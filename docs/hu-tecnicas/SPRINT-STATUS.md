@@ -1,5 +1,5 @@
 # Elevation — Estado de Historias de Usuario
-> Última actualización: 23 de marzo de 2026 | Entregable Sprint 2: miércoles 25 marzo
+> Última actualización: 24 de marzo de 2026 | Entregable Sprint 2: miércoles 25 marzo
 
 ---
 
@@ -17,78 +17,72 @@
 | HU-027 | Rol administrador backoffice | 3 | ✅ Desarrollado | JWT role=admin, panel slide-in, middleware verificarAdmin |
 | HU-028 | Prompt Vault encriptado | 5 | ✅ Desarrollado | AES-256-CBC, tabla PromptVaults, endpoints GET/POST |
 | HU-029 | Editor de prompts en backoffice | 3 | ✅ Desarrollado | Modal en panel admin, carga y guarda prompt activo |
-| HU-030 | Flujo de aprobación de prompts | 5 | ❌ Pendiente | Documentado, no desarrollado |
-| HU-031 | Historial de versiones de prompts | 3 | ❌ Pendiente | Documentado, no desarrollado |
-
-**Sprint 1 — Completado:** 6/12 HUs | 17/38 puntos
+| HU-030 | Flujo de aprobación de prompts | 5 | ✅ Desarrollado | Reemplazado por HU-033 |
+| HU-031 | Historial de versiones de prompts | 3 | ✅ Desarrollado | Incluido en HU-033 |
 
 ---
 
-## 🚀 SPRINT 2 — Backlog (Entregable: miércoles 25 marzo)
+## 🚀 SPRINT 2 — Estado actual (24 marzo)
 
-### 🔴 MUST HAVE — Crítico para el entregable
-
-| HU | Nombre | Puntos | Estado | Prioridad |
+| HU | Nombre | Puntos | Estado | Notas |
 |---|---|---|---|---|
-| HU-033 | Versionado y aprobación de prompts (superadmin) | 8 | 🔲 Pendiente | Alta |
-| HU-020-BD | Persistir mood_logs en PostgreSQL | 3 | 🔲 Pendiente | Alta |
-| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | 🔲 Pendiente | Alta |
-| HU-025 | Pantalla de bienvenida primer acceso | 2 | 🔲 Pendiente | Alta |
-
-### 🟡 SHOULD HAVE — Importante pero no bloqueante
-
-| HU | Nombre | Puntos | Estado | Prioridad |
-|---|---|---|---|---|
-| HU-021 | Check-out de ánimo al finalizar | 3 | ⚠️ Completar | Media |
-| HU-022 | Calificación con estrellas | 2 | 🔲 Pendiente | Media |
-
-### 🟢 NICE TO HAVE — Si hay tiempo
-
-| HU | Nombre | Puntos | Estado | Prioridad |
-|---|---|---|---|---|
-| HU-023 | Búsqueda de reflexiones | 3 | 🔲 Pendiente | Baja |
+| HU-033 | Versionado y aprobación de prompts | 8 | ⚠️ Parcial | Flujo core funciona, bug 404 en GET prompt activo pendiente |
+| HU-034 | Bug fix proposePrompt 500 | 3 | ✅ Resuelto | Import corregido en server.js, proposePrompt funciona |
+| HU-035 | Badge notificación superadmin | 3 | ⚠️ Parcial | Badge visible en panel, falta polling automático y diff de versiones |
+| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | ❌ Pendiente | Must Have para entregable |
+| HU-025 | Pantalla de bienvenida primer acceso | 2 | ❌ Pendiente | Must Have para entregable |
+| HU-021 | Check-out de ánimo al finalizar | 3 | ❌ Pendiente | Should Have |
+| HU-022 | Calificación con estrellas | 2 | ❌ Pendiente | Should Have |
 
 ---
 
-## ✅ LO QUE ESTÁ FUNCIONANDO EN PRODUCCIÓN HOY
+## ✅ FUNCIONANDO EN LOCAL HOY
 
-- 🟢 App desplegada en Cloud Run: https://elevation-ia-747531656650.us-central1.run.app
-- 🟢 PostgreSQL conectado via socket Unix en Cloud Run
-- 🟢 Login/Registro con JWT (role: user/admin)
-- 🟢 Encriptación AES-256-CBC de mensajes
-- 🟢 Chat con Claude claude-3-haiku-20240307
-- 🟢 Indicador "Elevation está reflexionando..."
-- 🟢 Scroll automático al último mensaje
-- 🟢 Check-in emocional con 5 emojis (UI funcional)
-- 🟢 Panel admin (slide-in desde derecha, solo role=admin)
-- 🟢 Prompt Vault encriptado con editor en backoffice
-
----
-
-## ⏳ PENDIENTES TÉCNICOS BLOQUEANTES
-
-1. **Rol superadmin:** Ejecutar `UPDATE "Users" SET role = 'superadmin' WHERE email = 'mauricio.roldan@iatech.com.co';` en Cloud SQL
-2. **Tabla mood_logs:** Crear en PostgreSQL para persistir check-ins
-3. **System prompt:** Alejo debe cargar el prompt real de Elevation desde el panel admin en producción
+- 🟢 Servidor backend en puerto 8080 conectado a Cloud SQL
+- 🟢 Login con roles (user / admin / superadmin)
+- 🟢 Panel admin visible para admin y superadmin
+- 🟢 Prompt activo visible en panel (solo lectura)
+- 🟢 Alejo puede proponer cambios al prompt → pending_review
+- 🟢 Mauro ve badge "1 pendiente de revisión" en su panel
+- 🟢 Mauro puede aprobar o rechazar versiones propuestas
+- 🟢 Historial de versiones visible para superadmin
+- 🟡 GET /api/admin/prompt/:key retorna 404 — bug pendiente
 
 ---
 
-## 📋 ORDEN DE DESARROLLO RECOMENDADO (Sprint 2)
+## 🔴 BUGS PENDIENTES
+
+### Bug principal — GET prompt activo retorna 404
+- **Endpoint:** GET /api/admin/prompt/elevation_system_prompt
+- **Causa probable:** El primer prompt se guardó con `savePrompt` que usa `unique:true` en el campo `key`. Al quitar el `unique:true` en el modelo, Sequelize puede haber perdido el registro o no sincronizó bien.
+- **Fix propuesto:** Verificar en Cloud SQL que exista un registro con `status='active'` y `key='elevation_system_prompt'`. Si no existe, el endpoint `POST /api/admin/prompt` con `savePrompt` debe crearlo correctamente ahora que los imports están corregidos.
+- **Siguiente paso:** Probar `POST /api/admin/prompt` desde Postman o desde el flujo de Alejo para insertar el primer prompt activo.
+
+---
+
+## 📋 PENDIENTES PARA HOY (martes 24)
 
 ```
-Día 1 (hoy lunes):
-  1. HU-033 — Versionado de prompts (superadmin) → backend + frontend
-  2. HU-020-BD — Persistir mood_logs en PostgreSQL
+PRIORIDAD ALTA — Must Have para el entregable:
+1. Fix Bug 404 GET prompt activo — completar HU-033
+2. HU-024 — Bloqueo tras 3 intentos fallidos
+3. HU-025 — Pantalla de bienvenida primer acceso
 
-Día 2 (martes):
-  3. HU-024 — Bloqueo tras 3 intentos fallidos
-  4. HU-025 — Pantalla de bienvenida primer acceso
-  5. HU-021 — Completar check-out de ánimo
+PRIORIDAD MEDIA:
+4. HU-035 — Polling automático badge + diff de versiones
+5. HU-021 — Check-out de ánimo (persistir en BD)
 
-Día 3 (miércoles — entregable):
-  6. HU-022 — Calificación con estrellas
-  7. Deploy final + pruebas + revisión
+PARA EL MIÉRCOLES:
+6. HU-022 — Calificación con estrellas
+7. Deploy a producción + pruebas finales
 ```
 
 ---
-*Generado por Claude (Tech Lead AI) — 23 marzo 2026*
+
+## 🔧 ARCHIVOS MODIFICADOS (pendientes de commit/push)
+
+- `backend/server.js` — imports corregidos (línea 11)
+- `backend/promptVault.js` — unique:true removido, fix nextVersion
+
+---
+*Actualizado: 24 de marzo de 2026 — Claude (Tech Lead AI) + Mauricio Roldán*
