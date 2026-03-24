@@ -1,5 +1,5 @@
 # Elevation — Estado de Historias de Usuario
-> Última actualización: 24 de marzo de 2026 | Entregable Sprint 2: miércoles 25 marzo
+> Última actualización: 25 de marzo de 2026 | Entregable Sprint 2: miércoles 25 marzo
 
 ---
 
@@ -22,14 +22,14 @@
 
 ---
 
-## 🚀 SPRINT 2 — Estado actual (24 marzo)
+## 🚀 SPRINT 2 — Estado actual (25 marzo)
 
 | HU | Nombre | Puntos | Estado | Notas |
 |---|---|---|---|---|
-| HU-033 | Versionado y aprobación de prompts | 8 | ⚠️ Parcial | Flujo core funciona, bug 404 en GET prompt activo pendiente |
+| HU-033 | Versionado y aprobación de prompts | 8 | ✅ Resuelto | Bug 404 corregido — fallback isActive:true en getActivePrompt y endpoint GET |
 | HU-034 | Bug fix proposePrompt 500 | 3 | ✅ Resuelto | Import corregido en server.js, proposePrompt funciona |
 | HU-035 | Badge notificación superadmin | 3 | ⚠️ Parcial | Badge visible en panel, falta polling automático y diff de versiones |
-| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | ❌ Pendiente | Must Have para entregable |
+| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | 🔄 En progreso | Backend: campos loginAttempts+lockedUntil en User. Frontend: mensaje de bloqueo |
 | HU-025 | Pantalla de bienvenida primer acceso | 2 | ❌ Pendiente | Must Have para entregable |
 | HU-021 | Check-out de ánimo al finalizar | 3 | ❌ Pendiente | Should Have |
 | HU-022 | Calificación con estrellas | 2 | ❌ Pendiente | Should Have |
@@ -41,48 +41,41 @@
 - 🟢 Servidor backend en puerto 8080 conectado a Cloud SQL
 - 🟢 Login con roles (user / admin / superadmin)
 - 🟢 Panel admin visible para admin y superadmin
-- 🟢 Prompt activo visible en panel (solo lectura)
+- 🟢 Prompt activo visible en panel (solo lectura) — GET 200 OK ✅
 - 🟢 Alejo puede proponer cambios al prompt → pending_review
 - 🟢 Mauro ve badge "1 pendiente de revisión" en su panel
 - 🟢 Mauro puede aprobar o rechazar versiones propuestas
 - 🟢 Historial de versiones visible para superadmin
-- 🟡 GET /api/admin/prompt/:key retorna 404 — bug pendiente
+- 🟢 GET /api/admin/prompt/:key retorna 200 con fallback isActive:true
 
 ---
 
 ## 🔴 BUGS PENDIENTES
 
-### Bug principal — GET prompt activo retorna 404
-- **Endpoint:** GET /api/admin/prompt/elevation_system_prompt
-- **Causa probable:** El primer prompt se guardó con `savePrompt` que usa `unique:true` en el campo `key`. Al quitar el `unique:true` en el modelo, Sequelize puede haber perdido el registro o no sincronizó bien.
-- **Fix propuesto:** Verificar en Cloud SQL que exista un registro con `status='active'` y `key='elevation_system_prompt'`. Si no existe, el endpoint `POST /api/admin/prompt` con `savePrompt` debe crearlo correctamente ahora que los imports están corregidos.
-- **Siguiente paso:** Probar `POST /api/admin/prompt` desde Postman o desde el flujo de Alejo para insertar el primer prompt activo.
+Ninguno crítico. HU-033 cerrada ✅
 
 ---
 
-## 📋 PENDIENTES PARA HOY (martes 24)
+## 📋 PENDIENTES PARA HOY (miércoles 25 — entregable)
 
 ```
-PRIORIDAD ALTA — Must Have para el entregable:
-1. Fix Bug 404 GET prompt activo — completar HU-033
-2. HU-024 — Bloqueo tras 3 intentos fallidos
-3. HU-025 — Pantalla de bienvenida primer acceso
+PRIORIDAD ALTA — Must Have:
+1. HU-024 — Bloqueo tras 3 intentos fallidos (en progreso)
+2. HU-025 — Pantalla de bienvenida primer acceso
+3. Deploy a producción + pruebas finales
 
 PRIORIDAD MEDIA:
 4. HU-035 — Polling automático badge + diff de versiones
 5. HU-021 — Check-out de ánimo (persistir en BD)
-
-PARA EL MIÉRCOLES:
-6. HU-022 — Calificación con estrellas
-7. Deploy a producción + pruebas finales
 ```
 
 ---
 
 ## 🔧 ARCHIVOS MODIFICADOS (pendientes de commit/push)
 
-- `backend/server.js` — imports corregidos (línea 11)
-- `backend/promptVault.js` — unique:true removido, fix nextVersion
+- `backend/server.js` — fallback isActive:true en GET /api/admin/prompt/:key
+- `backend/promptVault.js` — fallback isActive:true en getActivePrompt + unique:false
+- `backend/User.js` — campos loginAttempts + lockedUntil (HU-024, en progreso)
 
 ---
-*Actualizado: 24 de marzo de 2026 — Claude (Tech Lead AI) + Mauricio Roldán*
+*Actualizado: 25 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
