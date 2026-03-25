@@ -1,5 +1,5 @@
 # Elevation — Estado de Historias de Usuario
-> Última actualización: 25 de marzo de 2026 | Sprint 3 CASI COMPLETO
+> Última actualización: 25 de marzo de 2026 | Sprint 3 CERRADO ✅
 
 ---
 
@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | HU-020 | Check-in de ánimo obligatorio (RN-004) | 5 | ✅ Completado | 5 emojis, bloqueo hasta selección |
 | HU-021 | Check-out de ánimo al finalizar | 3 | ✅ Completado | Modal checkout + MoodLog en BD |
-| HU-022 | Calificación con estrellas (RN-009) | 2 | 🔄 En progreso | Sprint 3 — en desarrollo |
+| HU-022 | Calificación con estrellas (RN-009) | 2 | ✅ Completado | Integrada en modal checkout + SessionRating en BD |
 | HU-023 | Búsqueda de reflexiones por palabra clave | 3 | 🔄 Backlog | Movida post Sprint 3 |
 | HU-024 | Bloqueo tras 3 intentos fallidos (RN-002) | 3 | ✅ Completado | loginAttempts+lockedUntil, bloqueo 15min |
 | HU-025 | Pantalla de bienvenida primer acceso | 2 | ✅ Completado | Integrada con landing pública HU-036 |
@@ -33,7 +33,7 @@
 
 ---
 
-## 🎯 SPRINT 3 — Estado actual
+## 🎯 SPRINT 3 — CERRADO ✅ (36/36 puntos)
 
 ### Must Have ✅ COMPLETADO (23/23 puntos)
 | HU | Nombre | Puntos | Estado | Notas |
@@ -44,22 +44,22 @@
 | HU-041 | Bilingüe ES/EN | 5 | ✅ Completado | LanguageProvider + useLanguage + es.ts + en.ts |
 | HU-042 | BreathingBackground fondo animado | 3 | ✅ Completado | Canvas API — círculos que respiran, todas las pantallas |
 
-### Should Have (11/13 puntos completados)
+### Should Have ✅ COMPLETADO (13/13 puntos)
 | HU | Nombre | Puntos | Estado | Notas |
 |---|---|---|---|---|
 | HU-039 | Gestión contenido landing desde backoffice | 5 | ✅ Completado | Textos ES/EN editables desde panel superadmin |
 | HU-040 | Página de precios | 3 | ✅ Completado | /precios y /pricing con planes Free y Pro |
 | HU-021 | Check-out de ánimo (persistir en BD) | 3 | ✅ Completado | Modal checkout + tabla MoodLogs en PostgreSQL |
-| HU-022 | Calificación con estrellas | 2 | 🔄 En progreso | Integrada en modal checkout — en desarrollo |
+| HU-022 | Calificación con estrellas | 2 | ✅ Completado | Estrellas en modal checkout + tabla SessionRatings |
 
-### Progreso Sprint 3
+### Resultado Sprint 3
 - **Must Have:** 23/23 puntos ✅
-- **Should Have:** 11/13 puntos
-- **Total completado:** 34 de 36 puntos (94%)
+- **Should Have:** 13/13 puntos ✅
+- **Total:** 36/36 puntos (100%) 🎉
 
 ---
 
-## ✅ FUNCIONANDO EN LOCAL (pendiente deploy)
+## ✅ FUNCIONANDO EN LOCAL (pendiente deploy a Cloud Run)
 
 - 🟢 Login con roles (user / admin / superadmin)
 - 🟢 Bloqueo tras 3 intentos fallidos — HTTP 423, 15 min
@@ -69,8 +69,9 @@
 - 🟢 Prompt activo GET 200 OK con fallback isActive:true
 - 🟢 Proponer / aprobar / rechazar / rollback de prompts
 - 🟢 Historial de versiones visible para superadmin
-- 🟢 Check-in de ánimo obligatorio antes del chat — persiste en BD
+- 🟢 Check-in de ánimo obligatorio — persiste en BD
 - 🟢 Check-out de ánimo al cerrar sesión — persiste en BD
+- 🟢 Calificación con estrellas — persiste en BD
 - 🟢 Chat encriptado AES-256-CBC con historial
 - 🟢 Landing pública estilo Muji con fondo animado
 - 🟢 Rutas separadas / /login /app/checkin /app/chat /admin
@@ -97,16 +98,14 @@
 
 ---
 
-## 🎯 SIGUIENTE — Completar Sprint 3 y Deploy
+## 🚀 SPRINT 4 — Backlog inicial
 
-```
-Hoy:     HU-022 Calificación con estrellas
-Hoy:     Deploy a Cloud Run — Sprint 3 completo
-Sprint 4: HU-043 Gestión medios landing
-          HU-023 Búsqueda reflexiones
-          HU-035 Polling badge superadmin
-          DT-001 Limpieza dependencias
-```
+| HU | Nombre | Puntos | Prioridad |
+|---|---|---|---|
+| HU-043 | Gestión de imágenes y videos en landing | 8 | Must Have |
+| DT-001 | Limpieza de dependencias frontend | 3 | Must Have |
+| HU-023 | Búsqueda de reflexiones por palabra clave | 3 | Should Have |
+| HU-035 | Polling automático badge superadmin | 2 | Should Have |
 
 ---
 *Actualizado: 25 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
