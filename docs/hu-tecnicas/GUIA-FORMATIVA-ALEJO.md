@@ -262,25 +262,102 @@ El backend usa `dotenv`. Si una variable de entorno falta, el servidor puede fal
 
 ---
 
-## 9. Cómo trabajamos en equipo con Claude
+## 9. Por qué el humano siempre debe estar en el loop — la lección más importante del proyecto
 
-El equipo usa dos instancias de Claude con roles diferentes:
+Esta es probablemente la sección más importante de toda la guía. No habla de código — habla de cómo pensar el desarrollo de software con IA en 2026.
 
-### Claude.ai (este documento viene de acá)
-- Estrategia y arquitectura del producto
-- Definición de HUs y criterios de aceptación
-- Decisiones técnicas importantes
-- Documentación técnica
-- Revisión de código antes de aplicar
+### El error más común al trabajar con IA: delegar el pensamiento
 
-### Claude Code (terminal)
-- Ejecución de cambios en archivos locales
-- Lectura de archivos del proyecto sin copy-paste
-- Commits y push al repositorio
-- Correr el servidor y ver errores en tiempo real
-- Tareas concretas y bien definidas
+Cuando empezás a trabajar con herramientas de IA como Claude, la tentación más grande es pedirle que resuelva todo de forma autónoma. "Encontrá el bug y arreglalo." "Construí el backoffice." "Migrá la base de datos."
 
-**Regla de oro:** Claude Code solo ejecuta tareas que ya fueron definidas y aprobadas en Claude.ai. Nunca se le pide a Claude Code que tome decisiones de arquitectura o diseño.
+Y la IA puede hacerlo. Técnicamente tiene la capacidad. El problema no es si puede — el problema es si *debe*.
+
+El desarrollo de software no es solo escribir código que funcione. Es tomar decisiones que tienen consecuencias en el tiempo, en los datos de usuarios reales, en la arquitectura del sistema. Esas decisiones requieren contexto del negocio, criterio humano, y comprensión del producto que ninguna IA tiene de forma completa.
+
+### El ejemplo real: BUG-001 — cómo la conversación salvó el proyecto
+
+En el Sprint 4, Mauro reportó un bug: cuando un admin proponía un cambio de prompt, el superadmin no lo veía. El flujo parecía roto.
+
+La respuesta automática de una IA sin supervisión humana hubiera sido: **analizar el código, encontrar dónde falla la lógica, y proponer un fix en el código.**
+
+Y efectivamente, Claude analizó el código y encontró patrones que *podrían* ser problemáticos:
+- Una variable declarada pero no usada en `proposePrompt()`
+- La posibilidad de que `res.ok` no se estuviera verificando en el frontend
+- Un posible conflicto de rutas en Express
+
+Con esa información, Claude hubiera generado automáticamente cambios en `promptVault.js`, en `server.js`, y en `ChatPage.tsx`. Tres archivos modificados, decenas de líneas cambiadas.
+
+**Pero eso hubiera sido un error grave.**
+
+¿Por qué? Porque el código nuevo estaba perfectamente bien. No había ningún bug en la lógica nueva. El problema real era completamente diferente: los datos viejos en la base de datos tenían el campo `status` en NULL, mientras el código nuevo esperaba encontrar `status: 'active'`.
+
+La solución correcta fue **una sola línea de SQL** que migró los datos viejos:
+
+```sql
+UPDATE "PromptVaults"
+SET status = 'active'
+WHERE "isActive" = true
+AND (status IS NULL OR status = '');
+```
+
+Sin tocar ni una sola línea de código.
+
+### ¿Cómo se llegó a esa solución? Con conversación, no con automatización.
+
+El proceso fue así:
+
+1. Mauro describió el bug en lenguaje natural a Claude
+2. Claude leyó el código y propuso varias hipótesis
+3. **Mauro pensó sobre esas hipótesis** y se preguntó: "¿pero si cambiamos el código, no rompemos lo que ya funciona?"
+4. Esa pregunta llevó a entender que el problema no era el código sino los datos
+5. Claude propuso la migración de BD como solución limpia
+6. Mauro la ejecutó y verificó que funcionaba
+
+En ningún momento Claude actuó solo. Cada paso fue una conversación donde el humano aportó el criterio de negocio, la memoria del historial del sistema, y la pregunta correcta que redirigió el análisis.
+
+### Qué hubiera pasado con automatización total
+
+Si el proceso hubiera sido completamente automatizado — Claude detecta el bug, Claude genera el fix, Claude hace el commit — esto es lo que probablemente hubiera ocurrido:
+
+- Se hubieran modificado tres archivos de código que estaban correctos
+- Se hubiera introducido complejidad innecesaria para manejar casos que ya estaban bien manejados
+- Los cambios hubieran pasado a producción con una falsa sensación de que el problema estaba resuelto
+- El bug real (los datos viejos en la BD) seguiría existiendo
+- Y ahora además tendríamos código más complejo y difícil de mantener
+
+Esto en un sistema de salud mental con usuarios reales que confían sus emociones a la plataforma. El costo de ese error hubiera sido real.
+
+### La regla que seguimos en Elevation
+
+En este proyecto trabajamos con dos instancias de Claude que tienen roles muy diferentes:
+
+**Claude.ai — el Tech Lead**
+Es donde ocurre el pensamiento. Se analiza el problema, se debaten las hipótesis, se toman decisiones de arquitectura, se define *qué* hacer y *por qué*. Mauro aporta el contexto del negocio y la visión del producto. Claude aporta el conocimiento técnico y el análisis del código. Juntos llegan a la solución correcta.
+
+**Claude Code — el ejecutor**
+Solo actúa después de que Claude.ai y Mauro ya tomaron la decisión. Recibe instrucciones concretas, acotadas y ya validadas. "Ejecutá este script de migración." "Aplicá este cambio específico en este archivo." Nunca decide por su cuenta qué cambiar ni cómo.
+
+La regla es simple: **Claude Code nunca toma decisiones, solo ejecuta decisiones que ya fueron tomadas.**
+
+### Por qué este modelo es el correcto en 2026
+
+El desarrollo de software con IA está en un punto donde las herramientas son increíblemente capaces pero todavía requieren supervisión humana activa. No porque sean poco confiables, sino porque:
+
+**El código vive en un contexto que la IA no conoce completamente.** La IA puede leer el código, pero no estuvo en la reunión donde se decidió la arquitectura, no sabe qué compromisos se hicieron con el cliente, no conoce qué partes son frágiles por la historia del proyecto.
+
+**Los errores de software tienen consecuencias reales.** En Elevation, los usuarios comparten sus emociones más vulnerables. Un bug en el sistema de prompts podría hacer que la IA responda de forma inapropiada a alguien en un momento difícil. Eso no es un error de software — es un error humano.
+
+**La IA optimiza para lo que puede medir, no para lo que importa.** Una IA autónoma puede generar código que pasa todos los tests y aun así ser la solución incorrecta para el problema de negocio. Solo un humano que entiende el producto puede distinguir entre las dos.
+
+### Lo que esto significa para vos como desarrollador
+
+Tu rol en el equipo no es ser el que escribe código — las IAs pueden hacer eso. Tu rol es ser el que *entiende* el producto, *cuestiona* las soluciones propuestas, y *decide* qué cambios son correctos.
+
+Cuando Claude proponga una solución, la pregunta más valiosa que podés hacer es: **"¿Es esto realmente necesario?"**
+
+Muchas veces la respuesta va a revelar una solución más simple, más limpia, y más respetuosa con el código que ya existe.
+
+Eso es pensar como senior developer — con o sin IA.
 
 ---
 
@@ -297,7 +374,7 @@ Todo el Sprint 3 fue completado exitosamente:
 - Calificación con estrellas
 
 ### BUG-001 — RESUELTO ✅
-El flujo de propuesta/aprobación de prompts tenía un problema: los registros viejos en la BD tenían `isActive: true` pero `status: NULL`. Se resolvió con una migración directa en BD — sin tocar el código.
+El flujo de propuesta/aprobación de prompts tenía un problema: los registros viejos en la BD tenían `isActive: true` pero `status: NULL`. Se resolvió con una migración directa en BD — sin tocar el código. Ver `BUG-001-prompt-versions-superadmin.md` para el detalle completo.
 
 ### Sprint 4 — EN PLANIFICACIÓN
 Las próximas HUs del Sprint 4 incluyen:
@@ -322,7 +399,9 @@ Las próximas HUs del Sprint 4 incluyen:
 
 ## Mensaje final para Alejo
 
-Este proyecto fue construido con mucho cuidado en cada decisión. Cada línea de código tiene un motivo, cada arquitectura tiene un porqué. Cuando no entiendas algo, la respuesta probablemente está en los documentos de `docs/hu-tecnicas/` — ahí está documentado el razonamiento detrás de cada HU.
+Este proyecto fue construido con mucho cuidado en cada decisión. Cada línea de código tiene un motivo, cada arquitectura tiene un porqué. Cuando no entiendas algo, la pregunta correcta no es "¿qué hace este código?" sino "¿por qué se decidió hacerlo así?". La respuesta probablemente está en los documentos de `docs/hu-tecnicas/`.
+
+Las herramientas de IA son increíblemente poderosas. Pero su poder se multiplica cuando hay un humano que piensa, cuestiona y decide. Ese humano sos vos.
 
 Si algo no está documentado y lo entendés, documentalo vos. La documentación es parte del trabajo, no un extra.
 
