@@ -1,5 +1,5 @@
 # Elevation — Estado de Historias de Usuario
-> Última actualización: 31 de marzo de 2026 | Sprint 4 LISTO PARA ARRANCAR 🚀
+> Última actualización: 31 de marzo de 2026 | Sprint 4 EN CURSO 🚀
 
 ---
 
@@ -49,7 +49,7 @@
 
 ---
 
-## 🐛 BUGS — Sprint 4
+## 🐛 BUGS
 
 | Bug | Descripción | Estado |
 |---|---|---|
@@ -57,23 +57,16 @@
 
 ---
 
-## 🎯 SPRINT 4 — EN PREPARACIÓN
-
-### Definición completa ✅
-- HU-044, HU-045, HU-046, HU-047, HU-048 documentadas
-- Mockups generados por Manus y validados (`docs/mockups/`)
-- Design System validado visualmente
-- Arquitectura de datos completa (11 modelos)
-- Flujos de usuario documentados (4 flujos)
+## 🎯 SPRINT 4 — EN CURSO
 
 ### Must Have (29 puntos)
-| HU | Nombre | Puntos | Estado |
-|---|---|---|---|
-| HU-044 | Refactor backoffice a rutas /admin | 8 | 📋 Listo para desarrollar |
-| HU-045 | Gestión y creación de usuarios | 6 | 📋 Documentado |
-| HU-046 | Rol therapist + dashboard básico | 5 | 📋 Documentado |
-| HU-047 | Dashboard de métricas ejecutivas | 5 | 📋 Documentado |
-| HU-048 | Contenido todas las páginas + precios | 5 | 📋 Documentado |
+| HU | Nombre | Puntos | Estado | Notas |
+|---|---|---|---|---|
+| HU-044 | Refactor backoffice a rutas /admin | 8 | ✅ Completado | Layout + Sidebar + redirect por rol + 5 páginas placeholder |
+| HU-045 | Gestión y creación de usuarios | 6 | 🔄 Siguiente | — |
+| HU-046 | Rol therapist + dashboard básico | 5 | 📋 Documentado | — |
+| HU-047 | Dashboard de métricas ejecutivas | 5 | 📋 Documentado | — |
+| HU-048 | Contenido todas las páginas + precios | 5 | 📋 Documentado | — |
 
 ### Should Have (13 puntos)
 | HU | Nombre | Puntos | Estado |
@@ -87,7 +80,31 @@
 |---|---|---|
 | DT-001 | Limpieza dependencias frontend | 3 |
 
-**Total Sprint 4: 42 puntos + 3 DT**
+### Progreso Sprint 4
+- **Completado:** 8/42 puntos (19%)
+- **Siguiente:** HU-045 — Gestión y creación de usuarios
+
+---
+
+## Lo que se construyó en HU-044
+
+**Archivos nuevos:**
+- `frontend/src/layouts/AdminLayout.tsx` — header fijo + sidebar + Outlet
+- `frontend/src/components/AdminSidebar.tsx` — navegación con lógica de rol
+- `frontend/src/pages/admin/AdminDashboard.tsx`
+- `frontend/src/pages/admin/AdminPrompts.tsx`
+- `frontend/src/pages/admin/AdminContent.tsx`
+- `frontend/src/pages/admin/AdminUsers.tsx`
+- `frontend/src/pages/admin/AdminMetrics.tsx`
+
+**Archivos modificados:**
+- `frontend/src/App.tsx` — rutas `/admin/*` con guards
+- `frontend/src/pages/LoginPage.tsx` — redirect por rol post-login
+
+**Comportamiento:**
+- Admin/superadmin → login → `/admin/dashboard` directamente
+- User → login → `/app/checkin` como siempre
+- Sidebar muestra "Usuarios" solo para superadmin
 
 ---
 
@@ -95,45 +112,10 @@
 
 | Sprint | Enfoque | Estado |
 |---|---|---|
-| Sprint 4 | Base administrativa — backoffice, usuarios, terapeuta básico, métricas | 🚀 ARRANCANDO |
-| Sprint 5 | Plataforma clínica — onboarding, historia clínica, recomendaciones IA, prompts por terapeuta | 📋 Planificado |
-| Sprint 6 | Integración — videollamadas (Daily.co), Google Calendar, reasignación de pacientes | 📋 Planificado |
-| Sprint 7 | Bienestar expandido — matching usuario-terapeuta, biblioteca de corrientes | 📋 Planificado |
-
----
-
-## 📚 DOCUMENTACIÓN COMPLETA
-
-### Producto
-- `VISION-PRODUCTO.md` — visión de Elevation como plataforma de bienestar integral
-- `JUNTA-ELEVATION-ETICA.md` — Junta de validación y Marco Ético
-- `ONBOARDING-USUARIO.md` — flujo de registro con perfil de bienestar
-
-### Diseño
-- `DESIGN-SYSTEM.md` — paleta, tipografía, componentes
-- `UX-GUIA-EXPERIENCIA.md` — flujos y pantallas
-- `WIREFRAMES-BACKOFFICE.md` — wireframes backoffice
-- `WIREFRAMES-PLATAFORMA-WEB.md` — wireframes plataforma
-- `docs/mockups/` — mockups interactivos generados por Manus ✅
-
-### Sprint 4
-- `SPRINT-4-PLAN.md` — plan completo con HUs
-- `HU-044-refactor-backoffice-rutas-admin.md`
-- `HU-045-gestion-usuarios-backoffice.md`
-- `HU-046-rol-therapist-dashboard.md`
-- `HU-048-sistema-contenido-paginas-publicas.md`
-- `PROMPT-MANUS-ELEVATION.md` — prompt maestro usado con Manus
-
-### Formación
-- `GUIA-FORMATIVA-ALEJO.md` — guía completa para el equipo de desarrollo
-
----
-
-## 🔧 DEUDA TÉCNICA
-
-| ID | Descripción | Sprint |
-|---|---|---|
-| DT-001 | Conflicto vite@8 vs @tailwindcss/vite@4.2.1 | Sprint 4 |
+| Sprint 4 | Base administrativa | 🚀 EN CURSO |
+| Sprint 5 | Plataforma clínica — onboarding, historia clínica, recomendaciones IA | 📋 Planificado |
+| Sprint 6 | Integración — videollamadas, Google Calendar | 📋 Planificado |
+| Sprint 7 | Bienestar expandido — matching usuario-terapeuta | 📋 Planificado |
 
 ---
 *Actualizado: 31 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
