@@ -1,111 +1,139 @@
 # Elevation — Estado de Historias de Usuario
-> Última actualización: 25 de marzo de 2026 | Sprint 3 CERRADO ✅
+> Última actualización: 31 de marzo de 2026 | Sprint 4 LISTO PARA ARRANCAR 🚀
 
 ---
 
-## 🏁 SPRINT 1 — Estado Final
+## 🏁 SPRINT 1 — Cerrado ✅
 
-| HU | Nombre | Puntos | Estado | Notas |
-|---|---|---|---|---|
-| HU-020 | Check-in de ánimo obligatorio (RN-004) | 5 | ✅ Completado | 5 emojis, bloqueo hasta selección |
-| HU-021 | Check-out de ánimo al finalizar | 3 | ✅ Completado | Modal checkout + MoodLog en BD |
-| HU-022 | Calificación con estrellas (RN-009) | 2 | ✅ Completado | Integrada en modal checkout + SessionRating en BD |
-| HU-023 | Búsqueda de reflexiones por palabra clave | 3 | 🔄 Backlog | Movida post Sprint 3 |
-| HU-024 | Bloqueo tras 3 intentos fallidos (RN-002) | 3 | ✅ Completado | loginAttempts+lockedUntil, bloqueo 15min |
-| HU-025 | Pantalla de bienvenida primer acceso | 2 | ✅ Completado | Integrada con landing pública HU-036 |
-| HU-026 | Scroll automático en chat | 1 | ✅ Completado | chatEndRef + smooth scroll |
-| HU-027 | Rol administrador backoffice | 3 | ✅ Completado | JWT role=admin, panel slide-in |
-| HU-028 | Prompt Vault encriptado | 5 | ✅ Completado | AES-256-CBC, tabla PromptVaults |
-| HU-029 | Editor de prompts en backoffice | 3 | ✅ Completado | Modal en panel admin |
-| HU-030 | Flujo de aprobación de prompts | 5 | ✅ Completado | Reemplazado por HU-033 |
-| HU-031 | Historial de versiones de prompts | 3 | ✅ Completado | Incluido en HU-033 |
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-020 | Check-in de ánimo obligatorio | 5 | ✅ |
+| HU-021 | Check-out de ánimo al finalizar | 3 | ✅ |
+| HU-022 | Calificación con estrellas | 2 | ✅ |
+| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | ✅ |
+| HU-026 | Scroll automático en chat | 1 | ✅ |
+| HU-027 | Rol administrador backoffice | 3 | ✅ |
+| HU-028 | Prompt Vault encriptado | 5 | ✅ |
+| HU-029 | Editor de prompts en backoffice | 3 | ✅ |
 
 ---
 
-## 🚀 SPRINT 2 — Estado FINAL
+## 🚀 SPRINT 2 — Cerrado ✅
 
-| HU | Nombre | Puntos | Estado | Notas |
-|---|---|---|---|---|
-| HU-033 | Versionado y aprobación de prompts | 8 | ✅ Completado | Bug 404 corregido — fallback isActive:true |
-| HU-034 | Bug fix proposePrompt 500 | 3 | ✅ Completado | Import corregido en server.js |
-| HU-035 | Badge notificación superadmin | 3 | ⚠️ Parcial | Badge visible, polling → Sprint 4 backlog |
-| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | ✅ Completado | HTTP 423, 15min bloqueo |
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-033 | Versionado y aprobación de prompts | 8 | ✅ |
+| HU-034 | Bug fix proposePrompt 500 | 3 | ✅ |
+| HU-024 | Bloqueo tras 3 intentos fallidos | 3 | ✅ |
 
 ---
 
 ## 🎯 SPRINT 3 — CERRADO ✅ (36/36 puntos)
 
-### Must Have ✅ COMPLETADO (23/23 puntos)
-| HU | Nombre | Puntos | Estado | Notas |
-|---|---|---|---|---|
-| HU-037 | Refactor rutas React Router | 5 | ✅ Completado | BrowserRouter + ProtectedRoute + AdminRoute |
-| HU-036 | Landing pública estilo Muji | 8 | ✅ Completado | Hero + proceso + beneficios + CTA + footer |
-| HU-038 | SEC-001 mensaje genérico login | 2 | ✅ Completado | Mensaje unificado + rate limiting 10/min por IP |
-| HU-041 | Bilingüe ES/EN | 5 | ✅ Completado | LanguageProvider + useLanguage + es.ts + en.ts |
-| HU-042 | BreathingBackground fondo animado | 3 | ✅ Completado | Canvas API — círculos que respiran, todas las pantallas |
-
-### Should Have ✅ COMPLETADO (13/13 puntos)
-| HU | Nombre | Puntos | Estado | Notas |
-|---|---|---|---|---|
-| HU-039 | Gestión contenido landing desde backoffice | 5 | ✅ Completado | Textos ES/EN editables desde panel superadmin |
-| HU-040 | Página de precios | 3 | ✅ Completado | /precios y /pricing con planes Free y Pro |
-| HU-021 | Check-out de ánimo (persistir en BD) | 3 | ✅ Completado | Modal checkout + tabla MoodLogs en PostgreSQL |
-| HU-022 | Calificación con estrellas | 2 | ✅ Completado | Estrellas en modal checkout + tabla SessionRatings |
-
-### Resultado Sprint 3
-- **Must Have:** 23/23 puntos ✅
-- **Should Have:** 13/13 puntos ✅
-- **Total:** 36/36 puntos (100%) 🎉
-
----
-
-## ✅ FUNCIONANDO EN LOCAL (pendiente deploy a Cloud Run)
-
-- 🟢 Login con roles (user / admin / superadmin)
-- 🟢 Bloqueo tras 3 intentos fallidos — HTTP 423, 15 min
-- 🟢 Rate limiting login — 10 intentos/min por IP
-- 🟢 Mensaje genérico login — sin user enumeration
-- 🟢 Panel admin para admin y superadmin
-- 🟢 Prompt activo GET 200 OK con fallback isActive:true
-- 🟢 Proponer / aprobar / rechazar / rollback de prompts
-- 🟢 Historial de versiones visible para superadmin
-- 🟢 Check-in de ánimo obligatorio — persiste en BD
-- 🟢 Check-out de ánimo al cerrar sesión — persiste en BD
-- 🟢 Calificación con estrellas — persiste en BD
-- 🟢 Chat encriptado AES-256-CBC con historial
-- 🟢 Landing pública estilo Muji con fondo animado
-- 🟢 Rutas separadas / /login /app/checkin /app/chat /admin
-- 🟢 Bilingüe ES/EN con switcher en todas las pantallas
-- 🟢 Gestión de textos landing desde backoffice (superadmin)
-- 🟢 Página de precios /precios y /pricing
-
----
-
-## ⚠️ HALLAZGOS DE SEGURIDAD
-
-### SEC-001 — User Enumeration en Login
-- **Severidad:** Media
-- **Estado:** ✅ Resuelto — HU-038
-- **Solución:** Mensaje genérico + rate limiting por IP + delay 200ms
-
----
-
-## 🔧 DEUDA TÉCNICA DOCUMENTADA
-
-### DT-001 — Conflictos de dependencias frontend
-- **Estado:** Documentado — resolver Sprint 4
-- **Doc:** `docs/hu-tecnicas/DEUDA-TECNICA-001-dependencias.md`
-
----
-
-## 🚀 SPRINT 4 — Backlog inicial
-
-| HU | Nombre | Puntos | Prioridad |
+### Must Have ✅ (23/23 pts)
+| HU | Nombre | Puntos | Estado |
 |---|---|---|---|
-| HU-043 | Gestión de imágenes y videos en landing | 8 | Must Have |
-| DT-001 | Limpieza de dependencias frontend | 3 | Must Have |
-| HU-023 | Búsqueda de reflexiones por palabra clave | 3 | Should Have |
-| HU-035 | Polling automático badge superadmin | 2 | Should Have |
+| HU-037 | Refactor rutas React Router | 5 | ✅ |
+| HU-036 | Landing pública estilo Muji | 8 | ✅ |
+| HU-038 | SEC-001 mensaje genérico login | 2 | ✅ |
+| HU-041 | Bilingüe ES/EN | 5 | ✅ |
+| HU-042 | BreathingBackground fondo animado | 3 | ✅ |
+
+### Should Have ✅ (13/13 pts)
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-039 | Gestión contenido landing | 5 | ✅ |
+| HU-040 | Página de precios | 3 | ✅ |
+| HU-021 | Check-out de ánimo en BD | 3 | ✅ |
+| HU-022 | Calificación con estrellas | 2 | ✅ |
 
 ---
-*Actualizado: 25 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+
+## 🐛 BUGS — Sprint 4
+
+| Bug | Descripción | Estado |
+|---|---|---|
+| BUG-001 | Versiones pendientes no visibles para superadmin | ✅ Resuelto — migración BD |
+
+---
+
+## 🎯 SPRINT 4 — EN PREPARACIÓN
+
+### Definición completa ✅
+- HU-044, HU-045, HU-046, HU-047, HU-048 documentadas
+- Mockups generados por Manus y validados (`docs/mockups/`)
+- Design System validado visualmente
+- Arquitectura de datos completa (11 modelos)
+- Flujos de usuario documentados (4 flujos)
+
+### Must Have (29 puntos)
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-044 | Refactor backoffice a rutas /admin | 8 | 📋 Listo para desarrollar |
+| HU-045 | Gestión y creación de usuarios | 6 | 📋 Documentado |
+| HU-046 | Rol therapist + dashboard básico | 5 | 📋 Documentado |
+| HU-047 | Dashboard de métricas ejecutivas | 5 | 📋 Documentado |
+| HU-048 | Contenido todas las páginas + precios | 5 | 📋 Documentado |
+
+### Should Have (13 puntos)
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-043 | Gestión de imágenes y videos en landing | 8 | 📋 Documentado |
+| HU-023 | Búsqueda de reflexiones por palabra clave | 3 | 📋 Backlog |
+| HU-035 | Polling automático badge superadmin | 2 | 📋 Backlog |
+
+### Deuda técnica
+| ID | Descripción | Puntos |
+|---|---|---|
+| DT-001 | Limpieza dependencias frontend | 3 |
+
+**Total Sprint 4: 42 puntos + 3 DT**
+
+---
+
+## 📅 ROADMAP DE SPRINTS
+
+| Sprint | Enfoque | Estado |
+|---|---|---|
+| Sprint 4 | Base administrativa — backoffice, usuarios, terapeuta básico, métricas | 🚀 ARRANCANDO |
+| Sprint 5 | Plataforma clínica — onboarding, historia clínica, recomendaciones IA, prompts por terapeuta | 📋 Planificado |
+| Sprint 6 | Integración — videollamadas (Daily.co), Google Calendar, reasignación de pacientes | 📋 Planificado |
+| Sprint 7 | Bienestar expandido — matching usuario-terapeuta, biblioteca de corrientes | 📋 Planificado |
+
+---
+
+## 📚 DOCUMENTACIÓN COMPLETA
+
+### Producto
+- `VISION-PRODUCTO.md` — visión de Elevation como plataforma de bienestar integral
+- `JUNTA-ELEVATION-ETICA.md` — Junta de validación y Marco Ético
+- `ONBOARDING-USUARIO.md` — flujo de registro con perfil de bienestar
+
+### Diseño
+- `DESIGN-SYSTEM.md` — paleta, tipografía, componentes
+- `UX-GUIA-EXPERIENCIA.md` — flujos y pantallas
+- `WIREFRAMES-BACKOFFICE.md` — wireframes backoffice
+- `WIREFRAMES-PLATAFORMA-WEB.md` — wireframes plataforma
+- `docs/mockups/` — mockups interactivos generados por Manus ✅
+
+### Sprint 4
+- `SPRINT-4-PLAN.md` — plan completo con HUs
+- `HU-044-refactor-backoffice-rutas-admin.md`
+- `HU-045-gestion-usuarios-backoffice.md`
+- `HU-046-rol-therapist-dashboard.md`
+- `HU-048-sistema-contenido-paginas-publicas.md`
+- `PROMPT-MANUS-ELEVATION.md` — prompt maestro usado con Manus
+
+### Formación
+- `GUIA-FORMATIVA-ALEJO.md` — guía completa para el equipo de desarrollo
+
+---
+
+## 🔧 DEUDA TÉCNICA
+
+| ID | Descripción | Sprint |
+|---|---|---|
+| DT-001 | Conflicto vite@8 vs @tailwindcss/vite@4.2.1 | Sprint 4 |
+
+---
+*Actualizado: 31 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
