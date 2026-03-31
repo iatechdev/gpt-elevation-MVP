@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elevation — Design System & Pantallas</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --elevation-bg:#f9f9f7;--elevation-surface:#FAF8F4;--elevation-border:#E7E5E4;
+    --elevation-border-md:#D6D2C4;--elevation-olive:#6B7D5C;--elevation-olive-lt:#A8B5A2;
+    --elevation-olive-bg:#EAF0E6;--elevation-text-1:#1C1917;--elevation-text-2:#78716C;
+    --elevation-text-3:#A8A29E;--elevation-teal:#0d9488;--elevation-teal-bg:#F0FDFA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:var(--elevation-bg);color:var(--elevation-text-1);min-height:100vh;}
+  .hero{background:linear-gradient(180deg,var(--elevation-olive-bg) 0%,var(--elevation-bg) 100%);padding:4rem 2rem;text-align:center;border-bottom:1px solid var(--elevation-border);}
+  .hero-logo{width:48px;height:48px;background:var(--elevation-olive);border-radius:0.85rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;}
+  .hero-logo svg{width:24px;height:24px;stroke:white;stroke-width:1.5;}
+  .hero h1{font-family:'Playfair Display',serif;font-weight:300;font-size:36px;color:var(--elevation-text-1);margin-bottom:0.75rem;}
+  .hero p{font-size:15px;color:var(--elevation-text-2);max-width:600px;margin:0 auto 0.5rem;line-height:1.7;}
+  .hero-meta{font-size:12px;color:var(--elevation-text-3);margin-top:1rem;}
+  .hero-meta span{margin:0 0.75rem;}
+  .content{max-width:1100px;margin:0 auto;padding:3rem 2rem;}
+  .section-title{font-family:'Playfair Display',serif;font-weight:300;font-size:22px;color:var(--elevation-text-1);margin-bottom:0.4rem;}
+  .section-subtitle{font-size:13px;color:var(--elevation-text-3);margin-bottom:1.5rem;}
+  .screens-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:3rem;}
+  .screen-card{background:var(--elevation-surface);border:0.5px solid var(--elevation-border-md);border-radius:1rem;overflow:hidden;box-shadow:0 2px 12px rgba(26,28,27,0.04);transition:all 0.2s;text-decoration:none;display:block;}
+  .screen-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(26,28,27,0.1);border-color:var(--elevation-olive-lt);}
+  .screen-preview{height:160px;background:var(--elevation-olive-bg);display:flex;align-items:center;justify-content:center;font-size:40px;border-bottom:1px solid var(--elevation-border);position:relative;overflow:hidden;}
+  .screen-preview-bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--elevation-olive-bg) 0%,var(--elevation-surface) 100%);}
+  .screen-preview-icon{position:relative;z-index:1;font-size:36px;}
+  .screen-preview-label{position:absolute;bottom:0.75rem;right:0.75rem;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding:0.2rem 0.6rem;border-radius:2rem;}
+  .label-mobile{background:var(--elevation-olive);color:white;}
+  .label-desktop{background:var(--elevation-text-1);color:white;}
+  .screen-info{padding:1.25rem;}
+  .screen-num{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--elevation-text-3);margin-bottom:0.3rem;}
+  .screen-name{font-size:15px;font-weight:600;color:var(--elevation-text-1);margin-bottom:0.3rem;}
+  .screen-desc{font-size:12px;color:var(--elevation-text-3);line-height:1.5;margin-bottom:0.75rem;}
+  .screen-tags{display:flex;flex-wrap:wrap;gap:0.35rem;}
+  .screen-tag{padding:0.2rem 0.55rem;border-radius:2rem;font-size:10px;font-weight:500;}
+  .tag-user{background:var(--elevation-olive-bg);color:var(--elevation-olive);}
+  .tag-therapist{background:var(--elevation-teal-bg);color:var(--elevation-teal);}
+  .tag-admin{background:#F5F3EF;color:var(--elevation-text-2);}
+  .footer{text-align:center;padding:2rem;border-top:1px solid var(--elevation-border);color:var(--elevation-text-3);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-logo"><svg viewBox="0 0 24 24" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.728 12.728.707.707M3 12h1m16 0h1M4.927 19.073l.707-.707M18.364 5.636l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg></div>
+  <h1>Elevation — Mockups</h1>
+  <p>7 pantallas interactivas respetando el Design System Muji/olive. Generadas por Manus AI basadas en el Design System de Elevation.</p>
+  <div class="hero-meta"><span>7 pantallas</span><span>·</span><span>Mobile + Desktop</span><span>·</span><span>5 roles</span></div>
+</div>
+<div class="content">
+  <div class="section-title">Pantallas prioritarias</div>
+  <div class="section-subtitle">Referencia visual para el desarrollo del Sprint 4 y 5</div>
+  <div class="screens-grid">
+    <a href="01-onboarding.html" class="screen-card">
+      <div class="screen-preview"><div class="screen-preview-bg"></div><div class="screen-preview-icon">🌱</div><span class="screen-preview-label label-mobile">Mobile</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 01</div><div class="screen-name">Onboarding (6 pasos)</div><div class="screen-desc">Bienvenida, áreas de bienestar, temas, intención, preferencia y resumen.</div><div class="screen-tags"><span class="screen-tag tag-user">user</span><span class="screen-tag tag-user">mobile-first</span></div></div>
+    </a>
+    <a href="02-therapist-dashboard.html" class="screen-card">
+      <div class="screen-preview"><div class="screen-preview-bg"></div><div class="screen-preview-icon">🧑‍⚕️</div><span class="screen-preview-label label-desktop">Desktop</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 02</div><div class="screen-name">Dashboard Terapeuta</div><div class="screen-desc">KPIs, lista de pacientes con tendencia emocional, alertas y sesiones.</div><div class="screen-tags"><span class="screen-tag tag-therapist">therapist</span></div></div>
+    </a>
+    <a href="03-patient-profile.html" class="screen-card">
+      <div class="screen-preview"><div class="screen-preview-bg"></div><div class="screen-preview-icon">📋</div><span class="screen-preview-label label-desktop">Desktop</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 03</div><div class="screen-name">Ficha del Paciente</div><div class="screen-desc">Perfil de bienestar, tendencia emocional, notas clínicas y recomendaciones IA.</div><div class="screen-tags"><span class="screen-tag tag-therapist">therapist</span></div></div>
+    </a>
+    <a href="04-admin-dashboard.html" class="screen-card">
+      <div class="screen-preview"><div class="screen-preview-bg"></div><div class="screen-preview-icon">⚙️</div><span class="screen-preview-label label-desktop">Desktop</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 04</div><div class="screen-name">Dashboard Backoffice</div><div class="screen-desc">KPIs, gráfico de sesiones, prompts pendientes y accesos rápidos.</div><div class="screen-tags"><span class="screen-tag tag-admin">admin</span><span class="screen-tag tag-admin">superadmin</span></div></div>
+    </a>
+    <a href="05-content-management.html" class="screen-card">
+      <div class="screen-preview"><div class="screen-preview-bg"></div><div class="screen-preview-icon">📝</div><span class="screen-preview-label label-desktop">Desktop</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 05</div><div class="screen-name">Gestión de Contenido</div><div class="screen-desc">Editor por página (Home, Precios, Onboarding, Manifiesto) con bilingüe ES/EN.</div><div class="screen-tags"><span class="screen-tag tag-admin">admin</span><span class="screen-tag tag-admin">superadmin</span></div></div>
+    </a>
+    <a href="06-metrics.html" class="screen-card">
+      <div class="screen-preview"><div class="screen-preview-bg"></div><div class="screen-preview-icon">📊</div><span class="screen-preview-label label-desktop">Desktop</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 06</div><div class="screen-name">Panel de Métricas</div><div class="screen-desc">Mood check-in vs check-out, sesiones, terapeutas activos y áreas top.</div><div class="screen-tags"><span class="screen-tag tag-admin">admin</span><span class="screen-tag tag-admin">superadmin</span></div></div>
+    </a>
+    <a href="07-prompt-management.html" class="screen-card" style="grid-column:1/3">
+      <div class="screen-preview" style="height:120px"><div class="screen-preview-bg"></div><div class="screen-preview-icon">🔐</div><span class="screen-preview-label label-desktop">Desktop</span></div>
+      <div class="screen-info"><div class="screen-num">Pantalla 07</div><div class="screen-name">Gestión de Prompts</div><div class="screen-desc">Vault de prompts, flujo de aprobación técnico + ético, diff de versiones y rollback.</div><div class="screen-tags"><span class="screen-tag tag-admin">superadmin</span><span class="screen-tag tag-admin">junta</span></div></div>
+    </a>
+  </div>
+</div>
+<div class="footer">Elevation Mockups · Generado por Manus AI · Validado por Mauro Roldán · Marzo 2026</div>
+</body>
+</html>
