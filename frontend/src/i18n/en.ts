@@ -68,6 +68,32 @@ const en: Record<string, string> = {
   logo: 'ELEVATION',
   tagline: 'Tu santuario digital · Your digital sanctuary',
   btn_logout: 'Sign out',
+
+  // ==========================================
+  // HU-051 — Wellness recommendations
+  // ==========================================
+  rec_title: '✨ Recommendations for you',
+  rec_subtitle: 'Based on your recent emotional state',
+  rec_generate: 'Generate recommendations',
+  rec_regenerate: 'Generate new ones',
+  rec_loading: 'Generating recommendations...',
+  rec_empty: 'No recommendations yet. Generate your first ones now.',
+  rec_error: 'Could not generate recommendations.',
+  rec_category_mindfulness: '🧘 Mindfulness',
+  rec_category_habit: '🌿 Habit',
+  rec_category_reflection: '📓 Reflection',
+  rec_category_resource: '📚 Resource',
+  rec_generated_at: 'Generated',
+
+  // ==========================================
+  // DT-002 — Pending: backoffice and therapist keys
+  // These texts are hardcoded in English in:
+  // - AdminUsers.tsx
+  // - AdminDashboard.tsx
+  // - TherapistDashboard.tsx
+  // - TherapistPatient.tsx
+  // Will be migrated in the dedicated i18n sprint
+  // ==========================================
 }
 
 export { en }
