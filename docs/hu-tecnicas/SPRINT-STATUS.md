@@ -1,5 +1,5 @@
 # Elevation — Estado de Historias de Usuario
-> Última actualización: 31 de marzo de 2026 | Sprint 4 EN CURSO 🚀
+> Última actualización: 2 de abril de 2026 | Sprint 5 EN CURSO 🚀
 
 ---
 
@@ -28,9 +28,8 @@
 
 ---
 
-## 🎯 SPRINT 3 — CERRADO ✅ (36/36 puntos)
+## 🎯 SPRINT 3 — Cerrado ✅ (36/36 puntos)
 
-### Must Have ✅ (23/23 pts)
 | HU | Nombre | Puntos | Estado |
 |---|---|---|---|
 | HU-037 | Refactor rutas React Router | 5 | ✅ |
@@ -38,14 +37,25 @@
 | HU-038 | SEC-001 mensaje genérico login | 2 | ✅ |
 | HU-041 | Bilingüe ES/EN | 5 | ✅ |
 | HU-042 | BreathingBackground fondo animado | 3 | ✅ |
-
-### Should Have ✅ (13/13 pts)
-| HU | Nombre | Puntos | Estado |
-|---|---|---|---|
 | HU-039 | Gestión contenido landing | 5 | ✅ |
 | HU-040 | Página de precios | 3 | ✅ |
 | HU-021 | Check-out de ánimo en BD | 3 | ✅ |
 | HU-022 | Calificación con estrellas | 2 | ✅ |
+
+---
+
+## 🎯 SPRINT 4 — Cerrado ✅
+
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-044 | Refactor backoffice a rutas /admin | 8 | ✅ |
+| HU-045 | Gestión y creación de usuarios | 6 | ✅ |
+| HU-046 | Rol therapist + dashboard básico | 5 | ✅ |
+
+**Pendientes arrastrados a Sprint 5:**
+- HU-047 Dashboard métricas → incluido en Sprint 5
+- HU-048 Contenido páginas → backlog
+- HU-043 Gestión imágenes → backlog
 
 ---
 
@@ -57,54 +67,23 @@
 
 ---
 
-## 🎯 SPRINT 4 — EN CURSO
+## 🚀 SPRINT 5 — EN CURSO
 
-### Must Have (29 puntos)
-| HU | Nombre | Puntos | Estado | Notas |
-|---|---|---|---|---|
-| HU-044 | Refactor backoffice a rutas /admin | 8 | ✅ Completado | Layout + Sidebar + redirect por rol + 5 páginas placeholder |
-| HU-045 | Gestión y creación de usuarios | 6 | 🔄 Siguiente | — |
-| HU-046 | Rol therapist + dashboard básico | 5 | 📋 Documentado | — |
-| HU-047 | Dashboard de métricas ejecutivas | 5 | 📋 Documentado | — |
-| HU-048 | Contenido todas las páginas + precios | 5 | 📋 Documentado | — |
-
-### Should Have (13 puntos)
+### Must Have (21 puntos)
 | HU | Nombre | Puntos | Estado |
 |---|---|---|---|
-| HU-043 | Gestión de imágenes y videos en landing | 8 | 📋 Documentado |
-| HU-023 | Búsqueda de reflexiones por palabra clave | 3 | 📋 Backlog |
-| HU-035 | Polling automático badge superadmin | 2 | 📋 Backlog |
+| HU-049 | Prompt por terapeuta | 8 | 🔄 Siguiente |
+| HU-050 | Historia clínica del cliente | 8 | 📋 Documentada |
+| HU-051 | Recomendaciones IA de bienestar | 5 | 📋 Documentada |
 
-### Deuda técnica
-| ID | Descripción | Puntos |
-|---|---|---|
-| DT-001 | Limpieza dependencias frontend | 3 |
+### Should Have (18 puntos)
+| HU | Nombre | Puntos | Estado |
+|---|---|---|---|
+| HU-052 | Panel de reportes del usuario | 5 | 📋 Documentada |
+| HU-047 | Dashboard métricas ejecutivas | 5 | 📋 Documentada |
+| HU-060 | Matching usuario-terapeuta | 8 | 📋 Documentada |
 
-### Progreso Sprint 4
-- **Completado:** 8/42 puntos (19%)
-- **Siguiente:** HU-045 — Gestión y creación de usuarios
-
----
-
-## Lo que se construyó en HU-044
-
-**Archivos nuevos:**
-- `frontend/src/layouts/AdminLayout.tsx` — header fijo + sidebar + Outlet
-- `frontend/src/components/AdminSidebar.tsx` — navegación con lógica de rol
-- `frontend/src/pages/admin/AdminDashboard.tsx`
-- `frontend/src/pages/admin/AdminPrompts.tsx`
-- `frontend/src/pages/admin/AdminContent.tsx`
-- `frontend/src/pages/admin/AdminUsers.tsx`
-- `frontend/src/pages/admin/AdminMetrics.tsx`
-
-**Archivos modificados:**
-- `frontend/src/App.tsx` — rutas `/admin/*` con guards
-- `frontend/src/pages/LoginPage.tsx` — redirect por rol post-login
-
-**Comportamiento:**
-- Admin/superadmin → login → `/admin/dashboard` directamente
-- User → login → `/app/checkin` como siempre
-- Sidebar muestra "Usuarios" solo para superadmin
+**Total Sprint 5: 39 puntos**
 
 ---
 
@@ -112,10 +91,11 @@
 
 | Sprint | Enfoque | Estado |
 |---|---|---|
-| Sprint 4 | Base administrativa | 🚀 EN CURSO |
-| Sprint 5 | Plataforma clínica — onboarding, historia clínica, recomendaciones IA | 📋 Planificado |
-| Sprint 6 | Integración — videollamadas, Google Calendar | 📋 Planificado |
-| Sprint 7 | Bienestar expandido — matching usuario-terapeuta | 📋 Planificado |
+| Sprint 1-3 | Fundamentos, landing, seguridad, bilingüe | ✅ Cerrado |
+| Sprint 4 | Base administrativa — backoffice, roles, therapist | ✅ Cerrado |
+| Sprint 5 | Plataforma clínica — prompts, historia clínica, matching | 🚀 En curso |
+| Sprint 6 | Integración — videollamadas, Google Calendar, Cloudinary | 📋 Planificado |
+| Sprint 7 | Bienestar expandido — corrientes terapéuticas, biblioteca | 📋 Planificado |
 
 ---
-*Actualizado: 31 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+*Actualizado: 2 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
