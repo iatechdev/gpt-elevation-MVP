@@ -4,6 +4,7 @@
 > Documentada: 2 de abril de 2026
 > Aprobada por Mauro Roldán
 > Referencia visual: Manus design — /therapist
+> **Completada: 3 de abril de 2026**
 
 ---
 
@@ -19,7 +20,7 @@ Calculada con los MoodLogs del paciente:
 - **Mejorando** 📈: avgMood últimos 3 días > avgMood días 4–7 (diferencia > 0.5)
 - **Estable** 📊: diferencia entre períodos <= 0.5
 - **Decayendo** 📉: avgMood últimos 3 días < avgMood días 4–7 (diferencia > 0.5)
-- **Sin datos**: si tiene menos de 3 sesiones no se muestra badge
+- **Sin datos**: si tiene menos de 3 registros en los últimos 7 días no se muestra badge
 
 ---
 
@@ -37,18 +38,26 @@ Badge colores:
 
 ---
 
-## Endpoint a modificar
+## Archivos modificados
 
-`GET /api/therapist/pacientes` — agregar campo `trend: 'improving' | 'stable' | 'declining' | null` a cada paciente.
+- `backend/routes/therapistRoutes.js` — función `calculateTrend()` + campo `trend` en respuesta de `/api/therapist/pacientes`
+- `frontend/src/pages/therapist/TherapistDashboard.tsx` — interface `Patient` + `TREND_BADGE` config + badge visual
+
+## Decisiones técnicas
+
+- Se agregó `trend` como campo **nuevo** independiente de `moodTrend` (que ya existía) para no romper lógica existente
+- `moodTrend` compara solo últimas 2 sesiones — `trend` compara ventanas de 7 días (más robusto clínicamente)
+- `calculateTrend()` usa promedio de `checkin_mood` y `checkout_mood` por día para mayor precisión
 
 ---
 
 ## Criterios de aceptación
 
-- [ ] Cada paciente en el dashboard muestra su badge de tendencia
-- [ ] Badge correctamente coloreado según estado
-- [ ] Pacientes sin suficientes datos no muestran badge
-- [ ] Cálculo correcto: últimos 3 días vs días 4-7
+- [x] Cada paciente en el dashboard muestra su badge de tendencia
+- [x] Badge correctamente coloreado según estado
+- [x] Pacientes sin suficientes datos no muestran badge
+- [x] Cálculo correcto: últimos 3 días vs días 4-7
 
 ---
 *Documentada: 2 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+*Completada: 3 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
