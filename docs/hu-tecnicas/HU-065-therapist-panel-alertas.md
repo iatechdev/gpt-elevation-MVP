@@ -3,6 +3,7 @@
 > Sprint 6 | Should Have | 2 puntos
 > Documentada: 2 de abril de 2026
 > Aprobada por Mauro Roldán
+> **Completada: 3 de abril de 2026**
 > Referencia visual: Manus design — /therapist (columna derecha)
 
 ---
@@ -16,49 +17,41 @@ Agregar panel lateral de alertas al TherapistDashboard con tres tipos de alertas
 ## Panel de Alertas
 
 **Alerta 1 — Paciente sin actividad:**
-```
-⚠️ [Nombre] sin actividad
-No ha tenido sesiones en 7 días
-```
 - Se genera cuando un paciente asignado no tiene MoodLog en los últimos 7 días
+- Color: amarillo (#FEF3C7 / #92400E)
 
 **Alerta 2 — Progreso notable:**
-```
-✅ Progreso notable
-[Nombre] ha mejorado su mood un X% esta semana
-```
 - Se genera cuando avgMood últimos 3 días >= 30% mejor que semana anterior
+- Color: verde (#EAF0E6 / #4A6741)
 
 **Alerta 3 — Recomendación pendiente (placeholder):**
-```
-ℹ️ Recomendación pendiente
-[Nombre] tiene 1 recomendación IA
-```
-- Por ahora: informativo. Flujo de aprobación en Sprint 7.
+- Informativo por ahora. Flujo de aprobación en Sprint 7.
+- Color: azul (#E0F2FE / #0369A1)
 
 ---
 
-## Endpoint nuevo
+## Archivos modificados
 
-```
-GET /api/therapist/alerts
-```
-Retorna:
-```json
-{
-  "inactivePatients": [{"userId": 1, "name": "...", "daysSinceLastSession": 8}],
-  "notableProgress": [{"userId": 2, "name": "...", "improvementPercent": 40}]
-}
-```
+- `backend/routes/therapistRoutes.js` — endpoint `GET /api/therapist/alerts`
+- `frontend/src/pages/therapist/TherapistDashboard.tsx` — layout dos columnas + panel alertas
+
+## Decisiones técnicas
+
+- Layout convertido de una columna a dos columnas (lista pacientes + panel alertas)
+- Panel alertas sticky en columna derecha (320px)
+- Contador de alertas activas en header del panel
+- Alerta 3 es placeholder — flujo real en Sprint 7
+- Alertas son non-blocking: si el endpoint falla, el dashboard sigue funcionando
 
 ---
 
 ## Criterios de aceptación
 
-- [ ] Panel de alertas visible en columna derecha del dashboard
-- [ ] Alerta de paciente inactivo aparece correctamente
-- [ ] Alerta de progreso notable aparece con porcentaje calculado
-- [ ] Si no hay alertas: mensaje "Todo en orden 👍"
+- [x] Panel de alertas visible en columna derecha del dashboard
+- [x] Alerta de paciente inactivo aparece correctamente
+- [x] Alerta de progreso notable aparece con porcentaje calculado
+- [x] Si no hay alertas: mensaje "Todo en orden 👍"
 
 ---
 *Documentada: 2 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+*Completada: 3 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
