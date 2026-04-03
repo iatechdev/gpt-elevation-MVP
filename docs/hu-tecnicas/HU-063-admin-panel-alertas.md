@@ -3,76 +3,57 @@
 > Sprint 6 | Should Have | 2 puntos
 > Documentada: 2 de abril de 2026
 > Aprobada por Mauro Roldán
+> **Completada: 3 de abril de 2026**
 > Referencia visual: Manus design — /admin (columna derecha)
 
 ---
 
 ## Contexto
 
-Agregar panel de alertas al AdminDashboard con prompts pendientes, terapeutas pendientes y estado del Manifiesto Ético.
+Agregar panel de alertas al AdminDashboard con prompts pendientes, terapeutas sin perfil y estado del Manifiesto Ético.
 
 ---
 
-## Panel de Alertas
+## Panel de Alertas implementado
 
 **Alerta 1 — Prompts pendientes:**
-```
-⚠️ X prompts pendientes
-Esperando revisión ética
-[Revisar] → /admin/prompts
-```
+- Color amarillo cuando hay prompts, gris cuando no hay
+- Botón Review → /admin/prompts
+- Lista de prompts pendientes debajo del panel (máx 5)
 
 **Alerta 2 — Terapeutas sin perfil completo:**
-```
-ℹ️ X terapeutas sin perfil
-TherapistProfile incompleto
-[Revisar] → /admin/usuarios?role=therapist
-```
+- Color azul cuando hay terapeutas sin perfil
+- Botón Review → /admin/usuarios?role=therapist
 
 **Alerta 3 — Manifiesto Ético:**
-```
-ℹ️ Manifiesto Ético
-v1.0 activo desde [fecha]
-```
+- Siempre visible en verde
+- Muestra versión y fecha de activación
 
 ---
 
-## Lista de prompts pendientes en dashboard
+## Archivos modificados
 
-```
-Prompts pendientes de aprobación
-[Nombre terapeuta] — TCC    v2    [Rev. ética]  [Revisar]
-[Nombre terapeuta] — DBT    v1    [Rev. técnica] [Revisar]
-```
-- Máximo 5 items, con "Ver todos" → /admin/prompts
+- `backend/routes/adminUsers.js` — endpoint `GET /api/admin/usuarios/alerts`
+- `frontend/src/pages/admin/AdminDashboard.tsx` — layout dos columnas + panel alertas
 
----
+## Decisiones técnicas
 
-## Endpoint nuevo
-
-```
-GET /api/admin/alerts
-```
-Retorna:
-```json
-{
-  "pendingPrompts": 3,
-  "pendingPromptsList": [{"id": 1, "therapistName": "...", "version": 2}],
-  "therapistsWithoutProfile": 2,
-  "manifestoVersion": "v1.0",
-  "manifestoDate": "2026-04-02"
-}
-```
+- Endpoint montado en `/api/admin/usuarios/alerts` para reutilizar el router existente
+- Layout convertido de una columna a dos columnas (métricas + alertas)
+- Panel alertas sticky en columna derecha (300px)
+- Colores adaptativos — gris si no hay alertas, color si hay
+- Lista de prompts pendientes se muestra solo cuando hay al menos uno
 
 ---
 
 ## Criterios de aceptación
 
-- [ ] Panel de alertas visible en AdminDashboard
-- [ ] Alerta de prompts pendientes con conteo correcto
-- [ ] Lista de prompts pendientes directamente en el dashboard
-- [ ] Alerta de terapeutas sin perfil completo
-- [ ] Estado del Manifiesto Ético visible
+- [x] Panel de alertas visible en AdminDashboard
+- [x] Alerta de prompts pendientes con conteo correcto
+- [x] Lista de prompts pendientes directamente en el dashboard
+- [x] Alerta de terapeutas sin perfil completo
+- [x] Estado del Manifiesto Ético visible
 
 ---
 *Documentada: 2 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+*Completada: 3 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
