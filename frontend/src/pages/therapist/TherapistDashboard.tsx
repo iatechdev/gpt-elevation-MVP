@@ -1,4 +1,4 @@
-// HU-046 + HU-049 + HU-062 — Therapist dashboard with patient list + prompt management + trend badges
+// HU-046 + HU-049 + HU-062 + HU-065 — Therapist dashboard
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -16,7 +16,7 @@ interface Patient {
   sessionsThisWeek: number
   avgRating: number | null
   moodTrend: 'up' | 'down' | 'neutral'
-  trend: 'improving' | 'stable' | 'declining' | null  // HU-062
+  trend: 'improving' | 'stable' | 'declining' | null
   lastMood: {
     checkin_mood: number | null
     checkout_mood: number | null
@@ -41,15 +41,33 @@ interface PromptData {
   } | null
 }
 
+// HU-065 — Alert types
+interface InactivePatient {
+  userId: number
+  name: string
+  daysSinceLastSession: number | null
+}
+
+interface NotableProgress {
+  userId: number
+  name: string
+  improvementPercent: number
+}
+
+interface AlertsData {
+  inactivePatients: InactivePatient[]
+  notableProgress: NotableProgress[]
+}
+
 const MOOD_EMOJI: Record<number, string> = {
   1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
 }
 
 // HU-062 — Badge config
 const TREND_BADGE: Record<string, { label: string; bg: string; color: string; icon: string }> = {
-  improving: { label: 'Improving',  bg: '#EAF0E6', color: '#4A6741', icon: '📈' },
-  stable:    { label: 'Stable',     bg: '#E0F2FE', color: '#0369A1', icon: '📊' },
-  declining: { label: 'Declining',  bg: '#FEE2E2', color: '#DC2626', icon: '📉' },
+  improving: { label: 'Improving', bg: '#EAF0E6', color: '#4A6741', icon: '📈' },
+  stable:    { label: 'Stable',    bg: '#E0F2FE', color: '#0369A1', icon: '📊' },
+  declining: { label: 'Declining', bg: '#FEE2E2', color: '#DC2626', icon: '📉' },
 }
 
 export function TherapistDashboard() {
@@ -58,15 +76,21 @@ export function TherapistDashboard() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
 
-  const [promptData, setPromptData]       = useState<PromptData | null>(null)
-  const [promptLoading, setPromptLoading] = useState(true)
+  // Prompt state
+  const [promptData, setPromptData]             = useState<PromptData | null>(null)
+  const [promptLoading, setPromptLoading]       = useState(true)
   const [showPromptSection, setShowPromptSection] = useState(false)
   const [showProposeModal, setShowProposeModal]   = useState(false)
   const [newPromptContent, setNewPromptContent]   = useState('')
-  const [proposing, setProposing]     = useState(false)
-  const [proposeError, setProposeError]   = useState('')
-  const [proposeSuccess, setProposeSuccess] = useState('')
+  const [proposing, setProposing]               = useState(false)
+  const [proposeError, setProposeError]         = useState('')
+  const [proposeSuccess, setProposeSuccess]     = useState('')
 
+  // HU-065 — Alerts state
+  const [alerts, setAlerts]           = useState<AlertsData | null>(null)
+  const [alertsLoading, setAlertsLoading] = useState(true)
+
+  // Fetch patients
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -85,6 +109,7 @@ export function TherapistDashboard() {
     fetchPatients()
   }, [])
 
+  // Fetch prompt
   useEffect(() => {
     const fetchPrompt = async () => {
       try {
@@ -101,6 +126,25 @@ export function TherapistDashboard() {
       }
     }
     fetchPrompt()
+  }, [])
+
+  // HU-065 — Fetch alerts
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const res = await fetch(`${API}/api/therapist/alerts`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        })
+        if (!res.ok) throw new Error()
+        const data = await res.json()
+        setAlerts(data)
+      } catch {
+        // non-blocking
+      } finally {
+        setAlertsLoading(false)
+      }
+    }
+    fetchAlerts()
   }, [])
 
   const handleProposePrompt = async () => {
@@ -160,6 +204,9 @@ export function TherapistDashboard() {
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  // HU-065 — total alert count
+  const totalAlerts = (alerts?.inactivePatients.length ?? 0) + (alerts?.notableProgress.length ?? 0)
 
   return (
     <div style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -225,7 +272,6 @@ export function TherapistDashboard() {
               )}
             </div>
           </div>
-
           {showPromptSection && (
             <div style={{ marginTop: '1rem', padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
               {promptData?.content
@@ -241,93 +287,157 @@ export function TherapistDashboard() {
       {loading && <p style={{ color: '#78716C', fontSize: '0.875rem' }}>Loading patients...</p>}
       {error   && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{error}</p>}
 
-      {/* PATIENT LIST */}
+      {/* HU-065 — TWO COLUMN LAYOUT: patients + alerts */}
       {!loading && !error && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {patients.length === 0 ? (
-            <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: '0.875rem' }}>
-              No patients assigned yet.
-            </div>
-          ) : (
-            patients.map(p => {
-              const lastMoodValue = p.lastMood?.checkout_mood ?? p.lastMood?.checkin_mood ?? null
-              const daysSince = p.lastMood
-                ? Math.floor((Date.now() - new Date(p.lastMood.date).getTime()) / (1000 * 60 * 60 * 24))
-                : null
-              const trendBadge = p.trend ? TREND_BADGE[p.trend] : null  // HU-062
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1.5rem', alignItems: 'start' }}>
 
-              return (
-                <div key={p.id} style={{
-                  ...cardStyle,
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: '1rem', flexWrap: 'wrap', opacity: p.active ? 1 : 0.5,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                    {/* Avatar */}
-                    <div style={{
-                      width: 42, height: 42, borderRadius: '50%', background: '#EAF0E6',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.1rem', fontWeight: 600, color: '#6B7D5C', flexShrink: 0,
-                    }}>
-                      {p.name.charAt(0).toUpperCase()}
-                    </div>
+          {/* COLUMNA IZQUIERDA — PATIENT LIST */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {patients.length === 0 ? (
+              <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: '0.875rem' }}>
+                No patients assigned yet.
+              </div>
+            ) : (
+              patients.map(p => {
+                const lastMoodValue = p.lastMood?.checkout_mood ?? p.lastMood?.checkin_mood ?? null
+                const daysSince = p.lastMood
+                  ? Math.floor((Date.now() - new Date(p.lastMood.date).getTime()) / (1000 * 60 * 60 * 24))
+                  : null
+                const trendBadge = p.trend ? TREND_BADGE[p.trend] : null
 
-                    {/* Name + mood info */}
-                    <div>
-                      <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.95rem' }}>{p.name}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
-                        {lastMoodValue != null && (
-                          <span style={{ fontSize: '0.85rem' }}>{MOOD_EMOJI[lastMoodValue] ?? '—'}</span>
-                        )}
-                        {daysSince != null && (
-                          <span style={{ fontSize: '0.75rem', color: '#78716C' }}>
-                            {daysSince === 0 ? 'Today' : daysSince === 1 ? 'Yesterday' : `${daysSince} days ago`}
-                          </span>
-                        )}
-                        {/* HU-062 — Badge de tendencia */}
-                        {trendBadge && (
-                          <span style={{
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                            background: trendBadge.bg,
-                            color: trendBadge.color,
-                            padding: '0.15rem 0.55rem',
-                            borderRadius: '999px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                          }}>
-                            {trendBadge.icon} {trendBadge.label}
-                          </span>
-                        )}
+                return (
+                  <div key={p.id} style={{
+                    ...cardStyle,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: '1rem', flexWrap: 'wrap', opacity: p.active ? 1 : 0.5,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                      <div style={{
+                        width: 42, height: 42, borderRadius: '50%', background: '#EAF0E6',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.1rem', fontWeight: 600, color: '#6B7D5C', flexShrink: 0,
+                      }}>
+                        {p.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.95rem' }}>{p.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
+                          {lastMoodValue != null && <span style={{ fontSize: '0.85rem' }}>{MOOD_EMOJI[lastMoodValue] ?? '—'}</span>}
+                          {daysSince != null && (
+                            <span style={{ fontSize: '0.75rem', color: '#78716C' }}>
+                              {daysSince === 0 ? 'Today' : daysSince === 1 ? 'Yesterday' : `${daysSince} days ago`}
+                            </span>
+                          )}
+                          {trendBadge && (
+                            <span style={{
+                              fontSize: '0.72rem', fontWeight: 600,
+                              background: trendBadge.bg, color: trendBadge.color,
+                              padding: '0.15rem 0.55rem', borderRadius: '999px',
+                              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                            }}>
+                              {trendBadge.icon} {trendBadge.label}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Stats */}
-                  <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.82rem', color: '#78716C' }}>
-                    <span>{p.totalSessions} session{p.totalSessions !== 1 ? 's' : ''}</span>
-                    {p.avgRating != null && (
-                      <span>{'★'.repeat(Math.round(p.avgRating))}{'☆'.repeat(5 - Math.round(p.avgRating))} {p.avgRating}</span>
-                    )}
-                  </div>
+                    <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.82rem', color: '#78716C' }}>
+                      <span>{p.totalSessions} session{p.totalSessions !== 1 ? 's' : ''}</span>
+                      {p.avgRating != null && (
+                        <span>{'★'.repeat(Math.round(p.avgRating))}{'☆'.repeat(5 - Math.round(p.avgRating))} {p.avgRating}</span>
+                      )}
+                    </div>
 
-                  {/* CTA */}
-                  <button
-                    onClick={() => navigate(`/therapist/patient/${p.id}`)}
-                    style={{
-                      padding: '0.5rem 1.1rem', background: 'transparent',
-                      border: '0.5px solid #6B7D5C', borderRadius: '0.85rem',
-                      color: '#6B7D5C', fontSize: '0.82rem', fontWeight: 500,
-                      cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
-                    }}
-                  >
-                    View history
-                  </button>
+                    <button
+                      onClick={() => navigate(`/therapist/patient/${p.id}`)}
+                      style={{
+                        padding: '0.5rem 1.1rem', background: 'transparent',
+                        border: '0.5px solid #6B7D5C', borderRadius: '0.85rem',
+                        color: '#6B7D5C', fontSize: '0.82rem', fontWeight: 500,
+                        cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
+                      }}
+                    >
+                      View history
+                    </button>
+                  </div>
+                )
+              })
+            )}
+          </div>
+
+          {/* COLUMNA DERECHA — HU-065 ALERTS PANEL */}
+          <div style={{ ...cardStyle, position: 'sticky', top: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                🔔 Alerts
+              </div>
+              {totalAlerts > 0 && (
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#FEE2E2', color: '#DC2626', padding: '0.15rem 0.5rem', borderRadius: '999px' }}>
+                  {totalAlerts}
+                </span>
+              )}
+            </div>
+
+            {alertsLoading ? (
+              <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>Loading alerts...</p>
+            ) : totalAlerts === 0 ? (
+              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👍</div>
+                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>All good — no alerts right now.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                {/* Alerta 1 — Inactivos */}
+                {alerts?.inactivePatients.map(p => (
+                  <div key={p.userId} style={{
+                    padding: '0.75rem', borderRadius: '0.65rem',
+                    background: '#FEF3C7', border: '0.5px solid #FCD34D',
+                  }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E', marginBottom: '0.2rem' }}>
+                      ⚠️ {p.name} — no activity
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#92400E' }}>
+                      {p.daysSinceLastSession === null
+                        ? 'No sessions recorded yet'
+                        : `No sessions in ${p.daysSinceLastSession} days`}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Alerta 2 — Progreso notable */}
+                {alerts?.notableProgress.map(p => (
+                  <div key={p.userId} style={{
+                    padding: '0.75rem', borderRadius: '0.65rem',
+                    background: '#EAF0E6', border: '0.5px solid #A8B5A2',
+                  }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#4A6741', marginBottom: '0.2rem' }}>
+                      ✅ Notable progress
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#4A6741' }}>
+                      {p.name} improved {p.improvementPercent}% this week
+                    </div>
+                  </div>
+                ))}
+
+                {/* Alerta 3 — Recomendación pendiente (placeholder) */}
+                <div style={{
+                  padding: '0.75rem', borderRadius: '0.65rem',
+                  background: '#E0F2FE', border: '0.5px solid #7DD3FC',
+                }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#0369A1', marginBottom: '0.2rem' }}>
+                    ℹ️ AI recommendations
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#0369A1' }}>
+                    Approval flow available in Sprint 7
+                  </div>
                 </div>
-              )
-            })
-          )}
+
+              </div>
+            )}
+          </div>
+
         </div>
       )}
 

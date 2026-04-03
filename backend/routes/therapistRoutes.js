@@ -1,4 +1,4 @@
-// HU-046 + HU-049 + HU-050 + HU-062 — Therapist routes
+// HU-046 + HU-049 + HU-050 + HU-062 + HU-065 — Therapist routes
 
 const express = require('express');
 const router = express.Router();
@@ -51,40 +51,25 @@ const decrypt = (text) => {
 // ==========================================
 // HU-062 — Trend calculation helper
 // ==========================================
-/**
- * Calcula la tendencia emocional de un paciente basándose en sus MoodLogs.
- * Compara el promedio de mood de los últimos 3 días vs días 4-7.
- * Usa checkin_mood y checkout_mood si están disponibles.
- *
- * @param {Array} moodLogs - Array de MoodLog ordenados por date DESC
- * @returns {'improving' | 'stable' | 'declining' | null}
- */
 const calculateTrend = (moodLogs) => {
-  // Necesitamos al menos 3 registros para calcular tendencia
   if (!moodLogs || moodLogs.length < 3) return null;
 
   const now = Date.now();
   const ONE_DAY = 1000 * 60 * 60 * 24;
 
-  // Separar en dos períodos por días desde hoy
-  const recent = [];  // últimos 3 días (días 0-2)
-  const older = [];   // días 3-6 (días 4-7 en términos del negocio)
+  const recent = [];
+  const older  = [];
 
   for (const log of moodLogs) {
     const daysDiff = (now - new Date(log.date).getTime()) / ONE_DAY;
-    // Promedio de checkin y checkout del día
     const values = [log.checkin_mood, log.checkout_mood].filter(v => v != null);
     if (values.length === 0) continue;
     const dayAvg = values.reduce((a, b) => a + b, 0) / values.length;
 
-    if (daysDiff < 3) {
-      recent.push(dayAvg);
-    } else if (daysDiff < 7) {
-      older.push(dayAvg);
-    }
+    if (daysDiff < 3)      recent.push(dayAvg);
+    else if (daysDiff < 7) older.push(dayAvg);
   }
 
-  // Si no hay datos en ambos períodos, no podemos calcular
   if (recent.length === 0 || older.length === 0) return null;
 
   const avgRecent = recent.reduce((a, b) => a + b, 0) / recent.length;
@@ -140,7 +125,6 @@ router.get('/pacientes', async (req, res) => {
           return daysDiff <= 7;
         }).length;
 
-        // HU-062 — nuevo campo trend con lógica de 7 días
         const trend = calculateTrend(moodLogs);
 
         return {
@@ -154,7 +138,7 @@ router.get('/pacientes', async (req, res) => {
           avgRating,
           totalSessions: moodLogs.length,
           sessionsThisWeek,
-          trend, // 'improving' | 'stable' | 'declining' | null
+          trend,
         };
       })
     );
@@ -163,6 +147,90 @@ router.get('/pacientes', async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching patients:', error);
     res.status(500).json({ error: 'Could not fetch patients.' });
+  }
+});
+
+// ==========================================
+// HU-065 — GET /api/therapist/alerts
+// ==========================================
+router.get('/alerts', async (req, res) => {
+  try {
+    const therapistId = req.user.id;
+    const now = Date.now();
+    const ONE_DAY = 1000 * 60 * 60 * 24;
+
+    // Obtener todos los pacientes asignados al terapeuta
+    const patients = await User.findAll({
+      where: { therapistId, role: 'user', active: true },
+      attributes: ['id', 'name'],
+    });
+
+    const inactivePatients = [];
+    const notableProgress  = [];
+
+    await Promise.all(patients.map(async (p) => {
+
+      const moodLogs = await MoodLog.findAll({
+        where: { UserId: p.id },
+        order: [['date', 'DESC']],
+        limit: 14,
+      });
+
+      // ── Alerta 1: sin actividad en últimos 7 días ──────────────────────
+      const lastLog = moodLogs[0] ?? null;
+      if (!lastLog) {
+        // Nunca ha tenido sesión
+        inactivePatients.push({ userId: p.id, name: p.name, daysSinceLastSession: null });
+      } else {
+        const daysSince = (now - new Date(lastLog.date).getTime()) / ONE_DAY;
+        if (daysSince >= 7) {
+          inactivePatients.push({
+            userId: p.id,
+            name: p.name,
+            daysSinceLastSession: Math.floor(daysSince),
+          });
+        }
+      }
+
+      // ── Alerta 2: progreso notable (mejora >= 30% en mood) ─────────────
+      if (moodLogs.length >= 4) {
+        // Últimos 3 días vs días 4-7
+        const recent = moodLogs.filter(m => {
+          const d = (now - new Date(m.date).getTime()) / ONE_DAY;
+          return d < 3;
+        });
+        const older = moodLogs.filter(m => {
+          const d = (now - new Date(m.date).getTime()) / ONE_DAY;
+          return d >= 3 && d < 7;
+        });
+
+        if (recent.length > 0 && older.length > 0) {
+          const avgRecent = recent
+            .flatMap(m => [m.checkin_mood, m.checkout_mood].filter(Boolean))
+            .reduce((a, b, _, arr) => a + b / arr.length, 0);
+
+          const avgOlder = older
+            .flatMap(m => [m.checkin_mood, m.checkout_mood].filter(Boolean))
+            .reduce((a, b, _, arr) => a + b / arr.length, 0);
+
+          if (avgOlder > 0) {
+            const improvementPercent = Math.round(((avgRecent - avgOlder) / avgOlder) * 100);
+            if (improvementPercent >= 30) {
+              notableProgress.push({
+                userId: p.id,
+                name: p.name,
+                improvementPercent,
+              });
+            }
+          }
+        }
+      }
+    }));
+
+    res.json({ inactivePatients, notableProgress });
+  } catch (error) {
+    console.error('❌ Error fetching therapist alerts:', error);
+    res.status(500).json({ error: 'Could not fetch alerts.' });
   }
 });
 
@@ -371,10 +439,7 @@ router.post('/pacientes/:id/notas', async (req, res) => {
 
     res.status(201).json({
       message: 'Note saved successfully.',
-      note: {
-        ...note.toJSON(),
-        content,
-      },
+      note: { ...note.toJSON(), content },
     });
   } catch (error) {
     console.error('❌ Error creating clinical note:', error);
@@ -397,18 +462,15 @@ router.put('/notas/:noteId', async (req, res) => {
     }
 
     const updates = {};
-    if (content) updates.content = encrypt(content);
-    if (type) updates.type = type;
+    if (content)     updates.content     = encrypt(content);
+    if (type)        updates.type        = type;
     if (sessionDate) updates.sessionDate = sessionDate;
 
     await note.update(updates);
 
     res.json({
       message: 'Note updated successfully.',
-      note: {
-        ...note.toJSON(),
-        content: content ?? decrypt(note.content),
-      },
+      note: { ...note.toJSON(), content: content ?? decrypt(note.content) },
     });
   } catch (error) {
     console.error('❌ Error updating clinical note:', error);
@@ -481,10 +543,7 @@ Please write a concise clinical summary (3-5 sentences) of this patient's emotio
     res.json({
       summary: msg.content[0].text,
       generatedAt: new Date().toISOString(),
-      basedOn: {
-        sessions: moodLogs.length,
-        notes: notes.length,
-      },
+      basedOn: { sessions: moodLogs.length, notes: notes.length },
     });
   } catch (error) {
     console.error('❌ Error generating AI summary:', error);
