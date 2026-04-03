@@ -1,134 +1,101 @@
 # HU-060 — Matching Usuario-Terapeuta
 
-> Sprint 5 | Should Have | 8 puntos
-> Documentada: 2 de abril de 2026
-> Aprobada por Mauro Roldán
+> Sprint 7 | Must Have | 5 puntos
+> Documentada: 3 de abril de 2026
+> Aprobada por: Mauro Roldán
+> Depende de: HU-061 (User Dashboard), HU-071 (Vista Mi terapeuta)
 
 ---
 
 ## Contexto
 
-Actualmente un admin asigna manualmente un terapeuta a un usuario desde el backoffice. Esta HU agrega inteligencia al proceso: el usuario puede indicar sus necesidades y la IA sugiere los terapeutas más afines. El admin confirma la asignación.
+Hoy el admin asigna manualmente el terapeuta a cada usuario desde el backoffice. Esta HU implementa el flujo de matching inteligente donde el usuario elige su terapeuta según sus preferencias y necesidades.
+
+El botón "Buscar mi terapeuta" ya existe en el dashboard y en la vista Mi terapeuta — esta HU le da funcionalidad real.
 
 ---
 
-## Flujo completo
+## Flujo del usuario
 
 ```
-1. Usuario sin terapeuta ve sugerencia en el chat o en /app/progress
-2. Usuario responde cuestionario breve (3-5 preguntas)
-3. IA analiza respuestas + perfil emocional del usuario
-4. Sistema sugiere top 3 terapeutas con justificación
-5. Usuario elige su preferido o solicita ver más
-6. Admin recibe notificación y confirma la asignación
-7. Terapeuta es notificado del nuevo paciente
-```
-
----
-
-## Modelo nuevo — TherapistProfile
-
-```js
-TherapistProfile: {
-  id:            INTEGER (PK)
-  UserId:        INTEGER (FK → User, role: therapist)
-  specialties:   TEXT (JSON array) — ['mindfulness', 'ansiedad', 'pareja']
-  approach:      TEXT — descripción de su corriente terapéutica
-  languages:     TEXT (JSON array) — ['es', 'en']
-  bio:           TEXT — presentación para usuarios
-  maxPatients:   INTEGER (default 20)
-  currentPatients: INTEGER (virtual, calculado)
-  acceptingNew:  BOOLEAN (default true)
-}
+1. Usuario hace clic en "Buscar mi terapeuta" (dashboard o /app/my-therapist)
+2. Se abre modal de matching
+3. Usuario responde 3 preguntas de preferencias:
+   - ¿Qué buscás trabajar? (ansiedad / relaciones / autoconocimiento / hábitos / otro)
+   - ¿Qué enfoque preferís? (reflexivo / estructurado / espiritual / práctico)
+   - ¿En qué idioma preferís sesionar? (español / inglés / ambos)
+4. El sistema muestra los terapeutas que mejor coinciden (máx 3)
+5. Usuario ve card de cada terapeuta con: nombre, especialidades, enfoque, idiomas, bio corta
+6. Usuario elige uno → se guarda therapistId en su perfil
+7. Modal cierra, dashboard muestra el nuevo terapeuta
 ```
 
 ---
 
-## Modelo nuevo — MatchingRequest
+## UI — Modal de matching
 
-```js
-MatchingRequest: {
-  id:           INTEGER (PK)
-  UserId:       INTEGER (FK → User)
-  answers:      TEXT (JSON — respuestas al cuestionario)
-  suggestions:  TEXT (JSON — top 3 terapeutas sugeridos con scores)
-  chosenTherapistId: INTEGER (FK → User, nullable)
-  status:       STRING — 'pending' | 'confirmed' | 'rejected'
-  createdAt:    DATE
-}
+```
+┌─────────────────────────────────────────────┐
+│  Encontremos tu terapeuta ideal             │
+│                                             │
+│  ¿Qué buscás trabajar?                      │
+│  [Ansiedad] [Relaciones] [Autoconocimiento] │
+│  [Hábitos]  [Otro]                          │
+│                                             │
+│  ¿Qué enfoque preferís?                     │
+│  [Reflexivo] [Estructurado]                 │
+│  [Espiritual] [Práctico]                    │
+│                                             │
+│  ¿En qué idioma?                            │
+│  [Español] [Inglés] [Ambos]                 │
+│                                             │
+│  [Buscar →]                                 │
+└─────────────────────────────────────────────┘
+
+── Resultados ──
+┌──────────────────────────────────────────┐
+│ [M]  Mauro Roldán                        │
+│      Mindfulness · TCC                   │
+│      "Mi enfoque es..."                  │
+│      [Elegir este terapeuta]             │
+└──────────────────────────────────────────┘
 ```
 
 ---
 
-## Endpoints nuevos
+## Backend
 
+### Endpoint 1 — Buscar terapeutas compatibles
 ```
-POST /api/matching/request           ← usuario envía cuestionario
-GET  /api/matching/suggestions       ← obtener sugerencias IA
-POST /api/matching/choose            ← usuario elige terapeuta
-GET  /api/admin/matching/pending     ← admin ve solicitudes pendientes
-POST /api/admin/matching/:id/confirm ← admin confirma asignación
+POST /api/matching/search
+Body: { topics: string[], approach: string, language: string }
+Retorna: [{ id, name, email, profile: { specialties, approach, languages, bio } }]
 ```
 
----
+Lógica de matching (simple para MVP):
+- Filtra terapeutas activos con TherapistProfile
+- Prioriza por coincidencia de idioma (exacta)
+- Prioriza por coincidencia de approach en specialties
+- Máximo 3 resultados
 
-## Cuestionario de matching (3 preguntas)
-
-1. ¿Qué área quieres trabajar principalmente? (ansiedad / depresión / relaciones / crecimiento personal / otro)
-2. ¿Qué estilo de acompañamiento prefieres? (reflexivo y exploratorio / estructurado y con metas / empático y de escucha / cualquiera)
-3. ¿En qué idioma prefieres tus sesiones? (Español / Inglés / Sin preferencia)
-
----
-
-## Algoritmo de matching (IA)
-
+### Endpoint 2 — Confirmar selección
 ```
-Inputs:
-- Respuestas del cuestionario
-- Últimos 14 MoodLogs del usuario (tendencia emocional)
-- Lista de terapeutas disponibles con sus perfiles
-
-Proceso:
-- Llamada a Claude API con prompt de matching
-- El prompt recibe: perfil del usuario + respuestas + lista de terapeutas
-- Claude retorna: top 3 con score 1-10 + justificación por cada uno
-
-Output:
-[
-  { therapistId: 3, score: 9.2, reason: "Su especialidad en ansiedad y enfoque mindfulness..." },
-  { therapistId: 7, score: 8.1, reason: "Su corriente cognitivo-conductual es ideal para..." },
-  { therapistId: 1, score: 7.4, reason: "Aunque su enfoque es más exploratorio..." }
-]
+POST /api/matching/select
+Body: { therapistId: number }
+Actualiza: User.therapistId del usuario autenticado
+Retorna: { message, therapistName }
 ```
 
 ---
 
-## Frontend
+## Criterios de aceptación
 
-### Para el usuario — en `/app/progress` o `/app/chat`
-```
-💡 ¿Querés trabajar con un terapeuta?
-[Encontrar mi terapeuta ideal]
-```
-
-Modal con el cuestionario → resultados con cards de terapeutas → botón "Solicitar este terapeuta".
-
-### Para el admin — en `/admin/usuarios`
-- Badge con número de solicitudes de matching pendientes
-- Lista de solicitudes con el terapeuta sugerido y botón de confirmar
+- [ ] Modal de matching abre desde dashboard y desde /app/my-therapist
+- [ ] Usuario puede seleccionar sus preferencias (topics, approach, language)
+- [ ] Sistema muestra máx 3 terapeutas compatibles con su perfil
+- [ ] Usuario puede elegir un terapeuta y queda asignado
+- [ ] Dashboard y Mi terapeuta se actualizan tras la selección
+- [ ] Si no hay terapeutas compatibles: mensaje apropiado
 
 ---
-
-## Criterio de aceptación
-
-- [ ] Usuario sin terapeuta puede iniciar el proceso de matching
-- [ ] Cuestionario de 3 preguntas funcional
-- [ ] IA genera sugerencia de top 3 terapeutas con justificación
-- [ ] Usuario puede elegir su terapeuta preferido
-- [ ] Admin recibe la solicitud y puede confirmar la asignación
-- [ ] Al confirmar, el `therapistId` del usuario se actualiza en BD
-- [ ] Terapeuta ve al nuevo paciente en su dashboard
-- [ ] TherapistProfile permite que cada terapeuta defina sus especialidades
-
----
-*Documentada: 2 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+*Documentada: 3 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
