@@ -17,6 +17,9 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
+  // Bcrypt hash for manual email+password auth. NULL for OAuth users.
+  // NEVER store plaintext passwords. OWASP A02.
+  passwordHash: varchar("passwordHash", { length: 255 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   // Onboarding state
   onboardingCompleted: boolean("onboardingCompleted").default(false).notNull(),

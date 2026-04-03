@@ -1,20 +1,45 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('./database');
 
-// Definimos la estructura de la tabla 'User'
 const User = sequelize.define('User', {
   name: {
     type: DataTypes.STRING,
-    allowNull: false // Obligatorio
+    allowNull: false
   },
   email: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true // No se pueden repetir correos en la plataforma
+    unique: true
   },
   password: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'user'
+  },
+  active: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
+  },
+  therapistId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
+  },
+  loginAttempts: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  lockedUntil: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 });
 

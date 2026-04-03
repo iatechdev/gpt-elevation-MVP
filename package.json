@@ -7,13 +7,13 @@
     "build": "cd frontend && npm run build"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "jsonwebtoken": "^9.0.2",
-    "sqlite3": "^5.1.7",
-    "sequelize": "^6.37.3",
+    "@anthropic-ai/sdk": "^0.33.1",
     "bcryptjs": "^2.4.3",
-    "@anthropic-ai/sdk": "^0.33.1"
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "jsonwebtoken": "^9.0.3",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
   }
 }

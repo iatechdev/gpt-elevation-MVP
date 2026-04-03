@@ -5,6 +5,9 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { buildSystemPrompt as buildACTPrompt } from "./elevation-act-prompt";
+import { manualAuthRouter } from "./features/auth/manualAuthRouter";
+import { detectCrisis as detectCrisisDomain } from "./domain/crisisDetector";
+import { anonymizeForLLM as anonymizePII } from "./domain/piiAnonymizer";
 import {
   completeOnboarding,
   createCrisisFlag,
@@ -33,38 +36,18 @@ import {
   deleteReminder,
 } from "./db";
 
-// ─── Crisis Detection ─────────────────────────────────────────────────────────
-const CRISIS_KEYWORDS_HIGH = [
-  "suicid", "matarme", "quitarme la vida", "no quiero vivir", "acabar con todo",
-  "no tiene sentido vivir", "mejor muerto", "mejor muerta",
-];
-const CRISIS_KEYWORDS_MEDIUM = [
-  "hacerme daño", "autolesion", "cortarme", "lastimarme", "no puedo más",
-  "desaparecer", "no aguanto", "todo está perdido",
-];
-
-function detectCrisis(text: string): { severity: "low" | "medium" | "high" | null; resource: string } {
-  const lower = text.toLowerCase();
-  if (CRISIS_KEYWORDS_HIGH.some((k) => lower.includes(k))) {
-    return { severity: "high", resource: "Línea de crisis: 800-290-0024 (México) / 024 (España)" };
-  }
-  if (CRISIS_KEYWORDS_MEDIUM.some((k) => lower.includes(k))) {
-    return { severity: "medium", resource: "Línea de apoyo emocional: 800-290-0024" };
-  }
-  return { severity: null, resource: "" };
+// ─── Domain services (imported from domain layer) ────────────────────────────
+// Crisis detection and PII anonymization are now in dedicated domain modules.
+// These thin wrappers maintain backward compatibility with existing router code.
+function detectCrisis(text: string) {
+  return detectCrisisDomain(text);
 }
-
-// ─── Anonymizer ───────────────────────────────────────────────────────────────
 function anonymizeForLLM(text: string): string {
-  // Replace common PII patterns before sending to LLM
-  return text
-    .replace(/\b[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+ [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\b/g, "[NOMBRE]")
-    .replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, "[TELÉFONO]")
-    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, "[EMAIL]")
-    .replace(/\b\d{4,}\b/g, (m) => m.length > 6 ? "[NÚMERO]" : m);
+  return anonymizePII(text).anonymizedText;
 }
-// ─── ACT System Prompt ───────────────────────────────────────────────────────────────────
-// buildACTPrompt importado desde ./elevation-act-prompt.ts
+
+// ─── ACT System Prompt ────────────────────────────────────────────────────────
+// buildACTPrompt imported from ./elevation-act-prompt.ts
 export const appRouter = router({
   system: systemRouter,
 
@@ -75,6 +58,8 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    // Manual email+password auth (OWASP A02, A07)
+    manual: manualAuthRouter,
   }),
 
   // ─── Onboarding ────────────────────────────────────────────────────────────
