@@ -48,13 +48,15 @@ export function LoginPage() {
         localStorage.setItem('elevation_role',  data.role  ?? 'user')
         localStorage.setItem('elevation_name',  data.name  ?? '')
         const role = data.role ?? 'user'
-          if (role === 'admin' || role === 'superadmin') {
-            navigate('/admin/dashboard')
-          } else if (role === 'therapist') {
-            navigate('/therapist/dashboard')
-          } else {
-            navigate('/app/dashboard')
-          }
+        if (role === 'admin' || role === 'superadmin') {
+          navigate('/admin/dashboard')
+        } else if (role === 'therapist') {
+          navigate('/therapist/dashboard')
+        } else {
+          // HU-072 — redirigir al onboarding si no lo completó
+          const onboardingDone = data.onboardingCompleted === true
+          navigate(onboardingDone ? '/app/dashboard' : '/app/onboarding')
+        }
     }
     } catch {
       setAuthMessage(`❌ ${t('err_connection')}`)

@@ -19,6 +19,7 @@ import { TherapistRoute }     from './components/TherapistRoute.tsx'
 import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
 import { MyTherapist }   from './pages/MyTherapist.tsx'
+import { Onboarding }    from './pages/Onboarding.tsx'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
 
       {/* Usuario regular */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<ChatPage />} />
         <Route path="/app/progress"     element={<UserProgress />} />

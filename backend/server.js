@@ -153,7 +153,13 @@ app.post('/api/login', loginLimiter, async (req, res) => {
       JWT_SECRET,
       { expiresIn: '8h' }
     );
-    res.json({ message: 'Inicio de sesión exitoso', token, name: user.name, role: user.role });
+    res.json({ 
+  message: 'Inicio de sesión exitoso', 
+  token, 
+  name: user.name, 
+  role: user.role,
+  onboardingCompleted: user.onboardingCompleted ?? false,
+});
   } catch (error) {
     console.error('❌ Error en login:', error);
     res.status(500).json({ error: 'Error en el servidor.' });
@@ -636,6 +642,22 @@ app.get('/api/user/progress', verificarToken, async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching user progress:', error);
     res.status(500).json({ error: 'Could not fetch progress.' });
+  }
+});
+
+// ==========================================
+// 🎯 HU-072 — ONBOARDING
+// ==========================================
+app.put('/api/user/onboarding-complete', verificarToken, async (req, res) => {
+  try {
+    const { motivation } = req.body;
+    const updates = { onboardingCompleted: true };
+    if (motivation) updates.motivation = motivation;
+    await User.update(updates, { where: { id: req.user.id } });
+    res.json({ message: 'Onboarding completado.' });
+  } catch (error) {
+    console.error('❌ Error completando onboarding:', error);
+    res.status(500).json({ error: 'No se pudo completar el onboarding.' });
   }
 });
 

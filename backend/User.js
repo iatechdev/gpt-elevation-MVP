@@ -40,6 +40,16 @@ const User = sequelize.define('User', {
   lockedUntil: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  // HU-072 — Onboarding
+  onboardingCompleted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  motivation: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 });
 
