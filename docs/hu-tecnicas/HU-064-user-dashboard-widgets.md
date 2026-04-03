@@ -3,21 +3,19 @@
 > Sprint 6 | Must Have | 3 puntos
 > Documentada: 2 de abril de 2026
 > Aprobada por Mauro Roldán
+> **Completada: 3 de abril de 2026**
 > Referencia visual: Manus design — /dashboard (scroll)
 > Depende de: HU-061
 
 ---
 
+## Nota de implementación
+
+Todos los widgets de esta HU fueron implementados directamente en `UserDashboard.tsx` como parte de HU-061. No requirió archivos adicionales.
+
+---
+
 ## Widget 2 — Tu progreso
-
-```
-↗ Tu progreso
-Sesiones esta semana
-5 de 7
-
-Tendencia emocional
-[■][■][■][□][■][■][□]  ← 7 días
-```
 
 - Sesiones esta semana: conteo de MoodLogs con date >= lunes de la semana actual
 - Objetivo: 7 sesiones (hardcodeado por ahora, configurable en Sprint 7)
@@ -31,49 +29,35 @@ Tendencia emocional
 
 ## Widget 3 — Próxima sesión
 
-```
-📅 Próxima sesión
-Con [Nombre terapeuta]
-[Entrar a videollamada]  ← deshabilitado con tooltip "Próximamente"
-```
-
 - Visible solo si el usuario tiene therapistId asignado
-- Obtiene el nombre del terapeuta via GET /api/user/therapist-info (endpoint nuevo)
 - Botón "Entrar a videollamada" visible pero deshabilitado — Sprint 7
-- Si NO tiene terapeuta: muestra botón "🤝 Buscar terapeuta" que abre modal de matching
+- Si NO tiene terapeuta: muestra botón "🤝 Buscar mi terapeuta" que abre modal de matching
 
 ---
 
 ## Sección Recomendaciones personalizadas
 
-```
-Recomendaciones personalizadas
-[Card: ícono + título + descripción corta + Explorar]
-```
-
 - Grid 2x2 con últimas 4 recomendaciones de WellnessRecommendation
-- Botón "Explorar" abre modal con contenido completo de la recomendación
-- Si no hay recomendaciones: botón "Generar mis primeras recomendaciones" llama POST /api/recommendations/generate
+- Botón "Explorar" abre modal con contenido completo
+- Si no hay recomendaciones: botón "Generar nuevas" llama POST /api/recommendations/generate
 
 ---
 
-## Endpoint nuevo
+## Archivos modificados
 
-```
-GET /api/user/therapist-info
-```
-Retorna: `{ therapistId, therapistName }` o `null` si no tiene terapeuta asignado.
+- `frontend/src/pages/UserDashboard.tsx` — implementado en HU-061
 
 ---
 
 ## Criterios de aceptación
 
-- [ ] Widget progreso muestra sesiones de la semana vs objetivo
-- [ ] Tendencia emocional muestra 7 cuadros coloreados correctamente
-- [ ] Widget próxima sesión visible si tiene terapeuta, con su nombre
-- [ ] Widget próxima sesión muestra botón matching si no tiene terapeuta
-- [ ] Recomendaciones en grid 2x2 con botón Explorar
-- [ ] Modal de detalle de recomendación funcionando
+- [x] Widget progreso muestra sesiones de la semana vs objetivo
+- [x] Tendencia emocional muestra 7 cuadros coloreados correctamente
+- [x] Widget próxima sesión visible si tiene terapeuta, con su nombre
+- [x] Widget próxima sesión muestra botón matching si no tiene terapeuta
+- [x] Recomendaciones en grid 2x2 con botón Explorar
+- [x] Modal de detalle de recomendación funcionando
 
 ---
 *Documentada: 2 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+*Completada: 3 de abril de 2026 — implementada dentro de HU-061*
