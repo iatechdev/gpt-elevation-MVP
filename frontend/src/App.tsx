@@ -7,17 +7,18 @@ import { PricingPage }    from './pages/PricingPage.tsx'
 import { AdminLayout }    from './layouts/AdminLayout.tsx'
 import { AdminDashboard } from './pages/admin/AdminDashboard.tsx'
 import { AdminPrompts }   from './pages/admin/AdminPrompts.tsx'
-import { AdminContent } from './pages/admin/AdminContent.tsx'
-import { AdminUsers }  from './pages/admin/AdminUsers.tsx'
-import { AdminMetrics }  from './pages/admin/AdminMetrics.tsx'
+import { AdminContent }   from './pages/admin/AdminContent.tsx'
+import { AdminUsers }     from './pages/admin/AdminUsers.tsx'
+import { AdminMetrics }   from './pages/admin/AdminMetrics.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import { AdminRoute }     from './components/AdminRoute.tsx'
 import { TherapistLayout }    from './layouts/TherapistLayout.tsx'
 import { TherapistDashboard } from './pages/therapist/TherapistDashboard.tsx'
 import { TherapistPatient }   from './pages/therapist/TherapistPatient.tsx'
 import { TherapistRoute }     from './components/TherapistRoute.tsx'
-import { UserProgress } from './pages/UserProgress.tsx'
+import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
+import { MyTherapist }   from './pages/MyTherapist.tsx'
 
 export default function App() {
   return (
@@ -31,10 +32,11 @@ export default function App() {
 
       {/* Usuario regular */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/app/checkin" element={<CheckinPage />} />
-        <Route path="/app/chat"    element={<ChatPage />} />
-        <Route path="/app/progress" element={<UserProgress />} />
-        <Route path="/app/dashboard" element={<UserDashboard />} />
+        <Route path="/app/checkin"      element={<CheckinPage />} />
+        <Route path="/app/chat"         element={<ChatPage />} />
+        <Route path="/app/progress"     element={<UserProgress />} />
+        <Route path="/app/dashboard"    element={<UserDashboard />} />
+        <Route path="/app/my-therapist" element={<MyTherapist />} />
       </Route>
 
       {/* Backoffice admin/superadmin */}
@@ -51,14 +53,13 @@ export default function App() {
         <Route path="metricas"  element={<AdminMetrics  />} />
       </Route>
 
-{/* Therapist */}
-<Route element={<TherapistRoute />}>
-  <Route element={<TherapistLayout />}>
-    <Route path="/therapist/dashboard" element={<TherapistDashboard />} />
-    <Route path="/therapist/patient/:id" element={<TherapistPatient />} />
-  </Route>
-</Route>
-
+      {/* Therapist */}
+      <Route element={<TherapistRoute />}>
+        <Route element={<TherapistLayout />}>
+          <Route path="/therapist/dashboard"   element={<TherapistDashboard />} />
+          <Route path="/therapist/patient/:id" element={<TherapistPatient />} />
+        </Route>
+      </Route>
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
