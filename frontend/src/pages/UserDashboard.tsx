@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { MatchingModal } from '../components/MatchingModal'
 
 const API      = import.meta.env.VITE_BACKEND_URL || ''
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -71,6 +72,10 @@ export function UserDashboard() {
 
   // ── Matching modal ───────────────────────────────────────────────────────
   const [showMatching, setShowMatching] = useState(false)
+  const handleMatchingSuccess = (therapistName: string) => {
+  setShowMatching(false)
+  void loadUpcomingSession() // refresca el widget de próxima sesión
+}
 
   // ── Checkout modal ───────────────────────────────────────────────────────
   const [showCheckout,   setShowCheckout]   = useState(false)
@@ -554,6 +559,13 @@ export function UserDashboard() {
           </div>
         </div>
       )}
+      {/* ── MODAL MATCHING ── */}
+{showMatching && (
+  <MatchingModal
+    onClose={() => setShowMatching(false)}
+    onSuccess={handleMatchingSuccess}
+  />
+)}
     </div>
   )
 }

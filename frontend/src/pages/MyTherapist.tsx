@@ -4,9 +4,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { MatchingModal } from '../components/MatchingModal'
 
 const API      = import.meta.env.VITE_BACKEND_URL || ''
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
+
+
 
 const MOOD_EMOJI: Record<number, string> = {
   1: '😞', 2: '😔', 3: '😐', 4: '🙂', 5: '😊',
@@ -54,6 +57,7 @@ export function MyTherapist() {
   const [data, setData]       = useState<MyTherapistData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')
+  const [showMatching, setShowMatching] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -328,11 +332,18 @@ export function MyTherapist() {
             {/* ── CAMBIAR TERAPEUTA ── */}
             <div style={{ textAlign: 'center', paddingTop: '0.5rem' }}>
               <button
-                onClick={() => navigate('/app/dashboard')}
-                style={{ background: 'none', border: 'none', color: '#78716C', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Inter, sans-serif' }}
-              >
-                {lang === 'es' ? '¿Querés cambiar de terapeuta?' : 'Want to change therapist?'}
-              </button>
+  onClick={() => setShowMatching(true)}
+  style={{ background: 'none', border: 'none', color: '#78716C', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Inter, sans-serif' }}
+>
+  {lang === 'es' ? '¿Querés cambiar de terapeuta?' : 'Want to change therapist?'}
+</button>
+
+{showMatching && (
+  <MatchingModal
+    onClose={() => setShowMatching(false)}
+    onSuccess={() => { setShowMatching(false); window.location.reload() }}
+  />
+)}
             </div>
 
           </div>
