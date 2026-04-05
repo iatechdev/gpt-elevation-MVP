@@ -6,47 +6,15 @@ const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const ClinicalNote = require('../ClinicalNote');
-const Anthropic = require('@anthropic-ai/sdk');
+
+const { encriptar, desencriptar } = require('../utils/crypto');
+const anthropic = require('../utils/anthropic');
 
 const {
   PromptVault,
   getActivePrompt,
   proposePrompt,
 } = require('../promptVault');
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-// ==========================================
-// Encryption helpers for clinical data
-// ==========================================
-const crypto = require('crypto');
-const ALGORITHM = 'aes-256-cbc';
-const KEY = Buffer.from(
-  (process.env.DB_PASS || 'default_password_2026').padEnd(32).slice(0, 32)
-);
-
-const encrypt = (text) => {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return iv.toString('hex') + ':' + encrypted;
-};
-
-const decrypt = (text) => {
-  try {
-    const parts = text.split(':');
-    const iv = Buffer.from(parts.shift(), 'hex');
-    const encryptedContent = parts.join(':');
-    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
-    let decrypted = decipher.update(encryptedContent, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
-  } catch (error) {
-    console.error('⚠️ Error decrypting clinical note:', error.message);
-    return text;
-  }
-};
 
 // ==========================================
 // HU-062 — Trend calculation helper
@@ -159,7 +127,6 @@ router.get('/alerts', async (req, res) => {
     const now = Date.now();
     const ONE_DAY = 1000 * 60 * 60 * 24;
 
-    // Obtener todos los pacientes asignados al terapeuta
     const patients = await User.findAll({
       where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name'],
@@ -169,17 +136,14 @@ router.get('/alerts', async (req, res) => {
     const notableProgress  = [];
 
     await Promise.all(patients.map(async (p) => {
-
       const moodLogs = await MoodLog.findAll({
         where: { UserId: p.id },
         order: [['date', 'DESC']],
         limit: 14,
       });
 
-      // ── Alerta 1: sin actividad en últimos 7 días ──────────────────────
       const lastLog = moodLogs[0] ?? null;
       if (!lastLog) {
-        // Nunca ha tenido sesión
         inactivePatients.push({ userId: p.id, name: p.name, daysSinceLastSession: null });
       } else {
         const daysSince = (now - new Date(lastLog.date).getTime()) / ONE_DAY;
@@ -192,9 +156,7 @@ router.get('/alerts', async (req, res) => {
         }
       }
 
-      // ── Alerta 2: progreso notable (mejora >= 30% en mood) ─────────────
       if (moodLogs.length >= 4) {
-        // Últimos 3 días vs días 4-7
         const recent = moodLogs.filter(m => {
           const d = (now - new Date(m.date).getTime()) / ONE_DAY;
           return d < 3;
@@ -273,7 +235,6 @@ router.get('/pacientes/:id/historial', async (req, res) => {
 // ==========================================
 // HU-049 — THERAPIST PROMPT MANAGEMENT
 // ==========================================
-
 router.get('/prompt', async (req, res) => {
   try {
     const therapistId = req.user.id;
@@ -357,7 +318,6 @@ router.get('/prompt/versions', async (req, res) => {
 // ==========================================
 // HU-050 — CLINICAL HISTORY
 // ==========================================
-
 router.get('/pacientes/:id/historia', async (req, res) => {
   try {
     const therapistId = req.user.id;
@@ -391,7 +351,7 @@ router.get('/pacientes/:id/historia', async (req, res) => {
 
     const decryptedNotes = notes.map(n => ({
       ...n.toJSON(),
-      content: decrypt(n.content),
+      content: desencriptar(n.content),
     }));
 
     res.json({
@@ -432,7 +392,7 @@ router.post('/pacientes/:id/notas', async (req, res) => {
     const note = await ClinicalNote.create({
       UserId: patientId,
       therapistId,
-      content: encrypt(content),
+      content: encriptar(content),
       type: noteType,
       sessionDate,
     });
@@ -462,7 +422,7 @@ router.put('/notas/:noteId', async (req, res) => {
     }
 
     const updates = {};
-    if (content)     updates.content     = encrypt(content);
+    if (content)     updates.content     = encriptar(content);
     if (type)        updates.type        = type;
     if (sessionDate) updates.sessionDate = sessionDate;
 
@@ -470,7 +430,7 @@ router.put('/notas/:noteId', async (req, res) => {
 
     res.json({
       message: 'Note updated successfully.',
-      note: { ...note.toJSON(), content: content ?? decrypt(note.content) },
+      note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
     });
   } catch (error) {
     console.error('❌ Error updating clinical note:', error);
@@ -510,7 +470,7 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       limit: 10,
     });
 
-    const decryptedNotes = notes.map(n => decrypt(n.content));
+    const decryptedNotes = notes.map(n => desencriptar(n.content));
 
     const avgMood = moodLogs.length > 0
       ? (moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood])

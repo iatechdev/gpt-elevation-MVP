@@ -3,38 +3,10 @@
 
 const express = require('express');
 const router  = express.Router();
-const crypto  = require('crypto');
 
-const ALGORITMO = 'aes-256-cbc';
-const KEY = Buffer.from(
-  (process.env.DB_PASS || 'default_password_2026').padEnd(32).slice(0, 32)
-);
-
-const encriptar = (texto) => {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITMO, KEY, iv);
-  let enc = cipher.update(texto, 'utf8', 'hex');
-  enc += cipher.final('hex');
-  return iv.toString('hex') + ':' + enc;
-};
-
-const desencriptar = (texto) => {
-  try {
-    const partes = texto.split(':');
-    const iv  = Buffer.from(partes.shift(), 'hex');
-    const enc = partes.join(':');
-    const decipher = crypto.createDecipheriv(ALGORITMO, KEY, iv);
-    let dec = decipher.update(enc, 'hex', 'utf8');
-    dec += decipher.final('utf8');
-    return dec;
-  } catch {
-    return texto;
-  }
-};
+const { encriptar, desencriptar } = require('../utils/crypto');
 
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
-// Esto garantiza que cuando se ejecuta el handler, todos los modelos
-// ya están completamente definidos en el caché de Node.js
 
 // POST /api/sessions/therapist — crear nueva sesión
 router.post('/therapist', async (req, res) => {
