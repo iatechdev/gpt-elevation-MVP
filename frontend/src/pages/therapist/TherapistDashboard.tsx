@@ -59,6 +59,17 @@ interface AlertsData {
   notableProgress: NotableProgress[]
 }
 
+// HU-075 — Validation types
+interface ValidationDoc {
+  id: number
+  documentType: 'titulo' | 'certificado' | 'colegiado' | 'otro'
+  documentName: string
+  status: 'pending' | 'approved' | 'rejected'
+  reviewNote: string | null
+  submittedAt: string
+  reviewedAt: string | null
+}
+
 const MOOD_EMOJI: Record<number, string> = {
   1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
 }
@@ -89,6 +100,13 @@ export function TherapistDashboard() {
   // HU-065 — Alerts state
   const [alerts, setAlerts]           = useState<AlertsData | null>(null)
   const [alertsLoading, setAlertsLoading] = useState(true)
+
+    // HU-075 — Validation state
+  const [validations, setValidations]         = useState<ValidationDoc[]>([])
+  const [showValidationSection, setShowValidationSection] = useState(false)
+  const [uploadingDoc, setUploadingDoc]       = useState(false)
+  const [uploadMsg, setUploadMsg]             = useState('')
+  const [selectedDocType, setSelectedDocType] = useState<string>('titulo')
 
   // Fetch patients
   useEffect(() => {
@@ -180,6 +198,49 @@ export function TherapistDashboard() {
     }
   }
 
+  // HU-075 — Fetch validation status
+  useEffect(() => {
+    const fetchValidations = async () => {
+      try {
+        const res = await fetch(`${API}/api/therapist/validation/status`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        })
+        if (!res.ok) throw new Error()
+        setValidations(await res.json())
+      } catch {
+        // non-blocking
+      }
+    }
+    fetchValidations()
+  }, [])
+
+  const handleUploadDoc = async (file: File) => {
+    setUploadingDoc(true)
+    setUploadMsg('')
+    try {
+      const formData = new FormData()
+      formData.append('document', file)
+      formData.append('documentType', selectedDocType)
+      const res = await fetch(`${API}/api/therapist/validation/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) return setUploadMsg(data.error ?? 'Error subiendo documento.')
+      setUploadMsg('✓ Documento subido. La Junta lo revisará pronto.')
+      // Refrescar lista
+      const r2 = await fetch(`${API}/api/therapist/validation/status`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (r2.ok) setValidations(await r2.json())
+    } catch {
+      setUploadMsg('Error de conexión.')
+    } finally {
+      setUploadingDoc(false)
+    }
+  }
+
   const activeThisWeek = patients.filter(p => p.sessionsThisWeek > 0).length
   const avgMoodAll = (() => {
     const moods = patients.map(p => p.lastMood?.checkin_mood).filter((m): m is number => m != null)
@@ -234,6 +295,115 @@ export function TherapistDashboard() {
             <div style={{ fontSize: '0.78rem', color: '#78716C', marginTop: '0.25rem' }}>{card.label}</div>
           </div>
         ))}
+      </div>
+
+{/* HU-075 — VALIDACIÓN ACADÉMICA */}
+      <div style={{ ...cardStyle, marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              🎓 Validación académica
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#1C1917', marginTop: '0.2rem' }}>
+              {validations.length === 0
+                ? 'Sin documentos enviados aún'
+                : validations.some(v => v.status === 'approved')
+                  ? '✅ Validación aprobada'
+                  : validations.some(v => v.status === 'pending')
+                    ? '⏳ Documentos en revisión'
+                    : '❌ Documentos rechazados — podés volver a postular'}
+            </div>
+          </div>
+          <button
+            onClick={() => setShowValidationSection(!showValidationSection)}
+            style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#78716C', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            {showValidationSection ? 'Ocultar' : 'Ver documentos'}
+          </button>
+        </div>
+
+        {showValidationSection && (
+          <div style={{ marginTop: '1.25rem' }}>
+
+            {/* Lista de documentos enviados */}
+            {validations.length > 0 && (
+              <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {validations.map(v => (
+                  <div key={v.id} style={{
+                    padding: '0.75rem 1rem', borderRadius: '0.65rem',
+                    background: v.status === 'approved' ? '#EAF0E6' : v.status === 'rejected' ? '#FEE2E2' : '#FEF9C3',
+                    border: `0.5px solid ${v.status === 'approved' ? '#A8B5A2' : v.status === 'rejected' ? '#FCA5A5' : '#FDE68A'}`,
+                    display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>
+                        {v.documentName}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.15rem' }}>
+                        {v.documentType} · {new Date(v.submittedAt).toLocaleDateString('es-CO')}
+                      </div>
+                      {v.reviewNote && (
+                        <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.25rem', fontStyle: 'italic' }}>
+                          Nota: {v.reviewNote}
+                        </div>
+                      )}
+                    </div>
+                    <span style={{
+                      fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap', padding: '0.15rem 0.6rem', borderRadius: 999,
+                      background: v.status === 'approved' ? '#6B7D5C' : v.status === 'rejected' ? '#DC2626' : '#92400E',
+                      color: '#fff',
+                    }}>
+                      {v.status === 'approved' ? 'Aprobado' : v.status === 'rejected' ? 'Rechazado' : 'En revisión'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Formulario subir documento */}
+            {!validations.some(v => v.status === 'approved') && (
+              <div style={{ padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
+                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+                  Subí tu título o certificado para que la Junta de Elevation lo revise y te active como terapeuta. Solo PDF, JPG o PNG. Máximo 10 MB.
+                </p>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                  <div>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', display: 'block', marginBottom: 4 }}>
+                      Tipo de documento
+                    </label>
+                    <select
+                      value={selectedDocType}
+                      onChange={e => setSelectedDocType(e.target.value)}
+                      style={{ padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #D6D2C4', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', outline: 'none' }}>
+                      <option value="titulo">Título profesional</option>
+                      <option value="certificado">Certificado</option>
+                      <option value="colegiado">Número de colegiado</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </div>
+                  <label style={{
+                    padding: '0.5rem 1rem', background: uploadingDoc ? '#A8B5A2' : '#6B7D5C',
+                    color: '#fff', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500,
+                    cursor: uploadingDoc ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
+                  }}>
+                    {uploadingDoc ? 'Subiendo...' : '📎 Seleccionar archivo'}
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.webp"
+                      style={{ display: 'none' }}
+                      disabled={uploadingDoc}
+                      onChange={e => { if (e.target.files?.[0]) handleUploadDoc(e.target.files[0]) }}
+                    />
+                  </label>
+                </div>
+                {uploadMsg && (
+                  <p style={{ fontSize: '0.78rem', color: uploadMsg.startsWith('✓') ? '#4A6741' : '#DC2626', margin: '0.75rem 0 0' }}>
+                    {uploadMsg}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* HU-049 — MY THERAPEUTIC PROMPT */}

@@ -39,18 +39,20 @@ app.use('/api/user',            verificarToken, require('./routes/progress'));
 app.use('/api/matching',        verificarToken, require('./routes/matching'));
 app.use('/api/sessions',        verificarToken, require('./routes/sessions'));
 app.use('/api/therapist',       verificarToken, require('./routes/therapistRoutes'));
-
+app.use('/api/therapist/validation', verificarToken, require('./routes/validation')); 
 // ── Rutas admin ───────────────────────────────────────────────────────────────
 app.use('/api/admin/usuarios',  verificarAdmin,      require('./routes/adminUsers'));
 app.use('/api/admin/metrics',   verificarAdmin,      require('./routes/adminMetrics'));
 app.use('/api/admin/matching',  verificarAdmin,      require('./routes/matching'));
 app.use('/api/admin/pricing',   verificarAdmin,      require('./routes/pricing'));
 
+
 // adminPrompts maneja tanto rutas /admin como /superadmin internamente
 // se monta dos veces con diferente middleware
 const adminPromptsRouter = require('./routes/adminPrompts');
 app.use('/api/admin',      verificarAdmin,      adminPromptsRouter);
 app.use('/api/superadmin', verificarSuperAdmin, adminPromptsRouter);
+app.use('/api/junta',      verificarSuperAdmin, require('./routes/validation')); 
 
 // ── Frontend estático ─────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../frontend/dist')));

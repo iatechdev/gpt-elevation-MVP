@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/AdminContent.tsx
-// HU-074 — CMS completo: Landing content + Pricing plans (bilingüe)
+// HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
 import { useEffect, useState } from 'react'
 
@@ -20,6 +20,16 @@ interface PricingPlan {
   isHighlighted: boolean
   isActive: boolean
   order: number
+}
+
+interface ValidationDoc {
+  id: number
+  therapist: { id: number; name: string; email: string }
+  documentType: string
+  documentName: string
+  documentPath: string
+  status: 'pending' | 'approved' | 'rejected'
+  submittedAt: string
 }
 
 const emptyPlan: PricingPlan = {
@@ -68,7 +78,13 @@ const sectionTitle: React.CSSProperties = {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function AdminContent() {
-  const [tab, setTab] = useState<'pricing' | 'landing'>('pricing')
+  const [tab, setTab] = useState<'pricing' | 'landing' | 'validations'>('validations')
+
+  const tabs = [
+    { key: 'validations', label: '🎓 Validaciones' },
+    { key: 'pricing',     label: '💰 Precios' },
+    { key: 'landing',     label: '🌐 Landing' },
+  ] as const
 
   return (
     <div>
@@ -76,27 +92,196 @@ export function AdminContent() {
         Contenido
       </h1>
       <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '1.5rem' }}>
-        Gestión de páginas públicas y planes de precios
+        Gestión de validaciones, precios y páginas públicas
       </p>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem', borderBottom: '0.5px solid #E7E5E4' }}>
-        {(['pricing', 'landing'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 500, padding: '0.5rem 1rem',
-              color: tab === t ? '#6B7D5C' : '#78716C',
-              borderBottom: tab === t ? '2px solid #6B7D5C' : '2px solid transparent',
+              color: tab === t.key ? '#6B7D5C' : '#78716C',
+              borderBottom: tab === t.key ? '2px solid #6B7D5C' : '2px solid transparent',
               fontFamily: 'Inter, sans-serif', marginBottom: -1,
             }}>
-            {t === 'pricing' ? '💰 Precios' : '🌐 Landing'}
+            {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 'pricing' && <PricingTab />}
-      {tab === 'landing' && <LandingTab />}
+      {tab === 'validations' && <ValidationsTab />}
+      {tab === 'pricing'     && <PricingTab />}
+      {tab === 'landing'     && <LandingTab />}
+    </div>
+  )
+}
+
+// ── Tab Validaciones ──────────────────────────────────────────────────────────
+function ValidationsTab() {
+  const token = localStorage.getItem('elevation_token') ?? ''
+  const [docs, setDocs]           = useState<ValidationDoc[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [actionDoc, setActionDoc] = useState<ValidationDoc | null>(null)
+  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null)
+  const [note, setNote]           = useState('')
+  const [saving, setSaving]       = useState(false)
+  const [msg, setMsg]             = useState('')
+  const [loadingUrl, setLoadingUrl] = useState<number | null>(null)
+
+  const load = () => {
+    setLoading(true)
+    fetch(`${API}/api/junta/pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(data => { setDocs(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  const getDownloadUrl = async (doc: ValidationDoc) => {
+    setLoadingUrl(doc.id)
+    try {
+      const r = await fetch(`${API}/api/junta/${doc.id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await r.json()
+      if (r.ok) window.open(data.url, '_blank')
+      else setMsg('Error obteniendo el enlace.')
+    } catch {
+      setMsg('Error de conexión.')
+    } finally {
+      setLoadingUrl(null)
+    }
+  }
+
+  const openAction = (doc: ValidationDoc, type: 'approve' | 'reject') => {
+    setActionDoc(doc); setActionType(type); setNote(''); setMsg('')
+  }
+
+  const submitAction = async () => {
+    if (!actionDoc || !actionType) return
+    if (actionType === 'reject' && !note.trim()) return setMsg('La nota de rechazo es requerida.')
+    setSaving(true); setMsg('')
+    try {
+      const r = await fetch(`${API}/api/junta/${actionDoc.id}/${actionType}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ note }),
+      })
+      const data = await r.json()
+      if (!r.ok) return setMsg(data.error ?? 'Error.')
+      setMsg(actionType === 'approve' ? '✓ Terapeuta aprobado y activado.' : '✓ Documento rechazado.')
+      setActionDoc(null); setActionType(null)
+      load()
+    } catch { setMsg('Error de conexión.') }
+    finally { setSaving(false) }
+  }
+
+  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>Cargando documentos pendientes...</p>
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <p style={{ fontSize: 13, color: '#78716C', margin: 0 }}>
+          {docs.length} documento(s) pendiente(s) de revisión
+        </p>
+        <button style={btnSecondary} onClick={load}>↻ Actualizar</button>
+      </div>
+
+      {msg && (
+        <div style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem',
+          background: msg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2',
+          color: msg.startsWith('✓') ? '#4A6741' : '#DC2626', fontSize: 13 }}>
+          {msg}
+        </div>
+      )}
+
+      {docs.length === 0 && (
+        <div style={{ ...card, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: 13 }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
+          No hay documentos pendientes de revisión.
+        </div>
+      )}
+
+      {docs.map(doc => (
+        <div key={doc.id} style={card}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EAF0E6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#6B7D5C', fontWeight: 600, flexShrink: 0 }}>
+                  {doc.therapist.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{doc.therapist.name}</div>
+                  <div style={{ fontSize: 11, color: '#78716C' }}>{doc.therapist.email}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, background: '#F5F5F3', color: '#4A4A4A', padding: '2px 10px', borderRadius: 8 }}>
+                  📄 {doc.documentName}
+                </span>
+                <span style={{ fontSize: 11, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 8 }}>
+                  {doc.documentType}
+                </span>
+                <span style={{ fontSize: 11, color: '#A8A29E' }}>
+                  {new Date(doc.submittedAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+              <button onClick={() => getDownloadUrl(doc)} disabled={loadingUrl === doc.id}
+                style={{ ...btnSecondary, fontSize: 12, padding: '0.45rem 0.85rem' }}>
+                {loadingUrl === doc.id ? 'Cargando...' : '👁 Ver documento'}
+              </button>
+              <button onClick={() => openAction(doc, 'approve')}
+                style={{ ...btnPrimary, fontSize: 12, padding: '0.45rem 0.85rem' }}>
+                ✓ Aprobar
+              </button>
+              <button onClick={() => openAction(doc, 'reject')}
+                style={{ ...btnDanger, fontSize: 12, padding: '0.45rem 0.85rem' }}>
+                ✗ Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Modal aprobar / rechazar */}
+      {actionDoc && actionType && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 480 }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
+              {actionType === 'approve' ? '✓ Aprobar terapeuta' : '✗ Rechazar documento'}
+            </h3>
+            <p style={{ fontSize: 13, color: '#78716C', margin: '0 0 1.25rem' }}>
+              {actionType === 'approve'
+                ? `¿Aprobás la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`
+                : `Explicá por qué rechazás el documento de ${actionDoc.therapist.name}.`}
+            </p>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={label}>{actionType === 'approve' ? 'Nota (opcional)' : 'Motivo de rechazo *'}</label>
+              <textarea value={note} onChange={e => setNote(e.target.value)}
+                placeholder={actionType === 'approve' ? 'Ej: Documentos verificados.' : 'Ej: El título no está apostillado...'}
+                rows={3}
+                style={{ ...input, resize: 'vertical', lineHeight: 1.5 }} />
+            </div>
+            {msg && <p style={{ fontSize: 12, color: '#DC2626', margin: '0 0 1rem' }}>{msg}</p>}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button style={btnSecondary} onClick={() => { setActionDoc(null); setActionType(null); setMsg('') }}>
+                Cancelar
+              </button>
+              <button onClick={submitAction} disabled={saving}
+                style={actionType === 'approve' ? btnPrimary : btnDanger}>
+                {saving ? 'Procesando...' : actionType === 'approve' ? '✓ Confirmar aprobación' : '✗ Confirmar rechazo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -127,14 +312,12 @@ function PricingTab() {
   useEffect(() => { load() }, [])
 
   const openNew = () => {
-    setForm(emptyPlan)
-    setFeatInputEs(''); setFeatInputEn('')
+    setForm(emptyPlan); setFeatInputEs(''); setFeatInputEn('')
     setEditing(null); setShowForm(true); setMsg('')
   }
 
   const openEdit = (p: PricingPlan) => {
-    setForm({ ...p })
-    setFeatInputEs(''); setFeatInputEn('')
+    setForm({ ...p }); setFeatInputEs(''); setFeatInputEn('')
     setEditing(p); setShowForm(true); setMsg('')
   }
 
@@ -170,8 +353,7 @@ function PricingTab() {
       const data = await r.json()
       if (!r.ok) return setMsg(data.error ?? 'Error guardando.')
       setMsg(editing ? 'Plan actualizado.' : 'Plan creado.')
-      setShowForm(false)
-      load()
+      setShowForm(false); load()
     } catch { setMsg('Error de conexión.') }
     finally { setSaving(false) }
   }
@@ -179,8 +361,7 @@ function PricingTab() {
   const deactivate = async (id: number) => {
     if (!confirm('¿Desactivar este plan?')) return
     await fetch(`${API}/api/admin/pricing/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
     })
     load()
   }
@@ -196,19 +377,14 @@ function PricingTab() {
         <button style={btnPrimary} onClick={openNew}>+ Nuevo plan</button>
       </div>
 
-      {/* Lista */}
       {plans.map(p => (
         <div key={p.id} style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', opacity: p.isActive ? 1 : 0.5 }}>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{p.name_es}</span>
               <span style={{ fontSize: 11, color: '#A8A29E' }}>/ {p.name_en}</span>
-              {p.isHighlighted && (
-                <span style={{ fontSize: 10, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>DESTACADO</span>
-              )}
-              {!p.isActive && (
-                <span style={{ fontSize: 10, background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: 10 }}>INACTIVO</span>
-              )}
+              {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>DESTACADO</span>}
+              {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: 10 }}>INACTIVO</span>}
             </div>
             <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
               <strong>${p.price}</strong> {p.currency} / {p.period}
@@ -227,68 +403,52 @@ function PricingTab() {
       ))}
 
       {plans.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>
-          No hay planes. Creá el primero.
-        </div>
+        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>No hay planes. Creá el primero.</div>
       )}
 
-      {/* Modal formulario */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: '0 0 1.5rem' }}>
               {editing ? 'Editar plan' : 'Nuevo plan'}
             </h3>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-              {/* Nombres */}
               <div>
                 <p style={sectionTitle}>Nombre del plan</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>
                     <label style={label}>Español *</label>
-                    <input style={input} value={form.name_es} placeholder="ej: Gratis"
-                      onChange={e => setForm(f => ({ ...f, name_es: e.target.value }))} />
+                    <input style={input} value={form.name_es} placeholder="ej: Gratis" onChange={e => setForm(f => ({ ...f, name_es: e.target.value }))} />
                   </div>
                   <div>
                     <label style={label}>Inglés *</label>
-                    <input style={input} value={form.name_en} placeholder="ej: Free"
-                      onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))} />
+                    <input style={input} value={form.name_en} placeholder="ej: Free" onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))} />
                   </div>
                 </div>
               </div>
-
-              {/* Descripción */}
               <div>
                 <p style={sectionTitle}>Descripción</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div>
                     <label style={label}>Español</label>
-                    <input style={input} value={form.description_es} placeholder="Descripción en español..."
-                      onChange={e => setForm(f => ({ ...f, description_es: e.target.value }))} />
+                    <input style={input} value={form.description_es} placeholder="Descripción en español..." onChange={e => setForm(f => ({ ...f, description_es: e.target.value }))} />
                   </div>
                   <div>
                     <label style={label}>Inglés</label>
-                    <input style={input} value={form.description_en} placeholder="Description in English..."
-                      onChange={e => setForm(f => ({ ...f, description_en: e.target.value }))} />
+                    <input style={input} value={form.description_en} placeholder="Description in English..." onChange={e => setForm(f => ({ ...f, description_en: e.target.value }))} />
                   </div>
                 </div>
               </div>
-
-              {/* Precio */}
               <div>
                 <p style={sectionTitle}>Precio</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 8 }}>
                   <div>
                     <label style={label}>Precio</label>
-                    <input style={input} type="number" min="0" step="0.01" value={form.price}
-                      onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
+                    <input style={input} type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
                   </div>
                   <div>
                     <label style={label}>Moneda</label>
-                    <select style={{ ...input }} value={form.currency}
-                      onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
+                    <select style={{ ...input }} value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
                       <option value="USD">USD</option>
                       <option value="COP">COP</option>
                       <option value="EUR">EUR</option>
@@ -296,8 +456,7 @@ function PricingTab() {
                   </div>
                   <div>
                     <label style={label}>Período</label>
-                    <select style={{ ...input }} value={form.period}
-                      onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
+                    <select style={{ ...input }} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
                       <option value="month">Mensual</option>
                       <option value="year">Anual</option>
                       <option value="forever">Para siempre</option>
@@ -305,15 +464,10 @@ function PricingTab() {
                   </div>
                 </div>
               </div>
-
-              {/* Features ES */}
               <div>
                 <p style={sectionTitle}>Características en Español</p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <input style={{ ...input, flex: 1 }} value={featInputEs}
-                    onChange={e => setFeatInputEs(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addFeature('es')}
-                    placeholder="ej: Conversaciones ilimitadas" />
+                  <input style={{ ...input, flex: 1 }} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('es')} placeholder="ej: Conversaciones ilimitadas" />
                   <button style={btnSecondary} onClick={() => addFeature('es')}>+</button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -325,15 +479,10 @@ function PricingTab() {
                   ))}
                 </div>
               </div>
-
-              {/* Features EN */}
               <div>
                 <p style={sectionTitle}>Características en Inglés</p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <input style={{ ...input, flex: 1 }} value={featInputEn}
-                    onChange={e => setFeatInputEn(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addFeature('en')}
-                    placeholder="ej: Unlimited conversations" />
+                  <input style={{ ...input, flex: 1 }} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('en')} placeholder="ej: Unlimited conversations" />
                   <button style={btnSecondary} onClick={() => addFeature('en')}>+</button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -345,37 +494,26 @@ function PricingTab() {
                   ))}
                 </div>
               </div>
-
-              {/* Opciones */}
               <div>
                 <p style={sectionTitle}>Opciones</p>
                 <div style={{ display: 'flex', gap: '1.5rem' }}>
                   <div>
-                    <label style={label}>Orden (posición)</label>
-                    <input style={{ ...input, width: 80 }} type="number" min="0" value={form.order}
-                      onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
+                    <label style={label}>Orden</label>
+                    <input style={{ ...input, width: 80 }} type="number" min="0" value={form.order} onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
                   </div>
                   <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end', paddingBottom: '0.6rem' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#1C1917', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={form.isHighlighted}
-                        onChange={e => setForm(f => ({ ...f, isHighlighted: e.target.checked }))} />
+                      <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm(f => ({ ...f, isHighlighted: e.target.checked }))} />
                       Destacado
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#1C1917', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={form.isActive}
-                        onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />
+                      <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />
                       Activo
                     </label>
                   </div>
                 </div>
               </div>
-
-              {msg && (
-                <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#6B7D5C', margin: 0 }}>
-                  {msg}
-                </p>
-              )}
-
+              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#6B7D5C', margin: 0 }}>{msg}</p>}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: '0.5rem' }}>
                 <button style={btnSecondary} onClick={() => setShowForm(false)}>Cancelar</button>
                 <button style={btnPrimary} onClick={save} disabled={saving}>
@@ -416,8 +554,7 @@ function LandingTab() {
   }, [lang])
 
   const saveField = async (key: string) => {
-    setSaving(key)
-    setMsgs(m => ({ ...m, [key]: '' }))
+    setSaving(key); setMsgs(m => ({ ...m, [key]: '' }))
     try {
       const r = await fetch(`${API}/api/landing-content`, {
         method: 'PUT',
@@ -443,14 +580,11 @@ function LandingTab() {
           </button>
         ))}
       </div>
-
       {fields.map(f => (
         <div key={f.key} style={card}>
           <label style={label}>{f.label}</label>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <input style={{ ...input, flex: 1 }}
-              value={content[f.key] ?? ''}
-              onChange={e => setContent(c => ({ ...c, [f.key]: e.target.value }))} />
+            <input style={{ ...input, flex: 1 }} value={content[f.key] ?? ''} onChange={e => setContent(c => ({ ...c, [f.key]: e.target.value }))} />
             <button style={btnPrimary} onClick={() => saveField(f.key)} disabled={saving === f.key}>
               {saving === f.key ? '...' : 'Guardar'}
             </button>
