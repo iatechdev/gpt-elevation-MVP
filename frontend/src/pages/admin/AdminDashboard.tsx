@@ -1,8 +1,10 @@
 // frontend/src/pages/admin/AdminDashboard.tsx
 // HU-047 + HU-063 — Executive metrics dashboard + panel alertas
+// HU-076 — Usa design tokens
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { colors, radius, shadow, spacing, typography, cardStyle, labelStyle } from '../../styles/tokens'
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -19,7 +21,6 @@ interface Metrics {
   topTherapists: { id: number; name: string; patientCount: number; avgRating: number | null }[]
 }
 
-// HU-063 — Alert types
 interface PendingPrompt {
   id: number
   therapistName: string
@@ -45,136 +46,100 @@ export function AdminDashboard() {
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
-
-  // HU-063
   const [alerts, setAlerts]           = useState<AdminAlerts | null>(null)
   const [alertsLoading, setAlertsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const res = await fetch(`${API}/api/admin/metrics`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setMetrics(await res.json())
-      } catch {
-        setError('Could not load metrics.')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchMetrics()
+    fetch(`${API}/api/admin/metrics`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(data => { setMetrics(data); setLoading(false) })
+      .catch(() => { setError('Could not load metrics.'); setLoading(false) })
   }, [])
 
-  // HU-063 — fetch alerts
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const res = await fetch(`${API}/api/admin/usuarios/alerts`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setAlerts(await res.json())
-      } catch {
-        // non-blocking
-      } finally {
-        setAlertsLoading(false)
-      }
-    }
-    fetchAlerts()
+    fetch(`${API}/api/admin/usuarios/alerts`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    })
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(data => { setAlerts(data); setAlertsLoading(false) })
+      .catch(() => setAlertsLoading(false))
   }, [])
-
-  const cardStyle = {
-    background: '#fff',
-    borderRadius: '1rem',
-    border: '0.5px solid #E7E5E4',
-    boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
-    padding: '1.25rem 1.5rem',
-  }
-
-  const sectionLabel: React.CSSProperties = {
-    fontSize: '0.72rem',
-    fontWeight: 600,
-    color: '#78716C',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginBottom: '0.75rem',
-  }
 
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>Loading metrics...</p>
-  if (error)   return <p style={{ color: '#DC2626', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{error}</p>
+  if (loading) return <p style={{ color: colors.textMuted, fontSize: '0.875rem', fontFamily: typography.fontBody }}>Cargando métricas...</p>
+  if (error)   return <p style={{ color: colors.danger,    fontSize: '0.875rem', fontFamily: typography.fontBody }}>{error}</p>
   if (!metrics) return null
 
-  const maxCount = Math.max(...metrics.sessionsByDay.map(s => s.count), 1)
+  const maxCount  = Math.max(...metrics.sessionsByDay.map(s => s.count), 1)
   const totalAlerts = (alerts?.pendingPrompts ?? 0) + (alerts?.therapistsWithoutProfile ?? 0)
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ fontFamily: typography.fontBody }}>
 
       {/* HEADER */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
+      <div style={{ marginBottom: spacing.xxl }}>
+        <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>
           Dashboard
         </h1>
-        <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0.25rem 0 0' }}>
-          Platform overview
+        <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>
+          Resumen de la plataforma
         </p>
       </div>
 
       {/* SUMMARY CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: spacing.lg, marginBottom: spacing.xxl }}>
         {[
-          { label: 'Total users',      value: metrics.totalUsers },
-          { label: 'Active users',     value: metrics.activeUsers },
-          { label: 'Therapists',       value: metrics.totalTherapists },
-          { label: 'Total sessions',   value: metrics.totalSessions },
-          { label: 'Active this week', value: metrics.activeThisWeek },
+          { label: 'Total usuarios',      value: metrics.totalUsers },
+          { label: 'Usuarios activos',    value: metrics.activeUsers },
+          { label: 'Terapeutas',          value: metrics.totalTherapists },
+          { label: 'Total sesiones',      value: metrics.totalSessions },
+          { label: 'Activos esta semana', value: metrics.activeThisWeek },
           {
-            label: 'Avg mood',
+            label: 'Ánimo promedio',
             value: metrics.avgMood != null
               ? `${metrics.avgMood} ${MOOD_EMOJI[Math.round(metrics.avgMood)] ?? ''}`
               : '—',
           },
           {
-            label: 'Avg rating',
+            label: 'Calificación promedio',
             value: metrics.avgRating != null ? `${metrics.avgRating} ★` : '—',
           },
         ].map(card => (
           <div key={card.label} style={cardStyle}>
-            <div style={{ fontSize: '1.6rem', fontWeight: 600, color: '#1C1917' }}>{card.value}</div>
-            <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>{card.label}</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 600, color: colors.text }}>{card.value}</div>
+            <div style={{ fontSize: '0.75rem', color: colors.textMuted, marginTop: spacing.xs }}>{card.label}</div>
           </div>
         ))}
       </div>
 
-      {/* HU-063 — TWO COLUMN LAYOUT: charts + alerts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1.5rem', alignItems: 'start' }}>
+      {/* TWO COLUMN LAYOUT */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: spacing.xl, alignItems: 'start' }}>
 
-        {/* COLUMNA IZQUIERDA — charts + top therapists */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* COLUMNA IZQUIERDA */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
 
           {/* ACTIVITY CHART */}
           <div style={cardStyle}>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1.25rem' }}>
-              Session activity — last 30 days
+            <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>
+              Actividad — últimos 30 días
             </h2>
             {metrics.sessionsByDay.length === 0 ? (
-              <p style={{ color: '#78716C', fontSize: '0.875rem' }}>No session data yet.</p>
+              <p style={{ color: colors.textMuted, fontSize: '0.875rem' }}>Sin datos de sesiones aún.</p>
             ) : (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 80 }}>
                 {metrics.sessionsByDay.map(s => (
                   <div
                     key={s.date}
-                    title={`${s.date}: ${s.count} session${s.count !== 1 ? 's' : ''}`}
+                    title={`${s.date}: ${s.count} sesión${s.count !== 1 ? 'es' : ''}`}
                     style={{
                       flex: 1,
                       height: `${Math.max((s.count / maxCount) * 100, 8)}%`,
-                      background: '#6B7D5C',
-                      borderRadius: '3px 3px 0 0',
+                      background: colors.primary,
+                      borderRadius: `${radius.sm} ${radius.sm} 0 0`,
                       opacity: 0.75,
                       cursor: 'default',
                       transition: 'opacity 0.15s',
@@ -189,31 +154,29 @@ export function AdminDashboard() {
 
           {/* TOP THERAPISTS */}
           <div style={cardStyle}>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1.25rem' }}>
-              Top therapists
+            <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>
+              Top terapeutas
             </h2>
             {metrics.topTherapists.length === 0 ? (
-              <p style={{ color: '#78716C', fontSize: '0.875rem' }}>No therapists yet.</p>
+              <p style={{ color: colors.textMuted, fontSize: '0.875rem' }}>Sin terapeutas aún.</p>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    {['Therapist', 'Patients', 'Avg rating'].map(h => (
+                    {['Terapeuta', 'Pacientes', 'Calificación'].map(h => (
                       <th key={h} style={{
-                        padding: '0.5rem 0.75rem', textAlign: 'left',
-                        fontSize: '0.72rem', fontWeight: 600, color: '#78716C',
-                        textTransform: 'uppercase', letterSpacing: '0.05em',
-                        borderBottom: '0.5px solid #E7E5E4',
+                        padding: `${spacing.sm} ${spacing.md}`, textAlign: 'left',
+                        ...labelStyle, borderBottom: `0.5px solid ${colors.border}`,
                       }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {metrics.topTherapists.map((th, i) => (
-                    <tr key={th.id} style={{ background: i % 2 === 0 ? 'transparent' : '#F5F3EF' }}>
-                      <td style={{ padding: '0.65rem 0.75rem', fontSize: '0.875rem', color: '#1C1917' }}>{th.name}</td>
-                      <td style={{ padding: '0.65rem 0.75rem', fontSize: '0.875rem', color: '#1C1917' }}>{th.patientCount}</td>
-                      <td style={{ padding: '0.65rem 0.75rem', fontSize: '0.875rem', color: '#1C1917' }}>
+                    <tr key={th.id} style={{ background: i % 2 === 0 ? 'transparent' : colors.bgMuted }}>
+                      <td style={{ padding: `${spacing.md} ${spacing.md}`, fontSize: '0.875rem', color: colors.text }}>{th.name}</td>
+                      <td style={{ padding: `${spacing.md} ${spacing.md}`, fontSize: '0.875rem', color: colors.text }}>{th.patientCount}</td>
+                      <td style={{ padding: `${spacing.md} ${spacing.md}`, fontSize: '0.875rem', color: colors.text }}>
                         {th.avgRating != null ? `${th.avgRating} ★` : '—'}
                       </td>
                     </tr>
@@ -224,75 +187,72 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA — HU-063 ALERTS PANEL */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'sticky', top: '1.5rem' }}>
+        {/* COLUMNA DERECHA — ALERTS */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, position: 'sticky', top: spacing.xl }}>
 
-          {/* Panel alertas */}
           <div style={cardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={sectionLabel}>🔔 Alerts</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
+              <div style={labelStyle}>🔔 Alertas</div>
               {totalAlerts > 0 && (
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#FEE2E2', color: '#DC2626', padding: '0.15rem 0.5rem', borderRadius: '999px' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: colors.dangerLight, color: colors.danger, padding: `2px ${spacing.sm}`, borderRadius: radius.full }}>
                   {totalAlerts}
                 </span>
               )}
             </div>
 
             {alertsLoading ? (
-              <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>Loading...</p>
+              <p style={{ fontSize: '0.82rem', color: colors.textMuted, margin: 0 }}>Cargando...</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
 
-                {/* Alerta 1 — Prompts pendientes */}
+                {/* Prompts pendientes */}
                 <div style={{
-                  padding: '0.75rem', borderRadius: '0.65rem',
-                  background: alerts?.pendingPrompts ?? 0 > 0 ? '#FEF3C7' : '#F5F3EF',
-                  border: `0.5px solid ${alerts?.pendingPrompts ?? 0 > 0 ? '#FCD34D' : '#E7E5E4'}`,
+                  padding: spacing.md, borderRadius: radius.md,
+                  background: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warningLight : colors.bgMuted,
+                  border: `0.5px solid ${(alerts?.pendingPrompts ?? 0) > 0 ? '#FCD34D' : colors.border}`,
                 }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: alerts?.pendingPrompts ?? 0 > 0 ? '#92400E' : '#78716C', marginBottom: '0.2rem' }}>
-                    ⚠️ {alerts?.pendingPrompts ?? 0} pending prompt{(alerts?.pendingPrompts ?? 0) !== 1 ? 's' : ''}
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warning : colors.textMuted, marginBottom: '0.2rem' }}>
+                    ⚠️ {alerts?.pendingPrompts ?? 0} prompt{(alerts?.pendingPrompts ?? 0) !== 1 ? 's' : ''} pendiente{(alerts?.pendingPrompts ?? 0) !== 1 ? 's' : ''}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: alerts?.pendingPrompts ?? 0 > 0 ? '#92400E' : '#A8A29E', marginBottom: '0.5rem' }}>
-                    Awaiting ethical review
+                  <div style={{ fontSize: '0.72rem', color: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warning : colors.textSubtle, marginBottom: spacing.sm }}>
+                    Esperando revisión ética
                   </div>
                   <button
                     onClick={() => navigate('/admin/prompts')}
-                    style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', background: 'none', border: '0.5px solid #6B7D5C', borderRadius: '0.5rem', padding: '0.2rem 0.6rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-                  >
-                    Review →
+                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, cursor: 'pointer', fontFamily: typography.fontBody }}>
+                    Revisar →
                   </button>
                 </div>
 
-                {/* Alerta 2 — Terapeutas sin perfil */}
+                {/* Terapeutas sin perfil */}
                 <div style={{
-                  padding: '0.75rem', borderRadius: '0.65rem',
-                  background: alerts?.therapistsWithoutProfile ?? 0 > 0 ? '#E0F2FE' : '#F5F3EF',
-                  border: `0.5px solid ${alerts?.therapistsWithoutProfile ?? 0 > 0 ? '#7DD3FC' : '#E7E5E4'}`,
+                  padding: spacing.md, borderRadius: radius.md,
+                  background: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.infoLight : colors.bgMuted,
+                  border: `0.5px solid ${(alerts?.therapistsWithoutProfile ?? 0) > 0 ? '#7DD3FC' : colors.border}`,
                 }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: alerts?.therapistsWithoutProfile ?? 0 > 0 ? '#0369A1' : '#78716C', marginBottom: '0.2rem' }}>
-                    ℹ️ {alerts?.therapistsWithoutProfile ?? 0} therapist{(alerts?.therapistsWithoutProfile ?? 0) !== 1 ? 's' : ''} without profile
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.info : colors.textMuted, marginBottom: '0.2rem' }}>
+                    ℹ️ {alerts?.therapistsWithoutProfile ?? 0} terapeuta{(alerts?.therapistsWithoutProfile ?? 0) !== 1 ? 's' : ''} sin perfil
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: alerts?.therapistsWithoutProfile ?? 0 > 0 ? '#0369A1' : '#A8A29E', marginBottom: '0.5rem' }}>
-                    TherapistProfile incomplete
+                  <div style={{ fontSize: '0.72rem', color: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.info : colors.textSubtle, marginBottom: spacing.sm }}>
+                    TherapistProfile incompleto
                   </div>
                   <button
                     onClick={() => navigate('/admin/usuarios?role=therapist')}
-                    style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', background: 'none', border: '0.5px solid #6B7D5C', borderRadius: '0.5rem', padding: '0.2rem 0.6rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-                  >
-                    Review →
+                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, cursor: 'pointer', fontFamily: typography.fontBody }}>
+                    Revisar →
                   </button>
                 </div>
 
-                {/* Alerta 3 — Manifiesto Ético */}
+                {/* Manifiesto ético */}
                 <div style={{
-                  padding: '0.75rem', borderRadius: '0.65rem',
-                  background: '#EAF0E6', border: '0.5px solid #A8B5A2',
+                  padding: spacing.md, borderRadius: radius.md,
+                  background: colors.successLight, border: `0.5px solid #A8B5A2`,
                 }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#4A6741', marginBottom: '0.2rem' }}>
-                    ℹ️ Ethical Manifesto
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: colors.success, marginBottom: '0.2rem' }}>
+                    ✅ Manifiesto Ético
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: '#4A6741' }}>
-                    {alerts?.manifestoVersion ?? 'v1.0'} — active since {alerts?.manifestoDate ? formatDate(alerts.manifestoDate) : '02 Apr 2026'}
+                  <div style={{ fontSize: '0.72rem', color: colors.success }}>
+                    {alerts?.manifestoVersion ?? 'v1.0'} — activo desde {alerts?.manifestoDate ? formatDate(alerts.manifestoDate) : '02 abr 2026'}
                   </div>
                 </div>
 
@@ -303,27 +263,22 @@ export function AdminDashboard() {
           {/* Lista prompts pendientes */}
           {(alerts?.pendingPromptsList?.length ?? 0) > 0 && (
             <div style={cardStyle}>
-              <div style={sectionLabel}>📋 Pending prompts</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <div style={{ ...labelStyle, marginBottom: spacing.md }}>📋 Prompts pendientes</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
                 {alerts!.pendingPromptsList.map(p => (
                   <div key={p.id} style={{
-                    padding: '0.65rem 0.75rem',
-                    background: '#FEF3C7',
-                    borderRadius: '0.65rem',
-                    border: '0.5px solid #FCD34D',
+                    padding: `${spacing.sm} ${spacing.md}`,
+                    background: colors.warningLight,
+                    borderRadius: radius.md,
+                    border: `0.5px solid #FCD34D`,
                   }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E' }}>
-                      {p.therapistName}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: '#92400E', marginTop: '0.1rem' }}>
-                      v{p.version} — {formatDate(p.createdAt)}
-                    </div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: colors.warning }}>{p.therapistName}</div>
+                    <div style={{ fontSize: '0.72rem', color: colors.warning, marginTop: '0.1rem' }}>v{p.version} — {formatDate(p.createdAt)}</div>
                   </div>
                 ))}
                 <button
                   onClick={() => navigate('/admin/prompts')}
-                  style={{ fontSize: '0.75rem', color: '#6B7D5C', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', padding: '0.2rem 0' }}
-                >
+                  style={{ fontSize: '0.75rem', color: colors.primary, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: typography.fontBody, padding: `${spacing.xs} 0` }}>
                   Ver todos →
                 </button>
               </div>
