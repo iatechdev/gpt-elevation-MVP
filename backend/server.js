@@ -28,6 +28,7 @@ connectDB().then(() => {
 // ── Rutas públicas ────────────────────────────────────────────────────────────
 app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
+app.use('/api/pricing',         require('./routes/pricing'));
 
 // ── Rutas usuario ─────────────────────────────────────────────────────────────
 app.use('/api',                 verificarToken, require('./routes/chat'));
@@ -43,6 +44,7 @@ app.use('/api/therapist',       verificarToken, require('./routes/therapistRoute
 app.use('/api/admin/usuarios',  verificarAdmin,      require('./routes/adminUsers'));
 app.use('/api/admin/metrics',   verificarAdmin,      require('./routes/adminMetrics'));
 app.use('/api/admin/matching',  verificarAdmin,      require('./routes/matching'));
+app.use('/api/admin/pricing',   verificarAdmin,      require('./routes/pricing'));
 
 // adminPrompts maneja tanto rutas /admin como /superadmin internamente
 // se monta dos veces con diferente middleware
