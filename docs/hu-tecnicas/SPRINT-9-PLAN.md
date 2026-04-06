@@ -1,7 +1,7 @@
 # Sprint 9 — Plan de Videollamadas + Planes + Limitación de usuarios
 
-> Estado: PLANIFICADO
-> Fecha inicio: Por definir
+> Estado: EN PROGRESO
+> Fecha inicio: 6 de abril de 2026
 > Documentado por: Claude (Tech Lead AI) + Mauro Roldán
 
 ---
@@ -29,73 +29,60 @@ Las grandes features pendientes son:
 
 ---
 
-## HU-077 — Sistema de planes y limitación de usuarios (NUEVO — prioridad 1)
+## Avances sesión 06/04/2026
 
-### Problema actual
-Los `PricingPlan` existen en BD y se muestran en la página pública, pero:
-- Los usuarios no tienen un plan asignado
-- No hay limitación de funcionalidades por plan
-- No hay forma de saber si un usuario es Free, Pro, etc.
+### ✅ AdminPrompts.tsx — COMPLETADO
+- UI completa de gestión del Prompt Vault
+- Lista de prompts en panel izquierdo con nombres legibles (fmtKey)
+- Historial de versiones con estados: active, pending_review, approved, rejected, archived
+- Botones contextuales: Aprobar / Rechazar (con nota) / Rollback
+- Conectado a endpoints reales del backend
+- Fix: variable de entorno es VITE_BACKEND_URL (no VITE_API_URL)
 
-### Lo que hay que construir
+### ✅ AdminMetrics.tsx — COMPLETADO
+- 7 KPIs en cards: total usuarios, activos, terapeutas, sesiones, activos esta semana, ánimo promedio, calificación promedio
+- Gráfica de barras de actividad últimos 30 días
+- Tabla top terapeutas con pacientes y calificación
+- Conectado a GET /api/admin/metrics
 
-**Backend:**
-- Campo `planId` en modelo `User` (FK a `PricingPlan`)
-- Campo `planExpiresAt` en modelo `User` (para planes con período)
-- Middleware `verificarPlan(feature)` que valida si el usuario tiene acceso
-- Endpoint `GET /api/user/plan` — retorna el plan activo del usuario
-- Endpoint `POST /api/admin/users/:id/assign-plan` — admin asigna plan a usuario
-- Lógica de límites por plan (ej: Free = 10 chats/mes, Pro = ilimitado)
-
-**Frontend:**
-- Widget "Mi plan" en UserDashboard mostrando plan activo
-- Bloqueo suave cuando el usuario alcanza el límite (mensaje + CTA a upgrade)
-- Vista de upgrade en PricingPage con CTA que lleva al usuario a contactar admin
-
-### Decisiones a tomar en la sesión
-- ¿Cómo se asigna el plan? ¿Manual por admin o automático?
-- ¿Qué features limita cada plan? (chats, sesiones, terapeutas, etc.)
-- ¿Hay período de gracia o bloqueo inmediato al llegar al límite?
+### ✅ Flujo completo prompts terapeuta — COMPLETADO
+- Terapeuta ve su prompt activo / pendiente / rechazado
+- Banner de rechazo con motivo visible en TherapistDashboard
+- Terapeuta puede re-proponer después de un rechazo (nueva versión)
+- Fix crítico: eliminados 10 constraints UNIQUE de la tabla PromptVaults en Cloud SQL que bloqueaban el versionado
+- Backend: GET /api/therapist/prompt ahora retorna campo `rejected` con la última versión rechazada
 
 ---
 
-## HU-067 — Videollamada Daily.co
+## Pendiente Sprint 9
 
-Ver doc existente: `docs/hu-tecnicas/HU-067-videollamada-daily.md`
+### 🔴 Próximo a trabajar
 
-### Decisión de arquitectura ya tomada
+1. **Manifiesto Ético** — modelo BD + endpoint upload + Claude recibe contexto en chat
+2. **Dashboard Junta** — layout + páginas propias para rol `junta`
+3. **HU-077** — planId en User, límites por plan, widget "Mi plan" en UserDashboard
+4. **UI terapeuta para proponer prompt** — el modal ya existe, revisar pre-carga del contenido rechazado
+
+### HU-077 — Sistema de planes (decisiones tomadas en sesión)
+- Mercado: Latinoamérica B2C
+- Terapeutas: Elevation les paga % por sesiones
+- Planes propuestos: Básico ($0), Esencial ($12), Plus ($29), Pro ($59) en USD
+- Asignación: manual por admin para MVP
+- Bloqueo: suave con CTA a upgrade
+
+### HU-067 — Videollamada Daily.co
 - Daily.co como proveedor (no Google Meet — bloquea iframes)
-- Integración via iframe embebido en la plataforma
-- El link de la sala se guarda en `TherapySession.meetingUrl`
+- $0.004/participante-minuto, 10,000 min gratis/mes
+- Integración via iframe embebido
+- El link de la sala se guarda en TherapySession.meetingUrl
 
-### Lo que falta
-- Configurar cuenta Daily.co y API key
-- Backend: crear sala automáticamente al agendar sesión
-- Frontend: vista `VideoSession.tsx` con iframe de Daily.co
-- Flujo: terapeuta agenda → se crea sala → usuario y terapeuta ven el link
-
----
-
-## HU-068 — Google Calendar sync
-
-Ver doc existente: `docs/hu-tecnicas/HU-068-google-calendar.md`
-
-### Lo que falta
+### HU-068 — Google Calendar sync
 - OAuth con Google Calendar API
-- Sincronizar sesiones agendadas con el calendario del terapeuta
-- Enviar invitación al paciente
+- Sincronizar sesiones agendadas con calendario del terapeuta
 
----
-
-## HU-073 — Modal matching completo
-
-El `MatchingModal.tsx` existe pero el flujo no está completo.
-- El usuario llena el cuestionario
-- La IA sugiere terapeutas
-- El usuario elige
-- El admin confirma
-
-Falta pulir el flujo end-to-end y el estado en el dashboard.
+### HU-073 — Modal matching completo
+- MatchingModal.tsx existe, flujo incompleto
+- Falta: usuario elige terapeuta → admin confirma
 
 ---
 
@@ -107,4 +94,12 @@ Falta pulir el flujo end-to-end y el estado en el dashboard.
 
 ---
 
-*Documentado: 5 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+## Decisiones de arquitectura confirmadas
+
+- VITE_BACKEND_URL (no VITE_API_URL) — variable de entorno del frontend
+- Junta = rol ético independiente, no superadmin. Tiene poder de veto sobre prompts, sube el Manifiesto Ético. No tiene control técnico de la plataforma.
+- Planes pricing: Básico $0 / Esencial $12 / Plus $29 / Pro $59 USD
+
+---
+
+*Actualizado: 6 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
