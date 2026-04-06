@@ -252,12 +252,20 @@ router.get('/prompt', async (req, res) => {
       attributes: ['id', 'version', 'status', 'proposed_by', 'createdAt'],
     });
 
+    const rejectedRecord = await PromptVault.findOne({
+      where: { key: promptKey, status: 'rejected' },
+      attributes: ['id', 'version', 'status', 'rejected_by', 'rejection_note', 'rejected_at'],
+      order: [['version', 'DESC']],
+    });
+
     res.json({
       hasPrompt: !!content,
       content: content ?? null,
       active: activeRecord ?? null,
       pending: pendingRecord ?? null,
+      rejected: rejectedRecord ?? null,
     });
+
   } catch (error) {
     console.error('❌ Error fetching therapist prompt:', error);
     res.status(500).json({ error: 'Could not fetch prompt.' });

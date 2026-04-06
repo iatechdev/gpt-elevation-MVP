@@ -39,6 +39,13 @@ interface PromptData {
     proposed_by: string
     createdAt: string
   } | null
+   rejected: {
+    id: number
+    version: number
+    rejected_by: string
+    rejection_note: string | null
+    rejected_at: string
+  } | null
 }
 
 // HU-065 — Alert types
@@ -409,45 +416,68 @@ export function TherapistDashboard() {
       {/* HU-049 — MY THERAPEUTIC PROMPT */}
       {!promptLoading && (
         <div style={{ ...cardStyle, marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showPromptSection ? '1rem' : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 My Therapeutic Prompt
               </div>
-              <div style={{ fontSize: '0.82rem', color: '#1C1917', marginTop: '0.2rem' }}>
+              <div style={{ fontSize: '0.82rem', color: '#1C1917', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {promptData?.active
                   ? `Active v${promptData.active.version} — Approved ${formatDate(promptData.active.approved_at)}`
                   : 'No active prompt yet'}
                 {promptData?.pending && (
-                  <span style={{ marginLeft: '0.75rem', fontSize: '0.72rem', background: '#FEF3C7', color: '#92400E', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.72rem', background: '#FEF3C7', color: '#92400E', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
                     v{promptData.pending.version} pending review
+                  </span>
+                )}
+                {promptData?.rejected && !promptData?.active && !promptData?.pending && (
+                  <span style={{ fontSize: '0.72rem', background: '#FEE2E2', color: '#DC2626', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
+                    v{promptData.rejected.version} rechazado
                   </span>
                 )}
               </div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setShowPromptSection(!showPromptSection)}
-                style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#78716C', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-              >
-                {showPromptSection ? 'Hide' : 'View current'}
-              </button>
+              {promptData?.active && (
+                <button
+                  onClick={() => setShowPromptSection(!showPromptSection)}
+                  style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#78716C', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                  {showPromptSection ? 'Hide' : 'View current'}
+                </button>
+              )}
               {!promptData?.pending && (
                 <button
                   onClick={() => { setShowProposeModal(true); setNewPromptContent(promptData?.content ?? '') }}
-                  style={{ padding: '0.45rem 0.85rem', background: '#6B7D5C', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#fff', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}
-                >
+                  style={{ padding: '0.45rem 0.85rem', background: '#6B7D5C', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#fff', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
                   {promptData?.hasPrompt ? 'Propose new version' : 'Create prompt'}
                 </button>
               )}
             </div>
           </div>
-          {showPromptSection && (
+
+          {/* Banner rechazo — una sola vez, siempre visible */}
+          {promptData?.rejected && !promptData?.active && !promptData?.pending && (
+            <div style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: '#FEE2E2', border: '0.5px solid #FCA5A5', borderRadius: '0.65rem' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#DC2626', marginBottom: '0.25rem' }}>
+                Tu prompt v{promptData.rejected.version} fue rechazado por {promptData.rejected.rejected_by}
+              </div>
+              {promptData.rejected.rejection_note && (
+                <div style={{ fontSize: '0.75rem', color: '#DC2626', fontStyle: 'italic', marginBottom: '0.35rem' }}>
+                  "{promptData.rejected.rejection_note}"
+                </div>
+              )}
+              <div style={{ fontSize: '0.72rem', color: '#4A6741', fontWeight: 500 }}>
+                Podés crear una nueva versión corregida con el botón "Create prompt".
+              </div>
+            </div>
+          )}
+
+          {/* Prompt activo expandido */}
+          {showPromptSection && promptData?.content && (
             <div style={{ marginTop: '1rem', padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
-              {promptData?.content
-                ? <p style={{ fontSize: '0.875rem', color: '#1C1917', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{promptData.content}</p>
-                : <p style={{ fontSize: '0.875rem', color: '#78716C', margin: 0, fontStyle: 'italic' }}>No active prompt. Create one to personalize how Elevation AI interacts with your patients.</p>
-              }
+              <p style={{ fontSize: '0.875rem', color: '#1C1917', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                {promptData.content}
+              </p>
             </div>
           )}
         </div>
