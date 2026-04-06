@@ -52,16 +52,28 @@ Las grandes features pendientes son:
 - Fix crítico: eliminados 10 constraints UNIQUE de la tabla PromptVaults en Cloud SQL que bloqueaban el versionado
 - Backend: GET /api/therapist/prompt ahora retorna campo `rejected` con la última versión rechazada
 
+### ✅ Manifiesto Ético — Backend COMPLETADO (06/04/2026)
+- Modelo `EthicManifest` — contenido encriptado AES-256-CBC (misma clave que mensajes del chat)
+- Versionado automático: v1, v2, v3... — solo uno activo a la vez
+- Campo `uploadedBy` — trazabilidad de quién subió cada versión
+- `backend/routes/board.js` — router del rol Ethics Board:
+  - `POST /api/board/manifest` — sube nueva versión (requiere rol board o superadmin)
+  - `GET /api/board/manifest` — historial completo desencriptado
+  - `PUT /api/board/manifest/:id/activate` — rollback a versión anterior
+  - `GET /api/manifest/active` — consumido internamente por chat.js (sin auth)
+- `backend/middlewares/auth.js` — agrega `verificarBoard` (roles: board, superadmin)
+- `backend/routes/chat.js` — inyecta manifiesto activo al system prompt de Claude Haiku como bloque ético separado. Falla silenciosa si no hay manifiesto.
+- Decisión de naming: archivo `board.js` (no `junta.js`), rutas en inglés — regla fija para todo el proyecto
+
 ---
 
 ## Pendiente Sprint 9
 
 ### 🔴 Próximo a trabajar
 
-1. **Manifiesto Ético** — modelo BD + endpoint upload + Claude recibe contexto en chat
-2. **Dashboard Junta** — layout + páginas propias para rol `junta`
-3. **HU-077** — planId en User, límites por plan, widget "Mi plan" en UserDashboard
-4. **UI terapeuta para proponer prompt** — el modal ya existe, revisar pre-carga del contenido rechazado
+1. **Dashboard Board** — layout + páginas propias para rol `board` en el frontend
+2. **HU-077** — planId en User, límites por plan, widget "Mi plan" en UserDashboard
+3. **UI terapeuta para proponer prompt** — el modal ya existe, revisar pre-carga del contenido rechazado
 
 ### HU-077 — Sistema de planes (decisiones tomadas en sesión)
 - Mercado: Latinoamérica B2C
@@ -97,8 +109,10 @@ Las grandes features pendientes son:
 ## Decisiones de arquitectura confirmadas
 
 - VITE_BACKEND_URL (no VITE_API_URL) — variable de entorno del frontend
-- Junta = rol ético independiente, no superadmin. Tiene poder de veto sobre prompts, sube el Manifiesto Ético. No tiene control técnico de la plataforma.
+- Board = rol ético independiente, no superadmin. Tiene poder de veto sobre prompts, sube el Manifiesto Ético. No tiene control técnico de la plataforma.
 - Planes pricing: Básico $0 / Esencial $12 / Plus $29 / Pro $59 USD
+- Naming: archivos y rutas siempre en inglés (board.js, no junta.js — /api/board, no /api/junta)
+- Manifiesto Ético: encriptado en BD con AES-256-CBC, misma clave que mensajes del chat
 
 ---
 
