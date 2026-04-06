@@ -52,7 +52,7 @@ Las grandes features pendientes son:
 - Fix crítico: eliminados 10 constraints UNIQUE de la tabla PromptVaults en Cloud SQL que bloqueaban el versionado
 - Backend: GET /api/therapist/prompt ahora retorna campo `rejected` con la última versión rechazada
 
-### ✅ Manifiesto Ético — Backend COMPLETADO (06/04/2026)
+### ✅ Manifiesto Ético — COMPLETADO (06/04/2026)
 - Modelo `EthicManifest` — contenido encriptado AES-256-CBC (misma clave que mensajes del chat)
 - Versionado automático: v1, v2, v3... — solo uno activo a la vez
 - Campo `uploadedBy` — trazabilidad de quién subió cada versión
@@ -63,7 +63,16 @@ Las grandes features pendientes son:
   - `GET /api/manifest/active` — consumido internamente por chat.js (sin auth)
 - `backend/middlewares/auth.js` — agrega `verificarBoard` (roles: board, superadmin)
 - `backend/routes/chat.js` — inyecta manifiesto activo al system prompt de Claude Haiku como bloque ético separado. Falla silenciosa si no hay manifiesto.
-- Decisión de naming: archivo `board.js` (no `junta.js`), rutas en inglés — regla fija para todo el proyecto
+- `frontend/src/pages/board/BoardManifest.tsx` — página de gestión del manifiesto con historial, subida y rollback
+- `frontend/src/layouts/BoardLayout.tsx` — layout propio para rol board (header + sidebar verde oliva)
+- `frontend/src/components/BoardRoute.tsx` — guard de ruta para rol board/superadmin
+- Superadmin accede al Manifiesto desde `/admin/manifest` dentro del AdminLayout — navegación unificada con sidebar
+- Board accede desde `/board/manifest` con BoardLayout propio
+- `AdminSidebar.tsx` — sección "Ethics Board" visible solo para superadmin, link con i18n
+- `AdminUsers.tsx` — rol `board` agregado: tipo Role, badge verde (#F0FDF4), tres selectores actualizados
+- `backend/routes/adminUsers.js` — `board` agregado a ROLES_VALIDOS y ROLES_PRIVILEGIADOS
+- `LoginPage.tsx` — redirección a `/board/manifest` para usuarios con rol board
+- Decisión de naming: archivos y rutas siempre en inglés — regla fija para todo el proyecto
 
 ---
 
@@ -71,9 +80,9 @@ Las grandes features pendientes son:
 
 ### 🔴 Próximo a trabajar
 
-1. **Dashboard Board** — layout + páginas propias para rol `board` en el frontend
-2. **HU-077** — planId en User, límites por plan, widget "Mi plan" en UserDashboard
-3. **UI terapeuta para proponer prompt** — el modal ya existe, revisar pre-carga del contenido rechazado
+1. **HU-077** — planId en User, límites por plan, widget "Mi plan" en UserDashboard
+2. **UI terapeuta para proponer prompt** — el modal ya existe, revisar pre-carga del contenido rechazado
+3. **Deuda técnica** — revisar error técnico detectado en App.tsx
 
 ### HU-077 — Sistema de planes (decisiones tomadas en sesión)
 - Mercado: Latinoamérica B2C
@@ -110,8 +119,10 @@ Las grandes features pendientes son:
 
 - VITE_BACKEND_URL (no VITE_API_URL) — variable de entorno del frontend
 - Board = rol ético independiente, no superadmin. Tiene poder de veto sobre prompts, sube el Manifiesto Ético. No tiene control técnico de la plataforma.
+- Superadmin accede al Manifiesto desde AdminLayout (/admin/manifest) — navegación unificada
+- Board accede desde BoardLayout (/board/manifest) — experiencia enfocada
 - Planes pricing: Básico $0 / Esencial $12 / Plus $29 / Pro $59 USD
-- Naming: archivos y rutas siempre en inglés (board.js, no junta.js — /api/board, no /api/junta)
+- Naming: archivos y rutas siempre en inglés
 - Manifiesto Ético: encriptado en BD con AES-256-CBC, misma clave que mensajes del chat
 
 ---
