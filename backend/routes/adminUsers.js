@@ -9,9 +9,9 @@ const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 
-const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin'];
+const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin','board'];
 const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
-const ROLES_PRIVILEGIADOS = ['admin', 'superadmin'];
+const ROLES_PRIVILEGIADOS = ['admin', 'superadmin','board'];
 
 // ==========================================
 // POST /api/admin/usuarios — Crear usuario

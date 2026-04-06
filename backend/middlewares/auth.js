@@ -39,4 +39,15 @@ const verificarSuperAdmin = (req, res, next) => {
   });
 };
 
-module.exports = { verificarToken, verificarAdmin, verificarSuperAdmin };
+// Board members can access ethical review features
+// superadmin also has access as platform owner
+const verificarBoard = (req, res, next) => {
+  verificarToken(req, res, () => {
+    if (!['board', 'superadmin'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Acceso denegado. Solo miembros de la junta ética.' });
+    }
+    next();
+  });
+};
+
+module.exports = { verificarToken, verificarAdmin, verificarSuperAdmin, verificarBoard };

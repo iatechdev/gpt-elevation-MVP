@@ -1,3 +1,4 @@
+// frontend/src/i18n/en.ts
 const en: Record<string, string> = {
   // Landing
   hero_badge: 'AI emotional support',
@@ -34,7 +35,7 @@ const en: Record<string, string> = {
   checkin_subtitle: 'This moment is just yours',
   btn_continue: 'Begin',
 
-  // Emociones
+  // Emotions
   emo_1: 'Bad',
   emo_2: 'Restless',
   emo_3: 'Neutral',
@@ -72,7 +73,7 @@ const en: Record<string, string> = {
   admin_status_rejected: 'rejected',
   admin_status_archived: 'archived',
 
-  // Errores
+  // Errors
   err_credentials: 'Incorrect credentials',
   err_rate_limit: 'Too many attempts. Please try again later.',
   err_locked: 'Account temporarily locked',
@@ -97,7 +98,40 @@ const en: Record<string, string> = {
   rec_category_reflection: '📓 Reflection',
   rec_category_resource: '📚 Resource',
   rec_generated_at: 'Generated',
-  
+
+  // Board — Ethics Manifest
+  board_manifest_title: 'Ethics Manifest',
+  board_manifest_subtitle: 'Binding document that guides Elevation\'s AI behavior',
+  board_active_version: 'Active version',
+  board_active_badge: 'ACTIVE',
+  board_new_version: '+ New version',
+  board_cancel: 'Cancel',
+  board_form_title: 'Publish new manifest version',
+  board_form_note: 'Version note (optional)',
+  board_form_note_placeholder: 'e.g. Post-review update Q1 2026',
+  board_form_content: 'Manifest content',
+  board_form_content_placeholder: 'Write the full ethics manifest here...',
+  board_form_chars: 'characters',
+  board_publish: 'Publish and activate',
+  board_publishing: 'Publishing...',
+  board_rollback: 'Reactivate',
+  board_confirm_activate: 'Reactivate version',
+  board_history_title: 'Version history',
+  board_loading: 'Loading history...',
+  board_empty: 'No manifest versions yet.',
+  board_error_load: 'Could not load history.',
+  board_error_min: 'Manifest must be at least 50 characters long.',
+  board_error_upload: 'Could not publish manifest.',
+  board_error_activate: 'Could not reactivate version.',
+  board_success_upload: '✅ Manifest published and activated:',
+  board_success_activate: '✅ Version reactivated:',
+
+  // Admin sidebar nav
+  admin_nav_dashboard: 'Dashboard',
+  admin_nav_prompts: 'Prompts',
+  admin_nav_content: 'Content',
+  admin_nav_users: 'Users',
+  admin_nav_metrics: 'Metrics',
 }
 
 export { en }

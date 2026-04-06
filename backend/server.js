@@ -7,7 +7,12 @@ const path    = require('path');
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
 
-const { verificarToken, verificarAdmin, verificarSuperAdmin } = require('./middlewares/auth');
+const {
+  verificarToken,
+  verificarAdmin,
+  verificarSuperAdmin,
+  verificarBoard,
+} = require('./middlewares/auth');
 
 const app = express();
 
@@ -30,6 +35,9 @@ app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
 app.use('/api/pricing',         require('./routes/pricing'));
 
+// Manifest active version — consumed internally by chat.js (no auth required)
+app.use('/api/manifest',        require('./routes/board'));
+
 // ── Rutas usuario ─────────────────────────────────────────────────────────────
 app.use('/api',                 verificarToken, require('./routes/chat'));
 app.use('/api/mood',            verificarToken, require('./routes/mood'));
@@ -39,20 +47,22 @@ app.use('/api/user',            verificarToken, require('./routes/progress'));
 app.use('/api/matching',        verificarToken, require('./routes/matching'));
 app.use('/api/sessions',        verificarToken, require('./routes/sessions'));
 app.use('/api/therapist',       verificarToken, require('./routes/therapistRoutes'));
-app.use('/api/therapist/validation', verificarToken, require('./routes/validation')); 
+app.use('/api/therapist/validation', verificarToken, require('./routes/validation'));
+
 // ── Rutas admin ───────────────────────────────────────────────────────────────
 app.use('/api/admin/usuarios',  verificarAdmin,      require('./routes/adminUsers'));
 app.use('/api/admin/metrics',   verificarAdmin,      require('./routes/adminMetrics'));
 app.use('/api/admin/matching',  verificarAdmin,      require('./routes/matching'));
 app.use('/api/admin/pricing',   verificarAdmin,      require('./routes/pricing'));
 
-
 // adminPrompts maneja tanto rutas /admin como /superadmin internamente
-// se monta dos veces con diferente middleware
 const adminPromptsRouter = require('./routes/adminPrompts');
 app.use('/api/admin',      verificarAdmin,      adminPromptsRouter);
 app.use('/api/superadmin', verificarSuperAdmin, adminPromptsRouter);
-app.use('/api/junta',      verificarSuperAdmin, require('./routes/validation')); 
+
+// ── Rutas board (Ethics Board) ────────────────────────────────────────────────
+app.use('/api/board',      verificarBoard,      require('./routes/board'));
+app.use('/api/junta',      verificarSuperAdmin, require('./routes/validation'));
 
 // ── Frontend estático ─────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../frontend/dist')));

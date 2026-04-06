@@ -1,3 +1,4 @@
+// frontend/src/App.tsx
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { LandingPage }    from './pages/LandingPage.tsx'
 import { LoginPage }      from './pages/LoginPage.tsx'
@@ -20,6 +21,10 @@ import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
 import { MyTherapist }   from './pages/MyTherapist.tsx'
 import { Onboarding }    from './pages/Onboarding.tsx'
+import { BoardRoute }    from './components/BoardRoute.tsx'
+import { BoardLayout }   from './layouts/BoardLayout.tsx'
+import { BoardManifest } from './pages/board/BoardManifest.tsx'
+
 
 export default function App() {
   return (
@@ -51,8 +56,9 @@ export default function App() {
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="prompts"   element={<AdminPrompts />} />
         <Route path="contenido" element={<AdminContent />} />
-        <Route path="usuarios"  element={<AdminUsers  />} />
-        <Route path="metricas"  element={<AdminMetrics  />} />
+        <Route path="usuarios"  element={<AdminUsers />} />
+        <Route path="metricas"   element={<AdminMetrics />} />
+        <Route path="manifest"  element={<BoardManifest />} />
       </Route>
 
       {/* Therapist */}
@@ -61,6 +67,16 @@ export default function App() {
           <Route path="/therapist/dashboard"   element={<TherapistDashboard />} />
           <Route path="/therapist/patient/:id" element={<TherapistPatient />} />
         </Route>
+      </Route>
+
+      {/* Ethics Board */}
+      <Route path="/board" element={
+        <BoardRoute>
+          <BoardLayout />
+        </BoardRoute>
+      }>
+        <Route index element={<Navigate to="/board/manifest" replace />} />
+        <Route path="manifest" element={<BoardManifest />} />
       </Route>
 
       {/* Fallback */}

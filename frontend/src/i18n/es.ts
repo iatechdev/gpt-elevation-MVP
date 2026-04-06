@@ -1,3 +1,4 @@
+// frontend/src/i18n/es.ts
 const es: Record<string, string> = {
   // Landing
   hero_badge: 'Soporte emocional con IA',
@@ -97,6 +98,39 @@ const es: Record<string, string> = {
   rec_category_reflection: '📓 Reflexión',
   rec_category_resource: '📚 Recurso',
   rec_generated_at: 'Generado',
+
+  // Board — Manifiesto Ético
+  board_manifest_title: 'Manifiesto Ético',
+  board_manifest_subtitle: 'Documento vinculante que guía el comportamiento de la IA de Elevation',
+  board_active_version: 'Versión activa',
+  board_active_badge: 'ACTIVO',
+  board_new_version: '+ Nueva versión',
+  board_cancel: 'Cancelar',
+  board_form_title: 'Publicar nueva versión del manifiesto',
+  board_form_note: 'Nota de versión (opcional)',
+  board_form_note_placeholder: 'Ej: Actualización post-revisión Q1 2026',
+  board_form_content: 'Contenido del manifiesto',
+  board_form_content_placeholder: 'Redacta aquí el manifiesto ético completo...',
+  board_form_chars: 'caracteres',
+  board_publish: 'Publicar y activar',
+  board_publishing: 'Publicando...',
+  board_rollback: 'Reactivar',
+  board_confirm_activate: '¿Reactivar la versión',
+  board_history_title: 'Historial de versiones',
+  board_loading: 'Cargando historial...',
+  board_empty: 'No hay versiones del manifiesto todavía.',
+  board_error_load: 'No se pudo cargar el historial.',
+  board_error_min: 'El manifiesto debe tener al menos 50 caracteres.',
+  board_error_upload: 'No se pudo publicar el manifiesto.',
+  board_error_activate: 'No se pudo reactivar la versión.',
+  board_success_upload: '✅ Manifiesto publicado y activado:',
+  board_success_activate: '✅ Versión reactivada:',
+  // Admin sidebar nav
+  admin_nav_dashboard: 'Dashboard',
+  admin_nav_prompts: 'Prompts',
+  admin_nav_content: 'Contenido',
+  admin_nav_users: 'Usuarios',
+  admin_nav_metrics: 'Métricas',
 }
 
 export { es }

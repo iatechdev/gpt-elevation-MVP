@@ -1,3 +1,4 @@
+// backend/associations.js
 const setupAssociations = () => {
   const User                   = require('./User');
   const Message                = require('./Message');
@@ -9,6 +10,7 @@ const setupAssociations = () => {
   const MatchingRequest        = require('./MatchingRequest');
   const TherapySession         = require('./TherapySession');
   const SessionNote            = require('./SessionNote');
+  const EthicManifest          = require('./EthicManifest');
 
   User.hasMany(Message);
   Message.belongsTo(User);
@@ -31,6 +33,10 @@ const setupAssociations = () => {
   TherapySession.belongsTo(User, { foreignKey: 'patientId',   as: 'patient'   });
   TherapySession.hasMany(SessionNote, { foreignKey: 'sessionId' });
   SessionNote.belongsTo(TherapySession, { foreignKey: 'sessionId' });
+
+  // Manifiesto Ético — quién lo subió (miembro de la junta)
+  User.hasMany(EthicManifest, { foreignKey: 'uploadedBy', as: 'manifests' });
+  EthicManifest.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploader' });
 
   console.log('✅ Asociaciones configuradas.');
 };

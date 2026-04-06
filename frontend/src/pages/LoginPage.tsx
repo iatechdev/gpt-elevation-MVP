@@ -48,10 +48,12 @@ export function LoginPage() {
         localStorage.setItem('elevation_role',  data.role  ?? 'user')
         localStorage.setItem('elevation_name',  data.name  ?? '')
         const role = data.role ?? 'user'
-        if (role === 'admin' || role === 'superadmin') {
+          if (role === 'admin' || role === 'superadmin') {
           navigate('/admin/dashboard')
         } else if (role === 'therapist') {
           navigate('/therapist/dashboard')
+        } else if (role === 'board') {
+          navigate('/board/manifest')
         } else {
           // HU-072 — redirigir al onboarding si no lo completó
           const onboardingDone = data.onboardingCompleted === true

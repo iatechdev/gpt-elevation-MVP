@@ -10,6 +10,23 @@ const Message    = require('../Message');
 const anthropic  = require('../utils/anthropic');
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
+const EthicManifest               = require('../EthicManifest');
+
+// Internal helper — fetches active manifest content (decrypted)
+// Returns null silently if no manifest exists or any error occurs
+const getActiveManifest = async () => {
+  try {
+    const active = await EthicManifest.findOne({
+      where: { isActive: true },
+      order: [['createdAt', 'DESC']],
+    });
+    if (!active) return null;
+    return desencriptar(active.content);
+  } catch (err) {
+    console.error('⚠️ Could not load ethics manifest:', err.message);
+    return null;
+  }
+};
 
 // POST /api/chat
 router.post('/chat', async (req, res) => {
@@ -18,13 +35,21 @@ router.post('/chat', async (req, res) => {
   try {
     const user = await User.findByPk(userId, { attributes: ['therapistId'] });
 
-    let systemPrompt = null;
+    // ── System prompt del terapeuta o el de Elevation por defecto ────────────
+    let therapistPrompt = null;
     if (user?.therapistId) {
-      systemPrompt = await getActivePrompt(`therapist_prompt_${user.therapistId}`);
+      therapistPrompt = await getActivePrompt(`therapist_prompt_${user.therapistId}`);
     }
-    if (!systemPrompt) systemPrompt = await getActivePrompt('elevation_system_prompt');
-    if (!systemPrompt) systemPrompt = 'You are Elevation, an empathetic emotional wellness companion. You listen actively and ask reflective questions. Your responses are concise, warm and you never use emojis.';
+    if (!therapistPrompt) therapistPrompt = await getActivePrompt('elevation_system_prompt');
+    if (!therapistPrompt) therapistPrompt = 'You are Elevation, an empathetic emotional wellness companion. You listen actively and ask reflective questions. Your responses are concise, warm and you never use emojis.';
 
+    // ── Manifiesto Ético — se inyecta como contexto adicional ────────────────
+    const manifest = await getActiveManifest();
+    const systemPrompt = manifest
+      ? `${therapistPrompt}\n\n---\nETHICS MANIFEST (Elevation Ethics Board — binding guidelines):\n${manifest}\n---`
+      : therapistPrompt;
+
+    // ── Historial de conversación ─────────────────────────────────────────────
     const historialDB = await Message.findAll({
       where: { UserId: userId },
       order: [['createdAt', 'ASC']],

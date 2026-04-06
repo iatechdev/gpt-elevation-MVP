@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Role = 'user' | 'therapist' | 'admin' | 'superadmin';
+type Role = 'user' | 'therapist' | 'admin' | 'superadmin' | 'board';
 
 interface Usuario {
   id: number;
@@ -45,6 +45,7 @@ const getRoleBadgeStyle = (role: Role): React.CSSProperties => {
     therapist:  { background: '#E0F2FE', color: '#0369A1' },
     admin:      { background: '#FEF3C7', color: '#92400E' },
     superadmin: { background: '#FCE7F3', color: '#9D174D' },
+    board:      { background: '#F0FDF4', color: '#166534' },
   };
   return { ...base, ...colors[role] };
 };
@@ -53,25 +54,25 @@ const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
 
 export function AdminUsers() {
-  const [usuarios,           setUsuarios]           = useState<Usuario[]>([]);
-  const [terapeutas,         setTerapeutas]         = useState<Terapeuta[]>([]);
-  const [cargando,           setCargando]           = useState(true);
-  const [error,              setError]              = useState('');
-  const [filtroRol,          setFiltroRol]          = useState('');
-  const [filtroEstado,       setFiltroEstado]       = useState('');
+  const [usuarios,            setUsuarios]            = useState<Usuario[]>([]);
+  const [terapeutas,          setTerapeutas]          = useState<Terapeuta[]>([]);
+  const [cargando,            setCargando]            = useState(true);
+  const [error,               setError]               = useState('');
+  const [filtroRol,           setFiltroRol]           = useState('');
+  const [filtroEstado,        setFiltroEstado]        = useState('');
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
-  const [mostrarModal,       setMostrarModal]       = useState(false);
-  const [nuevoUsuario,       setNuevoUsuario]       = useState({ name: '', email: '', password: '', role: 'user' as Role });
-  const [creando,            setCreando]            = useState(false);
-  const [errorModal,         setErrorModal]         = useState('');
-  const [exitoModal,         setExitoModal]         = useState('');
+  const [mostrarModal,        setMostrarModal]        = useState(false);
+  const [nuevoUsuario,        setNuevoUsuario]        = useState({ name: '', email: '', password: '', role: 'user' as Role });
+  const [creando,             setCreando]             = useState(false);
+  const [errorModal,          setErrorModal]          = useState('');
+  const [exitoModal,          setExitoModal]          = useState('');
 
   // HU-060 — Matching requests
-  const [matchingRequests,   setMatchingRequests]   = useState<MatchingRequest[]>([]);
-  const [showMatching,       setShowMatching]       = useState(false);
-  const [confirmingId,       setConfirmingId]       = useState<number | null>(null);
+  const [matchingRequests, setMatchingRequests] = useState<MatchingRequest[]>([]);
+  const [showMatching,     setShowMatching]     = useState(false);
+  const [confirmingId,     setConfirmingId]     = useState<number | null>(null);
 
-  const role        = localStorage.getItem('elevation_role') ?? 'admin';
+  const role         = localStorage.getItem('elevation_role') ?? 'admin';
   const esSuperAdmin = role === 'superadmin';
 
   const fetchUsuarios = async () => {
@@ -91,7 +92,6 @@ export function AdminUsers() {
     finally   { setCargando(false); }
   };
 
-  // HU-060 — Fetch pending matching requests
   const fetchMatching = async () => {
     try {
       const res = await fetch(`${API}/api/admin/matching/pending`, {
@@ -108,7 +108,6 @@ export function AdminUsers() {
     fetchMatching();
   }, [filtroRol, filtroEstado]);
 
-  // HU-060 — Confirm matching assignment
   const confirmMatching = async (requestId: number) => {
     setConfirmingId(requestId);
     try {
@@ -200,7 +199,6 @@ export function AdminUsers() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {/* HU-060 — Matching badge */}
           {matchingRequests.length > 0 && (
             <button
               onClick={() => setShowMatching(!showMatching)}
@@ -225,7 +223,7 @@ export function AdminUsers() {
         </div>
       </div>
 
-      {/* HU-060 — MATCHING REQUESTS PANEL */}
+      {/* MATCHING REQUESTS PANEL */}
       {showMatching && matchingRequests.length > 0 && (
         <div style={{
           background: '#fff', borderRadius: '1rem', border: '0.5px solid #FCD34D',
@@ -277,6 +275,7 @@ export function AdminUsers() {
           <option value="therapist">Therapist</option>
           <option value="admin">Admin</option>
           {esSuperAdmin && <option value="superadmin">Superadmin</option>}
+          {esSuperAdmin && <option value="board">Board</option>}
         </select>
         <select style={sel} value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
           <option value="">Todos los estados</option>
@@ -362,6 +361,7 @@ export function AdminUsers() {
                   <option value="therapist">therapist</option>
                   {esSuperAdmin && <option value="admin">admin</option>}
                   {esSuperAdmin && <option value="superadmin">superadmin</option>}
+                  {esSuperAdmin && <option value="board">board</option>}
                 </select>
               </div>
               {usuarioSeleccionado.role === 'user' && (
@@ -399,8 +399,8 @@ export function AdminUsers() {
             {errorModal && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{errorModal}</div>}
             {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{exitoModal}</div>}
             {[
-              { label: 'Nombre completo',    key: 'name',     type: 'text',     placeholder: 'Ana García' },
-              { label: 'Email',              key: 'email',    type: 'email',    placeholder: 'ana@example.com' },
+              { label: 'Nombre completo',     key: 'name',     type: 'text',     placeholder: 'Ana García' },
+              { label: 'Email',               key: 'email',    type: 'email',    placeholder: 'ana@example.com' },
               { label: 'Contraseña temporal', key: 'password', type: 'password', placeholder: 'Mínimo 8 caracteres' },
             ].map(campo => (
               <div key={campo.key} style={{ marginBottom: '1rem' }}>
@@ -419,6 +419,7 @@ export function AdminUsers() {
                 <option value="therapist">therapist</option>
                 {esSuperAdmin && <option value="admin">admin</option>}
                 {esSuperAdmin && <option value="superadmin">superadmin</option>}
+                {esSuperAdmin && <option value="board">board</option>}
               </select>
             </div>
             <button onClick={crearUsuario} disabled={creando} style={{
