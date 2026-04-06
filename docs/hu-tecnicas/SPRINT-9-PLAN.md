@@ -74,6 +74,16 @@ Las grandes features pendientes son:
 - `LoginPage.tsx` — redirección a `/board/manifest` para usuarios con rol board
 - Decisión de naming: archivos y rutas siempre en inglés — regla fija para todo el proyecto
 
+### ✅ Deuda naming App.tsx + AdminSidebar — COMPLETADO (06/04/2026)
+- Rutas URL del backoffice migradas de español a inglés:
+  - `/admin/contenido` → `/admin/content`
+  - `/admin/usuarios` → `/admin/users`
+  - `/admin/metricas` → `/admin/metrics`
+  - `/precios` eliminada (alias redundante de `/pricing`)
+- `App.tsx` — paths actualizados, comentarios en inglés
+- `AdminSidebar.tsx` — `to:` y `fallback:` actualizados a inglés en los 5 items de nav
+- Regla confirmada: **todo path de URL y texto de código fuente en inglés**; los textos visibles al usuario van por i18n (useLanguage)
+
 ---
 
 ## Pendiente Sprint 9
@@ -82,7 +92,6 @@ Las grandes features pendientes son:
 
 1. **HU-077** — planId en User, límites por plan, widget "Mi plan" en UserDashboard
 2. **UI terapeuta para proponer prompt** — el modal ya existe, revisar pre-carga del contenido rechazado
-3. **Deuda técnica** — revisar error técnico detectado en App.tsx
 
 ### HU-077 — Sistema de planes (decisiones tomadas en sesión)
 - Mercado: Latinoamérica B2C
@@ -122,7 +131,7 @@ Las grandes features pendientes son:
 - Superadmin accede al Manifiesto desde AdminLayout (/admin/manifest) — navegación unificada
 - Board accede desde BoardLayout (/board/manifest) — experiencia enfocada
 - Planes pricing: Básico $0 / Esencial $12 / Plus $29 / Pro $59 USD
-- Naming: archivos y rutas siempre en inglés
+- **Naming: archivos, rutas URL y código fuente siempre en inglés — textos visibles al usuario van por i18n**
 - Manifiesto Ético: encriptado en BD con AES-256-CBC, misma clave que mensajes del chat
 
 ---
