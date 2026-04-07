@@ -23,9 +23,9 @@ Las grandes features pendientes son:
 | HU | Descripcion | Pts | Prioridad | Estado |
 |---|---|---|---|---|
 | HU-077 | Sistema de planes y limitacion de usuarios | 5 | Critico | COMPLETADO |
+| HU-073 | Modal matching completo | 2 | Normal | COMPLETADO |
 | HU-067 | Videollamada Daily.co integrada | 8 | Alto | Pendiente |
 | HU-068 | Google Calendar sync | 5 | Alto | Pendiente |
-| HU-073 | Modal matching completo | 2 | Normal | Pendiente |
 
 ---
 
@@ -82,43 +82,20 @@ Las grandes features pendientes son:
 - Tablas sincronizadas en Cloud SQL: PlanRequests creada, columna planId en Users, columna slug en PricingPlans
 
 #### Backend
-- backend/utils/planLimits.js — config central de limites por plan (chatMessagesDay, sessionsMonth, canAccessProgress, canMatchTherapist). -1 = ilimitado.
-- backend/routes/plans.js — GET /api/plans (publico), GET /api/user/plan/me (autenticado, retorna plan + limits)
-- backend/routes/planRequests.js — endpoints completos:
-  - POST /api/plan-requests — usuario solicita plan (valida no tener pendiente)
-  - GET /api/plan-requests/me — solicitud pendiente del usuario
-  - GET /api/admin/plan-requests/admin?status=pending — lista para admin
-  - PUT /api/admin/plan-requests/admin/:id/approve — aprueba y asigna planId al usuario
-  - PUT /api/admin/plan-requests/admin/:id/reject — rechaza con nota obligatoria
-- backend/routes/adminUsers.js — endpoint PUT /api/admin/usuarios/:id/plan + include PricingPlan en GET lista
-- backend/routes/pricing.js — campo slug agregado al POST y PUT
-- backend/server.js — rutas /api/plans, /api/user/plan, /api/plan-requests, /api/admin/plan-requests montadas
+- backend/utils/planLimits.js — config central de limites por plan. -1 = ilimitado.
+- backend/routes/plans.js — GET /api/plans (publico), GET /api/user/plan/me (autenticado)
+- backend/routes/planRequests.js — POST, GET, PUT approve/reject completos
+- backend/routes/adminUsers.js — PUT /api/admin/usuarios/:id/plan + include PricingPlan en GET
+- backend/routes/pricing.js — campo slug agregado
+- backend/server.js — rutas de planes y plan requests montadas
 
 #### Frontend
-- frontend/src/pages/UserDashboard.tsx — Widget Mi Plan (4to widget columna izquierda):
-  - Badge con nombre y color por slug (basic/essential/plus/pro)
-  - Precio o Gratis
-  - Limites: mensajes IA/dia y sesiones/mes
-  - Features del plan (hasta 3)
-  - CTA Ver planes para basic y essential
-  - Llama a GET /api/user/plan/me al cargar
-- frontend/src/pages/PricingPage.tsx — flujo completo:
-  - Usuario no logueado -> navigate('/login')
-  - Usuario logueado -> POST /api/plan-requests con planId real
-  - Estados: idle / loading / success / already_pending / error
-  - Banner de confirmacion verde + redirect a dashboard en 3s
-  - Header muestra Mi espacio si esta logueado
-  - Fix: VITE_API_URL -> VITE_BACKEND_URL
-- frontend/src/pages/admin/AdminUsers.tsx — panel de plan requests:
-  - Boton azul con contador cuando hay pendientes
-  - Panel desplegable con solicitudes: nombre usuario, plan, precio, email, fecha
-  - Aprobar -> llama approve -> plan asignado automaticamente
-  - Rechazar -> modal con nota obligatoria -> llama reject
-  - Columna Plan en tabla de usuarios (badge o guion)
-  - Fix: VITE_API_URL -> VITE_BACKEND_URL
-- frontend/src/pages/admin/AdminContent.tsx — fix VITE_API_URL + campo slug en formulario de planes
+- UserDashboard.tsx — Widget Mi Plan con badge, precio, limites y CTA
+- PricingPage.tsx — flujo real POST /api/plan-requests, estados, redirect
+- AdminUsers.tsx — panel plan requests con aprobar/rechazar, columna Plan en tabla
+- AdminContent.tsx — fix VITE_API_URL + campo slug en formulario
 
-#### Planes en BD (cargados desde AdminContent -> tab Precios)
+#### Planes en BD
 | Slug | Nombre | Precio | Sesiones/mes | Mensajes IA/dia |
 |---|---|---|---|---|
 | basic | Basico | $0 | 0 | 10 |
@@ -126,12 +103,16 @@ Las grandes features pendientes son:
 | plus | Plus | $29 | 4 | 100 |
 | pro | Pro | $59 | ilimitado | ilimitado |
 
-#### Flujo validado de punta a punta
-1. Usuario logueado -> /pricing -> click Comenzar -> solicitud registrada -> banner verde -> redirect dashboard
-2. Admin -> AdminUsers -> boton plan requests -> panel -> Aprobar -> plan asignado
-3. Usuario -> dashboard -> widget Mi Plan muestra plan correcto con badge, precio y limites
-4. Si usuario ya tiene solicitud pendiente -> mensaje 409 claro
-5. Si usuario no logueado -> redirect a /login
+### HU-073 — Modal matching completo — COMPLETADO (07/04/2026)
+- Flujo validado de punta a punta: form -> resultados IA -> usuario elige -> admin confirma
+- MatchingModal.tsx: 3 pasos (form, results, success), chips de seleccion, sugerencias con score y razon
+- backend/routes/matching.js: todos los endpoints completos y funcionales
+  - POST /api/matching/request — matching con Claude Haiku, top 3 sugerencias
+  - POST /api/matching/choose — usuario elige terapeuta
+  - GET /api/admin/matching/pending — lista para admin en AdminUsers
+  - POST /api/admin/matching/:id/confirm — admin asigna therapistId al usuario
+- AdminUsers.tsx — panel matching requests con boton amarillo y confirmacion
+- UserDashboard.tsx — widget Proxima Sesion muestra boton si no tiene terapeuta
 
 ---
 
@@ -139,24 +120,19 @@ Las grandes features pendientes son:
 
 ### Proximo a trabajar
 
-1. HU-067 — Videollamada Daily.co integrada
-2. HU-068 — Google Calendar sync
-3. HU-073 — Modal matching completo
-4. UI terapeuta — revisar pre-carga de prompt rechazado en modal de propuesta
+1. HU-067 — Videollamada Daily.co (la mas pesada — 8 pts)
+2. HU-068 — Google Calendar sync (5 pts)
 
 ### HU-067 — Videollamada Daily.co
 - Daily.co como proveedor (no Google Meet — bloquea iframes)
 - $0.004/participante-minuto, 10,000 min gratis/mes
 - Integracion via iframe embebido
 - El link de la sala se guarda en TherapySession.meetingUrl
+- Requiere cuenta Daily.co y DAILY_API_KEY en variables de entorno
 
 ### HU-068 — Google Calendar sync
 - OAuth con Google Calendar API
 - Sincronizar sesiones agendadas con calendario del terapeuta
-
-### HU-073 — Modal matching completo
-- MatchingModal.tsx existe, flujo incompleto
-- Falta: usuario elige terapeuta -> admin confirma
 
 ---
 
@@ -180,6 +156,7 @@ Las grandes features pendientes son:
 - Asignacion de plan: flujo PlanRequest -> aprobacion admin -> planId en User
 - planLimits.js es la fuente unica de verdad para limites por plan. -1 = ilimitado.
 - Planes se crean desde AdminContent -> tab Precios (no seed quemado)
+- Matching: Claude Haiku genera top 3 sugerencias, usuario elige, admin confirma
 
 ---
 
