@@ -72,7 +72,7 @@ export function PricingPage() {
         body: JSON.stringify({ planId: plan.id }),
       })
 
-      const data = await res.json()
+      await res.json()
 
       if (res.status === 409) {
         setRequestState('already_pending')

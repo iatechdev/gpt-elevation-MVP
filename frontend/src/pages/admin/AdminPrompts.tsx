@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/AdminPrompts.tsx
 import { useState, useEffect, useCallback } from 'react'
-import { colors, radius, shadow, cardStyle, labelStyle, btnPrimaryStyle, btnSecondaryStyle, spacing, typography } from '../../styles/tokens'
+import { colors, radius, cardStyle, labelStyle, btnPrimaryStyle, btnSecondaryStyle, spacing, typography } from '../../styles/tokens'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
 const token = () => localStorage.getItem('elevation_token') ?? ''

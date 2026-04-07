@@ -30,7 +30,7 @@ export function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      const data = await res.json() as { error?: string; locked?: boolean; token?: string; role?: string; name?: string }
+      const data = await res.json() as { error?: string; locked?: boolean; token?: string; role?: string; name?: string; onboardingCompleted?: boolean }
 
       if (!res.ok) {
         setIsLocked(data.locked === true)

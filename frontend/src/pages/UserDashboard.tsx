@@ -2,7 +2,7 @@
 // HU-061 — User Dashboard unificado con check-in integrado
 // HU-077 — Widget Mi Plan
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
