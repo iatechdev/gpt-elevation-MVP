@@ -30,13 +30,12 @@ export default function App() {
   return (
     <Routes>
 
-      {/* Públicas */}
+      {/* Public */}
       <Route path="/"        element={<LandingPage />} />
       <Route path="/login"   element={<LoginPage />} />
-      <Route path="/precios" element={<PricingPage />} />
       <Route path="/pricing" element={<PricingPage />} />
 
-      {/* Usuario regular */}
+      {/* Regular user */}
       <Route element={<ProtectedRoute />}>
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
@@ -46,7 +45,7 @@ export default function App() {
         <Route path="/app/my-therapist" element={<MyTherapist />} />
       </Route>
 
-      {/* Backoffice admin/superadmin */}
+      {/* Admin backoffice */}
       <Route path="/admin" element={
         <AdminRoute>
           <AdminLayout />
@@ -55,9 +54,9 @@ export default function App() {
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="prompts"   element={<AdminPrompts />} />
-        <Route path="contenido" element={<AdminContent />} />
-        <Route path="usuarios"  element={<AdminUsers />} />
-        <Route path="metricas"   element={<AdminMetrics />} />
+        <Route path="content"   element={<AdminContent />} />
+        <Route path="users"     element={<AdminUsers />} />
+        <Route path="metrics"   element={<AdminMetrics />} />
         <Route path="manifest"  element={<BoardManifest />} />
       </Route>
 

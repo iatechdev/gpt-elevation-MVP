@@ -34,6 +34,7 @@ connectDB().then(() => {
 app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
 app.use('/api/pricing',         require('./routes/pricing'));
+app.use('/api/plans',           require('./routes/plans'));           // HU-077 — lista pública de planes
 
 // Manifest active version — consumed internally by chat.js (no auth required)
 app.use('/api/manifest',        require('./routes/board'));
@@ -44,16 +45,19 @@ app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));
 app.use('/api/user',            verificarToken, require('./routes/progress'));
+app.use('/api/user/plan',       verificarToken, require('./routes/plans'));          // HU-077 — plan del usuario
+app.use('/api/plan-requests',   verificarToken, require('./routes/planRequests'));   // HU-077 — solicitudes usuario
 app.use('/api/matching',        verificarToken, require('./routes/matching'));
 app.use('/api/sessions',        verificarToken, require('./routes/sessions'));
 app.use('/api/therapist',       verificarToken, require('./routes/therapistRoutes'));
 app.use('/api/therapist/validation', verificarToken, require('./routes/validation'));
 
 // ── Rutas admin ───────────────────────────────────────────────────────────────
-app.use('/api/admin/usuarios',  verificarAdmin,      require('./routes/adminUsers'));
-app.use('/api/admin/metrics',   verificarAdmin,      require('./routes/adminMetrics'));
-app.use('/api/admin/matching',  verificarAdmin,      require('./routes/matching'));
-app.use('/api/admin/pricing',   verificarAdmin,      require('./routes/pricing'));
+app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
+app.use('/api/admin/metrics',       verificarAdmin, require('./routes/adminMetrics'));
+app.use('/api/admin/matching',      verificarAdmin, require('./routes/matching'));
+app.use('/api/admin/pricing',       verificarAdmin, require('./routes/pricing'));
+app.use('/api/admin/plan-requests', verificarAdmin, require('./routes/planRequests')); // HU-077 — solicitudes admin
 
 // adminPrompts maneja tanto rutas /admin como /superadmin internamente
 const adminPromptsRouter = require('./routes/adminPrompts');

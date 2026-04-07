@@ -1,5 +1,5 @@
-// backend/routes/adminUsuarios.js
-// HU-045 + HU-063 — Gestión de usuarios + alertas admin
+// backend/routes/adminUsers.js
+// HU-045 + HU-063 + HU-077 — Gestión de usuarios + alertas admin + planes
 
 const express = require('express');
 const router = express.Router();
@@ -8,10 +8,11 @@ const { Op } = require('sequelize');
 const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
+const PricingPlan = require('../PricingPlan');
 
-const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin','board'];
+const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
 const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
-const ROLES_PRIVILEGIADOS = ['admin', 'superadmin','board'];
+const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
 
 // ==========================================
 // POST /api/admin/usuarios — Crear usuario
@@ -68,7 +69,8 @@ router.get('/', async (req, res) => {
 
     const usuarios = await User.findAll({
       where,
-      attributes: ['id', 'name', 'email', 'role', 'active', 'therapistId', 'createdAt'],
+      attributes: ['id', 'name', 'email', 'role', 'active', 'therapistId', 'planId', 'createdAt'],
+      include: [{ model: PricingPlan, as: 'plan', attributes: ['id', 'slug', 'name_es', 'name_en'] }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -93,6 +95,7 @@ router.get('/', async (req, res) => {
         return {
           id: u.id, name: u.name, email: u.email, role: u.role,
           active: u.active, therapistId: u.therapistId, createdAt: u.createdAt,
+          plan: u.plan ?? null,
           sesiones, ratingPromedio, moodPromedio,
         };
       })
@@ -180,6 +183,46 @@ router.put('/:id/asignar-terapeuta', async (req, res) => {
 });
 
 // ==========================================
+// PUT /api/admin/usuarios/:id/plan — HU-077
+// Asignar plan a un usuario (solo admin/superadmin)
+// ==========================================
+router.put('/:id/plan', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { planId } = req.body;
+
+    const usuario = await User.findByPk(id);
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    if (usuario.role !== 'user') {
+      return res.status(400).json({ error: 'Solo se puede asignar plan a usuarios con rol user.' });
+    }
+
+    if (planId !== null && planId !== undefined) {
+      const plan = await PricingPlan.findOne({ where: { id: planId, isActive: true } });
+      if (!plan) return res.status(404).json({ error: 'Plan no encontrado o inactivo.' });
+    }
+
+    await usuario.update({ planId: planId || null });
+
+    const updatedUser = await User.findByPk(id, {
+      include: [{ model: PricingPlan, as: 'plan', attributes: ['id', 'slug', 'name_es', 'name_en', 'price'] }],
+    });
+
+    res.json({
+      message: 'Plan asignado correctamente.',
+      usuario: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        plan: updatedUser.plan ?? null,
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error asignando plan:', error);
+    res.status(500).json({ error: 'No se pudo asignar el plan.' });
+  }
+});
+
+// ==========================================
 // GET /api/admin/usuarios/:id/stats
 // ==========================================
 router.get('/:id/stats', async (req, res) => {
@@ -229,7 +272,6 @@ router.get('/alerts', async (req, res) => {
     const { PromptVault } = require('../promptVault');
     const TherapistProfile = require('../TherapistProfile');
 
-    // Alerta 1 — Prompts pendientes de revisión
     const pendingPrompts = await PromptVault.findAll({
       where: { status: 'pending_review' },
       attributes: ['id', 'key', 'version', 'proposed_by', 'createdAt'],
@@ -237,7 +279,6 @@ router.get('/alerts', async (req, res) => {
       limit: 5,
     });
 
-    // Enriquecer con nombre del terapeuta desde la key (therapist_prompt_ID)
     const pendingPromptsList = await Promise.all(
       pendingPrompts.map(async (p) => {
         const match = p.key.match(/therapist_prompt_(\d+)/);
@@ -256,7 +297,6 @@ router.get('/alerts', async (req, res) => {
       })
     );
 
-    // Alerta 2 — Terapeutas sin TherapistProfile completo
     const therapists = await User.findAll({
       where: { role: 'therapist', active: true },
       attributes: ['id', 'name'],

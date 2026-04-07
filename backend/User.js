@@ -1,3 +1,4 @@
+// backend/User.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('./database');
 
@@ -50,6 +51,15 @@ const User = sequelize.define('User', {
   motivation: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  // HU-077 — Pricing plans
+  planId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'PricingPlans',
+      key: 'id'
+    }
   }
 });
 

@@ -3,11 +3,12 @@
 
 import { useEffect, useState } from 'react'
 
-const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+const API = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 interface PricingPlan {
   id?: number
+  slug: string
   name_es: string
   name_en: string
   description_es: string
@@ -33,6 +34,7 @@ interface ValidationDoc {
 }
 
 const emptyPlan: PricingPlan = {
+   slug: '',
   name_es: '', name_en: '',
   description_es: '', description_en: '',
   price: 0, currency: 'USD', period: 'month',
@@ -339,8 +341,8 @@ function PricingTab() {
   }
 
   const save = async () => {
-    if (!form.name_es.trim() || !form.name_en.trim())
-      return setMsg('El nombre en español e inglés son requeridos.')
+    if (!form.slug.trim() || !form.name_es.trim() || !form.name_en.trim())
+      return setMsg('El slug, nombre en español e inglés son requeridos.')
     setSaving(true); setMsg('')
     try {
       const url    = editing?.id ? `${API}/api/admin/pricing/${editing.id}` : `${API}/api/admin/pricing`
@@ -414,6 +416,12 @@ function PricingTab() {
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
+                <p style={sectionTitle}>Identificador</p>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={label}>Slug * (sin espacios, ej: basic, essential, plus, pro)</label>
+                  <input style={input} value={form.slug} placeholder="ej: basic"
+                    onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-') }))} />
+                </div>
                 <p style={sectionTitle}>Nombre del plan</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>

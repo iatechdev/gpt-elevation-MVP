@@ -18,23 +18,23 @@ const ADMIN_NAV = [
     roles: ['admin', 'superadmin'],
   },
   {
-    to: '/admin/contenido',
+    to: '/admin/content',
     labelKey: 'admin_nav_content',
-    fallback: 'Contenido',
+    fallback: 'Content',
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>,
     roles: ['admin', 'superadmin'],
   },
   {
-    to: '/admin/usuarios',
+    to: '/admin/users',
     labelKey: 'admin_nav_users',
-    fallback: 'Usuarios',
+    fallback: 'Users',
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/></svg>,
     roles: ['superadmin'],
   },
   {
-    to: '/admin/metricas',
+    to: '/admin/metrics',
     labelKey: 'admin_nav_metrics',
-    fallback: 'Métricas',
+    fallback: 'Metrics',
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
     roles: ['admin', 'superadmin'],
   },
@@ -44,7 +44,7 @@ const BOARD_NAV = [
   {
     to: '/admin/manifest',
     labelKey: 'board_manifest_title',
-    fallback: 'Manifiesto Ético',
+    fallback: 'Ethical Manifest',
     icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/></svg>,
     roles: ['superadmin'],
   },
@@ -83,12 +83,12 @@ export function AdminSidebar() {
       padding: '1.5rem 0', flexShrink: 0,
     }}>
 
-      {/* Nav admin */}
+      {/* Admin nav */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 0.75rem' }}>
         {visibleAdmin.map(renderLink)}
       </nav>
 
-      {/* Sección Ethics Board — solo superadmin */}
+      {/* Ethics Board — superadmin only */}
       {visibleBoard.length > 0 && (
         <>
           <div style={{ margin: '1rem 0.75rem', borderTop: '0.5px solid #D6D2C4' }} />

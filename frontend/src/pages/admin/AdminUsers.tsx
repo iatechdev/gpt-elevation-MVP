@@ -1,4 +1,4 @@
-// HU-045 + HU-060 — User management + matching requests
+// HU-045 + HU-060 + HU-077 — User management + matching requests + plan requests
 
 import { useState, useEffect } from 'react';
 
@@ -15,6 +15,7 @@ interface Usuario {
   sesiones: number;
   ratingPromedio: number | null;
   moodPromedio: number | null;
+  plan: { id: number; slug: string; name_es: string; name_en: string } | null;
 }
 
 interface Terapeuta {
@@ -23,7 +24,6 @@ interface Terapeuta {
   email: string;
 }
 
-// HU-060
 interface MatchingRequest {
   id: number;
   user: { id: number; name: string; email: string };
@@ -32,8 +32,17 @@ interface MatchingRequest {
   createdAt: string;
 }
 
-const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
-const getToken = () => localStorage.getItem('elevation_token') || '';
+// HU-077
+interface PlanRequest {
+  id: number;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  requester: { id: number; name: string; email: string };
+  plan: { id: number; slug: string; name_es: string; name_en: string; price: number; currency: string };
+}
+
+const API = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080';
+const getToken = () => localStorage.getItem('elevation_token') ?? '';
 
 const getRoleBadgeStyle = (role: Role): React.CSSProperties => {
   const base: React.CSSProperties = {
@@ -72,6 +81,14 @@ export function AdminUsers() {
   const [showMatching,     setShowMatching]     = useState(false);
   const [confirmingId,     setConfirmingId]     = useState<number | null>(null);
 
+  // HU-077 — Plan requests
+  const [planRequests,     setPlanRequests]     = useState<PlanRequest[]>([]);
+  const [showPlanRequests, setShowPlanRequests] = useState(false);
+  const [planActionId,     setPlanActionId]     = useState<number | null>(null);
+  const [planRejectNote,   setPlanRejectNote]   = useState('');
+  const [showRejectModal,  setShowRejectModal]  = useState<PlanRequest | null>(null);
+  const [planMsg,          setPlanMsg]          = useState('');
+
   const role         = localStorage.getItem('elevation_role') ?? 'admin';
   const esSuperAdmin = role === 'superadmin';
 
@@ -103,9 +120,22 @@ export function AdminUsers() {
     } catch { /* silent */ }
   };
 
+  // HU-077
+  const fetchPlanRequests = async () => {
+    try {
+      const res = await fetch(`${API}/api/admin/plan-requests/admin?status=pending`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setPlanRequests(Array.isArray(data) ? data : []);
+    } catch { /* silent */ }
+  };
+
   useEffect(() => {
     fetchUsuarios();
     fetchMatching();
+    fetchPlanRequests();
   }, [filtroRol, filtroEstado]);
 
   const confirmMatching = async (requestId: number) => {
@@ -120,6 +150,45 @@ export function AdminUsers() {
       await fetchUsuarios();
     } catch { alert('Connection error'); }
     finally { setConfirmingId(null); }
+  };
+
+  // HU-077 — Aprobar solicitud de plan
+  const approvePlanRequest = async (req: PlanRequest) => {
+    setPlanActionId(req.id);
+    setPlanMsg('');
+    try {
+      const res = await fetch(`${API}/api/admin/plan-requests/admin/${req.id}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ adminNote: '' }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setPlanMsg(data.error ?? 'Error al aprobar.'); return; }
+      setPlanMsg(`✓ Plan ${req.plan.name_es} activado para ${req.requester.name}.`);
+      await fetchPlanRequests();
+      await fetchUsuarios();
+    } catch { setPlanMsg('Error de conexión.'); }
+    finally { setPlanActionId(null); }
+  };
+
+  // HU-077 — Rechazar solicitud de plan
+  const rejectPlanRequest = async (req: PlanRequest) => {
+    if (!planRejectNote.trim()) return;
+    setPlanActionId(req.id);
+    try {
+      const res = await fetch(`${API}/api/admin/plan-requests/admin/${req.id}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ adminNote: planRejectNote }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setPlanMsg(data.error ?? 'Error al rechazar.'); return; }
+      setPlanMsg(`Solicitud de ${req.requester.name} rechazada.`);
+      setShowRejectModal(null);
+      setPlanRejectNote('');
+      await fetchPlanRequests();
+    } catch { setPlanMsg('Error de conexión.'); }
+    finally { setPlanActionId(null); }
   };
 
   const toggleActivo = async (usuario: Usuario) => {
@@ -198,7 +267,24 @@ export function AdminUsers() {
             {usuarios.length} usuario{usuarios.length !== 1 ? 's' : ''} registrado{usuarios.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+
+          {/* Botón plan requests — HU-077 */}
+          {planRequests.length > 0 && (
+            <button
+              onClick={() => setShowPlanRequests(!showPlanRequests)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.6rem 1.2rem', background: '#EEF2FF',
+                color: '#4F46E5', border: '0.5px solid #A5B4FC',
+                borderRadius: '0.85rem', fontSize: '0.875rem',
+                fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              💳 {planRequests.length} plan request{planRequests.length !== 1 ? 's' : ''}
+            </button>
+          )}
+
           {matchingRequests.length > 0 && (
             <button
               onClick={() => setShowMatching(!showMatching)}
@@ -213,6 +299,7 @@ export function AdminUsers() {
               🤝 {matchingRequests.length} matching pending
             </button>
           )}
+
           <button onClick={() => setMostrarModal(true)} style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem',
             background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.85rem',
@@ -222,6 +309,85 @@ export function AdminUsers() {
           </button>
         </div>
       </div>
+
+      {/* PLAN REQUESTS PANEL — HU-077 */}
+      {showPlanRequests && (
+        <div style={{
+          background: '#fff', borderRadius: '1rem', border: '0.5px solid #A5B4FC',
+          boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem',
+          marginBottom: '1.5rem',
+        }}>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
+            💳 Solicitudes de plan pendientes
+          </h2>
+
+          {planMsg && (
+            <div style={{
+              padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem',
+              background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2',
+              color: planMsg.startsWith('✓') ? '#4A6741' : '#DC2626',
+            }}>
+              {planMsg}
+            </div>
+          )}
+
+          {planRequests.length === 0 ? (
+            <p style={{ color: '#78716C', fontSize: '0.875rem', margin: 0 }}>No hay solicitudes pendientes.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {planRequests.map(req => (
+                <div key={req.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '0.85rem 1rem', background: '#F5F7FF', borderRadius: '0.75rem',
+                  border: '0.5px solid #A5B4FC', flexWrap: 'wrap', gap: '0.75rem',
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>
+                      {req.requester.name}
+                      <span style={{ fontWeight: 400, color: '#78716C' }}> → </span>
+                      <span style={{ color: '#4F46E5', fontWeight: 600 }}>{req.plan.name_es}</span>
+                      <span style={{ fontSize: '0.78rem', color: '#78716C', marginLeft: 6 }}>
+                        ${req.plan.price} {req.plan.currency}/mes
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>
+                      {req.requester.email} · {formatDate(req.createdAt)}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => void approvePlanRequest(req)}
+                      disabled={planActionId === req.id}
+                      style={{
+                        padding: '0.45rem 1rem',
+                        background: planActionId === req.id ? '#A8B5A2' : '#6B7D5C',
+                        color: '#fff', border: 'none', borderRadius: '0.65rem',
+                        fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer',
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      {planActionId === req.id ? 'Procesando...' : '✓ Aprobar'}
+                    </button>
+                    <button
+                      onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }}
+                      disabled={planActionId === req.id}
+                      style={{
+                        padding: '0.45rem 1rem',
+                        background: 'transparent', color: '#DC2626',
+                        border: '0.5px solid #DC2626', borderRadius: '0.65rem',
+                        fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer',
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      ✕ Rechazar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* MATCHING REQUESTS PANEL */}
       {showMatching && matchingRequests.length > 0 && (
@@ -295,14 +461,14 @@ export function AdminUsers() {
             <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', border: '0.5px solid #E7E5E4' }}>
               <thead>
                 <tr>
-                  {['Usuario', 'Rol', 'Sesiones', 'Mood prom.', 'Rating prom.', 'Estado', 'Acción'].map(h => (
+                  {['Usuario', 'Rol', 'Plan', 'Sesiones', 'Mood prom.', 'Rating prom.', 'Estado', 'Acción'].map(h => (
                     <th key={h} style={{ padding: '0.85rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#78716C', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '0.5px solid #E7E5E4', background: '#F5F3EF' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {usuarios.length === 0 ? (
-                  <tr><td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#78716C', fontSize: '0.875rem' }}>No hay usuarios con los filtros seleccionados.</td></tr>
+                  <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#78716C', fontSize: '0.875rem' }}>No hay usuarios con los filtros seleccionados.</td></tr>
                 ) : usuarios.map(u => (
                   <tr key={u.id} style={{ background: usuarioSeleccionado?.id === u.id ? '#EAF0E6' : 'transparent', transition: 'background 0.15s' }}>
                     <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
@@ -311,6 +477,15 @@ export function AdminUsers() {
                     </td>
                     <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
                       <span style={getRoleBadgeStyle(u.role)}>{u.role}</span>
+                    </td>
+                    <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                      {u.plan ? (
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: '#EEF2FF', color: '#4F46E5' }}>
+                          {u.plan.name_es}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '0.72rem', color: '#A8A29E' }}>—</span>
+                      )}
                     </td>
                     <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.sesiones ?? '—'}</td>
                     <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.moodPromedio != null ? u.moodPromedio : '—'}</td>
@@ -387,7 +562,40 @@ export function AdminUsers() {
         </div>
       )}
 
-      {/* MODAL DE CREACIÓN */}
+      {/* MODAL RECHAZO PLAN — HU-077 */}
+      {showRejectModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
+              ✕ Rechazar solicitud
+            </h3>
+            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem' }}>
+              Explicá por qué rechazás la solicitud de <strong>{showRejectModal.requester.name}</strong> para el plan <strong>{showRejectModal.plan.name_es}</strong>.
+            </p>
+            <textarea
+              value={planRejectNote}
+              onChange={e => setPlanRejectNote(e.target.value)}
+              placeholder="Ej: El plan seleccionado no está disponible actualmente..."
+              rows={3}
+              style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #D6D2C4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+              <button onClick={() => { setShowRejectModal(null); setPlanRejectNote(''); }}
+                style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
+                Cancelar
+              </button>
+              <button
+                onClick={() => void rejectPlanRequest(showRejectModal)}
+                disabled={!planRejectNote.trim() || planActionId === showRejectModal.id}
+                style={{ padding: '0.6rem 1.25rem', background: !planRejectNote.trim() ? '#E7E5E4' : '#DC2626', color: !planRejectNote.trim() ? '#A8A29E' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: planRejectNote.trim() ? 'pointer' : 'not-allowed', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
+                {planActionId === showRejectModal.id ? 'Procesando...' : 'Confirmar rechazo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CREACIÓN USUARIO */}
       {mostrarModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>

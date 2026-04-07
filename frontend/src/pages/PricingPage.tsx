@@ -1,15 +1,16 @@
 // frontend/src/pages/PricingPage.tsx
-// HU-074 — Página de precios dinámica, bilingüe, consume /api/pricing
+// HU-074 + HU-077 — Página de precios con solicitud real de plan
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { BreathingBackground } from '../components/BreathingBackground.tsx'
 
-const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+const API = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
 
 interface PricingPlan {
   id: number
+  slug: string
   name_es: string
   name_en: string
   description_es: string
@@ -23,13 +24,21 @@ interface PricingPlan {
   order: number
 }
 
+type RequestState = 'idle' | 'loading' | 'success' | 'error' | 'already_pending'
+
 export function PricingPage() {
   const { t, lang, setLang } = useLanguage()
   const navigate = useNavigate()
 
-  const [plans, setPlans]     = useState<PricingPlan[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(false)
+  const [plans, setPlans]         = useState<PricingPlan[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(false)
+  const [requesting, setRequesting] = useState<number | null>(null)  // planId en proceso
+  const [requestState, setRequestState] = useState<RequestState>('idle')
+  const [requestedPlanName, setRequestedPlanName] = useState('')
+
+  const isLoggedIn = !!localStorage.getItem('elevation_token')
+  const token      = localStorage.getItem('elevation_token') ?? ''
 
   useEffect(() => {
     fetch(`${API}/api/pricing`)
@@ -44,14 +53,55 @@ export function PricingPage() {
       })
   }, [])
 
-  const getName = (plan: PricingPlan) =>
-    lang === 'en' ? plan.name_en : plan.name_es
+  const handlePlanCTA = async (plan: PricingPlan) => {
+    if (!isLoggedIn) {
+      navigate('/login')
+      return
+    }
 
-  const getDescription = (plan: PricingPlan) =>
-    lang === 'en' ? plan.description_en : plan.description_es
+    setRequesting(plan.id)
+    setRequestState('loading')
 
-  const getFeatures = (plan: PricingPlan) =>
-    lang === 'en' ? (plan.features_en ?? []) : (plan.features_es ?? [])
+    try {
+      const res = await fetch(`${API}/api/plan-requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ planId: plan.id }),
+      })
+
+      const data = await res.json()
+
+      if (res.status === 409) {
+        setRequestState('already_pending')
+        setRequesting(null)
+        return
+      }
+
+      if (!res.ok) {
+        setRequestState('error')
+        setRequesting(null)
+        return
+      }
+
+      setRequestedPlanName(lang === 'es' ? plan.name_es : plan.name_en)
+      setRequestState('success')
+      setRequesting(null)
+
+      // Volver al dashboard después de 3 segundos
+      setTimeout(() => navigate('/app/dashboard'), 3000)
+
+    } catch {
+      setRequestState('error')
+      setRequesting(null)
+    }
+  }
+
+  const getName        = (p: PricingPlan) => lang === 'en' ? p.name_en : p.name_es
+  const getDescription = (p: PricingPlan) => lang === 'en' ? p.description_en : p.description_es
+  const getFeatures    = (p: PricingPlan) => lang === 'en' ? (p.features_en ?? []) : (p.features_es ?? [])
 
   const formatPrice = (price: number, currency: string) => {
     if (price === 0) return lang === 'es' ? 'Gratis' : 'Free'
@@ -63,11 +113,52 @@ export function PricingPage() {
 
   const formatPeriod = (period: string) => {
     const map: Record<string, Record<string, string>> = {
-      month:   { es: '/ mes',         en: '/ month'   },
-      year:    { es: '/ año',         en: '/ year'    },
-      forever: { es: 'para siempre',  en: 'forever'   },
+      month:   { es: '/ mes',        en: '/ month'  },
+      year:    { es: '/ año',        en: '/ year'   },
+      forever: { es: 'para siempre', en: 'forever'  },
     }
     return map[period]?.[lang] ?? period
+  }
+
+  // ── Mensajes de estado ────────────────────────────────────────────────────
+  const statusBanner = () => {
+    if (requestState === 'idle') return null
+
+    const configs = {
+      success: {
+        bg: '#EAF0E6', border: '#A8B5A2', color: '#4A6741',
+        msg: lang === 'es'
+          ? `✓ Tu solicitud para el plan ${requestedPlanName} fue registrada. Nuestro equipo lo activará pronto. Volviendo al inicio...`
+          : `✓ Your request for the ${requestedPlanName} plan has been registered. Our team will activate it shortly. Redirecting...`,
+      },
+      already_pending: {
+        bg: '#FFF7ED', border: '#FCD34D', color: '#92400E',
+        msg: lang === 'es'
+          ? '⚠ Ya tenés una solicitud pendiente. Esperá a que el equipo la procese.'
+          : '⚠ You already have a pending request. Wait for our team to process it.',
+      },
+      error: {
+        bg: '#FEE2E2', border: '#FCA5A5', color: '#DC2626',
+        msg: lang === 'es'
+          ? '✕ Hubo un error al registrar tu solicitud. Intentá de nuevo.'
+          : '✕ There was an error registering your request. Please try again.',
+      },
+      loading: null,
+    }
+
+    const cfg = configs[requestState]
+    if (!cfg) return null
+
+    return (
+      <div style={{
+        maxWidth: 860, margin: '0 auto 1.5rem', padding: '1rem 1.5rem',
+        background: cfg.bg, border: `0.5px solid ${cfg.border}`,
+        borderRadius: '0.85rem', color: cfg.color,
+        fontSize: '0.875rem', textAlign: 'center', lineHeight: 1.6,
+      }}>
+        {cfg.msg}
+      </div>
+    )
   }
 
   return (
@@ -92,10 +183,17 @@ export function PricingPage() {
                 </button>
               ))}
             </div>
-            <button onClick={() => navigate('/login')}
-              style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: '#6B7D5C', color: '#FAF8F4', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-              {t('cta_primary')}
-            </button>
+            {isLoggedIn ? (
+              <button onClick={() => navigate('/app/dashboard')}
+                style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: '#6B7D5C', color: '#FAF8F4', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                {lang === 'es' ? 'Mi espacio' : 'My space'}
+              </button>
+            ) : (
+              <button onClick={() => navigate('/login')}
+                style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: '#6B7D5C', color: '#FAF8F4', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                {t('cta_primary')}
+              </button>
+            )}
           </div>
         </header>
 
@@ -108,6 +206,9 @@ export function PricingPage() {
             {lang === 'es' ? 'Sin compromisos. Cancelá cuando quieras.' : 'No commitments. Cancel anytime.'}
           </p>
         </section>
+
+        {/* Banner de estado */}
+        {statusBanner()}
 
         {/* Planes */}
         <section style={{ padding: '2rem', maxWidth: 860, margin: '0 auto' }}>
@@ -179,16 +280,25 @@ export function PricingPage() {
                   </div>
 
                   {/* CTA */}
-                  <button onClick={() => navigate('/login')}
+                  <button
+                    onClick={() => void handlePlanCTA(plan)}
+                    disabled={requesting === plan.id || requestState === 'success'}
                     style={{
                       padding: '0.85rem', borderRadius: '0.85rem',
                       border: plan.isHighlighted ? 'none' : '0.5px solid #A8B5A2',
-                      background: plan.isHighlighted ? '#6B7D5C' : 'transparent',
-                      color: plan.isHighlighted ? '#FAF8F4' : '#6B7D5C',
-                      fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer',
+                      background: requesting === plan.id
+                        ? '#A8B5A2'
+                        : plan.isHighlighted ? '#6B7D5C' : 'transparent',
+                      color: plan.isHighlighted || requesting === plan.id ? '#FAF8F4' : '#6B7D5C',
+                      fontSize: '0.9rem', fontWeight: 500,
+                      cursor: requesting === plan.id || requestState === 'success' ? 'not-allowed' : 'pointer',
                       fontFamily: 'Inter, sans-serif', width: '100%',
+                      transition: 'all 0.15s',
                     }}>
-                    {lang === 'es' ? 'Comenzar' : 'Get started'}
+                    {requesting === plan.id
+                      ? (lang === 'es' ? 'Enviando...' : 'Sending...')
+                      : (lang === 'es' ? 'Comenzar' : 'Get started')
+                    }
                   </button>
                 </div>
               ))}

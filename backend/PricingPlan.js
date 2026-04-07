@@ -3,7 +3,14 @@ const { DataTypes } = require('sequelize');
 const { sequelize }  = require('./database');
 
 const PricingPlan = sequelize.define('PricingPlan', {
-  // Nombre e idiomas
+  // Slug único — usado por planLimits.js para aplicar restricciones
+  // valores válidos: 'basic' | 'essential' | 'plus' | 'pro'
+  slug: {
+    type: DataTypes.STRING(20),
+    allowNull: true,   // true para permitir sync en BD con filas existentes
+    unique: true,
+  },
+  // Nombre por idioma
   name_es: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -23,7 +30,7 @@ const PricingPlan = sequelize.define('PricingPlan', {
     allowNull: true,
     defaultValue: '',
   },
-  // Precio (único, sin idioma)
+  // Precio
   price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,

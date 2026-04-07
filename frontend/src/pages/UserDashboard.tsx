@@ -1,12 +1,13 @@
 // frontend/src/pages/UserDashboard.tsx
 // HU-061 — User Dashboard unificado con check-in integrado
+// HU-077 — Widget Mi Plan
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
 
-const API      = import.meta.env.VITE_BACKEND_URL || ''
+const API      = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -17,6 +18,18 @@ type UpcomingSession = {
   id: number; scheduledAt: string; duration: number
   meetingUrl: string | null; status: string
   therapistName: string; therapistEmail: string
+}
+type UserPlan = {
+  id: number; slug: string; name_es: string; name_en: string
+  price: number; currency: string; period: string
+  features_es: string[]; features_en: string[]
+  isHighlighted: boolean
+} | null
+type PlanLimits = {
+  chatMessagesDay: number
+  sessionsMonth: number
+  canAccessProgress: boolean
+  canMatchTherapist: boolean
 }
 
 const MOOD_EMOJI: Record<number, string> = {
@@ -30,6 +43,13 @@ const CHECKOUT_MOODS = [
   { emoji: '🙂', value: 4 },
   { emoji: '😊', value: 5 },
 ]
+
+const PLAN_COLORS: Record<string, { bg: string; border: string; badge: string; text: string }> = {
+  basic:     { bg: '#F5F3EF', border: '#E7E5E4', badge: '#78716C', text: '#78716C' },
+  essential: { bg: '#EAF0E6', border: '#A8B5A2', badge: '#6B7D5C', text: '#6B7D5C' },
+  plus:      { bg: '#EEF2FF', border: '#A5B4FC', badge: '#4F46E5', text: '#4F46E5' },
+  pro:       { bg: '#FFF7ED', border: '#FCD34D', badge: '#D97706', text: '#D97706' },
+}
 
 async function apiFetch(path: string, options?: RequestInit) {
   return fetch(`${API}${path}`, {
@@ -72,10 +92,10 @@ export function UserDashboard() {
 
   // ── Matching modal ───────────────────────────────────────────────────────
   const [showMatching, setShowMatching] = useState(false)
-  const handleMatchingSuccess = (therapistName: string) => {
-  setShowMatching(false)
-  void loadUpcomingSession() // refresca el widget de próxima sesión
-}
+  const handleMatchingSuccess = (_therapistName: string) => {
+    setShowMatching(false)
+    void loadUpcomingSession()
+  }
 
   // ── Checkout modal ───────────────────────────────────────────────────────
   const [showCheckout,   setShowCheckout]   = useState(false)
@@ -84,19 +104,22 @@ export function UserDashboard() {
   const [starHover,      setStarHover]      = useState<number | null>(null)
   const [checkoutSaving, setCheckoutSaving] = useState(false)
 
+  // ── Plan state ───────────────────────────────────────────────────────────
+  const [userPlan,   setUserPlan]   = useState<UserPlan>(null)
+  const [planLimits, setPlanLimits] = useState<PlanLimits | null>(null)
+
   // ── Init ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const token = getToken()
     if (!token) { navigate('/login'); return }
 
-    // Check if already checked in today
     const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
     setCheckedIn(alreadyCheckedIn)
 
-    // Load data in parallel
     void loadProgress()
     void loadUpcomingSession()
     void loadRecommendations()
+    void loadUserPlan()
 
     if (alreadyCheckedIn) {
       void loadChatHistory()
@@ -115,7 +138,6 @@ export function UserDashboard() {
       const data = await res.json()
       setMoodLogs(data.moodLogs ?? [])
 
-      // Sessions this week
       const monday = new Date()
       monday.setDate(monday.getDate() - monday.getDay() + 1)
       monday.setHours(0, 0, 0, 0)
@@ -133,7 +155,6 @@ export function UserDashboard() {
       const data = await res.json()
       setUpcomingSession(data.session ?? null)
 
-      // Check if user has therapist assigned
       const userRes = await apiFetch('/api/sessions/user/my-therapist')
       if (userRes.ok) {
         const userData = await userRes.json()
@@ -161,6 +182,17 @@ export function UserDashboard() {
     } catch { /* silent */ }
   }
 
+  // HU-077 — carga el plan y límites del usuario
+  const loadUserPlan = async () => {
+    try {
+      const res = await apiFetch('/api/user/plan/me')
+      if (!res.ok) return
+      const data = await res.json()
+      setUserPlan(data.plan ?? null)
+      setPlanLimits(data.limits ?? null)
+    } catch { /* silent */ }
+  }
+
   // ── Check-in handler ──────────────────────────────────────────────────────
   const handleCheckin = async (mood: number) => {
     setCheckingIn(true)
@@ -173,7 +205,6 @@ export function UserDashboard() {
       setTodayMood(mood)
       setCheckedIn(true)
       localStorage.setItem('elevation_checkin_date', new Date().toDateString())
-      // Load chat history now that check-in is done
       void loadChatHistory()
     } catch { /* silent */ }
     finally { setCheckingIn(false) }
@@ -258,6 +289,17 @@ export function UserDashboard() {
     boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
     padding: '1.25rem',
   }
+
+  // ── Plan helpers ─────────────────────────────────────────────────────────
+  const planSlug   = userPlan?.slug ?? 'basic'
+  const planColors = PLAN_COLORS[planSlug] ?? PLAN_COLORS.basic
+  const planName   = userPlan
+    ? (lang === 'es' ? userPlan.name_es : userPlan.name_en)
+    : (lang === 'es' ? 'Básico' : 'Basic')
+  const planFeatures = userPlan
+    ? (lang === 'es' ? userPlan.features_es : userPlan.features_en)
+    : []
+  const formatLimit = (n: number) => n === -1 ? '∞' : String(n)
 
   return (
     <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
@@ -395,13 +437,98 @@ export function UserDashboard() {
               </button>
             )}
           </div>
+
+          {/* Widget 4 — Mi Plan (HU-077) */}
+          <div style={{
+            ...cardStyle,
+            background: planColors.bg,
+            border: `0.5px solid ${planColors.border}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                ◇ {lang === 'es' ? 'Mi plan' : 'My plan'}
+              </div>
+              <span style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+                padding: '2px 10px', borderRadius: 9999,
+                background: planColors.badge, color: '#fff',
+                textTransform: 'uppercase',
+              }}>
+                {planName}
+              </span>
+            </div>
+
+            {/* Precio */}
+            <div style={{ marginBottom: '0.75rem' }}>
+              {userPlan && userPlan.price > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>
+                    ${userPlan.price}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#78716C' }}>
+                    {userPlan.currency} / {lang === 'es' ? 'mes' : 'month'}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#78716C' }}>
+                  {lang === 'es' ? 'Gratis' : 'Free'}
+                </div>
+              )}
+            </div>
+
+            {/* Límites */}
+            {planLimits && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
+                  <span>{lang === 'es' ? 'Mensajes IA / día' : 'AI messages / day'}</span>
+                  <span style={{ fontWeight: 600, color: planColors.text }}>
+                    {formatLimit(planLimits.chatMessagesDay)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
+                  <span>{lang === 'es' ? 'Sesiones / mes' : 'Sessions / month'}</span>
+                  <span style={{ fontWeight: 600, color: planColors.text }}>
+                    {formatLimit(planLimits.sessionsMonth)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Features */}
+            {planFeatures.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '0.75rem' }}>
+                {planFeatures.slice(0, 3).map((f, i) => (
+                  <div key={i} style={{ fontSize: '0.72rem', color: '#78716C', display: 'flex', gap: '0.35rem' }}>
+                    <span style={{ color: planColors.text }}>✓</span>
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* CTA upgrade — solo si es basic o essential */}
+            {(planSlug === 'basic' || planSlug === 'essential') && (
+              <button
+                onClick={() => navigate('/pricing')}
+                style={{
+                  width: '100%', padding: '0.5rem', borderRadius: '0.65rem',
+                  border: `0.5px solid ${planColors.border}`,
+                  background: 'transparent', color: planColors.text,
+                  fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer',
+                  marginTop: '0.25rem',
+                }}
+              >
+                {lang === 'es' ? 'Ver planes →' : 'View plans →'}
+              </button>
+            )}
+          </div>
+
         </div>
 
         {/* ── COLUMNA DERECHA — CHAT ── */}
         <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', position: 'sticky', top: 76 }}>
 
           {!checkedIn ? (
-            // Chat bloqueado
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>
               <div style={{ fontSize: '2.5rem' }}>💬</div>
               <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#A8A29E', textAlign: 'center', margin: 0 }}>
@@ -559,13 +686,14 @@ export function UserDashboard() {
           </div>
         </div>
       )}
+
       {/* ── MODAL MATCHING ── */}
-{showMatching && (
-  <MatchingModal
-    onClose={() => setShowMatching(false)}
-    onSuccess={handleMatchingSuccess}
-  />
-)}
+      {showMatching && (
+        <MatchingModal
+          onClose={() => setShowMatching(false)}
+          onSuccess={handleMatchingSuccess}
+        />
+      )}
     </div>
   )
 }
