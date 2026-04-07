@@ -1,0 +1,15 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'VITE_BACKEND_URL=${_VITE_BACKEND_URL}'
+      - '-t'
+      - 'gcr.io/eleveation-490611/elevation-mvp'
+      - '.'
+
+images:
+  - 'gcr.io/eleveation-490611/elevation-mvp'
+
+substitutions:
+  _VITE_BACKEND_URL: 'https://elevation-mvp-hef4b77upa-uc.a.run.app'
