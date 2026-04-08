@@ -107,18 +107,54 @@ Las grandes features pendientes son:
 - Flujo validado de punta a punta: form -> resultados IA -> usuario elige -> admin confirma
 - MatchingModal.tsx: 3 pasos (form, results, success), chips de seleccion, sugerencias con score y razon
 - backend/routes/matching.js: todos los endpoints completos y funcionales
-  - POST /api/matching/request — matching con Claude Haiku, top 3 sugerencias
-  - POST /api/matching/choose — usuario elige terapeuta
-  - GET /api/admin/matching/pending — lista para admin en AdminUsers
-  - POST /api/admin/matching/:id/confirm — admin asigna therapistId al usuario
-- AdminUsers.tsx — panel matching requests con boton amarillo y confirmacion
-- UserDashboard.tsx — widget Proxima Sesion muestra boton si no tiene terapeuta
+
+### Errores TS — CORREGIDOS (07/04/2026)
+- AdminDashboard.tsx: shadow removido del import de tokens
+- AdminPrompts.tsx: shadow removido del import de tokens
+- LoginPage.tsx: onboardingCompleted agregado al tipo del cast
+- Onboarding.tsx: APPROACHES, LANGUAGES, approach, language removidos (no usados)
+- PricingPage.tsx: const data -> await res.json() (variable no usada)
+- UserDashboard.tsx: useCallback removido del import
+- Build local: vite built in 904ms — LIMPIO
+
+---
+
+## DEPLOY A CLOUD RUN — BLOQUEADO (07/04/2026)
+
+### Estado actual
+- Cloud Build: SUCCESS en cada intento
+- Cloud Run deploy: FALLA — container failed to start on PORT=8080
+- Error exacto: MODULE_NOT_FOUND en chat.js:9 -> require('../utils/anthropic') -> require('@anthropic-ai/sdk')
+
+### Lo que se intentó
+1. npm install --legacy-peer-deps
+2. Eliminar package-lock.json + npm install --no-package-lock
+3. Downgrade @anthropic-ai/sdk de 0.79.0 a 0.36.3 (en package.json, pendiente de build)
+4. Dockerfile con paso de verificacion de modulos
+5. cloudbuild.yaml con VITE_BACKEND_URL como substitution
+
+### Diagnostico
+- El sdk se instala en el build (195 packages added) pero falla en runtime
+- El comando de verificacion node -e "require(...)" --prefix fallo por sintaxis incorrecta
+- La version 0.79.0 del SDK puede tener incompatibilidad con Node 20 en el contenedor
+
+### Plan para proxima sesion
+1. Confirmar que el build con sdk@0.36.3 se ejecuto (git pull + gcloud builds submit + deploy)
+2. Si sigue fallando: revisar server.js para ver si hay otro require que falle antes
+3. Alternativa: reemplazar @anthropic-ai/sdk por llamadas HTTP directas a la API de Anthropic
+4. Variables de entorno en Cloud Run: todas configuradas EXCEPTO FRONTEND_URL y PORT=8080
+
+### URLs de produccion
+- Cloud Run service: https://elevation-mvp-747531656650.us-central1.run.app
+- GCP project: eleveation-490611 (doble 'e')
+- Region: us-central1
+- Image: gcr.io/eleveation-490611/elevation-mvp
 
 ---
 
 ## Pendiente Sprint 9
 
-### Proximo a trabajar
+### Proximo a trabajar (despues de resolver deploy)
 
 1. HU-067 — Videollamada Daily.co (la mas pesada — 8 pts)
 2. HU-068 — Google Calendar sync (5 pts)
@@ -130,17 +166,12 @@ Las grandes features pendientes son:
 - El link de la sala se guarda en TherapySession.meetingUrl
 - Requiere cuenta Daily.co y DAILY_API_KEY en variables de entorno
 
-### HU-068 — Google Calendar sync
-- OAuth con Google Calendar API
-- Sincronizar sesiones agendadas con calendario del terapeuta
-
----
-
-## Lo que queda del Sprint 8
-
-- DT-002 — i18n backoffice + therapist (Alejo lo esta trabajando)
-  - Ver docs/hu-tecnicas/DT-002-TAREA-ALEJO.md
-  - Mauro revisa antes de hacer push
+### BD — Pendiente
+- Insertar prompt elevation_system_prompt en PromptVaults:
+```sql
+INSERT INTO "PromptVaults" (key, content, version, status, "isActive", "createdAt", "updatedAt")
+VALUES ('elevation_system_prompt', 'You are Elevation, an empathetic emotional wellness companion...', 1, 'active', true, NOW(), NOW());
+```
 
 ---
 
@@ -157,6 +188,8 @@ Las grandes features pendientes son:
 - planLimits.js es la fuente unica de verdad para limites por plan. -1 = ilimitado.
 - Planes se crean desde AdminContent -> tab Precios (no seed quemado)
 - Matching: Claude Haiku genera top 3 sugerencias, usuario elige, admin confirma
+- Deploy: Cloud Build + Cloud Run, imagen en gcr.io/eleveation-490611/elevation-mvp
+- GCS_KEY_FILE en Cloud Run apunta a ./gcs-credentials.json — resolver con Secret Manager en deuda tecnica
 
 ---
 
