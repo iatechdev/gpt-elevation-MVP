@@ -24,8 +24,10 @@ Las grandes features pendientes son:
 |---|---|---|---|---|
 | HU-077 | Sistema de planes y limitacion de usuarios | 5 | Critico | COMPLETADO |
 | HU-073 | Modal matching completo | 2 | Normal | COMPLETADO |
-| HU-067 | Videollamada Daily.co integrada | 8 | Alto | Pendiente |
+| HU-067 | Videollamada Daily.co integrada | 8 | Alto | COMPLETADO |
 | HU-068 | Google Calendar sync | 5 | Alto | Pendiente |
+
+**Puntos completados Sprint 9: 15/20**
 
 ---
 
@@ -47,6 +49,7 @@ Las grandes features pendientes son:
 | GCS_BUCKET_NAME | elevation-therapist-docs |
 | GCS_KEY_FILE | ./gcs-credentials.json |
 | FRONTEND_URL | https://elevation-mvp-747531656650.us-central1.run.app |
+| DAILY_API_KEY | pendiente — Alejo gestiona con cliente |
 
 ### Conexion Cloud SQL
 - Instancia registrada en Cloud Run: `eleveation-490611:us-south1:elevation-bd`
@@ -84,54 +87,71 @@ gcloud run deploy elevation-mvp --image gcr.io/eleveation-490611/elevation-mvp -
 ## Avances sesion 08/04/2026 (tarde)
 
 ### AdminPrompts — Creacion de prompts desde admin/superadmin — COMPLETADO
-- Boton "+ Nuevo prompt" visible para ambos roles
-- Superadmin crea y activa directo via POST /api/admin/prompt
-- Admin propone via POST /api/admin/prompt/propose (requiere aprobacion)
-- Key predefinido: elevation_system_prompt (Elevation — Prompt General)
-- Panel "Contenido activo" al seleccionar prompt — muestra texto desencriptado con colapso/expansion
-- Fix BD: UPDATE status = 'active' para elevation_system_prompt que estaba en 'approved'
-
 ### LoginPage — Design system tokens — COMPLETADO
-- Todos los colores hardcodeados migrados a tokens.ts
-- inputStyle extraido como constante local
-- Sin cambios funcionales
-
-### Auth — Ciclo de vida de usuario definido e implementado — COMPLETADO
-Definicion de estados:
-- Activo (active: true): puede hacer login normalmente
-- Desactivado (active: false): NO puede hacer login, SI puede reactivarse registrandose de nuevo
-- Eliminado (destroy()): borrado fisico permanente, solo superadmin
-
-Cambios en backend/routes/auth.js:
-- POST /api/register: si email existe con active=false, reactiva el usuario con nuevos datos (nombre + password)
-- POST /api/login: bloquea usuarios con active=false con mensaje que indica como reactivarse
-- Validacion de campos vacios en register
-
+### Auth — Ciclo de vida de usuario — COMPLETADO
 ### Eliminacion de usuarios — COMPLETADO
-- DELETE /api/admin/usuarios/:id — solo superadmin
-- Protecciones: no puede eliminar su propio usuario, no puede eliminar otro superadmin
-- Frontend: boton "Eliminar permanentemente" solo visible para superadmin en panel lateral
-- Modal de confirmacion con triple friccion: muestra nombre+email, requiere escribir nombre exacto para habilitar boton
-
 ### Mood labels — COMPLETADO
-- Textos de emociones actualizados en es.ts y en.ts
-- ES: Muy mal / No tan bien / Neutral / Bien / Muy bien
-- EN: Very bad / Not so good / Neutral / Good / Very good
-- Subido directamente al repo por Claude
+
+---
+
+## Avances sesion 08/04/2026 (noche)
+
+### BUG CRITICO — Chat caido en produccion — RESUELTO
+- Error: AuthenticationError 401 invalid x-api-key en /api/chat
+- Causa: ANTHROPIC_API_KEY invalida/vencida en Cloud Run
+- Solucion: regenerar key en console.anthropic.com + redeploy con nueva revision en Cloud Run
+- Chat funcionando correctamente post-fix
+
+### HU-067 — Videollamada Daily.co — COMPLETADO
+Archivos entregados:
+- `backend/routes/sessions.js` — 3 endpoints nuevos:
+  - POST /api/sessions/therapist/:id/start — crea sala Daily.co (mock si no hay DAILY_API_KEY)
+  - POST /api/sessions/therapist/:id/end — cierra sesion, guarda nota + mood, genera recomendacion IA
+  - GET /api/sessions/user/:id/join — retorna meetingUrl al paciente (valida ownership)
+- `frontend/src/pages/therapist/SessionRoom.tsx` — sala completa: iframe Daily.co + sidebar notas en vivo (auto-save 2s) + timer + modal checkout con mood selector
+- `frontend/src/pages/user/SessionRoom.tsx` — vista paciente: iframe + estados (esperando/conectando)
+- `frontend/src/App.tsx` — rutas nuevas: /therapist/session/:id (fuera de TherapistLayout — full screen) + /app/session/:id
+- `frontend/src/pages/therapist/TherapistDashboard.tsx` — seccion "Proximas sesiones" + boton "Iniciar sesion" en card de paciente
+- `frontend/src/pages/therapist/TherapistPatient.tsx` — boton "Agendar sesion" + modal con datetime-local + selector duracion (30/45/50/60/90 min)
+
+Logica del boton videollamada en UserDashboard:
+- status in_progress → boton verde "Entrar a videollamada" activo → navega a /app/session/:id
+- scheduled + menos de 15 min → boton amarillo "La sesion esta por comenzar" → navigable
+- scheduled + mas de 15 min → mensaje informativo, sin boton clickeable
+
+DAILY_API_KEY: modo mock activo (genera URL simulada) hasta que Alejo entregue key real del cliente.
+Cuando llegue la key: agregarla en Cloud Run como variable DAILY_API_KEY y hacer redeploy.
+
+### DT-002 — i18n backoffice y terapeuta — COMPLETADO (merge commit Alejo 28c2088)
+- 49 claves nuevas en es.ts y en.ts (Admin + Therapist)
+- AdminDashboard, AdminUsers, AdminContent, AdminMetrics, AdminPrompts — useLanguage() aplicado
+- TherapistDashboard, TherapistPatient — claves disponibles
+
+### TherapistPatient.tsx — Design system tokens — COMPLETADO
+- Migrado completamente a tokens.ts (colors, radius, shadow, spacing, typography)
+- btnPrimaryStyle / btnSecondaryStyle importados desde tokens
+- Textos traducidos al espanol (coherente con UX del terapeuta)
+- Cards, inputs, selects y modales con estilos unificados del DS
+
+### Dominio elevation-ia.com — EN PROCESO
+- Dominio comprado en GoDaddy
+- Pendiente: configurar Domain Mapping en Cloud Run + registros DNS en GoDaddy
+- Guia entregada: registros A + AAAA de Google + CNAME www
 
 ---
 
 ## Pendiente Sprint 9
 
 ### Proximo a trabajar
-
-1. HU-067 — Videollamada Daily.co (8 pts) — requiere DAILY_API_KEY lista
-2. HU-068 — Google Calendar sync (5 pts)
+1. HU-068 — Google Calendar sync (5 pts) — requiere Google OAuth configurado en GCP
+2. Dominio elevation-ia.com — configuracion DNS + Domain Mapping Cloud Run
+3. DAILY_API_KEY — agregar cuando Alejo entregue key del cliente
 
 ### Deuda tecnica pendiente
 - GCS_KEY_FILE apunta a ./gcs-credentials.json — resolver con Secret Manager
 - backend/message.js (minuscula) es archivo zombie — limpiar en proximo sprint
 - Seguridad BD: evaluar mover instancia a us-central1 para usar Cloud SQL Proxy correctamente
+- i18n terapeuta: aplicar claves DT-002 en componentes (claves ya existen en es.ts/en.ts)
 
 ---
 
@@ -147,7 +167,11 @@ Cambios en backend/routes/auth.js:
 - Deploy: Cloud Build + Cloud Run, imagen en gcr.io/eleveation-490611/elevation-mvp
 - Usuario desactivado puede reactivarse registrandose con el mismo email
 - Eliminacion fisica solo para superadmin, con confirmacion por nombre exacto
+- SessionRoom del terapeuta va fuera de TherapistLayout (pantalla completa sin sidebar)
+- DAILY_API_KEY ausente activa modo mock automaticamente — no rompe el flujo
+- Matching: admin aprueba la asignacion, terapeuta ve nuevo paciente en su lista
+- Dominio: elevation-ia.com (GoDaddy) → Cloud Run Domain Mapping con HTTPS automatico de Google
 
 ---
 
-*Actualizado: 8 de abril de 2026 (sesion tarde) — Claude (Tech Lead AI) + Mauro Roldan*
+*Actualizado: 8 de abril de 2026 (sesion noche) — Claude (Tech Lead AI) + Mauro Roldan*
