@@ -1,17 +1,15 @@
 FROM node:20-slim
 
-WORKDIR /app/backend
+WORKDIR /app
 
 ARG VITE_BACKEND_URL
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 
-COPY backend/package.json ./
-RUN npm install --no-package-lock
-
-WORKDIR /app
 COPY . .
 
-RUN rm -f backend/.env
+RUN rm -f backend/.env backend/package-lock.json
+
+RUN cd backend && npm install --no-package-lock
 
 RUN cd frontend && npm install --legacy-peer-deps && npm run build
 
