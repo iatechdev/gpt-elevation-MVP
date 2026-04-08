@@ -1,5 +1,6 @@
 // backend/routes/sessions.js
 // HU-066 — TherapySession CRUD endpoints
+// HU-067 — Daily.co videocall: start, end, join
 
 const express = require('express');
 const router  = express.Router();
@@ -317,6 +318,177 @@ router.get('/user/my-therapist', async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching my-therapist:', error);
     res.status(500).json({ error: 'Could not fetch therapist info.' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-067 — Daily.co Videocall
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Helper — crea sala en Daily.co o retorna URL mock si no hay API key configurada
+const createDailyRoom = async (therapistId, patientId, sessionId) => {
+  const roomName = `elevation-${therapistId}-${patientId}-${sessionId}`;
+
+  if (!process.env.DAILY_API_KEY) {
+    // Modo mock — para desarrollo local sin API key
+    console.warn('⚠️  DAILY_API_KEY not set — using mock meeting URL');
+    return `https://mock.daily.co/${roomName}`;
+  }
+
+  const response = await fetch('https://api.daily.co/v1/rooms', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.DAILY_API_KEY}`,
+    },
+    body: JSON.stringify({
+      name: roomName,
+      properties: {
+        exp: Math.round(Date.now() / 1000) + 7200, // expira en 2 horas
+        enable_chat: true,
+        start_video_off: false,
+        start_audio_off: false,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(`Daily.co error: ${err.error || response.status}`);
+  }
+
+  const room = await response.json();
+  return room.url;
+};
+
+// POST /api/sessions/therapist/:id/start — iniciar videollamada
+router.post('/therapist/:id/start', async (req, res) => {
+  const TherapySession = require('../TherapySession');
+  try {
+    if (req.user.role !== 'therapist') {
+      return res.status(403).json({ error: 'Therapists only.' });
+    }
+    const session = await TherapySession.findOne({
+      where: { id: req.params.id, therapistId: req.user.id },
+    });
+    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (session.status !== 'scheduled') {
+      return res.status(400).json({ error: `Cannot start a session with status '${session.status}'.` });
+    }
+
+    const meetingUrl = await createDailyRoom(req.user.id, session.patientId, session.id);
+
+    await session.update({
+      status:     'in_progress',
+      startedAt:  new Date(),
+      meetingUrl,
+    });
+
+    console.log(`✅ Session ${session.id} started — room: ${meetingUrl}`);
+    res.json({ meetingUrl, sessionId: session.id });
+  } catch (error) {
+    console.error('❌ Error starting session:', error);
+    res.status(500).json({ error: 'Could not start session.' });
+  }
+});
+
+// POST /api/sessions/therapist/:id/end — finalizar videollamada con checkout
+router.post('/therapist/:id/end', async (req, res) => {
+  const TherapySession         = require('../TherapySession');
+  const WellnessRecommendation = require('../WellnessRecommendation');
+  const User                   = require('../User');
+  const anthropic               = require('../utils/anthropic');
+  try {
+    if (req.user.role !== 'therapist') {
+      return res.status(403).json({ error: 'Therapists only.' });
+    }
+    const session = await TherapySession.findOne({
+      where: { id: req.params.id, therapistId: req.user.id },
+    });
+    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (session.status !== 'in_progress') {
+      return res.status(400).json({ error: `Cannot end a session with status '${session.status}'.` });
+    }
+
+    const { therapistNote, patientMoodAfter } = req.body;
+    if (!therapistNote || therapistNote.trim().length < 10) {
+      return res.status(400).json({ error: 'therapistNote must be at least 10 characters.' });
+    }
+    if (patientMoodAfter === undefined || patientMoodAfter < 1 || patientMoodAfter > 5) {
+      return res.status(400).json({ error: 'patientMoodAfter must be between 1 and 5.' });
+    }
+
+    await session.update({
+      status:           'completed',
+      endedAt:          new Date(),
+      therapistNote:    encriptar(therapistNote),
+      patientMoodAfter: Number(patientMoodAfter),
+    });
+
+    // Generar recomendación IA para el paciente (silent fail si Anthropic falla)
+    let recommendation = null;
+    try {
+      const patient = await User.findByPk(session.patientId, { attributes: ['name'] });
+      const moodLabels = { 1: 'muy mal', 2: 'no tan bien', 3: 'neutral', 4: 'bien', 5: 'muy bien' };
+      const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
+
+      const aiResponse = await anthropic.messages.create({
+        model:      'claude-3-haiku-20240307',
+        max_tokens: 400,
+        system:     'Eres un asistente de bienestar empático de Elevation. Genera recomendaciones breves, cálidas y accionables para el paciente después de su sesión de terapia. Responde SOLO con la recomendación, sin preámbulo.',
+        messages: [{
+          role:    'user',
+          content: `El paciente ${patient?.name ?? 'el usuario'} terminó una sesión de terapia sintiéndose ${moodLabel}. La nota del terapeuta indica: "${therapistNote.substring(0, 200)}". Genera una recomendación de bienestar breve (máximo 3 oraciones) para ayudarle en las próximas horas.`,
+        }],
+      });
+
+      const content = aiResponse.content[0]?.text ?? '';
+      if (content) {
+        recommendation = await WellnessRecommendation.create({
+          UserId:      session.patientId,
+          content:     encriptar(content),
+          category:    'reflection',
+          generatedAt: new Date(),
+        });
+      }
+    } catch (aiErr) {
+      console.error('⚠️  Could not generate post-session recommendation:', aiErr.message);
+      // Silent fail — la sesión ya quedó guardada correctamente
+    }
+
+    console.log(`✅ Session ${session.id} completed`);
+    res.json({
+      message: 'Session completed.',
+      session: session.toJSON(),
+      recommendation: recommendation ? { id: recommendation.id } : null,
+    });
+  } catch (error) {
+    console.error('❌ Error ending session:', error);
+    res.status(500).json({ error: 'Could not end session.' });
+  }
+});
+
+// GET /api/sessions/user/:id/join — el paciente obtiene el meetingUrl de su sesión
+router.get('/user/:id/join', async (req, res) => {
+  const TherapySession = require('../TherapySession');
+  try {
+    if (req.user.role !== 'user') {
+      return res.status(403).json({ error: 'Users only.' });
+    }
+    const session = await TherapySession.findOne({
+      where: { id: req.params.id, patientId: req.user.id },
+    });
+    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (session.status !== 'in_progress') {
+      return res.status(400).json({ error: 'Session has not started yet.' });
+    }
+    if (!session.meetingUrl) {
+      return res.status(400).json({ error: 'Meeting URL not available yet.' });
+    }
+    res.json({ meetingUrl: session.meetingUrl, sessionId: session.id });
+  } catch (error) {
+    console.error('❌ Error joining session:', error);
+    res.status(500).json({ error: 'Could not join session.' });
   }
 });
 

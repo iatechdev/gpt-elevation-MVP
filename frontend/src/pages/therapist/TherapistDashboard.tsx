@@ -1,4 +1,4 @@
-// HU-046 + HU-049 + HU-062 + HU-065 — Therapist dashboard
+// HU-046 + HU-049 + HU-062 + HU-065 + HU-067 — Therapist dashboard
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -39,7 +39,7 @@ interface PromptData {
     proposed_by: string
     createdAt: string
   } | null
-   rejected: {
+  rejected: {
     id: number
     version: number
     rejected_by: string
@@ -48,7 +48,6 @@ interface PromptData {
   } | null
 }
 
-// HU-065 — Alert types
 interface InactivePatient {
   userId: number
   name: string
@@ -66,7 +65,6 @@ interface AlertsData {
   notableProgress: NotableProgress[]
 }
 
-// HU-075 — Validation types
 interface ValidationDoc {
   id: number
   documentType: 'titulo' | 'certificado' | 'colegiado' | 'otro'
@@ -77,11 +75,20 @@ interface ValidationDoc {
   reviewedAt: string | null
 }
 
+// HU-067 — upcoming session shape
+interface UpcomingSession {
+  id: number
+  patientId: number
+  scheduledAt: string
+  duration: number
+  status: string
+  patientName: string
+}
+
 const MOOD_EMOJI: Record<number, string> = {
   1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
 }
 
-// HU-062 — Badge config
 const TREND_BADGE: Record<string, { label: string; bg: string; color: string; icon: string }> = {
   improving: { label: 'Improving', bg: '#EAF0E6', color: '#4A6741', icon: '📈' },
   stable:    { label: 'Stable',    bg: '#E0F2FE', color: '#0369A1', icon: '📊' },
@@ -95,25 +102,28 @@ export function TherapistDashboard() {
   const [error, setError]       = useState('')
 
   // Prompt state
-  const [promptData, setPromptData]             = useState<PromptData | null>(null)
-  const [promptLoading, setPromptLoading]       = useState(true)
+  const [promptData, setPromptData]               = useState<PromptData | null>(null)
+  const [promptLoading, setPromptLoading]         = useState(true)
   const [showPromptSection, setShowPromptSection] = useState(false)
   const [showProposeModal, setShowProposeModal]   = useState(false)
   const [newPromptContent, setNewPromptContent]   = useState('')
-  const [proposing, setProposing]               = useState(false)
-  const [proposeError, setProposeError]         = useState('')
-  const [proposeSuccess, setProposeSuccess]     = useState('')
+  const [proposing, setProposing]                 = useState(false)
+  const [proposeError, setProposeError]           = useState('')
+  const [proposeSuccess, setProposeSuccess]       = useState('')
 
-  // HU-065 — Alerts state
-  const [alerts, setAlerts]           = useState<AlertsData | null>(null)
+  // Alerts state
+  const [alerts, setAlerts]               = useState<AlertsData | null>(null)
   const [alertsLoading, setAlertsLoading] = useState(true)
 
-    // HU-075 — Validation state
-  const [validations, setValidations]         = useState<ValidationDoc[]>([])
+  // Validation state
+  const [validations, setValidations]                     = useState<ValidationDoc[]>([])
   const [showValidationSection, setShowValidationSection] = useState(false)
-  const [uploadingDoc, setUploadingDoc]       = useState(false)
-  const [uploadMsg, setUploadMsg]             = useState('')
-  const [selectedDocType, setSelectedDocType] = useState<string>('titulo')
+  const [uploadingDoc, setUploadingDoc]                   = useState(false)
+  const [uploadMsg, setUploadMsg]                         = useState('')
+  const [selectedDocType, setSelectedDocType]             = useState<string>('titulo')
+
+  // HU-067 — upcoming sessions
+  const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([])
 
   // Fetch patients
   useEffect(() => {
@@ -123,8 +133,7 @@ export function TherapistDashboard() {
           headers: { Authorization: `Bearer ${getToken()}` },
         })
         if (!res.ok) throw new Error()
-        const data = await res.json()
-        setPatients(data)
+        setPatients(await res.json())
       } catch {
         setError('Could not load your patients.')
       } finally {
@@ -132,6 +141,22 @@ export function TherapistDashboard() {
       }
     }
     fetchPatients()
+  }, [])
+
+  // HU-067 — fetch upcoming sessions
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        const res = await fetch(`${API}/api/sessions/therapist/upcoming`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        })
+        if (!res.ok) throw new Error()
+        setUpcomingSessions(await res.json())
+      } catch {
+        // non-blocking
+      }
+    }
+    fetchUpcoming()
   }, [])
 
   // Fetch prompt
@@ -142,8 +167,7 @@ export function TherapistDashboard() {
           headers: { Authorization: `Bearer ${getToken()}` },
         })
         if (!res.ok) throw new Error()
-        const data = await res.json()
-        setPromptData(data)
+        setPromptData(await res.json())
       } catch {
         // non-blocking
       } finally {
@@ -153,7 +177,7 @@ export function TherapistDashboard() {
     fetchPrompt()
   }, [])
 
-  // HU-065 — Fetch alerts
+  // Fetch alerts
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
@@ -161,8 +185,7 @@ export function TherapistDashboard() {
           headers: { Authorization: `Bearer ${getToken()}` },
         })
         if (!res.ok) throw new Error()
-        const data = await res.json()
-        setAlerts(data)
+        setAlerts(await res.json())
       } catch {
         // non-blocking
       } finally {
@@ -171,6 +194,26 @@ export function TherapistDashboard() {
     }
     fetchAlerts()
   }, [])
+
+  // Fetch validations
+  useEffect(() => {
+    const fetchValidations = async () => {
+      try {
+        const res = await fetch(`${API}/api/therapist/validation/status`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        })
+        if (!res.ok) throw new Error()
+        setValidations(await res.json())
+      } catch {
+        // non-blocking
+      }
+    }
+    fetchValidations()
+  }, [])
+
+  // HU-067 — helper: dado un patientId, retorna la sesión scheduled más próxima (si existe)
+  const getNextSessionForPatient = (patientId: number): UpcomingSession | null =>
+    upcomingSessions.find(s => s.patientId === patientId) ?? null
 
   const handleProposePrompt = async () => {
     setProposeError('')
@@ -187,10 +230,7 @@ export function TherapistDashboard() {
         body: JSON.stringify({ content: newPromptContent }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setProposeError(data.error || 'Error submitting prompt.')
-        return
-      }
+      if (!res.ok) { setProposeError(data.error || 'Error submitting prompt.'); return }
       setProposeSuccess('Prompt submitted for review. A superadmin will approve it shortly.')
       setNewPromptContent('')
       const refreshRes = await fetch(`${API}/api/therapist/prompt`, {
@@ -204,22 +244,6 @@ export function TherapistDashboard() {
       setProposing(false)
     }
   }
-
-  // HU-075 — Fetch validation status
-  useEffect(() => {
-    const fetchValidations = async () => {
-      try {
-        const res = await fetch(`${API}/api/therapist/validation/status`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setValidations(await res.json())
-      } catch {
-        // non-blocking
-      }
-    }
-    fetchValidations()
-  }, [])
 
   const handleUploadDoc = async (file: File) => {
     setUploadingDoc(true)
@@ -236,7 +260,6 @@ export function TherapistDashboard() {
       const data = await res.json()
       if (!res.ok) return setUploadMsg(data.error ?? 'Error subiendo documento.')
       setUploadMsg('✓ Documento subido. La Junta lo revisará pronto.')
-      // Refrescar lista
       const r2 = await fetch(`${API}/api/therapist/validation/status`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
@@ -273,7 +296,12 @@ export function TherapistDashboard() {
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
 
-  // HU-065 — total alert count
+  const formatSessionTime = (iso: string) =>
+    new Date(iso).toLocaleString('es-CO', {
+      weekday: 'short', day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit',
+    })
+
   const totalAlerts = (alerts?.inactivePatients.length ?? 0) + (alerts?.notableProgress.length ?? 0)
 
   return (
@@ -304,7 +332,63 @@ export function TherapistDashboard() {
         ))}
       </div>
 
-{/* HU-075 — VALIDACIÓN ACADÉMICA */}
+      {/* HU-067 — PRÓXIMAS SESIONES */}
+      {upcomingSessions.length > 0 && (
+        <div style={{ ...cardStyle, marginBottom: '2rem' }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+            🎥 Próximas sesiones
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {upcomingSessions.map(session => {
+              const isNow = (() => {
+                const diff = new Date(session.scheduledAt).getTime() - Date.now()
+                return diff <= 15 * 60 * 1000 && diff >= -session.duration * 60 * 1000
+              })()
+              return (
+                <div key={session.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  gap: '1rem', flexWrap: 'wrap',
+                  padding: '0.75rem 1rem',
+                  background: isNow ? '#EAF0E6' : '#F5F3EF',
+                  borderRadius: '0.65rem',
+                  border: isNow ? '1px solid #A8B5A2' : '1px solid transparent',
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.9rem' }}>
+                      {session.patientName}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#78716C', marginTop: '0.15rem' }}>
+                      {formatSessionTime(session.scheduledAt)} · {session.duration} min
+                      {isNow && (
+                        <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 700, color: '#4A6741', background: '#C6D4BF', padding: '0.1rem 0.45rem', borderRadius: 999 }}>
+                          AHORA
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/therapist/session/${session.id}`)}
+                    style={{
+                      padding: '0.5rem 1.1rem',
+                      background: isNow ? '#6B7D5C' : 'transparent',
+                      border: isNow ? 'none' : '0.5px solid #6B7D5C',
+                      borderRadius: '0.65rem',
+                      color: isNow ? '#fff' : '#6B7D5C',
+                      fontSize: '0.82rem', fontWeight: 500,
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {isNow ? '▶ Iniciar sesión' : 'Ver sesión'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VALIDACIÓN ACADÉMICA */}
       <div style={{ ...cardStyle, marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
@@ -330,8 +414,6 @@ export function TherapistDashboard() {
 
         {showValidationSection && (
           <div style={{ marginTop: '1.25rem' }}>
-
-            {/* Lista de documentos enviados */}
             {validations.length > 0 && (
               <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {validations.map(v => (
@@ -342,9 +424,7 @@ export function TherapistDashboard() {
                     display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem',
                   }}>
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>
-                        {v.documentName}
-                      </div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>{v.documentName}</div>
                       <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.15rem' }}>
                         {v.documentType} · {new Date(v.submittedAt).toLocaleDateString('es-CO')}
                       </div>
@@ -355,7 +435,8 @@ export function TherapistDashboard() {
                       )}
                     </div>
                     <span style={{
-                      fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap', padding: '0.15rem 0.6rem', borderRadius: 999,
+                      fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap',
+                      padding: '0.15rem 0.6rem', borderRadius: 999,
                       background: v.status === 'approved' ? '#6B7D5C' : v.status === 'rejected' ? '#DC2626' : '#92400E',
                       color: '#fff',
                     }}>
@@ -365,8 +446,6 @@ export function TherapistDashboard() {
                 ))}
               </div>
             )}
-
-            {/* Formulario subir documento */}
             {!validations.some(v => v.status === 'approved') && (
               <div style={{ padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
                 <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
@@ -388,7 +467,8 @@ export function TherapistDashboard() {
                     </select>
                   </div>
                   <label style={{
-                    padding: '0.5rem 1rem', background: uploadingDoc ? '#A8B5A2' : '#6B7D5C',
+                    padding: '0.5rem 1rem',
+                    background: uploadingDoc ? '#A8B5A2' : '#6B7D5C',
                     color: '#fff', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500,
                     cursor: uploadingDoc ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
                   }}>
@@ -413,7 +493,7 @@ export function TherapistDashboard() {
         )}
       </div>
 
-      {/* HU-049 — MY THERAPEUTIC PROMPT */}
+      {/* MY THERAPEUTIC PROMPT */}
       {!promptLoading && (
         <div style={{ ...cardStyle, marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -455,7 +535,6 @@ export function TherapistDashboard() {
             </div>
           </div>
 
-          {/* Banner rechazo — una sola vez, siempre visible */}
           {promptData?.rejected && !promptData?.active && !promptData?.pending && (
             <div style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: '#FEE2E2', border: '0.5px solid #FCA5A5', borderRadius: '0.65rem' }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#DC2626', marginBottom: '0.25rem' }}>
@@ -472,7 +551,6 @@ export function TherapistDashboard() {
             </div>
           )}
 
-          {/* Prompt activo expandido */}
           {showPromptSection && promptData?.content && (
             <div style={{ marginTop: '1rem', padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
               <p style={{ fontSize: '0.875rem', color: '#1C1917', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
@@ -487,7 +565,7 @@ export function TherapistDashboard() {
       {loading && <p style={{ color: '#78716C', fontSize: '0.875rem' }}>Loading patients...</p>}
       {error   && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{error}</p>}
 
-      {/* HU-065 — TWO COLUMN LAYOUT: patients + alerts */}
+      {/* TWO COLUMN LAYOUT: patients + alerts */}
       {!loading && !error && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1.5rem', alignItems: 'start' }}>
 
@@ -503,7 +581,9 @@ export function TherapistDashboard() {
                 const daysSince = p.lastMood
                   ? Math.floor((Date.now() - new Date(p.lastMood.date).getTime()) / (1000 * 60 * 60 * 24))
                   : null
-                const trendBadge = p.trend ? TREND_BADGE[p.trend] : null
+                const trendBadge    = p.trend ? TREND_BADGE[p.trend] : null
+                // HU-067 — sesión próxima para este paciente
+                const nextSession   = getNextSessionForPatient(p.id)
 
                 return (
                   <div key={p.id} style={{
@@ -538,6 +618,16 @@ export function TherapistDashboard() {
                               {trendBadge.icon} {trendBadge.label}
                             </span>
                           )}
+                          {/* HU-067 — badge sesión próxima */}
+                          {nextSession && (
+                            <span style={{
+                              fontSize: '0.7rem', fontWeight: 600,
+                              background: '#E0F2FE', color: '#0369A1',
+                              padding: '0.15rem 0.55rem', borderRadius: '999px',
+                            }}>
+                              📅 {formatSessionTime(nextSession.scheduledAt)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -549,24 +639,42 @@ export function TherapistDashboard() {
                       )}
                     </div>
 
-                    <button
-                      onClick={() => navigate(`/therapist/patient/${p.id}`)}
-                      style={{
-                        padding: '0.5rem 1.1rem', background: 'transparent',
-                        border: '0.5px solid #6B7D5C', borderRadius: '0.85rem',
-                        color: '#6B7D5C', fontSize: '0.82rem', fontWeight: 500,
-                        cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
-                      }}
-                    >
-                      View history
-                    </button>
+                    {/* HU-067 — botones acción */}
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {nextSession && (
+                        <button
+                          onClick={() => navigate(`/therapist/session/${nextSession.id}`)}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            background: '#6B7D5C', border: 'none',
+                            borderRadius: '0.85rem',
+                            color: '#fff', fontSize: '0.82rem', fontWeight: 500,
+                            cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
+                          }}
+                        >
+                          ▶ Iniciar sesión
+                        </button>
+                      )}
+                      <button
+                        onClick={() => navigate(`/therapist/patient/${p.id}`)}
+                        style={{
+                          padding: '0.5rem 1.1rem',
+                          background: 'transparent', border: '0.5px solid #6B7D5C',
+                          borderRadius: '0.85rem',
+                          color: '#6B7D5C', fontSize: '0.82rem', fontWeight: 500,
+                          cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        View history
+                      </button>
+                    </div>
                   </div>
                 )
               })
             )}
           </div>
 
-          {/* COLUMNA DERECHA — HU-065 ALERTS PANEL */}
+          {/* COLUMNA DERECHA — ALERTS PANEL */}
           <div style={{ ...cardStyle, position: 'sticky', top: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -588,13 +696,8 @@ export function TherapistDashboard() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-
-                {/* Alerta 1 — Inactivos */}
                 {alerts?.inactivePatients.map(p => (
-                  <div key={p.userId} style={{
-                    padding: '0.75rem', borderRadius: '0.65rem',
-                    background: '#FEF3C7', border: '0.5px solid #FCD34D',
-                  }}>
+                  <div key={p.userId} style={{ padding: '0.75rem', borderRadius: '0.65rem', background: '#FEF3C7', border: '0.5px solid #FCD34D' }}>
                     <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E', marginBottom: '0.2rem' }}>
                       ⚠️ {p.name} — no activity
                     </div>
@@ -605,13 +708,8 @@ export function TherapistDashboard() {
                     </div>
                   </div>
                 ))}
-
-                {/* Alerta 2 — Progreso notable */}
                 {alerts?.notableProgress.map(p => (
-                  <div key={p.userId} style={{
-                    padding: '0.75rem', borderRadius: '0.65rem',
-                    background: '#EAF0E6', border: '0.5px solid #A8B5A2',
-                  }}>
+                  <div key={p.userId} style={{ padding: '0.75rem', borderRadius: '0.65rem', background: '#EAF0E6', border: '0.5px solid #A8B5A2' }}>
                     <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#4A6741', marginBottom: '0.2rem' }}>
                       ✅ Notable progress
                     </div>
@@ -620,12 +718,7 @@ export function TherapistDashboard() {
                     </div>
                   </div>
                 ))}
-
-                {/* Alerta 3 — Recomendación pendiente (placeholder) */}
-                <div style={{
-                  padding: '0.75rem', borderRadius: '0.65rem',
-                  background: '#E0F2FE', border: '0.5px solid #7DD3FC',
-                }}>
+                <div style={{ padding: '0.75rem', borderRadius: '0.65rem', background: '#E0F2FE', border: '0.5px solid #7DD3FC' }}>
                   <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#0369A1', marginBottom: '0.2rem' }}>
                     ℹ️ AI recommendations
                   </div>
@@ -633,7 +726,6 @@ export function TherapistDashboard() {
                     Approval flow available in Sprint 7
                   </div>
                 </div>
-
               </div>
             )}
           </div>
@@ -665,7 +757,7 @@ export function TherapistDashboard() {
             <textarea
               value={newPromptContent}
               onChange={e => setNewPromptContent(e.target.value)}
-              placeholder="You are a therapeutic companion specialized in mindfulness and emotional regulation. Your approach is warm and non-directive..."
+              placeholder="You are a therapeutic companion specialized in mindfulness and emotional regulation..."
               rows={8}
               style={{
                 width: '100%', padding: '0.75rem', borderRadius: '0.65rem',
@@ -675,7 +767,7 @@ export function TherapistDashboard() {
               }}
             />
             <div style={{ fontSize: '0.72rem', color: '#A8B5A2', marginTop: '0.35rem', marginBottom: '1.25rem' }}>
-              {newPromptContent.length} characters {newPromptContent.length < 50 ? `(minimum 50)` : '✓'}
+              {newPromptContent.length} characters {newPromptContent.length < 50 ? '(minimum 50)' : '✓'}
             </div>
 
             <button

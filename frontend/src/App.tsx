@@ -16,6 +16,8 @@ import { AdminRoute }     from './components/AdminRoute.tsx'
 import { TherapistLayout }    from './layouts/TherapistLayout.tsx'
 import { TherapistDashboard } from './pages/therapist/TherapistDashboard.tsx'
 import { TherapistPatient }   from './pages/therapist/TherapistPatient.tsx'
+import { SessionRoom }        from './pages/therapist/SessionRoom.tsx'
+import { UserSessionRoom }    from './pages/user/SessionRoom.tsx'
 import { TherapistRoute }     from './components/TherapistRoute.tsx'
 import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
@@ -24,7 +26,6 @@ import { Onboarding }    from './pages/Onboarding.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
-
 
 export default function App() {
   return (
@@ -43,6 +44,8 @@ export default function App() {
         <Route path="/app/progress"     element={<UserProgress />} />
         <Route path="/app/dashboard"    element={<UserDashboard />} />
         <Route path="/app/my-therapist" element={<MyTherapist />} />
+        {/* HU-067 — sala de videollamada para el paciente */}
+        <Route path="/app/session/:id"  element={<UserSessionRoom />} />
       </Route>
 
       {/* Admin backoffice */}
@@ -66,6 +69,8 @@ export default function App() {
           <Route path="/therapist/dashboard"   element={<TherapistDashboard />} />
           <Route path="/therapist/patient/:id" element={<TherapistPatient />} />
         </Route>
+        {/* HU-067 — sala de videollamada (fuera del layout, pantalla completa) */}
+        <Route path="/therapist/session/:id" element={<SessionRoom />} />
       </Route>
 
       {/* Ethics Board */}

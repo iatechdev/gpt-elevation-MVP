@@ -1,7 +1,13 @@
-// HU-046 + HU-050 — Patient emotional history + clinical notes + AI summary
+// HU-046 + HU-050 + HU-067 — Patient history + clinical notes + AI summary + schedule session
+// HU-076 — Design system tokens aplicados
 
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import {
+  colors, radius, shadow, spacing, typography,
+  cardStyle as card, labelStyle,
+  btnPrimaryStyle, btnSecondaryStyle,
+} from '../../styles/tokens'
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -55,9 +61,56 @@ const NOTE_TYPE_LABEL: Record<string, string> = {
 }
 
 const NOTE_TYPE_COLOR: Record<string, { bg: string; color: string }> = {
-  session_note: { bg: '#EAF0E6', color: '#4A6741' },
-  observation:  { bg: '#E0F2FE', color: '#0369A1' },
-  goal:         { bg: '#FEF3C7', color: '#92400E' },
+  session_note: { bg: colors.primaryLight,  color: colors.primaryDark },
+  observation:  { bg: colors.infoLight,     color: colors.info },
+  goal:         { bg: colors.warningLight,  color: colors.warning },
+}
+
+const minDateTime = () => {
+  const d = new Date(Date.now() + 5 * 60 * 1000)
+  return d.toISOString().slice(0, 16)
+}
+
+// ── Estilos locales usando tokens ─────────────────────────────────────────────
+const cardStyle: React.CSSProperties = {
+  background:   colors.bgMuted,
+  borderRadius: radius.lg,
+  border:       `0.5px solid ${colors.borderLight}`,
+  boxShadow:    shadow.card,
+  padding:      `${spacing.lg} ${spacing.xl}`,
+}
+
+const rowStyle: React.CSSProperties = {
+  display:       'flex',
+  alignItems:    'center',
+  justifyContent:'space-between',
+  padding:       `${spacing.md} ${spacing.lg}`,
+  background:    colors.bgMuted,
+  borderRadius:  radius.md,
+}
+
+const inputStyle: React.CSSProperties = {
+  width:        '100%',
+  padding:      `${spacing.md} ${spacing.md}`,
+  border:       `0.5px solid ${colors.borderLight}`,
+  borderRadius: radius.md,
+  fontSize:     13,
+  fontFamily:   typography.fontBody,
+  color:        colors.text,
+  outline:      'none',
+  boxSizing:    'border-box' as const,
+  background:   colors.bgCard,
+}
+
+const selStyle: React.CSSProperties = {
+  padding:      `${spacing.sm} ${spacing.md}`,
+  borderRadius: radius.md,
+  border:       `0.5px solid ${colors.border}`,
+  background:   colors.bgCard,
+  fontSize:     13,
+  color:        colors.text,
+  fontFamily:   typography.fontBody,
+  cursor:       'pointer',
 }
 
 export function TherapistPatient() {
@@ -72,24 +125,63 @@ export function TherapistPatient() {
   const [error,    setError]    = useState('')
 
   // AI Summary
-  const [aiSummary,        setAiSummary]        = useState<AISummary | null>(null)
+  const [aiSummary,         setAiSummary]        = useState<AISummary | null>(null)
   const [generatingSummary, setGeneratingSummary] = useState(false)
 
   // Note form
-  const [showNoteForm,  setShowNoteForm]  = useState(false)
-  const [noteContent,   setNoteContent]   = useState('')
-  const [noteType,      setNoteType]      = useState<'session_note' | 'observation' | 'goal'>('session_note')
-  const [noteDate,      setNoteDate]      = useState(new Date().toISOString().split('T')[0])
-  const [savingNote,    setSavingNote]    = useState(false)
-  const [noteError,     setNoteError]     = useState('')
+  const [showNoteForm, setShowNoteForm] = useState(false)
+  const [noteContent,  setNoteContent]  = useState('')
+  const [noteType,     setNoteType]     = useState<'session_note' | 'observation' | 'goal'>('session_note')
+  const [noteDate,     setNoteDate]     = useState(new Date().toISOString().split('T')[0])
+  const [savingNote,   setSavingNote]   = useState(false)
+  const [noteError,    setNoteError]    = useState('')
 
   // Edit note
-  const [editingNote,   setEditingNote]   = useState<ClinicalNote | null>(null)
-  const [editContent,   setEditContent]   = useState('')
-  const [savingEdit,    setSavingEdit]    = useState(false)
+  const [editingNote, setEditingNote] = useState<ClinicalNote | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [savingEdit,  setSavingEdit]  = useState(false)
 
   // Filter
   const [filterType, setFilterType] = useState('all')
+
+  // Schedule session
+  const [showSchedule,    setShowSchedule]    = useState(false)
+  const [schedDateTime,   setSchedDateTime]   = useState(minDateTime())
+  const [schedDuration,   setSchedDuration]   = useState(50)
+  const [schedulingError, setSchedulingError] = useState('')
+  const [schedulingOk,    setSchedulingOk]    = useState('')
+  const [scheduling,      setScheduling]      = useState(false)
+
+  const handleSchedule = async () => {
+    setSchedulingError('')
+    setSchedulingOk('')
+    if (!schedDateTime) { setSchedulingError('Seleccioná fecha y hora.'); return }
+    if (new Date(schedDateTime) <= new Date()) {
+      setSchedulingError('La fecha debe ser en el futuro.'); return
+    }
+    setScheduling(true)
+    try {
+      const res = await fetch(`${API}/api/sessions/therapist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({
+          patientId:   Number(id),
+          scheduledAt: new Date(schedDateTime).toISOString(),
+          duration:    schedDuration,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setSchedulingError(data.error || 'Error agendando sesión.'); return }
+      setSchedulingOk(`✓ Sesión agendada para el ${new Date(schedDateTime).toLocaleString('es-CO', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`)
+      setSchedDateTime(minDateTime())
+      setSchedDuration(50)
+      setTimeout(() => { setShowSchedule(false); setSchedulingOk('') }, 2500)
+    } catch {
+      setSchedulingError('Error de conexión.')
+    } finally {
+      setScheduling(false)
+    }
+  }
 
   const fetchHistory = async () => {
     try {
@@ -151,8 +243,7 @@ export function TherapistPatient() {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
       if (!res.ok) throw new Error()
-      const data = await res.json()
-      setAiSummary(data)
+      setAiSummary(await res.json())
     } catch { /* silent */ }
     finally { setGeneratingSummary(false) }
   }
@@ -169,132 +260,171 @@ export function TherapistPatient() {
   const filteredNotes = filterType === 'all' ? notes : notes.filter(n => n.type === filterType)
 
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
 
-  const cardStyle = {
-    background: '#fff',
-    borderRadius: '1rem',
-    border: '0.5px solid #E7E5E4',
-    boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
-    padding: '1.25rem 1.5rem',
-  }
-
-  const selStyle = {
-    padding: '0.4rem 0.75rem', borderRadius: '0.65rem',
-    border: '0.5px solid #E7E5E4', background: '#fff',
-    fontSize: '0.82rem', color: '#1C1917',
-    fontFamily: 'Inter, sans-serif', cursor: 'pointer',
-  } as React.CSSProperties
-
-  if (loading) return <p style={{ color: '#78716C', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>Loading...</p>
-  if (error)   return <p style={{ color: '#DC2626', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{error}</p>
+  if (loading) return (
+    <p style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>
+      Cargando...
+    </p>
+  )
+  if (error) return (
+    <p style={{ color: colors.danger, fontSize: 13, fontFamily: typography.fontBody }}>
+      {error}
+    </p>
+  )
   if (!patient) return null
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ fontFamily: typography.fontBody }}>
 
       {/* BACK + HEADER */}
-      <div style={{ marginBottom: '2rem' }}>
-        <button onClick={() => navigate('/therapist/dashboard')} style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: '#78716C', fontSize: '0.82rem', padding: 0,
-          fontFamily: 'Inter, sans-serif', marginBottom: '1rem',
-          display: 'flex', alignItems: 'center', gap: '0.35rem',
-        }}>
-          ← Back to patients
+      <div style={{ marginBottom: spacing.xxl }}>
+        <button
+          onClick={() => navigate('/therapist/dashboard')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: colors.textMuted, fontSize: 13,
+            fontFamily: typography.fontBody, marginBottom: spacing.lg,
+            display: 'flex', alignItems: 'center', gap: spacing.xs, padding: 0,
+          }}
+        >
+          ← Volver a pacientes
         </button>
-        <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
-          {patient.name}
-        </h1>
-        <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0.25rem 0 0' }}>
-          {patient.email} · Member since {formatDate(patient.createdAt)}
-        </p>
+
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: spacing.lg }}>
+          <div>
+            <h1 style={{
+              fontFamily: typography.fontDisplay, fontWeight: 300,
+              fontSize: '1.8rem', color: colors.text, margin: 0,
+            }}>
+              {patient.name}
+            </h1>
+            <p style={{ fontSize: 13, color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>
+              {patient.email} · Miembro desde {formatDate(patient.createdAt)}
+            </p>
+          </div>
+
+          {/* Botón agendar sesión */}
+          <button
+            onClick={() => { setShowSchedule(true); setSchedulingError(''); setSchedulingOk('') }}
+            style={{
+              ...btnPrimaryStyle,
+              padding: `${spacing.md} ${spacing.xl}`,
+              borderRadius: radius.lg,
+              fontSize: 13,
+              display: 'flex', alignItems: 'center', gap: spacing.xs,
+            }}
+          >
+            📅 Agendar sesión
+          </button>
+        </div>
       </div>
 
       {/* SUMMARY CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+        gap: spacing.lg,
+        marginBottom: spacing.xxl,
+      }}>
         {[
-          { label: 'Total sessions', value: moodLogs.length },
-          { label: 'Avg mood',       value: avgMood ?? '—' },
-          { label: 'Avg rating',     value: avgRating ? `${avgRating} ★` : '—' },
-          { label: 'Clinical notes', value: notes.length },
-        ].map(card => (
-          <div key={card.label} style={cardStyle}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>{card.value}</div>
-            <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>{card.label}</div>
+          { label: 'Total sesiones',  value: moodLogs.length },
+          { label: 'Ánimo promedio',  value: avgMood ?? '—' },
+          { label: 'Calif. promedio', value: avgRating ? `${avgRating} ★` : '—' },
+          { label: 'Notas clínicas',  value: notes.length },
+        ].map(c => (
+          <div key={c.label} style={cardStyle}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, color: colors.text }}>{c.value}</div>
+            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: spacing.xs }}>{c.label}</div>
           </div>
         ))}
       </div>
 
-      {/* ==========================================
-          HU-050 — AI SUMMARY
-      ========================================== */}
-      <div style={{ ...cardStyle, marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: aiSummary ? '1rem' : 0 }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            AI Clinical Summary
-          </div>
+      {/* AI CLINICAL SUMMARY */}
+      <div style={{ ...cardStyle, marginBottom: spacing.lg }}>
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: aiSummary ? spacing.lg : 0,
+        }}>
+          <div style={{ ...labelStyle }}>Resumen clínico IA</div>
           <button
             onClick={handleGenerateSummary}
             disabled={generatingSummary}
             style={{
-              padding: '0.45rem 0.85rem', borderRadius: '0.65rem', border: 'none',
-              background: generatingSummary ? '#A8B5A2' : '#0d9488',
-              color: '#fff', fontSize: '0.78rem', fontWeight: 500,
-              cursor: generatingSummary ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
+              ...btnPrimaryStyle,
+              background: generatingSummary ? colors.textSubtle : '#0d9488',
+              cursor: generatingSummary ? 'not-allowed' : 'pointer',
+              fontSize: 12,
+              padding: `${spacing.sm} ${spacing.md}`,
             }}
           >
-            {generatingSummary ? 'Generating...' : aiSummary ? 'Regenerate' : 'Generate summary'}
+            {generatingSummary ? 'Generando...' : aiSummary ? 'Regenerar' : 'Generar resumen'}
           </button>
         </div>
         {aiSummary && (
           <div>
-            <p style={{ fontSize: '0.875rem', color: '#1C1917', lineHeight: 1.7, margin: '0 0 0.5rem', fontFamily: 'Noto Serif, serif', fontStyle: 'italic' }}>
+            <p style={{
+              fontSize: 14, color: colors.text, lineHeight: 1.7,
+              margin: `0 0 ${spacing.sm}`,
+              fontFamily: 'Noto Serif, serif', fontStyle: 'italic',
+            }}>
               "{aiSummary.summary}"
             </p>
-            <div style={{ fontSize: '0.72rem', color: '#A8B5A2' }}>
-              Generated {formatDate(aiSummary.generatedAt)} · Based on {aiSummary.basedOn.sessions} sessions and {aiSummary.basedOn.notes} notes
+            <div style={{ fontSize: 11, color: colors.textSubtle }}>
+              Generado {formatDate(aiSummary.generatedAt)} · Basado en {aiSummary.basedOn.sessions} sesiones y {aiSummary.basedOn.notes} notas
             </div>
           </div>
         )}
       </div>
 
-      {/* ==========================================
-          HU-050 — CLINICAL NOTES
-      ========================================== */}
-      <div style={{ ...cardStyle, marginBottom: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: 0 }}>
-            Clinical Notes
+      {/* CLINICAL NOTES */}
+      <div style={{ ...cardStyle, marginBottom: spacing.lg }}>
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: spacing.lg, flexWrap: 'wrap', gap: spacing.md,
+        }}>
+          <h2 style={{
+            fontFamily: typography.fontDisplay, fontWeight: 400,
+            fontSize: '1.1rem', color: colors.text, margin: 0,
+          }}>
+            Notas clínicas
           </h2>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
             <select style={selStyle} value={filterType} onChange={e => setFilterType(e.target.value)}>
-              <option value="all">All types</option>
-              <option value="session_note">Session notes</option>
-              <option value="observation">Observations</option>
-              <option value="goal">Goals</option>
+              <option value="all">Todos los tipos</option>
+              <option value="session_note">Notas de sesión</option>
+              <option value="observation">Observaciones</option>
+              <option value="goal">Objetivos</option>
             </select>
             <button
               onClick={() => { setShowNoteForm(!showNoteForm); setNoteError('') }}
               style={{
-                padding: '0.45rem 0.85rem', background: '#6B7D5C', border: 'none',
-                borderRadius: '0.65rem', color: '#fff', fontSize: '0.78rem',
-                fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                ...btnPrimaryStyle,
+                fontSize: 12,
+                padding: `${spacing.sm} ${spacing.md}`,
               }}
             >
-              + New note
+              + Nueva nota
             </button>
           </div>
         </div>
 
-        {/* New note form */}
+        {/* Formulario nueva nota */}
         {showNoteForm && (
-          <div style={{ background: '#F5F3EF', borderRadius: '0.75rem', padding: '1rem', marginBottom: '1.25rem' }}>
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{
+            background: colors.bg,
+            borderRadius: radius.md,
+            padding: spacing.lg,
+            marginBottom: spacing.lg,
+            border: `0.5px solid ${colors.border}`,
+          }}>
+            <div style={{ display: 'flex', gap: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
               <select style={selStyle} value={noteType} onChange={e => setNoteType(e.target.value as typeof noteType)}>
-                <option value="session_note">Session note</option>
-                <option value="observation">Observation</option>
-                <option value="goal">Goal</option>
+                <option value="session_note">Nota de sesión</option>
+                <option value="observation">Observación</option>
+                <option value="goal">Objetivo</option>
               </select>
               <input
                 type="date" value={noteDate}
@@ -305,56 +435,80 @@ export function TherapistPatient() {
             <textarea
               value={noteContent}
               onChange={e => setNoteContent(e.target.value)}
-              placeholder="Write your clinical note here..."
+              placeholder="Escribí tu nota clínica aquí..."
               rows={4}
-              style={{
-                width: '100%', padding: '0.75rem', borderRadius: '0.65rem',
-                border: '0.5px solid #E7E5E4', fontSize: '0.875rem',
-                fontFamily: 'Inter, sans-serif', color: '#1C1917',
-                boxSizing: 'border-box', outline: 'none', resize: 'vertical',
-              }}
+              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
             />
-            {noteError && <p style={{ color: '#DC2626', fontSize: '0.78rem', margin: '0.35rem 0 0' }}>{noteError}</p>}
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setShowNoteForm(false); setNoteError('') }}
-                style={{ ...selStyle, background: 'transparent' }}>Cancel</button>
-              <button onClick={handleSaveNote} disabled={savingNote}
+            {noteError && (
+              <p style={{ color: colors.danger, fontSize: 12, margin: `${spacing.xs} 0 0` }}>
+                {noteError}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.md, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowNoteForm(false); setNoteError('') }}
+                style={{ ...btnSecondaryStyle, fontSize: 12, padding: `${spacing.sm} ${spacing.md}` }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveNote}
+                disabled={savingNote}
                 style={{
-                  padding: '0.45rem 0.85rem', background: savingNote ? '#A8B5A2' : '#6B7D5C',
-                  border: 'none', borderRadius: '0.65rem', color: '#fff',
-                  fontSize: '0.78rem', fontWeight: 500,
-                  cursor: savingNote ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
-                }}>
-                {savingNote ? 'Saving...' : 'Save note'}
+                  ...btnPrimaryStyle,
+                  fontSize: 12,
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  background: savingNote ? colors.textSubtle : colors.primary,
+                  cursor: savingNote ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {savingNote ? 'Guardando...' : 'Guardar nota'}
               </button>
             </div>
           </div>
         )}
 
-        {/* Notes list */}
+        {/* Lista de notas */}
         {filteredNotes.length === 0 ? (
-          <p style={{ color: '#78716C', fontSize: '0.875rem' }}>No notes yet. Add your first clinical note.</p>
+          <p style={{ color: colors.textMuted, fontSize: 13 }}>
+            Sin notas aún. Agregá tu primera nota clínica.
+          </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
             {filteredNotes.map(note => (
-              <div key={note.id} style={{ padding: '0.85rem 1rem', background: '#F5F3EF', borderRadius: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div key={note.id} style={{
+                padding: `${spacing.md} ${spacing.lg}`,
+                background: colors.bg,
+                borderRadius: radius.md,
+                border: `0.5px solid ${colors.border}`,
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  justifyContent: 'space-between', marginBottom: spacing.sm,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                     <span style={{
-                      fontSize: '0.68rem', fontWeight: 600, padding: '0.15rem 0.5rem',
-                      borderRadius: '999px',
-                      background: NOTE_TYPE_COLOR[note.type]?.bg ?? '#EAF0E6',
-                      color: NOTE_TYPE_COLOR[note.type]?.color ?? '#4A6741',
+                      fontSize: 11, fontWeight: 600,
+                      padding: `2px ${spacing.sm}`,
+                      borderRadius: radius.full,
+                      background: NOTE_TYPE_COLOR[note.type]?.bg ?? colors.primaryLight,
+                      color:      NOTE_TYPE_COLOR[note.type]?.color ?? colors.primaryDark,
                     }}>
                       {NOTE_TYPE_LABEL[note.type] ?? note.type}
                     </span>
-                    <span style={{ fontSize: '0.72rem', color: '#78716C' }}>{formatDate(note.sessionDate)}</span>
+                    <span style={{ fontSize: 12, color: colors.textMuted }}>
+                      {formatDate(note.sessionDate)}
+                    </span>
                   </div>
                   <button
                     onClick={() => { setEditingNote(note); setEditContent(note.content) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: '#A8B5A2', fontFamily: 'Inter, sans-serif' }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: 12, color: colors.textSubtle,
+                      fontFamily: typography.fontBody,
+                    }}
                   >
-                    Edit
+                    Editar
                   </button>
                 </div>
 
@@ -364,29 +518,34 @@ export function TherapistPatient() {
                       value={editContent}
                       onChange={e => setEditContent(e.target.value)}
                       rows={3}
-                      style={{
-                        width: '100%', padding: '0.65rem', borderRadius: '0.5rem',
-                        border: '0.5px solid #E7E5E4', fontSize: '0.875rem',
-                        fontFamily: 'Inter, sans-serif', color: '#1C1917',
-                        boxSizing: 'border-box', outline: 'none', resize: 'vertical',
-                      }}
+                      style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
                     />
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
-                      <button onClick={() => { setEditingNote(null); setEditContent('') }}
-                        style={{ ...selStyle, background: 'transparent', padding: '0.3rem 0.65rem' }}>Cancel</button>
-                      <button onClick={handleEditNote} disabled={savingEdit}
+                    <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm, justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => { setEditingNote(null); setEditContent('') }}
+                        style={{ ...btnSecondaryStyle, fontSize: 12, padding: `${spacing.xs} ${spacing.md}` }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleEditNote}
+                        disabled={savingEdit}
                         style={{
-                          padding: '0.3rem 0.65rem', background: savingEdit ? '#A8B5A2' : '#6B7D5C',
-                          border: 'none', borderRadius: '0.5rem', color: '#fff',
-                          fontSize: '0.75rem', cursor: savingEdit ? 'not-allowed' : 'pointer',
-                          fontFamily: 'Inter, sans-serif',
-                        }}>
-                        {savingEdit ? 'Saving...' : 'Save'}
+                          ...btnPrimaryStyle,
+                          fontSize: 12,
+                          padding: `${spacing.xs} ${spacing.md}`,
+                          background: savingEdit ? colors.textSubtle : colors.primary,
+                          cursor: savingEdit ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {savingEdit ? 'Guardando...' : 'Guardar'}
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p style={{ fontSize: '0.875rem', color: '#1C1917', margin: 0, lineHeight: 1.6 }}>{note.content}</p>
+                  <p style={{ fontSize: 13, color: colors.text, margin: 0, lineHeight: 1.6 }}>
+                    {note.content}
+                  </p>
                 )}
               </div>
             ))}
@@ -395,40 +554,42 @@ export function TherapistPatient() {
       </div>
 
       {/* MOOD + RATINGS GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.lg }}>
 
         {/* MOOD HISTORY */}
         <div style={cardStyle}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1.25rem' }}>
-            Emotional history
+          <h2 style={{
+            fontFamily: typography.fontDisplay, fontWeight: 400,
+            fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}`,
+          }}>
+            Historial emocional
           </h2>
           {moodLogs.length === 0 ? (
-            <p style={{ color: '#78716C', fontSize: '0.875rem' }}>No mood logs yet.</p>
+            <p style={{ color: colors.textMuted, fontSize: 13 }}>Sin registros de ánimo aún.</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
               {moodLogs.map(log => (
-                <div key={log.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '0.65rem 0.85rem', background: '#F5F3EF', borderRadius: '0.65rem',
-                }}>
-                  <span style={{ fontSize: '0.78rem', color: '#78716C' }}>{formatDate(log.date)}</span>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div key={log.id} style={rowStyle}>
+                  <span style={{ fontSize: 12, color: colors.textMuted }}>
+                    {formatDate(log.date)}
+                  </span>
+                  <div style={{ display: 'flex', gap: spacing.lg, alignItems: 'center' }}>
                     {log.checkin_mood != null && (
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '1rem' }}>{MOOD_EMOJI[log.checkin_mood]}</div>
-                        <div style={{ fontSize: '0.62rem', color: '#A8B5A2' }}>Check-in</div>
+                        <div style={{ fontSize: 10, color: colors.textSubtle }}>Check-in</div>
                       </div>
                     )}
                     {log.checkout_mood != null && (
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '1rem' }}>{MOOD_EMOJI[log.checkout_mood]}</div>
-                        <div style={{ fontSize: '0.62rem', color: '#A8B5A2' }}>Check-out</div>
+                        <div style={{ fontSize: 10, color: colors.textSubtle }}>Check-out</div>
                       </div>
                     )}
                     {log.checkin_mood != null && log.checkout_mood != null && (
                       <span style={{
-                        fontSize: '0.72rem', fontWeight: 600,
-                        color: log.checkout_mood >= log.checkin_mood ? '#22C55E' : '#EF4444',
+                        fontSize: 12, fontWeight: 600,
+                        color: log.checkout_mood >= log.checkin_mood ? colors.success : colors.danger,
                       }}>
                         {log.checkout_mood >= log.checkin_mood ? '↑' : '↓'}
                       </span>
@@ -442,24 +603,27 @@ export function TherapistPatient() {
 
         {/* SESSION RATINGS */}
         <div style={cardStyle}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1.25rem' }}>
-            Session ratings
+          <h2 style={{
+            fontFamily: typography.fontDisplay, fontWeight: 400,
+            fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}`,
+          }}>
+            Calificaciones de sesión
           </h2>
           {ratings.length === 0 ? (
-            <p style={{ color: '#78716C', fontSize: '0.875rem' }}>No ratings yet.</p>
+            <p style={{ color: colors.textMuted, fontSize: 13 }}>Sin calificaciones aún.</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
               {ratings.map(r => (
-                <div key={r.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '0.65rem 0.85rem', background: '#F5F3EF', borderRadius: '0.65rem',
-                }}>
-                  <span style={{ fontSize: '0.78rem', color: '#78716C' }}>{formatDate(r.date)}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.9rem', letterSpacing: '0.05em' }}>
-                      {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                <div key={r.id} style={rowStyle}>
+                  <span style={{ fontSize: 12, color: colors.textMuted }}>
+                    {formatDate(r.date)}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                    <span style={{ fontSize: '0.9rem', color: colors.primary }}>
+                      {'★'.repeat(r.rating)}
+                      <span style={{ color: colors.border }}>{'★'.repeat(5 - r.rating)}</span>
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#78716C' }}>
+                    <span style={{ fontSize: 12, color: colors.textMuted }}>
                       {MOOD_LABEL[r.rating] ?? r.rating}
                     </span>
                   </div>
@@ -469,6 +633,133 @@ export function TherapistPatient() {
           )}
         </div>
       </div>
+
+      {/* MODAL AGENDAR SESIÓN */}
+      {showSchedule && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(28,25,23,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: colors.bgCard,
+            borderRadius: radius.xl,
+            padding: spacing.xxl,
+            width: '100%', maxWidth: 440,
+            boxShadow: shadow.modal,
+            fontFamily: typography.fontBody,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl }}>
+              <h2 style={{
+                fontFamily: typography.fontDisplay, fontWeight: 400,
+                fontSize: '1.3rem', color: colors.text, margin: 0,
+              }}>
+                Agendar sesión
+              </h2>
+              <button
+                onClick={() => { setShowSchedule(false); setSchedulingError(''); setSchedulingOk('') }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: colors.textMuted }}
+              >✕</button>
+            </div>
+
+            <p style={{ fontSize: 13, color: colors.textMuted, margin: `0 0 ${spacing.xl}`, lineHeight: 1.5 }}>
+              Agendando sesión con <strong style={{ color: colors.text }}>{patient.name}</strong>
+            </p>
+
+            <div style={{ marginBottom: spacing.lg }}>
+              <label style={{ ...labelStyle, display: 'block', marginBottom: spacing.xs }}>
+                Fecha y hora *
+              </label>
+              <input
+                type="datetime-local"
+                value={schedDateTime}
+                min={minDateTime()}
+                onChange={e => setSchedDateTime(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+
+            <div style={{ marginBottom: spacing.xl }}>
+              <label style={{ ...labelStyle, display: 'block', marginBottom: spacing.sm }}>
+                Duración (minutos)
+              </label>
+              <div style={{ display: 'flex', gap: spacing.sm }}>
+                {[30, 45, 50, 60, 90].map(d => (
+                  <button
+                    key={d}
+                    onClick={() => setSchedDuration(d)}
+                    style={{
+                      flex: 1, padding: `${spacing.sm} ${spacing.xs}`,
+                      border: schedDuration === d
+                        ? `1.5px solid ${colors.primary}`
+                        : `0.5px solid ${colors.border}`,
+                      borderRadius: radius.md,
+                      background: schedDuration === d ? colors.primaryLight : colors.bgCard,
+                      color: schedDuration === d ? colors.primaryDark : colors.textMuted,
+                      fontSize: 13,
+                      fontWeight: schedDuration === d ? 600 : 400,
+                      cursor: 'pointer',
+                      fontFamily: typography.fontBody,
+                    }}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {schedulingError && (
+              <div style={{
+                background: colors.dangerLight, color: colors.danger,
+                padding: `${spacing.md} ${spacing.lg}`,
+                borderRadius: radius.md, fontSize: 13,
+                marginBottom: spacing.lg,
+              }}>
+                {schedulingError}
+              </div>
+            )}
+            {schedulingOk && (
+              <div style={{
+                background: colors.successLight, color: colors.success,
+                padding: `${spacing.md} ${spacing.lg}`,
+                borderRadius: radius.md, fontSize: 13,
+                marginBottom: spacing.lg,
+              }}>
+                {schedulingOk}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: spacing.md }}>
+              <button
+                onClick={() => { setShowSchedule(false); setSchedulingError(''); setSchedulingOk('') }}
+                style={{
+                  ...btnSecondaryStyle,
+                  flex: 1,
+                  padding: spacing.md,
+                  borderRadius: radius.lg,
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSchedule}
+                disabled={scheduling}
+                style={{
+                  ...btnPrimaryStyle,
+                  flex: 2,
+                  padding: spacing.md,
+                  borderRadius: radius.lg,
+                  background: scheduling ? colors.textSubtle : colors.primary,
+                  cursor: scheduling ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {scheduling ? 'Agendando...' : '📅 Confirmar sesión'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
