@@ -36,11 +36,11 @@ const en: Record<string, string> = {
   btn_continue: 'Begin',
 
   // Emotions
-  emo_1: 'Bad',
-  emo_2: 'Restless',
+  emo_1: 'Very bad',
+  emo_2: 'Not so good',
   emo_3: 'Neutral',
-  emo_4: 'Calm',
-  emo_5: 'Good',
+  emo_4: 'Good',
+  emo_5: 'Very good',
 
   // Chat
   chat_placeholder: 'Write what you feel... (Enter to send, Shift+Enter for new line)',
