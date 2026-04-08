@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import {
+  colors, radius, spacing, typography,
+  btnPrimaryStyle,
+} from '../styles/tokens'
 
-const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
+const BACKEND = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
 
 export function LoginPage() {
   const { t, lang, setLang } = useLanguage()
@@ -30,7 +34,10 @@ export function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      const data = await res.json() as { error?: string; locked?: boolean; token?: string; role?: string; name?: string; onboardingCompleted?: boolean }
+      const data = await res.json() as {
+        error?: string; locked?: boolean; token?: string
+        role?: string; name?: string; onboardingCompleted?: boolean
+      }
 
       if (!res.ok) {
         setIsLocked(data.locked === true)
@@ -48,86 +55,193 @@ export function LoginPage() {
         localStorage.setItem('elevation_role',  data.role  ?? 'user')
         localStorage.setItem('elevation_name',  data.name  ?? '')
         const role = data.role ?? 'user'
-          if (role === 'admin' || role === 'superadmin') {
+        if (role === 'admin' || role === 'superadmin') {
           navigate('/admin/dashboard')
         } else if (role === 'therapist') {
           navigate('/therapist/dashboard')
         } else if (role === 'board') {
           navigate('/board/manifest')
         } else {
-          // HU-072 — redirigir al onboarding si no lo completó
           const onboardingDone = data.onboardingCompleted === true
           navigate(onboardingDone ? '/app/dashboard' : '/app/onboarding')
         }
-    }
+      }
     } catch {
       setAuthMessage(`❌ ${t('err_connection')}`)
     }
   }
 
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 1.5rem', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    background: 'transparent',
+    outline: 'none',
+    padding: `${spacing.md} 0`,
+    borderBottom: `1px solid ${colors.border}`,
+    color: colors.text,
+    fontSize: '1rem',
+    fontFamily: typography.fontBody,
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s',
+  }
 
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '0 1.5rem',
+      background: colors.bg,
+      fontFamily: typography.fontBody,
+    }}>
       <div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
         {/* Lang switcher */}
-        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: 6, marginBottom: '1rem' }}>
+        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.xs, marginBottom: spacing.lg }}>
           {(['es', 'en'] as const).map(l => (
-            <button key={l} onClick={() => setLang(l)}
-              style={{ fontSize: 11, padding: '3px 10px', borderRadius: 12, border: '0.5px solid #D6D2C4', background: lang === l ? '#6B7D5C' : 'transparent', color: lang === l ? '#FAF8F4' : '#7A7A7A', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            <button key={l} onClick={() => setLang(l)} style={{
+              fontSize: 11,
+              padding: `3px 10px`,
+              borderRadius: radius.full,
+              border: `0.5px solid ${colors.borderLight}`,
+              background: lang === l ? colors.primary : 'transparent',
+              color: lang === l ? colors.bgCard : colors.textMuted,
+              cursor: 'pointer',
+              fontFamily: typography.fontBody,
+              transition: 'all 0.2s',
+            }}>
               {l.toUpperCase()}
             </button>
           ))}
         </div>
 
         {/* Branding */}
-        <header style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, letterSpacing: '0.3em', fontSize: '1.5rem', color: '#1C1917', margin: 0 }}>
+        <header style={{ textAlign: 'center', marginBottom: spacing.xxxl }}>
+          <h1 style={{
+            fontFamily: typography.fontDisplay,
+            fontWeight: 300,
+            letterSpacing: '0.3em',
+            fontSize: '1.5rem',
+            color: colors.text,
+            margin: 0,
+          }}>
             {t('logo')}
           </h1>
-          <div style={{ width: 40, height: 1, background: '#E7E5E4', margin: '1rem auto' }} />
-          <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.8rem', color: '#A8A29E', margin: 0 }}>
+          <div style={{ width: 40, height: 1, background: colors.border, margin: `${spacing.lg} auto` }} />
+          <p style={{
+            fontFamily: 'Noto Serif, serif',
+            fontStyle: 'italic',
+            fontSize: '0.8rem',
+            color: colors.textSubtle,
+            margin: 0,
+          }}>
             {t('tagline')}
           </p>
         </header>
 
         {/* Form */}
-        <form onSubmit={handleAuth} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <form onSubmit={handleAuth} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.xxl }}>
+
           {isRegistering && (
-            <input type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder={t('label_name')} required
-              style={{ width: '100%', background: 'transparent', outline: 'none', padding: '0.75rem 0', borderBottom: '1px solid #E7E5E4', color: '#1C1917', fontSize: '1rem', boxSizing: 'border-box' }} />
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder={t('label_name')}
+              required
+              style={inputStyle}
+            />
           )}
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder={t('label_email')} required
-            style={{ width: '100%', background: 'transparent', outline: 'none', padding: '0.75rem 0', borderBottom: '1px solid #E7E5E4', color: '#1C1917', fontSize: '1rem', boxSizing: 'border-box' }} />
+
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder={t('label_email')}
+            required
+            style={inputStyle}
+          />
 
           <div style={{ position: 'relative' }}>
-            <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-              placeholder={t('label_password')} required
-              style={{ width: '100%', background: 'transparent', outline: 'none', padding: '0.75rem 0', paddingRight: '2rem', borderBottom: '1px solid #E7E5E4', color: '#1C1917', fontSize: '1rem', boxSizing: 'border-box' }} />
-            <button type="button" onClick={() => setShowPassword(!showPassword)}
-              style={{ position: 'absolute', right: 0, bottom: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', fontSize: 16 }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder={t('label_password')}
+              required
+              style={{ ...inputStyle, paddingRight: '2rem' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: 0,
+                bottom: spacing.md,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: colors.textSubtle,
+                fontSize: 16,
+                padding: 0,
+              }}
+            >
               {showPassword ? '🙈' : '👁'}
             </button>
           </div>
 
           {authMessage && (
-            <p style={{ fontSize: '0.85rem', textAlign: 'center', color: authMessage.startsWith('✓') ? '#0d9488' : '#dc2626', margin: 0 }}>
+            <p style={{
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              color: authMessage.startsWith('✓') ? colors.success : colors.danger,
+              margin: 0,
+            }}>
               {authMessage}
             </p>
           )}
 
-          <button type="submit" disabled={isLocked}
-            style={{ width: '100%', padding: '0.85rem', color: 'white', fontWeight: 500, borderRadius: '1rem', border: 'none', fontSize: '0.9rem', cursor: isLocked ? 'not-allowed' : 'pointer', background: isLocked ? '#E7E5E4' : 'linear-gradient(135deg,#00685f,#008378)' }}>
+          <button
+            type="submit"
+            disabled={isLocked}
+            style={{
+              ...btnPrimaryStyle,
+              width: '100%',
+              padding: `${spacing.md} ${spacing.lg}`,
+              fontSize: '0.9rem',
+              borderRadius: radius.lg,
+              background: isLocked
+                ? colors.border
+                : `linear-gradient(135deg, ${colors.primaryDark}, ${colors.primary})`,
+              cursor: isLocked ? 'not-allowed' : 'pointer',
+              color: colors.bgCard,
+              fontWeight: 500,
+            }}
+          >
             {isLocked ? `🔒 ${t('err_locked')}` : isRegistering ? t('btn_register') : t('btn_login')}
           </button>
 
-          <button type="button"
-            onClick={() => { setIsRegistering(!isRegistering); setAuthMessage(''); setPassword(''); setShowPassword(false) }}
-            style={{ background: 'none', border: 'none', color: '#0d9488', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegistering(!isRegistering)
+              setAuthMessage('')
+              setPassword('')
+              setShowPassword(false)
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: colors.primary,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              textAlign: 'center',
+              fontFamily: typography.fontBody,
+            }}
+          >
             {isRegistering ? t('link_login') : t('link_register')}
           </button>
+
         </form>
       </div>
     </div>
