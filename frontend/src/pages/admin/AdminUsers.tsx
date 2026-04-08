@@ -1,4 +1,4 @@
-// HU-045 + HU-060 + HU-077 — User management + matching requests + plan requests
+// HU-045 + HU-063 + HU-077 — User management + matching requests + plan requests
 
 import { useState, useEffect } from 'react';
 
@@ -32,7 +32,6 @@ interface MatchingRequest {
   createdAt: string;
 }
 
-// HU-077
 interface PlanRequest {
   id: number;
   status: 'pending' | 'approved' | 'rejected';
@@ -76,12 +75,18 @@ export function AdminUsers() {
   const [errorModal,          setErrorModal]          = useState('');
   const [exitoModal,          setExitoModal]          = useState('');
 
-  // HU-060 — Matching requests
+  // — Eliminación —
+  const [confirmDelete,    setConfirmDelete]    = useState<Usuario | null>(null);
+  const [eliminando,       setEliminando]       = useState(false);
+  const [deleteInput,      setDeleteInput]      = useState('');
+  const [deleteError,      setDeleteError]      = useState('');
+
+  // Matching requests
   const [matchingRequests, setMatchingRequests] = useState<MatchingRequest[]>([]);
   const [showMatching,     setShowMatching]     = useState(false);
   const [confirmingId,     setConfirmingId]     = useState<number | null>(null);
 
-  // HU-077 — Plan requests
+  // Plan requests
   const [planRequests,     setPlanRequests]     = useState<PlanRequest[]>([]);
   const [showPlanRequests, setShowPlanRequests] = useState(false);
   const [planActionId,     setPlanActionId]     = useState<number | null>(null);
@@ -115,12 +120,10 @@ export function AdminUsers() {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (!res.ok) return;
-      const data = await res.json();
-      setMatchingRequests(data);
+      setMatchingRequests(await res.json());
     } catch { /* silent */ }
   };
 
-  // HU-077
   const fetchPlanRequests = async () => {
     try {
       const res = await fetch(`${API}/api/admin/plan-requests/admin?status=pending`, {
@@ -152,10 +155,8 @@ export function AdminUsers() {
     finally { setConfirmingId(null); }
   };
 
-  // HU-077 — Aprobar solicitud de plan
   const approvePlanRequest = async (req: PlanRequest) => {
-    setPlanActionId(req.id);
-    setPlanMsg('');
+    setPlanActionId(req.id); setPlanMsg('');
     try {
       const res = await fetch(`${API}/api/admin/plan-requests/admin/${req.id}/approve`, {
         method: 'PUT',
@@ -165,13 +166,11 @@ export function AdminUsers() {
       const data = await res.json();
       if (!res.ok) { setPlanMsg(data.error ?? 'Error al aprobar.'); return; }
       setPlanMsg(`✓ Plan ${req.plan.name_es} activado para ${req.requester.name}.`);
-      await fetchPlanRequests();
-      await fetchUsuarios();
+      await fetchPlanRequests(); await fetchUsuarios();
     } catch { setPlanMsg('Error de conexión.'); }
     finally { setPlanActionId(null); }
   };
 
-  // HU-077 — Rechazar solicitud de plan
   const rejectPlanRequest = async (req: PlanRequest) => {
     if (!planRejectNote.trim()) return;
     setPlanActionId(req.id);
@@ -184,8 +183,7 @@ export function AdminUsers() {
       const data = await res.json();
       if (!res.ok) { setPlanMsg(data.error ?? 'Error al rechazar.'); return; }
       setPlanMsg(`Solicitud de ${req.requester.name} rechazada.`);
-      setShowRejectModal(null);
-      setPlanRejectNote('');
+      setShowRejectModal(null); setPlanRejectNote('');
       await fetchPlanRequests();
     } catch { setPlanMsg('Error de conexión.'); }
     finally { setPlanActionId(null); }
@@ -222,9 +220,7 @@ export function AdminUsers() {
       });
       if (!res.ok) { const d = await res.json(); alert(d.error || 'Error al asignar terapeuta'); return; }
       await fetchUsuarios();
-      setUsuarioSeleccionado(prev =>
-        prev?.id === usuarioId ? { ...prev, therapistId } : prev
-      );
+      setUsuarioSeleccionado(prev => prev?.id === usuarioId ? { ...prev, therapistId } : prev);
     } catch { alert('Connection error'); }
   };
 
@@ -250,6 +246,29 @@ export function AdminUsers() {
     finally { setCreando(false); }
   };
 
+  // — Eliminar usuario (solo superadmin) —
+  const eliminarUsuario = async () => {
+    if (!confirmDelete) return;
+    if (deleteInput !== confirmDelete.name) {
+      setDeleteError('El nombre no coincide. Escribilo exactamente como aparece.');
+      return;
+    }
+    setEliminando(true); setDeleteError('');
+    try {
+      const res = await fetch(`${API}/api/admin/usuarios/${confirmDelete.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { setDeleteError(data.error || 'Error al eliminar.'); return; }
+      setConfirmDelete(null);
+      setDeleteInput('');
+      setUsuarioSeleccionado(null);
+      await fetchUsuarios();
+    } catch { setDeleteError('Error de conexión.'); }
+    finally { setEliminando(false); }
+  };
+
   const sel = {
     padding: '0.45rem 0.85rem', borderRadius: '0.65rem', border: '0.5px solid #E7E5E4',
     background: '#fff', fontSize: '0.875rem', color: '#1C1917',
@@ -268,38 +287,28 @@ export function AdminUsers() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-
-          {/* Botón plan requests — HU-077 */}
           {planRequests.length > 0 && (
-            <button
-              onClick={() => setShowPlanRequests(!showPlanRequests)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                padding: '0.6rem 1.2rem', background: '#EEF2FF',
-                color: '#4F46E5', border: '0.5px solid #A5B4FC',
-                borderRadius: '0.85rem', fontSize: '0.875rem',
-                fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-              }}
-            >
+            <button onClick={() => setShowPlanRequests(!showPlanRequests)} style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.6rem 1.2rem', background: '#EEF2FF',
+              color: '#4F46E5', border: '0.5px solid #A5B4FC',
+              borderRadius: '0.85rem', fontSize: '0.875rem',
+              fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+            }}>
               💳 {planRequests.length} plan request{planRequests.length !== 1 ? 's' : ''}
             </button>
           )}
-
           {matchingRequests.length > 0 && (
-            <button
-              onClick={() => setShowMatching(!showMatching)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                padding: '0.6rem 1.2rem', background: '#FEF3C7',
-                color: '#92400E', border: '0.5px solid #FCD34D',
-                borderRadius: '0.85rem', fontSize: '0.875rem',
-                fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-              }}
-            >
+            <button onClick={() => setShowMatching(!showMatching)} style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.6rem 1.2rem', background: '#FEF3C7',
+              color: '#92400E', border: '0.5px solid #FCD34D',
+              borderRadius: '0.85rem', fontSize: '0.875rem',
+              fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+            }}>
               🤝 {matchingRequests.length} matching pending
             </button>
           )}
-
           <button onClick={() => setMostrarModal(true)} style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem',
             background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.85rem',
@@ -310,121 +319,62 @@ export function AdminUsers() {
         </div>
       </div>
 
-      {/* PLAN REQUESTS PANEL — HU-077 */}
+      {/* PLAN REQUESTS PANEL */}
       {showPlanRequests && (
-        <div style={{
-          background: '#fff', borderRadius: '1rem', border: '0.5px solid #A5B4FC',
-          boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem',
-          marginBottom: '1.5rem',
-        }}>
+        <div style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #A5B4FC', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
             💳 Solicitudes de plan pendientes
           </h2>
-
           {planMsg && (
-            <div style={{
-              padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem',
-              background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2',
-              color: planMsg.startsWith('✓') ? '#4A6741' : '#DC2626',
-            }}>
+            <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem', background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: planMsg.startsWith('✓') ? '#4A6741' : '#DC2626' }}>
               {planMsg}
             </div>
           )}
-
-          {planRequests.length === 0 ? (
-            <p style={{ color: '#78716C', fontSize: '0.875rem', margin: 0 }}>No hay solicitudes pendientes.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {planRequests.map(req => (
-                <div key={req.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '0.85rem 1rem', background: '#F5F7FF', borderRadius: '0.75rem',
-                  border: '0.5px solid #A5B4FC', flexWrap: 'wrap', gap: '0.75rem',
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>
-                      {req.requester.name}
-                      <span style={{ fontWeight: 400, color: '#78716C' }}> → </span>
-                      <span style={{ color: '#4F46E5', fontWeight: 600 }}>{req.plan.name_es}</span>
-                      <span style={{ fontSize: '0.78rem', color: '#78716C', marginLeft: 6 }}>
-                        ${req.plan.price} {req.plan.currency}/mes
-                      </span>
+          {planRequests.length === 0
+            ? <p style={{ color: '#78716C', fontSize: '0.875rem', margin: 0 }}>No hay solicitudes pendientes.</p>
+            : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {planRequests.map(req => (
+                  <div key={req.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', background: '#F5F7FF', borderRadius: '0.75rem', border: '0.5px solid #A5B4FC', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>
+                        {req.requester.name}
+                        <span style={{ fontWeight: 400, color: '#78716C' }}> → </span>
+                        <span style={{ color: '#4F46E5', fontWeight: 600 }}>{req.plan.name_es}</span>
+                        <span style={{ fontSize: '0.78rem', color: '#78716C', marginLeft: 6 }}>${req.plan.price} {req.plan.currency}/mes</span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>{req.requester.email} · {formatDate(req.createdAt)}</div>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>
-                      {req.requester.email} · {formatDate(req.createdAt)}
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => void approvePlanRequest(req)} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: planActionId === req.id ? '#A8B5A2' : '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                        {planActionId === req.id ? 'Procesando...' : '✓ Aprobar'}
+                      </button>
+                      <button onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: 'transparent', color: '#DC2626', border: '0.5px solid #DC2626', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                        ✕ Rechazar
+                      </button>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => void approvePlanRequest(req)}
-                      disabled={planActionId === req.id}
-                      style={{
-                        padding: '0.45rem 1rem',
-                        background: planActionId === req.id ? '#A8B5A2' : '#6B7D5C',
-                        color: '#fff', border: 'none', borderRadius: '0.65rem',
-                        fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer',
-                        fontFamily: 'Inter, sans-serif',
-                      }}
-                    >
-                      {planActionId === req.id ? 'Procesando...' : '✓ Aprobar'}
-                    </button>
-                    <button
-                      onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }}
-                      disabled={planActionId === req.id}
-                      style={{
-                        padding: '0.45rem 1rem',
-                        background: 'transparent', color: '#DC2626',
-                        border: '0.5px solid #DC2626', borderRadius: '0.65rem',
-                        fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer',
-                        fontFamily: 'Inter, sans-serif',
-                      }}
-                    >
-                      ✕ Rechazar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )
+          }
         </div>
       )}
 
       {/* MATCHING REQUESTS PANEL */}
       {showMatching && matchingRequests.length > 0 && (
-        <div style={{
-          background: '#fff', borderRadius: '1rem', border: '0.5px solid #FCD34D',
-          boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem',
-          marginBottom: '1.5rem',
-        }}>
+        <div style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #FCD34D', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
             🤝 Pending matching requests
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {matchingRequests.map(req => (
-              <div key={req.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '0.85rem 1rem', background: '#FFFBEB', borderRadius: '0.75rem',
-                border: '0.5px solid #FCD34D', flexWrap: 'wrap', gap: '0.75rem',
-              }}>
+              <div key={req.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', background: '#FFFBEB', borderRadius: '0.75rem', border: '0.5px solid #FCD34D', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
-                  <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>
-                    {req.user?.name} → {req.chosenTherapist?.name}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>
-                    Area: {req.answers?.area ?? '—'} · Style: {req.answers?.style ?? '—'} · {formatDate(req.createdAt)}
-                  </div>
+                  <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>{req.user?.name} → {req.chosenTherapist?.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>Area: {req.answers?.area ?? '—'} · Style: {req.answers?.style ?? '—'} · {formatDate(req.createdAt)}</div>
                 </div>
-                <button
-                  onClick={() => confirmMatching(req.id)}
-                  disabled={confirmingId === req.id}
-                  style={{
-                    padding: '0.45rem 1rem', background: confirmingId === req.id ? '#A8B5A2' : '#6B7D5C',
-                    color: '#fff', border: 'none', borderRadius: '0.65rem',
-                    fontSize: '0.82rem', fontWeight: 500,
-                    cursor: confirmingId === req.id ? 'not-allowed' : 'pointer',
-                    fontFamily: 'Inter, sans-serif',
-                  }}
-                >
+                <button onClick={() => confirmMatching(req.id)} disabled={confirmingId === req.id} style={{ padding: '0.45rem 1rem', background: confirmingId === req.id ? '#A8B5A2' : '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: confirmingId === req.id ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
                   {confirmingId === req.id ? 'Confirming...' : 'Confirm assignment'}
                 </button>
               </div>
@@ -467,41 +417,39 @@ export function AdminUsers() {
                 </tr>
               </thead>
               <tbody>
-                {usuarios.length === 0 ? (
-                  <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#78716C', fontSize: '0.875rem' }}>No hay usuarios con los filtros seleccionados.</td></tr>
-                ) : usuarios.map(u => (
-                  <tr key={u.id} style={{ background: usuarioSeleccionado?.id === u.id ? '#EAF0E6' : 'transparent', transition: 'background 0.15s' }}>
-                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                      <div style={{ fontWeight: 500 }}>{u.name}</div>
-                      <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{u.email}</div>
-                    </td>
-                    <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                      <span style={getRoleBadgeStyle(u.role)}>{u.role}</span>
-                    </td>
-                    <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                      {u.plan ? (
-                        <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: '#EEF2FF', color: '#4F46E5' }}>
-                          {u.plan.name_es}
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '0.72rem', color: '#A8A29E' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.sesiones ?? '—'}</td>
-                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.moodPromedio != null ? u.moodPromedio : '—'}</td>
-                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.ratingPromedio != null ? `${u.ratingPromedio} ★` : '—'}</td>
-                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                      <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: u.active ? '#22C55E' : '#EF4444', marginRight: '0.4rem' }} />
-                      {u.active ? 'Activo' : 'Inactivo'}
-                    </td>
-                    <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                      <button onClick={() => setUsuarioSeleccionado(usuarioSeleccionado?.id === u.id ? null : u)}
-                        style={{ background: 'none', border: '0.5px solid #E7E5E4', borderRadius: '0.5rem', padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.875rem', color: '#78716C' }}>
-                        {usuarioSeleccionado?.id === u.id ? '✕' : '···'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {usuarios.length === 0
+                  ? <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#78716C', fontSize: '0.875rem' }}>No hay usuarios con los filtros seleccionados.</td></tr>
+                  : usuarios.map(u => (
+                    <tr key={u.id} style={{ background: usuarioSeleccionado?.id === u.id ? '#EAF0E6' : 'transparent', transition: 'background 0.15s' }}>
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                        <div style={{ fontWeight: 500 }}>{u.name}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{u.email}</div>
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                        <span style={getRoleBadgeStyle(u.role)}>{u.role}</span>
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                        {u.plan
+                          ? <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: '#EEF2FF', color: '#4F46E5' }}>{u.plan.name_es}</span>
+                          : <span style={{ fontSize: '0.72rem', color: '#A8A29E' }}>—</span>
+                        }
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.sesiones ?? '—'}</td>
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.moodPromedio != null ? u.moodPromedio : '—'}</td>
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.ratingPromedio != null ? `${u.ratingPromedio} ★` : '—'}</td>
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: u.active ? '#22C55E' : '#EF4444', marginRight: '0.4rem' }} />
+                        {u.active ? 'Activo' : 'Inactivo'}
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                        <button onClick={() => setUsuarioSeleccionado(usuarioSeleccionado?.id === u.id ? null : u)}
+                          style={{ background: 'none', border: '0.5px solid #E7E5E4', borderRadius: '0.5rem', padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.875rem', color: '#78716C' }}>
+                          {usuarioSeleccionado?.id === u.id ? '✕' : '···'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                }
               </tbody>
             </table>
           </div>
@@ -509,11 +457,15 @@ export function AdminUsers() {
           {/* PANEL LATERAL */}
           {usuarioSeleccionado && (
             <div style={{ width: 280, flexShrink: 0, background: '#fff', borderRadius: '1rem', border: '0.5px solid #E7E5E4', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem' }}>
+
+              {/* Info */}
               <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '0.5px solid #F5F3EF' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917', marginBottom: '0.2rem' }}>{usuarioSeleccionado.name}</div>
                 <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{usuarioSeleccionado.email}</div>
                 <div style={{ fontSize: '0.75rem', color: '#A8B5A2', marginTop: '0.35rem' }}>Desde {formatDate(usuarioSeleccionado.createdAt)}</div>
               </div>
+
+              {/* Stats */}
               <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '0.5px solid #F5F3EF' }}>
                 <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.65rem' }}>Estadísticas</div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -529,6 +481,8 @@ export function AdminUsers() {
                   ))}
                 </div>
               </div>
+
+              {/* Rol */}
               <div style={{ marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Rol</div>
                 <select style={{ ...sel, width: '100%' }} value={usuarioSeleccionado.role} onChange={e => cambiarRol(usuarioSeleccionado, e.target.value as Role)}>
@@ -539,6 +493,8 @@ export function AdminUsers() {
                   {esSuperAdmin && <option value="board">board</option>}
                 </select>
               </div>
+
+              {/* Terapeuta asignado */}
               {usuarioSeleccionado.role === 'user' && (
                 <div style={{ marginBottom: '1rem' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Terapeuta asignado</div>
@@ -549,34 +505,116 @@ export function AdminUsers() {
                   </select>
                 </div>
               )}
+
+              {/* Activar / Desactivar */}
               <button onClick={() => toggleActivo(usuarioSeleccionado)} style={{
                 width: '100%', padding: '0.6rem', borderRadius: '0.85rem', border: 'none',
                 background: usuarioSeleccionado.active ? '#FEE2E2' : '#EAF0E6',
                 color: usuarioSeleccionado.active ? '#DC2626' : '#4A6741',
                 fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                marginBottom: '0.5rem',
               }}>
                 {usuarioSeleccionado.active ? 'Desactivar usuario' : 'Activar usuario'}
               </button>
+
+              {/* Eliminar — solo superadmin */}
+              {esSuperAdmin && (
+                <button
+                  onClick={() => { setConfirmDelete(usuarioSeleccionado); setDeleteInput(''); setDeleteError(''); }}
+                  style={{
+                    width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
+                    border: '0.5px solid #DC2626', background: 'transparent',
+                    color: '#DC2626', fontWeight: 500, fontSize: '0.875rem',
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  Eliminar permanentemente
+                </button>
+              )}
             </div>
           )}
         </div>
       )}
 
-      {/* MODAL RECHAZO PLAN — HU-077 */}
+      {/* MODAL CONFIRMACIÓN ELIMINACIÓN */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(26,28,27,0.15)' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🗑️</div>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
+                Eliminar usuario
+              </h3>
+            </div>
+
+            <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '0.5rem', lineHeight: 1.6 }}>
+              Esta acción es <strong style={{ color: '#DC2626' }}>permanente e irreversible</strong>. Se eliminarán todos los datos de:
+            </p>
+
+            <div style={{ background: '#FEF2F2', border: '0.5px solid #FECACA', borderRadius: '0.65rem', padding: '0.75rem 1rem', marginBottom: '1.25rem' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1C1917' }}>{confirmDelete.name}</div>
+              <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{confirmDelete.email}</div>
+            </div>
+
+            <p style={{ fontSize: '0.82rem', color: '#78716C', marginBottom: '0.5rem' }}>
+              Para confirmar, escribí exactamente el nombre del usuario:
+            </p>
+
+            <input
+              type="text"
+              value={deleteInput}
+              onChange={e => { setDeleteInput(e.target.value); setDeleteError(''); }}
+              placeholder={confirmDelete.name}
+              style={{
+                width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem',
+                border: `0.5px solid ${deleteError ? '#DC2626' : '#E7E5E4'}`,
+                fontSize: '0.875rem', fontFamily: 'Inter, sans-serif',
+                color: '#1C1917', boxSizing: 'border-box', outline: 'none',
+                marginBottom: '0.5rem',
+              }}
+            />
+
+            {deleteError && (
+              <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 1rem' }}>{deleteError}</p>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+              <button
+                onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }}
+                style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarUsuario}
+                disabled={eliminando || deleteInput !== confirmDelete.name}
+                style={{
+                  flex: 1, padding: '0.65rem',
+                  background: eliminando || deleteInput !== confirmDelete.name ? '#F5F3EF' : '#DC2626',
+                  color: eliminando || deleteInput !== confirmDelete.name ? '#A8A29E' : '#fff',
+                  border: 'none', borderRadius: '0.75rem',
+                  cursor: eliminando || deleteInput !== confirmDelete.name ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                {eliminando ? 'Eliminando...' : 'Eliminar definitivamente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL RECHAZO PLAN */}
       {showRejectModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
-              ✕ Rechazar solicitud
-            </h3>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>✕ Rechazar solicitud</h3>
             <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem' }}>
               Explicá por qué rechazás la solicitud de <strong>{showRejectModal.requester.name}</strong> para el plan <strong>{showRejectModal.plan.name_es}</strong>.
             </p>
-            <textarea
-              value={planRejectNote}
-              onChange={e => setPlanRejectNote(e.target.value)}
-              placeholder="Ej: El plan seleccionado no está disponible actualmente..."
-              rows={3}
+            <textarea value={planRejectNote} onChange={e => setPlanRejectNote(e.target.value)}
+              placeholder="Ej: El plan seleccionado no está disponible actualmente..." rows={3}
               style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #D6D2C4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
             />
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
@@ -584,8 +622,7 @@ export function AdminUsers() {
                 style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
                 Cancelar
               </button>
-              <button
-                onClick={() => void rejectPlanRequest(showRejectModal)}
+              <button onClick={() => void rejectPlanRequest(showRejectModal)}
                 disabled={!planRejectNote.trim() || planActionId === showRejectModal.id}
                 style={{ padding: '0.6rem 1.25rem', background: !planRejectNote.trim() ? '#E7E5E4' : '#DC2626', color: !planRejectNote.trim() ? '#A8A29E' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: planRejectNote.trim() ? 'pointer' : 'not-allowed', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
                 {planActionId === showRejectModal.id ? 'Procesando...' : 'Confirmar rechazo'}
@@ -630,11 +667,7 @@ export function AdminUsers() {
                 {esSuperAdmin && <option value="board">board</option>}
               </select>
             </div>
-            <button onClick={crearUsuario} disabled={creando} style={{
-              width: '100%', padding: '0.75rem', background: creando ? '#A8B5A2' : '#6B7D5C',
-              color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.9rem',
-              fontWeight: 500, cursor: creando ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
-            }}>
+            <button onClick={crearUsuario} disabled={creando} style={{ width: '100%', padding: '0.75rem', background: creando ? '#A8B5A2' : '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.9rem', fontWeight: 500, cursor: creando ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
               {creando ? 'Creando...' : 'Crear usuario'}
             </button>
           </div>

@@ -29,14 +29,47 @@ const loginLimiter = rateLimit({
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Nombre, correo y contraseña son requeridos.' });
+    }
+
+    // Verificar si el email ya existe en la BD
+    const existing = await User.findOne({ where: { email } });
+
+    if (existing) {
+      if (existing.active === false) {
+        // Usuario desactivado — reactivar con los nuevos datos
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await existing.update({
+          name,
+          password: hashedPassword,
+          active: true,
+          loginAttempts: 0,
+          lockedUntil: null,
+        });
+        return res.status(200).json({
+          message: '¡Bienvenido de vuelta a Elevation! Tu cuenta ha sido reactivada.',
+          reactivated: true,
+        });
+      }
+
+      // Usuario activo — no se puede registrar con ese email
+      return res.status(400).json({ error: 'El correo ya está registrado.' });
+    }
+
+    // Usuario nuevo — crear normalmente
     const adminEmails = (process.env.ADMIN_EMAILS || '')
       .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
     const role = adminEmails.includes(email.toLowerCase()) ? 'admin' : 'user';
     const hashedPassword = await bcrypt.hash(password, 10);
+
     await User.create({ name, email, password: hashedPassword, role });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
+
   } catch (error) {
-    res.status(400).json({ error: 'El correo ya está registrado o hubo un error.' });
+    console.error('❌ Error en register:', error);
+    res.status(500).json({ error: 'Error en el servidor al registrar.' });
   }
 });
 
@@ -51,6 +84,15 @@ router.post('/login', loginLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas.' });
     }
 
+    // Usuario desactivado — informar que puede reactivarse
+    if (user.active === false) {
+      return res.status(403).json({
+        error: 'Tu cuenta está desactivada. Podés reactivarla registrándote nuevamente con tu correo.',
+        deactivated: true,
+      });
+    }
+
+    // Cuenta bloqueada por intentos fallidos
     if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
       const minutosRestantes = Math.ceil((new Date(user.lockedUntil) - new Date()) / 60000);
       return res.status(423).json({
@@ -74,11 +116,13 @@ router.post('/login', loginLimiter, async (req, res) => {
     }
 
     await user.update({ loginAttempts: 0, lockedUntil: null });
+
     const token = jwt.sign(
       { id: user.id, name: user.name, role: user.role },
       JWT_SECRET,
       { expiresIn: '8h' }
     );
+
     res.json({
       message: 'Inicio de sesión exitoso',
       token,
@@ -86,6 +130,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       role: user.role,
       onboardingCompleted: user.onboardingCompleted ?? false,
     });
+
   } catch (error) {
     console.error('❌ Error en login:', error);
     res.status(500).json({ error: 'Error en el servidor.' });

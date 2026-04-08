@@ -154,6 +154,48 @@ router.put('/:id', async (req, res) => {
 });
 
 // ==========================================
+// DELETE /api/admin/usuarios/:id — Eliminar usuario
+// Solo superadmin. Borrado físico permanente.
+// ==========================================
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const adminRole = req.user.role;
+    const adminId   = req.user.id;
+
+    // Solo superadmin puede eliminar
+    if (adminRole !== 'superadmin') {
+      return res.status(403).json({ error: 'Solo el superadmin puede eliminar usuarios permanentemente.' });
+    }
+
+    // No puede eliminarse a sí mismo
+    if (parseInt(id) === adminId) {
+      return res.status(403).json({ error: 'No podés eliminar tu propio usuario.' });
+    }
+
+    const usuario = await User.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+
+    // No se puede eliminar a otro superadmin
+    if (usuario.role === 'superadmin') {
+      return res.status(403).json({ error: 'No se puede eliminar a un superadmin.' });
+    }
+
+    const nombreUsuario = usuario.name;
+    await usuario.destroy();
+
+    console.log(`🗑️ Usuario eliminado permanentemente: ${nombreUsuario} (id: ${id}) por superadmin ${req.user.name}`);
+
+    res.json({ message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
+  } catch (error) {
+    console.error('❌ Error eliminando usuario:', error);
+    res.status(500).json({ error: 'No se pudo eliminar el usuario.' });
+  }
+});
+
+// ==========================================
 // PUT /api/admin/usuarios/:id/asignar-terapeuta
 // ==========================================
 router.put('/:id/asignar-terapeuta', async (req, res) => {
@@ -184,7 +226,6 @@ router.put('/:id/asignar-terapeuta', async (req, res) => {
 
 // ==========================================
 // PUT /api/admin/usuarios/:id/plan — HU-077
-// Asignar plan a un usuario (solo admin/superadmin)
 // ==========================================
 router.put('/:id/plan', async (req, res) => {
   try {
