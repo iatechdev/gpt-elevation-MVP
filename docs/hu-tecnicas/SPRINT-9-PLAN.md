@@ -54,14 +54,6 @@ Las grandes features pendientes son:
 - DB_HOST usa el path del socket: `/cloudsql/eleveation-490611:us-south1:elevation-bd`
 - **IMPORTANTE:** La BD esta en `us-south1`, no en `us-central1` — el path debe reflejar esto
 
-### Causas raiz resueltas (cronologia del debugging)
-1. `backend/message.js` en minuscula — Linux es case-sensitive, Windows no
-   - Fix: crear `backend/Message.js` con M mayuscula
-2. `VITE_BACKEND_URL` en cloudbuild.yaml tenia URL vieja de Cloud Run
-   - Fix: actualizar a `https://elevation-mvp-747531656650.us-central1.run.app`
-3. `DB_HOST` configurado con region incorrecta `us-central1` en lugar de `us-south1`
-   - Fix: cambiar a `/cloudsql/eleveation-490611:us-south1:elevation-bd`
-
 ### Stack de deploy (comandos definitivos)
 ```cmd
 git pull origin feature/mvp-elevation
@@ -89,22 +81,52 @@ gcloud run deploy elevation-mvp --image gcr.io/eleveation-490611/elevation-mvp -
 
 ---
 
+## Avances sesion 08/04/2026 (tarde)
+
+### AdminPrompts — Creacion de prompts desde admin/superadmin — COMPLETADO
+- Boton "+ Nuevo prompt" visible para ambos roles
+- Superadmin crea y activa directo via POST /api/admin/prompt
+- Admin propone via POST /api/admin/prompt/propose (requiere aprobacion)
+- Key predefinido: elevation_system_prompt (Elevation — Prompt General)
+- Panel "Contenido activo" al seleccionar prompt — muestra texto desencriptado con colapso/expansion
+- Fix BD: UPDATE status = 'active' para elevation_system_prompt que estaba en 'approved'
+
+### LoginPage — Design system tokens — COMPLETADO
+- Todos los colores hardcodeados migrados a tokens.ts
+- inputStyle extraido como constante local
+- Sin cambios funcionales
+
+### Auth — Ciclo de vida de usuario definido e implementado — COMPLETADO
+Definicion de estados:
+- Activo (active: true): puede hacer login normalmente
+- Desactivado (active: false): NO puede hacer login, SI puede reactivarse registrandose de nuevo
+- Eliminado (destroy()): borrado fisico permanente, solo superadmin
+
+Cambios en backend/routes/auth.js:
+- POST /api/register: si email existe con active=false, reactiva el usuario con nuevos datos (nombre + password)
+- POST /api/login: bloquea usuarios con active=false con mensaje que indica como reactivarse
+- Validacion de campos vacios en register
+
+### Eliminacion de usuarios — COMPLETADO
+- DELETE /api/admin/usuarios/:id — solo superadmin
+- Protecciones: no puede eliminar su propio usuario, no puede eliminar otro superadmin
+- Frontend: boton "Eliminar permanentemente" solo visible para superadmin en panel lateral
+- Modal de confirmacion con triple friccion: muestra nombre+email, requiere escribir nombre exacto para habilitar boton
+
+### Mood labels — COMPLETADO
+- Textos de emociones actualizados en es.ts y en.ts
+- ES: Muy mal / No tan bien / Neutral / Bien / Muy bien
+- EN: Very bad / Not so good / Neutral / Good / Very good
+- Subido directamente al repo por Claude
+
+---
+
 ## Pendiente Sprint 9
 
 ### Proximo a trabajar
 
-1. HU-067 — Videollamada Daily.co (8 pts) — requiere cuenta Daily.co y DAILY_API_KEY
+1. HU-067 — Videollamada Daily.co (8 pts) — requiere DAILY_API_KEY lista
 2. HU-068 — Google Calendar sync (5 pts)
-
-### BD — Pendiente (ejecutar en Cloud SQL Studio)
-```sql
-INSERT INTO "PromptVaults" (key, content, version, status, "isActive", "createdAt", "updatedAt")
-VALUES (
-  'elevation_system_prompt',
-  'You are Elevation, an empathetic emotional wellness companion. You listen actively, ask reflective questions, and provide warm support. You never replace professional therapy but you accompany the user with care.',
-  1, 'active', true, NOW(), NOW()
-);
-```
 
 ### Deuda tecnica pendiente
 - GCS_KEY_FILE apunta a ./gcs-credentials.json — resolver con Secret Manager
@@ -123,7 +145,9 @@ VALUES (
 - DB en us-south1 — DB_HOST debe usar `/cloudsql/eleveation-490611:us-south1:elevation-bd`
 - Cloud SQL Auth Proxy via socket (no IP publica) — seguro para produccion
 - Deploy: Cloud Build + Cloud Run, imagen en gcr.io/eleveation-490611/elevation-mvp
+- Usuario desactivado puede reactivarse registrandose con el mismo email
+- Eliminacion fisica solo para superadmin, con confirmacion por nombre exacto
 
 ---
 
-*Actualizado: 8 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldan*
+*Actualizado: 8 de abril de 2026 (sesion tarde) — Claude (Tech Lead AI) + Mauro Roldan*
