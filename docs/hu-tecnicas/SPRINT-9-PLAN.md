@@ -70,7 +70,7 @@ Las grandes features pendientes son:
 
 ---
 
-## Avances sesion 07/04/2026
+## Avances sesion 07-08/04/2026
 
 ### HU-077 — Sistema de planes y solicitudes — COMPLETADO
 
@@ -117,44 +117,30 @@ Las grandes features pendientes son:
 - UserDashboard.tsx: useCallback removido del import
 - Build local: vite built in 904ms — LIMPIO
 
----
+### DEPLOY A CLOUD RUN — COMPLETADO (08/04/2026) ✅
 
-## DEPLOY A CLOUD RUN — BLOQUEADO (07/04/2026)
+**URL de produccion:** https://elevation-mvp-747531656650.us-central1.run.app
 
-### Estado actual
-- Cloud Build: SUCCESS en cada intento
-- Cloud Run deploy: FALLA — container failed to start on PORT=8080
-- Error exacto: MODULE_NOT_FOUND en chat.js:9 -> require('../utils/anthropic') -> require('@anthropic-ai/sdk')
+**Causa raiz del bloqueo (2 dias de debugging):**
+- El archivo `backend/message.js` tenia nombre en minuscula
+- `chat.js` hacia `require('../Message')` con M mayuscula
+- Windows (maquina de desarrollo) es case-insensitive — funcionaba local
+- Linux (contenedor Cloud Run) es case-sensitive — fallaba en produccion
+- Error visible en logs: `Cannot find module '../Message'`
+- Fix: crear `backend/Message.js` con M mayuscula en el repo
 
-### Lo que se intentó
-1. npm install --legacy-peer-deps
-2. Eliminar package-lock.json + npm install --no-package-lock
-3. Downgrade @anthropic-ai/sdk de 0.79.0 a 0.36.3 (en package.json, pendiente de build)
-4. Dockerfile con paso de verificacion de modulos
-5. cloudbuild.yaml con VITE_BACKEND_URL como substitution
-
-### Diagnostico
-- El sdk se instala en el build (195 packages added) pero falla en runtime
-- El comando de verificacion node -e "require(...)" --prefix fallo por sintaxis incorrecta
-- La version 0.79.0 del SDK puede tener incompatibilidad con Node 20 en el contenedor
-
-### Plan para proxima sesion
-1. Confirmar que el build con sdk@0.36.3 se ejecuto (git pull + gcloud builds submit + deploy)
-2. Si sigue fallando: revisar server.js para ver si hay otro require que falle antes
-3. Alternativa: reemplazar @anthropic-ai/sdk por llamadas HTTP directas a la API de Anthropic
-4. Variables de entorno en Cloud Run: todas configuradas EXCEPTO FRONTEND_URL y PORT=8080
-
-### URLs de produccion
-- Cloud Run service: https://elevation-mvp-747531656650.us-central1.run.app
+**Stack de deploy:**
+- Cloud Build: gcloud builds submit --config cloudbuild.yaml --project eleveation-490611
+- Cloud Run: gcloud run deploy elevation-mvp --image gcr.io/eleveation-490611/elevation-mvp --platform managed --region us-central1 --allow-unauthenticated --project eleveation-490611
 - GCP project: eleveation-490611 (doble 'e')
-- Region: us-central1
-- Image: gcr.io/eleveation-490611/elevation-mvp
+- Imagen: gcr.io/eleveation-490611/elevation-mvp
+- Dockerfile: WORKDIR /app, npm install --no-package-lock, VITE_BACKEND_URL como ARG
 
 ---
 
 ## Pendiente Sprint 9
 
-### Proximo a trabajar (despues de resolver deploy)
+### Proximo a trabajar
 
 1. HU-067 — Videollamada Daily.co (la mas pesada — 8 pts)
 2. HU-068 — Google Calendar sync (5 pts)
@@ -167,11 +153,16 @@ Las grandes features pendientes son:
 - Requiere cuenta Daily.co y DAILY_API_KEY en variables de entorno
 
 ### BD — Pendiente
-- Insertar prompt elevation_system_prompt en PromptVaults:
+- Insertar prompt elevation_system_prompt en PromptVaults via Cloud SQL Studio:
 ```sql
 INSERT INTO "PromptVaults" (key, content, version, status, "isActive", "createdAt", "updatedAt")
-VALUES ('elevation_system_prompt', 'You are Elevation, an empathetic emotional wellness companion...', 1, 'active', true, NOW(), NOW());
+VALUES ('elevation_system_prompt', 'You are Elevation, an empathetic emotional wellness companion. You listen actively, ask reflective questions, and provide warm support. You never replace professional therapy but you accompany the user with care.', 1, 'active', true, NOW(), NOW());
 ```
+
+### Deuda tecnica pendiente
+- GCS_KEY_FILE apunta a ./gcs-credentials.json — resolver con Secret Manager o ADC
+- FRONTEND_URL no esta configurada en Cloud Run (CORS puede fallar en algunos browsers)
+- backend/message.js (minuscula) queda como archivo zombie — no rompe nada pero hay que limpiar
 
 ---
 
@@ -189,8 +180,8 @@ VALUES ('elevation_system_prompt', 'You are Elevation, an empathetic emotional w
 - Planes se crean desde AdminContent -> tab Precios (no seed quemado)
 - Matching: Claude Haiku genera top 3 sugerencias, usuario elige, admin confirma
 - Deploy: Cloud Build + Cloud Run, imagen en gcr.io/eleveation-490611/elevation-mvp
-- GCS_KEY_FILE en Cloud Run apunta a ./gcs-credentials.json — resolver con Secret Manager en deuda tecnica
+- Linux es case-sensitive — todos los require() deben coincidir exactamente con el nombre del archivo
 
 ---
 
-*Actualizado: 7 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldan*
+*Actualizado: 8 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldan*
