@@ -1,6 +1,7 @@
 // frontend/src/pages/UserDashboard.tsx
 // HU-061 — User Dashboard unificado con check-in integrado
 // HU-077 — Widget Mi Plan
+// HU-067 — Botón videollamada activo
 
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -182,7 +183,6 @@ export function UserDashboard() {
     } catch { /* silent */ }
   }
 
-  // HU-077 — carga el plan y límites del usuario
   const loadUserPlan = async () => {
     try {
       const res = await apiFetch('/api/user/plan/me')
@@ -301,6 +301,14 @@ export function UserDashboard() {
     : []
   const formatLimit = (n: number) => n === -1 ? '∞' : String(n)
 
+  // HU-067 — helper: sesión activa ahora o próxima en los próximos 15 min
+  const sessionIsLive = upcomingSession?.status === 'in_progress'
+  const sessionIsImminent = (() => {
+    if (!upcomingSession || upcomingSession.status !== 'scheduled') return false
+    const diff = new Date(upcomingSession.scheduledAt).getTime() - Date.now()
+    return diff <= 15 * 60 * 1000 && diff >= 0
+  })()
+
   return (
     <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
 
@@ -408,11 +416,18 @@ export function UserDashboard() {
             </div>
           </div>
 
-          {/* Widget 3 — Próxima sesión */}
-          <div style={cardStyle}>
+          {/* Widget 3 — Próxima sesión — HU-067 activado */}
+          <div style={{
+            ...cardStyle,
+            ...(sessionIsLive ? { border: '1px solid #6B7D5C', background: '#EAF0E6' } : {}),
+            ...(sessionIsImminent ? { border: '1px solid #A8B5A2' } : {}),
+          }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              📅 {lang === 'es' ? 'Próxima sesión' : 'Upcoming session'}
+              {sessionIsLive
+                ? '🔴 ' + (lang === 'es' ? 'Sesión en curso' : 'Session live')
+                : '📅 ' + (lang === 'es' ? 'Próxima sesión' : 'Upcoming session')}
             </div>
+
             {upcomingSession ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>
@@ -421,10 +436,50 @@ export function UserDashboard() {
                 <div style={{ fontSize: '0.78rem', color: '#78716C' }}>
                   {formatSession(upcomingSession.scheduledAt)} — {upcomingSession.duration} min
                 </div>
-                <button disabled title={lang === 'es' ? 'Próximamente' : 'Coming soon'}
-                  style={{ marginTop: '0.5rem', padding: '0.5rem 0.85rem', background: '#E7E5E4', color: '#A8A29E', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', cursor: 'not-allowed' }}>
-                  {lang === 'es' ? 'Entrar a videollamada' : 'Join videocall'}
-                </button>
+
+                {/* HU-067 — botón videollamada activo */}
+                {sessionIsLive ? (
+                  // Sesión activa — botón verde para entrar
+                  <button
+                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
+                    style={{
+                      marginTop: '0.5rem', padding: '0.6rem 0.85rem',
+                      background: '#6B7D5C', color: '#fff',
+                      border: 'none', borderRadius: '0.65rem',
+                      fontSize: '0.82rem', fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                    }}
+                  >
+                    🎥 {lang === 'es' ? 'Entrar a la videollamada' : 'Join videocall'}
+                  </button>
+                ) : sessionIsImminent ? (
+                  // Sesión en menos de 15 min — botón de espera pulsante
+                  <button
+                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
+                    style={{
+                      marginTop: '0.5rem', padding: '0.6rem 0.85rem',
+                      background: '#A8B5A2', color: '#fff',
+                      border: 'none', borderRadius: '0.65rem',
+                      fontSize: '0.82rem', fontWeight: 500,
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    ⏳ {lang === 'es' ? 'La sesión está por comenzar' : 'Session starting soon'}
+                  </button>
+                ) : (
+                  // Sesión futura — botón informativo deshabilitado
+                  <div style={{
+                    marginTop: '0.5rem', padding: '0.5rem 0.85rem',
+                    background: '#F5F3EF', borderRadius: '0.65rem',
+                    fontSize: '0.78rem', color: '#78716C',
+                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  }}>
+                    🕐 {lang === 'es'
+                      ? 'El enlace estará disponible cuando el terapeuta inicie la sesión'
+                      : 'Link will be available when your therapist starts the session'}
+                  </div>
+                )}
               </div>
             ) : therapistId ? (
               <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
@@ -458,7 +513,6 @@ export function UserDashboard() {
               </span>
             </div>
 
-            {/* Precio */}
             <div style={{ marginBottom: '0.75rem' }}>
               {userPlan && userPlan.price > 0 ? (
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
@@ -476,7 +530,6 @@ export function UserDashboard() {
               )}
             </div>
 
-            {/* Límites */}
             {planLimits && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
@@ -494,7 +547,6 @@ export function UserDashboard() {
               </div>
             )}
 
-            {/* Features */}
             {planFeatures.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '0.75rem' }}>
                 {planFeatures.slice(0, 3).map((f, i) => (
@@ -506,7 +558,6 @@ export function UserDashboard() {
               </div>
             )}
 
-            {/* CTA upgrade — solo si es basic o essential */}
             {(planSlug === 'basic' || planSlug === 'essential') && (
               <button
                 onClick={() => navigate('/pricing')}
