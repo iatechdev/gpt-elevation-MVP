@@ -1,4 +1,4 @@
-// HU-045 + HU-063 + HU-077 — User management + matching requests + plan requests
+// HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
 import { useState, useEffect } from 'react';
 
@@ -16,6 +16,10 @@ interface Usuario {
   ratingPromedio: number | null;
   moodPromedio: number | null;
   plan: { id: number; slug: string; name_es: string; name_en: string } | null;
+  // HU-078
+  isLocked: boolean;
+  lockedUntil: string | null;
+  loginAttempts: number;
 }
 
 interface Terapeuta {
@@ -75,24 +79,33 @@ export function AdminUsers() {
   const [errorModal,          setErrorModal]          = useState('');
   const [exitoModal,          setExitoModal]          = useState('');
 
-  // — Eliminación —
-  const [confirmDelete,    setConfirmDelete]    = useState<Usuario | null>(null);
-  const [eliminando,       setEliminando]       = useState(false);
-  const [deleteInput,      setDeleteInput]      = useState('');
-  const [deleteError,      setDeleteError]      = useState('');
+  // Eliminación
+  const [confirmDelete, setConfirmDelete] = useState<Usuario | null>(null);
+  const [eliminando,    setEliminando]    = useState(false);
+  const [deleteInput,   setDeleteInput]   = useState('');
+  const [deleteError,   setDeleteError]   = useState('');
 
-  // Matching requests
+  // Matching
   const [matchingRequests, setMatchingRequests] = useState<MatchingRequest[]>([]);
   const [showMatching,     setShowMatching]     = useState(false);
   const [confirmingId,     setConfirmingId]     = useState<number | null>(null);
 
   // Plan requests
-  const [planRequests,     setPlanRequests]     = useState<PlanRequest[]>([]);
-  const [showPlanRequests, setShowPlanRequests] = useState(false);
-  const [planActionId,     setPlanActionId]     = useState<number | null>(null);
-  const [planRejectNote,   setPlanRejectNote]   = useState('');
-  const [showRejectModal,  setShowRejectModal]  = useState<PlanRequest | null>(null);
-  const [planMsg,          setPlanMsg]          = useState('');
+  const [planRequests,    setPlanRequests]    = useState<PlanRequest[]>([]);
+  const [showPlanRequests,setShowPlanRequests]= useState(false);
+  const [planActionId,    setPlanActionId]    = useState<number | null>(null);
+  const [planRejectNote,  setPlanRejectNote]  = useState('');
+  const [showRejectModal, setShowRejectModal] = useState<PlanRequest | null>(null);
+  const [planMsg,         setPlanMsg]         = useState('');
+
+  // HU-078 — Desbloqueo y reset password
+  const [unlocking,        setUnlocking]        = useState(false);
+  const [unlockMsg,        setUnlockMsg]        = useState('');
+  const [showResetModal,   setShowResetModal]   = useState(false);
+  const [newPassword,      setNewPassword]      = useState('');
+  const [resetting,        setResetting]        = useState(false);
+  const [resetMsg,         setResetMsg]         = useState('');
+  const [resetError,       setResetError]       = useState('');
 
   const role         = localStorage.getItem('elevation_role') ?? 'admin';
   const esSuperAdmin = role === 'superadmin';
@@ -246,7 +259,6 @@ export function AdminUsers() {
     finally { setCreando(false); }
   };
 
-  // — Eliminar usuario (solo superadmin) —
   const eliminarUsuario = async () => {
     if (!confirmDelete) return;
     if (deleteInput !== confirmDelete.name) {
@@ -261,12 +273,53 @@ export function AdminUsers() {
       });
       const data = await res.json();
       if (!res.ok) { setDeleteError(data.error || 'Error al eliminar.'); return; }
-      setConfirmDelete(null);
-      setDeleteInput('');
+      setConfirmDelete(null); setDeleteInput('');
       setUsuarioSeleccionado(null);
       await fetchUsuarios();
     } catch { setDeleteError('Error de conexión.'); }
     finally { setEliminando(false); }
+  };
+
+  // HU-078 — Desbloquear cuenta
+  const desbloquearUsuario = async () => {
+    if (!usuarioSeleccionado) return;
+    setUnlocking(true); setUnlockMsg('');
+    try {
+      const res = await fetch(`${API}/api/admin/usuarios/${usuarioSeleccionado.id}/unlock`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { setUnlockMsg(data.error || 'Error al desbloquear.'); return; }
+      setUnlockMsg(`✓ ${data.message}`);
+      await fetchUsuarios();
+      setUsuarioSeleccionado(prev => prev ? { ...prev, isLocked: false, loginAttempts: 0, lockedUntil: null, active: true } : null);
+      setTimeout(() => setUnlockMsg(''), 3000);
+    } catch { setUnlockMsg('Error de conexión.'); }
+    finally { setUnlocking(false); }
+  };
+
+  // HU-078 — Reset contraseña (superadmin)
+  const resetPassword = async () => {
+    if (!usuarioSeleccionado) return;
+    setResetError(''); setResetMsg('');
+    if (newPassword.trim().length < 6) {
+      setResetError('La contraseña debe tener al menos 6 caracteres.'); return;
+    }
+    setResetting(true);
+    try {
+      const res = await fetch(`${API}/api/admin/usuarios/${usuarioSeleccionado.id}/reset-password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ newPassword: newPassword.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setResetError(data.error || 'Error al resetear.'); return; }
+      setResetMsg(`✓ ${data.message}`);
+      setNewPassword('');
+      setTimeout(() => { setShowResetModal(false); setResetMsg(''); }, 2500);
+    } catch { setResetError('Error de conexión.'); }
+    finally { setResetting(false); }
   };
 
   const sel = {
@@ -437,12 +490,25 @@ export function AdminUsers() {
                       <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.sesiones ?? '—'}</td>
                       <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.moodPromedio != null ? u.moodPromedio : '—'}</td>
                       <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.ratingPromedio != null ? `${u.ratingPromedio} ★` : '—'}</td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: u.active ? '#22C55E' : '#EF4444', marginRight: '0.4rem' }} />
-                        {u.active ? 'Activo' : 'Inactivo'}
+                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                          <div>
+                            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: u.active ? '#22C55E' : '#EF4444', marginRight: '0.4rem' }} />
+                            {u.active ? 'Activo' : 'Inactivo'}
+                          </div>
+                          {/* HU-078 — Badge bloqueado */}
+                          {u.isLocked && (
+                            <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#92400E', background: '#FEF3C7', padding: '1px 6px', borderRadius: 999 }}>
+                              🔒 Bloqueado
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        <button onClick={() => setUsuarioSeleccionado(usuarioSeleccionado?.id === u.id ? null : u)}
+                        <button onClick={() => {
+                          setUsuarioSeleccionado(usuarioSeleccionado?.id === u.id ? null : u);
+                          setUnlockMsg('');
+                        }}
                           style={{ background: 'none', border: '0.5px solid #E7E5E4', borderRadius: '0.5rem', padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.875rem', color: '#78716C' }}>
                           {usuarioSeleccionado?.id === u.id ? '✕' : '···'}
                         </button>
@@ -463,6 +529,17 @@ export function AdminUsers() {
                 <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917', marginBottom: '0.2rem' }}>{usuarioSeleccionado.name}</div>
                 <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{usuarioSeleccionado.email}</div>
                 <div style={{ fontSize: '0.75rem', color: '#A8B5A2', marginTop: '0.35rem' }}>Desde {formatDate(usuarioSeleccionado.createdAt)}</div>
+                {/* HU-078 — Estado de bloqueo */}
+                {usuarioSeleccionado.isLocked && (
+                  <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.65rem', background: '#FEF3C7', borderRadius: '0.5rem', fontSize: '0.75rem', color: '#92400E', fontWeight: 500 }}>
+                    🔒 Bloqueado por intentos fallidos
+                    {usuarioSeleccionado.lockedUntil && (
+                      <div style={{ fontSize: '0.7rem', fontWeight: 400, marginTop: '0.15rem' }}>
+                        Hasta: {new Date(usuarioSeleccionado.lockedUntil).toLocaleString('es-CO')}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Stats */}
@@ -506,16 +583,58 @@ export function AdminUsers() {
                 </div>
               )}
 
+              {/* Feedback desbloqueo */}
+              {unlockMsg && (
+                <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.78rem', marginBottom: '0.75rem', background: unlockMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: unlockMsg.startsWith('✓') ? '#4A6741' : '#DC2626' }}>
+                  {unlockMsg}
+                </div>
+              )}
+
+              {/* HU-078 — Desbloquear cuenta */}
+              {(usuarioSeleccionado.isLocked || !usuarioSeleccionado.active) && (
+                <button
+                  onClick={desbloquearUsuario}
+                  disabled={unlocking}
+                  style={{
+                    width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
+                    border: 'none', marginBottom: '0.5rem',
+                    background: unlocking ? '#A8B5A2' : '#EAF0E6',
+                    color: unlocking ? '#fff' : '#4A6741',
+                    fontWeight: 500, fontSize: '0.875rem',
+                    cursor: unlocking ? 'not-allowed' : 'pointer',
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  {unlocking ? 'Desbloqueando...' : '🔓 Desbloquear cuenta'}
+                </button>
+              )}
+
               {/* Activar / Desactivar */}
               <button onClick={() => toggleActivo(usuarioSeleccionado)} style={{
                 width: '100%', padding: '0.6rem', borderRadius: '0.85rem', border: 'none',
                 background: usuarioSeleccionado.active ? '#FEE2E2' : '#EAF0E6',
                 color: usuarioSeleccionado.active ? '#DC2626' : '#4A6741',
-                fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                marginBottom: '0.5rem',
+                fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', marginBottom: '0.5rem',
               }}>
                 {usuarioSeleccionado.active ? 'Desactivar usuario' : 'Activar usuario'}
               </button>
+
+              {/* HU-078 — Reset contraseña (solo superadmin) */}
+              {esSuperAdmin && (
+                <button
+                  onClick={() => { setShowResetModal(true); setNewPassword(''); setResetError(''); setResetMsg(''); }}
+                  style={{
+                    width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
+                    border: '0.5px solid #A8B5A2', background: 'transparent',
+                    color: '#6B7D5C', fontWeight: 500, fontSize: '0.875rem',
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  🔑 Resetear contraseña
+                </button>
+              )}
 
               {/* Eliminar — solo superadmin */}
               {esSuperAdmin && (
@@ -536,67 +655,106 @@ export function AdminUsers() {
         </div>
       )}
 
+      {/* MODAL RESET CONTRASEÑA */}
+      {showResetModal && usuarioSeleccionado && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 400, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
+                🔑 Resetear contraseña
+              </h3>
+              <button onClick={() => setShowResetModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#78716C' }}>✕</button>
+            </div>
+
+            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem', lineHeight: 1.5 }}>
+              Establecé una contraseña temporal para <strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>. Comunicasela por otro medio (email, WhatsApp, etc.).
+            </p>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                Nueva contraseña temporal
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={e => { setNewPassword(e.target.value); setResetError(''); }}
+                placeholder="Mínimo 6 caracteres"
+                style={{
+                  width: '100%', padding: '0.6rem 0.85rem',
+                  border: `0.5px solid ${resetError ? '#DC2626' : '#E7E5E4'}`,
+                  borderRadius: '0.65rem', fontSize: '0.875rem',
+                  fontFamily: 'Inter, sans-serif', color: '#1C1917',
+                  boxSizing: 'border-box', outline: 'none',
+                }}
+              />
+              {resetError && <p style={{ fontSize: '0.75rem', color: '#DC2626', margin: '0.25rem 0 0' }}>{resetError}</p>}
+            </div>
+
+            {resetMsg && (
+              <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem', background: '#EAF0E6', color: '#4A6741' }}>
+                {resetMsg}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button onClick={() => setShowResetModal(false)} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
+                Cancelar
+              </button>
+              <button
+                onClick={resetPassword}
+                disabled={resetting || newPassword.trim().length < 6}
+                style={{
+                  flex: 1, padding: '0.65rem',
+                  background: resetting || newPassword.trim().length < 6 ? '#E7E5E4' : '#6B7D5C',
+                  color: resetting || newPassword.trim().length < 6 ? '#A8A29E' : '#fff',
+                  border: 'none', borderRadius: '0.75rem',
+                  cursor: resetting || newPassword.trim().length < 6 ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                {resetting ? 'Guardando...' : 'Confirmar reset'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL CONFIRMACIÓN ELIMINACIÓN */}
       {confirmDelete && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(26,28,27,0.15)' }}>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🗑️</div>
               <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
                 Eliminar usuario
               </h3>
             </div>
-
             <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '0.5rem', lineHeight: 1.6 }}>
-              Esta acción es <strong style={{ color: '#DC2626' }}>permanente e irreversible</strong>. Se eliminarán todos los datos de:
+              Esta acción es <strong style={{ color: '#DC2626' }}>permanente e irreversible</strong>.
             </p>
-
             <div style={{ background: '#FEF2F2', border: '0.5px solid #FECACA', borderRadius: '0.65rem', padding: '0.75rem 1rem', marginBottom: '1.25rem' }}>
               <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1C1917' }}>{confirmDelete.name}</div>
               <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{confirmDelete.email}</div>
             </div>
-
             <p style={{ fontSize: '0.82rem', color: '#78716C', marginBottom: '0.5rem' }}>
               Para confirmar, escribí exactamente el nombre del usuario:
             </p>
-
             <input
               type="text"
               value={deleteInput}
               onChange={e => { setDeleteInput(e.target.value); setDeleteError(''); }}
               placeholder={confirmDelete.name}
-              style={{
-                width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem',
-                border: `0.5px solid ${deleteError ? '#DC2626' : '#E7E5E4'}`,
-                fontSize: '0.875rem', fontFamily: 'Inter, sans-serif',
-                color: '#1C1917', boxSizing: 'border-box', outline: 'none',
-                marginBottom: '0.5rem',
-              }}
+              style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: `0.5px solid ${deleteError ? '#DC2626' : '#E7E5E4'}`, fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none', marginBottom: '0.5rem' }}
             />
-
-            {deleteError && (
-              <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 1rem' }}>{deleteError}</p>
-            )}
-
+            {deleteError && <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 1rem' }}>{deleteError}</p>}
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-              <button
-                onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }}
-                style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}
-              >
+              <button onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
                 Cancelar
               </button>
               <button
                 onClick={eliminarUsuario}
                 disabled={eliminando || deleteInput !== confirmDelete.name}
-                style={{
-                  flex: 1, padding: '0.65rem',
-                  background: eliminando || deleteInput !== confirmDelete.name ? '#F5F3EF' : '#DC2626',
-                  color: eliminando || deleteInput !== confirmDelete.name ? '#A8A29E' : '#fff',
-                  border: 'none', borderRadius: '0.75rem',
-                  cursor: eliminando || deleteInput !== confirmDelete.name ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif',
-                }}
+                style={{ flex: 1, padding: '0.65rem', background: eliminando || deleteInput !== confirmDelete.name ? '#F5F3EF' : '#DC2626', color: eliminando || deleteInput !== confirmDelete.name ? '#A8A29E' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: eliminando || deleteInput !== confirmDelete.name ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}
               >
                 {eliminando ? 'Eliminando...' : 'Eliminar definitivamente'}
               </button>
@@ -618,8 +776,7 @@ export function AdminUsers() {
               style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #D6D2C4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
             />
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
-              <button onClick={() => { setShowRejectModal(null); setPlanRejectNote(''); }}
-                style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
+              <button onClick={() => { setShowRejectModal(null); setPlanRejectNote(''); }} style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
                 Cancelar
               </button>
               <button onClick={() => void rejectPlanRequest(showRejectModal)}
@@ -638,8 +795,7 @@ export function AdminUsers() {
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>Crear usuario</h2>
-              <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C' }}>✕</button>
+              <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C' }}>✕</button>
             </div>
             {errorModal && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{errorModal}</div>}
             {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{exitoModal}</div>}
