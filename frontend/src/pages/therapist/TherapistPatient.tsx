@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   colors, radius, shadow, spacing, typography,
-  cardStyle as card, labelStyle,
+  labelStyle,
   btnPrimaryStyle, btnSecondaryStyle,
 } from '../../styles/tokens'
 
@@ -81,12 +81,12 @@ const cardStyle: React.CSSProperties = {
 }
 
 const rowStyle: React.CSSProperties = {
-  display:       'flex',
-  alignItems:    'center',
-  justifyContent:'space-between',
-  padding:       `${spacing.md} ${spacing.lg}`,
-  background:    colors.bgMuted,
-  borderRadius:  radius.md,
+  display:        'flex',
+  alignItems:     'center',
+  justifyContent: 'space-between',
+  padding:        `${spacing.md} ${spacing.lg}`,
+  background:     colors.bgMuted,
+  borderRadius:   radius.md,
 }
 
 const inputStyle: React.CSSProperties = {
@@ -304,7 +304,6 @@ export function TherapistPatient() {
             </p>
           </div>
 
-          {/* Botón agendar sesión */}
           <button
             onClick={() => { setShowSchedule(true); setSchedulingError(''); setSchedulingOk('') }}
             style={{
@@ -400,18 +399,13 @@ export function TherapistPatient() {
             </select>
             <button
               onClick={() => { setShowNoteForm(!showNoteForm); setNoteError('') }}
-              style={{
-                ...btnPrimaryStyle,
-                fontSize: 12,
-                padding: `${spacing.sm} ${spacing.md}`,
-              }}
+              style={{ ...btnPrimaryStyle, fontSize: 12, padding: `${spacing.sm} ${spacing.md}` }}
             >
               + Nueva nota
             </button>
           </div>
         </div>
 
-        {/* Formulario nueva nota */}
         {showNoteForm && (
           <div style={{
             background: colors.bg,
@@ -468,7 +462,6 @@ export function TherapistPatient() {
           </div>
         )}
 
-        {/* Lista de notas */}
         {filteredNotes.length === 0 ? (
           <p style={{ color: colors.textMuted, fontSize: 13 }}>
             Sin notas aún. Agregá tu primera nota clínica.
@@ -556,7 +549,6 @@ export function TherapistPatient() {
       {/* MOOD + RATINGS GRID */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.lg }}>
 
-        {/* MOOD HISTORY */}
         <div style={cardStyle}>
           <h2 style={{
             fontFamily: typography.fontDisplay, fontWeight: 400,
@@ -601,7 +593,6 @@ export function TherapistPatient() {
           )}
         </div>
 
-        {/* SESSION RATINGS */}
         <div style={cardStyle}>
           <h2 style={{
             fontFamily: typography.fontDisplay, fontWeight: 400,
@@ -733,12 +724,7 @@ export function TherapistPatient() {
             <div style={{ display: 'flex', gap: spacing.md }}>
               <button
                 onClick={() => { setShowSchedule(false); setSchedulingError(''); setSchedulingOk('') }}
-                style={{
-                  ...btnSecondaryStyle,
-                  flex: 1,
-                  padding: spacing.md,
-                  borderRadius: radius.lg,
-                }}
+                style={{ ...btnSecondaryStyle, flex: 1, padding: spacing.md, borderRadius: radius.lg }}
               >
                 Cancelar
               </button>
@@ -747,9 +733,7 @@ export function TherapistPatient() {
                 disabled={scheduling}
                 style={{
                   ...btnPrimaryStyle,
-                  flex: 2,
-                  padding: spacing.md,
-                  borderRadius: radius.lg,
+                  flex: 2, padding: spacing.md, borderRadius: radius.lg,
                   background: scheduling ? colors.textSubtle : colors.primary,
                   cursor: scheduling ? 'not-allowed' : 'pointer',
                 }}
