@@ -1,6 +1,8 @@
 // frontend/src/i18n/es.ts
+// HU-082 — i18n completo: Landing + User + Admin + Therapist + Board
 const es: Record<string, string> = {
-  // Landing
+
+  // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'Soporte emocional con IA',
   hero_title: 'Encuentra tu calma interior',
   hero_subtitle: 'Tu compañero privado para la claridad mental y el bienestar emocional.',
@@ -18,7 +20,7 @@ const es: Record<string, string> = {
   nav_how: 'Cómo funciona',
   nav_prices: 'Precios',
 
-  // Login
+  // ── Login ─────────────────────────────────────────────────────────────────
   login_title: 'Bienvenido de nuevo',
   login_subtitle: 'Un espacio solo para ti',
   label_email: 'correo@ejemplo.com',
@@ -28,27 +30,28 @@ const es: Record<string, string> = {
   btn_register: 'Crear mi diario',
   link_register: '¿Primera vez aquí? Crear mi diario',
   link_login: '¿Ya tienes cuenta? Inicia sesión',
+  login_forgot_password: '¿Olvidaste tu contraseña?',
 
-  // Check-in
+  // ── Check-in ──────────────────────────────────────────────────────────────
   checkin_label: 'ANTES DE COMENZAR',
   checkin_title: '¿Cómo llegás hoy?',
   checkin_subtitle: 'Este momento es solo tuyo',
   btn_continue: 'Comenzar',
 
-  // Emociones
+  // ── Emociones ─────────────────────────────────────────────────────────────
   emo_1: 'Muy mal',
   emo_2: 'No tan bien',
   emo_3: 'Neutral',
   emo_4: 'Bien',
   emo_5: 'Muy bien',
 
-  // Chat
+  // ── Chat ──────────────────────────────────────────────────────────────────
   chat_placeholder: 'Escribe lo que sientes... (Enter para enviar, Shift+Enter para nueva línea)',
   chat_thinking: 'Elevation está reflexionando...',
   chat_error: 'Lo siento, tuve una pequeña desconexión. ¿Podrías repetirme eso?',
   chat_welcome: 'Hola. Soy Elevation. Gracias por acercarte. Este espacio es para explorar lo que sientes, lo que vives y lo que sueñas. ¿Desde dónde estás llegando hoy?',
 
-  // Admin
+  // ── Admin — general ───────────────────────────────────────────────────────
   admin_title: 'Panel de Administración',
   admin_brain: 'Cerebro de Elevation',
   admin_active: 'activo',
@@ -73,7 +76,7 @@ const es: Record<string, string> = {
   admin_status_rejected: 'rechazado',
   admin_status_archived: 'archivado',
 
-  // Admin — DT-002
+  // ── Admin — Dashboard ─────────────────────────────────────────────────────
   admin_dashboard: 'Panel de Administración',
   admin_platform_overview: 'Resumen de la plataforma',
   admin_total_users: 'Total usuarios',
@@ -83,21 +86,133 @@ const es: Record<string, string> = {
   admin_active_week: 'Activos esta semana',
   admin_avg_mood: 'Ánimo promedio',
   admin_avg_rating: 'Calificación promedio',
-  admin_session_activity: 'Actividad de sesiones',
+  admin_session_activity: 'Actividad de sesiones — últimos 30 días',
   admin_top_therapists: 'Top terapeutas',
   admin_alerts: 'Alertas',
   admin_pending_prompts: 'Prompts pendientes',
   admin_therapists_without_profile: 'Terapeutas sin perfil',
-  admin_ethical_manifesto: 'Manifiesto ético',
-  admin_review: 'Revisar',
+  admin_ethical_manifesto: 'Manifiesto Ético',
+  admin_review: 'Revisar →',
   admin_users: 'Usuarios',
   admin_content: 'Contenido',
   admin_metrics: 'Métricas',
   admin_prompts: 'Prompts',
   admin_no_alerts: 'Sin alertas activas',
   admin_patients: 'Pacientes',
+  admin_loading_metrics: 'Cargando métricas...',
+  admin_no_sessions: 'Sin datos de sesiones aún.',
+  admin_no_therapists: 'Sin terapeutas activos aún.',
 
-  // Therapist — DT-002
+  // ── Admin — Métricas ──────────────────────────────────────────────────────
+  admin_metrics_subtitle: 'Indicadores de rendimiento de la plataforma',
+  admin_retention: 'Retención',
+  admin_sessions_per_user: 'Sesiones / usuario',
+  admin_activity_chart: 'Actividad de sesiones — últimos 30 días',
+  admin_sessions_30d: 'sesiones en 30 días',
+  admin_daily_avg: 'promedio diario',
+  admin_peak: 'pico máximo',
+  admin_therapist_col: 'Terapeuta',
+  admin_patients_col: 'Pacientes',
+  admin_rating_col: 'Calificación promedio',
+  admin_level_col: 'Nivel',
+  admin_level_senior: '⭐ Senior',
+  admin_level_active: '✓ Activo',
+  admin_level_new: '○ Nuevo',
+
+  // ── Admin — Usuarios ──────────────────────────────────────────────────────
+  admin_users_title: 'Usuarios',
+  admin_users_registered: 'usuario registrado',
+  admin_users_registered_plural: 'usuarios registrados',
+  admin_create_user: '+ Crear usuario',
+  admin_filter_all_roles: 'Todos los roles',
+  admin_filter_all_states: 'Todos los estados',
+  admin_filter_active: 'Activos',
+  admin_filter_inactive: 'Inactivos',
+  admin_col_user: 'Usuario',
+  admin_col_role: 'Rol',
+  admin_col_plan: 'Plan',
+  admin_col_sessions: 'Sesiones',
+  admin_col_mood: 'Mood prom.',
+  admin_col_rating: 'Rating prom.',
+  admin_col_state: 'Estado',
+  admin_col_action: 'Acción',
+  admin_state_active: 'Activo',
+  admin_state_inactive: 'Inactivo',
+  admin_locked_badge: '🔒 Bloqueado',
+  admin_since: 'Desde',
+  admin_stats: 'Estadísticas',
+  admin_assign_therapist: 'Terapeuta asignado',
+  admin_no_assign: 'Sin asignar',
+  admin_deactivate: 'Desactivar usuario',
+  admin_activate_user: 'Activar usuario',
+  admin_unlock: '🔓 Desbloquear cuenta',
+  admin_unlocking: 'Desbloqueando...',
+  admin_reset_password: '🔑 Resetear contraseña',
+  admin_delete_permanent: 'Eliminar permanentemente',
+  admin_locked_by_attempts: 'Bloqueado por intentos fallidos',
+  admin_locked_until: 'Hasta:',
+  admin_no_users: 'No hay usuarios con los filtros seleccionados.',
+  admin_loading_users: 'Cargando usuarios...',
+  admin_modal_create_title: 'Crear usuario',
+  admin_modal_full_name: 'Nombre completo',
+  admin_modal_temp_password: 'Contraseña temporal',
+  admin_modal_role: 'Rol',
+  admin_creating: 'Creando...',
+  admin_delete_title: 'Eliminar usuario',
+  admin_delete_warning: 'Esta acción es permanente e irreversible.',
+  admin_delete_confirm_label: 'Para confirmar, escribí exactamente el nombre del usuario:',
+  admin_deleting: 'Eliminando...',
+  admin_delete_confirm_btn: 'Eliminar definitivamente',
+  admin_reset_modal_title: '🔑 Resetear contraseña',
+  admin_reset_temp_label: 'Nueva contraseña temporal',
+  admin_reset_placeholder: 'Mínimo 6 caracteres',
+  admin_reset_hint: 'Comunicá la contraseña temporal al usuario por otro medio.',
+  admin_resetting: 'Guardando...',
+  admin_reset_confirm: 'Confirmar reset',
+  admin_plan_requests: 'plan request',
+  admin_plan_requests_plural: 'plan requests',
+  admin_matching_pending: 'matching pending',
+  admin_confirm_assignment: 'Confirm assignment',
+  admin_confirming: 'Confirming...',
+
+  // ── Admin — Prompts ───────────────────────────────────────────────────────
+  admin_prompts_title: 'Prompts',
+  admin_prompts_subtitle_admin: 'Visualización y propuesta de prompts',
+  admin_prompts_subtitle_super: 'Gestión completa de prompts terapéuticos',
+  admin_new_prompt: '+ Nuevo prompt',
+  admin_no_prompts: 'No hay prompts configurados aún.',
+  admin_version_active: 'Versión activa',
+  admin_view_active_content: 'Ver contenido activo',
+  admin_hide_content: 'Ocultar contenido',
+  admin_propose_version: '✏️ Proponer nueva versión',
+  admin_edit_version: '✏️ Editar / nueva versión',
+  admin_version_history: 'Historial de versiones',
+  admin_no_versions: 'Sin versiones anteriores.',
+  admin_prompt_info: 'Sobre las propuestas',
+  admin_prompt_info_body: 'Al proponer una nueva versión, el superadmin recibirá una notificación para revisarla. La versión actual permanece activa hasta que sea aprobada la nueva.',
+  admin_requires_approval: 'Requiere aprobación del superadmin',
+  admin_char_count: 'caracteres',
+  admin_save_activate: 'Guardar y activar',
+  admin_send_approval: 'Enviar para aprobación',
+  admin_prompt_key_label: 'Key del prompt *',
+  admin_prompt_key_hint: 'Solo minúsculas y guiones bajos',
+  admin_prompt_content_label: 'Contenido *',
+  admin_prompt_create_activate: 'Crear y activar',
+  admin_reject_version_title: '✗ Rechazar versión',
+  admin_reject_version_body: 'Explicá el motivo del rechazo.',
+  admin_versions_pending_alert: 'versión pendiente de aprobación para',
+  admin_versions_pending_alert_plural: 'versiones pendientes de aprobación para',
+  admin_loading_prompts: 'Cargando prompts...',
+
+  // ── Admin — Sidebar nav ───────────────────────────────────────────────────
+  admin_nav_dashboard: 'Dashboard',
+  admin_nav_prompts: 'Prompts',
+  admin_nav_content: 'Contenido',
+  admin_nav_users: 'Usuarios',
+  admin_nav_metrics: 'Métricas',
+  admin_nav_manifest: 'Manifiesto Ético',
+
+  // ── Therapist — general ───────────────────────────────────────────────────
   therapist_my_patients: 'Mis pacientes',
   therapist_assigned: 'Asignados',
   therapist_active_week: 'Activos esta semana',
@@ -118,23 +233,88 @@ const es: Record<string, string> = {
   therapist_notable_progress: 'Progreso notable',
   therapist_patient_history: 'Historia del paciente',
   therapist_clinical_notes: 'Notas clínicas',
-  therapist_ai_summary: 'Resumen IA',
+  therapist_ai_summary: 'Resumen clínico IA',
   therapist_save_note: 'Guardar nota',
   therapist_dashboard: 'Panel del terapeuta',
 
-  // Errores
+  // ── Therapist — Dashboard ─────────────────────────────────────────────────
+  therapist_dashboard_subtitle: 'Resumen de tu práctica clínica',
+  therapist_loading: 'Cargando...',
+  therapist_no_patients: 'Aún no tenés pacientes asignados.',
+  therapist_upcoming_sessions: 'Próximas sesiones',
+  therapist_no_upcoming: 'Sin sesiones próximas.',
+  therapist_start_session: '▶ Iniciar sesión',
+  therapist_view_profile: 'Ver perfil →',
+  therapist_mood_trend: 'Tendencia ánimo',
+  therapist_propose_prompt: '✏️ Proponer cambio',
+  therapist_prompt_pending: '⏳ Propuesta pendiente de aprobación',
+  therapist_prompt_rejected: '✗ Tu propuesta fue rechazada',
+  therapist_rejection_reason: 'Motivo:',
+  therapist_re_propose: '↩ Proponer de nuevo',
+
+  // ── Therapist — Perfil de paciente ────────────────────────────────────────
+  therapist_back: '← Volver a pacientes',
+  therapist_member_since: 'Miembro desde',
+  therapist_schedule_session: '📅 Agendar sesión',
+  therapist_total_sessions: 'Total sesiones',
+  therapist_avg_mood_label: 'Ánimo promedio',
+  therapist_avg_rating_label: 'Calif. promedio',
+  therapist_notes_count: 'Notas clínicas',
+  therapist_generate_summary: 'Generar resumen',
+  therapist_regenerate: 'Regenerar',
+  therapist_generating: 'Generando...',
+  therapist_filter_all: 'Todos los tipos',
+  therapist_filter_session: 'Notas de sesión',
+  therapist_filter_obs: 'Observaciones',
+  therapist_filter_goal: 'Objetivos',
+  therapist_new_note: '+ Nueva nota',
+  therapist_note_date: 'Fecha',
+  therapist_note_placeholder: 'Escribí tu nota clínica aquí...',
+  therapist_note_type_session: 'Nota de sesión',
+  therapist_note_type_obs: 'Observación',
+  therapist_note_type_goal: 'Objetivo',
+  therapist_save_note_btn: 'Guardar nota',
+  therapist_saving: 'Guardando...',
+  therapist_edit: 'Editar',
+  therapist_no_notes: 'Sin notas aún. Agregá tu primera nota clínica.',
+  therapist_emotional_history: 'Historial emocional',
+  therapist_no_moods: 'Sin registros de ánimo aún.',
+  therapist_session_ratings: 'Calificaciones de sesión',
+  therapist_no_ratings: 'Sin calificaciones aún.',
+  therapist_checkin: 'Check-in',
+  therapist_checkout: 'Check-out',
+  therapist_schedule_title: 'Agendar sesión',
+  therapist_schedule_with: 'Agendando sesión con',
+  therapist_datetime_label: 'Fecha y hora *',
+  therapist_duration_label: 'Duración (minutos)',
+  therapist_schedule_confirm: '📅 Confirmar sesión',
+  therapist_scheduling: 'Agendando...',
+  therapist_future_date_error: 'La fecha debe ser en el futuro.',
+  therapist_select_datetime: 'Seleccioná fecha y hora.',
+  therapist_loading_history: 'Cargando...',
+  therapist_not_found: 'No se pudo cargar el historial del paciente.',
+
+  // ── Errores ───────────────────────────────────────────────────────────────
   err_credentials: 'Credenciales incorrectas',
   err_rate_limit: 'Demasiados intentos. Intentá más tarde.',
   err_locked: 'Cuenta bloqueada temporalmente',
   err_connection: 'Error de conexión con el servidor.',
   success_register: 'Registro exitoso. Ahora inicia sesión.',
 
-  // General
+  // ── General ───────────────────────────────────────────────────────────────
   logo: 'ELEVATION',
   tagline: 'Tu santuario digital · Your digital sanctuary',
   btn_logout: 'Salir',
+  btn_save: 'Guardar',
+  btn_cancel: 'Cancelar',
+  btn_confirm: 'Confirmar',
+  btn_edit: 'Editar',
+  btn_back: 'Volver',
+  loading: 'Cargando...',
+  error_connection: 'Error de conexión.',
+  no_data: '—',
 
-  // HU-051 — Recomendaciones de bienestar
+  // ── Recomendaciones ───────────────────────────────────────────────────────
   rec_title: '✨ Recomendaciones para vos',
   rec_subtitle: 'Basadas en tu estado emocional reciente',
   rec_generate: 'Generar recomendaciones',
@@ -148,7 +328,7 @@ const es: Record<string, string> = {
   rec_category_resource: '📚 Recurso',
   rec_generated_at: 'Generado',
 
-  // Board — Manifiesto Ético
+  // ── Board — Manifiesto Ético ───────────────────────────────────────────────
   board_manifest_title: 'Manifiesto Ético',
   board_manifest_subtitle: 'Documento vinculante que guía el comportamiento de la IA de Elevation',
   board_active_version: 'Versión activa',
@@ -174,13 +354,6 @@ const es: Record<string, string> = {
   board_error_activate: 'No se pudo reactivar la versión.',
   board_success_upload: '✅ Manifiesto publicado y activado:',
   board_success_activate: '✅ Versión reactivada:',
-
-  // Admin sidebar nav
-  admin_nav_dashboard: 'Dashboard',
-  admin_nav_prompts: 'Prompts',
-  admin_nav_content: 'Contenido',
-  admin_nav_users: 'Usuarios',
-  admin_nav_metrics: 'Métricas',
 }
 
 export { es }
