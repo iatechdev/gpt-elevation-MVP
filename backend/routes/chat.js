@@ -6,7 +6,7 @@
 const express    = require('express');
 const router     = express.Router();
 const User       = require('../User');
-const Message    = require('../Message');
+const Message = require('../message');
 const anthropic  = require('../utils/anthropic');
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');

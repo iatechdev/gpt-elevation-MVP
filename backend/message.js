@@ -1,4 +1,19 @@
-// backend/message.js
-// Re-export de Message.js para compatibilidad case-insensitive (Windows vs Linux)
-// El archivo canónico es Message.js — este archivo existe solo para evitar conflictos de case en Git
-module.exports = require('./Message');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('./database');
+const User = require('./User');
+
+const Message = sequelize.define('Message', {
+    role: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    content: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    }
+});
+
+Message.belongsTo(User);
+User.hasMany(Message);
+
+module.exports = Message;
