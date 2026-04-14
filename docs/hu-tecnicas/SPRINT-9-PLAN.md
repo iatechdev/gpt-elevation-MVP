@@ -1,4 +1,4 @@
-# Sprint 9 — Videollamadas + Planes + Limitacion de usuarios
+# Sprint 9 — Videollamadas + Planes + i18n + Desbloqueo usuarios
 
 > Estado: EN PROGRESO
 > Fecha inicio: 6 de abril de 2026
@@ -10,11 +10,11 @@
 
 Sprint 8 cerrado con 17/20 puntos (DT-002 en progreso con Alejo).
 
-Las grandes features pendientes son:
-1. Videollamadas con Daily.co
+Las grandes features pendientes eran:
+1. Videollamadas con Daily.co ✅
 2. Google Calendar sync
-3. Sistema de planes y limitacion de usuarios por plan
-4. Modal matching completo
+3. Sistema de planes y limitacion de usuarios por plan ✅
+4. Modal matching completo ✅
 
 ---
 
@@ -25,15 +25,21 @@ Las grandes features pendientes son:
 | HU-077 | Sistema de planes y limitacion de usuarios | 5 | Critico | COMPLETADO |
 | HU-073 | Modal matching completo | 2 | Normal | COMPLETADO |
 | HU-067 | Videollamada Daily.co integrada | 8 | Alto | COMPLETADO |
+| HU-078 | Desbloqueo + reset password usuarios | 3 | Alto | COMPLETADO |
+| HU-081 | Fix AdminMetrics + AdminPrompts (dano DT-002) | 2 | Critico | COMPLETADO |
+| HU-082 | i18n ES/EN completo toda la app | 5 | Alto | COMPLETADO |
 | HU-068 | Google Calendar sync | 5 | Alto | Pendiente |
 
-**Puntos completados Sprint 9: 15/20**
+**Puntos completados Sprint 9: 25/25 (excluyendo HU-068)**
 
 ---
 
 ## DEPLOY + LOGIN 100% FUNCIONAL EN PRODUCCION ✅ (08/04/2026)
 
 **URL:** https://elevation-mvp-747531656650.us-central1.run.app
+
+> ⚠️ TODO lo de las sesiones 09-14/04 esta en repo (feature/mvp-elevation) pero NO desplegado aun.
+> Pendiente hacer deploy a Cloud Run con los comandos abajo.
 
 ### Variables de entorno Cloud Run (configuracion final correcta)
 | Variable | Valor |
@@ -104,54 +110,82 @@ gcloud run deploy elevation-mvp --image gcr.io/eleveation-490611/elevation-mvp -
 
 ### HU-067 — Videollamada Daily.co — COMPLETADO
 Archivos entregados:
-- `backend/routes/sessions.js` — 3 endpoints nuevos:
-  - POST /api/sessions/therapist/:id/start — crea sala Daily.co (mock si no hay DAILY_API_KEY)
-  - POST /api/sessions/therapist/:id/end — cierra sesion, guarda nota + mood, genera recomendacion IA
-  - GET /api/sessions/user/:id/join — retorna meetingUrl al paciente (valida ownership)
-- `frontend/src/pages/therapist/SessionRoom.tsx` — sala completa: iframe Daily.co + sidebar notas en vivo (auto-save 2s) + timer + modal checkout con mood selector
-- `frontend/src/pages/user/SessionRoom.tsx` — vista paciente: iframe + estados (esperando/conectando)
-- `frontend/src/App.tsx` — rutas nuevas: /therapist/session/:id (fuera de TherapistLayout — full screen) + /app/session/:id
-- `frontend/src/pages/therapist/TherapistDashboard.tsx` — seccion "Proximas sesiones" + boton "Iniciar sesion" en card de paciente
-- `frontend/src/pages/therapist/TherapistPatient.tsx` — boton "Agendar sesion" + modal con datetime-local + selector duracion (30/45/50/60/90 min)
+- `backend/routes/sessions.js` — 3 endpoints nuevos
+- `frontend/src/pages/therapist/SessionRoom.tsx` — sala completa terapeuta
+- `frontend/src/pages/user/SessionRoom.tsx` — vista paciente
+- `frontend/src/App.tsx` — rutas nuevas full screen
+- `frontend/src/pages/therapist/TherapistDashboard.tsx` — seccion proximas sesiones
+- `frontend/src/pages/therapist/TherapistPatient.tsx` — boton agendar + modal duracion
 
-Logica del boton videollamada en UserDashboard:
-- status in_progress → boton verde "Entrar a videollamada" activo → navega a /app/session/:id
-- scheduled + menos de 15 min → boton amarillo "La sesion esta por comenzar" → navigable
-- scheduled + mas de 15 min → mensaje informativo, sin boton clickeable
-
-DAILY_API_KEY: modo mock activo (genera URL simulada) hasta que Alejo entregue key real del cliente.
-Cuando llegue la key: agregarla en Cloud Run como variable DAILY_API_KEY y hacer redeploy.
+DAILY_API_KEY: modo mock activo hasta que Alejo entregue key real del cliente.
 
 ### DT-002 — i18n backoffice y terapeuta — COMPLETADO (merge commit Alejo 28c2088)
-- 49 claves nuevas en es.ts y en.ts (Admin + Therapist)
-- AdminDashboard, AdminUsers, AdminContent, AdminMetrics, AdminPrompts — useLanguage() aplicado
-- TherapistDashboard, TherapistPatient — claves disponibles
 
 ### TherapistPatient.tsx — Design system tokens — COMPLETADO
-- Migrado completamente a tokens.ts (colors, radius, shadow, spacing, typography)
-- btnPrimaryStyle / btnSecondaryStyle importados desde tokens
-- Textos traducidos al espanol (coherente con UX del terapeuta)
-- Cards, inputs, selects y modales con estilos unificados del DS
 
 ### Dominio elevation-ia.com — EN PROCESO
 - Dominio comprado en GoDaddy
 - Pendiente: configurar Domain Mapping en Cloud Run + registros DNS en GoDaddy
-- Guia entregada: registros A + AAAA de Google + CNAME www
 
 ---
 
-## Pendiente Sprint 9
+## Avances sesion 09/04/2026
 
-### Proximo a trabajar
-1. HU-068 — Google Calendar sync (5 pts) — requiere Google OAuth configurado en GCP
-2. Dominio elevation-ia.com — configuracion DNS + Domain Mapping Cloud Run
-3. DAILY_API_KEY — agregar cuando Alejo entregue key del cliente
+### HU-078 — Desbloqueo + reset password — COMPLETADO
+Backend (`backend/routes/adminUsers.js`):
+- PUT /api/admin/usuarios/:id/unlock — desbloquea cuenta bloqueada por intentos fallidos
+- PUT /api/admin/usuarios/:id/reset-password — superadmin puede setear contrasena temporal
+
+Frontend (`frontend/src/pages/admin/AdminUsers.tsx`):
+- Badge 🔒 en tabla cuando isLocked === true
+- Boton "Desbloquear cuenta" en panel lateral (visible si isLocked || !active)
+- Modal "Resetear contrasena" con input password + validacion minimo 6 chars (solo superadmin)
+- GET /api/admin/usuarios retorna isLocked, lockedUntil, loginAttempts
+
+### HU-081 — Fix AdminMetrics + AdminPrompts — COMPLETADO
+- Ambos componentes reconstruidos tras dano del commit DT-002 de Alejo
+- Funcionalidad 100% restaurada y probada
+
+---
+
+## Avances sesion 14/04/2026
+
+### HU-082 — i18n ES/EN completo toda la app — COMPLETADO
+
+**Paso 1 — Claves (completado sesion 09/04):**
+- `frontend/src/i18n/es.ts` — 230+ claves: Landing, Login, Check-in, Chat, Admin completo, Therapist completo, Board, General
+- `frontend/src/i18n/en.ts` — espejo exacto en ingles
+
+**Paso 2 — t() aplicado (completado sesion 14/04):**
+- `frontend/src/layouts/AdminLayout.tsx` — selector ES/EN en header ✅
+- `frontend/src/layouts/TherapistLayout.tsx` — selector ES/EN en header ✅
+- `frontend/src/pages/admin/AdminDashboard.tsx` ✅
+- `frontend/src/pages/admin/AdminMetrics.tsx` ✅
+- `frontend/src/pages/admin/AdminPrompts.tsx` ✅
+- `frontend/src/pages/admin/AdminContent.tsx` ✅
+- `frontend/src/pages/admin/AdminUsers.tsx` ✅
+- `frontend/src/pages/therapist/TherapistDashboard.tsx` ✅
+- `frontend/src/pages/therapist/TherapistPatient.tsx` ✅
+
+Hook: `useLanguage()` — expone `t(key)` y `lang` ('es' | 'en')
+Selector persiste en localStorage. Plan name se muestra en idioma activo.
+
+---
+
+## Pendiente — Proximo Sprint
+
+### Features MVP restantes
+1. **HU-068** — Google Calendar sync (requiere Google OAuth configurado en GCP)
+2. **HU-079** — Flujo "olvide mi contrasena" con email (requiere SMTP configurado)
+3. **HU-080** — Notificaciones in-app + email (depende de HU-079)
+4. **Dominio elevation-ia.com** — DNS GoDaddy + Domain Mapping Cloud Run
+5. **Deploy** — Todo lo de sesiones 09-14/04 en repo pero no desplegado aun
 
 ### Deuda tecnica pendiente
 - GCS_KEY_FILE apunta a ./gcs-credentials.json — resolver con Secret Manager
-- backend/message.js (minuscula) es archivo zombie — limpiar en proximo sprint
-- Seguridad BD: evaluar mover instancia a us-central1 para usar Cloud SQL Proxy correctamente
-- i18n terapeuta: aplicar claves DT-002 en componentes (claves ya existen en es.ts/en.ts)
+- backend/message.js (minuscula) es archivo zombie — limpiar
+- Seguridad BD: evaluar mover instancia a us-central1
+- DAILY_API_KEY — agregar cuando Alejo entregue key del cliente
 
 ---
 
@@ -171,7 +205,9 @@ Cuando llegue la key: agregarla en Cloud Run como variable DAILY_API_KEY y hacer
 - DAILY_API_KEY ausente activa modo mock automaticamente — no rompe el flujo
 - Matching: admin aprueba la asignacion, terapeuta ve nuevo paciente en su lista
 - Dominio: elevation-ia.com (GoDaddy) → Cloud Run Domain Mapping con HTTPS automatico de Google
+- i18n: toda la app es bilingue ES/EN incluyendo backoffice. Selector en AdminLayout + TherapistLayout. Claves en es.ts/en.ts — Alejo solo toca esos dos archivos, nunca los componentes.
+- Refactoring: antes de comprimir/simplificar un archivo, informar explicitamente que se elimino y por que. Analisis conjunto antes de decidir.
 
 ---
 
-*Actualizado: 8 de abril de 2026 (sesion noche) — Claude (Tech Lead AI) + Mauro Roldan*
+*Actualizado: 14 de abril de 2026 — Claude (Tech Lead AI) + Mauro Roldan*
