@@ -1,7 +1,7 @@
 // backend/associations.js
 const setupAssociations = () => {
   const User                   = require('./User');
-  const Message                = require('./Message');
+  const Message                = require('./message');
   const MoodLog                = require('./MoodLog');
   const SessionRating          = require('./SessionRating');
   const ClinicalNote           = require('./ClinicalNote');
