@@ -1,5 +1,5 @@
-// HU-046 + HU-050 + HU-067 — Patient history + clinical notes + AI summary + schedule session
-// HU-076 — Design system tokens aplicados
+// HU-046 + HU-050 + HU-067 + HU-082 — Patient history + clinical notes + AI summary + schedule + i18n
+// HU-076 — Design system tokens
 
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -8,6 +8,7 @@ import {
   labelStyle,
   btnPrimaryStyle, btnSecondaryStyle,
 } from '../../styles/tokens'
+import { useLanguage } from '../../i18n/useLanguage'
 
 const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -48,16 +49,6 @@ interface AISummary {
 
 const MOOD_EMOJI: Record<number, string> = {
   1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
-}
-
-const MOOD_LABEL: Record<number, string> = {
-  1: 'Very low', 2: 'Low', 3: 'Neutral', 4: 'Good', 5: 'Great',
-}
-
-const NOTE_TYPE_LABEL: Record<string, string> = {
-  session_note: 'Session note',
-  observation:  'Observation',
-  goal:         'Goal',
 }
 
 const NOTE_TYPE_COLOR: Record<string, { bg: string; color: string }> = {
@@ -116,6 +107,17 @@ const selStyle: React.CSSProperties = {
 export function TherapistPatient() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useLanguage()
+
+  const NOTE_TYPE_LABEL: Record<string, string> = {
+    session_note: t('therapist_note_type_session'),
+    observation:  t('therapist_note_type_obs'),
+    goal:         t('therapist_note_type_goal'),
+  }
+
+  const MOOD_LABEL: Record<number, string> = {
+    1: t('emo_1'), 2: t('emo_2'), 3: t('emo_3'), 4: t('emo_4'), 5: t('emo_5'),
+  }
 
   const [patient,  setPatient]  = useState<Patient | null>(null)
   const [moodLogs, setMoodLogs] = useState<MoodLog[]>([])
@@ -155,9 +157,9 @@ export function TherapistPatient() {
   const handleSchedule = async () => {
     setSchedulingError('')
     setSchedulingOk('')
-    if (!schedDateTime) { setSchedulingError('Seleccioná fecha y hora.'); return }
+    if (!schedDateTime) { setSchedulingError(t('therapist_select_datetime')); return }
     if (new Date(schedDateTime) <= new Date()) {
-      setSchedulingError('La fecha debe ser en el futuro.'); return
+      setSchedulingError(t('therapist_future_date_error')); return
     }
     setScheduling(true)
     try {
@@ -171,13 +173,13 @@ export function TherapistPatient() {
         }),
       })
       const data = await res.json()
-      if (!res.ok) { setSchedulingError(data.error || 'Error agendando sesión.'); return }
-      setSchedulingOk(`✓ Sesión agendada para el ${new Date(schedDateTime).toLocaleString('es-CO', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`)
+      if (!res.ok) { setSchedulingError(data.error || t('error_connection')); return }
+      setSchedulingOk(`✓ ${new Date(schedDateTime).toLocaleString('es-CO', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`)
       setSchedDateTime(minDateTime())
       setSchedDuration(50)
       setTimeout(() => { setShowSchedule(false); setSchedulingOk('') }, 2500)
     } catch {
-      setSchedulingError('Error de conexión.')
+      setSchedulingError(t('error_connection'))
     } finally {
       setScheduling(false)
     }
@@ -195,7 +197,7 @@ export function TherapistPatient() {
       setRatings(data.ratings)
       setNotes(data.notes)
     } catch {
-      setError('Could not load patient history.')
+      setError(t('therapist_not_found'))
     } finally {
       setLoading(false)
     }
@@ -205,7 +207,7 @@ export function TherapistPatient() {
 
   const handleSaveNote = async () => {
     setNoteError('')
-    if (!noteContent.trim()) { setNoteError('Note content is required.'); return }
+    if (!noteContent.trim()) { setNoteError(t('therapist_note_placeholder')); return }
     setSavingNote(true)
     try {
       const res = await fetch(`${API}/api/therapist/pacientes/${id}/notas`, {
@@ -213,10 +215,10 @@ export function TherapistPatient() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ content: noteContent, type: noteType, sessionDate: noteDate }),
       })
-      if (!res.ok) { const d = await res.json(); setNoteError(d.error || 'Error saving note.'); return }
+      if (!res.ok) { const d = await res.json(); setNoteError(d.error || t('error_connection')); return }
       setNoteContent(''); setShowNoteForm(false)
       await fetchHistory()
-    } catch { setNoteError('Connection error.') }
+    } catch { setNoteError(t('error_connection')) }
     finally { setSavingNote(false) }
   }
 
@@ -264,7 +266,7 @@ export function TherapistPatient() {
 
   if (loading) return (
     <p style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>
-      Cargando...
+      {t('therapist_loading_history')}
     </p>
   )
   if (error) return (
@@ -288,7 +290,7 @@ export function TherapistPatient() {
             display: 'flex', alignItems: 'center', gap: spacing.xs, padding: 0,
           }}
         >
-          ← Volver a pacientes
+          {t('therapist_back')}
         </button>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: spacing.lg }}>
@@ -300,7 +302,7 @@ export function TherapistPatient() {
               {patient.name}
             </h1>
             <p style={{ fontSize: 13, color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>
-              {patient.email} · Miembro desde {formatDate(patient.createdAt)}
+              {patient.email} · {t('therapist_member_since')} {formatDate(patient.createdAt)}
             </p>
           </div>
 
@@ -314,7 +316,7 @@ export function TherapistPatient() {
               display: 'flex', alignItems: 'center', gap: spacing.xs,
             }}
           >
-            📅 Agendar sesión
+            {t('therapist_schedule_session')}
           </button>
         </div>
       </div>
@@ -327,10 +329,10 @@ export function TherapistPatient() {
         marginBottom: spacing.xxl,
       }}>
         {[
-          { label: 'Total sesiones',  value: moodLogs.length },
-          { label: 'Ánimo promedio',  value: avgMood ?? '—' },
-          { label: 'Calif. promedio', value: avgRating ? `${avgRating} ★` : '—' },
-          { label: 'Notas clínicas',  value: notes.length },
+          { label: t('therapist_total_sessions'), value: moodLogs.length },
+          { label: t('therapist_avg_mood_label'), value: avgMood ?? '—' },
+          { label: t('therapist_avg_rating_label'), value: avgRating ? `${avgRating} ★` : '—' },
+          { label: t('therapist_notes_count'),    value: notes.length },
         ].map(c => (
           <div key={c.label} style={cardStyle}>
             <div style={{ fontSize: '1.5rem', fontWeight: 600, color: colors.text }}>{c.value}</div>
@@ -346,7 +348,7 @@ export function TherapistPatient() {
           justifyContent: 'space-between',
           marginBottom: aiSummary ? spacing.lg : 0,
         }}>
-          <div style={{ ...labelStyle }}>Resumen clínico IA</div>
+          <div style={{ ...labelStyle }}>{t('therapist_ai_summary')}</div>
           <button
             onClick={handleGenerateSummary}
             disabled={generatingSummary}
@@ -358,7 +360,9 @@ export function TherapistPatient() {
               padding: `${spacing.sm} ${spacing.md}`,
             }}
           >
-            {generatingSummary ? 'Generando...' : aiSummary ? 'Regenerar' : 'Generar resumen'}
+            {generatingSummary
+              ? t('therapist_generating')
+              : aiSummary ? t('therapist_regenerate') : t('therapist_generate_summary')}
           </button>
         </div>
         {aiSummary && (
@@ -371,7 +375,7 @@ export function TherapistPatient() {
               "{aiSummary.summary}"
             </p>
             <div style={{ fontSize: 11, color: colors.textSubtle }}>
-              Generado {formatDate(aiSummary.generatedAt)} · Basado en {aiSummary.basedOn.sessions} sesiones y {aiSummary.basedOn.notes} notas
+              {t('rec_generated_at')} {formatDate(aiSummary.generatedAt)} · {aiSummary.basedOn.sessions} {t('therapist_sessions')} · {aiSummary.basedOn.notes} {t('therapist_notes_count')}
             </div>
           </div>
         )}
@@ -388,20 +392,20 @@ export function TherapistPatient() {
             fontFamily: typography.fontDisplay, fontWeight: 400,
             fontSize: '1.1rem', color: colors.text, margin: 0,
           }}>
-            Notas clínicas
+            {t('therapist_clinical_notes')}
           </h2>
           <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
             <select style={selStyle} value={filterType} onChange={e => setFilterType(e.target.value)}>
-              <option value="all">Todos los tipos</option>
-              <option value="session_note">Notas de sesión</option>
-              <option value="observation">Observaciones</option>
-              <option value="goal">Objetivos</option>
+              <option value="all">{t('therapist_filter_all')}</option>
+              <option value="session_note">{t('therapist_filter_session')}</option>
+              <option value="observation">{t('therapist_filter_obs')}</option>
+              <option value="goal">{t('therapist_filter_goal')}</option>
             </select>
             <button
               onClick={() => { setShowNoteForm(!showNoteForm); setNoteError('') }}
               style={{ ...btnPrimaryStyle, fontSize: 12, padding: `${spacing.sm} ${spacing.md}` }}
             >
-              + Nueva nota
+              {t('therapist_new_note')}
             </button>
           </div>
         </div>
@@ -416,9 +420,9 @@ export function TherapistPatient() {
           }}>
             <div style={{ display: 'flex', gap: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
               <select style={selStyle} value={noteType} onChange={e => setNoteType(e.target.value as typeof noteType)}>
-                <option value="session_note">Nota de sesión</option>
-                <option value="observation">Observación</option>
-                <option value="goal">Objetivo</option>
+                <option value="session_note">{t('therapist_note_type_session')}</option>
+                <option value="observation">{t('therapist_note_type_obs')}</option>
+                <option value="goal">{t('therapist_note_type_goal')}</option>
               </select>
               <input
                 type="date" value={noteDate}
@@ -429,7 +433,7 @@ export function TherapistPatient() {
             <textarea
               value={noteContent}
               onChange={e => setNoteContent(e.target.value)}
-              placeholder="Escribí tu nota clínica aquí..."
+              placeholder={t('therapist_note_placeholder')}
               rows={4}
               style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
             />
@@ -443,7 +447,7 @@ export function TherapistPatient() {
                 onClick={() => { setShowNoteForm(false); setNoteError('') }}
                 style={{ ...btnSecondaryStyle, fontSize: 12, padding: `${spacing.sm} ${spacing.md}` }}
               >
-                Cancelar
+                {t('btn_cancel')}
               </button>
               <button
                 onClick={handleSaveNote}
@@ -456,7 +460,7 @@ export function TherapistPatient() {
                   cursor: savingNote ? 'not-allowed' : 'pointer',
                 }}
               >
-                {savingNote ? 'Guardando...' : 'Guardar nota'}
+                {savingNote ? t('therapist_saving') : t('therapist_save_note_btn')}
               </button>
             </div>
           </div>
@@ -464,7 +468,7 @@ export function TherapistPatient() {
 
         {filteredNotes.length === 0 ? (
           <p style={{ color: colors.textMuted, fontSize: 13 }}>
-            Sin notas aún. Agregá tu primera nota clínica.
+            {t('therapist_no_notes')}
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
@@ -501,7 +505,7 @@ export function TherapistPatient() {
                       fontFamily: typography.fontBody,
                     }}
                   >
-                    Editar
+                    {t('therapist_edit')}
                   </button>
                 </div>
 
@@ -518,7 +522,7 @@ export function TherapistPatient() {
                         onClick={() => { setEditingNote(null); setEditContent('') }}
                         style={{ ...btnSecondaryStyle, fontSize: 12, padding: `${spacing.xs} ${spacing.md}` }}
                       >
-                        Cancelar
+                        {t('btn_cancel')}
                       </button>
                       <button
                         onClick={handleEditNote}
@@ -531,7 +535,7 @@ export function TherapistPatient() {
                           cursor: savingEdit ? 'not-allowed' : 'pointer',
                         }}
                       >
-                        {savingEdit ? 'Guardando...' : 'Guardar'}
+                        {savingEdit ? t('therapist_saving') : t('btn_save')}
                       </button>
                     </div>
                   </div>
@@ -554,10 +558,10 @@ export function TherapistPatient() {
             fontFamily: typography.fontDisplay, fontWeight: 400,
             fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}`,
           }}>
-            Historial emocional
+            {t('therapist_emotional_history')}
           </h2>
           {moodLogs.length === 0 ? (
-            <p style={{ color: colors.textMuted, fontSize: 13 }}>Sin registros de ánimo aún.</p>
+            <p style={{ color: colors.textMuted, fontSize: 13 }}>{t('therapist_no_moods')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
               {moodLogs.map(log => (
@@ -569,13 +573,13 @@ export function TherapistPatient() {
                     {log.checkin_mood != null && (
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '1rem' }}>{MOOD_EMOJI[log.checkin_mood]}</div>
-                        <div style={{ fontSize: 10, color: colors.textSubtle }}>Check-in</div>
+                        <div style={{ fontSize: 10, color: colors.textSubtle }}>{t('therapist_checkin')}</div>
                       </div>
                     )}
                     {log.checkout_mood != null && (
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '1rem' }}>{MOOD_EMOJI[log.checkout_mood]}</div>
-                        <div style={{ fontSize: 10, color: colors.textSubtle }}>Check-out</div>
+                        <div style={{ fontSize: 10, color: colors.textSubtle }}>{t('therapist_checkout')}</div>
                       </div>
                     )}
                     {log.checkin_mood != null && log.checkout_mood != null && (
@@ -598,10 +602,10 @@ export function TherapistPatient() {
             fontFamily: typography.fontDisplay, fontWeight: 400,
             fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}`,
           }}>
-            Calificaciones de sesión
+            {t('therapist_session_ratings')}
           </h2>
           {ratings.length === 0 ? (
-            <p style={{ color: colors.textMuted, fontSize: 13 }}>Sin calificaciones aún.</p>
+            <p style={{ color: colors.textMuted, fontSize: 13 }}>{t('therapist_no_ratings')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
               {ratings.map(r => (
@@ -646,7 +650,7 @@ export function TherapistPatient() {
                 fontFamily: typography.fontDisplay, fontWeight: 400,
                 fontSize: '1.3rem', color: colors.text, margin: 0,
               }}>
-                Agendar sesión
+                {t('therapist_schedule_title')}
               </h2>
               <button
                 onClick={() => { setShowSchedule(false); setSchedulingError(''); setSchedulingOk('') }}
@@ -655,12 +659,12 @@ export function TherapistPatient() {
             </div>
 
             <p style={{ fontSize: 13, color: colors.textMuted, margin: `0 0 ${spacing.xl}`, lineHeight: 1.5 }}>
-              Agendando sesión con <strong style={{ color: colors.text }}>{patient.name}</strong>
+              {t('therapist_schedule_with')} <strong style={{ color: colors.text }}>{patient.name}</strong>
             </p>
 
             <div style={{ marginBottom: spacing.lg }}>
               <label style={{ ...labelStyle, display: 'block', marginBottom: spacing.xs }}>
-                Fecha y hora *
+                {t('therapist_datetime_label')}
               </label>
               <input
                 type="datetime-local"
@@ -673,7 +677,7 @@ export function TherapistPatient() {
 
             <div style={{ marginBottom: spacing.xl }}>
               <label style={{ ...labelStyle, display: 'block', marginBottom: spacing.sm }}>
-                Duración (minutos)
+                {t('therapist_duration_label')}
               </label>
               <div style={{ display: 'flex', gap: spacing.sm }}>
                 {[30, 45, 50, 60, 90].map(d => (
@@ -726,7 +730,7 @@ export function TherapistPatient() {
                 onClick={() => { setShowSchedule(false); setSchedulingError(''); setSchedulingOk('') }}
                 style={{ ...btnSecondaryStyle, flex: 1, padding: spacing.md, borderRadius: radius.lg }}
               >
-                Cancelar
+                {t('btn_cancel')}
               </button>
               <button
                 onClick={handleSchedule}
@@ -738,7 +742,7 @@ export function TherapistPatient() {
                   cursor: scheduling ? 'not-allowed' : 'pointer',
                 }}
               >
-                {scheduling ? 'Agendando...' : '📅 Confirmar sesión'}
+                {scheduling ? t('therapist_scheduling') : t('therapist_schedule_confirm')}
               </button>
             </div>
           </div>
