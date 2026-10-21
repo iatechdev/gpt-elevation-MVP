@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/privacy", "destination": "/frontend/dist/privacy/index.html" },
+    { "source": "/(.*)", "destination": "/frontend/dist/$1" }
+  ]
+}
