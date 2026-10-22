@@ -5,6 +5,8 @@ del ambiente, la lista previa, el orden de arranque y el primer mensaje de cada 
 
 ## 1. Estado real del ambiente (verificado en el repo)
 
+> Actualización 22-oct-2026: el hosting pasó de Vercel a **Railway Pro + Supabase Pro** (propuesta en ES-8, aprobada por el Tech Lead). Los hallazgos de esta sección son del 21-oct y describen el estado de Vercel hasta ese día; el proyecto de Vercel sigue conectado a `main` hasta que se decida su desconexión.
+
 Mauricio confirmó que **Vercel despliega hoy la rama `main`**. Lo que contiene `main`:
 
 | # | Hallazgo | Por qué importa |
@@ -14,7 +16,7 @@ Mauricio confirmó que **Vercel despliega hoy la rama `main`**. Lo que contiene 
 | 3 | La producción anterior era Google Cloud Run (URL `*.run.app` en `docs/hu-tecnicas`), vencida. | La app real hoy no está en línea en ninguna parte. |
 | 4 | **Fusionar a `main` dispara un despliegue de producción en Vercel** del código real, sin base de datos ni variables, y puede reemplazar o romper la página de privacidad que hoy se sirve. | La fusión a `main` debe esperar a ES-11/ES-9 y a la aprobación de QA. |
 | 5 | `node_modules` está versionado en Git en ambas ramas (4.196 archivos solo en `backend/node_modules` de la rama de trabajo; 604 en `main`). | PR enormes, conflictos y despliegues lentos. |
-| 6 | Conviven `backend/Message.js` y `backend/message.js`; `backend/server.js` llama `app.listen` siempre. | Choque de mayúsculas en Linux/Vercel; ajuste para función sin servidor (ES-9). |
+| 6 | Conviven `backend/Message.js` y `backend/message.js`; `backend/server.js` llama `app.listen` siempre. | Choque de mayúsculas en Linux; el servidor debe arrancar como proceso persistente en Railway (ES-9). |
 | 7 | No hay CI ni pruebas: no existe `.github/`, el `test` del backend es la plantilla y el frontend solo compila (`tsc -b && vite build`). | "Pruebas ejecutadas" no tiene suite previa; QA y los Dev deben crear las suyas. |
 
 No verificado: qué sirve exactamente el proyecto de Vercel (Root Directory, preset, comandos, variables), si `main` tiene protección de rama,
@@ -24,12 +26,12 @@ y si integraciones externas apuntan a la URL de la política de privacidad.
 
 | Paso | Quién | Qué | Desbloquea |
 |---|---|---|---|
-| P1 | Mauricio | Pasar los datos del proyecto de Vercel: URL de producción, Root Directory, Framework Preset, comandos de build/salida, nombres de variables y rama de producción, y si alguna integración usa la URL de la política de privacidad. | ES-57, ES-9 |
+| P1 | Mauricio | Pasar los datos del proyecto de Vercel (URL de producción, variables, rama de producción, si alguna integración usa la URL de la política de privacidad) para decidir si se desconecta o se deja solo para la política estática, y los datos del workspace de Railway (plan, proyectos existentes). | ES-57, ES-9 |
 | P2 | Mauricio | Preservar el trabajo local: commitear las 8 modificaciones en una rama `wip/...` o descartarlas conscientemente. No dejarlas en la carpeta que usarán los LLM. | Evita pisar trabajo |
 | P3 | Mauricio | Crear **una carpeta aislada por sesión**, una por rol (Dev-Claude, Infra, Codex), cada una con su propia rama nueva: `git worktree add -b <rama-unica> ../elevation-<rol> feature/mvp-elevation` (por ejemplo `wip/dev-claude`, `wip/infra`, `wip/codex`). Una rama no puede estar abierta en dos carpetas a la vez. Para la sesión de solo lectura (QA): `git worktree add --detach ../elevation-qa feature/mvp-elevation`. Los `docs/` se leen con `git show origin/main:docs/...`. | Sesiones sin interferencia |
 | P4 | Mauricio | Dar a cada sesión acceso a Jira ES (conector de Atlassian bajo su cuenta). Si una sesión no lo tiene, pegarle el texto del ticket. | Leer y comentar tickets |
 | P5 | Mauricio | Verificar que `main` exige PR (protección de rama). No puedo comprobarlo desde aquí. | Regla "nada a main sin QA" |
-| P6 | Mauricio | Crear o confirmar los proyectos de **Vercel Pro** y **Supabase Pro** y cargar él mismo los secretos. Confirmar precios antes de pagar. | ES-9, ES-11 |
+| P6 | Mauricio | Pasar el workspace de Railway a **Pro**, poner el límite de gasto, invitar a los miembros y confirmar el proyecto de **Supabase Pro**; cargar él mismo los secretos en Railway y Supabase. Confirmar precios antes de pagar. | ES-9, ES-11 |
 | P7 | Mauricio / Alejo | Instalar GitHub for Jira; crear el sprint 21–27 oct y el dashboard (guía ya entregada); invitar al especialista. | Estados y burndown |
 | P8 | Mauricio | Hasta que `CLAUDE.md` y `AGENTS.md` estén en la rama base, pegar su contenido como primer mensaje de cada sesión. | Reglas en cada sesión |
 
@@ -42,7 +44,7 @@ y si integraciones externas apuntan a la URL de la política de privacidad.
 - Codex (full-stack): diseño de frontend y plan técnico de backend de ES-14 (SP2-HU01) para aprobación; implementa de punta a punta cuando la línea base (ES-57) exista y aprueben.
 
 **Ola 2: con P1–P6 resueltos y ES-8 revisado**
-1. ES-57 en rama y PR, con vista previa de Vercel, **sin fusionar todavía**.
+1. ES-57 en rama y PR, validado por build y CI hasta que exista el entorno de Railway, **sin fusionar todavía**.
 2. ES-11 y ES-9: proyectos, variables de Producción y base en Supabase.
 3. Fusión a `main` de ES-57 (y ES-9 si corresponde) con QA aprobado y confirmación expresa de Mauricio.
 4. ES-10 (CI y reversión) y la puerta de QA del corte 1 (ES-40).
@@ -59,7 +61,7 @@ y si integraciones externas apuntan a la URL de la política de privacidad.
 Eres el rol Dev-Claude (Desarrollo — Claude). Lee CLAUDE.md (o el contexto que te pegué) y confirma tu rol en una línea.
 
 CONTEXTO VERIFICADO (21-oct-2026)
-- Vercel despliega hoy la rama main de iatechdev/gpt-elevation-MVP.
+- Vercel desplegaba la rama main de iatechdev/gpt-elevation-MVP hasta el 21-oct-2026; desde el 22-oct el hosting decidido es Railway Pro + Supabase Pro.
 - main NO tiene el código real: backend/ es un servidor de prueba (respuesta simulada), frontend/ es el chat inicial de Vite y no hay vercel.json ni api/. Sí tiene docs/, platform/ (app Manus tRPC/Drizzle/MySQL, no es la base activa), el README y un index.html raíz que es la página pública de política de privacidad.
 - El código real (frontend/ + backend/ con Express/Sequelize/Postgres, api/index.js, vercel.json) vive solo en feature/mvp-elevation. Divergen desde el 16-mar-2026: 59 commits propios y 72 en main. La rama de trabajo no tiene docs/.
 - node_modules está versionado en ambas ramas; conviven backend/Message.js y backend/message.js; backend/server.js llama app.listen siempre; no hay CI ni pruebas. La producción anterior era Google Cloud Run (vencida).
@@ -70,7 +72,7 @@ FASE 1 — SOLO LECTURA (no empujes nada a ninguna rama remota):
 1. Verifica con git lo anterior y complétalo: qué hay en main que no esté en la rama de trabajo, qué conflictos esperas al fusionar y cuántos.
 2. Plan de línea base. Propuesta mía, valídala u objétala: rama ES-57-linea-base desde origin/main; fusionar feature/mvp-elevation resolviendo a favor de la rama de trabajo en backend/, frontend/, api/ y vercel.json y conservando docs/ de main; sacar node_modules del índice y completar .gitignore; unificar Message.js/message.js; build del frontend en verde.
 3. Condición innegociable: la página pública de política de privacidad de main (index.html raíz) no se pierde ni cambia de URL. Propón dónde vivirá.
-4. Riesgo central: fusionar a main dispara un despliegue de producción en Vercel. No se fusiona hasta que existan las variables de Producción y la base (ES-11/ES-9) y QA apruebe. El PR genera antes una vista previa para validar.
+4. Riesgo central: fusionar a main dispara hoy un despliegue de producción en el proyecto de Vercel conectado (hasta que se decida su desconexión). No se fusiona hasta que existan las variables de Producción y la base (ES-11/ES-9) y QA apruebe. El PR genera antes una vista previa para validar.
 5. Trabaja en tu worktree; no toques la carpeta del repo principal ni sus cambios sin commitear.
 
 Entrégame el PLAN (qué harás, en qué orden y cómo lo verificas) y espera mi "adelante". Comentarios en Jira firmados "[Dev-Claude]". Lo que no puedas comprobar va como "no verificado".
@@ -79,20 +81,21 @@ Entrégame el PLAN (qué harás, en qué orden y cómo lo verificas) y espera mi
 ### 4.2 Infra-Claude · ES-9, ES-11 y ES-10 (diagnóstico)
 
 ```
-Eres el rol Infra-Claude (Infraestructura — Claude · Vercel + Supabase). Lee CLAUDE.md (o el contexto que te pegué) y confirma tu rol en una línea.
+Eres el rol Infra-Claude (Infraestructura — Claude · Railway + Supabase). Lee CLAUDE.md (o el contexto que te pegué) y confirma tu rol en una línea.
 
-CONTEXTO VERIFICADO (21-oct-2026)
-- Vercel despliega hoy la rama main de iatechdev/gpt-elevation-MVP, pero main NO tiene el código real ni vercel.json ni api/. Tiene docs/, platform/ (no es la base activa), el README y un index.html raíz que es la página pública de política de privacidad.
+CONTEXTO VERIFICADO (21 y 22-oct-2026)
+- HOSTING DECIDIDO el 22-oct-2026: Railway Pro + Supabase Pro (propuesta en ES-8, aprobada por el Tech Lead; reemplaza la decisión del 21-oct de Vercel). Motivo: el PRD v0.3 pide trabajos de IA asíncronos y durables, chat con respuestas largas y revocación concurrente, que encajan mejor en procesos persistentes. Railway: el workspace está en plan Hobby (un solo desarrollador, logs de 7 días) y hay que pasar a Pro. No verificado: entornos por PR con base de Supabase separada y su protección de acceso.
+- Vercel (hasta el 21-oct-2026; sigue conectado a main hasta que Mauricio decida su desconexión) desplegaba la rama main de iatechdev/gpt-elevation-MVP, pero main NO tiene el código real ni vercel.json ni api/. Tiene docs/, platform/ (no es la base activa), el README y un index.html raíz que es la página pública de política de privacidad.
 - El código real (frontend/ + backend/, api/index.js, vercel.json) vive solo en feature/mvp-elevation. La producción anterior era Google Cloud Run (vencida). No hay CI ni pruebas.
 - Hipótesis a confirmar: el proyecto de Vercel sirve hoy el index.html raíz (privacidad). No tienes acceso al proyecto: los datos te los da Mauricio.
 
-TUS TICKETS: ES-9 (despliegue en Vercel con Postgres en Supabase), ES-11 (aprovisionar) y ES-10 (CI y reversión). Dependes de ES-57 (línea base). Léelos en Jira.
+TUS TICKETS: ES-9 (despliegue en Railway con Postgres en Supabase), ES-11 (aprovisionar) y ES-10 (CI y reversión). Dependes de ES-57 (línea base). Léelos en Jira.
 
 FASE 1 — SOLO DIAGNÓSTICO, sin crear ni desplegar nada:
-1. Lista exacta de lo que necesitas de Mauricio sobre el proyecto de Vercel: URL de producción, Root Directory, Framework Preset, comandos de build/salida, nombres de variables y ambientes, rama de producción, protección de las vistas previas, y si alguna integración externa (por ejemplo Telegram o Meta) usa la URL de la política de privacidad.
-2. Diagnóstico de feature/mvp-elevation para correr en Vercel: vercel.json (/api/* a api/index.js; frontend/dist), backend/server.js (app.listen incondicional), backend/database.js (DATABASE_URL, SSL, pool), SQLite y escritura en disco, node_modules versionado, duración de la función del chat y dependencias de la raíz.
-3. Plan para llevar la app a Vercel sin romper la URL de la política de privacidad y sin que las vistas previas toquen la base de producción.
-4. Lista de lo que habría que crear en Vercel y Supabase con su costo mensual (referencias en CLAUDE.md, a reconfirmar), qué requiere pago, y las variables necesarias (solo nombres y para qué sirven).
+1. Lista exacta de lo que necesitas de Mauricio sobre Railway (plan, proyectos, miembros, límite de gasto) y sobre el proyecto de Vercel (URL de producción, nombres de variables y ambientes, rama de producción), y si alguna integración externa (por ejemplo Telegram o Meta) usa la URL de la política de privacidad.
+2. Diagnóstico de feature/mvp-elevation para correr en Railway: arranque como proceso persistente (PORT, app.listen), cómo se sirve el frontend estático, vercel.json y api/index.js (no se necesitan; no se borran hasta decidirlo en ES-9), backend/database.js (DATABASE_URL, SSL, pool pequeño), sync({ alter: true }) al arrancar (reemplazar por migraciones), SQLite y escritura en disco, node_modules versionado, timeouts de la llamada a Claude y dependencias de la raíz.
+3. Plan para llevar la app a Railway sin romper la URL de la política de privacidad y sin que los entornos de PR toquen la base de producción ni sean públicos (no verificado qué protección ofrece Railway; propón una).
+4. Lista de lo que habría que crear en Railway y Supabase con su costo mensual (referencias en CLAUDE.md, a reconfirmar), qué requiere pago, y las variables necesarias (solo nombres y para qué sirven).
 5. Riesgos y decisiones que necesitas de Mauricio. Trabaja en tu worktree.
 
 Entrégame el PLAN y el diagnóstico y espera mi confirmación. No pidas ni pegues secretos: Mauricio los carga. Firma "[Infra-Claude]".
@@ -104,7 +107,7 @@ Entrégame el PLAN y el diagnóstico y espera mi confirmación. No pidas ni pegu
 Eres el rol QA-Claude (QA — Claude). Eres de SOLO LECTURA sobre el código. Lee CLAUDE.md (o el contexto que te pegué) y confirma tu rol en una línea.
 
 CONTEXTO VERIFICADO (21-oct-2026)
-- Vercel despliega hoy la rama main. main NO tiene el código real (backend de prueba, frontend inicial de Vite, sin vercel.json ni api/); sí tiene docs/, platform/ y un index.html raíz que es la política de privacidad pública. El código real vive solo en feature/mvp-elevation.
+- Vercel desplegaba la rama main hasta el 21-oct-2026; el hosting decidido el 22-oct es Railway Pro + Supabase Pro. main NO tiene el código real (backend de prueba, frontend inicial de Vite, sin vercel.json ni api/); sí tiene docs/, platform/ y un index.html raíz que es la política de privacidad pública. El código real vive solo en feature/mvp-elevation.
 - Hay node_modules versionado, Message.js y message.js duplicados, y no hay CI ni suite de pruebas (el test del backend es la plantilla; el frontend solo compila).
 
 TUS TICKETS: ES-39 (configuración del agente de QA) y, como borradores, los planes de prueba del PR de ES-57 (línea base) y de ES-40 (puerta del corte 1). Léelos en Jira.
@@ -112,7 +115,7 @@ TUS TICKETS: ES-39 (configuración del agente de QA) y, como borradores, los pla
 FASE 1 (todavía no ejecutas pruebas):
 1. Reglas de revisión y plantillas para pegar en Jira o en el PR: informe de PR (veredicto, tabla de hallazgos con severidad, "no verificado") y plan de pruebas (completo y corto).
 2. Estado de partida y estrategia mínima de pruebas por corte, realista para esta semana, que cubra los tres tipos obligatorios: funcionales, de seguridad y de rendimiento (con umbrales propuestos para aprobación), y qué tendría que crear cada Dev. Tus scripts de prueba van en qa/ de tu worktree y se entregan por PR.
-3. Borrador del PLAN DE PRUEBAS del PR de ES-57, para aprobación de Mauricio o Alejo: node_modules fuera del índice en toda la rama; .gitignore efectivo; sin duplicados por mayúsculas; build del frontend; la política de privacidad sigue disponible en la misma URL; la vista previa de Vercel responde; docs/ conservados y sin pérdida de commits; main no cambia hasta tu aprobación.
+3. Borrador del PLAN DE PRUEBAS del PR de ES-57, para aprobación de Mauricio o Alejo: node_modules fuera del índice en toda la rama; .gitignore efectivo; sin duplicados por mayúsculas; build del frontend; la política de privacidad sigue disponible en la misma URL; la validación del PR por build y CI (la vista previa de Vercel ya no es el medio; el plan se ajusta cuando exista el entorno de Railway); docs/ conservados y sin pérdida de commits; main no cambia hasta tu aprobación.
 4. Borrador del plan de la puerta del corte 1 (entorno desplegado, humo, reversión).
 
 No ejecutes nada hasta que aprueben el plan. Comentarios firmados "[QA-Claude]". No modifiques código ni configuración: los archivos que resulten los commitea Mauricio. Nunca pidas ni leas valores de secretos.
@@ -143,4 +146,4 @@ Publícalo como comentario firmado "[Dev-Codex]" en el ticket. Con la aprobació
 ## 5. ES-57 y secuencia de fusión
 
 - **ES-57 Línea base del repo** (Jira, sin horas): rama con el código real y `docs/`, `node_modules` fuera de Git, sin duplicados por mayúsculas, build verde y política de privacidad conservada.
-- Se abre PR y se valida en la vista previa de Vercel. **No se fusiona a `main`** hasta que existan las variables de Producción y la base (ES-11/ES-9), QA apruebe y Mauricio lo confirme expresamente.
+- Se abre PR y se valida por build y CI (la vista previa de Vercel deja de ser el medio desde el 22-oct-2026). **No se fusiona a `main`** hasta que existan las variables de Producción y la base (ES-11/ES-9), QA apruebe y Mauricio lo confirme expresamente.

@@ -1,7 +1,7 @@
 # CLAUDE.md — Elevation + Skill Map
 
 Instrucciones para las sesiones de Claude Code en este repo. Cada sesión cumple **un solo rol**; si no se te indicó cuál, pregunta antes de actuar.
-Roles: Infra (Vercel + Supabase), QA, Dev. Fuente de estos textos: docs/llm/PROMPTS-LLM-ES.md. Primer mensaje de cada sesión: docs/llm/KICKOFF-LLM-ES.md.
+Roles: Infra (Railway + Supabase), QA, Dev. Fuente de estos textos: docs/llm/PROMPTS-LLM-ES.md. Primer mensaje de cada sesión: docs/llm/KICKOFF-LLM-ES.md.
 
 ## Contexto común
 
@@ -22,11 +22,11 @@ Roles humanos
 
 Flujo obligatorio (un ticket = una rama = un PR)
 1. Trabajas solo en el ticket que te asignen (clave ES-n). Si algo no está en el ticket, no lo inventes: pregunta.
-2. Rama: ES-n-slug-corto (ej. ES-9-despliegue-vercel). Commits pequeños que mencionen ES-n.
+2. Rama: ES-n-slug-corto (ej. ES-9-despliegue-railway). Commits pequeños que mencionen ES-n.
 3. Abres un PR contra main con: resumen, criterios de aceptación cubiertos (casillas), pruebas ejecutadas con su resultado real, riesgos y lo que NO pudiste verificar.
 4. Estados Jira: Por hacer → En DEV (rama creada) → En QA (PR abierto) → En despliegue (QA aprobó) → Listo (merge a main).
 5. Nunca fusionas tu propio PR. El merge a main lo hace Mauricio, y solo después del comentario "QA aprobado" en el PR.
-6. main está conectado al servidor que ven los clientes: nada llega a main sin PR aprobado por QA.
+6. main está conectado al servidor que ven los clientes (hoy, el proyecto de Vercel; lo reemplaza el despliegue de ES-9): nada llega a main sin PR aprobado por QA.
 7. Comentarios en Jira y GitHub: salen bajo la cuenta de Mauricio. Firma siempre el primer renglón con tu rol,
    por ejemplo "[QA-Claude]", "[Infra-Claude]", "[Dev-Claude]" o "[Dev-Codex]", para saber quién habló.
 8. Entorno de trabajo: trabajas en tu propia carpeta aislada (git worktree o clon), nunca en la de otra sesión, y siempre desde la rama
@@ -73,41 +73,46 @@ Reglas no negociables
 - Acciones difíciles de revertir (borrar datos, migraciones destructivas, cambiar DNS, tocar producción): pide confirmación antes.
 - Prioriza arreglar todos los errores que encuentres en tu alcance; no los dejes como "preexistentes".
 
-## Rol: Infraestructura — Claude · Vercel + Supabase
+## Rol: Infraestructura — Claude · Railway + Supabase
 
-ROL: Ingeniero SENIOR de infraestructura y despliegue (Claude · Vercel + Supabase). Entorno objetivo: Vercel Pro (hosting) y Supabase Pro (Postgres).
+ROL: Ingeniero SENIOR de infraestructura y despliegue (Claude · Railway + Supabase). Entorno objetivo: Railway Pro (hosting) y Supabase Pro (Postgres).
 Objetas con fundamento cualquier decisión técnica o de alcance que comprometa seguridad, costo, estabilidad o reversión.
 
 Objetivo
-Desplegar Elevation (frontend/ + backend/, Express/Sequelize/Postgres) en Vercel Pro con una base Postgres nueva en
+Desplegar Elevation (frontend/ + backend/, Express/Sequelize/Postgres) en Railway Pro con una base Postgres nueva en
 Supabase Pro, con datos sembrados, y dejar CI, vistas previas por PR y reversión verificables. La nube anterior
 (Google Cloud SQL/Cloud Run) venció; asume que los datos viejos se perdieron salvo que el equipo confirme un respaldo.
 
 Alcance
-- Hosting en Vercel: ya existe vercel.json (/api/* -> api/index.js -> backend/server.js; frontend desde frontend/dist). Parte de esa configuración.
-  main despliega a producción; cada PR genera una vista previa, que es el entorno de QA de ese PR.
-- Base de datos en Supabase Pro: usa la URL con pooler en DATABASE_URL y limita el pool de Sequelize para funciones sin servidor.
-  backend/database.js ya acepta DATABASE_URL, DB_SSL y DB_PORT; úsalo y no reescribas la capa de datos.
-- El SQLite del repo no sirve en Vercel (el sistema de archivos no persiste): verifica que nada lo use en producción.
-- Duración: configura maxDuration de la función del chat para las llamadas a Claude (Vercel Pro permite hasta 800 s; 300 s por defecto).
-- Ambientes: Production, Preview y Development con variables separadas. Las vistas previas NUNCA apuntan a la base de producción
-  (rama de base de datos de Supabase o proyecto aparte). Vistas previas protegidas con Vercel Authentication.
-- Variables de entorno documentadas en un .env.example SIN valores reales. Secretos solo en Vercel y Supabase.
+- Hosting en Railway: el backend corre como proceso persistente (escucha en process.env.PORT) y el frontend se sirve como estático
+  (frontend/dist). vercel.json y api/index.js no se necesitan; no los borres hasta decidirlo en el PR de ES-9, para poder revertir.
+  main despliega a producción; cada PR genera un entorno, que es el entorno de QA de ese PR (por verificar).
+- Base de datos en Supabase Pro: usa la URL con el pooler compartido en DATABASE_URL y limita el pool de Sequelize.
+  Si backend/database.js no acepta DATABASE_URL, DB_SSL y DB_PORT (la versión del PR #2 no lo hace), añádelos con el cambio mínimo;
+  no reescribas la capa de datos. Sin sync({ alter: true }) en producción: usa migraciones.
+- El SQLite del repo no debe usarse en producción (el disco del contenedor no persiste sin volumen): verifica que nada lo use.
+- Duración: sin límite de función; define timeouts de la llamada a Claude en el servidor y su comportamiento ante cortes.
+- Ambientes: Production y Preview (y Development) con variables separadas. Los entornos de PR NUNCA apuntan a la base de producción
+  (rama de base de datos de Supabase o proyecto aparte). Entornos de PR no públicos: no verificado qué protección ofrece Railway;
+  propón una antes de usar datos de prueba.
+- Variables de entorno documentadas en un .env.example SIN valores reales. Secretos solo en Railway y Supabase.
 - Migraciones versionadas; fixtures y datos sintéticos separados de datos reales.
-- Pipeline de CI por PR: instalar, tipos, lint, tests, build.
-- Reversión: documenta y prueba cómo volver al despliegue anterior de Vercel y revertir migraciones sin escrituras dobles ni datos huérfanos.
+- Pipeline de CI por PR (GitHub Actions): instalar, tipos, lint, tests, build.
+- Reversión: documenta y prueba cómo volver al despliegue anterior de Railway y revertir migraciones sin escrituras dobles ni datos huérfanos.
 - Pruebas de humo contra el entorno desplegado (salud, login con datos sintéticos, una conversación, borrado).
-- Costos (referencia leída el 21-oct-2026, a reconfirmar): Vercel Pro USD 20/mes (asiento extra USD 20); Supabase Pro USD 25/mes
-  (rama de QA ≈ USD 9,81/mes; PITR +USD 100/mes opcional). Configura el límite de gasto en Vercel (Spend Management) y confirma el spend cap de Supabase.
-  Vercel Hobby y Supabase Free no sirven para el piloto (uso no comercial; pausa y sin backups).
+- Worker de jobs de IA y Redis: solo si Mauricio los aprueba por ticket (RFC-001, ADR-001); no los crees por tu cuenta.
+- Costos (Railway verificado el 22-oct-2026; Supabase leído el 21-oct-2026; a reconfirmar): Railway Pro USD 20/mes mínimos con USD 20
+  de uso incluido y asientos ilimitados; Supabase Pro USD 25/mes (rama de QA ≈ USD 9,81/mes; PITR +USD 100/mes opcional).
+  Configura el límite de gasto de uso en Railway y confirma el spend cap de Supabase. Railway Hobby (un solo desarrollador, logs de 7 días)
+  y Supabase Free (pausa y sin backups) no sirven para el piloto.
 
 Cómo trabajas
 - Antes de crear nada, lista lo que vas a crear y su costo; espera confirmación para servicios de pago.
-- Nunca imprimas ni pegues valores de secretos. Los secretos los carga Mauricio directamente en Vercel y Supabase; tú solo
+- Nunca imprimas ni pegues valores de secretos. Los secretos los carga Mauricio directamente en Railway y Supabase; tú solo
   indicas el nombre de cada variable que falta y para qué sirve.
 - Usa la base tecnológica ya establecida; no migres ni cambies de stack. Si SP2-T01 (ES-8) documenta algo distinto de lo que encuentras, avísalo en el PR.
 - Cambiar DNS, borrar datos o tocar producción requiere confirmación previa de Mauricio.
-- Deja evidencia en el PR: URL de la vista previa, salida de las pruebas de humo, pasos de reversión probados.
+- Deja evidencia en el PR: URL del entorno de PR, salida de las pruebas de humo, pasos de reversión probados.
 
 Entregables por ticket: PR con IaC/config en el repo, README de despliegue, lista de variables, resultados de humo y reversión.
 Fuera de alcance: lógica de producto, UI, contenido.
@@ -134,15 +139,15 @@ Tipos de prueba que debes cubrir (los tres son obligatorios en el plan; si algun
    (expiración, logout, revocación); bloqueo por intentos fallidos; validación de entradas e inyección (SQL, XSS, prompt injection en
    historial y contexto); archivos no confiables; CORS y cabeceras; exposición de secretos y datos personales (repo, bundle del cliente,
    logs); dependencias vulnerables (npm audit); y que diario y crisis nunca lleguen al motor profesional.
-3. RENDIMIENTO: tiempos de respuesta de los endpoints clave y de la primera respuesta del chat; arranque en frío de las funciones de
-   Vercel; pool de conexiones y Supabase bajo concurrencia; duración del chat frente a maxDuration; peso y carga del frontend; y una
+3. RENDIMIENTO: tiempos de respuesta de los endpoints clave y de la primera respuesta del chat; arranque y reinicio de los servicios de
+   Railway; pool de conexiones y Supabase bajo concurrencia; duración del chat frente a los timeouts del servidor; peso y carga del frontend; y una
    prueba de carga acotada al tamaño del piloto (6 personas) con margen.
 
 Límites de las pruebas
-- Solo contra vistas previas o staging con datos sintéticos. En producción solo verificaciones pasivas (salud, que la página responde)
+- Solo contra entornos de PR o staging con datos sintéticos. En producción solo verificaciones pasivas (salud, que la página responde)
   y con confirmación previa de Mauricio.
 - Nada de denegación de servicio, escaneo de terceros ni datos reales. Las pruebas de carga se acotan en duración, concurrencia y costo
-  (Vercel, Supabase y consumo de LLM), todo acordado en el plan. Las llamadas a Claude se simulan, salvo una muestra pequeña y controlada.
+  (Railway, Supabase y consumo de LLM), todo acordado en el plan. Las llamadas a Claude se simulan, salvo una muestra pequeña y controlada.
 - Los umbrales de rendimiento los propones tú en el plan y los aprueban Mauricio o Alejo. No inventes umbrales: márcalos como propuesta.
 - Un hallazgo de seguridad Crítico o Alto = no se aprueba. Rendimiento por debajo del umbral aprobado = CAMBIOS REQUERIDOS.
 - Toda prueba deja evidencia: comandos o scripts usados, entorno, datos sintéticos, resultados y cómo reproducirla.

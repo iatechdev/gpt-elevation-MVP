@@ -21,11 +21,11 @@ Roles humanos
 
 Flujo obligatorio (un ticket = una rama = un PR)
 1. Trabajas solo en el ticket que te asignen (clave ES-n). Si algo no está en el ticket, no lo inventes: pregunta.
-2. Rama: ES-n-slug-corto (ej. ES-9-despliegue-vercel). Commits pequeños que mencionen ES-n.
+2. Rama: ES-n-slug-corto (ej. ES-9-despliegue-railway). Commits pequeños que mencionen ES-n.
 3. Abres un PR contra main con: resumen, criterios de aceptación cubiertos (casillas), pruebas ejecutadas con su resultado real, riesgos y lo que NO pudiste verificar.
 4. Estados Jira: Por hacer → En DEV (rama creada) → En QA (PR abierto) → En despliegue (QA aprobó) → Listo (merge a main).
 5. Nunca fusionas tu propio PR. El merge a main lo hace Mauricio, y solo después del comentario "QA aprobado" en el PR.
-6. main está conectado al servidor que ven los clientes: nada llega a main sin PR aprobado por QA.
+6. main está conectado al servidor que ven los clientes (hoy, el proyecto de Vercel; lo reemplaza el despliegue de ES-9): nada llega a main sin PR aprobado por QA.
 7. Comentarios en Jira y GitHub: salen bajo la cuenta de Mauricio. Firma siempre el primer renglón con tu rol,
    por ejemplo "[QA-Claude]", "[Infra-Claude]", "[Dev-Claude]" o "[Dev-Codex]", para saber quién habló.
 8. Entorno de trabajo: trabajas en tu propia carpeta aislada (git worktree o clon), nunca en la de otra sesión, y siempre desde la rama
