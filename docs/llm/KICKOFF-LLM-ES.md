@@ -34,6 +34,8 @@ y si integraciones externas apuntan a la URL de la política de privacidad.
 | P6 | Mauricio | Pasar el workspace de Railway a **Pro**, poner el límite de gasto, invitar a los miembros y confirmar el proyecto de **Supabase Pro**; cargar él mismo los secretos en Railway y Supabase. Confirmar precios antes de pagar. | ES-9, ES-11 |
 | P7 | Mauricio / Alejo | Instalar GitHub for Jira; crear el sprint 21–27 oct y el dashboard (guía ya entregada); invitar al especialista. | Estados y burndown |
 | P8 | Mauricio | Hasta que `CLAUDE.md` y `AGENTS.md` estén en la rama base, pegar su contenido como primer mensaje de cada sesión. | Reglas en cada sesión |
+| P9 | Alejo | Aceptar la invitación de colaborador del repositorio y publicar (o entregar a Mauricio) el PR de ES-8 con las definiciones consolidadas. | Fuente de verdad |
+| P10 | Mauricio | Entregar la lista de variables de staging (solo nombres), el acceso técnico para las sesiones y las cuentas sintéticas de QA por un canal seguro. | Staging operativo |
 
 ## 3. Orden de arranque
 
@@ -141,6 +143,32 @@ FASE 1 — PLAN PARA APROBACIÓN (antes de escribir código; la implementación 
 4. Señala qué contratos necesitas de Mauricio (identidad y preferencias; dependen de ES-8 y ES-18) y qué objetarías del ticket si algo no cuadra.
 
 Publícalo como comentario firmado "[Dev-Codex]" en el ticket. Con la aprobación de Mauricio o de Alejo y cuando exista la línea base (ES-57), pasas a la Fase 2: implementas frontend y backend completos, con pruebas, y abres el PR.
+```
+
+### 4.5 UX-Claude · EP-5 (investigación, diseño y sistema de diseño)
+
+```
+Eres el rol UX-Claude (UX/UI — Claude). Lee CLAUDE.md (o el contexto que te pegué) y confirma tu rol en una línea.
+
+CONTEXTO
+- Meta final: Elevation como aplicación central con el motor Skill Map integrado. Piloto de seis personas en reconversión profesional (cinco ES, una EN).
+- Quien entra suele venir cargado de problemas: el diseño debe generar calma, seguridad y control. Producto NO clínico.
+- Quiero un diseño completamente original, llamativo y de muy buena experiencia, sin la estética genérica de los sitios hechos con IA. Tu rol define el proceso
+  de Design Thinking y el sistema de diseño completo.
+- Stack del frontend: React + TypeScript + Tailwind (frontend/). No cambias de stack.
+- Punto de partida: docs/hu-tecnicas/DESIGN-SYSTEM.md y HU-042 (fondo que respira). Evalúalos con criterio.
+- El repositorio es PÚBLICO: nada de datos personales, correos, tarifas ni secretos en documentos, PR o prototipos.
+- Tickets: ES-37 y ES-38 (EP-5), que hoy están asignados a Dev-Claude; Mauricio decidirá la reasignación en Jira.
+
+FASE 1 — SOLO PLAN, sin diseñar pantallas ni escribir código:
+1. Lee el PRD vigente (ver Fuentes de verdad), el recorrido y las pantallas, el sistema actual y las pantallas existentes del frontend.
+2. Propón el plan de Design Thinking con sus 5 fases, entregables y puertas de aprobación, y una estimación de esfuerzo por fase marcada como propuesta.
+3. Plan de investigación con las seis personas del piloto: guion, consentimiento, qué conducen los humanos y qué prepararías tú. Sin inventar hallazgos.
+4. Auditoría heurística y de accesibilidad de lo existente (lo que puedas verificar) y qué conservarías, evolucionarías o descartarías del sistema actual.
+5. Cómo evitarás la estética de IA genérica: tus anti-patrones y cómo demostrarás que una dirección es original y, a la vez, accesible e implementable.
+6. Preguntas, riesgos y decisiones que necesitas de Mauricio y Alejo.
+
+No diseñes ni implementes hasta que aprueben el plan. Firma "[UX-Claude]". Lo que no puedas comprobar va como "no verificado".
 ```
 
 ## 5. ES-57 y secuencia de fusión
