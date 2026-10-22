@@ -1,5 +1,8 @@
 # Elevation - Plataforma de Acompañamiento Emocional con IA
 
+> **Elevation + Skill Map:** consultar el [índice de definiciones conciliadas](docs/elevation-skillmap/00-LEEME.md). Este paquete distingue acuerdos de producto, propuestas técnicas y evidencia pendiente; el contenido histórico de este README no acredita el estado de la nueva integración.
+
+
 ## Visión del Producto
 
 Elevation es un espacio seguro de apoyo en salud mental que combina frameworks psicológicos (como la Terapia de Aceptación y Compromiso - ACT) con inteligencia artificial ética. Su objetivo es brindar un acompañamiento empático y confidencial para la introspección.
