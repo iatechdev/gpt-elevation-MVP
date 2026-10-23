@@ -6,6 +6,7 @@ const router       = express.Router();
 const PlanRequest  = require('../PlanRequest');
 const PricingPlan  = require('../PricingPlan');
 const User         = require('../User');
+const { verificarAdmin } = require('../middlewares/auth');
 
 // ==========================================
 // POST /api/plan-requests
@@ -77,7 +78,7 @@ router.get('/me', async (req, res) => {
 // GET /api/admin/plan-requests
 // Admin — lista todas las solicitudes pendientes
 // ==========================================
-router.get('/admin', async (req, res) => {
+router.get('/admin', verificarAdmin, async (req, res) => {
   try {
     const { status = 'pending' } = req.query;
 
@@ -109,7 +110,7 @@ router.get('/admin', async (req, res) => {
 // PUT /api/admin/plan-requests/:id/approve
 // Admin — aprueba solicitud y asigna el plan
 // ==========================================
-router.put('/admin/:id/approve', async (req, res) => {
+router.put('/admin/:id/approve', verificarAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { adminNote } = req.body;
@@ -150,7 +151,7 @@ router.put('/admin/:id/approve', async (req, res) => {
 // PUT /api/admin/plan-requests/:id/reject
 // Admin — rechaza solicitud
 // ==========================================
-router.put('/admin/:id/reject', async (req, res) => {
+router.put('/admin/:id/reject', verificarAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { adminNote } = req.body;
