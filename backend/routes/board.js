@@ -1,6 +1,6 @@
 // backend/routes/board.js
 // Endpoints for the Ethics Board role
-// Protected with verificarBoard in server.js (except /active, consumed internally by chat.js)
+// Route-level authorization also protects the public /api/manifest mount.
 
 const express       = require('express');
 const router        = express.Router();
@@ -8,11 +8,12 @@ const { sequelize } = require('../database');
 const EthicManifest = require('../EthicManifest');
 const User          = require('../User');
 const { encriptar, desencriptar } = require('../utils/crypto');
+const { verificarBoard } = require('../middlewares/auth');
 
 // ── POST /api/board/manifest ──────────────────────────────────────────────────
 // Upload a new version of the ethics manifest
 // Body: { content: string, note?: string }
-router.post('/manifest', async (req, res) => {
+router.post('/manifest', verificarBoard, async (req, res) => {
   const { content, note } = req.body;
   const uploadedBy = req.user.id;
 
@@ -67,7 +68,7 @@ router.post('/manifest', async (req, res) => {
 
 // ── GET /api/board/manifest ───────────────────────────────────────────────────
 // Full version history — decrypted, only for board members
-router.get('/manifest', async (req, res) => {
+router.get('/manifest', verificarBoard, async (req, res) => {
   try {
     const manifests = await EthicManifest.findAll({
       order: [['createdAt', 'DESC']],
@@ -97,7 +98,7 @@ router.get('/manifest', async (req, res) => {
 
 // ── PUT /api/board/manifest/:id/activate ─────────────────────────────────────
 // Reactivate a previous version (rollback)
-router.put('/manifest/:id/activate', async (req, res) => {
+router.put('/manifest/:id/activate', verificarBoard, async (req, res) => {
   const { id } = req.params;
 
   const t = await sequelize.transaction();
