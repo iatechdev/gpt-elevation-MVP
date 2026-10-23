@@ -2,6 +2,7 @@
 const express     = require('express');
 const router      = express.Router();
 const PricingPlan = require('../PricingPlan');
+const { verificarAdmin } = require('../middlewares/auth');
 
 // GET /api/pricing — público
 router.get('/', async (req, res) => {
@@ -16,6 +17,9 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'No se pudieron obtener los planes.' });
   }
 });
+
+// Only the active-plan GET above is public, regardless of the router mount.
+router.use(verificarAdmin);
 
 // GET /api/admin/pricing/all — todos los planes (activos e inactivos)
 router.get('/all', async (req, res) => {
