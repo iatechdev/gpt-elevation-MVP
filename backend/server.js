@@ -25,7 +25,8 @@ app.use(express.json());
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
   setupAssociations(sequelize);
-  sequelize.sync({ alter: true })
+  // `alter` solo fuera de producción; en producción solo crea las tablas que falten (migraciones: pendiente)
+  sequelize.sync(process.env.NODE_ENV === 'production' ? {} : { alter: true })
     .then(() => console.log('✅ Tablas sincronizadas en PostgreSQL.'))
     .catch(err => console.error('❌ Error sincronizando tablas:', err));
 });

@@ -5,8 +5,14 @@
 const crypto = require('crypto');
 
 const ALGORITMO = 'aes-256-cbc';
+// Clave propia (DATA_ENCRYPTION_KEY); DB_PASS queda solo por compatibilidad con datos ya cifrados.
+// En producción no hay clave por defecto: sin variable, el proceso no arranca.
+const keySource = process.env.DATA_ENCRYPTION_KEY || process.env.DB_PASS;
+if (!keySource && process.env.NODE_ENV === 'production') {
+  throw new Error('Falta DATA_ENCRYPTION_KEY (clave de cifrado de datos).');
+}
 const KEY = Buffer.from(
-  (process.env.DB_PASS || 'default_password_2026').padEnd(32).slice(0, 32)
+  (keySource || 'default_password_2026').padEnd(32).slice(0, 32)
 );
 
 const encriptar = (texto) => {
