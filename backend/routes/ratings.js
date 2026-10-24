@@ -6,9 +6,10 @@
 const express       = require('express');
 const router        = express.Router();
 const SessionRating = require('../SessionRating');
+const { validateBody, score } = require('../middlewares/validateBody');
 
 // POST /api/rating
-router.post('/rating', async (req, res) => {
+router.post('/rating', validateBody({ rating: score }), async (req, res) => {
   try {
     const { rating } = req.body;
     if (!rating || rating < 1 || rating > 5)

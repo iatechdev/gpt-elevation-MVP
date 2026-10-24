@@ -7,12 +7,13 @@ const PlanRequest  = require('../PlanRequest');
 const PricingPlan  = require('../PricingPlan');
 const User         = require('../User');
 const { verificarAdmin } = require('../middlewares/auth');
+const { validateBody, id, text, nonempty, optional, nullable } = require('../middlewares/validateBody');
 
 // ==========================================
 // POST /api/plan-requests
 // Usuario autenticado solicita un plan
 // ==========================================
-router.post('/', async (req, res) => {
+router.post('/', validateBody({ planId: id }), async (req, res) => {
   try {
     const { planId } = req.body;
     const userId = req.user.id;
@@ -110,7 +111,7 @@ router.get('/admin', verificarAdmin, async (req, res) => {
 // PUT /api/admin/plan-requests/:id/approve
 // Admin — aprueba solicitud y asigna el plan
 // ==========================================
-router.put('/admin/:id/approve', verificarAdmin, async (req, res) => {
+router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optional(nullable(text)) }), async (req, res) => {
   try {
     const { id } = req.params;
     const { adminNote } = req.body;
@@ -151,7 +152,7 @@ router.put('/admin/:id/approve', verificarAdmin, async (req, res) => {
 // PUT /api/admin/plan-requests/:id/reject
 // Admin — rechaza solicitud
 // ==========================================
-router.put('/admin/:id/reject', verificarAdmin, async (req, res) => {
+router.put('/admin/:id/reject', verificarAdmin, validateBody({ adminNote: nonempty }), async (req, res) => {
   try {
     const { id } = req.params;
     const { adminNote } = req.body;

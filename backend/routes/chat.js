@@ -8,9 +8,11 @@ const router     = express.Router();
 const User       = require('../User');
 const Message = require('../message');
 const anthropic  = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
+const { validateBody, nonempty } = require('../middlewares/validateBody');
 
 // Internal helper — fetches active manifest content (decrypted)
 // Returns null silently if no manifest exists or any error occurs
@@ -29,7 +31,7 @@ const getActiveManifest = async () => {
 };
 
 // POST /api/chat
-router.post('/chat', async (req, res) => {
+router.post('/chat', validateBody({ message: nonempty }), async (req, res) => {
   const mensajeUsuario = req.body.message;
   const userId = req.user.id;
   try {
@@ -66,13 +68,13 @@ router.post('/chat', async (req, res) => {
     await Message.create({ role: 'user', content: encriptar(mensajeUsuario), UserId: userId });
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 1000,
       system: systemPrompt,
       messages: historial,
     });
 
-    const respuestaIA = msg.content[0].text;
+    const respuestaIA = textOf(msg);
     await Message.create({ role: 'assistant', content: encriptar(respuestaIA), UserId: userId });
 
     res.json({ reply: respuestaIA });

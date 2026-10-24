@@ -44,7 +44,7 @@ interface PlanRequest {
   plan: { id: number; slug: string; name_es: string; name_en: string; price: number; currency: string };
 }
 
-const API = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080';
+const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '');
 const getToken = () => localStorage.getItem('elevation_token') ?? '';
 
 const getRoleBadgeStyle = (role: Role): React.CSSProperties => {

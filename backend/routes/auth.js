@@ -10,6 +10,7 @@ const jwt       = require('jsonwebtoken');
 const JWT_SECRET = require('../config/jwt');
 const rateLimit = require('express-rate-limit');
 const User      = require('../User');
+const { validateBody, nonempty } = require('../middlewares/validateBody');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -22,7 +23,7 @@ const loginLimiter = rateLimit({
 });
 
 // POST /api/register
-router.post('/register', async (req, res) => {
+router.post('/register', validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -58,7 +59,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/login
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, validateBody({ email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
