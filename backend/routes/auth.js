@@ -7,13 +7,9 @@ const express   = require('express');
 const router    = express.Router();
 const bcrypt    = require('bcryptjs');
 const jwt       = require('jsonwebtoken');
+const JWT_SECRET = require('../config/jwt');
 const rateLimit = require('express-rate-limit');
 const User      = require('../User');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_dev_secret_2026';
-if (!process.env.JWT_SECRET) {
-  console.warn('⚠️ JWT_SECRET no está configurado — usando valor de desarrollo');
-}
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

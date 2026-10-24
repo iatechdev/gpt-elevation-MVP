@@ -4,10 +4,7 @@
 
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_dev_secret_2026';
-if (!process.env.JWT_SECRET) {
-  console.warn('⚠️ JWT_SECRET no está configurado — usando valor de desarrollo');
-}
+const JWT_SECRET = require('../config/jwt');
 
 const verificarToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
