@@ -7,9 +7,10 @@
 const express = require('express');
 const router  = express.Router();
 const MoodLog = require('../MoodLog');
+const { validateBody, score } = require('../middlewares/validateBody');
 
 // POST /api/mood/checkin
-router.post('/checkin', async (req, res) => {
+router.post('/checkin', validateBody({ mood: score }), async (req, res) => {
   try {
     const { mood } = req.body;
     const today = new Date().toISOString().split('T')[0];
@@ -22,7 +23,7 @@ router.post('/checkin', async (req, res) => {
 });
 
 // POST /api/mood/checkout
-router.post('/checkout', async (req, res) => {
+router.post('/checkout', validateBody({ mood: score }), async (req, res) => {
   try {
     const { mood } = req.body;
     const today = new Date().toISOString().split('T')[0];

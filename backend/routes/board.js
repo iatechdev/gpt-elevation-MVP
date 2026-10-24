@@ -9,11 +9,12 @@ const EthicManifest = require('../EthicManifest');
 const User          = require('../User');
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { verificarBoard } = require('../middlewares/auth');
+const { validateBody, nonempty, text, optional } = require('../middlewares/validateBody');
 
 // ── POST /api/board/manifest ──────────────────────────────────────────────────
 // Upload a new version of the ethics manifest
 // Body: { content: string, note?: string }
-router.post('/manifest', verificarBoard, async (req, res) => {
+router.post('/manifest', verificarBoard, validateBody({ content: nonempty, note: optional(text) }), async (req, res) => {
   const { content, note } = req.body;
   const uploadedBy = req.user.id;
 

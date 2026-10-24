@@ -6,11 +6,12 @@ const express = require('express');
 const router  = express.Router();
 
 const { encriptar, desencriptar } = require('../utils/crypto');
+const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
 
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
 
 // POST /api/sessions/therapist — crear nueva sesión
-router.post('/therapist', async (req, res) => {
+router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, duration: optional(numeric) }), async (req, res) => {
   const User           = require('../User');
   const TherapySession = require('../TherapySession');
   try {
@@ -107,7 +108,7 @@ router.get('/therapist', async (req, res) => {
 });
 
 // PUT /api/sessions/therapist/:id — editar / cancelar sesión
-router.put('/therapist/:id', async (req, res) => {
+router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duration: optional(numeric), status: optional(text), cancelReason: optional(text) }), async (req, res) => {
   const TherapySession = require('../TherapySession');
   try {
     if (req.user.role !== 'therapist') {
@@ -145,7 +146,7 @@ router.put('/therapist/:id', async (req, res) => {
 });
 
 // POST /api/sessions/therapist/:id/notes — agregar nota en vivo
-router.post('/therapist/:id/notes', async (req, res) => {
+router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (req, res) => {
   const TherapySession = require('../TherapySession');
   const SessionNote    = require('../SessionNote');
   try {
@@ -393,7 +394,7 @@ router.post('/therapist/:id/start', async (req, res) => {
 });
 
 // POST /api/sessions/therapist/:id/end — finalizar videollamada con checkout
-router.post('/therapist/:id/end', async (req, res) => {
+router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patientMoodAfter: score }), async (req, res) => {
   const TherapySession         = require('../TherapySession');
   const WellnessRecommendation = require('../WellnessRecommendation');
   const User                   = require('../User');

@@ -12,6 +12,7 @@ const { textOf } = require('../utils/claudeText');
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
+const { validateBody, nonempty } = require('../middlewares/validateBody');
 
 // Internal helper — fetches active manifest content (decrypted)
 // Returns null silently if no manifest exists or any error occurs
@@ -30,7 +31,7 @@ const getActiveManifest = async () => {
 };
 
 // POST /api/chat
-router.post('/chat', async (req, res) => {
+router.post('/chat', validateBody({ message: nonempty }), async (req, res) => {
   const mensajeUsuario = req.body.message;
   const userId = req.user.id;
   try {

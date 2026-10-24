@@ -6,6 +6,7 @@ const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const ClinicalNote = require('../ClinicalNote');
+const { validateBody, nonempty, text, date, optional } = require('../middlewares/validateBody');
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
@@ -273,7 +274,7 @@ router.get('/prompt', async (req, res) => {
   }
 });
 
-router.post('/prompt/propose', async (req, res) => {
+router.post('/prompt/propose', validateBody({ content: nonempty }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const { content } = req.body;
@@ -375,7 +376,7 @@ router.get('/pacientes/:id/historia', async (req, res) => {
   }
 });
 
-router.post('/pacientes/:id/notas', async (req, res) => {
+router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDate: date, type: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const patientId = req.params.id;
@@ -416,7 +417,7 @@ router.post('/pacientes/:id/notas', async (req, res) => {
   }
 });
 
-router.put('/notas/:noteId', async (req, res) => {
+router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate: optional(date), type: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const { noteId } = req.params;

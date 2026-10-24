@@ -15,9 +15,10 @@ const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
 const { textOf } = require('../utils/claudeText');
 const { verificarAdmin } = require('../middlewares/auth');
+const { validateBody, object, text, id } = require('../middlewares/validateBody');
 
 // POST /api/matching/request
-router.post('/request', async (req, res) => {
+router.post('/request', validateBody({ answers: value => object(value) && Object.values(value).every(text) }), async (req, res) => {
   try {
     const userId   = req.user.id;
     const { answers } = req.body;
@@ -105,7 +106,7 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
 });
 
 // POST /api/matching/choose
-router.post('/choose', async (req, res) => {
+router.post('/choose', validateBody({ requestId: id, therapistId: id }), async (req, res) => {
   try {
     const { requestId, therapistId } = req.body;
     const request = await MatchingRequest.findOne({
