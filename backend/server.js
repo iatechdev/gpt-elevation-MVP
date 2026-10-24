@@ -4,6 +4,7 @@ require('./config/jwt'); // Fail before database initialization or opening a por
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
+const helmet  = require('helmet');
 
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
@@ -16,6 +17,24 @@ const {
 } = require('./middlewares/auth');
 
 const app = express();
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      // Existing React styles and Google Fonts; scripts remain same-origin only.
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://images.unsplash.com'],
+      connectSrc: ["'self'"],
+      frameSrc: ["'self'", 'https://*.daily.co'],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
+  xFrameOptions: { action: 'deny' },
+  referrerPolicy: { policy: 'no-referrer' },
+}));
 
 // Detrás de un proxy (Railway) define TRUST_PROXY_HOPS=1; por defecto no se confía en X-Forwarded-For (evita falsear la IP del rate limit)
 app.set('trust proxy', parseInt(process.env.TRUST_PROXY_HOPS, 10) || false);
