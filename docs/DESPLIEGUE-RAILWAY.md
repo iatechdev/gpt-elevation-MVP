@@ -5,7 +5,7 @@ Un solo servicio de Railway (`backend`) sirve la API y el frontend estático (`f
 ## Estructura en Railway
 - Proyecto `elevation`, entornos `staging` y `production` (variables separadas).
 - Servicio `backend`: build y arranque definidos en `railway.json` (raíz).
-  - Build: `npm --prefix backend ci && npm run build` (el `install` de la raíz instala el frontend; `npm run build` compila `frontend/dist`).
+  - Build: `npm run build` (el `install` de la raíz instala backend y frontend; el build compila `frontend/dist`).
   - Arranque: `node backend/server.js`. Escucha en `PORT` (lo asigna Railway).
   - Salud: `GET /api/health` (sin base de datos ni auth).
 - Servicio `Redis`: sin conexión desde el código todavía.
