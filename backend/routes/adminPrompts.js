@@ -6,6 +6,7 @@
 const express = require('express');
 const router  = express.Router();
 const { PromptVault, getActivePrompt, savePrompt, proposePrompt, approvePrompt, rejectPrompt, rollbackPrompt } = require('../promptVault');
+const { verificarSuperAdmin } = require('../middlewares/auth');
 
 // POST /api/admin/prompt
 router.post('/prompt', async (req, res) => {
@@ -85,7 +86,7 @@ router.get('/prompt/:key/versions', async (req, res) => {
 });
 
 // POST /api/superadmin/prompt/:id/approve
-router.post('/prompt/:id/approve', async (req, res) => {
+router.post('/prompt/:id/approve', verificarSuperAdmin, async (req, res) => {
   try {
     await approvePrompt(req.params.id, req.user.name);
     res.json({ message: 'Versión aprobada y activa en producción.' });
@@ -96,7 +97,7 @@ router.post('/prompt/:id/approve', async (req, res) => {
 });
 
 // POST /api/superadmin/prompt/:id/reject
-router.post('/prompt/:id/reject', async (req, res) => {
+router.post('/prompt/:id/reject', verificarSuperAdmin, async (req, res) => {
   try {
     const { note } = req.body;
     await rejectPrompt(req.params.id, req.user.name, note || '');
@@ -108,7 +109,7 @@ router.post('/prompt/:id/reject', async (req, res) => {
 });
 
 // POST /api/superadmin/prompt/:id/rollback
-router.post('/prompt/:id/rollback', async (req, res) => {
+router.post('/prompt/:id/rollback', verificarSuperAdmin, async (req, res) => {
   try {
     await rollbackPrompt(req.params.id, req.user.name);
     res.json({ message: 'Rollback exitoso. Versión anterior activa en producción.' });
