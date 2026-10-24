@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install": "cd frontend && npm install --legacy-peer-deps",
+    "install": "npm ci --prefix backend && npm ci --prefix frontend --legacy-peer-deps",
     "build": "cd frontend && npm run build"
   },
   "dependencies": {
