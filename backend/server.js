@@ -22,6 +22,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Salud para el healthcheck de Railway (sin base de datos ni auth)
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
   setupAssociations(sequelize);
