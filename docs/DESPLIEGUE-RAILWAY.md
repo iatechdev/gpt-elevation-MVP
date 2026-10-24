@@ -37,9 +37,12 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
 
 ## Reversión
-- Código: en Railway, servicio `backend` → Deployments → Redeploy del despliegue anterior, o revertir el merge en `main`.
+- Código (**probado en staging el 23-oct-2026**): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactivó el código previo (creó un despliegue nuevo, sin recompilar); `/api/health` dejó de informar el commit nuevo y las 11 pruebas de humo pasaron. Variables y base de datos no cambian con la reversión.
+- Volver a avanzar: un push a la rama (o Redeploy desde el panel) despliega de nuevo el último commit. Mientras se está en rollback, un push lo deshace.
+- El CLI solo ofrece `redeploy` del último despliegue; no hay rollback por CLI.
 - `vercel.json` y `api/index.js` siguen en el repo hasta decidir su retiro: Vercel es el camino de vuelta mientras tanto.
 - Datos: sin migraciones no hay reversión de esquema automática. No verificado: restauración de Supabase (depende del plan de respaldos).
+- `/api/health` informa el commit en ejecución (`RAILWAY_GIT_COMMIT_SHA`): úsalo para registrar qué versión corre.
 
 ## Pruebas de humo (después de cada despliegue)
 1. `GET /api/health` → `{"status":"ok"}`.
@@ -51,4 +54,3 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 ## No verificado aún
 - Primer build en Railway (`railway.json`, instalación del frontend por el `install` de la raíz, dependencia nativa `sqlite3` del `package.json` raíz).
 - Protección de los entornos de PR en Railway.
-- Reversión probada en Railway.
