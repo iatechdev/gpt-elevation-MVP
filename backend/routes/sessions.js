@@ -433,7 +433,7 @@ router.post('/therapist/:id/end', async (req, res) => {
       const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
 
       const aiResponse = await anthropic.messages.create({
-        model:      'claude-3-haiku-20240307',
+        model:      anthropic.MODEL,
         max_tokens: 400,
         system:     'Eres un asistente de bienestar empático de Elevation. Genera recomendaciones breves, cálidas y accionables para el paciente después de su sesión de terapia. Responde SOLO con la recomendación, sin preámbulo.',
         messages: [{

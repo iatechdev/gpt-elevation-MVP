@@ -70,7 +70,7 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
 [{ "therapistId": <id>, "score": <1-10>, "reason": "<one sentence why this therapist fits>" }]`;
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }],
     });

@@ -66,7 +66,7 @@ router.post('/chat', async (req, res) => {
     await Message.create({ role: 'user', content: encriptar(mensajeUsuario), UserId: userId });
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 1000,
       system: systemPrompt,
       messages: historial,

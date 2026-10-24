@@ -503,7 +503,7 @@ ${decryptedNotes.length > 0 ? decryptedNotes.join('\n---\n') : 'No notes yet.'}
 Please write a concise clinical summary (3-5 sentences) of this patient's emotional progress and current state. Focus on observable trends, not diagnoses. Be professional and empathetic.`;
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }],
     });

@@ -23,6 +23,7 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 | `DATA_ENCRYPTION_KEY` | Cifrado de datos (`utils/crypto.js`) | Distinta por entorno. En producción el proceso no arranca sin ella |
 | `PROMPT_ENCRYPTION_KEY` | Cifrado de prompts (`promptVault.js`) | Distinta por entorno |
 | `ANTHROPIC_API_KEY` | Claude | Timeout 60 s por intento, 1 reintento |
+| `ANTHROPIC_MODEL` | Modelo de Claude (opcional) | Por defecto `claude-haiku-5-5`; el ID anterior `claude-3-haiku-20240307` devuelve 404 |
 | `ADMIN_EMAILS` | Correos que nacen como admin al registrarse | Separados por coma |
 | `FRONTEND_URL` | Origen permitido por CORS | `https://${{RAILWAY_PUBLIC_DOMAIN}}` (mismo origen) |
 | `VITE_BACKEND_URL` | URL de la API en el build del frontend | Vacía: el frontend llama al mismo dominio |

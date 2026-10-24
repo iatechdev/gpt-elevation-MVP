@@ -47,7 +47,7 @@ Each content must be 1-2 sentences, warm, actionable and specific to the user's 
 Never mention diagnoses or medical advice.`;
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 600,
       messages: [{ role: 'user', content: prompt }],
     });

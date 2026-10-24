@@ -10,4 +10,7 @@ const anthropic = new Anthropic({
   maxRetries: 1,
 });
 
+// Modelo configurable (ANTHROPIC_MODEL). claude-3-haiku-20240307 ya no existe en la API (404).
+anthropic.MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5';
+
 module.exports = anthropic;
