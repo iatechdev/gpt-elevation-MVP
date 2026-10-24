@@ -18,6 +18,7 @@ const path     = require('path');
 const User     = require('../User');
 const TherapistValidation = require('../TherapistValidation');
 const { uploadFile, getSignedUrl } = require('../utils/storage');
+const { verificarSuperAdmin } = require('../middlewares/auth');
 
 // Multer en memoria — no guarda en disco, va directo a GCS
 const upload = multer({
@@ -106,7 +107,7 @@ router.get('/status', async (req, res) => {
 // ── RUTAS JUNTA ───────────────────────────────────────────────────────────────
 
 // GET /api/junta/validations/pending
-router.get('/pending', async (req, res) => {
+router.get('/pending', verificarSuperAdmin, async (req, res) => {
   try {
     const validations = await TherapistValidation.findAll({
       where: { status: 'pending' },
@@ -137,7 +138,7 @@ router.get('/pending', async (req, res) => {
 });
 
 // GET /api/junta/validations/:id/download — genera signed URL temporal
-router.get('/:id/download', async (req, res) => {
+router.get('/:id/download', verificarSuperAdmin, async (req, res) => {
   try {
     const validation = await TherapistValidation.findByPk(req.params.id);
     if (!validation) return res.status(404).json({ error: 'Documento no encontrado.' });
@@ -151,7 +152,7 @@ router.get('/:id/download', async (req, res) => {
 });
 
 // POST /api/junta/validations/:id/approve
-router.post('/:id/approve', async (req, res) => {
+router.post('/:id/approve', verificarSuperAdmin, async (req, res) => {
   try {
     const validation = await TherapistValidation.findByPk(req.params.id);
     if (!validation) return res.status(404).json({ error: 'Documento no encontrado.' });
@@ -183,7 +184,7 @@ router.post('/:id/approve', async (req, res) => {
 });
 
 // POST /api/junta/validations/:id/reject
-router.post('/:id/reject', async (req, res) => {
+router.post('/:id/reject', verificarSuperAdmin, async (req, res) => {
   try {
     const validation = await TherapistValidation.findByPk(req.params.id);
     if (!validation) return res.status(404).json({ error: 'Documento no encontrado.' });

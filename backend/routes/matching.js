@@ -13,6 +13,7 @@ const MoodLog          = require('../MoodLog');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
+const { verificarAdmin } = require('../middlewares/auth');
 
 // POST /api/matching/request
 router.post('/request', async (req, res) => {
@@ -118,7 +119,7 @@ router.post('/choose', async (req, res) => {
 });
 
 // GET /api/admin/matching/pending
-router.get('/pending', async (req, res) => {
+router.get('/pending', verificarAdmin, async (req, res) => {
   try {
     const requests = await MatchingRequest.findAll({
       where: { status: 'pending', chosenTherapistId: { [Op.ne]: null } },
@@ -142,7 +143,7 @@ router.get('/pending', async (req, res) => {
 });
 
 // POST /api/admin/matching/:id/confirm
-router.post('/:id/confirm', async (req, res) => {
+router.post('/:id/confirm', verificarAdmin, async (req, res) => {
   try {
     const request = await MatchingRequest.findByPk(req.params.id);
     if (!request) return res.status(404).json({ error: 'Request not found.' });

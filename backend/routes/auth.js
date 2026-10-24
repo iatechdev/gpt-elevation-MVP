@@ -7,13 +7,9 @@ const express   = require('express');
 const router    = express.Router();
 const bcrypt    = require('bcryptjs');
 const jwt       = require('jsonwebtoken');
+const JWT_SECRET = require('../config/jwt');
 const rateLimit = require('express-rate-limit');
 const User      = require('../User');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_dev_secret_2026';
-if (!process.env.JWT_SECRET) {
-  console.warn('⚠️ JWT_SECRET no está configurado — usando valor de desarrollo');
-}
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -39,18 +35,9 @@ router.post('/register', async (req, res) => {
 
     if (existing) {
       if (existing.active === false) {
-        // Usuario desactivado — reactivar con los nuevos datos
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await existing.update({
-          name,
-          password: hashedPassword,
-          active: true,
-          loginAttempts: 0,
-          lockedUntil: null,
-        });
-        return res.status(200).json({
-          message: '¡Bienvenido de vuelta a Elevation! Tu cuenta ha sido reactivada.',
-          reactivated: true,
+        // Registration is not proof of ownership of an existing account.
+        return res.status(403).json({
+          error: 'Cuenta inactiva. Contacta con soporte. / Inactive account. Contact support.',
         });
       }
 
@@ -84,10 +71,10 @@ router.post('/login', loginLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas.' });
     }
 
-    // Usuario desactivado — informar que puede reactivarse
+    // Una cuenta inactiva no se recupera mediante el registro público.
     if (user.active === false) {
       return res.status(403).json({
-        error: 'Tu cuenta está desactivada. Podés reactivarla registrándote nuevamente con tu correo.',
+        error: 'Cuenta inactiva. Contacta con soporte. / Inactive account. Contact support.',
         deactivated: true,
       });
     }

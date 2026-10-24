@@ -41,9 +41,10 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      # El backend aún no tiene tests ni lint: se comprueba que cada archivo compile.
+      # Sin lint en el backend: se comprueba la sintaxis y se corren los tests (P1 del PR #2).
       - name: Revisar sintaxis
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
+      - run: npm test
       - name: Auditar dependencias (solo informa)
         run: npm audit --omit=dev --audit-level=high
         continue-on-error: true

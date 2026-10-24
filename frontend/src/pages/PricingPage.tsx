@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { BreathingBackground } from '../components/BreathingBackground.tsx'
 
-const API = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
+const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 interface PricingPlan {
   id: number

@@ -6,7 +6,7 @@ import {
   btnPrimaryStyle,
 } from '../styles/tokens'
 
-const BACKEND = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
+const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 export function LoginPage() {
   const { t, lang, setLang } = useLanguage()

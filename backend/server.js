@@ -1,5 +1,6 @@
 // backend/server.js
 require('dotenv').config();
+require('./config/jwt'); // Fail before database initialization or opening a port.
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
