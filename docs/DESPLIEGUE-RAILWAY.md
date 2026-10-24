@@ -32,17 +32,19 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto usa videollamadas o archivos hay que cargarlas.
 
 ## Base de datos
-- Producción: `sequelize.sync({})` solo crea tablas que falten; no altera columnas (`alter` solo fuera de producción).
-- Pendiente (ticket aparte): migraciones versionadas. Hasta entonces, un cambio de columnas en producción requiere SQL manual revisado.
+- Producción (`NODE_ENV=production`): `sequelize.sync({})` solo crea las tablas que falten; no altera columnas.
+- **Esquema hasta que existan migraciones (QA-57-05, decisión propuesta):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo debe activarse de forma explícita en un entorno de desarrollo desechable, nunca por defecto (cambio de código pendiente de Dev, ver QA-57-05).
+- Migraciones versionadas: ticket propuesto en ES-9 (clave de Jira por enlazar aquí y en el PR #4 cuando se cree).
 - Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
 
 ## Reversión
-- Código (**probado en staging el 23-oct-2026**): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactivó el código previo (creó un despliegue nuevo, sin recompilar); `/api/health` dejó de informar el commit nuevo y las 11 pruebas de humo pasaron. Variables y base de datos no cambian con la reversión.
-- Volver a avanzar: un push a la rama (o Redeploy desde el panel) despliega de nuevo el último commit. Mientras se está en rollback, un push lo deshace.
+- Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
+- **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.
+- Volver a avanzar: `railway deployment redeploy --service backend --environment staging --from-source --yes` (o un push a la rama) despliega de nuevo el último commit de la rama. Mientras se está en rollback, un push lo deshace.
 - El CLI solo ofrece `redeploy` del último despliegue; no hay rollback por CLI.
 - `vercel.json` y `api/index.js` siguen en el repo hasta decidir su retiro: Vercel es el camino de vuelta mientras tanto.
 - Datos: sin migraciones no hay reversión de esquema automática. No verificado: restauración de Supabase (depende del plan de respaldos).
-- `/api/health` informa el commit en ejecución (`RAILWAY_GIT_COMMIT_SHA`): úsalo para registrar qué versión corre.
+- En un despliegue normal, `/api/health` informa el commit (`RAILWAY_GIT_COMMIT_SHA`); tras un rollback no, ver arriba.
 
 ## Pruebas de humo (después de cada despliegue)
 1. `GET /api/health` → `{"status":"ok"}`.
@@ -52,5 +54,4 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 5. Borrado del usuario sintético.
 
 ## No verificado aún
-- Primer build en Railway (`railway.json`, instalación del frontend por el `install` de la raíz, dependencia nativa `sqlite3` del `package.json` raíz).
 - Protección de los entornos de PR en Railway.
