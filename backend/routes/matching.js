@@ -13,6 +13,7 @@ const MoodLog          = require('../MoodLog');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 const { verificarAdmin } = require('../middlewares/auth');
 
 // POST /api/matching/request
@@ -77,7 +78,7 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
 
     let suggestions = [];
     try {
-      const raw = msg.content[0].text.replace(/```json|```/g, '').trim();
+      const raw = textOf(msg).replace(/```json|```/g, '').trim();
       suggestions = JSON.parse(raw);
     } catch {
       return res.status(500).json({ error: 'Could not parse suggestions.' });

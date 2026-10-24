@@ -9,6 +9,7 @@ const router                 = express.Router();
 const MoodLog                = require('../MoodLog');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const anthropic              = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 const { encriptar, desencriptar } = require('../utils/crypto');
 
 // POST /api/recommendations/generate
@@ -54,7 +55,7 @@ Never mention diagnoses or medical advice.`;
 
     let recommendations = [];
     try {
-      const raw = msg.content[0].text.replace(/```json|```/g, '').trim();
+      const raw = textOf(msg).replace(/```json|```/g, '').trim();
       recommendations = JSON.parse(raw);
     } catch {
       return res.status(500).json({ error: 'Could not parse recommendations.' });

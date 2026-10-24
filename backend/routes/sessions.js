@@ -398,6 +398,7 @@ router.post('/therapist/:id/end', async (req, res) => {
   const WellnessRecommendation = require('../WellnessRecommendation');
   const User                   = require('../User');
   const anthropic               = require('../utils/anthropic');
+  const { textOf }              = require('../utils/claudeText');
   try {
     if (req.user.role !== 'therapist') {
       return res.status(403).json({ error: 'Therapists only.' });
@@ -442,7 +443,7 @@ router.post('/therapist/:id/end', async (req, res) => {
         }],
       });
 
-      const content = aiResponse.content[0]?.text ?? '';
+      const content = textOf(aiResponse);
       if (content) {
         recommendation = await WellnessRecommendation.create({
           UserId:      session.patientId,

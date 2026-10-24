@@ -9,6 +9,7 @@ const ClinicalNote = require('../ClinicalNote');
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 
 const {
   PromptVault,
@@ -509,7 +510,7 @@ Please write a concise clinical summary (3-5 sentences) of this patient's emotio
     });
 
     res.json({
-      summary: msg.content[0].text,
+      summary: textOf(msg),
       generatedAt: new Date().toISOString(),
       basedOn: { sessions: moodLogs.length, notes: notes.length },
     });

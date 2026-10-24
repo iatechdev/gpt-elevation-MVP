@@ -8,6 +8,7 @@ const router     = express.Router();
 const User       = require('../User');
 const Message = require('../message');
 const anthropic  = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
@@ -72,7 +73,7 @@ router.post('/chat', async (req, res) => {
       messages: historial,
     });
 
-    const respuestaIA = msg.content[0].text;
+    const respuestaIA = textOf(msg);
     await Message.create({ role: 'assistant', content: encriptar(respuestaIA), UserId: userId });
 
     res.json({ reply: respuestaIA });

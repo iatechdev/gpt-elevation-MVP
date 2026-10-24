@@ -17,6 +17,9 @@ const {
 
 const app = express();
 
+// Detrás de un proxy (Railway) define TRUST_PROXY_HOPS=1; por defecto no se confía en X-Forwarded-For (evita falsear la IP del rate limit)
+app.set('trust proxy', parseInt(process.env.TRUST_PROXY_HOPS, 10) || false);
+
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   optionsSuccessStatus: 200,
