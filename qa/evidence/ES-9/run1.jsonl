@@ -1,0 +1,24 @@
+# ES-9 staging · 2026-10-24T03:33:45Z · cabeza local comparada: bf8f445
+## health
+{"id":"ES9-01 /api/health","esperado":200,"obtenido":200,"ok":true,"extra":"487ms {\"status\":\"ok\",\"commit\":\"bf8f445\"}"}
+{"id":"ES9-01 /api/health","esperado":200,"obtenido":200,"ok":true,"extra":"250ms {\"status\":\"ok\",\"commit\":\"bf8f445\"}"}
+{"id":"ES9-01 /","esperado":200,"obtenido":200,"ok":true,"extra":"157ms root=true"}
+{"id":"ES9-01 /login","esperado":200,"obtenido":200,"ok":true,"extra":"143ms root=true"}
+## smoke
+{"id":"ES9-02 registro","esperado":201,"obtenido":201,"ok":true,"extra":"1050ms"}
+{"id":"ES9-02 login","esperado":"200 + token","obtenido":200,"ok":true,"extra":"483ms rol=user"}
+{"id":"ES9-02 historial sin token","esperado":"denegado","obtenido":403,"ok":true,"extra":"151ms"}
+{"id":"ES9-02 admin con usuario común","esperado":"denegado","obtenido":403,"ok":true,"extra":"186ms"}
+{"id":"ES9-02 POST pricing sin token","esperado":"denegado","obtenido":403,"ok":true,"extra":"160ms"}
+{"id":"ES9-02 chat (Claude real, 1 llamada)","esperado":200,"obtenido":200,"ok":true,"extra":"2061ms respuesta_texto=true"}
+{"id":"ES9-02 historial propio","esperado":200,"obtenido":200,"ok":true,"extra":"214ms n=2"}
+{"nota":"Usuario sintético creado en staging; no hay ruta pública de borrado. Pedir a Mauricio/Infra que lo elimine.","email":"smoke-qa-1792812827082@example.test"}
+## anon
+{"id":"ES9-03 mutaciones sin sesión","esperado":"todas 401/403","obtenido":"63/63","ok":true,"extra":"[]"}
+## headers
+{"id":"ES9-05 cabeceras de seguridad","esperado":"presentes","obtenido":"{\"x-content-type-options\":null,\"strict-transport-security\":null,\"content-security-policy\":null,\"x-frame-options\":null,\"referrer-policy\":null}","ok":false,"extra":"x-powered-by=Express"}
+{"id":"ES9-05 CORS origen ajeno","esperado":"no reflejado ni *","obtenido":"https://backend-staging-e3a6.up.railway.app","ok":true,"extra":""}
+{"id":"ES9-05 CORS preflight ajeno","esperado":"no permitido","obtenido":"https://backend-staging-e3a6.up.railway.app","ok":true,"extra":""}
+{"id":"ES9-05 bundle sin secretos/localhost","esperado":0,"obtenido":0,"ok":true,"extra":"1 bundle(s) revisados; []"}
+{"id":"ES9-05 error sin traza","esperado":"sin stack","obtenido":400,"ok":true,"extra":""}
+{"id":"ES9-05 login con objeto (NoSQL/tipos)","esperado":"4xx, no 500","obtenido":500,"ok":false,"extra":""}
