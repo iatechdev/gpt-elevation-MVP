@@ -46,12 +46,9 @@ router.post('/register', async (req, res) => {
     }
 
     // Usuario nuevo — crear normalmente
-    const adminEmails = (process.env.ADMIN_EMAILS || '')
-      .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-    const role = adminEmails.includes(email.toLowerCase()) ? 'admin' : 'user';
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({ name, email, password: hashedPassword, role });
+    await User.create({ name, email, password: hashedPassword, role: 'user' });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {
