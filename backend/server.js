@@ -27,7 +27,11 @@ app.use(cors({
 app.use(express.json());
 
 // Salud para el healthcheck de Railway (sin base de datos ni auth)
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+// commit: SHA corto del despliegue (lo inyecta Railway); permite comprobar qué versión corre tras un despliegue o una reversión
+app.get('/api/health', (req, res) => {
+  const commit = (process.env.RAILWAY_GIT_COMMIT_SHA || '').slice(0, 7);
+  res.json(commit ? { status: 'ok', commit } : { status: 'ok' });
+});
 
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
