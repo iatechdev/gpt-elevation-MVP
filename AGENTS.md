@@ -10,9 +10,9 @@ personas en reconversión profesional (cinco ES, una EN).
 
 Fuentes de verdad
 - Repo de trabajo: https://github.com/iatechdev/gpt-elevation-MVP (rama de integración: main).
-- Índice y PRD conciliado v0.3: docs/elevation-skillmap/00-LEEME.md y 02-PRD.md en el repo de trabajo. Están propuestos en el PR de ES-8
-  y serán la fuente vigente cuando se fusionen a main. Hasta entonces el antecedente es el PRD v0.2 y las HUs del sprint
-  (repo AlejoRoldan/perfiladorV2, rama docs/elevation-skillmap-sprint-2).
+- Índice y PRD conciliado v0.3 (fuente vigente, fusionados a main en el PR #5 el 24-oct-2026): docs/elevation-skillmap/00-LEEME.md y
+  02-PRD.md en el repo de trabajo. Léelos desde ahí; empieza por 00-LEEME.md, que enlaza el resto (HUs, registro de validación del CTO,
+  arquitectura y ADR, QA, operación). El repo AlejoRoldan/perfiladorV2 queda solo como antecedente (PRD v0.2).
 - Qué define cada fuente: PRD = alcance y aceptación; ADR = decisión técnica y sus motivos; Jira = responsable, dependencias y estado;
   PR = cambios, revisión y pruebas; registro de release = commit y entorno realmente desplegados. Ante una contradicción, registra la
   discrepancia, detén solo el trabajo afectado y pregunta; ningún comentario sustituye una decisión aprobada por ser el más reciente.

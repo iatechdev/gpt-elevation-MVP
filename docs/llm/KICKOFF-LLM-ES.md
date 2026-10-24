@@ -34,7 +34,7 @@ y si integraciones externas apuntan a la URL de la política de privacidad.
 | P6 | Mauricio | Pasar el workspace de Railway a **Pro**, poner el límite de gasto, invitar a los miembros y confirmar el proyecto de **Supabase Pro**; cargar él mismo los secretos en Railway y Supabase. Confirmar precios antes de pagar. | ES-9, ES-11 |
 | P7 | Mauricio / Alejo | Instalar GitHub for Jira; crear el sprint 21–27 oct y el dashboard (guía ya entregada); invitar al especialista. | Estados y burndown |
 | P8 | Mauricio | Hasta que `CLAUDE.md` y `AGENTS.md` estén en la rama base, pegar su contenido como primer mensaje de cada sesión. | Reglas en cada sesión |
-| P9 | Alejo | Aceptar la invitación de colaborador del repositorio y publicar (o entregar a Mauricio) el PR de ES-8 con las definiciones consolidadas. | Fuente de verdad |
+| P9 | Alejo | Aceptar la invitación de colaborador del repositorio y publicar (o entregar a Mauricio) el PR de ES-8 con las definiciones consolidadas. HECHO el 24-oct-2026: se publicó como PR #5 y está fusionado en main (docs/elevation-skillmap/); queda pendiente que Alejo acepte la invitación. | Fuente de verdad |
 | P10 | Mauricio | Entregar la lista de variables de staging (solo nombres), el acceso técnico para las sesiones y las cuentas sintéticas de QA por un canal seguro. | Staging operativo |
 
 ## 3. Orden de arranque
