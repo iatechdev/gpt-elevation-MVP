@@ -1,10 +1,11 @@
 // backend/routes/landingContent.js
 // GET /api/landing-content — público
-// PUT /api/landing-content — solo superadmin (middleware aplicado en server.js)
+// PUT /api/landing-content — solo superadmin, autorizado en la propia ruta.
 
 const express = require('express');
 const router  = express.Router();
 const LandingContent = require('../LandingContent');
+const { verificarSuperAdmin } = require('../middlewares/auth');
 
 const LANDING_DEFAULTS = {
   es: {
@@ -38,11 +39,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-// PUT /api/landing-content — verificarSuperAdmin aplicado en server.js
-router.put('/', async (req, res) => {
+// PUT /api/landing-content
+router.put('/', verificarSuperAdmin, async (req, res) => {
   try {
-    const { key, lang, value } = req.body;
-    if (!key || !lang || !value)
+    const { key, lang, value } = req.body ?? {};
+    if (typeof key !== 'string' || !key.trim() ||
+        typeof lang !== 'string' || !lang ||
+        typeof value !== 'string' || !value.trim())
       return res.status(400).json({ error: 'key, lang y value son requeridos.' });
     if (!['es', 'en'].includes(lang))
       return res.status(400).json({ error: 'lang debe ser es o en.' });
