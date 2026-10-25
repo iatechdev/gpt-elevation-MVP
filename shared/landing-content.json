@@ -1,0 +1,117 @@
+[
+  {
+    "key": "landing.nav.skip",
+    "es": "Saltar al contenido",
+    "en": "Skip to content"
+  },
+  {
+    "key": "landing.nav.how",
+    "es": "Cómo funciona",
+    "en": "How it works"
+  },
+  {
+    "key": "landing.nav.skillmap",
+    "es": "Skill Map",
+    "en": "Skill Map"
+  },
+  {
+    "key": "landing.nav.pros",
+    "es": "Para psicólogos",
+    "en": "For psychologists"
+  },
+  {
+    "key": "landing.nav.plans",
+    "es": "Planes",
+    "en": "Plans"
+  },
+  {
+    "key": "landing.header.home",
+    "es": "Elevation, inicio",
+    "en": "Elevation, home"
+  },
+  {
+    "key": "landing.header.login",
+    "es": "Ingresar",
+    "en": "Log in"
+  },
+  {
+    "key": "landing.header.language",
+    "es": "Idioma",
+    "en": "Language"
+  },
+  {
+    "key": "landing.header.es",
+    "es": "ES",
+    "en": "ES"
+  },
+  {
+    "key": "landing.header.en",
+    "es": "EN",
+    "en": "EN"
+  },
+  {
+    "key": "landing.hero.label",
+    "es": "Acompañamiento + exploración profesional",
+    "en": "Support + career exploration"
+  },
+  {
+    "key": "landing.hero.title",
+    "es": "Lo que has vivido cuenta.",
+    "en": "What you have lived counts."
+  },
+  {
+    "key": "landing.hero.subtitle",
+    "es": "Hay cosas que necesitas poner en palabras. Y otras que todavía no has reconocido en ti. Podemos empezar por cualquiera.",
+    "en": "Some things you need to put into words. Others you have not yet recognised in yourself. We can start with either."
+  },
+  {
+    "key": "landing.doors.1.label",
+    "es": "Hacer espacio",
+    "en": "Make space"
+  },
+  {
+    "key": "landing.doors.1.title",
+    "es": "Ordenar lo que estoy viviendo",
+    "en": "Sort out what I am going through"
+  },
+  {
+    "key": "landing.doors.1.desc",
+    "es": "Una conversación con ritmo propio, sin diagnóstico y sin prisa.",
+    "en": "A conversation at its own pace, without diagnosis and without hurry."
+  },
+  {
+    "key": "landing.doors.2.label",
+    "es": "Mirar otra vez",
+    "en": "Look again"
+  },
+  {
+    "key": "landing.doors.2.title",
+    "es": "Reconocer lo que puedo aportar",
+    "en": "Recognise what I can contribute"
+  },
+  {
+    "key": "landing.doors.2.desc",
+    "es": "Convierte tu experiencia en capacidades con evidencia que tú revisas.",
+    "en": "Turn your experience into capabilities with evidence that you review."
+  },
+  {
+    "key": "landing.doors.go",
+    "es": "Empezar",
+    "en": "Start"
+  },
+  {
+    "key": "landing.example.label",
+    "es": "Ejemplo ilustrativo · caso ficticio · docencia",
+    "en": "Illustrative example · fictional case · teaching"
+  },
+  {
+    "key": "landing.example.title",
+    "es": "Acciones → posibles capacidades",
+    "en": "Actions → possible capabilities"
+  },
+  {
+    "key": "landing.example.flow",
+    "es": "Son hipótesis que tú puedes revisar, corregir o descartar. No es un diagnóstico ni una promesa de empleo.",
+    "en": "These are hypotheses you can review, correct or discard. Not a diagnosis, not a job promise."
+  }
+]

@@ -6,6 +6,8 @@ const express = require('express');
 const router  = express.Router();
 const LandingContent = require('../LandingContent');
 const { verificarSuperAdmin } = require('../middlewares/auth');
+const { defaults, catalog } = require('../content/landingDefaults');
+const approvedKeys = new Set(catalog.map(entry => entry.key));
 
 const LANDING_DEFAULTS = {
   es: {
@@ -29,13 +31,15 @@ router.get('/', async (req, res) => {
   try {
     const lang = req.query.lang === 'en' ? 'en' : 'es';
     const registros = await LandingContent.findAll({ where: { lang } });
-    const content = { ...LANDING_DEFAULTS[lang] };
-    registros.forEach(r => { content[r.key] = r.value; });
+    const content = { ...LANDING_DEFAULTS[lang], ...defaults[lang] };
+    registros.forEach(r => {
+      if (typeof r.value === 'string' && r.value.trim()) content[r.key] = r.value;
+    });
     res.json(content);
-  } catch (error) {
-    console.error('❌ Error obteniendo contenido landing:', error);
+  } catch {
+    console.error('Error obteniendo contenido landing.');
     const lang = req.query.lang === 'en' ? 'en' : 'es';
-    res.json(LANDING_DEFAULTS[lang]);
+    res.json({ ...LANDING_DEFAULTS[lang], ...defaults[lang] });
   }
 });
 
@@ -49,10 +53,14 @@ router.put('/', verificarSuperAdmin, async (req, res) => {
       return res.status(400).json({ error: 'key, lang y value son requeridos.' });
     if (!['es', 'en'].includes(lang))
       return res.status(400).json({ error: 'lang debe ser es o en.' });
+    if (key.startsWith('landing.') && !approvedKeys.has(key))
+      return res.status(400).json({ error: lang === 'en' ? 'Unknown landing key.' : 'Clave landing desconocida.' });
+    if (key.length > 255 || value.length > 5000)
+      return res.status(400).json({ error: lang === 'en' ? 'Content exceeds the allowed length.' : 'El contenido supera la longitud permitida.' });
     await LandingContent.upsert({ key, lang, value, updated_by: req.user.name });
     res.json({ message: `Contenido '${key}' (${lang}) actualizado correctamente.` });
-  } catch (error) {
-    console.error('❌ Error actualizando contenido landing:', error);
+  } catch {
+    console.error('Error actualizando contenido landing.');
     res.status(500).json({ error: 'No se pudo actualizar el contenido.' });
   }
 });
