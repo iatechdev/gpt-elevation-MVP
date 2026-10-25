@@ -23,6 +23,7 @@ jobs:
       # No bloquea hasta que un ticket los corrija; quitar continue-on-error entonces.
       - run: npm run lint
         continue-on-error: true
+      - run: npm test
       - name: Auditar dependencias (bloquea en alta o crítica)
         run: npm audit --omit=dev --audit-level=high
       # `npm run build` ejecuta tsc -b (tipos) y vite build
