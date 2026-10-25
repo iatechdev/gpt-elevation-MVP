@@ -1,0 +1,750 @@
+// frontend/src/pages/UserDashboard.tsx
+// HU-061 — User Dashboard unificado con check-in integrado
+// HU-077 — Widget Mi Plan
+// HU-067 — Botón videollamada activo
+
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useLanguage } from '../i18n/useLanguage'
+import { MatchingModal } from '../components/MatchingModal'
+
+const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
+const getToken = () => localStorage.getItem('elevation_token') ?? ''
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+type Message        = { role: string; text: string }
+type MoodLog        = { id: number; date: string; checkin_mood: number | null; checkout_mood: number | null }
+type Recommendation = { id: number; category: string; content: string; generatedAt: string }
+type UpcomingSession = {
+  id: number; scheduledAt: string; duration: number
+  meetingUrl: string | null; status: string
+  therapistName: string; therapistEmail: string
+}
+type UserPlan = {
+  id: number; slug: string; name_es: string; name_en: string
+  price: number; currency: string; period: string
+  features_es: string[]; features_en: string[]
+  isHighlighted: boolean
+} | null
+type PlanLimits = {
+  chatMessagesDay: number
+  sessionsMonth: number
+  canAccessProgress: boolean
+  canMatchTherapist: boolean
+}
+
+const MOOD_EMOJI: Record<number, string> = {
+  1: '😞', 2: '😔', 3: '😐', 4: '🙂', 5: '😊',
+}
+
+const CHECKOUT_MOODS = [
+  { emoji: '😞', value: 1 },
+  { emoji: '😔', value: 2 },
+  { emoji: '😐', value: 3 },
+  { emoji: '🙂', value: 4 },
+  { emoji: '😊', value: 5 },
+]
+
+const PLAN_COLORS: Record<string, { bg: string; border: string; badge: string; text: string }> = {
+  basic:     { bg: '#F5F3EF', border: '#E7E5E4', badge: '#78716C', text: '#78716C' },
+  essential: { bg: '#EAF0E6', border: '#A8B5A2', badge: '#6B7D5C', text: '#6B7D5C' },
+  plus:      { bg: '#EEF2FF', border: '#A5B4FC', badge: '#4F46E5', text: '#4F46E5' },
+  pro:       { bg: '#FFF7ED', border: '#FCD34D', badge: '#D97706', text: '#D97706' },
+}
+
+async function apiFetch(path: string, options?: RequestInit) {
+  return fetch(`${API}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+      ...(options?.headers ?? {}),
+    },
+  })
+}
+
+export function UserDashboard() {
+  const { t, lang, setLang } = useLanguage()
+  const navigate              = useNavigate()
+
+  // ── Check-in state ───────────────────────────────────────────────────────
+  const [checkedIn,      setCheckedIn]      = useState(false)
+  const [todayMood,      setTodayMood]      = useState<number | null>(null)
+  const [checkingIn,     setCheckingIn]     = useState(false)
+
+  // ── Chat state ───────────────────────────────────────────────────────────
+  const [messages,  setMessages]  = useState<Message[]>([])
+  const [input,     setInput]     = useState('')
+  const [sending,   setSending]   = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
+
+  // ── Progress state ───────────────────────────────────────────────────────
+  const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
+  const [sessionsWeek,  setSessionsWeek]  = useState(0)
+
+  // ── Upcoming session ─────────────────────────────────────────────────────
+  const [upcomingSession, setUpcomingSession] = useState<UpcomingSession | null>(null)
+  const [therapistId,     setTherapistId]     = useState<number | null>(null)
+
+  // ── Recommendations ──────────────────────────────────────────────────────
+  const [recommendations,  setRecommendations]  = useState<Recommendation[]>([])
+  const [expandedRec,      setExpandedRec]      = useState<Recommendation | null>(null)
+  const [loadingRecs,      setLoadingRecs]       = useState(false)
+
+  // ── Matching modal ───────────────────────────────────────────────────────
+  const [showMatching, setShowMatching] = useState(false)
+  const handleMatchingSuccess = (_therapistName: string) => {
+    setShowMatching(false)
+    void loadUpcomingSession()
+  }
+
+  // ── Checkout modal ───────────────────────────────────────────────────────
+  const [showCheckout,   setShowCheckout]   = useState(false)
+  const [checkoutMood,   setCheckoutMood]   = useState<number | null>(null)
+  const [starRating,     setStarRating]     = useState<number | null>(null)
+  const [starHover,      setStarHover]      = useState<number | null>(null)
+  const [checkoutSaving, setCheckoutSaving] = useState(false)
+
+  // ── Plan state ───────────────────────────────────────────────────────────
+  const [userPlan,   setUserPlan]   = useState<UserPlan>(null)
+  const [planLimits, setPlanLimits] = useState<PlanLimits | null>(null)
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const token = getToken()
+    if (!token) { navigate('/login'); return }
+
+    const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
+    setCheckedIn(alreadyCheckedIn)
+
+    void loadProgress()
+    void loadUpcomingSession()
+    void loadRecommendations()
+    void loadUserPlan()
+
+    if (alreadyCheckedIn) {
+      void loadChatHistory()
+    }
+  }, [])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, sending])
+
+  // ── Data loaders ──────────────────────────────────────────────────────────
+  const loadProgress = async () => {
+    try {
+      const res = await apiFetch('/api/user/progress')
+      if (!res.ok) return
+      const data = await res.json()
+      setMoodLogs(data.moodLogs ?? [])
+
+      const monday = new Date()
+      monday.setDate(monday.getDate() - monday.getDay() + 1)
+      monday.setHours(0, 0, 0, 0)
+      const thisWeek = (data.moodLogs ?? []).filter((m: MoodLog) =>
+        new Date(m.date) >= monday
+      ).length
+      setSessionsWeek(thisWeek)
+    } catch { /* silent */ }
+  }
+
+  const loadUpcomingSession = async () => {
+    try {
+      const res = await apiFetch('/api/sessions/user/upcoming')
+      if (!res.ok) return
+      const data = await res.json()
+      setUpcomingSession(data.session ?? null)
+
+      const userRes = await apiFetch('/api/sessions/user/my-therapist')
+      if (userRes.ok) {
+        const userData = await userRes.json()
+        setTherapistId(userData.therapist?.id ?? null)
+      }
+    } catch { /* silent */ }
+  }
+
+  const loadRecommendations = async () => {
+    try {
+      const res = await apiFetch('/api/recommendations')
+      if (!res.ok) return
+      const data = await res.json()
+      setRecommendations(data.slice(0, 4))
+    } catch { /* silent */ }
+  }
+
+  const loadChatHistory = async () => {
+    try {
+      const res = await apiFetch('/api/messages')
+      if (!res.ok) return
+      const hist = await res.json()
+      const welcome = { role: 'bot', text: t('chat_welcome') }
+      setMessages(hist.length > 0 ? [welcome, ...hist] : [welcome])
+    } catch { /* silent */ }
+  }
+
+  const loadUserPlan = async () => {
+    try {
+      const res = await apiFetch('/api/user/plan/me')
+      if (!res.ok) return
+      const data = await res.json()
+      setUserPlan(data.plan ?? null)
+      setPlanLimits(data.limits ?? null)
+    } catch { /* silent */ }
+  }
+
+  // ── Check-in handler ──────────────────────────────────────────────────────
+  const handleCheckin = async (mood: number) => {
+    setCheckingIn(true)
+    try {
+      const res = await apiFetch('/api/mood/checkin', {
+        method: 'POST',
+        body: JSON.stringify({ mood }),
+      })
+      if (!res.ok) return
+      setTodayMood(mood)
+      setCheckedIn(true)
+      localStorage.setItem('elevation_checkin_date', new Date().toDateString())
+      void loadChatHistory()
+    } catch { /* silent */ }
+    finally { setCheckingIn(false) }
+  }
+
+  // ── Chat handler ──────────────────────────────────────────────────────────
+  const handleSend = async () => {
+    if (!input.trim() || sending || !checkedIn) return
+    const userText = input.trim()
+    setInput('')
+    setMessages(prev => [...prev, { role: 'user', text: userText }])
+    setSending(true)
+    try {
+      const res  = await apiFetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message: userText }),
+      })
+      const data = await res.json() as { reply: string }
+      setMessages(prev => [...prev, { role: 'bot', text: data.reply }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'bot', text: t('chat_error') }])
+    }
+    setSending(false)
+  }
+
+  // ── Checkout handler ──────────────────────────────────────────────────────
+  const handleCheckout = async (mood: number) => {
+    setCheckoutSaving(true)
+    try {
+      await apiFetch('/api/mood/checkout', { method: 'POST', body: JSON.stringify({ mood }) })
+      if (starRating !== null) {
+        await apiFetch('/api/rating', { method: 'POST', body: JSON.stringify({ rating: starRating }) })
+      }
+    } catch { /* silent */ }
+    localStorage.removeItem('elevation_token')
+    localStorage.removeItem('elevation_role')
+    localStorage.removeItem('elevation_name')
+    localStorage.removeItem('elevation_checkin_date')
+    navigate('/login')
+  }
+
+  // ── Generate recommendations ──────────────────────────────────────────────
+  const handleGenerateRecs = async () => {
+    setLoadingRecs(true)
+    try {
+      const res = await apiFetch('/api/recommendations/generate', { method: 'POST' })
+      if (!res.ok) return
+      const data = await res.json()
+      setRecommendations(data.slice(0, 4))
+    } catch { /* silent */ }
+    finally { setLoadingRecs(false) }
+  }
+
+  // ── Mood trend for last 7 days ────────────────────────────────────────────
+  const getMoodTrend = () => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date()
+      d.setDate(d.getDate() - (6 - i))
+      const dateStr = d.toISOString().split('T')[0]
+      const log = moodLogs.find(m => m.date === dateStr)
+      const moods = [log?.checkin_mood, log?.checkout_mood].filter(Boolean) as number[]
+      const avg   = moods.length > 0 ? moods.reduce((a, b) => a + b, 0) / moods.length : null
+      return { dateStr, avg }
+    })
+  }
+
+  const trendColor = (avg: number | null) => {
+    if (avg === null)  return '#E7E5E4'
+    if (avg >= 3.5)    return '#6B7D5C'
+    if (avg >= 2.5)    return '#F59E0B'
+    return '#EF4444'
+  }
+
+  const formatSession = (iso: string) =>
+    new Date(iso).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', {
+      weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+    })
+
+  const cardStyle: React.CSSProperties = {
+    background: '#fff', borderRadius: '1rem',
+    border: '0.5px solid #E7E5E4',
+    boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
+    padding: '1.25rem',
+  }
+
+  // ── Plan helpers ─────────────────────────────────────────────────────────
+  const planSlug   = userPlan?.slug ?? 'basic'
+  const planColors = PLAN_COLORS[planSlug] ?? PLAN_COLORS.basic
+  const planName   = userPlan
+    ? (lang === 'es' ? userPlan.name_es : userPlan.name_en)
+    : (lang === 'es' ? 'Básico' : 'Basic')
+  const planFeatures = userPlan
+    ? (lang === 'es' ? userPlan.features_es : userPlan.features_en)
+    : []
+  const formatLimit = (n: number) => n === -1 ? '∞' : String(n)
+
+  // HU-067 — helper: sesión activa ahora o próxima en los próximos 15 min
+  const sessionIsLive = upcomingSession?.status === 'in_progress'
+  const sessionIsImminent = (() => {
+    if (!upcomingSession || upcomingSession.status !== 'scheduled') return false
+    const diff = new Date(upcomingSession.scheduledAt).getTime() - Date.now()
+    return diff <= 15 * 60 * 1000 && diff >= 0
+  })()
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
+
+      {/* ── HEADER ── */}
+      <header style={{
+        position: 'fixed', top: 0, width: '100%', zIndex: 50,
+        background: 'rgba(249,249,247,0.92)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(231,229,228,0.5)',
+        height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{ maxWidth: 1100, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>
+            {t('logo')}
+          </span>
+
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            {(['es', 'en'] as const).map(l => (
+              <button key={l} onClick={() => setLang(l)}
+                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '0.5px solid #D6D2C4', background: lang === l ? '#6B7D5C' : 'transparent', color: lang === l ? '#FAF8F4' : '#A8A29E', cursor: 'pointer' }}>
+                {l.toUpperCase()}
+              </button>
+            ))}
+            <button onClick={() => navigate('/app/progress')}
+              style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
+              {lang === 'es' ? 'Mi progreso' : 'My progress'}
+            </button>
+            <button onClick={() => navigate('/app/my-therapist')}
+              style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
+              {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
+            </button>
+            <button onClick={() => setShowCheckout(true)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── BODY ── */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '76px 1.5rem 2rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.25rem', alignItems: 'start' }}>
+
+        {/* ── COLUMNA IZQUIERDA ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+          {/* Widget 1 — Estado emocional */}
+          <div style={cardStyle}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+              ♡ {lang === 'es' ? 'Estado emocional' : 'Emotional state'}
+            </div>
+            {checkedIn ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ fontSize: '2rem' }}>{MOOD_EMOJI[todayMood ?? 3]}</div>
+                <div style={{ fontSize: '0.78rem', color: '#6B7D5C' }}>
+                  {lang === 'es' ? '✓ Ya registraste tu estado de hoy' : '✓ Check-in done for today'}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
+                  {lang === 'es' ? '¿Cómo llegás hoy?' : 'How are you arriving today?'}
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {CHECKOUT_MOODS.map(m => (
+                    <button key={m.value} onClick={() => { if (!checkingIn) void handleCheckin(m.value) }}
+                      disabled={checkingIn}
+                      style={{
+                        width: 44, height: 44, borderRadius: '50%', fontSize: '1.3rem',
+                        border: '1px solid #E7E5E4', background: 'white',
+                        cursor: checkingIn ? 'not-allowed' : 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#6B7D5C'; e.currentTarget.style.background = '#EAF0E6' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E7E5E4'; e.currentTarget.style.background = 'white' }}
+                    >
+                      {m.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Widget 2 — Tu progreso */}
+          <div style={cardStyle}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+              ↗ {lang === 'es' ? 'Tu progreso' : 'Your progress'}
+            </div>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '1.4rem', fontWeight: 600, color: '#1C1917' }}>{sessionsWeek}</div>
+              <div style={{ fontSize: '0.75rem', color: '#78716C' }}>
+                {lang === 'es' ? 'sesiones esta semana' : 'sessions this week'}
+              </div>
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#78716C', marginBottom: '0.4rem' }}>
+              {lang === 'es' ? 'Tendencia emocional' : 'Emotional trend'}
+            </div>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {getMoodTrend().map(({ dateStr, avg }) => (
+                <div key={dateStr} title={dateStr}
+                  style={{ flex: 1, height: 28, borderRadius: 4, background: trendColor(avg) }} />
+              ))}
+            </div>
+          </div>
+
+          {/* Widget 3 — Próxima sesión — HU-067 activado */}
+          <div style={{
+            ...cardStyle,
+            ...(sessionIsLive ? { border: '1px solid #6B7D5C', background: '#EAF0E6' } : {}),
+            ...(sessionIsImminent ? { border: '1px solid #A8B5A2' } : {}),
+          }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+              {sessionIsLive
+                ? '🔴 ' + (lang === 'es' ? 'Sesión en curso' : 'Session live')
+                : '📅 ' + (lang === 'es' ? 'Próxima sesión' : 'Upcoming session')}
+            </div>
+
+            {upcomingSession ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>
+                  {lang === 'es' ? 'Con' : 'With'} {upcomingSession.therapistName}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#78716C' }}>
+                  {formatSession(upcomingSession.scheduledAt)} — {upcomingSession.duration} min
+                </div>
+
+                {/* HU-067 — botón videollamada activo */}
+                {sessionIsLive ? (
+                  // Sesión activa — botón verde para entrar
+                  <button
+                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
+                    style={{
+                      marginTop: '0.5rem', padding: '0.6rem 0.85rem',
+                      background: '#6B7D5C', color: '#fff',
+                      border: 'none', borderRadius: '0.65rem',
+                      fontSize: '0.82rem', fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                    }}
+                  >
+                    🎥 {lang === 'es' ? 'Entrar a la videollamada' : 'Join videocall'}
+                  </button>
+                ) : sessionIsImminent ? (
+                  // Sesión en menos de 15 min — botón de espera pulsante
+                  <button
+                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
+                    style={{
+                      marginTop: '0.5rem', padding: '0.6rem 0.85rem',
+                      background: '#A8B5A2', color: '#fff',
+                      border: 'none', borderRadius: '0.65rem',
+                      fontSize: '0.82rem', fontWeight: 500,
+                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    ⏳ {lang === 'es' ? 'La sesión está por comenzar' : 'Session starting soon'}
+                  </button>
+                ) : (
+                  // Sesión futura — botón informativo deshabilitado
+                  <div style={{
+                    marginTop: '0.5rem', padding: '0.5rem 0.85rem',
+                    background: '#F5F3EF', borderRadius: '0.65rem',
+                    fontSize: '0.78rem', color: '#78716C',
+                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  }}>
+                    🕐 {lang === 'es'
+                      ? 'El enlace estará disponible cuando el terapeuta inicie la sesión'
+                      : 'Link will be available when your therapist starts the session'}
+                  </div>
+                )}
+              </div>
+            ) : therapistId ? (
+              <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
+                {lang === 'es' ? 'Tu terapeuta aún no ha agendado una sesión.' : 'Your therapist has not scheduled a session yet.'}
+              </p>
+            ) : (
+              <button onClick={() => setShowMatching(true)}
+                style={{ padding: '0.5rem 0.85rem', background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', cursor: 'pointer' }}>
+                🤝 {lang === 'es' ? 'Buscar mi terapeuta' : 'Find my therapist'}
+              </button>
+            )}
+          </div>
+
+          {/* Widget 4 — Mi Plan (HU-077) */}
+          <div style={{
+            ...cardStyle,
+            background: planColors.bg,
+            border: `0.5px solid ${planColors.border}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                ◇ {lang === 'es' ? 'Mi plan' : 'My plan'}
+              </div>
+              <span style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+                padding: '2px 10px', borderRadius: 9999,
+                background: planColors.badge, color: '#fff',
+                textTransform: 'uppercase',
+              }}>
+                {planName}
+              </span>
+            </div>
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              {userPlan && userPlan.price > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>
+                    ${userPlan.price}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#78716C' }}>
+                    {userPlan.currency} / {lang === 'es' ? 'mes' : 'month'}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#78716C' }}>
+                  {lang === 'es' ? 'Gratis' : 'Free'}
+                </div>
+              )}
+            </div>
+
+            {planLimits && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
+                  <span>{lang === 'es' ? 'Mensajes IA / día' : 'AI messages / day'}</span>
+                  <span style={{ fontWeight: 600, color: planColors.text }}>
+                    {formatLimit(planLimits.chatMessagesDay)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
+                  <span>{lang === 'es' ? 'Sesiones / mes' : 'Sessions / month'}</span>
+                  <span style={{ fontWeight: 600, color: planColors.text }}>
+                    {formatLimit(planLimits.sessionsMonth)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {planFeatures.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '0.75rem' }}>
+                {planFeatures.slice(0, 3).map((f, i) => (
+                  <div key={i} style={{ fontSize: '0.72rem', color: '#78716C', display: 'flex', gap: '0.35rem' }}>
+                    <span style={{ color: planColors.text }}>✓</span>
+                    <span>{f}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(planSlug === 'basic' || planSlug === 'essential') && (
+              <button
+                onClick={() => navigate('/pricing')}
+                style={{
+                  width: '100%', padding: '0.5rem', borderRadius: '0.65rem',
+                  border: `0.5px solid ${planColors.border}`,
+                  background: 'transparent', color: planColors.text,
+                  fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer',
+                  marginTop: '0.25rem',
+                }}
+              >
+                {lang === 'es' ? 'Ver planes →' : 'View plans →'}
+              </button>
+            )}
+          </div>
+
+        </div>
+
+        {/* ── COLUMNA DERECHA — CHAT ── */}
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', position: 'sticky', top: 76 }}>
+
+          {!checkedIn ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>
+              <div style={{ fontSize: '2.5rem' }}>💬</div>
+              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#A8A29E', textAlign: 'center', margin: 0 }}>
+                {lang === 'es'
+                  ? 'Seleccioná cómo llegás hoy para comenzar tu conversación.'
+                  : 'Select how you\'re arriving today to start your conversation.'}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Mensajes */}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem' }}>
+                {messages.map((msg, i) => (
+                  <div key={i}>
+                    {msg.role === 'user' ? (
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ maxWidth: '80%', background: '#F5F3EF', borderRadius: '1.25rem 1.25rem 0.25rem 1.25rem', padding: '0.85rem 1rem', fontSize: '0.95rem', color: '#1C1917', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                          {msg.text}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1rem' }}>
+                        <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.3rem' }}>{t('logo')} ·</span>
+                        <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#1C1917', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {sending && (
+                  <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1rem' }}>
+                    <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.3rem' }}>{t('logo')} ·</span>
+                    <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#A8A29E', margin: 0 }}>{t('chat_thinking')}</p>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Input */}
+              <div style={{ borderTop: '0.5px solid #E7E5E4', padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
+                <textarea value={input} onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend() } }}
+                  placeholder={t('chat_placeholder')} rows={2}
+                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.5, maxHeight: 100, overflowY: 'auto' }} />
+                {input.trim() && (
+                  <button onClick={() => void handleSend()}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0d9488', padding: 4, display: 'flex', flexShrink: 0 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── SECCIÓN RECOMENDACIONES ── */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 3rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
+            ✨ {lang === 'es' ? 'Recomendaciones para vos' : 'Recommendations for you'}
+          </h2>
+          <button onClick={() => void handleGenerateRecs()} disabled={loadingRecs}
+            style={{ fontSize: '0.78rem', color: '#6B7D5C', background: 'none', border: '0.5px solid #6B7D5C', borderRadius: '0.65rem', padding: '0.35rem 0.75rem', cursor: loadingRecs ? 'not-allowed' : 'pointer' }}>
+            {loadingRecs ? '...' : lang === 'es' ? 'Generar nuevas' : 'Generate new'}
+          </button>
+        </div>
+
+        {recommendations.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#A8A29E', fontSize: '0.875rem' }}>
+            {lang === 'es' ? 'Aún no tenés recomendaciones. ¡Generá las primeras!' : 'No recommendations yet. Generate your first ones!'}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            {recommendations.map(rec => (
+              <div key={rec.id} style={{ ...cardStyle, cursor: 'pointer' }}
+                onClick={() => setExpandedRec(rec)}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', marginBottom: '0.35rem' }}>
+                  {t(`rec_category_${rec.category}`)}
+                </div>
+                <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.88rem', color: '#1C1917', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
+                  {rec.content.length > 100 ? rec.content.slice(0, 100) + '...' : rec.content}
+                </p>
+                <span style={{ fontSize: '0.75rem', color: '#6B7D5C' }}>
+                  {lang === 'es' ? 'Explorar →' : 'Explore →'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── MODAL RECOMENDACIÓN ── */}
+      {expandedRec && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+          onClick={() => setExpandedRec(null)}>
+          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', maxWidth: 480, width: '90%', boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', marginBottom: '0.5rem' }}>
+              {t(`rec_category_${expandedRec.category}`)}
+            </div>
+            <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#1C1917', lineHeight: 1.75, margin: '0 0 1.5rem' }}>
+              {expandedRec.content}
+            </p>
+            <button onClick={() => setExpandedRec(null)}
+              style={{ padding: '0.5rem 1.25rem', background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+              {lang === 'es' ? 'Cerrar' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL CHECKOUT ── */}
+      {showCheckout && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
+            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>CHECK-OUT</p>
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
+              {lang === 'es' ? '¿Cómo te vas?' : 'How are you leaving?'}
+            </h3>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              {CHECKOUT_MOODS.map(m => (
+                <button key={m.value} onClick={() => setCheckoutMood(m.value)}
+                  style={{ width: 52, height: 52, borderRadius: '50%', fontSize: '1.5rem', border: checkoutMood === m.value ? '2px solid #0d9488' : '1px solid #E7E5E4', background: checkoutMood === m.value ? '#F0FDFA' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {m.emoji}
+                </button>
+              ))}
+            </div>
+            {checkoutMood !== null && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                <p style={{ fontSize: '0.8rem', color: '#78716C', margin: 0 }}>
+                  {lang === 'es' ? '¿Cómo fue la conversación?' : 'How was the conversation?'}
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button key={star} onClick={() => setStarRating(star)}
+                      onMouseEnter={() => setStarHover(star)} onMouseLeave={() => setStarHover(null)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, color: star <= (starHover ?? starRating ?? 0) ? '#6B7D5C' : '#D6D2C4' }}>★</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+              <button onClick={() => { if (checkoutMood !== null) void handleCheckout(checkoutMood) }}
+                disabled={checkoutMood === null || checkoutSaving}
+                style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
+                {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
+              </button>
+              <button onClick={() => { localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
+                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
+                {lang === 'es' ? 'Saltar' : 'Skip'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL MATCHING ── */}
+      {showMatching && (
+        <MatchingModal
+          onClose={() => setShowMatching(false)}
+          onSuccess={handleMatchingSuccess}
+        />
+      )}
+    </div>
+  )
+}
