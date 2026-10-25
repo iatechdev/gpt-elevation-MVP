@@ -1,0 +1,24 @@
+Launching isolated browser
+Browser ready
+Checking 4194 /login
+Checking 4193 /login
+Unchanged: /login
+Checking 4194 /app/dashboard
+Checking 4193 /app/dashboard
+Unchanged: /app/dashboard
+Checking 4194 /therapist/dashboard
+Checking 4193 /therapist/dashboard
+Unchanged: /therapist/dashboard
+Checking 4194 /admin/dashboard
+Checking 4193 /admin/dashboard
+Unchanged: /admin/dashboard
+Checking 4194 /board/manifest
+Checking 4193 /board/manifest
+Unchanged: /board/manifest
+Landing: 320 light {"theme":"elevation-landing-light","background":"rgb(250, 250, 249)","font":"\"Elevation Landing Inter\", Inter, sans-serif","weight":"800","width":320,"viewport":320,"bodyTheme":"","text":"Encuentra tu calma interior","motion":"0s"}
+Landing: 320 dark {"theme":"elevation-landing-dark","background":"rgb(21, 21, 19)","font":"\"Elevation Landing Inter\", Inter, sans-serif","weight":"800","width":320,"viewport":320,"bodyTheme":"","text":"Encuentra tu calma interior","motion":"0s"}
+Landing: 768 light {"theme":"elevation-landing-light","background":"rgb(250, 250, 249)","font":"\"Elevation Landing Inter\", Inter, sans-serif","weight":"800","width":768,"viewport":768,"bodyTheme":"","text":"Encuentra tu calma interior","motion":"0s"}
+Landing: 768 dark {"theme":"elevation-landing-dark","background":"rgb(21, 21, 19)","font":"\"Elevation Landing Inter\", Inter, sans-serif","weight":"800","width":768,"viewport":768,"bodyTheme":"","text":"Encuentra tu calma interior","motion":"0s"}
+Landing: 1440 light {"theme":"elevation-landing-light","background":"rgb(250, 250, 249)","font":"\"Elevation Landing Inter\", Inter, sans-serif","weight":"800","width":1440,"viewport":1440,"bodyTheme":"","text":"Encuentra tu calma interior","motion":"0s"}
+Landing: 1440 dark {"theme":"elevation-landing-dark","background":"rgb(21, 21, 19)","font":"\"Elevation Landing Inter\", Inter, sans-serif","weight":"800","width":1440,"viewport":1440,"bodyTheme":"","text":"Encuentra tu calma interior","motion":"0s"}
+Browser checks passed; API mocked, no database or model provider used.
