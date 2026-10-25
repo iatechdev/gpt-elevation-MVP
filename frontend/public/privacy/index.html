@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elevation — Privacy Policy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F5F0EA;
+      --warm: #E8DDD0;
+      --clay: #C4A882;
+      --earth: #8B6F52;
+      --deep: #2C2018;
+      --muted: #7A6B5D;
+    }
+
+    body {
+      background-color: var(--cream);
+      color: var(--deep);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    /* Background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+      border-bottom: 1px solid var(--warm);
+    }
+
+    .logo-mark {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1.5rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--clay), var(--earth));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--cream);
+      font-style: italic;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      color: var(--deep);
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 4rem 2rem 6rem;
+    }
+
+    .meta {
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--warm);
+    }
+
+    section {
+      margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    section:nth-child(1)  { animation-delay: 0.1s; }
+    section:nth-child(2)  { animation-delay: 0.2s; }
+    section:nth-child(3)  { animation-delay: 0.3s; }
+    section:nth-child(4)  { animation-delay: 0.4s; }
+    section:nth-child(5)  { animation-delay: 0.5s; }
+    section:nth-child(6)  { animation-delay: 0.6s; }
+    section:nth-child(7)  { animation-delay: 0.7s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--earth);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1px;
+      background: var(--clay);
+      flex-shrink: 0;
+    }
+
+    p {
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0;
+    }
+
+    ul li {
+      font-size: 0.92rem;
+      color: var(--muted);
+      padding: 0.3rem 0 0.3rem 1.25rem;
+      position: relative;
+    }
+
+    ul li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--clay);
+      font-size: 0.8rem;
+    }
+
+    a {
+      color: var(--earth);
+      text-decoration: none;
+      border-bottom: 1px solid var(--warm);
+      transition: border-color 0.2s;
+    }
+
+    a:hover { border-color: var(--clay); }
+
+    .contact-box {
+      background: var(--warm);
+      border-left: 2px solid var(--clay);
+      padding: 1.5rem 2rem;
+      border-radius: 0 4px 4px 0;
+      margin-top: 1rem;
+    }
+
+    .contact-box p { margin: 0; }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--warm);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--clay);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-mark">E</div>
+    <h1>Elevation</h1>
+    <p class="subtitle">Privacy Policy</p>
+  </header>
+
+  <main>
+    <p class="meta">Última actualización: 10 de marzo de 2026</p>
+
+    <section>
+      <h2>Introducción</h2>
+      <p>Elevation es un asistente de exploración interior diseñado para acompañarte en tu desarrollo personal. Esta política describe cómo recopilamos, usamos y protegemos la información que compartes durante tus sesiones.</p>
+    </section>
+
+    <section>
+      <h2>Información que recopilamos</h2>
+      <ul>
+        <li>Nombre y dirección de correo electrónico para identificar tu perfil</li>
+        <li>Contenido de sesiones y reflexiones que compartes voluntariamente</li>
+        <li>Datos de progreso y actividad dentro de la plataforma</li>
+        <li>Información técnica básica del dispositivo (tipo de navegador, idioma)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Cómo usamos tu información</h2>
+      <ul>
+        <li>Personalizar tu experiencia y recordar tu historial de reflexiones</li>
+        <li>Hacer seguimiento de tu progreso a lo largo del tiempo</li>
+        <li>Mejorar las respuestas y la calidad del acompañamiento</li>
+        <li>Garantizar la continuidad entre sesiones</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Almacenamiento y seguridad</h2>
+      <p>Tu información se almacena de forma segura en Supabase, una plataforma con cifrado en tránsito (TLS) y en reposo. No vendemos, alquilamos ni compartimos tus datos personales con terceros con fines comerciales.</p>
+    </section>
+
+    <section>
+      <h2>Integración con ChatGPT</h2>
+      <p>Elevation opera como un GPT personalizado sobre la plataforma de OpenAI. Las conversaciones están sujetas adicionalmente a la <a href="https://openai.com/policies/privacy-policy" target="_blank">Política de Privacidad de OpenAI</a>. No tenemos acceso directo al contenido de tus conversaciones dentro de ChatGPT más allá de los datos que el asistente envía explícitamente a nuestra API.</p>
+    </section>
+
+    <section>
+      <h2>Tus derechos</h2>
+      <ul>
+        <li>Acceder a los datos que tenemos sobre ti</li>
+        <li>Solicitar la corrección de información incorrecta</li>
+        <li>Pedir la eliminación completa de tus datos</li>
+        <li>Retirar tu consentimiento en cualquier momento</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Contacto</h2>
+      <p>Para cualquier consulta sobre esta política o el manejo de tus datos:</p>
+      <div class="contact-box">
+        <p>Puedes escribirnos directamente a través de la plataforma o contactarnos en el correo asociado a tu cuenta de Elevation.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    © 2026 Elevation · Explora contigo tu mundo interior
+  </footer>
+
+</body>
+</html>
