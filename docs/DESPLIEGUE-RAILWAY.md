@@ -34,7 +34,7 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 ## Base de datos
 - Producción (`NODE_ENV=production`): `sequelize.sync({})` solo crea las tablas que falten; no altera columnas.
 - **Esquema hasta que existan migraciones (QA-57-05, decisión propuesta):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo debe activarse de forma explícita en un entorno de desarrollo desechable, nunca por defecto (cambio de código pendiente de Dev, ver QA-57-05).
-- Migraciones versionadas: ticket propuesto en ES-9 (clave de Jira por enlazar aquí y en el PR #4 cuando se cree).
+- Migraciones versionadas y plan de migración continuo: **ES-59** (https://iatech-team-xqxmjki1.atlassian.net/browse/ES-59). Hasta que se cierre rige la regla de arriba.
 - Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
 
 ## Reversión
@@ -52,6 +52,12 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 3. Registro y login con un usuario sintético.
 4. Una conversación de chat (consume Claude: muestra pequeña).
 5. Borrado del usuario sintético.
+
+## CI y auditoría de dependencias
+- El workflow `CI` (`.github/workflows/ci.yml`) corre por PR: frontend (instalar, lint informativo, auditoría, tipos + build) y backend (instalar, sintaxis, `npm test`, auditoría).
+- `npm audit --omit=dev --audit-level=high` **bloquea** el CI en backend y frontend (decisión de Mauricio, 25-oct-2026). Las vulnerabilidades moderadas no bloquean; hoy hay 6 moderadas en el backend (`@google-cloud/storage`, `gaxios`, `retry-request`, `teeny-request`, `uuid`, `sequelize`) como riesgo aceptado hasta subir esas versiones (cambios con ruptura posible).
+- Lint del frontend: 4 errores previos (`UserDashboard.tsx`, `BoardManifest.tsx`); sigue informativo hasta que un ticket los corrija.
+- Protección de `main`: hoy exige el check `Vercel`. Los checks `backend` y `frontend` se añaden como requeridos cuando el workflow esté en `main` (ver orden en `docs/elevation-skillmap/12-OPERACION-Y-RELEASES.md`, paso 2); `Vercel` se retira después.
 
 ## No verificado aún
 - Protección de los entornos de PR en Railway.
