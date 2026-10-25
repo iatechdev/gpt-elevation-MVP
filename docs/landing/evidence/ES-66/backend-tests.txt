@@ -1,0 +1,111 @@
+
+> backend@1.0.0 test
+> node --test test/*.test.cjs
+
+✅ Tablas sincronizadas en PostgreSQL.
+✔ ES-66: public content defaults, persisted edits and real role checks (2838.3166ms)
+✔ ES-66: staging seed refuses other environments and preserves edits on rerun (mock DB) (7.5714ms)
+✔ ES-66: browser resolver falls back per language on missing, blank, malformed and failed responses (252.0601ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ P1-1: public registration cannot reactivate or replace an inactive account (3232.9591ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-2: pricing has only one public read; mutations and inactive plans require admin
+  ✔ GET /all (280.9803ms)
+  ✔ POST  (350.8069ms)
+  ✔ POST /seed (157.1097ms)
+  ✔ PUT /7 (150.7722ms)
+  ✔ DELETE /7 (124.8534ms)
+✔ P1-2: pricing has only one public read; mutations and inactive plans require admin (3201.8887ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-3: only the active manifest is public, history and mutations require board
+  ✔ GET /manifest (294.3355ms)
+  ✔ POST /manifest (265.7013ms)
+  ✔ PUT /manifest/7/activate (119.297ms)
+✔ P1-3: only the active manifest is public, history and mutations require board (2895.4169ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-4: plan request review requires admin even through the user mount
+  ✔ GET /admin (643.3575ms)
+  ✔ PUT /admin/7/approve (283.567ms)
+  ✔ PUT /admin/7/reject (146.2101ms)
+✔ P1-4: plan request review requires admin even through the user mount (2888.7886ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-5: only admin can list or confirm matching; user can request and choose
+  ✔ GET /pending (510.7887ms)
+  ✔ POST /7/confirm (207.223ms)
+✔ P1-5: only admin can list or confirm matching; user can request and choose (2610.437ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-6: review uses the existing superadmin role; therapists keep their own upload/status
+  ✔ GET /pending (495.204ms)
+  ✔ GET /7/download (141.9018ms)
+  ✔ POST /7/approve (212.1884ms)
+  ✔ POST /7/reject (175.5442ms)
+✔ P1-6: review uses the existing superadmin role; therapists keep their own upload/status (3079.2815ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-7: admin cannot approve, reject or roll back prompts through either alias
+  ✔ approve (529.3601ms)
+  ✔ reject (158.9476ms)
+  ✔ rollback (149.4637ms)
+✔ P1-7: admin cannot approve, reject or roll back prompts through either alias (2650.0774ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ P1-8: server dependencies resolve from the backend installation without root node_modules (2885.6478ms)
+✔ P1-8: Vercel entry is retained, exports the real app and protects administrative mutations (492.1486ms)
+✅ Tablas sincronizadas en PostgreSQL.
+▶ P1-9: production entrypoints, signer and verifier fail closed without JWT_SECRET
+  ✔ server.js (1549.1191ms)
+  ✔ ../api/index.js (1590.3292ms)
+  ✔ routes/auth.js (3038.5501ms)
+  ✔ middlewares/auth.js (1303.7682ms)
+✔ P1-9: production entrypoints, signer and verifier fail closed without JWT_SECRET (7486.471ms)
+✔ P1-9: configured production key works; foreign or missing tokens are denied (2046.0501ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ QA-57-01: connection identity and login limit remain enforced (4431.5074ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ QA-57-03: registration preserves its authorized role contract (3009.8299ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ QA-57-04: role matrix, authorized persistence and invalid inputs (2355.3661ms)
+✔ QA-57-05: alter solo con DB_SYNC_ALTER=true, sin importar NODE_ENV (5.2332ms)
+✔ QA-57-05: server.js usa syncOptions y no decide alter por NODE_ENV (1.8621ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ QA-9-01 (1716.5912ms)
+✅ Tablas sincronizadas en PostgreSQL.
+✔ QA-9-02: public input and legitimate authentication (2670.3497ms)
+▶ QA-9-02: body consumers reject invalid types before side effects
+  ✔ POST /api/chat (173.0784ms)
+  ✔ POST /api/mood/checkin (41.3816ms)
+  ✔ POST /api/mood/checkout (29.6304ms)
+  ✔ POST /api/rating (24.2931ms)
+  ✔ PUT /api/user/onboarding-complete (20.3245ms)
+  ✔ POST /api/matching/request (44.2294ms)
+  ✔ POST /api/matching/choose (35.5985ms)
+  ✔ POST /api/plan-requests (29.1296ms)
+  ✔ PUT /api/plan-requests/admin/7/approve (21.8403ms)
+  ✔ PUT /api/plan-requests/admin/7/reject (27.2639ms)
+  ✔ POST /api/manifest/manifest (18.2695ms)
+  ✔ POST /api/admin/usuarios (34.7591ms)
+  ✔ PUT /api/admin/usuarios/7 (24.5001ms)
+  ✔ PUT /api/admin/usuarios/7/asignar-terapeuta (16.7197ms)
+  ✔ PUT /api/admin/usuarios/7/plan (17.5478ms)
+  ✔ PUT /api/admin/usuarios/7/reset-password (20.8902ms)
+  ✔ POST /api/admin/prompt (17.8086ms)
+  ✔ POST /api/admin/prompt/propose (22.7862ms)
+  ✔ POST /api/superadmin/prompt/7/reject (22.8726ms)
+  ✔ POST /api/pricing (14.5783ms)
+  ✔ PUT /api/pricing/7 (16.9687ms)
+  ✔ POST /api/therapist/validation/7/approve (22.1158ms)
+  ✔ POST /api/therapist/validation/7/reject (21.8157ms)
+  ✔ POST /api/therapist/prompt/propose (28.4403ms)
+  ✔ POST /api/therapist/pacientes/7/notas (25.8238ms)
+  ✔ PUT /api/therapist/notas/7 (32.1299ms)
+  ✔ POST /api/sessions/therapist (27.7327ms)
+  ✔ PUT /api/sessions/therapist/7 (21.911ms)
+  ✔ POST /api/sessions/therapist/7/notes (21.0444ms)
+  ✔ POST /api/sessions/therapist/7/end (20.7741ms)
+✔ QA-9-02: body consumers reject invalid types before side effects (941.4713ms)
+ℹ tests 76
+ℹ suites 0
+ℹ pass 76
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14076.8311

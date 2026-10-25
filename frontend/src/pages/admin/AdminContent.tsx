@@ -1,3 +1,4 @@
+import landingFields from '../../../../shared/landing-content.json'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
@@ -551,6 +552,7 @@ function LandingTab() {
     { key: 'cta_primary',        label: 'CTA Principal' },
     { key: 'cta_final_title',    label: 'Título CTA Final' },
     { key: 'cta_final_subtitle', label: 'Subtítulo CTA Final' },
+    ...landingFields.map(({ key }) => ({ key, label: key })),
   ]
 
   useEffect(() => {
