@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation Landing Fase 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Concepto: editorial sobrio sobre papel; el titular en mayúsculas con subrayado ocre es el único gesto fuerte. */
+:root{
+  --paper:#FAFAF9; --ink:#1A1A18; --mute:#5E5E5A; --line:#E4E2DC; --card:#FFFFFF;
+  --ocre:#B8963E; --ocre-text:#7D6218; --soft:#F2EFE7; --ok:#2F6B3F; --warn:#8A5A12;
+  --f-body:'Inter',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#151513;--ink:#F3F1EA;--mute:#A9A79F;--line:#34332F;--card:#1D1D1A;--ocre:#C9A64B;--ocre-text:#D9B861;--soft:#222119;--ok:#7CC48F;--warn:#E0B060;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#151513;--ink:#F3F1EA;--mute:#A9A79F;--line:#34332F;--card:#1D1D1A;--ocre:#C9A64B;--ocre-text:#D9B861;--soft:#222119;--ok:#7CC48F;--warn:#E0B060;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--f-body);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.wrap{max-width:1080px;margin:0 auto}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--ocre);outline-offset:3px}
+.skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--ink);color:var(--paper);padding:8px 12px;z-index:5}
+.label{font:500 12px/1.4 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+/* Barra de revisión (no es parte de la landing) */
+.review{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--line)}
+.review b{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--warn)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:500 12px var(--f-mono);padding:8px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+/* Landing */
+.site{margin-top:20px;border:1px solid var(--line);background:var(--paper)}
+.site.mobile{max-width:390px;margin-inline:auto}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 28px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.02em;text-decoration:none}
+.logo i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ocre);margin-left:3px}
+nav.main{display:flex;gap:22px;flex-wrap:wrap}
+nav.main a{font-size:14px;text-decoration:none;color:var(--mute)}
+nav.main a:hover{color:var(--ink)}
+.tools{display:flex;gap:10px;align-items:center}
+.lang button{font:500 12px var(--f-mono);padding:6px 9px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.btn{display:inline-block;padding:11px 18px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);font-size:14px;font-weight:600;text-decoration:none;border-radius:6px;cursor:pointer}
+.btn:hover{background:transparent;color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.hero{padding:72px 28px 56px;max-width:900px}
+.hero h1{font-weight:800;text-transform:uppercase;letter-spacing:-.03em;line-height:.98;font-size:clamp(40px,8vw,84px);margin:14px 0 22px;text-wrap:balance}
+.hero h1 u{text-decoration:none;background:linear-gradient(var(--ocre),var(--ocre)) 0 92%/100% 6px no-repeat}
+.hero p.sub{font-size:19px;color:var(--mute);max-width:56ch;margin:0}
+.doors{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.door{padding:34px 28px 30px;text-decoration:none;display:flex;flex-direction:column;gap:10px;position:relative;transition:background .15s}
+.door+.door{border-left:1px solid var(--line)}
+.door:hover{background:var(--soft)}
+.door h2{margin:0;font-size:28px;line-height:1.1;letter-spacing:-.02em;text-transform:uppercase}
+.door p{margin:0;color:var(--mute);max-width:36ch}
+.door .go{margin-top:8px;font:500 13px var(--f-mono);color:var(--ocre-text)}
+.door .go::after{content:" →"}
+.strip{padding:30px 28px;border-top:1px solid var(--line);background:var(--soft);display:grid;gap:8px}
+.strip .tag{display:inline-block;width:max-content;font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--ocre-text);color:var(--ocre-text);padding:3px 8px}
+.strip p{margin:0;max-width:62ch}
+.strip .flow{font-size:15px;color:var(--mute)}
+.next{padding:20px 28px;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
+.site.mobile .doors{grid-template-columns:1fr}
+.site.mobile .door+.door{border-left:0;border-top:1px solid var(--line)}
+.site.mobile header.top{padding:14px 16px}.site.mobile nav.main{display:none}
+.site.mobile .hero,.site.mobile .door,.site.mobile .strip,.site.mobile .next{padding-inline:16px}
+@media (max-width:640px){.doors{grid-template-columns:1fr}.door+.door{border-left:0;border-top:1px solid var(--line)}nav.main{display:none}.hero{padding:44px 16px 36px}.door,.strip,.next{padding-inline:16px}header.top{padding:14px 16px}}
+/* Notas de diseño */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 36px;margin:44px 0 60px}
+.notes h3{margin:0 0 10px;font-size:15px}
+.notes ul{margin:0;padding-left:18px;font-size:14px}.notes li{margin:5px 0}
+.notes code,.k{font:13px var(--f-mono)}
+.sw{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.sw span{font:12px var(--f-mono);padding:6px 10px;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.scroll{overflow-x:auto}
+.open{border:1px solid var(--warn);padding:14px 16px;font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<div class="wrap">
+  <div class="review">
+    <b>Propuesta de diseño · Fase 1 · para aprobación en ES-60 · no es código</b>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span class="seg" role="group" aria-label="Ancho"><button id="bDesk" aria-pressed="true">Escritorio</button><button id="bMob" aria-pressed="false">Móvil</button></span>
+      <span class="seg" role="group" aria-label="Tema"><button id="bLight" aria-pressed="false">Claro</button><button id="bDark" aria-pressed="false">Oscuro</button></span>
+    </div>
+  </div>
+
+  <div class="site" id="site">
+    <header class="top">
+      <a class="logo" href="#" aria-label="Elevation, inicio">elevation<i></i></a>
+      <nav class="main" aria-label="Principal">
+        <a href="#" data-k="n1"></a><a href="#" data-k="n2"></a><a href="#" data-k="n3"></a><a href="#" data-k="n4"></a>
+      </nav>
+      <div class="tools">
+        <span class="lang" role="group" aria-label="Idioma"><button id="es" aria-pressed="true">ES</button><button id="en" aria-pressed="false">EN</button></span>
+        <a class="btn ghost" href="#" data-k="login"></a>
+      </div>
+    </header>
+    <main id="contenido">
+      <section class="hero">
+        <div class="label" data-k="eyebrow"></div>
+        <h1 data-k="h1"></h1>
+        <p class="sub" data-k="sub"></p>
+      </section>
+      <section class="doors" aria-label="">
+        <a class="door" href="#"><span class="label">01 · <span data-k="d1l"></span></span><h2 data-k="d1t"></h2><p data-k="d1p"></p><span class="go" data-k="go"></span></a>
+        <a class="door" href="#"><span class="label">02 · <span data-k="d2l"></span></span><h2 data-k="d2t"></h2><p data-k="d2p"></p><span class="go" data-k="go"></span></a>
+      </section>
+      <section class="strip">
+        <span class="tag" data-k="tag"></span>
+        <p><strong data-k="st"></strong></p>
+        <p class="flow" data-k="sf"></p>
+      </section>
+      <div class="next" data-k="next"></div>
+    </main>
+  </div>
+
+  <div class="notes">
+    <section>
+      <h3>Qué cubre esta fase</h3>
+      <ul>
+        <li>Cabecera con navegación, selector ES/EN e ingreso.</li>
+        <li>Hero con titular y las dos puertas de entrada.</li>
+        <li>Franja de ejemplo ilustrativo (marcada como tal).</li>
+        <li>Corresponde a ES-61, ES-62, ES-63 y ES-64. El resto (S3 a S15) se diseña en la fase 2.</li>
+      </ul>
+      <h3 style="margin-top:20px">Flujo</h3>
+      <ul>
+        <li>Puerta 1 y 2 llevan al registro o ingreso existente. Destino exacto <b>por confirmar</b> en ES-74; hasta entonces apuntan a <code>/login</code>.</li>
+        <li>"Ingresar" lleva a <code>/login</code>. Nada de <code>/app/*</code>, <code>/therapist/*</code> ni <code>/admin</code> cambia.</li>
+        <li>Los enlaces de la navegación hacen scroll a secciones de la fase 2 y se ocultan hasta que existan.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Tokens (reutiliza <code>index.css</code>)</h3>
+      <div class="sw"><span style="background:var(--paper)">papel #FAFAF9</span><span>tinta #1A1A18</span><span>gris #6B6B67</span><span>ocre #B8963E</span></div>
+      <ul>
+        <li>Tipografía: Inter para texto y titulares; mono para etiquetas en mayúsculas.</li>
+        <li>Titular: 800, mayúsculas, subrayado ocre. Sin serif Playfair de la landing actual.</li>
+        <li>Ocre <code>#B8963E</code> sobre papel da unos 2,9:1: <b>no pasa AA para texto</b>. Se usa solo para decorar (subrayado, punto). Para texto se propone ocre oscuro <code>#7D6218</code> (aprox. 5,5:1, por verificar con herramienta).</li>
+      </ul>
+      <h3 style="margin-top:20px">Componentes daisyUI</h3>
+      <ul>
+        <li><code>navbar</code> (cabecera), <code>btn</code> y <code>btn-outline</code>, <code>join</code> (selector ES/EN), <code>badge</code> (etiqueta de ejemplo), <code>hero</code> (contenedor).</li>
+        <li>Tema daisyUI propio con los tokens de arriba (ES-61). Nuevo: puerta de entrada (tarjeta grande enlazable).</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Estados</h3>
+      <div class="scroll"><table>
+        <tr><th>Elemento</th><th>Estados</th></tr>
+        <tr><td>Puertas</td><td>reposo, hover (fondo suave), foco (anillo ocre 3 px), activo</td></tr>
+        <tr><td>Botones</td><td>reposo, hover (invierte), foco, deshabilitado</td></tr>
+        <tr><td>Selector ES/EN</td><td>pulsado marcado; idioma guardado y <code>lang</code> del documento actualizado</td></tr>
+        <tr><td>Texto no cargado</td><td>si el contenido editable falla, se muestran los textos por defecto de la clave; sin pantalla vacía</td></tr>
+      </table></div>
+      <h3 style="margin-top:20px">Accesibilidad y responsive</h3>
+      <ul>
+        <li>Enlace "Saltar al contenido", orden de tabulación lógico, anillo de foco visible.</li>
+        <li>Móvil: puertas apiladas, navegación oculta (menú en fase 2). Sin scroll horizontal.</li>
+        <li><code>prefers-reduced-motion</code> sin transiciones. Tema claro y oscuro.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Claves de contenido (ES-66)</h3>
+      <p class="k" style="margin:0">landing.nav.*, landing.hero.{label,title,subtitle}, landing.doors.{title,1.title,1.desc,2.title,2.desc}, landing.example.{label,title,flow}</p>
+      <h3 style="margin-top:20px">Cambios respecto a hoy</h3>
+      <ul>
+        <li>Se reemplaza el héroe actual de <code>LandingPage.tsx</code> (serif, tres pasos, sección verde).</li>
+        <li>Se agregan las dos puertas y la franja de ejemplo. El resto de la landing actual queda hasta la fase 2.</li>
+      </ul>
+      <h3 style="margin-top:20px">Horas (propuesta, sin validar con Dev)</h3>
+      <p style="margin:0;font-size:14px">Sin estimar. Dev las propone tras la aprobación.</p>
+    </section>
+  </div>
+
+  <div class="open" style="margin-bottom:60px">
+    <b>Para decidir al aprobar:</b>
+    <ul style="margin:8px 0 0;padding-left:18px">
+      <li>Titular "Lo que has vivido cuenta." y las dos puertas vienen de la referencia. ¿Se mantienen, o se ajustan a los textos de S1 y S2 del documento de arquitectura?</li>
+      <li>Los textos de las puertas de abajo son de la referencia (<i>Hacer espacio</i> / <i>Mirar otra vez</i>). El documento propone una redacción para cada audiencia (persona y psicólogo); falta decidir si la segunda puerta es la de profesionales (ES-74, D-09).</li>
+      <li>El caso de docencia es ejemplo ilustrativo, no un caso real. Texto final pendiente de revisión del especialista (D-07).</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const T={
+es:{n1:'Cómo funciona',n2:'Skill Map',n3:'Para psicólogos',n4:'Planes',login:'Ingresar',
+eyebrow:'Acompañamiento + exploración profesional',h1:'Lo que has vivido <u>cuenta.</u>',
+sub:'Hay cosas que necesitas poner en palabras. Y otras que todavía no has reconocido en ti. Podemos empezar por cualquiera.',
+d1l:'Hacer espacio',d1t:'Ordenar lo que estoy viviendo',d1p:'Una conversación con ritmo propio, sin diagnóstico y sin prisa.',
+d2l:'Mirar otra vez',d2t:'Reconocer lo que puedo aportar',d2p:'Convierte tu experiencia en capacidades con evidencia que tú revisas.',go:'Empezar',
+tag:'Ejemplo ilustrativo · caso ficticio · docencia',st:'Acciones → posibles capacidades',sf:'Son hipótesis que tú puedes revisar, corregir o descartar. No es un diagnóstico ni una promesa de empleo.',
+next:'Siguiente (fase 2): problema, cómo funciona, privacidad, psicólogos, Skill Map, planes y cómo vincularte.'},
+en:{n1:'How it works',n2:'Skill Map',n3:'For psychologists',n4:'Plans',login:'Log in',
+eyebrow:'Support + career exploration',h1:'What you have lived <u>counts.</u>',
+sub:'Some things you need to put into words. Others you have not yet recognised in yourself. We can start with either.',
+d1l:'Make space',d1t:'Sort out what I am going through',d1p:'A conversation at its own pace, without diagnosis and without hurry.',
+d2l:'Look again',d2t:'Recognise what I can contribute',d2p:'Turn your experience into capabilities with evidence that you review.',go:'Start',
+tag:'Illustrative example · fictional case · teaching',st:'Actions → possible capabilities',sf:'These are hypotheses you can review, correct or discard. Not a diagnosis, not a job promise.',
+next:'Next (phase 2): problem, how it works, privacy, psychologists, Skill Map, plans and how to join.'}};
+function setLang(l){document.documentElement.lang=l;document.querySelectorAll('[data-k]').forEach(e=>{const v=T[l][e.dataset.k];if(e.dataset.k==='h1')e.innerHTML=v;else e.textContent=v});
+document.getElementById('es').setAttribute('aria-pressed',l==='es');document.getElementById('en').setAttribute('aria-pressed',l==='en')}
+document.getElementById('es').onclick=()=>setLang('es');document.getElementById('en').onclick=()=>setLang('en');
+const site=document.getElementById('site'),bD=document.getElementById('bDesk'),bM=document.getElementById('bMob');
+bD.onclick=()=>{site.classList.remove('mobile');bD.setAttribute('aria-pressed','true');bM.setAttribute('aria-pressed','false')};
+bM.onclick=()=>{site.classList.add('mobile');bM.setAttribute('aria-pressed','true');bD.setAttribute('aria-pressed','false')};
+const bL=document.getElementById('bLight'),bK=document.getElementById('bDark');
+bL.onclick=()=>{document.documentElement.dataset.theme='light';bL.setAttribute('aria-pressed','true');bK.setAttribute('aria-pressed','false')};
+bK.onclick=()=>{document.documentElement.dataset.theme='dark';bK.setAttribute('aria-pressed','true');bL.setAttribute('aria-pressed','false')};
+document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
+setLang('es');
+</script>
+
+</body>
+</html>
