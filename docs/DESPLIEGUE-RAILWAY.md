@@ -18,6 +18,7 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 | `DATABASE_URL` | Conexión a Postgres | Session pooler de Supabase, puerto 5432 |
 | `DB_SSL` | SSL a la base | `true` |
 | `DB_POOL_MAX` | Tope del pool de Sequelize | Opcional, por defecto 5 |
+| `DB_SYNC_ALTER` | Permite que `sync()` altere columnas | Solo `true` en una base de desarrollo desechable; no definir en staging ni producción |
 | `NODE_ENV` | Modo | `production` en ambos entornos |
 | `JWT_SECRET` | Firma de sesiones | Distinto por entorno. Sin ella el proceso debe fallar (hallazgo P1 del PR #2) |
 | `DATA_ENCRYPTION_KEY` | Cifrado de datos (`utils/crypto.js`) | Distinta por entorno. En producción el proceso no arranca sin ella |
@@ -33,7 +34,7 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 
 ## Base de datos
 - Producción (`NODE_ENV=production`): `sequelize.sync({})` solo crea las tablas que falten; no altera columnas.
-- **Esquema hasta que existan migraciones (QA-57-05, decisión propuesta):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo debe activarse de forma explícita en un entorno de desarrollo desechable, nunca por defecto (cambio de código pendiente de Dev, ver QA-57-05).
+- **Esquema hasta que existan migraciones (QA-57-05, decisión propuesta):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo se activa de forma explícita con `DB_SYNC_ALTER=true` en un entorno de desarrollo desechable, nunca por defecto y sin depender de `NODE_ENV` (QA-57-05).
 - Migraciones versionadas y plan de migración continuo: **ES-59** (https://iatech-team-xqxmjki1.atlassian.net/browse/ES-59). Hasta que se cierre rige la regla de arriba.
 - Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
 

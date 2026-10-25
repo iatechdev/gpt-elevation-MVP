@@ -8,6 +8,7 @@ const helmet  = require('helmet');
 
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
+const syncOptions              = require('./utils/syncOptions');
 
 const {
   verificarToken,
@@ -55,8 +56,8 @@ app.get('/api/health', (req, res) => {
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
   setupAssociations(sequelize);
-  // `alter` solo fuera de producción; en producción solo crea las tablas que falten (migraciones: pendiente)
-  sequelize.sync(process.env.NODE_ENV === 'production' ? {} : { alter: true })
+  // `alter` solo con DB_SYNC_ALTER=true; por defecto solo crea las tablas que falten (migraciones: ES-59)
+  sequelize.sync(syncOptions())
     .then(() => console.log('✅ Tablas sincronizadas en PostgreSQL.'))
     .catch(err => console.error('❌ Error sincronizando tablas:', err));
 });
