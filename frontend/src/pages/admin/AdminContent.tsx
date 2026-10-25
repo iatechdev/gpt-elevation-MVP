@@ -1,7 +1,7 @@
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -132,7 +132,7 @@ function ValidationsTab() {
   const [msg, setMsg]             = useState('')
   const [loadingUrl, setLoadingUrl] = useState<number | null>(null)
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true)
     fetch(`${API}/api/junta/pending`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -140,9 +140,9 @@ function ValidationsTab() {
       .then(r => r.json())
       .then(data => { setDocs(Array.isArray(data) ? data : []); setLoading(false) })
       .catch(() => setLoading(false))
-  }
+  }, [token])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   const getDownloadUrl = async (doc: ValidationDoc) => {
     setLoadingUrl(doc.id)
@@ -301,7 +301,7 @@ function PricingTab() {
   const [saving, setSaving]       = useState(false)
   const [msg, setMsg]             = useState('')
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true)
     fetch(`${API}/api/admin/pricing/all`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -309,9 +309,9 @@ function PricingTab() {
       .then(r => r.json())
       .then(data => { setPlans(Array.isArray(data) ? data : []); setLoading(false) })
       .catch(() => setLoading(false))
-  }
+  }, [token])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   const openNew = () => {
     setForm(emptyPlan); setFeatInputEs(''); setFeatInputEn('')

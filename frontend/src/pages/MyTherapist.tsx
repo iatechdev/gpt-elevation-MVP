@@ -57,6 +57,7 @@ export function MyTherapist() {
   const [data, setData]       = useState<MyTherapistData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')
+  const [loadError] = useState(() => lang === 'es' ? 'Error cargando la información.' : 'Could not load therapist info.')
   const [showMatching, setShowMatching] = useState(false)
 
   useEffect(() => {
@@ -69,13 +70,13 @@ export function MyTherapist() {
         const json = await res.json()
         setData(json)
       } catch {
-        setError(lang === 'es' ? 'Error cargando la información.' : 'Could not load therapist info.')
+        setError(loadError)
       } finally {
         setLoading(false)
       }
     }
     fetchData()
-  }, [])
+  }, [loadError])
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const formatDateTime = (iso: string) =>

@@ -1,0 +1,117 @@
+@font-face {
+  font-family: 'Elevation Landing Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2');
+}
+
+@plugin 'daisyui' {
+  themes: false;
+  root: '.landing-scope';
+  include: button, card, badge, link, join, navbar, hero;
+  prefix: 'elv-';
+  logs: false;
+}
+
+@plugin 'daisyui/theme' {
+  name: 'elevation-landing-light';
+  default: false;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: #FAFAF9;
+  --color-base-200: #F2EFE7;
+  --color-base-300: #E4E2DC;
+  --color-base-content: #1A1A18;
+  --color-primary: #1A1A18;
+  --color-primary-content: #FAFAF9;
+  --color-secondary: #7D6218;
+  --color-secondary-content: #FAFAF9;
+  --color-accent: #B8963E;
+  --color-accent-content: #1A1A18;
+  --color-neutral: #5E5E5A;
+  --color-neutral-content: #FAFAF9;
+  --color-info: #245A76;
+  --color-info-content: #FAFAF9;
+  --color-success: #325D40;
+  --color-success-content: #FAFAF9;
+  --color-warning: #7D6218;
+  --color-warning-content: #FAFAF9;
+  --color-error: #7A3030;
+  --color-error-content: #FAFAF9;
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin 'daisyui/theme' {
+  name: 'elevation-landing-dark';
+  default: false;
+  prefersdark: false;
+  color-scheme: dark;
+  --color-base-100: #151513;
+  --color-base-200: #222119;
+  --color-base-300: #34332F;
+  --color-base-content: #F3F1EA;
+  --color-primary: #F3F1EA;
+  --color-primary-content: #151513;
+  --color-secondary: #D9B861;
+  --color-secondary-content: #151513;
+  --color-accent: #C9A64B;
+  --color-accent-content: #151513;
+  --color-neutral: #A9A79F;
+  --color-neutral-content: #151513;
+  --color-info: #91C9E4;
+  --color-info-content: #151513;
+  --color-success: #A1D5AC;
+  --color-success-content: #151513;
+  --color-warning: #D9B861;
+  --color-warning-content: #151513;
+  --color-error: #F1ABAB;
+  --color-error-content: #151513;
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+.landing-scope {
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  min-height: 100svh;
+  font-family: 'Elevation Landing Inter', Inter, sans-serif;
+  line-height: 1.6;
+  --landing-muted: var(--color-neutral);
+  --landing-gutter: clamp(1rem, 4vw, 4rem);
+  --landing-space: clamp(2.5rem, 6vw, 6rem);
+}
+
+.landing-scope :is(h1, h2, h3, button, a, input) { font-family: inherit; }
+.landing-scope h1 { font-size: clamp(40px, 8vw, 84px); font-weight: 800; line-height: 0.98; letter-spacing: -0.03em; text-wrap: balance; text-transform: uppercase; }
+.landing-scope h2 { font-size: clamp(1.5rem, 3vw, 2.75rem); line-height: 1.2; }
+.landing-scope :is(button, a):focus-visible { outline: 3px solid var(--color-secondary); outline-offset: 3px; }
+.landing-scope .elv-btn { min-height: 44px; height: auto; white-space: normal; padding-block: 0.75rem; font-weight: 500; }
+.landing-scope .landing-label { height: auto; padding-block: 0.25rem; white-space: normal; font-family: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.landing-scope .landing-card { min-width: 0; background: var(--color-base-200); }
+.landing-scope .landing-section { padding: var(--landing-space) var(--landing-gutter); }
+.landing-scope .landing-container { width: 100%; max-width: 1080px; margin-inline: auto; }
+.landing-scope .landing-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+.landing-scope .landing-link { text-underline-offset: 0.25em; }
+.landing-scope .landing-decoration { color: var(--color-accent); }
+@media (min-width: 40rem) { .landing-scope .landing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; } }
+@media (prefers-reduced-motion: reduce) {
+  .landing-scope, .landing-scope *, .landing-scope *::before, .landing-scope *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,7 +1,7 @@
 // HU-046 + HU-050 + HU-067 + HU-082 — Patient history + clinical notes + AI summary + schedule + i18n
 // HU-076 — Design system tokens
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   colors, radius, shadow, spacing, typography,
@@ -185,7 +185,12 @@ export function TherapistPatient() {
     }
   }
 
-  const fetchHistory = async () => {
+  // Error copy does not determine which history is fetched. Keep it current without refetching on language changes.
+  const historyError = useRef(t('therapist_not_found'))
+  useEffect(() => { historyError.current = t('therapist_not_found') }, [t])
+
+  const fetchHistory = useCallback(async () => {
+    const loadError = historyError.current
     try {
       const res = await fetch(`${API}/api/therapist/pacientes/${id}/historia`, {
         headers: { Authorization: `Bearer ${getToken()}` },
@@ -197,13 +202,13 @@ export function TherapistPatient() {
       setRatings(data.ratings)
       setNotes(data.notes)
     } catch {
-      setError(t('therapist_not_found'))
+      setError(loadError)
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
 
-  useEffect(() => { fetchHistory() }, [id])
+  useEffect(() => { void fetchHistory() }, [fetchHistory])
 
   const handleSaveNote = async () => {
     setNoteError('')

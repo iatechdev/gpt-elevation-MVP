@@ -1,5 +1,5 @@
 // frontend/src/pages/board/BoardManifest.tsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useLanguage } from '../../i18n/useLanguage'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -31,7 +31,9 @@ export function BoardManifest() {
 
   const token = localStorage.getItem('elevation_token')
 
-  const fetchVersions = async () => {
+  const [initialLoadError] = useState(() => t('board_error_load'))
+
+  const fetchVersions = useCallback(async (loadError: string) => {
     setLoading(true)
     setError(null)
     try {
@@ -41,14 +43,14 @@ export function BoardManifest() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setVersions(data)
-    } catch (err: any) {
-      setError(err.message || t('board_error_load'))
+    } catch (err: unknown) {
+      setError(err instanceof Error && err.message ? err.message : loadError)
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
 
-  useEffect(() => { fetchVersions() }, [])
+  useEffect(() => { void fetchVersions(initialLoadError) }, [fetchVersions, initialLoadError])
 
   const handleSubmit = async () => {
     if (newContent.trim().length < 50) {
@@ -73,9 +75,9 @@ export function BoardManifest() {
       setNewContent('')
       setNewNote('')
       setShowForm(false)
-      await fetchVersions()
-    } catch (err: any) {
-      setError(err.message || t('board_error_upload'))
+      await fetchVersions(t('board_error_load'))
+    } catch (err: unknown) {
+      setError(err instanceof Error && err.message ? err.message : t('board_error_upload'))
     } finally {
       setSubmitting(false)
     }
@@ -94,9 +96,9 @@ export function BoardManifest() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setSuccess(`${t('board_success_activate')} ${version}`)
-      await fetchVersions()
-    } catch (err: any) {
-      setError(err.message || t('board_error_activate'))
+      await fetchVersions(t('board_error_load'))
+    } catch (err: unknown) {
+      setError(err instanceof Error && err.message ? err.message : t('board_error_activate'))
     } finally {
       setActivating(null)
     }

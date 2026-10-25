@@ -1,6 +1,6 @@
 // HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 type Role = 'user' | 'therapist' | 'admin' | 'superadmin' | 'board';
 
@@ -110,7 +110,7 @@ export function AdminUsers() {
   const role         = localStorage.getItem('elevation_role') ?? 'admin';
   const esSuperAdmin = role === 'superadmin';
 
-  const fetchUsuarios = async () => {
+  const fetchUsuarios = useCallback(async () => {
     setCargando(true); setError('');
     try {
       const params = new URLSearchParams();
@@ -125,7 +125,7 @@ export function AdminUsers() {
       setTerapeutas(data.filter((u: Usuario) => u.role === 'therapist' && u.active));
     } catch { setError('No se pudo cargar la lista de usuarios.'); }
     finally   { setCargando(false); }
-  };
+  }, [filtroRol, filtroEstado]);
 
   const fetchMatching = async () => {
     try {
@@ -152,7 +152,7 @@ export function AdminUsers() {
     fetchUsuarios();
     fetchMatching();
     fetchPlanRequests();
-  }, [filtroRol, filtroEstado]);
+  }, [fetchUsuarios]);
 
   const confirmMatching = async (requestId: number) => {
     setConfirmingId(requestId);

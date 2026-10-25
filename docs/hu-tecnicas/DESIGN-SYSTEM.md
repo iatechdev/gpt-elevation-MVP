@@ -253,3 +253,7 @@ El área de usuarios (landing, chat) debe funcionar perfectamente en **mobile**.
 
 ---
 *Documentado: 28 de marzo de 2026 — Claude (Tech Lead AI) + Mauro Roldán*
+
+## Landing publica - ES-61
+
+La landing usa un tema editorial propio y acotado; no sustituye los tokens de las zonas privadas. Ver [ES-61: base visual](../landing/ES-61-BASE-VISUAL.md) para temas, componentes, fuentes, contraste y limites de verificacion.

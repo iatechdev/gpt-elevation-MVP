@@ -1,0 +1,35 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\MyTherapist.tsx
+  78:6  warning  React Hook useEffect has a missing dependency: 'lang'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\UserDashboard.tsx
+   96:34  error    '_therapistName' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+  128:6   warning  React Hook useEffect has missing dependencies: 'loadChatHistory' and 'navigate'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\UserProgress.tsx
+  91:6  warning  React Hook useEffect has a missing dependency: 'lang'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\admin\AdminContent.tsx
+  145:31  warning  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  314:31  warning  React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\admin\AdminUsers.tsx
+  155:6  warning  React Hook useEffect has a missing dependency: 'fetchUsuarios'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\board\BoardManifest.tsx
+  44:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  51:40  warning  React Hook useEffect has a missing dependency: 'fetchVersions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  77:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  98:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\therapist\TherapistDashboard.tsx
+  141:6  warning  React Hook useEffect has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Usuario\.codex\visualizations\2026\10\21\01a16033-4db6-7631-9aa0-3a1a78dc5b61\landing-es61\frontend\src\pages\therapist\TherapistPatient.tsx
+  206:39  warning  React Hook useEffect has a missing dependency: 'fetchHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 13 problems (4 errors, 9 warnings)

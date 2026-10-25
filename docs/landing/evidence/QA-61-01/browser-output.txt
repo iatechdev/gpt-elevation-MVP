@@ -1,0 +1,5 @@
+PASS /app/dashboard 390px: text, geometry and styles equal; requests equal; draft preserved; user language change or board API error verified.
+PASS /app/dashboard 1280px: text, geometry and styles equal; requests equal; draft preserved; user language change or board API error verified.
+PASS /board/manifest 390px: text, geometry and styles equal; requests equal; draft preserved; user language change or board API error verified.
+PASS /board/manifest 1280px: text, geometry and styles equal; requests equal; draft preserved; user language change or board API error verified.
+PASS: fixtures and HTTP mocked; no real authentication, database or external provider.
