@@ -2,6 +2,8 @@
 
 Versión 0.1 · 25-oct-2026 · **BORRADOR para revisión de Alejo (PO) y Mauricio (Tech Lead)**. Redactado a pedido de Mauricio como insumo de ES-60 (diseño de la landing). No es una aprobación, no cambia código y no sustituye al PRD.
 
+> **Léelo junto con** `ALCANCE-COMO-ES-Y-COMO-DEBE-SER.md` (mismo directorio): qué existe hoy en el código, qué debe existir y qué decisiones siguen abiertas. Este documento solo cubre los textos y el orden de la landing.
+
 ## 0. Para qué sirve este documento
 
 La landing pública (la "front office") es la primera página que ve cualquier persona que llega a Elevation. Debe contar **qué es Elevation, qué objetivos tiene, cómo funciona, para quién es (personas en transición y psicólogos/orientadores profesionales), qué es el Skill Map, cuánto cuesta y cómo vincularse**. Este documento fija:
@@ -126,9 +128,12 @@ La landing actual (`frontend/src/pages/LandingPage.tsx`) tiene: héroe, proceso 
   - **If you are in a risky situation,** this is not an emergency service: contact the emergency or health services in your country. **[to decide D-08]**
 - Enlaces: política de privacidad (**conservar su URL pública actual**, criterio de ES-57).
 - Fuente: one-pager (límites y privacidad), PRD RF-02, 04, 12, 14.
+- **Estado hoy:** el puente de consentimiento, la exportación y la eliminación por parte de la persona **no existen todavía** en el código, y no encontré una detección de crisis en el backend. Estas viñetas describen el producto objetivo: se publican con el estado "Próximamente", o cuando existan. Lo que sí existe hoy: chat cifrado en base de datos y cabeceras de seguridad.
 
 ### S7 · Qué ofrece a las personas
 Seis bloques, cada uno con un **estado visible** (Disponible / En piloto / Próximamente) que debe confirmar Dev antes de publicar **[por decidir D-03]**.
+
+**Estado verificado hoy en el código** (ver `ALCANCE-COMO-ES-Y-COMO-DEBE-SER.md` §2): existe la conversación con IA, el check-in de ánimo y los planes. **No existen** el diario privado, los ejercicios, la brújula, la exportación ni la eliminación de datos por parte de la persona, ni el Skill Map. Hasta que existan, esas funciones salen como "Próximamente" o no salen.
 
 | Bloque | ES | EN | Fuente |
 | --- | --- | --- | --- |
@@ -192,18 +197,22 @@ Seis bloques, cada uno con un **estado visible** (Disponible / En piloto / Próx
 - **No publicar** el tamaño exacto, los países ni los idiomas del piloto sin aprobación del PO **[D-06]**: con seis personas, esos datos pueden identificar a alguien.
 - Fuente: PRD §0 y §10.
 
-### S12 · Planes y precios — **[por decidir D-01]**
-La fuente de verdad no está cerrada:
-- **Backend actual:** cuatro planes heredados del producto anterior (Básico 0, Esencial 12, Plus 29, Pro 59 dólares al mes) con sesiones con terapeuta y mensajes de IA por día. Describen un servicio terapéutico, que el PRD excluye.
-- **PRD y canvas:** "No existe aún precio comercial aprobado". El piloto lo financia el fundador, sin pago de los participantes. Los escenarios de 49, 79 y 119 dólares son internos, **no** precios publicables.
+### S12 · Planes y precios — **decidido por Mauricio el 25-oct (D-01)**
+**Decisión:** la landing muestra los **planes que ya existen** (hoy Básico 0, Esencial 12, Plus 29 y Pro 59 dólares al mes) y esa información es **administrable** desde el backoffice. La página no lleva precios escritos: los lee del backend (`GET /api/plans`; administración en `/api/admin/pricing`).
 
-Textos propuestos según la decisión:
-- **Opción A (hoy, recomendada hasta que el PO decida):**
-  - ES: **Acceso por invitación durante el piloto.** Por ahora, el piloto es sin costo para las personas participantes. Cuando definamos los planes, te lo contaremos aquí. ¿Quieres que te avisemos?
-  - EN: **Invitation-only access during the pilot.** For now, the pilot is free of charge for participants. When we define plans we will tell you here. Would you like us to let you know?
-- **Opción B (planes en la página):** tarjetas generadas desde el backend de planes (nombre, precio, periodo, funciones, destacado), con los **textos reescritos** para el producto no clínico y los precios aprobados por el PO. Hasta entonces no se muestra ningún precio.
-- **Opción C (instituciones):** "Cohortes con facilitación: escríbenos". Solo si el PO decide D-05.
-- Regla: no mostrar precios del producto anterior ni los escenarios internos.
+- Título ES: Elige cómo quieres acompañarte · EN: Choose how you want to be supported
+- Subtítulo ES: Empieza sin costo y cambia de plan cuando lo necesites. · EN: Start at no cost and change plans whenever you need.
+  - Solo es cierto mientras exista un plan de precio 0 (hoy, Básico). Si el administrador lo retira, este texto debe cambiar.
+- Cada tarjeta muestra, desde el backend: nombre, descripción, precio con moneda y periodo, lista de funciones y si va destacado.
+- Botón de cada plan ES: Crear cuenta y solicitar este plan · EN: Create an account and request this plan. Para una persona con sesión iniciada: Solicitar este plan / Request this plan (flujo existente de solicitud de plan, que aprueba un administrador).
+- Estados: cargando, error al cargar (mensaje y reintento), sin planes (mensaje "Pronto publicaremos los planes").
+- Nota ES: Los planes de pago pasan por la aprobación de un administrador. · EN: Paid plans go through administrator approval.
+
+**Riesgos a revisar con el PO antes de publicar (D-01):**
+1. Los textos actuales de los planes vienen del producto anterior: el plan Plus dice "para quienes quieren un proceso terapéutico consistente" y varios incluyen "sesiones con terapeuta". Eso choca con la regla de no prometer terapia. Como son administrables, se corrigen desde el backoffice, sin tocar código.
+2. Los **límites** de cada plan (mensajes por día, sesiones por mes, acceso a progreso) están fijos en el código por slug (`utils/planLimits.js`), no en la base. Cambiarlos requiere desarrollo.
+3. Ningún plan define aún qué parte del **Skill Map** incluye. Hay que decidirlo antes de anunciarlo en una tarjeta.
+4. Los escenarios de 49, 79 y 119 dólares del canvas son internos: **no** se usan.
 
 ### S13 · Cómo vincularte
 - Título ES: Empezar es sencillo · EN: Getting started is simple
@@ -271,8 +280,8 @@ Prefijo `landing.` en el sistema editable ES/EN (ver ES-66). Una clave por cada 
 
 | ID | Decisión | Quién | Por qué importa |
 | --- | --- | --- | --- |
-| D-01 | **Precios y planes.** Hoy hay cuatro planes heredados (0, 12, 29, 59 USD/mes, con sesiones con terapeuta) y el PRD dice que no hay precio aprobado. ¿Opción A, B o C de S12? | Alejo (PO) | No se puede publicar un precio que el producto no ofrece. |
-| D-02 | **Posicionamiento del psicólogo.** La zona actual (panel, pacientes, sesiones, notas clínicas) viene del producto anterior; el PRD es no clínico y define "facilitador" sin acceso a lo privado. ¿Qué papel se muestra? | Alejo y Mauricio | El texto de S8 promete lo que el producto debe cumplir. |
+| D-01 | **Precios y planes: DECIDIDO (Mauricio, 25-oct).** Se muestran los planes existentes, administrables. Pendiente de Alejo: revisar los textos de los planes (el Plus dice "proceso terapéutico") y definir qué incluye cada uno del Skill Map. | Alejo (PO) | Ver S12. |
+| D-02 | **La parte psicológica.** La zona actual (panel, pacientes, sesiones, notas clínicas) viene del producto anterior y sigue siendo parte de Elevation; el PRD v0.3 es no clínico y define un "facilitador" sin acceso a lo privado. ¿Qué ve el psicólogo en la plataforma, y cómo se describe en la landing? El texto de S8 sigue el PRD. | Alejo y Mauricio | El texto de S8 promete lo que el producto debe cumplir. |
 | D-03 | **Estado real de cada función** (disponible, en piloto, próximamente), sobre todo Skill Map, brújula, puente y diario. | Dev | No anunciar lo que no está publicado (PRD §11). |
 | D-04 | **Alta de psicólogos:** flujo y validación de credenciales; qué ve el visitante. | Mauricio | S13 y el botón de S8. |
 | D-05 | **Aliados o instituciones** en la landing (B2B2C): sí o no, y cómo contactar. | Alejo | Sección opcional. |
