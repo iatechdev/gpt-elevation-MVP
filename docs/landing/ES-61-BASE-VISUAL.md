@@ -53,3 +53,7 @@ No se añaden nuevas cadenas visibles en estas primitivas. Los consumidores de l
 Comandos: `npm ci --legacy-peer-deps`, `npm test`, `npx tsc -b`, `npm run build`, `npm run lint`. Lint completo de main ya falla en archivos de /app y /board excluidos expresamente; el cambio no silencia reglas ni modifica esas rutas. Se reporta aparte el lint del alcance.
 
 La comparación de navegador usa copias locales antes/después, datos sintéticos y API simulada: no acredita autenticación ni backend real. Las capturas locales, comprobaciones y salida real se enlazan en la entrega. No afirmar QA aprobado ni funcionamiento de contenidos editables por estas comprobaciones.
+
+## QA-61-01 · Lint corregido
+
+La ampliación de alcance autorizada por Alejo corrige los 4 errores y 9 advertencias sin cambios de JSX, layout, textos o flujo. Lint actual: exit 0, 0 errores y 0 advertencias. Ver [resultados y comparación antes/después](evidence/QA-61-01/README.md). La salvedad de lint de la evidencia inicial corresponde a la revisión anterior 1f6b1b6.

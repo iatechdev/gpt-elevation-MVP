@@ -58,6 +58,7 @@ export function UserProgress() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [loading,         setLoading]         = useState(true)
   const [error,           setError]           = useState('')
+  const [loadError] = useState(() => lang === 'es' ? 'No se pudo cargar tu progreso.' : 'Could not load your progress.')
 
   // HU-060 — Matching
   const [showMatching,        setShowMatching]        = useState(false)
@@ -82,13 +83,13 @@ export function UserProgress() {
         setRatings(data.ratings)
         setRecommendations(data.recommendations)
       } catch {
-        setError(lang === 'es' ? 'No se pudo cargar tu progreso.' : 'Could not load your progress.')
+        setError(loadError)
       } finally {
         setLoading(false)
       }
     }
     fetchProgress()
-  }, [])
+  }, [loadError])
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', {

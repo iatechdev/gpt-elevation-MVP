@@ -102,6 +102,7 @@ export function TherapistDashboard() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
+  const [loadError] = useState(() => t('therapist_not_found'))
 
   const [promptData, setPromptData]               = useState<PromptData | null>(null)
   const [promptLoading, setPromptLoading]         = useState(true)
@@ -132,13 +133,13 @@ export function TherapistDashboard() {
         if (!res.ok) throw new Error()
         setPatients(await res.json())
       } catch {
-        setError(t('therapist_not_found'))
+        setError(loadError)
       } finally {
         setLoading(false)
       }
     }
     fetchPatients()
-  }, [])
+  }, [loadError])
 
   useEffect(() => {
     const fetchUpcoming = async () => {

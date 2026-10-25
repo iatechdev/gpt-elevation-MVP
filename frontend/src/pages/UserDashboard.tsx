@@ -3,7 +3,7 @@
 // HU-077 — Widget Mi Plan
 // HU-067 — Botón videollamada activo
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
@@ -93,7 +93,7 @@ export function UserDashboard() {
 
   // ── Matching modal ───────────────────────────────────────────────────────
   const [showMatching, setShowMatching] = useState(false)
-  const handleMatchingSuccess = (_therapistName: string) => {
+  const handleMatchingSuccess = () => {
     setShowMatching(false)
     void loadUpcomingSession()
   }
@@ -109,7 +109,19 @@ export function UserDashboard() {
   const [userPlan,   setUserPlan]   = useState<UserPlan>(null)
   const [planLimits, setPlanLimits] = useState<PlanLimits | null>(null)
 
+  const [initialWelcome] = useState(() => t('chat_welcome'))
+
   // ── Init ─────────────────────────────────────────────────────────────────
+  const loadChatHistory = useCallback(async (welcomeText: string) => {
+    try {
+      const res = await apiFetch('/api/messages')
+      if (!res.ok) return
+      const hist = await res.json()
+      const welcome = { role: 'bot', text: welcomeText }
+      setMessages(hist.length > 0 ? [welcome, ...hist] : [welcome])
+    } catch { /* silent */ }
+  }, [])
+
   useEffect(() => {
     const token = getToken()
     if (!token) { navigate('/login'); return }
@@ -123,9 +135,9 @@ export function UserDashboard() {
     void loadUserPlan()
 
     if (alreadyCheckedIn) {
-      void loadChatHistory()
+      void loadChatHistory(initialWelcome)
     }
-  }, [])
+  }, [loadChatHistory, initialWelcome, navigate])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -173,16 +185,6 @@ export function UserDashboard() {
     } catch { /* silent */ }
   }
 
-  const loadChatHistory = async () => {
-    try {
-      const res = await apiFetch('/api/messages')
-      if (!res.ok) return
-      const hist = await res.json()
-      const welcome = { role: 'bot', text: t('chat_welcome') }
-      setMessages(hist.length > 0 ? [welcome, ...hist] : [welcome])
-    } catch { /* silent */ }
-  }
-
   const loadUserPlan = async () => {
     try {
       const res = await apiFetch('/api/user/plan/me')
@@ -205,7 +207,7 @@ export function UserDashboard() {
       setTodayMood(mood)
       setCheckedIn(true)
       localStorage.setItem('elevation_checkin_date', new Date().toDateString())
-      void loadChatHistory()
+      void loadChatHistory(t('chat_welcome'))
     } catch { /* silent */ }
     finally { setCheckingIn(false) }
   }
