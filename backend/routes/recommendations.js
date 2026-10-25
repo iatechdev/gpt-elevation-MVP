@@ -9,6 +9,7 @@ const router                 = express.Router();
 const MoodLog                = require('../MoodLog');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const anthropic              = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 const { encriptar, desencriptar } = require('../utils/crypto');
 
 // POST /api/recommendations/generate
@@ -47,14 +48,14 @@ Each content must be 1-2 sentences, warm, actionable and specific to the user's 
 Never mention diagnoses or medical advice.`;
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 600,
       messages: [{ role: 'user', content: prompt }],
     });
 
     let recommendations = [];
     try {
-      const raw = msg.content[0].text.replace(/```json|```/g, '').trim();
+      const raw = textOf(msg).replace(/```json|```/g, '').trim();
       recommendations = JSON.parse(raw);
     } catch {
       return res.status(500).json({ error: 'Could not parse recommendations.' });

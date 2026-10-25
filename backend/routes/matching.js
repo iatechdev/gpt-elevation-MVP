@@ -13,10 +13,12 @@ const MoodLog          = require('../MoodLog');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 const { verificarAdmin } = require('../middlewares/auth');
+const { validateBody, object, text, id } = require('../middlewares/validateBody');
 
 // POST /api/matching/request
-router.post('/request', async (req, res) => {
+router.post('/request', validateBody({ answers: value => object(value) && Object.values(value).every(text) }), async (req, res) => {
   try {
     const userId   = req.user.id;
     const { answers } = req.body;
@@ -70,14 +72,14 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
 [{ "therapistId": <id>, "score": <1-10>, "reason": "<one sentence why this therapist fits>" }]`;
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }],
     });
 
     let suggestions = [];
     try {
-      const raw = msg.content[0].text.replace(/```json|```/g, '').trim();
+      const raw = textOf(msg).replace(/```json|```/g, '').trim();
       suggestions = JSON.parse(raw);
     } catch {
       return res.status(500).json({ error: 'Could not parse suggestions.' });
@@ -104,7 +106,7 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
 });
 
 // POST /api/matching/choose
-router.post('/choose', async (req, res) => {
+router.post('/choose', validateBody({ requestId: id, therapistId: id }), async (req, res) => {
   try {
     const { requestId, therapistId } = req.body;
     const request = await MatchingRequest.findOne({

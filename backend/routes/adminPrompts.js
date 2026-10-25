@@ -7,9 +7,10 @@ const express = require('express');
 const router  = express.Router();
 const { PromptVault, getActivePrompt, savePrompt, proposePrompt, approvePrompt, rejectPrompt, rollbackPrompt } = require('../promptVault');
 const { verificarSuperAdmin } = require('../middlewares/auth');
+const { validateBody, nonempty } = require('../middlewares/validateBody');
 
 // POST /api/admin/prompt
-router.post('/prompt', async (req, res) => {
+router.post('/prompt', validateBody({ key: nonempty, content: nonempty }), async (req, res) => {
   try {
     const { key, content } = req.body;
     if (!key || !content)
@@ -58,7 +59,7 @@ router.get('/prompt/:key', async (req, res) => {
 });
 
 // POST /api/admin/prompt/propose
-router.post('/prompt/propose', async (req, res) => {
+router.post('/prompt/propose', validateBody({ key: nonempty, content: nonempty }), async (req, res) => {
   try {
     const { key, content } = req.body;
     if (!key || !content)
@@ -97,7 +98,7 @@ router.post('/prompt/:id/approve', verificarSuperAdmin, async (req, res) => {
 });
 
 // POST /api/superadmin/prompt/:id/reject
-router.post('/prompt/:id/reject', verificarSuperAdmin, async (req, res) => {
+router.post('/prompt/:id/reject', verificarSuperAdmin, validateBody({ note: nonempty }), async (req, res) => {
   try {
     const { note } = req.body;
     await rejectPrompt(req.params.id, req.user.name, note || '');

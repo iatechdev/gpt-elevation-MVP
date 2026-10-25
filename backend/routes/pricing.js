@@ -3,6 +3,15 @@ const express     = require('express');
 const router      = express.Router();
 const PricingPlan = require('../PricingPlan');
 const { verificarAdmin } = require('../middlewares/auth');
+const { validateBody, nonempty, text, numeric, boolean, textArray, optional, nullable } = require('../middlewares/validateBody');
+const fields = {
+  slug: nonempty, name_es: nonempty, name_en: nonempty,
+  description_es: nullable(text), description_en: nullable(text),
+  price: numeric, currency: nonempty, period: nonempty,
+  features_es: textArray, features_en: textArray,
+  isHighlighted: boolean, isActive: boolean, order: value => numeric(value) && Number.isInteger(Number(value)),
+};
+const optionalFields = Object.fromEntries(Object.entries(fields).map(([key, check]) => [key, optional(check)]));
 
 // GET /api/pricing — público
 router.get('/', async (req, res) => {
@@ -117,7 +126,7 @@ router.post('/seed', async (req, res) => {
 });
 
 // POST /api/admin/pricing — crear plan
-router.post('/', async (req, res) => {
+router.post('/', validateBody({ ...optionalFields, slug: nonempty, name_es: nonempty, name_en: nonempty }), async (req, res) => {
   try {
     const {
       slug,
@@ -153,7 +162,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/admin/pricing/:id — editar plan
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateBody(optionalFields), async (req, res) => {
   try {
     const plan = await PricingPlan.findByPk(req.params.id);
     if (!plan) return res.status(404).json({ error: 'Plan no encontrado.' });

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { colors, radius, spacing, typography, cardStyle, labelStyle } from '../../styles/tokens'
 
-const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
+const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
 
 interface Metrics {

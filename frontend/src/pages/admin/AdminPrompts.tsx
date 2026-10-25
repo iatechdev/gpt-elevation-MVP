@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 
-const API      = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
+const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────

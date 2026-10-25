@@ -9,6 +9,7 @@ const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const PricingPlan = require('../PricingPlan');
+const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
 
 const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
 const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
@@ -17,7 +18,7 @@ const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
 // ==========================================
 // POST /api/admin/usuarios — Crear usuario
 // ==========================================
-router.post('/', async (req, res) => {
+router.post('/', validateBody({ name: nonempty, email: nonempty, password: nonempty, role: nonempty }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
     const adminRole = req.user.role;
@@ -117,7 +118,7 @@ router.get('/', async (req, res) => {
 // ==========================================
 // PUT /api/admin/usuarios/:id — Editar usuario
 // ==========================================
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boolean) }), async (req, res) => {
   try {
     const { id } = req.params;
     const { role, active } = req.body;
@@ -198,7 +199,7 @@ router.delete('/:id', async (req, res) => {
 // ==========================================
 // PUT /api/admin/usuarios/:id/asignar-terapeuta
 // ==========================================
-router.put('/:id/asignar-terapeuta', async (req, res) => {
+router.put('/:id/asignar-terapeuta', validateBody({ therapistId: nullable(id) }), async (req, res) => {
   try {
     const { id } = req.params;
     const { therapistId } = req.body;
@@ -227,7 +228,7 @@ router.put('/:id/asignar-terapeuta', async (req, res) => {
 // ==========================================
 // PUT /api/admin/usuarios/:id/plan — HU-077
 // ==========================================
-router.put('/:id/plan', async (req, res) => {
+router.put('/:id/plan', validateBody({ planId: optional(nullable(id)) }), async (req, res) => {
   try {
     const { id } = req.params;
     const { planId } = req.body;
@@ -402,8 +403,8 @@ router.put('/:id/reset-password', async (req, res) => {
       return res.status(403).json({ error: 'Solo el superadmin puede resetear contraseñas.' });
     }
 
-    const { newPassword } = req.body;
-    if (!newPassword || newPassword.trim().length < 6) {
+    const { newPassword } = req.body ?? {};
+    if (typeof newPassword !== 'string' || newPassword.trim().length < 6) {
       return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres.' });
     }
 

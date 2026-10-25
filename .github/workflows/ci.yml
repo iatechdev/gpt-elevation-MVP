@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --legacy-peer-deps
+      # Lint: hay 4 errores previos (UserDashboard.tsx, BoardManifest.tsx) fuera del alcance de ES-9.
+      # No bloquea hasta que un ticket los corrija; quitar continue-on-error entonces.
+      - run: npm run lint
+        continue-on-error: true
+      - name: Auditar dependencias (bloquea en alta o crítica)
+        run: npm audit --omit=dev --audit-level=high
+      # `npm run build` ejecuta tsc -b (tipos) y vite build
+      - run: npm run build
+        env:
+          VITE_BACKEND_URL: ''
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      # Sin lint en el backend: se comprueba la sintaxis y se corren los tests (P1 del PR #2).
+      - name: Revisar sintaxis
+        run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
+      - run: npm test
+      # Bloquea con vulnerabilidades altas o críticas en dependencias de producción (decisión de Mauricio, QA-57-06).
+      # Las moderadas no bloquean: se listan en docs/DESPLIEGUE-RAILWAY.md como riesgo aceptado.
+      - name: Auditar dependencias (bloquea en alta o crítica)
+        run: npm audit --omit=dev --audit-level=high

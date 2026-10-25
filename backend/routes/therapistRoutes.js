@@ -6,9 +6,11 @@ const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const ClinicalNote = require('../ClinicalNote');
+const { validateBody, nonempty, text, date, optional } = require('../middlewares/validateBody');
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
+const { textOf } = require('../utils/claudeText');
 
 const {
   PromptVault,
@@ -272,7 +274,7 @@ router.get('/prompt', async (req, res) => {
   }
 });
 
-router.post('/prompt/propose', async (req, res) => {
+router.post('/prompt/propose', validateBody({ content: nonempty }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const { content } = req.body;
@@ -374,7 +376,7 @@ router.get('/pacientes/:id/historia', async (req, res) => {
   }
 });
 
-router.post('/pacientes/:id/notas', async (req, res) => {
+router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDate: date, type: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const patientId = req.params.id;
@@ -415,7 +417,7 @@ router.post('/pacientes/:id/notas', async (req, res) => {
   }
 });
 
-router.put('/notas/:noteId', async (req, res) => {
+router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate: optional(date), type: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const { noteId } = req.params;
@@ -503,13 +505,13 @@ ${decryptedNotes.length > 0 ? decryptedNotes.join('\n---\n') : 'No notes yet.'}
 Please write a concise clinical summary (3-5 sentences) of this patient's emotional progress and current state. Focus on observable trends, not diagnoses. Be professional and empathetic.`;
 
     const msg = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: anthropic.MODEL,
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }],
     });
 
     res.json({
-      summary: msg.content[0].text,
+      summary: textOf(msg),
       generatedAt: new Date().toISOString(),
       basedOn: { sessions: moodLogs.length, notes: notes.length },
     });

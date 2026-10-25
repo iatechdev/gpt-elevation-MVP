@@ -10,6 +10,7 @@ const MoodLog               = require('../MoodLog');
 const SessionRating         = require('../SessionRating');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const { desencriptar }      = require('../utils/crypto');
+const { validateBody, text, optional } = require('../middlewares/validateBody');
 
 // GET /api/user/progress
 router.get('/progress', async (req, res) => {
@@ -64,7 +65,7 @@ router.get('/progress', async (req, res) => {
 });
 
 // PUT /api/user/onboarding-complete
-router.put('/onboarding-complete', async (req, res) => {
+router.put('/onboarding-complete', validateBody({ motivation: optional(text) }), async (req, res) => {
   try {
     const { motivation } = req.body;
     const updates = { onboardingCompleted: true };

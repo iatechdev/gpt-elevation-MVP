@@ -4,9 +4,11 @@ require('./config/jwt'); // Fail before database initialization or opening a por
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
+const helmet  = require('helmet');
 
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
+const syncOptions              = require('./utils/syncOptions');
 
 const {
   verificarToken,
@@ -16,6 +18,27 @@ const {
 } = require('./middlewares/auth');
 
 const app = express();
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      // Existing React styles and Google Fonts; scripts remain same-origin only.
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://images.unsplash.com'],
+      connectSrc: ["'self'"],
+      frameSrc: ["'self'", 'https://*.daily.co'],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
+    },
+  },
+  xFrameOptions: { action: 'deny' },
+  referrerPolicy: { policy: 'no-referrer' },
+}));
+
+// Detrás de un proxy (Railway) define TRUST_PROXY_HOPS=1; por defecto no se confía en X-Forwarded-For (evita falsear la IP del rate limit)
+app.set('trust proxy', parseInt(process.env.TRUST_PROXY_HOPS, 10) || false);
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -23,10 +46,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Salud para el healthcheck de Railway (sin base de datos ni auth)
+// commit: SHA corto del despliegue (lo inyecta Railway); permite comprobar qué versión corre tras un despliegue o una reversión
+app.get('/api/health', (req, res) => {
+  const commit = (process.env.RAILWAY_GIT_COMMIT_SHA || '').slice(0, 7);
+  res.json(commit ? { status: 'ok', commit } : { status: 'ok' });
+});
+
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
   setupAssociations(sequelize);
-  sequelize.sync({ alter: true })
+  // `alter` solo con DB_SYNC_ALTER=true; por defecto solo crea las tablas que falten (migraciones: ES-59)
+  sequelize.sync(syncOptions())
     .then(() => console.log('✅ Tablas sincronizadas en PostgreSQL.'))
     .catch(err => console.error('❌ Error sincronizando tablas:', err));
 });
