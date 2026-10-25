@@ -115,14 +115,14 @@ La landing actual (`frontend/src/pages/LandingPage.tsx`) tiene: héroe, proceso 
 ### S6 · Privacidad y límites
 - Título ES: Tu espacio es tuyo, y sabemos cuáles son nuestros límites · EN: Your space is yours, and we are clear about our limits
 - Viñetas ES:
-  - **Apoyo no clínico y orientación profesional.** No ofrecemos diagnóstico, psicoterapia, atención de urgencias ni garantía de empleo. La IA puede equivocarse.
-  - **Lo privado se queda privado.** Tu diario y tus conversaciones no pasan al mapa ni a ningún facilitador. Solo cruzan las conclusiones profesionales que tú revisas y autorizas, y puedes retirar el permiso.
+  - **El asistente de IA es acompañamiento no clínico y orientación profesional.** No diagnostica, no hace psicoterapia, no es un servicio de urgencias y no garantiza empleo. La IA puede equivocarse. Si quieres atención psicológica, puedes trabajar con un profesional acreditado de la red de Elevation, en un espacio separado.
+  - **Lo privado se queda privado.** Tu psicólogo/a no lee tus conversaciones con el asistente, y estas no pasan al mapa. Solo cruzan las conclusiones profesionales que tú revisas y autorizas, y puedes retirar el permiso.
   - **Sin evidencia, una pregunta; no un déficit.** Una emoción o una preferencia no demuestra una competencia, y tu estado de ánimo no influye en tu mapa.
   - **Tú tienes el control.** Puedes exportar lo que elijas y pedir la eliminación de tus datos.
   - **Si estás en una situación de riesgo,** esto no es un servicio de urgencias: contacta a los servicios de emergencia o de salud de tu país. **[por decidir D-08]**
 - Viñetas EN:
-  - **Non-clinical support and career guidance.** We do not offer diagnosis, psychotherapy, emergency care or job guarantees. AI can be wrong.
-  - **What is private stays private.** Your journal and conversations do not go to the map or to any facilitator. Only the professional conclusions you review and authorise cross over, and you can withdraw permission.
+  - **The AI assistant is non-clinical support and career guidance.** It does not diagnose, provide psychotherapy, act as an emergency service or guarantee jobs. AI can be wrong. If you want psychological care, you can work with an accredited professional in Elevation's network, in a separate space.
+  - **What is private stays private.** Your psychologist does not read your conversations with the assistant, and they do not go to the map. Only the professional conclusions you review and authorise cross over, and you can withdraw permission.
   - **No evidence is a question, not a deficit.** A feeling or a preference does not prove a capability, and your mood does not affect your map.
   - **You are in control.** You can export what you choose and request deletion of your data.
   - **If you are in a risky situation,** this is not an emergency service: contact the emergency or health services in your country. **[to decide D-08]**
@@ -144,24 +144,32 @@ Seis bloques, cada uno con un **estado visible** (Disponible / En piloto / Próx
 | Español e inglés | Toda la experiencia en los dos idiomas; tu idioma, tu país y tu mercado laboral son cosas distintas. | The whole experience in two languages; your language, country and target job market are separate things. | RF-16 |
 | Tus datos | Exporta un resumen profesional o elimina tu cuenta y sus derivados. | Export a professional summary or delete your account and derived data. | RF-12 |
 
-### S8 · Para psicólogos y orientadores profesionales
+### S8 · Para psicólogos y profesionales del acompañamiento
+**La zona del psicólogo funciona como hoy** (decisión de Mauricio, 25-oct). La landing la cuenta tal como existe y explica cómo se liga con el Skill Map mediante lo que la persona autoriza.
 - Título ES: Para quienes acompañan a otras personas · EN: For those who support other people
-- Introducción ES: Si eres psicólogo/a u orientador/a profesional, Elevation busca complementar tu trabajo, no reemplazarlo: prepara la información entre encuentros y deja el criterio donde corresponde, en ti y en la persona.
-- Introducción EN: If you are a psychologist or career counsellor, Elevation aims to complement your work, not replace it: it prepares information between meetings and leaves judgement where it belongs, with you and the person.
-- Viñetas ES:
-  - **Recibes lo que la persona autoriza.** Un resumen profesional que ella revisó y decidió compartir, para que no tengas que reconstruir su trayectoria en cada sesión.
-  - **Das feedback sobre rutas y evidencias.** Tu revisión queda registrada con tu nombre y fecha, y la persona puede objetarla.
-  - **Nunca ves lo íntimo.** Sin acceso general a conversaciones privadas, diario, estado de ánimo ni señales de riesgo.
-  - **Seguimiento sin presión.** Progreso operativo del proceso, no una evaluación de la persona.
+- Introducción ES: Si eres psicólogo/a o coach profesional, Elevation te da un espacio propio para acompañar a las personas que te eligen, con un asistente de IA que cuida el tiempo entre sesiones. El criterio profesional es tuyo.
+- Introducción EN: If you are a psychologist or professional coach, Elevation gives you your own space to support the people who choose you, with an AI assistant that looks after the time between sessions. The professional judgement is yours.
+- Viñetas ES (cada una con su estado, **por confirmar con Dev, D-03**):
+  - **Panel de tus pacientes.** Cómo llegan y cómo salen de cada conversación (ánimo de entrada y de salida), valoraciones y alertas.
+  - **Historia clínica y notas.** Tus notas se guardan cifradas y solo las ves tú.
+  - **Resúmenes con IA** del progreso, a partir de ánimo, valoraciones y tus notas, para prepararte antes de cada sesión.
+  - **Sesiones y videollamada.** Programa, inicia y cierra sesiones con tus pacientes.
+  - **Tu propio estilo de acompañamiento.** Puedes proponer cómo conversa el asistente con tus pacientes, con aprobación del comité ético.
+  - **Verificación de credenciales** por el comité ético de Elevation.
 - Viñetas EN:
-  - **You receive what the person authorises.** A professional summary they reviewed and chose to share, so you do not have to rebuild their career story in every session.
-  - **You give feedback on routes and evidence.** Your review is recorded with your name and date, and the person can object to it.
-  - **You never see what is intimate.** No general access to private conversations, journal, mood or risk signals.
-  - **Follow-up without pressure.** Operational progress of the process, not an evaluation of the person.
-- Invitación ES: **¿Quieres aportar tu criterio?** Estamos formando el piloto con profesionales de la psicología que nos ayuden a revisar el encuadre, el lenguaje, la seguridad y la privacidad. · EN: **Want to contribute your expertise?** We are shaping the pilot with psychology professionals who help us review the framing, language, safety and privacy.
-- Botón: Unirme como profesional / Join as a professional → **[por decidir D-02, D-04]**.
-- Fuente: one-pager §"Dónde necesitamos tu aporte", PRD RF-11 (facilitador no ve chats ni indicadores de crisis), canvas §3.
-- **Contradicción a resolver:** la zona de psicólogos que existe hoy (panel, pacientes, sesiones, notas clínicas) viene del producto anterior y no coincide con el PRD no clínico. Ver D-02.
+  - **Your patient panel.** How people arrive at and leave each conversation (mood in and out), ratings and alerts.
+  - **Clinical history and notes.** Your notes are stored encrypted and only you can read them.
+  - **AI summaries** of progress, based on mood, ratings and your notes, to prepare for each session.
+  - **Sessions and video calls.** Schedule, start and close sessions with your patients.
+  - **Your own style of support.** You can propose how the assistant talks to your patients, subject to ethics committee approval.
+  - **Credential verification** by Elevation's ethics committee.
+- Lo que no ves ES: **La conversación de la persona con el asistente de IA es un espacio separado y privado: no la lees.** Si quiere compartir algo contigo, lo decide ella. · EN: **The person's conversation with the AI assistant is a separate, private space: you do not read it.** If they want to share something with you, they decide.
+- Y el Skill Map ES: Cuando el Skill Map esté disponible, la persona podrá compartir contigo, si lo decide, las conclusiones profesionales que revisó, para que acompañes su transición con más contexto. **Próximamente.** Qué ve el psicólogo y cómo lo ve queda por definir (D-12).
+- Y el Skill Map EN: When the Skill Map is available, the person will be able to share with you, if they choose, the professional conclusions they reviewed, so you can support their transition with more context. **Coming soon.** What the psychologist sees and how is still to be defined (D-12).
+- Invitación ES: **¿Quieres aportar tu criterio?** También estamos formando el piloto con profesionales de la psicología que nos ayuden a revisar el encuadre, el lenguaje, la seguridad y la privacidad. · EN: **Want to contribute your expertise?** We are also shaping the pilot with psychology professionals who help us review the framing, language, safety and privacy.
+- Botón: Unirme como profesional / Join as a professional → alta con validación de credenciales **[por confirmar, D-04]**.
+- Fuente: zona de terapeutas en el código (`routes/therapistRoutes.js`, `routes/sessions.js`, `routes/validation.js`), Manifiesto Ético §2.2 y §3, HU-046, HU-049, HU-050, one-pager para psicólogos.
+- **Aclaración:** no hay contradicción con el PRD. El asistente de IA es no clínico y el psicólogo es un profesional acreditado en un espacio separado; el puente del Skill Map (RF-04) conecta ese espacio solo con lo que la persona autoriza.
 
 ### S9 · Skill Map
 - Título ES: Tu experiencia, convertida en capacidades con evidencia · EN: Your experience, turned into capabilities with evidence
@@ -225,9 +233,9 @@ Seis bloques, cada uno con un **estado visible** (Disponible / En piloto / Próx
 ### S14 · Preguntas frecuentes
 | Pregunta (ES) | Respuesta (ES) |
 | --- | --- |
-| ¿Es terapia? | No. Es acompañamiento no clínico y orientación profesional, sin diagnóstico ni garantía de empleo. |
-| ¿Mis conversaciones son privadas? | Sí. Tu diario y tus conversaciones no pasan al mapa ni a ningún facilitador. Solo se comparte lo que tú revisas y autorizas. |
-| ¿Qué puede ver un profesional? | Solo el resumen profesional que tú autorizas. Nunca tus conversaciones privadas, tu diario, tu estado de ánimo ni señales de riesgo. |
+| ¿Es terapia? | El asistente de IA no: es acompañamiento no clínico y orientación profesional, sin diagnóstico ni garantía de empleo. Si quieres atención psicológica, puedes trabajar con un profesional acreditado de la red, en un espacio separado. |
+| ¿Mis conversaciones son privadas? | Sí. Tus conversaciones con el asistente no las lee tu psicólogo/a ni pasan al mapa. Solo se comparte lo que tú revisas y autorizas. |
+| ¿Qué puede ver mi psicólogo/a? | Tu ánimo de entrada y de salida, tus valoraciones y lo que él o ella anote. **No** lee tus conversaciones con el asistente de IA. Lo que quieras compartir, lo decides tú. |
 | ¿Qué hace la IA? | Propone síntesis y opciones. Tú las corriges, las rechazas o las confirmas. Puede equivocarse. |
 | ¿El Skill Map certifica mis capacidades? | No. Muestra qué evidencia respalda cada capacidad. Aceptar una capacidad candidata no acredita un nivel. |
 | ¿Me garantizan un empleo? | No. Conseguir empleo depende de condiciones externas y no forma parte de lo que ofrecemos. |
@@ -238,9 +246,9 @@ Seis bloques, cada uno con un **estado visible** (Disponible / En piloto / Próx
 
 | Question (EN) | Answer (EN) |
 | --- | --- |
-| Is this therapy? | No. It is non-clinical support and career guidance, without diagnosis or employment guarantees. |
-| Are my conversations private? | Yes. Your journal and conversations do not go to the map or to any facilitator. Only what you review and authorise is shared. |
-| What can a professional see? | Only the professional summary you authorise. Never your private conversations, journal, mood or risk signals. |
+| Is this therapy? | The AI assistant is not: it is non-clinical support and career guidance, without diagnosis or employment guarantees. If you want psychological care, you can work with an accredited professional in the network, in a separate space. |
+| Are my conversations private? | Yes. Your psychologist does not read your conversations with the assistant, and they do not go to the map. Only what you review and authorise is shared. |
+| What can my psychologist see? | Your mood in and out, your ratings and whatever they write down. They do **not** read your conversations with the AI assistant. What you want to share is your decision. |
 | What does the AI do? | It proposes summaries and options. You correct, reject or confirm them. It can be wrong. |
 | Does the Skill Map certify my capabilities? | No. It shows what evidence supports each capability. Accepting a candidate capability does not certify a level. |
 | Do you guarantee a job? | No. Getting a job depends on external conditions and is not part of what we offer. |
@@ -252,7 +260,7 @@ Seis bloques, cada uno con un **estado visible** (Disponible / En piloto / Próx
 ### S15 · Cierre y pie
 - Cierre ES: Empieza por donde quieras. · EN: Start wherever you like.
 - Botón ES: Crear mi cuenta · EN: Create my account. Secundario: Soy profesional / I am a professional.
-- Pie ES: Elevation ofrece acompañamiento y orientación profesional **no clínicos**; no sustituye atención psicológica, médica ni de emergencia. · EN: Elevation offers **non-clinical** support and career guidance; it does not replace psychological, medical or emergency care.
+- Pie ES: El asistente de IA de Elevation ofrece acompañamiento y orientación profesional **no clínicos**; no sustituye la atención psicológica, médica ni de emergencia. · EN: Elevation's AI assistant offers **non-clinical** support and career guidance; it does not replace psychological, medical or emergency care.
 - Enlaces: política de privacidad (URL actual), términos y contacto **[D-08]**.
 
 ## 5. Claves de contenido propuestas
@@ -281,7 +289,8 @@ Prefijo `landing.` en el sistema editable ES/EN (ver ES-66). Una clave por cada 
 | ID | Decisión | Quién | Por qué importa |
 | --- | --- | --- | --- |
 | D-01 | **Precios y planes: DECIDIDO (Mauricio, 25-oct).** Se muestran los planes existentes, administrables. Pendiente de Alejo: revisar los textos de los planes (el Plus dice "proceso terapéutico") y definir qué incluye cada uno del Skill Map. | Alejo (PO) | Ver S12. |
-| D-02 | **La parte psicológica.** La zona actual (panel, pacientes, sesiones, notas clínicas) viene del producto anterior y sigue siendo parte de Elevation; el PRD v0.3 es no clínico y define un "facilitador" sin acceso a lo privado. ¿Qué ve el psicólogo en la plataforma, y cómo se describe en la landing? El texto de S8 sigue el PRD. | Alejo y Mauricio | El texto de S8 promete lo que el producto debe cumplir. |
+| D-02 | **La parte psicológica: DECIDIDO (Mauricio, 25-oct).** Funciona tal como está hoy. El Skill Map se liga con el puente de consentimiento del PRD (RF-04). No hay contradicción: el asistente de IA es no clínico y está separado del espacio del psicólogo, que es un profesional acreditado. | — | Ver S8 y el documento de alcance §3. |
+| D-12 | Cuando el Skill Map exista: ¿qué ve el psicólogo de lo que la persona autoriza, y cómo? | Alejo y Mauricio | S8 lo marca "Próximamente"; no bloquea la landing. |
 | D-03 | **Estado real de cada función** (disponible, en piloto, próximamente), sobre todo Skill Map, brújula, puente y diario. | Dev | No anunciar lo que no está publicado (PRD §11). |
 | D-04 | **Alta de psicólogos:** flujo y validación de credenciales; qué ve el visitante. | Mauricio | S13 y el botón de S8. |
 | D-05 | **Aliados o instituciones** en la landing (B2B2C): sí o no, y cómo contactar. | Alejo | Sección opcional. |

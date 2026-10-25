@@ -67,7 +67,7 @@ Roles del sistema: persona usuaria, **terapeuta** (psicólogo/a), administrador,
 2. La persona puede pedir una **síntesis privada** editable (brújula: valores, motivaciones, límites).
 3. **Puente:** la persona elige, campo por campo, qué conclusión profesional pasa al dominio de carrera; ve la vista previa exacta y confirma. Solo cruza lo aprobado, nunca la transcripción, el diario ni indicadores de crisis (RF-04).
 4. El **Skill Map** trabaja solo con lo autorizado y con las evidencias que la persona cuenta: capacidades candidatas, nivel vacío mientras no haya evidencia (RF-06).
-5. El **profesional (psicólogo o facilitador)** ve únicamente el resumen profesional que la persona autoriza, da feedback sobre rutas y evidencias, y nunca ve lo privado (RF-11).
+5. El **psicólogo** sigue trabajando en su zona **tal como funciona hoy** (pacientes, sesiones, notas clínicas, resúmenes) y **no lee las conversaciones de la persona con el asistente de IA**. Cuando exista el Skill Map, ve únicamente lo que la persona decida compartir por el puente; qué ve y cómo queda por definir (D-12). El "facilitador" del PRD (RF-11) es el mismo principio: nunca ve lo privado.
 6. **Revocar** el permiso invalida lo derivado, que se recalcula con lo que sigue autorizado (RF-02, RF-04).
 
 ### 3.3 Qué queda fuera del MVP [Documento]
@@ -84,7 +84,7 @@ Terapia, diagnóstico, selección automática de personal, ranking entre persona
 | Brújula y puente | No existen | Síntesis editable y puente autorizado | Nueva | ES-25, ES-26 |
 | Evidencias y Skill Map | No existen | Evidencias con procedencia, mapa con nivel nulo, radar | Nueva | ES-27 a ES-30 |
 | Rutas, experimento y plan | No existen | Catálogo curado, tres rutas, experimento, plan 7/30/90 | Nueva | ES-31 a ES-34 |
-| Parte psicológica | Terapeutas con historia clínica, notas y resumen con IA | Facilitador sin acceso a lo privado; modelo clínico armonizado con el producto no clínico | **Contradicción: ver D-02** | ES-35 y decisión del PO |
+| Parte psicológica | Terapeutas con historia clínica, notas y resumen con IA | **Se mantiene tal cual** [Decisión]. Se le suma el puente de consentimiento hacia el Skill Map (RF-04) | Sin contradicción: el asistente de IA es no clínico y está separado del espacio del psicólogo | ES-35 (puente) |
 | Planes | 4 planes con sesiones con terapeuta y límites fijos | [Decisión] se mantienen y son administrables | Textos y límites por revisar | ES-12 y landing |
 | Seguridad y privacidad | Cifrado de mensajes; cabeceras de seguridad; P1 corregidos | Aislamiento probado con base real, exportación y eliminación | Media | ES-21, ES-23 |
 | Correo y videollamada | No hay correo; video sin clave en staging | Correo transaccional, videollamadas, dominio | Media | ES-12 |
@@ -97,7 +97,8 @@ Terapia, diagnóstico, selección automática de personal, ranking entre persona
 | ID | Decisión | Quién | Por qué |
 | --- | --- | --- | --- |
 | D-01 | **Precios: decidido [Decisión].** Se mantienen los cuatro planes actuales y son administrables. Pendiente: revisar que sus textos no prometan "proceso terapéutico" (el plan Plus lo dice hoy) y que los límites del Skill Map por plan estén definidos. | Alejo | El texto de un plan es una promesa pública. |
-| D-02 | **La parte psicológica.** El terapeuta de hoy ve historia clínica, notas y resúmenes; el PRD v0.3 es no clínico y le niega al facilitador el acceso a lo privado. ¿Qué ve el psicólogo en la plataforma nueva, y cómo se presentan las "sesiones con terapeuta" de los planes? | Alejo y Mauricio | Define la sección para psicólogos, los planes y el diseño de su zona. |
+| D-02 | **La parte psicológica: DECIDIDO (Mauricio, 25-oct) [Decisión].** Funciona tal cual está hoy; el Skill Map se liga con el puente del PRD (RF-04). Queda abierto solo D-12: qué ve el psicólogo del Skill Map cuando exista. | — | La sección para psicólogos de la landing cuenta la zona real. |
+| D-12 | Cuando el Skill Map exista: ¿qué ve el psicólogo de lo que la persona autoriza, y cómo? | Alejo y Mauricio | No bloquea la landing (se muestra "Próximamente"). |
 | D-03 | Estado real de cada función antes de anunciarla en la landing. | Dev | No prometer lo no publicado. |
 | D-04 | Cómo se da de alta un psicólogo y qué ve el visitante. | Mauricio | Botón "Unirme como profesional". |
 | D-05 | Aliados e instituciones en la landing (B2B2C). | Alejo | Sección opcional. |
