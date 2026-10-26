@@ -13,6 +13,7 @@ const MoodLog          = require('../MoodLog');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
+const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, object, text, id } = require('../middlewares/validateBody');
@@ -71,18 +72,37 @@ ${therapistList.map(t => `ID: ${t.id} | Name: ${t.name} | Specialties: ${t.speci
 Return ONLY a valid JSON array with the top 3 matches (or fewer if less available). No markdown, no extra text:
 [{ "therapistId": <id>, "score": <1-10>, "reason": "<one sentence why this therapist fits>" }]`;
 
-    const msg = await anthropic.messages.create({
-      model: anthropic.MODEL,
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    });
+    let msg;
+    try {
+      msg = await callClaude({
+        userId, kind: 'matching',
+        body: { model: anthropic.MODEL, max_tokens: 400, messages: [{ role: 'user', content: prompt }] },
+      });
+    } catch (error) {
+      if (error instanceof AiBudgetExhaustedError) {
+        return res.status(429).json({ error: 'Límite de uso de IA alcanzado. / AI usage limit reached.', code: 'ai_budget_exhausted', scope: error.scope, resetsAt: error.resetsAt });
+      }
+      if (error instanceof AiBudgetNotConfiguredError) {
+        return res.status(503).json({ error: 'IA no disponible por ahora. / AI not available right now.', code: 'ai_budget_not_configured' });
+      }
+      console.error('❌ Error del proveedor de IA (matching):', error.errorCode || error.code);
+      return res.status(502).json({ error: 'No se pudo procesar la solicitud ahora. / Could not process the request right now.', code: 'provider_unavailable', retryable: true });
+    }
 
     let suggestions = [];
     try {
       const raw = textOf(msg).replace(/```json|```/g, '').trim();
       suggestions = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: 'Could not parse suggestions.' });
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
+    }
+    // Esquema de salida: solo terapeutas ofrecidos, puntuación entera 1–10 y razón corta; si no, se rechaza sin guardar.
+    const offered = new Set(therapistList.map((t) => t.id));
+    const validSuggestions = Array.isArray(suggestions) && suggestions.length <= 3 && suggestions.every((item) => item && typeof item === 'object'
+      && offered.has(item.therapistId) && Number.isInteger(item.score) && item.score >= 1 && item.score <= 10
+      && typeof item.reason === 'string' && item.reason.length <= 300);
+    if (!validSuggestions) {
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
 
     const request = await MatchingRequest.create({

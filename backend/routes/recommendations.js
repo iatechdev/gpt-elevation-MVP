@@ -5,10 +5,16 @@
 // verificarToken aplicado en server.js
 
 const express                = require('express');
+const RECOMMENDATION_CATEGORIES = ['mindfulness', 'habit', 'reflection', 'resource'];
+const validRecommendations = (value) => Array.isArray(value) && value.length >= 1 && value.length <= 3
+  && value.every((item) => item && typeof item === 'object' && RECOMMENDATION_CATEGORIES.includes(item.category)
+    && typeof item.content === 'string' && item.content.trim().length > 0 && item.content.length <= 500);
+
 const router                 = express.Router();
 const MoodLog                = require('../MoodLog');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const anthropic              = require('../utils/anthropic');
+const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
 const { encriptar, desencriptar } = require('../utils/crypto');
 
@@ -47,18 +53,33 @@ Categories must be one of: mindfulness, habit, reflection, resource.
 Each content must be 1-2 sentences, warm, actionable and specific to the user's emotional state.
 Never mention diagnoses or medical advice.`;
 
-    const msg = await anthropic.messages.create({
-      model: anthropic.MODEL,
-      max_tokens: 600,
-      messages: [{ role: 'user', content: prompt }],
-    });
+    let msg;
+    try {
+      msg = await callClaude({
+        userId, kind: 'recommendations',
+        body: { model: anthropic.MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] },
+      });
+    } catch (error) {
+      if (error instanceof AiBudgetExhaustedError) {
+        return res.status(429).json({ error: 'Límite de uso de IA alcanzado. / AI usage limit reached.', code: 'ai_budget_exhausted', scope: error.scope, resetsAt: error.resetsAt });
+      }
+      if (error instanceof AiBudgetNotConfiguredError) {
+        return res.status(503).json({ error: 'IA no disponible por ahora. / AI not available right now.', code: 'ai_budget_not_configured' });
+      }
+      console.error('❌ Error del proveedor de IA (recomendaciones):', error.errorCode || error.code);
+      return res.status(502).json({ error: 'No se pudieron generar recomendaciones ahora. / Could not generate recommendations right now.', code: 'provider_unavailable', retryable: true });
+    }
 
     let recommendations = [];
     try {
       const raw = textOf(msg).replace(/```json|```/g, '').trim();
       recommendations = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: 'Could not parse recommendations.' });
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
+    }
+    // Esquema de salida: forma, categorías permitidas y longitudes. Una salida inválida se rechaza sin guardar nada.
+    if (!validRecommendations(recommendations)) {
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
 
     const saved = await Promise.all(

@@ -16,12 +16,13 @@ const Message = require('../message');
 const ChatTurn = require('../ChatTurn');
 const DiaryEntry = require('../DiaryEntry');
 const anthropic  = require('../utils/anthropic');
+const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
 const { encriptar, encriptarV2, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
 const { validateBody, nonempty, optional } = require('../middlewares/validateBody');
-const { MAX_MESSAGE_CHARS, normalizeText, capText, fenceUntrusted, COMPANION_LIMITS } = require('../utils/promptSafety');
+const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS } = require('../utils/promptSafety');
 const { detectRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
 
 const HISTORY_LIMIT = 20;
@@ -30,6 +31,14 @@ const MAX_CONTEXT_ENTRIES = 3;
 const MAX_CONTEXT_CHARS = 2000;
 const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
 const FALLBACK_REPLY = 'Lo siento, tuve una pequeña desconexión. ¿Podrías repetirme eso?';
+const BUDGET_REPLY = {
+  es: 'Por ahora alcanzaste el límite de uso del asistente. Tu conversación y tus avances están guardados; podrás continuar cuando se renueve el periodo.',
+  en: 'You have reached the assistant usage limit for now. Your conversation and progress are saved; you can continue when the period renews.',
+};
+const NOT_CONFIGURED_REPLY = {
+  es: 'El asistente no está disponible por el momento. Tu conversación y tus avances están guardados.',
+  en: 'The assistant is not available at the moment. Your conversation and progress are saved.',
+};
 
 const validRequestId = (value) => typeof value === 'string' && REQUEST_ID.test(value);
 const validMessage = (value) => nonempty(value) && value.length <= MAX_MESSAGE_CHARS;
@@ -179,7 +188,7 @@ router.post('/chat', validateBody({
 
     // ── Entradas de diario elegidas por la persona (contexto, no instrucciones) ──
     if (contexto.length > 0) {
-      const entries = contexto.map((entry) => `[${entry.date}] ${entry.text}`).join('\n\n');
+      const entries = redactSecrets(contexto.map((entry) => `[${entry.date}] ${entry.text}`).join('\n\n'));
       const { block } = fenceUntrusted('diary entries chosen by the person for this conversation', entries);
       systemPrompt += `\n\n---\n${block}\n---`;
     }
@@ -194,22 +203,34 @@ router.post('/chat', validateBody({
     });
     const historial = recientes.reverse().map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: capText(normalizeText(desencriptar(m.content))),
+      content: redactSecrets(capText(normalizeText(desencriptar(m.content)))),
     })).filter(m => m.content);
     while (historial.length > 0 && historial[0].role === 'assistant') historial.shift();
-    historial.push({ role: 'user', content: mensajeUsuario });
+    historial.push({ role: 'user', content: redactSecrets(mensajeUsuario) });
 
     let respuestaIA;
     try {
-      const msg = await anthropic.messages.create({
-        model: anthropic.MODEL,
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: historial,
+      const msg = await callClaude({
+        userId, kind: 'chat', requestId: requestId ?? null,
+        body: { model: anthropic.MODEL, max_tokens: 1000, system: systemPrompt, messages: historial },
       });
       respuestaIA = textOf(msg);
       if (!respuestaIA.trim()) throw new Error('Respuesta vacía del proveedor.');
     } catch (error) {
+      // Presupuesto agotado o sin configurar (V-13): no se llama al proveedor, se conserva el avance y no se amplía solo.
+      if (error instanceof AiBudgetExhaustedError) {
+        await failTurn(turn, 'budget_exhausted');
+        return res.status(429).json({
+          reply: BUDGET_REPLY[lang] ?? BUDGET_REPLY.es, code: 'ai_budget_exhausted', retryable: false,
+          scope: error.scope, resetsAt: error.resetsAt, requestId: requestId ?? null,
+        });
+      }
+      if (error instanceof AiBudgetNotConfiguredError) {
+        await failTurn(turn, 'budget_not_configured');
+        return res.status(503).json({
+          reply: NOT_CONFIGURED_REPLY[lang] ?? NOT_CONFIGURED_REPLY.es, code: 'ai_budget_not_configured', retryable: false, requestId: requestId ?? null,
+        });
+      }
       // Fallo del proveedor: la conversación válida queda intacta y se puede reintentar con el mismo requestId.
       console.error('❌ Error del proveedor de IA:', error.message);
       await failTurn(turn, 'provider_unavailable');

@@ -21,6 +21,18 @@ const normalizeText = (text) => String(text)
 
 const capText = (text, max = MAX_MESSAGE_CHARS) => (text.length > max ? text.slice(0, max) : text);
 
+// Patrones de claves, tokens y cadenas de conexión: se enmascaran en la copia que se envía al proveedor (minimización de datos, ES-22).
+const SECRET_PATTERNS = [
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g,
+  /\bsk-[A-Za-z0-9_-]{16,}/g,
+  /\bAKIA[0-9A-Z]{16}\b/g,
+  /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g,
+  /\bBearer\s+[A-Za-z0-9._~+/-]{20,}=*/gi,
+  /\b[a-z][a-z0-9+.-]*:\/\/[^\s:@/]+:[^\s@/]+@\S+/gi,
+  /\b(api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S{8,}/gi,
+];
+const redactSecrets = (text) => SECRET_PATTERNS.reduce((acc, pattern) => acc.replace(pattern, '[secreto omitido]'), String(text));
+
 // Encierra texto de la persona en un bloque con un delimitador aleatorio por solicitud: el contenido no puede cerrarlo
 // porque no lo conoce. `intro` explica al modelo que es un dato y no una instrucción.
 const fenceUntrusted = (label, text) => {
@@ -42,4 +54,4 @@ const COMPANION_LIMITS = [
   '- If the person describes a risk to their life or safety, do not continue the ordinary coaching flow: encourage them to contact local emergency services or a trusted person.',
 ].join('\n');
 
-module.exports = { MAX_MESSAGE_CHARS, normalizeText, capText, fenceUntrusted, COMPANION_LIMITS };
+module.exports = { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS };
