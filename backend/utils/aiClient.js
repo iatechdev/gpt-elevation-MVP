@@ -22,7 +22,7 @@ class AiProviderError extends Error {
 function classifyError(error) {
   const status = error && Number(error.status);
   if (status === 429) return 'rate_limited';
-  if (status === 408 || (error && /timeout/i.test(String(error.name || error.constructor?.name || '')))) return 'timeout';
+  if (status === 408 || (error && /timeout/i.test(`${error.name || ''} ${error.constructor?.name || ''}`))) return 'timeout';
   if ([500, 502, 503, 504, 529].includes(status)) return 'provider_unavailable';
   if (status === 400 || status === 422) return 'bad_request';
   if (status === 401 || status === 403) return 'provider_auth';

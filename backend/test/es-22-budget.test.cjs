@@ -454,7 +454,9 @@ test('ES-22 esquema: una salida inválida del modelo en recomendaciones se recha
     assert.equal(saved.length, 1, JSON.stringify(output).slice(0, 40)); // nada nuevo guardado
   }
   anthropic.messages.create = async () => ({ content: [{ type: 'text', text: 'esto no es JSON' }], usage: { input_tokens: 1, output_tokens: 1 } });
-  assert.equal((await request('POST', '/api/recommendations/generate', as())).status, 500);
+  const unparsable = await request('POST', '/api/recommendations/generate', as()); // QA-22-01
+  assert.equal(unparsable.status, 502);
+  assert.equal(unparsable.body.code, 'invalid_model_output');
   assert.equal(saved.length, 1);
 });
 
@@ -476,6 +478,10 @@ test('ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin co
     assert.equal(response.status, 502, JSON.stringify(item));
     assert.equal(response.body.code, 'invalid_model_output');
   }
+  anthropic.messages.create = async () => ({ content: [{ type: 'text', text: 'no es JSON' }], usage: { input_tokens: 1, output_tokens: 1 } }); // QA-22-01
+  const unparsable = await matching();
+  assert.equal(unparsable.status, 502);
+  assert.equal(unparsable.body.code, 'invalid_model_output');
   // Presupuesto: agotado, sin configurar, fallo del proveedor.
   process.env.AI_BUDGET_TOKENS_PER_USER = '50';
   for (const call of [matching, reco]) {

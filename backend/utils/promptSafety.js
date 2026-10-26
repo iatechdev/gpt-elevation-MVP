@@ -23,6 +23,7 @@ const capText = (text, max = MAX_MESSAGE_CHARS) => (text.length > max ? text.sli
 
 // Patrones de claves, tokens y cadenas de conexión: se enmascaran en la copia que se envía al proveedor (minimización de datos, ES-22).
 const SECRET_PATTERNS = [
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g,
   /\bsk-[A-Za-z0-9_-]{16,}/g,
   /\bAKIA[0-9A-Z]{16}\b/g,
   /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g,

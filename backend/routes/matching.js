@@ -94,7 +94,7 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
       const raw = textOf(msg).replace(/```json|```/g, '').trim();
       suggestions = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: 'Could not parse suggestions.' });
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
     // Esquema de salida: solo terapeutas ofrecidos, puntuación entera 1–10 y razón corta; si no, se rechaza sin guardar.
     const offered = new Set(therapistList.map((t) => t.id));

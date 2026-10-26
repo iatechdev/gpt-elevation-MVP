@@ -75,7 +75,7 @@ Never mention diagnoses or medical advice.`;
       const raw = textOf(msg).replace(/```json|```/g, '').trim();
       recommendations = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ error: 'Could not parse recommendations.' });
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
     // Esquema de salida: forma, categorías permitidas y longitudes. Una salida inválida se rechaza sin guardar nada.
     if (!validRecommendations(recommendations)) {
