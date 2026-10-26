@@ -24,7 +24,7 @@ Un README o un middleware de autenticación no acreditan aislamiento: cada afirm
 | Cierre de los 9 P1 de PR #2 (precios, manifiesto, matching, validación, prompts, JWT) | Reutilizable | Probado | Suite de `backend/test`: 76/76 ejecutadas por mí sobre `main` 417e49b (Windows, Node 24); con dobles de base y proveedores. |
 | Chat con Claude (`routes/chat.js`, `utils/anthropic.js`) | **Adaptar** | Leído | Dueño por token, mensajes cifrados, manifiesto ético inyectado. Defectos: historial incorrecto (INV-04), sin saneado (INV-05), sin presupuesto (INV-06), sin límites ni crisis (INV-03). |
 | Mood/check-in, valoraciones, progreso, recomendaciones | Adaptar | Leído (recomendaciones) / Patrón (mood, progreso) | Filtran por `UserId` del token. Modelos pensados para bienestar, no para evidencia profesional. |
-| Módulo de terapeutas (`therapistRoutes`, `sessions`, `ClinicalNote`, `TherapySession`, `TherapistProfile`, `TherapistValidation`, videollamada Daily) | **Decisión de alcance** | Leído (acceso) | Producto heredado, clínico. Choca con el producto no clínico y con consentimiento por propósito (INV-02). |
+| Módulo de terapeutas (`therapistRoutes`, `sessions`, `ClinicalNote`, `TherapySession`, `TherapistProfile`, `TherapistValidation`, videollamada Daily) | **Reutilizable, se conserva funcionando** | Leído (acceso) | Producto heredado. Riesgo aceptado hasta ES-19: el terapeuta asignado ve ánimo y valoraciones sin consentimiento por propósito. Arreglo mínimo del resumen por IA en ES-78 (INV-02). |
 | Backoffice (admin usuarios, métricas, prompts, contenido, manifiesto, precios) | Reutilizable | Probado (P1) / Patrón (resto) | Accesos admin protegidos por middleware; `adminUsers` y `adminMetrics` sin leer a fondo. |
 | Cifrado de datos (`utils/crypto.js`) | Adaptar | Leído | INV-08. |
 | Capa de datos (`database.js`, `associations.js`, modelos) | Reutilizable con cambios | Leído | Pool acotado y `DATABASE_URL`. Sin migraciones (ES-59); `alter` ya es opt-in. TLS sin validar certificado (INV-10). |
@@ -67,8 +67,8 @@ Montaje en `server.js`. «Dueño» = el recurso se filtra por el usuario del tok
 
 ## 4. Consentimiento, privacidad y crisis
 
-- **Consentimiento:** no existe ninguno. No hay campo, modelo, ruta ni texto de consentimiento por propósito ni de revocación. Los datos del chat y del ánimo se leen por el terapeuta asignado sin que la persona haya autorizado ese propósito (INV-01, INV-02).
-- **Frontera privada:** hay un solo dominio de datos. Un terapeuta asignado lee estado de ánimo, valoraciones y notas; `resumen-ia` envía a Claude el **nombre del paciente** y las notas descifradas con un mensaje que lo presenta como «asistente clínico». No existe separación privado/profesional.
+- **Consentimiento:** no existe ninguno. No hay campo, modelo, ruta ni texto de consentimiento por propósito ni de revocación. El estado de ánimo y las valoraciones los lee el terapeuta asignado sin que la persona haya autorizado ese propósito (INV-01, INV-02). El terapeuta no accede al chat.
+- **Frontera privada:** hay un solo dominio de datos. Un terapeuta asignado lee estado de ánimo, valoraciones y sus propias notas (las redacta él). `resumen-ia` enviaba a Claude el nombre del paciente y las notas con un mensaje que lo presentaba como «asistente clínico»: corregido en ES-78 (PR #15, pendiente de QA). No existe separación privado/profesional.
 - **Crisis:** el backend no detecta ni registra crisis; por tanto tampoco puede cumplir la regla de que ninguna señal de crisis llegue al motor profesional. Hay un detector de referencia en `platform/server/domain/crisisDetector.ts` (con pruebas), sin migrar.
 - **Registros:** los errores se escriben con `console.error`; no revisé que los mensajes de error o los registros excluyan contenido de conversaciones (no verificado).
 
@@ -119,7 +119,7 @@ Ensamblado en `chat.js`: aviso del terapeuta o aviso por defecto (de la base) + 
 | ID | Sev. | Hallazgo | Evidencia | Ticket |
 | --- | --- | --- | --- | --- |
 | INV-01 | Alto | No existe consentimiento por propósito ni revocación; es requisito de las reglas no negociables | `grep consent` sin resultados en backend y frontend | ES-19 |
-| INV-02 | Alto | El terapeuta asignado lee ánimo, valoraciones y notas clínicas, y `resumen-ia` envía el nombre del paciente y las notas a Claude como «asistente clínico»; sin consentimiento y fuera del marco no clínico | `therapistRoutes.js` `/historia`, `/resumen-ia` | Decisión PO (ver 10) |
+| INV-02 | Medio (Alto antes de ES-78) | El terapeuta asignado lee ánimo y valoraciones sin consentimiento por propósito; el resumen por IA enviaba el nombre real del paciente a Claude con texto «clínico». Con ES-78 el nombre ya no viaja y el texto es neutro; queda el consentimiento | `therapistRoutes.js` `/historia`, `/resumen-ia` | ES-78 (hecho, en QA); ES-19 |
 | INV-03 | Alto | Sin detección ni tratamiento de crisis ni límites de acompañamiento en el chat | Sin coincidencias en el código; el límite depende solo del aviso editable | ES-21, ES-24 |
 | INV-04 | Medio | El historial del chat usa los 20 mensajes más antiguos, no los más recientes | `chat.js` `order: ASC, limit: 20` | ES-13, ES-20 |
 | INV-05 | Medio | Sin saneado ni delimitación del prompt (mensaje, historial, nombre y notas) | Sección 5 | ES-21 |
@@ -134,7 +134,7 @@ Ensamblado en `chat.js`: aviso del terapeuta o aviso por defecto (de la base) + 
 
 ## 10. Decisiones y objeciones
 
-- **OBJECIÓN de alcance (INV-02):** el módulo de terapeutas conserva funciones clínicas (notas clínicas, resumen «clínico» por IA, sesiones terapéuticas). Con el piloto de reconversión profesional y la regla «producto no clínico», propongo: (a) mantenerlo apagado o separado hasta tener consentimiento por propósito, o (b) retirar `resumen-ia` y el acceso a notas del piloto. Decide Alejo (alcance) con Mauricio (técnica). Mientras tanto no lo modifico.
+- **Módulo de terapeutas (INV-02), decisión de Mauricio (26-oct):** se conserva funcionando; no se oculta ni se retira nada. Arreglo mínimo en ES-78 (sin nombre real en el resumen por IA y texto neutro). El riesgo restante (acceso a ánimo y valoraciones sin consentimiento por propósito) se acepta hasta ES-19; condición sugerida del piloto: no asignar terapeutas a las seis personas mientras tanto (no verificado cómo se arma el piloto). La objeción inicial de este documento se corrigió en el ticket.
 - **Identidad canónica:** hoy `User.id` entero con rol único por cuenta y correo único. Propongo mantenerlo para el piloto y reservar un identificador de dominio profesional distinto (sin exponer el ID privado), según ADR-002. Decide Mauricio.
 - **Almacenamiento:** Postgres único con `sequelize.sync()` sin `alter` hasta ES-59. Esquemas privado/profesional y rol del worker: nuevo, con pruebas SQL en base real.
 - **Proveedor:** Claude por SDK (según ticket). Modelo configurable; sin evaluación de modelo (pendiente de Mauricio).
