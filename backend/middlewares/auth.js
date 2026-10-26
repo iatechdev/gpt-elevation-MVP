@@ -48,6 +48,16 @@ const verificarSuperAdmin = (req, res, next) => {
   });
 };
 
+// Solo terapeutas: el aislamiento de /api/therapist/* no debe depender únicamente de la asignación (QA-18-01)
+const verificarTerapeuta = (req, res, next) => {
+  verificarToken(req, res, () => {
+    if (req.user.role !== 'therapist') {
+      return res.status(403).json({ error: 'Acceso denegado. Solo terapeutas.' });
+    }
+    next();
+  });
+};
+
 // Board members can access ethical review features
 // superadmin also has access as platform owner
 const verificarBoard = (req, res, next) => {
@@ -59,4 +69,4 @@ const verificarBoard = (req, res, next) => {
   });
 };
 
-module.exports = { verificarToken, verificarAdmin, verificarSuperAdmin, verificarBoard };
+module.exports = { verificarToken, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };
