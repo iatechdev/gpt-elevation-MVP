@@ -40,6 +40,8 @@ test('ES-64: el componente solo usa landing.example.* y no inyecta HTML ni datos
 
 test('ES-64: LandingPage monta la franja bajo el héroe sin tocar el resto', () => {
   assert.match(page, /<ExampleStrip text=\{landing\.text\} \/>/)
+  // Dentro del marco centrado de 1080 px de la maqueta (QA-LAND-01)
+  assert.match(page, /<div className="landing-frame">[\s\S]*<HeroDoors[^>]*\/>[\s\S]*<ExampleStrip text=\{landing\.text\} \/>\s*<\/div>/)
   assert.ok(page.indexOf('<ExampleStrip') < page.indexOf('{/* Proceso */}'))
 })
 
