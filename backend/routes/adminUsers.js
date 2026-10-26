@@ -10,6 +10,7 @@ const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
+const { revokeUserSessions } = require('../utils/sessions');
 
 const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
 const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
@@ -146,6 +147,8 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
     if (active !== undefined) updates.active = active;
 
     await usuario.update(updates);
+    // ES-18: un cambio de rol o estado corta las sesiones anteriores de esa cuenta
+    if (role !== undefined || active !== undefined) await revokeUserSessions(usuario.id);
 
     res.json({
       message: 'Usuario actualizado correctamente.',
@@ -187,6 +190,7 @@ router.delete('/:id', async (req, res) => {
 
     const nombreUsuario = usuario.name;
     await usuario.destroy();
+    await revokeUserSessions(usuario.id); // ES-18
 
     console.log(`🗑️ Usuario eliminado permanentemente: ${nombreUsuario} (id: ${id}) por superadmin ${req.user.name}`);
     res.json({ message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
@@ -423,6 +427,7 @@ router.put('/:id/reset-password', async (req, res) => {
       lockedUntil:   null,
       active:        true,
     });
+    await revokeUserSessions(usuario.id); // ES-18: la contraseña anterior ya no abre sesiones vivas
 
     console.log(`🔑 Contraseña reseteada para: ${usuario.name} (id: ${usuario.id}) por superadmin ${req.user.name}`);
     res.json({ message: `Contraseña de ${usuario.name} reseteada correctamente.` });

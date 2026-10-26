@@ -6,8 +6,7 @@
 const express   = require('express');
 const router    = express.Router();
 const bcrypt    = require('bcryptjs');
-const jwt       = require('jsonwebtoken');
-const JWT_SECRET = require('../config/jwt');
+const { issueToken } = require('../utils/sessions');
 const rateLimit = require('express-rate-limit');
 const User      = require('../User');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
@@ -102,11 +101,7 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
 
     await user.update({ loginAttempts: 0, lockedUntil: null });
 
-    const token = jwt.sign(
-      { id: user.id, name: user.name, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '8h' }
-    );
+    const token = issueToken(user);
 
     res.json({
       message: 'Inicio de sesión exitoso',
