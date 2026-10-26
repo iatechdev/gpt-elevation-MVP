@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { LandingSurface } from '../components/landing/LandingSurface'
 import { LandingButton, LandingLabel, LandingSection } from '../components/landing/LandingPrimitives'
+import { ExampleStrip } from '../components/landing/ExampleStrip'
+import { useLandingContent } from '../content/useLandingContent'
 import { useState, useEffect } from 'react'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
@@ -12,6 +14,7 @@ type LandingContent = Record<string, string> | null
 export function LandingPage() {
   const { t, lang, setLang } = useLanguage()
   const navigate = useNavigate()
+  const landing = useLandingContent(lang)
   const [content, setContent] = useState<LandingContent>(null)
 
   useEffect(() => {
@@ -75,6 +78,9 @@ export function LandingPage() {
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }} />
           </div>
         </LandingSection>
+
+        {/* Franja de ejemplo ilustrativo (ES-64) */}
+        <ExampleStrip text={landing.text} />
 
         {/* Proceso */}
         <LandingSection id="proceso" style={{ padding: 'var(--landing-space) var(--landing-gutter)', background: 'var(--color-base-200)', backdropFilter: 'blur(8px)' }}>
