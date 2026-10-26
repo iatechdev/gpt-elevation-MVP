@@ -38,3 +38,6 @@ supabase/.temp/
 .claude/settings.local.json
 *.log
 !.env.example
+
+# Base Postgres local de Dev y QA (ES-80)
+backend/.pgdata/
