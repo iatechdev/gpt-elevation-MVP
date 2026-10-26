@@ -127,7 +127,8 @@ test('A/B sesiones y terapeutas: unirse, finalizar o leer pacientes ajenos devue
   models.MoodLog.findAll = async () => [];
   assert.equal((await request('GET', `/api/therapist/pacientes/${B}/historial`, { headers: bearer(T1, 'therapist') })).status, 404);
   assert.equal((await request('GET', `/api/therapist/pacientes/${A}/historial`, { headers: bearer(T1, 'therapist') })).status, 200);
-  assert.equal((await request('GET', `/api/therapist/pacientes/${B}/historial`, { headers: bearer(A) })).status, 404);
+  // Un usuario sin rol de terapeuta ya no entra a estas rutas (QA-18-01).
+  assert.equal((await request('GET', `/api/therapist/pacientes/${B}/historial`, { headers: bearer(A) })).status, 403);
 });
 
 test('El administrador no recibe texto de conversaciones y las respuestas no incluyen contraseñas', async t => {
