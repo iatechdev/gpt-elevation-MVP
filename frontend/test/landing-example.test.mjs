@@ -45,6 +45,11 @@ test('ES-64: LandingPage monta la franja bajo el héroe sin tocar el resto', () 
   assert.ok(page.indexOf('<ExampleStrip') < page.indexOf('{/* Proceso */}'))
 })
 
+test('QA-64-01: la etiqueta se parte en pantallas estrechas en lugar de ensanchar la columna', () => {
+  assert.match(css, /\.landing-example \.landing-container \{[^}]*grid-template-columns: minmax\(0, 1fr\)/)
+  assert.match(css, /\.landing-example-tag \{[^}]*width: fit-content[^}]*min-width: 0[^}]*max-width: 100%[^}]*overflow-wrap: anywhere/)
+})
+
 test('ES-64: estilos con fondo suave, borde superior y etiqueta con borde ocre', () => {
   assert.match(css, /\.landing-example \{[^}]*border-top: 1px solid[^}]*background: var\(--color-base-200\)/)
   assert.match(css, /\.landing-example-tag \{[^}]*border: 1px solid var\(--color-secondary\)/)

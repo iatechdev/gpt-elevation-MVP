@@ -158,7 +158,7 @@
 
 /* ES-64 · Franja de ejemplo ilustrativo (DISENO-FASE1 §4) */
 .landing-scope .landing-example { padding: 1.875rem var(--landing-gutter); border-top: 1px solid var(--color-base-300); background: var(--color-base-200); }
-.landing-scope .landing-example .landing-container { display: grid; gap: 0.5rem; max-width: none; }
-.landing-scope .landing-example-tag { width: max-content; max-width: 100%; padding: 0.1875rem 0.5rem; border: 1px solid var(--color-secondary); color: var(--color-secondary); font-family: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; overflow-wrap: anywhere; }
+.landing-scope .landing-example .landing-container { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-width: none; }
+.landing-scope .landing-example-tag { width: fit-content; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 0.1875rem 0.5rem; border: 1px solid var(--color-secondary); color: var(--color-secondary); font-family: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; overflow-wrap: anywhere; }
 .landing-scope .landing-example-title { margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.3; }
 .landing-scope .landing-example-flow { margin: 0; max-width: 62ch; font-size: 0.9375rem; color: var(--landing-muted); }
