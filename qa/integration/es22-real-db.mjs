@@ -9,7 +9,7 @@ import path from 'node:path';
 const sut = process.env.QA_SUT, NONE = process.env.QA_NONE, LIM = process.env.QA_LIM, BIG = process.env.QA_BIG, mock = process.env.QA_MOCK, dbUrl = process.env.DATABASE_URL;
 if (![sut, NONE, LIM, BIG, mock, dbUrl].every(Boolean)) throw new Error('Defina QA_SUT, QA_NONE, QA_LIM, QA_BIG, QA_MOCK y DATABASE_URL.');
 const req = createRequire(path.join(sut, 'backend', 'package.json'));
-const { Client } = req('pg'); const budget = req(path.join(sut, 'backend', 'utils', 'aiBudget.js'));
+const { Client } = req('pg'); const jwt = req('jsonwebtoken'); const JWT = process.env.QA_JWT_SECRET; if (!JWT) throw new Error('Defina QA_JWT_SECRET (el mismo JWT_SECRET de los servidores) para acuñar tokens sin pasar por el limitador de login.'); const budget = req(path.join(sut, 'backend', 'utils', 'aiBudget.js'));
 const db = new Client({ connectionString: dbUrl, ssl: false }); await db.connect();
 let failed = 0; const check = (id, ok, detail = '') => { if (!ok) failed++; console.log(JSON.stringify({ id, ok, detail })); };
 const info = (id, detail) => console.log(JSON.stringify({ id, info: detail }));
@@ -21,7 +21,7 @@ const stats = async () => (await (await fetch(mock + '/_stats')).json()); const 
 const stamp = Date.now();
 const mkUser = async (tag, role = 'user', base = LIM) => { const email = `qa-${tag}-${stamp}@example.test`, password = randomBytes(14).toString('base64url') + 'aA1!';
   if ((await call(base, 'POST', '/api/register', { body: { name: 'QA ' + tag, email, password } })).status !== 201) throw new Error('registro ' + tag); if (role !== 'user') await db.query('update "Users" set role=$1 where email=$2', [role, email]);
-  const id = (await q('select id from "Users" where email=$1', [email]))[0].id; return { id, email, tok: async (b = base) => (await call(b, 'POST', '/api/login', { body: { email, password } })).json.token }; };
+  const id = (await q('select id from "Users" where email=$1', [email]))[0].id; return { id, email, tok: async () => jwt.sign({ id, name: 'QA ' + tag, role, jti: randomBytes(16).toString('hex'), iatMs: Date.now() }, JWT, { expiresIn: '1h' }) }; };
 const used = async uid => (await q('select used from "AiBudgetCounters" where "UserId"=$1 order by id desc limit 1', [uid]))[0]?.used ?? 0;
 const cohortUsed = async () => (await q('select coalesce(sum(used),0)::int n from "AiBudgetCounters" where "UserId"=0'))[0].n;
 const rid = () => 'qa' + randomBytes(8).toString('hex');
