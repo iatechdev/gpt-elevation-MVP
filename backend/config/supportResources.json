@@ -1,0 +1,5 @@
+{
+  "_nota": "Recursos de apoyo locales verificados por país (ES-21). SALE VACÍO a propósito: ninguna línea se publica sin país, fuente, quién la verificó y fecha de verificación vigente (maxAgeDays). Formato de cada país: { \"CO\": { \"name\": \"Colombia\", \"resources\": [ { \"label\": \"...\", \"contact\": \"...\", \"source\": \"URL o documento oficial\", \"verifiedBy\": \"persona o rol\", \"verifiedAt\": \"AAAA-MM-DD\" } ] } }. No copiar números de otros documentos sin verificarlos.",
+  "maxAgeDays": 180,
+  "countries": {}
+}

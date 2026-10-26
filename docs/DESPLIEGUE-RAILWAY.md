@@ -56,6 +56,11 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - `Messages` conserva el formato de cifrado anterior; no hay re-cifrado.
 - Reversión: el código anterior ignora las tablas nuevas y sigue leyendo `Messages`; no se borran. Contrato en `docs/elevation-skillmap/15-CONTRATO-CONVERSACIONES-DIARIO.md`.
 
+## Límites de acompañamiento y seguridad (ES-21)
+- Sin tablas ni variables nuevas. El registro de recursos de apoyo `backend/config/supportResources.json` sale **vacío**: no se muestran números hasta que alguien verifique cada país (fuente, verificador y fecha) mediante un PR.
+- El detector de riesgo es una ayuda limitada y sus textos son un borrador sin validar por un especialista: no abrir el piloto sin esa revisión. Detalle y límites en `docs/elevation-skillmap/16-LIMITES-Y-FRONTERA-PRIVADA.md`.
+- Reversión: sin datos que revertir; el código anterior no detecta ni interrumpe.
+
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
 - **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.
