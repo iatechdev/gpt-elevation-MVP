@@ -74,6 +74,7 @@ app.use('/api/manifest',        require('./routes/board'));
 // ── Rutas usuario ─────────────────────────────────────────────────────────────
 app.use('/api',                 verificarToken, require('./routes/chat'));
 app.use('/api',                 verificarToken, require('./routes/session'));        // ES-18 — logout y logout-all
+app.use('/api/consents',        verificarToken, require('./routes/consents'));       // ES-19 — consentimiento por propósito
 app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));

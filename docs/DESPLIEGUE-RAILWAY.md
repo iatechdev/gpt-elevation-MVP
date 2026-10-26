@@ -45,6 +45,11 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - **Reversión a una versión anterior:** el código anterior acepta los tokens con `jti` pero **no aplica las revocaciones**; los registros quedan en las tablas y vuelven a surtir efecto al volver a la versión nueva. Las tablas no se borran en la reversión.
 - Si no se puede consultar la base, la API responde 503 en las rutas autenticadas (cierra en falla).
 
+## Consentimiento por propósito (ES-19)
+- Tablas nuevas `Consents` y `ConsentEvents`: las crea `sync()` al arrancar (no altera tablas existentes). Sin migraciones hasta ES-59.
+- Rutas `/api/consents` (solo la persona autenticada). Contrato completo en `docs/elevation-skillmap/14-CONTRATO-CONSENTIMIENTO.md`.
+- Reversión: el código anterior ignora las tablas; no se borran. Ningún flujo existente depende todavía del consentimiento.
+
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
 - **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.
