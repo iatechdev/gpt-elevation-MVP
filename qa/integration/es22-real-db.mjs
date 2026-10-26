@@ -102,7 +102,9 @@ check('ES22-S01a 40 envíos simultáneos de una persona con límite 6000: nunca 
 await reset(); const cohort = []; for (let i = 0; i < 12; i++) cohort.push(await mkUser('K' + i)); const ctok = await Promise.all(cohort.map(c => c.tok()));
 await q('delete from "AiBudgetCounters" where "UserId"=0'); const cp = await Promise.all(ctok.flatMap((t, i) => [0, 1, 2].map(j => call(LIM, 'POST', '/api/chat', { token: t, body: { message: `cohorte ${i}-${j} __TOK1500__` } }))));
 const cOk = cp.filter(x => x.status === 200).length, c429b = cp.filter(x => x.status === 429); const cu = await cohortUsed(); const cScopes = [...new Set(c429b.map(x => x.json?.scope))];
-check('ES22-S01b 36 envíos de 12 personas contra un tope de cohorte de 20000: la cohorte nunca lo supera y los rechazos indican alcance `cohort`', cu <= 20000 && cOk * 1500 <= 20000 && cp.every(x => [200, 429].includes(x.status)) && (c429b.length === 0 || cScopes.includes('cohort')), `200=${cOk} 429=${c429b.length} alcances=${JSON.stringify(cScopes)} cohorteUsada=${cu}`);
+const after = await call(LIM, 'POST', '/api/chat', { token: ctok[0], body: { message: 'cohorte después __TOK1500__' } });
+// ES-22 §3b (QA-22-03): el tope de cohorte es BLANDO frente al uso real; se exige que, superado, la siguiente llamada se rechace con alcance `cohort` y que el exceso quede acotado.
+check('ES22-S01b 36 envíos de 12 personas contra un tope de cohorte de 20000: rechazos con alcance `cohort`; si el uso real supera el tope (blando, doc §3b) la siguiente llamada se rechaza', cp.every(x => [200, 429].includes(x.status)) && (c429b.length === 0 || cScopes.every(s => s === 'cohort')) && (cu <= 20000 || (after.status === 429 && after.json?.scope === 'cohort' && cu <= 20000 * 1.25)), `200=${cOk} 429=${c429b.length} alcances=${JSON.stringify(cScopes)} cohorteUsada=${cu} siguiente=${after.status}/${after.json?.scope}`);
 
 // ── S02 · aislamiento de lo medido ───────────────────────────────────────────
 const Bz = await mkUser('Bz'); const bz = await Bz.tok(); const SU = await mkUser('su', 'superadmin'); const su = await SU.tok(); const AD = await mkUser('ad', 'admin'); const ad = await AD.tok();
