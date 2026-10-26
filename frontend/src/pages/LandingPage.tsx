@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { LandingSurface } from '../components/landing/LandingSurface'
 import { LandingButton, LandingLabel, LandingSection } from '../components/landing/LandingPrimitives'
+import { LandingHeader } from '../components/landing/LandingHeader'
+import { useLandingContent } from '../content/useLandingContent'
 import { useState, useEffect } from 'react'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
@@ -12,6 +14,7 @@ type LandingContent = Record<string, string> | null
 export function LandingPage() {
   const { t, lang, setLang } = useLanguage()
   const navigate = useNavigate()
+  const landing = useLandingContent(lang)
   const [content, setContent] = useState<LandingContent>(null)
 
   useEffect(() => {
@@ -28,25 +31,10 @@ export function LandingPage() {
     <LandingSurface>
       <div style={{ position: 'relative', zIndex: 1 }}>
 
-        {/* Topbar */}
-        <header style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem var(--landing-gutter)', background: 'var(--color-base-100)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--color-base-300)', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontFamily: 'inherit', fontWeight: 300, letterSpacing: '0.25em', fontSize: '1.1rem', color: 'var(--color-base-content)' }}>ELEVATION</span>
-          <nav style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {(['es', 'en'] as const).map(l => (
-                <LandingButton key={l} onClick={() => setLang(l)}
-                  style={{ fontSize: 11, padding: '3px 10px', borderRadius: 12, border: '0.5px solid var(--color-base-300)', background: lang === l ? 'var(--color-primary)' : 'transparent', color: lang === l ? 'var(--color-primary-content)' : 'var(--landing-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {l.toUpperCase()}
-                </LandingButton>
-              ))}
-            </div>
-            <LandingButton onClick={() => navigate('/login')}
-              style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: 'var(--color-primary)', color: 'var(--color-primary-content)', cursor: 'pointer', fontFamily: 'inherit' }}>
-              {getText('cta_primary')}
-            </LandingButton>
-          </nav>
-        </header>
+        {/* Cabecera, idioma y salto al contenido (ES-62) */}
+        <LandingHeader text={landing.text} lang={lang} setLang={setLang} />
 
+        <main id="contenido" tabIndex={-1}>
         {/* Hero */}
         <LandingSection style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', minHeight: '90vh', alignItems: 'center' }}>
           <div style={{ paddingBlock: 'var(--landing-space)', display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
@@ -130,6 +118,8 @@ export function LandingPage() {
             </LandingButton>
           </div>
         </LandingSection>
+
+        </main>
 
         {/* Footer */}
         <footer style={{ padding: '2.5rem 2rem', background: 'var(--color-base-100)', borderTop: '0.5px solid var(--color-base-300)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
