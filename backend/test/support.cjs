@@ -18,7 +18,7 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -30,6 +30,20 @@ models.RevokedToken.upsert = async () => {};
 models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
+
+// ES-22: presupuesto de IA holgado por defecto y contadores en memoria; las pruebas de presupuesto lo sobrescriben.
+process.env.AI_BUDGET_TOKENS_PER_USER = '1000000000';
+process.env.AI_BUDGET_TOKENS_COHORT = '1000000000';
+process.env.AI_BUDGET_PERIOD = 'month';
+const defaultCounters = new Map();
+models.AiBudgetCounter.findOne = async ({ where }) => defaultCounters.get(`${where.UserId}|${where.periodKey}`) ?? null;
+models.AiBudgetCounter.create = async values => {
+  const row = { ...values, async update(updates) { Object.assign(this, updates); return this; } };
+  defaultCounters.set(`${values.UserId}|${values.periodKey}`, row);
+  return row;
+};
+models.AiUsage.create = async values => ({ ...values, async update(updates) { Object.assign(this, updates); return this; } });
+models.AiUsage.findAll = async () => [];
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };
 const transaction = { commit: async () => {}, rollback: async () => {} };
