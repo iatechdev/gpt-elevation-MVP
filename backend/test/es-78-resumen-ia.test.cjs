@@ -37,7 +37,7 @@ test('ES-78: el resumen por IA no envía el nombre real ni se presenta como asis
   assert.deepEqual(wheres[0].attributes, ['id']); // ni siquiera se carga el nombre
 });
 
-test('ES-78: terapeuta no asignado o paciente ajeno siguen recibiendo 404 sin llamar al proveedor', async t => {
+test('ES-78: terapeuta no asignado o paciente ajeno reciben 404 y una cuenta sin rol de terapeuta recibe 403, sin llamar al proveedor', async t => {
   models.User.findOne = async ({ where }) =>
     where.therapistId === 101 && where.id === '7' ? record({ id: 7 }) : null;
   models.MoodLog.findAll = async () => [];
@@ -49,7 +49,7 @@ test('ES-78: terapeuta no asignado o paciente ajeno siguen recibiendo 404 sin ll
 
   assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia', { role: 'therapist', id: 202 })).status, 404);
   assert.equal((await request('GET', '/api/therapist/pacientes/8/resumen-ia', { role: 'therapist', id: 101 })).status, 404);
-  assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia', { role: 'user', id: 7 })).status, 404);
+  assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia', { role: 'user', id: 7 })).status, 403); // ES-18: el rol se verifica antes que la propiedad
   assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia')).status, 403);
   assert.equal(calls, 0);
 });
