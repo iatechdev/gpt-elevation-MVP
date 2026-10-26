@@ -156,5 +156,8 @@ test('El administrador no recibe texto de conversaciones y las respuestas no inc
     const text = JSON.stringify(body);
     assert.doesNotMatch(text, /texto-privado|hash-secreto|"password"|"content"/);
   }
+  // Solo cifras agregadas: ninguna entrada de ánimo o valoración individual por fecha llega al administrador.
+  assert.deepEqual(Object.keys(stats.body.stats).sort(), ['moodPromedio', 'ratingPromedio', 'sesiones']);
+  assert.doesNotMatch(JSON.stringify(stats.body), /checkin_mood|checkout_mood|ultimosMoods|ultimosRatings/);
   assert.equal(touched, 0);
 });

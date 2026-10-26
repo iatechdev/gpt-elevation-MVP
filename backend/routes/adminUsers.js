@@ -299,9 +299,8 @@ router.get('/:id/stats', async (req, res) => {
     res.json({
       usuario: usuario.toJSON(),
       stats: {
+        // ES-18: solo cifras agregadas; las entradas de ánimo y valoración por fecha no se entregan al administrador
         sesiones, ratingPromedio, moodPromedio,
-        ultimosRatings: ratings.slice(-5),
-        ultimosMoods: moodLogs.slice(0, 7),
       }
     });
   } catch (error) {
