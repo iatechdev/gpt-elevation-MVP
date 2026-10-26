@@ -33,6 +33,21 @@ jobs:
 
   backend:
     runs-on: ubuntu-latest
+    # Postgres 17 desechable: misma versión mayor que la base de staging. Datos solo de CI.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: elevation
+          POSTGRES_PASSWORD: elevation_ci
+          POSTGRES_DB: elevation_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U elevation -d elevation_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -48,6 +63,21 @@ jobs:
       - name: Revisar sintaxis
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: npm test
+      # Conexión real a Postgres: base para las pruebas de integración con DB real (ES-78).
+      - name: Verificar conexión y esquema contra Postgres real
+        env:
+          DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
+          DB_SSL: 'false'
+        run: |
+          node -e "
+          const { sequelize } = require('./database');
+          require('./associations')();
+          sequelize.authenticate()
+            .then(() => sequelize.sync())
+            .then(() => sequelize.query(\"select count(*)::int as n from information_schema.tables where table_schema='public'\"))
+            .then(([r]) => { console.log('tablas creadas:', r[0].n); process.exit(r[0].n > 0 ? 0 : 1); })
+            .catch(e => { console.error(e.message); process.exit(1); });
+          "
       # Bloquea con vulnerabilidades altas o críticas en dependencias de producción (decisión de Mauricio, QA-57-06).
       # Las moderadas no bloquean: se listan en docs/DESPLIEGUE-RAILWAY.md como riesgo aceptado.
       - name: Auditar dependencias (bloquea en alta o crítica)
