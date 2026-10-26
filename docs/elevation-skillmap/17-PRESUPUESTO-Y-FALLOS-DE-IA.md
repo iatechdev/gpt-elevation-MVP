@@ -47,3 +47,20 @@ Errores de las llamadas de IA (chat, recomendaciones, matching): 429 `ai_budget_
 - **Llamadas que siguen fuera del control:** el resumen del terapeuta (`resumen-ia`, ES-78) y la recomendación de fin de sesión (ES-79) están en ramas aún sin fusionar; pasarán por `callClaude` cuando se fusionen. Hoy esas dos rutas llaman al proveedor sin presupuesto.
 - Valores de presupuesto y precios (decisiones de Alejo/Mauricio, V-12), un panel para cambiarlos sin redesplegar, avisos a la persona antes de agotar el límite, cobros del proveedor por llamadas duplicadas (no se promete evitarlos), y la prueba con Postgres real (la reserva se probó con exclusión mutua por fila simulada).
 - La cohorte es una sola fila por periodo: serializa todas las reservas; suficiente para seis personas, no para escalar.
+
+## 7. Cómo calcular los topes con datos reales (fórmula; los valores los decide Alejo/Mauricio)
+
+No se proponen montos. Los topes salen de tres datos que hoy no existen y de un margen que se decide:
+
+| Dato | De dónde sale |
+| --- | --- |
+| `T` = tokens por turno de chat (entrada + salida) | Medido: `GET /api/superadmin/ai-usage` da tokens y llamadas del periodo (`T = (entrada + salida) / llamadas`) |
+| `N` = turnos esperados por persona y periodo | Decisión de producto (diseño del piloto: sesiones por semana × turnos por sesión) |
+| `P` = personas del piloto | Seis (PRD) |
+
+- **Tope por persona** = `N × T × (1 + margen)`. Conviene fijar `margen` después de ver la dispersión: partir del uso de las personas más activas del periodo de medición, no del promedio.
+- **Tope de cohorte** = `P × tope por persona × factor de simultaneidad` (≤ 1; con 1 la cohorte nunca bloquea antes que las personas). Si se quiere un techo global de gasto, se fija directamente desde el costo (abajo).
+- **Costo** = `entrada × precio de entrada + salida × precio de salida`, con precios verificados en `aiPricing.json`. Un techo de gasto en dinero `G` implica un tope de tokens de cohorte ≈ `G / costo medio por token`.
+- **Periodo:** el que coincida con cómo se quiere controlar el gasto (`week` o `month`).
+
+**Cómo medir sin inventar:** (1) fijar topes provisionales holgados en un entorno de pruebas con datos sintéticos, (2) ejecutar el guion de humo y las pruebas del piloto guiado, (3) leer `T`, la dispersión y el uso de las personas más activas en el resumen de superadmin, (4) fijar los topes definitivos y anotar quién los aprobó y la fecha. Con personas reales, los topes de partida los aprueba Alejo/Mauricio y se revisan tras la primera semana.
