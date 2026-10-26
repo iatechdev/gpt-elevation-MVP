@@ -11,20 +11,22 @@ export function LandingHeader({ text, lang, setLang }: {
   return (
     <>
       <a className="landing-skip" href="#contenido">{text('landing.nav.skip')}</a>
-      <header className="landing-header elv-navbar">
-        <Link to="/" className="landing-logo" aria-label={text('landing.header.home')}>
-          elevation<i className="landing-logo-dot" aria-hidden="true" />
-        </Link>
-        <div className="landing-tools">
-          <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
-            {(['es', 'en'] as const).map(code => (
-              <button key={code} type="button" lang={code} aria-pressed={lang === code}
-                className="elv-btn elv-join-item landing-lang" onClick={() => setLang(code)}>
-                {text(`landing.header.${code}`)}
-              </button>
-            ))}
+      <header className="landing-header">
+        <div className="landing-header-inner elv-navbar">
+          <Link to="/" className="landing-logo" aria-label={text('landing.header.home')}>
+            elevation<i className="landing-logo-dot" aria-hidden="true" />
+          </Link>
+          <div className="landing-tools">
+            <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
+              {(['es', 'en'] as const).map(code => (
+                <button key={code} type="button" lang={code} aria-pressed={lang === code}
+                  className="elv-btn elv-join-item landing-lang" onClick={() => setLang(code)}>
+                  {text(`landing.header.${code}`)}
+                </button>
+              ))}
+            </div>
+            <Link to="/login" className="elv-btn elv-btn-outline landing-login">{text('landing.header.login')}</Link>
           </div>
-          <Link to="/login" className="elv-btn elv-btn-outline landing-login">{text('landing.header.login')}</Link>
         </div>
       </header>
     </>

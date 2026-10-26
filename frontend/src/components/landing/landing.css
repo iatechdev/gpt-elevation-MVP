@@ -119,7 +119,10 @@
 /* ES-62 · Cabecera, idioma y salto al contenido (DISENO-FASE1 §2) */
 .landing-scope .landing-skip { position: absolute; left: -999px; top: 0; z-index: 20; padding: 0.5rem 0.75rem; background: var(--color-primary); color: var(--color-primary-content); }
 .landing-scope .landing-skip:focus { left: 0.5rem; top: 0.5rem; }
-.landing-scope .landing-header { position: sticky; top: 0; z-index: 10; flex-wrap: wrap; gap: 1rem; justify-content: space-between; min-height: 0; padding: 1rem var(--landing-gutter); background: var(--color-base-100); border-bottom: 1px solid var(--color-base-300); }
+.landing-scope .landing-header { position: sticky; top: 0; z-index: 10; background: var(--color-base-100); }
+/* Marco centrado de 1080 px de la maqueta aprobada (QA-LAND-01): borde a borde por debajo de ese ancho. */
+.landing-scope .landing-header-inner { box-sizing: border-box; width: 100%; max-width: 1080px; margin-inline: auto; flex-wrap: wrap; gap: 1rem; justify-content: space-between; min-height: 0; padding: 1.125rem 1.75rem; border-inline: 1px solid var(--color-base-300); border-bottom: 1px solid var(--color-base-300); }
+@media (max-width: 40rem) { .landing-scope .landing-header-inner { padding: 0.875rem 1rem; } }
 .landing-scope .landing-logo { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; color: inherit; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; }
 .landing-scope .landing-logo-dot { display: inline-block; width: 7px; height: 7px; margin-left: 3px; border-radius: 50%; background: var(--color-accent); }
 .landing-scope .landing-tools { display: flex; flex-wrap: wrap; gap: 0.625rem; align-items: center; }
