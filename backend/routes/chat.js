@@ -42,8 +42,11 @@ const NOT_CONFIGURED_REPLY = {
 
 const validRequestId = (value) => typeof value === 'string' && REQUEST_ID.test(value);
 const validMessage = (value) => nonempty(value) && value.length <= MAX_MESSAGE_CHARS;
-const validCountry = (value) => typeof value === 'string' && /^[A-Za-z]{2}$/.test(value);
-const validLang = (value) => value === 'es' || value === 'en';
+// Campos opcionales del cliente (country, lang): si vienen mal formados se ignoran. Nunca deben impedir la respuesta de seguridad (QA-21-01).
+const normalizeLang = (value) => {
+  const base = typeof value === 'string' ? value.trim().toLowerCase().split(/[-_]/)[0] : '';
+  return base === 'es' || base === 'en' ? base : null;
+};
 const validEntryIds = (value) => Array.isArray(value) && value.length <= MAX_CONTEXT_ENTRIES
   && value.every((id) => Number.isSafeInteger(id) && id > 0);
 
@@ -120,8 +123,6 @@ router.post('/chat', validateBody({
   message: validMessage,
   requestId: optional(validRequestId),
   contextEntryIds: optional(validEntryIds),
-  country: optional(validCountry),
-  lang: optional(validLang),
 }), async (req, res) => {
   // ES-21: el texto se normaliza (controles e invisibles fuera) antes de usarse en cualquier parte del prompt.
   const mensajeUsuario = normalizeText(req.body.message);
@@ -160,7 +161,7 @@ router.post('/chat', validateBody({
 
     // ES-21: el nivel de riesgo solo vive en esta solicitud: no se guarda, no se registra y no sale de aquí.
     const risk = detectRisk(mensajeUsuario);
-    const lang = req.body.lang ?? risk.lang ?? 'es';
+    const lang = normalizeLang(req.body.lang) ?? risk.lang ?? 'es';
     const country = normalizeCountry(req.body.country); // solo un país declarado; nunca se infiere del idioma
     if (risk.level === 'high') {
       // Escenario grave: se interrumpe el flujo ordinario y NO se llama al proveedor de IA.
@@ -186,12 +187,13 @@ router.post('/chat', validateBody({
       : therapistPrompt;
 
     // ── Entradas de diario elegidas por la persona (contexto, no instrucciones) ──
-    systemPrompt += `\n\n---\n${COMPANION_LIMITS}\n---`;
     if (contexto.length > 0) {
       const entries = redactSecrets(contexto.map((entry) => `[${entry.date}] ${entry.text}`).join('\n\n'));
       const { block } = fenceUntrusted('diary entries chosen by the person for this conversation', entries);
       systemPrompt += `\n\n---\n${block}\n---`;
     }
+    // Los límites van al final: lo último que lee el modelo no es texto de la persona (QA-21-02).
+    systemPrompt += `\n\n---\n${COMPANION_LIMITS}\n---`;
 
     // ── Historial: los mensajes MÁS RECIENTES, en orden, empezando por un turno del usuario ──
     const recientes = await Message.findAll({
