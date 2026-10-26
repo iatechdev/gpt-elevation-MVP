@@ -50,6 +50,12 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - Rutas `/api/consents` (solo la persona autenticada). Contrato completo en `docs/elevation-skillmap/14-CONTRATO-CONSENTIMIENTO.md`.
 - Reversión: el código anterior ignora las tablas; no se borran. Ningún flujo existente depende todavía del consentimiento.
 
+## Conversaciones y diario (ES-20)
+- Tablas nuevas `ChatTurns`, `DiaryEntries` y `DerivedInvalidations`: las crea `sync()` al arrancar (no altera tablas existentes). Sin migraciones hasta ES-59.
+- El diario y los turnos se cifran con el formato v2 (AES-256-GCM) derivado de `DATA_ENCRYPTION_KEY`: la clave debe ser la misma en todo entorno que lea esos datos; con otra clave el descifrado falla (no devuelve texto cifrado).
+- `Messages` conserva el formato de cifrado anterior; no hay re-cifrado.
+- Reversión: el código anterior ignora las tablas nuevas y sigue leyendo `Messages`; no se borran. Contrato en `docs/elevation-skillmap/15-CONTRATO-CONVERSACIONES-DIARIO.md`.
+
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
 - **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.
