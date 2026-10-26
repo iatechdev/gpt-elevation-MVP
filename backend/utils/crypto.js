@@ -1,6 +1,8 @@
 // backend/utils/crypto.js
-// Fuente única de verdad para encriptación AES-256-CBC
-// Todos los routers que necesiten encriptar/desencriptar importan desde aquí
+// Fuente única de verdad para el cifrado de datos.
+//  - Formato heredado (encriptar): AES-256-CBC, "iv:contenido". Sin autenticación; se conserva para los datos existentes.
+//  - Formato v2 (encriptarV2): AES-256-GCM autenticado, "v2:iv:etiqueta:contenido", clave derivada con HKDF. ES-20.
+// desencriptar lee ambos. Un dato v2 alterado o con otra clave FALLA (DecryptionError) en lugar de devolver el texto cifrado.
 
 const crypto = require('crypto');
 
@@ -14,6 +16,17 @@ if (!keySource && process.env.NODE_ENV === 'production') {
 const KEY = Buffer.from(
   (keySource || 'default_password_2026').padEnd(32).slice(0, 32)
 );
+const KEY_V2 = Buffer.from(crypto.hkdfSync(
+  'sha256', Buffer.from(keySource || 'default_password_2026'), 'elevation-data-v2', 'aes-256-gcm', 32,
+));
+const PREFIJO_V2 = 'v2:';
+
+class DecryptionError extends Error {
+  constructor() {
+    super('No se pudo descifrar el dato (clave incorrecta o dato alterado).');
+    this.code = 'decryption_failed';
+  }
+}
 
 const encriptar = (texto) => {
   const iv = crypto.randomBytes(16);
@@ -23,7 +36,26 @@ const encriptar = (texto) => {
   return iv.toString('hex') + ':' + encrypted;
 };
 
+const encriptarV2 = (texto) => {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', KEY_V2, iv);
+  const encrypted = Buffer.concat([cipher.update(String(texto), 'utf8'), cipher.final()]);
+  return PREFIJO_V2 + iv.toString('hex') + ':' + cipher.getAuthTag().toString('hex') + ':' + encrypted.toString('hex');
+};
+
+const descifrarV2 = (texto) => {
+  try {
+    const [iv, tag, contenido] = texto.slice(PREFIJO_V2.length).split(':');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', KEY_V2, Buffer.from(iv, 'hex'));
+    decipher.setAuthTag(Buffer.from(tag, 'hex'));
+    return Buffer.concat([decipher.update(Buffer.from(contenido, 'hex')), decipher.final()]).toString('utf8');
+  } catch {
+    throw new DecryptionError();
+  }
+};
+
 const desencriptar = (texto) => {
+  if (typeof texto === 'string' && texto.startsWith(PREFIJO_V2)) return descifrarV2(texto);
   try {
     const partes = texto.split(':');
     const iv = Buffer.from(partes.shift(), 'hex');
@@ -38,4 +70,4 @@ const desencriptar = (texto) => {
   }
 };
 
-module.exports = { encriptar, desencriptar };
+module.exports = { encriptar, encriptarV2, desencriptar, DecryptionError };

@@ -18,7 +18,7 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -47,7 +47,7 @@ const promptVault = {
 
 replaceModule('database.js', database);
 replaceModule('associations.js', () => {});
-replaceModule('utils/crypto.js', { encriptar: value => value, desencriptar: value => value });
+replaceModule('utils/crypto.js', { encriptar: value => value, encriptarV2: value => value, desencriptar: value => value });
 replaceModule('utils/storage.js', storage);
 replaceModule('utils/anthropic.js', anthropic);
 replaceModule('promptVault.js', promptVault);
