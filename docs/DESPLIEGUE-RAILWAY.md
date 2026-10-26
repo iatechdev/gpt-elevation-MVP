@@ -38,6 +38,13 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - Migraciones versionadas y plan de migración continuo: **ES-59** (https://iatech-team-xqxmjki1.atlassian.net/browse/ES-59). Hasta que se cierre rige la regla de arriba.
 - Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
 
+## Sesiones y cierre de sesión (ES-18)
+- Cada token lleva un `jti`; `POST /api/logout` revoca el actual y `POST /api/logout-all` corta todas las sesiones de la persona. Un administrador que cambia rol/estado, borra o restablece la contraseña de una cuenta también corta sus sesiones anteriores.
+- Tablas nuevas `RevokedTokens` y `AuthRevocations`: las crea `sync()` al arrancar (no altera tablas existentes). Sin migraciones hasta ES-59.
+- **Al desplegar:** los tokens emitidos antes (sin `jti`) dejan de valer; cada persona debe iniciar sesión una vez.
+- **Reversión a una versión anterior:** el código anterior acepta los tokens con `jti` pero **no aplica las revocaciones**; los registros quedan en las tablas y vuelven a surtir efecto al volver a la versión nueva. Las tablas no se borran en la reversión.
+- Si no se puede consultar la base, la API responde 503 en las rutas autenticadas (cierra en falla).
+
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
 - **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.

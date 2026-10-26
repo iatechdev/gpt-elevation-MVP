@@ -15,6 +15,7 @@ const {
   verificarAdmin,
   verificarSuperAdmin,
   verificarBoard,
+  verificarTerapeuta,
 } = require('./middlewares/auth');
 
 const app = express();
@@ -73,6 +74,7 @@ app.use('/api/manifest',        require('./routes/board'));
 
 // ── Rutas usuario ─────────────────────────────────────────────────────────────
 app.use('/api',                 verificarToken, require('./routes/chat'));
+app.use('/api',                 verificarToken, require('./routes/session'));        // ES-18 — logout y logout-all
 app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));
@@ -81,8 +83,8 @@ app.use('/api/user/plan',       verificarToken, require('./routes/plans'));     
 app.use('/api/plan-requests',   verificarToken, require('./routes/planRequests'));   // HU-077 — solicitudes usuario
 app.use('/api/matching',        verificarToken, require('./routes/matching'));
 app.use('/api/sessions',        verificarToken, require('./routes/sessions'));
-app.use('/api/therapist',       verificarToken, require('./routes/therapistRoutes'));
 app.use('/api/therapist/validation', verificarToken, require('./routes/validation'));
+app.use('/api/therapist',       verificarTerapeuta, require('./routes/therapistRoutes'));
 
 // ── Rutas admin ───────────────────────────────────────────────────────────────
 app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
