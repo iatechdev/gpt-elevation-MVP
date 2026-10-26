@@ -13,7 +13,9 @@ const SESSION_TTL = '8h';
 
 // Cada token lleva un identificador único (jti) para poder revocarlo.
 const issueToken = (user) => jwt.sign(
-  { id: user.id, name: user.name, role: user.role },
+  // iatMs: instante de emisión en milisegundos (el claim estándar iat solo llega al segundo); permite que un inicio de sesión
+  // inmediatamente posterior a un corte de sesiones no quede revocado (QA-18-05).
+  { id: user.id, name: user.name, role: user.role, iatMs: Date.now() },
   JWT_SECRET,
   { expiresIn: SESSION_TTL, jwtid: crypto.randomBytes(16).toString('hex') },
 );
@@ -24,8 +26,11 @@ const sessionProblem = async (payload) => {
   if (typeof payload.jti !== 'string' || !payload.jti) return 'legacy'; // token anterior a ES-18
   if (await RevokedToken.findByPk(payload.jti)) return 'revoked';
   const cutoff = await AuthRevocation.findByPk(payload.id);
-  // iat tiene resolución de segundos: el corte incluye el segundo en que se revocó.
-  if (cutoff && payload.iat <= Math.floor(new Date(cutoff.revokedBefore).getTime() / 1000)) return 'revoked';
+  if (cutoff) {
+    // Con iatMs la comparación es exacta; sin él (tokens de pruebas o emisores antiguos) se usa el inicio del segundo de iat (revoca de más, nunca de menos).
+    const issuedMs = Number.isFinite(payload.iatMs) ? payload.iatMs : payload.iat * 1000;
+    if (issuedMs <= new Date(cutoff.revokedBefore).getTime()) return 'revoked';
+  }
   return null;
 };
 

@@ -12,6 +12,12 @@ const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
 const { revokeUserSessions } = require('../utils/sessions');
 
+// Un promedio de muy pocas entradas revela el valor individual: por debajo de este número de entradas se devuelve null (QA-18-02).
+const MIN_AVERAGE_SAMPLE = 5;
+const averageOf = (values) => (values.length >= MIN_AVERAGE_SAMPLE
+  ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
+  : null);
+
 const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
 const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
 const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
@@ -85,14 +91,10 @@ router.get('/', async (req, res) => {
           attributes: ['checkin_mood', 'checkout_mood'],
         });
 
-        const ratingPromedio = ratings.length > 0
-          ? Math.round((ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length) * 10) / 10
-          : null;
+        const ratingPromedio = averageOf(ratings.map(r => r.rating));
 
         const todosLosMoods = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-        const moodPromedio = todosLosMoods.length > 0
-          ? Math.round((todosLosMoods.reduce((a, b) => a + b, 0) / todosLosMoods.length) * 10) / 10
-          : null;
+        const moodPromedio = averageOf(todosLosMoods);
 
         // Determinar si está bloqueado por intentos fallidos
         const isLocked = u.lockedUntil && new Date() < new Date(u.lockedUntil);
@@ -287,14 +289,10 @@ router.get('/:id/stats', async (req, res) => {
       limit: 30,
     });
 
-    const ratingPromedio = ratings.length > 0
-      ? Math.round((ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length) * 10) / 10
-      : null;
+    const ratingPromedio = averageOf(ratings.map(r => r.rating));
 
     const todosLosMoods = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-    const moodPromedio = todosLosMoods.length > 0
-      ? Math.round((todosLosMoods.reduce((a, b) => a + b, 0) / todosLosMoods.length) * 10) / 10
-      : null;
+    const moodPromedio = averageOf(todosLosMoods);
 
     res.json({
       usuario: usuario.toJSON(),
