@@ -44,3 +44,9 @@ El job `backend` levanta un `postgres:17` desechable y comprueba que el servidor
 - Las 76 pruebas actuales siguen simulando la base. Esta herramienta da la base real; los casos de integración (aislamiento entre personas, propietario en servidor) los escriben Dev y QA.
 - `embedded-postgres` es un paquete de terceros en versión beta que empaqueta binarios de Postgres. Se fija la versión exacta. Si algo falla en tu sistema operativo, usa la opción B.
 - No sustituye a staging: las pruebas de humo y de despliegue siguen corriendo allí con datos sintéticos.
+
+## Notas de QA-80
+
+- **Codificación:** la base local se crea con `--encoding=UTF8 --locale=C` (en Windows `initdb` tomaba WIN1252 y fallaba con emojis). Si tu `backend/.pgdata` es anterior a este cambio, ejecuta `npm run db:local -- --reset` para recrearla.
+- **Docker:** el puerto se publica solo en `127.0.0.1`, no en todas las interfaces.
+- **Producción (no verificado):** `embedded-postgres` está en `devDependencies`; no se comprobó en Railway que el build con `NODE_ENV=production` omita las devDependencies. Revisar el tiempo y el tamaño del build en el primer despliegue.

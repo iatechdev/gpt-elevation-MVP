@@ -14,7 +14,10 @@ const password = 'elevation_local';
 (async () => {
   if (process.argv.includes('--reset')) fs.rmSync(dir, { recursive: true, force: true });
   const { default: EmbeddedPostgres } = await import('embedded-postgres');
-  const pg = new EmbeddedPostgres({ databaseDir: dir, user, password, port, persistent: true });
+  const pg = new EmbeddedPostgres({ databaseDir: dir, user, password, port, persistent: true,
+    // QA-80-01: en Windows initdb toma la codificación del sistema (WIN1252) y falla con emojis; se fuerza UTF8.
+    initdbFlags: ['--encoding=UTF8', '--locale=C'],
+  });
   const fresh = !fs.existsSync(path.join(dir, 'PG_VERSION'));
   if (fresh) await pg.initialise();
   await pg.start();
