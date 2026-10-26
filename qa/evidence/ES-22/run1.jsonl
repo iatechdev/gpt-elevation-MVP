@@ -1,0 +1,33 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+{"id":"REAL-T01 tablas nuevas creadas por sync()","ok":true,"detail":"[[\"AiBudgetCounters\",true],[\"AiUsages\",true]]"}
+{"id":"REAL-T02 restricción única de AiBudgetCounters (UserId, periodKey)","ok":true,"detail":"CREATE UNIQUE INDEX \"AiBudgetCounters_pkey\" ON public.\"AiBudgetCounters\" USING btree (id) | CREATE UNIQUE INDEX ai_budget_counters__user_id_period_key ON public"}
+{"id":"ES22-F01 sin AI_BUDGET_TOKENS_PER_USER: chat y recomendaciones → 503 `ai_budget_not_configured`, sin llamar al proveedor; el resto funciona","ok":true,"detail":"chat=503 reco=503 matching=404 resto=200 calls=0"}
+{"id":"ES22-F02a la reserva se ajusta al uso real tras responder (2500 tokens informados por el proveedor)","ok":false,"detail":"status=200 usado=2"}
+{"id":"ES22-F07a AiUsages registra tipo, tokens y latencia de la llamada completada","ok":false,"detail":"{\"status\":\"completed\",\"inputTokens\":1,\"outputTokens\":1,\"reservedTokens\":1327,\"latencyMs\":18,\"errorCode\":null,\"kind\":\"chat\"}"}
+{"id":"ES22-F02b GET /api/ai/usage muestra límite, usado y restante propios","ok":false,"detail":"{\"configured\":true,\"period\":\"day\",\"periodKey\":\"2026-10-26\",\"limit\":6000,\"used\":2,\"remaining\":5998,\"resetsAt\":\"2026-10-27T00:00:00.000Z\"}"}
+{"id":"ES22-F03a agotado: 429 `ai_budget_exhausted` con reply, scope y resetsAt, sin llamar al proveedor y sin tocar el historial","ok":false,"detail":"status=200 scope=undefined"}
+{"id":"ES22-F04 con el presupuesto agotado la respuesta de seguridad se entrega y NO consume presupuesto ni llama a Claude","ok":false,"detail":"usado 6→6"}
+{"id":"ES22-F03b al renovarse el periodo el mismo requestId se retoma sin duplicar (un solo par de mensajes más el par de seguridad)","ok":true,"detail":"reintento=200 mensajesNuevos=4"}
+{"id":"ES22-F02c si el proveedor falla: 502, la reserva se libera (contador intacto) y el error se clasifica","ok":true,"detail":"usado 0→0 fila={\"status\":\"failed\",\"errorCode\":\"provider_unavailable\"}"}
+{"id":"ES22-F05 el tiempo de espera de 3 s se respeta: 502 en ~3 s (no 6 s), error `timeout` y reserva liberada","ok":false,"detail":"3029ms fila={\"status\":\"failed\",\"errorCode\":\"unknown\",\"latencyMs\":3016}"}
+{"id":"ES22-F06a recomendaciones: salida inválida → rechazo (502) y nada guardado","ok":false,"detail":"estados={\"JSON roto\":500,\"categoría inventada\":502,\"sin contenido\":502,\"más de 3\":502,\"contenido > 500\":502,\"no es arreglo\":502,\"vacío\":502} guardadas=0"}
+{"id":"ES22-F06b recomendaciones válidas → 200 y guardadas","ok":true,"detail":"status=200"}
+{"id":"ES22-F06c matching: salida inválida → rechazo y nada guardado","ok":false,"detail":"estados={\"JSON roto\":500,\"terapeuta no ofrecido\":502,\"puntuación 11\":502,\"puntuación decimal\":502,\"razón > 300\":502,\"más de 3\":502} guardadas=0"}
+{"id":"ES22-F06c-detalle (el criterio de Dev dice 502 para salida inválida)","info":"{\"JSON roto\":500,\"terapeuta no ofrecido\":502,\"puntuación 11\":502,\"puntuación decimal\":502,\"razón > 300\":502,\"más de 3\":502}"}
+{"id":"ES22-F06d matching válido → 200 y guardado","ok":true,"detail":"status=200"}
+{"id":"ES22-F07b AiUsages no tiene columnas de contenido y sus filas no contienen texto de conversaciones ni del proveedor","ok":true,"detail":"columnas=id,UserId,kind,requestId,model,appVersion,periodKey,status,reservedTokens,inputTokens,outputTokens,costMicros,currency,priceVersion,latencyMs,errorCode,createdAt,updatedAt"}
+{"id":"ES22-F07c sin precios verificados el costo queda desconocido","ok":true,"detail":""}
+{"id":"ES22-S01a 40 envíos simultáneos de una persona con límite 6000: nunca se supera el límite, los excedentes son 429 y no llaman al proveedor","ok":false,"detail":"200=5 429=35 otros=[] usado=10 llamadasAlProveedor=5"}
+{"id":"ES22-S01b 36 envíos de 12 personas contra un tope de cohorte de 20000: la cohorte nunca lo supera y los rechazos indican alcance `cohort`","ok":false,"detail":"200=15 429=9 alcances=[\"cohort\"] cohorteUsada=30"}
+{"id":"ES22-S02a cada persona solo ve su propio uso (B no ve el de A)","ok":false,"detail":""}
+{"id":"ES22-S02b el resumen agregado es solo de superadmin (admin y usuario → 403) y no lleva identificadores, correos ni contenido","ok":false,"detail":"persons=undefined calls=undefined"}
+{"id":"ES22-S02c resumen agregado (forma)","info":"{}"}
+{"id":"ES22-S03a ningún secreto ficticio (clave, JWT, contraseña, llave privada, cadena de conexión) llega al proveedor: se enmascara","ok":false,"detail":"filtrados=[\"-----BEGIN PRIVATE\"]"}
+{"id":"ES22-S03b el historial de la persona conserva lo que escribió (el enmascarado solo aplica a lo que sale)","ok":true,"detail":""}
+{"id":"ES22-S04a valores no numéricos, cero, negativos, decimales o gigantes → no configurado (nunca ilimitado); espacios laterales sí se admiten","ok":true,"detail":"{\"0\":\"no configurado\",\"abc\":\"no configurado\",\"-5\":\"no configurado\",\"1e3\":\"no configurado\",\"1.5\":\"no configurado\",\"vacío\":\"no configurado\",\"13 dígitos\":\"no configurado\",\" 5000 \":\"configurado\"}"}
+{"id":"ES22-S04b periodo inválido → `month`; tiempo y reintentos acotados a sus límites duros (120 s y 2)","ok":true,"detail":"{\"perUser\":5000,\"cohort\":null,\"period\":\"month\",\"timeoutMs\":120000,\"maxRetries\":2}"}
+{"id":"ES22-S04c los periodos son UTC y cambian a medianoche; la semana empieza el lunes","ok":true,"detail":"{\"pk\":[\"2026-12-31\",\"2027-01-01\"],\"wk\":\"W2026-10-26\"}"}
+{"id":"ES22-P02 40 reservas simultáneas de 40 personas sobre la fila de cohorte: serializan sin errores ni interbloqueos","ok":false,"detail":"estados=[200,403] total=180ms p95=176ms"}
+{"id":"ES22-P01 carga: 6 personas, 2 min, con reserva y registro de uso en cada llamada: 0 errores 5xx y p95 ≤ 500 ms (proveedor simulado)","ok":true,"detail":"peticiones=117105 5xx=0 p50=3ms p95=6ms"}
+{"id":"ES22-P03 un solo contador por persona y periodo tras toda la carga (sin filas duplicadas)","ok":true,"detail":"duplicados=0"}
+{"resumen":{"fallos":14}}
