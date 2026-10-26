@@ -37,10 +37,14 @@ test('ES-79: la recomendación de fin de sesión no envía el nombre real del pa
   assert.deepEqual(response.body.recommendation, { id: 900 });
   assert.equal(created.length, 1);
   assert.equal(created[0].UserId, PATIENT);
+  assert.equal(session.therapistNote, body.therapistNote); // la nota se sigue guardando en la sesión (cifrada en producción)
   assert.equal(prompts.length, 1);
   const sent = JSON.stringify(prompts[0]);
   assert.ok(!sent.includes(NAME), 'el nombre del paciente no debe viajar al proveedor');
   assert.match(sent, /La persona terminó una sesión de terapia sintiéndose bien/);
+  // Decisión del 26-oct: la nota del terapeuta tampoco viaja al proveedor; solo el estado de ánimo.
+  assert.ok(!sent.includes('Nota sintética'), 'la nota del terapeuta no debe viajar al proveedor');
+  assert.doesNotMatch(sent, /nota del terapeuta/i);
   assert.equal(lookups(), 0); // ni siquiera se consulta el nombre
 });
 

@@ -429,7 +429,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
     // Generar recomendación IA para el paciente (silent fail si Anthropic falla)
     let recommendation = null;
     try {
-      // QA-78-01 / ES-79: el nombre real de la persona no se envía al proveedor de IA.
+      // QA-78-01 / ES-79: ni el nombre real de la persona ni la nota del terapeuta se envían al proveedor de IA (decisión de Mauricio, 26-oct): la recomendación se genera solo con el estado de ánimo.
       const moodLabels = { 1: 'muy mal', 2: 'no tan bien', 3: 'neutral', 4: 'bien', 5: 'muy bien' };
       const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
 
@@ -439,7 +439,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
         system:     'Eres un asistente de bienestar empático de Elevation. Genera recomendaciones breves, cálidas y accionables para el paciente después de su sesión de terapia. Responde SOLO con la recomendación, sin preámbulo.',
         messages: [{
           role:    'user',
-          content: `La persona terminó una sesión de terapia sintiéndose ${moodLabel}. La nota del terapeuta indica: "${therapistNote.substring(0, 200)}". Genera una recomendación de bienestar breve (máximo 3 oraciones) para ayudarle en las próximas horas.`,
+          content: `La persona terminó una sesión de terapia sintiéndose ${moodLabel}. Genera una recomendación de bienestar breve (máximo 3 oraciones) para ayudarle en las próximas horas.`,
         }],
       });
 
