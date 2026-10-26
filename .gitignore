@@ -39,5 +39,5 @@ supabase/.temp/
 *.log
 !.env.example
 
-# Base Postgres local de Dev y QA (ES-78)
+# Base Postgres local de Dev y QA (ES-80)
 backend/.pgdata/

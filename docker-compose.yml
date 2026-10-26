@@ -1,4 +1,4 @@
-# Postgres local para quien ya tenga Docker (ES-78). Alternativa sin Docker: `npm run db:local` en backend/.
+# Postgres local para quien ya tenga Docker (ES-80). Alternativa sin Docker: `npm run db:local` en backend/.
 # Misma versión mayor que la base de staging (PostgreSQL 17). Usuario y clave locales NO son secretos.
 services:
   postgres:

@@ -16,6 +16,8 @@ npm run db:local
 
 La primera vez descarga los binarios de Postgres (unos 100 MB en `node_modules`) y crea la base `elevation_dev` en el puerto `54329`. Deja la terminal abierta; `Ctrl+C` la detiene. Los datos quedan en `backend/.pgdata/` (no se versiona).
 
+> **Aviso: detén la base antes de volver a ejecutar `npm ci`.** `npm ci` borra y reinstala `node_modules`, donde están los binarios de Postgres que la base en marcha tiene en uso. Si la dejas corriendo (la terminal con `npm run db:local` abierta), la instalación puede fallar o dejar los binarios rotos. Orden seguro: `Ctrl+C` en esa terminal, `npm ci`, y de nuevo `npm run db:local`. Los datos de `backend/.pgdata/` no se pierden.
+
 En otra terminal, crea `backend/.env` con estas variables (no se versiona) más las que ya necesitas (`JWT_SECRET`, `DATA_ENCRYPTION_KEY`, `PROMPT_ENCRYPTION_KEY`; genera valores propios, no uses los de staging):
 
 ```text

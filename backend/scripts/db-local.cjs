@@ -1,4 +1,4 @@
-// Base Postgres local y desechable para Dev y QA (ES-78). No usa Docker ni permisos de administrador.
+// Base Postgres local y desechable para Dev y QA (ES-80). No usa Docker ni permisos de administrador.
 // Uso: npm run db:local          -> arranca y deja la base lista hasta Ctrl+C
 //      npm run db:local -- --reset -> borra los datos locales y empieza de cero
 // Solo para desarrollo: usuario y clave locales NO son secretos y la base no sale del equipo.

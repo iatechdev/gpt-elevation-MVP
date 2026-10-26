@@ -63,7 +63,7 @@ jobs:
       - name: Revisar sintaxis
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: npm test
-      # Conexión real a Postgres: base para las pruebas de integración con DB real (ES-78).
+      # Conexión real a Postgres: base para las pruebas de integración con DB real (ES-80).
       - name: Verificar conexión y esquema contra Postgres real
         env:
           DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
