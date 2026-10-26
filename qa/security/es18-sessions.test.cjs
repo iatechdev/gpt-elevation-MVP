@@ -116,17 +116,18 @@ test('ES18-S05: cambiar rol/estado, borrar o resetear contraseña corta las sesi
   assert.ok(cutoffs.has(301), 'el reset debe cortar sesiones');
 });
 
-test('ES18-S06: borde de un segundo — iniciar sesión justo tras logout-all', async t => {
+test('ES18-S06: borde de un segundo — token emitido por el emisor real justo después de logout-all debe valer', async t => {
   store();
   const request = await startApp(t);
-  const vieja = mk();
+  const { issueToken } = require(path.join(sut, 'backend', 'utils', 'sessions.js'));
+  const vieja = issueToken({ id: 201, name: 'x', role: 'user' });
   assert.equal((await call(request, 'POST', '/api/logout-all', vieja)).status, 200);
-  // token nuevo emitido en el MISMO segundo del corte (iat entero)
-  const nueva = mk();
+  assert.equal((await call(request, 'GET', '/api/messages', vieja)).status, 401, 'la vieja queda cortada');
+  await new Promise(r => setTimeout(r, 5));
+  const nueva = issueToken({ id: 201, name: 'x', role: 'user' });
   const r = await call(request, 'GET', '/api/messages', nueva);
-  console.log(JSON.stringify({ nota: 'token emitido en el mismo segundo del corte', status: r.status }));
-  // Documenta el comportamiento (Dev lo declara como riesgo): si es 401 hay una ventana de hasta 1 s.
-  assert.ok([200, 401].includes(r.status));
+  console.log(JSON.stringify({ nota: 'token real emitido 5 ms después del corte', status: r.status }));
+  assert.equal(r.status, 200, 'el inicio de sesión posterior al corte no debe quedar revocado');
 });
 
 test('ES18-S07: el administrador no recibe datos individuales de ánimo/valoración ni mensajes', async t => {
@@ -134,8 +135,9 @@ test('ES18-S07: el administrador no recibe datos individuales de ánimo/valoraci
   const objetivo = record({ id: 301, name: 'Obj', email: 'o@example.invalid', role: 'user', active: true, toJSON() { return { id: 301, name: 'Obj' }; } });
   models.User.findByPk = async () => objetivo; models.User.findOne = async () => objetivo;
   models.MoodLog.count = async () => 1;
-  models.MoodLog.findAll = async () => [{ checkin_mood: 2, checkout_mood: 1, date: '2026-10-20' }];
-  models.SessionRating.findAll = async () => [{ rating: 5, date: '2026-10-20' }];
+  let n = 1;
+  models.MoodLog.findAll = async () => Array.from({ length: n }, () => ({ checkin_mood: 2, checkout_mood: 1, date: '2026-10-20' }));
+  models.SessionRating.findAll = async () => Array.from({ length: n }, () => ({ rating: 5, date: '2026-10-20' }));
   const request = await startApp(t);
   const admin = mk({ id: 900, role: 'admin' });
   const r = await call(request, 'GET', '/api/admin/usuarios/301/stats', admin);
@@ -143,7 +145,13 @@ test('ES18-S07: el administrador no recibe datos individuales de ánimo/valoraci
   assert.equal(r.status, 200);
   assert.ok(!('ultimosMoods' in r.body.stats) && !('ultimosRatings' in r.body.stats), 'sin entradas individuales');
   assert.ok(!JSON.stringify(r.body).includes('2026-10-20'), 'sin fechas individuales');
-  console.log('promedios con n=1 →', JSON.stringify({ moodPromedio: r.body.stats.moodPromedio, ratingPromedio: r.body.stats.ratingPromedio }), '(equivalen al valor individual: 2 y 1 → 1.5; 5 → 5)');
+  console.log('promedios con n=1 →', JSON.stringify({ moodPromedio: r.body.stats.moodPromedio, ratingPromedio: r.body.stats.ratingPromedio }));
+  assert.equal(r.body.stats.moodPromedio, null, 'con una entrada el promedio no debe revelar el valor');
+  assert.equal(r.body.stats.ratingPromedio, null);
+  n = 6;
+  const r6 = await call(request, 'GET', '/api/admin/usuarios/301/stats', admin);
+  console.log('promedios con n=6 →', JSON.stringify({ moodPromedio: r6.body.stats.moodPromedio, ratingPromedio: r6.body.stats.ratingPromedio }));
+  assert.equal(r6.body.stats.ratingPromedio, 5, 'con suficientes entradas sí hay promedio');
   const m = await call(request, 'GET', '/api/messages?userId=301', admin);
   assert.notEqual(JSON.stringify(m.body ?? '').includes('301'), true);
 });
@@ -160,7 +168,12 @@ test('ES18-S08: rutas de terapeuta con rol "user" (sin control de rol en el hand
     const r = await call(request, m, u, user, b); salida[m + ' ' + u] = r.status;
   }
   console.log(JSON.stringify(salida));
-  // Hallazgo potencial si algún endpoint de terapeuta responde 2xx a un "user":
-  const ok2xx = Object.entries(salida).filter(([, s]) => s >= 200 && s < 300);
-  console.log('2xx para rol user:', JSON.stringify(ok2xx));
+  const noDenegados = Object.entries(salida).filter(([, s]) => s !== 403);
+  assert.deepEqual(noDenegados, [], 'un rol user debe recibir 403 en /api/therapist/*: ' + JSON.stringify(noDenegados));
+  for (const role of ['admin', 'superadmin', 'board']) {
+    const rr = await call(request, 'GET', '/api/therapist/pacientes', mk({ role }));
+    assert.equal(rr.status, 403, role + ' tampoco es terapeuta');
+  }
+  const ter = await call(request, 'GET', '/api/therapist/pacientes', mk({ role: 'therapist', id: 777 }));
+  assert.notEqual(ter.status, 403, 'el terapeuta sí accede (fue ' + ter.status + ')');
 });
