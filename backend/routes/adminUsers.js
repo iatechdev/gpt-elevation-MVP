@@ -10,6 +10,13 @@ const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
+const { revokeUserSessions } = require('../utils/sessions');
+
+// Un promedio de muy pocas entradas revela el valor individual: por debajo de este número de entradas se devuelve null (QA-18-02).
+const MIN_AVERAGE_SAMPLE = 5;
+const averageOf = (values) => (values.length >= MIN_AVERAGE_SAMPLE
+  ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
+  : null);
 
 const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
 const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
@@ -84,14 +91,10 @@ router.get('/', async (req, res) => {
           attributes: ['checkin_mood', 'checkout_mood'],
         });
 
-        const ratingPromedio = ratings.length > 0
-          ? Math.round((ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length) * 10) / 10
-          : null;
+        const ratingPromedio = averageOf(ratings.map(r => r.rating));
 
         const todosLosMoods = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-        const moodPromedio = todosLosMoods.length > 0
-          ? Math.round((todosLosMoods.reduce((a, b) => a + b, 0) / todosLosMoods.length) * 10) / 10
-          : null;
+        const moodPromedio = averageOf(todosLosMoods);
 
         // Determinar si está bloqueado por intentos fallidos
         const isLocked = u.lockedUntil && new Date() < new Date(u.lockedUntil);
@@ -146,6 +149,8 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
     if (active !== undefined) updates.active = active;
 
     await usuario.update(updates);
+    // ES-18: un cambio de rol o estado corta las sesiones anteriores de esa cuenta
+    if (role !== undefined || active !== undefined) await revokeUserSessions(usuario.id);
 
     res.json({
       message: 'Usuario actualizado correctamente.',
@@ -187,6 +192,7 @@ router.delete('/:id', async (req, res) => {
 
     const nombreUsuario = usuario.name;
     await usuario.destroy();
+    await revokeUserSessions(usuario.id); // ES-18
 
     console.log(`🗑️ Usuario eliminado permanentemente: ${nombreUsuario} (id: ${id}) por superadmin ${req.user.name}`);
     res.json({ message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
@@ -283,21 +289,16 @@ router.get('/:id/stats', async (req, res) => {
       limit: 30,
     });
 
-    const ratingPromedio = ratings.length > 0
-      ? Math.round((ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length) * 10) / 10
-      : null;
+    const ratingPromedio = averageOf(ratings.map(r => r.rating));
 
     const todosLosMoods = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-    const moodPromedio = todosLosMoods.length > 0
-      ? Math.round((todosLosMoods.reduce((a, b) => a + b, 0) / todosLosMoods.length) * 10) / 10
-      : null;
+    const moodPromedio = averageOf(todosLosMoods);
 
     res.json({
       usuario: usuario.toJSON(),
       stats: {
+        // ES-18: solo cifras agregadas; las entradas de ánimo y valoración por fecha no se entregan al administrador
         sesiones, ratingPromedio, moodPromedio,
-        ultimosRatings: ratings.slice(-5),
-        ultimosMoods: moodLogs.slice(0, 7),
       }
     });
   } catch (error) {
@@ -423,6 +424,7 @@ router.put('/:id/reset-password', async (req, res) => {
       lockedUntil:   null,
       active:        true,
     });
+    await revokeUserSessions(usuario.id); // ES-18: la contraseña anterior ya no abre sesiones vivas
 
     console.log(`🔑 Contraseña reseteada para: ${usuario.name} (id: ${usuario.id}) por superadmin ${req.user.name}`);
     res.json({ message: `Contraseña de ${usuario.name} reseteada correctamente.` });

@@ -18,11 +18,18 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
 }
+
+// ES-18: sesiones sin revocar por defecto; las pruebas de sesión sobrescriben estos dobles.
+models.RevokedToken.findByPk = async () => null;
+models.RevokedToken.upsert = async () => {};
+models.RevokedToken.destroy = async () => 0;
+models.AuthRevocation.findByPk = async () => null;
+models.AuthRevocation.upsert = async () => {};
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };
 const transaction = { commit: async () => {}, rollback: async () => {} };
@@ -40,7 +47,7 @@ const promptVault = {
 
 replaceModule('database.js', database);
 replaceModule('associations.js', () => {});
-replaceModule('utils/crypto.js', { encriptar: value => value, desencriptar: value => value });
+replaceModule('utils/crypto.js', { encriptar: value => value, encriptarV2: value => value, desencriptar: value => value });
 replaceModule('utils/storage.js', storage);
 replaceModule('utils/anthropic.js', anthropic);
 replaceModule('promptVault.js', promptVault);
@@ -66,7 +73,7 @@ async function startApp(t) {
   }));
   return async function request(method, url, { role, id = 101, body, headers = {} } = {}) {
     if (role) headers = { ...headers, Authorization: 'Bearer ' + jwt.sign(
-      { id, role, name: 'Synthetic actor' }, process.env.JWT_SECRET, { expiresIn: '1m' },
+      { id, role, name: 'Synthetic actor' }, process.env.JWT_SECRET, { expiresIn: '1m', jwtid: randomBytes(8).toString('hex') },
     ) };
     const options = { method, headers };
     if (body !== undefined) {

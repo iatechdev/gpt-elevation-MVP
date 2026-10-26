@@ -44,7 +44,9 @@ test('QA-9-02: public input and legitimate authentication', async t => {
 
 test('QA-9-02: body consumers reject invalid types before side effects', async t => {
   let calls = 0;
-  for (const model of Object.values(models)) {
+  // ES-18: la comprobación de sesión (lecturas de RevokedToken/AuthRevocation) no es un efecto secundario del cuerpo.
+  for (const [name, model] of Object.entries(models)) {
+    if (name === 'RevokedToken' || name === 'AuthRevocation') continue;
     for (const method of ['findOne', 'findByPk', 'findAll', 'create', 'update', 'upsert']) {
       model[method] = async () => { calls++; throw new Error('Unexpected model call'); };
     }

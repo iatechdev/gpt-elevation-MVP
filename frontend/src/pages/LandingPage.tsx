@@ -1,17 +1,20 @@
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { LandingSurface } from '../components/landing/LandingSurface'
-import { LandingButton, LandingLabel, LandingSection } from '../components/landing/LandingPrimitives'
+import { LandingButton, LandingSection } from '../components/landing/LandingPrimitives'
+import { HeroDoors } from '../components/landing/HeroDoors'
+import { LandingHeader } from '../components/landing/LandingHeader'
+import { useLandingContent } from '../content/useLandingContent'
 import { useState, useEffect } from 'react'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
-const UNSPLASH_URL = 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop&q=60'
 
 type LandingContent = Record<string, string> | null
 
 export function LandingPage() {
   const { t, lang, setLang } = useLanguage()
   const navigate = useNavigate()
+  const landing = useLandingContent(lang)
   const [content, setContent] = useState<LandingContent>(null)
 
   useEffect(() => {
@@ -28,53 +31,15 @@ export function LandingPage() {
     <LandingSurface>
       <div style={{ position: 'relative', zIndex: 1 }}>
 
-        {/* Topbar */}
-        <header style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem var(--landing-gutter)', background: 'var(--color-base-100)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--color-base-300)', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontFamily: 'inherit', fontWeight: 300, letterSpacing: '0.25em', fontSize: '1.1rem', color: 'var(--color-base-content)' }}>ELEVATION</span>
-          <nav style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {(['es', 'en'] as const).map(l => (
-                <LandingButton key={l} onClick={() => setLang(l)}
-                  style={{ fontSize: 11, padding: '3px 10px', borderRadius: 12, border: '0.5px solid var(--color-base-300)', background: lang === l ? 'var(--color-primary)' : 'transparent', color: lang === l ? 'var(--color-primary-content)' : 'var(--landing-muted)', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {l.toUpperCase()}
-                </LandingButton>
-              ))}
-            </div>
-            <LandingButton onClick={() => navigate('/login')}
-              style={{ fontSize: '0.85rem', padding: '0.5rem 1.25rem', borderRadius: '0.75rem', border: 'none', background: 'var(--color-primary)', color: 'var(--color-primary-content)', cursor: 'pointer', fontFamily: 'inherit' }}>
-              {getText('cta_primary')}
-            </LandingButton>
-          </nav>
-        </header>
+        {/* Cabecera, idioma y salto al contenido (ES-62) */}
+        <LandingHeader text={landing.text} lang={lang} setLang={setLang} />
 
-        {/* Hero */}
-        <LandingSection style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', minHeight: '90vh', alignItems: 'center' }}>
-          <div style={{ paddingBlock: 'var(--landing-space)', display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
-            <LandingLabel style={{ color: 'var(--color-secondary)', width: 'fit-content' }}>
-              {getText('hero_badge')}
-            </LandingLabel>
-            <h1 style={{ color: 'var(--color-base-content)', margin: 0, fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
-              {getText('hero_title')}
-            </h1>
-            <p style={{ fontSize: '1rem', color: 'var(--landing-muted)', lineHeight: 1.75, margin: 0, maxWidth: 460 }}>
-              {getText('hero_subtitle')}
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-              <LandingButton onClick={() => navigate('/login')}
-                style={{ padding: '0.85rem 2rem', borderRadius: '0.85rem', border: 'none', background: 'var(--color-primary)', color: 'var(--color-primary-content)', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
-                {getText('cta_primary')}
-              </LandingButton>
-              <LandingButton onClick={() => document.getElementById('proceso')?.scrollIntoView({ behavior: 'smooth' })}
-                style={{ padding: '0.85rem 2rem', borderRadius: '0.85rem', border: '0.5px solid var(--color-base-300)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.95rem', cursor: 'pointer', fontFamily: 'inherit' }}>
-                {getText('cta_secondary')}
-              </LandingButton>
-            </div>
+        <main id="contenido" tabIndex={-1}>
+          {/* Hero + puertas (ES-63) */}
+          <div className="landing-frame">
+            <HeroDoors text={landing.text} />
           </div>
-          <div style={{ minHeight: 400, overflow: 'hidden' }}>
-            <img src={UNSPLASH_URL} alt="Calma interior"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }} />
-          </div>
-        </LandingSection>
+
 
         {/* Proceso */}
         <LandingSection id="proceso" style={{ padding: 'var(--landing-space) var(--landing-gutter)', background: 'var(--color-base-200)', backdropFilter: 'blur(8px)' }}>
@@ -130,6 +95,8 @@ export function LandingPage() {
             </LandingButton>
           </div>
         </LandingSection>
+
+        </main>
 
         {/* Footer */}
         <footer style={{ padding: '2.5rem 2rem', background: 'var(--color-base-100)', borderTop: '0.5px solid var(--color-base-300)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
