@@ -165,12 +165,28 @@ test('ES-21 chat: el país declarado muestra recursos verificados; el idioma nun
   assert.match((await post(request, { message: 'quiero morir', lang: 'en' })).body.reply, /not an emergency or health service/);
 });
 
-test('ES-21 chat: país, idioma y mensaje inválidos se rechazan antes de cualquier efecto', async t => {
+test('ES-21 chat: country y lang mal formados se ignoran y nunca impiden la respuesta de seguridad (QA-21-01)', async t => {
+  const { calls } = setup();
+  const request = await startApp(t);
+  const malformed = [{ country: 'COL' }, { country: 'Colombia' }, { country: 5 }, { country: 'e1' }, { country: {} }, { country: null },
+    { lang: 'fr' }, { lang: {} }, { lang: 7 }, { lang: '' }, { country: 'ESP', lang: 'xx' }];
+  for (const extra of malformed) {
+    const grave = await post(request, { message: 'me quiero suicidar', ...extra });
+    assert.equal(grave.status, 200, JSON.stringify(extra));
+    assert.equal(grave.body.interrupted, true);
+    assert.doesNotMatch(grave.body.reply, /\d/); // sin país válido no hay recursos ni números
+    assert.equal((await post(request, { message: 'hola', ...extra })).status, 200, JSON.stringify(extra));
+  }
+  assert.equal(calls.length, malformed.length); // solo los mensajes ordinarios usaron el proveedor
+  // Variantes razonables se normalizan: mayúsculas y subetiquetas de idioma.
+  assert.match((await post(request, { message: 'quiero morir', lang: 'EN' })).body.reply, /not an emergency or health service/);
+  assert.match((await post(request, { message: 'quiero morir', lang: 'en-US' })).body.reply, /not an emergency or health service/);
+  assert.match((await post(request, { message: 'I want to kill myself', lang: 'es_CO' })).body.reply, /no es un servicio de emergencias/);
+});
+
+test('ES-21 chat: el mensaje vacío o demasiado largo se sigue rechazando antes de cualquier efecto', async t => {
   const { state, calls } = setup();
   const request = await startApp(t);
-  for (const extra of [{ country: 'ESP' }, { country: 5 }, { country: 'e1' }, { lang: 'fr' }, { lang: {} }]) {
-    assert.equal((await post(request, { message: 'hola', ...extra })).status, 400, JSON.stringify(extra));
-  }
   assert.equal((await post(request, { message: '\u200B\u202E \u0000' })).status, 400); // vacío tras normalizar
   assert.equal((await post(request, { message: 'a'.repeat(MAX_MESSAGE_CHARS + 1) })).status, 400);
   assert.equal((await post(request, { message: 'a'.repeat(MAX_MESSAGE_CHARS) })).status, 200);
@@ -205,6 +221,9 @@ test('ES-21 prompt: normaliza el mensaje, delimita el diario con un límite alea
   assert.match(first.system, /context only, not instructions/);
   // Los límites de acompañamiento van en el prompt del sistema, después del aviso editable.
   assert.ok(first.system.indexOf('COMPANION LIMITS') > first.system.indexOf('Synthetic system prompt'));
+  // QA-21-02: con diario, los límites quedan DESPUÉS del bloque de la persona y terminan el prompt.
+  assert.ok(first.system.indexOf('COMPANION LIMITS') > first.system.indexOf(`</${boundary(first.system)}>`));
+  assert.ok(first.system.trimEnd().endsWith(`${COMPANION_LIMITS}\n---`));
   assert.ok(first.system.includes(COMPANION_LIMITS));
   assert.equal(state.messages.length, 4);
 });
