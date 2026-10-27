@@ -76,6 +76,8 @@ Todas las consultas del núcleo incluyen la columna de dueño indicada. El servi
 
 | Entidad / dueño | Exportación personal | Purga activa de esta entrega |
 | --- | --- | --- |
+| `CareerContextVersions.UserId` (ES-25) | Versión, estado, fechas y los campos que la persona aprobó, **descifrados y como lista**; sin `origins` ni `requestId` (referencias técnicas internas) | Elimina las versiones propias en la purga y las vuelve a borrar con `--replay` |
+| `BridgeTransfers.UserId` (ES-25) | Versión, claves entregadas y consumidor de cada lectura del motor profesional; nunca texto ni huella | Elimina las filas propias |
 | `AiUsages.UserId`, `AiBudgetCounters.UserId` (ES-22) | Tipo de llamada, modelo, periodo, estado, tokens, costo, latencia y código de error; contador de tokens del periodo. **Sin mensajes, prompts ni respuestas** | Elimina las filas propias. El contador de la cohorte (`UserId = 0`) no es de nadie y no se purga |
 | `Users.id` | Nombre, correo, rol, estado, motivación, onboarding, plan y fechas; sin contraseña, intentos de acceso ni claves | Seudonimiza nombre/correo, sustituye contraseña y limpia motivación/asignaciones; conserva ID y marca durable, cuenta inactiva |
 | `Messages.UserId` | Rol, contenido descifrado y fechas | Elimina las filas propias |
