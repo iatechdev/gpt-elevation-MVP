@@ -286,3 +286,26 @@ test('ES-23 (QA-23-04): si el fallo de concurrencia ocurre DESPUÉS de entregar 
   } finally { database.sequelize.transaction = originalTransaction; }
   assert.equal(delivered, 1);
 });
+
+test('ES-23 (QA-14-01): el contexto del participante (ES-14) se exporta descifrado al dueño, no se mezcla con B y se purga, también tras una restauración (--replay)', async t => {
+  const { state, add } = setup();
+  const dto = (profession) => JSON.stringify({ preferredLanguage: 'es', residenceCountry: 'CO', targetMarket: 'DK', timeZone: 'America/Bogota', profession, interests: null, availabilityMinutesPerWeek: 90, careerGoal: null, careerConstraints: null });
+  add('ParticipantContext', { id: 1, UserId: 101, version: 3, content: dto('Docencia sintética A'), completedAt: new Date('2026-10-02') });
+  add('ParticipantContext', { id: 2, UserId: 202, version: 1, content: dto('B PROFESSION CANARY'), completedAt: null });
+  add('DerivedInvalidation', { id: 7, UserId: 101, sourceType: 'participant_context', sourceId: 1, reason: 'edited', handledAt: null });
+  const request = await startApp(t);
+  const p = await preview(request);
+  const exported = p.body.data.participantContext;
+  assert.equal(exported.length, 1);
+  assert.deepEqual([exported[0].version, exported[0].content.profession, exported[0].content.targetMarket], [3, 'Docencia sintética A', 'DK']); // descifrado y como objeto
+  assert.doesNotMatch(JSON.stringify(p.body.data), /B PROFESSION CANARY/);
+  assert.deepEqual(p.body.data.invalidations.map(i => [i.sourceType, i.reason]), [['participant_context', 'edited']]); // los eventos propios también se entregan
+  const result = await remove(request);
+  await processDeletion(result.body.id, { quiescent: true });
+  assert.deepEqual(state.tables.ParticipantContext.map(r => r.UserId), [202]); // purgado el de A, intacto el de B
+  assert.equal(state.tables.DerivedInvalidation.length, 1); // las invalidaciones pendientes se conservan (ES-23)
+  // una restauración reintroduce el contexto de A: el reaplicado lo vuelve a borrar
+  add('ParticipantContext', { id: 3, UserId: 101, version: 3, content: dto('RESTORED PRIVATE'), completedAt: null });
+  await processDeletion(result.body.id, { quiescent: true, replay: true });
+  assert.deepEqual(state.tables.ParticipantContext.map(r => r.UserId), [202]);
+});

@@ -69,14 +69,16 @@ test('ES-14: stale versions return 409, preserve the current record and never ec
   setup(); const request = await startApp(t);
   const saved = await request('PUT', '/api/user/context', { role: 'user', body: body({ profession: 'Current version' }) });
   const conflict = await request('PUT', '/api/user/context', { role: 'user', body: body({ profession: 'Stale version' }) });
-  assert.deepEqual(conflict, { status: 409, body: { error: 'context_conflict' } });
+  assert.deepEqual({ status: conflict.status, body: conflict.body }, { status: 409, body: { error: 'context_conflict' } });
   assert.deepEqual((await request('GET', '/api/user/context', { role: 'user' })).body, saved.body);
 });
 test('ES-14: database and commit failures return 503 without private data or false success', async t => {
   setup(); const request = await startApp(t);
   models.ParticipantContext.findOne = async () => { throw new Error('PRIVATE DATABASE DETAIL'); };
-  assert.deepEqual(await request('GET', '/api/user/context', { role: 'user' }), { status: 503, body: { error: 'context_unavailable' } });
+  const failedGet = await request('GET', '/api/user/context', { role: 'user' });
+  assert.deepEqual({ status: failedGet.status, body: failedGet.body }, { status: 503, body: { error: 'context_unavailable' } });
   models.ParticipantContext.findOne = async () => null;
   database.sequelize.transaction = async () => ({ async commit() { throw new Error('PRIVATE COMMIT'); }, async rollback() {} });
-  assert.deepEqual(await request('PUT', '/api/user/context', { role: 'user', body: body() }), { status: 503, body: { error: 'context_unavailable' } });
+  const failedPut = await request('PUT', '/api/user/context', { role: 'user', body: body() });
+  assert.deepEqual({ status: failedPut.status, body: failedPut.body }, { status: 503, body: { error: 'context_unavailable' } });
 });

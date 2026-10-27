@@ -76,6 +76,7 @@ Todas las consultas del núcleo incluyen la columna de dueño indicada. El servi
 
 | Entidad / dueño | Exportación personal | Purga activa de esta entrega |
 | --- | --- | --- |
+| `ParticipantContexts.UserId` (ES-14) | Versión, fecha de cierre y el contexto (idioma, residencia, mercado, zona horaria, profesión, intereses, minutos, objetivo y restricciones) **descifrado y como objeto**, solo del dueño | Elimina la fila propia en la purga y la vuelve a borrar con `--replay` tras una restauración. El `CASCADE` del FK no basta: la cuenta se seudonimiza, no se borra |
 | `AiUsages.UserId`, `AiBudgetCounters.UserId` (ES-22) | Tipo de llamada, modelo, periodo, estado, tokens, costo, latencia y código de error; contador de tokens del periodo. **Sin mensajes, prompts ni respuestas** | Elimina las filas propias. El contador de la cohorte (`UserId = 0`) no es de nadie y no se purga |
 | `Users.id` | Nombre, correo, rol, estado, motivación, onboarding, plan y fechas; sin contraseña, intentos de acceso ni claves | Seudonimiza nombre/correo, sustituye contraseña y limpia motivación/asignaciones; conserva ID y marca durable, cuenta inactiva |
 | `Messages.UserId` | Rol, contenido descifrado y fechas | Elimina las filas propias |
