@@ -144,6 +144,32 @@ const fs = require('node:fs');
     await page.waitForURL('**/app/onboarding');
     await page.getByText('Contexto guardado', { exact: true }).waitFor();
     check('personal entry reaches existing dashboard after save; My context reopens same resource');
+    // QA-14-03: solo las opciones de entrada están dentro de un fieldset con leyenda; los demás campos no heredan esa pregunta.
+    await page.locator('summary').click();
+    await page.locator('#profession').fill('Cambio sin guardar');
+    const structure = await page.evaluate(() => ({
+      controlsInFieldset: [...document.querySelectorAll('select, textarea, input[type=number]')].filter(element => element.closest('fieldset')).length,
+      legends: [...document.querySelectorAll('legend')].map(legend => legend.textContent),
+      radiosInGroup: document.querySelector('fieldset')?.querySelectorAll('input').length ?? 0,
+      fieldsets: document.querySelectorAll('fieldset').length,
+    }));
+    assert.deepEqual(structure, { controlsInFieldset: 0, legends: ['¿Por dónde quieres empezar?'], radiosInGroup: 3, fieldsets: 1 });
+    check('only the entry radios sit inside the fieldset with the legend; other fields are outside it');
+    // QA-14-04: si la sesión vence al guardar, el aviso dice que los cambios sin guardar se perderán (ES y EN).
+    putStatus = 401;
+    await page.getByRole('button', { name: 'Guardar avance', exact: true }).click();
+    await page.getByText('Sesión vencida. Inicia sesión para continuar. Los cambios sin guardar se perderán.').waitFor();
+    putStatus = 200; await page.reload();
+    await page.getByText('Contexto guardado', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
+    await page.locator('summary').click();
+    await page.locator('#profession').fill('Unsaved change');
+    putStatus = 401;
+    await page.getByRole('button', { name: 'Save progress', exact: true }).click();
+    await page.getByText('Session expired. Sign in to continue. Unsaved changes will be lost.').waitFor();
+    putStatus = 200; await page.reload();
+    await page.getByRole('button', { name: 'ES', exact: true }).click();
+    check('expiry while saving warns that unsaved changes will be lost (ES and EN)');
     getStatus = 503; await page.reload();
     await page.getByText('No pudimos cargar tu contexto.').waitFor();
     assert.equal(await page.locator('form').count(), 0);
@@ -151,6 +177,7 @@ const fs = require('node:fs');
     check('load failure blocks form and prevents blank overwrites');
     getStatus = 401; await page.getByRole('button', { name: 'Reintentar', exact: true }).click();
     await page.getByText('Sesión vencida. Inicia sesión para continuar.').waitFor();
+    assert.ok(!(await page.locator('body').innerText()).includes('perderán')); // vencida al cargar: no hay nada que perder
     check('expired session requires sign-in');
     assert.deepEqual(errors, []);
     console.log(`Browser checks: ${checks.length} passed, 0 console exceptions. HTTP is mocked.`);

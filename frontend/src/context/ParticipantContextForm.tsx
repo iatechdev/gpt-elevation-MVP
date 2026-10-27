@@ -19,8 +19,10 @@ export function Onboarding() {
   const [errors, setErrors] = useState<string[]>([])
   const [loadAttempt, setLoadAttempt] = useState(0)
   const [conflict, setConflict] = useState(false)
+  const [lostDraft, setLostDraft] = useState(false)
   const errorRef = useRef<HTMLDivElement>(null)
   const statusRef = useRef<HTMLDivElement>(null)
+  const busy = phase === 'saving'
   const dirty = snapshot !== null && JSON.stringify(draft) !== JSON.stringify(snapshot.context ?? emptyContext)
   useEffect(() => {
     const controller = new AbortController()
@@ -73,7 +75,7 @@ export function Onboarding() {
       setPhase(action === 'continue' ? 'confirmed' : 'ready')
       if (action === 'save_draft') setMessage('context_draft_saved')
     } catch (error) {
-      if (error instanceof ContextError && [401, 403].includes(error.status)) { setPhase('expired'); return }
+      if (error instanceof ContextError && [401, 403].includes(error.status)) { setLostDraft(true); setPhase('expired'); return }
       setPhase('ready')
       if (error instanceof ContextError && error.status === 409) { setConflict(true); setMessage('context_conflict') }
       else if (error instanceof ContextError && error.status === 400) { setErrors(error.fields); setMessage('context_invalid') }
@@ -84,7 +86,7 @@ export function Onboarding() {
   const select = (key: 'preferredLanguage' | 'residenceCountry' | 'targetMarket' | 'timeZone') => (
     <div className="context-field" key={key}>
       <label htmlFor={key}>{t(`context_${key}`)}</label>
-      <select id={key} className="elv-select" value={draft[key] ?? ''} aria-invalid={errors.includes(key)}
+      <select id={key} className="elv-select" disabled={busy} value={draft[key] ?? ''} aria-invalid={errors.includes(key)}
         aria-describedby={errors.includes(key) ? `${key}-error` : undefined} onChange={event => {
           const value = event.target.value
           if (key === 'preferredLanguage') {
@@ -97,7 +99,7 @@ export function Onboarding() {
           : key === 'timeZone' ? timeZones.map(value => <option key={value}>{value}</option>)
             : countryOptions.map(({ code, label }) => <option key={code} value={code}>{label}</option>)}
       </select>
-      {key === 'timeZone' && <button type="button" className="elv-btn elv-btn-ghost" onClick={() => change('timeZone', Intl.DateTimeFormat().resolvedOptions().timeZone)}>{t('context_suggest')}</button>}
+      {key === 'timeZone' && <button type="button" className="elv-btn elv-btn-ghost" disabled={busy} onClick={() => change('timeZone', Intl.DateTimeFormat().resolvedOptions().timeZone)}>{t('context_suggest')}</button>}
       {fieldError(key)}
     </div>
   )
@@ -110,15 +112,15 @@ export function Onboarding() {
       <h1>{t('context_title')}</h1><p>{t('context_intro')}</p>
       {phase === 'loading' ? <p role="status">{t('context_loading')}</p>
         : phase === 'loadError' ? <div role="alert"><p>{t('context_load_error')}</p><button className="elv-btn" onClick={reload}>{t('context_retry')}</button></div>
-          : phase === 'expired' ? <div role="alert"><p>{t('context_expired')}</p><button className="elv-btn" onClick={() => leave('/login')}>{t('context_signin')}</button></div>
+          : phase === 'expired' ? <div role="alert"><p>{t('context_expired')}{lostDraft ? ` ${t('context_expired_lost')}` : ''}</p><button className="elv-btn" onClick={() => leave('/login')}>{t('context_signin')}</button></div>
             : phase === 'confirmed' ? <div ref={statusRef} tabIndex={-1} role="status" className="elv-card context-confirmed">
               <h2>{t('context_saved')}</h2><button className="elv-btn elv-btn-primary" onClick={() => setPhase('ready')}>{t('context_edit')}</button>
             </div> : <form noValidate onSubmit={event => { event.preventDefault(); void save('continue') }}>
-              <fieldset className="elv-fieldset context-form" disabled={phase === 'saving'}>
+              <div className="elv-fieldset context-form" aria-busy={busy}>
                 <fieldset className="elv-fieldset context-entries" aria-describedby={errors.includes('entry') ? 'entry-error' : undefined}>
                   <legend>{t('context_entry')}</legend>
                   {(['personal', 'professional', 'soon'] as const).map(value => <label key={value} className="context-entry">
-                    <input className="elv-radio elv-radio-primary" type="radio" name="entry" value={value} checked={entry === value} aria-invalid={errors.includes('entry')}
+                    <input className="elv-radio elv-radio-primary" type="radio" disabled={busy} name="entry" value={value} checked={entry === value} aria-invalid={errors.includes('entry')}
                       onChange={() => { setEntry(value); setErrors(previous => previous.filter(field => field !== 'entry')); setMessage('') }} />
                     <span>{t(`context_${value}`)}{value === 'soon' && <small>{t('context_soon_help')}</small>}</span>
                   </label>)}
@@ -129,12 +131,12 @@ export function Onboarding() {
                   <summary>{t('context_professional_details')}</summary>
                   {(['profession', 'interests', 'careerGoal', 'careerConstraints'] as const).map(key => <div className="context-field" key={key}>
                     <label htmlFor={key}>{t(`context_${key}`)}</label>
-                    <textarea id={key} rows={key === 'profession' ? 2 : 3} className="elv-textarea" maxLength={key === 'profession' ? 120 : 500} value={draft[key] ?? ''}
+                    <textarea id={key} rows={key === 'profession' ? 2 : 3} className="elv-textarea" disabled={busy} maxLength={key === 'profession' ? 120 : 500} value={draft[key] ?? ''}
                       aria-invalid={errors.includes(key)} aria-describedby={`${key}-help${errors.includes(key) ? ` ${key}-error` : ''}`} onChange={event => change(key, event.target.value || null)} />
                     <small id={`${key}-help`}>{t(key === 'profession' ? 'context_limit120' : 'context_limit500')}</small>{fieldError(key)}
                   </div>)}
                   <div className="context-field"><label htmlFor="availabilityMinutesPerWeek">{t('context_availabilityMinutesPerWeek')}</label>
-                    <input id="availabilityMinutesPerWeek" type="number" className="elv-input" min={0} max={10080} step={1} value={draft.availabilityMinutesPerWeek ?? ''}
+                    <input id="availabilityMinutesPerWeek" type="number" className="elv-input" disabled={busy} min={0} max={10080} step={1} value={draft.availabilityMinutesPerWeek ?? ''}
                       aria-invalid={errors.includes('availabilityMinutesPerWeek')} aria-describedby={`minutes-help${errors.includes('availabilityMinutesPerWeek') ? ' availabilityMinutesPerWeek-error' : ''}`}
                       onChange={event => change('availabilityMinutesPerWeek', event.target.value === '' ? null : event.target.valueAsNumber)} />
                     <small id="minutes-help">{t('context_minutes_help')}</small>{fieldError('availabilityMinutesPerWeek')}
@@ -143,13 +145,13 @@ export function Onboarding() {
                 {message && <div ref={errorRef} tabIndex={-1} role={message === 'context_draft_saved' ? 'status' : 'alert'} className={message === 'context_draft_saved' ? '' : 'context-error'}>{t(message)}</div>}
                 <p role="status" aria-live="polite">{t(phase === 'saving' ? 'context_saving' : dirty ? 'context_unsaved' : snapshot?.completedAt ? 'context_saved' : snapshot?.version ? 'context_draft_saved' : 'context_empty')}</p>
                 <div className="context-actions">
-                  <button type="button" className="elv-btn elv-btn-ghost" onClick={() => leave('/app/dashboard')}>{t('context_back')}</button>
-                  {conflict ? <button type="button" className="elv-btn" onClick={reload}>{t('context_reload')}</button> : <>
-                    <button type="button" className="elv-btn" onClick={() => void save('save_draft')}>{t('context_draft')}</button>
-                    <button type="submit" className="elv-btn elv-btn-primary">{t(entry === 'personal' ? 'context_continue' : 'context_save')}</button>
+                  <button type="button" className="elv-btn elv-btn-ghost" disabled={busy} onClick={() => leave('/app/dashboard')}>{t('context_back')}</button>
+                  {conflict ? <button type="button" className="elv-btn" disabled={busy} onClick={reload}>{t('context_reload')}</button> : <>
+                    <button type="button" className="elv-btn" disabled={busy} onClick={() => void save('save_draft')}>{t('context_draft')}</button>
+                    <button type="submit" className="elv-btn elv-btn-primary" disabled={busy}>{t(entry === 'personal' ? 'context_continue' : 'context_save')}</button>
                   </>}
                 </div>
-              </fieldset>
+              </div>
             </form>}
     </main>
   </div>
