@@ -122,9 +122,7 @@ actual en servidor. No hay API administrativa/facilitador ni exportación nueva.
 No se llama a Claude ni a proveedores con este contexto. No hay borradores de
 contexto en localStorage, logs, fixtures personales ni documentación de casos reales.
 
-**ES-23 aún no está en main (PR #25 abierto en la comprobación). Antes de fusionar
-ES-14 deben integrarse exportación y borrado mediante el núcleo de Mauricio.**
-No se duplica ese núcleo en este ticket. Contrato que debe registrar:
+**ES-23 ya está en main y ParticipantContext está registrado en su núcleo** (`CORE` de `utils/personalData.js`; pruebas: unitaria y Postgres real de ES-23, ambas con A/B y `--replay`). No se duplica ese núcleo en este ticket. Contrato registrado:
 
 - Propietario: ParticipantContext.UserId; colección personal participantContext.
 - Campos: id, version, content, completedAt, createdAt, updatedAt. Descifrar content

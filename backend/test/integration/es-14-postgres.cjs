@@ -40,7 +40,7 @@ test('ES-14 PostgreSQL: additive migration, encrypted ownership, concurrency and
     for (const key of ['id', 'UserId', 'version', 'content', 'completedAt', 'createdAt', 'updatedAt']) assert.ok(table[key]);
   });
   const Context = require('../../ParticipantContext');
-  await require('../../DerivedInvalidation').sync();
+  await require('../../DerivedInvalidation').sync(); await require('../../DeletionRequest').sync();
   await require('../../RevokedToken').sync(); await require('../../AuthRevocation').sync();
   const express = require('express');
   const app = express(); app.use(express.json());

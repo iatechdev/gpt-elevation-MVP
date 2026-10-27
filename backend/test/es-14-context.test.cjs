@@ -22,6 +22,7 @@ function setup() {
   };
   return { rows, users, calls, invalidations };
 }
+const pick = ({ status, body }) => ({ status, body });
 test('ES-14: empty, draft, confirmed, edit and language clearing use server metadata', async t => {
   const { calls, invalidations } = setup(); const request = await startApp(t);
   const as = { role: 'user' };
@@ -69,14 +70,14 @@ test('ES-14: stale versions return 409, preserve the current record and never ec
   setup(); const request = await startApp(t);
   const saved = await request('PUT', '/api/user/context', { role: 'user', body: body({ profession: 'Current version' }) });
   const conflict = await request('PUT', '/api/user/context', { role: 'user', body: body({ profession: 'Stale version' }) });
-  assert.deepEqual(conflict, { status: 409, body: { error: 'context_conflict' } });
+  assert.deepEqual(pick(conflict), { status: 409, body: { error: 'context_conflict' } });
   assert.deepEqual((await request('GET', '/api/user/context', { role: 'user' })).body, saved.body);
 });
 test('ES-14: database and commit failures return 503 without private data or false success', async t => {
   setup(); const request = await startApp(t);
   models.ParticipantContext.findOne = async () => { throw new Error('PRIVATE DATABASE DETAIL'); };
-  assert.deepEqual(await request('GET', '/api/user/context', { role: 'user' }), { status: 503, body: { error: 'context_unavailable' } });
+  assert.deepEqual(pick(await request('GET', '/api/user/context', { role: 'user' })), { status: 503, body: { error: 'context_unavailable' } });
   models.ParticipantContext.findOne = async () => null;
   database.sequelize.transaction = async () => ({ async commit() { throw new Error('PRIVATE COMMIT'); }, async rollback() {} });
-  assert.deepEqual(await request('PUT', '/api/user/context', { role: 'user', body: body() }), { status: 503, body: { error: 'context_unavailable' } });
+  assert.deepEqual(pick(await request('PUT', '/api/user/context', { role: 'user', body: body() })), { status: 503, body: { error: 'context_unavailable' } });
 });

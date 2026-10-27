@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = require('../config/jwt');
 const { sessionProblem } = require('../utils/sessions');
 
-const verificarToken = async (req, res, next) => {
+const tokenMiddleware = (options = {}) => async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   if (!authHeader) return res.status(403).json({ error: 'Acceso denegado. No tienes llave.' });
   const token = authHeader.split(' ')[1];
@@ -19,16 +19,19 @@ const verificarToken = async (req, res, next) => {
   }
   // ES-18: la sesión debe seguir vigente en servidor (logout, corte por administrador, tokens anteriores sin jti).
   try {
-    if (await sessionProblem(payload)) {
-      return res.status(401).json({ error: 'Sesión cerrada o inválida. Inicia sesión de nuevo.' });
+    if (await sessionProblem(payload, options)) {
+      return res.status(401).json({ error: 'Sesión cerrada o inválida. Inicia sesión de nuevo. / Session closed or invalid. Sign in again.' });
     }
   } catch (error) {
-    console.error('⚠️ No se pudo verificar la sesión:', error.message);
-    return res.status(503).json({ error: 'No se pudo verificar la sesión. Intenta de nuevo.' });
+    console.error('No se pudo verificar la sesión.');
+    return res.status(503).json({ error: 'No se pudo verificar la sesión. Intenta de nuevo. / Session verification failed. Retry.' });
   }
   req.user = payload;
   next();
 };
+
+const verificarToken = tokenMiddleware();
+const verificarTokenParaBorrado = tokenMiddleware({ allowDeletionReceipt: true });
 
 const verificarAdmin = (req, res, next) => {
   verificarToken(req, res, () => {
@@ -69,4 +72,4 @@ const verificarBoard = (req, res, next) => {
   });
 };
 
-module.exports = { verificarToken, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };
+module.exports = { verificarToken, verificarTokenParaBorrado, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };
