@@ -1,0 +1,91 @@
+{"id":"seed-A","info":"chat=200"}
+{"id":"seed-B","info":"chat=200"}
+{"id":"ES23-F06 sin DATA_RIGHTS_ENABLED: preview y borrado → 503 data_rights_unavailable","ok":true,"detail":"preview=503 borrado=503"}
+{"id":"ES23-F06b mensaje bilingüe","ok":true,"detail":"Esta función aún no está disponible. / This feature is not available yet."}
+{"id":"ES23-S01 sin token → rechazado (401/403) y sin datos","ok":true,"detail":"status=403"}
+{"id":"ES23-S01b token inválido → rechazado","ok":true,"detail":"status=401"}
+{"id":"ES23-F01a vista previa del dueño: 201 con datos propios y sin datos de B","ok":true,"detail":"status=201"}
+{"id":"ES23-F01b cabeceras no-store y Vary","ok":true,"detail":"cc=no-store vary=Origin, Authorization"}
+{"id":"F01-claves","info":"schemaVersion,type,locale,profile,messages,chatTurns,diary,moods,ratings,recommendations,consents,consentHistory,planRequests,invalidations"}
+{"id":"ES23-F01c el perfil exportado no incluye contraseña ni tokens","ok":true,"detail":"[\"id\",\"name\",\"email\",\"role\",\"active\",\"onboardingCompleted\",\"motivation\",\"planId\",\"createdAt\",\"updatedAt\"]"}
+{"id":"ES23-F01d descifrado correcto (no devuelve v2: ni iv:hex)","ok":true,"detail":""}
+{"id":"ES23-F01e descarga del dueño: 200, adjunto fijo, datos propios","ok":true,"detail":"status=200"}
+{"id":"F01-redescarga","info":"status=200"}
+{"id":"ES23-S02 B descarga el id de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES23-S04a admin descarga el id de A → 404 (o 409 por rol) y sin datos","ok":true,"detail":"status=409 code=data_review_required"}
+{"id":"ES23-S04b superadmin descarga el id de A → sin datos","ok":true,"detail":"status=409"}
+{"id":"ES23-S03 id «no-es-uuid» → 404 sin 500","ok":true,"detail":"status=404"}
+{"id":"ES23-S03 id «1» → 404 sin 500","ok":true,"detail":"status=404"}
+{"id":"ES23-S03 id «../../etc/passwd» → 404 sin 500","ok":true,"detail":"status=404"}
+{"id":"ES23-S03 id «00000000-0000-4000» → 404 sin 500","ok":true,"detail":"status=404"}
+{"id":"ES23-S03 id «'; drop table \"Use» → 404 sin 500","ok":true,"detail":"status=404"}
+{"id":"ES23-S03 id «%00» → 404 sin 500","ok":true,"detail":"status=404"}
+{"id":"ES23-S05.1 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.2 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.3 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.4 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.5 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.6 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.7 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.8 entrada inválida en preview → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.9 descarga con cuerpo no vacío → 400","ok":true,"detail":"status=400"}
+{"id":"ES23-S05.10 GET sobre la ruta no cae en la SPA (404 JSON)","ok":true,"detail":"status=404 ct=application/json; charset=utf-8"}
+{"id":"ES23-F02 exportación profesional falla cerrada (503, sin datos)","ok":true,"detail":"status=503"}
+{"id":"rol-admin","info":"preview=409 code=data_review_required"}
+{"id":"rol-superadmin","info":"preview=409 code=data_review_required"}
+{"id":"ES23-S11 cambio de datos entre vista previa y descarga → 409 export_outdated, sin archivo","ok":true,"detail":"status=409 code=export_outdated"}
+{"id":"ES23-S10 vista previa vencida → 410 export_expired","ok":true,"detail":"status=410"}
+{"id":"S09-consentimientos","info":"{\"consents\":[{\"purpose\":\"necessary\",\"required\":true,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null},{\"purpose\":\"professional_bridge\",\"required\":false,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null},{\"purpose\":\"fa"}
+{"id":"S09-revocar","info":"put=404"}
+{"id":"S09-descarga-tras-revocar","info":"status=200 code=undefined incluyeDiario=true"}
+{"id":"ES23-S09 tras revocar entre vista previa y descarga no se entrega un archivo con datos desactualizados sin aviso (200 con datos idénticos a la vista previa o 409)","ok":true,"detail":"status=200"}
+{"id":"ES23-F03a borrado sin confirm:true → 400","ok":true,"detail":"status=400"}
+{"id":"ES23-F03b confirm como texto → 400","ok":true,"detail":"status=400"}
+{"id":"ES23-S01c borrado sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES23-F03c solicitud → 202 con recibo sin promesas de plazo","ok":true,"detail":"status=202 {\"id\":\"7dccebfd-1393-411c-b7ac-bc9668b0c236\",\"status\":\"accepted\",\"requestedAt\":\"2026-10-27T12:37:46.099Z\",\"activePurgedAt\":null,\"deadlinesVerified\":false,\"repeated\":false}"}
+{"id":"ES23-F04 repetirla → 200 con el mismo recibo","ok":true,"detail":"status=200"}
+{"id":"ES23-F05 un único registro en el libro de solicitudes","ok":true,"detail":"n=1"}
+{"id":"ES23-F05b cuenta bloqueada (active=false)","ok":true,"detail":""}
+{"id":"ES23-S06 sesión previa tras solicitar: diario rechazado (sin 200)","ok":true,"detail":"status=401 code=undefined"}
+{"id":"ES23-S06 sesión previa tras solicitar: chat rechazado (sin 200)","ok":true,"detail":"status=401 code=undefined"}
+{"id":"ES23-S06 sesión previa tras solicitar: historial rechazado (sin 200)","ok":true,"detail":"status=401 code=undefined"}
+{"id":"ES23-S06 sesión previa tras solicitar: consentimientos rechazado (sin 200)","ok":true,"detail":"status=401 code=undefined"}
+{"id":"ES23-S06 sesión previa tras solicitar: exportar rechazado (sin 200)","ok":true,"detail":"status=401 code=undefined"}
+{"id":"ES23-S07a login nuevo con la cuenta bloqueada → rechazado sin token","ok":true,"detail":"status=403 code=undefined"}
+{"id":"ES23-S08 PUT active:true (admin) → 409 deletion_pending","ok":false,"detail":"status=404 code=undefined"}
+{"id":"ES23-S08 unlock (admin) → 409 deletion_pending","ok":false,"detail":"status=404 code=undefined"}
+{"id":"ES23-S08 reset-password (superadmin) → 409 deletion_pending","ok":false,"detail":"status=404 code=undefined"}
+{"id":"ES23-S08 PUT active:true (superadmin) → 409 deletion_pending","ok":false,"detail":"status=404 code=undefined"}
+{"id":"ES23-S07b reactivada a la fuerza en base: el login sigue rechazado (lápida permanente)","ok":true,"detail":"status=403"}
+{"id":"ES23-S06b reactivada a la fuerza: la sesión previa sigue sin leer el diario","ok":true,"detail":"status=401"}
+{"id":"ES23-S08b GET sobre la ruta de borrado → 404 sin datos","ok":true,"detail":"status=404"}
+{"id":"ES23-S08c sesión revocada no puede ni repetir la solicitud (401)","ok":true,"detail":"status=401"}
+{"id":"ES23-S08d token expirado → rechazado","ok":true,"detail":"status=401"}
+{"id":"S02b-B-solicita-su-propio-borrado","info":"status=202 (esto crea la solicitud de B, no la de D); filas B=1"}
+{"id":"ES23-I05 10 solicitudes simultáneas: un único recibo y 0 respuestas 5xx","ok":true,"detail":"recibos=1 5xx=0 estados=200,202"}
+{"id":"ES23-I03 un solo registro en el libro","ok":true,"detail":""}
+{"id":"ES23-I04 descarga vs. borrado (6 rondas): sin 5xx, sin archivo mezclado y sin descargas tras aceptar el borrado","ok":false,"detail":"mal=0 5xx=5"}
+{"id":"P-sesion-sql","info":"null value in column \"scheduledAt\" of relation \"TherapySessions\" violates not-null constraint"}
+{"id":"P-paciente-con-sesion","info":"preview=201 code=undefined"}
+{"id":"P-terapeuta","info":"preview=409 code=data_review_required"}
+{"id":"ES23-S12 contenido hostil se exporta como dato JSON (Content-Type application/json, nosniff)","ok":true,"detail":"status=201 ct=application/json; charset=utf-8 nosniff=nosniff"}
+{"id":"ES23-S12b la tabla Users sigue existiendo","ok":true,"detail":""}
+{"id":"ES23-F07 idioma EN en la vista previa","ok":true,"detail":"locale=en"}
+{"id":"ES23-P01 vista previa p95 < 1000 ms (umbral propuesto)","ok":true,"detail":"p95=20ms"}
+{"id":"ES23-P02 descarga p95 < 1000 ms (umbral propuesto)","ok":true,"detail":"p95=18ms"}
+{"id":"P03-filas-ExportRequests-tras-20-previas","info":20}
+{"id":"P04-1000-mensajes","info":"status=201 ms=95 code=undefined"}
+{"id":"ES23-P05 más de 5.000 mensajes → 413 export_too_large (no 500)","ok":true,"detail":"status=413 code=export_too_large"}
+{"id":"P06-abuso-40-previas-simultaneas","info":"estados=201 filas=60 (sin límite de frecuencia en la ruta)"}
+{"id":"columnas","info":"ExportRequests=id,UserId,locale,fingerprint,expiresAt,createdAt | DeletionRequests=id,UserId,status,attempts,activePurgedAt,failureCode,createdAt,updatedAt"}
+{"id":"ES23-S13 ExportRequests no guarda texto de contenido","ok":true,"detail":""}
+{"id":"I-purga-D","info":"exit=0 out=[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com\n{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false} err="}
+{"id":"ES23-I01a la purga deja 0 filas de contenido personal (diario, chat, ánimo, exportaciones)","ok":true,"detail":"{\"DiaryEntries\":0,\"Messages\":0,\"ChatTurns\":0,\"MoodLogs\":0,\"Consents\":0,\"ConsentEvents\":0,\"ExportRequests\":0}"}
+{"id":"ES23-I01b la cuenta queda anonimizada (nombre y correo sustituidos)","ok":true,"detail":"email=<uuid>@deleted.invalid"}
+{"id":"ES23-I01c el recibo pasa a awaiting_verification (no «eliminado» total)","ok":true,"detail":"[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com\n{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}"}
+{"id":"ES23-I01d repetir la purga es idempotente (exit 0, sin error)","ok":true,"detail":"exit=0"}
+{"id":"ES23-I02 --replay tras restaurar vuelve a borrar lo restaurado","ok":true,"detail":"exit=0 filas=0"}
+{"id":"ES23-S14 purga con id inválido → error controlado","ok":true,"detail":"exit=1"}
+{"id":"ES23-S14b purga sin la confirmación de parada de productores → rechazada","ok":true,"detail":"exit=1"}
+{"id":"I-purga-paciente-con-sesion","info":"exit=0 out=[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2\n{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}"}
+{"fin":true,"canarios":{"A":"CANARIO-A-c14c39a0","B":"CANARIO-B-619aa772"}}
