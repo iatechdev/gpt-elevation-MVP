@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.cjs",
+    "test:db": "node --test --test-concurrency=1 test-db/*.test.cjs",
     "db:local": "node scripts/db-local.cjs"
   },
   "keywords": [],
