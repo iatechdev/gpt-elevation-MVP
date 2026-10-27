@@ -93,3 +93,29 @@ Interfaz; el contenido real del catálogo y las rúbricas; el endpoint de revisi
 - *Límites:* mide cantidad y procedencia de la evidencia, **no su calidad**; dos evidencias flojas dan «media». Mientras solo exista autorreporte, **«alta» es inalcanzable**: la interfaz no la mostrará en el piloto hasta que haya artefactos examinados, ejercicios observados o revisión humana.
 - *Parámetros:* los umbrales son una decisión de producto (Alejo). Se guardan con un `confidenceRuleVersion` en cada evaluación para poder cambiarlos sin reescribir la historia.
 - *Qué sigue haciendo el modelo:* redactar la justificación; nunca la confianza ni el nivel final.
+
+## 13. Estado de la implementación (aprobada el 27-oct-2026)
+
+**Decisiones aprobadas:** (1) catálogo y rúbricas administrables desde el backoffice, dentro de ES-29 (≈ 13–14 h); (2) la propuesta de la IA va dentro de ES-28; (3) se prepara un borrador de catálogo inicial; (4) el backoffice usa el rol `admin` (también `superadmin`, que ya pasa por `verificarAdmin`). La revisión humana queda para ES-35 y la confianza se calcula por reglas.
+
+**Código:** `backend/SkillCatalog.js`, `SkillDefinition.js`, `SkillAssessment.js`, `utils/skillCatalog.js`, `utils/skillMap.js`, `routes/skillCatalog.js` (montada en `/api/admin/skill-catalog`), `routes/skillMap.js` (montada en `/api/skill-map`), `seeds/skillCatalogDraft.json` y `scripts/seedSkillCatalogDraft.js`.
+
+**Contrato de API**
+
+| Ruta | Quién | Notas |
+| --- | --- | --- |
+| `GET/POST /api/admin/skill-catalog`, `GET /:id` | admin, superadmin | `POST` crea el único borrador abierto (copia el vigente); 409 `draft_exists` |
+| `PUT/DELETE /api/admin/skill-catalog/:id/skills/:skillKey` | admin, superadmin | solo en borrador; 409 `catalog_not_editable` si está publicado |
+| `POST /api/admin/skill-catalog/:id/publish` | admin, superadmin | 422 `incomplete_catalog` con `missing` por habilidad; registra quién publicó |
+| `GET /api/skill-map` | la persona | una entrada por habilidad; 503 `catalog_unavailable` sin catálogo publicado |
+| `POST /api/skill-map/self` | la persona | `{ skillKey, level, evidenceRefs, rationale?, requestId }`; `level: null` retira la vigente |
+
+Errores de `self`: 400 `invalid_input` / `unknown_skill` · 422 `evidence_required` / `evidence_not_valid` (con `index`) · 409 `conflict`. Cada entrada del mapa trae `self` y `review` (siempre `null` hasta ES-35), `state` (`no_evidence` \| `initial` \| `contradictory` \| `stale`), `confidence` y su motivo en ES/EN, `catalogOutdated` y `needsReview`.
+
+**Reglas implementadas:** nivel solo con evidencia propia, confirmada y en su versión vigente; confianza por reglas (`low` con una evidencia, `medium` con dos o más, `high` solo con procedencia examinada u observada, hoy inalcanzable); discrepancia de 2 o más niveles con la autonomía declarada en la evidencia → `contradictory`; si una evidencia citada cambia, se borra o se revoca, el nivel se muestra `null` (`stale`) y se procesan los eventos de invalidación; ningún agregado ni porcentaje; el módulo no importa ánimo, diario, chat ni crisis.
+
+**Validador para ES-28:** `validateAssessmentOutput(output, { skillKeys, evidence })` descarta lo inválido (esquema, habilidad fuera del catálogo, nivel sin evidencia, evidencia ajena o no vigente, cita inventada, confianza declarada) y sanea el texto. La llamada a Claude, con `callClaude` y `fenceUntrusted`, se conecta en ES-28.
+
+**Borrador de catálogo inicial:** `node scripts/seedSkillCatalogDraft.js` crea un **borrador** con 8 habilidades transversales (comunicación, trabajo en equipo, resolución de problemas, planificación y organización, adaptabilidad, aprendizaje autónomo, análisis de información, influencia y liderazgo), ES/EN y 4 niveles. **Está sin verificar**: no trae fuente, verificador ni fecha, así que el backoffice no permite publicarlo hasta que el cliente los complete. En producción solo se ejecuta con confirmación de Mauricio.
+
+**Pendiente tras fusionar #25 (ES-23):** añadir `SkillAssessments` al registro de datos personales (exportar y purgar). Las tablas de catálogo no son datos personales.
