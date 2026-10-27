@@ -101,3 +101,12 @@ Las respuestas 1 y 5 se aceptan tal cual. Las 2, 3 y 4 cambian el diseño porque
 **Alcance, hay que decidir (afecta horas):**
 - **Opción A:** ES-27 incluye todo (almacén + validación + origen `chat_derived` con citas + propuesta de la IA desde el chat). Estimación: **14–16 h** (el ticket tiene 8 h, rango 6–10).
 - **Opción B (recomendada):** ES-27 entrega el almacén, el esquema, el origen `chat_derived` con citas verificadas, el consentimiento, las versiones y la invalidación (≈ 8–10 h, dentro del ticket). La **propuesta automática de la IA** pasa a ES-28 «Mis evidencias: captura y revisión», que ya cubre la captura. Motivo: así la frontera de privacidad queda probada antes de agregar una llamada de IA que lee el chat, y el trabajo de la IA se estima con el diseño de la captura.
+
+## 14. Estado de la implementación (opción B aprobada el 27-oct-2026)
+
+- **Incluye:** almacén versionado y cifrado (`Evidence`, `EvidenceVersion`), esquema validado, borrador/confirmada, procedencia solo `self_report`, origen del chat con dueño y cita verificados, consentimiento `professional_bridge` para las evidencias del chat, invalidación al editar/borrar/revocar y la función de servidor `getConfirmedEvidence`.
+- **No incluye (pasa a ES-28):** la propuesta automática de la IA desde el chat. Cuando exista, `authoring: ai_proposed` lo fijará el servidor (la API de este PR solo acepta `person`), pasará por `callClaude` (ES-22), usará `fenceUntrusted` y su salida se validará con `normalizePayload`.
+- **Código:** `backend/Evidence.js`, `backend/EvidenceVersion.js`, `backend/utils/evidence.js`, `backend/routes/evidence.js` (montada en `/api/evidence`), gancho en `backend/utils/consent.js`.
+- **Errores estables:** 400 `invalid_input` / `invalid_source` · 403 `consent_required` · 404 `evidence_not_found` / `origin_not_found` · 409 `version_conflict` (con `currentVersion`) · 422 `incomplete_evidence` (con `missing`) / `quote_not_found` / `origin_not_usable`.
+- **Editar una evidencia confirmada como borrador** la saca del motor hasta que se confirme de nuevo, y registra la invalidación de lo derivado.
+- **Cuando #25 (ES-23) esté en `main`:** añadir `Evidences` y `EvidenceVersions` al registro de datos personales (exportar y purgar). Las tablas también deben incluirse en el procedimiento de restauración.
