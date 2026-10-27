@@ -1,0 +1,36 @@
+{"id":"ES31-S01 lectura sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES31-S01b administración sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES31-S01c usuario no administra el catálogo (403)","ok":true,"detail":"GET=403 POST=403"}
+{"id":"ES31-S01c terapeuta no administra el catálogo (403)","ok":true,"detail":"GET=403 POST=403"}
+{"id":"ES31-S01c board no administra el catálogo (403)","ok":true,"detail":"GET=403 POST=403"}
+{"id":"sin-catalogo","info":"status=503 {\"code\":\"catalog_unavailable\",\"error\":\"El catálogo de rutas aún no está disponible. / The route catalog is not available"}
+{"id":"ES31-C00 sin catálogo publicado la lectura no devuelve contenido inventado ni 500","ok":false,"detail":"status=503"}
+{"id":"ES31-C04a admin crea borrador → 201","ok":true,"detail":"status=201"}
+{"id":"ES31-C04b la semilla sintética completa se carga por la API del backoffice","ok":true,"detail":"fallos=0"}
+{"id":"ES31-C04c tres borradores simultáneos: un solo borrador y ningún 5xx","ok":true,"detail":"estados=409,409,409"}
+{"id":"borrador","info":"{\"id\":1,\"version\":1,\"status\":\"draft\",\"publishedAt\":null,\"itemCount\":27,\"items\":{\"contexts\":[{\"itemKey\":\"ctx_educacion_formacion\",\"labels\":{\"es\":\"[SINTÉTICO] Educación a formación corporativa\",\"en\":\"[S"}
+{"id":"ES31-G01 servidor SIN ALLOW_SYNTHETIC_CATALOG se niega a publicar contenido sintético (422 synthetic_content_not_allowed)","ok":true,"detail":"status=422 code=synthetic_content_not_allowed"}
+{"id":"ES31-G01b nada quedó publicado tras la negativa","ok":true,"detail":""}
+{"id":"ES31-G02 el script de semilla se niega con NODE_ENV=production","ok":true,"detail":"exit=1 Se niega a correr en producción: el catálogo sintético es solo para pruebas."}
+{"id":"ES31-C07 publicar el catálogo sintético completo con la bandera local → 200","ok":true,"detail":"status=200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-10-27T16:58:37.690Z\",\"itemCount\":27}"}
+{"id":"ES31-P04 publicar tarda menos de 3000 ms (propuesto)","ok":true,"detail":"18 ms"}
+{"id":"ES31-C05 lo publicado es inmutable: editar → 4xx","ok":true,"detail":"status=409"}
+{"id":"ES31-C05b borrar un elemento publicado → 4xx","ok":true,"detail":"status=409"}
+{"id":"ES31-C05c publicar dos veces → 4xx (no 500)","ok":true,"detail":"status=409"}
+{"id":"ES31-L00 lectura del catálogo publicado por una persona autenticada → 200 y no-store","ok":true,"detail":"status=200 cc=no-store"}
+{"id":"lectura-claves","info":"version,publishedAt,contexts,sources,roles,offers,resources"}
+{"id":"ES31-P03 la lectura no trae nombres de revisores ni de quien consultó","ok":true,"detail":""}
+{"id":"ES31-G03 todo lo leído es sintético y está marcado","ok":true,"detail":"marcas=27"}
+{"id":"ES31-O04 no existe ningún campo de demanda, volumen, elegibilidad ni probabilidad en la respuesta","ok":true,"detail":""}
+{"id":"ES31-I02b sin porcentajes ni lenguaje de reemplazo en lo leído","ok":true,"detail":""}
+{"id":"frescura-fuentes","info":"[[null,false],[null,false],[null,false],[null,true],[null,true],[null,false]]"}
+{"id":"frescura-ofertas","info":"[[null,\"current\"],[null,\"current\"],[null,\"expired\"]]"}
+file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es31-real-db.mjs:116
+check('ES31-P01 fuente inaccesible → stale de inmediato', isStale(srcIna), JSON.stringify(srcIna).slice(0, 200));
+                                                                                                 ^
+
+TypeError: Cannot read properties of undefined (reading 'slice')
+    at file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es31-real-db.mjs:116:98
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.14.0
