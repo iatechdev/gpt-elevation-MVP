@@ -119,6 +119,7 @@ check('ES27-D03 editar genera evento de invalidación (edited)', (await q(`selec
 const del2 = await call('DELETE', `/api/evidence/${unk.json.id}`, { token: a });
 check('ES27-D04 borrar dos veces → 404', del2.status === 404, `status=${del2.status}`);
 
+if (process.env.QA_ONLY_ES27) { const te = []; for (let i = 0; i < 20; i++) te.push((await call('POST', '/api/evidence', { token: a, body: save(full()) })).ms); check('ES27-P01 alta de evidencia p95 < 1000 ms (propuesto)', p95(te) < 1000, `p95=${p95(te).toFixed(0)}ms`); console.log(JSON.stringify({ fin: true })); await db.end(); process.exit(0); }
 // ════════════════ ES-29 · CATÁLOGO Y SKILL MAP ════════════════
 const levels = (p) => Object.fromEntries([1, 2, 3, 4].map(n => [n, { es: `${p} nivel ${n}`, en: `${p} level ${n}` }]));
 const skillBody = (n) => ({ type: 'transversal', labels: { es: `Habilidad ${n}`, en: `Skill ${n}` }, rubric: { levels: levels(n), source: 'Rúbrica sintética de QA', verifiedBy: 'Revisor sintético', verifiedAt: '2026-10-01' } });
