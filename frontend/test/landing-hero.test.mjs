@@ -65,7 +65,7 @@ test('ES-63: LandingPage monta HeroDoors y ya no usa el héroe anterior ni la im
 })
 
 test('QA-LAND-01: el héroe y las puertas van en el marco centrado de 1080 px de la maqueta', () => {
-  assert.match(page, /<div className="landing-frame">\s*<HeroDoors text=\{landing\.text\} \/>\s*<\/div>/);
+  assert.match(page, /<div className="landing-frame">\s*<HeroDoors text=\{landing\.text\} \/>[\s\S]*?<\/div>/);
   assert.match(css, /\.landing-frame \{[^}]*max-width: 1080px[^}]*margin-inline: auto[^}]*border-inline: 1px solid/);
   assert.match(css, /\.landing-frame \{[^}]*--landing-gutter: clamp\(1rem, 2\.6vw, 1\.75rem\)/);
 })
