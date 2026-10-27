@@ -1,0 +1,33 @@
+{"id":"REAL-T01 tablas nuevas creadas por sync()","ok":true,"detail":"[[\"ChatTurns\",true],[\"DiaryEntries\",true],[\"DerivedInvalidations\",true]]"}
+{"id":"REAL-T02 restricción única de ChatTurns (UserId, requestId)","ok":true,"detail":""}
+{"id":"ES20-F01a chat correcto: 200, 1 llamada al proveedor y 2 mensajes guardados","ok":true,"detail":"status=200 llamadas=1 mensajes=2"}
+{"id":"ES20-F01b fallo del proveedor: 502 reintentable y SIN mensaje huérfano","ok":true,"detail":"status=502 retryable=true mensajes=2 (antes 2)"}
+{"id":"ES20-F01c turno fallido queda \"failed/retryable\" y el reintento con el mismo requestId funciona","ok":true,"detail":"estadoTrasFallo=failed reintento=200"}
+{"id":"ES20-F02a repetir el mismo requestId: misma respuesta, sin segunda llamada ni mensajes duplicados","ok":true,"detail":"repetido=true llamadas=1"}
+{"id":"ES20-F02b mismo requestId con otro mensaje → 409 request_id_reuse","ok":true,"detail":"status=409"}
+{"id":"ES20-F02c 12 envíos simultáneos del mismo requestId: UNA llamada al proveedor, un solo par de mensajes, sin 5xx","ok":true,"detail":"200 originales=1 409=11 otros=[] llamadas=1"}
+{"id":"ES20-F02d turno pendiente vencido se informa como reintentable","ok":true,"detail":"{\"requestId\":\"qa07bf940e81fa6011\",\"status\":\"pending\",\"retryable\":true}"}
+{"id":"ES20-X01 (exploratorio) turno marcado vencido mientras el original sigue en curso","info":"reintento=409 llamadas=1 mensajesNuevos=2 (esperado sin duplicar: 2)"}
+{"id":"ES20-F03 el historial enviado son los MÁS RECIENTES (≤ 21), empieza por usuario y termina con el mensaje nuevo","ok":true,"detail":"enviados=21 primero={\"role\":\"user\",\"content\":\"turno-16\"}"}
+{"id":"ES20-F04a crear: 201 y el contenido en la base va cifrado v2 (sin texto en claro)","ok":true,"detail":"status=201 prefijo=v2:"}
+{"id":"ES20-F04b leer devuelve el texto original (incluye acentos y emoji)","ok":true,"detail":""}
+{"id":"ES20-F04c editar registra la invalidación","ok":true,"detail":"[{\"reason\":\"edited\",\"sourceType\":\"diary_entry\"}]"}
+{"id":"ES20-F04d borrar: deletedAt marcado, contenido vaciado, invalidación sin contenido, ya no se lista ni se lee","ok":true,"detail":"columnasInvalidaciones=id,UserId,sourceType,sourceId,reason,handledAt,createdAt"}
+{"id":"ES20-F04e borrar dos veces → 404 la segunda","ok":true,"detail":""}
+{"id":"ES20-F05a sin contextEntryIds el diario NO entra al prompt","ok":true,"detail":""}
+{"id":"ES20-F05b con contextEntryIds la entrada elegida entra al prompt (y solo ella)","ok":true,"detail":""}
+{"id":"ES20-F05c entradas ajenas, borradas o mezcladas → 404 sin llamar al proveedor","ok":true,"detail":"ajena=404 borrada=404 mezcla=404"}
+{"id":"ES20-F05d más de 3 entradas → 400","ok":true,"detail":"status=400"}
+{"id":"ES20-S01 B no lee, edita ni borra el diario de A ni ve sus turnos (404) y la fila no cambia; sus listas no incluyen lo de A","ok":true,"detail":"estados=404,404,404,404"}
+{"id":"ES20-S02 admin, terapeuta, superadmin y board: 404/lista propia ante el diario de A; las stats del admin no lo exponen; solo chat.js y diary.js leen el diario","ok":true,"detail":"fugas=[] lectores=[\"chat.js\",\"diary.js\"]"}
+{"id":"ES20-S03 entradas inválidas: 400/404 (y límites válidos 200), nunca 500","ok":true,"detail":"36 casos"}
+{"id":"ES20-S04 cifrado v2: ida y vuelta, IV distinto, alterado/truncado/otra clave fallan, el formato heredado se sigue leyendo","ok":true,"detail":"alterado=true truncado=true otraClave=true"}
+{"id":"ES20-S04b ChatTurns sin texto en claro","ok":true,"detail":""}
+{"id":"ES20-P02a diario de 200 entradas: la lista está acotada (50 por defecto, 100 máximo; límites no válidos vuelven a 50)","ok":true,"detail":"50=50 100=100 tope=100"}
+{"id":"ES20-P02b tiempos y tamaño","info":"lista50=7ms/17521B lista100=8ms/35027B"}
+{"id":"ES20-P02c GET /api/messages con 500 mensajes","info":"500 mensajes, 11 ms, 23 KB (sin paginación)"}
+(node:10572) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"ES20-P01 carga: 6 personas, 2 min, requestId repetidos: 0 errores 5xx, sin turnos duplicados","ok":true,"detail":"peticiones=260619 5xx=0 p50=2ms p95=3ms máx=69ms (umbral propuesto p95 ≤ 500 ms)"}
+{"id":"ES20-P01b p95 ≤ 500 ms (umbral propuesto)","ok":true,"detail":"p95=3ms"}
+{"resumen":{"total":27,"fallos":0}}
