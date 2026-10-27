@@ -18,7 +18,7 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -30,6 +30,7 @@ models.RevokedToken.upsert = async () => {};
 models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
+models.DeletionRequest.findOne = async () => null;
 
 // ES-22: presupuesto de IA holgado por defecto y contadores en memoria; las pruebas de presupuesto lo sobrescriben.
 process.env.AI_BUDGET_TOKENS_PER_USER = '1000000000';
@@ -99,7 +100,7 @@ async function startApp(t) {
     }
     const response = await fetch(`http://127.0.0.1:${server.address().port}${url}`, options);
     const text = await response.text();
-    return { status: response.status, body: text ? JSON.parse(text) : null };
+    return { status: response.status, body: text ? JSON.parse(text) : null, headers: response.headers };
   };
 }
 

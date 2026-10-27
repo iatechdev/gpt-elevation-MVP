@@ -46,6 +46,14 @@ app.use(cors({
   optionsSuccessStatus: 200,
 }));
 app.use(express.json());
+// Malformed JSON is rejected without Express logging the submitted private body.
+app.use((error, req, res, next) => {
+  if (!['entity.parse.failed', 'entity.too.large'].includes(error.type)) return next(error);
+  res.set('Cache-Control', 'no-store');
+  res.status(error.type === 'entity.too.large' ? 413 : 400).json({
+    code: 'invalid_input', error: 'Datos inválidos. / Invalid data.',
+  });
+});
 
 // Salud para el healthcheck de Railway (sin base de datos ni auth)
 // commit: SHA corto del despliegue (lo inyecta Railway); permite comprobar qué versión corre tras un despliegue o una reversión
@@ -73,6 +81,8 @@ app.use('/api/plans',           require('./routes/plans'));           // HU-077 
 app.use('/api/manifest',        require('./routes/board'));
 
 // ── Rutas usuario ─────────────────────────────────────────────────────────────
+// Before blanket /api authentication: deletion retries have a narrowly scoped session policy.
+app.use('/api', require('./routes/dataRights'));
 app.use('/api',                 verificarToken, require('./routes/chat'));
 app.use('/api',                 verificarToken, require('./routes/session'));        // ES-18 — logout y logout-all
 app.use('/api/consents',        verificarToken, require('./routes/consents'));       // ES-19 — consentimiento por propósito

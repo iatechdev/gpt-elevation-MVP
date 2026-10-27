@@ -11,6 +11,13 @@ const SessionRating = require('../SessionRating');
 const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
 const { revokeUserSessions } = require('../utils/sessions');
+const { deletionPending } = require('../utils/deletionGuard');
+
+const refuseDeletionPending = async (id, res) => {
+  if (!await deletionPending(Number(id))) return false;
+  res.status(409).json({ code: 'deletion_pending', error: 'La cuenta tiene una solicitud de eliminación. / The account has a deletion request.' });
+  return true;
+};
 
 // Un promedio de muy pocas entradas revela el valor individual: por debajo de este número de entradas se devuelve null (QA-18-02).
 const MIN_AVERAGE_SAMPLE = 5;
@@ -124,6 +131,7 @@ router.get('/', async (req, res) => {
 router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boolean) }), async (req, res) => {
   try {
     const { id } = req.params;
+    if (await refuseDeletionPending(id, res)) return;
     const { role, active } = req.body;
     const adminRole = req.user.role;
     const adminId = req.user.id;
@@ -178,6 +186,7 @@ router.delete('/:id', async (req, res) => {
     if (adminRole !== 'superadmin') {
       return res.status(403).json({ error: 'Solo el superadmin puede eliminar usuarios permanentemente.' });
     }
+    if (await refuseDeletionPending(id, res)) return;
     if (parseInt(id) === adminId) {
       return res.status(403).json({ error: 'No podés eliminar tu propio usuario.' });
     }
@@ -373,6 +382,7 @@ router.get('/alerts', async (req, res) => {
 // ==========================================
 router.put('/:id/unlock', async (req, res) => {
   try {
+    if (await refuseDeletionPending(req.params.id, res)) return;
     const usuario = await User.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
 
@@ -403,6 +413,7 @@ router.put('/:id/reset-password', async (req, res) => {
     if (adminRole !== 'superadmin') {
       return res.status(403).json({ error: 'Solo el superadmin puede resetear contraseñas.' });
     }
+    if (await refuseDeletionPending(req.params.id, res)) return;
 
     const { newPassword } = req.body ?? {};
     if (typeof newPassword !== 'string' || newPassword.trim().length < 6) {
