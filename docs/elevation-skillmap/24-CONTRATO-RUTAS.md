@@ -89,3 +89,7 @@ La pantalla (Alejo/Codex); preferencias por similitud semántica y la redacción
 8. **Orden de trabajo:** empezar cuando #27, #28, #30 y #33 estén en `main`. ¿Quién los fusiona y cuándo?
 
 **Estimación:** 10–12 h (el ticket tiene 8 h, rango 6–10): restricciones 2 h, motor y fichas 4 h, decisiones y revisión 2 h, Postgres real y mutaciones 2–3 h. Sin contenido real en el catálogo no se puede validar la pertinencia con las seis personas.
+
+## 11. Aprobación (27-oct-2026)
+
+Mauricio aprobó las 8 decisiones **como están**. Estado: **la implementación no ha empezado** por la decisión 8: los PR de los que depende (#27 ES-25, #28 ES-27, #30 ES-29, #33 ES-31; además #31, la parte de IA de ES-28) siguen abiertos, con el CI en verde pero **sin revisión de QA**. Orden de fusión sugerido, una vez QA los apruebe: #33 y #27 (independientes, base `main`) → #28 → #30 (cambiar su base a `main`) → #31 (ídem). Los conflictos entre ellos son triviales (`consent.js`, `server.js`, `test/support.cjs`, `package.json`).
