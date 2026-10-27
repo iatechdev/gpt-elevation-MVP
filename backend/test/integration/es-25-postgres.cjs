@@ -120,4 +120,17 @@ test('ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y
     await assert.rejects(bridge.getApprovedContext(userId, 'pg-engine'), (e) => e.code === 'no_context');
     assert.equal(await Transfer.count({ where: { UserId: userId } }), 0); // nada cruzó
   });
+  await t.test('QA-25-01: 10 confirmaciones simultáneas del mismo dueño, 25 rondas con personas nuevas: cero errores, versiones consecutivas y una sola activa', async () => {
+    for (let round = 0; round < 25; round++) {
+      const userId = 500 + round;
+      const fieldsFor = (n) => [{ key: 'motivations', text: `Texto ${round}-${n}` }];
+      const previews = await Promise.all(Array.from({ length: 10 }, (_, n) => bridge.preview(userId, { fields: fieldsFor(n) })));
+      const results = await Promise.allSettled(previews.map((p, n) => bridge.confirm(userId, { fields: fieldsFor(n), token: p.token, requestId: `req-stress-${round}-${String(n).padStart(2, '0')}` })));
+      assert.deepEqual(results.filter((r) => r.status === 'rejected').map((r) => r.reason.code || r.reason.message), [], 'ronda ' + round);
+      const rows = await Version.findAll({ where: { UserId: userId }, order: [['version', 'ASC']] });
+      assert.deepEqual(rows.map((r) => r.version), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'ronda ' + round);
+      assert.equal(rows.filter((r) => r.status === 'active').length, 1);
+    }
+  });
+
 });

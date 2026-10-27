@@ -88,3 +88,7 @@ Interfaz; propuestas de la IA para los campos; el motor de rutas y el Skill Map 
 - **Errores estables:** 400 `invalid_input` · 403 `consent_required` · 404 `origin_not_found` / `no_context` · 409 `preview_mismatch` · 410 `preview_expired` · 422 `field_not_shareable` (con `fieldIndex`, sin motivo).
 - **Reintentos:** hasta 6 intentos acotados ante colisión de versión; garantizan lo que exige la restricción única parcial de una versión activa por persona.
 - **Apertura:** a diferencia de ES-23, esta ruta no está detrás de un interruptor: sin versiones confirmadas no hay nada que leer y el motor aún no existe. Si Mauricio prefiere un interruptor, es un cambio pequeño.
+
+## 15. Respuesta a QA-25-01 (confirmaciones simultáneas)
+
+10 confirmaciones simultáneas del mismo dueño daban `500 bridge_failed` en algunos casos (colisión del `INSERT` agotando los 6 reintentos). Ahora **las confirmaciones de una misma persona se atienden de una en una dentro del proceso** (igual que en ES-23); los reintentos acotados quedan como respaldo para otra instancia, y si aun así se agotan la respuesta es **`409 conflict` reintentable**, nunca un 500. Pruebas: 40 confirmaciones simultáneas por HTTP con mocks (todas `201`, versiones consecutivas, una sola activa) y 25 rondas de 10 simultáneas en Postgres real; sin la serialización esa prueba falla (reproduce lo que vio QA). *Limitación: la serialización es por proceso (piloto de una sola instancia).*

@@ -223,3 +223,31 @@ test('ES-25 frontera en el código: el puente solo pide id y marca de tiempo de 
   const routes = fs.readFileSync(path.resolve(__dirname, '..', 'routes', 'careerContext.js'), 'utf8');
   assert.doesNotMatch(routes.split(String.fromCharCode(10)).filter((line) => !line.startsWith(String.fromCharCode(47, 47))).join(String.fromCharCode(10)), /getApprovedContext|DiaryEntry|ChatTurn/); // ninguna ruta HTTP entrega el contexto al motor
 });
+
+test('ES-25 (QA-25-01) 40 confirmaciones simultáneas del mismo dueño: ninguna respuesta 5xx, versiones consecutivas y una sola activa', async (t) => {
+  const { state } = setup();
+  const request = await startApp(t);
+  const fields = (i) => [{ key: 'motivations', text: `Texto ${i}` }];
+  const previews = await Promise.all(Array.from({ length: 40 }, (_, i) => post(request, 'preview', A, { fields: fields(i) })));
+  const results = await Promise.all(previews.map((p, i) => post(request, 'confirm', A, { fields: fields(i), token: p.body.token, requestId: `req-race-${String(i).padStart(4, '0')}` })));
+  assert.deepEqual(results.filter((r) => r.status >= 500).map((r) => r.status), []);
+  assert.ok(results.every((r) => [201, 409].includes(r.status)));
+  const versions = state.tables.CareerContextVersion.filter((v) => v.UserId === 101).map((v) => v.version).sort((a, b) => a - b);
+  assert.deepEqual(versions, versions.map((_, i) => i + 1)); // consecutivas
+  assert.equal(state.tables.CareerContextVersion.filter((v) => v.UserId === 101 && v.status === 'active').length, 1);
+  assert.equal(results.filter((r) => r.status === 201).length, 40); // al serializar por persona todas entran
+});
+
+test('ES-25 (QA-25-01) si se agotan los reintentos por colisión, la respuesta es un 409 reintentable y no un 500', async (t) => {
+  setup();
+  const request = await startApp(t);
+  const CareerContextVersion = require('../CareerContextVersion');
+  const originalCreate = CareerContextVersion.create;
+  const fieldsA = [{ key: 'motivations', text: 'Colisión persistente' }];
+  const p = await post(request, 'preview', A, { fields: fieldsA });
+  try {
+    CareerContextVersion.create = async () => { throw Object.assign(new Error('unique'), { name: 'SequelizeUniqueConstraintError' }); };
+    const r = await post(request, 'confirm', A, { fields: fieldsA, token: p.body.token, requestId: 'req-collide-0001' });
+    assert.deepEqual([r.status, r.body.code], [409, 'conflict']);
+  } finally { CareerContextVersion.create = originalCreate; }
+});

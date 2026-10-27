@@ -132,6 +132,18 @@ async function ownTransaction(fn) {
   }
 }
 
+// QA-25-01: las confirmaciones de una misma persona se atienden de una en una dentro de este proceso (como en ES-23). Así dos primeras
+// confirmaciones ya no compiten por el INSERT; los reintentos y el 409 quedan como respaldo (otra instancia, otro proceso).
+const ownerQueues = new Map();
+function serialize(userId, fn) {
+  const previous = ownerQueues.get(userId) || Promise.resolve();
+  const run = previous.then(fn, fn);
+  const tail = run.then(() => {}, () => {});
+  ownerQueues.set(userId, tail);
+  tail.then(() => { if (ownerQueues.get(userId) === tail) ownerQueues.delete(userId); });
+  return run;
+}
+
 async function confirm(userId, { fields, token, requestId }) {
   if (typeof requestId !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(requestId)) throw invalid();
   const clean = normalizeFields(fields);
@@ -155,21 +167,27 @@ async function confirm(userId, { fields, token, requestId }) {
     return { record: toRecord(row, representation(clean)), created: true };
   };
 
-  for (let attempt = 1; ; attempt++) {
-    try {
-      if (!withBridge) return await ownTransaction(work);
+  return serialize(userId, async () => {
+    for (let attempt = 1; ; attempt++) {
       try {
-        return await consent.withConsent(userId, PURPOSE, work);
+        if (!withBridge) return await ownTransaction(work);
+        try {
+          return await consent.withConsent(userId, PURPOSE, work);
+        } catch (error) {
+          if (error instanceof consent.ConsentRequiredError) throw consentError();
+          throw error;
+        }
       } catch (error) {
-        if (error instanceof consent.ConsentRequiredError) throw consentError();
+        // Confirmaciones simultáneas: gana el INSERT de una; las demás se reintentan (acotado) sobre lo ya creado.
+        if (error && error.name === 'SequelizeUniqueConstraintError' && attempt < MAX_ATTEMPTS) continue;
+        // Agotados los intentos: la integridad se mantiene (índice único), pero la respuesta es un 409 reintentable, no un 500.
+        if (error && error.name === 'SequelizeUniqueConstraintError') {
+          throw new BridgeError(409, 'conflict', 'Otro cambio ocurrió al mismo tiempo. Reintenta.', 'Another change happened at the same time. Retry.');
+        }
         throw error;
       }
-    } catch (error) {
-      // Confirmaciones simultáneas: gana el INSERT de una; las demás se reintentan (acotado) sobre lo ya creado.
-      if (error && error.name === 'SequelizeUniqueConstraintError' && attempt < MAX_ATTEMPTS) continue;
-      throw error;
     }
-  }
+  });
 }
 
 async function revokeActive(userId, transaction, { onlyWithConsent = false } = {}) {
