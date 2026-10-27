@@ -369,3 +369,71 @@ test('ES-28 frontera en el código: la propuesta A solo lee mensajes de la perso
   assert.match(code('aiProposals.js'), /callClaude/); // toda llamada pasa por el cliente con presupuesto
   for (const f of ['evidenceProposal.js', 'skillProposal.js']) assert.doesNotMatch(code(f), /anthropic\.messages|require\('\.\/anthropic'\)/); // nunca llaman al proveedor directamente
 });
+
+// QA-28-01: el filtro de la SALIDA del modelo rechaza lenguaje clínico y de tratamiento (ES y EN) en cualquier campo de texto.
+const CLINICAL = {
+  empleabilidad: 'Tiene alta empleabilidad', employability: 'Her employability is high', diagnostico: 'Parece un diagnóstico claro', prescripcion: 'Le prescribo un plan',
+  trastorno: 'Muestra un trastorno del sueño', disorder: 'He may have a disorder', depresion: 'La persona atraviesa una depresión', ansiedad: 'Tiene un cuadro de ansiedad generalizada',
+  anxiety: 'He shows anxiety at work', tratamiento: 'Necesita iniciar un tratamiento psicológico', treatment: 'She needs treatment', medicar: 'Debería medicarse pronto',
+  medicate: 'He should medicate daily', antidepresivo: 'Debería tomar antidepresivos', terapia: 'Le conviene hacer terapia de pareja', therapy: 'Couples therapy would help',
+  psicologo: 'Consulte a un psicólogo', psychologist: 'See a psychologist', psiquiatra: 'Debe ver a un psiquiatra', psychiatrist: 'See a psychiatrist', sintoma: 'Presenta un síntoma claro', symptom: 'A clear symptom appears',
+};
+const NEUTRAL = ['Probar en paralelo evita sorpresas', 'Coordinó un equipo de cuatro personas', 'Planificó el calendario del segundo trimestre'];
+
+test('ES-28 (QA-28-01) filtro de salida: cada término clínico o de tratamiento se rechaza, por separado, con y sin tildes y en mayúsculas', () => {
+  const { FORBIDDEN_TERMS, hasForbiddenTerm } = require('../utils/aiProposals');
+  assert.deepEqual(Object.keys(CLINICAL).sort(), Object.keys(FORBIDDEN_TERMS).sort()); // cada término de la lista tiene su prueba
+  for (const [term, phrase] of Object.entries(CLINICAL)) {
+    assert.equal(hasForbiddenTerm(phrase), true, term);
+    assert.equal(hasForbiddenTerm(phrase.toUpperCase()), true, `${term} (mayúsculas)`);
+    assert.equal(hasForbiddenTerm(phrase.normalize('NFD').replace(/[̀-ͯ]/g, '')), true, `${term} (sin tildes)`);
+  }
+  for (const phrase of NEUTRAL) assert.equal(hasForbiddenTerm(phrase), false, phrase);
+});
+
+test('ES-28 (QA-28-01) propuesta A: el término clínico se rechaza (502) en CADA campo de texto de la salida y el texto neutro pasa', async (t) => {
+  const { provider, turn } = setup();
+  const request = await startApp(t);
+  await grant(request, U);
+  const ask = () => post(request, U, '/api/evidence/proposals', { turnIds: [turn.id] });
+  const q = [{ turnId: turn.id, quote: 'migré 80 clientes' }];
+  const fields = {
+    title: (s) => goodDraft({ title: s, quotes: q }), situation: (s) => goodDraft({ situation: s, quotes: q }), responsibility: (s) => goodDraft({ responsibility: s, quotes: q }),
+    actions: (s) => goodDraft({ actions: [s], quotes: q }), alternatives: (s) => goodDraft({ alternatives: [s], quotes: q }), goal: (s) => goodDraft({ goal: s, quotes: q }),
+    delivered: (s) => goodDraft({ delivered: s, quotes: q }), observedEffect: (s) => goodDraft({ observedEffect: { known: true, text: s }, quotes: q }), learning: (s) => goodDraft({ learning: s, quotes: q }),
+  };
+  for (const [field, build] of Object.entries(fields)) {
+    for (const phrase of Object.values(CLINICAL)) {
+      provider.out = build(phrase);
+      const r = await ask();
+      assert.deepEqual([r.status, r.body.code], [502, 'invalid_model_output'], `${field}: ${phrase}`);
+    }
+    provider.out = build(NEUTRAL[0]);
+    assert.equal((await ask()).status, 200, `${field}: neutro`);
+  }
+});
+
+test('ES-28 (QA-28-01) propuesta B: la justificación clínica se rechaza (502) y la neutra pasa', async (t) => {
+  const { provider } = setup();
+  const request = await startApp(t);
+  await publishCatalog(request);
+  const e = await evidence.create(101, evBody());
+  const propose = (rationale) => {
+    provider.out = [{ skillKey: 'comunicacion', level: 2, evidenceRefs: [{ evidenceId: e.id, version: 1 }], rationale }];
+    return post(request, U, '/api/skill-map/proposals', { skillKeys: ['comunicacion'] });
+  };
+  for (const phrase of Object.values(CLINICAL)) {
+    const r = await propose(phrase);
+    assert.deepEqual([r.status, r.body.code], [502, 'invalid_model_output'], phrase);
+  }
+  for (const phrase of NEUTRAL) assert.equal((await propose(phrase)).status, 200, phrase);
+});
+
+test('ES-28 (QA-28-01) las cinco frases de la sonda de QA se rechazan y el texto neutro pasa', () => {
+  const { hasForbiddenTerm } = require('../utils/aiProposals');
+  for (const phrase of [
+    'La persona sufre depresión y debería medicarse', 'Tiene un cuadro de ansiedad generalizada', 'Necesita iniciar un tratamiento psicológico',
+    'Debería tomar antidepresivos', 'Le conviene hacer terapia de pareja',
+  ]) assert.equal(hasForbiddenTerm(phrase), true, phrase);
+  assert.equal(hasForbiddenTerm('Probar en paralelo evita sorpresas'), false);
+});

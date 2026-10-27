@@ -37,12 +37,24 @@ const appearsIn = (needle, haystack) => { const n = flat(needle); return n.lengt
 // Números de un texto sin separadores de miles ni espacios («10.000» = «10,000» = «10000»).
 const numbersOf = (text) => new Set((String(text).match(/\d[\d.,]*/g) || []).map((n) => n.replace(/[.,\s]/g, '').replace(/^0+(?=\d)/, '')).filter(Boolean));
 
-// Filtro de la SALIDA del modelo: sin diagnóstico, prescripción ni empleabilidad, y ningún porcentaje que la persona no haya escrito.
-// Es un filtro por palabras, limitado: no entiende el sentido de una frase.
-const FORBIDDEN = /empleabilidad|employab|diagn[oó]stic|diagnos|prescrib|prescripci|medicaci|medication|trastorno|disorder/i;
+// Filtro de la SALIDA del modelo (no de lo que la persona escribe): sin lenguaje clínico, de tratamiento ni de empleabilidad, y ningún
+// porcentaje que la persona no haya escrito. Es un filtro por palabras, limitado: no entiende el sentido de una frase, y puede dar falsos
+// positivos con textos legítimos del sector salud («terapia», «tratamiento de datos»). Se compara sin tildes y sin distinguir mayúsculas.
+const FORBIDDEN_TERMS = Object.freeze({
+  empleabilidad: /empleabilidad/, employability: /employab/, diagnostico: /diagnos/, prescripcion: /prescri(b|pc)/,
+  trastorno: /trastorno/, disorder: /disorder/,
+  depresion: /\bdepresi(on|vo)|\bdepress(ion|ive|ed)/, ansiedad: /ansiedad/, anxiety: /anxi(ety|ous)/,
+  tratamiento: /tratamiento/, treatment: /treatment/,
+  medicar: /medicar|medicamento|medicacion/, medicate: /medicat(e|ed|ing|ion)|medicament/,
+  antidepresivo: /antidepres/, terapia: /terapia|terapeutic|psicoterap/, therapy: /therap(y|ies|eutic)|psychotherap/,
+  psicologo: /psicolog(o|a|os|as)/, psychologist: /psycholog(ist|ists)/, psiquiatra: /psiquiatr/, psychiatrist: /psychiatr/,
+  sintoma: /sintoma/, symptom: /symptom/,
+});
+const unaccent = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const hasForbiddenTerm = (text) => { const plain = unaccent(text); return Object.values(FORBIDDEN_TERMS).some((re) => re.test(plain)); };
 function outputIsClean(texts, sourceText) {
   const joined = texts.join(' | ');
-  if (FORBIDDEN.test(joined)) return false;
+  if (hasForbiddenTerm(joined)) return false;
   const source = flat(sourceText).replace(/\s+/g, '');
   return (joined.match(/\d+(?:[.,]\d+)?\s*%/g) || []).every((p) => source.includes(flat(p).replace(/\s+/g, '')));
 }
@@ -71,4 +83,4 @@ function respondError(res, error) {
   return false;
 }
 
-module.exports = { ProposalError, invalidOutput, askForJson, flat, appearsIn, numbersOf, outputIsClean, respondError };
+module.exports = { FORBIDDEN_TERMS, hasForbiddenTerm, ProposalError, invalidOutput, askForJson, flat, appearsIn, numbersOf, outputIsClean, respondError };
