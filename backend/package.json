@@ -7,7 +7,8 @@
     "start": "node server.js",
     "test": "node --test test/*.test.cjs",
     "db:local": "node scripts/db-local.cjs",
-    "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs"
+    "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs",
+    "test:bridge:pg": "node --test test/integration/es-25-postgres.cjs"
   },
   "keywords": [],
   "author": "",
