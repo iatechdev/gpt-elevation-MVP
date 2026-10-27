@@ -66,3 +66,30 @@ Interfaz; el contenido real del catálogo y las rúbricas; el endpoint de revisi
 3. **IA dentro de ES-29:** el criterio de aceptación pide validar la salida del modelo, así que propongo incluir la propuesta con Claude (con proveedor simulado en las pruebas). Estimación: **12–14 h** (el ticket tiene 10 h, rango 8–12). Alternativa: ES-29 entrega almacén, reglas, validación y mapa (≈ 9–10 h) y la propuesta de la IA va aparte.
 4. **Datos legados 1–5:** ¿confirmas que no hay datos legados que llevar al piloto?
 5. **Confianza por reglas** (no la declarada por el modelo), con el tope `medium` mientras solo exista autorreporte. ¿De acuerdo?
+
+## 12. Revisión tras las respuestas de Mauricio (27-oct-2026)
+
+**1 · Catálogo y rúbricas administrables por el cliente desde el backoffice.** Sustituye al §2 (archivos JSON): el contenido vive en base de datos, versionado y publicable.
+- `SkillCatalogs` (`version`, `status`: `draft` \| `published` \| `archived`, `publishedAt`, `publishedBy`) y `SkillDefinitions` (`catalogId`, `skillKey` canónica y estable, `type`, etiquetas ES/EN y rúbrica: criterios observables por nivel 1–4 en ES/EN, `source`, `verifiedBy`, `verifiedAt`).
+- **Solo un catálogo `published` está vigente.** Un catálogo publicado es inmutable: para cambiarlo se crea un borrador copiado del vigente, se edita y se publica como versión nueva. Así cada evaluación sigue apuntando a la rúbrica exacta con la que se hizo.
+- **Publicar exige** que cada habilidad tenga etiquetas ES/EN, los 4 niveles descritos en ambos idiomas, fuente, verificador y fecha; si falta algo, no se publica (422 con la lista de faltantes).
+- API para el backoffice (rol de administración existente; *a confirmar si el cliente usa `admin` o `board`*): `GET/POST /api/admin/skill-catalog` (versiones y borrador nuevo), `PUT /api/admin/skill-catalog/:id/skills/:skillKey`, `DELETE …/skills/:skillKey`, `POST /api/admin/skill-catalog/:id/publish`. Cada publicación registra quién y cuándo (sin copiar contenido a los registros). La **pantalla del backoffice** la construye Alejo con este contrato.
+- Si el catálogo vigente cambia una rúbrica, las evaluaciones antiguas **conservan su versión** y el mapa las marca `catalogOutdated` (recalcular, a elección de la persona); no se recalcula sola.
+- El sistema **no trae contenido propio**: sin catálogo publicado, el mapa responde «catálogo no disponible» y no evalúa nada.
+
+**2 · Revisión humana.** Decido que **esta HU guarde la discrepancia y deje el endpoint de revisión para ES-35**. Motivo: un revisor tendría que leer la evidencia de otra persona; eso es un flujo de datos nuevo que exige el propósito `facilitator_sharing` (ES-19), una consola y su propio diseño de permisos. Hacerlo aquí, sin esa consola, arriesga abrir un acceso que no está diseñado. El modelo ya tiene la pista `review`, así que ES-35 solo añade el endpoint y la consola.
+
+**3 · Alcance e IA (recomendación).** Con el catálogo administrable la HU crece. Estimación honesta:
+- Catálogo/rúbricas en BD + API de administración + publicación: **4–5 h**
+- Evaluaciones, reglas, confirmación atómica, pistas, estado `stale`, mapa y validación de la salida del modelo (función pura, probada con salidas simuladas): **8–9 h**
+- Pruebas en Postgres real y mutaciones: incluidas.
+- **Total sin la llamada a Claude: ≈ 13–14 h** (el ticket tiene 10 h, rango 8–12; el catálogo administrable es alcance nuevo).
+- **Recomiendo dejar la propuesta con Claude para una historia siguiente (≈ 3–4 h)**, por dos razones: (a) no se puede probar con sentido sin un catálogo real publicado, que el cliente aún no ha cargado; (b) así la frontera de privacidad y las reglas quedan probadas antes de añadir una llamada de IA. El criterio «validar salida del modelo» se cumple con el validador (`validateAssessmentOutput`), que la historia siguiente solo conecta a `callClaude`. *(Pendiente: decidir si se registra como ticket nuevo o dentro de ES-28; el alcance lo decide Alejo.)*
+
+**4 · No hay datos legados 1–5.** Confirmado: no hay nada que importar. Para **organizar el piloto** hace falta contenido que crea el cliente (catálogo y rúbricas, desde el backoffice) y, para probar en staging, **datos sintéticos claramente marcados** (un script de siembra solo para staging que se niega a correr en producción, como el de ES-66). No se inventan fuentes ni verificaciones: si el cliente quiere arrancar más rápido, puedo preparar un **borrador de catálogo inicial** (`draft`, marcado «sin verificar») para que lo revise, edite y publique; no queda publicado por mí.
+
+**5 · Confianza calculada por reglas: implicaciones.**
+- *A favor:* es determinista, explicable («una sola evidencia de autorreporte») y comprobable; el PRD dice que la confianza que declara un LLM no está calibrada.
+- *Límites:* mide cantidad y procedencia de la evidencia, **no su calidad**; dos evidencias flojas dan «media». Mientras solo exista autorreporte, **«alta» es inalcanzable**: la interfaz no la mostrará en el piloto hasta que haya artefactos examinados, ejercicios observados o revisión humana.
+- *Parámetros:* los umbrales son una decisión de producto (Alejo). Se guardan con un `confidenceRuleVersion` en cada evaluación para poder cambiarlos sin reescribir la historia.
+- *Qué sigue haciendo el modelo:* redactar la justificación; nunca la confianza ni el nivel final.
