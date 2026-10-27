@@ -192,6 +192,7 @@ const comS = (mapS.json?.skills ?? []).find(x => x.skillKey === 'comunicacion');
 check('ES29-M14 editar la evidencia citada → nivel null (stale), sin conservar el nivel viejo', comS?.self?.level === null && comS.self.stale === true, JSON.stringify([comS?.self?.level, comS?.self?.stale, comS?.self?.state]));
 check('ES29-M15 los eventos de invalidación de esa evidencia quedan procesados (handledAt)', (await q(`select count(*)::int n from "DerivedInvalidations" where "UserId"=$1 and "sourceType"='evidence' and "sourceId"=$2 and "handledAt" is null`, [A.id, String(evA.json.id)])).every(r2 => r2.n === 0), '');
 
+if (process.env.QA_ONLY_UPTO29) { const tm = []; for (let i = 0; i < 20; i++) tm.push((await call('GET', '/api/skill-map', { token: a })).ms); check('ES29-P01 lectura del Skill Map p95 < 1000 ms (propuesto)', p95(tm) < 1000, `p95=${p95(tm).toFixed(0)}ms`); console.log(JSON.stringify({ fin: true })); await db.end(); process.exit(0); }
 // ════════════════ ES-28 · PROPUESTAS DE LA IA ════════════════
 const P = await mkUser('P'); const pt = mint(P);
 const TURN = 'Lideré la migración del sistema de facturación. La meta era migrar 120 clientes y migré 80 clientes en el segundo trimestre. Coordiné a cuatro personas.';

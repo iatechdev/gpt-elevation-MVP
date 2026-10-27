@@ -1,0 +1,36 @@
+{"id":"DEP-01 salud 200 y commit desplegado = el esperado","ok":true,"detail":"{\"status\":\"ok\",\"commit\":\"4311d69\"}"}
+{"id":"DEP-02 registro y login con datos sintéticos","ok":true,"detail":""}
+{"id":"ES21-crisis","info":"status=200 claves=reply,requestId,interrupted"}
+{"id":"ES21-S01 mensaje de crisis: respuesta de seguridad inmediata (200), sin 5xx y sin llamar a la IA","ok":true,"detail":"status=200 ms=128"}
+{"id":"ES21-S01b la respuesta de crisis no inventa teléfonos ni recursos","ok":true,"detail":""}
+{"id":"ES21-S02 country con SQL no da 400 ni 5xx en una respuesta de seguridad","ok":true,"detail":"status=200"}
+{"id":"ES21-S02 lang desconocido no da 400 ni 5xx en una respuesta de seguridad","ok":true,"detail":"status=200"}
+{"id":"ES21-S02 country como objeto no da 400 ni 5xx en una respuesta de seguridad","ok":true,"detail":"status=200"}
+{"id":"ES21-S03 chat sin token → rechazado","ok":true,"detail":""}
+{"id":"ES22-chat","info":"status=200 code=undefined ms=6312"}
+{"id":"ES22-C01 el chat responde 200 (presupuesto cargado), o 503 ai_budget_not_configured; nunca 500","ok":true,"detail":"status=200 code=undefined"}
+{"id":"ES23-estado","info":"preview=503 borrado=503"}
+{"id":"ES23-D01 exportación y eliminación apagadas (503 data_rights_unavailable)","ok":true,"detail":"preview=503 code=data_rights_unavailable borrado=503"}
+{"id":"ES23-D02 sin token no se llega al contenido (401/403/503, nunca 200)","ok":true,"detail":""}
+{"id":"ES25-D01 /api/career-context: 200 JSON con sesión y rechazo sin sesión","ok":true,"detail":"con=200 sin=403"}
+{"id":"ES27-D01 /api/evidence: 200 JSON con sesión y rechazo sin sesión","ok":true,"detail":"con=200 sin=403"}
+{"id":"ES25-D02 puente por el camino directo: vista previa 200 y confirmación 201 (versión 1)","ok":true,"detail":"preview=200 confirm=201"}
+{"id":"ES27-D02 evidencia directa confirmada: 201 y versión 1","ok":true,"detail":"status=201"}
+{"id":"ES27-D03 la persona no puede declarar procedencia «artifact_examined» (4xx, nunca 5xx)","ok":true,"detail":"status=400"}
+{"id":"ES25-D03 aislamiento: otra persona no ve el puente ni la evidencia de A","ok":true,"detail":"status=200/200"}
+{"id":"ES27-D04 el ID de evidencia de A pedido por B → 404","ok":true,"detail":""}
+{"id":"ES25-D04 revocar el puente → 200","ok":true,"detail":""}
+{"id":"ES27-D05 borrar la evidencia propia → 200 y luego 404","ok":true,"detail":"status=200"}
+{"id":"LAT-staging (ms)","info":"{\"career_context\":{\"p50\":\"134\",\"p95\":\"141\"},\"evidence\":{\"p50\":\"131\",\"p95\":\"141\"},\"consents\":{\"p50\":\"128\",\"p95\":\"133\"},\"messages\":{\"p50\":\"111\",\"p95\":\"125\"},\"diary\":{\"p50\":\"129\",\"p95\":\"139\"}}"}
+{"id":"LAT-01 lecturas autenticadas con p95 menor a 1000 ms (umbral propuesto; mide región y pool, no código)","ok":true,"detail":"{\"career_context\":{\"p50\":\"134\",\"p95\":\"141\"},\"evidence\":{\"p50\":\"131\",\"p95\":\"141\"},\"consents\":{\"p50\":\"128\",\"p95\":\"133\"},\"messages\":{\"p50\":\"111\",\"p95\":\"125\"},\"diary\":{\"p50\":\"129\",\"p95\":\"139\"}}"}
+{"id":"NOVEDAD-Skill Map (ES-29)","info":"status=200 html=true"}
+{"id":"NOVEDAD Skill Map (ES-29): sin datos y sin 5xx (HTML 200 de la SPA o 404 JSON)","ok":true,"detail":"status=200"}
+{"id":"NOVEDAD-catálogo de rutas (ES-31)","info":"status=200 html=true"}
+{"id":"NOVEDAD catálogo de rutas (ES-31): sin datos y sin 5xx (HTML 200 de la SPA o 404 JSON)","ok":true,"detail":"status=200"}
+{"id":"NOVEDAD-contexto del participante (ES-14)","info":"status=200 html=true"}
+{"id":"NOVEDAD contexto del participante (ES-14): sin datos y sin 5xx (HTML 200 de la SPA o 404 JSON)","ok":true,"detail":"status=200"}
+{"id":"NOVEDAD-ruta inexistente","info":"status=200 html=true"}
+{"id":"NOVEDAD ruta inexistente: sin datos y sin 5xx (HTML 200 de la SPA o 404 JSON)","ok":true,"detail":"status=200"}
+{"id":"SEG-01 cuerpo inválido en login → 4xx controlado, sin pila ni SQL","ok":true,"detail":"status=400"}
+{"id":"SEG-02 cabeceras de seguridad y sin x-powered-by","ok":true,"detail":""}
+{"fin":true,"usuarios_sinteticos":["qa-smoke21-…@example.test"]}
