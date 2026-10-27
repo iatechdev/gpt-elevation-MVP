@@ -7,7 +7,7 @@ import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-const sut = process.env.QA_SUT, api = process.env.QA_API, apiOff = process.env.QA_API_OFF, dbUrl = process.env.DATABASE_URL, JWT = process.env.QA_JWT_SECRET;
+const sut = process.env.QA_SUT, api = process.env.QA_API, apiOff = process.env.QA_API_OFF, apiLim = process.env.QA_API_LIM, dbUrl = process.env.DATABASE_URL, JWT = process.env.QA_JWT_SECRET;
 if (!sut || !api || !dbUrl || !JWT) throw new Error('Defina QA_SUT, QA_API, DATABASE_URL y QA_JWT_SECRET.');
 const req = createRequire(path.join(sut, 'backend', 'package.json'));
 const { Client } = req('pg'); const jwt = req('jsonwebtoken');
@@ -188,12 +188,12 @@ for (let i = 0; i < 6; i++) {
   await call('POST', '/api/diary', { token: tk, body: { date: '2026-10-20', content: 'CANARIO-G' + i } });
   const p = await call('POST', '/api/exports/preview', { token: tk, body: { type: 'personal', locale: 'es' } });
   const [dd, del] = await Promise.all([call('POST', `/api/exports/${p.json.id}/download`, { token: tk }), call('POST', '/api/account/deletion-requests', { token: tk, body: { confirm: true } })]);
-  if (dd.status === 500 || del.status >= 500) serverErr++; if (dd.status === 503) { r503++; const rt = await call('POST', `/api/exports/${p.json.id}/download`, { token: tk }); if (![401, 403].includes(rt.status)) bad++; }
+  if (dd.status >= 500 || del.status >= 500) serverErr++; if (![200, 403, 409].includes(dd.status)) bad++; if (dd.status === 409) r503++; // r503 cuenta ahora los 409 concurrent_change
   if (dd.status === 200 && !dd.text.includes('CANARIO-G' + i)) bad++; // archivo mezclado/vacío
   const after = await call('POST', `/api/exports/${p.json.id}/download`, { token: tk });
   if (after.status === 200) bad++; // tras aceptar el borrado no debe haber más descargas
 }
-check('ES23-I04 descarga vs. borrado (6 rondas): sin 500, sin archivo mezclado, sin descargas tras aceptar el borrado y el reintento da 401/403', bad === 0 && serverErr === 0, `mal=${bad} 500=${serverErr} descargas503=${r503}`);
+check('ES23-I04 (QA-23-04) descarga vs. borrado (6 rondas): ninguna respuesta 5xx; la descarga da 200, 403 o 409 y nunca un archivo mezclado ni descargas tras aceptar el borrado', bad === 0 && serverErr === 0, `mal=${bad} 5xx=${serverErr} descargas409=${r503}`);
 
 // ── Revisión requerida (paciente con sesión terapéutica / terapeuta)
 const P = await mkUser('P'); const pt = mint(P);
@@ -231,9 +231,55 @@ await q(`insert into "Messages" ("UserId", role, content, "createdAt", "updatedA
 x = await call('POST', '/api/exports/preview', { token: mt, body: { type: 'personal', locale: 'es' } });
 check('ES23-P05 más de 5.000 mensajes → 413 export_too_large (no 500)', x.status === 413 && x.json?.code === 'export_too_large', `status=${x.status} code=${x.json?.code}`);
 // abuso: muchas vistas previas seguidas del mismo dueño (sin limitador)
-const flood = await Promise.all(Array.from({ length: 40 }, () => call('POST', '/api/exports/preview', { token: lt, body: { type: 'personal', locale: 'es' } })));
-const rows2 = (await q('select count(*)::int n from "ExportRequests" where "UserId"=$1', [L.id]))[0].n;
-info('P06-abuso-40-previas-simultaneas', `estados=${[...new Set(flood.map(f => f.status))]} filas=${rows2} (sin límite de frecuencia en la ruta)`);
+info('P06', 'ver bloque QA-23-03 más abajo (servidor con límites por defecto)');
+
+// ── QA-23-03 · límite de frecuencia y reutilización (servidor con límites por defecto)
+if (apiLim) {
+  const R = await mkUser('R'); const rt = mint(R); const R2 = await mkUser('R2'); const rt2 = mint(R2);
+  await call('POST', '/api/diary', { token: rt, body: { date: '2026-10-20', content: 'CANARIO-R' } });
+  const p1 = await call('POST', '/api/exports/preview', { token: rt, body: { type: 'personal', locale: 'es' }, base: apiLim });
+  const p2 = await call('POST', '/api/exports/preview', { token: rt, body: { type: 'personal', locale: 'es' }, base: apiLim });
+  check('ES23-R01 misma vista previa reutilizada: 200 con el mismo id y sin fila nueva', p1.status === 201 && p2.status === 200 && p1.json.id === p2.json.id && (await q('select count(*)::int n from "ExportRequests" where "UserId"=$1', [R.id]))[0].n === 1, `p1=${p1.status} p2=${p2.status} mismoId=${p1.json?.id === p2.json?.id}`);
+  const p3 = await call('POST', '/api/exports/preview', { token: rt, body: { type: 'personal', locale: 'en' }, base: apiLim });
+  check('ES23-R02 otro idioma crea una vista previa nueva y la anterior deja de valer (una sola vigente)', p3.status === 201 && p3.json.id !== p1.json.id && (await q('select count(*)::int n from "ExportRequests" where "UserId"=$1', [R.id]))[0].n === 1 && (await call('POST', `/api/exports/${p1.json.id}/download`, { token: rt, base: apiLim })).status === 404, `p3=${p3.status}`);
+  const dl3 = await call('POST', `/api/exports/${p3.json.id}/download`, { token: rt, base: apiLim });
+  check('ES23-R03 la vigente descarga bien (200, datos propios)', dl3.status === 200 && dl3.text.includes('CANARIO-R'), `status=${dl3.status}`);
+  const flood = await Promise.all(Array.from({ length: 40 }, () => call('POST', '/api/exports/preview', { token: rt2, body: { type: 'personal', locale: 'es' }, base: apiLim })));
+  const okN = flood.filter(f => f.status === 200 || f.status === 201).length, lim = flood.filter(f => f.status === 429);
+  const rows = (await q('select count(*)::int n from "ExportRequests" where "UserId"=$1', [R2.id]))[0].n;
+  check('ES23-L01 (QA-23-03) 40 vistas previas simultáneas: como máximo 1 fila, ≤6 aceptadas, el resto 429, ningún 5xx', rows <= 1 && okN <= 6 && lim.length >= 34 && flood.every(f => f.status < 500), `filas=${rows} aceptadas=${okN} 429=${lim.length} estados=${[...new Set(flood.map(f => f.status))]}`);
+  check('ES23-L02 el 429 es bilingüe con código rate_limited y trae cabecera de reintento', lim[0]?.json?.code === 'rate_limited' && /\//.test(lim[0].json.error) && !!(lim[0].headers.get('ratelimit') || lim[0].headers.get('ratelimit-remaining') || lim[0].headers.get('retry-after')), `hdrs=${[...(lim[0]?.headers.keys() ?? [])].filter(k => /rate|retry/i.test(k))}`);
+  const other = await call('POST', '/api/exports/preview', { token: rt, body: { type: 'personal', locale: 'es' }, base: apiLim });
+  check('ES23-L03 el límite es por persona: otra persona no queda limitada', other.status < 429, `status=${other.status}`);
+  const dls = await Promise.all(Array.from({ length: 20 }, () => call('POST', `/api/exports/${p3.json.id}/download`, { token: rt, base: apiLim })));
+  check('ES23-L04 descargas: 429 tras el tope (12/min) y nunca 5xx', dls.some(x => x.status === 429) && dls.every(x => x.status < 500), `estados=${[...new Set(dls.map(x => x.status))]}`);
+  const un = await Promise.all(Array.from({ length: 10 }, () => call('POST', '/api/exports/preview', { body: { type: 'personal', locale: 'es' }, base: apiLim })));
+  check('ES23-L05 sin token siempre 401/403 (el limitador no se interpone)', un.every(x => [401, 403].includes(x.status)), `estados=${[...new Set(un.map(x => x.status))]}`);
+  const forged = jwt.sign({ id: R2.id, role: 'user', iatMs: Date.now() }, 'otro-secreto-sintetico-0000000000000000', { jwtid: 'forjado' });
+  const fx = await call('POST', '/api/exports/preview', { token: forged, body: { type: 'personal', locale: 'es' }, base: apiLim });
+  check('ES23-L06 token firmado con otro secreto → rechazado antes del limitador', [401, 403].includes(fx.status), `status=${fx.status}`);
+}
+
+// ── Cobertura del uso de IA (ES-22) en exportación y purga
+const AIu = await mkUser('AI'); const ait = mint(AIu);
+const chatAI = await call('POST', '/api/chat', { token: ait, body: { message: 'CANARIO-IA mensaje __TOK123__' } });
+const rowsAI = await q('select count(*)::int n from "AiUsages" where "UserId"=$1', [AIu.id]);
+const ctr = await q('select "UserId", used from "AiBudgetCounters" where "UserId" in ($1, 0) order by "UserId"', [AIu.id]);
+info('IA-seed', `chat=${chatAI.status} AiUsages=${rowsAI[0].n} contadores=${JSON.stringify(ctr)}`);
+const pvAI = await call('POST', '/api/exports/preview', { token: ait, body: { type: 'personal', locale: 'es' } });
+const usageRows = pvAI.json?.data?.aiUsage ?? [];
+check('ES23-A01 la exportación incluye el uso de IA propio y su contador', Array.isArray(usageRows) && usageRows.length >= 1 && Array.isArray(pvAI.json.data.aiBudget) && pvAI.json.data.aiBudget.length >= 1, `aiUsage=${usageRows.length} aiBudget=${pvAI.json?.data?.aiBudget?.length}`);
+check('ES23-A02 el uso de IA exportado no trae mensajes, prompts ni respuestas', usageRows.length >= 1 && !/prompt|message|reply|Respuesta sint|CANARIO-IA/i.test(JSON.stringify(usageRows)), JSON.stringify(Object.keys(usageRows[0] || {})));
+const otherAI = await call('POST', '/api/exports/preview', { token: a, body: { type: 'personal', locale: 'es' } });
+check('ES23-A03 la exportación de A no incluye uso de IA de otra persona', !(otherAI.json?.data?.aiUsage ?? []).some(u => usageRows.some(v => v.id === u.id)), '');
+const cohortBefore = (await q('select used from "AiBudgetCounters" where "UserId"=0 order by used desc limit 1'))[0]?.used ?? null;
+await call('POST', '/api/account/deletion-requests', { token: ait, body: { confirm: true } });
+const reqAI = (await q('select id from "DeletionRequests" where "UserId"=$1', [AIu.id]))[0].id;
+const pAI = spawnSync(process.execPath, ['scripts/purgePersonalData.js', reqAI, '--producers-stopped-and-drained'], { cwd: path.join(sut, 'backend'), env: { ...process.env, DATABASE_URL: dbUrl, DB_SSL: 'false', JWT_SECRET: JWT }, encoding: 'utf8' });
+const leftAI = { usos: (await q('select count(*)::int n from "AiUsages" where "UserId"=$1', [AIu.id]))[0].n, contador: (await q('select count(*)::int n from "AiBudgetCounters" where "UserId"=$1', [AIu.id]))[0].n };
+const cohortAfter = (await q('select used from "AiBudgetCounters" where "UserId"=0 order by used desc limit 1'))[0]?.used ?? null;
+check('ES23-A04 la purga borra el uso de IA y el contador de la persona', pAI.status === 0 && leftAI.usos === 0 && leftAI.contador === 0, `exit=${pAI.status} ${JSON.stringify(leftAI)}`);
+check('ES23-A05 la purga NO toca el contador de la cohorte (el gasto ya hecho sigue contando)', cohortBefore !== null && cohortAfter === cohortBefore, `antes=${cohortBefore} despues=${cohortAfter}`);
 
 // ── Almacenamiento sin texto de contenido
 const colsExp = (await q("select column_name from information_schema.columns where table_name='ExportRequests'")).map(r => r.column_name);
