@@ -8,6 +8,7 @@ const { Op } = require('sequelize');
 const JWT_SECRET = require('../config/jwt');
 const RevokedToken = require('../RevokedToken');
 const AuthRevocation = require('../AuthRevocation');
+const { deletionPending } = require('./deletionGuard');
 
 const SESSION_TTL = '8h';
 
@@ -22,7 +23,7 @@ const issueToken = (user) => jwt.sign(
 
 // Devuelve null si la sesión vale, o el motivo ('legacy' | 'revoked').
 // Los errores de base de datos se propagan: quien llama debe rechazar (cierra en falla).
-const sessionProblem = async (payload) => {
+const sessionProblem = async (payload, { allowDeletionReceipt = false } = {}) => {
   if (typeof payload.jti !== 'string' || !payload.jti) return 'legacy'; // token anterior a ES-18
   if (await RevokedToken.findByPk(payload.jti)) return 'revoked';
   const cutoff = await AuthRevocation.findByPk(payload.id);
@@ -31,6 +32,7 @@ const sessionProblem = async (payload) => {
     const issuedMs = Number.isFinite(payload.iatMs) ? payload.iatMs : payload.iat * 1000;
     if (issuedMs <= new Date(cutoff.revokedBefore).getTime()) return 'revoked';
   }
+  if (!allowDeletionReceipt && await deletionPending(payload.id)) return 'deletion_pending';
   return null;
 };
 

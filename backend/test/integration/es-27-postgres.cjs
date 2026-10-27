@@ -33,7 +33,7 @@ test('ES-27 PostgreSQL: cifrado real, unicidad, ediciones concurrentes y revocac
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
 
-  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion']) require('../../' + name);
+  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer']) require('../../' + name);
   await sequelize.sync();
   const evidence = require('../../utils/evidence');
   const consent = require('../../utils/consent');

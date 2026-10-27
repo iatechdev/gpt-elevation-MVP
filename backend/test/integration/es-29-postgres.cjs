@@ -30,7 +30,7 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
 
-  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment']) require('../../' + name);
+  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'CareerContextVersion', 'BridgeTransfer', 'DeletionRequest']) require('../../' + name);
   await sequelize.sync();
   const catalog = require('../../utils/skillCatalog');
   const skillMap = require('../../utils/skillMap');
@@ -38,6 +38,9 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
   const Assessment = require('../../SkillAssessment');
   const Catalog = require('../../SkillCatalog');
   const Invalidation = require('../../DerivedInvalidation');
+  const consent = require('../../utils/consent');
+  const ChatTurn = require('../../ChatTurn');
+  const { encriptarV2 } = require('../../utils/crypto');
 
   const levels = Object.fromEntries([1, 2, 3, 4].map((n) => [n, { es: `nivel ${n}`, en: `level ${n}` }]));
   const def = (name) => ({ type: 'transversal', labels: { es: name, en: name }, rubric: { levels, source: 'Fuente sintética', verifiedBy: 'Revisor sintético', verifiedAt: '2026-10-01' } });
@@ -107,5 +110,22 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
     assert.deepEqual([after.self.level, after.self.stale], [null, true]);
     assert.equal(await Invalidation.count({ where: { UserId: 3, sourceType: 'evidence', handledAt: null } }), 0);
     assert.equal((await Assessment.findOne({ where: { UserId: 3 } })).level, 3); // la fila histórica no se reescribe
+  });
+  await t.test('coexistencia con los ganchos de consentimiento: revocar el puente deja stale solo lo que se apoya en evidencia del chat; lo demás del mapa sigue', async () => {
+    const userId = 4;
+    await consent.setConsent(userId, 'professional_bridge', 'granted');
+    const turn = await ChatTurn.create({ UserId: userId, requestId: 'turn-skill-0001', status: 'completed', userContent: encriptarV2('Lideré la planificación sintética del equipo'), replyContent: encriptarV2('r') });
+    const fromChat = await evidence.create(userId, { ...evBody(), origins: [{ type: 'chat_turn', id: turn.id, quote: 'lideré la planificación' }] });
+    const direct = await evidence.create(userId, evBody());
+    await skillMap.selfAssess(userId, { skillKey: 'comunicacion', level: 3, evidenceRefs: [{ evidenceId: fromChat.id, version: 1 }], requestId: rid() });
+    await skillMap.selfAssess(userId, { skillKey: 'planificacion', level: 2, evidenceRefs: [{ evidenceId: direct.id, version: 1 }], requestId: rid() });
+    const level = async (key) => { const s = (await skillMap.getMap(userId)).skills.find((x) => x.skillKey === key).self; return [s.level, s.stale]; };
+    assert.deepEqual([await level('comunicacion'), await level('planificacion')], [[3, false], [2, false]]);
+    await consent.setConsent(userId, 'professional_bridge', 'revoked');
+    assert.deepEqual(await level('comunicacion'), [null, true]); // la evidencia del chat dejó de estar vigente
+    assert.deepEqual(await level('planificacion'), [2, false]); // la evidencia directa no depende del puente
+    assert.equal(await Invalidation.count({ where: { UserId: userId, sourceType: 'evidence', sourceId: fromChat.id, reason: 'revoked' } }), 1);
+    assert.equal(await Invalidation.count({ where: { UserId: userId, sourceType: 'evidence', sourceId: direct.id, reason: 'revoked' } }), 0);
+    assert.equal(await Assessment.count({ where: { UserId: userId, status: 'current' } }), 2); // las filas históricas no se reescriben ni se borran
   });
 });
