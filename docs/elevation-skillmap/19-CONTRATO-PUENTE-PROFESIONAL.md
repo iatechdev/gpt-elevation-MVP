@@ -79,3 +79,12 @@ Interfaz; propuestas de la IA para los campos; el motor de rutas y el Skill Map 
 5. ¿Auditoría `BridgeTransfers` (claves + hash, sin texto) sí o no?
 
 **Estimación:** dentro de las 10 h del ticket (rango 8–12) si se aprueba tal cual; la prueba en Postgres real y el núcleo de consentimiento son lo que más puede moverla.
+
+## 14. Estado de la implementación (ES-25, aprobado el 27-oct-2026 con las 5 propuestas)
+
+- **Decisiones aprobadas:** (1) origen cambiado o borrado = solo `needsReview`; (2) el camino directo no requiere `professional_bridge`; (3) lista de campos tal cual; (4) se tocó `utils/consent.js` (gancho en `setConsent`); (5) auditoría `BridgeTransfers` sí.
+- **Código:** `backend/CareerContextVersion.js`, `backend/BridgeTransfer.js`, `backend/utils/careerContext.js`, `backend/routes/careerContext.js` (montada en `/api/career-context`), gancho en `backend/utils/consent.js`.
+- **Fuera de las rutas HTTP:** `getApprovedContext(userId, consumer)` es solo una función de servidor para el motor; ninguna ruta la expone. La exportación profesional (ES-23) y el Skill Map (ES-27/29/32) deben usar esa función.
+- **Errores estables:** 400 `invalid_input` · 403 `consent_required` · 404 `origin_not_found` / `no_context` · 409 `preview_mismatch` · 410 `preview_expired` · 422 `field_not_shareable` (con `fieldIndex`, sin motivo).
+- **Reintentos:** hasta 6 intentos acotados ante colisión de versión; garantizan lo que exige la restricción única parcial de una versión activa por persona.
+- **Apertura:** a diferencia de ES-23, esta ruta no está detrás de un interruptor: sin versiones confirmadas no hay nada que leer y el motor aún no existe. Si Mauricio prefiere un interruptor, es un cambio pequeño.

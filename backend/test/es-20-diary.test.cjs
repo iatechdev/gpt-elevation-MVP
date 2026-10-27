@@ -155,7 +155,10 @@ test('ES-20 diario: ninguna otra ruta lee el diario (administrador, terapeuta, f
   const routes = path.resolve(__dirname, '..', 'routes');
   const readers = fs.readdirSync(routes).filter(file => /DiaryEntry/.test(fs.readFileSync(path.join(routes, file), 'utf8')));
   assert.deepEqual(readers.sort(), ['chat.js', 'diary.js']);
+  // ES-25: utils/careerContext.js solo comprueba que el origen indicado es de la persona (id y marca de tiempo, nunca el contenido);
+  // test/es-25-bridge.test.cjs verifica que no pide `content` y que ningún texto del diario cruza al motor.
   const sources = ['middlewares', 'utils'].flatMap(dir => fs.readdirSync(path.resolve(__dirname, '..', dir))
+    .filter(file => file !== 'careerContext.js')
     .map(file => fs.readFileSync(path.resolve(__dirname, '..', dir, file), 'utf8')));
   assert.ok(sources.every(source => !/DiaryEntry/.test(source)));
 });
