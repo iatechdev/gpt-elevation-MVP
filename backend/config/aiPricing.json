@@ -1,0 +1,4 @@
+{
+  "_nota": "Precios del proveedor de IA versionados (ES-22). SALE VACÍO a propósito: no se inventan tarifas. Una entrada solo se usa para calcular costos si trae todos los campos: { \"model\": \"...\", \"version\": \"2026-10\", \"currency\": \"USD\", \"inputPerMTok\": 0, \"outputPerMTok\": 0, \"source\": \"URL o documento oficial\", \"verifiedBy\": \"persona o rol\", \"verifiedAt\": \"AAAA-MM-DD\" }. Sin precio, el costo se registra como desconocido (null).",
+  "prices": []
+}

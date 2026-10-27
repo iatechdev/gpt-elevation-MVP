@@ -188,7 +188,7 @@ export function ChatPage() {
     try {
       const res  = await apiFetch('/api/chat', getToken(), {
         method: 'POST',
-        body: JSON.stringify({ message: userText }),
+        body: JSON.stringify({ message: userText, lang }),
       })
       const data = await res.json() as { reply: string }
       setMessages(prev => [...prev, { role: 'bot', text: data.reply }])

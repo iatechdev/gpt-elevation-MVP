@@ -455,7 +455,7 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
 
     const patient = await User.findOne({
       where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id', 'name'],
+      attributes: ['id'],
     });
 
     if (!patient) {
@@ -492,9 +492,8 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       ? (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1)
       : 'N/A';
 
-    const prompt = `You are a clinical assistant helping a therapist understand their patient's progress.
+    const prompt = `You help a professional review a person's recent progress. The person is not identified in this request.
 
-Patient: ${patient.name}
 Total sessions: ${moodLogs.length}
 Average mood (1-5): ${avgMood}
 Average session rating (1-5): ${avgRating}
@@ -502,7 +501,7 @@ Average session rating (1-5): ${avgRating}
 Recent therapist notes:
 ${decryptedNotes.length > 0 ? decryptedNotes.join('\n---\n') : 'No notes yet.'}
 
-Please write a concise clinical summary (3-5 sentences) of this patient's emotional progress and current state. Focus on observable trends, not diagnoses. Be professional and empathetic.`;
+Please write a concise, neutral summary (3-5 sentences) of the emotional progress and current state reflected in this data. Focus on observable trends. Do not diagnose, prescribe or predict outcomes. Be professional and empathetic.`;
 
     const msg = await anthropic.messages.create({
       model: anthropic.MODEL,
