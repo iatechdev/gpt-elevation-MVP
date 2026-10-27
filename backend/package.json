@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/*.test.cjs"
+    "test": "node --test test/*.test.cjs",
+    "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs"
   },
   "keywords": [],
   "author": "",

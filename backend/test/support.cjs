@@ -18,7 +18,7 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'ExportRequest', 'DeletionRequest',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -30,6 +30,7 @@ models.RevokedToken.upsert = async () => {};
 models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
+models.DeletionRequest.findOne = async () => null;
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };
 const transaction = { commit: async () => {}, rollback: async () => {} };
@@ -85,7 +86,7 @@ async function startApp(t) {
     }
     const response = await fetch(`http://127.0.0.1:${server.address().port}${url}`, options);
     const text = await response.text();
-    return { status: response.status, body: text ? JSON.parse(text) : null };
+    return { status: response.status, body: text ? JSON.parse(text) : null, headers: response.headers };
   };
 }
 
