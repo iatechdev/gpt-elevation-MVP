@@ -13,6 +13,10 @@ const CORE = [
   ['consents', 'Consent', 'UserId', ['id', 'purpose', 'scope', 'status', 'version', 'decidedAt', 'createdAt', 'updatedAt']],
   ['consentHistory', 'ConsentEvent', 'UserId', ['id', 'purpose', 'scope', 'status', 'version', 'decidedAt', 'createdAt']],
   ['planRequests', 'PlanRequest', 'userId', ['id', 'planId', 'status', 'adminNote', 'resolvedAt', 'createdAt', 'updatedAt']],
+  // ES-22: metadatos de uso de IA (sin mensajes, prompts ni respuestas) y el contador de presupuesto de la persona.
+  // El contador de la cohorte (UserId = 0) no es de nadie y nunca se purga: el gasto ya ocurrido sigue contando.
+  ['aiUsage', 'AiUsage', 'UserId', ['id', 'kind', 'requestId', 'model', 'periodKey', 'status', 'inputTokens', 'outputTokens', 'costMicros', 'currency', 'latencyMs', 'errorCode', 'createdAt']],
+  ['aiBudget', 'AiBudgetCounter', 'UserId', ['id', 'periodKey', 'used', 'createdAt', 'updatedAt']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];

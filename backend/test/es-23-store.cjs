@@ -4,6 +4,7 @@ const { Op } = require('sequelize');
 const matches = (row, where = {}) => Reflect.ownKeys(where).every(key => {
   if (key === Op.or) return where[key].some(branch => matches(row, branch));
   if (where[key] && typeof where[key] === 'object' && Op.lt in where[key]) return row[key] < where[key][Op.lt];
+  if (where[key] && typeof where[key] === 'object' && Op.gt in where[key]) return row[key] > where[key][Op.gt];
   return where[key] === null ? row[key] == null : row[key] === where[key];
 });
 

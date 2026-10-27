@@ -18,6 +18,30 @@ const blocked = () => problem(403, 'deletion_pending',
   'La cuenta tiene una solicitud de eliminación.', 'The account has a deletion request.');
 const missing = () => problem(404, 'export_not_found', 'Exportación no encontrada.', 'Export not found.');
 
+// QA-23-04: un fallo de serialización (40001) o un interbloqueo (40P01) significa que otra transacción cambió la misma cuenta a la vez,
+// por ejemplo la aceptación de un borrado. Se reintenta UNA vez antes de entregar nada; el reintento ve el estado nuevo y responde con el
+// motivo real (cuenta con solicitud de eliminación) en lugar de un 503 genérico.
+const isConcurrency = (error) => ['40001', '40P01'].includes(error?.parent?.code || error?.original?.code || error?.code);
+async function withRetry(fn, canRetry = () => true) {
+  for (let attempt = 1; ; attempt++) {
+    try { return await fn(); } catch (error) {
+      if (!(isConcurrency(error) && attempt === 1 && canRetry())) throw error;
+    }
+  }
+}
+
+// QA-23-03: las vistas previas de un mismo dueño se atienden de una en una dentro de este proceso. La segunda empieza cuando la primera ya
+// confirmó, ve su fila y la reutiliza; el límite de frecuencia de la ruta acota el resto. (Despliegue de una sola instancia en el piloto.)
+const ownerQueues = new Map();
+function serialize(userId, fn) {
+  const previous = ownerQueues.get(userId) || Promise.resolve();
+  const run = previous.then(fn, fn);
+  const tail = run.then(() => {}, () => {});
+  ownerQueues.set(userId, tail);
+  tail.then(() => { if (ownerQueues.get(userId) === tail) ownerQueues.delete(userId); });
+  return run;
+}
+
 async function inTransaction(fn, options = {}) {
   const transaction = await sequelize.transaction(options);
   try {
@@ -44,21 +68,29 @@ function fingerprint(id, data) {
 
 async function preview(userId, { type, locale }) {
   if (type === 'professional') throw unavailable(); // No guessed bridge/evidence schemas or fixtures.
-  return inTransaction(async transaction => {
+  return serialize(userId, () => withRetry(() => inTransaction(async transaction => {
     const user = await exportOwner(userId, transaction);
     const data = await personalData(user, locale, transaction);
+    const now = new Date();
+    await ExportRequest.destroy({ where: { UserId: userId, expiresAt: { [Op.lt]: now } }, transaction });
+    const live = await ExportRequest.findAll({ where: { UserId: userId, expiresAt: { [Op.gt]: now } }, transaction });
+    // Si ya hay una vista previa vigente con el mismo contenido y idioma, se reutiliza: no se crea otra fila.
+    const same = live.find((row) => row.locale === locale && fingerprint(row.id, data) === row.fingerprint);
+    if (same) return { id: same.id, expiresAt: same.expiresAt, data, reused: true };
+    // Una vista previa nueva reemplaza a las anteriores del mismo dueño: nunca quedan más de una vigente.
+    for (const row of live) await ExportRequest.destroy({ where: { UserId: userId, id: row.id }, transaction });
     const id = randomUUID();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    await ExportRequest.destroy({ where: { UserId: userId, expiresAt: { [Op.lt]: new Date() } }, transaction });
     await ExportRequest.create({ id, UserId: userId, locale, fingerprint: fingerprint(id, data), expiresAt }, { transaction });
-    return { id, expiresAt, data };
-  }, { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ });
+    return { id, expiresAt, data, reused: false };
+  }, { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ })));
 }
 
 // publish() runs while the owner's row is held. A deletion request cannot be
 // accepted between the last authorization check and handing these bytes to HTTP.
 async function download(userId, id, publish) {
-  return inTransaction(async transaction => {
+  let published = false; // tras entregar bytes a HTTP ya no se reintenta
+  return withRetry(() => inTransaction(async transaction => {
     const user = await exportOwner(userId, transaction);
     const request = await ExportRequest.findOne({ where: { id, UserId: userId }, transaction });
     if (!request) throw missing();
@@ -69,8 +101,9 @@ async function download(userId, id, publish) {
     if (fingerprint(id, data) !== request.fingerprint) {
       throw problem(409, 'export_outdated', 'Los datos cambiaron. Genera otra vista previa.', 'Data changed. Create a new preview.');
     }
+    published = true;
     return publish(data);
-  }, { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ });
+  }, { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ }), () => !published);
 }
 
 const receipt = row => ({
@@ -97,5 +130,5 @@ async function requestDeletion(userId) {
 }
 
 module.exports = {
-  DataRightsError, inTransaction, preview, download, requestDeletion, receipt, reviewRequired,
+  DataRightsError, inTransaction, preview, download, requestDeletion, receipt, reviewRequired, isConcurrency,
 };

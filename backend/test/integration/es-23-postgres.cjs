@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter']) require('../../' + name);
   await sequelize.sync();
   const rights = require('../../utils/dataRights');
   const { processDeletion } = require('../../utils/deletionProcessor');
@@ -135,5 +135,48 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
     await processDeletion(request.id, { quiescent: true, replay: true });
     assert.equal(await Message.count({ where: { UserId: a.id } }), 0);
     assert.equal((await User.findByPk(a.id)).active, false);
+  });
+
+  await t.test('QA-23-03: 40 vistas previas simultáneas del mismo dueño dejan una sola fila y la misma vista previa', async () => {
+    const a = await addUser();
+    await Message.create({ UserId: a.id, role: 'user', content: encriptarV2('mensaje sintético') });
+    const ExportRequest = require('../../ExportRequest');
+    const results = await Promise.all(Array.from({ length: 40 }, () => rights.preview(a.id, { type: 'personal', locale: 'es' })));
+    assert.equal(new Set(results.map((r) => r.id)).size, 1);
+    assert.equal(results.filter((r) => !r.reused).length, 1);
+    assert.equal(await ExportRequest.count({ where: { UserId: a.id } }), 1);
+  });
+
+  await t.test('QA-23-04: descarga y aceptación del borrado a la vez, en varias rondas: nunca un error genérico, solo entrega o deletion_pending', async () => {
+    for (let round = 0; round < 12; round++) {
+      const a = await addUser();
+      await Message.create({ UserId: a.id, role: 'user', content: encriptarV2('texto sintético ' + round) });
+      const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+      const outcomes = await Promise.allSettled([rights.download(a.id, p.id, (data) => data), rights.requestDeletion(a.id)]);
+      const unexpected = outcomes.filter((o) => o.status === 'rejected' && !['deletion_pending', 'export_not_found'].includes(o.reason.code));
+      assert.deepEqual(unexpected.map((o) => o.reason.message), [], 'ronda ' + round);
+      assert.equal(outcomes[1].status, 'fulfilled');
+      // tras aceptar el borrado ninguna descarga nueva empieza
+      await assert.rejects(rights.download(a.id, p.id, () => assert.fail('descarga tras el borrado')), { code: 'deletion_pending' });
+    }
+  });
+
+  await t.test('QA-H1: el uso de IA y el contador de presupuesto se exportan sin contenido y se purgan; la cohorte y B no se tocan', async () => {
+    const AiUsage = require('../../AiUsage');
+    const AiBudgetCounter = require('../../AiBudgetCounter');
+    const a = await addUser(); const b = await addUser();
+    await AiUsage.create({ UserId: a.id, kind: 'chat', model: 'm', periodKey: '2026-10', status: 'completed', reservedTokens: 10, inputTokens: 4, outputTokens: 3 });
+    await AiUsage.create({ UserId: b.id, kind: 'chat', model: 'm', periodKey: '2026-10', status: 'completed', reservedTokens: 10 });
+    await AiBudgetCounter.create({ UserId: a.id, periodKey: '2026-10', used: 7 });
+    await AiBudgetCounter.create({ UserId: 0, periodKey: '2026-10', used: 77 });
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.deepEqual(p.data.aiUsage.map((u) => [u.kind, u.inputTokens]), [['chat', 4]]);
+    assert.deepEqual(p.data.aiBudget.map((x) => x.used), [7]);
+    const request = await rights.requestDeletion(a.id);
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await AiUsage.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await AiUsage.count({ where: { UserId: b.id } }), 1);
+    assert.equal(await AiBudgetCounter.count({ where: { UserId: a.id } }), 0);
+    assert.equal((await AiBudgetCounter.findOne({ where: { UserId: 0, periodKey: '2026-10' } })).used, 77);
   });
 });

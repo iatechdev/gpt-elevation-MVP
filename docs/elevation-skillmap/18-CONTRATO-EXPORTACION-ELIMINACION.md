@@ -1,5 +1,7 @@
 # ES-23 — Exportación personal y solicitud de eliminación
 
+> **Numeración (QA-23-06):** este documento es el 18. El 16 de `main` es `16-LIMITES-Y-FRONTERA-PRIVADA.md` (ES-21).
+
 [Dev-Codex] · 26-oct-2026 · Implementación del plan técnico de Jira, comentario 10127, aprobado en la sesión de desarrollo. Base inicial: `main` 6b17291.
 
 ## Estado y alcance verificable
@@ -25,17 +27,21 @@ La solicitud de cuenta bloquea sesiones y cesión de datos, registra trabajo dur
 
 Únicos campos aceptados: `{ "type": "personal", "locale": "es" }`. `locale` admite `es` o `en`; se conserva el contenido original, sin traducciones de IA. `type: "professional"` está reservado pero no disponible. Los campos desconocidos se rechazan, incluyendo `UserId`, selecciones o permisos inventados.
 
-`201`: `{ id, expiresAt, data }`. `id` es un UUID aleatorio; `expiresAt` vence a los diez minutos. `data` es la representación completa que se descargará, no solo un contador. La UI muestra esa representación como **vista previa**, nunca como archivo guardado ni como permiso para compartir.
+`201` (vista previa nueva) o `200` (se reutilizó la vigente): `{ id, expiresAt, data }`. `id` es un UUID aleatorio; `expiresAt` vence a los diez minutos. `data` es la representación completa que se descargará, no solo un contador. La UI muestra esa representación como **vista previa**, nunca como archivo guardado ni como permiso para compartir.
 
 El JSON tiene `schemaVersion: 1`, `type`, `locale`, `profile` y las colecciones de la matriz de datos. Los valores ausentes se representan como `null`. Se conserva el texto original de los campos privados; el archivo personal no debe reutilizarse como reporte profesional.
 
 La tabla `ExportRequests` almacena solo dueño, idioma, vencimiento y una huella HMAC del contenido, ligada al UUID con separación de dominio. La clave proviene del secreto JWT configurado; rotarlo invalida vistas previas antiguas. No se persiste una segunda copia del contenido ni la huella se entrega al cliente. Al crear una vista previa se purgan los metadatos vencidos de ese dueño.
 
+**Frecuencia y reutilización (QA-23-03).** Armar el archivo es costoso (hasta ~10 MiB en una transacción), así que: (a) las vistas previas de un mismo dueño se atienden **de una en una** dentro del proceso; (b) si ya hay una vista previa **vigente con el mismo idioma y el mismo contenido** se **reutiliza** (mismo `id` y `expiresAt`, respuesta `200`, ninguna fila nueva); (c) si cambió el contenido o el idioma, la nueva **reemplaza** a las anteriores: nunca hay más de una vigente por dueño y el `id` anterior deja de servir (`404`); (d) hay un **límite de frecuencia por persona** (no por IP): `DATA_RIGHTS_PREVIEWS_PER_MINUTE`, por defecto 6, y `DATA_RIGHTS_DOWNLOADS_PER_MINUTE`, por defecto 12; al superarlo, `429 rate_limited`. *Despliegue de una sola instancia en el piloto: con varias instancias el límite y la serialización serían por instancia, y la garantía de una sola fila vigente la dan el reemplazo transaccional y la huella.*
+
 ### `POST /api/exports/:id/download`
 
 Sin cuerpo, o `{}`. Solo el dueño puede usar el UUID. `200 application/json`, `Content-Disposition: attachment; filename="elevation-personal.json"`. La descarga vuelve a obtener los datos y compara su huella con la vista previa. Una edición, adición o eliminación que cambie el archivo exige una nueva vista previa.
 
-Ambas operaciones usan una lectura consistente `REPEATABLE READ`. La descarga conserva un bloqueo compartido de la fila del dueño hasta entregar los bytes a HTTP. La aceptación del borrado usa un bloqueo exclusivo de esa misma fila y espera a las descargas ya autorizadas. Una vez aceptada la eliminación no empieza una descarga nueva. No es posible retirar bytes ya enviados o copias que la persona ya descargó.
+Ambas operaciones usan una lectura consistente `REPEATABLE READ`. La descarga conserva un bloqueo compartido de la fila del dueño hasta entregar los bytes a HTTP. La aceptación del borrado usa un bloqueo exclusivo de esa misma fila y espera a las descargas ya autorizadas. Una vez aceptada la eliminación no empieza una descarga nueva.
+
+**Descarga que coincide con la aceptación del borrado (QA-23-04).** Si la base detecta el choque (fallo de serialización `40001` o interbloqueo `40P01`) **antes** de entregar bytes, el servidor **reintenta una vez** de forma interna: el reintento ve el borrado aceptado y responde `403 deletion_pending`. Si ni así puede completarse responde `409 concurrent_change` (reintentable), nunca `503 data_rights_failed`. **Tras entregar bytes a HTTP no se reintenta**, para no enviar el archivo dos veces. No es posible retirar bytes ya enviados o copias que la persona ya descargó.
 
 Límites de esta versión: máximo 5.000 filas por colección y aproximadamente 10 MiB de contenido serializado. Si se superan, se rechaza la exportación entera; nunca se trunca silenciosamente. El procedimiento de exportación asistida para casos mayores queda pendiente de operación.
 
@@ -70,6 +76,7 @@ Todas las consultas del núcleo incluyen la columna de dueño indicada. El servi
 
 | Entidad / dueño | Exportación personal | Purga activa de esta entrega |
 | --- | --- | --- |
+| `AiUsages.UserId`, `AiBudgetCounters.UserId` (ES-22) | Tipo de llamada, modelo, periodo, estado, tokens, costo, latencia y código de error; contador de tokens del periodo. **Sin mensajes, prompts ni respuestas** | Elimina las filas propias. El contador de la cohorte (`UserId = 0`) no es de nadie y no se purga |
 | `Users.id` | Nombre, correo, rol, estado, motivación, onboarding, plan y fechas; sin contraseña, intentos de acceso ni claves | Seudonimiza nombre/correo, sustituye contraseña y limpia motivación/asignaciones; conserva ID y marca durable, cuenta inactiva |
 | `Messages.UserId` | Rol, contenido descifrado y fechas | Elimina las filas propias |
 | `ChatTurns.UserId` | Turno, estado, contenido descifrado y fechas | Elimina las filas propias |
@@ -98,6 +105,8 @@ Prompts atribuidos mediante nombres libres, documentos externos, grabaciones, ca
 | `404 export_not_found` | UUID inexistente, inválido o de otro dueño: respuesta indistinguible |
 | `409 export_outdated` | “Los datos cambiaron. Genera otra vista previa.” / “Data changed. Create a new preview.” |
 | `409 data_review_required` | “Estos datos requieren revisión antes de exportar o eliminar.” / “These records require review before export or deletion.” |
+| `409 concurrent_change` | “La cuenta cambió mientras se procesaba la solicitud. Vuelve a intentarlo.” / “The account changed while the request was processed. Try again.” |
+| `429 rate_limited` | “Demasiadas solicitudes. Espera un minuto.” / “Too many requests. Wait a minute.” No generar otra vista previa; conservar la vigente |
 | `410 export_expired` | Generar otra vista previa; no reutilizar el UUID |
 | `413 export_too_large` | No mostrar descarga parcial como completa |
 | `503 professional_contract_pending` | “La exportación profesional aún no está disponible.” / “Professional export is not available yet.” |
@@ -117,6 +126,11 @@ Estados del recibo: `accepted` (solicitud confirmada), `awaiting_review` (polít
 7. Confirmar con los proveedores reales la purga de archivos, cachés, respaldos, logs y datos de IA, así como sus tiempos. `deadlinesVerified` permanece `false`. No existe un cierre integral automático ni una promesa de siete/treinta días.
 
 **Reversión de código:** deshabilitar solicitudes nuevas conservando tablas y controles de marca durable en sesiones y consentimiento. Volver a una versión anterior sin esos controles puede reabrir acceso y no es una reversión segura. Nunca borrar el registro de solicitudes como rollback.
+
+## Decisiones de producto pendientes (QA-23-02 y QA-23-05)
+
+- **QA-23-02 · política de retención de los registros del servicio humano (decide Mauricio).** Pacientes con sesión terapéutica, terapeutas y administradores quedan en `409 data_review_required` y **no pueden exportar**; su borrado queda en `awaiting_review` y **no se purga**. Hasta que exista la política (qué se exporta, qué se retiene por obligación profesional y por cuánto tiempo), esas personas no pueden ejercer estos derechos por este flujo. **No es un defecto del código: es un pendiente explícito.**
+- **QA-23-05 · reautenticación de la solicitud de borrado (decide Mauricio con Alejo).** La solicitud de eliminación se acepta con una sesión vigente, sin pedir la contraseña de nuevo. Es una decisión de producto; no se cambia en este PR.
 
 ## Pruebas y pendientes de aceptación
 
