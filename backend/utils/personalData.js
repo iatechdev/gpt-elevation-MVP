@@ -17,6 +17,11 @@ const CORE = [
   // El contador de la cohorte (UserId = 0) no es de nadie y nunca se purga: el gasto ya ocurrido sigue contando.
   ['aiUsage', 'AiUsage', 'UserId', ['id', 'kind', 'requestId', 'model', 'periodKey', 'status', 'inputTokens', 'outputTokens', 'costMicros', 'currency', 'latencyMs', 'errorCode', 'createdAt']],
   ['aiBudget', 'AiBudgetCounter', 'UserId', ['id', 'periodKey', 'used', 'createdAt', 'updatedAt']],
+  // ES-25: versiones del puente profesional. `payload` (los campos que la persona aprobó) va cifrado v2: se entrega descifrado y como lista
+  // al dueño. No se exportan `origins` ni `requestId` (referencias técnicas internas, sin texto) y se purga todo con el resto.
+  ['careerContext', 'CareerContextVersion', 'UserId', ['id', 'version', 'status', 'payload', 'consentVersion', 'approvedAt', 'revokedAt', 'createdAt'], ['payload'], ['payload']],
+  // ES-25: auditoría de lo que leyó el motor profesional (solo claves y consumidor; nunca texto). Es información sobre la propia persona.
+  ['bridgeTransfers', 'BridgeTransfer', 'UserId', ['id', 'version', 'keys', 'consumer', 'createdAt']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
@@ -48,7 +53,7 @@ async function personalData(user, locale, transaction) {
   let bytes = Buffer.byteLength(JSON.stringify(data));
   const tooLarge = () => new DataRightsError(413, 'export_too_large',
     'La exportación supera el límite de esta versión.', 'The export exceeds this version’s limit.');
-  for (const [key, name, owner, fields, encrypted = []] of CORE) {
+  for (const [key, name, owner, fields, encrypted = [], json = [], keep = () => true] of CORE) {
     const where = { [owner]: user.id };
     if (name === 'DiaryEntry') where.deletedAt = null;
     const rows = await model(name).findAll({ where, attributes: fields, order: [['id', 'ASC']], limit: 5001, transaction });
@@ -56,10 +61,11 @@ async function personalData(user, locale, transaction) {
     data[key] = rows.map(row => {
       const output = pick(row, fields);
       for (const field of encrypted) if (output[field] !== null) output[field] = desencriptar(output[field]);
+      for (const field of json) if (output[field] !== null) output[field] = JSON.parse(output[field]);
       bytes += Buffer.byteLength(JSON.stringify(output));
       if (bytes > 10 * 1024 * 1024) throw tooLarge();
       return output;
-    });
+    }).filter(keep);
   }
   return data;
 }

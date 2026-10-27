@@ -286,3 +286,27 @@ test('ES-23 (QA-23-04): si el fallo de concurrencia ocurre DESPUÉS de entregar 
   } finally { database.sequelize.transaction = originalTransaction; }
   assert.equal(delivered, 1);
 });
+
+test('ES-23 (QA-25-03): el puente profesional (ES-25) y su auditoría se exportan descifrados al dueño, no se mezclan con B y se purgan, también tras una restauración (--replay)', async t => {
+  const { state, add } = setup();
+  const payload = (text) => JSON.stringify([{ key: 'values', text }]);
+  add('CareerContextVersion', { id: 1, UserId: 101, version: 2, status: 'active', payload: payload('Valoro aprender (A)'), origins: [{ type: 'chat_turn', id: 9 }], consentVersion: 1, requestId: 'req-a-0001', approvedAt: new Date('2026-10-02'), revokedAt: null });
+  add('CareerContextVersion', { id: 2, UserId: 202, version: 1, status: 'active', payload: payload('B BRIDGE CANARY'), origins: [], consentVersion: null, requestId: 'req-b-0001', approvedAt: new Date('2026-10-02'), revokedAt: null });
+  add('BridgeTransfer', { id: 1, UserId: 101, version: 2, keys: ['values'], hash: 'a'.repeat(64), consumer: 'routes' });
+  add('BridgeTransfer', { id: 2, UserId: 202, version: 1, keys: ['values'], hash: 'b'.repeat(64), consumer: 'B-CONSUMER-CANARY' });
+  const request = await startApp(t);
+  const p = await preview(request);
+  const exported = p.body.data.careerContext;
+  assert.equal(exported.length, 1);
+  assert.deepEqual([exported[0].version, exported[0].status, exported[0].payload], [2, 'active', [{ key: 'values', text: 'Valoro aprender (A)' }]]); // descifrado y como lista
+  assert.ok(!('origins' in exported[0]) && !('requestId' in exported[0])); // referencias técnicas internas: no se exportan
+  assert.deepEqual(p.body.data.bridgeTransfers.map(x => [x.version, x.keys, x.consumer]), [[2, ['values'], 'routes']]);
+  assert.doesNotMatch(JSON.stringify(p.body.data), /B BRIDGE CANARY|B-CONSUMER-CANARY|aaaaaaaa/);
+  const result = await remove(request);
+  await processDeletion(result.body.id, { quiescent: true });
+  assert.deepEqual(state.tables.CareerContextVersion.map(r => r.UserId), [202]);
+  assert.deepEqual(state.tables.BridgeTransfer.map(r => r.UserId), [202]);
+  add('CareerContextVersion', { id: 3, UserId: 101, version: 2, status: 'active', payload: payload('RESTORED PRIVATE'), origins: [], consentVersion: null, requestId: 'req-r-0001', approvedAt: new Date(), revokedAt: null });
+  await processDeletion(result.body.id, { quiescent: true, replay: true });
+  assert.deepEqual(state.tables.CareerContextVersion.map(r => r.UserId), [202]);
+});
