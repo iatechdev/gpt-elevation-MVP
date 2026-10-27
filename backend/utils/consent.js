@@ -85,6 +85,10 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (current) await current.update({ status, version, decidedAt }, { transaction });
       else row = await Consent.create({ ...where, status, version, decidedAt }, { transaction });
       await ConsentEvent.create({ ...where, status, version, decidedAt }, { transaction });
+      // ES-25: revocar el puente revoca, en la misma transacción, la versión de contexto que depende de él.
+      if (purpose === 'professional_bridge' && status === 'revoked') await require('./careerContext').revokeForConsent(userId, transaction);
+      // ES-27: revocar el puente deja de vigente, en la misma transacción, la evidencia confirmada que sale del chat.
+      if (purpose === 'professional_bridge' && status === 'revoked') await require('./evidence').revokeForConsent(userId, transaction);
       await transaction.commit();
       finished = true;
       return { row, changed: true };

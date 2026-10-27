@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion']) require('../../' + name);
   await sequelize.sync();
   const rights = require('../../utils/dataRights');
   const { processDeletion } = require('../../utils/deletionProcessor');
@@ -178,5 +178,57 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
     assert.equal(await AiUsage.count({ where: { UserId: b.id } }), 1);
     assert.equal(await AiBudgetCounter.count({ where: { UserId: a.id } }), 0);
     assert.equal((await AiBudgetCounter.findOne({ where: { UserId: 0, periodKey: '2026-10' } })).used, 77);
+  });
+  await t.test('QA-25-03: el puente profesional y su auditoría se exportan descifrados al dueño, se purgan con el procesador y el --replay los borra tras una restauración', async () => {
+    const CareerContextVersion = require('../../CareerContextVersion');
+    const BridgeTransfer = require('../../BridgeTransfer');
+    const a = await addUser(); const b = await addUser();
+    const payload = (text) => encriptarV2(JSON.stringify([{ key: 'values', text }]));
+    const version = (user, text, requestId) => CareerContextVersion.create({ UserId: user.id, version: 1, status: 'active', payload: payload(text), origins: [], consentVersion: null, requestId, approvedAt: new Date() });
+    await version(a, 'Valoro aprender (A)', 'req-pg-a-0001'); await version(b, 'B BRIDGE CANARY', 'req-pg-b-0001');
+    await BridgeTransfer.create({ UserId: a.id, version: 1, keys: ['values'], hash: 'a'.repeat(64), consumer: 'routes' });
+    await BridgeTransfer.create({ UserId: b.id, version: 1, keys: ['values'], hash: 'b'.repeat(64), consumer: 'B-CONSUMER-CANARY' });
+    const [raw] = await sequelize.query('SELECT payload FROM "CareerContextVersions" WHERE "UserId" = :id', { replacements: { id: a.id }, type: 'SELECT' });
+    assert.match(raw.payload, /^v2:/); // cifrado real
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.deepEqual([p.data.careerContext.length, p.data.careerContext[0].payload[0].text, p.data.bridgeTransfers.length], [1, 'Valoro aprender (A)', 1]);
+    assert.doesNotMatch(JSON.stringify(p.data), /B BRIDGE CANARY|B-CONSUMER-CANARY/);
+    const request = await rights.requestDeletion(a.id);
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await CareerContextVersion.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await BridgeTransfer.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await CareerContextVersion.count({ where: { UserId: b.id } }), 1);
+    assert.equal(await BridgeTransfer.count({ where: { UserId: b.id } }), 1);
+    await version(a, 'RESTORED PRIVATE', 'req-pg-a-0002');
+    await processDeletion(request.id, { quiescent: true, replay: true });
+    assert.equal(await CareerContextVersion.count({ where: { UserId: a.id } }), 0);
+  });
+  await t.test('QA-25-03: la evidencia profesional se exporta descifrada al dueño (sin las borradas), se purga con el procesador y el --replay la borra tras una restauración', async () => {
+    const evidence = require('../../utils/evidence');
+    const Evidence = require('../../Evidence');
+    const EvidenceVersion = require('../../EvidenceVersion');
+    const a = await addUser(); const b = await addUser();
+    const body = (title) => ({ payload: { title, situation: 's', responsibility: { text: 'r' }, actions: [{ text: 'a' }], delivered: { text: 'd' }, observedEffect: { known: false } }, status: 'confirmed', requestId: `pg-ev-${randomBytes(6).toString('hex')}` });
+    const kept = await evidence.create(a.id, body('Evidencia A'));
+    const removed = await evidence.create(a.id, body('Evidencia A borrada'));
+    await evidence.remove(a.id, removed.id);
+    await evidence.create(b.id, body('B EVIDENCE CANARY'));
+    const [raw] = await sequelize.query('SELECT payload FROM "EvidenceVersions" WHERE "EvidenceId" = :id', { replacements: { id: kept.id }, type: 'SELECT' });
+    assert.match(raw.payload, /^v2:/); // cifrado real
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.deepEqual(p.data.evidence.map((e) => e.id), [kept.id]); // la borrada no aparece
+    assert.deepEqual(p.data.evidenceVersions.map((v) => v.payload.title), ['Evidencia A']); // descifrada y sin la versión vaciada de la borrada
+    assert.doesNotMatch(JSON.stringify(p.data), /B EVIDENCE CANARY|borrada/);
+    const request = await rights.requestDeletion(a.id);
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await Evidence.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await EvidenceVersion.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await Evidence.count({ where: { UserId: b.id } }), 1);
+    await evidence.create(a.id, body('RESTORED PRIVATE')).catch(() => {}); // tras el borrado la cuenta ya no puede crear; se simula la restauración con filas directas
+    const restored = await Evidence.create({ UserId: a.id, currentVersion: 1 });
+    await EvidenceVersion.create({ EvidenceId: restored.id, UserId: a.id, version: 1, status: 'draft', payload: encriptarV2(JSON.stringify({ title: 'RESTORED PRIVATE' })), origins: [], hasChatOrigin: false, requestId: `pg-restored-${randomBytes(4).toString('hex')}` });
+    await processDeletion(request.id, { quiescent: true, replay: true });
+    assert.equal(await Evidence.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await EvidenceVersion.count({ where: { UserId: a.id } }), 0);
   });
 });
