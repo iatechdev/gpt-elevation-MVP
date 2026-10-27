@@ -1,0 +1,60 @@
+.skill-map-scope {
+  --color-base-100: #fff;
+  --color-base-200: #f9f9f7;
+  --color-base-300: #d6d2c4;
+  --color-base-content: #1c1917;
+  --color-neutral: #1c1917;
+  --color-neutral-content: #fff;
+  --radius-selector: .5rem;
+  --radius-field: .65rem;
+  --radius-box: 1rem;
+  --size-selector: .25rem;
+  --size-field: .25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+  color-scheme: light;
+  min-height: 100dvh;
+  background: var(--color-base-200);
+  color: var(--color-base-content);
+  font: 1rem/1.6 Inter, sans-serif;
+  padding: 24px;
+}
+.skill-map-header, .skill-map-main { max-width: 1100px; margin-inline: auto; }
+.skill-map-header, .skill-map-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.skill-map-header { margin-bottom: 32px; }
+.skill-map-back { display: inline-flex; align-items: center; min-height: 44px; color: #4a6741; }
+.skill-map-title { margin-block: 16px; }
+.skill-map-scope h1 { font: 400 clamp(2rem, 4vw, 3rem)/1.2 'Playfair Display', serif; }
+.skill-map-scope h2 { font-size: 1.375rem; font-weight: 500; }
+.skill-map-scope h3, .skill-map-scope h4 { font-weight: 600; }
+.skill-map-scope :focus-visible, .skill-map-entry:focus-visible { outline: 3px solid #4a6741; outline-offset: 4px; }
+.skill-map-scope .elv-btn { min-height: 44px; min-width: 44px; height: auto; padding: 10px 16px; white-space: normal; border: 1px solid #d6d2c4; }
+.skill-map-scope .elv-btn[aria-pressed=true] { background: #eaf0e6; color: #1c1917; border-color: #4a6741; }
+.skill-map-intro, .skill-map-catalog { margin-bottom: 24px; }
+.skill-map-grid { align-items: start; }
+.skill-map-card { min-width: 0; background: #fff; border: 1px solid #d6d2c4; }
+.skill-map-card .elv-card-body { padding: 24px; gap: 12px; min-width: 0; font-size: 1rem; }
+.skill-map-scope .elv-badge { width: fit-content; max-width: 100%; height: auto; white-space: normal; font-size: .875rem; padding: 4px 8px; border: 1px solid #d6d2c4; }
+.skill-map-track { border-top: 1px solid #e7e5e4; padding-top: 16px; margin-top: 8px; display: flex; flex-direction: column; gap: 12px; }
+.skill-map-level { font-size: 1.125rem; }
+.skill-map-note { font-size: .875rem; }
+.skill-map-warning { color: #92400e; }
+.skill-map-free-text { white-space: pre-wrap; }
+.skill-map-card, .skill-map-error { overflow-wrap: anywhere; }
+.skill-map-rubric { border-top: 1px solid #e7e5e4; margin-top: 8px; padding-top: 8px; }
+.skill-map-rubric summary { cursor: pointer; min-height: 44px; padding-block: 8px; }
+.skill-map-rubric li, .skill-map-rubric p { margin-block: 12px; }
+.skill-map-error { padding: 16px; border: 1px solid #dc2626; border-radius: .65rem; }
+.skill-map-error p { color: #dc2626; margin-bottom: 12px; }
+.skill-map-skip { position: absolute; top: -120px; left: 16px; background: #fff; padding: 12px; z-index: 1; }
+.skill-map-skip:focus { top: 8px; }
+@media (min-width: 1024px) { .skill-map-scope { padding: 32px; } }
+@media (max-width: 639px) {
+  .skill-map-scope { padding: 16px; }
+  .skill-map-title { flex-direction: column; align-items: stretch; }
+  .skill-map-card .elv-card-body { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skill-map-scope *, .skill-map-scope *::before, .skill-map-scope *::after { transition: none; animation: none; scroll-behavior: auto; }
+}
