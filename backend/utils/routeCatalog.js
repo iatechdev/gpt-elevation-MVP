@@ -19,8 +19,28 @@ const MODALITIES = ['onsite', 'hybrid', 'remote', 'unknown'];
 const LEVELS = ['introductory', 'intermediate', 'advanced'];
 const EXPOSURE = ['sourced', 'hypothesis', 'unknown'];
 const DRAFT_CAPS = { contexts: 12, sources: 100, roles: 60, offers: 60, resources: 100 };
-// Etiquetas que la política prohíbe (RF-17): ni «sin futuro» ni cifras de reemplazo.
-const FORBIDDEN_LABELS = /sin futuro|no future|desaparecer[aá]n?|will disappear|replacement rate|tasa de reemplazo/i;
+// Frases que la política del catálogo prohíbe (RF-17): ni «sin futuro» ni lenguaje de reemplazo o automatización total, en ningún campo de texto.
+// Se comparan sin tildes y sin distinguir mayúsculas. Es un filtro por frases, limitado: no entiende el sentido de una oración y puede dar
+// falsos positivos (p. ej. «será automatizado el registro» en un texto legítimo). «Automatización de procesos» como tema NO se bloquea.
+const FORBIDDEN_PHRASES = Object.freeze({
+  sin_futuro: /sin futuro|no (tiene|tendra|habra) futuro|(has|have|will have) no future|no future|no futuro/,
+  desaparecer: /desaparecer(a|an)\b|will (soon )?disappear|dejara(n)? de existir|will cease to exist/,
+  sera_reemplazado: /sera(n)? (completamente |totalmente |pronto )?(reemplazad|sustituid|desplazad|eliminad)/,
+  reemplazado_por: /(reemplazad|sustituid|desplazad)[oa]s? por (la |el |las |los )?(ia|inteligencia artificial|maquina|robot|automatizacion)/,
+  will_be_replaced: /will be (fully |completely |soon )?(replaced|automated|eliminated|displaced|obsolete)/,
+  replaced_by: /(replaced|displaced|substituted) by (ai|artificial|machines?|robots?|automation)/,
+  sera_automatizado: /sera(n)? (completamente |totalmente |pronto )?automatizad/,
+  tasa_reemplazo: /tasa de reemplazo|replacement rate|automation rate/,
+  ya_no_necesaria: /ya no (se )?(necesit|sera(n)? necesari)|no longer (needed|required|necessary)/,
+});
+const PERCENT = /\d+(?:[.,]\d+)?\s*(%|por\s*ciento|percent|pct\b)/i;
+const unaccent = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function checkPolicy(clean, { percent }) {
+  const plain = unaccent(clean);
+  if (Object.values(FORBIDDEN_PHRASES).some((re) => re.test(plain)) || (percent && PERCENT.test(plain))) {
+    throw new CatalogError(422, 'forbidden_label', 'Ese texto no está permitido en el catálogo.', 'That text is not allowed in the catalog.');
+  }
+}
 
 class CatalogError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -39,17 +59,17 @@ const onlyKeys = (obj, keys) => Object.keys(obj).every((k) => keys.includes(k));
 const todayIso = (now = new Date()) => now.toISOString().slice(0, 10);
 
 // ---------- normalizadores (aceptan borradores incompletos; los obligatorios se exigen al publicar) ----------
-const text = (v, max) => {
+const text = (v, max, { percent = false } = {}) => {
   if (typeof v !== 'string') throw invalid();
   const clean = redactSecrets(normalizeText(v));
   if (clean.length < 1 || clean.length > max) throw invalid(`El texto debe tener entre 1 y ${max} caracteres.`, `Text must be 1 to ${max} characters.`);
-  if (FORBIDDEN_LABELS.test(clean)) throw new CatalogError(422, 'forbidden_label', 'Ese texto no está permitido en el catálogo.', 'That text is not allowed in the catalog.');
+  checkPolicy(clean, { percent });
   return clean;
 };
 const i18n = (v, max) => {
   if (!isPlain(v) || !onlyKeys(v, LANGS)) throw invalid();
   const out = {};
-  for (const lang of LANGS) if (v[lang] !== undefined) out[lang] = text(v[lang], max);
+  for (const lang of LANGS) if (v[lang] !== undefined) out[lang] = text(v[lang], max, { percent: true });
   return out;
 };
 const date = (v, { allowFuture = false } = {}) => {
@@ -104,8 +124,6 @@ const NORMALIZERS = {
           if (e.sourceKey !== undefined) { if (typeof e.sourceKey !== 'string' || !KEY_RE.test(e.sourceKey)) throw invalid(); out.aiExposure.sourceKey = e.sourceKey; }
           if (e.note !== undefined) {
             out.aiExposure.note = i18n(e.note, 300);
-            // RF-17: ningún porcentaje individual ni cifra de reemplazo.
-            if (Object.values(out.aiExposure.note).some((n) => /%|\d+\s*(por ?ciento|percent)/i.test(n))) throw new CatalogError(422, 'forbidden_label', 'La nota no puede incluir porcentajes.', 'The note cannot include percentages.');
           }
         }
         return out;
@@ -381,5 +399,5 @@ async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPoli
 }
 
 module.exports = {
-  CatalogError, KINDS, KEY_RE, list, get, createDraft, upsertItem, removeItem, publish, getPublishedRouteCatalog, normalizeItem, missingFor,
+  CatalogError, FORBIDDEN_PHRASES, KINDS, KEY_RE, list, get, createDraft, upsertItem, removeItem, publish, getPublishedRouteCatalog, normalizeItem, missingFor,
 };

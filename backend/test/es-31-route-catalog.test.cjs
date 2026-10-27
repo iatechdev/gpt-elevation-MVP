@@ -220,3 +220,73 @@ test('ES-31 frontera en el código: el catálogo no sale a internet, no lee dato
   assert.doesNotMatch(routes, /MoodLog|DiaryEntry|ChatTurn/);
   assert.deepEqual(Object.keys(require('../config/routeCatalogPolicy.json')).filter((k) => !k.startsWith('_')).sort(), ['maxContexts', 'maxOffersPerRole', 'maxOffersTotal', 'offerVerificationDays', 'sourceStaleDays']);
 });
+
+// QA-31-01: la regla de «sin porcentajes ni lenguaje de reemplazo» (RF-17) aplica a TODOS los campos de texto descriptivos del catálogo.
+const PHRASE_SAMPLES = {
+  sin_futuro: 'Esta profesión no tiene futuro',
+  desaparecer: 'Este oficio desaparecerá pronto',
+  sera_reemplazado: 'Este puesto será reemplazado pronto',
+  reemplazado_por: 'El analista es reemplazado por la inteligencia artificial',
+  will_be_replaced: 'This job will be replaced soon',
+  replaced_by: 'Analysts are replaced by AI',
+  sera_automatizado: 'Estas tareas serán automatizadas',
+  tasa_reemplazo: 'La tasa de reemplazo es alta',
+  ya_no_necesaria: 'Esta función ya no será necesaria',
+};
+const PERCENT_SAMPLES = ['El 70 % de estas tareas son repetitivas', '40 percent replacement', 'Un 30 por ciento del trabajo', 'About 25% of the work'];
+const NEUTRAL_TEXTS = ['Coordina la automatización de procesos administrativos', 'Diseña sesiones de formación para equipos', 'Prepara reportes de desempeño trimestral'];
+
+// Cada campo de texto descriptivo: cómo meter una frase en él dentro de la semilla sintética.
+const FIELDS = {
+  'contexto.labels': { kind: 'contexts', key: 'ctx_educacion_formacion', set: (item, s) => { item.labels = { es: s, en: 'ok' }; } },
+  'contexto.note': { kind: 'contexts', key: 'ctx_educacion_formacion', set: (item, s) => { item.note = { es: s, en: 'ok' }; } },
+  'rol.labels': { kind: 'roles', key: 'formador_corporativo', set: (item, s) => { item.labels = { es: s, en: 'ok' }; } },
+  'rol.industry': { kind: 'roles', key: 'formador_corporativo', set: (item, s) => { item.industry = { es: s, en: 'ok' }; } },
+  'rol.tarea': { kind: 'roles', key: 'formador_corporativo', set: (item, s) => { item.tasks[0].text = { es: s, en: 'ok' }; } },
+  'rol.barrera': { kind: 'roles', key: 'formador_corporativo', set: (item, s) => { item.barriers = [{ es: s, en: 'ok' }]; } },
+  'rol.nota_ia': { kind: 'roles', key: 'formador_corporativo', set: (item, s) => { item.tasks[1].aiExposure.note = { es: s, en: 'ok' }; } },
+  'rol.habilitacion': { kind: 'roles', key: 'coordinador_proyectos_salud', set: (item, s) => { item.regulated.note = { es: s, en: 'ok' }; } },
+  'recurso.proposito': { kind: 'resources', key: 'rec_comunicacion', set: (item, s) => { item.purpose = { es: s, en: 'ok' }; } },
+  'recurso.ejercicio': { kind: 'resources', key: 'rec_comunicacion', set: (item, s) => { item.exercise = { es: s, en: 'ok' }; } },
+};
+
+test('ES-31 (QA-31-01) la lista de frases prohibidas y sus muestras coinciden: cada frase tiene su prueba', () => {
+  const { FORBIDDEN_PHRASES } = require('../utils/routeCatalog');
+  assert.deepEqual(Object.keys(PHRASE_SAMPLES).sort(), Object.keys(FORBIDDEN_PHRASES).sort());
+});
+
+test('ES-31 (QA-31-01) cada frase y cada porcentaje se rechazan (422) en CADA campo de texto descriptivo; el texto neutro pasa en todos', async (t) => {
+  install();
+  const request = await startApp(t);
+  const draft = (await request('POST', BASE, ADMIN)).body;
+  const put = (field, text) => {
+    const { kind, key, set } = FIELDS[field];
+    const item = build()[kind][key];
+    set(item, text);
+    return request('PUT', `${BASE}/${draft.id}/${kind}/${key}`, { ...ADMIN, body: item });
+  };
+  for (const field of Object.keys(FIELDS)) {
+    for (const [phrase, sample] of Object.entries(PHRASE_SAMPLES)) {
+      const r = await put(field, sample);
+      assert.deepEqual([r.status, r.body.code], [422, 'forbidden_label'], `${field}: ${phrase}`);
+      assert.equal((await put(field, sample.toUpperCase())).status, 422, `${field}: ${phrase} (mayúsculas)`);
+    }
+    for (const sample of PERCENT_SAMPLES) assert.equal((await put(field, sample)).status, 422, `${field}: ${sample}`);
+    for (const neutral of NEUTRAL_TEXTS) assert.equal((await put(field, neutral)).status, 200, `${field}: ${neutral}`);
+  }
+  // la sonda de QA: tres paráfrasis y «40 percent replacement»
+  for (const probe of ['El 70 % de estas tareas serán automatizadas', 'Esta profesión no tiene futuro', 'Será reemplazado por la IA', '40 percent replacement']) {
+    assert.equal((await put('rol.tarea', probe)).status, 422, probe);
+  }
+});
+
+test('ES-31 (QA-31-01) los campos que NO son descriptivos (títulos, organización, salario) no rechazan un porcentaje legítimo, y las frases sí se siguen rechazando', async (t) => {
+  install();
+  const request = await startApp(t);
+  const draft = (await request('POST', BASE, ADMIN)).body;
+  const offer = build().offers.oferta_formador_vigente;
+  const ok = await request('PUT', `${BASE}/${draft.id}/offers/oferta_a`, { ...ADMIN, body: { ...offer, title: 'Formador 100 % remoto', salary: { published: true, text: 'Incluye 10% de bono' } } });
+  assert.equal(ok.status, 200); // falso positivo evitado: «100 % remoto» y un bono del 10 % son legítimos en una oferta
+  const bad = await request('PUT', `${BASE}/${draft.id}/offers/oferta_b`, { ...ADMIN, body: { ...offer, title: 'Oferta: este cargo será reemplazado por la IA' } });
+  assert.deepEqual([bad.status, bad.body.code], [422, 'forbidden_label']);
+});
