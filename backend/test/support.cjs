@@ -15,7 +15,7 @@ function replaceModule(relativePath, exports) {
 
 const models = {};
 for (const name of [
-  'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
+  'User', 'ParticipantContext', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
   'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage',

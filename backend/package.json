@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test test/*.test.cjs",
+    "test:context:postgres": "node scripts/test-context-postgres.cjs",
     "db:local": "node scripts/db-local.cjs"
   },
   "keywords": [],
