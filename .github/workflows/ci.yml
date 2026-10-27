@@ -64,6 +64,10 @@ jobs:
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: npm test
       # Conexión real a Postgres: base para las pruebas de integración con DB real (ES-80).
+      - name: ES-14 — contexto, migración y concurrencia contra Postgres real
+        env:
+          ES14_TEST_DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
+        run: node --test test/integration/es-14-postgres.cjs
       - name: Verificar conexión y esquema contra Postgres real
         env:
           DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci

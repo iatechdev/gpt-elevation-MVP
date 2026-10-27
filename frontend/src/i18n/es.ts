@@ -1,6 +1,8 @@
 // frontend/src/i18n/es.ts
 // HU-082 — i18n completo: Landing + User + Admin + Therapist + Board
+import { contextEs } from '../context/contextCopy'
 const es: Record<string, string> = {
+  ...contextEs,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'Soporte emocional con IA',
