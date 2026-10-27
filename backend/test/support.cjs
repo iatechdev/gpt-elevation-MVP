@@ -18,7 +18,7 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -45,6 +45,8 @@ models.AiBudgetCounter.create = async values => {
 };
 models.AiUsage.create = async values => ({ ...values, async update(updates) { Object.assign(this, updates); return this; } });
 models.AiUsage.findAll = async () => [];
+models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
+models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };
 const transaction = { commit: async () => {}, rollback: async () => {} };
