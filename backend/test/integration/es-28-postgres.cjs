@@ -39,7 +39,7 @@ test('ES-28 PostgreSQL: propuestas con cifrado y presupuesto reales, confirmaci√
   const anthropicPath = require.resolve('../../utils/anthropic');
   require.cache[anthropicPath] = { id: anthropicPath, filename: anthropicPath, loaded: true, exports: stub };
 
-  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'AiBudgetCounter', 'AiUsage']) require('../../' + name);
+  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'AiBudgetCounter', 'AiUsage', 'CareerContextVersion', 'BridgeTransfer', 'DeletionRequest']) require('../../' + name);
   await sequelize.sync();
   const consent = require('../../utils/consent');
   const evidence = require('../../utils/evidence');

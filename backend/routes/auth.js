@@ -9,6 +9,7 @@ const bcrypt    = require('bcryptjs');
 const { issueToken } = require('../utils/sessions');
 const rateLimit = require('express-rate-limit');
 const User      = require('../User');
+const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -52,7 +53,7 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {
-    console.error('❌ Error en register:', error);
+    console.error('Error en register.');
     res.status(500).json({ error: 'Error en el servidor al registrar.' });
   }
 });
@@ -101,6 +102,10 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
 
     await user.update({ loginAttempts: 0, lockedUntil: null });
 
+    // A permanent tombstone also denies new sessions after administrative reactivation.
+    if (await deletionPending(user.id)) return res.status(403).json({
+      code: 'deletion_pending', error: 'La cuenta tiene una solicitud de eliminación. / The account has a deletion request.',
+    });
     const token = issueToken(user);
 
     res.json({
@@ -112,7 +117,7 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
     });
 
   } catch (error) {
-    console.error('❌ Error en login:', error);
+    console.error('Error en login.');
     res.status(500).json({ error: 'Error en el servidor.' });
   }
 });

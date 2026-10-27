@@ -18,7 +18,7 @@ for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -30,6 +30,7 @@ models.RevokedToken.upsert = async () => {};
 models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
+models.DeletionRequest.findOne = async () => null;
 
 // ES-22: presupuesto de IA holgado por defecto y contadores en memoria; las pruebas de presupuesto lo sobrescriben.
 process.env.AI_BUDGET_TOKENS_PER_USER = '1000000000';
@@ -44,6 +45,7 @@ models.AiBudgetCounter.create = async values => {
 };
 models.AiUsage.create = async values => ({ ...values, async update(updates) { Object.assign(this, updates); return this; } });
 models.AiUsage.findAll = async () => [];
+models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
 models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };
@@ -100,7 +102,7 @@ async function startApp(t) {
     }
     const response = await fetch(`http://127.0.0.1:${server.address().port}${url}`, options);
     const text = await response.text();
-    return { status: response.status, body: text ? JSON.parse(text) : null };
+    return { status: response.status, body: text ? JSON.parse(text) : null, headers: response.headers };
   };
 }
 
