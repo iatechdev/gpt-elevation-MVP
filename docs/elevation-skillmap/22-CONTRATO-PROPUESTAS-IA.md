@@ -57,3 +57,26 @@ El formulario y las tarjetas (Alejo/Codex); evaluación de calidad con casos rea
 5. **Registro:** la parte de IA es backend y mía; sugiero registrarla como subtarea de ES-28 para no mezclarla con las 5 h del formulario (Alejo/Codex).
 
 **Estimación:** ≈ 8–10 h en total (A ≈ 4 h, B ≈ 3 h, pruebas en Postgres real y mutaciones ≈ 2 h). No hay horas asignadas en el ticket para esta parte (ES-28 tiene 5 h para el formulario).
+
+## 9. Estado de la implementación (aprobada el 27-oct-2026 con las 5 propuestas)
+
+**Código:** `backend/utils/proposalToken.js`, `utils/aiProposals.js`, `utils/evidenceProposal.js`, `utils/skillProposal.js`; rutas `POST /api/evidence/proposals`, `POST /api/skill-map/proposals` y `POST /api/skill-map/proposals/confirm`; `proposalToken` opcional en `POST/PUT /api/evidence` (ES-27).
+
+**Diferencias respecto al texto del §3–§4 (todas hacia el lado más estricto)**
+- **La IA no propone `autonomy`.** La autonomía es el autorreporte de la persona y el tope de la propuesta B depende de ella; si la IA la rellenara, se inflaría sola. La propuesta A la rechaza si viene en la salida.
+- **Porcentajes:** se descarta la salida con un `%` **salvo** que la persona lo haya escrito en el turno citado (p. ej. «reduje costos 20%»); empleabilidad, diagnóstico, prescripción y medicación se descartan siempre. Es un filtro por palabras, limitado.
+- Si el modelo propone algo y **todo** se descarta, se responde 502 `invalid_model_output`; una lista vacía del modelo («no hay nada que evaluar») es válida.
+- Una propuesta con `level: null` se entrega, pero **no se puede confirmar** con un nivel (solo ponerla en `null`).
+- Un borrador de la propuesta A suele quedar **incompleto**: la persona debe completarlo antes de confirmar (422 `incomplete_evidence`, regla de ES-27); puede guardarlo como `draft` con el `proposalToken`.
+- Máximo 8 habilidades por propuesta B (`skill_keys_required` si el catálogo es mayor y no se indican).
+
+**Contrato de API**
+
+| Ruta | Éxito | Errores estables |
+| --- | --- | --- |
+| `POST /api/evidence/proposals` `{turnIds, locale}` | 200 `{proposal:{payload,origins}, usedTurns, warnings, token, expiresAt}` | 400 `invalid_input` · 403 `consent_required` · 404 `origin_not_found` · 422 `no_usable_source` · 502 `invalid_model_output` / `provider_unavailable` · 429 `ai_budget_exhausted` · 503 `ai_budget_not_configured` |
+| `POST /api/skill-map/proposals` `{skillKeys?, locale}` | 200 `{proposals, warnings, discarded, token, expiresAt}` (advertencias `level_capped`, `no_declared_autonomy`) | 400 `invalid_input` / `unknown_skill` / `skill_keys_required` · 422 `no_evidence` · 503 `catalog_unavailable` · más los 502/429/503 de arriba |
+| `POST /api/skill-map/proposals/confirm` `{token, requestId, proposals, accept, overrides?}` | 201 `{saved, cleared, created:true}` · 200 si es un reintento | 400 · 409 `proposal_mismatch` · 410 `proposal_expired` · 422 `cannot_raise_level` / `evidence_not_valid` / `unknown_skill` |
+| `POST/PUT /api/evidence` con `proposalToken` | igual que ES-27, con `authoring: ai_proposed` | 409 `proposal_mismatch` · 410 `proposal_expired` |
+
+**No verificado:** la calidad de las propuestas con Claude real (todas las pruebas usan un proveedor simulado) y el comportamiento ante ataques de inyección reales; la muestra controlada la hace QA. **Pendiente tras fusionar #25 (ES-23):** sin tablas nuevas en este PR, no hay nada que añadir al registro de datos personales; las propuestas no se guardan.
