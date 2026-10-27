@@ -44,9 +44,9 @@ test('QA-9-02: public input and legitimate authentication', async t => {
 
 test('QA-9-02: body consumers reject invalid types before side effects', async t => {
   let calls = 0;
-  // ES-18: la comprobación de sesión (lecturas de RevokedToken/AuthRevocation) no es un efecto secundario del cuerpo.
+  // Session/tombstone reads are authorization, not side effects of the submitted body.
   for (const [name, model] of Object.entries(models)) {
-    if (name === 'RevokedToken' || name === 'AuthRevocation') continue;
+    if (['RevokedToken', 'AuthRevocation', 'DeletionRequest'].includes(name)) continue;
     for (const method of ['findOne', 'findByPk', 'findAll', 'create', 'update', 'upsert']) {
       model[method] = async () => { calls++; throw new Error('Unexpected model call'); };
     }
