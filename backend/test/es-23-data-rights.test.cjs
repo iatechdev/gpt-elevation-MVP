@@ -310,3 +310,29 @@ test('ES-23 (QA-25-03): el puente profesional (ES-25) y su auditoría se exporta
   await processDeletion(result.body.id, { quiescent: true, replay: true });
   assert.deepEqual(state.tables.CareerContextVersion.map(r => r.UserId), [202]);
 });
+
+test('ES-23 (QA-25-03): la evidencia profesional (ES-27) se exporta descifrada al dueño sin las borradas, no se mezcla con B y se purga, también tras una restauración (--replay)', async t => {
+  const { state, add } = setup();
+  const payload = (title) => JSON.stringify({ title, situation: 's', responsibility: { text: 'r', source: 'self_report' }, actions: [{ text: 'a', source: 'self_report' }], delivered: { text: 'd', source: 'self_report' }, observedEffect: { known: false } });
+  add('Evidence', { id: 1, UserId: 101, currentVersion: 2, deletedAt: null });
+  add('Evidence', { id: 2, UserId: 101, currentVersion: 1, deletedAt: new Date('2026-10-03') }); // borrada: su contenido ya está vacío
+  add('Evidence', { id: 3, UserId: 202, currentVersion: 1, deletedAt: null });
+  const version = (id, EvidenceId, UserId, v, title, extra = {}) => add('EvidenceVersion', { id, EvidenceId, UserId, version: v, status: 'confirmed', authoring: 'person', payload: payload(title), origins: [{ type: 'chat_turn', id: 9 }], hasChatOrigin: false, consentVersion: null, requestId: 'req-ev-' + id, ...extra });
+  version(1, 1, 101, 1, 'Evidencia A v1'); version(2, 1, 101, 2, 'Evidencia A v2');
+  version(3, 2, 101, 1, 'x', { payload: '{}', origins: [] }); // versión vaciada de una evidencia borrada
+  version(4, 3, 202, 1, 'B EVIDENCE CANARY');
+  const request = await startApp(t);
+  const p = await preview(request);
+  assert.deepEqual(p.body.data.evidence.map(e => [e.id, e.currentVersion]), [[1, 2]]); // la borrada no aparece
+  assert.deepEqual(p.body.data.evidenceVersions.map(v => [v.EvidenceId, v.version, v.payload.title]), [[1, 1, 'Evidencia A v1'], [1, 2, 'Evidencia A v2']]); // descifradas y como objeto; sin la vaciada
+  assert.ok(!('origins' in p.body.data.evidenceVersions[0]) && !('requestId' in p.body.data.evidenceVersions[0]));
+  assert.doesNotMatch(JSON.stringify(p.body.data), /B EVIDENCE CANARY/);
+  const result = await remove(request);
+  await processDeletion(result.body.id, { quiescent: true });
+  assert.deepEqual(state.tables.Evidence.map(r => r.UserId), [202]);
+  assert.deepEqual(state.tables.EvidenceVersion.map(r => r.UserId), [202]); // purgadas también las versiones vaciadas de la borrada
+  version(5, 4, 101, 1, 'RESTORED PRIVATE'); add('Evidence', { id: 4, UserId: 101, currentVersion: 1, deletedAt: null });
+  await processDeletion(result.body.id, { quiescent: true, replay: true });
+  assert.deepEqual(state.tables.Evidence.map(r => r.UserId), [202]);
+  assert.deepEqual(state.tables.EvidenceVersion.map(r => r.UserId), [202]);
+});
