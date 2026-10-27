@@ -84,3 +84,20 @@ Interfaz; subida y análisis de archivos; revisión por un tercero (que es quien
 5. **Autonomía** como autorreporte de 4 niveles o `null`. ¿De acuerdo?
 
 **Estimación:** dentro de las 8 h del ticket (rango 6–10) si se aprueba tal cual.
+
+## 13. Revisión tras las respuestas de Mauricio (27-oct-2026)
+
+Las respuestas 1 y 5 se aceptan tal cual. Las 2, 3 y 4 cambian el diseño porque **la evidencia nace de la conversación del chat**, no se escribe aparte.
+
+**Lo que cambia**
+- **Origen de cada evidencia:** `direct` (la persona la escribe en el flujo profesional) o `chat_derived` (sale de turnos del chat). Sustituye al «todo directo» del §6.
+- **La conversación sigue siendo privada.** Del chat solo puede cruzar al motor el **texto estructurado que la persona revisó, editó y confirmó** (la misma regla que el puente de ES-25, RF-04). Nunca la transcripción, ni los turnos, ni los IDs de turno.
+- **Referencias a turnos (citas):** una evidencia `chat_derived` guarda, en la parte privada, los IDs de los turnos de los que sale. El servidor comprueba que son de la persona y, si hay una cita textual, que **esa cita aparece de verdad en el turno**; si no, se rechaza. Las citas y los IDs nunca viajan al motor.
+- **Decisión 4 (consentimiento), aclarada:** una evidencia `chat_derived` **sí exige `professional_bridge`** al confirmar y en cada lectura del motor, y revocarlo la revoca (mismo mecanismo de ES-25). Una `direct` no lo exige. Si una persona nunca autoriza el puente, el chat sigue funcionando y su Skill Map no recibe evidencias del chat.
+- **Decisión 3 (detector de riesgo):** se acepta **no bloquear** el texto escrito por la persona. Una sola salvedad, que es regla no negociable del proyecto (ningún indicador de crisis llega al motor): al **proponer** evidencias desde el chat, los turnos que el detector de ES-21 marque no se usan como fuente. El nivel de riesgo sigue siendo efímero: no se guarda ni se registra.
+- **Propuestas de la IA:** si se genera una evidencia propuesta desde el chat, la IA solo **propone** un borrador (`draft`); pasa por `callClaude` (presupuesto, tiempo de espera y registro de ES-22), el chat se envía delimitado como dato no confiable (`fenceUntrusted`), la salida se valida contra este esquema y se descartan las citas que no aparezcan en el turno. Nada se guarda como confirmado sin que la persona lo apruebe.
+- **Procedencia:** una afirmación aprobada por la persona sigue siendo `self_report` (son sus palabras, no un artefacto ni un ejercicio observado). Se añade `authoring: person | ai_proposed` para saber si partió de una propuesta de la IA.
+
+**Alcance, hay que decidir (afecta horas):**
+- **Opción A:** ES-27 incluye todo (almacén + validación + origen `chat_derived` con citas + propuesta de la IA desde el chat). Estimación: **14–16 h** (el ticket tiene 8 h, rango 6–10).
+- **Opción B (recomendada):** ES-27 entrega el almacén, el esquema, el origen `chat_derived` con citas verificadas, el consentimiento, las versiones y la invalidación (≈ 8–10 h, dentro del ticket). La **propuesta automática de la IA** pasa a ES-28 «Mis evidencias: captura y revisión», que ya cubre la captura. Motivo: así la frontera de privacidad queda probada antes de agregar una llamada de IA que lee el chat, y el trabajo de la IA se estima con el diseño de la captura.
