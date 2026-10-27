@@ -76,6 +76,7 @@ app.use('/api/manifest',        require('./routes/board'));
 app.use('/api',                 verificarToken, require('./routes/chat'));
 app.use('/api',                 verificarToken, require('./routes/session'));        // ES-18 — logout y logout-all
 app.use('/api/consents',        verificarToken, require('./routes/consents'));       // ES-19 — consentimiento por propósito
+app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
 app.use('/api/diary',           verificarToken, require('./routes/diary'));          // ES-20 — diario privado
 app.use('/api/ai/usage',         verificarToken, require('./routes/aiUsage').owner);   // ES-22 — presupuesto de IA de la persona
 app.use('/api/superadmin/ai-usage', verificarSuperAdmin, require('./routes/aiUsage').admin); // ES-22 — resumen agregado
@@ -91,6 +92,7 @@ app.use('/api/therapist/validation', verificarToken, require('./routes/validatio
 app.use('/api/therapist',       verificarTerapeuta, require('./routes/therapistRoutes'));
 
 // ── Rutas admin ───────────────────────────────────────────────────────────────
+app.use('/api/admin/route-catalog', verificarAdmin, require('./routes/routeCatalogAdmin')); // ES-31 — catálogo de rutas (backoffice)
 app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
 app.use('/api/admin/metrics',       verificarAdmin, require('./routes/adminMetrics'));
 app.use('/api/admin/matching',      verificarAdmin, require('./routes/matching'));

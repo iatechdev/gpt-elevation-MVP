@@ -64,3 +64,21 @@ El **contenido** (los seis contextos, roles, fuentes, ofertas y recursos reales:
 7. **Validación de `skillKey` contra el catálogo de habilidades (ES-29):** propongo **no** acoplarla aquí (ES-29 aún no está fusionado y evita otra capa de PR apilados); en publicación solo se valida el formato, y ES-32 al leer marca `skillMissing` si la clave ya no existe. ¿De acuerdo?
 
 **Estimación total:** 10–12 h (backend). Sin contenido real del cliente el catálogo queda vacío y la cadena ES-32 → ES-33 no puede probarse con datos reales.
+
+## 9. Estado de la implementación (aprobada el 27-oct-2026)
+
+**Respuestas de Mauricio a las decisiones y cómo se aplicaron**
+1. *«Defínelos tú»* (los seis contextos): **no se inventan contextos reales de las seis personas** (el PRD dice que faltan profesiones, industrias y mercados por confirmar). Se definieron **seis contextos SINTÉTICOS de prueba** (educación → formación corporativa, contabilidad → análisis financiero, salud → gestión de proyectos de salud, ventas → éxito del cliente, administración → operaciones, comunicación → estrategia de contenidos), marcados `synthetic` y con prefijo «[SINTÉTICO]», para analizarlos con el cliente. El cliente define los reales en el backoffice.
+2. y 3. *«Crea unas de pruebas y las analizamos»*: los **parámetros** (14 días de vigencia de la verificación de ofertas; 10 ofertas por rol y 60 en total) quedan en `backend/config/routeCatalogPolicy.json` y se pueden cambiar sin tocar código; el catálogo sintético trae 3 ofertas (una vigente sin salario publicado, una vigente con salario de prueba, una con verificación vencida).
+4. *«Desde que se marquen inaccesibles»*: una fuente marcada `accessible: false` es `stale` **desde ese momento**. Se **mantiene además** el umbral por antigüedad (180 días, en el mismo archivo de política) porque el PRD (RF-08) dice que una fuente antigua tampoco se presenta como confirmación actual; si Mauricio prefiere quitarlo, es cambiar un valor.
+5. Lectura para participantes sin nombres de revisores: aplicada.
+6. Registrada como subtarea de ES-31 (la parte backend).
+7. La validación de `skillKey` contra el catálogo de habilidades (ES-29) **se acopla cuando se trabaje ES-32**; aquí solo se valida el formato.
+
+**Código:** `backend/RouteCatalog.js`, `RouteCatalogItem.js`, `utils/routeCatalog.js`, `routes/routeCatalogAdmin.js` (montada en `/api/admin/route-catalog`), `routes/routeCatalog.js` (lectura, en `/api/route-catalog`), `config/routeCatalogPolicy.json`, `seeds/routeCatalogSynthetic.cjs` y `scripts/seedRouteCatalogSynthetic.js`.
+
+**Contenido sintético y producción:** cada elemento sintético lleva `synthetic: true`; **el servidor se niega a publicar un catálogo con contenido sintético** (`422 synthetic_content_not_allowed`) salvo que el entorno defina `ALLOW_SYNTHETIC_CATALOG=true` (staging; producción nunca lo define), y el script de semilla se niega a correr con `NODE_ENV=production`. Las URLs sintéticas usan `example.org` (dominio reservado): ninguna fuente, oferta, precio ni salario es real.
+
+**Errores estables:** 400 `invalid_input` · 404 `catalog_not_found` / `role_not_found` · 409 `draft_exists` / `catalog_not_editable` / `catalog_limit` / `conflict` · 422 `incomplete_catalog` (con `missing` por elemento) / `forbidden_label` / `synthetic_content_not_allowed` · 503 `catalog_unavailable`.
+
+**Pendiente tras fusionar #25 (ES-23):** ninguna tabla nueva contiene datos personales; no hay nada que añadir al registro de datos personales.
