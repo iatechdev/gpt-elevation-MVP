@@ -10,6 +10,7 @@ import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
+import { CareerEntry } from '../career/CareerShell'
 import { ExerciseTools } from '../exercises/ExerciseTools'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -325,6 +326,7 @@ export function UserDashboard() {
 
       {/* ── BODY ── */}
       <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>
+        <CareerEntry />
 
         {/* ── COLUMNA IZQUIERDA ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
