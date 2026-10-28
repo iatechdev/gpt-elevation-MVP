@@ -77,7 +77,7 @@ Herramienta: `sequelize-cli` (decisión de Mauricio, 25-oct), configurada solo c
 | --- | --- |
 | `npm run db:migrate` | Aplica las migraciones pendientes |
 | `npm run db:migrate:status` | Lista las aplicadas (`up`) y las pendientes (`down`) |
-| `npm run db:migrate:undo` | Deshace la última (en producción no se ejecutan `down`) |
+| `npm run db:migrate:undo` | Deshace la última. Todo `down` exige `ALLOW_DESTRUCTIVE_MIGRATION=true` y se niega con `NODE_ENV=production`, desde la primera migración que deshace |
 | `npm run db:drift` | Compara el esquema de `sync()` con el de las migraciones sobre bases nuevas, y comprueba deshacer y reaplicar. Solo en un Postgres local o desechable |
 
 **Migraciones actuales**
@@ -85,7 +85,7 @@ Herramienta: `sequelize-cli` (decisión de Mauricio, 25-oct), configurada solo c
 2. `20261026-es23-data-rights`: heredada de ES-23. Con `sequelize-cli` no hace nada (la línea base ya crea sus tablas); `scripts/migrateDataRights.js` sigue creándolas a mano.
 3. `20261028010000-drop-duplicate-es23-index`: quita el índice duplicado `export_requests_owner_expiry` que dejó la ejecución manual de ES-23 en staging. En una base nueva no hace nada.
 
-**Pasar una base que ya tiene el esquema (staging) a migraciones.** No se ejecuta la línea base: se registra como aplicada y luego se aplican las demás.
+**Pasar una base que ya tiene el esquema (staging) a migraciones.** No se ejecuta la línea base: se registra como aplicada y luego se aplican las demás. Aviso: `npm run db:migrate` directo sobre una base creada por `sync()` (como staging) falla con «already exists»; solo sirve este camino.
 
 1. Confirmar que la base coincide con la línea base (`db:drift` en local compara `sync` con migraciones; contra staging, volcado de esquema).
 2. Crear `SequelizeMeta` y registrar `20261001000000-baseline.js` y `20261026-es23-data-rights.cjs` como aplicadas.

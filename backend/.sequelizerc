@@ -1,5 +1,6 @@
 // sequelize-cli (ES-59). Las migraciones versionadas viven en backend/migrations (archivos .js).
-// El archivo heredado de ES-23 (`*.cjs`, otro contrato) no lo recoge el CLI.
+// El archivo heredado de ES-23 (`*.cjs`, otro contrato) también lo ejecuta el CLI, pero su `up` no hace
+// nada con ese contrato (la línea base ya crea sus tablas).
 const path = require('path');
 
 module.exports = {
