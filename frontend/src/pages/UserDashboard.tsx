@@ -11,6 +11,7 @@ import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
 import { CareerEntry } from '../career/CareerShell'
+import { ExerciseTools } from '../exercises/ExerciseTools'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -566,6 +567,7 @@ export function UserDashboard() {
 
         {/* ── COLUMNA DERECHA — CHAT ── */}
         <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', position: 'sticky', top: 76 }}>
+          <ExerciseTools />
 
           {!checkedIn ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>

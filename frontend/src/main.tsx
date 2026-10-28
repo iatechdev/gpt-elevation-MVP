@@ -6,6 +6,7 @@ import { LanguageProvider } from './i18n/LanguageProvider'
 import './index.css'
 import App from './App.tsx'
 import './career/navigationGuard'
+import './exercises/navigationGuard'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
