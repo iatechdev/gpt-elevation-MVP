@@ -4,7 +4,6 @@ import { compassEs } from '../compass/copy'
 import { contextEs } from '../context/contextCopy'
 import { evidenceEs } from '../evidence/copy'
 import { skillMapEs } from '../skill-map/copy'
-import { evidenceEs } from '../evidence/copy'
 const es: Record<string, string> = {
   ...compassEs,
   ...contextEs,
