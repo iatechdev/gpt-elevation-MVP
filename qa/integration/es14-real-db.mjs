@@ -141,7 +141,7 @@ check('ES14-C01b 8 ediciones con la misma versión: una gana y 7 con 409', eds.f
 check('ES14-C01c la versión final es consecutiva (2)', (await q('select version from "ParticipantContexts" where "UserId"=$1', [E.id]))[0].version === 2, '');
 
 // ── Migración
-const mig = (n) => spawnSync(process.execPath, ['-e', `process.env.DB_SSL='false';const {sequelize}=require('./database');const m=require('./migrations/001-participant-context.cjs');(async()=>{try{await m.up(sequelize.getQueryInterface(), sequelize.constructor);console.log('OK')}catch(e){console.log('ERR '+e.message)}await sequelize.close();process.exit(0)})()`], { cwd: path.join(sut, 'backend'), env: { ...process.env, DATABASE_URL: dbUrl, DB_SSL: 'false', JWT_SECRET: JWT }, encoding: 'utf8' });
+const mig = (n) => spawnSync(process.execPath, ['-e', `process.env.DB_SSL='false';const {sequelize}=require('./database');const m=require('./migrations/20261028020000-participant-context.cjs');(async()=>{try{await m.up(sequelize.getQueryInterface(), sequelize.constructor);console.log('OK')}catch(e){console.log('ERR '+e.message)}await sequelize.close();process.exit(0)})()`], { cwd: path.join(sut, 'backend'), env: { ...process.env, DATABASE_URL: dbUrl, DB_SSL: 'false', JWT_SECRET: JWT }, encoding: 'utf8' });
 const m1 = mig(1), m2 = mig(2);
 check('ES14-C02 la migración se aplica dos veces sobre una tabla ya creada por sync() sin error y sin tocar datos', /OK/.test(m1.stdout) && /OK/.test(m2.stdout) && (await q('select count(*)::int n from "ParticipantContexts"'))[0].n >= 3, `${m1.stdout.trim().slice(-60)} | ${m2.stdout.trim().slice(-60)}`);
 const fk = await q(`select confdeltype from pg_constraint where conrelid='"ParticipantContexts"'::regclass and contype='f'`);
