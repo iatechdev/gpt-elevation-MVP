@@ -14,7 +14,7 @@ function replaceModule(relativePath, exports) {
 }
 
 const models = {};
-for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest']) {
+for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest', 'CareerExperiment', 'CareerExperimentVersion', 'CareerPlanVersion', 'CareerExperimentReview', 'CareerReminder']) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
 }
