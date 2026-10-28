@@ -6,6 +6,20 @@ on:
     branches: [main]
 
 jobs:
+  evaluation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # ES-44 offline: built-ins only, no DB, credentials or provider calls.
+      - run: node evaluation/es44/cli.cjs --mode=validate
+      - run: node --test test/es-44-evaluation.test.cjs
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
