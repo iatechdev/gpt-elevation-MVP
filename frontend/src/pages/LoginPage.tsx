@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { contextRequest } from '../context/participantContext'
 import {
   colors, radius, spacing, typography,
   btnPrimaryStyle,
@@ -62,8 +63,10 @@ export function LoginPage() {
         } else if (role === 'board') {
           navigate('/board/manifest')
         } else {
-          const onboardingDone = data.onboardingCompleted === true
-          navigate(onboardingDone ? '/app/dashboard' : '/app/onboarding')
+          // Only durable, server-confirmed ES-14 context counts as complete.
+          const context = await contextRequest(undefined, data.token).catch(() => null)
+          if (context?.context?.preferredLanguage) setLang(context.context.preferredLanguage)
+          navigate(context?.completedAt ? '/app/dashboard' : '/app/onboarding')
         }
       }
     } catch {
