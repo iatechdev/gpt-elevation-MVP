@@ -22,7 +22,7 @@ Respuestas:
 `GET /api/chat/turns/:requestId` — estado de un turno **propio**: `{ requestId, status: 'pending' | 'completed' | 'failed', retryable, reply? }`. Permite recuperar desde otro navegador autenticado. Otro usuario, un administrador o un `requestId` inválido reciben 404.
 
 Reglas:
-- Los mensajes de usuario y de la respuesta se guardan **juntos y solo si Claude respondió** (sin mensajes huérfanos).
+- Los mensajes de usuario y de la respuesta se guardan **juntos y solo con una respuesta válida** (sin mensajes huérfanos): respuesta de Claude, respuesta fija de seguridad de ES-21 o pausa explícita ordinaria de ES-16. Seguridad y pausa no llaman al proveedor. La pausa conserva los mismos campos del contrato y el replay por requestId; no añade un estado clínico o indicador de riesgo al historial.
 - El historial enviado a Claude son los **20 mensajes más recientes**, en orden y empezando por un mensaje del usuario (corrige INV-04).
 - `GET /api/messages` conserva su forma `[ { role: 'user' | 'bot', text } ]`.
 
