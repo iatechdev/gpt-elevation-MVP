@@ -24,7 +24,7 @@ La API no ofrece ETag/revisión de elemento. No se garantiza impedir sobrescritu
 | `npm run lint` | exit 0, 0 errores y 0 advertencias; sin silenciar reglas |
 | `npm test` frontend | exit 0, 35/35 (13 nuevas ES-31) |
 | `npx tsc -b` | exit 0 |
-| `npm run build` | exit 0, 77 módulos; JS 562,05 kB / gzip 145,88 kB; CSS 57,91 kB / gzip 9,60 kB |
+| `npm run build` | exit 0, 77 módulos; JS 562,05 kB / gzip 145,88 kB; CSS 58,03 kB / gzip 9,61 kB |
 | `npm audit` frontend | exit 0, `found 0 vulnerabilities` |
 | `npm test` backend 783e934 | exit 0, 216/216, modelos simulados del arnés existente |
 | `node scripts/es31-api-integration.cjs` | exit 0, 12 grupos de comprobaciones con Express/JWT/Sequelize/PostgreSQL reales y Chromium |
@@ -50,7 +50,7 @@ Integración: el navegador usa la aplicación compilada y retransmite las llamad
 11. Nuevo borrador copia la publicada y no aparece en lectura participante; cancelar Atrás conserva cambios; Escape cierra diálogo; primer Tab llega al salto y Enter enfoca main.
 12. Rol admin falsificado en localStorage no evita 403 del servidor; revocar JWT durante la edición provoca 401 y retira los campos administrativos sin guardar.
 
-Capturas sintéticas de listado y editor generadas fuera de Git e inspeccionadas. Durante desarrollo se corrigieron el nombre accesible del filtro y el robo de foco del aviso de carga, detectados por navegador. El arnés tuvo un nombre de variable duplicado y una expectativa de cantidad de roles DK incorrecta; se corrigieron tras fallar, sin alterar backend para acomodar las pruebas.
+Capturas sintéticas de listado y editor generadas fuera de Git e inspeccionadas. Se alinearon los títulos secundarios con Playfair Display 400 del diseño aprobado y se repitieron los chequeos locales. Durante desarrollo se corrigieron el nombre accesible del filtro y el robo de foco del aviso de carga, detectados por navegador. El arnés tuvo un nombre de variable duplicado y una expectativa de cantidad de roles DK incorrecta; se corrigieron tras fallar, sin alterar backend para acomodar las pruebas.
 
 ## Reproducir
 
