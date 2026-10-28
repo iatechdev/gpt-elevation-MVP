@@ -111,3 +111,7 @@ jobs:
         env:
           # Disposable runner-local service only. The test creates its own random database.
           ES23_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-32 rutas, propiedad y ciclo de vida con PostgreSQL real
+        run: npm run test:routes:pg
+        env:
+          ES32_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres

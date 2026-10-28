@@ -93,3 +93,7 @@ La pantalla (Alejo/Codex); preferencias por similitud semántica y la redacción
 ## 11. Aprobación (27-oct-2026)
 
 Mauricio aprobó las 8 decisiones **como están**. Estado: **la implementación no ha empezado** por la decisión 8: los PR de los que depende (#27 ES-25, #28 ES-27, #30 ES-29, #33 ES-31; además #31, la parte de IA de ES-28) siguen abiertos, con el CI en verde pero **sin revisión de QA**. Orden de fusión sugerido, una vez QA los apruebe: #33 y #27 (independientes, base `main`) → #28 → #30 (cambiar su base a `main`) → #31 (ídem). Los conflictos entre ellos son triviales (`consent.js`, `server.js`, `test/support.cjs`, `package.json`).
+
+## 12. Continuación (28-oct-2026)
+
+[Dev-Codex] Alejo autorizó continuar ES-32. Las dependencias anteriores ya están integradas en main `6dc61e9`; el bloqueo histórico del §11 queda superado. Se conserva el contrato aprobado. La extensión declarativa de exportación/borrado se propuso en Jira 10250 y fue autorizada explícitamente en el chat, registrada en 10257. Contrato implementado, endpoints, reglas detalladas y límites de concurrencia: [36-ES-32-CONTRATO-IMPLEMENTACION.md](36-ES-32-CONTRATO-IMPLEMENTACION.md). No hay cambios de pantalla: corresponden a ES-34.

@@ -31,6 +31,10 @@ const CORE = [
   // `rubricHash`, `requestId` ni la versión de la regla (referencias técnicas internas); `evidenceRefs` son solo ids y versiones, sin texto. El catálogo
   // (SkillCatalog/SkillDefinition) lo administra el cliente y no es dato personal: no se registra.
   ['skillAssessments', 'SkillAssessment', 'UserId', ['id', 'skillKey', 'track', 'level', 'state', 'catalogVersion', 'evidenceRefs', 'confidence', 'confidenceReasonCode', 'rationale', 'authoring', 'status', 'createdAt'], ['rationale']],
+  // ES-32: extensión declarativa autorizada en Jira 10250 y en el chat. Sin cambios del procesador ni de retención.
+  ['routeConstraints', 'RouteConstraintsVersion', 'UserId', ['id', 'version', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['routeChoices', 'RouteChoice', 'UserId', ['id', 'roleKey', 'slot', 'decision', 'catalogVersion', 'constraintsVersion', 'status', 'createdAt']],
+  ['routeReviewRequests', 'RouteReviewRequest', 'UserId', ['id', 'status', 'note', 'createdAt'], ['note']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
