@@ -336,3 +336,23 @@ test('ES-23 (QA-25-03): la evidencia profesional (ES-27) se exporta descifrada a
   assert.deepEqual(state.tables.Evidence.map(r => r.UserId), [202]);
   assert.deepEqual(state.tables.EvidenceVersion.map(r => r.UserId), [202]);
 });
+
+test('ES-23 (QA-25-03): las evaluaciones del Skill Map (ES-29) se exportan con la justificación descifrada al dueño, no se mezclan con B y se purgan, también tras una restauración (--replay)', async t => {
+  const { state, add } = setup();
+  const row = (id, UserId, over = {}) => ({ id, UserId, skillKey: 'communication', track: 'self', level: 3, state: 'initial', catalogVersion: 1, rubricHash: 'f'.repeat(64), evidenceRefs: [{ evidenceId: 9, version: 1 }], confidence: 'medium', confidenceReasonCode: 'one_evidence', confidenceRuleVersion: 1, rationale: null, authoring: 'person', status: 'current', requestId: 'req-sk-' + id, ...over });
+  add('SkillAssessment', row(1, 101, { rationale: 'Mi justificación (A)' }));
+  add('SkillAssessment', row(2, 101, { skillKey: 'planning', status: 'superseded' }));
+  add('SkillAssessment', row(3, 202, { rationale: 'B SKILL CANARY' }));
+  const request = await startApp(t);
+  const p = await preview(request);
+  const exported = p.body.data.skillAssessments;
+  assert.deepEqual(exported.map(x => [x.id, x.skillKey, x.level, x.status, x.rationale]), [[1, 'communication', 3, 'current', 'Mi justificación (A)'], [2, 'planning', 3, 'superseded', null]]);
+  assert.ok(!('rubricHash' in exported[0]) && !('requestId' in exported[0]) && !('confidenceRuleVersion' in exported[0])); // referencias técnicas internas
+  assert.doesNotMatch(JSON.stringify(p.body.data), /B SKILL CANARY/);
+  const result = await remove(request);
+  await processDeletion(result.body.id, { quiescent: true });
+  assert.deepEqual(state.tables.SkillAssessment.map(r => r.UserId), [202]);
+  add('SkillAssessment', row(4, 101, { rationale: 'RESTORED PRIVATE' }));
+  await processDeletion(result.body.id, { quiescent: true, replay: true });
+  assert.deepEqual(state.tables.SkillAssessment.map(r => r.UserId), [202]);
+});
