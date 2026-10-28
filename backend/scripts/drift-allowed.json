@@ -1,0 +1,18 @@
+{
+  "comentario": "Restricciones que existen solo en migraciones y no en los modelos de Sequelize. Cada una exige su motivo; una nueva se añade en el PR de su historia y la revisa QA.",
+  "restricciones": {
+    "RouteChoices_decision_check": "ES-32: CHECK de dominio que el modelo no declara",
+    "RouteChoices_slot_check": "ES-32: CHECK de dominio que el modelo no declara",
+    "RouteChoices_status_check": "ES-32: CHECK de dominio que el modelo no declara",
+    "RouteConstraintsVersions_status_check": "ES-32: CHECK de dominio que el modelo no declara",
+    "RouteConstraintsVersions_version_check": "ES-32: CHECK de dominio que el modelo no declara",
+    "RouteReviewRequests_status_check": "ES-32: CHECK de dominio que el modelo no declara",
+    "career_review_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
+    "career_ev_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
+    "career_pv_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
+    "career_reminder_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara"
+  },
+  "indices": {
+    "career_plan_owner_id": "ES-33: índice único (UserId, id) que respalda la clave foránea compuesta de CareerReminders; el modelo no lo declara"
+  }
+}

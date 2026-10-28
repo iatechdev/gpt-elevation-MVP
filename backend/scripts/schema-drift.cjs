@@ -61,14 +61,15 @@ async function esquema(nombre) {
       for (const clave of Object.keys(s)) {
         const soloSync = s[clave].filter((x) => !m[clave].includes(x));
         let soloMig = m[clave].filter((x) => !s[clave].includes(x));
-        // Las migraciones pueden ser más estrictas que los modelos: Sequelize no declara CHECK, así que un CHECK que solo
-        // existe en las migraciones se informa pero no cuenta como deriva. Columnas e índices siguen siendo exactos.
-        if (clave === 'restricciones') {
-          const checks = soloMig.filter((x) => String(JSON.parse(x).def).startsWith('CHECK'));
-          checks.forEach((x) => console.log('  (informativo) CHECK solo en migraciones:', JSON.parse(x).conname));
-          soloMig = soloMig.filter((x) => !checks.includes(x));
+        // Restricciones que solo existen en las migraciones (Sequelize no declara CHECK ni FK compuestas, ni el índice único que las respalda): solo las
+        // listadas por nombre en drift-allowed.json cuentan como diferencia aceptada. Cualquier otra sigue siendo deriva,
+        // y lo que solo está en sync nunca se acepta.
+        if (clave === 'restricciones' || clave === 'indices') {
+          const permitidas = new Set(Object.keys(require('./drift-allowed.json')[clave]));
+          const ok = soloMig.filter((x) => permitidas.has(JSON.parse(x).conname || JSON.parse(x).indexname));
+          ok.forEach((x) => console.log('  (permitida, drift-allowed.json) solo en migraciones:', JSON.parse(x).conname || JSON.parse(x).indexname));
+          soloMig = soloMig.filter((x) => !ok.includes(x));
         }
-        console.log(`[${etapa}] ${clave}: sync=${s[clave].length} migraciones=${m[clave].length}`);
         if (soloSync.length || soloMig.length) {
           hay = true;
           soloSync.slice(0, 8).forEach((x) => console.error('  solo en sync:', x));
