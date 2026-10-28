@@ -18,6 +18,8 @@
     "test:career-plan:pg": "node --test test/integration/es-33-postgres.cjs",
     "test:career-plan:local": "node scripts/testEs33Local.cjs",
     "migrate:career-plan": "node scripts/migrateCareerPlan.js",
+    "seed:demo": "node scripts/seedStagingDemo.js",
+    "test:seed-demo:pg": "node --test test/integration/seed-demo-postgres.cjs",
     "test:routes:pg": "node --test test/integration/es-32-postgres.cjs",
     "test:routes:local": "node scripts/testEs32Local.cjs",
     "migrate:routes": "node scripts/migrateRoutes.js",

@@ -4,7 +4,7 @@
 // GET  /api/messages
 // verificarToken aplicado en server.js
 //
-// ES-20: los turnos se confirman completos (mensaje + respuesta) solo si Claude respondió; con requestId el reintento
+// ES-20/16: se confirma mensaje + respuesta válida (Claude, seguridad o pausa explícita); con requestId el reintento
 // no duplica mensajes ni vuelve a llamar al proveedor; el historial usa los mensajes MÁS RECIENTES; el diario solo entra
 // en el prompt si la persona elige las entradas (contextEntryIds).
 
@@ -24,13 +24,13 @@ const EthicManifest               = require('../EthicManifest');
 const { validateBody, nonempty, optional } = require('../middlewares/validateBody');
 const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS } = require('../utils/promptSafety');
 const { detectRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
+const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils/companionTone');
 
 const HISTORY_LIMIT = 20;
 const PENDING_TIMEOUT_MS = 2 * 60 * 1000; // un turno pendiente más viejo que esto se puede reintentar
 const MAX_CONTEXT_ENTRIES = 3;
 const MAX_CONTEXT_CHARS = 2000;
 const REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
-const FALLBACK_REPLY = 'Lo siento, tuve una pequeña desconexión. ¿Podrías repetirme eso?';
 const BUDGET_REPLY = {
   es: 'Por ahora alcanzaste el límite de uso del asistente. Tu conversación y tus avances están guardados; podrás continuar cuando se renueve el periodo.',
   en: 'You have reached the assistant usage limit for now. Your conversation and progress are saved; you can continue when the period renews.',
@@ -63,7 +63,7 @@ const getActiveManifest = async () => {
     if (!active) return null;
     return desencriptar(active.content);
   } catch (err) {
-    console.error('⚠️ Could not load ethics manifest:', err.message);
+    console.error('⚠️ Could not load ethics manifest:', err && err.name);
     return null;
   }
 };
@@ -114,7 +114,7 @@ const claimTurn = async (userId, requestId, message) => {
 const failTurn = async (turn, failureCode) => {
   if (!turn) return;
   try { await turn.update({ status: 'failed', failureCode }); } catch (error) {
-    console.error('⚠️ No se pudo marcar el turno como fallido:', error.message);
+    console.error('⚠️ No se pudo marcar el turno como fallido:', error && error.name);
   }
 };
 
@@ -129,6 +129,7 @@ router.post('/chat', validateBody({
   if (!mensajeUsuario) return res.status(400).json({ error: 'Datos de entrada inválidos. / Invalid input data.' });
   const userId = req.user.id;
   const requestId = req.body.requestId;
+  let replyLang = normalizeLang(req.body.lang) ?? 'es';
   let turn = null;
 
   // Confirma el turno completo (mensaje + respuesta) en una sola transacción.
@@ -161,13 +162,22 @@ router.post('/chat', validateBody({
 
     // ES-21: el nivel de riesgo solo vive en esta solicitud: no se guarda, no se registra y no sale de aquí.
     const risk = detectRisk(mensajeUsuario);
-    const lang = normalizeLang(req.body.lang) ?? risk.lang ?? 'es';
+    const pauseLang = explicitPauseLanguage(mensajeUsuario);
+    const lang = normalizeLang(req.body.lang) ?? risk.lang ?? pauseLang ?? 'es';
+    replyLang = lang;
     const country = normalizeCountry(req.body.country); // solo un país declarado; nunca se infiere del idioma
     if (risk.level === 'high') {
       // Escenario grave: se interrumpe el flujo ordinario y NO se llama al proveedor de IA.
       const reply = buildSafetyReply({ lang, country });
       await confirmTurn(reply);
       return res.json(requestId ? { reply, requestId, interrupted: true } : { reply, interrupted: true });
+    }
+
+    // ES-16: safety keeps priority. No provider, budget job or automatic follow-up for an ordinary explicit pause.
+    if (!risk.level && pauseLang) {
+      const reply = PAUSE_REPLY[lang];
+      await confirmTurn(reply);
+      return res.json(requestId ? { reply, requestId } : { reply });
     }
 
     const user = await User.findByPk(userId, { attributes: ['therapistId'] });
@@ -232,10 +242,10 @@ router.post('/chat', validateBody({
         });
       }
       // Fallo del proveedor: la conversación válida queda intacta y se puede reintentar con el mismo requestId.
-      console.error('❌ Error del proveedor de IA:', error.message);
+      console.error('❌ Error del proveedor de IA:', error && error.name);
       await failTurn(turn, 'provider_unavailable');
       return res.status(502).json({
-        reply: FALLBACK_REPLY, code: 'provider_unavailable', retryable: true, requestId: requestId ?? null,
+        reply: FALLBACK_REPLY[replyLang], code: 'provider_unavailable', retryable: true, requestId: requestId ?? null,
       });
     }
 
@@ -247,9 +257,9 @@ router.post('/chat', validateBody({
 
     res.json(requestId ? { reply: respuestaIA, requestId } : { reply: respuestaIA });
   } catch (error) {
-    console.error('❌ Error de comunicación:', error);
+    console.error('❌ Error de comunicación:', error && error.name);
     await failTurn(turn, 'internal_error');
-    res.status(500).json({ reply: FALLBACK_REPLY });
+    res.status(500).json({ reply: FALLBACK_REPLY[replyLang] });
   }
 });
 
@@ -268,7 +278,7 @@ router.get('/chat/turns/:requestId', async (req, res) => {
       ...(turn.status === 'completed' ? { reply: desencriptar(turn.replyContent) } : {}),
     });
   } catch (error) {
-    console.error('❌ Error obteniendo el turno:', error.message);
+    console.error('❌ Error obteniendo el turno:', error && error.name);
     res.status(500).json({ error: 'No se pudo obtener el turno.' });
   }
 });
@@ -286,7 +296,7 @@ router.get('/messages', async (req, res) => {
     }));
     res.json(historial);
   } catch (error) {
-    console.error('❌ Error obteniendo historial:', error);
+    console.error('❌ Error obteniendo historial:', error && error.name);
     res.status(500).json({ error: 'No se pudo cargar el historial.' });
   }
 });
