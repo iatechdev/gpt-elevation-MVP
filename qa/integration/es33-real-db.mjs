@@ -184,6 +184,27 @@ try {
   const outs = await Promise.all(props.map(async ({ f, p }) => { const x = await http('/experiments', { actor: f, method: 'POST', body: { requestId: randomUUID(), proposal: p.json.proposal, token: p.json.token } }); return { s: x.status, ms: Math.round(performance.now() - t0) }; }));
   info('carga', `pool=${POOL} estados=${outs.map(o => o.s + '@' + o.ms).join(' ')}`);
   check(`ES33-F01 ${fresh.length} personas crean un experimento a la vez con pool=${POOL}: ningún 5xx y todas < 3000 ms (umbral propuesto)`, outs.every(o => o.s < 500 && o.ms < 3000), `5xx=${outs.filter(o => o.s >= 500).length} max=${Math.max(...outs.map(o => o.ms))}ms`);
+  // ── Cargas mixtas con el pool real: cadenas completas (crear → plan) de 6 personas a la vez, y una ráfaga de 12 cambios de una sola persona
+  const dayN = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+  const t1 = performance.now();
+  const chains = await Promise.all(fresh.map(async f => {
+    const cr = await create(f); const id0 = cr.json.experimentId; const statuses = [cr.status]; let v = 1;
+    for (const op of [{ action: 'start' }, { action: 'submit', sample: 'M', evidenceRefs: [], assistance: 'none' }, { action: 'reflect', observation: 'o', interpretation: 'i' }, { action: 'decide', decision: 'continue', reason: 'r' }]) {
+      const z = await http(`/experiments/${id0}/versions`, { actor: f, method: 'POST', body: { requestId: randomUUID(), expectedVersion: v, change: op } }); statuses.push(z.status); v = z.json?.version?.version ?? v;
+    }
+    const prop = await http('/career-plan/proposals', { actor: f, method: 'POST', body: { experimentId: id0, expectedVersion: v } }); statuses.push(prop.status);
+    const acc = await http('/career-plan/versions', { actor: f, method: 'POST', body: { requestId: randomUUID(), expectedVersion: 0, action: 'accept', proposal: prop.json.proposal, token: prop.json.token, selections: ['step_7', 'step_30', 'step_90'].map((k, i) => ({ actionKey: k, chosenDate: dayN([3, 20, 70][i]), estimatedMinutes: 20, resourceRefs: [] })) } }); statuses.push(acc.status);
+    return statuses;
+  }));
+  const msChains = Math.round(performance.now() - t1);
+  info('cadenas', `ms=${msChains} estados=${chains.map(c => c.join('/')).join(' | ')}`);
+  check('ES33-F02 seis cadenas completas simultáneas (crear, iniciar, entregar, reflexionar, decidir, proponer y aceptar plan): ningún 5xx y todo en menos de 10 s (umbral propuesto)', chains.every(c => c.every(x => x < 300)) && msChains < 10000, `5xx=${chains.flat().filter(x => x >= 500).length} total=${msChains}ms`);
+  const solo = await create('c0'); const idS = solo.json.experimentId; await http(`/experiments/${idS}/versions`, { actor: 'c0', method: 'POST', body: { requestId: randomUUID(), expectedVersion: 1, change: { action: 'start' } } });
+  const t2 = performance.now();
+  const flood = await Promise.all(Array.from({ length: 12 }, () => http(`/experiments/${idS}/versions`, { actor: 'c0', method: 'POST', body: { requestId: randomUUID(), expectedVersion: 2, change: { action: 'submit', sample: 'M', evidenceRefs: [], assistance: 'none' } } }).then(z => ({ s: z.status, ms: Math.round(performance.now() - t2) }))));
+  const other = await http('/experiments', { actor: 'c1' });
+  info('rafaga', flood.map(z => z.s + '@' + z.ms).join(' ') + ' otra_sesion=' + other.status);
+  check('ES33-F03 12 cambios simultáneos de una persona: exactamente 1 creado, el resto 409, ningún 5xx y todo en menos de 3000 ms (umbral propuesto)', flood.filter(z => z.s === 201).length === 1 && flood.every(z => z.s < 500 && z.ms < 3000), flood.map(z => z.s).join(','));
   console.log(JSON.stringify({ fin: true }));
 } finally {
   if (server) { server.closeAllConnections(); await new Promise(res => server.close(res)); }
