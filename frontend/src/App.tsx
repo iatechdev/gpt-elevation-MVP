@@ -27,9 +27,13 @@ import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
 
+import { RegisteredRoutes } from './space/RegisteredRoutes'
+import { JournalPage } from './space/JournalPage'
+import { NextStepPage } from './space/NextStepPage'
+import { SpaceSession } from './space/SpaceSession'
 export default function App() {
   return (
-    <Routes>
+    <RegisteredRoutes><Routes>
 
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
@@ -38,11 +42,15 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/diary" element={<JournalPage />} />
+        <Route path="/app/diary/new" element={<JournalPage />} />
+        <Route path="/app/diary/:id" element={<JournalPage />} />
+        <Route path="/app/next-step" element={<NextStepPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
-        <Route path="/app/chat"         element={<ChatPage />} />
+        <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
-        <Route path="/app/dashboard"    element={<UserDashboard />} />
+        <Route path="/app/dashboard"    element={<SpaceSession><UserDashboard /></SpaceSession>} />
         <Route path="/app/my-therapist" element={<MyTherapist />} />
         {/* HU-067 — sala de videollamada para el paciente */}
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />
@@ -86,6 +94,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
-    </Routes>
+    </Routes></RegisteredRoutes>
   )
 }
