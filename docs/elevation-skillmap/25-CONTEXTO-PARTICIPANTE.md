@@ -178,3 +178,7 @@ Contrastes: tinta/fondo 16,59:1; secundario/blanco 7,63:1; error/fondo 6,14:1;
 blanco/acción 6,35:1. Las capturas locales solo contienen datos sintéticos.
 La primera prueba detectó y permitió corregir el parser JSON y la pérdida del
 borrador al cancelar Atrás. Las ejecuciones finales citadas son posteriores a sus correcciones.
+
+## Deuda técnica aceptada
+
+QA-14-02 (peso del CSS de los formularios, +80 % según QA) se acepta como deuda técnica y no se corrige en ES-14. Registro, alternativa medida y criterios para retomarla: `docs/hu-tecnicas/DT-007-css-formularios-es14.md`.
