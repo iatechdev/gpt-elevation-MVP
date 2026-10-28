@@ -30,8 +30,10 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
   const { context, route } = require('../es-33-fixture.cjs');
   const contracts = require('../../utils/careerPlanContracts'); const originalContracts = { ...contracts };
   const { problem } = require('../../utils/careerPlanRules');
-  await assert.rejects(contracts.getContext(1), { code: 'context_contract_pending' });
-  await assert.rejects(contracts.getRoute(1, 1), { code: 'route_contract_pending' });
+  // Los puertos de ES-14 y ES-32 ya son REALES (están en main): ante un titular que no existe responden owner_required, no «contrato pendiente».
+  // Esta prueba los sustituye más abajo por simulaciones solo para recorrer el ciclo de vida; la integración real está en es-33-integration-postgres.cjs.
+  await assert.rejects(contracts.getContext(1), { code: 'owner_required' });
+  await assert.rejects(contracts.getRoute(1, 1), { code: 'owner_required' });
   const users = {};
   for (const role of ['user', 'other', 'admin', 'therapist', 'board', 'superadmin']) users[role] = await User.create({ name: `SYNTHETIC ${role}`, email: `${role}@example.invalid`, password: randomBytes(32).toString('hex'), active: true, role: role === 'other' ? 'user' : role });
   const a = users.user, b = users.other, state = { routeVersion: 1, context: context() };
@@ -238,9 +240,10 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
     await assert.rejects(rights.download(b.id, preview.id, () => assert.fail('foreign export')), { code: 'export_not_found' });
     assert.deepEqual(await rights.download(a.id, preview.id, value => value), preview.data);
   });
-  await t.test('contratos reales ausentes fallan cerrados; historia propia recuperable, sin mock de runtime', async () => {
+  await t.test('contratos reales sin datos fallan cerrados; historia propia recuperable, sin mock de runtime', async () => {
     Object.assign(contracts, originalContracts);
-    assert.equal((await propose()).status, 503);
+    // ES-32 real, sin una elección guardada para esta persona: falla cerrado con 404 (antes, con ES-32 ausente, era un 503 «pendiente»).
+    const closed = await propose(); assert.equal(closed.status, 404); assert.equal(closed.data.code, 'route_record_not_found');
     const response = await http(`/experiments/${experimentId}`); assert.equal(response.status, 200); assert.equal(response.data.basis.status, 'needs_review');
     const paused = await http('/career-plan/versions', { method: 'POST', body: { requestId: randomUUID(), action: 'pause', expectedVersion: 2, planId } });
     assert.equal(paused.status, 201); assert.equal(paused.data.plan.status, 'paused');

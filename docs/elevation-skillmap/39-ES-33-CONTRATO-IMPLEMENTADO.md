@@ -8,11 +8,11 @@
 
 `utils/careerPlanContracts.js` es el único puerto de planificación:
 
-- `getRoute(userId, choiceId)` usa perezosamente `utils/routes.getAcceptedChoice` y `getRoutes` cuando ES-32 exista en main. Ausencia del módulo → 503 `route_contract_pending`. No crea un motor alternativo ni permite elegir el dueño.
-- `getContext(userId)` → **503 `context_contract_pending` en runtime** hasta que Mauricio facilite/apruebe un lector mínimo `{version, weeklyMinutes, timeZone, locale}` de ParticipantContext. No inventa disponibilidad/idioma/zona ni lee una preferencia alternativa. El snapshot guardado en planes explica una aceptación histórica; no es otra fuente canónica.
+- `getRoute(userId, choiceId)` usa `utils/routes.getAcceptedChoice` y `getRoutes` de **ES-32, ya en `main`** (verificado contra Postgres real en `es-33-integration-postgres.cjs`). Si el módulo faltara → 503 `route_contract_pending`. No crea un motor alternativo ni permite elegir el dueño. Una elección ajena responde 404; una elección cuya base cambió, 409.
+- `getContext(userId)` lee el **contexto canónico de ES-14 (`ParticipantContext`, ya en `main`)** y devuelve `{version, weeklyMinutes, timeZone, locale}` solo de la persona que pide. Reglas aprobadas por Mauricio (28-oct-2026): (1) **solo cuenta un contexto completado** (la persona pulsó «continuar»); un borrador no se usa; (2) **disponibilidad o zona horaria desconocidas** (`null` en ES-14) no se inventan ni se convierten en cero: 409 `availability_unknown` / `timezone_unknown` con mensaje ES/EN que lleva a Mi contexto; sin contexto o sin completar, 409 `context_incomplete`; (3) cuenta inactiva o con otro rol → 403 `owner_required`; con solicitud de eliminación → 403 `deletion_pending`; (4) la **versión del contexto** entra en la huella: editarlo deja los experimentos en `needs_review`, sin reescribir lo guardado. No lee una preferencia alternativa. El snapshot guardado en planes explica una aceptación histórica; no es otra fuente canónica.
 - Revisión humana: **no hay endpoint de feedback por terceros** ni rol inventado. Las solicitudes propias quedan `pending_authorization`, `shared:false`; no se concede acceso ni se envían materiales. El contrato de ES-35 debe definir asignación, selección de versiones, facilitator_sharing, autor/fecha de servidor, retirada y retención/exportación del feedback de terceros.
 
-Los fixtures viven exclusivamente en `backend/test/`. No hay modo demo, flag de entorno, payload o bypass de runtime que los habilite. Con módulos ausentes una propuesta falla 503; el dueño todavía recupera su historia con `basis.status=needs_review` y puede pausar/retirar. No se publica un resultado simulado como real.
+Los fixtures viven exclusivamente en `backend/test/`. No hay modo demo, flag de entorno, payload o bypass de runtime que los habilite. Si un contrato real falla cerrado (por ejemplo 404 por una elección inexistente, o 409 por un contexto incompleto) una propuesta no se crea; el dueño todavía recupera su historia con `basis.status=needs_review` y puede pausar/retirar. No se publica un resultado simulado como real.
 
 ## API y propiedad
 
@@ -96,8 +96,8 @@ No se consultan conversaciones, diario, ánimo o crisis ni se copian al motor; n
 
 ## Pendientes que impiden cerrar ES-33 integrada
 
-1. ES-32 revisado/fusionado y verificación del adaptador contra ese backend real; PR #43 no se fusiona desde esta tarea.
-2. ES-14 integrado y lector mínimo canónico de contexto aprobado por Mauricio; el puerto por defecto permanece cerrado.
+1. ~~ES-32 fusionado y verificación contra ese backend real~~: **hecho** (PR #43 en `main`; `es-33-integration-postgres.cjs`).
+2. ~~ES-14 integrado y lector de contexto~~: **hecho** con las reglas de arriba (contexto completado; 409 si falta disponibilidad o zona).
 3. Contrato canónico de asignación, compartición, autorización y retención de feedback humano. No reemplazarlo con un chequeo de rol.
 4. Rúbricas/plantillas específicas de dominio, revisión especializada y pertinencia con catálogo real/seis personas; fixtures no son aceptación del piloto.
 5. Pantalla ES-34 y consola ES-35 con sus diseños aprobados, integración E2E real y despliegue verificado por infraestructura.
