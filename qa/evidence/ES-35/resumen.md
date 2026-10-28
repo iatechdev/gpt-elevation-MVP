@@ -1,0 +1,9 @@
+# ES-35 · PR #46 (head dc90c38), merge local temporal con main a2c953f
+Entorno: builds locales estáticos (sin bandera, con VITE_ENABLE_FACILITATION_PREVIEW=true y escenarios lost-ack y conflict), Chromium del panel, sesión sintética. Sin red real.
+- lint 0 avisos, `npm test` 44/44, tipos, `npm audit` 0.
+- Peso (main a2c953f: JS 535.992 B, CSS 35.306 B): PR JS 565.436 B (+5,5 %), CSS 47.629 B (+34,9 %), iguales con y sin bandera (el código va siempre en el bundle). Supera los umbrales propuestos (+5 % / +10 %).
+- Sin bandera: /facilitation, /app/professional-reviews y /facilitation/participants/:id/reviews/new → «La vista preliminar no está habilitada», sin datos ni formularios. Con bandera: lista de seis alias (A a F) con invitación y progreso operativo, sin chats, diario, ánimo, puntuaciones, crisis, agregados, porcentajes ni idioma/país/edad (barrido de las seis fichas); frase «No se muestran estadísticas de subgrupos». Sin ordenación ni filtros.
+- Flujo: material → registrar revisión → vista previa exacta → confirmar (autor y fecha asignados) → objeción del titular A → respuesta del facilitador; todo inmutable y en el historial. 0 peticiones de red, sin cambios de almacenamiento. XSS: HTML mostrado como texto.
+- lost-ack: «No se confirmó el guardado. Conservamos el borrador» + Reintentar → un solo registro. conflict: «El material cambió», confirmar deshabilitado, borrador conservado.
+- Contraste AA sin fallos en claro; ES/EN completos; sin desplazamiento horizontal a 320 px, un h1, enlace «Saltar al contenido», sin objetivos menores de 44 px.
+- Observaciones: la observación profesional vacía y los caracteres de control se aceptan en la vista previa (solo `maxLength` del navegador, sin validación de longitud ni de caracteres en la lógica; el contrato real deberá validarlos en servidor); botón «Responder a la objeción» disponible sin límite de respuestas; rutas alcanzables por cualquier sesión con token (declarado por el PR).
