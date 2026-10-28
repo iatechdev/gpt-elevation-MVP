@@ -205,7 +205,10 @@ test('ES-31 la semilla sintética es completa, marca todo como sintético y no p
   assert.ok(Object.values(data.sources).every((s) => s.url === 'https://example.org/fuente-sintetica')); // dominio reservado: ninguna fuente real
   assert.ok(Object.values(data.offers).every((o) => o.url.startsWith('https://example.org/')));
   const script = fs.readFileSync(path.resolve(__dirname, '..', 'scripts', 'seedRouteCatalogSynthetic.js'), 'utf8');
-  assert.ok(script.indexOf("NODE_ENV === 'production'") !== -1 && script.indexOf("NODE_ENV === 'production'") < script.indexOf('authenticate'));
+  // La semilla exige la bandera explícita ANTES de tocar la base. Ya no se apoya en NODE_ENV: staging corre con NODE_ENV=production y debe poder cargarla.
+  const guard = script.indexOf("ALLOW_SYNTHETIC_CATALOG !== 'true'");
+  assert.ok(guard !== -1 && guard < script.indexOf('authenticate'));
+  assert.doesNotMatch(script, /NODE_ENVs*===s*['"]production['"]/);
   assert.match(fs.readFileSync(path.resolve(__dirname, '..', 'utils', 'routeCatalog.js'), 'utf8'), /ALLOW_SYNTHETIC_CATALOG/);
 });
 
