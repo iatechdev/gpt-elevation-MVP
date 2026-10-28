@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillAssessment']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'SkillAssessment']) require('../../' + name);
   await sequelize.sync();
   const rights = require('../../utils/dataRights');
   const { processDeletion } = require('../../utils/deletionProcessor');
@@ -230,6 +230,27 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
     await processDeletion(request.id, { quiescent: true, replay: true });
     assert.equal(await Evidence.count({ where: { UserId: a.id } }), 0);
     assert.equal(await EvidenceVersion.count({ where: { UserId: a.id } }), 0);
+  });
+  await t.test('QA-14-01: el contexto del participante se exporta descifrado al dueño, se purga con el procesador y el --replay lo borra tras una restauración (FK real)', async () => {
+    const ParticipantContext = require('../../ParticipantContext');
+    const a = await addUser(); const b = await addUser();
+    const dto = (profession) => encriptarV2(JSON.stringify({ preferredLanguage: 'es', residenceCountry: 'CO', targetMarket: 'DK', timeZone: 'America/Bogota', profession, interests: null, availabilityMinutesPerWeek: 60, careerGoal: null, careerConstraints: null }));
+    await ParticipantContext.create({ UserId: a.id, version: 2, content: dto('Contabilidad sintética A'), completedAt: new Date() });
+    await ParticipantContext.create({ UserId: b.id, version: 1, content: dto('B PROFESSION CANARY'), completedAt: null });
+    const [raw] = await sequelize.query('SELECT content FROM "ParticipantContexts" WHERE "UserId" = :id', { replacements: { id: a.id }, type: 'SELECT' });
+    assert.match(raw.content, /^v2:/); // cifrado real en la base
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.deepEqual([p.data.participantContext.length, p.data.participantContext[0].version, p.data.participantContext[0].content.profession], [1, 2, 'Contabilidad sintética A']);
+    assert.doesNotMatch(JSON.stringify(p.data), /B PROFESSION CANARY/);
+    const request = await rights.requestDeletion(a.id);
+    assert.equal(await ParticipantContext.count({ where: { UserId: a.id } }), 1); // aceptar la solicitud no purga: la purga es el procesador
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await ParticipantContext.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await ParticipantContext.count({ where: { UserId: b.id } }), 1);
+    assert.equal(await User.count({ where: { id: a.id } }), 1); // la fila del usuario se pseudonimiza, no se borra: el CASCADE no habría bastado
+    await ParticipantContext.create({ UserId: a.id, version: 2, content: dto('RESTORED PRIVATE'), completedAt: null });
+    await processDeletion(request.id, { quiescent: true, replay: true });
+    assert.equal(await ParticipantContext.count({ where: { UserId: a.id } }), 0);
   });
   await t.test('QA-25-03: las evaluaciones del Skill Map se exportan con la justificación descifrada, se purgan con el procesador y el --replay las borra tras una restauración', async () => {
     const SkillAssessment = require('../../SkillAssessment');
