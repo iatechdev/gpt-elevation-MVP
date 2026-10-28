@@ -23,15 +23,21 @@ import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
 import { MyTherapist }   from './pages/MyTherapist.tsx'
 import { Onboarding }    from './pages/Onboarding.tsx'
+import { EvidenceListPage, EvidenceDetailPage, EvidenceCreatePage } from './pages/EvidencePages.tsx'
+import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
 import { FacilitationPreview } from './facilitation/FacilitationPreview'
 import { Participants, ParticipantDetail, NewReview, OwnReviews } from './facilitation/Pages'
 
+import { RegisteredRoutes } from './space/RegisteredRoutes'
+import { JournalPage } from './space/JournalPage'
+import { SpaceToolsPage } from './space/SpaceToolsPage'
+import { SpaceSession } from './space/SpaceSession'
 export default function App() {
   return (
-    <Routes>
+    <RegisteredRoutes><Routes>
 
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
@@ -46,11 +52,19 @@ export default function App() {
           <Route path="/facilitation/participants/:id/reviews/new" element={<NewReview />} />
           <Route path="/app/professional-reviews" element={<OwnReviews />} />
         </Route>
+        <Route path="/app/diary" element={<JournalPage />} />
+        <Route path="/app/diary/new" element={<JournalPage />} />
+        <Route path="/app/diary/:id" element={<JournalPage />} />
+        <Route path="/app/space/tools" element={<SpaceToolsPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
-        <Route path="/app/chat"         element={<ChatPage />} />
+        <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
-        <Route path="/app/dashboard"    element={<UserDashboard />} />
+        <Route path="/app/dashboard"    element={<SpaceSession><UserDashboard /></SpaceSession>} />
+        <Route path="/app/evidence" element={<EvidenceListPage />} />
+        <Route path="/app/evidence/new" element={<EvidenceCreatePage />} />
+        <Route path="/app/evidence/:id" element={<EvidenceDetailPage />} />
+        <Route path="/app/skill-map"    element={<SkillMapPage />} />
         <Route path="/app/my-therapist" element={<MyTherapist />} />
         {/* HU-067 — sala de videollamada para el paciente */}
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />
@@ -94,6 +108,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
-    </Routes>
+    </Routes></RegisteredRoutes>
   )
 }

@@ -31,13 +31,14 @@ test('ES-62: LanguageProvider sincroniza <html lang> y tolera un almacenamiento 
   assert.match(provider, /resolveInitialLang\(readSavedLang\(\), navigator\.language\)/)
 })
 
-test('ES-62: la cabecera usa solo claves del catálogo y no muestra la navegación de fase 2', () => {
+test('ES-62/68: la cabecera usa el catálogo y activa solo la sección de fase 2 existente', () => {
   const used = [...header.matchAll(/text\((?:'|`)(landing\.[^'`]+)(?:'|`)\)/g)].map(match => match[1])
     .flatMap(key => key.includes('${code}') ? ['es', 'en'].map(code => key.replace('${code}', code)) : [key])
   assert.ok(used.length >= 5)
   for (const key of used) assert.ok(keys.has(key), `clave inexistente: ${key}`)
-  assert.doesNotMatch(header, /landing\.nav\.(how|skillmap|pros|plans)/)
-  assert.doesNotMatch(header, /<nav\b/)
+  assert.match(header, /href="#como-funciona"/)
+  assert.match(header, /landing\.nav\.how/)
+  assert.doesNotMatch(header, /landing\.nav\.(skillmap|pros|plans)/)
   assert.doesNotMatch(header, /dangerouslySetInnerHTML|fetch\(/)
 })
 
