@@ -74,6 +74,7 @@ export const copy = {
   reminderHelp: ['No enviamos email ni push; se muestra al abrir esta sección.', 'No email or push is sent; it appears when you open this section.'],
   localTime: ['Hora local elegida', 'Chosen local time'], acceptReminder: ['Aceptar recordatorio', 'Accept reminder'], acknowledge: ['Acusar recibo', 'Acknowledge'], cancel: ['Cancelar', 'Cancel'],
   noReminders: ['No hay recordatorios pendientes.', 'There are no pending reminders.'], reminderInvalid: ['Confirma permiso, aceptación, fecha y hora inequívoca en la zona del plan.', 'Confirm permission, acceptance, date and an unambiguous time in the plan time zone.'],
+  pickExperiment: ['Elige un experimento para proponer un plan.', 'Choose an experiment to propose a plan.'], ackLater: ['Disponible desde la hora elegida.', 'Available from the chosen time.'],
   validate: ['Revisa los campos obligatorios y la selección.', 'Review required fields and selections.'], empty: ['Sin datos confirmados.', 'No confirmed data.'],
 } as const
 export type CopyKey = keyof typeof copy

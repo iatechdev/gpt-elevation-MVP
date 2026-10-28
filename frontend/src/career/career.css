@@ -43,3 +43,5 @@
 @media(max-width:600px) { .career-grid,.career-scope .career-pair { grid-template-columns:minmax(0,1fr); } .career-scope main,.career-header { padding:16px; } .career-scope .elv-card,.career-panel { padding:16px; } }
 @media(prefers-color-scheme:dark) { .career-scope { color-scheme:dark; --color-base-100:#181c17; --color-base-200:#242b22; --color-base-300:#899582; --color-base-content:#f5f6f1; --color-primary:#c1d5b5; --color-primary-content:#182115; --color-error:#ffb5b5; --color-warning:#f4d9a8; } .career-scope input:not([type=checkbox]):not([type=radio]),.career-scope select,.career-scope textarea,.career-scope button { border-color:#899582; } }
 @media(prefers-reduced-motion:reduce) { .career-scope *, .career-scope *::before, .career-scope *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+
+.career-scope .career-sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }

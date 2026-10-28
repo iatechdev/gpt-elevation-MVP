@@ -40,6 +40,11 @@ async function constraints(page) {
   await page.getByRole('group', { name: 'Contextos de interés', exact: true }).getByRole('checkbox', { name: 'Análisis', exact: true }).check();
   await page.getByRole('button', { name: 'Guardar restricciones', exact: true }).click();
 }
+async function reasonOf(button, text) {
+  assert.equal(await button.isDisabled(), true);
+  const id = await button.getAttribute('aria-describedby'); assert.ok(id, 'el botón deshabilitado no enlaza su motivo');
+  assert.equal((await button.page().locator('[id="' + id + '"]').textContent()).trim(), text);
+}
 async function screenshot(page, name) { await page.screenshot({ path: path.join(artifacts, name + '.png'), fullPage: true }); }
 async function test(name, fn) { await fn(); console.log('PASS ' + name); }
 async function main() {
@@ -48,7 +53,9 @@ async function main() {
   await test('defecto apagado: entrada ausente y URL sin datos/controles', async () => {
     const { context, page } = await pageAt(disabled, '/app/dashboard'); assert.equal(await page.locator('.career-entry').count(), 0);
     await screenshot(page, 'dashboard-disabled');
-    await page.goto(disabled + '/app/next-step'); await page.getByText('Este recorrido aún no está disponible.', { exact: true }).waitFor(); assert.equal(await page.locator('.career-grid').count(), 0); await context.close();
+    await page.goto(disabled + '/app/next-step'); await page.getByText('Este recorrido aún no está disponible.', { exact: true }).waitFor(); assert.equal(await page.locator('.career-grid').count(), 0);
+    // QA-34 obs. 4: sin bandera no se muestran las pestañas del recorrido antes del aviso.
+    assert.equal(await page.locator('.career-scope nav').count(), 0); await context.close();
   });
   const normal = await build('normal');
   await test('dashboard: una tarjeta nueva; dimensiones de widgets existentes preservadas', async () => {
@@ -66,6 +73,8 @@ async function main() {
     const first = page.locator('.career-grid article').first(); await first.getByRole('button', { name: 'Elegir esta ruta', exact: true }).click();
     await first.getByRole('button', { name: 'Revisar y aceptar experimento', exact: true }).click(); await page.waitForURL(/\/experiments\/\d+$/);
     await page.getByRole('button', { name: 'Iniciar', exact: true }).click();
+    // QA-34 obs. 2: el envío vacío muestra el aviso de la aplicación (sin validación nativa que lo oculte).
+    await page.getByRole('button', { name: 'Guardar entrega', exact: true }).click(); await page.getByText('Revisa los campos obligatorios y la selección.', { exact: true }).waitFor();
     await page.getByLabel('Muestra escrita', { exact: true }).fill('SYNTHETIC SAMPLE — no personal data'); await page.getByLabel('Ayuda utilizada', { exact: true }).selectOption('drafting');
     await page.getByRole('button', { name: 'Guardar entrega', exact: true }).click(); await page.getByLabel('Observación', { exact: true }).waitFor();
     await page.getByRole('checkbox', { name: /Seleccionar esta muestra/ }).check(); await page.getByRole('button', { name: 'Solicitar revisión', exact: true }).click(); await page.getByText('Solicitud pendiente de autorización; material aún no compartido.', { exact: true }).waitFor();
@@ -75,6 +84,8 @@ async function main() {
     await page.getByLabel('Decisión', { exact: true }).selectOption('continue'); await page.getByLabel('Razón de tu decisión', { exact: true }).fill('Synthetic reason');
     await page.getByRole('button', { name: 'Guardar decisión', exact: true }).click(); await screenshot(page, 'experiment');
     await page.getByRole('button', { name: 'Proponer plan', exact: true }).click(); await page.waitForURL(/\/plan$/);
+    // QA-34 obs. 2: el botón deshabilitado enlaza su motivo con aria-describedby.
+    await reasonOf(page.getByRole('button', { name: 'Proponer plan', exact: true }), 'Elige un experimento para proponer un plan.');
     await page.getByLabel('Experimento', { exact: true }).selectOption({ index: 1 }); await page.getByRole('button', { name: 'Proponer plan', exact: true }).click();
     for (const [i, horizon] of [7, 30, 90].entries()) {
       const group = page.getByRole('group', { name: `${horizon} días`, exact: true }); await group.getByRole('checkbox', { name: 'Aceptar acción', exact: true }).check(); await group.getByLabel('Fecha elegida', { exact: true }).fill(date([3, 20, 70][i]));
@@ -90,6 +101,7 @@ async function main() {
     await page.getByText(date(3) + 'T09:00 · America/Bogota', { exact: true }).waitFor();
     const pending = page.locator('section').filter({ has: page.getByText(date(3) + 'T09:00 · America/Bogota', { exact: true }) }).last();
     assert.equal(await pending.getByRole('button', { name: 'Acusar recibo', exact: true }).isDisabled(), true);
+    await reasonOf(pending.getByRole('button', { name: 'Acusar recibo', exact: true }), 'Disponible desde la hora elegida.');
     await page.clock.setFixedTime(new Date(Date.now() + 4 * 86400000));
     await page.getByRole('button', { name: 'English', exact: true }).click(); await page.getByRole('button', { name: 'Español', exact: true }).click();
     await pending.getByRole('button', { name: 'Acusar recibo', exact: true }).click(); await page.getByText('No hay recordatorios pendientes.', { exact: true }).waitFor();
