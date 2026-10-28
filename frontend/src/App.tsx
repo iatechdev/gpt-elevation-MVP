@@ -31,9 +31,13 @@ import { BoardManifest } from './pages/board/BoardManifest.tsx'
 import { CareerShell } from './career/CareerShell'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 
+import { RegisteredRoutes } from './space/RegisteredRoutes'
+import { JournalPage } from './space/JournalPage'
+import { SpaceToolsPage } from './space/SpaceToolsPage'
+import { SpaceSession } from './space/SpaceSession'
 export default function App() {
   return (
-    <Routes>
+    <RegisteredRoutes><Routes>
 
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
@@ -48,11 +52,15 @@ export default function App() {
           <Route path="experiments/:id" element={<ExperimentScreen />} />
           <Route path="plan" element={<PlanScreen />} />
         </Route>
+        <Route path="/app/diary" element={<JournalPage />} />
+        <Route path="/app/diary/new" element={<JournalPage />} />
+        <Route path="/app/diary/:id" element={<JournalPage />} />
+        <Route path="/app/space/tools" element={<SpaceToolsPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
-        <Route path="/app/chat"         element={<ChatPage />} />
+        <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
-        <Route path="/app/dashboard"    element={<UserDashboard />} />
+        <Route path="/app/dashboard"    element={<SpaceSession><UserDashboard /></SpaceSession>} />
         <Route path="/app/evidence" element={<EvidenceListPage />} />
         <Route path="/app/evidence/new" element={<EvidenceCreatePage />} />
         <Route path="/app/evidence/:id" element={<EvidenceDetailPage />} />
@@ -100,6 +108,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
-    </Routes>
+    </Routes></RegisteredRoutes>
   )
 }
