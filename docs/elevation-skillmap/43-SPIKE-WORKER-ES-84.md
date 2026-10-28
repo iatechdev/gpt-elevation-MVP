@@ -94,7 +94,7 @@ No hay otras transiciones; las ilegales fallan en la función y se prueban una p
 
 ## 8. Borrado, exportación y auditoría
 
-- El borrado (ES-23) debe **drenar el worker** como productor: detener nuevos reclamos, esperar o invalidar los `RUNNING`, borrar jobs, outbox y candidatas de esa persona, y recién entonces purgar. El doc 18 ya prevé «web, workers e integraciones».
+- El borrado (ES-23) debe **drenar el worker** como productor: detener nuevos reclamos, esperar o invalidar los `RUNNING`, borrar jobs y candidatas de esa persona, y recién entonces purgar. El doc 18 ya prevé «web, workers e integraciones».
 - La exportación incluye los jobs y candidatas de la persona.
 - Auditoría: cada reclamo registra en `BridgeTransfers` las claves entregadas y su hash, sin texto, como cualquier otro consumidor (`consumer = 'worker'`).
 
