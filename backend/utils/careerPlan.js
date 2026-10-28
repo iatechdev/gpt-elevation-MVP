@@ -17,6 +17,7 @@ const consent = require('./consent');
 const evidence = require('./evidence');
 const contracts = require('./careerPlanContracts');
 const rules = require('./careerPlanRules');
+const { gate } = require('./connectionGate');
 const { shape, id, rid, version, invalid, problem } = rules;
 const canonical = value => value instanceof Date ? value.toISOString() : Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
 const hash = value => createHmac('sha256', JWT_SECRET).update('es33:').update(JSON.stringify(canonical(value))).digest('hex');
@@ -29,7 +30,9 @@ async function authorize(userId, transaction, lock = false) {
   if (!user || !user.active || user.role !== 'user') throw problem('owner_required', 'Solo la persona titular puede acceder.', 'Only the participant owner may access this.', 403);
   if (await deletionPending(userId, transaction)) throw problem('deletion_pending', 'La cuenta tiene una solicitud de eliminación.', 'The account has a deletion request.', 403);
 }
-async function write(userId, fn) {
+// QA-33-01: la compuerta limita las escrituras simultáneas para que siempre quede una conexión libre para las lecturas internas (basis, evidencia).
+const write = (userId, fn) => gate().run(() => writeInGate(userId, fn));
+async function writeInGate(userId, fn) {
   const transaction = await sequelize.transaction();
   try {
     await authorize(userId, transaction, true);
@@ -261,7 +264,7 @@ async function consentStamp(userId, transaction) {
   return { ...stamp(row), grantEventId: event.id };
 }
 async function withNotifications(userId, fn) {
-  try { return await consent.withConsent(userId, 'notifications', transaction => fn(transaction)); }
+  try { return await gate().run(() => consent.withConsent(userId, 'notifications', transaction => fn(transaction))); }
   catch (error) { if (error instanceof consent.ConsentRequiredError) throw problem('consent_required', 'Falta consentimiento de notificaciones.', 'Notification consent is required.', 403); throw error; }
 }
 async function publishNotifications(userId, transaction, fn) {

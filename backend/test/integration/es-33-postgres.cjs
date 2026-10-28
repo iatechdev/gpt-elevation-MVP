@@ -13,7 +13,9 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
   let sequelize, server, created = false;
   t.after(async () => { if (server) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); } if (sequelize) await sequelize.close(); if (created) await admin.query(`DROP DATABASE "${name}"`); await admin.close(); });
   await admin.query(`CREATE DATABASE "${name}"`); created = true; target.pathname = '/' + name;
-  sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: 15, min: 0 } });
+  // QA-33-01: el pool por defecto del backend es pequeño (5); un pool holgado esconde el agotamiento de conexiones.
+  const poolMax = Number(process.env.ES33_TEST_POOL_MAX) || 5;
+  sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: poolMax, min: 0, acquire: 10000 } });
   process.env.JWT_SECRET = randomBytes(32).toString('hex'); process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
   const database = require.resolve('../../database'); require.cache[database] = { id: database, filename: database, loaded: true, exports: { sequelize } };
   require('../../associations')(); const { CORE } = require('../../utils/personalData');
@@ -257,5 +259,30 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
     await Experiment.create({ id: experimentId, UserId: a.id, choiceId: a.id, currentVersion: 1, requestId: randomUUID(), inputHash: 'a'.repeat(64) });
     await processDeletion(request.id, { quiescent: true, replay: true }); assert.equal(await Experiment.count({ where: { UserId: a.id } }), 0); assert.equal(await Experiment.count({ where: { UserId: b.id } }), 1);
     assert.ok(otherExperimentId);
+  });
+  await t.test('QA-33-01: con el pool reducido, escrituras simultáneas de distintas personas y de la misma persona terminan sin 5xx ni bloqueo', async () => {
+    const people = [];
+    for (let i = 0; i < poolMax * 2; i++) {
+      const user = await User.create({ name: 'SYNTHETIC pool ' + i, email: `pool${i}@example.invalid`, password: randomBytes(32).toString('hex'), active: true, role: 'user' });
+      people.push({ user, token: issueToken(user) });
+    }
+    const proposals = await Promise.all(people.map(({ user, token }) => http('/experiments/proposals', { method: 'POST', token, body: { choiceId: user.id, taskIndex: 0, minutes: 20 } })));
+    proposals.forEach(proposal => assert.equal(proposal.status, 200));
+    const create = (i, requestId) => http('/experiments', { method: 'POST', token: people[i].token, body: { requestId, proposal: proposals[i].data.proposal, token: proposals[i].data.token } });
+    const same = randomUUID();
+    let started = Date.now();
+    const created = await Promise.all([...people.map((_, i) => create(i, i === 0 ? same : randomUUID())), ...Array.from({ length: poolMax * 2 }, () => create(0, same))]);
+    assert.ok(!created.some(r => r.status >= 500), 'creaciones: ' + created.map(r => r.status).join(','));
+    assert.ok(Date.now() - started < 8000, 'las creaciones tardaron ' + (Date.now() - started) + ' ms');
+    const own = await Promise.all(people.map(({ token }) => http('/experiments', { token })));
+    const ids = own.map(r => r.data.experiments[0].id);
+    started = Date.now();
+    const changed = await Promise.all([
+      ...people.map(({ token }, i) => http(`/experiments/${ids[i]}/versions`, { method: 'POST', token, body: { requestId: randomUUID(), expectedVersion: 1, change: { action: 'start' } } })),
+      ...Array.from({ length: poolMax * 2 }, () => http(`/experiments/${ids[0]}/versions`, { method: 'POST', token: people[0].token, body: { requestId: randomUUID(), expectedVersion: 1, change: { action: 'start' } } })),
+    ]);
+    assert.ok(!changed.some(r => r.status >= 500), 'cambios: ' + changed.map(r => r.status).join(','));
+    assert.ok(Date.now() - started < 8000, 'los cambios tardaron ' + (Date.now() - started) + ' ms');
+    for (const { user } of people) assert.equal(await Experiment.count({ where: { UserId: user.id } }), 1);
   });
 });
