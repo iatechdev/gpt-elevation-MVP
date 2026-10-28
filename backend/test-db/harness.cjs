@@ -62,6 +62,9 @@ async function create() {
   process.env.DATABASE_URL = url.toString();
   process.env.DB_SSL = 'false';
   process.env.DB_POOL_MAX = '10'; // varias conexiones reales simultáneas
+  // Claves sintéticas y aleatorias de esta corrida (los ganchos de consentimiento cargan módulos que las exigen al importarse).
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+  process.env.DATA_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
   for (const key of ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'DB_PORT']) delete process.env[key];
   created = { name, base: base.toString() };
   return name;

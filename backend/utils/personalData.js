@@ -1,0 +1,78 @@
+const { Op } = require('sequelize');
+const { desencriptar } = require('./crypto');
+const DataRightsError = require('./dataRightsError');
+
+// Closed registry: adding a personal-data model requires an explicit export/purge decision.
+const CORE = [
+  ['messages', 'message', 'UserId', ['id', 'role', 'content', 'createdAt', 'updatedAt'], ['content']],
+  ['chatTurns', 'ChatTurn', 'UserId', ['id', 'requestId', 'status', 'userContent', 'replyContent', 'failureCode', 'createdAt', 'updatedAt'], ['userContent', 'replyContent']],
+  ['diary', 'DiaryEntry', 'UserId', ['id', 'entryDate', 'content', 'createdAt', 'updatedAt'], ['content']],
+  ['moods', 'MoodLog', 'UserId', ['id', 'checkin_mood', 'checkout_mood', 'date', 'createdAt', 'updatedAt']],
+  ['ratings', 'SessionRating', 'UserId', ['id', 'rating', 'date', 'createdAt', 'updatedAt']],
+  ['recommendations', 'WellnessRecommendation', 'UserId', ['id', 'content', 'category', 'generatedAt', 'seenByUser', 'seenByTherapist', 'createdAt', 'updatedAt'], ['content']],
+  ['consents', 'Consent', 'UserId', ['id', 'purpose', 'scope', 'status', 'version', 'decidedAt', 'createdAt', 'updatedAt']],
+  ['consentHistory', 'ConsentEvent', 'UserId', ['id', 'purpose', 'scope', 'status', 'version', 'decidedAt', 'createdAt']],
+  ['planRequests', 'PlanRequest', 'userId', ['id', 'planId', 'status', 'adminNote', 'resolvedAt', 'createdAt', 'updatedAt']],
+  // ES-22: metadatos de uso de IA (sin mensajes, prompts ni respuestas) y el contador de presupuesto de la persona.
+  // El contador de la cohorte (UserId = 0) no es de nadie y nunca se purga: el gasto ya ocurrido sigue contando.
+  ['aiUsage', 'AiUsage', 'UserId', ['id', 'kind', 'requestId', 'model', 'periodKey', 'status', 'inputTokens', 'outputTokens', 'costMicros', 'currency', 'latencyMs', 'errorCode', 'createdAt']],
+  ['aiBudget', 'AiBudgetCounter', 'UserId', ['id', 'periodKey', 'used', 'createdAt', 'updatedAt']],
+  // ES-25: versiones del puente profesional. `payload` (los campos que la persona aprobó) va cifrado v2: se entrega descifrado y como lista
+  // al dueño. No se exportan `origins` ni `requestId` (referencias técnicas internas, sin texto) y se purga todo con el resto.
+  ['careerContext', 'CareerContextVersion', 'UserId', ['id', 'version', 'status', 'payload', 'consentVersion', 'approvedAt', 'revokedAt', 'createdAt'], ['payload'], ['payload']],
+  // ES-25: auditoría de lo que leyó el motor profesional (solo claves y consumidor; nunca texto). Es información sobre la propia persona.
+  ['bridgeTransfers', 'BridgeTransfer', 'UserId', ['id', 'version', 'keys', 'consumer', 'createdAt']],
+  // ES-27: evidencia profesional. El contenedor solo se exporta si no está borrado; cada versión lleva su contenido cifrado v2, que se entrega
+  // descifrado y como objeto al dueño. Al borrar una evidencia se vacía el contenido de todas sus versiones: esas versiones vacías no se exportan.
+  // No se exportan `origins` (referencias privadas sin texto) ni `requestId`.
+  ['evidence', 'Evidence', 'UserId', ['id', 'currentVersion', 'createdAt', 'updatedAt']],
+  ['evidenceVersions', 'EvidenceVersion', 'UserId', ['id', 'EvidenceId', 'version', 'status', 'authoring', 'payload', 'hasChatOrigin', 'consentVersion', 'createdAt'], ['payload'], ['payload'], (row) => Object.keys(row.payload).length > 0],
+  ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
+];
+const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
+const model = name => require('../' + name);
+const pick = (row, fields) => Object.fromEntries(fields.map(field => [field, row[field] ?? null]));
+
+// These records mix people, files or professional obligations. Never silently omit them
+// from a purportedly complete export, or erase them without Mauricio's retention contract.
+async function requiresReview(userId, transaction) {
+  const refs = [
+    ['ClinicalNote', { [Op.or]: [{ UserId: userId }, { therapistId: userId }] }],
+    ['TherapySession', { [Op.or]: [{ patientId: userId }, { therapistId: userId }] }],
+    ['SessionNote', { therapistId: userId }],
+    ['TherapistProfile', { UserId: userId }],
+    ['TherapistValidation', { therapistId: userId }],
+    ['MatchingRequest', { [Op.or]: [{ UserId: userId }, { chosenTherapistId: userId }] }],
+    ['EthicManifest', { uploadedBy: userId }],
+    ['PlanRequest', { resolvedBy: userId }],
+    ['User', { therapistId: userId }],
+  ];
+  for (const [name, where] of refs) {
+    if (await model(name).findOne({ where, attributes: ['id'], transaction })) return true;
+  }
+  return false;
+}
+
+async function personalData(user, locale, transaction) {
+  const data = { schemaVersion: 1, type: 'personal', locale, profile: pick(user, PROFILE) };
+  let bytes = Buffer.byteLength(JSON.stringify(data));
+  const tooLarge = () => new DataRightsError(413, 'export_too_large',
+    'La exportación supera el límite de esta versión.', 'The export exceeds this version’s limit.');
+  for (const [key, name, owner, fields, encrypted = [], json = [], keep = () => true] of CORE) {
+    const where = { [owner]: user.id };
+    if (name === 'DiaryEntry' || name === 'Evidence') where.deletedAt = null;
+    const rows = await model(name).findAll({ where, attributes: fields, order: [['id', 'ASC']], limit: 5001, transaction });
+    if (rows.length > 5000) throw tooLarge();
+    data[key] = rows.map(row => {
+      const output = pick(row, fields);
+      for (const field of encrypted) if (output[field] !== null) output[field] = desencriptar(output[field]);
+      for (const field of json) if (output[field] !== null) output[field] = JSON.parse(output[field]);
+      bytes += Buffer.byteLength(JSON.stringify(output));
+      if (bytes > 10 * 1024 * 1024) throw tooLarge();
+      return output;
+    }).filter(keep);
+  }
+  return data;
+}
+
+module.exports = { CORE, personalData, requiresReview };

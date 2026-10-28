@@ -11,6 +11,13 @@ const SessionRating = require('../SessionRating');
 const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
 const { revokeUserSessions } = require('../utils/sessions');
+const { deletionPending } = require('../utils/deletionGuard');
+
+const refuseDeletionPending = async (id, res) => {
+  if (!await deletionPending(Number(id))) return false;
+  res.status(409).json({ code: 'deletion_pending', error: 'La cuenta tiene una solicitud de eliminación. / The account has a deletion request.' });
+  return true;
+};
 
 // Un promedio de muy pocas entradas revela el valor individual: por debajo de este número de entradas se devuelve null (QA-18-02).
 const MIN_AVERAGE_SAMPLE = 5;
@@ -59,7 +66,7 @@ router.post('/', validateBody({ name: nonempty, email: nonempty, password: nonem
       }
     });
   } catch (error) {
-    console.error('❌ Error creando usuario:', error);
+    console.error('Error creando usuario.');
     res.status(500).json({ error: 'No se pudo crear el usuario.' });
   }
 });
@@ -113,7 +120,7 @@ router.get('/', async (req, res) => {
 
     res.json(usuariosConStats);
   } catch (error) {
-    console.error('❌ Error listando usuarios:', error);
+    console.error('Error listando usuarios.');
     res.status(500).json({ error: 'No se pudo obtener la lista de usuarios.' });
   }
 });
@@ -124,6 +131,7 @@ router.get('/', async (req, res) => {
 router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boolean) }), async (req, res) => {
   try {
     const { id } = req.params;
+    if (await refuseDeletionPending(id, res)) return;
     const { role, active } = req.body;
     const adminRole = req.user.role;
     const adminId = req.user.id;
@@ -160,7 +168,7 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
       }
     });
   } catch (error) {
-    console.error('❌ Error actualizando usuario:', error);
+    console.error('Error actualizando usuario.');
     res.status(500).json({ error: 'No se pudo actualizar el usuario.' });
   }
 });
@@ -178,6 +186,7 @@ router.delete('/:id', async (req, res) => {
     if (adminRole !== 'superadmin') {
       return res.status(403).json({ error: 'Solo el superadmin puede eliminar usuarios permanentemente.' });
     }
+    if (await refuseDeletionPending(id, res)) return;
     if (parseInt(id) === adminId) {
       return res.status(403).json({ error: 'No podés eliminar tu propio usuario.' });
     }
@@ -194,10 +203,10 @@ router.delete('/:id', async (req, res) => {
     await usuario.destroy();
     await revokeUserSessions(usuario.id); // ES-18
 
-    console.log(`🗑️ Usuario eliminado permanentemente: ${nombreUsuario} (id: ${id}) por superadmin ${req.user.name}`);
+    console.log('Borrado administrativo ejecutado.');
     res.json({ message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
   } catch (error) {
-    console.error('❌ Error eliminando usuario:', error);
+    console.error('Error eliminando usuario.');
     res.status(500).json({ error: 'No se pudo eliminar el usuario.' });
   }
 });
@@ -226,7 +235,7 @@ router.put('/:id/asignar-terapeuta', validateBody({ therapistId: nullable(id) })
     await usuario.update({ therapistId: therapistId || null });
     res.json({ message: 'Terapeuta asignado correctamente.' });
   } catch (error) {
-    console.error('❌ Error asignando terapeuta:', error);
+    console.error('Error asignando terapeuta.');
     res.status(500).json({ error: 'No se pudo asignar el terapeuta.' });
   }
 });
@@ -265,7 +274,7 @@ router.put('/:id/plan', validateBody({ planId: optional(nullable(id)) }), async 
       }
     });
   } catch (error) {
-    console.error('❌ Error asignando plan:', error);
+    console.error('Error asignando plan.');
     res.status(500).json({ error: 'No se pudo asignar el plan.' });
   }
 });
@@ -302,7 +311,7 @@ router.get('/:id/stats', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error obteniendo stats:', error);
+    console.error('Error obteniendo estadísticas.');
     res.status(500).json({ error: 'No se pudieron obtener las estadísticas.' });
   }
 });
@@ -361,7 +370,7 @@ router.get('/alerts', async (req, res) => {
       manifestoDate: '2026-04-02',
     });
   } catch (error) {
-    console.error('❌ Error fetching admin alerts:', error);
+    console.error('Error fetching admin alerts.');
     res.status(500).json({ error: 'Could not fetch admin alerts.' });
   }
 });
@@ -373,6 +382,7 @@ router.get('/alerts', async (req, res) => {
 // ==========================================
 router.put('/:id/unlock', async (req, res) => {
   try {
+    if (await refuseDeletionPending(req.params.id, res)) return;
     const usuario = await User.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
 
@@ -382,10 +392,10 @@ router.put('/:id/unlock', async (req, res) => {
       active:        true,
     });
 
-    console.log(`🔓 Usuario desbloqueado: ${usuario.name} (id: ${usuario.id}) por ${req.user.role} ${req.user.name}`);
+    console.log('Desbloqueo administrativo ejecutado.');
     res.json({ message: `Cuenta de ${usuario.name} desbloqueada correctamente.` });
   } catch (error) {
-    console.error('❌ Error desbloqueando usuario:', error);
+    console.error('Error desbloqueando usuario.');
     res.status(500).json({ error: 'No se pudo desbloquear el usuario.' });
   }
 });
@@ -403,6 +413,7 @@ router.put('/:id/reset-password', async (req, res) => {
     if (adminRole !== 'superadmin') {
       return res.status(403).json({ error: 'Solo el superadmin puede resetear contraseñas.' });
     }
+    if (await refuseDeletionPending(req.params.id, res)) return;
 
     const { newPassword } = req.body ?? {};
     if (typeof newPassword !== 'string' || newPassword.trim().length < 6) {
@@ -426,10 +437,10 @@ router.put('/:id/reset-password', async (req, res) => {
     });
     await revokeUserSessions(usuario.id); // ES-18: la contraseña anterior ya no abre sesiones vivas
 
-    console.log(`🔑 Contraseña reseteada para: ${usuario.name} (id: ${usuario.id}) por superadmin ${req.user.name}`);
+    console.log('Restablecimiento administrativo de contraseña ejecutado.');
     res.json({ message: `Contraseña de ${usuario.name} reseteada correctamente.` });
   } catch (error) {
-    console.error('❌ Error reseteando contraseña:', error);
+    console.error('Error reseteando contraseña.');
     res.status(500).json({ error: 'No se pudo resetear la contraseña.' });
   }
 });

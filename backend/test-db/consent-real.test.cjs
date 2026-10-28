@@ -25,6 +25,8 @@ before(async () => {
   consent = require('../utils/consent');
   await Consent.sync();
   await ConsentEvent.sync();
+  // Los ganchos de revocación (ES-25/27) y la guarda de eliminación (ES-23) consultan estas tablas dentro de setConsent.
+  for (const name of ['DeletionRequest', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ChatTurn']) await require('../' + name).sync();
   sampler = setInterval(() => { harness.connections().then((n) => { maxConnections = Math.max(maxConnections, n); }).catch(() => {}); }, 15);
 });
 
