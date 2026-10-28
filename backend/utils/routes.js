@@ -64,12 +64,14 @@ async function putConstraints(userId, input) {
   if (!Number.isSafeInteger(input.baseVersion) || input.baseVersion < 0) throw invalid();
   const payload = normalizeConstraints(input.payload);
   const inputHash = hash({ baseVersion: input.baseVersion, payload });
+  // QA-32-01: el catálogo se lee ANTES de abrir la transacción. Una lectura externa dentro de write() pide una segunda conexión mientras la
+  // primera sigue retenida y, con el pool lleno de escrituras, nadie avanza. El orden de los errores no cambia: se evalúa dentro, como antes.
+  const catalog = await catalogStore.getPublishedRouteCatalog();
   return write(userId, async transaction => {
     const repeated = await Constraints.findOne({ where: { UserId: userId, requestId: input.requestId }, transaction });
     if (repeated) { if (repeated.inputHash !== inputHash) throw conflict(); return { constraints: decode(repeated), created: false }; }
     const current = await currentConstraints(userId, transaction);
     if ((current?.version || 0) !== input.baseVersion) throw conflict();
-    const catalog = await catalogStore.getPublishedRouteCatalog();
     if (!catalog) throw new RoutesError(503, 'catalog_unavailable', 'Catálogo no disponible.', 'Catalog unavailable.');
     const contexts = new Set(catalog.contexts.map(context => context.contextKey));
     if ((payload.originContextKey && !contexts.has(payload.originContextKey)) || payload.interestContextKeys.some(key => !contexts.has(key))) throw invalid();
@@ -123,19 +125,29 @@ async function choose(userId, input) {
   if (typeof input.roleKey !== 'string' || !KEY.test(input.roleKey) || !['continuity', 'adjacency', 'exploration'].includes(input.slot) ||
     !['accepted', 'rejected'].includes(input.decision) || typeof input.basisHash !== 'string' || !/^[a-f0-9]{64}$/.test(input.basisHash)) throw invalid();
   const inputHash = hash(input);
-  return write(userId, async transaction => {
+  // QA-32-01: getRoutes/activeBasis abren sus propias conexiones (mapa, consentimiento, evidencia). Dentro de write() la transacción ya retiene
+  // una; con el pool lleno de escrituras nadie conseguía la segunda y todas daban 503. Por eso las lecturas van fuera de la transacción:
+  // antes (la base que vio la persona) y después de confirmar (el estado que se devuelve). La denegación temprana se conserva con authorize().
+  await authorize(userId);
+  let basis, basisError;
+  try { basis = await getRoutes(userId); } catch (error) { basisError = error; }
+  const outcome = await write(userId, async transaction => {
     const repeated = await Choice.findOne({ where: { UserId: userId, requestId: input.requestId }, transaction });
-    if (repeated) { if (repeated.inputHash !== inputHash) throw conflict(); return { choice: choiceDto(repeated, await activeBasis(userId)), created: false }; }
-    const basis = await getRoutes(userId);
+    if (repeated) { if (repeated.inputHash !== inputHash) throw conflict(); return { row: repeated, created: false }; }
+    if (basisError) throw basisError;
     if (basis.basisHash !== input.basisHash) throw conflict();
     if (!basis.routes.some(route => route.roleKey === input.roleKey && route.slot === input.slot)) throw new RoutesError(422, 'route_not_proposed', 'La ruta no forma parte de la propuesta vigente.', 'The route is not part of the current proposal.');
+    // Las restricciones se escriben bajo el mismo bloqueo de la persona: leerlas con esta transacción confirma que siguen siendo las de la base.
+    const latest = await currentConstraints(userId, transaction);
+    if ((latest?.version || 0) !== basis.constraintsVersion) throw conflict();
     const current = await Choice.findOne({ where: { UserId: userId, roleKey: input.roleKey, status: 'current' }, transaction });
     if (current) await current.update({ status: 'superseded' }, { transaction });
     const row = await Choice.create({ UserId: userId, ...input, inputHash, catalogVersion: basis.catalogVersion, constraintsVersion: basis.constraintsVersion, status: 'current' }, { transaction });
-    // Revalidación antes de confirmar. Una revocación posterior sigue detectándose al leer; no se promete un snapshot global de helpers.
-    if ((await getRoutes(userId)).basisHash !== basis.basisHash) throw conflict();
-    return { choice: choiceDto(row, basis.basisHash), created: true };
+    return { row, created: true };
   });
+  // Si el catálogo, la evidencia o el mapa cambiaron entre la lectura y la confirmación, la elección queda guardada y marcada basisChanged
+  // (hay que revisarla, no autoriza un experimento); antes se revertía con 409. No se promete un snapshot global de helpers.
+  return { choice: choiceDto(outcome.row, await activeBasis(userId)), created: outcome.created };
 }
 const reviewDto = row => ({ id: row.id, status: row.status, note: row.note ? desencriptar(row.note) : null, createdAt: row.createdAt });
 async function requestReview(userId, input) {

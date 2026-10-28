@@ -15,7 +15,9 @@ test('ES-32 PostgreSQL + HTTP: motor, propiedad, versiones y ciclo de vida', { t
   let sequelize, server, created = false;
   t.after(async () => { if (server) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); } if (sequelize) await sequelize.close(); if (created) await admin.query(`DROP DATABASE "${name}"`); await admin.close(); });
   await admin.query(`CREATE DATABASE "${name}"`); created = true; target.pathname = '/' + name;
-  sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: 15, min: 0 } });
+  // QA-32-01: el pool por defecto del backend es pequeño (5). Un pool holgado esconde el agotamiento de conexiones dentro de write().
+  const poolMax = Number(process.env.ES32_TEST_POOL_MAX) || 5;
+  sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: poolMax, min: 0, acquire: 10000 } });
   process.env.JWT_SECRET = randomBytes(32).toString('hex');
   process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
   const id = require.resolve('../../database');
@@ -186,5 +188,30 @@ test('ES-32 PostgreSQL + HTTP: motor, propiedad, versiones y ciclo de vida', { t
     await Review.create({ UserId: a.id, status: 'open', note: encriptarV2('RESTORED SYNTHETIC'), inputHash: 'a'.repeat(64), requestId: randomUUID() });
     await processDeletion(request.id, { quiescent: true, replay: true }); assert.equal(await Review.count({ where: { UserId: a.id } }), 0);
     assert.equal(await Constraints.count({ where: { UserId: b.id } }), 1);
+  });
+  await t.test('QA-32-01: con el pool reducido, escrituras simultáneas de distintas personas y de la misma persona terminan sin 5xx ni bloqueo', async () => {
+    const people = [];
+    for (let i = 0; i < poolMax * 2; i++) {
+      const user = await User.create({ name: 'Synthetic pool ' + i, email: `pool${i}@example.invalid`, password: randomBytes(32).toString('hex'), role: 'user', active: true });
+      const token = issueToken(user);
+      assert.equal((await http('/constraints', { method: 'PUT', token, body: constraintBody() })).status, 201);
+      people.push({ user, token });
+    }
+    const proposals = await Promise.all(people.map(({ token }) => http('', { token })));
+    const bodies = proposals.map((proposal, i) => {
+      assert.equal(proposal.status, 200); assert.ok(proposal.data.routes.length > 0, 'persona ' + i + ' sin rutas propuestas');
+      const route = proposal.data.routes[0];
+      return { roleKey: route.roleKey, slot: route.slot, decision: 'accepted', basisHash: proposal.data.basisHash, requestId: randomUUID() };
+    });
+    const started = Date.now();
+    const results = await Promise.all([
+      ...people.map(({ token }, i) => http('/choices', { method: 'POST', token, body: bodies[i] })),
+      ...people.map(({ token }) => http('/constraints', { method: 'PUT', token, body: constraintBody(1, { languages: ['en'] }) })),
+      ...Array.from({ length: poolMax * 2 }, () => http('/constraints', { method: 'PUT', token: people[0].token, body: constraintBody(1) })),
+    ]);
+    const elapsed = Date.now() - started;
+    assert.ok(!results.some(r => r.status >= 500), 'estados: ' + results.map(r => r.status).join(','));
+    assert.ok(elapsed < 8000, 'tardó ' + elapsed + ' ms');
+    for (const { user } of people) assert.equal(await Constraints.count({ where: { UserId: user.id, status: 'current' } }), 1);
   });
 });
