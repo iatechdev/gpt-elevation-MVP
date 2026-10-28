@@ -27,6 +27,8 @@ import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
 
+import { FeedbackPage } from './pilot/FeedbackPage'
+import { PilotMetricsPage } from './pilot/PilotMetricsPage'
 export default function App() {
   return (
     <Routes>
@@ -38,6 +40,7 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/feedback" element={<FeedbackPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<ChatPage />} />
@@ -48,6 +51,9 @@ export default function App() {
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />
       </Route>
 
+      <Route path="/admin/pilot-metrics" element={<AdminRoute><AdminLayout pilotPreview /></AdminRoute>}>
+        <Route index element={<PilotMetricsPage />} />
+      </Route>
       {/* Admin backoffice */}
       <Route path="/admin" element={
         <AdminRoute>

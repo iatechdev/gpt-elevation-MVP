@@ -1,0 +1,39 @@
+.pilot-scope {
+  --color-base-100: #f9f9f7; --color-base-200: #faf8f4; --color-base-300: #d6d2c4; --color-base-content: #1c1917;
+  --color-primary: #4a6741; --color-primary-content: #ffffff; --radius-field: .65rem; --radius-box: 1rem;
+  --radius-selector: .25rem; --size-selector: .25rem; --size-field: .25rem; --border: 1px; --depth: 0; --noise: 0;
+  color: var(--color-base-content); font: 400 16px/1.65 Inter, sans-serif; overflow-wrap: anywhere;
+  max-width: 860px; margin: auto; padding: 24px; background: var(--color-base-100);
+}
+.pilot-entry { margin: 0 auto; padding: 0; }
+.pilot-scope > header, .pilot-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.pilot-scope > header { justify-content: space-between; margin-bottom: 24px; }
+.pilot-scope h1, .pilot-scope h2, .pilot-scope h3 { font-family: 'Playfair Display', serif; font-weight: 400; line-height: 1.3; margin: 16px 0; }
+.pilot-scope h1 { font-size: 2rem; } .pilot-scope h2 { font-size: 1.5rem; } .pilot-scope h3 { font-size: 1.2rem; }
+.pilot-scope .elv-btn { height: auto; min-height: 44px; white-space: normal; padding: 8px 16px; border: 1px solid var(--color-base-300); background: var(--color-base-200); color: var(--color-base-content); }
+.pilot-scope .elv-btn-primary { background: var(--color-primary); color: white; }
+.pilot-scope .elv-btn:disabled { opacity: .6; cursor: not-allowed; }
+.pilot-scope .elv-link { color: var(--color-primary); text-decoration: underline; min-height: 44px; display: inline-flex; align-items: center; }
+.pilot-scope :is(a, button, input):focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.pilot-card { padding: 24px; background: white; border: 1px solid var(--color-base-300); border-radius: 1rem; margin: 24px 0; }
+.pilot-scope fieldset { min-width: 0; } .pilot-scope legend { white-space: normal; max-width: 100%; padding: 4px 8px; font-size: 16px; }
+.pilot-scope label { display: flex; gap: 12px; align-items: center; min-height: 44px; padding: 4px 0; }
+.pilot-scope input { flex-shrink: 0; } .pilot-note { font-size: 14px; }
+.pilot-scope .elv-fieldset { font-size: 1rem; }
+.pilot-scope :is(.elv-radio, .elv-checkbox) { --input-color: var(--color-primary); border-color: var(--color-primary); }
+.pilot-warning { background: #fef3c7; color: #92400e; padding: 16px; border: 1px solid #92400e; margin-bottom: 24px; border-radius: 1rem; }
+.pilot-scope dialog { padding: 24px; max-width: min(480px, 90vw); background: var(--color-base-100); color: var(--color-base-content); border: 1px solid var(--color-base-300); border-radius: 1rem; }
+.pilot-scope dialog::backdrop { background: #1c191755; }
+.pilot-skip { position: fixed; top: 0; left: 0; transform: translateY(-200%); background: white; padding: 12px; z-index: 100; } .pilot-skip:focus { transform: none; }
+.pilot-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; } .pilot-grid .pilot-card { margin: 0; }
+.pilot-scope dl > div { display: flex; gap: 12px; justify-content: space-between; }
+@media(min-width: 768px) { .pilot-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media(max-width: 767px) {
+  .pilot-scope { padding: 16px; }
+  .pilot-admin-layout > div > aside { display: none !important; }
+  .pilot-admin-layout > div > main { padding: 0 !important; }
+  .pilot-admin-layout > header { height: auto !important; min-height: 60px; }
+  .pilot-admin-layout > header > div { flex-wrap: wrap; gap: 8px !important; padding: 8px 16px !important; }
+  .pilot-admin-layout > div { padding-top: 120px !important; }
+}
+@media(prefers-reduced-motion: reduce) { .pilot-scope *, .pilot-scope *::before, .pilot-scope *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
