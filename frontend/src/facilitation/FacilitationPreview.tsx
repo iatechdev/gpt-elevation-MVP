@@ -10,7 +10,13 @@ function Dialog({ action, close }: { action: () => void; close: () => void }) {
   const { t } = useCopy()
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => { const dialog = ref.current; dialog?.showModal(); return () => dialog?.close() }, [])
-  return <dialog ref={ref} aria-labelledby="leave-title" onCancel={e => { e.preventDefault(); close() }}>
+  return <dialog ref={ref} aria-labelledby="leave-title" onCancel={e => { e.preventDefault(); close() }} onKeyDown={e => {
+    if (e.key !== 'Tab') return
+    const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')
+    const first = buttons[0], last = buttons[buttons.length - 1]
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
+  }}>
     <h2 id="leave-title">{t('dirty')}</h2><div className="fac-actions">
       <button className="elv-btn" onClick={close} autoFocus>{t('keep')}</button>
       <button className="elv-btn" onClick={action}>{t('discard')}</button>
@@ -49,6 +55,7 @@ function ActivePreview({ session }: { session: string }) {
     })
   }, [])
   const [leave, setLeave] = useState<{ go: () => void } | null>(null)
+  const returnFocus = useRef<HTMLElement | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const main = useRef<HTMLElement>(null)
@@ -75,7 +82,7 @@ function ActivePreview({ session }: { session: string }) {
     if (initialPath.current !== location.pathname) { initialPath.current = location.pathname; main.current?.focus() }
   }, [location.pathname])
   useEffect(() => {
-    setBlocker(dirty ? go => setLeave({ go }) : null)
+    setBlocker(dirty ? go => { returnFocus.current = document.activeElement as HTMLElement; setLeave({ go }) } : null)
     const unload = (e: BeforeUnloadEvent) => { if (dirty) { e.preventDefault(); e.returnValue = '' } }
     const click = (e: MouseEvent) => {
       if (!dirty || e.button !== 0 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
@@ -83,6 +90,7 @@ function ActivePreview({ session }: { session: string }) {
       if (!anchor || anchor.origin !== window.location.origin || anchor.hash || anchor.target) return
       if (anchor.pathname + anchor.search === window.location.pathname + window.location.search) { e.preventDefault(); e.stopImmediatePropagation(); return }
       e.preventDefault(); e.stopImmediatePropagation()
+      returnFocus.current = document.activeElement as HTMLElement
       setLeave({ go: () => navigate(anchor.pathname + anchor.search) })
     }
     window.addEventListener('beforeunload', unload)
@@ -116,7 +124,7 @@ function ActivePreview({ session }: { session: string }) {
         </nav>
         {content}
       </main>
-      {leave && <Dialog close={() => setLeave(null)} action={() => { setBlocker(null); setDrafts({}); setLeave(null); leave.go() }} />}
+      {leave && <Dialog close={() => { setLeave(null); requestAnimationFrame(() => returnFocus.current?.focus()) }} action={() => { setBlocker(null); setDrafts({}); setLeave(null); leave.go() }} />}
     </section>
   </FacilitationContext.Provider>
 }

@@ -213,3 +213,10 @@ Detener solo acceso real, migraciones/derechos del núcleo y publicación hasta 
 
 Un ticket, rama y PR contra main. Fase1 solo documentación; aún no PR de producto ni estado En QA. En DEV al crear rama. Cuando exista aprobación, implementar el tramo autorizado con pruebas reales, indicar mocks/criterios pendientes y sección Seguridad y privacidad. No fusionar ni cerrar hilos de QA. El diseño propuesto no constituye aprobación humana.
 
+## 12. Aprobación recibida
+
+Alejo aprobó explícitamente en este chat: «Aprobar diseño y vista preliminar propuesta».
+Registrado en Jira ES-35, comentario 10274, después de presentar este diseño en 10273.
+Autoriza únicamente el tramo A. No autoriza modificar el núcleo de Mauricio ni habilitar permisos/datos reales.
+La objeción de estimación y los contratos del apartado 8 siguen abiertos para la integración.
+
