@@ -4,7 +4,6 @@ import { SpaceNav } from '../space/SpaceNav'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
-import { ExerciseTools } from '../exercises/ExerciseTools'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -319,7 +318,6 @@ export function ChatPage() {
       {/* Mensajes */}
       <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 300, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
         <SpaceNav /><div id="space-main" tabIndex={-1} />
-        <ExerciseTools from="chat" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {messages.map((msg, i) => (

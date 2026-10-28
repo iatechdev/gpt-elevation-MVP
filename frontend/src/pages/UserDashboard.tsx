@@ -565,7 +565,7 @@ export function UserDashboard() {
 
         {/* ── COLUMNA DERECHA — CHAT ── */}
         <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', position: 'sticky', top: 76 }}>
-          <ExerciseTools from="dashboard" />
+          <ExerciseTools />
 
           {!checkedIn ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>
