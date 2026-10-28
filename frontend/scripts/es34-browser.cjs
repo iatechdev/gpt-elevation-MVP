@@ -86,6 +86,8 @@ async function main() {
     await page.getByRole('button', { name: 'Guardar decisión', exact: true }).click(); await screenshot(page, 'experiment');
     await page.getByRole('button', { name: 'Proponer plan', exact: true }).click(); await page.waitForURL(/\/plan$/);
     // QA-34 obs. 2: el botón deshabilitado enlaza su motivo con aria-describedby.
+    // Se espera a la pantalla del plan: justo tras el cambio de URL sigue montado, un instante, el «Proponer plan» (habilitado) de la pantalla anterior.
+    await page.getByLabel('Experimento', { exact: true }).waitFor();
     await reasonOf(page.getByRole('button', { name: 'Proponer plan', exact: true }), 'Elige un experimento para proponer un plan.');
     await page.getByLabel('Experimento', { exact: true }).selectOption({ index: 1 }); await page.getByRole('button', { name: 'Proponer plan', exact: true }).click();
     for (const [i, horizon] of [7, 30, 90].entries()) {
