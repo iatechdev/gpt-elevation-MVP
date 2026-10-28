@@ -26,6 +26,7 @@ import { Onboarding }    from './pages/Onboarding.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { CatalogBrowser, CatalogManager } from './routeCatalog/CatalogPages'
 
 export default function App() {
   return (
@@ -38,6 +39,8 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/route-catalog" element={<CatalogBrowser />} />
+        <Route path="/app/route-catalog/roles/:roleKey" element={<CatalogBrowser />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<ChatPage />} />
@@ -49,6 +52,9 @@ export default function App() {
       </Route>
 
       {/* Admin backoffice */}
+      <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/route-catalog/:id/:kind/:itemKey" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin" element={
         <AdminRoute>
           <AdminLayout />
