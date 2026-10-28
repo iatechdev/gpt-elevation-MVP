@@ -1,0 +1,9 @@
+file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es32-real-db.mjs:123
+check('ES32-R06 con mercado CO solo hay roles de CO; los de DK se cuentan como descartados por mercado', routes.every(z => z.market === 'CO') && r1.json.discarded.market === 3, JSON.stringify(r1.json?.discarded));
+                                                                                                                                                                   ^
+
+TypeError: Cannot read properties of undefined (reading 'market')
+    at file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es32-real-db.mjs:123:164
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.14.0
