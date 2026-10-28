@@ -27,10 +27,17 @@ const CORE = [
   // No se exportan `origins` (referencias privadas sin texto) ni `requestId`.
   ['evidence', 'Evidence', 'UserId', ['id', 'currentVersion', 'createdAt', 'updatedAt']],
   ['evidenceVersions', 'EvidenceVersion', 'UserId', ['id', 'EvidenceId', 'version', 'status', 'authoring', 'payload', 'hasChatOrigin', 'consentVersion', 'createdAt'], ['payload'], ['payload'], (row) => Object.keys(row.payload).length > 0],
+  // ES-14: contexto privado y versionado del participante. `content` es el DTO validado, cifrado v2: se entrega descifrado y como objeto al
+  // dueño y se purga con el resto. El FK con CASCADE solo cubriría el borrado físico del usuario; ES-23 pseudonimiza la fila y no la borra.
+  ['participantContext', 'ParticipantContext', 'UserId', ['id', 'version', 'content', 'completedAt', 'createdAt', 'updatedAt'], ['content'], ['content']],
   // ES-29: evaluaciones de habilidad del Skill Map. `rationale` (la justificación de la persona) va cifrado v2 y se entrega descifrado. No se exportan
   // `rubricHash`, `requestId` ni la versión de la regla (referencias técnicas internas); `evidenceRefs` son solo ids y versiones, sin texto. El catálogo
   // (SkillCatalog/SkillDefinition) lo administra el cliente y no es dato personal: no se registra.
   ['skillAssessments', 'SkillAssessment', 'UserId', ['id', 'skillKey', 'track', 'level', 'state', 'catalogVersion', 'evidenceRefs', 'confidence', 'confidenceReasonCode', 'rationale', 'authoring', 'status', 'createdAt'], ['rationale']],
+  // ES-32: extensión declarativa autorizada en Jira 10250 y en el chat. Sin cambios del procesador ni de retención.
+  ['routeConstraints', 'RouteConstraintsVersion', 'UserId', ['id', 'version', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['routeChoices', 'RouteChoice', 'UserId', ['id', 'roleKey', 'slot', 'decision', 'catalogVersion', 'constraintsVersion', 'status', 'createdAt']],
+  ['routeReviewRequests', 'RouteReviewRequest', 'UserId', ['id', 'status', 'note', 'createdAt'], ['note']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
