@@ -125,3 +125,11 @@ jobs:
         run: npm run test:routes:pg
         env:
           ES32_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-33 propietario y ciclo de vida (puertos ES-14/32 simulados)
+        run: npm run test:career-plan:pg
+        env:
+          ES33_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-33 integrado con ES-14 y ES-32 reales (PostgreSQL)
+        run: npm run test:career-plan:integration:pg
+        env:
+          ES33I_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
