@@ -3,8 +3,11 @@
 // HU-077 — Widget Mi Plan
 // HU-067 — Botón videollamada activo
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { SpaceNav } from '../space/SpaceNav'
+import { usePersonalChat } from '../space/usePersonalChat'
+import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
 
@@ -12,7 +15,6 @@ const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'htt
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type Message        = { role: string; text: string }
 type MoodLog        = { id: number; date: string; checkin_mood: number | null; checkout_mood: number | null }
 type Recommendation = { id: number; category: string; content: string; generatedAt: string }
 type UpcomingSession = {
@@ -73,9 +75,8 @@ export function UserDashboard() {
   const [checkingIn,     setCheckingIn]     = useState(false)
 
   // ── Chat state ───────────────────────────────────────────────────────────
-  const [messages,  setMessages]  = useState<Message[]>([])
-  const [input,     setInput]     = useState('')
-  const [sending,   setSending]   = useState(false)
+  const chat = usePersonalChat(lang, checkedIn)
+  const { messages, busy: sending } = chat
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   // ── Progress state ───────────────────────────────────────────────────────
@@ -109,18 +110,8 @@ export function UserDashboard() {
   const [userPlan,   setUserPlan]   = useState<UserPlan>(null)
   const [planLimits, setPlanLimits] = useState<PlanLimits | null>(null)
 
-  const [initialWelcome] = useState(() => t('chat_welcome'))
 
   // ── Init ─────────────────────────────────────────────────────────────────
-  const loadChatHistory = useCallback(async (welcomeText: string) => {
-    try {
-      const res = await apiFetch('/api/messages')
-      if (!res.ok) return
-      const hist = await res.json()
-      const welcome = { role: 'bot', text: welcomeText }
-      setMessages(hist.length > 0 ? [welcome, ...hist] : [welcome])
-    } catch { /* silent */ }
-  }, [])
 
   useEffect(() => {
     const token = getToken()
@@ -134,13 +125,10 @@ export function UserDashboard() {
     void loadRecommendations()
     void loadUserPlan()
 
-    if (alreadyCheckedIn) {
-      void loadChatHistory(initialWelcome)
-    }
-  }, [loadChatHistory, initialWelcome, navigate])
+  }, [navigate])
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    chatEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [messages, sending])
 
   // ── Data loaders ──────────────────────────────────────────────────────────
@@ -207,33 +195,15 @@ export function UserDashboard() {
       setTodayMood(mood)
       setCheckedIn(true)
       localStorage.setItem('elevation_checkin_date', new Date().toDateString())
-      void loadChatHistory(t('chat_welcome'))
     } catch { /* silent */ }
     finally { setCheckingIn(false) }
   }
 
   // ── Chat handler ──────────────────────────────────────────────────────────
-  const handleSend = async () => {
-    if (!input.trim() || sending || !checkedIn) return
-    const userText = input.trim()
-    setInput('')
-    setMessages(prev => [...prev, { role: 'user', text: userText }])
-    setSending(true)
-    try {
-      const res  = await apiFetch('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({ message: userText, lang }),
-      })
-      const data = await res.json() as { reply: string }
-      setMessages(prev => [...prev, { role: 'bot', text: data.reply }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'bot', text: t('chat_error') }])
-    }
-    setSending(false)
-  }
 
   // ── Checkout handler ──────────────────────────────────────────────────────
   const handleCheckout = async (mood: number) => {
+    if (!chat.canLeave()) return
     setCheckoutSaving(true)
     try {
       await apiFetch('/api/mood/checkout', { method: 'POST', body: JSON.stringify({ mood }) })
@@ -315,11 +285,11 @@ export function UserDashboard() {
     <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
 
       {/* ── HEADER ── */}
-      <header style={{
+      <header className="space-dashboard-header" style={{
         position: 'fixed', top: 0, width: '100%', zIndex: 50,
         background: 'rgba(249,249,247,0.92)', backdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(231,229,228,0.5)',
-        height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <div style={{ maxWidth: 1100, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>
@@ -333,11 +303,11 @@ export function UserDashboard() {
                 {l.toUpperCase()}
               </button>
             ))}
-            <button onClick={() => navigate('/app/progress')}
+            <button onClick={() => chat.canLeave() && navigate('/app/progress')}
               style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi progreso' : 'My progress'}
             </button>
-            <button onClick={() => navigate('/app/my-therapist')}
+            <button onClick={() => chat.canLeave() && navigate('/app/my-therapist')}
               style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
             </button>
@@ -350,9 +320,10 @@ export function UserDashboard() {
           </div>
         </div>
       </header>
+      <div className="space-dashboard-nav" style={{ maxWidth: 1100, marginLeft: "auto", marginRight: "auto", padding: "0 24px" }}><SpaceNav /><div id="space-main" tabIndex={-1} /></div>
 
       {/* ── BODY ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '76px 1.5rem 2rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.25rem', alignItems: 'start' }}>
+      <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>
 
         {/* ── COLUMNA IZQUIERDA ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -456,7 +427,7 @@ export function UserDashboard() {
                 {sessionIsLive ? (
                   // Sesión activa — botón verde para entrar
                   <button
-                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
+                    onClick={() => chat.canLeave() && navigate(`/app/session/${upcomingSession.id}`)}
                     style={{
                       marginTop: '0.5rem', padding: '0.6rem 0.85rem',
                       background: '#6B7D5C', color: '#fff',
@@ -471,7 +442,7 @@ export function UserDashboard() {
                 ) : sessionIsImminent ? (
                   // Sesión en menos de 15 min — botón de espera pulsante
                   <button
-                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
+                    onClick={() => chat.canLeave() && navigate(`/app/session/${upcomingSession.id}`)}
                     style={{
                       marginTop: '0.5rem', padding: '0.6rem 0.85rem',
                       background: '#A8B5A2', color: '#fff',
@@ -575,7 +546,7 @@ export function UserDashboard() {
 
             {(planSlug === 'basic' || planSlug === 'essential') && (
               <button
-                onClick={() => navigate('/pricing')}
+                onClick={() => chat.canLeave() && navigate('/pricing')}
                 style={{
                   width: '100%', padding: '0.5rem', borderRadius: '0.65rem',
                   border: `0.5px solid ${planColors.border}`,
@@ -607,6 +578,7 @@ export function UserDashboard() {
             <>
               {/* Mensajes */}
               <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem' }}>
+                {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
                 {messages.map((msg, i) => (
                   <div key={i}>
                     {msg.role === 'user' ? (
@@ -632,20 +604,10 @@ export function UserDashboard() {
                 <div ref={chatEndRef} />
               </div>
 
+              <div style={{ padding: 16 }}><ChatContext chat={chat} /></div>
               {/* Input */}
               <div style={{ borderTop: '0.5px solid #E7E5E4', padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
-                <textarea value={input} onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend() } }}
-                  placeholder={t('chat_placeholder')} rows={2}
-                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.5, maxHeight: 100, overflowY: 'auto' }} />
-                {input.trim() && (
-                  <button onClick={() => void handleSend()}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0d9488', padding: 4, display: 'flex', flexShrink: 0 }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                    </svg>
-                  </button>
-                )}
+                <ChatInput chat={chat} />
               </div>
             </>
           )}
@@ -744,7 +706,7 @@ export function UserDashboard() {
                 style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
                 {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
               </button>
-              <button onClick={() => { localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
+              <button onClick={() => { if (!chat.canLeave()) return; localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
                 {lang === 'es' ? 'Saltar' : 'Skip'}
               </button>
