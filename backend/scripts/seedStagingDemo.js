@@ -3,9 +3,11 @@
 //   ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD=<clave de 12+ caracteres> node scripts/seedStagingDemo.js
 // Es idempotente. Se niega si ya hay un catálogo real publicado o un borrador abierto. NO usar en producción: ahí no se define ALLOW_SYNTHETIC_CATALOG.
 const { sequelize } = require('../database');
-const { seedDemo, SeedError } = require('../utils/demoSeed');
+const { seedDemo, assertSeedAllowed, SeedError } = require('../utils/demoSeed');
 
 async function main() {
+  // QA-53-01: primero la bandera y la clave; una corrida rechazada no toca la base (ni siquiera para crear tablas).
+  assertSeedAllowed();
   await sequelize.authenticate();
   // Solo las tablas del Skill Map y las rutas (crear si faltan, nunca alterar); Users ya existe en staging.
   for (const model of ['SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'Evidence', 'EvidenceVersion', 'DerivedInvalidation',
