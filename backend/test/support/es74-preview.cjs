@@ -44,9 +44,14 @@ const path = require('node:path');
   const { catalog } = require('../../content/landingDefaults');
   const actors = new Map();
   const password = await bcrypt.hash('ES74-only-for-local-tests', 4); // synthetic fixture, never a real credential
-  for (const [key, role, done] of [['user-new', 'user', false], ['user-done', 'user', true], ['admin', 'admin', true], ['superadmin', 'superadmin', true], ['therapist', 'therapist', true], ['board', 'board', true]]) {
+  for (const [key, role, done] of [['user-new', 'user', false], ['user-legacy', 'user', true], ['user-done', 'user', true], ['admin', 'admin', true], ['superadmin', 'superadmin', true], ['therapist', 'therapist', true], ['board', 'board', true]]) {
     actors.set(key, await User.create({ name: 'Synthetic', email: `${key}@example.invalid`, password, role, active: true, onboardingCompleted: done }));
   }
+  const { encriptarV2 } = require('../../utils/crypto');
+  await require('../../ParticipantContext').create({ UserId: actors.get('user-done').id, version: 1, completedAt: new Date(), content: encriptarV2(JSON.stringify({
+    preferredLanguage: 'es', residenceCountry: null, targetMarket: null, timeZone: null, profession: null,
+    interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null,
+  })) });
   const wrapper = express();
   // Bootstrap a pre-existing synthetic session for the "with session" journeys, without exposing token values in logs.
   wrapper.get('/__es74/start', (req, res) => {

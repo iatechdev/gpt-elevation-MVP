@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
@@ -13,7 +13,6 @@ const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http
 
 export function LoginPage() {
   const { t, lang, setLang } = useLanguage()
-  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const isRegistering = registrationRequested(params.toString())
   const { text } = useLandingContent(lang)
@@ -67,12 +66,17 @@ export function LoginPage() {
         localStorage.setItem('elevation_token', token)
         localStorage.setItem('elevation_role', data.role)
         localStorage.setItem('elevation_name', typeof displayName === 'string' ? displayName : '')
-        navigate(sessionDestination(data), { replace: true })
+        window.dispatchEvent(new Event('elevation-session-change'))
       }
     } catch {
       setAuthMessage({ key: 'landing.access.failed', success: false })
     } finally { setSubmitting(false) }
   }
+
+  const preferredLanguage = entry.result.status === 'verified' ? entry.result.preferredLanguage : undefined
+  useEffect(() => {
+    if (preferredLanguage && preferredLanguage !== lang) setLang(preferredLanguage)
+  }, [preferredLanguage, lang, setLang])
 
   if (entry.result.status === 'verified') return <Navigate to={sessionDestination(entry.result.session)} replace />
 

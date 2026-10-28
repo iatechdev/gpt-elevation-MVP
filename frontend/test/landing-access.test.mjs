@@ -1,6 +1,19 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readVerifiedSession, sessionDestination, registrationRequested, authFailureKey, invalidateStoredSession } from '../src/access/session.ts'
+import { readVerifiedSession, sessionDestination, registrationRequested, authFailureKey, invalidateStoredSession, participantEntry } from '../src/access/session.ts'
+
+test('ES-74/ES-14: persisted context is canonical over the legacy onboarding flag and restores language', () => {
+  const legacy = { role: 'user', onboardingCompleted: true }
+  assert.equal(participantEntry(legacy, { completedAt: null, context: null }).session.onboardingCompleted, false)
+  const draft = { completedAt: null, context: { preferredLanguage: 'en' } }
+  assert.equal(participantEntry(legacy, draft).session.onboardingCompleted, false)
+  const completed = { ...draft, completedAt: '2026-10-28T12:00:00.000Z' }
+  const result = participantEntry({ ...legacy, onboardingCompleted: false }, completed)
+  assert.equal(result.session.onboardingCompleted, true)
+  assert.equal(result.preferredLanguage, 'en')
+  assert.equal(sessionDestination(result.session), '/app/dashboard')
+  for (const context of [{ ...draft, completedAt: undefined }, { ...draft, completedAt: 'invalid' }, { completedAt: completed.completedAt, context: null }, { ...completed, context: { preferredLanguage: 'unknown' } }]) assert.throws(() => participantEntry(legacy, context))
+})
 
 test('ES-74: destination allowlist follows canonical role and onboarding, never arbitrary URLs', () => {
   for (const [role, destination] of [['admin', '/admin/dashboard'], ['superadmin', '/admin/dashboard'], ['therapist', '/therapist/dashboard'], ['board', '/board/manifest']]) {

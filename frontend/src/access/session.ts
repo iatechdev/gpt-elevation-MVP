@@ -1,6 +1,15 @@
 export type SessionInfo = { role: 'user' | 'admin' | 'superadmin' | 'therapist' | 'board'; onboardingCompleted: boolean }
-export type SessionResult = { status: 'verified'; session: SessionInfo } | { status: 'invalid' | 'unavailable' }
+export type SessionResult = { status: 'verified'; session: SessionInfo; preferredLanguage?: 'es' | 'en' } | { status: 'invalid' | 'unavailable' }
 const roles = ['user', 'admin', 'superadmin', 'therapist', 'board']
+
+export function participantEntry(session: SessionInfo, context: {
+  completedAt: string | null; context: { preferredLanguage: 'es' | 'en' | null } | null
+}): SessionResult {
+  const language = context.context?.preferredLanguage
+  if ((context.completedAt !== null && (typeof context.completedAt !== 'string' || !Number.isFinite(Date.parse(context.completedAt)) || !language))
+    || (language != null && language !== 'es' && language !== 'en')) throw new Error('Invalid context entry')
+  return { status: 'verified', session: { ...session, onboardingCompleted: context.completedAt !== null }, preferredLanguage: language ?? undefined }
+}
 
 export function isSessionInfo(value: unknown): value is SessionInfo {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
