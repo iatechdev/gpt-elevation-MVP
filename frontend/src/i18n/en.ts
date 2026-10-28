@@ -1,6 +1,8 @@
 // frontend/src/i18n/en.ts
 // HU-082 — i18n complete: Landing + User + Admin + Therapist + Board
+import { compassEn } from '../compass/copy'
 const en: Record<string, string> = {
+  ...compassEn,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'AI emotional support',
