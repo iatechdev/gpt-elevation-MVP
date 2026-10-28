@@ -14,4 +14,3 @@ export function registerCompassGuard(cancel: () => boolean) {
   active = guard
   return () => { if (active === guard) active = null }
 }
-
