@@ -39,6 +39,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
     'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'SkillAssessment']) require('../../' + name);
+  for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest']) require('../../' + name);
   await sequelize.sync();
   const rights = require('../../utils/dataRights');
   const { processDeletion } = require('../../utils/deletionProcessor');
