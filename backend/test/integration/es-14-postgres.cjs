@@ -27,7 +27,7 @@ test('ES-14 PostgreSQL: additive migration, encrypted ownership, concurrency and
   const id = require.resolve('../../database');
   require.cache[id] = { id, filename: id, loaded: true, exports: { sequelize } };
   const qi = sequelize.getQueryInterface();
-  const migration = require('../../migrations/001-participant-context.cjs');
+  const migration = require('../../migrations/20261028020000-participant-context.cjs');
   await qi.createTable('Users', { id: { type: DataTypes.INTEGER, primaryKey: true }, active: DataTypes.BOOLEAN, role: DataTypes.STRING });
   await sequelize.query(`INSERT INTO "Users" (id, active, role) VALUES (101, true, 'user'), (202, true, 'user')`);
   await t.test('migration rolls back cleanly, then applies to an existing schema without rewriting users', async () => {

@@ -104,7 +104,7 @@ se recupera por GET; reintentar contra una versión antigua devuelve 409.
 Las ediciones registran DerivedInvalidation con sourceType=participant_context,
 sourceId=id, reason=edited, UserId del dueño, sin contenido.
 
-Migración aditiva `backend/migrations/001-participant-context.cjs`:
+Migración aditiva `backend/migrations/20261028020000-participant-context.cjs`:
 `up(queryInterface, Sequelize.DataTypes, transactionOpcional)`. Precondición:
 esquema base Users existente. La aplica el runner revisado de infraestructura
 una vez; no es un comando automático de despliegue y no se ejecutó en producción.

@@ -1,5 +1,7 @@
 // Additive, explicit migration. Run through the reviewed infrastructure migration
 // runner, never against production from a development session. No sync/alter.
+const guardDown = require('../scripts/guard-down.cjs');
+
 module.exports = {
   async up(queryInterface, Sequelize, transaction) {
     await queryInterface.createTable('ParticipantContexts', {
@@ -13,5 +15,9 @@ module.exports = {
       updatedAt: { type: Sequelize.DATE, allowNull: false },
     }, { transaction });
   },
-  // Deliberately no destructive down: preserve participant data on app rollback.
+  // El down borra datos de participantes: solo con permiso explícito y nunca en producción (guarda común, ES-59).
+  async down(queryInterface) {
+    guardDown('20261028020000-participant-context');
+    await queryInterface.dropTable('ParticipantContexts');
+  },
 };
