@@ -24,14 +24,14 @@ const path = require('node:path');
       const { page, requests, errors } = await create();
       await page.goto(release + '/app/exercises'); await page.getByText('Los ejercicios aún no están disponibles.', { exact: true }).waitFor();
       assert.equal(await page.locator('textarea').count(), 0); assert.equal(await page.getByRole('button', { name: 'Elegir', exact: true }).count(), 0);
-      await page.goto(release + '/app/chat'); await page.getByText('Asistente de IA', { exact: true }).waitFor();
+      await page.goto(release + '/app/chat'); await page.locator('.exercise-tools').getByText('Asistente de IA', { exact: true }).waitFor();
       assert.equal(await page.getByRole('link', { name: 'Ejercicios opcionales', exact: true }).count(), 0);
       assert.ok(requests.every(request => request.method === 'GET')); assert.deepEqual(errors, []);
       check('default release hides links and direct exercise content, while chat identifies AI'); await page.close();
     }
     {
       const { page, requests, errors } = await create();
-      await page.goto(preview + '/app/chat'); await page.getByRole('link', { name: 'Ejercicios opcionales', exact: true }).click();
+      await page.goto(preview + '/app/chat'); await page.locator('.exercise-tools').getByRole('link', { name: 'Ejercicios opcionales', exact: true }).click();
       await page.waitForURL('**/app/exercises?from=chat'); await page.getByText('Contenido en revisión. No habilitado para el piloto.', { exact: true }).waitFor();
       assert.equal(await page.getByRole('button', { name: 'Elegir', exact: true }).count(), 3);
       await page.getByRole('button', { name: 'Omitir', exact: true }).click(); await page.waitForURL('**/app/chat'); assert.ok(requests.every(request => request.method === 'GET'));
