@@ -259,3 +259,7 @@ Verificación posterior a aprobación:
 Estimación revisada: **20–30 h** para formularios/comparación/ciclo de experimento/plan/versiones/recordatorios, ES/EN, accesibilidad y navegador; depende de estabilidad de contratos. Las 10 h (8–12) del ticket no cubren de forma defendible el circuito completo y estas pruebas; no es una promesa de fecha ni horas ya ejecutadas. Integración real y revisión humana pueden cambiar esfuerzo/plazo; no se promete el corte vencido del 27-oct.
 
 **Aprobar antes de implementar:** pantallas/flujo/wireframes/tokens/componentes y textos de este documento; tarjeta de entrada al dashboard; preview fixture opt-in y cero escrituras reales; desconocidos y revisión humana pendientes; estimación revisada. Resolver expresamente el criterio de costo desconocido. Si cambia el diseño durante implementación, se vuelve a presentar; sin aprobación no se escribe frontend.
+
+## 11. Aprobación y entrega preliminar
+
+Respuesta explícita en el chat: «Aprobar diseño y vista preliminar propuesta». Para costos, el usuario delegó «La que me recomiendes»; se aplicó mostrar «Costo por confirmar» dejando ese criterio integral pendiente. Registro en Jira 10265. No se presume aprobación especializada, costo conocido, revisión humana autorizada ni integración real. Implementación/verificación del tramo preliminar: documento 42. ES-34 integrada continúa pendiente.
