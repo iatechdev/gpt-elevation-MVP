@@ -29,6 +29,9 @@ import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
 import { CompassPage } from './compass/CompassPage'
+import { CareerShell } from './career/CareerShell'
+import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
+import { ExercisePage } from './exercises/ExercisePage'
 
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
@@ -46,6 +49,13 @@ export default function App() {
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
         <Route path="/app/compass" element={<CompassPage />} />
+        <Route path="/app/next-step" element={<CareerShell />}>
+          <Route index element={<RoutesScreen />} />
+          <Route path="experiments" element={<ExperimentList />} />
+          <Route path="experiments/:id" element={<ExperimentScreen />} />
+          <Route path="plan" element={<PlanScreen />} />
+        </Route>
+        <Route path="/app/exercises" element={<ExercisePage />} />
         <Route path="/app/diary" element={<JournalPage />} />
         <Route path="/app/diary/new" element={<JournalPage />} />
         <Route path="/app/diary/:id" element={<JournalPage />} />
