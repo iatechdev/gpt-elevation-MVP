@@ -15,6 +15,7 @@ const { encriptarV2, desencriptar } = require('./crypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
 const { detectRisk } = require('./safety');
 const consent = require('./consent');
+const proposalToken = require('./proposalToken');
 
 const PURPOSE = 'professional_bridge';
 const STATUSES = ['draft', 'confirmed'];
@@ -175,11 +176,21 @@ const summary = (ev, row) => ({
 });
 
 function parseWrite(body, { update }) {
-  if (!isPlain(body) || !onlyKeys(body, update ? ['payload', 'status', 'baseVersion', 'requestId', 'origins'] : ['payload', 'status', 'requestId', 'origins'])) throw invalid();
+  if (!isPlain(body) || !onlyKeys(body, update ? ['payload', 'status', 'baseVersion', 'requestId', 'origins', 'proposalToken'] : ['payload', 'status', 'requestId', 'origins', 'proposalToken'])) throw invalid();
   if (!STATUSES.includes(body.status)) throw invalid();
   if (typeof body.requestId !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(body.requestId)) throw invalid();
   if (update && (!Number.isSafeInteger(body.baseVersion) || body.baseVersion < 1)) throw invalid();
   return normalizePayload(body.payload, body.status);
+}
+
+// ES-28: `authoring` es `ai_proposed` solo si llega un proposalToken válido emitido a esta persona para una propuesta de la IA (aunque
+// ella haya editado el borrador). Sin token, o con uno inválido, no se puede declarar: lo fija el servidor, nunca el cliente.
+function authoringOf(userId, body) {
+  if (body.proposalToken === undefined) return 'person';
+  const verdict = proposalToken.check('evidence_proposal', userId, body.proposalToken);
+  if (verdict === 'expired') throw new EvidenceError(410, 'proposal_expired', 'La propuesta venció.', 'The proposal expired.');
+  if (verdict !== 'ok') throw new EvidenceError(409, 'proposal_mismatch', 'La propuesta no es válida.', 'The proposal is not valid.');
+  return 'ai_proposed';
 }
 
 // Ejecuta `work` bajo el bloqueo de consentimiento solo cuando se confirma una evidencia con origen del chat.
@@ -202,6 +213,7 @@ async function guarded(userId, needsConsent, work) {
 
 async function create(userId, body) {
   const payload = parseWrite(body, { update: false });
+  const authoring = authoringOf(userId, body);
   const needsConsent = body.status === 'confirmed' && Array.isArray(body.origins) && body.origins.length > 0;
   return guarded(userId, needsConsent, async (transaction) => {
     const repeated = await EvidenceVersion.findOne({ where: { UserId: userId, requestId: body.requestId }, transaction });
@@ -209,7 +221,7 @@ async function create(userId, body) {
     const origins = await resolveOrigins(userId, body.origins, transaction);
     const ev = await Evidence.create({ UserId: userId, currentVersion: 1 }, { transaction });
     const row = await EvidenceVersion.create({
-      EvidenceId: ev.id, UserId: userId, version: 1, status: body.status, authoring: 'person', payload: encriptarV2(JSON.stringify(payload)),
+      EvidenceId: ev.id, UserId: userId, version: 1, status: body.status, authoring, payload: encriptarV2(JSON.stringify(payload)),
       origins, hasChatOrigin: origins.length > 0, consentVersion: origins.length && body.status === 'confirmed' ? consent.REQUIRED_VERSION[PURPOSE] : null,
       requestId: body.requestId,
     }, { transaction });
@@ -220,6 +232,7 @@ async function create(userId, body) {
 async function update(userId, id, body) {
   if (!Number.isSafeInteger(id) || id < 1) throw notFound();
   const payload = parseWrite(body, { update: true });
+  const authoring = authoringOf(userId, body);
   const needsConsent = body.status === 'confirmed' && Array.isArray(body.origins) && body.origins.length > 0;
   return guarded(userId, needsConsent, async (transaction) => {
     const ev = await Evidence.findOne({ where: { id, UserId: userId, deletedAt: null }, transaction, lock: Transaction.LOCK.UPDATE });
@@ -236,7 +249,7 @@ async function update(userId, id, body) {
       await DerivedInvalidation.create({ UserId: userId, sourceType: 'evidence', sourceId: ev.id, reason: 'edited' }, { transaction });
     }
     const row = await EvidenceVersion.create({
-      EvidenceId: ev.id, UserId: userId, version: ev.currentVersion + 1, status: body.status, authoring: 'person', payload: encriptarV2(JSON.stringify(payload)),
+      EvidenceId: ev.id, UserId: userId, version: ev.currentVersion + 1, status: body.status, authoring, payload: encriptarV2(JSON.stringify(payload)),
       origins, hasChatOrigin: origins.length > 0, consentVersion: origins.length && body.status === 'confirmed' ? consent.REQUIRED_VERSION[PURPOSE] : null,
       requestId: body.requestId,
     }, { transaction });

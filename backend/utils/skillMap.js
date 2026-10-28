@@ -217,4 +217,8 @@ function validateAssessmentOutput(output, { skillKeys, evidence }) {
   return { valid, rejected };
 }
 
-module.exports = { SkillMapError, selfAssess, getMap, validateAssessmentOutput, confidenceFor, CONFIDENCE_RULE_VERSION };
+module.exports = {
+  SkillMapError, selfAssess, getMap, validateAssessmentOutput, confidenceFor, CONFIDENCE_RULE_VERSION,
+  // Internos que reutiliza la confirmación de las propuestas de la IA (ES-28).
+  shared: { summarize, AUTONOMY_LEVEL, CONFIDENCE_REASONS, ownTransaction, requireCatalog, MAX_ATTEMPTS },
+};
