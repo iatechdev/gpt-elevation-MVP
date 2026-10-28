@@ -2,8 +2,12 @@
 // HU-082 — i18n completo: Landing + User + Admin + Therapist + Board
 import { exerciseEs } from '../exercises/copy'
 import { skillMapEs } from '../skill-map/copy'
+import { contextEs } from '../context/contextCopy'
+import { evidenceEs } from '../evidence/copy'
 const es: Record<string, string> = {
   ...exerciseEs,
+  ...contextEs,
+  ...evidenceEs,
   ...skillMapEs,
 
   // ── Landing ───────────────────────────────────────────────────────────────

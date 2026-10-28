@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { SpaceNav } from '../space/SpaceNav'
+import { usePersonalChat } from '../space/usePersonalChat'
+import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { ExerciseTools } from '../exercises/ExerciseTools'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
-type Message     = { role: string; text: string }
 type PromptData  = { version: number; content: string; approved_by?: string }
 type VersionData = { id: number; version: number; status: string; proposed_by: string }
 type LandingContent = Record<string, string>
@@ -44,9 +46,8 @@ export function ChatPage() {
   const getToken = () => localStorage.getItem('elevation_token') ?? ''
 
   // Chat
-  const [messages,        setMessages]        = useState<Message[]>([])
-  const [input,           setInput]           = useState('')
-  const [sending,         setSending]         = useState(false)
+  const chat = usePersonalChat(lang)
+  const { messages, busy: sending } = chat
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   // Admin panel
@@ -132,23 +133,16 @@ export function ChatPage() {
   useEffect(() => {
     const token = getToken()
     if (!token) { navigate('/login'); return }
-    setMessages([{ role: 'bot', text: t('chat_welcome') }])
-    void apiFetch('/api/messages', token).then(async res => {
-      if (res.ok) {
-        const hist = await res.json() as Message[]
-        if (hist.length > 0) setMessages(prev => [prev[0], ...hist])
-      }
-    })
     // HU-051 — Load existing recommendations
     void loadExistingRecs()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [navigate, loadExistingRecs])
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    chatEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [messages, sending])
 
   const handleLogout = () => {
+    if (!chat.canLeave()) return
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')
@@ -180,24 +174,6 @@ export function ChatPage() {
     handleLogout()
   }
 
-  const handleSend = async () => {
-    if (!input.trim() || sending) return
-    const userText = input.trim()
-    setInput('')
-    setMessages(prev => [...prev, { role: 'user', text: userText }])
-    setSending(true)
-    try {
-      const res  = await apiFetch('/api/chat', getToken(), {
-        method: 'POST',
-        body: JSON.stringify({ message: userText, lang }),
-      })
-      const data = await res.json() as { reply: string }
-      setMessages(prev => [...prev, { role: 'bot', text: data.reply }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'bot', text: t('chat_error') }])
-    }
-    setSending(false)
-  }
 
   // HU-051 — Generate recommendations
   const handleGenerateRecs = async () => {
@@ -341,9 +317,11 @@ export function ChatPage() {
       </header>
 
       {/* Mensajes */}
-      <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 120, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+      <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 300, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+        <SpaceNav /><div id="space-main" tabIndex={-1} />
         <ExerciseTools from="chat" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {messages.map((msg, i) => (
             <div key={i}>
               {msg.role === 'user' ? (
@@ -368,7 +346,7 @@ export function ChatPage() {
           )}
             {/* HU-052 — Progress link */}
             <button
-              onClick={() => navigate('/app/progress')}
+              onClick={() => chat.canLeave() && navigate('/app/progress')}
               title={lang === 'es' ? 'Mi progreso' : 'My progress'}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}
             >
@@ -376,6 +354,7 @@ export function ChatPage() {
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
             </button>
+          <ChatContext chat={chat} />
           {/* HU-051 — Wellness Recommendations */}
           {showRecs && (
             <div style={{ borderLeft: '2px solid #6B7D5C', paddingLeft: '1.25rem' }}>
@@ -433,17 +412,7 @@ export function ChatPage() {
       {/* Input */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', zIndex: 40, background: 'rgba(249,249,247,0.95)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(231,229,228,0.5)' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
-          <textarea value={input} onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend() } }}
-            placeholder={t('chat_placeholder')} rows={2}
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#1C1917', lineHeight: 1.6, maxHeight: 120, overflowY: 'auto' }} />
-          {input.trim() && (
-            <button onClick={() => { void handleSend() }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0d9488', padding: 4, display: 'flex', flexShrink: 0 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-          )}
+          <ChatInput chat={chat} />
         </div>
       </div>
 
