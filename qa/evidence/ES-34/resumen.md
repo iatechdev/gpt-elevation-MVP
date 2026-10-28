@@ -13,3 +13,6 @@ lint 0 avisos, `npm test` 44/44, tipos, `npm audit` 0. Peso (main a2c953f): JS 5
 
 ## Re-revisión del head 161aefb (fusión con main f08a639: incluye #40 y #43)
 Frontend: lint 0 avisos, tipos, `npm test` 65/65, `npm audit` 0, build en verde. Con Playwright (Chromium 156) corrí `es34-browser.cjs` sobre el merge local: las 11 comprobaciones pasan, incluidas tema oscuro, protección del botón Atrás/salida con borrador, zoom, foco visible, ES y EN completos, escenarios save-error, lost-ack, conflict, pending y load-error, y cero escrituras de API (cierra varios «no verificado» de mi revisión previa). Integración con #40: `/app/space/tools` («Mis herramientas») y `/app/next-step` («Mi siguiente paso») son rutas distintas; con bandera el dashboard muestra «Mi siguiente paso →» además de Mi espacio, Mis herramientas, Mi contexto, Mis evidencias y Mi mapa; sin bandera la entrada desaparece y `/app/next-step` dice «Este recorrido aún no está disponible»; sin errores de página.
+
+## Re-revisión del head b1f799b (fusión con main 8452e64, incluye #39)
+lint 0 avisos, tipos, `npm test` 72/72, `npm audit` 0, build en verde; `es34-browser.cjs` (Playwright) 11/11 sobre el merge local. El diff propio contra main solo añade en App.tsx las rutas /app/next-step y en UserDashboard.tsx `<CareerEntry />`; sin más cambios.
