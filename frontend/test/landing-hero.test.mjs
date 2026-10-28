@@ -8,27 +8,21 @@ const component = read('../src/components/landing/HeroDoors.tsx')
 const page = read('../src/pages/LandingPage.tsx')
 const css = read('../src/components/landing/landing.css')
 const catalog = JSON.parse(read('../../shared/landing-content.json'))
-const store = values => ({ getItem: key => values[key] ?? null })
-
-test('ES-63: sin sesión ambas puertas van a /login', () => {
-  assert.equal(doorTarget(store({})), '/login')
-  assert.equal(doorTarget(store({ elevation_role: 'admin' })), '/login')
-  assert.equal(doorTarget(store({ elevation_token: '' })), '/login')
-})
-
-test('ES-63: con sesión el destino sigue el mismo mapa por rol que el login (nunca /app, que no existe)', () => {
-  const session = role => store({ elevation_token: 't', ...(role ? { elevation_role: role } : {}) })
-  assert.equal(doorTarget(session('admin')), '/admin/dashboard')
-  assert.equal(doorTarget(session('superadmin')), '/admin/dashboard')
-  assert.equal(doorTarget(session('therapist')), '/therapist/dashboard')
-  assert.equal(doorTarget(session('board')), '/board/manifest')
-  assert.equal(doorTarget(session('user')), '/app/onboarding')
-  assert.equal(doorTarget(session()), '/app/onboarding')
-  assert.equal(doorTarget(store({ elevation_token: 't', elevation_role: 'user', elevation_onboarding: 'done' })), '/app/dashboard')
-})
-
-test('ES-63: un almacenamiento que lanza error cae en /login', () => {
-  assert.equal(doorTarget({ getItem() { throw new Error('bloqueado') } }), '/login')
+test('ES-63: ambas puertas conservan /login con o sin sesión, para cualquier rol', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'window')
+  try {
+    for (const role of [null, 'user', 'admin', 'superadmin', 'therapist', 'board']) {
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: {
+        getItem: key => key === 'elevation_token' ? (role ? 'synthetic-session' : null) : role,
+      } } })
+      assert.equal(doorTarget(), '/login', role ?? 'visitor')
+    }
+    Object.defineProperty(globalThis, 'window', { configurable: true, get() { throw new Error('No browser storage') } })
+    assert.equal(doorTarget(), '/login')
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'window', original)
+    else delete globalThis.window
+  }
 })
 
 test('ES-63: el titular subraya solo la última palabra y no pierde texto', () => {
@@ -71,7 +65,7 @@ test('ES-63: LandingPage monta HeroDoors y ya no usa el héroe anterior ni la im
 })
 
 test('QA-LAND-01: el héroe y las puertas van en el marco centrado de 1080 px de la maqueta', () => {
-  assert.match(page, /<div className="landing-frame">\s*<HeroDoors text=\{landing\.text\} \/>\s*<\/div>/);
+  assert.match(page, /<div className="landing-frame">\s*<HeroDoors text=\{landing\.text\} \/>[\s\S]*?<\/div>/);
   assert.match(css, /\.landing-frame \{[^}]*max-width: 1080px[^}]*margin-inline: auto[^}]*border-inline: 1px solid/);
   assert.match(css, /\.landing-frame \{[^}]*--landing-gutter: clamp\(1rem, 2\.6vw, 1\.75rem\)/);
 })

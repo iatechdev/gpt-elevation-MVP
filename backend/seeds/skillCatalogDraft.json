@@ -1,0 +1,85 @@
+{
+  "notice": "BORRADOR SIN VERIFICAR. Propuesta inicial de habilidades transversales para que el cliente la revise, edite y publique desde el backoffice. No tiene fuente, verificador ni fecha: no se puede publicar hasta que el cliente los complete. Los niveles siguen la escala del PRD: 1 conceptual, 2 aplicada con asistencia, 3 autónoma y repetible, 4 lidera o enseña en situaciones complejas.",
+  "skills": [
+    {
+      "skillKey": "comunicacion", "type": "transversal",
+      "labels": { "es": "Comunicación", "en": "Communication" },
+      "levels": {
+        "1": { "es": "Conoce cómo preparar un mensaje claro para su audiencia, pero aún no lo ha hecho en una situación real.", "en": "Knows how to prepare a clear message for an audience but has not yet done so in a real situation." },
+        "2": { "es": "Comunica ideas con apoyo de una guía, una plantilla o la revisión de otra persona.", "en": "Communicates ideas with the support of a guide, a template or another person's review." },
+        "3": { "es": "Adapta el mensaje a distintas audiencias y confirma que fue entendido, sin necesitar apoyo, de forma repetida.", "en": "Adapts the message to different audiences and checks it was understood, without support, repeatedly." },
+        "4": { "es": "Comunica en situaciones complejas o de tensión, alinea a varias partes y enseña a otras personas a hacerlo.", "en": "Communicates in complex or tense situations, aligns several parties and teaches others to do it." }
+      }
+    },
+    {
+      "skillKey": "trabajo_en_equipo", "type": "transversal",
+      "labels": { "es": "Trabajo en equipo", "en": "Teamwork" },
+      "levels": {
+        "1": { "es": "Entiende qué se espera de una persona en un equipo, sin experiencia directa todavía.", "en": "Understands what is expected of a person on a team, without direct experience yet." },
+        "2": { "es": "Cumple su parte en un equipo con indicaciones y seguimiento de otra persona.", "en": "Does their part on a team with guidance and follow-up from another person." },
+        "3": { "es": "Coordina su trabajo con otras personas, comparte información y resuelve desacuerdos sin ayuda, de forma repetida.", "en": "Coordinates their work with others, shares information and resolves disagreements without help, repeatedly." },
+        "4": { "es": "Integra equipos diversos o con conflicto, reparte responsabilidades y mejora la forma de trabajar de otras personas.", "en": "Brings together diverse or conflicted teams, distributes responsibilities and improves how others work." }
+      }
+    },
+    {
+      "skillKey": "resolucion_problemas", "type": "transversal",
+      "labels": { "es": "Resolución de problemas", "en": "Problem solving" },
+      "levels": {
+        "1": { "es": "Conoce un método para descomponer un problema, aún sin aplicarlo en un caso real.", "en": "Knows a method for breaking a problem down, not yet applied to a real case." },
+        "2": { "es": "Resuelve problemas conocidos siguiendo pasos que otra persona le indica.", "en": "Solves familiar problems by following steps another person gives them." },
+        "3": { "es": "Define el problema, compara alternativas y decide con criterios propios, sin apoyo, en casos repetidos.", "en": "Defines the problem, compares alternatives and decides using their own criteria, without support, in repeated cases." },
+        "4": { "es": "Resuelve problemas ambiguos o sin precedente, documenta el enfoque y lo enseña a otras personas.", "en": "Solves ambiguous or unprecedented problems, documents the approach and teaches it to others." }
+      }
+    },
+    {
+      "skillKey": "planificacion_organizacion", "type": "transversal",
+      "labels": { "es": "Planificación y organización", "en": "Planning and organization" },
+      "levels": {
+        "1": { "es": "Sabe qué incluye un plan de trabajo (tareas, plazos, prioridades), sin haberlo elaborado todavía.", "en": "Knows what a work plan includes (tasks, deadlines, priorities) but has not drawn one up yet." },
+        "2": { "es": "Organiza sus tareas con un calendario o lista que otra persona le ayuda a revisar.", "en": "Organizes their tasks with a calendar or list that another person helps them review." },
+        "3": { "es": "Planifica y prioriza su trabajo, cumple plazos y ajusta el plan cuando cambian las condiciones, de forma repetida.", "en": "Plans and prioritizes their work, meets deadlines and adjusts the plan when conditions change, repeatedly." },
+        "4": { "es": "Planifica proyectos con varias personas, riesgos y dependencias, y enseña a otras personas a hacerlo.", "en": "Plans projects involving several people, risks and dependencies, and teaches others to do so." }
+      }
+    },
+    {
+      "skillKey": "adaptabilidad", "type": "transversal",
+      "labels": { "es": "Adaptabilidad", "en": "Adaptability" },
+      "levels": {
+        "1": { "es": "Reconoce que los cambios exigen ajustar la forma de trabajar, sin haber vivido uno en la práctica.", "en": "Recognizes that changes require adjusting how they work, without having lived through one in practice." },
+        "2": { "es": "Se ajusta a un cambio cuando recibe explicación y acompañamiento.", "en": "Adjusts to a change when given explanation and support." },
+        "3": { "es": "Se ajusta por su cuenta a cambios de herramientas, funciones o prioridades y mantiene su resultado, de forma repetida.", "en": "Adjusts on their own to changes in tools, roles or priorities and keeps their results, repeatedly." },
+        "4": { "es": "Guía a otras personas durante cambios importantes o inciertos y los convierte en una oportunidad de mejora.", "en": "Guides others through major or uncertain changes and turns them into an opportunity to improve." }
+      }
+    },
+    {
+      "skillKey": "aprendizaje_autonomo", "type": "transversal",
+      "labels": { "es": "Aprendizaje autónomo", "en": "Self-directed learning" },
+      "levels": {
+        "1": { "es": "Sabe que puede aprender algo nuevo y conoce algunas fuentes, sin haber seguido un proceso propio.", "en": "Knows they can learn something new and knows some sources, without having followed a process of their own." },
+        "2": { "es": "Aprende algo nuevo con un curso o una guía que otra persona le propone.", "en": "Learns something new with a course or guide another person suggests." },
+        "3": { "es": "Elige qué aprender, busca sus fuentes, lo aplica y comprueba lo aprendido, sin apoyo, de forma repetida.", "en": "Chooses what to learn, finds their sources, applies it and checks what they learned, without support, repeatedly." },
+        "4": { "es": "Aprende en terrenos desconocidos o complejos y enseña a otras personas a construir su propio aprendizaje.", "en": "Learns in unfamiliar or complex areas and teaches others to build their own learning." }
+      }
+    },
+    {
+      "skillKey": "analisis_informacion", "type": "transversal",
+      "labels": { "es": "Análisis de información", "en": "Information analysis" },
+      "levels": {
+        "1": { "es": "Entiende la diferencia entre un dato, una interpretación y una opinión, sin haber analizado un caso real.", "en": "Understands the difference between data, interpretation and opinion, without having analyzed a real case." },
+        "2": { "es": "Revisa información con un procedimiento que otra persona le indica y reporta lo que encuentra.", "en": "Reviews information using a procedure another person gives them and reports what they find." },
+        "3": { "es": "Reúne información de varias fuentes, distingue datos de interpretaciones y justifica sus conclusiones, de forma repetida.", "en": "Gathers information from several sources, distinguishes data from interpretation and justifies their conclusions, repeatedly." },
+        "4": { "es": "Analiza información incompleta o contradictoria, explica sus límites y orienta decisiones de otras personas.", "en": "Analyzes incomplete or contradictory information, explains its limits and guides other people's decisions." }
+      }
+    },
+    {
+      "skillKey": "influencia_liderazgo", "type": "transversal",
+      "labels": { "es": "Influencia y liderazgo", "en": "Influence and leadership" },
+      "levels": {
+        "1": { "es": "Conoce en qué consiste orientar a otras personas hacia un objetivo, sin haberlo hecho.", "en": "Knows what it means to guide others toward a goal, without having done it." },
+        "2": { "es": "Lidera una tarea pequeña con el apoyo de alguien con más experiencia.", "en": "Leads a small task with the support of someone more experienced." },
+        "3": { "es": "Orienta a otras personas hacia un objetivo común, toma decisiones y asume sus consecuencias, sin apoyo, de forma repetida.", "en": "Guides others toward a shared goal, makes decisions and owns their consequences, without support, repeatedly." },
+        "4": { "es": "Lidera en situaciones complejas o de alto riesgo y desarrolla a otras personas para que lideren.", "en": "Leads in complex or high-stakes situations and develops others to lead." }
+      }
+    }
+  ]
+}

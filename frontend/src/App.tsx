@@ -24,6 +24,7 @@ import { UserDashboard } from './pages/UserDashboard.tsx'
 import { MyTherapist }   from './pages/MyTherapist.tsx'
 import { Onboarding }    from './pages/Onboarding.tsx'
 import { EvidenceListPage, EvidenceDetailPage, EvidenceCreatePage } from './pages/EvidencePages.tsx'
+import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/app/evidence" element={<EvidenceListPage />} />
         <Route path="/app/evidence/new" element={<EvidenceCreatePage />} />
         <Route path="/app/evidence/:id" element={<EvidenceDetailPage />} />
+        <Route path="/app/skill-map"    element={<SkillMapPage />} />
         <Route path="/app/my-therapist" element={<MyTherapist />} />
         {/* HU-067 — sala de videollamada para el paciente */}
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />

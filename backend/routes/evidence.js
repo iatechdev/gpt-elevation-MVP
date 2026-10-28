@@ -10,6 +10,8 @@
 const express = require('express');
 const router = express.Router();
 const evidence = require('../utils/evidence');
+const aiProposals = require('../utils/aiProposals');
+const { proposeEvidence } = require('../utils/evidenceProposal');
 
 router.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
@@ -20,6 +22,7 @@ const handle = (fn) => async (req, res) => {
   try {
     await fn(req, res);
   } catch (error) {
+    if (aiProposals.respondError(res, error)) return;
     if (error instanceof evidence.EvidenceError) {
       const body = { code: error.code, error: error.message };
       if (error.missing) body.missing = error.missing;
@@ -33,6 +36,11 @@ const handle = (fn) => async (req, res) => {
 };
 
 const idOf = (req) => (/^[0-9]{1,9}$/.test(req.params.id) ? Number(req.params.id) : 0);
+
+// ES-28: borrador de evidencia propuesto por la IA desde turnos del chat. No guarda nada; la persona lo confirma con POST /api/evidence.
+router.post('/proposals', handle(async (req, res) => {
+  res.json(await proposeEvidence(req.user.id, req.body));
+}));
 
 router.post('/', handle(async (req, res) => {
   const result = await evidence.create(req.user.id, req.body);

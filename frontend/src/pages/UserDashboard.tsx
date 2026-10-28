@@ -361,6 +361,10 @@ export function UserDashboard() {
             style={{ fontSize: '0.875rem', color: '#4A6741', background: 'white', border: '1px solid #D6D2C4', borderRadius: '0.65rem', cursor: 'pointer', minHeight: 44, padding: '0.5rem 1rem' }}>
             {t('evidence.title')}
           </button>
+          <button className="skill-map-entry elv-btn elv-btn-ghost" onClick={() => navigate('/app/skill-map')}
+            style={{ fontSize: '0.875rem', color: '#4A6741', background: 'white', border: '1px solid #D6D2C4', borderRadius: '0.65rem', cursor: 'pointer', minHeight: 44, padding: '0.5rem 1rem' }}>
+            {t('skill_map.title')}
+          </button>
 
           {/* Widget 1 — Estado emocional */}
           <div style={cardStyle}>
