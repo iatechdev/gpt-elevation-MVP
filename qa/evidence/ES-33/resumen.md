@@ -1,0 +1,5 @@
+# ES-33 · PR #44 (head c847dd6), merge local temporal con main
+Entorno: Postgres local real (base nueva por corrida), módulos del PR en el proceso de prueba con el pool POR DEFECTO de producción (5). Solo los puertos ES-14 y ES-32 se sustituyen por dobles, y únicamente después de comprobar que en runtime responden 503 `*_contract_pending`. Sin IA.
+- Dev: `npm test` 266/266; `test:career-plan:local` 30/30 (su arnés usa pool 15).
+- QA: `run3.jsonl` = 80 casos (`qa/integration/es33-real-db.mjs`), 79 pasan; falla ES33-F01 (QA-33-01). `run3-pool15.jsonl` = 80/80 (mismo script con pool 15: las 6 creaciones simultáneas responden 201 en ~190 ms). `run1`/`run2` son corridas previas del desarrollo del script (errores míos de orden: crear evidencia después de abrir el experimento cambia su base, comportamiento documentado en el contrato).
+- Observación de diseño (QA-33-02, Medio): evidencia nueva confirmada cambia la base (`needs_review`, 409 al continuar) y el rebase reinicia el experimento a `ready`; la entrega previa solo queda en el historial. Está documentado en el contrato (§Huella), la decisión es del PO.
