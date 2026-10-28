@@ -14,6 +14,10 @@ function replaceModule(relativePath, exports) {
 }
 
 const models = {};
+for (const name of ['CareerExperiment', 'CareerExperimentVersion', 'CareerPlanVersion', 'CareerExperimentReview', 'CareerReminder']) {
+  models[name] = {};
+  replaceModule(name + '.js', models[name]);
+}
 for (const name of [
   'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
