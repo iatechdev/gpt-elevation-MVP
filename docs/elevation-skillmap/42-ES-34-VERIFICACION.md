@@ -44,12 +44,12 @@ ProtectedRoute actual solo verifica existencia de token. La prueba del navegador
 | npm test | exit 0, 32/32, incluidas diez nuevas ES-34 |
 | Nuevas pruebas con Node 22 (CI) | exit 0, 10/10 |
 | npx tsc -b | exit 0 |
-| npm run build | exit 0; JS 574,84 kB gzip 149,43; CSS 60,85 kB gzip 10,18 |
+| npm run build | exit 0; JS 575,03 kB gzip 149,57; CSS 60,85 kB gzip 10,18 |
 | npm audit --audit-level=high | exit 0, 0 vulnerabilidades |
 | Chromium aislado, app compilada | siete builds, once grupos PASS, cero escrituras API/cero excepciones JavaScript |
 | git diff --check / sintaxis del arnés | exit 0 |
 
-Se conserva la advertencia >500 kB. Frente a main, JS pasa de 522,56 a 574,84 kB y CSS de 30,93 a 60,85 kB por componentes/estados de la nueva vista y módulos daisyUI de formularios. No se relaja el umbral ni se presenta como optimización. Dependencias/lockfile intactos. Backend y migraciones sin cambios: no se declaran pruebas backend locales nuevas ni integración real por este trabajo.
+Se conserva la advertencia >500 kB. Frente a main, JS pasa de 522,56 a 575,03 kB y CSS de 30,93 a 60,85 kB por componentes/estados de la nueva vista y módulos daisyUI de formularios. No se relaja el umbral ni se presenta como optimización. Dependencias/lockfile intactos. Backend y migraciones sin cambios: no se declaran pruebas backend locales nuevas ni integración real por este trabajo.
 
 Diez unitarias cubren ES/EN completo, apagado estricto, módulo sin red/almacenamiento, vacíos/restricciones/una o dos opciones, idempotencia, entrega/reflexión/ayuda/historia, dependencias/fechas/esfuerzo/costo, rebase, recordatorios y revocación/reotorgamiento, ACK perdido/recuperación y error, separación de simulaciones y contrastes de tokens claros/oscuros (texto ≥4,5:1, controles/foco ≥3:1). No equivalen a una auditoría universal de accesibilidad ni a pruebas del motor profesional.
 
@@ -91,6 +91,7 @@ Capturas inspeccionadas: comparación de rutas de escritorio, móvil oscuro, exp
 - La comprobación del arnés pretendía que el checkbox de consentimiento estuviera confirmado antes del ACK asíncrono: se cambió a clic + espera del estado confirmado, sin introducir guardado optimista.
 - La primera prueba de zoom pedía 187,5 px efectivos (375/2), por debajo del alcance 320; se verificó correctamente 200 % con 384 px efectivos y se conservan pruebas separadas a 320.
 - Lint detectó un import sin usar y mutación del argumento de un hook al crear su clave. Se corrigió código con variable local; reglas/configuración intactas.
+- La validación de fecha usa el día de America/Bogota del snapshot sintético, no UTC: una prueba cubre el borde nocturno entre ambos días.
 
 Corridas finales de lint/tipos/pruebas/build y navegador verdes; los fallos iniciales no se cuentan como aprobados.
 

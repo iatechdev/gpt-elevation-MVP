@@ -52,6 +52,7 @@ test('ES-34 planes: fechas, dependencias, esfuerzo y costo desconocido no se con
   assert.ok(validActions(actions().map(a => ({ ...a, cost: '0' })), '0'))
   const unknown = actions().map(a => ({ ...a, cost: '0', resource: true })); assert.equal(validActions(unknown, '0'), false)
   const invalid = actions(); invalid[0].date = '2026-02-30'; assert.equal(validActions(invalid, ''), false)
+  assert.ok(validActions([{ ...actions()[0], date: '2026-11-03' }], '', new Date('2026-11-04T02:00:00Z')), 'today follows the fixture time zone, not UTC')
 })
 test('ES-34 plan confirmado, checkbox sin evidencia bloqueado y cambios de base obligan revisión', async () => {
   const c = await fixture(), id = await decided(c), planId = await send(c, { type: 'plan', experimentId: id, actions: actions(), budget: '', currency: 'USD' })

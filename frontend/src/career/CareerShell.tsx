@@ -99,7 +99,7 @@ function CareerSession({ session }: { session: string }) {
     <header className="career-header"><div>{nav('/app/dashboard', 'back')}<span aria-hidden="true"> ELEVATION</span></div><div className="career-languages">{(['es', 'en'] as const).map(l => <button key={l} type="button" aria-label={l === 'es' ? 'Español' : 'English'} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header>
     <main id="career-main" tabIndex={-1}><h1>{t('title')}</h1>
       <nav aria-label={t('title')}>{nav('/app/next-step', 'routes')}{nav('/app/next-step/experiments', 'experiments')}{nav('/app/next-step/plan', 'plan')}</nav>
-      {!session ? <p role="alert">{t('session')}</p> : !enabled ? <p role="status">{t('disabled')}</p> : <>
+      {!session || token() !== session ? <p role="alert">{t('session')}</p> : !enabled ? <p role="status">{t('disabled')}</p> : <>
         <p className="elv-alert career-banner" role="note">{t('preview')}</p>
         {dirty && <p>{t('unsaved')}</p>}
         {dirtyCount > 1 && <p className="career-warning" role="status">{t('otherDraft')}</p>}

@@ -54,12 +54,14 @@ export function routesFor(s: State): Route[] {
 }
 const validDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(Date.parse(date)) && new Date(date).toISOString().slice(0, 10) === date
 const week = (date: string) => { const d = new Date(date); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() || 7) + 1); return d.toISOString().slice(0, 10) }
-export function validActions(actions: Action[], budget: string): boolean {
+export function validActions(actions: Action[], budget: string, now = new Date()): boolean {
   if (!actions.length || actions.length > 3 || new Set(actions.map(a => a.key)).size !== actions.length) return false
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en', { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).map(p => [p.type, p.value]))
+  const today = `${parts.year}-${parts.month}-${parts.day}`
   const weeks = new Map<string, number>()
   let total = 0
   for (const a of actions) {
-    if (![7, 30, 90].includes(a.key) || !validDate(a.date) || a.date < new Date().toISOString().slice(0, 10) || !Number.isInteger(a.minutes) || a.minutes < (a.key === 7 ? 20 : 1) || a.minutes > (a.key === 7 ? 45 : 60) || (a.resource && a.minutes < 20)) return false
+    if (![7, 30, 90].includes(a.key) || !validDate(a.date) || a.date < today || !Number.isInteger(a.minutes) || a.minutes < (a.key === 7 ? 20 : 1) || a.minutes > (a.key === 7 ? 45 : 60) || (a.resource && a.minutes < 20)) return false
     const parent = a.key === 30 ? 7 : a.key === 90 ? 30 : null
     if (parent && !actions.some(p => p.key === parent && p.date <= a.date)) return false
     weeks.set(week(a.date), (weeks.get(week(a.date)) ?? 0) + a.minutes)
