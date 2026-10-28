@@ -10,7 +10,7 @@ export function SpaceSkip() {
 export function SpaceNav() {
   const { lang } = useLanguage(); const c = copy[lang]; const routes = useSpaceRoutes()
   return <div className="space-scope space-nav">
-    <nav aria-label={c.space}><NavLink className="elv-btn" to="/app/chat">{c.space}</NavLink><NavLink className="elv-btn" to="/app/next-step">{c.next}</NavLink></nav>
+    <nav aria-label={c.space}><NavLink className="elv-btn" to="/app/chat">{c.space}</NavLink><NavLink className="elv-btn" to="/app/space/tools">{c.tools}</NavLink></nav>
     <nav aria-label={c.journal}><NavLink className="elv-link" to="/app/chat">{c.talk}</NavLink><NavLink className="elv-link" to="/app/diary">{c.journal}</NavLink>{routes.has('/app/exercises') && import.meta.env.VITE_ENABLE_COMPANION_EXERCISES === 'true' && <Link className="elv-link" to="/app/exercises">{c.exercises}</Link>}</nav>
   </div>
 }

@@ -31,7 +31,7 @@ import { BoardManifest } from './pages/board/BoardManifest.tsx'
 
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
-import { NextStepPage } from './space/NextStepPage'
+import { SpaceToolsPage } from './space/SpaceToolsPage'
 import { SpaceSession } from './space/SpaceSession'
 export default function App() {
   return (
@@ -47,13 +47,12 @@ export default function App() {
         <Route path="/app/diary" element={<JournalPage />} />
         <Route path="/app/diary/new" element={<JournalPage />} />
         <Route path="/app/diary/:id" element={<JournalPage />} />
-        <Route path="/app/next-step" element={<NextStepPage />} />
+        <Route path="/app/space/tools" element={<SpaceToolsPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
         <Route path="/app/dashboard"    element={<SpaceSession><UserDashboard /></SpaceSession>} />
-        <Route path="/app/dashboard"    element={<UserDashboard />} />
         <Route path="/app/evidence" element={<EvidenceListPage />} />
         <Route path="/app/evidence/new" element={<EvidenceCreatePage />} />
         <Route path="/app/evidence/:id" element={<EvidenceDetailPage />} />

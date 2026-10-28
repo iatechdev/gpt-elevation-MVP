@@ -1,6 +1,6 @@
 export const copy = {
   es: {
-    space: 'Mi espacio', next: 'Mi siguiente paso', talk: 'Conversar', journal: 'Diario', title: 'Mi diario privado', home: 'Volver al inicio', skip: 'Saltar al contenido',
+    space: 'Mi espacio', tools: 'Mis herramientas', talk: 'Conversar', journal: 'Diario', title: 'Mi diario privado', home: 'Volver al inicio', skip: 'Saltar al contenido',
     privacy: 'Guarda solo lo que quieras conservar. Guardar no comparte con otras personas ni con el recorrido profesional.',
     limit: 'Hasta las 100 entradas más recientes; esta lista puede no incluir todo tu diario.', empty: 'Aún no tienes entradas guardadas.',
     new: 'Nueva entrada', open: 'Abrir', edit: 'Editar', remove: 'Borrar', date: 'Fecha', content: 'Contenido', updated: 'Última edición',
@@ -19,13 +19,13 @@ export const copy = {
     send: 'Enviar', sending: 'Enviando…', unconfirmed: 'Sin confirmar', confirmed: 'Envío confirmado', check: 'Consultar estado', retrySend: 'Reintentar el mismo envío',
     sendError: 'No pudimos confirmar este envío. Conservamos tu texto en esta pantalla.', pending: 'El envío sigue en proceso. Puedes consultar su estado.',
     session: 'Tu sesión venció. Inicia sesión para continuar.', login: 'Iniciar sesión', composer: 'Mensaje (hasta 4.000 caracteres)',
-    compass: 'Brújula', evidence: 'Mis evidencias', map: 'Mi mapa', catalog: 'Catálogo', preparation: 'En preparación', nextEmpty: 'Las opciones profesionales aún no están disponibles aquí. Puedes volver a Mi espacio.',
+    compass: 'Brújula', evidence: 'Mis evidencias', map: 'Mi mapa', catalog: 'Catálogo', preparation: 'En preparación', toolsEmpty: 'Las opciones profesionales aún no están disponibles aquí. Puedes volver a Mi espacio.',
     budget: 'El envío no está disponible por el límite o la configuración de IA. Puedes consultar su estado; no se enviará automáticamente.',
     current: 'El contenido guardado coincide actualmente con tu borrador.', deleted: 'La entrada ya no está disponible.', deleteError: 'No pudimos verificar el borrado. Consulta la entrada antes de otra acción.',
     review: 'Revisar versión guardada', exercises: 'Ejercicios opcionales',
   },
   en: {
-    space: 'My space', next: 'My next step', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: 'Skip to content',
+    space: 'My space', tools: 'My tools', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: 'Skip to content',
     privacy: 'Save only what you want to keep. Saving does not share with other people or with your career journey.',
     limit: 'Up to the 100 most recent entries; this list may not include your entire journal.', empty: 'You do not have any saved entries yet.',
     new: 'New entry', open: 'Open', edit: 'Edit', remove: 'Delete', date: 'Date', content: 'Content', updated: 'Last edited',
@@ -44,7 +44,7 @@ export const copy = {
     send: 'Send', sending: 'Sending…', unconfirmed: 'Unconfirmed', confirmed: 'Message confirmed', check: 'Check status', retrySend: 'Retry the same message',
     sendError: 'We could not confirm this message. Your text remains on this screen.', pending: 'The message is still processing. You can check its status.',
     session: 'Your session expired. Sign in to continue.', login: 'Sign in', composer: 'Message (up to 4,000 characters)',
-    compass: 'Compass', evidence: 'My evidence', map: 'My map', catalog: 'Catalog', preparation: 'In preparation', nextEmpty: 'Career options are not available here yet. You can return to My space.',
+    compass: 'Compass', evidence: 'My evidence', map: 'My map', catalog: 'Catalog', preparation: 'In preparation', toolsEmpty: 'Career options are not available here yet. You can return to My space.',
     budget: 'The message is unavailable due to the AI limit or configuration. You can check its status; it will not be sent automatically.',
     current: 'The saved content currently matches your draft.', deleted: 'The entry is no longer available.', deleteError: 'We could not verify deletion. Check the entry before another action.',
     review: 'Review saved version', exercises: 'Optional exercises',

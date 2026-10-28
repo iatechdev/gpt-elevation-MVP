@@ -12,7 +12,7 @@ Rama propia `ES-15-mi-espacio-diario`, base `main` 4311d69. Fuentes: Jira ES-15/
 
 Una barra compacta de contenido, conservando las cabeceras existentes: **Mi espacio / My space** y **Mi siguiente paso / My next step**. Se muestra en los dos chats, diario y nueva puerta profesional. Dentro de Mi espacio: **Conversar / Talk** hacia `/app/chat` y **Diario / Journal** hacia `/app/diary`.
 
-`/app/next-step` será una puerta de navegación, no una recomendación o un plan calculado. Ofrece Brújula, Mis evidencias, Mi mapa y Catálogo cuando esas rutas estén realmente registradas en App. Si aún no existen: tarjetas «En preparación / In preparation», sin enlaces activos. Si ninguna existe, estado explicativo de opciones profesionales aún no disponibles y regreso a Mi espacio.
+`/app/space/tools` («Mis herramientas / My tools») será una puerta de navegación, no una recomendación o un plan calculado. Ofrece Brújula, Mis evidencias, Mi mapa y Catálogo cuando esas rutas estén realmente registradas en App. Si aún no existen: tarjetas «En preparación / In preparation», sin enlaces activos. Si ninguna existe, estado explicativo de opciones profesionales aún no disponibles y regreso a Mi espacio.
 
 Se propone un pequeño contexto frontend de rutas disponibles, obtenido del árbol de Route ya registrado, sin modificar guards ni las definiciones de las otras HUs. Evita enlaces inexistentes y activa las tarjetas al integrarse las pantallas: `/app/compass`, `/app/evidence`, `/app/skill-map`, `/app/route-catalog`. No se usa el progreso de ánimo como Skill Map. La presencia de una ruta no se presenta como disponibilidad de datos personales o de su backend; cada pantalla conserva sus estados propios.
 
