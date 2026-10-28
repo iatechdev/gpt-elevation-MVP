@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "ticket": "ES-45",
+  "target": null,
+  "pilotStartedAt": null,
+  "blockers": [
+    {
+      "id": "environment",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "isolated-data",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "migration",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "integration",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "canonical-context",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "sharing",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "retention",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "ai-approval",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "catalogue",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "specialist-tone",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "specialist-safety",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "specialist-corpus",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "qa-cut-1",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "qa-cut-2",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "qa-cut-3",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "qa-cut-4",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "screen-review",
+      "status": "pending",
+      "reference": null
+    },
+    {
+      "id": "support",
+      "status": "pending",
+      "reference": null
+    }
+  ]
+}
