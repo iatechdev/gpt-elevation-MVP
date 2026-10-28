@@ -118,6 +118,13 @@ app.use('/api/superadmin', verificarSuperAdmin, adminPromptsRouter);
 app.use('/api/board',      verificarBoard,      require('./routes/board'));
 app.use('/api/junta',      verificarSuperAdmin, require('./routes/validation'));
 
+// QA-SMK-01: una ruta /api/* que ninguna ruta atendió responde 404 JSON. Sin esto, con sesión caía en el comodín de la SPA y devolvía el
+// HTML de index.html con 200, que un cliente de la API (o una prueba de humo) toma por una respuesta válida.
+app.use('/api', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.status(404).json({ code: 'not_found', error: 'Ruta no encontrada. / Route not found.' });
+});
+
 // ── Frontend estático ─────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.get('/{*path}', (req, res) => {
