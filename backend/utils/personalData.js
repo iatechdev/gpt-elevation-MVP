@@ -39,6 +39,12 @@ const CORE = [
   ['routeChoices', 'RouteChoice', 'UserId', ['id', 'roleKey', 'slot', 'decision', 'catalogVersion', 'constraintsVersion', 'status', 'createdAt']],
   ['routeReviewRequests', 'RouteReviewRequest', 'UserId', ['id', 'status', 'note', 'createdAt'], ['note']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
+  // ES-33: autorización de extensión declarativa (Jira 10260/10261). Hijos antes del contenedor por sus FK.
+  ['careerReminders', 'CareerReminder', 'UserId', ['id', 'planVersionId', 'actionKey', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerPlans', 'CareerPlanVersion', 'UserId', ['id', 'experimentId', 'version', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerReviews', 'CareerExperimentReview', 'UserId', ['id', 'experimentId', 'submissionVersion', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerExperimentVersions', 'CareerExperimentVersion', 'UserId', ['id', 'experimentId', 'version', 'lifecycle', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerExperiments', 'CareerExperiment', 'UserId', ['id', 'choiceId', 'currentVersion', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);
