@@ -64,6 +64,10 @@ jobs:
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: npm test
       # Conexión real a Postgres: base para las pruebas de integración con DB real (ES-80).
+      - name: ES-14 — contexto, migración y concurrencia contra Postgres real
+        env:
+          ES14_TEST_DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
+        run: node --test test/integration/es-14-postgres.cjs
       - name: Verificar conexión y esquema contra Postgres real
         env:
           DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
@@ -78,6 +82,12 @@ jobs:
             .then(([r]) => { console.log('tablas creadas:', r[0].n); process.exit(r[0].n > 0 ? 0 : 1); })
             .catch(e => { console.error(e.message); process.exit(1); });
           "
+      # Migraciones (ES-59): sin deriva frente a sync() y ciclo deshacer/reaplicar, sobre bases desechables.
+      - name: Migraciones sin deriva y con down/up
+        env:
+          DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
+          DB_SSL: 'false'
+        run: npm run db:drift
       # Bloquea con vulnerabilidades altas o críticas en dependencias de producción (decisión de Mauricio, QA-57-06).
       # Las moderadas no bloquean: se listan en docs/DESPLIEGUE-RAILWAY.md como riesgo aceptado.
       - name: Auditar dependencias (bloquea en alta o crítica)
@@ -111,6 +121,10 @@ jobs:
         env:
           # Disposable runner-local service only. The test creates its own random database.
           ES23_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-32 rutas, propiedad y ciclo de vida con PostgreSQL real
+        run: npm run test:routes:pg
+        env:
+          ES32_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-33 propietario y ciclo de vida (puertos ES-14/32 simulados)
         run: npm run test:career-plan:pg
         env:

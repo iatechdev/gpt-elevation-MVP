@@ -1,5 +1,7 @@
-// Aditiva, repetible; no down destructivo. Los hijos se purgan antes que el contenedor en CORE.
-async function up(sequelize) {
+// Aditiva y repetible. El down (solo con permiso explícito, nunca en producción) borra las cinco tablas. Los hijos se purgan antes que el contenedor en CORE.
+// Contrato doble: scripts/migrateCareerPlan.js y la prueba la llaman con up(sequelize); sequelize-cli (ES-59) con up(queryInterface).
+async function up(arg) {
+  const sequelize = arg.sequelize || arg;
   await sequelize.transaction(async transaction => {
     const common = `"id" SERIAL PRIMARY KEY, "UserId" INTEGER NOT NULL REFERENCES "Users"("id"),
       "requestId" VARCHAR(64) NOT NULL, "inputHash" VARCHAR(64) NOT NULL,
@@ -33,4 +35,9 @@ async function up(sequelize) {
       THEN ALTER TABLE "${table}" ADD CONSTRAINT "${name}" FOREIGN KEY ("UserId","${field}") REFERENCES "${target}"("UserId","id"); END IF; END $$`, { transaction });
   });
 }
-module.exports = { up };
+// El down borra experimentos y planes de las personas: guarda común de ES-59.
+async function down(queryInterface) {
+  require('../scripts/guard-down.cjs')('20261028-es33-career-plan');
+  for (const table of ['CareerReminders', 'CareerExperimentReviews', 'CareerPlanVersions', 'CareerExperimentVersions', 'CareerExperiments']) await queryInterface.dropTable(table);
+}
+module.exports = { up, down };
