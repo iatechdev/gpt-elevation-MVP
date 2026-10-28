@@ -19,6 +19,8 @@
     "eval:mock": "node evaluation/es44/cli.cjs --mode=mock",
     "eval:local": "node evaluation/es44/cli.cjs --mode=integration",
     "eval:review": "node evaluation/es44/review.cjs",
+    "seed:demo": "node scripts/seedStagingDemo.js",
+    "test:seed-demo:pg": "node --test test/integration/seed-demo-postgres.cjs",
     "test:routes:pg": "node --test test/integration/es-32-postgres.cjs",
     "test:routes:local": "node scripts/testEs32Local.cjs",
     "migrate:routes": "node scripts/migrateRoutes.js",
