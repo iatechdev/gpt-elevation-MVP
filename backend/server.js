@@ -46,6 +46,13 @@ app.use(cors({
   optionsSuccessStatus: 200,
 }));
 app.use(express.json());
+// ES-14: parser failures must not echo submitted personal context or log its body.
+app.use('/api/user/context', (error, req, res, next) => {
+  if (['entity.parse.failed', 'entity.too.large'].includes(error.type)) {
+    return res.status(error.status === 413 ? 413 : 400).json({ error: 'invalid_request' });
+  }
+  next(error);
+});
 // Malformed JSON is rejected without Express logging the submitted private body.
 app.use((error, req, res, next) => {
   if (!['entity.parse.failed', 'entity.too.large'].includes(error.type)) return next(error);
@@ -90,12 +97,16 @@ app.use('/api/career-context',  verificarToken, require('./routes/careerContext'
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
+app.use('/api/routes',          verificarToken, require('./routes/routes'));         // ES-32 — rutas de la propia persona
+app.use('/api/experiments',      verificarToken, require('./routes/careerPlan').experiments); // ES-33 — recursos propios
+app.use('/api/career-plan',      verificarToken, require('./routes/careerPlan').plans);
 app.use('/api/diary',           verificarToken, require('./routes/diary'));          // ES-20 — diario privado
 app.use('/api/ai/usage',         verificarToken, require('./routes/aiUsage').owner);   // ES-22 — presupuesto de IA de la persona
 app.use('/api/superadmin/ai-usage', verificarSuperAdmin, require('./routes/aiUsage').admin); // ES-22 — resumen agregado
 app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));
+app.use('/api/user/context',   verificarToken, require('./routes/participantContext')); // ES-14 — owner-only context
 app.use('/api/user',            verificarToken, require('./routes/progress'));
 app.use('/api/user/plan',       verificarToken, require('./routes/plans'));          // HU-077 — plan del usuario
 app.use('/api/plan-requests',   verificarToken, require('./routes/planRequests'));   // HU-077 — solicitudes usuario
