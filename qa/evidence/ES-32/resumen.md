@@ -5,3 +5,7 @@ Entorno: Postgres embebido local (`qa43`), servidor del PR con `ALLOW_SYNTHETIC_
 - Regresión ES-18/19 sobre el servidor del PR: 20/20 (`reg-es18-19.jsonl`).
 - Migración `migrateRoutes.js` dos veces: sin error; índices únicos 4/3/3.
 - Registro del servidor tras las corridas: sin el canario de la nota ni correos sintéticos, sin trazas.
+
+## Re-revisión del head e7cbbd4 (cierre de QA-32-01)
+Dev: `npm test` 274/274; `test:routes:local` 26/26 (ahora con pool 5 y prueba de regresión). QA: `run4-e7cbbd4.jsonl` 95/95 (ES32-F01 y F02 pasan: 12 escrituras de una persona → 1×201 y 11×409 en <450 ms, lectura de otra sesión 19 ms); sonda: 8 personas escriben a la vez 201 en ~160 ms, 8 eligen a la vez 201 en ~350 ms. Regresión ES-18/19 20/20.
+Cambio de comportamiento a notar: si la base cambia entre la lectura y la confirmación, la elección se guarda marcada basisChanged (antes se revertía con 409); no autoriza experimento.
