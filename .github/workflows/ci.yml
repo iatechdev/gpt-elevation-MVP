@@ -82,3 +82,32 @@ jobs:
       # Las moderadas no bloquean: se listan en docs/DESPLIEGUE-RAILWAY.md como riesgo aceptado.
       - name: Auditar dependencias (bloquea en alta o crítica)
         run: npm audit --omit=dev --audit-level=high
+
+  data-rights-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run test:data-rights:pg
+        env:
+          # Disposable runner-local service only. The test creates its own random database.
+          ES23_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres

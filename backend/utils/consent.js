@@ -5,6 +5,7 @@ const { Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const Consent = require('../Consent');
 const ConsentEvent = require('../ConsentEvent');
+const { deletionPending } = require('./deletionGuard');
 
 // Lista cerrada de propósitos. `required`: no se puede revocar desde la API (solo con la eliminación de la cuenta, ES-23).
 const PURPOSES = Object.freeze({
@@ -38,6 +39,7 @@ const validOwner = (userId) => Number.isSafeInteger(Number(userId)) && Number(us
 // Lectura simple (sin bloqueo): para decisiones que no abren una operación de varios pasos.
 async function hasConsent(userId, purpose, scope = DEFAULT_SCOPE) {
   if (!validOwner(userId) || !isPurpose(purpose)) return false;
+  if (await deletionPending(userId)) return false;
   const row = await Consent.findOne({ where: keyOf(Number(userId), purpose, scope) });
   return isEffective(row, purpose);
 }
@@ -52,7 +54,7 @@ async function withConsent(userId, purpose, fn, scope = DEFAULT_SCOPE) {
     const row = await Consent.findOne({
       where: keyOf(Number(userId), purpose, scope), transaction, lock: Transaction.LOCK.SHARE,
     });
-    if (!isEffective(row, purpose)) throw new ConsentRequiredError(purpose);
+    if (!isEffective(row, purpose) || await deletionPending(userId, transaction)) throw new ConsentRequiredError(purpose);
     const result = await fn(transaction);
     await transaction.commit();
     finished = true;
@@ -69,6 +71,7 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
     const transaction = await sequelize.transaction();
     let finished = false;
     try {
+      if (await deletionPending(userId, transaction)) throw new ConsentRequiredError(purpose);
       const where = keyOf(userId, purpose, scope);
       const current = await Consent.findOne({ where, transaction, lock: Transaction.LOCK.UPDATE });
       const version = REQUIRED_VERSION[purpose];
@@ -82,6 +85,10 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (current) await current.update({ status, version, decidedAt }, { transaction });
       else row = await Consent.create({ ...where, status, version, decidedAt }, { transaction });
       await ConsentEvent.create({ ...where, status, version, decidedAt }, { transaction });
+      // ES-25: revocar el puente revoca, en la misma transacción, la versión de contexto que depende de él.
+      if (purpose === 'professional_bridge' && status === 'revoked') await require('./careerContext').revokeForConsent(userId, transaction);
+      // ES-27: revocar el puente deja de vigente, en la misma transacción, la evidencia confirmada que sale del chat.
+      if (purpose === 'professional_bridge' && status === 'revoked') await require('./evidence').revokeForConsent(userId, transaction);
       await transaction.commit();
       finished = true;
       return { row, changed: true };
@@ -91,6 +98,20 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (error && error.name === 'SequelizeUniqueConstraintError' && attempt === 1) continue;
       throw error;
     }
+  }
+}
+
+// ES-23 only: the necessary purpose may be revoked when deleting the account.
+// Uses the caller's transaction; exclusive row locks wait for in-flight withConsent consumers.
+async function revokeForDeletion(userId, transaction) {
+  const rows = await Consent.findAll({ where: { UserId: userId }, transaction, lock: Transaction.LOCK.UPDATE });
+  for (const row of rows) {
+    if (row.status === 'revoked') continue;
+    const decidedAt = new Date();
+    await row.update({ status: 'revoked', decidedAt }, { transaction });
+    await ConsentEvent.create({
+      UserId: userId, purpose: row.purpose, scope: row.scope, status: 'revoked', version: row.version, decidedAt,
+    }, { transaction });
   }
 }
 
@@ -128,7 +149,7 @@ const requireConsent = (purpose, ownerOf, scope = DEFAULT_SCOPE) => async (req, 
   try {
     allowed = await hasConsent(ownerOf(req), purpose, scope);
   } catch (error) {
-    console.error('⚠️ No se pudo verificar el consentimiento:', error.message);
+    console.error('No se pudo verificar el consentimiento.');
     return res.status(503).json({ error: 'No se pudo verificar el consentimiento. Intenta de nuevo.' });
   }
   if (!allowed) {
@@ -141,4 +162,5 @@ module.exports = {
   PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION,
   ConsentRequiredError, isPurpose, isEffective,
   hasConsent, withConsent, setConsent, listConsents, listHistory, requireConsent,
+  revokeForDeletion,
 };
