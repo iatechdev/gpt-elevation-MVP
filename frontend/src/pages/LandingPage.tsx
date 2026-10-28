@@ -5,6 +5,7 @@ import { LandingButton, LandingSection } from '../components/landing/LandingPrim
 import { HeroDoors } from '../components/landing/HeroDoors'
 import { LandingHeader } from '../components/landing/LandingHeader'
 import { ExampleStrip } from '../components/landing/ExampleStrip'
+import { LandingProject } from '../components/landing/LandingProject'
 import { useLandingContent } from '../content/useLandingContent'
 import { useState, useEffect } from 'react'
 
@@ -81,6 +82,9 @@ export function LandingPage() {
             ))}
           </div>
         </LandingSection>
+
+        {/* ES-72 · S11: objetivos y estado del proyecto */}
+        <LandingProject text={landing.text} />
 
         {/* CTA Final */}
         <LandingSection style={{ padding: 'var(--landing-space) var(--landing-gutter)', background: 'var(--color-primary)' }}>
