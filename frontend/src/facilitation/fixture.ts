@@ -127,4 +127,3 @@ export function createFixture(scenario: Scenario = 'normal', now = () => new Dat
   }
 }
 export type Fixture = ReturnType<typeof createFixture>
-

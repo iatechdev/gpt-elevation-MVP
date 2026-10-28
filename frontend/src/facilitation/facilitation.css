@@ -59,4 +59,3 @@
   .fac-scope { color-scheme: dark; --color-base-100: #1c211d; --color-base-200: #252c26; --color-base-300: #626e64; --color-base-content: #f4f3ed; --fac-muted: #d0d5ce; --fac-control: #899582; --color-primary: #b8d2ad; --color-primary-content: #1c211d; --color-error: #ffb4ab; }
 }
 @media (prefers-reduced-motion: reduce) { .fac-scope *, .fac-scope *::before, .fac-scope *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
-

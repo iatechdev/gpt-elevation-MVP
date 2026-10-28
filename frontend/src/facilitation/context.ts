@@ -16,4 +16,3 @@ export function useCopy() {
   const { lang, setLang } = useLanguage()
   return { lang, setLang, t: (key: TextKey) => copy[lang][`facilitation.${key}`] }
 }
-

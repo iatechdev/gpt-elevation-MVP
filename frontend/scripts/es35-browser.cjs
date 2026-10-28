@@ -167,4 +167,3 @@ async function confirmed(page, en = false) { await page.getByRole('button', { na
     console.error(error); process.exitCode = 1;
   } finally { if (browser) await browser.close(); for (const server of servers) await new Promise(resolve => server.close(resolve)); }
 })();
-

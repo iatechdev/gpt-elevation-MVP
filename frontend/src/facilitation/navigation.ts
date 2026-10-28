@@ -18,4 +18,3 @@ window.addEventListener('popstate', event => {
   const current = blocker
   current(() => { blocker = null; history.go(delta) })
 })
-

@@ -93,4 +93,3 @@ export const copy = {
   es: Object.fromEntries(Object.entries(words.es).map(([key, value]) => ['facilitation.' + key, value])) as Messages,
   en: Object.fromEntries(Object.entries(words.en).map(([key, value]) => ['facilitation.' + key, value])) as Messages,
 }
-

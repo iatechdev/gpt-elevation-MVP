@@ -106,4 +106,3 @@ test('ES-35 approved local palette meets AA text and control contrast in both mo
     assert.ok(ratio(bg, primary) >= 3); assert.ok(ratio(bg, border) >= 3)
   }
 })
-

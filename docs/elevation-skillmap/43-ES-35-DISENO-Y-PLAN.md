@@ -219,4 +219,3 @@ Alejo aprobó explícitamente en este chat: «Aprobar diseño y vista preliminar
 Registrado en Jira ES-35, comentario 10274, después de presentar este diseño en 10273.
 Autoriza únicamente el tramo A. No autoriza modificar el núcleo de Mauricio ni habilitar permisos/datos reales.
 La objeción de estimación y los contratos del apartado 8 siguen abiertos para la integración.
-

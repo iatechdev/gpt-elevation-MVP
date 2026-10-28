@@ -186,4 +186,3 @@ function RecordForm({ command, material, close }: { command: Command; material?:
     </div>
   </form>
 }
-

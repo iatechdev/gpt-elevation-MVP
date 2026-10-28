@@ -128,4 +128,3 @@ function ActivePreview({ session }: { session: string }) {
     </section>
   </FacilitationContext.Provider>
 }
-
