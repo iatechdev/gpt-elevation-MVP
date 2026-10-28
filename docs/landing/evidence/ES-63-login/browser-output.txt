@@ -1,0 +1,15 @@
+PASS es-CO visitor unset: both doors reach /login via keyboard.
+PASS es-CO user unset: both doors reach /login via keyboard.
+PASS es-CO user done: both doors reach /login via keyboard.
+PASS es-CO admin unset: both doors reach /login via keyboard.
+PASS es-CO superadmin unset: both doors reach /login via keyboard.
+PASS es-CO therapist unset: both doors reach /login via keyboard.
+PASS es-CO board unset: both doors reach /login via keyboard.
+PASS en-US visitor unset: both doors reach /login via keyboard.
+PASS en-US user unset: both doors reach /login via keyboard.
+PASS en-US user done: both doors reach /login via keyboard.
+PASS en-US admin unset: both doors reach /login via keyboard.
+PASS en-US superadmin unset: both doors reach /login via keyboard.
+PASS en-US therapist unset: both doors reach /login via keyboard.
+PASS en-US board unset: both doors reach /login via keyboard.
+PASS 14 session/language cases, 28 door navigations. Synthetic sessions and API mocks; no real authentication or DB.
