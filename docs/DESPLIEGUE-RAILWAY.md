@@ -35,7 +35,7 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 
 ## Base de datos
 - Producción (`NODE_ENV=production`): `sequelize.sync({})` solo crea las tablas que falten; no altera columnas.
-- **Esquema hasta que existan migraciones (QA-57-05, decisión propuesta):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo se activa de forma explícita con `DB_SYNC_ALTER=true` en un entorno de desarrollo desechable, nunca por defecto y sin depender de `NODE_ENV` (QA-57-05).
+- **Esquema hasta que se cierre ES-59 (fase 2) (QA-57-05, decisión propuesta; ver "Migraciones versionadas"):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo se activa de forma explícita con `DB_SYNC_ALTER=true` en un entorno de desarrollo desechable, nunca por defecto y sin depender de `NODE_ENV` (QA-57-05).
 - Migraciones versionadas y plan de migración continuo: **ES-59** (https://iatech-team-xqxmjki1.atlassian.net/browse/ES-59). Hasta que se cierre rige la regla de arriba.
 - Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
 
@@ -66,6 +66,36 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - **Acción de Infra/Mauricio antes de desplegar:** cargar `AI_BUDGET_TOKENS_PER_USER` (obligatoria) y, si se decide, `AI_BUDGET_TOKENS_COHORT`, `AI_BUDGET_PERIOD`, `AI_CALL_TIMEOUT_MS` y `AI_MAX_RETRIES`. Los valores son una decisión pendiente (V-12): **sin `AI_BUDGET_TOKENS_PER_USER` el chat, las recomendaciones y el matching responden 503** (también en staging).
 - Tablas nuevas `AiBudgetCounters` y `AiUsages`: las crea `sync()` (sin migración). `config/aiPricing.json` sale vacío: no hay costos en dinero hasta verificar precios.
 - Reversión: el código anterior ignora las tablas y vuelve a llamar sin tope; no se borran. Detalle en `docs/elevation-skillmap/17-PRESUPUESTO-Y-FALLOS-DE-IA.md`.
+
+## Migraciones versionadas (ES-59, fase 1)
+
+Herramienta: `sequelize-cli` (decisión de Mauricio, 25-oct), configurada solo con `DATABASE_URL`. Las migraciones están en `backend/migrations`; la tabla de control es `SequelizeMeta`.
+
+**Estado de la fase 1 (este PR):** herramienta, línea base y comprobación en el CI. **Todavía NO se desactiva `sync()`** en staging ni en producción: la aplicación sigue creando las tablas que falten al arrancar, y las historias que añadan tablas no necesitan migración hasta que Mauricio apruebe el cambio de proceso (fase 2).
+
+| Comando (en `backend/`) | Qué hace |
+| --- | --- |
+| `npm run db:migrate` | Aplica las migraciones pendientes |
+| `npm run db:migrate:status` | Lista las aplicadas (`up`) y las pendientes (`down`) |
+| `npm run db:migrate:undo` | Deshace la última (en producción no se ejecutan `down`) |
+| `npm run db:drift` | Compara el esquema de `sync()` con el de las migraciones sobre bases nuevas, y comprueba deshacer y reaplicar. Solo en un Postgres local o desechable |
+
+**Migraciones actuales**
+1. `20261001000000-baseline`: el esquema que `sync()` creaba el 28-oct (36 tablas, 3 tipos enumerados y sus índices). Es idempotente. Su `down` borra todas las tablas y exige `ALLOW_DESTRUCTIVE_MIGRATION=true` y `NODE_ENV` distinto de producción.
+2. `20261026-es23-data-rights`: heredada de ES-23. Con `sequelize-cli` no hace nada (la línea base ya crea sus tablas); `scripts/migrateDataRights.js` sigue creándolas a mano.
+3. `20261028010000-drop-duplicate-es23-index`: quita el índice duplicado `export_requests_owner_expiry` que dejó la ejecución manual de ES-23 en staging. En una base nueva no hace nada.
+
+**Pasar una base que ya tiene el esquema (staging) a migraciones.** No se ejecuta la línea base: se registra como aplicada y luego se aplican las demás.
+
+1. Confirmar que la base coincide con la línea base (`db:drift` en local compara `sync` con migraciones; contra staging, volcado de esquema).
+2. Crear `SequelizeMeta` y registrar `20261001000000-baseline.js` y `20261026-es23-data-rights.cjs` como aplicadas.
+3. `npm run db:migrate` con la `DATABASE_URL` de staging (aplica solo la de limpieza del índice).
+
+Antes, un volcado de respaldo o punto de restauración y la confirmación de Mauricio. Producción empieza ya con migraciones, sin pasar por este camino.
+
+**Regla para cada PR que toque el esquema (a partir de la fase 2):** una migración nueva con `up` y `down`, con nombre `AAAAMMDDHHMMSS-descripcion`; una migración aplicada no se edita; cambios aditivos por defecto; los destructivos (borrar o cambiar tipo) en dos despliegues y con confirmación de Mauricio. El CI (`db:drift`) falla si el modelo y las migraciones no coinciden.
+
+**Fases pendientes:** aplicar las migraciones antes de cada despliegue en Railway (comando previo) y retirar `sync()` de producción y staging (fase 2); hacer `db:drift` un check requerido de `main` (fase 3). Nota: `sequelize-cli` está en `dependencies` (no en `devDependencies`) porque el comando previo lo necesita dentro de la imagen; la prueba P1-8 lo trata como herramienta de línea de comandos.
 
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
