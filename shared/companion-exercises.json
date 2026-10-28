@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "reviewStatus": "draft",
+  "exercises": [
+    {
+      "key": "reflection",
+      "minutes": [3, 5],
+      "es": {
+        "title": "Una situación que quiero comprender",
+        "purpose": "Elegir qué parte de una situación quieres explorar, sin tener que explicarlo todo.",
+        "question": "¿Qué parte de una situación reciente te gustaría comprender mejor?",
+        "help": "Puedes elegir una situación cotidiana y compartir solo lo que desees."
+      },
+      "en": {
+        "title": "A situation I want to understand",
+        "purpose": "Choose which part of a situation to explore, without having to explain everything.",
+        "question": "Which part of a recent situation would you like to understand better?",
+        "help": "You can choose an everyday situation and share only what you want."
+      }
+    },
+    {
+      "key": "values",
+      "minutes": [3, 5],
+      "es": {
+        "title": "Lo que quiero cuidar en mi próxima etapa",
+        "purpose": "Identificar algo que valoras, sin ordenarlo ni convertirlo en una puntuación.",
+        "question": "¿Qué valor es importante para ti en tu próxima etapa?",
+        "help": "Puedes elegir una palabra o una idea; no necesitas justificarla."
+      },
+      "en": {
+        "title": "What I want to preserve in my next stage",
+        "purpose": "Identify something you value, without ranking or scoring it.",
+        "question": "What value matters to you in your next stage?",
+        "help": "You can choose a word or an idea; you do not need to justify it."
+      }
+    },
+    {
+      "key": "contribution",
+      "minutes": [3, 5],
+      "es": {
+        "title": "Reconocer mi contribución",
+        "purpose": "Distinguir tu acción del resultado conocido o desconocido.",
+        "question": "¿Qué hiciste tú en una situación de la que te gustaría conservar un aprendizaje?",
+        "help": "Puedes describir una acción, aunque no conozcas el resultado."
+      },
+      "en": {
+        "title": "Recognizing my contribution",
+        "purpose": "Distinguish your action from a known or unknown outcome.",
+        "question": "Think of a situation you want to learn from: what did you do?",
+        "help": "You can describe an action even if you do not know the outcome."
+      }
+    }
+  ]
+}
