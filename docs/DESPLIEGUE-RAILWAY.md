@@ -86,6 +86,9 @@ ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD='<clave de 12+ caracteres, defin
   (vacío o con cualquier contenido real: se toma por del cliente). Repetirlo no duplica nada ni cambia la clave de la persona.
 - **Si una corrida se corta a medias** (por ejemplo, una desconexión entre crear el borrador y publicarlo), queda un borrador íntegramente sintético: la siguiente corrida lo reconoce como
   propio, lo completa y lo publica (la salida dice `resumed`). Un borrador vacío por un corte justo después de crearlo no se distingue de uno del cliente y se rechaza: se descarta desde el backoffice.
+- **Cuenta temporal y bandera de un solo uso (recomendación de QA):** la persona de demostración es **temporal**: se borra después de la presentación con el flujo de borrado de datos (ES-23). La bandera
+  `ALLOW_SYNTHETIC_CATALOG` se define **solo en el comando** que corre la semilla (o en el entorno de staging) y **no debe quedar definida en producción** ni en ningún servicio que atienda a clientes; después de cargar
+  la demostración conviene quitarla del entorno donde se haya puesto.
 - **Cómo retirarlo:** cuando el cliente publique su catálogo real desde el backoffice, el sintético queda archivado y las autoevaluaciones de la demostración se marcan como
   desactualizadas. La persona de demostración se elimina con el flujo de borrado de datos (ES-23).
 - **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas (ES-32 no está en `main`) ni toca el catálogo real.
