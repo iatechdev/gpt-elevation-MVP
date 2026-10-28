@@ -5,13 +5,17 @@
 // Protecciones (en este orden):
 //  1. Exige ALLOW_SYNTHETIC_CATALOG=true (la misma bandera que ya gobierna la publicación de contenido sintético; producción nunca la define)
 //     y DEMO_USER_PASSWORD (la clave de la persona de demostración sale del entorno del operador; no está en el repositorio ni se imprime).
-//  2. Antes de escribir NADA, se niega si ya hay un catálogo PUBLICADO que no sea sintético (no pisa datos del cliente) o un borrador abierto
-//     (no mezcla contenido). Así un rechazo nunca deja la base a medias.
-//  3. Es idempotente: una segunda corrida no duplica nada (requestId fijos) y no cambia la clave de una persona ya creada.
+//  2. Antes de escribir NADA, se niega si ya hay un catálogo PUBLICADO que no sea sintético (no pisa datos del cliente) o un borrador abierto que
+//     no sea claramente de esta semilla (no mezcla contenido). Un rechazo no deja la base a medias.
+//  3. Es idempotente y REANUDABLE: cada helper de catálogo confirma su propia transacción, así que un corte entre «crear borrador» y «publicar» deja
+//     un borrador a medias. Si ese borrador es íntegramente sintético y no está vacío, es de esta semilla y la siguiente corrida lo completa y lo
+//     publica; un borrador vacío o con cualquier contenido real se trata como del cliente y se rechaza.
 const bcrypt = require('bcryptjs');
 const User = require('../User');
 const SkillCatalog = require('../SkillCatalog');
+const SkillDefinition = require('../SkillDefinition');
 const RouteCatalog = require('../RouteCatalog');
+const RouteCatalogItem = require('../RouteCatalogItem');
 const skillCatalog = require('./skillCatalog');
 const routeCatalog = require('./routeCatalog');
 const evidence = require('./evidence');
@@ -22,7 +26,16 @@ const data = require('./demoSeedData');
 const { SeedError, assertSeedAllowed, isSyntheticLabel, demoSkills, DEMO_EVIDENCE, DEMO_EMAIL } = data;
 const ROUTE_KINDS = ['contexts', 'sources', 'roles', 'offers', 'resources'];
 
-// Protección 2: solo lecturas. Devuelve qué hay que crear; lanza antes de que se escriba cualquier cosa.
+// Borrador abierto de esta semilla: no vacío y con todos sus elementos sintéticos. Cualquier otro borrador abierto es del cliente.
+async function ownDraft(Catalog, Items, isSynthetic, what) {
+  const draft = await Catalog.findOne({ where: { status: 'draft' } });
+  if (!draft) return null;
+  const items = await Items.findAll({ where: { catalogId: draft.id } });
+  if (!items.length || !items.every(isSynthetic)) throw new SeedError('draft_exists', `Hay un borrador de ${what} abierto que no es de la semilla.`);
+  return draft;
+}
+
+// Protección 2: solo lecturas. Devuelve qué hay que crear o completar; lanza antes de que se escriba cualquier cosa.
 async function preflight() {
   const skills = await skillCatalog.getPublished();
   if (skills && [...skills.skills.values()].some((skill) => !isSyntheticLabel(skill.labels))) {
@@ -32,22 +45,22 @@ async function preflight() {
   if (routes && ROUTE_KINDS.flatMap((kind) => routes[kind] || []).some((item) => item.synthetic !== true)) {
     throw new SeedError('real_catalog_present', 'Ya hay un catálogo de rutas publicado que no es sintético: no se toca.');
   }
-  if (!skills && await SkillCatalog.findOne({ where: { status: 'draft' } })) throw new SeedError('draft_exists', 'Hay un borrador de habilidades abierto.');
-  if (!routes && await RouteCatalog.findOne({ where: { status: 'draft' } })) throw new SeedError('draft_exists', 'Hay un borrador de rutas abierto.');
-  return { createSkills: !skills, createRoutes: !routes };
+  const skillDraft = skills ? null : await ownDraft(SkillCatalog, SkillDefinition, (d) => isSyntheticLabel(d.labels), 'habilidades');
+  const routeDraft = routes ? null : await ownDraft(RouteCatalog, RouteCatalogItem, (i) => Boolean(i.data && i.data.synthetic === true), 'rutas');
+  return { createSkills: !skills, skillDraftId: skillDraft ? skillDraft.id : null, createRoutes: !routes, routeDraftId: routeDraft ? routeDraft.id : null };
 }
 
-async function seedSkillCatalog(now) {
-  const draft = await skillCatalog.createDraft();
-  for (const skill of demoSkills(now)) await skillCatalog.upsertSkill(draft.id, skill.skillKey, { type: skill.type, labels: skill.labels, rubric: skill.rubric });
-  await skillCatalog.publish(draft.id, null);
+async function seedSkillCatalog(now, draftId) {
+  const id = draftId ?? (await skillCatalog.createDraft()).id;
+  for (const skill of demoSkills(now)) await skillCatalog.upsertSkill(id, skill.skillKey, { type: skill.type, labels: skill.labels, rubric: skill.rubric });
+  await skillCatalog.publish(id, null);
 }
 
-async function seedRouteCatalog() {
-  const draft = await routeCatalog.createDraft();
+async function seedRouteCatalog(draftId) {
+  const id = draftId ?? (await routeCatalog.createDraft()).id;
   const content = buildRouteCatalog();
-  for (const kind of routeCatalog.KINDS) for (const [key, item] of Object.entries(content[kind])) await routeCatalog.upsertItem(draft.id, kind, key, item);
-  await routeCatalog.publish(draft.id, null, { allowSynthetic: true });
+  for (const kind of routeCatalog.KINDS) for (const [key, item] of Object.entries(content[kind])) await routeCatalog.upsertItem(id, kind, key, item);
+  await routeCatalog.publish(id, null, { allowSynthetic: true });
 }
 
 async function seedParticipant(env) {
@@ -61,8 +74,8 @@ async function seedParticipant(env) {
 async function seedDemo({ env = process.env, now = new Date() } = {}) {
   assertSeedAllowed(env);
   const plan = await preflight();
-  if (plan.createSkills) await seedSkillCatalog(now);
-  if (plan.createRoutes) await seedRouteCatalog();
+  if (plan.createSkills) await seedSkillCatalog(now, plan.skillDraftId);
+  if (plan.createRoutes) await seedRouteCatalog(plan.routeDraftId);
   const { user, created } = await seedParticipant(env);
   for (const item of DEMO_EVIDENCE) {
     const saved = await evidence.create(user.id, data.evidenceBody(item));
@@ -71,8 +84,9 @@ async function seedDemo({ env = process.env, now = new Date() } = {}) {
     });
   }
   return {
-    skillCatalog: plan.createSkills ? 'created' : 'exists', routeCatalog: plan.createRoutes ? 'created' : 'exists', participant: created ? 'created' : 'exists',
-    evidence: DEMO_EVIDENCE.length, assessments: DEMO_EVIDENCE.length, email: DEMO_EMAIL,
+    skillCatalog: plan.createSkills ? (plan.skillDraftId ? 'resumed' : 'created') : 'exists',
+    routeCatalog: plan.createRoutes ? (plan.routeDraftId ? 'resumed' : 'created') : 'exists',
+    participant: created ? 'created' : 'exists', evidence: DEMO_EVIDENCE.length, assessments: DEMO_EVIDENCE.length, email: DEMO_EMAIL,
   };
 }
 

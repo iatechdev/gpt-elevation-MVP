@@ -41,6 +41,8 @@ test('Semilla de demostración en PostgreSQL: carga completa, idempotencia y rec
   const bcrypt = require('bcryptjs');
   const User = require('../../User');
   const SkillCatalog = require('../../SkillCatalog');
+  const SkillDefinition = require('../../SkillDefinition');
+  const RouteCatalogItem = require('../../RouteCatalogItem');
   const SkillAssessment = require('../../SkillAssessment');
   const RouteCatalog = require('../../RouteCatalog');
   const Evidence = require('../../Evidence');
@@ -138,6 +140,64 @@ test('Semilla de demostración en PostgreSQL: carga completa, idempotencia y rec
     await rejected(seedDemo({ env }), 'draft_exists');
     assert.equal(await SkillCatalog.count(), 0);
     assert.equal(await User.count(), 0);
+    assert.equal(await RouteCatalog.count({ where: { status: 'published' } }), 0);
+  });
+
+  await t.test('un corte entre crear el borrador y publicar (habilidades) deja un borrador propio que la siguiente corrida completa', async () => {
+    await reset();
+    const original = skillCatalog.upsertSkill; let calls = 0;
+    skillCatalog.upsertSkill = async (...args) => { if (++calls > 3) throw new Error('corte sintético'); return original(...args); };
+    try { await assert.rejects(seedDemo({ env }), /corte sintético/); } finally { skillCatalog.upsertSkill = original; }
+    assert.equal(await SkillCatalog.count({ where: { status: 'draft' } }), 1);
+    assert.equal(await SkillCatalog.count({ where: { status: 'published' } }), 0);
+    assert.equal(await SkillDefinition.count(), 3); // quedó a medias
+    const result = await seedDemo({ env });
+    assert.deepEqual([result.skillCatalog, result.routeCatalog, result.participant], ['resumed', 'created', 'created']);
+    assert.equal((await skillCatalog.getPublished()).skills.size, 8);
+    assert.equal(await SkillCatalog.count({ where: { status: 'draft' } }), 0);
+    assert.equal(await SkillCatalog.count(), 1); // reanudó el mismo borrador, no creó otro
+  });
+
+  await t.test('un corte a mitad del catálogo de rutas (con las habilidades ya publicadas) también se completa', async () => {
+    await reset();
+    const original = routeCatalog.upsertItem; let calls = 0;
+    routeCatalog.upsertItem = async (...args) => { if (++calls > 5) throw new Error('corte sintético'); return original(...args); };
+    try { await assert.rejects(seedDemo({ env }), /corte sintético/); } finally { routeCatalog.upsertItem = original; }
+    assert.equal(await SkillCatalog.count({ where: { status: 'published' } }), 1); // solo las habilidades llegaron a publicarse
+    assert.equal(await RouteCatalog.count({ where: { status: 'draft' } }), 1);
+    assert.equal(await RouteCatalogItem.count(), 5);
+    assert.equal(await User.count(), 0);
+    const result = await seedDemo({ env });
+    assert.deepEqual([result.skillCatalog, result.routeCatalog, result.participant], ['exists', 'resumed', 'created']);
+    assert.equal(await RouteCatalog.count({ where: { status: 'published' } }), 1);
+    assert.equal(await RouteCatalog.count({ where: { status: 'draft' } }), 0);
+    assert.equal(await RouteCatalog.count(), 1);
+  });
+
+  await t.test('un borrador de habilidades del cliente con cualquier contenido real NO se toma por propio: se rechaza y queda intacto', async () => {
+    await reset();
+    const draft = await skillCatalog.createDraft();
+    const [first, second] = demoSkills();
+    const realLabels = { es: first.labels.es.replace('[SINTÉTICO] ', ''), en: first.labels.en.replace('[SYNTHETIC] ', '') };
+    await skillCatalog.upsertSkill(draft.id, first.skillKey, { type: first.type, labels: realLabels, rubric: first.rubric });
+    await skillCatalog.upsertSkill(draft.id, second.skillKey, { type: second.type, labels: second.labels, rubric: second.rubric });
+    await rejected(seedDemo({ env }), 'draft_exists');
+    assert.equal(await SkillDefinition.count({ where: { catalogId: draft.id } }), 2);
+    assert.equal(await SkillCatalog.count({ where: { status: 'published' } }), 0);
+    assert.equal(await RouteCatalog.count(), 0);
+    assert.equal(await User.count(), 0);
+  });
+
+  await t.test('un borrador de rutas del cliente con un elemento no sintético tampoco se toma por propio', async () => {
+    await reset();
+    const draft = await routeCatalog.createDraft();
+    const content = buildRouteCatalog();
+    const [one, two] = Object.entries(content.contexts);
+    await routeCatalog.upsertItem(draft.id, 'contexts', one[0], { ...one[1], synthetic: false });
+    await routeCatalog.upsertItem(draft.id, 'contexts', two[0], two[1]);
+    await rejected(seedDemo({ env }), 'draft_exists');
+    assert.equal(await RouteCatalogItem.count({ where: { catalogId: draft.id } }), 2);
+    assert.equal(await SkillCatalog.count(), 0); // el rechazo ocurre antes de publicar las habilidades
     assert.equal(await RouteCatalog.count({ where: { status: 'published' } }), 0);
   });
 

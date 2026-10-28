@@ -82,8 +82,10 @@ ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD='<clave de 12+ caracteres, defin
 - **Variables (las define el operador en el entorno del comando; nada va al repositorio):** `ALLOW_SYNTHETIC_CATALOG=true` y `DEMO_USER_PASSWORD`. La clave se guarda con bcrypt y
   el script nunca la imprime. Producción no define `ALLOW_SYNTHETIC_CATALOG`.
 - **Funciona con `NODE_ENV=production`:** staging corre así. Antes `seedRouteCatalogSynthetic.js` se negaba con ese valor y no podía cargarse; ahora exige la bandera.
-- **Se niega, sin escribir nada,** si falta la bandera o la clave, si ya hay un catálogo **real** publicado (no sintético) o si hay un borrador abierto. Repetirlo no duplica nada
-  ni cambia la clave de la persona.
+- **Se niega, sin escribir nada,** si falta la bandera o la clave, si ya hay un catálogo **real** publicado (no sintético) o si hay un borrador abierto que no sea de la semilla
+  (vacío o con cualquier contenido real: se toma por del cliente). Repetirlo no duplica nada ni cambia la clave de la persona.
+- **Si una corrida se corta a medias** (por ejemplo, una desconexión entre crear el borrador y publicarlo), queda un borrador íntegramente sintético: la siguiente corrida lo reconoce como
+  propio, lo completa y lo publica (la salida dice `resumed`). Un borrador vacío por un corte justo después de crearlo no se distingue de uno del cliente y se rechaza: se descarta desde el backoffice.
 - **Cómo retirarlo:** cuando el cliente publique su catálogo real desde el backoffice, el sintético queda archivado y las autoevaluaciones de la demostración se marcan como
   desactualizadas. La persona de demostración se elimina con el flujo de borrado de datos (ES-23).
 - **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas (ES-32 no está en `main`) ni toca el catálogo real.
