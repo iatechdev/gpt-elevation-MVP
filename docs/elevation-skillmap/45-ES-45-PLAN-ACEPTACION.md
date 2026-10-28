@@ -180,3 +180,9 @@ Esta fase entrega solo este documento en rama propia, comentario firmado en Jira
 Solicito aprobar el tramo A: matriz/guiones/registro por capas/validadores y self-tests offline, sin UI/API/modelos/migraciones.
 Con aprobación: implementar, ejecutar/verificar pruebas, abrir un único PR contra main y pasar En QA del tramo preparatorio con criterios integrales pendientes. No fusionar ni resolver hilos de QA.
 AGENTS.md requiere plan técnico previo y: «Con la aprobación de Mauricio o de Alejo implementas todo». docs/elevation-skillmap/11-QA-Y-ACEPTACION.md también exige aprobación del plan detallado antes de ejecutarlo. No se interpreta este borrador como autorización humana.
+
+## 12. Aprobación recibida
+
+Alejo aprobó explícitamente en este chat: «Aprobar paquete preparatorio y pruebas locales».
+La aprobación fue registrada en Jira y autoriza solo el tramo A descrito en10288.
+No habilita ejecución en staging, invitaciones, gastos de proveedor, borrados remotos o modificaciones del núcleo de Mauricio.
