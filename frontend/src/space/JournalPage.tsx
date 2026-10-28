@@ -24,7 +24,7 @@ function JournalSession({ token }: { token: string }) {
   const [uncertain, setUncertain] = useState<'create' | 'edit' | 'delete' | null>(null)
   const [inspection, setInspection] = useState(false); const [conflict, setConflict] = useState<Entry | null>(null)
   const [dialog, setDialog] = useState<'delete' | 'cancel' | 'discard' | null>(null)
-  const alive = useRef(true); const lock = useRef(false)
+  const alive = useRef(true); const lock = useRef(false); const acknowledgedId = useRef<number | null>(null)
   const current = useCallback(() => alive.current && localStorage.getItem('elevation_token') === token, [token])
   const dirty = editing && (date !== (saved?.date || '') || content !== (saved?.content || ''))
   useDraftGuard(!expired && (dirty || busy || !!uncertain), c.leave)
@@ -58,11 +58,11 @@ function JournalSession({ token }: { token: string }) {
     lock.current = true; setBusy(true)
     try {
       if (uncertain === 'create') { const rows = await listEntries(token); if (current()) { setEntries(rows); setInspection(true) } }
-      else if (id) {
-        const row = await readEntry(token, id)
+      else if (id || acknowledgedId.current) {
+        const row = await readEntry(token, (id || acknowledgedId.current)!)
         if (current()) {
           setSaved(row); setUncertain(null)
-          if (row.date === date && row.content === content) setNotice(c.current)
+          if (row.date === date && row.content === content) { setNotice(c.current); if (isNew) navigate(`/app/diary/${row.id}`, { replace: true }) }
           else { setConflict(row); setNotice(c.changed) }
         }
       }
@@ -84,13 +84,14 @@ function JournalSession({ token }: { token: string }) {
       }
       attempted = true
       const acknowledged = entry(await request(token, saved ? `/api/diary/${saved.id}` : '/api/diary', { method: saved ? 'PUT' : 'POST', body: JSON.stringify({ date, content }) }))
+      acknowledgedId.current = acknowledged.id
       const row = await readEntry(token, acknowledged.id)
       if (!current()) return
       if (row.date !== date || row.content !== content) { setSaved(row); setConflict(row); setNotice(c.changed); return }
       setSaved(row); setEditing(false); setNotice(c.saved)
       if (isNew) navigate(`/app/diary/${row.id}`, { replace: true })
     } catch (error) {
-      if (current() && attempted && !(error instanceof SpaceError && [400, 401, 403, 404].includes(error.status))) { setUncertain(saved ? 'edit' : 'create'); setNotice(saved ? c.saveError : c.unknown) }
+      if (current() && attempted && !(error instanceof SpaceError && [400, 401, 403, 404].includes(error.status))) { setUncertain(saved || acknowledgedId.current ? 'edit' : 'create'); setNotice(saved || acknowledgedId.current ? c.saveError : c.unknown) }
       else failure(error, c.saveError)
     } finally { if (current()) setBusy(false); lock.current = false }
   }

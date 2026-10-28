@@ -285,11 +285,11 @@ export function UserDashboard() {
     <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
 
       {/* ── HEADER ── */}
-      <header style={{
+      <header className="space-dashboard-header" style={{
         position: 'fixed', top: 0, width: '100%', zIndex: 50,
         background: 'rgba(249,249,247,0.92)', backdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(231,229,228,0.5)',
-        height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <div style={{ maxWidth: 1100, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>
@@ -320,7 +320,7 @@ export function UserDashboard() {
           </div>
         </div>
       </header>
-      <div style={{ maxWidth: 1100, margin: "80px auto 0", padding: "0 24px" }}><SpaceNav /><div id="space-main" tabIndex={-1} /></div>
+      <div className="space-dashboard-nav" style={{ maxWidth: 1100, marginLeft: "auto", marginRight: "auto", padding: "0 24px" }}><SpaceNav /><div id="space-main" tabIndex={-1} /></div>
 
       {/* ── BODY ── */}
       <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>

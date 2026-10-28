@@ -71,11 +71,11 @@ const { pathToFileURL } = require('node:url');
 
     const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright'); browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: 'reduce' });
-    await context.addInitScript(({ token }) => { localStorage.setItem('elevation_token', token); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elevation_checkin_date', new Date().toDateString()); localStorage.setItem('elv_lang', 'es'); }, { token: tokens[0] });
+    await context.addInitScript(({ token }) => { localStorage.setItem('elevation_token', token); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elevation_checkin_date', new Date().toDateString()); if (!localStorage.getItem('elv_lang')) localStorage.setItem('elv_lang', 'es'); }, { token: tokens[0] });
     const page = await context.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
     const artifacts = path.resolve(__dirname, '../../../frontend/node_modules/.es15-artifacts'); fs.mkdirSync(artifacts, { recursive: true });
-    const screenshot = name => page.screenshot({ path: path.join(artifacts, name + '.png'), fullPage: true, animations: 'disabled' });
-    await page.goto(api + '/app/diary'); await page.getByRole('link', { name: 'Nueva entrada', exact: true }).click();
+    const screenshot = async name => { await page.evaluate(() => scrollTo(0, 0)); return page.screenshot({ path: path.join(artifacts, name + '.png'), animations: 'disabled' }); };
+    await page.goto(api + '/app/diary'); await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => document.activeElement?.textContent), 'Saltar al contenido'); await page.keyboard.press('Enter'); assert.equal(await page.evaluate(() => document.activeElement?.id), 'space-main'); await page.getByRole('link', { name: 'Nueva entrada', exact: true }).click();
     await page.getByLabel('Fecha', { exact: true }).fill('2026-10-03'); await page.getByLabel('Contenido', { exact: true }).fill('Browser synthetic private entry 🧭');
     await page.getByRole('button', { name: 'Guardar', exact: true }).click(); await page.waitForURL(/\/app\/diary\/\d+$/); await page.getByText('Browser synthetic private entry 🧭', { exact: true }).waitFor();
     const browserId = Number(new URL(page.url()).pathname.split('/').at(-1)); assert.equal((await req('GET', '/api/diary/' + browserId)).body.content, 'Browser synthetic private entry 🧭');
@@ -90,6 +90,17 @@ const { pathToFileURL } = require('node:url');
     await page.route('**/api/diary/' + browserId, async route => { if (route.request().method() === 'PUT') { await route.fetch(); await route.abort('failed'); } else await route.continue(); });
     await page.getByRole('button', { name: 'Guardar', exact: true }).click(); await page.getByRole('button', { name: 'Consultar mi diario', exact: true }).click(); await page.getByText('El contenido guardado coincide actualmente con tu borrador.', { exact: true }).waitFor(); await page.unroute('**/api/diary/' + browserId);
     check('built UI/real DB: CRUD readback, dialog focus/Escape, concurrent-update review and lost PUT ACK reconciled without repeat');
+    await page.goto(api + '/app/diary/new'); let blockRead = true; let acknowledgedCreateId;
+    await page.route('**/api/diary', async route => {
+      if (route.request().method() !== 'POST') { await route.continue(); return; }
+      const response = await route.fetch(); acknowledgedCreateId = (await response.json()).id; await route.fulfill({ response });
+    });
+    await page.route('**/api/diary/*', async route => {
+      if (blockRead && route.request().method() === 'GET') { blockRead = false; await route.abort('failed'); } else await route.continue();
+    });
+    await page.getByLabel('Fecha', { exact: true }).fill('2026-10-03'); await page.getByLabel('Contenido', { exact: true }).fill('Synthetic known ID readback interruption'); await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await page.getByRole('button', { name: 'Consultar mi diario', exact: true }).click(); await page.waitForURL(new RegExp('/app/diary/' + acknowledgedCreateId + '$')); await page.getByText('Synthetic known ID readback interruption', { exact: true }).waitFor();
+    await page.unroute('**/api/diary'); await page.unroute('**/api/diary/*');
     // Fault injection: server commits POST but the browser never receives its ACK.
     let postCount = 0; await page.goto(api + '/app/diary/new');
     await page.route('**/api/diary', async route => { if (route.request().method() === 'POST') { postCount++; await route.fetch(); await route.abort('failed'); } else await route.continue(); });
@@ -103,24 +114,34 @@ const { pathToFileURL } = require('node:url');
     await page.getByLabel('Mensaje (hasta 4.000 caracteres)', { exact: true }).fill('Browser recovered chat intent');
     let sentBody; await page.route('**/api/chat', async route => { sentBody = route.request().postDataJSON(); await route.fetch(); await route.abort('failed'); });
     await page.getByRole('button', { name: 'Enviar', exact: true }).click(); await page.getByRole('button', { name: 'Consultar estado', exact: true }).waitFor(); assert.equal(sentBody.contextEntryIds.length, 1); assert.ok(sentBody.requestId);
+    await page.getByText('No pudimos confirmar este envío. Conservamos tu texto en esta pantalla.', { exact: true }).waitFor();
     await page.unroute('**/api/chat'); await page.getByRole('button', { name: 'Consultar estado', exact: true }).click(); await page.getByText('Envío confirmado', { exact: true }).waitFor(); assert.equal((await req('GET', '/api/messages')).body.filter(m => m.text === 'Browser recovered chat intent').length, 1);
     assert.equal(await page.getByRole('checkbox').count(), 0); assert.equal(await page.getByLabel('Mensaje (hasta 4.000 caracteres)', { exact: true }).inputValue(), '');
     await screenshot('chat-mobile');
     providerFail = true; const retryBodies = []; await page.route('**/api/chat', async route => { retryBodies.push(route.request().postDataJSON()); await route.continue(); });
     await page.getByLabel('Mensaje (hasta 4.000 caracteres)', { exact: true }).fill('Browser explicit retry after provider failure'); await page.getByRole('button', { name: 'Enviar', exact: true }).click(); await page.getByRole('button', { name: 'Reintentar el mismo envío', exact: true }).waitFor();
-    assert.equal(await page.getByText('Browser explicit retry after provider failure', { exact: true }).count(), 1); providerFail = false;
+    assert.equal((await req('GET', '/api/messages')).body.filter(m => m.text === 'Browser explicit retry after provider failure').length, 0); assert.equal(await page.locator('.space-pending').count(), 1); providerFail = false;
     await page.getByRole('button', { name: 'EN', exact: true }).click(); await page.getByRole('button', { name: 'Retry the same message', exact: true }).click(); await page.getByText('Message confirmed', { exact: true }).waitFor(); assert.equal(retryBodies.length, 2); assert.deepEqual(retryBodies[0], retryBodies[1]); await page.unroute('**/api/chat');
     check('POST ACK loss retains diary without repeat; chat recovers one pair; max three; explicit provider retry preserves exact ES body even after EN switch');
     await page.getByRole('link', { name: 'My next step', exact: true }).click(); await page.getByRole('heading', { name: 'My next step', exact: true }).waitFor(); assert.equal(await page.getByText('In preparation', { exact: true }).count(), 4);
     assert.equal(await page.locator('a[href="/app/skill-map"]').count(), 0);
     for (const width of [320, 375, 768, 1440]) { await page.setViewportSize({ width, height: 900 }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `overflow ${width}`); }
+    await page.evaluate(() => { document.documentElement.style.zoom = '2'; }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), '200% CSS zoom reflow'); await page.evaluate(() => { document.documentElement.style.zoom = ''; });
     await screenshot('next-step-desktop'); await page.goto(api + '/app/dashboard'); await page.getByLabel('Message (up to 4,000 characters)', { exact: true }).waitFor();
     await page.getByLabel('Message (up to 4,000 characters)', { exact: true }).fill('Dashboard confirmed intent'); await page.getByRole('button', { name: 'Send', exact: true }).click(); await page.getByText('Message confirmed', { exact: true }).waitFor();
     assert.equal((await req('GET', '/api/messages')).body.filter(m => m.text === 'Dashboard confirmed intent').length, 1);
+    for (const width of [320, 375, 768, 1440]) { await page.setViewportSize({ width, height: 900 }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `dashboard overflow ${width}`); }
     await page.setViewportSize({ width: 375, height: 900 }); await screenshot('dashboard-mobile');
     const privateStorage = await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } })); assert.ok(!privateStorage.includes('Browser edited synthetic entry')); assert.ok(!privateStorage.includes('Dashboard confirmed intent'));
     check('EN, unavailable-route hub, 320/375/768/1440 overflow, dashboard uses same real chat, no private text in web storage');
-    await page.goto(api + '/app/diary/' + browserId); await page.getByRole('button', { name: 'Delete', exact: true }).click(); await page.locator('dialog').getByRole('button', { name: 'Delete', exact: true }).click(); await page.getByText('The entry is no longer available.', { exact: true }).waitFor(); assert.equal((await req('GET', '/api/diary/' + browserId)).status, 404);
+    await page.goto(api + '/app/diary');
+    await page.evaluate(token => { localStorage.setItem('elevation_token', token); window.dispatchEvent(new StorageEvent('storage', { key: 'elevation_token', newValue: token })); }, tokens[1]);
+    await page.getByText('You do not have any saved entries yet.', { exact: true }).waitFor(); assert.equal(await page.getByText('Synthetic edit with lost ACK', { exact: true }).count(), 0);
+    await page.getByRole('link', { name: 'New entry', exact: true }).click(); await page.getByLabel('Content', { exact: true }).fill('Synthetic B unsaved draft');
+    page.once('dialog', d => d.dismiss()); await page.evaluate(() => history.back()); await page.waitForTimeout(250); assert.ok(page.url().endsWith('/app/diary/new')); assert.equal(await page.getByLabel('Content', { exact: true }).inputValue(), 'Synthetic B unsaved draft');
+    page.once('dialog', d => d.accept()); await page.goto(api + '/app/diary/' + browserId);
+    check('session switch clears private A entries; B empty state; cancelled Back retains RAM draft');
+    await page.getByRole('button', { name: 'Delete', exact: true }).click(); await page.locator('dialog').getByRole('button', { name: 'Delete', exact: true }).click(); await page.getByText('The entry is no longer available.', { exact: true }).waitFor(); assert.equal((await req('GET', '/api/diary/' + browserId)).status, 404);
     await sessions.revokeToken(require('jsonwebtoken').decode(tokens[0])); assert.equal((await req('GET', '/api/diary')).status, 401);
     await page.goto(api + '/app/diary'); await page.getByText('Your session expired. Sign in to continue.', { exact: false }).waitFor();
     assert.deepEqual(errors, []); check('real UI deletion readback and revoked-token denial; zero browser runtime errors');

@@ -21,6 +21,13 @@
 .space-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .space-dashboard-body { grid-template-columns: minmax(0, 1fr); }
 .space-dashboard-body > div { min-width: 0; }
+.space-dashboard-nav { margin-top: 80px; }
+@media(max-width: 767px) {
+  .space-dashboard-header > div { gap: 8px; padding: 8px 16px !important; }
+  .space-dashboard-header > div > div { flex: 1; min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 8px !important; }
+  .space-dashboard-header button { min-height: 44px; min-width: 44px; }
+  .space-dashboard-nav { margin-top: 128px; }
+}
 .space-scope label { display: block; margin: 12px 0; }
 .space-scope .elv-input, .space-scope .elv-textarea { display: block; width: 100%; max-width: 100%; background: white; color: var(--color-base-content); border: 1px solid var(--color-base-300); padding: 12px; font: inherit; border-radius: .65rem; }
 .space-scope .elv-textarea { min-height: 180px; resize: vertical; }
