@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { ExerciseTools } from '../exercises/ExerciseTools'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -341,6 +342,7 @@ export function ChatPage() {
 
       {/* Mensajes */}
       <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 120, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+        <ExerciseTools from="chat" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {messages.map((msg, i) => (
             <div key={i}>

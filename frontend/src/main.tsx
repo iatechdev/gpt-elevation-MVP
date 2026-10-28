@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { LanguageProvider } from './i18n/LanguageProvider'
 import './index.css'
 import App from './App.tsx'
+import './exercises/navigationGuard'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,6 +1,8 @@
 // frontend/src/i18n/en.ts
 // HU-082 — i18n complete: Landing + User + Admin + Therapist + Board
+import { exerciseEn } from '../exercises/copy'
 const en: Record<string, string> = {
+  ...exerciseEn,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'AI emotional support',
@@ -47,9 +49,9 @@ const en: Record<string, string> = {
 
   // ── Chat ──────────────────────────────────────────────────────────────────
   chat_placeholder: 'Write what you feel... (Enter to send, Shift+Enter for new line)',
-  chat_thinking: 'Elevation is reflecting...',
+  chat_thinking: 'Preparing a response…',
   chat_error: 'Sorry, I had a small disconnection. Could you repeat that?',
-  chat_welcome: 'Hello. I\'m Elevation. Thank you for reaching out. This space is for exploring what you feel, what you live, and what you dream. Where are you coming from today?',
+  chat_welcome: 'I’m Elevation, an AI assistant for exploring what you choose to share. You can skip any topic or pause. What would you like to explore today?',
 
   // ── Admin — general ───────────────────────────────────────────────────────
   admin_title: 'Admin Panel',

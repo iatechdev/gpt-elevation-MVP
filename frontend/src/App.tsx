@@ -26,6 +26,7 @@ import { Onboarding }    from './pages/Onboarding.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { ExercisePage } from './exercises/ExercisePage'
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/exercises" element={<ExercisePage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<ChatPage />} />
