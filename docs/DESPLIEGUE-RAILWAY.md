@@ -67,6 +67,33 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - Tablas nuevas `AiBudgetCounters` y `AiUsages`: las crea `sync()` (sin migración). `config/aiPricing.json` sale vacío: no hay costos en dinero hasta verificar precios.
 - Reversión: el código anterior ignora las tablas y vuelve a llamar sin tope; no se borran. Detalle en `docs/elevation-skillmap/17-PRESUPUESTO-Y-FALLOS-DE-IA.md`.
 
+## Datos de demostración sintéticos en staging
+
+Sin catálogos publicados, «Mi mapa» y el catálogo de rutas muestran «catálogo no disponible». Para una demostración en **staging** (nunca en producción) hay una semilla
+sintética e idempotente: `backend/scripts/seedStagingDemo.js`.
+
+```bash
+cd backend
+ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD='<clave de 12+ caracteres, definida por el operador>' npm run seed:demo
+```
+
+- **Qué crea:** el catálogo de habilidades (8, todas con el rótulo «[SINTÉTICO]/[SYNTHETIC]») y el catálogo de rutas sintético, ambos **publicados**; una persona de
+  demostración (`demo.participante@example.invalid`, rol `user`) con 3 evidencias confirmadas y 3 autoevaluaciones. Las otras 5 habilidades quedan «sin evidencia».
+- **Variables (las define el operador en el entorno del comando; nada va al repositorio):** `ALLOW_SYNTHETIC_CATALOG=true` y `DEMO_USER_PASSWORD`. La clave se guarda con bcrypt y
+  el script nunca la imprime. Producción no define `ALLOW_SYNTHETIC_CATALOG`.
+- **Funciona con `NODE_ENV=production`:** staging corre así. Antes `seedRouteCatalogSynthetic.js` se negaba con ese valor y no podía cargarse; ahora exige la bandera.
+- **Se niega, sin escribir nada,** si falta la bandera o la clave, si ya hay un catálogo **real** publicado (no sintético) o si hay un borrador abierto que no sea de la semilla
+  (vacío o con cualquier contenido real: se toma por del cliente). Repetirlo no duplica nada ni cambia la clave de la persona.
+- **Si una corrida se corta a medias** (por ejemplo, una desconexión entre crear el borrador y publicarlo), queda un borrador íntegramente sintético: la siguiente corrida lo reconoce como
+  propio, lo completa y lo publica (la salida dice `resumed`). Un borrador vacío por un corte justo después de crearlo no se distingue de uno del cliente y se rechaza: se descarta desde el backoffice.
+- **Cuenta temporal y bandera de un solo uso (recomendación de QA):** la persona de demostración es **temporal**: se borra después de la presentación con el flujo de borrado de datos (ES-23). La bandera
+  `ALLOW_SYNTHETIC_CATALOG` se define **solo en el comando** que corre la semilla (o en el entorno de staging) y **no debe quedar definida en producción** ni en ningún servicio que atienda a clientes; después de cargar
+  la demostración conviene quitarla del entorno donde se haya puesto.
+- **Cómo retirarlo:** cuando el cliente publique su catálogo real desde el backoffice, el sintético queda archivado y las autoevaluaciones de la demostración se marcan como
+  desactualizadas. La persona de demostración se elimina con el flujo de borrado de datos (ES-23).
+- **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas (ES-32 no está en `main`) ni toca el catálogo real.
+- **Pruebas:** `npm run test:seed-demo:pg` con `SEED_TEST_DATABASE_URL` (Postgres local desechable) y `npm test`.
+
 ## Migraciones versionadas (ES-59, fase 1)
 
 Herramienta: `sequelize-cli` (decisión de Mauricio, 25-oct), configurada solo con `DATABASE_URL`. Las migraciones están en `backend/migrations`; la tabla de control es `SequelizeMeta`.
