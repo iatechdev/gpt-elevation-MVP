@@ -50,6 +50,7 @@ Cobertura ES-32:
 - Catálogo ausente 503; ausencia de mercado `needs_constraints`, sin inferirlo; catálogo ES-31 publicado mediante sus validadores con fixtures marcados sintéticos y permiso de prueba explícito.
 - Cifrado v2 y lectura propia de restricciones; repetición exacta 200, cuerpo distinto con mismo requestId 409, base obsoleta 409, campos adicionales/IDs de propietario/contexto inexistente 400.
 - Tres escrituras simultáneas sobre la misma base: una 201 y dos 409; una sola versión current, sin hueco ni sobrescritura silenciosa.
+- Orden estable de roles, ofertas y recursos: invertir las colecciones de entrada conserva el DTO y evita cambiar la huella solo por el orden de filas SQL. Corregido en la revisión final y repetidas suite completa + integración PostgreSQL.
 - Evidencia confirmada real + autoevaluación real del mapa → rutas; sin programación por defecto, nombres de revisores ni canarios privados en el DTO. Núcleo puro probado también con docente y contadora sintéticas y un rol de programación adicional.
 - Aceptar/rechazar/reemplazar una elección; cuatro repeticiones concurrentes devuelven la misma; rol inventado 422 y huella de otro dueño 409.
 - B leyendo el ID de elección de A → 404; historial de B vacío. Admin/therapist/board/superadmin → 403 en lecturas y escrituras; sin sesión 403; token revocado 401; cambiar el rol actual en DB impide usar el rol antiguo del token.

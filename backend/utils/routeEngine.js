@@ -78,7 +78,7 @@ function calculateRoutes({ catalog, map, constraints }) {
     if (role.regulated.isRegulated && constraints.acceptRegulated === 'unknown') uncertainties.push(issue('regulated_preference'));
     if (sources.some(source => source.stale)) uncertainties.push(issue('source_stale'));
     if (capabilities.some(capability => capability.skillMissing)) uncertainties.push(issue('skill_missing'));
-    const offers = catalog.offers.filter(offer => offer.roleKey === role.roleKey);
+    const offers = catalog.offers.filter(offer => offer.roleKey === role.roleKey).sort((a, b) => compareKey(a.offerKey, b.offerKey));
     if (offers.some(offer => offer.status !== 'current')) uncertainties.push(issue('offer_expired'));
     const gaps = new Set(capabilities.filter(capability => !capability.tracks.length).map(capability => capability.skillKey));
     // Selección explícita: no propagar nombres de revisores, justificaciones privadas ni propiedades desconocidas.
@@ -91,7 +91,7 @@ function calculateRoutes({ catalog, map, constraints }) {
       opportunityType: offers.some(offer => offer.status === 'current') ? 'has_current_listings' : 'occupational',
       offers: offers.map(({ offerKey, title, organization, url, market, language, modality, postedAt, checkedAt, salary, verifiedAt, status, synthetic }) =>
         ({ offerKey, title, organization, url, market, language, modality, postedAt, checkedAt, salary, verifiedAt, status, ...(synthetic ? { synthetic: true } : {}) })),
-      resources: catalog.resources.filter(resource => resource.roleKeys.includes(role.roleKey) && gaps.has(resource.linkedSkillKey)),
+      resources: catalog.resources.filter(resource => resource.roleKeys.includes(role.roleKey) && gaps.has(resource.linkedSkillKey)).sort((a, b) => compareKey(a.resourceKey, b.resourceKey)),
       dimensions: {
         preferenceFit: { status: !constraints.interestContextKeys.length && !constraints.preferredModalities.length ? 'unknown' :
           (!constraints.interestContextKeys.length || contextMatch) && (!constraints.preferredModalities.length || modalityMatch) ? 'matches' : contextMatch || modalityMatch ? 'partial' : 'outside_interests', contextMatch, modalityMatch },

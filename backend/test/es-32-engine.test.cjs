@@ -88,9 +88,13 @@ test('ES-32: fuentes autorizadas ausentes no autorizan rutas y los recursos solo
   assert.deepEqual(calculateRoutes(input).routes[0].resources.map(r => r.resourceKey), ['practice']);
 });
 test('ES-32: orden estable por fundamento, fecha y clave; entradas permanecen intactas', () => {
-  const input = fixture(); const before = JSON.stringify(input);
+  const input = fixture();
+  input.catalog.offers = ['z', 'a'].map(offerKey => ({ offerKey, roleKey: 'finance', salary: { published: false }, status: 'expired' }));
+  input.catalog.resources = ['z', 'a'].map(resourceKey => ({ resourceKey, roleKeys: ['finance'], linkedSkillKey: 'analysis' }));
+  const before = JSON.stringify(input);
   const first = calculateRoutes(input); assert.equal(JSON.stringify(input), before);
-  input.catalog.roles.reverse(); assert.deepEqual(calculateRoutes(input), first);
+  input.catalog.roles.reverse(); input.catalog.offers.reverse(); input.catalog.resources.reverse();
+  assert.deepEqual(calculateRoutes(input), first);
 });
 test('ES-32: una capacidad repetida en el catálogo no multiplica la transferencia', () => {
   const input = fixture(); input.catalog.roles[0].capabilities.push({ skillKey: 'communication', importance: 'essential' });
