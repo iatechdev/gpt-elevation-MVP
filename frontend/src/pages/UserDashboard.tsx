@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
+import { CareerEntry } from '../career/CareerShell'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -353,6 +354,7 @@ export function UserDashboard() {
 
       {/* ── BODY ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '76px 1.5rem 2rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.25rem', alignItems: 'start' }}>
+        <CareerEntry />
 
         {/* ── COLUMNA IZQUIERDA ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

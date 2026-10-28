@@ -26,6 +26,8 @@ import { Onboarding }    from './pages/Onboarding.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { CareerShell } from './career/CareerShell'
+import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 
 export default function App() {
   return (
@@ -38,6 +40,12 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/next-step" element={<CareerShell />}>
+          <Route index element={<RoutesScreen />} />
+          <Route path="experiments" element={<ExperimentList />} />
+          <Route path="experiments/:id" element={<ExperimentScreen />} />
+          <Route path="plan" element={<PlanScreen />} />
+        </Route>
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<ChatPage />} />
