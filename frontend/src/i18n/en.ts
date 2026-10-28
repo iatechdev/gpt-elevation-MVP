@@ -1,7 +1,11 @@
 // frontend/src/i18n/en.ts
 // HU-082 — i18n complete: Landing + User + Admin + Therapist + Board
+import { contextEn } from '../context/contextCopy'
+import { evidenceEn } from '../evidence/copy'
 import { skillMapEn } from '../skill-map/copy'
 const en: Record<string, string> = {
+  ...contextEn,
+  ...evidenceEn,
   ...skillMapEn,
 
   // ── Landing ───────────────────────────────────────────────────────────────
