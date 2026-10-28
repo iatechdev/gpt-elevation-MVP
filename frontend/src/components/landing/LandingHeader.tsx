@@ -1,22 +1,38 @@
 import { Link } from 'react-router-dom'
+import { useRef, useState } from 'react'
 import type { Lang } from '../../i18n/context'
 
-// Cabecera de la landing (ES-62). La navegación de fase 2 (Cómo funciona, Skill Map, Para psicólogos, Planes)
-// no se muestra hasta que existan esas secciones: ningún enlace apunta a una ruta inexistente.
+// ES-70 activates only the section that now exists; other phase 2 anchors stay hidden.
 export function LandingHeader({ text, lang, setLang }: {
   text: (key: string) => string
   lang: Lang
   setLang: (l: Lang) => void
 }) {
+  const [open, setOpen] = useState(false)
+  const menuButton = useRef<HTMLButtonElement>(null)
   return (
     <>
       <a className="landing-skip" href="#contenido">{text('landing.nav.skip')}</a>
-      <header className="landing-header">
+      <header className="landing-header" onKeyDown={event => {
+        if (event.key === 'Escape' && open) {
+          setOpen(false)
+          menuButton.current?.focus()
+        }
+      }} onBlur={event => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
+      }}>
         <div className="landing-header-inner elv-navbar">
           <Link to="/" className="landing-logo" aria-label={text('landing.header.home')}>
             elevation<i className="landing-logo-dot" aria-hidden="true" />
           </Link>
-          <div className="landing-tools">
+          <button ref={menuButton} type="button" className="elv-btn elv-btn-outline landing-menu-toggle"
+            aria-expanded={open} aria-controls="landing-navigation" onClick={() => setOpen(value => !value)}
+            aria-label={text(open ? 'landing.nav.close' : 'landing.nav.open')}>
+            <span aria-hidden="true">{open ? '×' : '☰'}</span>
+          </button>
+          <nav id="landing-navigation" className="landing-tools landing-navigation" data-open={open}
+            aria-label={text('landing.nav.label')}>
+            <a className="elv-link landing-nav-skillmap" href="#skill-map" onClick={() => setOpen(false)}>{text('landing.nav.skillmap')}</a>
             <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
               {(['es', 'en'] as const).map(code => (
                 <button key={code} type="button" lang={code} aria-pressed={lang === code}
@@ -26,7 +42,7 @@ export function LandingHeader({ text, lang, setLang }: {
               ))}
             </div>
             <Link to="/login" className="elv-btn elv-btn-outline landing-login">{text('landing.header.login')}</Link>
-          </div>
+          </nav>
         </div>
       </header>
     </>
