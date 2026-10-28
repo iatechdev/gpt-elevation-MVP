@@ -1,6 +1,8 @@
 // frontend/src/i18n/en.ts
 // HU-082 — i18n complete: Landing + User + Admin + Therapist + Board
+import { skillMapEn } from '../skill-map/copy'
 const en: Record<string, string> = {
+  ...skillMapEn,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'AI emotional support',
