@@ -1,10 +1,13 @@
 // frontend/src/i18n/es.ts
 // HU-082 — i18n completo: Landing + User + Admin + Therapist + Board
 import { compassEs } from '../compass/copy'
+import { contextEs } from '../context/contextCopy'
+import { evidenceEs } from '../evidence/copy'
 import { skillMapEs } from '../skill-map/copy'
 import { evidenceEs } from '../evidence/copy'
 const es: Record<string, string> = {
   ...compassEs,
+  ...contextEs,
   ...evidenceEs,
   ...skillMapEs,
 
