@@ -1,0 +1,21 @@
+// [QA-Claude] Siembra sintética para la revisión de «Mi mapa» (ES-30): catálogo de 3 habilidades, dos personas y un administrador.
+import { createRequire } from 'node:module'; import { randomBytes } from 'node:crypto';
+import path from 'node:path';
+const sut = process.env.QA_SUT, api = process.env.QA_API, dbUrl = process.env.DATABASE_URL, JWT = process.env.QA_JWT_SECRET, PW = process.env.QA_UI_PASSWORD;
+const req = createRequire(path.join(sut, 'backend', 'package.json')); const { Client } = req('pg'); const jwt = req('jsonwebtoken');
+const db = new Client({ connectionString: dbUrl, ssl: false }); await db.connect();
+const call = async (m, u, t, b) => { const r = await fetch(api + u, { method: m, headers: { ...(t ? { Authorization: 'Bearer ' + t } : {}), ...(b !== undefined ? { 'Content-Type': 'application/json' } : {}) }, body: b !== undefined ? JSON.stringify(b) : undefined }); const x = await r.text(); let j = null; try { j = JSON.parse(x) } catch {} return { s: r.status, j, x }; };
+const mk = async (email, role = 'user') => { await call('POST', '/api/register', null, { name: 'QA UI ' + email.split('@')[0], email, password: PW }); if (role !== 'user') await db.query('update "Users" set role=$1 where email=$2', [role, email]); const u = (await db.query('select id,name,role from "Users" where email=$1', [email])).rows[0]; return { ...u, tok: jwt.sign({ id: u.id, name: u.name, role: u.role, iatMs: Date.now() }, JWT, { expiresIn: '8h', jwtid: randomBytes(8).toString('hex') }) }; };
+const A = await mk('qa-ui-a@example.test'), B = await mk('qa-ui-b@example.test'), ADM = await mk('qa-ui-adm@example.test', 'admin');
+const lv = p => Object.fromEntries([1, 2, 3, 4].map(n => [n, { es: `${p} nivel ${n}`, en: `${p} level ${n}` }]));
+const sk = (n, es, en) => ({ type: 'transversal', labels: { es, en }, rubric: { levels: lv(n), source: 'Rúbrica sintética de QA', verifiedBy: 'Revisor sintético', verifiedAt: '2026-10-01' } });
+const pub = async (defs) => { const d = await call('POST', '/api/admin/skill-catalog', ADM.tok); const id = d.j.id ?? d.j.draftId; for (const [k, v] of Object.entries(defs)) await call('PUT', `/api/admin/skill-catalog/${id}/skills/${k}`, ADM.tok, v); return (await call('POST', `/api/admin/skill-catalog/${id}/publish`, ADM.tok)).s; };
+console.log('catálogo v1', await pub({ comunicacion: sk('comunicacion', 'Comunicación', 'Communication'), planificacion: sk('planificacion', 'Planificación', 'Planning'), analisis: sk('analisis', 'Análisis de información', 'Information analysis') }));
+const claim = t => ({ text: t });
+const ev = async (tok, title, autonomy) => (await call('POST', '/api/evidence', tok, { payload: { title, situation: 'Situación', responsibility: claim('Mi parte'), actions: [claim('Hice algo')], delivered: claim('Entregué algo'), observedEffect: { known: false }, autonomy }, status: 'confirmed', requestId: 'qa' + randomBytes(8).toString('hex') })).j;
+const e1 = await ev(A.tok, 'Evidencia comunicación <b>HTML</b>', 'assisted'), e2 = await ev(A.tok, 'Evidencia planificación', 'conceptual'), e3 = await ev(A.tok, 'Evidencia análisis', 'assisted');
+const self = (tok, skillKey, level, id) => call('POST', '/api/skill-map/self', tok, { requestId: 'qa' + randomBytes(8).toString('hex'), skillKey, level, evidenceRefs: [{ evidenceId: id, version: 1 }], rationale: skillKey === 'comunicacion' ? 'Coordiné al equipo <script>alert(1)</script> y lo expliqué' : 'Justificación sintética' });
+console.log('autoevaluaciones', (await self(A.tok, 'comunicacion', 2, e1.id)).s, (await self(A.tok, 'planificacion', 4, e2.id)).s, (await self(A.tok, 'analisis', 2, e3.id)).s);
+await call('PUT', `/api/evidence/${e3.id}`, A.tok, { payload: { title: 'Evidencia análisis editada', situation: 'Otra', responsibility: claim('Mi parte'), actions: [claim('Hice algo')], delivered: claim('Entregué algo'), observedEffect: { known: false }, autonomy: 'assisted' }, status: 'confirmed', requestId: 'qa' + randomBytes(8).toString('hex'), baseVersion: 1 }); // «análisis» queda stale
+console.log('catálogo v2 (rúbrica cambiada)', await pub({ comunicacion: sk('comunicacion', 'Comunicación revisada', 'Revised communication'), planificacion: sk('planificacion', 'Planificación', 'Planning'), analisis: sk('analisis', 'Análisis de información', 'Information analysis') }));
+await db.end();
