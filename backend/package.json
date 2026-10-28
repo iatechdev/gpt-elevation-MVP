@@ -13,7 +13,10 @@
     "test:skillmap:pg": "node --test test/integration/es-29-postgres.cjs",
     "test:evidence:pg": "node --test test/integration/es-27-postgres.cjs",
     "test:integration:pg": "node --test test/integration/es-integration-consent-hooks.cjs",
-    "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs"
+    "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
+    "test:career-plan:pg": "node --test test/integration/es-33-postgres.cjs",
+    "test:career-plan:local": "node scripts/testEs33Local.cjs",
+    "migrate:career-plan": "node scripts/migrateCareerPlan.js"
   },
   "keywords": [],
   "author": "",
