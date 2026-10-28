@@ -60,7 +60,14 @@ async function esquema(nombre) {
       let hay = false;
       for (const clave of Object.keys(s)) {
         const soloSync = s[clave].filter((x) => !m[clave].includes(x));
-        const soloMig = m[clave].filter((x) => !s[clave].includes(x));
+        let soloMig = m[clave].filter((x) => !s[clave].includes(x));
+        // Las migraciones pueden ser más estrictas que los modelos: Sequelize no declara CHECK, así que un CHECK que solo
+        // existe en las migraciones se informa pero no cuenta como deriva. Columnas e índices siguen siendo exactos.
+        if (clave === 'restricciones') {
+          const checks = soloMig.filter((x) => String(JSON.parse(x).def).startsWith('CHECK'));
+          checks.forEach((x) => console.log('  (informativo) CHECK solo en migraciones:', JSON.parse(x).conname));
+          soloMig = soloMig.filter((x) => !checks.includes(x));
+        }
         console.log(`[${etapa}] ${clave}: sync=${s[clave].length} migraciones=${m[clave].length}`);
         if (soloSync.length || soloMig.length) {
           hay = true;
