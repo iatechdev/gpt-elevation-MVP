@@ -1,4 +1,5 @@
 // Synthetic view model only. No transport, account information, or production permission contract.
+import { LIMITS, textProblem } from './validation.ts'
 export type Invitation = 'pending' | 'accepted' | 'expired'
 export type Progress = 'unknown' | 'context' | 'choice' | 'submitted' | 'plan'
 export type Scenario = 'normal' | 'empty' | 'load-error' | 'save-error' | 'lost-ack' | 'conflict' | 'revoked'
@@ -46,7 +47,7 @@ export function createFixture(scenario: Scenario = 'normal', now = () => new Dat
     if (!row) throw new PreviewError('revoked')
     return row
   }
-  const validText = (s: string, max: number) => typeof s === 'string' && s.trim().length > 0 && s.length <= max
+  const validText = (s: string, max: number) => textProblem(s, max) === null
   const publish = () => { snapshot = clone(durable); return clone(snapshot) }
   return {
     read() {
@@ -84,7 +85,7 @@ export function createFixture(scenario: Scenario = 'normal', now = () => new Dat
         if (actor !== 'reviewer') throw new PreviewError('revoked')
         const m = material(command.participantId, command.shareId)
         if (m.version !== command.materialVersion) throw new PreviewError('conflict')
-        if (!validText(command.observation, 4000) || !validText(command.limits, 2000) ||
+        if (!validText(command.observation, LIMITS.observation) || !validText(command.limits, LIMITS.limits) ||
           !['es', 'en'].includes(command.locale) || !command.evidenceRefs.length ||
           new Set(command.evidenceRefs).size !== command.evidenceRefs.length ||
           command.evidenceRefs.some(ref => !m.evidenceRefs.includes(ref))) throw new PreviewError('invalid')
@@ -100,7 +101,7 @@ export function createFixture(scenario: Scenario = 'normal', now = () => new Dat
         const r = review(command.reviewId)
         if (command.kind === 'objection') {
           if (actor !== 'participant' || r.participantId !== 'synthetic-A') throw new PreviewError('revoked')
-          if (!validText(command.reason, 2000) || !['es', 'en'].includes(command.locale)) throw new PreviewError('invalid')
+          if (!validText(command.reason, LIMITS.reason) || !['es', 'en'].includes(command.locale)) throw new PreviewError('invalid')
           result = 'synthetic-event-' + (durable.events.length + 1)
           durable.events.push({ id: result, reviewId: r.id, type: 'objection', text: command.reason, author: 'participant', locale: command.locale, at: now() })
         } else {
@@ -108,7 +109,7 @@ export function createFixture(scenario: Scenario = 'normal', now = () => new Dat
           if (material(r.participantId, r.shareId).version !== r.materialVersion) throw new PreviewError('conflict')
           const objection = durable.events.find(e => e.id === command.objectionId && e.reviewId === r.id && e.type === 'objection')
           if (!objection || durable.events.some(e => e.type === 'response' && e.objectionId === objection.id) ||
-            !validText(command.response, 2000) || !['es', 'en'].includes(command.locale)) throw new PreviewError('invalid')
+            !validText(command.response, LIMITS.response) || !['es', 'en'].includes(command.locale)) throw new PreviewError('invalid')
           result = 'synthetic-event-' + (durable.events.length + 1)
           durable.events.push({ id: result, reviewId: r.id, objectionId: objection.id, type: 'response', text: command.response, author: 'reviewer', locale: command.locale, at: now() })
         }

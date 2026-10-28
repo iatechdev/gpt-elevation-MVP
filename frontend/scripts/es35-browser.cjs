@@ -54,6 +54,19 @@ async function confirmed(page, en = false) { await page.getByRole('button', { na
       await page.getByRole('link', { name: 'Ver progreso · A', exact: true }).click();
       await page.getByRole('button', { name: 'Ver material', exact: true }).click(); await page.getByText('Esquema de tres pasos preparado para una actividad ficticia.', { exact: true }).waitFor();
       await page.getByRole('link', { name: 'Registrar revisión', exact: true }).click();
+      // QA-35 obs. 2: la lógica rechaza caracteres de control, textos demasiado largos y vacíos, cada uno con su mensaje.
+      {
+        const observation = page.getByLabel('Observación profesional', { exact: true }), limitsField = page.getByLabel('Límites de esta revisión', { exact: true });
+        const preview = () => page.getByRole('button', { name: 'Vista previa', exact: true }).click();
+        await page.getByRole('checkbox').check(); await limitsField.fill('Límites sintéticos');
+        await observation.fill('texto\u0007oculto'); await preview();
+        await page.getByText('El texto contiene caracteres no permitidos.', { exact: true }).waitFor(); assert.equal(await observation.getAttribute('aria-invalid'), 'true');
+        await observation.evaluate(el => el.removeAttribute('maxlength')); // el navegador recortaría el texto: aquí se prueba la lógica, no el atributo
+        await observation.fill('x'.repeat(4001)); await preview(); await page.getByText('El texto supera el máximo permitido.', { exact: true }).waitFor();
+        await observation.fill('   '); await preview(); await page.getByText('Completa este campo.', { exact: true }).waitFor();
+        assert.equal(await page.getByRole('button', { name: 'Confirmar registro', exact: true }).count(), 0);
+        await observation.fill(''); await limitsField.fill('');
+      }
       await fillReview(page); assert.equal(await page.getByRole('heading', { name: 'Observación profesional', exact: true }).count(), 1);
       assert.equal(await page.getByRole('heading', { name: 'Revisión registrada.', exact: true }).count(), 0);
       await confirmed(page); await shot(page, 'review-recorded');

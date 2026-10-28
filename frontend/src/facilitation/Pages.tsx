@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useCopy, useFacilitation } from './context'
 import { PreviewError, type Command, type Review, type Material } from './fixture'
 import type { TextKey } from './copy'
+import { LIMITS, textProblem } from './validation'
 
 function DateLabel({ value }: { value: string }) {
   const { lang } = useCopy()
@@ -141,15 +142,16 @@ function RecordForm({ command, material, close }: { command: Command; material?:
     finally { setBusy(false) }
   }
   const textField = (field: 'observation' | 'limits' | 'reason' | 'response', label: TextKey, max: number, value: string) => <label className="fac-field">
-    <span>{t(label)}</span><textarea className="elv-textarea" aria-label={t(label)} required maxLength={max} value={value} disabled={busy || preview || otherDirty} aria-invalid={invalid && !value.trim()} aria-describedby={invalid ? formId : undefined}
+    <span>{t(label)}</span><textarea className="elv-textarea" aria-label={t(label)} required maxLength={max} value={value} disabled={busy || preview || otherDirty} aria-invalid={invalid && textProblem(value, max) !== null} aria-describedby={invalid ? formId : undefined}
       onChange={e => change({ ...draft, [field]: e.target.value } as Command)} />
     <small>{t('fieldLimit')}: {max}</small>
   </label>
   if (done) return <p ref={status} tabIndex={-1} role="status">{t('synthetic')} {t(draft.kind === 'review' ? 'recorded' : draft.kind === 'objection' ? 'objectionRecorded' : draft.kind === 'response' ? 'responseRecorded' : 'invitationRequested')}</p>
   return <form className="fac-form" ref={form} noValidate onSubmit={e => {
     e.preventDefault()
-    const valid = draft.kind === 'review' ? draft.observation.trim() && draft.limits.trim() && draft.evidenceRefs.length : draft.kind === 'objection' ? draft.reason.trim() : draft.kind === 'response' ? draft.response.trim() : true
-    if (!valid) { setInvalid(true); setError(draft.kind === 'review' && !draft.evidenceRefs.length ? 'selectEvidence' : 'required'); return }
+    const problem = (draft.kind === 'review' ? [textProblem(draft.observation, LIMITS.observation), textProblem(draft.limits, LIMITS.limits)] : draft.kind === 'objection' ? [textProblem(draft.reason, LIMITS.reason)] : draft.kind === 'response' ? [textProblem(draft.response, LIMITS.response)] : []).find(Boolean) ?? null
+    const noEvidence = draft.kind === 'review' && !draft.evidenceRefs.length
+    if (problem || noEvidence) { setInvalid(true); setError(noEvidence ? 'selectEvidence' : problem as Exclude<typeof problem, null>); return }
     setPreview(true)
   }}>
     {draft.kind === 'invitation' ? <p>{t('invitationNote')}</p> : <>
@@ -159,11 +161,11 @@ function RecordForm({ command, material, close }: { command: Command; material?:
             onChange={e => change({ ...draft, evidenceRefs: e.target.checked ? [...draft.evidenceRefs, ref] : draft.evidenceRefs.filter(x => x !== ref) })} />{t('evidenceTitle')} · {t('version')} {material.version}</label>)}
           <p>{t('evidence')}</p>
         </fieldset>
-        {textField('observation', 'observation', 4000, draft.observation)}
-        {textField('limits', 'limits', 2000, draft.limits)}
+        {textField('observation', 'observation', LIMITS.observation, draft.observation)}
+        {textField('limits', 'limits', LIMITS.limits, draft.limits)}
       </>}
-      {draft.kind === 'objection' && textField('reason', 'reason', 2000, draft.reason)}
-      {draft.kind === 'response' && textField('response', 'response', 2000, draft.response)}
+      {draft.kind === 'objection' && textField('reason', 'reason', LIMITS.reason, draft.reason)}
+      {draft.kind === 'response' && textField('response', 'response', LIMITS.response, draft.response)}
     </>}
     {preview && <section className="fac-preview" aria-label={t('previewAction')}>
       <h3>{t('previewAction')}</h3><p>{t('exact')}</p>
