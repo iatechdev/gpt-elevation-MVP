@@ -33,6 +33,10 @@ test('QA-34: un envío vacío del experimento llega a la aplicación (sin valida
   await assert.rejects(client.send(empty, 'r-0000002'), error => error instanceof FixtureError)
 })
 
+test('QA-34: un error de validación no ofrece «Reintentar lectura» (solo los fallos de lectura o de guardado)', () => {
+  assert.match(read('../src/career/CareerShell.tsx'), /\{error && error !== 'validate' && <button type="button"/)
+})
+
 test('QA-34: sin bandera o sin sesión las pestañas del recorrido no se muestran antes del aviso', () => {
   assert.match(read('../src/career/CareerShell.tsx'), /\{session && token\(\) === session && enabled && <nav /)
 })

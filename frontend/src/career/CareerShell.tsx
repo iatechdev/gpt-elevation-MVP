@@ -105,7 +105,7 @@ function CareerSession({ session }: { session: string }) {
         {dirtyCount > 1 && <p className="career-warning" role="status">{t('otherDraft')}</p>}
         <div ref={notice} tabIndex={-1} aria-live="polite" className={error ? 'career-error' : ''}>
           {(busy || error || message) && <p>{busy ? t(state.loaded ? 'saving' : 'loading') : error ? t(error) : message ? t(message) : null}</p>}
-          {error && <button type="button" className="elv-btn elv-btn-outline" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
+          {error && error !== 'validate' && <button type="button" className="elv-btn elv-btn-outline" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
         </div>
         {!state.loaded ? <p role="status">{error ? t('empty') : t('loading')}</p> : <CareerContext.Provider value={{ state, client, lang, t, busy, uncertain, dirty: dirty || dirtyCount > 0, setDirty: setDirtyValue, otherDirty, send, navigate }}><div aria-busy={busy}><Outlet /></div></CareerContext.Provider>}
       </>}

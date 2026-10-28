@@ -75,6 +75,7 @@ async function main() {
     await page.getByRole('button', { name: 'Iniciar', exact: true }).click();
     // QA-34 obs. 2: el envío vacío muestra el aviso de la aplicación (sin validación nativa que lo oculte).
     await page.getByRole('button', { name: 'Guardar entrega', exact: true }).click(); await page.getByText('Revisa los campos obligatorios y la selección.', { exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Reintentar lectura', exact: true }).count(), 0, 'un error de validación no ofrece reintentar la lectura');
     await page.getByLabel('Muestra escrita', { exact: true }).fill('SYNTHETIC SAMPLE — no personal data'); await page.getByLabel('Ayuda utilizada', { exact: true }).selectOption('drafting');
     await page.getByRole('button', { name: 'Guardar entrega', exact: true }).click(); await page.getByLabel('Observación', { exact: true }).waitFor();
     await page.getByRole('checkbox', { name: /Seleccionar esta muestra/ }).check(); await page.getByRole('button', { name: 'Solicitar revisión', exact: true }).click(); await page.getByText('Solicitud pendiente de autorización; material aún no compartido.', { exact: true }).waitFor();
