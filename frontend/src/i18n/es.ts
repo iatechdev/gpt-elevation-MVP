@@ -1,8 +1,10 @@
 // frontend/src/i18n/es.ts
 // HU-082 — i18n completo: Landing + User + Admin + Therapist + Board
 import { catalogEs } from '../routeCatalog/copy'
+import { skillMapEs } from '../skill-map/copy'
 const es: Record<string, string> = {
   ...catalogEs,
+  ...skillMapEs,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'Soporte emocional con IA',

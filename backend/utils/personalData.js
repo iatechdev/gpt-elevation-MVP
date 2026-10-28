@@ -27,6 +27,10 @@ const CORE = [
   // No se exportan `origins` (referencias privadas sin texto) ni `requestId`.
   ['evidence', 'Evidence', 'UserId', ['id', 'currentVersion', 'createdAt', 'updatedAt']],
   ['evidenceVersions', 'EvidenceVersion', 'UserId', ['id', 'EvidenceId', 'version', 'status', 'authoring', 'payload', 'hasChatOrigin', 'consentVersion', 'createdAt'], ['payload'], ['payload'], (row) => Object.keys(row.payload).length > 0],
+  // ES-29: evaluaciones de habilidad del Skill Map. `rationale` (la justificación de la persona) va cifrado v2 y se entrega descifrado. No se exportan
+  // `rubricHash`, `requestId` ni la versión de la regla (referencias técnicas internas); `evidenceRefs` son solo ids y versiones, sin texto. El catálogo
+  // (SkillCatalog/SkillDefinition) lo administra el cliente y no es dato personal: no se registra.
+  ['skillAssessments', 'SkillAssessment', 'UserId', ['id', 'skillKey', 'track', 'level', 'state', 'catalogVersion', 'evidenceRefs', 'confidence', 'confidenceReasonCode', 'rationale', 'authoring', 'status', 'createdAt'], ['rationale']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
