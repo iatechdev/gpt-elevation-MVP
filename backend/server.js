@@ -90,6 +90,8 @@ app.use('/api/career-context',  verificarToken, require('./routes/careerContext'
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
+app.use('/api/experiments',      verificarToken, require('./routes/careerPlan').experiments); // ES-33 — recursos propios
+app.use('/api/career-plan',      verificarToken, require('./routes/careerPlan').plans);
 app.use('/api/diary',           verificarToken, require('./routes/diary'));          // ES-20 — diario privado
 app.use('/api/ai/usage',         verificarToken, require('./routes/aiUsage').owner);   // ES-22 — presupuesto de IA de la persona
 app.use('/api/superadmin/ai-usage', verificarSuperAdmin, require('./routes/aiUsage').admin); // ES-22 — resumen agregado
