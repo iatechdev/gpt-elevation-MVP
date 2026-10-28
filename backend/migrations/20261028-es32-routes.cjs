@@ -1,5 +1,7 @@
-// Aditiva e idempotente. Reversión de aplicación conserva las tablas; no hay down destructivo.
-async function up(sequelize) {
+// Aditiva e idempotente. El down (solo con permiso explícito, nunca en producción) borra las tres tablas.
+// Contrato doble: scripts/migrateRoutes.js y la prueba la llaman con up(sequelize); sequelize-cli (ES-59) con up(queryInterface).
+async function up(arg) {
+  const sequelize = arg.sequelize || arg;
   await sequelize.transaction(async transaction => {
     const common = `"id" SERIAL PRIMARY KEY, "UserId" INTEGER NOT NULL REFERENCES "Users"("id"),
       "requestId" VARCHAR(64) NOT NULL, "inputHash" VARCHAR(64) NOT NULL,
@@ -25,4 +27,9 @@ async function up(sequelize) {
     ]) await sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS "${name}" ON "${table}" (${fields})${predicate}`, { transaction });
   });
 }
-module.exports = { up };
+// El down borra decisiones de rutas de las personas: solo con permiso explícito y nunca en producción (guarda común, ES-59).
+async function down(queryInterface) {
+  require('../scripts/guard-down.cjs')('20261028-es32-routes');
+  for (const table of ['RouteReviewRequests', 'RouteChoices', 'RouteConstraintsVersions']) await queryInterface.dropTable(table);
+}
+module.exports = { up, down };

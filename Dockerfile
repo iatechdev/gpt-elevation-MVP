@@ -9,7 +9,8 @@ COPY . .
 
 RUN rm -f backend/.env backend/package-lock.json
 
-RUN cd backend && npm install --no-package-lock
+# Sin devDependencies: embedded-postgres (solo para `npm run db:local`) no debe entrar a la imagen de producción (ES-82).
+RUN cd backend && npm install --no-package-lock --omit=dev
 
 RUN cd frontend && npm install --legacy-peer-deps && npm run build
 

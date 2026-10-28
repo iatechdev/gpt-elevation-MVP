@@ -19,7 +19,7 @@ for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewReques
   replaceModule(name + '.js', models[name]);
 }
 for (const name of [
-  'User', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
+  'User', 'ParticipantContext', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
   'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem',
