@@ -1,0 +1,8 @@
+{
+  "_nota": "Parámetros de la política del catálogo de rutas (ES-31). Son valores de partida para analizar con el cliente; cambiarlos no exige tocar código. Las fechas se comparan en días.",
+  "offerVerificationDays": 14,
+  "sourceStaleDays": 180,
+  "maxContexts": 6,
+  "maxOffersPerRole": 10,
+  "maxOffersTotal": 60
+}

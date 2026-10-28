@@ -89,6 +89,7 @@ app.use('/api/consents',        verificarToken, require('./routes/consents'));  
 app.use('/api/career-context',  verificarToken, require('./routes/careerContext'));  // ES-25 — puente profesional
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
+app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
 app.use('/api/diary',           verificarToken, require('./routes/diary'));          // ES-20 — diario privado
 app.use('/api/ai/usage',         verificarToken, require('./routes/aiUsage').owner);   // ES-22 — presupuesto de IA de la persona
 app.use('/api/superadmin/ai-usage', verificarSuperAdmin, require('./routes/aiUsage').admin); // ES-22 — resumen agregado
@@ -105,6 +106,7 @@ app.use('/api/therapist',       verificarTerapeuta, require('./routes/therapistR
 
 // ── Rutas admin ───────────────────────────────────────────────────────────────
 app.use('/api/admin/skill-catalog', verificarAdmin, require('./routes/skillCatalog')); // ES-29 — catálogo de habilidades (backoffice)
+app.use('/api/admin/route-catalog', verificarAdmin, require('./routes/routeCatalogAdmin')); // ES-31 — catálogo de rutas (backoffice)
 app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
 app.use('/api/admin/metrics',       verificarAdmin, require('./routes/adminMetrics'));
 app.use('/api/admin/matching',      verificarAdmin, require('./routes/matching'));
