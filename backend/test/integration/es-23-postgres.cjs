@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'SkillAssessment']) require('../../' + name);
   await sequelize.sync();
   const rights = require('../../utils/dataRights');
   const { processDeletion } = require('../../utils/deletionProcessor');
@@ -251,5 +251,24 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
     await ParticipantContext.create({ UserId: a.id, version: 2, content: dto('RESTORED PRIVATE'), completedAt: null });
     await processDeletion(request.id, { quiescent: true, replay: true });
     assert.equal(await ParticipantContext.count({ where: { UserId: a.id } }), 0);
+  });
+  await t.test('QA-25-03: las evaluaciones del Skill Map se exportan con la justificación descifrada, se purgan con el procesador y el --replay las borra tras una restauración', async () => {
+    const SkillAssessment = require('../../SkillAssessment');
+    const a = await addUser(); const b = await addUser();
+    const make = (user, over = {}) => SkillAssessment.create({ UserId: user.id, skillKey: 'communication', track: 'self', level: 3, state: 'initial', catalogVersion: 1, rubricHash: 'f'.repeat(64), evidenceRefs: [], confidence: 'low', confidenceReasonCode: 'no_evidence', confidenceRuleVersion: 1, authoring: 'person', status: 'current', requestId: 'req-pg-sk-' + randomBytes(6).toString('hex'), ...over });
+    await make(a, { rationale: encriptarV2('Justificación sintética (A)') }); await make(b, { rationale: encriptarV2('B SKILL CANARY') });
+    const [raw] = await sequelize.query('SELECT rationale FROM "SkillAssessments" WHERE "UserId" = :id', { replacements: { id: a.id }, type: 'SELECT' });
+    assert.match(raw.rationale, /^v2:/); // cifrado real en la base
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.deepEqual([p.data.skillAssessments.length, p.data.skillAssessments[0].rationale, 'rubricHash' in p.data.skillAssessments[0]], [1, 'Justificación sintética (A)', false]);
+    assert.doesNotMatch(JSON.stringify(p.data), /B SKILL CANARY/);
+    const request = await rights.requestDeletion(a.id);
+    assert.equal(await SkillAssessment.count({ where: { UserId: a.id } }), 1); // aceptar la solicitud no purga: la purga es el procesador
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await SkillAssessment.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await SkillAssessment.count({ where: { UserId: b.id } }), 1);
+    await make(a, { rationale: encriptarV2('RESTORED PRIVATE') });
+    await processDeletion(request.id, { quiescent: true, replay: true });
+    assert.equal(await SkillAssessment.count({ where: { UserId: a.id } }), 0);
   });
 });

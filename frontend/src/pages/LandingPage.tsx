@@ -4,6 +4,7 @@ import { LandingSurface } from '../components/landing/LandingSurface'
 import { LandingButton, LandingSection } from '../components/landing/LandingPrimitives'
 import { HeroDoors } from '../components/landing/HeroDoors'
 import { LandingHeader } from '../components/landing/LandingHeader'
+import { ExampleStrip } from '../components/landing/ExampleStrip'
 import { useLandingContent } from '../content/useLandingContent'
 import { useState, useEffect } from 'react'
 
@@ -38,8 +39,9 @@ export function LandingPage() {
           {/* Hero + puertas (ES-63) */}
           <div className="landing-frame">
             <HeroDoors text={landing.text} />
+            {/* Franja de ejemplo ilustrativo (ES-64): oculta hasta aprobar el texto */}
+            <ExampleStrip text={landing.text} />
           </div>
-
 
         {/* Proceso */}
         <LandingSection id="proceso" style={{ padding: 'var(--landing-space) var(--landing-gutter)', background: 'var(--color-base-200)', backdropFilter: 'blur(8px)' }}>
