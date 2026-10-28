@@ -67,6 +67,28 @@ No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto us
 - Tablas nuevas `AiBudgetCounters` y `AiUsages`: las crea `sync()` (sin migración). `config/aiPricing.json` sale vacío: no hay costos en dinero hasta verificar precios.
 - Reversión: el código anterior ignora las tablas y vuelve a llamar sin tope; no se borran. Detalle en `docs/elevation-skillmap/17-PRESUPUESTO-Y-FALLOS-DE-IA.md`.
 
+## Datos de demostración sintéticos en staging
+
+Sin catálogos publicados, «Mi mapa» y el catálogo de rutas muestran «catálogo no disponible». Para una demostración en **staging** (nunca en producción) hay una semilla
+sintética e idempotente: `backend/scripts/seedStagingDemo.js`.
+
+```bash
+cd backend
+ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD='<clave de 12+ caracteres, definida por el operador>' npm run seed:demo
+```
+
+- **Qué crea:** el catálogo de habilidades (8, todas con el rótulo «[SINTÉTICO]/[SYNTHETIC]») y el catálogo de rutas sintético, ambos **publicados**; una persona de
+  demostración (`demo.participante@example.invalid`, rol `user`) con 3 evidencias confirmadas y 3 autoevaluaciones. Las otras 5 habilidades quedan «sin evidencia».
+- **Variables (las define el operador en el entorno del comando; nada va al repositorio):** `ALLOW_SYNTHETIC_CATALOG=true` y `DEMO_USER_PASSWORD`. La clave se guarda con bcrypt y
+  el script nunca la imprime. Producción no define `ALLOW_SYNTHETIC_CATALOG`.
+- **Funciona con `NODE_ENV=production`:** staging corre así. Antes `seedRouteCatalogSynthetic.js` se negaba con ese valor y no podía cargarse; ahora exige la bandera.
+- **Se niega, sin escribir nada,** si falta la bandera o la clave, si ya hay un catálogo **real** publicado (no sintético) o si hay un borrador abierto. Repetirlo no duplica nada
+  ni cambia la clave de la persona.
+- **Cómo retirarlo:** cuando el cliente publique su catálogo real desde el backoffice, el sintético queda archivado y las autoevaluaciones de la demostración se marcan como
+  desactualizadas. La persona de demostración se elimina con el flujo de borrado de datos (ES-23).
+- **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas (ES-32 no está en `main`) ni toca el catálogo real.
+- **Pruebas:** `npm run test:seed-demo:pg` con `SEED_TEST_DATABASE_URL` (Postgres local desechable) y `npm test`.
+
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
 - **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.

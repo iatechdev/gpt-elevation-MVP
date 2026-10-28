@@ -13,7 +13,9 @@
     "test:skillmap:pg": "node --test test/integration/es-29-postgres.cjs",
     "test:evidence:pg": "node --test test/integration/es-27-postgres.cjs",
     "test:integration:pg": "node --test test/integration/es-integration-consent-hooks.cjs",
-    "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs"
+    "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
+    "seed:demo": "node scripts/seedStagingDemo.js",
+    "test:seed-demo:pg": "node --test test/integration/seed-demo-postgres.cjs"
   },
   "keywords": [],
   "author": "",
