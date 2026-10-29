@@ -28,6 +28,8 @@ test('ES-101: el acceso del terapeuta se corta con la eliminación aceptada y co
   sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: 8, min: 0 } });
   process.env.JWT_SECRET = randomBytes(32).toString('hex'); process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
   process.env.PROMPT_ENCRYPTION_KEY = randomBytes(32).toString('hex');
+  // ES-102: el resumen con IA pasa por el presupuesto de ES-22; se configura uno holgado para esta base desechable.
+  process.env.AI_BUDGET_TOKENS_PER_USER = '1000000'; process.env.AI_BUDGET_TOKENS_COHORT = '10000000'; process.env.AI_BUDGET_PERIOD = 'month';
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
   // Único doble: el proveedor de IA (cuenta las llamadas; nunca sale a la red).
@@ -39,7 +41,7 @@ test('ES-101: el acceso del terapeuta se corta con la eliminación aceptada y co
   const { CORE } = require('../../utils/personalData');
   for (const [, model] of CORE) require('../../' + model);
   for (const model of ['PricingPlan', 'ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest',
-    'MoodLog', 'SessionRating', 'ClinicalNote', 'TherapySession', 'SessionNote', 'TherapistProfile', 'promptVault']) require('../../' + model);
+    'MoodLog', 'SessionRating', 'ClinicalNote', 'TherapySession', 'SessionNote', 'TherapistProfile', 'promptVault', 'AiUsage', 'AiBudgetCounter']) require('../../' + model);
   await sequelize.sync();
 
   const User = require('../../User'); const DeletionRequest = require('../../DeletionRequest'); const ClinicalNote = require('../../ClinicalNote');
