@@ -69,17 +69,12 @@ export function SkillMapPage() {
   }
   const register = (key: string) => { pick(key); window.setTimeout(() => detailRef.current?.focus(), 0) }
   const openAi = (keys: string[]) => { setAi(keys); window.setTimeout(() => aiRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0) }
-  // Tras guardar propuestas de la IA se vuelve a leer el mapa SIN pasar por «cargando», para no desmontar el panel que muestra el resultado.
+  // Se vuelve a leer el mapa SIN pasar por «cargando» tras guardar propuestas de la IA (para no desmontar el panel con el resultado) y tras «Revocar todos» (QA H-86-03).
   const reloadMap = async () => {
     const token = readToken(); if (!token) return
     try { const next = await readSkillMap({ baseUrl: backend, token }); if (readToken() === token) setState({ status: 'ready', map: next, token }) } catch { /* el siguiente «Actualizar mapa» lo reintenta */ }
   }
   const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
-  // QA H-86-03: al revocar, el servidor retira lo derivado del chat; se vuelve a leer el mapa SIN pasar por «cargando» para no perder el aviso ni el foco.
-  const reloadMap = async () => {
-    const token = readToken(); if (!token) return
-    try { const next = await readSkillMap({ baseUrl: backend, token }); if (readToken() === token) setState({ status: 'ready', map: next, token }) } catch { /* «Actualizar mapa» lo reintenta */ }
-  }
   const confirm = async () => {
     setRevoke('saving')
     try { await revokeBridge({ baseUrl: backend, token: readToken() }); setBridge('revoked'); setRevoke('done'); void reloadMap() }
