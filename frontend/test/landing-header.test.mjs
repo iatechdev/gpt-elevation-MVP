@@ -2,6 +2,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { resolveInitialLang } from '../src/i18n/resolveLang.ts'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter } from 'react-router-dom'
+import ts from 'typescript'
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const header = read('../src/components/landing/LandingHeader.tsx')
@@ -10,6 +14,11 @@ const page = read('../src/pages/LandingPage.tsx')
 const css = read('../src/components/landing/landing.css')
 const catalog = JSON.parse(read('../../shared/landing-content.json'))
 const keys = new Set(catalog.map(entry => entry.key))
+const compiled = ts.transpileModule(header, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
+  .replaceAll('"react/jsx-runtime"', JSON.stringify(import.meta.resolve('react/jsx-runtime')))
+  .replace("'react'", JSON.stringify(import.meta.resolve('react')))
+  .replace("'react-router-dom'", JSON.stringify(import.meta.resolve('react-router-dom')))
+const { LandingHeader } = await import('data:text/javascript;base64,' + Buffer.from(compiled).toString('base64'))
 
 test('ES-62: el idioma guardado manda; sin él, el del navegador; por defecto ES', () => {
   assert.equal(resolveInitialLang('en', 'es-CO'), 'en')
@@ -31,16 +40,20 @@ test('ES-62: LanguageProvider sincroniza <html lang> y tolera un almacenamiento 
   assert.match(provider, /resolveInitialLang\(readSavedLang\(\), navigator\.language\)/)
 })
 
-test('ES-62/68/70: la cabecera usa el catálogo y activa solo las secciones de fase 2 existentes', () => {
+test('ES-62/68/70/73: actual header links reach existing sections, including Plans and home sections from /pricing', () => {
   const used = [...header.matchAll(/text\((?:'|`)(landing\.[^'`]+)(?:'|`)\)/g)].map(match => match[1])
     .flatMap(key => key.includes('${code}') ? ['es', 'en'].map(code => key.replace('${code}', code)) : [key])
   assert.ok(used.length >= 5)
   for (const key of used) assert.ok(keys.has(key), `clave inexistente: ${key}`)
-  assert.match(header, /href="#como-funciona"/)
-  assert.match(header, /landing\.nav\.how/)
-  assert.match(header, /href="#skill-map"/)
-  assert.match(header, /landing\.nav\.skillmap/)
-  assert.doesNotMatch(header, /landing\.nav\.(pros|plans)/)
+  for (const homeSections of [false, true]) {
+    const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LandingHeader, {
+      homeSections, lang: 'es', setLang() {}, text: key => catalog.find(entry => entry.key === key).es,
+    })))
+    assert.ok(html.includes(`href="${homeSections ? '/' : ''}#como-funciona"`))
+    assert.ok(html.includes(`href="${homeSections ? '/' : ''}#skill-map"`))
+    assert.ok(html.includes('href="#planes"'))
+  }
+  assert.doesNotMatch(header, /landing\.nav\.pros/)
   assert.doesNotMatch(header, /dangerouslySetInnerHTML|fetch\(/)
 })
 

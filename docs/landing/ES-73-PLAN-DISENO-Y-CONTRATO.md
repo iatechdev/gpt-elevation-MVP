@@ -1,7 +1,9 @@
 # ES-73 — Diseño y plan técnico para aprobación
 
 [Dev-Codex] · 28-oct-2026 · Base main `13a0f9f75e08f6d5cc8b5291d7f0637d34cd953f`.
-Rama aislada `ES-73-planes-publicos`. No hay código de implementación escrito.
+Rama aislada `ES-73-planes-publicos`. Este documento conserva el plan presentado antes de implementar.
+
+**Decisión posterior (ES-73/10406):** el usuario autorizó continuar con los textos conservadores ES/EN y pidió planes visibles y administrables. S12 y /pricing se implementan sin bandera de ocultación. Esta decisión sustituye las propuestas de publicación desactivada al final de este documento. No acredita prestaciones no verificadas ni permite fusionar sin QA. La entrega y las pruebas reales se registran en ES-73-VERIFICACION.md.
 
 ## Aprobación existente y ampliación necesaria
 

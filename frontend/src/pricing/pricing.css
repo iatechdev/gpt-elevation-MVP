@@ -1,0 +1,22 @@
+/* ES-73 · Public, editable plan catalogue and owner-only request states. */
+.landing-scope .landing-plans { padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--color-base-300); overflow-wrap: anywhere; scroll-margin-top: 7rem; }
+.landing-scope .landing-plans-inner { width: 100%; max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-plans-label { display: flex; gap: 1rem; color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; text-transform: uppercase; }
+.landing-scope .landing-plans :is(h1,h2) { margin: 1.5rem 0 2rem; font-size: clamp(2.25rem,4.45vw,4rem); font-weight: 800; line-height: 1.03; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-plan-grid { margin-block: 2rem; align-items: stretch; }
+.landing-scope .landing-plan { min-width: 0; border-radius: 0; }
+.landing-scope .landing-plan-featured { border: 2px solid var(--color-secondary); }
+.landing-scope .landing-plan-selected { outline: 2px solid var(--color-secondary); outline-offset: 4px; }
+.landing-scope .landing-plan .elv-card-body { padding: 1.5rem; gap: 1rem; }
+.landing-scope .landing-plan :is(h2,h3) { margin: 0; font-size: 1.375rem; font-weight: 800; line-height: 1.2; letter-spacing: normal; text-transform: none; }
+.landing-scope .landing-plan p { margin: 0; color: var(--landing-muted); }
+.landing-scope .landing-plan .landing-plan-price { font-size: 2rem; line-height: 1.2; color: var(--color-base-content); font-weight: 700; }
+.landing-scope .landing-plan ul { padding-left: 1.25rem; margin: 0 0 1rem; }
+.landing-scope .landing-plan li + li { margin-top: 0.5rem; }
+.landing-scope .landing-plan-cta { margin-top: auto; width: 100%; padding-inline: 1rem; }
+.landing-scope .landing-plan-skeleton { min-height: 14rem; background: var(--color-base-200); border: 1px solid var(--color-base-300); }
+.landing-scope .landing-pricing-note { color: var(--landing-muted); }
+.landing-scope .landing-plans-space { display: inline-flex; align-items: center; min-height: 44px; margin-top: 1rem; }
+.landing-scope .landing-pricing-footer { padding: 2rem 1.5rem; border-top: 1px solid var(--color-base-300); }
+.landing-scope .landing-pricing-footer p { max-width: 1280px; margin: auto; color: var(--landing-muted); }
+@media (min-width: 48rem) { .landing-scope .landing-plans { padding: 4rem clamp(1.5rem,5.56vw,5rem) 5rem; } }

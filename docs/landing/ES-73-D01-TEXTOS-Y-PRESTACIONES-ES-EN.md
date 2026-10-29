@@ -1,6 +1,8 @@
 # ES-73 · D-01: textos y prestaciones para aprobar
 
-**Propuesta de [Dev-Codex], 28-oct-2026. No aprobada para publicación.**
+**[Dev-Codex], 28-oct-2026. Textos conservadores y visibilidad aprobados por el usuario; decisión registrada en ES-73/10406.**
+
+La decisión posterior a ES-73/10404 sustituye la propuesta de ocultar S12: landing y /pricing quedan visibles por defecto al desplegar el PR aprobado. No se dan por verificadas cuotas comerciales, sesiones profesionales ni uso ilimitado. La aprobación no equivale a un despliegue ni modifica producción desde esta rama. Véase ES-73-VERIFICACION.md para el comportamiento final y la carga administrativa.
 Base revisada: `main` `13a0f9f75e08f6d5cc8b5291d7f0637d34cd953f`.
 Alejo confirmó que no existe una revisión previa de D-01 y solicitó ayuda para prepararla.
 

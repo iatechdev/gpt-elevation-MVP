@@ -12,6 +12,7 @@ const fields = {
   isHighlighted: boolean, isActive: boolean, order: value => numeric(value) && Number.isInteger(Number(value)),
 };
 const optionalFields = Object.fromEntries(Object.entries(fields).map(([key, check]) => [key, optional(check)]));
+const reviewedCopy = require('../content/reviewedPricingCopy');
 
 // GET /api/pricing — público
 router.get('/', async (req, res) => {
@@ -113,7 +114,7 @@ router.post('/seed', async (req, res) => {
     for (const p of PLANS) {
       const [plan, created] = await PricingPlan.findOrCreate({
         where: { slug: p.slug },
-        defaults: p,
+        defaults: { ...p, ...reviewedCopy[p.slug] },
       });
       results.push({ slug: plan.slug, created });
     }
