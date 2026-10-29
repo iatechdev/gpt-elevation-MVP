@@ -10,7 +10,13 @@
     "career_review_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
     "career_ev_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
     "career_pv_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
-    "career_reminder_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara"
+    "career_reminder_owner_fk": "ES-33: clave foránea compuesta (UserId, id) que garantiza el mismo propietario; el modelo no la declara",
+    "ai_jobs_status_check": "ES-85: CHECK de dominio (matriz de estados del worker) que el modelo no declara",
+    "ai_jobs_kind_check": "ES-85: CHECK de dominio que el modelo no declara",
+    "ai_jobs_counters_check": "ES-85: CHECK (attempt y fence no negativos) que el modelo no declara",
+    "skill_candidates_status_check": "ES-85: CHECK de dominio que el modelo no declara",
+    "skill_candidates_level_check": "ES-85: CHECK (nivel 1 a 4 o null) que el modelo no declara",
+    "skill_candidates_owner_fk": "ES-85: clave foránea compuesta (UserId, jobId) que garantiza el mismo propietario; el modelo no la declara"
   },
   "indices": {
     "career_plan_owner_id": "ES-33: índice único (UserId, id) que respalda la clave foránea compuesta de CareerReminders; el modelo no lo declara"
