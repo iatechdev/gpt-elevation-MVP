@@ -12,6 +12,8 @@ export type Insight = { id: string; date: string; status: InsightStatus; fragmen
 const same = (a: Field, b: Field) => a.key === b.key && a.text === b.text
 const direct = (field: Field): DirectField => ({ key: field.key, text: field.text, origin: { type: 'direct' } })
 
+// ¿Es la misma lista (mismo orden, misma clave y texto)? Sirve para detectar que otra pestaña cambió el contexto desde que esta pantalla lo cargó.
+export const sameFields = (a: readonly Field[], b: readonly Field[]) => a.length === b.length && a.every((field, index) => same(field, b[index]))
 export const isCrossed = (active: readonly Field[], insight: Pick<Insight, 'key' | 'text'>) => active.some(field => same(field, insight))
 export type Why = 'limit_total' | 'limit_key' | null
 // ¿Cabe un insight más? Mismos topes que el servidor (12 en total y 3 por categoría), para avisar antes de pedir la vista previa.

@@ -39,6 +39,15 @@ test('ES-111 topes: 12 textos en total y 3 por categoría, como el servidor; se 
   const full = Array.from({ length: 12 }, (_, i) => field(['values', 'interests', 'motivations', 'constraints'][i % 4], `t${i}`)); assert.equal(whyNot(full, { key: 'energy_gives' }), 'limit_total')
 })
 
+test('ES-111 listas: detectar que otra pestaña cambió lo autorizado (misma clave, texto y orden)', async () => {
+  const { sameFields } = await import('../src/bridge/logic.ts')
+  const a = [field('values', 'X'), field('interests', 'Y')]
+  assert.equal(sameFields(a, [field('values', 'X'), field('interests', 'Y')]), true)
+  assert.equal(sameFields(a, [field('interests', 'Y')]), false) // X revocada en otra pestaña
+  assert.equal(sameFields(a, [...a, field('values', 'Z')]), false) // algo nuevo autorizado en otra pestaña
+  assert.equal(sameFields(a, [field('interests', 'Y'), field('values', 'X')]), false); assert.equal(sameFields([], []), true)
+})
+
 test('ES-111 insights: sin el interruptor la lista está vacía; con él hay ejemplos marcados como tales en ES y EN; nunca se mezclan con datos reales', () => {
   assert.equal(fixturesEnabled(undefined), false); assert.equal(fixturesEnabled({}), false); assert.equal(fixturesEnabled({ VITE_BRIDGE_INSIGHTS_FIXTURES: 'false' }), false); assert.equal(fixturesEnabled({ VITE_BRIDGE_INSIGHTS_FIXTURES: 'true' }), true)
   assert.deepEqual(loadInsights('es', {}), [])
@@ -58,8 +67,10 @@ test('ES-111 estructura: confirmación en la tarjeta, ojo accesible, nada cruza 
   const page = read('../src/bridge/BridgePage.tsx'); const css = read('../src/bridge/bridge.css'); const nav = read('../src/space/SpaceNav.tsx'); const app = read('../src/App.tsx')
   assert.match(page, /aria-pressed=\{open\}/); assert.match(page, /aria-label=\{open \? c\.hide : c\.show\}/); assert.match(page, /aria-hidden=\{!open\}/) // el fragmento arranca difuminado y oculto
   assert.match(page, /useState<ReadonlySet<string>>\(new Set\(\)\)/) // ningún fragmento visible por defecto
-  assert.match(page, /event\.key === 'Escape'/); assert.match(page, /confirmButton\.current\?\.focus\(\)/); assert.match(page, /trigger\.current\?\.focus\(\)/)
-  assert.match(page, /role="group" aria-label=\{c\.confirmQ\}/); assert.match(page, /onClick=\{event => ask\(insight\.id, event\.currentTarget\)\}/) // pulsar «Autorizar» solo pregunta
+  assert.match(page, /event\.key === 'Escape'/); assert.match(page, /confirmButton\.current\?\.focus\(\)/); assert.match(page, /data-authorize=/); assert.match(page, /setFocusTarget\(\{ kind: 'authorize', id \}\)/) // el foco vuelve a un elemento que sigue en pantalla (ES111-QA-03)
+  assert.match(page, /const fresh = await api\.read\(\)/); assert.match(page, /sameFields\(current, active\)/) // relee antes de componer (ES111-QA-01 y 02)
+  assert.match(page, /attempt\.current\?\.key !== key/) // el mismo intento conserva su requestId (ES111-QA-04)
+  assert.match(page, /role="group" aria-label=\{c\.confirmQ\}/); assert.match(page, /onClick=\{\(\) => ask\(insight\.id\)\}/) // pulsar «Autorizar» solo pregunta
   assert.match(page, /onClick=\{\(\) => void authorize\(insight\)\}/); assert.match(page, /crypto\.randomUUID\(\)/); assert.match(page, /await api\.revoke\(\)/)
   assert.match(page, /role="status" aria-live="polite"/); assert.match(page, /role="alert"/)
   assert.doesNotMatch(page, /localStorage|sessionStorage|indexedDB|document\.cookie/); assert.doesNotMatch(page, /insight\.fragment[^}]*(api|fetch|preview|confirm)/)

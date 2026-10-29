@@ -19,6 +19,7 @@ export const bridgeCopy = {
     expired: 'La vista previa venció. Intenta de nuevo.', conflict: 'Otro cambio ocurrió al mismo tiempo. Intenta de nuevo.', saveError: 'No pudimos guardar. Intenta de nuevo.',
     session: 'Tu sesión venció. Inicia sesión para continuar.', login: 'Iniciar sesión', home: 'Volver al inicio',
     insightOf: 'Entrada del', categories: 'Categoría',
+    stale: 'Lo que cruza cambió desde otra pestaña o dispositivo. Lo actualizamos: revisa y vuelve a intentarlo.', exampleWarn: 'Si autorizas un ejemplo, se guarda como texto real en tu contexto. Es solo para demostración.',
     motivations: 'Motivaciones', values: 'Valores', interests: 'Intereses', energy_gives: 'Lo que me da energía', energy_drains: 'Lo que me la quita', desired_conditions: 'Condiciones deseadas', constraints: 'Restricciones',
   },
   en: {
@@ -40,6 +41,7 @@ export const bridgeCopy = {
     expired: 'The preview expired. Try again.', conflict: 'Another change happened at the same time. Try again.', saveError: 'We could not save. Try again.',
     session: 'Your session expired. Sign in to continue.', login: 'Sign in', home: 'Back to home',
     insightOf: 'Entry of', categories: 'Category',
+    stale: 'What crosses changed from another tab or device. We refreshed it: review it and try again.', exampleWarn: 'If you authorize an example, it is saved as real text in your context. It is for demonstration only.',
     motivations: 'Motivations', values: 'Values', interests: 'Interests', energy_gives: 'What gives me energy', energy_drains: 'What drains me', desired_conditions: 'Desired conditions', constraints: 'Constraints',
   },
 } as const

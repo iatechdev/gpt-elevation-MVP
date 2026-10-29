@@ -84,6 +84,31 @@ const assert = require('node:assert/strict');
   assert.equal(state.revokes, 1); assert.equal(await page.locator('.bridge-card').count(), 3); check('revocar todos revoca la versión activa y todo vuelve a la columna del diario');
   await context.close();
 
+  // 5b Pestaña desactualizada (ES111-QA-01/02): otra pestaña cambió lo autorizado; esta NO compone con su lista vieja
+  reset(); ({ context, page } = await open(withExamples));
+  state.versions.push({ version: 1, status: 'active', approvedAt: '2026-10-29T15:00:00.000Z', revokedAt: null, fields: [{ key: 'values', text: 'Autorizado desde otra pestaña' }] });
+  let stale = page.locator('.bridge-card').first(); await stale.getByRole('button', { name: /Autorizar cruce/ }).click(); await stale.getByRole('button', { name: 'Confirmar' }).click();
+  await page.locator('.bridge-error').waitFor(); assert.match(await page.locator('.bridge-error').innerText(), /cambió desde otra pestaña/); assert.equal(state.confirms.length, 0); assert.equal(state.previews.length, 0); check('con la lista desactualizada no se compone nada: se avisa y no se confirma ni se pide vista previa');
+  assert.match(await page.locator('.bridge-col').nth(1).innerText(), /Autorizado desde otra pestaña/); assert.equal(await page.evaluate(() => document.activeElement?.id), 'bridge-pro'); check('la pantalla se actualiza con lo que hay en el servidor y el foco va a «Tu perfil profesional»');
+  stale = page.locator('.bridge-card').first(); await stale.getByRole('button', { name: /Autorizar cruce/ }).click(); await stale.getByRole('button', { name: 'Confirmar' }).click(); await page.waitForFunction(() => document.querySelectorAll('.bridge-done').length === 2);
+  assert.equal(state.confirms.length, 1); assert.equal(state.confirms[0].fields.length, 2); assert.equal(state.confirms[0].fields[0].text, 'Autorizado desde otra pestaña'); check('al reintentar se compone sobre lo vigente: no se pierde lo autorizado en la otra pestaña');
+  state.versions.at(-1).fields = state.versions.at(-1).fields.filter((f) => f.text !== 'Autorizado desde otra pestaña');
+  stale = page.locator('.bridge-card').first(); await stale.getByRole('button', { name: /Autorizar cruce/ }).click(); await stale.getByRole('button', { name: 'Confirmar' }).click();
+  await page.locator('.bridge-error').waitFor(); assert.equal(state.confirms.length, 1); check('si otra pestaña retiró un texto, tampoco vuelve a cruzar desde esta');
+  await context.close();
+
+  // 5c Foco al cancelar y reintento con el mismo requestId (ES111-QA-03/04)
+  reset(); ({ context, page } = await open(withExamples));
+  const cardOne = page.locator('.bridge-card').first(); const id = await cardOne.locator('[data-authorize]').getAttribute('data-authorize');
+  await cardOne.getByRole('button', { name: /Autorizar cruce/ }).click(); await cardOne.getByRole('button', { name: 'Cancelar' }).click();
+  assert.equal(await page.evaluate((i) => document.activeElement?.getAttribute('data-authorize') === i, id), true); check('al cancelar el foco vuelve al botón «Autorizar cruce» de la misma tarjeta');
+  state.failConfirm = { status: 500, code: 'x' };
+  await page.locator('.bridge-card').first().getByRole('button', { name: /Autorizar cruce/ }).click(); await page.locator('.bridge-card').first().getByRole('button', { name: 'Confirmar' }).click(); await page.locator('.bridge-error').waitFor();
+  await page.locator('.bridge-card').first().getByRole('button', { name: 'Confirmar' }).click(); await page.waitForSelector('.bridge-done'); // tras el error la pregunta sigue abierta: se reintenta con Confirmar
+  assert.equal(state.confirms.length, 2); assert.equal(state.confirms[0].requestId, state.confirms[1].requestId); check('reintentar el mismo cruce tras un fallo usa el mismo requestId');
+  assert.ok(await page.evaluate(() => document.activeElement?.id === 'bridge-pro')); check('tras autorizar el foco va a «Tu perfil profesional» (la tarjeta ya no existe)');
+  await context.close();
+
   // 6 Errores del servidor: no cruza nada y se explica
   for (const [status, code, expected] of [[422, 'field_not_shareable', /no se puede compartir/], [403, 'consent_required', /Necesitas autorizar el puente/], [409, 'conflict', /Otro cambio ocurrió/], [500, 'x', /No pudimos guardar/]]) {
     reset(); ({ context, page } = await open(withExamples)); state.failConfirm = { status, code };

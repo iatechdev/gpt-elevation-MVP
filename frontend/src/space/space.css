@@ -6,6 +6,8 @@
   --radius-field: .25rem; --radius-box: .25rem; --radius-selector: .25rem;
   font: 400 16px/1.65 Inter, sans-serif; color: var(--color-base-content); overflow-wrap: anywhere;
 }
+body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
+body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .space-page { min-height: 100vh; background: var(--color-base-100); padding: 16px; }
 .space-page > header, .space-page > main, .space-page > .space-nav { max-width: 860px; margin: 0 auto 24px; }
 .space-page > header, .space-actions, .space-nav nav { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
