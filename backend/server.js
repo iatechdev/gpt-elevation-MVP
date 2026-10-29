@@ -109,6 +109,7 @@ app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));
 app.use('/api/user/context',   verificarToken, require('./routes/participantContext')); // ES-14 — owner-only context
 app.use('/api/user/resumes',   verificarToken, require('./routes/resumes'));            // ES-109 — hoja de vida (PDF): análisis con IA e histórico cifrado
+app.use('/api/user/resume-skills', verificarToken, require('./routes/resumeSkills'));      // ES-110 — habilidades de la hoja de vida → Mis evidencias
 app.use('/api/user',            verificarToken, require('./routes/progress'));
 app.use('/api/user/plan',       verificarToken, require('./routes/plans'));          // HU-077 — plan del usuario
 app.use('/api/plan-requests',   verificarToken, require('./routes/planRequests'));   // HU-077 — solicitudes usuario

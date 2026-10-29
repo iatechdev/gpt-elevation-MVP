@@ -40,6 +40,11 @@ const str = (value, max) => (typeof value === 'string' && value.trim().length > 
 const literal = (haystack, value, max) => { const s = str(value, max); return s !== null && present(haystack, s) ? s : null; };
 const yearIn = (haystack, value) => Number.isInteger(value) && value >= 1950 && value <= new Date().getUTCFullYear() && haystack.includes(String(value)) ? value : null;
 const asArray = (value) => (Array.isArray(value) ? value : []);
+function lineWith(rawText, name) {
+  const needle = squash(name);
+  const hit = String(rawText).split('\n').map((line) => line.trim()).find((line) => line && squash(line).includes(needle))
+  return hit ? str(hit.slice(0, 200), 200) : null;
+}
 
 // -> { suggestions, discarded } con `suggestions` en la forma del contexto v2 (solo los campos que el documento respalda).
 function buildSuggestions(parsed, rawText, resumeVersion) {
@@ -76,7 +81,8 @@ function buildSuggestions(parsed, rawText, resumeVersion) {
     if (!name || seen.has(name.toLowerCase()) || out.declaredSkills.length >= 40) { discarded += 1; continue; }
     seen.add(name.toLowerCase());
     // La cita de respaldo debe ser un fragmento LITERAL del documento; si no lo es, la habilidad queda sin cita (no se inventa respaldo).
-    out.declaredSkills.push({ name, support: literal(text, item.support, 200), resumeVersion });
+    // Si el modelo no dio una cita literal, se usa la LÍNEA del documento que menciona la habilidad (texto exacto, ya sin contacto): ES-110 la muestra como respaldo.
+    out.declaredSkills.push({ name, support: literal(text, item.support, 200) ?? lineWith(rawText, name), resumeVersion });
   }
   for (const item of asArray(p.languages).slice(0, 10)) {
     const name = literal(text, item?.name, 40);
