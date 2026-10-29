@@ -4,7 +4,9 @@ import { useLanguage } from '../i18n/useLanguage'
 import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
 import type { SkillMap } from '../skill-map/model'
+import { MapGuide } from '../skill-map/MapAccess'
 import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
+import { noLevelAnywhere } from '../skill-map/status'
 import { resolveTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 
@@ -122,6 +124,7 @@ export function SkillMapPage() {
       {map && <>
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
+          {noLevelAnywhere(map.skills) && <MapGuide />}
           {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
           <div className={`skill-map-board${listView || noTerritories ? ' is-list' : ''}`}>
             <div className="skill-map-canvas">
