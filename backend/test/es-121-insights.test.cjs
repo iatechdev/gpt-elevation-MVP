@@ -309,9 +309,11 @@ test('ES-121 (QA ES121-QA-02) un insight nunca promete empleo, contratación, of
   await grantBoth(request, U);
   const { makesPromise } = require('../utils/insightProposal');
   const promises = ['Con esto conseguirás empleo pronto.', 'Seguro te contratarán como coordinador.', 'Parece que tendrás un mejor salario.', 'Recibirás ofertas de trabajo.', 'You will get job offers soon.',
-    'This leads to a higher salary.', 'Vas a conseguir un trabajo en dos meses.', 'Te garantizo que funcionará.', 'Te ofrecerán un puesto de coordinación.', 'Tendrás éxito como líder.', 'You will be hired quickly.', 'Esto garantiza un aumento de sueldo.'];
+    'This leads to a higher salary.', 'Vas a conseguir un trabajo en dos meses.', 'Te garantizo que funcionará.', 'Te ofrecerán un puesto de coordinación.', 'Tendrás éxito como líder.', 'You will be hired quickly.', 'Esto garantiza un aumento de sueldo.',
+    'Aumentarán tus ingresos.', 'Ganarás más dinero en ese rol.', 'Tendrás trabajo asegurado.', 'Your income will grow.', "You'll be hired soon.", 'Tus ingresos crecerán con el tiempo.', 'Con este perfil llegarás a un mejor puesto.', 'Your salary is going to rise.', 'You will earn more money.', 'Pronto lograrás un ascenso.'];
   for (const text of promises) assert.equal(makesPromise(text), true, text);
-  const fine = ['Parece que valoras un sueldo estable.', 'Podría ser que prefieras trabajar en remoto.', 'Parece que coordinar equipos pequeños te da energía.', 'It seems you value stable pay.', 'Dices que buscas un trabajo con autonomía.'];
+  const fine = ['Parece que valoras un sueldo estable.', 'Podría ser que prefieras trabajar en remoto.', 'Parece que coordinar equipos pequeños te da energía.', 'It seems you value stable pay.', 'Dices que buscas un trabajo con autonomía.',
+    'Parece que el dinero no es lo que más te mueve.', 'Te importa que el trabajo tenga sentido.', 'Valoras ganar lo justo y tener tiempo propio.', 'It seems money matters less to you than autonomy.', 'You say a job with purpose gives you energy.'];
   for (const text of fine) assert.equal(makesPromise(text), false, text);
   // por el flujo completo: la propuesta con una promesa se descarta (502 si era lo único) aunque la cita sea real
   for (const text of promises.slice(0, 6)) {

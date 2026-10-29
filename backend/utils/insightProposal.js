@@ -101,12 +101,21 @@ async function catalogSkills(locale) {
 
 // Promesas de resultado que un insight (una hipótesis sobre cómo es la persona) nunca debe hacer. Se compara sin tildes y sin distinguir mayúsculas.
 // No bloquea que la persona diga qué valora o necesita («valoras un sueldo estable»): solo promesas, comparativos de pago y ofertas.
-const PROMISE_TERMS = Object.freeze([
+const PROMISE_TERMS = [
   /conseguir(a|as|an|emos)\b.*\b(empleo|trabajo|puesto)/, /vas a (conseguir|encontrar|obtener)\b.*\b(empleo|trabajo|puesto)/, /(encontraras|obtendras|lograras)\b.*\b(empleo|trabajo|puesto)/,
   /te (contrat|ofrecer|pagar|llamar)/, /seras contratad/, /(mejor|mayor|mas alto|superior)(es)? (salario|sueldo|ingreso|remuneracion|paga)/, /(salario|sueldo) (mas alto|mayor|mejor)/,
   /ofertas? de (trabajo|empleo)/, /(garantiz|aseguraras|tendras exito|sin duda conseguir)/,
   /you will (get|land|find|be hired|be offered)\b/, /(get|land|find) (a|the) job/, /job offers?\b/, /(higher|better|bigger|more) (salary|pay|income)/, /(salary|pay) (increase|raise)/, /\b(hire|hired|hiring) you\b/, /guarantee/, /employment (offer|prospects)/,
-]);
+];
+// Futuro (promesa) cerca de un resultado económico o laboral, en cualquier orden y dentro de la misma frase: cubre «Aumentarán tus ingresos», «Ganarás más dinero», «Tendrás trabajo asegurado», «Your income will grow», «You'll be hired soon».
+// Sesgo deliberado hacia descartar: un falso positivo solo quita un insight; un falso negativo mostraría una promesa (ES121-QA-02).
+const FUTURE_ES = String.raw`(?:\w{3,}(?:aras|eras|iras|aran|eran|iran)|tendr(?:as|an|a)|har(?:as|an)|podr(?:as|an)|sera|seras|seran|habra|saldr(?:as|an|a)|vendr(?:as|an|a)|(?:aumentar|crecer|subir|mejorar|ganar|llegar|lograr|alcanzar|conseguir)a)`;
+const OUTCOME_ES = String.raw`(?:ingreso|dinero|sueldo|salario|empleo|trabajo|puesto|ascenso|promocion|oferta|contrat|remuneracion|paga\b)`;
+const FUTURE_EN = String.raw`(?:will|[a-z]+'ll|going to|gonna)`;
+const OUTCOME_EN = String.raw`(?:income|money|salar|\bpay\b|\bjobs?\b|hired|promot|\boffers?\b|employ|\braise|earning|wealth|\brich\b)`;
+const nearby = (future, outcome) => [new RegExp('\\b' + future + '\\b[^.!?;\\n]{0,60}' + outcome), new RegExp(outcome + '[^.!?;\\n]{0,60}\\b' + future + '\\b')];
+PROMISE_TERMS.push(...nearby(FUTURE_ES, OUTCOME_ES), ...nearby(FUTURE_EN, OUTCOME_EN));
+Object.freeze(PROMISE_TERMS);
 const unaccentLower = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const makesPromise = (text) => PROMISE_TERMS.some((re) => re.test(unaccentLower(text)));
 
