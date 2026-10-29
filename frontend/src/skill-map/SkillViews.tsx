@@ -33,7 +33,6 @@ export function TerritoryMap({ skills, territories, selected, onSelect, lang, t 
       return <g key={territory.id} className={`skill-map-territory tone-${territory.id}`}>
         <rect x={box.x} y={box.y} width={box.w} height={box.h} rx={34} />
         <text className="skill-map-territory-name" x={box.x + box.w / 2} y={box.y + box.h / 2 - 4} textAnchor="middle">{territory.labels[lang]}</text>
-        <text className="skill-map-territory-roles" x={box.x + box.w / 2} y={box.y + box.h / 2 + 18} textAnchor="middle">{territory.roles}</text>
       </g>
     })}
     {assigned.map(skill => links(skill).map(id => {
@@ -80,7 +79,6 @@ export function TerritoryList({ skills, territories, selected, onSelect, lang, t
   return <div className="skill-map-territory-list">
     {groups.map(({ territory, skills: inside }) => <section key={territory.id} className={`skill-map-territory-card tone-${territory.id}`} aria-labelledby={`terr-${territory.id}`}>
       <h2 id={`terr-${territory.id}`}>{territory.labels[lang]}</h2>
-      <p className="skill-map-roles">{territory.roles}</p>
       {inside.length > 0 && <ul>{inside.map(skill => row(skill, territory.id))}</ul>}
     </section>)}
     {unassigned.length > 0 && <section className="skill-map-territory-card tone-none" aria-labelledby="terr-none">
@@ -91,9 +89,34 @@ export function TerritoryList({ skills, territories, selected, onSelect, lang, t
   </div>
 }
 
+/** H-86-02: en escritorio el lienzo solo dibuja capacidades con territorio; las demás se ven aquí, sin tener que cambiar a la lista. */
+export function UnassignedCard({ skills, territories, selected, onSelect, lang, t }: {
+  skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
+  onSelect: (key: string) => void; lang: Lang; t: T
+}) {
+  const { unassigned } = resolveTerritories(skills, territories)
+  if (!unassigned.length) return null
+  return <section className="skill-map-territory-card tone-none skill-map-unassigned" aria-labelledby="terr-unassigned">
+    <h2 id="terr-unassigned">{t('skill_map.unassigned')}</h2>
+    <p className="skill-map-roles">{t('skill_map.unassigned_help')}</p>
+    <ul>{unassigned.map(skill => {
+      const status = skillStatus(skill)
+      return <li key={skill.skillKey}>
+        <button type="button" className="skill-map-pick" aria-pressed={selected === skill.skillKey} onClick={() => onSelect(skill.skillKey)}>
+          <span className={`skill-map-dot ${hasLevel(status) ? 'dot-level' : 'dot-none'}`} aria-hidden="true" />
+          <span className="skill-map-pick-text">
+            <span className="skill-map-pick-name">{label(skill.labels, lang, t)}</span>
+            <span className="skill-map-pick-status">{t(statusKey(status))}</span>
+          </span>
+        </button>
+      </li>
+    })}</ul>
+  </section>
+}
+
 function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessment | null; track: 'self' | 'review'; lang: Lang; t: T }) {
   const view = trackView(assessment)
-  const next = view.stale || assessment?.catalogOutdated ? 'next_stale' : view.needsReview ? 'contradictory' : view.level === null ? 'next_empty' : 'next_current'
+  const next = view.stale || assessment?.catalogOutdated ? 'next_stale' : view.needsReview ? 'next_review' : view.level === null ? 'next_empty' : 'next_current'
   return <section className="skill-map-track" aria-label={t(`skill_map.${track}`)}>
     <h3>{t(`skill_map.${track}`)}</h3>
     {track === 'review' && !assessment ? <p>{t('skill_map.no_review')}</p> : <>
@@ -101,6 +124,7 @@ function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessmen
         {view.level === null ? t('skill_map.no_evidence') : `${t('skill_map.level')} ${view.level}`}
       </p>
       {view.state !== 'no_evidence' && <span className="elv-badge elv-badge-outline">{t(`skill_map.${view.state}`)}</span>}
+      {view.needsReview && <p className="skill-map-note" data-testid="review-why">{t('skill_map.review_why')}</p>}
       {view.stale && <p className="skill-map-warning">{t('skill_map.stale_help')}</p>}
       {assessment?.catalogOutdated && <p className="skill-map-warning">{t('skill_map.catalog_outdated')} {view.level !== null && t('skill_map.previous_rubric')}</p>}
       {assessment && !view.stale && <>
@@ -114,7 +138,6 @@ function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessmen
         <p className="skill-map-free-text">{assessment.rationale || t('skill_map.no_rationale')}</p>
       </>}
       <p className="skill-map-next"><strong>{t('skill_map.next')}: </strong>{t(`skill_map.${next}`)}</p>
-      {view.needsReview && <p className="skill-map-note">{t('skill_map.review_unavailable')}</p>}
     </>}
   </section>
 }
