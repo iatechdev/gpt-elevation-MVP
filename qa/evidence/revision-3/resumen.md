@@ -18,3 +18,6 @@ No repetido por mí en esta pasada: medición propia de contraste y objetivos t�
 
 ## #42 ES-36 · head b96b84f (rebase sobre main ec77c2c; merge local con main a23c31a limpio)
 lint 0 avisos, tipos, frontend 129/129, backend 370/370, audit 0, build (JS 770.936 B, CSS 105.256 B: deuda de peso); las clases daisyUI que usa (radio, checkbox, fieldset, alert) existen en el CSS construido; script de Dev 9 grupos PASS en 8 builds; CI verde (4 jobs).
+
+## #46 ES-35 · head a3bd5b3 (rebase sobre main f3e1a95, con #70 y #42)
+Contiene main. lint 0 avisos, tipos, frontend 156/156, backend 383/383, audit 0, build (JS 818.542 B, CSS 111.525 B: deuda de peso); las clases daisyUI que usa (btn, card, checkbox, textarea) existen en el CSS; script de Dev 13/13 en 8 builds (flujo completo, lost-ack, conflicto, cierres seguros, 0 escrituras y 0 excepciones); CI verde en sus cuatro jobs.
