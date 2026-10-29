@@ -23,6 +23,9 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 | `JWT_SECRET` | Firma de sesiones | Distinto por entorno. Sin ella el proceso debe fallar (hallazgo P1 del PR #2) |
 | `DATA_ENCRYPTION_KEY` | Cifrado de datos (`utils/crypto.js`) | Distinta por entorno. En producción el proceso no arranca sin ella |
 | `PROMPT_ENCRYPTION_KEY` | Cifrado de prompts (`promptVault.js`) | Distinta por entorno |
+| `PROFESSIONAL_ENCRYPTION_KEY` | Cifrado del contexto profesional (`utils/professionalCrypto.js`, ES-86) | Distinta de `DATA_ENCRYPTION_KEY` y por entorno; mín. 32 caracteres. Sin ella, en producción, el API responde 503 al guardar contexto profesional. Respaldo fuera del repositorio. Ver doc 44 |
+| `PROFESSIONAL_KEY_ID` | Identificador de esa clave (`a-z0-9`, 1–8) | Opcional, por defecto `p1`; cambia al rotar |
+| `PROFESSIONAL_ENCRYPTION_KEY_PREVIOUS`, `PROFESSIONAL_KEY_ID_PREVIOUS` | Clave anterior, solo para descifrar | Solo durante una rotación |
 | `ANTHROPIC_API_KEY` | Claude | Timeout 60 s por intento, 1 reintento |
 | `ANTHROPIC_MODEL` | Modelo de Claude (opcional) | Por defecto `claude-haiku-5-5`; el ID anterior `claude-3-haiku-20240307` devuelve 404 |
 | `TRUST_PROXY_HOPS` | Saltos de proxy de confianza para la IP del rate limit | `1` en Railway; sin definir no se confía en `X-Forwarded-For` |

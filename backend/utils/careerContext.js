@@ -13,6 +13,7 @@ const DerivedInvalidation = require('../DerivedInvalidation');
 const DiaryEntry = require('../DiaryEntry');
 const ChatTurn = require('../ChatTurn');
 const { encriptarV2, desencriptar } = require('./crypto');
+const professionalCrypto = require('./professionalCrypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
 const { detectRisk } = require('./safety');
 const consent = require('./consent');
@@ -37,6 +38,17 @@ class BridgeError extends Error {
 const invalid = (es = 'Datos inválidos.', en = 'Invalid data.') => new BridgeError(400, 'invalid_input', es, en);
 const consentError = () => new BridgeError(403, 'consent_required',
   'Necesitas autorizar el puente profesional.', 'You need to authorize the professional bridge.');
+
+// ES-86: el payload se cifra con la clave del dominio profesional (v2p:). Transición: fuera de producción, sin esa clave, se conserva el
+// formato v2 con la clave de datos (como antes). En producción sin la clave NO se guarda nada (503): nunca se degrada en silencio.
+function sealPayload(text) {
+  if (professionalCrypto.configured()) return professionalCrypto.encrypt(text);
+  if (process.env.NODE_ENV === 'production') {
+    throw new BridgeError(503, 'professional_key_missing',
+      'El servicio no puede guardar el contexto profesional ahora.', 'The service cannot save the professional context right now.');
+  }
+  return encriptarV2(text);
+}
 
 const isPlain = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 
@@ -161,7 +173,7 @@ async function confirm(userId, { fields, token, requestId }) {
     }
     const row = await CareerContextVersion.create({
       UserId: userId, version: rows.reduce((max, r) => Math.max(max, r.version), 0) + 1, status: 'active',
-      payload: encriptarV2(JSON.stringify(representation(clean))), origins,
+      payload: sealPayload(JSON.stringify(representation(clean))), origins,
       consentVersion: withBridge ? consent.REQUIRED_VERSION[PURPOSE] : null, requestId, approvedAt: new Date(),
     }, { transaction });
     return { record: toRecord(row, representation(clean)), created: true };
