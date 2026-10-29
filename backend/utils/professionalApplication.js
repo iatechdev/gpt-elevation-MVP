@@ -48,4 +48,10 @@ function validateApplication(body, file) {
 
 const ack = { es: 'Recibimos tu solicitud. El equipo de Elevation la revisará y te escribirá al correo que indicaste.', en: 'We received your request. The Elevation team will review it and write to the email you provided.' };
 
-module.exports = { MAX_CV_BYTES, REJECTED_RETENTION_DAYS, STATUSES, FIELDS, isPdf, validateApplication, ack };
+// ES-107: tope global de solicitudes. El valor por defecto (200 pendientes, 1 GiB) es una propuesta que confirma el PO; se puede fijar por entorno.
+const positive = (raw, fallback) => { const n = Number(raw); return Number.isSafeInteger(n) && n > 0 ? n : fallback; };
+const capacityLimits = (env = process.env) => ({ maxPending: positive(env.PRO_APP_MAX_PENDING, 200), maxBytes: positive(env.PRO_APP_MAX_BYTES, 1024 * 1024 * 1024) });
+// Se cierra si ya hay el máximo de pendientes o si otra hoja de vida de 5 MB rebasaría el peso total.
+const isFull = (used, limits) => used.pending >= limits.maxPending || used.bytes + MAX_CV_BYTES > limits.maxBytes;
+
+module.exports = { capacityLimits, isFull, MAX_CV_BYTES, REJECTED_RETENTION_DAYS, STATUSES, FIELDS, isPdf, validateApplication, ack };
