@@ -7,6 +7,7 @@ const router  = express.Router();
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-101
+const { callClaude } = require('../utils/aiClient'); // ES-102
 const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
 
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
@@ -436,7 +437,8 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
       const moodLabels = { 1: 'muy mal', 2: 'no tan bien', 3: 'neutral', 4: 'bien', 5: 'muy bien' };
       const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
 
-      const aiResponse = await anthropic.messages.create({
+      // ES-102 (ES93-M5): por la puerta única de IA (presupuesto, tiempo de espera y reintentos de ES-22). Si falla o no hay presupuesto, el cierre sigue.
+      const aiResponse = await callClaude({ userId: req.user.id, kind: 'session_recommend', body: {
         model:      anthropic.MODEL,
         max_tokens: 400,
         system:     'Eres un asistente de bienestar empático de Elevation. Genera recomendaciones breves, cálidas y accionables para el paciente después de su sesión de terapia. Responde SOLO con la recomendación, sin preámbulo.',
@@ -444,7 +446,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
           role:    'user',
           content: `La persona terminó una sesión de terapia sintiéndose ${moodLabel}. Genera una recomendación de bienestar breve (máximo 3 oraciones) para ayudarle en las próximas horas.`,
         }],
-      });
+      } });
 
       const content = textOf(aiResponse);
       if (content) {
