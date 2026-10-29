@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ES-30 — Propuesta de diseño: Mapa de Competencias</title>
+<style>/* ES-37 — Tokens del sistema de diseño Elevation + Skill Map (fuente única).
+   Tres capas: primitivos (--elv-p-*) → semánticos (--elv-*) → tema daisyUI (ver bloque final).
+   Los pares texto/fondo están medidos contra WCAG 2.1 AA (≥4,5:1 texto, ≥3:1 controles y bordes de control);
+   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja aún NO está importada por la app. */
+
+:root {
+  /* 1. Primitivos ─────────────────────────────────────────── */
+  --elv-p-bg: #f9f9f7;
+  --elv-p-surface: #faf8f4;
+  --elv-p-card: #ffffff;
+  --elv-p-muted-bg: #f5f3ef;
+  --elv-p-line: #e7e5e4;
+  --elv-p-line-md: #d6d2c4;
+  --elv-p-control-line: #7c8875;
+  --elv-p-olive: #6b7d5c;       /* marca: decorativo, bordes de selección (no apto para texto sobre blanco) */
+  --elv-p-olive-action: #4a6741;
+  --elv-p-olive-bg: #eaf0e6;
+  --elv-p-sage: #a8b5a2;
+  --elv-p-ink-1: #1c1917;
+  --elv-p-ink-2: #57534e;
+  --elv-p-ink-3: #6b6560;
+  --elv-p-teal: #065f46;
+  --elv-p-teal-bg: #f0fdfa;
+
+  /* 2. Semánticos (claro) ─────────────────────────────────── */
+  --elv-bg: var(--elv-p-bg);
+  --elv-surface: var(--elv-p-surface);
+  --elv-card: var(--elv-p-card);
+  --elv-muted-bg: var(--elv-p-muted-bg);
+  --elv-text-1: var(--elv-p-ink-1);
+  --elv-text-2: var(--elv-p-ink-2);
+  --elv-text-3: var(--elv-p-ink-3);     /* sustituye al #A8A29E anterior (2,39:1, no cumplía AA) */
+  --elv-line: var(--elv-p-line);        /* divisores decorativos */
+  --elv-line-control: var(--elv-p-control-line); /* borde de inputs y botones secundarios (≥3:1) */
+  --elv-action: var(--elv-p-olive-action);
+  --elv-action-text: #ffffff;
+  --elv-action-soft: var(--elv-p-olive-bg);
+  --elv-brand: var(--elv-p-olive);
+  --elv-link: var(--elv-p-olive-action);
+  --elv-focus: #2f6b8f;
+  --elv-ai: var(--elv-p-teal);          /* voz de la IA */
+  --elv-ai-bg: var(--elv-p-teal-bg);
+  --elv-success: #065f46;   --elv-success-bg: #f0fdfa;
+  --elv-warning: #92400e;   --elv-warning-bg: #fef3c7;
+  --elv-error: #9b1c1c;     --elv-error-bg: #fee2e2;
+  --elv-info: #075985;      --elv-info-bg: #e0f2fe;
+
+  /* Espacio (base 4 px) */
+  --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;
+  --elv-s-6: 1.5rem;  --elv-s-8: 2rem;   --elv-s-12: 3rem;   --elv-s-16: 4rem;
+  /* Radios */
+  --elv-r-sm: 0.5rem; --elv-r-md: 0.75rem; --elv-r-lg: 1rem; --elv-r-xl: 1.25rem; --elv-r-pill: 999px;
+  /* Sombras: sutiles */
+  --elv-shadow-card: 0 2px 12px rgb(26 28 27 / 0.06);
+  --elv-shadow-modal: 0 8px 40px rgb(26 28 27 / 0.12);
+  /* Tipografía */
+  --elv-font-body: 'Inter', system-ui, sans-serif;
+  --elv-font-display: 'Playfair Display', Georgia, serif;   /* solo títulos, peso 300–400 */
+  --elv-font-voice: 'Noto Serif', Georgia, serif;           /* voz de la IA, cursiva */
+  --elv-fs-xs: 0.75rem; --elv-fs-sm: 0.8125rem; --elv-fs-md: 0.875rem;
+  --elv-fs-base: 1rem;  --elv-fs-lg: 1.125rem;  --elv-fs-xl: 1.375rem;
+  --elv-fs-hero: clamp(1.75rem, 4vw + 1rem, 3rem);
+  /* Objetivo táctil mínimo */
+  --elv-touch: 2.75rem;
+}
+
+/* Modo oscuro: mismos nombres semánticos, activado con la clase .elv-dark (la pone el dominio que ya lo soportaba:
+   Career y Facilitation, según prefers-color-scheme). No se activa en pantallas que hoy no lo tienen. */
+.elv-dark {
+    color-scheme: dark;
+    --elv-bg: #181c17;  --elv-surface: #242b22;  --elv-card: #242b22;  --elv-muted-bg: #1e241d;
+    --elv-text-1: #f5f6f1;  --elv-text-2: #c4cabf;  --elv-text-3: #b3baad;
+    --elv-line: #3a4337;  --elv-line-control: #899582;
+    --elv-action: #c1d5b5;  --elv-action-text: #182115;  --elv-action-soft: #2b3628;
+    --elv-link: #c1d5b5;  --elv-focus: #9fd0ea;
+    --elv-ai: #a9d6b0;  --elv-ai-bg: #1e2b24;
+    --elv-success: #a9d6b0;  --elv-success-bg: #1e2b24;
+    --elv-warning: #f4d9a8;  --elv-warning-bg: #33291a;
+    --elv-error: #ffb5b5;    --elv-error-bg: #3a2222;
+    --elv-info: #9fd0ea;     --elv-info-bg: #1c2b36;
+}
+
+/* Foco visible único para todo control */
+.elv-focusable:focus-visible,
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--elv-focus);
+  outline-offset: 2px;
+}
+
+/* 3. Tema daisyUI único: mapea los semánticos a las variables de daisyUI. Los CSS de dominio ya no
+   definen colores propios; conservan solo su layout. */
+.elv-theme, .skill-map-scope, .career-scope, .compass-scope {
+  --color-base-100: var(--elv-card);      --color-base-200: var(--elv-bg);
+  --color-base-300: var(--elv-line-control);  --color-base-content: var(--elv-text-1);
+  --color-primary: var(--elv-action);     --color-primary-content: var(--elv-action-text);
+  --color-secondary: var(--elv-text-2);   --color-secondary-content: var(--elv-bg);
+  --color-accent: var(--elv-ai);          --color-accent-content: var(--elv-bg);
+  --color-neutral: var(--elv-text-1);     --color-neutral-content: var(--elv-bg);
+  --color-info: var(--elv-info);          --color-info-content: var(--elv-bg);
+  --color-success: var(--elv-success);    --color-success-content: var(--elv-bg);
+  --color-warning: var(--elv-warning);    --color-warning-content: var(--elv-bg);
+  --color-error: var(--elv-error);        --color-error-content: var(--elv-bg);
+  --radius-selector: var(--elv-r-sm); --radius-field: var(--elv-r-md); --radius-box: var(--elv-r-lg);
+  --size-selector: 0.25rem; --size-field: 0.25rem; --border: 1px; --depth: 0; --noise: 0;
+}
+</style>
+<style>
+  /* Maqueta estática: DATOS DE EJEMPLO. Colores/espacios salen de tokens.css (ES-37). */
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--elv-bg);color:var(--elv-text-1);font:400 var(--elv-fs-base)/1.6 var(--elv-font-body)}
+  main{max-width:1100px;margin:0 auto;padding:var(--elv-s-6) var(--elv-s-4) var(--elv-s-12)}
+  h1{font:400 var(--elv-fs-hero) var(--elv-font-display);margin:var(--elv-s-4) 0 var(--elv-s-2)}
+  h2{font:400 var(--elv-fs-xl) var(--elv-font-display);margin:0 0 var(--elv-s-2)}
+  p{margin:var(--elv-s-2) 0;color:var(--elv-text-2)}
+  .note{background:var(--elv-warning-bg);color:var(--elv-warning);padding:var(--elv-s-3) var(--elv-s-4);border-radius:var(--elv-r-md);font-size:var(--elv-fs-md)}
+  .bar{display:flex;gap:var(--elv-s-2);flex-wrap:wrap;margin:var(--elv-s-4) 0;align-items:center}
+  .ctl{min-height:var(--elv-touch);padding:0 var(--elv-s-4);border:1px solid var(--elv-line-control);background:var(--elv-card);color:var(--elv-text-1);border-radius:var(--elv-r-md);font:500 var(--elv-fs-md) var(--elv-font-body);cursor:pointer}
+  .ctl[aria-pressed=true]{background:var(--elv-action);color:var(--elv-action-text);border-color:var(--elv-action)}
+  .ctl.danger{color:var(--elv-error);border-color:var(--elv-error)}
+  .legend{display:flex;gap:var(--elv-s-6);flex-wrap:wrap;font-size:var(--elv-fs-md);color:var(--elv-text-2);margin:var(--elv-s-2) 0}
+  .legend span{display:inline-flex;align-items:center;gap:var(--elv-s-2)}
+  .layout{display:grid;gap:var(--elv-s-6);grid-template-columns:1fr}
+  @media(min-width:900px){.layout{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}}
+  .card{background:var(--elv-card);border:1px solid var(--elv-line);border-radius:var(--elv-r-lg);box-shadow:var(--elv-shadow-card);padding:var(--elv-s-4) var(--elv-s-6)}
+  svg{width:100%;height:auto;display:block}
+  .node{cursor:pointer}
+  .node:focus-visible{outline:3px solid var(--elv-focus);outline-offset:3px}
+  .t-label{font:600 12px var(--elv-font-body);fill:var(--elv-text-1)}
+  .s-label{font:500 13px var(--elv-font-body);fill:var(--elv-text-1)}
+  .list-view{display:none}
+  .as-list .map-view{display:none}.as-list .list-view{display:block}
+  /* En móvil la lista es la vista por defecto (el mapa se ofrece como alternativa en pantallas anchas) */
+  @media(max-width:700px){.map-view{display:none}.list-view{display:block}.toggle-view{display:none}}
+  .terr{margin:var(--elv-s-4) 0}
+  .terr h3{margin:0 0 var(--elv-s-2);font-size:var(--elv-fs-lg);font-weight:600}
+  .skill-row{display:flex;gap:var(--elv-s-3);align-items:center;min-height:var(--elv-touch);padding:var(--elv-s-1) 0;border-top:1px solid var(--elv-line)}
+  .skill-row button.pick{flex:1;text-align:left;background:none;border:0;font:inherit;color:inherit;cursor:pointer;min-height:var(--elv-touch)}
+  .badge{display:inline-flex;align-items:center;gap:6px;min-height:1.5rem;padding:0 var(--elv-s-3);border-radius:var(--elv-r-pill);font-size:var(--elv-fs-xs);font-weight:600;border:1px solid}
+  .b-ev{background:var(--elv-action-soft);color:var(--elv-action);border-color:var(--elv-action)}
+  .b-conv{background:transparent;color:var(--elv-text-2);border:1px dashed var(--elv-line-control)}
+  .switch{display:inline-flex;align-items:center;gap:var(--elv-s-2);min-height:var(--elv-touch)}
+  .switch button{width:44px;height:26px;border-radius:var(--elv-r-pill);border:1px solid var(--elv-line-control);background:var(--elv-card);position:relative;cursor:pointer;padding:0}
+  .switch button::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--elv-line-control);transition:transform .2s}
+  .switch button[aria-checked=true]{background:var(--elv-action);border-color:var(--elv-action)}
+  .switch button[aria-checked=true]::after{transform:translateX(18px);background:var(--elv-action-text)}
+  .detail h3{margin:0;font-size:var(--elv-fs-lg)}
+  dl{margin:var(--elv-s-3) 0}dt{font-weight:600;font-size:var(--elv-fs-md)}dd{margin:0 0 var(--elv-s-2);color:var(--elv-text-2)}
+  details{border-top:1px solid var(--elv-line);padding-top:var(--elv-s-2)}summary{min-height:var(--elv-touch);cursor:pointer;display:flex;align-items:center}
+  .zone{margin-top:var(--elv-s-6)}
+  .zone .row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--elv-s-3)}
+  @media (prefers-reduced-motion:reduce){.switch button::after{transition:none}}
+</style>
+</head>
+<body>
+<main id="root">
+  <p class="note" data-i="sample">MAQUETA DE DISEÑO con datos de ejemplo. Los territorios son los del prototipo Figma; la asignación de habilidades a territorios es de ejemplo hasta que Alejo la defina.</p>
+  <div class="bar" role="group" aria-label="Opciones de vista">
+    <button class="ctl" id="tLang" aria-pressed="false" type="button">EN</button>
+    <button class="ctl toggle-view" id="tView" aria-pressed="false" type="button" data-i="asList">Ver como lista</button>
+  </div>
+
+  <h1 data-i="title">Mapa de competencias</h1>
+  <p data-i="lead">Territorios, no etiquetas. El nivel no certifica: muestra qué evidencia hay hoy.</p>
+  <div class="legend" aria-label="Leyenda">
+    <span><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="var(--elv-action)"/></svg><b data-i="lgEv">Con evidencia</b></span>
+    <span><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="none" stroke="var(--elv-text-2)" stroke-width="2" stroke-dasharray="3 3"/></svg><b data-i="lgConv">En conversación</b></span>
+    <span data-i="lgNote">Línea = la competencia pertenece a ese territorio.</span>
+  </div>
+
+  <div class="layout">
+    <section class="card" aria-label="Mapa">
+      <div class="map-view"><svg id="svg" viewBox="-100 0 1000 640" role="group" aria-label="Mapa de territorios y competencias"></svg></div>
+      <div class="list-view" id="list"></div>
+    </section>
+    <aside class="card detail" id="detail" aria-live="polite"></aside>
+  </div>
+
+  <section class="card zone" aria-labelledby="zt">
+    <div class="row"><div><h2 id="zt" data-i="zoneT">Zona profesional</h2><p data-i="zoneP">Solo lo que autorices cruza hacia tu recorrido profesional. Puedes cambiarlo cuando quieras.</p></div>
+      <button class="ctl danger" id="revokeAll" type="button" data-i="revoke">Revocar todos</button></div>
+    <div id="zoneList"></div>
+  </section>
+</main>
+<script>
+const T=[{id:'dir',es:'Dirección y Liderazgo',en:'Leadership & Management'},{id:'con',es:'Consultoría Estratégica',en:'Strategy Consulting'},{id:'com',es:'Comunicación Ejecutiva',en:'Executive Communication'},{id:'ing',es:'Ingeniería y Sistemas',en:'Engineering & Systems'},{id:'inn',es:'Innovación y Producto',en:'Innovation & Product'}];
+// DATOS DE EJEMPLO (no reales). evidence:true => nivel con evidencia; false => en conversación (sin nivel); territory:null => sin asignar
+const S=[
+ {k:'lid',t:'dir',es:'Liderazgo de equipos',en:'Team leadership',evidence:true,level:3,ev:2,conf:'Media'},
+ {k:'dec',t:'dir',es:'Toma de decisiones',en:'Decision making',evidence:false},
+ {k:'ana',t:'con',es:'Análisis de problemas',en:'Problem analysis',evidence:true,level:2,ev:1,conf:'Baja'},
+ {k:'est',t:'con',es:'Pensamiento estratégico',en:'Strategic thinking',evidence:false},
+ {k:'pre',t:'com',es:'Presentaciones a directivos',en:'Executive presentations',evidence:true,level:4,ev:3,conf:'Alta'},
+ {k:'neg',t:'com',es:'Negociación',en:'Negotiation',evidence:false},
+ {k:'sis',t:'ing',es:'Diseño de sistemas',en:'Systems design',evidence:true,level:null,ev:0,conf:'Baja',stale:true},
+ {k:'pro',t:'inn',es:'Descubrimiento de producto',en:'Product discovery',evidence:false},
+ {k:'ada',t:null,es:'Adaptabilidad',en:'Adaptability',evidence:false}];
+const I={es:{sample:'MAQUETA DE DISEÑO con datos de ejemplo. Los territorios son los del prototipo Figma; la asignación de habilidades a territorios es de ejemplo hasta que Alejo la defina.',asList:'Ver como lista',asMap:'Ver como mapa',title:'Mapa de competencias',lead:'Territorios, no etiquetas. El nivel no certifica: muestra qué evidencia hay hoy.',lgEv:'Con evidencia',lgConv:'En conversación',lgNote:'Línea = la competencia pertenece a ese territorio.',zoneT:'Zona profesional',zoneP:'Solo lo que autorices cruza hacia tu recorrido profesional. Puedes cambiarlo cuando quieras.',revoke:'Revocar todos',none:'Sin territorio asignado',pick:'Elige una competencia del mapa para ver su detalle.',level:'Nivel',noLevel:'Sin nivel: todavía no hay evidencia vigente',ev:'Evidencias referenciadas',conf:'Confianza del respaldo',stale:'Desactualizado: la evidencia ya no está vigente.',rub:'Ver criterios del catálogo vigente',next:'Siguiente paso',nextEv:'Consulta los criterios y reúne nuevas evidencias si quieres revisar tu nivel.',nextConv:'Hablaste de esto, pero aún no hay evidencia. Sube una evidencia para obtener un primer nivel.',nextStale:'Necesita una nueva evaluación con evidencia vigente.',auth:'Autorizar para el recorrido profesional'},
+ en:{sample:'DESIGN MOCKUP with example data. Territories come from the Figma prototype; the skill-to-territory assignment is an example until Alejo defines it.',asList:'View as list',asMap:'View as map',title:'Skills map',lead:'Territories, not labels. A level does not certify: it shows what evidence exists today.',lgEv:'With evidence',lgConv:'In conversation',lgNote:'Line = the skill belongs to that territory.',zoneT:'Professional zone',zoneP:'Only what you authorize crosses into your career path. You can change this any time.',revoke:'Revoke all',none:'No territory assigned',pick:'Choose a skill on the map to see its detail.',level:'Level',noLevel:'No level: there is no current evidence yet',ev:'Referenced evidence',conf:'Confidence in supporting evidence',stale:'Out of date: the evidence is no longer current.',rub:'View current catalog criteria',next:'Next step',nextEv:'Read the criteria and gather further evidence if you wish to revisit your level.',nextConv:'You talked about this, but there is no evidence yet. Upload evidence to get a first level.',nextStale:'Needs reassessment using current evidence.',auth:'Authorize for the career path'}};
+let L='es',sel=null,auth=new Set(['lid','pre']);
+const $=s=>document.querySelector(s),t=k=>I[L][k],nm=o=>o[L];
+function badge(s){return s.evidence?`<span class="badge b-ev">● ${t('lgEv')}${s.level?` · ${t('level')} ${s.level}`:''}</span>`:`<span class="badge b-conv">◌ ${t('lgConv')}</span>`}
+function drawMap(){
+  const cx=400,cy=320,R=150,D=125,svg=$('#svg');let h='';
+  const tp=T.map((x,i)=>{const a=-Math.PI/2+i*2*Math.PI/5;return{...x,a,x:cx+R*Math.cos(a),y:cy+R*Math.sin(a)}});
+  const placed=[];
+  tp.forEach(tt=>{const ss=S.filter(s=>s.t===tt.id);ss.forEach((s,j)=>{const a=tt.a+(j-(ss.length-1)/2)*0.75;placed.push({s,tt,a,sx:tt.x+D*Math.cos(a),sy:tt.y+D*Math.sin(a)})})});
+  placed.forEach(p=>h+='<line x1="'+p.tt.x+'" y1="'+p.tt.y+'" x2="'+p.sx+'" y2="'+p.sy+'" stroke="var(--elv-line-control)" stroke-width="1.5"/>');
+  tp.forEach(tt=>{const words=nm(tt).split(' ');const mid=Math.ceil(words.length/2);const lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')].filter(Boolean);
+    h+='<g><circle cx="'+tt.x+'" cy="'+tt.y+'" r="46" fill="var(--elv-action-soft)" stroke="var(--elv-action)" stroke-width="1.5"/>'+lines.map((l,i)=>'<text class="t-label" x="'+tt.x+'" y="'+(tt.y+4+(i-(lines.length-1)/2)*15)+'" text-anchor="middle">'+l+'</text>').join('')+'</g>'});
+  placed.forEach(p=>{const s=p.s,on=sel===s.k,c=Math.cos(p.a);const anchor=c>0.25?'start':c<-0.25?'end':'middle';const lx=p.sx+(anchor==='start'?20:anchor==='end'?-20:0);const ly=p.sy+(anchor==='middle'?(Math.sin(p.a)>0?34:-24):4);
+    h+='<g class="node" tabindex="0" role="button" aria-label="'+nm(s)+': '+(s.evidence?t('lgEv'):t('lgConv'))+'" data-k="'+s.k+'"><circle cx="'+p.sx+'" cy="'+p.sy+'" r="'+(on?15:12)+'" '+(s.evidence?'fill="var(--elv-action)"':'fill="var(--elv-card)" stroke="var(--elv-text-2)" stroke-width="2" stroke-dasharray="3 3"')+'/>'+(on?'<circle cx="'+p.sx+'" cy="'+p.sy+'" r="20" fill="none" stroke="var(--elv-focus)" stroke-width="2"/>':'')+'<text class="s-label" x="'+lx+'" y="'+ly+'" text-anchor="'+anchor+'">'+nm(s)+'</text></g>'});
+  svg.innerHTML=h;
+  svg.querySelectorAll('.node').forEach(n=>{n.onclick=()=>pick(n.dataset.k);n.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(n.dataset.k)}}})}
+function drawList(){let h='';[...T,{id:null,es:t('none'),en:t('none')}].forEach(tt=>{const ss=S.filter(s=>s.t===tt.id);if(!ss.length)return;h+=`<div class="terr"><h3>${nm(tt)}</h3>${ss.map(s=>`<div class="skill-row"><button class="pick" type="button" data-k="${s.k}">${nm(s)}</button>${badge(s)}</div>`).join('')}</div>`});
+  $('#list').innerHTML=h;$('#list').querySelectorAll('.pick').forEach(b=>b.onclick=()=>pick(b.dataset.k))}
+function detail(){const s=S.find(x=>x.k===sel);if(!s){$('#detail').innerHTML=`<p>${t('pick')}</p>`;return}
+  const nextK=s.stale?'nextStale':s.evidence?'nextEv':'nextConv';
+  $('#detail').innerHTML=`<h3>${nm(s)}</h3><p>${badge(s)}</p><dl>${s.evidence&&!s.stale?`<dt>${t('level')}</dt><dd>${s.level}</dd><dt>${t('ev')}</dt><dd>${s.ev}</dd><dt>${t('conf')}</dt><dd>${s.conf}</dd>`:`<dt>${t('level')}</dt><dd>${s.stale?t('stale'):t('noLevel')}</dd>`}<dt>${t('next')}</dt><dd>${t(nextK)}</dd></dl><details><summary>${t('rub')}</summary><p>1 — … · 2 — … · 3 — … · 4 — …</p></details>`}
+function drawZone(){$('#zoneList').innerHTML=S.map(s=>`<div class="skill-row"><span style="flex:1">${nm(s)}</span><span class="switch"><button type="button" role="switch" aria-checked="${auth.has(s.k)}" aria-label="${t('auth')}: ${nm(s)}" data-k="${s.k}"></button></span></div>`).join('');
+  $('#zoneList').querySelectorAll('button').forEach(b=>b.onclick=()=>{auth.has(b.dataset.k)?auth.delete(b.dataset.k):auth.add(b.dataset.k);drawZone()})}
+function pick(k){sel=k;drawMap();detail()}
+function i18n(){document.documentElement.lang=L;document.querySelectorAll('[data-i]').forEach(n=>{const v=t(n.dataset.i);if(v!==undefined)n.textContent=v});$('#tView').textContent=$('#root').classList.contains('as-list')?t('asMap'):t('asList');drawMap();drawList();detail();drawZone()}
+$('#tLang').onclick=e=>{L=L==='es'?'en':'es';e.target.textContent=L==='es'?'EN':'ES';e.target.setAttribute('aria-pressed',L==='en');i18n()};
+$('#tView').onclick=e=>{const on=$('#root').classList.toggle('as-list');e.target.setAttribute('aria-pressed',on);i18n()};
+$('#revokeAll').onclick=()=>{auth.clear();drawZone()};
+i18n();
+</script>
+</body>
+</html>
