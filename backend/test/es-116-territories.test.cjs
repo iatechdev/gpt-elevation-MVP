@@ -91,3 +91,15 @@ test('ES-116 el borrador provisional trae territorios válidos para las 8 habili
   const used = new Set(seed.skills.flatMap((s) => s.territories));
   assert.deepEqual([...used].sort(), [...skillCatalog.TERRITORIES].sort()); // ningún territorio queda vacío en el borrador
 });
+
+test('ES-116 (QA H-88-02) la clave «new» está reservada: el servidor la rechaza y el resto de claves sigue igual', async (t) => {
+  install();
+  const request = await startApp(t);
+  const draft = (await request('POST', '/api/admin/skill-catalog', ADMIN)).body;
+  const reserved = await put(request, draft.id, 'new', body('new'));
+  assert.deepEqual([reserved.status, reserved.body.code], [400, 'invalid_input']);
+  assert.equal((await put(request, draft.id, 'new_skill', body('nueva'))).status, 200); // solo la clave exacta está reservada
+  assert.equal((await request('GET', '/api/admin/skill-catalog/' + draft.id, ADMIN)).body.skills.some((s) => s.skillKey === 'new'), false);
+  assert.deepEqual(skillCatalog.RESERVED_KEYS, ['new']);
+  assert.equal(skillCatalog.isValidKey('new'), false);
+});

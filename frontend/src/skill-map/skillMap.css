@@ -76,7 +76,8 @@
 .tone-ing { --tone: var(--elv-tone-ing); } .tone-inn { --tone: var(--elv-tone-inn); } .tone-none { --tone: var(--elv-muted-bg); }
 .skill-map-territory rect { fill: var(--tone); }
 .skill-map-territory-name { font: 500 14px var(--elv-font-body); letter-spacing: .12em; text-transform: uppercase; fill: var(--elv-text-1); }
-.skill-map-territory-roles { font: 400 11px var(--elv-font-body); fill: var(--elv-text-2); }
+/* QA H-86-01: tinta (16:1) sobre los tintes de territorio; el gris (3,9–4,1:1) no llegaba a AA. */
+.skill-map-territory-roles { font: 400 11px var(--elv-font-body); fill: var(--elv-text-1); }
 .skill-map-link { stroke-width: 2; opacity: .8; }
 .skill-map-link.is-level { stroke: var(--elv-action); }
 .skill-map-link.is-none { stroke: var(--elv-text-2); stroke-dasharray: 6 5; }
@@ -94,7 +95,7 @@ svg .dot-none { fill: var(--elv-card); stroke: var(--elv-text-2); stroke-width: 
 @media (min-width: 1024px) { .skill-map-territory-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .skill-map-territory-card { background: var(--tone); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-lg); padding: 16px; min-width: 0; align-self: start; }
 .skill-map-territory-card h2 { margin: 0; font: 500 .8125rem var(--elv-font-body); letter-spacing: .12em; text-transform: uppercase; }
-.skill-map-roles { margin: 2px 0 8px; font-size: .8125rem; color: var(--elv-text-2); overflow-wrap: anywhere; }
+.skill-map-roles { margin: 2px 0 8px; font-size: .8125rem; color: var(--elv-text-1); overflow-wrap: anywhere; }
 .skill-map-territory-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .skill-map-pick { display: flex; gap: 10px; align-items: flex-start; width: 100%; min-height: 44px; text-align: left; padding: 10px 12px; background: var(--elv-card); color: var(--elv-text-1); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); cursor: pointer; font: inherit; }
 .skill-map-pick[aria-pressed=true] { border: 3px solid var(--elv-focus); padding: 8px 10px; }
