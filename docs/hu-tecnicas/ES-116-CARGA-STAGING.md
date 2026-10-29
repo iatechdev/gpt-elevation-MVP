@@ -48,7 +48,7 @@ La asignación del seed la propuso Dev, **sin verificar**; Alejo debe revisarla 
 | Caso | Qué hay en staging | Qué hacer |
 |---|---|---|
 | **A** | Ningún catálogo (ni publicado ni borrador) | `cd backend && DATABASE_URL='<staging>' node scripts/seedSkillCatalogDraft.js` → crea el borrador con las 8 habilidades y sus territorios; imprime `{"draftId":…,"version":…,"skills":8,"published":false}`. |
-| **B** | Catálogo **sintético publicado** (semilla de demostración) | **No uses el script**: el borrador copia el vigente y el script lo mezclaría con el texto sin verificar (sobrescribe las habilidades de igual clave y añade las demás). En la pantalla: «Crear borrador desde el vigente» y marcar los territorios de cada habilidad (o dejarlo a Alejo). |
+| **B** | **Cualquier catálogo publicado** (sintético o REAL; producción ya tiene la versión 1 publicada) | **No uses el script** (decisión de Mauricio, Jira ES-116, comentario 10528): el borrador copia el vigente y el script lo mezclaría con el texto sin verificar (sobrescribe las habilidades de igual clave y añade las demás). En la pantalla: «Crear borrador desde el vigente» y marcar los territorios de cada habilidad (o dejarlo a Alejo). |
 | **C** | Ya hay un borrador abierto | El script se niega («Ya hay un borrador abierto»). Edita ese borrador desde la pantalla. |
 
 `DB_SSL`: déjalo con su valor por defecto en staging (Supabase exige SSL); solo `DB_SSL=false` en una base local.

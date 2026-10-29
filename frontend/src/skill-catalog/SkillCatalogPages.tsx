@@ -195,6 +195,7 @@ function ManagerSession({ session }: { session: string }) {
       {ready && detail && <>
         {readOnly && <p className="skcat-help">{t('skcat.readonly_help')}</p>}
         <form className="skcat-card" onSubmit={e => { e.preventDefault(); void run('save') }} noValidate>
+          <fieldset className="skcat-lock" disabled={busy} aria-busy={busy}>
           <div className="skcat-grid2">
             <div className={fieldErrors.key ? 'skcat-field is-missing' : 'skcat-field'}>
               <label htmlFor="skcat-key">{t('skcat.f_key')}</label>
@@ -249,6 +250,7 @@ function ManagerSession({ session }: { session: string }) {
               <button type="submit" className="elv-btn skcat-primary" disabled={busy || (!dirty && !creating)}>{busy ? t('skcat.saving') : t('skcat.save')}</button>
             </div>
           </div>}
+          </fieldset>
         </form>
       </>}
       <dialog ref={dialog} className="skcat-dialog" aria-labelledby="skcat-rm-title" onClose={() => setConfirmRemove(false)}>

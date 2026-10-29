@@ -1,6 +1,9 @@
 import type { Pair, SkillBody, SkillRow } from './api'
 
 export const KEY_RE = /^[a-z][a-z0-9_]{2,47}$/
+/** QA H-88-02: `new` está reservada: la ruta /skills/new es el alta. */
+export const RESERVED_KEYS: readonly string[] = ['new']
+export const isValidKey = (key: string) => KEY_RE.test(key) && !RESERVED_KEYS.includes(key)
 export const LEVELS = ['1', '2', '3', '4'] as const
 export type Level = typeof LEVELS[number]
 export type Form = {
@@ -39,7 +42,7 @@ const today = () => new Date().toISOString().slice(0, 10)
 /** Las mismas reglas de tamaño y fecha que el servidor, para avisar en línea antes de enviar. */
 export function validate(form: Form, key: string, creating: boolean, now = today()): Partial<Record<FieldError, true>> {
   const e: Partial<Record<FieldError, true>> = {}
-  if (creating && !KEY_RE.test(key)) e.key = true
+  if (creating && !isValidKey(key)) e.key = true
   if (form.labelEs.trim().length > 80) e.label_es = true
   if (form.labelEn.trim().length > 80) e.label_en = true
   if (LEVELS.some(n => form.levels[n].es.trim().length > 300 || form.levels[n].en.trim().length > 300)) e.level = true

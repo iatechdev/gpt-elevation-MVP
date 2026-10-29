@@ -10,6 +10,9 @@ const SkillDefinition = require('../SkillDefinition');
 const { normalizeText } = require('./promptSafety');
 
 const KEY_RE = /^[a-z][a-z0-9_]{2,47}$/;
+// QA H-88-02: `new` es el alta en la pantalla (/skills/new); una habilidad con esa clave no se podría abrir ni editar.
+const RESERVED_KEYS = Object.freeze(['new']);
+const isValidKey = (key) => typeof key === 'string' && KEY_RE.test(key) && !RESERVED_KEYS.includes(key);
 const TYPES = ['transversal', 'domain'];
 const LEVELS = ['1', '2', '3', '4'];
 const LANGS = ['es', 'en'];
@@ -150,7 +153,7 @@ async function editableDraft(id, transaction) {
 }
 
 async function upsertSkill(id, skillKey, body) {
-  if (typeof skillKey !== 'string' || !KEY_RE.test(skillKey)) throw invalid('Clave de habilidad inválida.', 'Invalid skill key.');
+  if (!isValidKey(skillKey)) throw invalid('Clave de habilidad inválida.', 'Invalid skill key.');
   const def = normalizeDefinition(body);
   return ownTransaction(async (transaction) => {
     const catalog = await editableDraft(id, transaction);
@@ -200,4 +203,4 @@ async function getPublished(transaction) {
   return { version: catalog.version, skills: new Map(defs.map((d) => [d.skillKey, { skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], rubricHash: rubricHash(d) }])) };
 }
 
-module.exports = { TERRITORIES, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };
+module.exports = { TERRITORIES, RESERVED_KEYS, isValidKey, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };
