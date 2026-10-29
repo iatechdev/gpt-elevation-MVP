@@ -19,6 +19,7 @@
     "eval:mock": "node evaluation/es44/cli.cjs --mode=mock",
     "eval:local": "node evaluation/es44/cli.cjs --mode=integration",
     "eval:review": "node evaluation/es44/review.cjs",
+    "test:db": "node --test --test-concurrency=1 test-db/*.test.cjs",
     "test:career-plan:pg": "node --test test/integration/es-33-postgres.cjs",
     "test:career-plan:integration:pg": "node --test test/integration/es-33-integration-postgres.cjs",
     "test:career-plan:local": "node scripts/testEs33Local.cjs",

@@ -28,6 +28,7 @@ import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { CompassPage } from './compass/CompassPage'
 import { CareerShell } from './career/CareerShell'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 import { ExercisePage } from './exercises/ExercisePage'
@@ -47,6 +48,7 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/compass" element={<CompassPage />} />
         <Route path="/app/next-step" element={<CareerShell />}>
           <Route index element={<RoutesScreen />} />
           <Route path="experiments" element={<ExperimentList />} />
