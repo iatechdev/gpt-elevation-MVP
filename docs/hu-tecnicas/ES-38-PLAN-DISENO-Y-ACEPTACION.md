@@ -163,3 +163,9 @@ Los mocks facilitan estados difíciles pero no acreditan integración. Resultado
 ## Aprobación solicitada
 
 Aprobar la integración visual completa de los grupos anteriores, los patrones responsive/teclado, textos compartidos y estimación inicial 32–48 h, conservando flujos/contratos y la excepción de la landing. La implementación dependiente del tema espera ES-37 integrado; no se autoriza fusionarlo desde Dev. Este plan no da por aprobadas funcionalidades que sigan en QA ni amplía el alcance de sus contratos.
+
+## Aprobación recibida y preparación independiente
+
+El 29-oct-2026, Alejo respondió «Aprobar plan completo» a la consulta que referencia el comentario 10499 de ES-38. Registrado en Jira, comentario 10500. Aprobados el alcance completo y la estimación inicial de 32–48 horas más QA; se mantiene la dependencia de ES-37 integrado antes de aplicar el tema.
+
+La preparación independiente usa main d5eb00f9d0a035c6c98506038490f32087d4acc6. La matriz de rutas se genera con `node scripts/es38-route-inventory.mjs` desde frontend/ y queda en [ES-38-MATRIZ-RUTAS.md](ES-38-MATRIZ-RUTAS.md). Sus filas distinguen pantallas, contenedores y redirecciones y empiezan como «No ejecutada»; inventariar no acredita una revisión visual ni autorización del servidor. Debe regenerarse después de integrar las dependencias.
