@@ -1,0 +1,103 @@
+/* ES-37 — Tokens del sistema de diseño Elevation + Skill Map (fuente única).
+   Tres capas: primitivos (--elv-p-*) → semánticos (--elv-*) → tema daisyUI (ver bloque final).
+   Los pares texto/fondo están medidos contra WCAG 2.1 AA (≥4,5:1 texto, ≥3:1 controles y bordes de control);
+   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja la importa frontend/src/index.css y su tema daisyUI (bloque final) está activo en los tres dominios. */
+
+:root {
+  /* 1. Primitivos (paleta de la landing, frontend/src/index.css) ─────── */
+  --elv-p-bg: #fafaf9;          /* papel */
+  --elv-p-surface: #f2f1ef;
+  --elv-p-card: #ffffff;
+  --elv-p-muted-bg: #f2f1ef;
+  --elv-p-line: #e0ded9;
+  --elv-p-control-line: #8a8780;
+  --elv-p-ocre: #b8963e;        /* marca: SOLO decorativo (2,69:1 sobre papel; no apto para texto) */
+  --elv-p-ocre-dark: #7d6218;   /* ocre para texto, vínculos y nivel alto (5,54:1 sobre papel) */
+  --elv-p-ocre-bg: #f6efdc;
+  --elv-p-ink-1: #1a1a18;       /* tinta */
+  --elv-p-ink-2: #6b6b67;
+  --elv-p-ink-3: #6b6b67;
+  --elv-p-teal: #065f46;
+  --elv-p-teal-bg: #f0fdfa;
+
+  /* 2. Semánticos (claro) ─────────────────────────────────── */
+  --elv-bg: var(--elv-p-bg);
+  --elv-surface: var(--elv-p-surface);
+  --elv-card: var(--elv-p-card);
+  --elv-muted-bg: var(--elv-p-muted-bg);
+  --elv-text-1: var(--elv-p-ink-1);
+  --elv-text-2: var(--elv-p-ink-2);
+  --elv-text-3: var(--elv-p-ink-3);     /* sustituye al #A8A29E anterior (2,39:1, no cumplía AA) */
+  --elv-line: var(--elv-p-line);        /* divisores decorativos */
+  --elv-line-control: var(--elv-p-control-line); /* borde de inputs y botones secundarios (≥3:1) */
+  --elv-action: var(--elv-p-ink-1);
+  --elv-action-text: #ffffff;
+  --elv-action-soft: var(--elv-p-ocre-bg);
+  --elv-brand: var(--elv-p-ocre);
+  --elv-link: var(--elv-p-ocre-dark);
+  --elv-focus: #2f6b8f;
+  --elv-ai: var(--elv-p-teal);          /* voz de la IA */
+  --elv-ai-bg: var(--elv-p-teal-bg);
+  --elv-success: #065f46;   --elv-success-bg: #f0fdfa;
+  --elv-warning: #7d6218;   --elv-warning-bg: #f6efdc;
+  --elv-error: #7a3030;     --elv-error-bg: #f7e6e6;
+  --elv-info: #075985;      --elv-info-bg: #e0f2fe;
+
+  /* Espacio (base 4 px) */
+  --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;
+  --elv-s-6: 1.5rem;  --elv-s-8: 2rem;   --elv-s-12: 3rem;   --elv-s-16: 4rem;
+  /* Radios */
+  --elv-r-sm: 0.5rem; --elv-r-md: 0.75rem; --elv-r-lg: 1rem; --elv-r-xl: 1.25rem; --elv-r-pill: 999px;
+  /* Sombras: sutiles */
+  --elv-shadow-card: 0 2px 12px rgb(26 28 27 / 0.06);
+  --elv-shadow-modal: 0 8px 40px rgb(26 28 27 / 0.12);
+  /* Tipografía */
+  --elv-font-body: 'Inter', system-ui, sans-serif;
+  --elv-font-display: 'Playfair Display', Georgia, serif;   /* solo títulos, peso 300–400 */
+  --elv-font-voice: 'Noto Serif', Georgia, serif;           /* voz de la IA, cursiva */
+  --elv-fs-xs: 0.75rem; --elv-fs-sm: 0.8125rem; --elv-fs-md: 0.875rem;
+  --elv-fs-base: 1rem;  --elv-fs-lg: 1.125rem;  --elv-fs-xl: 1.375rem;
+  --elv-fs-hero: clamp(1.75rem, 4vw + 1rem, 3rem);
+  /* Objetivo táctil mínimo */
+  --elv-touch: 2.75rem;
+}
+
+/* Modo oscuro: mismos nombres semánticos, activado con la clase .elv-dark (la pone el dominio que ya lo soportaba:
+   Career y Facilitation, según prefers-color-scheme). No se activa en pantallas que hoy no lo tienen. */
+.elv-dark {
+    color-scheme: dark;
+    --elv-bg: #0f0f0e;  --elv-surface: #1a1a18;  --elv-card: #1a1a18;  --elv-muted-bg: #151513;
+    --elv-text-1: #fafaf9;  --elv-text-2: #cac7c1;  --elv-text-3: #b5b2ab;
+    --elv-line: #33332f;  --elv-line-control: #8a8780;
+    --elv-action: #b8963e;  --elv-action-text: #0f0f0e;  --elv-action-soft: #2a2417;
+    --elv-link: #dcc27d;  --elv-focus: #9fd0ea;
+    --elv-ai: #a9d6b0;  --elv-ai-bg: #1e2b24;
+    --elv-success: #a9d6b0;  --elv-success-bg: #1e2b24;
+    --elv-warning: #f0d9a0;  --elv-warning-bg: #2a2417;
+    --elv-error: #ffb5b5;    --elv-error-bg: #3a2222;
+    --elv-info: #9fd0ea;     --elv-info-bg: #1c2b36;
+}
+
+/* Foco visible único para todo control */
+.elv-focusable:focus-visible,
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--elv-focus);
+  outline-offset: 2px;
+}
+
+/* 3. Tema daisyUI único: mapea los semánticos a las variables de daisyUI. Los CSS de dominio ya no
+   definen colores propios; conservan solo su layout. */
+.elv-theme, .skill-map-scope, .career-scope, .compass-scope {
+  --color-base-100: var(--elv-card);      --color-base-200: var(--elv-bg);
+  --color-base-300: var(--elv-line-control);  --color-base-content: var(--elv-text-1);
+  --color-primary: var(--elv-action);     --color-primary-content: var(--elv-action-text);
+  --color-secondary: var(--elv-text-2);   --color-secondary-content: var(--elv-bg);
+  --color-accent: var(--elv-ai);          --color-accent-content: var(--elv-bg);
+  --color-neutral: var(--elv-text-1);     --color-neutral-content: var(--elv-bg);
+  --color-info: var(--elv-info);          --color-info-content: var(--elv-bg);
+  --color-success: var(--elv-success);    --color-success-content: var(--elv-bg);
+  --color-warning: var(--elv-warning);    --color-warning-content: var(--elv-bg);
+  --color-error: var(--elv-error);        --color-error-content: var(--elv-bg);
+  --radius-selector: var(--elv-r-sm); --radius-field: var(--elv-r-md); --radius-box: var(--elv-r-lg);
+  --size-selector: 0.25rem; --size-field: 0.25rem; --border: 1px; --depth: 0; --noise: 0;
+}
