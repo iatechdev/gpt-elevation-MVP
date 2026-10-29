@@ -48,7 +48,8 @@ test('P1-6: review uses the existing superadmin role; therapists keep their own 
   assert.equal(ownerFilter, 101);
   assert.equal((await request('GET', '/api/therapist/validation/status', { role: 'user' })).status, 403);
   const body = new FormData();
-  body.set('document', new Blob(['synthetic document'], { type: 'application/pdf' }), 'synthetic.pdf');
+  // ES-99: el contenido debe ser de verdad del tipo declarado (firma «%PDF-»)
+  body.set('document', new Blob(['%PDF-1.4 synthetic document'], { type: 'application/pdf' }), 'synthetic.pdf');
   body.set('therapistId', '999');
   assert.equal((await request('POST', '/api/therapist/validation/upload', { role: 'therapist', body })).status, 201);
   assert.equal(uploaded.therapistId, 101);

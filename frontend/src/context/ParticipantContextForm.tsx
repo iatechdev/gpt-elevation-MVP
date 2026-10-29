@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { ContextError, contextRequest, emptyContext, type ContextSnapshot, type ParticipantContext } from './participantContext'
 import countries from '../../../shared/participantCountries.json'
 import './participantContext.css'
 import { registerContextNavigationGuard } from './contextNavigationGuard'
+import './resume/resume.css'
+import { ResumeStarter } from './resume/ResumeStarter'
+import { ContextExtras, ScalarMeta } from './resume/ContextExtras'
+import { applySuggestions, cleanExtras, countSuggested, emptyFlags, removeAllSuggested, summarize, type ExtrasKey, type Flags, type Pending, type ScalarKey } from './resume/resumeLogic'
+import { fill } from './resume/resumeCopy'
+
+const HISTORY_PATH = '/app/context/resumes'
+const EXTRAS_KEYS: ExtrasKey[] = ['experience', 'education', 'declaredSkills', 'languages', 'sector', 'totalYearsExperience']
 
 type Entry = '' | 'personal' | 'professional' | 'soon'
 type Phase = 'loading' | 'ready' | 'saving' | 'confirmed' | 'loadError' | 'expired'
@@ -20,6 +28,13 @@ export function Onboarding() {
   const [loadAttempt, setLoadAttempt] = useState(0)
   const [conflict, setConflict] = useState(false)
   const [lostDraft, setLostDraft] = useState(false)
+  // ES-109: marcas de «sugerido desde tu hoja de vida», sugerencias aparte (no sobrescriben) y resumen del último análisis. Nada de esto se guarda.
+  const [flags, setFlags] = useState<Flags>(() => emptyFlags(emptyContext))
+  const [pending, setPending] = useState<Pending>({})
+  const [analysis, setAnalysis] = useState<{ found: number; empty: number; total: number } | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [live, setLive] = useState('')
+  const resultRef = useRef<HTMLDivElement>(null)
   const errorRef = useRef<HTMLDivElement>(null)
   const statusRef = useRef<HTMLDivElement>(null)
   const busy = phase === 'saving'
@@ -28,6 +43,7 @@ export function Onboarding() {
     const controller = new AbortController()
     void contextRequest(undefined, undefined, controller.signal).then(data => {
       setSnapshot(data); setDraft(data.context ?? { ...emptyContext }); setPhase('ready')
+      setFlags(emptyFlags(data.context ?? emptyContext)); setPending({}); setAnalysis(null)
       setMessage(''); setConflict(false); setErrors([])
     }).catch((error: unknown) => {
       if (!controller.signal.aborted) setPhase(error instanceof ContextError && [401, 403].includes(error.status) ? 'expired' : 'loadError')
@@ -53,7 +69,24 @@ export function Onboarding() {
   const timeZones = useMemo(() => [...new Set(['UTC', ...Intl.supportedValuesOf('timeZone'), ...(draft.timeZone ? [draft.timeZone] : [])])].sort(), [draft.timeZone])
   function change<K extends keyof ParticipantContext>(key: K, value: ParticipantContext[K]) {
     setDraft(previous => ({ ...previous, [key]: value })); setErrors(previous => previous.filter(field => field !== key)); setMessage('')
+    if (key === 'profession' || key === 'interests') setFlags(previous => ({ ...previous, [key]: false })) // editar un valor sugerido le quita la marca
   }
+  // ES-109: la hoja de vida propone; lo escrito por la persona no se pisa (la sugerencia queda aparte).
+  const receive = (result: { suggestions: Parameters<typeof applySuggestions>[2] }) => {
+    const merged = applySuggestions(draft, flags, result.suggestions)
+    const summary = summarize(result.suggestions)
+    setDraft(merged.draft); setFlags(merged.flags); setPending(merged.pending); setAnalysis(summary); setDetailsOpen(true); setMessage(''); setErrors([])
+    setLive(fill(t('resume_done_live'), { found: summary.found, total: summary.total }))
+    window.setTimeout(() => resultRef.current?.focus(), 0)
+  }
+  const resolvePending = (key: ScalarKey, use: boolean) => {
+    const value = pending[key]
+    setPending(previous => { const next = { ...previous }; delete next[key]; return next })
+    if (use && value !== undefined) { setDraft(previous => ({ ...previous, [key]: value })); setFlags(previous => ({ ...previous, [key]: true })) }
+  }
+  const removeScalar = (key: 'profession' | 'interests') => { setDraft(previous => ({ ...previous, [key]: null })); setFlags(previous => ({ ...previous, [key]: false })) }
+  const removeEverything = () => { const next = removeAllSuggested(draft, flags); setDraft(next.draft); setFlags(next.flags); setPending({}); setLive(t('resume_removed_all_live')) }
+  const goManual = () => { setDetailsOpen(false); document.getElementById('preferredLanguage')?.focus() }
   const leave = (path: string) => {
     if (phase !== 'saving' && (!dirty || window.confirm(t('context_leave')))) navigate(path)
   }
@@ -67,17 +100,21 @@ export function Onboarding() {
     const minutes = draft.availabilityMinutesPerWeek
     if (minutes !== null && (!Number.isInteger(minutes) || minutes < 0 || minutes > 10080)) invalid.push('availabilityMinutesPerWeek')
     if (invalid.length) { setErrors(invalid); setMessage('context_invalid'); return }
+    const cleaned = cleanExtras(draft)
+    if (cleaned.errors.length) { setErrors(cleaned.errors); setMessage('context_invalid'); setDetailsOpen(true); return }
     setPhase('saving'); setMessage(''); setErrors([])
     try {
-      const data = await contextRequest({ schemaVersion: 1, expectedVersion: snapshot.version, action, context: draft })
+      const data = await contextRequest({ schemaVersion: 2, expectedVersion: snapshot.version, action, context: cleaned.draft })
       setSnapshot(data); setDraft(data.context ?? { ...emptyContext })
+      setFlags(emptyFlags(data.context ?? emptyContext)); setPending({}); setAnalysis(null) // lo guardado ya es de la persona: deja de verse como sugerido
       if (action === 'continue' && entry === 'personal') { navigate('/app/dashboard'); return }
       setPhase(action === 'continue' ? 'confirmed' : 'ready')
       if (action === 'save_draft') setMessage('context_draft_saved')
     } catch (error) {
       if (error instanceof ContextError && [401, 403].includes(error.status)) { setLostDraft(true); setPhase('expired'); return }
       setPhase('ready')
-      if (error instanceof ContextError && error.status === 409) { setConflict(true); setMessage('context_conflict') }
+      if (error instanceof ContextError && error.status === 400 && error.code === 'schema_outdated') { setConflict(true); setMessage('resume_schema_outdated') }
+      else if (error instanceof ContextError && error.status === 409) { setConflict(true); setMessage('context_conflict') }
       else if (error instanceof ContextError && error.status === 400) { setErrors(error.fields); setMessage('context_invalid') }
       else setMessage('context_save_error')
     }
@@ -114,10 +151,19 @@ export function Onboarding() {
         : phase === 'loadError' ? <div role="alert"><p>{t('context_load_error')}</p><button className="elv-btn" onClick={reload}>{t('context_retry')}</button></div>
           : phase === 'expired' ? <div role="alert"><p>{t('context_expired')}{lostDraft ? ` ${t('context_expired_lost')}` : ''}</p><button className="elv-btn" onClick={() => leave('/login')}>{t('context_signin')}</button></div>
             : phase === 'confirmed' ? <div ref={statusRef} tabIndex={-1} role="status" className="elv-card context-confirmed">
-              <h2>{t('context_saved')}</h2><button className="elv-btn elv-btn-primary" onClick={() => setPhase('ready')}>{t('context_edit')}</button>
+              <h2>{t('context_saved')}</h2><div className="context-actions"><button className="elv-btn elv-btn-primary" onClick={() => setPhase('ready')}>{t('context_edit')}</button><Link className="elv-btn" to={HISTORY_PATH}>{t('resume_manage')}</Link><Link className="elv-btn" to="/app/evidence/resume-skills">{t('evidence.rs_banner_cta')}</Link></div>
               <section className="context-next" aria-labelledby="context-next-title"><h3 id="context-next-title">{t('context_next_title')}</h3><p>{t('context_next_text')}</p>
                 <button className="elv-btn elv-btn-primary" onClick={() => leave('/app/skill-map')}>{t('context_next_map')}</button> <button className="elv-btn" onClick={() => leave('/app/dashboard')}>{t('context_next_home')}</button></section>
-            </div> : <form noValidate onSubmit={event => { event.preventDefault(); void save('continue') }}>
+            </div> : <>
+              <ResumeStarter t={t} disabled={busy || conflict} historyPath={HISTORY_PATH} onResult={receive} onManual={goManual} />
+              {analysis && <div ref={resultRef} tabIndex={-1} className="rs-card rs-tint" aria-labelledby="rs-found">
+                <h2 id="rs-found">{t('resume_found_title')}</h2>
+                <p><strong>{fill(t('resume_found_summary'), analysis)}</strong></p><p className="rs-help">{t('resume_found_help')}</p>
+                <div className="rs-warn" role="note"><div><p><strong>{t('resume_unsaved_title')}</strong> {t('resume_unsaved_body')}</p></div></div>
+                {countSuggested(flags) > 0 && <div className="rs-actions"><button type="button" className="elv-btn" disabled={busy} onClick={removeEverything}>{t('resume_remove_all')}</button></div>}
+              </div>}
+              <div className="rs-live" role="status" aria-live="polite">{live}</div>
+              <form noValidate onSubmit={event => { event.preventDefault(); void save('continue') }}>
               <div className="elv-fieldset context-form" aria-busy={busy}>
                 <fieldset className="elv-fieldset context-entries" aria-describedby={errors.includes('entry') ? 'entry-error' : undefined}>
                   <legend>{t('context_entry')}</legend>
@@ -129,13 +175,15 @@ export function Onboarding() {
                   {errors.includes('entry') && <span id="entry-error" className="context-error">{t('context_entry_required')}</span>}
                 </fieldset>
                 {select('preferredLanguage')}{select('residenceCountry')}{select('targetMarket')}{select('timeZone')}
-                <details open={errors.some(key => ['profession', 'interests', 'careerGoal', 'careerConstraints', 'availabilityMinutesPerWeek'].includes(key)) || undefined}>
+                <details open={detailsOpen || errors.some(key => ['profession', 'interests', 'careerGoal', 'careerConstraints', 'availabilityMinutesPerWeek', ...EXTRAS_KEYS].includes(key))} onToggle={event => setDetailsOpen(event.currentTarget.open)}>
                   <summary>{t('context_professional_details')}</summary>
                   {(['profession', 'interests', 'careerGoal', 'careerConstraints'] as const).map(key => <div className="context-field" key={key}>
                     <label htmlFor={key}>{t(`context_${key}`)}</label>
                     <textarea id={key} rows={key === 'profession' ? 2 : 3} className="elv-textarea" disabled={busy} maxLength={key === 'profession' ? 120 : 500} value={draft[key] ?? ''}
                       aria-invalid={errors.includes(key)} aria-describedby={`${key}-help${errors.includes(key) ? ` ${key}-error` : ''}`} onChange={event => change(key, event.target.value || null)} />
                     <small id={`${key}-help`}>{t(key === 'profession' ? 'context_limit120' : 'context_limit500')}</small>{fieldError(key)}
+                    {(key === 'profession' || key === 'interests') && <ScalarMeta t={t} name={key} label={t(`context_${key}`)} flagged={flags[key] && draft[key] !== null} pending={pending[key]}
+                      onRemove={() => removeScalar(key)} onUse={() => resolvePending(key, true)} onIgnore={() => resolvePending(key, false)} />}
                   </div>)}
                   <div className="context-field"><label htmlFor="availabilityMinutesPerWeek">{t('context_availabilityMinutesPerWeek')}</label>
                     <input id="availabilityMinutesPerWeek" type="number" className="elv-input" disabled={busy} min={0} max={10080} step={1} value={draft.availabilityMinutesPerWeek ?? ''}
@@ -143,6 +191,9 @@ export function Onboarding() {
                       onChange={event => change('availabilityMinutesPerWeek', event.target.value === '' ? null : event.target.valueAsNumber)} />
                     <small id="minutes-help">{t('context_minutes_help')}</small>{fieldError('availabilityMinutesPerWeek')}
                   </div>
+                  <h3 className="rs-extras-title">{t('resume_extras_title')}</h3>
+                  <ContextExtras t={t} lang={lang} draft={draft} flags={flags} pending={pending} busy={busy} errors={errors.filter((key): key is ExtrasKey => (EXTRAS_KEYS as string[]).includes(key))}
+                    onChange={(nextDraft, nextFlags) => { setDraft(nextDraft); setFlags(nextFlags); setMessage('') }} onPending={resolvePending} />
                 </details>
                 {message && <div ref={errorRef} tabIndex={-1} role={message === 'context_draft_saved' ? 'status' : 'alert'} className={message === 'context_draft_saved' ? '' : 'context-error'}>{t(message)}</div>}
                 <p role="status" aria-live="polite">{t(phase === 'saving' ? 'context_saving' : dirty ? 'context_unsaved' : snapshot?.completedAt ? 'context_saved' : snapshot?.version ? 'context_draft_saved' : 'context_empty')}</p>
@@ -154,7 +205,7 @@ export function Onboarding() {
                   </>}
                 </div>
               </div>
-            </form>}
+            </form></>}
     </main>
   </div>
 }

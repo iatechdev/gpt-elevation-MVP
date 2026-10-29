@@ -63,6 +63,9 @@ test('ES-101: el acceso del terapeuta se corta con la eliminación aceptada y co
       session: await TherapySession.create({ therapistId: therapist.id, patientId: person.id, scheduledAt: new Date('2099-01-01T12:00:00Z'), status: 'in_progress', duration: 50 }),
     };
   }
+  // ES-96: las tres personas autorizaron compartir con este terapeuta, así que lo único que las separa es el bloqueo de ES-101.
+  const Consent = require('../../Consent');
+  for (const person of [ok, deleting, inactive]) await Consent.create({ UserId: person.id, purpose: 'therapist_sharing', scope: `therapist-${therapist.id}`, status: 'granted', version: 1, decidedAt: new Date() });
   // ES-23: la solicitud aceptada deja un tombstone y desactiva la cuenta; aquí además se reactiva, porque el bloqueo no debe depender de `active`.
   await DeletionRequest.create({ id: randomUUID(), UserId: deleting.id, status: 'accepted' });
 
@@ -132,14 +135,15 @@ test('ES-101: el acceso del terapeuta se corta con la eliminación aceptada y co
     assert.equal((await call('GET', `/api/therapist/pacientes/${deleting.id}/historia`)).status, 200);
     await DeletionRequest.create({ id: randomUUID(), UserId: deleting.id, status: 'accepted' }); // vuelve a quedar bloqueada
     assert.equal((await call('GET', `/api/therapist/pacientes/${deleting.id}/historia`)).status, 404);
-    const original = DeletionRequest.findAll; DeletionRequest.findAll = async () => { throw new Error('SYNTHETIC_LEDGER_DOWN'); };
+    const original = DeletionRequest.findAll; const originalOne = DeletionRequest.findOne;
+    DeletionRequest.findAll = async () => { throw new Error('SYNTHETIC_LEDGER_DOWN'); }; DeletionRequest.findOne = DeletionRequest.findAll;
     const logs = []; const previous = console.error; console.error = (...args) => logs.push(args);
     try {
       // 500 de la ruta o 503 del middleware de sesión (que también consulta el registro): en ambos casos se deniega, sin datos.
       for (const path of [`/api/therapist/pacientes/${ok.id}/historia`, '/api/therapist/pacientes']) {
         const response = await call('GET', path); assert.ok([500, 503].includes(response.status), `${path} → ${response.status}`); assert.doesNotMatch(JSON.stringify(response.body), /@example|nota-/);
       }
-    } finally { DeletionRequest.findAll = original; console.error = previous; }
+    } finally { DeletionRequest.findAll = original; DeletionRequest.findOne = originalOne; console.error = previous; }
     assert.doesNotMatch(JSON.stringify(logs), /@example/);
   });
 });
