@@ -41,7 +41,7 @@ const STREET = /\b(?:calle|cll?\.?|carrera|cra?\.?|kr|avenida|av\.?|diagonal|dg\
 const STREET_US = /\b\d{1,5}[a-z]?\s{1,3}(?:[a-z.]{1,20}\s{1,3}){1,3}(?:street|st\.?|avenue|ave\.?|road|rd\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?|way|court|ct\.?|plaza|place|pl\.?)(?![a-z])[^\n]*/gi;
 const POSTAL = /\b(?:c\.?p\.?|zip|c[oó]digo postal|postal code)\s*:?\s*[a-z0-9-]{4,10}\b/gi;
 // Documentos de identidad: con etiqueta (cualquier valor alfanumérico razonable) y formatos autoexplicativos.
-const ID_LABEL = /\b(?:c\.?\s?c\.?|c[eé]dula(?: de ciudadan[ií]a)?|c[eé]dula de extranjer[ií]a|c\.?\s?e\.?|tarjeta de identidad|t\.?\s?i\.?|dni|nie|nit|rut|curp|rfc|cpf|cnpj|ssn|passport|pasaporte|documento(?: de identidad)?|identificaci[oó]n|id number|n[uú]mero de documento|licencia de conducir)\b\s*(?:n[°ºo]\.?|no\.?|num\.?|n[uú]mero|#|:)?\s*[a-z0-9][a-z0-9.\- ]{4,20}[a-z0-9]/gi;
+const ID_LABEL = /\b(?:c\.?\s?c\.?|c[eé]dula(?: de ciudadan[ií]a)?|c[eé]dula de extranjer[ií]a|c\.?\s?e\.?|tarjeta de identidad|t\.?\s?i\.?|dni|nie|nit|rut|curp|rfc|cpf|cnpj|ssn|passport|pasaporte|documento(?: de identidad)?|identificaci[oó]n|id number|n[uú]mero de documento|licencia de conducir)(?![a-z0-9])\s*(?:n[°ºo]\.?|no\.?|num\.?|n[uú]mero|#|:)?\s*[a-z0-9][a-z0-9.\- ]{4,20}[a-z0-9]/gi;
 const ID_SHAPES = [
   /\b\d{3}-\d{2}-\d{4}\b/g,                  // SSN
   /\b\d{1,3}(?:\.\d{3}){3}\b/g,              // cédula colombiana de 10 dígitos con puntos
@@ -103,4 +103,4 @@ function sanitizeResumeText(raw) {
   if (text.length < MIN_CHARS) throw new ResumeSanitizeError('no_text');
   return { text, removed };
 }
-module.exports = { sanitizeResumeText, ResumeSanitizeError, MAX_CHARS, MIN_CHARS };
+module.exports = { sanitizeResumeText, ResumeSanitizeError, containsContact: leftover, MAX_CHARS, MIN_CHARS };
