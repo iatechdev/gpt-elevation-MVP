@@ -57,7 +57,7 @@
 .evidence-scope .evidence-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-block: 12px; }
 .evidence-scope .evidence-skills { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
 .evidence-scope .evidence-skill { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px; border: 1px solid #d6d2c4; border-radius: .65rem; background: #fff; cursor: pointer; min-height: 56px; }
-.evidence-scope .evidence-skill input { width: 22px; height: 22px; margin-top: 2px; }
+.evidence-scope .evidence-skill input { width: 24px; height: 24px; margin-top: 2px; }
 .evidence-scope .evidence-skill-on { border-color: #4a6741; background: #eaf0e6; }
 .evidence-scope .evidence-skill-off { cursor: default; background: #f3f2ee; }
 .evidence-scope .evidence-skill-info { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }

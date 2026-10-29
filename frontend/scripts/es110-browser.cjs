@@ -93,6 +93,8 @@ const assert = require('node:assert/strict');
     const dialog = page.getByRole('dialog'); await dialog.waitFor(); assert.equal(await dialog.evaluate((el) => el === document.activeElement), true);
     await dialog.getByText('Nivel: sin definir.').waitFor(); await dialog.getByText('Tu hoja de vida no demuestra dominio; el nivel se define con evidencia.').waitFor(); await dialog.getByText('Cada una guarda de dónde viene (tu hoja de vida v3) y el texto exacto que la respalda.').waitFor();
     check('el diálogo resume qué se añade, su origen y «Nivel: sin definir»; el foco entra en el diálogo');
+    for (let n = 0; n < 8; n++) { await page.keyboard.press('Tab'); assert.equal(await dialog.evaluate((el) => el.contains(document.activeElement)), true, 'Tab salió del diálogo'); }
+    for (let n = 0; n < 8; n++) { await page.keyboard.press('Shift+Tab'); assert.equal(await dialog.evaluate((el) => el.contains(document.activeElement)), true, 'Shift+Tab salió del diálogo'); } check('el diálogo atrapa Tab y Shift+Tab (QA-110: el foco no sale)');
     await page.keyboard.press('Escape'); await dialog.waitFor({ state: 'detached' }); assert.equal(await reviewBtn.evaluate((el) => el === document.activeElement), true); check('Escape cierra el diálogo y devuelve el foco al botón que lo abrió');
     if (process.env.ES110_SHOTS) await page.screenshot({ path: process.env.ES110_SHOTS + '/bandeja.png', fullPage: true });
     await noOverflow(page, 'bandeja escritorio');

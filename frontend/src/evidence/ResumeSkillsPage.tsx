@@ -6,6 +6,7 @@ import { EvidenceShell } from './Shell'
 import { BackedBadge, DeclaredBadge } from './ResumeOrigin'
 import { formatDate, resumeSkillsApi, selectable, whyNot, SkillsError, type Declared } from './resumeSkills'
 import { readEvidenceToken, useEvidenceToken } from './session'
+import { trapTab } from './focusTrap'
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const newId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `rs-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
@@ -79,7 +80,7 @@ export function ResumeSkillsPage() {
                 <p role="status" aria-live="polite">{l('rs_count').replace('{n}', String(picked.size))}</p>
                 <button ref={opener} type="button" className="elv-btn elv-btn-primary" disabled={!picked.size} onClick={() => setDialog(true)}>{picked.size ? l('rs_review_n').replace('{n}', String(picked.size)) : l('rs_add')}</button>
               </div>
-              {dialog && <div className="evidence-scrim" onKeyDown={event => { if (event.key === 'Escape') closeDialog() }}>
+              {dialog && <div className="evidence-scrim" onKeyDown={event => { if (event.key === 'Escape') closeDialog(); else trapTab(event, dialogRef.current) }}>
                 <div ref={dialogRef} tabIndex={-1} className="evidence-dialog" role="dialog" aria-modal="true" aria-labelledby="rs-confirm-title">
                   <h2 id="rs-confirm-title">{l('rs_confirm_title').replace('{n}', String(chosen.length))}</h2>
                   <ul>{chosen.map(skill => <li key={skill.name}><strong>{skill.name}</strong></li>)}</ul>

@@ -81,6 +81,8 @@ test('ES-110 estructura: bandeja con nada marcado por defecto, sin nivel, diálo
   assert.match(page, /useState<Set<string>>\(new Set\(\)\)/) // por defecto ninguna marcada
   assert.doesNotMatch(page + origin, /level\b(?!_none)|nivel (alto|medio|bajo)/i) // ningún nivel numérico ni de dominio
   assert.match(page, /role="dialog" aria-modal="true" aria-labelledby="rs-confirm-title"/); assert.match(page, /event\.key === 'Escape'/); assert.match(page, /opener\.current\?\.focus\(\)/)
+  assert.match(page, /trapTab\(event, dialogRef\.current\)/); assert.match(read('../src/evidence/focusTrap.ts'), /event\.shiftKey/) // el diálogo atrapa Tab y Shift+Tab
+  assert.match(css, /\.evidence-skill input \{ width: 24px; height: 24px/) // objetivo táctil de al menos 24 px (WCAG 2.5.8)
   assert.match(page, /requestId\.current = newId\(\)/) // la selección nueva es una solicitud nueva; reintentar la misma no duplica
   assert.match(page, /api\.promote\(chosen\.map\(skill => skill\.name\), requestId\.current\)/); assert.match(page, /disabled=\{!selectable\(skill\)\}/)
   assert.match(page, /aria-live="polite"/); assert.match(page, /role="status" aria-busy="true"/)

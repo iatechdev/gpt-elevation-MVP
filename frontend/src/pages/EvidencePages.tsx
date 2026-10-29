@@ -3,7 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { evidenceApi, EvidenceError, type CreateBody, type UpdateBody } from '../evidence/api'
 import { OriginBlock } from '../evidence/ResumeOrigin'
-import { resumeSkillsApi, selectable } from '../evidence/resumeSkills'
+import { formatDate, resumeSkillsApi, selectable } from '../evidence/resumeSkills'
 import { blankDraft, draftFromPayload, draftPayload, type Draft, type Payload, type Evidence, type Detail } from '../evidence/model'
 import { EvidenceShell } from '../evidence/Shell'
 import { EvidenceContent } from '../evidence/EvidenceContent'
@@ -23,9 +23,9 @@ function ReadError({ status, retry }: { status: number; retry?: () => void }) {
   </div>
 }
 function Metadata({ row }: { row: Evidence }) {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   return <div className="evidence-metadata"><span className="elv-badge elv-badge-outline">{t(`evidence.${row.status}`)}</span>
-    <p>{t('evidence.version')}: {row.version}</p><time dateTime={row.createdAt}>{row.createdAt}</time>
+    <p>{t('evidence.version')}: {row.version}</p><time dateTime={row.createdAt}>{formatDate(row.createdAt, lang)}</time>
     <p>{t('evidence.authoring')}: {t(`evidence.${row.authoring}`)}</p>
   </div>
 }
@@ -91,7 +91,7 @@ export function EvidenceListPage() {
 }
 export function EvidenceDetailPage() {
   const { id: rawId } = useParams(); const id = rawId && /^[1-9]\d{0,8}$/.test(rawId) ? Number(rawId) : 0
-  const { t } = useLanguage(); const token = useEvidenceToken()
+  const { t, lang } = useLanguage(); const token = useEvidenceToken()
   const api = useMemo(() => evidenceApi(backend, token), [token])
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<{ data?: Detail; token?: string; id?: number; error?: number }>({})
@@ -113,7 +113,7 @@ export function EvidenceDetailPage() {
         </div></article>
         {data.versions.length > 1 && <details><summary>{t('evidence.history')}</summary>
           {data.versions.slice(1).map(row => <section className="evidence-history" key={row.version}><h2>{t('evidence.previous')}: {row.version}</h2>
-            <p>{t(`evidence.${row.status}`)} · <time dateTime={row.createdAt}>{row.createdAt}</time></p><EvidenceContent payload={row.payload} />
+            <p>{t(`evidence.${row.status}`)} · <time dateTime={row.createdAt}>{formatDate(row.createdAt, lang)}</time></p><EvidenceContent payload={row.payload} />
           </section>)}
         </details>}
       </> : <p role="status">{t('evidence.loading')}</p>}
