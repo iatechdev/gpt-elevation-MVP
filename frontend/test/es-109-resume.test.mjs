@@ -152,6 +152,7 @@ test('ES-109 estructura: la tarjeta cumple lo aprobado (aviso PDF antes del bot�
   const starter = read('../src/context/resume/ResumeStarter.tsx'); const extras = read('../src/context/resume/ContextExtras.tsx'); const page = read('../src/context/resume/ResumesPage.tsx')
   assert.ok(starter.indexOf('resume_pdf_notice') < starter.indexOf('resume_choose'), 'el aviso del PDF va ANTES del botón de elegir archivo')
   assert.match(starter, /disabled=\{!consent \|\| disabled\}/) // sin autorización no se analiza
+  assert.match(starter, /useState\(false\) \/\/ siempre parte desmarcada/); assert.doesNotMatch(starter, /readResumeConsent/) // nunca viene premarcada
   assert.match(starter, /setResumeConsent\(true\)[\s\S]*analyzeResume\(/) // la autorización se registra antes de enviar
   assert.match(starter, /role="alert"/); assert.match(starter, /aria-busy=\{stage === 'analyzing'\}/); assert.match(starter, /heading\.current\?\.focus\(\)/)
   assert.match(starter, /className="rs-bar" aria-hidden="true"/) // barra indeterminada: sin porcentajes inventados

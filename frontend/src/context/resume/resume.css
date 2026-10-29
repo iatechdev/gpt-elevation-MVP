@@ -68,3 +68,4 @@
   .participant-context-scope .rs-ver { grid-template-columns: 1fr; }
   .participant-context-scope .rs-actions .elv-btn { width: 100%; }
 }
+.participant-context-scope .rs-extras-title { font: 500 1.1rem 'Playfair Display', serif; margin: 28px 0 0; }

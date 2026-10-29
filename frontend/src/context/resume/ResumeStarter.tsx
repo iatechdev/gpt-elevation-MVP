@@ -2,7 +2,7 @@
 // Nada sale del dispositivo hasta que la persona marca la autorización y pulsa «Analizar». Lo sugerido NO se guarda aquí: se entrega al formulario.
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { analyzeResume, checkFile, readResumeConsent, setResumeConsent, type AnalyzeResult, type ErrorCode } from './resumeApi'
+import { analyzeResume, checkFile, setResumeConsent, type AnalyzeResult, type ErrorCode } from './resumeApi'
 import { fill } from './resumeCopy'
 
 type Stage = 'idle' | 'picked' | 'analyzing' | 'error' | 'done'
@@ -21,7 +21,7 @@ const newId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? c
 export function ResumeStarter({ t, disabled, historyPath, onResult, onManual }: Props) {
   const [stage, setStage] = useState<Stage>('idle')
   const [file, setFile] = useState<File | null>(null)
-  const [consent, setConsent] = useState(false)
+  const [consent, setConsent] = useState(false) // siempre parte desmarcada: la autorización es explícita en cada análisis
   const [error, setError] = useState<ErrorCode | null>(null)
   const [saved, setSaved] = useState(false)
   const [seconds, setSeconds] = useState(0)
@@ -32,8 +32,6 @@ export function ResumeStarter({ t, disabled, historyPath, onResult, onManual }: 
   const abort = useRef<AbortController | null>(null)
   const mounted = useRef(true)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; abort.current?.abort() } }, [])
-  // Si la persona ya autorizó antes, la casilla parte marcada (puede desmarcarla): la decisión sigue siendo suya en cada análisis.
-  useEffect(() => { void readResumeConsent().then(granted => { if (mounted.current && granted) setConsent(true) }) }, [])
   useEffect(() => {
     if (stage !== 'analyzing') return
     const timer = window.setInterval(() => setSeconds(value => value + 1), 1000)
