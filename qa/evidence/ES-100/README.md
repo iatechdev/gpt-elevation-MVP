@@ -13,3 +13,8 @@ Entorno: merge local con main (incluye #74), Postgres embebido (qa78), servidor 
 
 ## No verificado
 Salas con Daily real, lectores de pantalla, tema oscuro, comparación de los contrastes con main, mutaciones (no aplican a este PR de interfaz), staging.
+
+## Reverificación · head 1c2a34c
+Merge local con main. Frontend 191/191, tsc, lint y build limpios. Script de navegador contra servidor real: 23 correctas, 1 observación (`ui-1c2a34c.jsonl`).
+- QA-01 cerrado (errores del servidor en español en salas y resumen; 429/502/500 y los mensajes reales de sesiones). QA-02 cerrado (0 controles < 44 px en las seis pantallas). QA-04 cerrado (nombres de 38 y 54 caracteres sin desborde).
+- QA-03 casi cerrado: sin textos < 4.5:1 en panel, Mi terapeuta ni salas; queda la ficha de la persona con 4.33–4.46 («Total sesiones», «Ánimo promedio», «Calif. promedio», «Agendar sesión»). Origen: el token global `textMuted` (#78716C) de `styles/tokens.ts`, usado también fuera de este PR. Bajo, seguimiento.
