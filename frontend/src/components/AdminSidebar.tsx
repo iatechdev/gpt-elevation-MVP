@@ -8,6 +8,10 @@ const ADMIN_NAV = [
     icon: <span aria-hidden="true">↗</span>, roles: ['admin', 'superadmin'],
   },
   {
+    to: '/admin/skill-catalog', labelKey: 'skcat.menu', fallback: 'Skills catalog',
+    icon: <span aria-hidden="true">◇</span>, roles: ['admin', 'superadmin'],
+  },
+  {
     to: '/admin/dashboard',
     labelKey: 'admin_nav_dashboard',
     fallback: 'Dashboard',

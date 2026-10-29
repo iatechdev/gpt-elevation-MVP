@@ -4,6 +4,7 @@ import { catalogEn } from '../routeCatalog/copy'
 import { compassEn } from '../compass/copy'
 import { exerciseEn } from '../exercises/copy'
 import { skillMapEn } from '../skill-map/copy'
+import { skillCatalogEn } from '../skill-catalog/copy'
 import { contextEn } from '../context/contextCopy'
 import { evidenceEn } from '../evidence/copy'
 const en: Record<string, string> = {
@@ -13,6 +14,7 @@ const en: Record<string, string> = {
   ...contextEn,
   ...evidenceEn,
   ...skillMapEn,
+  ...skillCatalogEn,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'AI emotional support',
