@@ -113,3 +113,8 @@ svg .dot-none { fill: var(--elv-card); stroke: var(--elv-text-2); stroke-width: 
 .skill-map-scope .skill-map-danger { background: var(--elv-error); color: var(--elv-card); border-color: var(--elv-error); }
 .skill-map-scope .elv-btn:disabled { opacity: .6; cursor: not-allowed; }
 @media (max-width: 639px) { .skill-map-tools > .elv-btn, .skill-map-dialog-actions > .elv-btn { flex: 1 1 auto; } }
+
+/* H-86-02: «Sin territorio asignado» junto al lienzo en escritorio; en móvil y en la vista de lista ya va dentro de la lista. */
+.skill-map-unassigned { display: none; margin-bottom: 24px; }
+@media (min-width: 1024px) { .skill-map-board:not(.is-list) + .skill-map-unassigned { display: block; } }
+.skill-map-no-territories { margin-block: 0 16px; }

@@ -100,3 +100,16 @@ test('ES-30 (QA H-86-03) tras «Revocar todos» el mapa se vuelve a leer sin pas
   assert.match(css, /\.skill-map-territory-roles \{[^}]*fill: var\(--elv-text-1\)/)
   assert.match(css, /\.skill-map-roles \{[^}]*color: var\(--elv-text-1\)/)
 })
+
+test('ES-30 diseño aprobado (QA H-86-02, H-86-04, H-93-02): sin roles, «Sin territorio asignado» en escritorio y «Conviene revisar» con paso accionable', () => {
+  const views = readFileSync(new URL('../src/skill-map/SkillViews.tsx', import.meta.url), 'utf8')
+  const page = readFileSync(new URL('../src/pages/SkillMapPage.tsx', import.meta.url), 'utf8')
+  const css = readFileSync(new URL('../src/skill-map/skillMap.css', import.meta.url), 'utf8')
+  assert.equal(views.includes('{territory.roles}'), false, 'H-86-04: los roles de ejemplo ya no se muestran')
+  assert.ok(views.includes('export function UnassignedCard') && page.includes('<UnassignedCard'))
+  assert.match(page, /const noTerritories = !!map && map\.skills\.length > 0 && resolveTerritories/)
+  assert.match(page, /listView \|\| noTerritories \? ' is-list'/)
+  assert.match(css, /\.skill-map-board:not\(\.is-list\) \+ \.skill-map-unassigned \{ display: block; \}/)
+  assert.ok(views.includes("view.needsReview ? 'next_review'") && views.includes('review-why'))
+  assert.equal(views.includes('review_unavailable'), false, 'H-93-02: no se promete una revisión que no existe')
+})
