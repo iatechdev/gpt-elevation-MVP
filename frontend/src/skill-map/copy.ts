@@ -47,6 +47,14 @@ export const skillMapEs = {
   'skill_map.revoke_error': 'No pudimos revocar. Inténtalo de nuevo.',
   'skill_map.revoke_none': 'No hay nada autorizado para el recorrido profesional.',
   'skill_map.revoke_scope': 'Hoy el permiso se revoca para todas las capacidades a la vez; el permiso por capacidad aún no está disponible.',
+  'skill_map.access_text': 'Mira tus competencias por territorios laborales y decide qué cruza a tu zona profesional. El nivel no certifica: muestra qué evidencia hay hoy.',
+  'skill_map.access_cta': 'Abrir mi mapa',
+  'skill_map.guide_title': 'Todavía no hay nivel en ninguna capacidad',
+  'skill_map.guide_text': 'Un nivel necesita evidencia: algo que hiciste, con su situación, tu parte y lo que entregaste. Mientras no la haya, el mapa muestra «Sin evidencia vigente»; no es un déficit.',
+  'skill_map.guide_1': 'Empieza en «Mis evidencias» y cuenta una experiencia real.',
+  'skill_map.guide_2': 'Confírmala: solo lo que tú confirmas cuenta.',
+  'skill_map.guide_3': 'Vuelve aquí: las capacidades con respaldo pasan a «Con evidencia».',
+  'skill_map.guide_cta': 'Ir a Mis evidencias',
 }
 export const skillMapEn: Record<keyof typeof skillMapEs, string> = {
   'skill_map.title': 'Skills map',
@@ -97,4 +105,12 @@ export const skillMapEn: Record<keyof typeof skillMapEs, string> = {
   'skill_map.revoke_error': 'We could not revoke. Please try again.',
   'skill_map.revoke_none': 'Nothing is authorized for the career path.',
   'skill_map.revoke_scope': 'Today the permission is revoked for all skills at once; per-skill permission is not available yet.',
+  'skill_map.access_text': 'See your skills by work territory and decide what crosses into your professional zone. A level does not certify: it shows what evidence exists today.',
+  'skill_map.access_cta': 'Open my map',
+  'skill_map.guide_title': 'No skill has a level yet',
+  'skill_map.guide_text': 'A level needs evidence: something you did, with its situation, your part and what you delivered. Until there is some, the map shows “No current evidence”; it is not a deficit.',
+  'skill_map.guide_1': 'Start in “My evidence” and describe a real experience.',
+  'skill_map.guide_2': 'Confirm it: only what you confirm counts.',
+  'skill_map.guide_3': 'Come back here: skills with support move to “With evidence”.',
+  'skill_map.guide_cta': 'Go to My evidence',
 }

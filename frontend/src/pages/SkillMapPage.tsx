@@ -4,7 +4,9 @@ import { useLanguage } from '../i18n/useLanguage'
 import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
 import type { SkillMap } from '../skill-map/model'
+import { MapGuide } from '../skill-map/MapAccess'
 import { SkillDetail, TerritoryList, TerritoryMap } from '../skill-map/SkillViews'
+import { noLevelAnywhere } from '../skill-map/status'
 import { sampleSkillTerritories, skillTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 
@@ -119,6 +121,7 @@ export function SkillMapPage() {
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
         {sample && <p className="skill-map-note">Asignación de territorios de ejemplo (solo desarrollo). / Sample territory assignment (development only).</p>}
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
+          {noLevelAnywhere(map.skills) && <MapGuide />}
           <div className={`skill-map-board${listView ? ' is-list' : ''}`}>
             <div className="skill-map-canvas">
               <TerritoryMap skills={map.skills} assignment={assignment} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />

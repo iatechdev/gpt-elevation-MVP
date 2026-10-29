@@ -13,3 +13,5 @@ export function skillStatus(skill: Skill): SkillStatus {
 }
 /** Relleno = hay un nivel vigente; hueco punteado = no lo hay. El texto siempre acompaña a la forma y al color. */
 export const hasLevel = (status: SkillStatus) => status === 'evidence' || status === 'needs_review'
+/** La guía del mapa solo se muestra si hay capacidades y NINGUNA tiene un nivel vigente; en cuanto una lo tiene, se oculta. */
+export const noLevelAnywhere = (skills: readonly Skill[]) => skills.length > 0 && skills.every(skill => !hasLevel(skillStatus(skill)))

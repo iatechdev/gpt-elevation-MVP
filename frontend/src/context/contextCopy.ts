@@ -26,6 +26,10 @@ export const contextEs = {
   context_limit120: 'Máximo 120 caracteres.', context_limit500: 'Máximo 500 caracteres.',
   context_minutes_help: 'De 0 a 10080. Deja el campo vacío si está por confirmar.',
   context_language_required: 'Confirma tu idioma preferido.', context_entry_required: 'Elige por dónde quieres empezar.',
+  context_next_title: 'Siguiente paso',
+  context_next_text: 'Con tu contexto guardado, ya puedes ver tu mapa de competencias y empezar a reunir evidencia.',
+  context_next_map: 'Abrir mi mapa',
+  context_next_home: 'Volver al inicio',
 }
 export const contextEn: Record<keyof typeof contextEs, string> = {
   context_title: 'Your starting point', context_intro: 'You do not need to share intimate experiences.',
@@ -55,4 +59,8 @@ export const contextEn: Record<keyof typeof contextEs, string> = {
   context_limit120: 'Maximum 120 characters.', context_limit500: 'Maximum 500 characters.',
   context_minutes_help: 'From 0 to 10080. Leave blank if to be confirmed.',
   context_language_required: 'Confirm your preferred language.', context_entry_required: 'Choose where you would like to start.',
+  context_next_title: 'Next step',
+  context_next_text: 'With your context saved, you can see your skills map and start gathering evidence.',
+  context_next_map: 'Open my map',
+  context_next_home: 'Back to dashboard',
 }

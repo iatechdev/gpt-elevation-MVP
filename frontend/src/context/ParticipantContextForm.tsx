@@ -115,6 +115,8 @@ export function Onboarding() {
           : phase === 'expired' ? <div role="alert"><p>{t('context_expired')}{lostDraft ? ` ${t('context_expired_lost')}` : ''}</p><button className="elv-btn" onClick={() => leave('/login')}>{t('context_signin')}</button></div>
             : phase === 'confirmed' ? <div ref={statusRef} tabIndex={-1} role="status" className="elv-card context-confirmed">
               <h2>{t('context_saved')}</h2><button className="elv-btn elv-btn-primary" onClick={() => setPhase('ready')}>{t('context_edit')}</button>
+              <section className="context-next" aria-labelledby="context-next-title"><h3 id="context-next-title">{t('context_next_title')}</h3><p>{t('context_next_text')}</p>
+                <button className="elv-btn elv-btn-primary" onClick={() => leave('/app/skill-map')}>{t('context_next_map')}</button> <button className="elv-btn" onClick={() => leave('/app/dashboard')}>{t('context_next_home')}</button></section>
             </div> : <form noValidate onSubmit={event => { event.preventDefault(); void save('continue') }}>
               <div className="elv-fieldset context-form" aria-busy={busy}>
                 <fieldset className="elv-fieldset context-entries" aria-describedby={errors.includes('entry') ? 'entry-error' : undefined}>

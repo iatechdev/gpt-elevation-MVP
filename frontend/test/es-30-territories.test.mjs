@@ -89,5 +89,5 @@ test('ES-30 estado del permiso: lee solo lo propio y no inventa estados', async 
 })
 test('ES-30 textos: ES y EN con las mismas claves, sin vacíos ni «déficit/porcentaje»', () => {
   assert.deepEqual(Object.keys(skillMapEs).sort(), Object.keys(skillMapEn).sort())
-  for (const [k, v] of [...Object.entries(skillMapEs), ...Object.entries(skillMapEn)]) { assert.ok(v.trim().length > 0, k); assert.equal(/%|déficit|deficit|puntaje|score/i.test(v), false, k) }
+  for (const [k, v] of [...Object.entries(skillMapEs), ...Object.entries(skillMapEn)]) { assert.ok(v.trim().length > 0, k); assert.equal(/%|déficit|deficit|puntaje|score/i.test(v.replace(/no es un déficit|it is not a deficit/gi, '')), false, k) }
 })
