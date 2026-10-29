@@ -37,6 +37,10 @@ const CORE = [
   // `rubricHash`, `requestId` ni la versión de la regla (referencias técnicas internas); `evidenceRefs` son solo ids y versiones, sin texto. El catálogo
   // (SkillCatalog/SkillDefinition) lo administra el cliente y no es dato personal: no se registra.
   ['skillAssessments', 'SkillAssessment', 'UserId', ['id', 'skillKey', 'track', 'level', 'state', 'catalogVersion', 'evidenceRefs', 'confidence', 'confidenceReasonCode', 'rationale', 'authoring', 'status', 'createdAt'], ['rationale']],
+  // ES-88: análisis de IA del worker (ES-84). Candidatas antes que jobs por su clave foránea. Solo lo que es de la persona: no se exportan
+  // `contextHash`, `requestId`, `leaseOwner`, `fence`, `notBefore` (estado técnico interno). Las citas son claves de campo, sin texto.
+  ['skillCandidates', 'SkillCandidate', 'UserId', ['id', 'jobId', 'skillKey', 'level', 'citations', 'status', 'catalogVersion', 'createdAt']],
+  ['aiJobs', 'AiJob', 'UserId', ['id', 'kind', 'contextVersion', 'status', 'attempt', 'catalogVersion', 'errorCode', 'startedAt', 'finishedAt', 'createdAt']],
   // ES-32: extensión declarativa autorizada en Jira 10250 y en el chat. Sin cambios del procesador ni de retención.
   ['routeConstraints', 'RouteConstraintsVersion', 'UserId', ['id', 'version', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
   ['routeChoices', 'RouteChoice', 'UserId', ['id', 'roleKey', 'slot', 'decision', 'catalogVersion', 'constraintsVersion', 'status', 'createdAt']],
