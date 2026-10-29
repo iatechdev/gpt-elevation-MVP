@@ -13,6 +13,8 @@ const KEY_RE = /^[a-z][a-z0-9_]{2,47}$/;
 const TYPES = ['transversal', 'domain'];
 const LEVELS = ['1', '2', '3', '4'];
 const LANGS = ['es', 'en'];
+// ES-116: los cinco territorios laborales del mapa (ids estables; los nombres viven en el frontend, ES/EN).
+const TERRITORIES = ['dir', 'con', 'com', 'ing', 'inn'];
 
 class SkillError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -38,8 +40,15 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 // Normaliza lo enviado desde el backoffice. Un borrador admite contenido incompleto; publicar exige completarlo.
 function normalizeDefinition(body) {
-  if (!isPlain(body) || !onlyKeys(body, ['type', 'labels', 'rubric'])) throw invalid();
+  if (!isPlain(body) || !onlyKeys(body, ['type', 'labels', 'rubric', 'territories'])) throw invalid();
   const out = {};
+  if (body.territories !== undefined) {
+    const t = body.territories;
+    if (!Array.isArray(t) || t.length > TERRITORIES.length || t.some((id) => typeof id !== 'string' || !TERRITORIES.includes(id)) || new Set(t).size !== t.length) {
+      throw invalid('Territorios inválidos: usa ids conocidos, sin repetir.', 'Invalid territories: use known ids, without repeats.');
+    }
+    out.territories = [...t];
+  }
   if (body.type === undefined || !TYPES.includes(body.type)) throw invalid();
   out.type = body.type;
   out.labels = {};
@@ -111,7 +120,7 @@ async function get(id) {
   const catalog = await SkillCatalog.findOne({ where: { id } });
   if (!catalog) throw notFound();
   const defs = await SkillDefinition.findAll({ where: { catalogId: catalog.id }, order: [['skillKey', 'ASC']] });
-  return { ...describe(catalog, defs.length), skills: defs.map((d) => ({ skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, missing: missingFor(d) })) };
+  return { ...describe(catalog, defs.length), skills: defs.map((d) => ({ skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], missing: missingFor(d) })) };
 }
 
 // Crea el borrador copiando el catálogo vigente (o vacío si no hay). Solo puede haber un borrador abierto.
@@ -125,7 +134,7 @@ async function createDraft() {
     let copied = 0;
     if (published) {
       for (const d of await SkillDefinition.findAll({ where: { catalogId: published.id }, transaction })) {
-        await SkillDefinition.create({ catalogId: draft.id, skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric }, { transaction });
+        await SkillDefinition.create({ catalogId: draft.id, skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? null }, { transaction });
         copied++;
       }
     }
@@ -146,9 +155,12 @@ async function upsertSkill(id, skillKey, body) {
   return ownTransaction(async (transaction) => {
     const catalog = await editableDraft(id, transaction);
     const existing = await SkillDefinition.findOne({ where: { catalogId: catalog.id, skillKey }, transaction });
-    if (existing) await existing.update({ type: def.type, labels: def.labels, rubric: def.rubric }, { transaction });
-    else await SkillDefinition.create({ catalogId: catalog.id, skillKey, ...def }, { transaction });
-    return { skillKey, ...def, missing: missingFor(def) };
+    // `territories` omitido conserva lo guardado; [] lo vacía explícitamente.
+    const fields = { type: def.type, labels: def.labels, rubric: def.rubric, ...(def.territories !== undefined ? { territories: def.territories } : {}) };
+    if (existing) await existing.update(fields, { transaction });
+    else await SkillDefinition.create({ catalogId: catalog.id, skillKey, ...fields }, { transaction });
+    const territories = def.territories ?? existing?.territories ?? [];
+    return { skillKey, ...def, territories, missing: missingFor(def) };
   });
 }
 
@@ -184,7 +196,7 @@ async function getPublished() {
   const catalog = await SkillCatalog.findOne({ where: { status: 'published' } });
   if (!catalog) return null;
   const defs = await SkillDefinition.findAll({ where: { catalogId: catalog.id }, order: [['skillKey', 'ASC']] });
-  return { version: catalog.version, skills: new Map(defs.map((d) => [d.skillKey, { skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, rubricHash: rubricHash(d) }])) };
+  return { version: catalog.version, skills: new Map(defs.map((d) => [d.skillKey, { skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], rubricHash: rubricHash(d) }])) };
 }
 
-module.exports = { SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };
+module.exports = { TERRITORIES, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };

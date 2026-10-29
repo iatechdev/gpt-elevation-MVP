@@ -151,7 +151,7 @@ async function getMap(userId) {
   const rows = await SkillAssessment.findAll({ where: { UserId: userId, status: 'current' } });
   const skills = [];
   for (const skill of catalog.skills.values()) {
-    const entry = { skillKey: skill.skillKey, type: skill.type, labels: skill.labels, rubric: { levels: skill.rubric.levels, source: skill.rubric.source, verifiedAt: skill.rubric.verifiedAt }, self: null, review: null };
+    const entry = { skillKey: skill.skillKey, type: skill.type, labels: skill.labels, territories: skill.territories ?? [], rubric: { levels: skill.rubric.levels, source: skill.rubric.source, verifiedAt: skill.rubric.verifiedAt }, self: null, review: null };
     for (const track of ['self', 'review']) {
       const row = rows.find((r) => r.skillKey === skill.skillKey && r.track === track);
       if (!row) continue;

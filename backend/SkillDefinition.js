@@ -9,6 +9,8 @@ const SkillDefinition = sequelize.define('SkillDefinition', {
   type: { type: DataTypes.STRING(12), allowNull: false }, // transversal | domain
   labels: { type: DataTypes.JSON, allowNull: false },
   rubric: { type: DataTypes.JSON, allowNull: false },
+  // ES-116: territorios del mapa (ids de utils/skillCatalog.TERRITORIES). Metadato de presentación: NO entra en rubricHash.
+  territories: { type: DataTypes.JSON, allowNull: true },
 }, {
   indexes: [{ unique: true, fields: ['catalogId', 'skillKey'] }],
 });

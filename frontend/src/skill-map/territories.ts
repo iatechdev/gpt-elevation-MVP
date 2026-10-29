@@ -10,26 +10,13 @@ export const territories: readonly Territory[] = [
   { id: 'inn', labels: { es: 'Innovación & Producto', en: 'Innovation & Product' }, roles: 'Product Manager · CPO · Innovation Lead' },
 ]
 
-/** Asignación habilidad → territorios (una habilidad puede estar en varios).
- *  VACÍA A PROPÓSITO: la define producto (Alejo) y no se inventa. Mientras no haya asignación, la habilidad
- *  aparece en «Sin territorio asignado». Formato: { skillKey: ['dir', 'con'] }. */
-export const skillTerritories: Readonly<Record<string, readonly string[]>> = {}
-
-/** SOLO para revisar el diseño en desarrollo con el servidor simulado (scripts/mock-es37.mjs). Nunca se usa en producción. */
-export const sampleSkillTerritories: Readonly<Record<string, readonly string[]>> = {
-  comunicacion: ['dir', 'com'],
-  datos: ['con', 'ing'],
-  liderazgo: ['dir', 'con'],
-  diseno: ['ing', 'inn'],
-}
-
-export type Assignment = Readonly<Record<string, readonly string[]>>
 export type TerritoryGroup = { territory: Territory; skills: Skill[] }
 
-/** Reparte las habilidades por territorio. Ids desconocidos se ignoran; sin ninguno válido → sin territorio. Conserva el orden del catálogo. */
-export function resolveTerritories(skills: readonly Skill[], assignment: Assignment, all: readonly Territory[] = territories) {
+/** Reparte las habilidades por territorio según `skill.territories` (lo define el catálogo del backoffice; una habilidad puede estar en varios).
+ *  Ids desconocidos se ignoran; sin ninguno válido → «sin territorio asignado». Conserva el orden del catálogo. */
+export function resolveTerritories(skills: readonly Skill[], all: readonly Territory[] = territories) {
   const known = new Set(all.map(t => t.id))
-  const links = (skill: Skill) => [...new Set(assignment[skill.skillKey] ?? [])].filter(id => known.has(id))
+  const links = (skill: Skill) => [...new Set(skill.territories ?? [])].filter(id => known.has(id))
   const groups: TerritoryGroup[] = all.map(territory => ({ territory, skills: skills.filter(skill => links(skill).includes(territory.id)) }))
   return { groups, unassigned: skills.filter(skill => links(skill).length === 0), links }
 }
