@@ -489,13 +489,17 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
     // ES-102/ES-105: el promedio se calcula sobre los valores registrados (utils/moodStats), no sobre el número de registros.
     const avgMood = formatAverage(averageMood(moodLogs), 'N/A');
 
+    if (avgMood === 'N/A' && ratings.length === 0) {
+      return res.json({ summary: 'Aún no hay datos suficientes para un resumen. / There is not enough data for a summary yet.', generatedAt: new Date().toISOString(), basedOn: { sessions: moodLogs.length, notes: 0 } });
+    }
+
     const avgRating = ratings.length > 0
       ? (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1)
       : 'N/A';
 
     // ES-102 (ES93-A2): solo datos estructurados (ánimo y valoraciones). Las notas del terapeuta NO se envían al proveedor de IA
     // (decisión de ES-79, 26-oct), ni el nombre ni el correo de la persona.
-    const prompt = `You help a professional review a person's recent progress. The person is not identified in this request.
+    const prompt = `You help a professional review a person's recent progress. The person is not identified in this request, and you receive only aggregate numbers: no text written by the person or by the professional.
 
 Total check-ins: ${moodLogs.length}
 Average mood (1-5): ${avgMood}
@@ -512,10 +516,10 @@ Please write a concise, neutral summary (3-5 sentences) of the emotional progres
       });
     } catch (error) {
       if (error instanceof AiBudgetExhaustedError) {
-        return res.status(429).json({ error: 'AI usage limit reached.', code: 'ai_budget_exhausted', retryable: false, scope: error.scope, resetsAt: error.resetsAt });
+        return res.status(429).json({ error: 'Límite de uso de IA alcanzado. / AI usage limit reached.', code: 'ai_budget_exhausted', retryable: false, scope: error.scope, resetsAt: error.resetsAt });
       }
       if (error instanceof AiBudgetNotConfiguredError) {
-        return res.status(503).json({ error: 'AI is not available at the moment.', code: 'ai_budget_not_configured', retryable: false });
+        return res.status(503).json({ error: 'IA no disponible por ahora. / AI is not available at the moment.', code: 'ai_budget_not_configured', retryable: false });
       }
       console.error('❌ Error del proveedor de IA (resumen):', error && error.name);
       return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
