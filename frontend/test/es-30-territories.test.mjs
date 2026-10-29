@@ -91,3 +91,12 @@ test('ES-30 textos: ES y EN con las mismas claves, sin vacíos ni «déficit/por
   assert.deepEqual(Object.keys(skillMapEs).sort(), Object.keys(skillMapEn).sort())
   for (const [k, v] of [...Object.entries(skillMapEs), ...Object.entries(skillMapEn)]) { assert.ok(v.trim().length > 0, k); assert.equal(/%|déficit|deficit|puntaje|score/i.test(v), false, k) }
 })
+
+test('ES-30 (QA H-86-03) tras «Revocar todos» el mapa se vuelve a leer sin pasar por «cargando»; (H-86-01) los roles usan tinta sobre los tintes', () => {
+  const page = readFileSync(new URL('../src/pages/SkillMapPage.tsx', import.meta.url), 'utf8')
+  assert.ok(page.includes("setBridge('revoked'); setRevoke('done'); void reloadMap()"))
+  assert.ok(page.includes('const reloadMap = async'))
+  const css = readFileSync(new URL('../src/skill-map/skillMap.css', import.meta.url), 'utf8')
+  assert.match(css, /\.skill-map-territory-roles \{[^}]*fill: var\(--elv-text-1\)/)
+  assert.match(css, /\.skill-map-roles \{[^}]*color: var\(--elv-text-1\)/)
+})
