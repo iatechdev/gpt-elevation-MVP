@@ -61,9 +61,14 @@ export function SkillMapPage() {
     window.setTimeout(() => detailRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0)
   }
   const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
+  // QA H-86-03: al revocar, el servidor retira lo derivado del chat; se vuelve a leer el mapa SIN pasar por «cargando» para no perder el aviso ni el foco.
+  const reloadMap = async () => {
+    const token = readToken(); if (!token) return
+    try { const next = await readSkillMap({ baseUrl: backend, token }); if (readToken() === token) setState({ status: 'ready', map: next, token }) } catch { /* «Actualizar mapa» lo reintenta */ }
+  }
   const confirm = async () => {
     setRevoke('saving')
-    try { await revokeBridge({ baseUrl: backend, token: readToken() }); setBridge('revoked'); setRevoke('done') }
+    try { await revokeBridge({ baseUrl: backend, token: readToken() }); setBridge('revoked'); setRevoke('done'); void reloadMap() }
     catch (error) { setRevoke(error instanceof ConsentError && error.reason === 'expired' ? 'expired' : 'error') }
     window.setTimeout(() => revokeButton.current?.focus(), 0)
   }
