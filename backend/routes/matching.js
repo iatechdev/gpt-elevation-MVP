@@ -15,6 +15,7 @@ const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, object, text, id } = require('../middlewares/validateBody');
 const { validateIdParams } = require('../middlewares/params');
@@ -53,11 +54,7 @@ router.post('/request', validateBody({ answers: value => object(value) && Object
       limit: 14,
     });
 
-    // ES-98: promedio sobre todos los valores (antes se dividía entre el número de registros y casi duplicaba la cifra).
-    const moodValues = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-    const avgMood = moodValues.length > 0
-      ? (moodValues.reduce((a, b) => a + b, 0) / moodValues.length).toFixed(1)
-      : 'No data';
+    const avgMood = formatAverage(averageMood(moodLogs), 'No data'); // ES-105: sobre los valores registrados, no sobre los registros
 
     const therapistList = availableTherapists.map(t => ({
       id:          t.id,

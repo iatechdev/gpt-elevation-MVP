@@ -15,6 +15,9 @@ const { validateBody, nonempty, text, date, optional } = require('../middlewares
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
 const { textOf } = require('../utils/claudeText');
+const { blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-101
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
+const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient'); // ES-102
 
 const {
   PromptVault,
@@ -64,10 +67,13 @@ router.get('/pacientes', async (req, res) => {
   try {
     const therapistId = req.user.id;
 
-    const patients = await User.findAll({
+    const linked = await User.findAll({
       where: { therapistId, role: 'user' },
       attributes: ['id', 'name', 'email', 'active', 'createdAt'],
     });
+    // ES-101: sin eliminación aceptada ni cuenta inactiva en la lista.
+    const blocked = await blockedPatientIds(linked.map((p) => p.id));
+    const patients = linked.filter((p) => !blocked.has(p.id));
 
     const patientsWithStats = await Promise.all(
       patients.map(async (p) => {
@@ -135,10 +141,12 @@ router.get('/alerts', async (req, res) => {
     const now = Date.now();
     const ONE_DAY = 1000 * 60 * 60 * 24;
 
-    const patients = await User.findAll({
+    const linked = await User.findAll({
       where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name'],
     });
+    const blocked = await blockedPatientIds(linked.map((p) => p.id)); // ES-101
+    const patients = linked.filter((p) => !blocked.has(p.id));
 
     const inactivePatients = [];
     const notableProgress  = [];
@@ -217,7 +225,7 @@ router.get('/pacientes/:id/historial', async (req, res) => {
       attributes: ['id', 'name', 'email', 'createdAt'],
     });
 
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -344,7 +352,7 @@ router.get('/pacientes/:id/historia', async (req, res) => {
       attributes: ['id', 'name', 'email', 'createdAt', 'therapistId'],
     });
 
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -400,7 +408,7 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
     const patient = await User.findOne({
       where: { id: patientId, therapistId, role: 'user' },
     });
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -432,7 +440,7 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
       where: { id: noteId, therapistId },
     });
 
-    if (!note) {
+    if (!note || await patientBlocked(note.UserId)) { // ES-101: tampoco se edita la nota de una persona bloqueada
       return res.status(404).json({ error: 'Note not found or not authorized.' });
     }
 
@@ -467,7 +475,7 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       attributes: ['id'],
     });
 
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -483,48 +491,53 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       limit: 30,
     });
 
-    const notes = await ClinicalNote.findAll({
-      where: { UserId: patientId, therapistId },
-      order: [['sessionDate', 'DESC']],
-      limit: 10,
-    });
-
-    const decryptedNotes = notes.map(n => desencriptar(n.content));
-
-    const avgMood = moodLogs.length > 0
-      ? (moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood])
-          .filter(Boolean)
-          .reduce((a, b) => a + b, 0) / moodLogs.length).toFixed(1)
-      : 'N/A';
+    // ES-102/ES-105: el promedio se calcula sobre los valores registrados (utils/moodStats), no sobre el número de registros.
+    const avgMood = formatAverage(averageMood(moodLogs), 'N/A');
 
     const avgRating = ratings.length > 0
       ? (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1)
       : 'N/A';
 
+    // ES-102 (ES93-A2): solo datos estructurados (ánimo y valoraciones). Las notas del terapeuta NO se envían al proveedor de IA
+    // (decisión de ES-79, 26-oct), ni el nombre ni el correo de la persona.
     const prompt = `You help a professional review a person's recent progress. The person is not identified in this request.
 
-Total sessions: ${moodLogs.length}
+Total check-ins: ${moodLogs.length}
 Average mood (1-5): ${avgMood}
 Average session rating (1-5): ${avgRating}
 
-Recent therapist notes:
-${decryptedNotes.length > 0 ? decryptedNotes.join('\n---\n') : 'No notes yet.'}
-
 Please write a concise, neutral summary (3-5 sentences) of the emotional progress and current state reflected in this data. Focus on observable trends. Do not diagnose, prescribe or predict outcomes. Be professional and empathetic.`;
 
-    const msg = await anthropic.messages.create({
-      model: anthropic.MODEL,
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    });
+    let msg;
+    try {
+      // ES-102 (ES93-A2/M5): por la puerta única de IA (presupuesto, tiempo de espera y reintentos acotados de ES-22).
+      msg = await callClaude({
+        userId: therapistId, kind: 'therapist_summary',
+        body: { model: anthropic.MODEL, max_tokens: 400, messages: [{ role: 'user', content: prompt }] },
+      });
+    } catch (error) {
+      if (error instanceof AiBudgetExhaustedError) {
+        return res.status(429).json({ error: 'AI usage limit reached.', code: 'ai_budget_exhausted', retryable: false, scope: error.scope, resetsAt: error.resetsAt });
+      }
+      if (error instanceof AiBudgetNotConfiguredError) {
+        return res.status(503).json({ error: 'AI is not available at the moment.', code: 'ai_budget_not_configured', retryable: false });
+      }
+      console.error('❌ Error del proveedor de IA (resumen):', error && error.name);
+      return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
+    }
+
+    const summary = textOf(msg).trim();
+    if (!summary) { // ES-105 (ES102-F03): una respuesta vacía es un fallo del proveedor, no un resumen
+      return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
+    }
 
     res.json({
-      summary: textOf(msg),
+      summary,
       generatedAt: new Date().toISOString(),
-      basedOn: { sessions: moodLogs.length, notes: notes.length },
+      basedOn: { sessions: moodLogs.length, notes: 0 }, // las notas ya no se usan; la clave se conserva por compatibilidad con la pantalla
     });
   } catch (error) {
-    console.error('❌ Error generating AI summary:', error);
+    console.error('❌ Error generating AI summary:', error && error.name);
     res.status(500).json({ error: 'Could not generate summary.' });
   }
 });

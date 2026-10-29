@@ -81,6 +81,7 @@ connectDB().then(() => {
 // ── Rutas públicas ────────────────────────────────────────────────────────────
 app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
+app.use('/api/professional-applications', require('./routes/professionalApplications').publicRouter); // ES-95 — solicitud pública de profesionales
 app.use('/api/pricing',         require('./routes/pricing'));
 app.use('/api/plans',           require('./routes/plans'));           // HU-077 — lista pública de planes
 
@@ -119,6 +120,7 @@ app.use('/api/therapist',       verificarTerapeuta, require('./routes/therapistR
 app.use('/api/admin/skill-catalog', verificarAdmin, require('./routes/skillCatalog')); // ES-29 — catálogo de habilidades (backoffice)
 app.use('/api/admin/route-catalog', verificarAdmin, require('./routes/routeCatalogAdmin')); // ES-31 — catálogo de rutas (backoffice)
 app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
+app.use('/api/admin/professional-applications', verificarAdmin, require('./routes/professionalApplications').adminRouter); // ES-95 — solicitudes (backoffice)
 app.use('/api/admin/metrics',       verificarAdmin, require('./routes/adminMetrics'));
 app.use('/api/admin/matching',      verificarAdmin, require('./routes/matching'));
 app.use('/api/admin/pricing',       verificarAdmin, require('./routes/pricing'));

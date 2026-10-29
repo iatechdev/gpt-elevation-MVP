@@ -115,6 +115,7 @@ test('QA-9-02: body consumers reject invalid types before side effects', async t
   models.User.findOne = async () => record({ id: 7, therapistId: 101 });
   models.User.findByPk = async () => record({ id: 101 }); // ES-98: bloqueo de la fila del terapeuta para el choque de horarios
   models.TherapySession.findAll = async () => [];
+  models.User.findAll = async () => []; // ES-101: lectura de autorización (cuentas inactivas), no un efecto del cuerpo enviado
   models.TherapySession.create = async values => { saved = values; return record({ id: 8, ...values }); };
   assert.equal((await request('POST', '/api/sessions/therapist', {
     role: 'therapist', body: { patientId: 7, scheduledAt: '2099-01-01T12:00:00Z', duration: 50, therapistId: 999 },
