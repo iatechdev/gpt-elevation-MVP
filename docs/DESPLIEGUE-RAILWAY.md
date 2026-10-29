@@ -127,7 +127,24 @@ Antes, un volcado de respaldo o punto de restauración y la confirmación de Mau
 
 **Regla para cada PR que toque el esquema (a partir de la fase 2):** una migración nueva con `up` y `down`, con nombre `AAAAMMDDHHMMSS-descripcion`; una migración aplicada no se edita; cambios aditivos por defecto; los destructivos (borrar o cambiar tipo) en dos despliegues y con confirmación de Mauricio. El CI (`db:drift`) falla si el modelo y las migraciones no coinciden. Excepción: las restricciones e índices que solo existen en las migraciones y están listados por nombre, con su motivo, en `backend/scripts/drift-allowed.json` (Sequelize no declara CHECK ni claves foráneas compuestas); cualquier otra diferencia es deriva. Quien añada una la declara en el PR de su historia.
 
-**Fases pendientes:** aplicar las migraciones antes de cada despliegue en Railway (comando previo) y retirar `sync()` de producción y staging (fase 2); hacer `db:drift` un check requerido de `main` (fase 3). Nota: `sequelize-cli` está en `dependencies` (no en `devDependencies`) porque el comando previo lo necesita dentro de la imagen; la prueba P1-8 lo trata como herramienta de línea de comandos.
+**Fase 2 (ES-115): migrar al desplegar.** Entrega este PR; aplicarla en staging es un paso aparte, con respaldo y confirmación de Mauricio.
+
+- `railway.json` define `preDeployCommand: ["node backend/scripts/migrate-deploy.cjs"]`. Railway lo ejecuta en la imagen ya construida y **antes** de arrancar la nueva versión: aplica las migraciones pendientes con `sequelize-cli`. Si falla, el despliegue no continúa y sigue sirviendo la versión anterior. *No verificado:* el comportamiento de `preDeployCommand` en Railway hasta probarlo en un despliegue real.
+- `migrate-deploy` se niega (sale con 1 y no escribe nada) si la base tiene el esquema de la aplicación pero la línea base no está registrada, es decir, una base creada por `sync()` y sin adoptar. En una base nueva (producción) corre todo desde cero.
+- `DB_SYNC_DISABLED=true` hace que el servidor no llame a `sync()`. Sin la variable nada cambia (desarrollo local y pruebas). Se define por entorno en Railway **después** de adoptar y comprobar que las migraciones corren; se revierte quitando la variable.
+- Concurrencia: no hay bloqueo propio entre despliegues (el pooler de Supabase en modo transacción no sostiene bloqueos de sesión); se apoya en que Railway despliega de a uno por servicio.
+
+**Adoptar staging (una sola vez, con respaldo y confirmación de Mauricio)**
+
+1. Respaldo de staging (volcado lógico de solo lectura; el de 29-oct está en la máquina de Mauricio, fuera de Git).
+2. Diagnóstico, sin escribir nada: `railway run --environment staging --service backend node backend/scripts/adopt-existing-schema.cjs`. Debe decir `adoptable` para la línea base y para `20261029000000-es95-professional-applications.js` (y `registrada` para las que ya lo estén).
+3. Adopción: la misma orden con `--apply`. Registra en `SequelizeMeta` solo lo comprobado por objetos (tablas e índice); no crea ni borra tablas.
+4. Comprobar que `migrate-deploy` corre sin errores contra staging (`railway run … node backend/scripts/migrate-deploy.cjs`): aplica el resto de migraciones, todas idempotentes (`CREATE … IF NOT EXISTS`), y no cambia datos. Nota: como las tablas de staging ya existen, las restricciones CHECK de ES-32 que solo trae la migración siguen sin crearse (la «diferencia conocida de staging» no se cierra con esto).
+5. Definir `DB_SYNC_DISABLED=true` en el servicio de staging y redesplegar. Comprobar `/api/health` y el registro de arranque («no se llama a sync()»).
+
+**Si una migración falla en el despliegue:** el despliegue se detiene y la versión anterior sigue activa; se corrige hacia adelante con una migración nueva (no se editan las aplicadas). Para volver a `sync()`, quitar `DB_SYNC_DISABLED`. Los `down` siguen exigiendo `ALLOW_DESTRUCTIVE_MIGRATION=true` y no corren en producción.
+
+**Fase pendiente:** hacer `db:drift` un check requerido de `main` (fase 3). Nota: `sequelize-cli` está en `dependencies` (no en `devDependencies`) porque el comando previo lo necesita dentro de la imagen.
 
 ## Diferencias conocidas de staging
 

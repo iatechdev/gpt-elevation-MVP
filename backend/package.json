@@ -48,7 +48,10 @@
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:status": "sequelize-cli db:migrate:status",
     "db:drift": "node scripts/schema-drift.cjs",
-    "check:workflows": "node scripts/check-workflows.cjs"
+    "check:workflows": "node scripts/check-workflows.cjs",
+    "db:adopt": "node scripts/adopt-existing-schema.cjs",
+    "db:migrate:deploy": "node scripts/migrate-deploy.cjs",
+    "test:migrate-deploy:pg": "node --test test/integration/es-115-postgres.cjs"
   },
   "keywords": [],
   "author": "",

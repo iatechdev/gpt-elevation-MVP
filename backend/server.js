@@ -9,6 +9,7 @@ const helmet  = require('helmet');
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
 const syncOptions              = require('./utils/syncOptions');
+const { syncDisabled }         = syncOptions;
 
 const {
   verificarToken,
@@ -72,6 +73,11 @@ app.get('/api/health', (req, res) => {
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
   setupAssociations(sequelize);
+  if (syncDisabled()) {
+    // ES-115 (ES-59, fase 2): el esquema lo gestionan solo las migraciones (se aplican antes del despliegue).
+    console.log('ℹ️ DB_SYNC_DISABLED=true: no se llama a sync(); el esquema lo gestionan las migraciones.');
+    return;
+  }
   // `alter` solo con DB_SYNC_ALTER=true; por defecto solo crea las tablas que falten (migraciones: ES-59)
   sequelize.sync(syncOptions())
     .then(() => console.log('✅ Tablas sincronizadas en PostgreSQL.'))
