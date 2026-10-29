@@ -128,14 +128,14 @@ const fs = require('node:fs');
     await page.getByRole('radio', { name: 'Quiero avanzar pronto' }).check();
     await page.locator('summary').click();
     const writesBeforeInvalid = writes.length;
-    await page.locator('#availabilityMinutesPerWeek').fill('1.5');
+    await page.locator('#availabilityMinutesPerWeek').fill('200'); // más de 168 horas por semana: no se envía
     await page.getByRole('button', { name: 'Guardar avance', exact: true }).click();
     await page.getByRole('alert').waitFor(); assert.equal(writes.length, writesBeforeInvalid);
-    await page.locator('#availabilityMinutesPerWeek').fill('0');
+    await page.locator('#availabilityMinutesPerWeek').fill('7,5'); // horas por semana → se guardan 450 minutos
     await page.getByRole('button', { name: 'Guardar contexto', exact: true }).click();
     await page.getByRole('heading', { name: 'Contexto guardado', exact: true }).waitFor();
-    assert.equal(snapshot.context.availabilityMinutesPerWeek, 0);
-    check('career urgency saves without an intimate narrative; fractional minutes never sent');
+    assert.equal(snapshot.context.availabilityMinutesPerWeek, 450);
+    check('career urgency saves without an intimate narrative; out-of-range hours never sent; 7,5 h saved as 450 minutes');
     await page.getByRole('button', { name: 'Seguir editando', exact: true }).click();
     await page.getByRole('radio', { name: 'Mi espacio', exact: true }).check();
     await page.getByRole('button', { name: 'Guardar y continuar', exact: true }).click();
