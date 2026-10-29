@@ -151,7 +151,7 @@ export function Onboarding() {
         : phase === 'loadError' ? <div role="alert"><p>{t('context_load_error')}</p><button className="elv-btn" onClick={reload}>{t('context_retry')}</button></div>
           : phase === 'expired' ? <div role="alert"><p>{t('context_expired')}{lostDraft ? ` ${t('context_expired_lost')}` : ''}</p><button className="elv-btn" onClick={() => leave('/login')}>{t('context_signin')}</button></div>
             : phase === 'confirmed' ? <div ref={statusRef} tabIndex={-1} role="status" className="elv-card context-confirmed">
-              <h2>{t('context_saved')}</h2><div className="context-actions"><button className="elv-btn elv-btn-primary" onClick={() => setPhase('ready')}>{t('context_edit')}</button><Link className="elv-btn" to={HISTORY_PATH}>{t('resume_manage')}</Link></div>
+              <h2>{t('context_saved')}</h2><div className="context-actions"><button className="elv-btn elv-btn-primary" onClick={() => setPhase('ready')}>{t('context_edit')}</button><Link className="elv-btn" to={HISTORY_PATH}>{t('resume_manage')}</Link><Link className="elv-btn" to="/app/evidence/resume-skills">{t('evidence.rs_banner_cta')}</Link></div>
             </div> : <>
               <ResumeStarter t={t} disabled={busy || conflict} historyPath={HISTORY_PATH} onResult={receive} onManual={goManual} />
               {analysis && <div ref={resultRef} tabIndex={-1} className="rs-card rs-tint" aria-labelledby="rs-found">
