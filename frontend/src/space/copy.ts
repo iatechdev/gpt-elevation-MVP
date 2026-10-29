@@ -23,6 +23,11 @@ export const copy = {
     budget: 'El envío no está disponible por el límite o la configuración de IA. Puedes consultar su estado; no se enviará automáticamente.',
     current: 'El contenido guardado coincide actualmente con tu borrador.', deleted: 'La entrada ya no está disponible.', deleteError: 'No pudimos verificar el borrado. Consulta la entrada antes de otra acción.',
     review: 'Revisar versión guardada', proCompass: 'Brújula profesional', proCompassIntro: 'Explora ideas de profesión a partir de lo que ya valoras y haces bien. No es terapia ni un diagnóstico, y no promete resultados laborales. Puedes parar cuando quieras.', proCompassNotNow: 'Ahora no', proCompassClose: 'Cerrar sin presión', exercises: 'Ejercicios opcionales',
+    conversation: 'Conversación', convPrivate: 'Privada · Solo visible para ti', pause: 'Pausar', resume: 'Retomar', menu: 'Menú', menuLabel: 'Más opciones de Mi espacio',
+    usage: 'Uso de IA este periodo', usageRenews: 'Se renueva el {date}', usageValue: '{n} % usado', usageNone: 'Aún no hay un límite de uso definido para tu cuenta, por eso no se muestra la barra.',
+    usageError: 'No pudimos consultar tu uso de IA. Reintentar', usageLoading: 'Consultando tu uso de IA…',
+    paused: 'Conversación en pausa. No se envía nada al acompañante hasta que la retomes. Tu historial sigue aquí.',
+    exhausted: 'Llegaste al límite de este periodo. Puedes seguir escribiendo en tu diario; la conversación se reactiva el {date}.', tabs: 'Secciones de Mi espacio',
   },
   en: {
     space: 'My space', tools: 'My tools', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: 'Skip to content',
@@ -48,5 +53,10 @@ export const copy = {
     budget: 'The message is unavailable due to the AI limit or configuration. You can check its status; it will not be sent automatically.',
     current: 'The saved content currently matches your draft.', deleted: 'The entry is no longer available.', deleteError: 'We could not verify deletion. Check the entry before another action.',
     review: 'Review saved version', proCompass: 'Professional compass', proCompassIntro: 'Explore career ideas starting from what you already value and do well. It is not therapy or a diagnosis, and it does not promise job outcomes. You can stop whenever you like.', proCompassNotNow: 'Not now', proCompassClose: 'Close, no pressure', exercises: 'Optional exercises',
+    conversation: 'Conversation', convPrivate: 'Private · Only visible to you', pause: 'Pause', resume: 'Resume', menu: 'Menu', menuLabel: 'More My space options',
+    usage: 'AI use this period', usageRenews: 'Renews on {date}', usageValue: '{n}% used', usageNone: 'No usage limit has been set for your account yet, so the bar is not shown.',
+    usageError: 'We could not check your AI use. Retry', usageLoading: 'Checking your AI use…',
+    paused: 'Conversation paused. Nothing is sent to the companion until you resume. Your history stays here.',
+    exhausted: 'You reached this period’s limit. You can keep writing in your journal; the conversation reopens on {date}.', tabs: 'My space sections',
   },
 } as const
