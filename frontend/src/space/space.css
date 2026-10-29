@@ -70,6 +70,5 @@
 .space-meter-full i { background: var(--color-accent); }
 .space-callout { margin: 0; padding: 10px 12px; font-size: .9rem; background: var(--space-callout); color: #5A4710; border: 1px solid var(--color-secondary); border-radius: .25rem; }
 
-.space-scope .space-paper { font-family: 'Noto Serif', Georgia, serif; font-style: italic; line-height: 32px; background: repeating-linear-gradient(#FBF9F2 0 31px, #E8E3D3 31px 32px); }
 
 @media (max-width: 479px) { .space-menu-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .space-menu summary { min-width: 44px; justify-content: center; } .space-tabs a { letter-spacing: .06em; padding-inline: 6px; } }
