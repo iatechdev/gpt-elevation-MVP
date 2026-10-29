@@ -38,7 +38,8 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:status": "sequelize-cli db:migrate:status",
-    "db:drift": "node scripts/schema-drift.cjs"
+    "db:drift": "node scripts/schema-drift.cjs",
+    "check:workflows": "node scripts/check-workflows.cjs"
   },
   "keywords": [],
   "author": "",
@@ -62,6 +63,7 @@
     "sequelize-cli": "6.6.5"
   },
   "devDependencies": {
-    "embedded-postgres": "17.10.0-beta.17"
+    "embedded-postgres": "17.10.0-beta.17",
+    "js-yaml": "4.3.2"
   }
 }
