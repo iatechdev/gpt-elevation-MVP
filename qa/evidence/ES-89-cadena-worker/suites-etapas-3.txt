@@ -1,0 +1,19 @@
+##### qa61 387becdc962a6c050682274d4fb27721ba4e18cc
+test:data-rights:pg: # pass 12 # fail 0 
+test:bridge:pg: # pass 7 # fail 0 
+test:proposals:pg: # pass 5 # fail 0 
+test:integration:pg: # pass 5 # fail 0 
+test:pro-applications:pg: # pass 5 # fail 0 
+##### qa63 466921f8c0aed8101f51a34895f26872a83c6c8b
+test:data-rights:pg: # pass 12 # fail 0 
+test:bridge:pg: # pass 7 # fail 0 
+test:proposals:pg: # pass 5 # fail 0 
+test:integration:pg: # pass 5 # fail 0 
+test:pro-applications:pg: # pass 5 # fail 0 
+##### qa66 b73306892d4c17265500af6f07ad482ad78b1309
+test:data-rights:pg: # pass 12 # fail 0 
+test:bridge:pg: # pass 7 # fail 0 
+test:proposals:pg: # pass 5 # fail 0 
+test:integration:pg: # pass 5 # fail 0 
+test:pro-applications:pg: # pass 5 # fail 0 
+FIN3
