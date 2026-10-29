@@ -95,6 +95,7 @@ app.use('/api',                 verificarToken, require('./routes/session'));   
 app.use('/api/consents',        verificarToken, require('./routes/consents'));       // ES-19 — consentimiento por propósito
 app.use('/api/career-context',  verificarToken, require('./routes/careerContext'));  // ES-25 — puente profesional
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
+app.use('/api/skill-analysis',  verificarToken, require('./routes/skillAnalysis'));  // ES-89 — análisis de IA del contexto profesional (worker)
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
 app.use('/api/routes',          verificarToken, require('./routes/routes'));         // ES-32 — rutas de la propia persona

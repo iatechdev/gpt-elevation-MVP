@@ -24,6 +24,7 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 | `DATA_ENCRYPTION_KEY` | Cifrado de datos (`utils/crypto.js`) | Distinta por entorno. En producción el proceso no arranca sin ella |
 | `PROMPT_ENCRYPTION_KEY` | Cifrado de prompts (`promptVault.js`) | Distinta por entorno |
 | `PROFESSIONAL_ENCRYPTION_KEY` | Cifrado del contexto profesional (`utils/professionalCrypto.js`, ES-86) | Distinta de `DATA_ENCRYPTION_KEY` y por entorno; mín. 32 caracteres. Sin ella, en producción, el API responde 503 al guardar contexto profesional. Respaldo fuera del repositorio. Ver doc 44 |
+| `AI_ANALYSIS_TRIGGER` | Quién pide el análisis de IA del contexto profesional (ES-89, API) | Opcional: `explicit` (por defecto) o `automatic`. Pendiente de confirmar por Alejo. Ver doc 47 |
 | `WORKER_DATABASE_URL` y `WORKER_*` | Servicio `worker` (ES-87, `node backend/worker.js`): conexión con el rol `elevation_worker` y sondeo/lease/intentos | Solo en el servicio worker, nunca en el API. El worker no recibe `DATA_ENCRYPTION_KEY`, `JWT_SECRET` ni `DATABASE_URL`. Ver doc 45 |
 | `PROFESSIONAL_KEY_ID` | Identificador de esa clave (`a-z0-9`, 1–8) | Opcional, por defecto `p1`; cambia al rotar |
 | `PROFESSIONAL_ENCRYPTION_KEY_PREVIOUS`, `PROFESSIONAL_KEY_ID_PREVIOUS` | Clave anterior, solo para descifrar | Solo durante una rotación |
