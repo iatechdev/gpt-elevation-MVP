@@ -3,7 +3,7 @@ import { copy } from './copy'
 import { history, listEntries, makeIntent, readEntry, request, SpaceError } from './api'
 import type { ChatMessage, Entry, Intent } from './api'
 import { useDraftGuard, useSpaceToken } from './hooks'
-export function usePersonalChat(lang: 'es' | 'en', enabled = true) {
+export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compass') {
   const token = useSpaceToken(); const c = copy[lang]
   const [messages, setMessages] = useState<ChatMessage[]>([]); const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false); const [expired, setExpired] = useState(!token)
@@ -71,7 +71,7 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true) {
       const latest = await Promise.all(selected.map(e => readEntry(token, e.id)))
       if (!current()) return
       if (latest.some((e, index) => e.updatedAt !== selected[index].updatedAt)) { setSelected([]); setNotice(c.contextChanged); return }
-      const body = makeIntent(input, lang, selected.map(e => e.id))
+      const body = makeIntent(input, lang, selected.map(e => e.id), undefined, mode)
       setIntent(body); setRetryable(false)
       await post(body)
     } catch (error) { if (current()) { setSelected([]); fail(error, c.contextChanged) } }

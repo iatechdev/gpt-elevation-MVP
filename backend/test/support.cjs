@@ -22,7 +22,7 @@ for (const name of [
   'User', 'ParticipantContext', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem',
+  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -35,6 +35,8 @@ models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
 models.DeletionRequest.findOne = async () => null;
+models.DeletionRequest.findAll = async () => []; // ES-101: el terapeuta consulta las eliminaciones aceptadas
+models.User.findAll = async () => []; // ES-101: por defecto nadie está inactivo; las pruebas que listan usuarios lo sobrescriben
 
 // ES-22: presupuesto de IA holgado por defecto y contadores en memoria; las pruebas de presupuesto lo sobrescriben.
 process.env.AI_BUDGET_TOKENS_PER_USER = '1000000000';

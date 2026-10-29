@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
+import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
@@ -45,7 +46,12 @@ export function ChatPage() {
   const getToken = () => localStorage.getItem('elevation_token') ?? ''
 
   // Chat
-  const chat = usePersonalChat(lang)
+  // ES-13: la Brújula profesional solo existe con la bandera encendida; sin ella, ?mode=compass se ignora y el chat es el normal.
+  const [params] = useSearchParams()
+  const compass = import.meta.env.VITE_ENABLE_COMPASS_CHAT === 'true' && params.get('mode') === 'compass'
+  const chat = usePersonalChat(lang, true, compass ? 'compass' : undefined)
+  const [compassStarted, setCompassStarted] = useState(false)
+  useEffect(() => { if (chat.intent) setCompassStarted(true) }, [chat.intent])
   const { messages, busy: sending } = chat
   const chatEndRef = useRef<HTMLDivElement>(null)
 
@@ -318,6 +324,7 @@ export function ChatPage() {
       {/* Mensajes */}
       <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 300, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
         <SpaceNav /><div id="space-main" tabIndex={-1} />
+        {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {messages.map((msg, i) => (
