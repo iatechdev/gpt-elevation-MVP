@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { models, anthropic, record, startApp } = require('./support.cjs');
+const { models, anthropic, record, startApp, grantTherapistSharing } = require('./support.cjs');
 
 const NAME = 'Nombre Sintetico Paciente';
 const T1 = 301;
@@ -8,6 +8,7 @@ const T2 = 302;
 const PATIENT = 7;
 
 function setup() {
+  grantTherapistSharing(); // ES-96: la persona autorizó compartir con este terapeuta
   const session = record({ id: 41, patientId: PATIENT, therapistId: T1, status: 'in_progress' });
   models.TherapySession.findOne = async ({ where }) =>
     String(where.id) === '41' && where.therapistId === T1 ? session : null;

@@ -192,10 +192,11 @@ async function publish(id, adminId) {
 }
 
 // Catálogo vigente con sus habilidades, o null si el cliente no ha publicado ninguno.
-async function getPublished() {
-  const catalog = await SkillCatalog.findOne({ where: { status: 'published' } });
+// `transaction` (opcional): quien ya tiene una transacción abierta (ES-110) debe leer con ella; si no, retiene DOS conexiones del pool por solicitud.
+async function getPublished(transaction) {
+  const catalog = await SkillCatalog.findOne({ where: { status: 'published' }, transaction });
   if (!catalog) return null;
-  const defs = await SkillDefinition.findAll({ where: { catalogId: catalog.id }, order: [['skillKey', 'ASC']] });
+  const defs = await SkillDefinition.findAll({ where: { catalogId: catalog.id }, order: [['skillKey', 'ASC']], transaction });
   return { version: catalog.version, skills: new Map(defs.map((d) => [d.skillKey, { skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], rubricHash: rubricHash(d) }])) };
 }
 
