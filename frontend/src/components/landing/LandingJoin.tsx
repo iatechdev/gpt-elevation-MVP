@@ -23,6 +23,7 @@ export function LandingJoin({ text }: { text: (key: string) => string }) {
       <div className="landing-join-professionals">
         <h3>{text('landing.join.professionals')}</h3>
         <div><p>{text('landing.join.professional_body')}</p><p>{text('landing.join.professional_pending')}</p></div>
+        <Link to="/profesionales" className="elv-btn landing-join-create">{text('landing.join.professional_cta')}</Link>
       </div>
     </div>
   </LandingSection>

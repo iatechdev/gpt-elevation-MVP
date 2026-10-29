@@ -9,6 +9,7 @@ import { SpaceNav } from '../space/SpaceNav'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
+import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { MatchingModal } from '../components/MatchingModal'
 import { CareerEntry } from '../career/CareerShell'
 import { ExerciseTools } from '../exercises/ExerciseTools'
@@ -328,6 +329,7 @@ export function UserDashboard() {
       <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>
         <CareerEntry />
 
+        <FeedbackPreviewLink />
         {/* ── COLUMNA IZQUIERDA ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
@@ -620,6 +622,7 @@ export function UserDashboard() {
 
       {/* ── SECCIÓN RECOMENDACIONES ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 1.5rem' }}>
+        <a href="/app/route-catalog" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('catalog.title')}</a>
         <a href="/app/compass" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('compass.title')}</a>
       </div>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 3rem' }}>

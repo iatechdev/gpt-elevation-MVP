@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:es44:corpus:1",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "corpusId": {
+      "const": "es44-synthetic-v1"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "synthetic": {
+      "const": true
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 30,
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "pattern": "^ES44-[0-9]{3}$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "locale": {
+            "enum": [
+              "es",
+              "en"
+            ]
+          },
+          "synthetic": {
+            "const": true
+          },
+          "author": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "tags": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "non_technical",
+                "adversarial",
+                "scarce",
+                "regulated",
+                "contradiction"
+              ]
+            }
+          },
+          "scenario": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "ref": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,40}$"
+                    },
+                    "kind": {
+                      "enum": [
+                        "chat_turn",
+                        "diary_entry",
+                        "document_text"
+                      ]
+                    },
+                    "owner": {
+                      "enum": [
+                        "self",
+                        "other"
+                      ]
+                    },
+                    "authorized": {
+                      "type": "boolean"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "kind",
+                    "owner",
+                    "authorized",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "constraints": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "autonomy": {
+                "enum": [
+                  "assisted",
+                  "autonomous"
+                ]
+              },
+              "skillKeys": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 8,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{1,63}$"
+                }
+              }
+            },
+            "required": [
+              "sources",
+              "constraints",
+              "autonomy",
+              "skillKeys"
+            ],
+            "additionalProperties": false
+          },
+          "expected": {
+            "type": "object",
+            "properties": {
+              "controls": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "evidence_proposal",
+                    "skill_proposal",
+                    "citation_rejected",
+                    "claim_number_rejected",
+                    "foreign_owner_denied",
+                    "private_boundary",
+                    "safety_source_excluded",
+                    "untrusted_fenced",
+                    "secret_redacted",
+                    "revocation_confirmation",
+                    "unknown_skill_rejected",
+                    "budget_denied",
+                    "provider_recovered",
+                    "autonomy_cap"
+                  ]
+                }
+              },
+              "pendingStages": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "routes",
+                    "plan",
+                    "file_parser"
+                  ]
+                }
+              },
+              "criteria": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "forbiddenClaims": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "controls",
+              "pendingStages",
+              "criteria",
+              "forbiddenClaims"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "caseId",
+          "version",
+          "locale",
+          "synthetic",
+          "author",
+          "tags",
+          "scenario",
+          "input",
+          "expected"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "corpusId",
+    "version",
+    "synthetic",
+    "author",
+    "cases"
+  ],
+  "additionalProperties": false
+}

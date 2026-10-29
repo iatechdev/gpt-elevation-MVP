@@ -2,6 +2,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { LandingPage }    from './pages/LandingPage.tsx'
 import { LoginPage }      from './pages/LoginPage.tsx'
+import { ProfessionalApplicationPage } from './professional/ProfessionalApplicationPage.tsx'
 import { CheckinPage }    from './pages/CheckinPage.tsx'
 import { ChatPage }       from './pages/ChatPage.tsx'
 import { PricingPage }    from './pages/PricingPage.tsx'
@@ -28,11 +29,16 @@ import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { FacilitationPreview } from './facilitation/FacilitationPreview'
+import { Participants, ParticipantDetail, NewReview, OwnReviews } from './facilitation/Pages'
+import { CatalogBrowser, CatalogManager } from './routeCatalog/CatalogPages'
 import { CompassPage } from './compass/CompassPage'
 import { CareerShell } from './career/CareerShell'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 import { ExercisePage } from './exercises/ExercisePage'
 
+import { FeedbackPage } from './pilot/FeedbackPage'
+import { PilotMetricsPage } from './pilot/PilotMetricsPage'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
 import { SpaceToolsPage } from './space/SpaceToolsPage'
@@ -44,10 +50,20 @@ export default function App() {
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
       <Route path="/login"   element={<LoginPage />} />
+      <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route element={<FacilitationPreview />}>
+          <Route path="/facilitation" element={<Participants />} />
+          <Route path="/facilitation/participants/:id" element={<ParticipantDetail />} />
+          <Route path="/facilitation/participants/:id/reviews/new" element={<NewReview />} />
+          <Route path="/app/professional-reviews" element={<OwnReviews />} />
+        </Route>
+        <Route path="/app/feedback" element={<FeedbackPage />} />
+        <Route path="/app/route-catalog" element={<CatalogBrowser />} />
+        <Route path="/app/route-catalog/roles/:roleKey" element={<CatalogBrowser />} />
         <Route path="/app/compass" element={<CompassPage />} />
         <Route path="/app/next-step" element={<CareerShell />}>
           <Route index element={<RoutesScreen />} />
@@ -74,7 +90,13 @@ export default function App() {
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />
       </Route>
 
+      <Route path="/admin/pilot-metrics" element={<AdminRoute><AdminLayout pilotPreview /></AdminRoute>}>
+        <Route index element={<PilotMetricsPage />} />
+      </Route>
       {/* Admin backoffice */}
+      <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/route-catalog/:id/:kind/:itemKey" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin" element={
         <AdminRoute>
           <AdminLayout />
