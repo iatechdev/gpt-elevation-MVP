@@ -67,6 +67,16 @@ Arnés es73-preview.cjs: aplicación, registro, ingreso, sesión, contexto, ruta
 - Anchos 320/375/390: una columna; 768/1024: dos; 1440: cuatro. Sin desbordamiento horizontal en los seis anchos con texto largo; CTA 48.39 px de alto.
 - Contraste claro/oscuro verificado por prueba existente: ocre de texto 5.54:1; decorativo no se usa para texto. Sin animación nueva; foco y enlace saltar al contenido reutilizados.
 
-## Límites de verificación
+## Integración final con main
+
+Se integró origin/main 2f237a4 en 61b94c5, conservando S11 de ES-72 antes de S12 y todos los textos de ambas ramas. Repetición completa: frontend 114/114 y backend 348/348, ambos exit 0. Lint exit 0 sin advertencias. Build (incluye tsc -b) exit 0: 143 módulos, JS 717.54 kB (gzip 190.22), CSS 99.81 kB (gzip 15.17); persiste el aviso del chunk >500 kB. El crecimiento incluye las HU recién integradas. No se relajó ninguna configuración.
+
+En navegador se verificó además el reintento tras fallo temporal del lector de sesión, foco por teclado de 3 px y S12 en tema oscuro con cuatro planes, sin desbordamiento.
+
+PostgreSQL repetido tras integrar main: 1/1, exit 0, misma comprobación de concurrencia, propiedad y rollback.
+
+Suite frontend repetida con Node 22 tras integrar main: 114/114, exit 0.
+
+## Pendientes externos
 
 No se ejecutó staging, despliegue, cobro, activación comercial, proveedores externos ni carga de catálogo de producción. No se certifican las prestaciones reales de cada nivel. No se probó manualmente cada combinación de navegador, lector de pantalla o cambio concurrente de cuenta. Las capturas locales usan importes sintéticos, no tarifas de clientes. QA y Mauricio deben revisar el PR; el autor no fusiona ni cierra hilos.
