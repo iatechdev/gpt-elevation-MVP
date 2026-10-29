@@ -11,3 +11,7 @@
 
 Fusión acumulada (orden #37, #38, #42, #46, #23, #41) sobre main: #37 limpio; #38 conflicta con #37 en App.tsx, landing.css, i18n ES/EN, main.tsx y UserDashboard.tsx; #42 y #46 conflictan con lo anterior en App.tsx y landing.css; #23 limpio; #41 conflicta con #23 en backend/package.json. Cada PR necesita rebase después de fusionar el anterior y su aprobación vuelve a valer solo con una pasada corta sobre el head nuevo.
 No repetido por mí en esta pasada: medición propia de contraste y objetivos táctiles en #37, #38, #42 y #46 (lo cubren los scripts de Dev y mis revisiones de heads anteriores).
+
+## Pasada corta tras la fusión en cadena (29-oct) · main 2f237a4 (con #54, #64, #23 y #37)
+- #38 ES-31 head 39b1696 (contiene main): lint 0 avisos, tipos, frontend 121/121, backend 342/342, audit 0, JS 751.605 B / CSS 101.965 B (deuda). Integración real ES-31 12/12; con #37 ya en main: navegador ES-26 13/13 e integración real ES-26 6/6.
+- #41 ES-44 head 3d9ddeb (contiene main): código de evaluación idéntico (diff 0), backend 358/358, audit 0; validate 30, mock 30, integration 15 pasan / 15 pendientes, provider sale 1, 0 llamadas reales, puerta bloqueada; `test:db` de #23 13/13 (package.json conserva los scripts de ambos).

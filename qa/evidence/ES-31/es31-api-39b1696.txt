@@ -1,0 +1,13 @@
+PASS empty published catalog is a real 503 state; anonymous/user cannot administer
+PASS React creates actual draft; changing admin catalog ID grants no GET/PUT/DELETE/publish access to a user
+PASS new item key literally new works; confirmed deletion is real and empty publication is rejected
+PASS all five structured editors save full existing bodies without dropping references, zero prices or synthetic flags
+PASS lost save acknowledgment performs GET recovery with no repeated mutation or false saved status
+PASS failed write/readback blocks new writes until read recovery and keeps local unpersisted text
+PASS actual 422 text policy preserves draft; server refuses synthetic publication without test flag
+PASS confirmed publication is verified from published API, immutable and excludes reviewer names for participants
+PASS published profiles use real dates/statuses, missing salary/price and zero correctly; filters, ES/EN, responsive and zoom
+PASS published version editor is read-only
+PASS new draft copies published version without exposing it; canceled Back keeps draft, Escape and keyboard skip work
+PASS fake local admin role cannot bypass server authorization; revoked JWT removes editorial data
+ES-31 real API/browser: 12 checks passed. Real Express/JWT/ORM/PostgreSQL; only two intentional network/readback faults, no model provider or production.
