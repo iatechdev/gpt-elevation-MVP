@@ -29,6 +29,8 @@ import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { FacilitationPreview } from './facilitation/FacilitationPreview'
+import { Participants, ParticipantDetail, NewReview, OwnReviews } from './facilitation/Pages'
 import { CatalogBrowser, CatalogManager } from './routeCatalog/CatalogPages'
 import { CompassPage } from './compass/CompassPage'
 import { CareerShell } from './career/CareerShell'
@@ -53,6 +55,12 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route element={<FacilitationPreview />}>
+          <Route path="/facilitation" element={<Participants />} />
+          <Route path="/facilitation/participants/:id" element={<ParticipantDetail />} />
+          <Route path="/facilitation/participants/:id/reviews/new" element={<NewReview />} />
+          <Route path="/app/professional-reviews" element={<OwnReviews />} />
+        </Route>
         <Route path="/app/feedback" element={<FeedbackPage />} />
         <Route path="/app/route-catalog" element={<CatalogBrowser />} />
         <Route path="/app/route-catalog/roles/:roleKey" element={<CatalogBrowser />} />

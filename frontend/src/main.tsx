@@ -1,3 +1,4 @@
+import './facilitation/navigation'
 import './pilot/navigationGuard'
 import './space/navigationGuard'
 import { StrictMode } from 'react'
