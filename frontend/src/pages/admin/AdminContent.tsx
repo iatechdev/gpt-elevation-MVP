@@ -1,4 +1,6 @@
 import landingFields from '../../../../shared/landing-content.json'
+import { LandingPendingPanel } from './LandingPendingPanel'
+import { PENDING_KEYS } from './landingPending'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
@@ -552,7 +554,7 @@ function LandingTab() {
     { key: 'cta_primary',        label: 'CTA Principal' },
     { key: 'cta_final_title',    label: 'Título CTA Final' },
     { key: 'cta_final_subtitle', label: 'Subtítulo CTA Final' },
-    ...landingFields.map(({ key }) => ({ key, label: key })),
+    ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: key })), // ES-90: los pendientes se editan en su panel
   ]
 
   useEffect(() => {
@@ -590,6 +592,7 @@ function LandingTab() {
           </button>
         ))}
       </div>
+      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => setContent(c => ({ ...c, [key]: value }))} save={saveField} saving={saving} msgs={msgs} s={{ card, label, input, btnPrimary }} />
       {fields.map(f => (
         <div key={f.key} style={card}>
           <label style={label}>{f.label}</label>
