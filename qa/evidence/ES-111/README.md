@@ -18,3 +18,10 @@ Entorno: merge local de origin/main + #94 + #95, Postgres embebido (qa111), serv
 
 ## No verificado
 Insights reales con origen de diario (no existen; el servidor no devuelve el origen por texto), lector de pantalla, otros navegadores, Railway, Claude real.
+
+## Reverificación · head a4e982b
+Merge local con main (+#94 ya incluido). Frontend 170/170, tsc y lint limpios. Script de navegador contra servidor real: 38 correctas, 1 observación abierta (B3d).
+- ES111-QA-01/02 cerrados en el caso de pestaña desactualizada (B3b, B3c): no compone, actualiza y avisa; lo revocado no reaparece y lo autorizado se conserva.
+- ES111-QA-03 (foco), QA-04 (mismo requestId al reintentar; 1 versión), QA-05 (ejemplos marcados + aviso + .env.example), QA-07 (fondo #FAFAF9 medido) cerrados.
+- ES111-QA-08 (Medio, residual declarado por Dev): si otra sesión revoca justo entre la relectura y la confirmación, lo revocado vuelve a cruzar (B3d, reproducido interceptando la vista previa). Cierre completo = versión base en el servidor (ES-25); decide Mauricio.
+- ES111-QA-06 (observación) sin cambios.
