@@ -35,6 +35,8 @@ import { CareerShell } from './career/CareerShell'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 import { ExercisePage } from './exercises/ExercisePage'
 
+import { FeedbackPage } from './pilot/FeedbackPage'
+import { PilotMetricsPage } from './pilot/PilotMetricsPage'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
 import { SpaceToolsPage } from './space/SpaceToolsPage'
@@ -51,6 +53,7 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/feedback" element={<FeedbackPage />} />
         <Route path="/app/route-catalog" element={<CatalogBrowser />} />
         <Route path="/app/route-catalog/roles/:roleKey" element={<CatalogBrowser />} />
         <Route path="/app/compass" element={<CompassPage />} />
@@ -79,6 +82,9 @@ export default function App() {
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />
       </Route>
 
+      <Route path="/admin/pilot-metrics" element={<AdminRoute><AdminLayout pilotPreview /></AdminRoute>}>
+        <Route index element={<PilotMetricsPage />} />
+      </Route>
       {/* Admin backoffice */}
       <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
