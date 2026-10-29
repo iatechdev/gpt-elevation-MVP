@@ -12,7 +12,8 @@ function moduleUrl(file, replacements = []) {
   return 'data:text/javascript;base64,' + Buffer.from(code).toString('base64')
 }
 const modelUrl = moduleUrl('../src/skill-map/model.ts')
-const { resolveTerritories, territories, skillTerritories } = await import(moduleUrl('../src/skill-map/territories.ts'))
+const { resolveTerritories, territories } = await import(moduleUrl('../src/skill-map/territories.ts'))
+const { parseSkillMap } = await import(modelUrl)
 const { skillStatus, hasLevel } = await import(moduleUrl('../src/skill-map/status.ts', [["'./model'", JSON.stringify(modelUrl)]]))
 const layout = await import(moduleUrl('../src/skill-map/layout.ts'))
 const { readBridgeStatus, revokeBridge, ConsentError } = await import(moduleUrl('../src/skill-map/consent.ts'))
@@ -22,18 +23,27 @@ const track = (over = {}) => ({ level: 2, state: 'initial', stale: false, catalo
   confidenceReason: { es: 'Respaldo sintético', en: 'Synthetic support' }, evidenceCount: 1, authoring: 'person', rationale: null, needsReview: false, ...over })
 const skill = (key, over = {}) => ({ skillKey: key, type: 'transversal', labels: { es: key, en: key }, rubric: {}, self: track(), review: null, state: 'initial', ...over })
 
-test('ES-30 territorios: una capacidad puede estar en varios; ids desconocidos se ignoran; sin ninguno válido → sin territorio', () => {
-  const skills = [skill('a'), skill('b'), skill('c'), skill('d')]
-  const out = resolveTerritories(skills, { a: ['dir', 'con'], b: ['nope'], c: ['dir', 'dir'] })
+test('ES-116 territorios: vienen del catálogo (skill.territories); una capacidad puede estar en varios; ids desconocidos se ignoran', () => {
+  const skills = [skill('a', { territories: ['dir', 'con'] }), skill('b', { territories: ['nope'] }), skill('c', { territories: ['dir', 'dir'] }), skill('d')]
+  const out = resolveTerritories(skills)
   const by = Object.fromEntries(out.groups.map(g => [g.territory.id, g.skills.map(s => s.skillKey)]))
   assert.deepEqual(by.dir, ['a', 'c']); assert.deepEqual(by.con, ['a']); assert.deepEqual(by.ing, [])
-  assert.deepEqual(out.unassigned.map(s => s.skillKey), ['b', 'd'])
+  assert.deepEqual(out.unassigned.map(s => s.skillKey), ['b', 'd']) // sin ninguno válido (o un servidor anterior sin el campo) → sin territorio asignado
   assert.equal(territories.length, 5)
 })
-test('ES-30 territorios: la asignación real NO se inventa (vacía hasta que producto la defina)', () => {
-  assert.deepEqual(skillTerritories, {})
-  const out = resolveTerritories([skill('x'), skill('y')], skillTerritories)
-  assert.equal(out.unassigned.length, 2); assert.ok(out.groups.every(g => g.skills.length === 0))
+test('ES-116 el frontend ya no trae asignación propia ni de ejemplo (la gestiona el backoffice)', () => {
+  const src = readFileSync(new URL('../src/skill-map/territories.ts', import.meta.url), 'utf8')
+  assert.equal(/skillTerritories|sampleSkillTerritories/.test(src), false)
+  const page = readFileSync(new URL('../src/pages/SkillMapPage.tsx', import.meta.url), 'utf8')
+  assert.equal(/SAMPLE_TERRITORIES|skillTerritories/.test(page), false)
+})
+test('ES-116 contrato: parseSkillMap acepta territories opcional y rechaza formas inválidas', () => {
+  const rubric = { levels: Object.fromEntries([1, 2, 3, 4].map(n => [n, { es: 'a', en: 'a' }])), source: 's', verifiedAt: '2026-10-01' }
+  const mk = (extra) => ({ catalogVersion: 1, skills: [{ skillKey: 'k', type: 'transversal', labels: { es: 'K' }, rubric, self: null, review: null, state: 'no_evidence', ...extra }] })
+  assert.doesNotThrow(() => parseSkillMap(mk({}))) // servidor anterior
+  assert.doesNotThrow(() => parseSkillMap(mk({ territories: [] })))
+  assert.deepEqual(parseSkillMap(mk({ territories: ['dir', 'con'] })).skills[0].territories, ['dir', 'con'])
+  for (const territories of ['dir', [1], [''], ['x'.repeat(17)], Array(9).fill('dir'), null, { 0: 'dir' }]) assert.throws(() => parseSkillMap(mk({ territories })), undefined, JSON.stringify(territories))
 })
 test('ES-30 estado: nunca promedia ni inventa nivel; null/caducado no cuentan como evidencia', () => {
   assert.equal(skillStatus(skill('a')), 'evidence')

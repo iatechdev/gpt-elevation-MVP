@@ -5,13 +5,10 @@ import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
 import type { SkillMap } from '../skill-map/model'
 import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
-import { resolveTerritories, sampleSkillTerritories, skillTerritories, territories } from '../skill-map/territories'
+import { resolveTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
-// La asignación real la define producto; la de ejemplo solo existe en desarrollo y con el servidor simulado.
-const sample = import.meta.env.DEV && import.meta.env.VITE_SKILL_MAP_SAMPLE_TERRITORIES === 'true'
-const assignment = sample ? sampleSkillTerritories : skillTerritories
 const readToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
 type PageState = { status: 'loading' } | { status: 'ready'; map: SkillMap; token: string } | { status: 'error'; reason: MapFailure }
 type Revoke = 'idle' | 'confirm' | 'saving' | 'done' | 'error' | 'expired'
@@ -78,7 +75,7 @@ export function SkillMapPage() {
   const error = state.status === 'error' ? state.reason : state.status === 'ready' && !map ? 'expired' : null
   const skill = map?.skills.find(item => item.skillKey === selected) ?? null
   // H-86-02: sin ninguna capacidad con territorio no se dibujan cinco recuadros vacíos: se muestra el aviso y la lista.
-  const noTerritories = !!map && map.skills.length > 0 && resolveTerritories(map.skills, assignment, territories).groups.every(group => group.skills.length === 0)
+  const noTerritories = !!map && map.skills.length > 0 && resolveTerritories(map.skills, territories).groups.every(group => group.skills.length === 0)
   const nothingToRevoke = bridge === 'revoked' || bridge === 'undecided'
   const message = revoke === 'done' ? t('skill_map.revoke_done') : revoke === 'error' ? t('skill_map.revoke_error') : revoke === 'expired' ? t('skill_map.expired')
     : nothingToRevoke ? t('skill_map.revoke_none') : ''
@@ -124,18 +121,17 @@ export function SkillMapPage() {
       </div>}
       {map && <>
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
-        {sample && <p className="skill-map-note">Asignación de territorios de ejemplo (solo desarrollo). / Sample territory assignment (development only).</p>}
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
           {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
           <div className={`skill-map-board${listView || noTerritories ? ' is-list' : ''}`}>
             <div className="skill-map-canvas">
-              <TerritoryMap skills={map.skills} assignment={assignment} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+              <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
             </div>
-            <TerritoryList skills={map.skills} assignment={assignment} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+            <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
           </div>
-          {!noTerritories && <UnassignedCard skills={map.skills} assignment={assignment} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
+          {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
           <div ref={detailRef} className="skill-map-detail-wrap" aria-live="polite">
-            {skill ? <SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} assignment={assignment} lang={lang} t={t} />
+            {skill ? <SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} />
               : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
           </div>
           <p className="skill-map-note">{t('skill_map.revoke_scope')}</p>

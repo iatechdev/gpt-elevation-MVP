@@ -1,8 +1,8 @@
 {
-  "notice": "BORRADOR SIN VERIFICAR. Propuesta inicial de habilidades transversales para que el cliente la revise, edite y publique desde el backoffice. No tiene fuente, verificador ni fecha: no se puede publicar hasta que el cliente los complete. Los niveles siguen la escala del PRD: 1 conceptual, 2 aplicada con asistencia, 3 autónoma y repetible, 4 lidera o enseña en situaciones complejas.",
+  "notice": "BORRADOR SIN VERIFICAR. Propuesta inicial de habilidades transversales para que el cliente la revise, edite y publique desde el backoffice. No tiene fuente, verificador ni fecha: no se puede publicar hasta que el cliente los complete. Los niveles siguen la escala del PRD: 1 conceptual, 2 aplicada con asistencia, 3 autónoma y repetible, 4 lidera o enseña en situaciones complejas. Territorios (dir, con, com, ing, inn): ASIGNACIÓN PROVISIONAL propuesta por Dev, sin verificar; el cliente la revisa y la corrige desde el backoffice antes de publicar.",
   "skills": [
     {
-      "skillKey": "comunicacion", "type": "transversal",
+      "skillKey": "comunicacion", "type": "transversal", "territories": ["com", "dir"],
       "labels": { "es": "Comunicación", "en": "Communication" },
       "levels": {
         "1": { "es": "Conoce cómo preparar un mensaje claro para su audiencia, pero aún no lo ha hecho en una situación real.", "en": "Knows how to prepare a clear message for an audience but has not yet done so in a real situation." },
@@ -12,7 +12,7 @@
       }
     },
     {
-      "skillKey": "trabajo_en_equipo", "type": "transversal",
+      "skillKey": "trabajo_en_equipo", "type": "transversal", "territories": ["dir", "inn"],
       "labels": { "es": "Trabajo en equipo", "en": "Teamwork" },
       "levels": {
         "1": { "es": "Entiende qué se espera de una persona en un equipo, sin experiencia directa todavía.", "en": "Understands what is expected of a person on a team, without direct experience yet." },
@@ -22,7 +22,7 @@
       }
     },
     {
-      "skillKey": "resolucion_problemas", "type": "transversal",
+      "skillKey": "resolucion_problemas", "type": "transversal", "territories": ["con", "ing"],
       "labels": { "es": "Resolución de problemas", "en": "Problem solving" },
       "levels": {
         "1": { "es": "Conoce un método para descomponer un problema, aún sin aplicarlo en un caso real.", "en": "Knows a method for breaking a problem down, not yet applied to a real case." },
@@ -32,7 +32,7 @@
       }
     },
     {
-      "skillKey": "planificacion_organizacion", "type": "transversal",
+      "skillKey": "planificacion_organizacion", "type": "transversal", "territories": ["dir", "con"],
       "labels": { "es": "Planificación y organización", "en": "Planning and organization" },
       "levels": {
         "1": { "es": "Sabe qué incluye un plan de trabajo (tareas, plazos, prioridades), sin haberlo elaborado todavía.", "en": "Knows what a work plan includes (tasks, deadlines, priorities) but has not drawn one up yet." },
@@ -42,7 +42,7 @@
       }
     },
     {
-      "skillKey": "adaptabilidad", "type": "transversal",
+      "skillKey": "adaptabilidad", "type": "transversal", "territories": ["inn", "con"],
       "labels": { "es": "Adaptabilidad", "en": "Adaptability" },
       "levels": {
         "1": { "es": "Reconoce que los cambios exigen ajustar la forma de trabajar, sin haber vivido uno en la práctica.", "en": "Recognizes that changes require adjusting how they work, without having lived through one in practice." },
@@ -52,7 +52,7 @@
       }
     },
     {
-      "skillKey": "aprendizaje_autonomo", "type": "transversal",
+      "skillKey": "aprendizaje_autonomo", "type": "transversal", "territories": ["ing", "inn"],
       "labels": { "es": "Aprendizaje autónomo", "en": "Self-directed learning" },
       "levels": {
         "1": { "es": "Sabe que puede aprender algo nuevo y conoce algunas fuentes, sin haber seguido un proceso propio.", "en": "Knows they can learn something new and knows some sources, without having followed a process of their own." },
@@ -62,7 +62,7 @@
       }
     },
     {
-      "skillKey": "analisis_informacion", "type": "transversal",
+      "skillKey": "analisis_informacion", "type": "transversal", "territories": ["con", "ing"],
       "labels": { "es": "Análisis de información", "en": "Information analysis" },
       "levels": {
         "1": { "es": "Entiende la diferencia entre un dato, una interpretación y una opinión, sin haber analizado un caso real.", "en": "Understands the difference between data, interpretation and opinion, without having analyzed a real case." },
@@ -72,7 +72,7 @@
       }
     },
     {
-      "skillKey": "influencia_liderazgo", "type": "transversal",
+      "skillKey": "influencia_liderazgo", "type": "transversal", "territories": ["dir", "com"],
       "labels": { "es": "Influencia y liderazgo", "en": "Influence and leadership" },
       "levels": {
         "1": { "es": "Conoce en qué consiste orientar a otras personas hacia un objetivo, sin haberlo hecho.", "en": "Knows what it means to guide others toward a goal, without having done it." },

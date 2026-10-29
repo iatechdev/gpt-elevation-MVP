@@ -1,7 +1,7 @@
 import { trackView, type Assessment, type LocalizedText, type Skill } from './model'
 import { CANVAS_W, CHIP_H, CHIP_W, edgePoint, layoutChips, territoryBoxes } from './layout'
 import { hasLevel, skillStatus, type SkillStatus } from './status'
-import { resolveTerritories, type Assignment, type Territory } from './territories'
+import { resolveTerritories, type Territory } from './territories'
 
 type T = (key: string) => string
 type Lang = 'es' | 'en'
@@ -20,11 +20,11 @@ function wrap(text: string, width = 22): string[] {
 }
 
 /** Mapa visual (SVG): territorios como recuadros y capacidades unidas por líneas a cada uno de sus territorios. */
-export function TerritoryMap({ skills, assignment, territories, selected, onSelect, lang, t }: {
-  skills: readonly Skill[]; assignment: Assignment; territories: readonly Territory[]; selected: string | null
+export function TerritoryMap({ skills, territories, selected, onSelect, lang, t }: {
+  skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
   onSelect: (key: string) => void; lang: Lang; t: T
 }) {
-  const { groups, links } = resolveTerritories(skills, assignment, territories)
+  const { groups, links } = resolveTerritories(skills, territories)
   const assigned = skills.filter(skill => links(skill).length > 0)
   const { positions, height } = layoutChips(assigned.map(skill => ({ key: skill.skillKey, links: links(skill) })))
   return <svg className="skill-map-svg" viewBox={`0 0 ${CANVAS_W} ${height}`} role="group" aria-label={t('skill_map.map_label')}>
@@ -57,11 +57,11 @@ export function TerritoryMap({ skills, assignment, territories, selected, onSele
 }
 
 /** Misma información como tarjetas por territorio: es la vista de móvil y tableta, y la alternativa accesible del mapa. */
-export function TerritoryList({ skills, assignment, territories, selected, onSelect, lang, t }: {
-  skills: readonly Skill[]; assignment: Assignment; territories: readonly Territory[]; selected: string | null
+export function TerritoryList({ skills, territories, selected, onSelect, lang, t }: {
+  skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
   onSelect: (key: string) => void; lang: Lang; t: T
 }) {
-  const { groups, unassigned, links } = resolveTerritories(skills, assignment, territories)
+  const { groups, unassigned, links } = resolveTerritories(skills, territories)
   const byId = new Map(territories.map(territory => [territory.id, territory]))
   const row = (skill: Skill, here?: string) => {
     const status = skillStatus(skill), others = links(skill).filter(id => id !== here).map(id => byId.get(id)?.labels[lang]).filter(Boolean)
@@ -90,11 +90,11 @@ export function TerritoryList({ skills, assignment, territories, selected, onSel
 }
 
 /** H-86-02: en escritorio el lienzo solo dibuja capacidades con territorio; las demás se ven aquí, sin tener que cambiar a la lista. */
-export function UnassignedCard({ skills, assignment, territories, selected, onSelect, lang, t }: {
-  skills: readonly Skill[]; assignment: Assignment; territories: readonly Territory[]; selected: string | null
+export function UnassignedCard({ skills, territories, selected, onSelect, lang, t }: {
+  skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
   onSelect: (key: string) => void; lang: Lang; t: T
 }) {
-  const { unassigned } = resolveTerritories(skills, assignment, territories)
+  const { unassigned } = resolveTerritories(skills, territories)
   if (!unassigned.length) return null
   return <section className="skill-map-territory-card tone-none skill-map-unassigned" aria-labelledby="terr-unassigned">
     <h2 id="terr-unassigned">{t('skill_map.unassigned')}</h2>
@@ -143,10 +143,10 @@ function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessmen
 }
 
 /** Detalle de la capacidad elegida: las mismas pistas separadas y reglas de datos de siempre (nivel null sin evidencia, sin promedios). */
-export function SkillDetail({ skill, catalogVersion, territories, assignment, lang, t }: {
-  skill: Skill; catalogVersion: number; territories: readonly Territory[]; assignment: Assignment; lang: Lang; t: T
+export function SkillDetail({ skill, catalogVersion, territories, lang, t }: {
+  skill: Skill; catalogVersion: number; territories: readonly Territory[]; lang: Lang; t: T
 }) {
-  const { links } = resolveTerritories([skill], assignment, territories)
+  const { links } = resolveTerritories([skill], territories)
   const names = links(skill).map(id => territories.find(territory => territory.id === id)?.labels[lang]).filter(Boolean)
   return <article className="elv-card skill-map-card skill-map-detail" aria-labelledby="skill-detail-title">
     <div className="elv-card-body">
