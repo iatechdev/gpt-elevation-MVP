@@ -59,3 +59,8 @@ test('ES-30 acceso: textos ES/EN completos, sin porcentajes ni promesas de nivel
   }
   for (const k of ['context_next_title', 'context_next_text', 'context_next_map', 'context_next_home']) assert.ok(contextEs[k]?.trim() && contextEn[k]?.trim(), k)
 })
+
+test('ES-30 (QA H-90-03) los tres pasos de la guía se numeran aunque el reset de Tailwind quite los números', () => {
+  const css = readFileSync(new URL('../src/skill-map/mapAccess.css', import.meta.url), 'utf8')
+  assert.match(css, /\.map-guide ol \{[^}]*list-style: decimal/)
+})
