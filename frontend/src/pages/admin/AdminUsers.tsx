@@ -1,6 +1,7 @@
 // HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 type Role = 'user' | 'therapist' | 'admin' | 'superadmin' | 'board';
 
@@ -75,6 +76,17 @@ export function AdminUsers() {
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [mostrarModal,        setMostrarModal]        = useState(false);
   const [nuevoUsuario,        setNuevoUsuario]        = useState({ name: '', email: '', password: '', role: 'user' as Role });
+  // ES-95: «Crear cuenta de terapeuta» desde una solicitud aprobada abre este modal con nombre y correo precargados (la contraseña la define quien crea la cuenta).
+  // Los datos viajan en el estado de navegación, no en la URL (sin datos personales en el historial ni en los registros del servidor).
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const prefill = (location.state as { newTherapist?: { name?: unknown; email?: unknown } } | null)?.newTherapist;
+    if (!prefill) return;
+    setNuevoUsuario({ name: String(prefill.name ?? '').slice(0, 120), email: String(prefill.email ?? '').slice(0, 254), password: '', role: 'therapist' });
+    setMostrarModal(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location, navigate]);
   const [creando,             setCreando]             = useState(false);
   const [errorModal,          setErrorModal]          = useState('');
   const [exitoModal,          setExitoModal]          = useState('');

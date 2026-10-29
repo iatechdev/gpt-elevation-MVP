@@ -72,4 +72,28 @@ const desencriptar = (texto) => {
   }
 };
 
-module.exports = { encriptar, encriptarV2, desencriptar, DecryptionError };
+// ES-107: cifrado de BYTES (p. ej. un PDF) sin pasar por base64 ni hexadecimal. Mismo AES-256-GCM y misma clave que v2.
+// Formato: [versión 1 byte = 0x02][iv 12][etiqueta 16][contenido cifrado]. Sobrecoste fijo de 29 bytes.
+const VERSION_BINARIA = 2;
+const CABECERA_BINARIA = 1 + 12 + 16;
+
+const encriptarBuffer = (bytes) => {
+  if (!Buffer.isBuffer(bytes)) throw new TypeError('encriptarBuffer exige un Buffer.');
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', KEY_V2, iv);
+  const encrypted = Buffer.concat([cipher.update(bytes), cipher.final()]);
+  return Buffer.concat([Buffer.from([VERSION_BINARIA]), iv, cipher.getAuthTag(), encrypted]);
+};
+
+const desencriptarBuffer = (datos) => {
+  try {
+    if (!Buffer.isBuffer(datos) || datos.length < CABECERA_BINARIA || datos[0] !== VERSION_BINARIA) throw new Error('formato');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', KEY_V2, datos.subarray(1, 13));
+    decipher.setAuthTag(datos.subarray(13, 29));
+    return Buffer.concat([decipher.update(datos.subarray(29)), decipher.final()]);
+  } catch {
+    throw new DecryptionError();
+  }
+};
+
+module.exports = { encriptar, encriptarV2, desencriptar, encriptarBuffer, desencriptarBuffer, CABECERA_BINARIA, DecryptionError };

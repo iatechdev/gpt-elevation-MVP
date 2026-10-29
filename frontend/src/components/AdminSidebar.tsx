@@ -4,6 +4,10 @@ import { useLanguage } from '../i18n/useLanguage'
 
 const ADMIN_NAV = [
   {
+    to: '/admin/route-catalog', labelKey: 'catalog.title', fallback: 'Route catalog',
+    icon: <span aria-hidden="true">↗</span>, roles: ['admin', 'superadmin'],
+  },
+  {
     to: '/admin/dashboard',
     labelKey: 'admin_nav_dashboard',
     fallback: 'Dashboard',

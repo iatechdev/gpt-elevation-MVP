@@ -1,14 +1,16 @@
 // frontend/src/layouts/TherapistLayout.tsx
 // HU-046 — Layout for therapist role
 // HU-082 — Selector ES/EN
+// ES-100 — Cabecera adaptable (dos líneas en pantallas estrechas), contraste, foco visible y objetivos táctiles (ES93-M6 y B4)
 
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import '../styles/therapist.css'
 
 export function TherapistLayout() {
   const navigate = useNavigate()
-  const { lang, setLang } = useLanguage()
-  const name = localStorage.getItem('elevation_name') ?? 'Therapist'
+  const { lang, setLang, t } = useLanguage()
+  const name = localStorage.getItem('elevation_name') ?? t('therapist_role')
 
   const handleLogout = () => {
     localStorage.removeItem('elevation_token')
@@ -18,73 +20,59 @@ export function TherapistLayout() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
+    <div className="th-root">
 
       {/* Header */}
-      <header style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-        height: 60, display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', padding: '0 2rem',
-        background: 'rgba(249,249,247,0.95)', backdropFilter: 'blur(12px)',
-        borderBottom: '0.5px solid #E7E5E4',
-      }}>
+      <header className="th-header">
         {/* Logo */}
-        <span style={{
-          fontFamily: 'Playfair Display, serif', fontWeight: 300,
-          letterSpacing: '0.2em', fontSize: '1rem', color: '#1C1917',
-        }}>
+        <span className="th-logo">
           ELEVATION{' '}
-          <span style={{ fontSize: 10, color: '#A8A29E', letterSpacing: '0.15em' }}>
-            THERAPIST
-          </span>
+          <small>THERAPIST</small>
         </span>
 
-        {/* Derecha: selector idioma + usuario + logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-
-          {/* Selector ES / EN */}
-          <div style={{ display: 'flex', gap: 2, background: '#EDEAE4', borderRadius: 9999, padding: 2 }}>
-            {(['es', 'en'] as const).map(l => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                style={{
-                  padding: '2px 10px', borderRadius: 9999, border: 'none',
-                  fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em',
-                  background: lang === l ? '#fff' : 'transparent',
-                  color: lang === l ? '#1C1917' : '#A8A29E',
-                  boxShadow: lang === l ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          <span style={{ fontSize: 13, color: '#78716C' }}>{name}</span>
-          <span style={{
-            fontSize: 10, fontWeight: 600, padding: '3px 10px',
-            borderRadius: 9999, letterSpacing: '0.08em',
-            background: '#E0F2FE', color: '#0369A1',
-            border: '0.5px solid #BAE6FD',
-          }}>
-            THERAPIST
-          </span>
-          <button onClick={handleLogout} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#A8A29E', display: 'flex', padding: 4,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-          </button>
+        {/* Selector ES / EN */}
+        <div role="group" aria-label={lang === 'es' ? 'Idioma' : 'Language'} className="th-lang">
+          {(['es', 'en'] as const).map(l => (
+            <button
+              key={l}
+              className="th-pill-btn"
+              onClick={() => setLang(l)}
+              aria-pressed={lang === l}
+              style={{
+                padding: '2px 10px', borderRadius: 9999, border: 'none',
+                fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em',
+                background: lang === l ? '#fff' : 'transparent',
+                color: lang === l ? '#1C1917' : '#57534E',
+                boxShadow: lang === l ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                transition: 'all 0.15s',
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
         </div>
+
+        {/* Usuario y rol: en la misma fila en pantallas anchas; en la segunda línea, truncado, en las estrechas */}
+        <div className="th-who">
+          <span className="th-name">{name}</span>
+          <span className="th-chip">{t('therapist_role')}</span>
+          <span className="th-who-role">{t('therapist_role')}</span>
+        </div>
+
+        <button
+          className="th-logout"
+          onClick={handleLogout}
+          aria-label={lang === 'es' ? 'Cerrar sesión' : 'Log out'}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+        </button>
       </header>
 
       {/* Main content */}
-      <main style={{ paddingTop: 60, padding: '80px 2rem 2rem', maxWidth: 900, margin: '0 auto' }}>
+      <main className="th-main">
         <Outlet />
       </main>
 

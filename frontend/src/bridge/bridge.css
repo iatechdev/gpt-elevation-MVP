@@ -1,0 +1,45 @@
+/* ES-111 — El Puente. Valores del tema de la landing, tomados de las variables de .space-scope (space.css); aquí no hay colores propios salvo los tintes de apoyo. */
+.space-scope .bridge { display: grid; gap: 16px; }
+.bridge-head { display: grid; gap: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--color-base-300); }
+.bridge-head h1 { margin: 0; font-size: 2rem; }
+.bridge-head p { margin: 0; }
+.bridge-zone { font-family: var(--space-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-secondary); }
+.bridge-small { font-size: .85rem; color: var(--color-neutral); }
+.bridge-tag { width: fit-content; padding: 2px 8px; border: 1px dashed var(--color-secondary); border-radius: .25rem; font-family: var(--space-mono); font-size: .72rem; color: var(--color-secondary); }
+.bridge-live { min-height: 1.2em; margin: 0; font-size: .9rem; color: var(--color-success); }
+.bridge-note { margin: 0; padding: 10px 12px; border: 1px solid var(--color-base-300); border-radius: .25rem; background: var(--color-base-200); }
+.bridge-error { border-color: var(--color-error); color: var(--color-error); }
+.bridge-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.bridge-col { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.bridge-col h2 { margin: 0; font-family: var(--space-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
+.bridge-arrow { display: grid; place-items: center; color: var(--color-neutral); font-size: 1.4rem; }
+@media (min-width: 768px) { .bridge-cols { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); } .bridge-arrow { border-inline: 1px solid var(--color-base-300); } }
+.bridge-card, .bridge-done { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--color-base-300); border-radius: .25rem; background: var(--color-base-200); min-width: 0; }
+.bridge-card-asking { border-color: var(--color-secondary); background: var(--space-callout); }
+.bridge-done { background: color-mix(in srgb, var(--color-success) 10%, white); border-color: var(--color-success); list-style: none; }
+.bridge-done p { margin: 0; font-weight: 500; }
+.bridge-list { display: grid; gap: 10px; margin: 0; padding: 0; }
+.bridge-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bridge-pill { display: inline-block; padding: 2px 8px; border-radius: .25rem; font-family: var(--space-mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; background: var(--color-base-300); }
+.bridge-pill-dash { background: transparent; border: 1px dashed var(--color-neutral); color: var(--color-neutral); }
+.bridge-pill-ok { background: transparent; border: 1px solid var(--color-success); color: var(--color-success); }
+.bridge-eye { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--color-neutral); font-size: 1.1rem; cursor: pointer; }
+.bridge-frag { position: relative; font-family: 'Noto Serif', Georgia, serif; font-style: italic; overflow-wrap: anywhere; }
+.bridge-blur span { filter: blur(5px); user-select: none; display: block; }
+.bridge-blur::after { content: attr(data-label); position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--space-mono); font-style: normal; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral); pointer-events: none; }
+.bridge-insight { display: grid; gap: 2px; padding: 8px 12px; background: var(--color-base-100); border-left: 3px solid var(--color-accent); overflow-wrap: anywhere; }
+.bridge-insight b { font-family: var(--space-mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-secondary); font-weight: 600; }
+.bridge-insight small { color: var(--color-neutral); }
+.bridge-cta, .bridge-ok, .bridge-no { min-height: 44px; padding: 10px 16px; border-radius: .25rem; font-family: var(--space-mono); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.bridge-cta { width: 100%; background: transparent; color: var(--color-secondary); border: 1px solid var(--color-secondary); font-weight: 600; }
+.bridge-ok { background: var(--color-accent); color: var(--color-accent-content); border: 0; font-weight: 600; }
+.bridge-no { background: transparent; color: inherit; border: 1px solid var(--color-neutral); }
+.bridge-cta:disabled, .bridge-ok:disabled, .bridge-no:disabled, .bridge-link:disabled { opacity: .55; cursor: not-allowed; }
+.bridge-ask { display: grid; gap: 8px; } .bridge-ask p { margin: 0; } .bridge-ask div { display: flex; flex-wrap: wrap; gap: 8px; }
+.bridge-link { justify-self: start; min-height: 44px; padding: 6px 0; background: none; border: 0; color: var(--color-secondary); text-decoration: underline; cursor: pointer; font: inherit; }
+.bridge-empty { padding: 26px 14px; border: 1px dashed var(--color-neutral); border-radius: .25rem; text-align: center; color: var(--color-neutral); }
+.bridge-empty p { margin: 0 0 6px; }
+.bridge-review { padding: 10px 12px; border: 1px solid var(--color-secondary); border-radius: .25rem; background: var(--space-callout); color: #5A4710; }
+.bridge-review p { margin: 4px 0 0; }
+.bridge-foot { padding-top: 8px; border-top: 1px solid var(--color-base-300); }
+.bridge-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

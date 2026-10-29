@@ -25,6 +25,7 @@ const { validateBody, nonempty, optional } = require('../middlewares/validateBod
 const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS } = require('../utils/promptSafety');
 const { detectRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
 const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils/companionTone');
+const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
 const HISTORY_LIMIT = 20;
 const PENDING_TIMEOUT_MS = 2 * 60 * 1000; // un turno pendiente más viejo que esto se puede reintentar
@@ -123,6 +124,7 @@ router.post('/chat', validateBody({
   message: validMessage,
   requestId: optional(validRequestId),
   contextEntryIds: optional(validEntryIds),
+  mode: optional(validMode), // ES-13: solo cambia el prompt de esta solicitud; no se guarda
 }), async (req, res) => {
   // ES-21: el texto se normaliza (controles e invisibles fuera) antes de usarse en cualquier parte del prompt.
   const mensajeUsuario = normalizeText(req.body.message);
@@ -180,21 +182,32 @@ router.post('/chat', validateBody({
       return res.json(requestId ? { reply, requestId } : { reply });
     }
 
-    const user = await User.findByPk(userId, { attributes: ['therapistId'] });
-
-    // ── System prompt del terapeuta o el de Elevation por defecto ────────────
-    let therapistPrompt = null;
-    if (user?.therapistId) {
-      therapistPrompt = await getActivePrompt(`therapist_prompt_${user.therapistId}`);
-    }
-    if (!therapistPrompt) therapistPrompt = await getActivePrompt('elevation_system_prompt');
-    if (!therapistPrompt) therapistPrompt = 'You are Elevation, an empathetic emotional wellness companion. You listen actively and ask reflective questions. Your responses are concise, warm and you never use emojis.';
-
+    const compass = req.body.mode === 'compass';
     // ── Manifiesto Ético — se inyecta como contexto adicional ────────────────
     const manifest = await getActiveManifest();
-    let systemPrompt = manifest
-      ? `${therapistPrompt}\n\n---\nETHICS MANIFEST (Elevation Ethics Board — binding guidelines):\n${manifest}\n---`
-      : therapistPrompt;
+    let systemPrompt;
+    if (compass) {
+      // ES-13: la Brújula usa su propio prompt (Vault o borrador) y NO el del terapeuta.
+      systemPrompt = composeCompassPrompt({ vaultPrompt: await getActivePrompt(COMPASS_KEY), manifest, lang });
+    } else {
+      const user = await User.findByPk(userId, { attributes: ['therapistId'] });
+
+      // ── System prompt del terapeuta o el de Elevation por defecto ────────────
+      let therapistPrompt = null;
+      if (user?.therapistId) {
+        therapistPrompt = await getActivePrompt(`therapist_prompt_${user.therapistId}`);
+      }
+      if (!therapistPrompt) therapistPrompt = await getActivePrompt('elevation_system_prompt');
+      if (!therapistPrompt) therapistPrompt = 'You are Elevation, an empathetic emotional wellness companion. You listen actively and ask reflective questions. Your responses are concise, warm and you never use emojis.';
+      systemPrompt = manifest
+        ? `${therapistPrompt}
+
+---
+ETHICS MANIFEST (Elevation Ethics Board — binding guidelines):
+${manifest}
+---`
+        : therapistPrompt;
+    }
 
     // ── Entradas de diario elegidas por la persona (contexto, no instrucciones) ──
     if (contexto.length > 0) {
