@@ -1,0 +1,29 @@
+{"id":"ES95-U01 el botón «Unirme como profesional» de la landing lleva a /profesionales y no se envía nada antes de enviar el formulario","ok":true,"detail":"botón=1 destino=/profesionales"}
+{"id":"ES95-U01b /profesionales abre sin sesión, con un formulario y sin redirigir al inicio de sesión","ok":true,"detail":"/profesionales"}
+{"id":"ES95-U02 enviar vacío: no envía, muestra un error por campo obligatorio y mueve el foco al primero con error","ok":true,"detail":"foco=pro-name errores=7"}
+{"id":"ES95-U02b correo inválido: error en el campo y el foco va al correo","ok":true,"detail":"foco=pro-email"}
+{"id":"ES95-U02c enlace de perfil con `javascript:` rechazado en pantalla","ok":true,"detail":"foco=pro-profileUrl"}
+{"id":"ES95-U03 archivo: un .txt y un PDF de más de 5 MB se rechazan en pantalla con mensaje; un PDF válido muestra nombre, tamaño y «Quitar»","ok":true,"detail":"quitar=1"}
+{"id":"ES95-U03b «Quitar» elimina el archivo elegido","ok":true,"detail":""}
+{"id":"ES95-U04 [SEG] el campo trampa es invisible, fuera del orden de tabulación, con autocompletado apagado y oculto a lectores de pantalla (una persona real no debe llegar a rellenarlo)","ok":true,"detail":"{\"tab\":-1,\"ac\":\"off\",\"x\":-10000,\"y\":1389,\"w\":215,\"h\":26,\"hidden\":false,\"ariaHidden\":true,\"inert\":false,\"label\":\"Website\",\"inText\":true}"}
+{"id":"ES95-U04b [INFO] si un navegador o gestor de contraseñas rellena un campo llamado «website», la solicitud se descarta con un «éxito» falso","info":"nombre del campo=website (blanco habitual del autocompletado); `autocomplete=off` no siempre se respeta"}
+{"id":"ES95-U05 envío real en español: mensaje de éxito, solicitud `pending` en la base con el consentimiento, sin cuenta creada","ok":true,"detail":"fila=pending"}
+{"id":"ES95-U05b tras el éxito no quedan datos del envío en el almacenamiento ni en la URL","ok":true,"detail":""}
+{"id":"ES95-U05c sin errores de página ni 5xx en el envío","ok":true,"detail":""}
+{"id":"ES95-U05d envío real en inglés a 375 px: éxito en inglés, locale `en`, sin desplazamiento horizontal","ok":false,"detail":"locale=en hs=true"}
+{"id":"ES95-U06 429, 500, 400 y caída de red: lo escrito se conserva y hay un mensaje (sin «éxito» falso)","ok":true,"detail":"{\"400\":{\"conservado\":true,\"mensaje\":\"levation usará mis datos solo para evaluar esta solicitud. Website Enviar solicitud Elevation no es un servicio de emergencias ni sustituye la atención clínica.\"},\"429\":{\"conservado\":true,\"mensaje\":\"levation usará mis datos solo para evaluar esta solicitud. Website Enviar solicitud Elevation no es un servicio de emergencias ni sustituye la atención clínica.\"},\"500\":{\"conservado\":true,\"mensaje\":\"levation usará mis datos solo para evaluar esta solicitud. Websit"}
+{"id":"ES95-U07 solo con teclado se alcanzan todos los campos en orden lógico, la casilla y «Enviar solicitud»; el campo trampa se salta","ok":true,"detail":"Saltar al formular → Volver al inicio → ES → EN → pro-name → pro-email → pro-country → pro-profession → pro-licenseNumber → pro-profileUrl → pro-message → pro-cv → pro-consent → Enviar solicitud → Saltar al formular → Saltar al formular → Volver al inicio → ES"}
+{"id":"ES95-U08 sin desplazamiento horizontal a 320, 375, 768 y 1440 px en ES y EN; un h1; enlace de saltar; solo el propio origen y las fuentes","ok":false,"detail":"[\"es320\",\"es375\",\"en320\",\"en375\"]"}
+{"id":"ES95-U08b contraste AA del texto del formulario (≥ 4,5:1)","ok":true,"detail":"peor=6.02"}
+{"id":"ES95-U08c [INFO] controles de menos de 44 px de alto","info":["es320:pro-name","es320:pro-email","es320:pro-country","es320:pro-profession","es320:pro-licenseNumber","es320:pro-profileUrl","es320:pro-cv","es320:pro-consent"]}
+{"id":"ES95-U06b el texto del formulario no promete empleo, ingresos ni garantías, e incluye «no es un servicio de emergencias»","ok":true,"detail":"sin coincidencias"}
+{"id":"ES95-U09 backoffice (administrador): la pestaña «Solicitudes» lista las solicitudes con estado y fecha; el HTML de un nombre se muestra como texto y no se ejecuta","ok":true,"detail":"visible=true xssEjecutado=false"}
+{"id":"ES95-U09b [INFO] controles de filtro por estado en la pestaña","info":"controles=1"}
+{"id":"ES95-U10 descarga autenticada de la hoja de vida desde la pantalla: llega un PDF como adjunto con nombre fijo","ok":true,"detail":"archivo=solicitud-291-hoja-de-vida.pdf pdf=true"}
+{"id":"ES95-U11 rechazar exige un motivo: sin motivo no cambia nada; con motivo queda `rejected` con la nota","ok":true,"detail":"botón=1"}
+{"id":"ES95-U11b sin errores de página en el recorrido del backoffice","ok":true,"detail":""}
+{"id":"ES95-U12 aprobar solo cambia el estado (ninguna cuenta nueva); «Crear cuenta de terapeuta» abre el formulario de usuarios con nombre y correo precargados, rol terapeuta, sin contraseña y con la URL limpia","ok":false,"detail":"{}"}
+{"id":"ES95-U13 el backoffice de solicitudes no abre para participante, terapeuta ni anónimo","ok":true,"detail":"{\"participante\":\"/app/onboarding\",\"terapeuta\":\"/therapist/dashboard\",\"anónimo\":\"/login\"}"}
+{"id":"ES95-U14 el panel de pendientes de ES-90 queda en 4 tarjetas (sin «Alta de profesionales»)","ok":true,"detail":"tarjetas=4"}
+{"id":"ES95-U14b la landing pública sigue sin corchetes y el bloque de profesionales describe el proceso real","ok":true,"detail":""}
+{"fin":true}
