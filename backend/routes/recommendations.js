@@ -16,6 +16,7 @@ const WellnessRecommendation = require('../WellnessRecommendation');
 const anthropic              = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
 const { encriptar, desencriptar } = require('../utils/crypto');
 
 // POST /api/recommendations/generate
@@ -28,10 +29,7 @@ router.post('/generate', async (req, res) => {
       limit: 7,
     });
 
-    const avgMood = moodLogs.length > 0
-      ? (moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean)
-          .reduce((a, b) => a + b, 0) / moodLogs.length).toFixed(1)
-      : null;
+    const avgMood = formatAverage(averageMood(moodLogs), null); // ES-105: sobre los valores registrados, no sobre los registros
 
     const trend = moodLogs.length >= 2
       ? (moodLogs[0].checkin_mood ?? 3) >= (moodLogs[moodLogs.length - 1].checkin_mood ?? 3)

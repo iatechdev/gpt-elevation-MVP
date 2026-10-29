@@ -2,6 +2,18 @@
 
 const express = require('express');
 const router = express.Router();
+const { sharingSet, withPatientData, patientBlocked } = require('../utils/therapistAccess'); // ES-96 y ES-101
+const { deletionPending } = require('../utils/deletionGuard');
+const { validateIdParams } = require('../middlewares/params');
+
+// ES-96 (ES93-M7): lo que entrega este router son datos de personas: nunca se guarda en cachés.
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
+// ES-98 (ES93-B1): ids de ruta mal formados → 404 uniforme (antes, un 500 de la base).
+validateIdParams(router, 'id', 'noteId');
 const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
@@ -11,12 +23,16 @@ const { validateBody, nonempty, text, date, optional } = require('../middlewares
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
 const { textOf } = require('../utils/claudeText');
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
+const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient'); // ES-102
 
 const {
   PromptVault,
   getActivePrompt,
   proposePrompt,
 } = require('../promptVault');
+
+const NOTE_TYPES = ['session_note', 'observation', 'goal'];
 
 // ==========================================
 // HU-062 — Trend calculation helper
@@ -58,13 +74,24 @@ router.get('/pacientes', async (req, res) => {
   try {
     const therapistId = req.user.id;
 
-    const patients = await User.findAll({
-      where: { therapistId, role: 'user' },
+    // ES-96: solo personas vinculadas, activas y sin eliminación solicitada; lo demás de cada una, solo si autorizó compartirlo con ESTE terapeuta.
+    const linked = await User.findAll({
+      where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name', 'email', 'active', 'createdAt'],
     });
+    const patients = [];
+    for (const p of linked) if (!(await deletionPending(p.id))) patients.push(p);
+    const sharing = await sharingSet(therapistId, patients.map((p) => p.id));
 
     const patientsWithStats = await Promise.all(
       patients.map(async (p) => {
+        if (!sharing.has(p.id)) {
+          // Sin autorización: solo identidad mínima del vínculo (id y nombre). Sin correo, ánimo, valoraciones ni tendencias.
+          return {
+            id: p.id, name: p.name, email: '', active: p.active, createdAt: p.createdAt, sharing: false,
+            lastMood: null, moodTrend: 'neutral', avgRating: null, totalSessions: 0, sessionsThisWeek: 0, trend: null,
+          };
+        }
         const moodLogs = await MoodLog.findAll({
           where: { UserId: p.id },
           order: [['date', 'DESC']],
@@ -103,6 +130,7 @@ router.get('/pacientes', async (req, res) => {
           email: p.email,
           active: p.active,
           createdAt: p.createdAt,
+          sharing: true,
           lastMood,
           moodTrend,
           avgRating,
@@ -129,10 +157,14 @@ router.get('/alerts', async (req, res) => {
     const now = Date.now();
     const ONE_DAY = 1000 * 60 * 60 * 24;
 
-    const patients = await User.findAll({
+    const linkedPatients = await User.findAll({
       where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name'],
     });
+    // ES-96: las alertas se calculan con el ánimo de la persona: solo de quien autorizó compartirlo con este terapeuta y no se está borrando.
+    const allowed = await sharingSet(therapistId, linkedPatients.map((p) => p.id));
+    const patients = [];
+    for (const p of linkedPatients) if (allowed.has(p.id) && !(await deletionPending(p.id))) patients.push(p);
 
     const inactivePatients = [];
     const notableProgress  = [];
@@ -203,37 +235,29 @@ router.get('/alerts', async (req, res) => {
 // ==========================================
 router.get('/pacientes/:id/historial', async (req, res) => {
   try {
-    const therapistId = req.user.id;
     const patientId = req.params.id;
+    await withPatientData(req, res, patientId, async (patient, transaction) => {
+      const moodLogs = await MoodLog.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 30,
+        transaction,
+      });
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id', 'name', 'email', 'createdAt'],
+      const ratings = await SessionRating.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 30,
+        transaction,
+      });
+
+      res.json({ patient: patient.toJSON(), moodLogs, ratings });
     });
-
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
-
-    const moodLogs = await MoodLog.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 30,
-    });
-
-    const ratings = await SessionRating.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 30,
-    });
-
-    res.json({ patient: patient.toJSON(), moodLogs, ratings });
   } catch (error) {
     console.error('❌ Error fetching patient history:', error);
     res.status(500).json({ error: 'Could not fetch patient history.' });
   }
 });
-
 // ==========================================
 // HU-049 — THERAPIST PROMPT MANAGEMENT
 // ==========================================
@@ -331,51 +355,44 @@ router.get('/prompt/versions', async (req, res) => {
 router.get('/pacientes/:id/historia', async (req, res) => {
   try {
     const therapistId = req.user.id;
-    const patientId = req.params.id;
+    await withPatientData(req, res, req.params.id, async (patient, transaction) => {
+      const moodLogs = await MoodLog.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 60,
+        transaction,
+      });
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id', 'name', 'email', 'createdAt', 'therapistId'],
-    });
+      const ratings = await SessionRating.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 60,
+        transaction,
+      });
 
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
+      const notes = await ClinicalNote.findAll({
+        where: { UserId: patient.id, therapistId },
+        order: [['sessionDate', 'DESC']],
+        transaction,
+      });
 
-    const moodLogs = await MoodLog.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 60,
-    });
+      const decryptedNotes = notes.map(n => ({
+        ...n.toJSON(),
+        content: desencriptar(n.content),
+      }));
 
-    const ratings = await SessionRating.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 60,
-    });
-
-    const notes = await ClinicalNote.findAll({
-      where: { UserId: patientId, therapistId },
-      order: [['sessionDate', 'DESC']],
-    });
-
-    const decryptedNotes = notes.map(n => ({
-      ...n.toJSON(),
-      content: desencriptar(n.content),
-    }));
-
-    res.json({
-      patient: patient.toJSON(),
-      moodLogs,
-      ratings,
-      notes: decryptedNotes,
-    });
+      res.json({
+        patient: patient.toJSON(),
+        moodLogs,
+        ratings,
+        notes: decryptedNotes,
+      });
+    }, ['id', 'name', 'email', 'createdAt', 'therapistId']);
   } catch (error) {
     console.error('❌ Error fetching clinical history:', error);
     res.status(500).json({ error: 'Could not fetch clinical history.' });
   }
 });
-
 router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDate: date, type: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
@@ -389,27 +406,21 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
       return res.status(400).json({ error: 'Session date is required.' });
     }
 
-    const validTypes = ['session_note', 'observation', 'goal'];
-    const noteType = validTypes.includes(type) ? type : 'session_note';
+    const noteType = NOTE_TYPES.includes(type) ? type : 'session_note';
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-    });
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
-
-    const note = await ClinicalNote.create({
-      UserId: patientId,
+    // ES-96 (ES93-A1/A3): solo sobre una persona vinculada, activa, sin eliminación solicitada y que autorizó compartir con este terapeuta.
+    const saved = await withPatientData(req, res, patientId, async (patient, transaction) => ClinicalNote.create({
+      UserId: patient.id,
       therapistId,
       content: encriptar(content),
       type: noteType,
       sessionDate,
-    });
-
+    }, { transaction }), ['id']);
+    if (res.headersSent) return; // withPatientData ya respondió 404 o 403
+    // Se responde después del commit: no se confirma una nota que la transacción pudiera deshacer.
     res.status(201).json({
       message: 'Note saved successfully.',
-      note: { ...note.toJSON(), content },
+      note: { ...saved.toJSON(), content },
     });
   } catch (error) {
     console.error('❌ Error creating clinical note:', error);
@@ -427,17 +438,22 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
       where: { id: noteId, therapistId },
     });
 
-    if (!note) {
+    if (!note || await patientBlocked(note.UserId)) { // ES-101: tampoco se edita la nota de una persona bloqueada
       return res.status(404).json({ error: 'Note not found or not authorized.' });
     }
 
+    // ES-98 (ES93-B2): la misma lista de tipos que al crear; un tipo desconocido se rechaza (no se guarda ni se cambia en silencio).
+    if (type !== undefined && !NOTE_TYPES.includes(type)) {
+      return res.status(400).json({ code: 'invalid_type', error: 'Tipo de nota no válido. / Invalid note type.' });
+    }
     const updates = {};
     if (content)     updates.content     = encriptar(content);
     if (type)        updates.type        = type;
     if (sessionDate) updates.sessionDate = sessionDate;
 
-    await note.update(updates);
-
+    // ES-96: editar una nota sobre una persona exige el mismo acceso que escribirla (vínculo vigente, sin eliminación y con autorización).
+    await withPatientData(req, res, note.UserId, async (patient, transaction) => note.update(updates, { transaction }), ['id']);
+    if (res.headersSent) return; // withPatientData ya respondió 404 o 403
     res.json({
       message: 'Note updated successfully.',
       note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
@@ -453,14 +469,10 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
     const therapistId = req.user.id;
     const patientId = req.params.id;
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id'],
-    });
-
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
+    // ES-96: vínculo vigente, sin eliminación solicitada y con autorización de la persona. El bloqueo del consentimiento solo cubre esta
+    // comprobación, no la llamada a la IA (no se retiene una revocación esperando a un proveedor lento).
+    const allowed = await withPatientData(req, res, patientId, async () => true, ['id']);
+    if (allowed !== true) return; // withPatientData ya respondió 404 o 403
 
     const moodLogs = await MoodLog.findAll({
       where: { UserId: patientId },
@@ -474,48 +486,53 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       limit: 30,
     });
 
-    const notes = await ClinicalNote.findAll({
-      where: { UserId: patientId, therapistId },
-      order: [['sessionDate', 'DESC']],
-      limit: 10,
-    });
-
-    const decryptedNotes = notes.map(n => desencriptar(n.content));
-
-    const avgMood = moodLogs.length > 0
-      ? (moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood])
-          .filter(Boolean)
-          .reduce((a, b) => a + b, 0) / moodLogs.length).toFixed(1)
-      : 'N/A';
+    // ES-102/ES-105: el promedio se calcula sobre los valores registrados (utils/moodStats), no sobre el número de registros.
+    const avgMood = formatAverage(averageMood(moodLogs), 'N/A');
 
     const avgRating = ratings.length > 0
       ? (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1)
       : 'N/A';
 
+    // ES-102 (ES93-A2): solo datos estructurados (ánimo y valoraciones). Las notas del terapeuta NO se envían al proveedor de IA
+    // (decisión de ES-79, 26-oct), ni el nombre ni el correo de la persona.
     const prompt = `You help a professional review a person's recent progress. The person is not identified in this request.
 
-Total sessions: ${moodLogs.length}
+Total check-ins: ${moodLogs.length}
 Average mood (1-5): ${avgMood}
 Average session rating (1-5): ${avgRating}
 
-Recent therapist notes:
-${decryptedNotes.length > 0 ? decryptedNotes.join('\n---\n') : 'No notes yet.'}
-
 Please write a concise, neutral summary (3-5 sentences) of the emotional progress and current state reflected in this data. Focus on observable trends. Do not diagnose, prescribe or predict outcomes. Be professional and empathetic.`;
 
-    const msg = await anthropic.messages.create({
-      model: anthropic.MODEL,
-      max_tokens: 400,
-      messages: [{ role: 'user', content: prompt }],
-    });
+    let msg;
+    try {
+      // ES-102 (ES93-A2/M5): por la puerta única de IA (presupuesto, tiempo de espera y reintentos acotados de ES-22).
+      msg = await callClaude({
+        userId: therapistId, kind: 'therapist_summary',
+        body: { model: anthropic.MODEL, max_tokens: 400, messages: [{ role: 'user', content: prompt }] },
+      });
+    } catch (error) {
+      if (error instanceof AiBudgetExhaustedError) {
+        return res.status(429).json({ error: 'AI usage limit reached.', code: 'ai_budget_exhausted', retryable: false, scope: error.scope, resetsAt: error.resetsAt });
+      }
+      if (error instanceof AiBudgetNotConfiguredError) {
+        return res.status(503).json({ error: 'AI is not available at the moment.', code: 'ai_budget_not_configured', retryable: false });
+      }
+      console.error('❌ Error del proveedor de IA (resumen):', error && error.name);
+      return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
+    }
+
+    const summary = textOf(msg).trim();
+    if (!summary) { // ES-105 (ES102-F03): una respuesta vacía es un fallo del proveedor, no un resumen
+      return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
+    }
 
     res.json({
-      summary: textOf(msg),
+      summary,
       generatedAt: new Date().toISOString(),
-      basedOn: { sessions: moodLogs.length, notes: notes.length },
+      basedOn: { sessions: moodLogs.length, notes: 0 }, // las notas ya no se usan; la clave se conserva por compatibilidad con la pantalla
     });
   } catch (error) {
-    console.error('❌ Error generating AI summary:', error);
+    console.error('❌ Error generating AI summary:', error && error.name);
     res.status(500).json({ error: 'Could not generate summary.' });
   }
 });

@@ -1,6 +1,6 @@
 export type Entry = { id: number; date: string; content: string; createdAt: string; updatedAt: string }
 export type ChatMessage = { role: 'user' | 'bot'; text: string }
-export type Intent = Readonly<{ message: string; lang: string; requestId: string; contextEntryIds?: readonly number[] }>
+export type Intent = Readonly<{ message: string; lang: string; requestId: string; contextEntryIds?: readonly number[]; mode?: 'compass' }>
 export class SpaceError extends Error {
   status: number
   code: string
@@ -21,9 +21,9 @@ export function entry(value: unknown): Entry {
   if (!Number.isSafeInteger(e.id) || Number(e.id) < 1 || typeof e.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(e.date) || typeof e.content !== 'string' || typeof e.createdAt !== 'string' || typeof e.updatedAt !== 'string' || !Number.isFinite(Date.parse(e.updatedAt))) throw new SpaceError(502)
   return { id: Number(e.id), date: e.date, content: e.content, createdAt: e.createdAt, updatedAt: e.updatedAt }
 }
-export function makeIntent(message: string, lang: string, ids: number[], requestId = crypto.randomUUID()): Intent {
+export function makeIntent(message: string, lang: string, ids: number[], requestId = crypto.randomUUID(), mode?: 'compass'): Intent {
   if (!message.trim() || message.trim().length > 4000 || ids.length > 3 || new Set(ids).size !== ids.length || ids.some(id => !Number.isSafeInteger(id) || id < 1) || !/^[A-Za-z0-9_-]{8,64}$/.test(requestId)) throw new SpaceError(400)
-  return Object.freeze({ message: message.trim(), lang, requestId, ...(ids.length ? { contextEntryIds: Object.freeze([...ids]) } : {}) })
+  return Object.freeze({ message: message.trim(), lang, requestId, ...(ids.length ? { contextEntryIds: Object.freeze([...ids]) } : {}), ...(mode ? { mode } : {}) })
 }
 export async function request(token: string, path: string, options?: RequestInit): Promise<unknown> {
   if (!token || localStorage.getItem('elevation_token') !== token) throw new SpaceError(401)

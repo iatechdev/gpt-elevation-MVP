@@ -6,6 +6,20 @@ on:
     branches: [main]
 
 jobs:
+  evaluation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # ES-44 offline: built-ins only, no DB, credentials or provider calls.
+      - run: node evaluation/es44/cli.cjs --mode=validate
+      - run: node --test test/es-44-evaluation.test.cjs
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -129,6 +143,18 @@ jobs:
         run: npm run test:career-plan:pg
         env:
           ES33_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-96 privacidad del terapeuta: solo lo autorizado (HTTP y PostgreSQL reales)"
+        run: npm run test:therapist-privacy:pg
+        env:
+          ES96_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-99 subida de documentos del profesional (HTTP y PostgreSQL reales)
+        run: npm run test:validation-upload:pg
+        env:
+          ES99_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-98 terapeuta: ids, sesiones, matching y promedio (HTTP y PostgreSQL reales)"
+        run: npm run test:therapist-validation:pg
+        env:
+          ES98_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-85 worker de IA — rol, funciones, fencing y revocación concurrente (PostgreSQL)
         run: npm run test:worker:pg
         env:
@@ -145,3 +171,23 @@ jobs:
         run: npm run test:career-plan:integration:pg
         env:
           ES33I_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-101 acceso del terapeuta con eliminación aceptada o cuenta inactiva (PostgreSQL)
+        run: npm run test:therapist-deletion:pg
+        env:
+          ES101_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-95 solicitudes de profesionales: carrera de envíos simultáneos (PostgreSQL)"
+        run: npm run test:pro-applications:pg
+        env:
+          ES95_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-109 hoja de vida: análisis, histórico cifrado, consentimiento y derechos de datos (PostgreSQL)"
+        run: npm run test:resume:pg
+        env:
+          ES109_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-110 habilidades de la hoja de vida a evidencias: borrador sin nivel, origen conservado y para revisión (PostgreSQL)"
+        run: npm run test:resume-skills:pg
+        env:
+          ES110_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-107 hoja de vida en binario, migración y tope global (PostgreSQL)"
+        run: npm run test:pro-cv-binary:pg
+        env:
+          ES107_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres

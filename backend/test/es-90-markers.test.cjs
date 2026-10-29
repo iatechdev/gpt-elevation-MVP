@@ -1,0 +1,45 @@
+// ES-90: ningún marcador entre corchetes llega a la landing pública; el superadmin puede reemplazar cada texto pendiente.
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { models, startApp } = require('./support.cjs');
+const { catalog } = require('../content/landingDefaults');
+
+const PENDING_KEYS = [
+  // ES-94: textos definitivos que explican cada ruta; el estado de Elevation es vacío a propósito (sin etiqueta).
+  'landing.skillmap.routes.continuity.pending', 'landing.skillmap.routes.adjacent.pending',
+  'landing.skillmap.routes.exploratory.pending', 'landing.join.professional_pending',
+];
+const marker = /\[[^\]]*\]/;
+
+test('ES-90: el catálogo no trae marcadores [..] en ES ni EN', () => {
+  for (const entry of catalog) for (const lang of ['es', 'en']) assert.doesNotMatch(entry[lang], marker, `${entry.key} ${lang}`);
+});
+
+test('ES-90: GET público devuelve los textos provisionales honestos y ningún marcador', async t => {
+  models.LandingContent.findAll = async () => [];
+  const request = await startApp(t);
+  for (const lang of ['es', 'en']) {
+    const { status, body } = await request('GET', '/api/landing-content?lang=' + lang);
+    assert.equal(status, 200);
+    for (const [key, value] of Object.entries(body)) assert.doesNotMatch(String(value), marker, `${key} ${lang}`);
+    for (const key of PENDING_KEYS) assert.ok(body[key] && body[key].length > 5, key);
+  }
+  const es = (await request('GET', '/api/landing-content?lang=es')).body;
+  assert.equal('landing.modules.elevation.status' in es, false); // ES-94: Elevation no lleva etiqueta de estado
+  assert.match(es['landing.skillmap.routes.continuity.pending'], /^Un rol del mismo contexto del que vienes\./);
+  assert.equal((await request('GET', '/api/landing-content?lang=en')).body['landing.join.professional_pending'], 'Fill in the form: the Elevation team reviews your application and writes to the email you provide. Afterwards, a board verifies your credentials before giving you access.');
+});
+
+test('ES-90: solo el superadmin reemplaza un pendiente y el valor nuevo se publica; otros roles reciben 403', async t => {
+  const rows = [];
+  models.LandingContent.findAll = async ({ where }) => rows.filter(row => row.lang === where.lang);
+  models.LandingContent.upsert = async row => { rows.push(row); };
+  const request = await startApp(t);
+  const body = { key: 'landing.skillmap.routes.continuity.pending', lang: 'es', value: 'Valor sintético de prueba' };
+  for (const role of ['user', 'admin', 'therapist']) assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, 403, role);
+  assert.equal(rows.length, 0);
+  assert.equal((await request('PUT', '/api/landing-content', { role: 'superadmin', body })).status, 200);
+  assert.equal((await request('GET', '/api/landing-content?lang=es')).body[body.key], body.value);
+  assert.equal((await request('GET', '/api/landing-content?lang=en')).body[body.key], catalog.find(e => e.key === body.key).en); // el otro idioma conserva su valor por defecto
+  assert.equal((await request('PUT', '/api/landing-content', { role: 'superadmin', body: { key: 'landing.modules.elevation.status', lang: 'es', value: 'En piloto' } })).status, 400); // la clave ya no existe
+});
