@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
+import { ChatBar } from '../space/ChatBar'
+import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
@@ -45,7 +47,12 @@ export function ChatPage() {
   const getToken = () => localStorage.getItem('elevation_token') ?? ''
 
   // Chat
-  const chat = usePersonalChat(lang)
+  // ES-13: la Brújula profesional solo existe con la bandera encendida; sin ella, ?mode=compass se ignora y el chat es el normal.
+  const [params] = useSearchParams()
+  const compass = import.meta.env.VITE_ENABLE_COMPASS_CHAT === 'true' && params.get('mode') === 'compass'
+  const chat = usePersonalChat(lang, true, compass ? 'compass' : undefined)
+  const [compassStarted, setCompassStarted] = useState(false)
+  useEffect(() => { if (chat.intent) setCompassStarted(true) }, [chat.intent])
   const { messages, busy: sending } = chat
   const chatEndRef = useRef<HTMLDivElement>(null)
 
@@ -275,17 +282,17 @@ export function ChatPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
 
       {/* Header */}
-      <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(249,249,247,0.85)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(231,229,228,0.5)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 680, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ width: 24 }} />
-          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>{t('logo')}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.3em', color: '#1A1A18', textTransform: 'uppercase', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{t('logo')}</span>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             {(['es', 'en'] as const).map(l => (
               <button key={l} onClick={() => setLang(l)}
-                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '0.5px solid #D6D2C4', background: lang === l ? '#6B7D5C' : 'transparent', color: lang === l ? '#FAF8F4' : '#A8A29E', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, minHeight: 32, border: '1px solid #5E5E5A', background: lang === l ? '#1A1A18' : 'transparent', color: lang === l ? '#FAFAF9' : '#5E5E5A', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 {l.toUpperCase()}
               </button>
             ))}
@@ -317,29 +324,30 @@ export function ChatPage() {
 
       {/* Mensajes */}
       <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 300, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
-        <SpaceNav /><div id="space-main" tabIndex={-1} />
+        <SpaceNav /><ChatBar sent={messages.length} /><div id="space-main" tabIndex={-1} />
+        {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {messages.map((msg, i) => (
             <div key={i}>
               {msg.role === 'user' ? (
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <div style={{ maxWidth: '80%', background: 'white', borderRadius: '1.25rem 1.25rem 0.25rem 1.25rem', padding: '1rem 1.25rem', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', color: '#1C1917', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                  <div style={{ maxWidth: '85%', background: '#1A1A18', borderRadius: 4, padding: '0.9rem 1.1rem', color: '#FAFAF9', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                     {msg.text}
                   </div>
                 </div>
               ) : (
-                <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1.25rem' }}>
-                  <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.4rem' }}>{t('logo')} ·</span>
-                  <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1.05rem', color: '#1C1917', lineHeight: 1.85, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
+                <div style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
+                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
+                  <p style={{ fontSize: '1rem', color: '#1A1A18', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
                 </div>
               )}
             </div>
           ))}
           {sending && (
-            <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1.25rem' }}>
-              <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{t('logo')} ·</span>
-              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#A8A29E', margin: 0 }}>{t('chat_thinking')}</p>
+            <div role="status" style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
+              <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.5rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
+              <p style={{ fontSize: '0.95rem', color: '#5E5E5A', margin: 0 }}>{t('chat_thinking')}</p>
             </div>
           )}
             {/* HU-052 — Progress link */}
@@ -408,7 +416,7 @@ export function ChatPage() {
       </main>
 
       {/* Input */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', zIndex: 40, background: 'rgba(249,249,247,0.95)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(231,229,228,0.5)' }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', zIndex: 40, background: 'rgba(250,250,249,0.96)', backdropFilter: 'blur(16px)', borderTop: '1px solid #E4E2DC' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
           <ChatInput chat={chat} />
         </div>

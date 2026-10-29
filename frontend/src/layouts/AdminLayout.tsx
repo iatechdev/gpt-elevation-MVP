@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { AdminSidebar } from '../components/AdminSidebar.tsx'
 import { useLanguage } from '../i18n/useLanguage'
 
-export function AdminLayout() {
+export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }) {
   const navigate = useNavigate()
   const { lang, setLang } = useLanguage()
   const name = localStorage.getItem('elevation_name') ?? 'Admin'
@@ -16,7 +16,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F3EF', fontFamily: 'Inter, sans-serif' }}>
+    <div className={pilotPreview ? "pilot-admin-layout" : undefined} style={{ minHeight: '100vh', background: '#F5F3EF', fontFamily: 'Inter, sans-serif' }}>
 
       {/* Header fijo */}
       <header style={{

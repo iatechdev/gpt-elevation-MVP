@@ -3,6 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { sequelize } = require('../database');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const User = require('../User');
@@ -232,7 +233,19 @@ router.put('/:id/asignar-terapeuta', validateBody({ therapistId: nullable(id) })
       }
     }
 
-    await usuario.update({ therapistId: therapistId || null });
+    const next = therapistId || null;
+    const previous = usuario.therapistId || null;
+    const transaction = await sequelize.transaction();
+    try {
+      // La autorización de compartir es con UN terapeuta: al cambiar o quitar, la del anterior se retira (el nuevo debe obtener la suya; si la persona
+      // vuelve al original, tampoco revive la anterior). Un error no se traga: el cambio y el retiro ocurren juntos o ninguno.
+      if (previous !== null && previous !== next) await require('../utils/consent').revokeTherapistSharing(usuario.id, previous, transaction);
+      await usuario.update({ therapistId: next }, { transaction });
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback().catch(() => {});
+      throw error;
+    }
     res.json({ message: 'Terapeuta asignado correctamente.' });
   } catch (error) {
     console.error('Error asignando terapeuta.');

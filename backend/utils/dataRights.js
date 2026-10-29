@@ -123,6 +123,8 @@ async function requestDeletion(userId) {
       id: randomUUID(), UserId: userId, status: 'accepted', attempts: 0,
     }, { transaction });
     await revokeForDeletion(userId, transaction);
+    // ES-96 (ES93-A1): su terapeuta deja de tener acceso desde este instante (no al purgar, que es un paso de mantenimiento manual).
+    await require('./therapistLink').unlinkTherapist(userId, 'account_deletion', transaction);
     await require('./aiJobs').invalidateForUser(userId, 'deletion_requested', transaction); // ES-88: el worker deja de producir para esta persona
     await user.update({ active: false }, { transaction });
     await ExportRequest.destroy({ where: { UserId: userId }, transaction });

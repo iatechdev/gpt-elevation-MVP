@@ -9,7 +9,7 @@
 @plugin 'daisyui' {
   themes: false;
   root: '.landing-scope';
-  include: button, card, badge, link, join, navbar, hero, fieldset, input, textarea, select, checkbox, radio, alert;
+  include: button, card, badge, link, join, navbar, hero, textarea, checkbox, input, fieldset, select, radio, alert;
   prefix: 'elv-';
   logs: false;
 }
@@ -194,9 +194,91 @@
   .landing-scope .landing-module h3, .landing-scope .landing-journey-list h3 { font-size: 1.5625rem; }
   .landing-scope .landing-journey-list li { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 3rem; padding-block: 2rem; }
 }
+/* ES-70 · Approved S7/S9 editorial grids, scoped to the public landing. */
+.landing-scope .landing-offer-section { padding: 2.5rem 1.5rem 3rem; border-top: 1px solid var(--color-base-300); overflow-wrap: anywhere; }
+.landing-scope .landing-offer-inner { max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-offer-label { display: flex; align-items: center; gap: 1rem; margin: 0 0 2rem; color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; text-transform: uppercase; letter-spacing: 0.1em; }
+.landing-scope .landing-offer-label > span:first-child { display: inline-flex; align-items: center; gap: 1rem; }
+.landing-scope .landing-offer-label > span:first-child::after { content: ''; width: 2rem; height: 1px; background: var(--color-accent); }
+.landing-scope .landing-offer-section h2 { max-width: 1050px; margin: 0 0 2rem; font-size: clamp(2.25rem, 4.45vw, 4rem); font-weight: 800; line-height: 1.03; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-offer-card { min-width: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.landing-scope .landing-offer-card .elv-card-body { display: flex; gap: 1rem; padding: 1.5rem; }
+.landing-scope .landing-offer-section h3, .landing-scope .landing-offer-section h4 { margin: 0; font-size: 1.375rem; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
+.landing-scope .landing-offer-section p { max-width: 65ch; }
+.landing-scope .landing-offer-card p, .landing-scope .landing-map-row p { margin: 0; font-size: 1.0625rem; color: var(--landing-muted); }
+.landing-scope .landing-offer-status { align-self: flex-start; max-width: 100%; border-color: var(--color-base-300); border-radius: 100px; color: var(--landing-muted); font-size: 0.6875rem; letter-spacing: 0; text-transform: none; overflow-wrap: anywhere; }
+.landing-scope .landing-offer-status::before { content: ''; flex-shrink: 0; width: 4px; height: 4px; border-radius: 50%; background: var(--color-accent); }
+.landing-scope .landing-map-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-block: 2rem; }
+.landing-scope .landing-map-row p { max-width: 530px; }
+.landing-scope .landing-map-panels { margin-block: 2rem; align-items: start; }
+.landing-scope .landing-autonomy { background: var(--color-base-200); }
+.landing-scope .landing-map-list { list-style: none; padding: 0; margin: 0; }
+.landing-scope .landing-map-list li { display: flex; gap: 1rem; align-items: baseline; padding-block: 1rem; border-top: 1px solid var(--color-base-300); }
+.landing-scope .landing-map-list li > span { flex-shrink: 0; font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; color: var(--landing-muted); }
+.landing-scope .landing-offer-note { margin: 0; padding-left: 1rem; border-left: 2px solid var(--color-accent); font-size: 1.0625rem; }
+.landing-scope .landing-map-connection { margin-top: 2rem; }
+.landing-scope #skill-map { scroll-margin-top: 8rem; }
+.landing-scope .landing-menu-toggle { display: none; }
+.landing-scope .landing-nav-skillmap { display: inline-flex; align-items: center; min-height: 48px; font-size: 0.875rem; color: inherit; text-underline-offset: 0.25em; }
+.landing-scope .landing-navigation { gap: 1.25rem; }
+@media (min-width: 48rem) {
+  .landing-scope .landing-offer-section { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; }
+  .landing-scope .landing-offer-section h2 { margin-bottom: 3rem; }
+  .landing-scope .landing-offer-card .elv-card-body { padding: 2rem; }
+  .landing-scope .landing-offer-section h3 { font-size: 1.5625rem; }
+  .landing-scope .landing-map-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 3rem; margin-block: 3rem; }
+}
 @media (max-width: 47.999rem) {
   .landing-scope .landing-menu-toggle { display: inline-flex; min-width: 48px; min-height: 48px; font-size: 1.25rem; }
   .landing-scope .landing-navigation { display: none; flex-basis: 100%; padding-top: 1rem; border-top: 1px solid var(--color-base-300); }
   .landing-scope .landing-navigation[data-open='true'] { display: flex; }
   .landing-scope .landing-nav-how { flex-basis: 100%; }
+  .landing-scope .landing-nav-skillmap { flex-basis: 100%; }
+}
+
+/* ES-74 · S13: four steps and the pending professional flow. */
+.landing-scope .landing-join { padding: 2.5rem 1.5rem 3rem; border-top: 1px solid var(--color-base-300); overflow-wrap: anywhere; }
+.landing-scope .landing-join-inner { max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-join-eyebrow { display: flex; gap: 1rem; align-items: center; margin: 0 0 2rem; color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; text-transform: uppercase; letter-spacing: 0.1em; }
+.landing-scope .landing-join-eyebrow > span:first-child { display: inline-flex; gap: 1rem; align-items: center; }
+.landing-scope .landing-join-eyebrow > span:first-child::after { content: ''; width: 2rem; height: 1px; background: var(--color-accent); }
+.landing-scope .landing-join h2 { max-width: 1050px; margin: 0 0 2rem; font-size: clamp(2.25rem, 4.45vw, 4rem); line-height: 1.03; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-join-steps { list-style: none; padding: 0; margin: 0; }
+.landing-scope .landing-join-steps > li { min-width: 0; }
+.landing-scope .landing-join-card { height: 100%; border-radius: 0; background: transparent; }
+.landing-scope .landing-join-card .elv-card-body { display: flex; gap: 1rem; padding: 1.5rem; }
+.landing-scope .landing-join-card .landing-join-eyebrow { margin: 0; }
+.landing-scope .landing-join h3 { margin: 0; font-size: 1.375rem; font-weight: 800; line-height: 1.15; }
+.landing-scope .landing-join p { margin-block: 0; }
+.landing-scope .landing-join-card p, .landing-scope .landing-join-professionals p { max-width: 530px; color: var(--landing-muted); font-size: 1.0625rem; }
+.landing-scope .landing-join-card .landing-label { align-self: start; max-width: 100%; color: var(--landing-muted); border-color: var(--color-base-300); }
+.landing-scope .landing-join-create { margin-top: 2rem; }
+.landing-scope .landing-join-professionals { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; margin-top: 3rem; }
+.landing-scope .landing-join-professionals h3 { font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; text-transform: uppercase; letter-spacing: 0.1em; color: var(--landing-muted); }
+@media (min-width: 48rem) {
+  .landing-scope .landing-join { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; }
+  .landing-scope .landing-join h2 { margin-bottom: 3rem; }
+  .landing-scope .landing-join-professionals { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 3rem; }
+}
+/* ES-72 · S11, approved editorial objectives and project status. */
+.landing-scope .landing-project { padding: 2.5rem 1.5rem 3rem; border-top: 1px solid var(--color-base-300); overflow-wrap: anywhere; }
+.landing-scope .landing-project-inner { max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-project-label { margin: 0; color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.landing-scope .landing-project-eyebrow { display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; }
+.landing-scope .landing-project-eyebrow > span:first-child { display: inline-flex; gap: 1rem; align-items: center; }
+.landing-scope .landing-project-eyebrow > span:first-child::after { content: ''; width: 2rem; height: 1px; background: var(--color-accent); }
+.landing-scope .landing-project h2 { max-width: 1050px; margin: 0 0 2rem; font-size: clamp(2.25rem, 4.45vw, 4rem); line-height: 1.03; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-project-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; margin-top: 2rem; }
+.landing-scope .landing-project-goals { list-style: none; margin: 0; padding: 0; max-width: 650px; }
+.landing-scope .landing-project-goals li { display: flex; gap: 1rem; padding: 1.5rem 0; border-bottom: 1px solid var(--color-base-300); font-size: 1.0625rem; }
+.landing-scope .landing-project-goals li:first-child { padding-top: 0; }
+.landing-scope .landing-project-goals li::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--color-accent); flex-shrink: 0; margin-top: 0.65em; }
+.landing-scope .landing-project-state { border: 0; border-radius: 0; max-width: 650px; }
+.landing-scope .landing-project-state .elv-card-body { padding: 1.5rem; }
+.landing-scope .landing-project-state p { margin: 0; max-width: 530px; font-size: 1.0625rem; }
+@media (min-width: 48rem) {
+  .landing-scope .landing-project { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; }
+  .landing-scope .landing-project h2 { margin-bottom: 3rem; }
+  .landing-scope .landing-project-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 3rem; margin-top: 3rem; }
+  .landing-scope .landing-project-state .elv-card-body { padding: 2rem; }
 }

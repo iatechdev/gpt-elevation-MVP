@@ -15,8 +15,17 @@ const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, object, text, id } = require('../middlewares/validateBody');
+const { validateIdParams } = require('../middlewares/params');
+
+validateIdParams(router, 'id'); // ES-98 (ES93-B1)
+
+// ES-98 (ES93-M1): se vincula solo con un terapeuta ACTIVO que acepta personas nuevas, y solo a un participante activo.
+const isAvailableTherapist = (user) => Boolean(user) && user.role === 'therapist' && user.active === true
+  && !(user.TherapistProfile && user.TherapistProfile.acceptingNew === false);
+const unavailable = { code: 'therapist_unavailable', error: 'Ese terapeuta no está disponible. / That therapist is not available.' };
 
 // POST /api/matching/request
 router.post('/request', validateBody({ answers: value => object(value) && Object.values(value).every(text) }), async (req, res) => {
@@ -45,10 +54,7 @@ router.post('/request', validateBody({ answers: value => object(value) && Object
       limit: 14,
     });
 
-    const avgMood = moodLogs.length > 0
-      ? (moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean)
-          .reduce((a, b) => a + b, 0) / moodLogs.length).toFixed(1)
-      : 'No data';
+    const avgMood = formatAverage(averageMood(moodLogs), 'No data'); // ES-105: sobre los valores registrados, no sobre los registros
 
     const therapistList = availableTherapists.map(t => ({
       id:          t.id,
@@ -133,6 +139,11 @@ router.post('/choose', validateBody({ requestId: id, therapistId: id }), async (
       where: { id: requestId, UserId: req.user.id },
     });
     if (!request) return res.status(404).json({ error: 'Request not found.' });
+    if (request.status !== 'pending') {
+      return res.status(409).json({ code: 'request_closed', error: 'Esta solicitud ya fue resuelta. / This request has already been resolved.' });
+    }
+    const therapist = await User.findOne({ where: { id: therapistId, role: 'therapist', active: true }, attributes: ['id', 'role', 'active'], include: [{ model: TherapistProfile, required: false }] });
+    if (!isAvailableTherapist(therapist)) return res.status(409).json(unavailable);
     await request.update({ chosenTherapistId: therapistId, status: 'pending' });
     res.json({ message: 'Therapist chosen. Waiting for admin confirmation.' });
   } catch (error) {
@@ -171,6 +182,14 @@ router.post('/:id/confirm', verificarAdmin, async (req, res) => {
     if (!request) return res.status(404).json({ error: 'Request not found.' });
     if (!request.chosenTherapistId)
       return res.status(400).json({ error: 'No therapist chosen yet.' });
+    if (request.status !== 'pending') {
+      return res.status(409).json({ code: 'request_closed', error: 'Esta solicitud ya fue resuelta. / This request has already been resolved.' });
+    }
+    // El terapeuta pudo desactivarse o cambiar de rol desde que se eligió; la persona debe ser un participante activo.
+    const therapist = await User.findOne({ where: { id: request.chosenTherapistId, role: 'therapist', active: true }, attributes: ['id', 'role', 'active'], include: [{ model: TherapistProfile, required: false }] });
+    if (!isAvailableTherapist(therapist)) return res.status(409).json(unavailable);
+    const person = await User.findOne({ where: { id: request.UserId, role: 'user', active: true }, attributes: ['id'] });
+    if (!person) return res.status(409).json({ code: 'person_unavailable', error: 'Esa persona no puede vincularse. / That person cannot be linked.' });
     await User.update({ therapistId: request.chosenTherapistId }, { where: { id: request.UserId } });
     await request.update({ status: 'confirmed' });
     res.json({ message: 'Therapist assigned successfully.' });
