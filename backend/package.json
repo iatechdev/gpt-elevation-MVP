@@ -24,6 +24,8 @@
     "test:professional-key:pg": "node --test test/integration/es-86-postgres.cjs",
     "test:routes:pg": "node --test test/integration/es-32-postgres.cjs",
     "test:worker:pg": "node --test test/integration/es-85-postgres.cjs",
+    "test:worker-process:pg": "node --test test/integration/es-87-postgres.cjs",
+    "worker": "node worker.js",
     "test:routes:local": "node scripts/testEs32Local.cjs",
     "migrate:routes": "node scripts/migrateRoutes.js",
     "db:migrate": "sequelize-cli db:migrate",
