@@ -17,3 +17,10 @@ Backend 457/457; servidores reiniciados con el código nuevo; script de ES-121: 
 - ES121-QA-01 (Alto) CERRADO: las lecturas usan la transacción de `withConsent`; con 1, 3, 4, 5, 8 y 12 propuestas simultáneas de personas distintas todas dan 200 y otra persona es atendida en 31–120 ms (antes 5 → 5×500 y 30 s de espera); 6 clics de la misma persona, 200; revocar la fuente con 12 propuestas simultáneas ya no da 5xx y la siguiente es 403.
 - ES121-QA-02 (Medio) REDUCIDO: el filtro frena 8 de mis 9 frases de empleo/contratación/salario (pasa «Aumentarán tus ingresos») y NO bloquea 7 frases legítimas sobre lo que la persona valora o necesita (sueldo estable, empleo con impacto, trabajo flexible…). Otras 6 de 11 promesas con redacción distinta atraviesan el filtro por palabras («Ganarás más dinero…», «Tendrás trabajo asegurado», «Your income will grow…», «You'll be hired soon»…): límite conocido de un filtro por palabras.
 - Observaciones QA-03 y QA-04: documentadas por Dev en el contrato §14.
+
+## Reverificación · head 1b11da0 (filtro de promesas ampliado)
+Merge local con main (sin conflictos), backend 457/457, Postgres real, IA simulada, servidores nuevos sobre base nueva.
+- `backend-1b11da0.jsonl`: es121-real-db.mjs → 32 correctas, 0 fallas. C9: 0/9 promesas pasan (antes 1/9). C10: 0 falsos positivos en 7 frases legítimas. C11 (info): 1/11 evasiones pasan (antes 6/11): «Las empresas se pelearán por ti.»
+- `pool-1b11da0.jsonl`: 1/3/4/5/8/12 propuestas simultáneas, todas 200; tercero 40–195 ms; 6 clics de la misma persona 200.
+- Sonda directa de `makesPromise` con 20 frases extra: bloquea futuro + empleo/ingresos/contratación; siguen pasando «Podrías conseguir una oferta pronto», «Las empresas se pelearán por ti», «Tu CV te abrirá puertas laborales»; bloquea «Buscarás un trabajo con impacto» (sesgo deliberado a descartar).
+- ES121-QA-02 baja de Medio a Bajo (filtro por patrones, no semántico); la contención restante es la instrucción al modelo y la autorización persona por persona de cada insight.
