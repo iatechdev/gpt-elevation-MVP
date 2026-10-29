@@ -5,10 +5,28 @@
 const express = require('express');
 const router  = express.Router();
 
+// ES-96 (ES93-M7): datos de personas y de su terapeuta: nunca en cachés.
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 const { encriptar, desencriptar } = require('../utils/crypto');
-const { blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-101
+const { sharingSet, blockedPatientIds, patientBlocked, requireSharing, hasSharing } = require('../utils/therapistAccess'); // ES-96 y ES-101
 const { callClaude } = require('../utils/aiClient'); // ES-102
 const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
+const { Transaction } = require('sequelize');
+const { sequelize } = require('../database');
+const { validateIdParams, isRouteId } = require('../middlewares/params');
+const { findConflict, editProblem } = require('../utils/sessionSchedule');
+
+// ES-98 (ES93-B1): un id de ruta mal formado es un 404 uniforme, no un 500 de la base.
+validateIdParams(router, 'id');
+
+const CONFLICT = { code: 'session_conflict', error: 'Ya hay una sesión en ese horario. / There is already a session at that time.' };
+const MAX_CANCEL_REASON = 255; // TherapySessions.cancelReason es VARCHAR(255)
+// Duración en minutos: entero entre 15 y 120 (acepta un número o un texto numérico, como antes).
+const parseDuration = (value) => (value === undefined ? 50 : Number(value));
 
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
 
@@ -24,11 +42,14 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     if (!patientId || !scheduledAt) {
       return res.status(400).json({ error: 'patientId and scheduledAt are required.' });
     }
+    if (!isRouteId(String(patientId))) {
+      return res.status(403).json({ error: 'This patient is not assigned to you.' }); // mismo mensaje que un paciente ajeno: no revela nada
+    }
     if (new Date(scheduledAt) <= new Date()) {
       return res.status(400).json({ error: 'scheduledAt must be in the future.' });
     }
-    const dur = duration ?? 50;
-    if (dur < 15 || dur > 120) {
+    const dur = parseDuration(duration);
+    if (!Number.isInteger(dur) || dur < 15 || dur > 120) {
       return res.status(400).json({ error: 'duration must be between 15 and 120 minutes.' });
     }
     const patient = await User.findOne({
@@ -37,13 +58,29 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     if (!patient || await patientBlocked(patient.id)) { // ES-101
       return res.status(403).json({ error: 'This patient is not assigned to you.' });
     }
-    const session = await TherapySession.create({
-      therapistId: req.user.id,
-      patientId,
-      scheduledAt: new Date(scheduledAt),
-      duration: dur,
-      status: 'scheduled',
-    });
+    if (!(await requireSharing(req, res, patient.id))) return; // sin autorización de compartir, no se agenda (ES-96)
+    // ES-98 (ES93-B5): sin choques de horario. La fila del terapeuta se bloquea para que dos altas simultáneas no se crucen.
+    const start = new Date(scheduledAt);
+    const transaction = await sequelize.transaction();
+    let session;
+    try {
+      await User.findByPk(req.user.id, { transaction, lock: Transaction.LOCK.UPDATE, attributes: ['id'] });
+      if (await findConflict(TherapySession, { therapistId: req.user.id, patientId, start, durationMin: dur, transaction })) {
+        await transaction.rollback();
+        return res.status(409).json(CONFLICT);
+      }
+      session = await TherapySession.create({
+        therapistId: req.user.id,
+        patientId,
+        scheduledAt: start,
+        duration: dur,
+        status: 'scheduled',
+      }, { transaction });
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback().catch(() => {});
+      throw error;
+    }
     res.status(201).json({
       message: 'Session created.',
       session: { ...session.toJSON(), patientName: patient.name },
@@ -100,9 +137,11 @@ router.get('/therapist', async (req, res) => {
       order: [['scheduledAt', 'ASC']],
     });
     const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
+    // ES-96 (ES93-A3): el nombre es parte del vínculo (para agendar); el correo, solo de quien autorizó compartir sus datos con este terapeuta.
+    const sharing = await sharingSet(req.user.id, [...new Set(sessions.map((s) => s.patientId))]);
     const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
       const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
-      return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: p?.email ?? '' };
+      return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: sharing.has(s.patientId) ? (p?.email ?? '') : '' };
     }));
     res.json(enriched);
   } catch (error) {
@@ -111,8 +150,11 @@ router.get('/therapist', async (req, res) => {
   }
 });
 
-// PUT /api/sessions/therapist/:id — editar / cancelar sesión
+// PUT /api/sessions/therapist/:id — reprogramar / cancelar una sesión agendada
+// ES-98 (ES93-M2): por aquí solo se puede reprogramar y pasar a «cancelled»; iniciar y terminar tienen sus rutas (sala, cierre y nota). Nada de
+// estados inventados ni de saltarse el flujo. Una sesión terminada o cancelada no se edita; una en curso solo se cierra por su ruta.
 router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duration: optional(numeric), status: optional(text), cancelReason: optional(text) }), async (req, res) => {
+  const User           = require('../User');
   const TherapySession = require('../TherapySession');
   try {
     if (req.user.role !== 'therapist') {
@@ -122,10 +164,20 @@ router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duratio
       where: { id: req.params.id, therapistId: req.user.id },
     });
     if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
-    if (session.status === 'completed') {
-      return res.status(400).json({ error: 'Cannot edit a completed session.' });
-    }
     const { scheduledAt, duration, status, cancelReason } = req.body;
+    const problem = editProblem(session, { status, scheduledAt, duration });
+    if (problem === 'session_final') {
+      return res.status(400).json({ code: problem, error: `Cannot edit a ${session.status} session.` });
+    }
+    if (problem === 'session_in_progress') {
+      return res.status(400).json({ code: problem, error: 'Una sesión en curso solo se cierra con su ruta de cierre. / An in-progress session can only be closed through its end route.' });
+    }
+    if (problem === 'invalid_status') {
+      return res.status(400).json({ code: problem, error: "Estado no permitido: por aquí solo se puede cancelar ('cancelled'). / Status not allowed: here you can only cancel ('cancelled')." });
+    }
+    if (cancelReason !== undefined && cancelReason.length > MAX_CANCEL_REASON) {
+      return res.status(400).json({ code: 'invalid_cancel_reason', error: `El motivo no puede superar ${MAX_CANCEL_REASON} caracteres. / The reason cannot exceed ${MAX_CANCEL_REASON} characters.` });
+    }
     const updates = {};
     if (scheduledAt) {
       if (new Date(scheduledAt) <= new Date()) {
@@ -133,15 +185,36 @@ router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duratio
       }
       updates.scheduledAt = new Date(scheduledAt);
     }
-    if (duration) {
-      if (duration < 15 || duration > 120) {
+    if (duration !== undefined) {
+      const dur = parseDuration(duration);
+      if (!Number.isInteger(dur) || dur < 15 || dur > 120) {
         return res.status(400).json({ error: 'duration must be between 15 and 120 minutes.' });
       }
-      updates.duration = duration;
+      updates.duration = dur;
     }
-    if (status)       updates.status       = status;
+    if (status === 'cancelled') updates.status = 'cancelled';
     if (cancelReason) updates.cancelReason = cancelReason;
-    await session.update(updates);
+
+    const transaction = await sequelize.transaction();
+    try {
+      await User.findByPk(req.user.id, { transaction, lock: Transaction.LOCK.UPDATE, attributes: ['id'] });
+      // Solo choca si la sesión sigue activa y cambia su horario o duración.
+      if (updates.status !== 'cancelled' && (updates.scheduledAt || updates.duration)) {
+        const conflict = await findConflict(TherapySession, {
+          therapistId: req.user.id, patientId: session.patientId, start: updates.scheduledAt ?? new Date(session.scheduledAt),
+          durationMin: updates.duration ?? (Number(session.duration) || 50), excludeId: session.id, transaction,
+        });
+        if (conflict) {
+          await transaction.rollback();
+          return res.status(409).json(CONFLICT);
+        }
+      }
+      await session.update(updates, { transaction });
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback().catch(() => {});
+      throw error;
+    }
     res.json({ message: 'Session updated.', session });
   } catch (error) {
     console.error('❌ Error updating session:', error);
@@ -161,6 +234,7 @@ router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (
       where: { id: req.params.id, therapistId: req.user.id },
     });
     if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    if (!(await requireSharing(req, res, session.patientId))) return; // la autorización se retiró: no se anota en vivo
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: 'Session is not in progress.' });
     }
@@ -261,6 +335,34 @@ router.get('/user', async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching user sessions:', error);
     res.status(500).json({ error: 'Could not fetch sessions.' });
+  }
+});
+
+// DELETE /api/sessions/user/my-therapist — la propia persona se desvincula de su terapeuta (ES-96, ES93-A3).
+// El terapeuta pierde el acceso de inmediato; las sesiones futuras entre ambos se cancelan; la autorización que dio queda ligada a ese terapeuta
+// (alcance `therapist-<id>`), así que un terapeuta nuevo no la hereda. Idempotente.
+router.delete('/user/my-therapist', async (req, res) => {
+  const { unlinkTherapist } = require('../utils/therapistLink');
+  const { sequelize } = require('../database');
+  const consent = require('../utils/consent');
+  try {
+    if (req.user.role !== 'user') {
+      return res.status(403).json({ error: 'Users only.' });
+    }
+    const transaction = await sequelize.transaction();
+    try {
+      const result = await unlinkTherapist(req.user.id, 'unlinked_by_person', transaction);
+      // La autorización a ese terapeuta se retira en la MISMA transacción (QA ES-96): o ocurren las dos cosas o ninguna; el error no se traga.
+      if (result.unlinked) await consent.revokeTherapistSharing(req.user.id, result.therapistId, transaction);
+      await transaction.commit();
+      res.json({ unlinked: result.unlinked });
+    } catch (error) {
+      await transaction.rollback().catch(() => {});
+      throw error;
+    }
+  } catch (error) {
+    console.error('❌ Error unlinking therapist:', error && (error.code || error.name));
+    res.status(500).json({ error: 'No se pudo completar la operación. / The operation could not be completed.' });
   }
 });
 
@@ -377,6 +479,7 @@ router.post('/therapist/:id/start', async (req, res) => {
       where: { id: req.params.id, therapistId: req.user.id },
     });
     if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    if (!(await requireSharing(req, res, session.patientId))) return; // sin autorización de compartir, no se inicia
     if (session.status !== 'scheduled') {
       return res.status(400).json({ error: `Cannot start a session with status '${session.status}'.` });
     }
@@ -432,7 +535,9 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
 
     // Generar recomendación IA para el paciente (silent fail si Anthropic falla)
     let recommendation = null;
+    const sharing = await hasSharing(req.user.id, session.patientId); // sin autorización: se cierra, pero no se genera nada para la persona
     try {
+      if (!sharing) throw new Error('sin autorización de compartir');
       // QA-78-01 / ES-79: ni el nombre real de la persona ni la nota del terapeuta se envían al proveedor de IA (decisión de Mauricio, 26-oct): la recomendación se genera solo con el estado de ánimo.
       const moodLabels = { 1: 'muy mal', 2: 'no tan bien', 3: 'neutral', 4: 'bien', 5: 'muy bien' };
       const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
