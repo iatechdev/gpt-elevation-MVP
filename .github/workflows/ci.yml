@@ -167,3 +167,7 @@ jobs:
         run: npm run test:pro-applications:pg
         env:
           ES95_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-107 hoja de vida en binario, migración y tope global (PostgreSQL)"
+        run: npm run test:pro-cv-binary:pg
+        env:
+          ES107_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
