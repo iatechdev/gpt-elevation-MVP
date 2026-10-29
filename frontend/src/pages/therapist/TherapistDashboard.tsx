@@ -13,6 +13,7 @@ interface Patient {
   email: string
   active: boolean
   createdAt: string
+  sharing?: boolean // false: la persona no autorizó compartir (ES-96); sin cifras ni correo
   totalSessions: number
   sessionsThisWeek: number
   avgRating: number | null
@@ -91,7 +92,8 @@ const MOOD_EMOJI: Record<number, string> = {
 
 export function TherapistDashboard() {
   const navigate = useNavigate()
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
+  const locale = lang === 'es' ? 'es-CO' : 'en-US'
 
   const TREND_BADGE: Record<string, { label: string; bg: string; color: string; icon: string }> = {
     improving: { label: t('therapist_improving'), bg: '#EAF0E6', color: '#4A6741', icon: '📈' },
@@ -277,10 +279,10 @@ export function TherapistDashboard() {
   }
 
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
   const formatSessionTime = (iso: string) =>
-    new Date(iso).toLocaleString('es-CO', {
+    new Date(iso).toLocaleString(locale, {
       weekday: 'short', day: '2-digit', month: 'short',
       hour: '2-digit', minute: '2-digit',
     })
@@ -409,7 +411,7 @@ export function TherapistDashboard() {
                     <div>
                       <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>{v.documentName}</div>
                       <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.15rem' }}>
-                        {v.documentType} · {new Date(v.submittedAt).toLocaleDateString('es-CO')}
+                        {v.documentType} · {new Date(v.submittedAt).toLocaleDateString(locale)}
                       </div>
                       {v.reviewNote && (
                         <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.25rem', fontStyle: 'italic' }}>
@@ -554,7 +556,7 @@ export function TherapistDashboard() {
 
       {/* TWO COLUMN LAYOUT */}
       {!loading && !error && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1.5rem', alignItems: 'start' }}>
+        <div className="th-two-col">
 
           {/* COLUMNA IZQUIERDA — PATIENT LIST */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -570,6 +572,7 @@ export function TherapistDashboard() {
                   : null
                 const trendBadge  = p.trend ? TREND_BADGE[p.trend] : null
                 const nextSession = getNextSessionForPatient(p.id)
+                const noAccess    = p.sharing === false
 
                 return (
                   <div key={p.id} style={{
@@ -586,8 +589,17 @@ export function TherapistDashboard() {
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.95rem' }}>{p.name}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
+                        <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          {p.name}
+                          {noAccess && <span className="th-badge-muted">🔒 {t('therapist_no_access')}</span>}
+                        </div>
+                        {noAccess && (
+                          <div className="th-notice" role="note" style={{ marginTop: '0.4rem' }}>
+                            <span aria-hidden="true">ℹ️</span>
+                            <span>{t('therapist_not_shared')}</span>
+                          </div>
+                        )}
+                        <div style={{ display: noAccess ? 'none' : 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                           {lastMoodValue != null && <span style={{ fontSize: '0.85rem' }}>{MOOD_EMOJI[lastMoodValue] ?? '—'}</span>}
                           {daysSince != null && (
                             <span style={{ fontSize: '0.75rem', color: '#78716C' }}>
@@ -617,7 +629,7 @@ export function TherapistDashboard() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.82rem', color: '#78716C' }}>
+                    <div style={{ display: noAccess ? 'none' : 'flex', gap: '1.5rem', fontSize: '0.82rem', color: '#57534E' }}>
                       <span>{p.totalSessions} {t('therapist_sessions')}</span>
                       {p.avgRating != null && (
                         <span>{'★'.repeat(Math.round(p.avgRating))}{'☆'.repeat(5 - Math.round(p.avgRating))} {p.avgRating}</span>
@@ -659,7 +671,7 @@ export function TherapistDashboard() {
           </div>
 
           {/* COLUMNA DERECHA — ALERTS */}
-          <div style={{ ...cardStyle, position: 'sticky', top: '1.5rem' }}>
+          <div className="th-sticky" style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 🔔 {t('therapist_alerts')}

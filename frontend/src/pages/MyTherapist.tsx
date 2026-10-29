@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
+import { TherapistSharingCard } from '../components/TherapistSharingCard'
 
 const API      = import.meta.env.VITE_BACKEND_URL || ''
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -59,6 +60,7 @@ export function MyTherapist() {
   const [error, setError]     = useState('')
   const [loadError] = useState(() => lang === 'es' ? 'Error cargando la información.' : 'Could not load therapist info.')
   const [showMatching, setShowMatching] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0) // ES-100: se incrementa al desvincularse para volver a pedir los datos
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,7 +78,7 @@ export function MyTherapist() {
       }
     }
     fetchData()
-  }, [loadError])
+  }, [loadError, reloadKey])
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const formatDateTime = (iso: string) =>
@@ -244,6 +246,12 @@ export function MyTherapist() {
                 </div>
               </div>
             </div>
+
+            {/* ── COMPARTIR CON MI TERAPEUTA (ES-100 / ES-96) ── */}
+            <TherapistSharingCard
+              therapistName={data.therapist.name}
+              onUnlinked={() => setReloadKey(k => k + 1)}
+            />
 
             {/* ── PRÓXIMAS SESIONES ── */}
             <div style={cardStyle}>

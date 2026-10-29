@@ -4,8 +4,10 @@ import { exerciseEs } from '../exercises/copy'
 import { skillMapEs } from '../skill-map/copy'
 import { contextEs } from '../context/contextCopy'
 import { evidenceEs } from '../evidence/copy'
+import { therapistEs } from './therapistCopy'
 const es: Record<string, string> = {
   ...exerciseEs,
+  ...therapistEs,
   ...contextEs,
   ...evidenceEs,
   ...skillMapEs,

@@ -1,0 +1,76 @@
+/* ES-100 — panel del terapeuta: cabecera adaptable, columnas que se apilan, foco visible y objetivos táctiles (ES93-M6 y B4). */
+
+.th-root { min-height: 100vh; background: #f9f9f7; font-family: Inter, sans-serif; }
+
+/* Foco visible en todo lo interactivo del panel (antes: sin anillo). */
+.th-root :where(a, button, input, select, textarea, [role='switch'], [tabindex]):focus-visible {
+  outline: 2px solid #0369A1;
+  outline-offset: 2px;
+}
+
+/* Cabecera: una fila a partir de 641 px; dos líneas por debajo (nombre y rol pasan a la segunda). */
+.th-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  column-gap: 0.75rem; row-gap: 0.15rem;
+  min-height: 60px; padding: 0.4rem 1rem;
+  background: rgba(249, 249, 247, 0.95); backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid #E7E5E4;
+}
+.th-logo { order: 1; margin-right: auto; font-family: 'Playfair Display', serif; font-weight: 300; letter-spacing: 0.2em; font-size: 1rem; color: #1C1917; white-space: nowrap; }
+.th-logo small { font-family: Inter, sans-serif; font-size: 10px; color: #78716C; letter-spacing: 0.15em; } /* contraste ≥ 4,5:1 (antes #A8A29E ≈ 2,5:1) */
+.th-lang { display: flex; gap: 2px; background: #EDEAE4; border-radius: 9999px; padding: 2px; order: 2; }
+.th-logout { order: 4; background: none; border: none; cursor: pointer; color: #78716C; display: flex; align-items: center; justify-content: center; padding: 4px; min-width: 44px; }
+.th-who { order: 3; display: flex; align-items: center; gap: 0.5rem; min-width: 0; font-size: 13px; color: #78716C; }
+.th-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.th-chip {
+  font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 9999px; letter-spacing: 0.08em; text-transform: uppercase;
+  background: #E0F2FE; color: #0369A1; border: 0.5px solid #BAE6FD; white-space: nowrap;
+}
+.th-main { max-width: 900px; margin: 0 auto; padding: 96px 1rem 2rem; }
+
+@media (min-width: 641px) {
+  .th-header { padding: 0 2rem; flex-wrap: nowrap; }
+  .th-main { padding: 80px 2rem 2rem; }
+}
+@media (max-width: 640px) {
+  .th-header { align-items: center; }
+  .th-who { order: 5; flex-basis: 100%; font-size: 12px; padding-bottom: 0.25rem; }
+  .th-chip { display: none; } /* en pantallas estrechas el rol va como texto en la segunda línea */
+  .th-who-role::before { content: '· '; }
+}
+@media (min-width: 641px) { .th-who-role { display: none; } }
+@media (max-width: 360px) {
+  .th-logo { letter-spacing: 0.1em; font-size: 0.9rem; }
+  .th-logo small { display: none; } /* el rol ya aparece en la segunda línea */
+  .th-header { column-gap: 0.4rem; }
+}
+
+/* Contenido: las filas flex no deben forzar el ancho de la pantalla. */
+.th-root :where(div, section, p, span) { min-width: 0; }
+.th-two-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.th-two-col > * { min-width: 0; }
+.th-sticky { position: static; }
+@media (min-width: 900px) {
+  .th-two-col { grid-template-columns: minmax(0, 1fr) 320px; }
+  .th-sticky { position: sticky; top: 1.5rem; }
+}
+.th-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+@media (min-width: 700px) { .th-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.th-table-scroll { overflow-x: auto; max-width: 100%; }
+
+/* Objetivos táctiles ≥ 44 px: botones y controles propios del panel. */
+.th-root :where(button, select, input[type='date'], input[type='text']) { min-height: 44px; }
+.th-root .th-pill-btn { min-height: 0; position: relative; } /* píldora ES/EN: se agranda la zona de toque sin cambiar su aspecto */
+.th-root .th-pill-btn::after { content: ''; position: absolute; inset: -11px -4px; }
+
+/* Aviso informativo (icono + texto; no depende solo del color). */
+.th-notice {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  padding: 0.75rem 1rem; border-radius: 0.65rem; background: #E0F2FE; color: #075985;
+  border: 0.5px solid #BAE6FD; font-size: 0.82rem; line-height: 1.5;
+}
+.th-badge-muted {
+  font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px;
+  background: #F5F5F4; color: #57534E; border: 0.5px solid #D6D3D1; white-space: nowrap;
+}
