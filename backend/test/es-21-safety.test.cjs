@@ -301,3 +301,29 @@ test('ES-92: los niveles ya existentes no cambian (muerte y suicidio siguen ALTO
   for (const text of ['quiero morir', 'no quiero vivir', 'suicidio', "I don't want to live", 'I want to kill myself', 'better off dead']) assert.equal(detectRisk(text).level, 'high', text);
   for (const text of ['quiero hacerme daño', 'lastimarme', 'I want to hurt myself', 'self-harm', 'ya no puedo más']) assert.equal(detectRisk(text).level, 'medium', text);
 });
+
+test('ES-92 (QA-92-01): «me quiero matar», «me voy a quitar la vida» e «I wish I was dead» son ALTO, como «matarme» y «quitarme la vida»', () => {
+  for (const text of ['me quiero matar', 'Me voy a matar', 'me voy a quitar la vida', 'me quisiera suicidar']) {
+    assert.deepEqual(detectRisk(text), { level: 'high', lang: 'es' }, text);
+  }
+  for (const text of ['I wish I was dead', 'i wish i were dead', 'I wish that I was dead']) assert.deepEqual(detectRisk(text), { level: 'high', lang: 'en' }, text);
+  for (const text of ['I wish I was a developer', 'I wish I were taller', 'quiero matar el tiempo', 'voy a matar este bug', 'matar la reunion']) assert.equal(detectRisk(text).level, null, text);
+});
+
+test('ES-92 (QA-92-02): un «no» justo antes niega la frase («no me quiero hacer daño»); sin «no» sigue activando', () => {
+  for (const text of ['no me quiero hacer daño', 'No me voy a lastimar', 'no me quiero matar', 'no me quiero cortar las venas']) assert.deepEqual(detectRisk(text), { level: null, lang: null }, text);
+  assert.equal(detectRisk('me quiero hacer daño').level, 'medium'); assert.equal(detectRisk('me quiero matar').level, 'high');
+  assert.equal(detectRisk('me voy a cortar las venas').level, 'medium');
+});
+
+test('ES-92 (QA-92-03): «I do not want to live on this planet anymore» vuelve a ser ALTO; «live in/at/near» sigue siendo un lugar', () => {
+  for (const text of ["I don't want to live on this planet anymore", 'I do not want to live on this earth anymore']) assert.deepEqual(detectRisk(text), { level: 'high', lang: 'en' }, text);
+  for (const text of ['I do not want to live in the city anymore', 'I do not want to live near the office', 'I do not want to live at home anymore']) assert.equal(detectRisk(text).level, null, text);
+});
+
+test('ES-92: falsos positivos aceptados a propósito (se prefiere sobreactivar ante autolesión posible)', () => {
+  // «me voy a cortar con el cuchillo» puede ser un accidente de cocina o autolesión; no se distingue.
+  assert.equal(detectRisk('me voy a cortar con el cuchillo').level, 'medium');
+  // «live with this anymore» es angustia real; «live with my parents anymore» no se distingue de ella.
+  assert.equal(detectRisk('I do not want to live with my parents anymore').level, 'high');
+});

@@ -19,6 +19,8 @@ const HIGH = [
   { lang: 'es', re: /\bsuicid\w*/ },
   { lang: 'es', re: /\b(quiero|quisiera|voy a|pienso en|pensando en|ganas de|decidi)\s+(morir(me)?|matarme|suicidarme|acabar con (mi vida|todo)|quitarme la vida)\b/ },
   { lang: 'es', re: /\b(matarme|quitarme la vida|acabar con mi vida|terminar con mi vida)\b/ },
+  // ES-92 (QA-92-01): el «me» antes del verbo, igual que «matarme» y «quitarme la vida».
+  { lang: 'es', re: /(?<!\bno )\bme (quiero|quisiera|voy a|pienso|dan ganas de) (matar|quitar la vida|suicidar)\b/ },
   { lang: 'es', re: /\bno quiero (seguir )?viv(ir|iendo)\b/ },
   { lang: 'es', re: /\bno vale la pena (vivir|seguir viviendo)\b/ },
   { lang: 'es', re: /\bmejor (estar )?muert[oa]\b/ },
@@ -26,16 +28,17 @@ const HIGH = [
   { lang: 'en', re: /\b(kill(ing)? myself|(end|ending) my (own )?life|(take|taking) my (own )?life)\b/ },
   { lang: 'en', re: /\b(want|wanna|going|plan|planning|thinking of|thinking about)\s+(to\s+)?(die|end it all|end things)\b/ },
   { lang: 'en', re: /\bbetter off dead\b/ },
-  // ES-92: «do not» y «wanna»; «live in/at/on/near…» es un lugar, no riesgo.
-  { lang: 'en', re: /\b(don'?t|do not) (want to|wanna) (live(?!\s+(in|at|on|near)\b)|be alive|be here anymore)\b/ },
+  { lang: 'en', re: /\bwish (i|that i) (was|were) dead\b/ }, // ES-92 (QA-92-01)
+  // ES-92: «do not» y «wanna»; «live in/at/near…» es un lugar, no riesgo.
+  { lang: 'en', re: /\b(don'?t|do not) (want to|wanna) (live(?!\s+(in|at|near)\b)|be alive|be here anymore)\b/ },
 ];
 const MEDIUM = [
   { lang: 'es', re: /\b(hacerme dano|cortarme|lastimarme|desaparecer|todo esta perdido)\b/ },
   { lang: 'es', re: /\bautolesion\w*/ },
   // ES-92: «me quiero hacer daño / lastimar / cortar». «cortar» no activa con un objeto cotidiano («cortar el pelo»).
-  { lang: 'es', re: /\bme (quiero|quisiera|voy a|pienso|dan ganas de) (hacer dano|lastimar\b)/ },
-  { lang: 'es', re: /\bme (quiero|quisiera|voy a|pienso|dan ganas de) cortar(?!\s+(el|la|los|las|un|una|unos|unas|mi|mis|tu|su)\b)/ },
-  { lang: 'es', re: /\bme (quiero|quisiera|voy a|pienso|dan ganas de) cortar (las venas|la piel|los brazos|el brazo|las munecas)\b/ },
+  { lang: 'es', re: /(?<!\bno )\bme (quiero|quisiera|voy a|pienso|dan ganas de) (hacer dano|lastimar\b)/ },
+  { lang: 'es', re: /(?<!\bno )\bme (quiero|quisiera|voy a|pienso|dan ganas de) cortar(?!\s+(el|la|los|las|un|una|unos|unas|mi|mis|tu|su)\b)/ },
+  { lang: 'es', re: /(?<!\bno )\bme (quiero|quisiera|voy a|pienso|dan ganas de) cortar (las venas|la piel|los brazos|el brazo|las munecas)\b/ },
   { lang: 'es', re: /\b(no aguanto mas|no puedo mas|ya no puedo)\b/ },
   { lang: 'en', re: /\b(hurt myself|harm myself|harming myself|cut myself|disappear)\b/ },
   { lang: 'en', re: /\bself[- ]?harm\w*/ },
