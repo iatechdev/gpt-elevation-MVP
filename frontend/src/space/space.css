@@ -42,3 +42,5 @@
 .space-scope dialog::backdrop { background: #1c191755; }
 @media(min-width: 768px) { .space-grid { grid-template-columns: 1fr 1fr; } .space-page { padding: 24px; } .space-dashboard-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); } }
 @media(prefers-reduced-motion: reduce) { .space-scope *, .space-scope *::before, .space-scope *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+.space-compass-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.space-compass-head h2 { margin: 0; font-size: 1.125rem; }
