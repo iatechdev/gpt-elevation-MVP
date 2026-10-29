@@ -61,8 +61,8 @@ test('ES-19: catálogo cerrado de seis propósitos, todos sin decidir y solo vis
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.consents.map(c => c.purpose),
     ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications', 'resume_ai_reading']);
-  assert.deepEqual(response.body.consents.map(c => c.status), Array(5).fill('undecided'));
-  assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false]);
+  assert.deepEqual(response.body.consents.map(c => c.status), Array(6).fill('undecided'));
+  assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false, false]);
   for (const entry of response.body.consents) {
     assert.deepEqual(Object.keys(entry).sort(), ['decidedAt', 'purpose', 'required', 'requiredVersion', 'scope', 'status', 'version']);
   }
