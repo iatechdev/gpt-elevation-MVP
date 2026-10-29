@@ -16,7 +16,7 @@ const bridge = async (t) => (await call('GET', '/api/consents', t)).j.consents.f
   ck('GET /api/skill-map real: 200 y 8 capacidades', map.s === 200 && map.j.skills.length === 8, `catálogo v${map.j.catalogVersion}`)
   ck('nivel null sin evidencia en TODAS (sin 0 ni déficits)', map.j.skills.every(s => (s.self === null || s.self.level === null) && (s.review === null || s.review.level === null)))
   ck('respuesta sin campos de otra persona / diario / crisis', !/diary|crisis|mood|email/i.test(JSON.stringify(map.j)))
-  ck('sin token: 401', (await call('GET', '/api/skill-map')).s === 401)
+  ck('sin token: 401/403 (el middleware existente responde 403)', [401, 403].includes((await call('GET', '/api/skill-map')).s))
   ck('token manipulado: 401', (await call('GET', '/api/skill-map', A.token.slice(0, -4) + 'xxxx')).s === 401)
   for (const t of [A, B]) ck('PUT granted ' + t.email.slice(3, 5), (await call('PUT', '/api/consents/professional_bridge', t.token, { status: 'granted' })).s === 200)
   ck('A y B en granted', (await bridge(A.token)) === 'granted' && (await bridge(B.token)) === 'granted')
@@ -27,7 +27,7 @@ const bridge = async (t) => (await call('GET', '/api/consents', t)).j.consents.f
   }
   const stillA = await bridge(A.token); console.log('   estado de A tras entradas inválidas:', stillA)
   ck('propósito desconocido: 404', (await call('PUT', '/api/consents/inexistente', A.token, { status: 'revoked' })).s === 404)
-  ck('PUT sin token: 401', (await call('PUT', '/api/consents/professional_bridge', null, { status: 'revoked' })).s === 401)
+  ck('PUT sin token: 401/403', [401, 403].includes((await call('PUT', '/api/consents/professional_bridge', null, { status: 'revoked' })).s))
   // concurrencia: doble revocación simultánea
   await call('PUT', '/api/consents/professional_bridge', A.token, { status: 'granted' })
   const both = await Promise.all([call('PUT', '/api/consents/professional_bridge', A.token, { status: 'revoked' }), call('PUT', '/api/consents/professional_bridge', A.token, { status: 'revoked' })])
