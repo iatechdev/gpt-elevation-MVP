@@ -12,6 +12,7 @@ const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
 const { textOf } = require('../utils/claudeText');
 const { blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-101
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient'); // ES-102
 
 const {
@@ -481,10 +482,8 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       limit: 30,
     });
 
-    // ES-102: el promedio se calcula sobre los valores registrados (entrada y salida), no sobre el número de registros;
-    // antes la suma de dos valores por registro se dividía entre los registros y podía salir fuera de la escala 1-5.
-    const moods = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-    const avgMood = moods.length > 0 ? (moods.reduce((a, b) => a + b, 0) / moods.length).toFixed(1) : 'N/A';
+    // ES-102/ES-105: el promedio se calcula sobre los valores registrados (utils/moodStats), no sobre el número de registros.
+    const avgMood = formatAverage(averageMood(moodLogs), 'N/A');
 
     const avgRating = ratings.length > 0
       ? (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1)
@@ -518,8 +517,13 @@ Please write a concise, neutral summary (3-5 sentences) of the emotional progres
       return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
     }
 
+    const summary = textOf(msg).trim();
+    if (!summary) { // ES-105 (ES102-F03): una respuesta vacía es un fallo del proveedor, no un resumen
+      return res.status(502).json({ error: 'Could not generate summary.', code: 'provider_unavailable', retryable: true });
+    }
+
     res.json({
-      summary: textOf(msg),
+      summary,
       generatedAt: new Date().toISOString(),
       basedOn: { sessions: moodLogs.length, notes: 0 }, // las notas ya no se usan; la clave se conserva por compatibilidad con la pantalla
     });
