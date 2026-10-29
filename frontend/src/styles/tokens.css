@@ -44,7 +44,11 @@
   --elv-info: #075985;      --elv-info-bg: #e0f2fe;
 
   /* Tintes de territorio del mapa de competencias (ES-30): neutros y fijos; no codifican estado */
-  --elv-tone-dir: #dde0d3; --elv-tone-con: #ece0d8; --elv-tone-com: #e6e1d2; --elv-tone-ing: #e4dccf; --elv-tone-inn: #d8ded3;
+  --elv-tone-dir: #e9e6dd; --elv-tone-con: #efe3d7; --elv-tone-com: #ebe4d0; --elv-tone-ing: #e8dfcf; --elv-tone-inn: #e3e4da;
+
+  /* Mapa de calor del radar (ES-30): escala ocre de 4 pasos. El color nunca va solo: siempre con número y texto. Pasos vecinos: 1,3–2,5:1 entre sí */
+  --elv-heat-1: #f3ead3; --elv-heat-2: #e2ce97; --elv-heat-3: #c9a64d; --elv-heat-4: #7d6218;
+  --elv-heat-on-light: #1a1a18; --elv-heat-on-dark: #ffffff;
 
   /* Espacio (base 4 px) */
   --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;

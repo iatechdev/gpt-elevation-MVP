@@ -5,10 +5,12 @@ import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
 import type { SkillMap } from '../skill-map/model'
 import { MapGuide } from '../skill-map/MapAccess'
+import { RadarBoard } from '../skill-map/RadarView'
 import { SkillDetail, TerritoryList, TerritoryMap } from '../skill-map/SkillViews'
 import { noLevelAnywhere } from '../skill-map/status'
 import { territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
+import '../skill-map/radar.css'
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const readToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
@@ -21,6 +23,7 @@ export function SkillMapPage() {
   const [attempt, setAttempt] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
   const [listView, setListView] = useState(false)
+  const [view, setView] = useState<'radar' | 'territories'>('radar')
   const [bridge, setBridge] = useState<BridgeStatus | 'loading'>('loading')
   const [revoke, setRevoke] = useState<Revoke>('idle')
   const [saved, setSaved] = useState('')
@@ -61,6 +64,7 @@ export function SkillMapPage() {
     setSelected(key); setSaved('')
     window.setTimeout(() => detailRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0)
   }
+  const register = (key: string) => { pick(key); window.setTimeout(() => detailRef.current?.focus(), 0) }
   const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
   const confirm = async () => {
     setRevoke('saving')
@@ -95,19 +99,25 @@ export function SkillMapPage() {
           <p className="skill-map-intro">{t('skill_map.intro')}</p>
         </div>
         <div className="skill-map-tools">
-          <ul className="skill-map-legend" aria-label={t('skill_map.legend')}>
-            <li><span className="skill-map-dot dot-level" aria-hidden="true" />{t('skill_map.status_evidence')}</li>
-            <li><span className="skill-map-dot dot-none" aria-hidden="true" />{t('skill_map.no_evidence')}</li>
-          </ul>
-          <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
-            {t(listView ? 'skill_map.view_map' : 'skill_map.view_list')}
-          </button>
+          <div className="skill-map-views" role="group" aria-label={t('skill_map.views')}>
+            <button type="button" aria-pressed={view === 'radar'} onClick={() => setView('radar')}>{t('skill_map.view_radar')}</button>
+            <button type="button" aria-pressed={view === 'territories'} onClick={() => setView('territories')}>{t('skill_map.view_territories')}</button>
+          </div>
+          {view === 'territories' && <>
+            <ul className="skill-map-legend" aria-label={t('skill_map.legend')}>
+              <li><span className="skill-map-dot dot-level" aria-hidden="true" />{t('skill_map.status_evidence')}</li>
+              <li><span className="skill-map-dot dot-none" aria-hidden="true" />{t('skill_map.no_evidence')}</li>
+            </ul>
+            <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
+              {t(listView ? 'skill_map.view_map' : 'skill_map.view_list')}
+            </button>
+          </>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
             disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving'}>{t('skill_map.revoke_all')}</button>
           <button type="button" className="elv-btn" onClick={refresh} disabled={state.status === 'loading'}>{t('skill_map.refresh')}</button>
         </div>
       </div>
-      <p className="skill-map-reading">{t('skill_map.reading')}</p>
+      <p className="skill-map-reading">{t(view === 'radar' ? 'skill_map.radar_reading' : 'skill_map.reading')}</p>
       <p role="status" aria-live="polite" className="skill-map-revoke-status">{message}</p>
       {state.status === 'loading' && <p role="status" aria-live="polite">{t('skill_map.loading')}</p>}
       {error && <div ref={errorRef} tabIndex={-1} role="alert" className="skill-map-error">
@@ -119,13 +129,14 @@ export function SkillMapPage() {
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
           {noLevelAnywhere(map.skills) && <MapGuide />}
-          <div className={`skill-map-board${listView ? ' is-list' : ''}`}>
-            <div className="skill-map-canvas">
-              <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
-            </div>
-            <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
-          </div>
-          <div ref={detailRef} className="skill-map-detail-wrap" aria-live="polite">
+          {view === 'radar' ? <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} lang={lang} t={t} />
+            : <div className={`skill-map-board${listView ? ' is-list' : ''}`}>
+              <div className="skill-map-canvas">
+                <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+              </div>
+              <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+            </div>}
+          <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
             {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t}
               self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></>
               : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
