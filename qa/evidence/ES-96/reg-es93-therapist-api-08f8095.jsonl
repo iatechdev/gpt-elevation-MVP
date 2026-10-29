@@ -1,0 +1,75 @@
+{"id":"ES93-S01 [PRIV] el terapeuta B no lee ni escribe sobre la persona P1 de A (historial, historia, resumen IA, notas) → 404","ok":true,"detail":"historial:404 historia:404 resumen-ia:404 notas:404"}
+{"id":"ES93-S01b [SEG] ids inválidos o maliciosos en las rutas de pacientes: sin 5xx y sin datos","ok":false,"detail":"estados=404,500"}
+{"id":"ES93-S01c [PRIV] la lista de pacientes de B solo trae a P3","ok":true,"detail":"n=1"}
+{"id":"ES93-S01d [PRIV] las alertas de B no mencionan a P1 ni a P2","ok":true,"detail":"{\"inactivePatients\":[{\"userId\":285,\"name\":\"QA93 p3\",\"daysSinceLastSession\":null}],\"notableProgress\":[]}"}
+{"id":"ES93-S02 [SEG] participante, administrador, superadmin y junta no usan las rutas del terapeuta (403)","ok":true,"detail":"{\"participante\":[403,403,403,403,403,403,403,403],\"administrador\":[403,403,403,403,403,403,403,403],\"superadmin\":[403,403,403,403,403,403,403,403],\"junta\":[403,403,403,403,403,403,403,403]}"}
+{"id":"ES93-S02b sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES93-S02c [SEG] el terapeuta no usa rutas de administración, junta ni prompts globales (403)","ok":true,"detail":"403,403,403,403,403,403"}
+{"id":"ES93-S03 [SEG] B no edita la nota de A (404) y el contenido no cambia","ok":true,"detail":"status=404"}
+{"id":"ES93-S03b [SEG] B no agenda con la persona de A ni modifica, inicia, lee, anota ni termina la sesión de A","ok":true,"detail":"agendar=403 resto=404,404,404,404,404"}
+{"id":"ES93-S12 [SEG] otra persona (P2) no obtiene el enlace de la sesión de P1","ok":true,"detail":"status=404"}
+{"id":"ES93-S05 [PRIV] ninguna ruta del terapeuta (ni el resumen con IA ni lo que se envía al modelo) contiene texto del chat ni del diario de la persona","ok":true,"detail":"resumen=200"}
+{"id":"ES93-S06 [PRIV] el riesgo escrito por P1 en el chat no aparece en alertas, historial, historia, resumen ni lista de pacientes","ok":true,"detail":"sin coincidencias"}
+{"id":"ES93-S06b no hay columnas de riesgo o crisis en ninguna tabla (nada que el terapeuta pueda leer)","ok":true,"detail":"[]"}
+{"id":"ES93-S04 [INFO] lo que el terapeuta ve de P1 hoy","info":{"historial":{"paciente":"id,name,email,createdAt","moodLogs":6,"ratings":1},"historia":{"notas":1},"alertas":"{\"inactivePatients\":[],\"notableProgress\":[{\"userId\":283,\"name\":\"QA93 p1\",\"improvementPercent\":42}]}","correoVisible":true}}
+{"id":"ES93-S04b [INFO] propósitos de consentimiento disponibles para la persona","info":"{\"consents\":[{\"purpose\":\"necessary\",\"required\":true,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null},{\"purpose\":\"professional_bridge\",\"required\":false,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null},{\"purpose\":\"facilitator_sharing\",\"required\":false,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredV"}
+{"id":"ES93-S04c [PRIV] con todos los consentimientos opcionales revocados, el terapeuta sigue viendo ánimo y valoraciones de P1 (sin propósito «terapeuta» que lo controle)","ok":true,"detail":"historial=200 moodLogs=6 (decisión 2a/2b: a definir)"}
+{"id":"ES93-S07a [PRIV] tras desvincular a P2, el terapeuta A pierde el acceso a sus datos (404) con el token anterior","ok":true,"detail":"404,404,404"}
+{"id":"ES93-S07b [PRIV] tras desvincular, P2 desaparece de las alertas y de la lista del terapeuta","ok":true,"detail":""}
+{"id":"ES93-S07c la persona desvinculada ya no ve a su terapeuta","ok":true,"detail":"{\"therapist\":null}"}
+{"id":"ES93-S07d [INFO] solicitud de eliminación de P4","info":"status=202 {\"id\":\"e20337dd-7084-49a2-8c92-a62306725bdc\",\"status\":\"accepted\",\"requestedAt\":\"2026-10-29T11:13:26.749Z\",\"activePurgedA"}
+{"id":"ES93-S07e [PRIV] con la eliminación de P4 solicitada, el terapeuta ya no accede a su historia","ok":true,"detail":"status=404 eliminación=202"}
+{"id":"ES93-S08a tras logout el token del terapeuta no sirve (401/403)","ok":true,"detail":"logout=200 despues=401"}
+{"id":"ES93-S08b [SEG] un terapeuta desactivado por el administrador pierde el acceso con su token vigente","ok":false,"detail":"status=200"}
+{"id":"ES93-S08c [SEG] un terapeuta degradado a participante en la base pierde el acceso con su token vigente (se lee el rol de la base)","ok":false,"detail":"status=200"}
+{"id":"ES93-S08d token vencido → 401/403","ok":true,"detail":""}
+{"id":"ES93-S09a [SEG] SQL y XSS en notas: se guardan como texto, la tabla sigue y vuelven literales","ok":true,"detail":"201,201,201"}
+{"id":"ES93-F07b las notas clínicas quedan cifradas en la base","ok":true,"detail":"9c5121"}
+{"id":"ES93-S09b [INFO] el resumen con IA envía las notas del terapeuta sin sanear ni delimitar","info":{"status":200,"notaMaliciosaEnPrompt":false,"delimitadas":false,"nombreDelPaciente":false}}
+{"id":"ES93-S09c [SEG] las notas entran al modelo delimitadas como dato no confiable (como el diario en ES-15)","ok":true,"detail":"sin delimitación: la instrucción de la nota entra tal cual"}
+{"id":"ES93-F09a proponer prompt: 200; segunda propuesta pendiente → 409; muy corto → 400","ok":true,"detail":"200/409/400"}
+{"id":"ES93-F09b [SEG] una propuesta pendiente NO se activa: el chat de la persona no incluye el prompt propuesto","ok":true,"detail":""}
+{"id":"ES93-F09c solo el superadmin aprueba (terapeuta y administrador → 403; superadmin → 200)","ok":true,"detail":"403/403/200"}
+{"id":"ES93-F09d [PRIV] aprobado, el prompt de A llega al chat de P1 (su paciente) y no al de P4 (sin terapeuta tras la eliminación) ni al de P3 (de B)","ok":true,"detail":"P1=true otra=false"}
+{"id":"ES93-F09e el chat de P3 (terapeuta B) no recibe el prompt de A","ok":true,"detail":""}
+{"id":"ES93-S03c [PRIV] B no ve las versiones ni el contenido del prompt de A","ok":true,"detail":""}
+{"id":"ES93-S10 [SEG] el resumen con IA pasa por el presupuesto y el registro de uso de ES-22 (AiUsages)","ok":true,"detail":"30 resúmenes → llamadas al modelo=30, filas de uso del terapeuta=33 (sin registro = omite el presupuesto)"}
+{"id":"ES93-S10b [SEG] hay un límite por persona: 30 resúmenes seguidos no se aceptan todos sin control","ok":false,"detail":"200s=30/30"}
+{"id":"ES93-S14 [SEG] respuestas con datos de pacientes con Cache-Control no-store","ok":true,"detail":"cache-control=no-store"}
+{"id":"ES93-S13 [PRIV] el correo del paciente viaja a la pantalla del terapeuta (historial e historia)","ok":true,"detail":"historial.email=true historia.email=true (decisión 2a)"}
+{"id":"ES93-S13b [INFO] lo que la persona ve de su terapeuta","info":"{\"campos\":[\"id\",\"name\",\"email\",\"profile\"],\"perfil\":[]}"}
+{"id":"ES93-F10a [INFO] solicitud de matching","info":"status=502 {\"error\":\"Invalid model output.\",\"code\":\"invalid_model_output\",\"retryable\":true}"}
+{"id":"ES93-F10b [SEG] el matching solo vincula a un terapeuta activo: elegir como «terapeuta» a un administrador y confirmarlo no debe vincular a la persona con él","ok":true,"detail":"choose=400 confirm=n/a vinculado=null"}
+{"id":"ES93-F10d elegir un terapeuta inexistente no se acepta (404/400)","ok":true,"detail":"status=400"}
+{"id":"ES93-F10e [SEG] una persona no puede elegir sobre la solicitud de otra (404)","ok":false,"detail":"status=400"}
+{"id":"ES93-F10f la asignación manual del administrador solo acepta terapeutas activos (400/404 con un administrador)","ok":true,"detail":"status=404"}
+{"id":"ES93-F11a agendar: fecha pasada, duración fuera de 15–120 y paciente ajeno → 400/400/400/403","ok":true,"detail":"400/400/400/403"}
+{"id":"ES93-F11b [INFO] dos sesiones a la misma hora con la misma persona","info":"status=201 (sin control de choque de horario si es 201)"}
+{"id":"ES93-F11c [SEG] el estado de una sesión solo acepta valores válidos (scheduled, in_progress, completed, cancelled)","ok":false,"detail":"PUT estado inválido=200 quedó=«cualquier-cosa»"}
+{"id":"ES93-F11d nota de sesión antes de iniciar → 400","ok":true,"detail":"status=400"}
+{"id":"ES93-F11e unirse: antes de iniciar 400, tras iniciar 200 con enlace","ok":true,"detail":"400/200/200"}
+{"id":"ES93-F11f [INFO] enlace de la sala sin DAILY_API_KEY","info":"https://mock.daily.co/elevation-278-283-59"}
+{"id":"ES93-F11g reglas de estado: reiniciar → 400, nota en vivo 201, cierre con nota corta y ánimo 9 → 400, cierre válido 200","ok":true,"detail":"400/201/400/400/200"}
+{"id":"ES93-S05b [PRIV] al cerrar la sesión, la recomendación con IA no recibe la nota del terapeuta ni datos de la persona (decisión ES-79)","ok":true,"detail":"prompt revisado"}
+{"id":"ES93-F11h una sesión completada no se edita (400)","ok":true,"detail":"status=400"}
+{"id":"ES93-F07c la nota de cierre queda cifrada en la base","ok":true,"detail":""}
+{"id":"ES93-S05c [PRIV] la persona no ve la nota clínica ni la nota de cierre del terapeuta en sus sesiones","ok":true,"detail":"[{\"id\":60,\"scheduledAt\":\"2026-10-30T11:13:28.961Z\",\"duration\":50,\"status\":\"sched"}
+{"id":"ES93-F07a notas: vacía, sin fecha y fecha inválida → 400; 200 000 caracteres sin 5xx","ok":true,"detail":"400/400/400/413"}
+{"id":"ES93-F07d editar una nota con un tipo inválido se rechaza o se ignora (sin 500 y sin guardar el valor inválido)","ok":false,"detail":"status=200 tipo=tipo-inventado"}
+{"id":"ES93-F01a subida: participante → 403; terapeuta sin archivo → 400; estado para participante → 403","ok":true,"detail":"403/400/403"}
+{"id":"ES93-F01b [INFO] subida real de un PDF sintético sin almacenamiento en la nube configurado (hoy usa Google Cloud Storage)","info":"status=500 cuerpo={\"error\":\"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Usuario\\\\Documents\\\\gpt-elevation-nm\\\\backend\\\\gcs-credentials.json'\"}"}
+{"id":"ES93-S11a [SEG] el error de subida no expone detalles internos (rutas, nombres de bucket, credenciales)","ok":false,"detail":"{\"error\":\"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Usuario\\\\Documents\\\\gpt-elevation-nm\\\\backend\\\\gcs-credentials.json'\"}"}
+{"id":"ES93-S11b tipo de archivo no permitido (exe) → 4xx, no 5xx por el almacenamiento","ok":false,"detail":"status=500 <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</tit"}
+{"id":"ES93-S11c archivo de 11 MB (límite 10 MB) → 4xx","ok":false,"detail":"status=500"}
+{"id":"ES93-F02a [SEG] solo el superadmin lista, descarga, aprueba o rechaza validaciones (terapeuta, participante, administrador y junta → 403)","ok":true,"detail":"{\"terapeuta\":[403,403,403],\"participante\":[403,403,403],\"administrador\":[403,403,403],\"junta\":[403,403,403]}"}
+{"id":"ES93-F02b rechazar sin nota → 400; con nota 200; aprobar uno ya revisado → 4xx; el terapeuta ve el estado y la nota","ok":false,"detail":"404/404/404"}
+{"id":"ES93-F02c [INFO] descarga del documento por el superadmin sin almacenamiento en la nube","info":"status=404 {\"code\":\"not_found\",\"error\":\"Ruta no encontrada. / Route not found.\"}"}
+{"id":"ES93-S11d [INFO] la lista de pendientes entrega documentPath (ruta interna en el almacenamiento) al superadmin","info":"no"}
+{"id":"ES93-F03 [INFO] un terapeuta sin validación aprobada ni perfil ya usa el panel y recibe pacientes","info":"perfiles=0, panel=200"}
+{"id":"ES93-F12a valoración fuera de 1–5 → 400","ok":true,"detail":"status=400"}
+{"id":"ES93-F12b [PRIV] el promedio de valoraciones de toda la plataforma no está disponible para un participante","ok":false,"detail":"status=200 cuerpo={\"avg\":4.1,\"total\":36}"}
+{"id":"ES93-P01 pacientes y alertas con 50 pacientes vinculados: p95 < 500 ms (umbral propuesto)","ok":true,"detail":"pacientes p95=82 ms, alertas p95=66 ms"}
+{"id":"ES93-P02 historia de un paciente: p95 < 300 ms (umbral propuesto)","ok":true,"detail":"p95=19 ms"}
+{"id":"ES93-P03 60 peticiones simultáneas del panel con 50 pacientes: sin 5xx (pool de 5 conexiones)","ok":true,"detail":"estados=200 máx=2559 ms"}
+{"id":"ES93-P04 [INFO] resumen con IA ante un proveedor lento (6 s)","info":"status=200 tiempo=23 ms (el servidor espera el proveedor sin límite propio si no hay timeout)"}
+{"fin":true}
