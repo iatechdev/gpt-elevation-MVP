@@ -1,0 +1,12 @@
+{"id":"ES106-L01 las claves `landing.*` fuera del catálogo (incluida la eliminada de Elevation) no se publican en ES ni en EN y el GET responde 200","ok":true,"detail":"es=200 en=200 huérfano_en_cuerpo=false"}
+{"id":"ES106-L02 el conjunto de claves publicado es idéntico al de antes de insertar las huérfanas","ok":true,"detail":"claves es=176 en=176"}
+{"id":"ES106-L03 el override vigente de una clave del catálogo se publica en ES y no cambia el EN","ok":true,"detail":"put=200"}
+{"id":"ES106-L04 las claves heredadas (`hero_title`, `cta_primary`) con override siguen publicándose","ok":true,"detail":"hero_title=LEGADA-de83"}
+{"id":"ES106-L05 [INFO] una clave sin prefijo `landing.` guardada en la base sigue publicándose (comportamiento previo, documentado en el PR)","info":"publicada=true"}
+{"id":"ES106-L06 un override en blanco de una clave válida se ignora y se conserva el texto por defecto","ok":true,"detail":""}
+{"id":"ES106-P01 [SEG] PUT: sin sesión 401/403, participante 403, administrador 403; superadmin: clave `landing.*` desconocida 400, idioma inválido 400","ok":true,"detail":"403/403/403/400/400"}
+{"id":"ES106-P02 [INFO] PUT de clave sin prefijo `landing.` por superadmin (comportamiento previo)","info":"status=200"}
+{"id":"ES106-P03 el PUT rechazado no deja fila huérfana en la base","ok":true,"detail":"filas=0"}
+{"id":"ES106-R01 [PERF] con 500 filas huérfanas: GET 200, ninguna publicada y p95 < 100 ms (umbral propuesto)","ok":true,"detail":"p95 sin huérfanas=3.1 ms; con 500=8.5 ms; filas=506"}
+{"id":"ES106-R02 tras limpiar, el GET vuelve al estado inicial","ok":true,"detail":""}
+{"fin":true}
