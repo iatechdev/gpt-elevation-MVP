@@ -621,6 +621,10 @@ export function UserDashboard() {
       </div>
 
       {/* ── SECCIÓN RECOMENDACIONES ── */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 1.5rem' }}>
+        <a href="/app/route-catalog" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('catalog.title')}</a>
+        <a href="/app/compass" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('compass.title')}</a>
+      </div>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>

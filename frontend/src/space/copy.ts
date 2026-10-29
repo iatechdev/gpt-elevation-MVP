@@ -22,7 +22,7 @@ export const copy = {
     compass: 'Brújula', evidence: 'Mis evidencias', map: 'Mi mapa', catalog: 'Catálogo', preparation: 'En preparación', toolsEmpty: 'Las opciones profesionales aún no están disponibles aquí. Puedes volver a Mi espacio.',
     budget: 'El envío no está disponible por el límite o la configuración de IA. Puedes consultar su estado; no se enviará automáticamente.',
     current: 'El contenido guardado coincide actualmente con tu borrador.', deleted: 'La entrada ya no está disponible.', deleteError: 'No pudimos verificar el borrado. Consulta la entrada antes de otra acción.',
-    review: 'Revisar versión guardada', exercises: 'Ejercicios opcionales',
+    review: 'Revisar versión guardada', proCompass: 'Brújula profesional', proCompassIntro: 'Explora ideas de profesión a partir de lo que ya valoras y haces bien. No es terapia ni un diagnóstico, y no promete resultados laborales. Puedes parar cuando quieras.', proCompassNotNow: 'Ahora no', proCompassClose: 'Cerrar sin presión', exercises: 'Ejercicios opcionales',
   },
   en: {
     space: 'My space', tools: 'My tools', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: 'Skip to content',
@@ -47,6 +47,6 @@ export const copy = {
     compass: 'Compass', evidence: 'My evidence', map: 'My map', catalog: 'Catalog', preparation: 'In preparation', toolsEmpty: 'Career options are not available here yet. You can return to My space.',
     budget: 'The message is unavailable due to the AI limit or configuration. You can check its status; it will not be sent automatically.',
     current: 'The saved content currently matches your draft.', deleted: 'The entry is no longer available.', deleteError: 'We could not verify deletion. Check the entry before another action.',
-    review: 'Review saved version', exercises: 'Optional exercises',
+    review: 'Review saved version', proCompass: 'Professional compass', proCompassIntro: 'Explore career ideas starting from what you already value and do well. It is not therapy or a diagnosis, and it does not promise job outcomes. You can stop whenever you like.', proCompassNotNow: 'Not now', proCompassClose: 'Close, no pressure', exercises: 'Optional exercises',
   },
 } as const

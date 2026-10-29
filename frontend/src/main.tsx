@@ -6,6 +6,8 @@ import { BrowserRouter } from 'react-router-dom'
 import { LanguageProvider } from './i18n/LanguageProvider'
 import './index.css'
 import App from './App.tsx'
+import './catalogGuard'
+import './compass/navigationGuard'
 import './career/navigationGuard'
 import './exercises/navigationGuard'
 
