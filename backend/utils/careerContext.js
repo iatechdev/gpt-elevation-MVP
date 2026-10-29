@@ -16,6 +16,7 @@ const { encriptarV2, desencriptar } = require('./crypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
 const { detectRisk } = require('./safety');
 const consent = require('./consent');
+const skillCatalog = require('./skillCatalog');
 
 const FIELD_KEYS = Object.freeze(['motivations', 'values', 'interests', 'energy_gives', 'energy_drains', 'desired_conditions', 'constraints']);
 const MAX_TEXT = 500;
@@ -45,7 +46,8 @@ function normalizeFields(fields) {
   if (!Array.isArray(fields) || fields.length < 1 || fields.length > MAX_FIELDS) throw invalid();
   const perKey = new Map();
   return fields.map((field, index) => {
-    if (!isPlain(field) || Object.keys(field).some((k) => !['key', 'text', 'origin'].includes(k))) throw invalid();
+    if (!isPlain(field) || Object.keys(field).some((k) => !['key', 'text', 'origin', 'skillKey'].includes(k))) throw invalid();
+    if (field.skillKey !== undefined && (typeof field.skillKey !== 'string' || !skillCatalog.KEY_RE.test(field.skillKey))) throw invalid();
     if (!FIELD_KEYS.includes(field.key) || typeof field.text !== 'string') throw invalid();
     const text = redactSecrets(normalizeText(field.text));
     if (text.length < 1 || text.length > MAX_TEXT) {
@@ -65,13 +67,13 @@ function normalizeFields(fields) {
       throw new BridgeError(422, 'field_not_shareable',
         'Este texto no se puede compartir. Reescríbelo o déjalo fuera.', 'This text cannot be shared. Rewrite it or leave it out.', { fieldIndex: index });
     }
-    return { key: field.key, text, origin: origin.type === 'direct' ? { type: 'direct' } : { type: origin.type, id: origin.id } };
+    return { key: field.key, text, origin: origin.type === 'direct' ? { type: 'direct' } : { type: origin.type, id: origin.id }, ...(field.skillKey ? { skillKey: field.skillKey } : {}) };
   });
 }
 
 const needsBridge = (fields) => fields.some((f) => f.origin.type !== 'direct');
 const representation = (fields) => fields.map(({ key, text }) => ({ key, text }));
-const canonical = (fields) => JSON.stringify(fields.map(({ key, text, origin }) => [key, text, origin.type, origin.id ?? null]));
+const canonical = (fields) => JSON.stringify(fields.map(({ key, text, origin, skillKey }) => (skillKey ? [key, text, origin.type, origin.id ?? null, skillKey] : [key, text, origin.type, origin.id ?? null])));
 
 function sign(userId, expiresAtMs, fields) {
   return createHmac('sha256', JWT_SECRET).update('ES-25-preview-v1\0').update(String(userId)).update('\0')
@@ -90,22 +92,31 @@ function checkToken(userId, token, fields) {
 }
 
 // Comprueba que cada origen pertenece a la persona. No copia su contenido; devuelve la marca de tiempo del origen.
+// La habilidad de un insight debe existir en el catálogo publicado (sin catálogo, o con una clave que no está, se rechaza).
+async function assertSkillKeys(fields) {
+  const wanted = [...new Set(fields.map((f) => f.skillKey).filter(Boolean))];
+  if (!wanted.length) return;
+  const catalog = await skillCatalog.getPublished().catch(() => null);
+  if (!catalog || wanted.some((key) => !catalog.skills.has(key))) throw invalid();
+}
+
 async function resolveOrigins(userId, fields, transaction) {
   const origins = [];
   for (const [index, field] of fields.entries()) {
     const { type, id } = field.origin;
-    if (type === 'direct') { origins.push({ key: field.key, index, type }); continue; }
+    if (type === 'direct') { origins.push({ key: field.key, index, type, ...(field.skillKey ? { skillKey: field.skillKey } : {}) }); continue; }
     const row = type === 'diary_entry'
       ? await DiaryEntry.findOne({ where: { id, UserId: userId, deletedAt: null }, attributes: ['id', 'updatedAt'], transaction })
       : await ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'updatedAt'], transaction });
     if (!row) throw new BridgeError(404, 'origin_not_found', 'No se encontró el origen indicado.', 'The referenced source was not found.');
-    origins.push({ key: field.key, index, type, id, stamp: new Date(row.updatedAt).toISOString() });
+    origins.push({ key: field.key, index, type, id, stamp: new Date(row.updatedAt).toISOString(), ...(field.skillKey ? { skillKey: field.skillKey } : {}) });
   }
   return origins;
 }
 
 async function preview(userId, { fields }) {
   const clean = normalizeFields(fields);
+  await assertSkillKeys(clean);
   await resolveOrigins(userId, clean);
   if (needsBridge(clean) && !await consent.hasConsent(userId, PURPOSE)) throw consentError();
   const expiresAtMs = Date.now() + PREVIEW_TTL_MS;
@@ -148,6 +159,7 @@ async function confirm(userId, { fields, token, requestId }) {
   if (typeof requestId !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(requestId)) throw invalid();
   const clean = normalizeFields(fields);
   checkToken(userId, token, clean);
+  await assertSkillKeys(clean);
   const withBridge = needsBridge(clean);
 
   const work = async (transaction) => {
@@ -220,13 +232,22 @@ async function needsReviewFor(userId, origins) {
   return false;
 }
 
+// Solo para la consulta del titular: une a cada texto su origen privado (tipo, id y habilidad; nunca contenido ni marca de tiempo).
+function withOrigins(fields, origins) {
+  return fields.map((field, index) => {
+    const found = (origins || []).find((o) => o.index === index);
+    if (!found) return field;
+    return { ...field, origin: found.type === 'direct' ? { type: 'direct' } : { type: found.type, id: found.id }, ...(found.skillKey ? { skillKey: found.skillKey } : {}) };
+  });
+}
+
 // Consulta de la propia persona: versión activa e historial. Solo el dueño (userId viene de la sesión).
 async function list(userId) {
   const rows = await CareerContextVersion.findAll({ where: { UserId: userId }, order: [['version', 'DESC']] });
   const versions = [];
   for (const row of rows) {
     const extra = row.status === 'active' ? { needsReview: await needsReviewFor(userId, row.origins) } : {};
-    versions.push(toRecord(row, JSON.parse(desencriptar(row.payload)), extra));
+    versions.push(toRecord(row, withOrigins(JSON.parse(desencriptar(row.payload)), row.origins), extra));
   }
   return { active: versions.find((v) => v.status === 'active') ?? null, versions };
 }

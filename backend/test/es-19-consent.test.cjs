@@ -54,16 +54,16 @@ function consentStore() {
   return { rows, events, keyOf };
 }
 
-test('ES-19: catálogo cerrado de seis propósitos (ES-96 añade therapist_sharing), todos sin decidir y solo visibles para su titular', async t => {
+test('ES-19: catálogo cerrado de ocho propósitos (ES-96 añade therapist_sharing; ES-121 añade insights_chat e insights_diary), todos sin decidir y solo visibles para su titular', async t => {
   consentStore();
   const request = await startApp(t);
   assert.equal((await request('GET', '/api/consents')).status, 403);
   const response = await request('GET', '/api/consents', as(A));
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.consents.map(c => c.purpose),
-    ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications', 'therapist_sharing']);
-  assert.deepEqual(response.body.consents.map(c => c.status), Array(6).fill('undecided'));
-  assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false, false]);
+    ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications', 'therapist_sharing', 'insights_chat', 'insights_diary']);
+  assert.deepEqual(response.body.consents.map(c => c.status), Array(8).fill('undecided'));
+  assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false, false, false, false]);
   for (const entry of response.body.consents) {
     const base = ['decidedAt', 'purpose', 'required', 'requiredVersion', 'scope', 'status', 'version'];
     assert.deepEqual(Object.keys(entry).sort(), entry.purpose === 'therapist_sharing' ? [...base, 'applicable'].sort() : base);
@@ -104,7 +104,7 @@ test('ES-19: rechazar investigación o notificaciones no bloquea lo necesario ni
   assert.equal(await consent.hasConsent(A, 'necessary'), true);
   const byPurpose = Object.fromEntries((await request('GET', '/api/consents', as(A))).body.consents.map(c => [c.purpose, c.status]));
   assert.deepEqual(byPurpose, {
-    necessary: 'granted', professional_bridge: 'undecided', facilitator_sharing: 'undecided', research: 'revoked', notifications: 'revoked', therapist_sharing: 'undecided',
+    necessary: 'granted', professional_bridge: 'undecided', facilitator_sharing: 'undecided', research: 'revoked', notifications: 'revoked', therapist_sharing: 'undecided', insights_chat: 'undecided', insights_diary: 'undecided',
   });
 });
 
