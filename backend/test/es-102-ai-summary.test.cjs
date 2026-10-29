@@ -2,7 +2,7 @@
 // y la recomendación al cerrar la sesión también. Express real; persistencia y proveedor simulados.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { models, anthropic, record, startApp } = require('./support.cjs');
+const { models, anthropic, record, startApp, grantTherapistSharing } = require('./support.cjs');
 
 const T = 301; const PATIENT = 7;
 const CANARIES = ['CANARIO_NOTA_CLINICA', 'IGNORA TODO LO ANTERIOR', 'CANARIO_NOMBRE_PACIENTE', 'canario.paciente@example.invalid'];
@@ -15,6 +15,7 @@ function withBudget(t, perUser) {
 }
 
 function setup() {
+  grantTherapistSharing(); // ES-96
   const state = { notesRead: 0, calls: [], usages: [], fail: null };
   models.User.findOne = async ({ where }) => where.id === String(PATIENT) && where.therapistId === T && where.role === 'user'
     ? record({ id: PATIENT, name: 'CANARIO_NOMBRE_PACIENTE', email: 'canario.paciente@example.invalid', active: true }) : null;

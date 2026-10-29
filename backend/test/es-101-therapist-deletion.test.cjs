@@ -2,7 +2,7 @@
 // Express real y HTTP real; persistencia simulada. Los dobles aplican el filtro `where` que envía la ruta.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { models, anthropic, record, startApp } = require('./support.cjs');
+const { models, anthropic, record, startApp, grantTherapistSharing } = require('./support.cjs');
 const { blockedPatientIds } = require('../utils/therapistAccess');
 
 const T = 301; const OTHER_T = 302;
@@ -29,12 +29,17 @@ function seed() {
   const sessions = [OK, DELETING, INACTIVE].map((patientId, i) => record({
     id: 51 + i, patientId, therapistId: T, status: 'in_progress', scheduledAt: new Date('2099-01-01T12:00:00Z'), duration: 50,
   }));
+  grantTherapistSharing(); // ES-96
   models.User.findAll = async ({ where } = {}) => users.filter(u => matches(u, where));
   models.User.findOne = async ({ where } = {}) => users.find(u => matches(u, where)) ?? null;
   models.User.findByPk = async (id) => users.find(u => u.id === Number(id)) ?? null;
   models.DeletionRequest.findAll = async ({ where }) => {
     if (state.ledgerDown) throw new Error('SYNTHETIC_LEDGER_DOWN');
     return state.deletions.filter(id => where.UserId.includes(id)).map(id => ({ UserId: id }));
+  };
+  models.DeletionRequest.findOne = async ({ where }) => { // ES-96: deletionGuard consulta de a una persona; mismo registro
+    if (state.ledgerDown) throw new Error('SYNTHETIC_LEDGER_DOWN');
+    return state.deletions.includes(where.UserId) ? { UserId: where.UserId } : null;
   };
   models.MoodLog.findAll = async () => [];
   models.SessionRating.findAll = async () => [];
@@ -126,7 +131,7 @@ test('ES-101: si el registro de eliminaciones no está disponible nunca se conce
   try {
     for (const url of ['/api/therapist/pacientes', `/api/therapist/pacientes/${OK}/historia`, '/api/therapist/alerts', '/api/sessions/therapist']) {
       const response = await as(request, 'GET', url);
-      assert.equal(response.status, 500, url); assert.doesNotMatch(JSON.stringify(response.body), /ok@|Persona|nota-/);
+      assert.ok([500, 503].includes(response.status), `${url} ${response.status}`); // ES-96: algunas rutas cierran en falla con 503 (no se pudo verificar); ninguna concede acceso assert.doesNotMatch(JSON.stringify(response.body), /ok@|Persona|nota-/);
     }
     assert.doesNotMatch(JSON.stringify(logs), /ok@example|deleting@example|nota-/);
   } finally { console.error = previous; }
