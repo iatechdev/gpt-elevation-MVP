@@ -4,13 +4,9 @@ import landingFields from '../../../../shared/landing-content.json' with { type:
 export type PendingItem = { key: string; label: string; missing: string }
 export type Lang = 'es' | 'en'
 
-export const PENDING_ITEMS: readonly PendingItem[] = [
-  { key: 'landing.modules.elevation.status', label: 'Estado de Elevation', missing: 'El estado real de Elevation para quien visita (por ejemplo «En piloto» o «Disponible»). Lo confirma el PO.' },
-  { key: 'landing.skillmap.routes.continuity.pending', label: 'Ruta de continuidad', missing: 'Fuente verificada, fecha de verificación, barreras y brechas de esta ruta. Salen del catálogo de rutas verificado.' },
-  { key: 'landing.skillmap.routes.adjacent.pending', label: 'Ruta adyacente', missing: 'Fuente verificada, fecha de verificación, barreras y brechas de esta ruta. Salen del catálogo de rutas verificado.' },
-  { key: 'landing.skillmap.routes.exploratory.pending', label: 'Ruta exploratoria', missing: 'Fuente verificada, fecha de verificación, barreras y brechas de esta ruta. Salen del catálogo de rutas verificado.' },
-  { key: 'landing.join.professional_pending', label: 'Alta de profesionales', missing: 'Decisión D-04: si existe el alta con validación de credenciales. Cuando exista, el texto y el destino del botón.' },
-]
+// ES-94: los textos de Elevation y de las tres rutas pasaron a ser definitivos (se editan en la lista general). La lista queda vacía y el panel no se muestra
+// mientras no haya nada pendiente; un texto nuevo que espere un dato real se agrega aquí.
+export const PENDING_ITEMS: readonly PendingItem[] = []
 
 export const PENDING_KEYS: ReadonlySet<string> = new Set(PENDING_ITEMS.map(item => item.key))
 

@@ -4,7 +4,6 @@
 
 const express = require('express');
 const router  = express.Router();
-const { sharingSet } = require('../utils/therapistAccess');
 
 // ES-96 (ES93-M7): datos de personas y de su terapeuta: nunca en cachés.
 router.use((req, res, next) => {
@@ -13,6 +12,8 @@ router.use((req, res, next) => {
 });
 
 const { encriptar, desencriptar } = require('../utils/crypto');
+const { sharingSet, blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-96 y ES-101
+const { callClaude } = require('../utils/aiClient'); // ES-102
 const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
 
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
@@ -39,7 +40,7 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     const patient = await User.findOne({
       where: { id: patientId, therapistId: req.user.id, role: 'user' },
     });
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101
       return res.status(403).json({ error: 'This patient is not assigned to you.' });
     }
     const session = await TherapySession.create({
@@ -77,7 +78,8 @@ router.get('/therapist/upcoming', async (req, res) => {
       order: [['scheduledAt', 'ASC']],
       limit: 5,
     });
-    const enriched = await Promise.all(sessions.map(async (s) => {
+    const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
+    const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
       const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
       return { ...s.toJSON(), patientName: p?.name ?? 'Unknown' };
     }));
@@ -103,9 +105,10 @@ router.get('/therapist', async (req, res) => {
       where,
       order: [['scheduledAt', 'ASC']],
     });
+    const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
     // ES-96 (ES93-A3): el nombre es parte del vínculo (para agendar); el correo, solo de quien autorizó compartir sus datos con este terapeuta.
     const sharing = await sharingSet(req.user.id, [...new Set(sessions.map((s) => s.patientId))]);
-    const enriched = await Promise.all(sessions.map(async (s) => {
+    const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
       const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
       return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: sharing.has(s.patientId) ? (p?.email ?? '') : '' };
     }));
@@ -126,7 +129,7 @@ router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duratio
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status === 'completed') {
       return res.status(400).json({ error: 'Cannot edit a completed session.' });
     }
@@ -165,7 +168,7 @@ router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: 'Session is not in progress.' });
     }
@@ -195,7 +198,7 @@ router.get('/therapist/:id/notes', async (req, res) => {
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     const notes = await SessionNote.findAll({
       where: { sessionId: session.id },
       order: [['timestamp', 'ASC']],
@@ -411,7 +414,7 @@ router.post('/therapist/:id/start', async (req, res) => {
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status !== 'scheduled') {
       return res.status(400).json({ error: `Cannot start a session with status '${session.status}'.` });
     }
@@ -445,7 +448,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: `Cannot end a session with status '${session.status}'.` });
     }
@@ -472,7 +475,8 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
       const moodLabels = { 1: 'muy mal', 2: 'no tan bien', 3: 'neutral', 4: 'bien', 5: 'muy bien' };
       const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
 
-      const aiResponse = await anthropic.messages.create({
+      // ES-102 (ES93-M5): por la puerta única de IA (presupuesto, tiempo de espera y reintentos de ES-22). Si falla o no hay presupuesto, el cierre sigue.
+      const aiResponse = await callClaude({ userId: req.user.id, kind: 'session_recommend', body: {
         model:      anthropic.MODEL,
         max_tokens: 400,
         system:     'Eres un asistente de bienestar empático de Elevation. Genera recomendaciones breves, cálidas y accionables para el paciente después de su sesión de terapia. Responde SOLO con la recomendación, sin preámbulo.',
@@ -480,7 +484,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
           role:    'user',
           content: `La persona terminó una sesión de terapia sintiéndose ${moodLabel}. Genera una recomendación de bienestar breve (máximo 3 oraciones) para ayudarle en las próximas horas.`,
         }],
-      });
+      } });
 
       const content = textOf(aiResponse);
       if (content) {

@@ -23,14 +23,16 @@ const render = (lang, values) => renderToStaticMarkup(createElement(MemoryRouter
   text: key => landingText(key, lang, values),
 })))
 
-test('ES-74: actual S13 renders four ordered steps, future sharing and professional placeholder ES/EN', () => {
+test('ES-74: actual S13 renders four ordered steps, future sharing and the professional form link (ES-95) ES/EN', () => {
   for (const lang of ['es', 'en']) {
     const html = render(lang)
     assert.equal((html.match(/<li>/g) ?? []).length, 4)
     assert.equal((html.match(/<h2 /g) ?? []).length, 1)
     assert.equal((html.match(/landing-label/g) ?? []).length, 2)
     assert.match(html, /href="\/login\?mode=register"/)
-    assert.equal((html.match(/<a /g) ?? []).length, 1)
+    assert.equal((html.match(/<a /g) ?? []).length, 2) // registro de personas y formulario de profesionales (ES-95)
+    assert.match(html, /href="\/profesionales"/)
+    assert.doesNotMatch(html, /Próximamente: el alta|Coming soon: professional/)
     for (const entry of entries) assert.ok(html.includes(escape(entry[lang])), entry.key)
     assert.doesNotMatch(html, /<form|<input|<script|\/therapist|door=|returnTo=|track|analytics/)
   }
