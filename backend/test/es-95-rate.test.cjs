@@ -17,6 +17,7 @@ test('ES-95: pasado el límite por IP el formulario responde 429 y no guarda ni 
   models.ProfessionalApplication.findOne = async () => null;
   models.ProfessionalApplication.create = async (values) => { created.push(values); return { id: created.length, ...values }; };
   models.ProfessionalApplicationFile.create = async (values) => values;
+  models.ProfessionalApplication.count = async () => 0; models.ProfessionalApplicationFile.sum = async () => 0;
   const request = await startApp(t);
   const statuses = [];
   for (let i = 0; i < 5; i++) statuses.push((await request('POST', '/api/professional-applications', { body: body(`n${i}@example.test`) })).status);

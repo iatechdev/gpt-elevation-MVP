@@ -37,7 +37,7 @@ test('ES-95: 10 envíos simultáneos del mismo correo crean una sola solicitud y
   await sequelize.sync();
 
   const Application = require('../../ProfessionalApplication'); const File = require('../../ProfessionalApplicationFile');
-  const { desencriptar } = require('../../utils/crypto');
+  const { desencriptarBuffer } = require('../../utils/crypto');
   const express = require('express'); const app = express(); app.use(express.json());
   app.use('/api/professional-applications', require('../../routes/professionalApplications').publicRouter);
   server = app.listen(0, '127.0.0.1'); await once(server, 'listening');
@@ -64,8 +64,8 @@ test('ES-95: 10 envíos simultáneos del mismo correo crean una sola solicitud y
   await t.test('la hoja de vida se guarda cifrada y se recupera idéntica; el tamaño y la huella corresponden al archivo', async () => {
     const row = await Application.findOne({ where: { email: 'synthetic.race@example.invalid' } });
     const file = await File.findOne({ where: { ApplicationId: row.id } });
-    assert.notEqual(file.content, PDF.toString('base64')); assert.match(file.content, /^v2:/);
-    assert.equal(Buffer.from(desencriptar(file.content), 'base64').equals(PDF), true);
+    assert.equal(file.data.includes(PDF), false); assert.equal(file.data.length, PDF.length + 29); // ES-107: binario cifrado, sin base64
+    assert.equal(desencriptarBuffer(file.data).equals(PDF), true);
     assert.equal(file.size, PDF.length); assert.match(file.sha256, /^[0-9a-f]{64}$/);
   });
 
