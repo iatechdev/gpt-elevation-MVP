@@ -1,4 +1,4 @@
-# ES-90 · PR #62 · panel «Pendientes de contenido» y textos provisionales · head 23765fc (apilado sobre #52 2fd0796)
+# ES-90 · PR #62 · panel «Pendientes de contenido» y textos provisionales · head 23765fc y re-verificado en c56b7ce (merge de main 16754a9, ya con #52 y #59 en main; base del PR = main)
 
 [QA-Claude] · 28-oct-2026. Merge local sobre main cdcd065 (contiene #55), Postgres 17 real, servidor del merge sirviendo el frontend, Chromium. Datos sintéticos; sin IA.
 
@@ -19,3 +19,6 @@ Hallazgos (sin Críticos ni Altos):
 - ES90-O5 (informativo): un superadmin puede guardar «[…]» por el PUT y el GET público lo devuelve; el panel lo marca Pendiente. La frase «el GET público no puede traer […]» vale para el catálogo por defecto.
 
 No verificado: un superadmin real contra el backend desplegado (staging), los datos reales pendientes del PO, el panel en inglés (no existe).
+
+## Re-verificación del head c56b7ce
+Dev fusionó main (con #52 y #59) en la rama mientras yo probaba: head c56b7ce (sin cambios propios sobre 23765fc). Repetido: backend 334/334, frontend 95/95, lint/tipos/audit/build ok; API 20/20; interfaz 21/23 (las mismas 2 Bajas); S7 14/14, S9 12/14 (conocidas), S13 14/14, chips 10/10, CMS 8/8, ES-18/19 20/20, navegador es74 23/23. Evidencia `c56b7ce-*.jsonl`.
