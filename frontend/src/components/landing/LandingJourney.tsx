@@ -27,7 +27,8 @@ export function LandingJourney({ text }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 landing-module-grid">
           {(['elevation', 'skillmap'] as const).map(module => <LandingCard key={module} className="landing-module">
             <div className="elv-card-body">
-              <LandingLabel className="landing-module-status">{text(`landing.modules.${module}.status`)}</LandingLabel>
+              {/* ES-94: Elevation no lleva etiqueta de estado; Skill Map conserva «Próximamente» porque la función aún no existe. */}
+              {module === 'skillmap' && <LandingLabel className="landing-module-status">{text('landing.modules.skillmap.status')}</LandingLabel>}
               <h3 className="elv-card-title">{text(`landing.modules.${module}.title`)}</h3>
               <p>{text(`landing.modules.${module}.body`)}</p>
             </div>

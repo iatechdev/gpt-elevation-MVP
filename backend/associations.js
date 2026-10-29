@@ -13,6 +13,8 @@ const setupAssociations = () => {
   const EthicManifest          = require('./EthicManifest');
   const PricingPlan            = require('./PricingPlan');
   const PlanRequest            = require('./PlanRequest');
+  require('./AiJob');          // ES-85 — worker de análisis de IA (registra el modelo para sync y db:drift)
+  require('./SkillCandidate'); // ES-85
 
   User.hasMany(Message);
   Message.belongsTo(User);
