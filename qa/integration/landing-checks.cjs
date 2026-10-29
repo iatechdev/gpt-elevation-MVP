@@ -7,7 +7,18 @@ const check = (id, ok, d = '') => console.log(JSON.stringify({ id, ok: !!ok, det
 const doc = fs.readFileSync(process.env.DOC, 'utf8');
 const norm = s => s.replace(/\*\*/g, '').replace(/\s+/g, ' ').replace(/[“”]/g, '"').trim().toLowerCase();
 const part = id => { const i = doc.indexOf('## ' + id); const j = doc.indexOf('\n---', i); return doc.slice(i, j === -1 ? undefined : j); };
+function tableExpected(sec, lang) {
+  const out = [];
+  for (const line of sec.split('\n').map(x => x.trim()).filter(l => l.startsWith('|'))) {
+    const cells = line.split('|').slice(1, -1).map(c => c.trim());
+    if (cells.length < 3 || /^-+$/.test(cells[0].replace(/\s/g, '')) || /^(bloque|es|en|\| )/i.test(cells[0]) && /^ES$/i.test(cells[1])) continue;
+    const t = (lang === 'es' ? cells[1] : cells[2]).replace(/\*\*/g, '').replace(/`[^`]*`/g, '').trim();
+    out.push(...t.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 6));
+  }
+  return out;
+}
 function expected(sec, lang) {
+  if (/^\|.*\|.*\|.*\|/m.test(sec) && !/\*\*ES —/.test(sec)) return tableExpected(sec, lang);
   const a = sec.indexOf(lang === 'es' ? '**ES' : '**EN'); const e = lang === 'es' ? sec.indexOf('**EN') : sec.length;
   const body = sec.slice(a, e === -1 ? sec.length : e); const out = [];
   for (const line of body.split('\n').map(x => x.trim()).filter(Boolean)) {
