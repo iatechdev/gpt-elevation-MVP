@@ -14,13 +14,14 @@ const PURPOSES = Object.freeze({
   facilitator_sharing: { required: false }, // compartir con el facilitador
   research: { required: false },            // investigación (opcional)
   notifications: { required: false },       // notificaciones (opcional)
+  resume_ai_reading: { required: false },   // ES-109: leer mi hoja de vida con IA (retirarla borra mis hojas de vida)
 });
 const SCOPES = Object.freeze(['default']); // ES-25 amplía el alcance por campos del puente
 const DEFAULT_SCOPE = 'default';
 const STATUSES = Object.freeze(['granted', 'revoked']);
 // Versión de política exigida por propósito: un «granted» con versión anterior deja de valer (hay que volver a consentir).
 const REQUIRED_VERSION = Object.freeze({
-  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1,
+  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, resume_ai_reading: 1,
 });
 
 class ConsentRequiredError extends Error {
@@ -89,6 +90,8 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (purpose === 'professional_bridge' && status === 'revoked') await require('./careerContext').revokeForConsent(userId, transaction);
       // ES-27: revocar el puente deja de vigente, en la misma transacción, la evidencia confirmada que sale del chat.
       if (purpose === 'professional_bridge' && status === 'revoked') await require('./evidence').revokeForConsent(userId, transaction);
+      // ES-109: retirar la lectura con IA borra de verdad todas las hojas de vida (y marca «para revisión» lo derivado), en la misma transacción.
+      if (purpose === 'resume_ai_reading' && status === 'revoked') await require('./resumes').revokeForConsent(userId, transaction);
       await transaction.commit();
       finished = true;
       return { row, changed: true };

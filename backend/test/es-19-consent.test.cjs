@@ -53,14 +53,14 @@ function consentStore() {
   return { rows, events, keyOf };
 }
 
-test('ES-19: catálogo cerrado de cinco propósitos, todos sin decidir y solo visibles para su titular', async t => {
+test('ES-19: catálogo cerrado de seis propósitos, todos sin decidir y solo visibles para su titular', async t => {
   consentStore();
   const request = await startApp(t);
   assert.equal((await request('GET', '/api/consents')).status, 403);
   const response = await request('GET', '/api/consents', as(A));
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.consents.map(c => c.purpose),
-    ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications']);
+    ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications', 'resume_ai_reading']);
   assert.deepEqual(response.body.consents.map(c => c.status), Array(5).fill('undecided'));
   assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false]);
   for (const entry of response.body.consents) {
@@ -100,7 +100,7 @@ test('ES-19: rechazar investigación o notificaciones no bloquea lo necesario ni
   assert.equal(await consent.hasConsent(A, 'necessary'), true);
   const byPurpose = Object.fromEntries((await request('GET', '/api/consents', as(A))).body.consents.map(c => [c.purpose, c.status]));
   assert.deepEqual(byPurpose, {
-    necessary: 'granted', professional_bridge: 'undecided', facilitator_sharing: 'undecided', research: 'revoked', notifications: 'revoked',
+    necessary: 'granted', professional_bridge: 'undecided', facilitator_sharing: 'undecided', research: 'revoked', notifications: 'revoked', resume_ai_reading: 'undecided',
   });
 });
 
