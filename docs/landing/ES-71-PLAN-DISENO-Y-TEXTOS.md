@@ -2,6 +2,8 @@
 
 [Dev-Codex] · 29-oct-2026. Rama ES-71-seccion-profesionales, base main d5eb00f9d0a035c6c98506038490f32087d4acc6. Solo propuesta documental; sin código de implementación.
 
+**Decisión posterior:** el usuario aprobó «Aprobar preparación de la sección» sobre ES-71/10482; registrada en 10483. Se implementa el tramo descrito, con publicación desactivada por defecto. La aprobación no sustituye revisión especializada ni confirma disponibilidad en producción. Este documento conserva la propuesta previa; resultados en ES-71-VERIFICACION.md.
+
 ## Alcance y aprobación existente
 
 S8 Para quienes acompañan a otras personas, entre S7 Funciones y S9 Skill Map. Diseño general aprobado en ES-60/10279 y ES-71/10283. Texto fuente: origin/docs/landing-diseno-fase2:docs/landing/TEXTOS-LANDING-FASE2-ES-EN.md. Revisión previa de los 84 frames: ES-68/10304 y docs/landing/ES-68-VERIFICACION.md (S8, frames 21–24).
