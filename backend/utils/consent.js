@@ -21,6 +21,7 @@ const PURPOSES = Object.freeze({
   // ES-121: analizar con IA una fuente propia para proponer insights. Separados entre sí y de professional_bridge: analizar NO es compartir.
   insights_chat: { required: false },
   insights_diary: { required: false },
+  insights_resume: { required: false },
 });
 const SCOPES = Object.freeze(['default']); // ES-25 amplía el alcance por campos del puente
 const THERAPIST_SCOPE = /^therapist-[1-9][0-9]{0,9}$/; // ES-96: el alcance de therapist_sharing es el terapeuta al que se autoriza
@@ -30,7 +31,7 @@ const DEFAULT_SCOPE = 'default';
 const STATUSES = Object.freeze(['granted', 'revoked']);
 // Versión de política exigida por propósito: un «granted» con versión anterior deja de valer (hay que volver a consentir).
 const REQUIRED_VERSION = Object.freeze({
-  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, therapist_sharing: 1, resume_ai_reading: 1, insights_chat: 1, insights_diary: 1,
+  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, therapist_sharing: 1, resume_ai_reading: 1, insights_chat: 1, insights_diary: 1, insights_resume: 1,
 });
 
 class ConsentRequiredError extends Error {

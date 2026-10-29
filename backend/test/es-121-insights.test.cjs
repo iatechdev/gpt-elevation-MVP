@@ -74,7 +74,7 @@ test('ES-121: propuesta desde chat y diario con citas reales; no guarda nada y s
   assert.equal(r.body.insights.length, 2);
   assert.deepEqual(r.body.insights[0], { key: 'energy_gives', text: 'Parece que coordinar equipos pequeños te da energía.', origins: [{ type: 'chat_turn', id: turn.id, quote: 'disfruto coordinar equipos pequeños' }] });
   assert.deepEqual(r.body.insights[1].origins, [{ type: 'diary_entry', id: entry.id, quote: 'me agota quedarme en reuniones largas' }]);
-  assert.deepEqual(r.body.usedSources, { chat: 1, diary: 1 });
+  assert.deepEqual(r.body.usedSources, { chat: 1, diary: 1, resume: 0 });
   assert.match(r.body.token, /^\d+\.[0-9a-f]{64}$/);
   assert.equal(state.tables.CareerContextVersion.length, 0); // nada guardado: la propuesta no tiene estado
   assert.equal(calls.length, 1);
@@ -115,7 +115,7 @@ test('ES-121 entradas inválidas, orígenes ajenos, borrados y de riesgo: 400/40
   const request = await startApp(t);
   await grantBoth(request, U);
   provider.out = good(turn.id, entry.id);
-  const bad = [{}, { sources: [] }, { sources: 'chat' }, { sources: ['chat', 'chat'] }, { sources: ['resume'] }, { sources: ['chat', 'diary', 'resume'] }, { sources: ['chat'], turnIds: [] },
+  const bad = [{}, { sources: [] }, { sources: 'chat' }, { sources: ['chat', 'chat'] }, { sources: ['cv'] }, { sources: ['chat', 'diary', 'resume', 'cv'] }, { sources: ['chat'], resumeId: 1 }, { sources: ['resume'], resumeId: 0 }, { sources: ['resume'], resumeId: '1' }, { sources: ['chat'], turnIds: [] },
     { sources: ['chat'], turnIds: [1, 1] }, { sources: ['chat'], turnIds: [0] }, { sources: ['chat'], turnIds: ['1'] }, { sources: ['chat'], turnIds: Array.from({ length: 21 }, (_, i) => i + 1) },
     { sources: ['diary'], entryIds: Array.from({ length: 11 }, (_, i) => i + 1) }, { sources: ['chat'], entryIds: [entry.id] }, { sources: ['diary'], turnIds: [turn.id] },
     { sources: ['chat'], locale: 'fr' }, { sources: ['chat'], UserId: 202 }];
@@ -130,7 +130,7 @@ test('ES-121 entradas inválidas, orígenes ajenos, borrados y de riesgo: 400/40
   assert.doesNotMatch(JSON.stringify(onlyRisk.body), /riesgo|risk|crisis|vida/i); // sin motivo
   const mixed = await ask(request, U, { sources: ['chat', 'diary'], turnIds: [turn.id, riskTurn.id], entryIds: [entry.id, riskEntry.id] });
   assert.equal(mixed.status, 200);
-  assert.deepEqual(mixed.body.usedSources, { chat: 1, diary: 1 });
+  assert.deepEqual(mixed.body.usedSources, { chat: 1, diary: 1, resume: 0 });
   assert.doesNotMatch(promptOf(calls), /quitarme|taller con 30|no quiero seguir viviendo|reunión de 12/i); // la crisis nunca llega al proveedor
 });
 
@@ -163,7 +163,7 @@ test('ES-121 salida del modelo: inválida, con citas, categorías o habilidades 
     'sin citas': one({ quotes: [] }),
     'cita inventada': one({ quotes: [{ source: 'chat', id: turn.id, quote: 'siempre quise ser astronauta' }] }),
     'cita de una fuente no pedida': one({ quotes: [{ source: 'chat', id: 99999, quote: 'disfruto coordinar' }] }),
-    'fuente desconocida': one({ quotes: [{ source: 'resume', id: 1, quote: 'disfruto coordinar' }] }),
+    'fuente desconocida': one({ quotes: [{ source: 'cv', id: 1, quote: 'disfruto coordinar' }] }),
     'cita demasiado larga': one({ quotes: [{ source: 'chat', id: turn.id, quote: 'disfruto coordinar equipos pequeños'.padEnd(201, ' x') }] }),
     'texto vacío': one({ text: '   ' }),
     'texto de más de 500': one({ text: 'x'.repeat(501) }),
@@ -328,8 +328,8 @@ test('ES-121 (QA ES121-QA-02) un insight nunca promete empleo, contratación, of
 test('ES-121 (QA ES121-QA-01) las lecturas usan la transacción de withConsent: una sola conexión por propuesta', () => {
   const code = fs.readFileSync(path.join(__dirname, '..', 'utils', 'insightProposal.js'), 'utf8');
   assert.match(code, /consent\.withConsent\(userId, SOURCES\[source\], \(transaction\) => READERS\[source\]\(userId, parsed, transaction\)\)/);
-  const reads = code.split('\n').filter((line) => /(ChatTurn|DiaryEntry)\.find(One|All)\(/.test(line));
-  assert.equal(reads.length, 4);
+  const reads = code.split('\n').filter((line) => /(ChatTurn|DiaryEntry|ParticipantResume)\.find(One|All)\(/.test(line));
+  assert.equal(reads.length, 5);
   for (const read of reads) assert.match(read, /transaction/, read);
   assert.equal(/Promise\.all/.test(code), false); // una consulta tras otra sobre la misma conexión
 });

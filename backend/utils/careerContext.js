@@ -11,6 +11,7 @@ const CareerContextVersion = require('../CareerContextVersion');
 const BridgeTransfer = require('../BridgeTransfer');
 const DerivedInvalidation = require('../DerivedInvalidation');
 const DiaryEntry = require('../DiaryEntry');
+const ParticipantResume = require('../ParticipantResume');
 const ChatTurn = require('../ChatTurn');
 const { encriptarV2, desencriptar } = require('./crypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
@@ -25,7 +26,7 @@ const MAX_FIELDS = 12;
 const PREVIEW_TTL_MS = 10 * 60 * 1000;
 const PURPOSE = 'professional_bridge';
 const MAX_ATTEMPTS = 6;
-const ORIGIN_TYPES = ['direct', 'diary_entry', 'chat_turn'];
+const ORIGIN_TYPES = ['direct', 'diary_entry', 'chat_turn', 'resume_version'];
 
 class BridgeError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -100,14 +101,19 @@ async function assertSkillKeys(fields) {
   if (!catalog || wanted.some((key) => !catalog.skills.has(key))) throw invalid();
 }
 
+// La marca de tiempo de un origen: la hoja de vida no se edita (se borra o se sube otra versión), así que usa su fecha de creación.
+async function findOrigin(userId, type, id, transaction) {
+  if (type === 'diary_entry') return DiaryEntry.findOne({ where: { id, UserId: userId, deletedAt: null }, attributes: ['id', 'updatedAt'], transaction });
+  if (type === 'resume_version') { const row = await ParticipantResume.findOne({ where: { id, UserId: userId }, attributes: ['id', 'createdAt'], transaction }); return row && { id: row.id, updatedAt: row.createdAt }; }
+  return ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'updatedAt'], transaction });
+}
+
 async function resolveOrigins(userId, fields, transaction) {
   const origins = [];
   for (const [index, field] of fields.entries()) {
     const { type, id } = field.origin;
     if (type === 'direct') { origins.push({ key: field.key, index, type, ...(field.skillKey ? { skillKey: field.skillKey } : {}) }); continue; }
-    const row = type === 'diary_entry'
-      ? await DiaryEntry.findOne({ where: { id, UserId: userId, deletedAt: null }, attributes: ['id', 'updatedAt'], transaction })
-      : await ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'updatedAt'], transaction });
+    const row = await findOrigin(userId, type, id, transaction);
     if (!row) throw new BridgeError(404, 'origin_not_found', 'No se encontró el origen indicado.', 'The referenced source was not found.');
     origins.push({ key: field.key, index, type, id, stamp: new Date(row.updatedAt).toISOString(), ...(field.skillKey ? { skillKey: field.skillKey } : {}) });
   }
@@ -224,9 +230,7 @@ const revokeForConsent = (userId, transaction) => revokeActive(userId, transacti
 async function needsReviewFor(userId, origins) {
   for (const origin of origins) {
     if (origin.type === 'direct') continue;
-    const row = origin.type === 'diary_entry'
-      ? await DiaryEntry.findOne({ where: { id: origin.id, UserId: userId, deletedAt: null }, attributes: ['id', 'updatedAt'] })
-      : await ChatTurn.findOne({ where: { id: origin.id, UserId: userId }, attributes: ['id', 'updatedAt'] });
+    const row = await findOrigin(userId, origin.type, origin.id);
     if (!row || new Date(row.updatedAt).toISOString() !== origin.stamp) return true;
   }
   return false;

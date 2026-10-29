@@ -18,7 +18,7 @@ La IA **propone borradores de insights** a partir de **tres fuentes de la propia
 | --- | --- |
 | `key` | Una de las categorías cerradas del puente: `motivations`, `values`, `interests`, `energy_gives`, `energy_drains`, `desired_conditions`, `constraints` |
 | `text` | Hasta 500 caracteres, redactado como hipótesis en el idioma de la persona. Es lo **único** que puede cruzar, y solo tras autorizarlo |
-| `origins` | Referencias privadas a la fuente: `{type: 'chat_turn' \| 'diary_entry' \| 'resume', id, quote}`. **Nunca viajan** al motor profesional |
+| `origins` | Referencias privadas a la fuente: `{type: 'chat_turn' \| 'diary_entry' \| 'resume_version', id, quote}`. **Nunca viajan** al motor profesional |
 | `skillKey` (opcional) | Habilidad del catálogo a la que apoya. **Metadato privado**: no viaja al motor. Permite el estado «En conversación» del mapa (ver §9) |
 
 El texto del insight no copia la cita ni la entrada: la `quote` es una frase literal corta (hasta 200 caracteres, **la elige y comprueba el servidor**) que la pantalla muestra **difuminada** hasta que la persona pulsa el ojo.
@@ -43,7 +43,7 @@ La lista de ES-19 es cerrada; se añaden **tres propósitos nuevos**, explícito
 
 ## 6. API (propuestas sin estado, como ES-28)
 
-`POST /api/insights/proposals` `{ sources: ['chat'|'diary'|'resume'] (1–3), turnIds?: [int], entryIds?: [int], locale }` → `200 { insights: [...], warnings, discarded, token, expiresAt }`
+`POST /api/insights/proposals` `{ sources: ['chat'|'diary'|'resume'] (1–3), turnIds?: [int], entryIds?: [int], resumeId?: int, locale }` → `200 { insights: [...], warnings, discarded, token, expiresAt }`
 
 - **Titular siempre el del token.** Un id ajeno es 404 (`origin_not_found`), indistinguible de uno inexistente.
 - **Qué se lee de cada fuente** (límites **propuestos**, a confirmar; ninguno está medido):
@@ -57,7 +57,7 @@ La lista de ES-19 es cerrada; se añaden **tres propósitos nuevos**, explícito
 
 **Autorizar un insight** no tiene ruta nueva: la pantalla usa `POST /api/career-context/preview` y `/confirm` de ES-25 con `{key, text, origin}`, con dos cambios pequeños:
 
-1. `origin.type` admite `'resume'` además de `diary_entry`, `chat_turn` y `direct`, y el servidor comprueba que la fuente es de la persona sin copiar su contenido.
+1. `origin.type` admite `'resume_version'` (el `id` es la versión de la hoja de vida; el nombre sigue al de la tabla de ES-109) además de `diary_entry`, `chat_turn` y `direct`, y el servidor comprueba que la fuente es de la persona sin copiar su contenido.
 2. **`GET /api/career-context` devuelve el origen de cada texto** (tipo, id y marca de tiempo, **sin contenido**), como pidió Dev en ES-111. Sin esto, al recomponer una versión se perdería la dependencia del consentimiento. Es un dato privado de la persona; nunca va al motor profesional.
 
 ## 7. Salida del modelo: validada y filtrada
@@ -106,7 +106,7 @@ Cada análisis consume cupo de tokens de la persona (V-12; propuesta de arranque
 **Código:** `backend/utils/insightProposal.js`, `backend/routes/insights.js` (`POST /api/insights/proposals`), propósitos `insights_chat` e `insights_diary` en `utils/consent.js`, y cambios en `utils/careerContext.js` (habilidad como metadato privado, origen visible para el titular) y `utils/skillMap.js` (`inConversation`).
 
 **Diferencias respecto al texto del contrato (todas hacia el lado más estricto o de menor alcance)**
-- **La hoja de vida NO está en esta entrega.** Depende del modelo y la extracción de texto de ES-109 (#89), que aún no están en `main`. Cuando #89 se fusione se añade: fuente `resume`, propósito `insights_resume` y origen `resume` en el puente. Por ahora `sources: ['resume']` responde 400.
+- **La hoja de vida** se añadió en un PR apilado sobre ES-121 (sección «Fuente hoja de vida» más abajo).
 - La habilidad (`skillKey`) de un insight se **valida contra el catálogo publicado** también al autorizar (vista previa y confirmación), y el token de la vista previa la liga: cambiarla después impide confirmar (409).
 - `GET /api/career-context` devuelve, solo al titular, `origin` (`{type, id}` o `{type:'direct'}`) y `skillKey` por texto; **sin contenido ni marca de tiempo**. `getApprovedContext` (motor profesional) no cambia: solo `{key, text}`.
 - `GET /api/skill-map` añade `inConversation: boolean` por habilidad: hay un insight autorizado vigente que la apoya y no hay ningún nivel vigente (autoevaluación ni revisión). No crea evaluaciones ni cambia el radar.
@@ -127,3 +127,14 @@ Cada análisis consume cupo de tokens de la persona (V-12; propuesta de arranque
 - **ES121-QA-02 (Medio, corregido):** un insight que **promete** empleo, contratación, ofertas, mejor pago o éxito se descarta (`conseguirás empleo`, `te contratarán`, `mejor salario`, `ofertas de trabajo`, `job offers`, `higher salary`, `te garantizo`…). No se bloquea que la persona diga qué valora o necesita («valoras un sueldo estable»). Es un filtro por palabras: puede dejar pasar una promesa con otra redacción y puede descartar un texto legítimo.
 - **Observación (Baja): el `token` de la propuesta no lo consume ningún endpoint.** Es así a propósito en esta entrega: la autorización de un insight usa el token de vista previa de ES-25, que sí se verifica. El `token` queda reservado (firma ligada a la persona y al contenido, 10 minutos) por si una ruta futura necesita comprobar que una propuesta salió de este servidor; hoy no autoriza nada.
 - **Observación (Baja): un texto inyectado pasa si cita una frase real.** Si la persona escribe una instrucción en su propio chat o diario y el modelo la obedece citando una frase real, el insight llega **solo a la propia persona**, como hipótesis marcada «tú decides»; no se guarda ni cruza sin su autorización. Es una limitación conocida del filtrado por citas; la mitigación es el delimitador, la cita verificada y los filtros.
+
+### Fuente hoja de vida (PR apilado sobre ES-121, 30-oct-2026)
+Decisión de Mauricio (30-oct): **permiso propio** `insights_resume`, separado de `resume_ai_reading` (que sirve para sacar campos del mapa).
+- **Permiso:** `insights_resume` (opcional, sin decidir por defecto). Analizar chat o diario, o tener `resume_ai_reading`, **no** lo reemplazan. Retirarlo se respeta desde la siguiente petición (mismo bloqueo compartido de ES-19).
+- **Qué se lee:** el PDF **cifrado** de la propia persona: su última versión, o la que indique `resumeId` (id ajeno o inexistente = 404 `origin_not_found`). Dentro de la transacción de `withConsent` solo se lee y descifra el PDF; el texto se extrae y se **depura de contacto** con el mismo saneador de ES-109 **después**, fuera de la transacción (no retiene la conexión mientras se lee el PDF). Nada de ese texto se guarda ni se registra.
+- **No sirve como fuente (422 `no_usable_source`, sin llamar a la IA y sin decir por qué):** persona sin hoja de vida, PDF escaneado/corrupto/con contraseña, texto con contacto restante, o texto marcado por el detector de riesgo.
+- **Citas:** se comprueban contra el texto ya depurado; una cita al correo o al teléfono (que ya no existen en ese texto) descarta el insight.
+- **Origen en el puente (ES-25):** `origin: {type: 'resume_version', id}`; el servidor comprueba que la versión es de la persona y guarda solo `id` y su fecha de creación. Si la hoja de vida se borra (o se retira `resume_ai_reading`, que borra todas las versiones), el contexto autorizado **se conserva** y queda **«para revisión»** (`needsReview: true`). El motor profesional sigue leyendo solo `{key, text}`.
+- **Límite de lectura:** una hoja de vida por corrida, hasta 8 000 caracteres de texto depurado hacia el modelo (arranque, a ajustar tras medir).
+
+**Pruebas:** `backend/test/es-121-resume.test.cjs` (4 pruebas, PDFs sintéticos reales; proveedor simulado), 3 pruebas nuevas en `backend/test/integration/es-121-postgres.cjs` (PDF cifrado de verdad, última versión por defecto, id ajeno, borrado por revocación de `resume_ai_reading`, 20 personas simultáneas con pool de 5) y 9 mutaciones de la fuente, todas detectadas. **No verificado:** calidad de los insights con Claude real sobre hojas de vida reales (la muestra controlada la hace QA con casos sintéticos); hojas de vida con diseños complejos (columnas, imágenes) cuyo texto el extractor lea desordenado; pantalla de consentimiento para esta fuente (puerta de diseño).
