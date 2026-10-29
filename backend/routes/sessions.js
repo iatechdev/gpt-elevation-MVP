@@ -4,6 +4,13 @@
 
 const express = require('express');
 const router  = express.Router();
+const { sharingSet } = require('../utils/therapistAccess');
+
+// ES-96 (ES93-M7): datos de personas y de su terapeuta: nunca en cachés.
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
@@ -96,9 +103,11 @@ router.get('/therapist', async (req, res) => {
       where,
       order: [['scheduledAt', 'ASC']],
     });
+    // ES-96 (ES93-A3): el nombre es parte del vínculo (para agendar); el correo, solo de quien autorizó compartir sus datos con este terapeuta.
+    const sharing = await sharingSet(req.user.id, [...new Set(sessions.map((s) => s.patientId))]);
     const enriched = await Promise.all(sessions.map(async (s) => {
       const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
-      return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: p?.email ?? '' };
+      return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: sharing.has(s.patientId) ? (p?.email ?? '') : '' };
     }));
     res.json(enriched);
   } catch (error) {
@@ -257,6 +266,36 @@ router.get('/user', async (req, res) => {
   } catch (error) {
     console.error('❌ Error fetching user sessions:', error);
     res.status(500).json({ error: 'Could not fetch sessions.' });
+  }
+});
+
+// DELETE /api/sessions/user/my-therapist — la propia persona se desvincula de su terapeuta (ES-96, ES93-A3).
+// El terapeuta pierde el acceso de inmediato; las sesiones futuras entre ambos se cancelan; la autorización que dio queda ligada a ese terapeuta
+// (alcance `therapist-<id>`), así que un terapeuta nuevo no la hereda. Idempotente.
+router.delete('/user/my-therapist', async (req, res) => {
+  const { unlinkTherapist } = require('../utils/therapistLink');
+  const { sequelize } = require('../database');
+  const consent = require('../utils/consent');
+  try {
+    if (req.user.role !== 'user') {
+      return res.status(403).json({ error: 'Users only.' });
+    }
+    const transaction = await sequelize.transaction();
+    try {
+      const result = await unlinkTherapist(req.user.id, 'unlinked_by_person', transaction);
+      await transaction.commit();
+      if (result.unlinked) {
+        // La autorización a ese terapeuta se retira también (queda en el historial de decisiones de la persona).
+        await consent.setConsent(req.user.id, 'therapist_sharing', 'revoked', consent.therapistScope(result.therapistId)).catch(() => {});
+      }
+      res.json({ unlinked: result.unlinked });
+    } catch (error) {
+      await transaction.rollback().catch(() => {});
+      throw error;
+    }
+  } catch (error) {
+    console.error('❌ Error unlinking therapist:', error && (error.code || error.name));
+    res.status(500).json({ error: 'No se pudo completar la operación. / The operation could not be completed.' });
   }
 });
 

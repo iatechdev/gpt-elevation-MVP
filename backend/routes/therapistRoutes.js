@@ -2,6 +2,14 @@
 
 const express = require('express');
 const router = express.Router();
+const { sharingSet, withPatientData } = require('../utils/therapistAccess');
+const { deletionPending } = require('../utils/deletionGuard');
+
+// ES-96 (ES93-M7): lo que entrega este router son datos de personas: nunca se guarda en cachés.
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
@@ -58,13 +66,24 @@ router.get('/pacientes', async (req, res) => {
   try {
     const therapistId = req.user.id;
 
-    const patients = await User.findAll({
-      where: { therapistId, role: 'user' },
+    // ES-96: solo personas vinculadas, activas y sin eliminación solicitada; lo demás de cada una, solo si autorizó compartirlo con ESTE terapeuta.
+    const linked = await User.findAll({
+      where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name', 'email', 'active', 'createdAt'],
     });
+    const patients = [];
+    for (const p of linked) if (!(await deletionPending(p.id))) patients.push(p);
+    const sharing = await sharingSet(therapistId, patients.map((p) => p.id));
 
     const patientsWithStats = await Promise.all(
       patients.map(async (p) => {
+        if (!sharing.has(p.id)) {
+          // Sin autorización: solo identidad mínima del vínculo (id y nombre). Sin correo, ánimo, valoraciones ni tendencias.
+          return {
+            id: p.id, name: p.name, email: '', active: p.active, createdAt: p.createdAt, sharing: false,
+            lastMood: null, moodTrend: 'neutral', avgRating: null, totalSessions: 0, sessionsThisWeek: 0, trend: null,
+          };
+        }
         const moodLogs = await MoodLog.findAll({
           where: { UserId: p.id },
           order: [['date', 'DESC']],
@@ -103,6 +122,7 @@ router.get('/pacientes', async (req, res) => {
           email: p.email,
           active: p.active,
           createdAt: p.createdAt,
+          sharing: true,
           lastMood,
           moodTrend,
           avgRating,
@@ -129,10 +149,14 @@ router.get('/alerts', async (req, res) => {
     const now = Date.now();
     const ONE_DAY = 1000 * 60 * 60 * 24;
 
-    const patients = await User.findAll({
+    const linkedPatients = await User.findAll({
       where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name'],
     });
+    // ES-96: las alertas se calculan con el ánimo de la persona: solo de quien autorizó compartirlo con este terapeuta y no se está borrando.
+    const allowed = await sharingSet(therapistId, linkedPatients.map((p) => p.id));
+    const patients = [];
+    for (const p of linkedPatients) if (allowed.has(p.id) && !(await deletionPending(p.id))) patients.push(p);
 
     const inactivePatients = [];
     const notableProgress  = [];
@@ -203,37 +227,27 @@ router.get('/alerts', async (req, res) => {
 // ==========================================
 router.get('/pacientes/:id/historial', async (req, res) => {
   try {
-    const therapistId = req.user.id;
     const patientId = req.params.id;
+    await withPatientData(req, res, patientId, async (patient) => {
+      const moodLogs = await MoodLog.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 30,
+      });
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id', 'name', 'email', 'createdAt'],
+      const ratings = await SessionRating.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 30,
+      });
+
+      res.json({ patient: patient.toJSON(), moodLogs, ratings });
     });
-
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
-
-    const moodLogs = await MoodLog.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 30,
-    });
-
-    const ratings = await SessionRating.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 30,
-    });
-
-    res.json({ patient: patient.toJSON(), moodLogs, ratings });
   } catch (error) {
     console.error('❌ Error fetching patient history:', error);
     res.status(500).json({ error: 'Could not fetch patient history.' });
   }
 });
-
 // ==========================================
 // HU-049 — THERAPIST PROMPT MANAGEMENT
 // ==========================================
@@ -331,51 +345,41 @@ router.get('/prompt/versions', async (req, res) => {
 router.get('/pacientes/:id/historia', async (req, res) => {
   try {
     const therapistId = req.user.id;
-    const patientId = req.params.id;
+    await withPatientData(req, res, req.params.id, async (patient) => {
+      const moodLogs = await MoodLog.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 60,
+      });
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id', 'name', 'email', 'createdAt', 'therapistId'],
-    });
+      const ratings = await SessionRating.findAll({
+        where: { UserId: patient.id },
+        order: [['date', 'DESC']],
+        limit: 60,
+      });
 
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
+      const notes = await ClinicalNote.findAll({
+        where: { UserId: patient.id, therapistId },
+        order: [['sessionDate', 'DESC']],
+      });
 
-    const moodLogs = await MoodLog.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 60,
-    });
+      const decryptedNotes = notes.map(n => ({
+        ...n.toJSON(),
+        content: desencriptar(n.content),
+      }));
 
-    const ratings = await SessionRating.findAll({
-      where: { UserId: patientId },
-      order: [['date', 'DESC']],
-      limit: 60,
-    });
-
-    const notes = await ClinicalNote.findAll({
-      where: { UserId: patientId, therapistId },
-      order: [['sessionDate', 'DESC']],
-    });
-
-    const decryptedNotes = notes.map(n => ({
-      ...n.toJSON(),
-      content: desencriptar(n.content),
-    }));
-
-    res.json({
-      patient: patient.toJSON(),
-      moodLogs,
-      ratings,
-      notes: decryptedNotes,
-    });
+      res.json({
+        patient: patient.toJSON(),
+        moodLogs,
+        ratings,
+        notes: decryptedNotes,
+      });
+    }, ['id', 'name', 'email', 'createdAt', 'therapistId']);
   } catch (error) {
     console.error('❌ Error fetching clinical history:', error);
     res.status(500).json({ error: 'Could not fetch clinical history.' });
   }
 });
-
 router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDate: date, type: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
@@ -392,25 +396,21 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
     const validTypes = ['session_note', 'observation', 'goal'];
     const noteType = validTypes.includes(type) ? type : 'session_note';
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-    });
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
+    // ES-96 (ES93-A1/A3): solo sobre una persona vinculada, activa, sin eliminación solicitada y que autorizó compartir con este terapeuta.
+    await withPatientData(req, res, patientId, async (patient) => {
+      const note = await ClinicalNote.create({
+        UserId: patient.id,
+        therapistId,
+        content: encriptar(content),
+        type: noteType,
+        sessionDate,
+      });
 
-    const note = await ClinicalNote.create({
-      UserId: patientId,
-      therapistId,
-      content: encriptar(content),
-      type: noteType,
-      sessionDate,
-    });
-
-    res.status(201).json({
-      message: 'Note saved successfully.',
-      note: { ...note.toJSON(), content },
-    });
+      res.status(201).json({
+        message: 'Note saved successfully.',
+        note: { ...note.toJSON(), content },
+      });
+    }, ['id']);
   } catch (error) {
     console.error('❌ Error creating clinical note:', error);
     res.status(500).json({ error: 'Could not save note.' });
@@ -436,12 +436,15 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
     if (type)        updates.type        = type;
     if (sessionDate) updates.sessionDate = sessionDate;
 
-    await note.update(updates);
+    // ES-96: editar una nota sobre una persona exige el mismo acceso que escribirla (vínculo vigente, sin eliminación y con autorización).
+    await withPatientData(req, res, note.UserId, async () => {
+      await note.update(updates);
 
-    res.json({
-      message: 'Note updated successfully.',
-      note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
-    });
+      res.json({
+        message: 'Note updated successfully.',
+        note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
+      });
+    }, ['id']);
   } catch (error) {
     console.error('❌ Error updating clinical note:', error);
     res.status(500).json({ error: 'Could not update note.' });
@@ -453,14 +456,10 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
     const therapistId = req.user.id;
     const patientId = req.params.id;
 
-    const patient = await User.findOne({
-      where: { id: patientId, therapistId, role: 'user' },
-      attributes: ['id'],
-    });
-
-    if (!patient) {
-      return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
-    }
+    // ES-96: vínculo vigente, sin eliminación solicitada y con autorización de la persona. El bloqueo del consentimiento solo cubre esta
+    // comprobación, no la llamada a la IA (no se retiene una revocación esperando a un proveedor lento).
+    const allowed = await withPatientData(req, res, patientId, async () => true, ['id']);
+    if (allowed !== true) return; // withPatientData ya respondió 404 o 403
 
     const moodLogs = await MoodLog.findAll({
       where: { UserId: patientId },
