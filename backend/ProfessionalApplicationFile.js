@@ -2,7 +2,8 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('./database');
 
 // ES-95: hoja de vida (PDF) de la solicitud. Tabla aparte para que las listas nunca la carguen.
-// El contenido va cifrado (AES-256-GCM v2, en base64); el nombre original NO se guarda.
+// ES-107: el contenido se guarda como BINARIO cifrado (AES-256-GCM sobre los bytes, sin base64): ocupa el tamaño del archivo + 29 bytes.
+// El nombre original NO se guarda.
 module.exports = sequelize.define('ProfessionalApplicationFile', {
   ApplicationId: {
     type: DataTypes.INTEGER, allowNull: false, unique: true,
@@ -10,5 +11,5 @@ module.exports = sequelize.define('ProfessionalApplicationFile', {
   },
   size: { type: DataTypes.INTEGER, allowNull: false },
   sha256: { type: DataTypes.STRING(64), allowNull: false },
-  content: { type: DataTypes.TEXT, allowNull: false },
+  data: { type: DataTypes.BLOB, allowNull: false },
 });
