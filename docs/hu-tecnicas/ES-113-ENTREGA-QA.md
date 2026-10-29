@@ -6,7 +6,7 @@ Diseño/plan aprobado: Jira 10511 y aprobación explícita 10512. Nueva paleta d
 
 ## Dependencia y revisión del cambio
 
-La rama ES-113-diario-papel parte de main d5eb00f e integra ES-37 5c5da06 solo en la rama de trabajo, por la solicitud posterior de Alejo (Jira 10535 y 10575). No se fusiona ningún PR ni se modifica main. El PR apunta a main y **requiere fusionar ES-37 / PR 84 primero**. Los diez archivos heredados de esa dependencia no son cambios propios del diario. Para aislar ES-113: `git diff 5c5da06...HEAD`.
+La rama ES-113-diario-papel partió de main d5eb00f y se actualizó con main eb371a6 (merge local 06f0721), además de ES-37 5c5da06, por la solicitud de Alejo (Jira 10535 y 10575). No se fusiona ningún PR ni se modifica main. El PR 98 apunta a main y **requiere fusionar ES-37 / PR 84 primero**. Los diez archivos heredados de esa dependencia no son cambios propios del diario. Cambios propios: frontend/src/space/, frontend/test/es-113-diary.test.mjs, los dos archivos backend/test/* de ES-113 y estos documentos. El diff del PR excluye los cambios ya integrados en main; un diff simple contra 5c5da06 también incluiría la actualización posterior de main.
 
 La UI usa los tokens compartidos y las clases daisyUI ya disponibles; no instala dependencias ni crea otro tema. SpaceShell recibe una clase opcional usada solo por el diario. Se mantienen navegación/rutas y funciones del chat, sin implementar ES-112, El Puente o el mapa. El botón Al Puente está deshabilitado con explicación: no hay ruta adivinada ni envío implícito.
 
@@ -25,14 +25,16 @@ Windows, Node v24.14.0. Comandos desde frontend/ salvo indicación.
 | Prueba | Resultado |
 | --- | --- |
 | npm run lint | Exit 0; 0 errores y 0 advertencias |
-| npm run build (tsc -b + vite build) | Exit 0; 171 módulos, build 3.66 s; CSS 117.76 kB (18.32 gzip), JS 822.98 kB (220.10 gzip) |
-| npm test | Exit 0; 168 tests, 168 pasan, 0 fallan/omitidos; 32930.9791 ms. Incluye 3 nuevos de ES-113 y 9 heredados de ES-37 |
+| npm run build (tsc -b + vite build) | Exit 0; 172 módulos, build 2.94 s; CSS 117.76 kB (18.32 gzip), JS 824.28 kB (220.59 gzip) |
+| npm test | Exit 0; 171 tests, 171 pasan, 0 fallan/omitidos; 28814.4978 ms. Incluye 3 nuevos de ES-113, 9 heredados de ES-37 y los 3 de ES-107 integrados desde main |
 | npm audit --json | Exit 0; 0 vulnerabilidades frontend |
-| backend/: npm test | Exit 0; 388 tests, 388 pasan, 0 fallan/omitidos; 66720.6855 ms. Persistencia/proveedores con dobles en las suites que así lo declaran |
-| backend/: node --test test/integration/es-113-diary-postgres.cjs | Exit 0; 7 tests contando padre y 6 subcasos, 7 pasan, 0 fallan/omitidos; 71795.4096 ms. PostgreSQL/JWT/ORM/cifrado reales, conexión local inyectada |
+| backend/: node --test --test-concurrency=1 test/*.test.cjs | Exit 0; 402 tests, 402 pasan, 0 fallan/omitidos; 109465.5916 ms. Persistencia/proveedores con dobles en las suites que así lo declaran |
+| backend/: node --test test/integration/es-113-diary-postgres.cjs | Exit 0; 7 tests contando padre y 6 subcasos, 7 pasan, 0 fallan/omitidos; 26617.6931 ms. PostgreSQL/JWT/ORM/cifrado reales, conexión local inyectada y limpieza verificada |
 | node --check backend/test/support/es113-preview.cjs | Exit 0 |
 
-Vite mantiene aviso de chunk >500 kB y tiempos de callbacks de plugins. No se silencian reglas ni avisos. Backend npm ci reporta seis vulnerabilidades moderadas; no se declara auditoría backend verde ni se hacen cambios mayores de dependencias en esta HU. La salida de backend tests incluye fallos inyectados y NotFoundError del fallback SPA bajo .codex aunque el resultado es 388/388; la navegación real del diario se comprueba con el harness que permite esa carpeta oculta.
+Vite mantiene aviso de chunk >500 kB. No se silencian reglas ni avisos. Backend npm ci reporta seis vulnerabilidades moderadas; no se declara auditoría backend verde ni se hacen cambios mayores de dependencias en esta HU. La salida de backend tests incluye fallos inyectados y NotFoundError del fallback SPA bajo .codex aunque la ejecución en serie termina 402/402; la navegación real del diario se comprueba con el harness que permite esa carpeta oculta.
+
+Incidencias de la validación local, sin ocultarlas: npm ci falló primero por EPERM de una DLL usada por el preview; se cerró el proceso y la instalación repetida terminó exit 0 (294 paquetes). npm test backend concurrente agotó el timeout de un subproceso de P1-9/routes/auth.js; esa suite aislada pasó 6/6 y toda la regresión en serie pasó 402/402, sin cambiar aserciones ni límites. Una primera repetición PostgreSQL pasó los seis casos pero falló en el hook de cierre por EBUSY al retirar la carpeta: se corrigió el harness de pruebas para parar el servidor antes de eliminar solo su ruta validada, con reintentos acotados de fs.rm. La repetición pasó 7/7 y comprobó que la carpeta desaparece; el stop HTTP del preview también terminó exit 0 y limpió su DB. El fallo anterior de limpieza no se presenta como un caso funcional aprobado.
 
 ### Navegador con PostgreSQL real
 
@@ -51,6 +53,7 @@ Comprobado:
 - Cambio de versión mientras se edita: bloquea guardar, conserva borrador y permite revisar; no se promete atomicidad en la carrera posterior al GET.
 - Fallos 503 de listado/lectura: aviso y Reintentar recuperan la información sin escrituras.
 - Cambio A→B: lista de B, sin texto de A. ID de A abierto por B muestra entrada no disponible. B puede borrar su propia entrada y ver el vacío; tras revocar su JWT y recargar aparece sesión vencida sin texto privado.
+- Revisión automática P2 del PR 98: el listado convertía 401 en un error genérico. Corregido propagándolo al manejador de sesión del padre (sin rediseñar auth). Reproducción real: revocar la cuenta B y recargar exactamente /app/diary; aparece Iniciar sesión, 0 botones Reintentar y 0 listas privadas. El hilo queda abierto para QA.
 
 No verificado por Dev: lector de pantalla externo, zoom real al 200%, emulación en vivo de prefers-reduced-motion, dispositivos físicos, staging/producción, recorrido completo del chat y El Puente. El CSS de reduced-motion se conserva; no se presenta como una comprobación de preferencia en vivo. QA debe ejecutar los casos restantes y comparar con la maqueta de Jira.
 
@@ -78,7 +81,7 @@ El harness tiene rutas `/__es113/*` de control, incluidas sesiones sintéticas y
 6. Para provocar un fallo una vez: navegar a `/__es113/scenario/list-error`, `read-error`, `create-error`, `create-ack`, `edit-ack` o `delete-ack`. Redirige al listado; realizar la acción correspondiente. `normal` desactiva fallos. La elección usa una cookie local de prueba.
 7. Para conflicto: editar la entrada inicial de A y, en otra pestaña, abrir `/__es113/change-seed`; volver a guardar en la primera. Ese control modifica directamente la fixture en DB para simular otra sesión.
 8. `/__es113/revoke/101` o `/202` revoca esa sesión sintética; recargar una entrada para verificar el rechazo. Reiniciar el harness restaura las fixtures/tokens.
-9. Para detener y limpiar la DB: abrir `/__es113/stop` o terminar normalmente el proceso. Si se fuerza la terminación del terminal, verificar que PostgreSQL esté detenido antes de retirar su carpeta propia bajo backend/.pgdata. No reutilizar estos controles en producción.
+9. Para detener y limpiar la DB: abrir `/__es113/stop` o terminar normalmente el proceso. El harness detiene PostgreSQL y retira solo su ruta aleatoria comprobada, con reintentos acotados por los handles de Windows. Si se fuerza la terminación del terminal, verificar que PostgreSQL esté detenido antes de retirar su carpeta propia bajo backend/.pgdata. No reutilizar estos controles en producción.
 
 Para comparación histórica opcional, ES113_BASELINE_DIST puede apuntar explícitamente al dist de una copia limpia de main d5eb00f; el harness lo sirve en 43115 sobre la misma DB sintética. Esa referencia ya debe estar construida. No se versionan dist, capturas, .pgdata ni node_modules.
 

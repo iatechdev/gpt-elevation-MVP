@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listEntries } from './api'
+import { listEntries, SpaceError } from './api'
 import type { Entry } from './api'
 import { copy } from './copy'
 import { journalCopy, journalDate } from './journalCopy'
@@ -13,13 +13,18 @@ export function JournalRecentList({ entries, lang, selected }: { entries: Entry[
   </article>)}</>
 }
 
-export function JournalRecent({ token, lang, selected }: { token: string; lang: 'es' | 'en'; selected: number | null }) {
+export function JournalRecent({ token, lang, selected, onSessionExpired }: { token: string; lang: 'es' | 'en'; selected: number | null; onSessionExpired: () => void }) {
   const [state, setState] = useState<{ entries: Entry[]; loading: boolean; failed: boolean }>({ entries: [], loading: true, failed: false })
   const [attempt, setAttempt] = useState(0)
+  const expire = useEffectEvent(onSessionExpired)
   useEffect(() => {
     let alive = true
     void listEntries(token).then(entries => { if (alive && localStorage.getItem('elevation_token') === token) setState({ entries, loading: false, failed: false }) })
-      .catch(() => { if (alive && localStorage.getItem('elevation_token') === token) setState({ entries: [], loading: false, failed: true }) })
+      .catch(error => {
+        if (!alive || localStorage.getItem('elevation_token') !== token) return
+        if (error instanceof SpaceError && error.status === 401) { expire(); return }
+        setState({ entries: [], loading: false, failed: true })
+      })
     return () => { alive = false }
   }, [token, attempt])
   const c = copy[lang]

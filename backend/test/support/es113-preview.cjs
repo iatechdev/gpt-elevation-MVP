@@ -11,13 +11,18 @@ const { randomBytes } = require('node:crypto'); const { once } = require('node:e
   const probe = net.createServer();
   const pgPort = await new Promise(resolve => probe.listen(0, '127.0.0.1', () => { const port = probe.address().port; probe.close(() => resolve(port)); }));
   const password = randomBytes(24).toString('hex');
-  const pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es113_preview', password, port: pgPort, persistent: false,
+  const pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es113_preview', password, port: pgPort, persistent: true,
     initdbFlags: ['--encoding=UTF8', '--locale=C'], postgresFlags: ['-h', '127.0.0.1'], onLog() {}, onError() {} });
   const servers = []; let sequelize; let started = false; let stopping = false;
   const stop = async () => {
     if (stopping) return; stopping = true;
     for (const server of servers) await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
-    if (sequelize) await sequelize.close(); if (started) await pg.stop();
+    if (sequelize) await sequelize.close();
+    if (started) {
+      await pg.stop();
+      if (path.dirname(directory) !== root || !/^es113-preview-[a-f0-9]{16}$/.test(path.basename(directory))) throw new Error('Invalid cleanup directory');
+      await fs.promises.rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    }
   };
   process.on('SIGINT', () => void stop().then(() => process.exit()));
   process.on('SIGTERM', () => void stop().then(() => process.exit()));

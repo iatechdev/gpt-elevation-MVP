@@ -26,7 +26,9 @@ test('ES-113 diary: real PostgreSQL ownership, encrypted CRUD, validation and se
     });
   });
   const password = randomBytes(24).toString('hex');
-  const pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es113_test', password, port, persistent: false,
+  // Windows descendants may release file handles after the parent's exit event.
+  // Stop first; remove only our verified directory with bounded EBUSY retries.
+  const pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es113_test', password, port, persistent: true,
     initdbFlags: ['--encoding=UTF8', '--locale=C'], postgresFlags: ['-h', '127.0.0.1'], onLog() {}, onError() {} });
   let started = false;
   let sequelize;
@@ -34,7 +36,13 @@ test('ES-113 diary: real PostgreSQL ownership, encrypted CRUD, validation and se
   t.after(async () => {
     if (server) await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
     if (sequelize) await sequelize.close();
-    if (started) await pg.stop();
+    if (started) {
+      await pg.stop();
+      assert.equal(path.dirname(directory), root);
+      assert.match(path.basename(directory), /^es113-[a-f0-9]{16}$/);
+      await fs.promises.rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+      assert.equal(fs.existsSync(directory), false, 'Disposable PostgreSQL directory must be removed');
+    }
   });
   await pg.initialise();
   await pg.start();

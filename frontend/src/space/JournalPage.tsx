@@ -128,7 +128,7 @@ function JournalSession({ token }: { token: string }) {
       {uncertain && <div className="space-card"><p>{uncertain === 'create' ? c.unknown : uncertain === 'delete' ? c.deleteError : j.unconfirmed}</p><button className="elv-btn" disabled={busy} onClick={() => void inspect()}>{c.inspect}</button>{uncertain === 'create' && <><p>{c.duplicate}</p><button className="elv-btn" disabled={busy} onClick={() => setDialog('discard')}>{c.discard}</button></>}{inspection && rows}</div>}
       <p className="space-note">{c.deleteLimit}</p><Link className="elv-link" to="/app/diary">{c.journal}</Link>
     </>}
-    </section><JournalRecent key={`${saved?.updatedAt || ''}:${unavailable}`} token={token} lang={lang} selected={id} /></div>}
+    </section><JournalRecent key={`${saved?.updatedAt || ''}:${unavailable}`} token={token} lang={lang} selected={id} onSessionExpired={() => failure(new SpaceError(401), c.loadError)} /></div>}
     {dialog && !expired && <ConfirmDialog text={dialog === 'delete' ? `${c.deleteWarning} ${c.deleteLimit}` : c.leave} cancel={c.stay} confirm={dialog === 'delete' ? c.remove : c.discard} onClose={() => setDialog(null)} onConfirm={() => {
       if (dialog === 'delete') { void remove(); return }
       setDialog(null)
