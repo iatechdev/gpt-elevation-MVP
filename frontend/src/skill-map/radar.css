@@ -59,3 +59,26 @@
   .radar-card { padding: 16px; }
 }
 .radar-card { box-shadow: var(--elv-shadow-card); border-radius: var(--elv-r-lg); }
+
+/* ── ES-30 · Analizar mi evidencia con IA ─────────────────────── */
+.radar-analyze { margin-top: 12px; }
+.skill-map-ai-ask { align-self: flex-start; }
+.ai-panel { margin-bottom: 24px; }
+.ai-steps { display: flex; gap: 8px; flex-wrap: wrap; list-style: none; margin: 0 0 12px; padding: 0; font-size: var(--elv-fs-sm); color: var(--elv-text-2); }
+.ai-steps li { padding: 2px 10px; border: 1px solid var(--elv-line); border-radius: 999px; }
+.ai-steps li[aria-current="step"] { background: var(--elv-action); color: var(--elv-action-text); border-color: var(--elv-action); }
+.ai-prop { border: 1px solid var(--elv-line); border-radius: var(--elv-r-md); padding: 16px; margin-top: 12px; }
+.ai-prop-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.ai-prop h3 { margin: 0; font-size: var(--elv-fs-md); font-weight: 600; }
+.ai-prop p { margin: 8px 0 0; }
+.ai-tag { font-size: var(--elv-fs-sm); font-weight: 600; color: var(--elv-ai); background: var(--elv-ai-bg); border-radius: 999px; padding: 2px 10px; }
+.ai-lv { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.ai-evid blockquote { margin: 8px 0 0; padding-left: 12px; border-left: 3px solid var(--elv-line); color: var(--elv-text-2); font-size: var(--elv-fs-md); }
+.ai-warn { background: var(--elv-warning-bg); border-left: 4px solid var(--elv-brand); border-radius: var(--elv-r-sm); padding: 8px 12px; margin-top: 8px; font-size: var(--elv-fs-md); }
+.ai-error { background: var(--elv-error-bg); border-left: 4px solid var(--elv-error); border-radius: var(--elv-r-sm); padding: 12px 16px; margin-top: 12px; }
+.ai-error p { margin: 0 0 8px; }
+.ai-ok { background: var(--elv-ai-bg); border-left: 4px solid var(--elv-ai); border-radius: var(--elv-r-sm); padding: 12px 16px; }
+.ai-spin { width: 22px; height: 22px; border: 3px solid var(--elv-line); border-top-color: var(--elv-action); border-radius: 50%; display: inline-block; vertical-align: middle; animation: ai-spin 1s linear infinite; }
+@keyframes ai-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ai-spin { animation: none; } }
+@media (max-width: 600px) { .ai-panel .skill-map-self-actions > .elv-btn { flex: 1 1 auto; } }

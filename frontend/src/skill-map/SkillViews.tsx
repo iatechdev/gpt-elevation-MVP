@@ -121,9 +121,10 @@ function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessmen
 }
 
 /** Detalle de la capacidad elegida: las mismas pistas separadas y reglas de datos de siempre (nivel null sin evidencia, sin promedios). */
-export function SkillDetail({ skill, catalogVersion, territories, lang, t, self }: {
+export function SkillDetail({ skill, catalogVersion, territories, lang, t, self, onAnalyze }: {
   skill: Skill; catalogVersion: number; territories: readonly Territory[]; lang: Lang; t: T
   self?: { backend: string; token: string; onChanged: (kind: 'saved' | 'retired') => void }
+  onAnalyze?: (key: string) => void
 }) {
   const status = skillStatus(skill)
   const { links } = resolveTerritories([skill], territories)
@@ -137,6 +138,7 @@ export function SkillDetail({ skill, catalogVersion, territories, lang, t, self 
       {names.length > 0 && <p className="skill-map-note">{t('skill_map.territories')}: {names.join(' · ')}</p>}
       <AssessmentPanel assessment={skill.self} track="self" lang={lang} t={t} />
       <AssessmentPanel assessment={skill.review} track="review" lang={lang} t={t} />
+      {onAnalyze && <button type="button" className="elv-btn skill-map-ai-ask" onClick={() => onAnalyze(skill.skillKey)}>{t('skill_map.ai_open_skill')}</button>}
       {self && <SelfAssessPanel skill={skill} catalogVersion={catalogVersion} lang={lang} t={t} backend={self.backend} token={self.token} onChanged={self.onChanged} />}
       <details className="skill-map-rubric">
         <summary>{t('skill_map.rubric')} · {catalogVersion}</summary>
