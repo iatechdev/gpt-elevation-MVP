@@ -8,7 +8,13 @@ test('P1-8: server dependencies resolve from the backend installation without ro
   const serverRequire = createRequire(path.resolve(__dirname, '../server.js'));
   const backendModules = path.resolve(__dirname, '../node_modules') + path.sep;
   const { dependencies } = require('../package.json');
+  // Herramientas de línea de comandos que se ejecutan con su binario y no exportan un módulo (ES-59).
+  const soloCli = new Set(['sequelize-cli']);
   for (const name of Object.keys(dependencies)) {
+    if (soloCli.has(name)) {
+      assert.ok(require('node:fs').existsSync(path.join(backendModules, '.bin', 'sequelize-cli')), name + ' must provide its binary in backend/node_modules/.bin');
+      continue;
+    }
     const resolved = serverRequire.resolve(name);
     assert.ok(resolved.startsWith(backendModules), name + ' must resolve from backend/node_modules');
     assert.ok(serverRequire(name), name + ' must be loadable');

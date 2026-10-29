@@ -27,11 +27,24 @@ const CORE = [
   // No se exportan `origins` (referencias privadas sin texto) ni `requestId`.
   ['evidence', 'Evidence', 'UserId', ['id', 'currentVersion', 'createdAt', 'updatedAt']],
   ['evidenceVersions', 'EvidenceVersion', 'UserId', ['id', 'EvidenceId', 'version', 'status', 'authoring', 'payload', 'hasChatOrigin', 'consentVersion', 'createdAt'], ['payload'], ['payload'], (row) => Object.keys(row.payload).length > 0],
+  // ES-14: contexto privado y versionado del participante. `content` es el DTO validado, cifrado v2: se entrega descifrado y como objeto al
+  // dueño y se purga con el resto. El FK con CASCADE solo cubriría el borrado físico del usuario; ES-23 pseudonimiza la fila y no la borra.
+  ['participantContext', 'ParticipantContext', 'UserId', ['id', 'version', 'content', 'completedAt', 'createdAt', 'updatedAt'], ['content'], ['content']],
   // ES-29: evaluaciones de habilidad del Skill Map. `rationale` (la justificación de la persona) va cifrado v2 y se entrega descifrado. No se exportan
   // `rubricHash`, `requestId` ni la versión de la regla (referencias técnicas internas); `evidenceRefs` son solo ids y versiones, sin texto. El catálogo
   // (SkillCatalog/SkillDefinition) lo administra el cliente y no es dato personal: no se registra.
   ['skillAssessments', 'SkillAssessment', 'UserId', ['id', 'skillKey', 'track', 'level', 'state', 'catalogVersion', 'evidenceRefs', 'confidence', 'confidenceReasonCode', 'rationale', 'authoring', 'status', 'createdAt'], ['rationale']],
+  // ES-32: extensión declarativa autorizada en Jira 10250 y en el chat. Sin cambios del procesador ni de retención.
+  ['routeConstraints', 'RouteConstraintsVersion', 'UserId', ['id', 'version', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['routeChoices', 'RouteChoice', 'UserId', ['id', 'roleKey', 'slot', 'decision', 'catalogVersion', 'constraintsVersion', 'status', 'createdAt']],
+  ['routeReviewRequests', 'RouteReviewRequest', 'UserId', ['id', 'status', 'note', 'createdAt'], ['note']],
   ['invalidations', 'DerivedInvalidation', 'UserId', ['id', 'sourceType', 'sourceId', 'reason', 'handledAt', 'createdAt']],
+  // ES-33: autorización de extensión declarativa (Jira 10260/10261). Hijos antes del contenedor por sus FK.
+  ['careerReminders', 'CareerReminder', 'UserId', ['id', 'planVersionId', 'actionKey', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerPlans', 'CareerPlanVersion', 'UserId', ['id', 'experimentId', 'version', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerReviews', 'CareerExperimentReview', 'UserId', ['id', 'experimentId', 'submissionVersion', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerExperimentVersions', 'CareerExperimentVersion', 'UserId', ['id', 'experimentId', 'version', 'lifecycle', 'payload', 'createdAt'], ['payload'], ['payload']],
+  ['careerExperiments', 'CareerExperiment', 'UserId', ['id', 'choiceId', 'currentVersion', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);
