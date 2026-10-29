@@ -118,3 +118,24 @@ svg .dot-none { fill: var(--elv-card); stroke: var(--elv-text-2); stroke-width: 
 .skill-map-unassigned { display: none; margin-bottom: 24px; }
 @media (min-width: 1024px) { .skill-map-board:not(.is-list) + .skill-map-unassigned { display: block; } }
 .skill-map-no-territories { margin-block: 0 16px; }
+/* ── ES-30: registrar mi nivel (autoevaluación) ─────────────── */
+.skill-map-state { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0; }
+.skill-map-scope .skill-map-validated { background: var(--elv-action-soft); color: var(--elv-action); border-color: var(--elv-action); }
+.skill-map-notice { background: var(--elv-success-bg); color: var(--elv-success); padding: 12px 16px; border-radius: var(--elv-r-md); margin: 0 0 12px; max-width: 720px; }
+.skill-map-self { border-top: 1px solid var(--elv-line); margin-top: 8px; padding-top: 16px; display: grid; gap: 12px; }
+.skill-map-self h3 { margin: 0; }
+.skill-map-self-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.skill-map-scope .skill-map-primary { background: var(--elv-action); color: var(--elv-action-text); border-color: var(--elv-action); text-decoration: none; display: inline-flex; align-items: center; }
+.skill-map-self-error { background: var(--elv-error-bg); color: var(--elv-error); padding: 12px 16px; border-radius: var(--elv-r-md); margin: 0; }
+.skill-map-self-warn { background: var(--elv-info-bg); color: var(--elv-info); padding: 12px 16px; border-radius: var(--elv-r-md); margin: 0; }
+.skill-map-self-empty { background: var(--elv-info-bg); color: var(--elv-text-1); border: 1px solid var(--elv-info); border-radius: var(--elv-r-md); padding: 12px 16px; display: grid; gap: 8px; }
+.skill-map-self-empty p { margin: 0; }
+.skill-map-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.skill-map-fieldset legend { font-weight: 600; padding: 0; margin-bottom: 8px; }
+.skill-map-opt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); padding: 12px 16px; margin: 8px 0; cursor: pointer; background: var(--elv-card); min-height: 44px; }
+.skill-map-opt:has(input:checked) { border: 2px solid var(--elv-action); padding: 11px 15px; background: var(--elv-action-soft); }
+.skill-map-opt input { width: 22px; height: 22px; accent-color: var(--elv-action); margin: 2px 0 0; flex: none; }
+.skill-map-opt > span { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.skill-map-field label { display: block; font-weight: 600; margin-bottom: 4px; }
+.skill-map-field textarea { width: 100%; max-width: 100%; min-height: 96px; padding: 10px 12px; background: var(--elv-card); color: var(--elv-text-1); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); font: inherit; resize: vertical; }
+@media (max-width: 639px) { .skill-map-self-actions > .elv-btn { flex: 1 1 auto; } }

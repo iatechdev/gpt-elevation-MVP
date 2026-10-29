@@ -23,6 +23,7 @@ export function SkillMapPage() {
   const [listView, setListView] = useState(false)
   const [bridge, setBridge] = useState<BridgeStatus | 'loading'>('loading')
   const [revoke, setRevoke] = useState<Revoke>('idle')
+  const [saved, setSaved] = useState('')
   const errorRef = useRef<HTMLDivElement>(null)
   const detailRef = useRef<HTMLDivElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -57,7 +58,7 @@ export function SkillMapPage() {
   }, [revoke])
   const refresh = () => { setState({ status: 'loading' }); setSelected(null); setBridge('loading'); setRevoke('idle'); setAttempt(value => value + 1) }
   const pick = (key: string) => {
-    setSelected(key)
+    setSelected(key); setSaved('')
     window.setTimeout(() => detailRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0)
   }
   const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
@@ -134,7 +135,8 @@ export function SkillMapPage() {
           </div>
           {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
           <div ref={detailRef} className="skill-map-detail-wrap" aria-live="polite">
-            {skill ? <SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} />
+            {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t}
+              self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></>
               : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
           </div>
           <p className="skill-map-note">{t('skill_map.revoke_scope')}</p>
