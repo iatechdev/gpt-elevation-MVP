@@ -24,6 +24,7 @@ import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
 import { MyTherapist }   from './pages/MyTherapist.tsx'
 import { Onboarding }    from './pages/Onboarding.tsx'
+import { ResumesPage }   from './context/resume/ResumesPage'
 import { EvidenceListPage, EvidenceDetailPage, EvidenceCreatePage } from './pages/EvidencePages.tsx'
 import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/app/diary/:id" element={<JournalPage />} />
         <Route path="/app/space/tools" element={<SpaceToolsPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
+        <Route path="/app/context/resumes" element={<ResumesPage />} /> {/* ES-109 — mis hojas de vida */}
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
