@@ -22,7 +22,7 @@ for (const name of [
   'User', 'ParticipantContext', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem',
+  'PlanRequest', 'TherapistValidation', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -49,6 +49,9 @@ models.AiBudgetCounter.create = async values => {
 };
 models.AiUsage.create = async values => ({ ...values, async update(updates) { Object.assign(this, updates); return this; } });
 models.AiUsage.findAll = async () => [];
+models.AiJob.update = async () => [0]; // ES-88: los ganchos de revocación y borrado invalidan jobs y candidatas (sin filas en los dobles)
+models.SkillCandidate.update = async () => [0];
+models.AiJob.findAll = async () => [];
 models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
 models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 

@@ -215,7 +215,12 @@ async function revokeActive(userId, transaction, { onlyWithConsent = false } = {
 }
 
 // Revocación voluntaria desde el puente. Revoca la versión activa (no crea otra).
-const revoke = (userId) => ownTransaction(async (transaction) => ({ revoked: (await revokeActive(userId, transaction)) > 0 }));
+// ES-88: si se revoca la versión activa, lo que el worker derivó de ella (jobs y candidatas) se invalida en la misma transacción.
+const revoke = (userId) => ownTransaction(async (transaction) => {
+  const revoked = (await revokeActive(userId, transaction)) > 0;
+  if (revoked) await require('./aiJobs').invalidateForUser(userId, 'context_revoked', transaction);
+  return { revoked };
+});
 
 // Gancho de utils/consent.js: al revocar `professional_bridge`, la versión que dependa de él se revoca en la MISMA transacción.
 // Las versiones con solo texto ingresado directamente no dependen del consentimiento y se conservan.

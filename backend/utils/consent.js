@@ -89,6 +89,8 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (purpose === 'professional_bridge' && status === 'revoked') await require('./careerContext').revokeForConsent(userId, transaction);
       // ES-27: revocar el puente deja de vigente, en la misma transacción, la evidencia confirmada que sale del chat.
       if (purpose === 'professional_bridge' && status === 'revoked') await require('./evidence').revokeForConsent(userId, transaction);
+      // ES-88: revocar el puente invalida, en la misma transacción, los jobs de análisis de IA y las candidatas de la persona (worker de ES-84).
+      if (purpose === 'professional_bridge' && status === 'revoked') await require('./aiJobs').invalidateForUser(userId, 'consent_revoked', transaction);
       await transaction.commit();
       finished = true;
       return { row, changed: true };
