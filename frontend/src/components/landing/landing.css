@@ -9,7 +9,7 @@
 @plugin 'daisyui' {
   themes: false;
   root: '.landing-scope';
-  include: button, card, badge, link, join, navbar, hero, fieldset, input, textarea, select, checkbox, radio, alert;
+  include: button, card, badge, link, join, navbar, hero, textarea, checkbox, input, fieldset, select, radio, alert;
   prefix: 'elv-';
   logs: false;
 }
@@ -259,4 +259,26 @@
   .landing-scope .landing-join { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; }
   .landing-scope .landing-join h2 { margin-bottom: 3rem; }
   .landing-scope .landing-join-professionals { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 3rem; }
+}
+/* ES-72 · S11, approved editorial objectives and project status. */
+.landing-scope .landing-project { padding: 2.5rem 1.5rem 3rem; border-top: 1px solid var(--color-base-300); overflow-wrap: anywhere; }
+.landing-scope .landing-project-inner { max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-project-label { margin: 0; color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.landing-scope .landing-project-eyebrow { display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; }
+.landing-scope .landing-project-eyebrow > span:first-child { display: inline-flex; gap: 1rem; align-items: center; }
+.landing-scope .landing-project-eyebrow > span:first-child::after { content: ''; width: 2rem; height: 1px; background: var(--color-accent); }
+.landing-scope .landing-project h2 { max-width: 1050px; margin: 0 0 2rem; font-size: clamp(2.25rem, 4.45vw, 4rem); line-height: 1.03; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-project-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; margin-top: 2rem; }
+.landing-scope .landing-project-goals { list-style: none; margin: 0; padding: 0; max-width: 650px; }
+.landing-scope .landing-project-goals li { display: flex; gap: 1rem; padding: 1.5rem 0; border-bottom: 1px solid var(--color-base-300); font-size: 1.0625rem; }
+.landing-scope .landing-project-goals li:first-child { padding-top: 0; }
+.landing-scope .landing-project-goals li::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--color-accent); flex-shrink: 0; margin-top: 0.65em; }
+.landing-scope .landing-project-state { border: 0; border-radius: 0; max-width: 650px; }
+.landing-scope .landing-project-state .elv-card-body { padding: 1.5rem; }
+.landing-scope .landing-project-state p { margin: 0; max-width: 530px; font-size: 1.0625rem; }
+@media (min-width: 48rem) {
+  .landing-scope .landing-project { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; }
+  .landing-scope .landing-project h2 { margin-bottom: 3rem; }
+  .landing-scope .landing-project-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 3rem; margin-top: 3rem; }
+  .landing-scope .landing-project-state .elv-card-body { padding: 2rem; }
 }

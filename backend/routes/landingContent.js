@@ -33,6 +33,8 @@ router.get('/', async (req, res) => {
     const registros = await LandingContent.findAll({ where: { lang } });
     const content = { ...LANDING_DEFAULTS[lang], ...defaults[lang] };
     registros.forEach(r => {
+      // ES-106 (ES94-C03): un texto guardado de una clave `landing.*` que ya no está en el catálogo (p. ej. una clave eliminada) no se publica.
+      if (typeof r.key === 'string' && r.key.startsWith('landing.') && !approvedKeys.has(r.key)) return;
       if (typeof r.value === 'string' && r.value.trim()) content[r.key] = r.value;
     });
     res.json(content);

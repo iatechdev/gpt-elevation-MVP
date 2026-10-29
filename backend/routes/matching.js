@@ -15,6 +15,7 @@ const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
+const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, object, text, id } = require('../middlewares/validateBody');
 
@@ -45,10 +46,7 @@ router.post('/request', validateBody({ answers: value => object(value) && Object
       limit: 14,
     });
 
-    const avgMood = moodLogs.length > 0
-      ? (moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean)
-          .reduce((a, b) => a + b, 0) / moodLogs.length).toFixed(1)
-      : 'No data';
+    const avgMood = formatAverage(averageMood(moodLogs), 'No data'); // ES-105: sobre los valores registrados, no sobre los registros
 
     const therapistList = availableTherapists.map(t => ({
       id:          t.id,
