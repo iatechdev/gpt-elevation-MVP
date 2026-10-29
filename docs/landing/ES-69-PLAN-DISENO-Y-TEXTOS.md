@@ -2,6 +2,8 @@
 
 [Dev-Codex] · 28-oct-2026. Rama ES-69-privacidad-faq, base origin/main 2f237a4. No se ha escrito código de implementación.
 
+**Decisión posterior:** Alejo aprobó explícitamente en el chat «Si, lo apruebo saquemoslo adelante»; registrada en ES-69/10430. Se implementa el tramo preparatorio descrito, con publicación desactivada por defecto. La aprobación no sustituye la revisión especializada de ES-69/10281 ni resuelve D-08. Este documento conserva el plan presentado antes de implementar; entrega y resultados en ES-69-VERIFICACION.md.
+
 ## Alcance y fuentes
 
 S6 Privacidad y límites y S14 Preguntas frecuentes (diez). Diseño general aprobado en ES-60/10279 y ES-69/10281. Textos base: docs/landing/TEXTOS-LANDING-FASE2-ES-EN.md de origin/docs/landing-diseno-fase2. La revisión de los 84 frames fue registrada en ES-68/10304; se conserva la estructura aprobada. La presente propuesta adapta las afirmaciones que no pueden presentarse como disponibilidad verificada.

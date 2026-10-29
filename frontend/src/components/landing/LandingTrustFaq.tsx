@@ -1,11 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { LandingButton, LandingCard, LandingLabel, LandingSection } from './LandingPrimitives'
 import './trust-faq.css'
 
 type Props = { text: (key: string) => string }
+function useLandingAnchor(id: string) {
+  useEffect(() => {
+    if (window.location.hash !== '#' + id) return
+    const section = document.getElementById(id)
+    section?.focus({ preventScroll: true })
+    section?.scrollIntoView({ block: 'start' })
+  }, [id])
+}
 export function LandingTrust({ text }: Props) {
-  return <LandingSection id="privacidad-limites" className="landing-trust-faq" aria-labelledby="landing-trust-title">
+  useLandingAnchor('privacidad-limites')
+  return <LandingSection id="privacidad-limites" tabIndex={-1} className="landing-trust-faq" aria-labelledby="landing-trust-title">
     <div className="landing-trust-inner">
       <p className="landing-trust-label"><span aria-hidden="true">{text('landing.trust.number')}</span>{text('landing.trust.label')}</p>
       <h2 id="landing-trust-title">{text('landing.trust.title')}</h2>
@@ -25,6 +34,7 @@ export function LandingTrust({ text }: Props) {
 }
 
 export function LandingFaq({ text }: Props) {
+  useLandingAnchor('preguntas-frecuentes')
   const [open, setOpen] = useState<ReadonlySet<number>>(() => new Set())
   const toggle = (item: number) => setOpen(previous => {
     const next = new Set(previous)
@@ -32,7 +42,7 @@ export function LandingFaq({ text }: Props) {
     else next.add(item)
     return next
   })
-  return <LandingSection id="preguntas-frecuentes" className="landing-trust-faq" aria-labelledby="landing-faq-title">
+  return <LandingSection id="preguntas-frecuentes" tabIndex={-1} className="landing-trust-faq" aria-labelledby="landing-faq-title">
     <div className="landing-trust-inner">
       <p className="landing-trust-label"><span aria-hidden="true">{text('landing.faq.number')}</span>{text('landing.faq.label')}</p>
       <h2 id="landing-faq-title">{text('landing.faq.title')}</h2>

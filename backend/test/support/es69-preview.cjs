@@ -30,8 +30,9 @@ for (const [mode, folder] of [['default', 'dist'], ['review', 'dist/es69-review'
     res.json(values);
   });
   app.get('/__es69/metrics', (_req, res) => res.json({ mode, writes }));
-  app.get('/__es69/dark', (_req, res) => {
+  app.get(['/__es69/dark', '/__es69/text-zoom'], (req, res) => {
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    if (req.path.endsWith('text-zoom')) return res.type('html').send(html.replace('</head>', '<style>html{font-size:200%}</style></head>'));
     res.type('html').send(html.replace('</head>', "<script>const mm=window.matchMedia.bind(window);window.matchMedia=q=>q==='(prefers-color-scheme: dark)'?{matches:true,media:q,addEventListener(){},removeEventListener(){}}:mm(q);history.replaceState(null,'','/');</script></head>"));
   });
   app.post('/__es69/stop', (_req, res) => { res.end(); setImmediate(stop); });
