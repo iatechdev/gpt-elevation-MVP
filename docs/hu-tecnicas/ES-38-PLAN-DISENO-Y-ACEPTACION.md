@@ -163,4 +163,3 @@ Los mocks facilitan estados difíciles pero no acreditan integración. Resultado
 ## Aprobación solicitada
 
 Aprobar la integración visual completa de los grupos anteriores, los patrones responsive/teclado, textos compartidos y estimación inicial 32–48 h, conservando flujos/contratos y la excepción de la landing. La implementación dependiente del tema espera ES-37 integrado; no se autoriza fusionarlo desde Dev. Este plan no da por aprobadas funcionalidades que sigan en QA ni amplía el alcance de sus contratos.
-
