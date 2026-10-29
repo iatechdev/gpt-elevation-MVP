@@ -20,6 +20,7 @@ const chip = (pending: boolean): React.CSSProperties => ({
 
 export function LandingPendingPanel({ lang, content, setValue, save, saving, msgs, s }: Props) {
   const { pending, ready } = countPending(content, lang)
+  if (PENDING_ITEMS.length === 0) return null // ES-94: nada pendiente, no hay panel
   return (
     <section aria-labelledby="landing-pending-title" style={{ marginBottom: '1.5rem' }}>
       <h2 id="landing-pending-title" style={{ fontSize: 16, margin: '0 0 4px' }}>Pendientes de contenido</h2>

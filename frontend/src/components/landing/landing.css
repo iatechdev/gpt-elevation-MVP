@@ -9,7 +9,7 @@
 @plugin 'daisyui' {
   themes: false;
   root: '.landing-scope';
-  include: button, card, badge, link, join, navbar, hero, fieldset, select, textarea, checkbox, input, radio, alert;
+  include: button, card, badge, link, join, navbar, hero, fieldset, input, select, checkbox, textarea, radio, alert;
   prefix: 'elv-';
   logs: false;
 }

@@ -35,6 +35,8 @@ models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
 models.DeletionRequest.findOne = async () => null;
+models.DeletionRequest.findAll = async () => []; // ES-101: el terapeuta consulta las eliminaciones aceptadas
+models.User.findAll = async () => []; // ES-101: por defecto nadie está inactivo; las pruebas que listan usuarios lo sobrescriben
 
 // ES-22: presupuesto de IA holgado por defecto y contadores en memoria; las pruebas de presupuesto lo sobrescriben.
 process.env.AI_BUDGET_TOKENS_PER_USER = '1000000000';
