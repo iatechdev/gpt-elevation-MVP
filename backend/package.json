@@ -26,6 +26,7 @@
     "migrate:career-plan": "node scripts/migrateCareerPlan.js",
     "seed:demo": "node scripts/seedStagingDemo.js",
     "test:seed-demo:pg": "node --test test/integration/seed-demo-postgres.cjs",
+    "test:therapist-privacy:pg": "node --test test/integration/es-96-postgres.cjs",
     "test:validation-upload:pg": "node --test test/integration/es-99-postgres.cjs",
     "test:therapist-validation:pg": "node --test test/integration/es-98-postgres.cjs",
     "test:pro-applications:pg": "node --test test/integration/es-95-postgres.cjs",
@@ -39,7 +40,8 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:status": "sequelize-cli db:migrate:status",
-    "db:drift": "node scripts/schema-drift.cjs"
+    "db:drift": "node scripts/schema-drift.cjs",
+    "check:workflows": "node scripts/check-workflows.cjs"
   },
   "keywords": [],
   "author": "",
@@ -64,6 +66,7 @@
     "sequelize-cli": "6.6.5"
   },
   "devDependencies": {
-    "embedded-postgres": "17.10.0-beta.17"
+    "embedded-postgres": "17.10.0-beta.17",
+    "js-yaml": "4.3.2"
   }
 }
