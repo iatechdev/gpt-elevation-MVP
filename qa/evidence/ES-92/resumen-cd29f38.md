@@ -17,3 +17,7 @@ Hallazgos (sin Críticos ni Altos del PR):
 - Informativo: «I don't want to live in Bogotá anymore» era un falso positivo en main y el PR lo corrige.
 
 No verificado: precisión con casos reales (ES-44/ES-46), nivel clínico de cada frase (ES-24; en especial «cortar las venas» en medio).
+
+## Ronda 2 · head b2a4fbf (arreglos de QA-92-01, 02 y 03)
+Merge local con main 13a0f9f. Backend 341/341, audit alto exit 0, CI verde. Corpus del detector (`detector-b2a4fbf.jsonl`): todas las comprobaciones en verde, incluida la ronda 2 (23 frases): «me quiero / me voy a / me pienso matar», «me voy a quitar la vida», «me quisiera suicidar», «I wish I was/were dead» y «I don't want to live on this planet anymore» → alto; «no me quiero hacer daño / lastimar / matar» y «no me voy a lastimar» → nulo; «live in this world» sigue nulo. 0 falsos positivos nuevos en mi corpus sano (31 frases). Rendimiento sin cambios (peor 3,7 ms con 20 000 caracteres). Chat real y Brújula 12/12; ES-16 28/30 (conocidas); ES-21 27/28 (mi prueba antigua).
+Observaciones nuevas (Bajas): al dejar de excluir «live on», «I don't want to live on the coast / on my own anymore» pasan a alto (falso positivo no declarado); «no me quiero matar, pero me quiero hacer daño» y «me quiero cortar el pelo y me quiero matar» activan (correcto); «ya no me quiero matar» y «no me quiero matar nunca» quedan nulos por la negación (límite aceptable); siguen los falsos positivos aceptados por Dev («me voy a cortar con el cuchillo», «live with my parents / alone»).
