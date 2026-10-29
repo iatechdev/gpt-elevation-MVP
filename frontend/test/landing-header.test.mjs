@@ -53,7 +53,7 @@ test('ES-62/68/70/73: actual header links reach existing sections, including Pla
     assert.ok(html.includes(`href="${homeSections ? '/' : ''}#skill-map"`))
     assert.ok(html.includes('href="#planes"'))
   }
-  assert.doesNotMatch(header, /landing\.nav\.pros/)
+  assert.match(header, /showProfessionals && <a[^>]+href="#profesionales"/)
   assert.doesNotMatch(header, /dangerouslySetInnerHTML|fetch\(/)
 })
 

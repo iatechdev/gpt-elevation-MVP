@@ -8,6 +8,9 @@ import { LandingHeader } from '../components/landing/LandingHeader'
 import { ExampleStrip } from '../components/landing/ExampleStrip'
 import { LandingFeatures, LandingSkillMap } from '../components/landing/LandingOffering'
 import { LandingProject } from '../components/landing/LandingProject'
+import { LandingProfessionals } from '../components/landing/LandingProfessionals'
+import { professionalsEnabled } from '../content/landingProfessionals'
+import { useSpaceRoutes } from '../space/routesContext'
 import { LandingJoin } from '../components/landing/LandingJoin'
 import { LandingPlans } from '../components/landing/LandingPlans'
 import { useLandingContent } from '../content/useLandingContent'
@@ -21,6 +24,8 @@ export function LandingPage() {
   const { t, lang, setLang } = useLanguage()
   const navigate = useNavigate()
   const landing = useLandingContent(lang)
+  const routes = useSpaceRoutes()
+  const showProfessionals = professionalsEnabled(import.meta.env.VITE_ENABLE_LANDING_PROFESSIONALS)
   const [content, setContent] = useState<LandingContent>(null)
 
   useEffect(() => {
@@ -38,7 +43,7 @@ export function LandingPage() {
       <div style={{ position: 'relative', zIndex: 1 }}>
 
         {/* Cabecera, idioma y salto al contenido (ES-62) */}
-        <LandingHeader text={landing.text} lang={lang} setLang={setLang} />
+        <LandingHeader text={landing.text} lang={lang} setLang={setLang} showProfessionals={showProfessionals} />
 
         <main id="contenido" tabIndex={-1}>
           {/* Hero + puertas (ES-63) */}
@@ -51,8 +56,9 @@ export function LandingPage() {
         {/* ES-68 · Problema, módulos y recorrido */}
         <LandingJourney text={landing.text} />
 
-        {/* ES-70 · S7 y S9; S8 se incorporará mediante ES-71. */}
+        {/* ES-70 · S7 y S9; ES-71 · S8 solo en el build de revisión. */}
         <LandingFeatures text={landing.text} />
+        {showProfessionals && <LandingProfessionals text={landing.text} applicationAvailable={routes.has('/profesionales')} />}
         <LandingSkillMap text={landing.text} />
         {/* ES-72 · S11: objetivos y estado del proyecto */}
         <LandingProject text={landing.text} />

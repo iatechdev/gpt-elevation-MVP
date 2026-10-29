@@ -3,11 +3,12 @@ import { useRef, useState } from 'react'
 import type { Lang } from '../../i18n/context'
 
 // ES-68/70 activate only the sections that now exist; other phase 2 anchors stay hidden.
-export function LandingHeader({ text, lang, setLang, homeSections = false }: {
+export function LandingHeader({ text, lang, setLang, homeSections = false, showProfessionals = false }: {
   text: (key: string) => string
   lang: Lang
   setLang: (l: Lang) => void
   homeSections?: boolean
+  showProfessionals?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
@@ -36,6 +37,7 @@ export function LandingHeader({ text, lang, setLang, homeSections = false }: {
             <a className="elv-link landing-nav-how" href={`${homeSections ? '/' : ''}#como-funciona`} onClick={() => setOpen(false)}>{text('landing.nav.how')}</a>
             <a className="elv-link landing-nav-skillmap" href={`${homeSections ? '/' : ''}#skill-map`} onClick={() => setOpen(false)}>{text('landing.nav.skillmap')}</a>
             <a className="elv-link landing-nav-plans" href="#planes" onClick={() => setOpen(false)}>{text('landing.nav.plans')}</a>
+            {showProfessionals && <a className="elv-link landing-nav-pros" href="#profesionales" onClick={() => setOpen(false)}>{text('landing.nav.pros')}</a>}
             <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
               {(['es', 'en'] as const).map(code => (
                 <button key={code} type="button" lang={code} aria-pressed={lang === code}
