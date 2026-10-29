@@ -114,7 +114,7 @@ export function ProfessionalApplicationPage() {
                 aria-describedby={has('consent') ? 'pro-consent-error' : undefined} onChange={e => setConsent(e.target.checked)} /> {c.consent}</label>
               {has('consent') && <span id="pro-consent-error" className="pro-error">{c.consentRequired}</span>}
             </div>
-            <div className="pro-trap" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" name="website" value={trap} onChange={e => setTrap(e.target.value)} /></label></div>
+            <div className="pro-trap" aria-hidden="true"><label>Leave empty<input tabIndex={-1} autoComplete="off" name="bot_trap" value={trap} onChange={e => setTrap(e.target.value)} /></label></div>
             <div className="space-actions">
               <button type="submit" className="elv-btn elv-btn-primary" disabled={phase === 'sending'}>{phase === 'sending' ? c.sending : c.submit}</button>
             </div>

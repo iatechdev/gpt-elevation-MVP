@@ -15,7 +15,7 @@ const KNOWN: FieldKey[] = ['name', 'email', 'country', 'profession', 'licenseNum
 export function buildForm(values: Values, file: File, lang: 'es' | 'en', honeypot = ''): FormData {
   const data = new FormData()
   for (const [key, value] of Object.entries(values)) if (value.trim()) data.append(key, value.trim())
-  data.append('locale', lang); data.append('consent', 'true'); data.append('website', honeypot)
+  data.append('locale', lang); data.append('consent', 'true'); data.append('bot_trap', honeypot)
   data.append('cv', file, 'cv.pdf') // el nombre original no viaja
   return data
 }

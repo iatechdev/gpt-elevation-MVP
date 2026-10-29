@@ -43,7 +43,7 @@ test('ES-95: el formulario no guarda nada en el navegador ni en la URL, no enví
   assert.doesNotMatch(page + api, /localStorage|sessionStorage|indexedDB|history\.(push|replace)State|navigate\(/)
   assert.match(api, /data\.append\('cv', file, 'cv\.pdf'\)/) // el nombre original no viaja
   assert.match(page, /<section[^>]*aria-labelledby="pro-title"/); assert.match(page, /role="alert"/); assert.match(page, /htmlFor=\{id\}/)
-  assert.match(page, /pro-trap" aria-hidden="true"/); assert.match(page, /tabIndex=\{-1\} autoComplete="off" name="website"/)
+  assert.match(page, /pro-trap" aria-hidden="true"/); assert.match(page, /tabIndex=\{-1\} autoComplete="off" name="bot_trap"/)
   assert.match(page, /type="file" accept="application\/pdf,\.pdf"/); assert.match(page, /aria-describedby=\{`pro-cv-help/)
   assert.match(read('../src/App.tsx'), /path="\/profesionales" element=\{<ProfessionalApplicationPage \/>\}/) // ruta pública, fuera de las rutas con sesión
 })
@@ -53,9 +53,9 @@ test('ES-95 backoffice: la pestaña lista, aprueba, rechaza con motivo, descarga
   assert.match(read('../src/pages/admin/AdminContent.tsx'), /<ProfessionalApplicationsPanel s=\{\{ card, label, input, btnPrimary, btnSecondary \}\} \/>/)
   assert.match(panel, /Aprobar no crea la cuenta/); assert.match(panel, /Escribe el motivo del rechazo/); assert.match(panel, /target="_blank" rel="noopener noreferrer"/)
   assert.match(panel, /Authorization: `Bearer \$\{token\}`/); assert.match(panel, /createObjectURL/); assert.doesNotMatch(panel, /window\.open|href=\{`\$\{API\}/) // sin URL pública de la hoja de vida
-  assert.match(panel, /item\.status === 'approved' && <Link/); assert.match(panel, /newTherapist=1&name=\$\{encodeURIComponent\(item\.name\)\}&email=/)
+  assert.match(panel, /item\.status === 'approved' && <Link/); assert.match(panel, /to="\/admin\/users" state=\{\{ newTherapist: \{ name: item\.name, email: item\.email \} \}\}/); assert.doesNotMatch(panel, /\?newTherapist|[?&]name=|[?&]email=/) // sin datos personales en la URL
   assert.doesNotMatch(panel, /password/i) // la contraseña la define quien crea la cuenta
-  assert.match(users, /searchParams\.get\('newTherapist'\) !== '1'/); assert.match(users, /password: '', role: 'therapist'/)
+  assert.match(users, /location\.state as \{ newTherapist\?/); assert.match(users, /password: '', role: 'therapist'/); assert.match(users, /navigate\(location\.pathname, \{ replace: true, state: null \}\)/); assert.doesNotMatch(users, /searchParams\.get\('newTherapist'\)/)
 })
 
 test('ES-95 landing: el bloque de profesionales enlaza al formulario y el texto del catálogo deja de ser provisional', () => {

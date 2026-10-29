@@ -27,6 +27,10 @@ module.exports = {
     });
     await queryInterface.addIndex('ProfessionalApplications', ['status', 'createdAt']);
     await queryInterface.addIndex('ProfessionalApplications', ['email']);
+    // QA M2: índice único parcial: una solicitud pendiente o aprobada por correo, también con envíos simultáneos.
+    await queryInterface.addIndex('ProfessionalApplications', ['email'], {
+      unique: true, name: 'professional_applications_email_open_unique', where: { status: ['pending', 'approved'] },
+    });
     await queryInterface.createTable('ProfessionalApplicationFiles', {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false },
       ApplicationId: {

@@ -49,7 +49,7 @@ publicRouter.post('/', limiter, receive, async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   // Campo trampa: un bot lo rellena; se responde igual que un éxito y no se guarda nada.
-  if (typeof body.website === 'string' && body.website.trim()) return res.status(201).json({ message: ack.es });
+  if (typeof body.bot_trap === 'string' && body.bot_trap.trim()) return res.status(201).json({ message: ack.es });
 
   const checked = validateApplication(body, req.file);
   if (!checked.ok) {
@@ -72,6 +72,8 @@ publicRouter.post('/', limiter, receive, async (req, res) => {
         await transaction.commit();
       } catch (error) {
         await transaction.rollback().catch(() => {});
+        // Envío simultáneo del mismo correo: otro ya lo guardó (índice único parcial). Misma respuesta, nada duplicado.
+        if (error && (error.name === 'SequelizeUniqueConstraintError' || error.parent?.code === '23505')) return res.status(201).json({ message: ack[values.locale] });
         throw error;
       }
     }

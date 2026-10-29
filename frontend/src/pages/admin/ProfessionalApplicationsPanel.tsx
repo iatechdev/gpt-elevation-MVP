@@ -117,7 +117,7 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
                 <button style={s.btnSecondary} disabled={busy === item.id} onClick={() => { setOpen({ id: item.id, action: 'reject' }); setNote(''); setMsg('') }}>Rechazar</button>
               </>}
               {item.status === 'approved' && <Link style={{ ...s.btnPrimary, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                to={`/admin/users?newTherapist=1&name=${encodeURIComponent(item.name)}&email=${encodeURIComponent(item.email)}`}>Crear cuenta de terapeuta</Link>}
+                to="/admin/users" state={{ newTherapist: { name: item.name, email: item.email } }}>Crear cuenta de terapeuta</Link>}
               <button style={s.btnSecondary} disabled={busy === item.id} onClick={() => void remove(item)}>Eliminar</button>
             </div>
             {reviewing && open && (

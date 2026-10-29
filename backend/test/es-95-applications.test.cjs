@@ -103,7 +103,7 @@ test('ES-95: sin hoja de vida, con un archivo que no es PDF (aunque diga serlo),
 
 test('ES-95: el campo trampa responde como un éxito sin guardar; un correo pendiente o aprobado no se duplica ni se revela, uno rechazado sí puede volver a solicitar', async t => {
   const { apps } = install(); const request = await startApp(t);
-  const bot = await post(request, good({ website: 'https://spam.example.test' })); assert.equal(bot.status, 201); assert.equal(apps.length, 0);
+  const bot = await post(request, good({ bot_trap: 'https://spam.example.test' })); assert.equal(bot.status, 201); assert.equal(apps.length, 0);
   const first = await post(request, good()); const again = await post(request, good({ name: 'Otro Nombre' }));
   assert.equal(first.status, 201); assert.equal(again.status, 201); assert.deepEqual(again.body, first.body); assert.equal(apps.length, 1);
   apps[0].status = 'approved'; assert.equal((await post(request, good())).status, 201); assert.equal(apps.length, 1);

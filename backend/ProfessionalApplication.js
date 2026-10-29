@@ -18,5 +18,10 @@ module.exports = sequelize.define('ProfessionalApplication', {
   consentAt: { type: DataTypes.DATE, allowNull: false },
   userId: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'Users', key: 'id' }, onDelete: 'SET NULL' },
 }, {
-  indexes: [{ fields: ['status', 'createdAt'] }, { fields: ['email'] }],
+  indexes: [
+    { fields: ['status', 'createdAt'] },
+    { fields: ['email'] },
+    // ES-95 (QA M2): a lo sumo UNA solicitud pendiente o aprobada por correo, garantizado por la base aun con envíos simultáneos.
+    { unique: true, name: 'professional_applications_email_open_unique', fields: ['email'], where: { status: ['pending', 'approved'] } },
+  ],
 });
