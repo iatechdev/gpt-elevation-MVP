@@ -21,3 +21,6 @@
 | Prueba de carrera de Dev (`test:pro-applications:pg`) | 5/5 |
 | Regresión | landing S7/S11/S13 14/14, S9 12/14 (conocidas), ES-94 13/14 (C03 conocido), CMS 8/8, chips 10/10, ES-18/19 20/20, sesión 25/25, navegador es74 23/23 |
 | **CI del PR** | **no corre**: los dos últimos pushes (44b2740 y 5b54d25) fallan en 0 s con «workflow file issue»: `.github/workflows/ci.yml` es YAML inválido (js-yaml: «bad indentation of a mapping entry», línea 154): el nombre del paso nuevo «ES-95 solicitudes de profesionales: carrera…» lleva «: » sin comillas. |
+
+## Cierre · head b8ab672 (solo cambia `.github/workflows/ci.yml`)
+Diff contra 5b54d25: una línea (el nombre del paso de ES-95 entre comillas); backend/frontend/shared idénticos (diff vacío) y backend 383/383. `ci.yml` parsea con js-yaml (4 jobs, el paso de ES-95 presente) y el CI corre y está en verde (evaluation, frontend, backend, data-rights-postgres). Merge CLEAN, contiene main a23c31a. Mis pasadas de 5b54d25 (API, interfaz, Dev 10/10, carrera, db:drift, regresión) siguen vigentes. Veredicto: APROBADO.
