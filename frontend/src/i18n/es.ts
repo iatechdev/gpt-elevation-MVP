@@ -5,12 +5,14 @@ import { compassEs } from '../compass/copy'
 import { exerciseEs } from '../exercises/copy'
 import { skillMapEs } from '../skill-map/copy'
 import { contextEs } from '../context/contextCopy'
+import { resumeEs } from '../context/resume/resumeCopy'
 import { evidenceEs } from '../evidence/copy'
 const es: Record<string, string> = {
   ...catalogEs,
   ...compassEs,
   ...exerciseEs,
   ...contextEs,
+  ...resumeEs,
   ...evidenceEs,
   ...skillMapEs,
 
