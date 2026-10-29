@@ -113,4 +113,13 @@ async function startApp(t) {
   };
 }
 
-module.exports = { models, database, transaction, storage, anthropic, promptVault, record, startApp };
+// ES-96: la persona autorizó compartir su seguimiento con CUALQUIER terapeuta (therapist_sharing, alcance therapist-<id>). Para pruebas de otras
+// historias que ejercen las rutas del terapeuta; las pruebas de consentimiento (es-96, es-78) definen sus propios consentimientos.
+function grantTherapistSharing() {
+  const { Op } = require('sequelize');
+  const granted = (UserId, scope) => ({ UserId, purpose: 'therapist_sharing', scope, status: 'granted', version: 1 });
+  models.Consent.findOne = async ({ where }) => (where.purpose === 'therapist_sharing' && /^therapist-\d+$/.test(where.scope) ? granted(where.UserId, where.scope) : null);
+  models.Consent.findAll = async ({ where }) => (where.purpose === 'therapist_sharing' ? [].concat(where.UserId?.[Op.in] ?? []).map((id) => granted(id, where.scope)) : []);
+}
+
+module.exports = { models, database, transaction, storage, anthropic, promptVault, record, startApp, grantTherapistSharing };

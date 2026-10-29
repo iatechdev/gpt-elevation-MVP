@@ -82,6 +82,8 @@ test('ES-98 PostgreSQL + HTTP: ids, tipos de nota, estados y choques de sesión,
   const therapist = await mkUser('therapist');
   const patient = await mkUser('user', { therapistId: therapist.id });
   const otherPatient = await mkUser('user', { therapistId: therapist.id });
+  // ES-96: sin autorización de compartir no se agenda ni se anota; aquí las dos personas autorizaron a este terapeuta (lo que se prueba es ES-98, no el consentimiento).
+  for (const person of [patient, otherPatient]) await q(`INSERT INTO "Consents" ("UserId","purpose","scope","status","version","decidedAt","createdAt","updatedAt") VALUES ($1,'therapist_sharing',$2,'granted',1,now(),now(),now())`, [person.id, `therapist-${therapist.id}`]);
 
   await t.test('B1: ids de ruta mal formados dan 404 uniforme (nunca 500) en pacientes, notas, sesiones y matching', async () => {
     const bad = ['abc', '-1', '0', '1.5', '99999999999', '1e3', '%20', '1;DROP', '2147483648', '007x'];
