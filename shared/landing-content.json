@@ -291,5 +291,16 @@
   {"key":"landing.pricing.space","es":"Continuar a mi espacio","en":"Continue to my space"},
   {"key":"landing.pricing.period.month","es":"/ mes","en":"/ month"},
   {"key":"landing.pricing.period.year","es":"/ año","en":"/ year"},
-  {"key":"landing.pricing.notice","es":"El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.","en":"Elevation's AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care."}
+  {"key":"landing.pricing.notice","es":"El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.","en":"Elevation's AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care."},
+  { "key": "landing.project.number", "es": "11", "en": "11" },
+  { "key": "landing.project.label", "es": "Objetivos y estado del proyecto", "en": "Project objectives and status" },
+  { "key": "landing.project.title", "es": "Lo que queremos lograr, y dónde estamos", "en": "What we want to achieve, and where we are" },
+  { "key": "landing.project.goals.label", "es": "Objetivos", "en": "Objectives" },
+  { "key": "landing.project.goals.1", "es": "Acompañamiento respetuoso y sin presión.", "en": "Respectful, pressure-free support." },
+  { "key": "landing.project.goals.2", "es": "Un mapa de capacidades respaldado por evidencia.", "en": "A capability map backed by evidence." },
+  { "key": "landing.project.goals.3", "es": "Decisiones profesionales mejor fundamentadas.", "en": "Better-grounded career decisions." },
+  { "key": "landing.project.goals.4", "es": "Privacidad bajo tu control.", "en": "Privacy under your control." },
+  { "key": "landing.project.goals.5", "es": "Una experiencia completa en español e inglés.", "en": "A complete experience in Spanish and English." },
+  { "key": "landing.project.state.label", "es": "Estado", "en": "Status" },
+  { "key": "landing.project.state.body", "es": "Estamos construyendo la plataforma por etapas. Primero, un piloto cerrado con un grupo pequeño de personas en reconversión profesional, para aprender antes de ampliar. No presentamos cifras de eficacia ni de tracción porque todavía no existen.", "en": "We are building the platform in stages. First, a closed pilot with a small group of people changing careers, so we learn before we scale. We do not present efficacy or traction figures because they do not exist yet." }
 ]
