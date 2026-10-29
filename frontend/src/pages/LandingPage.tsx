@@ -8,6 +8,8 @@ import { LandingHeader } from '../components/landing/LandingHeader'
 import { ExampleStrip } from '../components/landing/ExampleStrip'
 import { LandingFeatures, LandingSkillMap } from '../components/landing/LandingOffering'
 import { LandingProject } from '../components/landing/LandingProject'
+import { LandingTrust, LandingFaq } from '../components/landing/LandingTrustFaq'
+import { trustFaqEnabled } from '../content/landingTrustFaq'
 import { LandingJoin } from '../components/landing/LandingJoin'
 import { useLandingContent } from '../content/useLandingContent'
 import { useState, useEffect } from 'react'
@@ -49,6 +51,7 @@ export function LandingPage() {
 
         {/* ES-68 · Problema, módulos y recorrido */}
         <LandingJourney text={landing.text} />
+        {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingTrust text={landing.text} />}
 
         {/* ES-70 · S7 y S9; S8 se incorporará mediante ES-71. */}
         <LandingFeatures text={landing.text} />
@@ -57,6 +60,7 @@ export function LandingPage() {
         <LandingProject text={landing.text} />
         {/* ES-74 · S13: acceso y alta, sin registrar elección de puerta */}
         <LandingJoin text={landing.text} />
+        {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingFaq text={landing.text} />}
 
         {/* CTA Final */}
         <LandingSection style={{ padding: 'var(--landing-space) var(--landing-gutter)', background: 'var(--color-primary)' }}>
