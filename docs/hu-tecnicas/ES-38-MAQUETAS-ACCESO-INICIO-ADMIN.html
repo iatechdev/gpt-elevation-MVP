@@ -132,4 +132,3 @@ document.querySelectorAll('[data-preview]').forEach(a=>a.onclick=e=>{e.preventDe
 $('#screen').onchange=render;$('#state').onchange=render;$('#es').onclick=()=>{lang='es';render()};$('#en').onclick=()=>{lang='en';render()};$('#logout').onclick=()=>{$('#state').value='expired';render()};$('#menu').onclick=()=>{const open=$('#menu').getAttribute('aria-expanded')!=='true';$('#menu').setAttribute('aria-expanded',open);$('#menu').textContent=open?words[lang].close:words[lang].menu;$('#admin-nav')?.classList.toggle('expanded',open)};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#menu').getAttribute('aria-expanded')==='true'){$('#menu').click();$('#menu').focus()}});render();
 </script>
 </body></html>
-
