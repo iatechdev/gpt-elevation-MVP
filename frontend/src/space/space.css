@@ -1,23 +1,25 @@
 .space-scope {
-  --color-base-100: #f9f9f7; --color-base-200: #faf8f4; --color-base-300: #d6d2c4; --color-base-content: #1c1917;
-  --color-primary: #4a6741; --color-primary-content: #ffffff; --color-error: #b91c1c; --color-warning: #92400e;
-  --radius-field: .65rem; --radius-box: 1rem; --radius-selector: .25rem;
+  --color-base-100: #FAFAF9; --color-base-200: #F2EFE7; --color-base-300: #E4E2DC; --color-base-content: #1A1A18;
+  --color-primary: #1A1A18; --color-primary-content: #FAFAF9; --color-secondary: #7D6218; --color-accent: #B8963E; --color-accent-content: #1A1A18;
+  --color-neutral: #5E5E5A; --color-success: #325D40; --color-error: #7A3030; --color-warning: #7D6218;
+  --space-surface: #FFFFFF; --space-callout: #F3E9CC; --space-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace;
+  --radius-field: .25rem; --radius-box: .25rem; --radius-selector: .25rem;
   font: 400 16px/1.65 Inter, sans-serif; color: var(--color-base-content); overflow-wrap: anywhere;
 }
 .space-page { min-height: 100vh; background: var(--color-base-100); padding: 16px; }
 .space-page > header, .space-page > main, .space-page > .space-nav { max-width: 860px; margin: 0 auto 24px; }
 .space-page > header, .space-actions, .space-nav nav { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .space-page > header { justify-content: space-between; }
-.space-scope h1, .space-scope h2 { font-family: 'Playfair Display', serif; font-weight: 400; line-height: 1.3; margin: 16px 0; }
+.space-scope h1, .space-scope h2 { font-family: Inter, sans-serif; font-weight: 600; line-height: 1.3; margin: 16px 0; }
 .space-scope h1 { font-size: 2rem; } .space-scope h2 { font-size: 1.35rem; }
 .space-scope .elv-btn { min-height: 44px; height: auto; white-space: normal; padding: 8px 16px; border: 1px solid var(--color-base-300); background: var(--color-base-200); color: var(--color-base-content); }
-.space-scope .elv-btn-primary { background: var(--color-primary); color: white; }
+.space-scope .elv-btn-primary { background: var(--color-accent); color: var(--color-accent-content); border-color: var(--color-accent); font-weight: 600; }
 .space-scope .elv-btn:disabled { opacity: .6; cursor: not-allowed; }
-.space-scope :is(a,button,input,textarea):focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
-.space-scope .elv-link { color: var(--color-primary); display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; }
+.space-scope :is(a,button,input,textarea,summary):focus-visible { outline: 3px solid var(--color-secondary); outline-offset: 3px; }
+.space-scope .elv-link { color: var(--color-secondary); display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; }
 .space-nav { margin-bottom: 24px; } .space-nav nav { margin-bottom: 8px; } .space-nav [aria-current=page] { text-decoration: underline; text-underline-offset: 4px; }
-.space-skip { position: fixed; top: 0; left: 0; transform: translateY(-200%); z-index: 100; background: white; padding: 12px; } .space-skip:focus { transform: none; }
-.space-card { border: 1px solid var(--color-base-300); border-radius: 1rem; padding: 24px; background: white; margin-bottom: 16px; }
+.space-skip { position: fixed; top: 0; left: 0; transform: translateY(-200%); z-index: 100; background: var(--space-surface); padding: 12px; } .space-skip:focus { transform: none; }
+.space-card { border: 1px solid var(--color-base-300); border-radius: .25rem; padding: 24px; background: var(--space-surface); margin-bottom: 16px; }
 .space-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .space-dashboard-body { grid-template-columns: minmax(0, 1fr); }
 .space-dashboard-body > div { min-width: 0; }
@@ -38,9 +40,36 @@
 .space-context label { display: flex; gap: 12px; align-items: center; min-height: 44px; }
 .space-context input { flex-shrink: 0; }
 .space-pending { border: 2px dashed var(--color-base-300); padding: 12px; }
-.space-scope dialog { border: 1px solid var(--color-base-300); border-radius: 1rem; padding: 24px; max-width: min(480px, 90vw); color: var(--color-base-content); background: var(--color-base-100); }
+.space-scope dialog { border: 1px solid var(--color-base-300); border-radius: .25rem; padding: 24px; max-width: min(480px, 90vw); color: var(--color-base-content); background: var(--color-base-100); }
 .space-scope dialog::backdrop { background: #1c191755; }
 @media(min-width: 768px) { .space-grid { grid-template-columns: 1fr 1fr; } .space-page { padding: 24px; } .space-dashboard-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); } }
 @media(prefers-reduced-motion: reduce) { .space-scope *, .space-scope *::before, .space-scope *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 .space-compass-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .space-compass-head h2 { margin: 0; font-size: 1.125rem; }
+
+/* ES-112 — Mi espacio: pestañas, menú, cabecera privada con «Pausar» y barra de uso de IA */
+.space-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--color-base-300); margin-bottom: 0; }
+.space-tabs { display: flex; flex: 1 1 auto; margin: 0; }
+.space-tabs a { white-space: nowrap; flex: 1 1 0; min-height: 48px; display: grid; place-items: center; padding: 8px 12px; font-family: var(--space-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral); text-decoration: none; border-bottom: 2px solid transparent; }
+.space-tabs a[aria-current=page] { color: var(--color-secondary); border-bottom-color: var(--color-accent); font-weight: 600; }
+.space-menu { position: relative; }
+.space-menu summary { list-style: none; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; padding: 8px 12px; font-family: var(--space-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--color-neutral); border-radius: .25rem; }
+.space-menu summary::-webkit-details-marker { display: none; }
+.space-menu[open] > nav { position: absolute; right: 0; z-index: 30; margin-top: 4px; min-width: 220px; padding: 8px 12px; background: var(--space-surface); border: 1px solid var(--color-base-300); border-radius: .25rem; flex-direction: column; align-items: flex-start; gap: 0; }
+.space-menu nav { display: none; }
+.space-menu[open] nav { display: flex; }
+.space-chatbar { display: grid; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--color-base-300); margin-bottom: 20px; }
+.space-chatbar-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.space-chatbar-head h2 { margin: 0; font-family: var(--space-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
+.space-chatbar-head p { margin: 2px 0 0; font-size: .85rem; color: var(--color-neutral); }
+.space-ghost { min-height: 44px; padding: 6px 14px; background: transparent; color: var(--color-base-content); border: 1px solid var(--color-neutral); border-radius: .25rem; font-family: var(--space-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.space-ghost[aria-pressed=true] { border-color: var(--color-secondary); color: var(--color-secondary); font-weight: 600; }
+.space-usage-text { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; font-family: var(--space-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--color-neutral); }
+.space-meter { height: 4px; background: var(--color-base-300); margin-top: 6px; }
+.space-meter i { display: block; height: 100%; background: var(--color-success); }
+.space-meter-full i { background: var(--color-accent); }
+.space-callout { margin: 0; padding: 10px 12px; font-size: .9rem; background: var(--space-callout); color: #5A4710; border: 1px solid var(--color-secondary); border-radius: .25rem; }
+
+.space-scope .space-paper { font-family: 'Noto Serif', Georgia, serif; font-style: italic; line-height: 32px; background: repeating-linear-gradient(#FBF9F2 0 31px, #E8E3D3 31px 32px); }
+
+@media (max-width: 479px) { .space-menu-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .space-menu summary { min-width: 44px; justify-content: center; } .space-tabs a { letter-spacing: .06em; padding-inline: 6px; } }
