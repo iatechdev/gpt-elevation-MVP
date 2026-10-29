@@ -10,5 +10,6 @@ a.map-access-cta:focus-visible { outline: 3px solid var(--elv-focus); outline-of
 .map-guide { background: var(--elv-info-bg); border: 1px solid var(--elv-info); border-radius: var(--elv-r-lg); padding: 16px 24px; margin: 16px 0 24px; color: var(--elv-text-1); }
 .map-guide h2 { font: 600 1.125rem var(--elv-font-body); margin: 0 0 8px; color: var(--elv-info); }
 .map-guide p { margin: 0; }
-.map-guide ol { margin: 8px 0 16px; padding-left: 1.25rem; }
+/* QA H-90-03: el reset de Tailwind quita los números; los tres pasos se numeran de nuevo. */
+.map-guide ol { margin: 8px 0 16px; padding-left: 1.5rem; list-style: decimal; }
 .map-guide li { margin: 4px 0; }

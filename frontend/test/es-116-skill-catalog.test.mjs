@@ -98,3 +98,12 @@ test('ES-116 rutas y menú: tres rutas protegidas para administración y enlace 
   assert.match(side, /to: '\/admin\/skill-catalog', labelKey: 'skcat\.menu'/)
   assert.match(read('../src/i18n/es.ts'), /\.\.\.skillCatalogEs/); assert.match(read('../src/i18n/en.ts'), /\.\.\.skillCatalogEn/)
 })
+
+test('ES-116 (QA H-88-02) la clave «new» está reservada en el cliente y (H-88-03) el formulario se bloquea mientras guarda', () => {
+  const f = emptyForm(); f.labelEs = 'Comunicación'
+  assert.equal(validate(f, 'new', true).key, true)
+  assert.equal(validate(f, 'new_skill', true).key, undefined)
+  const page = read('../src/skill-catalog/SkillCatalogPages.tsx')
+  assert.ok(page.includes('<fieldset className="skcat-lock" disabled={busy} aria-busy={busy}>'))
+  assert.ok(read('../src/skill-catalog/skillCatalog.css').includes('.skcat-lock'))
+})
