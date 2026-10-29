@@ -10,6 +10,9 @@ const yaml = require('js-yaml');
 const ROOT = path.resolve(__dirname, '..', '..');
 const WORKFLOWS = path.join(ROOT, '.github', 'workflows');
 
+// «./frontend», «frontend/», «./frontend/» y «frontend» son el mismo directorio; «.», «./» y vacío son la raíz.
+const normalizeDir = (value) => String(value ?? '').trim().replace(/^(?:\.\/)+/, '').replace(/\/+$/, '').replace(/^\.$/, '');
+
 function scriptsOf(dir) {
   try { return new Set(Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, dir, 'package.json'), 'utf8')).scripts ?? {})); } catch { return new Set(); }
 }
@@ -28,14 +31,16 @@ function checkWorkflow(text, file = 'workflow.yml', scripts = { backend: scripts
     if (!job || typeof job !== 'object') { problems.push(`${file}: el job «${jobName}» no es un mapa.`); continue; }
     if (job.uses) continue; // workflow reutilizable: sin pasos propios
     if (!Array.isArray(job.steps) || !job.steps.length) { problems.push(`${file}: el job «${jobName}» no tiene pasos.`); continue; }
-    const dir = String(job.defaults?.run?.['working-directory'] ?? '').replace(/^\.\/?/, '');
+    const dir = normalizeDir(job.defaults?.run?.['working-directory']);
     job.steps.forEach((step, index) => {
       const where = `${file}: job «${jobName}», paso ${index + 1}${step && step.name ? ` («${step.name}»)` : ''}`;
       if (!step || typeof step !== 'object' || Array.isArray(step)) { problems.push(`${where}: no es un mapa.`); return; }
+      // `run: 123` o `run: true` se leen como número o booleano: GitHub los trata como texto y casi siempre es un descuido de comillas.
+      if (step.run !== undefined && typeof step.run !== 'string') { problems.push(`${where}: «run» debe ser texto (¿faltan comillas?).`); return; }
       if (Boolean(step.run) === Boolean(step.uses)) { problems.push(`${where}: debe tener exactamente uno de «run» o «uses».`); return; }
       if (step.name !== undefined && typeof step.name !== 'string') problems.push(`${where}: «name» debe ser texto.`);
       if (typeof step.run !== 'string') return;
-      const known = scripts[step['working-directory'] ?? dir] ?? scripts[dir];
+      const known = scripts[step['working-directory'] === undefined ? dir : normalizeDir(step['working-directory'])] ?? scripts[dir];
       for (const match of step.run.matchAll(/\bnpm run ([A-Za-z0-9:_-]+)/g)) {
         if (known && known.size && !known.has(match[1])) problems.push(`${where}: «npm run ${match[1]}» no existe en el package.json de «${dir || '.'}».`);
       }

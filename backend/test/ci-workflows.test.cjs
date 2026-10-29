@@ -32,6 +32,17 @@ test('ES-108: pasos mal formados, scripts inexistentes y documentos que no son w
   assert.match(checkWorkflow('name: CI\njobs:\n  a:\n    runs-on: x\n    steps: []\n', 'w.yml', SCRIPTS)[0], /no tiene pasos/);
 });
 
+test('ES-108 (QA): el directorio se normaliza (./frontend, frontend/, ./frontend/) y un run numérico o booleano se señala', () => {
+  for (const dir of ['./frontend', 'frontend/', './frontend/', 'frontend', '././frontend//']) {
+    const ok = wrap('      - run: npm run build\n').replace('working-directory: backend', `working-directory: ${dir}`);
+    assert.deepEqual(checkWorkflow(ok, 'w.yml', SCRIPTS), [], dir);
+    const bad = wrap('      - run: npm run no-existe\n').replace('working-directory: backend', `working-directory: ${dir}`);
+    assert.match(checkWorkflow(bad, 'w.yml', SCRIPTS)[0], /no existe en el package\.json de «frontend»/, dir);
+  }
+  for (const value of ['123', 'true', '1.5']) assert.match(checkWorkflow(wrap(`      - run: ${value}\n`), 'w.yml', SCRIPTS)[0], /«run» debe ser texto/, value);
+  assert.deepEqual(checkWorkflow(wrap('      - run: "123"\n'), 'w.yml', SCRIPTS), []);
+});
+
 test('ES-108: el directorio de trabajo del job decide en qué package.json se buscan los scripts', () => {
   const frontend = wrap('      - run: npm run build\n').replace('working-directory: backend', 'working-directory: frontend');
   assert.deepEqual(checkWorkflow(frontend, 'w.yml', SCRIPTS), []);
