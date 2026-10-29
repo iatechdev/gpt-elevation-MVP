@@ -6,12 +6,16 @@ import { exerciseEn } from '../exercises/copy'
 import { skillMapEn } from '../skill-map/copy'
 import { skillCatalogEn } from '../skill-catalog/copy'
 import { contextEn } from '../context/contextCopy'
+import { resumeEn } from '../context/resume/resumeCopy'
 import { evidenceEn } from '../evidence/copy'
+import { therapistEn } from './therapistCopy'
 const en: Record<string, string> = {
   ...catalogEn,
   ...compassEn,
   ...exerciseEn,
+  ...therapistEn,
   ...contextEn,
+  ...resumeEn,
   ...evidenceEn,
   ...skillMapEn,
   ...skillCatalogEn,
