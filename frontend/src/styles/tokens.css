@@ -4,21 +4,19 @@
    la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja aún NO está importada por la app. */
 
 :root {
-  /* 1. Primitivos ─────────────────────────────────────────── */
-  --elv-p-bg: #f9f9f7;
-  --elv-p-surface: #faf8f4;
+  /* 1. Primitivos (paleta de la landing, frontend/src/index.css) ─────── */
+  --elv-p-bg: #fafaf9;          /* papel */
+  --elv-p-surface: #f2f1ef;
   --elv-p-card: #ffffff;
-  --elv-p-muted-bg: #f5f3ef;
-  --elv-p-line: #e7e5e4;
-  --elv-p-line-md: #d6d2c4;
-  --elv-p-control-line: #7c8875;
-  --elv-p-olive: #6b7d5c;       /* marca: decorativo, bordes de selección (no apto para texto sobre blanco) */
-  --elv-p-olive-action: #4a6741;
-  --elv-p-olive-bg: #eaf0e6;
-  --elv-p-sage: #a8b5a2;
-  --elv-p-ink-1: #1c1917;
-  --elv-p-ink-2: #57534e;
-  --elv-p-ink-3: #6b6560;
+  --elv-p-muted-bg: #f2f1ef;
+  --elv-p-line: #e0ded9;
+  --elv-p-control-line: #8a8780;
+  --elv-p-ocre: #b8963e;        /* marca: SOLO decorativo (2,69:1 sobre papel; no apto para texto) */
+  --elv-p-ocre-dark: #7d6218;   /* ocre para texto, vínculos y nivel alto (5,54:1 sobre papel) */
+  --elv-p-ocre-bg: #f6efdc;
+  --elv-p-ink-1: #1a1a18;       /* tinta */
+  --elv-p-ink-2: #6b6b67;
+  --elv-p-ink-3: #6b6b67;
   --elv-p-teal: #065f46;
   --elv-p-teal-bg: #f0fdfa;
 
@@ -32,17 +30,17 @@
   --elv-text-3: var(--elv-p-ink-3);     /* sustituye al #A8A29E anterior (2,39:1, no cumplía AA) */
   --elv-line: var(--elv-p-line);        /* divisores decorativos */
   --elv-line-control: var(--elv-p-control-line); /* borde de inputs y botones secundarios (≥3:1) */
-  --elv-action: var(--elv-p-olive-action);
+  --elv-action: var(--elv-p-ink-1);
   --elv-action-text: #ffffff;
-  --elv-action-soft: var(--elv-p-olive-bg);
-  --elv-brand: var(--elv-p-olive);
-  --elv-link: var(--elv-p-olive-action);
+  --elv-action-soft: var(--elv-p-ocre-bg);
+  --elv-brand: var(--elv-p-ocre);
+  --elv-link: var(--elv-p-ocre-dark);
   --elv-focus: #2f6b8f;
   --elv-ai: var(--elv-p-teal);          /* voz de la IA */
   --elv-ai-bg: var(--elv-p-teal-bg);
   --elv-success: #065f46;   --elv-success-bg: #f0fdfa;
-  --elv-warning: #92400e;   --elv-warning-bg: #fef3c7;
-  --elv-error: #9b1c1c;     --elv-error-bg: #fee2e2;
+  --elv-warning: #7d6218;   --elv-warning-bg: #f6efdc;
+  --elv-error: #7a3030;     --elv-error-bg: #f7e6e6;
   --elv-info: #075985;      --elv-info-bg: #e0f2fe;
 
   /* Espacio (base 4 px) */
@@ -68,14 +66,14 @@
    Career y Facilitation, según prefers-color-scheme). No se activa en pantallas que hoy no lo tienen. */
 .elv-dark {
     color-scheme: dark;
-    --elv-bg: #181c17;  --elv-surface: #242b22;  --elv-card: #242b22;  --elv-muted-bg: #1e241d;
-    --elv-text-1: #f5f6f1;  --elv-text-2: #c4cabf;  --elv-text-3: #b3baad;
-    --elv-line: #3a4337;  --elv-line-control: #899582;
-    --elv-action: #c1d5b5;  --elv-action-text: #182115;  --elv-action-soft: #2b3628;
-    --elv-link: #c1d5b5;  --elv-focus: #9fd0ea;
+    --elv-bg: #0f0f0e;  --elv-surface: #1a1a18;  --elv-card: #1a1a18;  --elv-muted-bg: #151513;
+    --elv-text-1: #fafaf9;  --elv-text-2: #cac7c1;  --elv-text-3: #b5b2ab;
+    --elv-line: #33332f;  --elv-line-control: #8a8780;
+    --elv-action: #b8963e;  --elv-action-text: #0f0f0e;  --elv-action-soft: #2a2417;
+    --elv-link: #dcc27d;  --elv-focus: #9fd0ea;
     --elv-ai: #a9d6b0;  --elv-ai-bg: #1e2b24;
     --elv-success: #a9d6b0;  --elv-success-bg: #1e2b24;
-    --elv-warning: #f4d9a8;  --elv-warning-bg: #33291a;
+    --elv-warning: #f0d9a0;  --elv-warning-bg: #2a2417;
     --elv-error: #ffb5b5;    --elv-error-bg: #3a2222;
     --elv-info: #9fd0ea;     --elv-info-bg: #1c2b36;
 }

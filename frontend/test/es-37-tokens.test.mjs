@@ -54,8 +54,9 @@ test('ES-37 los semánticos del modo oscuro existen también en claro', () => {
   for (const k of Object.keys(parseVars(darkBlock))) assert.ok(k in light, `${k} falta en :root`)
 })
 
-test('ES-37 la marca #6B7D5C no se usa como fondo de texto (no llega a 4,5:1 con blanco)', () => {
-  assert.ok(ratio('#6b7d5c', '#ffffff') < 4.5)
+test('ES-37 el ocre de marca #B8963E es solo decorativo (no llega a 4,5:1 sobre papel); el texto usa #7D6218', () => {
+  assert.ok(ratio('#b8963e', '#fafaf9') < 4.5)
+  assert.ok(ratio(light['elv-link'], light['elv-bg']) >= 4.5)
   assert.notEqual(light['elv-action'], light['elv-brand'])
 })
 
@@ -71,4 +72,9 @@ for (const file of ['skill-map/skillMap.css', 'career/career.css', 'compass/comp
 test('ES-37 el tema único cubre los tres dominios y se importa en index.css', () => {
   assert.match(css, /\.elv-theme,\s*\.skill-map-scope,\s*\.career-scope,\s*\.compass-scope\s*\{/)
   assert.match(readFileSync(new URL('../src/index.css', import.meta.url), 'utf8'), /@import '\.\/styles\/tokens\.css'/)
+})
+
+test('ES-37 paleta de la landing: papel, tinta, gris y ocre coinciden con index.css', () => {
+  const landing = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8').toLowerCase()
+  for (const k of ['elv-bg', 'elv-text-1', 'elv-text-2', 'elv-line', 'elv-brand']) assert.ok(landing.includes(light[k]), `${k} ${light[k]} no está en la landing`)
 })
