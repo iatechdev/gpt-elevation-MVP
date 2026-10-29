@@ -1,5 +1,7 @@
 # ES-113 — Preparación tras aprobar el diseño
 
+> Registro histórico anterior a integrar la dependencia en la rama. La entrega actual y cómo probarla están en [ES-113-ENTREGA-QA.md](ES-113-ENTREGA-QA.md).
+
 [Dev-Codex]
 
 29-oct-2026. Rama ES-113-diario-papel, base origin/main d5eb00f9d0a035c6c98506038490f32087d4acc6. Aprobación explícita de Alejo en Jira 10512 sobre diseño/plan 10511; incluye aceptar guardado manual sin recuperación de texto no guardado tras cierre. No se ha desplegado nada.

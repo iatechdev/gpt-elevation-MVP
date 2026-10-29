@@ -99,3 +99,5 @@ Aprobar o corregir layout, textos ES/EN, una entrada por registro, guardado manu
 ## Aprobación recibida
 
 Alejo respondió «Aprobar diseño y guardado manual con ese límite» el 29-oct-2026. Aprobación registrada en Jira ES-113, comentario 10512, sobre el diseño/plan del comentario 10511 y sus cuatro adjuntos. Se acepta expresamente el ajuste del criterio 5 indicado arriba. No se autoriza recuperación persistente, autoguardado ni despliegue. La rama aprobada es ES-113-diario-papel desde main; la aplicación de tokens conserva la dependencia de ES-37 integrado.
+
+Actualización operativa autorizada por la solicitud posterior de Alejo de integrar y terminar: ES-37 se integra únicamente en ES-113-diario-papel para implementar y probar sin modificar main ni fusionar PR ajenos. Registrado en Jira 10535. El PR de entrega contra main depende de que Mauricio fusione primero ES-37 tras QA; el diseño aprobado se conserva.
