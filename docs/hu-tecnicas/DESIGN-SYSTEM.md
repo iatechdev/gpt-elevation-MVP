@@ -257,3 +257,21 @@ El área de usuarios (landing, chat) debe funcionar perfectamente en **mobile**.
 ## Landing publica - ES-61
 
 La landing usa un tema editorial propio y acotado; no sustituye los tokens de las zonas privadas. Ver [ES-61: base visual](../landing/ES-61-BASE-VISUAL.md) para temas, componentes, fuentes, contraste y limites de verificacion.
+
+---
+
+## Versión 2 (ES-37) — tokens unificados
+
+Fuente única: `frontend/src/styles/tokens.css` (variables `--elv-*`). Referencia visual: `docs/hu-tecnicas/design-system-reference.html`. Prueba: `frontend/test/es-37-tokens.test.mjs` (falla si un par texto/fondo baja de WCAG 2.1 AA).
+
+Cambios frente a la paleta anterior (contrastes calculados):
+
+| Antes | Ahora | Motivo |
+|---|---|---|
+| Texto 3 `#A8A29E` (2,39:1 sobre el fondo) | `#6B6560` (5,45:1) | No cumplía AA como texto ni como placeholder |
+| Texto 2 `#78716C` (4,55:1) | `#57534E` (7,24:1) | Margen sobre fondos alternos |
+| Acción `#6B7D5C` con texto blanco (4,46:1) | Acción `#4A6741` (6,35:1); `#6B7D5C` queda como color de marca decorativo | No llegaba a 4,5:1 |
+| Borde `#D6D2C4` / `#E7E5E4` (≈1,2:1) en controles | `#7C8875` (3,53:1) para inputs y botones secundarios; los divisores decorativos conservan el tono claro | Los controles deben distinguirse (≥3:1) |
+| Error `#DC2626` (4,83:1 sobre blanco) | `#9B1C1C` (≥6,6:1) | Margen sobre fondos teñidos |
+
+Capas: primitivos (`--elv-p-*`) → semánticos (`--elv-bg`, `--elv-text-1`, `--elv-action`…) → tema daisyUI único (bloque comentado en tokens.css; se activa en el paso B). Modo oscuro: clase `.elv-dark`, solo donde el dominio ya lo tenía (Career, Facilitation). La landing pública conserva su identidad propia (excepción documentada, a cargo de Alejo).
