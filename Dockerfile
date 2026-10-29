@@ -4,6 +4,9 @@ WORKDIR /app
 
 ARG VITE_BACKEND_URL
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
+# Banderas de frontend que se leen al construir (Vite). Vacías = apagadas. Solo se definen en Railway donde se decida (ES-13).
+ARG VITE_ENABLE_COMPASS_CHAT
+ENV VITE_ENABLE_COMPASS_CHAT=$VITE_ENABLE_COMPASS_CHAT
 
 COPY . .
 
