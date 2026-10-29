@@ -1,6 +1,7 @@
 import { trackView, type Assessment, type LocalizedText, type Skill } from './model'
 import { CANVAS_W, CHIP_H, CHIP_W, edgePoint, layoutChips, territoryBoxes } from './layout'
 import { hasLevel, skillStatus, type SkillStatus } from './status'
+import { SelfAssessPanel } from './SelfAssessPanel'
 import { resolveTerritories, type Territory } from './territories'
 
 type T = (key: string) => string
@@ -120,18 +121,23 @@ function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessmen
 }
 
 /** Detalle de la capacidad elegida: las mismas pistas separadas y reglas de datos de siempre (nivel null sin evidencia, sin promedios). */
-export function SkillDetail({ skill, catalogVersion, territories, lang, t }: {
+export function SkillDetail({ skill, catalogVersion, territories, lang, t, self }: {
   skill: Skill; catalogVersion: number; territories: readonly Territory[]; lang: Lang; t: T
+  self?: { backend: string; token: string; onChanged: (kind: 'saved' | 'retired') => void }
 }) {
+  const status = skillStatus(skill)
   const { links } = resolveTerritories([skill], territories)
   const names = links(skill).map(id => territories.find(territory => territory.id === id)?.labels[lang]).filter(Boolean)
   return <article className="elv-card skill-map-card skill-map-detail" aria-labelledby="skill-detail-title">
     <div className="elv-card-body">
       <h2 id="skill-detail-title" className="elv-card-title">{label(skill.labels, lang, t)}</h2>
       <span className="elv-badge elv-badge-outline skill-map-type">{t(`skill_map.${skill.type}`)}</span>
+      <p className="skill-map-state"><span className={`elv-badge elv-badge-outline${hasLevel(status) ? ' skill-map-validated' : ''}`}>{t(status === 'evidence' ? 'skill_map.state_validated' : status === 'needs_review' ? 'skill_map.contradictory' : status === 'stale' ? 'skill_map.stale' : 'skill_map.state_unassessed')}</span>
+        {hasLevel(status) && <span className="skill-map-note">{t('skill_map.source')}: {t('skill_map.source_evidence')}</span>}</p>
       {names.length > 0 && <p className="skill-map-note">{t('skill_map.territories')}: {names.join(' · ')}</p>}
       <AssessmentPanel assessment={skill.self} track="self" lang={lang} t={t} />
       <AssessmentPanel assessment={skill.review} track="review" lang={lang} t={t} />
+      {self && <SelfAssessPanel skill={skill} catalogVersion={catalogVersion} lang={lang} t={t} backend={self.backend} token={self.token} onChanged={self.onChanged} />}
       <details className="skill-map-rubric">
         <summary>{t('skill_map.rubric')} · {catalogVersion}</summary>
         <ol>
