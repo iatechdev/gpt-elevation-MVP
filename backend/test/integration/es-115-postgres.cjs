@@ -28,7 +28,8 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
   const cli = (args, dbName) => spawnSync('npx', ['--no-install', 'sequelize-cli', ...args], {
     cwd: backend, encoding: 'utf8', shell: process.platform === 'win32', env: { ...process.env, DATABASE_URL: urlFor(dbName), DB_SSL: 'false', NODE_ENV: 'test' },
   });
-  const meta = async (db) => (await db.query('SELECT "name" FROM "SequelizeMeta" ORDER BY "name"')).rows.map((r) => r.name);
+  // Se ordena en JS: el orden de ORDER BY depende de la colación del clúster (en CI difiere de la local), y aquí importa el conjunto.
+  const meta = async (db) => (await db.query('SELECT "name" FROM "SequelizeMeta"')).rows.map((r) => r.name).sort();
 
   const admin = await connect(target.toString());
   t.after(async () => {
@@ -57,7 +58,7 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
   const value = ({ column_name: c, data_type: d }) => (/timestamp/.test(d) ? 'now()' : /int|numeric/.test(d) ? '0' : d === 'boolean' ? 'false' : c === 'email' ? "'sintetico-115@example.invalid'" : "'x'");
   await db.query(`INSERT INTO "Users" (${required.map((c) => '"' + c.column_name + '"').join(',')}) VALUES (${required.map(value).join(',')})`);
   const usersBefore = (await db.query('SELECT count(*)::int n FROM "Users"')).rows[0].n;
-  assert.deepEqual(await meta(db), ES85, 'estado de staging: solo las dos migraciones de ES-85 registradas');
+  assert.deepEqual(await meta(db), [...ES85].sort(), 'estado de staging: solo las dos migraciones de ES-85 registradas');
 
   // ── 1. Diagnóstico: no escribe nada ───────────────────────────────────────────
   const dry = run('adopt-existing-schema.cjs', [], names.staging);
@@ -65,13 +66,13 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
   assert.match(dry.stdout, /adoptable\s+20261001000000-baseline\.js/);
   assert.match(dry.stdout, /adoptable\s+20261029000000-es95-professional-applications\.js/);
   assert.match(dry.stdout, /no se escribió nada/);
-  assert.deepEqual(await meta(db), ES85, 'el diagnóstico no escribe');
+  assert.deepEqual(await meta(db), [...ES85].sort(), 'el diagnóstico no escribe');
 
   // ── 2. Sin adoptar, migrate-deploy se niega y no cambia nada ──────────────────
   const blocked = run('migrate-deploy.cjs', [], names.staging);
   assert.equal(blocked.status, 1);
   assert.match(blocked.stderr, /sin adoptar/);
-  assert.deepEqual(await meta(db), ES85, 'migrate-deploy bloqueado no escribe');
+  assert.deepEqual(await meta(db), [...ES85].sort(), 'migrate-deploy bloqueado no escribe');
 
   // ── 3. Adopción ───────────────────────────────────────────────────────────────
   const apply = run('adopt-existing-schema.cjs', ['--apply'], names.staging);
