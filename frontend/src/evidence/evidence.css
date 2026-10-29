@@ -40,3 +40,45 @@
 @media (min-width: 1024px) { .evidence-scope { padding: 32px; } }
 @media (max-width: 639px) { .evidence-scope { padding: 16px; } .evidence-actions { flex-direction: column; } .evidence-card .elv-card-body { padding: 16px; } }
 @media (prefers-reduced-motion: reduce) { .evidence-scope *, .evidence-scope *::before, .evidence-scope *::after { transition: none; animation: none; scroll-behavior: auto; } }
+/* ES-110: habilidades de la hoja de vida. Lo «declarado» se distingue de lo «respaldado» por FORMA (borde punteado frente a relleno y marca), no solo por color. */
+.evidence-scope .evidence-ico { vertical-align: -2px; flex: none; }
+.evidence-scope .evidence-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.evidence-scope .evidence-help { color: #57534e; font-size: .875rem; margin: 0; }
+.evidence-scope .evidence-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .8125rem; font-weight: 500; padding: 3px 10px; border-radius: 999px; border: 1px solid #d6d2c4; background: #fff; width: fit-content; max-width: 100%; }
+.evidence-scope .evidence-badge-dashed { border: 1.5px dashed #78716c; color: #44403c; background: transparent; }
+.evidence-scope .evidence-badge-solid { background: #4a6741; border-color: #4a6741; color: #fff; }
+.evidence-scope .evidence-badge-sage { background: #eaf0e6; border-color: #b9c9b1; color: #3a5233; }
+.evidence-scope .evidence-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.evidence-scope .evidence-origin { display: flex; flex-direction: column; gap: 8px; }
+.evidence-scope .evidence-review { background: #fef3c7; border: 1px solid #f2d98a; color: #92400e; border-radius: .65rem; padding: 12px; display: grid; gap: 4px; }
+.evidence-scope .evidence-review p { margin: 0; }
+.evidence-scope .evidence-card-review { border-color: #f2d98a; }
+.evidence-scope .evidence-quote { margin: 0; padding: 8px 12px; border-left: 3px solid #b9c9b1; background: #f6f8f4; color: #44403c; font-size: .95rem; overflow-wrap: anywhere; }
+.evidence-scope .evidence-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-block: 12px; }
+.evidence-scope .evidence-skills { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 10px; }
+.evidence-scope .evidence-skill { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px; border: 1px solid #d6d2c4; border-radius: .65rem; background: #fff; cursor: pointer; min-height: 56px; }
+.evidence-scope .evidence-skill input { width: 22px; height: 22px; margin-top: 2px; }
+.evidence-scope .evidence-skill-on { border-color: #4a6741; background: #eaf0e6; }
+.evidence-scope .evidence-skill-off { cursor: default; background: #f3f2ee; }
+.evidence-scope .evidence-skill-info { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.evidence-scope .evidence-skill-info q { color: #57534e; font-size: .9rem; quotes: "«" "»"; overflow-wrap: anywhere; }
+.evidence-scope .evidence-note { color: #92400e; }
+.evidence-scope .evidence-sticky { position: sticky; bottom: 0; margin-top: 16px; padding: 14px 0; background: rgba(249, 249, 247, .96); border-top: 1px solid #d6d2c4; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; z-index: 2; }
+.evidence-scope .evidence-sticky p { margin: 0; }
+.evidence-scope .evidence-scrim { position: fixed; inset: 0; background: rgba(28, 25, 23, .45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+.evidence-scope .evidence-dialog { background: #fff; border-radius: 1rem; padding: 20px; max-width: 480px; width: 100%; max-height: 100%; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.evidence-scope .evidence-dialog h2, .evidence-scope .evidence-dialog p, .evidence-scope .evidence-dialog ul { margin: 0; }
+.evidence-scope .evidence-dialog ul { padding-left: 20px; list-style: disc; }
+.evidence-scope .evidence-banner { background: #eaf0e6; border: 1px solid #b9c9b1; border-radius: 1rem; padding: 16px; margin-block: 16px; display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; justify-content: space-between; }
+.evidence-scope .evidence-banner h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.evidence-scope .evidence-banner p { margin: 0; }
+.evidence-scope .evidence-ok { background: #eaf0e6; border: 1px solid #b9c9b1; border-radius: .65rem; padding: 12px 16px; margin-block: 16px; }
+.evidence-scope .evidence-ok p { margin: 4px 0 0; }
+.evidence-scope .evidence-confirm { background: #fee2e2; border: 1px solid #f4b4b4; color: #7f1d1d; border-radius: .65rem; padding: 14px; display: grid; gap: 8px; }
+.evidence-scope .evidence-confirm h3, .evidence-scope .evidence-confirm p { margin: 0; }
+.evidence-scope .evidence-danger { color: #b91c1c; }
+.evidence-scope .evidence-skeleton { height: 18px; border-radius: 8px; background: #ece9df; margin-block: 8px; }
+.evidence-scope .evidence-skeleton-short { width: 60%; }
+@media (prefers-reduced-motion: no-preference) { .evidence-scope .evidence-skeleton { background: linear-gradient(90deg, #ece9df 25%, #f6f4ee 50%, #ece9df 75%); background-size: 200% 100%; animation: evidence-shimmer 1.4s linear infinite; } }
+@keyframes evidence-shimmer { to { background-position: -200% 0; } }
+@media (max-width: 639px) { .evidence-scope .evidence-sticky .elv-btn, .evidence-scope .evidence-dialog .evidence-actions .elv-btn { width: 100%; } .evidence-scope .evidence-banner .elv-btn { width: 100%; } }
