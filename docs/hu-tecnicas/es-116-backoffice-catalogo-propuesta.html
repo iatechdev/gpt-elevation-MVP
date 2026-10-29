@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ES-116 — Propuesta de diseño: Catálogo de habilidades en el backoffice</title>
+<style>/* ES-37 — Tokens del sistema de diseño Elevation + Skill Map (fuente única).
+   Tres capas: primitivos (--elv-p-*) → semánticos (--elv-*) → tema daisyUI (ver bloque final).
+   Los pares texto/fondo están medidos contra WCAG 2.1 AA (≥4,5:1 texto, ≥3:1 controles y bordes de control);
+   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja aún NO está importada por la app. */
+
+:root {
+  /* 1. Primitivos ─────────────────────────────────────────── */
+  --elv-p-bg: #f9f9f7;
+  --elv-p-surface: #faf8f4;
+  --elv-p-card: #ffffff;
+  --elv-p-muted-bg: #f5f3ef;
+  --elv-p-line: #e7e5e4;
+  --elv-p-line-md: #d6d2c4;
+  --elv-p-control-line: #7c8875;
+  --elv-p-olive: #6b7d5c;       /* marca: decorativo, bordes de selección (no apto para texto sobre blanco) */
+  --elv-p-olive-action: #4a6741;
+  --elv-p-olive-bg: #eaf0e6;
+  --elv-p-sage: #a8b5a2;
+  --elv-p-ink-1: #1c1917;
+  --elv-p-ink-2: #57534e;
+  --elv-p-ink-3: #6b6560;
+  --elv-p-teal: #065f46;
+  --elv-p-teal-bg: #f0fdfa;
+
+  /* 2. Semánticos (claro) ─────────────────────────────────── */
+  --elv-bg: var(--elv-p-bg);
+  --elv-surface: var(--elv-p-surface);
+  --elv-card: var(--elv-p-card);
+  --elv-muted-bg: var(--elv-p-muted-bg);
+  --elv-text-1: var(--elv-p-ink-1);
+  --elv-text-2: var(--elv-p-ink-2);
+  --elv-text-3: var(--elv-p-ink-3);     /* sustituye al #A8A29E anterior (2,39:1, no cumplía AA) */
+  --elv-line: var(--elv-p-line);        /* divisores decorativos */
+  --elv-line-control: var(--elv-p-control-line); /* borde de inputs y botones secundarios (≥3:1) */
+  --elv-action: var(--elv-p-olive-action);
+  --elv-action-text: #ffffff;
+  --elv-action-soft: var(--elv-p-olive-bg);
+  --elv-brand: var(--elv-p-olive);
+  --elv-link: var(--elv-p-olive-action);
+  --elv-focus: #2f6b8f;
+  --elv-ai: var(--elv-p-teal);          /* voz de la IA */
+  --elv-ai-bg: var(--elv-p-teal-bg);
+  --elv-success: #065f46;   --elv-success-bg: #f0fdfa;
+  --elv-warning: #92400e;   --elv-warning-bg: #fef3c7;
+  --elv-error: #9b1c1c;     --elv-error-bg: #fee2e2;
+  --elv-info: #075985;      --elv-info-bg: #e0f2fe;
+
+  /* Tintes de territorio del mapa de competencias (ES-30): neutros y fijos; no codifican estado */
+  --elv-tone-dir: #dde0d3; --elv-tone-con: #ece0d8; --elv-tone-com: #e6e1d2; --elv-tone-ing: #e4dccf; --elv-tone-inn: #d8ded3;
+
+  /* Espacio (base 4 px) */
+  --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;
+  --elv-s-6: 1.5rem;  --elv-s-8: 2rem;   --elv-s-12: 3rem;   --elv-s-16: 4rem;
+  /* Radios */
+  --elv-r-sm: 0.5rem; --elv-r-md: 0.75rem; --elv-r-lg: 1rem; --elv-r-xl: 1.25rem; --elv-r-pill: 999px;
+  /* Sombras: sutiles */
+  --elv-shadow-card: 0 2px 12px rgb(26 28 27 / 0.06);
+  --elv-shadow-modal: 0 8px 40px rgb(26 28 27 / 0.12);
+  /* Tipografía */
+  --elv-font-body: 'Inter', system-ui, sans-serif;
+  --elv-font-display: 'Playfair Display', Georgia, serif;   /* solo títulos, peso 300–400 */
+  --elv-font-voice: 'Noto Serif', Georgia, serif;           /* voz de la IA, cursiva */
+  --elv-fs-xs: 0.75rem; --elv-fs-sm: 0.8125rem; --elv-fs-md: 0.875rem;
+  --elv-fs-base: 1rem;  --elv-fs-lg: 1.125rem;  --elv-fs-xl: 1.375rem;
+  --elv-fs-hero: clamp(1.75rem, 4vw + 1rem, 3rem);
+  /* Objetivo táctil mínimo */
+  --elv-touch: 2.75rem;
+}
+
+/* Modo oscuro: mismos nombres semánticos, activado con la clase .elv-dark (la pone el dominio que ya lo soportaba:
+   Career y Facilitation, según prefers-color-scheme). No se activa en pantallas que hoy no lo tienen. */
+.elv-dark {
+    color-scheme: dark;
+    --elv-bg: #181c17;  --elv-surface: #242b22;  --elv-card: #242b22;  --elv-muted-bg: #1e241d;
+    --elv-text-1: #f5f6f1;  --elv-text-2: #c4cabf;  --elv-text-3: #b3baad;
+    --elv-line: #3a4337;  --elv-line-control: #899582;
+    --elv-action: #c1d5b5;  --elv-action-text: #182115;  --elv-action-soft: #2b3628;
+    --elv-link: #c1d5b5;  --elv-focus: #9fd0ea;
+    --elv-ai: #a9d6b0;  --elv-ai-bg: #1e2b24;
+    --elv-success: #a9d6b0;  --elv-success-bg: #1e2b24;
+    --elv-warning: #f4d9a8;  --elv-warning-bg: #33291a;
+    --elv-error: #ffb5b5;    --elv-error-bg: #3a2222;
+    --elv-info: #9fd0ea;     --elv-info-bg: #1c2b36;
+}
+
+/* Foco visible único para todo control */
+.elv-focusable:focus-visible,
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--elv-focus);
+  outline-offset: 2px;
+}
+
+/* 3. Tema daisyUI único: mapea los semánticos a las variables de daisyUI. Los CSS de dominio ya no
+   definen colores propios; conservan solo su layout. */
+.elv-theme, .skill-map-scope, .career-scope, .compass-scope {
+  --color-base-100: var(--elv-card);      --color-base-200: var(--elv-bg);
+  --color-base-300: var(--elv-line-control);  --color-base-content: var(--elv-text-1);
+  --color-primary: var(--elv-action);     --color-primary-content: var(--elv-action-text);
+  --color-secondary: var(--elv-text-2);   --color-secondary-content: var(--elv-bg);
+  --color-accent: var(--elv-ai);          --color-accent-content: var(--elv-bg);
+  --color-neutral: var(--elv-text-1);     --color-neutral-content: var(--elv-bg);
+  --color-info: var(--elv-info);          --color-info-content: var(--elv-bg);
+  --color-success: var(--elv-success);    --color-success-content: var(--elv-bg);
+  --color-warning: var(--elv-warning);    --color-warning-content: var(--elv-bg);
+  --color-error: var(--elv-error);        --color-error-content: var(--elv-bg);
+  --radius-selector: var(--elv-r-sm); --radius-field: var(--elv-r-md); --radius-box: var(--elv-r-lg);
+  --size-selector: 0.25rem; --size-field: 0.25rem; --border: 1px; --depth: 0; --noise: 0;
+}
+</style>
+<style>
+  /* MAQUETA con DATOS DE EJEMPLO. Sigue el patrón del gestor del catálogo de rutas (/admin/route-catalog) y los tokens de ES-37. */
+  *{box-sizing:border-box}
+  body{margin:0;background:#f5f3ef;color:var(--elv-text-1);font:400 var(--elv-fs-base)/1.6 var(--elv-font-body)}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:var(--elv-s-3);padding:0 var(--elv-s-6);min-height:60px;border-bottom:.5px solid var(--elv-line);background:#f5f3ef;flex-wrap:wrap}
+  .logo{font:300 16px var(--elv-font-display);letter-spacing:.2em}.logo small{font:400 10px var(--elv-font-body);color:var(--elv-text-2);letter-spacing:.15em}
+  .seg{display:inline-flex;gap:2px;background:#edeae4;border-radius:999px;padding:2px}
+  .seg button{min-height:32px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:var(--elv-text-2);font:600 11px var(--elv-font-body);cursor:pointer}
+  .seg button[aria-pressed=true]{background:#fff;color:var(--elv-text-1);box-shadow:0 1px 4px rgb(0 0 0 / .08)}
+  .layout{display:grid;grid-template-columns:1fr;max-width:1240px;margin:0 auto}
+  @media(min-width:900px){.layout{grid-template-columns:220px 1fr}}
+  aside{padding:var(--elv-s-4) var(--elv-s-6);border-bottom:1px solid var(--elv-line)}
+  @media(min-width:900px){aside{border-bottom:0;border-right:1px solid var(--elv-line);min-height:calc(100vh - 60px)}}
+  aside a{display:flex;align-items:center;min-height:var(--elv-touch);color:var(--elv-text-2);text-decoration:none;font-size:var(--elv-fs-md)}
+  aside a[aria-current=page]{color:var(--elv-text-1);font-weight:600}
+  main{padding:var(--elv-s-6)}
+  h1{font:400 var(--elv-fs-xl) var(--elv-font-display);margin:0 0 var(--elv-s-2)}
+  h2{font:600 var(--elv-fs-md);margin:0 0 var(--elv-s-2)}
+  p{margin:var(--elv-s-2) 0;color:var(--elv-text-2)}
+  .note{background:var(--elv-warning-bg);color:var(--elv-warning);padding:var(--elv-s-3) var(--elv-s-4);border-radius:var(--elv-r-md);font-size:var(--elv-fs-md);margin-bottom:var(--elv-s-4)}
+  .tabs{display:flex;gap:var(--elv-s-2);flex-wrap:wrap;margin-bottom:var(--elv-s-4)}
+  .btn{min-height:var(--elv-touch);padding:0 var(--elv-s-4);border:1px solid var(--elv-line-control);background:var(--elv-card);color:var(--elv-text-1);border-radius:var(--elv-r-md);font:500 var(--elv-fs-md) var(--elv-font-body);cursor:pointer}
+  .btn.primary{background:var(--elv-action);color:var(--elv-action-text);border-color:var(--elv-action)}
+  .btn.danger{color:var(--elv-error);border-color:var(--elv-error)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn[aria-pressed=true]{outline:3px solid var(--elv-focus);outline-offset:2px}
+  .card{background:var(--elv-card);border:1px solid var(--elv-line);border-radius:var(--elv-r-lg);padding:var(--elv-s-4) var(--elv-s-6);margin-bottom:var(--elv-s-4)}
+  .row{display:flex;gap:var(--elv-s-3);align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;min-height:1.5rem;padding:0 var(--elv-s-3);border-radius:999px;font-size:var(--elv-fs-xs);font-weight:600;border:1px solid}
+  .b-ok{background:var(--elv-success-bg);color:var(--elv-success);border-color:var(--elv-success)}
+  .b-draft{background:var(--elv-warning-bg);color:var(--elv-warning);border-color:var(--elv-warning)}
+  .b-old{background:var(--elv-muted-bg);color:var(--elv-text-2);border-color:var(--elv-line-control)}
+  .b-miss{background:var(--elv-error-bg);color:var(--elv-error);border-color:var(--elv-error)}
+  .chip{display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;border:1px solid var(--elv-line-control);border-radius:var(--elv-r-sm);font-size:var(--elv-fs-sm);background:var(--elv-muted-bg)}
+  table{width:100%;border-collapse:collapse;font-size:var(--elv-fs-md)}
+  th{text-align:left;font-size:var(--elv-fs-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--elv-text-2);padding:var(--elv-s-2)}
+  td{padding:var(--elv-s-3) var(--elv-s-2);border-top:1px solid var(--elv-line);vertical-align:top}
+  @media(max-width:760px){thead{display:none}tr{display:block;border-top:1px solid var(--elv-line);padding:var(--elv-s-3) 0}td{display:block;border:0;padding:2px 0}td[data-l]::before{content:attr(data-l) ": ";font-weight:600;color:var(--elv-text-2)}}
+  .grid2{display:grid;gap:var(--elv-s-4);grid-template-columns:1fr}
+  @media(min-width:760px){.grid2{grid-template-columns:1fr 1fr}}
+  label{display:block;font-weight:500;font-size:var(--elv-fs-md);margin-bottom:4px}
+  input[type=text],input[type=date],select,textarea{width:100%;min-height:var(--elv-touch);padding:var(--elv-s-3);background:var(--elv-card);color:var(--elv-text-1);border:1px solid var(--elv-line-control);border-radius:var(--elv-r-md);font:inherit}
+  textarea{min-height:84px;resize:vertical}
+  .help{font-size:var(--elv-fs-sm);color:var(--elv-text-2);margin:4px 0 0}
+  .err input,.err textarea{border:2px solid var(--elv-error)}.err .help{color:var(--elv-error)}
+  fieldset{border:1px solid var(--elv-line);border-radius:var(--elv-r-md);padding:var(--elv-s-4);margin:0}
+  legend{font-weight:600;padding:0 var(--elv-s-2)}
+  .check{display:flex;gap:var(--elv-s-3);align-items:center;min-height:var(--elv-touch);cursor:pointer}
+  .check input{width:22px;height:22px;accent-color:var(--elv-action);margin:0}
+  .view{display:none}.view.on{display:block}
+  .dialog{border:1px solid var(--elv-line-control);border-radius:var(--elv-r-lg);padding:var(--elv-s-6);background:var(--elv-card);max-width:460px;box-shadow:var(--elv-shadow-modal)}
+</style>
+</head>
+<body>
+<div class="bar"><span class="logo">ELEVATION <small>ADMIN</small></span><div class="seg" role="group" aria-label="Idioma"><button id="es" aria-pressed="true">ES</button><button id="en" aria-pressed="false">EN</button></div></div>
+<div class="layout">
+<aside><nav aria-label="Admin"><a href="#" data-i="nDash">Panel</a><a href="#" data-i="nRoute">Catálogo de rutas</a><a href="#" aria-current="page" data-i="nSkill">Catálogo de habilidades</a></nav></aside>
+<main>
+  <div class="note" data-i="note">MAQUETA DE DISEÑO con datos de ejemplo. Sigue el patrón del gestor del catálogo de rutas y los tokens de ES-37.</div>
+  <div class="tabs" role="group" aria-label="Pantallas de la maqueta"><button class="btn" data-v="v1" aria-pressed="true" data-i="t1">1 · Versiones</button><button class="btn" data-v="v2" aria-pressed="false" data-i="t2">2 · Borrador</button><button class="btn" data-v="v3" aria-pressed="false" data-i="t3">3 · Habilidad</button><button class="btn" data-v="v4" aria-pressed="false" data-i="t4">4 · Confirmar publicar</button></div>
+
+  <section class="view on" id="v1"><h1 data-i="h1">Catálogo de habilidades</h1><p data-i="lead1">Aquí defines las habilidades, sus criterios por nivel y los territorios del mapa. Lo publicado no se edita: los cambios se hacen en un borrador.</p>
+    <div class="card"><table><thead><tr><th data-i="cV">Versión</th><th data-i="cS">Estado</th><th data-i="cP">Publicada</th><th data-i="cN">Habilidades</th><th></th></tr></thead><tbody>
+      <tr><td data-l="Versión">3</td><td data-l="Estado"><span class="badge b-draft" data-i="draft">Borrador</span></td><td data-l="Publicada">—</td><td data-l="Habilidades">8</td><td><button class="btn primary" data-go="v2" data-i="open">Abrir borrador</button></td></tr>
+      <tr><td data-l="Versión">2</td><td data-l="Estado"><span class="badge b-ok" data-i="pub">Publicado</span></td><td data-l="Publicada">2026-10-20</td><td data-l="Habilidades">8</td><td><button class="btn" data-i="view">Ver</button></td></tr>
+      <tr><td data-l="Versión">1</td><td data-l="Estado"><span class="badge b-old" data-i="arch">Archivado</span></td><td data-l="Publicada">2026-10-02</td><td data-l="Habilidades">6</td><td><button class="btn" data-i="view">Ver</button></td></tr></tbody></table></div>
+    <button class="btn" disabled data-i="create">Crear borrador desde el vigente</button><p class="help" data-i="createHelp">Ya hay un borrador abierto: solo puede haber uno.</p></section>
+
+  <section class="view" id="v2"><div class="row"><div><h1><span data-i="h2">Borrador</span> · v3 <span class="badge b-draft" data-i="draft">Borrador</span></h1><p data-i="lead2">Los cambios se aplican a las personas solo al publicar.</p></div><div class="row"><button class="btn" data-go="v3" data-i="add">Añadir habilidad</button><button class="btn primary" data-go="v4" data-i="publish">Publicar…</button></div></div>
+    <p class="help" role="status" data-i="missingSummary">Para publicar faltan datos en 2 habilidades (ver «Falta»).</p>
+    <div class="card"><table><thead><tr><th data-i="cSk">Habilidad</th><th data-i="cKey">Clave</th><th data-i="cT">Tipo</th><th data-i="cTer">Territorios</th><th data-i="cSt">Estado</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
+
+  <section class="view" id="v3"><h1><span data-i="h3">Habilidad</span> · <span id="skName">Comunicación</span></h1>
+    <form class="card" onsubmit="return false"><div class="grid2">
+      <div><label for="k" data-i="fKey">Clave</label><input id="k" type="text" value="comunicacion" disabled><p class="help" data-i="fKeyH">Se fija al crear y no cambia (minúsculas, números y _).</p></div>
+      <div><label for="ty" data-i="fType">Tipo</label><select id="ty"><option data-i="transversal">Transversal</option><option data-i="domain">De dominio</option></select></div>
+      <div><label for="le" data-i="fLabES">Nombre (ES)</label><input id="le" type="text" value="Comunicación"></div>
+      <div><label for="ln" data-i="fLabEN">Nombre (EN)</label><input id="ln" type="text" value="Communication"></div></div>
+      <h2 style="margin-top:var(--elv-s-6)" data-i="fLevels">Criterios por nivel (ES / EN)</h2>
+      <div class="grid2"><div><label for="l1e">1 · ES</label><textarea id="l1e">Conoce cómo preparar un mensaje claro…</textarea></div><div><label for="l1n">1 · EN</label><textarea id="l1n">Knows how to prepare a clear message…</textarea></div>
+      <div class="err"><label for="l2e">2 · ES</label><textarea id="l2e"></textarea><p class="help" role="alert" data-i="req">Obligatorio para publicar.</p></div><div class="err"><label for="l2n">2 · EN</label><textarea id="l2n"></textarea><p class="help" role="alert" data-i="req">Obligatorio para publicar.</p></div></div>
+      <p class="help" data-i="more">Los niveles 3 y 4 se editan igual (se muestran plegados en la pantalla real).</p>
+      <div class="grid2" style="margin-top:var(--elv-s-4)"><div><label for="so" data-i="fSrc">Fuente</label><input id="so" type="text" value="Rúbrica sintética de prueba"></div><div><label for="vb" data-i="fBy">Verificada por</label><input id="vb" type="text"></div><div><label for="vd" data-i="fDate">Fecha de verificación</label><input id="vd" type="date"></div></div>
+      <fieldset style="margin-top:var(--elv-s-6)"><legend data-i="fTer">Territorios del mapa</legend><p class="help" data-i="fTerH" style="margin:0 0 var(--elv-s-2)">Puede estar en varios. Sin territorio aparece en «Sin territorio asignado». Cambiarlos no altera los criterios ni avisa de «rúbrica cambiada».</p><div id="terr"></div></fieldset>
+      <div class="row" style="margin-top:var(--elv-s-6)"><button class="btn danger" data-i="remove">Quitar del borrador</button><div class="row"><button class="btn" data-go="v2" data-i="cancel">Cancelar</button><button class="btn primary" data-go="v2" data-i="save">Guardar</button></div></div></form></section>
+
+  <section class="view" id="v4"><h1 data-i="h4">Publicar la versión 3</h1>
+    <div class="card"><p data-i="p4">Al publicar, esta versión pasa a ser la vigente para todas las personas y la anterior se archiva. Después no se podrá editar.</p>
+      <h2 data-i="p4m">Falta para poder publicar</h2><ul><li>Comunicación: nivel 2 (ES y EN), verificada por, fecha</li><li>Adaptabilidad: fuente</li></ul>
+      <p class="help" role="status" data-i="p4h">El botón se activa cuando no falte nada.</p>
+      <div class="row"><button class="btn" data-go="v2" data-i="back">Volver al borrador</button><button class="btn primary" disabled data-i="publishNow">Publicar versión 3</button></div></div>
+    <div class="dialog" role="dialog" aria-labelledby="dt"><h2 id="dt" data-i="dt">¿Quitar «Comunicación» del borrador?</h2><p data-i="db">Se quita solo del borrador. Las versiones publicadas no cambian.</p><div class="row"><button class="btn" data-i="cancel">Cancelar</button><button class="btn danger" data-i="yes">Sí, quitar</button></div></div></section>
+</main></div>
+<script>
+const T=[['dir','Dirección & Liderazgo','Leadership & Management'],['con','Consultoría Estratégica','Strategy Consulting'],['com','Comunicación Ejecutiva','Executive Communication'],['ing','Ingeniería & Sistemas','Engineering & Systems'],['inn','Innovación & Producto','Innovation & Product']];
+const S=[['Comunicación','Communication','comunicacion','transversal',['com','dir'],3],['Trabajo en equipo','Teamwork','trabajo_en_equipo','transversal',['dir','inn'],0],['Adaptabilidad','Adaptability','adaptabilidad','transversal',['inn','con'],1],['Análisis de información','Information analysis','analisis_informacion','transversal',['con','ing'],0],['Diseño de servicios','Service design','diseno_servicios','domain',[],0]];
+const EN={note:'DESIGN MOCKUP with example data. Follows the route-catalog manager pattern and the ES-37 tokens.',nDash:'Dashboard',nRoute:'Route catalog',nSkill:'Skills catalog',t1:'1 · Versions',t2:'2 · Draft',t3:'3 · Skill',t4:'4 · Confirm publish',h1:'Skills catalog',lead1:'Define skills, their criteria per level and the map territories here. Published versions are not edited: changes happen in a draft.',cV:'Version',cS:'Status',cP:'Published',cN:'Skills',draft:'Draft',open:'Open draft',pub:'Published',arch:'Archived',view:'View',create:'Create draft from current',createHelp:'A draft is already open: only one at a time.',h2:'Draft',lead2:'Changes reach people only when published.',add:'Add skill',publish:'Publish…',missingSummary:'To publish, 2 skills have missing data (see “Missing”).',cSk:'Skill',cKey:'Key',cT:'Type',cTer:'Territories',cSt:'Status',h3:'Skill',fKey:'Key',fKeyH:'Set on creation and never changes (lowercase, numbers and _).',fType:'Type',transversal:'Transferable',domain:'Domain-specific',fLabES:'Name (ES)',fLabEN:'Name (EN)',fLevels:'Criteria per level (ES / EN)',req:'Required to publish.',more:'Levels 3 and 4 work the same way (collapsed in the real screen).',fSrc:'Source',fBy:'Verified by',fDate:'Verification date',fTer:'Map territories',fTerH:'Can be in several. With none it appears under “No territory assigned”. Changing them does not alter criteria or flag “rubric changed”.',remove:'Remove from draft',cancel:'Cancel',save:'Save',h4:'Publish version 3',p4:'On publishing, this version becomes current for everyone and the previous one is archived. It cannot be edited afterwards.',p4m:'Missing before publishing',p4h:'The button enables when nothing is missing.',back:'Back to draft',publishNow:'Publish version 3',dt:'Remove “Communication” from the draft?',db:'It is removed from the draft only. Published versions do not change.',yes:'Yes, remove',stOk:'Complete',stMiss:'Missing',none:'No territory'};
+const ES={};document.querySelectorAll('[data-i]').forEach(n=>{ES[n.dataset.i]??=n.textContent});
+ES.stOk='Completa';ES.stMiss='Falta';ES.none='Sin territorio';
+let L='es';const g=k=>(L==='en'?EN:ES)[k]??ES[k];
+function rows(){document.getElementById('rows').innerHTML=S.map(s=>{const ter=s[4].length?s[4].map(id=>{const t=T.find(x=>x[0]===id);return`<span class="chip">${L==='en'?t[2]:t[1]}</span>`}).join(''):`<span class="help">${L==='en'?EN.none:'Sin territorio'}</span>`;const st=s[5]?`<span class="badge b-miss">${g('stMiss')}: ${s[5]}</span>`:`<span class="badge b-ok">${g('stOk')}</span>`;return`<tr><td data-l="${g('cSk')}"><b>${L==='en'?s[1]:s[0]}</b></td><td data-l="${g('cKey')}"><code>${s[2]}</code></td><td data-l="${g('cT')}">${g(s[3])}</td><td data-l="${g('cTer')}">${ter}</td><td data-l="${g('cSt')}">${st}</td><td><button class="btn" data-go="v3">${L==='en'?'Edit':'Editar'}</button></td></tr>`}).join('');bind()}
+function terr(){document.getElementById('terr').innerHTML=T.map(t=>`<label class="check"><input type="checkbox" ${['com','dir'].includes(t[0])?'checked':''}> ${L==='en'?t[2]:t[1]}</label>`).join('')}
+function show(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id===v));document.querySelectorAll('.tabs .btn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}
+function bind(){document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go))}
+function i18n(){document.documentElement.lang=L;document.querySelectorAll('[data-i]').forEach(n=>{const v=g(n.dataset.i);if(v!==undefined)n.textContent=v});document.getElementById('skName').textContent=L==='en'?'Communication':'Comunicación';rows();terr()}
+document.querySelectorAll('.tabs .btn').forEach(b=>b.onclick=()=>show(b.dataset.v));
+document.getElementById('es').onclick=()=>{L='es';document.getElementById('es').setAttribute('aria-pressed',true);document.getElementById('en').setAttribute('aria-pressed',false);i18n()};
+document.getElementById('en').onclick=()=>{L='en';document.getElementById('en').setAttribute('aria-pressed',true);document.getElementById('es').setAttribute('aria-pressed',false);i18n()};
+i18n();bind();
+</script>
+</body>
+</html>
