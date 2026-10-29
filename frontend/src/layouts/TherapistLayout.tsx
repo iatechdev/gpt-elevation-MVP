@@ -43,7 +43,7 @@ export function TherapistLayout() {
                 fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em',
                 background: lang === l ? '#fff' : 'transparent',
-                color: lang === l ? '#1C1917' : '#78716C',
+                color: lang === l ? '#1C1917' : '#57534E',
                 boxShadow: lang === l ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                 transition: 'all 0.15s',
               }}

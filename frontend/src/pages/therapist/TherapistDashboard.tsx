@@ -297,7 +297,7 @@ export function TherapistDashboard() {
         <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
           {t('therapist_my_patients')}
         </h1>
-        <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0.25rem 0 0' }}>
+        <p style={{ fontSize: '0.875rem', color: '#57534E', margin: '0.25rem 0 0' }}>
           {patients.length} {patients.length !== 1 ? t('therapist_assigned') : t('therapist_assigned')}
         </p>
       </div>
@@ -312,7 +312,7 @@ export function TherapistDashboard() {
         ].map(card => (
           <div key={card.label} style={cardStyle}>
             <div style={{ fontSize: '1.6rem', fontWeight: 600, color: '#1C1917' }}>{card.value}</div>
-            <div style={{ fontSize: '0.78rem', color: '#78716C', marginTop: '0.25rem' }}>{card.label}</div>
+            <div style={{ fontSize: '0.78rem', color: '#57534E', marginTop: '0.25rem' }}>{card.label}</div>
           </div>
         ))}
       </div>
@@ -320,7 +320,7 @@ export function TherapistDashboard() {
       {/* PRÓXIMAS SESIONES */}
       {upcomingSessions.length > 0 && (
         <div style={{ ...cardStyle, marginBottom: '2rem' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
             🎥 {t('therapist_upcoming_sessions')}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
@@ -342,7 +342,7 @@ export function TherapistDashboard() {
                     <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.9rem' }}>
                       {session.patientName}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#78716C', marginTop: '0.15rem' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#57534E', marginTop: '0.15rem' }}>
                       {formatSessionTime(session.scheduledAt)} · {session.duration} min
                       {isNow && (
                         <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 700, color: '#4A6741', background: '#C6D4BF', padding: '0.1rem 0.45rem', borderRadius: 999 }}>
@@ -355,10 +355,10 @@ export function TherapistDashboard() {
                     onClick={() => navigate(`/therapist/session/${session.id}`)}
                     style={{
                       padding: '0.5rem 1.1rem',
-                      background: isNow ? '#6B7D5C' : 'transparent',
-                      border: isNow ? 'none' : '0.5px solid #6B7D5C',
+                      background: isNow ? '#4A6741' : 'transparent',
+                      border: isNow ? 'none' : '0.5px solid #4A6741',
                       borderRadius: '0.65rem',
-                      color: isNow ? '#fff' : '#6B7D5C',
+                      color: isNow ? '#fff' : '#4A6741',
                       fontSize: '0.82rem', fontWeight: 500,
                       cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                       whiteSpace: 'nowrap',
@@ -377,7 +377,7 @@ export function TherapistDashboard() {
       <div style={{ ...cardStyle, marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               🎓 {t('therapist_patient_history')}
             </div>
             <div style={{ fontSize: '0.82rem', color: '#1C1917', marginTop: '0.2rem' }}>
@@ -392,7 +392,7 @@ export function TherapistDashboard() {
           </div>
           <button
             onClick={() => setShowValidationSection(!showValidationSection)}
-            style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#78716C', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#57534E', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
             {showValidationSection ? t('admin_hide_content') : t('admin_view_active_content')}
           </button>
         </div>
@@ -410,11 +410,11 @@ export function TherapistDashboard() {
                   }}>
                     <div>
                       <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>{v.documentName}</div>
-                      <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.15rem' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#57534E', marginTop: '0.15rem' }}>
                         {v.documentType} · {new Date(v.submittedAt).toLocaleDateString(locale)}
                       </div>
                       {v.reviewNote && (
-                        <div style={{ fontSize: '0.72rem', color: '#78716C', marginTop: '0.25rem', fontStyle: 'italic' }}>
+                        <div style={{ fontSize: '0.72rem', color: '#57534E', marginTop: '0.25rem', fontStyle: 'italic' }}>
                           {v.reviewNote}
                         </div>
                       )}
@@ -422,7 +422,7 @@ export function TherapistDashboard() {
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap',
                       padding: '0.15rem 0.6rem', borderRadius: 999,
-                      background: v.status === 'approved' ? '#6B7D5C' : v.status === 'rejected' ? '#DC2626' : '#92400E',
+                      background: v.status === 'approved' ? '#4A6741' : v.status === 'rejected' ? '#DC2626' : '#92400E',
                       color: '#fff',
                     }}>
                       {v.status === 'approved'
@@ -437,12 +437,12 @@ export function TherapistDashboard() {
             )}
             {!validations.some(v => v.status === 'approved') && (
               <div style={{ padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
-                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.82rem', color: '#57534E', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
                   {t('therapist_dashboard_subtitle')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                   <div>
-                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', display: 'block', marginBottom: 4 }}>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', display: 'block', marginBottom: 4 }}>
                       {t('admin_col_role')}
                     </label>
                     <select
@@ -457,7 +457,7 @@ export function TherapistDashboard() {
                   </div>
                   <label style={{
                     padding: '0.5rem 1rem',
-                    background: uploadingDoc ? '#A8B5A2' : '#6B7D5C',
+                    background: uploadingDoc ? '#A8B5A2' : '#4A6741',
                     color: '#fff', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500,
                     cursor: uploadingDoc ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',
                   }}>
@@ -487,7 +487,7 @@ export function TherapistDashboard() {
         <div style={{ ...cardStyle, marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {t('therapist_prompt')}
               </div>
               <div style={{ fontSize: '0.82rem', color: '#1C1917', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -510,14 +510,14 @@ export function TherapistDashboard() {
               {promptData?.active && (
                 <button
                   onClick={() => setShowPromptSection(!showPromptSection)}
-                  style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#78716C', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                  style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#57534E', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                   {showPromptSection ? t('admin_hide_content') : t('therapist_view_current')}
                 </button>
               )}
               {!promptData?.pending && (
                 <button
                   onClick={() => { setShowProposeModal(true); setNewPromptContent(promptData?.content ?? '') }}
-                  style={{ padding: '0.45rem 0.85rem', background: '#6B7D5C', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#fff', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
+                  style={{ padding: '0.45rem 0.85rem', background: '#4A6741', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', color: '#fff', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontWeight: 500 }}>
                   {promptData?.hasPrompt ? t('therapist_propose_prompt') : t('therapist_create_prompt')}
                 </button>
               )}
@@ -551,7 +551,7 @@ export function TherapistDashboard() {
       )}
 
       {/* LOADING / ERROR */}
-      {loading && <p style={{ color: '#78716C', fontSize: '0.875rem' }}>{t('therapist_loading')}</p>}
+      {loading && <p style={{ color: '#57534E', fontSize: '0.875rem' }}>{t('therapist_loading')}</p>}
       {error   && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{error}</p>}
 
       {/* TWO COLUMN LAYOUT */}
@@ -561,7 +561,7 @@ export function TherapistDashboard() {
           {/* COLUMNA IZQUIERDA — PATIENT LIST */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {patients.length === 0 ? (
-              <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: '0.875rem' }}>
+              <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#57534E', fontSize: '0.875rem' }}>
                 {t('therapist_no_patients')}
               </div>
             ) : (
@@ -584,7 +584,7 @@ export function TherapistDashboard() {
                       <div style={{
                         width: 42, height: 42, borderRadius: '50%', background: '#EAF0E6',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.1rem', fontWeight: 600, color: '#6B7D5C', flexShrink: 0,
+                        fontSize: '1.1rem', fontWeight: 600, color: '#4A6741', flexShrink: 0,
                       }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
@@ -602,7 +602,7 @@ export function TherapistDashboard() {
                         <div style={{ display: noAccess ? 'none' : 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                           {lastMoodValue != null && <span style={{ fontSize: '0.85rem' }}>{MOOD_EMOJI[lastMoodValue] ?? '—'}</span>}
                           {daysSince != null && (
-                            <span style={{ fontSize: '0.75rem', color: '#78716C' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#57534E' }}>
                               {daysSince === 0 ? t('checkin_label') : `${daysSince}d`}
                             </span>
                           )}
@@ -642,7 +642,7 @@ export function TherapistDashboard() {
                           onClick={() => navigate(`/therapist/session/${nextSession.id}`)}
                           style={{
                             padding: '0.5rem 1rem',
-                            background: '#6B7D5C', border: 'none',
+                            background: '#4A6741', border: 'none',
                             borderRadius: '0.85rem',
                             color: '#fff', fontSize: '0.82rem', fontWeight: 500,
                             cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
@@ -655,9 +655,9 @@ export function TherapistDashboard() {
                         onClick={() => navigate(`/therapist/patient/${p.id}`)}
                         style={{
                           padding: '0.5rem 1.1rem',
-                          background: 'transparent', border: '0.5px solid #6B7D5C',
+                          background: 'transparent', border: '0.5px solid #4A6741',
                           borderRadius: '0.85rem',
-                          color: '#6B7D5C', fontSize: '0.82rem', fontWeight: 500,
+                          color: '#4A6741', fontSize: '0.82rem', fontWeight: 500,
                           cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
                         }}
                       >
@@ -673,7 +673,7 @@ export function TherapistDashboard() {
           {/* COLUMNA DERECHA — ALERTS */}
           <div className="th-sticky" style={cardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 🔔 {t('therapist_alerts')}
               </div>
               {totalAlerts > 0 && (
@@ -684,11 +684,11 @@ export function TherapistDashboard() {
             </div>
 
             {alertsLoading ? (
-              <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>{t('loading')}</p>
+              <p style={{ fontSize: '0.82rem', color: '#57534E', margin: 0 }}>{t('loading')}</p>
             ) : totalAlerts === 0 ? (
               <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👍</div>
-                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>{t('therapist_no_alerts')}</p>
+                <p style={{ fontSize: '0.82rem', color: '#57534E', margin: 0 }}>{t('therapist_no_alerts')}</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -739,11 +739,11 @@ export function TherapistDashboard() {
               </h2>
               <button
                 onClick={() => { setShowProposeModal(false); setProposeError(''); setProposeSuccess('') }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#57534E' }}
               >✕</button>
             </div>
 
-            <p style={{ fontSize: '0.82rem', color: '#78716C', marginBottom: '1rem', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.82rem', color: '#57534E', marginBottom: '1rem', lineHeight: 1.5 }}>
               {t('admin_prompt_info_body')}
             </p>
 
@@ -771,7 +771,7 @@ export function TherapistDashboard() {
               disabled={proposing}
               style={{
                 width: '100%', padding: '0.75rem',
-                background: proposing ? '#A8B5A2' : '#6B7D5C',
+                background: proposing ? '#A8B5A2' : '#4A6741',
                 color: '#fff', border: 'none', borderRadius: '0.85rem',
                 fontSize: '0.9rem', fontWeight: 500,
                 cursor: proposing ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif',

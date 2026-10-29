@@ -132,7 +132,7 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
           }}
         >
           <span aria-hidden="true" style={{
-            position: 'relative', width: 48, height: 28, borderRadius: 999, background: on ? '#6B7D5C' : '#A8A29E',
+            position: 'relative', width: 48, height: 28, borderRadius: 999, background: on ? '#4A6741' : '#78716C',
             transition: 'background 0.15s', display: 'inline-block',
           }}>
             <span style={{

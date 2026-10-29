@@ -18,10 +18,10 @@
   border-bottom: 0.5px solid #E7E5E4;
 }
 .th-logo { order: 1; margin-right: auto; font-family: 'Playfair Display', serif; font-weight: 300; letter-spacing: 0.2em; font-size: 1rem; color: #1C1917; white-space: nowrap; }
-.th-logo small { font-family: Inter, sans-serif; font-size: 10px; color: #78716C; letter-spacing: 0.15em; } /* contraste ≥ 4,5:1 (antes #A8A29E ≈ 2,5:1) */
+.th-logo small { font-family: Inter, sans-serif; font-size: 10px; color: #57534E; letter-spacing: 0.15em; } /* contraste ≥ 4,5:1 (antes #A8A29E ≈ 2,5:1) */
 .th-lang { display: flex; gap: 2px; background: #EDEAE4; border-radius: 9999px; padding: 2px; order: 2; }
-.th-logout { order: 4; background: none; border: none; cursor: pointer; color: #78716C; display: flex; align-items: center; justify-content: center; padding: 4px; min-width: 44px; }
-.th-who { order: 3; display: flex; align-items: center; gap: 0.5rem; min-width: 0; font-size: 13px; color: #78716C; }
+.th-logout { order: 4; background: none; border: none; cursor: pointer; color: #57534E; display: flex; align-items: center; justify-content: center; padding: 4px; min-width: 44px; }
+.th-who { order: 3; display: flex; align-items: center; gap: 0.5rem; min-width: 0; font-size: 13px; color: #57534E; }
 .th-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .th-chip {
   font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 9999px; letter-spacing: 0.08em; text-transform: uppercase;
@@ -61,8 +61,7 @@
 
 /* Objetivos táctiles ≥ 44 px: botones y controles propios del panel. */
 .th-root :where(button, select, input[type='date'], input[type='text']) { min-height: 44px; }
-.th-root .th-pill-btn { min-height: 0; position: relative; } /* píldora ES/EN: se agranda la zona de toque sin cambiar su aspecto */
-.th-root .th-pill-btn::after { content: ''; position: absolute; inset: -11px -4px; }
+.th-root .th-pill-btn, .th-a11y .th-pill-btn { min-height: 44px; min-width: 44px; } /* píldora ES/EN: objetivo táctil real de 44 px (QA ES100-QA-02) */
 
 /* Aviso informativo (icono + texto; no depende solo del color). */
 .th-notice {
@@ -74,3 +73,11 @@
   font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px;
   background: #F5F5F4; color: #57534E; border: 0.5px solid #D6D3D1; white-space: nowrap;
 }
+
+/* ES100-QA-02/04: pantallas fuera del panel (Mi terapeuta y las salas) con los mismos objetivos táctiles y el mismo ajuste de texto largo. */
+.th-a11y :where(button, a, select, [role='switch'], [role='button']) { min-height: 44px; min-width: 44px; }
+.th-a11y :where(a, button) { box-sizing: border-box; }
+.th-a11y :where(a) { display: inline-flex; align-items: center; }
+.th-a11y :where(button, a):focus-visible { outline: 2px solid #0369A1; outline-offset: 2px; }
+/* Un nombre largo sin espacios no debe desbordar a 320 ni 375 px. */
+.th-root :where(h1, h2, h3, p, span, div, li, td, th, a, button), .th-a11y :where(h1, h2, h3, p, span, div, li, td, th, a, button) { overflow-wrap: anywhere; }

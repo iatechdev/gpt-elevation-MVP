@@ -7,7 +7,15 @@ import { therapistEs, therapistEn } from '../src/i18n/therapistCopy.ts'
 test('ES-100: localizeServerError elige el lado del idioma y cae al respaldo', () => {
   assert.equal(localizeServerError('Consentimiento requerido. / Consent required.', 'es'), 'Consentimiento requerido.')
   assert.equal(localizeServerError('Consentimiento requerido. / Consent required.', 'en'), 'Consent required.')
-  assert.equal(localizeServerError('Session has not started yet.', 'es'), 'Session has not started yet.')
+  // ES100-QA-01: el backend envía solo inglés; en español se traduce lo conocido y lo demás cae al texto de la pantalla, nunca inglés suelto.
+  assert.equal(localizeServerError('Session has not started yet.', 'es'), 'La sesión todavía no ha comenzado.')
+  assert.equal(localizeServerError('Session not found.', 'es', 'respaldo'), 'No se encontró la sesión.')
+  assert.equal(localizeServerError('AI usage limit reached.', 'es'), 'Se alcanzó el límite de uso de IA del periodo.')
+  assert.equal(localizeServerError('Could not fetch patients.', 'es', 'No pudimos cargar a las personas.'), 'No pudimos cargar a las personas.')
+  assert.equal(localizeServerError('Something unexpected happened.', 'es', 'No pudimos completar la acción.'), 'No pudimos completar la acción.')
+  assert.equal(localizeServerError('Something unexpected happened.', 'es'), '')
+  assert.equal(localizeServerError('Session not found.', 'en', 'fallback'), 'Session not found.')
+  assert.doesNotMatch(['Session not found.', 'Could not join session.', 'Could not generate summary.', 'Could not end session.', 'Could not start session.', 'Could not save note.'].map(m => localizeServerError(m, 'es', 'x')).join(' '), /Could not|not found\./)
   assert.equal(localizeServerError(undefined, 'es', 'respaldo'), 'respaldo')
   assert.equal(localizeServerError('   ', 'en', 'fallback'), 'fallback')
   assert.equal(localizeServerError({ nope: 1 }, 'en', 'fallback'), 'fallback')

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 import { localizeServerError } from '../../i18n/serverError'
+import '../../styles/therapist.css'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -85,7 +86,7 @@ export function UserSessionRoom() {
           onClick={() => navigate('/app/dashboard')}
           style={{
             minHeight: 44, padding: '0.6rem 1.25rem', background: 'transparent',
-            border: '0.5px solid #A8A29E', borderRadius: '0.65rem',
+            border: '1px solid #78716C', borderRadius: '0.65rem',
             color: '#44403C', cursor: 'pointer',
             fontFamily: 'Inter, sans-serif', fontSize: '0.875rem',
           }}
@@ -97,7 +98,7 @@ export function UserSessionRoom() {
   )
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#1C1917' }}>
+    <div className="th-a11y" style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#1C1917' }}>
       {/* Header mínimo */}
       <div style={{
         padding: '0.75rem 1.5rem',

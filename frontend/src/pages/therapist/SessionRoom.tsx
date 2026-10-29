@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 import { localizeServerError } from '../../i18n/serverError'
+import '../../styles/therapist.css'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -152,7 +153,7 @@ export function SessionRoom() {
   )
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'Inter, sans-serif', background: '#1C1917', overflow: 'hidden' }}>
+    <div className="th-a11y" style={{ display: 'flex', height: '100vh', fontFamily: 'Inter, sans-serif', background: '#1C1917', overflow: 'hidden' }}>
 
       {/* VIDEO — columna principal */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -254,7 +255,7 @@ export function SessionRoom() {
                     style={{
                       flex: 1, padding: '0.6rem 0.25rem',
                       background: mood === opt.value ? '#EAF0E6' : '#F5F3EF',
-                      border: mood === opt.value ? '1.5px solid #6B7D5C' : '1.5px solid transparent',
+                      border: mood === opt.value ? '1.5px solid #4A6741' : '1.5px solid transparent',
                       borderRadius: '0.65rem', cursor: 'pointer',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem',
                     }}
@@ -303,7 +304,7 @@ export function SessionRoom() {
                   flex: 1, padding: '0.7rem',
                   background: 'transparent', border: '0.5px solid #E7E5E4',
                   borderRadius: '0.85rem', fontSize: '0.875rem',
-                  color: '#78716C', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                  color: '#57534E', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                 }}
               >
                 {t('room_t_cancel')}
@@ -313,7 +314,7 @@ export function SessionRoom() {
                 disabled={ending}
                 style={{
                   flex: 2, padding: '0.7rem',
-                  background: ending ? '#A8B5A2' : '#6B7D5C',
+                  background: ending ? '#A8B5A2' : '#4A6741',
                   border: 'none', borderRadius: '0.85rem',
                   fontSize: '0.875rem', fontWeight: 500,
                   color: '#fff', cursor: ending ? 'not-allowed' : 'pointer',

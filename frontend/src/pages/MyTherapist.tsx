@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { MatchingModal } from '../components/MatchingModal'
 import { TherapistSharingCard } from '../components/TherapistSharingCard'
+import '../styles/therapist.css'
 
 const API      = import.meta.env.VITE_BACKEND_URL || ''
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -109,7 +110,7 @@ export function MyTherapist() {
   const sectionLabel: React.CSSProperties = {
     fontSize: '0.72rem',
     fontWeight: 600,
-    color: '#78716C',
+    color: '#57534E',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: '0.75rem',
@@ -117,7 +118,7 @@ export function MyTherapist() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: '#F9F9F7', fontFamily: 'Inter, sans-serif' }}>
+    <div className="th-a11y" style={{ minHeight: '100vh', background: '#F9F9F7', fontFamily: 'Inter, sans-serif' }}>
 
       {/* HEADER */}
       <header style={{
@@ -129,11 +130,11 @@ export function MyTherapist() {
         <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button
             onClick={() => navigate('/app/dashboard')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#78716C', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#57534E', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
           >
             ← {lang === 'es' ? 'Volver' : 'Back'}
           </button>
-          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#6B6560', textTransform: 'uppercase' }}>
             ELEVATION
           </span>
           <div style={{ width: 60 }} />
@@ -148,7 +149,7 @@ export function MyTherapist() {
         </h1>
 
         {loading && (
-          <p style={{ color: '#78716C', fontSize: '0.875rem' }}>
+          <p style={{ color: '#57534E', fontSize: '0.875rem' }}>
             {lang === 'es' ? 'Cargando...' : 'Loading...'}
           </p>
         )}
@@ -164,14 +165,14 @@ export function MyTherapist() {
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
               {lang === 'es' ? 'Aún no tenés un terapeuta asignado' : 'You don\'t have a therapist yet'}
             </h2>
-            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.5rem' }}>
+            <p style={{ fontSize: '0.875rem', color: '#57534E', margin: '0 0 1.5rem' }}>
               {lang === 'es'
                 ? 'Encontrá al terapeuta ideal para vos según tus preferencias.'
                 : 'Find the right therapist based on your preferences.'}
             </p>
             <button
               onClick={() => navigate('/app/dashboard')}
-              style={{ padding: '0.65rem 1.5rem', background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+              style={{ padding: '0.65rem 1.5rem', background: '#4A6741', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
             >
               {lang === 'es' ? '🔍 Buscar mi terapeuta' : '🔍 Find my therapist'}
             </button>
@@ -191,7 +192,7 @@ export function MyTherapist() {
                 <div style={{
                   width: 56, height: 56, borderRadius: '50%', background: '#EAF0E6', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.4rem', fontWeight: 600, color: '#6B7D5C',
+                  fontSize: '1.4rem', fontWeight: 600, color: '#4A6741',
                 }}>
                   {data.therapist.name.charAt(0).toUpperCase()}
                 </div>
@@ -200,7 +201,7 @@ export function MyTherapist() {
                   <div style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1C1917' }}>
                     {data.therapist.name}
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: '#78716C', marginTop: '0.15rem' }}>
+                  <div style={{ fontSize: '0.82rem', color: '#57534E', marginTop: '0.15rem' }}>
                     {data.therapist.email}
                   </div>
 
@@ -208,7 +209,7 @@ export function MyTherapist() {
                     <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                       {data.therapist.profile.specialties && (
                         <div style={{ fontSize: '0.82rem', color: '#1C1917' }}>
-                          <span style={{ color: '#78716C' }}>
+                          <span style={{ color: '#57534E' }}>
                             {lang === 'es' ? 'Especialidades: ' : 'Specialties: '}
                           </span>
                           {data.therapist.profile.specialties}
@@ -216,7 +217,7 @@ export function MyTherapist() {
                       )}
                       {data.therapist.profile.languages && (
                         <div style={{ fontSize: '0.82rem', color: '#1C1917' }}>
-                          <span style={{ color: '#78716C' }}>
+                          <span style={{ color: '#57534E' }}>
                             {lang === 'es' ? 'Idiomas: ' : 'Languages: '}
                           </span>
                           {data.therapist.profile.languages}
@@ -224,7 +225,7 @@ export function MyTherapist() {
                       )}
                       {data.therapist.profile.approach && (
                         <div style={{ fontSize: '0.82rem', color: '#1C1917' }}>
-                          <span style={{ color: '#78716C' }}>
+                          <span style={{ color: '#57534E' }}>
                             {lang === 'es' ? 'Enfoque: ' : 'Approach: '}
                           </span>
                           {data.therapist.profile.approach}
@@ -239,7 +240,7 @@ export function MyTherapist() {
                   )}
 
                   {!data.therapist.profile && (
-                    <p style={{ fontSize: '0.82rem', color: '#A8A29E', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: '0.82rem', color: '#6B6560', marginTop: '0.5rem', fontStyle: 'italic' }}>
                       {lang === 'es' ? 'Perfil no completado aún.' : 'Profile not completed yet.'}
                     </p>
                   )}
@@ -260,7 +261,7 @@ export function MyTherapist() {
               </div>
 
               {data.upcomingSessions.length === 0 ? (
-                <p style={{ fontSize: '0.875rem', color: '#78716C', margin: 0 }}>
+                <p style={{ fontSize: '0.875rem', color: '#57534E', margin: 0 }}>
                   {lang === 'es'
                     ? 'Tu terapeuta aún no ha agendado una sesión.'
                     : 'Your therapist has not scheduled a session yet.'}
@@ -280,7 +281,7 @@ export function MyTherapist() {
                           <div style={{ fontSize: '0.875rem', fontWeight: 500, color: '#1C1917', textTransform: 'capitalize' }}>
                             {formatDateTime(s.scheduledAt)}
                           </div>
-                          <div style={{ fontSize: '0.78rem', color: '#78716C', marginTop: '0.15rem' }}>
+                          <div style={{ fontSize: '0.78rem', color: '#57534E', marginTop: '0.15rem' }}>
                             {s.duration} min
                           </div>
                         </div>
@@ -290,8 +291,8 @@ export function MyTherapist() {
                           title={joinable ? '' : (lang === 'es' ? 'Disponible 15 min antes' : 'Available 15 min before')}
                           style={{
                             padding: '0.45rem 0.9rem',
-                            background: joinable ? '#6B7D5C' : '#E7E5E4',
-                            color: joinable ? '#fff' : '#A8A29E',
+                            background: joinable ? '#4A6741' : '#E7E5E4',
+                            color: joinable ? '#fff' : '#6B6560',
                             border: 'none', borderRadius: '0.65rem',
                             fontSize: '0.78rem', fontWeight: 500,
                             cursor: joinable ? 'pointer' : 'not-allowed',
@@ -342,7 +343,7 @@ export function MyTherapist() {
             <div style={{ textAlign: 'center', paddingTop: '0.5rem' }}>
               <button
   onClick={() => setShowMatching(true)}
-  style={{ background: 'none', border: 'none', color: '#78716C', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Inter, sans-serif' }}
+  style={{ background: 'none', border: 'none', color: '#57534E', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Inter, sans-serif' }}
 >
   {lang === 'es' ? '¿Querés cambiar de terapeuta?' : 'Want to change therapist?'}
 </button>
