@@ -15,3 +15,6 @@ No repetido por mí en esta pasada: medición propia de contraste y objetivos t�
 ## Pasada corta tras la fusión en cadena (29-oct) · main 2f237a4 (con #54, #64, #23 y #37)
 - #38 ES-31 head 39b1696 (contiene main): lint 0 avisos, tipos, frontend 121/121, backend 342/342, audit 0, JS 751.605 B / CSS 101.965 B (deuda). Integración real ES-31 12/12; con #37 ya en main: navegador ES-26 13/13 e integración real ES-26 6/6.
 - #41 ES-44 head 3d9ddeb (contiene main): código de evaluación idéntico (diff 0), backend 358/358, audit 0; validate 30, mock 30, integration 15 pasan / 15 pendientes, provider sale 1, 0 llamadas reales, puerta bloqueada; `test:db` de #23 13/13 (package.json conserva los scripts de ambos).
+
+## #42 ES-36 · head b96b84f (rebase sobre main ec77c2c; merge local con main a23c31a limpio)
+lint 0 avisos, tipos, frontend 129/129, backend 370/370, audit 0, build (JS 770.936 B, CSS 105.256 B: deuda de peso); las clases daisyUI que usa (radio, checkbox, fieldset, alert) existen en el CSS construido; script de Dev 9 grupos PASS en 8 builds; CI verde (4 jobs).
