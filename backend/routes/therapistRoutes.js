@@ -11,6 +11,7 @@ const { validateBody, nonempty, text, date, optional } = require('../middlewares
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
 const { textOf } = require('../utils/claudeText');
+const { blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-101
 
 const {
   PromptVault,
@@ -58,10 +59,13 @@ router.get('/pacientes', async (req, res) => {
   try {
     const therapistId = req.user.id;
 
-    const patients = await User.findAll({
+    const linked = await User.findAll({
       where: { therapistId, role: 'user' },
       attributes: ['id', 'name', 'email', 'active', 'createdAt'],
     });
+    // ES-101: sin eliminación aceptada ni cuenta inactiva en la lista.
+    const blocked = await blockedPatientIds(linked.map((p) => p.id));
+    const patients = linked.filter((p) => !blocked.has(p.id));
 
     const patientsWithStats = await Promise.all(
       patients.map(async (p) => {
@@ -129,10 +133,12 @@ router.get('/alerts', async (req, res) => {
     const now = Date.now();
     const ONE_DAY = 1000 * 60 * 60 * 24;
 
-    const patients = await User.findAll({
+    const linked = await User.findAll({
       where: { therapistId, role: 'user', active: true },
       attributes: ['id', 'name'],
     });
+    const blocked = await blockedPatientIds(linked.map((p) => p.id)); // ES-101
+    const patients = linked.filter((p) => !blocked.has(p.id));
 
     const inactivePatients = [];
     const notableProgress  = [];
@@ -211,7 +217,7 @@ router.get('/pacientes/:id/historial', async (req, res) => {
       attributes: ['id', 'name', 'email', 'createdAt'],
     });
 
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -338,7 +344,7 @@ router.get('/pacientes/:id/historia', async (req, res) => {
       attributes: ['id', 'name', 'email', 'createdAt', 'therapistId'],
     });
 
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -395,7 +401,7 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
     const patient = await User.findOne({
       where: { id: patientId, therapistId, role: 'user' },
     });
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 
@@ -427,7 +433,7 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
       where: { id: noteId, therapistId },
     });
 
-    if (!note) {
+    if (!note || await patientBlocked(note.UserId)) { // ES-101: tampoco se edita la nota de una persona bloqueada
       return res.status(404).json({ error: 'Note not found or not authorized.' });
     }
 
@@ -458,7 +464,7 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
       attributes: ['id'],
     });
 
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101: eliminación aceptada o cuenta inactiva → 404 uniforme
       return res.status(404).json({ error: 'Patient not found or not assigned to you.' });
     }
 

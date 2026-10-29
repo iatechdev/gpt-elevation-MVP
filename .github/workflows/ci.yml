@@ -147,3 +147,7 @@ jobs:
         run: npm run test:career-plan:integration:pg
         env:
           ES33I_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-101 acceso del terapeuta con eliminación aceptada o cuenta inactiva (PostgreSQL)
+        run: npm run test:therapist-deletion:pg
+        env:
+          ES101_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres

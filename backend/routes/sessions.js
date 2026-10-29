@@ -6,6 +6,7 @@ const express = require('express');
 const router  = express.Router();
 
 const { encriptar, desencriptar } = require('../utils/crypto');
+const { blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-101
 const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
 
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
@@ -32,7 +33,7 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     const patient = await User.findOne({
       where: { id: patientId, therapistId: req.user.id, role: 'user' },
     });
-    if (!patient) {
+    if (!patient || await patientBlocked(patient.id)) { // ES-101
       return res.status(403).json({ error: 'This patient is not assigned to you.' });
     }
     const session = await TherapySession.create({
@@ -70,7 +71,8 @@ router.get('/therapist/upcoming', async (req, res) => {
       order: [['scheduledAt', 'ASC']],
       limit: 5,
     });
-    const enriched = await Promise.all(sessions.map(async (s) => {
+    const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
+    const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
       const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
       return { ...s.toJSON(), patientName: p?.name ?? 'Unknown' };
     }));
@@ -96,7 +98,8 @@ router.get('/therapist', async (req, res) => {
       where,
       order: [['scheduledAt', 'ASC']],
     });
-    const enriched = await Promise.all(sessions.map(async (s) => {
+    const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
+    const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
       const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
       return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: p?.email ?? '' };
     }));
@@ -117,7 +120,7 @@ router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duratio
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status === 'completed') {
       return res.status(400).json({ error: 'Cannot edit a completed session.' });
     }
@@ -156,7 +159,7 @@ router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: 'Session is not in progress.' });
     }
@@ -186,7 +189,7 @@ router.get('/therapist/:id/notes', async (req, res) => {
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     const notes = await SessionNote.findAll({
       where: { sessionId: session.id },
       order: [['timestamp', 'ASC']],
@@ -372,7 +375,7 @@ router.post('/therapist/:id/start', async (req, res) => {
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status !== 'scheduled') {
       return res.status(400).json({ error: `Cannot start a session with status '${session.status}'.` });
     }
@@ -406,7 +409,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
     });
-    if (!session) return res.status(404).json({ error: 'Session not found.' });
+    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: `Cannot end a session with status '${session.status}'.` });
     }
