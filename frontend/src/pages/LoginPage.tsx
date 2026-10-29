@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
-import { contextRequest } from '../context/participantContext'
+import { useLandingContent } from '../content/useLandingContent'
+import { useSessionEntry } from '../access/useSessionEntry'
+import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
 import {
   colors, radius, spacing, typography,
   btnPrimaryStyle,
@@ -11,19 +13,24 @@ const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http
 
 export function LoginPage() {
   const { t, lang, setLang } = useLanguage()
-  const navigate = useNavigate()
+  const [params, setParams] = useSearchParams()
+  const isRegistering = registrationRequested(params.toString())
+  const { text } = useLandingContent(lang)
+  const entry = useSessionEntry(BACKEND)
 
-  const [isRegistering, setIsRegistering] = useState(false)
   const [name,          setName]          = useState('')
   const [email,         setEmail]         = useState('')
   const [password,      setPassword]      = useState('')
   const [showPassword,  setShowPassword]  = useState(false)
-  const [authMessage,   setAuthMessage]   = useState('')
+  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean } | null>(null)
   const [isLocked,      setIsLocked]      = useState(false)
+  const [submitting,    setSubmitting]    = useState(false)
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
-    setAuthMessage('')
+    if (submitting || isLocked) return
+    setAuthMessage(null)
+    setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
     const body = isRegistering
       ? { name, email, password }
@@ -37,47 +44,45 @@ export function LoginPage() {
       })
       const data = await res.json() as {
         error?: string; locked?: boolean; token?: string
-        role?: string; name?: string; onboardingCompleted?: boolean
+        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string
       }
 
       if (!res.ok) {
         setIsLocked(data.locked === true)
-        setAuthMessage(`❌ ${data.error ?? t('err_credentials')}`)
+        setAuthMessage({ key: authFailureKey(res.status, data, isRegistering), success: false })
         return
       }
 
       if (isRegistering) {
-        setAuthMessage(`✓ ${t('success_register')}`)
-        setIsRegistering(false)
+        if (res.status !== 201) throw new Error('Invalid registration response')
+        setAuthMessage({ key: 'landing.access.registered', success: true })
+        setParams({}, { replace: true })
         setPassword('')
         setName('')
       } else {
-        localStorage.setItem('elevation_token', data.token ?? '')
-        localStorage.setItem('elevation_role',  data.role  ?? 'user')
-        localStorage.setItem('elevation_name',  data.name  ?? '')
-        const role = data.role ?? 'user'
-        if (role === 'admin' || role === 'superadmin') {
-          navigate('/admin/dashboard')
-        } else if (role === 'therapist') {
-          navigate('/therapist/dashboard')
-        } else if (role === 'board') {
-          navigate('/board/manifest')
-        } else {
-          // Only durable, server-confirmed ES-14 context counts as complete.
-          const context = await contextRequest(undefined, data.token).catch(() => null)
-          if (context?.context?.preferredLanguage) setLang(context.context.preferredLanguage)
-          navigate(context?.completedAt ? '/app/dashboard' : '/app/onboarding')
-        }
+        const token = data.token
+        const displayName = data.name
+        if (res.status !== 200 || !isSessionInfo(data) || typeof token !== 'string' || !token.trim()) throw new Error('Invalid login response')
+        localStorage.setItem('elevation_token', token)
+        localStorage.setItem('elevation_role', data.role)
+        localStorage.setItem('elevation_name', typeof displayName === 'string' ? displayName : '')
+        window.dispatchEvent(new Event('elevation-session-change'))
       }
     } catch {
-      setAuthMessage(`❌ ${t('err_connection')}`)
-    }
+      setAuthMessage({ key: 'landing.access.failed', success: false })
+    } finally { setSubmitting(false) }
   }
+
+  const preferredLanguage = entry.result.status === 'verified' ? entry.result.preferredLanguage : undefined
+  useEffect(() => {
+    if (preferredLanguage && preferredLanguage !== lang) setLang(preferredLanguage)
+  }, [preferredLanguage, lang, setLang])
+
+  if (entry.result.status === 'verified') return <Navigate to={sessionDestination(entry.result.session)} replace />
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
     background: 'transparent',
-    outline: 'none',
     padding: `${spacing.md} 0`,
     borderBottom: `1px solid ${colors.border}`,
     color: colors.text,
@@ -142,12 +147,22 @@ export function LoginPage() {
           </p>
         </header>
 
-        {/* Form */}
+        {entry.result.status === 'checking' && <p role="status" style={{ color: colors.text }}>{text('landing.access.checking')}</p>}
+        {entry.result.status === 'invalid' && <p role="status" style={{ color: colors.text }}>{text('landing.access.expired')}</p>}
+        {entry.result.status === 'unavailable' && <div role="alert" style={{ marginBottom: spacing.lg, color: colors.text }}>
+          <p>{text('landing.access.unavailable')}</p>
+          <button type="button" className="elv-btn" onClick={entry.retry} style={{ ...btnPrimaryStyle, marginTop: spacing.md }}>{text('landing.access.retry')}</button>
+        </div>}
+
+        {/* Existing form layout and authentication endpoints are preserved. */}
+        {entry.result.status !== 'checking' &&
         <form onSubmit={handleAuth} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.xxl }}>
 
           {isRegistering && (
             <input
               type="text"
+              aria-label={text('landing.access.name')}
+              autoComplete="name"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder={t('label_name')}
@@ -158,6 +173,8 @@ export function LoginPage() {
 
           <input
             type="email"
+            aria-label={text('landing.access.email')}
+            autoComplete="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder={t('label_email')}
@@ -168,6 +185,8 @@ export function LoginPage() {
           <div style={{ position: 'relative' }}>
             <input
               type={showPassword ? 'text' : 'password'}
+              aria-label={text('landing.access.password')}
+              autoComplete={isRegistering ? 'new-password' : 'current-password'}
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder={t('label_password')}
@@ -176,6 +195,7 @@ export function LoginPage() {
             />
             <button
               type="button"
+              aria-label={text(showPassword ? 'landing.access.hide_password' : 'landing.access.show_password')}
               onClick={() => setShowPassword(!showPassword)}
               style={{
                 position: 'absolute',
@@ -197,16 +217,16 @@ export function LoginPage() {
             <p style={{
               fontSize: '0.85rem',
               textAlign: 'center',
-              color: authMessage.startsWith('✓') ? colors.success : colors.danger,
+              color: authMessage.success ? colors.success : colors.danger,
               margin: 0,
-            }}>
-              {authMessage}
+            }} role="status">
+              {authMessage.success ? '✓ ' : '❌ '}{text(authMessage.key)}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={isLocked}
+            disabled={isLocked || submitting}
             style={{
               ...btnPrimaryStyle,
               width: '100%',
@@ -221,14 +241,15 @@ export function LoginPage() {
               fontWeight: 500,
             }}
           >
-            {isLocked ? `🔒 ${t('err_locked')}` : isRegistering ? t('btn_register') : t('btn_login')}
+            {isLocked ? `🔒 ${text('landing.access.locked')}` : submitting ? text('landing.access.submitting') : isRegistering ? text('landing.access.register') : t('btn_login')}
           </button>
 
           <button
             type="button"
+            disabled={submitting}
             onClick={() => {
-              setIsRegistering(!isRegistering)
-              setAuthMessage('')
+              setParams(isRegistering ? {} : { mode: 'register' }, { replace: true })
+              setAuthMessage(null)
               setPassword('')
               setShowPassword(false)
             }}
@@ -242,10 +263,10 @@ export function LoginPage() {
               fontFamily: typography.fontBody,
             }}
           >
-            {isRegistering ? t('link_login') : t('link_register')}
+            {isRegistering ? t('link_login') : text('landing.access.register_link')}
           </button>
 
-        </form>
+        </form>}
       </div>
     </div>
   )
