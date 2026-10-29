@@ -57,6 +57,17 @@ ${line}`); gone(text, line, ...line.split(/[:\-]/).slice(1).map(x => x.trim()).f
   assert.match(text, /10 años de experiencia/); assert.match(text, /desde 2018/);
 });
 
+test('ES-109 depuración (QA-02 y QA-03): datos personales sin dos puntos se quitan y las líneas profesionales que empiezan con las mismas palabras se conservan', () => {
+  for (const line of ['Tengo 34 años', 'Nació el 12 de marzo de 1990', 'Born March 12, 1990', 'Nacionalidad colombiana', 'DOB 12/03/1990', 'Edad 34', 'Soltera', 'I am 41 years old', '34 años de edad, casada', 'Nacida en Medellín el 3 de mayo de 1988', 'Born in Medellín']) {
+    const text = clean(`María Gómez
+${line}`); gone(text, line); kept(text);
+  }
+  for (const line of ['10 años de experiencia en análisis de datos', '12 años liderando equipos', 'Single sign-on con Okta', 'Single-page applications con React', 'Married to the data: mejora continua', 'Casado con la mejora continua del proceso', '5 años de experiencia total', 'Age verification service built for banks', 'Born digital strategies para retail 2020', 'Edad media de los clientes analizada en el estudio']) {
+    const text = clean(`María Gómez
+${line}`); assert.equal(text.includes(line), true, `se perdió contenido profesional: ${line}`); kept(text);
+  }
+});
+
 test('ES-109 depuración: enlaces, dominios y perfiles en redes', () => {
   for (const link of ['https://www.linkedin.com/in/maria-gomez', 'linkedin.com/in/maria-gomez', 'www.mariagomez.dev', 'https://github.com/mariagomez', 'github.com/mariagomez', 'mariagomez.design', 'https://behance.net/mariagomez/portafolio?x=1', 'LinkedIn: maria-gomez', 'GitHub: mariagomez', 'Portafolio: mi sitio personal', '@maria_gomez', 'Instagram: maria.gomez']) {
     const text = clean(`María Gómez\n${link}`); gone(text, link, 'linkedin', 'github', 'behance', 'mariagomez', 'maria_gomez'); kept(text);

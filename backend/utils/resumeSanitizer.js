@@ -16,9 +16,22 @@ const isYearToken = (token) => new RegExp(`^${YEAR}$`).test(token);
 // Etiquetas de contacto: se quita la etiqueta y el resto de la línea («LinkedIn: juanperez», «Tel.: …», «Dirección: …»).
 const LABELS = /^[^\S\n]*(?:e-?mail|correo(?: electr[oó]nico)?|tel[eé]fono|tel\.?|cel(?:ular)?\.?|m[oó]vil|whats\s?app|phone|mobile|linkedin|github|gitlab|behance|dribbble|twitter|instagram|facebook|telegram|skype|portafolio|portfolio|website|web|sitio web|p[aá]gina web|direcci[oó]n|domicilio|address|home address|vivo en)\b[^\n]*$/gim;
 // Datos personales que no hacen falta para leer la trayectoria y que sesgan: edad, nacimiento, estado civil, nacionalidad, sexo/género, religión.
-// Con etiqueta se quita la línea («Fecha de nacimiento: 12/03/1990»); sin etiqueta, solo formas inequívocas («34 años», «Soltera», «Nacido el …»).
+// Con etiqueta y dos puntos o guion se quita la línea («Fecha de nacimiento: 12/03/1990»). Sin dos puntos solo formas inequívocas, para no borrar contenido
+// profesional («10 años de experiencia en análisis», «Single sign-on con Okta»): una línea que EMPIEZA con una de estas palabras solo se quita si encaja con la forma de un dato personal.
 const PERSONAL_LABEL = /^[^\S\n]*(?:fecha de nacimiento|f\.? ?de nacimiento|lugar de nacimiento|nacimiento|nacido(?:\/a)?|nacida|edad|estado civil|nacionalidad|sexo|g[eé]nero|religi[oó]n|date of birth|birth ?date|birthplace|place of birth|dob|born|age|marital status|civil status|nationality|citizenship|gender|sex|religion)[^\S\n]*(?::|-|–|—)[^\n]*$/gim;
-const PERSONAL_LINE = /^[^\S\n]*(?:(?:\d{2}\s{0,3}(?:a[ñn]os|years old|yo)\b)|(?:soltero|soltera|casado|casada|divorciado|divorciada|viudo|viuda|uni[oó]n libre|single|married|divorced|widowed)(?![a-z])|(?:nacido|nacida|born)\s{1,3}(?:el|en|on|in)\b)[^\n]{0,60}$/gim;
+const PERSONAL_FORMS = [
+  /^[^\S\n]*(?:fecha de nacimiento|date of birth|birth ?date)\b[^\n]{0,60}$/,                                                         // «Fecha de nacimiento 12/03/1990»
+  /^[^\S\n]*d\.?o\.?b\.?[^\S\n]*\d[^\n]{0,40}$/,                                                                                    // «DOB 12/03/1990»
+  /^[^\S\n]*(?:edad|age)[^\S\n]+\d{1,3}\b[^\n]{0,20}$/,                                                                              // «Edad 34»
+  /^[^\S\n]*(?:nacionalidad|nationality|citizenship)[^\S\n]+[a-zñáéíóúü]+(?:[^\S\n]+[a-zñáéíóúü]+){0,2}[^\S\n]*$/,                   // «Nacionalidad colombiana»
+  /^[^\S\n]*(?:tengo|i am|i'm)[^\S\n]+\d{2}[^\S\n]*(?:años|years old|y\.o\.)?[^\n]{0,30}$/,                                           // «Tengo 34 años»
+  /^[^\S\n]*\d{2}[^\S\n]{0,3}(?:años|years old|yo)(?:[^\S\n]+de[^\S\n]+edad)?[^\S\n]*[.,;|·]?[^\S\n]*$/,                              // la línea es solo «34 años»
+  /^[^\S\n]*\d{2}[^\S\n]*años[^\S\n]+de[^\S\n]+edad\b[^\n]{0,40}$/,                                                                  // «34 años de edad, casada»
+  /^[^\S\n]*(?:nació|nacio|nacido|nacida)(?![a-zñáéíóúü])(?=[^\n]*(?:\d|[^\S\n](?:el|en)[^\S\n]))[^\n]{0,60}$/,                              // «Nació el 12 de marzo»
+  /^[^\S\n]*born[^\S\n]+(?:(?:on[^\S\n]+)?(?:[a-z]+[^\S\n]+)?\d|in[^\S\n]+[a-záéíóúñ]+(?:,?[^\S\n]+[a-záéíóúñ]+){0,2}[^\S\n]*$)[^\n]{0,40}/,    // «Born March 12, 1990», «Born in Medellín»
+  /^[^\S\n]*(?:soltero|soltera|casado|casada|divorciado|divorciada|viudo|viuda|uni[oó]n libre|single|married|divorced|widowed)[^\S\n]*(?:$|[,.;|·][^\n]{0,40}$)/, // «Casado, 2 hijos»; no «Single sign-on»
+];
+const PERSONAL_LINE = new RegExp(PERSONAL_FORMS.map((form) => form.source).join('|'), 'gim');
 const URL = /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi;
 // Dominios sin esquema (p. ej. «linkedin.com/in/ana», «ana-gomez.dev»). Se detectan por TOKENS (separados por espacios) en tiempo lineal:
 // una expresión regular anidada sobre texto hostil se vuelve cuadrática.
