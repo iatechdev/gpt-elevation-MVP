@@ -8,12 +8,13 @@ const catalog = JSON.parse(fs.readFileSync(new URL('../../shared/landing-content
 const read = (path) => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
 
 test('ES-90: las 5 claves pendientes existen en el catálogo y tienen etiqueta y descripción de lo que falta', () => {
-  assert.equal(PENDING_ITEMS.length, 5)
+  assert.equal(PENDING_ITEMS.length, 4)
   for (const item of PENDING_ITEMS) {
     assert.ok(catalog.some(entry => entry.key === item.key), item.key)
     assert.ok(item.label.length > 3 && item.missing.length > 20, item.key)
   }
-  assert.equal(PENDING_KEYS.size, 5)
+  assert.equal(PENDING_KEYS.size, 4)
+  assert.equal(PENDING_KEYS.has('landing.join.professional_pending'), false) // ES-95: ya es texto definitivo (formulario público)
 })
 
 test('ES-90: ningún texto del catálogo, ES ni EN, trae marcadores entre corchetes', () => {
@@ -25,8 +26,8 @@ test('ES-90: textos provisionales aprobados', () => {
   assert.equal(provisionalText('landing.modules.elevation.status', 'en'), 'In pilot')
   assert.equal(provisionalText('landing.skillmap.routes.adjacent.pending', 'es'), 'Las fuentes, fechas, barreras y brechas se mostrarán cuando el catálogo esté verificado.')
   assert.equal(provisionalText('landing.skillmap.routes.exploratory.pending', 'en'), 'Sources, dates, barriers and gaps will be shown once the catalog is verified.')
-  assert.equal(provisionalText('landing.join.professional_pending', 'es'), 'Próximamente: el alta de profesionales aún no está disponible.')
-  assert.equal(provisionalText('landing.join.professional_pending', 'en'), 'Coming soon: professional sign-up is not available yet.')
+  assert.match(provisionalText('landing.join.professional_pending', 'es'), /^Completa el formulario: el equipo de Elevation revisa tu solicitud/)
+  assert.match(provisionalText('landing.join.professional_pending', 'en'), /^Fill in the form: the Elevation team reviews your application/)
   assert.equal(provisionalText('no.existe', 'es'), '')
 })
 
@@ -43,9 +44,9 @@ test('ES-90: Pendiente mientras el valor sea el provisional, vacío o con corche
 
 test('ES-90: el contador distingue pendientes y listos por idioma', () => {
   const content = Object.fromEntries(PENDING_ITEMS.map(item => [item.key, provisionalText(item.key, 'es')]))
-  assert.deepEqual(countPending(content, 'es'), { pending: 5, ready: 0 })
-  assert.deepEqual(countPending({ ...content, 'landing.modules.elevation.status': 'Disponible' }, 'es'), { pending: 4, ready: 1 })
-  assert.deepEqual(countPending({}, 'en'), { pending: 5, ready: 0 })
+  assert.deepEqual(countPending(content, 'es'), { pending: 4, ready: 0 })
+  assert.deepEqual(countPending({ ...content, 'landing.modules.elevation.status': 'Disponible' }, 'es'), { pending: 3, ready: 1 })
+  assert.deepEqual(countPending({}, 'en'), { pending: 4, ready: 0 })
 })
 
 test('ES-90: la pestaña Landing muestra el panel primero, sin duplicar los campos pendientes en la lista general', () => {

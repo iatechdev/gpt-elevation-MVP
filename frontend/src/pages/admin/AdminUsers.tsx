@@ -1,6 +1,7 @@
 // HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 type Role = 'user' | 'therapist' | 'admin' | 'superadmin' | 'board';
 
@@ -75,6 +76,14 @@ export function AdminUsers() {
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [mostrarModal,        setMostrarModal]        = useState(false);
   const [nuevoUsuario,        setNuevoUsuario]        = useState({ name: '', email: '', password: '', role: 'user' as Role });
+  // ES-95: «Crear cuenta de terapeuta» desde una solicitud aprobada abre este modal con nombre y correo precargados (la contraseña la define quien crea la cuenta).
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('newTherapist') !== '1') return;
+    setNuevoUsuario({ name: (searchParams.get('name') ?? '').slice(0, 120), email: (searchParams.get('email') ?? '').slice(0, 254), password: '', role: 'therapist' });
+    setMostrarModal(true);
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
   const [creando,             setCreando]             = useState(false);
   const [errorModal,          setErrorModal]          = useState('');
   const [exitoModal,          setExitoModal]          = useState('');

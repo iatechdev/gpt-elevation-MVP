@@ -9,7 +9,6 @@ export const PENDING_ITEMS: readonly PendingItem[] = [
   { key: 'landing.skillmap.routes.continuity.pending', label: 'Ruta de continuidad', missing: 'Fuente verificada, fecha de verificación, barreras y brechas de esta ruta. Salen del catálogo de rutas verificado.' },
   { key: 'landing.skillmap.routes.adjacent.pending', label: 'Ruta adyacente', missing: 'Fuente verificada, fecha de verificación, barreras y brechas de esta ruta. Salen del catálogo de rutas verificado.' },
   { key: 'landing.skillmap.routes.exploratory.pending', label: 'Ruta exploratoria', missing: 'Fuente verificada, fecha de verificación, barreras y brechas de esta ruta. Salen del catálogo de rutas verificado.' },
-  { key: 'landing.join.professional_pending', label: 'Alta de profesionales', missing: 'Decisión D-04: si existe el alta con validación de credenciales. Cuando exista, el texto y el destino del botón.' },
 ]
 
 export const PENDING_KEYS: ReadonlySet<string> = new Set(PENDING_ITEMS.map(item => item.key))
