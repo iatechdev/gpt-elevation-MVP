@@ -27,7 +27,7 @@ test('ES-90: GET público devuelve los textos provisionales honestos y ningún m
   const es = (await request('GET', '/api/landing-content?lang=es')).body;
   assert.equal('landing.modules.elevation.status' in es, false); // ES-94: Elevation no lleva etiqueta de estado
   assert.match(es['landing.skillmap.routes.continuity.pending'], /^Un rol del mismo contexto del que vienes\./);
-  assert.equal((await request('GET', '/api/landing-content?lang=en')).body['landing.join.professional_pending'], 'Coming soon: professional sign-up is not available yet.');
+  assert.equal((await request('GET', '/api/landing-content?lang=en')).body['landing.join.professional_pending'], 'Fill in the form: the Elevation team reviews your application and writes to the email you provide. Afterwards, a board verifies your credentials before giving you access.');
 });
 
 test('ES-90: solo el superadmin reemplaza un pendiente y el valor nuevo se publica; otros roles reciben 403', async t => {

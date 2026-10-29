@@ -2,6 +2,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { LandingPage }    from './pages/LandingPage.tsx'
 import { LoginPage }      from './pages/LoginPage.tsx'
+import { ProfessionalApplicationPage } from './professional/ProfessionalApplicationPage.tsx'
 import { CheckinPage }    from './pages/CheckinPage.tsx'
 import { ChatPage }       from './pages/ChatPage.tsx'
 import { PricingPage }    from './pages/PricingPage.tsx'
@@ -45,6 +46,7 @@ export default function App() {
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
       <Route path="/login"   element={<LoginPage />} />
+      <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
 
       {/* Regular user */}

@@ -1,5 +1,6 @@
 import landingFields from '../../../../shared/landing-content.json'
 import { LandingPendingPanel } from './LandingPendingPanel'
+import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
@@ -83,10 +84,11 @@ const sectionTitle: React.CSSProperties = {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function AdminContent() {
-  const [tab, setTab] = useState<'pricing' | 'landing' | 'validations'>('validations')
+  const [tab, setTab] = useState<'pricing' | 'landing' | 'validations' | 'applications'>('validations')
 
   const tabs = [
     { key: 'validations', label: '🎓 Validaciones' },
+    { key: 'applications', label: '📨 Solicitudes' }, // ES-95
     { key: 'pricing',     label: '💰 Precios' },
     { key: 'landing',     label: '🌐 Landing' },
   ] as const
@@ -117,6 +119,7 @@ export function AdminContent() {
       </div>
 
       {tab === 'validations' && <ValidationsTab />}
+      {tab === 'applications' && <ProfessionalApplicationsPanel s={{ card, label, input, btnPrimary, btnSecondary }} />}
       {tab === 'pricing'     && <PricingTab />}
       {tab === 'landing'     && <LandingTab />}
     </div>
