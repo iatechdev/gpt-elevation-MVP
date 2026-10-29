@@ -55,6 +55,8 @@ const descifrarV2 = (texto) => {
 };
 
 const desencriptar = (texto) => {
+  // ES-86: el contexto profesional va cifrado con su propia clave (v2p:). Falla (no devuelve texto cifrado) si no hay clave o el dato se alteró.
+  if (typeof texto === 'string' && texto.startsWith('v2p:')) return require('./professionalCrypto').decrypt(texto);
   if (typeof texto === 'string' && texto.startsWith(PREFIJO_V2)) return descifrarV2(texto);
   try {
     const partes = texto.split(':');

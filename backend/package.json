@@ -34,6 +34,7 @@
     "test:resume-skills:pg": "node --test test/integration/es-110-postgres.cjs",
     "test:pro-cv-binary:pg": "node --test test/integration/es-107-postgres.cjs",
     "test:therapist-deletion:pg": "node --test test/integration/es-101-postgres.cjs",
+    "test:professional-key:pg": "node --test test/integration/es-86-postgres.cjs",
     "test:routes:pg": "node --test test/integration/es-32-postgres.cjs",
     "test:worker:pg": "node --test test/integration/es-85-postgres.cjs",
     "test:routes:local": "node scripts/testEs32Local.cjs",
