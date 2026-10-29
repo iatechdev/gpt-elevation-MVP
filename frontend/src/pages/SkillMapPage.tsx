@@ -5,9 +5,9 @@ import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
 import type { SkillMap } from '../skill-map/model'
 import { MapGuide } from '../skill-map/MapAccess'
-import { SkillDetail, TerritoryList, TerritoryMap } from '../skill-map/SkillViews'
+import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
 import { noLevelAnywhere } from '../skill-map/status'
-import { territories } from '../skill-map/territories'
+import { resolveTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -77,6 +77,8 @@ export function SkillMapPage() {
   const map = state.status === 'ready' && state.token === readToken() ? state.map : null
   const error = state.status === 'error' ? state.reason : state.status === 'ready' && !map ? 'expired' : null
   const skill = map?.skills.find(item => item.skillKey === selected) ?? null
+  // H-86-02: sin ninguna capacidad con territorio no se dibujan cinco recuadros vacíos: se muestra el aviso y la lista.
+  const noTerritories = !!map && map.skills.length > 0 && resolveTerritories(map.skills, territories).groups.every(group => group.skills.length === 0)
   const nothingToRevoke = bridge === 'revoked' || bridge === 'undecided'
   const message = revoke === 'done' ? t('skill_map.revoke_done') : revoke === 'error' ? t('skill_map.revoke_error') : revoke === 'expired' ? t('skill_map.expired')
     : nothingToRevoke ? t('skill_map.revoke_none') : ''
@@ -104,9 +106,9 @@ export function SkillMapPage() {
             <li><span className="skill-map-dot dot-level" aria-hidden="true" />{t('skill_map.status_evidence')}</li>
             <li><span className="skill-map-dot dot-none" aria-hidden="true" />{t('skill_map.no_evidence')}</li>
           </ul>
-          <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
+          {!noTerritories && <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
             {t(listView ? 'skill_map.view_map' : 'skill_map.view_list')}
-          </button>
+          </button>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
             disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving'}>{t('skill_map.revoke_all')}</button>
           <button type="button" className="elv-btn" onClick={refresh} disabled={state.status === 'loading'}>{t('skill_map.refresh')}</button>
@@ -124,12 +126,14 @@ export function SkillMapPage() {
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
           {noLevelAnywhere(map.skills) && <MapGuide />}
-          <div className={`skill-map-board${listView ? ' is-list' : ''}`}>
+          {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
+          <div className={`skill-map-board${listView || noTerritories ? ' is-list' : ''}`}>
             <div className="skill-map-canvas">
               <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
             </div>
             <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
           </div>
+          {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
           <div ref={detailRef} className="skill-map-detail-wrap" aria-live="polite">
             {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t}
               self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></>
