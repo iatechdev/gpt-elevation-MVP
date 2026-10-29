@@ -24,6 +24,7 @@ El detector es una ayuda limitada, no un sistema clínico. **Que no detecte nada
 - **Sobre-activa a propósito.** No entiende negaciones ni modismos: «quiero morir de risa» y «no quiero morir» se tratan como graves; «esto va a desaparecer pronto» como malestar. Se prefiere interrumpir de más a callar.
 - **No detecta lo indirecto:** «ya nada importa», «ojalá no despertar», «no veo salida», faltas de ortografía («suisidarme»), otros idiomas, ironía y metáforas.
 - Solo analiza el mensaje actual, no el historial.
+- **ES-92 (QA-13-01):** reconoce «me quiero hacer daño / lastimar / cortar», «harm myself» y «I do not / don't / dont want|wanna live» (también con apóstrofo tipográfico). Sigue sin entender negaciones: «no quiero lastimar a nadie» no activa porque no lleva «me» antes del verbo, pero «me voy a lastimar» (accidente) sí activa. «Cortar» no activa con un objeto cotidiano («me quiero cortar el pelo»); «live in/at/on/near…» se trata como lugar. La lista sigue siendo BORRADOR a revisar por el especialista (ES-24).
 - Normaliza acentos, mayúsculas, espacios y caracteres invisibles, pero un texto muy ofuscado puede escaparse.
 - Los casos anteriores están probados como «límites conocidos» en `backend/test/es-21-safety.test.cjs`.
 - No hay medición de aciertos ni de falsos positivos con casos reales: el corpus de evaluación es de ES-44/ES-46.

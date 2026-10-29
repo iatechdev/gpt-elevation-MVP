@@ -12,7 +12,7 @@ const registryDefault = require('../config/supportResources.json');
 
 const INVISIBLE = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g;
 const flat = (text) => String(text).normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .replace(INVISIBLE, '').toLowerCase().replace(/\s+/g, ' ');
+  .replace(INVISIBLE, '').replace(/[\u2018\u2019\u02BC]/g, "'").toLowerCase().replace(/\s+/g, ' ');
 
 // Patrones sobre texto sin acentos, en minúsculas.
 const HIGH = [
@@ -25,13 +25,19 @@ const HIGH = [
   { lang: 'en', re: /\bsuicid\w*/ },
   { lang: 'en', re: /\b(kill(ing)? myself|(end|ending) my (own )?life|(take|taking) my (own )?life)\b/ },
   { lang: 'en', re: /\b(want|wanna|going|plan|planning|thinking of|thinking about)\s+(to\s+)?(die|end it all|end things)\b/ },
-  { lang: 'en', re: /\b(better off dead|don'?t want to (live|be alive|be here anymore))\b/ },
+  { lang: 'en', re: /\bbetter off dead\b/ },
+  // ES-92: «do not» y «wanna»; «live in/at/on/near…» es un lugar, no riesgo.
+  { lang: 'en', re: /\b(don'?t|do not) (want to|wanna) (live(?!\s+(in|at|on|near)\b)|be alive|be here anymore)\b/ },
 ];
 const MEDIUM = [
   { lang: 'es', re: /\b(hacerme dano|cortarme|lastimarme|desaparecer|todo esta perdido)\b/ },
   { lang: 'es', re: /\bautolesion\w*/ },
+  // ES-92: «me quiero hacer daño / lastimar / cortar». «cortar» no activa con un objeto cotidiano («cortar el pelo»).
+  { lang: 'es', re: /\bme (quiero|quisiera|voy a|pienso|dan ganas de) (hacer dano|lastimar\b)/ },
+  { lang: 'es', re: /\bme (quiero|quisiera|voy a|pienso|dan ganas de) cortar(?!\s+(el|la|los|las|un|una|unos|unas|mi|mis|tu|su)\b)/ },
+  { lang: 'es', re: /\bme (quiero|quisiera|voy a|pienso|dan ganas de) cortar (las venas|la piel|los brazos|el brazo|las munecas)\b/ },
   { lang: 'es', re: /\b(no aguanto mas|no puedo mas|ya no puedo)\b/ },
-  { lang: 'en', re: /\b(hurt myself|cut myself|disappear)\b/ },
+  { lang: 'en', re: /\b(hurt myself|harm myself|harming myself|cut myself|disappear)\b/ },
   { lang: 'en', re: /\bself[- ]?harm\w*/ },
   { lang: 'en', re: /\b(can'?t go on|can'?t take (it|this) anymore)\b/ },
 ];
