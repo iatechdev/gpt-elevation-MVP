@@ -264,14 +264,21 @@ La landing usa un tema editorial propio y acotado; no sustituye los tokens de la
 
 Fuente única: `frontend/src/styles/tokens.css` (variables `--elv-*`). Referencia visual: `docs/hu-tecnicas/design-system-reference.html`. Prueba: `frontend/test/es-37-tokens.test.mjs` (falla si un par texto/fondo baja de WCAG 2.1 AA).
 
-Cambios frente a la paleta anterior (contrastes calculados):
+Paleta vigente (la de la landing, `frontend/src/index.css`; contrastes calculados y vigilados por `frontend/test/es-37-tokens.test.mjs`):
 
-| Antes | Ahora | Motivo |
+| Token | Valor | Contraste / uso |
 |---|---|---|
-| Texto 3 `#A8A29E` (2,39:1 sobre el fondo) | `#6B6560` (5,45:1) | No cumplía AA como texto ni como placeholder |
-| Texto 2 `#78716C` (4,55:1) | `#57534E` (7,24:1) | Margen sobre fondos alternos |
-| Acción `#6B7D5C` con texto blanco (4,46:1) | Acción `#4A6741` (6,35:1); `#6B7D5C` queda como color de marca decorativo | No llegaba a 4,5:1 |
-| Borde `#D6D2C4` / `#E7E5E4` (≈1,2:1) en controles | `#7C8875` (3,53:1) para inputs y botones secundarios; los divisores decorativos conservan el tono claro | Los controles deben distinguirse (≥3:1) |
-| Error `#DC2626` (4,83:1 sobre blanco) | `#9B1C1C` (≥6,6:1) | Margen sobre fondos teñidos |
+| Fondo `--elv-bg` (papel) | `#FAFAF9` | Fondo de pantalla |
+| Texto 1 `--elv-text-1` (tinta) | `#1A1A18` | 16,7:1 sobre papel |
+| Texto 2 y 3 `--elv-text-2/3` (gris) | `#6B6B67` | 5,1:1 sobre papel; 4,7:1 sobre superficie `#F2F1EF` |
+| Acción `--elv-action` | `#1A1A18` con texto blanco | 17,4:1 |
+| Vínculo `--elv-link` y nivel alto | `#7D6218` | 5,5:1 sobre papel |
+| Marca `--elv-brand` (ocre) | `#B8963E` | 2,7:1: **solo decorativo**, nunca como texto |
+| Borde decorativo `--elv-line` | `#E0DED9` | Divisores (no controles) |
+| Borde de control `--elv-line-control` | `#8A8780` | 3,4:1: inputs y botones secundarios |
+| Error `--elv-error` | `#7A3030` sobre `#F7E6E6` | ≥4,5:1 |
+| Foco `--elv-focus` | `#2F6B8F` (claro) / `#9FD0EA` (oscuro) | ≥3:1 |
 
-Capas: primitivos (`--elv-p-*`) → semánticos (`--elv-bg`, `--elv-text-1`, `--elv-action`…) → tema daisyUI único (bloque comentado en tokens.css; se activa en el paso B). Modo oscuro: clase `.elv-dark`, solo donde el dominio ya lo tenía (Career, Facilitation). Paleta: desde 29-oct-2026 los tokens usan la de la landing (papel #FAFAF9, tinta #1A1A18, gris #6B6B67, borde #E0DED9, ocre #B8963E solo decorativo y #7D6218 para texto/vínculos/nivel alto), por decisión de Mauricio, para que producto y landing sean una sola identidad. La acción principal es tinta con texto blanco; el olivo del sistema anterior (#6B7D5C) se retira de estos tokens. Radios y tipografía no cambian en este paso.
+La paleta olivo anterior (acción `#4A6741`, marca `#6B7D5C`, borde de control `#7C8875`, error `#9B1C1C`) **ya no existe** en los tokens; solo sobrevive en los textos antiguos de este documento (más arriba) y en `frontend/src/styles/tokens.ts` del producto anterior.
+
+Capas: primitivos (`--elv-p-*`) → semánticos (`--elv-bg`, `--elv-text-1`, `--elv-action`…) → tema daisyUI único (bloque final de tokens.css, **activo** para `.elv-theme`, `.skill-map-scope`, `.career-scope` y `.compass-scope`). Modo oscuro: clase `.elv-dark`, solo donde el dominio ya lo tenía (Career, Facilitation). Paleta: desde 29-oct-2026 los tokens usan la de la landing (papel #FAFAF9, tinta #1A1A18, gris #6B6B67, borde #E0DED9, ocre #B8963E solo decorativo y #7D6218 para texto/vínculos/nivel alto), por decisión de Mauricio, para que producto y landing sean una sola identidad. La acción principal es tinta con texto blanco; el olivo del sistema anterior (#6B7D5C) se retira de estos tokens. Radios y tipografía no cambian en este paso.

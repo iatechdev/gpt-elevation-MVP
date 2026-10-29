@@ -1,7 +1,7 @@
 /* ES-37 — Tokens del sistema de diseño Elevation + Skill Map (fuente única).
    Tres capas: primitivos (--elv-p-*) → semánticos (--elv-*) → tema daisyUI (ver bloque final).
    Los pares texto/fondo están medidos contra WCAG 2.1 AA (≥4,5:1 texto, ≥3:1 controles y bordes de control);
-   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja aún NO está importada por la app. */
+   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja la importa frontend/src/index.css y su tema daisyUI (bloque final) está activo en los tres dominios. */
 
 :root {
   /* 1. Primitivos (paleta de la landing, frontend/src/index.css) ─────── */
