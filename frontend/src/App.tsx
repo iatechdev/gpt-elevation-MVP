@@ -28,6 +28,7 @@ import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
 import { BoardManifest } from './pages/board/BoardManifest.tsx'
+import { CatalogBrowser, CatalogManager } from './routeCatalog/CatalogPages'
 import { CompassPage } from './compass/CompassPage'
 import { CareerShell } from './career/CareerShell'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
@@ -48,6 +49,8 @@ export default function App() {
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/route-catalog" element={<CatalogBrowser />} />
+        <Route path="/app/route-catalog/roles/:roleKey" element={<CatalogBrowser />} />
         <Route path="/app/compass" element={<CompassPage />} />
         <Route path="/app/next-step" element={<CareerShell />}>
           <Route index element={<RoutesScreen />} />
@@ -75,6 +78,9 @@ export default function App() {
       </Route>
 
       {/* Admin backoffice */}
+      <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/route-catalog/:id/:kind/:itemKey" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin" element={
         <AdminRoute>
           <AdminLayout />
