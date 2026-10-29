@@ -7,9 +7,9 @@ import type { SkillMap } from '../skill-map/model'
 import { MapGuide } from '../skill-map/MapAccess'
 import { AiAnalysisPanel } from '../skill-map/AiAnalysisPanel'
 import { RadarBoard } from '../skill-map/RadarView'
-import { SkillDetail, TerritoryList, TerritoryMap } from '../skill-map/SkillViews'
+import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
 import { noLevelAnywhere } from '../skill-map/status'
-import { territories } from '../skill-map/territories'
+import { resolveTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 import '../skill-map/radar.css'
 
@@ -85,6 +85,8 @@ export function SkillMapPage() {
   const map = state.status === 'ready' && state.token === readToken() ? state.map : null
   const error = state.status === 'error' ? state.reason : state.status === 'ready' && !map ? 'expired' : null
   const skill = map?.skills.find(item => item.skillKey === selected) ?? null
+  // H-86-02: sin ninguna capacidad con territorio no se dibujan cinco recuadros vacíos: se muestra el aviso y la lista.
+  const noTerritories = !!map && map.skills.length > 0 && resolveTerritories(map.skills, territories).groups.every(group => group.skills.length === 0)
   const nothingToRevoke = bridge === 'revoked' || bridge === 'undecided'
   const message = revoke === 'done' ? t('skill_map.revoke_done') : revoke === 'error' ? t('skill_map.revoke_error') : revoke === 'expired' ? t('skill_map.expired')
     : nothingToRevoke ? t('skill_map.revoke_none') : ''
@@ -117,9 +119,9 @@ export function SkillMapPage() {
               <li><span className="skill-map-dot dot-level" aria-hidden="true" />{t('skill_map.status_evidence')}</li>
               <li><span className="skill-map-dot dot-none" aria-hidden="true" />{t('skill_map.no_evidence')}</li>
             </ul>
-            <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
+            {!noTerritories && <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
               {t(listView ? 'skill_map.view_map' : 'skill_map.view_list')}
-            </button>
+            </button>}
           </>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
             disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving'}>{t('skill_map.revoke_all')}</button>
@@ -139,12 +141,16 @@ export function SkillMapPage() {
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
           {noLevelAnywhere(map.skills) && <MapGuide />}
           {view === 'radar' ? <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} onAnalyze={() => openAi(map.skills.slice(0, 8).map(item => item.skillKey))} lang={lang} t={t} />
-            : <div className={`skill-map-board${listView ? ' is-list' : ''}`}>
-              <div className="skill-map-canvas">
-                <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+            : <>
+              {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
+              <div className={`skill-map-board${listView || noTerritories ? ' is-list' : ''}`}>
+                <div className="skill-map-canvas">
+                  <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+                </div>
+                <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
               </div>
-              <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
-            </div>}
+              {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
+            </>}
           {ai && state.status === 'ready' && <div ref={aiRef}><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
             onSaved={reloadMap} onClose={() => setAi(null)} /></div>}
           <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
