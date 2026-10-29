@@ -31,8 +31,8 @@ async function readContext(userId, transaction) {
 }
 
 // Claves del catálogo vigente por nombre normalizado (ES y EN). Sin catálogo publicado no se clasifica nada.
-async function catalogIndex() {
-  const published = await skillCatalog.getPublished();
+async function catalogIndex(transaction) {
+  const published = await skillCatalog.getPublished(transaction);
   const index = new Map();
   if (!published) return { index, version: null };
   for (const skill of published.skills.values()) {
@@ -60,11 +60,10 @@ async function addedKeys(userId, transaction) {
 
 // -> habilidades declaradas en la hoja de vida cuya versión de origen todavía existe, con su clasificación y si ya pasaron a evidencia.
 async function listCandidates(userId, transaction) {
-  const [context, resumes, { index }, added] = await Promise.all([
-    readContext(userId, transaction),
-    ParticipantResume.findAll({ where: { UserId: userId }, attributes: ['id', 'version', 'createdAt'], transaction }),
-    catalogIndex(), addedKeys(userId, transaction),
-  ]);
+  const context = await readContext(userId, transaction);
+  const resumes = await ParticipantResume.findAll({ where: { UserId: userId }, attributes: ['id', 'version', 'createdAt'], transaction });
+  const { index } = await catalogIndex(transaction);
+  const added = await addedKeys(userId, transaction);
   const byVersion = new Map(resumes.map((r) => [r.version, r]));
   const skills = [];
   for (const skill of context ? context.declaredSkills : []) {
