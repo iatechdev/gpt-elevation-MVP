@@ -10,6 +10,9 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
   models.MatchingRequest.findByPk = async () => { calls++; return match; };
   models.User.update = async (values, options) => { calls++; assigned = { values, options }; };
   models.User.findAll = async () => [record({ id: 303, name: 'Synthetic therapist' })];
+  // ES-98 (ES93-M1): elegir y confirmar validan que el terapeuta esté activo y que la persona sea un participante activo.
+  models.User.findOne = async ({ where }) => (where.role === 'therapist' ? record({ id: where.id, role: 'therapist', active: true })
+    : where.role === 'user' ? record({ id: where.id, role: 'user', active: true }) : null);
   models.MoodLog.findAll = async () => [];
   models.MatchingRequest.create = async values => record({ id: 7, ...values });
   models.MatchingRequest.findOne = async ({ where }) => {
@@ -34,6 +37,7 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
         body, headers: { Authorization: 'Bearer invalid' },
       })).status, 401);
       for (const role of ['admin', 'superadmin']) {
+        match.status = 'pending'; // ES-98: una solicitud confirmada ya no se vuelve a confirmar (409); cada vuelta parte de una pendiente
         assert.equal((await request(method, prefix + suffix, { role, body })).status, 200);
       }
     }
@@ -42,6 +46,7 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
   assert.equal((await request('POST', '/api/matching/request', {
     role: 'user', body: { answers: { area: 'synthetic', style: 'synthetic', language: 'en' } },
   })).status, 200);
+  match.status = 'pending';
   assert.equal((await request('POST', '/api/matching/choose', {
     role: 'user', body: { requestId: 7, therapistId: 303 },
   })).status, 200);
