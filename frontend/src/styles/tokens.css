@@ -45,6 +45,9 @@
   --elv-error: #9b1c1c;     --elv-error-bg: #fee2e2;
   --elv-info: #075985;      --elv-info-bg: #e0f2fe;
 
+  /* Tintes de territorio del mapa de competencias (ES-30): neutros y fijos; no codifican estado */
+  --elv-tone-dir: #dde0d3; --elv-tone-con: #ece0d8; --elv-tone-com: #e6e1d2; --elv-tone-ing: #e4dccf; --elv-tone-inn: #d8ded3;
+
   /* Espacio (base 4 px) */
   --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;
   --elv-s-6: 1.5rem;  --elv-s-8: 2rem;   --elv-s-12: 3rem;   --elv-s-16: 4rem;

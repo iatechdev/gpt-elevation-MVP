@@ -44,3 +44,71 @@
 @media (prefers-reduced-motion: reduce) {
   .skill-map-scope *, .skill-map-scope *::before, .skill-map-scope *::after { transition: none; animation: none; scroll-behavior: auto; }
 }
+
+/* ── ES-30: mapa por territorios ─────────────────────────────── */
+.skill-map-eyebrow { margin: 0; font-size: .6875rem; letter-spacing: .25em; text-transform: uppercase; color: var(--elv-text-2); }
+.skill-map-title { align-items: flex-end; }
+.skill-map-title h1 { margin-block: 4px 8px; }
+.skill-map-title .skill-map-intro { margin: 0; max-width: 60ch; color: var(--elv-text-2); }
+.skill-map-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.skill-map-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; font-size: .875rem; color: var(--elv-text-2); }
+.skill-map-legend li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.skill-map-reading { color: var(--elv-text-2); margin-block: 0 16px; }
+.skill-map-revoke-status:empty { display: none; }
+.skill-map-revoke-status { margin-block: 0 16px; }
+.skill-map-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.skill-map-dot.dot-level { background: var(--elv-action); }
+.skill-map-dot.dot-none { border: 2px dashed var(--elv-text-2); }
+.skill-map-board { margin-bottom: 24px; }
+.skill-map-canvas { display: none; }
+.skill-map-svg { width: 100%; height: auto; display: block; }
+.skill-map-canvas { background-color: var(--elv-muted-bg); background-image: radial-gradient(var(--elv-line) 1px, transparent 1px); background-size: 24px 24px; border: 1px solid var(--elv-line); border-radius: var(--elv-r-md); padding: 16px; }
+.skill-map-view-toggle { display: none; }
+@media (min-width: 1024px) {
+  .skill-map-canvas { display: block; }
+  .skill-map-board .skill-map-territory-list { display: none; }
+  .skill-map-view-toggle { display: inline-flex; align-items: center; }
+  .skill-map-board.is-list .skill-map-canvas { display: none; }
+  .skill-map-board.is-list .skill-map-territory-list { display: grid; }
+}
+.skill-map-territory rect, .skill-map-territory-card { stroke: var(--elv-line-control); stroke-width: 1.2; }
+.tone-dir { --tone: var(--elv-tone-dir); } .tone-con { --tone: var(--elv-tone-con); } .tone-com { --tone: var(--elv-tone-com); }
+.tone-ing { --tone: var(--elv-tone-ing); } .tone-inn { --tone: var(--elv-tone-inn); } .tone-none { --tone: var(--elv-muted-bg); }
+.skill-map-territory rect { fill: var(--tone); }
+.skill-map-territory-name { font: 500 14px var(--elv-font-body); letter-spacing: .12em; text-transform: uppercase; fill: var(--elv-text-1); }
+.skill-map-territory-roles { font: 400 11px var(--elv-font-body); fill: var(--elv-text-2); }
+.skill-map-link { stroke-width: 2; opacity: .8; }
+.skill-map-link.is-level { stroke: var(--elv-action); }
+.skill-map-link.is-none { stroke: var(--elv-text-2); stroke-dasharray: 6 5; }
+.skill-map-chip { cursor: pointer; }
+.skill-map-chip rect { fill: var(--elv-card); stroke: var(--elv-line-control); stroke-width: 1.2; }
+.skill-map-chip.is-selected rect { stroke: var(--elv-focus); stroke-width: 3; }
+.skill-map-scope .skill-map-chip:focus-visible { outline: none; }
+.skill-map-chip:focus-visible rect { stroke: var(--elv-focus); stroke-width: 4; }
+svg .dot-level { fill: var(--elv-action); }
+svg .dot-none { fill: var(--elv-card); stroke: var(--elv-text-2); stroke-width: 2; stroke-dasharray: 3 3; }
+.skill-map-chip-name { font: 500 13px var(--elv-font-body); fill: var(--elv-text-1); }
+.skill-map-chip-status { font: 600 10px var(--elv-font-body); letter-spacing: .06em; text-transform: uppercase; fill: var(--elv-text-2); }
+.skill-map-territory-list { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .skill-map-territory-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .skill-map-territory-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.skill-map-territory-card { background: var(--tone); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-lg); padding: 16px; min-width: 0; align-self: start; }
+.skill-map-territory-card h2 { margin: 0; font: 500 .8125rem var(--elv-font-body); letter-spacing: .12em; text-transform: uppercase; }
+.skill-map-roles { margin: 2px 0 8px; font-size: .8125rem; color: var(--elv-text-2); overflow-wrap: anywhere; }
+.skill-map-territory-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.skill-map-pick { display: flex; gap: 10px; align-items: flex-start; width: 100%; min-height: 44px; text-align: left; padding: 10px 12px; background: var(--elv-card); color: var(--elv-text-1); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); cursor: pointer; font: inherit; }
+.skill-map-pick[aria-pressed=true] { border: 3px solid var(--elv-focus); padding: 8px 10px; }
+.skill-map-pick .skill-map-dot { margin-top: 4px; }
+.skill-map-pick-text { display: grid; gap: 2px; min-width: 0; }
+.skill-map-pick-name { font-weight: 500; overflow-wrap: anywhere; }
+.skill-map-pick-status { font-size: .6875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--elv-text-2); }
+.skill-map-pick-also { font-size: .8125rem; color: var(--elv-text-2); overflow-wrap: anywhere; }
+.skill-map-detail-wrap { margin-bottom: 24px; scroll-margin-top: 16px; }
+.skill-map-detail { max-width: 720px; }
+.skill-map-dialog { margin: auto; max-width: min(28rem, calc(100% - 2rem)); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-lg); padding: 24px; background: var(--elv-card); color: var(--elv-text-1); }
+.skill-map-dialog::backdrop { background: rgb(28 25 23 / .45); }
+.skill-map-dialog h2 { margin: 0 0 8px; font: 400 1.25rem var(--elv-font-display); }
+.skill-map-dialog-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; margin-top: 16px; }
+.skill-map-scope .skill-map-danger { background: var(--elv-error); color: var(--elv-card); border-color: var(--elv-error); }
+.skill-map-scope .elv-btn:disabled { opacity: .6; cursor: not-allowed; }
+@media (max-width: 639px) { .skill-map-tools > .elv-btn, .skill-map-dialog-actions > .elv-btn { flex: 1 1 auto; } }
