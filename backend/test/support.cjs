@@ -58,7 +58,7 @@ const unexpected = async () => { throw new Error('Unexpected mocked provider cal
 const transaction = { commit: async () => {}, rollback: async () => {} };
 const database = {
   connectDB: async () => {},
-  sequelize: { sync: async () => {}, transaction: async () => transaction },
+  sequelize: { sync: async () => {}, transaction: async () => transaction, getDialect: () => 'mock' },
 };
 const storage = { uploadFile: unexpected, getSignedUrl: unexpected };
 const anthropic = { messages: { create: unexpected } };
@@ -70,7 +70,8 @@ const promptVault = {
 
 replaceModule('database.js', database);
 replaceModule('associations.js', () => {});
-replaceModule('utils/crypto.js', { encriptar: value => value, encriptarV2: value => value, desencriptar: value => value });
+const realCrypto = require('../utils/crypto'); // ES-107: el cifrado de bytes es el real (lo que se prueba es el formato binario)
+replaceModule('utils/crypto.js', { encriptar: value => value, encriptarV2: value => value, desencriptar: value => value, encriptarBuffer: realCrypto.encriptarBuffer, desencriptarBuffer: realCrypto.desencriptarBuffer, CABECERA_BINARIA: realCrypto.CABECERA_BINARIA });
 replaceModule('utils/storage.js', storage);
 replaceModule('utils/anthropic.js', anthropic);
 replaceModule('promptVault.js', promptVault);
