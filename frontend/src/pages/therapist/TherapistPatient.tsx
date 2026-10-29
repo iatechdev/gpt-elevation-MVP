@@ -9,6 +9,7 @@ import {
   btnPrimaryStyle, btnSecondaryStyle,
 } from '../../styles/tokens'
 import { useLanguage } from '../../i18n/useLanguage'
+import { localizeServerError } from '../../i18n/serverError'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -107,7 +108,8 @@ const selStyle: React.CSSProperties = {
 export function TherapistPatient() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
+  const locale = lang === 'es' ? 'es-CO' : 'en-US'
 
   const NOTE_TYPE_LABEL: Record<string, string> = {
     session_note: t('therapist_note_type_session'),
@@ -125,10 +127,12 @@ export function TherapistPatient() {
   const [notes,    setNotes]    = useState<ClinicalNote[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState('')
+  const [notShared, setNotShared] = useState(false) // ES-96: la persona no autorizó compartir (403 consent_required)
 
   // AI Summary
   const [aiSummary,         setAiSummary]        = useState<AISummary | null>(null)
   const [generatingSummary, setGeneratingSummary] = useState(false)
+  const [summaryError,      setSummaryError]      = useState('')
 
   // Note form
   const [showNoteForm, setShowNoteForm] = useState(false)
@@ -174,7 +178,7 @@ export function TherapistPatient() {
       })
       const data = await res.json()
       if (!res.ok) { setSchedulingError(data.error || t('error_connection')); return }
-      setSchedulingOk(`✓ ${new Date(schedDateTime).toLocaleString('es-CO', { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`)
+      setSchedulingOk(`✓ ${new Date(schedDateTime).toLocaleString(locale, { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`)
       setSchedDateTime(minDateTime())
       setSchedDuration(50)
       setTimeout(() => { setShowSchedule(false); setSchedulingOk('') }, 2500)
@@ -191,10 +195,16 @@ export function TherapistPatient() {
 
   const fetchHistory = useCallback(async () => {
     const loadError = historyError.current
+    setNotShared(false)
+    setError('')
     try {
       const res = await fetch(`${API}/api/therapist/pacientes/${id}/historia`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
+      if (res.status === 403) {
+        const body = await res.json().catch(() => ({}))
+        if (body.code === 'consent_required') { setNotShared(true); return }
+      }
       if (!res.ok) throw new Error()
       const data = await res.json()
       setPatient(data.patient)
@@ -245,13 +255,18 @@ export function TherapistPatient() {
 
   const handleGenerateSummary = async () => {
     setGeneratingSummary(true)
+    setSummaryError('')
     try {
       const res = await fetch(`${API}/api/therapist/pacientes/${id}/resumen-ia`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        setSummaryError(localizeServerError(body.error, lang, t('therapist_summary_error')))
+        return
+      }
       setAiSummary(await res.json())
-    } catch { /* silent */ }
+    } catch { setSummaryError(t('therapist_summary_error')) }
     finally { setGeneratingSummary(false) }
   }
 
@@ -267,12 +282,29 @@ export function TherapistPatient() {
   const filteredNotes = filterType === 'all' ? notes : notes.filter(n => n.type === filterType)
 
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
   if (loading) return (
-    <p style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>
+    <p role="status" style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>
       {t('therapist_loading_history')}
     </p>
+  )
+  if (notShared) return (
+    <div style={{ fontFamily: typography.fontBody }}>
+      <div className="th-notice" role="note">
+        <span aria-hidden="true">ℹ️</span>
+        <span>{t('therapist_not_shared')}</span>
+      </div>
+      <button
+        onClick={() => navigate('/therapist/dashboard')}
+        style={{
+          marginTop: spacing.lg, background: 'none', border: 'none', cursor: 'pointer',
+          color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody, padding: 0,
+        }}
+      >
+        ← {t('room_t_back')}
+      </button>
+    </div>
   )
   if (error) return (
     <p style={{ color: colors.danger, fontSize: 13, fontFamily: typography.fontBody }}>
@@ -380,9 +412,15 @@ export function TherapistPatient() {
               "{aiSummary.summary}"
             </p>
             <div style={{ fontSize: 11, color: colors.textSubtle }}>
-              {t('rec_generated_at')} {formatDate(aiSummary.generatedAt)} · {aiSummary.basedOn.sessions} {t('therapist_sessions')} · {aiSummary.basedOn.notes} {t('therapist_notes_count')}
+              {t('rec_generated_at')} {formatDate(aiSummary.generatedAt)} · {aiSummary.basedOn.sessions} {t('therapist_sessions_unit')}
+            </div>
+            <div style={{ fontSize: 11, color: colors.textMuted, marginTop: spacing.xs }}>
+              {t('therapist_summary_hint')}
             </div>
           </div>
+        )}
+        {summaryError && (
+          <p role="alert" style={{ color: colors.danger, fontSize: 12, margin: `${spacing.sm} 0 0` }}>{summaryError}</p>
         )}
       </div>
 
@@ -435,7 +473,11 @@ export function TherapistPatient() {
                 style={{ ...selStyle, cursor: 'text' }}
               />
             </div>
+            <label htmlFor="th-new-note" style={{ display: 'block', fontSize: 12, color: colors.textMuted, marginBottom: spacing.xs }}>
+              {t('therapist_note_label')}
+            </label>
             <textarea
+              id="th-new-note"
               value={noteContent}
               onChange={e => setNoteContent(e.target.value)}
               placeholder={t('therapist_note_placeholder')}
@@ -517,6 +559,7 @@ export function TherapistPatient() {
                 {editingNote?.id === note.id ? (
                   <div>
                     <textarea
+                      aria-label={t('therapist_note_label')}
                       value={editContent}
                       onChange={e => setEditContent(e.target.value)}
                       rows={3}
@@ -556,7 +599,7 @@ export function TherapistPatient() {
       </div>
 
       {/* MOOD + RATINGS GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: spacing.lg }}>
+      <div className="th-pair">
 
         <div style={cardStyle}>
           <h2 style={{
