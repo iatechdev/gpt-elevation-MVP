@@ -40,6 +40,14 @@ test('ES-109 depuración: direcciones postales y códigos postales', () => {
   }
 });
 
+test('ES-109 depuración: formatos que se escaparon en QA (ancho completo, calles en catalán y portugués, acortadores)', () => {
+  const cases = [['ana＠example.test', 'example.test'], ['３００１２３４５６７', '3001234567'], ['Carrer de Balmes 12', 'Balmes'], ['Rua Augusta 1500', 'Augusta'], ['bit.ly/abc123xyz', 'abc123xyz']];
+  for (const [input, ...marks] of cases) {
+    const text = clean(`María Gómez
+${input}`); gone(text, input, ...marks, input.normalize('NFKC')); kept(text);
+  }
+});
+
 test('ES-109 depuración: enlaces, dominios y perfiles en redes', () => {
   for (const link of ['https://www.linkedin.com/in/maria-gomez', 'linkedin.com/in/maria-gomez', 'www.mariagomez.dev', 'https://github.com/mariagomez', 'github.com/mariagomez', 'mariagomez.design', 'https://behance.net/mariagomez/portafolio?x=1', 'LinkedIn: maria-gomez', 'GitHub: mariagomez', 'Portafolio: mi sitio personal', '@maria_gomez', 'Instagram: maria.gomez']) {
     const text = clean(`María Gómez\n${link}`); gone(text, link, 'linkedin', 'github', 'behance', 'mariagomez', 'maria_gomez'); kept(text);
