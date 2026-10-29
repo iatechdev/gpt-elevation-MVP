@@ -15,6 +15,7 @@ Entorno usado: Node 22 portable, Playwright 1.64.1 + Chromium, `embedded-postgre
 | `es90-real.cjs`, `es90-onboarding.cjs` | Acceso al mapa (#90) |
 | `es119-api.cjs`, `es119-ui.cjs` | Registrar mi nivel (#93) |
 | `es118-check.cjs` | Habilidades técnicas borrador (#92) |
+| `pendientes.cjs` | Sesión/token, puente (Compass) real, 40 capacidades (P-4), catálogo vacío |
 | `perf-map.cjs` | Rendimiento acotado: 6 personas concurrentes, solo loopback (P-2/P-3) |
 
 Variables: `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, `OUT` (capturas), `BACKEND`, `DATABASE_URL` (solo local), `TOKEN`/`ROLE`/`URL`/`WIDTHS`/`CLICK` para `contrast-dom.cjs`.
