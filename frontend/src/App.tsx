@@ -43,6 +43,7 @@ import { FeedbackPage } from './pilot/FeedbackPage'
 import { PilotMetricsPage } from './pilot/PilotMetricsPage'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
+import { BridgePage } from './bridge/BridgePage'
 import { SpaceToolsPage } from './space/SpaceToolsPage'
 import { SpaceSession } from './space/SpaceSession'
 export default function App() {
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="plan" element={<PlanScreen />} />
         </Route>
         <Route path="/app/exercises" element={<ExercisePage />} />
+        <Route path="/app/bridge" element={<BridgePage />} /> {/* ES-111 — El Puente */}
         <Route path="/app/diary" element={<JournalPage />} />
         <Route path="/app/diary/new" element={<JournalPage />} />
         <Route path="/app/diary/:id" element={<JournalPage />} />
