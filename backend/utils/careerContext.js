@@ -176,6 +176,8 @@ async function confirm(userId, { fields, token, requestId }) {
       payload: sealPayload(JSON.stringify(representation(clean))), origins,
       consentVersion: withBridge ? consent.REQUIRED_VERSION[PURPOSE] : null, requestId, approvedAt: new Date(),
     }, { transaction });
+    // ES-89: con AI_ANALYSIS_TRIGGER=automatic el análisis de IA se pide solo al confirmar el contexto (misma transacción; nunca falla la confirmación).
+    if (process.env.AI_ANALYSIS_TRIGGER === 'automatic') await require('./skillAnalysis').autoCreate(userId, requestId, transaction);
     return { record: toRecord(row, representation(clean)), created: true };
   };
 

@@ -40,6 +40,7 @@
     "test:worker-process:pg": "node --test test/integration/es-87-postgres.cjs",
     "worker": "node worker.js",
     "test:worker-rights:pg": "node --test test/integration/es-88-postgres.cjs",
+    "test:skill-analysis:pg": "node --test test/integration/es-89-postgres.cjs",
     "test:routes:local": "node scripts/testEs32Local.cjs",
     "migrate:routes": "node scripts/migrateRoutes.js",
     "db:migrate": "sequelize-cli db:migrate",

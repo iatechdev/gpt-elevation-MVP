@@ -12,6 +12,9 @@ const SkillCandidate = sequelize.define('SkillCandidate', {
   citations: { type: DataTypes.JSON, allowNull: false },
   status: { type: DataTypes.STRING(16), allowNull: false, defaultValue: 'REVIEW_REQUIRED' },
   catalogVersion: { type: DataTypes.INTEGER, allowNull: false },
+  // ES-89: decisión de la persona. `level` (lo que propuso la IA) no cambia; `confirmedLevel` es el que ella acepta (igual o menor, o null).
+  confirmedLevel: { type: DataTypes.INTEGER, allowNull: true },
+  reviewedAt: { type: DataTypes.DATE, allowNull: true },
 }, {
   indexes: [
     { name: 'skill_candidates_job_skill', unique: true, fields: ['jobId', 'skillKey'] },
