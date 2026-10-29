@@ -48,6 +48,15 @@ ${input}`); gone(text, input, ...marks, input.normalize('NFKC')); kept(text);
   }
 });
 
+test('ES-109 depuración: edad, nacimiento, estado civil, nacionalidad, género y religión no llegan a la IA; años de experiencia y fechas de cargos sí se conservan', () => {
+  for (const line of ['Fecha de nacimiento: 12/03/1990', 'Edad: 34 años', 'Estado civil: Soltera', 'Nacionalidad: Colombiana', 'Género - Femenino', 'Date of birth: 12 March 1990', 'Marital status: Married', 'Nationality: Spanish', 'Age: 41', '34 años', 'Casado, 2 hijos', 'Nacida en Medellín el 3 de mayo de 1988', 'Religión: Católica']) {
+    const text = clean(`María Gómez
+${line}`); gone(text, line, ...line.split(/[:\-]/).slice(1).map(x => x.trim()).filter(x => x.length > 3)); kept(text);
+  }
+  const text = clean('María Gómez\nMás de 10 años de experiencia en diseño\nLiderazgo desde 2018');
+  assert.match(text, /10 años de experiencia/); assert.match(text, /desde 2018/);
+});
+
 test('ES-109 depuración: enlaces, dominios y perfiles en redes', () => {
   for (const link of ['https://www.linkedin.com/in/maria-gomez', 'linkedin.com/in/maria-gomez', 'www.mariagomez.dev', 'https://github.com/mariagomez', 'github.com/mariagomez', 'mariagomez.design', 'https://behance.net/mariagomez/portafolio?x=1', 'LinkedIn: maria-gomez', 'GitHub: mariagomez', 'Portafolio: mi sitio personal', '@maria_gomez', 'Instagram: maria.gomez']) {
     const text = clean(`María Gómez\n${link}`); gone(text, link, 'linkedin', 'github', 'behance', 'mariagomez', 'maria_gomez'); kept(text);

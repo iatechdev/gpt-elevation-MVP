@@ -15,6 +15,10 @@ const YEAR = '(?:19|20)\\d{2}';
 const isYearToken = (token) => new RegExp(`^${YEAR}$`).test(token);
 // Etiquetas de contacto: se quita la etiqueta y el resto de la línea («LinkedIn: juanperez», «Tel.: …», «Dirección: …»).
 const LABELS = /^[^\S\n]*(?:e-?mail|correo(?: electr[oó]nico)?|tel[eé]fono|tel\.?|cel(?:ular)?\.?|m[oó]vil|whats\s?app|phone|mobile|linkedin|github|gitlab|behance|dribbble|twitter|instagram|facebook|telegram|skype|portafolio|portfolio|website|web|sitio web|p[aá]gina web|direcci[oó]n|domicilio|address|home address|vivo en)\b[^\n]*$/gim;
+// Datos personales que no hacen falta para leer la trayectoria y que sesgan: edad, nacimiento, estado civil, nacionalidad, sexo/género, religión.
+// Con etiqueta se quita la línea («Fecha de nacimiento: 12/03/1990»); sin etiqueta, solo formas inequívocas («34 años», «Soltera», «Nacido el …»).
+const PERSONAL_LABEL = /^[^\S\n]*(?:fecha de nacimiento|f\.? ?de nacimiento|lugar de nacimiento|nacimiento|nacido(?:\/a)?|nacida|edad|estado civil|nacionalidad|sexo|g[eé]nero|religi[oó]n|date of birth|birth ?date|birthplace|place of birth|dob|born|age|marital status|civil status|nationality|citizenship|gender|sex|religion)[^\S\n]*(?::|-|–|—)[^\n]*$/gim;
+const PERSONAL_LINE = /^[^\S\n]*(?:(?:\d{2}\s{0,3}(?:a[ñn]os|years old|yo)\b)|(?:soltero|soltera|casado|casada|divorciado|divorciada|viudo|viuda|uni[oó]n libre|single|married|divorced|widowed)(?![a-z])|(?:nacido|nacida|born)\s{1,3}(?:el|en|on|in)\b)[^\n]{0,60}$/gim;
 const URL = /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi;
 // Dominios sin esquema (p. ej. «linkedin.com/in/ana», «ana-gomez.dev»). Se detectan por TOKENS (separados por espacios) en tiempo lineal:
 // una expresión regular anidada sobre texto hostil se vuelve cuadrática.
@@ -65,7 +69,7 @@ function phoneLike(candidate) {
 
 function strip(text) {
   let out = text;
-  out = out.replace(LABELS, '');
+  out = out.replace(LABELS, '').replace(PERSONAL_LABEL, '').replace(PERSONAL_LINE, '');
   out = out.replace(EMAIL, '');
   out = out.replace(URL, '');
   out = stripDomains(out);
@@ -81,6 +85,7 @@ function strip(text) {
 function leftover(text) {
   if (new RegExp(EMAIL.source, 'i').test(text) || /\b(?:https?:\/\/|www\.)\S/i.test(text)) return true;
   if (hasDomain(text)) return true;
+  if (new RegExp(PERSONAL_LABEL.source, 'im').test(text) || new RegExp(PERSONAL_LINE.source, 'im').test(text)) return true;
   for (const match of text.matchAll(PHONE)) if (phoneLike(match[0])) return true;
   return ID_SHAPES.some((shape) => new RegExp(shape.source, shape.flags.replace('g', '')).test(text));
 }
