@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { PersonalChat } from './usePersonalChat'
+import { useChatBlocked } from './usageStore'
 export function ChatContext({ chat }: { chat: PersonalChat }) {
   const { c } = chat
   if (chat.expired) return <div className="space-scope" role="alert">{c.session} <Link to="/login">{c.login}</Link></div>
@@ -19,7 +20,7 @@ export function ChatContext({ chat }: { chat: PersonalChat }) {
   </div>
 }
 export function ChatInput({ chat }: { chat: PersonalChat }) {
-  const { c } = chat
+  const { c } = chat; const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
   if (chat.expired) return null
-  return <form className="space-scope" style={{ width: '100%' }} onSubmit={event => { event.preventDefault(); void chat.send() }}><label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={4000} disabled={chat.busy || !!chat.intent || !chat.loaded} onChange={event => chat.setInput(event.target.value)} rows={2} /></label><button className="elv-btn elv-btn-primary" disabled={chat.busy || !!chat.intent || !chat.loaded || !chat.input.trim()}>{chat.busy ? c.sending : c.send}</button></form>
+  return <form className="space-scope" style={{ width: '100%' }} onSubmit={event => { event.preventDefault(); void chat.send() }}><label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={4000} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={2} /></label><button className="elv-btn elv-btn-primary" disabled={chat.busy || !!chat.intent || !chat.loaded || off || !chat.input.trim()}>{chat.busy ? c.sending : c.send}</button></form>
 }
