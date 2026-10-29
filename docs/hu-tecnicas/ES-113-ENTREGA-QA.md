@@ -2,11 +2,11 @@
 
 [Dev-Codex]
 
-Diseño/plan aprobado: Jira 10511 y aprobación explícita 10512. Alejo aceptó una entrada por registro y guardado manual, sin recuperación de texto no guardado tras cerrar la pestaña. Se conserva el aviso y la protección de salida; no se añade autoguardado ni texto privado al almacenamiento del navegador.
+Diseño/plan aprobado: Jira 10511 y aprobación explícita 10512. Nueva paleta de la landing presentada en 10574 y aprobada por Alejo en 10575; adjuntos 10020/10021. Alejo aceptó una entrada por registro y guardado manual, sin recuperación de texto no guardado tras cerrar la pestaña. Se conserva el aviso y la protección de salida; no se añade autoguardado ni texto privado al almacenamiento del navegador.
 
 ## Dependencia y revisión del cambio
 
-La rama ES-113-diario-papel parte de main d5eb00f e integra ES-37 d0d2c1c solo en la rama de trabajo, por la solicitud posterior de Alejo (Jira 10535). No se fusiona ningún PR ni se modifica main. El PR apunta a main y **requiere fusionar ES-37 / PR 84 primero**. Los diez archivos heredados de esa dependencia no son cambios propios del diario. Para aislar ES-113: `git diff d0d2c1c...HEAD`.
+La rama ES-113-diario-papel parte de main d5eb00f e integra ES-37 5c5da06 solo en la rama de trabajo, por la solicitud posterior de Alejo (Jira 10535 y 10575). No se fusiona ningún PR ni se modifica main. El PR apunta a main y **requiere fusionar ES-37 / PR 84 primero**. Los diez archivos heredados de esa dependencia no son cambios propios del diario. Para aislar ES-113: `git diff 5c5da06...HEAD`.
 
 La UI usa los tokens compartidos y las clases daisyUI ya disponibles; no instala dependencias ni crea otro tema. SpaceShell recibe una clase opcional usada solo por el diario. Se mantienen navegación/rutas y funciones del chat, sin implementar ES-112, El Puente o el mapa. El botón Al Puente está deshabilitado con explicación: no hay ruta adivinada ni envío implícito.
 
@@ -25,8 +25,8 @@ Windows, Node v24.14.0. Comandos desde frontend/ salvo indicación.
 | Prueba | Resultado |
 | --- | --- |
 | npm run lint | Exit 0; 0 errores y 0 advertencias |
-| npm run build (tsc -b + vite build) | Exit 0; 171 módulos, build 20.00 s; CSS 117.75 kB (18.33 gzip), JS 822.98 kB (220.10 gzip) |
-| npm test | Exit 0; 167 tests, 167 pasan, 0 fallan/omitidos; 70555.2797 ms. Incluye 3 nuevos de ES-113 y 8 heredados de ES-37 |
+| npm run build (tsc -b + vite build) | Exit 0; 171 módulos, build 3.66 s; CSS 117.76 kB (18.32 gzip), JS 822.98 kB (220.10 gzip) |
+| npm test | Exit 0; 168 tests, 168 pasan, 0 fallan/omitidos; 32930.9791 ms. Incluye 3 nuevos de ES-113 y 9 heredados de ES-37 |
 | npm audit --json | Exit 0; 0 vulnerabilidades frontend |
 | backend/: npm test | Exit 0; 388 tests, 388 pasan, 0 fallan/omitidos; 66720.6855 ms. Persistencia/proveedores con dobles en las suites que así lo declaran |
 | backend/: node --test test/integration/es-113-diary-postgres.cjs | Exit 0; 7 tests contando padre y 6 subcasos, 7 pasan, 0 fallan/omitidos; 71795.4096 ms. PostgreSQL/JWT/ORM/cifrado reales, conexión local inyectada |
@@ -44,7 +44,7 @@ Comprobado:
 - Fecha futura introducida con teclado en el control nativo: se rechaza antes de escribir, recibe foco y aria-invalid=true con descripción asociada al mensaje. El intento de cambiar fecha se descarta explícitamente desde el diálogo.
 - ES/EN mantienen texto y fecha; no se traduce el contenido privado de las entradas.
 - Sin desborde de documento a 320/375/768/1440 px (también texto largo a 375). Capturas antes/después con el mismo texto sintético y misma DB antes de editarla: escritorio 1440 y móvil 375.
-- Medición con estilos computados: texto de hoja/fondo 16.49:1; aviso discreto/fondo 5.42:1; texto/botón primario 6.35:1; borde de fecha/fondo 3.73:1.
+- Medición final con estilos computados: texto de hoja/fondo 15.44:1; aviso discreto/fondo 4.74:1; texto/botón primario 17.43:1; borde de fecha/fondo 3.58:1. Navegación anidada usa tinta rgb(26,26,24), sin el tema olivo anterior.
 - ACK de creación ilegible después de confirmar DB: conserva texto y estado incierto, bloquea otro envío; consultar lista permite encontrar una sola entrada del intento y abrirla sin otra creación.
 - ACK de edición ilegible: Guardado sin confirmar hasta consultar y comprobar que la versión guardada coincide. La misma prueba se repite con el texto final ES.
 - ACK de borrado ilegible: no anuncia eliminación confirmada hasta consultar y obtener 404; entonces quita contenido y refresca recientes.
@@ -54,7 +54,7 @@ Comprobado:
 
 No verificado por Dev: lector de pantalla externo, zoom real al 200%, emulación en vivo de prefers-reduced-motion, dispositivos físicos, staging/producción, recorrido completo del chat y El Puente. El CSS de reduced-motion se conserva; no se presenta como una comprobación de preferencia en vivo. QA debe ejecutar los casos restantes y comparar con la maqueta de Jira.
 
-Evidencia adjunta a Jira ES-113: antes-escritorio.png (10015), despues-escritorio.png (10016), antes-movil.png (10017), despues-movil-es.png (10018), despues-movil-en.png (10019). Son capturas de la aplicación real con contenido sintético, distintas de los adjuntos de la maqueta aprobada (10009–10012).
+Evidencia adjunta a Jira ES-113: antes-escritorio.png (10015) y antes-movil.png (10017), frente a final-escritorio.png (10022), final-movil-es.png (10023) y final-movil-en.png (10024). La misma fixture de A se restauró usando la API/UI real tras las pruebas de fallo para comparar el contenido. Los adjuntos 10016/10018/10019 muestran la iteración olivo anterior y quedan como histórico, no como entrega final. Los 10020/10021 son la maqueta de la nueva paleta; los 10022–10024 son capturas de la aplicación implementada.
 
 ## Límite comprobado: creación sin idempotencia
 

@@ -1,5 +1,5 @@
 /* ES-113: diary layout only. Colors come from the ES-37 dependency. */
-.space-scope.journal-page {
+.space-scope.journal-page, .journal-page .space-scope {
   --color-base-100: var(--elv-bg); --color-base-200: var(--elv-surface);
   --color-base-300: var(--elv-line-control); --color-base-content: var(--elv-text-1);
   --color-primary: var(--elv-action); --color-primary-content: var(--elv-action-text);
@@ -10,6 +10,7 @@
 .journal-page .space-nav { background: transparent; }
 .journal-page .elv-btn { border-color: var(--elv-line-control); border-radius: var(--elv-r-sm); }
 .journal-page .elv-btn-primary { color: var(--elv-action-text); background: var(--elv-action); }
+.journal-page .elv-link { color: var(--elv-link); }
 .journal-page :is(a, button, input, textarea):focus-visible { outline: 3px solid var(--elv-focus); outline-offset: 3px; }
 .journal-heading { display: flex; justify-content: space-between; align-items: center; gap: var(--elv-s-4); margin-top: var(--elv-s-8); }
 .journal-heading h1 { font-size: clamp(2.25rem, 4vw, 2.75rem); margin: 8px 0; }
