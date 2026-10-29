@@ -114,6 +114,8 @@ test('QA-9-02: body consumers reject invalid types before side effects', async t
   })).status, 403);
   grantTherapistSharing(); // ES-96: sin autorización de compartir, agendar e iniciar responden 403
   models.User.findOne = async () => record({ id: 7, therapistId: 101 });
+  models.User.findByPk = async () => record({ id: 101 }); // ES-98: bloqueo de la fila del terapeuta para el choque de horarios
+  models.TherapySession.findAll = async () => [];
   models.User.findAll = async () => []; // ES-101: lectura de autorización (cuentas inactivas), no un efecto del cuerpo enviado
   models.TherapySession.create = async values => { saved = values; return record({ id: 8, ...values }); };
   assert.equal((await request('POST', '/api/sessions/therapist', {

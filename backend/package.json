@@ -27,6 +27,7 @@
     "seed:demo": "node scripts/seedStagingDemo.js",
     "test:seed-demo:pg": "node --test test/integration/seed-demo-postgres.cjs",
     "test:therapist-privacy:pg": "node --test test/integration/es-96-postgres.cjs",
+    "test:therapist-validation:pg": "node --test test/integration/es-98-postgres.cjs",
     "test:pro-applications:pg": "node --test test/integration/es-95-postgres.cjs",
     "test:therapist-deletion:pg": "node --test test/integration/es-101-postgres.cjs",
     "test:routes:pg": "node --test test/integration/es-32-postgres.cjs",

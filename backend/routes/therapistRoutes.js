@@ -4,12 +4,16 @@ const express = require('express');
 const router = express.Router();
 const { sharingSet, withPatientData, patientBlocked } = require('../utils/therapistAccess'); // ES-96 y ES-101
 const { deletionPending } = require('../utils/deletionGuard');
+const { validateIdParams } = require('../middlewares/params');
 
 // ES-96 (ES93-M7): lo que entrega este router son datos de personas: nunca se guarda en cachés.
 router.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
+
+// ES-98 (ES93-B1): ids de ruta mal formados → 404 uniforme (antes, un 500 de la base).
+validateIdParams(router, 'id', 'noteId');
 const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
@@ -27,6 +31,8 @@ const {
   getActivePrompt,
   proposePrompt,
 } = require('../promptVault');
+
+const NOTE_TYPES = ['session_note', 'observation', 'goal'];
 
 // ==========================================
 // HU-062 — Trend calculation helper
@@ -400,8 +406,7 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
       return res.status(400).json({ error: 'Session date is required.' });
     }
 
-    const validTypes = ['session_note', 'observation', 'goal'];
-    const noteType = validTypes.includes(type) ? type : 'session_note';
+    const noteType = NOTE_TYPES.includes(type) ? type : 'session_note';
 
     // ES-96 (ES93-A1/A3): solo sobre una persona vinculada, activa, sin eliminación solicitada y que autorizó compartir con este terapeuta.
     const saved = await withPatientData(req, res, patientId, async (patient, transaction) => ClinicalNote.create({
@@ -437,6 +442,10 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
       return res.status(404).json({ error: 'Note not found or not authorized.' });
     }
 
+    // ES-98 (ES93-B2): la misma lista de tipos que al crear; un tipo desconocido se rechaza (no se guarda ni se cambia en silencio).
+    if (type !== undefined && !NOTE_TYPES.includes(type)) {
+      return res.status(400).json({ code: 'invalid_type', error: 'Tipo de nota no válido. / Invalid note type.' });
+    }
     const updates = {};
     if (content)     updates.content     = encriptar(content);
     if (type)        updates.type        = type;
