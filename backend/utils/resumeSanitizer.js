@@ -18,7 +18,7 @@ const LABELS = /^[^\S\n]*(?:e-?mail|correo(?: electr[oó]nico)?|tel[eé]fono|tel
 const URL = /\b(?:https?:\/\/|www\.)[^\s<>"')]+/gi;
 // Dominios sin esquema (p. ej. «linkedin.com/in/ana», «ana-gomez.dev»). Se detectan por TOKENS (separados por espacios) en tiempo lineal:
 // una expresión regular anidada sobre texto hostil se vuelve cuadrática.
-const TLDS = new Set(['com', 'net', 'org', 'io', 'dev', 'me', 'co', 'app', 'ai', 'info', 'biz', 'edu', 'gov', 'xyz', 'site', 'online', 'tech', 'design', 'studio', 'page', 'link', 'pro', 'cloud', 'es', 'mx', 'ar', 'cl', 'pe', 'br', 'uk', 'us', 'de', 'fr', 'it']);
+const TLDS = new Set(['com', 'net', 'org', 'io', 'dev', 'me', 'co', 'app', 'ai', 'info', 'biz', 'edu', 'gov', 'xyz', 'site', 'online', 'tech', 'design', 'studio', 'page', 'link', 'pro', 'cloud', 'ly', 'gl', 'to', 'cc', 'ee', 'sh', 'is', 'es', 'mx', 'ar', 'cl', 'pe', 'br', 'uk', 'us', 'de', 'fr', 'it']);
 const LABEL = /^[a-z0-9][a-z0-9-]*$/i;
 function isDomainToken(raw) {
   if (raw.length > 300) return true; // un «token» de más de 300 caracteres no es una palabra: se trata como enlace y se quita
@@ -36,7 +36,7 @@ const HANDLE = /(?<![\w@])@[a-z0-9_.]{3,30}\b/gi;
 // Teléfonos: secuencias de 7–15 dígitos con separadores; se descartan años y rangos de años.
 const PHONE = /(?<![\w.])(?:\+|00)?\(?\d[\d\s().‐-―-]{5,22}\d(?![\w])/g;
 // Calle/carrera/avenida/street + número, o «Cl. 45 # 12-34». Se quita la línea completa.
-const STREET = /\b(?:calle|cll?\.?|carrera|cra?\.?|kr|avenida|av\.?|diagonal|dg\.?|transversal|tv\.?|autopista|circular|manzana|mz|street|st\.|avenue|ave\.?|road|rd\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?|apartado a[eé]reo|apto\.?|barrio)\b[^\n]{0,40}?(?:#|n[°ºo]\.?|no\.?)?\s*\d+[a-z]?\b[^\n]*/gi;
+const STREET = /\b(?:calle|carrer|rua|rúa|passeig|paseo|rue|cll?\.?|carrera|cra?\.?|kr|avenida|av\.?|diagonal|dg\.?|transversal|tv\.?|autopista|circular|manzana|mz|street|st\.|avenue|ave\.?|road|rd\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?|apartado a[eé]reo|apto\.?|barrio)\b[^\n]{0,40}?(?:#|n[°ºo]\.?|no\.?)?\s*\d+[a-z]?\b[^\n]*/gi;
 // Estilo anglosajón: el número va ANTES del nombre de la calle («123 Main Street, Springfield»).
 const STREET_US = /\b\d{1,5}[a-z]?\s{1,3}(?:[a-z.]{1,20}\s{1,3}){1,3}(?:street|st\.?|avenue|ave\.?|road|rd\.?|boulevard|blvd\.?|lane|ln\.?|drive|dr\.?|way|court|ct\.?|plaza|place|pl\.?)(?![a-z])[^\n]*/gi;
 const POSTAL = /\b(?:c\.?p\.?|zip|c[oó]digo postal|postal code)\s*:?\s*[a-z0-9-]{4,10}\b/gi;
@@ -89,7 +89,8 @@ function leftover(text) {
 function sanitizeResumeText(raw) {
   if (typeof raw !== 'string') throw new ResumeSanitizeError('no_text');
   if (raw.length > MAX_CHARS * 2) throw new ResumeSanitizeError('too_long');
-  let text = normalizeText(raw);
+  // NFKC primero: «＠» y los dígitos de ancho completo se vuelven «@» y 0-9 y las reglas los ven (QA ES-109).
+  let text = normalizeText(raw.normalize('NFKC'));
   if (text.length > MAX_CHARS) throw new ResumeSanitizeError('too_long');
   let removed = 0;
   // Dos pasadas: lo que una regla deja al quitar otra (p. ej. un teléfono tras quitar su etiqueta) se limpia en la segunda.
