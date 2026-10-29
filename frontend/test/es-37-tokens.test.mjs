@@ -58,3 +58,17 @@ test('ES-37 la marca #6B7D5C no se usa como fondo de texto (no llega a 4,5:1 con
   assert.ok(ratio('#6b7d5c', '#ffffff') < 4.5)
   assert.notEqual(light['elv-action'], light['elv-brand'])
 })
+
+// Paso B: los CSS de Skill Map, Career y Compass ya no definen colores propios ni temas daisyUI por dominio.
+for (const file of ['skill-map/skillMap.css', 'career/career.css', 'compass/compass.css']) {
+  test(`ES-37 ${file} usa solo tokens (sin hex ni --color-* propios)`, () => {
+    const src = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8')
+    assert.deepEqual(src.match(/#[0-9a-fA-F]{3,8}\b/g)?.filter((h) => h.toLowerCase() !== '#0009') ?? [], [], 'hay colores hex sueltos')
+    assert.equal(/--color-[a-z0-9-]+\s*:/.test(src), false, 'redefine variables de daisyUI')
+  })
+}
+
+test('ES-37 el tema único cubre los tres dominios y se importa en index.css', () => {
+  assert.match(css, /\.elv-theme,\s*\.skill-map-scope,\s*\.career-scope,\s*\.compass-scope\s*\{/)
+  assert.match(readFileSync(new URL('../src/index.css', import.meta.url), 'utf8'), /@import '\.\/styles\/tokens\.css'/)
+})

@@ -87,21 +87,19 @@
   outline-offset: 2px;
 }
 
-/* 3. Tema daisyUI único (se activa en el paso B, al reemplazar los temas por dominio) ─────────
-   Mapea los semánticos a las variables de daisyUI. Quedan fuera de los CSS de dominio:
-   cada uno conserva solo su layout.
-.elv-theme {
-  --color-base-100: var(--elv-bg);        --color-base-200: var(--elv-surface);
+/* 3. Tema daisyUI único: mapea los semánticos a las variables de daisyUI. Los CSS de dominio ya no
+   definen colores propios; conservan solo su layout. */
+.elv-theme, .skill-map-scope, .career-scope, .compass-scope {
+  --color-base-100: var(--elv-card);      --color-base-200: var(--elv-bg);
   --color-base-300: var(--elv-line-control);  --color-base-content: var(--elv-text-1);
   --color-primary: var(--elv-action);     --color-primary-content: var(--elv-action-text);
   --color-secondary: var(--elv-text-2);   --color-secondary-content: var(--elv-bg);
   --color-accent: var(--elv-ai);          --color-accent-content: var(--elv-bg);
-  --color-neutral: var(--elv-text-2);     --color-neutral-content: var(--elv-bg);
+  --color-neutral: var(--elv-text-1);     --color-neutral-content: var(--elv-bg);
   --color-info: var(--elv-info);          --color-info-content: var(--elv-bg);
   --color-success: var(--elv-success);    --color-success-content: var(--elv-bg);
   --color-warning: var(--elv-warning);    --color-warning-content: var(--elv-bg);
   --color-error: var(--elv-error);        --color-error-content: var(--elv-bg);
   --radius-selector: var(--elv-r-sm); --radius-field: var(--elv-r-md); --radius-box: var(--elv-r-lg);
-  --border: 1px; --depth: 0; --noise: 0;
+  --size-selector: 0.25rem; --size-field: 0.25rem; --border: 1px; --depth: 0; --noise: 0;
 }
-*/

@@ -10,6 +10,9 @@ import { registerCareerGuard } from './navigationGuard'
 import './career.css'
 
 const enabled = import.meta.env.VITE_ENABLE_CAREER_PREVIEW === 'true'
+const darkQuery = '(prefers-color-scheme: dark)'
+const subscribeDark = (notify: () => void) => { if (typeof window.matchMedia !== 'function') return () => {}; const query = window.matchMedia(darkQuery); query.addEventListener('change', notify); return () => query.removeEventListener('change', notify) }
+const prefersDark = () => typeof window.matchMedia === 'function' && window.matchMedia(darkQuery).matches
 const token = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
 export function CareerEntry() {
   const { lang } = useLanguage()
@@ -27,6 +30,7 @@ export function CareerShell() {
   return <CareerSession key={session} session={session} />
 }
 function CareerSession({ session }: { session: string }) {
+  const dark = useSyncExternalStore(subscribeDark, prefersDark, () => false)
   const { lang, setLang } = useLanguage(), routerNavigate = useNavigate(), location = useLocation()
   const [client] = useState(() => createFixture(import.meta.env.VITE_CAREER_FIXTURE_SCENARIO ?? 'normal'))
   const state = useSyncExternalStore(client.subscribe, client.snapshot)
@@ -94,7 +98,7 @@ function CareerSession({ session }: { session: string }) {
   const stay = () => { setPending(null); opener.current?.focus() }
   const leave = () => { const target = pending; dirtyKeys.current.clear(); setDirtyValue(false); setPending(null); if (typeof target === 'number') window.history.go(target); else if (target !== null) routerNavigate(target) }
   const nav = (to: string, key: CopyKey) => <Link to={to} aria-current={location.pathname === to ? 'page' : undefined} onClick={e => { if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate(to) } }}>{t(key)}</Link>
-  return <section className="career-scope">
+  return <section className={`career-scope${dark ? ' elv-dark' : ''}`}>
     <a className="career-skip" href="#career-main">{t('skip')}</a>
     <header className="career-header"><div>{nav('/app/dashboard', 'back')}<span aria-hidden="true"> ELEVATION</span></div><div className="career-languages">{(['es', 'en'] as const).map(l => <button key={l} type="button" aria-label={l === 'es' ? 'Español' : 'English'} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header>
     <main id="career-main" tabIndex={-1}><h1>{t('title')}</h1>
