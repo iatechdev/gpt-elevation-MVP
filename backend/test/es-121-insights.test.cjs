@@ -302,3 +302,32 @@ test('ES-121 frontera en el código: la propuesta no escribe, el motor no lee ha
   assert.doesNotMatch(approved.slice(0, approved.indexOf('module.exports')), /skillKey|origins/); // el motor nunca ve la habilidad ni el origen
   assert.match(read('server.js'), /app\.use\('\/api\/insights',\s+verificarToken/);
 });
+
+test('ES-121 (QA ES121-QA-02) un insight nunca promete empleo, contratación, ofertas, salario ni éxito; sí puede decir qué valora la persona', async (t) => {
+  const { provider, turn } = setup();
+  const request = await startApp(t);
+  await grantBoth(request, U);
+  const { makesPromise } = require('../utils/insightProposal');
+  const promises = ['Con esto conseguirás empleo pronto.', 'Seguro te contratarán como coordinador.', 'Parece que tendrás un mejor salario.', 'Recibirás ofertas de trabajo.', 'You will get job offers soon.',
+    'This leads to a higher salary.', 'Vas a conseguir un trabajo en dos meses.', 'Te garantizo que funcionará.', 'Te ofrecerán un puesto de coordinación.', 'Tendrás éxito como líder.', 'You will be hired quickly.', 'Esto garantiza un aumento de sueldo.'];
+  for (const text of promises) assert.equal(makesPromise(text), true, text);
+  const fine = ['Parece que valoras un sueldo estable.', 'Podría ser que prefieras trabajar en remoto.', 'Parece que coordinar equipos pequeños te da energía.', 'It seems you value stable pay.', 'Dices que buscas un trabajo con autonomía.'];
+  for (const text of fine) assert.equal(makesPromise(text), false, text);
+  // por el flujo completo: la propuesta con una promesa se descarta (502 si era lo único) aunque la cita sea real
+  for (const text of promises.slice(0, 6)) {
+    provider.out = [{ key: 'energy_gives', text, quotes: quotes(turn.id, null) }];
+    const r = await ask(request, U, { sources: ['chat'], turnIds: [turn.id] });
+    assert.deepEqual([r.status, r.body.code], [502, 'invalid_model_output'], text);
+  }
+  provider.out = [{ key: 'values', text: 'Parece que valoras un sueldo estable.', quotes: quotes(turn.id, null) }];
+  assert.equal((await ask(request, U, { sources: ['chat'], turnIds: [turn.id] })).status, 200);
+});
+
+test('ES-121 (QA ES121-QA-01) las lecturas usan la transacción de withConsent: una sola conexión por propuesta', () => {
+  const code = fs.readFileSync(path.join(__dirname, '..', 'utils', 'insightProposal.js'), 'utf8');
+  assert.match(code, /consent\.withConsent\(userId, SOURCES\[source\], \(transaction\) => READERS\[source\]\(userId, parsed, transaction\)\)/);
+  const reads = code.split('\n').filter((line) => /(ChatTurn|DiaryEntry)\.find(One|All)\(/.test(line));
+  assert.equal(reads.length, 4);
+  for (const read of reads) assert.match(read, /transaction/, read);
+  assert.equal(/Promise\.all/.test(code), false); // una consulta tras otra sobre la misma conexión
+});

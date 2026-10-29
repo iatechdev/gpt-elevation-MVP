@@ -61,28 +61,31 @@ function parseBody(body) {
 const notFound = () => new ProposalError(404, 'origin_not_found', 'No se encontró el origen indicado.', 'The referenced source was not found.');
 const clean = (text, source) => capText(normalizeText(text), MAX_SOURCE_CHARS[source]);
 
+// Una consulta tras otra: dentro de una transacción comparten conexión y no hay nada que ganar en paralelo.
+async function inOrder(ids, read) { const out = []; for (const id of ids) out.push(await read(id)); return out; }
+
 // Lee SOLO lo propio, descifra en memoria y descarta lo que el detector de riesgo marca (no se dice por qué ni se guarda).
-async function readChat(userId, turnIds) {
+async function readChat(userId, turnIds, transaction) {
   const rows = turnIds
-    ? await Promise.all(turnIds.map((id) => ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'userContent'] })))
-    : await ChatTurn.findAll({ where: { UserId: userId }, attributes: ['id', 'userContent'], order: [['id', 'DESC']], limit: DEFAULT_TURNS });
+    ? await inOrder(turnIds, (id) => ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'userContent'], transaction }))
+    : await ChatTurn.findAll({ where: { UserId: userId }, attributes: ['id', 'userContent'], order: [['id', 'DESC']], limit: DEFAULT_TURNS, transaction });
   if (turnIds && rows.some((r) => !r)) throw notFound();
   return rows.slice(0, DEFAULT_TURNS).map((row) => [row.id, clean(desencriptar(row.userContent), 'chat')]).filter(([, text]) => text && !detectRisk(text).level);
 }
-async function readDiary(userId, entryIds) {
+async function readDiary(userId, entryIds, transaction) {
   const rows = entryIds
-    ? await Promise.all(entryIds.map((id) => DiaryEntry.findOne({ where: { id, UserId: userId, deletedAt: null }, attributes: ['id', 'content'] })))
-    : await DiaryEntry.findAll({ where: { UserId: userId, deletedAt: null }, attributes: ['id', 'content'], order: [['entryDate', 'DESC']], limit: DEFAULT_ENTRIES });
+    ? await inOrder(entryIds, (id) => DiaryEntry.findOne({ where: { id, UserId: userId, deletedAt: null }, attributes: ['id', 'content'], transaction }))
+    : await DiaryEntry.findAll({ where: { UserId: userId, deletedAt: null }, attributes: ['id', 'content'], order: [['entryDate', 'DESC']], limit: DEFAULT_ENTRIES, transaction });
   if (entryIds && rows.some((r) => !r)) throw notFound();
   return rows.slice(0, DEFAULT_ENTRIES).map((row) => [row.id, clean(desencriptar(row.content), 'diary')]).filter(([, text]) => text && !detectRisk(text).level);
 }
-const READERS = { chat: (userId, p) => readChat(userId, p.turnIds), diary: (userId, p) => readDiary(userId, p.entryIds) };
+const READERS = { chat: (userId, p, transaction) => readChat(userId, p.turnIds, transaction), diary: (userId, p, transaction) => readDiary(userId, p.entryIds, transaction) };
 
 // El consentimiento de la fuente se comprueba DENTRO de la transacción de withConsent (ES-19 §4) al leerla: una revocación concurrente
 // se respeta y la siguiente petición ya la rechaza. La llamada a la IA va después, fuera del bloqueo.
 async function readSource(userId, source, parsed) {
   try {
-    return await consent.withConsent(userId, SOURCES[source], () => READERS[source](userId, parsed));
+    return await consent.withConsent(userId, SOURCES[source], (transaction) => READERS[source](userId, parsed, transaction));
   } catch (error) {
     if (error instanceof consent.ConsentRequiredError) throw new ProposalError(403, 'consent_required', 'Necesitas autorizar el análisis de esta fuente.', 'You need to authorize analyzing this source.', { purpose: SOURCES[source] });
     throw error;
@@ -95,6 +98,17 @@ async function catalogSkills(locale) {
     return catalog ? [...catalog.skills.values()].map((s) => ({ key: s.skillKey, label: s.labels[locale] || s.labels.es || s.labels.en })) : [];
   } catch { return []; }
 }
+
+// Promesas de resultado que un insight (una hipótesis sobre cómo es la persona) nunca debe hacer. Se compara sin tildes y sin distinguir mayúsculas.
+// No bloquea que la persona diga qué valora o necesita («valoras un sueldo estable»): solo promesas, comparativos de pago y ofertas.
+const PROMISE_TERMS = Object.freeze([
+  /conseguir(a|as|an|emos)\b.*\b(empleo|trabajo|puesto)/, /vas a (conseguir|encontrar|obtener)\b.*\b(empleo|trabajo|puesto)/, /(encontraras|obtendras|lograras)\b.*\b(empleo|trabajo|puesto)/,
+  /te (contrat|ofrecer|pagar|llamar)/, /seras contratad/, /(mejor|mayor|mas alto|superior)(es)? (salario|sueldo|ingreso|remuneracion|paga)/, /(salario|sueldo) (mas alto|mayor|mejor)/,
+  /ofertas? de (trabajo|empleo)/, /(garantiz|aseguraras|tendras exito|sin duda conseguir)/,
+  /you will (get|land|find|be hired|be offered)\b/, /(get|land|find) (a|the) job/, /job offers?\b/, /(higher|better|bigger|more) (salary|pay|income)/, /(salary|pay) (increase|raise)/, /\b(hire|hired|hiring) you\b/, /guarantee/, /employment (offer|prospects)/,
+]);
+const unaccentLower = (t) => String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const makesPromise = (text) => PROMISE_TERMS.some((re) => re.test(unaccentLower(text)));
 
 const publicOf = (i) => ({ key: i.key, text: i.text, ...(i.skillKey ? { skillKey: i.skillKey } : {}), origins: i.origins });
 
@@ -149,9 +163,10 @@ function buildInsight(item, texts, skillKeys) {
   }
   const cited = origins.map((o) => texts[o.type === 'chat_turn' ? 'chat' : 'diary'].get(o.id)).join('\n');
   if (!outputIsClean([text], cited)) return null; // términos clínicos o de empleabilidad, o un porcentaje que la persona no escribió
+  if (makesPromise(text)) return null; // promesas de empleo, contratación, ofertas, salario o éxito (ES121-QA-02)
   const sourceNumbers = numbersOf(cited);
   if ([...numbersOf(text)].some((n) => !sourceNumbers.has(n))) return null; // ningún número que la persona no haya escrito
   return { key: item.key, text, ...(item.skillKey ? { skillKey: item.skillKey } : {}), origins };
 }
 
-module.exports = { proposeInsights, SOURCES, MAX_INSIGHTS, MAX_PER_KEY, DEFAULT_TURNS, DEFAULT_ENTRIES };
+module.exports = { proposeInsights, makesPromise, PROMISE_TERMS, SOURCES, MAX_INSIGHTS, MAX_PER_KEY, DEFAULT_TURNS, DEFAULT_ENTRIES };

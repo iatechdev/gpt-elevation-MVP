@@ -24,7 +24,7 @@ test('ES-121 PostgreSQL: insights desde chat y diario cifrados, consentimiento p
   await admin.query(`CREATE DATABASE "${dbName}"`);
   created = true;
   target.pathname = '/' + dbName;
-  sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: 12, min: 0 } });
+  sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false }, pool: { max: 5, min: 0, acquire: 8000 } });
   process.env.JWT_SECRET = randomBytes(32).toString('hex');
   process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
   process.env.AI_BUDGET_TOKENS_PER_USER = '1000000';
@@ -84,6 +84,24 @@ test('ES-121 PostgreSQL: insights desde chat y diario cifrados, consentimiento p
     const before = calls.length;
     await assert.rejects(proposeInsights(1, { sources: ['chat', 'diary'] }), (e) => e.code === 'consent_required' && e.purpose === 'insights_chat');
     assert.equal(calls.length, before);
+  });
+
+  await t.test('ES121-QA-01: más propuestas simultáneas que conexiones del pool (20 personas, pool de 5) terminan todas, sin errores ni bloqueos', async () => {
+    const people = Array.from({ length: 20 }, (_, i) => 500 + i);
+    for (const id of people) {
+      await consent.setConsent(id, 'insights_chat', 'granted');
+      await consent.setConsent(id, 'insights_diary', 'granted');
+      await ChatTurn.create({ UserId: id, requestId: 'pool-turn-' + id, status: 'completed', userContent: encriptarV2('Mensaje de la persona ' + id + ' sobre su trabajo'), replyContent: encriptarV2('r') });
+      await DiaryEntry.create({ UserId: id, entryDate: '2026-10-05', content: encriptarV2('Nota del diario de la persona ' + id) });
+    }
+    provider.out = [];
+    const started = Date.now();
+    const results = await Promise.allSettled(people.map((id) => proposeInsights(id, { sources: ['chat', 'diary'] })));
+    const failed = results.filter((r) => r.status === 'rejected').map((r) => r.reason && (r.reason.name || r.reason.code));
+    assert.deepEqual(failed, [], 'ninguna propuesta falla por agotar el pool: ' + failed.join(','));
+    assert.ok(Date.now() - started < 20000, 'terminan sin esperar al tiempo máximo de conexión');
+    // y el pool sigue sano después
+    assert.equal((await sequelize.query('SELECT 1 AS ok', { type: 'SELECT' }))[0].ok, 1);
   });
 
   await t.test('revocar una fuente mientras otra petición ya la leyó no rompe nada; la siguiente petición la rechaza (bloqueo compartido real)', async () => {
