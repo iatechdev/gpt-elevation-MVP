@@ -290,7 +290,10 @@ test('ES-88 PostgreSQL: revocación, borrado con worker activo y exportación de
     const registered = new Set(CORE.map(([, name]) => require('../../' + name).getTableName()));
     // Fuera del registro por decisión revisada: ledger de borrado y exportación y sesiones (se tratan aparte), y los datos clínicos/de terapeutas,
     // que bloquean la exportación y la purga mediante requiresReview (ES-23) hasta que Mauricio defina su retención.
-    const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'ClinicalNotes', 'MatchingRequests', 'TherapistProfiles']);
+    // ES-95: ProfessionalApplications son solicitudes PÚBLICAS de profesionales (no datos de una cuenta de la plataforma): su userId es opcional
+    // (ON DELETE SET NULL) y su retención la regula scripts/purgeProfessionalApplications.js. Decisión a confirmar por Mauricio si se quiere exportar
+    // o borrar también esas solicitudes con la cuenta.
+    const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'ClinicalNotes', 'MatchingRequests', 'TherapistProfiles', 'ProfessionalApplications']);
     const missing = tables.filter((n) => !registered.has(n) && !exceptions.has(n));
     assert.ok(registered.has('AiJobs') && registered.has('SkillCandidates'), 'los dos modelos nuevos están registrados');
     const order = CORE.map(([, name]) => name);
