@@ -34,6 +34,7 @@ import { Participants, ParticipantDetail, NewReview, OwnReviews } from './facili
 import { CatalogBrowser, CatalogManager } from './routeCatalog/CatalogPages'
 import { CompassPage } from './compass/CompassPage'
 import { CareerShell } from './career/CareerShell'
+import { SkillCatalogManager } from './skill-catalog/SkillCatalogPages'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 import { ExercisePage } from './exercises/ExercisePage'
 
@@ -95,6 +96,9 @@ export default function App() {
       </Route>
       {/* Admin backoffice */}
       <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/skill-catalog" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
+      <Route path="/admin/skill-catalog/:id" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
+      <Route path="/admin/skill-catalog/:id/skills/:skillKey" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
       <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin/route-catalog/:id/:kind/:itemKey" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin" element={
