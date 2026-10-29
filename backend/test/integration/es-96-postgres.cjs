@@ -35,7 +35,7 @@ test('ES-96 PostgreSQL + HTTP: el terapeuta ve solo lo autorizado y pierde el ac
     env: { ...process.env, DATABASE_URL: urlFor(dbName), DB_SSL: 'false', NODE_ENV: 'test' } });
   assert.equal(migrated.status, 0, `Fallaron las migraciones: ${(migrated.stdout + migrated.stderr).slice(-600)}`);
 
-  app = new Sequelize(urlFor(dbName), { logging: false, dialectOptions: { ssl: false }, pool: { max: 12, min: 0 } });
+  app = new Sequelize(urlFor(dbName), { logging: false, dialectOptions: { ssl: false }, pool: { max: 5, min: 0, acquire: 5000 } }); // QA ES96-QA-01: pool de 5 y espera corta, para que retener dos conexiones por lectura se note
   process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
   process.env.DATA_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
   process.env.NODE_ENV = 'test';
@@ -51,7 +51,7 @@ test('ES-96 PostgreSQL + HTTP: el terapeuta ve solo lo autorizado y pierde el ac
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
-  const { verificarToken, verificarTerapeuta } = require('../../middlewares/auth');
+  const { verificarToken, verificarTerapeuta, verificarAdmin } = require('../../middlewares/auth');
   const consent = require('../../utils/consent');
   const express = require('express');
   const api = express(); api.use(express.json());
@@ -59,6 +59,7 @@ test('ES-96 PostgreSQL + HTTP: el terapeuta ve solo lo autorizado y pierde el ac
   api.use('/api/consents', verificarToken, require('../../routes/consents'));
   api.use('/api/sessions', verificarToken, require('../../routes/sessions'));
   api.use('/api/therapist', verificarTerapeuta, require('../../routes/therapistRoutes'));
+  api.use('/api/admin/usuarios', verificarAdmin, require('../../routes/adminUsers')); // decisión 2 de Mauricio: reasignar retira la autorización anterior
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   db = new Client({ connectionString: urlFor(dbName), ssl: false }); await db.connect();
@@ -285,5 +286,94 @@ test('ES-96 PostgreSQL + HTTP: el terapeuta ve solo lo autorizado y pierde el ac
       const r = await http(who, 'GET', route);
       assert.match(String(r.cache), /no-store/, `${route} -> ${r.status}`);
     }
+  });
+  await t.test('QA ES96-QA-01: 12 lecturas y 6 altas de nota simultáneas con un pool de 5 no dan ningún 5xx y terminan en menos de 5 s (una conexión por solicitud)', async () => {
+    // Persona propia de esta prueba: las anteriores ya cambiaron de terapeuta o se desvincularon.
+    const pc = await mkUser('user', { therapistId: tA.id, name: 'Persona Concurrente' });
+    await addData(pc);
+    assert.equal((await grant(pc)).status, 200);
+    const started = Date.now();
+    const reads = Array.from({ length: 12 }, (_, i) => http(tA, 'GET', i % 2 ? `/api/therapist/pacientes/${pc.id}/historial` : `/api/therapist/pacientes/${pc.id}/historia`));
+    const writes = Array.from({ length: 6 }, (_, i) => http(tA, 'POST', `/api/therapist/pacientes/${pc.id}/notas`, { content: `Nota concurrente ${i}`, sessionDate: today }));
+    const results = await Promise.all([...reads, ...writes]);
+    const elapsed = Date.now() - started;
+    assert.deepEqual(results.map((r) => r.status).filter((status) => status >= 500), [], 'ningún 5xx');
+    assert.deepEqual(results.slice(0, 12).map((r) => r.status), Array(12).fill(200));
+    assert.deepEqual(results.slice(12).map((r) => r.status), Array(6).fill(201));
+    assert.ok(elapsed < 5000, `tardó ${elapsed} ms`);
+    // Una revocación en curso sigue esperando a las lecturas y ninguna lectura posterior ve el consentimiento retirado (ADR-003).
+    assert.equal((await grant(pc, 'revoked')).status, 200);
+    assert.equal((await http(tA, 'GET', `/api/therapist/pacientes/${pc.id}/historial`)).status, 403);
+    assert.equal((await grant(pc)).status, 200);
+  });
+
+  await t.test('decisión 3 de Mauricio: sin autorización de compartir NO se agenda, inicia ni anota en vivo (403 consent_required ES/EN, sin crear ni cambiar nada); cerrar una sesión en curso sí se puede, sin recomendación de IA', async () => {
+    const ps = await mkUser('user', { therapistId: tA.id, name: 'Persona Sin Autorizar' });
+    const future = new Date(Date.now() + 3 * 86400000).toISOString();
+    const count = async (table, where, params) => Number((await q(`SELECT count(*)::int AS n FROM "${table}" WHERE ${where}`, params))[0].n);
+    const create = await http(tA, 'POST', '/api/sessions/therapist', { patientId: ps.id, scheduledAt: future });
+    assert.deepEqual([create.status, create.body.code], [403, 'consent_required']);
+    assert.match(create.body.error, /La persona no ha autorizado compartir sus datos con su terapeuta\. \/ The person has not authorized sharing their data with their therapist\./);
+    assert.equal(await count('TherapySessions', '"patientId"=$1', [ps.id]), 0, 'no se creó ninguna sesión');
+    const scheduled = (await q(`INSERT INTO "TherapySessions" ("therapistId","patientId","scheduledAt","duration","status","createdAt","updatedAt") VALUES ($1,$2,now()+interval '2 day',50,'scheduled',now(),now()) RETURNING id`, [tA.id, ps.id]))[0].id;
+    const start = await http(tA, 'POST', `/api/sessions/therapist/${scheduled}/start`);
+    assert.deepEqual([start.status, start.body.code], [403, 'consent_required']);
+    assert.equal((await q('SELECT status FROM "TherapySessions" WHERE id=$1', [scheduled]))[0].status, 'scheduled', 'la sesión no cambió');
+    const live = (await q(`INSERT INTO "TherapySessions" ("therapistId","patientId","scheduledAt","duration","status","startedAt","createdAt","updatedAt") VALUES ($1,$2,now(),50,'in_progress',now(),now(),now()) RETURNING id`, [tA.id, ps.id]))[0].id;
+    const note = await http(tA, 'POST', `/api/sessions/therapist/${live}/notes`, { content: 'Nota en vivo sintética' });
+    assert.deepEqual([note.status, note.body.code], [403, 'consent_required']);
+    assert.equal(await count('SessionNotes', '"sessionId"=$1', [live]), 0, 'no se guardó la nota en vivo');
+    const calls = provider.calls;
+    const end = await http(tA, 'POST', `/api/sessions/therapist/${live}/end`, { therapistNote: 'Cierre sintético de la sesión', patientMoodAfter: 4 });
+    assert.equal(end.status, 200); assert.equal(end.body.recommendation, null);
+    assert.equal(provider.calls, calls, 'sin autorización no se llama a la IA');
+    assert.equal(await count('WellnessRecommendations', '"UserId"=$1', [ps.id]), 0, 'no se generó nada para la persona');
+    // Con autorización, todo sigue como antes.
+    assert.equal((await grant(ps)).status, 200);
+    const ok = await http(tA, 'POST', '/api/sessions/therapist', { patientId: ps.id, scheduledAt: future });
+    assert.equal(ok.status, 201);
+    const live2 = (await q(`INSERT INTO "TherapySessions" ("therapistId","patientId","scheduledAt","duration","status","startedAt","createdAt","updatedAt") VALUES ($1,$2,now(),50,'in_progress',now(),now(),now()) RETURNING id`, [tA.id, ps.id]))[0].id;
+    assert.equal((await http(tA, 'POST', `/api/sessions/therapist/${live2}/notes`, { content: 'Nota en vivo autorizada' })).status, 201);
+  });
+
+  await t.test('decisión 1 de Mauricio: desvincularse retira la autorización en la MISMA transacción; si el retiro falla, no se desvincula y el error no se traga', async () => {
+    const pu = await mkUser('user', { therapistId: tA.id, name: 'Persona Desvincula' });
+    assert.equal((await grant(pu)).status, 200);
+    const original = consent.revokeTherapistSharing;
+    consent.revokeTherapistSharing = async () => { throw new Error('SYNTHETIC_REVOKE_FAILURE'); };
+    const logs = []; const previous = console.error; console.error = (...args) => logs.push(args);
+    try {
+      const failed = await http(pu, 'DELETE', '/api/sessions/user/my-therapist');
+      assert.equal(failed.status, 500);
+    } finally { consent.revokeTherapistSharing = original; console.error = previous; }
+    assert.equal((await q('SELECT "therapistId" FROM "Users" WHERE id=$1', [pu.id]))[0].therapistId, tA.id, 'no se desvinculó');
+    assert.equal((await q(`SELECT status FROM "Consents" WHERE "UserId"=$1 AND purpose='therapist_sharing'`, [pu.id]))[0].status, 'granted', 'la autorización sigue vigente');
+    assert.equal((await http(pu, 'DELETE', '/api/sessions/user/my-therapist')).status, 200);
+    assert.equal((await q('SELECT "therapistId" FROM "Users" WHERE id=$1', [pu.id]))[0].therapistId, null);
+    assert.equal((await q(`SELECT status FROM "Consents" WHERE "UserId"=$1 AND purpose='therapist_sharing'`, [pu.id]))[0].status, 'revoked');
+  });
+
+  await t.test('decisión 2 de Mauricio: reasignar a otro terapeuta retira la autorización del anterior, el nuevo no hereda nada y, si la persona vuelve al original, tampoco revive', async () => {
+    const pr = await mkUser('user', { therapistId: tA.id, name: 'Persona Reasignada' });
+    await addData(pr);
+    const admin = await mkUser('admin');
+    assert.equal((await grant(pr)).status, 200);
+    assert.equal((await http(tA, 'GET', `/api/therapist/pacientes/${pr.id}/historial`)).status, 200);
+    const assign = (therapist) => http(admin, 'PUT', `/api/admin/usuarios/${pr.id}/asignar-terapeuta`, { therapistId: therapist ? therapist.id : null });
+    assert.equal((await assign(tB)).status, 200);
+    assert.equal((await q(`SELECT status FROM "Consents" WHERE "UserId"=$1 AND scope=$2`, [pr.id, `therapist-${tA.id}`]))[0].status, 'revoked', 'la autorización del anterior se retiró');
+    assert.equal((await http(tA, 'GET', `/api/therapist/pacientes/${pr.id}/historial`)).status, 404, 'el anterior ya no la ve');
+    const asNew = await http(tB, 'GET', `/api/therapist/pacientes/${pr.id}/historial`);
+    assert.deepEqual([asNew.status, asNew.body.code], [403, 'consent_required'], 'el nuevo no hereda la autorización');
+    assert.equal((await assign(tA)).status, 200); // vuelve al original
+    const back = await http(tA, 'GET', `/api/therapist/pacientes/${pr.id}/historial`);
+    assert.deepEqual([back.status, back.body.code], [403, 'consent_required'], 'la autorización anterior NO revive');
+    assert.equal((await grant(pr)).status, 200); // la persona decide de nuevo
+    assert.equal((await http(tA, 'GET', `/api/therapist/pacientes/${pr.id}/historial`)).status, 200);
+    // Quitarle el terapeuta también retira la autorización; reasignar al mismo terapeuta no toca nada.
+    assert.equal((await assign(tA)).status, 200);
+    assert.equal((await q(`SELECT status FROM "Consents" WHERE "UserId"=$1 AND scope=$2`, [pr.id, `therapist-${tA.id}`]))[0].status, 'granted');
+    assert.equal((await assign(null)).status, 200);
+    assert.equal((await q(`SELECT status FROM "Consents" WHERE "UserId"=$1 AND scope=$2`, [pr.id, `therapist-${tA.id}`]))[0].status, 'revoked');
   });
 });

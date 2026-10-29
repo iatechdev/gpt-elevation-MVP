@@ -230,17 +230,19 @@ router.get('/alerts', async (req, res) => {
 router.get('/pacientes/:id/historial', async (req, res) => {
   try {
     const patientId = req.params.id;
-    await withPatientData(req, res, patientId, async (patient) => {
+    await withPatientData(req, res, patientId, async (patient, transaction) => {
       const moodLogs = await MoodLog.findAll({
         where: { UserId: patient.id },
         order: [['date', 'DESC']],
         limit: 30,
+        transaction,
       });
 
       const ratings = await SessionRating.findAll({
         where: { UserId: patient.id },
         order: [['date', 'DESC']],
         limit: 30,
+        transaction,
       });
 
       res.json({ patient: patient.toJSON(), moodLogs, ratings });
@@ -347,22 +349,25 @@ router.get('/prompt/versions', async (req, res) => {
 router.get('/pacientes/:id/historia', async (req, res) => {
   try {
     const therapistId = req.user.id;
-    await withPatientData(req, res, req.params.id, async (patient) => {
+    await withPatientData(req, res, req.params.id, async (patient, transaction) => {
       const moodLogs = await MoodLog.findAll({
         where: { UserId: patient.id },
         order: [['date', 'DESC']],
         limit: 60,
+        transaction,
       });
 
       const ratings = await SessionRating.findAll({
         where: { UserId: patient.id },
         order: [['date', 'DESC']],
         limit: 60,
+        transaction,
       });
 
       const notes = await ClinicalNote.findAll({
         where: { UserId: patient.id, therapistId },
         order: [['sessionDate', 'DESC']],
+        transaction,
       });
 
       const decryptedNotes = notes.map(n => ({
@@ -399,20 +404,19 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
     const noteType = validTypes.includes(type) ? type : 'session_note';
 
     // ES-96 (ES93-A1/A3): solo sobre una persona vinculada, activa, sin eliminación solicitada y que autorizó compartir con este terapeuta.
-    await withPatientData(req, res, patientId, async (patient) => {
-      const note = await ClinicalNote.create({
-        UserId: patient.id,
-        therapistId,
-        content: encriptar(content),
-        type: noteType,
-        sessionDate,
-      });
-
-      res.status(201).json({
-        message: 'Note saved successfully.',
-        note: { ...note.toJSON(), content },
-      });
-    }, ['id']);
+    const saved = await withPatientData(req, res, patientId, async (patient, transaction) => ClinicalNote.create({
+      UserId: patient.id,
+      therapistId,
+      content: encriptar(content),
+      type: noteType,
+      sessionDate,
+    }, { transaction }), ['id']);
+    if (res.headersSent) return; // withPatientData ya respondió 404 o 403
+    // Se responde después del commit: no se confirma una nota que la transacción pudiera deshacer.
+    res.status(201).json({
+      message: 'Note saved successfully.',
+      note: { ...saved.toJSON(), content },
+    });
   } catch (error) {
     console.error('❌ Error creating clinical note:', error);
     res.status(500).json({ error: 'Could not save note.' });
@@ -439,14 +443,12 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
     if (sessionDate) updates.sessionDate = sessionDate;
 
     // ES-96: editar una nota sobre una persona exige el mismo acceso que escribirla (vínculo vigente, sin eliminación y con autorización).
-    await withPatientData(req, res, note.UserId, async () => {
-      await note.update(updates);
-
-      res.json({
-        message: 'Note updated successfully.',
-        note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
-      });
-    }, ['id']);
+    await withPatientData(req, res, note.UserId, async (patient, transaction) => note.update(updates, { transaction }), ['id']);
+    if (res.headersSent) return; // withPatientData ya respondió 404 o 403
+    res.json({
+      message: 'Note updated successfully.',
+      note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
+    });
   } catch (error) {
     console.error('❌ Error updating clinical note:', error);
     res.status(500).json({ error: 'Could not update note.' });

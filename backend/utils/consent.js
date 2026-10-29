@@ -107,6 +107,18 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
   }
 }
 
+// ES-96: retira, dentro de la transacción del llamador, la autorización de compartir con UN terapeuta (desvincularse o ser reasignada). No crea nada si
+// la persona nunca autorizó. Los errores se propagan: la desvinculación y el retiro ocurren juntos o no ocurren.
+async function revokeTherapistSharing(userId, therapistId, transaction) {
+  const where = keyOf(userId, 'therapist_sharing', therapistScope(therapistId));
+  const row = await Consent.findOne({ where, transaction, lock: Transaction.LOCK.UPDATE });
+  if (!row || row.status === 'revoked') return false;
+  const decidedAt = new Date();
+  await row.update({ status: 'revoked', decidedAt }, { transaction });
+  await ConsentEvent.create({ ...where, status: 'revoked', version: row.version, decidedAt }, { transaction });
+  return true;
+}
+
 // ES-23 only: the necessary purpose may be revoked when deleting the account.
 // Uses the caller's transaction; exclusive row locks wait for in-flight withConsent consumers.
 async function revokeForDeletion(userId, transaction) {
@@ -172,5 +184,5 @@ module.exports = {
   PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, isValidScope,
   ConsentRequiredError, isPurpose, isEffective,
   hasConsent, withConsent, setConsent, listConsents, listHistory, requireConsent,
-  revokeForDeletion,
+  revokeForDeletion, revokeTherapistSharing, therapistScope,
 };

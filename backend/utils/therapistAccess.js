@@ -37,13 +37,15 @@ async function sharingSet(therapistId, patientIds) {
   return new Set(rows.filter((row) => consent.isEffective(row, PURPOSE)).map((row) => row.UserId));
 }
 
-// Ejecuta fn(patient) con el consentimiento comprobado DENTRO de una transacción y con bloqueo compartido: una revocación concurrente espera a
+// Ejecuta fn(patient, transaction) con el consentimiento comprobado DENTRO de una transacción y con bloqueo compartido: una revocación concurrente espera a
 // que termine la lectura y ninguna lectura nueva ve un consentimiento retirado (ADR-003 de ES-19). Responde 404 si no hay vínculo y 403 si no hay consentimiento.
+// QA (ES-96, Alto): fn DEBE hacer sus consultas con la `transaction` que recibe. Si usara otra conexión, cada lectura retendría dos del pool y con N lecturas
+// simultáneas mayores que el pool (5) todas esperarían una segunda conexión que nadie libera (esperas de decenas de segundos y 5xx).
 async function withPatientData(req, res, patientId, fn, attributes) {
   const patient = await linkedPatient(req.user.id, patientId, attributes);
   if (!patient) return res.status(404).json(NOT_FOUND);
   try {
-    return await consent.withConsent(patient.id, PURPOSE, () => fn(patient), consent.therapistScope(req.user.id));
+    return await consent.withConsent(patient.id, PURPOSE, (transaction) => fn(patient, transaction), consent.therapistScope(req.user.id));
   } catch (error) {
     if (error instanceof consent.ConsentRequiredError) return res.status(403).json(SHARING_REQUIRED);
     throw error;
@@ -69,4 +71,13 @@ async function blockedPatientIds(ids) {
 
 const patientBlocked = async (id) => (await blockedPatientIds([Number(id)])).has(Number(id));
 
-module.exports = { PURPOSE, SHARING_REQUIRED, linkedPatient, sharingSet, withPatientData, blockedPatientIds, patientBlocked };
+// Sin autorización de compartir NO se crean ni gestionan sesiones con esa persona (decisión de Mauricio): el terapeuta no tiene su información para agendar.
+// -> true si autorizó; si no, responde 403 consent_required (ES/EN) y devuelve false. Lectura sin bloqueo: no abre una transacción larga.
+async function requireSharing(req, res, patientId) {
+  if (await consent.hasConsent(patientId, PURPOSE, consent.therapistScope(req.user.id))) return true;
+  res.status(403).json(SHARING_REQUIRED);
+  return false;
+}
+const hasSharing = (therapistId, patientId) => consent.hasConsent(patientId, PURPOSE, consent.therapistScope(therapistId));
+
+module.exports = { requireSharing, hasSharing, PURPOSE, SHARING_REQUIRED, linkedPatient, sharingSet, withPatientData, blockedPatientIds, patientBlocked };

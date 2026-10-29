@@ -12,7 +12,7 @@ router.use((req, res, next) => {
 });
 
 const { encriptar, desencriptar } = require('../utils/crypto');
-const { sharingSet, blockedPatientIds, patientBlocked } = require('../utils/therapistAccess'); // ES-96 y ES-101
+const { sharingSet, blockedPatientIds, patientBlocked, requireSharing, hasSharing } = require('../utils/therapistAccess'); // ES-96 y ES-101
 const { callClaude } = require('../utils/aiClient'); // ES-102
 const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
 
@@ -43,6 +43,7 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     if (!patient || await patientBlocked(patient.id)) { // ES-101
       return res.status(403).json({ error: 'This patient is not assigned to you.' });
     }
+    if (!(await requireSharing(req, res, patient.id))) return; // sin autorización de compartir, no se agenda
     const session = await TherapySession.create({
       therapistId: req.user.id,
       patientId,
@@ -169,6 +170,7 @@ router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (
       where: { id: req.params.id, therapistId: req.user.id },
     });
     if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    if (!(await requireSharing(req, res, session.patientId))) return; // la autorización se retiró: no se anota en vivo
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: 'Session is not in progress.' });
     }
@@ -286,11 +288,9 @@ router.delete('/user/my-therapist', async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
       const result = await unlinkTherapist(req.user.id, 'unlinked_by_person', transaction);
+      // La autorización a ese terapeuta se retira en la MISMA transacción (QA ES-96): o ocurren las dos cosas o ninguna; el error no se traga.
+      if (result.unlinked) await consent.revokeTherapistSharing(req.user.id, result.therapistId, transaction);
       await transaction.commit();
-      if (result.unlinked) {
-        // La autorización a ese terapeuta se retira también (queda en el historial de decisiones de la persona).
-        await consent.setConsent(req.user.id, 'therapist_sharing', 'revoked', consent.therapistScope(result.therapistId)).catch(() => {});
-      }
       res.json({ unlinked: result.unlinked });
     } catch (error) {
       await transaction.rollback().catch(() => {});
@@ -415,6 +415,7 @@ router.post('/therapist/:id/start', async (req, res) => {
       where: { id: req.params.id, therapistId: req.user.id },
     });
     if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    if (!(await requireSharing(req, res, session.patientId))) return; // sin autorización de compartir, no se inicia
     if (session.status !== 'scheduled') {
       return res.status(400).json({ error: `Cannot start a session with status '${session.status}'.` });
     }
@@ -470,7 +471,9 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
 
     // Generar recomendación IA para el paciente (silent fail si Anthropic falla)
     let recommendation = null;
+    const sharing = await hasSharing(req.user.id, session.patientId); // sin autorización: se cierra, pero no se genera nada para la persona
     try {
+      if (!sharing) throw new Error('sin autorización de compartir');
       // QA-78-01 / ES-79: ni el nombre real de la persona ni la nota del terapeuta se envían al proveedor de IA (decisión de Mauricio, 26-oct): la recomendación se genera solo con el estado de ánimo.
       const moodLabels = { 1: 'muy mal', 2: 'no tan bien', 3: 'neutral', 4: 'bien', 5: 'muy bien' };
       const moodLabel  = moodLabels[patientMoodAfter] || 'neutral';
