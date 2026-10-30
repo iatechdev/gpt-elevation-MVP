@@ -129,6 +129,27 @@ Antes, un volcado de respaldo o punto de restauración y la confirmación de Mau
 
 **Fases pendientes:** aplicar las migraciones antes de cada despliegue en Railway (comando previo) y retirar `sync()` de producción y staging (fase 2); hacer `db:drift` un check requerido de `main` (fase 3). Nota: `sequelize-cli` está en `dependencies` (no en `devDependencies`) porque el comando previo lo necesita dentro de la imagen; la prueba P1-8 lo trata como herramienta de línea de comandos.
 
+## Diferencias conocidas de staging
+
+Staging se creó con `sync()` antes de que existieran las migraciones; producción nacerá con migraciones. Por eso hay diferencias que se aceptan de forma explícita y no se corrigen tocando staging.
+
+**Los 6 CHECK de ES-32 (QA-43-02, decisión de Mauricio: aceptar como diferencia conocida, 28-oct-2026).** La migración `20261028-es32-routes.cjs` crea 6 restricciones CHECK que los modelos no declaran. En una base creada con migraciones existen; en staging, cuyas tablas de rutas las creó `sync()`, no existen (0 frente a 6). Nombres:
+
+- `RouteChoices_decision_check`
+- `RouteChoices_slot_check`
+- `RouteChoices_status_check`
+- `RouteConstraintsVersions_status_check`
+- `RouteConstraintsVersions_version_check`
+- `RouteReviewRequests_status_check`
+
+**Motivo.** El camino documentado para pasar staging a migraciones (registrar la línea base y ejecutar `db:migrate`) usa `CREATE TABLE IF NOT EXISTS`, que no añade restricciones a tablas que ya existen. Añadirlas exigiría una migración propia tras verificar que las filas actuales las cumplen, y en staging solo hay datos sintéticos.
+
+**Efecto.** El servidor valida de entrada el slot y la decisión (`utils/routes.js`) y es el único que fija el estado y la versión; la diferencia es de defensa en profundidad en la base, no de comportamiento. Que ninguna otra ruta de escritura salte esa validación no se ha auditado aquí. Las pruebas de QA con Postgres real se ejecutan sobre bases creadas con migraciones, que sí los tienen.
+
+**Cuándo se reabre.** Si se recrea staging, o si se exige paridad exacta entre staging y producción, se crea una migración propia que añada los 6 CHECK (comprobando antes las filas existentes) y se retira esta entrada. Hasta entonces `db:drift` no se ve afectado: compara bases nuevas creadas por `sync()` y por migraciones, no la base de staging.
+
+No se toca la base de staging ni se migra nada por este motivo.
+
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.
 - **Cómo confirmar qué versión corre tras un Rollback:** `GET /api/health` puede **no** traer el campo `commit`, porque Railway no inyecta `RAILWAY_GIT_COMMIT_SHA` en un despliegue revertido (observado dos veces; la causa es una inferencia). Se confirma por el panel (despliegue marcado ACTIVE y su commit) o por CLI: `railway deployment list --service backend --json` → `meta.commitHash` y `meta.reason` (`rollback` o `deploy`), más las pruebas de humo. En un despliegue normal, `commit` sí aparece.
