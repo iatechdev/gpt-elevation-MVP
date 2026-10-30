@@ -217,7 +217,8 @@ test('ES-25 un cambio o borrado del origen privado marca para revisión pero NO 
 
 test('ES-25 frontera en el código: el puente solo pide id y marca de tiempo de los orígenes y la única lectura del motor es getApprovedContext', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '..', 'utils', 'careerContext.js'), 'utf8');
-  assert.equal((source.match(/attributes: \['id', 'updatedAt'\]/g) || []).length, 4); // resolveOrigins y needsReviewFor, para cada modelo
+  assert.equal((source.match(/attributes: \['id', 'updatedAt'\]/g) || []).length, 2); // findOrigin (lo usan resolveOrigins y needsReviewFor): diario y chat
+  assert.equal((source.match(/attributes: \['id', 'createdAt'\]/g) || []).length, 1); // y la hoja de vida: solo id y fecha de creación, nunca el PDF
   assert.doesNotMatch(source, /\.content\b|userContent|replyContent/);
   assert.deepEqual(Object.keys(bridge).sort(), ['BridgeError', 'FIELD_KEYS', 'confirm', 'getApprovedContext', 'list', 'normalizeFields', 'preview', 'revoke', 'revokeForConsent']);
   const routes = fs.readFileSync(path.resolve(__dirname, '..', 'routes', 'careerContext.js'), 'utf8');
