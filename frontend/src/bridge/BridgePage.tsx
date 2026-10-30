@@ -9,9 +9,11 @@ import { compassApi, CompassError } from '../compass/api'
 import type { CareerContext, Field } from '../compass/model'
 import { bridgeCopy } from './copy'
 import { loadInsights } from './insights'
+import { SourcesPanel } from './SourcesPanel'
+import { emptyProposals, withSource } from './sources'
 import { formatDate, pending, sameFields, sortInsights, whyNot, withInsight, withoutField } from './logic'
 import type { DirectField } from '../compass/model'
-import type { Insight } from './logic'
+import type { Insight, SourceId } from './logic'
 import './bridge.css'
 
 const backend = import.meta.env?.VITE_BACKEND_URL || ''
@@ -21,7 +23,11 @@ type Focus = { kind: 'authorize'; id: string } | { kind: 'pro' } | null
 export function BridgePage() {
   const { lang } = useLanguage(); const c = bridgeCopy[lang]; const token = useSpaceToken()
   const api = useMemo(() => compassApi(backend, token), [token])
-  const insights = useMemo(() => sortInsights(loadInsights(lang)), [lang])
+  // ES-121: a las ideas de ejemplo (solo con el interruptor) se suman las propuestas de la IA por fuente. Viven solo en esta pantalla: no se guardan.
+  const [proposals, setProposals] = useState(emptyProposals)
+  const insights = useMemo(() => sortInsights([...loadInsights(lang), ...Object.values(proposals).flat()]), [lang, proposals])
+  const onResult = useCallback((source: SourceId, list: Insight[]) => setProposals(current => withSource(current, source, list)), [])
+  const onExpired = useCallback(() => setExpired(true), [])
   const [ctx, setCtx] = useState<CareerContext | null>(null); const [loadError, setLoadError] = useState(false); const [expired, setExpired] = useState(!token)
   const [peek, setPeek] = useState<ReadonlySet<string>>(new Set()); const [confirming, setConfirming] = useState<string | null>(null)
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<Notice>(null); const [askAll, setAskAll] = useState(false)
@@ -97,12 +103,13 @@ export function BridgePage() {
       {ctx && <div className="bridge-cols">
         <section className="bridge-col" aria-labelledby="bridge-private">
           <h2 id="bridge-private">🔒 {c.private}</h2>
+          <SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} />
           {!todo.length && <div className="bridge-empty" role="status"><p>{insights.length ? c.nothing : c.empty}</p>{!insights.length && <p className="bridge-small">{c.emptyNote} <Link className="elv-link" to="/app/compass">{c.toCompass}</Link></p>}</div>}
           {todo.map(insight => {
             const open = peek.has(insight.id); const asking = confirming === insight.id; const blocked = whyNot(active, insight)
             return <article key={insight.id} className={`bridge-card${asking ? ' bridge-card-asking' : ''}`} onKeyDown={event => { if (asking && event.key === 'Escape') { event.stopPropagation(); cancel() } }}>
               <div className="bridge-row">
-                <span className="bridge-small">{formatDate(insight.date, lang)}{insight.example && <span className="bridge-pill bridge-pill-dash"> {c.example}</span>}</span>
+                <span className="bridge-small">{formatDate(insight.date, lang)}{insight.example && <span className="bridge-pill bridge-pill-dash"> {c.example}</span>}{insight.source && <span className="bridge-pill bridge-pill-dash"> {c[`src_from_${insight.source}` as keyof typeof c]}</span>}</span>
                 <span><span className={`bridge-pill${insight.status === 'unassessed' ? ' bridge-pill-dash' : ''}`}>{insight.status === 'hypothesis' ? c.hypothesis : c.unassessed}</span>
                   <button type="button" className="bridge-eye" aria-pressed={open} aria-label={open ? c.hide : c.show} onClick={() => togglePeek(insight.id)}>{open ? '◉' : '◎'}</button></span>
               </div>
