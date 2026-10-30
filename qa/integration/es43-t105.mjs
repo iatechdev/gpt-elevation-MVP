@@ -1,4 +1,4 @@
-// [QA-Claude] ES-43 · PR #105 (ES43-QA-01, opción 1: max_tokens del chat 1000 → 1500). Postgres REAL, proveedor SIMULADO, datos SINTÉTICOS.
+// [QA-Claude] ES-43 · PR #105 (ES43-QA-01, opción 1: max_tokens del chat 1500 → 2000). Postgres REAL, proveedor SIMULADO, datos SINTÉTICOS.
 // Uso: QA_PHASE=1|2|3 QA_SUT=<clon> QA_API=<servidor> QA_STOP=<proxy stop_reason> QA_MOCK=<mock IA> DATABASE_URL=<base> QA_JWT_SECRET=<clave> [QA_R=<reserva>] node qa/integration/es43-t105.mjs
 import { createRequire } from 'node:module'; import { randomBytes } from 'node:crypto'; import fs from 'node:fs'; import path from 'node:path';
 const E = process.env; const PH = E.QA_PHASE; const req = createRequire(path.join(E.QA_SUT, 'backend', 'package.json')); const { Client } = req('pg'); const jwt = req('jsonwebtoken'); const API = E.QA_API;
@@ -12,9 +12,9 @@ const stats = async () => (await fetch(E.QA_MOCK + '/_stats')).json(); const set
 const row = async rid => (await q('select "stopReason","reservedTokens","inputTokens","outputTokens",status from "AiUsages" where "requestId"=$1', [rid]))[0];
 if (PH === '1') {
   const U = await mk('a'); await setText('Respuesta sintética completa.'); await setStop('end_turn'); const r1 = await chat(U, 'Primer mensaje sintético'); const s1 = await stats(); const w1 = await row(r1.requestId);
-  check('T1a el chat envía max_tokens: 1500 al proveedor', r1.status === 200 && s1.last?.max_tokens === 1500, `http=${r1.status} max_tokens=${s1.last?.max_tokens}`);
+  check('T1a el chat envía max_tokens: 2000 al proveedor', r1.status === 200 && s1.last?.max_tokens === 2000, `http=${r1.status} max_tokens=${s1.last?.max_tokens}`);
   check('T1d (PR #106) el chat envía output_config {effort:"low"} y NO envía thinking ni temperature', JSON.stringify(s1.last?.output_config) === '{"effort":"low"}' && s1.last?.thinking === undefined && s1.last?.temperature === undefined, JSON.stringify({ oc: s1.last?.output_config, th: s1.last?.thinking, te: s1.last?.temperature }));
-  const R = Number(w1?.reservedTokens); fs.writeFileSync(E.QA_RFILE, String(R)); check('T2a la reserva por llamada incluye los 1500 (reservedTokens ≥ 1500) y el turno queda completado', R >= 1500 && w1.status === 'completed', JSON.stringify(w1));
+  const R = Number(w1?.reservedTokens); fs.writeFileSync(E.QA_RFILE, String(R)); check('T2a la reserva por llamada incluye los 2000 (reservedTokens ≥ 2000) y el turno queda completado', R >= 2000 && w1.status === 'completed', JSON.stringify(w1));
   const usage = (await call(U, 'GET', '/api/ai/usage')).json; check('T2b el cobro es el uso real (no la reserva): used = entrada + salida registradas', usage.used === Number(w1.inputTokens) + Number(w1.outputTokens) && usage.used < R, `used=${usage.used} reserva=${R}`);
   await setStop('max_tokens'); await setText('Texto completo que el modelo entrega aunque cierre por límite.'); const r2 = await chat(U, 'Segundo mensaje'); const w2 = await row(r2.requestId); const turn = (await q('select status from "ChatTurns" where "requestId"=$1', [r2.requestId]))[0];
   check('T1b un cierre por `max_tokens` no rompe el flujo: turno completo, registrado como max_tokens y texto sin alterar', r2.status === 200 && r2.json?.reply === 'Texto completo que el modelo entrega aunque cierre por límite.' && w2.stopReason === 'max_tokens' && turn?.status === 'completed', `http=${r2.status} stop=${w2?.stopReason} turno=${turn?.status}`);
