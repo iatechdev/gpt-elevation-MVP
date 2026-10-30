@@ -16,3 +16,6 @@ Calidad con Claude real; hojas de vida con columnas o imágenes (declarado por D
 
 ## Decisión
 Mauricio aceptó ES121R-QA-01 como residual y lo registra como deuda técnica del segundo release. Veredicto: APROBADO en el head 62d57f52c1df7436acd3c21f366e5a353b2b6181.
+
+## Reverificación · head 4c172ab5c80fdf093cf42590149b9e10b11b3d68 (cola de extracciones + arnés con AiJob/SkillCandidate)
+Merge local con main actual. `resume-4c172ab.jsonl`: 24 correctas. ES121R-QA-01 cerrado: con 6 simultáneas la espectadora responde en 91–153 ms (antes 244–771); con 20, 194–333 ms (antes 391–950); sin 5xx. ES121R-QA-02 cerrado en #102: `test:insights:pg` 8/8; backend 496/496; bridge, resume, resume-skills y data-rights pasan; regresión de #99: 31 correctas y B5 (cambio por diseño). Las 3 mutaciones se corrieron en el head anterior (el cambio no toca consentimiento, propietario ni depuración). Sigue abierto: #99 tiene el mismo problema de arnés al fusionar con main.
