@@ -49,7 +49,7 @@ test('ES-30 radar: geometría determinista, dentro del radio y con una cuña por
       assert.equal(a.path, radar.wedge(i, total, 4).path)
       assert.equal(none.path, a.path, 'el hueco ocupa el sector completo')
       assert.notEqual(b.path, a.path)
-      assert.match(a.path, /^M280,250 L[\d.-]+,[\d.-]+ A[\d.]+,[\d.]+ 0 [01] 1 [\d.-]+,[\d.-]+ Z$/)
+      assert.match(a.path, /^M340,250 L[\d.-]+,[\d.-]+ A[\d.]+,[\d.]+ 0 [01] 1 [\d.-]+,[\d.-]+ Z$/)
     }
   }
   assert.deepEqual(radar.wrapName('Planificación y organización de proyectos largos'), ['Planificación y', 'organización de', 'proyectos largos'])
@@ -70,4 +70,16 @@ test('ES-30 textos del radar: ES y EN completos; «Conviene revisar» ya no prom
   }
   assert.equal(skillMapEs['skill_map.contradictory'], 'Conviene revisar'); assert.equal(skillMapEn['skill_map.contradictory'], 'Worth reviewing')
   assert.match(skillMapEs['skill_map.radar_level_of'], /\{n\}.*\{max\}/)
+})
+
+test('ES-30 (H-96-01) las etiquetas caben en el lienzo: con 1 a 12 capacidades ninguna línea (hasta 16 caracteres, ~7,5 u por carácter) se sale del viewBox por los costados', () => {
+  const width = 16 * 7.5
+  for (let total = 1; total <= radar.MAX_LABELS; total++) for (let index = 0; index < total; index++) {
+    const { label } = radar.wedge(index, total, 3)
+    const left = label.anchor === 'end' ? label.x - width : label.anchor === 'middle' ? label.x - width / 2 : label.x
+    const right = label.anchor === 'start' ? label.x + width : label.anchor === 'middle' ? label.x + width / 2 : label.x
+    assert.ok(left >= 0 && right <= radar.VIEW_W, `total ${total} cuña ${index}: [${left.toFixed(0)}, ${right.toFixed(0)}] fuera de 0..${radar.VIEW_W}`)
+  }
+  assert.equal(radar.CENTER.x, radar.VIEW_W / 2)
+  assert.match(readFileSync(new URL('../src/skill-map/RadarView.tsx', import.meta.url), 'utf8'), /viewBox=\{`0 0 \$\{VIEW_W\} \$\{VIEW_H\}`\}/)
 })

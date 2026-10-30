@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { LocalizedText } from './model'
-import { anyLevel, CENTER, improvement, MAX_LABELS, MAX_LEVEL, RADIUS, radarItems, strongest, wedge, wrapName, type RadarItem } from './radar'
+import { anyLevel, CENTER, improvement, MAX_LABELS, MAX_LEVEL, RADIUS, radarItems, strongest, VIEW_H, VIEW_W, wedge, wrapName, type RadarItem } from './radar'
 import type { Skill } from './model'
 
 type T = (key: string) => string
@@ -20,7 +20,7 @@ export function RadarChart({ items, selected, onSelect, lang, t }: { items: Rada
   const labels = items.length <= MAX_LABELS
   const withLevel = items.filter(item => item.level !== null).map(item => `${name(item.skill, lang, t)} ${item.level}`).join(', ') || '—'
   const without = items.filter(item => item.level === null).map(item => name(item.skill, lang, t)).join(', ') || '—'
-  return <svg className="radar-svg" viewBox="0 0 560 520" role="group" aria-label={fmt(t('skill_map.radar_alt'), { n: items.length, with: withLevel, without })}>
+  return <svg className="radar-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} role="group" aria-label={fmt(t('skill_map.radar_alt'), { n: items.length, with: withLevel, without })}>
     {[1, 2, 3, 4].map(n => <g key={n}>
       <circle className="radar-ring" cx={CENTER.x} cy={CENTER.y} r={RADIUS * n / MAX_LEVEL} />
       <text className="radar-ring-label" x={CENTER.x + 4} y={CENTER.y - RADIUS * n / MAX_LEVEL - 3} aria-hidden="true">{n}</text>
