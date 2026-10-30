@@ -2,6 +2,24 @@
 
 [Dev-Codex] · 30-oct-2026. **Entrega parcial del plan completo, para revisión de código; ES-38 sigue En DEV.**
 
+## Revisión de acceso aplicada después del feedback visual
+
+La versión inicial de acceso descrita en las mediciones históricas de abajo no es el diseño final. El usuario pidió revisarla; Jira 10682 registra padding de input en 0 y placeholder de poco contraste, además de una jerarquía visual insuficiente. La maqueta revisada (adjuntos 10032–10034) fue aprobada explícitamente y quedó registrada en 10685.
+
+Se aplica únicamente a acceso/registro: tarjeta de máximo 448 px, título Inter de 30 px/28 móvil, campo de 52 px con padding 12/14 px, acción principal y opción de crear cuenta secundaria. Utiliza la fuente local ya declarada como Elevation Landing Inter, sin nueva dependencia ni descarga. Los mensajes de sesión, validación y resultado siguen en el componente real; el handler, endpoints y selección de plan no cambian. La navegación administrativa no cambia con esta revisión.
+
+Textos aprobados ES/EN: Ingresar / Sign in, ¿Primera vez aquí? / First time here?, ¿Ya tienes cuenta? / Already have an account?; Crear cuenta y su traducción conservan la clave editable existente. Se conserva el formulario nativo, sus etiquetas/autocomplete y el bloqueo de acciones durante envío. El título y la acción secundaria ya no duplican el texto largo de ingreso.
+
+Verificación nueva en navegador: login y registro × ES/EN × 320/375/768/1440, 16 lecturas sin desborde. Padding computado 12px 14px; fuente local declarada en estilos; tarjeta 288 px a 320, 343 a 375 y 448 en escritorio. Contraste del placeholder **5.35:1** y borde **3.58:1** sobre el fondo del campo. No se toma la prueba antigua de contraste como prueba del placeholder: era una omisión que motivó esta corrección.
+
+API simulada: envío demorado 2.5 s dejó aria-busy=true y ambas acciones deshabilitadas; al fallar se conservaron correo/contraseña y se habilitaron acciones. Registro simulado 201 volvió a login, borró contraseña y mantuvo plan=7. No se crearon cuentas reales ni se llamó al proveedor. La primera apertura de la pestaña del harness agotó la espera; se verificó HTTP local 200 y una apertura nueva funcionó. No se atribuye ese intento como un resultado verde.
+
+Pruebas locales de la revisión: lint exit 0; suite completa 274/274 (31546.6843 ms) y repetición del subconjunto tras ampliar aserciones de título/acción secundaria 4/4. Build con tipos exit 0, 224 módulos, 3.62 s, CSS 170.69 kB/27.24 gzip y JS 1052.72 kB/281.46 gzip; conserva aviso de chunk >500 kB y PLUGIN_TIMINGS. Audit frontend exit 0, 0 vulnerabilidades. La repetición final de suite/lint y CI del nuevo commit se informan en Jira/PR con su resultado observado.
+
+Repetición final, con las aserciones ampliadas: lint sin errores/advertencias y 274/274, 19846.1438 ms, exit 0. El primer intento de esta repetición no pudo iniciar por un error del lanzador de Windows (CreateProcessSecurityEnvironment); se repitió fuera del sandbox. No fue un fallo de la aplicación ni se omitieron pruebas para obtener el resultado.
+
+Las capturas nuevas de la aplicación (Jira 10035 escritorio/10036 móvil) se distinguen de las maquetas del visor. Sin cambios de backend, modelo de datos, producción o alcance integral de la HU. Los resultados previos siguientes se mantienen como historial y no como aceptación visual del diseño rechazado.
+
 ## Diseño aprobado y base
 
 Plan completo aprobado: Jira 10499/10500. Maquetas actualizadas: 10593, adjuntos 10025–10028. Aprobación explícita de acceso y navegación administrativa: 10594. Reanudación: 10676. Se implementa exclusivamente ese tramo. Inicio sigue preliminar y requiere presentar su composición integrada antes de modificarlo.

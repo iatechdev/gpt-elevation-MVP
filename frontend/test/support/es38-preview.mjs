@@ -28,6 +28,7 @@ const server = await createServer({ root, server: { host: '127.0.0.1', port, str
       if (url.pathname === '/api/login' || url.pathname === '/api/register') {
         // Deliberately no real credentials, database, providers or token signing.
         for await (const chunk of req) void chunk
+        if (mode === 'saving') await new Promise(resolve => setTimeout(resolve, 2500))
         if (mode === 'error') return json(503, {})
         if (mode === 'locked') return json(423, { locked: true })
         if (url.pathname.endsWith('/register')) return json(201, {})

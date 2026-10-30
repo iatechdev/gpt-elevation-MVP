@@ -55,12 +55,15 @@ const render = (component, entry, props) => {
 test('ES-38: login/register have visible associated labels and password autocomplete in ES and EN', () => {
   status = 'anonymous'
   for (lang of ['es', 'en']) {
-    const signIn = render(LoginPage, '/login?plan=basic')
+    const signIn = render(LoginPage, '/login?plan=7')
+    assert.match(signIn, new RegExp(`<h1 id="access-title">${lang === 'es' ? 'Ingresar' : 'Sign in'}</h1>`))
     assert.match(signIn, /for="access-email"/)
     assert.match(signIn, /for="access-password"/)
     assert.doesNotMatch(signIn, /id="access-name"/)
     assert.match(signIn, /autocomplete="current-password"/i)
-    const register = render(LoginPage, '/login?mode=register&plan=basic')
+    // The secondary action is outside the form and cannot become a submit button.
+    assert.match(signIn, /<\/form><div class="access-secondary"><p>/)
+    const register = render(LoginPage, '/login?mode=register&plan=7')
     assert.match(register, /for="access-name"/)
     assert.match(register, /autocomplete="new-password"/i)
     assert.match(register, /aria-controls="access-password"/)
@@ -71,7 +74,7 @@ test('ES-38: login/register have visible associated labels and password autocomp
 test('ES-38: pending session hides form; expired and unavailable sessions have distinct accessible states', () => {
   lang = 'es'
   status = 'checking'
-  assert.doesNotMatch(render(LoginPage, '/login'), /<form/)
+  assert.doesNotMatch(render(LoginPage, '/login'), /<form|class="access-secondary"/)
   status = 'invalid'
   const expired = render(LoginPage, '/login')
   assert.match(expired, /role="status"/)

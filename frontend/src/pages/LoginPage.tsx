@@ -94,9 +94,9 @@ export function LoginPage() {
         </div>
       </header>
       <main id="access-main" className="access-main" tabIndex={-1}>
+        <section className="elv-card access-card" aria-labelledby="access-title">
         <header className="access-heading">
-          <div className="access-rule" aria-hidden="true" />
-          <h1>{isRegistering ? text('landing.access.register') : t('btn_login')}</h1>
+          <h1 id="access-title">{isRegistering ? text('landing.access.register') : copy.signIn}</h1>
           <p>{t('login_subtitle')}</p>
         </header>
         {entry.result.status === 'checking' && <p role="status" className="access-notice">{text('landing.access.checking')}</p>}
@@ -105,7 +105,7 @@ export function LoginPage() {
           <p>{text('landing.access.unavailable')}</p>
           <button type="button" className="elv-btn elv-btn-outline" onClick={entry.retry}>{text('landing.access.retry')}</button>
         </div>}
-        {entry.result.status !== 'checking' &&
+        {entry.result.status !== 'checking' && <>
         <form onSubmit={handleAuth} className="access-form" aria-busy={submitting}>
           {isRegistering && <div>
             <label htmlFor="access-name">{text('landing.access.name')}</label>
@@ -135,16 +135,21 @@ export function LoginPage() {
           <button type="submit" className="elv-btn elv-btn-primary" disabled={isLocked || submitting}>
             {isLocked ? text('landing.access.locked') : submitting ? text('landing.access.submitting') : isRegistering ? text('landing.access.register') : t('btn_login')}
           </button>
-          <button type="button" className="elv-btn elv-btn-outline" disabled={submitting}
+        </form>
+        <div className="access-secondary">
+          <p>{isRegistering ? copy.alreadyRegistered : copy.firstTime}</p>
+          <button type="button" disabled={submitting}
             onClick={() => {
               setParams(accessParams(!isRegistering, selectedPlan), { replace: true })
               setAuthMessage(null)
               setPassword('')
               setShowPassword(false)
             }}>
-            {isRegistering ? t('link_login') : text('landing.access.register_link')}
+            {isRegistering ? copy.signIn : text('landing.access.register')}
           </button>
-        </form>}
+        </div>
+        </>}
+        </section>
       </main>
     </div>
   )
