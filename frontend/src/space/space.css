@@ -35,7 +35,7 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .space-scope label { display: block; margin: 12px 0; }
 .space-scope .elv-input, .space-scope .elv-textarea { display: block; width: 100%; max-width: 100%; background: white; color: var(--color-base-content); border: 1px solid var(--color-base-300); padding: 12px; font: inherit; border-radius: .65rem; }
 .space-scope .elv-textarea { min-height: 180px; resize: vertical; }
-.space-scope .space-message { min-height: 88px; }
+.space-scope .space-message { min-height: 96px; max-height: 14rem; field-sizing: content; }
 .space-private-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .space-error { color: var(--color-error); } .space-warning { color: var(--color-warning); }
 .space-note { font-size: 14px; } .space-context { max-height: 340px; overflow-y: auto; }
@@ -74,3 +74,37 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 
 
 @media (max-width: 479px) { .space-menu-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .space-menu summary { min-width: 44px; justify-content: center; } .space-tabs a { letter-spacing: .06em; padding-inline: 6px; } }
+
+/* ES-123 — chat: la conversación ocupa el alto restante entre la cabecera y la caja de mensaje; el selector del diario va plegado */
+.chat-shell { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.chat-main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; width: 100%; max-width: 760px; margin: 0 auto; padding: 60px 1.5rem 0; box-sizing: border-box; }
+.chat-top { flex: 0 0 auto; }
+.chat-top .space-chatbar { padding: 8px 0; margin-bottom: 8px; gap: 6px; }
+.chat-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 8px 0 16px; }
+.chat-input-bar { flex: 0 0 auto; max-height: 70dvh; overflow-y: auto; border-top: 1px solid var(--color-base-300, #E4E2DC); background: #FAFAF9; padding: 8px 0 max(12px, env(safe-area-inset-bottom, 0px)); }
+.chat-composer { display: grid; gap: 8px; width: 100%; }
+.chat-composer-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.chat-composer .chat-status { margin: 0; }
+.chat-composer .chat-status:empty { display: none; }
+.chat-composer-row { display: flex; align-items: flex-end; gap: 12px; }
+.chat-composer-row label { flex: 1 1 auto; min-width: 0; margin: 0; }
+.chat-diary-panel { margin: 0; padding: 12px; max-height: 30dvh; overflow-y: auto; }
+.chat-diary-panel fieldset { border: 0; padding: 0; margin: 0 0 8px; min-width: 0; }
+.chat-diary-panel .space-context { max-height: none; overflow: visible; }
+.chat-diary-help { margin-bottom: 8px; }
+.chat-diary-help summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+@media (max-width: 639px) {
+  .chat-main { padding-inline: 16px; }
+  .chat-composer-row { flex-direction: column; align-items: stretch; }
+  .chat-composer-row .elv-btn { width: 100%; }
+  .space-scope .space-message { min-height: 64px; }
+  .chat-diary-panel { max-height: 35dvh; }
+}
+/* ES-123 — pantallas bajas (móvil pequeño, teclado abierto): la cabecera de la conversación se acota con scroll propio y la caja se compacta para que la conversación conserve espacio */
+@media (max-height: 700px) {
+  .chat-top { max-height: 22dvh; overflow-y: auto; }
+  .chat-input-bar { max-height: 50dvh; }
+  .space-scope .space-message { min-height: 48px; }
+  .chat-composer-row { flex-direction: row; align-items: flex-end; }
+  .chat-composer-row .elv-btn { width: auto; }
+}

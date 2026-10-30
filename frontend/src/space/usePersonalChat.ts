@@ -97,6 +97,6 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     try { await post(intent) } finally { if (current()) setBusy(false); lock.current = false }
   }
   const canLeave = () => expired || (!input && !intent) || window.confirm(c.leave)
-  return { messages, input, setInput, busy, expired, loaded, notice, selected, setSelected, entries, picker, pickerLoading, pickerError, intent, retryable, send, check, retry, loadPicker, reload, canLeave, c }
+  return { messages, input, setInput, busy, expired, loaded, notice, selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, check, retry, loadPicker, reload, canLeave, c }
 }
 export type PersonalChat = ReturnType<typeof usePersonalChat>

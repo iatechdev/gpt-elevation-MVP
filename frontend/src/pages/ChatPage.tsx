@@ -6,6 +6,7 @@ import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
+import { copy } from '../space/copy'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -282,7 +283,7 @@ export function ChatPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
+    <div className="chat-shell" style={{ background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
 
       {/* Header */}
       <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -303,17 +304,29 @@ export function ChatPage() {
                 </svg>
               </button>
             )}
+            {/* HU-052 — Progress link (ES-123: en la cabecera y con etiqueta; antes era un ícono suelto dentro de la conversación) */}
+            <button
+              onClick={() => chat.canLeave() && navigate('/app/progress')}
+              title={copy[lang].progress}
+              aria-label={copy[lang].progress}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </button>
             {/* HU-051 — Recommendations toggle */}
             <button
               onClick={() => setShowRecs(!showRecs)}
               title={t('rec_title')}
+              aria-label={t('rec_title')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: showRecs ? '#6B7D5C' : '#A8A29E', display: 'flex', padding: 4 }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </button>
-            <button onClick={() => setShowCheckout(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}>
+            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
               </svg>
@@ -323,9 +336,13 @@ export function ChatPage() {
       </header>
 
       {/* Mensajes */}
-      <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 300, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
-        <SpaceNav /><ChatBar sent={messages.length} /><div id="space-main" tabIndex={-1} />
-        {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
+      {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
+      <main className="chat-main">
+        <div className="chat-top">
+          <SpaceNav /><ChatBar sent={messages.length} /><div id="space-main" tabIndex={-1} />
+          {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
+        </div>
+        <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {messages.map((msg, i) => (
@@ -350,16 +367,6 @@ export function ChatPage() {
               <p style={{ fontSize: '0.95rem', color: '#5E5E5A', margin: 0 }}>{t('chat_thinking')}</p>
             </div>
           )}
-            {/* HU-052 — Progress link */}
-            <button
-              onClick={() => chat.canLeave() && navigate('/app/progress')}
-              title={lang === 'es' ? 'Mi progreso' : 'My progress'}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </button>
           <ChatContext chat={chat} />
           {/* HU-051 — Wellness Recommendations */}
           {showRecs && (
@@ -413,25 +420,22 @@ export function ChatPage() {
 
           <div ref={chatEndRef} />
         </div>
-      </main>
-
-      {/* Input */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', zIndex: 40, background: 'rgba(250,250,249,0.96)', backdropFilter: 'blur(16px)', borderTop: '1px solid #E4E2DC' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
+        </div>
+        <div className="chat-input-bar">
           <ChatInput chat={chat} />
         </div>
-      </div>
+      </main>
 
       {/* HU-021 + HU-022 — Modal check-out + estrellas */}
       {showCheckout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>CHECK-OUT</p>
+            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>{t('checkout_label')}</p>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
-              {lang === 'es' ? '¿Cómo te vas?' : 'How are you leaving?'}
+              {t('checkout_title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: '#78716C', margin: 0, textAlign: 'center' }}>
-              {lang === 'es' ? 'Tomá un momento antes de cerrar.' : 'Take a moment before closing.'}
+              {t('checkout_hint')}
             </p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               {CHECKOUT_MOODS.map(m => (
@@ -450,7 +454,7 @@ export function ChatPage() {
             {checkoutMood !== null && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                 <p style={{ fontSize: '0.8rem', color: '#78716C', margin: 0 }}>
-                  {lang === 'es' ? '¿Cómo fue la conversación?' : 'How was the conversation?'}
+                  {t('checkout_rating')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {[1, 2, 3, 4, 5].map(star => (
@@ -465,7 +469,7 @@ export function ChatPage() {
                 </div>
                 {starRating && (
                   <p style={{ fontSize: '0.75rem', color: '#A8A29E', margin: 0 }}>
-                    {['', '😞 Muy mala', '😐 Regular', '🙂 Buena', '😊 Muy buena', '✨ Excelente'][starRating]}
+                    {['', t('star_1'), t('star_2'), t('star_3'), t('star_4'), t('star_5')][starRating]}
                   </p>
                 )}
               </div>
@@ -482,11 +486,11 @@ export function ChatPage() {
                   cursor: checkoutMood !== null ? 'pointer' : 'not-allowed',
                   fontFamily: 'Inter, sans-serif',
                 }}>
-                {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                {checkoutSaving ? '...' : t('checkout_signout')}
               </button>
               <button onClick={handleLogout}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                {lang === 'es' ? 'Saltar' : 'Skip'}
+                {t('checkout_skip')}
               </button>
             </div>
           </div>

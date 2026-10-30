@@ -28,6 +28,8 @@ export const copy = {
     usageError: 'No pudimos consultar tu uso de IA. Reintentar', usageLoading: 'Consultando tu uso de IA…',
     paused: 'Conversación en pausa. No se envía nada al acompañante hasta que la retomes. Tu historial sigue aquí.',
     exhausted: 'Llegaste al límite de este periodo. Puedes seguir escribiendo en tu diario; la conversación se reactiva el {date}.', tabs: 'Secciones de Mi espacio',
+    // ES-123 — chat: selector del diario plegable, «Mi progreso» y cierre de sesión con etiqueta
+    diaryNone: 'Diario: sin seleccionar', diaryCount: 'Diario: {n}/3', howTitle: 'Cómo se usa tu diario en el chat', close: 'Cerrar', progress: 'Mi progreso', signOut: 'Cerrar sesión',
   },
   en: {
     space: 'My space', tools: 'My tools', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: 'Skip to content',
@@ -58,5 +60,7 @@ export const copy = {
     usageError: 'We could not check your AI use. Retry', usageLoading: 'Checking your AI use…',
     paused: 'Conversation paused. Nothing is sent to the companion until you resume. Your history stays here.',
     exhausted: 'You reached this period’s limit. You can keep writing in your journal; the conversation reopens on {date}.', tabs: 'My space sections',
+    // ES-123 — chat: selector del diario plegable, «Mi progreso» y cierre de sesión con etiqueta
+    diaryNone: 'Journal: none selected', diaryCount: 'Journal: {n}/3', howTitle: 'How your journal is used in chat', close: 'Close', progress: 'My progress', signOut: 'Sign out',
   },
 } as const
