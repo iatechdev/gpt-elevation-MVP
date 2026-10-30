@@ -28,7 +28,7 @@ const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
 const HISTORY_LIMIT = 20;
-const CHAT_MAX_TOKENS = 1500; // ES43-QA-01: con 1000 una respuesta normal (≈800) quedaba al límite; el presupuesto reserva este valor por llamada
+const CHAT_MAX_TOKENS = 2000; // ES43-QA-01: con 1500 y esfuerzo bajo 2 de 11 turnos largos aún cerraban por max_tokens (salida máxima ≈1479); el presupuesto reserva este valor por llamada
 // ES43-QA-01: Sonnet 5.5 razona por defecto (esfuerzo alto) y esos tokens cuentan contra max_tokens, así que el chat se cortaba con poco texto visible.
 // Esfuerzo bajo = razonamiento corto; el tope sigue en CHAT_MAX_TOKENS y no se recorta el texto ni se toca el prompt.
 const CHAT_OUTPUT_CONFIG = { effort: 'low' };
