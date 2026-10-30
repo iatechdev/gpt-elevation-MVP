@@ -17,7 +17,7 @@ const ChatTurn = require('../ChatTurn');
 const DiaryEntry = require('../DiaryEntry');
 const anthropic  = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
-const { textOf, completeText } = require('../utils/claudeText');
+const { textOf } = require('../utils/claudeText');
 const { encriptar, encriptarV2, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
@@ -238,7 +238,7 @@ ${manifest}
         userId, kind: 'chat', requestId: requestId ?? null,
         body: { model: anthropic.MODEL, max_tokens: CHAT_MAX_TOKENS, system: systemPrompt, messages: historial },
       });
-      respuestaIA = completeText(textOf(msg), msg.stop_reason); // ES43-QA-01: nunca texto cortado a mitad de frase
+      respuestaIA = textOf(msg);
       if (!respuestaIA.trim()) throw new Error('Respuesta vacía del proveedor.');
     } catch (error) {
       // Presupuesto agotado o sin configurar (V-13): no se llama al proveedor, se conserva el avance y no se amplía solo.
