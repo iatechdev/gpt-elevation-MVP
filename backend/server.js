@@ -98,6 +98,7 @@ app.use('/api/career-context',  verificarToken, require('./routes/careerContext'
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
 app.use('/api/skill-analysis',  verificarToken, require('./routes/skillAnalysis'));  // ES-89 — análisis de IA del contexto profesional (worker)
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
+app.use('/api/insights',        verificarToken, require('./routes/insights'));       // ES-121 — insights de El Puente (propuestas de la IA)
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
 app.use('/api/routes',          verificarToken, require('./routes/routes'));         // ES-32 — rutas de la propia persona
 app.use('/api/experiments',      verificarToken, require('./routes/careerPlan').experiments); // ES-33 — recursos propios

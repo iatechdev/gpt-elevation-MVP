@@ -162,5 +162,11 @@ test('ES-20 diario: ninguna otra ruta lee el diario (administrador, terapeuta, f
   // Their ownership, blocked-session and no-professional-export behavior is tested via HTTP/SQL.
   // ES-25: utils/careerContext.js solo comprueba que el origen indicado es de la persona (id y marca de tiempo, nunca el contenido);
   // test/es-25-bridge.test.cjs verifica que no pide `content` y que ningún texto del diario cruza al motor.
-  assert.deepEqual(readersInHelpers, ['utils/careerContext.js', 'utils/personalData.js']);
+  // ES-121: utils/insightProposal.js es el ÚNICO lector con fin de análisis y solo lee el diario de quien lo pide, tras comprobar el consentimiento
+  // propio `insights_diary` dentro de withConsent, descifra en memoria, excluye lo marcado por el detector de riesgo y no escribe ni registra nada
+  // (test/es-121-insights.test.cjs lo comprueba por comportamiento y por código).
+  assert.deepEqual(readersInHelpers, ['utils/careerContext.js', 'utils/insightProposal.js', 'utils/personalData.js']);
+  const insight = fs.readFileSync(path.resolve(__dirname, '..', 'utils', 'insightProposal.js'), 'utf8');
+  assert.match(insight, /consent\.withConsent\(userId, SOURCES\[source\]/);
+  assert.match(insight, /diary: 'insights_diary'/);
 });
