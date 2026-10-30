@@ -530,6 +530,9 @@ test('ES-43 chat: pide 1500 tokens como máximo; con stop_reason max_tokens el t
   const response = await post(request, { message: 'uno', requestId: 'req-cut-0000001' });
   assert.equal(response.status, 200);
   assert.equal(provider.calls[0].body.max_tokens, 1500);
+  assert.deepEqual(provider.calls[0].body.output_config, { effort: 'low' }); // razonamiento corto: no gasta el tope en pensar
+  assert.equal(provider.calls[0].body.thinking, undefined); // sin parámetros que el modelo rechace
+  assert.equal(provider.calls[0].body.temperature, undefined);
   assert.equal(response.body.reply, 'Empieza por algo pequeño. Habla con dos personas y anota qué les sor'); // sin recorte (decisión de Mauricio)
   assert.deepEqual([store.usages[0].stopReason, store.usages[0].outputTokens, store.usages[0].status], ['max_tokens', 1500, 'completed']);
   assert.equal(store.used(A, month()), 1600); // se cobra lo usado, no la reserva
