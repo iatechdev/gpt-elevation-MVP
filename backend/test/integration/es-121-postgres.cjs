@@ -39,7 +39,7 @@ test('ES-121 PostgreSQL: insights desde chat y diario cifrados, consentimiento p
   const anthropicPath = require.resolve('../../utils/anthropic');
   require.cache[anthropicPath] = { id: anthropicPath, filename: anthropicPath, loaded: true, exports: stub };
 
-  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'AiBudgetCounter', 'AiUsage', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'DeletionRequest', 'ParticipantResume', 'PricingPlan', 'User', 'AiJob']) require(`../../${name}`);
+  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'AiBudgetCounter', 'AiUsage', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'DeletionRequest', 'ParticipantResume', 'PricingPlan', 'User', 'AiJob', 'SkillCandidate']) require(`../../${name}`);
   await sequelize.sync();
   const consent = require('../../utils/consent');
   const catalog = require('../../utils/skillCatalog');
