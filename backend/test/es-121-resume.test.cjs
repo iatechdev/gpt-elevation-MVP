@@ -8,6 +8,15 @@ const { install } = require('./es-29-store.cjs');
 const { makeTextPdf, makeScannedPdf, makeCorruptPdf } = require('./support/pdfFixtures.cjs');
 const { encriptarBuffer } = require('../utils/crypto');
 
+// Se mide cuántas extracciones de PDF corren a la vez (debe cargarse ANTES de que la aplicación importe el módulo).
+const pdfModule = require('../utils/resumePdf');
+const realExtract = pdfModule.extractResumeText;
+const extraction = { active: 0, max: 0, total: 0 };
+pdfModule.extractResumeText = async (buffer) => {
+  extraction.active += 1; extraction.total += 1; extraction.max = Math.max(extraction.max, extraction.active);
+  try { await new Promise((resolve) => setTimeout(resolve, 15)); return await realExtract(buffer); } finally { extraction.active -= 1; }
+};
+
 const U = { role: 'user', id: 101 };
 const V = { role: 'user', id: 202 };
 let counter = 0;
@@ -143,4 +152,17 @@ test('ES-121 hoja de vida: un insight con origen de hoja de vida se autoriza con
   const later = (await request('GET', '/api/career-context', U)).body.active;
   assert.equal(later.needsReview, true);
   assert.equal(later.status, 'active');
+});
+
+test('ES-121 hoja de vida (QA ES121R-QA-01): las extracciones de PDF van de una en una y todas las propuestas simultáneas terminan', async (t) => {
+  const { calls, provider, mine } = setup();
+  const request = await startApp(t);
+  await put(request, U, 'insights_resume');
+  provider.out = [insight(mine.id)];
+  extraction.max = 0; extraction.total = 0;
+  const results = await Promise.all(Array.from({ length: 8 }, () => ask(request, U, { sources: ['resume'] })));
+  assert.deepEqual(results.map((r) => r.status), Array(8).fill(200), JSON.stringify(results.map((r) => r.body.code)));
+  assert.equal(extraction.total, 8);
+  assert.equal(extraction.max, 1); // nunca dos extracciones a la vez
+  assert.equal(calls.length, 8);
 });

@@ -91,11 +91,19 @@ async function readResume(userId, resumeId, transaction) {
   if (!row) { if (resumeId) throw notFound(); return []; }
   return [[row.id, desencriptarBuffer(Buffer.from(row.data))]];
 }
+// ES121R-QA-01: extraer el texto de un PDF gasta CPU en el proceso principal. Con N propuestas a la vez se apilaban y quien solo lee esperaba cientos de ms.
+// Ahora se hacen UNA a la vez y cada una cede el turno al resto de la cola de eventos antes de empezar: una espectadora espera, como máximo, una extracción.
+let extractionTail = Promise.resolve();
+function oneAtATime(job) {
+  const run = extractionTail.then(() => new Promise((resolve) => setImmediate(resolve))).then(job);
+  extractionTail = run.catch(() => {});
+  return run;
+}
 // Mismo texto depurado (sin contacto) que ve el análisis de ES-109. Un PDF ilegible o con contacto restante simplemente no sirve como fuente.
 async function resumeText([id, buffer]) {
   try {
     checkResumeFile(buffer);
-    const { text } = await extractResumeText(buffer);
+    const { text } = await oneAtATime(() => extractResumeText(buffer));
     const cleaned = clean(sanitizeResumeText(text).text, 'resume');
     return [id, cleaned && !detectRisk(cleaned).level ? cleaned : ''];
   } catch (error) {
