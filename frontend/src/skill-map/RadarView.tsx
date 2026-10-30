@@ -55,8 +55,8 @@ export function RadarLegend({ t }: { t: T }) {
 }
 
 /** Pantalla completa del radar: gráfico, puntos fuertes, un punto a mejorar (con criterio real del catálogo) y lista de texto. */
-export function RadarBoard({ skills, selected, onSelect, onRegister, lang, t }: {
-  skills: readonly Skill[]; selected: string | null; onSelect: (key: string) => void; onRegister: (key: string) => void; lang: Lang; t: T
+export function RadarBoard({ skills, selected, onSelect, onRegister, onAnalyze, lang, t }: {
+  skills: readonly Skill[]; selected: string | null; onSelect: (key: string) => void; onRegister: (key: string) => void; onAnalyze?: () => void; lang: Lang; t: T
 }) {
   const items = radarItems(skills)
   const top = strongest(items), next = improvement(items), some = anyLevel(items)
@@ -65,6 +65,7 @@ export function RadarBoard({ skills, selected, onSelect, onRegister, lang, t }: 
       <h2 id="radar-title">{t('skill_map.radar_title')}</h2>
       <RadarChart items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} />
       <RadarLegend t={t} />
+      {onAnalyze && <button type="button" className="elv-btn radar-analyze" onClick={onAnalyze}>{t('skill_map.ai_open')}</button>}
     </section>
     <div className="radar-side">
       {!some ? <section className="elv-card skill-map-card radar-card radar-empty" role="status" aria-labelledby="radar-empty-title">

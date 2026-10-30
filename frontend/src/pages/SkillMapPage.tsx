@@ -5,6 +5,7 @@ import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
 import type { SkillMap } from '../skill-map/model'
 import { MapGuide } from '../skill-map/MapAccess'
+import { AiAnalysisPanel } from '../skill-map/AiAnalysisPanel'
 import { RadarBoard } from '../skill-map/RadarView'
 import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
 import { noLevelAnywhere } from '../skill-map/status'
@@ -24,6 +25,8 @@ export function SkillMapPage() {
   const [selected, setSelected] = useState<string | null>(null)
   const [listView, setListView] = useState(false)
   const [view, setView] = useState<'radar' | 'territories'>('radar')
+  const [ai, setAi] = useState<string[] | null>(null)
+  const aiRef = useRef<HTMLDivElement>(null)
   const [bridge, setBridge] = useState<BridgeStatus | 'loading'>('loading')
   const [revoke, setRevoke] = useState<Revoke>('idle')
   const [saved, setSaved] = useState('')
@@ -65,12 +68,13 @@ export function SkillMapPage() {
     window.setTimeout(() => detailRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0)
   }
   const register = (key: string) => { pick(key); window.setTimeout(() => detailRef.current?.focus(), 0) }
-  const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
-  // QA H-86-03: al revocar, el servidor retira lo derivado del chat; se vuelve a leer el mapa SIN pasar por «cargando» para no perder el aviso ni el foco.
+  const openAi = (keys: string[]) => { setAi(keys); window.setTimeout(() => aiRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0) }
+  // Se vuelve a leer el mapa SIN pasar por «cargando» tras guardar propuestas de la IA (para no desmontar el panel con el resultado) y tras «Revocar todos» (QA H-86-03).
   const reloadMap = async () => {
     const token = readToken(); if (!token) return
-    try { const next = await readSkillMap({ baseUrl: backend, token }); if (readToken() === token) setState({ status: 'ready', map: next, token }) } catch { /* «Actualizar mapa» lo reintenta */ }
+    try { const next = await readSkillMap({ baseUrl: backend, token }); if (readToken() === token) setState({ status: 'ready', map: next, token }) } catch { /* el siguiente «Actualizar mapa» lo reintenta */ }
   }
+  const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
   const confirm = async () => {
     setRevoke('saving')
     try { await revokeBridge({ baseUrl: backend, token: readToken() }); setBridge('revoked'); setRevoke('done'); void reloadMap() }
@@ -136,7 +140,7 @@ export function SkillMapPage() {
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
           {noLevelAnywhere(map.skills) && <MapGuide />}
-          {view === 'radar' ? <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} lang={lang} t={t} />
+          {view === 'radar' ? <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} onAnalyze={() => openAi(map.skills.slice(0, 8).map(item => item.skillKey))} lang={lang} t={t} />
             : <>
               {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
               <div className={`skill-map-board${listView || noTerritories ? ' is-list' : ''}`}>
@@ -147,8 +151,10 @@ export function SkillMapPage() {
               </div>
               {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
             </>}
+          {ai && state.status === 'ready' && <div ref={aiRef}><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
+            onSaved={reloadMap} onClose={() => setAi(null)} /></div>}
           <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
-            {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t}
+            {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} onAnalyze={key => openAi([key])}
               self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></>
               : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
           </div>
