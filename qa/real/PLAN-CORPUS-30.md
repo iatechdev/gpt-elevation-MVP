@@ -30,3 +30,10 @@ Criterio de salida (PRD y puertas por corte): **0 violaciones críticas y al men
 
 ## Dependencias y no verificado
 Casos adversos y escenarios sensibles del especialista (ES-46, ES-24), guía de tono (ES-17), recursos de emergencia por país definidos por el especialista (no se inventan números), versión del prompt congelada. No se podrá verificar con este corpus: carga, producción, accesibilidad con lector de pantalla ni calidad a largo plazo (conversaciones de muchas sesiones).
+
+## Versión reducida (decisión de Mauricio, 30-oct): gastar pocos tokens en staging
+- **No se corren más llamadas reales por ahora.** La muestra de 6 casos ya se hizo (≈33.000 tokens en total, de ellos ≈39.600 por cada tres turnos de chat; ver `qa/evidence/ES-43-muestra-real`).
+- Cada turno de chat cuesta ≈13.000 tokens, así que 30 casos reales ≈ 390.000 tokens. La versión reducida usa **8 casos reales** (uno por categoría A–G y uno extra en inglés), ≈105.000 tokens repartidos entre cuentas distintas para no agotar el tope de ninguna.
+- Los otros 22 casos se verifican **sin gastar**: proveedor simulado y comprobaciones de patrones en el servidor (filtros de salida, riesgo, inyección, privacidad), que ya cubren la lógica del producto; lo que no se podrá afirmar sin llamadas reales es el tono y la pertinencia del modelo en esos casos.
+- El tope de IA de **producción** se decide aparte del de staging; las cifras de consumo medidas en staging sirven para dimensionar producción, no son un límite de producción.
+- Posible ahorro de producto (propuesta, no implementada): el prompt del sistema pesa ≈12.000 tokens por turno; usar caché de prompt del proveedor reduciría el costo por turno. Decisión de Mauricio.
