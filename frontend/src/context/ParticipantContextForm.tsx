@@ -10,6 +10,7 @@ import { ResumeStarter } from './resume/ResumeStarter'
 import { ContextExtras, ScalarMeta } from './resume/ContextExtras'
 import { applySuggestions, cleanExtras, countSuggested, emptyFlags, removeAllSuggested, summarize, type ExtrasKey, type Flags, type Pending, type ScalarKey } from './resume/resumeLogic'
 import { fill } from './resume/resumeCopy'
+import { minutesToHours, parseHours } from './availability'
 
 const HISTORY_PATH = '/app/context/resumes'
 const EXTRAS_KEYS: ExtrasKey[] = ['experience', 'education', 'declaredSkills', 'languages', 'sector', 'totalYearsExperience']
@@ -23,6 +24,10 @@ export function Onboarding() {
   const [snapshot, setSnapshot] = useState<ContextSnapshot | null>(null)
   const [draft, setDraft] = useState<ParticipantContext>({ ...emptyContext })
   const [entry, setEntry] = useState<Entry>('')
+  // ES-122: la persona escribe HORAS por semana; el borrador y el servidor siguen en minutos. El texto se conserva tal cual mientras se escribe.
+  const [hoursText, setHoursText] = useState('')
+  // Si los minutos del borrador cambian por otra vía (carga, propuesta de la hoja de vida), el texto se actualiza; lo que la persona escribe y es coherente no se toca.
+  useEffect(() => { setHoursText(current => { const parsed = parseHours(current); return parsed.valid && parsed.minutes === draft.availabilityMinutesPerWeek ? current : minutesToHours(draft.availabilityMinutesPerWeek) }) }, [draft.availabilityMinutesPerWeek])
   const [message, setMessage] = useState('')
   const [errors, setErrors] = useState<string[]>([])
   const [loadAttempt, setLoadAttempt] = useState(0)
@@ -98,7 +103,7 @@ export function Onboarding() {
     if (!snapshot || phase !== 'ready' || conflict) return
     const invalid = action === 'continue' ? [...(!draft.preferredLanguage ? ['preferredLanguage'] : []), ...(!entry ? ['entry'] : [])] : []
     const minutes = draft.availabilityMinutesPerWeek
-    if (minutes !== null && (!Number.isInteger(minutes) || minutes < 0 || minutes > 10080)) invalid.push('availabilityMinutesPerWeek')
+    if (!parseHours(hoursText).valid || (minutes !== null && (!Number.isInteger(minutes) || minutes < 0 || minutes > 10080))) invalid.push('availabilityMinutesPerWeek')
     if (invalid.length) { setErrors(invalid); setMessage('context_invalid'); return }
     const cleaned = cleanExtras(draft)
     if (cleaned.errors.length) { setErrors(cleaned.errors); setMessage('context_invalid'); setDetailsOpen(true); return }
@@ -186,9 +191,9 @@ export function Onboarding() {
                       onRemove={() => removeScalar(key)} onUse={() => resolvePending(key, true)} onIgnore={() => resolvePending(key, false)} />}
                   </div>)}
                   <div className="context-field"><label htmlFor="availabilityMinutesPerWeek">{t('context_availabilityMinutesPerWeek')}</label>
-                    <input id="availabilityMinutesPerWeek" type="number" className="elv-input" disabled={busy} min={0} max={10080} step={1} value={draft.availabilityMinutesPerWeek ?? ''}
+                    <input id="availabilityMinutesPerWeek" type="text" inputMode="decimal" autoComplete="off" className="elv-input" disabled={busy} value={hoursText}
                       aria-invalid={errors.includes('availabilityMinutesPerWeek')} aria-describedby={`minutes-help${errors.includes('availabilityMinutesPerWeek') ? ' availabilityMinutesPerWeek-error' : ''}`}
-                      onChange={event => change('availabilityMinutesPerWeek', event.target.value === '' ? null : event.target.valueAsNumber)} />
+                      onChange={event => { const text = event.target.value; setHoursText(text); const parsed = parseHours(text); if (parsed.valid) change('availabilityMinutesPerWeek', parsed.minutes) }} />
                     <small id="minutes-help">{t('context_minutes_help')}</small>{fieldError('availabilityMinutesPerWeek')}
                   </div>
                   <h3 className="rs-extras-title">{t('resume_extras_title')}</h3>
