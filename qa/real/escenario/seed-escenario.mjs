@@ -23,8 +23,9 @@ const PEOPLE = [
 ];
 const STAFF = [{ key: 'T1', slug: 'terapeuta1', name: 'Teo Terapeuta (vinculado a Lucía)', role: 'therapist' }, { key: 'T2', slug: 'terapeuta2', name: 'Tania Terapeuta (sin vínculos)', role: 'therapist' }];
 const ADMIN = { key: 'ADM', slug: 'admin', name: 'Ada Administradora', role: 'admin' };
-const accounts = {}; const mkEmail = slug => `qa-${slug}-${stamp}@example.test`;
-for (const p of [...PEOPLE, ADMIN]) { const a = { ...p, email: mkEmail(p.slug), password: pw() }; const r = await j('POST', '/api/register', { body: { name: a.name, email: a.email, password: a.password } }); log(`registro ${p.key}`, r.status === 201, 'status ' + r.status); accounts[p.key] = a; }
+const PHASE2 = E.QA_PHASE2 === '1'; const credFile = path.join(here, `credenciales-${ENV}.json`); const accounts = {}; const mkEmail = slug => `qa-${slug}-${stamp}@example.test`;
+if (PHASE2) { const saved = JSON.parse(fs.readFileSync(credFile, 'utf8')).cuentas; for (const [k, v] of Object.entries(saved)) accounts[k] = { key: k, name: v.nombre, email: v.email, password: v.password, role: v.rol === 'persona' ? undefined : v.rol }; }
+if (!PHASE2) for (const p of [...PEOPLE, ADMIN]) { const a = { ...p, email: mkEmail(p.slug), password: pw() }; const r = await j('POST', '/api/register', { body: { name: a.name, email: a.email, password: a.password } }); log(`registro ${p.key}`, r.status === 201, 'status ' + r.status); accounts[p.key] = a; }
 const login = async a => { let r = await j('POST', '/api/login', { body: { email: a.email, password: a.password } }); for (let i = 0; i < 3 && r.status === 429; i++) { await new Promise(x => setTimeout(x, 62000)); r = await j('POST', '/api/login', { body: { email: a.email, password: a.password } }); } a.token = r.json?.token ?? r.json?.accessToken ?? null; try { a.id = r.json?.user?.id ?? r.json?.id ?? JSON.parse(Buffer.from(a.token.split('.')[1], 'base64url').toString()).id ?? null; } catch { a.id = null; } return !!a.token; };
 
 // ── el administrador: ascenso (local por SQL; en staging lo hace Infra con una sola sentencia)
@@ -37,7 +38,7 @@ log('administrador con rol admin', adminOk, adminOk ? '' : 'pendiente de Infra')
 
 // ── terapeutas y vínculo (por la API de administración)
 if (adminOk) {
-  for (const s of STAFF) { const a = { ...s, email: mkEmail(s.slug), password: pw() }; const r = await j('POST', '/api/admin/usuarios', { t: accounts.ADM.token, body: { name: a.name, email: a.email, password: a.password, role: 'therapist' } }); log(`alta ${s.key}`, r.status === 201 || r.status === 200, 'status ' + r.status); accounts[s.key] = a; await login(a); }
+  for (const s of STAFF) { if (accounts[s.key]) continue; const a = { ...s, email: mkEmail(s.slug), password: pw() }; const r = await j('POST', '/api/admin/usuarios', { t: accounts.ADM.token, body: { name: a.name, email: a.email, password: a.password, role: 'therapist' } }); log(`alta ${s.key}`, r.status === 201 || r.status === 200, 'status ' + r.status); accounts[s.key] = a; await login(a); }
 }
 
 // ── catálogo de habilidades sintético (solo si el entorno no tiene uno publicado)
@@ -54,7 +55,7 @@ if (adminOk) {
 
 // ── datos de las personas (con su propia sesión)
 const ctxFor = (p) => p.empty ? null : ({ preferredLanguage: p.lang, residenceCountry: 'CO', targetMarket: 'CO', timeZone: 'America/Bogota', profession: p.key === 'P3' ? 'Project coordinator' : p.key === 'P2' ? 'Contador' : 'Docente de matemáticas', interests: p.key === 'P3' ? 'Planning, mentoring, team leadership' : 'Estadística, tableros, enseñar a otros', availabilityMinutesPerWeek: p.rich ? 480 : 240, careerGoal: p.key === 'P3' ? 'Lead a team formally' : 'Pasar a un trabajo con datos de forma gradual', careerConstraints: p.rich ? 'Poco tiempo entre semana' : '', sector: p.key === 'P3' ? 'Logistics' : 'Educación', totalYearsExperience: p.rich ? 12 : 8, experience: [], education: [], declaredSkills: [], languages: [] });
-for (const p of PEOPLE) {
+for (const p of (PHASE2 ? [] : PEOPLE)) {
   const a = accounts[p.key]; if (!a.token) continue; const c = ctxFor(p);
   if (c) { const g = await j('GET', '/api/user/context', { t: a.token }); const v = g.json?.version ?? g.json?.context?.version ?? 0; const r = await j('PUT', '/api/user/context', { t: a.token, body: { schemaVersion: 2, expectedVersion: Number.isInteger(v) ? v : 0, action: 'continue', context: c } }); log(`contexto ${p.key}`, r.status === 200, `status ${r.status} ${r.json?.error ?? ''} ${(r.json?.fields ?? []).join(',')}`); }
   if (p.rich) {
@@ -70,7 +71,7 @@ for (const p of PEOPLE) {
 // consentimiento para que el terapeuta vinculado vea lo permitido de Lucía
 if (accounts.T1?.id && accounts.P1.token) { const l = await j('PUT', `/api/admin/usuarios/${accounts.P1.id}/asignar-terapeuta`, { t: accounts.ADM.token, body: { therapistId: accounts.T1.id } }); const c = await j('PUT', '/api/consents/therapist_sharing', { t: accounts.P1.token, body: { status: 'granted' } }); log('vínculo T1 ↔ P1 y permiso therapist_sharing', l.status < 300 && c.status < 300, `${l.status}/${c.status}`); }
 // IA (solo local o con QA_SEED_AI=1): hoja de vida y un chat para Lucía
-if (SEED_AI && accounts.P1.token && E.QA_SUT) {
+if (!PHASE2 && SEED_AI && accounts.P1.token && E.QA_SUT) {
   const req = createRequire(path.join(E.QA_SUT, 'backend', 'package.json')); const fx = req(path.join(E.QA_SUT, 'backend', 'test', 'support', 'pdfFixtures.cjs')); await j('PUT', '/api/consents/resume_ai_reading', { t: accounts.P1.token, body: { status: 'granted' } });
   const fd = new FormData(); fd.append('requestId', randomUUID()); fd.append('cv', new Blob([fx.makeTextPdf(['Lucía Prueba - Docente de matemáticas', 'Correo: lucia.prueba@example.test', 'Doce años de docencia en secundaria.', 'Preparé tableros mensuales con notas de los cursos.', 'Habilidades: Excel, estadística básica, comunicación'])], { type: 'application/pdf' }), 'cv.pdf'); const up = await j('POST', '/api/user/resumes/analyze', { t: accounts.P1.token, body: fd }); log('hoja de vida P1 (IA)', up.status === 200, '' + up.status);
   const ch = await j('POST', '/api/chat', { t: accounts.P1.token, body: { message: 'Quiero pasar de dar clases a trabajar con datos, pero tengo poco tiempo entre semana.', requestId: 'q' + randomBytes(5).toString('hex') } }); log('chat P1 (IA)', ch.status === 200, '' + ch.status);
