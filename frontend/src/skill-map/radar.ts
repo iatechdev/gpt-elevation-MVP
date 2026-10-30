@@ -38,7 +38,10 @@ export function improvement(items: readonly RadarItem[]): { item: RadarItem; nex
 /** ¿Hay algún nivel vigente? Si no, el radar muestra el aviso en lugar de las tarjetas. */
 export const anyLevel = (items: readonly RadarItem[]) => items.some(item => item.level !== null)
 
-export const CENTER = { x: 280, y: 250 }
+// H-96-01: el lienzo mide VIEW_W de ancho y el centro va en el medio; a cada lado quedan ~150 unidades para las etiquetas (antes ~89 y se recortaban).
+export const VIEW_W = 680
+export const VIEW_H = 520
+export const CENTER = { x: VIEW_W / 2, y: 250 }
 export const RADIUS = 165
 const GAP = 0.02
 const point = (angle: number, radius: number) => ({ x: CENTER.x + radius * Math.cos(angle), y: CENTER.y + radius * Math.sin(angle) })
