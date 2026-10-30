@@ -13,3 +13,6 @@ Entorno: merge local con origin/main (que ya incluye la cadena #61–#67), Postg
 
 ## No verificado
 Calidad con Claude real; hojas de vida con columnas o imágenes (declarado por Dev); PDFs binarios de producción; frontend (no hay); producción.
+
+## Decisión
+Mauricio aceptó ES121R-QA-01 como residual y lo registra como deuda técnica del segundo release. Veredicto: APROBADO en el head 62d57f52c1df7436acd3c21f366e5a353b2b6181.
