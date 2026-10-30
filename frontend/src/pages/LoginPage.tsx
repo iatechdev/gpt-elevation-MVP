@@ -4,6 +4,7 @@ import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
+import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import {
   colors, radius, spacing, typography,
   btnPrimaryStyle,
@@ -15,6 +16,7 @@ export function LoginPage() {
   const { t, lang, setLang } = useLanguage()
   const [params, setParams] = useSearchParams()
   const isRegistering = registrationRequested(params.toString())
+  const selectedPlan = planIntent(params.toString())
   const { text } = useLandingContent(lang)
   const entry = useSessionEntry(BACKEND)
 
@@ -56,7 +58,7 @@ export function LoginPage() {
       if (isRegistering) {
         if (res.status !== 201) throw new Error('Invalid registration response')
         setAuthMessage({ key: 'landing.access.registered', success: true })
-        setParams({}, { replace: true })
+        setParams(accessParams(false, selectedPlan), { replace: true })
         setPassword('')
         setName('')
       } else {
@@ -78,7 +80,7 @@ export function LoginPage() {
     if (preferredLanguage && preferredLanguage !== lang) setLang(preferredLanguage)
   }, [preferredLanguage, lang, setLang])
 
-  if (entry.result.status === 'verified') return <Navigate to={sessionDestination(entry.result.session)} replace />
+  if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? sessionDestination(entry.result.session)} replace />
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -248,7 +250,7 @@ export function LoginPage() {
             type="button"
             disabled={submitting}
             onClick={() => {
-              setParams(isRegistering ? {} : { mode: 'register' }, { replace: true })
+              setParams(accessParams(!isRegistering, selectedPlan), { replace: true })
               setAuthMessage(null)
               setPassword('')
               setShowPassword(false)

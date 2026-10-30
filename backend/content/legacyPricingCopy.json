@@ -1,0 +1,66 @@
+{
+  "basic": {
+    "description_es": "Acceso gratuito para empezar tu camino de bienestar.",
+    "description_en": "Free access to start your wellness journey.",
+    "features_es": [
+      "10 mensajes IA por día",
+      "Check-in emocional diario",
+      "Recomendaciones básicas"
+    ],
+    "features_en": [
+      "10 AI messages per day",
+      "Daily emotional check-in",
+      "Basic recommendations"
+    ]
+  },
+  "essential": {
+    "description_es": "Todo lo que necesitás para un acompañamiento real.",
+    "description_en": "Everything you need for real support.",
+    "features_es": [
+      "30 mensajes IA por día",
+      "1 sesión con terapeuta / mes",
+      "Acceso a mi progreso",
+      "Matching con terapeuta"
+    ],
+    "features_en": [
+      "30 AI messages per day",
+      "1 therapist session / month",
+      "Progress tracking",
+      "Therapist matching"
+    ]
+  },
+  "plus": {
+    "description_es": "Para quienes quieren un proceso terapéutico consistente.",
+    "description_en": "For those who want a consistent therapeutic process.",
+    "features_es": [
+      "100 mensajes IA por día",
+      "4 sesiones con terapeuta / mes",
+      "Acceso a mi progreso",
+      "Matching prioritario"
+    ],
+    "features_en": [
+      "100 AI messages per day",
+      "4 therapist sessions / month",
+      "Progress tracking",
+      "Priority matching"
+    ]
+  },
+  "pro": {
+    "description_es": "Acceso ilimitado para el máximo nivel de bienestar.",
+    "description_en": "Unlimited access for the highest level of wellness.",
+    "features_es": [
+      "Mensajes IA ilimitados",
+      "Sesiones ilimitadas / mes",
+      "Acceso completo a progreso",
+      "Matching VIP",
+      "Soporte prioritario"
+    ],
+    "features_en": [
+      "Unlimited AI messages",
+      "Unlimited sessions / month",
+      "Full progress access",
+      "VIP matching",
+      "Priority support"
+    ]
+  }
+}
