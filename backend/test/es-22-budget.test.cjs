@@ -503,7 +503,7 @@ test('ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin co
 
 // ES43-QA-01: el motivo de cierre del proveedor queda registrado junto a los tokens de salida (sin contenido) para detectar cortes por max_tokens.
 test('ES-43 chat: se registra stop_reason y output_tokens; solo códigos cortos, nunca texto libre', async t => {
-  const { store } = chatSetup(t);
+  const { store } = chatSetup(t, { ...CHAT_ENV, AI_BUDGET_TOKENS_PER_USER: '50000', AI_BUDGET_TOKENS_COHORT: '50000' }); // cada llamada reserva max_tokens (1500)
   const request = await startApp(t);
   const reply = (stop_reason) => { anthropic.messages.create = async () => ({ content: [{ type: 'text', text: 'Respuesta sintética' }], usage: { input_tokens: 100, output_tokens: 1000 }, ...(stop_reason === undefined ? {} : { stop_reason }) }); };
   reply('max_tokens');
@@ -520,4 +520,32 @@ test('ES-43 chat: se registra stop_reason y output_tokens; solo códigos cortos,
   assert.equal(free.stopReason, null); // un valor que no parece un código no se guarda
   assert.equal(missing.stopReason, null);
   assert.doesNotMatch(JSON.stringify(store.usages), /Texto libre|datos personales|uno|Respuesta sintética/);
+});
+
+// ES43-QA-01 (corrección): tope de 1500 tokens y nunca texto cortado a mitad de frase.
+test('ES-43 completeText: solo recorta si el proveedor cortó por max_tokens y deja siempre una frase completa', () => {
+  const { completeText } = require('../utils/claudeText');
+  const cut = 'Podrías empezar por un experimento pequeño. Habla con dos personas de tu sector y anota qué les sor';
+  assert.equal(completeText(cut, 'max_tokens'), 'Podrías empezar por un experimento pequeño.');
+  assert.equal(completeText(cut, 'end_turn'), cut); // respuesta completa: no se toca
+  assert.equal(completeText(cut, undefined), cut);
+  assert.equal(completeText('¿Qué te gustaría probar? Cuéntame más sobre tu', 'max_tokens'), '¿Qué te gustaría probar?');
+  assert.equal(completeText('He aquí la idea (la mejor.) Y luego algo que se cor', 'max_tokens'), 'He aquí la idea (la mejor.)');
+  assert.equal(completeText('Una sola frase muy larga que se corta sin ningún punt', 'max_tokens'), 'Una sola frase muy larga que se corta sin ningún…');
+  assert.equal(completeText('Palabra', 'max_tokens'), 'Palabra…'); // sin final de frase se marca el corte; nunca queda vacío
+  assert.equal(completeText('3.5 es un número. Y sigue sin ter', 'max_tokens'), '3.5 es un número.'); // un decimal no es fin de frase
+  assert.equal(completeText(12, 'max_tokens'), 12);
+});
+
+test('ES-43 chat: pide 1500 tokens como máximo y una respuesta cortada por el tope se entrega recortada a la última frase completa', async t => {
+  const { store, provider } = chatSetup(t);
+  const request = await startApp(t);
+  anthropic.messages.create = async (body) => { provider.calls.push({ body }); return { content: [{ type: 'text', text: 'Empieza por algo pequeño. Habla con dos personas y anota qué les sor' }], usage: { input_tokens: 100, output_tokens: 1500 }, stop_reason: 'max_tokens' }; };
+  const response = await post(request, { message: 'uno', requestId: 'req-cut-0000001' });
+  assert.equal(response.status, 200);
+  assert.equal(provider.calls[0].body.max_tokens, 1500);
+  assert.equal(response.body.reply, 'Empieza por algo pequeño.');
+  assert.equal(store.usages[0].stopReason, 'max_tokens');
+  anthropic.messages.create = async () => ({ content: [{ type: 'text', text: 'Respuesta completa sin punto final' }], usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: 'end_turn' });
+  assert.equal((await post(request, { message: 'dos', requestId: 'req-cut-0000002' })).body.reply, 'Respuesta completa sin punto final');
 });

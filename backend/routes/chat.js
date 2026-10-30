@@ -17,7 +17,7 @@ const ChatTurn = require('../ChatTurn');
 const DiaryEntry = require('../DiaryEntry');
 const anthropic  = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
-const { textOf } = require('../utils/claudeText');
+const { textOf, completeText } = require('../utils/claudeText');
 const { encriptar, encriptarV2, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
@@ -28,6 +28,7 @@ const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
 const HISTORY_LIMIT = 20;
+const CHAT_MAX_TOKENS = 1500; // ES43-QA-01: con 1000 una respuesta normal (≈800) quedaba al límite; el presupuesto reserva este valor por llamada
 const PENDING_TIMEOUT_MS = 2 * 60 * 1000; // un turno pendiente más viejo que esto se puede reintentar
 const MAX_CONTEXT_ENTRIES = 3;
 const MAX_CONTEXT_CHARS = 2000;
@@ -235,9 +236,9 @@ ${manifest}
     try {
       const msg = await callClaude({
         userId, kind: 'chat', requestId: requestId ?? null,
-        body: { model: anthropic.MODEL, max_tokens: 1000, system: systemPrompt, messages: historial },
+        body: { model: anthropic.MODEL, max_tokens: CHAT_MAX_TOKENS, system: systemPrompt, messages: historial },
       });
-      respuestaIA = textOf(msg);
+      respuestaIA = completeText(textOf(msg), msg.stop_reason); // ES43-QA-01: nunca texto cortado a mitad de frase
       if (!respuestaIA.trim()) throw new Error('Respuesta vacía del proveedor.');
     } catch (error) {
       // Presupuesto agotado o sin configurar (V-13): no se llama al proveedor, se conserva el avance y no se amplía solo.
