@@ -57,6 +57,12 @@ const fs = require('node:fs');
   assert.equal(await page.getByRole('button', { name: 'Mi progreso' }).count(), 1); assert.equal(await page.locator('.chat-scroll').getByRole('button', { name: 'Mi progreso' }).count(), 0); check('«Mi progreso» está en la cabecera con etiqueta, no suelto en la conversación');
   assert.equal(await page.getByRole('button', { name: 'Cerrar sesión' }).count() >= 1, true); check('el ícono de salida tiene etiqueta');
   assert.equal(await page.getByText('Asistente de IA').count(), 1); check('la identificación «Asistente de IA» sigue visible');
+  // Adenda 1: etiqueta sin cifra y contador solo cerca del tope
+  assert.equal(await page.locator('.chat-composer label').first().innerText().then((x) => x.trim()), 'Mensaje'); assert.equal(await page.locator('.chat-composer').getByText(/4\.000/).count(), 0); check('adenda 1: la etiqueta dice «Mensaje» y no muestra cifras de límite');
+  const area = page.locator('.chat-composer textarea'); await area.fill('a'.repeat(3599)); assert.equal(await page.locator('.chat-counter').innerText(), ''); check('adenda 1: con 3.599 caracteres no hay contador');
+  await area.fill('a'.repeat(3600)); assert.equal((await page.locator('.chat-counter').innerText()).trim(), '3.600 / 4.000 caracteres'); assert.equal(await page.locator('.chat-counter').getAttribute('aria-live'), 'polite'); check('adenda 1: desde 3.600 aparece «3.600 / 4.000 caracteres» en región aria-live polite');
+  await area.fill('a'.repeat(4000)); assert.equal((await page.locator('.chat-counter').innerText()).trim(), 'Has llegado al máximo de 4.000 caracteres.'); check('adenda 1: a 4.000 el aviso dice que se llegó al máximo');
+  await area.fill('');
   if (shots) await page.screenshot({ path: `${shots}/chat-1440-es.png` });
 
   // 2 Selector plegable: abre, lista, selecciona, muestra el texto técnico dentro, Esc cierra y devuelve el foco

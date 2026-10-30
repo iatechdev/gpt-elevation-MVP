@@ -3,11 +3,10 @@
 // HU-077 — Widget Mi Plan
 // HU-067 — Botón videollamada activo
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
-import { usePersonalChat } from '../space/usePersonalChat'
-import { ChatContext, ChatInput } from '../space/ChatControls'
+import { copy } from '../space/copy'
 import { useLanguage } from '../i18n/useLanguage'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { MatchingModal } from '../components/MatchingModal'
@@ -79,9 +78,6 @@ export function UserDashboard() {
   const [checkingIn,     setCheckingIn]     = useState(false)
 
   // ── Chat state ───────────────────────────────────────────────────────────
-  const chat = usePersonalChat(lang, checkedIn)
-  const { messages, busy: sending } = chat
-  const chatEndRef = useRef<HTMLDivElement>(null)
 
   // ── Progress state ───────────────────────────────────────────────────────
   const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
@@ -130,10 +126,6 @@ export function UserDashboard() {
     void loadUserPlan()
 
   }, [navigate])
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
-  }, [messages, sending])
 
   // ── Data loaders ──────────────────────────────────────────────────────────
   const loadProgress = async () => {
@@ -203,11 +195,8 @@ export function UserDashboard() {
     finally { setCheckingIn(false) }
   }
 
-  // ── Chat handler ──────────────────────────────────────────────────────────
-
   // ── Checkout handler ──────────────────────────────────────────────────────
   const handleCheckout = async (mood: number) => {
-    if (!chat.canLeave()) return
     setCheckoutSaving(true)
     try {
       await apiFetch('/api/mood/checkout', { method: 'POST', body: JSON.stringify({ mood }) })
@@ -307,11 +296,11 @@ export function UserDashboard() {
                 {l.toUpperCase()}
               </button>
             ))}
-            <button onClick={() => chat.canLeave() && navigate('/app/progress')}
+            <button onClick={() => navigate('/app/progress')}
               style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi progreso' : 'My progress'}
             </button>
-            <button onClick={() => chat.canLeave() && navigate('/app/my-therapist')}
+            <button onClick={() => navigate('/app/my-therapist')}
               style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
             </button>
@@ -430,7 +419,7 @@ export function UserDashboard() {
                 {sessionIsLive ? (
                   // Sesión activa — botón verde para entrar
                   <button
-                    onClick={() => chat.canLeave() && navigate(`/app/session/${upcomingSession.id}`)}
+                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
                     style={{
                       marginTop: '0.5rem', padding: '0.6rem 0.85rem',
                       background: '#6B7D5C', color: '#fff',
@@ -445,7 +434,7 @@ export function UserDashboard() {
                 ) : sessionIsImminent ? (
                   // Sesión en menos de 15 min — botón de espera pulsante
                   <button
-                    onClick={() => chat.canLeave() && navigate(`/app/session/${upcomingSession.id}`)}
+                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
                     style={{
                       marginTop: '0.5rem', padding: '0.6rem 0.85rem',
                       background: '#A8B5A2', color: '#fff',
@@ -549,7 +538,7 @@ export function UserDashboard() {
 
             {(planSlug === 'basic' || planSlug === 'essential') && (
               <button
-                onClick={() => chat.canLeave() && navigate('/pricing')}
+                onClick={() => navigate('/pricing')}
                 style={{
                   width: '100%', padding: '0.5rem', borderRadius: '0.65rem',
                   border: `0.5px solid ${planColors.border}`,
@@ -565,8 +554,8 @@ export function UserDashboard() {
 
         </div>
 
-        {/* ── COLUMNA DERECHA — CHAT ── */}
-        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)', position: 'sticky', top: 76 }}>
+        {/* ── COLUMNA DERECHA — ACCESO AL CHAT (ES-123: la conversación vive en /app/chat, a pantalla completa) ── */}
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column' }}>
           <ExerciseTools />
 
           {!checkedIn ? (
@@ -579,47 +568,17 @@ export function UserDashboard() {
               </p>
             </div>
           ) : (
-            <>
-              {/* Mensajes */}
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem' }}>
-                {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
-                {messages.map((msg, i) => (
-                  <div key={i}>
-                    {msg.role === 'user' ? (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <div style={{ maxWidth: '80%', background: '#F5F3EF', borderRadius: '1.25rem 1.25rem 0.25rem 1.25rem', padding: '0.85rem 1rem', fontSize: '0.95rem', color: '#1C1917', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                          {msg.text}
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1rem' }}>
-                        <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.3rem' }}>{t('logo')} ·</span>
-                        <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#1C1917', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {sending && (
-                  <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1rem' }}>
-                    <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.3rem' }}>{t('logo')} ·</span>
-                    <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#A8A29E', margin: 0 }}>{t('chat_thinking')}</p>
-                  </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
-
-              <div style={{ padding: 16 }}><ChatContext chat={chat} /></div>
-              {/* Input */}
-              <div style={{ borderTop: '0.5px solid #E7E5E4', padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
-                <ChatInput chat={chat} />
-              </div>
-            </>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '2rem 1rem' }}>
+              <div style={{ fontSize: '2.5rem' }} aria-hidden="true">💬</div>
+              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#57534E', textAlign: 'center', margin: 0 }}>{copy[lang].chatLinkHint}</p>
+              <div className="space-scope"><a className="elv-btn elv-btn-primary" href="/app/chat" style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>{copy[lang].chatLink}</a></div>
+            </div>
           )}
         </div>
       </div>
 
       {/* ── SECCIÓN RECOMENDACIONES ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 1.5rem' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem 1.5rem' }}>
         <a href="/app/route-catalog" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('catalog.title')}</a>
         <a href="/app/compass" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('compass.title')}</a>
       </div>
@@ -714,7 +673,7 @@ export function UserDashboard() {
                 style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
                 {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
               </button>
-              <button onClick={() => { if (!chat.canLeave()) return; localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
+              <button onClick={() => { localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
                 {lang === 'es' ? 'Saltar' : 'Skip'}
               </button>

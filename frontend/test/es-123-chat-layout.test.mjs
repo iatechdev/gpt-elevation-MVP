@@ -39,6 +39,26 @@ test('ES-123 selector del diario: botón plegable con aria-expanded/aria-control
   assert.match(controls, /blocked\.paused \|\| blocked\.exhausted/); assert.match(controls, /\|\| off/) // escritura bloqueada al pausar o agotar (ES-112)
 })
 
+test('ES-123 adenda 1: etiqueta «Mensaje» sin cifra, contador desde 3.600 con aria-live y límite de 2.000 en lenguaje claro dentro del panel', () => {
+  assert.equal(copy.es.composer, 'Mensaje'); assert.equal(copy.en.composer, 'Message')
+  for (const key of ['counter', 'counterMax']) { assert.ok(copy.es[key] && copy.en[key], key); assert.notEqual(copy.es[key], copy.en[key], key) }
+  assert.match(copy.es.counter, /\{n\}/); assert.match(copy.en.counter, /\{n\}/); assert.match(copy.es.counterMax, /4\.000/); assert.match(copy.en.counterMax, /4,000/)
+  assert.doesNotMatch(copy.es.counterMax, /Llegaste|tenés|querés/) // sin voseo
+  assert.match(copy.es.contextLimit, /2\.000/); assert.match(copy.en.contextLimit, /2,000/)
+  const controls = read('../src/space/ChatControls.tsx')
+  assert.match(controls, /const COUNTER_FROM = 3600/); assert.match(controls, /maxLength=\{MAX_MESSAGE\}/)
+  assert.match(controls, /role="status" aria-live="polite" className="space-note chat-counter"/)
+  assert.doesNotMatch(controls.slice(0, controls.indexOf('id="chat-diary-panel"')), /c\.contextLimit/) // el 2.000 sigue solo dentro del panel plegable
+})
+
+test('ES-123 adenda 2 (opción 2): el dashboard ya no embebe el chat y ofrece el acceso a /app/chat, con los enlaces separados', () => {
+  const dash = read('../src/pages/UserDashboard.tsx')
+  assert.doesNotMatch(dash, /usePersonalChat|ChatInput|ChatContext|calc\(100vh - 100px\)|position: 'sticky', top: 76/)
+  assert.match(dash, /href="\/app\/chat"[^>]*>\{copy\[lang\]\.chatLink\}/)
+  assert.match(dash, /flexWrap: 'wrap', gap: '0\.25rem 1\.5rem' \}\}>\s*<a href="\/app\/route-catalog"/)
+  for (const key of ['chatLink', 'chatLinkHint']) { assert.ok(copy.es[key] && copy.en[key], key); assert.notEqual(copy.es[key], copy.en[key], key) }
+})
+
 test('ES-123 textos: el selector, «Mi progreso» y el check-out existen en ES y EN, sin voseo ni ternarios de idioma en el chat de la persona', () => {
   for (const key of ['diaryNone', 'diaryCount', 'howTitle', 'close', 'progress', 'signOut']) { assert.ok(copy.es[key] && copy.en[key], key); assert.notEqual(copy.es[key], copy.en[key], key) }
   assert.match(copy.es.diaryCount, /\{n\}/); assert.match(copy.en.diaryCount, /\{n\}/)

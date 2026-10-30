@@ -2,6 +2,9 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { PersonalChat } from './usePersonalChat'
 import { useChatBlocked } from './usageStore'
+import { useLanguage } from '../i18n/useLanguage'
+const MAX_MESSAGE = 4000 // tope del textarea (maxLength); el contador aparece cuando quedan 400 o menos
+const COUNTER_FROM = 3600
 // ES-123: ChatContext = avisos de la conversación (sesión vencida, error de carga, envío sin confirmar); ChatInput = caja de mensaje con el selector del diario plegable.
 export function ChatContext({ chat }: { chat: PersonalChat }) {
   const { c } = chat
@@ -13,7 +16,7 @@ export function ChatContext({ chat }: { chat: PersonalChat }) {
   </div>
 }
 export function ChatInput({ chat }: { chat: PersonalChat }) {
-  const { c } = chat; const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
+  const { c } = chat; const { lang } = useLanguage(); const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
   const toggle = useRef<HTMLButtonElement>(null)
   if (chat.expired) return null
   const locked = chat.busy || !!chat.intent
@@ -35,8 +38,9 @@ export function ChatInput({ chat }: { chat: PersonalChat }) {
       <button type="button" className="elv-btn" onClick={closePicker}>{c.close}</button>
     </div>}
     <p role="status" aria-live="polite" className="space-note chat-status">{chat.busy ? c.sending : chat.notice}</p>
+    <p role="status" aria-live="polite" className="space-note chat-counter">{chat.input.length >= COUNTER_FROM ? (chat.input.length >= MAX_MESSAGE ? c.counterMax : c.counter.replace('{n}', chat.input.length.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US'))) : ''}</p>
     <div className="chat-composer-row">
-      <label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={4000} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={3} /></label>
+      <label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={MAX_MESSAGE} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={3} /></label>
       <button className="elv-btn elv-btn-primary" disabled={chat.busy || !!chat.intent || !chat.loaded || off || !chat.input.trim()}>{chat.busy ? c.sending : c.send}</button>
     </div>
   </form>
