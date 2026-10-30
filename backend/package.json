@@ -14,6 +14,7 @@
     "test:skillmap:pg": "node --test test/integration/es-29-postgres.cjs",
     "test:evidence:pg": "node --test test/integration/es-27-postgres.cjs",
     "test:integration:pg": "node --test test/integration/es-integration-consent-hooks.cjs",
+    "test:insights:pg": "node --test test/integration/es-121-postgres.cjs",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
     "eval:validate": "node evaluation/es44/cli.cjs --mode=validate",
     "eval:mock": "node evaluation/es44/cli.cjs --mode=mock",
@@ -26,16 +27,28 @@
     "migrate:career-plan": "node scripts/migrateCareerPlan.js",
     "seed:demo": "node scripts/seedStagingDemo.js",
     "test:seed-demo:pg": "node --test test/integration/seed-demo-postgres.cjs",
+    "test:therapist-privacy:pg": "node --test test/integration/es-96-postgres.cjs",
+    "test:validation-upload:pg": "node --test test/integration/es-99-postgres.cjs",
+    "test:therapist-validation:pg": "node --test test/integration/es-98-postgres.cjs",
     "test:pro-applications:pg": "node --test test/integration/es-95-postgres.cjs",
+    "test:resume:pg": "node --test test/integration/es-109-postgres.cjs",
+    "test:resume-skills:pg": "node --test test/integration/es-110-postgres.cjs",
+    "test:pro-cv-binary:pg": "node --test test/integration/es-107-postgres.cjs",
     "test:therapist-deletion:pg": "node --test test/integration/es-101-postgres.cjs",
+    "test:professional-key:pg": "node --test test/integration/es-86-postgres.cjs",
     "test:routes:pg": "node --test test/integration/es-32-postgres.cjs",
     "test:worker:pg": "node --test test/integration/es-85-postgres.cjs",
+    "test:worker-process:pg": "node --test test/integration/es-87-postgres.cjs",
+    "worker": "node worker.js",
+    "test:worker-rights:pg": "node --test test/integration/es-88-postgres.cjs",
+    "test:skill-analysis:pg": "node --test test/integration/es-89-postgres.cjs",
     "test:routes:local": "node scripts/testEs32Local.cjs",
     "migrate:routes": "node scripts/migrateRoutes.js",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:status": "sequelize-cli db:migrate:status",
-    "db:drift": "node scripts/schema-drift.cjs"
+    "db:drift": "node scripts/schema-drift.cjs",
+    "check:workflows": "node scripts/check-workflows.cjs"
   },
   "keywords": [],
   "author": "",
@@ -53,12 +66,14 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
+    "pdfjs-dist": "4.10.38",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.8",
     "sequelize-cli": "6.6.5"
   },
   "devDependencies": {
-    "embedded-postgres": "17.10.0-beta.17"
+    "embedded-postgres": "17.10.0-beta.17",
+    "js-yaml": "4.3.2"
   }
 }

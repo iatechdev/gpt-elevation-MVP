@@ -36,6 +36,7 @@ function consentStore() {
     transaction.held.set(key, free);
   }
   database.sequelize.transaction = async () => newTransaction();
+  models.User.findByPk = async (id) => record({ id, therapistId: null }); // ES-96: therapist_sharing se refiere al terapeuta actual de la persona
   models.Consent.findOne = async ({ where, transaction, lock }) => {
     if (lock) await acquire(transaction, keyOf(where));
     return rows.get(keyOf(where)) ?? null;
@@ -53,19 +54,22 @@ function consentStore() {
   return { rows, events, keyOf };
 }
 
-test('ES-19: catálogo cerrado de cinco propósitos, todos sin decidir y solo visibles para su titular', async t => {
+test('ES-19: catálogo cerrado de diez propósitos (ES-96 añade therapist_sharing, ES-109 resume_ai_reading y ES-121 insights_chat, insights_diary e insights_resume), todos sin decidir y solo visibles para su titular', async t => {
   consentStore();
   const request = await startApp(t);
   assert.equal((await request('GET', '/api/consents')).status, 403);
   const response = await request('GET', '/api/consents', as(A));
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.consents.map(c => c.purpose),
-    ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications']);
-  assert.deepEqual(response.body.consents.map(c => c.status), Array(5).fill('undecided'));
-  assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false]);
+    ['necessary', 'professional_bridge', 'facilitator_sharing', 'research', 'notifications', 'therapist_sharing', 'resume_ai_reading', 'insights_chat', 'insights_diary', 'insights_resume']);
+  assert.deepEqual(response.body.consents.map(c => c.status), Array(10).fill('undecided'));
+  assert.deepEqual(response.body.consents.map(c => c.required), [true, false, false, false, false, false, false, false, false, false]);
   for (const entry of response.body.consents) {
-    assert.deepEqual(Object.keys(entry).sort(), ['decidedAt', 'purpose', 'required', 'requiredVersion', 'scope', 'status', 'version']);
+    const base = ['decidedAt', 'purpose', 'required', 'requiredVersion', 'scope', 'status', 'version'];
+    assert.deepEqual(Object.keys(entry).sort(), entry.purpose === 'therapist_sharing' ? [...base, 'applicable'].sort() : base);
   }
+  // Sin terapeuta vinculado no hay a quién autorizar.
+  assert.equal(response.body.consents.find(c => c.purpose === 'therapist_sharing').applicable, false);
 });
 
 test('ES-19: decisiones contradictorias e idempotencia; el historial conserva cada cambio', async t => {
@@ -100,7 +104,7 @@ test('ES-19: rechazar investigación o notificaciones no bloquea lo necesario ni
   assert.equal(await consent.hasConsent(A, 'necessary'), true);
   const byPurpose = Object.fromEntries((await request('GET', '/api/consents', as(A))).body.consents.map(c => [c.purpose, c.status]));
   assert.deepEqual(byPurpose, {
-    necessary: 'granted', professional_bridge: 'undecided', facilitator_sharing: 'undecided', research: 'revoked', notifications: 'revoked',
+    necessary: 'granted', professional_bridge: 'undecided', facilitator_sharing: 'undecided', research: 'revoked', notifications: 'revoked', therapist_sharing: 'undecided', resume_ai_reading: 'undecided', insights_chat: 'undecided', insights_diary: 'undecided', insights_resume: 'undecided',
   });
 });
 

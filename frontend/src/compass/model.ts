@@ -1,7 +1,9 @@
 export const fieldKeys = ['motivations', 'values', 'interests', 'energy_gives', 'energy_drains', 'desired_conditions', 'constraints'] as const
 export type FieldKey = typeof fieldKeys[number]
-export type Field = { key: FieldKey; text: string }
-export type DirectField = Field & { origin: { type: 'direct' } }
+// ES-121: un texto puede venir de un insight con origen privado (solo `id`, nunca el contenido) y de una habilidad; el titular los recibe de vuelta en GET y se reenvían tal cual.
+export type Origin = { type: 'direct' } | { type: 'chat_turn' | 'diary_entry' | 'resume_version'; id: number }
+export type Field = { key: FieldKey; text: string; origin?: Origin; skillKey?: string }
+export type DirectField = Field & { origin: Origin }
 export type DraftField = { id: string; key: FieldKey | ''; text: string; selected: boolean }
 export type ContextVersion = { version: number; status: 'active' | 'superseded' | 'revoked'; approvedAt: string; revokedAt: string | null; fields: Field[]; needsReview?: boolean }
 export type CareerContext = { active: ContextVersion | null; versions: ContextVersion[] }
@@ -9,6 +11,14 @@ export type Preview = { token: string; expiresAt: string; representation: Field[
 const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v)
 const nonempty = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0
 const date = (v: unknown): v is string => typeof v === 'string' && Number.isFinite(Date.parse(v))
+const originTypes = ['chat_turn', 'diary_entry', 'resume_version']
+function parseOrigin(value: unknown): Origin | undefined {
+  // Lo que no es un origen reconocible se ignora (como cualquier dato extra del servidor): el texto sigue siendo válido.
+  if (!object(value)) return undefined
+  if (value.type === 'direct' && Object.keys(value).length === 1) return { type: 'direct' }
+  if (typeof value.type === 'string' && originTypes.includes(value.type) && Number.isSafeInteger(value.id) && Number(value.id) > 0 && Object.keys(value).length === 2) return { type: value.type as 'chat_turn', id: Number(value.id) }
+  return undefined
+}
 export function parseFields(value: unknown): Field[] {
   if (!Array.isArray(value) || !value.length || value.length > 12) throw new Error('Invalid fields')
   const counts = new Map<string, number>()
@@ -16,7 +26,9 @@ export function parseFields(value: unknown): Field[] {
     if (!object(item) || typeof item.key !== 'string' || !fieldKeys.includes(item.key as FieldKey) || !nonempty(item.text) || item.text.length > 500) throw new Error('Invalid field')
     counts.set(item.key, (counts.get(item.key) ?? 0) + 1)
     if (counts.get(item.key)! > 3) throw new Error('Invalid field count')
-    return { key: item.key as FieldKey, text: item.text }
+    const origin = parseOrigin(item.origin)
+    const skillKey = typeof item.skillKey === 'string' && /^[a-z0-9][a-z0-9_-]{1,63}$/.test(item.skillKey) ? item.skillKey : undefined
+    return { key: item.key as FieldKey, text: item.text, ...(origin ? { origin } : {}), ...(skillKey ? { skillKey } : {}) }
   })
 }
 export function parseVersion(value: unknown): ContextVersion {

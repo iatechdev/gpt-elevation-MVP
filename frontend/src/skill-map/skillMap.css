@@ -1,53 +1,39 @@
 .skill-map-scope {
-  --color-base-100: #fff;
-  --color-base-200: #f9f9f7;
-  --color-base-300: #d6d2c4;
-  --color-base-content: #1c1917;
-  --color-neutral: #1c1917;
-  --color-neutral-content: #fff;
-  --radius-selector: .5rem;
-  --radius-field: .65rem;
-  --radius-box: 1rem;
-  --size-selector: .25rem;
-  --size-field: .25rem;
-  --border: 1px;
-  --depth: 0;
-  --noise: 0;
   color-scheme: light;
   min-height: 100dvh;
-  background: var(--color-base-200);
-  color: var(--color-base-content);
-  font: 1rem/1.6 Inter, sans-serif;
+  background: var(--elv-bg);
+  color: var(--elv-text-1);
+  font: 1rem/1.6 var(--elv-font-body);
   padding: 24px;
 }
 .skill-map-header, .skill-map-main { max-width: 1100px; margin-inline: auto; }
 .skill-map-header, .skill-map-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .skill-map-header { margin-bottom: 32px; }
-.skill-map-back { display: inline-flex; align-items: center; min-height: 44px; color: #4a6741; }
+.skill-map-back { display: inline-flex; align-items: center; min-height: 44px; color: var(--elv-link); }
 .skill-map-title { margin-block: 16px; }
-.skill-map-scope h1 { font: 400 clamp(2rem, 4vw, 3rem)/1.2 'Playfair Display', serif; }
+.skill-map-scope h1 { font: 400 clamp(2rem, 4vw, 3rem)/1.2 var(--elv-font-display); }
 .skill-map-scope h2 { font-size: 1.375rem; font-weight: 500; }
 .skill-map-scope h3, .skill-map-scope h4 { font-weight: 600; }
-.skill-map-scope :focus-visible, .skill-map-entry:focus-visible { outline: 3px solid #4a6741; outline-offset: 4px; }
-.skill-map-scope .elv-btn { min-height: 44px; min-width: 44px; height: auto; padding: 10px 16px; white-space: normal; border: 1px solid #d6d2c4; }
-.skill-map-scope .elv-btn[aria-pressed=true] { background: #eaf0e6; color: #1c1917; border-color: #4a6741; }
+.skill-map-scope :focus-visible, .skill-map-entry:focus-visible { outline: 3px solid var(--elv-focus); outline-offset: 4px; }
+.skill-map-scope .elv-btn { min-height: 44px; min-width: 44px; height: auto; padding: 10px 16px; white-space: normal; border: 1px solid var(--elv-line-control); }
+.skill-map-scope .elv-btn[aria-pressed=true] { background: var(--elv-action-soft); color: var(--elv-text-1); border-color: var(--elv-action); }
 .skill-map-intro, .skill-map-catalog { margin-bottom: 24px; }
 .skill-map-grid { align-items: start; }
-.skill-map-card { min-width: 0; background: #fff; border: 1px solid #d6d2c4; }
+.skill-map-card { min-width: 0; background: var(--elv-card); border: 1px solid var(--elv-line); }
 .skill-map-card .elv-card-body { padding: 24px; gap: 12px; min-width: 0; font-size: 1rem; }
-.skill-map-scope .elv-badge { width: fit-content; max-width: 100%; height: auto; white-space: normal; font-size: .875rem; padding: 4px 8px; border: 1px solid #d6d2c4; }
-.skill-map-track { border-top: 1px solid #e7e5e4; padding-top: 16px; margin-top: 8px; display: flex; flex-direction: column; gap: 12px; }
+.skill-map-scope .elv-badge { width: fit-content; max-width: 100%; height: auto; white-space: normal; font-size: .875rem; padding: 4px 8px; border: 1px solid var(--elv-line-control); }
+.skill-map-track { border-top: 1px solid var(--elv-line); padding-top: 16px; margin-top: 8px; display: flex; flex-direction: column; gap: 12px; }
 .skill-map-level { font-size: 1.125rem; }
 .skill-map-note { font-size: .875rem; }
-.skill-map-warning { color: #92400e; }
+.skill-map-warning { color: var(--elv-warning); }
 .skill-map-free-text { white-space: pre-wrap; }
 .skill-map-card, .skill-map-error { overflow-wrap: anywhere; }
-.skill-map-rubric { border-top: 1px solid #e7e5e4; margin-top: 8px; padding-top: 8px; }
+.skill-map-rubric { border-top: 1px solid var(--elv-line); margin-top: 8px; padding-top: 8px; }
 .skill-map-rubric summary { cursor: pointer; min-height: 44px; padding-block: 8px; }
 .skill-map-rubric li, .skill-map-rubric p { margin-block: 12px; }
-.skill-map-error { padding: 16px; border: 1px solid #dc2626; border-radius: .65rem; }
-.skill-map-error p { color: #dc2626; margin-bottom: 12px; }
-.skill-map-skip { position: absolute; top: -120px; left: 16px; background: #fff; padding: 12px; z-index: 1; }
+.skill-map-error { padding: 16px; border: 1px solid var(--elv-error); border-radius: var(--elv-r-md); }
+.skill-map-error p { color: var(--elv-error); margin-bottom: 12px; }
+.skill-map-skip { position: absolute; top: -120px; left: 16px; background: var(--elv-card); padding: 12px; z-index: 1; }
 .skill-map-skip:focus { top: 8px; }
 @media (min-width: 1024px) { .skill-map-scope { padding: 32px; } }
 @media (max-width: 639px) {
@@ -58,3 +44,98 @@
 @media (prefers-reduced-motion: reduce) {
   .skill-map-scope *, .skill-map-scope *::before, .skill-map-scope *::after { transition: none; animation: none; scroll-behavior: auto; }
 }
+
+/* ── ES-30: mapa por territorios ─────────────────────────────── */
+.skill-map-eyebrow { margin: 0; font-size: .6875rem; letter-spacing: .25em; text-transform: uppercase; color: var(--elv-text-2); }
+.skill-map-title { align-items: flex-end; }
+.skill-map-title h1 { margin-block: 4px 8px; }
+.skill-map-title .skill-map-intro { margin: 0; max-width: 60ch; color: var(--elv-text-2); }
+.skill-map-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.skill-map-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; font-size: .875rem; color: var(--elv-text-2); }
+.skill-map-legend li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.skill-map-reading { color: var(--elv-text-2); margin-block: 0 16px; }
+.skill-map-revoke-status:empty { display: none; }
+.skill-map-revoke-status { margin-block: 0 16px; }
+.skill-map-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.skill-map-dot.dot-level { background: var(--elv-action); }
+.skill-map-dot.dot-none { border: 2px dashed var(--elv-text-2); }
+.skill-map-board { margin-bottom: 24px; }
+.skill-map-canvas { display: none; }
+.skill-map-svg { width: 100%; height: auto; display: block; }
+.skill-map-canvas { background-color: var(--elv-muted-bg); background-image: radial-gradient(var(--elv-line) 1px, transparent 1px); background-size: 24px 24px; border: 1px solid var(--elv-line); border-radius: var(--elv-r-md); padding: 16px; }
+.skill-map-view-toggle { display: none; }
+@media (min-width: 1024px) {
+  .skill-map-canvas { display: block; }
+  .skill-map-board .skill-map-territory-list { display: none; }
+  .skill-map-view-toggle { display: inline-flex; align-items: center; }
+  .skill-map-board.is-list .skill-map-canvas { display: none; }
+  .skill-map-board.is-list .skill-map-territory-list { display: grid; }
+}
+.skill-map-territory rect, .skill-map-territory-card { stroke: var(--elv-line-control); stroke-width: 1.2; }
+.tone-dir { --tone: var(--elv-tone-dir); } .tone-con { --tone: var(--elv-tone-con); } .tone-com { --tone: var(--elv-tone-com); }
+.tone-ing { --tone: var(--elv-tone-ing); } .tone-inn { --tone: var(--elv-tone-inn); } .tone-none { --tone: var(--elv-muted-bg); }
+.skill-map-territory rect { fill: var(--tone); }
+.skill-map-territory-name { font: 500 14px var(--elv-font-body); letter-spacing: .12em; text-transform: uppercase; fill: var(--elv-text-1); }
+/* QA H-86-01: tinta (16:1) sobre los tintes de territorio; el gris (3,9–4,1:1) no llegaba a AA. */
+.skill-map-territory-roles { font: 400 11px var(--elv-font-body); fill: var(--elv-text-1); }
+.skill-map-link { stroke-width: 2; opacity: .8; }
+.skill-map-link.is-level { stroke: var(--elv-action); }
+.skill-map-link.is-none { stroke: var(--elv-text-2); stroke-dasharray: 6 5; }
+.skill-map-chip { cursor: pointer; }
+.skill-map-chip rect { fill: var(--elv-card); stroke: var(--elv-line-control); stroke-width: 1.2; }
+.skill-map-chip.is-selected rect { stroke: var(--elv-focus); stroke-width: 3; }
+.skill-map-scope .skill-map-chip:focus-visible { outline: none; }
+.skill-map-chip:focus-visible rect { stroke: var(--elv-focus); stroke-width: 4; }
+svg .dot-level { fill: var(--elv-action); }
+svg .dot-none { fill: var(--elv-card); stroke: var(--elv-text-2); stroke-width: 2; stroke-dasharray: 3 3; }
+.skill-map-chip-name { font: 500 13px var(--elv-font-body); fill: var(--elv-text-1); }
+.skill-map-chip-status { font: 600 10px var(--elv-font-body); letter-spacing: .06em; text-transform: uppercase; fill: var(--elv-text-2); }
+.skill-map-territory-list { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .skill-map-territory-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .skill-map-territory-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.skill-map-territory-card { background: var(--tone); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-lg); padding: 16px; min-width: 0; align-self: start; }
+.skill-map-territory-card h2 { margin: 0; font: 500 .8125rem var(--elv-font-body); letter-spacing: .12em; text-transform: uppercase; }
+.skill-map-roles { margin: 2px 0 8px; font-size: .8125rem; color: var(--elv-text-1); overflow-wrap: anywhere; }
+.skill-map-territory-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.skill-map-pick { display: flex; gap: 10px; align-items: flex-start; width: 100%; min-height: 44px; text-align: left; padding: 10px 12px; background: var(--elv-card); color: var(--elv-text-1); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); cursor: pointer; font: inherit; }
+.skill-map-pick[aria-pressed=true] { border: 3px solid var(--elv-focus); padding: 8px 10px; }
+.skill-map-pick .skill-map-dot { margin-top: 4px; }
+.skill-map-pick-text { display: grid; gap: 2px; min-width: 0; }
+.skill-map-pick-name { font-weight: 500; overflow-wrap: anywhere; }
+.skill-map-pick-status { font-size: .6875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--elv-text-2); }
+.skill-map-pick-also { font-size: .8125rem; color: var(--elv-text-2); overflow-wrap: anywhere; }
+.skill-map-detail-wrap { margin-bottom: 24px; scroll-margin-top: 16px; }
+.skill-map-detail { max-width: 720px; }
+.skill-map-dialog { margin: auto; max-width: min(28rem, calc(100% - 2rem)); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-lg); padding: 24px; background: var(--elv-card); color: var(--elv-text-1); }
+.skill-map-dialog::backdrop { background: rgb(28 25 23 / .45); }
+.skill-map-dialog h2 { margin: 0 0 8px; font: 400 1.25rem var(--elv-font-display); }
+.skill-map-dialog-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; margin-top: 16px; }
+.skill-map-scope .skill-map-danger { background: var(--elv-error); color: var(--elv-card); border-color: var(--elv-error); }
+.skill-map-scope .elv-btn:disabled { opacity: .6; cursor: not-allowed; }
+@media (max-width: 639px) { .skill-map-tools > .elv-btn, .skill-map-dialog-actions > .elv-btn { flex: 1 1 auto; } }
+
+/* H-86-02: «Sin territorio asignado» junto al lienzo en escritorio; en móvil y en la vista de lista ya va dentro de la lista. */
+.skill-map-unassigned { display: none; margin-bottom: 24px; }
+@media (min-width: 1024px) { .skill-map-board:not(.is-list) + .skill-map-unassigned { display: block; } }
+.skill-map-no-territories { margin-block: 0 16px; }
+/* ── ES-30: registrar mi nivel (autoevaluación) ─────────────── */
+.skill-map-state { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0; }
+.skill-map-scope .skill-map-validated { background: var(--elv-action-soft); color: var(--elv-action); border-color: var(--elv-action); }
+.skill-map-notice { background: var(--elv-success-bg); color: var(--elv-success); padding: 12px 16px; border-radius: var(--elv-r-md); margin: 0 0 12px; max-width: 720px; }
+.skill-map-self { border-top: 1px solid var(--elv-line); margin-top: 8px; padding-top: 16px; display: grid; gap: 12px; }
+.skill-map-self h3 { margin: 0; }
+.skill-map-self-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.skill-map-scope .skill-map-primary { background: var(--elv-action); color: var(--elv-action-text); border-color: var(--elv-action); text-decoration: none; display: inline-flex; align-items: center; }
+.skill-map-self-error { background: var(--elv-error-bg); color: var(--elv-error); padding: 12px 16px; border-radius: var(--elv-r-md); margin: 0; }
+.skill-map-self-warn { background: var(--elv-info-bg); color: var(--elv-info); padding: 12px 16px; border-radius: var(--elv-r-md); margin: 0; }
+.skill-map-self-empty { background: var(--elv-info-bg); color: var(--elv-text-1); border: 1px solid var(--elv-info); border-radius: var(--elv-r-md); padding: 12px 16px; display: grid; gap: 8px; }
+.skill-map-self-empty p { margin: 0; }
+.skill-map-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.skill-map-fieldset legend { font-weight: 600; padding: 0; margin-bottom: 8px; }
+.skill-map-opt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); padding: 12px 16px; margin: 8px 0; cursor: pointer; background: var(--elv-card); min-height: 44px; }
+.skill-map-opt:has(input:checked) { border: 2px solid var(--elv-action); padding: 11px 15px; background: var(--elv-action-soft); }
+.skill-map-opt input { width: 22px; height: 22px; accent-color: var(--elv-action); margin: 2px 0 0; flex: none; }
+.skill-map-opt > span { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.skill-map-field label { display: block; font-weight: 600; margin-bottom: 4px; }
+.skill-map-field textarea { width: 100%; max-width: 100%; min-height: 96px; padding: 10px 12px; background: var(--elv-card); color: var(--elv-text-1); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); font: inherit; resize: vertical; }
+@media (max-width: 639px) { .skill-map-self-actions > .elv-btn { flex: 1 1 auto; } }

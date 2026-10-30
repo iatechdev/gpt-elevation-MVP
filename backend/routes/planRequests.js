@@ -6,6 +6,7 @@ const router       = express.Router();
 const PlanRequest  = require('../PlanRequest');
 const PricingPlan  = require('../PricingPlan');
 const User         = require('../User');
+const { sequelize } = require('../database');
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, id, text, nonempty, optional, nullable } = require('../middlewares/validateBody');
 
@@ -14,6 +15,11 @@ const { validateBody, id, text, nonempty, optional, nullable } = require('../mid
 // Usuario autenticado solicita un plan
 // ==========================================
 router.post('/', validateBody({ planId: id }), async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  if (Object.keys(req.body).some(key => key !== 'planId') || Object.keys(req.query).length) {
+    return res.status(400).json({ code: 'invalid_input' });
+  }
+  let transaction;
   try {
     const { planId } = req.body;
     const userId = req.user.id;
@@ -23,22 +29,33 @@ router.post('/', validateBody({ planId: id }), async (req, res) => {
     }
 
     // Verificar que el plan existe y está activo
-    const plan = await PricingPlan.findOne({ where: { id: planId, isActive: true } });
+    transaction = await sequelize.transaction();
+    // Serialize all submissions for this owner. No client-supplied owner is accepted.
+    const owner = await User.findByPk(userId, { attributes: ['id', 'active'], transaction, lock: transaction.LOCK?.UPDATE ?? true });
+    if (!owner || owner.active !== true) {
+      await transaction.rollback();
+      return res.status(401).json({ code: 'session_invalid' });
+    }
+    const plan = await PricingPlan.findOne({ where: { id: Number(planId), isActive: true }, transaction, lock: transaction.LOCK?.SHARE ?? true });
     if (!plan) {
+      await transaction.rollback();
       return res.status(404).json({ error: 'Plan no encontrado o inactivo.' });
     }
 
     // Verificar que el usuario no tenga ya una solicitud pendiente
     const existing = await PlanRequest.findOne({
       where: { userId, status: 'pending' },
+      transaction,
     });
     if (existing) {
+      await transaction.rollback();
       return res.status(409).json({
         error: 'Ya tenés una solicitud de plan pendiente. Esperá a que el equipo la procese.',
       });
     }
 
-    const request = await PlanRequest.create({ userId, planId, status: 'pending' });
+    const request = await PlanRequest.create({ userId, planId: Number(planId), status: 'pending' }, { transaction });
+    await transaction.commit();
 
     res.status(201).json({
       message: 'Solicitud registrada correctamente.',
@@ -51,7 +68,8 @@ router.post('/', validateBody({ planId: id }), async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('❌ Error creando plan request:', error);
+    if (transaction && !transaction.finished) await transaction.rollback().catch(() => {});
+    console.error('No se pudo registrar la solicitud de plan.');
     res.status(500).json({ error: 'No se pudo registrar la solicitud.' });
   }
 });
@@ -61,6 +79,9 @@ router.post('/', validateBody({ planId: id }), async (req, res) => {
 // Plan request activo del usuario autenticado
 // ==========================================
 router.get('/me', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.vary('Authorization');
+  if (Object.keys(req.query).length) return res.status(400).json({ code: 'invalid_input' });
   try {
     const request = await PlanRequest.findOne({
       where: { userId: req.user.id, status: 'pending' },
@@ -70,7 +91,7 @@ router.get('/me', async (req, res) => {
 
     res.json({ request: request ?? null });
   } catch (error) {
-    console.error('❌ Error obteniendo plan request:', error);
+    console.error('No se pudo leer la solicitud propia.');
     res.status(500).json({ error: 'No se pudo obtener la solicitud.' });
   }
 });

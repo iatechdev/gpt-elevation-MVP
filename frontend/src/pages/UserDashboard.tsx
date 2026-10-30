@@ -12,6 +12,7 @@ import { useLanguage } from '../i18n/useLanguage'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { MatchingModal } from '../components/MatchingModal'
 import { CareerEntry } from '../career/CareerShell'
+import { MapAccessCard } from '../skill-map/MapAccess'
 import { ExerciseTools } from '../exercises/ExerciseTools'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -327,6 +328,7 @@ export function UserDashboard() {
 
       {/* ── BODY ── */}
       <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>
+        <MapAccessCard />
         <CareerEntry />
 
         <FeedbackPreviewLink />
@@ -340,10 +342,6 @@ export function UserDashboard() {
           <button className="evidence-dashboard-link elv-btn elv-btn-ghost" onClick={() => navigate('/app/evidence')}
             style={{ fontSize: '0.875rem', color: '#4A6741', background: 'white', border: '1px solid #D6D2C4', borderRadius: '0.65rem', cursor: 'pointer', minHeight: 44, padding: '0.5rem 1rem' }}>
             {t('evidence.title')}
-          </button>
-          <button className="skill-map-entry elv-btn elv-btn-ghost" onClick={() => navigate('/app/skill-map')}
-            style={{ fontSize: '0.875rem', color: '#4A6741', background: 'white', border: '1px solid #D6D2C4', borderRadius: '0.65rem', cursor: 'pointer', minHeight: 44, padding: '0.5rem 1rem' }}>
-            {t('skill_map.title')}
           </button>
 
           {/* Widget 1 — Estado emocional */}

@@ -6,7 +6,10 @@ export type Payload = {
   learning?: string; autonomy?: 'conceptual' | 'assisted' | 'autonomous' | 'leads' | null; artifactRefs?: Artifact[]
 }
 export type Status = 'draft' | 'confirmed' | 'revoked'
-export type Evidence = { id: number; version: number; status: Status; authoring: 'person' | 'ai_proposed'; createdAt: string; payload: Payload }
+// ES-110: si la evidencia salió de una hoja de vida se informa de dónde (versión y fecha) y si esa versión ya no existe («para revisión»).
+// `fromChat` solo dice que viene del chat (sin ids ni citas): esas no se editan desde aquí porque la edición perdería su origen.
+export type Origin = { kind: 'resume'; version: number; date: string; needsReview: boolean }
+export type Evidence = { id: number; version: number; status: Status; authoring: 'person' | 'ai_proposed'; createdAt: string; payload: Payload; origin?: Origin; fromChat?: boolean }
 export type Detail = { id: number; currentVersion: number; versions: Evidence[] }
 export type Draft = {
   title: string; situation: string; responsibility: string; actions: string[]; alternatives: string[]
@@ -78,11 +81,13 @@ function isPayload(v: unknown): v is Payload {
   )))) return false
   return true
 }
+const isOrigin = (v: unknown): v is Origin => object(v) && v.kind === 'resume' && positive(v.version) && typeof v.date === 'string' && Number.isFinite(Date.parse(v.date)) && typeof v.needsReview === 'boolean'
 export function parseEvidence(value: unknown): Evidence {
   if (!object(value) || !positive(value.id) || !positive(value.version)
     || !['draft', 'confirmed', 'revoked'].includes(String(value.status)) || typeof value.status !== 'string'
     || !['person', 'ai_proposed'].includes(String(value.authoring)) || typeof value.authoring !== 'string'
-    || typeof value.createdAt !== 'string' || !Number.isFinite(Date.parse(value.createdAt)) || !isPayload(value.payload)) throw new Error('Invalid evidence')
+    || typeof value.createdAt !== 'string' || !Number.isFinite(Date.parse(value.createdAt)) || !isPayload(value.payload)
+    || (value.origin !== undefined && !isOrigin(value.origin)) || (value.fromChat !== undefined && value.fromChat !== true)) throw new Error('Invalid evidence')
   return value as Evidence
 }
 export function parseList(value: unknown): Evidence[] {
@@ -101,4 +106,15 @@ export function parseDetail(value: unknown): Detail {
 export function parseAck(value: unknown): { id: number; version: number } {
   if (!object(value) || !positive(value.id) || !positive(value.version)) throw new Error('Invalid save result')
   return { id: value.id, version: value.version }
+}
+
+// ES-110: lleva una versión guardada de vuelta al formulario para editarla (cada edición crea una versión nueva).
+export function draftFromPayload(payload: Payload): Draft {
+  return {
+    title: payload.title, situation: payload.situation ?? '', responsibility: payload.responsibility?.text ?? '', actions: payload.actions?.length ? payload.actions.map(item => item.text) : [''],
+    alternatives: payload.alternatives ?? [], goal: payload.goal ?? '', delivered: payload.delivered?.text ?? '',
+    effect: payload.observedEffect ? (payload.observedEffect.known ? 'known' : 'unknown') : 'unset', effectText: payload.observedEffect?.known ? payload.observedEffect.claim.text : '',
+    learning: payload.learning ?? '', autonomy: payload.autonomy ?? '',
+    artifacts: (payload.artifactRefs ?? []).map(ref => ref.kind === 'url' ? { kind: 'url' as const, value: ref.url, note: ref.note ?? '' } : { kind: 'text' as const, value: ref.excerpt, note: '' }),
+  }
 }

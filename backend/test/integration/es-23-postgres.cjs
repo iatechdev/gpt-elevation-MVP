@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'SkillAssessment']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'ParticipantResume', 'SkillAssessment']) require('../../' + name);
   for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest']) require('../../' + name);
   for (const name of ['CareerExperiment', 'CareerExperimentVersion', 'CareerPlanVersion', 'CareerExperimentReview', 'CareerReminder']) require('../../' + name);
   await sequelize.sync();

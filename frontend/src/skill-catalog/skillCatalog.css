@@ -1,0 +1,71 @@
+/* ES-116 · Catálogo de habilidades (backoffice). Solo tokens de ES-37; ningún color propio. */
+.skcat-scope { min-height: 100vh; background: var(--elv-bg); color: var(--elv-text-1); font: 400 1rem/1.6 var(--elv-font-body); }
+.skcat-scope *, .skcat-scope *::before, .skcat-scope *::after { box-sizing: border-box; }
+.skcat-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 24px; border-bottom: 1px solid var(--elv-line); }
+.skcat-lang { display: inline-flex; gap: 8px; }
+.skcat-main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+.skcat-main:focus { outline: none; }
+.skcat-main h1 { font: 400 clamp(1.5rem, 4vw, 2.25rem)/1.25 var(--elv-font-display); margin: 16px 0 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.skcat-main h2 { font: 600 1.0625rem/1.4 var(--elv-font-body); margin: 24px 0 8px; }
+.skcat-main h3 { font: 600 .9375rem var(--elv-font-body); margin: 16px 0 8px; }
+.skcat-lead { color: var(--elv-text-2); margin: 4px 0 16px; max-width: 70ch; }
+.skcat-skip { position: absolute; left: -9999px; top: 8px; padding: 12px; background: var(--elv-card); z-index: 10; }
+.skcat-skip:focus { left: 8px; }
+.skcat-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skcat-scope .elv-btn { min-height: 44px; min-width: 44px; height: auto; padding: 10px 16px; white-space: normal; border: 1px solid var(--elv-line-control); background: var(--elv-card); color: var(--elv-text-1); }
+.skcat-scope .elv-btn[aria-pressed=true] { background: var(--elv-action-soft); border-color: var(--elv-action); }
+.skcat-scope .elv-btn:disabled { opacity: .6; cursor: not-allowed; }
+.skcat-scope .skcat-primary { background: var(--elv-action); color: var(--elv-action-text); border-color: var(--elv-action); }
+.skcat-scope .skcat-danger { color: var(--elv-error); border-color: var(--elv-error); }
+.skcat-scope :focus-visible { outline: 3px solid var(--elv-focus); outline-offset: 2px; }
+.skcat-card { background: var(--elv-card); border: 1px solid var(--elv-line); border-radius: var(--elv-r-lg); box-shadow: var(--elv-shadow-card); padding: 16px 24px; margin: 16px 0; }
+.skcat-notice, .skcat-error { padding: 12px 16px; border-radius: var(--elv-r-md); margin: 12px 0; }
+.skcat-notice { background: var(--elv-success-bg); color: var(--elv-success); }
+.skcat-error { background: var(--elv-error-bg); color: var(--elv-error); }
+.skcat-notice:focus, .skcat-error:focus { outline: 3px solid var(--elv-focus); outline-offset: 2px; }
+.skcat-help { font-size: .8125rem; color: var(--elv-text-2); margin: 4px 0 0; overflow-wrap: anywhere; }
+.skcat-help.is-missing { color: var(--elv-error); }
+.skcat-badge { white-space: nowrap; display: inline-flex; align-items: center; min-height: 1.5rem; padding: 0 12px; border-radius: 999px; border: 1px solid; font: 600 .75rem var(--elv-font-body); }
+.skcat-badge.is-published, .skcat-badge.is-complete { background: var(--elv-success-bg); color: var(--elv-success); border-color: var(--elv-success); }
+.skcat-badge.is-draft { background: var(--elv-warning-bg); color: var(--elv-warning); border-color: var(--elv-warning); }
+.skcat-badge.is-archived { background: var(--elv-muted-bg); color: var(--elv-text-2); border-color: var(--elv-line-control); }
+.skcat-badge.is-missing { background: var(--elv-error-bg); color: var(--elv-error); border-color: var(--elv-error); }
+.skcat-chip { display: inline-block; padding: 2px 8px; margin: 2px 4px 2px 0; border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-sm); font-size: .8125rem; background: var(--elv-muted-bg); }
+.skcat-table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.skcat-table th { text-align: left; font: 600 .75rem var(--elv-font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--elv-text-2); padding: 8px; }
+.skcat-table td { padding: 12px 8px; border-top: 1px solid var(--elv-line); vertical-align: top; }
+.skcat-table td code { overflow-wrap: anywhere; }
+.skcat-table .elv-btn, .skcat-table .skcat-badge { white-space: nowrap; }
+@media (max-width: 760px) {
+  .skcat-table thead { display: none; }
+  .skcat-table tr { display: block; padding: 12px 0; border-top: 1px solid var(--elv-line); }
+  .skcat-table td { display: block; border: 0; padding: 2px 0; }
+  .skcat-table td[data-label]::before { content: attr(data-label) ': '; font-weight: 600; color: var(--elv-text-2); }
+  .skcat-table td:last-child { padding-top: 8px; }
+  .skcat-main { padding: 16px; }
+  .skcat-header { padding: 12px 16px; }
+}
+.skcat-grid2 { display: grid; gap: 16px; grid-template-columns: 1fr; margin: 8px 0 16px; }
+@media (min-width: 760px) { .skcat-grid2 { grid-template-columns: 1fr 1fr; } }
+.skcat-field { min-width: 0; }
+.skcat-field label { display: block; font-weight: 500; font-size: .9375rem; margin-bottom: 4px; }
+.skcat-field input[type=text], .skcat-field input[type=date], .skcat-field select, .skcat-field textarea { width: 100%; max-width: 100%; min-height: 44px; padding: 10px 12px; background: var(--elv-card); color: var(--elv-text-1); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); font: inherit; }
+.skcat-field textarea { min-height: 92px; resize: vertical; }
+.skcat-field.is-missing input, .skcat-field.is-missing textarea { border: 2px solid var(--elv-error); }
+.skcat-field :disabled { background: var(--elv-muted-bg); color: var(--elv-text-2); }
+.skcat-more { margin: 8px 0 16px; border-top: 1px solid var(--elv-line); }
+.skcat-more summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.skcat-territories { border: 1px solid var(--elv-line); border-radius: var(--elv-r-md); padding: 16px; margin: 16px 0 0; min-width: 0; }
+.skcat-territories legend { font-weight: 600; padding: 0 8px; }
+.skcat-check { display: flex; gap: 12px; align-items: center; min-height: 44px; cursor: pointer; }
+.skcat-check input { width: 22px; height: 22px; accent-color: var(--elv-action); margin: 0; flex: none; }
+.skcat-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.skcat-actions-end { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.skcat-dialog { margin: auto; max-width: min(28rem, calc(100% - 2rem)); border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-lg); padding: 24px; background: var(--elv-card); color: var(--elv-text-1); }
+.skcat-dialog::backdrop { background: rgb(28 25 23 / .45); }
+.skcat-dialog h2 { margin-top: 0; font-family: var(--elv-font-display); font-weight: 400; }
+@media (max-width: 639px) { .skcat-actions > .elv-btn, .skcat-actions-end > .elv-btn { flex: 1 1 auto; } }
+@media (prefers-reduced-motion: reduce) { .skcat-scope * { transition: none !important; animation: none !important; } }
+
+/* QA H-88-03: mientras se guarda, el formulario entero queda bloqueado para no perder lo que se escriba. */
+.skcat-lock { border: 0; padding: 0; margin: 0; min-width: 0; }

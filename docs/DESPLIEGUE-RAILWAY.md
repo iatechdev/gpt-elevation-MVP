@@ -23,6 +23,11 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 | `JWT_SECRET` | Firma de sesiones | Distinto por entorno. Sin ella el proceso debe fallar (hallazgo P1 del PR #2) |
 | `DATA_ENCRYPTION_KEY` | Cifrado de datos (`utils/crypto.js`) | Distinta por entorno. En producción el proceso no arranca sin ella |
 | `PROMPT_ENCRYPTION_KEY` | Cifrado de prompts (`promptVault.js`) | Distinta por entorno |
+| `PROFESSIONAL_ENCRYPTION_KEY` | Cifrado del contexto profesional (`utils/professionalCrypto.js`, ES-86) | Distinta de `DATA_ENCRYPTION_KEY` y por entorno; mín. 32 caracteres. Sin ella, en producción, el API responde 503 al guardar contexto profesional. Respaldo fuera del repositorio. Ver doc 44 |
+| `AI_ANALYSIS_TRIGGER` | Quién pide el análisis de IA del contexto profesional (ES-89, API) | Opcional: `explicit` (por defecto) o `automatic`. Pendiente de confirmar por Alejo. Ver doc 47 |
+| `WORKER_DATABASE_URL` y `WORKER_*` | Servicio `worker` (ES-87, `node backend/worker.js`): conexión con el rol `elevation_worker` y sondeo/lease/intentos | Solo en el servicio worker, nunca en el API. El worker no recibe `DATA_ENCRYPTION_KEY`, `JWT_SECRET` ni `DATABASE_URL`. Ver doc 45 |
+| `PROFESSIONAL_KEY_ID` | Identificador de esa clave (`a-z0-9`, 1–8) | Opcional, por defecto `p1`; cambia al rotar |
+| `PROFESSIONAL_ENCRYPTION_KEY_PREVIOUS`, `PROFESSIONAL_KEY_ID_PREVIOUS` | Clave anterior, solo para descifrar | Solo durante una rotación |
 | `ANTHROPIC_API_KEY` | Claude | Timeout 60 s por intento, 1 reintento |
 | `ANTHROPIC_MODEL` | Modelo de Claude (opcional) | Por defecto `claude-haiku-5-5`; el ID anterior `claude-3-haiku-20240307` devuelve 404 |
 | `TRUST_PROXY_HOPS` | Saltos de proxy de confianza para la IP del rate limit | `1` en Railway; sin definir no se confía en `X-Forwarded-For` |
@@ -123,6 +128,27 @@ Antes, un volcado de respaldo o punto de restauración y la confirmación de Mau
 **Regla para cada PR que toque el esquema (a partir de la fase 2):** una migración nueva con `up` y `down`, con nombre `AAAAMMDDHHMMSS-descripcion`; una migración aplicada no se edita; cambios aditivos por defecto; los destructivos (borrar o cambiar tipo) en dos despliegues y con confirmación de Mauricio. El CI (`db:drift`) falla si el modelo y las migraciones no coinciden. Excepción: las restricciones e índices que solo existen en las migraciones y están listados por nombre, con su motivo, en `backend/scripts/drift-allowed.json` (Sequelize no declara CHECK ni claves foráneas compuestas); cualquier otra diferencia es deriva. Quien añada una la declara en el PR de su historia.
 
 **Fases pendientes:** aplicar las migraciones antes de cada despliegue en Railway (comando previo) y retirar `sync()` de producción y staging (fase 2); hacer `db:drift` un check requerido de `main` (fase 3). Nota: `sequelize-cli` está en `dependencies` (no en `devDependencies`) porque el comando previo lo necesita dentro de la imagen; la prueba P1-8 lo trata como herramienta de línea de comandos.
+
+## Diferencias conocidas de staging
+
+Staging se creó con `sync()` antes de que existieran las migraciones; producción nacerá con migraciones. Por eso hay diferencias que se aceptan de forma explícita y no se corrigen tocando staging.
+
+**Los 6 CHECK de ES-32 (QA-43-02, decisión de Mauricio: aceptar como diferencia conocida, 28-oct-2026).** La migración `20261028-es32-routes.cjs` crea 6 restricciones CHECK que los modelos no declaran. En una base creada con migraciones existen; en staging, cuyas tablas de rutas las creó `sync()`, no existen (0 frente a 6). Nombres:
+
+- `RouteChoices_decision_check`
+- `RouteChoices_slot_check`
+- `RouteChoices_status_check`
+- `RouteConstraintsVersions_status_check`
+- `RouteConstraintsVersions_version_check`
+- `RouteReviewRequests_status_check`
+
+**Motivo.** El camino documentado para pasar staging a migraciones (registrar la línea base y ejecutar `db:migrate`) usa `CREATE TABLE IF NOT EXISTS`, que no añade restricciones a tablas que ya existen. Añadirlas exigiría una migración propia tras verificar que las filas actuales las cumplen, y en staging solo hay datos sintéticos.
+
+**Efecto.** El servidor valida de entrada el slot y la decisión (`utils/routes.js`) y es el único que fija el estado y la versión; la diferencia es de defensa en profundidad en la base, no de comportamiento. Que ninguna otra ruta de escritura salte esa validación no se ha auditado aquí. Las pruebas de QA con Postgres real se ejecutan sobre bases creadas con migraciones, que sí los tienen.
+
+**Cuándo se reabre.** Si se recrea staging, o si se exige paridad exacta entre staging y producción, se crea una migración propia que añada los 6 CHECK (comprobando antes las filas existentes) y se retira esta entrada. Hasta entonces `db:drift` no se ve afectado: compara bases nuevas creadas por `sync()` y por migraciones, no la base de staging.
+
+No se toca la base de staging ni se migra nada por este motivo.
 
 ## Reversión
 - Código (**probado en staging el 23 y 24-oct-2026**, QA ES9-04): panel de Railway → proyecto `elevation` → entorno `staging` → servicio `backend` → Deployments → menú ⋮ del despliegue anterior → Rollback. Railway reactiva el código previo (crea un despliegue nuevo, sin recompilar). Variables y base de datos no cambian con la reversión.

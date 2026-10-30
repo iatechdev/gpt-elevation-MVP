@@ -24,7 +24,9 @@ import { UserProgress }  from './pages/UserProgress.tsx'
 import { UserDashboard } from './pages/UserDashboard.tsx'
 import { MyTherapist }   from './pages/MyTherapist.tsx'
 import { Onboarding }    from './pages/Onboarding.tsx'
-import { EvidenceListPage, EvidenceDetailPage, EvidenceCreatePage } from './pages/EvidencePages.tsx'
+import { ResumesPage }   from './context/resume/ResumesPage'
+import { ResumeSkillsPage } from './evidence/ResumeSkillsPage'
+import { EvidenceListPage, EvidenceDetailPage, EvidenceCreatePage, EvidenceEditPage } from './pages/EvidencePages.tsx'
 import { SkillMapPage }  from './pages/SkillMapPage.tsx'
 import { BoardRoute }    from './components/BoardRoute.tsx'
 import { BoardLayout }   from './layouts/BoardLayout.tsx'
@@ -34,6 +36,7 @@ import { Participants, ParticipantDetail, NewReview, OwnReviews } from './facili
 import { CatalogBrowser, CatalogManager } from './routeCatalog/CatalogPages'
 import { CompassPage } from './compass/CompassPage'
 import { CareerShell } from './career/CareerShell'
+import { SkillCatalogManager } from './skill-catalog/SkillCatalogPages'
 import { RoutesScreen, ExperimentList, ExperimentScreen, PlanScreen } from './career/CareerPages'
 import { ExercisePage } from './exercises/ExercisePage'
 
@@ -41,6 +44,7 @@ import { FeedbackPage } from './pilot/FeedbackPage'
 import { PilotMetricsPage } from './pilot/PilotMetricsPage'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
+import { BridgePage } from './bridge/BridgePage'
 import { SpaceToolsPage } from './space/SpaceToolsPage'
 import { SpaceSession } from './space/SpaceSession'
 export default function App() {
@@ -72,18 +76,22 @@ export default function App() {
           <Route path="plan" element={<PlanScreen />} />
         </Route>
         <Route path="/app/exercises" element={<ExercisePage />} />
+        <Route path="/app/bridge" element={<BridgePage />} /> {/* ES-111 — El Puente */}
         <Route path="/app/diary" element={<JournalPage />} />
         <Route path="/app/diary/new" element={<JournalPage />} />
         <Route path="/app/diary/:id" element={<JournalPage />} />
         <Route path="/app/space/tools" element={<SpaceToolsPage />} />
         <Route path="/app/onboarding"   element={<Onboarding />} />
+        <Route path="/app/context/resumes" element={<ResumesPage />} /> {/* ES-109 — mis hojas de vida */}
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
         <Route path="/app/dashboard"    element={<SpaceSession><UserDashboard /></SpaceSession>} />
         <Route path="/app/evidence" element={<EvidenceListPage />} />
         <Route path="/app/evidence/new" element={<EvidenceCreatePage />} />
+        <Route path="/app/evidence/resume-skills" element={<ResumeSkillsPage />} /> {/* ES-110 — habilidades de la hoja de vida */}
         <Route path="/app/evidence/:id" element={<EvidenceDetailPage />} />
+        <Route path="/app/evidence/:id/edit" element={<EvidenceEditPage />} />
         <Route path="/app/skill-map"    element={<SkillMapPage />} />
         <Route path="/app/my-therapist" element={<MyTherapist />} />
         {/* HU-067 — sala de videollamada para el paciente */}
@@ -95,6 +103,9 @@ export default function App() {
       </Route>
       {/* Admin backoffice */}
       <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
+      <Route path="/admin/skill-catalog" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
+      <Route path="/admin/skill-catalog/:id" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
+      <Route path="/admin/skill-catalog/:id/skills/:skillKey" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
       <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin/route-catalog/:id/:kind/:itemKey" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin" element={

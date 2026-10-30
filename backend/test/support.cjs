@@ -19,10 +19,10 @@ for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewReques
   replaceModule(name + '.js', models[name]);
 }
 for (const name of [
-  'User', 'ParticipantContext', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
+  'User', 'ParticipantContext', 'ParticipantResume', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem',
+  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -51,6 +51,9 @@ models.AiBudgetCounter.create = async values => {
 };
 models.AiUsage.create = async values => ({ ...values, async update(updates) { Object.assign(this, updates); return this; } });
 models.AiUsage.findAll = async () => [];
+models.AiJob.update = async () => [0]; // ES-88: los ganchos de revocación y borrado invalidan jobs y candidatas (sin filas en los dobles)
+models.SkillCandidate.update = async () => [0];
+models.AiJob.findAll = async () => [];
 models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
 models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 
@@ -58,7 +61,7 @@ const unexpected = async () => { throw new Error('Unexpected mocked provider cal
 const transaction = { commit: async () => {}, rollback: async () => {} };
 const database = {
   connectDB: async () => {},
-  sequelize: { sync: async () => {}, transaction: async () => transaction },
+  sequelize: { sync: async () => {}, transaction: async () => transaction, getDialect: () => 'mock' },
 };
 const storage = { uploadFile: unexpected, getSignedUrl: unexpected };
 const anthropic = { messages: { create: unexpected } };
@@ -70,7 +73,8 @@ const promptVault = {
 
 replaceModule('database.js', database);
 replaceModule('associations.js', () => {});
-replaceModule('utils/crypto.js', { encriptar: value => value, encriptarV2: value => value, desencriptar: value => value });
+const realCrypto = require('../utils/crypto'); // ES-107: el cifrado de bytes es el real (lo que se prueba es el formato binario)
+replaceModule('utils/crypto.js', { encriptar: value => value, encriptarV2: value => value, desencriptar: value => value, encriptarBuffer: realCrypto.encriptarBuffer, desencriptarBuffer: realCrypto.desencriptarBuffer, CABECERA_BINARIA: realCrypto.CABECERA_BINARIA });
 replaceModule('utils/storage.js', storage);
 replaceModule('utils/anthropic.js', anthropic);
 replaceModule('promptVault.js', promptVault);
@@ -112,4 +116,13 @@ async function startApp(t) {
   };
 }
 
-module.exports = { models, database, transaction, storage, anthropic, promptVault, record, startApp };
+// ES-96: la persona autorizó compartir su seguimiento con CUALQUIER terapeuta (therapist_sharing, alcance therapist-<id>). Para pruebas de otras
+// historias que ejercen las rutas del terapeuta; las pruebas de consentimiento (es-96, es-78) definen sus propios consentimientos.
+function grantTherapistSharing() {
+  const { Op } = require('sequelize');
+  const granted = (UserId, scope) => ({ UserId, purpose: 'therapist_sharing', scope, status: 'granted', version: 1 });
+  models.Consent.findOne = async ({ where }) => (where.purpose === 'therapist_sharing' && /^therapist-\d+$/.test(where.scope) ? granted(where.UserId, where.scope) : null);
+  models.Consent.findAll = async ({ where }) => (where.purpose === 'therapist_sharing' ? [].concat(where.UserId?.[Op.in] ?? []).map((id) => granted(id, where.scope)) : []);
+}
+
+module.exports = { models, database, transaction, storage, anthropic, promptVault, record, startApp, grantTherapistSharing };

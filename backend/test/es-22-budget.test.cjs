@@ -500,3 +500,38 @@ test('ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin co
   }
   assert.equal(saved.length, 0);
 });
+
+// ES43-QA-01: el motivo de cierre del proveedor queda registrado junto a los tokens de salida (sin contenido) para detectar cortes por max_tokens.
+test('ES-43 chat: se registra stop_reason y output_tokens; solo códigos cortos, nunca texto libre', async t => {
+  const { store } = chatSetup(t, { ...CHAT_ENV, AI_BUDGET_TOKENS_PER_USER: '50000', AI_BUDGET_TOKENS_COHORT: '50000' }); // cada llamada reserva max_tokens (1500)
+  const request = await startApp(t);
+  const reply = (stop_reason) => { anthropic.messages.create = async () => ({ content: [{ type: 'text', text: 'Respuesta sintética' }], usage: { input_tokens: 100, output_tokens: 1000 }, ...(stop_reason === undefined ? {} : { stop_reason }) }); };
+  reply('max_tokens');
+  assert.equal((await post(request, { message: 'uno', requestId: 'req-stop-000001' })).status, 200);
+  reply('end_turn');
+  assert.equal((await post(request, { message: 'dos', requestId: 'req-stop-000002' })).status, 200);
+  reply('Texto libre del proveedor con datos personales');
+  assert.equal((await post(request, { message: 'tres', requestId: 'req-stop-000003' })).status, 200);
+  reply(undefined);
+  assert.equal((await post(request, { message: 'cuatro', requestId: 'req-stop-000004' })).status, 200);
+  const [cut, normal, free, missing] = store.usages;
+  assert.deepEqual([cut.stopReason, cut.outputTokens], ['max_tokens', 1000]); // el corte queda a la vista: cierre por límite con los 1000 tokens pedidos
+  assert.equal(normal.stopReason, 'end_turn');
+  assert.equal(free.stopReason, null); // un valor que no parece un código no se guarda
+  assert.equal(missing.stopReason, null);
+  assert.doesNotMatch(JSON.stringify(store.usages), /Texto libre|datos personales|uno|Respuesta sintética/);
+});
+
+// ES43-QA-01 (corrección): el chat pide 1500 tokens como máximo; un cierre por max_tokens no rompe el flujo y el texto no se altera.
+test('ES-43 chat: pide 1500 tokens como máximo; con stop_reason max_tokens el turno se completa, se registra y la reserva sigue acotada', async t => {
+  const { store, provider } = chatSetup(t);
+  const request = await startApp(t);
+  anthropic.messages.create = async (body) => { provider.calls.push({ body }); return { content: [{ type: 'text', text: 'Empieza por algo pequeño. Habla con dos personas y anota qué les sor' }], usage: { input_tokens: 100, output_tokens: 1500 }, stop_reason: 'max_tokens' }; };
+  const response = await post(request, { message: 'uno', requestId: 'req-cut-0000001' });
+  assert.equal(response.status, 200);
+  assert.equal(provider.calls[0].body.max_tokens, 1500);
+  assert.equal(response.body.reply, 'Empieza por algo pequeño. Habla con dos personas y anota qué les sor'); // sin recorte (decisión de Mauricio)
+  assert.deepEqual([store.usages[0].stopReason, store.usages[0].outputTokens, store.usages[0].status], ['max_tokens', 1500, 'completed']);
+  assert.equal(store.used(A, month()), 1600); // se cobra lo usado, no la reserva
+  assert.ok(store.usages[0].reservedTokens >= 1500); // la reserva por llamada incluye max_tokens completo, más ≈ prompt/3
+});
