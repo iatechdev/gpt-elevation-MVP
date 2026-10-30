@@ -103,3 +103,13 @@ test('ES-30 textos de la IA: ES y EN completos, sin porcentajes ni promesas, y e
   assert.match(skillMapEs['skill_map.ai_privacy'], /No ve tu diario/); assert.match(skillMapEn['skill_map.ai_privacy'], /does not see your journal/)
   assert.equal(/#[0-9a-fA-F]{3,8}\b/.test(read('../src/skill-map/radar.css')), false, 'solo tokens')
 })
+
+test('ES-30 (QA, Bajo) singular correcto: «1 seleccionada» y «Guardaste 1 capacidad» (ES y EN), y el panel los usa solo con una', () => {
+  assert.equal(skillMapEs['skill_map.ai_selected_one'].replace('{max}', '8'), '1 seleccionada de 8')
+  assert.equal(skillMapEn['skill_map.ai_selected_one'].replace('{max}', '8'), '1 selected of 8')
+  assert.match(skillMapEs['skill_map.ai_done_text_one'], /^Guardaste 1 capacidad como «propuesta por la IA y confirmada por ti»\. El radar ya la muestra\.$/)
+  assert.match(skillMapEn['skill_map.ai_done_text_one'], /^You saved 1 skill as /)
+  const panel = read('../src/skill-map/AiAnalysisPanel.tsx')
+  assert.match(panel, /picked\.length === 1 \? 'skill_map\.ai_selected_one' : 'skill_map\.ai_selected'/)
+  assert.match(panel, /savedKeys\.length === 1 \? 'skill_map\.ai_done_text_one' : 'skill_map\.ai_done_text'/)
+})

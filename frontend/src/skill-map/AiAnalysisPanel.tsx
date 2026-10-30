@@ -107,7 +107,7 @@ export function AiAnalysisPanel({ skills, initialKeys, lang, t, backend, token, 
         <fieldset className="skill-map-fieldset"><legend>{fmt(t('skill_map.ai_pick'), { max: MAX_SKILLS })}</legend>
           {skills.map(skill => <label key={skill.skillKey} className="skill-map-opt"><input type="checkbox" checked={picked.includes(skill.skillKey)} disabled={busy || (!picked.includes(skill.skillKey) && picked.length >= MAX_SKILLS)} onChange={() => toggle(skill.skillKey)} /><span><strong>{name(skill)}</strong></span></label>)}
         </fieldset>
-        <p className="skill-map-note" role="status">{fmt(t('skill_map.ai_selected'), { n: picked.length, max: MAX_SKILLS })}</p>
+        <p className="skill-map-note" role="status">{fmt(t(picked.length === 1 ? 'skill_map.ai_selected_one' : 'skill_map.ai_selected'), { n: picked.length, max: MAX_SKILLS })}</p>
         <p className="skill-map-note">{t('skill_map.ai_privacy')}</p>
         {problem}
         <div className="skill-map-self-actions"><button type="button" className="elv-btn" onClick={onClose}>{t('skill_map.reg_cancel')}</button>
@@ -147,7 +147,7 @@ export function AiAnalysisPanel({ skills, initialKeys, lang, t, backend, token, 
         <div className="skill-map-self-actions"><button type="button" className="elv-btn" disabled={busy} onClick={onClose}>{t('skill_map.reg_cancel')}</button>
           <button type="button" className="elv-btn skill-map-primary" disabled={busy || accepted.length < 1} onClick={() => void save()}>{busy ? t('skill_map.reg_saving') : t('skill_map.ai_save')}</button></div></>}
       {step === 'done' && <>
-        <p role="status" className="ai-ok">{fmt(t('skill_map.ai_done_text'), { n: savedKeys.length })}</p>
+        <p role="status" className="ai-ok">{fmt(t(savedKeys.length === 1 ? 'skill_map.ai_done_text_one' : 'skill_map.ai_done_text'), { n: savedKeys.length })}</p>
         {doneItems.filter(item => item.needsReview).map(item => <div key={item.skill.skillKey} className="ai-warn">
           <strong>{name(item.skill)} · {t('skill_map.contradictory')}</strong><br />{t('skill_map.ai_review_help')}</div>)}
         <div className="skill-map-self-actions"><button type="button" className="elv-btn skill-map-primary" onClick={onClose}>{t('skill_map.ai_see_map')}</button><button type="button" className="elv-btn" onClick={again}>{t('skill_map.ai_again')}</button></div></>}
