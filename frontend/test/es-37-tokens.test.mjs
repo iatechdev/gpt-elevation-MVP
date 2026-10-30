@@ -78,3 +78,9 @@ test('ES-37 paleta de la landing: papel, tinta, gris y ocre coinciden con index.
   const landing = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8').toLowerCase()
   for (const k of ['elv-bg', 'elv-text-1', 'elv-text-2', 'elv-line', 'elv-brand']) assert.ok(landing.includes(light[k]), `${k} ${light[k]} no está en la landing`)
 })
+
+test('ES-37 mapa de calor (radar ES-30): 4 pasos ocre, con texto legible encima (tinta en 1–3, blanco en 4)', () => {
+  for (const n of [1, 2, 3]) assert.ok(ratio(light['elv-heat-on-light'], light[`elv-heat-${n}`]) >= 4.5, `paso ${n}`)
+  assert.ok(ratio(light['elv-heat-on-dark'], light['elv-heat-4']) >= 4.5, 'paso 4')
+  assert.ok(ratio(light['elv-heat-4'], light['elv-bg']) >= 4.5, 'el paso 4 se lee sobre el fondo')
+})

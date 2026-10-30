@@ -1,0 +1,61 @@
+/* ES-30 · Radar con mapa de calor. Solo tokens (ES-37); el color nunca va solo: cada cuña lleva número y la lista de texto repite todo. */
+.radar-board { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); margin-bottom: 24px; }
+@media (min-width: 960px) {
+  .radar-board { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .radar-list-card { grid-column: 1 / -1; }
+}
+.radar-card { padding: 16px 24px; }
+.radar-card h2 { margin: 0 0 8px; font-size: var(--elv-fs-lg); font-weight: 600; }
+.radar-side { display: grid; gap: 16px; align-content: start; }
+.radar-svg { width: 100%; height: auto; display: block; }
+.radar-ring { fill: none; stroke: var(--elv-line); stroke-width: 1; }
+.radar-spoke { stroke: var(--elv-line); stroke-width: 1; }
+.radar-ring-label { font: 600 10px var(--elv-font-body); fill: var(--elv-text-2); }
+.radar-wedge { cursor: pointer; }
+.radar-fill { stroke: var(--elv-heat-4); stroke-width: 1.5; }
+.radar-fill.h1 { fill: var(--elv-heat-1); } .radar-fill.h2 { fill: var(--elv-heat-2); }
+.radar-fill.h3 { fill: var(--elv-heat-3); } .radar-fill.h4 { fill: var(--elv-heat-4); }
+.radar-none { fill: transparent; stroke: var(--elv-text-2); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.radar-wedge:hover path, .radar-wedge.is-selected path { stroke: var(--elv-focus); stroke-width: 3; }
+.radar-wedge:focus { outline: none; }
+.radar-wedge:focus-visible path { stroke: var(--elv-focus); stroke-width: 4; }
+.radar-num { font: 700 14px var(--elv-font-body); fill: var(--elv-heat-on-light); pointer-events: none; }
+.radar-num.on-dark { fill: var(--elv-heat-on-dark); }
+.radar-label { font: 500 12px var(--elv-font-body); fill: var(--elv-text-1); }
+.radar-label-sub { font: 600 10px var(--elv-font-body); fill: var(--elv-text-2); letter-spacing: .04em; text-transform: uppercase; }
+.radar-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 8px 0 0; padding: 0; list-style: none; font-size: var(--elv-fs-sm); color: var(--elv-text-2); }
+.radar-legend li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.radar-swatch { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--elv-heat-4); display: inline-grid; place-items: center; font: 700 11px var(--elv-font-body); color: var(--elv-heat-on-light); flex: none; }
+.radar-swatch.h1 { background: var(--elv-heat-1); } .radar-swatch.h2 { background: var(--elv-heat-2); } .radar-swatch.h3 { background: var(--elv-heat-3); }
+.radar-swatch.h4 { background: var(--elv-heat-4); color: var(--elv-heat-on-dark); }
+.radar-swatch.is-none { border: 1.5px dashed var(--elv-text-2); background: transparent; }
+.radar-points { list-style: none; margin: 0; padding: 0; }
+.radar-points li { border-top: 1px solid var(--elv-line); padding: 12px 0; }
+.radar-points li:first-child { border-top: 0; }
+.radar-points h3 { margin: 0; font-size: var(--elv-fs-md); font-weight: 600; }
+.radar-lv { display: flex; align-items: center; gap: 6px; margin: 4px 0 0; font-size: var(--elv-fs-sm); font-weight: 600; }
+.radar-criterion { margin: 4px 0 0; color: var(--elv-text-2); font-size: var(--elv-fs-md); }
+.radar-improve { border-left: 4px solid var(--elv-brand); background: var(--elv-action-soft); border-radius: var(--elv-r-md); padding: 12px 16px; }
+.radar-improve h3 { margin: 0; font-size: var(--elv-fs-md); font-weight: 600; }
+.radar-improve p { margin: 4px 0 12px; }
+.radar-empty { background: var(--elv-info-bg); border-color: var(--elv-info); }
+.radar-list { list-style: none; margin: 0; padding: 0; }
+.radar-list li { border-top: 1px solid var(--elv-line); }
+.radar-list li:first-child { border-top: 0; }
+.radar-row { display: grid; grid-template-columns: minmax(0, 1.2fr) 112px minmax(0, 1fr); gap: 12px; align-items: center; width: 100%; min-height: var(--elv-touch); padding: 8px 4px; text-align: left; background: none; border: 0; border-radius: var(--elv-r-sm); color: var(--elv-text-1); font: inherit; cursor: pointer; }
+.radar-row.is-selected { background: var(--elv-action-soft); }
+.radar-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; }
+.radar-steps i { display: block; height: 14px; border-radius: 3px; border: 1.5px solid var(--elv-heat-4); }
+.radar-steps.is-none i { border: 1.5px dashed var(--elv-text-2); }
+.radar-steps i.h1 { background: var(--elv-heat-1); } .radar-steps i.h2 { background: var(--elv-heat-2); }
+.radar-steps i.h3 { background: var(--elv-heat-3); } .radar-steps i.h4 { background: var(--elv-heat-4); }
+.radar-row-text { font-size: var(--elv-fs-sm); color: var(--elv-text-2); }
+.skill-map-views { display: inline-flex; border: 1px solid var(--elv-line-control); border-radius: var(--elv-r-md); overflow: hidden; }
+.skill-map-views button { min-height: var(--elv-touch); padding: 0 16px; border: 0; background: var(--elv-card); color: var(--elv-text-1); font: 500 var(--elv-fs-md) var(--elv-font-body); cursor: pointer; }
+.skill-map-views button[aria-pressed="true"] { background: var(--elv-action); color: var(--elv-action-text); }
+@media (max-width: 600px) {
+  .radar-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .radar-label, .radar-label-sub { display: none; }
+  .radar-card { padding: 16px; }
+}
+.radar-card { box-shadow: var(--elv-shadow-card); border-radius: var(--elv-r-lg); }
