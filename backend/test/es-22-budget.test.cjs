@@ -500,3 +500,24 @@ test('ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin co
   }
   assert.equal(saved.length, 0);
 });
+
+// ES43-QA-01: el motivo de cierre del proveedor queda registrado junto a los tokens de salida (sin contenido) para detectar cortes por max_tokens.
+test('ES-43 chat: se registra stop_reason y output_tokens; solo códigos cortos, nunca texto libre', async t => {
+  const { store } = chatSetup(t);
+  const request = await startApp(t);
+  const reply = (stop_reason) => { anthropic.messages.create = async () => ({ content: [{ type: 'text', text: 'Respuesta sintética' }], usage: { input_tokens: 100, output_tokens: 1000 }, ...(stop_reason === undefined ? {} : { stop_reason }) }); };
+  reply('max_tokens');
+  assert.equal((await post(request, { message: 'uno', requestId: 'req-stop-000001' })).status, 200);
+  reply('end_turn');
+  assert.equal((await post(request, { message: 'dos', requestId: 'req-stop-000002' })).status, 200);
+  reply('Texto libre del proveedor con datos personales');
+  assert.equal((await post(request, { message: 'tres', requestId: 'req-stop-000003' })).status, 200);
+  reply(undefined);
+  assert.equal((await post(request, { message: 'cuatro', requestId: 'req-stop-000004' })).status, 200);
+  const [cut, normal, free, missing] = store.usages;
+  assert.deepEqual([cut.stopReason, cut.outputTokens], ['max_tokens', 1000]); // el corte queda a la vista: cierre por límite con los 1000 tokens pedidos
+  assert.equal(normal.stopReason, 'end_turn');
+  assert.equal(free.stopReason, null); // un valor que no parece un código no se guarda
+  assert.equal(missing.stopReason, null);
+  assert.doesNotMatch(JSON.stringify(store.usages), /Texto libre|datos personales|uno|Respuesta sintética/);
+});
