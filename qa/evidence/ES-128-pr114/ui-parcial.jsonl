@@ -1,0 +1,16 @@
+{"id":"UI [es-1440] contraseña corta (6): bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 caracteres y hasta 72 bytes UTF-8; evita contraseñas comunes.\" peticiones=0"}
+{"id":"UI [es-1440] contraseña común: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 caracteres y hasta 72 bytes UTF-8; evita contraseñas comunes.\" peticiones=0"}
+{"id":"UI [es-1440] contraseña 11 caracteres: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 caracteres y hasta 72 bytes UTF-8; evita contraseñas comunes.\" peticiones=0"}
+{"id":"ERROR","ok":false,"detail":"Error: page.evaluate: Target crashed "}
+{"id":"UI [es-320] contraseña corta (6): bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 caracteres y hasta 72 bytes UTF-8; evita contraseñas comunes.\" peticiones=0"}
+{"id":"UI [es-320] contraseña común: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 caracteres y hasta 72 bytes UTF-8; evita contraseñas comunes.\" peticiones=0"}
+{"id":"UI [es-320] contraseña 11 caracteres: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 caracteres y hasta 72 bytes UTF-8; evita contraseñas comunes.\" peticiones=0"}
+{"id":"ERROR","ok":false,"detail":"Error: page.evaluate: Target crashed "}
+{"id":"UI [en-1440] contraseña corta (6): bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 characters and up to 72 UTF-8 bytes; avoid common passwords.\" peticiones=0"}
+{"id":"UI [en-1440] contraseña común: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 characters and up to 72 UTF-8 bytes; avoid common passwords.\" peticiones=0"}
+{"id":"UI [en-1440] contraseña 11 caracteres: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 characters and up to 72 UTF-8 bytes; avoid common passwords.\" peticiones=0"}
+{"id":"ERROR","ok":false,"detail":"Error: page.evaluate: Target crashed "}
+{"id":"UI [en-320] contraseña corta (6): bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 characters and up to 72 UTF-8 bytes; avoid common passwords.\" peticiones=0"}
+{"id":"UI [en-320] contraseña común: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 characters and up to 72 UTF-8 bytes; avoid common passwords.\" peticiones=0"}
+{"id":"UI [en-320] contraseña 11 caracteres: bloquea el envío, sin petición al servidor, mensaje en el idioma, sin desborde","ok":true,"detail":"mensaje=\"12 characters and up to 72 UTF-8 bytes; avoid common passwords.\" peticiones=0"}
+{"id":"ERROR","ok":false,"detail":"Error: page.evaluate: Target crashed "}
