@@ -302,5 +302,11 @@
   { "key": "landing.project.goals.4", "es": "Privacidad bajo tu control.", "en": "Privacy under your control." },
   { "key": "landing.project.goals.5", "es": "Una experiencia completa en español e inglés.", "en": "A complete experience in Spanish and English." },
   { "key": "landing.project.state.label", "es": "Estado", "en": "Status" },
-  { "key": "landing.project.state.body", "es": "Estamos construyendo la plataforma por etapas. Primero, un piloto cerrado con un grupo pequeño de personas en reconversión profesional, para aprender antes de ampliar. No presentamos cifras de eficacia ni de tracción porque todavía no existen.", "en": "We are building the platform in stages. First, a closed pilot with a small group of people changing careers, so we learn before we scale. We do not present efficacy or traction figures because they do not exist yet." }
+  { "key": "landing.project.state.body", "es": "Estamos construyendo la plataforma por etapas. Primero, un piloto cerrado con un grupo pequeño de personas en reconversión profesional, para aprender antes de ampliar. No presentamos cifras de eficacia ni de tracción porque todavía no existen.", "en": "We are building the platform in stages. First, a closed pilot with a small group of people changing careers, so we learn before we scale. We do not present efficacy or traction figures because they do not exist yet." },
+  {"key":"landing.closing.number","es":"15","en":"15"},
+  {"key":"landing.closing.title","es":"Empieza por donde quieras.","en":"Start wherever you like."},
+  {"key":"landing.closing.create","es":"Crear mi cuenta","en":"Create my account"},
+  {"key":"landing.footer.brand","es":"elevation","en":"elevation"},
+  {"key":"landing.footer.notice","es":"El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.","en":"Elevation's AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care."},
+  {"key":"landing.footer.copyright","es":"© {year}","en":"© {year}"}
 ]

@@ -72,7 +72,7 @@ test('ES-62: el enlace de salto es el primer elemento enfocable y apunta al cont
   assert.match(page, /<LandingHeader text=\{landing\.text\} lang=\{lang\} setLang=\{setLang\} \/>/)
   assert.match(page, /<main id="contenido" tabIndex=\{-1\}>/)
   assert.ok(page.indexOf('<LandingHeader') < page.indexOf('<main id="contenido"'))
-  assert.ok(page.indexOf('</main>') < page.indexOf('<footer'))
+  assert.ok(page.indexOf('</main>') < page.indexOf('<LandingFooter'))
   assert.doesNotMatch(page, /ELEVATION<\/span>\s*<nav/)
 })
 

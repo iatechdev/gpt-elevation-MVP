@@ -9,7 +9,7 @@
 @plugin 'daisyui' {
   themes: false;
   root: '.landing-scope';
-  include: button, card, badge, link, join, navbar, hero, textarea, checkbox, input, fieldset, select, radio, alert;
+  include: button, card, badge, link, join, navbar, hero, footer, textarea, checkbox, input, fieldset, select, radio, alert;
   prefix: 'elv-';
   logs: false;
 }
@@ -281,4 +281,25 @@
   .landing-scope .landing-project h2 { margin-bottom: 3rem; }
   .landing-scope .landing-project-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 3rem; margin-top: 3rem; }
   .landing-scope .landing-project-state .elv-card-body { padding: 2rem; }
+}
+
+/* ES-65 · S15: approved closing and footer; D-08 links remain plain markers. */
+.landing-scope .landing-closing { padding: 2.5rem 1.5rem 4rem; overflow-wrap: anywhere; }
+.landing-scope .landing-closing-inner, .landing-scope .landing-footer-inner { max-width: 1280px; width: 100%; margin-inline: auto; }
+.landing-scope .landing-closing-number { margin: 0 0 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-base-300); color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; }
+.landing-scope .landing-closing-number::after { content: ''; display: inline-block; width: 2rem; height: 1px; margin-left: 1rem; vertical-align: middle; background: var(--color-accent); }
+.landing-scope .landing-closing h2 { margin: 0 0 2.5rem; font-size: clamp(2.25rem, 4.45vw, 4rem); line-height: 1.03; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-closing-create { width: 100%; padding-inline: 1.25rem; }
+.landing-scope .landing-footer { display: block; padding: 0 1.5rem 2.5rem; overflow-wrap: anywhere; }
+.landing-scope .landing-footer-inner { display: grid; gap: 2rem; border-top: 1px solid var(--color-base-300); padding-top: 2rem; }
+.landing-scope .landing-footer-brand { display: inline-block; color: var(--color-base-content); font-size: 1.75rem; font-weight: 800; letter-spacing: -0.04em; }
+.landing-scope .landing-footer-brand > span { color: var(--color-accent); }
+.landing-scope .landing-footer-notice { max-width: 720px; color: var(--landing-muted); font-size: 0.9375rem; line-height: 1.6; margin: 0; }
+.landing-scope .landing-footer-pending { display: flex; flex-direction: column; gap: 1.5rem; list-style: none; padding: 0; margin: 0; font-size: 0.9375rem; color: var(--color-base-content); }
+.landing-scope .landing-footer-meta { margin: 0; color: var(--landing-muted); font-size: 0.8125rem; }
+@media (min-width: 48rem) {
+  .landing-scope .landing-closing { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 7rem; }
+  .landing-scope .landing-closing-create { width: auto; }
+  .landing-scope .landing-footer { padding: 0 clamp(1.5rem, 5.56vw, 5rem) 4rem; }
+  .landing-scope .landing-footer-pending { flex-direction: row; flex-wrap: wrap; gap: 2.5rem; }
 }
