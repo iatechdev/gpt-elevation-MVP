@@ -78,6 +78,16 @@ connectDB().then(() => {
     .catch(err => console.error('❌ Error sincronizando tablas:', err));
 });
 
+// ES-137: ninguna respuesta de la API con datos de la persona se guarda en caché de navegador ni de proxy compartido.
+// Quedan fuera solo los recursos públicos de lectura (contenido de la landing, planes, precios, manifiesto); las rutas pueden fijar su propio valor.
+const PUBLIC_CACHEABLE = /^\/(landing-content|plans|pricing|manifest)(\/|$)/;
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' && PUBLIC_CACHEABLE.test(req.path)) return next();
+  res.set('Cache-Control', 'no-store');
+  res.vary('Authorization');
+  next();
+});
+
 // ── Rutas públicas ────────────────────────────────────────────────────────────
 app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
