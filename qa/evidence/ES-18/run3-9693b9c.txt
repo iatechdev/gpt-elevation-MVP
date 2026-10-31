@@ -1,0 +1,26 @@
+❌ Error fetching manifests: TypeError: EthicManifest.findAll is not a function
+{"user":{"antes":200,"despues":401},"admin":{"antes":200,"despues":401},"superadmin":{"antes":500,"despues":401},"board":{"antes":500,"despues":401}}
+✔ ES18-S01: un token revocado por logout deja de valer en TODOS los middlewares (552.4629ms)
+✔ ES18-S02: logout y logout-all (flujo real) invalidan la sesión (30.0688ms)
+✔ ES18-S03: token sin jti, alterado o con algoritmo none → 401 (15.2971ms)
+✔ ES18-S04: si la base de sesiones falla, cierra en falla (503), nunca 200 (12.8634ms)
+PUT estado → 200 corte creado: true
+🔑 Contraseña reseteada para: Obj (id: 301) por superadmin Sintético A
+reset-password → 200 corte: true
+✔ ES18-S05: cambiar rol/estado, borrar o resetear contraseña corta las sesiones de esa cuenta (117.4904ms)
+{"nota":"token real emitido 5 ms después del corte","status":200}
+✔ ES18-S06: borde de un segundo — token emitido por el emisor real justo después de logout-all debe valer (29.1788ms)
+stats → 200 ["sesiones","ratingPromedio","moodPromedio"]
+promedios con n=1 → {"moodPromedio":null,"ratingPromedio":null}
+promedios con n=6 → {"moodPromedio":1.5,"ratingPromedio":5}
+✔ ES18-S07: el administrador no recibe datos individuales de ánimo/valoración ni mensajes (13.3665ms)
+{"GET /api/therapist/prompt":403,"GET /api/therapist/pacientes":403,"GET /api/therapist/alerts":403,"POST /api/therapist/prompt/propose":403,"GET /api/therapist/pacientes/1/historia":403}
+✔ ES18-S08: rutas de terapeuta con rol "user" (sin control de rol en el handler) (24.4074ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 997.7405

@@ -1,0 +1,42 @@
+== test:data-rights:pg
+# tests 12
+# pass 12
+# fail 0
+== test:bridge:pg
+# tests 7
+# pass 7
+# fail 0
+== test:proposals:pg
+# tests 5
+# pass 5
+# fail 0
+== test:skillmap:pg
+    not ok 4 - ocho autoevaluaciones simultáneas de la misma habilidad dejan una sola vigente y ningún error
+not ok 1 - ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de evaluaciones e invalidación por cambio de evidencia
+# tests 8
+# pass 6
+# fail 2
+== test:pro-applications:pg
+# tests 5
+# pass 5
+# fail 0
+== test:integration:pg
+not ok 1 - Integración ES-23/25/27 en PostgreSQL: revocar el puente actúa en las tres piezas a la vez y respeta la guarda de eliminación
+# tests 1
+# pass 0
+# fail 1
+== flaky npm test x6 (#67)
+# fail 0 
+# fail 0 
+# fail 0 
+# fail 0 
+# fail 0 
+# fail 0 
+== flaky npm test x6 (#63)
+# fail 0 
+# fail 0 
+# fail 0 
+# fail 0 
+# fail 0 
+# fail 0 
+FIN2

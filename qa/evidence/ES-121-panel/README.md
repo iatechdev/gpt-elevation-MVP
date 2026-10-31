@@ -1,0 +1,10 @@
+# ES-121 parte 3 · PR #103 · head 3a0962462d356c3f4b65fdb27e0114c19267caab — evidencia [QA-Claude]
+Entorno: merge local con origin/main (que incluye #99 y #102 vía la pila), frontend construido (vite build), Postgres 17 con migraciones reales, API real que sirve `frontend/dist` (mismo origen), Chromium (Playwright), IA simulada, datos SINTÉTICOS. Claude real: no ejecutado.
+- `ui-3a09624.jsonl`: es121-sources-ui.cjs, 32 comprobaciones correctas (P1–P11, P13a): interruptores y estado inicial, diálogo (foco, Tab atrapado, Esc, Cancelar), otorgar con doble clic = 1 petición, retirar inmediato sin borrar lo autorizado, analizar chat/diario/hoja de vida con etiquetas, autorizar con origen `chat_turn` + id y sin la cita ni el texto fuente, 403 con permiso retirado en otra pestaña, proveedor caído con «Reintentar», sin red, límite, sin material, error al guardar, XSS en la propuesta, nada en localStorage/sessionStorage/cookies, propuestas no guardadas al recargar, aislamiento A/B, terapeuta y sesión inválida, EN, 375 y 320 px sin desborde y controles ≥44 px, sin errores de consola.
+- `capturas/`: p1-inicial, p2-dialogo, p4-chat, p6-fuentes, p6-403, p11-375, p11-320.
+- Frontend `npm test` 242/242 con main fusionado (main solo: 233), `tsc -b` y `eslint` sin errores, `vite build` correcto; backend 496/496; bundle sin secretos ni datos sintéticos; `npm audit --omit=dev` frontend: 0 vulnerabilidades (igual que main).
+## Observaciones
+- P3d (la propuesta de una fuente desaparece de la pantalla al retirar su permiso) NO la verifiqué de forma automática (mi comprobación era débil); sí verifiqué que retirar es inmediato, queda revocado y no borra lo autorizado (P3c).
+- Desviaciones declaradas por Dev (origen conservado en `compass/model.ts`, `PermissionSwitch` nuevo, estilo de El Puente, varias citas cruzan con el origen de la primera) revisadas: el origen cruza correctamente y la cita nunca viaja; el resto no produjo fallas.
+## No verificado
+Claude real, lector de pantalla real, navegadores distintos de Chromium, producción, mutaciones del frontend.

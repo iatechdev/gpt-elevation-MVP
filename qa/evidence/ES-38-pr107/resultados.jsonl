@@ -1,0 +1,95 @@
+{"id":"F1 320-es: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":288,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 320-es: autocomplete correcto (current-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Ingresar\"}"}
+{"id":"F11 320-es: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 320-es-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":288,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 320-es-registro: autocomplete correcto (new-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Crear cuenta\"}"}
+{"id":"F11 320-es-registro: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 320-en: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":288,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 320-en: autocomplete correcto (current-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Sign in\"}"}
+{"id":"F11 320-en: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 320-en-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":288,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 320-en-registro: autocomplete correcto (new-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Create an account\"}"}
+{"id":"F11 320-en-registro: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 375-es: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":343,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 375-es: autocomplete correcto (current-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Ingresar\"}"}
+{"id":"F10 375-es: el primer Tab llega al enlace de salto","ok":false,"detail":"elv-btn|"}
+{"id":"F1 375-es-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":343,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 375-es-registro: autocomplete correcto (new-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Crear cuenta\"}"}
+{"id":"F10 375-es-registro: el primer Tab llega al enlace de salto","ok":false,"detail":"elv-btn|"}
+{"id":"F1 375-en: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":343,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 375-en: autocomplete correcto (current-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Sign in\"}"}
+{"id":"F10 375-en: el primer Tab llega al enlace de salto","ok":false,"detail":"elv-input|"}
+{"id":"F1 375-en-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":343,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 375-en-registro: autocomplete correcto (new-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Create an account\"}"}
+{"id":"F10 375-en-registro: el primer Tab llega al enlace de salto","ok":false,"detail":"elv-input|"}
+{"id":"F1 768-es: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 768-es: autocomplete correcto (current-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Ingresar\"}"}
+{"id":"F1 768-es-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 768-es-registro: autocomplete correcto (new-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Crear cuenta\"}"}
+{"id":"F1 768-en: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 768-en: autocomplete correcto (current-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Sign in\"}"}
+{"id":"F1 768-en-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 768-en-registro: autocomplete correcto (new-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Create an account\"}"}
+{"id":"F1 1440-es: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 1440-es: autocomplete correcto (current-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Ingresar\"}"}
+{"id":"F11 1440-es: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 1440-es-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 1440-es-registro: autocomplete correcto (new-password) y título en es","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Crear cuenta\"}"}
+{"id":"F11 1440-es-registro: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 1440-en: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 1440-en: autocomplete correcto (current-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"current-password\"},\"h1\":\"Sign in\"}"}
+{"id":"F11 1440-en: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1 1440-en-registro: etiquetas asociadas, controles ≥44 px, tarjeta ≤448 px, enlace de salto, sin desborde","ok":true,"detail":"{\"emH\":52,\"subH\":50,\"tgH\":44,\"cardW\":448,\"sw\":false,\"errs\":[]}"}
+{"id":"F1b 1440-en-registro: autocomplete correcto (new-password) y título en en","ok":true,"detail":"{\"ac\":{\"e\":\"email\",\"p\":\"new-password\"},\"h1\":\"Create an account\"}"}
+{"id":"F11 1440-en-registro: contraste placeholder ≥4.5 y borde ≥3 (medido)","ok":true,"detail":"placeholder 5.35 borde 3.58 pad 12px 14px"}
+{"id":"F1c Mostrar/Ocultar contraseña alterna el tipo del campo","ok":true,"detail":"password/text/password"}
+{"id":"F10 Tab recorre salto, idioma, correo, contraseña, mostrar, enviar y «crear cuenta» sin trampas","ok":true,"detail":"A:Saltar al co > BUTTON:ES > BUTTON:EN > access-email: > access-password: > BUTTON:Mostrar > BUTTON:Entrar a mi  > BUTTON:Crear cuenta"}
+{"id":"F2 login rol user: destino correcto","ok":true,"detail":"/app/onboarding"}
+{"id":"F2 login rol admin: destino correcto","ok":true,"detail":"/admin/dashboard"}
+{"id":"F2 login rol superadmin: destino correcto","ok":true,"detail":"/admin/dashboard"}
+{"id":"F2 login rol therapist: destino correcto","ok":true,"detail":"/therapist/dashboard"}
+{"id":"F2 login rol board: destino correcto","ok":true,"detail":"/board/manifest"}
+{"id":"F3a credenciales erróneas: alerta visible y el correo se conserva","ok":true,"detail":"alerta=\"Credenciales incorrectas.\""}
+{"id":"F3b campos vacíos: el navegador bloquea el envío (sin petición)","ok":true,"detail":"valueMissing=true posts=0"}
+{"id":"F4 envío lento: aria-busy=true, botón deshabilitado y UNA sola petición","ok":true,"detail":"busy=true disabled=true peticiones=1"}
+{"id":"F5a registro OK: mensaje de éxito, contraseña vacía, vuelve a modo ingreso, sin login automático","ok":true,"detail":"status=\"Registro exitoso. Ahora inicia sesión.\" url=/login?plan=3"}
+{"id":"F6 la intención de plan (?plan=3) se conserva tras registrarse","ok":true,"detail":"?plan=3"}
+{"id":"S4a la contraseña nunca aparece en la URL","ok":true,"detail":"?plan=3"}
+{"id":"F5b correo repetido: alerta visible, sin 5xx","ok":true,"detail":"\"El correo ya está registrado.\""}
+{"id":"F5c contraseña débil: alerta visible","ok":false,"detail":"\"\""}
+{"id":"S3 /login?plan=http://evil.example: sin redirección abierta (origen propio, ruta conocida)","ok":true,"detail":"/app/onboarding"}
+{"id":"S3 /login?next=https://evil.example: sin redirección abierta (origen propio, ruta conocida)","ok":true,"detail":"/app/onboarding"}
+{"id":"S3 /login?redirect=//evil.example: sin redirección abierta (origen propio, ruta conocida)","ok":true,"detail":"/app/onboarding"}
+{"id":"S3 /login?plan=1&plan=2: sin redirección abierta (origen propio, ruta conocida)","ok":true,"detail":"/app/onboarding"}
+{"id":"S3 /login?plan=-1: sin redirección abierta (origen propio, ruta conocida)","ok":true,"detail":"/app/onboarding"}
+{"id":"S3 /login?plan=0x10: sin redirección abierta (origen propio, ruta conocida)","ok":true,"detail":"/app/onboarding"}
+{"id":"F7 admin admin es: menú con los destinos esperados por rol y botón de cerrar sesión","ok":true,"detail":"{\"hrefs\":[\"/admin/route-catalog\",\"/admin/skill-catalog\",\"/admin/dashboard\",\"/admin/prompts\",\"/admin/content\",\"/admin/metrics\"],\"lo\":true}"}
+{"id":"F7 admin admin en: menú con los destinos esperados por rol y botón de cerrar sesión","ok":true,"detail":"{\"hrefs\":[\"/admin/route-catalog\",\"/admin/skill-catalog\",\"/admin/dashboard\",\"/admin/prompts\",\"/admin/content\",\"/admin/metrics\"],\"lo\":true}"}
+{"id":"F7 admin superadmin es: menú con los destinos esperados por rol y botón de cerrar sesión","ok":true,"detail":"{\"hrefs\":[\"/admin/route-catalog\",\"/admin/skill-catalog\",\"/admin/dashboard\",\"/admin/prompts\",\"/admin/content\",\"/admin/users\",\"/admin/metrics\",\"/admin/manifest\"],\"lo\":true}"}
+{"id":"F7 admin superadmin en: menú con los destinos esperados por rol y botón de cerrar sesión","ok":true,"detail":"{\"hrefs\":[\"/admin/route-catalog\",\"/admin/skill-catalog\",\"/admin/dashboard\",\"/admin/prompts\",\"/admin/content\",\"/admin/users\",\"/admin/metrics\",\"/admin/manifest\"],\"lo\":true}"}
+{"id":"F8a 390px: el botón de menú abre (aria-expanded), Escape cierra y devuelve el foco al botón","ok":true,"detail":"false/true/false foco=elv-btn elv-btn-outline admin-menu-toggle"}
+{"id":"F8b 390px: elegir un destino cierra el menú y enfoca el contenido principal","ok":true,"detail":"exp=false foco=admin-main url=/admin/users"}
+{"id":"F8c 390px: un cambio de ruta deja el menú cerrado","ok":true,"detail":"false"}
+{"id":"F9 390px: contenido ancho de /admin/users no genera scroll horizontal de la página","ok":true,"detail":"{\"dash\":{\"doc\":false,\"main\":301},\"users\":false}"}
+{"id":"P3 390px: abrir/cerrar el menú 20 veces sin errores ni estado inconsistente","ok":true,"detail":"{\"ok\":true,\"errs\":[]}"}
+{"id":"F8a 320px: el botón de menú abre (aria-expanded), Escape cierra y devuelve el foco al botón","ok":true,"detail":"false/true/false foco=elv-btn elv-btn-outline admin-menu-toggle"}
+{"id":"F8b 320px: elegir un destino cierra el menú y enfoca el contenido principal","ok":true,"detail":"exp=false foco=admin-main url=/admin/users"}
+{"id":"F8c 320px: un cambio de ruta deja el menú cerrado","ok":true,"detail":"false"}
+{"id":"F9 320px: contenido ancho de /admin/users no genera scroll horizontal de la página","ok":true,"detail":"{\"dash\":{\"doc\":false,\"main\":371},\"users\":false}"}
+{"id":"P3 320px: abrir/cerrar el menú 20 veces sin errores ni estado inconsistente","ok":true,"detail":"{\"ok\":true,\"errs\":[]}"}
+{"id":"S1 persona usuaria abre /admin/dashboard por URL: no ve datos administrativos","ok":true,"detail":"url=/app/onboarding apiAdmin= leaked=false"}
+{"id":"S1 persona usuaria abre /admin/users por URL: no ve datos administrativos","ok":true,"detail":"url=/app/onboarding apiAdmin= leaked=false"}
+{"id":"S1 persona usuaria abre /board/manifest por URL: no ve datos administrativos","ok":true,"detail":"url=/app/onboarding apiAdmin= leaked=false"}
+{"id":"S1 terapeuta abre /admin/dashboard por URL: no ve datos administrativos","ok":true,"detail":"url=/therapist/dashboard apiAdmin= leaked=false"}
+{"id":"S1 terapeuta abre /admin/users por URL: no ve datos administrativos","ok":true,"detail":"url=/therapist/dashboard apiAdmin= leaked=false"}
+{"id":"S1 admin abre /admin/users por URL: no ve datos administrativos","ok":false,"detail":"url=/admin/users apiAdmin=200,200,200 leaked=true"}
+{"id":"S1 junta abre /admin/dashboard por URL: no ve datos administrativos","ok":true,"detail":"url=/board/manifest apiAdmin= leaked=false"}
+{"id":"S1b rol falsificado en localStorage con token de persona usuaria: la API responde 401/403 y no se listan cuentas","ok":true,"detail":"api=403,403,403 filasConCorreo=0"}
+{"id":"S2a token inválido en el panel admin: sin datos administrativos visibles (vuelve a login o muestra error sin datos)","ok":true,"detail":"url=/admin/dashboard texto=\"Saltar al contenido ELEVATION ● ES EN QA107 a Administrador Cerrar sesión ↗ Catálogo de rutas ◇ Catá\""}
+{"id":"S2b cerrar sesión: va a /login, borra token/rol/nombre y «Atrás» no devuelve al panel","ok":true,"detail":"{\"afterOut\":\"/login\",\"ls\":{\"t\":null,\"r\":null,\"n\":null},\"back\":\"/login\"}"}
+{"id":"S4b entradas con HTML/script: no se ejecuta ni se inyecta marcado en la página","ok":true,"detail":"dialogo=false"}
+{"id":"info S5 cabeceras de /login","xcto":"nosniff","xfo":"DENY","csp":"default-src 'self';base-uri 'self';font-src 'self' https://fonts.gstatic.com;for","hsts":"max-age=31536000; includeSubDomains"}
+{"id":"S6 tras intentos fallidos la cuenta se bloquea (423) y la contraseña correcta también es rechazada","ok":true,"detail":"intentos=401,401,423,423,423,423,423 correcta=423"}
+{"id":"P2 /login con red lenta simulada (≈ Fast 3G): título visible en < 3 s en local","ok":false,"detail":"6941 ms"}
+{"id":"P4 6 inicios de sesión simultáneos: todos 200 y < 1 s cada uno","ok":true,"detail":"[{\"s\":200,\"ms\":604},{\"s\":200,\"ms\":599},{\"s\":200,\"ms\":602},{\"s\":200,\"ms\":601},{\"s\":200,\"ms\":596},{\"s\":200,\"ms\":598}]"}
+RESUMEN {"total":93,"ok":86,"fallos":["F10 375-es: el primer Tab llega al enlace de salto","F10 375-es-registro: el primer Tab llega al enlace de salto","F10 375-en: el primer Tab llega al enlace de salto","F10 375-en-registro: el primer Tab llega al enlace de salto","F5c contraseña débil: alerta visible","S1 admin abre /admin/users por URL: no ve datos administrativos","P2 /login con red lenta simulada (≈ Fast 3G): título visible en < 3 s en local"]}

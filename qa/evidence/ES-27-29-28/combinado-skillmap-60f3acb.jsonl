@@ -1,0 +1,11 @@
+{"id":"SK-H0 alta: evidencia del chat 201, directa 201 y dos autoevaluaciones 201","ok":true,"detail":"201/201/201/201 {\"assessment\":{\"skillKey\":\"comunicacion\",\"track\":\"self\",\"level\":2,\"state\":\"initial\",\"confidence\":\"lo"}
+{"id":"SK-H0b antes de revocar ambas habilidades tienen nivel 2","ok":true,"detail":"[2,2]"}
+{"id":"SK-H1 revocar professional_bridge: la habilidad apoyada en evidencia del chat pasa a null (stale) y la apoyada en evidencia directa se conserva","ok":true,"detail":"[200,null,true,2]"}
+{"id":"SK-H2 con el consentimiento revocado no se puede volver a evaluar apoyándose en la evidencia del chat (4xx)","ok":true,"detail":"status=422"}
+{"id":"exportacion","info":"status=201 claves=schemaVersion,type,locale,profile,messages,chatTurns,diary,moods,ratings,recommendations,consents,consentHistory,planRequests,aiUsage,aiBudget,careerContext,bridgeTransfers,evidence,evidenceVersions,skillAssessments,invalidations"}
+{"id":"SK-X01 la exportación personal incluye las evaluaciones del Skill Map (con el nivel y las evidencias citadas) y no las de otra persona","ok":true,"detail":"status=201 n=2"}
+{"id":"SK-X02 la exportación descifra la justificación de la persona (sin texto cifrado v2:)","ok":true,"detail":""}
+{"id":"SK-E01 antes de la purga hay evaluaciones y después de purgar quedan 0 (y 0 de puente y de evidencia)","ok":true,"detail":"solicitud=202 antes=2 después=0 {\"puente\":0,\"evidencia\":0} exit=0"}
+{"id":"SK-E02 con la solicitud aceptada la sesión no lee el Skill Map (4xx)","ok":true,"detail":"status=401"}
+{"id":"SK-E03 el catálogo y sus habilidades (no son datos personales) siguen intactos tras la purga","ok":true,"detail":""}
+{"fin":true}

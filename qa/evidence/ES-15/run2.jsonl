@@ -1,0 +1,42 @@
+{"id":"ES15-D01 diario vacío","ok":true,"detail":""}
+{"id":"ES15-D02 crear y leer el detalle","ok":true,"detail":"id=1"}
+{"id":"ES15-D03 editar y ver el cambio","ok":true,"detail":"status=200"}
+{"id":"ES15-D05 el contenido está cifrado v2 en la base","ok":true,"detail":"v2:44a"}
+{"id":"ES15-D04 borrar: desaparece de la lista y el detalle da 404","ok":true,"detail":"status=200"}
+{"id":"ES15-D06 editar y borrar dejan invalidaciones sin contenido","ok":true,"detail":""}
+{"id":"ES15-D07 100 entradas: el listado responde y devuelve como máximo 100","ok":true,"detail":"n=100 ms=30"}
+{"id":"ES15-C01 sin selección no entra nada del diario al prompt","ok":true,"detail":"status=200"}
+{"id":"ES15-C02 con 2 entradas seleccionadas entran esas 2 y solo esas","ok":true,"detail":"status=200"}
+{"id":"ES15-C02b con 3 entradas entran las 3","ok":true,"detail":"status=200"}
+{"id":"ES15-C03 una cuarta selección se rechaza (4xx) y no llega al modelo","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES15-C05 la selección es por envío: el siguiente envío sin selección no lleva diario","ok":true,"detail":""}
+{"id":"C04-entrada-larga","info":"status=200 longitud-enviada=2000"}
+{"id":"ES15-C04 el límite de 2.000 caracteres se respeta (no entran los 5.000)","ok":true,"detail":"enviados=2000"}
+{"id":"ES15-C06 elegir diario no crea puente, evidencia ni consentimiento profesional","ok":true,"detail":""}
+{"id":"ES15-C07 el texto del diario no se guarda como mensaje ni en los turnos del chat","ok":true,"detail":""}
+{"id":"ES15-E04 fallo del proveedor y reintento con el mismo requestId: un solo turno y el error no queda como respuesta persistida","ok":true,"detail":"1°=502 2°=200 turnos=1"}
+{"id":"ES15-E07 8 envíos simultáneos con el mismo requestId: un turno y ningún 5xx","ok":true,"detail":"estados=200,409"}
+{"id":"ES15-S01 B con el ID de una entrada de A → 404 en GET, PUT y DELETE y sin datos","ok":true,"detail":"404/404/404"}
+{"id":"ES15-S01 administrador con el ID de una entrada de A → 404 en GET, PUT y DELETE y sin datos","ok":true,"detail":"404/404/404"}
+{"id":"ES15-S01 terapeuta con el ID de una entrada de A → 404 en GET, PUT y DELETE y sin datos","ok":true,"detail":"404/404/404"}
+{"id":"ES15-S01 board con el ID de una entrada de A → 404 en GET, PUT y DELETE y sin datos","ok":true,"detail":"404/404/404"}
+{"id":"ES15-S01b sin token → rechazado","ok":true,"detail":""}
+{"id":"ES15-S02 el diario de A elegido por B → 404 y no llega al prompt (0 llamadas)","ok":true,"detail":"status=404 llamadas=0"}
+{"id":"ES15-S04 una entrada borrada ya no se puede elegir (404, 0 llamadas)","ok":true,"detail":"status=404"}
+{"id":"ES15-S05 el texto del diario va delimitado como dato no confiable (UNTRUSTED) y los límites quedan al final","ok":true,"detail":"largo-system=1453"}
+{"id":"S06-entrada-de-riesgo-como-contexto","info":"status=200 interrumpido=false llamadas-al-modelo=1 texto-de-riesgo-en-prompt=true"}
+{"id":"ES15-S07 un mensaje de riesgo con diario seleccionado sigue el flujo de seguridad: respuesta interrumpida y 0 llamadas al modelo","ok":true,"detail":"status=200 llamadas=0"}
+{"id":"ES15-S10 HTML se guarda y se devuelve como dato JSON","ok":true,"detail":""}
+{"id":"ES15-S11 contextEntryIds [] → sin 5xx","ok":true,"detail":"status=200"}
+{"id":"ES15-S11 contextEntryIds \"x\" → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-S11 contextEntryIds [0] → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-S11 contextEntryIds [-1] → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-S11 contextEntryIds [1.5] → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-S11 contextEntryIds [\"a\"] → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-S11 contextEntryIds [1,1] → sin 5xx","ok":true,"detail":"status=200"}
+{"id":"ES15-S11 contextEntryIds [1,2,3,4,5,6,7,8,9,10,11,12,13 → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-S11 contextEntryIds {\"a\":1} → sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES15-P01 listado de 100 entradas p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=19ms"}
+{"id":"ES15-P02 creación p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=21ms"}
+{"id":"ES15-P03 el envío con 3 entradas no es más de 20 % más lento que sin diario (proveedor simulado)","ok":true,"detail":"sin=31ms con=30ms"}
+{"fin":true}

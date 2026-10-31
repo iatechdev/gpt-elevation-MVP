@@ -1,0 +1,9 @@
+✔ ES66-F01: catálogo completo, sin duplicados ni vacíos, ES y EN (1.373ms)
+✔ ES66-F02/F03: GET público mezcla defaults, ignora blancos y responde con respaldo si falla la base (530.6869ms)
+✔ ES66-S01: PUT solo superadmin; sin escritura al denegar (60.4129ms)
+✔ ES66-S02/S03: entradas inválidas y contenido hostil (nunca 500) (40.2181ms)
+{"peticiones":134724,"errores":0,"p50":4.3,"p95":9.6,"max":217.5}
+✔ ES66-P01: latencia del GET con 6 usuarios virtuales (DB simulada) (120115.3659ms)
+ℹ tests 5
+ℹ pass 5
+ℹ fail 0

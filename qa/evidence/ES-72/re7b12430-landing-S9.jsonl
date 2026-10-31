@@ -1,0 +1,15 @@
+{"id":"ES72-T01 ES: las 11 frases de S9 del documento aparecen literalmente","ok":false,"detail":"Autonomía en cuatro niveles (conceptual, aplicada con asistencia, autónoma y rep || Sin un porcentaje de \"empleabilidad\" ni de \"reemplazo por IA\". || Bloque \"era de la IA\": Entender cómo cambian las tareas de los roles que explora"}
+{"id":"ES72-T02 ES: sin promesas ni cifras en toda la página","ok":true,"detail":"empleabil"}
+{"id":"ES72-T03 ES: sin frases de Figma no aprobadas","ok":true,"detail":""}
+{"id":"ES72-T01 EN: las 11 frases de S9 del documento aparecen literalmente","ok":false,"detail":"Autonomy in four levels (conceptual, applied with assistance, autonomous and rep || No \"employability\" or \"AI replacement\" percentage."}
+{"id":"ES72-T02 EN: sin promesas ni cifras en toda la página","ok":true,"detail":"employab"}
+{"id":"ES72-T03 EN: sin frases de Figma no aprobadas","ok":true,"detail":""}
+{"id":"ES72-A01 un h1, landmarks completos, enlace de saltar y anclas que existen","ok":true,"detail":"{\"h1\":1,\"landmarks\":\"header:1 nav:1 main:1 footer:1\",\"anchors\":[\"#contenido→ok\",\"#como-funciona→ok\",\"#skill-map→ok\"],\"skip\":\"#contenido\"}"}
+{"id":"ES72-R01 sin desplazamiento ni texto cortado a 320, 375, 390, 768, 1024 y 1440 px en ES y EN","ok":true,"detail":"ok"}
+{"id":"ES72-A02 contraste AA en light","ok":true,"detail":"{\"n\":0,\"worst\":5.54,\"theme\":\"elevation-landing-light\"}"}
+{"id":"ES72-A02 contraste AA en dark","ok":true,"detail":"{\"n\":0,\"worst\":6.71,\"theme\":\"elevation-landing-dark\"}"}
+{"id":"ES72-A03 el primer foco con teclado es «saltar al contenido» y es visible","ok":true,"detail":"{\"t\":\"Skip to content\",\"fv\":true,\"o\":\"solid\"}"}
+{"id":"ES72-S01 la landing solo pide al propio origen y a las fuentes ya existentes","ok":true,"detail":""}
+{"id":"ES72-S02 el almacenamiento local solo tiene el idioma","ok":true,"detail":"elv_lang"}
+{"id":"ES72-E01 sin errores de página","ok":true,"detail":""}
+{"fin":true}

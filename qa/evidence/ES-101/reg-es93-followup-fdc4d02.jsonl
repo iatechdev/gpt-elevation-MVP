@@ -1,0 +1,22 @@
+{"id":"ES93-S01b [SEG] ids inválidos en rutas de pacientes: ningún 5xx","ok":false,"detail":"abc/historial:500:{\"error\":\"Could not fetch patient history.\"} | abc/historia:500:{\"error\":\"Could not fetch clinical history.\"} | abc/resumen-ia:500:{\"error\":\"Could not generate summary.\"} | 99999999999999999999/historial:500:{\"error\":\"Could not fetch patient history.\"}"}
+{"id":"ES93-S01e [INFO] ids inválidos al crear notas","info":"abc:500 1.5:500 99999999999999999999:500"}
+{"id":"ES93-S08b [SEG] el administrador desactiva al terapeuta por la API: su token anterior deja de servir","ok":true,"detail":"PUT=200 después=401"}
+{"id":"ES93-S08c [SEG] el administrador cambia el rol del terapeuta por la API: su token anterior deja de servir","ok":true,"detail":"PUT=200 después=401"}
+{"id":"ES93-F10a matching: solicitud con salida válida del modelo → sugerencias solo de terapeutas ofrecidos","ok":true,"detail":"status=200 {\"requestId\":1,\"suggestions\":[{\"therapistId\":231,\"score\":8,\"reason\":\"Encaja con "}
+{"id":"ES93-F10g matching: un terapeuta inventado por el modelo se rechaza (502) sin guardar","ok":true,"detail":"status=502"}
+{"id":"ES93-F10b [SEG] el matching solo vincula a un terapeuta activo: elegir a un administrador y confirmar no debe vincular a la persona con él","ok":false,"detail":"choose=200 confirm=200 vinculado a EL ADMINISTRADOR (rol admin)"}
+{"id":"ES93-F10h [SEG] tampoco con otro participante: elegir a un participante como «terapeuta» y confirmar no debe vincularlo","ok":false,"detail":"choose=200 confirm=200 vinculado a UN PARTICIPANTE"}
+{"id":"ES93-F10i [SEG] un terapeuta desactivado no se puede vincular por el matching","ok":false,"detail":"choose=200 confirm=200 vinculado=AL DESACTIVADO"}
+{"id":"ES93-F10e [SEG] una persona no puede elegir sobre la solicitud de otra (404)","ok":true,"detail":"status=404"}
+{"id":"ES93-F10j [SEG] solo el administrador confirma asignaciones (terapeuta y participante → 403)","ok":true,"detail":"403/403"}
+{"id":"ES93-F02a [SEG] solo el superadmin lista, descarga, aprueba o rechaza validaciones (terapeuta, participante, administrador y junta → 403 en las URLs reales)","ok":true,"detail":"{\"terapeuta\":[403,403,403,403],\"participante\":[403,403,403,403],\"administrador\":[403,403,403,403],\"junta\":[403,403,403,403]}"}
+{"id":"ES93-S11d [INFO] la lista de pendientes del superadmin","info":"status=200 documentPath=se entrega"}
+{"id":"ES93-F02b rechazar sin nota → 400; con nota → 200; aprobar uno ya revisado → 4xx; el terapeuta ve su estado y la nota","ok":true,"detail":"400/200/400 estado=[{\"id\":2,\"documentType\":\"titulo\",\"documentName\":\"sintetico.pdf\",\"status\":\"reject"}
+{"id":"ES93-F02d [INFO] aprobar una validación","info":"status=200 perfil=0 activo=true (¿se enlaza la aprobación con el acceso del terapeuta?)"}
+{"id":"ES93-F02c [INFO] descarga del documento por el superadmin sin almacenamiento en la nube","info":"status=500 {\"error\":\"No se pudo generar el enlace de descarga.\"}"}
+{"id":"ES93-S11b [INFO] subir un .exe","info":"status=500 traza_o_rutas=SÍ cuerpo=<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"utf-8\"> <title>Error</title> </head> <body> <pre>Error: Solo se permiten PDF, JPG, PNG o WEBP.<br> &nbsp; &nbsp;at fileFilter (C:\\Users\\Usuario\\Documents\\gpt-elevati"}
+{"id":"ES93-S11c [INFO] subir 11 MB","info":"status=500 traza_o_rutas=SÍ cuerpo=<!DOCTYPE html> <html lang=\"en\"> <head> <meta charset=\"utf-8\"> <title>Error</title> </head> <body> <pre>MulterError: File too large<br> &nbsp; &nbsp;at abortWithCode (C:\\Users\\Usuario\\Documents\\gpt-elevation-nm\\backend\\n"}
+{"id":"ES93-S07d [INFO] eliminación de la persona (ES-23) con terapeuta vinculado","info":{"solicitud":202,"antes":200,"despues":404,"despuesCuerpo":"{\"error\":\"Patient not found or not assigned to you.\"}","usuario":{"activo":false,"terapeuta":231,"nombre":"QA93F p4"},"notasClinicasRestantes":1,"registrosAnimoRestantes":1,"enListaDelTerapeuta":false,"enAlertas":false}}
+{"id":"ES93-S07e [PRIV] tras aceptar la eliminación, el terapeuta ya no accede a datos de la persona (404)","ok":true,"detail":"despues=404"}
+{"id":"ES93-S07f [PRIV] tras la eliminación no quedan notas clínicas ni estados de ánimo de la persona y el vínculo se corta","ok":false,"detail":"notas=1 ánimo=1 vínculo=231"}
+{"fin":true}

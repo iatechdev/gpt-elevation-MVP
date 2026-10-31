@@ -1,0 +1,42 @@
+{"id":"ES73-F3a catálogo vacío: «Pronto publicaremos los planes», sin tarjetas ni precios inventados","ok":true,"detail":"Saltar al contenido elevation Cómo funciona Skill Map Planes ES EN Ingresar  12 PLANES  ELIGE CÓMO QUIERES ACOMPAÑARTE  Pronto publicaremos los planes.  El asis"}
+{"id":"ES73-F1a `GET /api/plans` devuelve solo los planes activos, en orden, con precio DECIMAL como cadena y sin campos internos","ok":true,"detail":"[[1,\"0.00\",\"COP\",\"month\"],[2,\"49900.50\",\"COP\",\"month\"],[3,\"399000.00\",\"COP\",\"year\"]]"}
+{"id":"ES73-F1 /pricing muestra el catálogo: 3 tarjetas con nombre, descripción, precio con formato regional, periodo, función y «Destacado» solo en el plan marcado","ok":true,"detail":"tarjetas=3 o lo necesites.  Plan inicial  Descripción sintética  Gratis  COP · / mes  Función A Función B Crear cuenta y solicitar este plan DESTACADO Plan completo  Descripción sintética  49.900,50 COP  / mes  Función A Función B "}
+{"id":"ES73-S4 [SEG] nombre, descripción y funciones con HTML hostil se muestran como texto: no se ejecuta ningún script","ok":true,"detail":"xss=undefined"}
+{"id":"ES73-P1b EN: planes en inglés (Free, Featured, «/ month», «Request/Create an account»), sin restos en español","ok":true,"detail":"Skip to content elevation How it works Skill Map Plans ES EN Log in  12 PLANS  CHOOSE HOW YOU WANT TO BE SUPPORTED  Start at no cost and change plans whenever y"}
+{"id":"ES73-F1b cambiar el precio en la base cambia la pantalla (sin importes fijos en el código)","ok":true,"detail":""}
+{"id":"ES73-F2 el subtítulo «Empieza sin costo…» y «Gratis» solo aparecen si hay un plan activo de precio cero","ok":true,"detail":"con_gratis=true sin_gratis=true"}
+{"id":"ES73-F3b estado cargando visible mientras llega el catálogo (con `role=status`) y luego las tarjetas","ok":true,"detail":""}
+{"id":"ES73-F3c error del catálogo: mensaje con `role=alert` y «Reintentar» que recupera las tarjetas","ok":true,"detail":""}
+{"id":"ES73-F3d [SEG] un catálogo malformado (precio negativo, moneda o periodo inválidos, no lista) se rechaza con el mensaje de error y no se muestra nada inventado","ok":true,"detail":"4 casos"}
+{"id":"ES73-F4a un plan retirado en el enlace avisa «ya no está disponible» y no permite solicitarlo","ok":true,"detail":""}
+{"id":"ES73-F4 anónimo con `?plan=`: el plan queda resaltado con «Revisa el plan seleccionado…» y el botón lleva a `/login?mode=register&plan=<id>` (solo el id)","ok":true,"detail":"enlace=/login?mode=register&plan=2"}
+{"id":"ES73-F4b [SEG] sin sesión, `returnTo`/`redirect` externos en /login se ignoran (no hay redirección abierta)","ok":true,"detail":"http://127.0.0.1:9911/login?plan=2&returnTo=https://evil.example.test/x&redirect=//evil.example.test"}
+{"id":"ES73-F4c [SEG] con sesión válida, /login redirige SOLO a `/pricing?plan=<id>` del mismo origen y no a `returnTo` externo","ok":true,"detail":"http://127.0.0.1:9911/pricing?plan=2"}
+{"id":"ES73-F5a [PRIV] con sesión y plan elegido NO se envía nada automáticamente: 0 POST hasta que la persona pulsa «Solicitar este plan»","ok":true,"detail":"POST=0"}
+{"id":"ES73-F5 solicitar envía UN POST con solo `{planId}`, la base queda con una solicitud pendiente de ese plan y la pantalla dice «quedó registrada… aún no está activado»","ok":true,"detail":"POST=1 filas=[{\"planId\":2,\"status\":\"pending\"}]"}
+{"id":"ES73-F5b tras solicitar, todos los botones quedan desactivados (una sola solicitud pendiente) y el plan solicitado se marca «Ya tienes una solicitud en revisión»","ok":true,"detail":""}
+{"id":"ES73-F5c [PRIV] la solicitud NO activa el plan ni cobra: el plan del usuario no cambia","ok":true,"detail":"usuarios con plan asignado=0"}
+{"id":"ES73-F5d respuesta perdida tras guardar: se reconcilia con el GET propio SIN repetir el POST (1 POST, 1 fila) y la pantalla muestra la solicitud en revisión","ok":true,"detail":"POST=1 filas=1 Ya tienes una solicitud en revisión"}
+{"id":"ES73-F5e un plan retirado justo al solicitar → aviso «ya no está disponible», 0 solicitudes y sin repetir","ok":true,"detail":"filas=0"}
+{"id":"ES73-S1 [SEG] aislamiento: B no ve la solicitud de A (`/me` → null), sin token no se lee ni crea nada (401/403), y un usuario normal no accede a la lista de administración","ok":true,"detail":"A=201 B.me={\"request\":null} anon=403/403 admin=403/403 plans/me=403"}
+{"id":"ES73-S2 [SEG] entradas maliciosas o raras en el POST (clave extra, tipos, negativos, enormes, plan inexistente/inactivo, query, JSON inválido) → 4xx sin 5xx, sin 201 y sin solicitud","ok":true,"detail":"15 casos, filas=0"}
+{"id":"ES73-S3 [SEG] seis POST simultáneos de la misma persona → una sola solicitud pendiente (1×201 y 5×409), sin 5xx","ok":true,"detail":"códigos=201,409,409,409,409,409 filas=1"}
+{"id":"ES73-P1c [OBS] mensaje del 409 (texto del backend)","info":"{\"error\":\"Ya tenés una solicitud de plan pendiente. Esperá a que el equipo la procese.\"}"}
+{"id":"ES73-P1 [SEG] los textos landing.pricing.* (ES/EN) no prometen empleo, cura, diagnóstico, ilimitado ni urgencia, y están completos en ambos idiomas","ok":true,"detail":"claves=25  faltan=ninguna"}
+{"id":"ES73-P1d [SEG] los textos de descripción/funciones aprobados y el respaldo antiguo no prometen empleo, cura ni ilimitado","ok":true,"detail":"sin coincidencias"}
+{"id":"ES73-F6 herramienta de textos: el dry-run informa cambios pero NO escribe; `--apply` sin el marcador de aprobación se niega y no cambia nada; no toca precios","ok":true,"detail":"[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2\n{\"mode\":\"dry-run\",\"ch | ERR Explicit approval marker required; no changes made."}
+{"id":"ES73-F6b con el marcador de aprobación `--apply` actualiza SOLO descripción y funciones de los slugs conocidos; precios y activos no cambian","ok":true,"detail":"[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild\n{\"mode\":\"apply-reviewed-copy\",\"changes\":[{\" | descripciones_sintéticas_restantes=0"}
+{"id":"ES73-F6c el texto antiguo del seed (coincidencia exacta) se muestra con el texto aprobado y una edición del administrador se respeta","ok":true,"detail":"antiguo→Una forma de comenzar con la conversación y la ref | editado→Texto editado por el administrador"}
+{"id":"ES73-U1 a 320, 375, 768 y 1440 px (ES y EN) no hay desborde horizontal, hay un solo h1 y la rejilla pasa de 1 a 2 y a 4 columnas","ok":true,"detail":"320:sw320/cw320/h1=1/cols=1 375:sw375/cw375/h1=1/cols=1 768:sw768/cw768/h1=1/cols=2 1440:sw1440/cw1440/h1=1/cols=4"}
+{"id":"ES73-U2 objetivos táctiles ≥ 44 px de alto en /pricing (botones y enlaces)","ok":false,"detail":"Saltar al contenid:165x42, Planes:50x26, Skip to content:138x42, Plans:41x26"}
+{"id":"ES73-U3 contraste del texto ≥ 4.5:1 (AA) en tema claro","ok":true,"detail":"ninguno"}
+{"id":"ES73-U4a [INFO] tema oscuro (prefers-color-scheme): fondo del body","info":"rgb(249, 249, 247)"}
+{"id":"ES73-U4 contraste del texto ≥ 4.5:1 (AA) en tema oscuro","ok":true,"detail":"ninguno"}
+{"id":"ES73-U5 teclado: los botones de plan (con nombre accesible «Solicitar este plan · <plan>») se recorren con Tab con foco visible","ok":true,"detail":"12 paradas"}
+{"id":"ES73-U5b [INFO] orden de tabulación","info":"A:Saltar al contenido → A:Elevation, inicio → A:Cómo funciona → A:Skill Map → A:Planes → BUTTON:ES → BUTTON:EN → A:Ingresar → BUTTON:Solicitar este plan · Plan ini → BUTTON:Solicitar este plan · Plan com → BUTTON:Solicitar este plan · Plan anu → A:Continuar a mi espacio"}
+{"id":"ES73-U8 [OBS] al volver a la pestaña/ventana (evento `focus`) las tarjetas NO desaparecen ni se pierde el foco del botón enfocado mientras se actualiza el catálogo","ok":false,"detail":"durante la recarga: tarjetas=3 foco=BODY"}
+{"id":"ES73-U6 se puede solicitar solo con teclado (Enter) y queda una solicitud","ok":true,"detail":"filas=1 POST=1 mensaje=Tu solicitud quedó registrada y está en revisión"}
+{"id":"ES73-E1 sin errores de consola ni excepciones en el flujo","ok":true,"detail":"ok"}
+{"id":"ES73-S5 [SEG] /pricing solo habla con su propio origen y no expone datos de ninguna persona en la página pública","ok":true,"detail":"solo el origen propio"}
+{"id":"ES73-U7 la sección S12 de la landing (`/#planes`) muestra el mismo catálogo con h2 y sin duplicar h1","ok":true,"detail":"tarjetas=3 h1=1"}
+{"fin":true}

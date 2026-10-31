@@ -1,0 +1,45 @@
+{"id":"ES16-P01 pausa es: «quiero quedarme en silencio» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa es: «Silencio por favor» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa es: «SILENCIO» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa es: «prefiero quedarme en silencio» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa es: «quiero hacer una pausa» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa es: «Quiero   hacer una pausa.» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa es: «silencio!!!» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «Está bien. Lo dejamos aquí.»"}
+{"id":"ES16-P01 pausa en: «I want to sit in silence» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «That’s okay. We can stop here.»"}
+{"id":"ES16-P01 pausa en: «please let me be quiet» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «That’s okay. We can stop here.»"}
+{"id":"ES16-P01 pausa en: «Silence please» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «That’s okay. We can stop here.»"}
+{"id":"ES16-P01 pausa en: «silence» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «That’s okay. We can stop here.»"}
+{"id":"ES16-P01 pausa en: «I would like to pause» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «That’s okay. We can stop here.»"}
+{"id":"ES16-P01 pausa en: «SILENCE.» → respuesta fija sin pregunta y 0 llamadas al proveedor","ok":true,"detail":"status=200 llamadas=0 «That’s okay. We can stop here.»"}
+{"id":"ES16-P01b la respuesta de pausa sale en el idioma de la frase (ES y EN distintos)","ok":true,"detail":"es=Está bien. Lo dejamos aquí. en=That’s okay. We can stop here."}
+{"id":"ES16-P02 el mismo requestId devuelve lo mismo sin duplicar mensajes ni turnos","ok":true,"detail":"200/200"}
+{"id":"ES16-P02b el turno de pausa queda confirmado con mensaje y respuesta (2 mensajes)","ok":true,"detail":""}
+{"id":"P03-no quiero una pausa","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-¿puedo quedarme en silencio?","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-ella dijo \"silencio\" y se fu","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-quiero hacer una pausa para ","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-necesito silencio para estud","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-silence is golden","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-I do not want to pause","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-quiero una pausa","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-dame un momento","info":"llamadas-al-modelo=1 status=200"}
+{"id":"P03-necesito una pausa","info":"llamadas-al-modelo=1 status=200"}
+{"id":"ES16-P03 citas, negaciones, preguntas y frases con más texto NO se toman por una pausa (llegan al modelo: 7 de 7)","ok":true,"detail":"llamadas=7"}
+{"id":"P03b-peticiones-naturales-no-reconocidas","info":"5 de 5 llegan al modelo (el léxico de pausa es de 10 frases exactas; Dev lo declara «no es un clasificador universal»)"}
+{"id":"ES16-P04 mensaje de riesgo alto: flujo de seguridad (interrumpido, 0 llamadas) y no la respuesta de pausa","ok":true,"detail":"status=200"}
+{"id":"ES16-P04b pausa con country/lang mal formados no da 400 ni 5xx","ok":true,"detail":"status=200"}
+{"id":"ES16-S04 la pausa no guarda estado clínico ni nivel de riesgo (ninguna columna de riesgo en ChatTurns ni Messages)","ok":true,"detail":""}
+{"id":"L01-prompt-fragmento-final","info":"escribed. - Offer one main question at a time and short reflections; the person may skip any topic. - A short reflection may end without a question. Do not end every reply with a question or invent a task to keep the conversation going. - Respect a request to skip, pause or stop: acknowledge briefly, without pressure, guilt, penalties or automatic follow-up. - Identify yourself as an AI assistant. Do not imply that a human is reading live, supervising this exchange or available when no such service is present. - If the person describes a risk to their life or safety, do not continue the ordinary coaching flow: encourage them to contact local emergency services or a trusted person. ---\""}
+{"id":"ES16-L01 el prompt termina con los límites de acompañamiento (identidad de IA, sin presencia humana, permitir cierre, sin presión)","ok":true,"detail":""}
+{"id":"ES16-S05 un mensaje con inyección no altera que los límites quedan al final del prompt","ok":false,"detail":""}
+{"id":"ES16-I02a proveedor caído (502) con lang es: mensaje en español, reintentable y sin reescribir el historial","ok":true,"detail":"status=502 «No pudimos completar la respuesta. Puedes volver a intentarlo.»"}
+{"id":"ES16-I02b proveedor caído (502) con lang en: mensaje en inglés","ok":true,"detail":"status=502 «We could not complete the response. You can try again.»"}
+{"id":"I02c-fallo-sin-lang-mensaje-en-inglés","info":"status=502 respuesta=«No pudimos completar la respuesta. Puedes volver a intentarlo.»"}
+{"id":"ES16-I02d fallo con mensaje en inglés SIN el parámetro lang: el aviso sale en inglés","ok":false,"detail":"«No pudimos completar la respuesta. Puedes volver a intentarlo.»"}
+{"id":"ES16-I02e un fallo del proveedor no deja mensajes huérfanos","ok":true,"detail":""}
+{"id":"I01-historial-vacío","info":"[]"}
+{"id":"ES16-S01 B no recupera el requestId de A (404)","ok":true,"detail":"A=200"}
+{"id":"ES16-S01b sin token → rechazado","ok":true,"detail":""}
+{"id":"ES16-S03 los logs de error del chat solo traen el nombre del error (sin mensaje, parámetros ni contenido)","ok":true,"detail":"líneas=5 muestra=«❌ Error del proveedor de IA: Error»"}
+{"id":"ES16-P05 respuesta de pausa p95 < 500 ms (propuesto)","ok":true,"detail":"p95=21ms"}
+{"fin":true}

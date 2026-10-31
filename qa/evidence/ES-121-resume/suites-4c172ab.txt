@@ -1,0 +1,18 @@
+Auto-merging backend/package.json
+Auto-merging backend/server.js
+Auto-merging backend/utils/careerContext.js
+Auto-merging backend/utils/consent.js
+Auto-merging backend/utils/skillMap.js
+##### 4c172ab5c80fdf093cf42590149b9e10b11b3d68
+npm test: # tests 496 # pass 496 # fail 0 
+test:bridge:pg: # pass 7 # fail 0 
+test:insights:pg: # pass 8 # fail 0 
+test:resume:pg: # pass 8 # fail 0 
+test:resume-skills:pg: # pass 8 # fail 0 
+test:bridge:pg: # pass 7 # fail 0 
+test:resume:pg: # pass 8 # fail 0 
+test:resume-skills:pg: # pass 8 # fail 0 
+test:data-rights:pg: # pass 12 # fail 0 
+real-db ok=31
+{"id":"ES121-B5 [SEG] 20 entradas inválidas (hoja de vida, vacío, duplicados, claves extra, ids fuera de rango/negativos/texto, locale raro, cuerpo nulo, __proto__, JSON roto) → 400 sin 5xx ni trazas","ok":false,"detail":"resume=403"}
+FIN4

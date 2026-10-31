@@ -1,0 +1,21 @@
+{"id":"ES111-setup","info":"entradas de diario sintéticas=1"}
+{"id":"ES111-S0 la pantalla carga: «El Puente», «Tu diario privado», «Tu perfil profesional», 3 tarjetas de ejemplo, aviso de demostración y «Nada ha cruzado aún»","ok":true,"detail":"tarjetas=3 carga_ms=890"}
+{"id":"ES111-S0b rendimiento (propuesta): la pantalla queda lista en < 2 s con el servidor local (carga en frío y con caché)","ok":true,"detail":"frío=890 ms, caché=1089 ms"}
+{"id":"ES111-C1d los ejemplos están marcados «Ejemplo» en cada tarjeta y la pantalla no los presenta como del diario real","ok":true,"detail":""}
+{"id":"ES111-A4a [PRIV] la pantalla del puente no muestra el texto del diario real ni la frase de crisis (solo los ejemplos)","ok":true,"detail":""}
+{"id":"ES111-A3 [PRIV] el fragmento nace difuminado y `aria-hidden`; el ojo lo muestra y lo vuelve a ocultar; el botón tiene etiqueta y `aria-pressed`","ok":true,"detail":"nace=true/none|blur(5px) abierto=false cerrado=true"}
+{"id":"ES111-A3b mostrar el fragmento no escribe en localStorage/sessionStorage","ok":true,"detail":"[[\"elevation_role\",\"elevation_token\",\"elv_lang\"],[]]"}
+{"id":"ES111-A3c [OBS] al mostrar el fragmento de otra tarjeta, el primero (a) SIGUE visible: el plan esperaba que volviera a difuminarse al cambiar de insight","info":"primero tras abrir segundo aria-hidden=false (abierto=false)"}
+{"id":"ES111-A3d tras recargar el fragmento vuelve a estar difuminado","ok":true,"detail":"true"}
+{"id":"ES111-A1 [PRIV] «Autorizar cruce» solo PREGUNTA: aparece la confirmación en la tarjeta, el foco pasa a «Confirmar» y NO sale ninguna petición al servidor ni se crea versión","ok":true,"detail":"peticiones=0 versiones=0 foco=bridge-ok"}
+{"id":"ES111-A1b Escape cancela sin rastro (sin peticiones, sin versión, sin cambios en el almacenamiento local) y devuelve el foco al botón «Autorizar cruce»","ok":false,"detail":"foco="}
+{"id":"ES111-A1c «Cancelar» tampoco deja rastro","ok":true,"detail":""}
+{"id":"ES111-A2 [PRIV] lo que viaja al confirmar es SOLO `{key,text,origin:{type:\"direct\"}}` (vista previa → confirmar con `requestId`), sin fragmento, sin texto del diario, sin crisis, sin nombre ni correo","ok":false,"detail":"POST /api/career-context/preview > POST /api/career-context/confirm > GET /api/career-context"}
+{"id":"ES111-B1 [PRIV] se creó la versión 1 con exactamente el texto autorizado (no el fragmento ni el diario) y la pantalla lo lista en «Tu perfil profesional» con la fecha","ok":false,"detail":"versiones=1 {\"active\":{\"version\":1,\"status\":\"active\",\"approvedAt\":\"2026-10-29T17:03:45.727Z\",\"revokedAt\":null,\"fields\":[{\""}
+{"id":"ES111-B1b rendimiento (propuesta): confirmar un cruce (vista previa + confirmar + recarga) < 1,5 s","ok":true,"detail":"125 ms"}
+{"id":"ES111-A4 [PRIV] ni la base del puente ni las transferencias contienen el canario del diario ni la frase de crisis (el motor profesional no los recibe)","ok":true,"detail":"transferencias=0"}
+{"id":"ES111-B1c tras autorizar, la tarjeta sale de «Tu diario privado» (quedan 2) y aparece el aviso «Autorizado»","ok":false,"detail":""}
+{"id":"ES111-B1d autorizar un segundo insight crea la versión 2 con LOS DOS textos y deja la 1 como histórico (no sobrescribe)","ok":true,"detail":"1:superseded,2:active campos=energy_gives,energy_gives"}
+TypeError: Cannot read properties of null (reading 'version')
+    at C:\Users\Usuario\Documents\gpt-elevation-qa\qa\integration\es111-ui.cjs:74:272
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)

@@ -1,0 +1,13 @@
+PASS ES full review / objection / response; reload clears RAM
+PASS EN / language preserves drafts / keyboard skip / dark mobile / zoom
+PASS dirty Link and Back guard / Escape retains draft / session change clears
+PASS invitations / withdrawn and foreign materials; no aggregates
+PASS save-error exact retry with no false success or duplicate
+PASS lost-ack exact retry with no false success or duplicate
+PASS conflict requires reloading material version; no overwrite
+PASS empty fails closed / no controls
+PASS load-error fails closed / no controls
+PASS revoked fails closed / no controls
+PASS disabled fails closed / no controls
+PASS session-less URL redirects; existing dashboard unaffected when disabled
+PASS zero API writes / zero page exceptions; builds=8

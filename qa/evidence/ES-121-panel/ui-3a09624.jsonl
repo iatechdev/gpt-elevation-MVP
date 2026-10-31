@@ -1,0 +1,33 @@
+{"id":"setup","info":"turn=1 entry=1 resume=1 subida=200 diario=201"}
+{"id":"P1 tres interruptores `role=switch`, apagados por defecto, y «Analizar» deshabilitado sin permiso","ok":true,"detail":"switches=3 checked=false,false,false runDisabled=true,true,true"}
+{"id":"P1b cada interruptor tiene nombre accesible y descripción","ok":true,"detail":"[\"Autorizar el análisis de tu chat\",\"Autorizar el análisis de tu diario\",\"Autorizar el análisis de tu hoja de vida\"]"}
+{"id":"P9 el panel no usa lenguaje clínico, de promesa de empleo ni ofrece «Analizar todo»","ok":true,"detail":"🔒 ANÁLISIS CON IA DE TUS FUENTES\n\nTú decides qué fuente puede leer la IA para proponerte ideas sobre ti. Nada se guarda"}
+{"id":"P2a el diálogo se abre con Enter, el foco entra en «Cancelar» y Tab/Shift+Tab quedan atrapados dentro","ok":true,"detail":"Cancelar|Sí, autorizar|Cancelar|Sí, autorizar"}
+{"id":"P2b Escape cancela sin peticiones de escritura ni cambio de permiso y el foco vuelve al interruptor","ok":true,"detail":"diálogo=0 foco=chat"}
+{"id":"P2c «Cancelar» cierra sin otorgar y devuelve el foco","ok":true,"detail":""}
+{"id":"P3 confirmar otorga `insights_chat` en el servidor; el interruptor queda activo; doble clic = 1 sola petición","ok":true,"detail":"PUT=1 estado=granted"}
+{"id":"P3b el botón «Analizar mi chat» se habilita solo con el permiso; las otras fuentes siguen apagadas","ok":true,"detail":""}
+{"id":"P4a analizar el chat muestra la idea con etiqueta «Del chat» y el aviso de hipótesis; el doble clic envía 1 sola propuesta","ok":true,"detail":"propuestas=1"}
+{"id":"P5a autorizar envía al servidor `origin` {chat_turn, id} y `skillKey`, y NUNCA la cita ni el texto fuente","ok":true,"detail":"{\"fields\":[{\"key\":\"energy_gives\",\"text\":\"Parece que lideras con energía equipos pequeños de datos.\",\"origin\":{\"type\":\"chat_turn\",\"id\":1},\"skillKey\":\"liderazgo\"}],\"locale\":\"es\"} {\"fields\":[{\"key\":\"energy_gives\",\"text\":\"Parece que lideras con energía equipos peq"}
+{"id":"P5b la versión autorizada guarda el origen privado (tipo + id) y no contiene la cita","ok":true,"detail":"campos=1"}
+{"id":"P6a analizar el diario muestra «Del diario»","ok":true,"detail":""}
+{"id":"P6b el diálogo de la hoja de vida avisa del contacto; analizar muestra «De tu hoja de vida»; el correo de la hoja no llega a la IA; hay selector de versión","ok":true,"detail":"selector=1"}
+{"id":"P3c retirar un permiso es inmediato (sin diálogo), queda revocado en el servidor y NO borra lo ya autorizado","ok":true,"detail":"activos=1"}
+{"id":"P3d retirar quita de la pantalla lo propuesto con esa fuente","ok":true,"detail":"ver captura"}
+{"id":"P6c con el permiso retirado en otra pestaña, «Analizar» muestra «Esta fuente ya no está autorizada» y apaga el interruptor","ok":true,"detail":""}
+{"id":"P6d proveedor no disponible → mensaje con «Reintentar»; al reintentar funciona","ok":true,"detail":"retry=1 despues=Valoro la autonomía y trabajar con claridad | INSIGHT EXTRAÍDO | Parece que valoras la autonomía y la claridad. | Valores | AUTORIZAR CRUCE → | ↓ | TU PERFIL PROFESIONAL | Versión 1 · autorizada el 30 oct 2026 | ✓ HIPÓTESIS | Lo que me da energía | Parece que lideras con energía equi"}
+{"id":"P6e sin red → mensaje de conexión recuperable","ok":true,"detail":""}
+{"id":"P6f límite de IA → mensaje de límite (sin reintento inmediato)","ok":true,"detail":"e guardan: si sales de esta pantalla sin autorizarlas, tendrás que analizar de nuevo. Algunos fragmentos pueden quedar fuera por privacidad."}
+{"id":"P6g sin material utilizable → «No encontramos nada…»","ok":true,"detail":""}
+{"id":"P6h error al guardar el permiso → mensaje de error y el interruptor NO queda activo","ok":true,"detail":""}
+{"id":"P8a un texto con HTML en la propuesta no se ejecuta (se muestra como texto o se descarta)","ok":true,"detail":"xss=false visible=false"}
+{"id":"P8b localStorage/sessionStorage/cookies no contienen propuestas, citas ni texto de las fuentes","ok":true,"detail":"[[[\"elevation_role\",\"user\"],[\"elevation_token\",\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6IlFBMTAzIGEiLCJyb2xlIjoidXNlciIsImlhdE1zIjoxNzkzMzIxMTY"}
+{"id":"P8c al recargar las propuestas no autorizadas desaparecen (no se guardan)","ok":true,"detail":""}
+{"id":"P13a sin errores de consola ni excepciones en toda la sesión de A","ok":true,"detail":""}
+{"id":"P7a la persona B ve sus permisos apagados (no los de A) y su análisis de chat no usa el chat de A (sin material → «No encontramos nada»)","ok":true,"detail":"B=false,false,false"}
+{"id":"P7b un terapeuta no ve datos de ninguna persona en El Puente (sin propuestas de A)","ok":true,"detail":""}
+{"id":"P7c con sesión inválida/expirada no se muestra el panel con datos y se redirige o pide iniciar sesión","ok":true,"detail":"http://127.0.0.1:9932/app/bridge"}
+{"id":"P10 inglés completo en el panel (sin textos en español)","ok":true,"detail":"🔒 AI ANALYSIS OF YOUR SOURCES\n\nYou decide which source the AI may read to suggest ideas about you. Nothing is saved or reaches a professional unless you author"}
+{"id":"P10b diálogo en inglés","ok":true,"detail":"Allow the analysis of your résumé?\nThe AI reads your résumé to suggest ideas about who you are and what moves you.\nWhat "}
+{"id":"P11 a 375 px no hay desborde horizontal y los controles del panel miden ≥44 px","ok":true,"detail":"desborde=0 pequeños="}
+{"id":"P11 a 320 px no hay desborde horizontal y los controles del panel miden ≥44 px","ok":true,"detail":"desborde=0 pequeños="}

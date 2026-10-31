@@ -1,0 +1,21 @@
+{"id":"ES90-A01 GET público ES y EN: 200 y ningún corchete en ninguna clave","ok":true,"detail":"claves=165/165"}
+{"id":"ES90-A02 ES: los 5 textos provisionales son literalmente los aprobados","ok":true,"detail":""}
+{"id":"ES90-A02 EN: los 5 textos provisionales son literalmente los aprobados","ok":true,"detail":""}
+{"id":"ES90-A03 los textos provisionales no inventan fuentes, fechas, cifras, estados ni promesas","ok":true,"detail":""}
+{"id":"ES90-B01 solo el superadmin edita: admin, terapeuta, junta, participante y anónimo → 401/403","ok":true,"detail":"{\"su\":200,\"adm\":403,\"th\":403,\"brd\":403,\"usr\":403,\"anon\":403}"}
+{"id":"ES90-B02 el valor del superadmin se publica en ES y el EN conserva su provisional","ok":true,"detail":""}
+{"id":"ES90-B03 token firmado con otra clave que dice superadmin → rechazado","ok":true,"detail":""}
+{"id":"ES90-B04 (informativo) las rutas de administración leen el rol del token firmado por el servidor (diseño ES-18; un token con otro rol solo existe si se firma con la clave del servidor, como hace esta prueba)","ok":true,"detail":"PUT con token propio re-firmado como superadmin=200"}
+{"id":"ES90-C01 valor vacío → 400 y no cambia","ok":true,"detail":"status=400"}
+{"id":"ES90-C01 valor solo espacios → 400 y no cambia","ok":true,"detail":"status=400"}
+{"id":"ES90-C01 valor 5001 caracteres → 400 y no cambia","ok":true,"detail":"status=400"}
+{"id":"ES90-C01 valor no texto → 400 y no cambia","ok":true,"detail":"status=400"}
+{"id":"ES90-C01 valor null → 400 y no cambia","ok":true,"detail":"status=400"}
+{"id":"ES90-C02 clave inexistente e idioma no soportado → 400, sin 5xx","ok":true,"detail":"400/400"}
+{"id":"ES90-C03 HTML y comillas se guardan literales (y se muestran como texto)","ok":true,"detail":""}
+{"id":"ES90-C04 límite con acentos y emoji: 200 si cabe, 400 si no; sin 5xx","ok":true,"detail":"status=400"}
+{"id":"ES90-D01 (informativo) intentar guardar un marcador «[…]» por la API","ok":true,"detail":"PUT=200 GET público=lo devuelve"}
+{"id":"ES90-E01 el valor queda en la base (una fila por clave e idioma) con el autor","ok":true,"detail":"filas=1 autor=sí"}
+{"id":"ES90-E02 restaurar los provisionales deja el GET público como al inicio y sin corchetes","ok":true,"detail":""}
+{"id":"ES90-E03 20 guardados simultáneos del mismo campo: sin 5xx y una sola fila","ok":true,"detail":"estados=200 filas=1"}
+{"fin":true}

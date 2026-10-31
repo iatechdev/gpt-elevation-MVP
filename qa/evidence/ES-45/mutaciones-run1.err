@@ -1,0 +1,8 @@
+file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/acceptance/es45-mutations.mjs:74
+check('M40 un passed de staging_api con hash comprobado cuenta como «evidencia para revisión» (1 de 236)', elig({}, true).coverage.integratedEvidenceForReview === 1 && elig({}, true).coverage.integratedNotVerified === 235, '');
+                                                                                                                                  ^
+
+TypeError: Cannot read properties of undefined (reading 'integratedEvidenceForReview')
+    at file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/acceptance/es45-mutations.mjs:74:131
+
+Node.js v24.14.0

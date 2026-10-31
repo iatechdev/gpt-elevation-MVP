@@ -1,0 +1,3 @@
+# ES-31 · PR #33 (11c8b30) y ES-81 · PR #23 (431ba14), sobre main 69a68ce
+- #33: el código de ES-31 es idéntico al aprobado en 783e934 (8 archivos comparados). `run7-11c8b30.jsonl` 104/104; `fusion-11c8b30.jsonl` 7/7 (rutas de ES-25/27/29/31 siguen respondiendo con el 404 JSON de #35 fusionado y montado después; ruta inexistente → 404 JSON). Dev: `npm test` 248/248, `test:routecatalog:pg` 6/6, `test:data-rights:pg` 11/11, `npm audit` salida 0.
+- #23: diff contra main = `backend/package.json` y los 3 archivos de `backend/test-db/`; merge limpio con main. `npm test` 237/237, `test:db` 13/13; el arnés se niega sin `TEST_DATABASE_URL`, con `NODE_ENV=production` y con un host no local; claves sintéticas aleatorias; 0 bases `es_harness_*` restantes; `npm audit` salida 0.

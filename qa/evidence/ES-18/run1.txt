@@ -1,0 +1,44 @@
+❌ Error fetching manifests: TypeError: EthicManifest.findAll is not a function
+{"user":{"antes":200,"despues":401},"admin":{"antes":200,"despues":401},"superadmin":{"antes":500,"despues":401},"board":{"antes":500,"despues":401}}
+✔ ES18-S01: un token revocado por logout deja de valer en TODOS los middlewares (524.8419ms)
+✔ ES18-S02: logout y logout-all (flujo real) invalidan la sesión (25.1843ms)
+✔ ES18-S03: token sin jti, alterado o con algoritmo none → 401 (16.8088ms)
+✔ ES18-S04: si la base de sesiones falla, cierra en falla (503), nunca 200 (12.7254ms)
+PUT estado → 200 corte creado: true
+🔑 Contraseña reseteada para: Obj (id: 301) por superadmin Sintético A
+reset-password → 200 corte: true
+✔ ES18-S05: cambiar rol/estado, borrar o resetear contraseña corta las sesiones de esa cuenta (126.9708ms)
+{"nota":"token emitido en el mismo segundo del corte","status":401}
+✔ ES18-S06: borde de un segundo — iniciar sesión justo tras logout-all (9.6383ms)
+❌ Error obteniendo stats: TypeError: MoodLog.count is not a function
+stats → 500 []
+✖ ES18-S07: el administrador no recibe datos individuales de ánimo/valoración ni mensajes (8.1798ms)
+✖ ES18-S08: rutas de terapeuta con rol "user" (sin control de rol en el handler) (1.0957ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 916.993
+
+✖ failing tests:
+
+test at qa\security\es18-sessions.test.cjs:132:1
+✖ ES18-S07: el administrador no recibe datos individuales de ánimo/valoración ni mensajes (8.1798ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 200
+  
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at qa\security\es18-sessions.test.cjs:150:1
+✖ ES18-S08: rutas de terapeuta con rol "user" (sin control de rol en el handler) (1.0957ms)
+  TypeError: Cannot set properties of undefined (setting 'findOne')

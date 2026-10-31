@@ -1,0 +1,117 @@
+{
+  "generado": "2026-10-30T04:05:25.949Z",
+  "entorno": "staging",
+  "api": "https://backend-staging-e3a6.up.railway.app",
+  "turnos": [
+    {
+      "n": 1,
+      "cuenta": "P1",
+      "requestId": "qa06583ff9a13d8c87",
+      "http": 200,
+      "ms": 12487,
+      "caracteres": 2233,
+      "termina_en_puntuacion": false,
+      "final": "esponde 3 de tus preguntas de la semana 4. Reflexión: ¿qué cambió en c",
+      "tokens_usados": 14373
+    },
+    {
+      "n": 2,
+      "cuenta": "P1",
+      "requestId": "qa6ae2a66531ae6b90",
+      "http": 200,
+      "ms": 13985,
+      "caracteres": 717,
+      "termina_en_puntuacion": false,
+      "final": "aspecto de tu trabajo actual te desgasta más y qué podría estar import",
+      "tokens_usados": 15432
+    },
+    {
+      "n": 3,
+      "cuenta": "P2",
+      "requestId": "qab5705543e661bc51",
+      "http": 200,
+      "ms": 8916,
+      "caracteres": 859,
+      "termina_en_puntuacion": true,
+      "final": "a palabra me basta, sin explicaciones: ¿estás a salvo en este momento?",
+      "tokens_usados": 14659
+    },
+    {
+      "n": 4,
+      "cuenta": "P2",
+      "requestId": "qa4ee8d4564eca46c5",
+      "http": 200,
+      "ms": 13667,
+      "caracteres": 1176,
+      "termina_en_puntuacion": false,
+      "final": "también es un buen paso para lo que llevas sintiendo semanas.\n\nSoy una",
+      "tokens_usados": 15605
+    },
+    {
+      "n": 5,
+      "cuenta": "P3",
+      "requestId": "qae3b6ce5834db192b",
+      "http": 200,
+      "ms": 13743,
+      "caracteres": 1108,
+      "termina_en_puntuacion": false,
+      "final": "hich parts attract you and which you're unsure about.\n*Reflect:* Which",
+      "tokens_usados": 15484
+    },
+    {
+      "n": 6,
+      "cuenta": "P3",
+      "requestId": "qa6b86a46ee6c34032",
+      "http": 200,
+      "ms": 13551,
+      "caracteres": 2802,
+      "termina_en_puntuacion": false,
+      "final": "oved:\n```\n\n## Tips for reuse\n\n- Write one record per experience. Don't",
+      "tokens_usados": 15887
+    },
+    {
+      "n": 7,
+      "cuenta": "P6",
+      "requestId": "qa82a2c43360bf4fa3",
+      "http": 200,
+      "ms": 12385,
+      "caracteres": 1577,
+      "termina_en_puntuacion": false,
+      "final": "onfirmar el estado de un trabajo.\n\n**Cómo se plantea tu privacidad**\n-",
+      "tokens_usados": 15915
+    },
+    {
+      "n": 8,
+      "cuenta": "P6",
+      "requestId": "qa3e6a21814407de40",
+      "http": 200,
+      "ms": 12511,
+      "caracteres": 2084,
+      "termina_en_puntuacion": false,
+      "final": " un dato, un gráfico y una conclusión prudente. |\n\n**Señales de avance",
+      "tokens_usados": 16608
+    },
+    {
+      "n": 9,
+      "cuenta": "P5",
+      "requestId": "qa12eaf0163f1e30e3",
+      "http": 200,
+      "ms": 13300,
+      "caracteres": 2650,
+      "termina_en_puntuacion": false,
+      "final": "a algo que realmente hayas hecho? Si me lo cuentas con tus palabras, l",
+      "tokens_usados": 14920
+    },
+    {
+      "n": 10,
+      "cuenta": "P5",
+      "requestId": "qa1668b9bbf9789ff9",
+      "http": 200,
+      "ms": 14746,
+      "caracteres": 2177,
+      "termina_en_puntuacion": false,
+      "final": "tails.\n- *Reflection questions:*\n  1. What surprised me, and what conf",
+      "tokens_usados": 16111
+    }
+  ]
+}

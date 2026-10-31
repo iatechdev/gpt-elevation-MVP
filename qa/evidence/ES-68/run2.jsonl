@@ -1,0 +1,30 @@
+{"id":"claves","info":"es=63 en=63"}
+{"id":"ES68-G01 GET público (sin token) responde 200 con claves landing.* en ES y EN, mismas claves en ambos idiomas","ok":true,"detail":"es=63 en=63"}
+{"id":"ES68-G02 existen las claves de S3, S4 y S5","ok":true,"detail":"landing.journey.1.body,landing.journey.1.number,landing.journey.1.title,landing.journey.2.body"}
+{"id":"ES68-G03 los valores por defecto de ES y EN no están vacíos ni son iguales entre idiomas (traducción presente)","ok":false,"detail":"iguales=landing.modules.elevation.title,landing.modules.label,landing.modules.skillmap.title,landing.nav.skillmap"}
+{"id":"ES68-G04 el GET público no contiene datos personales, correos ni secretos","ok":true,"detail":""}
+{"id":"ES68-G05 sin promesas de empleo, cifras de eficacia ni diagnóstico afirmativo en los textos por defecto","ok":true,"detail":"—"}
+{"id":"ES68-P01 PUT de sin token → 401/403 y no cambia el contenido","ok":true,"detail":"status=403"}
+{"id":"ES68-P01 PUT de usuario → 401/403 y no cambia el contenido","ok":true,"detail":"status=403"}
+{"id":"ES68-P01 PUT de administrador → 401/403 y no cambia el contenido","ok":true,"detail":"status=403"}
+{"id":"ES68-P01 PUT de terapeuta → 401/403 y no cambia el contenido","ok":true,"detail":"status=403"}
+{"id":"ES68-P01 PUT de junta → 401/403 y no cambia el contenido","ok":true,"detail":"status=403"}
+{"id":"ES68-P02 tras los intentos no autorizados el contenido sigue igual","ok":true,"detail":""}
+{"id":"ES68-P03 superadmin edita una clave aprobada → 200","ok":true,"detail":"status=200"}
+{"id":"ES68-P04 la edición se ve en el GET público (ES) y no altera EN","ok":true,"detail":""}
+{"id":"ES68-V01 «clave landing desconocida» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «idioma inválido» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «valor vacío» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «valor no texto» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «sin clave» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «valor de 5001 caracteres» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «clave de 256 caracteres» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V01 «clave objeto» → 400, no 500","ok":true,"detail":"status=400"}
+{"id":"ES68-V02 JSON roto → 4xx","ok":true,"detail":"status=400"}
+{"id":"ES68-V03 cuerpo arreglo → 400","ok":true,"detail":"status=400"}
+{"id":"ES68-V04 __proto__ en el cuerpo no contamina el prototipo","ok":true,"detail":"status=200"}
+{"id":"ES68-V05 HTML en el valor se guarda como texto y se devuelve tal cual (el escape lo hace la interfaz)","ok":true,"detail":"status=200"}
+{"id":"ES68-V06 cadena larga sin espacios (2800 caracteres) se acepta","ok":true,"detail":"status=200"}
+{"id":"ES68-V07 12 ediciones concurrentes de la misma clave: sin 5xx y una sola fila","ok":true,"detail":"200,200,200,200,200,200,200,200,200,200,200,200"}
+{"id":"ES68-V08 30 lecturas públicas simultáneas sin error","ok":true,"detail":""}
+{"fin":true,"claveEditada":"landing.problem.title","claveLarga":"landing.problem.body","claveHtml":"landing.problem.title"}

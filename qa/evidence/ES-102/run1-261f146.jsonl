@@ -1,0 +1,15 @@
+{"id":"ES102-S09 [PRIV] el resumen responde 200 y el prompt enviado al proveedor NO contiene notas, canarios, la instrucción maliciosa, el chat, el diario, ni el nombre o el correo de la persona","ok":true,"detail":"status=200 llamadas=1"}
+{"id":"ES102-S09b el cuerpo de la respuesta no trae notas ni datos de la persona y `basedOn.notes` vale 0","ok":true,"detail":"{\"sessions\":2,\"notes\":0}"}
+{"id":"ES102-S09c [INFO] prompt enviado (sin datos personales)","info":"You help a professional review a person's recent progress. The person is not identified in this request. Total check-ins: 2 Average mood (1-5): 3.8 Average session rating (1-5): 4.0 Please write a concise, neutral summary (3-5 sentences) of the emotional progress and current state reflected in this data. Focus on observable tren"}
+{"id":"ES102-S09d las notas siguen guardadas y visibles para su autor en la historia (solo se dejó de enviarlas a la IA)","ok":true,"detail":"notas=2"}
+file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es102-real-db.mjs:10
+const mk = async (tag, role = 'user') => { const email = `qa102-${tag}-${stamp}@example.test`; const r = await call('ok', 'POST', '/api/register', { body: { name: 'Nombre Real ' + tag, email, password: randomBytes(12).toString('base64url') + 'aA1!' } }); if (r.status !== 201) throw new Error('registro ' + tag + ' ' + r.status); if (role !== 'user') await q('update "Users" set role=$1 where email=$2', [role, email]); const u = (await q('select id,name,role from "Users" where email=$1', [email]))[0]; return { ...u, email, t: sign(u) }; };
+                                                                                                                                                                                                                                                                                           ^
+
+Error: registro av022 400
+    at mk (file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es102-real-db.mjs:10:284)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async patient (file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es102-real-db.mjs:15:59)
+    at async file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es102-real-db.mjs:28:68
+
+Node.js v22.23.4

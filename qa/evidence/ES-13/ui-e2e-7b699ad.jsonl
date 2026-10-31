@@ -1,0 +1,14 @@
+{"id":"ES13-U01 E2E real: enviar desde la Brújula manda mode=compass y el servidor arma el prompt de la Brújula","ok":true,"detail":"mode=compass calls=1"}
+{"id":"ES13-U02 E2E real: tras «Cerrar sin presión» el siguiente envío va sin mode y el prompt ya no es el de la Brújula","ok":true,"detail":"mode2=undefined"}
+{"id":"ES13-U03 el historial recargado muestra los dos intercambios y ningún rastro del modo ni del prompt","ok":true,"detail":""}
+{"id":"ES13-U04 riesgo alto escrito en la Brújula: se muestra apoyo de seguridad y el proveedor no recibe la llamada","ok":true,"detail":"calls=0 texto=2.000 caracteres de cada entrada seleccionada. Esta selección permite consultar esas entradas en el chat; no autoriza su uso profesional. Dejar de seleccionar evita nuevas lecturas directas, pero no borra lo que ya apareció en la conversación. Envío confirmado Mensaje (hasta 4.000 caracteres) Enviar"}
+{"id":"ES13-U05 sin errores de página en el recorrido ES","ok":true,"detail":""}
+{"id":"ES13-U06 E2E real en EN: el prompt usa el borrador en inglés (ACT)","ok":true,"detail":"lang=en mode=compass sys=You are Elevation, an AI assistant that helps a person explore new career ideas starting f"}
+{"id":"ES13-U07 sin errores de página en EN","ok":true,"detail":""}
+{"id":"ES13-U08 sin desplazamiento horizontal ni texto cortado a 320, 375, 768 y 1440 px (ES/EN, claro/oscuro)","ok":true,"detail":"[]"}
+{"id":"ES13-U09 contraste AA (≥ 4,5:1) de todo el texto de la banda en claro y oscuro","ok":true,"detail":"peor=6.35 fallan=ninguno"}
+{"id":"ES13-U10 botones de la banda con alto táctil ≥ 44 px","ok":true,"detail":"ok"}
+{"id":"ES13-U11 la página solo pide al propio origen y a las fuentes ya existentes","ok":true,"detail":"[]"}
+{"id":"ES13-U12 foco visible en «Cerrar sin presión» y «Ahora no» con teclado","ok":true,"detail":"[{\"t\":\"Cerrar sin presión\",\"fv\":true,\"o\":true},{\"t\":\"Ahora no\",\"fv\":true,\"o\":true}]"}
+{"id":"ES13-U13 build SIN bandera: ni enlace ni banda, ?mode=compass se ignora y el servidor recibe el chat normal","ok":true,"detail":"link=0 banda=0"}
+{"fin":true}
