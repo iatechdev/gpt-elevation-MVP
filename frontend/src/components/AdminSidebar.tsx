@@ -1,6 +1,7 @@
 // frontend/src/components/AdminSidebar.tsx
 import { NavLink } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { interfaceCopy } from '../access/interfaceCopy'
 
 const ADMIN_NAV = [
   {
@@ -58,67 +59,28 @@ const BOARD_NAV = [
   },
 ]
 
-export function AdminSidebar() {
-  const { t } = useLanguage()
+export function AdminSidebar({ open = false, onNavigate }: { open?: boolean; onNavigate?: () => void }) {
+  const { t, lang } = useLanguage()
+  const copy = interfaceCopy[lang]
   const role = localStorage.getItem('elevation_role') ?? 'admin'
-
   const visibleAdmin = ADMIN_NAV.filter(item => item.roles.includes(role))
   const visibleBoard = BOARD_NAV.filter(item => item.roles.includes(role))
 
   const renderLink = (item: typeof ADMIN_NAV[0]) => (
-    <NavLink
-      key={item.to}
-      to={item.to}
-      style={({ isActive }) => ({
-        display: 'flex', alignItems: 'center', gap: '0.65rem',
-        padding: '0.65rem 0.85rem', borderRadius: '0.75rem',
-        fontSize: '0.875rem', textDecoration: 'none', transition: 'all 0.15s',
-        color: isActive ? '#FAF8F4' : '#78716C',
-        background: isActive ? '#6B7D5C' : 'transparent',
-        fontWeight: isActive ? 500 : 400,
-      })}
-    >
-      {item.icon}
+    <NavLink key={item.to} to={item.to} onClick={onNavigate}>
+      <span aria-hidden="true">{item.icon}</span>
       {t(item.labelKey) !== item.labelKey ? t(item.labelKey) : item.fallback}
     </NavLink>
   )
 
   return (
-    <aside style={{
-      width: 240, minHeight: 'calc(100vh - 60px)',
-      background: '#EDEAE4', borderRight: '0.5px solid #E7E5E4',
-      display: 'flex', flexDirection: 'column',
-      padding: '1.5rem 0', flexShrink: 0,
-    }}>
-
-      {/* Admin nav */}
-      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 0.75rem' }}>
-        {visibleAdmin.map(renderLink)}
-      </nav>
-
-      {/* Ethics Board — superadmin only */}
-      {visibleBoard.length > 0 && (
-        <>
-          <div style={{ margin: '1rem 0.75rem', borderTop: '0.5px solid #D6D2C4' }} />
-          <div style={{ padding: '0 1.5rem', marginBottom: '0.5rem' }}>
-            <p style={{ fontSize: 10, color: '#A8A29E', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
-              Ethics Board
-            </p>
-          </div>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 0.75rem' }}>
-            {visibleBoard.map(renderLink)}
-          </nav>
-        </>
-      )}
-
-      {/* Version */}
-      <div style={{ margin: '1rem 0.75rem', borderTop: '0.5px solid #D6D2C4' }} />
-      <div style={{ padding: '0 1.5rem' }}>
-        <p style={{ fontSize: 10, color: '#A8A29E', letterSpacing: '0.05em', margin: 0 }}>
-          Elevation MVP · Sprint 9
-        </p>
-      </div>
-
+    <aside id="admin-navigation" className={`admin-sidebar${open ? ' admin-sidebar--open' : ''}`}>
+      <nav aria-label={copy.navigation}>{visibleAdmin.map(renderLink)}</nav>
+      {visibleBoard.length > 0 && <>
+        <p className="admin-board-label">{copy.board}</p>
+        <nav aria-label={copy.boardNavigation}>{visibleBoard.map(renderLink)}</nav>
+      </>}
+      <p className="admin-version">Elevation MVP · Sprint 9</p>
     </aside>
   )
 }
