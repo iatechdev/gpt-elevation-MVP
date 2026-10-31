@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom'
 import { useRef, useState } from 'react'
 import type { Lang } from '../../i18n/context'
 
+// ES-67 (H-67-05): nombre de cada idioma en su propio idioma; no se traduce, así que no va al catálogo.
+const LANGUAGE_NAMES = { es: 'Español', en: 'English' } as const
+
 // ES-68/70 activate only the sections that now exist; other phase 2 anchors stay hidden.
 export function LandingHeader({ text, lang, setLang, homeSections = false }: {
   text: (key: string) => string
@@ -39,6 +42,7 @@ export function LandingHeader({ text, lang, setLang, homeSections = false }: {
             <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
               {(['es', 'en'] as const).map(code => (
                 <button key={code} type="button" lang={code} aria-pressed={lang === code}
+                  aria-label={LANGUAGE_NAMES[code]}
                   className="elv-btn elv-join-item landing-lang" onClick={() => setLang(code)}>
                   {text(`landing.header.${code}`)}
                 </button>
