@@ -30,7 +30,7 @@ test('ES-70: real TSX renders six features, four evidence states, four autonomy 
     assert.equal((html.match(/<h2 /g) ?? []).length, 2)
     assert.equal((html.match(/<h4>/g) ?? []).length, 3)
     assert.equal((html.match(/<li>/g) ?? []).length, 8)
-    assert.equal((html.match(/landing-offer-status/g) ?? []).length, 7)
+    assert.equal((html.match(/landing-offer-status/g) ?? []).length, 10)
     assert.match(html, /id="skill-map" tabindex="-1"/)
     for (const entry of entries) {
       assert.ok(entry[lang].trim(), entry.key)
@@ -42,8 +42,8 @@ test('ES-70: real TSX renders six features, four evidence states, four autonomy 
 
 test('ES-133: availability labels reflect what exists, no "coming soon" remains, and they stay editable per language', () => {
   const statuses = entries.filter(entry => entry.key.endsWith('.status'))
-  assert.equal(statuses.length, 7)
-  const preparing = ['landing.features.exercises.status', 'landing.features.data.status']
+  assert.equal(statuses.length, 10)
+  const preparing = ['landing.features.exercises.status', 'landing.features.data.status', ...['continuity', 'adjacent', 'exploratory'].map(route => `landing.skillmap.routes.${route}.status`)]
   for (const entry of statuses) {
     const expected = preparing.includes(entry.key) ? ['En preparación', 'In preparation'] : ['Disponible', 'Available']
     assert.deepEqual([entry.es, entry.en], expected, entry.key)

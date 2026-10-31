@@ -81,6 +81,8 @@ export function LandingSkillMap({ text }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 landing-route-grid">
         {routes.map(route => <LandingCard key={route} className="landing-offer-card">
           <div className="elv-card-body">
+            {/* ES-133 (M1): comparar rutas depende de /app/next-step, que aún no está disponible para todas las personas. */}
+            <LandingLabel className="landing-offer-status">{text(`landing.skillmap.routes.${route}.status`)}</LandingLabel>
             <h4>{text(`landing.skillmap.routes.${route}.title`)}</h4>
             <p>{text(`landing.skillmap.routes.${route}.pending`)}</p>
           </div>
