@@ -372,6 +372,19 @@ const es: Record<string, string> = {
   board_error_activate: 'No se pudo reactivar la versión.',
   board_success_upload: '✅ Manifiesto publicado y activado:',
   board_success_activate: '✅ Versión reactivada:',
+
+  // ── Check-out del chat (ES-123: antes fijos en el componente) ─────────────
+  checkout_label: 'CHECK-OUT',
+  checkout_title: '¿Cómo te vas?',
+  checkout_hint: 'Tómate un momento antes de cerrar.',
+  checkout_rating: '¿Cómo fue la conversación?',
+  checkout_signout: 'Cerrar sesión',
+  checkout_skip: 'Saltar',
+  star_1: '😞 Muy mala',
+  star_2: '😐 Regular',
+  star_3: '🙂 Buena',
+  star_4: '😊 Muy buena',
+  star_5: '✨ Excelente',
 }
 
 export { es }
