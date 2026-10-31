@@ -74,6 +74,17 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
   assert.match(blocked.stderr, /sin adoptar/);
   assert.deepEqual(await meta(db), [...ES85].sort(), 'migrate-deploy bloqueado no escribe');
 
+  // P2: ES-95 parcial no puede registrar siquiera la línea base.
+  await db.query('DROP INDEX professional_applications_email_open_unique');
+  const partial = run('adopt-existing-schema.cjs', ['--apply'], names.staging);
+  assert.equal(partial.status, 1, partial.stdout + partial.stderr);
+  assert.match(partial.stdout, /no_adoptable\s+20261029000000-es95-professional-applications\.js/);
+  assert.match(partial.stdout, /professional_applications_email_open_unique/);
+  assert.match(partial.stderr, /Adopción bloqueada.*No se registra nada/);
+  assert.deepEqual(await meta(db), [...ES85].sort(), 'ES-95 parcial no registra baseline ni ninguna otra migración');
+  assert.equal((await db.query('SELECT count(*)::int n FROM "Users"')).rows[0].n, usersBefore);
+  await db.query(`CREATE UNIQUE INDEX professional_applications_email_open_unique ON "ProfessionalApplications" (email) WHERE status IN ('pending', 'approved')`);
+
   // ── 3. Adopción ───────────────────────────────────────────────────────────────
   const apply = run('adopt-existing-schema.cjs', ['--apply'], names.staging);
   assert.equal(apply.status, 0, apply.stderr);

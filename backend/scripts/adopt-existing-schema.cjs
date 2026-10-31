@@ -62,8 +62,8 @@ async function main() {
     for (const p of plan) console.log(`${p.state.padEnd(13)} ${p.name}${p.missing ? '  (falta: ' + p.missing.join(', ') + ')' : ''}`);
     const toAdopt = plan.filter((p) => p.state === 'adoptable');
     if (!apply) { console.log(`Diagnóstico solamente (no se escribió nada). Adoptables: ${toAdopt.length}. Use --apply para registrarlas.`); return; }
-    if (plan.some((p) => p.state === 'no_adoptable' && p.name === BASELINE)) {
-      console.error('La línea base no es adoptable: la base no coincide con ella. No se registra nada.'); process.exitCode = 1; return;
+    if (plan.some((p) => p.state === 'no_adoptable')) {
+      console.error('Adopción bloqueada: hay migraciones no_adoptable. Repare los objetos faltantes indicados y repita el diagnóstico antes de usar --apply. No se registra nada.'); process.exitCode = 1; return;
     }
     await client.query('BEGIN');
     await ensureMeta(client);
