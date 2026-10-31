@@ -1,0 +1,146 @@
+{"id":"C1 /app/chat 1440x900-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 1440x900-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":76,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 1440x900-es: etiqueta «Mensaje» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Mensaje\"}"}
+{"id":"C5 /app/chat 1440x900-es: contador vacío a 3.599; «3.600 / 4.000 caracteres» a 3.600; máximo a 4.000; aria-live polite","ok":true,"detail":"{\"c0\":{\"text\":\"\",\"live\":\"polite\",\"role\":\"status\"},\"c1\":{\"text\":\"3.600 / 4.000 caracteres\",\"live\":\"polite\",\"role\":\"status\"},\"c2\":{\"text\":\"Has llegado al máximo de 4.000 caracteres.\",\"live\":\"polite\",\"role\":\"status\"}}"}
+{"id":"C5b /app/chat 1440x900-es: el textarea no admite más de 4.000","ok":true,"detail":"4000"}
+{"id":"C6 /app/chat 1440x900-es: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada a\"}"}
+{"id":"R1 /app/chat 1440x900-es: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 1440x900-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 1440x900-es: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 1440x900-es: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 1440x900-es: sin chat embebido (0 textarea) y con «Ir a mi conversación»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 1440x900-es: «Ir a mi conversación» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 1440x900-es: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 1440x900-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 1440x900-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":68,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 1440x900-en: etiqueta «Message» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Message\"}"}
+{"id":"C4 /app/chat 1440x900-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON NOVEMBER"}
+{"id":"C5 /app/chat 1440x900-en: contador vacío a 3.599; «3,600 / 4,000 characters» a 3.600; máximo a 4.000; aria-live polite","ok":true,"detail":"{\"c0\":{\"text\":\"\",\"live\":\"polite\",\"role\":\"status\"},\"c1\":{\"text\":\"3,600 / 4,000 characters\",\"live\":\"polite\",\"role\":\"status\"},\"c2\":{\"text\":\"You have reached the 4,000-character maximum.\",\"live\":\"polite\",\"role\":\"status\"}}"}
+{"id":"C5b /app/chat 1440x900-en: el textarea no admite más de 4.000","ok":true,"detail":"4000"}
+{"id":"C6 /app/chat 1440x900-en: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"From each entry you select, the chat reads up to 2,000 characters, using the version saved whe\"}"}
+{"id":"R1 /app/chat 1440x900-en: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 1440x900-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 1440x900-en: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 1440x900-en: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 1440x900-en: sin chat embebido (0 textarea) y con «Go to my conversation»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 1440x900-en: «Go to my conversation» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 1440x900-en: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 768x1024-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 768x1024-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":76,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 768x1024-es: etiqueta «Mensaje» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Mensaje\"}"}
+{"id":"C6 /app/chat 768x1024-es: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada a\"}"}
+{"id":"R1 /app/chat 768x1024-es: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 768x1024-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 768x1024-es: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 768x1024-es: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 768x1024-es: sin chat embebido (0 textarea) y con «Ir a mi conversación»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 768x1024-es: «Ir a mi conversación» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 768x1024-es: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 768x1024-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 768x1024-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":68,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 768x1024-en: etiqueta «Message» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Message\"}"}
+{"id":"C4 /app/chat 768x1024-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON NOVEMBER"}
+{"id":"C6 /app/chat 768x1024-en: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"From each entry you select, the chat reads up to 2,000 characters, using the version saved whe\"}"}
+{"id":"R1 /app/chat 768x1024-en: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 768x1024-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 768x1024-en: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 768x1024-en: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 768x1024-en: sin chat embebido (0 textarea) y con «Go to my conversation»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 768x1024-en: «Go to my conversation» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 768x1024-en: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 390x844-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 390x844-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":358,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 390x844-es: etiqueta «Mensaje» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Mensaje\"}"}
+{"id":"C5 /app/chat 390x844-es: contador vacío a 3.599; «3.600 / 4.000 caracteres» a 3.600; máximo a 4.000; aria-live polite","ok":true,"detail":"{\"c0\":{\"text\":\"\",\"live\":\"polite\",\"role\":\"status\"},\"c1\":{\"text\":\"3.600 / 4.000 caracteres\",\"live\":\"polite\",\"role\":\"status\"},\"c2\":{\"text\":\"Has llegado al máximo de 4.000 caracteres.\",\"live\":\"polite\",\"role\":\"status\"}}"}
+{"id":"C5b /app/chat 390x844-es: el textarea no admite más de 4.000","ok":true,"detail":"4000"}
+{"id":"C6 /app/chat 390x844-es: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada a\"}"}
+{"id":"R1 /app/chat 390x844-es: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 390x844-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 390x844-es: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 390x844-es: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 390x844-es: sin chat embebido (0 textarea) y con «Ir a mi conversación»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 390x844-es: «Ir a mi conversación» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 390x844-es: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 390x844-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 390x844-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":358,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 390x844-en: etiqueta «Message» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Message\"}"}
+{"id":"C4 /app/chat 390x844-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON NOVEMBER"}
+{"id":"C5 /app/chat 390x844-en: contador vacío a 3.599; «3,600 / 4,000 characters» a 3.600; máximo a 4.000; aria-live polite","ok":true,"detail":"{\"c0\":{\"text\":\"\",\"live\":\"polite\",\"role\":\"status\"},\"c1\":{\"text\":\"3,600 / 4,000 characters\",\"live\":\"polite\",\"role\":\"status\"},\"c2\":{\"text\":\"You have reached the 4,000-character maximum.\",\"live\":\"polite\",\"role\":\"status\"}}"}
+{"id":"C5b /app/chat 390x844-en: el textarea no admite más de 4.000","ok":true,"detail":"4000"}
+{"id":"C6 /app/chat 390x844-en: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"From each entry you select, the chat reads up to 2,000 characters, using the version saved whe\"}"}
+{"id":"R1 /app/chat 390x844-en: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 390x844-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 390x844-en: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 390x844-en: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 390x844-en: sin chat embebido (0 textarea) y con «Go to my conversation»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 390x844-en: «Go to my conversation» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 390x844-en: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 364x740-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 364x740-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":332,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 364x740-es: etiqueta «Mensaje» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Mensaje\"}"}
+{"id":"C6 /app/chat 364x740-es: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada a\"}"}
+{"id":"R1 /app/chat 364x740-es: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 364x740-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 364x740-es: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 364x740-es: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 364x740-es: sin chat embebido (0 textarea) y con «Ir a mi conversación»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 364x740-es: «Ir a mi conversación» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 364x740-es: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 364x740-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 364x740-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":332,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 364x740-en: etiqueta «Message» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Message\"}"}
+{"id":"C4 /app/chat 364x740-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON NOVEMBER"}
+{"id":"C6 /app/chat 364x740-en: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"From each entry you select, the chat reads up to 2,000 characters, using the version saved whe\"}"}
+{"id":"R1 /app/chat 364x740-en: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 364x740-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 364x740-en: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 364x740-en: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 364x740-en: sin chat embebido (0 textarea) y con «Go to my conversation»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 364x740-en: «Go to my conversation» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 364x740-en: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 360x740-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 360x740-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":328,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 360x740-es: etiqueta «Mensaje» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Mensaje\"}"}
+{"id":"C6 /app/chat 360x740-es: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada a\"}"}
+{"id":"R1 /app/chat 360x740-es: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 360x740-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 360x740-es: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 360x740-es: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 360x740-es: sin chat embebido (0 textarea) y con «Ir a mi conversación»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 360x740-es: «Ir a mi conversación» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 360x740-es: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 360x740-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 360x740-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":328,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 360x740-en: etiqueta «Message» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Message\"}"}
+{"id":"C4 /app/chat 360x740-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON NOVEMBER"}
+{"id":"C6 /app/chat 360x740-en: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"From each entry you select, the chat reads up to 2,000 characters, using the version saved whe\"}"}
+{"id":"R1 /app/chat 360x740-en: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 360x740-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 360x740-en: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 360x740-en: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 360x740-en: sin chat embebido (0 textarea) y con «Go to my conversation»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 360x740-en: «Go to my conversation» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 360x740-en: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 320x568-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 320x568-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":76,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 320x568-es: etiqueta «Mensaje» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Mensaje\"}"}
+{"id":"C6 /app/chat 320x568-es: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada a\"}"}
+{"id":"R1 /app/chat 320x568-es: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 320x568-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 320x568-es: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":4,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 320x568-es: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 320x568-es: sin chat embebido (0 textarea) y con «Ir a mi conversación»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 320x568-es: «Ir a mi conversación» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 320x568-es: sin errores de página (pageerror)","ok":true,"detail":""}
+{"id":"C1 /app/chat 320x568-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 320x568-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":68,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 320x568-en: etiqueta «Message» sin cifra y sin 4.000/2.000 visibles","ok":true,"detail":"{\"label\":\"Message\"}"}
+{"id":"C4 /app/chat 320x568-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON NOVEMBER"}
+{"id":"C6 /app/chat 320x568-en: 2.000 NO visible con el panel del diario abierto pero la ayuda plegada, SÍ con la ayuda desplegada","ok":true,"detail":"{\"hasClosed\":false,\"hasOpen\":true,\"ctx\":\"From each entry you select, the chat reads up to 2,000 characters, using the version saved whe\"}"}
+{"id":"R1 /app/chat 320x568-en: enviar un mensaje responde 200 y la respuesta se muestra","ok":true,"detail":"http=200"}
+{"id":"D1 /app/dashboard 320x568-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 320x568-en: «Catálogo de rutas» y «Brújula profesional» separados (sin solape, hueco > 0)","ok":true,"detail":"{\"n\":2,\"ov\":false,\"gap\":24,\"textareas\":0}"}
+{"id":"D3 /app/dashboard 320x568-en: sin 4.000/2.000 visibles","ok":true,"detail":""}
+{"id":"D5a /app/dashboard 320x568-en: sin chat embebido (0 textarea) y con «Go to my conversation»","ok":true,"detail":"{\"textareas\":0}"}
+{"id":"D5b /app/dashboard 320x568-en: «Go to my conversation» lleva a /app/chat","ok":true,"detail":"http://127.0.0.1:9952/app/chat"}
+{"id":"E1 320x568-en: sin errores de página (pageerror)","ok":true,"detail":""}
