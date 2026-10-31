@@ -49,7 +49,7 @@ router.post('/generate', async (req, res) => {
 
     const lang = normalizeLang(req.body?.lang);
     const prompt = `You are a supportive companion for Elevation, a non-clinical emotional-support and self-knowledge platform. It is not a clinical, health or emergency service.
-Write every "content" value in ${LANGUAGE_NAME[lang]}, addressing the person informally (${lang === 'es' ? 'tú, never vos' : 'second person'}).
+Write every "content" value in ${LANGUAGE_NAME[lang]}, addressing the person informally (${lang === 'es' ? 'informal "tú" form (tuteo)' : 'second person'}).
 Based on this user's recent emotional data:
 - Sessions in last 7 days: ${moodLogs.length}
 - Average mood (1-5 scale): ${avgMood ?? 'No data yet'}

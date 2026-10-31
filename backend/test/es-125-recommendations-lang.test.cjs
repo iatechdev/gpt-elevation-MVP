@@ -33,7 +33,7 @@ test('ES-125: el prompt es no clínico, no usa voseo y no promete ni diagnostica
   const prompt = promptOf(calls);
   assert.doesNotMatch(prompt, /mental health platform|wellness coach/i);
   assert.match(prompt, /non-clinical/); assert.match(prompt, /not a clinical, health or emergency service/);
-  assert.match(prompt, /tú, never vos/);
+  assert.ok(prompt.includes('informal "tú" form (tuteo)'));
   assert.match(prompt, /Never diagnose, prescribe, give medical advice or promise/);
   assert.match(prompt, /Average mood \(1-5 scale\): 3\.8/);
   assert.match(prompt, /Keep the "category" values exactly as listed/);
