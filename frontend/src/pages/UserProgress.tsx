@@ -147,7 +147,9 @@ export function UserProgress() {
     setMatchingAnswers({ area: '', style: '', language: '' })
   }
 
-  const cardStyle = {
+  const cardStyle: React.CSSProperties = {
+    minWidth: 0,
+    overflowWrap: 'anywhere',
     background: '#fff',
     borderRadius: '1rem',
     border: '0.5px solid #E7E5E4',
@@ -257,7 +259,7 @@ export function UserProgress() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
           {/* MOOD HISTORY */}
           <div style={cardStyle}>
