@@ -53,7 +53,7 @@ test('ES-62/68/70/73: actual header links reach existing sections, including Pla
     assert.ok(html.includes(`href="${homeSections ? '/' : ''}#skill-map"`))
     assert.ok(html.includes('href="#planes"'))
   }
-  assert.doesNotMatch(header, /landing\.nav\.pros/)
+  assert.match(header, /showProfessionals && <a[^>]+href="#profesionales"/)
   assert.doesNotMatch(header, /dangerouslySetInnerHTML|fetch\(/)
 })
 
@@ -69,7 +69,7 @@ test('ES-62: el enlace de salto es el primer elemento enfocable y apunta al cont
   const skip = header.indexOf('href="#contenido"')
   assert.ok(skip > 0)
   for (const later of ['<Link', '<button']) assert.ok(skip < header.indexOf(later), later)
-  assert.match(page, /<LandingHeader text=\{landing\.text\} lang=\{lang\} setLang=\{setLang\} \/>/)
+  assert.match(page, /<LandingHeader text=\{landing\.text\} lang=\{lang\} setLang=\{setLang\} showProfessionals=\{showProfessionals\} \/>/)
   assert.match(page, /<main id="contenido" tabIndex=\{-1\}>/)
   assert.ok(page.indexOf('<LandingHeader') < page.indexOf('<main id="contenido"'))
   assert.ok(page.indexOf('</main>') < page.indexOf('<footer'))
