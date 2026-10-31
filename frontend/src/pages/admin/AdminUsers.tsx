@@ -679,7 +679,7 @@ export function AdminUsers() {
             </div>
 
             <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              Establecé una contraseña temporal para <strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>. Comunicasela por otro medio (email, WhatsApp, etc.).
+              Establece una contraseña temporal para <strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>. Comunicasela por otro medio (email, WhatsApp, etc.).
             </p>
 
             <div style={{ marginBottom: '1.25rem' }}>
@@ -749,7 +749,7 @@ export function AdminUsers() {
               <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{confirmDelete.email}</div>
             </div>
             <p style={{ fontSize: '0.82rem', color: '#78716C', marginBottom: '0.5rem' }}>
-              Para confirmar, escribí exactamente el nombre del usuario:
+              Para confirmar, escribe exactamente el nombre del usuario:
             </p>
             <input
               type="text"
@@ -781,7 +781,7 @@ export function AdminUsers() {
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>✕ Rechazar solicitud</h3>
             <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem' }}>
-              Explicá por qué rechazás la solicitud de <strong>{showRejectModal.requester.name}</strong> para el plan <strong>{showRejectModal.plan.name_es}</strong>.
+              Explica por qué rechazas la solicitud de <strong>{showRejectModal.requester.name}</strong> para el plan <strong>{showRejectModal.plan.name_es}</strong>.
             </p>
             <textarea value={planRejectNote} onChange={e => setPlanRejectNote(e.target.value)}
               placeholder="Ej: El plan seleccionado no está disponible actualmente..." rows={3}

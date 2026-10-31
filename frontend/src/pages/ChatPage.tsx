@@ -250,7 +250,7 @@ export function ChatPage() {
   }
 
   const rollbackVersion = async (id: number) => {
-    if (!confirm('¿Seguro que querés activar esta versión anterior?')) return
+    if (!confirm('¿Seguro que quieres activar esta versión anterior?')) return
     try {
       await apiFetch(`/api/superadmin/prompt/${id}/rollback`, getToken(), { method: 'POST' })
       setPromptMsg('✓ Rollback exitoso.')

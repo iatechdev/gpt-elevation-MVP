@@ -152,7 +152,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
             {step === 'success'
               ? (lang === 'es' ? '¡Terapeuta elegido!' : 'Therapist chosen!')
               : step === 'results'
-              ? (lang === 'es' ? 'Terapeutas para vos' : 'Therapists for you')
+              ? (lang === 'es' ? 'Terapeutas para ti' : 'Therapists for you')
               : (lang === 'es' ? 'Encontremos tu terapeuta ideal' : 'Let\'s find your ideal therapist')}
           </h2>
           <button onClick={onClose}
@@ -173,7 +173,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
 
             <div>
               <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#78716C', marginBottom: '0.5rem' }}>
-                {lang === 'es' ? '¿Qué querés trabajar?' : 'What do you want to work on?'}
+                {lang === 'es' ? '¿Qué quieres trabajar?' : 'What do you want to work on?'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {TOPICS.map(t => (
@@ -186,7 +186,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
 
             <div>
               <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#78716C', marginBottom: '0.5rem' }}>
-                {lang === 'es' ? '¿Qué enfoque preferís?' : 'What approach do you prefer?'}
+                {lang === 'es' ? '¿Qué enfoque prefieres?' : 'What approach do you prefer?'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {APPROACHES.map(a => (
@@ -238,7 +238,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
               <div style={{ textAlign: 'center', padding: '2rem', color: '#78716C', fontSize: '0.875rem' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>😔</div>
                 {lang === 'es'
-                  ? 'No encontramos terapeutas disponibles ahora. Volvé a intentar más tarde.'
+                  ? 'No encontramos terapeutas disponibles ahora. Vuelve a intentarlo más tarde.'
                   : 'No therapists available right now. Try again later.'}
               </div>
             ) : (

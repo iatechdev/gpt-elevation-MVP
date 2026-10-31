@@ -348,7 +348,7 @@ export function UserDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
-                  {lang === 'es' ? '¿Cómo llegás hoy?' : 'How are you arriving today?'}
+                  {lang === 'es' ? '¿Cómo llegas hoy?' : 'How are you arriving today?'}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {CHECKOUT_MOODS.map(m => (
@@ -563,7 +563,7 @@ export function UserDashboard() {
               <div style={{ fontSize: '2.5rem' }}>💬</div>
               <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#A8A29E', textAlign: 'center', margin: 0 }}>
                 {lang === 'es'
-                  ? 'Seleccioná cómo llegás hoy para comenzar tu conversación.'
+                  ? 'Selecciona cómo llegas hoy para comenzar tu conversación.'
                   : 'Select how you\'re arriving today to start your conversation.'}
               </p>
             </div>
@@ -585,7 +585,7 @@ export function UserDashboard() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
-            ✨ {lang === 'es' ? 'Recomendaciones para vos' : 'Recommendations for you'}
+            ✨ {lang === 'es' ? 'Recomendaciones para ti' : 'Recommendations for you'}
           </h2>
           <button onClick={() => void handleGenerateRecs()} disabled={loadingRecs}
             style={{ fontSize: '0.78rem', color: '#6B7D5C', background: 'none', border: '0.5px solid #6B7D5C', borderRadius: '0.65rem', padding: '0.35rem 0.75rem', cursor: loadingRecs ? 'not-allowed' : 'pointer' }}>
@@ -595,7 +595,7 @@ export function UserDashboard() {
 
         {recommendations.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#A8A29E', fontSize: '0.875rem' }}>
-            {lang === 'es' ? 'Aún no tenés recomendaciones. ¡Generá las primeras!' : 'No recommendations yet. Generate your first ones!'}
+            {lang === 'es' ? 'Aún no tienes recomendaciones. ¡Genera las primeras!' : 'No recommendations yet. Generate your first ones!'}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
