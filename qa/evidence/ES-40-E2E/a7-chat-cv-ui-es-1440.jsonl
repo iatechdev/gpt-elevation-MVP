@@ -1,0 +1,14 @@
+{"id":"A7 [es 1440] chat: con el campo vacío «Enviar» está deshabilitado","ok":true,"d":""}
+{"id":"A7 [es 1440] chat: doble clic en «Enviar» vacío no envía nada","ok":true,"d":"peticiones=0"}
+{"id":"A7 [es 1440] chat: contador vacío a 3.599, visible a 3.600 y de máximo a 4.000; el campo no pasa de 4.000","ok":true,"d":"{\"c0\":\"\",\"c1\":\"3.600 / 4.000 caracteres\",\"c2\":\"Has llegado al máximo de 4.000 caracteres.\",\"lenMax\":4000}"}
+{"id":"A7 [es 1440] chat: pegar 200.000 caracteres (entrada real de teclado/portapapeles) queda en ≤ 4.000 y la página sigue viva","ok":true,"d":"longitud=4000"}
+{"id":"A7 [es 1440] chat: emojis, acentos y HTML se aceptan en el campo (sin enviar)","ok":true,"d":""}
+{"id":"A7 [es 1440] chat: «Pausar» muestra una respuesta de pausa sin consumir IA","ok":true,"d":"texto=Saltar al contenido ELEVATION ES EN CONVERSACIÓN DIARIO ☰ MENÚ CONVERSACIÓN Privada · Solo visible p"}
+{"id":"A7 [es 1440] chat: el selector del diario se abre sin cifras técnicas (2.000/4.000) visibles hasta abrir la ayuda","ok":true,"d":""}
+{"id":"A7 [es 1440] chat: nada de lo anterior llamó a la IA (consumo igual)","ok":true,"d":"chat=0"}
+{"id":"A7 [es 1440] hoja de vida (interfaz): «no es PDF» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"No pudimos continuar Este archivo no es un PDF. Solo se aceptan archivos PDF: elige un ar\" peticionesIA=1"}
+{"id":"A7 [es 1440] hoja de vida (interfaz): «vacío» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"No pudimos continuar El archivo está vacío. Elige otro PDF o llena el formulario a mano.\" peticionesIA=1"}
+{"id":"A7 [es 1440] hoja de vida (interfaz): «más de 5 MB» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"No pudimos continuar El archivo pesa más de 5 MB. Prueba exportarlo de nuevo con menos im\" peticionesIA=1"}
+{"id":"A7 [es 1440] hoja de vida (interfaz): «extensión .txt» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"No pudimos continuar Este archivo no es un PDF. Solo se aceptan archivos PDF: elige un ar\" peticionesIA=1"}
+{"id":"A7 [es 1440] mis hojas de vida: estado vacío legible","ok":true,"d":"hojas de vida Solo tú puedes verlas. Están cifradas y no llegan a nadie más sin tu autorización apar"}
+{"id":"A7 [es 1440] el consumo de IA no cambió en toda la prueba (los archivos no válidos se rechazan antes de la IA) y no hubo errores de página","ok":true,"d":"consumo 0 → 0; llamadas a /analyze=1; errores="}

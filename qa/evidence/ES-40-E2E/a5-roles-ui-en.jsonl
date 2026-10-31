@@ -1,0 +1,17 @@
+{"id":"A5 [en] administrador: ingreso por la interfaz llega a su panel","ok":true,"d":"/admin/dashboard"}
+{"id":"A5 [en] administrador: /admin/dashboard carga, sin voseo ni desborde","ok":true,"d":" /admin/dashboard"}
+{"id":"A5 [en] administrador: /admin/users carga, sin voseo ni desborde","ok":true,"d":" /admin/users"}
+{"id":"A5 [en] administrador: /admin/content carga, sin voseo ni desborde","ok":true,"d":" /admin/content"}
+{"id":"A5 [en] administrador: /admin/prompts carga, sin voseo ni desborde","ok":true,"d":" /admin/prompts"}
+{"id":"A5 [en] administrador: /admin/metrics carga, sin voseo ni desborde","ok":true,"d":" /admin/metrics"}
+{"id":"A5 [en] administrador: /therapist/dashboard (no le corresponde) no muestra datos ajenos","ok":true,"d":"url=/"}
+{"id":"A5 [en] administrador: hay botón de cerrar sesión en su panel","ok":false,"d":""}
+{"id":"A5 [en] administrador: sin errores de página","ok":true,"d":""}
+{"id":"A5 [en] terapeuta: ingreso por la interfaz llega a su panel","ok":true,"d":"/therapist/dashboard"}
+{"id":"A5 [en] terapeuta: /therapist/dashboard carga, sin voseo ni desborde","ok":true,"d":" /therapist/dashboard"}
+{"id":"A5 [en] terapeuta: /admin/dashboard (no le corresponde) no muestra datos ajenos","ok":true,"d":"url=/therapist/dashboard"}
+{"id":"A5 [en] terapeuta: /admin/users (no le corresponde) no muestra datos ajenos","ok":true,"d":"url=/therapist/dashboard"}
+{"id":"A5 [en] terapeuta: /board/manifest (no le corresponde) no muestra datos ajenos","ok":true,"d":"url=/therapist/dashboard"}
+{"id":"A5 [en] terapeuta: hay botón de cerrar sesión en su panel","ok":true,"d":""}
+{"id":"A5 [en] terapeuta: tras cerrar sesión el token se borra y «Atrás» no vuelve al panel","ok":true,"d":"token=borrado url=/login"}
+{"id":"A5 [en] terapeuta: sin errores de página","ok":true,"d":""}

@@ -1,0 +1,391 @@
+{"id":"A1-0 sesiones sintéticas de persona, admin y terapeuta creadas por API","ok":true,"d":"persona=true admin=admin terapeuta=therapist"}
+{"id":"A1 publico es 1920x1080 /","ok":true,"d":"ok"}
+{"id":"A1 publico es 1920x1080 /login","ok":true,"d":"ok"}
+{"id":"A1 publico es 1920x1080 /login?mode=register","ok":true,"d":"ok"}
+{"id":"A1 publico es 1920x1080 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico es 1920x1080 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico es 1440x900 /","ok":true,"d":"ok"}
+{"id":"A1 publico es 1440x900 /login","ok":true,"d":"ok"}
+{"id":"A1 publico es 1440x900 /login?mode=register","ok":true,"d":"ok"}
+{"id":"A1 publico es 1440x900 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico es 1440x900 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico es 768x1024 /","ok":true,"d":"ok"}
+{"id":"A1 publico es 768x1024 /login","ok":true,"d":"ok"}
+{"id":"A1 publico es 768x1024 /login?mode=register","ok":true,"d":"ok"}
+{"id":"A1 publico es 768x1024 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico es 768x1024 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico es 390x844 /","ok":true,"d":"ok"}
+{"id":"A1 publico es 390x844 /login","ok":true,"d":"ok"}
+{"id":"A1 publico es 390x844 /login?mode=register","ok":true,"d":"ok"}
+{"id":"A1 publico es 390x844 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico es 390x844 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico es 320x568 /","ok":true,"d":"ok"}
+{"id":"A1 publico es 320x568 /login","ok":true,"d":"ok"}
+{"id":"A1 publico es 320x568 /login?mode=register","ok":true,"d":"ok"}
+{"id":"A1 publico es 320x568 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico es 320x568 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico en 1920x1080 /","ok":true,"d":"ok"}
+{"id":"A1 publico en 1920x1080 /login","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 1920x1080 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 1920x1080 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico en 1920x1080 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico en 1440x900 /","ok":true,"d":"ok"}
+{"id":"A1 publico en 1440x900 /login","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 1440x900 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 1440x900 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico en 1440x900 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico en 768x1024 /","ok":true,"d":"ok"}
+{"id":"A1 publico en 768x1024 /login","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 768x1024 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 768x1024 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico en 768x1024 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico en 390x844 /","ok":false,"d":"texto en español en EN «Conversación»"}
+{"id":"A1 publico en 390x844 /login","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 390x844 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 390x844 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico en 390x844 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 publico en 320x568 /","ok":false,"d":"texto en español en EN «Conversación»"}
+{"id":"A1 publico en 320x568 /login","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 320x568 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 320x568 /pricing","ok":true,"d":"ok"}
+{"id":"A1 publico en 320x568 /profesionales","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 1920x1080 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona es 1920x1080 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 1440x900 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona es 1440x900 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 768x1024 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona es 768x1024 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 390x844 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona es 390x844 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/progress","ok":false,"d":"desborde horizontal"}
+{"id":"A1 persona es 320x568 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 320x568 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona es 320x568 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 1920x1080 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona en 1920x1080 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 1440x900 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona en 1440x900 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 768x1024 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona en 768x1024 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 390x844 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona en 390x844 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/dashboard","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/chat","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/checkin","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/progress","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/diary","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/diary/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/space/tools","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/exercises","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/compass","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/bridge","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/evidence","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/evidence/new","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/evidence/resume-skills","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/context/resumes","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/skill-map","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 320x568 /app/next-step","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/next-step/experiments","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/next-step/plan","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/my-therapist","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/feedback","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/onboarding","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /app/professional-reviews","ok":true,"d":"ok"}
+{"id":"A1 persona en 320x568 /facilitation","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/dashboard","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin es 1920x1080 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 1920x1080 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 1920x1080 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 1440x900 /admin/dashboard","ok":true,"d":"ok"}
+{"id":"A1 admin es 1440x900 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin es 1440x900 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 1440x900 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin es 1440x900 /admin/metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 1440x900 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 1440x900 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 1440x900 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 1440x900 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 768x1024 /admin/dashboard","ok":true,"d":"ok"}
+{"id":"A1 admin es 768x1024 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin es 768x1024 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 768x1024 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin es 768x1024 /admin/metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 768x1024 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 768x1024 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 768x1024 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 768x1024 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 390x844 /admin/dashboard","ok":true,"d":"ok"}
+{"id":"A1 admin es 390x844 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin es 390x844 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 390x844 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin es 390x844 /admin/metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 390x844 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 390x844 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 390x844 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 390x844 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 320x568 /admin/dashboard","ok":true,"d":"ok"}
+{"id":"A1 admin es 320x568 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin es 320x568 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin es 320x568 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin es 320x568 /admin/metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 320x568 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 320x568 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin es 320x568 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin es 320x568 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 1920x1080 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1920x1080 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin en 1920x1080 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
+{"id":"A1 admin en 1920x1080 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1920x1080 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1920x1080 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 1920x1080 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 1920x1080 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin en 1920x1080 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 1440x900 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1440x900 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin en 1440x900 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
+{"id":"A1 admin en 1440x900 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1440x900 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1440x900 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 1440x900 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 1440x900 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin en 1440x900 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 768x1024 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 768x1024 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin en 768x1024 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
+{"id":"A1 admin en 768x1024 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 768x1024 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 768x1024 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 768x1024 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 768x1024 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin en 768x1024 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 390x844 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 390x844 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin en 390x844 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
+{"id":"A1 admin en 390x844 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 390x844 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 390x844 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 390x844 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 390x844 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin en 390x844 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 320x568 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 320x568 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
+{"id":"A1 admin en 320x568 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
+{"id":"A1 admin en 320x568 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 320x568 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 320x568 /admin/route-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 320x568 /admin/skill-catalog","ok":true,"d":"ok"}
+{"id":"A1 admin en 320x568 /admin/pilot-metrics","ok":true,"d":"ok"}
+{"id":"A1 admin en 320x568 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 terapeuta es 1920x1080 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta es 1440x900 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta es 768x1024 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta es 390x844 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta es 320x568 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta en 1920x1080 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta en 1440x900 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta en 768x1024 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta en 390x844 /therapist/dashboard","ok":true,"d":"ok"}
+{"id":"A1 terapeuta en 320x568 /therapist/dashboard","ok":true,"d":"ok"}

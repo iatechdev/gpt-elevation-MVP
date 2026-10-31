@@ -1,0 +1,14 @@
+{"id":"A7 [en 390] chat: con el campo vacío «Enviar» está deshabilitado","ok":true,"d":""}
+{"id":"A7 [en 390] chat: doble clic en «Enviar» vacío no envía nada","ok":true,"d":"peticiones=0"}
+{"id":"A7 [en 390] chat: contador vacío a 3.599, visible a 3.600 y de máximo a 4.000; el campo no pasa de 4.000","ok":true,"d":"{\"c0\":\"\",\"c1\":\"3,600 / 4,000 characters\",\"c2\":\"You have reached the 4,000-character maximum.\",\"lenMax\":4000}"}
+{"id":"A7 [en 390] chat: pegar 200.000 caracteres (entrada real de teclado/portapapeles) queda en ≤ 4.000 y la página sigue viva","ok":true,"d":"longitud=4000"}
+{"id":"A7 [en 390] chat: emojis, acentos y HTML se aceptan en el campo (sin enviar)","ok":true,"d":""}
+{"id":"A7 [en 390] chat: «Pausar» muestra una respuesta de pausa sin consumir IA","ok":true,"d":"texto=Skip to content ELEVATION ES EN CONVERSATION JOURNAL ☰ MENU CONVERSATION Private · Only visible to y"}
+{"id":"A7 [en 390] chat: el selector del diario se abre sin cifras técnicas (2.000/4.000) visibles hasta abrir la ayuda","ok":true,"d":""}
+{"id":"A7 [en 390] chat: nada de lo anterior llamó a la IA (consumo igual)","ok":true,"d":"chat=0"}
+{"id":"A7 [en 390] hoja de vida (interfaz): «no es PDF» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"We could not continue This file is not a PDF. Only PDF files are accepted: choose a .pdf \" peticionesIA=1"}
+{"id":"A7 [en 390] hoja de vida (interfaz): «vacío» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"We could not continue The file is empty. Choose another PDF or fill in the form yourself.\" peticionesIA=1"}
+{"id":"A7 [en 390] hoja de vida (interfaz): «más de 5 MB» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"We could not continue The file is larger than 5 MB. Try exporting it again with fewer ima\" peticionesIA=1"}
+{"id":"A7 [en 390] hoja de vida (interfaz): «extensión .txt» se rechaza con un mensaje claro en el idioma activo","ok":true,"d":"mensaje=\"We could not continue This file is not a PDF. Only PDF files are accepted: choose a .pdf \" peticionesIA=1"}
+{"id":"A7 [en 390] mis hojas de vida: estado vacío legible","ok":true,"d":"és Only you can see them. They are encrypted and reach nobody else without separate permission. Vers"}
+{"id":"A7 [en 390] el consumo de IA no cambió en toda la prueba (los archivos no válidos se rechazan antes de la IA) y no hubo errores de página","ok":true,"d":"consumo 0 → 0; llamadas a /analyze=1; errores="}
