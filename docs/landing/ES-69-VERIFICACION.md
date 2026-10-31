@@ -78,3 +78,13 @@ Captura de revisión local fuera de Git: es69-faq-revision.jpg en la carpeta de 
 ## Límites
 
 Sin staging/producción, publicación, datos reales, PostgreSQL de integración, pruebas de proveedor IA, traducción nativa o revisión especializada. No se probó Safari/Firefox, lector de pantalla real ni zoom nativo de navegador; se probó ampliación CSS de texto al 200%. Las secciones existentes y las zonas privadas conservan su implementación. QA y Mauricio revisan; Dev no fusiona ni resuelve hilos.
+
+## Correcciones de contenido QA · 31-oct-2026
+
+[Dev-Codex]
+
+Las claves ES/EN de privacidad y FAQ ahora describen el permiso específico por fuente y finalidad para leer chat, diario y hoja de vida con IA (ES-121), y el análisis de contexto profesional autorizado (ES-84). Proponer insights no comparte automáticamente los textos ni certifica competencias.
+
+Se retiró la afirmación permanente «en preparación» para exportación/eliminación y el indicador «Próximamente». Ahora indican «Consulta disponibilidad / Check availability» y remiten a los controles de datos de la cuenta cuando estén habilitados. Es correcto con DATA_RIGHTS_ENABLED activo o desactivado, sin inferir una bandera del servidor desde el build público ni modificar su contrato.
+
+Exento de nueva maqueta: corrección de textos solicitada por QA, sin cambio de layout, navegación ni flujo (AGENTS.md). Publicación desactivada y PR en borrador hasta revisión especializada. No se sobrescribieron personalizaciones del CMS ni se escribió en una base remota: revisar también estos valores existentes en el gestor antes de publicar. Fallback ES/EN conservado.

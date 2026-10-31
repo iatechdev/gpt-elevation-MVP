@@ -71,7 +71,7 @@ test('ES-69: all forty editorial keys are bilingual/editable and malformed or of
 test('ES-69: pending rights/policy, no price or free promise, native keyboard buttons and correct section order', () => {
   const html = render('es') + render('en')
   assert.doesNotMatch(html, /\bGratis\b|\bFree\b|USD|\$|tel:|https?:|href="\/app|href="\/api/)
-  assert.ok(html.includes('Próximamente') && html.includes('Coming soon'))
+  assert.ok(html.includes('Consulta disponibilidad') && html.includes('Check availability'))
   assert.ok(html.includes('Pendiente de revisión') && html.includes('Pending review'))
   const page = read('../src/pages/LandingPage.tsx')
   assert.ok(page.indexOf('<LandingJourney') < page.indexOf('<LandingTrust'))
