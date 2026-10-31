@@ -267,8 +267,8 @@ function ValidationsTab() {
             </h3>
             <p style={{ fontSize: 13, color: '#78716C', margin: '0 0 1.25rem' }}>
               {actionType === 'approve'
-                ? `¿Aprobás la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`
-                : `Explicá por qué rechazás el documento de ${actionDoc.therapist.name}.`}
+                ? `¿Apruebas la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`
+                : `Explica por qué rechazas el documento de ${actionDoc.therapist.name}.`}
             </p>
             <div style={{ marginBottom: '1.25rem' }}>
               <label style={label}>{actionType === 'approve' ? 'Nota (opcional)' : 'Motivo de rechazo *'}</label>
@@ -411,7 +411,7 @@ function PricingTab() {
       ))}
 
       {plans.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>No hay planes. Creá el primero.</div>
+        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>No hay planes. Crea el primero.</div>
       )}
 
       {showForm && (
