@@ -199,3 +199,7 @@ jobs:
         run: npm run test:pro-cv-binary:pg
         env:
           ES107_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-115 migrar al desplegar y adoptar el esquema de staging (PostgreSQL)"
+        run: npm run test:migrate-deploy:pg
+        env:
+          ES115_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
