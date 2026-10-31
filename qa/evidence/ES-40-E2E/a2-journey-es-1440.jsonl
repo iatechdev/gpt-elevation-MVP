@@ -14,9 +14,9 @@
 {"id":"A2 [es 1440] 14-checkin","ok":true,"d":"/app/chat"}
 {"id":"A2 [es 1440] 15-dashboard","ok":true,"d":"caracteres=800"}
 {"id":"A2 [es 1440] 16-progreso","ok":true,"d":"ok"}
-{"id":"A2 [es 1440] 17-diario-crear-a","ok":true,"d":"url=/app/diary/51 XSS ejecutado=false"}
-{"id":"A2 [es 1440] 17-diario-crear-xss","ok":true,"d":"url=/app/diary/52 XSS ejecutado=false"}
-{"id":"A2 [es 1440] 17-diario-crear-largo","ok":true,"d":"url=/app/diary/53 XSS ejecutado=false"}
+{"id":"A2 [es 1440] 17-diario-crear-a","ok":true,"d":"url=/app/diary/69 XSS ejecutado=false"}
+{"id":"A2 [es 1440] 17-diario-crear-xss","ok":true,"d":"url=/app/diary/70 XSS ejecutado=false"}
+{"id":"A2 [es 1440] 17-diario-crear-largo","ok":true,"d":"url=/app/diary/71 XSS ejecutado=false"}
 {"id":"A2 [es 1440] 18-diario-lista","ok":true,"d":"entradas visibles; XSS ejecutado=false"}
 {"id":"A2 [es 1440] 19-diario-vacio-no-guarda","ok":true,"d":"/app/diary/new"}
 {"id":"A2 [es 1440] 20-diario-doble-clic-guardar","ok":true,"d":"entradas con ese texto=1"}

@@ -1,15 +1,15 @@
 {"id":"A3-0 dos personas sintéticas A y B","ok":true,"d":""}
-{"id":"S1a A crea una entrada de diario","ok":true,"d":"http=201 id=29"}
+{"id":"S1a A crea una entrada de diario","ok":true,"d":"http=201 id=67"}
 {"id":"S1b B intenta GET sobre la entrada de A: 403/404","ok":true,"d":"http=404"}
 {"id":"S1b B intenta PUT sobre la entrada de A: 403/404","ok":true,"d":"http=404"}
 {"id":"S1b B intenta DELETE sobre la entrada de A: 403/404","ok":true,"d":"http=404"}
 {"id":"S1c B no ve entradas de A en su lista","ok":true,"d":"http=200"}
 {"id":"S1d la entrada de A sigue intacta tras los intentos de B","ok":true,"d":"http=200"}
-{"id":"S1e A crea una evidencia (borrador)","ok":true,"d":"http=201 {\"id\":34,\"version\":1,\"status\":\"draft\",\"created\":true}"}
+{"id":"S1e A crea una evidencia (borrador)","ok":true,"d":"http=201 {\"id\":45,\"version\":1,\"status\":\"draft\",\"created\":true}"}
 {"id":"S1f B intenta GET sobre la evidencia de A: 403/404 (no 200)","ok":true,"d":"http=404"}
 {"id":"S1f B intenta PUT sobre la evidencia de A: 403/404 (no 200)","ok":true,"d":"http=400"}
 {"id":"S1f B intenta DELETE sobre la evidencia de A: 403/404 (no 200)","ok":true,"d":"http=404"}
-{"id":"U16a A: vista previa de exportación personal (201) con sus propios datos","ok":true,"d":"http=201 {\"id\":\"218153e2-2a6a-4bde-a873-d08abecceb17\",\"expiresAt\":\"2026-10-31T17:52:41.180Z\",\"data\":{\"schemaVersion\":1,\"type\":\"pe"}
+{"id":"U16a A: vista previa de exportación personal (201) con sus propios datos","ok":true,"d":"http=201 {\"id\":\"c393870a-abf0-420f-a3fa-c53491c66d1f\",\"expiresAt\":\"2026-10-31T18:14:31.863Z\",\"data\":{\"schemaVersion\":1,\"type\":\"pe"}
 {"id":"S1g B no puede descargar la exportación de A: 403/404","ok":true,"d":"http=404"}
 {"id":"U16b A descarga su exportación (200) y contiene su entrada y nada de B","ok":true,"d":"http=200"}
 {"id":"U16c exportación profesional: 4xx/503 controlado, nunca 5xx genérico ni datos de otros","ok":true,"d":"http=503 {\"code\":\"professional_contract_pending\",\"error\":\"La exportación profesional aún "}
@@ -40,10 +40,10 @@
 {"id":"S4b CORS: el origen https://evil.example NO recibe Access-Control-Allow-Origin","ok":true,"d":"acao=https://backend-staging-e3a6.up.railway.app"}
 {"id":"S4c respuestas autenticadas sin caché pública (Cache-Control no-store/private)","ok":false,"d":"cache-control=null"}
 {"id":"S5 login con cuentas inexistentes: mismo código que contraseña errónea (sin enumeración de cuentas)","ok":true,"d":"401,401,401,401"}
-{"id":"R1 endpoints de lectura sin IA (40 llamadas): mediana < 500 ms y p95 < 1500 ms","ok":true,"d":"mediana=153ms p95=202ms"}
-{"id":"R4 6 personas simultáneas (90 lecturas, sin IA): 0 respuestas 5xx y p95 < 2 s","ok":true,"d":"5xx=0 p95=328ms total=3001ms"}
-{"id":"R5 la página inicial responde 200 y /api/health responde OK","ok":true,"d":"health=200 landing=106ms"}
-{"id":"U16d B solicita borrar su cuenta con confirmación: 202","ok":true,"d":"http=202 {\"id\":\"2124d60e-848b-409a-b608-34a058a6c2cb\",\"status\":\"accepted\",\"requestedAt\":\""}
+{"id":"R1 endpoints de lectura sin IA (40 llamadas): mediana < 500 ms y p95 < 1500 ms","ok":true,"d":"mediana=135ms p95=173ms"}
+{"id":"R4 6 personas simultáneas (90 lecturas, sin IA): 0 respuestas 5xx y p95 < 2 s","ok":true,"d":"5xx=0 p95=288ms total=2460ms"}
+{"id":"R5 la página inicial responde 200 y /api/health responde OK","ok":true,"d":"health=200 landing=84ms"}
+{"id":"U16d B solicita borrar su cuenta con confirmación: 202","ok":true,"d":"http=202 {\"id\":\"57a353c0-1b97-4584-9280-7dc52740608a\",\"status\":\"accepted\",\"requestedAt\":\""}
 {"id":"U16e tras borrar la cuenta, el token de B da 401","ok":true,"d":"http=401"}
 {"id":"U16f B ya no puede iniciar sesión (4xx)","ok":true,"d":"http=403"}
 {"id":"U16g el borrado de B no afectó a los datos de A","ok":true,"d":"http=200"}
