@@ -31,9 +31,9 @@ test('ES-94: las explicaciones no prometen empleo, porcentajes ni datos que no e
   }
 })
 
-test('ES-94: Elevation no lleva etiqueta de estado (la clave ya no existe) y Skill Map conserva «Próximamente»', () => {
+test('ES-94: Elevation no lleva etiqueta de estado (la clave ya no existe) y Skill Map figura como disponible (ES-133)', () => {
   assert.equal(get('landing.modules.elevation.status'), undefined)
-  const skillmap = get('landing.modules.skillmap.status'); assert.deepEqual([skillmap.es, skillmap.en], ['Próximamente', 'Coming soon'])
+  const skillmap = get('landing.modules.skillmap.status'); assert.deepEqual([skillmap.es, skillmap.en], ['Disponible', 'Available'])
   const journey = fs.readFileSync(new URL('../src/components/landing/LandingJourney.tsx', import.meta.url), 'utf8')
   assert.match(journey, /module === 'skillmap' && <LandingLabel className="landing-module-status">/)
   assert.doesNotMatch(journey, /modules\.\$\{module\}\.status/)

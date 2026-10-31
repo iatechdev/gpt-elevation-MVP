@@ -555,8 +555,6 @@ function LandingTab() {
     { key: 'hero_title',         label: 'Título Hero' },
     { key: 'hero_subtitle',      label: 'Subtítulo Hero' },
     { key: 'cta_primary',        label: 'CTA Principal' },
-    { key: 'cta_final_title',    label: 'Título CTA Final' },
-    { key: 'cta_final_subtitle', label: 'Subtítulo CTA Final' },
     ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: key })), // ES-90: los pendientes se editan en su panel
   ]
 
