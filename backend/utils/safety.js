@@ -24,10 +24,20 @@ const HIGH = [
   { lang: 'es', re: /\bno quiero (seguir )?viv(ir|iendo)\b/ },
   { lang: 'es', re: /\bno vale la pena (vivir|seguir viviendo)\b/ },
   { lang: 'es', re: /\bmejor (estar )?muert[oa]\b/ },
+  // ES43-QA-02: ideación implícita («mejor que no estuviera aquí», «mejor me desaparezco»). «desaparecer de/del…» es otra cosa (redes, radar).
+  // Acotadas a primera persona o a lugar/vida: «sería mejor que no estuviera lloviendo» o «mejor no existir en esa lista» no activan (QA ES43-QA-06).
+  { lang: 'es', re: /\bmejor (que )?yo no (estuviera|estuviese|existiera|existiese)\b/ },
+  { lang: 'es', re: /\bmejor (que )?no (estuviera|estuviese|existiera|existiese) (aqui|aca|en este mundo|en esta vida|vivo|viva|con vida)\b/ },
+  { lang: 'es', re: /\bmejor no (estar|existir) (en este mundo|en esta vida|vivo|viva|con vida)\b/ },
+  { lang: 'es', re: /\bmejor (me )?(desaparezco|desaparecer(me)?|desaparecia)\b(?!\s+de(l)?\b)/ },
   { lang: 'en', re: /\bsuicid\w*/ },
   { lang: 'en', re: /\b(kill(ing)? myself|(end|ending) my (own )?life|(take|taking) my (own )?life)\b/ },
   { lang: 'en', re: /\b(want|wanna|going|plan|planning|thinking of|thinking about)\s+(to\s+)?(die|end it all|end things)\b/ },
   { lang: 'en', re: /\bbetter off dead\b/ },
+  // ES43-QA-02: ideación implícita («better if I wasn't here», «better if I disappeared»). «disappear from/off…» es otra cosa (redes).
+  { lang: 'en', re: /\bbetter (off )?(if|that) i (just )?(wasn'?t|was not|weren'?t|were not) (here|around|alive|born)\b/ },
+  { lang: 'en', re: /\bbetter (off )?(if|that) i (just )?(disappeared|disappear|didn'?t exist|did not exist|was gone|were gone)\b(?!\s+(from|off)\b)/ },
+  { lang: 'en', re: /\bbetter off (not being (here|alive)|not existing)\b/ },
   { lang: 'en', re: /\bwish (i|that i) (was|were) dead\b/ }, // ES-92 (QA-92-01)
   // ES-92: «do not» y «wanna»; «live in/at/near…» es un lugar, no riesgo.
   { lang: 'en', re: /\b(don'?t|do not) (want to|wanna) (live(?!\s+(in|at|near)\b)|be alive|be here anymore)\b/ },
