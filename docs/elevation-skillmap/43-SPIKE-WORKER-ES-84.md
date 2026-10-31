@@ -1,4 +1,24 @@
-# ES-84 · Spike de diseño del worker de análisis de IA (PROPUESTA para aprobación)
+# ES-84 · Diseño del worker de análisis de IA y estado de implementación
+
+## Estado actualizado · 31-oct-2026 · Dev-Codex
+
+El worker **ya tiene implementación fusionada en main**. Este PR entrega el documento; no entrega de nuevo el worker ni acredita su despliegue. Las secciones 1–15 conservan el diseño y las estimaciones del 28-oct como **registro histórico**, no como una lista vigente de código por construir. Esta actualización prevalece sobre sus expresiones en futuro.
+
+| Implementación comprobada en main | Referencia |
+| --- | --- |
+| Tablas, rol y funciones SQL con aislamiento del dominio profesional | `backend/migrations/20261028190000-es85-ai-jobs-skill-candidates.js`, `20261028190100-es85-worker-role-functions.js`; prueba `backend/test/integration/es-85-postgres.cjs` |
+| Cifrado profesional con clave propia | ES-86, [PR #61](https://github.com/iatechdev/gpt-elevation-MVP/pull/61); prueba `backend/test/integration/es-86-postgres.cjs` |
+| Proceso con sondeo PostgreSQL, sin Redis | ES-87, [PR #63](https://github.com/iatechdev/gpt-elevation-MVP/pull/63); `backend/worker.js`, `backend/worker/`; prueba `backend/test/integration/es-87-postgres.cjs` |
+| Integración con revocación, borrado y exportación | ES-88, [PR #66](https://github.com/iatechdev/gpt-elevation-MVP/pull/66); prueba `backend/test/integration/es-88-postgres.cjs` |
+| API de trabajos y revisión de candidatas | ES-89, [PR #67](https://github.com/iatechdev/gpt-elevation-MVP/pull/67); prueba `backend/test/integration/es-89-postgres.cjs` |
+
+Comprobación documental contra main `972388cad87a95afb33f20e7ef26c14379727fda`: archivos presentes y merges anteriores verificables. No se ejecutó otra corrida del worker ni se llamó al proveedor para esta actualización documental. Los PR #62/#64/#65 del intervalo #61–#67 corresponden a otras HUs y no son evidencia del worker.
+
+**Pendiente de confirmación por Infra/Mauricio:** servicio y configuración actualmente activos en Railway/Supabase, acceso real del rol en el pooler, revisión de costos/topes y mediciones reales. La estimación histórica de §9 no es una tarifa ni consumo comprobado. ES-115/PR #87 sigue revisando el arranque con migraciones y la adopción del esquema; el código fusionado del worker no resuelve por sí mismo ese pendiente. La aprobación de QA y el despliegue de este documento no se dan por realizados.
+
+---
+
+## Diseño original · registro histórico del 28-oct
 
 28-oct-2026 · Autor: Infra-Claude · Decide lo técnico: Mauricio · Decide el alcance: Alejo.
 Este documento **no crea servicios ni código**: propone el diseño para estimar y para que Mauricio apruebe el costo. Versión 2 (28-oct): incorpora las decisiones de Mauricio (sin Redis, funciones SQL, clave propia). Todo lo que no se pudo verificar está marcado «no verificado».
