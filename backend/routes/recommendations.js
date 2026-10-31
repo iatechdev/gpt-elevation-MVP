@@ -10,6 +10,17 @@ const validRecommendations = (value) => Array.isArray(value) && value.length >= 
   && value.every((item) => item && typeof item === 'object' && RECOMMENDATION_CATEGORIES.includes(item.category)
     && typeof item.content === 'string' && item.content.trim().length > 0 && item.content.length <= 500);
 
+// ES-125: las recomendaciones se generan en el idioma activo de la interfaz (opcional en el cuerpo; sin dato o inválido, español).
+const LANGUAGE_NAME = { es: 'Spanish', en: 'English' };
+const normalizeLang = (value) => {
+  const base = typeof value === 'string' ? value.trim().toLowerCase().split(/[-_]/)[0] : '';
+  return base === 'en' ? 'en' : 'es';
+};
+// 3 recomendaciones de hasta 500 caracteres caben en unos 600 tokens de texto; con esfuerzo bajo el razonamiento no se come el tope
+// (mismo ajuste que el chat, ES43-QA-01). El presupuesto reserva max_tokens por llamada.
+const RECOMMENDATIONS_MAX_TOKENS = 1200;
+const RECOMMENDATIONS_OUTPUT_CONFIG = { effort: 'low' };
+
 const router                 = express.Router();
 const MoodLog                = require('../MoodLog');
 const WellnessRecommendation = require('../WellnessRecommendation');
@@ -36,7 +47,9 @@ router.post('/generate', async (req, res) => {
         ? 'improving' : 'declining'
       : 'stable';
 
-    const prompt = `You are a wellness coach for Elevation, a mental health platform.
+    const lang = normalizeLang(req.body?.lang);
+    const prompt = `You are a supportive companion for Elevation, a non-clinical emotional-support and self-knowledge platform. It is not a clinical, health or emergency service.
+Write every "content" value in ${LANGUAGE_NAME[lang]}, addressing the person informally (${lang === 'es' ? 'informal "tú" form (tuteo)' : 'second person'}).
 Based on this user's recent emotional data:
 - Sessions in last 7 days: ${moodLogs.length}
 - Average mood (1-5 scale): ${avgMood ?? 'No data yet'}
@@ -49,13 +62,14 @@ Generate exactly 3 personalized wellness recommendations. Respond ONLY with a va
 ]
 Categories must be one of: mindfulness, habit, reflection, resource.
 Each content must be 1-2 sentences, warm, actionable and specific to the user's emotional state.
-Never mention diagnoses or medical advice.`;
+Keep the "category" values exactly as listed (they are identifiers, do not translate them).
+Never diagnose, prescribe, give medical advice or promise therapeutic or job results. Do not flatter and do not invent facts about the person.`;
 
     let msg;
     try {
       msg = await callClaude({
         userId, kind: 'recommendations',
-        body: { model: anthropic.MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] },
+        body: { model: anthropic.MODEL, max_tokens: RECOMMENDATIONS_MAX_TOKENS, output_config: RECOMMENDATIONS_OUTPUT_CONFIG, messages: [{ role: 'user', content: prompt }] },
       });
     } catch (error) {
       if (error instanceof AiBudgetExhaustedError) {
@@ -66,6 +80,11 @@ Never mention diagnoses or medical advice.`;
       }
       console.error('❌ Error del proveedor de IA (recomendaciones):', error.errorCode || error.code);
       return res.status(502).json({ error: 'No se pudieron generar recomendaciones ahora. / Could not generate recommendations right now.', code: 'provider_unavailable', retryable: true });
+    }
+
+    // Una salida cortada por el tope de tokens es un JSON incompleto: se rechaza sin guardar nada (el reintento es seguro).
+    if (msg?.stop_reason === 'max_tokens') {
+      return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
 
     let recommendations = [];

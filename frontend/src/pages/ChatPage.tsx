@@ -188,7 +188,7 @@ export function ChatPage() {
     setRecsError('')
     setShowRecs(true)
     try {
-      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST' })
+      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST', body: JSON.stringify({ lang }) })
       if (!res.ok) throw new Error()
       const data = await res.json()
       setRecommendations(data)
