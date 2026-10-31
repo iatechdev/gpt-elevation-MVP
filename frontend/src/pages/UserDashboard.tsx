@@ -215,7 +215,7 @@ export function UserDashboard() {
   const handleGenerateRecs = async () => {
     setLoadingRecs(true)
     try {
-      const res = await apiFetch('/api/recommendations/generate', { method: 'POST' })
+      const res = await apiFetch('/api/recommendations/generate', { method: 'POST', body: JSON.stringify({ lang }) })
       if (!res.ok) return
       const data = await res.json()
       setRecommendations(data.slice(0, 4))
