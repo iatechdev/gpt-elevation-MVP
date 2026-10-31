@@ -25,7 +25,10 @@ const HIGH = [
   { lang: 'es', re: /\bno vale la pena (vivir|seguir viviendo)\b/ },
   { lang: 'es', re: /\bmejor (estar )?muert[oa]\b/ },
   // ES43-QA-02: ideación implícita («mejor que no estuviera aquí», «mejor me desaparezco»). «desaparecer de/del…» es otra cosa (redes, radar).
-  { lang: 'es', re: /\bmejor (que )?(yo )?no (estuviera|estuviese|existiera|existiese|estar|existir|estaria|existiria)\b/ },
+  // Acotadas a primera persona o a lugar/vida: «sería mejor que no estuviera lloviendo» o «mejor no existir en esa lista» no activan (QA ES43-QA-06).
+  { lang: 'es', re: /\bmejor (que )?yo no (estuviera|estuviese|existiera|existiese)\b/ },
+  { lang: 'es', re: /\bmejor (que )?no (estuviera|estuviese|existiera|existiese) (aqui|aca|en este mundo|en esta vida|vivo|viva|con vida)\b/ },
+  { lang: 'es', re: /\bmejor no (estar|existir) (en este mundo|en esta vida|vivo|viva|con vida)\b/ },
   { lang: 'es', re: /\bmejor (me )?(desaparezco|desaparecer(me)?|desaparecia)\b(?!\s+de(l)?\b)/ },
   { lang: 'en', re: /\bsuicid\w*/ },
   { lang: 'en', re: /\b(kill(ing)? myself|(end|ending) my (own )?life|(take|taking) my (own )?life)\b/ },
