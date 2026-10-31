@@ -1,0 +1,20 @@
+/* ES-69: scoped to the landing; native buttons/panels avoid a second interaction model. */
+.landing-scope .landing-trust-faq { padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--color-base-300); scroll-margin-top: 7rem; overflow-wrap: anywhere; }
+.landing-scope .landing-trust-inner { max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-trust-label { display: flex; gap: 1rem; font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; text-transform: uppercase; color: var(--landing-muted); }
+.landing-scope .landing-trust-faq h2 { max-width: 1050px; margin: 1.5rem 0 2rem; font-size: clamp(2.25rem,4.45vw,4rem); line-height: 1.03; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-trust-card { min-width: 0; border-radius: 0; }
+.landing-scope .landing-trust-card .elv-card-body { padding: 1.5rem; gap: 1rem; }
+.landing-scope .landing-trust-card h3 { font-size: 1.25rem; margin: 0; line-height: 1.3; font-weight: 700; }
+.landing-scope .landing-trust-card p { margin: 0; color: var(--landing-muted); }
+.landing-scope .landing-trust-policy { margin-top: 2rem; color: var(--landing-muted); }
+.landing-scope .landing-faq-list { max-width: 850px; }
+.landing-scope .landing-faq-item { border-bottom: 1px solid var(--color-base-300); }
+.landing-scope .landing-faq-item h3 { margin: 0; }
+.landing-scope .landing-faq-question { display: flex; justify-content: space-between; width: 100%; height: auto; min-height: 56px; padding: 1.25rem 0.5rem; gap: 1rem; text-align: left; white-space: normal; border-radius: 0; font-size: 1.125rem; line-height: 1.5; }
+.landing-scope .landing-faq-question > span:last-child { flex-shrink: 0; color: var(--color-secondary); }
+.landing-scope .landing-faq-answer { padding: 0 0.5rem 1.5rem; color: var(--landing-muted); line-height: 1.65; }
+.landing-scope .landing-faq-answer[hidden] { display: none; }
+.landing-scope .landing-faq-answer p { margin: 0; }
+.landing-scope .landing-faq-plans { display: inline-flex; align-items: center; min-height: 44px; margin-top: 0.5rem; }
+@media (min-width: 48rem) { .landing-scope .landing-trust-faq { padding: 4rem clamp(1.5rem,5.56vw,5rem) 5rem; } }
