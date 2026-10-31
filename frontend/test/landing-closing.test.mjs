@@ -25,15 +25,15 @@ const render = (lang, values) => {
     createElement(LandingClosing, props), createElement(LandingFooter, props))))
 }
 
-test('ES-65: actual ES/EN closing has explicit signup, full notice and non-interactive D-08 markers', () => {
-  assert.equal(entries.length, 10)
+test('ES-65: actual ES/EN closing has explicit signup, full notice and hidden unapproved links', () => {
+  assert.equal(entries.length, 6)
   assert.equal(new Set(catalog.map(entry => entry.key)).size, catalog.length)
   for (const lang of ['es', 'en']) {
     const html = render(lang)
     assert.equal((html.match(/<a /g) ?? []).length, 1)
     assert.match(html, /href="\/login\?mode=register"/)
     assert.match(html, /<footer class="elv-footer landing-footer">/)
-    assert.equal((html.match(/<li>/g) ?? []).length, 3)
+    assert.equal((html.match(/<li>/g) ?? []).length, 0)
     assert.doesNotMatch(html, /href="#"|href="\/privacy|mailto:|tel:|<button|onclick|I am a professional|Soy profesional/)
     for (const entry of entries) assert.ok(html.includes(escape(entry[lang].replaceAll('{year}', String(new Date().getFullYear())))), `${lang}:${entry.key}`)
   }

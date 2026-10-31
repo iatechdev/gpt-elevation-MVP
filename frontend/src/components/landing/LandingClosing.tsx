@@ -19,11 +19,7 @@ export function LandingFooter({ text }: Props) {
     <div className="landing-footer-inner">
       <span className="landing-footer-brand">{text('landing.footer.brand')}<span aria-hidden="true">·</span></span>
       <p className="landing-footer-notice">{text('landing.footer.notice')}</p>
-      {/* D-08: labels are plain text, never fake or unverified links. /privacy stays intact. */}
-      <ul className="landing-footer-pending" aria-describedby="landing-footer-pending">
-        {['privacy', 'terms', 'contact'].map(key => <li key={key}>{text(`landing.footer.${key}`)}</li>)}
-      </ul>
-      <p id="landing-footer-pending" className="landing-footer-meta">{text('landing.footer.pending')}</p>
+      {/* D-08 / ES-90: unapproved links stay hidden. /privacy is preserved. */}
       <p className="landing-footer-meta">{text('landing.footer.copyright').replaceAll('{year}', String(new Date().getFullYear()))}</p>
     </div>
   </footer>

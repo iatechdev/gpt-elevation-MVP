@@ -2,9 +2,9 @@
 
 **BORRADOR PARA REVISIÓN — NO PUBLICAR / DRAFT FOR REVIEW — DO NOT PUBLISH**
 
-Versión / Version: 0.1 · Preparado / Prepared: 28-oct-2026 · Ticket: ES-65, D-08.
+Versión / Version: 0.3 · Actualizado / Updated: 31-oct-2026 · Ticket: ES-65, D-08. El nombre del archivo conserva la referencia del adjunto anterior.
 Autoría / Prepared by: [Dev-Codex]. Solicitado por Alejo en el chat de ES-65.
-Referencia técnica / Code reviewed: `main`, commit `6f01a928a6b015edb75b4f934af2d2f032f6541c`.
+Referencia técnica / Code reviewed: `main`, commit `972388cad87a95afb33f20e7ef26c14379727fda`.
 Entrada en vigor / Effective date: **pendiente de aprobación / pending approval**.
 URL pública a conservar / Public URL to preserve: **`/privacy`**.
 
@@ -34,9 +34,10 @@ Según las funciones que uses, la aplicación puede tratar:
 | Mensajes con el asistente, respuestas y entradas de diario que decidas guardar | Mantener tu historial y prestar las funciones de conversación y diario; las entradas del diario solo se incorporan a una conversación cuando las seleccionas explícitamente |
 | Registros de ánimo y valoraciones | Mostrar seguimiento y funciones de acompañamiento; no certificar competencias ni diagnosticar |
 | Idioma, residencia, mercado de interés, zona horaria, profesión, intereses, disponibilidad, objetivos y restricciones que aportes | Preparar tu contexto y orientar la exploración profesional |
-| Campos profesionales autorizados, evidencias y evaluaciones del mapa, versiones y decisiones de compartir o retirar | Construir funciones profesionales con trazabilidad y respetar tus decisiones |
+| Campos profesionales autorizados, evidencias y evaluaciones del mapa, restricciones y decisiones sobre rutas, experimentos y reflexiones, planes y recordatorios, versiones y decisiones de compartir o retirar | Construir funciones profesionales con trazabilidad y respetar tus decisiones |
 | Solicitudes de plan, sesiones, vinculación con profesionales y sus documentos de acreditación o notas, cuando corresponda | Gestionar el servicio y el espacio profesional separado |
 | Metadatos de sesión, revocación, consentimiento, uso y presupuesto de IA | Proteger accesos, registrar decisiones y controlar el funcionamiento y consumo del servicio |
+| Hoja de vida, versiones y análisis que solicites (ES-109), e insights propuestos desde fuentes autorizadas (ES-121) | Extraer y revisar información profesional; solicitar una propuesta no confirma por sí sola una evidencia ni certifica una competencia |
 
 Los textos libres pueden incluir información sensible si la escribes. Evita incluir información identificativa o confidencial de otras personas que no sea necesaria. **[PENDIENTE: determinar y documentar la base jurídica de cada finalidad y la condición aplicable a datos sensibles; no se presume consentimiento por usar la página]**.
 
@@ -44,7 +45,7 @@ Los textos libres pueden incluir información sensible si la escribes. Evita inc
 
 La aplicación usa cuentas y permisos para comprobar el propietario y el rol en servidor. El chat y el diario privados no son una carpeta pública ni el historial de lectura del profesional. El puente profesional se diseña para transferir únicamente campos profesionales que revises y autorices; la señal de riesgo no alimenta el mapa ni se envía al profesional como indicador.
 
-Si usas el espacio de un profesional, este puede acceder a los datos previstos para su relación contigo, como registros de ánimo, valoraciones y sus propias notas. Las funciones de resumen con IA del espacio profesional pueden enviar los materiales que esa función utiliza al proveedor de IA. Esto es distinto de abrir tus conversaciones privadas con el asistente.
+Si usas el espacio de un profesional, este puede acceder a los datos previstos para su relación contigo y autorizados, como registros de ánimo, valoraciones y sus propias notas. El resumen con IA de ese espacio usa cifras agregadas de ánimo y valoraciones; no envía sus notas ni tus conversaciones privadas al proveedor. Las notas se cifran al crearse y editarse por la API; no se ha auditado aquí el contenido histórico de todas las filas ni el despliegue.
 
 Personal autorizado de operación y proveedores técnicos pueden intervenir en la prestación, soporte o seguridad según sus funciones. **[PENDIENTE: inventario de accesos operativos, personal, controles de soporte, obligaciones y destinatarios externos efectivamente contratados]**. No prometemos inaccesibilidad absoluta para quien administra la infraestructura.
 
@@ -52,7 +53,11 @@ Personal autorizado de operación y proveedores técnicos pueden intervenir en l
 
 El backend integra Claude mediante la API de Anthropic. Para responder, se envía al proveedor el contenido necesario del turno y el contexto seleccionado por la función; no es un servicio sin tratamiento de conversaciones por terceros. Las respuestas pueden equivocarse y debes revisarlas. No son certificaciones, decisiones de contratación ni garantías de empleo.
 
-También hay integraciones con PostgreSQL para persistencia, Google Cloud Storage para documentos profesionales y Daily para crear salas de videollamada. El HTML actual solicita fuentes de Google Fonts. **[PENDIENTE: confirmar servicios activos, entidades contratadas, regiones, subencargados, transferencias internacionales y garantías contractuales; no dar por verificados Railway, Supabase o Vercel solo por su documentación o configuración en el repo]**.
+Para proponer insights (ES-121), la IA puede leer el chat, el diario o la hoja de vida seleccionados **solo con permiso específico para cada fuente y finalidad**. El permiso para una fuente no autoriza las otras ni sustituye el permiso para analizar la hoja de vida de ES-109. Las propuestas requieren tu revisión y no trasladan automáticamente los textos al mapa ni al profesional. Retirar un permiso impide nuevas lecturas cubiertas por él; la conservación de resultados depende del contrato de revocación y borrado.
+
+El análisis profesional asíncrono (ES-84/85–89) usa el contexto profesional autorizado para proponer candidatas de competencias. Tiene un proceso y una clave del dominio profesional separados; no recibe acceso al chat, al diario ni a indicadores de riesgo. Sus propuestas pueden ser incorrectas y requieren revisión. La presencia del código del worker en main no confirma que el servicio esté activo en producción.
+
+El código integra PostgreSQL para persistencia, Google Cloud Storage para documentos profesionales y Daily para salas de videollamada; también conserva referencias a Cloud Run. La documentación de despliegue describe API en Railway y PostgreSQL en Supabase. Esto no confirma qué proveedores están activos hoy. El HTML solicita fuentes de Google Fonts. **[PENDIENTE Infra/Mauricio: inventario efectivo de API, worker, base de datos y almacenamiento; vigencia de Google Cloud Storage/Cloud Run, entidades contratadas, regiones, subencargados, transferencias y garantías. Confirmación solicitada en PR #87; no se presenta como recibida]**.
 
 La retención de datos enviados a Anthropic depende de la API, el modelo, las condiciones del proveedor y el acuerdo de la organización. No se ha verificado un acuerdo de retención cero para Elevation. Las reglas de conservación de Google Cloud Storage también dependen de la configuración del bucket. Las páginas oficiales citadas al final no acreditan la configuración de esta cuenta.
 
@@ -104,9 +109,10 @@ Depending on the features you use, the application may process:
 | Assistant messages and responses, and journal entries you choose to save | Conversation and journal features and history; journal entries are included in a conversation only when explicitly selected |
 | Mood records and ratings | Tracking and support features, without diagnosing or certifying capabilities |
 | Language, residence, target market, time zone, profession, interests, availability, goals and constraints you provide | Your context and career exploration |
-| Authorised professional fields, evidence, map assessments, versions and sharing/withdrawal decisions | Traceable professional features and respecting your choices |
+| Authorised professional fields, evidence, map assessments, route constraints and decisions, experiments and reflections, plans and reminders, versions and sharing/withdrawal decisions | Traceable professional features and respecting your choices |
 | Plan requests, sessions, professional matching, credentials and notes where applicable | Service administration and the separate professional space |
 | Session, revocation, consent and AI usage/budget metadata | Access security, decision records and service/usage controls |
+| Resume, versions and analysis you request (ES-109), and insights proposed from authorised sources (ES-121) | Extract and review career information; requesting a proposal does not itself confirm evidence or certify a capability |
 
 Free text may contain sensitive information if you provide it. Avoid unnecessary identifying or confidential information about others. **[PENDING: legal basis for each purpose and applicable condition for sensitive data; using the page is not assumed to establish consent]**.
 
@@ -114,7 +120,7 @@ Free text may contain sensitive information if you provide it. Avoid unnecessary
 
 The application checks ownership and roles on the server. Private assistant conversations and journals are not public folders or the professional's reading history. The professional bridge is designed to transfer only professional fields you review and authorise; a risk indicator does not feed the map or become a professional-facing indicator.
 
-If you use a professional's space, that professional can access the information provided for that relationship, including mood records, ratings and their own notes. Its AI summary features may send the materials used by that function to the AI provider. This differs from opening your private assistant conversations.
+If you use a professional's space, that professional can access the information authorised for that relationship, including mood records, ratings and their own notes. Its AI summary uses aggregate mood and rating numbers; it does not send professional notes or your private conversations to the provider. Notes are encrypted when created or edited through the API; this review has not audited every historical row or the deployed environment.
 
 Authorised operations staff and technical providers may be involved in service delivery, support or security according to their functions. **[PENDING: actual operational access, support controls, obligations and contracted recipients]**. We do not promise absolute inaccessibility to infrastructure administrators.
 
@@ -122,7 +128,11 @@ Authorised operations staff and technical providers may be involved in service d
 
 The backend integrates Claude through Anthropic's API. The content needed for a turn and the context selected by the feature are sent to the provider. Conversations are therefore processed by a third-party provider. Responses can be wrong and require your review; they are not certifications, hiring decisions or employment guarantees.
 
-The code also integrates PostgreSQL for persistence, Google Cloud Storage for professional documents and Daily for video rooms. The current HTML requests Google Fonts. **[PENDING: active services, contracted entities, regions, subprocessors, international transfers and safeguards; repository configuration does not verify Railway, Supabase or Vercel deployment]**.
+To propose insights (ES-121), AI may read selected chat, journal or resume material **only with specific permission for each source and purpose**. Permission for one source does not authorise another or replace permission for ES-109 resume analysis. Proposals require your review and do not automatically transfer source text to the map or the professional. Withdrawing permission prevents new reads covered by it; result retention follows the revocation and deletion contract.
+
+Asynchronous career analysis (ES-84/85–89) uses authorised career context to propose capability candidates. Its process and career-domain key are separate; it has no access to chat, journals or risk indicators. Proposals can be wrong and require review. Worker code in main does not establish that the service is running in production.
+
+The code integrates PostgreSQL for persistence, Google Cloud Storage for professional documents and Daily for video rooms, and retains Cloud Run references. Deployment documentation describes the API on Railway and PostgreSQL on Supabase; this does not verify today's active providers. HTML requests Google Fonts. **[PENDING Infra/Mauricio: actual API, worker, database and storage inventory; whether Google Cloud Storage/Cloud Run remain active; contracted entities, regions, subprocessors, transfers and safeguards. Confirmation requested in PR #87, not yet received]**.
 
 Anthropic's retention depends on the API, model, provider terms and organisational agreement. A zero-data-retention agreement for Elevation has not been verified. Google Cloud Storage retention also depends on bucket configuration. The official pages below do not establish this account's settings.
 
