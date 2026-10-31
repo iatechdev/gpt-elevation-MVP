@@ -1,0 +1,117 @@
+{
+  "generado": "2026-10-30T09:55:59.327Z",
+  "entorno": "staging",
+  "api": "https://backend-staging-e3a6.up.railway.app",
+  "turnos": [
+    {
+      "n": 1,
+      "cuenta": "P1",
+      "requestId": "qad1a2bcc13147b786",
+      "http": 200,
+      "ms": 9268,
+      "caracteres": 2949,
+      "termina_en_puntuacion": false,
+      "final": "quiero explorar después, y qué me falta saber para decidirlo?\n\n**Ajust",
+      "tokens_usados": 17153
+    },
+    {
+      "n": 2,
+      "cuenta": "P1",
+      "requestId": "qaba806381d63a0e16",
+      "http": 200,
+      "ms": 8598,
+      "caracteres": 2012,
+      "termina_en_puntuacion": true,
+      "final": "e una y la exploramos juntos; si prefieres, volvemos al plan de datos.",
+      "tokens_usados": 17916
+    },
+    {
+      "n": 3,
+      "cuenta": "P2",
+      "requestId": "qa330c6ca69b09edb2",
+      "http": 200,
+      "ms": 13533,
+      "caracteres": 1849,
+      "termina_en_puntuacion": true,
+      "final": " a preparar la conversación con tu jefe. Lo que prefieras, a tu ritmo.",
+      "tokens_usados": 16120
+    },
+    {
+      "n": 4,
+      "cuenta": "P2",
+      "requestId": "qab8b08966ffbfed7d",
+      "http": 200,
+      "ms": 10412,
+      "caracteres": 2142,
+      "termina_en_puntuacion": true,
+      "final": "edes preparar la conversación a tu ritmo, o dejarla para otro momento.",
+      "tokens_usados": 16600
+    },
+    {
+      "n": 5,
+      "cuenta": "P3",
+      "requestId": "qaa4ad671109b02500",
+      "http": 200,
+      "ms": 11590,
+      "caracteres": 3199,
+      "termina_en_puntuacion": true,
+      "final": "sonal from Elevation.\n\nWhich month feels like the best place to start?",
+      "tokens_usados": 16544
+    },
+    {
+      "n": 6,
+      "cuenta": "P3",
+      "requestId": "qad942d540cc24697e",
+      "http": 200,
+      "ms": 8335,
+      "caracteres": 3352,
+      "termina_en_puntuacion": true,
+      "final": "at and we can look together at what it shows and what's still missing.",
+      "tokens_usados": 17582
+    },
+    {
+      "n": 7,
+      "cuenta": "P6",
+      "requestId": "qa0221c252c79c5def",
+      "http": 200,
+      "ms": 6738,
+      "caracteres": 2340,
+      "termina_en_puntuacion": true,
+      "final": "ue se cortó. Si quieres, te la entrego completa en el próximo mensaje.",
+      "tokens_usados": 16977
+    },
+    {
+      "n": 8,
+      "cuenta": "P6",
+      "requestId": "qa9d98df2c9140b2be",
+      "http": 200,
+      "ms": 8534,
+      "caracteres": 2631,
+      "termina_en_puntuacion": true,
+      "final": "ón, o prefieres que lo adapte a tu contexto de contadora o de docente?",
+      "tokens_usados": 18134
+    },
+    {
+      "n": 9,
+      "cuenta": "P5",
+      "requestId": "qae4d1b7668515e3d8",
+      "http": 200,
+      "ms": 9914,
+      "caracteres": 2651,
+      "termina_en_puntuacion": true,
+      "final": "e hayas hecho? Si me lo cuentas con tus palabras, lo ordenamos juntos.",
+      "tokens_usados": 16823
+    },
+    {
+      "n": 10,
+      "cuenta": "P5",
+      "requestId": "qab68cd7eefe64d7d1",
+      "http": 200,
+      "ms": 10585,
+      "caracteres": 3146,
+      "termina_en_puntuacion": true,
+      "final": "l, not in this chat.\n\nIf you want, I can go deeper on any single week.",
+      "tokens_usados": 17918
+    }
+  ]
+}
