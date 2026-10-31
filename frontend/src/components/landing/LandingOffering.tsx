@@ -61,8 +61,9 @@ export function LandingSkillMap({ text }: Props) {
           </div>
         </LandingCard>
         <LandingCard className="landing-offer-card landing-autonomy">
-          <div className="elv-card-body">
-            <h3 className="elv-card-title">{text('landing.skillmap.autonomy.title')}</h3>
+          {/* ES-133: el detalle de los cuatro niveles se pliega para acortar la sección sin quitar contenido aprobado. */}
+          <details className="landing-autonomy-details">
+            <summary><h3 className="elv-card-title">{text('landing.skillmap.autonomy.title')}</h3></summary>
             <ol className="landing-map-list" role="list">
               {[1, 2, 3, 4].map(level => <li key={level}>
                 <span aria-hidden="true">{text(`landing.skillmap.autonomy.${level}.number`)}</span>
@@ -70,7 +71,7 @@ export function LandingSkillMap({ text }: Props) {
               </li>)}
             </ol>
             <p className="landing-offer-note">{text('landing.skillmap.autonomy.note')}</p>
-          </div>
+          </details>
         </LandingCard>
       </div>
       <div className="landing-map-row">
@@ -80,7 +81,6 @@ export function LandingSkillMap({ text }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 landing-route-grid">
         {routes.map(route => <LandingCard key={route} className="landing-offer-card">
           <div className="elv-card-body">
-            <LandingLabel className="landing-offer-status">{text(`landing.skillmap.routes.${route}.status`)}</LandingLabel>
             <h4>{text(`landing.skillmap.routes.${route}.title`)}</h4>
             <p>{text(`landing.skillmap.routes.${route}.pending`)}</p>
           </div>

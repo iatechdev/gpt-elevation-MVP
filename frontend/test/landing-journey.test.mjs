@@ -36,7 +36,7 @@ test('ES-68: actual ES/EN render exposes three named sections and six ordered st
       assert.ok(entry[lang].trim(), entry.key)
       assert.ok(html.includes(escape(entry[lang])), `missing ${lang}: ${entry.key}`)
     }
-    assert.equal((html.match(/landing-module-status/g) ?? []).length, 1) // solo Skill Map conserva «Próximamente»
+    assert.equal((html.match(/landing-module-status/g) ?? []).length, 1) // solo Skill Map lleva etiqueta de estado (ES-133: Disponible)
     assert.doesNotMatch(html, /<form|<input|<button|<a |TCC|DBT|24\/7|AES-256/)
   }
 })

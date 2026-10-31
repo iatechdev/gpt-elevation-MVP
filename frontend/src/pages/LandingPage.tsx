@@ -1,7 +1,5 @@
-import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { LandingSurface } from '../components/landing/LandingSurface'
-import { LandingButton, LandingSection } from '../components/landing/LandingPrimitives'
 import { HeroDoors } from '../components/landing/HeroDoors'
 import { LandingJourney } from '../components/landing/LandingJourney'
 import { LandingHeader } from '../components/landing/LandingHeader'
@@ -19,7 +17,6 @@ type LandingContent = Record<string, string> | null
 
 export function LandingPage() {
   const { t, lang, setLang } = useLanguage()
-  const navigate = useNavigate()
   const landing = useLandingContent(lang)
   const [content, setContent] = useState<LandingContent>(null)
 
@@ -54,27 +51,13 @@ export function LandingPage() {
         {/* ES-70 · S7 y S9; S8 se incorporará mediante ES-71. */}
         <LandingFeatures text={landing.text} />
         <LandingSkillMap text={landing.text} />
-        {/* ES-72 · S11: objetivos y estado del proyecto */}
-        <LandingProject text={landing.text} />
+        {/* ES-133: planes antes del estado del proyecto; S11 (ES-72) cierra antes del acceso */}
         <LandingPlans text={landing.text} />
+        <LandingProject text={landing.text} />
         {/* ES-74 · S13: acceso y alta, sin registrar elección de puerta */}
         <LandingJoin text={landing.text} />
 
-        {/* CTA Final */}
-        <LandingSection style={{ padding: 'var(--landing-space) var(--landing-gutter)', background: 'var(--color-primary)' }}>
-          <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
-            <h2 style={{ fontFamily: 'inherit', fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 400, color: 'var(--color-primary-content)', margin: 0, lineHeight: 1.3 }}>
-              {getText('cta_final_title')}
-            </h2>
-            <p style={{ fontSize: '0.9rem', color: 'var(--color-primary-content)', margin: 0 }}>
-              {getText('cta_final_subtitle')}
-            </p>
-            <LandingButton onClick={() => navigate('/login')}
-              style={{ padding: '0.9rem 2.5rem', borderRadius: '0.85rem', border: 'none', background: 'var(--color-primary-content)', color: 'var(--color-primary)', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
-              {getText('cta_primary')}
-            </LandingButton>
-          </div>
-        </LandingSection>
+        {/* ES-133: el CTA final repetía el acceso de S13; se fusionó en LandingJoin. */}
 
         </main>
 
