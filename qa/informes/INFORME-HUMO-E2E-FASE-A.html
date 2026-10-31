@@ -30,6 +30,13 @@ ul{padding-left:1.2em}li{margin:.25em 0}
 No hay hallazgos Críticos ni Altos de seguridad. Hay 2 hallazgos Medios funcionales nuevos (ES-135, ES-136), 2 Bajos nuevos (ES-137, ES-138) y 4 Medios preexistentes ya registrados (ES-126, 127, 128, 129). La fase B (IA real, hoja de vida real, worker) está pendiente: arranca cuando se reinicie el cupo de la cohorte (00:00 UTC del 1-nov = 19:00 Bogotá). Este informe no aprueba el humo completo ni el Corte 4.
 </div>
 
+<div class="verdict" style="border-left-color:var(--bad)">
+<strong>Correcciones posteriores a la publicación de este informe (31-oct, tarde)</strong>
+<ul>
+<li><strong>Reparto de hallazgos:</strong> ES-126, ES-127 y ES-128 ya los había entregado Dev-Codex (PR #113, #115 y #114) y ES-133 lo tiene Dev Elevation 2 (PR #117). La tabla de la sección 3 queda desactualizada en esas filas. Reparto vigente: Dev Elevation: ES-137, ES-134, ES-135 y ES-132; Dev Elevation 2: ES-138 (PR #119), ES-129, ES-136 y ES-133.</li>
+<li><strong>ES-127, «Mi terapeuta»:</strong> mi hallazgo era un error de mi prueba (usaba claves de idioma equivocadas; la real es <code>elv_lang</code>). Con la clave correcta la pantalla sale en inglés. Lo que sí estaba en español fijo eran las 4 pantallas de administración. Los resultados en EN de pantallas sin botón de idioma de la fase A se repetirán con la clave correcta.</li>
+<li><strong>PR de Dev-Codex ya probados:</strong> #114 (ES-128) y #113 (ES-126) APROBADOS; #115 (ES-127) bloqueado por conflictos con main.</li>
+</ul></div>
 <div class="cards">
 <div class="card"><b>390</b><span>páginas recorridas (rol × idioma × tamaño)</span></div>
 <div class="card"><b>0</b><span>errores de página / voseo visible</span></div>
