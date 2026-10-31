@@ -138,7 +138,7 @@
 }
 
 /* ES-62 · Cabecera, idioma y salto al contenido (DISENO-FASE1 §2) */
-.landing-scope .landing-skip { position: absolute; left: -999px; top: 0; z-index: 20; padding: 0.5rem 0.75rem; background: var(--color-primary); color: var(--color-primary-content); }
+.landing-scope .landing-skip { position: absolute; left: -999px; top: 0; z-index: 20; display: inline-flex; align-items: center; min-height: 44px; padding: 0.5rem 0.75rem; background: var(--color-primary); color: var(--color-primary-content); }
 .landing-scope .landing-skip:focus { left: 0.5rem; top: 0.5rem; }
 .landing-scope .landing-header { position: sticky; top: 0; z-index: 10; background: var(--color-base-100); }
 /* Marco centrado de 1080 px de la maqueta aprobada (QA-LAND-01): borde a borde por debajo de ese ancho. */
