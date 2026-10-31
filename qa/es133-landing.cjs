@@ -29,8 +29,8 @@ const plan = id => ({ id, slug: 'p' + id, order: id, name_es: 'Plan ' + id, name
       console.log(`      etiquetas ${lang}:`, JSON.stringify(labels))
       const dis = lang === 'es' ? 'Disponible' : 'Available', prep = lang === 'es' ? 'En preparación' : 'In preparation'
       const cnt = s => labels.filter(x => x.toLowerCase().endsWith('→ ' + s.toLowerCase())).length
-      ck(`F2 ${lang}: «${prep}» en 4 (ejercicios, datos, pasos 3 y 4) y 5 «${dis}» (módulo, conversación, diario, brújula, idiomas) más la sección Skill Map`, cnt(prep) === 4 && cnt(dis) === 6, `disp=${cnt(dis)} prep=${cnt(prep)} total=${labels.length}`)
-      ck(`F5 ${lang}: 3 tarjetas de ruta sin etiqueta de estado`, await p.locator('.landing-route-grid > *').count() === 3 && await p.locator('.landing-route-grid .landing-label, .landing-route-grid .landing-offer-status').count() === 0)
+      ck(`F2 ${lang}: «${prep}» en 7 (ejercicios, datos, pasos 3 y 4, 3 rutas) y 5 «${dis}» (módulo, conversación, diario, brújula, idiomas) más la sección Skill Map`, cnt(prep) === 7 && cnt(dis) === 6, `disp=${cnt(dis)} prep=${cnt(prep)} total=${labels.length}`)
+      ck(`F5 ${lang}: 3 tarjetas de ruta, cada una con su etiqueta «${prep}» (M1)`, await p.locator('.landing-route-grid > *').count() === 3 && await p.locator('.landing-route-grid .landing-label, .landing-route-grid .landing-offer-status').allInnerTexts().then(t => t.length === 3 && t.every(x => x.toLowerCase() === prep.toLowerCase())))
       const sm = await p.locator('#skill-map').innerText(); console.log(`      texto Skill Map ${lang}:`, sm.replace(/\s+/g, ' ').slice(0, 1200))
       const forb = (txt.match(/diagn[oó]stic|terapia|therapy|tratamiento|empleabilidad|employability|\d+ ?% de (reemplazo|replacement)|vacante|salario|tarifa/gi) || []); console.log(`      términos a revisar ${lang}:`, JSON.stringify([...new Set(forb)]))
     }
