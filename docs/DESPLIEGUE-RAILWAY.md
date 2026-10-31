@@ -38,6 +38,17 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 
 No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto usa videollamadas o archivos hay que cargarlas.
 
+## Servicio `worker` (ES-87), un Dockerfile por servicio
+El worker de análisis de IA corre como un servicio aparte de Railway, con el mismo código del repositorio pero **otro arranque** (`node backend/worker.js`, sin puerto ni healthcheck). No puede usar el `Dockerfile` del API, cuyo `CMD` arranca el servidor: en staging, el primer despliegue del worker arrancó el API y falló con `JWT_SECRET must be configured` porque el worker (a propósito) no recibe esa variable. Tampoco se pudo fijar el comando de arranque por la CLI de Railway (`railway environment edit` respondió «No changes to apply») ni por `railway.json`, así que se usa un Dockerfile propio.
+
+- Archivo: `Dockerfile.worker` (sin build del frontend; solo dependencias del backend; `CMD ["node", "backend/worker.js"]`).
+- En el servicio `worker` se define la variable `RAILWAY_DOCKERFILE_PATH=Dockerfile.worker` (no es un secreto). El servicio `backend` no la define y sigue con `Dockerfile`.
+- Variables del worker: ver doc 45 y la tabla de arriba. **No** recibe `DATA_ENCRYPTION_KEY`, `PROMPT_ENCRYPTION_KEY`, `JWT_SECRET` ni el `DATABASE_URL` del API; el worker se niega a arrancar (código 2) si las tiene. `PROFESSIONAL_ENCRYPTION_KEY` debe ser idéntica a la del API del mismo entorno.
+- **Un worker por entorno** (hoy solo staging; los que se creen después): cada uno con su propia `WORKER_DATABASE_URL` (rol `elevation_worker` de su base) y su propia clave profesional. Nunca compartir valores entre entornos.
+- Origen del despliegue: en staging el worker se subió con `railway up --service worker` desde `main`; para que se redespliegue solo hay que conectar el servicio al repositorio con la rama del entorno (pendiente, decisión de Mauricio).
+- Verificación: el log del worker muestra `worker_started` y luego `poll_wait reason=idle`; `claim_error code=28P01` significa que la contraseña de la URL no coincide con la del rol.
+- No verificado: que el worker procese un trabajo real con Claude (lo cubre el plan de humo de QA).
+
 ## Base de datos
 - Producción (`NODE_ENV=production`): `sequelize.sync({})` solo crea las tablas que falten; no altera columnas.
 - **Esquema hasta que se cierre ES-59 (fase 2) (QA-57-05, decisión propuesta; ver "Migraciones versionadas"):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo se activa de forma explícita con `DB_SYNC_ALTER=true` en un entorno de desarrollo desechable, nunca por defecto y sin depender de `NODE_ENV` (QA-57-05).
