@@ -1,3 +1,4 @@
+import { useAdminText } from '../../i18n/useAdminText'
 // frontend/src/pages/admin/AdminMetrics.tsx
 // HU-047 + HU-081 — Métricas detalladas de la plataforma
 // Fix: componente reconstruido tras ser pisado por commit DT-002
@@ -24,13 +25,15 @@ const MOOD_EMOJI: Record<number, string> = {
   1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
 }
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
+const formatDate = (iso: string, locale = 'es-CO') =>
+  new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short' })
 
-const formatDateFull = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+const formatDateFull = (iso: string, locale = 'es-CO') =>
+  new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
 export function AdminMetrics() {
+  const tr = useAdminText()
+
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
@@ -45,13 +48,11 @@ export function AdminMetrics() {
   }, [])
 
   if (loading) return (
-    <p style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>
-      Cargando métricas...
-    </p>
+    <p style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>{tr("Cargando métricas...")}{' '}</p>
   )
   if (error) return (
     <p style={{ color: colors.danger, fontSize: 13, fontFamily: typography.fontBody }}>
-      {error}
+      {tr(error)}
     </p>
   )
   if (!metrics) return null
@@ -73,36 +74,32 @@ export function AdminMetrics() {
 
       {/* HEADER */}
       <div style={{ marginBottom: spacing.xxl }}>
-        <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>
-          Métricas
-        </h1>
-        <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>
-          Indicadores de rendimiento de la plataforma
-        </p>
+        <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>{tr("Métricas")}{' '}</h1>
+        <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>{tr("Indicadores de rendimiento de la plataforma")}{' '}</p>
       </div>
 
       {/* CARDS PRINCIPALES */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: spacing.lg, marginBottom: spacing.xxl }}>
         {[
-          { label: 'Total usuarios',       value: metrics.totalUsers,      color: colors.text },
-          { label: 'Usuarios activos',     value: metrics.activeUsers,     color: colors.primary },
-          { label: 'Terapeutas activos',   value: metrics.totalTherapists, color: colors.primary },
-          { label: 'Total sesiones',       value: metrics.totalSessions,   color: colors.text },
-          { label: 'Activos esta semana',  value: metrics.activeThisWeek,  color: colors.text },
+          { label: tr('Total usuarios'),       value: metrics.totalUsers,      color: colors.text },
+          { label: tr('Usuarios activos'),     value: metrics.activeUsers,     color: colors.primary },
+          { label: tr('Terapeutas activos'),   value: metrics.totalTherapists, color: colors.primary },
+          { label: tr('Total sesiones'),       value: metrics.totalSessions,   color: colors.text },
+          { label: tr('Activos esta semana'),  value: metrics.activeThisWeek,  color: colors.text },
           {
-            label: 'Ánimo promedio',
+            label: tr('Ánimo promedio'),
             value: metrics.avgMood != null
               ? `${metrics.avgMood} ${MOOD_EMOJI[Math.round(metrics.avgMood)] ?? ''}`
               : '—',
             color: colors.text,
           },
           {
-            label: 'Rating promedio',
+            label: tr('Rating promedio'),
             value: metrics.avgRating != null ? `${metrics.avgRating} ★` : '—',
             color: colors.text,
           },
-          { label: 'Retención',            value: `${retencion}%`,         color: retencion >= 70 ? colors.success : colors.warning },
-          { label: 'Sesiones / usuario',   value: sesionesPerUser,         color: colors.text },
+          { label: tr('Retención'),            value: `${retencion}%`,         color: retencion >= 70 ? colors.success : colors.warning },
+          { label: tr('Sesiones / usuario'),   value: sesionesPerUser,         color: colors.text },
         ].map(card => (
           <div key={card.label} style={cardStyle}>
             <div style={{ fontSize: '1.5rem', fontWeight: 600, color: card.color }}>{card.value}</div>
@@ -113,12 +110,10 @@ export function AdminMetrics() {
 
       {/* GRÁFICO DE ACTIVIDAD */}
       <div style={{ ...cardStyle, marginBottom: spacing.xl }}>
-        <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>
-          Actividad de sesiones — últimos 30 días
-        </h2>
+        <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>{tr("Actividad de sesiones — últimos 30 días")}{' '}</h2>
 
         {metrics.sessionsByDay.length === 0 ? (
-          <p style={{ color: colors.textMuted, fontSize: 13 }}>Sin datos de sesiones aún.</p>
+          <p style={{ color: colors.textMuted, fontSize: 13 }}>{tr("Sin datos de sesiones aún.")}</p>
         ) : (
           <>
             {/* Gráfico de barras */}
@@ -126,7 +121,7 @@ export function AdminMetrics() {
               {metrics.sessionsByDay.map(s => (
                 <div
                   key={s.date}
-                  title={`${formatDateFull(s.date)}: ${s.count} sesión${s.count !== 1 ? 'es' : ''}`}
+                  title={`${formatDateFull(s.date, tr('es-CO'))}: ${s.count} sesión${s.count !== 1 ? 'es' : ''}`}
                   style={{
                     flex: 1,
                     height: `${Math.max((s.count / maxCount) * 100, 6)}%`,
@@ -145,8 +140,8 @@ export function AdminMetrics() {
 
             {/* Eje X — fechas extremas */}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: colors.textSubtle }}>
-              <span>{formatDate(metrics.sessionsByDay[0].date)}</span>
-              <span>{formatDate(metrics.sessionsByDay[metrics.sessionsByDay.length - 1].date)}</span>
+              <span>{formatDate(metrics.sessionsByDay[0].date, tr('es-CO'))}</span>
+              <span>{formatDate(metrics.sessionsByDay[metrics.sessionsByDay.length - 1].date, tr('es-CO'))}</span>
             </div>
 
             {/* Resumen del período */}
@@ -155,19 +150,19 @@ export function AdminMetrics() {
                 <div style={{ fontSize: '1.1rem', fontWeight: 600, color: colors.text }}>
                   {metrics.sessionsByDay.reduce((a, s) => a + s.count, 0)}
                 </div>
-                <div style={{ fontSize: 12, color: colors.textMuted }}>sesiones en 30 días</div>
+                <div style={{ fontSize: 12, color: colors.textMuted }}>{tr("sesiones en 30 días")}</div>
               </div>
               <div>
                 <div style={{ fontSize: '1.1rem', fontWeight: 600, color: colors.text }}>
                   {Math.round(metrics.sessionsByDay.reduce((a, s) => a + s.count, 0) / 30 * 10) / 10}
                 </div>
-                <div style={{ fontSize: 12, color: colors.textMuted }}>promedio diario</div>
+                <div style={{ fontSize: 12, color: colors.textMuted }}>{tr("promedio diario")}</div>
               </div>
               <div>
                 <div style={{ fontSize: '1.1rem', fontWeight: 600, color: colors.text }}>
                   {Math.max(...metrics.sessionsByDay.map(s => s.count))}
                 </div>
-                <div style={{ fontSize: 12, color: colors.textMuted }}>pico máximo</div>
+                <div style={{ fontSize: 12, color: colors.textMuted }}>{tr("pico máximo")}</div>
               </div>
             </div>
           </>
@@ -176,21 +171,19 @@ export function AdminMetrics() {
 
       {/* TOP TERAPEUTAS */}
       <div style={cardStyle}>
-        <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>
-          Top terapeutas
-        </h2>
+        <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>{tr("Top terapeutas")}{' '}</h2>
 
         {metrics.topTherapists.length === 0 ? (
-          <p style={{ color: colors.textMuted, fontSize: 13 }}>Sin terapeutas activos aún.</p>
+          <p style={{ color: colors.textMuted, fontSize: 13 }}>{tr("Sin terapeutas activos aún.")}</p>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['#', 'Terapeuta', 'Pacientes', 'Calificación promedio', 'Nivel'].map(h => (
-                  <th key={h} style={{
+                {['#', tr('Terapeuta'), tr('Pacientes'), tr('Calificación promedio'), 'Nivel'].map(h => (
+                  <th key={tr(h)} style={{
                     padding: `${spacing.sm} ${spacing.md}`, textAlign: 'left',
                     ...labelStyle, borderBottom: `0.5px solid ${colors.border}`,
-                  }}>{h}</th>
+                  }}>{tr(h)}</th>
                 ))}
               </tr>
             </thead>

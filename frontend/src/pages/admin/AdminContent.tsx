@@ -1,3 +1,4 @@
+import { useAdminText } from '../../i18n/useAdminText'
 import landingFields from '../../../../shared/landing-content.json'
 import { LandingPendingPanel } from './LandingPendingPanel'
 import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
@@ -84,6 +85,8 @@ const sectionTitle: React.CSSProperties = {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function AdminContent() {
+  const tr = useAdminText()
+
   const [tab, setTab] = useState<'pricing' | 'landing' | 'validations' | 'applications'>('validations')
 
   const tabs = [
@@ -95,12 +98,8 @@ export function AdminContent() {
 
   return (
     <div>
-      <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.8rem', color: '#1C1917', marginBottom: '0.25rem' }}>
-        Contenido
-      </h1>
-      <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '1.5rem' }}>
-        Gestión de validaciones, precios y páginas públicas
-      </p>
+      <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.8rem', color: '#1C1917', marginBottom: '0.25rem' }}>{tr("Contenido")}{' '}</h1>
+      <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '1.5rem' }}>{tr("Gestión de validaciones, precios y páginas públicas")}{' '}</p>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem', borderBottom: '0.5px solid #E7E5E4' }}>
@@ -113,7 +112,7 @@ export function AdminContent() {
               borderBottom: tab === t.key ? '2px solid #6B7D5C' : '2px solid transparent',
               fontFamily: 'Inter, sans-serif', marginBottom: -1,
             }}>
-            {t.label}
+            {tr(t.label)}
           </button>
         ))}
       </div>
@@ -128,6 +127,8 @@ export function AdminContent() {
 
 // ── Tab Validaciones ──────────────────────────────────────────────────────────
 function ValidationsTab() {
+  const tr = useAdminText()
+
   const token = localStorage.getItem('elevation_token') ?? ''
   const [docs, setDocs]           = useState<ValidationDoc[]>([])
   const [loading, setLoading]     = useState(true)
@@ -189,30 +190,27 @@ function ValidationsTab() {
     finally { setSaving(false) }
   }
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>Cargando documentos pendientes...</p>
+  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>{tr("Cargando documentos pendientes...")}</p>
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <p style={{ fontSize: 13, color: '#78716C', margin: 0 }}>
-          {docs.length} documento(s) pendiente(s) de revisión
-        </p>
-        <button style={btnSecondary} onClick={load}>↻ Actualizar</button>
+          {docs.length}{' '}{tr("documento(s) pendiente(s) de revisión")}{' '}</p>
+        <button style={btnSecondary} onClick={load}>{tr("↻ Actualizar")}</button>
       </div>
 
       {msg && (
         <div style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem',
           background: msg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2',
           color: msg.startsWith('✓') ? '#4A6741' : '#DC2626', fontSize: 13 }}>
-          {msg}
+          {tr(msg)}
         </div>
       )}
 
       {docs.length === 0 && (
         <div style={{ ...card, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: 13 }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
-          No hay documentos pendientes de revisión.
-        </div>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>{tr("No hay documentos pendientes de revisión.")}{' '}</div>
       )}
 
       {docs.map(doc => (
@@ -236,23 +234,19 @@ function ValidationsTab() {
                   {doc.documentType}
                 </span>
                 <span style={{ fontSize: 11, color: '#A8A29E' }}>
-                  {new Date(doc.submittedAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {new Date(doc.submittedAt).toLocaleDateString(tr('es-CO'), { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
               <button onClick={() => getDownloadUrl(doc)} disabled={loadingUrl === doc.id}
                 style={{ ...btnSecondary, fontSize: 12, padding: '0.45rem 0.85rem' }}>
-                {loadingUrl === doc.id ? 'Cargando...' : '👁 Ver documento'}
+                {loadingUrl === doc.id ? tr('Cargando...') : tr('👁 Ver documento')}
               </button>
               <button onClick={() => openAction(doc, 'approve')}
-                style={{ ...btnPrimary, fontSize: 12, padding: '0.45rem 0.85rem' }}>
-                ✓ Aprobar
-              </button>
+                style={{ ...btnPrimary, fontSize: 12, padding: '0.45rem 0.85rem' }}>{tr("✓ Aprobar")}{' '}</button>
               <button onClick={() => openAction(doc, 'reject')}
-                style={{ ...btnDanger, fontSize: 12, padding: '0.45rem 0.85rem' }}>
-                ✗ Rechazar
-              </button>
+                style={{ ...btnDanger, fontSize: 12, padding: '0.45rem 0.85rem' }}>{tr("✗ Rechazar")}{' '}</button>
             </div>
           </div>
         </div>
@@ -263,28 +257,26 @@ function ValidationsTab() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 480 }}>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
-              {actionType === 'approve' ? '✓ Aprobar terapeuta' : '✗ Rechazar documento'}
+              {actionType === 'approve' ? tr('✓ Aprobar terapeuta') : tr('✗ Rechazar documento')}
             </h3>
             <p style={{ fontSize: 13, color: '#78716C', margin: '0 0 1.25rem' }}>
               {actionType === 'approve'
-                ? `¿Aprobás la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`
-                : `Explicá por qué rechazás el documento de ${actionDoc.therapist.name}.`}
+                ? tr(`¿Aprobás la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`)
+                : tr(`Explicá por qué rechazás el documento de ${actionDoc.therapist.name}.`)}
             </p>
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={label}>{actionType === 'approve' ? 'Nota (opcional)' : 'Motivo de rechazo *'}</label>
+              <label style={label}>{actionType === 'approve' ? tr('Nota (opcional)') : tr('Motivo de rechazo *')}</label>
               <textarea value={note} onChange={e => setNote(e.target.value)}
-                placeholder={actionType === 'approve' ? 'Ej: Documentos verificados.' : 'Ej: El título no está apostillado...'}
+                placeholder={actionType === 'approve' ? tr('Ej: Documentos verificados.') : tr('Ej: El título no está apostillado...')}
                 rows={3}
                 style={{ ...input, resize: 'vertical', lineHeight: 1.5 }} />
             </div>
-            {msg && <p style={{ fontSize: 12, color: '#DC2626', margin: '0 0 1rem' }}>{msg}</p>}
+            {msg && <p style={{ fontSize: 12, color: '#DC2626', margin: '0 0 1rem' }}>{tr(msg)}</p>}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button style={btnSecondary} onClick={() => { setActionDoc(null); setActionType(null); setMsg('') }}>
-                Cancelar
-              </button>
+              <button style={btnSecondary} onClick={() => { setActionDoc(null); setActionType(null); setMsg('') }}>{tr("Cancelar")}{' '}</button>
               <button onClick={submitAction} disabled={saving}
                 style={actionType === 'approve' ? btnPrimary : btnDanger}>
-                {saving ? 'Procesando...' : actionType === 'approve' ? '✓ Confirmar aprobación' : '✗ Confirmar rechazo'}
+                {saving ? 'Procesando...' : actionType === 'approve' ? tr('✓ Confirmar aprobación') : tr('✗ Confirmar rechazo')}
               </button>
             </div>
           </div>
@@ -296,6 +288,8 @@ function ValidationsTab() {
 
 // ── Tab Precios ───────────────────────────────────────────────────────────────
 function PricingTab() {
+  const tr = useAdminText()
+
   const token = localStorage.getItem('elevation_token') ?? ''
   const [plans, setPlans]         = useState<PricingPlan[]>([])
   const [loading, setLoading]     = useState(true)
@@ -374,15 +368,14 @@ function PricingTab() {
     load()
   }
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>Cargando planes...</p>
+  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>{tr("Cargando planes...")}</p>
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <p style={{ fontSize: 13, color: '#78716C', margin: 0 }}>
-          {plans.filter(p => p.isActive).length} plan(es) activo(s)
-        </p>
-        <button style={btnPrimary} onClick={openNew}>+ Nuevo plan</button>
+          {plans.filter(p => p.isActive).length}{' '}{tr("plan(es) activo(s)")}{' '}</p>
+        <button style={btnPrimary} onClick={openNew}>{tr("+ Nuevo plan")}</button>
       </div>
 
       {plans.map(p => (
@@ -391,8 +384,8 @@ function PricingTab() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{p.name_es}</span>
               <span style={{ fontSize: 11, color: '#A8A29E' }}>/ {p.name_en}</span>
-              {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>DESTACADO</span>}
-              {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: 10 }}>INACTIVO</span>}
+              {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>{tr("DESTACADO")}</span>}
+              {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: 10 }}>{tr("INACTIVO")}</span>}
             </div>
             <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
               <strong>${p.price}</strong> {p.currency} / {p.period}
@@ -404,64 +397,64 @@ function PricingTab() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <button style={btnSecondary} onClick={() => openEdit(p)}>Editar</button>
-            {p.isActive && <button style={btnDanger} onClick={() => deactivate(p.id!)}>Desactivar</button>}
+            <button style={btnSecondary} onClick={() => openEdit(p)}>{tr("Editar")}</button>
+            {p.isActive && <button style={btnDanger} onClick={() => deactivate(p.id!)}>{tr("Desactivar")}</button>}
           </div>
         </div>
       ))}
 
       {plans.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>No hay planes. Creá el primero.</div>
+        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>{tr("No hay planes. Creá el primero.")}</div>
       )}
 
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: '0 0 1.5rem' }}>
-              {editing ? 'Editar plan' : 'Nuevo plan'}
+              {editing ? tr('Editar plan') : tr('Nuevo plan')}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
-                <p style={sectionTitle}>Identificador</p>
+                <p style={sectionTitle}>{tr("Identificador")}</p>
                 <div style={{ marginBottom: 8 }}>
-                  <label style={label}>Slug * (sin espacios, ej: basic, essential, plus, pro)</label>
-                  <input style={input} value={form.slug} placeholder="ej: basic"
+                  <label style={label}>{tr("Slug * (sin espacios, ej: basic, essential, plus, pro)")}</label>
+                  <input style={input} value={form.slug} placeholder={tr("ej: basic")}
                     onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-') }))} />
                 </div>
-                <p style={sectionTitle}>Nombre del plan</p>
+                <p style={sectionTitle}>{tr("Nombre del plan")}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>
-                    <label style={label}>Español *</label>
-                    <input style={input} value={form.name_es} placeholder="ej: Gratis" onChange={e => setForm(f => ({ ...f, name_es: e.target.value }))} />
+                    <label style={label}>{tr("Español *")}</label>
+                    <input style={input} value={form.name_es} placeholder={tr("ej: Gratis")} onChange={e => setForm(f => ({ ...f, name_es: e.target.value }))} />
                   </div>
                   <div>
-                    <label style={label}>Inglés *</label>
-                    <input style={input} value={form.name_en} placeholder="ej: Free" onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))} />
+                    <label style={label}>{tr("Inglés *")}</label>
+                    <input style={input} value={form.name_en} placeholder={tr("ej: Free")} onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))} />
                   </div>
                 </div>
               </div>
               <div>
-                <p style={sectionTitle}>Descripción</p>
+                <p style={sectionTitle}>{tr("Descripción")}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div>
-                    <label style={label}>Español</label>
-                    <input style={input} value={form.description_es} placeholder="Descripción en español..." onChange={e => setForm(f => ({ ...f, description_es: e.target.value }))} />
+                    <label style={label}>{tr("Español")}</label>
+                    <input style={input} value={form.description_es} placeholder={tr("Descripción en español...")} onChange={e => setForm(f => ({ ...f, description_es: e.target.value }))} />
                   </div>
                   <div>
-                    <label style={label}>Inglés</label>
+                    <label style={label}>{tr("Inglés")}</label>
                     <input style={input} value={form.description_en} placeholder="Description in English..." onChange={e => setForm(f => ({ ...f, description_en: e.target.value }))} />
                   </div>
                 </div>
               </div>
               <div>
-                <p style={sectionTitle}>Precio</p>
+                <p style={sectionTitle}>{tr("Precio")}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 8 }}>
                   <div>
-                    <label style={label}>Precio</label>
+                    <label style={label}>{tr("Precio")}</label>
                     <input style={input} type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
                   </div>
                   <div>
-                    <label style={label}>Moneda</label>
+                    <label style={label}>{tr("Moneda")}</label>
                     <select style={{ ...input }} value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
                       <option value="USD">USD</option>
                       <option value="COP">COP</option>
@@ -469,19 +462,19 @@ function PricingTab() {
                     </select>
                   </div>
                   <div>
-                    <label style={label}>Período</label>
+                    <label style={label}>{tr("Período")}</label>
                     <select style={{ ...input }} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
-                      <option value="month">Mensual</option>
-                      <option value="year">Anual</option>
-                      <option value="forever">Para siempre</option>
+                      <option value="month">{tr("Mensual")}</option>
+                      <option value="year">{tr("Anual")}</option>
+                      <option value="forever">{tr("Para siempre")}</option>
                     </select>
                   </div>
                 </div>
               </div>
               <div>
-                <p style={sectionTitle}>Características en Español</p>
+                <p style={sectionTitle}>{tr("Características en Español")}</p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <input style={{ ...input, flex: 1 }} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('es')} placeholder="ej: Conversaciones ilimitadas" />
+                  <input style={{ ...input, flex: 1 }} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('es')} placeholder={tr("ej: Conversaciones ilimitadas")} />
                   <button style={btnSecondary} onClick={() => addFeature('es')}>+</button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -494,9 +487,9 @@ function PricingTab() {
                 </div>
               </div>
               <div>
-                <p style={sectionTitle}>Características en Inglés</p>
+                <p style={sectionTitle}>{tr("Características en Inglés")}</p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <input style={{ ...input, flex: 1 }} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('en')} placeholder="ej: Unlimited conversations" />
+                  <input style={{ ...input, flex: 1 }} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('en')} placeholder={tr("ej: Unlimited conversations")} />
                   <button style={btnSecondary} onClick={() => addFeature('en')}>+</button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -509,29 +502,25 @@ function PricingTab() {
                 </div>
               </div>
               <div>
-                <p style={sectionTitle}>Opciones</p>
+                <p style={sectionTitle}>{tr("Opciones")}</p>
                 <div style={{ display: 'flex', gap: '1.5rem' }}>
                   <div>
-                    <label style={label}>Orden</label>
+                    <label style={label}>{tr("Orden")}</label>
                     <input style={{ ...input, width: 80 }} type="number" min="0" value={form.order} onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
                   </div>
                   <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end', paddingBottom: '0.6rem' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#1C1917', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm(f => ({ ...f, isHighlighted: e.target.checked }))} />
-                      Destacado
-                    </label>
+                      <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm(f => ({ ...f, isHighlighted: e.target.checked }))} />{tr("Destacado")}{' '}</label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#1C1917', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />
-                      Activo
-                    </label>
+                      <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />{tr("Activo")}{' '}</label>
                   </div>
                 </div>
               </div>
-              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#6B7D5C', margin: 0 }}>{msg}</p>}
+              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#6B7D5C', margin: 0 }}>{tr(msg)}</p>}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: '0.5rem' }}>
-                <button style={btnSecondary} onClick={() => setShowForm(false)}>Cancelar</button>
+                <button style={btnSecondary} onClick={() => setShowForm(false)}>{tr("Cancelar")}{' '}</button>
                 <button style={btnPrimary} onClick={save} disabled={saving}>
-                  {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear plan'}
+                  {saving ? tr('Guardando...') : editing ? 'Actualizar' : tr('Crear plan')}
                 </button>
               </div>
             </div>
@@ -544,6 +533,8 @@ function PricingTab() {
 
 // ── Tab Landing ───────────────────────────────────────────────────────────────
 function LandingTab() {
+  const tr = useAdminText()
+
   const token = localStorage.getItem('elevation_token') ?? ''
   const [lang, setLang]       = useState<'es' | 'en'>('es')
   const [content, setContent] = useState<Record<string, string>>({})
@@ -583,7 +574,7 @@ function LandingTab() {
     } finally { setSaving(null) }
   }
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>Cargando contenido...</p>
+  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>{tr("Cargando contenido...")}</p>
 
   return (
     <div>
@@ -598,11 +589,11 @@ function LandingTab() {
       <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => setContent(c => ({ ...c, [key]: value }))} save={saveField} saving={saving} msgs={msgs} s={{ card, label, input, btnPrimary }} />
       {fields.map(f => (
         <div key={f.key} style={card}>
-          <label style={label}>{f.label}</label>
+          <label style={label}>{tr(f.label)}</label>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <input style={{ ...input, flex: 1 }} value={content[f.key] ?? ''} onChange={e => setContent(c => ({ ...c, [f.key]: e.target.value }))} />
             <button style={btnPrimary} onClick={() => saveField(f.key)} disabled={saving === f.key}>
-              {saving === f.key ? '...' : 'Guardar'}
+              {saving === f.key ? '...' : tr('Guardar')}
             </button>
           </div>
           {msgs[f.key] && (
