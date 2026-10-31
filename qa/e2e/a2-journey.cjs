@@ -4,7 +4,7 @@ const L = require('./lib.cjs'); const { chromium, API, SHOTS, rec, savResults, V
 const lang = process.env.QA_LANG || 'es'; const W = Number(process.env.QA_W || 1440), H = Number(process.env.QA_H || 900); const T = lang === 'es';
 const dir = path.join(SHOTS, 'a2', lang + '-' + W); fs.mkdirSync(dir, { recursive: true }); let n = 0;
 (async () => {
-  const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: W, height: H } }); await ctx.addInitScript(l => { try { for (const k of ['lang', 'i18nextLng', 'language', 'elevation_lang']) localStorage.setItem(k, l); } catch { /* */ } }, lang);
+  const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: W, height: H } }); await ctx.addInitScript(l => { try { for (const k of ['elv_lang', 'lang', 'i18nextLng', 'language', 'elevation_lang']) localStorage.setItem(k, l); } catch { /* */ } }, lang);
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(String(e).slice(0, 100))); const bad = []; p.on('response', r => { if (r.url().includes('/api/') && r.status() >= 500 && !r.url().includes('/api/route-catalog') && !r.url().includes('/api/routes')) bad.push(r.status() + ' ' + r.url().replace(API, '')); });
   let dialog = false; p.on('dialog', d => { if (d.type() === 'beforeunload') d.accept(); else { dialog = true; d.dismiss(); } });
   const shot = async name => { n++; await p.screenshot({ path: path.join(dir, String(n).padStart(2, '0') + '-' + name + '.png'), fullPage: true }).catch(() => {}); };
