@@ -1,3 +1,4 @@
+import { useAdminText } from '../../i18n/useAdminText'
 // HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
 import { useState, useEffect, useCallback } from 'react';
@@ -63,10 +64,12 @@ const getRoleBadgeStyle = (role: Role): React.CSSProperties => {
   return { ...base, ...colors[role] };
 };
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+const formatDate = (iso: string, locale = 'es-CO') =>
+  new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 
 export function AdminUsers() {
+  const tr = useAdminText()
+
   const [usuarios,            setUsuarios]            = useState<Usuario[]>([]);
   const [terapeutas,          setTerapeutas]          = useState<Terapeuta[]>([]);
   const [cargando,            setCargando]            = useState(true);
@@ -346,9 +349,9 @@ export function AdminUsers() {
       {/* HEADER */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>Usuarios</h1>
+          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>{tr("Usuarios")}</h1>
           <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0.25rem 0 0' }}>
-            {usuarios.length} usuario{usuarios.length !== 1 ? 's' : ''} registrado{usuarios.length !== 1 ? 's' : ''}
+            {usuarios.length}{' '}{tr(usuarios.length === 1 ? 'usuario registrado' : 'usuarios registrados')}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -378,25 +381,21 @@ export function AdminUsers() {
             display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem',
             background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.85rem',
             fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-          }}>
-            + Crear usuario
-          </button>
+          }}>{tr("+ Crear usuario")}{' '}</button>
         </div>
       </div>
 
       {/* PLAN REQUESTS PANEL */}
       {showPlanRequests && (
         <div style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #A5B4FC', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
-            💳 Solicitudes de plan pendientes
-          </h2>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>{tr("💳 Solicitudes de plan pendientes")}{' '}</h2>
           {planMsg && (
             <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem', background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: planMsg.startsWith('✓') ? '#4A6741' : '#DC2626' }}>
-              {planMsg}
+              {tr(planMsg)}
             </div>
           )}
           {planRequests.length === 0
-            ? <p style={{ color: '#78716C', fontSize: '0.875rem', margin: 0 }}>No hay solicitudes pendientes.</p>
+            ? <p style={{ color: '#78716C', fontSize: '0.875rem', margin: 0 }}>{tr("No hay solicitudes pendientes.")}</p>
             : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {planRequests.map(req => (
@@ -406,17 +405,15 @@ export function AdminUsers() {
                         {req.requester.name}
                         <span style={{ fontWeight: 400, color: '#78716C' }}> → </span>
                         <span style={{ color: '#4F46E5', fontWeight: 600 }}>{req.plan.name_es}</span>
-                        <span style={{ fontSize: '0.78rem', color: '#78716C', marginLeft: 6 }}>${req.plan.price} {req.plan.currency}/mes</span>
+                        <span style={{ fontSize: '0.78rem', color: '#78716C', marginLeft: 6 }}>${req.plan.price} {req.plan.currency}{tr("/mes")}</span>
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>{req.requester.email} · {formatDate(req.createdAt)}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>{req.requester.email} · {formatDate(req.createdAt, tr('es-CO'))}</div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button onClick={() => void approvePlanRequest(req)} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: planActionId === req.id ? '#A8B5A2' : '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                        {planActionId === req.id ? 'Procesando...' : '✓ Aprobar'}
+                        {planActionId === req.id ? 'Procesando...' : tr('✓ Aprobar')}
                       </button>
-                      <button onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: 'transparent', color: '#DC2626', border: '0.5px solid #DC2626', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                        ✕ Rechazar
-                      </button>
+                      <button onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: 'transparent', color: '#DC2626', border: '0.5px solid #DC2626', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{tr("✕ Rechazar")}{' '}</button>
                     </div>
                   </div>
                 ))}
@@ -437,7 +434,7 @@ export function AdminUsers() {
               <div key={req.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', background: '#FFFBEB', borderRadius: '0.75rem', border: '0.5px solid #FCD34D', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
                   <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>{req.user?.name} → {req.chosenTherapist?.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>Area: {req.answers?.area ?? '—'} · Style: {req.answers?.style ?? '—'} · {formatDate(req.createdAt)}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>Area: {req.answers?.area ?? '—'} · Style: {req.answers?.style ?? '—'} · {formatDate(req.createdAt, tr('es-CO'))}</div>
                 </div>
                 <button onClick={() => confirmMatching(req.id)} disabled={confirmingId === req.id} style={{ padding: '0.45rem 1rem', background: confirmingId === req.id ? '#A8B5A2' : '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: confirmingId === req.id ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
                   {confirmingId === req.id ? 'Confirming...' : 'Confirm assignment'}
@@ -451,7 +448,7 @@ export function AdminUsers() {
       {/* FILTROS */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         <select style={sel} value={filtroRol} onChange={e => setFiltroRol(e.target.value)}>
-          <option value="">Todos los roles</option>
+          <option value="">{tr("Todos los roles")}</option>
           <option value="user">User</option>
           <option value="therapist">Therapist</option>
           <option value="admin">Admin</option>
@@ -459,14 +456,14 @@ export function AdminUsers() {
           {esSuperAdmin && <option value="board">Board</option>}
         </select>
         <select style={sel} value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
-          <option value="">Todos los estados</option>
-          <option value="true">Activos</option>
-          <option value="false">Inactivos</option>
+          <option value="">{tr("Todos los estados")}</option>
+          <option value="true">{tr("Activos")}</option>
+          <option value="false">{tr("Inactivos")}</option>
         </select>
       </div>
 
-      {cargando && <p style={{ color: '#78716C', fontSize: '0.875rem' }}>Cargando usuarios...</p>}
-      {error    && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{error}</p>}
+      {cargando && <p style={{ color: '#78716C', fontSize: '0.875rem' }}>{tr("Cargando usuarios...")}</p>}
+      {error    && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{tr(error)}</p>}
 
       {!cargando && !error && (
         <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
@@ -476,14 +473,14 @@ export function AdminUsers() {
             <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', border: '0.5px solid #E7E5E4' }}>
               <thead>
                 <tr>
-                  {['Usuario', 'Rol', 'Plan', 'Sesiones', 'Mood prom.', 'Rating prom.', 'Estado', 'Acción'].map(h => (
-                    <th key={h} style={{ padding: '0.85rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#78716C', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '0.5px solid #E7E5E4', background: '#F5F3EF' }}>{h}</th>
+                  {[tr('Usuario'), tr('Rol'), 'Plan', tr('Sesiones'), tr('Mood prom.'), tr('Rating prom.'), tr('Estado'), tr('Acción')].map(h => (
+                    <th key={tr(h)} style={{ padding: '0.85rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#78716C', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '0.5px solid #E7E5E4', background: '#F5F3EF' }}>{tr(h)}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {usuarios.length === 0
-                  ? <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#78716C', fontSize: '0.875rem' }}>No hay usuarios con los filtros seleccionados.</td></tr>
+                  ? <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#78716C', fontSize: '0.875rem' }}>{tr("No hay usuarios con los filtros seleccionados.")}</td></tr>
                   : usuarios.map(u => (
                     <tr key={u.id} style={{ background: usuarioSeleccionado?.id === u.id ? '#EAF0E6' : 'transparent', transition: 'background 0.15s' }}>
                       <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
@@ -506,13 +503,11 @@ export function AdminUsers() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                           <div>
                             <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: u.active ? '#22C55E' : '#EF4444', marginRight: '0.4rem' }} />
-                            {u.active ? 'Activo' : 'Inactivo'}
+                            {u.active ? tr('Activo') : 'Inactivo'}
                           </div>
                           {/* HU-078 — Badge bloqueado */}
                           {u.isLocked && (
-                            <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#92400E', background: '#FEF3C7', padding: '1px 6px', borderRadius: 999 }}>
-                              🔒 Bloqueado
-                            </span>
+                            <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#92400E', background: '#FEF3C7', padding: '1px 6px', borderRadius: 999 }}>{tr("🔒 Bloqueado")}{' '}</span>
                           )}
                         </div>
                       </td>
@@ -540,14 +535,11 @@ export function AdminUsers() {
               <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '0.5px solid #F5F3EF' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917', marginBottom: '0.2rem' }}>{usuarioSeleccionado.name}</div>
                 <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{usuarioSeleccionado.email}</div>
-                <div style={{ fontSize: '0.75rem', color: '#A8B5A2', marginTop: '0.35rem' }}>Desde {formatDate(usuarioSeleccionado.createdAt)}</div>
+                <div style={{ fontSize: '0.75rem', color: '#A8B5A2', marginTop: '0.35rem' }}>{tr("Desde")}{' '}{formatDate(usuarioSeleccionado.createdAt, tr('es-CO'))}</div>
                 {/* HU-078 — Estado de bloqueo */}
                 {usuarioSeleccionado.isLocked && (
-                  <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.65rem', background: '#FEF3C7', borderRadius: '0.5rem', fontSize: '0.75rem', color: '#92400E', fontWeight: 500 }}>
-                    🔒 Bloqueado por intentos fallidos
-                    {usuarioSeleccionado.lockedUntil && (
-                      <div style={{ fontSize: '0.7rem', fontWeight: 400, marginTop: '0.15rem' }}>
-                        Hasta: {new Date(usuarioSeleccionado.lockedUntil).toLocaleString('es-CO')}
+                  <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.65rem', background: '#FEF3C7', borderRadius: '0.5rem', fontSize: '0.75rem', color: '#92400E', fontWeight: 500 }}>{tr("🔒 Bloqueado por intentos fallidos")}{' '}{usuarioSeleccionado.lockedUntil && (
+                      <div style={{ fontSize: '0.7rem', fontWeight: 400, marginTop: '0.15rem' }}>{tr("Hasta:")}{' '}{new Date(usuarioSeleccionado.lockedUntil).toLocaleString(tr('es-CO'))}
                       </div>
                     )}
                   </div>
@@ -556,10 +548,10 @@ export function AdminUsers() {
 
               {/* Stats */}
               <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '0.5px solid #F5F3EF' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.65rem' }}>Estadísticas</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.65rem' }}>{tr("Estadísticas")}</div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   {[
-                    { label: 'Sesiones', value: usuarioSeleccionado.sesiones ?? '—' },
+                    { label: tr('Sesiones'), value: usuarioSeleccionado.sesiones ?? '—' },
                     { label: 'Mood',     value: usuarioSeleccionado.moodPromedio ?? '—' },
                     { label: 'Rating',   value: usuarioSeleccionado.ratingPromedio ? `${usuarioSeleccionado.ratingPromedio}★` : '—' },
                   ].map(s => (
@@ -573,7 +565,7 @@ export function AdminUsers() {
 
               {/* Rol */}
               <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Rol</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>{tr("Rol")}</div>
                 <select style={{ ...sel, width: '100%' }} value={usuarioSeleccionado.role} onChange={e => cambiarRol(usuarioSeleccionado, e.target.value as Role)}>
                   <option value="user">user</option>
                   <option value="therapist">therapist</option>
@@ -586,10 +578,10 @@ export function AdminUsers() {
               {/* Terapeuta asignado */}
               {usuarioSeleccionado.role === 'user' && (
                 <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Terapeuta asignado</div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>{tr("Terapeuta asignado")}</div>
                   <select style={{ ...sel, width: '100%' }} value={usuarioSeleccionado.therapistId ?? ''}
                     onChange={e => asignarTerapeuta(usuarioSeleccionado.id, e.target.value ? Number(e.target.value) : null)}>
-                    <option value="">Sin asignar</option>
+                    <option value="">{tr("Sin asignar")}</option>
                     {terapeutas.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
@@ -598,7 +590,7 @@ export function AdminUsers() {
               {/* Feedback desbloqueo */}
               {unlockMsg && (
                 <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.78rem', marginBottom: '0.75rem', background: unlockMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: unlockMsg.startsWith('✓') ? '#4A6741' : '#DC2626' }}>
-                  {unlockMsg}
+                  {tr(unlockMsg)}
                 </div>
               )}
 
@@ -617,7 +609,7 @@ export function AdminUsers() {
                     fontFamily: 'Inter, sans-serif',
                   }}
                 >
-                  {unlocking ? 'Desbloqueando...' : '🔓 Desbloquear cuenta'}
+                  {unlocking ? 'Desbloqueando...' : tr('🔓 Desbloquear cuenta')}
                 </button>
               )}
 
@@ -629,7 +621,7 @@ export function AdminUsers() {
                 fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif', marginBottom: '0.5rem',
               }}>
-                {usuarioSeleccionado.active ? 'Desactivar usuario' : 'Activar usuario'}
+                {usuarioSeleccionado.active ? tr('Desactivar usuario') : tr('Activar usuario')}
               </button>
 
               {/* HU-078 — Reset contraseña (solo superadmin) */}
@@ -643,9 +635,7 @@ export function AdminUsers() {
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                     marginBottom: '0.5rem',
                   }}
-                >
-                  🔑 Resetear contraseña
-                </button>
+                >{tr("🔑 Resetear contraseña")}{' '}{' '}</button>
               )}
 
               {/* Eliminar — solo superadmin */}
@@ -658,9 +648,7 @@ export function AdminUsers() {
                     color: '#DC2626', fontWeight: 500, fontSize: '0.875rem',
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                   }}
-                >
-                  Eliminar permanentemente
-                </button>
+                >{tr("Eliminar permanentemente")}{' '}</button>
               )}
             </div>
           )}
@@ -672,25 +660,19 @@ export function AdminUsers() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 400, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
-                🔑 Resetear contraseña
-              </h3>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("🔑 Resetear contraseña")}{' '}{' '}</h3>
               <button onClick={() => setShowResetModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#78716C' }}>✕</button>
             </div>
 
-            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              Establecé una contraseña temporal para <strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>. Comunicasela por otro medio (email, WhatsApp, etc.).
-            </p>
+            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem', lineHeight: 1.5 }}>{tr("Establecé una contraseña temporal para")}{' '}<strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>{tr(". Comunicasela por otro medio (email, WhatsApp, etc.).")}{' '}</p>
 
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
-                Nueva contraseña temporal
-              </label>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>{tr("Nueva contraseña temporal")}{' '}</label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={e => { setNewPassword(e.target.value); setResetError(''); }}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={tr("Mínimo 6 caracteres")}
                 style={{
                   width: '100%', padding: '0.6rem 0.85rem',
                   border: `0.5px solid ${resetError ? '#DC2626' : '#E7E5E4'}`,
@@ -699,19 +681,17 @@ export function AdminUsers() {
                   boxSizing: 'border-box', outline: 'none',
                 }}
               />
-              {resetError && <p style={{ fontSize: '0.75rem', color: '#DC2626', margin: '0.25rem 0 0' }}>{resetError}</p>}
+              {resetError && <p style={{ fontSize: '0.75rem', color: '#DC2626', margin: '0.25rem 0 0' }}>{tr(resetError)}</p>}
             </div>
 
             {resetMsg && (
               <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem', background: '#EAF0E6', color: '#4A6741' }}>
-                {resetMsg}
+                {tr(resetMsg)}
               </div>
             )}
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => setShowResetModal(false)} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
-                Cancelar
-              </button>
+              <button onClick={() => setShowResetModal(false)} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
               <button
                 onClick={resetPassword}
                 disabled={resetting || newPassword.trim().length < 6}
@@ -724,7 +704,7 @@ export function AdminUsers() {
                   fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif',
                 }}
               >
-                {resetting ? 'Guardando...' : 'Confirmar reset'}
+                {resetting ? tr('Guardando...') : tr('Confirmar reset')}
               </button>
             </div>
           </div>
@@ -737,20 +717,15 @@ export function AdminUsers() {
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(26,28,27,0.15)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🗑️</div>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
-                Eliminar usuario
-              </h3>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("Eliminar usuario")}{' '}</h3>
             </div>
-            <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '0.5rem', lineHeight: 1.6 }}>
-              Esta acción es <strong style={{ color: '#DC2626' }}>permanente e irreversible</strong>.
+            <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '0.5rem', lineHeight: 1.6 }}>{tr("Esta acción es")}{' '}<strong style={{ color: '#DC2626' }}>{tr("permanente e irreversible")}</strong>.
             </p>
             <div style={{ background: '#FEF2F2', border: '0.5px solid #FECACA', borderRadius: '0.65rem', padding: '0.75rem 1rem', marginBottom: '1.25rem' }}>
               <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1C1917' }}>{confirmDelete.name}</div>
               <div style={{ fontSize: '0.78rem', color: '#78716C' }}>{confirmDelete.email}</div>
             </div>
-            <p style={{ fontSize: '0.82rem', color: '#78716C', marginBottom: '0.5rem' }}>
-              Para confirmar, escribí exactamente el nombre del usuario:
-            </p>
+            <p style={{ fontSize: '0.82rem', color: '#78716C', marginBottom: '0.5rem' }}>{tr("Para confirmar, escribí exactamente el nombre del usuario:")}{' '}</p>
             <input
               type="text"
               value={deleteInput}
@@ -758,17 +733,15 @@ export function AdminUsers() {
               placeholder={confirmDelete.name}
               style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: `0.5px solid ${deleteError ? '#DC2626' : '#E7E5E4'}`, fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none', marginBottom: '0.5rem' }}
             />
-            {deleteError && <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 1rem' }}>{deleteError}</p>}
+            {deleteError && <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 1rem' }}>{tr(deleteError)}</p>}
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-              <button onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
-                Cancelar
-              </button>
+              <button onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
               <button
                 onClick={eliminarUsuario}
                 disabled={eliminando || deleteInput !== confirmDelete.name}
                 style={{ flex: 1, padding: '0.65rem', background: eliminando || deleteInput !== confirmDelete.name ? '#F5F3EF' : '#DC2626', color: eliminando || deleteInput !== confirmDelete.name ? '#A8A29E' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: eliminando || deleteInput !== confirmDelete.name ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}
               >
-                {eliminando ? 'Eliminando...' : 'Eliminar definitivamente'}
+                {eliminando ? 'Eliminando...' : tr('Eliminar definitivamente')}
               </button>
             </div>
           </div>
@@ -779,22 +752,19 @@ export function AdminUsers() {
       {showRejectModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>✕ Rechazar solicitud</h3>
-            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem' }}>
-              Explicá por qué rechazás la solicitud de <strong>{showRejectModal.requester.name}</strong> para el plan <strong>{showRejectModal.plan.name_es}</strong>.
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>{tr("✕ Rechazar solicitud")}</h3>
+            <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0 0 1.25rem' }}>{tr("Explicá por qué rechazás la solicitud de")}{' '}<strong>{showRejectModal.requester.name}</strong>{' '}{tr("para el plan")}{' '}<strong>{showRejectModal.plan.name_es}</strong>.
             </p>
             <textarea value={planRejectNote} onChange={e => setPlanRejectNote(e.target.value)}
-              placeholder="Ej: El plan seleccionado no está disponible actualmente..." rows={3}
+              placeholder={tr("Ej: El plan seleccionado no está disponible actualmente...")} rows={3}
               style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #D6D2C4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
             />
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
-              <button onClick={() => { setShowRejectModal(null); setPlanRejectNote(''); }} style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>
-                Cancelar
-              </button>
+              <button onClick={() => { setShowRejectModal(null); setPlanRejectNote(''); }} style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#78716C', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
               <button onClick={() => void rejectPlanRequest(showRejectModal)}
                 disabled={!planRejectNote.trim() || planActionId === showRejectModal.id}
                 style={{ padding: '0.6rem 1.25rem', background: !planRejectNote.trim() ? '#E7E5E4' : '#DC2626', color: !planRejectNote.trim() ? '#A8A29E' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: planRejectNote.trim() ? 'pointer' : 'not-allowed', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
-                {planActionId === showRejectModal.id ? 'Procesando...' : 'Confirmar rechazo'}
+                {planActionId === showRejectModal.id ? 'Procesando...' : tr('Confirmar rechazo')}
               </button>
             </div>
           </div>
@@ -806,15 +776,15 @@ export function AdminUsers() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>Crear usuario</h2>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>{tr("Crear usuario")}</h2>
               <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C' }}>✕</button>
             </div>
-            {errorModal && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{errorModal}</div>}
-            {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{exitoModal}</div>}
+            {errorModal && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
+            {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
             {[
-              { label: 'Nombre completo',     key: 'name',     type: 'text',     placeholder: 'Ana García' },
-              { label: 'Email',               key: 'email',    type: 'email',    placeholder: 'ana@example.com' },
-              { label: 'Contraseña temporal', key: 'password', type: 'password', placeholder: 'Mínimo 8 caracteres' },
+              { label: tr('Nombre completo'),     key: 'name',     type: 'text',     placeholder: 'Ana García' },
+              { label: tr('Email'),               key: 'email',    type: 'email',    placeholder: 'ana@example.com' },
+              { label: tr('Contraseña temporal'), key: 'password', type: 'password', placeholder: tr('Mínimo 8 caracteres') },
             ].map(campo => (
               <div key={campo.key} style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{campo.label}</label>
@@ -826,7 +796,7 @@ export function AdminUsers() {
               </div>
             ))}
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>Rol</label>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr("Rol")}</label>
               <select style={{ ...sel, width: '100%' }} value={nuevoUsuario.role} onChange={e => setNuevoUsuario(prev => ({ ...prev, role: e.target.value as Role }))}>
                 <option value="user">user</option>
                 <option value="therapist">therapist</option>
@@ -836,7 +806,7 @@ export function AdminUsers() {
               </select>
             </div>
             <button onClick={crearUsuario} disabled={creando} style={{ width: '100%', padding: '0.75rem', background: creando ? '#A8B5A2' : '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.9rem', fontWeight: 500, cursor: creando ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
-              {creando ? 'Creando...' : 'Crear usuario'}
+              {creando ? tr('Creando...') : tr('Crear usuario')}
             </button>
           </div>
         </div>
