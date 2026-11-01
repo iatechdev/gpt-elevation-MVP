@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -37,7 +37,7 @@ function load(file) {
     if (!id.startsWith('.')) return require(id)
     let target = resolve(dirname(file), id)
     if (target.endsWith('.json')) { const json = JSON.parse(readFileSync(target, 'utf8')); return { default: json, ...json } } // política de contraseñas (#114)
-    if (!/\.tsx?$/.test(target)) target += '.ts'
+    if (!/\.tsx?$/.test(target)) target += existsSync(target + '.ts') ? '.ts' : '.tsx'
     return load(target)
   }
   new Function('require', 'module', 'exports', code)(localRequire, module, module.exports)

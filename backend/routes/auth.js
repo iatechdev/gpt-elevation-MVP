@@ -11,7 +11,7 @@ const rateLimit = require('express-rate-limit');
 const User      = require('../User');
 const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
-const { validRegistrationPassword, policy } = require('../utils/registrationPassword');
+const { passwordProblems, policy } = require('../utils/registrationPassword');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -28,8 +28,9 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
   try {
     const { name, email, password } = req.body;
 
-    if (!validRegistrationPassword(password)) {
-      return res.status(400).json({ code: 'password_policy', error: `${policy.message.es} / ${policy.message.en}` });
+    const missing = passwordProblems(password);
+    if (missing.length) {
+      return res.status(400).json({ code: 'password_policy', missing, error: `${policy.message.es} / ${policy.message.en}` });
     }
 
     if (!name || !email || !password) {

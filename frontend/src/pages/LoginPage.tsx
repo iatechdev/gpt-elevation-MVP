@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
@@ -7,7 +7,8 @@ import { authFailureKey, isSessionInfo, registrationRequested, sessionDestinatio
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { interfaceCopy } from '../access/interfaceCopy'
 import '../styles/accessAdmin.css'
-import { validRegistrationPassword } from '../access/registrationPassword'
+import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
+import { PasswordRequirements } from '../access/PasswordRequirements'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -24,17 +25,22 @@ export function LoginPage() {
   const [email,         setEmail]         = useState('')
   const [password,      setPassword]      = useState('')
   const [showPassword,  setShowPassword]  = useState(false)
-  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean } | null>(null)
+  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean; missing?: PasswordProblem[] } | null>(null)
   const [isLocked,      setIsLocked]      = useState(false)
   const [submitting,    setSubmitting]    = useState(false)
+  const passwordInput = useRef<HTMLInputElement>(null)
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     if (submitting || isLocked) return
     setAuthMessage(null)
-    if (isRegistering && !validRegistrationPassword(password)) {
-      setAuthMessage({ key: 'landing.access.password_policy', success: false })
-      return
+    if (isRegistering) {
+      const missing = passwordProblems(password)
+      if (missing.length) {
+        setAuthMessage({ key: 'landing.access.password_policy', success: false, missing })
+        passwordInput.current?.focus()
+        return
+      }
     }
     setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
@@ -50,12 +56,14 @@ export function LoginPage() {
       })
       const data = await res.json() as {
         error?: string; locked?: boolean; token?: string
-        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string
+        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string; missing?: unknown
       }
 
       if (!res.ok) {
         setIsLocked(data.locked === true)
-        setAuthMessage({ key: authFailureKey(res.status, data, isRegistering), success: false })
+        const key = authFailureKey(res.status, data, isRegistering)
+        setAuthMessage({ key, success: false, missing: key === 'landing.access.password_policy' ? knownProblems(data.missing) : undefined })
+        if (key === 'landing.access.password_policy') passwordInput.current?.focus()
         return
       }
 
@@ -85,6 +93,11 @@ export function LoginPage() {
   }, [preferredLanguage, lang, setLang])
 
   if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? sessionDestination(entry.result.session)} replace />
+
+  // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
+  const policyError = authMessage?.key === 'landing.access.password_policy'
+  const missingList = authMessage?.missing?.map(id => text(`landing.access.pw.missing.${id}`)).join(', ')
+  const messageText = policyError && missingList ? text('landing.access.pw.missing').replace('{list}', missingList) : authMessage ? text(authMessage.key) : ''
 
   return (
     <div className="access-page elv-theme">
@@ -125,17 +138,21 @@ export function LoginPage() {
           <div>
             <label htmlFor="access-password">{text('landing.access.password')}</label>
             <div className="access-password">
-              <input id="access-password" className="elv-input" type={showPassword ? 'text' : 'password'}
+              <input id="access-password" ref={passwordInput} className="elv-input" type={showPassword ? 'text' : 'password'}
                 autoComplete={isRegistering ? 'new-password' : 'current-password'} value={password}
-                onChange={e => setPassword(e.target.value)} required />
+                aria-describedby={isRegistering ? 'pw-req' : undefined} aria-invalid={policyError ? true : undefined}
+                onChange={e => { setPassword(e.target.value); if (policyError) setAuthMessage(null) }} required />
               <button type="button" className="elv-btn elv-btn-ghost" aria-controls="access-password"
                 aria-label={text(showPassword ? 'landing.access.hide_password' : 'landing.access.show_password')}
                 onClick={() => setShowPassword(!showPassword)}>{showPassword ? copy.hide : copy.show}</button>
             </div>
           </div>
+          {isRegistering && (
+            <PasswordRequirements id="pw-req" password={password} showErrors={policyError} serverProblems={authMessage?.missing} text={text} />
+          )}
           {authMessage && <p role={authMessage.success ? 'status' : 'alert'}
             className={`access-notice access-notice--${authMessage.success ? 'success' : 'error'}`}>
-            {text(authMessage.key)}
+            {messageText}
           </p>}
           <button type="submit" className="elv-btn elv-btn-primary" disabled={isLocked || submitting}>
             {isLocked ? text('landing.access.locked') : submitting ? text('landing.access.submitting') : isRegistering ? text('landing.access.register') : t('btn_login')}
