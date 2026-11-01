@@ -1,5 +1,6 @@
 // ES-135: cliente de los derechos de datos de ES-23 (exportar y eliminar la cuenta). Solo la exportación personal: la profesional no está disponible en el servidor.
 import { request, SpaceError } from './api.ts'
+import { hiddenSections } from './dataCopy.ts'
 export type ExportPreview = { id: string; expiresAt: string; sections: { name: string; count: number | null }[] }
 export type DataErrorKey = 'unavailable' | 'rate' | 'expired' | 'concurrent' | 'review' | 'pending' | 'session' | 'error'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
@@ -7,7 +8,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{1
 // Nombres y conteos salen del propio archivo; no se muestra su contenido ni se inventan secciones.
 export function summarize(data: unknown): ExportPreview['sections'] {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return []
-  return Object.entries(data as Record<string, unknown>).map(([name, value]) => ({ name, count: Array.isArray(value) ? value.length : null }))
+  return Object.entries(data as Record<string, unknown>).filter(([name]) => !hiddenSections.includes(name)).map(([name, value]) => ({ name, count: Array.isArray(value) ? value.length : null }))
 }
 export async function prepareExport(token: string, locale: 'es' | 'en'): Promise<ExportPreview> {
   const response = await request(token, '/api/exports/preview', { method: 'POST', body: JSON.stringify({ type: 'personal', locale }) }) as { id?: unknown; expiresAt?: unknown; data?: unknown }

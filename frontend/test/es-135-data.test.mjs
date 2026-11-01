@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { SpaceError } from '../src/space/api.ts'
-import { dataCopy } from '../src/space/dataCopy.ts'
+import { dataCopy, sectionLabels } from '../src/space/dataCopy.ts'
 import { dataErrorKey, downloadExport, prepareExport, requestDeletion, summarize } from '../src/space/dataRights.ts'
 
 const read = (path) => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
@@ -86,4 +86,27 @@ test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está acces
   assert.match(page, /invalidateStoredSession\(token\)/); assert.match(page, /event\.key === 'Escape'/)
   assert.match(read('../src/App.tsx'), /path="\/app\/data" element=\{<DataPage \/>\}/)
   assert.match(read('../src/space/SpaceNav.tsx'), /to="\/app\/data"/)
+})
+
+// QA-135-01: al cerrar el paso 2 el botón de inicio se vuelve a montar; el foco se devuelve DESPUÉS del render (verificado también en navegador real, 390 y 1440 px, ES y EN).
+test('ES-135: el foco vuelve al botón de inicio después del render, no antes', () => {
+  const page = read('../src/space/DataPage.tsx')
+  assert.match(page, /const closePanel = \(\) => \{ refocus\.current = true; setConfirming\(false\); setAck\(false\) \}/)
+  assert.match(page, /else if \(refocus\.current\) \{ refocus\.current = false; startRef\.current\?\.focus\(\) \}/)
+  assert.doesNotMatch(page, /setAck\(false\); startRef\.current\?\.focus\(\)/)
+})
+
+test('ES-135: la lista «Qué incluye» usa etiquetas ES/EN, oculta metadatos y deja la clave desconocida tal cual', () => {
+  const sections = summarize({ schemaVersion: 1, type: 'personal', locale: 'es', profile: {}, chatTurns: [], diary: [1], nueva: [1, 2] })
+  assert.deepEqual(sections.map((s) => s.name), ['profile', 'chatTurns', 'diary', 'nueva'])
+  for (const lang of ['es', 'en']) for (const key of ['profile', 'chatTurns', 'diary', 'consents', 'evidence', 'moods']) assert.ok(sectionLabels[lang][key], `${lang}.${key}`)
+  assert.notEqual(sectionLabels.es.chatTurns, sectionLabels.en.chatTurns)
+  assert.deepEqual(Object.keys(sectionLabels.es).sort(), Object.keys(sectionLabels.en).sort())
+})
+
+test('ES-135: si el servidor responde que la función no está disponible, no se ofrece ninguna acción', () => {
+  const page = read('../src/space/DataPage.tsx')
+  assert.match(page, /if \(k === 'unavailable'\) \{ setOff\(true\)/)
+  assert.match(page, /disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => void prepare\(\)\}/)
+  assert.match(page, /disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => setConfirming\(true\)\}/)
 })
