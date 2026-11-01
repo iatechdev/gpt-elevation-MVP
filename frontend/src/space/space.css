@@ -37,7 +37,7 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .space-scope .elv-textarea { min-height: 180px; resize: vertical; }
 .space-scope .space-message { min-height: 96px; max-height: 14rem; field-sizing: content; }
 .space-private-text { white-space: pre-wrap; overflow-wrap: anywhere; }
-.space-error { color: var(--color-error); } .space-warning { color: var(--color-warning); }
+.space-error { color: var(--color-error); } .space-scope .space-danger { color: var(--color-error); border-color: var(--color-error); } .space-warning { color: var(--color-warning); }
 .space-note { font-size: 14px; } .space-context { max-height: 340px; overflow-y: auto; }
 .space-context label { display: flex; gap: 12px; align-items: center; min-height: 44px; }
 .space-context input { flex-shrink: 0; }
