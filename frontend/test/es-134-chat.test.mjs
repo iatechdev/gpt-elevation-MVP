@@ -1,0 +1,86 @@
+// ES-134: aviso de límite con alcance y fecha, avisos que siguen al idioma y envío sin confirmar que sobrevive a navegar y recargar.
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import { SpaceError, makeIntent } from '../src/space/api.ts'
+import { isAlert, noticeForError, noticeText } from '../src/space/notices.ts'
+import { clearPending, loadPending, savePending } from '../src/space/pending.ts'
+
+const read = (path) => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
+const RESET = '2026-11-01T00:00:00.000Z'
+const TOKEN = 'header.payload.signature-abcdefghijklmnopqrstuvwxyz0123'
+const memory = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) } }
+
+test('ES-134: con el cupo del grupo agotado el aviso dice «grupo» y la fecha de reinicio, en ES y EN', () => {
+  const notice = noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, 'cohort', RESET))
+  const es = noticeText(notice, 'es'); const en = noticeText(notice, 'en')
+  assert.match(es, /grupo/); assert.match(es, /1 de noviembre/); assert.match(es, /no se envió/)
+  assert.match(en, /group/); assert.match(en, /November 1|1 November/); assert.match(en, /not sent/)
+  assert.doesNotMatch(es, /tu cuenta\.\s/); assert.doesNotMatch(en, /your account’s AI limit/)
+  assert.equal(isAlert(notice), true)
+})
+
+test('ES-134: con el límite de la persona el aviso habla de su cuenta; sin fecha no inventa una; sin alcance no atribuye el límite', () => {
+  const person = noticeText(noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, 'person', RESET)), 'es')
+  assert.match(person, /tu cuenta/); assert.match(person, /1 de noviembre/)
+  const noDate = noticeText(noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, 'cohort', '')), 'en')
+  assert.match(noDate, /group/); assert.match(noDate, /Once it renews/); assert.doesNotMatch(noDate, /\d{4}/)
+  const badDate = noticeText({ k: 'budget', scope: 'person', resetsAt: 'no-es-fecha' }, 'es')
+  assert.match(badDate, /Cuando se renueve/)
+  assert.equal(noticeText(noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, '', RESET)), 'es'), noticeText({ k: 'budgetGeneric' }, 'es'))
+})
+
+test('ES-134: cada error HTTP produce un aviso en el idioma activo y cambiar de idioma después del error cambia el texto', () => {
+  const errors = [
+    new SpaceError(401), new SpaceError(429, 'ai_budget_exhausted', false, 'cohort', RESET), new SpaceError(429, 'ai_budget_exhausted', false, 'person', RESET),
+    new SpaceError(429, 'ai_budget_exhausted', false, 'cohort', ''), new SpaceError(503, 'ai_budget_not_configured'), new SpaceError(502),
+    new SpaceError(409, 'turn_in_progress'), new SpaceError(500, '', true), new TypeError('Failed to fetch'),
+  ]
+  for (const error of errors) {
+    const notice = noticeForError(error)
+    const es = noticeText(notice, 'es'); const en = noticeText(notice, 'en')
+    assert.ok(es && en && es !== en, JSON.stringify(notice))
+    assert.doesNotMatch(en, /No pudimos|Conservamos|Llegaste|Tu mensaje|El envío|se conserva/, en)
+    assert.doesNotMatch(es, /We could not|Your message|You reached|The message/, es)
+  }
+  for (const k of ['sendError', 'pending', 'loadError', 'contextChanged', 'confirmed', 'restored']) {
+    assert.notEqual(noticeText({ k }, 'es'), noticeText({ k }, 'en'), k)
+  }
+})
+
+test('ES-134: el aviso del chat se guarda como clave, no como texto ya traducido, y el de límite se anuncia como alerta', () => {
+  const hook = read('../src/space/usePersonalChat.ts')
+  assert.doesNotMatch(hook, /setNotice\(c\./); assert.doesNotMatch(hook, /fail\(error, c\./)
+  assert.match(read('../src/space/ChatControls.tsx'), /role=\{chat\.alert \? 'alert' : 'status'\}/)
+})
+
+test('ES-134: el envío sin confirmar se guarda, se restaura con el mismo requestId y se borra al confirmar', () => {
+  const store = memory()
+  const intent = makeIntent('Quiero hablar de mi semana', 'es', [4, 9], 'req-12345678', 'compass')
+  savePending(TOKEN, intent, store)
+  const restored = loadPending(TOKEN, store)
+  assert.deepEqual({ ...restored }, { ...intent })
+  assert.equal(restored.requestId, 'req-12345678')
+  clearPending(store)
+  assert.equal(loadPending(TOKEN, store), null)
+})
+
+test('ES-134: otra sesión o cuenta no recupera el envío ajeno, y el almacenamiento dañado se descarta', () => {
+  const store = memory()
+  savePending(TOKEN, makeIntent('Mensaje privado', 'en', [], 'req-abcdefgh'), store)
+  assert.equal(loadPending('otro.token.de-otra-cuenta-ZZZZZZZZZZZZZZZZZZZZZZ', store), null)
+  assert.equal(store.getItem('elevation_pending_chat'), null)
+  savePending(TOKEN, makeIntent('Mensaje privado', 'en', [], 'req-abcdefgh'), store)
+  assert.equal(loadPending('', store), null)
+  store.setItem('elevation_pending_chat', '{no es json')
+  assert.equal(loadPending(TOKEN, store), null)
+  store.setItem('elevation_pending_chat', JSON.stringify({ t: TOKEN.slice(-24), message: 'x', lang: 'es', requestId: '!!', ids: [] }))
+  assert.equal(loadPending(TOKEN, store), null)
+})
+
+test('ES-134: el chat restaura el pendiente al montar y lo persiste o borra según el estado', () => {
+  const hook = read('../src/space/usePersonalChat.ts')
+  assert.match(hook, /useState<Intent \| null>\(\(\) => \(token \? loadPending\(token\) : null\)\)/)
+  assert.match(hook, /savePending\(token, intent\); else clearPending\(\)/)
+  assert.match(hook, /\{ k: 'restored' \}/)
+})

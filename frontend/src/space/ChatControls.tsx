@@ -37,7 +37,7 @@ export function ChatInput({ chat }: { chat: PersonalChat }) {
       </details>
       <button type="button" className="elv-btn" onClick={closePicker}>{c.close}</button>
     </div>}
-    <p role="status" aria-live="polite" className="space-note chat-status">{chat.busy ? c.sending : chat.notice}</p>
+    <p role={chat.alert ? 'alert' : 'status'} aria-live={chat.alert ? 'assertive' : 'polite'} className="space-note chat-status">{chat.busy ? c.sending : chat.notice}</p>
     <p role="status" aria-live="polite" className="space-note chat-counter">{chat.input.length >= COUNTER_FROM ? (chat.input.length >= MAX_MESSAGE ? c.counterMax : c.counter.replace('{n}', chat.input.length.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US'))) : ''}</p>
     <div className="chat-composer-row">
       <label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={MAX_MESSAGE} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={3} /></label>
