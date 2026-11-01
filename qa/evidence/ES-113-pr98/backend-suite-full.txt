@@ -1,0 +1,3329 @@
+
+> backend@1.0.0 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# Subtest: ES-108: los workflows del repositorio son válidos (si falla, GitHub los rechazaría en 0 s sin correr pruebas)
+ok 1 - ES-108: los workflows del repositorio son válidos (si falla, GitHub los rechazaría en 0 s sin correr pruebas)
+  ---
+  duration_ms: 25.8186
+  type: 'test'
+  ...
+# Subtest: ES-108: el defecto de \#70 (nombre de paso con «: » sin comillas) se detecta con archivo y línea; entre comillas pasa
+ok 2 - ES-108: el defecto de \#70 (nombre de paso con «: » sin comillas) se detecta con archivo y línea; entre comillas pasa
+  ---
+  duration_ms: 3.3734
+  type: 'test'
+  ...
+# Subtest: ES-108: pasos mal formados, scripts inexistentes y documentos que no son workflows se señalan
+ok 3 - ES-108: pasos mal formados, scripts inexistentes y documentos que no son workflows se señalan
+  ---
+  duration_ms: 2.8282
+  type: 'test'
+  ...
+# Subtest: ES-108 (QA): el directorio se normaliza (./frontend, frontend/, ./frontend/) y un run numérico o booleano se señala
+ok 4 - ES-108 (QA): el directorio se normaliza (./frontend, frontend/, ./frontend/) y un run numérico o booleano se señala
+  ---
+  duration_ms: 6.08
+  type: 'test'
+  ...
+# Subtest: ES-108: el directorio de trabajo del job decide en qué package.json se buscan los scripts
+ok 5 - ES-108: el directorio de trabajo del job decide en qué package.json se buscan los scripts
+  ---
+  duration_ms: 3.6933
+  type: 'test'
+  ...
+# Subtest: QA-33-01: el tamaño deja siempre una conexión libre para las lecturas internas
+ok 6 - QA-33-01: el tamaño deja siempre una conexión libre para las lecturas internas
+  ---
+  duration_ms: 6.9582
+  type: 'test'
+  ...
+# Subtest: QA-33-01: nunca hay más operaciones a la vez que cupos y todas terminan
+ok 7 - QA-33-01: nunca hay más operaciones a la vez que cupos y todas terminan
+  ---
+  duration_ms: 112.0892
+  type: 'test'
+  ...
+# Subtest: QA-33-01: un fallo libera el cupo y la cola sigue
+ok 8 - QA-33-01: un fallo libera el cupo y la cola sigue
+  ---
+  duration_ms: 25.8292
+  type: 'test'
+  ...
+# Subtest: QA-33-01: es reentrante: una operación protegida dentro de otra no pide un segundo cupo
+ok 9 - QA-33-01: es reentrante: una operación protegida dentro de otra no pide un segundo cupo
+  ---
+  duration_ms: 77.1757
+  type: 'test'
+  ...
+# Subtest: QA-33-01: el orden de llegada se respeta
+ok 10 - QA-33-01: el orden de llegada se respeta
+  ---
+  duration_ms: 49.2882
+  type: 'test'
+  ...
+# Subtest: la semilla exige la bandera sintética y una clave del operador
+ok 11 - la semilla exige la bandera sintética y una clave del operador
+  ---
+  duration_ms: 8.0255
+  type: 'test'
+  ...
+# Subtest: staging corre con NODE_ENV=production: la protección es la bandera, no el entorno
+ok 12 - staging corre con NODE_ENV=production: la protección es la bandera, no el entorno
+  ---
+  duration_ms: 3.8238
+  type: 'test'
+  ...
+# Subtest: QA-53-01: el script comprueba la bandera y la clave ANTES de conectarse y de crear tablas
+ok 13 - QA-53-01: el script comprueba la bandera y la clave ANTES de conectarse y de crear tablas
+  ---
+  duration_ms: 2.9667
+  type: 'test'
+  ...
+# Subtest: el catálogo de habilidades de demostración es completo, publicable y está rotulado como sintético en ES y EN
+ok 14 - el catálogo de habilidades de demostración es completo, publicable y está rotulado como sintético en ES y EN
+  ---
+  duration_ms: 6.8286
+  type: 'test'
+  ...
+# Subtest: las evidencias y autoevaluaciones de demostración son sintéticas, apuntan a habilidades del catálogo y son idempotentes por requestId
+ok 15 - las evidencias y autoevaluaciones de demostración son sintéticas, apuntan a habilidades del catálogo y son idempotentes por requestId
+  ---
+  duration_ms: 1.9202
+  type: 'test'
+  ...
+# Subtest: la persona de demostración usa un correo inválido por construcción y ningún archivo de la semilla trae claves ni correos reales
+ok 16 - la persona de demostración usa un correo inválido por construcción y ningún archivo de la semilla trae claves ni correos reales
+  ---
+  duration_ms: 2.9528
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-101: la lista de pacientes y las alertas no incluyen a la persona con eliminación aceptada (aunque su cuenta siga activa) ni a la inactiva
+ok 17 - ES-101: la lista de pacientes y las alertas no incluyen a la persona con eliminación aceptada (aunque su cuenta siga activa) ni a la inactiva
+  ---
+  duration_ms: 1380.1986
+  type: 'test'
+  ...
+# Subtest: ES-101: historial, historia y resumen con IA responden 404 uniforme para la persona bloqueada y siguen funcionando para la accesible
+ok 18 - ES-101: historial, historia y resumen con IA responden 404 uniforme para la persona bloqueada y siguen funcionando para la accesible
+  ---
+  duration_ms: 354.7656
+  type: 'test'
+  ...
+# Subtest: ES-101: no se crean ni editan notas de una persona bloqueada, y las de la accesible sí
+ok 19 - ES-101: no se crean ni editan notas de una persona bloqueada, y las de la accesible sí
+  ---
+  duration_ms: 170.3038
+  type: 'test'
+  ...
+# Subtest: ES-101: las sesiones de una persona bloqueada no se listan, agendan, editan, ni se leen o escriben sus notas, ni se inician o terminan
+ok 20 - ES-101: las sesiones de una persona bloqueada no se listan, agendan, editan, ni se leen o escriben sus notas, ni se inician o terminan
+  ---
+  duration_ms: 219.8406
+  type: 'test'
+  ...
+# Subtest: ES-101: si se cancela la solicitud de eliminación (el registro desaparece) y la cuenta está activa, el acceso se restablece
+ok 21 - ES-101: si se cancela la solicitud de eliminación (el registro desaparece) y la cuenta está activa, el acceso se restablece
+  ---
+  duration_ms: 44.5411
+  type: 'test'
+  ...
+# Subtest: ES-101: si el registro de eliminaciones no está disponible nunca se concede acceso (500, sin datos) y no se registran datos personales
+ok 22 - ES-101: si el registro de eliminaciones no está disponible nunca se concede acceso (500, sin datos) y no se registran datos personales
+  ---
+  duration_ms: 36.043
+  type: 'test'
+  ...
+# Subtest: ES-101: blockedPatientIds — ids inválidos se ignoran, duplicados no cuentan, una cuenta cuyo active no es false no se bloquea y la unión es correcta
+ok 23 - ES-101: blockedPatientIds — ids inválidos se ignoran, duplicados no cuentan, una cuenta cuyo active no es false no se bloquea y la unión es correcta
+  ---
+  duration_ms: 2.2551
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-102: el resumen no recibe las notas del terapeuta (ni siquiera las lee) ni el nombre ni el correo; usa solo ánimo y valoraciones
+ok 24 - ES-102: el resumen no recibe las notas del terapeuta (ni siquiera las lee) ni el nombre ni el correo; usa solo ánimo y valoraciones
+  ---
+  duration_ms: 2187.2439
+  type: 'test'
+  ...
+# Subtest: ES-102: el resumen pasa por la puerta única de IA: registra el uso del terapeuta sin contenido y fija tiempo de espera y reintentos
+ok 25 - ES-102: el resumen pasa por la puerta única de IA: registra el uso del terapeuta sin contenido y fija tiempo de espera y reintentos
+  ---
+  duration_ms: 72.1025
+  type: 'test'
+  ...
+# Subtest: ES-102: con el presupuesto agotado responde 429 sin llamar al proveedor; sin configurar, 503; un fallo del proveedor, 502 reintentable y sin su texto
+ok 26 - ES-102: con el presupuesto agotado responde 429 sin llamar al proveedor; sin configurar, 503; un fallo del proveedor, 502 reintentable y sin su texto
+  ---
+  duration_ms: 96.0623
+  type: 'test'
+  ...
+# Subtest: ES-102: 30 resúmenes seguidos ya no se aceptan sin límite: el tope por persona los frena
+ok 27 - ES-102: 30 resúmenes seguidos ya no se aceptan sin límite: el tope por persona los frena
+  ---
+  duration_ms: 558.1131
+  type: 'test'
+  ...
+# ✅ Session 41 completed
+# ⚠️  Could not generate post-session recommendation: ai_budget_exhausted
+# ✅ Session 41 completed
+# Subtest: ES-102 (M5): la recomendación al cerrar la sesión pasa por el presupuesto; sin presupuesto el cierre sigue y no se llama al proveedor
+ok 28 - ES-102 (M5): la recomendación al cerrar la sesión pasa por el presupuesto; sin presupuesto el cierre sigue y no se llama al proveedor
+  ---
+  duration_ms: 87.6611
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-105 averageMood: promedio sobre los valores registrados, siempre entre 1 y 5, y null sin evidencia
+ok 29 - ES-105 averageMood: promedio sobre los valores registrados, siempre entre 1 y 5, y null sin evidencia
+  ---
+  duration_ms: 8.1572
+  type: 'test'
+  ...
+# Subtest: ES-105 (F03): una respuesta vacía o de solo espacios del proveedor responde 502 reintentable; una válida se recorta y sigue en 200
+ok 30 - ES-105 (F03): una respuesta vacía o de solo espacios del proveedor responde 502 reintentable; una válida se recorta y sigue en 200
+  ---
+  duration_ms: 2306.4871
+  type: 'test'
+  ...
+# Subtest: ES-105 (O1): el prompt del resumen, del matching y de las recomendaciones lleva el promedio sobre los valores registrados (3,8 y no 7,5)
+ok 31 - ES-105 (O1): el prompt del resumen, del matching y de las recomendaciones lleva el promedio sobre los valores registrados (3,8 y no 7,5)
+  ---
+  duration_ms: 168.6612
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-106: un override huérfano no se publica; uno vigente, los heredados y las claves no landing sí; blancos y no textos se ignoran
+ok 32 - ES-106: un override huérfano no se publica; uno vigente, los heredados y las claves no landing sí; blancos y no textos se ignoran
+  ---
+  duration_ms: 2390.7411
+  type: 'test'
+  ...
+# Subtest: ES-106: sin overrides responde el catálogo completo y ante un fallo de base de datos responde los defectos
+ok 33 - ES-106: sin overrides responde el catálogo completo y ante un fallo de base de datos responde los defectos
+  ---
+  duration_ms: 64.8188
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-109: un contexto vacío v2 es válido y todo lo nuevo acepta null o lista vacía
+ok 34 - ES-109: un contexto vacío v2 es válido y todo lo nuevo acepta null o lista vacía
+  ---
+  duration_ms: 8.5281
+  type: 'test'
+  ...
+# Subtest: ES-109: experiencia — límites de texto, años, periodo coherente y tope de 15
+ok 35 - ES-109: experiencia — límites de texto, años, periodo coherente y tope de 15
+  ---
+  duration_ms: 9.5601
+  type: 'test'
+  ...
+# Subtest: ES-109: educación y certificaciones — tipo cerrado, límites y tope de 15
+ok 36 - ES-109: educación y certificaciones — tipo cerrado, límites y tope de 15
+  ---
+  duration_ms: 7.0747
+  type: 'test'
+  ...
+# Subtest: ES-109: habilidades declaradas — sin repetidos (sin distinguir mayúsculas), límites y tope de 40
+ok 37 - ES-109: habilidades declaradas — sin repetidos (sin distinguir mayúsculas), límites y tope de 40
+  ---
+  duration_ms: 3.908
+  type: 'test'
+  ...
+# Subtest: ES-109: idiomas, sector y años totales — límites y null
+ok 38 - ES-109: idiomas, sector y años totales — límites y null
+  ---
+  duration_ms: 3.3116
+  type: 'test'
+  ...
+# Subtest: ES-109: los textos se normalizan (invisibles y controles fuera) y los nuevos campos no aceptan claves ajenas ni ausentes
+ok 39 - ES-109: los textos se normalizan (invisibles y controles fuera) y los nuevos campos no aceptan claves ajenas ni ausentes
+  ---
+  duration_ms: 0.8299
+  type: 'test'
+  ...
+# Subtest: ES-109: upgradeContext presenta un contexto v1 como v2 sin inventar nada
+ok 40 - ES-109: upgradeContext presenta un contexto v1 como v2 sin inventar nada
+  ---
+  duration_ms: 1.3874
+  type: 'test'
+  ...
+# Subtest: ES-109 ruta: GET presenta v1 como v2; PUT v1 responde 400 schema_outdated y no guarda; PUT v2 guarda y devuelve lo nuevo
+ok 41 - ES-109 ruta: GET presenta v1 como v2; PUT v1 responde 400 schema_outdated y no guarda; PUT v2 guarda y devuelve lo nuevo
+  ---
+  duration_ms: 2553.936
+  type: 'test'
+  ...
+# Subtest: ES-109 PDF: extrae el texto con acentos y estructura de líneas
+ok 42 - ES-109 PDF: extrae el texto con acentos y estructura de líneas
+  ---
+  duration_ms: 789.4156
+  type: 'test'
+  ...
+# Subtest: ES-109 PDF: varias páginas y el tope de 15 páginas
+ok 43 - ES-109 PDF: varias páginas y el tope de 15 páginas
+  ---
+  duration_ms: 172.1564
+  type: 'test'
+  ...
+# Subtest: ES-109 PDF: tamaño — vacío, 5 MB exactos, 5 MB + 1 byte, no PDF y firma que no está al inicio
+ok 44 - ES-109 PDF: tamaño — vacío, 5 MB exactos, 5 MB + 1 byte, no PDF y firma que no está al inicio
+  ---
+  duration_ms: 20.4616
+  type: 'test'
+  ...
+# Subtest: ES-109 PDF: escaneado (sin texto), con contraseña y corrupto dan un código distinto y sin contenido
+ok 45 - ES-109 PDF: escaneado (sin texto), con contraseña y corrupto dan un código distinto y sin contenido
+  ---
+  duration_ms: 76.609
+  type: 'test'
+  ...
+# Subtest: ES-109 PDF: contenido hostil dentro del PDF es texto inerte (no se ejecuta ni se interpreta) y el PDF no abre recursos
+ok 46 - ES-109 PDF: contenido hostil dentro del PDF es texto inerte (no se ejecuta ni se interpreta) y el PDF no abre recursos
+  ---
+  duration_ms: 35.9112
+  type: 'test'
+  ...
+# Subtest: ES-109 PDF: un PDF con acción JavaScript no la ejecuta
+ok 47 - ES-109 PDF: un PDF con acción JavaScript no la ejecuta
+  ---
+  duration_ms: 14.7069
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-109: análisis feliz — se guarda la versión cifrada, a la IA solo llega texto SIN contacto y se proponen solo campos del documento
+ok 48 - ES-109: análisis feliz — se guarda la versión cifrada, a la IA solo llega texto SIN contacto y se proponen solo campos del documento
+  ---
+  duration_ms: 3214.8294
+  type: 'test'
+  ...
+# Subtest: ES-109: sin autorización no se procesa nada; si la autorización se retira antes de guardar tampoco se guarda
+ok 49 - ES-109: sin autorización no se procesa nada; si la autorización se retira antes de guardar tampoco se guarda
+  ---
+  duration_ms: 143.0548
+  type: 'test'
+  ...
+# Subtest: ES-109: archivo inválido — vacío, no PDF, 5 MB exactos sí y 5 MB + 1 no; ninguno llama a la IA ni guarda
+ok 50 - ES-109: archivo inválido — vacío, no PDF, 5 MB exactos sí y 5 MB + 1 no; ninguno llama a la IA ni guarda
+  ---
+  duration_ms: 848.5777
+  type: 'test'
+  ...
+# Subtest: ES-109: PDF escaneado, con contraseña o corrupto responden un código claro, sin IA y sin guardar
+ok 51 - ES-109: PDF escaneado, con contraseña o corrupto responden un código claro, sin IA y sin guardar
+  ---
+  duration_ms: 192.6674
+  type: 'test'
+  ...
+# Subtest: ES-109: si la depuración falla (solo había contacto) NO se llama a la IA ni se guarda
+ok 52 - ES-109: si la depuración falla (solo había contacto) NO se llama a la IA ni se guarda
+  ---
+  duration_ms: 52.9847
+  type: 'test'
+  ...
+# Subtest: ES-109 (criterio 9): instrucciones dentro del PDF no cambian nada y lo inventado o el contacto que devolviera el modelo se descartan
+ok 53 - ES-109 (criterio 9): instrucciones dentro del PDF no cambian nada y lo inventado o el contacto que devolviera el modelo se descartan
+  ---
+  duration_ms: 107.548
+  type: 'test'
+  ...
+# Subtest: ES-109: fallos del proveedor — salida que no es JSON, vacía, caída, presupuesto agotado o sin configurar; la hoja de vida queda guardada y el error no lleva su texto
+ok 54 - ES-109: fallos del proveedor — salida que no es JSON, vacía, caída, presupuesto agotado o sin configurar; la hoja de vida queda guardada y el error no lleva su texto
+  ---
+  duration_ms: 264.446
+  type: 'test'
+  ...
+# Subtest: ES-109 (criterio 7): requestId obligatorio y único por intento; un solo análisis a la vez por persona; límite por hora
+ok 55 - ES-109 (criterio 7): requestId obligatorio y único por intento; un solo análisis a la vez por persona; límite por hora
+  ---
+  duration_ms: 611.829
+  type: 'test'
+  ...
+# Subtest: ES-109: tope de 5 versiones y el mismo archivo no se guarda dos veces
+ok 56 - ES-109: tope de 5 versiones y el mismo archivo no se guarda dos veces
+  ---
+  duration_ms: 214.8271
+  type: 'test'
+  ...
+# Subtest: ES-109 (criterio 6): histórico solo del dueño — lista, descarga idéntica, borrado real; IDs ajenos = inexistentes; otros roles 403
+ok 57 - ES-109 (criterio 6): histórico solo del dueño — lista, descarga idéntica, borrado real; IDs ajenos = inexistentes; otros roles 403
+  ---
+  duration_ms: 254.4831
+  type: 'test'
+  ...
+# Subtest: ES-109: límite por persona del análisis (por hora) sin afectar a otra persona
+ok 58 - ES-109: límite por persona del análisis (por hora) sin afectar a otra persona
+  ---
+  duration_ms: 122.2758
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: correos (varios formatos, ofuscados y partidos en líneas) se quitan; el resto se conserva
+ok 59 - ES-109 depuración: correos (varios formatos, ofuscados y partidos en líneas) se quitan; el resto se conserva
+  ---
+  duration_ms: 137.5805
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: teléfonos de varios países y formatos, en encabezado y pie de página
+ok 60 - ES-109 depuración: teléfonos de varios países y formatos, en encabezado y pie de página
+  ---
+  duration_ms: 20.9696
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: direcciones postales y códigos postales
+ok 61 - ES-109 depuración: direcciones postales y códigos postales
+  ---
+  duration_ms: 7.433
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: formatos que se escaparon en QA (ancho completo, calles en catalán y portugués, acortadores)
+ok 62 - ES-109 depuración: formatos que se escaparon en QA (ancho completo, calles en catalán y portugués, acortadores)
+  ---
+  duration_ms: 15.9926
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: edad, nacimiento, estado civil, nacionalidad, género y religión no llegan a la IA; años de experiencia y fechas de cargos sí se conservan
+ok 63 - ES-109 depuración: edad, nacimiento, estado civil, nacionalidad, género y religión no llegan a la IA; años de experiencia y fechas de cargos sí se conservan
+  ---
+  duration_ms: 11.7627
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración (QA-02 y QA-03): datos personales sin dos puntos se quitan y las líneas profesionales que empiezan con las mismas palabras se conservan
+ok 64 - ES-109 depuración (QA-02 y QA-03): datos personales sin dos puntos se quitan y las líneas profesionales que empiezan con las mismas palabras se conservan
+  ---
+  duration_ms: 15.1086
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: enlaces, dominios y perfiles en redes
+ok 65 - ES-109 depuración: enlaces, dominios y perfiles en redes
+  ---
+  duration_ms: 10.1183
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: documentos de identidad con etiqueta y por formato
+ok 66 - ES-109 depuración: documentos de identidad con etiqueta y por formato
+  ---
+  duration_ms: 10.7837
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: contacto repartido en encabezado y pie, todo junto
+ok 67 - ES-109 depuración: contacto repartido en encabezado y pie, todo junto
+  ---
+  duration_ms: 2.429
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: NO se confunden con contacto los años, rangos, versiones, porcentajes, cifras ni normas
+ok 68 - ES-109 depuración: NO se confunden con contacto los años, rangos, versiones, porcentajes, cifras ni normas
+  ---
+  duration_ms: 2.5448
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: falla CERRADO (no hay texto, es demasiado largo o no es texto) y el error no lleva el contenido
+ok 69 - ES-109 depuración: falla CERRADO (no hay texto, es demasiado largo o no es texto) y el error no lleva el contenido
+  ---
+  duration_ms: 36.4818
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: entradas hostiles (instrucciones al modelo, unicode raro, miles de separadores) terminan rápido y no revientan
+ok 70 - ES-109 depuración: entradas hostiles (instrucciones al modelo, unicode raro, miles de separadores) terminan rápido y no revientan
+  ---
+  duration_ms: 264.7628
+  type: 'test'
+  ...
+# Subtest: ES-109 depuración: no deja rastro en logs ni en el resultado del contenido quitado
+ok 71 - ES-109 depuración: no deja rastro en logs ni en el resultado del contenido quitado
+  ---
+  duration_ms: 4.308
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-110 lista: solo habilidades de una hoja de vida que existe, clasificadas con el catálogo vigente (ES/EN, sin acentos ni mayúsculas) y las demás «sin clasificar»
+ok 72 - ES-110 lista: solo habilidades de una hoja de vida que existe, clasificadas con el catálogo vigente (ES/EN, sin acentos ni mayúsculas) y las demás «sin clasificar»
+  ---
+  duration_ms: 1286.4085
+  type: 'test'
+  ...
+# Subtest: ES-110 elegir: ninguna por defecto; solo lo elegido pasa; borrador sin nivel, con origen y con el texto que la respalda; sin clasificar, sin cita y ajenas se saltan
+ok 73 - ES-110 elegir: ninguna por defecto; solo lo elegido pasa; borrador sin nivel, con origen y con el texto que la respalda; sin clasificar, sin cita y ajenas se saltan
+  ---
+  duration_ms: 394.9268
+  type: 'test'
+  ...
+# Subtest: ES-110 idempotencia: confirmar dos veces con el mismo requestId no duplica; otra confirmación de lo ya añadido se salta
+ok 74 - ES-110 idempotencia: confirmar dos veces con el mismo requestId no duplica; otra confirmación de lo ya añadido se salta
+  ---
+  duration_ms: 73.4792
+  type: 'test'
+  ...
+# Subtest: ES-110 entradas: forma exacta, requestId, tope y roles; sin sesión o con otro rol responde 403 y nunca crea
+ok 75 - ES-110 entradas: forma exacta, requestId, tope y roles; sin sesión o con otro rol responde 403 y nunca crea
+  ---
+  duration_ms: 245.6186
+  type: 'test'
+  ...
+# Subtest: ES-110 origen: se conserva al editar (el cliente no puede crearlo ni quitarlo), «para revisión» si la hoja de vida se borró y el chat solo informa que existe
+ok 76 - ES-110 origen: se conserva al editar (el cliente no puede crearlo ni quitarlo), «para revisión» si la hoja de vida se borró y el chat solo informa que existe
+  ---
+  duration_ms: 99.3478
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-116 los cinco ids de territorio son los del frontend y no se repiten
+ok 77 - ES-116 los cinco ids de territorio son los del frontend y no se repiten
+  ---
+  duration_ms: 5.8711
+  type: 'test'
+  ...
+# Subtest: ES-116 territorios: se guardan en el borrador, se copian a la nueva versión y salen en GET /api/skill-map
+ok 78 - ES-116 territorios: se guardan en el borrador, se copian a la nueva versión y salen en GET /api/skill-map
+  ---
+  duration_ms: 2017.1697
+  type: 'test'
+  ...
+# Subtest: ES-116 territorios: entradas inválidas dan 400 controlado y lo publicado sigue inmutable
+ok 79 - ES-116 territorios: entradas inválidas dan 400 controlado y lo publicado sigue inmutable
+  ---
+  duration_ms: 203.5847
+  type: 'test'
+  ...
+# Subtest: ES-116 cambiar los territorios NO cambia rubricHash ni marca «la rúbrica cambió» (catalogOutdated)
+ok 80 - ES-116 cambiar los territorios NO cambia rubricHash ni marca «la rúbrica cambió» (catalogOutdated)
+  ---
+  duration_ms: 111.7203
+  type: 'test'
+  ...
+# Subtest: ES-116 el borrador provisional trae territorios válidos para las 8 habilidades, rotulado «sin verificar»
+ok 81 - ES-116 el borrador provisional trae territorios válidos para las 8 habilidades, rotulado «sin verificar»
+  ---
+  duration_ms: 3.8515
+  type: 'test'
+  ...
+# Subtest: ES-116 (QA H-88-02) la clave «new» está reservada: el servidor la rechaza y el resto de claves sigue igual
+ok 82 - ES-116 (QA H-88-02) la clave «new» está reservada: el servidor la rechaza y el resto de claves sigue igual
+  ---
+  duration_ms: 77.5323
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-118 el borrador técnico trae 8 habilidades de dominio con clave válida, nombres ES/EN y territorio «ing»
+ok 83 - ES-118 el borrador técnico trae 8 habilidades de dominio con clave válida, nombres ES/EN y territorio «ing»
+  ---
+  duration_ms: 8.3195
+  type: 'test'
+  ...
+# Subtest: ES-118 NO se inventa ni se convierte ningún criterio de nivel: el seed no lleva rúbrica y las anclas originales (1, 3, 5) quedan solo como referencia
+ok 84 - ES-118 NO se inventa ni se convierte ningún criterio de nivel: el seed no lleva rúbrica y las anclas originales (1, 3, 5) quedan solo como referencia
+  ---
+  duration_ms: 9.4877
+  type: 'test'
+  ...
+# Subtest: ES-118 las claves técnicas no chocan con las 8 transversales del catálogo base
+ok 85 - ES-118 las claves técnicas no chocan con las 8 transversales del catálogo base
+  ---
+  duration_ms: 0.5198
+  type: 'test'
+  ...
+# Subtest: ES-118 como borrador son incompletas («falta» todo lo de la rúbrica), no se pueden publicar y no pisan el catálogo vigente
+ok 86 - ES-118 como borrador son incompletas («falta» todo lo de la rúbrica), no se pueden publicar y no pisan el catálogo vigente
+  ---
+  duration_ms: 1903.4855
+  type: 'test'
+  ...
+# Subtest: ES-118 la guía de referencia lista las 8 claves y dice qué falta; el script nunca publica y se niega ante claves existentes
+ok 87 - ES-118 la guía de referencia lista las 8 claves y dice qué falta; el script nunca publica y se niega ante claves existentes
+  ---
+  duration_ms: 2.6095
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-121: propuesta desde chat y diario con citas reales; no guarda nada y solo lee lo propio, sin respuestas del asistente ni ánimo
+ok 88 - ES-121: propuesta desde chat y diario con citas reales; no guarda nada y solo lee lo propio, sin respuestas del asistente ni ánimo
+  ---
+  duration_ms: 2474.8086
+  type: 'test'
+  ...
+# Subtest: ES-121 consentimiento por fuente: sin él no se lee ni se llama a la IA; analizar chat no autoriza el diario; revocar se respeta
+ok 89 - ES-121 consentimiento por fuente: sin él no se lee ni se llama a la IA; analizar chat no autoriza el diario; revocar se respeta
+  ---
+  duration_ms: 196.0622
+  type: 'test'
+  ...
+# Subtest: ES-121 entradas inválidas, orígenes ajenos, borrados y de riesgo: 400/404/422 controlados y sin llamar a la IA
+ok 90 - ES-121 entradas inválidas, orígenes ajenos, borrados y de riesgo: 400/404/422 controlados y sin llamar a la IA
+  ---
+  duration_ms: 388.7284
+  type: 'test'
+  ...
+# Subtest: ES-121 sin ids se leen los más recientes propios (hasta 20 turnos y 10 entradas) y nada ajeno
+ok 91 - ES-121 sin ids se leen los más recientes propios (hasta 20 turnos y 10 entradas) y nada ajeno
+  ---
+  duration_ms: 44.2125
+  type: 'test'
+  ...
+# Subtest: ES-121 salida del modelo: inválida, con citas, categorías o habilidades inventadas, números, porcentajes o términos clínicos se descarta sin 500
+ok 92 - ES-121 salida del modelo: inválida, con citas, categorías o habilidades inventadas, números, porcentajes o términos clínicos se descarta sin 500
+  ---
+  duration_ms: 400.7639
+  type: 'test'
+  ...
+# Subtest: ES-121 topes: 3 por categoría y 12 en total; repetidos se descartan
+ok 93 - ES-121 topes: 3 por categoría y 12 en total; repetidos se descartan
+  ---
+  duration_ms: 52.5125
+  type: 'test'
+  ...
+# Error del proveedor de IA (propuestas): unknown
+# Subtest: ES-121 inyección y proveedor: el texto de la persona va dentro del delimitador; presupuesto y fallos devuelven 429/502 sin 500
+ok 94 - ES-121 inyección y proveedor: el texto de la persona va dentro del delimitador; presupuesto y fallos devuelven 429/502 sin 500
+  ---
+  duration_ms: 66.7562
+  type: 'test'
+  ...
+# Subtest: ES-121 autorizar un insight: usa el flujo de ES-25, la habilidad es metadato privado y el origen solo lo ve su titular
+ok 95 - ES-121 autorizar un insight: usa el flujo de ES-25, la habilidad es metadato privado y el origen solo lo ve su titular
+  ---
+  duration_ms: 149.3935
+  type: 'test'
+  ...
+# Subtest: ES-121 «En conversación»: habilidad con insight autorizado vigente y sin nivel; no es nivel ni evidencia; se va al revocar o al tener nivel
+ok 96 - ES-121 «En conversación»: habilidad con insight autorizado vigente y sin nivel; no es nivel ni evidencia; se va al revocar o al tener nivel
+  ---
+  duration_ms: 233.6132
+  type: 'test'
+  ...
+# Subtest: ES-121 frontera en el código: la propuesta no escribe, el motor no lee habilidades ni orígenes y no hay secretos ni contenido en registros
+ok 97 - ES-121 frontera en el código: la propuesta no escribe, el motor no lee habilidades ni orígenes y no hay secretos ni contenido en registros
+  ---
+  duration_ms: 3.9236
+  type: 'test'
+  ...
+# Subtest: ES-121 (QA ES121-QA-02) un insight nunca promete empleo, contratación, ofertas, salario ni éxito; sí puede decir qué valora la persona
+ok 98 - ES-121 (QA ES121-QA-02) un insight nunca promete empleo, contratación, ofertas, salario ni éxito; sí puede decir qué valora la persona
+  ---
+  duration_ms: 120.0796
+  type: 'test'
+  ...
+# Subtest: ES-121 (QA ES121-QA-01) las lecturas usan la transacción de withConsent: una sola conexión por propuesta
+ok 99 - ES-121 (QA ES121-QA-01) las lecturas usan la transacción de withConsent: una sola conexión por propuesta
+  ---
+  duration_ms: 1.9246
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-121 hoja de vida: pide su propia autorización; ni analizar el chat, el diario ni leer la hoja de vida con IA la reemplazan
+ok 100 - ES-121 hoja de vida: pide su propia autorización; ni analizar el chat, el diario ni leer la hoja de vida con IA la reemplazan
+  ---
+  duration_ms: 3511.995
+  type: 'test'
+  ...
+# Subtest: ES-121 hoja de vida: a la IA llega el texto SIN contacto; la cita se comprueba contra ese texto y el origen es la versión
+ok 101 - ES-121 hoja de vida: a la IA llega el texto SIN contacto; la cita se comprueba contra ese texto y el origen es la versión
+  ---
+  duration_ms: 115.5896
+  type: 'test'
+  ...
+# Subtest: ES-121 hoja de vida: solo la propia; id ajeno o inexistente = 404; sin hoja de vida o ilegible = 422 sin llamar a la IA
+ok 102 - ES-121 hoja de vida: solo la propia; id ajeno o inexistente = 404; sin hoja de vida o ilegible = 422 sin llamar a la IA
+  ---
+  duration_ms: 458.8199
+  type: 'test'
+  ...
+# Subtest: ES-121 hoja de vida: un insight con origen de hoja de vida se autoriza con el flujo de ES-25; solo el titular ve el origen; borrarla lo marca para revisión
+ok 103 - ES-121 hoja de vida: un insight con origen de hoja de vida se autoriza con el flujo de ES-25; solo el titular ve el origen; borrarla lo marca para revisión
+  ---
+  duration_ms: 142.157
+  type: 'test'
+  ...
+# Subtest: ES-121 hoja de vida (QA ES121R-QA-01): las extracciones de PDF van de una en una y todas las propuestas simultáneas terminan
+ok 104 - ES-121 hoja de vida (QA ES121R-QA-01): las extracciones de PDF van de una en una y todas las propuestas simultáneas terminan
+  ---
+  duration_ms: 520.1768
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-125: el idioma de la interfaz llega al prompt; sin dato o con un valor inválido se usa español
+ok 105 - ES-125: el idioma de la interfaz llega al prompt; sin dato o con un valor inválido se usa español
+  ---
+  duration_ms: 2685.4561
+  type: 'test'
+  ...
+# Subtest: ES-125: el prompt es no clínico, no usa voseo y no promete ni diagnostica; el promedio sigue sobre los valores registrados
+ok 106 - ES-125: el prompt es no clínico, no usa voseo y no promete ni diagnostica; el promedio sigue sobre los valores registrados
+  ---
+  duration_ms: 50.9709
+  type: 'test'
+  ...
+# Subtest: ES-125: tope de tokens con margen y esfuerzo bajo, igual que el chat
+ok 107 - ES-125: tope de tokens con margen y esfuerzo bajo, igual que el chat
+  ---
+  duration_ms: 23.9587
+  type: 'test'
+  ...
+# Subtest: ES-125: una salida cortada por max_tokens se rechaza (502 reintentable) y no guarda nada, aunque el texto parcial parezca válido
+ok 108 - ES-125: una salida cortada por max_tokens se rechaza (502 reintentable) y no guarda nada, aunque el texto parcial parezca válido
+  ---
+  duration_ms: 21.4638
+  type: 'test'
+  ...
+# Subtest: ES-125: una salida completa (end_turn) se guarda y se devuelve igual que antes
+ok 109 - ES-125: una salida completa (end_turn) se guarda y se devuelve igual que antes
+  ---
+  duration_ms: 25.3978
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-128: mínimo 8 caracteres con mayúscula, minúscula, número y carácter especial; ids de requisitos estables
+ok 110 - ES-128: mínimo 8 caracteres con mayúscula, minúscula, número y carácter especial; ids de requisitos estables
+  ---
+  duration_ms: 15.2074
+  type: 'test'
+  ...
+# Subtest: ES-128: el espacio no cuenta como carácter especial; letras, números y símbolos Unicode se clasifican igual en toda la política
+ok 111 - ES-128: el espacio no cuenta como carácter especial; letras, números y símbolos Unicode se clasifican igual en toda la política
+  ---
+  duration_ms: 0.7202
+  type: 'test'
+  ...
+# Subtest: ES-128: máximo 72 bytes UTF-8 sin truncar ni normalizar, con entradas extremas sin lanzar
+ok 112 - ES-128: máximo 72 bytes UTF-8 sin truncar ni normalizar, con entradas extremas sin lanzar
+  ---
+  duration_ms: 2.4026
+  type: 'test'
+  ...
+# Subtest: ES-128: registro débil no consulta ni escribe cuentas; registro válido conserva hash y rol, e inactiva no se reactiva
+ok 113 - ES-128: registro débil no consulta ni escribe cuentas; registro válido conserva hash y rol, e inactiva no se reactiva
+  ---
+  duration_ms: 3205.1355
+  type: 'test'
+  ...
+# Subtest: ES-128: correo ya registrado con contraseña débil devuelve password_policy (no revela si la cuenta existe) y con contraseña válida conserva el error de duplicado
+ok 114 - ES-128: correo ya registrado con contraseña débil devuelve password_policy (no revela si la cuenta existe) y con contraseña válida conserva el error de duplicado
+  ---
+  duration_ms: 50.6196
+  type: 'test'
+  ...
+# Subtest: ES-128: entradas extremas responden 400 controlado, nunca 5xx
+ok 115 - ES-128: entradas extremas responden 400 controlado, nunca 5xx
+  ---
+  duration_ms: 118.0226
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-13: solo el valor «compass» es un modo válido; cualquier otro se rechaza en vez de ignorarse
+ok 116 - ES-13: solo el valor «compass» es un modo válido; cualquier otro se rechaza en vez de ignorarse
+  ---
+  duration_ms: 2383.5634
+  type: 'test'
+  ...
+# Subtest: ES-13: sin «mode» el chat normal no cambia (prompt de Elevation o del terapeuta, sin reglas de la Brújula)
+ok 117 - ES-13: sin «mode» el chat normal no cambia (prompt de Elevation o del terapeuta, sin reglas de la Brújula)
+  ---
+  duration_ms: 94.5457
+  type: 'test'
+  ...
+# Subtest: ES-13: en modo compass el orden es base → manifiesto → reglas → límites, y no se usa el prompt del terapeuta
+ok 118 - ES-13: en modo compass el orden es base → manifiesto → reglas → límites, y no se usa el prompt del terapeuta
+  ---
+  duration_ms: 31.5767
+  type: 'test'
+  ...
+# Subtest: ES-13: sin texto en el Vault se usa el borrador ES o EN según el idioma, y las reglas fijas van siempre
+ok 119 - ES-13: sin texto en el Vault se usa el borrador ES o EN según el idioma, y las reglas fijas van siempre
+  ---
+  duration_ms: 1.2444
+  type: 'test'
+  ...
+# Subtest: ES-13: las reglas fijas cubren los criterios del ticket (una pregunta, sin diagnóstico ni promesas, sin datos inventados, omitir sin presión)
+ok 120 - ES-13: las reglas fijas cubren los criterios del ticket (una pregunta, sin diagnóstico ni promesas, sin datos inventados, omitir sin presión)
+  ---
+  duration_ms: 0.8851
+  type: 'test'
+  ...
+# Subtest: ES-13: riesgo alto y pausa explícita conservan su prioridad en modo compass y no llaman al proveedor
+ok 121 - ES-13: riesgo alto y pausa explícita conservan su prioridad en modo compass y no llaman al proveedor
+  ---
+  duration_ms: 83.6085
+  type: 'test'
+  ...
+# Subtest: ES-13: el modo no se guarda; el mismo requestId se reproduce sin volver a llamar al proveedor y otro dueño no lo recupera
+ok 122 - ES-13: el modo no se guarda; el mismo requestId se reproduce sin volver a llamar al proveedor y otro dueño no lo recupera
+  ---
+  duration_ms: 85.9333
+  type: 'test'
+  ...
+# Subtest: ES-13: una entrada de diario ajena sigue rechazada con 404 en modo compass y no llama al proveedor
+ok 123 - ES-13: una entrada de diario ajena sigue rechazada con 404 en modo compass y no llama al proveedor
+  ---
+  duration_ms: 28.3189
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# ❌ Error listando consentimientos: User.findByPk is not a function
+# Subtest: ES-137: una lectura autenticada de datos privados no se guarda en caché y varía por Authorization
+ok 124 - ES-137: una lectura autenticada de datos privados no se guarda en caché y varía por Authorization
+  ---
+  duration_ms: 2300.9154
+  type: 'test'
+  ...
+# Subtest: ES-137: también el rechazo sin sesión y las rutas de autenticación llevan no-store
+ok 125 - ES-137: también el rechazo sin sesión y las rutas de autenticación llevan no-store
+  ---
+  duration_ms: 128.1631
+  type: 'test'
+  ...
+# Subtest: ES-137: los recursos públicos de lectura (precios y contenido de la landing; los planes fijan el suyo) no reciben no-store del middleware global
+ok 126 - ES-137: los recursos públicos de lectura (precios y contenido de la landing; los planes fijan el suyo) no reciben no-store del middleware global
+  ---
+  duration_ms: 41.2468
+  type: 'test'
+  ...
+# No se pudo leer el plan propio.
+# Subtest: ES-137: GET /api/pricing/all y /api/manifest/manifest (con sesión) llevan no-store y Vary: Authorization
+ok 127 - ES-137: GET /api/pricing/all y /api/manifest/manifest (con sesión) llevan no-store y Vary: Authorization
+  ---
+  duration_ms: 176.2821
+  type: 'test'
+  ...
+# Subtest: ES-137: las lecturas públicas exactas (con o sin barra final) siguen sin no-store del middleware
+ok 128 - ES-137: las lecturas públicas exactas (con o sin barra final) siguen sin no-store del middleware
+  ---
+  duration_ms: 135.5585
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-14: empty, draft, confirmed, edit and language clearing use server metadata
+ok 129 - ES-14: empty, draft, confirmed, edit and language clearing use server metadata
+  ---
+  duration_ms: 2606.8552
+  type: 'test'
+  ...
+# Subtest: ES-14 A/B: owner from JWT, body/query/path foreign IDs rejected, no admin bypass
+ok 130 - ES-14 A/B: owner from JWT, body/query/path foreign IDs rejected, no admin bypass
+  ---
+  duration_ms: 309.4696
+  type: 'test'
+  ...
+# Subtest: ES-14: inactive, missing and changed-role principals denied on reads and writes
+ok 131 - ES-14: inactive, missing and changed-role principals denied on reads and writes
+  ---
+  duration_ms: 79.9096
+  type: 'test'
+  ...
+# Subtest: ES-14: strict contract rejects malformed data before persistence
+ok 132 - ES-14: strict contract rejects malformed data before persistence
+  ---
+  duration_ms: 278.8103
+  type: 'test'
+  ...
+# Subtest: ES-14: stale versions return 409, preserve the current record and never echo content
+ok 133 - ES-14: stale versions return 409, preserve the current record and never echo content
+  ---
+  duration_ms: 55.7265
+  type: 'test'
+  ...
+# Subtest: ES-14: database and commit failures return 503 without private data or false success
+ok 134 - ES-14: database and commit failures return 503 without private data or false success
+  ---
+  duration_ms: 86.7201
+  type: 'test'
+  ...
+# Subtest: ES-141: los assets con hash llevan Cache-Control public, max-age=31536000, immutable
+ok 135 - ES-141: los assets con hash llevan Cache-Control public, max-age=31536000, immutable
+  ---
+  duration_ms: 350.6316
+  type: 'test'
+  ...
+# Subtest: ES-141: index.html (en / y por el comodín de la SPA) y los archivos sin hash no reciben caché larga
+ok 136 - ES-141: index.html (en / y por el comodín de la SPA) y los archivos sin hash no reciben caché larga
+  ---
+  duration_ms: 179.5647
+  type: 'test'
+  ...
+# Subtest: ES-140: GET /assets/<inexistente>.js y .css devuelven 404 y no text/html
+ok 137 - ES-140: GET /assets/<inexistente>.js y .css devuelven 404 y no text/html
+  ---
+  duration_ms: 104.6812
+  type: 'test'
+  ...
+# Subtest: ES-140: las rutas de la SPA siguen respondiendo index.html con 200
+ok 138 - ES-140: las rutas de la SPA siguen respondiendo index.html con 200
+  ---
+  duration_ms: 215.5873
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-16: bounded explicit pause phrases; quotes, questions and negations do not become commands
+ok 139 - ES-16: bounded explicit pause phrases; quotes, questions and negations do not become commands
+  ---
+  duration_ms: 4.4249
+  type: 'test'
+  ...
+# Subtest: ES-16: ES/EN pause confirms one pair and replays the same own request without provider calls
+ok 140 - ES-16: ES/EN pause confirms one pair and replays the same own request without provider calls
+  ---
+  duration_ms: 2578.8043
+  type: 'test'
+  ...
+# Subtest: ES-16: explicit locale wins over pause phrase language
+ok 141 - ES-16: explicit locale wins over pause phrase language
+  ---
+  duration_ms: 102.5613
+  type: 'test'
+  ...
+# Subtest: ES-16: high/medium safety behavior has priority and ordinary negation still uses the provider
+ok 142 - ES-16: high/medium safety behavior has priority and ordinary negation still uses the provider
+  ---
+  duration_ms: 145.8974
+  type: 'test'
+  ...
+# Subtest: ES-16: A/B/admin cannot recover another owner pause; alien diary context still rejects
+ok 143 - ES-16: A/B/admin cannot recover another owner pause; alien diary context still rejects
+  ---
+  duration_ms: 78.833
+  type: 'test'
+  ...
+# ❌ Error del proveedor de IA: Error
+# Subtest: ES-16: provider failure keeps the valid conversation and responds in the requested language
+ok 144 - ES-16: provider failure keeps the valid conversation and responds in the requested language
+  ---
+  duration_ms: 26.7371
+  type: 'test'
+  ...
+# Subtest: ES-16: database failure logs no query parameters or private error text and localizes 500
+ok 145 - ES-16: database failure logs no query parameters or private error text and localizes 500
+  ---
+  duration_ms: 18.8582
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: A/B lectura: A solo ve lo suyo en mensajes, ánimo, recomendaciones y solicitud de plan
+ok 146 - A/B lectura: A solo ve lo suyo en mensajes, ánimo, recomendaciones y solicitud de plan
+  ---
+  duration_ms: 2576.8434
+  type: 'test'
+  ...
+# Subtest: A/B escritura: cambiar IDs o enviar el propietario en el cuerpo no toca datos ajenos
+ok 147 - A/B escritura: cambiar IDs o enviar el propietario en el cuerpo no toca datos ajenos
+  ---
+  duration_ms: 207.7814
+  type: 'test'
+  ...
+# Subtest: A/B sesiones y terapeutas: unirse, finalizar o leer pacientes ajenos devuelve 404
+ok 148 - A/B sesiones y terapeutas: unirse, finalizar o leer pacientes ajenos devuelve 404
+  ---
+  duration_ms: 118.3073
+  type: 'test'
+  ...
+# Subtest: El administrador no recibe texto de conversaciones y las respuestas no incluyen contraseñas
+ok 149 - El administrador no recibe texto de conversaciones y las respuestas no incluyen contraseñas
+  ---
+  duration_ms: 60.2933
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-18-01: solo el rol terapeuta entra a /api/therapist/*; la validación documental conserva sus roles
+ok 150 - QA-18-01: solo el rol terapeuta entra a /api/therapist/*; la validación documental conserva sus roles
+  ---
+  duration_ms: 2829.5639
+  type: 'test'
+  ...
+# Subtest: QA-18-02: promedios de ánimo y valoración solo con suficientes entradas (lista y estadísticas)
+ok 151 - QA-18-02: promedios de ánimo y valoración solo con suficientes entradas (lista y estadísticas)
+  ---
+  duration_ms: 89.7418
+  type: 'test'
+  ...
+# Subtest: QA-18-05: un login inmediatamente posterior a logout-all vale; los tokens anteriores, aunque sean del mismo segundo, no
+ok 152 - QA-18-05: un login inmediatamente posterior a logout-all vale; los tokens anteriores, aunque sean del mismo segundo, no
+  ---
+  duration_ms: 296.9315
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-18: el login emite tokens con jti único y vencimiento de 8 h
+ok 153 - ES-18: el login emite tokens con jti único y vencimiento de 8 h
+  ---
+  duration_ms: 2944.2236
+  type: 'test'
+  ...
+# Subtest: ES-18: logout revoca solo el token actual y las demás sesiones siguen vivas
+ok 154 - ES-18: logout revoca solo el token actual y las demás sesiones siguen vivas
+  ---
+  duration_ms: 126.7619
+  type: 'test'
+  ...
+# Subtest: ES-18: logout-all corta todas las sesiones anteriores y permite una nueva
+ok 155 - ES-18: logout-all corta todas las sesiones anteriores y permite una nueva
+  ---
+  duration_ms: 147.1741
+  type: 'test'
+  ...
+# Subtest: ES-18: expirado, alterado, otra firma, sin jti y sin cabecera se rechazan
+ok 156 - ES-18: expirado, alterado, otra firma, sin jti y sin cabecera se rechazan
+  ---
+  duration_ms: 63.2216
+  type: 'test'
+  ...
+# No se pudo verificar la sesión.
+# Subtest: ES-18: si no se puede comprobar la sesión se rechaza (cierra en falla)
+ok 157 - ES-18: si no se puede comprobar la sesión se rechaza (cierra en falla)
+  ---
+  duration_ms: 20.9062
+  type: 'test'
+  ...
+# Restablecimiento administrativo de contraseña ejecutado.
+# Borrado administrativo ejecutado.
+# Subtest: ES-18: un administrador que cambia rol/estado, borra o restablece la contraseña corta las sesiones de esa cuenta
+ok 158 - ES-18: un administrador que cambia rol/estado, borra o restablece la contraseña corta las sesiones de esa cuenta
+  ---
+  duration_ms: 503.9324
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-19: catálogo cerrado de diez propósitos (ES-96 añade therapist_sharing, ES-109 resume_ai_reading y ES-121 insights_chat, insights_diary e insights_resume), todos sin decidir y solo visibles para su titular
+ok 159 - ES-19: catálogo cerrado de diez propósitos (ES-96 añade therapist_sharing, ES-109 resume_ai_reading y ES-121 insights_chat, insights_diary e insights_resume), todos sin decidir y solo visibles para su titular
+  ---
+  duration_ms: 1314.5293
+  type: 'test'
+  ...
+# Subtest: ES-19: decisiones contradictorias e idempotencia; el historial conserva cada cambio
+ok 160 - ES-19: decisiones contradictorias e idempotencia; el historial conserva cada cambio
+  ---
+  duration_ms: 295.5083
+  type: 'test'
+  ...
+# Subtest: ES-19: rechazar investigación o notificaciones no bloquea lo necesario ni otras funciones
+ok 161 - ES-19: rechazar investigación o notificaciones no bloquea lo necesario ni otras funciones
+  ---
+  duration_ms: 108.8699
+  type: 'test'
+  ...
+# Subtest: ES-19: el uso necesario no se revoca desde la API
+ok 162 - ES-19: el uso necesario no se revoca desde la API
+  ---
+  duration_ms: 33.9733
+  type: 'test'
+  ...
+# Subtest: ES-19: entradas inválidas y propósitos inventados se rechazan sin escribir
+ok 163 - ES-19: entradas inválidas y propósitos inventados se rechazan sin escribir
+  ---
+  duration_ms: 197.554
+  type: 'test'
+  ...
+# Subtest: ES-19: aislamiento A/B; el titular sale del token, no del cuerpo ni de la ruta, y nadie más puede cambiarlo
+ok 164 - ES-19: aislamiento A/B; el titular sale del token, no del cuerpo ni de la ruta, y nadie más puede cambiarlo
+  ---
+  duration_ms: 89.3247
+  type: 'test'
+  ...
+# No se pudo verificar el consentimiento.
+# Subtest: ES-19: se verifica al acceder; permisos previos con versión antigua y errores no abren acceso
+ok 165 - ES-19: se verifica al acceder; permisos previos con versión antigua y errores no abren acceso
+  ---
+  duration_ms: 96.2849
+  type: 'test'
+  ...
+# Subtest: ES-19: una revocación durante un acceso espera a que termine y desde ese momento ya no hay acceso
+ok 166 - ES-19: una revocación durante un acceso espera a que termine y desde ese momento ya no hay acceso
+  ---
+  duration_ms: 184.9276
+  type: 'test'
+  ...
+# Subtest: ES-19: withConsent no ejecuta la operación sin consentimiento y libera el bloqueo ante errores
+ok 167 - ES-19: withConsent no ejecuta la operación sin consentimiento y libera el bloqueo ante errores
+  ---
+  duration_ms: 42.6154
+  type: 'test'
+  ...
+# Subtest: ES-19: decisiones simultáneas contradictorias terminan en un estado coherente con su historial
+ok 168 - ES-19: decisiones simultáneas contradictorias terminan en un estado coherente con su historial
+  ---
+  duration_ms: 77.8381
+  type: 'test'
+  ...
+# Subtest: ES-19: dos primeras decisiones simultáneas: el choque de unicidad se reintenta una vez
+ok 169 - ES-19: dos primeras decisiones simultáneas: el choque de unicidad se reintenta una vez
+  ---
+  duration_ms: 18.7538
+  type: 'test'
+  ...
+# Subtest: ES-19: si falla la base no se filtra el error y el estado no cambia
+ok 170 - ES-19: si falla la base no se filtra el error y el estado no cambia
+  ---
+  duration_ms: 42.3465
+  type: 'test'
+  ...
+# ❌ Error listando consentimientos: detalle interno de base
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: INV-04: el historial enviado a Claude son los mensajes más recientes, en orden y empezando por el usuario
+ok 171 - INV-04: el historial enviado a Claude son los mensajes más recientes, en orden y empezando por el usuario
+  ---
+  duration_ms: 2898.9237
+  type: 'test'
+  ...
+# ❌ Error del proveedor de IA: Error
+# ❌ Error del proveedor de IA: Error
+# Subtest: ES-20: el turno se confirma completo y solo si Claude responde; sin requestId el contrato sigue igual
+ok 172 - ES-20: el turno se confirma completo y solo si Claude responde; sin requestId el contrato sigue igual
+  ---
+  duration_ms: 101.843
+  type: 'test'
+  ...
+# Subtest: ES-20: repetir un requestId no duplica mensajes ni vuelve a llamar al proveedor
+ok 173 - ES-20: repetir un requestId no duplica mensajes ni vuelve a llamar al proveedor
+  ---
+  duration_ms: 82.5173
+  type: 'test'
+  ...
+# Subtest: ES-20: el mismo requestId con otro mensaje se rechaza sin tocar nada
+ok 174 - ES-20: el mismo requestId con otro mensaje se rechaza sin tocar nada
+  ---
+  duration_ms: 47.4739
+  type: 'test'
+  ...
+# Subtest: ES-20: dos envíos simultáneos del mismo requestId: uno procede y el otro espera con 409
+ok 175 - ES-20: dos envíos simultáneos del mismo requestId: uno procede y el otro espera con 409
+  ---
+  duration_ms: 191.2404
+  type: 'test'
+  ...
+# ❌ Error del proveedor de IA: Error
+# Subtest: ES-20: tras un fallo del proveedor el mismo requestId se puede reintentar sin duplicar
+ok 176 - ES-20: tras un fallo del proveedor el mismo requestId se puede reintentar sin duplicar
+  ---
+  duration_ms: 94.4908
+  type: 'test'
+  ...
+# Subtest: ES-20: un turno pendiente reciente da 409; uno vencido se puede reclamar
+ok 177 - ES-20: un turno pendiente reciente da 409; uno vencido se puede reclamar
+  ---
+  duration_ms: 38.7338
+  type: 'test'
+  ...
+# Subtest: ES-20 A/B: el requestId es por persona y el estado del turno solo lo ve su dueño
+ok 178 - ES-20 A/B: el requestId es por persona y el estado del turno solo lo ve su dueño
+  ---
+  duration_ms: 81.8058
+  type: 'test'
+  ...
+# Subtest: ES-20: requestId y contextEntryIds inválidos se rechazan antes de cualquier efecto
+ok 179 - ES-20: requestId y contextEntryIds inválidos se rechazan antes de cualquier efecto
+  ---
+  duration_ms: 154.6155
+  type: 'test'
+  ...
+# Subtest: ES-20: si falla la confirmación la escritura es atómica y el turno se puede reintentar
+ok 180 - ES-20: si falla la confirmación la escritura es atómica y el turno se puede reintentar
+  ---
+  duration_ms: 36.6872
+  type: 'test'
+  ...
+# ❌ Error de comunicación: Error
+# ⚠️ Error desencriptando: Invalid initialization vector
+# Subtest: ES-20 cifrado v2: ida y vuelta, IV distinto por mensaje y formato esperado
+ok 181 - ES-20 cifrado v2: ida y vuelta, IV distinto por mensaje y formato esperado
+  ---
+  duration_ms: 28.1336
+  type: 'test'
+  ...
+# Subtest: ES-20 cifrado v2: un dato alterado o truncado falla en vez de devolver texto cifrado
+ok 182 - ES-20 cifrado v2: un dato alterado o truncado falla en vez de devolver texto cifrado
+  ---
+  duration_ms: 4.6481
+  type: 'test'
+  ...
+# Subtest: ES-20 cifrado v2: otra clave no descifra (falla) y el mensaje de error no filtra datos
+ok 183 - ES-20 cifrado v2: otra clave no descifra (falla) y el mensaje de error no filtra datos
+  ---
+  duration_ms: 737.8044
+  type: 'test'
+  ...
+# Subtest: ES-20 cifrado: los datos heredados (CBC y texto plano) siguen siendo legibles
+ok 184 - ES-20 cifrado: los datos heredados (CBC y texto plano) siguen siendo legibles
+  ---
+  duration_ms: 3.8881
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-20 diario: crear, listar, leer, editar y borrar entradas fechadas propias
+ok 185 - ES-20 diario: crear, listar, leer, editar y borrar entradas fechadas propias
+  ---
+  duration_ms: 2918.0294
+  type: 'test'
+  ...
+# Subtest: ES-20 diario: borrar vacía el contenido y registra la invalidación sin contenido privado
+ok 186 - ES-20 diario: borrar vacía el contenido y registra la invalidación sin contenido privado
+  ---
+  duration_ms: 60.0072
+  type: 'test'
+  ...
+# Subtest: ES-20 diario A/B: nadie lee, edita ni borra entradas ajenas y los roles distintos solo ven las suyas
+ok 187 - ES-20 diario A/B: nadie lee, edita ni borra entradas ajenas y los roles distintos solo ven las suyas
+  ---
+  duration_ms: 310.8656
+  type: 'test'
+  ...
+# Subtest: ES-20 diario: entradas inválidas se rechazan sin escribir
+ok 188 - ES-20 diario: entradas inválidas se rechazan sin escribir
+  ---
+  duration_ms: 347.6669
+  type: 'test'
+  ...
+# ❌ Error editando entrada de diario: base caída
+# ❌ Error borrando entrada de diario: base caída
+# Subtest: ES-20 diario: la edición y la invalidación son atómicas
+ok 189 - ES-20 diario: la edición y la invalidación son atómicas
+  ---
+  duration_ms: 111.0977
+  type: 'test'
+  ...
+# Subtest: ES-20 contexto: el diario solo entra al prompt si la persona elige la entrada
+ok 190 - ES-20 contexto: el diario solo entra al prompt si la persona elige la entrada
+  ---
+  duration_ms: 306.7199
+  type: 'test'
+  ...
+# Subtest: ES-20 diario: ninguna otra ruta lee el diario (administrador, terapeuta, facilitador, puente)
+ok 191 - ES-20 diario: ninguna otra ruta lee el diario (administrador, terapeuta, facilitador, puente)
+  ---
+  duration_ms: 57.0388
+  type: 'test'
+  ...
+# Subtest: ES-21 detector: reconoce escenarios graves en ES y EN, con acentos, mayúsculas y caracteres invisibles
+ok 192 - ES-21 detector: reconoce escenarios graves en ES y EN, con acentos, mayúsculas y caracteres invisibles
+  ---
+  duration_ms: 17.218
+  type: 'test'
+  ...
+# Subtest: ES-21 detector: malestar en ES y EN, y los mensajes cotidianos de carrera no activan nada
+ok 193 - ES-21 detector: malestar en ES y EN, y los mensajes cotidianos de carrera no activan nada
+  ---
+  duration_ms: 34.6256
+  type: 'test'
+  ...
+# Subtest: ES-21 detector: límites conocidos (sobre-activa y no detecta lo indirecto); cero casos no es garantía
+ok 194 - ES-21 detector: límites conocidos (sobre-activa y no detecta lo indirecto); cero casos no es garantía
+  ---
+  duration_ms: 1.8507
+  type: 'test'
+  ...
+# Subtest: ES-21 recursos: el registro sale vacío y solo se publica lo verificado, vigente y con fuente, para un país declarado
+ok 195 - ES-21 recursos: el registro sale vacío y solo se publica lo verificado, vigente y con fuente, para un país declarado
+  ---
+  duration_ms: 6.2692
+  type: 'test'
+  ...
+# Subtest: ES-21 respuesta de seguridad: no diagnostica, no prescribe y no promete (ES y EN)
+ok 196 - ES-21 respuesta de seguridad: no diagnostica, no prescribe y no promete (ES y EN)
+  ---
+  duration_ms: 1.9085
+  type: 'test'
+  ...
+# Subtest: ES-21 chat: un escenario grave interrumpe el flujo, no llama a Claude y se guarda como cualquier mensaje
+ok 197 - ES-21 chat: un escenario grave interrumpe el flujo, no llama a Claude y se guarda como cualquier mensaje
+  ---
+  duration_ms: 2645.2162
+  type: 'test'
+  ...
+# Subtest: ES-21 chat: malestar mantiene el flujo ordinario y añade una nota de apoyo sin teléfonos sin verificar
+ok 198 - ES-21 chat: malestar mantiene el flujo ordinario y añade una nota de apoyo sin teléfonos sin verificar
+  ---
+  duration_ms: 66.9587
+  type: 'test'
+  ...
+# Subtest: ES-21 chat: el país declarado muestra recursos verificados; el idioma nunca los infiere
+ok 199 - ES-21 chat: el país declarado muestra recursos verificados; el idioma nunca los infiere
+  ---
+  duration_ms: 264.4541
+  type: 'test'
+  ...
+# Subtest: ES-21 chat: country y lang mal formados se ignoran y nunca impiden la respuesta de seguridad (QA-21-01)
+ok 200 - ES-21 chat: country y lang mal formados se ignoran y nunca impiden la respuesta de seguridad (QA-21-01)
+  ---
+  duration_ms: 280.136
+  type: 'test'
+  ...
+# Subtest: ES-21 chat: el mensaje vacío o demasiado largo se sigue rechazando antes de cualquier efecto
+ok 201 - ES-21 chat: el mensaje vacío o demasiado largo se sigue rechazando antes de cualquier efecto
+  ---
+  duration_ms: 59.6386
+  type: 'test'
+  ...
+# Subtest: ES-21 prompt: normaliza el mensaje, delimita el diario con un límite aleatorio y mantiene los límites de acompañamiento al final
+ok 202 - ES-21 prompt: normaliza el mensaje, delimita el diario con un límite aleatorio y mantiene los límites de acompañamiento al final
+  ---
+  duration_ms: 53.9712
+  type: 'test'
+  ...
+# Subtest: ES-21 prompt: el historial se normaliza, se acota por mensaje y descarta lo vacío
+ok 203 - ES-21 prompt: el historial se normaliza, se acota por mensaje y descarta lo vacío
+  ---
+  duration_ms: 21.7494
+  type: 'test'
+  ...
+# Subtest: ES-21 utilidades: normalización, tope y delimitación
+ok 204 - ES-21 utilidades: normalización, tope y delimitación
+  ---
+  duration_ms: 0.8785
+  type: 'test'
+  ...
+# Subtest: ES-21 frontera privada: el detector solo lo usa el chat y ninguna tabla guarda indicadores de riesgo
+ok 205 - ES-21 frontera privada: el detector solo lo usa el chat y ninguna tabla guarda indicadores de riesgo
+  ---
+  duration_ms: 61.8544
+  type: 'test'
+  ...
+# Subtest: ES-92 (QA-13-01): frases directas de autolesión con «me» antes del verbo y «do not want to live» se detectan en ES y EN
+ok 206 - ES-92 (QA-13-01): frases directas de autolesión con «me» antes del verbo y «do not want to live» se detectan en ES y EN
+  ---
+  duration_ms: 1.032
+  type: 'test'
+  ...
+# Subtest: ES-92: lo cotidiano que se parece NO activa (cortar el pelo, hacer daño a otros, lugares donde vivir, daño técnico)
+ok 207 - ES-92: lo cotidiano que se parece NO activa (cortar el pelo, hacer daño a otros, lugares donde vivir, daño técnico)
+  ---
+  duration_ms: 0.8611
+  type: 'test'
+  ...
+# Subtest: ES-92: los niveles ya existentes no cambian (muerte y suicidio siguen ALTO; hacerme daño y hurt myself siguen MEDIO)
+ok 208 - ES-92: los niveles ya existentes no cambian (muerte y suicidio siguen ALTO; hacerme daño y hurt myself siguen MEDIO)
+  ---
+  duration_ms: 0.5413
+  type: 'test'
+  ...
+# Subtest: ES-92 (QA-92-01): «me quiero matar», «me voy a quitar la vida» e «I wish I was dead» son ALTO, como «matarme» y «quitarme la vida»
+ok 209 - ES-92 (QA-92-01): «me quiero matar», «me voy a quitar la vida» e «I wish I was dead» son ALTO, como «matarme» y «quitarme la vida»
+  ---
+  duration_ms: 0.6604
+  type: 'test'
+  ...
+# Subtest: ES-92 (QA-92-02): un «no» justo antes niega la frase («no me quiero hacer daño»); sin «no» sigue activando
+ok 210 - ES-92 (QA-92-02): un «no» justo antes niega la frase («no me quiero hacer daño»); sin «no» sigue activando
+  ---
+  duration_ms: 0.5765
+  type: 'test'
+  ...
+# Subtest: ES-92 (QA-92-03): «I do not want to live on this planet anymore» vuelve a ser ALTO; «live in/at/near» sigue siendo un lugar
+ok 211 - ES-92 (QA-92-03): «I do not want to live on this planet anymore» vuelve a ser ALTO; «live in/at/near» sigue siendo un lugar
+  ---
+  duration_ms: 0.5565
+  type: 'test'
+  ...
+# Subtest: ES-92: falsos positivos aceptados a propósito (se prefiere sobreactivar ante autolesión posible)
+ok 212 - ES-92: falsos positivos aceptados a propósito (se prefiere sobreactivar ante autolesión posible)
+  ---
+  duration_ms: 0.3566
+  type: 'test'
+  ...
+# Subtest: ES43-QA-02: la ideación implícita en ES y EN es ALTO (frases del informe de QA y variantes cercanas)
+ok 213 - ES43-QA-02: la ideación implícita en ES y EN es ALTO (frases del informe de QA y variantes cercanas)
+  ---
+  duration_ms: 0.8001
+  type: 'test'
+  ...
+# Subtest: ES43-QA-02: lo cotidiano parecido NO sube a ALTO (mejor desaparecer de las redes, mejor si no llego tarde) y lo ya clasificado no cambia
+ok 214 - ES43-QA-02: lo cotidiano parecido NO sube a ALTO (mejor desaparecer de las redes, mejor si no llego tarde) y lo ya clasificado no cambia
+  ---
+  duration_ms: 1.1849
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-22 configuración: sin tope por persona no hay presupuesto; los límites duros acotan tiempo y reintentos
+ok 215 - ES-22 configuración: sin tope por persona no hay presupuesto; los límites duros acotan tiempo y reintentos
+  ---
+  duration_ms: 7.7725
+  type: 'test'
+  ...
+# Subtest: ES-22 periodos: día, semana (lunes UTC) y mes, con su próximo reinicio
+ok 216 - ES-22 periodos: día, semana (lunes UTC) y mes, con su próximo reinicio
+  ---
+  duration_ms: 3.3718
+  type: 'test'
+  ...
+# Subtest: ES-22 estimación: conservadora, acotada por max_tokens y tolerante a entradas raras
+ok 217 - ES-22 estimación: conservadora, acotada por max_tokens y tolerante a entradas raras
+  ---
+  duration_ms: 0.8394
+  type: 'test'
+  ...
+# Subtest: ES-22 reserva: se ajusta al uso real, se libera si falla y nunca supera el tope de la persona ni de la cohorte
+ok 218 - ES-22 reserva: se ajusta al uso real, se libera si falla y nunca supera el tope de la persona ni de la cohorte
+  ---
+  duration_ms: 12.2223
+  type: 'test'
+  ...
+# Subtest: ES-22 reserva: sin configurar, entradas inválidas o una llamada mayor que el tope se rechazan sin escribir
+ok 219 - ES-22 reserva: sin configurar, entradas inválidas o una llamada mayor que el tope se rechazan sin escribir
+  ---
+  duration_ms: 4.394
+  type: 'test'
+  ...
+# Subtest: ES-22 reserva: al cambiar el periodo el contador vuelve a empezar y no se amplía solo
+ok 220 - ES-22 reserva: al cambiar el periodo el contador vuelve a empezar y no se amplía solo
+  ---
+  duration_ms: 4.0303
+  type: 'test'
+  ...
+# Subtest: ES-22 concurrencia: reservas simultáneas nunca superan el tope y la suma cuadra
+ok 221 - ES-22 concurrencia: reservas simultáneas nunca superan el tope y la suma cuadra
+  ---
+  duration_ms: 21.7322
+  type: 'test'
+  ...
+# Subtest: ES-22 reserva: dos primeras reservas simultáneas de una persona nueva se reintentan sin perder ninguna
+ok 222 - ES-22 reserva: dos primeras reservas simultáneas de una persona nueva se reintentan sin perder ninguna
+  ---
+  duration_ms: 6.3898
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: la reserva se ajusta al uso real y se registra la llamada sin contenido
+ok 223 - ES-22 chat: la reserva se ajusta al uso real y se registra la llamada sin contenido
+  ---
+  duration_ms: 1667.2908
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: al agotar el límite no se llama al proveedor, se conserva todo y se puede retomar sin ampliar solo
+ok 224 - ES-22 chat: al agotar el límite no se llama al proveedor, se conserva todo y se puede retomar sin ampliar solo
+  ---
+  duration_ms: 130.6795
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: el tope de la cohorte bloquea a otra persona y las respuestas de seguridad no consumen presupuesto
+ok 225 - ES-22 chat: el tope de la cohorte bloquea a otra persona y las respuestas de seguridad no consumen presupuesto
+  ---
+  duration_ms: 78.5846
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: sin presupuesto configurado se rechaza con un mensaje claro y sin llamar al proveedor
+ok 226 - ES-22 chat: sin presupuesto configurado se rechaza con un mensaje claro y sin llamar al proveedor
+  ---
+  duration_ms: 67.7708
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: un fallo del proveedor libera la reserva, se clasifica sin guardar texto del proveedor y se puede reintentar
+ok 227 - ES-22 chat: un fallo del proveedor libera la reserva, se clasifica sin guardar texto del proveedor y se puede reintentar
+  ---
+  duration_ms: 105.9498
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: si el proveedor no informa el uso, la reserva completa se da por consumida; los límites de espera se pasan acotados
+ok 228 - ES-22 chat: si el proveedor no informa el uso, la reserva completa se da por consumida; los límites de espera se pasan acotados
+  ---
+  duration_ms: 24.986
+  type: 'test'
+  ...
+# Subtest: ES-22 chat: los secretos ficticios se enmascaran antes de salir al proveedor y no llegan a los registros ni al uso
+ok 229 - ES-22 chat: los secretos ficticios se enmascaran antes de salir al proveedor y no llegan a los registros ni al uso
+  ---
+  duration_ms: 44.13
+  type: 'test'
+  ...
+# Subtest: ES-22 costo: el archivo de precios sale vacío; solo hay costo con un precio completo, verificado y vigente
+ok 230 - ES-22 costo: el archivo de precios sale vacío; solo hay costo con un precio completo, verificado y vigente
+  ---
+  duration_ms: 1.6584
+  type: 'test'
+  ...
+# Subtest: ES-22 costo: se registra en la llamada solo cuando existe un precio verificado
+ok 231 - ES-22 costo: se registra en la llamada solo cuando existe un precio verificado
+  ---
+  duration_ms: 22.1655
+  type: 'test'
+  ...
+# ❌ Error del proveedor de IA: Error
+# Subtest: ES-22 uso: cada persona ve solo su presupuesto; el resumen agregado es solo de superadmin y no trae contenido ni identificadores
+ok 232 - ES-22 uso: cada persona ve solo su presupuesto; el resumen agregado es solo de superadmin y no trae contenido ni identificadores
+  ---
+  duration_ms: 103.2638
+  type: 'test'
+  ...
+# Subtest: ES-22 esquema: una salida inválida del modelo en recomendaciones se rechaza sin guardar nada
+ok 233 - ES-22 esquema: una salida inválida del modelo en recomendaciones se rechaza sin guardar nada
+  ---
+  duration_ms: 130.1595
+  type: 'test'
+  ...
+# ❌ Error del proveedor de IA (matching): provider_unavailable
+# ❌ Error del proveedor de IA (recomendaciones): provider_unavailable
+# Subtest: ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin configurar y 502 si falla el proveedor
+ok 234 - ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin configurar y 502 si falla el proveedor
+  ---
+  duration_ms: 199.5089
+  type: 'test'
+  ...
+# Subtest: ES-43 chat: se registra stop_reason y output_tokens; solo códigos cortos, nunca texto libre
+ok 235 - ES-43 chat: se registra stop_reason y output_tokens; solo códigos cortos, nunca texto libre
+  ---
+  duration_ms: 56.2345
+  type: 'test'
+  ...
+# Subtest: ES-43 chat: pide 2000 tokens como máximo; con stop_reason max_tokens el turno se completa, se registra y la reserva sigue acotada
+ok 236 - ES-43 chat: pide 2000 tokens como máximo; con stop_reason max_tokens el turno se completa, se registra y la reserva sigue acotada
+  ---
+  duration_ms: 20.2258
+  type: 'test'
+  ...
+# [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+# Subtest: QA-22-02: un error de tiempo de espera del SDK se clasifica como timeout
+ok 237 - QA-22-02: un error de tiempo de espera del SDK se clasifica como timeout
+  ---
+  duration_ms: 3.5748
+  type: 'test'
+  ...
+# Subtest: QA-22-04: se enmascara una llave privada PEM, completa o truncada
+ok 238 - QA-22-04: se enmascara una llave privada PEM, completa o truncada
+  ---
+  duration_ms: 3.1547
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-23: preview and download deliver exactly the owner’s allowed data, in ES/EN, without credentials or deleted entries
+ok 239 - ES-23: preview and download deliver exactly the owner’s allowed data, in ES/EN, without credentials or deleted entries
+  ---
+  duration_ms: 1892.4473
+  type: 'test'
+  ...
+# Subtest: ES-23: guessed IDs and elevated roles cannot download another owner’s preview
+ok 240 - ES-23: guessed IDs and elevated roles cannot download another owner’s preview
+  ---
+  duration_ms: 115.9296
+  type: 'test'
+  ...
+# Subtest: ES-23: source edits and expired previews prevent delivery; professional dependency stays closed
+ok 241 - ES-23: source edits and expired previews prevent delivery; professional dependency stays closed
+  ---
+  duration_ms: 162.4582
+  type: 'test'
+  ...
+# Subtest: ES-23: invalid selections/owner injection never write; feature is off by default
+ok 242 - ES-23: invalid selections/owner injection never write; feature is off by default
+  ---
+  duration_ms: 143.8341
+  type: 'test'
+  ...
+# Subtest: ES-23: accepted deletion is atomic, blocks sessions, new login and sharing; authenticated retry returns same receipt
+ok 243 - ES-23: accepted deletion is atomic, blocks sessions, new login and sharing; authenticated retry returns same receipt
+  ---
+  duration_ms: 242.4965
+  type: 'test'
+  ...
+# Subtest: ES-23: failed acceptance rolls back deactivation, consent changes and receipt; retry succeeds
+ok 244 - ES-23: failed acceptance rolls back deactivation, consent changes and receipt; retry succeeds
+  ---
+  duration_ms: 64.3684
+  type: 'test'
+  ...
+# Subtest: ES-23: legacy human records fail closed; no misleading partial export or deletion
+ok 245 - ES-23: legacy human records fail closed; no misleading partial export or deletion
+  ---
+  duration_ms: 39.3926
+  type: 'test'
+  ...
+# Subtest: ES-23: purge rollback, retry and repeat preserve B and never claim providers/backups are deleted
+ok 246 - ES-23: purge rollback, retry and repeat preserve B and never claim providers/backups are deleted
+  ---
+  duration_ms: 68.1655
+  type: 'test'
+  ...
+# No se pudo verificar la sesión.
+# Subtest: ES-23: ledger read failures deny session and download rather than leak data
+ok 247 - ES-23: ledger read failures deny session and download rather than leak data
+  ---
+  duration_ms: 68.4904
+  type: 'test'
+  ...
+# Subtest: ES-23: oversized archives are rejected in full without creating a preview
+ok 248 - ES-23: oversized archives are rejected in full without creating a preview
+  ---
+  duration_ms: 406.7983
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-23-03): 40 vistas previas simultáneas del mismo dueño dejan una sola fila y reutilizan la vigente; una nueva reemplaza a la anterior
+ok 249 - ES-23 (QA-23-03): 40 vistas previas simultáneas del mismo dueño dejan una sola fila y reutilizan la vigente; una nueva reemplaza a la anterior
+  ---
+  duration_ms: 638.2147
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-23-03): límite de frecuencia por persona en la vista previa y la descarga; otra persona no se ve afectada
+ok 250 - ES-23 (QA-23-03): límite de frecuencia por persona en la vista previa y la descarga; otra persona no se ve afectada
+  ---
+  duration_ms: 151.0165
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-23-04): un fallo de serialización al descargar se reintenta una vez; si la cuenta ya tiene un borrado aceptado, responde 403 y no un 503 engañoso
+ok 251 - ES-23 (QA-23-04): un fallo de serialización al descargar se reintenta una vez; si la cuenta ya tiene un borrado aceptado, responde 403 y no un 503 engañoso
+  ---
+  duration_ms: 72.6119
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-H1): el uso de IA de la persona se exporta sin contenido y se purga; el contador de cohorte y los datos de B no se tocan
+ok 252 - ES-23 (QA-H1): el uso de IA de la persona se exporta sin contenido y se purga; el contador de cohorte y los datos de B no se tocan
+  ---
+  duration_ms: 45.5646
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-23-04): si el fallo de concurrencia ocurre DESPUÉS de entregar los bytes, no se reintenta (no se envía el archivo dos veces)
+ok 253 - ES-23 (QA-23-04): si el fallo de concurrencia ocurre DESPUÉS de entregar los bytes, no se reintenta (no se envía el archivo dos veces)
+  ---
+  duration_ms: 34.7667
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-25-03): el puente profesional (ES-25) y su auditoría se exportan descifrados al dueño, no se mezclan con B y se purgan, también tras una restauración (--replay)
+ok 254 - ES-23 (QA-25-03): el puente profesional (ES-25) y su auditoría se exportan descifrados al dueño, no se mezclan con B y se purgan, también tras una restauración (--replay)
+  ---
+  duration_ms: 228.7575
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-25-03): la evidencia profesional (ES-27) se exporta descifrada al dueño sin las borradas, no se mezcla con B y se purga, también tras una restauración (--replay)
+ok 255 - ES-23 (QA-25-03): la evidencia profesional (ES-27) se exporta descifrada al dueño sin las borradas, no se mezcla con B y se purga, también tras una restauración (--replay)
+  ---
+  duration_ms: 51.3707
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-14-01): el contexto del participante (ES-14) se exporta descifrado al dueño, no se mezcla con B y se purga, también tras una restauración (--replay)
+ok 256 - ES-23 (QA-14-01): el contexto del participante (ES-14) se exporta descifrado al dueño, no se mezcla con B y se purga, también tras una restauración (--replay)
+  ---
+  duration_ms: 48.3832
+  type: 'test'
+  ...
+# Subtest: ES-23 (QA-25-03): las evaluaciones del Skill Map (ES-29) se exportan con la justificación descifrada al dueño, no se mezclan con B y se purgan, también tras una restauración (--replay)
+ok 257 - ES-23 (QA-25-03): las evaluaciones del Skill Map (ES-29) se exportan con la justificación descifrada al dueño, no se mezclan con B y se purgan, también tras una restauración (--replay)
+  ---
+  duration_ms: 57.0119
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-25 camino directo: vista previa exacta, confirmación sin consentimiento y lectura del motor solo con clave y texto
+ok 258 - ES-25 camino directo: vista previa exacta, confirmación sin consentimiento y lectura del motor solo con clave y texto
+  ---
+  duration_ms: 1617.0638
+  type: 'test'
+  ...
+# Subtest: ES-25 camino privado: exige consentimiento, no copia el contenido del origen y el motor nunca ve diario, chat ni IDs de origen
+ok 259 - ES-25 camino privado: exige consentimiento, no copia el contenido del origen y el motor nunca ve diario, chat ni IDs de origen
+  ---
+  duration_ms: 125.9683
+  type: 'test'
+  ...
+# Subtest: ES-25 token: campos alterados, vencidos o de otra persona no se pueden confirmar; requestId es idempotente
+ok 260 - ES-25 token: campos alterados, vencidos o de otra persona no se pueden confirmar; requestId es idempotente
+  ---
+  duration_ms: 138.0805
+  type: 'test'
+  ...
+# Subtest: ES-25 entradas inválidas y textos no compartibles: 400/422 controlados, sin guardar y sin revelar el motivo
+ok 261 - ES-25 entradas inválidas y textos no compartibles: 400/422 controlados, sin guardar y sin revelar el motivo
+  ---
+  duration_ms: 209.1503
+  type: 'test'
+  ...
+# Subtest: ES-25 aislamiento: orígenes ajenos, otros roles y consulta solo del dueño
+ok 262 - ES-25 aislamiento: orígenes ajenos, otros roles y consulta solo del dueño
+  ---
+  duration_ms: 167.0678
+  type: 'test'
+  ...
+# Subtest: ES-25 revocar el consentimiento invalida la versión privada, emite el evento y conserva la versión directa
+ok 263 - ES-25 revocar el consentimiento invalida la versión privada, emite el evento y conserva la versión directa
+  ---
+  duration_ms: 132.0109
+  type: 'test'
+  ...
+# Subtest: ES-25 revocación entre la vista previa y la confirmación, y entre la confirmación y la lectura
+ok 264 - ES-25 revocación entre la vista previa y la confirmación, y entre la confirmación y la lectura
+  ---
+  duration_ms: 230.3131
+  type: 'test'
+  ...
+# Subtest: ES-25 versiones: confirmar de nuevo reemplaza la activa, invalida lo derivado y quitar un campo es una versión nueva
+ok 265 - ES-25 versiones: confirmar de nuevo reemplaza la activa, invalida lo derivado y quitar un campo es una versión nueva
+  ---
+  duration_ms: 63.1645
+  type: 'test'
+  ...
+# Subtest: ES-25 un cambio o borrado del origen privado marca para revisión pero NO actualiza el contexto
+ok 266 - ES-25 un cambio o borrado del origen privado marca para revisión pero NO actualiza el contexto
+  ---
+  duration_ms: 73.9252
+  type: 'test'
+  ...
+# Subtest: ES-25 frontera en el código: el puente solo pide id y marca de tiempo de los orígenes y la única lectura del motor es getApprovedContext
+ok 267 - ES-25 frontera en el código: el puente solo pide id y marca de tiempo de los orígenes y la única lectura del motor es getApprovedContext
+  ---
+  duration_ms: 4.4323
+  type: 'test'
+  ...
+# Subtest: ES-25 (QA-25-01) 40 confirmaciones simultáneas del mismo dueño: ninguna respuesta 5xx, versiones consecutivas y una sola activa
+ok 268 - ES-25 (QA-25-01) 40 confirmaciones simultáneas del mismo dueño: ninguna respuesta 5xx, versiones consecutivas y una sola activa
+  ---
+  duration_ms: 1384.5417
+  type: 'test'
+  ...
+# Subtest: ES-25 (QA-25-01) si se agotan los reintentos por colisión, la respuesta es un 409 reintentable y no un 500
+ok 269 - ES-25 (QA-25-01) si se agotan los reintentos por colisión, la respuesta es un 409 reintentable y no un 500
+  ---
+  duration_ms: 139.3913
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-27 camino directo: guarda meta, entrega y efecto por separado y los entrega al motor sin fusionarlos
+ok 270 - ES-27 camino directo: guarda meta, entrega y efecto por separado y los entrega al motor sin fusionarlos
+  ---
+  duration_ms: 2222.9343
+  type: 'test'
+  ...
+# Subtest: ES-27 una meta no se convierte en logro y un resultado desconocido se conserva tal cual
+ok 271 - ES-27 una meta no se convierte en logro y un resultado desconocido se conserva tal cual
+  ---
+  duration_ms: 106.7203
+  type: 'test'
+  ...
+# Subtest: ES-27 procedencia: la persona solo puede enviar autorreporte
+ok 272 - ES-27 procedencia: la persona solo puede enviar autorreporte
+  ---
+  duration_ms: 151.9216
+  type: 'test'
+  ...
+# Subtest: ES-27 esquema: entradas inválidas dan 400/422 controlado, nunca 500, y no guardan nada
+ok 273 - ES-27 esquema: entradas inválidas dan 400/422 controlado, nunca 500, y no guardan nada
+  ---
+  duration_ms: 354.2521
+  type: 'test'
+  ...
+# Subtest: ES-27 borrador: se guarda incompleto pero el motor no lo consume hasta confirmarlo
+ok 274 - ES-27 borrador: se guarda incompleto pero el motor no lo consume hasta confirmarlo
+  ---
+  duration_ms: 119.2028
+  type: 'test'
+  ...
+# Subtest: ES-27 versiones: editar crea una versión nueva, exige baseVersion vigente, es idempotente e invalida lo derivado
+ok 275 - ES-27 versiones: editar crea una versión nueva, exige baseVersion vigente, es idempotente e invalida lo derivado
+  ---
+  duration_ms: 150.0917
+  type: 'test'
+  ...
+# Subtest: ES-27 borrar vacía el contenido de todas las versiones, deja de ser visible y registra la invalidación
+ok 276 - ES-27 borrar vacía el contenido de todas las versiones, deja de ser visible y registra la invalidación
+  ---
+  duration_ms: 103.5611
+  type: 'test'
+  ...
+# Subtest: ES-27 aislamiento: un ID ajeno es 404 en leer, editar y borrar; otros roles no ven nada
+ok 277 - ES-27 aislamiento: un ID ajeno es 404 en leer, editar y borrar; otros roles no ven nada
+  ---
+  duration_ms: 169.135
+  type: 'test'
+  ...
+# Subtest: ES-27 origen del chat: exige consentimiento, verifica dueño y cita, y no guarda ni entrega texto, turnos ni citas
+ok 278 - ES-27 origen del chat: exige consentimiento, verifica dueño y cita, y no guarda ni entrega texto, turnos ni citas
+  ---
+  duration_ms: 128.0899
+  type: 'test'
+  ...
+# Subtest: ES-27 un turno que el detector de riesgo marca no se puede usar como fuente y no se guarda el motivo
+ok 279 - ES-27 un turno que el detector de riesgo marca no se puede usar como fuente y no se guarda el motivo
+  ---
+  duration_ms: 31.5209
+  type: 'test'
+  ...
+# Subtest: ES-27 revocar el puente deja sin vigencia la evidencia del chat, emite el evento y conserva la directa
+ok 280 - ES-27 revocar el puente deja sin vigencia la evidencia del chat, emite el evento y conserva la directa
+  ---
+  duration_ms: 80.4032
+  type: 'test'
+  ...
+# Subtest: ES-27 contenido no confiable: una instrucción incrustada se guarda como dato y al usarla en un prompt queda delimitada
+ok 281 - ES-27 contenido no confiable: una instrucción incrustada se guarda como dato y al usarla en un prompt queda delimitada
+  ---
+  duration_ms: 22.2148
+  type: 'test'
+  ...
+# Subtest: ES-27 secretos y caracteres invisibles se sanean antes de guardar
+ok 282 - ES-27 secretos y caracteres invisibles se sanean antes de guardar
+  ---
+  duration_ms: 22.0584
+  type: 'test'
+  ...
+# Subtest: ES-27 frontera en el código: ninguna ruta entrega evidencia al motor y el módulo expone solo lo previsto
+ok 283 - ES-27 frontera en el código: ninguna ruta entrega evidencia al motor y el módulo expone solo lo previsto
+  ---
+  duration_ms: 2.3676
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-28 propuesta A: borrador desde el chat con citas reales; no guarda nada y solo lee los mensajes de la persona
+ok 284 - ES-28 propuesta A: borrador desde el chat con citas reales; no guarda nada y solo lee los mensajes de la persona
+  ---
+  duration_ms: 1944.823
+  type: 'test'
+  ...
+# Subtest: ES-28 propuesta A: sin consentimiento, turno ajeno, entradas inválidas y turnos de riesgo no llegan a la IA
+ok 285 - ES-28 propuesta A: sin consentimiento, turno ajeno, entradas inválidas y turnos de riesgo no llegan a la IA
+  ---
+  duration_ms: 421.661
+  type: 'test'
+  ...
+# Subtest: ES-28 propuesta A: salidas del modelo inválidas, infladas o con citas inventadas se descartan sin 500
+ok 286 - ES-28 propuesta A: salidas del modelo inválidas, infladas o con citas inventadas se descartan sin 500
+  ---
+  duration_ms: 223.3583
+  type: 'test'
+  ...
+# Subtest: ES-28 propuesta A: el número de la meta repetido como logro se entrega con advertencia explícita
+ok 287 - ES-28 propuesta A: el número de la meta repetido como logro se entrega con advertencia explícita
+  ---
+  duration_ms: 115.9266
+  type: 'test'
+  ...
+# Subtest: ES-28 una instrucción incrustada en el turno queda dentro del delimitador, separada de las instrucciones del sistema
+ok 288 - ES-28 una instrucción incrustada en el turno queda dentro del delimitador, separada de las instrucciones del sistema
+  ---
+  duration_ms: 50.7666
+  type: 'test'
+  ...
+# Subtest: ES-28 authoring ai_proposed solo con un proposalToken válido emitido a esa persona
+ok 289 - ES-28 authoring ai_proposed solo con un proposalToken válido emitido a esa persona
+  ---
+  duration_ms: 131.2467
+  type: 'test'
+  ...
+# Subtest: ES-28 propuesta B: propone desde evidencias confirmadas, topa el nivel por la autonomía declarada y no guarda nada
+ok 290 - ES-28 propuesta B: propone desde evidencias confirmadas, topa el nivel por la autonomía declarada y no guarda nada
+  ---
+  duration_ms: 101.2878
+  type: 'test'
+  ...
+# Subtest: ES-28 propuesta B: sin evidencia, sin catálogo o con entradas inválidas no se llama a la IA; la confianza del modelo no se acepta
+ok 291 - ES-28 propuesta B: sin evidencia, sin catálogo o con entradas inválidas no se llama a la IA; la confianza del modelo no se acepta
+  ---
+  duration_ms: 347.5572
+  type: 'test'
+  ...
+# Subtest: ES-28 confirmar propuestas: atómico, idempotente, solo se puede bajar el nivel y exige evidencia aún vigente
+ok 292 - ES-28 confirmar propuestas: atómico, idempotente, solo se puede bajar el nivel y exige evidencia aún vigente
+  ---
+  duration_ms: 185.9268
+  type: 'test'
+  ...
+# Subtest: ES-28 confirmar vencida: la propuesta de 10 minutos caduca
+ok 293 - ES-28 confirmar vencida: la propuesta de 10 minutos caduca
+  ---
+  duration_ms: 131.1623
+  type: 'test'
+  ...
+# Error del proveedor de IA (propuestas): provider_unavailable
+# Subtest: ES-28 presupuesto y fallos: 429 al agotar, 503 sin configurar, 502 si cae el proveedor; sin tocar datos
+ok 294 - ES-28 presupuesto y fallos: 429 al agotar, 503 sin configurar, 502 si cae el proveedor; sin tocar datos
+  ---
+  duration_ms: 157.3115
+  type: 'test'
+  ...
+# Subtest: ES-28 aislamiento: sin sesión no hay propuestas y cada persona solo usa sus propios datos
+ok 295 - ES-28 aislamiento: sin sesión no hay propuestas y cada persona solo usa sus propios datos
+  ---
+  duration_ms: 40.4815
+  type: 'test'
+  ...
+# Subtest: ES-28 frontera en el código: la propuesta A solo lee mensajes de la persona y la B no toca ánimo, diario ni chat
+ok 296 - ES-28 frontera en el código: la propuesta A solo lee mensajes de la persona y la B no toca ánimo, diario ni chat
+  ---
+  duration_ms: 8.3341
+  type: 'test'
+  ...
+# Subtest: ES-28 (QA-28-01) filtro de salida: cada término clínico o de tratamiento se rechaza, por separado, con y sin tildes y en mayúsculas
+ok 297 - ES-28 (QA-28-01) filtro de salida: cada término clínico o de tratamiento se rechaza, por separado, con y sin tildes y en mayúsculas
+  ---
+  duration_ms: 2.1768
+  type: 'test'
+  ...
+# Subtest: ES-28 (QA-28-01) propuesta A: el término clínico se rechaza (502) en CADA campo de texto de la salida y el texto neutro pasa
+ok 298 - ES-28 (QA-28-01) propuesta A: el término clínico se rechaza (502) en CADA campo de texto de la salida y el texto neutro pasa
+  ---
+  duration_ms: 3055.2977
+  type: 'test'
+  ...
+# Subtest: ES-28 (QA-28-01) propuesta B: la justificación clínica se rechaza (502) y la neutra pasa
+ok 299 - ES-28 (QA-28-01) propuesta B: la justificación clínica se rechaza (502) y la neutra pasa
+  ---
+  duration_ms: 385.9539
+  type: 'test'
+  ...
+# Subtest: ES-28 (QA-28-01) las cinco frases de la sonda de QA se rechazan y el texto neutro pasa
+ok 300 - ES-28 (QA-28-01) las cinco frases de la sonda de QA se rechazan y el texto neutro pasa
+  ---
+  duration_ms: 0.9683
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-29 catálogo: sin publicar el mapa no evalúa nada; publicar exige todo completo; lo publicado es inmutable
+ok 301 - ES-29 catálogo: sin publicar el mapa no evalúa nada; publicar exige todo completo; lo publicado es inmutable
+  ---
+  duration_ms: 2554.584
+  type: 'test'
+  ...
+# Subtest: ES-29 catálogo: solo administración lo edita y las entradas inválidas dan 400 controlado
+ok 302 - ES-29 catálogo: solo administración lo edita y las entradas inválidas dan 400 controlado
+  ---
+  duration_ms: 450.0728
+  type: 'test'
+  ...
+# Subtest: ES-29 mapa: sin evidencia el nivel es null; con evidencia vigente se guarda y la confianza sale de reglas
+ok 303 - ES-29 mapa: sin evidencia el nivel es null; con evidencia vigente se guarda y la confianza sale de reglas
+  ---
+  duration_ms: 137.312
+  type: 'test'
+  ...
+# Subtest: ES-29 reglas del servidor: nivel sin evidencia, evidencia ajena, en borrador, de otra versión o inexistente se rechazan sin 500
+ok 304 - ES-29 reglas del servidor: nivel sin evidencia, evidencia ajena, en borrador, de otra versión o inexistente se rechazan sin 500
+  ---
+  duration_ms: 309.0642
+  type: 'test'
+  ...
+# Subtest: ES-29 confirmación atómica e idempotente por requestId; level null retira la vigente
+ok 305 - ES-29 confirmación atómica e idempotente por requestId; level null retira la vigente
+  ---
+  duration_ms: 104.3953
+  type: 'test'
+  ...
+# Subtest: ES-29 si una evidencia citada cambia, se borra o deja de estar vigente, el nivel deja de mostrarse y se procesa la invalidación
+ok 306 - ES-29 si una evidencia citada cambia, se borra o deja de estar vigente, el nivel deja de mostrarse y se procesa la invalidación
+  ---
+  duration_ms: 118.5726
+  type: 'test'
+  ...
+# Subtest: ES-29 revocar el puente invalida la evaluación que dependía de evidencia del chat
+ok 307 - ES-29 revocar el puente invalida la evaluación que dependía de evidencia del chat
+  ---
+  duration_ms: 112.2092
+  type: 'test'
+  ...
+# Subtest: ES-29 discrepancia con la autonomía declarada en la evidencia: queda contradictory para revisión humana y no se resuelve sola
+ok 308 - ES-29 discrepancia con la autonomía declarada en la evidencia: queda contradictory para revisión humana y no se resuelve sola
+  ---
+  duration_ms: 130.6349
+  type: 'test'
+  ...
+# Subtest: ES-29 la nueva versión de una rúbrica marca catalogOutdated pero no recalcula ni borra
+ok 309 - ES-29 la nueva versión de una rúbrica marca catalogOutdated pero no recalcula ni borra
+  ---
+  duration_ms: 107.6571
+  type: 'test'
+  ...
+# Subtest: ES-29 aislamiento: cada persona ve solo su mapa y las evidencias ajenas no sirven
+ok 310 - ES-29 aislamiento: cada persona ve solo su mapa y las evidencias ajenas no sirven
+  ---
+  duration_ms: 125.8341
+  type: 'test'
+  ...
+# Subtest: ES-29 validador de la salida de un modelo: descarta lo inválido y nunca acepta una confianza declarada
+ok 311 - ES-29 validador de la salida de un modelo: descarta lo inválido y nunca acepta una confianza declarada
+  ---
+  duration_ms: 4.2423
+  type: 'test'
+  ...
+# Subtest: ES-29 frontera en el código: el Skill Map solo lee evidencias confirmadas y ningún módulo toca ánimo, diario, chat ni crisis
+ok 312 - ES-29 frontera en el código: el Skill Map solo lee evidencias confirmadas y ningún módulo toca ánimo, diario, chat ni crisis
+  ---
+  duration_ms: 3.926
+  type: 'test'
+  ...
+# Subtest: ES-29 borrador de catálogo inicial: válido para el backoffice, sin fuente ni verificador y por tanto NO publicable
+ok 313 - ES-29 borrador de catálogo inicial: válido para el backoffice, sin fuente ni verificador y por tanto NO publicable
+  ---
+  duration_ms: 3.5844
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-31 el catálogo sintético completo se publica solo con la autorización explícita de pruebas y queda inmutable
+ok 314 - ES-31 el catálogo sintético completo se publica solo con la autorización explícita de pruebas y queda inmutable
+  ---
+  duration_ms: 2900.5699
+  type: 'test'
+  ...
+# Subtest: ES-31 lectura para participantes: solo lo publicado, con frescura calculada, sin nombres de revisores y sin demanda
+ok 315 - ES-31 lectura para participantes: solo lo publicado, con frescura calculada, sin nombres de revisores y sin demanda
+  ---
+  duration_ms: 548.1989
+  type: 'test'
+  ...
+# Subtest: ES-31 solo la administración escribe el catálogo; las personas, terapeutas y facilitadores no
+ok 316 - ES-31 solo la administración escribe el catálogo; las personas, terapeutas y facilitadores no
+  ---
+  duration_ms: 109.1305
+  type: 'test'
+  ...
+# Subtest: ES-31 publicar exige completitud y referencias válidas: cada regla, una por una
+ok 317 - ES-31 publicar exige completitud y referencias válidas: cada regla, una por una
+  ---
+  duration_ms: 1082.8162
+  type: 'test'
+  ...
+# Subtest: ES-31 topes: más de seis contextos, de 10 ofertas por rol o de 60 en total no se publica
+ok 318 - ES-31 topes: más de seis contextos, de 10 ofertas por rol o de 60 en total no se publica
+  ---
+  duration_ms: 363.9742
+  type: 'test'
+  ...
+# Subtest: ES-31 entradas inválidas y etiquetas prohibidas: 400/422 controlado, sin 500
+ok 319 - ES-31 entradas inválidas y etiquetas prohibidas: 400/422 controlado, sin 500
+  ---
+  duration_ms: 450.9812
+  type: 'test'
+  ...
+# Subtest: ES-31 la semilla sintética es completa, marca todo como sintético y no puede publicarse en producción
+ok 320 - ES-31 la semilla sintética es completa, marca todo como sintético y no puede publicarse en producción
+  ---
+  duration_ms: 2.667
+  type: 'test'
+  ...
+# Subtest: ES-31 frontera en el código: el catálogo no sale a internet, no lee datos personales y no tiene campos de demanda
+ok 321 - ES-31 frontera en el código: el catálogo no sale a internet, no lee datos personales y no tiene campos de demanda
+  ---
+  duration_ms: 3.5682
+  type: 'test'
+  ...
+# Subtest: ES-31 (QA-31-01) la lista de frases prohibidas y sus muestras coinciden: cada frase tiene su prueba
+ok 322 - ES-31 (QA-31-01) la lista de frases prohibidas y sus muestras coinciden: cada frase tiene su prueba
+  ---
+  duration_ms: 0.8127
+  type: 'test'
+  ...
+# Subtest: ES-31 (QA-31-01) cada frase y cada porcentaje se rechazan (422) en CADA campo de texto descriptivo; el texto neutro pasa en todos
+ok 323 - ES-31 (QA-31-01) cada frase y cada porcentaje se rechazan (422) en CADA campo de texto descriptivo; el texto neutro pasa en todos
+  ---
+  duration_ms: 3030.6787
+  type: 'test'
+  ...
+# Subtest: ES-31 (QA-31-01) los campos que NO son descriptivos (títulos, organización, salario) no rechazan un porcentaje legítimo, y las frases sí se siguen rechazando
+ok 324 - ES-31 (QA-31-01) los campos que NO son descriptivos (títulos, organización, salario) no rechazan un porcentaje legítimo, y las frases sí se siguen rechazando
+  ---
+  duration_ms: 40.9242
+  type: 'test'
+  ...
+# Subtest: ES-32: tres casillas justificadas, dimensiones separadas y sin programación por defecto
+ok 325 - ES-32: tres casillas justificadas, dimensiones separadas y sin programación por defecto
+  ---
+  duration_ms: 19.5299
+  type: 'test'
+  ...
+# Subtest: ES-32: mercado ausente no se infiere de idioma/residencia/profesión
+ok 326 - ES-32: mercado ausente no se infiere de idioma/residencia/profesión
+  ---
+  duration_ms: 0.6275
+  type: 'test'
+  ...
+# Subtest: ES-32: filtro duro market excluye antes de clasificación
+ok 327 - ES-32: filtro duro market excluye antes de clasificación
+  ---
+  duration_ms: 0.796
+  type: 'test'
+  ...
+# Subtest: ES-32: filtro duro language excluye antes de clasificación
+ok 328 - ES-32: filtro duro language excluye antes de clasificación
+  ---
+  duration_ms: 14.8672
+  type: 'test'
+  ...
+# Subtest: ES-32: filtro duro modality excluye antes de clasificación
+ok 329 - ES-32: filtro duro modality excluye antes de clasificación
+  ---
+  duration_ms: 0.6989
+  type: 'test'
+  ...
+# Subtest: ES-32: filtro duro regulated excluye antes de clasificación
+ok 330 - ES-32: filtro duro regulated excluye antes de clasificación
+  ---
+  duration_ms: 0.9306
+  type: 'test'
+  ...
+# Subtest: ES-32: desconocidos no coinciden ni se descartan como incumplimiento conocido
+ok 331 - ES-32: desconocidos no coinciden ni se descartan como incumplimiento conocido
+  ---
+  duration_ms: 2.2054
+  type: 'test'
+  ...
+# Subtest: ES-32: idioma conocido incompatible no se oculta por una segunda entrada unknown
+ok 332 - ES-32: idioma conocido incompatible no se oculta por una segunda entrada unknown
+  ---
+  duration_ms: 0.7311
+  type: 'test'
+  ...
+# Subtest: ES-32: sin evidencia, nivel null, stale, contradictorio, rúbrica antigua o cero citas no generan adyacencia
+ok 333 - ES-32: sin evidencia, nivel null, stale, contradictorio, rúbrica antigua o cero citas no generan adyacencia
+  ---
+  duration_ms: 8.9146
+  type: 'test'
+  ...
+# Subtest: ES-32: revisión y autorreporte conservan sus pistas y no suman niveles
+ok 334 - ES-32: revisión y autorreporte conservan sus pistas y no suman niveles
+  ---
+  duration_ms: 2.1386
+  type: 'test'
+  ...
+# Subtest: ES-32: skillMissing no cuenta como transferencia; brecha bilingüe sin nivel inventado
+ok 335 - ES-32: skillMissing no cuenta como transferencia; brecha bilingüe sin nivel inventado
+  ---
+  duration_ms: 1.0613
+  type: 'test'
+  ...
+# Subtest: ES-32: no rellena tres rutas ni duplica un rol para rellenar casillas
+ok 336 - ES-32: no rellena tres rutas ni duplica un rol para rellenar casillas
+  ---
+  duration_ms: 0.5957
+  type: 'test'
+  ...
+# Subtest: ES-32: sin contexto origen ni transferencia ni intereses no recomienda por similitud suelta
+ok 337 - ES-32: sin contexto origen ni transferencia ni intereses no recomienda por similitud suelta
+  ---
+  duration_ms: 0.5562
+  type: 'test'
+  ...
+# Subtest: ES-32: profesiones reguladas siempre pendientes, incluso aceptadas y con idioma del mercado
+ok 338 - ES-32: profesiones reguladas siempre pendientes, incluso aceptadas y con idioma del mercado
+  ---
+  duration_ms: 1.183
+  type: 'test'
+  ...
+# Subtest: ES-32: fuente antigua y oferta vencida nunca se convierten en confirmación actual
+ok 339 - ES-32: fuente antigua y oferta vencida nunca se convierten en confirmación actual
+  ---
+  duration_ms: 2.8133
+  type: 'test'
+  ...
+# Subtest: ES-32: fuentes autorizadas ausentes no autorizan rutas y los recursos solo atienden brechas
+ok 340 - ES-32: fuentes autorizadas ausentes no autorizan rutas y los recursos solo atienden brechas
+  ---
+  duration_ms: 1.3463
+  type: 'test'
+  ...
+# Subtest: ES-32: orden estable por fundamento, fecha y clave; entradas permanecen intactas
+ok 341 - ES-32: orden estable por fundamento, fecha y clave; entradas permanecen intactas
+  ---
+  duration_ms: 2.4818
+  type: 'test'
+  ...
+# Subtest: ES-32: una capacidad repetida en el catálogo no multiplica la transferencia
+ok 342 - ES-32: una capacidad repetida en el catálogo no multiplica la transferencia
+  ---
+  duration_ms: 0.7329
+  type: 'test'
+  ...
+# Subtest: ES-32: docente y contadora no reciben programación por defecto aunque exista en el catálogo
+ok 343 - ES-32: docente y contadora no reciben programación por defecto aunque exista en el catálogo
+  ---
+  duration_ms: 1.5319
+  type: 'test'
+  ...
+# Subtest: ES-32 mutación detectada: mercado
+ok 344 - ES-32 mutación detectada: mercado
+  ---
+  duration_ms: 276.4739
+  type: 'test'
+  ...
+# Subtest: ES-32 mutación detectada: idioma
+ok 345 - ES-32 mutación detectada: idioma
+  ---
+  duration_ms: 218.0485
+  type: 'test'
+  ...
+# Subtest: ES-32 mutación detectada: modalidad
+ok 346 - ES-32 mutación detectada: modalidad
+  ---
+  duration_ms: 182.598
+  type: 'test'
+  ...
+# Subtest: ES-32 mutación detectada: regulación
+ok 347 - ES-32 mutación detectada: regulación
+  ---
+  duration_ms: 111.2379
+  type: 'test'
+  ...
+# Subtest: ES-32 mutación detectada: vigencia de evidencia
+ok 348 - ES-32 mutación detectada: vigencia de evidencia
+  ---
+  duration_ms: 159.3792
+  type: 'test'
+  ...
+# Subtest: ES-32 mutación detectada: no duplicar rol
+ok 349 - ES-32 mutación detectada: no duplicar rol
+  ---
+  duration_ms: 163.9079
+  type: 'test'
+  ...
+# Subtest: ES-32: núcleo aislado sin require/red/IA y orquestador sin modelos privados
+ok 350 - ES-32: núcleo aislado sin require/red/IA y orquestador sin modelos privados
+  ---
+  duration_ms: 4.8092
+  type: 'test'
+  ...
+# Subtest: ES-33 plantilla bilingüe neutral, costo desconocido y rúbrica sin acreditación
+ok 351 - ES-33 plantilla bilingüe neutral, costo desconocido y rúbrica sin acreditación
+  ---
+  duration_ms: 89.8065
+  type: 'test'
+  ...
+# Subtest: ES-33 tiempo inicial 20/30/45; cero disponibilidad y datos faltantes no crean plan
+ok 352 - ES-33 tiempo inicial 20/30/45; cero disponibilidad y datos faltantes no crean plan
+  ---
+  duration_ms: 6.3854
+  type: 'test'
+  ...
+# Subtest: ES-33 tarea regulada exige plantilla revisada; índice ajeno no elige tarea inventada
+ok 353 - ES-33 tarea regulada exige plantilla revisada; índice ajeno no elige tarea inventada
+  ---
+  duration_ms: 1.7973
+  type: 'test'
+  ...
+# Subtest: ES-33 estados: entregar antes de iniciar y decidir sin reflexión se rechazan
+ok 354 - ES-33 estados: entregar antes de iniciar y decidir sin reflexión se rechazan
+  ---
+  duration_ms: 3.3129
+  type: 'test'
+  ...
+# Subtest: ES-33 reflexión propia mantiene observación, interpretación y ayuda declarada separadas
+ok 355 - ES-33 reflexión propia mantiene observación, interpretación y ayuda declarada separadas
+  ---
+  duration_ms: 3.5331
+  type: 'test'
+  ...
+# Subtest: ES-33 nueva entrega retira reflexión/decisión anterior; checkbox no es evidencia
+ok 356 - ES-33 nueva entrega retira reflexión/decisión anterior; checkbox no es evidencia
+  ---
+  duration_ms: 8.3481
+  type: 'test'
+  ...
+# Subtest: ES-33 referencias cerradas y sin duplicados; ayuda nunca se infiere
+ok 357 - ES-33 referencias cerradas y sin duplicados; ayuda nunca se infiere
+  ---
+  duration_ms: 31.6013
+  type: 'test'
+  ...
+# Subtest: ES-33 plan propuesto 7/30/90 no contiene acciones aceptadas ni fechas inventadas
+ok 358 - ES-33 plan propuesto 7/30/90 no contiene acciones aceptadas ni fechas inventadas
+  ---
+  duration_ms: 6.4256
+  type: 'test'
+  ...
+# Subtest: ES-33 aceptar conserva fechas explícitas, dependencia y suma semanal
+ok 359 - ES-33 aceptar conserva fechas explícitas, dependencia y suma semanal
+  ---
+  duration_ms: 12.5752
+  type: 'test'
+  ...
+# Subtest: ES-33 ciclos/dependencia ausente o posterior no crean plan
+ok 360 - ES-33 ciclos/dependencia ausente o posterior no crean plan
+  ---
+  duration_ms: 20.1373
+  type: 'test'
+  ...
+# Subtest: ES-33 curso no cuenta dos veces; duración desconocida requiere confirmar
+ok 361 - ES-33 curso no cuenta dos veces; duración desconocida requiere confirmar
+  ---
+  duration_ms: 3.2983
+  type: 'test'
+  ...
+# Subtest: ES-33 actividades posteriores pueden superar 45 minutos si caben en disponibilidad
+ok 362 - ES-33 actividades posteriores pueden superar 45 minutos si caben en disponibilidad
+  ---
+  duration_ms: 17.1743
+  type: 'test'
+  ...
+# Subtest: ES-33 presupuesto no convierte precio desconocido en cero ni aplica cambio de divisa
+ok 363 - ES-33 presupuesto no convierte precio desconocido en cero ni aplica cambio de divisa
+  ---
+  duration_ms: 10.9537
+  type: 'test'
+  ...
+# Subtest: ES-33 fecha válida y zona elegida: UTC, Bogotá, Dinamarca; no asume zona del host
+ok 364 - ES-33 fecha válida y zona elegida: UTC, Bogotá, Dinamarca; no asume zona del host
+  ---
+  duration_ms: 23.6693
+  type: 'test'
+  ...
+# Subtest: ES-33 horario estacional: hora inexistente/ambigua se rechaza
+ok 365 - ES-33 horario estacional: hora inexistente/ambigua se rechaza
+  ---
+  duration_ms: 46.455
+  type: 'test'
+  ...
+# Subtest: ES-33 frontera: reglas sin require/red; orquestador sin modelos privados ni proveedor
+ok 366 - ES-33 frontera: reglas sin require/red; orquestador sin modelos privados ni proveedor
+  ---
+  duration_ms: 3.5917
+  type: 'test'
+  ...
+# Subtest: ES-33 mutación detectada: tiempo mínimo
+ok 367 - ES-33 mutación detectada: tiempo mínimo
+  ---
+  duration_ms: 6.5172
+  type: 'test'
+  ...
+# Subtest: ES-33 mutación detectada: capacidad semanal
+ok 368 - ES-33 mutación detectada: capacidad semanal
+  ---
+  duration_ms: 21.088
+  type: 'test'
+  ...
+# Subtest: ES-44 corpus has exactly 30 unique cases, 24 ES/6 EN, >=10 nontechnical and >=5 adversarial
+ok 369 - ES-44 corpus has exactly 30 unique cases, 24 ES/6 EN, >=10 nontechnical and >=5 adversarial
+  ---
+  duration_ms: 22.0877
+  type: 'test'
+  ...
+# Subtest: ES-44 schema rejects unknown fields, types, duplicate refs, IDs and insufficient coverage
+ok 370 - ES-44 schema rejects unknown fields, types, duplicate refs, IDs and insufficient coverage
+  ---
+  duration_ms: 42.8412
+  type: 'test'
+  ...
+# Subtest: ES-44 canonical hash ignores key order but binds all input and expectation values
+ok 371 - ES-44 canonical hash ignores key order but binds all input and expectation values
+  ---
+  duration_ms: 6.0748
+  type: 'test'
+  ...
+# Subtest: ES-44 coverage includes regulated/contradictory/sparse cases, injection, revocation and resolvable source refs
+ok 372 - ES-44 coverage includes regulated/contradictory/sparse cases, injection, revocation and resolvable source refs
+  ---
+  duration_ms: 15.4676
+  type: 'test'
+  ...
+# Subtest: ES-44 default validation and mock cannot claim real-provider quality or human approval
+ok 373 - ES-44 default validation and mock cannot claim real-provider quality or human approval
+  ---
+  duration_ms: 72.672
+  type: 'test'
+  ...
+# Subtest: ES-44 real provider is refused before any adapter call; limits are bounded
+ok 374 - ES-44 real provider is refused before any adapter call; limits are bounded
+  ---
+  duration_ms: 772.1658
+  type: 'test'
+  ...
+# Subtest: ES-44 stops at first technical failure and records unexecuted cases without improving the denominator
+ok 375 - ES-44 stops at first technical failure and records unexecuted cases without improving the denominator
+  ---
+  duration_ms: 8.8429
+  type: 'test'
+  ...
+# Subtest: ES-44 truncation, malformed adapter output and call limits are explicit failures
+ok 376 - ES-44 truncation, malformed adapter output and call limits are explicit failures
+  ---
+  duration_ms: 21.0461
+  type: 'test'
+  ...
+# Subtest: ES-44 nominal test records only make a report eligible for human release decision, never release approved
+ok 377 - ES-44 nominal test records only make a report eligible for human release decision, never release approved
+  ---
+  duration_ms: 47.087
+  type: 'test'
+  ...
+# Subtest: ES-44 24/30 threshold is fixed; 23 fails even with all cases reviewed
+ok 378 - ES-44 24/30 threshold is fixed; 23 fails even with all cases reviewed
+  ---
+  duration_ms: 42.9912
+  type: 'test'
+  ...
+# Subtest: ES-44 any critical violation blocks despite 30 pertinent cases
+ok 379 - ES-44 any critical violation blocks despite 30 pertinent cases
+  ---
+  duration_ms: 40.6266
+  type: 'test'
+  ...
+# Subtest: ES-44 missing review, duplicate/case-varied reviewer, author reviewer and LLM reviewer cannot approve
+ok 380 - ES-44 missing review, duplicate/case-varied reviewer, author reviewer and LLM reviewer cannot approve
+  ---
+  duration_ms: 123.8071
+  type: 'test'
+  ...
+# Subtest: ES-44 disagreements require a separate tech lead and bound resolution; cannot override a critical finding
+ok 381 - ES-44 disagreements require a separate tech lead and bound resolution; cannot override a critical finding
+  ---
+  duration_ms: 61.0805
+  type: 'test'
+  ...
+# Subtest: ES-44 changed corpus, rubric, run output or unknown controls invalidate approval bindings
+ok 382 - ES-44 changed corpus, rubric, run output or unknown controls invalidate approval bindings
+  ---
+  duration_ms: 115.237
+  type: 'test'
+  ...
+# Subtest: ES-44 incomplete run, pending routes, mock relabeled as provider, missing QA and malformed files remain blocked
+ok 383 - ES-44 incomplete run, pending routes, mock relabeled as provider, missing QA and malformed files remain blocked
+  ---
+  duration_ms: 172.8278
+  type: 'test'
+  ...
+# Subtest: ES-44 a report cannot erase a pending stage declared in the corpus
+ok 384 - ES-44 a report cannot erase a pending stage declared in the corpus
+  ---
+  duration_ms: 88.7154
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-66: public content defaults, persisted edits and real role checks
+ok 385 - ES-66: public content defaults, persisted edits and real role checks
+  ---
+  duration_ms: 3543.8512
+  type: 'test'
+  ...
+# Subtest: ES-66: staging seed refuses other environments and preserves edits on rerun (mock DB)
+ok 386 - ES-66: staging seed refuses other environments and preserves edits on rerun (mock DB)
+  ---
+  duration_ms: 88.745
+  type: 'test'
+  ...
+# Subtest: ES-66: browser resolver falls back per language on missing, blank, malformed and failed responses
+ok 387 - ES-66: browser resolver falls back per language on missing, blank, malformed and failed responses
+  ---
+  duration_ms: 223.6224
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-68: new copy uses the existing public read and protected CMS write (mock persistence)
+ok 388 - ES-68: new copy uses the existing public read and protected CMS write (mock persistence)
+  ---
+  duration_ms: 3752.0086
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-70: new copy uses the existing public read and protected CMS write (mock persistence)
+ok 389 - ES-70: new copy uses the existing public read and protected CMS write (mock persistence)
+  ---
+  duration_ms: 4243.5515
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-72: new copy uses the existing public read and protected CMS write (mock persistence)
+ok 390 - ES-72: new copy uses the existing public read and protected CMS write (mock persistence)
+  ---
+  duration_ms: 3566.8942
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-73: new copy uses the existing public read and protected CMS write (mock persistence)
+ok 391 - ES-73: new copy uses the existing public read and protected CMS write (mock persistence)
+  ---
+  duration_ms: 3259.0604
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-73: public plans are active/ordered/whitelisted and protected /me cannot read another owner
+ok 392 - ES-73: public plans are active/ordered/whitelisted and protected /me cannot read another owner
+  ---
+  duration_ms: 2739.514
+  type: 'test'
+  ...
+# Subtest: ES-73: request commits before 201, owner comes only from JWT and malformed/alien inputs never write
+ok 393 - ES-73: request commits before 201, owner comes only from JWT and malformed/alien inputs never write
+  ---
+  duration_ms: 207.5433
+  type: 'test'
+  ...
+# No se pudo leer la solicitud propia.
+# Subtest: ES-73: pending reads ignore no owner, reject foreign-ID query/path and database errors do not expose details
+ok 394 - ES-73: pending reads ignore no owner, reject foreign-ID query/path and database errors do not expose details
+  ---
+  duration_ms: 67.9942
+  type: 'test'
+  ...
+# Subtest: ES-73: reviewed copy dry-run/idempotent apply changes only public wording; seed uses the same approved copy
+ok 395 - ES-73: reviewed copy dry-run/idempotent apply changes only public wording; seed uses the same approved copy
+  ---
+  duration_ms: 25.4449
+  type: 'test'
+  ...
+# Subtest: ES-73: exact legacy copy is safe on first public read, custom admin text and financial values remain authoritative
+ok 396 - ES-73: exact legacy copy is safe on first public read, custom admin text and financial values remain authoritative
+  ---
+  duration_ms: 2.1438
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-74: new copy uses the existing public read and protected CMS write (mock persistence)
+ok 397 - ES-74: new copy uses the existing public read and protected CMS write (mock persistence)
+  ---
+  duration_ms: 4045.796
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-74: minimal session reads canonical owner role/onboarding, never client claims or PII (mock DB)
+ok 398 - ES-74: minimal session reads canonical owner role/onboarding, never client claims or PII (mock DB)
+  ---
+  duration_ms: 2861.109
+  type: 'test'
+  ...
+# Subtest: ES-74: foreign IDs/query parameters/path never select another person
+ok 399 - ES-74: foreign IDs/query parameters/path never select another person
+  ---
+  duration_ms: 157.3359
+  type: 'test'
+  ...
+# Subtest: ES-74: absent/inactive/unknown role/malformed row/database failure close in failure
+ok 400 - ES-74: absent/inactive/unknown role/malformed row/database failure close in failure
+  ---
+  duration_ms: 47.8887
+  type: 'test'
+  ...
+# Subtest: ES-74: real JWT middleware rejects absent/invalid/expired/legacy/revoked/cutoff/deletion sessions
+ok 401 - ES-74: real JWT middleware rejects absent/invalid/expired/legacy/revoked/cutoff/deletion sessions
+  ---
+  duration_ms: 59.9247
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-78: el resumen por IA no envía el nombre real ni se presenta como asistente clínico
+ok 402 - ES-78: el resumen por IA no envía el nombre real ni se presenta como asistente clínico
+  ---
+  duration_ms: 2357.3262
+  type: 'test'
+  ...
+# Subtest: ES-78: terapeuta no asignado o paciente ajeno reciben 404 y una cuenta sin rol de terapeuta recibe 403, sin llamar al proveedor
+ok 403 - ES-78: terapeuta no asignado o paciente ajeno reciben 404 y una cuenta sin rol de terapeuta recibe 403, sin llamar al proveedor
+  ---
+  duration_ms: 151.5458
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# ✅ Session 41 completed
+# Subtest: ES-79: la recomendación de fin de sesión no envía el nombre real del paciente
+ok 404 - ES-79: la recomendación de fin de sesión no envía el nombre real del paciente
+  ---
+  duration_ms: 2601.4766
+  type: 'test'
+  ...
+# ⚠️  Could not generate post-session recommendation: provider_unavailable
+# ✅ Session 41 completed
+# Subtest: ES-79: un fallo del proveedor no rompe el cierre; terapeuta ajeno y roles incorrectos no finalizan nada
+ok 405 - ES-79: un fallo del proveedor no rompe el cierre; terapeuta ajeno y roles incorrectos no finalizan nada
+  ---
+  duration_ms: 175.7974
+  type: 'test'
+  ...
+# Subtest: ES-86 sin clave profesional no hay clave por defecto: cifrar y descifrar fallan con un código claro
+ok 406 - ES-86 sin clave profesional no hay clave por defecto: cifrar y descifrar fallan con un código claro
+  ---
+  duration_ms: 19.0137
+  type: 'test'
+  ...
+# Subtest: ES-86 ida y vuelta, formato con kid, IV distinto por mensaje y el texto no aparece cifrado
+ok 407 - ES-86 ida y vuelta, formato con kid, IV distinto por mensaje y el texto no aparece cifrado
+  ---
+  duration_ms: 16.999
+  type: 'test'
+  ...
+# Subtest: ES-86 un dato alterado, truncado o con otro kid falla (el kid está autenticado)
+ok 408 - ES-86 un dato alterado, truncado o con otro kid falla (el kid está autenticado)
+  ---
+  duration_ms: 4.5509
+  type: 'test'
+  ...
+# Subtest: ES-86 la clave de datos no descifra lo profesional y la profesional no descifra lo privado (aislamiento entre dominios)
+ok 409 - ES-86 la clave de datos no descifra lo profesional y la profesional no descifra lo privado (aislamiento entre dominios)
+  ---
+  duration_ms: 2353.1619
+  type: 'test'
+  ...
+# Subtest: ES-86 claves inválidas: corta, igual a la de datos, kid mal formado o repetido; los errores no filtran material de clave
+ok 410 - ES-86 claves inválidas: corta, igual a la de datos, kid mal formado o repetido; los errores no filtran material de clave
+  ---
+  duration_ms: 4.0513
+  type: 'test'
+  ...
+# Subtest: ES-86 rotación: la clave anterior solo descifra; lo nuevo se cifra con la vigente
+ok 411 - ES-86 rotación: la clave anterior solo descifra; lo nuevo se cifra con la vigente
+  ---
+  duration_ms: 4.9528
+  type: 'test'
+  ...
+# [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+# Subtest: ES-87 entorno: se niega con variables que rompen el aislamiento o con faltantes, sin imprimir valores
+ok 412 - ES-87 entorno: se niega con variables que rompen el aislamiento o con faltantes, sin imprimir valores
+  ---
+  duration_ms: 31.4248
+  type: 'test'
+  ...
+# Subtest: ES-87 configuración: valores por defecto y topes duros
+ok 413 - ES-87 configuración: valores por defecto y topes duros
+  ---
+  duration_ms: 1.7147
+  type: 'test'
+  ...
+# Subtest: ES-87 registro: solo campos permitidos y valores escalares cortos; nada de texto de personas
+ok 414 - ES-87 registro: solo campos permitidos y valores escalares cortos; nada de texto de personas
+  ---
+  duration_ms: 39.9288
+  type: 'test'
+  ...
+# Subtest: ES-87 las claves de campo del worker coinciden con las del puente profesional
+ok 415 - ES-87 las claves de campo del worker coinciden con las del puente profesional
+  ---
+  duration_ms: 1.6522
+  type: 'test'
+  ...
+# Subtest: ES-87 contexto: se vuelve a sanear (secretos y caracteres ocultos) y lo malformado se rechaza
+ok 416 - ES-87 contexto: se vuelve a sanear (secretos y caracteres ocultos) y lo malformado se rechaza
+  ---
+  duration_ms: 7.1573
+  type: 'test'
+  ...
+# Subtest: ES-87 prompt: texto de la persona dentro de un bloque no confiable, catálogo aparte, sin identificadores
+ok 417 - ES-87 prompt: texto de la persona dentro de un bloque no confiable, catálogo aparte, sin identificadores
+  ---
+  duration_ms: 7.2733
+  type: 'test'
+  ...
+# Subtest: ES-87 salida del modelo: solo {skillKey, level, citations} canónicos; el resto se descarta
+ok 418 - ES-87 salida del modelo: solo {skillKey, level, citations} canónicos; el resto se descarta
+  ---
+  duration_ms: 1.8977
+  type: 'test'
+  ...
+# Subtest: ES-87 análisis: salida inválida, vacía o demasiado grande se tratan sin llamar de más
+ok 419 - ES-87 análisis: salida inválida, vacía o demasiado grande se tratan sin llamar de más
+  ---
+  duration_ms: 46.7854
+  type: 'test'
+  ...
+# Subtest: ES-87 clasificación de errores: reintentable o no, y con qué código
+ok 420 - ES-87 clasificación de errores: reintentable o no, y con qué código
+  ---
+  duration_ms: 3.4042
+  type: 'test'
+  ...
+# Subtest: ES-87 bucle: procesa, publica con el fence del reclamo y registra sin contenido
+ok 421 - ES-87 bucle: procesa, publica con el fence del reclamo y registra sin contenido
+  ---
+  duration_ms: 5.4886
+  type: 'test'
+  ...
+# Subtest: ES-87 bucle: errores del análisis llaman a worker_fail con el fence y sin publicar
+ok 422 - ES-87 bucle: errores del análisis llaman a worker_fail con el fence y sin publicar
+  ---
+  duration_ms: 5.0903
+  type: 'test'
+  ...
+# Subtest: ES-87 bucle: heartbeat falso = lease perdido; no se publica ni se llama a fail
+ok 423 - ES-87 bucle: heartbeat falso = lease perdido; no se publica ni se llama a fail
+  ---
+  duration_ms: 214.0921
+  type: 'test'
+  ...
+# Subtest: ES-87 bucle: publicar rechazado por el SQL = fallo no reintentable; error de conexión al publicar no llama a fail
+ok 424 - ES-87 bucle: publicar rechazado por el SQL = fallo no reintentable; error de conexión al publicar no llama a fail
+  ---
+  duration_ms: 6.3218
+  type: 'test'
+  ...
+# Subtest: ES-87 bucle: publicación no aceptada (fenced / consentimiento) se registra como tal
+ok 425 - ES-87 bucle: publicación no aceptada (fenced / consentimiento) se registra como tal
+  ---
+  duration_ms: 1.2662
+  type: 'test'
+  ...
+# Subtest: ES-87 sondeo: espera creciente en reposo y ante fallos de la base; sin espera tras tomar trabajo
+ok 426 - ES-87 sondeo: espera creciente en reposo y ante fallos de la base; sin espera tras tomar trabajo
+  ---
+  duration_ms: 14.1715
+  type: 'test'
+  ...
+# Subtest: ES-87 apagado: espera al job en curso y, si no termina, informa timeout sin matar el lease
+ok 427 - ES-87 apagado: espera al job en curso y, si no termina, informa timeout sin matar el lease
+  ---
+  duration_ms: 313.4766
+  type: 'test'
+  ...
+# Subtest: ES-87 aislamiento de módulos: el proceso del worker no carga chats, diario, consentimiento, sesiones, rutas ni la clave de datos
+ok 428 - ES-87 aislamiento de módulos: el proceso del worker no carga chats, diario, consentimiento, sesiones, rutas ni la clave de datos
+  ---
+  duration_ms: 2319.3696
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-90: el catálogo no trae marcadores [..] en ES ni EN
+ok 429 - ES-90: el catálogo no trae marcadores [..] en ES ni EN
+  ---
+  duration_ms: 5.1524
+  type: 'test'
+  ...
+# Subtest: ES-90: GET público devuelve los textos provisionales honestos y ningún marcador
+ok 430 - ES-90: GET público devuelve los textos provisionales honestos y ningún marcador
+  ---
+  duration_ms: 2538.1543
+  type: 'test'
+  ...
+# Subtest: ES-90: solo el superadmin reemplaza un pendiente y el valor nuevo se publica; otros roles reciben 403
+ok 431 - ES-90: solo el superadmin reemplaza un pendiente y el valor nuevo se publica; otros roles reciben 403
+  ---
+  duration_ms: 348.6358
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-95 validación pura: campos obligatorios, límites, correo, URL, consentimiento y PDF por firma
+ok 432 - ES-95 validación pura: campos obligatorios, límites, correo, URL, consentimiento y PDF por firma
+  ---
+  duration_ms: 18.3651
+  type: 'test'
+  ...
+# Subtest: ES-95: una solicitud válida se guarda pendiente, sin rol ni estado del cliente, con la hoja de vida cifrada y sin nombre de archivo
+ok 433 - ES-95: una solicitud válida se guarda pendiente, sin rol ni estado del cliente, con la hoja de vida cifrada y sin nombre de archivo
+  ---
+  duration_ms: 2480.8636
+  type: 'test'
+  ...
+# Subtest: ES-95: sin hoja de vida, con un archivo que no es PDF (aunque diga serlo), pasado de tamaño o con campos inválidos se rechaza con 400 y sin guardar
+ok 434 - ES-95: sin hoja de vida, con un archivo que no es PDF (aunque diga serlo), pasado de tamaño o con campos inválidos se rechaza con 400 y sin guardar
+  ---
+  duration_ms: 459.6043
+  type: 'test'
+  ...
+# Subtest: ES-95: el campo trampa responde como un éxito sin guardar; un correo pendiente o aprobado no se duplica ni se revela, uno rechazado sí puede volver a solicitar
+ok 435 - ES-95: el campo trampa responde como un éxito sin guardar; un correo pendiente o aprobado no se duplica ni se revela, uno rechazado sí puede volver a solicitar
+  ---
+  duration_ms: 137.7142
+  type: 'test'
+  ...
+# Subtest: ES-95: un fallo de base de datos responde 500 sin registrar datos personales
+ok 436 - ES-95: un fallo de base de datos responde 500 sin registrar datos personales
+  ---
+  duration_ms: 26.7808
+  type: 'test'
+  ...
+# Subtest: ES-95 backoffice: sin sesión 403 y llave inválida 401; persona, terapeuta o junta de otro rol 403; admin y superadmin sí; la lista no incluye la hoja de vida
+ok 437 - ES-95 backoffice: sin sesión 403 y llave inválida 401; persona, terapeuta o junta de otro rol 403; admin y superadmin sí; la lista no incluye la hoja de vida
+  ---
+  duration_ms: 138.0609
+  type: 'test'
+  ...
+# Subtest: ES-95 backoffice: aprobar solo cambia el estado (no crea cuenta); rechazar exige nota; una solicitud revisada no se revisa dos veces
+ok 438 - ES-95 backoffice: aprobar solo cambia el estado (no crea cuenta); rechazar exige nota; una solicitud revisada no se revisa dos veces
+  ---
+  duration_ms: 147.9225
+  type: 'test'
+  ...
+# Subtest: ES-95 backoffice: eliminar borra la solicitud y su hoja de vida; roles ajenos 403
+ok 439 - ES-95 backoffice: eliminar borra la solicitud y su hoja de vida; roles ajenos 403
+  ---
+  duration_ms: 59.341
+  type: 'test'
+  ...
+# Subtest: ES-95 descarga: solo admin y superadmin, siempre como adjunto, sin sniffing y sin caché; devuelve exactamente el PDF subido
+ok 440 - ES-95 descarga: solo admin y superadmin, siempre como adjunto, sin sniffing y sin caché; devuelve exactamente el PDF subido
+  ---
+  duration_ms: 108.0196
+  type: 'test'
+  ...
+# Subtest: ES-95: nada de la solicitud llega al motor profesional ni a otras tablas (solo los dos modelos propios y ninguna cuenta)
+ok 441 - ES-95: nada de la solicitud llega al motor profesional ni a otras tablas (solo los dos modelos propios y ninguna cuenta)
+  ---
+  duration_ms: 40.0663
+  type: 'test'
+  ...
+# Subtest: ES-95: un formulario con demasiados campos se rechaza antes de procesarlo
+ok 442 - ES-95: un formulario con demasiados campos se rechaza antes de procesarlo
+  ---
+  duration_ms: 32.0293
+  type: 'test'
+  ...
+# Subtest: ES-95 retención: solo se eliminan las rechazadas con más de 180 días desde su revisión; pendientes, aprobadas y recientes quedan
+ok 443 - ES-95 retención: solo se eliminan las rechazadas con más de 180 días desde su revisión; pendientes, aprobadas y recientes quedan
+  ---
+  duration_ms: 4.6385
+  type: 'test'
+  ...
+# Subtest: ES-107 cifrado de bytes: ida y vuelta idéntica, sobrecoste fijo de 29 bytes, aleatorio por envío y a prueba de alteraciones
+ok 444 - ES-107 cifrado de bytes: ida y vuelta idéntica, sobrecoste fijo de 29 bytes, aleatorio por envío y a prueba de alteraciones
+  ---
+  duration_ms: 18.4597
+  type: 'test'
+  ...
+# Subtest: ES-107 tope global: valores por defecto, configuración inválida ignorada y cierre por pendientes o por peso
+ok 445 - ES-107 tope global: valores por defecto, configuración inválida ignorada y cierre por pendientes o por peso
+  ---
+  duration_ms: 0.6298
+  type: 'test'
+  ...
+# Subtest: ES-107: con el tope alcanzado el formulario responde 503 controlado sin cifras y sin guardar; un correo ya abierto sigue con su respuesta normal; al liberar cupo vuelve a recibir
+ok 446 - ES-107: con el tope alcanzado el formulario responde 503 controlado sin cifras y sin guardar; un correo ya abierto sigue con su respuesta normal; al liberar cupo vuelve a recibir
+  ---
+  duration_ms: 63.9717
+  type: 'test'
+  ...
+# Subtest: ES-107: el tope por peso total también cierra el formulario
+ok 447 - ES-107: el tope por peso total también cierra el formulario
+  ---
+  duration_ms: 33.6867
+  type: 'test'
+  ...
+# Subtest: ES-107: GET /capacity es solo del backoffice y avisa si el formulario está cerrado
+ok 448 - ES-107: GET /capacity es solo del backoffice y avisa si el formulario está cerrado
+  ---
+  duration_ms: 58.008
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-95: pasado el límite por IP el formulario responde 429 y no guarda ni siquiera las solicitudes válidas
+ok 449 - ES-95: pasado el límite por IP el formulario responde 429 y no guarda ni siquiera las solicitudes válidas
+  ---
+  duration_ms: 2860.6247
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-97 A2: ninguna nota clínica llega al proveedor ni se lee; el resumen usa solo cifras
+ok 450 - ES-97 A2: ninguna nota clínica llega al proveedor ni se lee; el resumen usa solo cifras
+  ---
+  duration_ms: 2749.0426
+  type: 'test'
+  ...
+# Subtest: ES-97 A2: sin datos no se llama al proveedor ni se gasta presupuesto
+ok 451 - ES-97 A2: sin datos no se llama al proveedor ni se gasta presupuesto
+  ---
+  duration_ms: 67.1361
+  type: 'test'
+  ...
+# Subtest: ES-97 M5: el resumen pasa por callClaude: registro de uso sin contenido, tiempo límite y cobro a quien lo pide
+ok 452 - ES-97 M5: el resumen pasa por callClaude: registro de uso sin contenido, tiempo límite y cobro a quien lo pide
+  ---
+  duration_ms: 72.9052
+  type: 'test'
+  ...
+# ❌ Error del proveedor de IA (resumen): Error
+# Subtest: ES-97 M5: presupuesto agotado (30 resúmenes seguidos no pasan del tope), sin configurar, proveedor caído y respuesta vacía
+ok 453 - ES-97 M5: presupuesto agotado (30 resúmenes seguidos no pasan del tope), sin configurar, proveedor caído y respuesta vacía
+  ---
+  duration_ms: 559.1642
+  type: 'test'
+  ...
+# Subtest: ES-97 M5: un proveedor lento no deja colgado el panel más allá del tiempo límite
+ok 454 - ES-97 M5: un proveedor lento no deja colgado el panel más allá del tiempo límite
+  ---
+  duration_ms: 77.3236
+  type: 'test'
+  ...
+# Subtest: ES-97 A2: terapeuta no asignado o rol incorrecto no llegan al proveedor ni gastan presupuesto
+ok 455 - ES-97 A2: terapeuta no asignado o rol incorrecto no llegan al proveedor ni gastan presupuesto
+  ---
+  duration_ms: 24.8794
+  type: 'test'
+  ...
+# ✅ Session 41 completed
+# Subtest: ES-97 M5: la recomendación al cerrar pasa por callClaude, se cobra a quien cierra y no lleva la nota
+ok 456 - ES-97 M5: la recomendación al cerrar pasa por callClaude, se cobra a quien cierra y no lleva la nota
+  ---
+  duration_ms: 74.5807
+  type: 'test'
+  ...
+# ⚠️  Could not generate post-session recommendation: ai_budget_exhausted
+# ⚠️  Could not generate post-session recommendation: provider_unavailable
+# ✅ Session 41 completed
+# ✅ Session 41 completed
+# Subtest: ES-97 M5: sin presupuesto o con el proveedor caído, el cierre sigue bien y avisa por qué no hay recomendación
+ok 457 - ES-97 M5: sin presupuesto o con el proveedor caído, el cierre sigue bien y avisa por qué no hay recomendación
+  ---
+  duration_ms: 36.9817
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: ES-98: matching/request envía el promedio de ánimo correcto y no un valor duplicado
+ok 458 - ES-98: matching/request envía el promedio de ánimo correcto y no un valor duplicado
+  ---
+  duration_ms: 2965.6992
+  type: 'test'
+  ...
+# Subtest: ES-98: sin registros de ánimo el matching dice «No data», no un número
+ok 459 - ES-98: sin registros de ánimo el matching dice «No data», no un número
+  ---
+  duration_ms: 54.9687
+  type: 'test'
+  ...
+# Subtest: ES-99: el nombre que se guarda no trae rutas, caracteres de control ni puntos iniciales y nunca queda vacío
+ok 460 - ES-99: el nombre que se guarda no trae rutas, caracteres de control ni puntos iniciales y nunca queda vacío
+  ---
+  duration_ms: 5.7807
+  type: 'test'
+  ...
+# Subtest: ES-99: el contenido debe corresponder al tipo declarado (PDF, JPEG, PNG, WEBP); lo demás no pasa
+ok 461 - ES-99: el contenido debe corresponder al tipo declarado (PDF, JPEG, PNG, WEBP); lo demás no pasa
+  ---
+  duration_ms: 4.2176
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-1: public registration cannot reactivate or replace an inactive account
+ok 462 - P1-1: public registration cannot reactivate or replace an inactive account
+  ---
+  duration_ms: 3887.1728
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-2: pricing has only one public read; mutations and inactive plans require admin
+    # Subtest: GET /all
+    ok 1 - GET /all
+      ---
+      duration_ms: 326.6156
+      type: 'test'
+      ...
+    # Subtest: POST 
+    ok 2 - POST 
+      ---
+      duration_ms: 277.6829
+      type: 'test'
+      ...
+    # Subtest: POST /seed
+    ok 3 - POST /seed
+      ---
+      duration_ms: 136.2671
+      type: 'test'
+      ...
+    # Subtest: PUT /7
+    ok 4 - PUT /7
+      ---
+      duration_ms: 143.2795
+      type: 'test'
+      ...
+    # Subtest: DELETE /7
+    ok 5 - DELETE /7
+      ---
+      duration_ms: 89.3769
+      type: 'test'
+      ...
+    1..5
+ok 463 - P1-2: pricing has only one public read; mutations and inactive plans require admin
+  ---
+  duration_ms: 3345.1269
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-3: only the active manifest is public, history and mutations require board
+    # Subtest: GET /manifest
+    ok 1 - GET /manifest
+      ---
+      duration_ms: 326.9572
+      type: 'test'
+      ...
+    # Subtest: POST /manifest
+    ok 2 - POST /manifest
+      ---
+      duration_ms: 279.0805
+      type: 'test'
+      ...
+    # Subtest: PUT /manifest/7/activate
+    ok 3 - PUT /manifest/7/activate
+      ---
+      duration_ms: 148.0711
+      type: 'test'
+      ...
+    1..3
+ok 464 - P1-3: only the active manifest is public, history and mutations require board
+  ---
+  duration_ms: 3160.8147
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-4: plan request review requires admin even through the user mount
+    # Subtest: GET /admin
+    ok 1 - GET /admin
+      ---
+      duration_ms: 487.1538
+      type: 'test'
+      ...
+    # Subtest: PUT /admin/7/approve
+    ok 2 - PUT /admin/7/approve
+      ---
+      duration_ms: 261.8918
+      type: 'test'
+      ...
+    # Subtest: PUT /admin/7/reject
+    ok 3 - PUT /admin/7/reject
+      ---
+      duration_ms: 130.5612
+      type: 'test'
+      ...
+    1..3
+ok 465 - P1-4: plan request review requires admin even through the user mount
+  ---
+  duration_ms: 3440.2799
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-5: only admin can list or confirm matching; user can request and choose
+    # Subtest: GET /pending
+    ok 1 - GET /pending
+      ---
+      duration_ms: 554.5955
+      type: 'test'
+      ...
+    # Subtest: POST /7/confirm
+    ok 2 - POST /7/confirm
+      ---
+      duration_ms: 307.0947
+      type: 'test'
+      ...
+    1..2
+ok 466 - P1-5: only admin can list or confirm matching; user can request and choose
+  ---
+  duration_ms: 3356.6911
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-6: review uses the existing superadmin role; therapists keep their own upload/status
+    # Subtest: GET /pending
+    ok 1 - GET /pending
+      ---
+      duration_ms: 570.3573
+      type: 'test'
+      ...
+    # Subtest: GET /7/download
+    ok 2 - GET /7/download
+      ---
+      duration_ms: 144.771
+      type: 'test'
+      ...
+    # Subtest: POST /7/approve
+    ok 3 - POST /7/approve
+      ---
+      duration_ms: 264.9254
+      type: 'test'
+      ...
+    # Subtest: POST /7/reject
+    ok 4 - POST /7/reject
+      ---
+      duration_ms: 178.633
+      type: 'test'
+      ...
+    1..4
+ok 467 - P1-6: review uses the existing superadmin role; therapists keep their own upload/status
+  ---
+  duration_ms: 3634.1089
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-7: admin cannot approve, reject or roll back prompts through either alias
+    # Subtest: approve
+    ok 1 - approve
+      ---
+      duration_ms: 695.376
+      type: 'test'
+      ...
+    # Subtest: reject
+    ok 2 - reject
+      ---
+      duration_ms: 185.6063
+      type: 'test'
+      ...
+    # Subtest: rollback
+    ok 3 - rollback
+      ---
+      duration_ms: 142.6867
+      type: 'test'
+      ...
+    1..3
+ok 468 - P1-7: admin cannot approve, reject or roll back prompts through either alias
+  ---
+  duration_ms: 3427.6104
+  type: 'test'
+  ...
+# Warning: Please use the `legacy` build in Node.js environments.
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-8: server dependencies resolve from the backend installation without root node_modules
+ok 469 - P1-8: server dependencies resolve from the backend installation without root node_modules
+  ---
+  duration_ms: 2972.431
+  type: 'test'
+  ...
+# Subtest: P1-8: Vercel entry is retained, exports the real app and protects administrative mutations
+ok 470 - P1-8: Vercel entry is retained, exports the real app and protects administrative mutations
+  ---
+  duration_ms: 753.508
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: P1-9: production entrypoints, signer and verifier fail closed without JWT_SECRET
+    # Subtest: server.js
+    ok 1 - server.js
+      ---
+      duration_ms: 1125.5849
+      type: 'test'
+      ...
+    # Subtest: ../api/index.js
+    ok 2 - ../api/index.js
+      ---
+      duration_ms: 1644.7678
+      type: 'test'
+      ...
+    # Subtest: routes/auth.js
+    ok 3 - routes/auth.js
+      ---
+      duration_ms: 4157.4285
+      type: 'test'
+      ...
+    # Subtest: middlewares/auth.js
+    ok 4 - middlewares/auth.js
+      ---
+      duration_ms: 532.9589
+      type: 'test'
+      ...
+    1..4
+ok 471 - P1-9: production entrypoints, signer and verifier fail closed without JWT_SECRET
+  ---
+  duration_ms: 7465.8668
+  type: 'test'
+  ...
+# Subtest: P1-9: configured production key works; foreign or missing tokens are denied
+ok 472 - P1-9: configured production key works; foreign or missing tokens are denied
+  ---
+  duration_ms: 822.1031
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-57-01: connection identity and login limit remain enforced
+ok 473 - QA-57-01: connection identity and login limit remain enforced
+  ---
+  duration_ms: 4512.5094
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-57-03: registration preserves its authorized role contract
+ok 474 - QA-57-03: registration preserves its authorized role contract
+  ---
+  duration_ms: 3296.2379
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-57-04: role matrix, authorized persistence and invalid inputs
+ok 475 - QA-57-04: role matrix, authorized persistence and invalid inputs
+  ---
+  duration_ms: 2681.3273
+  type: 'test'
+  ...
+# Subtest: QA-57-05: alter solo con DB_SYNC_ALTER=true, sin importar NODE_ENV
+ok 476 - QA-57-05: alter solo con DB_SYNC_ALTER=true, sin importar NODE_ENV
+  ---
+  duration_ms: 8.2234
+  type: 'test'
+  ...
+# Subtest: QA-57-05: server.js usa syncOptions y no decide alter por NODE_ENV
+ok 477 - QA-57-05: server.js usa syncOptions y no decide alter por NODE_ENV
+  ---
+  duration_ms: 1.4533
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-9-01
+ok 478 - QA-9-01
+  ---
+  duration_ms: 2320.4065
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-9-02: public input and legitimate authentication
+ok 479 - QA-9-02: public input and legitimate authentication
+  ---
+  duration_ms: 3257.6563
+  type: 'test'
+  ...
+# Subtest: QA-9-02: body consumers reject invalid types before side effects
+    # Subtest: POST /api/chat
+    ok 1 - POST /api/chat
+      ---
+      duration_ms: 50.0586
+      type: 'test'
+      ...
+    # Subtest: POST /api/mood/checkin
+    ok 2 - POST /api/mood/checkin
+      ---
+      duration_ms: 41.4198
+      type: 'test'
+      ...
+    # Subtest: POST /api/mood/checkout
+    ok 3 - POST /api/mood/checkout
+      ---
+      duration_ms: 37.055
+      type: 'test'
+      ...
+    # Subtest: POST /api/rating
+    ok 4 - POST /api/rating
+      ---
+      duration_ms: 28.6195
+      type: 'test'
+      ...
+    # Subtest: PUT /api/user/onboarding-complete
+    ok 5 - PUT /api/user/onboarding-complete
+      ---
+      duration_ms: 39.8215
+      type: 'test'
+      ...
+    # Subtest: POST /api/matching/request
+    ok 6 - POST /api/matching/request
+      ---
+      duration_ms: 26.4223
+      type: 'test'
+      ...
+    # Subtest: POST /api/matching/choose
+    ok 7 - POST /api/matching/choose
+      ---
+      duration_ms: 42.9947
+      type: 'test'
+      ...
+    # Subtest: POST /api/plan-requests
+    ok 8 - POST /api/plan-requests
+      ---
+      duration_ms: 36.2713
+      type: 'test'
+      ...
+    # Subtest: PUT /api/plan-requests/admin/7/approve
+    ok 9 - PUT /api/plan-requests/admin/7/approve
+      ---
+      duration_ms: 42.9382
+      type: 'test'
+      ...
+    # Subtest: PUT /api/plan-requests/admin/7/reject
+    ok 10 - PUT /api/plan-requests/admin/7/reject
+      ---
+      duration_ms: 30.4501
+      type: 'test'
+      ...
+    # Subtest: POST /api/manifest/manifest
+    ok 11 - POST /api/manifest/manifest
+      ---
+      duration_ms: 20.6305
+      type: 'test'
+      ...
+    # Subtest: POST /api/admin/usuarios
+    ok 12 - POST /api/admin/usuarios
+      ---
+      duration_ms: 29.3911
+      type: 'test'
+      ...
+    # Subtest: PUT /api/admin/usuarios/7
+    ok 13 - PUT /api/admin/usuarios/7
+      ---
+      duration_ms: 27.683
+      type: 'test'
+      ...
+    # Subtest: PUT /api/admin/usuarios/7/asignar-terapeuta
+    ok 14 - PUT /api/admin/usuarios/7/asignar-terapeuta
+      ---
+      duration_ms: 23.6942
+      type: 'test'
+      ...
+    # Subtest: PUT /api/admin/usuarios/7/plan
+    ok 15 - PUT /api/admin/usuarios/7/plan
+      ---
+      duration_ms: 22.7164
+      type: 'test'
+      ...
+    # Subtest: PUT /api/admin/usuarios/7/reset-password
+    ok 16 - PUT /api/admin/usuarios/7/reset-password
+      ---
+      duration_ms: 25.7779
+      type: 'test'
+      ...
+    # Subtest: POST /api/admin/prompt
+    ok 17 - POST /api/admin/prompt
+      ---
+      duration_ms: 32.3434
+      type: 'test'
+      ...
+    # Subtest: POST /api/admin/prompt/propose
+    ok 18 - POST /api/admin/prompt/propose
+      ---
+      duration_ms: 28.2419
+      type: 'test'
+      ...
+    # Subtest: POST /api/superadmin/prompt/7/reject
+    ok 19 - POST /api/superadmin/prompt/7/reject
+      ---
+      duration_ms: 33.9874
+      type: 'test'
+      ...
+    # Subtest: POST /api/pricing
+    ok 20 - POST /api/pricing
+      ---
+      duration_ms: 51.0166
+      type: 'test'
+      ...
+    # Subtest: PUT /api/pricing/7
+    ok 21 - PUT /api/pricing/7
+      ---
+      duration_ms: 19.2032
+      type: 'test'
+      ...
+    # Subtest: POST /api/therapist/validation/7/approve
+    ok 22 - POST /api/therapist/validation/7/approve
+      ---
+      duration_ms: 26.5237
+      type: 'test'
+      ...
+    # Subtest: POST /api/therapist/validation/7/reject
+    ok 23 - POST /api/therapist/validation/7/reject
+      ---
+      duration_ms: 28.5644
+      type: 'test'
+      ...
+    # Subtest: POST /api/therapist/prompt/propose
+    ok 24 - POST /api/therapist/prompt/propose
+      ---
+      duration_ms: 26.2697
+      type: 'test'
+      ...
+    # Subtest: POST /api/therapist/pacientes/7/notas
+    ok 25 - POST /api/therapist/pacientes/7/notas
+      ---
+      duration_ms: 32.9977
+      type: 'test'
+      ...
+    # Subtest: PUT /api/therapist/notas/7
+    ok 26 - PUT /api/therapist/notas/7
+      ---
+      duration_ms: 38.1419
+      type: 'test'
+      ...
+    # Subtest: POST /api/sessions/therapist
+    ok 27 - POST /api/sessions/therapist
+      ---
+      duration_ms: 34.4711
+      type: 'test'
+      ...
+    # Subtest: PUT /api/sessions/therapist/7
+    ok 28 - PUT /api/sessions/therapist/7
+      ---
+      duration_ms: 23.8399
+      type: 'test'
+      ...
+    # Subtest: POST /api/sessions/therapist/7/notes
+    ok 29 - POST /api/sessions/therapist/7/notes
+      ---
+      duration_ms: 23.1335
+      type: 'test'
+      ...
+    # Subtest: POST /api/sessions/therapist/7/end
+    ok 30 - POST /api/sessions/therapist/7/end
+      ---
+      duration_ms: 26.4123
+      type: 'test'
+      ...
+    1..30
+ok 480 - QA-9-02: body consumers reject invalid types before side effects
+  ---
+  duration_ms: 1004.843
+  type: 'test'
+  ...
+# ✅ Tablas sincronizadas en PostgreSQL.
+# Subtest: QA-SMK-01: una ruta /api/* inexistente da 404 JSON con sesión y sigue pidiendo sesión sin ella; la salud y la SPA no cambian
+ok 481 - QA-SMK-01: una ruta /api/* inexistente da 404 JSON con sesión y sigue pidiendo sesión sin ella; la salud y la SPA no cambian
+  ---
+  duration_ms: 2076.9703
+  type: 'test'
+  ...
+1..481
+# tests 535
+# suites 0
+# pass 535
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49724.915
