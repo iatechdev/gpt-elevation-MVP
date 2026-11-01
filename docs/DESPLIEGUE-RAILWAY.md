@@ -96,7 +96,7 @@ ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD='<clave de 12+ caracteres, defin
   la demostración conviene quitarla del entorno donde se haya puesto.
 - **Cómo retirarlo:** cuando el cliente publique su catálogo real desde el backoffice, el sintético queda archivado y las autoevaluaciones de la demostración se marcan como
   desactualizadas. La persona de demostración se elimina con el flujo de borrado de datos (ES-23).
-- **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas (ES-32 no está en `main`) ni toca el catálogo real.
+- **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas para la persona de demostración (ES-32 ya está en `main`, pero la semilla no carga esos datos) ni toca el catálogo real.
 - **Pruebas:** `npm run test:seed-demo:pg` con `SEED_TEST_DATABASE_URL` (Postgres local desechable) y `npm test`.
 
 ## Migraciones versionadas (ES-59, fase 1)
