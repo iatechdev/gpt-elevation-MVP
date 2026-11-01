@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
-import { validRegistrationPassword } from '../access/registrationPassword'
-import {
-  colors, radius, spacing, typography,
-  btnPrimaryStyle,
-} from '../styles/tokens'
+import { interfaceCopy } from '../access/interfaceCopy'
+import '../styles/accessAdmin.css'
+import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
+import { PasswordRequirements } from '../access/PasswordRequirements'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 export function LoginPage() {
   const { t, lang, setLang } = useLanguage()
+  const copy = interfaceCopy[lang]
   const [params, setParams] = useSearchParams()
   const isRegistering = registrationRequested(params.toString())
   const selectedPlan = planIntent(params.toString())
@@ -25,17 +25,22 @@ export function LoginPage() {
   const [email,         setEmail]         = useState('')
   const [password,      setPassword]      = useState('')
   const [showPassword,  setShowPassword]  = useState(false)
-  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean } | null>(null)
+  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean; missing?: PasswordProblem[] } | null>(null)
   const [isLocked,      setIsLocked]      = useState(false)
   const [submitting,    setSubmitting]    = useState(false)
+  const passwordInput = useRef<HTMLInputElement>(null)
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     if (submitting || isLocked) return
     setAuthMessage(null)
-    if (isRegistering && !validRegistrationPassword(password)) {
-      setAuthMessage({ key: 'landing.access.password_policy', success: false })
-      return
+    if (isRegistering) {
+      const missing = passwordProblems(password)
+      if (missing.length) {
+        setAuthMessage({ key: 'landing.access.password_policy', success: false, missing })
+        passwordInput.current?.focus()
+        return
+      }
     }
     setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
@@ -51,12 +56,14 @@ export function LoginPage() {
       })
       const data = await res.json() as {
         error?: string; locked?: boolean; token?: string
-        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string
+        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string; missing?: unknown
       }
 
       if (!res.ok) {
         setIsLocked(data.locked === true)
-        setAuthMessage({ key: authFailureKey(res.status, data, isRegistering), success: false })
+        const key = authFailureKey(res.status, data, isRegistering)
+        setAuthMessage({ key, success: false, missing: key === 'landing.access.password_policy' ? knownProblems(data.missing) : undefined })
+        if (key === 'landing.access.password_policy') passwordInput.current?.focus()
         return
       }
 
@@ -87,194 +94,85 @@ export function LoginPage() {
 
   if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? sessionDestination(entry.result.session)} replace />
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    background: 'transparent',
-    padding: `${spacing.md} 0`,
-    borderBottom: `1px solid ${colors.border}`,
-    color: colors.text,
-    fontSize: '1rem',
-    fontFamily: typography.fontBody,
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-  }
+  // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
+  const policyError = authMessage?.key === 'landing.access.password_policy'
+  const missingList = authMessage?.missing?.map(id => text(`landing.access.pw.missing.${id}`)).join(', ')
+  const messageText = policyError && missingList ? text('landing.access.pw.missing').replace('{list}', missingList) : authMessage ? text(authMessage.key) : ''
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 1.5rem',
-      background: colors.bg,
-      fontFamily: typography.fontBody,
-    }}>
-      <div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-        {/* Lang switcher */}
-        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: spacing.xs, marginBottom: spacing.lg }}>
-          {(['es', 'en'] as const).map(l => (
-            <button key={l} onClick={() => setLang(l)} style={{
-              fontSize: 11,
-              padding: `3px 10px`,
-              borderRadius: radius.full,
-              border: `0.5px solid ${colors.borderLight}`,
-              background: lang === l ? colors.primary : 'transparent',
-              color: lang === l ? colors.bgCard : colors.textMuted,
-              cursor: 'pointer',
-              fontFamily: typography.fontBody,
-              transition: 'all 0.2s',
-            }}>
-              {l.toUpperCase()}
-            </button>
+    <div className="access-page elv-theme">
+      <a className="interface-skip" href="#access-main">{copy.skip}</a>
+      <header className="interface-header">
+        <span className="interface-brand">{t('logo')} <span aria-hidden="true">●</span></span>
+        <div className="interface-language" role="group" aria-label={copy.language}>
+          {(['es', 'en'] as const).map(code => (
+            <button key={code} type="button" lang={code} aria-pressed={lang === code}
+              className="elv-btn" onClick={() => setLang(code)}>{code.toUpperCase()}</button>
           ))}
         </div>
-
-        {/* Branding */}
-        <header style={{ textAlign: 'center', marginBottom: spacing.xxxl }}>
-          <h1 style={{
-            fontFamily: typography.fontDisplay,
-            fontWeight: 300,
-            letterSpacing: '0.3em',
-            fontSize: '1.5rem',
-            color: colors.text,
-            margin: 0,
-          }}>
-            {t('logo')}
-          </h1>
-          <div style={{ width: 40, height: 1, background: colors.border, margin: `${spacing.lg} auto` }} />
-          <p style={{
-            fontFamily: 'Noto Serif, serif',
-            fontStyle: 'italic',
-            fontSize: '0.8rem',
-            color: colors.textSubtle,
-            margin: 0,
-          }}>
-            {t('tagline')}
-          </p>
+      </header>
+      <main id="access-main" className="access-main" tabIndex={-1}>
+        <section className="elv-card access-card" aria-labelledby="access-title">
+        <header className="access-heading">
+          <h1 id="access-title">{isRegistering ? text('landing.access.register') : copy.signIn}</h1>
+          <p>{t('login_subtitle')}</p>
         </header>
-
-        {entry.result.status === 'checking' && <p role="status" style={{ color: colors.text }}>{text('landing.access.checking')}</p>}
-        {entry.result.status === 'invalid' && <p role="status" style={{ color: colors.text }}>{text('landing.access.expired')}</p>}
-        {entry.result.status === 'unavailable' && <div role="alert" style={{ marginBottom: spacing.lg, color: colors.text }}>
+        {entry.result.status === 'checking' && <p role="status" className="access-notice">{text('landing.access.checking')}</p>}
+        {entry.result.status === 'invalid' && <p role="status" className="access-notice">{text('landing.access.expired')}</p>}
+        {entry.result.status === 'unavailable' && <div role="alert" className="access-notice access-notice--error">
           <p>{text('landing.access.unavailable')}</p>
-          <button type="button" className="elv-btn" onClick={entry.retry} style={{ ...btnPrimaryStyle, marginTop: spacing.md }}>{text('landing.access.retry')}</button>
+          <button type="button" className="elv-btn elv-btn-outline" onClick={entry.retry}>{text('landing.access.retry')}</button>
         </div>}
-
-        {/* Existing form layout and authentication endpoints are preserved. */}
-        {entry.result.status !== 'checking' &&
-        <form onSubmit={handleAuth} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.xxl }}>
-
-          {isRegistering && (
-            <input
-              type="text"
-              aria-label={text('landing.access.name')}
-              autoComplete="name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder={t('label_name')}
-              required
-              style={inputStyle}
-            />
-          )}
-
-          <input
-            type="email"
-            aria-label={text('landing.access.email')}
-            autoComplete="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder={t('label_email')}
-            required
-            style={inputStyle}
-          />
-
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              aria-label={text('landing.access.password')}
-              autoComplete={isRegistering ? 'new-password' : 'current-password'}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder={t('label_password')}
-              required
-              style={{ ...inputStyle, paddingRight: '2rem' }}
-            />
-            <button
-              type="button"
-              aria-label={text(showPassword ? 'landing.access.hide_password' : 'landing.access.show_password')}
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
-                position: 'absolute',
-                right: 0,
-                bottom: spacing.md,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: colors.textSubtle,
-                fontSize: 16,
-                padding: 0,
-              }}
-            >
-              {showPassword ? '🙈' : '👁'}
-            </button>
+        {entry.result.status !== 'checking' && <>
+        <form onSubmit={handleAuth} className="access-form" aria-busy={submitting}>
+          {isRegistering && <div>
+            <label htmlFor="access-name">{text('landing.access.name')}</label>
+            <input id="access-name" className="elv-input" type="text" autoComplete="name"
+              value={name} onChange={e => setName(e.target.value)} placeholder={t('label_name')} required />
+          </div>}
+          <div>
+            <label htmlFor="access-email">{text('landing.access.email')}</label>
+            <input id="access-email" className="elv-input" type="email" autoComplete="email"
+              value={email} onChange={e => setEmail(e.target.value)} placeholder={t('label_email')} required />
           </div>
-
-          {authMessage && (
-            <p style={{
-              fontSize: '0.85rem',
-              textAlign: 'center',
-              color: authMessage.success ? colors.success : colors.danger,
-              margin: 0,
-            }} role="status">
-              {authMessage.success ? '✓ ' : '❌ '}{text(authMessage.key)}
-            </p>
+          <div>
+            <label htmlFor="access-password">{text('landing.access.password')}</label>
+            <div className="access-password">
+              <input id="access-password" ref={passwordInput} className="elv-input" type={showPassword ? 'text' : 'password'}
+                autoComplete={isRegistering ? 'new-password' : 'current-password'} value={password}
+                aria-describedby={isRegistering ? 'pw-req' : undefined} aria-invalid={policyError ? true : undefined}
+                onChange={e => { setPassword(e.target.value); if (policyError) setAuthMessage(null) }} required />
+              <button type="button" className="elv-btn elv-btn-ghost" aria-controls="access-password"
+                aria-label={text(showPassword ? 'landing.access.hide_password' : 'landing.access.show_password')}
+                onClick={() => setShowPassword(!showPassword)}>{showPassword ? copy.hide : copy.show}</button>
+            </div>
+          </div>
+          {isRegistering && (
+            <PasswordRequirements id="pw-req" password={password} showErrors={policyError} serverProblems={authMessage?.missing} text={text} />
           )}
-
-          <button
-            type="submit"
-            disabled={isLocked || submitting}
-            style={{
-              ...btnPrimaryStyle,
-              width: '100%',
-              padding: `${spacing.md} ${spacing.lg}`,
-              fontSize: '0.9rem',
-              borderRadius: radius.lg,
-              background: isLocked
-                ? colors.border
-                : `linear-gradient(135deg, ${colors.primaryDark}, ${colors.primary})`,
-              cursor: isLocked ? 'not-allowed' : 'pointer',
-              color: colors.bgCard,
-              fontWeight: 500,
-            }}
-          >
-            {isLocked ? `🔒 ${text('landing.access.locked')}` : submitting ? text('landing.access.submitting') : isRegistering ? text('landing.access.register') : t('btn_login')}
+          {authMessage && <p role={authMessage.success ? 'status' : 'alert'}
+            className={`access-notice access-notice--${authMessage.success ? 'success' : 'error'}`}>
+            {messageText}
+          </p>}
+          <button type="submit" className="elv-btn elv-btn-primary" disabled={isLocked || submitting}>
+            {isLocked ? text('landing.access.locked') : submitting ? text('landing.access.submitting') : isRegistering ? text('landing.access.register') : t('btn_login')}
           </button>
-
-          <button
-            type="button"
-            disabled={submitting}
+        </form>
+        <div className="access-secondary">
+          <p>{isRegistering ? copy.alreadyRegistered : copy.firstTime}</p>
+          <button type="button" disabled={submitting}
             onClick={() => {
               setParams(accessParams(!isRegistering, selectedPlan), { replace: true })
               setAuthMessage(null)
               setPassword('')
               setShowPassword(false)
-            }}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: colors.primary,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              textAlign: 'center',
-              fontFamily: typography.fontBody,
-            }}
-          >
-            {isRegistering ? t('link_login') : text('landing.access.register_link')}
+            }}>
+            {isRegistering ? copy.signIn : text('landing.access.register')}
           </button>
-
-        </form>}
-      </div>
+        </div>
+        </>}
+        </section>
+      </main>
     </div>
   )
 }

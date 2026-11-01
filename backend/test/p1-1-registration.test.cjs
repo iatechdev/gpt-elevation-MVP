@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { models, record, startApp } = require('./support.cjs');
 
 test('P1-1: public registration cannot reactivate or replace an inactive account', async t => {
-  const password = randomBytes(24).toString('hex');
+  const password = `Aa1!${randomBytes(24).toString('hex')}`; // ES-128: cumple la política de registro
   const originalHash = await bcrypt.hash(randomBytes(24).toString('hex'), 4);
   const account = record({ id: 202, role: 'superadmin', active: false, password: originalHash });
   account.update = mock.fn(account.update);
