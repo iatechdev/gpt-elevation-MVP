@@ -1,0 +1,58 @@
+{"id":"F1a crear entrada (201)","ok":true,"detail":"201"}
+{"id":"F1b contenido cifrado en base (no aparece el texto)","ok":true,"detail":"cifrado=true"}
+{"id":"F1c leer devuelve el texto descifrado","ok":true,"detail":""}
+{"id":"F1d editar","ok":true,"detail":"200"}
+{"id":"F2a otras personas y roles (B, admin, superadmin, terapeuta, junta): GET/PUT/DELETE de la entrada de A → 404 y no aparece en su lista","ok":true,"detail":"[]"}
+{"id":"F2b la entrada de A sigue intacta tras los intentos ajenos","ok":true,"detail":""}
+{"id":"F2c sin sesión → 401/403 y JWT inválido → 401","ok":true,"detail":"sin=403 inv=401"}
+{"id":"F3a el diario no aparece en el contexto profesional (consulta de la propia persona)","ok":true,"detail":"estado=404"}
+{"id":"F1e borrar → 404 posterior y contenido vaciado en base","ok":true,"detail":"del=200 get=404 deletedAt=true"}
+{"id":"F10a 10.000 caracteres se aceptan y 10.001 se rechazan","ok":true,"detail":"201/400"}
+{"id":"F10b inyección SQL en la fecha → 400 y la tabla sigue","ok":true,"detail":"400"}
+{"id":"F3b [es] «Al Puente» deshabilitado, con explicación honesta asociada, y no envía nada","ok":true,"detail":"{\"found\":true,\"disabled\":true,\"aria\":\"journal-bridge-note\",\"note\":\"El Puente estará disponible cuando su flujo de autorización esté integrado.\"} env=0"}
+{"id":"F8a [es] sin errores de página","ok":true,"detail":""}
+{"id":"F3b [en] «Al Puente» deshabilitado, con explicación honesta asociada, y no envía nada","ok":true,"detail":"{\"found\":true,\"disabled\":true,\"aria\":\"journal-bridge-note\",\"note\":\"The Bridge will be available once its authorization flow is integrated.\"} env=0"}
+{"id":"F8a [en] sin errores de página","ok":true,"detail":""}
+{"id":"F8b [en] la pantalla no contiene palabras en español","ok":true,"detail":""}
+{"id":"F8c [es] la pantalla no contiene frases en inglés","ok":true,"detail":""}
+{"id":"F1f [es] crear desde la pantalla, redirige a la entrada y persiste al recargar","ok":true,"detail":"http://127.0.0.1:9998/app/diary/429"}
+{"id":"F1g [es] editar desde la pantalla guarda el cambio","ok":true,"detail":"Contenido editado QA"}
+{"id":"F1h [es] borrar desde la pantalla (con confirmación) → 404 en el servidor","ok":true,"detail":"404"}
+{"id":"F1f [en] crear desde la pantalla, redirige a la entrada y persiste al recargar","ok":true,"detail":"http://127.0.0.1:9998/app/diary/430"}
+{"id":"F1g [en] editar desde la pantalla guarda el cambio","ok":true,"detail":"Contenido editado QA"}
+{"id":"F1h [en] borrar desde la pantalla (con confirmación) → 404 en el servidor","ok":true,"detail":"404"}
+{"id":"F6a lista con 503: mensaje de error y botón Reintentar","ok":true,"detail":"Saltar al contenido Volver al inicio ESEN CONVERSACIÓN DIARIO ☰ MENÚ  MI ESPACIO / DIARIO  Mi diario  Privado · Solo par"}
+{"id":"F6b lista con JWT vencido: aviso de sesión, sin lista privada ni Reintentar","ok":true,"detail":"Saltar al contenido Volver al inicio ESEN CONVERSACIÓN DIARIO ☰ MENÚ  MI ESPACIO / DIARIO  Mi diario  Privado · Solo para ti  Al Puente →  E"}
+{"id":"F6c respuesta ilegible al guardar: «Guardado sin confirmar» y no se crea un duplicado","ok":true,"detail":"entradas=0"}
+{"id":"F6d conflicto: no se sobrescribe la versión del servidor","ok":true,"detail":"cambiado desde otra pestaña"}
+{"id":"F6e estado vacío de la lista","ok":true,"detail":"Saltar al contenido Volver al inicio ESEN CONVERSACIÓN DIARIO ☰ MENÚ  MI ESPACIO / DIARIO  Mi diario  Privado · Solo para ti  Al Puente →  El Puente estará disp"}
+{"id":"F5a con texto sin guardar, salir de la pestaña activa la guardia (beforeunload)","ok":true,"detail":""}
+{"id":"F5b sin cambios no hay guardia","ok":true,"detail":""}
+{"id":"F5c ante un error del servidor el texto escrito se conserva en pantalla","ok":true,"detail":"texto que debe conservarse"}
+{"id":"F9a [es] 320px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 320px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 375px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 375px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 768px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 768px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 1440px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [es] 1440px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 320px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 320px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 375px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 375px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 768px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 768px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 1440px /app/diary/new: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9a [en] 1440px /app/diary: sin desborde horizontal","ok":true,"detail":"exceso=0"}
+{"id":"F9b [es] 320px con texto al 200 %: sin desborde horizontal","ok":true,"detail":"{\"sw\":0,\"bad\":[]}"}
+{"id":"F9b [es] 375px con texto al 200 %: sin desborde horizontal","ok":true,"detail":"{\"sw\":0,\"bad\":[]}"}
+{"id":"F9b [en] 320px con texto al 200 %: sin desborde horizontal","ok":true,"detail":"{\"sw\":0,\"bad\":[]}"}
+{"id":"F9b [en] 375px con texto al 200 %: sin desborde horizontal","ok":true,"detail":"{\"sw\":0,\"bad\":[]}"}
+{"id":"F9c teclado: Tab recorre los controles y el foco es visible","ok":true,"detail":"Saltar al contenido > Volver al inicio > ES > EN > Conversación > Diario > ☰ Menú > entry-date > entry-date > entry-date > entry-date > entry-content > Cancelar > Diario"}
+{"id":"F9d reduced-motion emulado: sin animaciones ni transiciones largas","ok":true,"detail":"elementos=0"}
+{"id":"F9e contraste medido de textos (mín. 4,5:1) — el PR declara 15,44 / 4,74 / 3,58","ok":true,"detail":"[[\".journal-paper\",15.44,\"\"],[\".journal-private\",5.12,\"\"],[\".journal-eyebrow\",5.12,\"\"],[\".journal-privacy\",4.74,\"\"],[\".journal-draft-warning\",4.74,\"\"],[\".journal-bridge-note\",5.12,\"\"],[\"#journal-counter\",4.74,\"\"],[\"label[for=\\\"entry-date\\\"]\",15.44,\"\"]]"}
+{"id":"F10c HTML/JS en el contenido se muestra como texto y no se ejecuta","ok":true,"detail":"alerta=false"}
+{"id":"F10d doble clic en Guardar entrada: una sola entrada","ok":true,"detail":"entradas=1"}
+{"id":"F11 es113-preview.cjs no se monta en server.js ni en api/index.js","ok":true,"detail":""}
+RESUMEN {"total":57,"fallos":0,"ids":[]}

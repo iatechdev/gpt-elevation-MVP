@@ -1,0 +1,61 @@
+{"id":"T1 [es] Bogotá 19:30 del 31-oct (UTC ya es 1-nov): fecha por defecto = 2026-10-31","ok":true,"detail":"valor=2026-10-31 utc=2026-11-01"}
+{"id":"T1 [en] Bogotá 19:30 del 31-oct (UTC ya es 1-nov): fecha por defecto = 2026-10-31","ok":true,"detail":"valor=2026-10-31 utc=2026-11-01"}
+{"id":"T1 [es] Bogotá 23:59 del 31-oct: fecha por defecto = 2026-10-31","ok":true,"detail":"valor=2026-10-31 utc=2026-11-01"}
+{"id":"T1 [en] Bogotá 23:59 del 31-oct: fecha por defecto = 2026-10-31","ok":true,"detail":"valor=2026-10-31 utc=2026-11-01"}
+{"id":"T1 [es] Bogotá 00:00 del 1-nov: fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-11-01"}
+{"id":"T1 [en] Bogotá 00:00 del 1-nov: fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-11-01"}
+{"id":"T1 [es] Tokio 08:00 del 1-nov (UTC aún es 31-oct): fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [en] Tokio 08:00 del 1-nov (UTC aún es 31-oct): fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [es] Auckland 02:00 del 1-nov (UTC aún es 31-oct): fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [en] Auckland 02:00 del 1-nov (UTC aún es 31-oct): fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [es] Kiritimati UTC+14, 00:30 del 1-nov: fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [en] Kiritimati UTC+14, 00:30 del 1-nov: fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [es] Pago Pago UTC-11, 23:30 del 31-oct: fecha por defecto = 2026-10-31","ok":true,"detail":"valor=2026-10-31 utc=2026-11-01"}
+{"id":"T1 [en] Pago Pago UTC-11, 23:30 del 31-oct: fecha por defecto = 2026-10-31","ok":true,"detail":"valor=2026-10-31 utc=2026-11-01"}
+{"id":"T1 [es] Madrid 00:30 del 1-nov (cambio de horario 25-oct): fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T1 [en] Madrid 00:30 del 1-nov (cambio de horario 25-oct): fecha por defecto = 2026-11-01","ok":true,"detail":"valor=2026-11-01 utc=2026-10-31"}
+{"id":"T2 Bogotá 19:30: guardar con la fecha por defecto responde 201 y queda con la fecha local 2026-10-31","ok":true,"detail":"http=201 fecha guardada=2026-10-31"}
+{"id":"T2 Tokio 08:00: guardar con la fecha por defecto responde 201 y queda con la fecha local 2026-11-01","ok":true,"detail":"http=201 fecha guardada=2026-11-01"}
+{"id":"T2 Kiritimati +14: guardar con la fecha por defecto responde 201 y queda con la fecha local 2026-11-01","ok":true,"detail":"http=201 fecha guardada=2026-11-01"}
+{"id":"T3a [es] el formulario no usa la validación nativa (noValidate)","ok":true,"detail":"noValidate=true"}
+{"id":"T3b [es] «Guardar» está desactivado mientras no hay cambios (el estado inicial no cuenta como cambio)","ok":true,"detail":"desactivado=true"}
+{"id":"T3c [es] contenido solo con espacios: error propio «Escribe algo antes de guardar.», role=alert, aria-invalid y aria-describedby, foco en el campo","ok":true,"detail":"{\"t\":\"Escribe algo antes de guardar.\",\"role\":\"alert\",\"inv\":\"true\",\"desc\":\"entry-content-error\",\"foc\":\"entry-content\",\"bubble\":\"\"}"}
+{"id":"T3d [es] al escribir el error del campo desaparece","ok":true,"detail":""}
+{"id":"T3e [es] fecha vacía: «Elige la fecha de la entrada.» con foco en la fecha","ok":true,"detail":"{\"t\":\"Elige la fecha de la entrada.\",\"foc\":\"entry-date\",\"inv\":\"true\"}"}
+{"id":"T3f [es] fecha muy futura (2999-01-01): «Esa fecha no es válida o es futura.»","ok":true,"detail":"Esa fecha no es válida o es futura."}
+{"id":"T3g [es] ambos campos inválidos: dos errores y el foco va al primero (fecha)","ok":true,"detail":"{\"d\":true,\"c\":true,\"foc\":\"entry-date\"}"}
+{"id":"T3h [es] con errores no se envía nada al servidor","ok":true,"detail":"POST=0"}
+{"id":"T3i [es] sin errores de página","ok":true,"detail":""}
+{"id":"T3a [en] el formulario no usa la validación nativa (noValidate)","ok":true,"detail":"noValidate=true"}
+{"id":"T3b [en] «Guardar» está desactivado mientras no hay cambios (el estado inicial no cuenta como cambio)","ok":true,"detail":"desactivado=true"}
+{"id":"T3c [en] contenido solo con espacios: error propio «Write something before saving.», role=alert, aria-invalid y aria-describedby, foco en el campo","ok":true,"detail":"{\"t\":\"Write something before saving.\",\"role\":\"alert\",\"inv\":\"true\",\"desc\":\"entry-content-error\",\"foc\":\"entry-content\",\"bubble\":\"\"}"}
+{"id":"T3d [en] al escribir el error del campo desaparece","ok":true,"detail":""}
+{"id":"T3e [en] fecha vacía: «Choose the date of the entry.» con foco en la fecha","ok":true,"detail":"{\"t\":\"Choose the date of the entry.\",\"foc\":\"entry-date\",\"inv\":\"true\"}"}
+{"id":"T3f [en] fecha muy futura (2999-01-01): «That date is not valid or is in the future.»","ok":true,"detail":"That date is not valid or is in the future."}
+{"id":"T3g [en] ambos campos inválidos: dos errores y el foco va al primero (fecha)","ok":true,"detail":"{\"d\":true,\"c\":true,\"foc\":\"entry-date\"}"}
+{"id":"T3h [en] con errores no se envía nada al servidor","ok":true,"detail":"POST=0"}
+{"id":"T3i [en] sin errores de página","ok":true,"detail":""}
+{"id":"info T4 texto de estado al abrir una entrada nueva","note":"Guarda solo lo que quieras conservar. Guardar no comparte con otras personas ni con el recorrido profesional."}
+{"id":"T4a «Cancelar» abre siempre el diálogo de confirmación, igual que en main (comportamiento previo, el PR no lo cambia)","ok":true,"detail":"diálogo=1"}
+{"id":"T4c salir de una entrada nueva sin escribir NO dispara la guardia de cambios sin guardar (la fecha por defecto no cuenta)","ok":true,"detail":"diálogos="}
+{"id":"T4d salir con texto escrito SÍ dispara la guardia (beforeunload)","ok":true,"detail":"diálogos=beforeunload"}
+{"id":"T4b «Cancelar» con texto escrito pide confirmar el descarte","ok":true,"detail":"diálogo=1"}
+{"id":"T5 doble clic en «Guardar»: un solo POST y una sola entrada","ok":true,"detail":"POST=1 entradas=1"}
+{"id":"T6 editar una entrada de otra fecha conserva su fecha (no la reemplaza por hoy)","ok":true,"detail":"campo=2026-10-20 PUT=200 fecha=2026-10-20"}
+{"id":"T7 contenido con HTML se muestra como texto y no ejecuta código","ok":true,"detail":"xss=false"}
+{"id":"T8 [es] 320 px con texto al 200 %: error visible y sin desborde horizontal","ok":true,"detail":"{\"sw\":false,\"err\":true}"}
+{"id":"T8 [en] 320 px con texto al 200 %: error visible y sin desborde horizontal","ok":true,"detail":"{\"sw\":false,\"err\":true}"}
+{"id":"T9 el texto de error cumple contraste AA (≥ 4,5:1) sobre su fondo","ok":true,"detail":"color=rgb(122, 48, 48) fondo=rgb(242, 241, 239) razón=8.11"}
+{"id":"info T10 pantalla abierta al cruzar la medianoche local (Bogotá)","antes":"2026-10-31","despues":"2026-10-31","comentario":"la fecha por defecto se fija al abrir; no se actualiza sola"}
+{"id":"T11 API POST /api/diary fecha «hoy UTC» → 201","ok":true,"detail":"http=201"}
+{"id":"T11 API POST /api/diary fecha «mañana UTC (margen 36 h)» → 201","ok":true,"detail":"http=201"}
+{"id":"T11 API POST /api/diary fecha «pasado mañana UTC» → 400","ok":false,"detail":"http=201"}
+{"id":"T11 API POST /api/diary fecha «2999-01-01» → 400","ok":true,"detail":"http=400"}
+{"id":"T11 API POST /api/diary fecha «30-feb» → 400","ok":true,"detail":"http=400"}
+{"id":"T11 API POST /api/diary fecha «formato» → 400","ok":true,"detail":"http=400"}
+{"id":"T11 API POST /api/diary fecha «vacía» → 400","ok":true,"detail":"http=400"}
+{"id":"T11 API POST /api/diary fecha «número» → 400","ok":true,"detail":"http=400"}
+{"id":"T11 API POST /api/diary fecha «null» → 400","ok":true,"detail":"http=400"}
+{"id":"T11b API contenido en blanco → 400","ok":true,"detail":"http=400"}
+{"id":"T11c API sin sesión → 401/403","ok":true,"detail":"http=403"}
+RESUMEN {"total":58,"fallos":1,"fallosIds":["T11 API POST /api/diary fecha «pasado mañana UTC» → 400"]}
