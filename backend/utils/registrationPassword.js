@@ -3,13 +3,13 @@
 const policy = require('../../shared/registration-password-policy.json');
 const common = new Set(policy.common);
 
-// Carácter especial: ni letra, ni número, ni espacio en blanco (símbolos, puntuación y emojis cuentan; el espacio no).
+// Carácter especial: ni letra, ni número, ni marca combinante, ni espacio en blanco (símbolos, puntuación y emojis cuentan; el espacio no).
 const RULES = {
   length: value => [...value].length >= policy.minCharacters,
   upper: value => /\p{Lu}/u.test(value),
   lower: value => /\p{Ll}/u.test(value),
   digit: value => /[0-9]/.test(value),
-  special: value => /[^\p{L}\p{N}\s]/u.test(value),
+  special: value => /[^\p{L}\p{N}\p{M}\s]/u.test(value),
 };
 
 // Ids estables de los requisitos que NO se cumplen: length, upper, lower, digit, special, max_bytes, common.

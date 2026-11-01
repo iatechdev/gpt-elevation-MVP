@@ -21,6 +21,7 @@ test('ES-128: mínimo 8 caracteres con mayúscula, minúscula, número y caráct
     ['', ['length', 'upper', 'lower', 'digit', 'special']],
     ['        ', ['upper', 'lower', 'digit', 'special']],
     ['Abcdefg1 ', ['special']],
+    ['Contrasen\u0303a1x', ['special']],
     ['Abcdef1😀', []],
     ['Password1!', ['common']],
     ['  PASSWORD1!  ', ['lower', 'common']],

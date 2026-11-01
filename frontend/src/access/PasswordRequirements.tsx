@@ -22,12 +22,12 @@ export function PasswordRequirements({ id, password, showErrors, serverProblems 
   const bytesOver = problems.has('max_bytes')
   const summary = password ? text('landing.access.pw.summary').replace('{n}', String(met)).replace('{total}', String(PASSWORD_RULES.length)) : ''
   return (
-    <div id={id} style={{ fontSize: '0.8rem', color: colors.textSubtle, textAlign: 'left', width: '100%', marginTop: `-${spacing.xs}` }}>
+    <div id={id} style={{ fontSize: '0.8rem', color: colors.textMuted, textAlign: 'left', width: '100%', marginTop: `-${spacing.xs}` }}>
       <p style={{ margin: `0 0 ${spacing.xs}`, color: colors.textMuted }}>{text('landing.access.pw.title')}</p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {PASSWORD_RULES.map(rule => {
           const ok = !problems.has(rule)
-          const color = ok ? colors.success : showErrors ? colors.danger : colors.textSubtle
+          const color = ok ? colors.success : showErrors ? colors.danger : colors.textMuted
           return (
             <li key={rule} style={{ display: 'flex', gap: spacing.xs, color, overflowWrap: 'anywhere' }}>
               <span aria-hidden="true" style={{ width: '1em', flexShrink: 0 }}>{ok ? '✓' : '○'}</span>
@@ -36,7 +36,7 @@ export function PasswordRequirements({ id, password, showErrors, serverProblems 
           )
         })}
       </ul>
-      <p style={{ margin: `${spacing.xs} 0 0`, color: bytesOver ? colors.danger : colors.textSubtle, overflowWrap: 'anywhere' }}>
+      <p style={{ margin: `${spacing.xs} 0 0`, color: bytesOver ? colors.danger : colors.textMuted, overflowWrap: 'anywhere' }}>
         {text('landing.access.pw.max_bytes')}
       </p>
       <span aria-live="polite" style={hidden}>{summary}</span>

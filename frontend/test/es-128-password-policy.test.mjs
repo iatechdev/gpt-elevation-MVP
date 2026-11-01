@@ -10,7 +10,7 @@ const catalog = JSON.parse(readFileSync(new URL('../../shared/landing-content.js
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const entry = key => catalog.find(x => x.key === key)
 
-const samples = ['', '123', 'abcdefgh', 'ABCDEFGH', '12345678', 'Abcdef1!', 'Abcdef1', 'Abcdefg1 ', 'Abcdef1😀', 'Abcdefg12', 'Ñandú123·', 'ñandú123-', 'Password1!', '  PASSWORD1!  ', 'P@ssw0rd',
+const samples = ['', '123', 'abcdefgh', 'ABCDEFGH', '12345678', 'Abcdef1!', 'Abcdef1', 'Abcdefg1 ', 'Contrasen\u0303a1x', 'Abcdef1😀', 'Abcdefg12', 'Ñandú123·', 'ñandú123-', 'Password1!', '  PASSWORD1!  ', 'P@ssw0rd',
   'Aa1!' + 'x'.repeat(68), 'Aa1!' + 'x'.repeat(69), 'Aa1!' + '😀'.repeat(17), 'Aa1!' + '😀'.repeat(18), 'é'.repeat(37) + 'A1!', ' '.repeat(20), 'Aa1!' + 'x'.repeat(10000), ...backend.policy.common]
 
 test('ES-128: cliente y servidor calculan los mismos requisitos faltantes para cada contraseña de borde', () => {
