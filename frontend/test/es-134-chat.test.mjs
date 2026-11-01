@@ -1,4 +1,5 @@
 // ES-134: aviso de límite con alcance y fecha, avisos que siguen al idioma y envío sin confirmar que sobrevive a navegar y recargar.
+process.env.TZ = 'America/Bogota' // la fecha de reinicio se muestra en la zona de la persona
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -14,15 +15,15 @@ const memory = () => { const m = new Map(); return { getItem: (k) => m.get(k) ??
 test('ES-134: con el cupo del grupo agotado el aviso dice «grupo» y la fecha de reinicio, en ES y EN', () => {
   const notice = noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, 'cohort', RESET))
   const es = noticeText(notice, 'es'); const en = noticeText(notice, 'en')
-  assert.match(es, /grupo/); assert.match(es, /1 de noviembre/); assert.match(es, /no se envió/)
-  assert.match(en, /group/); assert.match(en, /November 1|1 November/); assert.match(en, /not sent/)
+  assert.match(es, /grupo/); assert.match(es, /31 de octubre/); assert.match(es, /no se envió/)
+  assert.match(en, /group/); assert.match(en, /October 31|31 October/); assert.match(en, /not sent/)
   assert.doesNotMatch(es, /tu cuenta\.\s/); assert.doesNotMatch(en, /your account’s AI limit/)
   assert.equal(isAlert(notice), true)
 })
 
 test('ES-134: con el límite de la persona el aviso habla de su cuenta; sin fecha no inventa una; sin alcance no atribuye el límite', () => {
   const person = noticeText(noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, 'person', RESET)), 'es')
-  assert.match(person, /tu cuenta/); assert.match(person, /1 de noviembre/)
+  assert.match(person, /tu cuenta/); assert.match(person, /31 de octubre/)
   const noDate = noticeText(noticeForError(new SpaceError(429, 'ai_budget_exhausted', false, 'cohort', '')), 'en')
   assert.match(noDate, /group/); assert.match(noDate, /Once it renews/); assert.doesNotMatch(noDate, /\d{4}/)
   const badDate = noticeText({ k: 'budget', scope: 'person', resetsAt: 'no-es-fecha' }, 'es')
@@ -83,4 +84,28 @@ test('ES-134: el chat restaura el pendiente al montar y lo persiste o borra seg�
   assert.match(hook, /useState<Intent \| null>\(\(\) => \(token \? loadPending\(token\) : null\)\)/)
   assert.match(hook, /savePending\(token, intent\); else clearPending\(\)/)
   assert.match(hook, /\{ k: 'restored' \}/)
+})
+
+// QA-134-01: el mensaje pendiente es privado y no sobrevive al cierre de sesión, en ningún sitio donde se retiran las claves de sesión.
+test('ES-134: invalidar la sesión borra el mensaje pendiente y la huella no guarda ningún fragmento del token', async () => {
+  const session = memory(); globalThis.sessionStorage = session
+  const local = memory(); local.setItem('elevation_token', TOKEN); globalThis.localStorage = local
+  globalThis.window = { dispatchEvent() {} }; globalThis.Event = class { constructor(type) { this.type = type } }
+  savePending(TOKEN, makeIntent('Texto privado del mensaje', 'es', [], 'req-privado1'))
+  const raw = session.getItem('elevation_pending_chat')
+  assert.ok(raw.includes('Texto privado del mensaje'))
+  for (let i = 0; i + 8 <= TOKEN.length; i++) assert.ok(!JSON.stringify(JSON.parse(raw).t).includes(TOKEN.slice(i, i + 8)), 'fragmento del token ' + i)
+  const { invalidateStoredSession } = await import('../src/access/session.ts')
+  invalidateStoredSession(TOKEN)
+  assert.equal(session.getItem('elevation_pending_chat'), null)
+  assert.equal(local.getItem('elevation_token'), null)
+})
+
+test('ES-134: todos los cierres de sesión de la aplicación limpian el mensaje pendiente', () => {
+  for (const file of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/pages/ChatPage.tsx', '../src/pages/UserDashboard.tsx']) {
+    const source = read(file)
+    const removals = source.match(/localStorage\.removeItem\('elevation_token'\)/g) ?? []
+    const cleared = source.match(/clearPending\(\)[^\n]*\n\s*localStorage\.removeItem\('elevation_token'\)|clearPending\(\); localStorage\.removeItem\('elevation_token'\)/g) ?? []
+    assert.ok(removals.length > 0 && cleared.length === removals.length, `${file}: ${cleared.length}/${removals.length}`)
+  }
 })

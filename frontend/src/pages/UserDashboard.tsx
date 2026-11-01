@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
 import { copy } from '../space/copy'
+import { clearPending } from '../space/pending'
 import { useLanguage } from '../i18n/useLanguage'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { MatchingModal } from '../components/MatchingModal'
@@ -204,6 +205,7 @@ export function UserDashboard() {
         await apiFetch('/api/rating', { method: 'POST', body: JSON.stringify({ rating: starRating }) })
       }
     } catch { /* silent */ }
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')
@@ -673,7 +675,7 @@ export function UserDashboard() {
                 style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
                 {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
               </button>
-              <button onClick={() => { localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
+              <button onClick={() => { clearPending(); localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
                 {lang === 'es' ? 'Saltar' : 'Skip'}
               </button>

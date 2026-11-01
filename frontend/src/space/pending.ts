@@ -3,7 +3,13 @@
 import { makeIntent } from './api.ts'
 import type { Intent } from './api.ts'
 const KEY = 'elevation_pending_chat'
-const fingerprint = (token: string) => token.slice(-24)
+// Huella de 53 bits del token completo (cyrb53): identifica la sesión sin guardar ningún fragmento del token.
+const fingerprint = (token: string) => {
+  let a = 0xdeadbeef, b = 0x41c6ce57
+  for (let i = 0; i < token.length; i++) { const c = token.charCodeAt(i); a = Math.imul(a ^ c, 2654435761); b = Math.imul(b ^ c, 1597334677) }
+  a = Math.imul(a ^ (a >>> 16), 2246822507) ^ Math.imul(b ^ (b >>> 13), 3266489909); b = Math.imul(b ^ (b >>> 16), 2246822507) ^ Math.imul(a ^ (a >>> 13), 3266489909)
+  return (4294967296 * (2097151 & b) + (a >>> 0)).toString(36)
+}
 export function savePending(token: string, intent: Intent, store?: Storage) {
   try {
     (store ?? sessionStorage).setItem(KEY, JSON.stringify({ t: fingerprint(token), message: intent.message, lang: intent.lang, requestId: intent.requestId, ids: intent.contextEntryIds ?? [], mode: intent.mode }))
