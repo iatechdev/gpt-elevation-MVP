@@ -84,3 +84,13 @@ test('ES-62: estilos de salto, idioma activo en tinta invertida, 44 px y foco oc
   assert.match(css, /\.landing-logo-dot \{[^}]*width: 7px; height: 7px/)
   assert.match(css, /\.landing-scope :is\(button, a\):focus-visible \{ outline: 3px solid var\(--color-secondary\)/)
 })
+
+test('ES-67 H-67-05: los botones de idioma tienen nombre accesible en su propio idioma', () => {
+  const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LandingHeader, { text: key => key, lang: 'es', setLang: () => {} })))
+  assert.match(html, /<button[^>]*aria-label="Español"[^>]*>/)
+  assert.match(html, /<button[^>]*aria-label="English"[^>]*>/)
+})
+
+test('ES-67 H-67-04: «Saltar al contenido» tiene objetivo táctil de al menos 44 px', () => {
+  assert.match(css, /\.landing-scope \.landing-skip \{[^}]*min-height: 44px/)
+})
