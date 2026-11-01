@@ -21,7 +21,7 @@ const ES_MARK = /\b(el|la|tu|tus|envío|mensaje|conversación|límite|sesión|pu
   const status = p => p.locator('.chat-status').innerText()
   const setLang = async (p, l) => { await p.getByRole('button', { name: l.toUpperCase(), exact: true }).first().click(); await p.waitForTimeout(500) }
   const store = p => p.evaluate(() => ({ ss: Object.fromEntries(Object.entries(sessionStorage)), ls: Object.keys(localStorage) }))
-  const utcFmt = (iso, lang) => new Intl.DateTimeFormat(lang === 'es' ? 'es' : 'en', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(iso))
+  const utcFmt = (iso, lang) /* hora local (a3b82e85) */ => new Intl.DateTimeFormat(lang === 'es' ? 'es' : 'en', { day: 'numeric', month: 'long' }).format(new Date(iso))
 
   if (PHASE === 'person' || PHASE === 'cohort') {
     // F1/F2: rechazo real del servidor (presupuesto agotado) con alcance persona o grupo
@@ -101,7 +101,7 @@ const ES_MARK = /\b(el|la|tu|tus|envío|mensaje|conversación|límite|sesión|pu
   const tkD = await person(), tkE = await person(); const ctxD = await b.newContext({ viewport: { width: 1280, height: 900 } })
   const pD = await open(tkD, 'es', { ctx: ctxD, mock: r => r.request().method() === 'POST' ? r.abort('failed') : r.continue() }); await send(pD, 'Texto privado de D'); const sD = await store(pD)
   ck('F6 localStorage no contiene el texto privado ni el token en sessionStorage completo', !JSON.stringify(await pD.evaluate(() => Object.fromEntries(Object.entries(localStorage)))).includes('Texto privado de D') && !JSON.stringify(sD.ss).includes(tkD), JSON.stringify(sD.ls))
-  const recD = JSON.parse(sD.ss.elevation_pending_chat); ck('F6/F7 el valor guardado contiene solo un fragmento de 24 caracteres del token (observación: es parte de la firma)', recD.t.length === 24 && tkD.endsWith(recD.t), `claves sessionStorage: ${Object.keys(sD.ss).join(',')}`)
+  const recD = JSON.parse(sD.ss.elevation_pending_chat); ck('F6/F7 la huella guardada ya no es un fragmento del token', !!recD.t && !tkD.includes(String(recD.t)) && String(recD.t).length < 24, `claves sessionStorage: ${Object.keys(sD.ss).join(',')}`)
   const pD2 = await ctxD.newPage(); await pD2.goto(UI + '/app/chat', { waitUntil: 'networkidle' }); await pD2.waitForTimeout(1200); ck('F6 otra pestaña (misma sesión): no hereda el pendiente', await pD2.locator('.space-pending').count() === 0 && !('elevation_pending_chat' in (await store(pD2)).ss)); await pD2.close()
   await pD.evaluate(t => localStorage.setItem('elevation_token', t), tkE); await pD.reload({ waitUntil: 'networkidle' }); await pD.waitForTimeout(1200)
   ck('F6 otra cuenta en la misma pestaña: no ve el texto de D y el pendiente se borra', await pD.locator('.space-pending').count() === 0 && !(await pD.locator('body').innerText()).includes('Texto privado de D') && !('elevation_pending_chat' in (await store(pD)).ss))
@@ -114,7 +114,7 @@ const ES_MARK = /\b(el|la|tu|tus|envío|mensaje|conversación|límite|sesión|pu
   await pX.reload({ waitUntil: 'networkidle' }); await pX.waitForTimeout(1200); ck('F7 tras recargar sigue sin ejecutarse y se restaura (mensaje de ~3.960 caracteres)', (await pX.evaluate(() => window.__xss)) === undefined && (await pX.locator('.space-private-text').innerText()).length >= 3900, `${(await pX.locator('.space-private-text').innerText()).length}`)
   // F8 accesibilidad / responsive con el aviso visible
   for (const w of [320, 390, 1440]) { const p = await open(tkA, 'es', { w, mock: r => r.request().method() === 'POST' ? r.fulfill({ status: 429, contentType: 'application/json', body: bodyOf(matrix[1][2]) }) : r.continue() }); await send(p, 'a11y'); const m = await p.evaluate(() => ({ s: document.documentElement.scrollWidth, i: innerWidth, f: document.activeElement.tagName + '.' + document.activeElement.className.slice(0, 30) }))
-    ck(`F8 ${w}px: sin desborde horizontal con el aviso de grupo visible`, m.s <= m.i, `${m.s}/${m.i}`); if (w === 390) { console.log(`      F8 foco tras el aviso de límite: ${m.f} (el PR no añade foco programático)`); await p.screenshot({ path: path.join(OUT, 'aviso-grupo-390.png'), fullPage: true })
+    ck(`F8 ${w}px: sin desborde horizontal con el aviso de grupo visible`, m.s <= m.i, `${m.s}/${m.i}`); if (w === 390) { ck('F8 el aviso de límite recibe foco programático', !/^BODY/.test(m.f), m.f); await p.screenshot({ path: path.join(OUT, 'aviso-grupo-390.png'), fullPage: true })
       const c = await p.evaluate(() => { const e = document.querySelector('.chat-status'), cs = getComputedStyle(e); return { fg: cs.color, bg: (() => { let x = e; while (x) { const b = getComputedStyle(x).backgroundColor; if (b && b !== 'rgba(0, 0, 0, 0)') return b; x = x.parentElement } return 'rgb(255,255,255)' })() } })
       const lum = s => { const [r, g, bl] = s.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }); return .2126 * r + .7152 * g + .0722 * bl }; const l1 = lum(c.fg), l2 = lum(c.bg), ratio = (Math.max(l1, l2) + .05) / (Math.min(l1, l2) + .05); ck('F8 contraste del texto del aviso ≥ 4,5:1', ratio >= 4.5, `${ratio.toFixed(2)} (${c.fg} sobre ${c.bg})`) }
     await p.context().close() }
