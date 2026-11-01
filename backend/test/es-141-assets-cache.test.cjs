@@ -62,3 +62,30 @@ test('ES-140: las rutas de la SPA siguen respondiendo index.html con 200', async
     assert.match(res.headers.get('content-type') || '', /html/, url);
   }
 });
+
+// ES-139: JS, CSS y HTML estáticos se comprimen cuando el cliente lo acepta; sin Accept-Encoding no se comprime.
+test('ES-139: los assets JS y CSS grandes llevan Content-Encoding gzip con Vary: Accept-Encoding', async t => {
+  const dist = fs.mkdtempSync(path.join(os.tmpdir(), 'es139-'));
+  fs.mkdirSync(path.join(dist, 'assets'));
+  fs.writeFileSync(path.join(dist, 'index.html'), '<!doctype html><title>x</title>');
+  fs.writeFileSync(path.join(dist, 'assets', 'index-Ab12Cd34.js'), 'console.log("elevation");\n'.repeat(500));
+  fs.writeFileSync(path.join(dist, 'assets', 'style-Zy98_xW7.css'), '.a{color:red}\n'.repeat(500));
+  const app = express();
+  mountFrontend(app, dist);
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => { server.close(); fs.rmSync(dist, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const http = require('node:http');
+  const fetchRaw = (url, headers) => new Promise((resolve, reject) => {
+    http.get(base + url, { headers }, res => { res.resume(); res.on('end', () => resolve(res)); }).on('error', reject);
+  });
+  for (const url of ['/assets/index-Ab12Cd34.js', '/assets/style-Zy98_xW7.css']) {
+    const gz = await fetchRaw(url, { 'Accept-Encoding': 'gzip' });
+    assert.equal(gz.headers['content-encoding'], 'gzip', url);
+    assert.match(gz.headers.vary || '', /Accept-Encoding/i, url);
+    assert.equal(gz.headers['cache-control'], IMMUTABLE, url + ': la compresión no pisa la caché');
+    const plain = await fetchRaw(url, { 'Accept-Encoding': 'identity' });
+    assert.equal(plain.headers['content-encoding'], undefined, url);
+  }
+});
