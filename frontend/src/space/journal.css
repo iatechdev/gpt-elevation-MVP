@@ -13,6 +13,10 @@
 .journal-page .elv-link { color: var(--elv-link); }
 .journal-page :is(a, button, input, textarea):focus-visible { outline: 3px solid var(--elv-focus); outline-offset: 3px; }
 .journal-heading { display: flex; justify-content: space-between; align-items: center; gap: var(--elv-s-4); margin-top: var(--elv-s-8); }
+/* QA-113-01: con texto ampliado o en pantallas de 320 px el botón del puente baja de línea en vez de desbordar. */
+.journal-heading { flex-wrap: wrap; }
+.journal-heading > div { min-width: 0; flex: 1 1 14rem; }
+.journal-heading > button { max-width: 100%; white-space: normal; text-align: left; }
 .journal-heading h1 { font-size: clamp(2.25rem, 4vw, 2.75rem); margin: 8px 0; }
 .journal-private, .journal-bridge-note { font-size: .8125rem; color: var(--elv-text-2); }
 .journal-private { margin: 0; }
