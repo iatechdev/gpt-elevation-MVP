@@ -109,3 +109,10 @@ test('ES-134: todos los cierres de sesión de la aplicación limpian el mensaje 
     assert.ok(removals.length > 0 && cleared.length === removals.length, `${file}: ${cleared.length}/${removals.length}`)
   }
 })
+
+test('ES-134: el aviso de límite recibe el foco al aparecer y solo ese aviso es enfocable', () => {
+  const controls = read('../src/space/ChatControls.tsx')
+  assert.match(controls, /useEffect\(\(\) => \{ if \(chat\.alert && chat\.notice\) status\.current\?\.focus\(\) \}, \[chat\.alert, chat\.notice\]\)/)
+  assert.match(controls, /tabIndex=\{chat\.alert \? -1 : undefined\}/)
+  assert.ok(controls.indexOf('status.current?.focus()') < controls.indexOf('if (chat.expired) return null', controls.indexOf('export function ChatInput')), 'el efecto va antes del retorno anticipado (reglas de hooks)')
+})
