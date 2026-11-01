@@ -27,7 +27,7 @@ const miss = r => (r.j?.missing || []).join(',')
   ]
   for (const [name, pw, want] of cases) { const r = await reg(pw); ck(name, want ? (r.s === 400 && r.j?.code === 'password_policy' && miss(r) === want) : r.s === 201, `${r.s} missing=${miss(r)} (esperado ${want || '201'})`) }
   // F2b marca combinante como especial (observación)
-  { const r = await reg('Contraseña1x'); console.log(`INFO F2 solo marca combinante (n+U+0303) sin símbolo: ${r.s} missing=${miss(r)} ${r.s === 201 ? '(la marca combinante cuenta como especial)' : ''}`) }
+  { const r = await reg('Contraseña1x'); ck('F2/B1 solo marca combinante (n+U+0303) sin símbolo → falta special', r.s === 400 && miss(r) === 'special', r.s + ' ' + miss(r)); const r2 = await reg('Contraseña1!'); ck('F2/B1 marca combinante + símbolo real sigue válida', r2.s === 201, r2.s) }
   // F3 bytes
   { const mk = k => 'Aa1!' + 'a'.repeat(k)
     let r = await reg(mk(68)); ck('F3 72 bytes exactos aceptada', r.s === 201, r.s)
