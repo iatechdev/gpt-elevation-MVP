@@ -1,0 +1,27 @@
+{"id":"F4 /api/plans: sin sesión, mismo Cache-Control que main (el PR no lo cambia)","ok":true,"detail":"pr=200/no-store base=200/no-store"}
+{"id":"F4 /api/pricing: sin sesión, mismo Cache-Control que main (el PR no lo cambia)","ok":true,"detail":"pr=200/null base=200/null"}
+{"id":"F4 /api/landing-content: sin sesión, mismo Cache-Control que main (el PR no lo cambia)","ok":true,"detail":"pr=200/null base=200/null"}
+{"id":"F4 /api/manifest/active: sin sesión, mismo Cache-Control que main (el PR no lo cambia)","ok":true,"detail":"pr=200/null base=200/null"}
+{"id":"F5a datos propios de plan (/api/plans/me y /api/user/plan/me) con no-store","ok":true,"detail":"plans/me=200/no-store user/plan/me=200/no-store"}
+{"id":"info F5b /api/pricing/all con admin","s":200,"cc":null,"vary":"Origin"}
+{"id":"info F5c /api/manifest/manifest con junta","s":200,"cc":null,"vary":"Origin"}
+{"id":"F5d rutas privadas de administración/junta bajo la excepción (/api/pricing/all, /api/manifest/manifest) llevan no-store","ok":false,"detail":"pricing/all=200/null manifest/manifest=200/null"}
+{"id":"F6 POST /api/plans (ruta pública pero método de escritura): no-store","ok":true,"detail":"s=404 cc=no-store"}
+{"id":"F6 PUT /api/plans (ruta pública pero método de escritura): no-store","ok":true,"detail":"s=404 cc=no-store"}
+{"id":"F6 PATCH /api/plans (ruta pública pero método de escritura): no-store","ok":true,"detail":"s=404 cc=no-store"}
+{"id":"F6 DELETE /api/plans (ruta pública pero método de escritura): no-store","ok":true,"detail":"s=404 cc=no-store"}
+{"id":"F6b HEAD pública igual que en main; HEAD privada con no-store","ok":true,"detail":"HEAD plans pr=no-store base=no-store; HEAD diary cc=no-store"}
+{"id":"info F6c OPTIONS /api/diary","s":200,"cc":null,"acao":"http://localhost:5173"}
+{"id":"F7 respuestas de error (401/403/404/400) también con no-store","ok":true,"detail":"401=403/no-store 404=404/no-store 400=400/no-store 403=403/no-store"}
+{"id":"F8 las cabeceras de seguridad (CSP, HSTS, nosniff, XFO, referrer-policy) siguen presentes y son iguales a main","ok":true,"detail":"pr=7 base=7"}
+{"id":"F8b la página y los estáticos (fuera de /api) no cambian de Cache-Control respecto a main","ok":true,"detail":"/ pr=public, max-age=0 base=public, max-age=0; favicon pr=public, max-age=0 base=public, max-age=0"}
+{"id":"info rutas descubiertas","total":172,"montajes":45}
+{"id":"F1 1008 combinaciones rol×ruta: toda respuesta fuera de la excepción pública lleva no-store","ok":true,"detail":""}
+{"id":"F1b esas mismas respuestas llevan Vary: Authorization","ok":true,"detail":""}
+{"id":"info F2 respuestas con no-store en main (antes del PR)","conNoStore":350,"de":1008}
+{"id":"info F3 rutas GET dentro de la excepción por rol (estado/cache-control)","need":{"GET /api/landing-content":{"anon":"200/—","persona":"200/—","terapeuta":"200/—","admin":"200/—","junta":"200/—","superadmin":"200/—"},"GET /api/manifest/active":{"anon":"200/—","persona":"200/—","terapeuta":"200/—","admin":"200/—","junta":"200/—","superadmin":"200/—"},"GET /api/manifest/manifest":{"anon":"403/—","persona":"403/—","terapeuta":"403/—","admin":"403/—","junta":"200/—","superadmin":"200/—"},"GET /api/plans":{"anon":"200/no-store","persona":"200/no-store","terapeuta":"200/no-store","admin":"200/no-store","junta":"200/no-store","superadmin":"200/no-store"},"GET /api/plans/me":{"anon":"403/—","persona":"200/no-store","terapeuta":"200/no-store","admin":"200/no-store","junta":"200/no-store","superadmin":"200/no-store"},"GET /api/pricing":{"anon":"200/—","persona":"200/—","terapeuta":"200/—","admin":"200/—","junta":"200/—","superadmin":"200/—"},"GET /api/pricing/all":{"anon":"403/—","persona":"403/—","terapeuta":"403/—","admin":"200/—","junta":"403/—","superadmin":"200/—"}}}
+{"id":"F3 ninguna ruta GET dentro de la excepción devuelve 200 SOLO con sesión sin no-store (sobre-exclusión)","ok":false,"detail":"GET /api/pricing/all (admin) cc=null | GET /api/manifest/manifest (junta) cc=null | GET /api/manifest/manifest (superadmin) cc=null | GET /api/pricing/all (superadmin) cc=null"}
+{"id":"info F9 rutas donde cambió el valor respecto a main","n":0,"ejemplos":[]}
+{"id":"F10 latencia mediana de /api/health: diferencia vs main ≤ 5 % o ≤ 0,5 ms (ruido)","ok":true,"detail":"pr=1.81 ms base=1.78 ms (2.0 %)"}
+{"id":"F10 latencia mediana de /api/diary: diferencia vs main ≤ 5 % o ≤ 0,5 ms (ruido)","ok":true,"detail":"pr=15.07 ms base=14.52 ms (3.7 %)"}
+RESUMEN {"total":19,"fallos":2,"fallosIds":["F5d rutas privadas de administración/junta bajo la excepción (/api/pricing/all, ","F3 ninguna ruta GET dentro de la excepción devuelve 200 SOLO con sesión sin no-s"]}
