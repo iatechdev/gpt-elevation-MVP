@@ -1,0 +1,10 @@
+{"caso":"bloque de 500.000 B (límite exacto)","salida":0,"detalle":"Presupuesto de tamaño: OK"}
+{"caso":"bloque de 500.001 B","salida":1,"detalle":"PRESUPUESTO EXCEDIDO — bloque c0-BBB.js: 500.0 kB > 500 kB"}
+{"caso":"entrada incompresible de 149.900 B gzip","salida":0,"detalle":"Presupuesto de tamaño: OK"}
+{"caso":"entrada incompresible de 150.300 B gzip","salida":1,"detalle":"PRESUPUESTO EXCEDIDO — carga inicial de JS: 150.4 kB gzip > 150 kB"}
+{"caso":"entrada renombrada (el HTML apunta a otro nombre)","salida":1,"detalle":"PRESUPUESTO EXCEDIDO — carga inicial de JS: 160.1 kB gzip > 150 kB"}
+{"caso":"HTML sin ningún script de entrada","salida":1,"detalle":"file:///C:/Users/Usuario/Documents/gpt-elevation-nm/frontend/scripts/check-bundle-size.mjs:17\r /   if (!initial.length) throw new Error('index.html no"}
+{"caso":"HTML con ruta relativa ./assets/…","salida":1,"detalle":"file:///C:/Users/Usuario/Documents/gpt-elevation-nm/frontend/scripts/check-bundle-size.mjs:17\r /   if (!initial.length) throw new Error('index.html no"}
+{"caso":"sin carpeta dist","salida":1,"detalle":"node:fs:440\r /     return binding.readFileUtf8(path, stringToFlags(options.flag));\r"}
+{"caso":"entrada grande en <script> en línea (no se cuenta)","salida":0,"detalle":"Presupuesto de tamaño: OK"}
+{"caso":"modulepreload de un bloque pesado (sí se cuenta)","salida":1,"detalle":"PRESUPUESTO EXCEDIDO — carga inicial de JS: 160.2 kB gzip > 150 kB"}
