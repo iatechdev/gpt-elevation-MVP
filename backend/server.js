@@ -91,6 +91,7 @@ app.use('/api', (req, res, next) => {
 
 // ── Rutas públicas ────────────────────────────────────────────────────────────
 app.use('/api',                 require('./routes/auth'));
+app.use('/api',                 require('./routes/passwordReset'));         // ES-132 — recuperación de contraseña
 app.use('/api/landing-content', require('./routes/landingContent'));
 app.use('/api/professional-applications', require('./routes/professionalApplications').publicRouter); // ES-95 — solicitud pública de profesionales
 app.use('/api/pricing',         require('./routes/pricing'));
