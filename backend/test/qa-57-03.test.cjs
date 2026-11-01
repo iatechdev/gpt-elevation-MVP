@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { models, record, startApp } = require('./support.cjs');
 
 test('QA-57-03: registration preserves its authorized role contract', async t => {
-  const password = randomBytes(24).toString('hex');
+  const password = `Aa1!${randomBytes(24).toString('hex')}`; // ES-128: cumple la política de registro
   process.env.ADMIN_EMAILS = 'listed@example.invalid';
   t.after(() => { delete process.env.ADMIN_EMAILS; });
   const created = [];
