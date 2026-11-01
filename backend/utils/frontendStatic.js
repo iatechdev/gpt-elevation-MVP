@@ -2,6 +2,7 @@
 // se cachean un año como immutable. El resto (index.html y los archivos públicos sin hash) se revalida siempre, para que un despliegue
 // nuevo llegue a la persona sin esperar.
 const express = require('express');
+const compression = require('compression');
 const path = require('path');
 
 const IMMUTABLE = 'public, max-age=31536000, immutable';
@@ -15,6 +16,9 @@ function setCacheHeaders(res, filePath) {
 }
 
 function mountFrontend(app, distDir) {
+  // ES-139: solo los estáticos se comprimen (gzip; el paquete compression no ofrece brotli). La API no pasa por aquí: las respuestas con
+  // datos de la persona no se comprimen (evita ataques tipo BREACH).
+  app.use(compression({ threshold: 1024 }));
   app.use(express.static(distDir, { setHeaders: setCacheHeaders }));
   // ES-140: un archivo de /assets que no existe (p. ej. un bloque con hash de un despliegue anterior) responde 404, no el index.html con 200:
   // el navegador no debe tomar HTML por JavaScript.
