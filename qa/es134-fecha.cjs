@@ -1,0 +1,7 @@
+// QA-Claude-2 — ES-134 M2: compara la fecha de la barra «Uso de IA» con la del aviso de límite. Requiere backend con cohorte agotada (es134-up.sh <db> 1000000 500). Env: TZID (zona horaria), PLAYWRIGHT_MODULE.
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE)
+;(async () => { const j = async (p, b) => (await fetch('http://localhost:8090' + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })).json()
+  const e = `qa2s-pb-${Date.now().toString(36)}@example.test`, P = 'Sint3tica-QA-pass1'; await j('/api/register', { name: 'p', email: e, password: P }); const t = (await j('/api/login', { email: e, password: P })).token
+  const b = await chromium.launch(); const c = await b.newContext({ viewport: { width: 1280, height: 900 }, timezoneId: process.env.TZID || 'America/Bogota' }); await c.addInitScript(t => { localStorage.setItem('elevation_token', t); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', 'es') }, t)
+  const p = await c.newPage(); await p.goto('http://localhost:5173/app/chat', { waitUntil: 'networkidle' }); await p.waitForSelector('textarea.space-message:not([disabled])'); await p.locator('textarea.space-message').fill('hola'); await p.locator('.chat-composer-row button').click(); await p.waitForTimeout(2000)
+  console.log('AVISO:', await p.locator('.chat-status').innerText()); console.log('BARRA:', (await p.locator('body').innerText()).split('\n').filter(l => /renueva|uso|%|dic|nov/i.test(l)).slice(0, 6).join(' | ')); await b.close() })()
