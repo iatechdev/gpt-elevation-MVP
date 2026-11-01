@@ -212,6 +212,11 @@
 .landing-scope .landing-map-row p { max-width: 530px; }
 .landing-scope .landing-map-panels { margin-block: 2rem; align-items: start; }
 .landing-scope .landing-autonomy { background: var(--color-base-200); }
+/* ES-133: niveles de autonomía plegados; el resumen es el control y mide al menos 44 px. */
+.landing-scope .landing-autonomy-details { padding: 1.5rem; }
+.landing-scope .landing-autonomy-details > summary { cursor: pointer; display: flex; align-items: center; min-height: 44px; }
+.landing-scope .landing-autonomy-details > summary:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.landing-scope .landing-autonomy-details[open] > summary { margin-bottom: 1rem; }
 .landing-scope .landing-map-list { list-style: none; padding: 0; margin: 0; }
 .landing-scope .landing-map-list li { display: flex; gap: 1rem; align-items: baseline; padding-block: 1rem; border-top: 1px solid var(--color-base-300); }
 .landing-scope .landing-map-list li > span { flex-shrink: 0; font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; color: var(--landing-muted); }
@@ -224,7 +229,7 @@
 @media (min-width: 48rem) {
   .landing-scope .landing-offer-section { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; }
   .landing-scope .landing-offer-section h2 { margin-bottom: 3rem; }
-  .landing-scope .landing-offer-card .elv-card-body { padding: 2rem; }
+  .landing-scope .landing-offer-card .elv-card-body, .landing-scope .landing-autonomy-details { padding: 2rem; }
   .landing-scope .landing-offer-section h3 { font-size: 1.5625rem; }
   .landing-scope .landing-map-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 3rem; margin-block: 3rem; }
 }

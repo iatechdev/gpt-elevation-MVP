@@ -188,7 +188,7 @@ export function ChatPage() {
     setRecsError('')
     setShowRecs(true)
     try {
-      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST' })
+      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST', body: JSON.stringify({ lang }) })
       if (!res.ok) throw new Error()
       const data = await res.json()
       setRecommendations(data)
@@ -250,7 +250,7 @@ export function ChatPage() {
   }
 
   const rollbackVersion = async (id: number) => {
-    if (!confirm('¿Seguro que querés activar esta versión anterior?')) return
+    if (!confirm('¿Seguro que quieres activar esta versión anterior?')) return
     try {
       await apiFetch(`/api/superadmin/prompt/${id}/rollback`, getToken(), { method: 'POST' })
       setPromptMsg('✓ Rollback exitoso.')

@@ -328,7 +328,7 @@ export function UserProgress() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>
                 {matchingStep === 'questionnaire'
-                  ? (lang === 'es' ? '🤝 Encontrá tu terapeuta' : '🤝 Find your therapist')
+                  ? (lang === 'es' ? '🤝 Encuentra tu terapeuta' : '🤝 Find your therapist')
                   : (lang === 'es' ? '✨ Tus matches' : '✨ Your matches')}
               </h2>
               <button onClick={closeMatching} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C' }}>✕</button>
@@ -341,10 +341,10 @@ export function UserProgress() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-                    {lang === 'es' ? '¿En qué área querés trabajar?' : 'What area do you want to work on?'}
+                    {lang === 'es' ? '¿En qué área quieres trabajar?' : 'What area do you want to work on?'}
                   </label>
                   <select value={matchingAnswers.area} onChange={e => setMatchingAnswers(p => ({ ...p, area: e.target.value }))} style={selectStyle}>
-                    <option value="">{lang === 'es' ? 'Seleccioná...' : 'Select...'}</option>
+                    <option value="">{lang === 'es' ? 'Selecciona...' : 'Select...'}</option>
                     <option value="anxiety">{lang === 'es' ? 'Ansiedad' : 'Anxiety'}</option>
                     <option value="depression">{lang === 'es' ? 'Depresión' : 'Depression'}</option>
                     <option value="relationships">{lang === 'es' ? 'Relaciones' : 'Relationships'}</option>
@@ -355,10 +355,10 @@ export function UserProgress() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-                    {lang === 'es' ? '¿Qué estilo preferís?' : 'What style do you prefer?'}
+                    {lang === 'es' ? '¿Qué estilo prefieres?' : 'What style do you prefer?'}
                   </label>
                   <select value={matchingAnswers.style} onChange={e => setMatchingAnswers(p => ({ ...p, style: e.target.value }))} style={selectStyle}>
-                    <option value="">{lang === 'es' ? 'Seleccioná...' : 'Select...'}</option>
+                    <option value="">{lang === 'es' ? 'Selecciona...' : 'Select...'}</option>
                     <option value="reflective and exploratory">{lang === 'es' ? 'Reflexivo y exploratorio' : 'Reflective and exploratory'}</option>
                     <option value="structured with goals">{lang === 'es' ? 'Estructurado con objetivos' : 'Structured with goals'}</option>
                     <option value="empathetic and listening">{lang === 'es' ? 'Empático y de escucha' : 'Empathetic and listening'}</option>
@@ -370,7 +370,7 @@ export function UserProgress() {
                     {lang === 'es' ? 'Idioma preferido para las sesiones' : 'Preferred session language'}
                   </label>
                   <select value={matchingAnswers.language} onChange={e => setMatchingAnswers(p => ({ ...p, language: e.target.value }))} style={selectStyle}>
-                    <option value="">{lang === 'es' ? 'Seleccioná...' : 'Select...'}</option>
+                    <option value="">{lang === 'es' ? 'Selecciona...' : 'Select...'}</option>
                     <option value="Spanish">{lang === 'es' ? 'Español' : 'Spanish'}</option>
                     <option value="English">{lang === 'es' ? 'Inglés' : 'English'}</option>
                     <option value="No preference">{lang === 'es' ? 'Sin preferencia' : 'No preference'}</option>

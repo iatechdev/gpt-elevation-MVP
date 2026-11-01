@@ -506,7 +506,7 @@ export function AdminPrompts() {
                 value={createContent}
                 onChange={e => setCreateContent(e.target.value)}
                 rows={8}
-                placeholder="Escribí el contenido del prompt..."
+                placeholder="Escribe el contenido del prompt..."
                 style={{ width: '100%', padding: '0.75rem', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none', resize: 'vertical', lineHeight: 1.6 }}
               />
             </div>
@@ -535,7 +535,7 @@ export function AdminPrompts() {
               ✗ Rechazar versión v{showReject.version}
             </h3>
             <p style={{ fontSize: 13, color: '#78716C', margin: '0 0 1rem' }}>
-              Propuesta por <strong>{showReject.proposed_by}</strong>. Explicá el motivo del rechazo.
+              Propuesta por <strong>{showReject.proposed_by}</strong>. Explica el motivo del rechazo.
             </p>
             <textarea
               value={rejectNote}
