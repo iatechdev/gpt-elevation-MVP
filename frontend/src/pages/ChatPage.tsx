@@ -7,6 +7,7 @@ import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
+import { clearPending } from '../space/pending'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -150,6 +151,7 @@ export function ChatPage() {
 
   const handleLogout = () => {
     if (!chat.canLeave()) return
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')

@@ -1,3 +1,4 @@
+import { clearPending } from '../space/pending.ts'
 export type SessionInfo = { role: 'user' | 'admin' | 'superadmin' | 'therapist' | 'board'; onboardingCompleted: boolean }
 export type SessionResult = { status: 'verified'; session: SessionInfo; preferredLanguage?: 'es' | 'en' } | { status: 'invalid' | 'unavailable' }
 const roles = ['user', 'admin', 'superadmin', 'therapist', 'board']
@@ -33,6 +34,7 @@ export const readStoredToken = () => { try { return localStorage.getItem('elevat
 export function invalidateStoredSession(expected: string) {
   // A delayed 401 must never erase a newer login performed in this or another tab.
   if (readStoredToken() !== expected) return
+  clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive a una sesión invalidada
   try { for (const key of ['elevation_token', 'elevation_role', 'elevation_name']) localStorage.removeItem(key) } catch { /* unavailable storage */ }
   window.dispatchEvent(new Event('elevation-session-change'))
 }

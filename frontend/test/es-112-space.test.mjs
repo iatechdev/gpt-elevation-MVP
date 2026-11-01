@@ -28,7 +28,7 @@ test('ES-112 uso de IA: solo se acepta lo que el servidor calcula; sin límite d
   assert.equal(isExhausted(parseUsage(ready({ used: 1000, remaining: 0 }))), true); assert.equal(usedPercent(parseUsage(ready({ used: 5000 }))), 100)
   assert.equal(isExhausted({ configured: false }), false)
   for (const bad of [null, 'x', [], {}, { configured: 'yes' }, ready({ limit: 0 }), ready({ limit: -5 }), ready({ used: -1 }), ready({ used: 1.5 }), ready({ resetsAt: 'no-fecha' }), ready({ resetsAt: 5 }), { configured: true }]) assert.throws(() => parseUsage(bad), undefined, JSON.stringify(bad))
-  assert.match(renewalDate('2026-11-01T00:00:00.000Z', 'es'), /1.*noviembre/i); assert.match(renewalDate('2026-11-01T00:00:00.000Z', 'en'), /November.*1|1.*November/)
+  assert.match(renewalDate('2026-11-01T12:00:00.000Z', 'es'), /1.*noviembre/i); assert.match(renewalDate('2026-11-01T12:00:00.000Z', 'en'), /November.*1|1.*November/) // mediodía UTC: el mismo día en cualquier zona habitual
 })
 
 test('ES-112 pausa: es solo del cliente, no falla sin almacenamiento y no toca el servidor', () => {
