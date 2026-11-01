@@ -50,7 +50,7 @@ router.post('/', validateBody({ planId: id }), async (req, res) => {
     if (existing) {
       await transaction.rollback();
       return res.status(409).json({
-        error: 'Ya tenés una solicitud de plan pendiente. Esperá a que el equipo la procese.',
+        error: 'Ya tienes una solicitud de plan pendiente. Espera a que el equipo la procese.',
       });
     }
 

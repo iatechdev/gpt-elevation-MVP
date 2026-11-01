@@ -70,6 +70,8 @@ test('ES-101: la lista de pacientes y las alertas no incluyen a la persona con e
 
 test('ES-101: historial, historia y resumen con IA responden 404 uniforme para la persona bloqueada y siguen funcionando para la accesible', async t => {
   const { state } = seed(); const request = await startApp(t);
+  // ES-97: con cero datos el proveedor ya no se llama. Este caso prueba acceso con evidencia suficiente.
+  models.MoodLog.findAll = async () => [record({ checkin_mood: 3, checkout_mood: 4 })];
   for (const path of ['historial', 'historia', 'resumen-ia']) {
     const before = state.summaries;
     assert.equal((await as(request, 'GET', `/api/therapist/pacientes/${OK}/${path}`)).status, 200, `${path} accesible`);

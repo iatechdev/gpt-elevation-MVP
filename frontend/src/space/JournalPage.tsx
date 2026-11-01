@@ -8,8 +8,11 @@ import { useDraftGuard, useSpaceToken } from './hooks'
 import { SpaceShell } from './SpaceShell'
 import { ConfirmDialog } from './ConfirmDialog'
 import { JournalRecent, JournalRecentList } from './JournalRecent'
-import { journalCopy, journalDate, localToday } from './journalCopy'
+import { journalCopy, journalDate } from './journalCopy'
 import './journal.css'
+
+// ES-138: fecha local de hoy (no la UTC del servidor) como valor inicial de una entrada nueva.
+const localToday = () => { const now = new Date(); return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
 
 export function JournalPage() {
   const token = useSpaceToken(); const location = useLocation()
@@ -21,7 +24,7 @@ function JournalSession({ token }: { token: string }) {
   const isNew = location.pathname.endsWith('/new'); const id = rawId && /^[1-9]\d{0,9}$/.test(rawId) ? Number(rawId) : null
   const isList = !isNew && !rawId
   const [entries, setEntries] = useState<Entry[]>([]); const [saved, setSaved] = useState<Entry | null>(null)
-  const [date, setDate] = useState(isNew ? localToday : ''); const [content, setContent] = useState(''); const [editing, setEditing] = useState(isNew)
+  const [defaultDate] = useState(localToday); const [date, setDate] = useState(isNew ? defaultDate : ''); const [errors, setErrors] = useState<{ date?: string; content?: string }>({}); const [content, setContent] = useState(''); const [editing, setEditing] = useState(isNew)
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [expired, setExpired] = useState(!token)
   const [loadAttempt, setLoadAttempt] = useState(0)
   const [notice, setNotice] = useState(''); const [unavailable, setUnavailable] = useState(false)
@@ -30,7 +33,7 @@ function JournalSession({ token }: { token: string }) {
   const [dialog, setDialog] = useState<'delete' | 'cancel' | 'discard' | null>(null)
   const alive = useRef(true); const lock = useRef(false); const acknowledgedId = useRef<number | null>(null)
   const current = useCallback(() => alive.current && localStorage.getItem('elevation_token') === token, [token])
-  const dirty = editing && (isNew ? content !== '' : date !== (saved?.date || '') || content !== (saved?.content || ''))
+  const dirty = editing && (date !== (saved?.date || (isNew ? defaultDate : '')) || content !== (saved?.content || ''))
   useDraftGuard(!expired && (dirty || busy || !!uncertain), c.leave)
   const failure = (error: unknown, fallback: string) => {
     if (!current()) return
@@ -76,7 +79,13 @@ function JournalSession({ token }: { token: string }) {
   }
   const save = async () => {
     if (lock.current || uncertain || conflict) return
-    if (!validDraft(date, content)) { setNotice(c.invalid); document.getElementById(!validDate(date) ? 'entry-date' : 'entry-content')?.focus(); return }
+    // ES-138: errores propios (ES/EN) asociados a cada campo en lugar de la burbuja nativa del navegador.
+    const found = { date: !date ? c.dateMissing : !validDate(date) ? c.dateInvalid : undefined, content: !content.trim() ? c.contentMissing : undefined }
+    if (found.date || found.content || !validDraft(date, content)) {
+      setErrors(found); setNotice('')
+      document.getElementById(found.date ? 'entry-date' : 'entry-content')?.focus(); return
+    }
+    setErrors({})
     lock.current = true; setBusy(true); setNotice('')
     let attempted = false
     try {
@@ -116,9 +125,9 @@ function JournalSession({ token }: { token: string }) {
     {expired ? <p role="alert">{c.session} <Link to="/login">{c.login}</Link></p> : <div className="journal-workspace"><section className="elv-card journal-sheet" aria-labelledby="journal-entry-title">
     <div className="journal-sheet-top"><h2 id="journal-entry-title" className="journal-eyebrow">{j.entry}</h2><p id="journal-save-status" role="status" aria-live="polite" className={notice && notice !== c.saved ? 'space-warning' : ''}>{busy ? c.saving : loading ? c.loading : notice || (editing ? dirty ? c.dirty : isNew ? c.new : c.saved : saved ? c.saved : '')}</p></div>
     {isList ? <><p>{j.select}</p><p className="journal-privacy">{c.privacy}</p></> : !loading && <>
-      {unavailable ? <p>{c.unavailable}</p> : editing ? <form onSubmit={event => { event.preventDefault(); void save() }}>
-        <div className="journal-date"><label htmlFor="entry-date">{c.date}</label><input className="elv-input" id="entry-date" type="date" required value={date} aria-describedby="journal-save-status" aria-invalid={notice === c.invalid && !validDate(date) || undefined} disabled={busy || !!uncertain} onChange={event => { setDate(event.target.value); setNotice('') }} /></div>
-        <label className="sr-only" htmlFor="entry-content">{c.content}</label><textarea className="elv-textarea journal-paper" id="entry-content" rows={8} required maxLength={10000} aria-describedby="journal-save-status journal-privacy journal-draft-warning journal-counter" aria-invalid={notice === c.invalid && (!content.trim() || content.length > 10000) || undefined} value={content} disabled={busy || !!uncertain} onChange={event => { setContent(event.target.value); setNotice('') }} />
+      {unavailable ? <p>{c.unavailable}</p> : editing ? <form noValidate onSubmit={event => { event.preventDefault(); void save() }}>
+        <div className="journal-date"><label htmlFor="entry-date">{c.date}</label><input className="elv-input" id="entry-date" type="date" required value={date} aria-invalid={!!errors.date} aria-describedby={errors.date ? 'entry-date-error' : 'journal-save-status'} disabled={busy || !!uncertain} onChange={event => { setDate(event.target.value); setNotice(''); setErrors(e => ({ ...e, date: undefined })) }} />{errors.date && <p id="entry-date-error" className="space-error" role="alert">{errors.date}</p>}</div>
+        <label className="sr-only" htmlFor="entry-content">{c.content}</label><textarea className="elv-textarea journal-paper" id="entry-content" rows={8} required maxLength={10000} aria-invalid={!!errors.content} aria-describedby={errors.content ? 'entry-content-error' : 'journal-save-status journal-privacy journal-draft-warning journal-counter'} value={content} disabled={busy || !!uncertain} onChange={event => { setContent(event.target.value); setNotice(''); setErrors(e => ({ ...e, content: undefined })) }} />{errors.content && <p id="entry-content-error" className="space-error" role="alert">{errors.content}</p>}
         <div className="journal-paper-footer"><span id="journal-counter">{content.length.toLocaleString(lang)} / {(10000).toLocaleString(lang)} {j.count}</span><span>{j.manual}</span></div>
         <p className="journal-privacy" id="journal-privacy">{c.privacy}</p><p className="journal-draft-warning" id="journal-draft-warning">{j.draftWarning}</p>
         <div className="space-actions"><button className="elv-btn elv-btn-primary" disabled={busy || !!uncertain || !!conflict || !dirty}>{j.save}</button><button type="button" className="elv-btn" disabled={busy} onClick={() => setDialog('cancel')}>{c.cancel}</button></div>
