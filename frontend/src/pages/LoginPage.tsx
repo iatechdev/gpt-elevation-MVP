@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
-import { validRegistrationPassword } from '../access/registrationPassword'
+import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
+import { PasswordRequirements } from '../access/PasswordRequirements'
 import {
   colors, radius, spacing, typography,
   btnPrimaryStyle,
@@ -25,17 +26,22 @@ export function LoginPage() {
   const [email,         setEmail]         = useState('')
   const [password,      setPassword]      = useState('')
   const [showPassword,  setShowPassword]  = useState(false)
-  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean } | null>(null)
+  const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean; missing?: PasswordProblem[] } | null>(null)
   const [isLocked,      setIsLocked]      = useState(false)
   const [submitting,    setSubmitting]    = useState(false)
+  const passwordInput = useRef<HTMLInputElement>(null)
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     if (submitting || isLocked) return
     setAuthMessage(null)
-    if (isRegistering && !validRegistrationPassword(password)) {
-      setAuthMessage({ key: 'landing.access.password_policy', success: false })
-      return
+    if (isRegistering) {
+      const missing = passwordProblems(password)
+      if (missing.length) {
+        setAuthMessage({ key: 'landing.access.password_policy', success: false, missing })
+        passwordInput.current?.focus()
+        return
+      }
     }
     setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
@@ -51,12 +57,14 @@ export function LoginPage() {
       })
       const data = await res.json() as {
         error?: string; locked?: boolean; token?: string
-        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string
+        role?: string; name?: string; onboardingCompleted?: boolean; deactivated?: boolean; code?: string; missing?: unknown
       }
 
       if (!res.ok) {
         setIsLocked(data.locked === true)
-        setAuthMessage({ key: authFailureKey(res.status, data, isRegistering), success: false })
+        const key = authFailureKey(res.status, data, isRegistering)
+        setAuthMessage({ key, success: false, missing: key === 'landing.access.password_policy' ? knownProblems(data.missing) : undefined })
+        if (key === 'landing.access.password_policy') passwordInput.current?.focus()
         return
       }
 
@@ -86,6 +94,10 @@ export function LoginPage() {
   }, [preferredLanguage, lang, setLang])
 
   if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? sessionDestination(entry.result.session)} replace />
+
+  const policyError = authMessage?.key === 'landing.access.password_policy'
+  const missingList = authMessage?.missing?.map(id => text(`landing.access.pw.missing.${id}`)).join(', ')
+  const messageText = policyError && missingList ? text('landing.access.pw.missing').replace('{list}', missingList) : authMessage ? text(authMessage.key) : ''
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -191,11 +203,14 @@ export function LoginPage() {
 
           <div style={{ position: 'relative' }}>
             <input
+              ref={passwordInput}
               type={showPassword ? 'text' : 'password'}
               aria-label={text('landing.access.password')}
               autoComplete={isRegistering ? 'new-password' : 'current-password'}
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); if (policyError) setAuthMessage(null) }}
+              aria-describedby={isRegistering ? 'pw-req' : undefined}
+              aria-invalid={policyError ? true : undefined}
               placeholder={t('label_password')}
               required
               style={{ ...inputStyle, paddingRight: '2rem' }}
@@ -220,14 +235,18 @@ export function LoginPage() {
             </button>
           </div>
 
+          {isRegistering && (
+            <PasswordRequirements id="pw-req" password={password} showErrors={policyError} serverProblems={authMessage?.missing} text={text} />
+          )}
+
           {authMessage && (
             <p style={{
               fontSize: '0.85rem',
               textAlign: 'center',
               color: authMessage.success ? colors.success : colors.danger,
               margin: 0,
-            }} role="status">
-              {authMessage.success ? '✓ ' : '❌ '}{text(authMessage.key)}
+            }} role={authMessage.success ? 'status' : 'alert'}>
+              {authMessage.success ? '✓ ' : '❌ '}{messageText}
             </p>
           )}
 
