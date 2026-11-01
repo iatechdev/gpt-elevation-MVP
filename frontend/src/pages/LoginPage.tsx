@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
@@ -249,6 +249,8 @@ export function LoginPage() {
               {authMessage.success ? '✓ ' : '❌ '}{messageText}
             </p>
           )}
+
+          {!isRegistering && <Link to="/forgot-password" style={{ color: colors.primary, fontSize: '0.85rem', textAlign: 'center', fontFamily: typography.fontBody, marginTop: `-${spacing.lg}` }}>{text('landing.access.reset.forgot_link')}</Link>}
 
           <button
             type="submit"

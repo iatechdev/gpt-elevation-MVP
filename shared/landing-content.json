@@ -321,5 +321,20 @@
   {"key":"landing.access.pw.missing.digit","es":"un número","en":"a number"},
   {"key":"landing.access.pw.missing.special","es":"un carácter especial","en":"a special character"},
   {"key":"landing.access.pw.missing.max_bytes","es":"no superar los 72 bytes","en":"not exceed 72 bytes"},
-  {"key":"landing.access.pw.missing.common","es":"no ser una contraseña muy común","en":"not be a very common password"}
+  {"key":"landing.access.pw.missing.common","es":"no ser una contraseña muy común","en":"not be a very common password"},
+  {"key":"landing.access.reset.forgot_link","es":"¿Olvidaste tu contraseña?","en":"Forgot your password?"},
+  {"key":"landing.access.reset.forgot_title","es":"Recuperar contraseña","en":"Reset your password"},
+  {"key":"landing.access.reset.forgot_intro","es":"Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.","en":"Enter your account email and we will send you a link to choose a new password."},
+  {"key":"landing.access.reset.send","es":"Enviar enlace","en":"Send link"},
+  {"key":"landing.access.reset.sent","es":"Si existe una cuenta con ese correo, te enviaremos un enlace. Caduca en 30 minutos.","en":"If an account exists for that email, we will send you a link. It expires in 30 minutes."},
+  {"key":"landing.access.reset.back","es":"Volver a iniciar sesión","en":"Back to sign in"},
+  {"key":"landing.access.reset.title","es":"Elige tu contraseña nueva","en":"Choose your new password"},
+  {"key":"landing.access.reset.new_password","es":"Contraseña nueva","en":"New password"},
+  {"key":"landing.access.reset.save","es":"Guardar contraseña","en":"Save password"},
+  {"key":"landing.access.reset.done_title","es":"Contraseña actualizada","en":"Password updated"},
+  {"key":"landing.access.reset.done","es":"Listo. Por seguridad cerramos tus otras sesiones. Inicia sesión con tu contraseña nueva.","en":"Done. For security we signed you out everywhere else. Sign in with your new password."},
+  {"key":"landing.access.reset.go_login","es":"Iniciar sesión","en":"Sign in"},
+  {"key":"landing.access.reset.invalid_title","es":"Enlace no válido","en":"Link not valid"},
+  {"key":"landing.access.reset.invalid","es":"Este enlace ya no sirve. Pide uno nuevo.","en":"This link no longer works. Request a new one."},
+  {"key":"landing.access.reset.request_new","es":"Pedir un enlace nuevo","en":"Request a new link"}
 ]
