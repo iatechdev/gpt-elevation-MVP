@@ -116,3 +116,18 @@ test('ES-134: el aviso de límite recibe el foco al aparecer y solo ese aviso es
   assert.match(controls, /tabIndex=\{chat\.alert \? -1 : undefined\}/)
   assert.ok(controls.indexOf('status.current?.focus()') < controls.indexOf('if (chat.expired) return null', controls.indexOf('export function ChatInput')), 'el efecto va antes del retorno anticipado (reglas de hooks)')
 })
+
+// QA M2: la barra «Uso de IA» y el aviso de límite muestran la misma fecha de reinicio (una sola función, hora local de la persona).
+test('ES-134: la barra de uso y el aviso de límite dicen el mismo día de reinicio, en cualquier zona horaria', async () => {
+  const { renewalDate } = await import('../src/space/usage.ts')
+  for (const tz of ['America/Bogota', 'UTC', 'Asia/Tokyo', 'Europe/Madrid']) {
+    process.env.TZ = tz
+    for (const iso of ['2026-12-01T00:00:00.000Z', '2026-11-01T00:00:00.000Z', '2026-11-30T23:30:00.000Z']) for (const lang of ['es', 'en']) {
+      const date = renewalDate(iso, lang)
+      assert.ok(noticeText({ k: 'budget', scope: 'cohort', resetsAt: iso }, lang).includes(date), `${tz} ${iso} ${lang}: ${date}`)
+    }
+  }
+  process.env.TZ = 'America/Bogota'
+  assert.match(renewalDate('2026-12-01T00:00:00.000Z', 'es'), /30 de noviembre/)
+  assert.match(read('../src/space/notices.ts'), /renewalDate\(notice\.resetsAt, lang\)/)
+})
