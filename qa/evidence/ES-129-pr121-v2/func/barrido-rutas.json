@@ -1,0 +1,1082 @@
+[
+ {
+  "route": "/",
+  "who": "anon",
+  "pr": {
+   "len": 6396,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/",
+   "snippet": "Saltar al contenido elevation Cómo funci"
+  },
+  "base": {
+   "len": 6396,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/",
+   "snippet": "Saltar al contenido elevation Cómo funci"
+  }
+ },
+ {
+  "route": "/login",
+  "who": "anon",
+  "pr": {
+   "len": 118,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/login",
+   "snippet": "ES EN ELEVATION Tu santuario digital · Y"
+  },
+  "base": {
+   "len": 118,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/login",
+   "snippet": "ES EN ELEVATION Tu santuario digital · Y"
+  }
+ },
+ {
+  "route": "/profesionales",
+  "who": "anon",
+  "pr": {
+   "len": 930,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/profesionales",
+   "snippet": "Saltar al formulario Volver al inicio ES"
+  },
+  "base": {
+   "len": 930,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/profesionales",
+   "snippet": "Saltar al formulario Volver al inicio ES"
+  }
+ },
+ {
+  "route": "/pricing",
+  "who": "anon",
+  "pr": {
+   "len": 308,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/pricing",
+   "snippet": "Saltar al contenido elevation Cómo funci"
+  },
+  "base": {
+   "len": 308,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/pricing",
+   "snippet": "Saltar al contenido elevation Cómo funci"
+  }
+ },
+ {
+  "route": "/facilitation",
+  "who": "persona",
+  "pr": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/facilitation",
+   "snippet": "Consola de facilitación La vista prelimi"
+  },
+  "base": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/facilitation",
+   "snippet": "Consola de facilitación La vista prelimi"
+  }
+ },
+ {
+  "route": "/facilitation/participants/1",
+  "who": "persona",
+  "pr": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/facilitation/participants/1",
+   "snippet": "Consola de facilitación La vista prelimi"
+  },
+  "base": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/facilitation/participants/1",
+   "snippet": "Consola de facilitación La vista prelimi"
+  }
+ },
+ {
+  "route": "/facilitation/participants/1/reviews/new",
+  "who": "persona",
+  "pr": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/facilitation/participants/1/reviews/new",
+   "snippet": "Consola de facilitación La vista prelimi"
+  },
+  "base": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/facilitation/participants/1/reviews/new",
+   "snippet": "Consola de facilitación La vista prelimi"
+  }
+ },
+ {
+  "route": "/app/professional-reviews",
+  "who": "persona",
+  "pr": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/professional-reviews",
+   "snippet": "Consola de facilitación La vista prelimi"
+  },
+  "base": {
+   "len": 82,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/professional-reviews",
+   "snippet": "Consola de facilitación La vista prelimi"
+  }
+ },
+ {
+  "route": "/app/feedback",
+  "who": "persona",
+  "pr": {
+   "len": 97,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/feedback",
+   "snippet": "Saltar al contenido Volver a mi espacio "
+  },
+  "base": {
+   "len": 97,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/feedback",
+   "snippet": "Saltar al contenido Volver a mi espacio "
+  }
+ },
+ {
+  "route": "/app/route-catalog",
+  "who": "persona",
+  "pr": {
+   "len": 197,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/route-catalog",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 197,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/route-catalog",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/route-catalog/roles/1",
+  "who": "persona",
+  "pr": {
+   "len": 197,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/route-catalog/roles/1",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 197,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/route-catalog/roles/1",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/compass",
+  "who": "persona",
+  "pr": {
+   "len": 864,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/compass",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 864,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/compass",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/next-step",
+  "who": "persona",
+  "pr": {
+   "len": 110,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/next-step",
+   "snippet": "Saltar al contenido Volver al inicio ELE"
+  },
+  "base": {
+   "len": 110,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/next-step",
+   "snippet": "Saltar al contenido Volver al inicio ELE"
+  }
+ },
+ {
+  "route": "/app/next-step/experiments",
+  "who": "persona",
+  "pr": {
+   "len": 110,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/next-step/experiments",
+   "snippet": "Saltar al contenido Volver al inicio ELE"
+  },
+  "base": {
+   "len": 110,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/next-step/experiments",
+   "snippet": "Saltar al contenido Volver al inicio ELE"
+  }
+ },
+ {
+  "route": "/app/next-step/plan",
+  "who": "persona",
+  "pr": {
+   "len": 110,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/next-step/plan",
+   "snippet": "Saltar al contenido Volver al inicio ELE"
+  },
+  "base": {
+   "len": 110,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/next-step/plan",
+   "snippet": "Saltar al contenido Volver al inicio ELE"
+  }
+ },
+ {
+  "route": "/app/exercises",
+  "who": "persona",
+  "pr": {
+   "len": 95,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/exercises",
+   "snippet": "Saltar al contenido Volver ESEN Ejercici"
+  },
+  "base": {
+   "len": 95,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/exercises",
+   "snippet": "Saltar al contenido Volver ESEN Ejercici"
+  }
+ },
+ {
+  "route": "/app/bridge",
+  "who": "persona",
+  "pr": {
+   "len": 1437,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/bridge",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 1437,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/bridge",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/diary",
+  "who": "persona",
+  "pr": {
+   "len": 330,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/diary",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 330,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/diary",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/diary/new",
+  "who": "persona",
+  "pr": {
+   "len": 386,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/diary/new",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 386,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/diary/new",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/diary/1",
+  "who": "persona",
+  "pr": {
+   "len": 384,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/diary/1",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 384,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/diary/1",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/space/tools",
+  "who": "persona",
+  "pr": {
+   "len": 162,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/space/tools",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 162,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/space/tools",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  }
+ },
+ {
+  "route": "/app/data",
+  "who": "persona",
+  "pr": {
+   "len": 457,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/data",
+   "snippet": "Saltar al contenido Volver al inicio ESE"
+  },
+  "base": {
+   "len": 6420,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/",
+   "snippet": "Saltar al contenido elevation Cómo funci"
+  }
+ },
+ {
+  "route": "/app/onboarding",
+  "who": "persona",
+  "pr": {
+   "len": 13062,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/onboarding",
+   "snippet": "Saltar al contenido ELEVATION ES EN Tu p"
+  },
+  "base": {
+   "len": 13062,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/onboarding",
+   "snippet": "Saltar al contenido ELEVATION ES EN Tu p"
+  }
+ },
+ {
+  "route": "/app/context/resumes",
+  "who": "persona",
+  "pr": {
+   "len": 254,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/context/resumes",
+   "snippet": "Saltar al contenido ELEVATION ES EN Mis "
+  },
+  "base": {
+   "len": 254,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/context/resumes",
+   "snippet": "Saltar al contenido ELEVATION ES EN Mis "
+  }
+ },
+ {
+  "route": "/app/checkin",
+  "who": "persona",
+  "pr": {
+   "len": 129,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/checkin",
+   "snippet": "ANTES DE COMENZAR ¿Cómo llegas hoy? Este"
+  },
+  "base": {
+   "len": 129,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/checkin",
+   "snippet": "ANTES DE COMENZAR ¿Cómo llegas hoy? Este"
+  }
+ },
+ {
+  "route": "/app/chat",
+  "who": "persona",
+  "pr": {
+   "len": 396,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/chat",
+   "snippet": "Saltar al contenido ELEVATION ES EN CONV"
+  },
+  "base": {
+   "len": 396,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/chat",
+   "snippet": "Saltar al contenido ELEVATION ES EN CONV"
+  }
+ },
+ {
+  "route": "/app/progress",
+  "who": "persona",
+  "pr": {
+   "len": 236,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/progress",
+   "snippet": "← Volver al chat ELEVATION 🤝 Buscar ter"
+  },
+  "base": {
+   "len": 236,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/progress",
+   "snippet": "← Volver al chat ELEVATION 🤝 Buscar ter"
+  }
+ },
+ {
+  "route": "/app/dashboard",
+  "who": "persona",
+  "pr": {
+   "len": 752,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/dashboard",
+   "snippet": "Saltar al contenido ELEVATION ES EN Mi p"
+  },
+  "base": {
+   "len": 752,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/dashboard",
+   "snippet": "Saltar al contenido ELEVATION ES EN Mi p"
+  }
+ },
+ {
+  "route": "/app/evidence",
+  "who": "persona",
+  "pr": {
+   "len": 217,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  },
+  "base": {
+   "len": 217,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  }
+ },
+ {
+  "route": "/app/evidence/new",
+  "who": "persona",
+  "pr": {
+   "len": 1152,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/new",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  },
+  "base": {
+   "len": 1152,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/new",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  }
+ },
+ {
+  "route": "/app/evidence/resume-skills",
+  "who": "persona",
+  "pr": {
+   "len": 258,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/resume-skills",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  },
+  "base": {
+   "len": 258,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/resume-skills",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  }
+ },
+ {
+  "route": "/app/evidence/1",
+  "who": "persona",
+  "pr": {
+   "len": 148,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/1",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  },
+  "base": {
+   "len": 148,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/1",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  }
+ },
+ {
+  "route": "/app/evidence/1/edit",
+  "who": "persona",
+  "pr": {
+   "len": 141,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/1/edit",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  },
+  "base": {
+   "len": 141,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/evidence/1/edit",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  }
+ },
+ {
+  "route": "/app/skill-map",
+  "who": "persona",
+  "pr": {
+   "len": 521,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/skill-map",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  },
+  "base": {
+   "len": 521,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/skill-map",
+   "snippet": "Saltar al contenido ELEVATION ES EN Volv"
+  }
+ },
+ {
+  "route": "/app/my-therapist",
+  "who": "persona",
+  "pr": {
+   "len": 156,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/my-therapist",
+   "snippet": "← Volver ELEVATION Mi terapeuta 🤝 Aún n"
+  },
+  "base": {
+   "len": 156,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/my-therapist",
+   "snippet": "← Volver ELEVATION Mi terapeuta 🤝 Aún n"
+  }
+ },
+ {
+  "route": "/app/session/1",
+  "who": "persona",
+  "pr": {
+   "len": 55,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/session/1",
+   "snippet": "⏳ No se encontró la sesión. Reintentar V"
+  },
+  "base": {
+   "len": 55,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/app/session/1",
+   "snippet": "⏳ No se encontró la sesión. Reintentar V"
+  }
+ },
+ {
+  "route": "/admin/pilot-metrics",
+  "who": "superadmin",
+  "pr": {
+   "len": 293,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/pilot-metrics",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 293,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/pilot-metrics",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/route-catalog",
+  "who": "superadmin",
+  "pr": {
+   "len": 96,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/route-catalog",
+   "snippet": "Saltar al contenido Volver a administrac"
+  },
+  "base": {
+   "len": 96,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/route-catalog",
+   "snippet": "Saltar al contenido Volver a administrac"
+  }
+ },
+ {
+  "route": "/admin/skill-catalog",
+  "who": "superadmin",
+  "pr": {
+   "len": 289,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/skill-catalog",
+   "snippet": "Saltar al contenido Volver al panel ES E"
+  },
+  "base": {
+   "len": 289,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/skill-catalog",
+   "snippet": "Saltar al contenido Volver al panel ES E"
+  }
+ },
+ {
+  "route": "/admin/skill-catalog/1",
+  "who": "superadmin",
+  "pr": {
+   "len": 120,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/skill-catalog/1",
+   "snippet": "Saltar al contenido Volver al panel ES E"
+  },
+  "base": {
+   "len": 120,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/skill-catalog/1",
+   "snippet": "Saltar al contenido Volver al panel ES E"
+  }
+ },
+ {
+  "route": "/admin/skill-catalog/1/skills/1",
+  "who": "superadmin",
+  "pr": {
+   "len": 86,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/skill-catalog/1/skills/1",
+   "snippet": "Saltar al contenido Volver al panel ES E"
+  },
+  "base": {
+   "len": 86,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/skill-catalog/1/skills/1",
+   "snippet": "Saltar al contenido Volver al panel ES E"
+  }
+ },
+ {
+  "route": "/admin/route-catalog/1",
+  "who": "superadmin",
+  "pr": {
+   "len": 108,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/route-catalog/1",
+   "snippet": "Saltar al contenido Volver a administrac"
+  },
+  "base": {
+   "len": 108,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/route-catalog/1",
+   "snippet": "Saltar al contenido Volver a administrac"
+  }
+ },
+ {
+  "route": "/admin/route-catalog/1/1/1",
+  "who": "superadmin",
+  "pr": {
+   "len": 69,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/route-catalog/1/1/1",
+   "snippet": "Saltar al contenido Volver a administrac"
+  },
+  "base": {
+   "len": 69,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/route-catalog/1/1/1",
+   "snippet": "Saltar al contenido Volver a administrac"
+  }
+ },
+ {
+  "route": "/admin",
+  "who": "superadmin",
+  "pr": {
+   "len": 695,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/dashboard",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 695,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/dashboard",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/dashboard",
+  "who": "superadmin",
+  "pr": {
+   "len": 695,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/dashboard",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 695,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/dashboard",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/prompts",
+  "who": "superadmin",
+  "pr": {
+   "len": 290,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/prompts",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 290,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/prompts",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/content",
+  "who": "superadmin",
+  "pr": {
+   "len": 407,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/content",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 407,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/content",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/users",
+  "who": "superadmin",
+  "pr": {
+   "len": 16588,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/users",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 16588,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/users",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/metrics",
+  "who": "superadmin",
+  "pr": {
+   "len": 711,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/metrics",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 711,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/metrics",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/admin/manifest",
+  "who": "superadmin",
+  "pr": {
+   "len": 361,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/manifest",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  },
+  "base": {
+   "len": 361,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/admin/manifest",
+   "snippet": "ELEVATION ADMIN ES EN QA129 s SUPERADMIN"
+  }
+ },
+ {
+  "route": "/therapist/dashboard",
+  "who": "terapeuta",
+  "pr": {
+   "len": 339,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/therapist/dashboard",
+   "snippet": "ELEVATION THERAPIST ES EN QA129 t TERAPE"
+  },
+  "base": {
+   "len": 339,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/therapist/dashboard",
+   "snippet": "ELEVATION THERAPIST ES EN QA129 t TERAPE"
+  }
+ },
+ {
+  "route": "/therapist/patient/1",
+  "who": "terapeuta",
+  "pr": {
+   "len": 89,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/therapist/patient/1",
+   "snippet": "ELEVATION THERAPIST ES EN QA129 t TERAPE"
+  },
+  "base": {
+   "len": 89,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/therapist/patient/1",
+   "snippet": "ELEVATION THERAPIST ES EN QA129 t TERAPE"
+  }
+ },
+ {
+  "route": "/therapist/session/1",
+  "who": "terapeuta",
+  "pr": {
+   "len": 41,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/therapist/session/1",
+   "snippet": "No se encontró la sesión. Volver al pane"
+  },
+  "base": {
+   "len": 41,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/therapist/session/1",
+   "snippet": "No se encontró la sesión. Volver al pane"
+  }
+ },
+ {
+  "route": "/board",
+  "who": "junta",
+  "pr": {
+   "len": 223,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/board/manifest",
+   "snippet": "ELEVATION ETHICS BOARD QA129 j BOARD Man"
+  },
+  "base": {
+   "len": 223,
+   "stuck": false,
+   "errs": 0,
+   "bad": 0,
+   "url": "/board/manifest",
+   "snippet": "ELEVATION ETHICS BOARD QA129 j BOARD Man"
+  }
+ }
+]
