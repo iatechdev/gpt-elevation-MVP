@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { clearPending } from '../space/pending'
 import { AdminSidebar } from '../components/AdminSidebar.tsx'
 import { useLanguage } from '../i18n/useLanguage'
 import { interfaceCopy } from '../access/interfaceCopy'
@@ -18,6 +19,7 @@ export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }
   const main = useRef<HTMLElement>(null)
 
   const handleLogout = () => {
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')

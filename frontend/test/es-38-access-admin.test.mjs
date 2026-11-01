@@ -36,6 +36,7 @@ function load(file) {
     if (id.endsWith('useLandingContent')) return { useLandingContent: () => ({ text: key => content.find(row => row.key === key)?.[lang] ?? key }) }
     if (!id.startsWith('.')) return require(id)
     let target = resolve(dirname(file), id)
+    if (target.endsWith('.json')) { const json = JSON.parse(readFileSync(target, 'utf8')); return { default: json, ...json } } // política de contraseñas (#114)
     if (!/\.tsx?$/.test(target)) target += '.ts'
     return load(target)
   }

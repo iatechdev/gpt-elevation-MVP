@@ -46,6 +46,7 @@ import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { JournalPage } from './space/JournalPage'
 import { BridgePage } from './bridge/BridgePage'
 import { SpaceToolsPage } from './space/SpaceToolsPage'
+import { DataPage } from './space/DataPage'
 import { SpaceSession } from './space/SpaceSession'
 export default function App() {
   return (
@@ -81,6 +82,7 @@ export default function App() {
         <Route path="/app/diary/new" element={<JournalPage />} />
         <Route path="/app/diary/:id" element={<JournalPage />} />
         <Route path="/app/space/tools" element={<SpaceToolsPage />} />
+        <Route path="/app/data" element={<DataPage />} /> {/* ES-135 — Mis datos: exportar y eliminar la cuenta */}
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/context/resumes" element={<ResumesPage />} /> {/* ES-109 — mis hojas de vida */}
         <Route path="/app/checkin"      element={<CheckinPage />} />

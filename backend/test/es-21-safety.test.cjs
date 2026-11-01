@@ -327,3 +327,18 @@ test('ES-92: falsos positivos aceptados a propósito (se prefiere sobreactivar a
   // «live with this anymore» es angustia real; «live with my parents anymore» no se distingue de ella.
   assert.equal(detectRisk('I do not want to live with my parents anymore').level, 'high');
 });
+
+test('ES43-QA-02: la ideación implícita en ES y EN es ALTO (frases del informe de QA y variantes cercanas)', () => {
+  for (const text of ['Creo que sería mejor que no estuviera aquí', 'Siento que todo da igual y que mejor me desaparezco', 'Ya no puedo más, siento que sería mejor desaparecer',
+    'Es mejor que yo no existiera', 'Creo que sería mejor que no estuviera en este mundo', 'mejor no estar vivo', 'a veces pienso que mejor desaparecerme', 'Sería MEJOR que no estuviese aquí']) assert.deepEqual(detectRisk(text), { level: 'high', lang: 'es' }, text);
+  for (const text of ["I think it would be better if I wasn't here", 'It would be better if I disappeared', 'everyone is better off if I was gone', "I'm better off not being here", 'better that I was not around']) assert.deepEqual(detectRisk(text), { level: 'high', lang: 'en' }, text);
+});
+
+test('ES43-QA-02: lo cotidiano parecido NO sube a ALTO (mejor desaparecer de las redes, mejor si no llego tarde) y lo ya clasificado no cambia', () => {
+  for (const text of ['Creo que es mejor desaparecer de las redes un tiempo', 'mejor desaparecer del radar hasta que cierre el proyecto', 'sería mejor que mi jefe no estuviera aquí',
+    "it would be better if I wasn't late", 'better if I disappeared from social media', 'I wish I had more time', 'quiero que esto desaparezca de mi agenda']) assert.notEqual(detectRisk(text).level, 'high', text); // «desaparecer» suelto ya era MEDIO antes de este ticket
+  for (const text of ['Sería mejor que no estuviera lloviendo para el viaje', 'mejor no estar solo en esta decisión', 'Es mejor no existir en esa lista de correo', 'sería mejor que mi jefe no estuviera aquí', "it would be better if I wasn't late", 'I wish I had more time']) assert.equal(detectRisk(text).level, null, text);
+  assert.equal(detectRisk('Pienso en hacerme daño').level, 'medium'); // explícito pero sin referencia a morir: sigue MEDIO (ES-92); el especialista decide si sube (ES-24)
+  for (const text of ['Quiero morirme', 'Me quiero matar', 'No quiero seguir viviendo']) assert.equal(detectRisk(text).level, 'high', text);
+  for (const text of ['estos miedos van a desaparecer pronto', 'quiero desaparecer']) assert.equal(detectRisk(text).level, 'medium', text);
+});

@@ -28,7 +28,10 @@ const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
 const HISTORY_LIMIT = 20;
-const CHAT_MAX_TOKENS = 1500; // ES43-QA-01: con 1000 una respuesta normal (≈800) quedaba al límite; el presupuesto reserva este valor por llamada
+const CHAT_MAX_TOKENS = 2000; // ES43-QA-01: con 1500 y esfuerzo bajo 2 de 11 turnos largos aún cerraban por max_tokens (salida máxima ≈1479); el presupuesto reserva este valor por llamada
+// ES43-QA-01: Sonnet 5.5 razona por defecto (esfuerzo alto) y esos tokens cuentan contra max_tokens, así que el chat se cortaba con poco texto visible.
+// Esfuerzo bajo = razonamiento corto; el tope sigue en CHAT_MAX_TOKENS y no se recorta el texto ni se toca el prompt.
+const CHAT_OUTPUT_CONFIG = { effort: 'low' };
 const PENDING_TIMEOUT_MS = 2 * 60 * 1000; // un turno pendiente más viejo que esto se puede reintentar
 const MAX_CONTEXT_ENTRIES = 3;
 const MAX_CONTEXT_CHARS = 2000;
@@ -236,7 +239,7 @@ ${manifest}
     try {
       const msg = await callClaude({
         userId, kind: 'chat', requestId: requestId ?? null,
-        body: { model: anthropic.MODEL, max_tokens: CHAT_MAX_TOKENS, system: systemPrompt, messages: historial },
+        body: { model: anthropic.MODEL, max_tokens: CHAT_MAX_TOKENS, output_config: CHAT_OUTPUT_CONFIG, system: systemPrompt, messages: historial },
       });
       respuestaIA = textOf(msg);
       if (!respuestaIA.trim()) throw new Error('Respuesta vacía del proveedor.');

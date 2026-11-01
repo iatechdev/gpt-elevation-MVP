@@ -372,6 +372,19 @@ const en: Record<string, string> = {
   board_error_activate: 'Could not reactivate version.',
   board_success_upload: '✅ Manifest published and activated:',
   board_success_activate: '✅ Version reactivated:',
+
+  // ── Chat check-out (ES-123: previously hard-coded in the component) ───────
+  checkout_label: 'CHECK-OUT',
+  checkout_title: 'How are you leaving?',
+  checkout_hint: 'Take a moment before closing.',
+  checkout_rating: 'How was the conversation?',
+  checkout_signout: 'Sign out',
+  checkout_skip: 'Skip',
+  star_1: '😞 Very poor',
+  star_2: '😐 Fair',
+  star_3: '🙂 Good',
+  star_4: '😊 Very good',
+  star_5: '✨ Excellent',
 }
 
 export { en }

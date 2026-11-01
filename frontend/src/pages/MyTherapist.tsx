@@ -163,11 +163,11 @@ export function MyTherapist() {
           <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🤝</div>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
-              {lang === 'es' ? 'Aún no tenés un terapeuta asignado' : 'You don\'t have a therapist yet'}
+              {lang === 'es' ? 'Aún no tienes un terapeuta asignado' : 'You don\'t have a therapist yet'}
             </h2>
             <p style={{ fontSize: '0.875rem', color: '#57534E', margin: '0 0 1.5rem' }}>
               {lang === 'es'
-                ? 'Encontrá al terapeuta ideal para vos según tus preferencias.'
+                ? 'Encuentra al terapeuta ideal para ti según tus preferencias.'
                 : 'Find the right therapist based on your preferences.'}
             </p>
             <button
@@ -345,7 +345,7 @@ export function MyTherapist() {
   onClick={() => setShowMatching(true)}
   style={{ background: 'none', border: 'none', color: '#57534E', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Inter, sans-serif' }}
 >
-  {lang === 'es' ? '¿Querés cambiar de terapeuta?' : 'Want to change therapist?'}
+  {lang === 'es' ? '¿Quieres cambiar de terapeuta?' : 'Want to change therapist?'}
 </button>
 
 {showMatching && (

@@ -7,6 +7,7 @@ import { authFailureKey, isSessionInfo, registrationRequested, sessionDestinatio
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { interfaceCopy } from '../access/interfaceCopy'
 import '../styles/accessAdmin.css'
+import { validRegistrationPassword } from '../access/registrationPassword'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -31,6 +32,10 @@ export function LoginPage() {
     e.preventDefault()
     if (submitting || isLocked) return
     setAuthMessage(null)
+    if (isRegistering && !validRegistrationPassword(password)) {
+      setAuthMessage({ key: 'landing.access.password_policy', success: false })
+      return
+    }
     setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
     const body = isRegistering

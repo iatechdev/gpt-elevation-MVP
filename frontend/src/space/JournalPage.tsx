@@ -2,11 +2,14 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from './copy'
-import { entry, listEntries, readEntry, request, SpaceError, validDraft } from './api'
+import { entry, listEntries, readEntry, request, SpaceError, validDate, validDraft } from './api'
 import type { Entry } from './api'
 import { useDraftGuard, useSpaceToken } from './hooks'
 import { SpaceShell } from './SpaceShell'
 import { ConfirmDialog } from './ConfirmDialog'
+
+// ES-138: fecha local de hoy (no la UTC del servidor) como valor inicial de una entrada nueva.
+const localToday = () => { const now = new Date(); return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
 
 export function JournalPage() {
   const token = useSpaceToken(); const location = useLocation()
@@ -18,7 +21,7 @@ function JournalSession({ token }: { token: string }) {
   const isNew = location.pathname.endsWith('/new'); const id = rawId && /^[1-9]\d{0,9}$/.test(rawId) ? Number(rawId) : null
   const isList = !isNew && !rawId
   const [entries, setEntries] = useState<Entry[]>([]); const [saved, setSaved] = useState<Entry | null>(null)
-  const [date, setDate] = useState(''); const [content, setContent] = useState(''); const [editing, setEditing] = useState(isNew)
+  const [defaultDate] = useState(localToday); const [date, setDate] = useState(isNew ? defaultDate : ''); const [errors, setErrors] = useState<{ date?: string; content?: string }>({}); const [content, setContent] = useState(''); const [editing, setEditing] = useState(isNew)
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [expired, setExpired] = useState(!token)
   const [notice, setNotice] = useState(''); const [unavailable, setUnavailable] = useState(false)
   const [uncertain, setUncertain] = useState<'create' | 'edit' | 'delete' | null>(null)
@@ -26,7 +29,7 @@ function JournalSession({ token }: { token: string }) {
   const [dialog, setDialog] = useState<'delete' | 'cancel' | 'discard' | null>(null)
   const alive = useRef(true); const lock = useRef(false); const acknowledgedId = useRef<number | null>(null)
   const current = useCallback(() => alive.current && localStorage.getItem('elevation_token') === token, [token])
-  const dirty = editing && (date !== (saved?.date || '') || content !== (saved?.content || ''))
+  const dirty = editing && (date !== (saved?.date || (isNew ? defaultDate : '')) || content !== (saved?.content || ''))
   useDraftGuard(!expired && (dirty || busy || !!uncertain), c.leave)
   const failure = (error: unknown, fallback: string) => {
     if (!current()) return
@@ -73,7 +76,13 @@ function JournalSession({ token }: { token: string }) {
   }
   const save = async () => {
     if (lock.current || uncertain || conflict) return
-    if (!validDraft(date, content)) { setNotice(c.invalid); document.getElementById(!date ? 'entry-date' : 'entry-content')?.focus(); return }
+    // ES-138: errores propios (ES/EN) asociados a cada campo en lugar de la burbuja nativa del navegador.
+    const found = { date: !date ? c.dateMissing : !validDate(date) ? c.dateInvalid : undefined, content: !content.trim() ? c.contentMissing : undefined }
+    if (found.date || found.content || !validDraft(date, content)) {
+      setErrors(found); setNotice('')
+      document.getElementById(found.date ? 'entry-date' : 'entry-content')?.focus(); return
+    }
+    setErrors({})
     lock.current = true; setBusy(true); setNotice('')
     let attempted = false
     try {
@@ -111,10 +120,10 @@ function JournalSession({ token }: { token: string }) {
   return <SpaceShell><h1>{c.title}</h1><p>{c.privacy}</p>{expired ? <p role="alert">{c.session} <Link to="/login">{c.login}</Link></p> : <>
     <p role="status" aria-live="polite" className={notice ? 'space-warning' : ''}>{busy ? c.saving : loading ? c.loading : notice}</p>
     {isList ? <><Link className="elv-btn elv-btn-primary" to="/app/diary/new">{c.new}</Link>{!loading && !notice && rows}{notice && <button className="elv-btn" onClick={() => { void listEntries(token).then(rows => { if (current()) { setEntries(rows); setNotice('') } }).catch(error => failure(error, c.loadError)) }}>{c.retry}</button>}</> : !loading && <>
-      {unavailable ? <p>{c.unavailable}</p> : editing ? <form onSubmit={event => { event.preventDefault(); void save() }}>
+      {unavailable ? <p>{c.unavailable}</p> : editing ? <form noValidate onSubmit={event => { event.preventDefault(); void save() }}>
         <p>{isNew || dirty ? c.dirty : c.saved}</p>
-        <label htmlFor="entry-date">{c.date}</label><input className="elv-input" id="entry-date" type="date" required value={date} disabled={busy || !!uncertain} onChange={event => setDate(event.target.value)} />
-        <label htmlFor="entry-content">{c.content}</label><textarea className="elv-textarea" id="entry-content" rows={10} required maxLength={10000} value={content} disabled={busy || !!uncertain} onChange={event => setContent(event.target.value)} /><p className="space-note">{content.length}/10.000</p>
+        <label htmlFor="entry-date">{c.date}</label><input className="elv-input" id="entry-date" type="date" required value={date} aria-invalid={!!errors.date} aria-describedby={errors.date ? 'entry-date-error' : undefined} disabled={busy || !!uncertain} onChange={event => { setDate(event.target.value); setErrors(e => ({ ...e, date: undefined })) }} />{errors.date && <p id="entry-date-error" className="space-error" role="alert">{errors.date}</p>}
+        <label htmlFor="entry-content">{c.content}</label><textarea className="elv-textarea" id="entry-content" rows={10} required maxLength={10000} value={content} aria-invalid={!!errors.content} aria-describedby={errors.content ? 'entry-content-error' : undefined} disabled={busy || !!uncertain} onChange={event => { setContent(event.target.value); setErrors(e => ({ ...e, content: undefined })) }} />{errors.content && <p id="entry-content-error" className="space-error" role="alert">{errors.content}</p>}<p className="space-note">{content.length}/10.000</p>
         <div className="space-actions"><button className="elv-btn elv-btn-primary" disabled={busy || !!uncertain || !!conflict || !dirty}>{c.save}</button><button type="button" className="elv-btn" disabled={busy} onClick={() => setDialog('cancel')}>{c.cancel}</button></div>
       </form> : saved && <article><h2>{saved.date}</h2><p className="space-note">{c.updated}: {new Date(saved.updatedAt).toLocaleString(lang)}</p><p className="space-private-text">{saved.content}</p><div className="space-actions"><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => { setEditing(true); setNotice('') }}>{c.edit}</button><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => setDialog('delete')}>{c.remove}</button><Link className="elv-link" to="/app/chat?journal=choose">{c.chooseChat}</Link></div></article>}
       {conflict && <button type="button" className="elv-btn" onClick={() => { if (!dirty || window.confirm(c.leave)) { setSaved(conflict); setDate(conflict.date); setContent(conflict.content); setConflict(null); setUncertain(null); setNotice('') } }}>{c.review}</button>}

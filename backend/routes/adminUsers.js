@@ -45,7 +45,7 @@ router.post('/', validateBody({ name: nonempty, email: nonempty, password: nonem
       return res.status(400).json({ error: `Rol inválido. Roles válidos: ${ROLES_VALIDOS.join(', ')}.` });
     }
     if (adminRole === 'admin' && ROLES_PRIVILEGIADOS.includes(role)) {
-      return res.status(403).json({ error: 'No tenés permisos para crear usuarios con ese rol.' });
+      return res.status(403).json({ error: 'No tienes permisos para crear usuarios con ese rol.' });
     }
 
     const existente = await User.findOne({ where: { email } });
@@ -138,7 +138,7 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
     const adminId = req.user.id;
 
     if (parseInt(id) === adminId) {
-      return res.status(403).json({ error: 'No podés modificar tu propio usuario.' });
+      return res.status(403).json({ error: 'No puedes modificar tu propio usuario.' });
     }
 
     const usuario = await User.findByPk(id);
@@ -149,7 +149,7 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
         return res.status(400).json({ error: `Rol inválido. Roles válidos: ${ROLES_VALIDOS.join(', ')}.` });
       }
       if (adminRole === 'admin' && ROLES_PRIVILEGIADOS.includes(role)) {
-        return res.status(403).json({ error: 'No tenés permisos para asignar ese rol.' });
+        return res.status(403).json({ error: 'No tienes permisos para asignar ese rol.' });
       }
     }
 
@@ -189,7 +189,7 @@ router.delete('/:id', async (req, res) => {
     }
     if (await refuseDeletionPending(id, res)) return;
     if (parseInt(id) === adminId) {
-      return res.status(403).json({ error: 'No podés eliminar tu propio usuario.' });
+      return res.status(403).json({ error: 'No puedes eliminar tu propio usuario.' });
     }
 
     const usuario = await User.findByPk(id);
