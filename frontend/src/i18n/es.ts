@@ -329,6 +329,8 @@ const es: Record<string, string> = {
   btn_edit: 'Editar',
   btn_back: 'Volver',
   loading: 'Cargando...',
+  route_error: 'Hay una versión nueva de la aplicación. Recarga la página para continuar.',
+  route_error_reload: 'Recargar',
   error_connection: 'Error de conexión.',
   no_data: '—',
 
