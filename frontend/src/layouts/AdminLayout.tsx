@@ -1,21 +1,12 @@
-import { Outlet, useNavigate } from 'react-router-dom'
-import { clearPending } from '../space/pending'
+import { Outlet } from 'react-router-dom'
+import { SessionControl } from '../access/SessionControl'
 import { AdminSidebar } from '../components/AdminSidebar.tsx'
 import { useLanguage } from '../i18n/useLanguage'
 
 export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }) {
-  const navigate = useNavigate()
   const { lang, setLang } = useLanguage()
   const name = localStorage.getItem('elevation_name') ?? 'Admin'
   const role = localStorage.getItem('elevation_role') ?? 'admin'
-
-  const handleLogout = () => {
-    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    navigate('/login')
-  }
 
   return (
     <div className={pilotPreview ? "pilot-admin-layout" : undefined} style={{ minHeight: '100vh', background: '#F5F3EF', fontFamily: 'Inter, sans-serif' }}>
@@ -60,24 +51,7 @@ export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }
             ))}
           </div>
 
-          <span style={{ fontSize: 13, color: '#78716C' }}>{name}</span>
-          <span style={{
-            fontSize: 10, fontWeight: 600, padding: '3px 10px',
-            borderRadius: 9999, letterSpacing: '0.08em',
-            background: role === 'superadmin' ? '#EAF0E6' : '#F5F3EF',
-            color: role === 'superadmin' ? '#6B7D5C' : '#78716C',
-            border: `0.5px solid ${role === 'superadmin' ? '#A8B5A2' : '#D6D2C4'}`,
-          }}>
-            {role.toUpperCase()}
-          </span>
-          <button onClick={handleLogout} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#A8A29E', display: 'flex', padding: 4,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-          </button>
+          <SessionControl name={name} roleLabel={role.toUpperCase()} />
         </div>
       </header>
 
