@@ -1,6 +1,6 @@
 // frontend/src/App.tsx
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useLanguage } from './i18n/useLanguage'
 import { LandingPage } from './pages/LandingPage.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
@@ -9,6 +9,7 @@ import { AdminRoute } from './components/AdminRoute.tsx'
 import { TherapistRoute } from './components/TherapistRoute.tsx'
 import { BoardRoute } from './components/BoardRoute.tsx'
 
+import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { SpaceSession } from './space/SpaceSession'
 // ES-129: cada pantalla fuera de la portada y el login se descarga al entrar en su ruta; así /login no arrastra admin, terapeuta, junta ni mapas.
@@ -59,6 +60,7 @@ const FeedbackPage = lazy(() => import('./pilot/FeedbackPage').then(m => ({ defa
 const PilotMetricsPage = lazy(() => import('./pilot/PilotMetricsPage').then(m => ({ default: m.PilotMetricsPage })))
 const JournalPage = lazy(() => import('./space/JournalPage').then(m => ({ default: m.JournalPage })))
 const BridgePage = lazy(() => import('./bridge/BridgePage').then(m => ({ default: m.BridgePage })))
+const DataPage = lazy(() => import('./space/DataPage').then(m => ({ default: m.DataPage })))
 const SpaceToolsPage = lazy(() => import('./space/SpaceToolsPage').then(m => ({ default: m.SpaceToolsPage })))
 
 // Mientras baja el bloque de la ruta se muestra el texto «Cargando...» que ya existe en ES y EN.
@@ -68,8 +70,9 @@ function RouteFallback() {
 }
 
 export default function App() {
+  const { pathname } = useLocation()
   return (
-    <RegisteredRoutes><Suspense fallback={<RouteFallback />}><Routes>
+    <RegisteredRoutes><RouteErrorBoundary resetKey={pathname}><Suspense fallback={<RouteFallback />}><Routes>
 
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
@@ -101,6 +104,7 @@ export default function App() {
         <Route path="/app/diary/new" element={<JournalPage />} />
         <Route path="/app/diary/:id" element={<JournalPage />} />
         <Route path="/app/space/tools" element={<SpaceToolsPage />} />
+        <Route path="/app/data" element={<DataPage />} /> {/* ES-135 — Mis datos: exportar y eliminar la cuenta */}
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/context/resumes" element={<ResumesPage />} /> {/* ES-109 — mis hojas de vida */}
         <Route path="/app/checkin"      element={<CheckinPage />} />
@@ -165,6 +169,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
 
-    </Routes></Suspense></RegisteredRoutes>
+    </Routes></Suspense></RouteErrorBoundary></RegisteredRoutes>
   )
 }
