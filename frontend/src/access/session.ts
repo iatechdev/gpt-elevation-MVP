@@ -59,6 +59,7 @@ export async function readVerifiedSession({ baseUrl = '', token, signal, timeout
 }
 
 export function authFailureKey(status: number, data: { error?: string; locked?: boolean; deactivated?: boolean; code?: string }, registering: boolean): string {
+  if (registering && data.code === 'password_policy') return 'landing.access.password_policy'
   if (data.locked === true || status === 423) return 'landing.access.locked'
   if (status === 429) return 'landing.access.rate_limit'
   if (data.code === 'deletion_pending') return 'landing.access.deletion_pending'

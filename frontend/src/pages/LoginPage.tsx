@@ -5,6 +5,7 @@ import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
+import { validRegistrationPassword } from '../access/registrationPassword'
 import {
   colors, radius, spacing, typography,
   btnPrimaryStyle,
@@ -32,6 +33,10 @@ export function LoginPage() {
     e.preventDefault()
     if (submitting || isLocked) return
     setAuthMessage(null)
+    if (isRegistering && !validRegistrationPassword(password)) {
+      setAuthMessage({ key: 'landing.access.password_policy', success: false })
+      return
+    }
     setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
     const body = isRegistering
