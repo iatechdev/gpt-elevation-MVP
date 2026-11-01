@@ -16,6 +16,12 @@ function setCacheHeaders(res, filePath) {
 
 function mountFrontend(app, distDir) {
   app.use(express.static(distDir, { setHeaders: setCacheHeaders }));
+  // ES-140: un archivo de /assets que no existe (p. ej. un bloque con hash de un despliegue anterior) responde 404, no el index.html con 200:
+  // el navegador no debe tomar HTML por JavaScript.
+  app.use('/assets', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.status(404).type('text/plain').send('Not found');
+  });
   app.get('/{*path}', (req, res) => {
     res.set('Cache-Control', REVALIDATE);
     res.sendFile(path.join(distDir, 'index.html'));

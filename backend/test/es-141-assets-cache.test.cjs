@@ -42,3 +42,23 @@ test('ES-141: index.html (en / y por el comodín de la SPA) y los archivos sin h
     assert.equal(cc, 'no-cache', url + ' -> ' + cc);
   }
 });
+
+// ES-140: un asset inexistente responde 404 (no el index.html con 200); las rutas de la SPA siguen cayendo en index.html.
+test('ES-140: GET /assets/<inexistente>.js y .css devuelven 404 y no text/html', async t => {
+  const get = await start(t);
+  for (const url of ['/assets/no-existe-Ab12Cd34.js', '/assets/viejo-Zz99Yy88.css', '/assets/']) {
+    const res = await get(url);
+    assert.equal(res.status, 404, url);
+    assert.doesNotMatch(res.headers.get('content-type') || '', /html/, url);
+    assert.equal(res.headers.get('cache-control'), 'no-store', url);
+  }
+});
+
+test('ES-140: las rutas de la SPA siguen respondiendo index.html con 200', async t => {
+  const get = await start(t);
+  for (const url of ['/login', '/mi-espacio/mapa']) {
+    const res = await get(url);
+    assert.equal(res.status, 200, url);
+    assert.match(res.headers.get('content-type') || '', /html/, url);
+  }
+});
