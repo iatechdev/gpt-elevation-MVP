@@ -1,0 +1,213 @@
+{
+ "level": "139",
+ "base": "http://127.0.0.1:9991",
+ "resultados": [
+  {
+   "id": "C1-ES141-assets-immutable",
+   "ok": true,
+   "detail": {
+    "archivos": 73,
+    "fallos": []
+   }
+  },
+  {
+   "id": "C2-ES141-spa-sin-cache-larga",
+   "ok": true,
+   "detail": {
+    "rutas": 7,
+    "fallos": []
+   }
+  },
+  {
+   "id": "C3-ES141-sin-hash",
+   "ok": true,
+   "detail": {
+    "fallos": []
+   }
+  },
+  {
+   "id": "C4-API-sin-cambios",
+   "ok": true,
+   "detail": {
+    "inexistente": [
+     403,
+     "no-store",
+     null
+    ],
+    "health": [
+     200,
+     null,
+     null
+    ]
+   }
+  },
+  {
+   "id": "C5-borde",
+   "ok": true,
+   "detail": {
+    "etag": true,
+    "if_none_match": 304,
+    "head": 200,
+    "dotdot": [
+     404,
+     200,
+     200
+    ],
+    "cc_head": "public, max-age=31536000, immutable"
+   }
+  },
+  {
+   "id": "C1-ES140-asset-inexistente-404",
+   "ok": false,
+   "detail": {
+    "casos": 7,
+    "fallos": [
+     "/assets"
+    ],
+    "muestra": [
+     [
+      "/assets/inexistente-AbCdEf12.js",
+      404,
+      "text/plain; charset=utf-8",
+      "no-store",
+      false
+     ],
+     [
+      "/assets/inexistente-AbCdEf12.css",
+      404,
+      "text/plain; charset=utf-8",
+      "no-store",
+      false
+     ],
+     [
+      "/assets/sub/dir/otro-Zz9Zz9Zz.js",
+      404,
+      "text/plain; charset=utf-8",
+      "no-store",
+      false
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C5-ES140-metodos",
+   "ok": true,
+   "detail": {
+    "post": 404,
+    "head": 404
+   }
+  },
+  {
+   "id": "C1C2-ES139-gzip",
+   "ok": true,
+   "detail": {
+    "archivos": 68,
+    "muestra": [
+     {
+      "f": "AdminContent-RMx_GrCN.js",
+      "plain": 30188,
+      "gzip": 8042,
+      "enc": "gzip",
+      "same": true,
+      "vary": true,
+      "plain_enc": null
+     },
+     {
+      "f": "AdminDashboard-36TZZXrK.js",
+      "plain": 8651,
+      "gzip": 2567,
+      "enc": "gzip",
+      "same": true,
+      "vary": true,
+      "plain_enc": null
+     },
+     {
+      "f": "AdminLayout-BVtKzLLj.js",
+      "plain": 6772,
+      "gzip": 2155,
+      "enc": "gzip",
+      "same": true,
+      "vary": true,
+      "plain_enc": null
+     },
+     {
+      "f": "AdminMetrics-BEVP1clS.js",
+      "plain": 6705,
+      "gzip": 2192,
+      "enc": "gzip",
+      "same": true,
+      "vary": true,
+      "plain_enc": null
+     }
+    ],
+    "total_plano": 1263593,
+    "total_gzip": 367583
+   }
+  },
+  {
+   "id": "C3-ES139-API-no-comprime",
+   "ok": true,
+   "detail": {
+    "apis": [
+     [
+      "/api/health",
+      200,
+      null
+     ],
+     [
+      "/api/landing-content",
+      200,
+      null
+     ],
+     [
+      "/api/plans",
+      200,
+      null
+     ],
+     [
+      "/api/pricing",
+      200,
+      null
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C7-ES139-borde",
+   "ok": true,
+   "detail": {
+    "pequenos": [
+     [
+      "/favicon.svg",
+      200,
+      1490,
+      "gzip"
+     ],
+     [
+      "/icons.svg",
+      200,
+      2110,
+      "gzip"
+     ]
+    ],
+    "range": [
+     206,
+     null,
+     100
+    ],
+    "head_gzip": [
+     200,
+     null
+    ]
+   }
+  },
+  {
+   "id": "C-regresion-index-referencia-assets-existentes",
+   "ok": true,
+   "detail": {
+    "referencias": 4,
+    "fallos": []
+   }
+  }
+ ]
+}
