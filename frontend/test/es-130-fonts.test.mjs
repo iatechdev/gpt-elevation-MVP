@@ -31,3 +31,12 @@ test('ES-130 archivos: cada woff2 referenciado existe y trae su licencia OFL', (
     assert.ok(fs.existsSync(new URL(`../src/assets/fonts/${licence}`, import.meta.url)), licence)
   }
 })
+
+test('ES-130 CLS: el respaldo de Inter ajusta métricas y las pantallas con Inter local lo usan', () => {
+  const landing = fs.readFileSync(new URL('../src/components/landing/landing.css', import.meta.url), 'utf8')
+  const access = fs.readFileSync(new URL('../src/styles/accessAdmin.css', import.meta.url), 'utf8')
+  assert.match(landing, /font-family: 'Elevation Landing Inter Fallback';/)
+  for (const prop of ['size-adjust', 'ascent-override', 'descent-override', 'line-gap-override']) assert.ok(landing.includes(prop), prop)
+  assert.ok(landing.includes("'Elevation Landing Inter', 'Elevation Landing Inter Fallback'"))
+  assert.ok(access.includes("'Elevation Landing Inter', 'Elevation Landing Inter Fallback'"))
+})

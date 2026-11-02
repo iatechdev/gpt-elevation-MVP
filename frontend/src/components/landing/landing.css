@@ -1,3 +1,13 @@
+/* ES-130 (CLS): mientras baja Inter, el texto se pinta con Arial ajustado a las métricas de Inter; así el héroe no cambia de alto al llegar la fuente. */
+@font-face {
+  font-family: 'Elevation Landing Inter Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Helvetica');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
 @font-face {
   font-family: 'Elevation Landing Inter';
   font-style: normal;
@@ -88,7 +98,7 @@
   background: var(--color-base-100);
   color: var(--color-base-content);
   min-height: 100svh;
-  font-family: 'Elevation Landing Inter', Inter, sans-serif;
+  font-family: 'Elevation Landing Inter', 'Elevation Landing Inter Fallback', Inter, sans-serif;
   line-height: 1.6;
   --landing-muted: var(--color-neutral);
   --landing-gutter: clamp(1rem, 4vw, 4rem);

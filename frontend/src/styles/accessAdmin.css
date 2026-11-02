@@ -39,7 +39,7 @@
 .interface-language, .admin-header-actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--elv-s-2); }
 .interface-language [aria-pressed=true] { background: var(--elv-action); color: var(--elv-action-text); }
 .interface-language [aria-pressed=false] { background: var(--elv-card); color: var(--elv-text-1); border-color: var(--elv-line-control); }
-.access-page { font-family: 'Elevation Landing Inter', var(--elv-font-body); }
+.access-page { font-family: 'Elevation Landing Inter', 'Elevation Landing Inter Fallback', var(--elv-font-body); }
 .access-page .interface-header { max-width: 1120px; margin-inline: auto; padding: 20px var(--elv-s-8); border-bottom: 0; }
 .access-page .interface-brand { font-size: .8125rem; letter-spacing: .2em; }
 .access-page .interface-language { gap: var(--elv-s-1); padding: var(--elv-s-1); border-radius: var(--elv-r-md); background: var(--elv-surface); }
