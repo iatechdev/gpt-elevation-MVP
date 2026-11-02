@@ -1,0 +1,15 @@
+{"id":"F5-politica-ES128-no-gasta-el-enlace","ok":true,"detail":"débiles=400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=200"}
+{"id":"S3a-espaciadas-limite-3","ok":true,"detail":"solicitudes espaciadas 400 ms: correos=3"}
+{"id":"S3b-rafaga-6-simultaneas-limite-3","ok":true,"detail":"ráfaga de 6 simultáneas: correos emitidos=3, filas creadas=3, enlaces vivos=1 (esperado: ≤3 correos y 1 vivo)"}
+{"id":"F5-politica-ES128-no-gasta-el-enlace","ok":true,"detail":"débiles=400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=200"}
+{"id":"S3a-espaciadas-limite-3","ok":true,"detail":"solicitudes espaciadas 400 ms: correos=3"}
+{"id":"S3b-rafaga-6-simultaneas-limite-3","ok":true,"detail":"ráfaga de 6 simultáneas: correos emitidos=3, filas creadas=3, enlaces vivos=1 (esperado: ≤3 correos y 1 vivo)"}
+{"id":"F5-politica-ES128-no-gasta-el-enlace","ok":true,"detail":"débiles=400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=200"}
+{"id":"S3a-espaciadas-limite-3","ok":true,"detail":"solicitudes espaciadas 400 ms: correos=3"}
+{"id":"S3b-rafaga-6-simultaneas-limite-3","ok":true,"detail":"ráfaga de 6 simultáneas: correos emitidos=3, filas creadas=3, enlaces vivos=1 (esperado: ≤3 correos y 1 vivo)"}
+{"id":"F5-politica-ES128-no-gasta-el-enlace","ok":true,"detail":"débiles=400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=200"}
+{"id":"S3a-espaciadas-limite-3","ok":true,"detail":"solicitudes espaciadas 400 ms: correos=3"}
+{"id":"S3b-rafaga-6-simultaneas-limite-3","ok":true,"detail":"ráfaga de 6 simultáneas: correos emitidos=3, filas creadas=3, enlaces vivos=1 (esperado: ≤3 correos y 1 vivo)"}
+{"id":"F5-politica-ES128-no-gasta-el-enlace","ok":true,"detail":"débiles=400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=200"}
+{"id":"S3a-espaciadas-limite-3","ok":true,"detail":"solicitudes espaciadas 400 ms: correos=3"}
+{"id":"S3b-rafaga-6-simultaneas-limite-3","ok":true,"detail":"ráfaga de 6 simultáneas: correos emitidos=3, filas creadas=3, enlaces vivos=1 (esperado: ≤3 correos y 1 vivo)"}

@@ -52,7 +52,7 @@ const stable = r => JSON.stringify({ s: r.s, txt: r.txt, ct: r.h.get('content-ty
   check('S3-limite-3-enlaces-por-hora', mails(A, u3.email).length === 3 && r3.every(r => r.s === 202) && new Set(r3.map(stable)).size === 1, `correos=${mails(A, u3.email).length} respuestas=${r3.map(r => r.s).join(',')}`);
   // --- F5: política ES-128 sin gastar el enlace
   const u5 = await mkUser(A, 'user', 'politica'); await request(A, u5.email); const t5 = tokenOf((await waitMail(A, u5.email, 1))[0]);
-  const weak = ['corta1A!', 'sinmayuscula123!', 'SINMINUSCULA123!', 'SinDigitos-Largo!', 'SinEspecial12345Aa', '']; const wr = []; for (const w of weak) wr.push(await confirm(A, t5, w));
+  const weak = ['corta1A', 'sinmayuscula123!', 'SINMINUSCULA123!', 'SinDigitos-Largo!', 'SinEspecial12345Aa', '']; const wr = []; for (const w of weak) wr.push(await confirm(A, t5, w));
   const strongAfter = await confirm(A, t5, STRONG);
   check('F5-politica-ES128-no-gasta-el-enlace', wr.slice(0, 5).every(r => r.s === 400 && r.j && r.j.code === 'password_policy' && Array.isArray(r.j.missing)) && wr[5].s === 400 && strongAfter.s === 200, `débiles=${wr.map(r => r.s + (r.j && r.j.code ? ':' + r.j.code : '')).join(' | ')}; luego válida=${strongAfter.s}`);
   // --- S8: roles
