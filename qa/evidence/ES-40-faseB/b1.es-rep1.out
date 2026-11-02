@@ -1,0 +1,5 @@
+{"id":"B1 [es] turno 1: 200, respuesta completa (termina en puntuación), sin diagnóstico ni promesas, idioma correcto y sin voseo","ok":true,"detail":"http=200 4630ms caracteres=983 tokens=12768 requestId=06232a96-58f6-4584-a01a-fcbd26639647 "}
+{"id":"B1 [es] turno 2: 200, respuesta completa (termina en puntuación), sin diagnóstico ni promesas, idioma correcto y sin voseo","ok":false,"detail":"http=200 16364ms caracteres=3630 tokens=14837 requestId=9dab9647-9cda-40b3-8f16-fa2d5cee8cc1 "}
+{"id":"B1 [es] sin errores de página","ok":true,"detail":""}
+{"id":"info B1 [es] resumen de gasto","tokens":27605,"requestIds":["06232a96-58f6-4584-a01a-fcbd26639647","9dab9647-9cda-40b3-8f16-fa2d5cee8cc1"]}
+RESUMEN-B1 {"lang":"es","total":3,"fallos":1,"tokens":27605}
