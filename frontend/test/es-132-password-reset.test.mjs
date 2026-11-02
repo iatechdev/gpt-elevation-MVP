@@ -36,7 +36,7 @@ test('ES-132: rutas públicas, enlace en el login y token fuera de la URL', () =
   const app = read('../src/App.tsx')
   assert.match(app, /path="\/forgot-password"/)
   assert.match(app, /path="\/reset-password"/)
-  assert.match(read('../src/pages/LoginPage.tsx'), /!isRegistering && <Link to="\/forgot-password"/)
+  assert.match(read('../src/pages/LoginPage.tsx'), /!isRegistering && <p><Link to="\/forgot-password"/)
   const pages = read('../src/access/PasswordResetPages.tsx')
   assert.match(pages, /history\.replaceState\(null, '', window\.location\.pathname\)/)
   assert.doesNotMatch(pages, /localStorage|sessionStorage|console\./)

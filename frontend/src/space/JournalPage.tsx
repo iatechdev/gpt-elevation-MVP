@@ -7,6 +7,9 @@ import type { Entry } from './api'
 import { useDraftGuard, useSpaceToken } from './hooks'
 import { SpaceShell } from './SpaceShell'
 import { ConfirmDialog } from './ConfirmDialog'
+import { JournalRecent, JournalRecentList } from './JournalRecent'
+import { journalCopy, journalDate } from './journalCopy'
+import './journal.css'
 
 // ES-138: fecha local de hoy (no la UTC del servidor) como valor inicial de una entrada nueva.
 const localToday = () => { const now = new Date(); return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10) }
@@ -16,13 +19,14 @@ export function JournalPage() {
   return <JournalSession key={`${token}:${location.pathname}`} token={token} />
 }
 function JournalSession({ token }: { token: string }) {
-  const { lang } = useLanguage(); const c = copy[lang]; const navigate = useNavigate()
+  const { lang } = useLanguage(); const c = copy[lang]; const j = journalCopy[lang]; const navigate = useNavigate()
   const { id: rawId } = useParams(); const location = useLocation()
   const isNew = location.pathname.endsWith('/new'); const id = rawId && /^[1-9]\d{0,9}$/.test(rawId) ? Number(rawId) : null
   const isList = !isNew && !rawId
   const [entries, setEntries] = useState<Entry[]>([]); const [saved, setSaved] = useState<Entry | null>(null)
   const [defaultDate] = useState(localToday); const [date, setDate] = useState(isNew ? defaultDate : ''); const [errors, setErrors] = useState<{ date?: string; content?: string }>({}); const [content, setContent] = useState(''); const [editing, setEditing] = useState(isNew)
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState(false); const [expired, setExpired] = useState(!token)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [notice, setNotice] = useState(''); const [unavailable, setUnavailable] = useState(false)
   const [uncertain, setUncertain] = useState<'create' | 'edit' | 'delete' | null>(null)
   const [inspection, setInspection] = useState(false); const [conflict, setConflict] = useState<Entry | null>(null)
@@ -42,8 +46,7 @@ function JournalSession({ token }: { token: string }) {
     alive.current = true
     const load = async () => {
       try {
-        if (isList) { const rows = await listEntries(token); if (current()) setEntries(rows) }
-        else if (!isNew) {
+        if (!isList && !isNew) {
           if (!id) throw new SpaceError(404)
           const row = await readEntry(token, id)
           if (current()) { setSaved(row); setDate(row.date); setContent(row.content) }
@@ -54,7 +57,7 @@ function JournalSession({ token }: { token: string }) {
     void load()
     return () => { alive.current = false }
     // Token/path changes remount the session; language changes do not reload private drafts.
-  }, [token, id, isNew, isList, current])
+  }, [token, id, isNew, isList, current, loadAttempt])
 
   const inspect = async () => {
     if (lock.current) return
@@ -100,7 +103,7 @@ function JournalSession({ token }: { token: string }) {
       setSaved(row); setEditing(false); setNotice(c.saved)
       if (isNew) navigate(`/app/diary/${row.id}`, { replace: true })
     } catch (error) {
-      if (current() && attempted && !(error instanceof SpaceError && [400, 401, 403, 404].includes(error.status))) { setUncertain(saved || acknowledgedId.current ? 'edit' : 'create'); setNotice(saved || acknowledgedId.current ? c.saveError : c.unknown) }
+      if (current() && attempted && !(error instanceof SpaceError && [400, 401, 403, 404].includes(error.status))) { setUncertain(saved || acknowledgedId.current ? 'edit' : 'create'); setNotice(saved || acknowledgedId.current ? j.unconfirmed : c.unknown) }
       else failure(error, c.saveError)
     } finally { if (current()) setBusy(false); lock.current = false }
   }
@@ -116,25 +119,30 @@ function JournalSession({ token }: { token: string }) {
     } catch (error) { if (current()) { setUncertain('delete'); failure(error, c.deleteError) } }
     finally { if (current()) setBusy(false); lock.current = false }
   }
-  const rows = <><p className="space-note">{c.limit}</p>{!entries.length && <p>{c.empty}</p>}{entries.map(e => <article className="elv-card space-card" key={e.id}><h2>{e.date}</h2><p className="space-private-text">{e.content.slice(0, 160)}{e.content.length > 160 ? '…' : ''}</p><Link className="elv-link" to={`/app/diary/${e.id}`}>{c.open}<span className="sr-only"> {e.date}</span></Link></article>)}</>
-  return <SpaceShell><h1>{c.title}</h1><p>{c.privacy}</p>{expired ? <p role="alert">{c.session} <Link to="/login">{c.login}</Link></p> : <>
-    <p role="status" aria-live="polite" className={notice ? 'space-warning' : ''}>{busy ? c.saving : loading ? c.loading : notice}</p>
-    {isList ? <><Link className="elv-btn elv-btn-primary" to="/app/diary/new">{c.new}</Link>{!loading && !notice && rows}{notice && <button className="elv-btn" onClick={() => { void listEntries(token).then(rows => { if (current()) { setEntries(rows); setNotice('') } }).catch(error => failure(error, c.loadError)) }}>{c.retry}</button>}</> : !loading && <>
+  const rows = <JournalRecentList entries={entries} lang={lang} selected={id} />
+  return <SpaceShell className="journal-page elv-theme"><div className="journal-heading"><div><p className="journal-eyebrow">{c.space} / {c.journal}</p><h1>{j.title}</h1><p className="journal-private">{j.private}</p></div><button className="elv-btn" disabled aria-describedby="journal-bridge-note">{j.bridge}</button></div>
+    <p id="journal-bridge-note" className="journal-bridge-note">{j.bridgeNote}</p>
+    {expired ? <p role="alert">{c.session} <Link to="/login">{c.login}</Link></p> : <div className="journal-workspace"><section className="elv-card journal-sheet" aria-labelledby="journal-entry-title">
+    <div className="journal-sheet-top"><h2 id="journal-entry-title" className="journal-eyebrow">{j.entry}</h2><p id="journal-save-status" role="status" aria-live="polite" className={notice && notice !== c.saved ? 'space-warning' : ''}>{busy ? c.saving : loading ? c.loading : notice || (editing ? dirty ? c.dirty : isNew ? c.new : c.saved : saved ? c.saved : '')}</p></div>
+    {isList ? <><p>{j.select}</p><p className="journal-privacy">{c.privacy}</p></> : !loading && <>
       {unavailable ? <p>{c.unavailable}</p> : editing ? <form noValidate onSubmit={event => { event.preventDefault(); void save() }}>
-        <p>{isNew || dirty ? c.dirty : c.saved}</p>
-        <label htmlFor="entry-date">{c.date}</label><input className="elv-input" id="entry-date" type="date" required value={date} aria-invalid={!!errors.date} aria-describedby={errors.date ? 'entry-date-error' : undefined} disabled={busy || !!uncertain} onChange={event => { setDate(event.target.value); setErrors(e => ({ ...e, date: undefined })) }} />{errors.date && <p id="entry-date-error" className="space-error" role="alert">{errors.date}</p>}
-        <label htmlFor="entry-content">{c.content}</label><textarea className="elv-textarea" id="entry-content" rows={10} required maxLength={10000} value={content} aria-invalid={!!errors.content} aria-describedby={errors.content ? 'entry-content-error' : undefined} disabled={busy || !!uncertain} onChange={event => { setContent(event.target.value); setErrors(e => ({ ...e, content: undefined })) }} />{errors.content && <p id="entry-content-error" className="space-error" role="alert">{errors.content}</p>}<p className="space-note">{content.length}/10.000</p>
-        <div className="space-actions"><button className="elv-btn elv-btn-primary" disabled={busy || !!uncertain || !!conflict || !dirty}>{c.save}</button><button type="button" className="elv-btn" disabled={busy} onClick={() => setDialog('cancel')}>{c.cancel}</button></div>
-      </form> : saved && <article><h2>{saved.date}</h2><p className="space-note">{c.updated}: {new Date(saved.updatedAt).toLocaleString(lang)}</p><p className="space-private-text">{saved.content}</p><div className="space-actions"><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => { setEditing(true); setNotice('') }}>{c.edit}</button><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => setDialog('delete')}>{c.remove}</button><Link className="elv-link" to="/app/chat?journal=choose">{c.chooseChat}</Link></div></article>}
+        <div className="journal-date"><label htmlFor="entry-date">{c.date}</label><input className="elv-input" id="entry-date" type="date" required value={date} aria-invalid={!!errors.date} aria-describedby={errors.date ? 'entry-date-error' : 'journal-save-status'} disabled={busy || !!uncertain} onChange={event => { setDate(event.target.value); setNotice(''); setErrors(e => ({ ...e, date: undefined })) }} />{errors.date && <p id="entry-date-error" className="space-error" role="alert">{errors.date}</p>}</div>
+        <label className="sr-only" htmlFor="entry-content">{c.content}</label><textarea className="elv-textarea journal-paper" id="entry-content" rows={8} required maxLength={10000} aria-invalid={!!errors.content} aria-describedby={errors.content ? 'entry-content-error' : 'journal-save-status journal-privacy journal-draft-warning journal-counter'} value={content} disabled={busy || !!uncertain} onChange={event => { setContent(event.target.value); setNotice(''); setErrors(e => ({ ...e, content: undefined })) }} />{errors.content && <p id="entry-content-error" className="space-error" role="alert">{errors.content}</p>}
+        <div className="journal-paper-footer"><span id="journal-counter">{content.length.toLocaleString(lang)} / {(10000).toLocaleString(lang)} {j.count}</span><span>{j.manual}</span></div>
+        <p className="journal-privacy" id="journal-privacy">{c.privacy}</p><p className="journal-draft-warning" id="journal-draft-warning">{j.draftWarning}</p>
+        <div className="space-actions"><button className="elv-btn elv-btn-primary" disabled={busy || !!uncertain || !!conflict || !dirty}>{j.save}</button><button type="button" className="elv-btn" disabled={busy} onClick={() => setDialog('cancel')}>{c.cancel}</button></div>
+      </form> : saved && <article><h3><time dateTime={saved.date}>{journalDate(saved.date, lang)}</time></h3><p className="space-note">{c.updated}: {new Date(saved.updatedAt).toLocaleString(lang)}</p><p className="space-private-text journal-paper journal-reading">{saved.content}</p><p className="journal-privacy">{c.privacy}</p><div className="space-actions"><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => { setEditing(true); setNotice('') }}>{c.edit}</button><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => setDialog('delete')}>{c.remove}</button><Link className="elv-link" to="/app/chat?journal=choose">{c.chooseChat}</Link></div></article>}
       {conflict && <button type="button" className="elv-btn" onClick={() => { if (!dirty || window.confirm(c.leave)) { setSaved(conflict); setDate(conflict.date); setContent(conflict.content); setConflict(null); setUncertain(null); setNotice('') } }}>{c.review}</button>}
-      {uncertain && <div className="space-card"><p>{uncertain === 'create' ? c.unknown : uncertain === 'delete' ? c.deleteError : c.saveError}</p><button className="elv-btn" disabled={busy} onClick={() => void inspect()}>{c.inspect}</button>{uncertain === 'create' && <><p>{c.duplicate}</p><button className="elv-btn" disabled={busy} onClick={() => setDialog('discard')}>{c.discard}</button></>}{inspection && rows}</div>}
+      {!saved && !isNew && !unavailable && notice === c.loadError && <button className="elv-btn" onClick={() => { setNotice(''); setLoading(true); setLoadAttempt(value => value + 1) }}>{c.retry}</button>}
+      {uncertain && <div className="space-card"><p>{uncertain === 'create' ? c.unknown : uncertain === 'delete' ? c.deleteError : j.unconfirmed}</p><button className="elv-btn" disabled={busy} onClick={() => void inspect()}>{c.inspect}</button>{uncertain === 'create' && <><p>{c.duplicate}</p><button className="elv-btn" disabled={busy} onClick={() => setDialog('discard')}>{c.discard}</button></>}{inspection && rows}</div>}
       <p className="space-note">{c.deleteLimit}</p><Link className="elv-link" to="/app/diary">{c.journal}</Link>
     </>}
-    {dialog && <ConfirmDialog text={dialog === 'delete' ? `${c.deleteWarning} ${c.deleteLimit}` : c.leave} cancel={c.stay} confirm={dialog === 'delete' ? c.remove : c.discard} onClose={() => setDialog(null)} onConfirm={() => {
+    </section><JournalRecent key={`${saved?.updatedAt || ''}:${unavailable}`} token={token} lang={lang} selected={id} onSessionExpired={() => failure(new SpaceError(401), c.loadError)} /></div>}
+    {dialog && !expired && <ConfirmDialog text={dialog === 'delete' ? `${c.deleteWarning} ${c.deleteLimit}` : c.leave} cancel={c.stay} confirm={dialog === 'delete' ? c.remove : c.discard} onClose={() => setDialog(null)} onConfirm={() => {
       if (dialog === 'delete') { void remove(); return }
       setDialog(null)
       if (isNew || dialog === 'discard') navigate('/app/diary')
       else { setEditing(false); setDate(saved?.date || ''); setContent(saved?.content || ''); setNotice(''); setUncertain(null); setConflict(null) }
     }} />}
-  </>}</SpaceShell>
+  </SpaceShell>
 }
