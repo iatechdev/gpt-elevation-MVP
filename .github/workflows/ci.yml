@@ -162,6 +162,10 @@ jobs:
         run: npm run test:worker:pg
         env:
           ES85_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-117 RLS y privilegios de la API pública de Supabase; el worker sigue operando (PostgreSQL)
+        run: npm run test:rls:pg
+        env:
+          ES117_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-86 clave profesional, doble lectura y re-cifrado reversible (PostgreSQL)
         run: npm run test:professional-key:pg
         env:
