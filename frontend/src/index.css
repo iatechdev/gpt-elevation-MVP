@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import './components/landing/landing.css';
+@import './styles/fonts.css';
 @import './styles/tokens.css';
 
 @theme {
