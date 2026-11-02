@@ -1,0 +1,54 @@
+{
+  "notice": "BORRADOR SIN VERIFICAR. Ocho habilidades técnicas de dominio tomadas del catálogo de PerfiladorV2 (Supabase, tabla skill_taxonomy, consultada por Dev el 29-oct-2026 en solo lectura). Los nombres en español son traducción provisional de Dev; el territorio «Ingeniería y Sistemas» es provisional. NO traen criterios de nivel: PerfiladorV2 usa una escala de 1 a 5 con anclas en 1, 3 y 5, y Elevation usa 4 niveles con criterios completos en ES y EN; no se convierte la escala ni se inventan niveles. Alejo o el especialista completan los 4 niveles, la fuente, el verificador y la fecha desde el backoffice antes de publicar.",
+  "source": "PerfiladorV2 · skill_taxonomy (8 filas). No se importan seniority_benchmarks ni gap_vs_target.",
+  "skills": [
+    {
+      "skillKey": "clean_architecture", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Arquitectura limpia", "en": "Clean Architecture" },
+      "reference": { "domain": "Architecture", "descriptionEn": "Designs modular boundaries, keeps domain logic isolated, and applies dependency inversion pragmatically.",
+        "anchors": { "1": "Tangled responsibilities and framework-coupled domain logic", "3": "Mostly separated layers with occasional leakage", "5": "Clear boundaries, testable core, and pragmatic dependency direction" } }
+    },
+    {
+      "skillKey": "system_design_scalability", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Diseño de sistemas y escalabilidad", "en": "System Design & Scalability" },
+      "reference": { "domain": "Architecture", "descriptionEn": "Reasons about scale, trade-offs, data ownership, failure modes, and operational constraints.",
+        "anchors": { "1": "Proposes single-node or vague designs", "3": "Covers basic scaling and persistence trade-offs", "5": "Models load, consistency, resilience, observability, and cost trade-offs" } }
+    },
+    {
+      "skillKey": "api_contracts", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Contratos de API", "en": "API Contracts" },
+      "reference": { "domain": "Backend", "descriptionEn": "Designs stable API boundaries with validation, versioning, compatibility, and useful errors.",
+        "anchors": { "1": "Breaks clients with ad-hoc payloads", "3": "Documents and validates core contracts", "5": "Versioned contracts with compatibility and consumer-aware error design" } }
+    },
+    {
+      "skillKey": "sql_optimization_concurrency", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Optimización SQL y concurrencia", "en": "SQL Optimization & Concurrency" },
+      "reference": { "domain": "Backend", "descriptionEn": "Uses transactions, locking, indexing, query plans, and isolation levels to protect data correctness and performance.",
+        "anchors": { "1": "Unsafe string SQL or non-atomic updates", "3": "Uses parameterized queries and basic transactions", "5": "Handles isolation, locks, indexes, and contention deliberately" } }
+    },
+    {
+      "skillKey": "code_review_rigor", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Rigor en la revisión de código", "en": "Code Review Rigor" },
+      "reference": { "domain": "Collaboration", "descriptionEn": "Reviews code for correctness, maintainability, security, tests, and architectural fit.",
+        "anchors": { "1": "Reviews mostly style or approves superficially", "3": "Finds correctness and maintainability issues", "5": "Surfaces systemic risks and teaches through clear, actionable feedback" } }
+    },
+    {
+      "skillKey": "observability_incidents", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Observabilidad e incidentes", "en": "Observability & Incidents" },
+      "reference": { "domain": "Operations", "descriptionEn": "Designs logs, metrics, traces, alerts, and incident feedback loops for production systems.",
+        "anchors": { "1": "Debugs mostly by logs after failures", "3": "Adds useful metrics and basic alerts", "5": "Defines SLOs, traces critical flows, and improves systems after incidents" } }
+    },
+    {
+      "skillKey": "testing_strategy", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Estrategia de pruebas", "en": "Testing Strategy" },
+      "reference": { "domain": "Quality", "descriptionEn": "Balances unit, integration, contract, and edge-case tests around business risk.",
+        "anchors": { "1": "Little or no meaningful coverage", "3": "Covers happy paths and important edge cases", "5": "Risk-based test pyramid with deterministic integration and regression coverage" } }
+    },
+    {
+      "skillKey": "owasp_input_validation", "type": "domain", "territories": ["ing"],
+      "labels": { "es": "Validación de entradas (OWASP)", "en": "OWASP Input Validation" },
+      "reference": { "domain": "Security", "descriptionEn": "Prevents injection and unsafe input paths with validation, encoding, and least privilege.",
+        "anchors": { "1": "Trusts raw input or concatenates untrusted data", "3": "Validates common cases and parameterizes queries", "5": "Applies layered validation, safe encoding, and abuse-case thinking" } }
+    }
+  ]
+}

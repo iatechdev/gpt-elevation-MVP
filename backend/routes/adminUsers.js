@@ -3,6 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { sequelize } = require('../database');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const User = require('../User');
@@ -44,7 +45,7 @@ router.post('/', validateBody({ name: nonempty, email: nonempty, password: nonem
       return res.status(400).json({ error: `Rol inválido. Roles válidos: ${ROLES_VALIDOS.join(', ')}.` });
     }
     if (adminRole === 'admin' && ROLES_PRIVILEGIADOS.includes(role)) {
-      return res.status(403).json({ error: 'No tenés permisos para crear usuarios con ese rol.' });
+      return res.status(403).json({ error: 'No tienes permisos para crear usuarios con ese rol.' });
     }
 
     const existente = await User.findOne({ where: { email } });
@@ -137,7 +138,7 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
     const adminId = req.user.id;
 
     if (parseInt(id) === adminId) {
-      return res.status(403).json({ error: 'No podés modificar tu propio usuario.' });
+      return res.status(403).json({ error: 'No puedes modificar tu propio usuario.' });
     }
 
     const usuario = await User.findByPk(id);
@@ -148,7 +149,7 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
         return res.status(400).json({ error: `Rol inválido. Roles válidos: ${ROLES_VALIDOS.join(', ')}.` });
       }
       if (adminRole === 'admin' && ROLES_PRIVILEGIADOS.includes(role)) {
-        return res.status(403).json({ error: 'No tenés permisos para asignar ese rol.' });
+        return res.status(403).json({ error: 'No tienes permisos para asignar ese rol.' });
       }
     }
 
@@ -188,7 +189,7 @@ router.delete('/:id', async (req, res) => {
     }
     if (await refuseDeletionPending(id, res)) return;
     if (parseInt(id) === adminId) {
-      return res.status(403).json({ error: 'No podés eliminar tu propio usuario.' });
+      return res.status(403).json({ error: 'No puedes eliminar tu propio usuario.' });
     }
 
     const usuario = await User.findByPk(id);
@@ -232,7 +233,19 @@ router.put('/:id/asignar-terapeuta', validateBody({ therapistId: nullable(id) })
       }
     }
 
-    await usuario.update({ therapistId: therapistId || null });
+    const next = therapistId || null;
+    const previous = usuario.therapistId || null;
+    const transaction = await sequelize.transaction();
+    try {
+      // La autorización de compartir es con UN terapeuta: al cambiar o quitar, la del anterior se retira (el nuevo debe obtener la suya; si la persona
+      // vuelve al original, tampoco revive la anterior). Un error no se traga: el cambio y el retiro ocurren juntos o ninguno.
+      if (previous !== null && previous !== next) await require('../utils/consent').revokeTherapistSharing(usuario.id, previous, transaction);
+      await usuario.update({ therapistId: next }, { transaction });
+      await transaction.commit();
+    } catch (error) {
+      await transaction.rollback().catch(() => {});
+      throw error;
+    }
     res.json({ message: 'Terapeuta asignado correctamente.' });
   } catch (error) {
     console.error('Error asignando terapeuta.');

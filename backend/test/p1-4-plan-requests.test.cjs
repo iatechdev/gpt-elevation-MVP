@@ -12,7 +12,7 @@ test('P1-4: plan request review requires admin even through the user mount', asy
     reviewed = record({ id: 7, userId: 202, planId: 9, status: 'pending' });
     return reviewed;
   };
-  models.User.findByPk = async () => { calls++; return account; };
+  models.User.findByPk = async id => { calls++; return id === 202 ? account : record({ id, active: true }); };
   models.PricingPlan.findOne = async () => ({ id: 9, name_es: 'Prueba' });
   models.PlanRequest.findOne = async () => null;
   models.PlanRequest.create = async values => record({ id: 8, ...values });

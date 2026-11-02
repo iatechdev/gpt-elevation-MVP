@@ -64,6 +64,7 @@ function respondError(res, error) {
   if (error instanceof ProposalError) {
     const body = { code: error.code, error: error.message };
     if (error.warnings) body.warnings = error.warnings;
+    if (error.purpose) body.purpose = error.purpose; // ES-121: qué consentimiento falta
     res.status(error.status).json(body);
     return true;
   }

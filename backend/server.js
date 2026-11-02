@@ -9,6 +9,7 @@ const helmet  = require('helmet');
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
 const syncOptions              = require('./utils/syncOptions');
+const { mountFrontend }        = require('./utils/frontendStatic');
 
 const {
   verificarToken,
@@ -78,6 +79,16 @@ connectDB().then(() => {
     .catch(err => console.error('❌ Error sincronizando tablas:', err));
 });
 
+// ES-137: ninguna respuesta de la API con datos de la persona se guarda en caché de navegador ni de proxy compartido.
+// Quedan fuera solo estas lecturas públicas, por ruta exacta (QA-137-01: GET /pricing/all y /manifest/manifest exigen sesión y sí llevan no-store); las rutas pueden fijar su propio valor.
+const PUBLIC_CACHEABLE = /^\/(landing-content|plans|pricing|manifest\/active)\/?$/;
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' && PUBLIC_CACHEABLE.test(req.path)) return next();
+  res.set('Cache-Control', 'no-store');
+  res.vary('Authorization');
+  next();
+});
+
 // ── Rutas públicas ────────────────────────────────────────────────────────────
 app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
@@ -96,7 +107,9 @@ app.use('/api',                 verificarToken, require('./routes/session'));   
 app.use('/api/consents',        verificarToken, require('./routes/consents'));       // ES-19 — consentimiento por propósito
 app.use('/api/career-context',  verificarToken, require('./routes/careerContext'));  // ES-25 — puente profesional
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
+app.use('/api/skill-analysis',  verificarToken, require('./routes/skillAnalysis'));  // ES-89 — análisis de IA del contexto profesional (worker)
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
+app.use('/api/insights',        verificarToken, require('./routes/insights'));       // ES-121 — insights de El Puente (propuestas de la IA)
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
 app.use('/api/routes',          verificarToken, require('./routes/routes'));         // ES-32 — rutas de la propia persona
 app.use('/api/experiments',      verificarToken, require('./routes/careerPlan').experiments); // ES-33 — recursos propios
@@ -108,6 +121,8 @@ app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));
 app.use('/api/user/context',   verificarToken, require('./routes/participantContext')); // ES-14 — owner-only context
+app.use('/api/user/resumes',   verificarToken, require('./routes/resumes'));            // ES-109 — hoja de vida (PDF): análisis con IA e histórico cifrado
+app.use('/api/user/resume-skills', verificarToken, require('./routes/resumeSkills'));      // ES-110 — habilidades de la hoja de vida → Mis evidencias
 app.use('/api/user',            verificarToken, require('./routes/progress'));
 app.use('/api/user/plan',       verificarToken, require('./routes/plans'));          // HU-077 — plan del usuario
 app.use('/api/plan-requests',   verificarToken, require('./routes/planRequests'));   // HU-077 — solicitudes usuario
@@ -143,10 +158,7 @@ app.use('/api', (req, res) => {
 });
 
 // ── Frontend estático ─────────────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-app.get('/{*path}', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-});
+mountFrontend(app, path.join(__dirname, '../frontend/dist'));
 
 // ── Servidor ──────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8080;

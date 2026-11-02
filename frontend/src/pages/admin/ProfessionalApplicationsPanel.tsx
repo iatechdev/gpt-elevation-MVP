@@ -2,6 +2,7 @@
 // Aprobar solo cambia el estado: la cuenta la crea el administrador con «Crear usuario» (precargado con nombre y correo).
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { capacityNotice, parseCapacity, type Capacity } from './applicationsCapacity'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -33,6 +34,7 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState<number | null>(null)
   const [msg, setMsg] = useState('')
+  const [capacity, setCapacity] = useState<Capacity | null>(null)
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 
   const load = useCallback(async () => {
@@ -42,6 +44,11 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
       if (!r.ok) throw new Error(String(r.status))
       setItems(await r.json())
     } catch { setError('No se pudieron cargar las solicitudes.'); setItems([]) } finally { setLoading(false) }
+    // ES-107: ¿el tope global cerró el formulario público? Corre también tras aprobar, rechazar y eliminar (liberan cupo). Si falla, no hay aviso.
+    try {
+      const r = await fetch(`${API}/api/admin/professional-applications/capacity`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+      setCapacity(r.ok ? parseCapacity(await r.json()) : null)
+    } catch { setCapacity(null) }
   }, [filter, token])
   useEffect(() => { void load() }, [load])
 
@@ -78,12 +85,20 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
     } catch { setMsg('No se pudo descargar la hoja de vida.') } finally { setBusy(null) }
   }
 
+  const notice = capacityNotice(capacity)
+
   return (
     <section aria-labelledby="applications-title">
       <h2 id="applications-title" style={{ fontSize: 16, margin: '0 0 4px' }}>Solicitudes de profesionales</h2>
       <p style={{ fontSize: 12, color: '#78716C', margin: '0 0 12px' }}>
         Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de terapeuta». Abre las hojas de vida solo en un visor aislado; no se analizan contra virus.
       </p>
+      {notice && (
+        <div role="status" data-testid="capacity-notice" style={{ background: '#FEF3C7', color: '#92400E', borderRadius: 8, padding: '10px 12px', margin: '0 0 12px', fontSize: 13 }}>
+          <strong style={{ display: 'block', marginBottom: 2 }}>⚠ {notice.title}</strong>
+          {notice.body}
+        </div>
+      )}
       <div role="group" aria-label="Filtrar por estado" style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
         {FILTERS.map(f => <button key={f.key} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}
           style={{ ...s.btnSecondary, background: filter === f.key ? '#6B7D5C' : 'transparent', color: filter === f.key ? '#fff' : '#6B7D5C' }}>{f.label}</button>)}

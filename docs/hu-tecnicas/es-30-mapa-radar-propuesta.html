@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ES-30 — Propuesta de diseño v3: mapa en radar con mapa de calor</title>
+<style>/* ES-37 — Tokens del sistema de diseño Elevation + Skill Map (fuente única).
+   Tres capas: primitivos (--elv-p-*) → semánticos (--elv-*) → tema daisyUI (ver bloque final).
+   Los pares texto/fondo están medidos contra WCAG 2.1 AA (≥4,5:1 texto, ≥3:1 controles y bordes de control);
+   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja aún NO está importada por la app. */
+
+:root {
+  /* 1. Primitivos ─────────────────────────────────────────── */
+  --elv-p-bg: #f9f9f7;
+  --elv-p-surface: #faf8f4;
+  --elv-p-card: #ffffff;
+  --elv-p-muted-bg: #f5f3ef;
+  --elv-p-line: #e7e5e4;
+  --elv-p-line-md: #d6d2c4;
+  --elv-p-control-line: #7c8875;
+  --elv-p-olive: #6b7d5c;       /* marca: decorativo, bordes de selección (no apto para texto sobre blanco) */
+  --elv-p-olive-action: #4a6741;
+  --elv-p-olive-bg: #eaf0e6;
+  --elv-p-sage: #a8b5a2;
+  --elv-p-ink-1: #1c1917;
+  --elv-p-ink-2: #57534e;
+  --elv-p-ink-3: #6b6560;
+  --elv-p-teal: #065f46;
+  --elv-p-teal-bg: #f0fdfa;
+
+  /* 2. Semánticos (claro) ─────────────────────────────────── */
+  --elv-bg: var(--elv-p-bg);
+  --elv-surface: var(--elv-p-surface);
+  --elv-card: var(--elv-p-card);
+  --elv-muted-bg: var(--elv-p-muted-bg);
+  --elv-text-1: var(--elv-p-ink-1);
+  --elv-text-2: var(--elv-p-ink-2);
+  --elv-text-3: var(--elv-p-ink-3);     /* sustituye al #A8A29E anterior (2,39:1, no cumplía AA) */
+  --elv-line: var(--elv-p-line);        /* divisores decorativos */
+  --elv-line-control: var(--elv-p-control-line); /* borde de inputs y botones secundarios (≥3:1) */
+  --elv-action: var(--elv-p-olive-action);
+  --elv-action-text: #ffffff;
+  --elv-action-soft: var(--elv-p-olive-bg);
+  --elv-brand: var(--elv-p-olive);
+  --elv-link: var(--elv-p-olive-action);
+  --elv-focus: #2f6b8f;
+  --elv-ai: var(--elv-p-teal);          /* voz de la IA */
+  --elv-ai-bg: var(--elv-p-teal-bg);
+  --elv-success: #065f46;   --elv-success-bg: #f0fdfa;
+  --elv-warning: #92400e;   --elv-warning-bg: #fef3c7;
+  --elv-error: #9b1c1c;     --elv-error-bg: #fee2e2;
+  --elv-info: #075985;      --elv-info-bg: #e0f2fe;
+
+  /* Tintes de territorio del mapa de competencias (ES-30): neutros y fijos; no codifican estado */
+  --elv-tone-dir: #dde0d3; --elv-tone-con: #ece0d8; --elv-tone-com: #e6e1d2; --elv-tone-ing: #e4dccf; --elv-tone-inn: #d8ded3;
+
+  /* Espacio (base 4 px) */
+  --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;
+  --elv-s-6: 1.5rem;  --elv-s-8: 2rem;   --elv-s-12: 3rem;   --elv-s-16: 4rem;
+  /* Radios */
+  --elv-r-sm: 0.5rem; --elv-r-md: 0.75rem; --elv-r-lg: 1rem; --elv-r-xl: 1.25rem; --elv-r-pill: 999px;
+  /* Sombras: sutiles */
+  --elv-shadow-card: 0 2px 12px rgb(26 28 27 / 0.06);
+  --elv-shadow-modal: 0 8px 40px rgb(26 28 27 / 0.12);
+  /* Tipografía */
+  --elv-font-body: 'Inter', system-ui, sans-serif;
+  --elv-font-display: 'Playfair Display', Georgia, serif;   /* solo títulos, peso 300–400 */
+  --elv-font-voice: 'Noto Serif', Georgia, serif;           /* voz de la IA, cursiva */
+  --elv-fs-xs: 0.75rem; --elv-fs-sm: 0.8125rem; --elv-fs-md: 0.875rem;
+  --elv-fs-base: 1rem;  --elv-fs-lg: 1.125rem;  --elv-fs-xl: 1.375rem;
+  --elv-fs-hero: clamp(1.75rem, 4vw + 1rem, 3rem);
+  /* Objetivo táctil mínimo */
+  --elv-touch: 2.75rem;
+}
+
+/* Modo oscuro: mismos nombres semánticos, activado con la clase .elv-dark (la pone el dominio que ya lo soportaba:
+   Career y Facilitation, según prefers-color-scheme). No se activa en pantallas que hoy no lo tienen. */
+.elv-dark {
+    color-scheme: dark;
+    --elv-bg: #181c17;  --elv-surface: #242b22;  --elv-card: #242b22;  --elv-muted-bg: #1e241d;
+    --elv-text-1: #f5f6f1;  --elv-text-2: #c4cabf;  --elv-text-3: #b3baad;
+    --elv-line: #3a4337;  --elv-line-control: #899582;
+    --elv-action: #c1d5b5;  --elv-action-text: #182115;  --elv-action-soft: #2b3628;
+    --elv-link: #c1d5b5;  --elv-focus: #9fd0ea;
+    --elv-ai: #a9d6b0;  --elv-ai-bg: #1e2b24;
+    --elv-success: #a9d6b0;  --elv-success-bg: #1e2b24;
+    --elv-warning: #f4d9a8;  --elv-warning-bg: #33291a;
+    --elv-error: #ffb5b5;    --elv-error-bg: #3a2222;
+    --elv-info: #9fd0ea;     --elv-info-bg: #1c2b36;
+}
+
+/* Foco visible único para todo control */
+.elv-focusable:focus-visible,
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--elv-focus);
+  outline-offset: 2px;
+}
+
+/* 3. Tema daisyUI único: mapea los semánticos a las variables de daisyUI. Los CSS de dominio ya no
+   definen colores propios; conservan solo su layout. */
+.elv-theme, .skill-map-scope, .career-scope, .compass-scope {
+  --color-base-100: var(--elv-card);      --color-base-200: var(--elv-bg);
+  --color-base-300: var(--elv-line-control);  --color-base-content: var(--elv-text-1);
+  --color-primary: var(--elv-action);     --color-primary-content: var(--elv-action-text);
+  --color-secondary: var(--elv-text-2);   --color-secondary-content: var(--elv-bg);
+  --color-accent: var(--elv-ai);          --color-accent-content: var(--elv-bg);
+  --color-neutral: var(--elv-text-1);     --color-neutral-content: var(--elv-bg);
+  --color-info: var(--elv-info);          --color-info-content: var(--elv-bg);
+  --color-success: var(--elv-success);    --color-success-content: var(--elv-bg);
+  --color-warning: var(--elv-warning);    --color-warning-content: var(--elv-bg);
+  --color-error: var(--elv-error);        --color-error-content: var(--elv-bg);
+  --radius-selector: var(--elv-r-sm); --radius-field: var(--elv-r-md); --radius-box: var(--elv-r-lg);
+  --size-selector: 0.25rem; --size-field: 0.25rem; --border: 1px; --depth: 0; --noise: 0;
+}
+</style>
+<style>
+  /* MAQUETA con datos de ejemplo. Radar + mapa de calor + explicación; nivel null = hueco (nunca cero ni déficit). */
+  :root{--h1:#F3EAD3;--h2:#E2CE97;--h3:#C9A64D;--h4:#7D6218;--edge:#7D6218;
+  --elv-bg:#FAFAF9;--elv-surface:#F2F1EF;--elv-card:#FFFFFF;--elv-muted-bg:#F2F1EF;--elv-text-1:#1A1A18;--elv-text-2:#6B6B67;--elv-text-3:#6B6B67;
+  --elv-line:#E0DED9;--elv-line-control:#8A8780;--elv-action:#1A1A18;--elv-action-text:#FFFFFF;--elv-action-soft:#F6EFDC;--elv-brand:#B8963E;--elv-link:#7D6218;
+  --elv-warning:#7D6218;--elv-warning-bg:#F6EFDC;--elv-info:#1A1A18;--elv-info-bg:#F2F1EF;--elv-error:#7A3030}
+  .sw,.btn,.card,.empty,.improve{border-radius:4px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--elv-bg);color:var(--elv-text-1);font:400 var(--elv-fs-base)/1.6 var(--elv-font-body)}
+  .wrap{max-width:1180px;margin:0 auto;padding:var(--elv-s-4)}
+  .note{background:var(--elv-warning-bg);color:var(--elv-warning);padding:var(--elv-s-3) var(--elv-s-4);border-radius:var(--elv-r-md);font-size:var(--elv-fs-md)}
+  .tabs{display:flex;gap:var(--elv-s-2);flex-wrap:wrap;margin:var(--elv-s-4) 0}
+  .btn{min-height:var(--elv-touch);padding:0 var(--elv-s-4);border:1px solid var(--elv-line-control);background:var(--elv-card);color:var(--elv-text-1);border-radius:var(--elv-r-md);font:500 var(--elv-fs-md) var(--elv-font-body);cursor:pointer;display:inline-flex;align-items:center;text-decoration:none}
+  .btn.primary{background:var(--elv-action);color:var(--elv-action-text);border-color:var(--elv-action)}
+  .btn[aria-pressed=true]{outline:3px solid var(--elv-focus);outline-offset:2px}
+  .eyebrow{margin:0;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--elv-text-2)}
+  h1{font:400 clamp(1.7rem,4vw,2.4rem) var(--elv-font-display);margin:var(--elv-s-1) 0 var(--elv-s-2)}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--elv-s-4);flex-wrap:wrap}
+  .sub{color:var(--elv-text-2);margin:0;max-width:62ch}
+  .seg{display:inline-flex;border:1px solid var(--elv-line-control);border-radius:var(--elv-r-md);overflow:hidden}
+  .seg button{min-height:var(--elv-touch);padding:0 var(--elv-s-4);border:0;background:var(--elv-card);color:var(--elv-text-1);font:500 var(--elv-fs-md) var(--elv-font-body);cursor:pointer}
+  .seg button[aria-pressed=true]{background:var(--elv-action);color:var(--elv-action-text)}
+  .grid{display:grid;gap:var(--elv-s-4);grid-template-columns:minmax(0,1fr);margin-top:var(--elv-s-4)}
+  @media(min-width:960px){.grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+  .card{background:var(--elv-card);border:1px solid var(--elv-line);border-radius:var(--elv-r-lg);box-shadow:var(--elv-shadow-card);padding:var(--elv-s-4) var(--elv-s-6)}
+  .card h2{font:600 var(--elv-fs-lg) var(--elv-font-body);margin:0 0 var(--elv-s-2)}
+  .radar{width:100%;height:auto;display:block}
+  .ring{fill:none;stroke:var(--elv-line);stroke-width:1}
+  .ringl{font:600 10px var(--elv-font-body);fill:var(--elv-text-2)}
+  .spoke{stroke:var(--elv-line);stroke-width:1}
+  .wedge{stroke:var(--edge);stroke-width:1.5;cursor:pointer}
+  .wedge:focus-visible,.wedge:hover{stroke:var(--elv-focus);stroke-width:3;outline:none}
+  .none{fill:none;stroke:var(--elv-text-2);stroke-width:1.5;stroke-dasharray:5 4}
+  .lab{font:500 12px var(--elv-font-body);fill:var(--elv-text-1)}
+  .lab2{font:600 10px var(--elv-font-body);fill:var(--elv-text-2);letter-spacing:.04em;text-transform:uppercase}
+  .num{font:700 14px var(--elv-font-body);pointer-events:none}
+  .legend{display:flex;gap:var(--elv-s-4);flex-wrap:wrap;font-size:var(--elv-fs-sm);color:var(--elv-text-2);margin:var(--elv-s-2) 0 0;padding:0;list-style:none}
+  .legend li{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--edge);display:inline-grid;place-items:center;font:700 11px var(--elv-font-body)}
+  .sw.n{border:1.5px dashed var(--elv-text-2);background:transparent}
+  .item{border-top:1px solid var(--elv-line);padding:var(--elv-s-3) 0}
+  .item:first-of-type{border-top:0}
+  .item h3{font:600 var(--elv-fs-md) var(--elv-font-body);margin:0}
+  .lv{display:inline-flex;align-items:center;gap:6px;font-size:var(--elv-fs-sm);font-weight:600}
+  .p{margin:var(--elv-s-1) 0 0;color:var(--elv-text-2);font-size:var(--elv-fs-md)}
+  .improve{border-left:4px solid var(--elv-action);background:var(--elv-action-soft);border-radius:var(--elv-r-md);padding:var(--elv-s-3) var(--elv-s-4)}
+  .row{display:flex;gap:var(--elv-s-3);flex-wrap:wrap;margin-top:var(--elv-s-3)}
+  .bars{list-style:none;margin:0;padding:0}
+  .bar{display:grid;grid-template-columns:minmax(0,1.2fr) 112px minmax(0,1fr);gap:var(--elv-s-3);align-items:center;padding:var(--elv-s-2) 0;border-top:1px solid var(--elv-line)}
+  .bar:first-child{border-top:0}
+  .seg4{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+  .seg4 i{display:block;height:14px;border-radius:3px;border:1.5px solid var(--edge)}
+  .seg4.nv i{border:1.5px dashed var(--elv-text-2)}
+  .t{font-size:var(--elv-fs-sm);color:var(--elv-text-2)}
+  @media(max-width:600px){.bar{grid-template-columns:1fr;gap:4px}.lab,.lab2{display:none}}
+  .info{font-size:var(--elv-fs-sm);color:var(--elv-text-2);margin:var(--elv-s-3) 0 0}
+  .empty{background:var(--elv-info-bg);border:1px solid var(--elv-info);border-radius:var(--elv-r-md);padding:var(--elv-s-3) var(--elv-s-4)}
+  .states{margin:var(--elv-s-4) 0;padding:var(--elv-s-3) var(--elv-s-4);border:1px dashed var(--elv-line-control);border-radius:var(--elv-r-md);font-size:var(--elv-fs-sm);color:var(--elv-text-2)}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="note" data-i="note">MAQUETA v3 con la paleta de la landing (papel #FAFAF9, tinta #1A1A18, ocre #B8963E decorativo y #7D6218 para texto, Inter, esquinas de 4 px) y datos de ejemplo: mapa en RADAR con MAPA DE CALOR, explicación a la derecha y lista de todas las capacidades. Sustituye la vista de territorios como principal; los territorios pasan a una segunda pestaña.</div>
+  <div class="tabs" role="group" aria-label="Estados de la maqueta"><button class="btn" data-s="some" aria-pressed="true" data-i="t1">1 · Con algunas capacidades</button><button class="btn" data-s="few" aria-pressed="false" data-i="t2">2 · Solo 2 con nivel</button><button class="btn" data-s="none" aria-pressed="false" data-i="t3">3 · Sin evidencia</button><button class="btn" id="tLang" aria-pressed="false">EN</button></div>
+
+  <header class="head"><div><p class="eyebrow" data-i="eyebrow">Zona profesional</p><h1 data-i="title">Mapa de competencias</h1><p class="sub" data-i="sub">Cada cuña es una capacidad de tu catálogo: más larga y más oscura cuanto mayor es el nivel que respaldas con evidencia. Lo que aún no evaluaste queda en hueco, no en cero.</p></div>
+    <div class="row" style="margin:0"><div class="seg" role="group" aria-label="Vista"><button aria-pressed="true" data-i="vRadar">Radar</button><button aria-pressed="false" data-i="vTerr">Territorios</button></div><button class="btn" data-i="revoke">Revocar todos</button></div></header>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="rt"><h2 id="rt" data-i="radarT">Tus capacidades en un vistazo</h2>
+      <svg id="radar" class="radar" viewBox="0 0 560 520" role="img" aria-describedby="list"></svg>
+      <ul class="legend" aria-label="Leyenda" id="legend"></ul></section>
+    <div id="side"></div>
+  </div>
+
+  <section class="card" style="margin-top:var(--elv-s-4)" aria-labelledby="lt"><h2 id="lt" data-i="listT">Todas tus capacidades (texto)</h2><ul class="bars" id="list"></ul>
+    <p class="info" data-i="info">El nivel no certifica: muestra qué evidencia hay hoy. No se compara con otras personas ni con un puntaje ideal.</p></section>
+  <div class="states" data-i="states">Estados: cargando («Cargando tu mapa…»), error (con «Reintentar»), catálogo vacío (aviso actual). Teclado: cada cuña es un botón (Tab / Enter) que abre el detalle de la capacidad que ya existe; el radar tiene descripción para lector de pantalla y la lista de abajo es su alternativa en texto. A 320/375 px el radar se reduce y las tarjetas y la lista se apilan. «Revocar todos» y el permiso por capacidad se conservan.</div>
+</div>
+<script>
+const SK=[['comunicacion','Comunicación','Communication',3,2],['trabajo','Trabajo en equipo','Teamwork',2,1],['problemas','Resolución de problemas','Problem solving',3,2],['planificacion','Planificación y organización','Planning and organization',1,1],['adaptabilidad','Adaptabilidad','Adaptability',null,0],['aprendizaje','Aprendizaje autónomo','Self-directed learning',null,0],['analisis','Análisis de información','Information analysis',4,3],['influencia','Influencia y liderazgo','Influence and leadership',null,0]];
+const CRIT={comunicacion:{3:'Adapta el mensaje a distintas audiencias y confirma que fue entendido, sin necesitar apoyo, de forma repetida.',4:'Comunica en situaciones complejas o de tensión, alinea a varias partes y enseña a otras personas a hacerlo.'},trabajo:{2:'Colabora con apoyo y cumple su parte en equipos con roles claros.',3:'Coordina su trabajo con el de otras personas y resuelve desacuerdos sin apoyo.'},problemas:{3:'Descompone problemas nuevos, prueba hipótesis y documenta lo aprendido.',4:'Resuelve problemas ambiguos de alto impacto y enseña su método.'},planificacion:{1:'Conoce cómo ordenar tareas, pero aún no lo ha hecho en una situación real.',2:'Planifica con apoyo de una plantilla o la revisión de otra persona.'},analisis:{4:'Analiza información incompleta o contradictoria y orienta decisiones complejas.'}};
+const CRITEN={comunicacion:{3:'Adapts the message to different audiences and confirms it was understood, without support, repeatedly.'},trabajo:{2:'Collaborates with support and delivers their part in teams with clear roles.',3:'Coordinates their work with others and resolves disagreements without support.'},problemas:{3:'Breaks down new problems, tests hypotheses and documents what was learned.'},planificacion:{1:'Knows how to order tasks but has not yet done so in a real situation.',2:'Plans with the support of a template or another person’s review.'},analisis:{4:'Analyzes incomplete or contradictory information and guides complex decisions.'}};
+const I={es:{note:'MAQUETA v3 con la paleta de la landing (papel #FAFAF9, tinta #1A1A18, ocre #B8963E decorativo y #7D6218 para texto, Inter, esquinas de 4 px) y datos de ejemplo: mapa en RADAR con MAPA DE CALOR, explicación a la derecha y lista de todas las capacidades. Sustituye la vista de territorios como principal; los territorios pasan a una segunda pestaña.',t1:'1 · Con algunas capacidades',t2:'2 · Solo 2 con nivel',t3:'3 · Sin evidencia',eyebrow:'Zona profesional',title:'Mapa de competencias',sub:'Cada cuña es una capacidad de tu catálogo: más larga y más oscura cuanto mayor es el nivel que respaldas con evidencia. Lo que aún no evaluaste queda en hueco, no en cero.',vRadar:'Radar',vTerr:'Territorios',revoke:'Revocar todos',radarT:'Tus capacidades en un vistazo',listT:'Todas tus capacidades (texto)',info:'El nivel no certifica: muestra qué evidencia hay hoy. No se compara con otras personas ni con un puntaje ideal.',states:'Estados: cargando («Cargando tu mapa…»), error (con «Reintentar»), catálogo vacío (aviso actual). Teclado: cada cuña es un botón (Tab / Enter) que abre el detalle de la capacidad que ya existe; el radar tiene descripción para lector de pantalla y la lista de abajo es su alternativa en texto. A 320/375 px el radar se reduce y las tarjetas y la lista se apilan. «Revocar todos» y el permiso por capacidad se conservan.',level:'Nivel',of:'de 4',none:'Sin evaluar',lev:'Nivel',strong:'Tus puntos más fuertes',strongFew:'Tus puntos más fuertes (por ahora)',improve:'Un punto donde puedes mejorar',evid:'evidencias',toLevel:'Para pasar al nivel',reg:'Registrar mi nivel',seeCrit:'Ver criterios',emptyT:'Todavía no hay evidencia suficiente',emptyP:'Un nivel necesita evidencia que tú confirmaste. Cuando la tengas, aquí verás tus puntos más fuertes y un criterio para subir de nivel.',toEv:'Ir a Mis evidencias',onlyN:'Por ahora solo hay evidencia suficiente para {n} capacidades; no se rellena con otras.',topH:'Nivel máximo en esta capacidad: no hay un siguiente nivel que proponer.',alt:'Radar de {n} capacidades. Con nivel: {w}. Sin evaluar: {u}.'},
+ en:{note:'MOCKUP v3 with example data: RADAR map with HEAT MAP, explanation on the right and a list of all skills. It replaces the territory view as the main one; territories move to a second tab.',t1:'1 · With some skills',t2:'2 · Only 2 with a level',t3:'3 · No evidence',eyebrow:'Professional zone',title:'Skills map',sub:'Each wedge is a skill from your catalog: longer and darker the higher the level you back with evidence. What you have not assessed yet stays hollow, not zero.',vRadar:'Radar',vTerr:'Territories',revoke:'Revoke all',radarT:'Your skills at a glance',listT:'All your skills (text)',info:'A level does not certify: it shows what evidence exists today. It is not compared with other people or an ideal score.',states:'States: loading (“Loading your map…”), error (with “Retry”), empty catalog (current notice). Keyboard: each wedge is a button (Tab / Enter) that opens the existing skill detail; the radar has a screen-reader description and the list below is its text alternative. At 320/375 px the radar shrinks and cards and list stack. “Revoke all” and per-skill permission are kept.',level:'Level',of:'of 4',none:'Not assessed',lev:'Level',strong:'Your strongest points',strongFew:'Your strongest points (so far)',improve:'One point where you can improve',evid:'evidence items',toLevel:'To reach level',reg:'Register my level',seeCrit:'See criteria',emptyT:'There is not enough evidence yet',emptyP:'A level needs evidence that you confirmed. Once you have some, you will see your strongest points here and a criterion to move up a level.',toEv:'Go to My evidence',onlyN:'For now there is enough evidence for only {n} skills; it is not padded with others.',topH:'Highest level in this skill: there is no next level to suggest.',alt:'Radar of {n} skills. With a level: {w}. Not assessed: {u}.'}};
+let L='es',S='some';const $=s=>document.querySelector(s),t=k=>I[L][k],nm=s=>L==='en'?s[2]:s[1];
+const data=()=>SK.map(s=>({k:s[0],es:s[1],en:s[2],lvl:S==='none'?null:S==='few'?(['comunicacion','analisis'].includes(s[0])?s[3]:null):s[3],ev:s[4]}));
+const HC=['','var(--h1)','var(--h2)','var(--h3)','var(--h4)'];const TC=['','#1A1A18','#1A1A18','#1A1A18','#ffffff'];
+function radar(){const d=data(),cx=280,cy=250,R=165;let h='';for(let n=1;n<=4;n++){h+=`<circle class="ring" cx="${cx}" cy="${cy}" r="${R*n/4}"/><text class="ringl" x="${cx+4}" y="${cy-R*n/4-3}">${n}</text>`}
+ d.forEach((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/8;h+=`<line class="spoke" x1="${cx}" y1="${cy}" x2="${cx+R*Math.cos(a)}" y2="${cy+R*Math.sin(a)}"/>`});
+ d.forEach((s,i)=>{const a=-Math.PI/2+i*2*Math.PI/8,a0=a-Math.PI/8+.02,a1=a+Math.PI/8-.02;
+  if(s.lvl){const r=R*s.lvl/4,p=(an,rr)=>[cx+rr*Math.cos(an),cy+rr*Math.sin(an)];const[x0,y0]=p(a0,r),[x1,y1]=p(a1,r);h+=`<path class="wedge" tabindex="0" role="button" aria-label="${nm([0,s.es,s.en])}: ${t('lev')} ${s.lvl} ${t('of')}" fill="${HC[s.lvl]}" d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1} Z"/>`;const[mx,my]=p(a,Math.max(r*0.62,26));h+=`<text class="num" x="${mx}" y="${my+5}" text-anchor="middle" fill="${TC[s.lvl]}">${s.lvl}</text>`}
+  else{const p=(an,rr)=>[cx+rr*Math.cos(an),cy+rr*Math.sin(an)];const[x0,y0]=p(a0,R),[x1,y1]=p(a1,R);h+=`<path class="none" tabindex="0" role="button" aria-label="${nm([0,s.es,s.en])}: ${t('none')}" d="M${cx},${cy} L${x0},${y0} A${R},${R} 0 0 1 ${x1},${y1} Z"/>`}
+  const lx=cx+(R+26)*Math.cos(a),ly=cy+(R+26)*Math.sin(a),c=Math.cos(a),an=c>.3?'start':c<-.3?'end':'middle';const words=nm([0,s.es,s.en]).split(' ');const lines=[];let cur='';words.forEach(w=>{if((cur+' '+w).trim().length>16&&cur){lines.push(cur);cur=w}else cur=(cur+' '+w).trim()});lines.push(cur);
+  h+=lines.map((l,k)=>`<text class="lab" x="${lx}" y="${ly+(k-(lines.length-1)/2)*14+ (Math.sin(a)>.5?8:Math.sin(a)<-.5?-4:4)}" text-anchor="${an}">${l}</text>`).join('')+`<text class="lab2" x="${lx}" y="${ly+((lines.length+1)/2)*14+(Math.sin(a)>.5?8:Math.sin(a)<-.5?-4:4)-2}" text-anchor="${an}">${s.lvl?t('lev')+' '+s.lvl:t('none')}</text>`});
+ const w=d.filter(s=>s.lvl).map(s=>nm([0,s.es,s.en])+' '+s.lvl).join(', ')||'—',u=d.filter(s=>!s.lvl).map(s=>nm([0,s.es,s.en])).join(', ')||'—';
+ $('#radar').setAttribute('aria-label',t('alt').replace('{n}',d.length).replace('{w}',w).replace('{u}',u));$('#radar').innerHTML=h;
+ $('#legend').innerHTML=[1,2,3,4].map(n=>`<li><span class="sw" style="background:${HC[n]};color:${TC[n]}">${n}</span>${t('lev')} ${n}</li>`).join('')+`<li><span class="sw n"></span>${t('none')}</li>`}
+function side(){const d=data().filter(s=>s.lvl).sort((a,b)=>b.lvl-a.lvl),top=d.slice(0,3);let h='';
+ if(!d.length){h=`<section class="card"><div class="empty" role="status"><b>${t('emptyT')}</b><p class="p" style="color:var(--elv-text-1)">${t('emptyP')}</p><div class="row"><a class="btn primary" href="#">${t('toEv')}</a></div></div></section>`}
+ else{h=`<section class="card" aria-labelledby="st"><h2 id="st">${top.length<3?t('strongFew'):t('strong')}</h2>`+top.map(s=>`<div class="item"><h3>${nm([0,s.es,s.en])}</h3><span class="lv"><span class="sw" style="background:${HC[s.lvl]};color:${TC[s.lvl]}">${s.lvl}</span>${t('level')} ${s.lvl} ${t('of')} · ${s.ev} ${t('evid')}</span><p class="p">${(L==='en'?CRITEN:CRIT)[s.k]?.[s.lvl]??''}</p></div>`).join('')+(top.length<3?`<p class="info">${t('onlyN').replace('{n}',top.length)}</p>`:'')+`</section>`;
+  const imp=[...d].sort((a,b)=>a.lvl-b.lvl)[0],nx=imp.lvl+1;h+=`<section class="card" style="margin-top:var(--elv-s-4)" aria-labelledby="it"><h2 id="it">${t('improve')}</h2>`+(imp.lvl>=4?`<p class="p">${t('topH')}</p>`:`<div class="improve"><h3 style="margin:0;font:600 var(--elv-fs-md) var(--elv-font-body)">${nm([0,imp.es,imp.en])}</h3><p class="p" style="color:var(--elv-text-1)">${t('toLevel')} ${nx}: «${(L==='en'?CRITEN:CRIT)[imp.k]?.[nx]??(L==='en'?'(criterion from the current catalog)':'(criterio del catálogo vigente)')}»</p><div class="row"><a class="btn primary" href="#">${t('reg')}</a><a class="btn" href="#">${t('seeCrit')}</a></div></div>`)+`</section>`}
+ $('#side').innerHTML=h}
+function list(){$('#list').innerHTML=data().map(s=>{const f=s.lvl||0;return `<li class="bar"><b>${nm([0,s.es,s.en])}</b><span class="seg4 ${s.lvl?'':'nv'}" aria-hidden="true">${[1,2,3,4].map(n=>`<i style="${n<=f?`background:${HC[f]}`:''}"></i>`).join('')}</span><span class="t">${s.lvl?`${t('level')} ${s.lvl} ${t('of')} · ${s.ev} ${t('evid')}`:t('none')}</span></li>`}).join('')}
+function i18n(){document.documentElement.lang=L;document.querySelectorAll('[data-i]').forEach(n=>{const v=t(n.dataset.i);if(v!==undefined)n.textContent=v});$('#tLang').textContent=L==='en'?'ES':'EN';radar();side();list()}
+document.querySelectorAll('.tabs [data-s]').forEach(b=>b.onclick=()=>{S=b.dataset.s;document.querySelectorAll('.tabs [data-s]').forEach(x=>x.setAttribute('aria-pressed',x===b));radar();side();list()});
+$('#tLang').onclick=()=>{L=L==='es'?'en':'es';i18n()};i18n();
+</script>
+</body>
+</html>

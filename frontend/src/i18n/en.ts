@@ -4,15 +4,21 @@ import { catalogEn } from '../routeCatalog/copy'
 import { compassEn } from '../compass/copy'
 import { exerciseEn } from '../exercises/copy'
 import { skillMapEn } from '../skill-map/copy'
+import { skillCatalogEn } from '../skill-catalog/copy'
 import { contextEn } from '../context/contextCopy'
+import { resumeEn } from '../context/resume/resumeCopy'
 import { evidenceEn } from '../evidence/copy'
+import { therapistEn } from './therapistCopy'
 const en: Record<string, string> = {
   ...catalogEn,
   ...compassEn,
   ...exerciseEn,
+  ...therapistEn,
   ...contextEn,
+  ...resumeEn,
   ...evidenceEn,
   ...skillMapEn,
+  ...skillCatalogEn,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'AI emotional support',
@@ -323,6 +329,8 @@ const en: Record<string, string> = {
   btn_edit: 'Edit',
   btn_back: 'Back',
   loading: 'Loading...',
+  route_error: 'A new version of the app is available. Reload the page to continue.',
+  route_error_reload: 'Reload',
   error_connection: 'Connection error.',
   no_data: '—',
 
@@ -366,6 +374,19 @@ const en: Record<string, string> = {
   board_error_activate: 'Could not reactivate version.',
   board_success_upload: '✅ Manifest published and activated:',
   board_success_activate: '✅ Version reactivated:',
+
+  // ── Chat check-out (ES-123: previously hard-coded in the component) ───────
+  checkout_label: 'CHECK-OUT',
+  checkout_title: 'How are you leaving?',
+  checkout_hint: 'Take a moment before closing.',
+  checkout_rating: 'How was the conversation?',
+  checkout_signout: 'Sign out',
+  checkout_skip: 'Skip',
+  star_1: '😞 Very poor',
+  star_2: '😐 Fair',
+  star_3: '🙂 Good',
+  star_4: '😊 Very good',
+  star_5: '✨ Excellent',
 }
 
 export { en }

@@ -65,7 +65,26 @@ test('ES-28: only GET and manual POST, exact request reused without origins/owne
   assert.deepEqual(Object.keys(JSON.parse(calls[0].options.body)).sort(), ['payload', 'requestId', 'status'])
   assert.deepEqual(calls.map(call => call.options.method), ['POST', 'POST', 'GET'])
   assert.equal(calls[2].url, 'https://api.example.invalid/api/evidence/11')
-  assert.equal(api.update, undefined); assert.equal(api.remove, undefined)
+  // ES-110 habilita editar y borrar (antes: «edición pendiente»): se prueban en su propia prueba, con las mismas garantías.
+  assert.equal(typeof api.update, 'function'); assert.equal(typeof api.remove, 'function')
+})
+test('ES-110: editar y borrar — PUT con baseVersion y sin origen/autor, DELETE por id válido, ids inválidos sin llamada y fallos nunca se vuelven éxito', async () => {
+  const calls = []
+  const api = evidenceApi('https://api.example.invalid/', 'synthetic-token', async (url, options) => {
+    calls.push({ url, options }); assert.equal(options.cache, 'no-store'); assert.equal(options.headers.Authorization, 'Bearer synthetic-token')
+    if (url.endsWith('/99')) return Response.json({ code: 'version_conflict' }, { status: 409 })
+    return Response.json(options.method === 'DELETE' ? { deleted: true } : { id: 11, version: 2, status: 'draft', created: true })
+  })
+  const body = { payload: draftPayload(complete(), 'confirmed').payload, status: 'confirmed', requestId: 'synthetic-request-02', baseVersion: 1 }
+  assert.deepEqual(await api.update(11, body), { id: 11, version: 2 }); await api.remove(11)
+  assert.deepEqual(calls.map(call => [call.options.method, call.url]), [['PUT', 'https://api.example.invalid/api/evidence/11'], ['DELETE', 'https://api.example.invalid/api/evidence/11']])
+  assert.deepEqual(Object.keys(JSON.parse(calls[0].options.body)).sort(), ['baseVersion', 'payload', 'requestId', 'status']) // nunca origins, owner ni authoring
+  assert.equal(calls[1].options.body, undefined)
+  for (const id of [0, -1, 1.5, 1e10, NaN]) { await assert.rejects(api.update(id, body), error => error.status === 404); await assert.rejects(api.remove(id), error => error.status === 404) }
+  assert.equal(calls.length, 2, 'un id inválido no llega a la red')
+  await assert.rejects(api.update(99, body), error => error.status === 409)
+  const anonymous = evidenceApi('https://api.example.invalid/', '', async () => { throw new Error('sin sesión no se llama') })
+  await assert.rejects(anonymous.remove(11), error => error.status === 401); await assert.rejects(anonymous.update(11, body), error => error.status === 401)
 })
 test('ES-28: protocol failures and foreign resource never become empty/saved success', async () => {
   for (const status of [400, 401, 403, 404, 409, 422, 500]) {

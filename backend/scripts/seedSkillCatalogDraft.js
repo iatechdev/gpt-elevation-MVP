@@ -12,7 +12,7 @@ async function main() {
   await require('../SkillDefinition').sync();
   const draft = await catalog.createDraft();
   for (const skill of seed.skills) {
-    await catalog.upsertSkill(draft.id, skill.skillKey, { type: skill.type, labels: skill.labels, rubric: { levels: skill.levels } });
+    await catalog.upsertSkill(draft.id, skill.skillKey, { type: skill.type, labels: skill.labels, rubric: { levels: skill.levels }, territories: skill.territories });
   }
   console.log(JSON.stringify({ draftId: draft.id, version: draft.version, skills: seed.skills.length, published: false }));
 }

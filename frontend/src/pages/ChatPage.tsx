@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
+import { ChatBar } from '../space/ChatBar'
 import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
+import { copy } from '../space/copy'
+import { clearPending } from '../space/pending'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -148,6 +151,7 @@ export function ChatPage() {
 
   const handleLogout = () => {
     if (!chat.canLeave()) return
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')
@@ -186,7 +190,7 @@ export function ChatPage() {
     setRecsError('')
     setShowRecs(true)
     try {
-      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST' })
+      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST', body: JSON.stringify({ lang }) })
       if (!res.ok) throw new Error()
       const data = await res.json()
       setRecommendations(data)
@@ -248,7 +252,7 @@ export function ChatPage() {
   }
 
   const rollbackVersion = async (id: number) => {
-    if (!confirm('¿Seguro que querés activar esta versión anterior?')) return
+    if (!confirm('¿Seguro que quieres activar esta versión anterior?')) return
     try {
       await apiFetch(`/api/superadmin/prompt/${id}/rollback`, getToken(), { method: 'POST' })
       setPromptMsg('✓ Rollback exitoso.')
@@ -281,17 +285,17 @@ export function ChatPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
+    <div className="chat-shell" style={{ background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
 
       {/* Header */}
-      <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(249,249,247,0.85)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(231,229,228,0.5)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 680, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ width: 24 }} />
-          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>{t('logo')}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.3em', color: '#1A1A18', textTransform: 'uppercase', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{t('logo')}</span>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             {(['es', 'en'] as const).map(l => (
               <button key={l} onClick={() => setLang(l)}
-                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '0.5px solid #D6D2C4', background: lang === l ? '#6B7D5C' : 'transparent', color: lang === l ? '#FAF8F4' : '#A8A29E', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, minHeight: 32, border: '1px solid #5E5E5A', background: lang === l ? '#1A1A18' : 'transparent', color: lang === l ? '#FAFAF9' : '#5E5E5A', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 {l.toUpperCase()}
               </button>
             ))}
@@ -302,17 +306,29 @@ export function ChatPage() {
                 </svg>
               </button>
             )}
+            {/* HU-052 — Progress link (ES-123: en la cabecera y con etiqueta; antes era un ícono suelto dentro de la conversación) */}
+            <button
+              onClick={() => chat.canLeave() && navigate('/app/progress')}
+              title={copy[lang].progress}
+              aria-label={copy[lang].progress}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </button>
             {/* HU-051 — Recommendations toggle */}
             <button
               onClick={() => setShowRecs(!showRecs)}
               title={t('rec_title')}
+              aria-label={t('rec_title')}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: showRecs ? '#6B7D5C' : '#A8A29E', display: 'flex', padding: 4 }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </button>
-            <button onClick={() => setShowCheckout(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}>
+            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
               </svg>
@@ -322,43 +338,37 @@ export function ChatPage() {
       </header>
 
       {/* Mensajes */}
-      <main style={{ maxWidth: 680, width: '100%', margin: '0 auto', paddingTop: 80, paddingBottom: 300, paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
-        <SpaceNav /><div id="space-main" tabIndex={-1} />
-        {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
+      {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
+      <main className="chat-main">
+        <div className="chat-top">
+          <SpaceNav /><ChatBar sent={messages.length} /><div id="space-main" tabIndex={-1} />
+          {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
+        </div>
+        <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {messages.map((msg, i) => (
             <div key={i}>
               {msg.role === 'user' ? (
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <div style={{ maxWidth: '80%', background: 'white', borderRadius: '1.25rem 1.25rem 0.25rem 1.25rem', padding: '1rem 1.25rem', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', color: '#1C1917', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                  <div style={{ maxWidth: '85%', background: '#1A1A18', borderRadius: 4, padding: '0.9rem 1.1rem', color: '#FAFAF9', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                     {msg.text}
                   </div>
                 </div>
               ) : (
-                <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1.25rem' }}>
-                  <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.4rem' }}>{t('logo')} ·</span>
-                  <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1.05rem', color: '#1C1917', lineHeight: 1.85, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
+                <div style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
+                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
+                  <p style={{ fontSize: '1rem', color: '#1A1A18', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
                 </div>
               )}
             </div>
           ))}
           {sending && (
-            <div style={{ borderLeft: '2px solid #0d9488', paddingLeft: '1.25rem' }}>
-              <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#0d9488', textTransform: 'uppercase', marginBottom: '0.5rem' }}>{t('logo')} ·</span>
-              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#A8A29E', margin: 0 }}>{t('chat_thinking')}</p>
+            <div role="status" style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
+              <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.5rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
+              <p style={{ fontSize: '0.95rem', color: '#5E5E5A', margin: 0 }}>{t('chat_thinking')}</p>
             </div>
           )}
-            {/* HU-052 — Progress link */}
-            <button
-              onClick={() => chat.canLeave() && navigate('/app/progress')}
-              title={lang === 'es' ? 'Mi progreso' : 'My progress'}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </button>
           <ChatContext chat={chat} />
           {/* HU-051 — Wellness Recommendations */}
           {showRecs && (
@@ -412,25 +422,22 @@ export function ChatPage() {
 
           <div ref={chatEndRef} />
         </div>
-      </main>
-
-      {/* Input */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', zIndex: 40, background: 'rgba(249,249,247,0.95)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(231,229,228,0.5)' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '1rem 1.5rem', display: 'flex', alignItems: 'flex-end', gap: '0.75rem' }}>
+        </div>
+        <div className="chat-input-bar">
           <ChatInput chat={chat} />
         </div>
-      </div>
+      </main>
 
       {/* HU-021 + HU-022 — Modal check-out + estrellas */}
       {showCheckout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>CHECK-OUT</p>
+            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>{t('checkout_label')}</p>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
-              {lang === 'es' ? '¿Cómo te vas?' : 'How are you leaving?'}
+              {t('checkout_title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: '#78716C', margin: 0, textAlign: 'center' }}>
-              {lang === 'es' ? 'Tomá un momento antes de cerrar.' : 'Take a moment before closing.'}
+              {t('checkout_hint')}
             </p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               {CHECKOUT_MOODS.map(m => (
@@ -449,7 +456,7 @@ export function ChatPage() {
             {checkoutMood !== null && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                 <p style={{ fontSize: '0.8rem', color: '#78716C', margin: 0 }}>
-                  {lang === 'es' ? '¿Cómo fue la conversación?' : 'How was the conversation?'}
+                  {t('checkout_rating')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {[1, 2, 3, 4, 5].map(star => (
@@ -464,7 +471,7 @@ export function ChatPage() {
                 </div>
                 {starRating && (
                   <p style={{ fontSize: '0.75rem', color: '#A8A29E', margin: 0 }}>
-                    {['', '😞 Muy mala', '😐 Regular', '🙂 Buena', '😊 Muy buena', '✨ Excelente'][starRating]}
+                    {['', t('star_1'), t('star_2'), t('star_3'), t('star_4'), t('star_5')][starRating]}
                   </p>
                 )}
               </div>
@@ -481,11 +488,11 @@ export function ChatPage() {
                   cursor: checkoutMood !== null ? 'pointer' : 'not-allowed',
                   fontFamily: 'Inter, sans-serif',
                 }}>
-                {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
+                {checkoutSaving ? '...' : t('checkout_signout')}
               </button>
               <button onClick={handleLogout}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                {lang === 'es' ? 'Saltar' : 'Skip'}
+                {t('checkout_skip')}
               </button>
             </div>
           </div>

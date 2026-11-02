@@ -47,6 +47,12 @@ function computeCost(model, inputTokens, outputTokens, pricing = pricingDefault,
   };
 }
 
+// Código corto del proveedor (end_turn, max_tokens...). Solo se guarda si parece un código: nunca texto libre.
+function stopReasonOf(message) {
+  const reason = message?.stop_reason;
+  return typeof reason === 'string' && /^[a-z_]{1,24}$/.test(reason) ? reason : null;
+}
+
 const safe = async (fn) => {
   try { await fn(); } catch (error) { console.error('⚠️ Registro de uso de IA no guardado:', error.code || error.name); }
 };
@@ -91,6 +97,7 @@ async function callClaude({ userId, kind, requestId = null, body, now = new Date
       currency: cost.currency ?? null,
       priceVersion: cost.priceVersion ?? null,
       latencyMs: Date.now() - startedAt,
+      stopReason: stopReasonOf(message),
     }));
   }
   return message;

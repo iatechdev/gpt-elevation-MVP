@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { models, record, startApp } = require('./support.cjs');
+const { models, record, startApp, grantTherapistSharing } = require('./support.cjs');
 
 test('QA-9-02: public input and legitimate authentication', async t => {
   let queries = 0;
@@ -11,7 +11,7 @@ test('QA-9-02: public input and legitimate authentication', async t => {
   models.User.findOne = async () => { queries++; return null; };
   models.User.create = async values => { writes++; return record(values); };
   const request = await startApp(t);
-  const password = randomBytes(24).toString('hex');
+  const password = `Aa1!${randomBytes(24).toString('hex')}`; // ES-128: cumple la política de registro
   const valid = { email: 'synthetic@example.invalid', password };
   const invalid = [undefined, {}, [], { ...valid, email: {} },
     { ...valid, password: {} }, { ...valid, email: null },
@@ -112,7 +112,10 @@ test('QA-9-02: body consumers reject invalid types before side effects', async t
   assert.equal((await request('POST', '/api/sessions/therapist', {
     role: 'therapist', body: { patientId: 999, scheduledAt: '2099-01-01T12:00:00Z', duration: 50 },
   })).status, 403);
+  grantTherapistSharing(); // ES-96: sin autorización de compartir, agendar e iniciar responden 403
   models.User.findOne = async () => record({ id: 7, therapistId: 101 });
+  models.User.findByPk = async () => record({ id: 101 }); // ES-98: bloqueo de la fila del terapeuta para el choque de horarios
+  models.TherapySession.findAll = async () => [];
   models.User.findAll = async () => []; // ES-101: lectura de autorización (cuentas inactivas), no un efecto del cuerpo enviado
   models.TherapySession.create = async values => { saved = values; return record({ id: 8, ...values }); };
   assert.equal((await request('POST', '/api/sessions/therapist', {

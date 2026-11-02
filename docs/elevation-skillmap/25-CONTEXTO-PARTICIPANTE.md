@@ -182,3 +182,6 @@ borrador al cancelar Atrás. Las ejecuciones finales citadas son posteriores a s
 ## Deuda técnica aceptada
 
 QA-14-02 (peso del CSS de los formularios, +80 % según QA) se acepta como deuda técnica y no se corrige en ES-14. Registro, alternativa medida y criterios para retomarla: `docs/hu-tecnicas/DT-007-css-formularios-es14.md`.
+
+
+> **ES-122.** La pantalla pide y muestra la disponibilidad en **horas por semana** (0 a 168, admite decimales); el campo guardado sigue siendo `availabilityMinutesPerWeek` en **minutos enteros** (0 a 10 080). La conversión es solo de presentación; el plan de carrera sigue consumiendo minutos.

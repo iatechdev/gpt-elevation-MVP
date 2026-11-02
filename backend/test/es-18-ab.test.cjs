@@ -43,8 +43,8 @@ function seed() {
       record({ id: 42, patientId: B, therapistId: T2, status: 'in_progress', meetingUrl: 'https://meet.invalid/b' }),
     ],
     patients: [
-      record({ id: A, name: 'Persona A', role: 'user', therapistId: T1 }),
-      record({ id: B, name: 'Persona B', role: 'user', therapistId: T2 }),
+      record({ id: A, name: 'Persona A', role: 'user', active: true, therapistId: T1 }),
+      record({ id: B, name: 'Persona B', role: 'user', active: true, therapistId: T2 }),
     ],
   };
   models.message.findAll = async ({ where: w }) => where(data.messages, w);
@@ -126,6 +126,12 @@ test('A/B sesiones y terapeutas: unirse, finalizar o leer pacientes ajenos devue
   // Un terapeuta solo lee a su paciente asignado; un usuario cualquiera no lee a nadie.
   models.MoodLog.findAll = async () => [];
   assert.equal((await request('GET', `/api/therapist/pacientes/${B}/historial`, { headers: bearer(T1, 'therapist') })).status, 404);
+  // ES-96: además del vínculo, la persona debe haber autorizado compartir con ESTE terapeuta (therapist_sharing, alcance therapist-<id>).
+  models.Consent.findOne = async () => null;
+  const noConsent = await request('GET', `/api/therapist/pacientes/${A}/historial`, { headers: bearer(T1, 'therapist') });
+  assert.deepEqual([noConsent.status, noConsent.body.code], [403, 'consent_required']);
+  models.Consent.findOne = async ({ where }) => (where.purpose === 'therapist_sharing' && where.scope === `therapist-${T1}`
+    ? { UserId: where.UserId, purpose: where.purpose, scope: where.scope, status: 'granted', version: 1 } : null);
   assert.equal((await request('GET', `/api/therapist/pacientes/${A}/historial`, { headers: bearer(T1, 'therapist') })).status, 200);
   // Un usuario sin rol de terapeuta ya no entra a estas rutas (QA-18-01).
   assert.equal((await request('GET', `/api/therapist/pacientes/${B}/historial`, { headers: bearer(A) })).status, 403);

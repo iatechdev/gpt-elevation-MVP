@@ -4,15 +4,21 @@ import { catalogEs } from '../routeCatalog/copy'
 import { compassEs } from '../compass/copy'
 import { exerciseEs } from '../exercises/copy'
 import { skillMapEs } from '../skill-map/copy'
+import { skillCatalogEs } from '../skill-catalog/copy'
 import { contextEs } from '../context/contextCopy'
+import { resumeEs } from '../context/resume/resumeCopy'
 import { evidenceEs } from '../evidence/copy'
+import { therapistEs } from './therapistCopy'
 const es: Record<string, string> = {
   ...catalogEs,
   ...compassEs,
   ...exerciseEs,
+  ...therapistEs,
   ...contextEs,
+  ...resumeEs,
   ...evidenceEs,
   ...skillMapEs,
+  ...skillCatalogEs,
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'Soporte emocional con IA',
@@ -21,11 +27,11 @@ const es: Record<string, string> = {
   cta_primary: 'Iniciar conversación',
   cta_secondary: 'Cómo funciona',
   step1_title: 'Check-in',
-  step1_desc: 'Comparte cómo te sentís hoy.',
+  step1_desc: 'Comparte cómo te sientes hoy.',
   step2_title: 'Charla guiada',
   step2_desc: 'Diálogo basado en evidencia.',
-  step3_title: 'Reflexioná',
-  step3_desc: 'Seguí tus tendencias emocionales.',
+  step3_title: 'Reflexiona',
+  step3_desc: 'Sigue tus tendencias emocionales.',
   cta_final_title: '¿Listo para empezar?',
   cta_final_subtitle: 'Sin tarjeta de crédito.',
   disclaimer: 'No reemplaza atención profesional de salud mental.',
@@ -46,7 +52,7 @@ const es: Record<string, string> = {
 
   // ── Check-in ──────────────────────────────────────────────────────────────
   checkin_label: 'ANTES DE COMENZAR',
-  checkin_title: '¿Cómo llegás hoy?',
+  checkin_title: '¿Cómo llegas hoy?',
   checkin_subtitle: 'Este momento es solo tuyo',
   btn_continue: 'Comenzar',
 
@@ -172,13 +178,13 @@ const es: Record<string, string> = {
   admin_creating: 'Creando...',
   admin_delete_title: 'Eliminar usuario',
   admin_delete_warning: 'Esta acción es permanente e irreversible.',
-  admin_delete_confirm_label: 'Para confirmar, escribí exactamente el nombre del usuario:',
+  admin_delete_confirm_label: 'Para confirmar, escribe exactamente el nombre del usuario:',
   admin_deleting: 'Eliminando...',
   admin_delete_confirm_btn: 'Eliminar definitivamente',
   admin_reset_modal_title: '🔑 Resetear contraseña',
   admin_reset_temp_label: 'Nueva contraseña temporal',
   admin_reset_placeholder: 'Mínimo 6 caracteres',
-  admin_reset_hint: 'Comunicá la contraseña temporal al usuario por otro medio.',
+  admin_reset_hint: 'Comunica la contraseña temporal al usuario por otro medio.',
   admin_resetting: 'Guardando...',
   admin_reset_confirm: 'Confirmar reset',
   admin_plan_requests: 'plan request',
@@ -211,7 +217,7 @@ const es: Record<string, string> = {
   admin_prompt_content_label: 'Contenido *',
   admin_prompt_create_activate: 'Crear y activar',
   admin_reject_version_title: '✗ Rechazar versión',
-  admin_reject_version_body: 'Explicá el motivo del rechazo.',
+  admin_reject_version_body: 'Explica el motivo del rechazo.',
   admin_versions_pending_alert: 'versión pendiente de aprobación para',
   admin_versions_pending_alert_plural: 'versiones pendientes de aprobación para',
   admin_loading_prompts: 'Cargando prompts...',
@@ -252,7 +258,7 @@ const es: Record<string, string> = {
   // ── Therapist — Dashboard ─────────────────────────────────────────────────
   therapist_dashboard_subtitle: 'Resumen de tu práctica clínica',
   therapist_loading: 'Cargando...',
-  therapist_no_patients: 'Aún no tenés pacientes asignados.',
+  therapist_no_patients: 'Aún no tienes pacientes asignados.',
   therapist_upcoming_sessions: 'Próximas sesiones',
   therapist_no_upcoming: 'Sin sesiones próximas.',
   therapist_start_session: '▶ Iniciar sesión',
@@ -281,14 +287,14 @@ const es: Record<string, string> = {
   therapist_filter_goal: 'Objetivos',
   therapist_new_note: '+ Nueva nota',
   therapist_note_date: 'Fecha',
-  therapist_note_placeholder: 'Escribí tu nota clínica aquí...',
+  therapist_note_placeholder: 'Escribe tu nota clínica aquí...',
   therapist_note_type_session: 'Nota de sesión',
   therapist_note_type_obs: 'Observación',
   therapist_note_type_goal: 'Objetivo',
   therapist_save_note_btn: 'Guardar nota',
   therapist_saving: 'Guardando...',
   therapist_edit: 'Editar',
-  therapist_no_notes: 'Sin notas aún. Agregá tu primera nota clínica.',
+  therapist_no_notes: 'Sin notas aún. Agrega tu primera nota clínica.',
   therapist_emotional_history: 'Historial emocional',
   therapist_no_moods: 'Sin registros de ánimo aún.',
   therapist_session_ratings: 'Calificaciones de sesión',
@@ -302,13 +308,13 @@ const es: Record<string, string> = {
   therapist_schedule_confirm: '📅 Confirmar sesión',
   therapist_scheduling: 'Agendando...',
   therapist_future_date_error: 'La fecha debe ser en el futuro.',
-  therapist_select_datetime: 'Seleccioná fecha y hora.',
+  therapist_select_datetime: 'Selecciona fecha y hora.',
   therapist_loading_history: 'Cargando...',
   therapist_not_found: 'No se pudo cargar el historial del paciente.',
 
   // ── Errores ───────────────────────────────────────────────────────────────
   err_credentials: 'Credenciales incorrectas',
-  err_rate_limit: 'Demasiados intentos. Intentá más tarde.',
+  err_rate_limit: 'Demasiados intentos. Inténtalo más tarde.',
   err_locked: 'Cuenta bloqueada temporalmente',
   err_connection: 'Error de conexión con el servidor.',
   success_register: 'Registro exitoso. Ahora inicia sesión.',
@@ -323,16 +329,18 @@ const es: Record<string, string> = {
   btn_edit: 'Editar',
   btn_back: 'Volver',
   loading: 'Cargando...',
+  route_error: 'Hay una versión nueva de la aplicación. Recarga la página para continuar.',
+  route_error_reload: 'Recargar',
   error_connection: 'Error de conexión.',
   no_data: '—',
 
   // ── Recomendaciones ───────────────────────────────────────────────────────
-  rec_title: '✨ Recomendaciones para vos',
+  rec_title: '✨ Recomendaciones para ti',
   rec_subtitle: 'Basadas en tu estado emocional reciente',
   rec_generate: 'Generar recomendaciones',
   rec_regenerate: 'Generar nuevas',
   rec_loading: 'Generando recomendaciones...',
-  rec_empty: 'Todavía no tenés recomendaciones. Generá las primeras ahora.',
+  rec_empty: 'Todavía no tienes recomendaciones. Genera las primeras ahora.',
   rec_error: 'No se pudieron generar las recomendaciones.',
   rec_category_mindfulness: '🧘 Mindfulness',
   rec_category_habit: '🌿 Hábito',
@@ -366,6 +374,19 @@ const es: Record<string, string> = {
   board_error_activate: 'No se pudo reactivar la versión.',
   board_success_upload: '✅ Manifiesto publicado y activado:',
   board_success_activate: '✅ Versión reactivada:',
+
+  // ── Check-out del chat (ES-123: antes fijos en el componente) ─────────────
+  checkout_label: 'CHECK-OUT',
+  checkout_title: '¿Cómo te vas?',
+  checkout_hint: 'Tómate un momento antes de cerrar.',
+  checkout_rating: '¿Cómo fue la conversación?',
+  checkout_signout: 'Cerrar sesión',
+  checkout_skip: 'Saltar',
+  star_1: '😞 Muy mala',
+  star_2: '😐 Regular',
+  star_3: '🙂 Buena',
+  star_4: '😊 Muy buena',
+  star_5: '✨ Excelente',
 }
 
 export { es }

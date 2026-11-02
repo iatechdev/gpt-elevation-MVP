@@ -5,6 +5,7 @@ const { once } = require('node:events');
 const { randomBytes } = require('node:crypto');
 const jwt = require('jsonwebtoken');
 const { models, startApp } = require('./support.cjs');
+const { desencriptarBuffer, CABECERA_BINARIA } = require('../utils/crypto');
 const { validateApplication, isPdf, MAX_CV_BYTES, STATUSES } = require('../utils/professionalApplication');
 
 process.env.PRO_APP_RATE_MAX = '1000'; // el límite de intentos se prueba en es-95-rate.test.cjs
@@ -37,6 +38,8 @@ function install() {
   models.ProfessionalApplicationFile.create = async (values) => { files.push({ ...values }); return values; };
   models.ProfessionalApplicationFile.findAll = async ({ where }) => files.filter(f => where.ApplicationId.includes(f.ApplicationId)).map(f => ({ ApplicationId: f.ApplicationId, size: f.size }));
   models.ProfessionalApplicationFile.findOne = async ({ where }) => files.find(f => f.ApplicationId === where.ApplicationId) ?? null;
+  models.ProfessionalApplication.count = async ({ where }) => apps.filter(a => a.status === where.status).length; // ES-107: uso para el tope global
+  models.ProfessionalApplicationFile.sum = async () => files.reduce((total, f) => total + f.size, 0);
   models.User.create = async () => { throw new Error('ES-95 no debe crear cuentas'); };
   return { apps, files };
 }
@@ -75,7 +78,7 @@ test('ES-95: una solicitud válida se guarda pendiente, sin rol ni estado del cl
   assert.equal('role' in apps[0], false); assert.equal(apps[0].status, 'pending');
   assert.equal(apps[0].userId, null); assert.equal(apps[0].reviewedBy, null); assert.ok(apps[0].consentAt instanceof Date);
   assert.equal(files.length, 1); assert.equal(files[0].size, PDF.length); assert.match(files[0].sha256, /^[0-9a-f]{64}$/);
-  assert.equal(Buffer.from(files[0].content, 'base64').equals(PDF), true);
+  assert.equal(desencriptarBuffer(files[0].data).equals(PDF), true); assert.equal(files[0].data.length, PDF.length + CABECERA_BINARIA); // ES-107: binario, sin base64
   assert.equal(JSON.stringify([apps, files]).includes('passwd'), false); // el nombre original no se guarda
   const en = await post(request, good({ email: 'other@example.test', locale: 'en' })); assert.match(en.body.message, /We received your request/);
 });
@@ -204,4 +207,66 @@ test('ES-95 retención: solo se eliminan las rechazadas con más de 180 días de
   assert.deepEqual(await purgeExpired({ now, model, dryRun: true }), { count: 2, dryRun: true });
   assert.deepEqual(calls.map(c => c[0]), ['destroy', 'count']);
   for (const [, where] of calls) { assert.equal(where.status, 'rejected'); assert.equal(Object.getOwnPropertySymbols(where.reviewedAt).length, 1); }
+});
+
+// ── ES-107 ───────────────────────────────────────────────────────────────
+const { capacityLimits, isFull } = require('../utils/professionalApplication');
+const { encriptarBuffer } = require('../utils/crypto');
+
+
+test('ES-107 cifrado de bytes: ida y vuelta idéntica, sobrecoste fijo de 29 bytes, aleatorio por envío y a prueba de alteraciones', () => {
+  for (const size of [0, 1, 17, 4096, 1024 * 1024]) {
+    const bytes = randomBytes(size); const sealed = encriptarBuffer(bytes);
+    assert.equal(sealed.length, size + CABECERA_BINARIA); assert.equal(desencriptarBuffer(sealed).equals(bytes), true);
+  }
+  const bytes = Buffer.from('%PDF-1.4 sintético'); const a = encriptarBuffer(bytes); const b = encriptarBuffer(bytes);
+  assert.equal(a.equals(b), false); // iv distinto cada vez
+  assert.equal(a.includes(bytes), false); // el contenido no queda en claro
+  for (const index of [0, 5, 20, a.length - 1]) { const bad = Buffer.from(a); bad[index] ^= 1; assert.throws(() => desencriptarBuffer(bad), { code: 'decryption_failed' }); }
+  for (const bad of [Buffer.alloc(0), Buffer.alloc(28), 'texto', null, undefined]) assert.throws(() => desencriptarBuffer(bad), { code: 'decryption_failed' });
+  assert.throws(() => encriptarBuffer('texto'), TypeError);
+});
+
+test('ES-107 tope global: valores por defecto, configuración inválida ignorada y cierre por pendientes o por peso', () => {
+  assert.deepEqual(capacityLimits({}), { maxPending: 200, maxBytes: 1024 ** 3 });
+  assert.deepEqual(capacityLimits({ PRO_APP_MAX_PENDING: '3', PRO_APP_MAX_BYTES: '20000000' }), { maxPending: 3, maxBytes: 20000000 });
+  for (const bad of ['0', '-1', 'abc', '1.5', '', '1e400']) assert.deepEqual(capacityLimits({ PRO_APP_MAX_PENDING: bad, PRO_APP_MAX_BYTES: bad }), { maxPending: 200, maxBytes: 1024 ** 3 });
+  const limits = { maxPending: 3, maxBytes: 20 * 1024 * 1024 };
+  assert.equal(isFull({ pending: 2, bytes: 0 }, limits), false); assert.equal(isFull({ pending: 3, bytes: 0 }, limits), true);
+  assert.equal(isFull({ pending: 1, bytes: 15 * 1024 * 1024 }, limits), false); assert.equal(isFull({ pending: 1, bytes: 15 * 1024 * 1024 + 1 }, limits), true);
+});
+
+test('ES-107: con el tope alcanzado el formulario responde 503 controlado sin cifras y sin guardar; un correo ya abierto sigue con su respuesta normal; al liberar cupo vuelve a recibir', async t => {
+  process.env.PRO_APP_MAX_PENDING = '2'; t.after(() => { delete process.env.PRO_APP_MAX_PENDING; });
+  const { apps, files } = install(); const request = await startApp(t);
+  assert.equal((await post(request, good({ email: 'a@example.test' }))).status, 201);
+  assert.equal((await post(request, good({ email: 'b@example.test' }))).status, 201);
+  const closed = await post(request, good({ email: 'c@example.test' }));
+  assert.equal(closed.status, 503); assert.equal(closed.body.code, 'not_accepting'); assert.match(closed.body.error, /no estamos recibiendo solicitudes/i);
+  assert.doesNotMatch(JSON.stringify(closed.body), /\d/); // sin cifras (ni tope ni uso)
+  assert.equal(apps.length, 2); assert.equal(files.length, 2);
+  assert.equal((await post(request, good({ email: 'a@example.test' }))).status, 201); // ya abierta: misma respuesta, no se entera del cierre
+  apps[0].status = 'approved'; // se libera un cupo (deja de estar pendiente)
+  assert.equal((await post(request, good({ email: 'c@example.test' }))).status, 201); assert.equal(apps.length, 3);
+});
+
+test('ES-107: el tope por peso total también cierra el formulario', async t => {
+  process.env.PRO_APP_MAX_BYTES = String(5 * 1024 * 1024 + PDF.length - 1); t.after(() => { delete process.env.PRO_APP_MAX_BYTES; });
+  const { apps } = install(); const request = await startApp(t);
+  assert.equal((await post(request, good({ email: 'a@example.test' }))).status, 201); // 0 + 5 MB cabe
+  assert.equal((await post(request, good({ email: 'b@example.test' }))).status, 503); // PDF.length + 5 MB ya no cabe
+  assert.equal(apps.length, 1);
+});
+
+test('ES-107: GET /capacity es solo del backoffice y avisa si el formulario está cerrado', async t => {
+  process.env.PRO_APP_MAX_PENDING = '1'; t.after(() => { delete process.env.PRO_APP_MAX_PENDING; });
+  install(); const request = await startApp(t);
+  const url = '/api/admin/professional-applications/capacity';
+  assert.equal((await request('GET', url)).status, 403); // sin sesión: no es público
+  for (const role of ['user', 'therapist']) assert.equal((await request('GET', url, { role, id: 5 })).status, 403);
+  const open = await request('GET', url, { role: 'admin', id: 9 });
+  assert.equal(open.status, 200); assert.equal(open.body.full, false); assert.equal(open.body.pending, 0);
+  await post(request, good({ email: 'a@example.test' }));
+  const full = await request('GET', url, { role: 'admin', id: 9 });
+  assert.equal(full.body.full, true); assert.equal(full.body.pending, 1); assert.equal(full.body.maxPending, 1);
 });

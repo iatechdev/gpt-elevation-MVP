@@ -14,13 +14,22 @@ const crypto = require('crypto');
 const { sequelize } = require('../database');
 const ProfessionalApplication = require('../ProfessionalApplication');
 const ProfessionalApplicationFile = require('../ProfessionalApplicationFile');
-const { encriptarV2, desencriptar } = require('../utils/crypto');
+const { encriptarBuffer, desencriptarBuffer } = require('../utils/crypto');
 const { normalizeText } = require('../utils/promptSafety');
 const { validateBody, nonempty, text } = require('../middlewares/validateBody');
-const { MAX_CV_BYTES, STATUSES, validateApplication, ack } = require('../utils/professionalApplication');
+const { MAX_CV_BYTES, STATUSES, validateApplication, ack, capacityLimits, isFull } = require('../utils/professionalApplication');
 
+const CLOSED = { error: 'Por ahora no estamos recibiendo solicitudes. Inténtalo más tarde. / We are not accepting requests right now. Please try again later.', code: 'not_accepting' };
 const BAD_REQUEST = { error: 'Solicitud inválida. / Invalid request.', code: 'invalid_request' };
 const NOTE_MAX = 1000;
+
+// ES-107: uso actual para el tope global (solicitudes pendientes y bytes de hojas de vida almacenadas).
+const LOCK_KEY = 1070001;
+async function usage(transaction) {
+  const pending = await ProfessionalApplication.count({ where: { status: 'pending' }, transaction });
+  const bytes = Number(await ProfessionalApplicationFile.sum('size', { transaction })) || 0;
+  return { pending, bytes };
+}
 
 // ── Público ──────────────────────────────────────────────────────────────
 const publicRouter = express.Router();
@@ -62,12 +71,15 @@ publicRouter.post('/', limiter, receive, async (req, res) => {
     if (!existing) {
       const transaction = await sequelize.transaction();
       try {
+        // ES-107: tope global. El candado serializa los envíos en Postgres para que 20 simultáneos no lo rebasen; la respuesta no revela cifras.
+        if (sequelize.getDialect() === 'postgres') await sequelize.query('SELECT pg_advisory_xact_lock(:key)', { replacements: { key: LOCK_KEY }, transaction });
+        if (isFull(await usage(transaction), capacityLimits())) { await transaction.rollback(); return res.status(503).json(CLOSED); }
         const application = await ProfessionalApplication.create({ ...values, status: 'pending', consentAt: new Date() }, { transaction });
         await ProfessionalApplicationFile.create({
           ApplicationId: application.id,
           size: req.file.buffer.length,
           sha256: crypto.createHash('sha256').update(req.file.buffer).digest('hex'),
-          content: encriptarV2(req.file.buffer.toString('base64')),
+          data: encriptarBuffer(req.file.buffer),
         }, { transaction });
         await transaction.commit();
       } catch (error) {
@@ -103,6 +115,17 @@ const view = (row, file) => ({
   cv: file ? { size: file.size } : null,
 });
 
+// Aviso del backoffice: ¿el formulario está cerrado por el tope? (ES-107). Solo admin; nunca en la ruta pública.
+adminRouter.get('/capacity', async (req, res) => {
+  try {
+    const limits = capacityLimits(); const used = await usage();
+    res.json({ full: isFull(used, limits), pending: used.pending, maxPending: limits.maxPending, bytes: used.bytes, maxBytes: limits.maxBytes });
+  } catch {
+    console.error('Error leyendo el uso de solicitudes de profesionales.');
+    res.status(500).json({ error: 'No se pudo leer el uso.', code: 'internal_error' });
+  }
+});
+
 adminRouter.get('/', async (req, res) => {
   const status = req.query.status;
   if (status !== undefined && !STATUSES.includes(status)) return res.status(400).json(BAD_REQUEST);
@@ -122,7 +145,7 @@ adminRouter.get('/:id/cv', withId, async (req, res) => {
   try {
     const file = await ProfessionalApplicationFile.findOne({ where: { ApplicationId: req.applicationId } });
     if (!file) return res.status(404).json({ error: 'Hoja de vida no encontrada.', code: 'not_found' });
-    const pdf = Buffer.from(desencriptar(file.content), 'base64');
+    const pdf = desencriptarBuffer(file.data);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="solicitud-${req.applicationId}-hoja-de-vida.pdf"`,

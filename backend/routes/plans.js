@@ -6,11 +6,14 @@ const router      = express.Router();
 const PricingPlan = require('../PricingPlan');
 const User        = require('../User');
 const { getLimits } = require('../utils/planLimits');
+const { verificarToken } = require('../middlewares/auth');
+const publicPricingCopy = require('../content/publicPricingCopy');
 
 // ==========================================
 // GET /api/plans — Lista pública de planes
 // ==========================================
 router.get('/', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
   try {
     const plans = await PricingPlan.findAll({
       where: { isActive: true },
@@ -23,9 +26,9 @@ router.get('/', async (req, res) => {
         'isHighlighted', 'order',
       ],
     });
-    res.json(plans);
+    res.json(plans.map(publicPricingCopy));
   } catch (error) {
-    console.error('❌ Error listando planes:', error);
+    console.error('No se pudieron leer los planes.');
     res.status(500).json({ error: 'Could not fetch plans.' });
   }
 });
@@ -34,7 +37,10 @@ router.get('/', async (req, res) => {
 // GET /api/user/plan — Plan del usuario autenticado
 // Requiere verificarToken (montado en server.js)
 // ==========================================
-router.get('/me', async (req, res) => {
+router.get('/me', verificarToken, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.vary('Authorization');
+  if (Object.keys(req.query).length) return res.status(400).json({ code: 'invalid_input' });
   try {
     const user = await User.findByPk(req.user.id, {
       include: [{ model: PricingPlan, as: 'plan' }],
@@ -63,7 +69,7 @@ router.get('/me', async (req, res) => {
       limits,
     });
   } catch (error) {
-    console.error('❌ Error obteniendo plan del usuario:', error);
+    console.error('No se pudo leer el plan propio.');
     res.status(500).json({ error: 'Could not fetch user plan.' });
   }
 });

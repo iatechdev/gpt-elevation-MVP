@@ -19,6 +19,7 @@ const AiUsage = sequelize.define('AiUsage', {
   priceVersion: { type: DataTypes.STRING(32), allowNull: true },
   latencyMs: { type: DataTypes.INTEGER, allowNull: true },
   errorCode: { type: DataTypes.STRING(32), allowNull: true },
+  stopReason: { type: DataTypes.STRING(24), allowNull: true },  // motivo de cierre del proveedor (end_turn | max_tokens ...); ES43-QA-01
 }, {
   indexes: [{ fields: ['periodKey'] }, { fields: ['UserId', 'periodKey'] }],
 });

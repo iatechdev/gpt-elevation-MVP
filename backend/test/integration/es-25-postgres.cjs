@@ -33,7 +33,7 @@ test('ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
 
-  for (const name of ['Consent', 'ConsentEvent', 'DiaryEntry', 'ChatTurn', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'DeletionRequest', 'Evidence', 'EvidenceVersion']) require('../../' + name);
+  for (const name of ['Consent', 'ConsentEvent', 'DiaryEntry', 'ChatTurn', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'DeletionRequest', 'Evidence', 'EvidenceVersion', 'PricingPlan', 'User', 'AiJob', 'SkillCandidate']) require('../../' + name); // ES-88: el gancho de revocación invalida jobs y candidatas (AiJobs referencia Users)
   await sequelize.sync();
   const bridge = require('../../utils/careerContext');
   const consent = require('../../utils/consent');

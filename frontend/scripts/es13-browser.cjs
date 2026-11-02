@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
   const preview = process.env.ES13_PREVIEW_URL || 'http://127.0.0.1:4314';
   for (const url of [release, preview]) assert.ok(['127.0.0.1', 'localhost'].includes(new URL(url).hostname));
   const check = label => console.log('PASS ' + label);
-  const composer = { es: 'Mensaje (hasta 4.000 caracteres)', en: 'Message (up to 4,000 characters)' };
+  const composer = { es: 'Mensaje', en: 'Message' };
   async function create(lang = 'es', viewport = { width: 1280, height: 900 }) {
     const page = await browser.newPage({ viewport }); const posts = []; const errors = []; const stored = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -29,7 +29,7 @@ const assert = require('node:assert/strict');
     { // Con bandera: menú, banda, modo en la solicitud, salir sin enviar
       const { page, posts, errors } = await create('es');
       await page.goto(preview + '/app/chat');
-      await page.getByLabel(composer.es).waitFor();
+      await page.getByLabel(composer.es, { exact: true }).waitFor();
       assert.equal(await page.getByRole('link', { name: 'Brújula profesional', exact: true }).count(), 1);
       await page.getByRole('link', { name: 'Brújula profesional', exact: true }).click(); await page.waitForURL('**/app/chat?mode=compass');
       await heading(page, 'Brújula profesional').waitFor();
@@ -41,7 +41,7 @@ const assert = require('node:assert/strict');
       assert.equal(await heading(page, 'Brújula profesional').count(), 0); assert.equal(posts.length, 0);
       check('«Ahora no» vuelve al chat normal sin enviar nada');
       await page.goto(preview + '/app/chat?mode=compass'); await heading(page, 'Brújula profesional').waitFor();
-      await page.getByLabel(composer.es).fill('Quiero explorar otra profesión'); page.once('dialog', d => d.dismiss());
+      await page.getByLabel(composer.es, { exact: true }).fill('Quiero explorar otra profesión'); page.once('dialog', d => d.dismiss());
       await page.getByRole('button', { name: 'Cerrar sin presión', exact: true }).click();
       assert.ok(page.url().includes('mode=compass'), 'con texto sin enviar pide confirmar y, al descartar, se queda'); assert.equal(posts.length, 0);
       check('con texto sin enviar, salir pide confirmación y no envía');
@@ -51,7 +51,7 @@ const assert = require('node:assert/strict');
       assert.equal(await page.getByRole('button', { name: 'Cerrar sin presión', exact: true }).count(), 1);
       check('el mensaje viaja con mode=compass; tras enviar solo queda «Cerrar sin presión»');
       await page.getByRole('button', { name: 'Cerrar sin presión', exact: true }).click(); await page.waitForURL('**/app/chat'); assert.equal(posts.length, 1);
-      await page.getByLabel(composer.es).fill('Otra cosa'); await page.getByRole('button', { name: 'Enviar', exact: true }).click();
+      await page.getByLabel(composer.es, { exact: true }).fill('Otra cosa'); await page.getByRole('button', { name: 'Enviar', exact: true }).click();
       await page.waitForFunction(() => document.body.innerText.includes('Otra cosa'));
       assert.equal(posts.length, 2); assert.equal('mode' in posts[1], false);
       check('cerrar vuelve al chat normal: la siguiente solicitud ya no lleva mode');
@@ -70,10 +70,10 @@ const assert = require('node:assert/strict');
     }
     { // Sin bandera: nada cambia
       const { page, posts, errors } = await create('es');
-      await page.goto(release + '/app/chat?mode=compass'); await page.getByLabel(composer.es).waitFor();
+      await page.goto(release + '/app/chat?mode=compass'); await page.getByLabel(composer.es, { exact: true }).waitFor();
       assert.equal(await page.getByRole('link', { name: 'Brújula profesional', exact: true }).count(), 0);
       assert.equal(await heading(page, 'Brújula profesional').count(), 0);
-      await page.getByLabel(composer.es).fill('Hola'); await page.getByRole('button', { name: 'Enviar', exact: true }).click(); await page.getByText('Respuesta sintética.').waitFor();
+      await page.getByLabel(composer.es, { exact: true }).fill('Hola'); await page.getByRole('button', { name: 'Enviar', exact: true }).click(); await page.getByText('Respuesta sintética.').waitFor();
       assert.equal(posts.length, 1); assert.equal('mode' in posts[0], false);
       check('sin bandera: ni enlace ni banda, y ?mode=compass no cambia la solicitud'); assert.deepEqual(errors, []); await page.close();
     }

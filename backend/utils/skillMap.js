@@ -12,6 +12,7 @@ const { encriptarV2, desencriptar } = require('./crypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
 const { getConfirmedEvidence } = require('./evidence');
 const skillCatalog = require('./skillCatalog');
+const CareerContextVersion = require('../CareerContextVersion');
 
 const CONFIDENCE_RULE_VERSION = 1;
 const AUTONOMY_LEVEL = Object.freeze({ conceptual: 1, assisted: 2, autonomous: 3, leads: 4 });
@@ -145,13 +146,20 @@ async function selfAssess(userId, body) {
 }
 
 // El mapa: una entrada por habilidad del catálogo vigente. Sin evidencia vigente el nivel es null. Sin agregados ni porcentajes.
+// ES-121: claves de habilidad de los insights AUTORIZADOS y vigentes (versión activa del puente). Metadato privado de la persona: no es nivel ni evidencia.
+async function skillsInConversation(userId) {
+  const row = await CareerContextVersion.findOne({ where: { UserId: userId, status: 'active' }, attributes: ['id', 'origins'] });
+  return new Set(((row && row.origins) || []).map((o) => o.skillKey).filter(Boolean));
+}
+
 async function getMap(userId) {
   const catalog = await requireCatalog();
   const confirmed = new Map((await getConfirmedEvidence(userId, 'skill-map')).map((e) => [e.evidenceId, e]));
   const rows = await SkillAssessment.findAll({ where: { UserId: userId, status: 'current' } });
+  const conversation = await skillsInConversation(userId);
   const skills = [];
   for (const skill of catalog.skills.values()) {
-    const entry = { skillKey: skill.skillKey, type: skill.type, labels: skill.labels, rubric: { levels: skill.rubric.levels, source: skill.rubric.source, verifiedAt: skill.rubric.verifiedAt }, self: null, review: null };
+    const entry = { skillKey: skill.skillKey, type: skill.type, labels: skill.labels, territories: skill.territories ?? [], rubric: { levels: skill.rubric.levels, source: skill.rubric.source, verifiedAt: skill.rubric.verifiedAt }, self: null, review: null };
     for (const track of ['self', 'review']) {
       const row = rows.find((r) => r.skillKey === skill.skillKey && r.track === track);
       if (!row) continue;
@@ -164,6 +172,7 @@ async function getMap(userId) {
       };
     }
     entry.state = entry.self || entry.review ? (entry.review || entry.self).state : 'no_evidence';
+    entry.inConversation = conversation.has(skill.skillKey) && !['self', 'review'].some((track) => entry[track] && entry[track].level !== null);
     skills.push(entry);
   }
   // Los eventos de invalidación de evidencia ya están reflejados en este cálculo: se marcan como procesados.

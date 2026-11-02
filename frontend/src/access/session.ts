@@ -1,3 +1,4 @@
+import { clearPending } from '../space/pending.ts'
 export type SessionInfo = { role: 'user' | 'admin' | 'superadmin' | 'therapist' | 'board'; onboardingCompleted: boolean }
 export type SessionResult = { status: 'verified'; session: SessionInfo; preferredLanguage?: 'es' | 'en' } | { status: 'invalid' | 'unavailable' }
 const roles = ['user', 'admin', 'superadmin', 'therapist', 'board']
@@ -33,6 +34,7 @@ export const readStoredToken = () => { try { return localStorage.getItem('elevat
 export function invalidateStoredSession(expected: string) {
   // A delayed 401 must never erase a newer login performed in this or another tab.
   if (readStoredToken() !== expected) return
+  clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive a una sesión invalidada
   try { for (const key of ['elevation_token', 'elevation_role', 'elevation_name']) localStorage.removeItem(key) } catch { /* unavailable storage */ }
   window.dispatchEvent(new Event('elevation-session-change'))
 }
@@ -59,6 +61,7 @@ export async function readVerifiedSession({ baseUrl = '', token, signal, timeout
 }
 
 export function authFailureKey(status: number, data: { error?: string; locked?: boolean; deactivated?: boolean; code?: string }, registering: boolean): string {
+  if (registering && data.code === 'password_policy') return 'landing.access.password_policy'
   if (data.locked === true || status === 423) return 'landing.access.locked'
   if (status === 429) return 'landing.access.rate_limit'
   if (data.code === 'deletion_pending') return 'landing.access.deletion_pending'

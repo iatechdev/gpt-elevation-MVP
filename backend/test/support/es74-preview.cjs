@@ -51,6 +51,7 @@ const path = require('node:path');
   await require('../../ParticipantContext').create({ UserId: actors.get('user-done').id, version: 1, completedAt: new Date(), content: encriptarV2(JSON.stringify({
     preferredLanguage: 'es', residenceCountry: null, targetMarket: null, timeZone: null, profession: null,
     interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null,
+    sector: null, totalYearsExperience: null, experience: [], education: [], declaredSkills: [], languages: [], // ES-109: esquema v2
   })) });
   const wrapper = express();
   // Bootstrap a pre-existing synthetic session for the "with session" journeys, without exposing token values in logs.

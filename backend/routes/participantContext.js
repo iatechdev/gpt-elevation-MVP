@@ -4,12 +4,12 @@ const ParticipantContext = require('../ParticipantContext');
 const DerivedInvalidation = require('../DerivedInvalidation');
 const { sequelize } = require('../database');
 const { encriptarV2, desencriptar } = require('../utils/crypto');
-const { validateContextRequest } = require('../utils/participantContext');
+const { SCHEMA_VERSION, upgradeContext, validateContextRequest } = require('../utils/participantContext');
 
 const present = row => row ? {
-  schemaVersion: 1, version: row.version, context: JSON.parse(desencriptar(row.content)),
+  schemaVersion: SCHEMA_VERSION, version: row.version, context: upgradeContext(JSON.parse(desencriptar(row.content))), // ES-109: un contexto v1 sale como v2 con lo nuevo vacío
   savedAt: row.updatedAt, completedAt: row.completedAt,
-} : { schemaVersion: 1, version: 0, context: null, savedAt: null, completedAt: null };
+} : { schemaVersion: SCHEMA_VERSION, version: 0, context: null, savedAt: null, completedAt: null };
 
 // verificarToken is mounted in server.js. The current owner is checked again inside
 // the transaction; a stale JWT cannot grant an inactive user or changed role access.
@@ -62,7 +62,7 @@ async function ownContext(req, res, write) {
 router.get('/', (req, res) => ownContext(req, res, false));
 router.put('/', (req, res) => {
   const result = validateContextRequest(req.body);
-  if (result.error) return res.status(400).json(result);
+  if (result.error) return res.status(400).json(result); // incluye { error: 'schema_outdated' } para una pestaña abierta con el esquema v1
   req.validContext = result.context;
   return ownContext(req, res, true);
 });

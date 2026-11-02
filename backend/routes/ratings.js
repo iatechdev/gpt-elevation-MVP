@@ -7,6 +7,7 @@ const express       = require('express');
 const router        = express.Router();
 const SessionRating = require('../SessionRating');
 const { validateBody, score } = require('../middlewares/validateBody');
+const { verificarAdmin } = require('../middlewares/auth');
 
 // POST /api/rating
 router.post('/rating', validateBody({ rating: score }), async (req, res) => {
@@ -23,8 +24,8 @@ router.post('/rating', validateBody({ rating: score }), async (req, res) => {
   }
 });
 
-// GET /api/rating/avg — solo admin
-router.get('/rating/avg', async (req, res) => {
+// GET /api/rating/avg — solo admin (ES-98, ES93-B3: antes lo decía el comentario pero lo podía llamar cualquier participante)
+router.get('/rating/avg', verificarAdmin, async (req, res) => {
   try {
     const ratings = await SessionRating.findAll({ attributes: ['rating'] });
     if (ratings.length === 0) return res.json({ avg: 0, total: 0 });

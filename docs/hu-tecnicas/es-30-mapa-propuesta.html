@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ES-30 — Propuesta de diseño v2: Mapa de Competencias (según Figma)</title>
+<style>/* ES-37 — Tokens del sistema de diseño Elevation + Skill Map (fuente única).
+   Tres capas: primitivos (--elv-p-*) → semánticos (--elv-*) → tema daisyUI (ver bloque final).
+   Los pares texto/fondo están medidos contra WCAG 2.1 AA (≥4,5:1 texto, ≥3:1 controles y bordes de control);
+   la tabla vive en docs/hu-tecnicas/DESIGN-SYSTEM.md. Esta hoja aún NO está importada por la app. */
+
+:root {
+  /* 1. Primitivos ─────────────────────────────────────────── */
+  --elv-p-bg: #f9f9f7;
+  --elv-p-surface: #faf8f4;
+  --elv-p-card: #ffffff;
+  --elv-p-muted-bg: #f5f3ef;
+  --elv-p-line: #e7e5e4;
+  --elv-p-line-md: #d6d2c4;
+  --elv-p-control-line: #7c8875;
+  --elv-p-olive: #6b7d5c;       /* marca: decorativo, bordes de selección (no apto para texto sobre blanco) */
+  --elv-p-olive-action: #4a6741;
+  --elv-p-olive-bg: #eaf0e6;
+  --elv-p-sage: #a8b5a2;
+  --elv-p-ink-1: #1c1917;
+  --elv-p-ink-2: #57534e;
+  --elv-p-ink-3: #6b6560;
+  --elv-p-teal: #065f46;
+  --elv-p-teal-bg: #f0fdfa;
+
+  /* 2. Semánticos (claro) ─────────────────────────────────── */
+  --elv-bg: var(--elv-p-bg);
+  --elv-surface: var(--elv-p-surface);
+  --elv-card: var(--elv-p-card);
+  --elv-muted-bg: var(--elv-p-muted-bg);
+  --elv-text-1: var(--elv-p-ink-1);
+  --elv-text-2: var(--elv-p-ink-2);
+  --elv-text-3: var(--elv-p-ink-3);     /* sustituye al #A8A29E anterior (2,39:1, no cumplía AA) */
+  --elv-line: var(--elv-p-line);        /* divisores decorativos */
+  --elv-line-control: var(--elv-p-control-line); /* borde de inputs y botones secundarios (≥3:1) */
+  --elv-action: var(--elv-p-olive-action);
+  --elv-action-text: #ffffff;
+  --elv-action-soft: var(--elv-p-olive-bg);
+  --elv-brand: var(--elv-p-olive);
+  --elv-link: var(--elv-p-olive-action);
+  --elv-focus: #2f6b8f;
+  --elv-ai: var(--elv-p-teal);          /* voz de la IA */
+  --elv-ai-bg: var(--elv-p-teal-bg);
+  --elv-success: #065f46;   --elv-success-bg: #f0fdfa;
+  --elv-warning: #92400e;   --elv-warning-bg: #fef3c7;
+  --elv-error: #9b1c1c;     --elv-error-bg: #fee2e2;
+  --elv-info: #075985;      --elv-info-bg: #e0f2fe;
+
+  /* Espacio (base 4 px) */
+  --elv-s-1: 0.25rem; --elv-s-2: 0.5rem; --elv-s-3: 0.75rem; --elv-s-4: 1rem;
+  --elv-s-6: 1.5rem;  --elv-s-8: 2rem;   --elv-s-12: 3rem;   --elv-s-16: 4rem;
+  /* Radios */
+  --elv-r-sm: 0.5rem; --elv-r-md: 0.75rem; --elv-r-lg: 1rem; --elv-r-xl: 1.25rem; --elv-r-pill: 999px;
+  /* Sombras: sutiles */
+  --elv-shadow-card: 0 2px 12px rgb(26 28 27 / 0.06);
+  --elv-shadow-modal: 0 8px 40px rgb(26 28 27 / 0.12);
+  /* Tipografía */
+  --elv-font-body: 'Inter', system-ui, sans-serif;
+  --elv-font-display: 'Playfair Display', Georgia, serif;   /* solo títulos, peso 300–400 */
+  --elv-font-voice: 'Noto Serif', Georgia, serif;           /* voz de la IA, cursiva */
+  --elv-fs-xs: 0.75rem; --elv-fs-sm: 0.8125rem; --elv-fs-md: 0.875rem;
+  --elv-fs-base: 1rem;  --elv-fs-lg: 1.125rem;  --elv-fs-xl: 1.375rem;
+  --elv-fs-hero: clamp(1.75rem, 4vw + 1rem, 3rem);
+  /* Objetivo táctil mínimo */
+  --elv-touch: 2.75rem;
+}
+
+/* Modo oscuro: mismos nombres semánticos, activado con la clase .elv-dark (la pone el dominio que ya lo soportaba:
+   Career y Facilitation, según prefers-color-scheme). No se activa en pantallas que hoy no lo tienen. */
+.elv-dark {
+    color-scheme: dark;
+    --elv-bg: #181c17;  --elv-surface: #242b22;  --elv-card: #242b22;  --elv-muted-bg: #1e241d;
+    --elv-text-1: #f5f6f1;  --elv-text-2: #c4cabf;  --elv-text-3: #b3baad;
+    --elv-line: #3a4337;  --elv-line-control: #899582;
+    --elv-action: #c1d5b5;  --elv-action-text: #182115;  --elv-action-soft: #2b3628;
+    --elv-link: #c1d5b5;  --elv-focus: #9fd0ea;
+    --elv-ai: #a9d6b0;  --elv-ai-bg: #1e2b24;
+    --elv-success: #a9d6b0;  --elv-success-bg: #1e2b24;
+    --elv-warning: #f4d9a8;  --elv-warning-bg: #33291a;
+    --elv-error: #ffb5b5;    --elv-error-bg: #3a2222;
+    --elv-info: #9fd0ea;     --elv-info-bg: #1c2b36;
+}
+
+/* Foco visible único para todo control */
+.elv-focusable:focus-visible,
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--elv-focus);
+  outline-offset: 2px;
+}
+
+/* 3. Tema daisyUI único: mapea los semánticos a las variables de daisyUI. Los CSS de dominio ya no
+   definen colores propios; conservan solo su layout. */
+.elv-theme, .skill-map-scope, .career-scope, .compass-scope {
+  --color-base-100: var(--elv-card);      --color-base-200: var(--elv-bg);
+  --color-base-300: var(--elv-line-control);  --color-base-content: var(--elv-text-1);
+  --color-primary: var(--elv-action);     --color-primary-content: var(--elv-action-text);
+  --color-secondary: var(--elv-text-2);   --color-secondary-content: var(--elv-bg);
+  --color-accent: var(--elv-ai);          --color-accent-content: var(--elv-bg);
+  --color-neutral: var(--elv-text-1);     --color-neutral-content: var(--elv-bg);
+  --color-info: var(--elv-info);          --color-info-content: var(--elv-bg);
+  --color-success: var(--elv-success);    --color-success-content: var(--elv-bg);
+  --color-warning: var(--elv-warning);    --color-warning-content: var(--elv-bg);
+  --color-error: var(--elv-error);        --color-error-content: var(--elv-bg);
+  --radius-selector: var(--elv-r-sm); --radius-field: var(--elv-r-md); --radius-box: var(--elv-r-lg);
+  --size-selector: 0.25rem; --size-field: 0.25rem; --border: 1px; --depth: 0; --noise: 0;
+}
+</style>
+<style>
+  /* MAQUETA con DATOS DE EJEMPLO. Sigue la pantalla «Mapa de Competencias» del prototipo Figma, con correcciones de accesibilidad marcadas en la nota. */
+  :root{--elv-conv:#9a3b2c;--elv-conv-bg:#f6e4df;--tone-dir:#dde0d3;--tone-con:#ece0d8;--tone-com:#e6e1d2;--tone-ing:#e4dccf;--tone-inn:#d8ded3;--eyebrow:var(--elv-text-2)}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f1ec;color:var(--elv-text-1);font:400 var(--elv-fs-base)/1.6 var(--elv-font-body)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:var(--elv-s-4);padding:0 var(--elv-s-6);min-height:58px;border-bottom:1px solid var(--elv-line);background:#f4f1ec;flex-wrap:wrap}
+  .logo{font:400 15px var(--elv-font-display);letter-spacing:.3em}
+  nav{display:flex;gap:var(--elv-s-6)}
+  nav a{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--elv-text-2);text-decoration:none;min-height:var(--elv-touch);display:inline-flex;align-items:center}
+  nav a[aria-current=page]{color:var(--elv-conv);font-weight:600}
+  .lang{min-height:var(--elv-touch);padding:0 var(--elv-s-3);background:none;border:0;font:500 12px var(--elv-font-body);letter-spacing:.15em;color:var(--elv-text-2);cursor:pointer}
+  header.page{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--elv-s-4);flex-wrap:wrap;padding:var(--elv-s-8) var(--elv-s-6) var(--elv-s-6);max-width:1240px;margin:0 auto}
+  .eyebrow{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--eyebrow);margin:0}
+  h1{font:400 clamp(1.9rem,4vw,2.6rem) var(--elv-font-display);margin:var(--elv-s-2) 0}
+  .sub{color:var(--elv-text-2);margin:0;max-width:60ch}
+  .tools{display:flex;gap:var(--elv-s-4);align-items:center;flex-wrap:wrap}
+  .legend{display:flex;gap:var(--elv-s-4);font-size:var(--elv-fs-sm);color:var(--elv-text-2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .btn{min-height:var(--elv-touch);padding:0 var(--elv-s-4);background:transparent;border:1px solid var(--elv-line-control);border-radius:var(--elv-r-sm);color:var(--elv-text-1);font:500 11px var(--elv-font-body);letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .note{max-width:1240px;margin:0 auto var(--elv-s-4);padding:0 var(--elv-s-6)}
+  .note div{background:var(--elv-warning-bg);color:var(--elv-warning);padding:var(--elv-s-3) var(--elv-s-4);border-radius:var(--elv-r-md);font-size:var(--elv-fs-md)}
+  .stage{max-width:1240px;margin:0 auto var(--elv-s-6);padding:0 var(--elv-s-6)}
+  .canvas{background:#eeebe4;background-image:radial-gradient(#cfcabd 1px,transparent 1px);background-size:24px 24px;border:1px solid var(--elv-line);border-radius:var(--elv-r-sm);padding:var(--elv-s-4)}
+  svg{width:100%;height:auto;display:block}
+  .terr rect{stroke-width:1.2}
+  .terr text.n{font:500 14px var(--elv-font-body);letter-spacing:.14em;fill:var(--elv-text-1);text-transform:uppercase}
+  .terr text.r{font:400 11px var(--elv-font-body);fill:var(--elv-text-2)}
+  .chip{cursor:pointer}
+  .chip rect.b{fill:var(--elv-card);stroke:var(--elv-line-control);stroke-width:1.2}
+  .chip:focus-visible rect.b,.chip.on rect.b{stroke:var(--elv-focus);stroke-width:3}
+  .chip:focus-visible{outline:none}
+  .chip text{font:500 13px var(--elv-font-body);fill:var(--elv-text-1)}
+  .chip text.st{font:600 10px var(--elv-font-body);letter-spacing:.06em;text-transform:uppercase}
+  .list{display:none;padding:0 var(--elv-s-6) var(--elv-s-4);max-width:1240px;margin:0 auto}
+  .as-list .canvasWrap{display:none}.as-list .list{display:block}
+  @media(max-width:760px){.canvasWrap,.tview{display:none}.list{display:block}nav{display:none}}
+  .terrL{margin:var(--elv-s-4) 0;background:var(--elv-card);border:1px solid var(--elv-line);border-radius:var(--elv-r-lg);padding:var(--elv-s-4)}
+  .terrL h2{margin:0;font:500 13px var(--elv-font-body);letter-spacing:.14em;text-transform:uppercase}
+  .terrL p{margin:2px 0 var(--elv-s-2);font-size:var(--elv-fs-sm);color:var(--elv-text-2)}
+  .row{display:flex;gap:var(--elv-s-3);align-items:center;min-height:var(--elv-touch);border-top:1px solid var(--elv-line)}
+  .row button.pick{flex:1;text-align:left;background:none;border:0;font:inherit;color:inherit;cursor:pointer;min-height:var(--elv-touch)}
+  .badge{display:inline-flex;align-items:center;gap:6px;min-height:1.5rem;padding:0 var(--elv-s-3);border-radius:var(--elv-r-pill);font-size:var(--elv-fs-xs);font-weight:600;border:1px solid}
+  .b-ev{background:var(--elv-action-soft);color:var(--elv-action);border-color:var(--elv-action)}
+  .b-conv{background:var(--elv-conv-bg);color:var(--elv-conv);border:1px dashed var(--elv-conv)}
+  .detail{max-width:1240px;margin:0 auto var(--elv-s-12);padding:0 var(--elv-s-6)}
+  .detail .card{background:var(--elv-card);border:1px solid var(--elv-line);border-radius:var(--elv-r-lg);box-shadow:var(--elv-shadow-card);padding:var(--elv-s-4) var(--elv-s-6)}
+  .detail h2{font:400 var(--elv-fs-xl) var(--elv-font-display);margin:0 0 var(--elv-s-2)}
+  dl{margin:var(--elv-s-3) 0;display:grid;grid-template-columns:max-content 1fr;gap:4px var(--elv-s-4)}dt{font-weight:600;font-size:var(--elv-fs-md)}dd{margin:0;color:var(--elv-text-2)}
+  details{border-top:1px solid var(--elv-line);margin-top:var(--elv-s-3)}summary{min-height:var(--elv-touch);cursor:pointer;display:flex;align-items:center}
+  .switch{display:inline-flex;align-items:center;gap:var(--elv-s-3);min-height:var(--elv-touch)}
+  .switch button{width:44px;height:26px;border-radius:var(--elv-r-pill);border:1px solid var(--elv-line-control);background:var(--elv-card);position:relative;cursor:pointer;padding:0}
+  .switch button::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--elv-line-control);transition:transform .2s}
+  .switch button[aria-checked=true]{background:var(--elv-action);border-color:var(--elv-action)}
+  .switch button[aria-checked=true]::after{transform:translateX(18px);background:var(--elv-action-text)}
+  .ok{color:var(--elv-text-2);font-size:var(--elv-fs-sm)}
+  @media (prefers-reduced-motion:reduce){.switch button::after{transition:none}}
+</style>
+</head>
+<body>
+<div id="root">
+<div class="top"><span class="logo">ELEVATION</span>
+  <nav aria-label="Principal"><a href="#" data-i="n1">Mi espacio</a><a href="#" data-i="n2">El puente</a><a href="#" aria-current="page" data-i="n3">Mapa</a></nav>
+  <button class="lang" id="tLang" type="button" aria-label="Cambiar idioma / Change language">EN</button></div>
+<div class="note" style="padding-top:var(--elv-s-4)"><div data-i="sample"></div></div>
+<header class="page"><div><p class="eyebrow" data-i="eyebrow">Zona profesional</p><h1 data-i="title">Mapa de competencias</h1><p class="sub" data-i="lead"></p></div>
+  <div class="tools"><div class="legend" role="group" aria-label="Leyenda"><span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="var(--elv-conv)"/></svg><span data-i="lgConv">En conversación</span></span><span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="var(--elv-action)"/></svg><span data-i="lgEv">Con evidencia</span></span></div>
+  <button class="btn tview" id="tView" type="button" aria-pressed="false" data-i="asList">Ver como lista</button>
+  <button class="btn" id="revokeAll" type="button" data-i="revoke">Revocar todos</button></div></header>
+<div class="stage canvasWrap"><div class="canvas"><svg id="svg" viewBox="0 0 1120 600" role="group" aria-label="Mapa de territorios y competencias"></svg></div></div>
+<div class="list" id="list"></div>
+<section class="detail" id="detail" aria-live="polite"></section>
+</div>
+<script>
+const T=[
+ {id:'dir',es:'Dirección & Liderazgo',en:'Leadership & Management',r:'Director General · COO · Head of',x:40,y:50,w:320,h:170,tone:'--tone-dir'},
+ {id:'con',es:'Consultoría Estratégica',en:'Strategy Consulting',r:'Strategy Consultant · Change Manager',x:770,y:40,w:300,h:180,tone:'--tone-con'},
+ {id:'com',es:'Comunicación Ejecutiva',en:'Executive Communication',r:'Chief of Staff · PR Director · Portavoz',x:40,y:400,w:300,h:160,tone:'--tone-com'},
+ {id:'ing',es:'Ingeniería & Sistemas',en:'Engineering & Systems',r:'Solutions Architect · Tech Lead · CTO',x:420,y:390,w:320,h:170,tone:'--tone-ing'},
+ {id:'inn',es:'Innovación & Producto',en:'Innovation & Product',r:'Product Manager · CPO · Innovation Lead',x:790,y:400,w:290,h:160,tone:'--tone-inn'}];
+// DATOS DE EJEMPLO. Una competencia puede unirse a varios territorios (como en el Figma). cx,cy = centro del recuadro.
+const S=[
+ {k:'lc',es:'Liderazgo en Crisis',en:'Crisis Leadership',links:['dir','con'],evidence:false,cx:560,cy:120},
+ {k:'ce',es:'Comunicación Ejecutiva',en:'Executive Communication',links:['dir','com'],evidence:false,cx:215,cy:310},
+ {k:'ap',es:'Análisis de Problemas',en:'Problem Analysis',links:['con','ing'],evidence:true,level:2,ev:1,conf:'Baja',cx:700,cy:300},
+ {k:'ds',es:'Diseño de Sistemas',en:'Systems Design',links:['ing','inn'],evidence:true,level:3,ev:2,conf:'Media',cx:930,cy:320}];
+const I={es:{sample:'MAQUETA v2 con datos de ejemplo, basada en la pantalla «Mapa de Competencias» del Figma. Cambios propuestos respecto al Figma: recuadros sin solaparse; el estado se distingue también por forma y texto (no solo por color); subtítulos con contraste AA; detalle y permiso por competencia en un panel.',eyebrow:'Zona profesional',title:'Mapa de competencias',lead:'Territorios laborales donde tus competencias tienen impacto. Solo lo autorizado cruza.',n1:'Mi espacio',n2:'El puente',n3:'Mapa',lgConv:'En conversación',lgEv:'Con evidencia',asList:'Ver como lista',asMap:'Ver como mapa',revoke:'Revocar todos',stConv:'En conversación',stEv:'Con evidencia',pick:'Elige una competencia del mapa para ver su detalle. Territorios, no etiquetas: el nivel no certifica, muestra qué evidencia hay hoy.',level:'Nivel',noLevel:'Sin nivel: todavía no hay evidencia vigente',ev:'Evidencias referenciadas',conf:'Confianza del respaldo',terr:'Territorios',next:'Siguiente paso',nextEv:'Consulta los criterios y reúne nuevas evidencias si quieres revisar tu nivel.',nextConv:'Hablaste de esto, pero aún no hay evidencia. Sube una evidencia para obtener un primer nivel.',rub:'Ver criterios del catálogo vigente',auth:'Autorizar para el recorrido profesional',on:'Autorizada: cruza al puente profesional.',off:'No autorizada: no cruza.',revoked:'Se revocó la autorización de todas.'},
+ en:{sample:'MOCKUP v2 with example data, based on the Figma “Skills Map” screen. Proposed changes to the Figma: non-overlapping boxes; status also shown by shape and text (not color alone); AA-contrast subtitles; detail and per-skill permission in a panel.',eyebrow:'Professional zone',title:'Skills map',lead:'Work territories where your skills have impact. Only what you authorize crosses.',n1:'My space',n2:'The bridge',n3:'Map',lgConv:'In conversation',lgEv:'With evidence',asList:'View as list',asMap:'View as map',revoke:'Revoke all',stConv:'In conversation',stEv:'With evidence',pick:'Choose a skill on the map to see its detail. Territories, not labels: a level does not certify, it shows what evidence exists today.',level:'Level',noLevel:'No level: there is no current evidence yet',ev:'Referenced evidence',conf:'Confidence in supporting evidence',terr:'Territories',next:'Next step',nextEv:'Read the criteria and gather further evidence if you wish to revisit your level.',nextConv:'You talked about this, but there is no evidence yet. Upload evidence to get a first level.',rub:'View current catalog criteria',auth:'Authorize for the career path',on:'Authorized: crosses to the professional bridge.',off:'Not authorized: does not cross.',revoked:'All authorizations were revoked.'}};
+let L='es',sel=null,msg='',auth=new Set(['ap']);
+const $=s=>document.querySelector(s),t=k=>I[L][k],nm=o=>o[L];
+const tById=id=>T.find(x=>x.id===id);
+function badge(s){return s.evidence?`<span class="badge b-ev">● ${t('stEv')}${s.level?` · ${t('level')} ${s.level}`:''}</span>`:`<span class="badge b-conv">◌ ${t('stConv')}</span>`}
+function drawMap(){let h='<g class="terr">';
+  T.forEach(x=>{h+=`<rect x="${x.x}" y="${x.y}" width="${x.w}" height="${x.h}" rx="34" fill="var(${x.tone})" stroke="var(--elv-line-control)"/><text class="n" x="${x.x+x.w/2}" y="${x.y+x.h/2-4}" text-anchor="middle">${nm(x)}</text><text class="r" x="${x.x+x.w/2}" y="${x.y+x.h/2+18}" text-anchor="middle">${x.r}</text>`});h+='</g>';
+  const edge=(x,s)=>{const cx=x.x+x.w/2,cy=x.y+x.h/2,dx=s.cx-cx,dy=s.cy-cy,k=1/Math.max(Math.abs(dx)/(x.w/2),Math.abs(dy)/(x.h/2));return[cx+dx*k,cy+dy*k]};
+  S.forEach(s=>s.links.forEach(id=>{const x=tById(id),[ex,ey]=edge(x,s);h+=`<line x1="${s.cx}" y1="${s.cy}" x2="${ex}" y2="${ey}" stroke="${s.evidence?'var(--elv-action)':'var(--elv-conv)'}" stroke-width="2" ${s.evidence?'':'stroke-dasharray="6 5"'} opacity=".75"/>`}));
+  S.forEach(s=>{const on=sel===s.k,w=Math.max(190,nm(s).length*8+60);h+=`<g class="chip ${on?'on':''}" tabindex="0" role="button" aria-pressed="${on}" aria-label="${nm(s)}: ${s.evidence?t('stEv'):t('stConv')}" data-k="${s.k}"><rect class="b" x="${s.cx-w/2}" y="${s.cy-26}" width="${w}" height="52" rx="4"/>${s.evidence?`<circle cx="${s.cx-w/2+18}" cy="${s.cy}" r="6" fill="var(--elv-action)"/>`:`<circle cx="${s.cx-w/2+18}" cy="${s.cy}" r="6" fill="var(--elv-card)" stroke="var(--elv-conv)" stroke-width="2" stroke-dasharray="3 2"/>`}<text x="${s.cx-w/2+34}" y="${s.cy-3}">${nm(s)}</text><text class="st" x="${s.cx-w/2+34}" y="${s.cy+14}" fill="${s.evidence?'var(--elv-action)':'var(--elv-conv)'}" style="fill:${s.evidence?'var(--elv-action)':'var(--elv-conv)'}">${s.evidence?t('stEv'):t('stConv')}</text></g>`});
+  $('#svg').innerHTML=h;
+  $('#svg').querySelectorAll('.chip').forEach(n=>{n.onclick=()=>pick(n.dataset.k);n.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(n.dataset.k)}}})}
+function drawList(){$('#list').innerHTML=T.map(x=>{const ss=S.filter(s=>s.links.includes(x.id));return`<div class="terrL"><h2>${nm(x)}</h2><p>${x.r}</p>${ss.length?ss.map(s=>`<div class="row"><button class="pick" type="button" data-k="${s.k}">${nm(s)}</button>${badge(s)}</div>`).join(''):''}</div>`}).join('');
+  $('#list').querySelectorAll('.pick').forEach(b=>b.onclick=()=>pick(b.dataset.k))}
+function detail(){const s=S.find(x=>x.k===sel);if(!s){$('#detail').innerHTML=`<div class="card"><p class="ok">${msg||t('pick')}</p></div>`;return}
+  const a=auth.has(s.k);
+  $('#detail').innerHTML=`<div class="card"><h2>${nm(s)}</h2><p>${badge(s)}</p><dl><dt>${t('terr')}</dt><dd>${s.links.map(id=>nm(tById(id))).join(' · ')}</dd>${s.evidence?`<dt>${t('level')}</dt><dd>${s.level}</dd><dt>${t('ev')}</dt><dd>${s.ev}</dd><dt>${t('conf')}</dt><dd>${s.conf}</dd>`:`<dt>${t('level')}</dt><dd>${t('noLevel')}</dd>`}<dt>${t('next')}</dt><dd>${s.evidence?t('nextEv'):t('nextConv')}</dd></dl><div class="switch"><button type="button" role="switch" aria-checked="${a}" aria-labelledby="al" id="sw"></button><span id="al">${t('auth')}</span></div><p class="ok" role="status">${a?t('on'):t('off')}</p><details><summary>${t('rub')}</summary><p>1 — … · 2 — … · 3 — … · 4 — …</p></details></div>`;
+  $('#sw').onclick=()=>{a?auth.delete(s.k):auth.add(s.k);detail()}}
+function pick(k){sel=k;msg='';drawMap();detail()}
+function i18n(){document.documentElement.lang=L;document.querySelectorAll('[data-i]').forEach(n=>{const v=t(n.dataset.i);if(v!==undefined)n.textContent=v});$('#tView').textContent=$('#root').classList.contains('as-list')?t('asMap'):t('asList');drawMap();drawList();detail()}
+$('#tLang').onclick=e=>{L=L==='es'?'en':'es';e.target.textContent=L==='es'?'EN':'ES';i18n()};
+$('#tView').onclick=e=>{const on=$('#root').classList.toggle('as-list');e.target.setAttribute('aria-pressed',on);i18n()};
+$('#revokeAll').onclick=()=>{auth.clear();sel=null;msg=t('revoked');drawMap();detail()};
+i18n();
+</script>
+</body>
+</html>

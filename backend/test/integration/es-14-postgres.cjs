@@ -49,11 +49,11 @@ test('ES-14 PostgreSQL: additive migration, encrypted ownership, concurrency and
   const { issueToken, revokeToken } = require('../../utils/sessions');
   const tokens = { 101: issueToken({ id: 101, role: 'user' }), 202: issueToken({ id: 202, role: 'user' }) };
   const blank = { preferredLanguage: null, residenceCountry: null, targetMarket: null, timeZone: null, profession: null,
-    interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null };
+    interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null, sector: null, totalYearsExperience: null, experience: [], education: [], declaredSkills: [], languages: [] }; // ES-109: esquema v2
   async function request(owner, context, version = 0, action = 'save_draft') {
     const res = await fetch(`http://127.0.0.1:${server.address().port}/api/user/context`, {
       method: context ? 'PUT' : 'GET', headers: { Authorization: `Bearer ${tokens[owner]}`, 'Content-Type': 'application/json' },
-      ...(context ? { body: JSON.stringify({ schemaVersion: 1, expectedVersion: version, action, context: { ...blank, ...context } }) } : {}),
+      ...(context ? { body: JSON.stringify({ schemaVersion: 2, expectedVersion: version, action, context: { ...blank, ...context } }) } : {}),
     });
     return { status: res.status, body: await res.json() };
   }

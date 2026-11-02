@@ -30,7 +30,7 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
 
-  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'CareerContextVersion', 'BridgeTransfer', 'DeletionRequest']) require('../../' + name);
+  for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DerivedInvalidation', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'CareerContextVersion', 'BridgeTransfer', 'DeletionRequest', 'PricingPlan', 'User', 'AiJob', 'SkillCandidate']) require('../../' + name); // ES-88
   await sequelize.sync();
   const catalog = require('../../utils/skillCatalog');
   const skillMap = require('../../utils/skillMap');

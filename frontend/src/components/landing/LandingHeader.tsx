@@ -2,11 +2,15 @@ import { Link } from 'react-router-dom'
 import { useRef, useState } from 'react'
 import type { Lang } from '../../i18n/context'
 
+// ES-67 (H-67-05): nombre de cada idioma en su propio idioma; no se traduce, así que no va al catálogo.
+const LANGUAGE_NAMES = { es: 'Español', en: 'English' } as const
+
 // ES-68/70 activate only the sections that now exist; other phase 2 anchors stay hidden.
-export function LandingHeader({ text, lang, setLang }: {
+export function LandingHeader({ text, lang, setLang, homeSections = false }: {
   text: (key: string) => string
   lang: Lang
   setLang: (l: Lang) => void
+  homeSections?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
@@ -32,11 +36,13 @@ export function LandingHeader({ text, lang, setLang }: {
           </button>
           <nav id="landing-navigation" className="landing-tools landing-navigation" data-open={open}
             aria-label={text('landing.nav.label')}>
-            <a className="elv-link landing-nav-how" href="#como-funciona" onClick={() => setOpen(false)}>{text('landing.nav.how')}</a>
-            <a className="elv-link landing-nav-skillmap" href="#skill-map" onClick={() => setOpen(false)}>{text('landing.nav.skillmap')}</a>
+            <a className="elv-link landing-nav-how" href={`${homeSections ? '/' : ''}#como-funciona`} onClick={() => setOpen(false)}>{text('landing.nav.how')}</a>
+            <a className="elv-link landing-nav-skillmap" href={`${homeSections ? '/' : ''}#skill-map`} onClick={() => setOpen(false)}>{text('landing.nav.skillmap')}</a>
+            <a className="elv-link landing-nav-plans" href="#planes" onClick={() => setOpen(false)}>{text('landing.nav.plans')}</a>
             <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
               {(['es', 'en'] as const).map(code => (
                 <button key={code} type="button" lang={code} aria-pressed={lang === code}
+                  aria-label={LANGUAGE_NAMES[code]}
                   className="elv-btn elv-join-item landing-lang" onClick={() => setLang(code)}>
                   {text(`landing.header.${code}`)}
                 </button>

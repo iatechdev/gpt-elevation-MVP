@@ -7,14 +7,17 @@
 
 const express = require('express');
 const router = express.Router();
+const User = require('../User');
 const { validateBody, optional } = require('../middlewares/validateBody');
 const {
-  PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, isPurpose, setConsent, listConsents, listHistory,
+  PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, isPurpose, setConsent, listConsents, listHistory, therapistScope,
 } = require('../utils/consent');
 
 router.get('/', async (req, res) => {
   try {
-    res.json({ consents: await listConsents(req.user.id) });
+    // ES-96: therapist_sharing se refiere al terapeuta ACTUAL de la persona.
+    const me = await User.findByPk(req.user.id, { attributes: ['id', 'therapistId'] });
+    res.json({ consents: await listConsents(req.user.id, { therapistId: me && me.therapistId }) });
   } catch (error) {
     console.error('❌ Error listando consentimientos:', error.message);
     res.status(500).json({ error: 'No se pudieron obtener los consentimientos.' });
@@ -46,7 +49,17 @@ router.put('/:purpose', validateBody({
     });
   }
   try {
-    const { row, changed } = await setConsent(req.user.id, purpose, status, req.body.scope ?? DEFAULT_SCOPE);
+    let scope = req.body.scope ?? DEFAULT_SCOPE;
+    if (purpose === 'therapist_sharing') {
+      // ES-96: la persona autoriza o retira a SU terapeuta actual; el alcance nunca viene del cliente (no se puede autorizar a otra cuenta).
+      if (req.body.scope !== undefined) return res.status(400).json({ code: 'invalid_input', error: 'Datos inválidos. / Invalid data.' });
+      const me = await User.findByPk(req.user.id, { attributes: ['id', 'therapistId'] });
+      if (!me || !me.therapistId) {
+        return res.status(409).json({ code: 'no_therapist', error: 'No tienes un terapeuta vinculado. / You do not have a linked therapist.' });
+      }
+      scope = therapistScope(me.therapistId);
+    }
+    const { row, changed } = await setConsent(req.user.id, purpose, status, scope);
     res.json({
       purpose, scope: row.scope, status: row.status, version: row.version, decidedAt: row.decidedAt, changed,
     });

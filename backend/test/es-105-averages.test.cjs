@@ -2,7 +2,7 @@
 // recomendaciones; y una respuesta vacía del proveedor en el resumen es un fallo reintentable, no un 200 con texto vacío.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { models, anthropic, record, startApp } = require('./support.cjs');
+const { models, anthropic, record, startApp, grantTherapistSharing } = require('./support.cjs');
 const { averageMood, formatAverage } = require('../utils/moodStats');
 
 const log = (checkin_mood, checkout_mood) => ({ checkin_mood, checkout_mood });
@@ -26,6 +26,7 @@ test('ES-105 averageMood: promedio sobre los valores registrados, siempre entre 
 
 const asTherapist = { role: 'therapist', id: 301 };
 function summarySetup(output) {
+  grantTherapistSharing(); // ES-96
   const calls = [];
   models.User.findOne = async ({ where }) => where.id === '7' ? record({ id: 7, active: true }) : null;
   models.MoodLog.findAll = async () => [record({ checkin_mood: 4, checkout_mood: 5 }), record({ checkin_mood: 3, checkout_mood: 3 })];
@@ -59,6 +60,7 @@ test('ES-105 (O1): el prompt del resumen, del matching y de las recomendaciones 
   const logs = [record({ checkin_mood: 4, checkout_mood: 5 }), record({ checkin_mood: 3, checkout_mood: 3 })];
   models.MoodLog.findAll = async () => logs;
   // Resumen del terapeuta
+  grantTherapistSharing(); // ES-96
   models.User.findOne = async ({ where }) => where.id === '7' ? record({ id: 7, active: true }) : null; models.SessionRating.findAll = async () => [];
   anthropic.messages.create = keep('summary', 'Resumen sintético.');
   assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia', asTherapist)).status, 200);

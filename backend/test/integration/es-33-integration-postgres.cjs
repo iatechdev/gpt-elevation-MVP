@@ -61,9 +61,9 @@ test('ES-33 integrado con ES-14, ES-32 y los catálogos reales en PostgreSQL', {
 
   // Contexto de ES-14 construido con SU validador (mismo DTO que guarda la ruta real) y cifrado v2.
   const baseContext = { preferredLanguage: 'es', residenceCountry: 'CO', targetMarket: 'DK', timeZone: 'America/Bogota', profession: 'Docencia sintética', interests: null,
-    availabilityMinutesPerWeek: 90, careerGoal: null, careerConstraints: null };
+    availabilityMinutesPerWeek: 90, careerGoal: null, careerConstraints: null, sector: null, totalYearsExperience: null, experience: [], education: [], declaredSkills: [], languages: [] }; // ES-109: esquema v2
   async function setContext(userId, over = {}, { completed = true } = {}) {
-    const valid = validateContextRequest({ schemaVersion: 1, expectedVersion: 0, action: 'save_draft', context: { ...baseContext, ...over } });
+    const valid = validateContextRequest({ schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: { ...baseContext, ...over } });
     assert.ok(!valid.error, JSON.stringify(valid));
     const row = await ParticipantContext.findOne({ where: { UserId: userId } });
     const values = { content: encriptarV2(JSON.stringify(valid.context)), completedAt: completed ? new Date() : null };

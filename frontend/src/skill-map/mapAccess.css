@@ -1,0 +1,15 @@
+/* ES-30 · Acceso claro al mapa. Solo tokens de ES-37. */
+.map-access { grid-column: 1 / -1; display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: center; background: var(--elv-card); border: 1px solid var(--elv-line); border-radius: var(--elv-r-xl); box-shadow: var(--elv-shadow-card); padding: 24px; color: var(--elv-text-1); }
+@media (min-width: 760px) { .map-access { grid-template-columns: 1.2fr 1fr; } }
+.map-access-eyebrow { margin: 0; font-size: .6875rem; letter-spacing: .25em; text-transform: uppercase; color: var(--elv-text-2); }
+.map-access h2 { font: 400 1.375rem/1.3 var(--elv-font-display); margin: 4px 0 8px; }
+.map-access-text > p:not(.map-access-eyebrow) { margin: 0 0 16px; color: var(--elv-text-2); }
+.map-access-art { width: 100%; height: auto; max-height: 190px; min-width: 0; }
+a.map-access-cta { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 20px; border-radius: var(--elv-r-md); background: var(--elv-action); color: var(--elv-action-text); border: 1px solid var(--elv-action); font: 500 .9375rem var(--elv-font-body); text-decoration: none; }
+a.map-access-cta:focus-visible { outline: 3px solid var(--elv-focus); outline-offset: 2px; }
+.map-guide { background: var(--elv-info-bg); border: 1px solid var(--elv-info); border-radius: var(--elv-r-lg); padding: 16px 24px; margin: 16px 0 24px; color: var(--elv-text-1); }
+.map-guide h2 { font: 600 1.125rem var(--elv-font-body); margin: 0 0 8px; color: var(--elv-info); }
+.map-guide p { margin: 0; }
+/* QA H-90-03: el reset de Tailwind quita los números; los tres pasos se numeran de nuevo. */
+.map-guide ol { margin: 8px 0 16px; padding-left: 1.5rem; list-style: decimal; }
+.map-guide li { margin: 4px 0; }

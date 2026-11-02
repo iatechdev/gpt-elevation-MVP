@@ -20,6 +20,8 @@ export type Skill = {
   self: Assessment | null
   review: Assessment | null
   state: AssessmentState | 'no_evidence'
+  /** Ids de territorio (ES-116). Opcional: un servidor anterior no lo envía; sin ninguno válido, la habilidad queda «sin territorio». */
+  territories?: string[]
 }
 export type SkillMap = { catalogVersion: number; skills: Skill[] }
 const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -55,7 +57,9 @@ export function parseSkillMap(value: unknown): SkillMap {
       || typeof skill.type !== 'string' || !['transversal', 'domain'].includes(skill.type) || !localized(skill.labels)
       || !rubric(skill.rubric)
       || !assessment(skill.self) || !assessment(skill.review)
-      || typeof skill.state !== 'string' || !['no_evidence', ...states].includes(skill.state)) throw new Error('Invalid skill map')
+      || typeof skill.state !== 'string' || !['no_evidence', ...states].includes(skill.state)
+      || (skill.territories !== undefined && (!Array.isArray(skill.territories) || skill.territories.length > 8
+        || skill.territories.some(id => typeof id !== 'string' || id.length === 0 || id.length > 16)))) throw new Error('Invalid skill map')
     keys.add(skill.skillKey)
   }
   return value as SkillMap

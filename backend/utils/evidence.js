@@ -10,6 +10,7 @@ const { sequelize } = require('../database');
 const Evidence = require('../Evidence');
 const EvidenceVersion = require('../EvidenceVersion');
 const ChatTurn = require('../ChatTurn');
+const ParticipantResume = require('../ParticipantResume');
 const DerivedInvalidation = require('../DerivedInvalidation');
 const { encriptarV2, desencriptar } = require('./crypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
@@ -171,9 +172,17 @@ async function ownTransaction(fn) {
 }
 
 const decode = (row) => JSON.parse(desencriptar(row.payload));
-const summary = (ev, row) => ({
-  id: ev.id, version: row.version, status: row.status, authoring: row.authoring, createdAt: row.createdAt, payload: decode(row),
-});
+// ES-110: si la evidencia salió de una hoja de vida, se informa de dónde (versión y fecha) y si esa versión ya no existe («para revisión»; nada se borra solo).
+// De un origen del chat solo se informa que lo hay (`fromChat`): nunca su id ni su cita.
+const summary = (ev, row, existingResumes) => {
+  const out = { id: ev.id, version: row.version, status: row.status, authoring: row.authoring, createdAt: row.createdAt, payload: decode(row) };
+  const resume = (Array.isArray(row.origins) ? row.origins : []).find((o) => o && o.type === 'resume');
+  if (resume) out.origin = { kind: 'resume', version: resume.version, date: resume.stamp, needsReview: !(existingResumes && existingResumes.has(resume.id)) };
+  if (row.hasChatOrigin) out.fromChat = true;
+  return out;
+};
+const resumeIdsOf = async (userId, rows) => (rows.some((r) => Array.isArray(r.origins) && r.origins.some((o) => o && o.type === 'resume'))
+  ? new Set((await ParticipantResume.findAll({ where: { UserId: userId }, attributes: ['id'] })).map((r) => r.id)) : new Set());
 
 function parseWrite(body, { update }) {
   if (!isPlain(body) || !onlyKeys(body, update ? ['payload', 'status', 'baseVersion', 'requestId', 'origins', 'proposalToken'] : ['payload', 'status', 'requestId', 'origins', 'proposalToken'])) throw invalid();
@@ -242,15 +251,18 @@ async function update(userId, id, body) {
     if (body.baseVersion !== ev.currentVersion) {
       throw new EvidenceError(409, 'version_conflict', 'La evidencia cambió. Recárgala antes de editar.', 'The evidence changed. Reload it before editing.', { currentVersion: ev.currentVersion });
     }
-    const origins = await resolveOrigins(userId, body.origins, transaction);
+    const chatOrigins = await resolveOrigins(userId, body.origins, transaction);
     const current = await EvidenceVersion.findOne({ where: { EvidenceId: ev.id, version: ev.currentVersion }, transaction });
+    // ES-110: la procedencia «hoja de vida» es del servidor y no se pierde al editar (el cliente nunca puede crearla ni quitarla).
+    const resumeOrigins = (current && Array.isArray(current.origins) ? current.origins : []).filter((o) => o && o.type === 'resume');
+    const origins = [...resumeOrigins, ...chatOrigins];
     if (current && current.status !== 'draft') {
       // Lo derivado de la versión confirmada deja de ser válido: evaluaciones y rutas (ES-29, ES-32) deben recalcular.
       await DerivedInvalidation.create({ UserId: userId, sourceType: 'evidence', sourceId: ev.id, reason: 'edited' }, { transaction });
     }
     const row = await EvidenceVersion.create({
       EvidenceId: ev.id, UserId: userId, version: ev.currentVersion + 1, status: body.status, authoring, payload: encriptarV2(JSON.stringify(payload)),
-      origins, hasChatOrigin: origins.length > 0, consentVersion: origins.length && body.status === 'confirmed' ? consent.REQUIRED_VERSION[PURPOSE] : null,
+      origins, hasChatOrigin: chatOrigins.length > 0, consentVersion: chatOrigins.length && body.status === 'confirmed' ? consent.REQUIRED_VERSION[PURPOSE] : null,
       requestId: body.requestId,
     }, { transaction });
     await ev.update({ currentVersion: row.version }, { transaction });
@@ -260,11 +272,13 @@ async function update(userId, id, body) {
 
 async function list(userId) {
   const evidences = await Evidence.findAll({ where: { UserId: userId, deletedAt: null }, order: [['id', 'ASC']] });
-  const items = [];
+  const items = []; const rows = [];
   for (const ev of evidences) {
     const row = await EvidenceVersion.findOne({ where: { EvidenceId: ev.id, version: ev.currentVersion } });
-    if (row) items.push(summary(ev, row));
+    if (row) rows.push([ev, row]);
   }
+  const existing = await resumeIdsOf(userId, rows.map(([, row]) => row));
+  for (const [ev, row] of rows) items.push(summary(ev, row, existing));
   return { evidence: items };
 }
 
@@ -273,7 +287,8 @@ async function get(userId, id) {
   const ev = await Evidence.findOne({ where: { id, UserId: userId, deletedAt: null } });
   if (!ev) throw notFound();
   const rows = await EvidenceVersion.findAll({ where: { EvidenceId: ev.id }, order: [['version', 'DESC']] });
-  return { id: ev.id, currentVersion: ev.currentVersion, versions: rows.map((row) => summary(ev, row)) };
+  const existing = await resumeIdsOf(userId, rows);
+  return { id: ev.id, currentVersion: ev.currentVersion, versions: rows.map((row) => summary(ev, row, existing)) };
 }
 
 // Borrar: se vacía el contenido de todas las versiones, se marca deletedAt y se registra la invalidación de lo derivado.

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation — Referencia del sistema de diseño (ES-37)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400&family=Noto+Serif:ital,wght@1,300&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../frontend/src/styles/tokens.css">
+<style>
+  /* Solo layout de esta página de referencia; todo color, radio y espacio sale de tokens.css */
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--elv-bg);color:var(--elv-text-1);font:400 var(--elv-fs-base)/1.6 var(--elv-font-body)}
+  main{max-width:1100px;margin:0 auto;padding:var(--elv-s-6) var(--elv-s-4) var(--elv-s-16)}
+  h1,h2{font-family:var(--elv-font-display);font-weight:400;margin:0}
+  h1{font-size:var(--elv-fs-hero);letter-spacing:.02em}
+  h2{font-size:var(--elv-fs-xl);margin:var(--elv-s-12) 0 var(--elv-s-4);padding-top:var(--elv-s-4);border-top:1px solid var(--elv-line)}
+  h3{font-size:var(--elv-fs-md);font-weight:600;margin:var(--elv-s-6) 0 var(--elv-s-2);color:var(--elv-text-2)}
+  p{margin:var(--elv-s-2) 0;color:var(--elv-text-2)}
+  .bar{display:flex;gap:var(--elv-s-2);flex-wrap:wrap;margin:var(--elv-s-4) 0}
+  .grid{display:grid;gap:var(--elv-s-4);grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+  .sw{border:1px solid var(--elv-line);border-radius:var(--elv-r-md);overflow:hidden;background:var(--elv-card)}
+  .sw i{display:block;height:54px;border-bottom:1px solid var(--elv-line)}
+  .sw span{display:block;padding:var(--elv-s-2) var(--elv-s-3);font-size:var(--elv-fs-sm);color:var(--elv-text-2)}
+  .sw b{display:block;color:var(--elv-text-1);font-weight:600}
+  .row{display:flex;gap:var(--elv-s-3);flex-wrap:wrap;align-items:center}
+  /* Componentes */
+  .btn{min-height:var(--elv-touch);padding:0 var(--elv-s-6);border-radius:var(--elv-r-md);font:500 var(--elv-fs-md) var(--elv-font-body);cursor:pointer;border:1px solid transparent;transition:opacity .2s}
+  .btn-primary{background:var(--elv-action);color:var(--elv-action-text)}
+  .btn-secondary{background:transparent;color:var(--elv-action);border-color:var(--elv-line-control)}
+  .btn-ghost{background:transparent;color:var(--elv-action);text-decoration:underline;text-underline-offset:3px}
+  .btn:hover:not(:disabled){opacity:.88}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn.loading::after{content:"";width:14px;height:14px;margin-left:var(--elv-s-2);border:2px solid currentColor;border-right-color:transparent;border-radius:50%;display:inline-block;vertical-align:-2px;animation:spin .9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.btn.loading::after{animation:none}.btn{transition:none}}
+  .field{display:grid;gap:var(--elv-s-1);max-width:340px}
+  .field label{font-size:var(--elv-fs-md);font-weight:500}
+  .field input,.field select,.field textarea{min-height:var(--elv-touch);padding:0 var(--elv-s-3);background:var(--elv-card);color:var(--elv-text-1);border:1px solid var(--elv-line-control);border-radius:var(--elv-r-md);font:inherit}
+  .field input::placeholder{color:var(--elv-text-3)}
+  .field .help{font-size:var(--elv-fs-sm);color:var(--elv-text-2)}
+  .field.err input{border-color:var(--elv-error);border-width:2px}
+  .field.err .help{color:var(--elv-error)}
+  .card{background:var(--elv-card);border:.5px solid var(--elv-line-control);border-radius:var(--elv-r-lg);box-shadow:var(--elv-shadow-card);padding:var(--elv-s-4) var(--elv-s-6);max-width:420px}
+  .badge{display:inline-flex;align-items:center;min-height:1.5rem;padding:0 var(--elv-s-3);border-radius:var(--elv-r-pill);font-size:var(--elv-fs-xs);font-weight:600}
+  .b-ok{background:var(--elv-success-bg);color:var(--elv-success)}.b-warn{background:var(--elv-warning-bg);color:var(--elv-warning)}
+  .b-err{background:var(--elv-error-bg);color:var(--elv-error)}.b-info{background:var(--elv-info-bg);color:var(--elv-info)}.b-brand{background:var(--elv-action-soft);color:var(--elv-action)}
+  .alert{padding:var(--elv-s-3) var(--elv-s-4);border-radius:var(--elv-r-md);border-left:4px solid currentColor;font-size:var(--elv-fs-md)}
+  .switch{display:inline-flex;align-items:center;gap:var(--elv-s-3);min-height:var(--elv-touch);cursor:pointer}
+  .switch button{width:44px;height:26px;border-radius:var(--elv-r-pill);border:1px solid var(--elv-line-control);background:var(--elv-card);position:relative;cursor:pointer;padding:0}
+  .switch button::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--elv-line-control);transition:transform .2s}
+  .switch button[aria-checked=true]{background:var(--elv-action);border-color:var(--elv-action)}
+  .switch button[aria-checked=true]::after{transform:translateX(18px);background:var(--elv-action-text)}
+  .dialog{background:var(--elv-card);border-radius:var(--elv-r-xl);box-shadow:var(--elv-shadow-modal);padding:var(--elv-s-6);max-width:420px;border:.5px solid var(--elv-line-control)}
+  .dialog h4{margin:0 0 var(--elv-s-2);font:400 var(--elv-fs-lg) var(--elv-font-display)}
+  .state{border:1px dashed var(--elv-line-control);border-radius:var(--elv-r-lg);padding:var(--elv-s-6);text-align:center;color:var(--elv-text-2);max-width:340px}
+  .skel{height:12px;border-radius:6px;background:var(--elv-muted-bg);margin:var(--elv-s-2) 0}
+  .voice{font:italic 300 var(--elv-fs-lg)/1.7 var(--elv-font-voice);color:var(--elv-ai)}
+  .type div{margin:var(--elv-s-2) 0}
+  .sp i{display:inline-block;background:var(--elv-brand);height:12px;margin-right:var(--elv-s-2);vertical-align:middle;border-radius:2px}
+  .ctl{min-height:var(--elv-touch);padding:0 var(--elv-s-4);border:1px solid var(--elv-line-control);background:var(--elv-card);color:var(--elv-text-1);border-radius:var(--elv-r-md);font:500 var(--elv-fs-md) var(--elv-font-body);cursor:pointer}
+  .ctl[aria-pressed=true]{background:var(--elv-action);color:var(--elv-action-text);border-color:var(--elv-action)}
+</style>
+</head>
+<body>
+<main id="root">
+  <h1 data-i="title">Sistema de diseño</h1>
+  <p data-i="lead">Referencia estática de ES-37. Los colores, radios y espacios salen de <code>tokens.css</code>; esta página no define ninguno.</p>
+  <div class="bar" role="group" aria-label="Opciones de vista">
+    <button class="ctl" id="tLang" aria-pressed="false" type="button">EN</button>
+    <button class="ctl" id="tDark" aria-pressed="false" type="button" data-i="dark">Modo oscuro</button>
+  </div>
+
+  <h2 data-i="h_colors">Colores</h2>
+  <div class="grid" id="colors"></div>
+
+  <h2 data-i="h_type">Tipografía</h2>
+  <div class="type">
+    <div style="font:400 var(--elv-fs-hero) var(--elv-font-display)">Playfair Display 400</div>
+    <div style="font:400 var(--elv-fs-xl) var(--elv-font-display)" data-i="t_section">Título de sección 22 px</div>
+    <div style="font:400 var(--elv-fs-base) var(--elv-font-body)" data-i="t_body">Cuerpo Inter 16 px — texto principal de la interfaz.</div>
+    <div style="font:400 var(--elv-fs-md) var(--elv-font-body);color:var(--elv-text-2)" data-i="t_sec">Texto secundario Inter 14 px.</div>
+    <div class="voice" data-i="t_voice">Voz de la IA: Noto Serif cursiva, color acento.</div>
+  </div>
+
+  <h2 data-i="h_space">Espacio y radios</h2>
+  <div class="sp" id="space"></div>
+  <div class="row" style="margin-top:var(--elv-s-4)">
+    <div class="card" style="padding:var(--elv-s-3);border-radius:var(--elv-r-sm)">sm 8</div>
+    <div class="card" style="padding:var(--elv-s-3);border-radius:var(--elv-r-md)">md 12</div>
+    <div class="card" style="padding:var(--elv-s-3);border-radius:var(--elv-r-lg)">lg 16</div>
+    <div class="card" style="padding:var(--elv-s-3);border-radius:var(--elv-r-xl)">xl 20</div>
+  </div>
+
+  <h2 data-i="h_btn">Botones (estados)</h2>
+  <div class="row"><button class="btn btn-primary" data-i="b_save">Guardar</button><button class="btn btn-secondary" data-i="b_cancel">Cancelar</button><button class="btn btn-ghost" data-i="b_more">Ver más</button></div>
+  <h3 data-i="s_dis">Deshabilitado</h3>
+  <div class="row"><button class="btn btn-primary" disabled data-i="b_save">Guardar</button><button class="btn btn-secondary" disabled data-i="b_cancel">Cancelar</button></div>
+  <h3 data-i="s_load">Guardando</h3>
+  <div class="row"><button class="btn btn-primary loading" aria-busy="true" data-i="b_saving">Guardando…</button></div>
+  <p data-i="s_focus">Foco visible: pulsa Tab sobre cualquier control (anillo de 3 px con color de foco).</p>
+
+  <h2 data-i="h_form">Campo</h2>
+  <div class="row" style="align-items:flex-start">
+    <div class="field"><label for="f1" data-i="f_name">Nombre</label><input id="f1" placeholder="Ana" autocomplete="off"><span class="help" data-i="f_help">Como quieres que te llamemos.</span></div>
+    <div class="field err"><label for="f2" data-i="f_mail">Correo</label><input id="f2" value="ana@" aria-invalid="true" aria-describedby="f2h"><span class="help" id="f2h" role="alert" data-i="f_err">Escribe un correo completo.</span></div>
+  </div>
+
+  <h2 data-i="h_card">Tarjeta, insignias y avisos</h2>
+  <div class="card"><div class="row"><b data-i="c_title">Mi terapeuta</b><span class="badge b-ok" data-i="g_ok">Listo</span><span class="badge b-warn" data-i="g_warn">Pendiente</span><span class="badge b-err" data-i="g_err">Sin acceso</span><span class="badge b-info">Info</span><span class="badge b-brand" data-i="g_brand">Nuevo</span></div><p data-i="c_body">Las tarjetas usan espacio antes que bordes y sombras suaves.</p></div>
+  <div class="row" style="margin-top:var(--elv-s-4);align-items:stretch">
+    <div class="alert" style="background:var(--elv-success-bg);color:var(--elv-success)" role="status" data-i="a_ok">Cambios guardados.</div>
+    <div class="alert" style="background:var(--elv-warning-bg);color:var(--elv-warning)" role="status" data-i="a_warn">Esta persona aún no autorizó compartir.</div>
+    <div class="alert" style="background:var(--elv-error-bg);color:var(--elv-error)" role="alert" data-i="a_err">No pudimos guardar. Inténtalo de nuevo.</div>
+    <div class="alert" style="background:var(--elv-info-bg);color:var(--elv-info)" role="status" data-i="a_info">El análisis tarda unos minutos.</div>
+  </div>
+
+  <h2 data-i="h_sw">Interruptor y diálogo</h2>
+  <div class="switch"><button type="button" role="switch" aria-checked="true" aria-labelledby="swl" id="sw"></button><span id="swl" data-i="sw_l">Compartir con mi terapeuta</span></div>
+  <div class="dialog" role="dialog" aria-modal="false" aria-labelledby="dg" style="margin-top:var(--elv-s-4)"><h4 id="dg" data-i="d_t">¿Dejar de compartir?</h4><p data-i="d_b">Tu terapeuta dejará de ver tus datos. Puedes volver a compartir cuando quieras.</p><div class="row" style="margin-top:var(--elv-s-4)"><button class="btn btn-secondary" data-i="b_cancel">Cancelar</button><button class="btn btn-primary" data-i="d_ok">Dejar de compartir</button></div></div>
+
+  <h2 data-i="h_states">Estados de pantalla</h2>
+  <div class="row" style="align-items:stretch">
+    <div class="state"><b data-i="e_t">Aún no hay nada aquí</b><p data-i="e_b">Cuando tengas registros aparecerán en esta lista.</p></div>
+    <div class="state" aria-busy="true"><b data-i="l_t">Cargando…</b><div class="skel"></div><div class="skel" style="width:70%"></div></div>
+    <div class="state" role="alert"><b style="color:var(--elv-error)" data-i="r_t">No se pudo cargar</b><p data-i="r_b">Revisa tu conexión.</p><button class="btn btn-secondary" data-i="r_btn">Reintentar</button></div>
+  </div>
+</main>
+<script>
+const COLORS=[['bg','Fondo'],['surface','Superficie'],['card','Tarjeta'],['muted-bg','Fondo alterno'],['text-1','Texto 1'],['text-2','Texto 2'],['text-3','Texto 3'],['line','Divisor'],['line-control','Borde de control'],['action','Acción'],['action-soft','Acción suave'],['brand','Marca (decorativa)'],['focus','Foco'],['ai','Voz IA'],['success','Éxito'],['warning','Aviso'],['error','Error'],['info','Info']];
+const SPACES=[1,2,3,4,6,8,12,16];
+const EN={title:'Design system',lead:'Static reference for ES-37. Colors, radii and spacing come from tokens.css; this page defines none.',dark:'Dark mode',h_colors:'Colors',h_type:'Typography',t_section:'Section title 22 px',t_body:'Inter body 16 px — main interface text.',t_sec:'Secondary text, Inter 14 px.',t_voice:'AI voice: Noto Serif italic, accent color.',h_space:'Spacing and radii',h_btn:'Buttons (states)',b_save:'Save',b_cancel:'Cancel',b_more:'See more',s_dis:'Disabled',s_load:'Saving',b_saving:'Saving…',s_focus:'Visible focus: press Tab on any control (3 px ring in the focus color).',h_form:'Field',f_name:'Name',f_help:'How you want us to call you.',f_mail:'Email',f_err:'Enter a complete email.',h_card:'Card, badges and notices',c_title:'My therapist',g_ok:'Done',g_warn:'Pending',g_err:'No access',g_brand:'New',c_body:'Cards use space first, then borders and soft shadows.',a_ok:'Changes saved.',a_warn:'This person has not yet allowed sharing.',a_err:'We could not save. Please try again.',a_info:'The analysis takes a few minutes.',h_sw:'Switch and dialog',sw_l:'Share with my therapist',d_t:'Stop sharing?',d_b:'Your therapist will stop seeing your data. You can share again whenever you like.',d_ok:'Stop sharing',h_states:'Screen states',e_t:'Nothing here yet',e_b:'When you have entries they will appear in this list.',l_t:'Loading…',r_t:'Could not load',r_b:'Check your connection.',r_btn:'Try again'};
+const ES={};document.querySelectorAll('[data-i]').forEach(n=>{ES[n.dataset.i]??=n.textContent});
+const css=getComputedStyle(document.documentElement);
+function paint(){const g=document.getElementById('colors');g.innerHTML='';const r=document.querySelector('main');const cs=getComputedStyle(r);
+ for(const[k,l]of COLORS){const v=cs.getPropertyValue('--elv-'+k).trim();const d=document.createElement('div');d.className='sw';d.innerHTML=`<i style="background:var(--elv-${k})"></i><span><b>${l}</b>--elv-${k}<br>${v}</span>`;g.appendChild(d)}
+ document.getElementById('space').innerHTML=SPACES.map(n=>`<div><i style="width:var(--elv-s-${n})"></i>--elv-s-${n}</div>`).join('')}
+let lang='es';
+document.getElementById('tLang').onclick=e=>{lang=lang==='es'?'en':'es';document.documentElement.lang=lang;e.target.textContent=lang==='es'?'EN':'ES';e.target.setAttribute('aria-pressed',lang==='en');
+ document.querySelectorAll('[data-i]').forEach(n=>{const t=(lang==='en'?EN:ES)[n.dataset.i];if(t!==undefined)n.textContent=t})};
+document.getElementById('tDark').onclick=e=>{const on=e.target.getAttribute('aria-pressed')!=='true';e.target.setAttribute('aria-pressed',on);document.querySelector('main').classList.toggle('elv-dark',on);document.body.style.background=on?'#181c17':'';paint()};
+document.getElementById('sw').onclick=e=>e.target.setAttribute('aria-checked',e.target.getAttribute('aria-checked')!=='true');
+paint();
+</script>
+</body>
+</html>

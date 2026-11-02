@@ -2,8 +2,9 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { models, database, record, startApp } = require('./support.cjs');
 const blank = () => ({ preferredLanguage: null, residenceCountry: null, targetMarket: null, timeZone: null,
-  profession: null, interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null });
-const body = (context = {}, expectedVersion = 0, action = 'save_draft') => ({ schemaVersion: 1, expectedVersion, action, context: { ...blank(), ...context } });
+  profession: null, interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null,
+  sector: null, totalYearsExperience: null, experience: [], education: [], declaredSkills: [], languages: [] }); // ES-109: esquema v2
+const body = (context = {}, expectedVersion = 0, action = 'save_draft') => ({ schemaVersion: 2, expectedVersion, action, context: { ...blank(), ...context } });
 function setup() {
   const rows = new Map();
   const users = new Map([101, 202].map(id => [id, { id, active: true, role: 'user' }]));
@@ -26,7 +27,7 @@ const pick = ({ status, body }) => ({ status, body });
 test('ES-14: empty, draft, confirmed, edit and language clearing use server metadata', async t => {
   const { calls, invalidations } = setup(); const request = await startApp(t);
   const as = { role: 'user' };
-  assert.deepEqual((await request('GET', '/api/user/context', as)).body, { schemaVersion: 1, version: 0, context: null, savedAt: null, completedAt: null });
+  assert.deepEqual((await request('GET', '/api/user/context', as)).body, { schemaVersion: 2, version: 0, context: null, savedAt: null, completedAt: null });
   const draft = await request('PUT', '/api/user/context', { ...as, body: body({ residenceCountry: 'CO', targetMarket: 'ES', availabilityMinutesPerWeek: 0 }) });
   assert.equal(draft.status, 200); assert.equal(draft.body.version, 1); assert.equal(draft.body.completedAt, null);
   assert.equal(draft.body.context.availabilityMinutesPerWeek, 0);
@@ -62,7 +63,7 @@ test('ES-14: strict contract rejects malformed data before persistence', async t
     body({ timeZone: 'Invalid/Zone' }), body({ profession: 'x'.repeat(121) }), body({ interests: 'x'.repeat(501) }),
     ...[-1, 10081, 2.5, '5'].map(value => body({ availabilityMinutesPerWeek: value })), body({ userId: 202 }),
     body({ entry: 'personal' }), body({ crisis: true }), body({}, 0, 'continue'), { ...body(), expectedVersion: '0' },
-    { ...body(), schemaVersion: 2 }, { ...body(), context: {} }, [], null];
+    { ...body(), schemaVersion: 3 }, { ...body(), context: {} }, [], null];
   for (const input of invalid) assert.equal((await request('PUT', '/api/user/context', { role: 'user', body: input })).status, 400);
   assert.equal(rows.size, 0);
 });
