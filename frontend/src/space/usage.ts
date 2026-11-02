@@ -14,4 +14,5 @@ export function parseUsage(value: unknown): Usage {
 }
 export const usedPercent = (u: Extract<Usage, { configured: true }>) => Math.min(100, Math.round((u.used / u.limit) * 100))
 export const isExhausted = (u: Usage) => u.configured && u.used >= u.limit
-export const renewalDate = (iso: string, lang: string) => new Date(iso).toLocaleDateString(lang === 'en' ? 'en' : 'es', { day: 'numeric', month: 'long', timeZone: 'UTC' })
+// El reinicio es un instante (00:00 UTC): se muestra el día en la zona horaria de la persona (en Bogotá es la tarde del día anterior).
+export const renewalDate = (iso: string, lang: string) => new Date(iso).toLocaleDateString(lang === 'en' ? 'en' : 'es', { day: 'numeric', month: 'long' })

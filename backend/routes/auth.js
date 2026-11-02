@@ -11,13 +11,14 @@ const rateLimit = require('express-rate-limit');
 const User      = require('../User');
 const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
+const { passwordProblems, policy } = require('../utils/registrationPassword');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
-  message: { error: 'Demasiados intentos. Intentá de nuevo en un minuto.' },
+  message: { error: 'Demasiados intentos. Inténtalo de nuevo en un minuto.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -26,6 +27,11 @@ const loginLimiter = rateLimit({
 router.post('/register', validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    const missing = passwordProblems(password);
+    if (missing.length) {
+      return res.status(400).json({ code: 'password_policy', missing, error: `${policy.message.es} / ${policy.message.en}` });
+    }
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Nombre, correo y contraseña son requeridos.' });
@@ -81,7 +87,7 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
     if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
       const minutosRestantes = Math.ceil((new Date(user.lockedUntil) - new Date()) / 60000);
       return res.status(423).json({
-        error: `Cuenta bloqueada. Intentá de nuevo en ${minutosRestantes} minuto${minutosRestantes > 1 ? 's' : ''}.`,
+        error: `Cuenta bloqueada. Inténtalo de nuevo en ${minutosRestantes} minuto${minutosRestantes > 1 ? 's' : ''}.`,
         locked: true,
       });
     }

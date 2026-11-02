@@ -1,5 +1,6 @@
 // frontend/src/layouts/BoardLayout.tsx
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { clearPending } from '../space/pending'
 
 const NAV_ITEMS = [
   {
@@ -19,6 +20,7 @@ export function BoardLayout() {
   const role = localStorage.getItem('elevation_role') ?? 'board'
 
   const handleLogout = () => {
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')

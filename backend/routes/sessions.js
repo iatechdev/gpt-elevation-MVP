@@ -535,6 +535,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
 
     // Generar recomendación IA para el paciente (silent fail si Anthropic falla)
     let recommendation = null;
+    let recommendationSkipped = null;
     const sharing = await hasSharing(req.user.id, session.patientId); // sin autorización: se cierra, pero no se genera nada para la persona
     try {
       if (!sharing) throw new Error('sin autorización de compartir');
@@ -563,7 +564,9 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
         });
       }
     } catch (aiErr) {
-      console.error('⚠️  Could not generate post-session recommendation:', aiErr.message);
+      recommendationSkipped = aiErr && aiErr.code === 'ai_budget_exhausted' ? 'budget'
+        : aiErr && aiErr.code === 'ai_budget_not_configured' ? 'unavailable' : 'provider';
+      console.error('⚠️  Could not generate post-session recommendation:', aiErr && (aiErr.code || aiErr.name));
       // Silent fail — la sesión ya quedó guardada correctamente
     }
 
@@ -572,6 +575,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
       message: 'Session completed.',
       session: session.toJSON(),
       recommendation: recommendation ? { id: recommendation.id } : null,
+      ...(recommendationSkipped ? { recommendationSkipped } : {}),
     });
   } catch (error) {
     console.error('❌ Error ending session:', error);

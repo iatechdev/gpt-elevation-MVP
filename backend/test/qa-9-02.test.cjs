@@ -11,7 +11,7 @@ test('QA-9-02: public input and legitimate authentication', async t => {
   models.User.findOne = async () => { queries++; return null; };
   models.User.create = async values => { writes++; return record(values); };
   const request = await startApp(t);
-  const password = randomBytes(24).toString('hex');
+  const password = `Aa1!${randomBytes(24).toString('hex')}`; // ES-128: cumple la política de registro
   const valid = { email: 'synthetic@example.invalid', password };
   const invalid = [undefined, {}, [], { ...valid, email: {} },
     { ...valid, password: {} }, { ...valid, email: null },

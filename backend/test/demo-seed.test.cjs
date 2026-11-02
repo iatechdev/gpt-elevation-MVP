@@ -25,6 +25,14 @@ test('staging corre con NODE_ENV=production: la protección es la bandera, no el
   assert.match(read('scripts/seedRouteCatalogSynthetic.js'), /ALLOW_SYNTHETIC_CATALOG !== 'true'/);
 });
 
+test('QA-53-01: el script comprueba la bandera y la clave ANTES de conectarse y de crear tablas', () => {
+  const script = read('scripts/seedStagingDemo.js');
+  const guard = script.indexOf('assertSeedAllowed();');
+  assert.ok(guard !== -1, 'el script llama a assertSeedAllowed');
+  assert.ok(guard < script.indexOf('authenticate'), 'antes de conectarse');
+  assert.ok(guard < script.indexOf('.sync()'), 'antes de cualquier sync()');
+});
+
 test('el catálogo de habilidades de demostración es completo, publicable y está rotulado como sintético en ES y EN', () => {
   const skills = demoSkills(new Date('2026-10-28T12:00:00Z'));
   assert.equal(skills.length, 8);

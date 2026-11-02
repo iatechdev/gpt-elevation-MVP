@@ -4,6 +4,7 @@
 // ES-100 — Cabecera adaptable (dos líneas en pantallas estrechas), contraste, foco visible y objetivos táctiles (ES93-M6 y B4)
 
 import { Outlet, useNavigate } from 'react-router-dom'
+import { clearPending } from '../space/pending'
 import { useLanguage } from '../i18n/useLanguage'
 import '../styles/therapist.css'
 
@@ -13,6 +14,7 @@ export function TherapistLayout() {
   const name = localStorage.getItem('elevation_name') ?? t('therapist_role')
 
   const handleLogout = () => {
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')

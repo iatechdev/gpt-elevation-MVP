@@ -7,6 +7,7 @@ import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
+import { clearPending } from '../space/pending'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -150,6 +151,7 @@ export function ChatPage() {
 
   const handleLogout = () => {
     if (!chat.canLeave()) return
+    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
     localStorage.removeItem('elevation_token')
     localStorage.removeItem('elevation_role')
     localStorage.removeItem('elevation_name')
@@ -188,7 +190,7 @@ export function ChatPage() {
     setRecsError('')
     setShowRecs(true)
     try {
-      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST' })
+      const res = await apiFetch('/api/recommendations/generate', getToken(), { method: 'POST', body: JSON.stringify({ lang }) })
       if (!res.ok) throw new Error()
       const data = await res.json()
       setRecommendations(data)
@@ -250,7 +252,7 @@ export function ChatPage() {
   }
 
   const rollbackVersion = async (id: number) => {
-    if (!confirm('¿Seguro que querés activar esta versión anterior?')) return
+    if (!confirm('¿Seguro que quieres activar esta versión anterior?')) return
     try {
       await apiFetch(`/api/superadmin/prompt/${id}/rollback`, getToken(), { method: 'POST' })
       setPromptMsg('✓ Rollback exitoso.')
