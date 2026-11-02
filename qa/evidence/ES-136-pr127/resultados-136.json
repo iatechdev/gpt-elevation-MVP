@@ -1,0 +1,207 @@
+[
+ {
+  "id": "PRE-sesiones",
+  "ok": true,
+  "detail": "persona:true,admin:true,superadmin:true,therapist:true,board:true"
+ },
+ {
+  "id": "L1L2L4-persona-es",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-persona-es",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-admin-es",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-admin-es",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-superadmin-es",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-superadmin-es",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-therapist-es",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-therapist-es",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-board-es",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-board-es",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-persona-en",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-persona-en",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-admin-en",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-admin-en",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-superadmin-en",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-superadmin-en",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-therapist-en",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-therapist-en",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L1L2L4-board-en",
+  "ok": true,
+  "detail": "{\"visible\":true,\"antes\":200,\"despues\":401,\"url\":\"/\",\"token\":false,\"pend\":[],\"llamadas_logout\":1,\"errs\":[]}"
+ },
+ {
+  "id": "L2-atras-board-en",
+  "ok": true,
+  "detail": "{\"url\":\"sin-acceso-al-almacenamiento:about:blank\",\"token\":false}"
+ },
+ {
+  "id": "L3-falla-500",
+  "ok": true,
+  "detail": "{\"t\":null,\"r\":null,\"n\":null,\"pend\":[],\"url\":\"/\",\"hs\":false}"
+ },
+ {
+  "id": "L3-falla-401",
+  "ok": true,
+  "detail": "{\"t\":null,\"r\":null,\"n\":null,\"pend\":[],\"url\":\"/\",\"hs\":false}"
+ },
+ {
+  "id": "L3-falla-red",
+  "ok": true,
+  "detail": "{\"t\":null,\"r\":null,\"n\":null,\"pend\":[],\"url\":\"/\",\"hs\":false}"
+ },
+ {
+  "id": "L5-doble-clic-una-llamada",
+  "ok": true,
+  "detail": "llamadas=1"
+ },
+ {
+  "id": "L5-otra-pestana-pide-login",
+  "ok": true,
+  "detail": "{\"t\":null,\"r\":null,\"n\":null,\"pend\":[\"elevation_pending_chat\"],\"url\":\"/login\",\"hs\":false}"
+ },
+ {
+  "id": "L6-persona-es-320",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-es-375",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-es-768",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-es-1440",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-admin-es-320",
+  "ok": true,
+  "detail": "{\"h\":47,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-therapist-es-320",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-board-es-375",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-en-320",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-en-375",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-en-768",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-persona-en-1440",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-admin-en-320",
+  "ok": true,
+  "detail": "{\"h\":47,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-therapist-en-320",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L6-board-en-375",
+  "ok": true,
+  "detail": "{\"h\":44,\"inView\":true,\"hs\":false,\"teclado_ok\":true}"
+ },
+ {
+  "id": "L8-xss-nombre-no-ejecuta-y-token-revocado",
+  "ok": true,
+  "detail": "{\"ejecutado\":false,\"url_con_token\":false}"
+ }
+]
