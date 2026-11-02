@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe de QA — Humo E2E de staging, fase A (repetición)</title>
+<style>
+:root{--bg:#faf8f4;--fg:#1f2a24;--mut:#5f6b64;--card:#ffffff;--line:#dcd8cf;--ok:#2f6b3f;--warn:#9a6a00;--bad:#a23a2a;--acc:#3f5b45}
+@media (prefers-color-scheme:dark){:root{--bg:#161b18;--fg:#e8ece9;--mut:#a3aea7;--card:#1f2622;--line:#34403a;--ok:#74c28a;--warn:#e0b44c;--bad:#e58a78;--acc:#9cc4a6}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.7rem;margin:.2em 0}h2{font-size:1.25rem;margin:2em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.05rem;margin:1.2em 0 .3em}
+.meta{color:var(--mut);font-size:.92rem}
+.verdict{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--warn);border-radius:8px;padding:14px 16px;margin:16px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card b{display:block;font-size:1.5rem}.card span{color:var(--mut);font-size:.85rem}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;background:var(--card);font-size:.92rem}th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}th{background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}.bad{color:var(--bad);font-weight:600}
+code{background:color-mix(in srgb,var(--acc) 12%,var(--card));padding:1px 5px;border-radius:4px;font-size:.88em}
+ul{padding-left:1.2em}li{margin:.25em 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Informe de QA — Humo E2E de staging, fase A (repetición)</h1>
+<p class="meta">Elevation + Skill Map · [QA-Claude] · 1-nov-2026 · Staging: <code>ebf7e72</code> (= main, incluye #107/ES-38) · Ticket: ES-40 · Plan aprobado por Mauricio · Datos 100 % sintéticos, 0 tokens de IA · Scripts: <code>qa/e2e</code> (PR #6)</p>
+
+<div class="verdict">
+<strong>Veredicto de la fase A: CAMBIOS REQUERIDOS (sin hallazgos Críticos ni Altos).</strong>
+La seguridad, el aislamiento, el rechazo de archivos no válidos, el chat, el Radar y las rutas pasan. Siguen abiertos dos hallazgos funcionales ya conocidos: falta «Cerrar sesión» en el panel de la persona y de la junta (lo cubre #127 / ES-136, aún sin fusionar) y no hay acceso en la interfaz para exportar ni eliminar datos. La fase B (chat con IA real) no está autorizada y no se ejecutó.
+</div>
+
+<div class="cards">
+<div class="card"><b>50/50</b><span>A3 seguridad y aislamiento (API)</span></div>
+<div class="card"><b>21/21</b><span>A4 archivos no válidos</span></div>
+<div class="card"><b>16/17</b><span>A8 sesión y límites (1 precondición)</span></div>
+<div class="card"><b>390 × 2</b><span>A1 páginas recorridas ES y EN</span></div>
+<div class="card"><b>0 → 0</b><span>Consumo de IA en la corrida</span></div>
+</div>
+
+<h2>Resultados por bloque</h2>
+<div class="tw"><table>
+<tr><th>Bloque</th><th>ES</th><th>EN</th><th>Lectura</th></tr>
+<tr><td>A1 recorrido de rutas por rol, idioma y 5 tamaños</td><td>390 páginas, 10 marcadas</td><td>390 páginas, 10 marcadas</td><td>Las 10 son <code>/admin/prompts</code>: el texto <code>elevation_system_prompt</code> es el identificador de la plantilla (<code>p.key</code>), no una clave de traducción perdida. Falso positivo del detector. Aparte, esa pantalla tiene textos fijos en español (Bajo, fuera de este alcance).</td></tr>
+<tr><td>A2 ruta completa de una persona (37 pasos)</td><td>2 fallos</td><td>8 fallos</td><td>Reales en ambos idiomas: pasos 33 (derechos de datos) y 34 (cerrar sesión). Los otros 6 de EN son artefactos de mi script (ver abajo).</td></tr>
+<tr><td>A3 seguridad y aislamiento, derechos por API</td><td colspan="2">50/50</td><td>Pasa.</td></tr>
+<tr><td>A4 hojas de vida no válidas</td><td colspan="2">21/21</td><td>Pasa; ninguna consumió IA.</td></tr>
+<tr><td>A5 roles por la interfaz</td><td>36/37</td><td>36/37</td><td>Falla solo «cerrar sesión» de la junta (ES-136).</td></tr>
+<tr><td>A6 Radar</td><td>28/28</td><td>28/28</td><td>Pasa. Sigue sin zoom ni paneo (ya informado; no es un requisito verificado).</td></tr>
+<tr><td>A7 chat y subida de CV por la interfaz</td><td>14/14</td><td>14/14</td><td>Pasa.</td></tr>
+<tr><td>A8 sesión, revocación, límites, planes</td><td colspan="2">16/17</td><td>S8o «solicitud de plan» no se pudo probar: no hay planes publicados en staging (precondición, no defecto).</td></tr>
+<tr><td>A9 rutas y plan de carrera (catálogo sintético)</td><td>13/13</td><td>13/13</td><td>Pasa.</td></tr>
+</table></div>
+
+<h2>Falsos positivos de mis scripts (corregidos al revisar)</h2>
+<ul>
+<li>A2 EN pasos 17/18/21: «Hoy» y «Mis » son el texto en español que el propio script escribe como entrada sintética; no es una fuga de idioma.</li>
+<li>A2 EN pasos 29/30/31: mi umbral de 100 caracteres era demasiado alto para el texto inglés (98). Comprobado aparte (<code>a2b-en-pages.cjs</code>): las cuatro pantallas renderizan en EN y ES sin errores ni fuga de idioma.</li>
+<li>A2 ES paso 19 (diario vacío) falló una vez por tiempo y pasó al repetir. A4, A8 y A1 ES fallaron al inicio por el límite de inicios de sesión justo después de A3; se repitieron tras esperar y A1 ES ahora sí recorrió los roles administrador y terapeuta.</li>
+</ul>
+
+<h2>Hallazgos que siguen abiertos</h2>
+<div class="tw"><table>
+<tr><th>ID</th><th>Sev.</th><th>Hallazgo</th><th>Estado</th></tr>
+<tr><td>—</td><td class="warn">Medio</td><td>Sin botón «Cerrar sesión» en el panel de la persona y de la junta (ES y EN).</td><td>Lo corrige #127 (ES-136); sin fusionar ni probar. Su head cambió a <code>033ebee7</code>; plan por reaprobar.</td></tr>
+<tr><td>—</td><td class="warn">Medio</td><td>Sin acceso en la interfaz para exportar o eliminar datos (la API existe y pasa A3).</td><td>Abierto; confirmar ticket en Jira.</td></tr>
+<tr><td>—</td><td class="warn">Bajo</td><td>Radar sin zoom ni paneo; <code>/admin/prompts</code> con textos fijos en español.</td><td>Informativo.</td></tr>
+</table></div>
+
+<h2>No verificado</h2>
+<ul>
+<li>Solicitud de plan (S8o): faltan planes sintéticos en staging; escribirlos en la base es decisión de Mauricio.</li>
+<li>Reversión: Infra remite a <code>docs/DESPLIEGUE-RAILWAY.md</code> (probada el 23 y 24-oct); no se repitió en <code>ebf7e72</code>.</li>
+<li>Worker: activo con <code>poll_wait</code> cada ~30 s; no hay línea de arranque para <code>ebf7e72</code>.</li>
+<li>Consumo de IA de la cohorte 2026-11: sin filas (0 de 1.000.000) según Infra, coherente con 0 → 0 medido en A4/A7.</li>
+<li>Fase B (chat con IA real, ≈320 k tokens): no autorizada. #98 (ES-113) y #127 no están en staging, por lo que esta fase no los cubre.</li>
+</ul>
+
+<h2>Cómo reproducir</h2>
+<p>Con credenciales sintéticas locales: <code>node qa/e2e/a3-security-api.cjs</code>, <code>a4</code>, <code>a8</code>; y con <code>QA_LANG=es|en</code>: <code>a1</code>, <code>a2</code>, <code>a5</code>, <code>a6</code>, <code>a7</code>, <code>a9</code>. Salidas en <code>qa-e2e-evidencia/run-ebf7e72</code> (fuera del repositorio, junto con las capturas). Los inicios de sesión están limitados (~10/min): conviene esperar un minuto entre scripts.</p>
+</main>
+</body>
+</html>

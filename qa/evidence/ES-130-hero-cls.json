@@ -1,0 +1,106 @@
+[
+ {
+  "lang": "en",
+  "w": 390,
+  "before": {
+   "h1": "WHAT YOU HAVE LIVED COUNTS.",
+   "h1Top": 174,
+   "h1H": 78,
+   "subText": "Some things you need to put into words. Others you have not ",
+   "subH": 122,
+   "blockH": 222,
+   "sectionH": 345,
+   "font": "40px \"Elevation Landing Inter\", Int"
+  },
+  "after": {
+   "h1": "WHAT YOU HAVE LIVED COUNTS.",
+   "h1Top": 174,
+   "h1H": 78,
+   "subText": "Some things you need to put into words. Others you have not ",
+   "subH": 122,
+   "blockH": 222,
+   "sectionH": 345,
+   "font": "40px \"Elevation Landing Inter\", Int"
+  },
+  "saltoBloque": 0,
+  "saltoSeccion": 0
+ },
+ {
+  "lang": "en",
+  "w": 1440,
+  "before": {
+   "h1": "WHAT YOU HAVE LIVED COUNTS.",
+   "h1Top": 201,
+   "h1H": 165,
+   "subText": "Some things you need to put into words. Others you have not ",
+   "subH": 61,
+   "blockH": 247,
+   "sectionH": 419,
+   "font": "84px \"Elevation Landing Inter\", Int"
+  },
+  "after": {
+   "h1": "WHAT YOU HAVE LIVED COUNTS.",
+   "h1Top": 201,
+   "h1H": 165,
+   "subText": "Some things you need to put into words. Others you have not ",
+   "subH": 61,
+   "blockH": 247,
+   "sectionH": 419,
+   "font": "84px \"Elevation Landing Inter\", Int"
+  },
+  "saltoBloque": 0,
+  "saltoSeccion": 0
+ },
+ {
+  "lang": "es",
+  "w": 390,
+  "before": {
+   "h1": "LO QUE HAS VIVIDO CUENTA.",
+   "h1Top": 174,
+   "h1H": 78,
+   "subText": "Hay cosas que necesitas poner en palabras. Y otras que todav",
+   "subH": 122,
+   "blockH": 222,
+   "sectionH": 345,
+   "font": "40px \"Elevation Landing Inter\", Int"
+  },
+  "after": {
+   "h1": "LO QUE HAS VIVIDO CUENTA.",
+   "h1Top": 174,
+   "h1H": 78,
+   "subText": "Hay cosas que necesitas poner en palabras. Y otras que todav",
+   "subH": 122,
+   "blockH": 222,
+   "sectionH": 345,
+   "font": "40px \"Elevation Landing Inter\", Int"
+  },
+  "saltoBloque": 0,
+  "saltoSeccion": 0
+ },
+ {
+  "lang": "es",
+  "w": 1440,
+  "before": {
+   "h1": "LO QUE HAS VIVIDO CUENTA.",
+   "h1Top": 201,
+   "h1H": 165,
+   "subText": "Hay cosas que necesitas poner en palabras. Y otras que todav",
+   "subH": 61,
+   "blockH": 247,
+   "sectionH": 419,
+   "font": "84px \"Elevation Landing Inter\", Int"
+  },
+  "after": {
+   "h1": "LO QUE HAS VIVIDO CUENTA.",
+   "h1Top": 201,
+   "h1H": 165,
+   "subText": "Hay cosas que necesitas poner en palabras. Y otras que todav",
+   "subH": 61,
+   "blockH": 247,
+   "sectionH": 419,
+   "font": "84px \"Elevation Landing Inter\", Int"
+  },
+  "saltoBloque": 0,
+  "saltoSeccion": 0
+ }
+]
