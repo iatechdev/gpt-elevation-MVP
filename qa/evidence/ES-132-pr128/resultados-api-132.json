@@ -1,0 +1,97 @@
+[
+ {
+  "id": "F1-misma-respuesta",
+  "ok": true,
+  "detail": "{\"existe\":202,\"inexistente\":202,\"inactivo\":202,\"mayusculas\":202}"
+ },
+ {
+  "id": "F1b-solo-la-cuenta-activa-recibe-correo",
+  "ok": true,
+  "detail": "existe=1 inactivo=0"
+ },
+ {
+  "id": "S1-enumeracion-por-tiempo",
+  "ok": true,
+  "detail": "mediana existe=4.9 ms, inexistente=5.3 ms, diferencia=0.5 ms; p95 11.4/8.8"
+ },
+ {
+  "id": "F2pre-correo-con-enlace-en-fragmento",
+  "ok": true,
+  "detail": "enlace en #fragmento, caducidad 30 min en el texto"
+ },
+ {
+  "id": "S5-solo-hash-en-bd",
+  "ok": true,
+  "detail": "filas=1 columnas=tokenHash,expiresAt,usedAt"
+ },
+ {
+  "id": "F2-un-solo-uso",
+  "ok": true,
+  "detail": "1.º=200 2.º=400"
+ },
+ {
+  "id": "F6-revoca-sesiones-previas",
+  "ok": true,
+  "detail": "token previo antes=200 despues=401; clave vieja=401; nueva=200"
+ },
+ {
+  "id": "F7-desbloquea-cuenta",
+  "ok": true,
+  "detail": "bloqueada antes del reset: login con clave correcta=423; tras el reset=200"
+ },
+ {
+  "id": "S2-concurrencia-10-confirm",
+  "ok": true,
+  "detail": "éxitos=1; estados=400,400,200,400,400,400,400,400,400,400"
+ },
+ {
+  "id": "F4-ultimo-enlace-gana",
+  "ok": true,
+  "detail": "primero=400 segundo=200"
+ },
+ {
+  "id": "S3-limite-3-enlaces-por-hora",
+  "ok": false,
+  "detail": "correos=4 respuestas=202,202,202,202"
+ },
+ {
+  "id": "F5-politica-ES128-no-gasta-el-enlace",
+  "ok": false,
+  "detail": "débiles=200 | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=400"
+ },
+ {
+  "id": "S8-roles-misma-respuesta",
+  "ok": true,
+  "detail": "[[\"admin\",202,true],[\"therapist\",202,true],[\"board\",202,true]]"
+ },
+ {
+  "id": "S9-correo-capitalizacion-y-espacios",
+  "ok": true,
+  "detail": "respuestas=202,202,202; correos emitidos=1 (se documenta: el servidor compara el correo tal cual lo recibe)"
+ },
+ {
+  "id": "S7-entradas-maliciosas-sin-500",
+  "ok": true,
+  "detail": "request=400,400,400,400,400,400,202,202,202,202,400; confirm=400,400,400,400,400,400,400,400,400,400; json roto=400; GET=403"
+ },
+ {
+  "id": "S6-token-correo-y-enlace-fuera-de-logs",
+  "ok": true,
+  "detail": "log de 5521 caracteres revisado: sin tokens, sin enlaces, sin correos"
+ },
+ {
+  "id": "F3-caducidad",
+  "ok": true,
+  "detail": "confirm tras vencer=400; la clave original sigue valiendo=200"
+ },
+ {
+  "id": "S4-429-request-y-confirm",
+  "ok": true,
+  "detail": "request: 202,202,202,202,202,429,429; confirm: 400,400,400,400,400,400,400,400,400,400,429,429"
+ },
+ {
+  "id": "P1-rendimiento",
+  "ok": true,
+  "detail": "request p50=4.1 p95=6.7 ms (n=50); confirm p50=186.2 p95=223.2 ms (n=12; incluye bcrypt)"
+ }
+]

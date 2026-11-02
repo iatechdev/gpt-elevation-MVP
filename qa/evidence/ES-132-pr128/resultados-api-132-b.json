@@ -1,0 +1,17 @@
+[
+ {
+  "id": "F5-politica-ES128-no-gasta-el-enlace",
+  "ok": true,
+  "detail": "débiles=400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400:password_policy | 400; luego válida=200"
+ },
+ {
+  "id": "S3a-espaciadas-limite-3",
+  "ok": true,
+  "detail": "solicitudes espaciadas 400 ms: correos=3"
+ },
+ {
+  "id": "S3b-rafaga-6-simultaneas-limite-3",
+  "ok": false,
+  "detail": "ráfaga de 6 simultáneas: correos emitidos=4, filas creadas=4, enlaces vivos=1 (esperado: ≤3 correos y 1 vivo)"
+ }
+]
