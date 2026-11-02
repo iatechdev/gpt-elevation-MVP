@@ -44,6 +44,9 @@ jobs:
       - run: npm run build
         env:
           VITE_BACKEND_URL: ''
+      # ES-129: presupuesto de tamaño (JS inicial en gzip y mayor bloque); falla el PR si se excede.
+      - name: Presupuesto de tamaño del frontend
+        run: npm run build:check
 
   backend:
     runs-on: ubuntu-latest

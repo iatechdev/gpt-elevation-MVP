@@ -34,9 +34,9 @@ export function LandingPage() {
         {/* ES-70 · S7 y S9; S8 se incorporará mediante ES-71. */}
         <LandingFeatures text={landing.text} />
         <LandingSkillMap text={landing.text} />
-        {/* ES-72 · S11: objetivos y estado del proyecto */}
-        <LandingProject text={landing.text} />
+        {/* ES-133: planes antes del estado del proyecto; S11 (ES-72) cierra antes del acceso */}
         <LandingPlans text={landing.text} />
+        <LandingProject text={landing.text} />
         {/* ES-74 · S13: acceso y alta, sin registrar elección de puerta */}
         <LandingJoin text={landing.text} />
 

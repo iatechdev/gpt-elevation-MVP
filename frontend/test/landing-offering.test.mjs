@@ -40,12 +40,13 @@ test('ES-70: real TSX renders six features, four evidence states, four autonomy 
   }
 })
 
-test('ES-70: all feature/route availability labels start conservatively and are editable per language', () => {
+test('ES-133: availability labels reflect what exists, no "coming soon" remains, and they stay editable per language', () => {
   const statuses = entries.filter(entry => entry.key.endsWith('.status'))
   assert.equal(statuses.length, 10)
+  const preparing = ['landing.features.exercises.status', 'landing.features.data.status', ...['continuity', 'adjacent', 'exploratory'].map(route => `landing.skillmap.routes.${route}.status`)]
   for (const entry of statuses) {
-    assert.equal(entry.es, 'Próximamente')
-    assert.equal(entry.en, 'Coming soon')
+    const expected = preparing.includes(entry.key) ? ['En preparación', 'In preparation'] : ['Disponible', 'Available']
+    assert.deepEqual([entry.es, entry.en], expected, entry.key)
     for (const [lang, value] of [['es', 'En piloto'], ['en', 'Available']]) {
       assert.ok(render(lang, { [entry.key]: value }).includes(value))
     }

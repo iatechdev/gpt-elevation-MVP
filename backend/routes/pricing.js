@@ -67,7 +67,7 @@ router.post('/seed', async (req, res) => {
         slug:           'essential',
         name_es:        'Esencial',
         name_en:        'Essential',
-        description_es: 'Todo lo que necesitás para un acompañamiento real.',
+        description_es: 'Todo lo que necesitas para un acompañamiento real.',
         description_en: 'Everything you need for real support.',
         price:          12,
         currency:       'USD',
