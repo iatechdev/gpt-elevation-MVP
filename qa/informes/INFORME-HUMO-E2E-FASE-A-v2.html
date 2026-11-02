@@ -48,7 +48,7 @@ La seguridad, el aislamiento, el rechazo de archivos no válidos, el chat, el Ra
 <tr><td>A5 roles por la interfaz</td><td>36/37</td><td>36/37</td><td>Falla solo «cerrar sesión» de la junta (ES-136).</td></tr>
 <tr><td>A6 Radar</td><td>28/28</td><td>28/28</td><td>Pasa. Sigue sin zoom ni paneo (ya informado; no es un requisito verificado).</td></tr>
 <tr><td>A7 chat y subida de CV por la interfaz</td><td>14/14</td><td>14/14</td><td>Pasa.</td></tr>
-<tr><td>A8 sesión, revocación, límites, planes</td><td colspan="2">16/17</td><td>S8o «solicitud de plan» no se pudo probar: no hay planes publicados en staging (precondición, no defecto).</td></tr>
+<tr><td>A8 sesión, revocación, límites, planes</td><td colspan="2">16/17 → 18/18 en la pasada corta</td><td>S8o «solicitud de plan» no se pudo probar en la primera corrida (sin planes en staging); con los 2 planes sintéticos que sembró Infra pasa.</td></tr>
 <tr><td>A9 rutas y plan de carrera (catálogo sintético)</td><td>13/13</td><td>13/13</td><td>Pasa.</td></tr>
 </table></div>
 
@@ -69,7 +69,7 @@ La seguridad, el aislamiento, el rechazo de archivos no válidos, el chat, el Ra
 
 <h2>No verificado</h2>
 <ul>
-<li>Solicitud de plan (S8o): faltan planes sintéticos en staging; escribirlos en la base es decisión de Mauricio.</li>
+<li>Solicitud de plan (S8o): resuelto en la pasada corta (ver anexo).</li>
 <li>Reversión: Infra remite a <code>docs/DESPLIEGUE-RAILWAY.md</code> (probada el 23 y 24-oct); no se repitió en <code>ebf7e72</code>.</li>
 <li>Worker: activo con <code>poll_wait</code> cada ~30 s; no hay línea de arranque para <code>ebf7e72</code>.</li>
 <li>Consumo de IA de la cohorte 2026-11: sin filas (0 de 1.000.000) según Infra, coherente con 0 → 0 medido en A4/A7.</li>
@@ -78,6 +78,6 @@ La seguridad, el aislamiento, el rechazo de archivos no válidos, el chat, el Ra
 
 <h2>Cómo reproducir</h2>
 <p>Con credenciales sintéticas locales: <code>node qa/e2e/a3-security-api.cjs</code>, <code>a4</code>, <code>a8</code>; y con <code>QA_LANG=es|en</code>: <code>a1</code>, <code>a2</code>, <code>a5</code>, <code>a6</code>, <code>a7</code>, <code>a9</code>. Salidas en <code>qa-e2e-evidencia/run-ebf7e72</code> (fuera del repositorio, junto con las capturas). Los inicios de sesión están limitados (~10/min): conviene esperar un minuto entre scripts.</p>
-</main>
+<h2>Anexo — pasada corta sobre 9e95d7d (incluye #98 / ES-113)</h2><p>Staging pasó a <code>9e95d7d</code> (= main) con #98 fusionado en el head aprobado <code>985da16e</code> y 2 planes sintéticos sembrados por Infra. Se repitieron A8, A3, A2 (ES y EN) y A5 (ES).</p><ul><li><b>A8: 18/18</b> (S8o pasa). <b>A3: 50/50.</b></li><li><b>A2:</b> ES 3 fallos, EN 12; ningún fallo nuevo del producto. Los reales siguen siendo los pasos 33 (derechos de datos) y 34 (cerrar sesión). El paso 19 (diario vacío) falla porque tras ES-113 el botón «Guardar entrada» está deshabilitado con el campo vacío (comportamiento correcto y aprobado): mi script de A2 intenta pulsarlo y espera; es un artefacto del script (actualizar). Los demás fallos de EN son los mismos artefactos ya descritos («Hoy»/«Mis » de la entrada sintética y el umbral de 100 caracteres).</li><li><b>A5 (ES):</b> 36/37, solo «cerrar sesión» de la junta (ES-136).</li></ul><p>El diario de ES-113 no se re-probó a fondo aquí (ya tiene su aprobación y evidencia en PR #98); esta pasada solo confirma que staging responde y no hay regresión visible.</p></main>
 </body>
 </html>
