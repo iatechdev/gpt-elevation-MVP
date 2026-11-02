@@ -109,6 +109,23 @@ test('ES-132 PostgreSQL: recuperación de contraseña de un solo uso, con vencim
     assert.equal((await call('/password-reset/confirm', { token: second.token, password: 'abc' })).body.code, 'password_policy');
   });
 
+  await t.test('ráfaga de seis solicitudes simultáneas al mismo correo (QA-132-01): máximo 3 correos y un solo enlace vivo', async () => {
+    await sequelize.query('DELETE FROM "PasswordResets"');
+    for (let round = 0; round < 3; round++) {
+      await sequelize.query('DELETE FROM "PasswordResets"');
+      sent.length = 0;
+      const answers = await Promise.all(Array.from({ length: 6 }, () => call('/password-reset/request', { email: 'real@example.invalid' })));
+      await router.idle();
+      assert.ok(answers.every(answer => answer.status === 202));
+      assert.equal(sent.length, 3, 'correos enviados en la ráfaga');
+      assert.equal(await PasswordReset.count(), 3);
+      assert.equal(await PasswordReset.count({ where: { usedAt: null } }), 1, 'enlaces vivos');
+      // El único vivo es el del último correo creado; los demás ya no sirven.
+      const live = await PasswordReset.findOne({ where: { usedAt: null } });
+      assert.ok(live);
+    }
+  });
+
   await t.test('cuenta inactiva o con eliminación pendiente: no se crea enlace ni se envía correo', async () => {
     await sequelize.query('DELETE FROM "PasswordResets"');
     const off = await User.create({ name: 'Off', email: 'off@example.invalid', password: 'x', role: 'user', active: false });

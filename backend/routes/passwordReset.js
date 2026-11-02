@@ -8,6 +8,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
+const { sequelize } = require('../database');
 const User = require('../User');
 const PasswordReset = require('../PasswordReset');
 const { deletionPending } = require('../utils/deletionGuard');
@@ -41,12 +42,21 @@ const track = promise => { pending.add(promise); promise.finally(() => pending.d
 async function issueLink(email, locale) {
   const user = await User.findOne({ where: { email } });
   if (!user || user.active === false || await deletionPending(user.id)) return;
-  const recent = await PasswordReset.count({ where: { UserId: user.id, createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } } });
-  if (recent >= perAccountPerHour()) return;
+  // Contar, invalidar y crear van juntos bajo un bloqueo de la fila de la persona: solicitudes simultáneas se ponen en fila (QA-132-01).
   const token = crypto.randomBytes(32).toString('base64url');
-  // Solo vale el último enlace pedido.
-  await PasswordReset.update({ usedAt: new Date() }, { where: { UserId: user.id, usedAt: null } });
-  await PasswordReset.create({ UserId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + ttlMinutes() * 60 * 1000) });
+  const transaction = await sequelize.transaction();
+  try {
+    await User.findOne({ where: { id: user.id }, transaction, lock: true });
+    const recent = await PasswordReset.count({ where: { UserId: user.id, createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } }, transaction });
+    if (recent >= perAccountPerHour()) { await transaction.commit(); return; }
+    // Solo vale el último enlace pedido.
+    await PasswordReset.update({ usedAt: new Date() }, { where: { UserId: user.id, usedAt: null }, transaction });
+    await PasswordReset.create({ UserId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + ttlMinutes() * 60 * 1000) }, { transaction });
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback().catch(() => {});
+    throw error;
+  }
   const base = String(process.env.APP_BASE_URL || process.env.FRONTEND_URL || '').replace(/\/+$/, '');
   // El token va en el fragmento (#): no viaja al servidor, ni a registros de acceso, ni en Referer.
   if (!base) return;
