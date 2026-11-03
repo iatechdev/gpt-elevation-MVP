@@ -9,7 +9,7 @@ const helmet  = require('helmet');
 const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
 const syncOptions              = require('./utils/syncOptions');
-const { syncDisabled }         = syncOptions;
+const { syncDisabled, syncDisabledWarning } = syncOptions;
 const { mountFrontend }        = require('./utils/frontendStatic');
 
 const {
@@ -74,6 +74,8 @@ app.get('/api/health', (req, res) => {
 // ── Base de datos ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
   setupAssociations(sequelize);
+  const syncWarning = syncDisabledWarning();
+  if (syncWarning) console.warn('⚠️ ' + syncWarning);
   if (syncDisabled()) {
     // ES-115 (ES-59, fase 2): el esquema lo gestionan solo las migraciones (se aplican antes del despliegue).
     console.log('ℹ️ DB_SYNC_DISABLED=true: no se llama a sync(); el esquema lo gestionan las migraciones.');

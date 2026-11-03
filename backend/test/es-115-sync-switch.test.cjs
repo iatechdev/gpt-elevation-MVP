@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const syncOptions = require('../utils/syncOptions');
-const { syncDisabled } = syncOptions;
+const { syncDisabled, syncDisabledWarning } = syncOptions;
 
 test('ES-115: sync() se omite únicamente con DB_SYNC_DISABLED=true', () => {
   assert.equal(syncDisabled({ DB_SYNC_DISABLED: 'true' }), true);
@@ -10,6 +10,14 @@ test('ES-115: sync() se omite únicamente con DB_SYNC_DISABLED=true', () => {
     assert.equal(syncDisabled({ DB_SYNC_DISABLED: value }), false, `valor ${JSON.stringify(value)}`);
   }
   assert.equal(syncDisabled({}), false);
+});
+
+test('ES-115 QA-115-01: un valor no reconocido deja sync() activo y avisa; true, false, vacío y ausente no avisan', () => {
+  for (const value of ['TRUE', '1', 'yes', ' true', 'True']) {
+    assert.equal(syncDisabled({ DB_SYNC_DISABLED: value }), false);
+    assert.match(syncDisabledWarning({ DB_SYNC_DISABLED: value }), /sigue ACTIVO/);
+  }
+  for (const value of [undefined, '', 'true', 'false']) assert.equal(syncDisabledWarning({ DB_SYNC_DISABLED: value }), null);
 });
 
 test('ES-115: el interruptor no altera las opciones de sync() existentes', () => {
