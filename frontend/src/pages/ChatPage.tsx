@@ -4,7 +4,7 @@ import { SpaceNav } from '../space/SpaceNav'
 import { ChatBar } from '../space/ChatBar'
 import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
-import { ChatContext, ChatInput } from '../space/ChatControls'
+import { ChatContext, ChatInput, TruncatedNotice } from '../space/ChatControls'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
 import { clearPending } from '../space/pending'
@@ -359,6 +359,7 @@ export function ChatPage() {
                 <div style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
                   <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
                   <p style={{ fontSize: '1rem', color: '#1A1A18', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
+                  {i === messages.length - 1 && <TruncatedNotice chat={chat} />}
                 </div>
               )}
             </div>

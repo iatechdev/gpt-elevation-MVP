@@ -15,6 +15,19 @@ export function ChatContext({ chat }: { chat: PersonalChat }) {
     {chat.intent && <div className="space-actions"><button className="elv-btn" disabled={chat.busy} onClick={() => void chat.check()}>{c.check}</button>{chat.retryable && <button className="elv-btn" disabled={chat.busy} onClick={() => void chat.retry()}>{c.retrySend}</button>}</div>}
   </div>
 }
+// ES-142: aviso bajo la última respuesta cortada por longitud. El texto del modelo no se toca; «Continuar» envía un turno normal.
+export function TruncatedNotice({ chat }: { chat: PersonalChat }) {
+  const { c } = chat; const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
+  const button = useRef<HTMLButtonElement>(null)
+  const last = chat.messages[chat.messages.length - 1]
+  if (chat.expired || !chat.loaded || last?.role !== 'bot' || !last.truncated) return null
+  // Si el botón desaparece porque llegó la respuesta nueva, el foco pasa a la caja de mensaje.
+  const onContinue = async () => { await chat.continueReply(); setTimeout(() => { if (!button.current?.isConnected) document.querySelector<HTMLTextAreaElement>('.space-message')?.focus() }, 0) }
+  return <div className="space-scope chat-truncated">
+    <p className="chat-truncated-msg" role="status">{c.truncated}<span className="chat-truncated-hint">{c.truncatedHint}</span></p>
+    <button ref={button} type="button" className="elv-btn" disabled={chat.busy || !!chat.intent || off} onClick={() => void onContinue()}>{chat.busy ? c.sending : c.continue}</button>
+  </div>
+}
 export function ChatInput({ chat }: { chat: PersonalChat }) {
   const { c } = chat; const { lang } = useLanguage(); const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
   const toggle = useRef<HTMLButtonElement>(null); const status = useRef<HTMLParagraphElement>(null)
