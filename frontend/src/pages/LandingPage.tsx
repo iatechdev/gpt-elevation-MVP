@@ -6,6 +6,8 @@ import { LandingHeader } from '../components/landing/LandingHeader'
 import { ExampleStrip } from '../components/landing/ExampleStrip'
 import { LandingFeatures, LandingSkillMap } from '../components/landing/LandingOffering'
 import { LandingProject } from '../components/landing/LandingProject'
+import { LandingTrust, LandingFaq } from '../components/landing/LandingTrustFaq'
+import { trustFaqEnabled } from '../content/landingTrustFaq'
 import { LandingProfessionals } from '../components/landing/LandingProfessionals'
 import { professionalsEnabled } from '../content/landingProfessionals'
 import { useSpaceRoutes } from '../space/routesContext'
@@ -52,6 +54,7 @@ export function LandingPage() {
 
         {/* ES-68 · Problema, módulos y recorrido */}
         <LandingJourney text={landing.text} />
+        {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingTrust text={landing.text} />}
 
         {/* ES-70 · S7 y S9; ES-71 · S8 solo en el build de revisión. */}
         <LandingFeatures text={landing.text} />
@@ -62,6 +65,7 @@ export function LandingPage() {
         <LandingProject text={landing.text} />
         {/* ES-74 · S13: acceso y alta, sin registrar elección de puerta */}
         <LandingJoin text={landing.text} />
+        {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingFaq text={landing.text} />}
 
         {/* ES-133: el CTA final repetía el acceso de S13; se fusionó en LandingJoin. */}
 
