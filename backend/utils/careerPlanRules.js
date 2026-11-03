@@ -29,13 +29,13 @@ function contextSnapshot(context) {
   try { new Intl.DateTimeFormat('en', { timeZone: context.timeZone }); } catch { throw invalid(); }
   return { version: context.version, weeklyMinutes: context.weeklyMinutes, timeZone: context.timeZone, locale: context.locale };
 }
-function experimentProposal({ choiceId, route, taskIndex, minutes, context, basisHash }) {
+function experimentProposal({ choiceId, route, taskIndex, minutes, context, basisHash, basisParts }) {
   id(choiceId);
   if (![20, 30, 45].includes(minutes) || !Number.isInteger(taskIndex) || taskIndex < 0 || taskIndex >= route.tasks.length) throw invalid();
   const availability = contextSnapshot(context);
   if (availability.weeklyMinutes < minutes) throw problem('needs_scope_reduction', 'Reduce el alcance o confirma más disponibilidad.', 'Reduce scope or confirm more availability.');
   if (route.regulated.isRegulated) throw problem('needs_safe_template', 'La tarea regulada necesita una plantilla revisada por un especialista.', 'The regulated task needs a specialist-reviewed template.');
-  return { schemaVersion: 1, templateVersion: TEMPLATE_VERSION, choiceId, basisHash, roleKey: route.roleKey,
+  return { schemaVersion: basisParts ? 2 : 1, ...(basisParts ? { basisParts } : {}), templateVersion: TEMPLATE_VERSION, choiceId, basisHash, roleKey: route.roleKey,
     taskIndex, task: structuredClone(route.tasks[taskIndex]), minutes, availability, content: structuredClone(TEMPLATE),
     rubric: { version: TEMPLATE_VERSION, status: 'not_domain_validated', criteria: structuredClone(TEMPLATE.criteria) },
     cost: { status: 'unknown' }, resources: [], lifecycle: 'ready' };
@@ -47,8 +47,44 @@ function refs(value = []) {
   return value.map(ref => { shape(ref, ['evidenceId', 'version']); id(ref.evidenceId); version(ref.version);
     if (seen.has(ref.evidenceId)) throw invalid(); seen.add(ref.evidenceId); return { evidenceId: ref.evidenceId, version: ref.version }; });
 }
+// QA-33-02: lo que la persona escribió en la versión anterior pasa a la nueva como borrador por revisar, nunca como resultado vigente.
+// Solo texto propio; la evidencia que dejó de ser válida se cuenta, sin su contenido. Nada de chat, diario, crisis ni revisiones humanas.
+const CARRY_PARTS = ['submission', 'reflection', 'decision'];
+function carryOver(previous, fromVersion, isValidRef) {
+  const old = previous.carriedOver || {}, out = {};
+  const s = previous.submission;
+  if (s) {
+    const all = s.evidenceRefs || [], valid = all.filter(isValidRef);
+    if (s.sample || valid.length) out.submission = { fromVersion, sample: s.sample, assistance: s.assistance.degree, evidenceRefs: valid, retiredEvidence: all.length - valid.length };
+  } else if (old.submission) out.submission = old.submission;
+  const r = previous.reflection;
+  if (r) out.reflection = { fromVersion, observation: r.observation, interpretation: r.interpretation }; else if (old.reflection) out.reflection = old.reflection;
+  const d = previous.decision;
+  if (d) out.decision = { fromVersion, value: d.value, reason: d.reason }; else if (old.decision) out.decision = old.decision;
+  return Object.keys(out).length ? { status: 'previous_version_to_review', ...out } : undefined;
+}
+function dropCarried(next, part) {
+  if (!next.carriedOver) return;
+  delete next.carriedOver[part];
+  if (!CARRY_PARTS.some(key => next.carriedOver[key])) delete next.carriedOver;
+}
 function changeExperiment(previous, input) {
-  shape(input, ['action', 'sample', 'evidenceRefs', 'assistance', 'observation', 'interpretation', 'decision', 'reason']);
+  shape(input, ['action', 'sample', 'evidenceRefs', 'assistance', 'observation', 'interpretation', 'decision', 'reason', 'part']);
+  if (input.action === 'adopt' || input.action === 'discard') {
+    shape(input, ['action', 'part']);
+    const carried = CARRY_PARTS.includes(input.part) ? previous.carriedOver?.[input.part] : null;
+    if (!carried) throw problem('nothing_to_adopt', 'No hay un borrador de la versión anterior para esa parte.', 'There is no draft from the previous version for that part.', 409);
+    if (input.action === 'discard') { const kept = structuredClone(previous); dropCarried(kept, input.part); return kept; }
+    // Lo adoptado se valida con las mismas reglas que lo escrito a mano y respeta el orden entrega → reflexión → decisión.
+    const base = input.part === 'submission' && previous.lifecycle === 'ready' ? { ...structuredClone(previous), lifecycle: 'in_progress' } : previous;
+    const step = input.part === 'submission' ? { action: 'submit', sample: carried.sample, evidenceRefs: carried.evidenceRefs, assistance: carried.assistance }
+      : input.part === 'reflection' ? { action: 'reflect', observation: carried.observation, interpretation: carried.interpretation }
+        : { action: 'decide', decision: carried.value, reason: carried.reason };
+    const adopted = changeExperiment(base, step);
+    adopted.carriedOver = previous.carriedOver ? structuredClone(previous.carriedOver) : undefined;
+    dropCarried(adopted, input.part);
+    return adopted;
+  }
   const next = structuredClone(previous);
   if (input.action === 'start') {
     shape(input, ['action']); if (previous.lifecycle !== 'ready') throw problem('transition_not_allowed', 'Transición no permitida.', 'Transition not allowed.', 409);
@@ -60,16 +96,16 @@ function changeExperiment(previous, input) {
     const sample = text(input.sample, 6000, true), evidenceRefs = refs(input.evidenceRefs);
     if (!sample && !evidenceRefs.length) throw invalid();
     next.submission = { sample, evidenceRefs, assistance: { degree: input.assistance, source: 'self_report' } };
-    delete next.reflection; delete next.decision; next.lifecycle = 'submitted';
+    delete next.reflection; delete next.decision; next.lifecycle = 'submitted'; dropCarried(next, 'submission');
   } else if (input.action === 'reflect') {
     shape(input, ['action', 'observation', 'interpretation']);
     if (!['submitted', 'self_reviewed'].includes(previous.lifecycle)) throw problem('transition_not_allowed', 'Primero guarda una entrega.', 'Save a submission first.', 409);
     next.reflection = { observation: text(input.observation), interpretation: text(input.interpretation), source: 'self_report' };
-    next.lifecycle = 'self_reviewed';
+    next.lifecycle = 'self_reviewed'; dropCarried(next, 'reflection');
   } else if (input.action === 'decide') {
     shape(input, ['action', 'decision', 'reason']);
     if (!['self_reviewed', 'decided'].includes(previous.lifecycle) || !['continue', 'adjust', 'pause', 'discard'].includes(input.decision)) throw problem('transition_not_allowed', 'Revisa la entrega antes de decidir.', 'Review the submission before deciding.', 409);
-    next.decision = { value: input.decision, reason: text(input.reason) }; next.lifecycle = 'decided';
+    next.decision = { value: input.decision, reason: text(input.reason) }; next.lifecycle = 'decided'; dropCarried(next, 'decision');
   } else throw invalid();
   return next;
 }
@@ -158,4 +194,4 @@ function localInstant(localDateTime, timeZone) {
   if (matches.length !== 1) throw problem('ambiguous_local_time', 'Elige otra hora local: esta hora no existe o es ambigua.', 'Choose another local time: this time does not exist or is ambiguous.');
   return matches[0].toISOString();
 }
-module.exports = { CareerPlanError, invalid, problem, shape, text, id, rid, version, refs, contextSnapshot, experimentProposal, changeExperiment, proposePlan, acceptPlan, localInstant, TEMPLATE_VERSION, TEMPLATE };
+module.exports = { CareerPlanError, invalid, problem, shape, text, id, rid, version, refs, contextSnapshot, experimentProposal, changeExperiment, carryOver, proposePlan, acceptPlan, localInstant, TEMPLATE_VERSION, TEMPLATE };

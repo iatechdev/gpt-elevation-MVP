@@ -36,8 +36,11 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
   await assert.rejects(contracts.getRoute(1, 1), { code: 'owner_required' });
   const users = {};
   for (const role of ['user', 'other', 'admin', 'therapist', 'board', 'superadmin']) users[role] = await User.create({ name: `SYNTHETIC ${role}`, email: `${role}@example.invalid`, password: randomBytes(32).toString('hex'), active: true, role: role === 'other' ? 'user' : role });
-  const a = users.user, b = users.other, state = { routeVersion: 1, context: context() };
-  contracts.getRoute = async (userId, choiceId) => { if (choiceId !== userId) throw problem('resource_not_found', 'No encontrado.', 'Not found.', 404); return { basisHash: `synthetic-${state.routeVersion}`, route: route() }; };
+  const a = users.user, b = users.other, state = { routeVersion: 1, ruleVersion: 1, context: context(), capabilities: [{ skillKey: 'communication', importance: 'essential', tracks: [{ track: 'self', level: 2, evidenceCount: 1 }] }, { skillKey: 'analysis', importance: 'useful', tracks: [] }] };
+  // QA-33-02: la ruta simulada lleva las capacidades y la versión de reglas de ES-32; routeVersion es el hash GLOBAL de ES-32, que ES-33 ya no usa.
+  const routeOf = () => ({ ...route(), slot: 'continuity', dimensions: { demonstratedTransfer: { capabilities: structuredClone(state.capabilities) } } });
+  const stubRoute = async (userId, choiceId) => { if (choiceId !== userId) throw problem('resource_not_found', 'No encontrado.', 'Not found.', 404); return { basisHash: `synthetic-${state.routeVersion}`, route: routeOf(), rules: { ruleVersion: state.ruleVersion, catalogVersion: 1, constraintsVersion: 1 } }; };
+  contracts.getRoute = stubRoute;
   contracts.getContext = async () => structuredClone(state.context);
   const consent = require('../../utils/consent'), evidence = require('../../utils/evidence'), rights = require('../../utils/dataRights');
   const { processDeletion } = require('../../utils/deletionProcessor'); const { issueToken, revokeToken } = require('../../utils/sessions');
@@ -221,15 +224,123 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
     assert.equal((await http(`/career-plan/versions/${planId}`)).data.plan.status, 'superseded'); planId = saved.data.plan.id;
     assert.equal(saved.data.plan.payload.actions[0].completionEvidence.actual.source, 'self_report'); assert.equal(await require('../../SkillAssessment').count(), 0);
   });
-  await t.test('cambio de disponibilidad, ruta y evidencia invalida y explica; rebase explícito no conserva logros como actuales', async () => {
-    state.context.version++; assert.equal((await http(`/experiments/${experimentId}`)).data.basis.status, 'needs_review');
+  const makeEvidence = title => evidence.create(a.id, { requestId: randomUUID(), status: 'confirmed', payload: { title, situation: 'Synthetic', responsibility: { text: 'Synthetic' }, actions: [{ text: 'Synthetic' }], delivered: { text: 'Synthetic' }, observedEffect: { known: false }, autonomy: 'assisted' } });
+  const basisOf = async () => (await http(`/experiments/${experimentId}`)).data.basis;
+  const payloadOf = async () => (await http(`/experiments/${experimentId}`)).data.current.payload;
+  await t.test('QA-33-02: solo la evidencia relevante cambia la base, y la razón se explica', async () => {
+    state.context.version++; assert.deepEqual(await basisOf(), { status: 'needs_review', reasons: ['context_changed'] });
     assert.equal((await http(`/career-plan/versions/${planId}`)).data.plan.basis.status, 'needs_review');
     assert.equal((await change({ action: 'submit', sample: 'new sample', assistance: 'none' })).status, 409);
-    state.context.version--; state.routeVersion++; assert.equal((await http(`/experiments/${experimentId}`)).data.basis.status, 'needs_review'); state.routeVersion--;
-    await evidence.remove(a.id, ev.id); assert.equal((await http(`/experiments/${experimentId}`)).data.basis.status, 'needs_review');
-    assert.equal((await change({ action: 'rebase' })).status, 201);
-    const own = await http(`/experiments/${experimentId}`); assert.equal(own.data.current.payload.lifecycle, 'ready'); assert.equal(own.data.current.payload.submission, undefined);
-    assert.ok(own.data.versions.some(row => row.payload.submission));
+    state.context.version--; assert.deepEqual(await basisOf(), { status: 'current', reasons: [] });
+    // Cambio GLOBAL de ES-32 (hash de todas las rutas) y evidencia confirmada que no toca esta ruta ni está citada: la base sigue vigente.
+    state.routeVersion++; assert.deepEqual(await basisOf(), { status: 'current', reasons: [] }); state.routeVersion--;
+    const unrelated = await makeEvidence('SYNTHETIC unrelated'); assert.ok(unrelated.id);
+    assert.deepEqual(await basisOf(), { status: 'current', reasons: [] });
+    assert.equal((await http(`/career-plan/versions/${planId}`)).data.plan.basis.status, 'current');
+    assert.equal(await Versions.count({ where: { UserId: a.id, experimentId } }), v); // nada se versionó solo
+    // Reglas, capacidades de la ruta y elección cambian la base con su propia razón; varias razones a la vez se listan todas.
+    state.ruleVersion++; assert.deepEqual(await basisOf(), { status: 'needs_review', reasons: ['rules_changed'] }); state.ruleVersion--;
+    state.capabilities[0].tracks[0].evidenceCount++; assert.deepEqual(await basisOf(), { status: 'needs_review', reasons: ['route_evidence_changed'] }); state.capabilities[0].tracks[0].evidenceCount--;
+    state.capabilities[1].tracks.push({ track: 'review', level: 1, evidenceCount: 1 }); assert.deepEqual((await basisOf()).reasons, ['route_evidence_changed']); state.capabilities[1].tracks.pop();
+    state.context.version++; state.ruleVersion++; assert.deepEqual((await basisOf()).reasons.sort(), ['context_changed', 'rules_changed']); state.context.version--; state.ruleVersion--;
+    contracts.getRoute = async () => { throw problem('basis_changed', 'Revisa la ruta elegida.', 'Review the chosen route.', 409); };
+    assert.deepEqual(await basisOf(), { status: 'needs_review', reasons: ['route_choice_changed'] }); contracts.getRoute = stubRoute;
+    assert.deepEqual(await basisOf(), { status: 'current', reasons: [] });
+    // Evidencia CITADA en la entrega: retirarla invalida con su propia razón.
+    await evidence.remove(a.id, ev.id); assert.deepEqual(await basisOf(), { status: 'needs_review', reasons: ['cited_evidence_changed'] });
+  });
+  let previousVersion, carried;
+  await t.test('QA-33-02: el rebase conserva entrega, reflexión y decisión como borrador de la versión anterior, que queda intacta', async () => {
+    previousVersion = v;
+    const rebased = await change({ action: 'rebase' }); assert.equal(rebased.status, 201);
+    const payload = rebased.data.version.payload; carried = payload.carriedOver;
+    assert.equal(payload.lifecycle, 'ready'); assert.equal(payload.submission, undefined); assert.equal(payload.reflection, undefined); assert.equal(payload.decision, undefined);
+    assert.equal(carried.status, 'previous_version_to_review');
+    assert.equal(carried.submission.fromVersion, previousVersion); assert.equal(carried.submission.sample, 'SYNTHETIC SAMPLE');
+    assert.deepEqual(carried.submission.evidenceRefs, []); assert.equal(carried.submission.retiredEvidence, 1); // la citada retirada no viaja como válida
+    assert.equal(carried.reflection.observation, 'SYNTHETIC observation'); assert.equal(carried.decision.value, 'continue');
+    assert.ok(!JSON.stringify(carried).includes('PRIVATE_')); assert.ok(!JSON.stringify(carried).includes('basisParts'));
+    const view = await http(`/experiments/${experimentId}`);
+    const old = view.data.versions.find(row => row.version === previousVersion);
+    assert.equal(old.payload.lifecycle, 'decided'); assert.equal(old.payload.submission.sample, 'SYNTHETIC SAMPLE'); assert.equal(old.payload.carriedOver, undefined); // inmutable
+    assert.deepEqual(view.data.basis, { status: 'current', reasons: [] });
+    // Lo arrastrado no es resultado vigente: ni revisión humana ni plan hasta que la persona lo reconfirme.
+    const review = await http(`/experiments/${experimentId}/review-requests`, { method: 'POST', body: { requestId: randomUUID(), expectedVersion: v, action: 'request', submissionVersion: 3, evidenceRefs: [], includeSample: true } });
+    assert.equal(review.status, 409);
+    assert.equal((await http('/career-plan/proposals', { method: 'POST', body: { experimentId, expectedVersion: v } })).status, 409);
+    assert.equal((await http(`/experiments/${experimentId}`, { actor: 'other' })).status, 404); // B no ve lo arrastrado de A
+  });
+  await t.test('QA-33-02: adoptar y descartar exige el orden entrega → reflexión → decisión y valida como lo escrito a mano', async () => {
+    assert.equal((await change({ action: 'adopt', part: 'reflection' })).status, 409);
+    assert.equal((await change({ action: 'adopt', part: 'decision' })).status, 409);
+    assert.equal((await change({ action: 'adopt', part: 'other' })).status, 409);
+    assert.equal((await change({ action: 'adopt', part: 'submission', sample: 'x' })).status, 400);
+    assert.equal(await Versions.count({ where: { UserId: a.id, experimentId } }), v); // los rechazos no crearon versiones
+    const dropped = await change({ action: 'discard', part: 'decision' }); assert.equal(dropped.status, 201);
+    assert.equal(dropped.data.version.payload.carriedOver.decision, undefined); assert.equal(dropped.data.version.payload.lifecycle, 'ready');
+    assert.equal((await change({ action: 'discard', part: 'decision' })).status, 409); // ya no hay borrador
+    const requestId = randomUUID(), body = { requestId, expectedVersion: v, change: { action: 'adopt', part: 'submission' } };
+    const adopted = await http(`/experiments/${experimentId}/versions`, { method: 'POST', body }); assert.equal(adopted.status, 201); v = adopted.data.version.version;
+    const payload = adopted.data.version.payload;
+    assert.equal(payload.lifecycle, 'submitted'); assert.equal(payload.submission.sample, 'SYNTHETIC SAMPLE'); assert.equal(payload.submission.version, v); assert.equal(payload.submission.assistance.source, 'self_report');
+    assert.equal(payload.carriedOver.submission, undefined); assert.ok(payload.carriedOver.reflection);
+    const repeat = await http(`/experiments/${experimentId}/versions`, { method: 'POST', body }); assert.equal(repeat.status, 200); assert.equal(repeat.data.created, false); // idempotente
+    assert.equal(await Versions.count({ where: { UserId: a.id, experimentId } }), v);
+    assert.equal((await http(`/experiments/${experimentId}/versions`, { actor: 'other', method: 'POST', body: { ...body, requestId: randomUUID() } })).status, 404);
+    const reflected = await change({ action: 'adopt', part: 'reflection' }); assert.equal(reflected.status, 201);
+    assert.equal(reflected.data.version.payload.lifecycle, 'self_reviewed'); assert.equal(reflected.data.version.payload.reflection.source, 'self_report');
+    assert.equal(reflected.data.version.payload.carriedOver, undefined);
+    assert.equal((await change({ action: 'adopt', part: 'reflection' })).status, 409);
+  });
+  await t.test('QA-33-02: lo que la persona escribe a mano reemplaza el borrador; evidencia citada que ya no es válida no se adopta', async () => {
+    const second = await makeEvidence('SYNTHETIC second'); const refs2 = [{ evidenceId: second.id, version: 1 }];
+    assert.equal((await change({ action: 'submit', sample: 'SECOND SAMPLE', evidenceRefs: refs2, assistance: 'planning' })).status, 201);
+    assert.equal((await change({ action: 'reflect', observation: 'SECOND observation', interpretation: 'SECOND interpretation' })).status, 201);
+    assert.equal((await change({ action: 'decide', decision: 'adjust', reason: 'SECOND reason' })).status, 201);
+    const rebased = await change({ action: 'rebase' }); assert.equal(rebased.status, 201); carried = rebased.data.version.payload.carriedOver;
+    assert.deepEqual(carried.submission.evidenceRefs, refs2); assert.equal(carried.submission.retiredEvidence, 0); assert.equal(carried.submission.fromVersion, rebased.data.version.version - 1);
+    // Rebase repetido sin tocar nada: el trabajo propio de la versión vacía no existe, el borrador pendiente sigue y conserva su origen.
+    const again = await change({ action: 'rebase' }); assert.equal(again.status, 201); assert.deepEqual(again.data.version.payload.carriedOver, carried);
+    await evidence.remove(a.id, second.id);
+    const rejected = await change({ action: 'adopt', part: 'submission' }); assert.equal(rejected.status, 422); assert.equal(rejected.data.code, 'evidence_not_valid');
+    assert.equal((await payloadOf()).lifecycle, 'ready'); assert.ok((await payloadOf()).carriedOver.submission); // nada cambió
+    // Escribir la entrega propia sustituye el borrador de esa parte.
+    assert.equal((await change({ action: 'start' })).status, 201);
+    assert.equal((await change({ action: 'submit', sample: 'MY OWN SAMPLE', assistance: 'none' })).status, 201);
+    const after = await payloadOf(); assert.equal(after.submission.sample, 'MY OWN SAMPLE'); assert.equal(after.carriedOver.submission, undefined); assert.ok(after.carriedOver.reflection && after.carriedOver.decision);
+  });
+  await t.test('QA-33-02: rebase repetido o concurrente no duplica versiones y no produce 5xx con el pool reducido', async () => {
+    const count = () => Versions.count({ where: { UserId: a.id, experimentId } });
+    const start = await count(), shared = randomUUID();
+    const post = requestId => http(`/experiments/${experimentId}/versions`, { method: 'POST', body: { requestId, expectedVersion: v, change: { action: 'rebase' } } });
+    const same = await Promise.all([post(shared), post(shared), post(shared)]);
+    assert.ok(same.every(r => [200, 201].includes(r.status)), JSON.stringify(same.map(r => r.status))); assert.equal(same.filter(r => r.status === 201).length, 1);
+    assert.equal(await count(), start + 1); v = start + 1;
+    const rivals = await Promise.all([post(randomUUID()), post(randomUUID()), post(randomUUID()), post(randomUUID())]);
+    assert.deepEqual(rivals.map(r => r.status).sort(), [201, 409, 409, 409]); assert.ok(rivals.every(r => r.status < 500));
+    assert.equal(await count(), start + 2);
+    const final = await http(`/experiments/${experimentId}`); v = final.data.current.version;
+    assert.equal(final.data.current.payload.carriedOver.reflection.observation, 'SECOND observation'); // el borrador sobrevive a varios rebases
+  });
+  await t.test('QA-33-02: versiones guardadas antes (payload v1) se comparan con la huella anterior y migran con el rebase', async () => {
+    const { createHmac } = require('node:crypto'), rulesModule = require('../../utils/careerPlanRules');
+    const canon = x => x instanceof Date ? x.toISOString() : Array.isArray(x) ? x.map(canon) : x && typeof x === 'object' ? Object.fromEntries(Object.keys(x).sort().map(k => [k, canon(x[k])])) : x;
+    const legacy = x => createHmac('sha256', process.env.JWT_SECRET).update('es33:').update(JSON.stringify(canon(x))).digest('hex');
+    const confirmed = await evidence.getConfirmedEvidence(a.id, 'career-plan');
+    const old = rulesModule.experimentProposal({ choiceId: a.id, route: routeOf(), taskIndex: 0, minutes: 20, context: state.context, basisHash: 'x'.repeat(64) });
+    assert.equal(old.schemaVersion, 1); assert.equal(old.basisParts, undefined);
+    const hashNow = () => legacy({ userId: a.id, choiceId: a.id, routeHash: `synthetic-${state.routeVersion}`, context: rulesModule.contextSnapshot(state.context), refs: confirmed.map(e => ({ evidenceId: e.evidenceId, version: e.version })).sort((x, y) => x.evidenceId - y.evidenceId), templateVersion: rulesModule.TEMPLATE_VERSION, templateHash: legacy(rulesModule.TEMPLATE) });
+    const container = await Experiment.create({ UserId: a.id, choiceId: a.id, currentVersion: 1, requestId: randomUUID(), inputHash: 'b'.repeat(64) });
+    const { basisHash: dropped, ...stored } = old;
+    await Versions.create({ UserId: a.id, experimentId: container.id, version: 1, lifecycle: 'ready', payload: encriptarV2(JSON.stringify(stored)), basisHash: hashNow(), requestId: randomUUID(), inputHash: 'c'.repeat(64) });
+    const read = async () => (await http(`/experiments/${container.id}`)).data;
+    assert.deepEqual((await read()).basis, { status: 'current', reasons: [] });
+    state.routeVersion++; assert.deepEqual((await read()).basis, { status: 'needs_review', reasons: ['basis_changed'] }); // comportamiento anterior, sin razones finas
+    const rebased = await http(`/experiments/${container.id}/versions`, { method: 'POST', body: { requestId: randomUUID(), expectedVersion: 1, change: { action: 'rebase' } } });
+    assert.equal(rebased.status, 201); assert.equal(rebased.data.version.payload.schemaVersion, 2); assert.ok(rebased.data.version.payload.basisParts);
+    assert.deepEqual((await read()).basis, { status: 'current', reasons: [] });
+    state.routeVersion--; assert.deepEqual((await read()).basis, { status: 'current', reasons: [] }); // el hash global ya no cuenta
+    await Versions.destroy({ where: { experimentId: container.id } }); await container.destroy();
   });
   await t.test('exportación propia de cinco modelos, sin hashes/tokens; B no descarga exportación de A', async () => {
     const preview = await rights.preview(a.id, { type: 'personal', locale: 'en' });
@@ -247,7 +358,7 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
     const response = await http(`/experiments/${experimentId}`); assert.equal(response.status, 200); assert.equal(response.data.basis.status, 'needs_review');
     const paused = await http('/career-plan/versions', { method: 'POST', body: { requestId: randomUUID(), action: 'pause', expectedVersion: 2, planId } });
     assert.equal(paused.status, 201); assert.equal(paused.data.plan.status, 'paused');
-    contracts.getRoute = async (userId, choiceId) => ({ basisHash: `synthetic-${state.routeVersion}`, route: route() }); contracts.getContext = async () => state.context;
+    contracts.getRoute = stubRoute; contracts.getContext = async () => state.context;
   });
   await t.test('eliminación pendiente bloquea; fallo SQL revierte cinco modelos, reintento/replay conservan B', async () => {
     const request = await rights.requestDeletion(a.id); assert.equal((await http('/experiments')).status, 401);
