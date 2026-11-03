@@ -103,7 +103,7 @@ test('ES-38: shell provides skip target, named navigation, collapsed disclosure 
     assert.match(markup, /href="#admin-main"/)
     assert.match(markup, /id="admin-main"[^>]*tabindex="-1"/)
     assert.match(markup, /aria-expanded="false" aria-controls="admin-navigation"/)
-    assert.match(markup, new RegExp(lang === 'es' ? 'Cerrar sesión' : 'Log out'))
+    assert.match(markup, new RegExp(lang === 'es' ? 'Cerrar sesión' : 'Sign out')) // ES-136: el control de sesión común dice «Sign out»
     assert.match(markup, /aria-pressed="true"/)
   }
 })

@@ -7,7 +7,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
 import { copy } from '../space/copy'
-import { clearPending } from '../space/pending'
+import { SessionControl } from '../access/SessionControl'
+import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { MatchingModal } from '../components/MatchingModal'
@@ -205,12 +206,8 @@ export function UserDashboard() {
         await apiFetch('/api/rating', { method: 'POST', body: JSON.stringify({ rating: starRating }) })
       }
     } catch { /* silent */ }
-    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    localStorage.removeItem('elevation_checkin_date')
-    navigate('/login')
+    await signOut(API) // ES-136: revoca la sesión en el servidor y borra la local
+    navigate('/', { replace: true })
   }
 
   // ── Generate recommendations ──────────────────────────────────────────────
@@ -306,12 +303,7 @@ export function UserDashboard() {
               style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
             </button>
-            <button onClick={() => setShowCheckout(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-              </svg>
-            </button>
+            <SessionControl onRequestSignOut={() => setShowCheckout(true)} />
           </div>
         </div>
       </header>
@@ -675,7 +667,7 @@ export function UserDashboard() {
                 style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
                 {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
               </button>
-              <button onClick={() => { clearPending(); localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
+              <button onClick={() => { void signOut(API).then(() => navigate('/', { replace: true })) }}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
                 {lang === 'es' ? 'Saltar' : 'Skip'}
               </button>
