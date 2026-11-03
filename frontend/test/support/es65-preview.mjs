@@ -19,11 +19,9 @@ const server = createServer(async (req, res) => {
     const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'es'
     let body = {}
     if (scenario === 'partial' || scenario === 'race') body = {
-      'landing.closing.title': lang === 'es' ? 'Cierre de prueba' : 'Synthetic closing',
       'landing.footer.notice': lang === 'es' ? 'Aviso de prueba' : 'Synthetic notice',
     }
     if (scenario === 'long') body = {
-      'landing.closing.title': 'SyntheticLongWord'.repeat(15),
       'landing.footer.notice': '<img src=x onerror="alert(1)"> ' + 'Synthetic text '.repeat(160),
     }
     const finish = () => {

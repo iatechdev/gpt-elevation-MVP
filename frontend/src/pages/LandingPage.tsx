@@ -1,6 +1,6 @@
 import { useLanguage } from '../i18n/useLanguage'
 import { LandingSurface } from '../components/landing/LandingSurface'
-import { LandingClosing, LandingFooter } from '../components/landing/LandingClosing'
+import { LandingFooter } from '../components/landing/LandingClosing'
 import { HeroDoors } from '../components/landing/HeroDoors'
 import { LandingJourney } from '../components/landing/LandingJourney'
 import { LandingHeader } from '../components/landing/LandingHeader'
@@ -40,7 +40,6 @@ export function LandingPage() {
         {/* ES-74 · S13: acceso y alta, sin registrar elección de puerta */}
         <LandingJoin text={landing.text} />
 
-        <LandingClosing text={landing.text} />
 
         </main>
 

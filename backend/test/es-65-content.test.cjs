@@ -8,8 +8,8 @@ test('ES-65: new copy uses the existing public read and protected CMS write (moc
   models.LandingContent.findAll = async ({ where }) => [...rows.values()].filter(row => row.lang === where.lang);
   models.LandingContent.upsert = async row => { rows.set(row.key + ':' + row.lang, row); };
   const request = await startApp(t); // production Express mounts, real HTTP and signed JWTs
-  const entries = catalog.filter(entry => /^landing\.(closing|footer)\./.test(entry.key));
-  assert.ok(entries.length === 6);
+  const entries = catalog.filter(entry => /^landing\.footer\./.test(entry.key));
+  assert.ok(entries.length === 3);
   const body = { key: 'landing.footer.notice', lang: 'es', value: 'Synthetic editorial change' };
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
     assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, 403);

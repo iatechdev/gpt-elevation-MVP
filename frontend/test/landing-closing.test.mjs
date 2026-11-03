@@ -12,26 +12,23 @@ const compile = source => ts.transpileModule(source, { compilerOptions: {
   jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
 } }).outputText.replaceAll('"react/jsx-runtime"', JSON.stringify(import.meta.resolve('react/jsx-runtime')))
 const dataUrl = source => 'data:text/javascript;base64,' + Buffer.from(source).toString('base64')
-const primitives = dataUrl(compile(read('../src/components/landing/LandingPrimitives.tsx')))
-const { LandingClosing, LandingFooter } = await import(dataUrl(compile(read('../src/components/landing/LandingClosing.tsx'))
-  .replace("'./LandingPrimitives'", JSON.stringify(primitives))
+const { LandingFooter } = await import(dataUrl(compile(read('../src/components/landing/LandingClosing.tsx'))
   .replace("'react-router-dom'", JSON.stringify(import.meta.resolve('react-router-dom')))))
 const catalog = JSON.parse(read('../../shared/landing-content.json'))
-const entries = catalog.filter(entry => /^landing\.(closing|footer)\./.test(entry.key))
+const entries = catalog.filter(entry => /^landing\.footer\./.test(entry.key))
 const escape = value => renderToStaticMarkup(createElement('span', null, value)).slice(6, -7)
 const render = (lang, values) => {
   const props = { text: key => landingText(key, lang, values) }
   return renderToStaticMarkup(createElement(MemoryRouter, null, createElement(Fragment, null,
-    createElement(LandingClosing, props), createElement(LandingFooter, props))))
+    createElement(LandingFooter, props))))
 }
 
-test('ES-65: actual ES/EN closing has explicit signup, full notice and hidden unapproved links', () => {
-  assert.equal(entries.length, 6)
+test('ES-65: actual ES/EN footer has full notice, no CTA and hidden unapproved links', () => {
+  assert.equal(entries.length, 3)
   assert.equal(new Set(catalog.map(entry => entry.key)).size, catalog.length)
   for (const lang of ['es', 'en']) {
     const html = render(lang)
-    assert.equal((html.match(/<a /g) ?? []).length, 1)
-    assert.match(html, /href="\/login\?mode=register"/)
+    assert.equal((html.match(/<a /g) ?? []).length, 0)
     assert.match(html, /<footer class="elv-footer landing-footer">/)
     assert.equal((html.match(/<li>/g) ?? []).length, 0)
     assert.doesNotMatch(html, /href="#"|href="\/privacy|mailto:|tel:|<button|onclick|I am a professional|Soy profesional/)
@@ -44,7 +41,6 @@ test('ES-65: CMS edits affect all copy, are escaped and cannot change destinatio
     const html = render(lang, { [entry.key]: '<img src=x onerror="alert(1)">' })
     assert.ok(html.includes('&lt;img'))
     assert.doesNotMatch(html, /<img|<script/)
-    assert.match(html, /href="\/login\?mode=register"/)
     for (const value of ['', ' ', null, 7, {}, []]) assert.equal(render(lang, { [entry.key]: value }), render(lang))
   }
   for (const fetcher of [async () => { throw new Error('Synthetic offline') }, async () => ({ ok: false }), async () => ({ ok: true, json: async () => ({}) })]) {
