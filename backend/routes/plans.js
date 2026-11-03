@@ -8,6 +8,7 @@ const User        = require('../User');
 const { getLimits } = require('../utils/planLimits');
 const { verificarToken } = require('../middlewares/auth');
 const publicPricingCopy = require('../content/publicPricingCopy');
+const { getCachedPlans } = require('../utils/plansCache');
 
 // ==========================================
 // GET /api/plans — Lista pública de planes
@@ -15,18 +16,21 @@ const publicPricingCopy = require('../content/publicPricingCopy');
 router.get('/', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
-    const plans = await PricingPlan.findAll({
-      where: { isActive: true },
-      order: [['order', 'ASC']],
-      attributes: [
-        'id', 'slug', 'name_es', 'name_en',
-        'description_es', 'description_en',
-        'price', 'currency', 'period',
-        'features_es', 'features_en',
-        'isHighlighted', 'order',
-      ],
+    const body = await getCachedPlans(async () => {
+      const plans = await PricingPlan.findAll({
+        where: { isActive: true },
+        order: [['order', 'ASC']],
+        attributes: [
+          'id', 'slug', 'name_es', 'name_en',
+          'description_es', 'description_en',
+          'price', 'currency', 'period',
+          'features_es', 'features_en',
+          'isHighlighted', 'order',
+        ],
+      });
+      return plans.map(publicPricingCopy);
     });
-    res.json(plans.map(publicPricingCopy));
+    res.json(body);
   } catch (error) {
     console.error('No se pudieron leer los planes.');
     res.status(500).json({ error: 'Could not fetch plans.' });

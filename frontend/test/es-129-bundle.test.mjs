@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { randomBytes } from 'node:crypto'
 import { checkBundle, LIMITS } from '../scripts/check-bundle-size.mjs'
 
 const app = fs.readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8')
@@ -35,5 +36,16 @@ test('ES-129 presupuesto: pasa dentro de los límites y falla (con el motivo) al
   assert.match(heavyEntry.problems.join('\n'), /carga inicial de JS/)
   const bigChunk = checkBundle(fakeDist(1_000, 600_000))
   assert.match(bigChunk.problems.join('\n'), /bloque Big-b\.js/)
-  assert.deepEqual(LIMITS, { initialJsGzipKb: 150, chunkRawKb: 500 })
+  assert.deepEqual(LIMITS, { initialJsGzipKb: 150, initialCssGzipKb: 20, chunkRawKb: 500 })
+})
+
+test('ES-130 presupuesto: el CSS inicial enlazado en index.html también cuenta y falla con el motivo', () => {
+  const dir = fakeDist(1_000, 1_000)
+  const noise = randomBytes(200_000) // incompresible: el gzip no lo reduce por debajo del límite
+  fs.writeFileSync(path.join(dir, 'assets', 'index-c.css'), noise)
+  fs.writeFileSync(path.join(dir, 'index.html'), '<link rel="stylesheet" crossorigin href="/assets/index-c.css"><script type="module" src="/assets/index-a.js"></script>')
+  const heavy = checkBundle(dir)
+  assert.deepEqual(heavy.initialCss, ['assets/index-c.css'])
+  assert.match(heavy.problems.join(' | '), /CSS inicial/)
+  assert.deepEqual(checkBundle(fakeDist(1_000, 1_000)).initialCss, [])
 })
