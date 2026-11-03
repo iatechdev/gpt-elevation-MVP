@@ -28,7 +28,7 @@ const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
 const HISTORY_LIMIT = 20;
-const CHAT_MAX_TOKENS = 2000; // ES43-QA-01: con 1500 y esfuerzo bajo 2 de 11 turnos largos aún cerraban por max_tokens (salida máxima ≈1479); el presupuesto reserva este valor por llamada
+const CHAT_MAX_TOKENS = 3000; // ES-142: con 2000, 4 de 5 respuestas largas en español cerraban por max_tokens (ES43-QA-01 ya lo había subido desde 1500); el presupuesto reserva este valor por llamada
 // ES43-QA-01: Sonnet 5.5 razona por defecto (esfuerzo alto) y esos tokens cuentan contra max_tokens, así que el chat se cortaba con poco texto visible.
 // Esfuerzo bajo = razonamiento corto; el tope sigue en CHAT_MAX_TOKENS y no se recorta el texto ni se toca el prompt.
 const CHAT_OUTPUT_CONFIG = { effort: 'low' };
@@ -99,7 +99,7 @@ const claimTurn = async (userId, requestId, message) => {
       'Este requestId ya se usó con otro mensaje. / This requestId was already used with a different message.', requestId);
   }
   if (existing.status === 'completed') {
-    return { status: 200, response: { reply: desencriptar(existing.replyContent), requestId, replayed: true } };
+    return { status: 200, response: { reply: desencriptar(existing.replyContent), requestId, replayed: true, ...(existing.truncated ? { truncated: true } : {}) } };
   }
   const stale = Date.now() - new Date(existing.updatedAt).getTime() > PENDING_TIMEOUT_MS;
   if (existing.status === 'pending' && !stale) {
@@ -139,12 +139,12 @@ router.post('/chat', validateBody({
   let turn = null;
 
   // Confirma el turno completo (mensaje + respuesta) en una sola transacción.
-  const confirmTurn = async (respuesta) => {
+  const confirmTurn = async (respuesta, truncated = false) => {
     const transaction = await sequelize.transaction();
     try {
       await Message.create({ role: 'user', content: encriptar(mensajeUsuario), UserId: userId }, { transaction });
-      await Message.create({ role: 'assistant', content: encriptar(respuesta), UserId: userId }, { transaction });
-      if (turn) await turn.update({ status: 'completed', replyContent: encriptarV2(respuesta), failureCode: null }, { transaction });
+      await Message.create({ role: 'assistant', content: encriptar(respuesta), truncated, UserId: userId }, { transaction });
+      if (turn) await turn.update({ status: 'completed', replyContent: encriptarV2(respuesta), truncated, failureCode: null }, { transaction });
       await transaction.commit();
     } catch (error) {
       await transaction.rollback().catch(() => {});
@@ -236,12 +236,15 @@ ${manifest}
     historial.push({ role: 'user', content: redactSecrets(mensajeUsuario) });
 
     let respuestaIA;
+    let truncated = false;
     try {
       const msg = await callClaude({
         userId, kind: 'chat', requestId: requestId ?? null,
         body: { model: anthropic.MODEL, max_tokens: CHAT_MAX_TOKENS, output_config: CHAT_OUTPUT_CONFIG, system: systemPrompt, messages: historial },
       });
       respuestaIA = textOf(msg);
+      // ES-142: el texto se entrega y guarda tal cual lo escribió el modelo; si se cortó por el tope de salida se marca para avisar a la persona.
+      truncated = msg?.stop_reason === 'max_tokens';
       if (!respuestaIA.trim()) throw new Error('Respuesta vacía del proveedor.');
     } catch (error) {
       // Presupuesto agotado o sin configurar (V-13): no se llama al proveedor, se conserva el avance y no se amplía solo.
@@ -270,9 +273,9 @@ ${manifest}
     if (risk.level === 'medium') respuestaIA = `${respuestaIA}\n\n${buildSupportNote({ lang, country })}`;
 
     // ── Se confirma el turno completo (mensaje + respuesta) ──
-    await confirmTurn(respuestaIA);
+    await confirmTurn(respuestaIA, truncated);
 
-    res.json(requestId ? { reply: respuestaIA, requestId } : { reply: respuestaIA });
+    res.json({ reply: respuestaIA, ...(requestId ? { requestId } : {}), ...(truncated ? { truncated: true } : {}) });
   } catch (error) {
     console.error('❌ Error de comunicación:', error && error.name);
     await failTurn(turn, 'internal_error');
@@ -292,7 +295,7 @@ router.get('/chat/turns/:requestId', async (req, res) => {
       requestId,
       status: turn.status,
       retryable: turn.status === 'failed' || stale,
-      ...(turn.status === 'completed' ? { reply: desencriptar(turn.replyContent) } : {}),
+      ...(turn.status === 'completed' ? { reply: desencriptar(turn.replyContent), ...(turn.truncated ? { truncated: true } : {}) } : {}),
     });
   } catch (error) {
     console.error('❌ Error obteniendo el turno:', error && error.name);
@@ -310,6 +313,7 @@ router.get('/messages', async (req, res) => {
     const historial = mensajes.map(m => ({
       role: m.role === 'assistant' ? 'bot' : 'user',
       text: desencriptar(m.content),
+      ...(m.truncated ? { truncated: true } : {}),
     }));
     res.json(historial);
   } catch (error) {

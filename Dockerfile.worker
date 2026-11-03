@@ -1,0 +1,6 @@
+FROM node:20-slim
+WORKDIR /app
+COPY . .
+RUN rm -f backend/.env backend/package-lock.json
+RUN cd backend && npm install --no-package-lock --omit=dev
+CMD ["node", "backend/worker.js"]

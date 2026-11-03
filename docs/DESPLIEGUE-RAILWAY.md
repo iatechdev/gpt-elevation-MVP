@@ -38,11 +38,22 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 
 No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto usa videollamadas o archivos hay que cargarlas.
 
+## Servicio `worker` (ES-87), un Dockerfile por servicio
+El worker de análisis de IA corre como un servicio aparte de Railway, con el mismo código del repositorio pero **otro arranque** (`node backend/worker.js`, sin puerto ni healthcheck). No puede usar el `Dockerfile` del API, cuyo `CMD` arranca el servidor: en staging, el primer despliegue del worker arrancó el API y falló con `JWT_SECRET must be configured` porque el worker (a propósito) no recibe esa variable. Tampoco se pudo fijar el comando de arranque por la CLI de Railway (`railway environment edit` respondió «No changes to apply») ni por `railway.json`, así que se usa un Dockerfile propio.
+
+- Archivo: `Dockerfile.worker` (sin build del frontend; solo dependencias del backend; `CMD ["node", "backend/worker.js"]`).
+- En el servicio `worker` se define la variable `RAILWAY_DOCKERFILE_PATH=Dockerfile.worker` (no es un secreto). El servicio `backend` no la define y sigue con `Dockerfile`.
+- Variables del worker: ver doc 45 y la tabla de arriba. **No** recibe `DATA_ENCRYPTION_KEY`, `PROMPT_ENCRYPTION_KEY`, `JWT_SECRET` ni el `DATABASE_URL` del API; el worker se niega a arrancar (código 2) si las tiene. `PROFESSIONAL_ENCRYPTION_KEY` debe ser idéntica a la del API del mismo entorno.
+- **Un worker por entorno** (hoy solo staging; los que se creen después): cada uno con su propia `WORKER_DATABASE_URL` (rol `elevation_worker` de su base) y su propia clave profesional. Nunca compartir valores entre entornos.
+- Origen del despliegue: en staging el worker se subió con `railway up --service worker` desde `main`; para que se redespliegue solo hay que conectar el servicio al repositorio con la rama del entorno (pendiente, decisión de Mauricio).
+- Verificación: el log del worker muestra `worker_started` y luego `poll_wait reason=idle`; `claim_error code=28P01` significa que la contraseña de la URL no coincide con la del rol.
+- No verificado: que el worker procese un trabajo real con Claude (lo cubre el plan de humo de QA).
+
 ## Base de datos
 - Producción (`NODE_ENV=production`): `sequelize.sync({})` solo crea las tablas que falten; no altera columnas.
 - **Esquema hasta que se cierre ES-59 (fase 2) (QA-57-05, decisión propuesta; ver "Migraciones versionadas"):** (1) en producción y en staging no se altera el esquema desde el código; (2) un cambio de columnas se hace con SQL revisado y aprobado por Mauricio, aplicado a mano y registrado en el PR; (3) `alter` solo se activa de forma explícita con `DB_SYNC_ALTER=true` en un entorno de desarrollo desechable, nunca por defecto y sin depender de `NODE_ENV` (QA-57-05).
 - Migraciones versionadas y plan de migración continuo: **ES-59** (https://iatech-team-xqxmjki1.atlassian.net/browse/ES-59). Hasta que se cierre rige la regla de arriba.
-- Staging y production usan proyectos de Supabase distintos. Los entornos de PR nunca apuntan a producción.
+- **Corrección (2-nov-2026):** hoy staging usa el proyecto de Supabase `elevation-prod` (rama `main`, PRODUCTION), el mismo que será producción; decisión de Mauricio: no se separa hasta cerrar el release (ver ES-117). Los entornos de PR nunca apuntan a ese proyecto.
 
 ## Sesiones y cierre de sesión (ES-18)
 - Cada token lleva un `jti`; `POST /api/logout` revoca el actual y `POST /api/logout-all` corta todas las sesiones de la persona. Un administrador que cambia rol/estado, borra o restablece la contraseña de una cuenta también corta sus sesiones anteriores.
@@ -96,8 +107,19 @@ ALLOW_SYNTHETIC_CATALOG=true DEMO_USER_PASSWORD='<clave de 12+ caracteres, defin
   la demostración conviene quitarla del entorno donde se haya puesto.
 - **Cómo retirarlo:** cuando el cliente publique su catálogo real desde el backoffice, el sintético queda archivado y las autoevaluaciones de la demostración se marcan como
   desactualizadas. La persona de demostración se elimina con el flujo de borrado de datos (ES-23).
-- **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas (ES-32 no está en `main`) ni toca el catálogo real.
+- **No lo hace:** no activa banderas de build (`VITE_ENABLE_*`), no crea restricciones de rutas para la persona de demostración (ES-32 ya está en `main`, pero la semilla no carga esos datos) ni toca el catálogo real.
 - **Pruebas:** `npm run test:seed-demo:pg` con `SEED_TEST_DATABASE_URL` (Postgres local desechable) y `npm test`.
+
+## API pública de Supabase: RLS y privilegios (ES-117)
+
+La Data API de Supabase está **apagada** en el proyecto (verificado en el panel el 2-nov-2026). La migración `20261102120000-es117-supabase-rls` es defensa en profundidad por si alguien la enciende:
+- `anon` y `authenticated` pierden todo privilegio sobre tablas, secuencias y funciones de `public` (también el EXECUTE heredado de PUBLIC en las funciones propias, como `ai_jobs_guard` y `skill_candidates_guard`), y los privilegios por defecto de quien migra dejan de concederles lo nuevo. `service_role` no se toca (decisión del equipo). También se quita el EXECUTE por defecto de PUBLIC para funciones futuras de quien migra (`ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC`): toda función nueva que deba ejecutar un rol necesita su `GRANT EXECUTE` explícito (hallazgo QA-117-01).
+- RLS activo en todas las tablas de `public`. La app y las migraciones usan el dueño de las tablas (`postgres`, con BYPASSRLS), así que no cambian. Sin política, nadie más lee ni escribe.
+- Políticas explícitas solo para los roles del worker (ES-85), que NO tienen BYPASSRLS: `elevation_worker` (`AiBudgetCounters`, `AiUsages`) y `elevation_worker_owner` (dueño de las funciones `worker_*`; las mismas tablas y operaciones de sus GRANT). Sin ellas el worker deja de funcionar: sin las políticas del dueño fallan 12 de los 17 casos de ES-85 (prueba de control).
+
+**Regla para tablas nuevas:** la migración que cree una tabla en `public` debe ejecutar `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`. `npm run test:rls:pg` (CI) y `npm run check:rls` (contra una base: `DATABASE_URL`, solo lectura) fallan si queda una tabla sin RLS o con privilegios para `anon`/`authenticated`. Aviso: `sync()` crea tablas sin RLS al arrancar; mientras siga activo, una tabla nueva creada así queda sin RLS hasta que su migración lo active. Un disparador de eventos que active RLS automáticamente queda como propuesta (necesita permiso para crear event triggers en Supabase; no verificado).
+
+**Aplicar en staging (que hoy es el proyecto productivo):** (1) confirmación de Mauricio y ventana sin Fase B ni despliegues; (2) respaldo: Supabase conserva copias físicas diarias de 7 días (verificado en el panel); anotar la hora de la última antes de migrar; (3) `npx sequelize-cli db:migrate` con la `DATABASE_URL` del servicio; (4) `npm run check:rls` debe decir «RLS ok»; (5) humo: `/api/health`, login sintético, un chat y un job del worker. **Reversión:** el `down` existe (devuelve el estado de Supabase por defecto, es decir, reabre la exposición) y exige `ALLOW_DESTRUCTIVE_MIGRATION=true`; en producción se prefiere corregir hacia adelante con una política puntual antes que deshacer.
 
 ## Migraciones versionadas (ES-59, fase 1)
 

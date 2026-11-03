@@ -10,6 +10,7 @@ const ChatTurn = sequelize.define('ChatTurn', {
   userContent: { type: DataTypes.TEXT, allowNull: false },
   replyContent: { type: DataTypes.TEXT, allowNull: true },
   failureCode: { type: DataTypes.STRING(40), allowNull: true },
+  truncated: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }, // ES-142: la respuesta se cortó por el tope de salida del modelo
 }, {
   indexes: [{ unique: true, fields: ['UserId', 'requestId'] }],
 });

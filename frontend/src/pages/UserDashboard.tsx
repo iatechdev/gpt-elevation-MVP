@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
 import { copy } from '../space/copy'
+import { SessionControl } from '../access/SessionControl'
+import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { MatchingModal } from '../components/MatchingModal'
@@ -204,18 +206,15 @@ export function UserDashboard() {
         await apiFetch('/api/rating', { method: 'POST', body: JSON.stringify({ rating: starRating }) })
       }
     } catch { /* silent */ }
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    localStorage.removeItem('elevation_checkin_date')
-    navigate('/login')
+    await signOut(API) // ES-136: revoca la sesión en el servidor y borra la local
+    navigate('/', { replace: true })
   }
 
   // ── Generate recommendations ──────────────────────────────────────────────
   const handleGenerateRecs = async () => {
     setLoadingRecs(true)
     try {
-      const res = await apiFetch('/api/recommendations/generate', { method: 'POST' })
+      const res = await apiFetch('/api/recommendations/generate', { method: 'POST', body: JSON.stringify({ lang }) })
       if (!res.ok) return
       const data = await res.json()
       setRecommendations(data.slice(0, 4))
@@ -304,12 +303,7 @@ export function UserDashboard() {
               style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
             </button>
-            <button onClick={() => setShowCheckout(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-              </svg>
-            </button>
+            <SessionControl onRequestSignOut={() => setShowCheckout(true)} />
           </div>
         </div>
       </header>
@@ -348,7 +342,7 @@ export function UserDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
-                  {lang === 'es' ? '¿Cómo llegás hoy?' : 'How are you arriving today?'}
+                  {lang === 'es' ? '¿Cómo llegas hoy?' : 'How are you arriving today?'}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {CHECKOUT_MOODS.map(m => (
@@ -563,7 +557,7 @@ export function UserDashboard() {
               <div style={{ fontSize: '2.5rem' }}>💬</div>
               <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#A8A29E', textAlign: 'center', margin: 0 }}>
                 {lang === 'es'
-                  ? 'Seleccioná cómo llegás hoy para comenzar tu conversación.'
+                  ? 'Selecciona cómo llegas hoy para comenzar tu conversación.'
                   : 'Select how you\'re arriving today to start your conversation.'}
               </p>
             </div>
@@ -585,7 +579,7 @@ export function UserDashboard() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
-            ✨ {lang === 'es' ? 'Recomendaciones para vos' : 'Recommendations for you'}
+            ✨ {lang === 'es' ? 'Recomendaciones para ti' : 'Recommendations for you'}
           </h2>
           <button onClick={() => void handleGenerateRecs()} disabled={loadingRecs}
             style={{ fontSize: '0.78rem', color: '#6B7D5C', background: 'none', border: '0.5px solid #6B7D5C', borderRadius: '0.65rem', padding: '0.35rem 0.75rem', cursor: loadingRecs ? 'not-allowed' : 'pointer' }}>
@@ -595,7 +589,7 @@ export function UserDashboard() {
 
         {recommendations.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#A8A29E', fontSize: '0.875rem' }}>
-            {lang === 'es' ? 'Aún no tenés recomendaciones. ¡Generá las primeras!' : 'No recommendations yet. Generate your first ones!'}
+            {lang === 'es' ? 'Aún no tienes recomendaciones. ¡Genera las primeras!' : 'No recommendations yet. Generate your first ones!'}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -673,7 +667,7 @@ export function UserDashboard() {
                 style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
                 {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
               </button>
-              <button onClick={() => { localStorage.removeItem('elevation_token'); localStorage.removeItem('elevation_role'); localStorage.removeItem('elevation_name'); localStorage.removeItem('elevation_checkin_date'); navigate('/login') }}
+              <button onClick={() => { void signOut(API).then(() => navigate('/', { replace: true })) }}
                 style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
                 {lang === 'es' ? 'Saltar' : 'Skip'}
               </button>

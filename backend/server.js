@@ -10,6 +10,7 @@ const { connectDB, sequelize } = require('./database');
 const setupAssociations        = require('./associations');
 const syncOptions              = require('./utils/syncOptions');
 const { syncDisabled }         = syncOptions;
+const { mountFrontend }        = require('./utils/frontendStatic');
 
 const {
   verificarToken,
@@ -84,6 +85,16 @@ connectDB().then(() => {
     .catch(err => console.error('❌ Error sincronizando tablas:', err));
 });
 
+// ES-137: ninguna respuesta de la API con datos de la persona se guarda en caché de navegador ni de proxy compartido.
+// Quedan fuera solo estas lecturas públicas, por ruta exacta (QA-137-01: GET /pricing/all y /manifest/manifest exigen sesión y sí llevan no-store); las rutas pueden fijar su propio valor.
+const PUBLIC_CACHEABLE = /^\/(landing-content|plans|pricing|manifest\/active)\/?$/;
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' && PUBLIC_CACHEABLE.test(req.path)) return next();
+  res.set('Cache-Control', 'no-store');
+  res.vary('Authorization');
+  next();
+});
+
 // ── Rutas públicas ────────────────────────────────────────────────────────────
 app.use('/api',                 require('./routes/auth'));
 app.use('/api/landing-content', require('./routes/landingContent'));
@@ -153,10 +164,7 @@ app.use('/api', (req, res) => {
 });
 
 // ── Frontend estático ─────────────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-app.get('/{*path}', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-});
+mountFrontend(app, path.join(__dirname, '../frontend/dist'));
 
 // ── Servidor ──────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8080;

@@ -1,5 +1,6 @@
 // frontend/src/layouts/BoardLayout.tsx
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink } from 'react-router-dom'
+import { SessionControl } from '../access/SessionControl'
 
 const NAV_ITEMS = [
   {
@@ -14,16 +15,8 @@ const NAV_ITEMS = [
 ]
 
 export function BoardLayout() {
-  const navigate = useNavigate()
   const name = localStorage.getItem('elevation_name') ?? 'Board Member'
   const role = localStorage.getItem('elevation_role') ?? 'board'
-
-  const handleLogout = () => {
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    navigate('/login')
-  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F3EF', fontFamily: 'Inter, sans-serif' }}>
@@ -49,23 +42,7 @@ export function BoardLayout() {
 
         {/* Usuario */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: 13, color: '#78716C' }}>{name}</span>
-          <span style={{
-            fontSize: 10, fontWeight: 600, padding: '3px 10px',
-            borderRadius: 9999, letterSpacing: '0.08em',
-            background: '#EAF0E6', color: '#6B7D5C',
-            border: '0.5px solid #A8B5A2',
-          }}>
-            {role.toUpperCase()}
-          </span>
-          <button onClick={handleLogout} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#A8A29E', display: 'flex', padding: 4,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-          </button>
+          <SessionControl name={name} roleLabel={role.toUpperCase()} />
         </div>
       </header>
 

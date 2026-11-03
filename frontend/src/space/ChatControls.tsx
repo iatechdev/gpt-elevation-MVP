@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { PersonalChat } from './usePersonalChat'
 import { useChatBlocked } from './usageStore'
@@ -15,9 +15,24 @@ export function ChatContext({ chat }: { chat: PersonalChat }) {
     {chat.intent && <div className="space-actions"><button className="elv-btn" disabled={chat.busy} onClick={() => void chat.check()}>{c.check}</button>{chat.retryable && <button className="elv-btn" disabled={chat.busy} onClick={() => void chat.retry()}>{c.retrySend}</button>}</div>}
   </div>
 }
+// ES-142: aviso bajo la última respuesta cortada por longitud. El texto del modelo no se toca; «Continuar» envía un turno normal.
+export function TruncatedNotice({ chat }: { chat: PersonalChat }) {
+  const { c } = chat; const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
+  const button = useRef<HTMLButtonElement>(null)
+  const last = chat.messages[chat.messages.length - 1]
+  if (chat.expired || !chat.loaded || last?.role !== 'bot' || !last.truncated) return null
+  // Si el botón desaparece porque llegó la respuesta nueva, el foco pasa a la caja de mensaje.
+  const onContinue = async () => { await chat.continueReply(); setTimeout(() => { if (!button.current?.isConnected) document.querySelector<HTMLTextAreaElement>('.space-message')?.focus() }, 0) }
+  return <div className="space-scope chat-truncated">
+    <p className="chat-truncated-msg" role="status">{c.truncated}<span className="chat-truncated-hint">{c.truncatedHint}</span></p>
+    <button ref={button} type="button" className="elv-btn" disabled={chat.busy || !!chat.intent || off} onClick={() => void onContinue()}>{chat.busy ? c.sending : c.continue}</button>
+  </div>
+}
 export function ChatInput({ chat }: { chat: PersonalChat }) {
   const { c } = chat; const { lang } = useLanguage(); const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
-  const toggle = useRef<HTMLButtonElement>(null)
+  const toggle = useRef<HTMLButtonElement>(null); const status = useRef<HTMLParagraphElement>(null)
+  // ES-134: el aviso de límite recibe el foco al aparecer (el campo de texto queda bloqueado y la persona no debe perderlo).
+  useEffect(() => { if (chat.alert && chat.notice) status.current?.focus() }, [chat.alert, chat.notice])
   if (chat.expired) return null
   const locked = chat.busy || !!chat.intent
   const closePicker = () => { chat.setPicker(false); toggle.current?.focus() }
@@ -37,7 +52,7 @@ export function ChatInput({ chat }: { chat: PersonalChat }) {
       </details>
       <button type="button" className="elv-btn" onClick={closePicker}>{c.close}</button>
     </div>}
-    <p role="status" aria-live="polite" className="space-note chat-status">{chat.busy ? c.sending : chat.notice}</p>
+    <p ref={status} tabIndex={chat.alert ? -1 : undefined} role={chat.alert ? 'alert' : 'status'} aria-live={chat.alert ? 'assertive' : 'polite'} className="space-note chat-status">{chat.busy ? c.sending : chat.notice}</p>
     <p role="status" aria-live="polite" className="space-note chat-counter">{chat.input.length >= COUNTER_FROM ? (chat.input.length >= MAX_MESSAGE ? c.counterMax : c.counter.replace('{n}', chat.input.length.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US'))) : ''}</p>
     <div className="chat-composer-row">
       <label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={MAX_MESSAGE} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={3} /></label>

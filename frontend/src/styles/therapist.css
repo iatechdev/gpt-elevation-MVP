@@ -20,7 +20,7 @@
 .th-logo { order: 1; margin-right: auto; font-family: 'Playfair Display', serif; font-weight: 300; letter-spacing: 0.2em; font-size: 1rem; color: #1C1917; white-space: nowrap; }
 .th-logo small { font-family: Inter, sans-serif; font-size: 10px; color: #57534E; letter-spacing: 0.15em; } /* contraste ≥ 4,5:1 (antes #A8A29E ≈ 2,5:1) */
 .th-lang { display: flex; gap: 2px; background: #EDEAE4; border-radius: 9999px; padding: 2px; order: 2; }
-.th-logout { order: 4; background: none; border: none; cursor: pointer; color: #57534E; display: flex; align-items: center; justify-content: center; padding: 4px; min-width: 44px; }
+.th-header .session-control { order: 4; } /* ES-136 */
 .th-who { order: 3; display: flex; align-items: center; gap: 0.5rem; min-width: 0; font-size: 13px; color: #57534E; }
 .th-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .th-chip {
