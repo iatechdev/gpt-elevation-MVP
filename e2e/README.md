@@ -51,3 +51,13 @@ Para correr contra la app local: `E2E_BASE_URL=http://localhost:8080 npm test`.
 - Usar solo cuentas **sintéticas** de staging. Las claves se piden a Mauricio por un canal privado.
 - No apuntar a producción. No hacer pruebas de carga desde aquí.
 - Para ejecutar en CI se necesita descargar navegadores (pesan): hoy se corre a mano; evaluar después.
+
+## Auditoría de UX/UI (ES-148)
+- `tests/auditoria.spec.ts`: recorre cada pantalla por perfil (público, persona, terapeuta, admin, superadmin), ES/EN, escritorio y móvil, con estados de error y cargando simulados. Solo lectura. Un acceso por rol; la sesión se guarda en `e2e/.auth/` (ignorada por Git). Enmascara correos antes de capturar. Salida: `docs/ux/capturas/`.
+- `tests/maquetas.spec.ts`: verifica (sin red) las maquetas de `docs/ux/maquetas/` con axe y teclado y genera sus imágenes.
+- `scripts/con-credenciales.mjs`: lanzador que lee el archivo local de cuentas sintéticas y las pasa solo como variables de entorno del proceso hijo (no imprime ni guarda valores):
+
+```bash
+node scripts/con-credenciales.mjs "<ruta al archivo local>" npx playwright test tests/auditoria.spec.ts --project=escritorio
+```
+Variables útiles: `E2E_ONLY=PUBLICO|USER|THERAPIST|ADMIN|SUPERADMIN`, `E2E_LANGS=es,en`, `E2E_TAG`, `E2E_CAPTURE_DIR`. Las capturas del repo se recomprimieron a JPEG (calidad 70).
