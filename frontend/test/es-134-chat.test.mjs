@@ -102,7 +102,12 @@ test('ES-134: invalidar la sesión borra el mensaje pendiente y la huella no gua
 })
 
 test('ES-134: todos los cierres de sesión de la aplicación limpian el mensaje pendiente', () => {
-  for (const file of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/pages/ChatPage.tsx', '../src/pages/UserDashboard.tsx']) {
+  // ES-136: administración, junta, terapeuta y dashboard cierran con signOut(), que limpia el pendiente antes de borrar el token; el chat conserva su cierre.
+  const out = read('../src/access/signOut.ts')
+  assert.ok(out.includes('clearPending()') && out.indexOf('clearPending()') < out.indexOf('localStorage.removeItem(key)'))
+  for (const file of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/pages/UserDashboard.tsx'])
+    assert.ok(read(file).includes('SessionControl') && !read(file).includes("localStorage.removeItem('elevation_token')"), file)
+  for (const file of ['../src/pages/ChatPage.tsx']) {
     const source = read(file)
     const removals = source.match(/localStorage\.removeItem\('elevation_token'\)/g) ?? []
     const cleared = source.match(/clearPending\(\)[^\n]*\n\s*localStorage\.removeItem\('elevation_token'\)|clearPending\(\); localStorage\.removeItem\('elevation_token'\)/g) ?? []

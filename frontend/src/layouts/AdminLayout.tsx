@@ -1,13 +1,12 @@
 import { useRef, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { clearPending } from '../space/pending'
+import { Outlet, useLocation } from 'react-router-dom'
+import { SessionControl } from '../access/SessionControl'
 import { AdminSidebar } from '../components/AdminSidebar.tsx'
 import { useLanguage } from '../i18n/useLanguage'
 import { interfaceCopy } from '../access/interfaceCopy'
 import '../styles/accessAdmin.css'
 
 export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }) {
-  const navigate = useNavigate()
   const location = useLocation()
   const { lang, setLang } = useLanguage()
   const copy = interfaceCopy[lang]
@@ -17,14 +16,6 @@ export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }
   const open = expandedAt === location.key
   const menuButton = useRef<HTMLButtonElement>(null)
   const main = useRef<HTMLElement>(null)
-
-  const handleLogout = () => {
-    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    navigate('/login')
-  }
 
   return (
     <div className={`admin-shell elv-theme${pilotPreview ? ' pilot-admin-layout' : ''}`}
@@ -48,9 +39,7 @@ export function AdminLayout({ pilotPreview = false }: { pilotPreview?: boolean }
                 className="elv-btn" onClick={() => setLang(code)}>{code.toUpperCase()}</button>
             ))}
           </div>
-          <span className="admin-name">{name}</span>
-          <span className="admin-role">{role === 'superadmin' ? copy.superadministrator : copy.administrator}</span>
-          <button type="button" onClick={handleLogout} className="elv-btn elv-btn-outline">{copy.logout}</button>
+          <SessionControl name={name} roleLabel={role === 'superadmin' ? copy.superadministrator : copy.administrator} />
         </div>
       </header>
       <div className="admin-body">

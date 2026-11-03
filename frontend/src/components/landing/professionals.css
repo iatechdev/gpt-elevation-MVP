@@ -1,0 +1,20 @@
+/* ES-71: editorial section; all styles remain inside the landing theme. */
+.landing-scope .landing-pros { padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--color-base-300); scroll-margin-top: 7rem; overflow-wrap: anywhere; }
+.landing-scope .landing-pros-inner { max-width: 1280px; margin-inline: auto; }
+.landing-scope .landing-pros-label { display: flex; gap: 1rem; font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; color: var(--landing-muted); text-transform: uppercase; }
+.landing-scope .landing-pros h2 { max-width: 1050px; margin: 1.5rem 0 2rem; font-size: clamp(2.25rem,4.45vw,4rem); line-height: 1.03; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; }
+.landing-scope .landing-pros-intro { max-width: 850px; margin: 0 0 2rem; font-size: 1.0625rem; color: var(--landing-muted); }
+.landing-scope .landing-pros-card { min-width: 0; border-radius: 0; }
+.landing-scope .landing-pros-card .elv-card-body { padding: 1.5rem; gap: 1rem; }
+.landing-scope .landing-pros h3 { margin: 0; font-size: 1.25rem; font-weight: 700; line-height: 1.3; }
+.landing-scope .landing-pros-card p { margin: 0; color: var(--landing-muted); }
+.landing-scope .landing-pros-boundaries { margin-block: 2rem; padding-block: 2rem; border-block: 1px solid var(--color-base-300); }
+.landing-scope .landing-pros-boundaries h3 { margin-top: 1rem; }
+.landing-scope .landing-pros-boundaries p { margin: 1rem 0 0; color: var(--landing-muted); }
+.landing-scope .landing-pros-invitation { max-width: 850px; }
+.landing-scope .landing-pros-invitation > p { color: var(--landing-muted); }
+.landing-scope .landing-pros-cta { min-height: 44px; margin-block: 0.5rem; white-space: normal; }
+.landing-scope .landing-pros-note { font-size: 1rem; }
+.landing-scope .landing-nav-pros { display: inline-flex; align-items: center; min-height: 48px; font-size: 0.875rem; color: inherit; text-underline-offset: 0.25em; }
+@media (max-width: 47.999rem) { .landing-scope .landing-nav-pros { flex-basis: 100%; } }
+@media (min-width: 48rem) { .landing-scope .landing-pros { padding: 4rem clamp(1.5rem,5.56vw,5rem) 5rem; } }

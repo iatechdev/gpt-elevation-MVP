@@ -3,23 +3,14 @@
 // HU-082 — Selector ES/EN
 // ES-100 — Cabecera adaptable (dos líneas en pantallas estrechas), contraste, foco visible y objetivos táctiles (ES93-M6 y B4)
 
-import { Outlet, useNavigate } from 'react-router-dom'
-import { clearPending } from '../space/pending'
+import { Outlet } from 'react-router-dom'
+import { SessionControl } from '../access/SessionControl'
 import { useLanguage } from '../i18n/useLanguage'
 import '../styles/therapist.css'
 
 export function TherapistLayout() {
-  const navigate = useNavigate()
   const { lang, setLang, t } = useLanguage()
   const name = localStorage.getItem('elevation_name') ?? t('therapist_role')
-
-  const handleLogout = () => {
-    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    navigate('/login')
-  }
 
   return (
     <div className="th-root">
@@ -62,15 +53,7 @@ export function TherapistLayout() {
           <span className="th-who-role">{t('therapist_role')}</span>
         </div>
 
-        <button
-          className="th-logout"
-          onClick={handleLogout}
-          aria-label={lang === 'es' ? 'Cerrar sesión' : 'Log out'}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-          </svg>
-        </button>
+        <SessionControl />
       </header>
 
       {/* Main content */}
