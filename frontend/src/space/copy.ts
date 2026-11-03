@@ -26,6 +26,8 @@ export const copy = {
     truncated: 'La respuesta se cortó por longitud.', truncatedHint: 'Continuar envía un mensaje corto pidiendo que siga.', continue: 'Continuar', continueMessage: 'Continúa, por favor, desde donde te quedaste.',
     budgetWhen: 'La conversación se reactiva el {date}.', budgetNoDate: 'Cuando se renueve, podrás volver a enviarlo.', budgetKeep: 'Tu mensaje no se envió y se conserva en esta pantalla; no se enviará solo.',
     restored: 'Recuperamos tu mensaje sin confirmar.',
+    // ES-149: aviso de límites del asistente = landing.footer.notice + frase de landing.trust.1.body (la prueba lo compara con el catálogo)
+    limitsLabel: 'Límites del asistente', limits: 'El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia. La IA puede equivocarse.',
     current: 'El contenido guardado coincide actualmente con tu borrador.', deleted: 'La entrada ya no está disponible.', deleteError: 'No pudimos verificar el borrado. Consulta la entrada antes de otra acción.',
     review: 'Revisar versión guardada', proCompass: 'Brújula profesional', proCompassIntro: 'Explora ideas de profesión a partir de lo que ya valoras y haces bien. No es terapia ni un diagnóstico, y no promete resultados laborales. Puedes parar cuando quieras.', proCompassNotNow: 'Ahora no', proCompassClose: 'Cerrar sin presión', exercises: 'Ejercicios opcionales',
     bridge: 'El Puente', conversation: 'Conversación', convPrivate: 'Privada · Solo visible para ti', pause: 'Pausar', resume: 'Retomar', menu: 'Menú', menuLabel: 'Más opciones de Mi espacio',
@@ -63,6 +65,7 @@ export const copy = {
     truncated: 'The response was cut off because of its length.', truncatedHint: 'Continue sends a short message asking it to keep going.', continue: 'Continue', continueMessage: 'Please continue from where you left off.',
     budgetWhen: 'The conversation reopens on {date}.', budgetNoDate: 'Once it renews, you can send it again.', budgetKeep: 'Your message was not sent and stays on this screen; it will not be sent automatically.',
     restored: 'We restored your unconfirmed message.',
+    limitsLabel: 'Assistant limits', limits: 'Elevation\'s AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care. AI can be wrong.',
     current: 'The saved content currently matches your draft.', deleted: 'The entry is no longer available.', deleteError: 'We could not verify deletion. Check the entry before another action.',
     review: 'Review saved version', proCompass: 'Professional compass', proCompassIntro: 'Explore career ideas starting from what you already value and do well. It is not therapy or a diagnosis, and it does not promise job outcomes. You can stop whenever you like.', proCompassNotNow: 'Not now', proCompassClose: 'Close, no pressure', exercises: 'Optional exercises',
     bridge: 'The Bridge', conversation: 'Conversation', convPrivate: 'Private · Only visible to you', pause: 'Pause', resume: 'Resume', menu: 'Menu', menuLabel: 'More My space options',
