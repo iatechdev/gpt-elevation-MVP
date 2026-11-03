@@ -20,8 +20,8 @@ async function run({ missingIndex = false, missingTable = false, apply = true, m
       queries.push({ sql, values });
       if (sql.includes('to_regclass')) return { rows: [{ t: metaExists ? 'SequelizeMeta' : null }] };
       if (sql.startsWith('SELECT "name"')) return { rows: [{ name: 'already-registered.js' }] };
-      if (sql.includes('FROM pg_tables')) return { rows: [...new Set([...tables, 'ProfessionalApplications', 'ProfessionalApplicationFiles'])].filter(t => !missingTable || t !== 'Users').map(tablename => ({ tablename })) };
-      if (sql.includes('FROM pg_indexes')) return { rows: missingIndex ? [] : [{ indexname: 'professional_applications_email_open_unique' }] };
+      if (sql.includes('FROM pg_tables')) return { rows: [...new Set([...tables, 'ProfessionalApplications', 'ProfessionalApplicationFiles', 'ParticipantResumes'])].filter(t => !missingTable || t !== 'Users').map(tablename => ({ tablename })) };
+      if (sql.includes('FROM pg_indexes')) return { rows: missingIndex ? [] : ['professional_applications_email_open_unique', 'participant_resumes_user_version_unique', 'participant_resumes_user_sha_unique'].map(indexname => ({ indexname })) };
       return { rows: [] };
     }
     async end() { finish(); }
@@ -55,6 +55,6 @@ test('ES-115: cualquier no_adoptable bloquea, diagnóstico sigue sin escribir y 
   assert.ok(dry.queries.every(({ sql }) => sql.startsWith('SELECT')));
   const valid = await run();
   assert.equal(valid.code, 0);
-  assert.deepEqual(valid.queries.filter(({ sql }) => sql.startsWith('INSERT')).map(({ values }) => values[0]), ['20261001000000-baseline.js', '20261029000000-es95-professional-applications.js']);
+  assert.deepEqual(valid.queries.filter(({ sql }) => sql.startsWith('INSERT')).map(({ values }) => values[0]), ['20261001000000-baseline.js', '20261029000000-es95-professional-applications.js', '20261030010000-es109-participant-resumes.js']);
   assert.equal(valid.queries.at(-1).sql, 'COMMIT');
 });

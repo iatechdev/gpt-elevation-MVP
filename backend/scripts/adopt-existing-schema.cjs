@@ -9,6 +9,7 @@ const { Client } = require('pg');
 
 const BASELINE = '20261001000000-baseline.js';
 const ES95 = '20261029000000-es95-professional-applications.js';
+const ES109 = '20261030010000-es109-participant-resumes.js';
 const baselineTables = require('../migrations/baseline-20261028.json')
   .map((sql) => (sql.match(/^CREATE TABLE IF NOT EXISTS "(\w+)"/) || [])[1])
   .filter(Boolean);
@@ -21,6 +22,8 @@ const ADOPTABLE = [
     tables: ['ProfessionalApplications', 'ProfessionalApplicationFiles'],
     indexes: ['professional_applications_email_open_unique'],
   },
+  // ES-109: staging ya tiene la tabla y sus dos índices únicos (inventario de solo lectura, 3-nov-2026) con la migración sin registrar.
+  { name: ES109, tables: ['ParticipantResumes'], indexes: ['participant_resumes_user_version_unique', 'participant_resumes_user_sha_unique'] },
 ];
 
 async function ensureMeta(client) {

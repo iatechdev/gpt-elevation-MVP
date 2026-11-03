@@ -1,5 +1,5 @@
 // ES-115 (ES-59, fase 2) · Migrar al desplegar y adoptar el esquema de una base creada por sync(), contra PostgreSQL REAL.
-// Reproduce staging: esquema de sync() + las dos migraciones de ES-85 ya aplicadas, con un dato de persona sintética.
+// Reproduce staging: esquema de sync() + las migraciones que staging YA tiene registradas (historial real, 3-nov-2026), con un dato de persona sintética.
 // Comando explícito: solo una base de nombre aleatorio en un clúster desechable de loopback. Todo dato es sintético.
 //   ES115_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54339/postgres node --test test/integration/es-115-postgres.cjs
 const { test } = require('node:test');
@@ -13,6 +13,10 @@ const { Client } = require('pg');
 const backend = path.resolve(__dirname, '..', '..');
 const migrationFiles = fs.readdirSync(path.join(backend, 'migrations')).filter((f) => /^\d.*\.(js|cjs)$/.test(f)).sort();
 const ES85 = ['20261028190000-es85-ai-jobs-skill-candidates.js', '20261028190100-es85-worker-role-functions.js'];
+// Fixture histórico: migraciones ya registradas en el staging real (inventario de solo lectura, ES-115). Sus efectos los trae el sync() del modelo
+// actual (p. ej. ProfessionalApplicationFiles.data de ES-107), así que solo se registran; repetirlas fallaría («column data already exists»).
+const HISTORICAL = ['20261028210000-es89-candidate-review.js', '20261029010000-es116-skill-territories.js', '20261030000000-es107-cv-binary.js', '20261030020000-es43-ai-usage-stop-reason.js'];
+const REGISTERED = [...ES85, ...HISTORICAL].sort();
 
 test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopción, migración y repetición', { timeout: 420000 }, async (t) => {
   assert.ok(process.env.ES115_TEST_DATABASE_URL, 'Se requiere ES115_TEST_DATABASE_URL (clúster desechable en loopback)');
@@ -53,26 +57,30 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
     const r = cli(['db:migrate', '--name', m], names.staging);
     assert.equal(r.status, 0, `migración ${m}: ` + (r.stdout + r.stderr).slice(-400));
   }
+  // El staging real ya tenía registradas estas migraciones (efectos presentes por sync()): solo se registran.
+  await db.query('CREATE TABLE IF NOT EXISTS "SequelizeMeta" ("name" varchar(255) NOT NULL PRIMARY KEY)');
+  for (const m of HISTORICAL) await db.query('INSERT INTO "SequelizeMeta" ("name") VALUES ($1) ON CONFLICT DO NOTHING', [m]);
   // Persona sintética: se rellenan solo las columnas obligatorias sin valor por defecto.
   const required = (await db.query(`SELECT column_name, data_type FROM information_schema.columns WHERE table_name='Users' AND is_nullable='NO' AND column_default IS NULL`)).rows;
   const value = ({ column_name: c, data_type: d }) => (/timestamp/.test(d) ? 'now()' : /int|numeric/.test(d) ? '0' : d === 'boolean' ? 'false' : c === 'email' ? "'sintetico-115@example.invalid'" : "'x'");
   await db.query(`INSERT INTO "Users" (${required.map((c) => '"' + c.column_name + '"').join(',')}) VALUES (${required.map(value).join(',')})`);
   const usersBefore = (await db.query('SELECT count(*)::int n FROM "Users"')).rows[0].n;
-  assert.deepEqual(await meta(db), [...ES85].sort(), 'estado de staging: solo las dos migraciones de ES-85 registradas');
+  assert.deepEqual(await meta(db), REGISTERED, 'estado de staging: las migraciones ya registradas (ES-85, ES-89, ES-116, ES-107, ES-43)');
 
   // ── 1. Diagnóstico: no escribe nada ───────────────────────────────────────────
   const dry = run('adopt-existing-schema.cjs', [], names.staging);
   assert.equal(dry.status, 0, dry.stderr);
   assert.match(dry.stdout, /adoptable\s+20261001000000-baseline\.js/);
   assert.match(dry.stdout, /adoptable\s+20261029000000-es95-professional-applications\.js/);
+  assert.match(dry.stdout, /adoptable\s+20261030010000-es109-participant-resumes\.js/);
   assert.match(dry.stdout, /no se escribió nada/);
-  assert.deepEqual(await meta(db), [...ES85].sort(), 'el diagnóstico no escribe');
+  assert.deepEqual(await meta(db), REGISTERED, 'el diagnóstico no escribe');
 
   // ── 2. Sin adoptar, migrate-deploy se niega y no cambia nada ──────────────────
   const blocked = run('migrate-deploy.cjs', [], names.staging);
   assert.equal(blocked.status, 1);
   assert.match(blocked.stderr, /sin adoptar/);
-  assert.deepEqual(await meta(db), [...ES85].sort(), 'migrate-deploy bloqueado no escribe');
+  assert.deepEqual(await meta(db), REGISTERED, 'migrate-deploy bloqueado no escribe');
 
   // P2: ES-95 parcial no puede registrar siquiera la línea base.
   await db.query('DROP INDEX professional_applications_email_open_unique');
@@ -81,7 +89,7 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
   assert.match(partial.stdout, /no_adoptable\s+20261029000000-es95-professional-applications\.js/);
   assert.match(partial.stdout, /professional_applications_email_open_unique/);
   assert.match(partial.stderr, /Adopción bloqueada.*No se registra nada/);
-  assert.deepEqual(await meta(db), [...ES85].sort(), 'ES-95 parcial no registra baseline ni ninguna otra migración');
+  assert.deepEqual(await meta(db), REGISTERED, 'ES-95 parcial no registra baseline ni ninguna otra migración');
   assert.equal((await db.query('SELECT count(*)::int n FROM "Users"')).rows[0].n, usersBefore);
   await db.query(`CREATE UNIQUE INDEX professional_applications_email_open_unique ON "ProfessionalApplications" (email) WHERE status IN ('pending', 'approved')`);
 
@@ -90,7 +98,7 @@ test('ES-115 PostgreSQL: diagnóstico sin cambios, bloqueo sin adoptar, adopció
   assert.equal(apply.status, 0, apply.stderr);
   const afterAdopt = await meta(db);
   assert.ok(afterAdopt.includes('20261001000000-baseline.js') && afterAdopt.includes('20261029000000-es95-professional-applications.js'));
-  assert.equal(afterAdopt.length, 4, 'las dos de ES-85 más baseline y ES-95');
+  assert.equal(afterAdopt.length, REGISTERED.length + 3, 'las ya registradas más baseline, ES-95 y ES-109');
 
   // ── 4. migrate-deploy aplica lo pendiente sin errores ─────────────────────────
   const deploy = run('migrate-deploy.cjs', [], names.staging);
