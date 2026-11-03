@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'ParticipantResume', 'SkillAssessment']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'ParticipantResume', 'SkillAssessment', 'PasswordReset']) require('../../' + name);
   for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest']) require('../../' + name);
   for (const name of ['CareerExperiment', 'CareerExperimentVersion', 'CareerPlanVersion', 'CareerExperimentReview', 'CareerReminder']) require('../../' + name);
   await sequelize.sync();
@@ -163,6 +163,22 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
     }
   });
 
+  await t.test('ES-132: una recuperación de contraseña pendiente se exporta sin el hash del token y se purga con la cuenta; la de B no se toca', async () => {
+    const PasswordReset = require('../../PasswordReset');
+    const a = await addUser(); const b = await addUser();
+    const live = new Date(Date.now() + 3600000);
+    await PasswordReset.create({ UserId: a.id, tokenHash: 'a'.repeat(64), expiresAt: live });
+    await PasswordReset.create({ UserId: a.id, tokenHash: 'b'.repeat(64), expiresAt: live, usedAt: new Date() });
+    await PasswordReset.create({ UserId: b.id, tokenHash: 'c'.repeat(64), expiresAt: live });
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.equal(p.data.passwordResets.length, 2);
+    assert.ok(!JSON.stringify(p.data).includes('a'.repeat(64)) && !JSON.stringify(p.data).includes('tokenHash')); // la credencial nunca sale
+    assert.equal((await rights.preview(b.id, { type: 'personal', locale: 'es' })).data.passwordResets.length, 1);
+    const request = await rights.requestDeletion(a.id);
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await PasswordReset.count({ where: { UserId: a.id } }), 0);
+    assert.equal(await PasswordReset.count({ where: { UserId: b.id } }), 1);
+  });
   await t.test('QA-H1: el uso de IA y el contador de presupuesto se exportan sin contenido y se purgan; la cohorte y B no se tocan', async () => {
     const AiUsage = require('../../AiUsage');
     const AiBudgetCounter = require('../../AiBudgetCounter');

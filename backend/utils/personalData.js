@@ -52,6 +52,9 @@ const CORE = [
   ['careerReviews', 'CareerExperimentReview', 'UserId', ['id', 'experimentId', 'submissionVersion', 'status', 'payload', 'createdAt'], ['payload'], ['payload']],
   ['careerExperimentVersions', 'CareerExperimentVersion', 'UserId', ['id', 'experimentId', 'version', 'lifecycle', 'payload', 'createdAt'], ['payload'], ['payload']],
   ['careerExperiments', 'CareerExperiment', 'UserId', ['id', 'choiceId', 'currentVersion', 'createdAt']],
+  // ES-132: enlaces de recuperación de contraseña. Se exportan solo cuándo se pidieron, vencieron o se usaron; NUNCA `tokenHash` (es una credencial de un solo uso,
+  // aunque esté hasheada). Se purgan con la cuenta: un enlace pendiente no debe sobrevivir al borrado.
+  ['passwordResets', 'PasswordReset', 'UserId', ['id', 'expiresAt', 'usedAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);

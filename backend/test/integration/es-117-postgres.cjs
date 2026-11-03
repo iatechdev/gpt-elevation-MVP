@@ -5,13 +5,16 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { Client } = require('pg');
 const { findExposure } = require('../../scripts/check-rls.cjs');
 
 const backend = path.resolve(__dirname, '..', '..');
-const PREVIOUS = '20261030020000-es43-ai-usage-stop-reason.js';
+// La migración inmediatamente anterior a ES-117 se calcula, no se fija: toda migración posterior a la fija y previa a ES-117 (p. ej. ES-132) la rompería.
+const ES117 = '20261102120000-es117-supabase-rls.js';
+const PREVIOUS = fs.readdirSync(path.join(backend, 'migrations')).filter((f) => /^\d.*\.(js|cjs)$/.test(f)).sort().filter((f) => f < ES117).pop();
 
 test('ES-117 PostgreSQL: RLS en todas las tablas, API pública sin privilegios y worker operativo', { timeout: 300000 }, async (t) => {
   assert.ok(process.env.ES117_TEST_DATABASE_URL, 'Se requiere ES117_TEST_DATABASE_URL (clúster desechable en loopback)');

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
@@ -159,6 +159,7 @@ export function LoginPage() {
           </button>
         </form>
         <div className="access-secondary">
+          {!isRegistering && <p><Link to="/forgot-password">{text('landing.access.reset.forgot_link')}</Link></p>}
           <p>{isRegistering ? copy.alreadyRegistered : copy.firstTime}</p>
           <button type="button" disabled={submitting}
             onClick={() => {

@@ -14,6 +14,8 @@ import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { SpaceSession } from './space/SpaceSession'
 // ES-129: cada pantalla fuera de la portada y el login se descarga al entrar en su ruta; así /login no arrastra admin, terapeuta, junta ni mapas.
 const ProfessionalApplicationPage = lazy(() => import('./professional/ProfessionalApplicationPage.tsx').then(m => ({ default: m.ProfessionalApplicationPage })))
+const ForgotPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ForgotPasswordPage })))
+const ResetPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ResetPasswordPage })))
 const CheckinPage = lazy(() => import('./pages/CheckinPage.tsx').then(m => ({ default: m.CheckinPage })))
 const ChatPage = lazy(() => import('./pages/ChatPage.tsx').then(m => ({ default: m.ChatPage })))
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx').then(m => ({ default: m.PricingPage })))
@@ -77,6 +79,8 @@ export default function App() {
       {/* Public */}
       <Route path="/"        element={<LandingPage />} />
       <Route path="/login"   element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} /> {/* ES-132 */}
+      <Route path="/reset-password"  element={<ResetPasswordPage />} />
       <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
 
