@@ -9,7 +9,7 @@ async function up(arg) {
       "tokenHash" VARCHAR(64) NOT NULL UNIQUE, "expiresAt" TIMESTAMP WITH TIME ZONE NOT NULL,
       "usedAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,
       "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL)`, { transaction });
-    await sequelize.query('CREATE INDEX IF NOT EXISTS "password_resets_user_created" ON "PasswordResets" ("UserId", "createdAt")', { transaction });
+    await sequelize.query('CREATE INDEX IF NOT EXISTS "password_resets__user_id_created_at" ON "PasswordResets" ("UserId", "createdAt")', { transaction });
     // ES-117: toda tabla nueva activa RLS en su propia migración (sin política: nadie sin BYPASSRLS la lee ni escribe). ENABLE es idempotente (QA-132-05).
     await sequelize.query('ALTER TABLE "PasswordResets" ENABLE ROW LEVEL SECURITY', { transaction });
   });
