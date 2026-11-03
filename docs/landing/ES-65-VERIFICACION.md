@@ -3,12 +3,19 @@
 28-oct-2026 · [Dev-Codex] · Rama `ES-65-cierre-pie`.
 Base inicial `6f01a92`; integración de main hasta `13a0f9f` (incluye ES-74, ES-70 y ES-90).
 
+## Actualización 3-nov-2026 [Dev-Worker-Claude] (QA-68-01)
+
+Por decisión de Mauricio se **retiró el CTA final del S15** para alinear con main: ES-133 (`0413748a`) dejó el acceso en `LandingJoin`. Este PR conserva solo el pie (aviso no clínico ES/EN, año dinámico, enlaces no aprobados ocultos por D-08). Se eliminaron `LandingClosing`, las claves `landing.closing.*` y su CSS.
+Donde este documento habla de S15, CTA, botón «Crear mi cuenta», foco/Enter hacia el registro o contraste del CTA, **esas evidencias son históricas (head 91516b9 y posteriores hasta 7cb7cc19) y ya no aplican** al head actual. Los recuentos de pruebas de la tabla también son históricos. Las pruebas del head actual se registran abajo.
+
+Pruebas del head actual (local, 3-nov-2026): tipos y lint sin errores; frontend 324/324; backend 537/537; build correcto. No verificado: CI de GitHub, navegador, lector de pantalla, banderas de secciones, despliegue.
+
 ## Aprobaciones y alcance
 
 - Diseño fase 2: ES-60/10279 y ES-65/10287. Plan, wireframe, textos, estados y objeción: ES-65/10339.
 - Fuente visual: Figma, 84 frames revisados en ES-68/10304; en esta HU se volvió a observar S15 escritorio ES, móvil ES y escritorio EN (49–51). La recarga del frame 52 no permitió una nueva captura estable; su revisión previa consta en 10304.
 - Fuente textual: `origin/docs/landing-diseno-fase2:docs/landing/TEXTOS-LANDING-FASE2-ES-EN.md`. Se omite «El siguiente paso es tuyo / The next step is yours» del diseño porque no está en la fuente de textos.
-- S15 usa daisyUI con prefijo elv-, tokens ES-61, Inter/mono, filetes y ocre decorativo. CTA real `/login?mode=register`; el flujo de ES-74 ya existe en la base integrada. No se toca identidad ni zonas privadas.
+- (Histórico, retirado) S15 con CTA real `/login?mode=register`. Vigente: solo el pie semántico, con tokens ES-61 e Inter/mono; no se toca identidad ni zonas privadas.
 - Footer semántico fuera del main, aviso no clínico completo ES/EN y año dinámico. Se elimina el fetch antiguo que solo alimentaba los textos sustituidos; queda el lector/fallback ES-66 existente.
 - ES-90 retiró marcadores internos de la landing. Resolución registrada antes del ajuste en ES-65/10396: se ocultan enlaces de privacidad/términos/contacto mientras D-08 esté pendiente, usando la alternativa aprobada en DISENO-FASE2 §6. No hay enlaces falsos, texto nuevo no aprobado ni cambios en el panel de administración.
 - CTA profesional oculto mientras no esté definido su flujo. No se inventan contactos, precios, certificaciones, analítica ni cookies.
@@ -38,14 +45,14 @@ La propuesta separa datos/finalidades, espacios privados/profesionales, proveedo
 
 Antes de integrar main: 43/43 frontend y 257/257 backend. Se detectó un fallo en la aserción antigua de ES-62 que buscaba el tag footer literal dentro de LandingPage; se actualizó para la extracción del componente, conservando la comprobación de que está después de main. Render SSR real y navegador comprueban el footer resultante. No se silenciaron reglas.
 
-El test nuevo de frontend compila y renderiza los componentes TSX reales con React/MemoryRouter: seis claves ES/EN, CTA fijo, escape HTML, overrides completos y fallback ante error/vacío. El test backend usa servidor Express/HTTP/JWT reales y **persistencia/proveedores simulados**: todas las claves se guardan solo como superadmin; anónimo, participante, terapeuta, board y admin no pueden editarlas. No se ejecutó PostgreSQL real en ES-65; no hay endpoints, modelos ni migraciones nuevos.
+El test nuevo de frontend compila y renderiza los componentes TSX reales con React/MemoryRouter: tres claves de pie ES/EN (antes seis, con cierre), sin enlaces ni CTA, escape HTML, overrides completos y fallback ante error/vacío. El test backend usa servidor Express/HTTP/JWT reales y **persistencia/proveedores simulados**: todas las claves se guardan solo como superadmin; anónimo, participante, terapeuta, board y admin no pueden editarlas. No se ejecutó PostgreSQL real en ES-65; no hay endpoints, modelos ni migraciones nuevos.
 
 ## Verificación visual local
 
 - Navegador sobre build real y servidor de fixtures local; no se usaron producción, personas reales ni credenciales reales.
 - ES/EN, anchos 320/375/390/768/1024/1440, sin desbordamiento horizontal. Se repitieron las doce combinaciones después de integrar main; el footer final no contiene enlaces ni marcadores internos.
-- CTA de 48,39 px, Tab/Shift+Tab con contorno ocre de 3 px y activación con Enter hasta el formulario real de registro de ES-74 (campo nombre visible). No se efectuó un registro real contra el servidor de fixtures.
-- Claro y oscuro: título, aviso y CTA legibles. Preferencia oscura simulada solo por el arnés; usa el tema real. Contraste calculado: texto secundario claro 5,12:1; oscuro 7,59:1; CTA claro 16,69:1 y oscuro 16,18:1. Tests existentes comprueban contraste de ambos temas y foco.
+- (Histórico, retirado con el CTA) CTA de 48,39 px, foco, Enter hasta el registro. No aplica al head actual y no se repitió.
+- (Histórico) Claro y oscuro: título, aviso y CTA legibles; contraste secundario claro 5,12:1 y oscuro 7,59:1 vale para el aviso del pie; los valores del CTA (16,69:1 y 16,18:1) ya no aplican. No se repitió en el head actual.
 - CMS 503, vacío, texto editado, JSON malformado, palabra extensa y HTML: se mantiene fallback bilingüe o se muestra texto escapado, sin inyección ni overflow. Los escenarios son fixtures, no una prueba de persistencia en producción.
 - Artefacto de privacidad conservado por build: SHA256 de public y dist idéntico `b7a0c3ffa9ca5329489c1bbc2cb1f57af2c6ef2507e793af5871ce8062404b4c`. GET `/privacy` del arnés: 200 y contenido idéntico; el arnés tiene mapeo explícito, **no demuestra el routing de Railway/Vercel**.
 
