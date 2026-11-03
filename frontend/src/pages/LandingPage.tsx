@@ -1,5 +1,6 @@
 import { useLanguage } from '../i18n/useLanguage'
 import { LandingSurface } from '../components/landing/LandingSurface'
+import { LandingFooter } from '../components/landing/LandingClosing'
 import { HeroDoors } from '../components/landing/HeroDoors'
 import { LandingJourney } from '../components/landing/LandingJourney'
 import { LandingHeader } from '../components/landing/LandingHeader'
@@ -14,28 +15,11 @@ import { useSpaceRoutes } from '../space/routesContext'
 import { LandingJoin } from '../components/landing/LandingJoin'
 import { LandingPlans } from '../components/landing/LandingPlans'
 import { useLandingContent } from '../content/useLandingContent'
-import { useState, useEffect } from 'react'
-
-const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
-
-type LandingContent = Record<string, string> | null
-
 export function LandingPage() {
-  const { t, lang, setLang } = useLanguage()
+  const { lang, setLang } = useLanguage()
   const landing = useLandingContent(lang)
   const routes = useSpaceRoutes()
   const showProfessionals = professionalsEnabled(import.meta.env.VITE_ENABLE_LANDING_PROFESSIONALS)
-  const [content, setContent] = useState<LandingContent>(null)
-
-  useEffect(() => {
-    fetch(`${BACKEND}/api/landing-content?lang=${lang}`)
-      .then(r => r.json())
-      .then((data: Record<string, string>) => setContent(data))
-      .catch(() => setContent(null))
-  }, [lang])
-
-  // Fallback al i18n si la API falla o no tiene el key
-  const getText = (key: string) => content?.[key] ?? t(key)
 
   return (
     <LandingSurface>
@@ -67,16 +51,10 @@ export function LandingPage() {
         <LandingJoin text={landing.text} />
         {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingFaq text={landing.text} />}
 
-        {/* ES-133: el CTA final repetía el acceso de S13; se fusionó en LandingJoin. */}
 
         </main>
 
-        {/* Footer */}
-        <footer style={{ padding: '2.5rem 2rem', background: 'var(--color-base-100)', borderTop: '0.5px solid var(--color-base-300)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <span style={{ fontFamily: 'inherit', fontWeight: 300, letterSpacing: '0.2em', fontSize: '0.95rem', color: 'var(--color-base-content)' }}>ELEVATION</span>
-          <p style={{ fontSize: '0.75rem', color: 'var(--landing-muted)', margin: 0, textAlign: 'center' }}>{getText('disclaimer')}</p>
-          <span style={{ fontSize: '0.75rem', color: 'var(--landing-muted)' }}>© {new Date().getFullYear()}</span>
-        </footer>
+        <LandingFooter text={landing.text} />
 
       </div>
     </LandingSurface>
