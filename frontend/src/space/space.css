@@ -79,6 +79,7 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .chat-shell { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 .chat-main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; width: 100%; max-width: 760px; margin: 0 auto; padding: 60px 1.5rem 0; box-sizing: border-box; }
 .chat-top { flex: 0 0 auto; }
+.chat-limits { margin: 8px 0 0; font-size: .8rem; line-height: 1.4; color: var(--color-neutral); } /* ES-149 */
 .chat-top .space-chatbar { padding: 8px 0; margin-bottom: 8px; gap: 6px; }
 .chat-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 8px 0 16px; }
 .chat-input-bar { flex: 0 0 auto; max-height: 70dvh; overflow-y: auto; border-top: 1px solid var(--color-base-300, #E4E2DC); background: #FAFAF9; padding: 8px 0 max(12px, env(safe-area-inset-bottom, 0px)); }
