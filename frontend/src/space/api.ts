@@ -1,5 +1,5 @@
 export type Entry = { id: number; date: string; content: string; createdAt: string; updatedAt: string }
-export type ChatMessage = { role: 'user' | 'bot'; text: string }
+export type ChatMessage = { role: 'user' | 'bot'; text: string; truncated?: boolean }
 export type Intent = Readonly<{ message: string; lang: string; requestId: string; contextEntryIds?: readonly number[]; mode?: 'compass' }>
 export class SpaceError extends Error {
   status: number
@@ -44,5 +44,5 @@ export async function readEntry(token: string, id: number) { return entry(await 
 export async function history(token: string): Promise<ChatMessage[]> {
   const data = await request(token, '/api/messages')
   if (!Array.isArray(data) || data.some(m => !m || !['user', 'bot'].includes(m.role) || typeof m.text !== 'string')) throw new SpaceError(502)
-  return data.map(m => ({ role: m.role, text: m.text }))
+  return data.map(m => ({ role: m.role, text: m.text, ...(m.truncated === true ? { truncated: true } : {}) })) // ES-142: respuesta que el modelo dejó cortada por longitud
 }

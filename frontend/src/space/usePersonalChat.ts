@@ -54,15 +54,18 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     })
     return () => { active = false }
   }, [picker, token, current])
-  const confirm = async () => {
+  const confirm = async (sent?: Intent) => {
     await reload()
-    if (current()) { setIntent(null); setInput(''); setSelected([]); setPicker(false); setEntries([]); setRetryable(false); setNotice({ k: 'confirmed' }) }
+    if (!current()) return
+    // ES-142: «Continuar» envía un texto fijo; si en la caja hay otro borrador, se conserva con su selección de diario.
+    if (sent && input.trim() !== sent.message) { setIntent(null); setRetryable(false); setNotice({ k: 'confirmed' }); return }
+    setIntent(null); setInput(''); setSelected([]); setPicker(false); setEntries([]); setRetryable(false); setNotice({ k: 'confirmed' })
   }
   const post = async (body: Intent) => {
     try {
       const response = await request(token, '/api/chat', { method: 'POST', body: JSON.stringify(body) }) as { reply?: unknown; requestId?: unknown }
       if (typeof response?.reply !== 'string' || response.requestId !== body.requestId) throw new SpaceError(502)
-      await confirm()
+      await confirm(body)
     } catch (error) {
       if (!current()) return
       setRetryable(error instanceof SpaceError && error.retryable)
@@ -82,6 +85,18 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     } catch (error) { if (current()) { setSelected([]); fail(error, { k: 'contextChanged' }) } }
     finally { if (current()) setBusy(false); lock.current = false }
   }
+  // ES-142: «Continuar» pide seguir una respuesta cortada con un turno normal (requestId nuevo, sin diario) y no toca el borrador de la caja.
+  const continueReply = async () => {
+    const last = messages[messages.length - 1]
+    if (!enabled || lock.current || intent || expired || !loaded || last?.role !== 'bot' || !last.truncated) return
+    lock.current = true; setBusy(true); setNotice(null)
+    try {
+      const body = makeIntent(c.continueMessage, lang, [], undefined, mode)
+      setIntent(body); setRetryable(false)
+      await post(body)
+    } catch (error) { if (current()) fail(error, { k: 'sendError' }) }
+    finally { if (current()) setBusy(false); lock.current = false }
+  }
   const check = async () => {
     if (!intent || lock.current) return
     lock.current = true; setBusy(true); setRetryable(false)
@@ -89,7 +104,7 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
       const result = await request(token, `/api/chat/turns/${intent.requestId}`) as { requestId?: string; status?: string; retryable?: boolean }
       if (!current()) return
       if (result?.requestId !== intent.requestId || !['completed', 'pending', 'failed'].includes(result.status || '')) throw new SpaceError(502)
-      if (result.status === 'completed') await confirm()
+      if (result.status === 'completed') await confirm(intent)
       else { setRetryable(result.retryable === true); setNotice({ k: result.status === 'pending' ? 'pending' : 'sendError' }) }
     } catch (error) {
       if (current() && error instanceof SpaceError && error.status === 404) { setRetryable(true); setNotice({ k: 'sendError' }) }
@@ -102,6 +117,6 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     try { await post(intent) } finally { if (current()) setBusy(false); lock.current = false }
   }
   const canLeave = () => expired || (!input && !intent) || window.confirm(c.leave)
-  return { messages, input, setInput, busy, expired, loaded, notice: noticeText(notice, lang), alert: isAlert(notice), selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, check, retry, loadPicker, reload, canLeave, c }
+  return { messages, input, setInput, busy, expired, loaded, notice: noticeText(notice, lang), alert: isAlert(notice), selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, continueReply, check, retry, loadPicker, reload, canLeave, c }
 }
 export type PersonalChat = ReturnType<typeof usePersonalChat>
