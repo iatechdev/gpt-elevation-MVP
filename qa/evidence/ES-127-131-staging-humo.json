@@ -1,0 +1,77 @@
+[
+ {
+  "id": "H1 /api/health 200",
+  "ok": true,
+  "detail": "http=200 commit=385f9b9"
+ },
+ {
+  "id": "S1 #131 /api/messages de cuenta nueva: 200, vacío y sin campo truncated",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "S2 #131 GET turno inexistente: 404 (no 500) y sin contenido",
+  "ok": true,
+  "detail": "http=404"
+ },
+ {
+  "id": "S3 #131 POST /api/chat con mensaje vacío: 4xx sin llamar a la IA",
+  "ok": true,
+  "detail": "http=400"
+ },
+ {
+  "id": "S4 #131 POST /api/chat con requestId inválido: 4xx",
+  "ok": true,
+  "detail": "http=400"
+ },
+ {
+  "id": "S5 #131 id de turno malicioso: 4xx, nunca 500",
+  "ok": true,
+  "detail": "http=404"
+ },
+ {
+  "id": "S6 sin token: 401/403",
+  "ok": true,
+  "detail": "http=403"
+ },
+ {
+  "id": "C1 #127 es: «Cerrar sesión» visible en el dashboard",
+  "ok": true,
+  "detail": "botones=1"
+ },
+ {
+  "id": "C2 #127 es: cerrar sesión llama POST /api/logout una vez, limpia el token y vuelve a la portada",
+  "ok": true,
+  "detail": "logout=POST token=false ruta=/"
+ },
+ {
+  "id": "C3 #127 es: el token anterior queda revocado en el servidor (401)",
+  "ok": true,
+  "detail": "http=401"
+ },
+ {
+  "id": "C4 #127 es: sin errores de página",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "C1 #127 en: «Sign out» visible en el dashboard",
+  "ok": true,
+  "detail": "botones=1"
+ },
+ {
+  "id": "C2 #127 en: cerrar sesión llama POST /api/logout una vez, limpia el token y vuelve a la portada",
+  "ok": true,
+  "detail": "logout=POST token=false ruta=/"
+ },
+ {
+  "id": "C3 #127 en: el token anterior queda revocado en el servidor (401)",
+  "ok": true,
+  "detail": "http=401"
+ },
+ {
+  "id": "C4 #127 en: sin errores de página",
+  "ok": true,
+  "detail": ""
+ }
+]
