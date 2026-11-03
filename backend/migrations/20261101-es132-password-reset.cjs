@@ -9,7 +9,7 @@ async function up(arg) {
       "tokenHash" VARCHAR(64) NOT NULL UNIQUE, "expiresAt" TIMESTAMP WITH TIME ZONE NOT NULL,
       "usedAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,
       "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL)`, { transaction });
-    await sequelize.query('CREATE INDEX IF NOT EXISTS "password_resets_user_created" ON "PasswordResets" ("UserId", "createdAt")', { transaction });
+    await sequelize.query('CREATE INDEX IF NOT EXISTS "password_resets__user_id_created_at" ON "PasswordResets" ("UserId", "createdAt")', { transaction });
   });
 }
 async function down(queryInterface) {

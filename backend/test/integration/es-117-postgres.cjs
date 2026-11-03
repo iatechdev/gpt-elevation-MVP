@@ -11,7 +11,7 @@ const { Client } = require('pg');
 const { findExposure } = require('../../scripts/check-rls.cjs');
 
 const backend = path.resolve(__dirname, '..', '..');
-const PREVIOUS = '20261030020000-es43-ai-usage-stop-reason.js';
+const PREVIOUS = '20261102000000-es142-chat-truncated.js';
 
 test('ES-117 PostgreSQL: RLS en todas las tablas, API pública sin privilegios y worker operativo', { timeout: 300000 }, async (t) => {
   assert.ok(process.env.ES117_TEST_DATABASE_URL, 'Se requiere ES117_TEST_DATABASE_URL (clúster desechable en loopback)');
