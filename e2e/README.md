@@ -10,17 +10,17 @@ Pantallas **públicas** (landing y acceso), en **español e inglés**, en **escr
 - El teclado llega a un control con foco visible.
 - Accesibilidad automática (axe, WCAG 2 A/AA): sin violaciones graves ni críticas.
 
-No inicia sesión ni escribe datos. Las pruebas con cuentas (por rol) se añaden después, leyendo las credenciales **solo** de variables de entorno.
+Estas pruebas (`tests/publico.spec.ts`) no inician sesión ni escriben datos.
 
-## Pruebas por perfil ()
-Con las 4 cuentas sintéticas de staging (persona, terapeuta, administrador, superadministrador). Corren **en serie y solo en escritorio** (el acceso está limitado a 10 por minuto por dirección). Necesitan las variables  y  (ROL = USER, THERAPIST, ADMIN, SUPERADMIN); sin ellas se omiten.
+## Pruebas por perfil (`tests/roles.spec.ts`)
+Con las 4 cuentas sintéticas de staging (persona, terapeuta, administrador, superadministrador). Corren **en serie y solo en escritorio** (el acceso está limitado a 10 por minuto por dirección). Necesitan las variables `E2E_<ROL>_EMAIL` y `E2E_<ROL>_PASSWORD` (ROL = USER, THERAPIST, ADMIN, SUPERADMIN), siempre por entorno y nunca en el repositorio; sin ellas se omiten.
 
 - **Persona:** inicia sesión; un envío al chat que falla con 429 (simulado, no llega al servidor) queda como «sin confirmar», **sobrevive a recargar** y se recupera con «Consultar estado» → «Reintentar el mismo envío». El reintento hace **1 llamada real a la IA** (unos pocos miles de tokens de salida y ~15 mil de entrada; no medido).
-- **Terapeuta:** ve a su persona asignada; por API **no recibe** los mensajes de la persona y no accede a la API de administración; no se queda en .
+- **Terapeuta:** ve a su persona asignada; por API **no recibe** los mensajes de la persona y no accede a la API de administración; no se queda en `/admin`.
 - **Administrador:** en «Crear usuario» no puede elegir superadmin ni junta.
 - **Superadministrador:** accede a los catálogos de habilidades y de rutas y puede elegir todos los roles.
 
-Notas de diseño: la ruta  es una pantalla de la aplicación de una sola página (siempre responde 200), así que el aislamiento del terapeuta se comprueba por **datos en el servidor**, no por el código HTTP de la ruta. Las pruebas no crean cuentas ni escriben datos de otras personas.
+Notas de diseño: la ruta `/app/chat` es una pantalla de la aplicación de una sola página (siempre responde 200), así que el aislamiento del terapeuta se comprueba por **datos en el servidor**, no por el código HTTP de la ruta. Las pruebas no crean cuentas ni escriben datos de otras personas.
 
 ## Cómo correrlas
 
