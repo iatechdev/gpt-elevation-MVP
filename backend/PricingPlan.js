@@ -1,6 +1,7 @@
 // backend/PricingPlan.js
 const { DataTypes } = require('sequelize');
 const { sequelize }  = require('./database');
+const { invalidate: invalidatePlansCache } = require('./utils/plansCache');
 
 const PricingPlan = sequelize.define('PricingPlan', {
   // Slug único — usado por planLimits.js para aplicar restricciones
@@ -72,6 +73,15 @@ const PricingPlan = sequelize.define('PricingPlan', {
 }, {
   tableName: 'PricingPlans',
   timestamps: true,
+  // ES-130: cualquier escritura invalida el microcaché de GET /api/plans.
+  hooks: {
+    afterSave: invalidatePlansCache,
+    afterDestroy: invalidatePlansCache,
+    afterBulkCreate: invalidatePlansCache,
+    afterBulkUpdate: invalidatePlansCache,
+    afterBulkDestroy: invalidatePlansCache,
+    afterUpsert: invalidatePlansCache,
+  },
 });
 
 module.exports = PricingPlan;
