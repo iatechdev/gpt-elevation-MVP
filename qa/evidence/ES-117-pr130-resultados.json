@@ -1,0 +1,202 @@
+[
+ {
+  "id": "INFO versión previa a ES-117",
+  "ok": true,
+  "detail": "20261030020000-es43-ai-usage-stop-reason.js"
+ },
+ {
+  "id": "F0 el rol de la app no es superusuario ni tiene BYPASSRLS (como un dueño real)",
+  "ok": true,
+  "detail": "{\"rolsuper\":false,\"rolbypassrls\":false}"
+ },
+ {
+  "id": "F1a migraciones previas aplicadas como dueño sin superusuario",
+  "ok": true,
+  "detail": "030000000-es107-cv-binary: migrated (0.019s)\n\n== 20261030010000-es109-participant-resumes: migrating =======\n== 20261030010000-es109-participant-resumes: migrated (0.028s)\n\n== 20261030020000-es43-ai-usage-stop-reason: migrating =======\n== 20261030020000-es43-ai-usage-stop-reason: migrated (0.028s)\n\n"
+ },
+ {
+  "id": "F3a registro y login sintéticos antes de ES-117",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "F3b flujo (diario, chat, mensajes) antes de ES-117",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "id": "INFO filas sintéticas antes",
+  "ok": true,
+  "detail": "{\"Users\":1,\"Messages\":9648,\"DiaryEntries\":4824}"
+ },
+ {
+  "id": "F1b antes: el escenario reproduce la exposición (tablas sin RLS)",
+  "ok": true,
+  "detail": "{\"sin_rls\":51,\"total\":51}"
+ },
+ {
+  "id": "F1c migración ES-117 aplicada sobre datos previos",
+  "ok": true,
+  "detail": ".3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: migrating =======\n== 20261102120000-es117-supabase-rls: migrated (0.089s)\n\n"
+ },
+ {
+  "id": "P1 duración de la migración con ~14472 filas (umbral propuesto ≤ 30 s)",
+  "ok": true,
+  "detail": "3082 ms (incluye arranque de sequelize-cli)"
+ },
+ {
+  "id": "P2 lecturas concurrentes durante la migración (umbral propuesto: ninguna espera > 2 s)",
+  "ok": true,
+  "detail": "lecturas=100 máx=15 ms p95=4 ms"
+ },
+ {
+  "id": "F5 check:rls tras migrar: «RLS ok»",
+  "ok": true,
+  "detail": "RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "F1d RLS activo en todas las tablas de public tras migrar",
+  "ok": true,
+  "detail": "{\"sin_rls\":0,\"total\":51}"
+ },
+ {
+  "id": "F1e los datos del dueño siguen intactos (RLS no los oculta al dueño)",
+  "ok": true,
+  "detail": "{\"Users\":1,\"Messages\":9648,\"DiaryEntries\":4824}"
+ },
+ {
+  "id": "S1 anon: SELECT/DELETE/TRUNCATE sobre Users, Messages, DiaryEntries y Consents → permission denied (42501)",
+  "ok": true,
+  "detail": "12/12"
+ },
+ {
+  "id": "S1 anon: EXECUTE de ai_jobs_guard y skill_candidates_guard denegado",
+  "ok": true,
+  "detail": "2/2"
+ },
+ {
+  "id": "S1 anon: nextval de secuencia denegado",
+  "ok": true,
+  "detail": "42501"
+ },
+ {
+  "id": "S1 authenticated: SELECT/DELETE/TRUNCATE sobre Users, Messages, DiaryEntries y Consents → permission denied (42501)",
+  "ok": true,
+  "detail": "12/12"
+ },
+ {
+  "id": "S1 authenticated: EXECUTE de ai_jobs_guard y skill_candidates_guard denegado",
+  "ok": true,
+  "detail": "2/2"
+ },
+ {
+  "id": "S1 authenticated: nextval de secuencia denegado",
+  "ok": true,
+  "detail": "42501"
+ },
+ {
+  "id": "S1b defensa en profundidad: con GRANT reabierto por error, RLS sin políticas deja 0 filas visibles y 0 borradas",
+  "ok": true,
+  "detail": "visibles=0 borradas=0"
+ },
+ {
+  "id": "S4 service_role conserva sus privilegios",
+  "ok": true,
+  "detail": "antes=51 después=51"
+ },
+ {
+  "id": "S2a tabla nueva creada por el dueño: sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "{\"a\":false,\"b\":false,\"s\":true}"
+ },
+ {
+  "id": "S2b check:rls detecta la tabla nueva sin RLS (sale con error y la nombra)",
+  "ok": true,
+  "detail": "Tablas sin RLS (1): QaFutura"
+ },
+ {
+  "id": "S2c activando RLS en la tabla nueva, check:rls vuelve a pasar",
+  "ok": true,
+  "detail": "RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "S2d función nueva creada por el dueño: anon/authenticated NO deberían poder ejecutarla (EXECUTE heredado de PUBLIC)",
+  "ok": false,
+  "detail": "{\"a\":true,\"b\":true} · check:rls la detecta (salida 1)"
+ },
+ {
+  "id": "S3a roles del worker existen, sin superusuario ni BYPASSRLS",
+  "ok": true,
+  "detail": "[{\"rolname\":\"elevation_worker_owner\",\"rolsuper\":false,\"rolbypassrls\":false},{\"rolname\":\"elevation_worker\",\"rolsuper\":false,\"rolbypassrls\":false}]"
+ },
+ {
+  "id": "S3b elevation_worker: sin acceso a Users/Messages/DiaryEntries/Consents y sí a AiUsages",
+  "ok": true,
+  "detail": "denegadas=4/4 AiUsages=true"
+ },
+ {
+  "id": "F3c flujo (diario, chat, mensajes) después de ES-117 sin errores",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "id": "F3d el diario y los mensajes previos siguen visibles para su dueño",
+  "ok": true,
+  "detail": "antes=12 después=50"
+ },
+ {
+  "id": "P3 GET /api/messages: mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)",
+  "ok": true,
+  "detail": "antes p50=440.7 p95=731.6 ms · después p50=231.1 p95=316.7 ms"
+ },
+ {
+  "id": "P3 POST /api/chat (proveedor simulado): mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)",
+  "ok": true,
+  "detail": "antes p50=53.9 p95=77.6 ms · después p50=34.7 p95=44.5 ms"
+ },
+ {
+  "id": "P3 POST /api/diary: mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)",
+  "ok": true,
+  "detail": "antes p50=20.1 p95=32.2 ms · después p50=15.9 p95=25.8 ms"
+ },
+ {
+  "id": "F4a down aplicado (ensayo)",
+  "ok": true,
+  "detail": "vx.com\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: reverting =======\n== 20261102120000-es117-supabase-rls: reverted (0.065s)\n\n"
+ },
+ {
+  "id": "F4b tras el down no queda RLS (estado previo)",
+  "ok": true,
+  "detail": "{\"con_rls\":0}"
+ },
+ {
+  "id": "F4c reaplicación del up",
+  "ok": true,
+  "detail": "nv'] }\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: migrating =======\n== 20261102120000-es117-supabase-rls: migrated (0.128s)\n\n"
+ },
+ {
+  "id": "F4d tras reaplicar, check:rls pasa",
+  "ok": true,
+  "detail": "RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "F4e up→down→up no pierde datos",
+  "ok": true,
+  "detail": "{\"Users\":1,\"Messages\":9672,\"DiaryEntries\":4836}"
+ },
+ {
+  "id": "F4f db:drift sin deriva",
+  "ok": true,
+  "detail": "k\n  (permitida, drift-allowed.json) solo en migraciones: skill_candidates_owner_fk\n  (permitida, drift-allowed.json) solo en migraciones: skill_candidates_status_check\nSIN DERIVA: las migraciones coinciden con sync, también tras deshacer y reaplicar."
+ },
+ {
+  "id": "S5 la migración y el script no contienen secretos, correos ni identificadores de proyecto",
+  "ok": true,
+  "detail": "revisión por expresión regular"
+ },
+ {
+  "id": "S6 check-rls.cjs es de solo lectura (sin INSERT/UPDATE/DELETE/ALTER/CREATE/DROP/GRANT/REVOKE/TRUNCATE y no imprime DATABASE_URL)",
+  "ok": true,
+  "detail": "revisión estática"
+ }
+]
