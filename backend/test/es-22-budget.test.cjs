@@ -241,7 +241,7 @@ test('ES-22 chat: la reserva se ajusta al uso real y se registra la llamada sin 
 });
 
 test('ES-22 chat: al agotar el límite no se llama al proveedor, se conserva todo y se puede retomar sin ampliar solo', async t => {
-  const { state, store, provider } = chatSetup(t, { ...CHAT_ENV, AI_BUDGET_TOKENS_PER_USER: '3500' });
+  const { state, store, provider } = chatSetup(t, { ...CHAT_ENV, AI_BUDGET_TOKENS_PER_USER: '3700' });
   provider.usage = { input_tokens: 1000, output_tokens: 500 }; // 1.500 por llamada
   const request = await startApp(t);
   assert.equal((await post(request, { message: 'uno', requestId: 'req-ai-000002' })).status, 200);
@@ -268,7 +268,7 @@ test('ES-22 chat: al agotar el límite no se llama al proveedor, se conserva tod
 });
 
 test('ES-22 chat: el tope de la cohorte bloquea a otra persona y las respuestas de seguridad no consumen presupuesto', async t => {
-  const { state, store, provider } = chatSetup(t, { ...CHAT_ENV, AI_BUDGET_TOKENS_COHORT: '3500' });
+  const { state, store, provider } = chatSetup(t, { ...CHAT_ENV, AI_BUDGET_TOKENS_COHORT: '3700' });
   provider.usage = { input_tokens: 1000, output_tokens: 500 };
   const request = await startApp(t);
   assert.equal((await post(request, { message: 'uno' }, as(A))).status, 200);
