@@ -26,6 +26,12 @@
 .career-scope input[type=checkbox],.career-scope input[type=radio] { appearance:auto; accent-color:var(--elv-action); flex:none; width:22px; height:22px; margin:0; }
 .career-scope textarea { min-height:130px; resize:vertical; } .career-actions { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
 .career-scope .career-original { white-space:pre-wrap; }
+.career-scope .career-notice { display:block; border:1px solid var(--elv-warning); border-radius:var(--elv-r-md); padding:16px; margin:16px 0; min-width:0; } .career-scope .career-notice h3 { margin-top:0; } .career-scope .career-notice ul { margin:8px 0; padding-left:20px; }
+/* El botón base no encoge (flex-shrink:0): una etiqueta larga se salía de la pantalla a 320 px. */
+.career-scope .career-actions .elv-btn { flex-shrink:1; max-width:100%; }
+.career-scope .career-hint { color:var(--elv-text-2); font-size:.9rem; }
+.career-scope .career-carried { margin:16px 0; } .career-scope .career-draft { background:var(--elv-card); border:1px solid var(--elv-line); border-radius:var(--elv-r-md); padding:16px; margin:12px 0; min-width:0; } .career-scope .career-draft h4 { margin:0 0 8px; font-size:1.05rem; }
+@media (max-width:420px) { .career-scope .career-draft .career-actions button { width:100%; } .career-scope .career-notice .career-actions button { width:100%; } }
 .career-scope .career-pair { display:grid; grid-template-columns:1fr 1fr; gap:20px; } .career-scope dl { margin:16px 0; } .career-scope dt { font-weight:600; } .career-scope dd { margin:0 0 16px; }
 .career-scope details { margin:16px 0; border-top:1px solid var(--elv-line); } .career-scope summary { padding-left:0; }
 .career-scope .career-tag { display:inline-block; border:1px solid var(--elv-line-control); border-radius:var(--elv-r-sm); padding:2px 8px; margin:4px; }

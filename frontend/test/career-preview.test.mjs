@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { createFixture, emptyConstraints, routesFor, preferenceFor, validActions, fixtureInstant, FixtureError } from '../src/career/fixture.ts'
+import { createFixture, emptyConstraints, routesFor, preferenceFor, validActions, fixtureInstant, isCurrent, reasonsFor, FixtureError } from '../src/career/fixture.ts'
 import { copy } from '../src/career/copy.ts'
 const constraints = () => ({ ...emptyConstraints(), markets: ['CO', 'DK'], languages: ['es', 'en'], origin: 'education', interests: ['analysis'] })
 let sequence = 0
@@ -88,4 +88,62 @@ test('ES-34 contraste de texto, foco y límites de campos cumple en ambos temas'
   const ratio = (a, b) => (Math.max(luminance(a), luminance(b)) + .05) / (Math.min(luminance(a), luminance(b)) + .05)
   for (const [fg, bg] of [['#1c1917', '#f9f9f7'], ['#ffffff', '#4a6741'], ['#4a6741', '#faf8f4'], ['#7a3030', '#faf8f4'], ['#92400e', '#faf8f4'], ['#f5f6f1', '#242b22'], ['#182115', '#c1d5b5'], ['#ffb5b5', '#242b22'], ['#f4d9a8', '#242b22']]) assert.ok(ratio(fg, bg) >= 4.5, `${fg}/${bg}`)
   assert.ok(ratio('#6b7267', '#f9f9f7') >= 3); assert.ok(ratio('#899582', '#181c17') >= 3)
+})
+
+// QA-33-02: el aviso explica por qué cambió la base y el rebase conserva el trabajo como borrador por revisar.
+const reasonsOf = (c, id) => reasonsFor(c.snapshot(), c.snapshot().experiments.find(e => e.id === id))
+test('QA-33-02 la base cambia con su razón y el rebase conserva entrega, reflexión y decisión como borrador; la versión anterior queda intacta', async () => {
+  const c = await fixture(), id = await decided(c)
+  assert.deepEqual(reasonsOf(c, id), [])
+  await send(c, { type: 'constraints', value: { ...constraints(), languages: ['es'] } })
+  assert.deepEqual(reasonsOf(c, id), ['rules_changed']); assert.equal(isCurrent(c.snapshot(), c.snapshot().experiments[0]), false)
+  await code(send(c, { type: 'adopt', id, expected: 5, part: 'submission' }), 'conflict') // sin rebase no se adopta nada
+  await send(c, { type: 'rebase', id })
+  const e = c.snapshot().experiments[0]
+  assert.equal(e.phase, 'ready'); assert.equal(e.sample, ''); assert.equal(e.decision, ''); assert.equal(e.version, 6)
+  assert.deepEqual(e.carried, { submission: { from: 5, sample: 'SYNTHETIC SAMPLE', assistance: 'drafting', evidence: false, retired: 0 }, reflection: { from: 5, observation: 'Synthetic observation', interpretation: 'Synthetic interpretation' }, decision: { from: 5, decision: 'continue', reason: 'Synthetic reason' } })
+  assert.equal(e.versions[4].sample, 'SYNTHETIC SAMPLE'); assert.equal(e.versions[4].phase, 'decided') // la versión anterior queda en el historial
+  assert.equal(isCurrent(c.snapshot(), e), true); assert.deepEqual(reasonsOf(c, id), [])
+  await code(send(c, { type: 'plan', experimentId: id, actions: actions(), budget: '', currency: 'USD' }), 'conflict') // lo arrastrado no es resultado vigente
+  await code(send(c, { type: 'review', id, selected: true }), 'validate')
+})
+test('QA-33-02 adoptar respeta el orden entrega, reflexión y decisión; descartar y escribir a mano reemplazan el borrador', async () => {
+  const c = await fixture(), id = await decided(c)
+  await send(c, { type: 'constraints', value: { ...constraints(), languages: ['es'] } }); await send(c, { type: 'rebase', id })
+  await code(send(c, { type: 'adopt', id, expected: 6, part: 'reflection' }), 'validate')
+  await code(send(c, { type: 'adopt', id, expected: 6, part: 'decision' }), 'validate')
+  await code(send(c, { type: 'adopt', id, expected: 5, part: 'submission' }), 'conflict') // versión desactualizada
+  await send(c, { type: 'discard', id, expected: 6, part: 'decision' })
+  assert.equal(c.snapshot().experiments[0].carried.decision, undefined); await code(send(c, { type: 'discard', id, expected: 7, part: 'decision' }), 'validate')
+  await send(c, { type: 'adopt', id, expected: 7, part: 'submission' })
+  let e = c.snapshot().experiments[0]; assert.equal(e.phase, 'submitted'); assert.equal(e.sample, 'SYNTHETIC SAMPLE'); assert.equal(e.version, 8); assert.equal(e.carried.submission, undefined)
+  await send(c, { type: 'adopt', id, expected: 8, part: 'reflection' })
+  e = c.snapshot().experiments[0]; assert.equal(e.phase, 'self_reviewed'); assert.equal(e.observation, 'Synthetic observation'); assert.equal(e.carried, undefined)
+  // Escribir a mano reemplaza el borrador de esa parte.
+  await send(c, { type: 'constraints', value: { ...constraints(), languages: ['es', 'en'] } }); await send(c, { type: 'rebase', id })
+  assert.ok(c.snapshot().experiments[0].carried.submission && c.snapshot().experiments[0].carried.reflection)
+  await send(c, { type: 'change', id, expected: 10, phase: 'in_progress', value: {} })
+  await send(c, { type: 'change', id, expected: 11, phase: 'submitted', value: { sample: 'MY OWN', assistance: 'none', evidence: false } })
+  e = c.snapshot().experiments[0]; assert.equal(e.carried.submission, undefined); assert.ok(e.carried.reflection)
+})
+test('QA-33-02 evidencia citada que ya no es válida se cuenta sin su contenido y varias razones se listan juntas', async () => {
+  const c = await fixture('evidence'); await send(c, { type: 'constraints', value: constraints() }); const route = routesFor(c.snapshot())[0]
+  await send(c, { type: 'choice', route, decision: 'chosen' }); const id = await send(c, { type: 'experiment', routeId: route.id, minutes: 20 })
+  await send(c, { type: 'change', id, expected: 1, phase: 'in_progress', value: {} })
+  await send(c, { type: 'change', id, expected: 2, phase: 'submitted', value: { sample: '', assistance: 'none', evidence: true } })
+  await send(c, { type: 'constraints', value: { ...constraints(), languages: ['es'] } })
+  assert.deepEqual(reasonsOf(c, id), ['rules_changed', 'route_evidence_changed', 'cited_evidence_changed'])
+  await send(c, { type: 'rebase', id })
+  const e = c.snapshot().experiments[0]
+  assert.equal(e.carried, undefined) // sin texto propio y con la única cita retirada no queda nada que arrastrar
+  assert.equal(e.versions.at(-2).phase, 'submitted')
+})
+test('QA-33-02 los textos del aviso y de los borradores salen de copy ES/EN, sin texto fijo en la vista', () => {
+  const source = fs.readFileSync(new URL('../src/career/CareerPages.tsx', import.meta.url), 'utf8')
+  const block = source.slice(source.indexOf('function BasisNotice'), source.indexOf('export function ExperimentScreen'))
+  assert.ok(block.length > 500)
+  assert.doesNotMatch(block, />\s*[A-Za-zÁ-ú]{3,}[^<{]*</)
+  for (const key of ['basisTitle', 'basisWhat', 'reasonRouteEvidence', 'reasonCitedEvidence', 'reasonContext', 'reasonChoice', 'reasonRules', 'basisKeep', 'basisKeepEmpty', 'carriedTitle', 'carriedDraft', 'useDraft', 'discardDraft', 'discardAsk', 'discardYes', 'keepDraft', 'firstSubmission', 'firstReflection', 'retiredEvidence'])
+    assert.ok(copy[key] && copy[key][0] !== copy[key][1], key)
+  assert.match(block, /role="status"/); assert.match(block, /aria-labelledby="career-carried-title"/)
 })
