@@ -1,0 +1,157 @@
+[
+ {
+  "id": "F0 el rol de la app no es superusuario ni tiene BYPASSRLS",
+  "ok": true,
+  "detail": "{\"rolsuper\":false,\"rolbypassrls\":false}"
+ },
+ {
+  "id": "F11a escenario: sync() + historial + ES-142 y ES-117 aplicados (RLS activo) y baseline sin registrar",
+  "ok": true,
+  "detail": "registradas=8 usuarios=1"
+ },
+ {
+  "id": "F5/F11 diagnóstico por defecto: lista adoptables y NO escribe (catálogo y SequelizeMeta idénticos)",
+  "ok": true,
+  "detail": "adoptable     20261001000000-baseline.js | adoptable     20261029000000-es95-professional-applications.js | adoptable     20261030010000-es109-participant-resumes.js | Diagnóstico solamente (no se escribió nada). Adoptables: 3. Use --apply para registrarlas."
+ },
+ {
+  "id": "F4 migrate-deploy sin adoptar: se niega (exit 1) y no escribe",
+  "ok": true,
+  "detail": "exit=1"
+ },
+ {
+  "id": "F8a índice faltante (ES-109): --apply se bloquea ANTES de escribir (exit 1, no registra nada, ni la línea base)",
+  "ok": true,
+  "detail": "exit=1"
+ },
+ {
+  "id": "F8b tabla faltante (ES-95): bloquea y no registra nada",
+  "ok": true,
+  "detail": "exit=1"
+ },
+ {
+  "id": "F6/F7 --apply registra solo baseline, ES-95 y ES-109 (comprobadas por objetos) y NO toca objetos",
+  "ok": true,
+  "detail": "añadidas=20261001000000,20261029000000,20261030010000"
+ },
+ {
+  "id": "F7 migrate-deploy aplica lo pendiente sobre el fixture (con RLS activo) y deja todas registradas",
+  "ok": true,
+  "detail": "exit=0 registradas=16/16 "
+ },
+ {
+  "id": "F11b datos de la persona intactos",
+  "ok": true,
+  "detail": "usuarios=1"
+ },
+ {
+  "id": "F11c check:rls después de migrar: «RLS ok»",
+  "ok": true,
+  "detail": "RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "F2 repetir migrate-deploy: sin cambios (idempotente)",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "P1 migrate-deploy sin pendientes (umbral propuesto ≤ 5 s)",
+  "ok": true,
+  "detail": "4329 ms"
+ },
+ {
+  "id": "F1 base nueva: migrate-deploy aplica todas las migraciones y queda registrada la lista completa",
+  "ok": true,
+  "detail": "exit=0 4989 ms"
+ },
+ {
+  "id": "F13 forma del CMD (sh -c «migrate && servidor»): con migraciones al día arranca el servidor",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "F3 migración que falla: sale ≠ 0, el servidor NO arranca, sin tabla a medias y la base queda como estaba",
+  "ok": true,
+  "detail": "exit=1"
+ },
+ {
+  "id": "INFO F3b migración fallida SIN transacción: deja objetos a medias y migrate-deploy no los limpia (riesgo para migraciones futuras; exigir transacción)",
+  "ok": true,
+  "detail": "exit=1 tabla_a_medias=true"
+ },
+ {
+  "id": "P2 base vacía → migraciones → servidor listo (umbral propuesto ≤ 60 s)",
+  "ok": true,
+  "detail": "6879 ms"
+ },
+ {
+  "id": "F9 DB_SYNC_DISABLED=\"true\": NO llama a sync() (la tabla borrada NO reaparece)",
+  "ok": true,
+  "detail": "servidor=true tabla=false"
+ },
+ {
+  "id": "F9 DB_SYNC_DISABLED=\"TRUE\": sync() sigue activo (la tabla borrada se recrea)",
+  "ok": true,
+  "detail": "servidor=true tabla=true"
+ },
+ {
+  "id": "F9 DB_SYNC_DISABLED=\"1\": sync() sigue activo (la tabla borrada se recrea)",
+  "ok": true,
+  "detail": "servidor=true tabla=true"
+ },
+ {
+  "id": "F9 DB_SYNC_DISABLED=\"false\": sync() sigue activo (la tabla borrada se recrea)",
+  "ok": true,
+  "detail": "servidor=true tabla=true"
+ },
+ {
+  "id": "F9 DB_SYNC_DISABLED=\"\": sync() sigue activo (la tabla borrada se recrea)",
+  "ok": true,
+  "detail": "servidor=true tabla=true"
+ },
+ {
+  "id": "F9 DB_SYNC_DISABLED=(ausente): sync() sigue activo (la tabla borrada se recrea)",
+  "ok": true,
+  "detail": "servidor=true tabla=true"
+ },
+ {
+  "id": "S1a contraseña errónea: el error no imprime la contraseña ni la URL",
+  "ok": true,
+  "detail": "exit=1 C:\\Users\\Usuario\\Documents\\qa-pr-test\\backend\\node_modules\\pg-protocol\\dist\\pars"
+ },
+ {
+  "id": "S1b DATABASE_URL malformada: error claro sin la contraseña",
+  "ok": true,
+  "detail": "exit=1 migrate-deploy: error: getaddrinfo ENOTFOUND host malformado"
+ },
+ {
+  "id": "S3 sin DATABASE_URL: error claro (exit 2) sin tocar nada",
+  "ok": true,
+  "detail": "exit=2"
+ },
+ {
+  "id": "S6 los scripts no contienen DROP/TRUNCATE/DELETE/ALTER ni UPDATE (solo SELECT, CREATE TABLE IF NOT EXISTS de SequelizeMeta e INSERT en SequelizeMeta)",
+  "ok": true,
+  "detail": "revisión estática"
+ },
+ {
+  "id": "S2 sin secretos, correos reales ni identificadores de proyecto en los archivos",
+  "ok": true,
+  "detail": "revisión por expresión regular"
+ },
+ {
+  "id": "S5 dos migrate-deploy simultáneos sobre base vacía (el PR admite que no hay bloqueo): resultado y recuperación",
+  "ok": true,
+  "detail": "salidas=0,1 registradas=16/16 · un tercer intento posterior: exit 0 · UNO FALLÓ (riesgo declarado; reintento lo resuelve=true)"
+ },
+ {
+  "id": "F14 railway.json sin startCommand ni preDeployCommand y Dockerfile con CMD «migrate-deploy && exec node backend/server.js»",
+  "ok": true,
+  "detail": "{\"healthcheckPath\":\"/api/health\",\"healthcheckTimeout\":60,\"restartPolicyType\":\"ON_FAILURE\",\"restartPolicyMaxRetries\":3}"
+ },
+ {
+  "id": "F12 la documentación cita los comandos reales (adopt-existing-schema --apply, DB_SYNC_DISABLED, reversión)",
+  "ok": true,
+  "detail": "lectura"
+ }
+]
