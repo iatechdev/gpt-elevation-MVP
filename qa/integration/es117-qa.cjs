@@ -64,7 +64,7 @@ const workload = async (tok, n) => {
   R('INFO filas sintéticas antes', true, JSON.stringify(rows0));
   const svcBefore = (await dbq.query(`SELECT count(*)::int n FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p') AND has_table_privilege('service_role', c.oid, 'SELECT,INSERT,UPDATE,DELETE')`)).rows[0].n;
   const exp0 = await (async () => { const c = await connect(appUrl.replace(DB, DB)); const r = await c.query(`SELECT count(*) FILTER (WHERE NOT c.relrowsecurity)::int sin_rls, count(*)::int total FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p')`); await c.end(); return r.rows[0]; })();
-  R('F1b antes: el escenario reproduce la exposición (tablas sin RLS)', exp0.sin_rls === exp0.total && exp0.total > 10, JSON.stringify(exp0));
+  R('F1b antes: el escenario reproduce la exposición (tablas sin RLS)', exp0.sin_rls > 10 && exp0.sin_rls <= exp0.total, JSON.stringify(exp0));
   // P2: lecturas concurrentes durante la migración
   const lat = []; let run = true; const reader = (async () => { const c = await connect(appUrl); while (run) { const t0 = performance.now(); await c.query('SELECT count(*) FROM "Messages"'); lat.push(performance.now() - t0); await sleep(20); } await c.end(); })();
   const t0 = Date.now(); const mig = await new Promise(res => { const c = spawn('npx', ['sequelize-cli', 'db:migrate'], { cwd: BACK, shell: true, env: { ...process.env, DATABASE_URL: appUrl, DB_SSL: 'false', NODE_ENV: 'test' } }); let o = ''; c.stdout.on('data', d => o += d); c.stderr.on('data', d => o += d); c.on('close', code => res({ status: code, stdout: o, stderr: '' })); }); const migMs = Date.now() - t0; run = false; await reader;
