@@ -1,0 +1,232 @@
+[
+ {
+  "id": "U1/U7 [es 320px] aviso único, textos correctos, botón ≥44 px, sin desborde",
+  "ok": true,
+  "detail": "avisos=1 h=44 ancho botón=218/218 overflow=0"
+ },
+ {
+  "id": "U7 [es 320px] el botón ocupa todo el ancho del aviso",
+  "ok": true,
+  "detail": "botón=218 aviso=218"
+ },
+ {
+  "id": "U1 [es 320px] sin errores de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1/U7 [es 768px] aviso único, textos correctos, botón ≥44 px, sin desborde",
+  "ok": true,
+  "detail": "avisos=1 h=44 ancho botón=100/591 overflow=0"
+ },
+ {
+  "id": "U1 [es 768px] sin errores de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1/U7 [es 1440px] aviso único, textos correctos, botón ≥44 px, sin desborde",
+  "ok": true,
+  "detail": "avisos=1 h=44 ancho botón=100/591 overflow=0"
+ },
+ {
+  "id": "U2 [es] tras recargar el aviso persiste",
+  "ok": true,
+  "detail": "antes=1"
+ },
+ {
+  "id": "U1 [es 1440px] sin errores de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U8 [es light] contraste del aviso y de la nota ≥ 4,5:1 sobre la burbuja",
+  "ok": true,
+  "detail": "aviso=5.67 nota=5.67 burbuja=rgb(242, 239, 231)"
+ },
+ {
+  "id": "U8 [es dark] contraste del aviso y de la nota ≥ 4,5:1 sobre la burbuja",
+  "ok": true,
+  "detail": "aviso=5.67 nota=5.67 burbuja=rgb(242, 239, 231)"
+ },
+ {
+  "id": "U8 [es] el botón se alcanza con Tab y muestra contorno de foco visible",
+  "ok": true,
+  "detail": "{\"o\":\"solid\",\"w\":3,\"fv\":true}"
+ },
+ {
+  "id": "U8 [es] el aviso es role=status",
+  "ok": true,
+  "detail": "role=status"
+ },
+ {
+  "id": "U6 [es] doble clic: un solo turno enviado y un solo gasto",
+  "ok": true,
+  "detail": "peticiones=1 consumo=6400->9600"
+ },
+ {
+  "id": "U3 [es] «Continuar» envía el texto fijo, requestId nuevo y sin diario",
+  "ok": true,
+  "detail": "mensaje=Continúa, por favor, desde donde te quedaste. ids=undefined lang=es"
+ },
+ {
+  "id": "U5 [es] el borrador de la caja se conserva",
+  "ok": true,
+  "detail": "valor=Mi borrador sin enviar"
+ },
+ {
+  "id": "U3 [es] se ve el mensaje de la persona y la respuesta nueva; el aviso queda solo en la última (cortada de nuevo)",
+  "ok": true,
+  "detail": "avisos=1"
+ },
+ {
+  "id": "U3/U8 [es] respuesta completa: sin aviso y el foco pasa a la caja de mensaje",
+  "ok": true,
+  "detail": "avisos=0 foco=elv-textarea space-message"
+ },
+ {
+  "id": "U1 [es] con un mensaje posterior el aviso anterior no se muestra y el historial viejo sin marca no lo activa",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U3 [es] sin errores de consola en el flujo",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U9 [es] el HTML del modelo se muestra como texto (sin ejecutar ni interpretar)",
+  "ok": true,
+  "detail": "{\"imgs\":0,\"bold\":0,\"text\":true}"
+ },
+ {
+  "id": "U9 [es] riesgo medio con respuesta cortada: aviso y nota de apoyo legibles, sin duplicar el aviso",
+  "ok": true,
+  "detail": "http=200 truncated=true avisos=1"
+ },
+ {
+  "id": "U4 [es] error de envío: aviso del flujo existente, sin pérdida y sin cuelgue",
+  "ok": true,
+  "detail": "botón deshabilitado=true errores=0"
+ },
+ {
+  "id": "U1/U7 [en 320px] aviso único, textos correctos, botón ≥44 px, sin desborde",
+  "ok": true,
+  "detail": "avisos=1 h=44 ancho botón=218/218 overflow=0"
+ },
+ {
+  "id": "U7 [en 320px] el botón ocupa todo el ancho del aviso",
+  "ok": true,
+  "detail": "botón=218 aviso=218"
+ },
+ {
+  "id": "U1 [en 320px] sin errores de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1/U7 [en 768px] aviso único, textos correctos, botón ≥44 px, sin desborde",
+  "ok": true,
+  "detail": "avisos=1 h=44 ancho botón=95/591 overflow=0"
+ },
+ {
+  "id": "U1 [en 768px] sin errores de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1/U7 [en 1440px] aviso único, textos correctos, botón ≥44 px, sin desborde",
+  "ok": true,
+  "detail": "avisos=1 h=44 ancho botón=95/591 overflow=0"
+ },
+ {
+  "id": "U2 [en] tras recargar el aviso persiste",
+  "ok": true,
+  "detail": "antes=1"
+ },
+ {
+  "id": "U1 [en 1440px] sin errores de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U8 [en light] contraste del aviso y de la nota ≥ 4,5:1 sobre la burbuja",
+  "ok": true,
+  "detail": "aviso=5.67 nota=5.67 burbuja=rgb(242, 239, 231)"
+ },
+ {
+  "id": "U8 [en dark] contraste del aviso y de la nota ≥ 4,5:1 sobre la burbuja",
+  "ok": true,
+  "detail": "aviso=5.67 nota=5.67 burbuja=rgb(242, 239, 231)"
+ },
+ {
+  "id": "U8 [en] el botón se alcanza con Tab y muestra contorno de foco visible",
+  "ok": true,
+  "detail": "{\"o\":\"solid\",\"w\":3,\"fv\":true}"
+ },
+ {
+  "id": "U8 [en] el aviso es role=status",
+  "ok": true,
+  "detail": "role=status"
+ },
+ {
+  "id": "U6 [en] doble clic: un solo turno enviado y un solo gasto",
+  "ok": true,
+  "detail": "peticiones=1 consumo=6400->9600"
+ },
+ {
+  "id": "U3 [en] «Continuar» envía el texto fijo, requestId nuevo y sin diario",
+  "ok": true,
+  "detail": "mensaje=Please continue from where you left off. ids=undefined lang=en"
+ },
+ {
+  "id": "U5 [en] el borrador de la caja se conserva",
+  "ok": true,
+  "detail": "valor=Mi borrador sin enviar"
+ },
+ {
+  "id": "U3 [en] se ve el mensaje de la persona y la respuesta nueva; el aviso queda solo en la última (cortada de nuevo)",
+  "ok": true,
+  "detail": "avisos=1"
+ },
+ {
+  "id": "U3/U8 [en] respuesta completa: sin aviso y el foco pasa a la caja de mensaje",
+  "ok": true,
+  "detail": "avisos=0 foco=elv-textarea space-message"
+ },
+ {
+  "id": "U1 [en] con un mensaje posterior el aviso anterior no se muestra y el historial viejo sin marca no lo activa",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U3 [en] sin errores de consola en el flujo",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U9 [en] el HTML del modelo se muestra como texto (sin ejecutar ni interpretar)",
+  "ok": true,
+  "detail": "{\"imgs\":0,\"bold\":0,\"text\":true}"
+ },
+ {
+  "id": "U9 [en] riesgo medio con respuesta cortada: aviso y nota de apoyo legibles, sin duplicar el aviso",
+  "ok": true,
+  "detail": "http=200 truncated=true avisos=1"
+ },
+ {
+  "id": "U4 [en] error de envío: aviso del flujo existente, sin pérdida y sin cuelgue",
+  "ok": true,
+  "detail": "botón deshabilitado=true errores=0"
+ },
+ {
+  "id": "U4 [es] límite de IA agotado: «Continuar» deshabilitado y aviso de presupuesto existente",
+  "ok": true,
+  "detail": "avisos=1 deshabilitado=true"
+ },
+ {
+  "id": "U4 [en] límite de IA agotado: «Continuar» deshabilitado y aviso de presupuesto existente",
+  "ok": true,
+  "detail": "avisos=1 deshabilitado=true"
+ }
+]

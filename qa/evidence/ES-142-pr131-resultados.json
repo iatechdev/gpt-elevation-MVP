@@ -7,7 +7,7 @@
  {
   "id": "T5a la petición al proveedor usa max_tokens=3000",
   "ok": true,
-  "detail": "[3000,3000,3000,3000,3000,3000,3000]"
+  "detail": "[3000]"
  },
  {
   "id": "T5b el gasto se descuenta (usage.used sube)",
@@ -32,7 +32,7 @@
  {
   "id": "T3 repetición con el mismo requestId: replayed, truncated:true, mismo texto, sin llamada nueva ni gasto",
   "ok": true,
-  "detail": "http=200 replayed=true truncated=true llamadas=10/10"
+  "detail": "http=200 replayed=true truncated=true llamadas=4/4"
  },
  {
   "id": "T3b mismo requestId con otro mensaje: rechazado (409)",
@@ -42,7 +42,7 @@
  {
   "id": "T4a GET turno cortado: completed, truncated:true, texto completo",
   "ok": true,
-  "detail": "http=200 {\"requestId\":\"10664b2d-ecbd-427a-99db-eccdc11bfbf3\",\"status\":\"completed\",\"retryable\":false,\"truncated\":true}"
+  "detail": "http=200 {\"requestId\":\"32ee356e-57f7-4391-84c6-0c79affc58f8\",\"status\":\"completed\",\"retryable\":false,\"truncated\":true}"
  },
  {
   "id": "T4b GET turno normal: sin truncated",
