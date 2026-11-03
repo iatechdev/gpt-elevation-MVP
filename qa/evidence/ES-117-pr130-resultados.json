@@ -12,7 +12,7 @@
  {
   "id": "F1a migraciones previas aplicadas como dueño sin superusuario",
   "ok": true,
-  "detail": "030000000-es107-cv-binary: migrated (0.019s)\n\n== 20261030010000-es109-participant-resumes: migrating =======\n== 20261030010000-es109-participant-resumes: migrated (0.028s)\n\n== 20261030020000-es43-ai-usage-stop-reason: migrating =======\n== 20261030020000-es43-ai-usage-stop-reason: migrated (0.028s)\n\n"
+  "detail": "030000000-es107-cv-binary: migrated (0.022s)\n\n== 20261030010000-es109-participant-resumes: migrating =======\n== 20261030010000-es109-participant-resumes: migrated (0.031s)\n\n== 20261030020000-es43-ai-usage-stop-reason: migrating =======\n== 20261030020000-es43-ai-usage-stop-reason: migrated (0.030s)\n\n"
  },
  {
   "id": "F3a registro y login sintéticos antes de ES-117",
@@ -27,7 +27,7 @@
  {
   "id": "INFO filas sintéticas antes",
   "ok": true,
-  "detail": "{\"Users\":1,\"Messages\":9648,\"DiaryEntries\":4824}"
+  "detail": "{\"Users\":1,\"Messages\":9672,\"DiaryEntries\":4836}"
  },
  {
   "id": "F1b antes: el escenario reproduce la exposición (tablas sin RLS)",
@@ -37,17 +37,17 @@
  {
   "id": "F1c migración ES-117 aplicada sobre datos previos",
   "ok": true,
-  "detail": ".3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: migrating =======\n== 20261102120000-es117-supabase-rls: migrated (0.089s)\n\n"
+  "detail": "] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: migrating =======\n== 20261102120000-es117-supabase-rls: migrated (0.104s)\n\n"
  },
  {
-  "id": "P1 duración de la migración con ~14472 filas (umbral propuesto ≤ 30 s)",
+  "id": "P1 duración de la migración con ~14508 filas (umbral propuesto ≤ 30 s)",
   "ok": true,
-  "detail": "3082 ms (incluye arranque de sequelize-cli)"
+  "detail": "3478 ms (incluye arranque de sequelize-cli)"
  },
  {
   "id": "P2 lecturas concurrentes durante la migración (umbral propuesto: ninguna espera > 2 s)",
   "ok": true,
-  "detail": "lecturas=100 máx=15 ms p95=4 ms"
+  "detail": "lecturas=120 máx=34 ms p95=3 ms"
  },
  {
   "id": "F5 check:rls tras migrar: «RLS ok»",
@@ -62,7 +62,7 @@
  {
   "id": "F1e los datos del dueño siguen intactos (RLS no los oculta al dueño)",
   "ok": true,
-  "detail": "{\"Users\":1,\"Messages\":9648,\"DiaryEntries\":4824}"
+  "detail": "{\"Users\":1,\"Messages\":9672,\"DiaryEntries\":4836}"
  },
  {
   "id": "S1 anon: SELECT/DELETE/TRUNCATE sobre Users, Messages, DiaryEntries y Consents → permission denied (42501)",
@@ -121,8 +121,8 @@
  },
  {
   "id": "S2d función nueva creada por el dueño: anon/authenticated NO deberían poder ejecutarla (EXECUTE heredado de PUBLIC)",
-  "ok": false,
-  "detail": "{\"a\":true,\"b\":true} · check:rls la detecta (salida 1)"
+  "ok": true,
+  "detail": "{\"a\":false,\"b\":false} · check:rls no la detecta"
  },
  {
   "id": "S3a roles del worker existen, sin superusuario ni BYPASSRLS",
@@ -147,22 +147,27 @@
  {
   "id": "P3 GET /api/messages: mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)",
   "ok": true,
-  "detail": "antes p50=440.7 p95=731.6 ms · después p50=231.1 p95=316.7 ms"
+  "detail": "antes p50=346.6 p95=610.0 ms · después p50=282.0 p95=301.9 ms"
  },
  {
   "id": "P3 POST /api/chat (proveedor simulado): mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)",
   "ok": true,
-  "detail": "antes p50=53.9 p95=77.6 ms · después p50=34.7 p95=44.5 ms"
+  "detail": "antes p50=50.6 p95=58.7 ms · después p50=39.2 p95=45.2 ms"
  },
  {
   "id": "P3 POST /api/diary: mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)",
   "ok": true,
-  "detail": "antes p50=20.1 p95=32.2 ms · después p50=15.9 p95=25.8 ms"
+  "detail": "antes p50=18.3 p95=24.7 ms · después p50=15.4 p95=22.3 ms"
+ },
+ {
+  "id": "INFO P3 ruido de medición GET /api/messages (p50): antes → control sin migración → después",
+  "ok": true,
+  "detail": "347 → 316 (-9 %) → 282 ms (después vs control -11 %)"
  },
  {
   "id": "F4a down aplicado (ensayo)",
   "ok": true,
-  "detail": "vx.com\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: reverting =======\n== 20261102120000-es117-supabase-rls: reverted (0.065s)\n\n"
+  "detail": "om/as2\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: reverting =======\n== 20261102120000-es117-supabase-rls: reverted (0.081s)\n\n"
  },
  {
   "id": "F4b tras el down no queda RLS (estado previo)",
@@ -172,7 +177,7 @@
  {
   "id": "F4c reaplicación del up",
   "ok": true,
-  "detail": "nv'] }\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: migrating =======\n== 20261102120000-es117-supabase-rls: migrated (0.128s)\n\n"
+  "detail": "true }\nLoaded configuration file \"config\\sequelize-cli.cjs\".\nUsing environment \"test\".\n== 20261102120000-es117-supabase-rls: migrating =======\n== 20261102120000-es117-supabase-rls: migrated (0.088s)\n\n"
  },
  {
   "id": "F4d tras reaplicar, check:rls pasa",
@@ -182,7 +187,7 @@
  {
   "id": "F4e up→down→up no pierde datos",
   "ok": true,
-  "detail": "{\"Users\":1,\"Messages\":9672,\"DiaryEntries\":4836}"
+  "detail": "{\"Users\":1,\"Messages\":9696,\"DiaryEntries\":4848}"
  },
  {
   "id": "F4f db:drift sin deriva",

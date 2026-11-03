@@ -59,6 +59,7 @@ const workload = async (tok, n) => {
     if (cols.length) await app.query(`INSERT INTO "${tbl}" (${cols.join(',')}) SELECT ${cols.join(',')} FROM "${tbl}" CROSS JOIN generate_series(1, 400)`);
   }
   const beforeBig = await workload(tok, 12); // misma carga de datos que tendrá el «después»: la comparación de latencia no mezcla volumen con RLS
+  const ctrl = await workload(tok, 12); // control: misma carga SIN migración entre medias, para conocer el ruido de la medición
   const rows0 = Object.fromEntries((await Promise.all(['Users', 'Messages', 'DiaryEntries'].map(async t => [t, (await app.query(`SELECT count(*)::int n FROM "${t}"`)).rows[0].n]))));
   R('INFO filas sintéticas antes', true, JSON.stringify(rows0));
   const svcBefore = (await dbq.query(`SELECT count(*)::int n FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p') AND has_table_privilege('service_role', c.oid, 'SELECT,INSERT,UPDATE,DELETE')`)).rows[0].n;
@@ -105,6 +106,7 @@ const workload = async (tok, n) => {
   R('F3d el diario y los mensajes previos siguen visibles para su dueño', after.diaryCount >= before.diaryCount, `antes=${before.diaryCount} después=${after.diaryCount}`);
   const me = (a) => `p50=${pct(a, 0.5).toFixed(1)} p95=${pct(a, 0.95).toFixed(1)}`; const cmp = (n, a, b) => { const x = pct(a, 0.5), y = pct(b, 0.5); return { n, x, y, rel: (y - x) / x }; };
   for (const [n, k] of [['GET /api/messages', 'msgs'], ['POST /api/chat (proveedor simulado)', 'chat'], ['POST /api/diary', 'diary']]) { const c = cmp(n, beforeBig.t[k], after.t[k]); R(`P3 ${n}: mediana antes→después (umbral propuesto: no más de +20 % o +15 ms)`, c.rel <= 0.2 || c.y - c.x <= 15, `antes ${me(beforeBig.t[k])} ms · después ${me(after.t[k])} ms`); }
+  { const a = pct(beforeBig.t.msgs, 0.5), b = pct(ctrl.t.msgs, 0.5), c = pct(after.t.msgs, 0.5); R('INFO P3 ruido de medición GET /api/messages (p50): antes → control sin migración → después', true, `${a.toFixed(0)} → ${b.toFixed(0)} (${((b - a) / a * 100).toFixed(0)} %) → ${c.toFixed(0)} ms (después vs control ${((c - b) / b * 100).toFixed(0)} %)`); }
   // F4 down y reaplicación sobre datos
   const dn = cli(['db:migrate:undo'], { ALLOW_DESTRUCTIVE_MIGRATION: 'true' }); R('F4a down aplicado (ensayo)', dn.status === 0, (dn.stdout + dn.stderr).slice(-200));
   const exp2 = (await app.query(`SELECT count(*) FILTER (WHERE c.relrowsecurity)::int con_rls FROM pg_class c WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p')`)).rows[0]; R('F4b tras el down no queda RLS (estado previo)', exp2.con_rls === 0, JSON.stringify(exp2));
