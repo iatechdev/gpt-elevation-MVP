@@ -75,6 +75,18 @@ test('ES-117 PostgreSQL: RLS en todas las tablas, API pública sin privilegios y
     }
   });
 
+  await t.test('una función creada DESPUÉS de la migración nace sin EXECUTE para PUBLIC, anon ni authenticated (QA-117-01)', async () => {
+    await db.query('CREATE FUNCTION es117_future_fn() RETURNS int LANGUAGE sql AS $$ SELECT 1 $$');
+    try {
+      assert.deepEqual(await findExposure(db), { withoutRls: [], granted: [] });
+      for (const role of ['anon', 'authenticated']) {
+        const c = await connect(urlFor(dbName)); extra.push(c);
+        await c.query(`SET ROLE ${role}`);
+        await assert.rejects(c.query('SELECT es117_future_fn()'), (e) => e.code === '42501', `${role} no debe ejecutar funciones futuras`);
+      }
+    } finally { await db.query('DROP FUNCTION IF EXISTS es117_future_fn()'); }
+  });
+
   await t.test('service_role conserva sus privilegios (decisión del equipo)', async () => {
     assert.equal((await db.query(`SELECT has_table_privilege('service_role', '"Users"', 'SELECT') AS ok`)).rows[0].ok, true);
   });

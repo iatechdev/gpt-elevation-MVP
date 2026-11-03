@@ -50,6 +50,9 @@ async function up(queryInterface) {
       await run(`ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM ${list}`);
       await run(`ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON FUNCTIONS FROM ${list}`);
     }
+    // EXECUTE sobre funciones nuevas lo concede PostgreSQL a PUBLIC por defecto (y anon/authenticated lo heredan): el REVOKE de arriba, limitado
+    // al esquema, no lo quita. Se quita a nivel de quien migra; las funciones futuras que deba ejecutar un rol necesitan GRANT EXECUTE explícito.
+    await run('ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC');
     for (const { signature } of await rows(OWN_FUNCTIONS)) {
       // EXECUTE a PUBLIC por defecto lo hereda anon: también se quita. Los triggers no necesitan EXECUTE del usuario al dispararse.
       await run(`REVOKE ALL ON FUNCTION ${signature} FROM PUBLIC${api.length ? `, ${api.join(', ')}` : ''}`);
@@ -91,6 +94,7 @@ async function down(queryInterface) {
     const tables = (await rows(`SELECT c.relname FROM pg_class c WHERE c.relnamespace = 'public'::regnamespace AND c.relkind IN ('r', 'p')
       AND c.relowner = (SELECT oid FROM pg_roles WHERE rolname = current_user)`)).map((r) => r.relname);
     for (const table of tables) await run(`ALTER TABLE "${table}" DISABLE ROW LEVEL SECURITY`);
+    await run('ALTER DEFAULT PRIVILEGES GRANT EXECUTE ON FUNCTIONS TO PUBLIC');
     if (api.length) {
       const list = api.join(', ');
       await run(`GRANT ALL ON ALL TABLES IN SCHEMA public TO ${list}`);
