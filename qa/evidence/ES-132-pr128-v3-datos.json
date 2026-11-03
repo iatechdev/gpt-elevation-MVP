@@ -1,0 +1,42 @@
+[
+ {
+  "id": "D1 solicitud de recuperación A",
+  "ok": true,
+  "detail": "http=202"
+ },
+ {
+  "id": "D1 solicitud de recuperación B",
+  "ok": true,
+  "detail": "http=202"
+ },
+ {
+  "id": "D2 hay una recuperación pendiente para A y otra para B",
+  "ok": true,
+  "detail": "A=1 B=1"
+ },
+ {
+  "id": "D3 la exportación personal incluye passwordResets (id y fechas) y NUNCA tokenHash ni valores de hash",
+  "ok": true,
+  "detail": "http=201 filas=1 claves=id,expiresAt,usedAt,createdAt"
+ },
+ {
+  "id": "D4 aislamiento: la exportación de B no contiene la recuperación de A",
+  "ok": true,
+  "detail": "B=1"
+ },
+ {
+  "id": "D5 solicitar el borrado de A con la recuperación pendiente: 202",
+  "ok": true,
+  "detail": "http=202 claves=id,status,requestedAt,activePurgedAt,deadlinesVerified,repeated"
+ },
+ {
+  "id": "D6 tras procesar el borrado, A queda sin recuperaciones y B intacta",
+  "ok": true,
+  "detail": "procesado=true A=0 B=1"
+ },
+ {
+  "id": "D7 un token inventado no sirve (4xx, nunca 500)",
+  "ok": true,
+  "detail": "http=400"
+ }
+]
