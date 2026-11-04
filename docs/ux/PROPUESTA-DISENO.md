@@ -3,12 +3,35 @@
 UX-Claude · 3-nov-2026 · **Estado: PROPUESTA — pasa por la puerta de diseño.** Nadie implementa nada hasta que **Mauricio o Alejo** la aprueben por escrito en el ticket. Evidencia de partida: [INFORME-AUDITORIA-UX.md](INFORME-AUDITORIA-UX.md) (hallazgos H-nn).
 Maqueta navegable (ES/EN, claro/oscuro, escritorio/móvil, teclado): [maquetas/index.html](maquetas/index.html) · imágenes en `maquetas/img/`.
 
-> **Actualización (3-nov, tras pedido de Mauricio): diseño de alta fidelidad con textos finales.**
-> - Prototipo navegable: [diseno-final/index.html](diseno-final/index.html) — 22 pantallas/estados (landing piloto, acceso y error, primeros pasos en 3 pasos, inicio, conversación con sus estados, diario, mapa, evidencias, siguiente paso, El Puente, mi profesional, mis datos con confirmación de eliminar, profesional, administración, estados), ES/EN, escritorio/móvil, claro/oscuro. Imágenes en `diseno-final/img/` (88).
-> - Textos finales ES/EN (fuente única): [TEXTOS-FINALES-ES-EN.md](TEXTOS-FINALES-ES-EN.md), generado desde `diseno-final/copy.js`. Marca qué se conserva, qué se ajusta y qué es nuevo, y lista los textos actuales que se retiran y los que requieren decisión.
-> - Tokens: [diseno-final/tokens.css](diseno-final/tokens.css) (sin paleta nueva).
-> - Decisiones tomadas por defecto en el prototipo (cámbialas y se regenera): ES-114 → **variante B**; sin serif (solo Inter); «Mi profesional / Personas que acompañas» en lugar de «terapeuta/paciente»; landing del piloto **sin planes ni precios** (ES-73 D-01 sin verificar); modo oscuro activo.
-> - `maquetas/` (primer borrador) queda como referencia histórica.
+> **Versión 2 (3-nov, tarde) — diseño de alta fidelidad con textos finales y dirección visual propia.** Sustituye a la maqueta del primer borrador (`maquetas/`, solo referencia histórica).
+> - **Prototipo interactivo:** [diseno-final/index.html](diseno-final/index.html) (32 vistas y estados, ES/EN, escritorio/móvil, claro/oscuro, teclado). Léase primero [diseno-final/README.md](diseno-final/README.md).
+> - **Textos finales ES/EN:** [TEXTOS-FINALES-ES-EN.md](TEXTOS-FINALES-ES-EN.md) (generado desde `diseno-final/copy*.js`; marca qué se conserva, qué se ajusta y qué es nuevo).
+> - **Auditoría ampliada** (chat con IA real, niveles, registro, planes): [INFORME-AMPLIACION.md](INFORME-AMPLIACION.md).
+> - **Decisiones por defecto del prototipo** (se cambian y se regenera): ES-114 → variante B; **Playfair Display solo en titulares y Noto Serif para la voz del asistente** (ambas ya están en el repo; reemplaza la propuesta anterior de «solo Inter»); «Mi profesional / Personas que acompaño»; landing del piloto sin planes ni precios; modo oscuro activo; casilla de consentimiento en el registro (**propuesta nueva**).
+
+## 0. Dirección visual: «Cuaderno»
+
+Idea: Elevation se siente como **un cuaderno personal bien escrito**, no como un panel de software. Es lo que lo separa de una plantilla de «tarjetas redondeadas con sombra y pastel».
+
+| Decisión | Cómo se ve | Por qué |
+|---|---|---|
+| **Texto como protagonista** | Titulares en Playfair Display con una palabra en cursiva y subrayada como con marcador ocre; cuerpo en Inter; la voz del asistente en Noto Serif | La plataforma trata de palabras; la tipografía hace el trabajo que otros dejan a los adornos |
+| **Rejilla de margen** | Etiqueta pequeña en mayúsculas a la izquierda («PLAN ACTUAL», «MI SOLICITUD») y contenido a la derecha, separados por líneas finas; sin tarjetas con borde | Orden de libro: se escanea por etiquetas; en móvil la etiqueta pasa arriba |
+| **Conversación como página** | Sin globos. «TÚ» con una línea ocre a la izquierda; las respuestas de «ELEVATION» como prosa en serif de 60 caracteres; **la pregunta final destacada** en cursiva; respuestas rápidas elegidas por la persona | La respuesta del asistente es lo más valioso del producto y hoy se lee como un muro de texto |
+| **Mapa como rosa de capacidades** | Ocho cuñas con trazo punteado = «sin evaluar» (hueco, no cero); la cuña se rellena en ocre según el nivel con evidencia | Es honesto con la regla «nivel solo con evidencia» y es reconocible |
+| **Caras propias** | Cinco rostros lineales dibujados (no emojis) para el estado de ánimo | Evita el aspecto genérico y se ve igual en todos los dispositivos |
+| **Botones rectos** | Primario tinta con esquinas casi rectas, secundarios con contorno, terciarios subrayados en ocre | Sobrio y distinto de los botones «pastilla» |
+| **Grano de papel** muy sutil y paneles laterales con borde de tinta | — | Calidez sin gradientes ni sombras difusas |
+| **Cero colores nuevos** | Papel, tinta, ocre (solo decorativo), teal (solo voz de la IA), estados | Los tokens ya existen (`tokens.css`) |
+
+## 0.1 Flujos nuevos o rediseñados (todos operables en el prototipo)
+
+1. **Conversación → evidencia.** Cada mensaje de la persona con una experiencia ofrece «Guardar como evidencia»: abre un **borrador de 3 pasos** con sus palabras; ella completa y **confirma** (no cuenta hasta entonces). Resuelve H-29 y H-31.
+2. **Cómo se llega a un nivel.** En «Mi mapa», un indicador de 3 pasos (contar → confirmar → registrar) con el actual resaltado (H-32).
+3. **Registrar mi nivel**, con los mismos pasos y reglas de hoy, en un panel lateral: evidencias (1–8) → nivel 1–4 con su criterio → nota y resumen con la advertencia de editar/borrar. Retirar con confirmación.
+4. **Análisis con IA**: elegir capacidades → analizar → revisar cada propuesta (**aceptar / bajar / dejar sin evaluar / no guardar; nunca subir**; vence en 10 min).
+5. **Crear cuenta** con reglas de contraseña en vivo y **consentimiento explícito** (propuesta), y entrada directa al primer paso.
+6. **Mi plan**: plan actual, uso, estado de la solicitud (enviada → en revisión → decisión) y catálogo; «Solicitar este plan» abre una **confirmación** que dice qué pasa después y que **aquí no se cobra ni se piden datos de pago**. Si habrá cobro, es una decisión de producto pendiente.
 
 ## 1. Principios
 
@@ -30,7 +53,7 @@ Maqueta navegable (ES/EN, claro/oscuro, escritorio/móvil, teclado): [maquetas/i
 | Panel abre con «Zona profesional / Mapa» y el asistente al final en móvil | Panel abre con «¿Cómo llegas hoy?»; mapa y uso de IA en tarjetas secundarias |
 | Errores: invisible (panel) o texto suelto (diario) | Componente de alerta único con «Reintentar» y `role="alert"` |
 | «Aún no disponible» sin salida | Se oculta del menú o se presenta como «Próximamente» con acción alternativa |
-| Serif Playfair en muchos títulos + mono en etiquetas + Inter | Inter en todo; serif solo en el titular de página (opcional); mono solo en etiquetas de 12 px |
+| Playfair en títulos de unas pantallas, Inter en otras, mono sin criterio | Playfair solo en titulares (con una palabra en cursiva), Noto Serif solo para la voz del asistente, Inter para la interfaz, mono solo en etiquetas de 12 px |
 | Verde, dorado y negro como botón principal | Un único primario: tinta (`--elv-action`) |
 | «Mis pacientes», «insight», «flujo de autorización integrado» | Glosario §5 |
 
@@ -48,7 +71,7 @@ Maqueta navegable (ES/EN, claro/oscuro, escritorio/móvil, teclado): [maquetas/i
 | Estados | `--elv-error`, `--elv-success`, `--elv-info`, `--elv-warning` (+ `-bg`) | Alertas; nunca solo color (icono + texto) |
 | Foco | `--elv-focus` `#2F6B8F` | Anillo 3 px con desfase 3 px (no recortado, H-08) |
 | Espacio / radios / sombra | `--elv-s-*`, `--elv-r-*`, `--elv-shadow-card` | Base 4 px |
-| Tipografía | Inter 400/600/800; escala `--elv-fs-*` | **Nuevo:** unificar tamaños (base 16 px, etiquetas 12 px mínimo); el titular serif se limita a la `h1` (decisión del PO) |
+| Tipografía | Inter 400/600/800; escala `--elv-fs-*` | **Nuevo:** unificar tamaños (base 16 px, etiquetas 12 px mínimo); serifs solo donde dice la dirección «Cuaderno» (§0); Playfair y Noto Serif ya están en el repo |
 | Modo oscuro | Paleta oscura de la landing (`#151513`/`#F3F1EA`) extendida a la app | **Nuevo en app**; ya existe en landing. La maqueta lo incluye y pasa axe |
 
 ### Componentes (nombre → qué resuelve)
@@ -147,11 +170,12 @@ Cada fase = un ticket = una rama = un PR, con QA entre fases. No estimo horas: n
 
 1. ¿Se aprueba el principio «un sistema, una cabecera» y los componentes de §3 como base de las fases 1–4?
 2. **ES-114:** A o B (§4.4). La maqueta soporta ambas.
-3. ¿Se retira la serif de los titulares (solo Inter) o se conserva solo en la `h1`?
+3. ¿Se aprueba la dirección «Cuaderno» (§0): Playfair en titulares y Noto Serif en la voz del asistente?
 4. ¿Se aprueba el glosario de §5 (en especial «paciente»)? Es decisión de producto.
 5. ¿La landing del piloto se reduce y se quitan las etiquetas «(sintético)»? (H-15)
 6. ¿Se activa el modo oscuro en la app (ya existe en landing)?
-7. ¿Se autoriza un gasto limitado de IA (3–5 llamadas) para auditar respuestas del asistente?
+7. ¿Se agrega el consentimiento en el registro (H-35) y se define si habrá cobro en línea (H-36)? Hoy solo hay solicitud de plan aprobada por un administrador.
+8. Pruebas de escritura en staging que siguen sin aprobar: crear una evidencia sintética, registrar un nivel y enviar una solicitud de plan (para auditar esos flujos reales).
 
 ## 10. Límites de esta propuesta (no verificado)
 

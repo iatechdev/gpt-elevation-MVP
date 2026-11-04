@@ -63,3 +63,5 @@ node scripts/con-credenciales.mjs "<ruta al archivo local>" npx playwright test 
 Variables útiles: `E2E_ONLY=PUBLICO|USER|THERAPIST|ADMIN|SUPERADMIN`, `E2E_LANGS=es,en`, `E2E_TAG`, `E2E_CAPTURE_DIR`. Las capturas del repo se recomprimieron a JPEG (calidad 70).
 - `tests/diseno-final.spec.ts`: verifica el prototipo `docs/ux/diseno-final/` (sin red): sin textos faltantes, sin desborde, axe sin violaciones graves/críticas, ES/EN, escritorio/móvil, claro/oscuro; genera `docs/ux/diseno-final/img/`.
 - `scripts/generar-textos.mjs`: genera `docs/ux/TEXTOS-FINALES-ES-EN.md` desde `docs/ux/diseno-final/copy.js`.
+- `tests/auditoria-chat.spec.ts`: chat REAL con la IA (gasta presupuesto y escribe turnos en la persona sintética de staging). **Solo corre con `E2E_CHAT_MAX=N`** (aprobado por Mauricio: hasta 4 el 3-nov-2026). `scripts/leer-historial-chat.mjs` resume el historial guardado por API (solo lectura, sin IA).
+- `tests/auditoria-registro-planes.spec.ts`: formulario de registro (sin enviarlo) y `/pricing` sin sesión y con sesión de persona. Solo lectura.

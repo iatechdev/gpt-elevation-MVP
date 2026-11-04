@@ -7,7 +7,8 @@ import vm from 'node:vm'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs', 'ux')
 const ctx = { window: {} }
-vm.runInNewContext(readFileSync(join(root, 'diseno-final', 'copy.js'), 'utf8'), ctx)
+vm.createContext(ctx)
+for (const file of ['copy.js', 'copy-extra.js']) vm.runInContext(readFileSync(join(root, 'diseno-final', file), 'utf8'), ctx)
 const rows = ctx.window.COPY_ROWS
 const label = { repo: 'se conserva (ya existe)', landing: 'aprobado en landing', ajuste: 'se ajusta (existe)', nuevo: 'nuevo' }
 const esc = (s) => s.replace(/\|/g, '\\|')

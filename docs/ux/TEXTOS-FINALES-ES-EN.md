@@ -322,8 +322,210 @@ Los marcadores `{n}`, `{date}`, `{pct}`, `{a}`, `{b}` son variables que rellena 
 | `ad.state.active` | Activo | Active | se conserva (ya existe) |
 | `ad.state.inactive` | Inactivo | Inactive | se conserva (ya existe) |
 
+## Navegación y global (añadidos)
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `nav.main` | Principal | Main | nuevo |
+| `nav.account` | Mi cuenta | My account | nuevo |
+| `nav.plan` | Mi plan | My plan | se conserva (ya existe) |
+| `btn.close` | Cerrar | Close | se conserva (ya existe) |
+| `role.pro` | Profesional | Professional | nuevo |
+| `role.admin` | Administración | Administration | nuevo |
+| `home.after` | Gracias por decírmelo. Puedes hablar con el asistente, escribir en tu diario o simplemente quedarte aquí. | Thank you for telling me. You can talk to the assistant, write in your journal or simply stay here. | nuevo |
+| `home.diary.line` | Escribir solo para mí | Write just for me | nuevo |
+| `home.plan.link` | Ver mi plan y mis solicitudes | See my plan and requests | nuevo |
+| `home.err.safe` | Tus datos están a salvo. | Your data is safe. | nuevo |
+| `pro.next` | Próxima sesión | Next session | se conserva (ya existe) |
+| `land.pilot.label` | Piloto | Pilot | nuevo |
+| `ob.finish` | Entrar a mi espacio | Enter my space | se conserva (ya existe) |
+
+## Conversación (turnos, acciones y estados)
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `chat.you` | Tú | You | nuevo |
+| `chat.sample` | Ejemplo real capturado en staging (cuenta sintética) | Real example captured in staging (synthetic account) | nuevo |
+| `chat.empty.title` | Empieza cuando quieras | Start whenever you like | nuevo |
+| `chat.q.label` | Responder más fácil | Easier ways to reply | nuevo |
+| `chat.q.skip` | Prefiero no responder esa ahora | I’d rather not answer that now | nuevo |
+| `chat.q.skip.send` | Prefiero no responder esa pregunta ahora. | I’d rather not answer that question right now. | nuevo |
+| `chat.q.other` | Propón otro camino | Suggest another path | nuevo |
+| `chat.q.other.send` | ¿Podemos probar otro camino? | Could we try another path? | nuevo |
+| `chat.q.pause` | Hacer una pausa | Take a pause | nuevo |
+| `chat.q.pause.send` | Quiero hacer una pausa por ahora. | I’d like to pause for now. | nuevo |
+| `chat.msg.copy` | Copiar | Copy | nuevo |
+| `chat.msg.copied` | Copiado. | Copied. | nuevo |
+| `chat.msg.evidence` | Guardar como evidencia | Save as evidence | nuevo |
+| `chat.msg.saved` | Guardado en tus evidencias | Saved to your evidence | nuevo |
+| `chat.paused` | Conversación en pausa. No se envía nada hasta que la retomes. Tu historial sigue aquí. | Conversation paused. Nothing is sent until you resume. Your history stays here. | se conserva (ya existe) |
+| `chat.resume` | Retomar | Resume | se conserva (ya existe) |
+| `chat.usage.note` | Cada mensaje usa una parte de tu cupo. | Each message uses part of your allowance. | nuevo |
+| `chat.draft.title` | Borrador de evidencia | Evidence draft | nuevo |
+| `chat.draft.sub` | Tomamos tus palabras como punto de partida. Complétalo y confírmalo: no cuenta hasta que lo hagas. | We take your words as a starting point. Complete and confirm it: it doesn’t count until you do. | nuevo |
+| `chat.draft.from` | Tus palabras | Your words | nuevo |
+| `dia.private` | Privada | Private | nuevo |
+
+## Evidencia (formulario guiado de 3 pasos; mismos campos y obligatoriedad que hoy)
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `ev.f.title` | Título | Title | se conserva (ya existe) |
+| `ev.f.actions` | Qué hiciste, paso a paso | What you did, step by step | se ajusta (existe) |
+| `ev.f.actions.h` | Al menos una acción. Escribe cada una en su propia línea. | At least one action. Write each on its own line. | nuevo |
+| `ev.f.effect` | ¿Se notó algún efecto? | Was any effect noticed? | se ajusta (existe) |
+| `ev.effect.known` | Sí, y lo puedo describir | Yes, and I can describe it | nuevo |
+| `ev.effect.unknown` | No lo sé | I don’t know | se conserva (ya existe) |
+| `ev.f.autonomy` | Autonomía con la que lo hiciste | How independently you did it | se ajusta (existe) |
+| `ev.autonomy.unset` | Por confirmar | To be confirmed | se conserva (ya existe) |
+| `ev.autonomy.conceptual` | Conceptual | Conceptual | se conserva (ya existe) |
+| `ev.autonomy.assisted` | Con asistencia | With assistance | se conserva (ya existe) |
+| `ev.autonomy.autonomous` | Autónoma y repetible | Autonomous and repeatable | se conserva (ya existe) |
+| `ev.autonomy.leads` | Lidera o enseña | Leads or teaches | se conserva (ya existe) |
+| `ev.autonomy.help` | Es autorreporte, no una certificación de capacidad. | This is self-report, not a skill certification. | se conserva (ya existe) |
+| `ev.list.confirmed` | Confirmada | Confirmed | nuevo |
+| `ev.list.draft` | Borrador | Draft | nuevo |
+| `ev.counts` | Cuenta para tu mapa | Counts toward your map | nuevo |
+| `ev.notcounts` | No cuenta todavía | Doesn’t count yet | nuevo |
+| `ev.saved.draft` | Borrador guardado. No cuenta para tu mapa hasta que lo confirmes. | Draft saved. It doesn’t count toward your map until you confirm it. | nuevo |
+
+## Mi mapa (camino, detalle y registro de nivel)
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `map.guide.title` | Cómo se llega a un nivel | How you get to a level | se ajusta (existe) |
+| `map.guide.1` | Cuenta una experiencia real en «Evidencias» o desde la conversación. | Describe a real experience in “Evidence” or from the conversation. | se ajusta (existe) |
+| `map.guide.2` | Confírmala: solo lo que tú confirmas cuenta. | Confirm it: only what you confirm counts. | se conserva (ya existe) |
+| `map.guide.3` | Pulsa «Registrar mi nivel» en una capacidad y elige el nivel que tu evidencia respalda. | Press “Record my level” on a capability and choose the level your evidence supports. | se ajusta (existe) |
+| `map.detail` | Detalle de la capacidad | Capability detail | se conserva (ya existe) |
+| `map.list` | Todas tus capacidades | All your capabilities | se conserva (ya existe) |
+| `map.select` | Elige una capacidad en el radar o en la lista para ver su detalle. | Choose a capability on the radar or in the list to see its detail. | se ajusta (existe) |
+| `map.radar.hint` | Cada cuña es una capacidad. Lo que no evaluaste queda en hueco, no en cero. | Each wedge is a capability. What you haven’t assessed stays empty, not at zero. | se ajusta (existe) |
+| `map.rubric` | Criterios del catálogo vigente | Current catalogue criteria | se conserva (ya existe) |
+| `map.revoke` | Revocar todos los permisos | Revoke all permissions | se conserva (ya existe) |
+| `map.revoke.title` | ¿Revocar todos los permisos? | Revoke all permissions? | se conserva (ya existe) |
+| `map.revoke.body` | Se retirará tu permiso para el recorrido profesional: lo que habías autorizado dejará de cruzar. Puedes autorizar de nuevo más adelante. | Your permission for the career journey will be withdrawn: what you had authorised will stop crossing. You can authorise again later. | se conserva (ya existe) |
+| `map.revoke.yes` | Sí, revocar | Yes, revoke | se conserva (ya existe) |
+| `lv.open` | Registrar mi nivel | Record my level | se conserva (ya existe) |
+| `lv.change` | Cambiar mi nivel | Change my level | se conserva (ya existe) |
+| `lv.retire` | Retirar mi nivel | Remove my level | se conserva (ya existe) |
+| `lv.intro` | Tu nivel es tu valoración, respaldada por tu evidencia: no certifica. Solo cuenta lo que tú confirmas. | Your level is your own assessment, backed by your evidence: it doesn’t certify. Only what you confirm counts. | se conserva (ya existe) |
+| `lv.s1` | Elige la evidencia que respalda tu nivel (de 1 a {max}) | Choose the evidence that backs your level (1 to {max}) | se conserva (ya existe) |
+| `lv.s2` | ¿Qué nivel describe mejor lo que hiciste? | Which level best describes what you did? | se conserva (ya existe) |
+| `lv.s3` | Una nota y revisión final | A note and final check | se ajusta (existe) |
+| `lv.note` | Nota (opcional, hasta 500 caracteres) | Note (optional, up to 500 characters) | se conserva (ya existe) |
+| `lv.rubric.ph` | Criterio del nivel {n}: texto del catálogo vigente | Level {n} criterion: text from the current catalogue | nuevo |
+| `lv.rubric.src` | Criterios del catálogo vigente (versión {v}). | Criteria from the current catalogue (version {v}). | se conserva (ya existe) |
+| `lv.ev.meta` | Confirmada · versión 1 | Confirmed · version 1 | se conserva (ya existe) |
+| `lv.ev.count` | evidencia(s) | evidence item(s) | nuevo |
+| `lv.see` | Ver o añadir en «Evidencias» | View or add in “Evidence” | se conserva (ya existe) |
+| `lv.summary` | Resumen | Summary | nuevo |
+| `lv.warn` | Si más adelante editas o borras la evidencia que citas, tu nivel dejará de mostrarse hasta que lo registres de nuevo. | If you later edit or delete the evidence you cite, your level will stop showing until you record it again. | se conserva (ya existe) |
+| `lv.save` | Guardar mi nivel | Save my level | se conserva (ya existe) |
+| `lv.saved` | Nivel guardado. | Level saved. | se conserva (ya existe) |
+| `lv.retired` | Nivel retirado. | Level removed. | se conserva (ya existe) |
+| `lv.retire.title` | ¿Retirar tu nivel? | Remove your level? | se conserva (ya existe) |
+| `lv.retire.body` | Tu nivel se retira y la capacidad vuelve a «Sin evaluar». Tu evidencia no se borra. | Your level is removed and the capability goes back to “Not assessed”. Your evidence is not deleted. | se conserva (ya existe) |
+| `lv.retire.yes` | Sí, retirar | Yes, remove | se conserva (ya existe) |
+| `lv.none.title` | Primero necesitas una evidencia confirmada | You first need a confirmed piece of evidence | se conserva (ya existe) |
+| `lv.none.text` | Un nivel se apoya en algo que hiciste: su situación, tu parte y lo que entregaste. Cuéntalo y confírmalo. | A level rests on something you did: its situation, your part and what you delivered. Describe it and confirm it. | se ajusta (existe) |
+| `lv.none.cta` | Añadir mi primera evidencia | Add my first evidence | se ajusta (existe) |
+
+## Análisis de evidencia con IA (propuesta que tú decides)
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `ai.open_skill` | Pedir propuesta de la IA para esta capacidad | Ask the AI for a proposal for this capability | se conserva (ya existe) |
+| `ai.title` | Analizar mi evidencia con IA | Analyse my evidence with AI | se conserva (ya existe) |
+| `ai.pick.text` | La IA lee solo las evidencias que ya confirmaste y propone un nivel por capacidad, con su razón. Tú decides. Lo que no tenga evidencia no cambia. | The AI reads only the evidence you already confirmed and proposes a level per capability, with its reasoning. You decide. Anything without evidence stays as it is. | se conserva (ya existe) |
+| `ai.pick` | Elige hasta {max} capacidades para analizar | Choose up to {max} capabilities to analyse | se conserva (ya existe) |
+| `ai.selected` | {n} seleccionadas de {max} | {n} selected of {max} | se conserva (ya existe) |
+| `ai.privacy` | La IA solo ve tus evidencias confirmadas y la rúbrica del catálogo. No ve tu diario, tu ánimo ni tus conversaciones. Cada análisis usa tu cupo de análisis. | The AI only sees your confirmed evidence and the catalogue rubric. It does not see your journal, your mood or your conversations. Each analysis uses your analysis allowance. | se ajusta (existe) |
+| `ai.selected_one` | 1 seleccionada de {max} | 1 selected of {max} | se conserva (ya existe) |
+| `ai.go` | Analizar | Analyse | se conserva (ya existe) |
+| `ai.analyzing` | Analizando tu evidencia… puede tardar unos segundos. | Analysing your evidence… it may take a few seconds. | se conserva (ya existe) |
+| `ai.rev.title` | Propuestas de la IA | AI proposals | se conserva (ya existe) |
+| `ai.rev.text` | Revisa cada una. Puedes aceptarla, bajarla de nivel, dejarla sin evaluar o no guardarla. No puedes subirla. | Review each one. You can accept it, lower it, leave it unassessed or not save it. You can’t raise it. | se conserva (ya existe) |
+| `ai.tag` | Propuesta de la IA · tú decides | AI proposal · you decide | se conserva (ya existe) |
+| `ai.proposed` | Nivel propuesto | Proposed level | se conserva (ya existe) |
+| `ai.why` | Razón de la IA | AI’s reasoning | se conserva (ya existe) |
+| `ai.why.ex` | Texto de la razón que devuelve la IA, citando tu evidencia. | Reasoning text returned by the AI, citing your evidence. | nuevo |
+| `ai.evid` | Evidencia citada | Evidence cited | se conserva (ya existe) |
+| `ai.conf.rule` | La confianza del respaldo la calcula el sistema con reglas; no la decide la IA. | The system calculates the confidence of the support with rules; the AI doesn’t decide it. | se conserva (ya existe) |
+| `ai.accept` | Aceptar nivel {n} | Accept level {n} | se conserva (ya existe) |
+| `ai.down` | Bajar a nivel {n} | Lower to level {n} | se conserva (ya existe) |
+| `ai.unassessed` | Dejar sin evaluar (retira mi nivel actual, si lo hay) | Leave unassessed (removes my current level, if any) | se conserva (ya existe) |
+| `ai.skip` | No guardar | Don’t save | se conserva (ya existe) |
+| `ai.expires` | Esta propuesta vence en 10 minutos. | This proposal expires in 10 minutes. | se conserva (ya existe) |
+| `ai.save.n` | Se guardarán {n} y no se tocará el resto. | {n} will be saved and nothing else will change. | se conserva (ya existe) |
+| `ai.save` | Guardar las aceptadas | Save accepted ones | se conserva (ya existe) |
+| `ai.done` | Guardado como «propuesto por la IA y confirmado por ti». | Saved as “proposed by the AI and confirmed by you”. | se ajusta (existe) |
+| `ai.noev.title` | Primero necesitas una evidencia confirmada | You first need a confirmed piece of evidence | se conserva (ya existe) |
+| `ai.noev.text` | La IA solo propone a partir de evidencias que tú confirmaste. Cuenta una situación real y confírmala. | The AI only proposes from evidence you confirmed. Describe a real situation and confirm it. | se conserva (ya existe) |
+| `ai.close` | Cerrar | Close | se conserva (ya existe) |
+
+## Crear cuenta
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `reg.name` | Nombre | Name | se conserva (ya existe) |
+| `reg.name.ph` | Tu nombre | Your name | se conserva (ya existe) |
+| `reg.pw.title` | Tu contraseña debe tener: | Your password must have: | se conserva (ya existe) |
+| `reg.pw.len` | Al menos 8 caracteres | At least 8 characters | se conserva (ya existe) |
+| `reg.pw.up` | Una mayúscula (A-Z) | An uppercase letter (A-Z) | se conserva (ya existe) |
+| `reg.pw.low` | Una minúscula (a-z) | A lowercase letter (a-z) | se conserva (ya existe) |
+| `reg.pw.dig` | Un número (0-9) | A number (0-9) | se conserva (ya existe) |
+| `reg.pw.spec` | Un carácter especial (! ? # $ % & * …); el espacio no cuenta | A special character (! ? # $ % & * …); a space doesn’t count | se conserva (ya existe) |
+| `reg.pw.bytes` | Si usas acentos o emojis, la contraseña admite menos caracteres. | If you use accents or emojis, the password allows fewer characters. | se ajusta (existe) |
+| `reg.consent` | Entiendo que Elevation no es terapia ni diagnóstico, que mi espacio es privado y que la IA es un asistente automático. | I understand that Elevation is not therapy or diagnosis, that my space is private and that the AI is an automated assistant. | nuevo |
+| `reg.policy` | Leer la política de privacidad | Read the privacy policy | nuevo |
+| `reg.err` | Revisa los datos: falta un nombre, un correo válido, una contraseña que cumpla las reglas o aceptar lo anterior. | Check your details: a name, a valid email, a password that meets the rules or accepting the above is missing. | nuevo |
+| `reg.have` | ¿Ya tienes cuenta? | Already have an account? | se conserva (ya existe) |
+| `reg.plan` | Elegiste {plan}. Después de crear tu cuenta podrás revisar y enviar tu solicitud. | You chose {plan}. After creating your account you can review and send your request. | nuevo |
+| `reg.done.title` | Tu cuenta está lista | Your account is ready | se ajusta (existe) |
+| `reg.done.body` | Entra con tu correo y tu contraseña. Después te guiamos en tres pasos. | Sign in with your email and password. Then we’ll guide you in three steps. | se ajusta (existe) |
+| `reg.done.cta` | Ir a ingresar | Go to log in | nuevo |
+
+## Mi plan y solicitud de plan (no hay pasarela de pago)
+
+| Clave | ES | EN | Origen |
+|---|---|---|---|
+| `pl.sub` | Aquí ves tu plan actual, tu uso y el estado de tus solicitudes. | Here you see your current plan, your use and the status of your requests. | nuevo |
+| `pl.current` | Plan actual | Current plan | nuevo |
+| `pl.msgday` | Mensajes de IA por día | AI messages per day | se conserva (ya existe) |
+| `pl.sessions` | Sesiones por mes | Sessions per month | se conserva (ya existe) |
+| `pl.req.title` | Mi solicitud | My request | nuevo |
+| `pl.req.none` | No tienes solicitudes de plan. | You have no plan requests. | nuevo |
+| `pl.req.pending` | En revisión | Under review | nuevo |
+| `pl.req.pending.body` | Tu solicitud quedó registrada y está en revisión. El plan aún no está activado. | Your request was recorded and is under review. The plan is not active yet. | se conserva (ya existe) |
+| `pl.req.where` | Verás aquí el estado de tu solicitud. | You’ll see the status of your request here. | nuevo |
+| `pl.tl.sent` | Enviada | Sent | nuevo |
+| `pl.tl.review` | En revisión | Under review | nuevo |
+| `pl.tl.decision` | Decisión | Decision | nuevo |
+| `pl.catalog.title` | Elige cómo quieres acompañarte | Choose how you want to be supported | se conserva (ya existe) |
+| `pl.catalog.sub` | Empieza sin costo y cambia de plan cuando lo necesites. | Start at no cost and change plans whenever you need. | se conserva (ya existe) |
+| `pl.highlight` | Destacado | Featured | se conserva (ya existe) |
+| `pl.free` | Gratis | Free | se conserva (ya existe) |
+| `pl.per` | mes | month | se conserva (ya existe) |
+| `pl.cta` | Solicitar este plan | Request this plan | se conserva (ya existe) |
+| `pl.existing` | Ya tienes una solicitud en revisión. | You already have a request under review. | se conserva (ya existe) |
+| `pl.paid.note` | Los planes de pago pasan por la aprobación de un administrador. | Paid plans go through administrator approval. | se conserva (ya existe) |
+| `pl.nopay` | Aquí no se cobra ni se piden datos de pago. | Nothing is charged here and no payment details are requested. | nuevo |
+| `pl.ex.name` | Nombre del plan | Plan name | nuevo |
+| `pl.ex.desc` | Descripción del plan, tal como la define el catálogo. | Plan description, as defined in the catalogue. | nuevo |
+| `pl.ex.f1` | Función incluida (según el catálogo) | Included feature (per the catalogue) | nuevo |
+| `pl.ex.f2` | Otra función incluida (según el catálogo) | Another included feature (per the catalogue) | nuevo |
+| `pl.confirm.title` | Revisa tu solicitud | Review your request | nuevo |
+| `pl.confirm.sub` | Revisa el plan seleccionado antes de enviar tu solicitud. | Review the selected plan before submitting your request. | se conserva (ya existe) |
+| `pl.confirm.what` | Qué pasa después | What happens next | nuevo |
+| `pl.confirm.1` | Un administrador revisa tu solicitud. | An administrator reviews your request. | nuevo |
+| `pl.confirm.2` | El plan no se activa hasta que haya una decisión. | The plan isn’t activated until there is a decision. | se ajusta (existe) |
+| `pl.confirm.3` | Puedes ver el estado en «Mi plan». | You can see the status in “My plan”. | nuevo |
+| `pl.confirm.send` | Enviar solicitud | Submit request | se ajusta (existe) |
+| `pl.sent` | Solicitud enviada. Está en revisión. | Request submitted. It is under review. | se ajusta (existe) |
+
 ## Resumen
-Total: 238 textos · se conservan 115 · se ajustan 50 · nuevos 73.
+Total: 405 textos · se conservan 201 · se ajustan 69 · nuevos 135.
 
 ## Textos existentes que este diseño **retira o reemplaza** (hallazgos del informe)
 | Hoy (frontend/src/i18n u otras pantallas) | Problema | Reemplazo |

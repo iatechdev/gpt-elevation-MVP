@@ -1,7 +1,7 @@
 # Auditoría de UX/UI · Elevation + Skill Map (ES-148)
 
 Autor: UX-Claude · 3-nov-2026 · Entorno: **staging** (`backend-staging-e3a6`), cuentas sintéticas · Sin producción, sin llamadas a la IA, sin escrituras.
-Estado: **borrador para revisión de Mauricio y Alejo**. Propuesta de rediseño: [PROPUESTA-DISENO.md](PROPUESTA-DISENO.md) (pasa por la puerta de diseño).
+Estado: **borrador para revisión de Mauricio y Alejo**. Propuesta de rediseño: [PROPUESTA-DISENO.md](PROPUESTA-DISENO.md) (pasa por la puerta de diseño). **Ampliación (chat con IA real, niveles, registro y planes, H-24 en adelante): [INFORME-AMPLIACION.md](INFORME-AMPLIACION.md).**
 
 ## 1. Qué se ejecutó (y cómo repetirlo)
 
