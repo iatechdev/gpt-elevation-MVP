@@ -3,6 +3,13 @@
 UX-Claude · 3-nov-2026 · **Estado: PROPUESTA — pasa por la puerta de diseño.** Nadie implementa nada hasta que **Mauricio o Alejo** la aprueben por escrito en el ticket. Evidencia de partida: [INFORME-AUDITORIA-UX.md](INFORME-AUDITORIA-UX.md) (hallazgos H-nn).
 Maqueta navegable (ES/EN, claro/oscuro, escritorio/móvil, teclado): [maquetas/index.html](maquetas/index.html) · imágenes en `maquetas/img/`.
 
+> **Actualización (3-nov, tras pedido de Mauricio): diseño de alta fidelidad con textos finales.**
+> - Prototipo navegable: [diseno-final/index.html](diseno-final/index.html) — 22 pantallas/estados (landing piloto, acceso y error, primeros pasos en 3 pasos, inicio, conversación con sus estados, diario, mapa, evidencias, siguiente paso, El Puente, mi profesional, mis datos con confirmación de eliminar, profesional, administración, estados), ES/EN, escritorio/móvil, claro/oscuro. Imágenes en `diseno-final/img/` (88).
+> - Textos finales ES/EN (fuente única): [TEXTOS-FINALES-ES-EN.md](TEXTOS-FINALES-ES-EN.md), generado desde `diseno-final/copy.js`. Marca qué se conserva, qué se ajusta y qué es nuevo, y lista los textos actuales que se retiran y los que requieren decisión.
+> - Tokens: [diseno-final/tokens.css](diseno-final/tokens.css) (sin paleta nueva).
+> - Decisiones tomadas por defecto en el prototipo (cámbialas y se regenera): ES-114 → **variante B**; sin serif (solo Inter); «Mi profesional / Personas que acompañas» en lugar de «terapeuta/paciente»; landing del piloto **sin planes ni precios** (ES-73 D-01 sin verificar); modo oscuro activo.
+> - `maquetas/` (primer borrador) queda como referencia histórica.
+
 ## 1. Principios
 
 1. **Un espacio, una voz.** Una sola identidad visual, una cabecera, un selector de idioma, un botón principal (H-01).

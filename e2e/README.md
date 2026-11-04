@@ -61,3 +61,5 @@ Para correr contra la app local: `E2E_BASE_URL=http://localhost:8080 npm test`.
 node scripts/con-credenciales.mjs "<ruta al archivo local>" npx playwright test tests/auditoria.spec.ts --project=escritorio
 ```
 Variables útiles: `E2E_ONLY=PUBLICO|USER|THERAPIST|ADMIN|SUPERADMIN`, `E2E_LANGS=es,en`, `E2E_TAG`, `E2E_CAPTURE_DIR`. Las capturas del repo se recomprimieron a JPEG (calidad 70).
+- `tests/diseno-final.spec.ts`: verifica el prototipo `docs/ux/diseno-final/` (sin red): sin textos faltantes, sin desborde, axe sin violaciones graves/críticas, ES/EN, escritorio/móvil, claro/oscuro; genera `docs/ux/diseno-final/img/`.
+- `scripts/generar-textos.mjs`: genera `docs/ux/TEXTOS-FINALES-ES-EN.md` desde `docs/ux/diseno-final/copy.js`.
