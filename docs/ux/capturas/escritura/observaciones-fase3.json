@@ -1,0 +1,31 @@
+{
+ "pasos": [
+  {
+   "paso": "Abrir el borrador para editarlo",
+   "ok": true,
+   "ms": 2182
+  },
+  {
+   "paso": "Confirmar evidencia",
+   "ok": true,
+   "ms": 2943,
+   "nota": "Evidencia confirmada"
+  },
+  {
+   "paso": "Mapa: capacidad y registrar nivel",
+   "ok": true,
+   "ms": 6478,
+   "nota": "No hay nada autorizado para el recorrido profesional. | Versión del catálogo: 1 | Nivel guardado."
+  },
+  {
+   "paso": "Retirar mi nivel",
+   "ok": true,
+   "ms": 2885
+  }
+ ],
+ "llamadasDeEscritura": [
+  "PUT /api/evidence/58 → 201",
+  "POST /api/skill-map/self → 201",
+  "POST /api/skill-map/self → 200"
+ ]
+}

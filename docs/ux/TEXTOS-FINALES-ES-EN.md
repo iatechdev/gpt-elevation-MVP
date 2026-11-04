@@ -385,6 +385,7 @@ Los marcadores `{n}`, `{date}`, `{pct}`, `{a}`, `{b}` son variables que rellena 
 | `ev.autonomy.help` | Es autorreporte, no una certificación de capacidad. | This is self-report, not a skill certification. | se conserva (ya existe) |
 | `ev.list.confirmed` | Confirmada | Confirmed | nuevo |
 | `ev.list.draft` | Borrador | Draft | nuevo |
+| `ev.review.confirm` | Revisar y confirmar | Review and confirm | nuevo |
 | `ev.counts` | Cuenta para tu mapa | Counts toward your map | nuevo |
 | `ev.notcounts` | No cuenta todavía | Doesn’t count yet | nuevo |
 | `ev.saved.draft` | Borrador guardado. No cuenta para tu mapa hasta que lo confirmes. | Draft saved. It doesn’t count toward your map until you confirm it. | nuevo |
@@ -416,7 +417,7 @@ Los marcadores `{n}`, `{date}`, `{pct}`, `{a}`, `{b}` son variables que rellena 
 | `lv.note` | Nota (opcional, hasta 500 caracteres) | Note (optional, up to 500 characters) | se conserva (ya existe) |
 | `lv.rubric.ph` | Criterio del nivel {n}: texto del catálogo vigente | Level {n} criterion: text from the current catalogue | nuevo |
 | `lv.rubric.src` | Criterios del catálogo vigente (versión {v}). | Criteria from the current catalogue (version {v}). | se conserva (ya existe) |
-| `lv.ev.meta` | Confirmada · versión 1 | Confirmed · version 1 | se conserva (ya existe) |
+| `lv.ev.meta` | Confirmada | Confirmed | se ajusta (existe) |
 | `lv.ev.count` | evidencia(s) | evidence item(s) | nuevo |
 | `lv.see` | Ver o añadir en «Evidencias» | View or add in “Evidence” | se conserva (ya existe) |
 | `lv.summary` | Resumen | Summary | nuevo |
@@ -525,7 +526,7 @@ Los marcadores `{n}`, `{date}`, `{pct}`, `{a}`, `{b}` son variables que rellena 
 | `pl.sent` | Solicitud enviada. Está en revisión. | Request submitted. It is under review. | se ajusta (existe) |
 
 ## Resumen
-Total: 405 textos · se conservan 201 · se ajustan 69 · nuevos 135.
+Total: 406 textos · se conservan 200 · se ajustan 70 · nuevos 136.
 
 ## Textos existentes que este diseño **retira o reemplaza** (hallazgos del informe)
 | Hoy (frontend/src/i18n u otras pantallas) | Problema | Reemplazo |

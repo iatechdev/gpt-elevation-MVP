@@ -7,7 +7,7 @@ UX-Claude · 3-nov-2026 (tarde) · Staging, cuentas sintéticas. Continúa [INFO
 
 | Pregunta | Respuesta (con su base) |
 |---|---|
-| **¿Cómo se marcan las aptitudes y se registran los niveles?** | Hay tres pasos y dos caminos. Camino manual: en «Evidencias» la persona cuenta una experiencia (situación, su parte, acciones, lo entregado, efecto observado, autonomía) y **la confirma**; en «Mi mapa» elige una capacidad → «Registrar mi nivel» → (1) elige de 1 a 8 evidencias confirmadas, (2) elige nivel 1–4 leyendo el criterio del catálogo, (3) nota opcional de hasta 500 caracteres; si luego edita o borra esa evidencia, el nivel deja de mostrarse. Camino con IA: «Analizar mi evidencia con IA» → elige capacidades → la IA propone un nivel con su razón → la persona acepta, **baja**, deja sin evaluar o no guarda (**nunca sube**); la propuesta vence a los 10 minutos. *Base: código (`SelfAssessPanel.tsx`, `skill-map/copy.ts`, `evidence/FormFields.tsx`); **no ejecutado** porque no se aprobó escribir evidencias (ver §6).* |
+| **¿Cómo se marcan las aptitudes y se registran los niveles?** | Hay tres pasos y dos caminos. Camino manual: en «Evidencias» la persona cuenta una experiencia (situación, su parte, acciones, lo entregado, efecto observado, autonomía) y **la confirma**; en «Mi mapa» elige una capacidad → «Registrar mi nivel» → (1) elige de 1 a 8 evidencias confirmadas, (2) elige nivel 1–4 leyendo el criterio del catálogo, (3) nota opcional de hasta 500 caracteres; si luego edita o borra esa evidencia, el nivel deja de mostrarse. Camino con IA: «Analizar mi evidencia con IA» → elige capacidades → la IA propone un nivel con su razón → la persona acepta, **baja**, deja sin evaluar o no guarda (**nunca sube**); la propuesta vence a los 10 minutos. *Base: código (`SelfAssessPanel.tsx`, `skill-map/copy.ts`, `evidence/FormFields.tsx`) **y ejecutado de punta a punta en staging** con aprobación de Mauricio (§7): evidencia → confirmada → nivel 2 registrado → retirado.* |
 | **¿Cuál es el formulario de registro de cada persona cuando va a hacer la compra?** | **No existe un formulario de compra ni una pasarela de pago.** El registro pide solo **nombre, correo y contraseña** (con una lista de reglas de contraseña en vivo) y no tiene casillas de consentimiento ni enlace a la política de privacidad. «Comprar» hoy es **solicitar un plan**: botón «Solicitar este plan» → queda «en revisión» y **un administrador la aprueba**; no se piden datos de pago. *Base: ejecutado en staging (capturas de registro y planes; medida: 3 campos, 0 casillas) y código (`pricing/plans.ts`, `backend/routes/auth.js`).* |
 | **¿Cómo veo mis planes?** | Hoy: en el panel hay una tarjeta «Mi plan» (Gratis · Básico · mensajes de IA/día 10 · sesiones/mes 0) con «Ver planes →», que lleva a `/pricing` (otra pantalla con otro marco visual). No hay una pantalla «Mi plan» con el plan actual, el uso y el estado de la solicitud juntos. *Base: ejecutado (capturas del panel y de `/pricing` con sesión).* |
 | **¿Cómo se ven los mensajes de la persona y la respuesta de la IA?** | Mensaje de la persona: bloque negro alineado a la derecha; respuesta: bloque beige a la izquierda con «✦ ELEVATION», en **texto plano** (el formato Markdown aparece sin interpretar). *Base: ejecutado con **4 llamadas reales** a la IA aprobadas por Mauricio; capturas en `capturas/chat-real/`.* |
@@ -54,7 +54,8 @@ Qué se hizo: una persona sintética envió 4 mensajes inocuos (sin datos person
 
 ## 4. Lo que no se puede concluir todavía
 
-- **Qué ocurre al enviar** un registro, una evidencia, un nivel o una solicitud de plan: no se hizo (no hay aprobación de escritura para eso; solo se aprobaron los 4 mensajes de chat).
+- **Qué ocurre al enviar un registro de cuenta**: no se hizo (crearía una cuenta). Evidencia, nivel y solicitud de plan sí se ejecutaron (§7).
+- **El análisis con IA** (propuesta de nivel): no se ejecutó; gasta presupuesto de IA y no estaba aprobado.
 - **Reglas reales de cupo y de precio**: no verificadas (ES-73 D-01). Los números del prototipo («10 mensajes por día», «4 %») son los que muestra la cuenta de staging, marcados como ejemplo.
 - **Calidad de la IA en otros casos** (crisis, temas sensibles, mensajes largos, inyección de instrucciones): no se probó; son pruebas de QA con plan aprobado.
 - **El texto de los criterios de cada nivel** (rúbrica del catálogo): se desconoce en esta auditoría; el diseño deja un hueco para el texto del catálogo.
@@ -66,5 +67,24 @@ Cada hallazgo de este documento está resuelto o planteado en el prototipo [dise
 ## 6. Aprobaciones de Mauricio usadas en esta ampliación
 
 - Aprobado y usado: **hasta 4 mensajes reales al chat** (se usaron 4).
-- **No** aprobado (por eso no se ejecutó): crear una evidencia sintética y registrar un nivel; enviar una solicitud de plan.
-- Efecto en staging de lo ejecutado: 8 turnos (4 de la persona y 4 del asistente) en el historial de la cuenta sintética de persona; el uso de IA de esa cuenta pasó de 4 % a 21 %.
+- Aprobado y usado después («Aprobar pruebas»): una evidencia sintética confirmada, registrar y retirar un nivel, y una solicitud de plan (§7).
+- **No** aprobado: el análisis con IA y la creación de cuentas.
+- Efecto en staging: 8 turnos en el historial de la persona sintética (uso de IA de 4 % a 21 %); **1 evidencia confirmada (versión 3)**; un nivel registrado y retirado; **1 solicitud de plan en revisión que la interfaz no permite cancelar**.
+
+## 7. Flujo real con escritura en staging (aprobado por Mauricio)
+
+Capturas y registro de llamadas: `capturas/escritura/` (`observaciones.json`, `observaciones-fase2.json`, `observaciones-fase3.json`). Texto de la evidencia: ficticio e inocuo. No se usó el análisis con IA.
+
+**Lo que se comprobó que funciona:** guardar un borrador (201), editarlo (crea una versión nueva y conserva las anteriores), confirmarlo, registrar un nivel con el criterio del catálogo (201), ver el radar y el panel de la capacidad actualizados al instante, retirar el nivel con confirmación (200) y volver a «Sin evaluar». Los criterios por nivel existen y son claros (ej. Comunicación, nivel 1 a 4, texto del catálogo de staging).
+
+| ID | Sev. | Hallazgo | Evidencia | Recomendación |
+|---|---|---|---|---|
+| **H-41** | Alta | **«Validado» después de registrar uno mismo el nivel.** Al guardar, la capacidad pasa a «**Validado** · Fuente: Evidencia aportada» aunque no hay revisión humana («Sin revisión humana», confianza del respaldo «Baja»). «Validado» sugiere que alguien lo comprobó, y choca con «el nivel no certifica». | `29-nivel-guardado.jpg` | Usar «Con evidencia» (sin «Validado»). **Es la misma contradicción de ES-114**: decisión del PO. |
+| **H-42** | Alta | **Después de «Guardar borrador» no se ve cómo confirmar.** Queda una vista de solo lectura titulada «Nueva evidencia» o «Editar evidencia», con «Borrador guardado» y sin acción siguiente; «Revisar para confirmar» solo está dentro del formulario de edición. Hizo falta repetir el camino (editar → revisar → confirmar) para lograrlo. | `03-borrador-guardado.jpg`, `22-tras-guardar.jpg`, `23-revisar.jpg` | Tras guardar: botón «Revisar y confirmar» visible junto al estado «Borrador». |
+| **H-43** | Alta | **La solicitud de plan se envía con un solo clic, sin pantalla de revisión, y no se puede cancelar.** El mensaje «Tu solicitud quedó registrada…» aparece arriba, lejos del botón; el otro plan queda con un botón gris sin explicación. | `14-solicitar-paso-1.jpg`, `15-solicitud-resultado.jpg` | Confirmación previa («Revisa tu solicitud: qué pasa después, no se cobra aquí») y acción «Cancelar solicitud» mientras esté en revisión. |
+| **H-44** | Media | **Las versiones se filtran a la persona**: una sola evidencia aparece como «versión 3» (v1 borrador, v2 editado, v3 confirmado). | `27-registrar-nivel.jpg` («Confirmada · versión 3») | Mostrar la fecha y el estado; dejar las versiones para «Ver historial». |
+| **H-45** | Media | **El detalle de la capacidad queda al final de la página**, debajo de la lista, lejos del radar donde se hizo clic; al elegir no pasa nada visible en pantalla. | `26-capacidad-elegida.jpg` | Panel a un lado del radar (escritorio) o que se abra encima (móvil), con el foco puesto en él. |
+| **H-46** | Media | **Encuadre de carencia**: «Un punto donde puedes mejorar» con el criterio del nivel siguiente y un botón «Registrar mi nivel» (que registraría el nivel que aún no se tiene). | `29-nivel-guardado.jpg` | «Siguiente nivel posible» y un solo paso: «Añadir evidencia». Nunca un botón que registre sin respaldo. |
+| **H-47** | Baja | **Concordancia**: «evidencia suficiente para 1 capacidades». | `29-nivel-guardado.jpg` | Plural correcto («1 capacidad»). |
+
+**Efecto de esta ronda sobre el diseño:** el prototipo ya cubre H-42 (acción «Revisar y confirmar» tras guardar), H-43 (confirmación previa; la cancelación queda como decisión de producto), H-44 (sin versiones), H-45 (panel de detalle junto al radar) y H-46/H-47. H-41 sigue ligado a la decisión **ES-114**.

@@ -35,6 +35,9 @@ const SAMPLE = {
   ],
 };
 const REPLIES = () => SAMPLE[S.lang].filter(x => x[0] === 'ai').map(x => x[1]);
+const RUBRIC = { 3: { es: ['Conoce cómo preparar un mensaje claro para su audiencia, pero aún no lo ha hecho en una situación real.', 'Comunica ideas con apoyo de una guía, una plantilla o la revisión de otra persona.', 'Adapta el mensaje a distintas audiencias y confirma que fue entendido, sin necesitar apoyo, de forma repetida.', 'Comunica en situaciones complejas o de tensión, alinea a varias partes y enseña a otras personas a hacerlo.'],
+  en: ['Knows how to prepare a clear message for their audience, but hasn’t yet done so in a real situation.', 'Communicates ideas with support from a guide, a template or another person’s review.', 'Adapts the message to different audiences and confirms it was understood, without needing support, repeatedly.', 'Communicates in complex or tense situations, aligns several parties and teaches others to do so.'] } }
+const rubric = (i, n) => RUBRIC[i] ? RUBRIC[i][S.lang][n - 1] : t('lv.rubric.ph', { n })
 const AUTONOMY = ['conceptual', 'assisted', 'autonomous', 'leads'];
 
 /* ---------- iconos y caras ---------- */
@@ -168,7 +171,7 @@ function detail() {
   const i = S.sel, lv = S.levels[i];
   return `<div class="stack"><span class="mono">${t('map.detail')}</span><h2 class="d3" tabindex="-1" id="capname">${CAPS[S.lang][i]}</h2>
 <p>${lv ? `<span class="chip on">${t('map.level', { n: lv.level })}</span> <span class="chip">${t('map.source.evid')}</span>` : `<span class="chip">${t('map.status.none')}</span>`}</p>
-<ol class="ladder" aria-label="${t('map.rubric')}">${[1, 2, 3, 4].map(n => `<li class="${lv?.level === n ? 'cur' : ''}"><b>${n}</b><span class="sub">${t('lv.rubric.ph', { n })}</span></li>`).join('')}</ol>
+<ol class="ladder" aria-label="${t('map.rubric')}">${[1, 2, 3, 4].map(n => `<li class="${lv?.level === n ? 'cur' : ''}"><b>${n}</b><span class="sub">${rubric(i, n)}</span></li>`).join('')}</ol>
 <div class="row"><button class="btn p" type="button" data-act="openlevel">${t(lv ? 'lv.change' : 'lv.open')}</button>${lv ? `<button class="btn d" type="button" data-act="retire">${t('lv.retire')}</button>` : ''}<button class="btn" type="button" data-act="openai">${ico('spark')}${t('ai.open_skill')}</button></div></div>`;
 }
 V.map = () => app(`${head(t('map.title'), t('map.sub'))}
@@ -179,7 +182,7 @@ ${Object.keys(S.levels).length ? `<div class="row"><button class="btn sm d" type
 
 /* ---- evidencias ---- */
 V.evidence = () => app(`${head(t('ev.title'), t('ev.sub'), `<div><button class="btn p" type="button" data-act="newev">${ico('plus')}${t('ev.new')}</button></div>`)}
-${S.evid.length ? S.evid.map(e => `<div class="rowline" style="grid-template-columns:7rem 1fr auto"><span class="mono">${e.status === 'confirmed' ? t('ev.list.confirmed') : t('ev.list.draft')}</span><span><b>${esc(e.title)}</b>${e.demo ? ' ' + demo('ejemplo', 'example') : ''}</span><span class="chip ${e.status === 'confirmed' ? 'on' : ''}">${e.status === 'confirmed' ? ico('check') : ''}${e.status === 'confirmed' ? t('ev.counts') : t('ev.notcounts')}</span></div>`).join('') : `<div class="empty"><h2 class="d3">${t('ev.empty.title')}</h2><p class="sub">${t('ev.empty.body')}</p><button class="btn p" type="button" data-act="newev">${t('ev.new')}</button></div>`}`);
+${S.evid.length ? S.evid.map(e => `<div class="rowline" style="grid-template-columns:7rem 1fr auto"><span class="mono">${e.status === 'confirmed' ? t('ev.list.confirmed') : t('ev.list.draft')}</span><span><b>${esc(e.title)}</b>${e.demo ? ' ' + demo('ejemplo', 'example') : ''}</span>${e.status === 'confirmed' ? `<span class="chip on">${ico('check')}${t('ev.counts')}</span>` : `<button class="btn sm p" type="button" data-act="confirmdraft" data-v="${e.id}">${t('ev.review.confirm')}</button>`}</div>`).join('') : `<div class="empty"><h2 class="d3">${t('ev.empty.title')}</h2><p class="sub">${t('ev.empty.body')}</p><button class="btn p" type="button" data-act="newev">${t('ev.new')}</button></div>`}`);
 
 /* ---- planes ---- */
 const reqTimeline = () => { const st = S.req === 'none' ? -1 : S.req === 'pending' ? 1 : 2;
@@ -227,7 +230,7 @@ function lvDrawer() {
   let body;
   if (!ev.length) body = `<div class="empty"><h3 class="d3">${t('lv.none.title')}</h3><p class="sub">${t('lv.none.text')}</p><button class="btn p" type="button" data-act="newev">${t('lv.none.cta')}</button></div>`;
   else if (n === 1) body = `<span class="mono">01 / 03</span><h3 class="d3">${t('lv.s1', { max })}</h3>${ev.map(e => `<label class="opt"><input type="checkbox" data-in="LV.ev" value="${e.id}" ${d.ev.includes(e.id) ? 'checked' : ''}><span><b>${esc(e.title)}</b> ${e.demo ? demo('ejemplo', 'example') : ''}<br><small class="sub">${t('lv.ev.meta')}</small></span></label>`).join('')}<a class="btn t" href="#evidence" style="align-self:flex-start">${t('lv.see')}</a>`;
-  else if (n === 2) body = `<span class="mono">02 / 03</span><h3 class="d3">${t('lv.s2')}</h3>${[1, 2, 3, 4].map(k => `<label class="opt"><input type="radio" name="lv" data-in="LV.level" value="${k}" ${d.level === k ? 'checked' : ''}><span><b class="d3">${t('map.level', { n: k })}</b><br><span class="sub">${t('lv.rubric.ph', { n: k })}</span></span></label>`).join('')}<p class="sub">${t('lv.rubric.src', { v: 1 })}</p>`;
+  else if (n === 2) body = `<span class="mono">02 / 03</span><h3 class="d3">${t('lv.s2')}</h3>${[1, 2, 3, 4].map(k => `<label class="opt"><input type="radio" name="lv" data-in="LV.level" value="${k}" ${d.level === k ? 'checked' : ''}><span><b class="d3">${t('map.level', { n: k })}</b><br><span class="sub">${rubric(i, k)}</span></span></label>`).join('')}<p class="sub">${t('lv.rubric.src', { v: 1 })}${RUBRIC[i] ? ' ' + demo('texto del catálogo de staging (EN: traducción del prototipo)', 'staging catalogue text (EN: prototype translation)') : ''}</p>`;
   else body = `<span class="mono">03 / 03</span><h3 class="d3">${t('lv.s3')}</h3><div class="fld"><label for="ln">${t('lv.note')}</label><textarea id="ln" data-in="LV.note" maxlength="500">${esc(d.note)}</textarea><small>${d.note.length} / 500</small></div><div class="note"><b>${t('lv.summary')}</b>${CAPS[S.lang][i]} · ${t('map.level', { n: d.level })} · ${d.ev.length} ${t('lv.ev.count')}</div><p class="note warn" role="note">${t('lv.warn')}</p>`;
   const canNext = n === 1 ? d.ev.length >= 1 : n === 2 ? d.level !== null : true;
   return drawer(`${t('lv.open')} · ${CAPS[S.lang][i]}`, t('lv.intro'), body, ev.length ? `<button class="btn" type="button" data-act="lvstep" data-v="${n - 1}" ${n === 1 ? 'disabled' : ''}>${t('btn.back')}</button>${n < 3 ? `<button class="btn p" type="button" data-act="lvstep" data-v="${n + 1}" ${canNext ? '' : 'disabled'}>${t('btn.next')}${ico('ar', 'ar')}</button>` : `<button class="btn p" type="button" data-act="lvsave">${t('lv.save')}</button>`}` : `<button class="btn" type="button" data-act="close">${t('btn.cancel')}</button>`);
@@ -306,6 +309,7 @@ const ACT = {
   edstep: v => { S.ED.step = Math.min(3, Math.max(1, Number(v))); render() },
   eddraft: () => { const d = S.ED; S.evid.push({ id: S.evid.length + 10, title: d.title || L('Borrador sin título', 'Untitled draft'), status: 'draft' }); S.overlay = ''; toast(t('ev.saved.draft')) },
   edconfirm: () => { const d = S.ED; S.evid.push({ id: S.evid.length + 10, title: d.title, status: 'confirmed' }); if (d.fromChat >= 0) S.saved[d.fromChat] = true; S.overlay = ''; toast(t('ev.saved')) },
+  confirmdraft: v => { const e = S.evid.find(x => x.id === Number(v)); if (e) e.status = 'confirmed'; toast(t('ev.saved')) },
   sel: v => { S.sel = Number(v); render() },
   openlevel: () => { openLv(); render() }, lvstep: v => { S.LV.step = Math.min(3, Math.max(1, Number(v))); render() },
   lvsave: () => { S.levels[S.sel] = { level: S.LV.level, ev: S.LV.ev, note: S.LV.note }; S.overlay = ''; toast(t('lv.saved')) },
