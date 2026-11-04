@@ -1,0 +1,61 @@
+{
+ "fase": "final",
+ "commit": null,
+ "checks": [
+  {
+   "id": "H1 /api/health 200",
+   "ok": true,
+   "detail": "http=200 commit=sin commit en la respuesta"
+  },
+  {
+   "id": "H2 páginas públicas, SPA y /api/plans responden 200",
+   "ok": true,
+   "detail": "/=200 /login=200 /forgot-password=200 /app/data=200 /api/plans=200"
+  },
+  {
+   "id": "H3 registro y login de dos cuentas sintéticas",
+   "ok": true,
+   "detail": "registro=201/201"
+  },
+  {
+   "id": "H4 diario: escribir y leer (base de datos con las migraciones actuales)",
+   "ok": true,
+   "detail": "post=201 get=200 n=1"
+  },
+  {
+   "id": "H5 aislamiento: B no lee la entrada de A (404)",
+   "ok": true,
+   "detail": "404 esperado"
+  },
+  {
+   "id": "H6 diario: editar y borrar la entrada propia",
+   "ok": true,
+   "detail": "put=200 delete=200"
+  },
+  {
+   "id": "H7 /api/messages, /api/ai/usage y /api/user/context 200",
+   "ok": true,
+   "detail": "200/200/200"
+  },
+  {
+   "id": "H8 derechos de datos: vista previa y descarga de la exportación propia",
+   "ok": true,
+   "detail": "preview=201 download=200"
+  },
+  {
+   "id": "H9 recuperación de contraseña (ES-132): respuesta neutra e idéntica exista o no la cuenta (tabla PasswordResets presente)",
+   "ok": true,
+   "detail": "202/202"
+  },
+  {
+   "id": "H10 sin sesión 403; cerrar sesión revoca el token (401)",
+   "ok": true,
+   "detail": "sinSesion=403 logout=200 tras=401"
+  },
+  {
+   "id": "H11 /api/plans (microcaché de ES-130) responde y no-store",
+   "ok": true,
+   "detail": "p50=98 ms"
+  }
+ ]
+}
