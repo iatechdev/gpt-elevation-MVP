@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Elevation · plataforma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Spectral:ital,wght@1,400;1,500&display=swap">
+<link rel="stylesheet" href="estilos.css">
+<link rel="stylesheet" href="pantallas.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="proto" role="toolbar" aria-label="Controles del prototipo">
+    <b>Elevation · plataforma · prototipo · ES/EN</b>
+    <label class="sr" for="rt">Pantalla</label><select id="rt"></select>
+    <label class="sr" for="md">Simular chat</label>
+    <select id="md"><option value="ok">Chat: respuesta normal</option><option value="limit">Chat: límite de uso</option><option value="offline">Chat: sin conexión</option></select>
+    <button id="th" type="button">Tema: auto</button>
+    <button id="lg" type="button">EN</button>
+  </div>
+  <div id="app"></div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="nucleo.js"></script>
+<script src="p-hoy.js"></script>
+<script src="p-diario.js"></script>
+<script src="p-datos.js"></script>
+<script src="p-sistema.js"></script>
+<script src="inicio.js"></script>
+</body>
+</html>

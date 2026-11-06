@@ -1,0 +1,65 @@
+/* Piezas de las pantallas de la plataforma (se suman a estilos.css) */
+.narrow{max-width:46rem;margin:0 auto;padding-bottom:1rem}
+.stack{display:grid;gap:1.4rem}
+
+/* menú de la persona */
+.um{position:relative}
+.um summary{list-style:none;cursor:pointer;padding:.15rem 0;border-bottom:3px solid transparent;display:inline-block}
+.um summary::-webkit-details-marker{display:none}
+.um summary.on{border-color:var(--ink)}
+.um .who::after{content:' ▾';font-style:normal;font-size:.8em}
+.umm{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel);border:1.5px solid var(--ink);min-width:13rem;padding:.3rem;display:grid;z-index:10}
+.umm a{padding:.55rem .7rem;border:0!important}
+.umm a:hover,.umm a[aria-current=page]{background:var(--ground)}
+
+/* botón destructivo: rojo solo para esto */
+:root{--on-err:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--on-err:#2A0E07}}
+:root[data-theme="dark"]{--on-err:#2A0E07}
+.btn.danger{background:var(--err);color:var(--on-err)}
+.btn.danger:hover{background:var(--err);filter:brightness(.92);color:var(--on-err)}
+.btn.ghost.danger{background:none;color:var(--err);box-shadow:inset 0 0 0 1.5px var(--err)}
+.btn.ghost.danger:hover{background:var(--err);color:var(--on-err)}
+.btn[disabled].danger{background:var(--err)}
+input.bad,.fld input.bad{border-color:var(--err)}
+
+/* check-in: escala con relieve */
+.scale{border:0;padding:0;margin:1.4rem 0 .4rem;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.6rem}
+.scale label{position:relative;display:grid;justify-items:center;gap:.4rem;padding:.9rem .4rem .7rem;border:1.5px solid var(--ink);background:var(--panel);cursor:pointer;color:var(--contour);text-align:center}
+.scale label span{font:700 1rem var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
+.scale input{position:absolute;opacity:0;inset:0;cursor:pointer;margin:0}
+.scale label:has(input:checked){background:var(--ink);color:var(--ground)}
+.scale label:has(input:checked) span{color:var(--ground)}
+.scale label:has(input:focus-visible){outline:3px solid var(--mark);outline-offset:3px}
+
+/* diario */
+.diario{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:1.6rem;padding:.6rem 0 1rem;align-items:start}
+.dlist{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+.dlist li{border-bottom:1px solid var(--line)}
+.dlist button{display:grid;gap:.15rem;width:100%;text-align:left;background:none;border:0;padding:.7rem .3rem;cursor:pointer}
+.dlist button span{color:var(--muted);font-size:.9rem}
+.dlist button[aria-current=true]{background:var(--panel);box-shadow:inset 4px 0 0 var(--mark)}
+.dlist button:hover{background:var(--panel)}
+.sheetp{background:var(--panel);border:2px solid var(--ink);padding:1.1rem 1.3rem;min-height:18rem}
+.paper{width:100%;background:var(--ground);border:1.5px solid var(--ink);padding:.9rem 1rem;font:400 1.1rem/1.7 var(--sans);border-radius:0;resize:vertical}
+.paper.read{border:0;background:none;padding:0;white-space:pre-wrap;margin:0}
+.scrim{position:fixed;inset:0;background:rgba(10,18,15,.55);display:grid;place-items:center;padding:1rem;z-index:30}
+.dlg{background:var(--panel);border:2px solid var(--ink);padding:1.3rem 1.4rem;max-width:30rem;width:100%}
+
+/* sistema */
+.sysx{border-top:2px solid var(--ink);padding:1.2rem 0 1.4rem;margin-top:.6rem}
+.sysx h2{margin-bottom:.8rem}
+.tw{overflow-x:auto}
+.tok{border-collapse:collapse;width:100%;min-width:34rem}
+.tok th{font:600 .75rem var(--cond);letter-spacing:.1em;text-transform:uppercase;text-align:left;color:var(--muted);padding:.3rem .6rem;border-bottom:1.5px solid var(--ink)}
+.tok td{padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:middle}
+.swa{display:block;width:34px;height:34px;border:1px solid var(--ink)}
+.h1x{font:700 clamp(2.4rem,8vw,5rem)/.95 var(--cond);text-transform:uppercase;margin:0}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.85em}
+
+@media (max-width:900px){
+  .diario{grid-template-columns:1fr}
+  .scale{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .scale label:last-child{grid-column:span 2}
+  .umm{right:auto;left:0}
+}
