@@ -53,7 +53,9 @@ h2{font:700 1.7rem/1 var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .nm{font:italic 500 clamp(1.6rem,3.4vw,2.4rem)/1.05 var(--name);margin:0}
 .tag{font:600 .78rem var(--cond);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:.55rem 1.2rem;background:var(--ink);color:var(--ground);border:0;font:700 1rem var(--cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
-.btn:hover{background:var(--mark);color:#fff}
+.btn:hover{background:var(--mark);color:var(--ground)}
+nav.main a.btn{color:var(--ground);border-bottom:0;padding:.55rem 1.2rem}
+nav.main a.btn:hover{background:var(--mark);color:var(--ground)}
 .btn.ghost{background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .btn.ghost:hover{background:none;color:var(--mark);box-shadow:inset 0 0 0 1.5px var(--mark)}
 .btn[disabled]{opacity:.45;cursor:not-allowed;background:var(--ink)}
