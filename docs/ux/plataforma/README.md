@@ -22,19 +22,31 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 | `/reset-password`, `/profesionales`, `/pricing` | (planes ya está) | Falta restablecer y profesionales |
 | `/app/onboarding` | `punto` | Hecho |
 | `/app/checkin` | `checkin` | Hecho |
-| `/app/skill-map`, `/app/dashboard` | `inicio` (mapa) | Falta: vista de lista, análisis con IA, revocar accesos del puente, actualizar |
+| `/app/skill-map`, `/app/dashboard` | `inicio` (mapa, `p-mapa.js`) | Hecho: relieve y lista por territorios, autoevaluación y revisión humana por separado, confianza, criterios, registrar/cambiar/retirar nivel, análisis con IA en 3 pasos, revocar todos, actualizar, guía sin niveles. Pendiente de decisión: el radar |
+| `/app/bridge` | `puente` (`p-puente.js`) | Hecho: fuentes con consentimiento por fuente, propuestas, cruce idea por idea con confirmación, revocar una o todas, estados de error |
+| `/app/my-therapist` | `terapeuta` | Hecho: perfil, compartir datos, desvincular, sesiones, emparejamiento en 3 pasos |
+| `/app/session/:id` | `sesion` | Hecho: conectando, en curso, aún no comienza, error |
 | `/app/chat` | `chat` | Hecho (falta enlazar la elección de diario) |
 | `/app/evidence` (lista, nueva, detalle, editar, hoja de vida) | `evidencias`, `evidencia_nueva`, `evidencia_detalle`, `evidencia_editar`, `resumen_habilidades` | Hecho con el modelo real |
 | `/app/context/resumes` | `resumes` | Hecho |
 | `/app/diary` (lista, nueva, detalle) | `diario` | Hecho |
 | `/app/next-step` (rutas, experimentos, experimento, plan) | `siguiente`, `experimentos`, `experimento`, `plan_accion` | Hecho |
 | `/app/data` | `datos` | Hecho |
-| `/app/exercises`, `/app/space/tools`, `/app/compass`, `/app/route-catalog`, `/app/progress`, `/app/feedback`, `/app/bridge`, `/app/my-therapist`, `/app/session/:id` | | Pendiente |
+| `/app/exercises`, `/app/space/tools`, `/app/compass`, `/app/route-catalog`, `/app/progress`, `/app/feedback` | | Pendiente |
+
+## Decisiones que necesito de Alejo y Mauricio (de esta entrega)
+
+1. **Radar.** El mapa real tiene vista de radar. En Cartografía el relieve ya cumple esa función, así que lo sustituí por el relieve y un resumen («puntos más fuertes» y «un punto donde mejorar»). Si se mantiene el radar, hay que diseñarlo aparte.
+2. **«Terapeuta» o «profesional».** El código usa «terapeuta». El producto es no clínico: propongo «profesional de acompañamiento», pero no lo cambié sin tu decisión.
+3. **Tema «Ansiedad» del emparejamiento.** Roza lo clínico; propuse «Estrés y carga» en el prototipo. Cambia la lista real de temas.
+4. **Ánimo con emojis.** El código muestra emojis de 1 a 5 en las sesiones anteriores; el prototipo usa las mismas cinco palabras del check-in más el número.
+5. **Enlace a la Brújula en El Puente.** Se omite hasta diseñar la Brújula (siguiente entrega).
 | Profesional, administración, junta | | Pendiente |
 
 ## Qué se verificó
 
-- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 22 pantallas.
+- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 25 pantallas.
+- Corrección de dos fallos de la primera fase: el botón «Crear cuenta» de la barra tenía el texto del color del fondo, y los botones secundarios desactivados salían como un bloque gris sin texto. Además, los enlaces de texto usaban el azul del navegador.
 - axe-core (WCAG 2 A/AA), nivel grave y crítico, en claro y oscuro, ES y EN: 0 hallazgos.
 - Flujos de punta a punta con Playwright: check-in, diario, mis datos, evidencias (validación, revisión, confirmación, guardado sin confirmar y reintento), habilidades de la hoja de vida, hojas de vida, punto de partida, siguiente paso hasta plan aceptado y guardia al salir con cambios.
 

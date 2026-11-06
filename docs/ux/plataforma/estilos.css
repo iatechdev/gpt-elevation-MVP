@@ -146,3 +146,7 @@ textarea{min-height:96px;resize:vertical;line-height:1.5}
   .entry{grid-template-columns:4rem minmax(0,1fr)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Enlaces de texto: color de marca (el del navegador no tiene contraste ni identidad). Los .btn y los de la barra conservan los suyos. */
+a{color:var(--mark);text-underline-offset:3px}
+/* Un botón secundario desactivado conserva su borde y su texto: antes quedaba como un bloque gris sin texto. */
+.btn.ghost[disabled]{background:none;color:var(--ink)}
