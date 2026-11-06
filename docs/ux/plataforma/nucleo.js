@@ -114,12 +114,14 @@ var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function raise(p,to){p.th=to;if(reduce){p.h=to;drawAll();return}(function step(){var d=p.th-p.h;if(Math.abs(d)<.004){p.h=p.th;drawAll();return}p.h+=d*.12;drawAll();requestAnimationFrame(step)})()}
 /* ================= vistas ================= */
 var PUB=['portada','registro','entrar','recuperar'],ROUTES=['portada','registro','entrar','recuperar','inicio','evidencias','chat','planes','estados'];
+var SEC={evidencias:['evidencia_nueva','evidencia_detalle','evidencia_editar','resumen_habilidades'],siguiente:['experimentos','experimento','plan_accion']};
+function on(r){return S.route===r||(SEC[r]||[]).indexOf(S.route)>-1}
 function header(){var pub=PUB.indexOf(S.route)>-1;
   if(pub)return'<header class="top"><a class="brand" href="#portada" aria-label="Elevation">Elevation<i>.</i></a><nav class="main" aria-label="'+t('nav_how')+'"><a href="#portada">'+t('nav_how')+'</a><a href="#portada">'+t('nav_priv')+'</a><a href="#entrar">'+t('nav_in')+'</a><a class="btn" href="#registro">'+t('nav_up')+'</a></nav></header>';
   var l=[['inicio','nav_map'],['chat','nav_chat'],['evidencias','nav_ev'],['diario','nav_diary'],['siguiente','nav_next']];
   var menu=[['checkin','nav_today'],['planes','nav_plan'],['resumes','nav_cv'],['datos','nav_data']];
   var inMenu=menu.some(function(m){return m[0]===S.route});
-  return'<header class="top"><a class="brand" href="#inicio" aria-label="Elevation">Elevation<i>.</i></a><nav class="main" aria-label="Principal">'+l.map(function(x){return'<a href="#'+x[0]+'"'+(S.route===x[0]?' aria-current="page"':'')+'>'+t(x[1])+'</a>'}).join('')+
+  return'<header class="top"><a class="brand" href="#inicio" aria-label="Elevation">Elevation<i>.</i></a><nav class="main" aria-label="Principal">'+l.map(function(x){return'<a href="#'+x[0]+'"'+(on(x[0])?' aria-current="page"':'')+'>'+t(x[1])+'</a>'}).join('')+
    '<details class="um"><summary'+(inMenu?' class="on"':'')+'><span class="who">Camila</span></summary><div class="umm">'+menu.map(function(x){return'<a href="#'+x[0]+'"'+(S.route===x[0]?' aria-current="page"':'')+'>'+t(x[1])+'</a>'}).join('')+'<a href="#portada">'+t('nav_out')+'</a></div></details></nav></header>'}
 function footer(){return'<footer class="f"><span>'+t('foot1')+'</span><span>'+t('foot2')+'</span></footer>'}
 var V={};
@@ -215,7 +217,7 @@ document.getElementById('app').addEventListener('click',function(e){var b=e.targ
   else if(a==='plreq'){S.planReview=v;render()}else if(a==='plback'){S.planReview=null;render()}
   else if(a==='plsend'){S.plan='review';S.review=S.planReview;S.planReview=null;render();toast(t('pl_sent'))}
   else if(a==='plcancel'){S.plan='none';S.review=null;render();toast(t('pl_canceled'))}
-  else if(ACTS[a]){ACTS[a](b,v)}});
+  else if(ACTS[a]){ACTS[a](b,v,e)}});
 document.getElementById('app').addEventListener('submit',function(e){e.preventDefault();var id=e.target.id;
   if(id==='f-reg'){if(!document.getElementById('rc').checked){var er=document.getElementById('rce');er.hidden=false;document.getElementById('rc').focus();return}S.signed=true;render()}
   else if(id==='f-in'){location.hash='inicio'}
