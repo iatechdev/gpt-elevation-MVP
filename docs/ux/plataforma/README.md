@@ -32,7 +32,14 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 | `/app/diary` (lista, nueva, detalle) | `diario` | Hecho |
 | `/app/next-step` (rutas, experimentos, experimento, plan) | `siguiente`, `experimentos`, `experimento`, `plan_accion` | Hecho |
 | `/app/data` | `datos` | Hecho |
-| `/app/exercises`, `/app/space/tools`, `/app/compass`, `/app/route-catalog`, `/app/progress`, `/app/feedback` | | Pendiente |
+| `/app/space/tools` | `herramientas` (`p-brujula.js`) | Hecho: cuatro tarjetas reales, «en preparación», ninguna disponible, cargando y error |
+| `/app/exercises` | `ejercicios` | Hecho: lista de 3, ejercicio con notas que no se guardan, copiar, cerrar con aviso, contenido en revisión y no disponible |
+| `/app/compass` | `brujula` | Hecho: contexto vigente, historial, campos (12 / 3 por categoría / 500), vista previa exacta con vigencia, autorización, retirar, estados de error e incertidumbre |
+| `/app/route-catalog`, `/app/route-catalog/roles/:roleKey` | `catalogo`, `catalogo_ficha` (`p-catalogo.js`) | Hecho: filtros, fichas, fuentes, ofertas, recursos, estados. Contenido de EJEMPLO |
+| `/app/progress` | `progreso` (`p-progreso.js`) | Hecho: cifras, recomendaciones, historial emocional, calificaciones, vacío, error |
+| `/app/feedback` | `opinion` | Hecho: vista de revisión con datos ficticios, omitir cada pregunta, guardado incierto, conflicto, retirar |
+| `/app/dashboard` | `inicio` | Es el mapa (ver arriba): en el código real la ruta redirige al mapa |
+| Profesional, administración, junta | | Pendiente |
 
 ## Decisiones que necesito de Alejo y Mauricio (de esta entrega)
 
@@ -40,12 +47,21 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 2. **«Terapeuta» o «profesional».** El código usa «terapeuta». El producto es no clínico: propongo «profesional de acompañamiento», pero no lo cambié sin tu decisión.
 3. **Tema «Ansiedad» del emparejamiento.** Roza lo clínico; propuse «Estrés y carga» en el prototipo. Cambia la lista real de temas.
 4. **Ánimo con emojis.** El código muestra emojis de 1 a 5 en las sesiones anteriores; el prototipo usa las mismas cinco palabras del check-in más el número.
-5. **Enlace a la Brújula en El Puente.** Se omite hasta diseñar la Brújula (siguiente entrega).
-| Profesional, administración, junta | | Pendiente |
+5. **Enlace a la Brújula en El Puente.** Ya está: aparece en el estado vacío de El Puente («Añadir algo a mano»).
+
+### Decisiones de la entrega 4 (ejercicios, herramientas, brújula, catálogo, progreso, opinión)
+
+6. **Tarjetas de «Mis herramientas».** El código solo tiene título y botón. Propongo una línea descriptiva por tarjeta (son textos nuevos, revisar ES/EN).
+7. **Ejercicios.** El contenido real está marcado `draft` y los ejercicios van detrás de una bandera. El diseño es el final; el aviso «Contenido en revisión» se ve solo mientras siga en borrador. Hace falta revisión humana del contenido antes de habilitarlo.
+8. **Brújula.** La vigencia de la vista previa (aquí 10 min) y qué texto «no se puede compartir» los decide el servidor; el prototipo simula esa regla con las palabras «salud», «health» y «@». Mejora propuesta: la etiqueta «Categoría» sobre el selector (el código usa «Selecciona una categoría» como etiqueta).
+9. **Progreso.** Se retiran los emojis (ánimo y categorías) y se sustituyen por palabras; las estrellas llevan texto «4 de 5»; la subida/bajada del ánimo lleva palabra, ya no depende de verde/rojo; se añade «no es una medición de salud». Las recomendaciones del ejemplo son inventadas.
+10. **Opinión.** El permiso real depende del contrato de Mauricio. Hasta entonces se mantiene la franja «Vista de revisión · datos ficticios» y no se envía nada; el texto de retirada se reescribe sin la palabra «simulación» (propuesta).
+11. **Catálogo.** Todo el contenido (fichas, fuentes, ofertas, recursos, mercados) es de ejemplo, con dominio `.invalid` y el aviso «Contenido de prueba» siempre visible. Sin porcentajes ni afirmaciones de reemplazo por IA. Los enlaces externos avisan «se abre en una pestaña nueva» (propuesta).
 
 ## Qué se verificó
 
-- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 25 pantallas.
+- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 32 pantallas (25 anteriores + herramientas, ejercicios, brújula, catálogo, ficha, progreso y opinión).
+- Entrega 4: flujos de punta a punta con Playwright (ejercicio con notas y diálogo, error de copiado, brújula con campos, texto no compartible, vista previa, confirmación incierta, reintento, retirar, versión activa, vencida y pendiente de revisar; catálogo con filtros y fichas; progreso; opinión con guardado incierto, consulta de estado, retirar y conflicto) y axe-core sin hallazgos graves ni críticos en claro y oscuro, ES y EN.
 - Corrección de dos fallos de la primera fase: el botón «Crear cuenta» de la barra tenía el texto del color del fondo, y los botones secundarios desactivados salían como un bloque gris sin texto. Además, los enlaces de texto usaban el azul del navegador.
 - axe-core (WCAG 2 A/AA), nivel grave y crítico, en claro y oscuro, ES y EN: 0 hallazgos.
 - Flujos de punta a punta con Playwright: check-in, diario, mis datos, evidencias (validación, revisión, confirmación, guardado sin confirmar y reintento), habilidades de la hoja de vida, hojas de vida, punto de partida, siguiente paso hasta plan aceptado y guardia al salir con cambios.

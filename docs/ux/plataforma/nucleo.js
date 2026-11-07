@@ -119,10 +119,10 @@ function on(r){return S.route===r||(SEC[r]||[]).indexOf(S.route)>-1}
 function header(){if(S.route==='sesion')return'';var pub=PUB.indexOf(S.route)>-1;
   if(pub)return'<header class="top"><a class="brand" href="#portada" aria-label="Elevation">Elevation<i>.</i></a><nav class="main" aria-label="'+t('nav_how')+'"><a href="#portada">'+t('nav_how')+'</a><a href="#portada">'+t('nav_priv')+'</a><a href="#entrar">'+t('nav_in')+'</a><a class="btn" href="#registro">'+t('nav_up')+'</a></nav></header>';
   var l=[['inicio','nav_map'],['chat','nav_chat'],['evidencias','nav_ev'],['diario','nav_diary'],['siguiente','nav_next']];
-  var menu=[['checkin','nav_today'],['puente','nav_bridge'],['terapeuta','nav_th'],['planes','nav_plan'],['resumes','nav_cv'],['datos','nav_data']];
-  var inMenu=menu.some(function(m){return m[0]===S.route});
+  var menu=[['checkin','nav_today'],['puente','nav_bridge'],['terapeuta','nav_th'],['herramientas','nav_tools'],['progreso','nav_prog'],['planes','nav_plan'],['resumes','nav_cv'],['datos','nav_data'],['opinion','nav_op']];
+  var inMenu=menu.some(function(m){return on(m[0])});
   return'<header class="top"><a class="brand" href="#inicio" aria-label="Elevation">Elevation<i>.</i></a><nav class="main" aria-label="Principal">'+l.map(function(x){return'<a href="#'+x[0]+'"'+(on(x[0])?' aria-current="page"':'')+'>'+t(x[1])+'</a>'}).join('')+
-   '<details class="um"><summary'+(inMenu?' class="on"':'')+'><span class="who">Camila</span></summary><div class="umm">'+menu.map(function(x){return'<a href="#'+x[0]+'"'+(S.route===x[0]?' aria-current="page"':'')+'>'+t(x[1])+'</a>'}).join('')+'<a href="#portada">'+t('nav_out')+'</a></div></details></nav></header>'}
+   '<details class="um"><summary'+(inMenu?' class="on"':'')+'><span class="who">Camila</span></summary><div class="umm">'+menu.map(function(x){return'<a href="#'+x[0]+'"'+(on(x[0])?' aria-current="page"':'')+'>'+t(x[1])+'</a>'}).join('')+'<a href="#portada">'+t('nav_out')+'</a></div></details></nav></header>'}
 function footer(){if(S.route==='sesion')return'';return'<footer class="f"><span>'+t('foot1')+'</span><span>'+t('foot2')+'</span></footer>'}
 var V={};
 V.portada=function(){return'<main><section class="hero" aria-label="Portada"><canvas id="c-hero" aria-hidden="true"></canvas><div class="here" aria-hidden="true"><i></i>'+t('here')+'</div><div class="in"><h1>'+t('h_hero')+'</h1><p class="lead">'+t('lead')+'</p></div>'+
