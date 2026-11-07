@@ -210,3 +210,7 @@ jobs:
         run: npm run test:migrate-deploy:pg
         env:
           ES115_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-193 datos de contacto y ayuda editables, con procedencia vigente (PostgreSQL)"
+        run: npm run test:contact-entries:pg
+        env:
+          ES193_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
