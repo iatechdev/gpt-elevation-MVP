@@ -103,10 +103,25 @@ test('ES-33 integrado con ES-14, ES-32 y los catálogos reales en PostgreSQL', {
     assert.equal(await Experiment.count({ where: { UserId: a.id } }), 1);
   });
 
+  await t.test('QA-33-02 con ES-32 real: las pistas por capacidad son estables y la evidencia ajena a la ruta no cambia la base del experimento', async () => {
+    const capabilities = async () => (await routes.getRoutes(a.id)).routes.find(r => r.roleKey === pick.roleKey && r.slot === pick.slot).dimensions.demonstratedTransfer.capabilities;
+    const first = await capabilities(), second = await capabilities();
+    assert.ok(first.length, 'la ruta elegida expone capacidades');
+    assert.deepEqual(first, second); // determinista: dos lecturas seguidas dan lo mismo
+    assert.ok(first.every(c => typeof c.skillKey === 'string' && Array.isArray(c.tracks) && c.tracks.every(t => ['self', 'review'].includes(t.track) && Number.isInteger(t.level) && Number.isInteger(t.evidenceCount))));
+    const before = (await routes.getChoice(a.id, choice.id)).choice.basisChanged;
+    const evidence = require('../../utils/evidence');
+    await evidence.create(a.id, { requestId: randomUUID(), status: 'confirmed', payload: { title: 'SYNTHETIC unrelated sample', situation: 'Synthetic', responsibility: { text: 'Synthetic' }, actions: [{ text: 'Synthetic' }], delivered: { text: 'Synthetic' }, observedEffect: { known: false }, autonomy: 'assisted' } });
+    assert.deepEqual(await capabilities(), first); // sin autoevaluación nueva, las pistas de la ruta no se mueven
+    const view = await careerPlan.getExperiment(a.id, experimentId);
+    assert.deepEqual(view.basis, { status: 'current', reasons: [] });
+    assert.equal(before, (await routes.getChoice(a.id, choice.id)).choice.basisChanged);
+  });
+
   await t.test('editar el contexto en ES-14 deja el experimento «necesita revisión» sin tocar lo guardado, y una propuesta anterior ya no se puede confirmar', async () => {
     await setContext(a.id, { availabilityMinutesPerWeek: 120 });
     const view = await careerPlan.getExperiment(a.id, experimentId);
-    assert.deepEqual([view.basis.status, view.basis.reasons], ['needs_review', ['basis_changed']]);
+    assert.deepEqual([view.basis.status, view.basis.reasons], ['needs_review', ['context_changed']]);
     assert.equal(view.current.version, 1); // la versión guardada no se reescribe sola
     await assert.rejects(careerPlan.createExperiment(a.id, { requestId: randomUUID(), proposal: proposal.proposal, token: proposal.token }), e => e.status === 409);
     assert.equal(await Experiment.count({ where: { UserId: a.id } }), 1);

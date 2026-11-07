@@ -13,12 +13,16 @@ const catalog: Omit<Route, 'slot'>[] = [
 export type Phase = 'ready' | 'in_progress' | 'submitted' | 'self_reviewed' | 'decided'
 export type Assistance = 'none' | 'planning' | 'drafting' | 'substantial' | 'unknown'
 export type Decision = 'continue' | 'adjust' | 'pause' | 'discard'
+// QA-33-02: por qué cambió la base y qué trabajo de la versión anterior espera revisión. Refleja el contrato del backend (basis.reasons y carriedOver).
+export type Reason = 'route_evidence_changed' | 'cited_evidence_changed' | 'context_changed' | 'route_choice_changed' | 'rules_changed'
+export type Part = 'submission' | 'reflection' | 'decision'
+export type Carried = { submission?: { from: number; sample: string; assistance: Assistance | ''; evidence: boolean; retired: number }; reflection?: { from: number; observation: string; interpretation: string }; decision?: { from: number; decision: Decision; reason: string } }
 type History = { version: number; phase: Phase; basis: number; sample?: string; observation?: string; interpretation?: string; reason?: string }
-export type Experiment = { id: number; route: Route; version: number; basis: number; phase: Phase; minutes: number; sample: string; evidence: boolean; assistance: Assistance | ''; observation: string; interpretation: string; decision: Decision | ''; reason: string; review: boolean; versions: History[] }
+export type Experiment = { id: number; route: Route; version: number; basis: number; phase: Phase; minutes: number; sample: string; evidence: boolean; assistance: Assistance | ''; observation: string; interpretation: string; decision: Decision | ''; reason: string; review: boolean; carried?: Carried; versions: History[] }
 export type Action = { key: number; date: string; minutes: number; resource: boolean; cost: string; completed: string }
 export type Plan = { id: number; experimentId: number; experimentVersion: number; basis: number; version: number; status: 'accepted' | 'paused' | 'superseded'; actions: Action[]; budget: string; currency: 'USD' | 'COP'; versions: { version: number; status: 'accepted' | 'paused' | 'superseded' }[] }
 export type Reminder = { id: number; planId: number; planVersion: number; actionKey: number; dueAt: string; localTime: string; grant: number; status: 'active' | 'cancelled' | 'delivered' }
-export type State = { loaded: boolean; constraints: Constraints; basis: number; choices: { id: number; route: Route; decision: 'chosen' | 'rejected'; basis: number }[]; experiments: Experiment[]; plans: Plan[]; requested: boolean; notifications: boolean; grant: number; reminders: Reminder[] }
+export type State = { loaded: boolean; constraints: Constraints; basis: number; choices: { id: number; route: Route; decision: 'chosen' | 'rejected'; basis: number }[]; experiments: Experiment[]; plans: Plan[]; requested: boolean; notifications: boolean; grant: number; reminders: Reminder[]; basisLog: Reason[][] }
 export type Command =
   | { type: 'constraints'; value: Constraints }
   | { type: 'choice'; route: Route; decision: 'chosen' | 'rejected' }
@@ -26,6 +30,7 @@ export type Command =
   | { type: 'change'; id: number; expected: number; value: Partial<Pick<Experiment, 'sample' | 'evidence' | 'assistance' | 'observation' | 'interpretation' | 'decision' | 'reason'>>; phase: Phase }
   | { type: 'review'; id?: number; selected?: boolean }
   | { type: 'rebase'; id: number }
+  | { type: 'adopt' | 'discard'; id: number; expected: number; part: Part }
   | { type: 'plan'; experimentId: number; actions: Action[]; budget: string; currency: 'USD' | 'COP' }
   | { type: 'complete'; planId: number; expected: number; key: number; text: string }
   | { type: 'pause'; planId: number; expected: number }
@@ -34,6 +39,9 @@ export type Command =
   | { type: 'ack' | 'cancel'; id: number }
 export class FixtureError extends Error { code: 'saveError' | 'lostAck' | 'conflict' | 'pending' | 'validate' | 'invalidPlan' | 'reminderInvalid'; constructor(code: FixtureError['code']) { super(code); this.code = code } }
 export const isCurrent = (s: State, e: Experiment) => e.basis === s.basis
+// Razones acumuladas desde la base en que se creó la versión; basisLog[n - 1] explica el paso a la base n.
+export const reasonsFor = (s: State, e: Experiment): Reason[] => [...new Set(s.basisLog.slice(e.basis).flat())]
+const partOf = (phase: Phase): Part | null => phase === 'submitted' ? 'submission' : phase === 'self_reviewed' ? 'reflection' : phase === 'decided' ? 'decision' : null
 export const planCurrent = (s: State, p: Plan) => p.basis === s.basis && s.experiments.find(e => e.id === p.experimentId)?.version === p.experimentVersion
 export function preferenceFor(s: State, route: Route): 'unknown' | 'matches' | 'partialMatch' | 'outside' {
   const c = s.constraints, contextMatch = c.interests.includes(route.context), arrangementMatch = c.preferred.some(m => m !== 'onsite')
@@ -78,7 +86,7 @@ export const fixtureInstant = (localTime: string) => {
   return new Date(Date.parse(localTime + ':00Z') + 5 * 3600000).toISOString()
 }
 export function createFixture(scenario = 'normal') {
-  let state: State = { loaded: false, constraints: emptyConstraints(), basis: 0, choices: [], experiments: [], plans: [], requested: false, notifications: false, grant: 0, reminders: [] }
+  let state: State = { loaded: false, constraints: emptyConstraints(), basis: 0, choices: [], experiments: [], plans: [], requested: false, notifications: false, grant: 0, reminders: [], basisLog: [] }
   let durable = state
   const listeners = new Set<() => void>()
   let sequence = 0
@@ -104,7 +112,9 @@ export function createFixture(scenario = 'normal') {
         case 'constraints': {
           const c = input.value
           if (!c.markets.length || c.markets.length > 3 || c.markets.some(m => !['CO', 'DK'].includes(m)) || c.preferred.some(m => c.arrangements.length > 0 && !c.arrangements.includes(m))) throw new FixtureError('validate')
-          next.constraints = structuredClone(c); next.basis++; break
+          next.constraints = structuredClone(c); next.basis++
+          // El escenario «evidence» simula evidencia de la ruta y evidencia citada que cambian junto con las reglas.
+          next.basisLog.push(scenario === 'evidence' ? ['rules_changed', 'route_evidence_changed', 'cited_evidence_changed'] : ['rules_changed']); break
         }
         case 'choice': {
           const r = routesFor(next).find(r => r.id === input.route.id && r.slot === input.route.slot)
@@ -128,14 +138,49 @@ export function createFixture(scenario = 'normal') {
           if (input.phase === 'self_reviewed' && (!value.observation?.trim() || !value.interpretation?.trim() || value.observation.length > 2000 || value.interpretation.length > 2000)) throw new FixtureError('validate')
           if (input.phase === 'decided' && (!value.decision || !value.reason?.trim() || value.reason.length > 2000)) throw new FixtureError('validate')
           if (input.phase === 'submitted') Object.assign(e, { observation: '', interpretation: '', decision: '', reason: '', review: false })
-          Object.assign(e, value); e.phase = input.phase; e.version++; e.versions.push(history(e)); break
+          Object.assign(e, value); e.phase = input.phase; e.version++; e.versions.push(history(e))
+          // Lo que la persona escribe a mano reemplaza el borrador de esa parte.
+          { const part = partOf(input.phase); if (part && e.carried) { delete e.carried[part]; if (!Object.keys(e.carried).length) delete e.carried } }
+          break
         }
         case 'review': {
           if (input.id === undefined) next.requested = !next.requested
           else { const e = findExperiment(next, input.id); if (!e.review && (!input.selected || !e.sample || !isCurrent(next, e))) throw new FixtureError('validate'); e.review = !e.review } break
         }
         case 'rebase': {
-          const e = findExperiment(next, input.id); Object.assign(e, { phase: 'ready', basis: next.basis, sample: '', evidence: false, assistance: '', observation: '', interpretation: '', decision: '', reason: '', review: false }); e.version++; e.versions.push(history(e)); break
+          const e = findExperiment(next, input.id)
+          // Solo texto propio; la evidencia citada que dejó de ser válida se cuenta sin su contenido. Un borrador sin resolver conserva su versión de origen.
+          const retired = e.evidence && reasonsFor(next, e).includes('cited_evidence_changed') ? 1 : 0, old = e.carried ?? {}, carried: Carried = {}
+          if (e.sample.trim() || (e.evidence && !retired)) carried.submission = { from: e.version, sample: e.sample, assistance: e.assistance, evidence: e.evidence && !retired, retired }
+          else if (old.submission) carried.submission = old.submission
+          if (e.observation.trim()) carried.reflection = { from: e.version, observation: e.observation, interpretation: e.interpretation }
+          else if (old.reflection) carried.reflection = old.reflection
+          if (e.decision) carried.decision = { from: e.version, decision: e.decision, reason: e.reason }
+          else if (old.decision) carried.decision = old.decision
+          Object.assign(e, { phase: 'ready', basis: next.basis, sample: '', evidence: false, assistance: '', observation: '', interpretation: '', decision: '', reason: '', review: false })
+          if (Object.keys(carried).length) e.carried = carried; else delete e.carried
+          e.version++; e.versions.push(history(e)); break
+        }
+        case 'adopt': case 'discard': {
+          const e = findExperiment(next, input.id)
+          if (e.version !== input.expected || !isCurrent(next, e)) throw new FixtureError('conflict')
+          const draft = e.carried?.[input.part]
+          if (!e.carried || !draft) throw new FixtureError('validate')
+          if (input.type === 'adopt') {
+            // Se valida como lo escrito a mano y respeta el orden entrega → reflexión → decisión.
+            if (input.part === 'submission' && 'sample' in draft) {
+              if (!['ready', 'in_progress'].includes(e.phase) || (!draft.sample.trim() && !draft.evidence)) throw new FixtureError('validate')
+              Object.assign(e, { sample: draft.sample, evidence: draft.evidence, assistance: draft.assistance, observation: '', interpretation: '', decision: '', reason: '', review: false }); e.phase = 'submitted'
+            } else if (input.part === 'reflection' && 'observation' in draft) {
+              if (!['submitted', 'self_reviewed'].includes(e.phase)) throw new FixtureError('validate')
+              Object.assign(e, { observation: draft.observation, interpretation: draft.interpretation }); e.phase = 'self_reviewed'
+            } else if (input.part === 'decision' && 'decision' in draft) {
+              if (!['self_reviewed', 'decided'].includes(e.phase)) throw new FixtureError('validate')
+              Object.assign(e, { decision: draft.decision, reason: draft.reason }); e.phase = 'decided'
+            } else throw new FixtureError('validate')
+          }
+          delete e.carried[input.part]; if (!Object.keys(e.carried).length) delete e.carried
+          e.version++; e.versions.push(history(e)); break
         }
         case 'plan': {
           const e = findExperiment(next, input.experimentId)
