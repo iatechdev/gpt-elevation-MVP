@@ -44,7 +44,6 @@ function load(file) {
   return module.exports
 }
 const { LoginPage } = load(resolve(root, 'pages/LoginPage.tsx'))
-const { AdminSidebar } = load(resolve(root, 'components/AdminSidebar.tsx'))
 const { AdminLayout } = load(resolve(root, 'layouts/AdminLayout.tsx'))
 const render = (component, entry, props) => {
   const saved = globalThis.localStorage
@@ -88,8 +87,8 @@ test('ES-38: pending session hides form; expired and unavailable sessions have d
 test('ES-38: admin and superadmin keep their distinct destinations; skill catalog is retained', () => {
   lang = 'es'
   for (role of ['admin', 'superadmin']) {
-    const markup = render(AdminSidebar, '/admin/dashboard')
-    for (const path of ['route-catalog', 'skill-catalog', 'dashboard', 'prompts', 'content', 'metrics']) assert.ok(markup.includes(`href="/admin/${path}"`))
+    const markup = render(AdminLayout, '/admin/dashboard') // ES-153: la navegación sale del marco de administración
+    for (const path of ['route-catalog', 'skill-catalog', 'dashboard', 'prompts', 'content', 'metrics', 'pilot-metrics']) assert.ok(markup.includes(`href="/admin/${path}"`))
     assert.equal(markup.includes('href="/admin/users"'), role === 'superadmin')
     assert.equal(markup.includes('href="/admin/manifest"'), role === 'superadmin')
     assert.match(markup, /aria-current="page"/)
@@ -100,10 +99,11 @@ test('ES-38: shell provides skip target, named navigation, collapsed disclosure 
   role = 'admin'
   for (lang of ['es', 'en']) {
     const markup = render(AdminLayout, '/admin/dashboard')
-    assert.match(markup, /href="#admin-main"/)
-    assert.match(markup, /id="admin-main"[^>]*tabindex="-1"/)
-    assert.match(markup, /aria-expanded="false" aria-controls="admin-navigation"/)
-    assert.match(markup, new RegExp(lang === 'es' ? 'Cerrar sesión' : 'Sign out')) // ES-136: el control de sesión común dice «Sign out»
+    assert.match(markup, /href="#main"/) // ES-153: «Saltar al contenido» y un solo <main> que recibe el foco
+    assert.match(markup, /id="main"[^>]*tabindex="-1"/)
+    assert.equal((markup.match(/<main/g) ?? []).length, 1)
+    assert.match(markup, new RegExp(lang === 'es' ? 'Salir' : 'Sign out')) // ES-153: botón de salida con texto en el encabezado
+    assert.match(markup, /Elevation es acompañamiento|Elevation is support/) // el pie conserva el aviso «no es terapia ni diagnóstico»
     assert.match(markup, /aria-pressed="true"/)
   }
 })

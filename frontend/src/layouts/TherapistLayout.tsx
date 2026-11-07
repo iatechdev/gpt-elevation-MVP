@@ -1,66 +1,11 @@
 // frontend/src/layouts/TherapistLayout.tsx
-// HU-046 — Layout for therapist role
-// HU-082 — Selector ES/EN
-// ES-100 — Cabecera adaptable (dos líneas en pantallas estrechas), contraste, foco visible y objetivos táctiles (ES93-M6 y B4)
+// HU-046 — Layout for therapist role · HU-082 — selector ES/EN · ES-100 — cabecera adaptable
+// ES-153: marco del profesional (Panel, Personas en facilitación, menú con Revisiones profesionales y Salir).
 
 import { Outlet } from 'react-router-dom'
-import { SessionControl } from '../access/SessionControl'
-import { useLanguage } from '../i18n/useLanguage'
+import { ProfessionalFrame } from '../shell/frames'
 import '../styles/therapist.css'
 
 export function TherapistLayout() {
-  const { lang, setLang, t } = useLanguage()
-  const name = localStorage.getItem('elevation_name') ?? t('therapist_role')
-
-  return (
-    <div className="th-root">
-
-      {/* Header */}
-      <header className="th-header">
-        {/* Logo */}
-        <span className="th-logo">
-          ELEVATION{' '}
-          <small>THERAPIST</small>
-        </span>
-
-        {/* Selector ES / EN */}
-        <div role="group" aria-label={lang === 'es' ? 'Idioma' : 'Language'} className="th-lang">
-          {(['es', 'en'] as const).map(l => (
-            <button
-              key={l}
-              className="th-pill-btn"
-              onClick={() => setLang(l)}
-              aria-pressed={lang === l}
-              style={{
-                padding: '2px 10px', borderRadius: 9999, border: 'none',
-                fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', letterSpacing: '0.05em',
-                background: lang === l ? '#fff' : 'transparent',
-                color: lang === l ? '#1C1917' : '#57534E',
-                boxShadow: lang === l ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-                transition: 'all 0.15s',
-              }}
-            >
-              {l.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        {/* Usuario y rol: en la misma fila en pantallas anchas; en la segunda línea, truncado, en las estrechas */}
-        <div className="th-who">
-          <span className="th-name">{name}</span>
-          <span className="th-chip">{t('therapist_role')}</span>
-          <span className="th-who-role">{t('therapist_role')}</span>
-        </div>
-
-        <SessionControl />
-      </header>
-
-      {/* Main content */}
-      <main className="th-main">
-        <Outlet />
-      </main>
-
-    </div>
-  )
+  return <ProfessionalFrame><Outlet /></ProfessionalFrame>
 }

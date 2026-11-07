@@ -51,12 +51,17 @@ test('ES-136 textos: «Cerrar sesión», «Saliendo…» y «Mis datos» en ES y
 })
 
 test('ES-136 estructura: el control de sesión está en dashboard, administración, junta y terapeuta; destino «/»; sin cierres locales sueltos', () => {
-  for (const f of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/pages/UserDashboard.tsx'])
-    assert.ok(read(f).includes('<SessionControl'), f)
+  // ES-153: administración, junta y profesional salen desde su marco (shell/frames.tsx → SignOutButton / UserMenu, que llaman a signOut()).
+  for (const f of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx']) assert.match(read(f), /<(Admin|Board|Professional)Frame/, f)
+  const frames = read('../src/shell/frames.tsx'), chrome = read('../src/shell/Frame.tsx')
+  assert.equal((frames.match(/<SignOutButton \/>/g) ?? []).length, 2); assert.ok(frames.includes('<UserMenu'))
+  assert.equal((chrome.match(/await signOut\(BACKEND\)/g) ?? []).length, 2); assert.equal((chrome.match(/navigate\('\/', \{ replace: true \}\)/g) ?? []).length, 2)
+  assert.ok(chrome.includes('aria-busy={leaving}') && chrome.includes('disabled={leaving}'))
+  assert.ok(read('../src/pages/UserDashboard.tsx').includes('<SessionControl'))
   const control = read('../src/access/SessionControl.tsx')
   assert.ok(control.includes("navigate('/', { replace: true })")); assert.ok(control.includes('aria-busy={leaving}')); assert.ok(control.includes('to="/app/data"'))
   assert.ok(control.includes('disabled={leaving}')) // un segundo clic no repite la llamada
-  for (const f of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/pages/UserDashboard.tsx'])
+  for (const f of [...['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/shell/frames.tsx', '../src/shell/Frame.tsx'], '../src/pages/UserDashboard.tsx'])
     assert.equal(read(f).includes("localStorage.removeItem('elevation_token')"), false, f + ' no borra la sesión por su cuenta')
   const dash = read('../src/pages/UserDashboard.tsx')
   assert.ok(dash.includes('<SessionControl onRequestSignOut={() => setShowCheckout(true)} />')) // la despedida (check-out) se conserva

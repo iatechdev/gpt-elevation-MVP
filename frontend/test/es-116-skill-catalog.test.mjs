@@ -94,8 +94,8 @@ test('ES-116 textos: ES y EN con las mismas claves y sin vacíos; el CSS no defi
 test('ES-116 rutas y menú: tres rutas protegidas para administración y enlace en el menú', () => {
   const app = read('../src/App.tsx')
   for (const path of ['/admin/skill-catalog', '/admin/skill-catalog/:id', '/admin/skill-catalog/:id/skills/:skillKey']) assert.match(app, new RegExp(`path="${path.replace(/[/:]/g, m => '\\' + m)}" element=\\{<AdminRoute><SkillCatalogManager />`))
-  const side = read('../src/components/AdminSidebar.tsx')
-  assert.match(side, /to: '\/admin\/skill-catalog', labelKey: 'skcat\.menu'/)
+  const side = read('../src/shell/nav.ts') // ES-153: el menú de administración vive en shell/nav.ts
+  assert.match(side, /to: '\/admin\/skill-catalog', label: 'adSkills'/)
   assert.match(read('../src/i18n/es.ts'), /\.\.\.skillCatalogEs/); assert.match(read('../src/i18n/en.ts'), /\.\.\.skillCatalogEn/)
 })
 
