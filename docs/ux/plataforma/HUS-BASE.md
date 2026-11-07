@@ -51,3 +51,52 @@ Un hallazgo de seguridad Crítico o Alto = no se aprueba.
 ## 5. Decisiones abiertas que afectan a varias historias
 
 Ver `README.md`, decisiones 1 a 35. Las que bloquean o condicionan trabajo se repiten en la historia afectada con su número. Quien implementa una historia con una decisión abierta construye la variante recomendada y la deja detrás de una constante fácil de cambiar, salvo que Mauricio o Alejo indiquen otra.
+
+## 6. Índice de historias en Jira (épica ES-6)
+
+Orden recomendado: HU-P00 (aprobación) → P01 a P03 y P38 (base) → pantallas → P39 (calidad, se alimenta de cada una).
+
+| HU | Jira | Qué cubre |
+|---|---|---|
+| P00 | ES-151 | Aprobación del diseño (puerta de diseño) |
+| P01 | ES-152 | Sistema de diseño: tokens, tipografías, componentes |
+| P02 | ES-153 | Estructura y navegación por rol |
+| P03 | ES-154 | Textos ES/EN desde `textos.json` |
+| P04 | ES-155 | Portada, registro, entrar, recuperar |
+| P05 | ES-156 | Restablecer contraseña |
+| P06 | ES-157 | Solicitud pública de profesionales |
+| P07 | ES-158 | Precios públicos |
+| P08 | ES-159 | Punto de partida y Hoy |
+| P09 | ES-160 | Mapa de competencias |
+| P10 | ES-161 | Análisis con IA y retiro del permiso |
+| P11 | ES-162 | Conversación |
+| P12 | ES-163 | Diario |
+| P13 | ES-164 | Evidencias |
+| P14 | ES-165 | Hojas de vida |
+| P15 | ES-166 | Siguiente paso: rutas y experimentos |
+| P16 | ES-167 | Experimento y plan de acción |
+| P17 | ES-168 | El Puente |
+| P18 | ES-169 | Mi profesional y sala de la persona |
+| P19 | ES-170 | Herramientas y ejercicios |
+| P20 | ES-171 | Brújula |
+| P21 | ES-172 | Catálogo de rutas (persona) |
+| P22 | ES-173 | Progreso y opinión |
+| P23 | ES-174 | Mis datos y Mi plan |
+| P24 | ES-175 | Revisiones profesionales recibidas |
+| P25 | ES-176 | Facilitación |
+| P26 | ES-177 | Panel profesional |
+| P27 | ES-178 | Ficha de la persona |
+| P28 | ES-179 | Sala de sesión del profesional |
+| P29 | ES-180 | Administración: panel y métricas |
+| P30 | ES-181 | Guías de la IA |
+| P31 | ES-182 | Manifiesto ético |
+| P32 | ES-183 | Métricas del piloto |
+| P33 | ES-184 | Contenido: validaciones y solicitudes |
+| P34 | ES-185 | Contenido: planes y textos públicos |
+| P35 | ES-186 | Personas usuarias |
+| P36 | ES-187 | Catálogo de rutas (administración) |
+| P37 | ES-188 | Catálogo de habilidades |
+| P38 | ES-189 | Privacidad y seguridad transversales |
+| P39 | ES-190 | Calidad transversal y e2e |
+
+Las historias no tienen responsable ni estimación: Dev estima las suyas tras la aprobación del diseño (HU-P00).
