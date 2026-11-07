@@ -57,7 +57,9 @@ test('ES-117 PostgreSQL: RLS en todas las tablas, API pública sin privilegios y
   assert.ok(exposed.withoutRls.length > 10 && exposed.granted.length > 10, 'el escenario previo debe reproducir la exposición de Supabase');
   const tablesBefore = (await db.query(`SELECT count(*)::int AS n FROM pg_class WHERE relnamespace='public'::regnamespace AND relkind IN ('r','p')`)).rows[0].n;
 
-  const applied = migrate('db:migrate');
+  // ES-191: solo hasta ES-117 (no todas): una migración POSTERIOR que cree tablas (con su propio RLS) no debe alterar el conteo ni el `undo`, que deshace la última aplicada.
+  // El `db:migrate` completo se prueba al reaplicar, al final: ahí findExposure exige RLS también en las tablas posteriores.
+  const applied = migrate('db:migrate', '--to', ES117);
   assert.equal(applied.status, 0, `Falló la migración ES-117: ${(applied.stdout + applied.stderr).slice(-800)}`);
   await admin.query(`ALTER ROLE elevation_worker PASSWORD '${workerPassword}'`);
 

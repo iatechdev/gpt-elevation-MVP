@@ -38,7 +38,7 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
   await up(sequelize); // repeat application is additive/idempotent
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation',
-    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'ParticipantResume', 'SkillAssessment', 'PasswordReset']) require('../../' + name);
+    'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'AiUsage', 'AiBudgetCounter', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'ParticipantContext', 'ParticipantResume', 'SkillAssessment', 'PasswordReset', 'Invitation']) require('../../' + name);
   for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest']) require('../../' + name);
   for (const name of ['CareerExperiment', 'CareerExperimentVersion', 'CareerPlanVersion', 'CareerExperimentReview', 'CareerReminder']) require('../../' + name);
   await sequelize.sync();
@@ -178,6 +178,23 @@ test('ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, r
     await processDeletion(request.id, { quiescent: true });
     assert.equal(await PasswordReset.count({ where: { UserId: a.id } }), 0);
     assert.equal(await PasswordReset.count({ where: { UserId: b.id } }), 1);
+  });
+  await t.test('ES-192: la invitación con la que se creó la cuenta se exporta sin el hash del token ni el correo de otra persona y se purga con la cuenta; la de B no se toca', async () => {
+    const Invitation = require('../../Invitation');
+    const a = await addUser(); const b = await addUser();
+    const live = new Date(Date.now() + 3600000);
+    await Invitation.create({ email: 'a-invitada@example.invalid', role: 'user', invitedBy: 999001, tokenHash: 'd'.repeat(64), expiresAt: live, usedAt: new Date(), acceptedUserId: a.id });
+    await Invitation.create({ email: 'b-invitada@example.invalid', role: 'therapist', invitedBy: 999001, tokenHash: 'e'.repeat(64), expiresAt: live, usedAt: new Date(), acceptedUserId: b.id });
+    await Invitation.create({ email: 'sin-aceptar@example.invalid', role: 'user', invitedBy: a.id, tokenHash: 'f'.repeat(64), expiresAt: live }); // creada POR a, no es de nadie todavía
+    const p = await rights.preview(a.id, { type: 'personal', locale: 'es' });
+    assert.equal(p.data.invitations.length, 1);
+    const text = JSON.stringify(p.data.invitations);
+    assert.ok(!text.includes('d'.repeat(64)) && !text.includes('tokenHash') && !text.includes('sin-aceptar') && !text.includes('b-invitada')); // la credencial y el correo de otras personas nunca salen
+    assert.equal((await rights.preview(b.id, { type: 'personal', locale: 'es' })).data.invitations[0].role, 'therapist');
+    const request = await rights.requestDeletion(a.id);
+    await processDeletion(request.id, { quiescent: true });
+    assert.equal(await Invitation.count({ where: { acceptedUserId: a.id } }), 0);
+    assert.equal(await Invitation.count({ where: { acceptedUserId: b.id } }), 1);
   });
   await t.test('QA-H1: el uso de IA y el contador de presupuesto se exportan sin contenido y se purgan; la cohorte y B no se tocan', async () => {
     const AiUsage = require('../../AiUsage');
