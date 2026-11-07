@@ -122,6 +122,8 @@ Respondió Mauricio Roldán. Quedan como decisiones tomadas; lo que cambia el di
 44. **Decisión 33 (enlace de profesionales): solo `https://`.** Se unifica regla y mensaje.
 45. **Decisión 7 (ejercicios), 34 (planes) y datos de contexto: se administran desde la aplicación.** El contenido real es el que se crea en la aplicación; un cambio se hace ahí y se habilita con el mismo cambio (publicar). Planes y precios: se dejan como recomendación y los cambia superadministración o administración desde Contenido. **La línea de emergencia (y otros datos de contacto) también se edita desde Contenido**, con valor inicial para Colombia pendiente de verificar (ES-193). Ningún número va en el código.
 46. **Asignación:** las historias se reparten entre Dev-Claude, Dev-Claude 2 y Dev-Codex en bloques de pantallas distintas, para que no editen los mismos archivos (ver HUS-BASE sección 7). El diseño lo aprueba Mauricio.
+47. **Aprobación del diseño (7-nov, Mauricio Roldán): ES-151 cerrada.** Incluye el radar y las decisiones 36 a 46.
+48. **Invitaciones: pueden enviarlas personas, profesionales, administración y superadministración** (ES-192), para generar reconocimiento y, a futuro, mercadeo con las recomendaciones. Salvaguardas añadidas en ES-192: nadie crea una cuenta con más permisos que los suyos, límites por persona y por día editables, quien invita no ve datos ni actividad del invitado, y el uso de la recomendación para mercadeo requiere consentimiento explícito y base legal (pendiente de confirmar con asesoría legal; no verificado).
 
 ## Qué se verificó
 
