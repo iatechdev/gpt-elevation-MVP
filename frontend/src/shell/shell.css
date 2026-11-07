@@ -1,0 +1,67 @@
+/* ES-153 — marcos de página «Cartografía». Referencia: docs/ux/plataforma/estilos.css (header.top, .um, .admshell) y pantallas.css.
+   Los colores salen de los tokens --cg-* (ES-152); el tema queda en claro hasta que las pantallas de contenido migren. */
+@import '../cartografia/cartografia.css';
+
+.cg-frame { min-height: 100dvh; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.cg-skip { position: absolute; left: 1rem; top: -10rem; z-index: 100; background: var(--cg-panel); color: var(--cg-mark); border: 2px solid var(--cg-ink); padding: 0.7rem 1rem; font-weight: 600; }
+.cg-skip:focus { top: 1rem; }
+
+.cg-header { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem 1.4rem; flex-wrap: wrap; padding: 1rem 0; border-bottom: 1px solid var(--cg-line); max-width: 1240px; width: 100%; margin: 0 auto; }
+.cg-brand { font: 700 1.7rem var(--cg-font-cond); letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; color: var(--cg-ink); display: inline-flex; align-items: center; min-height: var(--cg-touch); }
+.cg-brand i { font-style: normal; color: var(--cg-mark); }
+.cg-brand__role { font: 600 0.8rem var(--cg-font-cond); letter-spacing: 0.12em; color: var(--cg-muted); border-left: 1px solid var(--cg-line); padding-left: 0.6rem; margin-left: 0.6rem; }
+.cg-nav { display: flex; gap: 0.2rem 1.3rem; flex-wrap: wrap; align-items: center; font: 600 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; }
+.cg-nav a:not(.cg-btn), .cg-sidenav a { color: var(--cg-ink); text-decoration: none; border-bottom: 3px solid transparent; display: inline-flex; align-items: center; min-height: var(--cg-touch); }
+.cg-nav a:not(.cg-btn):hover { border-color: var(--cg-mark); }
+.cg-nav a[aria-current='page'] { border-color: var(--cg-ink); }
+.cg-header__end { display: flex; align-items: center; gap: 0.7rem 1rem; flex-wrap: wrap; margin-left: auto; }
+.cg-role { font: 600 0.78rem var(--cg-font-cond); letter-spacing: 0.12em; text-transform: uppercase; color: var(--cg-muted); }
+.cg-who { color: var(--cg-muted); font-size: 1rem; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg-signout { min-height: var(--cg-touch); }
+
+.cg-lang { display: inline-flex; border: 1.5px solid var(--cg-ink); }
+.cg-lang__btn { min-width: var(--cg-touch); min-height: var(--cg-touch); background: none; border: 0; border-radius: 0; color: var(--cg-ink); font: 700 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; cursor: pointer; }
+.cg-lang__btn[aria-pressed='true'] { background: var(--cg-ink); color: var(--cg-ground); }
+
+/* menú de usuario */
+.cg-usermenu { position: relative; }
+.cg-usermenu__button { background: none; border: 0; border-bottom: 3px solid transparent; min-height: var(--cg-touch); padding: 0 0.2rem; cursor: pointer; color: var(--cg-ink); }
+.cg-usermenu__button:hover, .cg-usermenu__button[aria-expanded='true'] { border-color: var(--cg-ink); }
+.cg-usermenu__who { font-size: 1.1rem; }
+.cg-usermenu__list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; list-style: none; margin: 0; padding: 0.3rem; min-width: 14rem; max-width: calc(100vw - 2rem); background: var(--cg-panel); border: 1.5px solid var(--cg-ink); display: grid; }
+.cg-usermenu__list[hidden] { display: none; }
+.cg-usermenu__list a, .cg-usermenu__out { display: flex; align-items: center; min-height: var(--cg-touch); padding: 0.55rem 0.7rem; color: var(--cg-ink); text-decoration: none; background: none; border: 0; width: 100%; text-align: left; font: inherit; cursor: pointer; }
+.cg-usermenu__list a:hover, .cg-usermenu__out:hover, .cg-usermenu__list a[aria-current='page'] { background: var(--cg-ground); }
+.cg-usermenu__list a[aria-current='page'] { box-shadow: inset 4px 0 0 var(--cg-mark); }
+
+/* cuerpo y barra lateral de administración */
+.cg-body { flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 1rem 0 2rem; min-width: 0; }
+.cg-body--side { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; align-items: start; }
+.cg-side { position: sticky; top: 1rem; }
+.cg-sidenav { display: grid; border-top: 2px solid var(--cg-ink); font: 600 1rem var(--cg-font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.cg-sidenav a { padding: 0.6rem 0.2rem; border-bottom: 1px solid var(--cg-line); }
+.cg-sidenav a:hover { background: var(--cg-panel); }
+.cg-sidenav a[aria-current='page'] { box-shadow: inset 4px 0 0 var(--cg-mark); padding-left: 0.8rem; }
+.cg-side__group { margin: 1rem 0 0.3rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--cg-ink); }
+.cg-main { min-width: 0; outline: none; }
+.cg-main:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
+.cg-main--bare { min-height: 100dvh; }
+/* Contenido antiguo: conserva su lienzo (tokens --elv-*) hasta que su pantalla migre; así sus colores siguen cumpliendo contraste sobre su propio fondo. */
+.cg-main.elv-theme { background: var(--elv-bg); color: var(--elv-text-1); font-family: var(--elv-font-body); padding: 1rem; }
+.cg-main.elv-theme.cg-main--bare { padding: 0; }
+.cg-footer { display: flex; justify-content: space-between; gap: 0.4rem 1rem; flex-wrap: wrap; padding: 1.2rem 0 2rem; border-top: 1px solid var(--cg-line); font-size: 0.85rem; color: var(--cg-muted); max-width: 1240px; width: 100%; margin: 0 auto; }
+
+/* compuerta de acceso */
+.cg-gate { max-width: 40rem; margin: 3rem auto; padding: 0 0.2rem; }
+.cg-gate__title { font-size: 1.4rem; margin: 0; outline: none; }
+
+@media (max-width: 900px) {
+  /* en móvil la barra lateral pasa a una fila que se ajusta */
+  .cg-body--side { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .cg-side { position: static; }
+  .cg-sidenav { display: flex; flex-wrap: wrap; gap: 0.1rem 1rem; border-top: 0; }
+  .cg-sidenav a { border-bottom: 3px solid transparent; padding: 0.3rem 0; }
+  .cg-sidenav a[aria-current='page'] { box-shadow: none; padding-left: 0; border-bottom-color: var(--cg-mark); }
+  .cg-usermenu__list { right: auto; left: 0; }
+  .cg-header__end { margin-left: 0; width: 100%; justify-content: space-between; }
+}

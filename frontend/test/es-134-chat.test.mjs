@@ -105,8 +105,11 @@ test('ES-134: todos los cierres de sesión de la aplicación limpian el mensaje 
   // ES-136: administración, junta, terapeuta y dashboard cierran con signOut(), que limpia el pendiente antes de borrar el token; el chat conserva su cierre.
   const out = read('../src/access/signOut.ts')
   assert.ok(out.includes('clearPending()') && out.indexOf('clearPending()') < out.indexOf('localStorage.removeItem(key)'))
-  for (const file of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/pages/UserDashboard.tsx'])
-    assert.ok(read(file).includes('SessionControl') && !read(file).includes("localStorage.removeItem('elevation_token')"), file)
+  // ES-153: los marcos de administración, junta y profesional cierran con signOut() desde shell/Frame.tsx.
+  assert.ok(read('../src/shell/Frame.tsx').includes('await signOut(BACKEND)'))
+  for (const file of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/shell/Frame.tsx', '../src/shell/frames.tsx', '../src/pages/UserDashboard.tsx'])
+    assert.ok(!read(file).includes("localStorage.removeItem('elevation_token')"), file)
+  assert.ok(read('../src/pages/UserDashboard.tsx').includes('SessionControl'))
   for (const file of ['../src/pages/ChatPage.tsx']) {
     const source = read(file)
     const removals = source.match(/localStorage\.removeItem\('elevation_token'\)/g) ?? []
