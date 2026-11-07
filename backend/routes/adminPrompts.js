@@ -5,11 +5,11 @@
 
 const express = require('express');
 const router  = express.Router();
-const { PromptVault, getActivePrompt, savePrompt, proposePrompt, approvePrompt, rejectPrompt, rollbackPrompt, decryptPrompt } = require('../promptVault');
+const { PromptVault, getActivePrompt, proposePrompt, approvePrompt, rejectPrompt, rollbackPrompt, decryptPrompt } = require('../promptVault');
 const PromptRule = require('../PromptRule');
 const { verificarSuperAdmin } = require('../middlewares/auth');
 const { validateBody, nonempty, optional, boolean } = require('../middlewares/validateBody');
-const { CATEGORIES, fold, reviewPrompt, describeReasons, loadActiveRules } = require('../utils/promptReview'); // ES-191
+const { CATEGORIES, fold, describeReasons } = require('../utils/promptReview'); // ES-191
 const { KEY, replyProposal, replyReviewError } = require('../utils/promptHttp');
 
 // ES-191: la clave de una guía es un identificador corto; cualquier otra cosa es 400, no un 500 de la base.
@@ -17,26 +17,12 @@ const { KEY, replyProposal, replyReviewError } = require('../utils/promptHttp');
 const validId = (req, res, next) => (/^[1-9][0-9]{0,9}$/.test(req.params.id) ? next() : res.status(404).json({ error: 'Versión no encontrada. / Version not found.' }));
 const validKey = (req, res, next) => (KEY.test(req.params.key) ? next() : res.status(400).json({ error: 'Clave inválida. / Invalid key.' }));
 
-// POST /api/admin/prompt
-router.post('/prompt', validateBody({ key: nonempty, content: nonempty }), async (req, res) => {
-  try {
-    const { key, content } = req.body;
-    if (!key || !content)
-      return res.status(400).json({ error: 'key y content son requeridos.' });
-    if (!KEY.test(key)) return res.status(400).json({ error: 'Clave inválida. / Invalid key.' });
-    // ES-191: el guardado directo no puede saltarse la revisión automática (rechaza sin guardar).
-    const review = reviewPrompt(content, await loadActiveRules(PromptRule));
-    if (review.outcome !== 'passed') {
-      return res.status(422).json({ code: 'prompt_rejected', error: 'La revisión automática rechazó la guía. / The automatic review rejected the guide.', reasons: describeReasons(review.reasons) });
-    }
-    await savePrompt(key, content, req.user.name);
-    res.json({ message: `Prompt '${key}' guardado y encriptado exitosamente.` });
-  } catch (error) {
-    if (replyReviewError(res, error)) return;
-    console.error('❌ Error guardando prompt:', error);
-    res.status(500).json({ error: 'No se pudo guardar el prompt.' });
-  }
-});
+// POST /api/admin/prompt y /api/superadmin/prompt — RETIRADA (ES-191, decisión de Mauricio): guardaba y ACTIVABA una guía al instante,
+// sin aprobación humana. Toda guía nueva pasa por proponer (/prompt/propose, con revisión automática) y aprobar (superadministración).
+router.post('/prompt', (req, res) => res.status(410).json({
+  code: 'prompt_direct_save_removed',
+  error: 'Esta ruta se retiró: toda guía se propone y la aprueba una persona. / This route was removed: every guide is proposed and approved by a person.',
+}));
 
 // GET /api/admin/prompts
 router.get('/prompts', async (req, res) => {
