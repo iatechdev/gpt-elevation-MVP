@@ -5156,6 +5156,46 @@
    "en": "List",
    "archivo": "p-mapa.js"
   },
+  "mp_v3": {
+   "es": "Radar",
+   "en": "Radar",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_alt": {
+   "es": "Radar de capacidades: un eje por capacidad, del nivel 1 al 4. Los niveles están también en la tabla de abajo.",
+   "en": "Capability radar: one axis per capability, from level 1 to 4. The levels are also in the table below.",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_p": {
+   "es": "Cada eje es una capacidad y el anillo exterior es el nivel 4. Una capacidad sin punto no tiene nivel con evidencia: no es un cero.",
+   "en": "Each axis is a capability and the outer ring is level 4. A capability with no point has no level backed by evidence: it is not a zero.",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_gap": {
+   "es": "{n} capacidades sin nivel todavía. Se unen solo los puntos vecinos que sí tienen nivel.",
+   "en": "{n} capabilities have no level yet. Only neighbouring points that do have a level are joined.",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_no": {
+   "es": "Sin nivel",
+   "en": "No level",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_tb": {
+   "es": "Ver los niveles como tabla",
+   "en": "See the levels as a table",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_c": {
+   "es": "Capacidad",
+   "en": "Capability",
+   "archivo": "p-mapa.js"
+  },
+  "mp_rad_l": {
+   "es": "Nivel",
+   "en": "Level",
+   "archivo": "p-mapa.js"
+  },
   "mp_ai": {
    "es": "Analizar mi evidencia con IA",
    "en": "Analyze my evidence with AI",
