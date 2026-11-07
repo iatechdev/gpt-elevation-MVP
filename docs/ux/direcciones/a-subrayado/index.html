@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation · Dirección A · Subrayado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700;900&display=swap">
+<style>
+/* Dirección A · Subrayado.
+   Concepto: la plataforma habla en limpio; las palabras de la persona van en máquina de escribir,
+   numeradas por línea, y lo que la plataforma propone se escribe al margen, como corrección de editor.
+   Decisión de color: un solo azul de bolígrafo sobre blanco frío. El rojo solo existe para tachar. */
+:root{
+  --paper:#F3F4F6; --sheet:#FBFBFC; --ink:#101114; --muted:#4B4E58; --rule:#C9CBD2;
+  --pen:#1B2BF0; --pen-soft:rgba(27,43,240,.13); --strike:#C8261C;
+  --sans:'Schibsted Grotesk',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --gut:max(16px,env(safe-area-inset-left,0px)); --gutr:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0C0D11; --sheet:#13141A; --ink:#ECEDF3; --muted:#A5A8B5; --rule:#2B2D37;
+  --pen:#8C99FF; --pen-soft:rgba(140,153,255,.17); --strike:#FF7A70; color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#0C0D11;--sheet:#13141A;--ink:#ECEDF3;--muted:#A5A8B5;--rule:#2B2D37;--pen:#8C99FF;--pen-soft:rgba(140,153,255,.17);--strike:#FF7A70;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.55 var(--sans);padding-left:var(--gut);padding-right:var(--gutr)}
+button,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--pen);outline-offset:3px}
+.sr{position:absolute;left:-9999px}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* barra del prototipo (no es parte del producto) */
+.proto{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;padding:.6rem 0;border-bottom:1px solid var(--rule);font:500 .75rem var(--mono);color:var(--muted)}
+.proto b{color:var(--ink);font-weight:500;margin-right:auto}
+.proto button{background:none;border:1px solid var(--rule);padding:.3rem .65rem;cursor:pointer;font:500 .75rem var(--mono)}
+.proto button[aria-current="true"]{border-color:var(--pen);color:var(--pen)}
+
+header.top{display:flex;align-items:baseline;justify-content:space-between;padding:1.4rem 0 1rem;border-bottom:2px solid var(--ink)}
+.mark{font-weight:900;font-size:1.6rem;letter-spacing:-.04em;text-decoration:none;color:var(--ink)}
+.mark i{font-style:normal;background:linear-gradient(transparent 62%,var(--pen-soft) 62%);box-shadow:inset 0 -2px 0 var(--pen)}
+nav.main{display:flex;gap:1.4rem;font-size:.95rem}
+nav.main a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+nav.main a:hover,nav.main a[aria-current="page"]{border-color:var(--pen)}
+
+h1{font-weight:900;letter-spacing:-.035em;word-spacing:.1em;line-height:.96;margin:0;font-size:clamp(2.6rem,8.4vw,6.6rem);max-width:15ch;text-wrap:balance}
+h2{font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0;font-size:1.5rem}
+.hl{background:linear-gradient(transparent 58%,var(--pen-soft) 58%);box-shadow:inset 0 -.07em 0 var(--pen);padding:0 .06em}
+.label{font:500 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:.5rem;min-height:46px;padding:.6rem 1.15rem;background:var(--ink);color:var(--paper);border:0;font-weight:700;cursor:pointer;border-radius:0}
+.btn:hover{background:var(--pen);color:#fff}
+.btn.ghost{background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--pen);color:var(--pen);background:none}
+.lnk{background:none;border:0;border-bottom:1.5px solid var(--pen);padding:.15rem 0;cursor:pointer;font-weight:500;color:var(--ink)}
+.view{display:none}.view.on{display:block}
+
+/* transcripción: números de línea, texto en máquina de escribir, nota al margen */
+.tx{display:grid;grid-template-columns:2.4rem minmax(0,1fr) minmax(0,17rem);column-gap:1.2rem;border-top:1px solid var(--rule)}
+.tx>*{padding:.7rem 0;border-bottom:1px solid var(--rule)}
+.ln{font:400 .75rem/2.1 var(--mono);color:var(--muted);text-align:right}
+.say{font:400 1rem/1.7 var(--mono)}
+.say mark{background:none;color:inherit;transition:background .25s,box-shadow .25s}
+.say mark.on{background:linear-gradient(transparent 55%,var(--pen-soft) 55%);box-shadow:inset 0 -2px 0 var(--pen)}
+.say mark.off{text-decoration:line-through;text-decoration-color:var(--strike);text-decoration-thickness:2px;color:var(--muted)}
+.note{font-size:.88rem;line-height:1.4;color:var(--ink);border-left:2px solid var(--pen);padding-left:.8rem;align-self:start;margin:.7rem 0}
+.note[hidden]{display:none}
+.note b{display:block;font-weight:700}
+.note .acts{display:flex;gap:1rem;margin-top:.5rem;flex-wrap:wrap}
+.note.gone{border-color:var(--strike);color:var(--muted)}
+.note.gone b{text-decoration:line-through;text-decoration-color:var(--strike)}
+
+/* portada */
+.hero{padding:clamp(2rem,6vw,4.5rem) 0 2.5rem}
+.hero .sub{max-width:34rem;font-size:1.2rem;margin:1.4rem 0 0}
+.demo{margin:2.4rem 0 1rem}
+.demo .row{display:flex;gap:.9rem;align-items:center;flex-wrap:wrap;margin:1rem 0 0}
+.photo{margin:3rem 0;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:2rem;align-items:end}
+.slot{aspect-ratio:16/10;border:1.5px dashed var(--muted);display:grid;place-items:center;padding:1rem;text-align:center;font:400 .8rem/1.5 var(--mono);color:var(--muted);background:repeating-linear-gradient(135deg,transparent 0 10px,var(--pen-soft) 10px 11px)}
+.how{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:2px solid var(--ink);margin-top:3rem}
+.how>div{padding:1rem 1rem 1.2rem 0;border-right:1px solid var(--rule)}
+.how>div+div{padding-left:1rem}.how>div:last-child{border-right:0}
+.how p{margin:.5rem 0 0;font-size:.95rem}
+footer.f{margin-top:3rem;padding:1rem 0 2rem;border-top:1px solid var(--rule);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+
+/* inicio con sesión */
+.home{display:grid;grid-template-columns:minmax(0,17rem) minmax(0,1fr);gap:3rem;padding:2rem 0}
+.idx{position:sticky;top:1rem;align-self:start}
+.idx ol{list-style:none;margin:.8rem 0 0;padding:0}
+.idx li{display:flex;align-items:baseline;gap:.5rem;padding:.42rem 0;border-bottom:1px dotted var(--rule);font-size:.95rem}
+.idx li span.d{flex:1;border-bottom:1px dotted var(--muted);transform:translateY(-3px)}
+.idx li .n{font:500 .78rem var(--mono);color:var(--muted);white-space:nowrap}
+.idx li.has b{font-weight:700}
+.ticks{display:inline-flex;gap:3px;margin-left:.2rem;vertical-align:middle}
+.ticks i{width:9px;height:9px;border:1.5px solid var(--ink);display:block}.ticks i.f{background:var(--pen);border-color:var(--pen)}
+.hello{margin:0 0 1.6rem}
+.hello h1{font-size:clamp(2rem,5vw,3.6rem);max-width:none}
+.new{margin:0 0 1.5rem;display:grid;gap:.6rem}
+textarea{width:100%;min-height:92px;padding:.8rem;background:var(--sheet);border:1.5px solid var(--ink);font:400 1rem/1.6 var(--mono);border-radius:0;resize:vertical}
+.sample-tag{font:500 .68rem var(--mono);color:var(--muted);border:1px solid var(--rule);padding:.05rem .35rem;margin-left:.5rem;white-space:nowrap}
+
+/* conversación */
+.chat{max-width:880px;margin:0 auto;padding:1.6rem 0 0;min-height:calc(100svh - 150px);display:flex;flex-direction:column}
+.chat .head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:.8rem}
+.thread{flex:1;padding:.5rem 0 1rem}
+.turn{display:grid;grid-template-columns:2.4rem minmax(0,1fr);column-gap:1rem;padding:.9rem 0;border-bottom:1px solid var(--rule)}
+.turn .who{grid-column:2;font:500 .7rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.turn .ln{grid-row:2}
+.turn .txt{grid-column:2}
+.turn.ai .txt{font-weight:500;font-size:1.12rem;line-height:1.5;max-width:36rem}
+.turn.me .txt{font:400 1rem/1.7 var(--mono)}
+.pista{margin:.8rem 0 0;border-left:2px solid var(--pen);padding-left:1rem;max-width:34rem}
+.pista p{margin:.2rem 0}
+.pista .acts{display:flex;gap:1rem;margin-top:.6rem;flex-wrap:wrap}
+.composer{position:sticky;bottom:0;background:var(--paper);padding:.8rem 0 calc(.8rem + env(safe-area-inset-bottom,0px));border-top:2px solid var(--ink)}
+.composer .row{display:flex;gap:.8rem;align-items:flex-end}
+.composer textarea{min-height:56px}
+.safe{font-size:.8rem;color:var(--muted);margin:.5rem 0 0}
+
+@media (max-width:860px){
+  .tx{grid-template-columns:2rem minmax(0,1fr)}
+  .tx .note{grid-column:2;margin:0 0 .8rem}.tx>.note{border-bottom:0}
+  .photo,.home{grid-template-columns:1fr}.idx{position:static}
+  .how{grid-template-columns:1fr 1fr}.how>div:nth-child(2){border-right:0}.how>div:nth-child(3){padding-left:0;border-top:1px solid var(--rule)}.how>div:nth-child(4){border-top:1px solid var(--rule)}
+  nav.main{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="proto" role="toolbar" aria-label="Pantallas del prototipo">
+    <b>Dirección A · Subrayado · prototipo</b>
+    <button data-go="portada" aria-current="true">Portada</button>
+    <button data-go="inicio">Inicio con sesión</button>
+    <button data-go="chat">Conversación</button>
+  </div>
+  <header class="top">
+    <a class="mark" href="#portada" aria-label="Elevation, inicio">ele<i>vation</i></a>
+    <nav class="main" aria-label="Principal"><a href="#" data-go="portada">Cómo funciona</a><a href="#" data-go="portada">Privacidad</a><a href="#" data-go="inicio">Entrar</a></nav>
+  </header>
+
+  <!-- PORTADA -->
+  <main id="v-portada" class="view on">
+    <section class="hero">
+      <h1>Lo que hiciste ya dice <span class="hl">qué sabes hacer.</span></h1>
+      <p class="sub">Cuéntanos una escena de tu trabajo. Subrayamos lo que ahí demuestras y tú decides qué se queda.</p>
+    </section>
+
+    <section class="demo" aria-labelledby="dtitle">
+      <p class="label" id="dtitle">Pruébalo con una escena de ejemplo</p>
+      <div class="tx" role="group" aria-label="Escena de ejemplo">
+        <div class="ln" aria-hidden="true">01</div>
+        <p class="say" style="margin:0">El pedido se atrasó, <mark id="m1">avisé a todos</mark> y <mark id="m2">reorganicé la entrega</mark>.</p>
+        <aside class="note" id="n1" hidden>
+          <b>Posible pista: Planificación y organización</b>
+          Se apoya en «reorganicé la entrega». Es una sugerencia, no una evaluación.
+          <div class="acts"><button class="lnk" data-a="yes">Sí, un poco</button><button class="lnk" data-a="no">No todavía</button></div>
+        </aside>
+      </div>
+      <div class="row">
+        <button class="btn" id="go">Subrayar la escena</button>
+        <button class="btn ghost" data-go="chat">Escribir la mía</button>
+        <span class="sample-tag">Ejemplo, no es tuyo</span>
+      </div>
+      <p class="muted" id="status" aria-live="polite" style="margin:.8rem 0 0;min-height:1.5em"></p>
+    </section>
+
+    <section class="photo" aria-label="Espacio para fotografía">
+      <div class="slot">Espacio reservado para fotografía real<br>Una persona en su lugar de trabajo, Bogotá.<br>Por encargar. No se genera con IA.</div>
+      <div>
+        <p class="label">Por qué así</p>
+        <h2 style="margin:.4rem 0 .8rem">Cada pista enlaza con la frase que la originó.</h2>
+        <p class="muted" style="margin:0">Si no hay frase que la respalde, no hay pista. Y si no estás de acuerdo, la tachas.</p>
+      </div>
+    </section>
+
+    <section class="how" aria-label="Cómo funciona">
+      <div><span class="label">Escribes</span><p>Una escena real de tu trabajo, en tus palabras.</p></div>
+      <div><span class="label">Subrayamos</span><p>Marcamos lo que parece una capacidad y la frase que lo respalda.</p></div>
+      <div><span class="label">Decides</span><p>Aceptas, corriges o tachas. Nada se guarda sin tu confirmación.</p></div>
+      <div><span class="label">Queda en tu mapa</span><p>Tu nivel es lo que tú registras con evidencia. Nadie lo certifica.</p></div>
+    </section>
+    <footer class="f"><span>Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.</span><span>Tú decides qué guardar.</span></footer>
+  </main>
+
+  <!-- INICIO CON SESIÓN -->
+  <main id="v-inicio" class="view">
+    <div class="home">
+      <aside class="idx" aria-label="Índice de capacidades">
+        <p class="label">Índice de capacidades <span class="sample-tag">Ejemplo</span></p>
+        <ol>
+          <li><span>Adaptabilidad</span><span class="d"></span><span class="n">0</span></li>
+          <li><span>Análisis de información</span><span class="d"></span><span class="n">0</span></li>
+          <li><span>Aprendizaje autónomo</span><span class="d"></span><span class="n">0</span></li>
+          <li class="has"><b>Comunicación</b><span class="ticks" role="img" aria-label="Nivel 2 de 4"><i class="f"></i><i class="f"></i><i></i><i></i></span><span class="d"></span><span class="n">2 frases</span></li>
+          <li><span>Influencia y liderazgo</span><span class="d"></span><span class="n">0</span></li>
+          <li class="has"><b>Planificación y organización</b><span class="d"></span><span class="n">1 pista</span></li>
+          <li><span>Resolución de problemas</span><span class="d"></span><span class="n">0</span></li>
+          <li class="has"><b>Trabajo en equipo</b><span class="d"></span><span class="n">1 pista</span></li>
+        </ol>
+        <p class="muted" style="font-size:.85rem;margin-top:1rem">Un nivel es lo que registras con tu evidencia. Sin evidencia, queda sin evaluar.</p>
+      </aside>
+      <section aria-labelledby="hola">
+        <div class="hello"><p class="label">Tus frases</p><h1 id="hola">Hola, Camila.</h1><p class="muted" style="margin:.6rem 0 0">Tienes 2 pistas esperando tu respuesta.</p></div>
+        <div class="new">
+          <label class="label" for="nf">Escribe una frase nueva</label>
+          <textarea id="nf" maxlength="360" placeholder="Una escena breve basta."></textarea>
+          <div><button class="btn" id="add">Guardar frase</button> <button class="btn ghost" data-go="chat">Conversar en vez de escribir</button></div>
+        </div>
+        <div class="tx" id="list">
+          <div class="ln" aria-hidden="true">01</div>
+          <p class="say" style="margin:0">El pedido se atrasó, avisé a todos y <mark class="on">reorganicé la entrega</mark>.</p>
+          <aside class="note"><b>Pista: Planificación y organización</b>Se apoya en «reorganicé la entrega».<div class="acts"><button class="lnk">Sí, un poco</button><button class="lnk">No todavía</button></div></aside>
+          <div class="ln" aria-hidden="true">02</div>
+          <p class="say" style="margin:0"><mark class="on">Le expliqué al cliente qué había pasado</mark> antes de que preguntara.</p>
+          <aside class="note"><b>Respaldo: Comunicación · nivel 2</b>Confirmada por ti. Sin revisión humana.</aside>
+          <div class="ln" aria-hidden="true">03</div>
+          <p class="say" style="margin:0">Armé una hoja para que <mark class="on">el turno de la tarde supiera dónde íbamos</mark>.</p>
+          <aside class="note"><b>Pista: Trabajo en equipo</b>Se apoya en la frase subrayada.<div class="acts"><button class="lnk">Sí, un poco</button><button class="lnk">No todavía</button></div></aside>
+        </div>
+        <p class="muted" style="font-size:.85rem">Las tres frases son de ejemplo para este prototipo.</p>
+      </section>
+    </div>
+  </main>
+
+  <!-- CONVERSACIÓN -->
+  <main id="v-chat" class="view">
+    <div class="chat">
+      <div class="head"><h2>Conversación</h2><span class="muted" style="font-size:.85rem">Esto no es terapia ni diagnóstico. Puedes pausar cuando quieras.</span></div>
+      <div class="thread" id="thread" aria-live="polite">
+        <div class="turn ai"><span class="who">Elevation</span><span class="ln" aria-hidden="true"></span><p class="txt" style="margin:0">Cuéntame una situación de trabajo que te dejó pensando. Una frase basta.</p></div>
+        <div class="turn me"><span class="who">Tú</span><span class="ln" aria-hidden="true">01</span><p class="txt" style="margin:0">Esta semana se atrasó un pedido grande y me tocó reorganizar todo.</p></div>
+        <div class="turn ai"><span class="who">Elevation</span><span class="ln" aria-hidden="true"></span><p class="txt" style="margin:0">Suena a una semana movida. ¿Qué fue lo primero que hiciste cuando supiste del atraso?</p></div>
+        <div class="turn me"><span class="who">Tú</span><span class="ln" aria-hidden="true">02</span><p class="txt" style="margin:0">Avisé a todos y <mark class="on" style="background:linear-gradient(transparent 55%,var(--pen-soft) 55%);box-shadow:inset 0 -2px 0 var(--pen);color:inherit">reorganicé la entrega</mark>.</p></div>
+        <div class="turn ai"><span class="who">Elevation</span><span class="ln" aria-hidden="true"></span>
+          <div class="txt"><p style="margin:0">En lo que me cuentas aparece algo que podría ser coordinar cambios. Es una posibilidad, no una evaluación.</p>
+            <div class="pista" id="cp"><p class="label">Posible pista · Planificación y organización</p><p>Se apoya en «reorganicé la entrega». ¿Te suena?</p>
+              <div class="acts"><button class="lnk" data-c="yes">Sí, un poco</button><button class="lnk" data-c="no">No todavía</button><button class="lnk" data-go="inicio">Ver en mis frases</button></div></div></div></div>
+      </div>
+      <form class="composer" id="cf">
+        <label class="sr" for="cm">Tu mensaje</label>
+        <div class="row"><textarea id="cm" maxlength="500" placeholder="Escribe lo que quieras compartir."></textarea><button class="btn" type="submit">Enviar</button></div>
+        <p class="safe">Tu conversación es privada. Tú decides qué se guarda como evidencia.</p>
+      </form>
+    </div>
+  </main>
+</div>
+<script>
+(function(){
+  var views={portada:1,inicio:1,chat:1};
+  function show(n){if(!views[n])n='portada';
+    for(var k in views){document.getElementById('v-'+k).classList.toggle('on',k===n)}
+    document.querySelectorAll('.proto [data-go]').forEach(function(b){b.setAttribute('aria-current',b.dataset.go===n?'true':'false')});
+    try{history.replaceState(null,'','#'+n)}catch(e){}
+    window.scrollTo(0,0)}
+  document.addEventListener('click',function(e){var g=e.target.closest('[data-go]');if(g){e.preventDefault();show(g.dataset.go)}});
+  show((location.hash||'').slice(1));
+  window.addEventListener('hashchange',function(){show((location.hash||'').slice(1))});
+  var m1=document.getElementById('m1'),m2=document.getElementById('m2'),n1=document.getElementById('n1'),st=document.getElementById('status');
+  document.getElementById('go').addEventListener('click',function(){
+    m1.className='on';m2.className='on';n1.hidden=false;n1.className='note';
+    st.textContent='Subrayamos dos frases. Mira la nota al margen y decide.'});
+  n1.addEventListener('click',function(e){var a=e.target.closest('[data-a]');if(!a)return;
+    if(a.dataset.a==='yes'){st.textContent='Quedó como pista aceptada. En el producto real, solo se guarda si la confirmas.'}
+    else{m2.className='off';n1.className='note gone';st.textContent='Tachada. No se guarda nada.'}});
+  document.getElementById('cp').addEventListener('click',function(e){var a=e.target.closest('[data-c]');if(!a)return;
+    this.querySelector('p:nth-child(2)').textContent=a.dataset.c==='yes'?'Anotada como pista aceptada. Puedes retirarla cuando quieras.':'Entendido, la dejamos fuera.'});
+  var list=document.getElementById('list'),cnt=3;
+  document.getElementById('add').addEventListener('click',function(){var t=document.getElementById('nf'),v=t.value.trim();if(!v)return;cnt++;
+    var n=document.createElement('div');n.className='ln';n.textContent=('0'+cnt).slice(-2);n.setAttribute('aria-hidden','true');
+    var p=document.createElement('p');p.className='say';p.style.margin='0';p.textContent=v;
+    var a=document.createElement('aside');a.className='note';a.innerHTML='<b>Sin pista todavía</b>Guardada como borrador. Tú decides si la confirmas.';
+    list.append(n,p,a);t.value=''});
+  document.getElementById('cf').addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('cm'),v=t.value.trim();if(!v)return;
+    var th=document.getElementById('thread');
+    var me=document.createElement('div');me.className='turn me';
+    var w=document.createElement('span');w.className='who';w.textContent='Tú';
+    var l=document.createElement('span');l.className='ln';l.setAttribute('aria-hidden','true');l.textContent='03';
+    var p=document.createElement('p');p.className='txt';p.style.margin='0';p.textContent=v;me.append(w,l,p);th.append(me);
+    var ai=document.createElement('div');ai.className='turn ai';
+    var w2=document.createElement('span');w2.className='who';w2.textContent='Elevation';
+    var l2=document.createElement('span');l2.className='ln';
+    var p2=document.createElement('p');p2.className='txt';p2.style.margin='0';p2.textContent='Gracias por contarlo. En este prototipo no hay respuesta real; en el producto, aquí seguiría una pregunta.';
+    ai.append(w2,l2,p2);th.append(ai);t.value='';ai.scrollIntoView({block:'nearest'})});
+})();
+</script>
+</body>
+</html>

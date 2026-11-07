@@ -1,0 +1,41 @@
+{
+ "pasos": [
+  {
+   "paso": "Abrir el borrador para editarlo",
+   "ok": true,
+   "ms": 2085
+  },
+  {
+   "paso": "Completar efecto observado y autonomía",
+   "ok": true,
+   "ms": 255
+  },
+  {
+   "paso": "Guardar y revisar para confirmar",
+   "ok": true,
+   "ms": 1772,
+   "nota": "Borrador guardado"
+  },
+  {
+   "paso": "Confirmar evidencia",
+   "ok": false,
+   "ms": 8032,
+   "nota": "locator.check: Timeout 8000ms exceeded."
+  },
+  {
+   "paso": "Mapa: capacidad y registrar nivel",
+   "ok": false,
+   "ms": 11599,
+   "nota": "locator.check: Timeout 8000ms exceeded."
+  },
+  {
+   "paso": "Retirar mi nivel",
+   "ok": false,
+   "ms": 8030,
+   "nota": "locator.click: Timeout 8000ms exceeded."
+  }
+ ],
+ "llamadasDeEscritura": [
+  "PUT /api/evidence/58 → 201"
+ ]
+}

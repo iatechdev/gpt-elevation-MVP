@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation · Maquetas de rediseño (ES-148)</title>
+<style>
+/* Tokens: los existentes de frontend/src/styles/tokens.css, sin colores nuevos salvo los marcados «nuevo». */
+:root{
+  --bg:#FAFAF9; --surface:#F2F1EF; --card:#fff; --ink:#1A1A18; --ink-2:#5E5E5A; --line:#E0DED9; --control:#8A8780;
+  --ocre:#B8963E; --ocre-text:#7D6218; --ocre-bg:#F6EFDC;
+  --ai:#065F46; --ai-bg:#F0FDFA; --error:#7A3030; --error-bg:#F7E6E6; --info:#075985; --info-bg:#E0F2FE; --success:#065F46;
+  --focus:#2F6B8F; --r:.75rem; --r-lg:1.25rem; --touch:2.75rem;
+  --font:'Inter',system-ui,sans-serif; --serif:Georgia,'Times New Roman',serif; /* nuevo: la serif solo en el titular de página */
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#151513;--surface:#222119;--card:#1c1b18;--ink:#F3F1EA;--ink-2:#B4B2AA;--line:#34332F;--control:#8d8a82;--ocre-text:#D9B861;--ocre-bg:#2b2616;--ai-bg:#10241f;--error:#F1ABAB;--error-bg:#2e1a1a;--info:#9fd3f2;--info-bg:#112733;--focus:#7cc0e8}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--font)}
+a{color:var(--ocre-text)} :focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:6px}
+.sr{position:absolute;left:-9999px}.skip:focus{left:8px;top:8px;background:var(--ink);color:var(--bg);padding:.5rem 1rem;z-index:99}
+/* Barra de la maqueta (no es parte del producto) */
+.deck{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);padding:.5rem 1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.deck b{margin-right:.5rem}.deck button{min-height:var(--touch);padding:0 .9rem;border:1px solid var(--control);background:var(--card);color:var(--ink);border-radius:999px;font:inherit;cursor:pointer}
+.deck button[aria-pressed=true],.deck button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.note{max-width:62rem;margin:1rem auto;padding:0 1rem;color:var(--ink-2);font-size:.9rem}
+/* Marco de dispositivo */
+.stage{display:flex;justify-content:center;padding:1rem}
+.frame{width:100%;max-width:1100px;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--bg);display:grid;grid-template-columns:15rem 1fr;min-height:640px}
+.frame.mobile{max-width:393px;grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
+/* Navegación: lateral en escritorio, barra inferior en móvil */
+.side{background:var(--surface);border-right:1px solid var(--line);padding:1rem;display:flex;flex-direction:column;gap:.25rem}
+.brand{font-weight:800;letter-spacing:-.02em;font-size:1.25rem;display:flex;align-items:center;gap:.4rem;margin-bottom:1rem}.brand i{width:7px;height:7px;border-radius:50%;background:var(--ocre);display:inline-block}
+.nav a{display:flex;align-items:center;gap:.6rem;min-height:var(--touch);padding:0 .75rem;border-radius:var(--r);color:var(--ink);text-decoration:none}
+.nav a[aria-current=page]{background:var(--card);box-shadow:inset 3px 0 0 var(--ocre);font-weight:600}
+.side .foot{margin-top:auto;display:flex;flex-direction:column;gap:.5rem}
+.lang{display:inline-flex;border:1px solid var(--control);border-radius:999px;overflow:hidden;align-self:flex-start}
+.lang button{min-height:36px;min-width:44px;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;cursor:pointer}.lang button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.mtop{display:none}.mbar{display:none}
+.frame.mobile .side{display:none}
+.frame.mobile .mtop{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--line)}
+.frame.mobile .mbar{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface)}
+.mbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;font-size:.75rem;color:var(--ink);text-decoration:none;gap:2px}
+.mbar a[aria-current=page]{font-weight:700;box-shadow:inset 0 3px 0 var(--ocre)}
+main{padding:1.5rem;display:flex;flex-direction:column;gap:1rem;min-width:0}
+.frame.mobile main{padding:1rem}
+h1{font:400 2rem/1.15 var(--serif);margin:0} .frame.mobile h1{font-size:1.6rem}
+h2{font-size:1rem;margin:0}
+.sub{color:var(--ink-2);margin:.25rem 0 0}
+.eyebrow{font:500 .75rem ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:1.1rem;display:flex;flex-direction:column;gap:.6rem}
+.card.hero{padding:1.4rem}
+.grid{display:grid;gap:1rem;grid-template-columns:1fr 1fr}.frame.mobile .grid{grid-template-columns:1fr}
+.btn{min-height:var(--touch);padding:0 1.1rem;border-radius:var(--r);border:1px solid var(--control);background:var(--card);color:var(--ink);font:600 1rem var(--font);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.quiet{border-color:transparent;color:var(--ocre-text);text-decoration:underline}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.mood{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem}
+.mood button{min-height:4.5rem;border:1px solid var(--control);background:var(--card);border-radius:var(--r);font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.8rem}
+.mood button span{font-size:1.4rem}
+/* Estados */
+.alert{border:1px solid;border-radius:var(--r);padding:.75rem 1rem;display:flex;gap:.75rem;align-items:flex-start;flex-wrap:wrap}
+.alert.err{background:var(--error-bg);border-color:var(--error);color:var(--error)}
+.alert.info{background:var(--info-bg);border-color:var(--info);color:var(--info)}
+.alert.ok{background:var(--ai-bg);border-color:var(--success);color:var(--success)}
+.alert p{margin:0;flex:1 1 14rem}
+.skel{height:.9rem;border-radius:6px;background:linear-gradient(90deg,var(--surface),var(--line),var(--surface));background-size:200% 100%;animation:sh 1.4s infinite}
+@keyframes sh{to{background-position:-200% 0}}@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+.empty{border:1px dashed var(--control);border-radius:var(--r);padding:1.25rem;text-align:center;color:var(--ink-2);display:flex;flex-direction:column;gap:.6rem;align-items:center}
+/* Chat */
+.bubble{max-width:34rem;padding:.9rem 1rem;border-radius:var(--r-lg);background:var(--surface)}.bubble.ai{background:var(--ai-bg);border:1px solid var(--line)}
+.bubble .who{font:500 .75rem ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ai);margin-bottom:.25rem}
+.meter{height:6px;border-radius:99px;background:var(--line);overflow:hidden}.meter i{display:block;height:100%;width:4%;background:var(--ai)}
+.composer{display:flex;gap:.5rem;align-items:flex-end}.composer textarea{flex:1;min-height:3.5rem;border:1px solid var(--control);border-radius:var(--r);padding:.6rem;font:inherit;background:var(--card);color:var(--ink)}
+/* Mapa */
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:.5rem;padding:.6rem 0;border-top:1px solid var(--line)}
+.pips{display:inline-flex;gap:3px}.pips i{width:20px;height:12px;border:1px dashed var(--control);border-radius:3px}
+.frame.mobile .row{grid-template-columns:1fr}.tag{white-space:nowrap;font-size:.8rem;border:1px solid var(--control);border-radius:999px;padding:.1rem .6rem;color:var(--ink-2)}
+.demo{border:2px dashed var(--ocre);padding:.2rem .6rem;border-radius:6px;font-size:.8rem;background:var(--ocre-bg);color:var(--ocre-text)}
+.screen{display:none}.screen.on{display:block}
+[lang-en]{display:none}html[data-l=en] [lang-es]{display:none}html[data-l=en] [lang-en]{display:revert}
+</style>
+</head>
+<body>
+<a class="skip sr" href="#contenido"><span lang-es>Saltar al contenido</span><span lang-en>Skip to content</span></a>
+
+<div class="deck" role="toolbar" aria-label="Controles de la maqueta">
+  <b>Maqueta ES-148</b>
+  <span role="tablist" aria-label="Pantalla" id="tabs"></span>
+  <button id="bDev" aria-pressed="false" type="button">Escritorio / Móvil</button>
+  <button id="bLang" aria-pressed="false" type="button">ES / EN</button>
+  <button id="bTheme" aria-pressed="false" type="button">Claro / Oscuro</button>
+</div>
+<p class="note"><span lang-es>Maqueta estática y navegable con teclado (Tab, Enter; las pestañas con flechas). Los textos son propuesta ES/EN. <b>No hay datos reales ni inventados</b>: lo marcado «ejemplo de maqueta» sirve solo para mostrar el diseño.</span><span lang-en>Static, keyboard-navigable mockup (Tab, Enter; tabs with arrow keys). Copy is a proposal in ES/EN. <b>No real or invented data</b>: anything marked “mockup example” only shows the layout.</span></p>
+
+<div class="stage"><div class="frame" id="frame">
+  <aside class="side" aria-label="Navegación">
+    <div class="brand">elevation<i></i></div>
+    <nav class="nav" id="nav" aria-label="Principal"></nav>
+    <div class="foot">
+      <div class="lang" role="group" aria-label="Idioma"><button type="button" data-set="es" aria-pressed="true">ES</button><button type="button" data-set="en" aria-pressed="false">EN</button></div>
+      <a class="btn quiet" href="#" style="justify-content:flex-start"><span lang-es>Mi cuenta y mis datos</span><span lang-en>My account &amp; data</span></a>
+    </div>
+  </aside>
+  <div class="mtop"><div class="brand" style="margin:0">elevation<i></i></div>
+    <div class="lang" role="group" aria-label="Idioma"><button type="button" data-set="es" aria-pressed="true">ES</button><button type="button" data-set="en" aria-pressed="false">EN</button></div></div>
+
+  <main id="contenido" tabindex="-1">
+
+  <!-- 1 · INICIO -->
+  <section class="screen on" data-id="home" data-es="Inicio" data-en="Home">
+    <h1 lang-es>Hola. ¿Cómo llegas hoy?</h1><h1 lang-en>Hi. How are you arriving today?</h1>
+    <p class="sub"><span lang-es>Este momento es solo tuyo. Puedes saltarlo.</span><span lang-en>This moment is just yours. You can skip it.</span></p>
+    <div class="card hero">
+      <div class="mood" role="group" aria-label="Estado de ánimo">
+        <button type="button"><span aria-hidden="true">😞</span><b lang-es>Muy mal</b><b lang-en>Very low</b></button>
+        <button type="button"><span aria-hidden="true">😔</span><b lang-es>No tan bien</b><b lang-en>Not great</b></button>
+        <button type="button"><span aria-hidden="true">😐</span><b lang-es>Neutral</b><b lang-en>Neutral</b></button>
+        <button type="button"><span aria-hidden="true">🙂</span><b lang-es>Bien</b><b lang-en>Good</b></button>
+        <button type="button"><span aria-hidden="true">😊</span><b lang-es>Muy bien</b><b lang-en>Great</b></button>
+      </div>
+      <div><a class="btn primary" href="#" data-go="chat"><span lang-es>Hablar con el asistente</span><span lang-en>Talk to the assistant</span></a></div>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="eyebrow" lang-es>Tu mapa</span><span class="eyebrow" lang-en>Your map</span>
+        <h2 lang-es>Ocho capacidades, todavía sin evaluar</h2><h2 lang-en>Eight capabilities, not assessed yet</h2>
+        <p class="sub"><span lang-es>Un nivel necesita evidencia que tú confirmes. Empieza con una experiencia real.</span><span lang-en>A level needs evidence you confirm. Start with one real experience.</span></p>
+        <div><a class="btn" href="#" data-go="map"><span lang-es>Abrir mi mapa</span><span lang-en>Open my map</span></a></div></div>
+      <div class="card"><span class="eyebrow" lang-es>Tu uso de IA</span><span class="eyebrow" lang-en>Your AI use</span>
+        <div class="meter" role="img" aria-label="4 %"><i></i></div>
+        <p class="sub"><span lang-es>4 % usado este período · se renueva el 30 de noviembre</span><span lang-en>4% used this period · renews on 30 November</span></p>
+        <span class="demo" lang-es>ejemplo de maqueta</span><span class="demo" lang-en>mockup example</span></div>
+    </div>
+    <div class="alert info" role="note"><p><span lang-es><b>Elevation no es terapia ni diagnóstico.</b> Tu diario y tus conversaciones son privados; solo compartes lo que tú autorices.</span><span lang-en><b>Elevation is not therapy or diagnosis.</b> Your journal and conversations are private; you only share what you authorise.</span></p></div>
+  </section>
+
+  <!-- 2 · CHAT -->
+  <section class="screen" data-id="chat" data-es="Conversación" data-en="Conversation">
+    <h1 lang-es>Conversación</h1><h1 lang-en>Conversation</h1>
+    <p class="sub"><span lang-es>Privada · solo visible para ti</span><span lang-en>Private · only visible to you</span> · <button class="btn quiet" style="min-height:var(--touch)" type="button"><span lang-es>Pausar</span><span lang-en>Pause</span></button></p>
+    <div class="bubble ai"><div class="who">Elevation · <span lang-es>asistente de IA</span><span lang-en>AI assistant</span></div>
+      <span lang-es>Hola, soy un asistente de inteligencia artificial. No hay prisa ni camino obligatorio: puedes saltarte cualquier pregunta. ¿Qué te trae por aquí hoy?</span>
+      <span lang-en>Hi, I’m an AI assistant. There’s no rush and no required path: you can skip any question. What brings you here today?</span></div>
+    <div class="alert err" role="alert"><p><b lang-es>No pudimos confirmar tu mensaje.</b><b lang-en>We couldn’t confirm your message.</b> <span lang-es>Tu texto sigue aquí; no se perdió.</span><span lang-en>Your text is still here; nothing was lost.</span></p><button class="btn" type="button"><span lang-es>Reintentar el mismo envío</span><span lang-en>Retry the same message</span></button></div>
+    <div class="composer"><label class="sr" for="m">Mensaje</label><textarea id="m" placeholder="Escribe lo que quieras…"></textarea><button class="btn primary" type="button"><span lang-es>Enviar</span><span lang-en>Send</span></button></div>
+    <div><div class="meter" role="img" aria-label="4 %"><i></i></div><small class="sub"><span lang-es>4 % de tu uso de IA · se renueva el 30 de nov.</span><span lang-en>4% of your AI use · renews 30 Nov</span></small></div>
+  </section>
+
+  <!-- 3 · MAPA -->
+  <section class="screen" data-id="map" data-es="Mi mapa" data-en="My map">
+    <h1 lang-es>Mi mapa de competencias</h1><h1 lang-en>My skills map</h1>
+    <p class="sub"><span lang-es>Lo que aún no evaluaste queda en hueco, no en cero. Un nivel no certifica: muestra qué evidencia hay hoy.</span><span lang-en>Anything not yet assessed stays empty, not zero. A level doesn’t certify: it shows what evidence exists today.</span></p>
+    <div class="empty"><h2 lang-es>Todavía no hay evidencia en ninguna capacidad</h2><h2 lang-en>No evidence yet in any capability</h2>
+      <span lang-es>Cuenta una experiencia real y confírmala; entonces podrás registrar tu nivel.</span><span lang-en>Describe a real experience and confirm it; then you can record your level.</span>
+      <a class="btn primary" href="#" data-go="evidence"><span lang-es>Añadir mi primera evidencia</span><span lang-en>Add my first evidence</span></a></div>
+    <div class="card" role="list" aria-label="Capacidades">
+      <div class="row" role="listitem"><b lang-es>Adaptabilidad</b><b lang-en>Adaptability</b><span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span> <span class="tag" lang-es>Sin evaluar</span><span class="tag" lang-en>Not assessed</span></span></div>
+      <div class="row" role="listitem"><b lang-es>Comunicación</b><b lang-en>Communication</b><span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span> <span class="tag" lang-es>Sin evaluar</span><span class="tag" lang-en>Not assessed</span></span></div>
+      <div class="row" role="listitem"><b lang-es>Trabajo en equipo</b><b lang-en>Teamwork</b><span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span> <span class="tag" lang-es>Sin evaluar</span><span class="tag" lang-en>Not assessed</span></span></div>
+      <p class="sub" style="margin:0"><span lang-es>… y cinco más del catálogo. Con evidencia aparece «Nivel N» y sus fuentes; sin evidencia, nunca un número.</span><span lang-en>… and five more from the catalogue. With evidence a “Level N” and its sources appear; without evidence, never a number.</span></p></div>
+  </section>
+
+  <!-- 4 · EVIDENCIAS (vacío + éxito) -->
+  <section class="screen" data-id="evidence" data-es="Evidencias" data-en="Evidence">
+    <h1 lang-es>Mis evidencias</h1><h1 lang-en>My evidence</h1>
+    <p class="sub"><span lang-es>Solo lo que tú confirmas cuenta para tu mapa.</span><span lang-en>Only what you confirm counts toward your map.</span></p>
+    <div class="empty"><span aria-hidden="true">📝</span><b lang-es>Aún no tienes evidencias</b><b lang-en>You have no evidence yet</b>
+      <span lang-es>Una evidencia es algo que hiciste: la situación, tu parte y lo que entregaste. Tarda unos 5 minutos.</span><span lang-en>Evidence is something you did: the situation, your part and what you delivered. It takes about 5 minutes.</span>
+      <a class="btn primary" href="#"><span lang-es>Nueva evidencia</span><span lang-en>New evidence</span></a></div>
+    <div class="alert ok" role="status"><p><b lang-es>Evidencia guardada.</b><b lang-en>Evidence saved.</b> <span lang-es>Aún no cuenta para tu mapa hasta que la confirmes.</span><span lang-en>It doesn’t count toward your map until you confirm it.</span></p><a class="btn" href="#"><span lang-es>Revisar y confirmar</span><span lang-en>Review and confirm</span></a></div>
+  </section>
+
+  <!-- 5 · ESTADOS -->
+  <section class="screen" data-id="states" data-es="Estados" data-en="States">
+    <h1 lang-es>Estados de pantalla</h1><h1 lang-en>Screen states</h1>
+    <p class="sub"><span lang-es>Los cuatro estados que toda tarjeta debe resolver, con los mismos componentes en toda la app.</span><span lang-en>The four states every card must handle, using the same components across the app.</span></p>
+    <div class="grid">
+      <div class="card"><span class="eyebrow" lang-es>Cargando</span><span class="eyebrow" lang-en>Loading</span><div class="skel" style="width:60%"></div><div class="skel"></div><div class="skel" style="width:80%"></div><small class="sub" role="status"><span lang-es>Cargando tu mapa…</span><span lang-en>Loading your map…</span></small></div>
+      <div class="card"><span class="eyebrow" lang-es>Vacío</span><span class="eyebrow" lang-en>Empty</span><div class="empty"><span lang-es>Aún no tienes entradas de diario.</span><span lang-en>You have no journal entries yet.</span><a class="btn" href="#"><span lang-es>Nueva entrada</span><span lang-en>New entry</span></a></div></div>
+      <div class="card"><span class="eyebrow">Error</span><div class="alert err" role="alert"><p><b lang-es>No pudimos cargar tu diario.</b><b lang-en>We couldn’t load your journal.</b> <span lang-es>Tus datos están a salvo.</span><span lang-en>Your data is safe.</span></p><button class="btn" type="button"><span lang-es>Reintentar</span><span lang-en>Retry</span></button></div></div>
+      <div class="card"><span class="eyebrow" lang-es>Éxito</span><span class="eyebrow" lang-en>Success</span><div class="alert ok" role="status"><p><b lang-es>Guardado.</b><b lang-en>Saved.</b> <span lang-es>Solo tú puedes ver esta entrada.</span><span lang-en>Only you can see this entry.</span></p></div></div>
+    </div>
+  </section>
+
+  </main>
+  <nav class="mbar" id="mbar" aria-label="Principal (móvil)"></nav>
+</div></div>
+
+<script>
+const screens=[...document.querySelectorAll('.screen')];
+const ico={home:'🏠',chat:'💬',map:'🧭',evidence:'📝',states:'▦'};
+const tabs=document.getElementById('tabs'),nav=document.getElementById('nav'),mbar=document.getElementById('mbar');
+function label(s){return document.documentElement.dataset.l==='en'?s.dataset.en:s.dataset.es}
+function build(){
+  const cur=(screens.find(s=>s.classList.contains('on'))||{dataset:{}}).dataset.id;
+  tabs.innerHTML='';nav.innerHTML='';mbar.innerHTML='';
+  screens.forEach(s=>{
+    const id=s.dataset.id,on=id===cur;
+    const t=document.createElement('button');t.type='button';t.role='tab';t.textContent=label(s);t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;t.onclick=()=>show(id);t.onkeydown=e=>{const i=screens.indexOf(s);if(e.key==='ArrowRight')show(screens[(i+1)%screens.length].dataset.id,1);if(e.key==='ArrowLeft')show(screens[(i-1+screens.length)%screens.length].dataset.id,1)};tabs.append(t);
+    if(id!=='states'){
+      const a=document.createElement('a');a.href='#';a.innerHTML=`<span aria-hidden="true">${ico[id]}</span> ${label(s)}`;if(on)a.setAttribute('aria-current','page');a.onclick=e=>{e.preventDefault();show(id)};nav.append(a);
+      if(id!=='evidence'){const b=a.cloneNode(true);b.innerHTML=`<span aria-hidden="true">${ico[id]}</span>${label(s)}`;b.onclick=e=>{e.preventDefault();show(id)};mbar.append(b)}
+    }
+  });
+  const more=document.createElement('a');more.href='#';more.innerHTML='<span aria-hidden="true">⋯</span>'+(document.documentElement.dataset.l==='en'?'More':'Más');more.onclick=e=>{e.preventDefault();show('states')};mbar.append(more);
+}
+function show(id,focus){screens.forEach(s=>s.classList.toggle('on',s.dataset.id===id));build();if(focus)tabs.querySelector('[aria-selected=true]').focus();else document.getElementById('contenido').focus({preventScroll:true})}
+document.querySelectorAll('[data-go]').forEach(a=>a.onclick=e=>{e.preventDefault();show(a.dataset.go)});
+function setLang(l){document.documentElement.dataset.l=l;document.documentElement.lang=l;document.querySelectorAll('[data-set]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.set===l));document.getElementById('bLang').setAttribute('aria-pressed',l==='en');build()}
+document.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>setLang(b.dataset.set));
+document.getElementById('bLang').onclick=()=>setLang(document.documentElement.dataset.l==='en'?'es':'en');
+document.getElementById('bDev').onclick=function(){const m=document.getElementById('frame').classList.toggle('mobile');this.setAttribute('aria-pressed',m)};
+document.getElementById('bTheme').onclick=function(){const r=document.documentElement,d=r.dataset.theme==='dark';r.dataset.theme=d?'light':'dark';this.setAttribute('aria-pressed',!d)};
+if(matchMedia('(max-width:700px)').matches)document.getElementById('frame').classList.add('mobile');
+build();
+</script>
+<style>:root[data-theme=dark]{--bg:#151513;--surface:#222119;--card:#1c1b18;--ink:#F3F1EA;--ink-2:#B4B2AA;--line:#34332F;--control:#8d8a82;--ocre-text:#D9B861;--ocre-bg:#2b2616;--ai-bg:#10241f;--error:#F1ABAB;--error-bg:#2e1a1a;--info:#9fd3f2;--info-bg:#112733;--focus:#7cc0e8;--ai:#6ee7b7;--success:#6ee7b7}</style>
+</body>
+</html>

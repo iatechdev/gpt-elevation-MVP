@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation · Diseño final propuesto (ES-148)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="deck" role="toolbar" aria-label="Controles del prototipo">
+  <span class="ttl">Elevation · diseño final propuesto</span>
+  <label class="sr" for="scr">Pantalla</label><select id="scr"></select>
+  <label class="sr" for="sc">Escenario</label>
+  <select id="sc"><option value="new">Cuenta nueva</option><option value="active">Conversación en curso</option><option value="evidence">Con evidencias</option><option value="leveled">Con nivel y solicitud</option></select>
+  <button id="bDev" type="button" aria-pressed="false">Móvil</button>
+  <button id="bLang" type="button">EN</button>
+  <button id="bTheme" type="button" aria-pressed="false">Claro / Oscuro</button>
+</div>
+<div class="ribbon" id="ribbon"></div>
+<div class="stage"><div class="device grain" id="device"><div id="view" style="display:flex;flex-direction:column;flex:1;min-height:inherit;position:relative"></div></div></div>
+<script src="copy.js"></script>
+<script src="copy-extra.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

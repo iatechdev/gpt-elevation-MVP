@@ -1,0 +1,71 @@
+{
+ "pasos": [
+  {
+   "paso": "Abrir «Nueva evidencia»",
+   "ok": true,
+   "ms": 5041,
+   "nota": "campos visibles: 10"
+  },
+  {
+   "paso": "Llenar los campos obligatorios",
+   "ok": false,
+   "ms": 333,
+   "nota": "locator.check: Error: strict mode violation: getByLabel('Lo conozco') resolved to 2 elements:"
+  },
+  {
+   "paso": "Guardar borrador",
+   "ok": true,
+   "ms": 1881,
+   "nota": "Borrador guardado"
+  },
+  {
+   "paso": "Revisar para confirmar",
+   "ok": false,
+   "ms": 8027,
+   "nota": "locator.click: Timeout 8000ms exceeded."
+  },
+  {
+   "paso": "Confirmar evidencia",
+   "ok": false,
+   "ms": 8026,
+   "nota": "locator.check: Timeout 8000ms exceeded."
+  },
+  {
+   "paso": "Abrir el mapa y elegir una capacidad",
+   "ok": true,
+   "ms": 2437
+  },
+  {
+   "paso": "Registrar mi nivel (3 pasos)",
+   "ok": false,
+   "ms": 9199,
+   "nota": "locator.check: Timeout 8000ms exceeded."
+  },
+  {
+   "paso": "Retirar mi nivel",
+   "ok": false,
+   "ms": 8030,
+   "nota": "locator.click: Timeout 8000ms exceeded."
+  },
+  {
+   "paso": "Ver planes con sesión",
+   "ok": true,
+   "ms": 1888
+  },
+  {
+   "paso": "Solicitar un plan",
+   "ok": true,
+   "ms": 2896,
+   "nota": "Tu solicitud quedó registrada y está en revisión. El plan aún no está activado."
+  },
+  {
+   "paso": "Plan en el panel tras la solicitud",
+   "ok": true,
+   "ms": 1998
+  }
+ ],
+ "llamadasDeEscritura": [
+  "POST /api/evidence → 201",
+  "POST /api/plan-requests → 201"
+ ]
+}
