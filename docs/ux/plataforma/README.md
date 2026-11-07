@@ -39,7 +39,12 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 | `/app/progress` | `progreso` (`p-progreso.js`) | Hecho: cifras, recomendaciones, historial emocional, calificaciones, vacío, error |
 | `/app/feedback` | `opinion` | Hecho: vista de revisión con datos ficticios, omitir cada pregunta, guardado incierto, conflicto, retirar |
 | `/app/dashboard` | `inicio` | Es el mapa (ver arriba): en el código real la ruta redirige al mapa |
-| Profesional, administración, junta | | Pendiente |
+| `/facilitation`, `/facilitation/participants/:id`, `/facilitation/participants/:id/reviews/new` | `facilitacion`, `facilitacion_persona`, `facilitacion_revision` (`p-profesional.js`) | Hecho: personas asignadas, progreso por pasos, materiales, registrar revisión (evidencias, observación, límites, vista previa exacta), guardia al salir, error de guardado, confirmación incierta sin duplicar, conflicto de versión, acceso retirado, solicitar invitación |
+| `/app/professional-reviews` | `mis_revisiones` | Hecho: revisiones recibidas, objetar con vista previa, pendiente/respondida, vacío |
+| `/therapist/dashboard` | `panel_pro` | Hecho: resumen, próximas sesiones, personas, avisos, validación académica (subir, estados, rechazo), guía para la IA (proponer, pendiente, rechazada); cada sección con su error |
+| `/therapist/patient/:id` | `paciente_pro` | Hecho: resumen con IA, notas de seguimiento (filtrar, crear, editar), historial emocional, valoraciones, agendar sesión, sin autorización |
+| `/therapist/session/:id` | `sala_pro` | Hecho: pantalla previa, conectando, error al iniciar, en sesión con notas en vivo (autoguardado y error), cierre con ánimo y nota |
+| Administración, junta, `/reset-password`, `/profesionales`, `/pricing` real | | Pendiente |
 
 ## Decisiones que necesito de Alejo y Mauricio (de esta entrega)
 
@@ -58,9 +63,24 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 10. **Opinión.** El permiso real depende del contrato de Mauricio. Hasta entonces se mantiene la franja «Vista de revisión · datos ficticios» y no se envía nada; el texto de retirada se reescribe sin la palabra «simulación» (propuesta).
 11. **Catálogo.** Todo el contenido (fichas, fuentes, ofertas, recursos, mercados) es de ejemplo, con dominio `.invalid` y el aviso «Contenido de prueba» siempre visible. Sin porcentajes ni afirmaciones de reemplazo por IA. Los enlaces externos avisan «se abre en una pestaña nueva» (propuesta).
 
+### Decisiones de la entrega 5 (familia profesional)
+
+12. **Vocabulario.** «Personas» en lugar de «pacientes», «notas de seguimiento» en lugar de «notas clínicas» y «resumen con IA» en lugar de resumen clínico. Prolonga la decisión 2: el producto es no clínico. Cambia textos reales (`therapist_*`).
+13. **Porcentajes.** El aviso de progreso del código dice «+N %» (`improvementPercent`). El diseño lo dice con palabras («su ánimo mejoró en los registros recientes») y no muestra porcentajes: no hay base para presentarlos como medición.
+14. **Privacidad: hallazgo para Dev y QA.** Cuando una persona no autorizó compartir, el código del panel oculta sus datos con `display:none`, pero siguen en la página. El diseño no los dibuja y espera que el servidor tampoco los envíe. Hay que verificarlo (es una regla no negociable).
+15. **Errores que hoy se tragan en silencio.** Sesiones próximas, avisos, validación académica y guía para la IA fallan sin avisar, y editar una nota que no se guardó tampoco dice nada. El diseño da a cada sección su propio error con reintento y conserva el texto.
+16. **Sala con pantalla previa.** El código inicia la sesión (llamada `start`) al montar la sala: recargar o abrir dos veces puede iniciarla dos veces. El diseño pide un clic en «Iniciar sesión». Cambia el flujo y el servidor debe ser idempotente.
+17. **Cierre de sesión.** «Finalizar» deja de ser rojo (el rojo queda para errores). El cierre sigue exigiendo ánimo y nota de 10 caracteres. La etiqueta «Cómo ves a la persona al terminar» es propuesta; el texto real no se verificó.
+18. **Guía para la IA (el «prompt terapéutico» del código).** Una persona profesional propone instrucciones que orientan a la IA con las personas que acompaña y administración las aprueba. Es la pieza con más riesgo del paquete: el diseño añade el recordatorio de las reglas (sin diagnóstico, sin tratamiento, sin promesas de empleo), pero la validación real (inyección de instrucciones, límites no clínicos) debe vivir en el servidor. **Posible objeción para Mauricio y Alejo** antes de implementarla.
+19. **Facilitación y «Revisiones profesionales».** Son una vista preliminar con datos sintéticos y el permiso real depende del contrato; se mantiene la franja y «Solicitar invitación» sigue siendo una simulación. En el código, «Mis revisiones» solo se llega desde la consola de facilitación; el prototipo la añade al menú de la persona (no verifiqué si existe otro acceso).
+20. **Cifra «Total de sesiones».** En la ficha, el código la calcula contando registros de ánimo. El diseño la renombra «Registros de ánimo». Si se quiere contar sesiones, el servidor debe entregarlo.
+
 ## Qué se verificó
 
-- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 32 pantallas (25 anteriores + herramientas, ejercicios, brújula, catálogo, ficha, progreso y opinión).
+- Entrega 5: barrido de las 7 pantallas profesionales en ES/EN, claro y oscuro, 390 y 1360 px (sin desborde, un solo h1, axe sin hallazgos graves ni críticos) y flujos de punta a punta con Playwright (revisión con evidencia, vista previa, guardia al salir, error y reintento del mismo envío, confirmación incierta sin duplicar, conflicto, acceso retirado, invitación; objeción; panel con errores por sección, validación y guía; ficha con resumen IA, notas, filtro, edición con error, agendar; sala con autoguardado, error y cierre).
+- Colisión de claves de texto entre archivos: se detectó y corrigió (`rv_t`, `sp_back`, `sp_save` ya existían en otros módulos).
+
+- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 39 pantallas (32 anteriores + 7 profesionales).
 - Entrega 4: flujos de punta a punta con Playwright (ejercicio con notas y diálogo, error de copiado, brújula con campos, texto no compartible, vista previa, confirmación incierta, reintento, retirar, versión activa, vencida y pendiente de revisar; catálogo con filtros y fichas; progreso; opinión con guardado incierto, consulta de estado, retirar y conflicto) y axe-core sin hallazgos graves ni críticos en claro y oscuro, ES y EN.
 - Corrección de dos fallos de la primera fase: el botón «Crear cuenta» de la barra tenía el texto del color del fondo, y los botones secundarios desactivados salían como un bloque gris sin texto. Además, los enlaces de texto usaban el azul del navegador.
 - axe-core (WCAG 2 A/AA), nivel grave y crítico, en claro y oscuro, ES y EN: 0 hallazgos.

@@ -181,3 +181,11 @@ fieldset.fld>legend{font:600 .85rem var(--cond);letter-spacing:.1em;text-transfo
 
 /* Familia 4: herramientas, ejercicios, brujula, catalogo, progreso, opinion */
 .cprow legend{margin-bottom:.5rem}.cprow .row{margin-top:.6rem}
+.prose{white-space:pre-wrap;overflow-wrap:anywhere}
+.pferr{color:var(--err)}
+.pfcols{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:2rem;align-items:start}
+@media (max-width:900px){.pfcols{grid-template-columns:1fr}}
+.rmbody{display:grid;grid-template-columns:minmax(0,1fr) 20rem;min-height:60vh}
+.rmnotes{padding:1rem 1.2rem;border-left:1px solid color-mix(in srgb,var(--ground) 25%,transparent);display:grid;align-content:start;gap:.4rem}
+.rmnotes textarea{color:var(--ink);min-height:12rem}
+@media (max-width:900px){.rmbody{grid-template-columns:1fr}.rmnotes{border-left:0;border-top:1px solid color-mix(in srgb,var(--ground) 25%,transparent)}}
