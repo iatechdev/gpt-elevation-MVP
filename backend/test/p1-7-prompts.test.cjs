@@ -5,7 +5,7 @@ const { promptVault, startApp } = require('./support.cjs');
 test('P1-7: admin cannot approve, reject or roll back prompts through either alias', async t => {
   const calls = [];
   for (const action of ['approve', 'reject', 'rollback', 'propose']) {
-    promptVault[action + 'Prompt'] = async (...args) => { calls.push({ action, args }); };
+    promptVault[action + 'Prompt'] = async (...args) => { calls.push({ action, args }); return { id: 7, version: 2, status: 'pending_review', outcome: 'passed', reasons: [] }; }; // ES-191: propose devuelve el resultado de la revisión
   }
   promptVault.PromptVault.findAll = async () => [];
   const request = await startApp(t);

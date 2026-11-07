@@ -33,7 +33,7 @@ test('P1-9: production entrypoints, signer and verifier fail closed without JWT_
 test('P1-9: configured production key works; foreign or missing tokens are denied', async t => {
   process.env.NODE_ENV = 'production';
   let proposed = false;
-  promptVault.proposePrompt = async () => { proposed = true; };
+  promptVault.proposePrompt = async () => { proposed = true; return { id: 1, version: 2, status: 'pending_review', outcome: 'passed', reasons: [] }; }; // ES-191: devuelve el resultado de la revisión
   const request = await startApp(t);
   assert.equal((await request('POST', '/api/admin/prompt/propose', {
     role: 'admin', body: { key: 'synthetic', content: 'Synthetic prompt' },
