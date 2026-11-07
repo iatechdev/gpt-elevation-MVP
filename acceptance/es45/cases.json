@@ -1,0 +1,2936 @@
+{
+  "schemaVersion": 1,
+  "ticket": "ES-45",
+  "families": [
+    {
+      "id": "E45-01",
+      "title": {
+        "es": "Entorno y despliegue",
+        "en": "Environment and deployment"
+      },
+      "hu": [
+        "ES-10"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-01, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Entorno y despliegue» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El entorno está aislado y protegido, y el SHA completo coincide con evidencia del deployment; health por sí solo no acredita DB ni autenticación.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-01, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Environment and deployment” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The environment is isolated and protected, and the full SHA matches deployment evidence; health alone does not verify DB or authentication.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El entorno está aislado y protegido, y el SHA completo coincide con evidencia del deployment; health por sí solo no acredita DB ni autenticación.",
+            "en": "The environment is isolated and protected, and the full SHA matches deployment evidence; health alone does not verify DB or authentication."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-01, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Entorno y despliegue» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El entorno está aislado y protegido, y el SHA completo coincide con evidencia del deployment; health por sí solo no acredita DB ni autenticación.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-01, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Environment and deployment” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The environment is isolated and protected, and the full SHA matches deployment evidence; health alone does not verify DB or authentication.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El entorno está aislado y protegido, y el SHA completo coincide con evidencia del deployment; health por sí solo no acredita DB ni autenticación.",
+            "en": "The environment is isolated and protected, and the full SHA matches deployment evidence; health alone does not verify DB or authentication."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-02",
+      "title": {
+        "es": "Puertas e inicio de sesión",
+        "en": "Entry doors and sign-in"
+      },
+      "hu": [
+        "ES-14"
+      ],
+      "requiredLayers": [
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-02, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Puertas e inicio de sesión» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Ambas puertas conservan el destino aprobado y el inicio de sesión real muestra una pantalla existente, no el fallback HTML.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-02, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Entry doors and sign-in” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Both entry doors preserve the approved destination and real sign-in displays an existing screen, not the HTML fallback.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Ambas puertas conservan el destino aprobado y el inicio de sesión real muestra una pantalla existente, no el fallback HTML.",
+            "en": "Both entry doors preserve the approved destination and real sign-in displays an existing screen, not the HTML fallback."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-02, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Puertas e inicio de sesión» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Ambas puertas conservan el destino aprobado y el inicio de sesión real muestra una pantalla existente, no el fallback HTML.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-02, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Entry doors and sign-in” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Both entry doors preserve the approved destination and real sign-in displays an existing screen, not the HTML fallback.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Ambas puertas conservan el destino aprobado y el inicio de sesión real muestra una pantalla existente, no el fallback HTML.",
+            "en": "Both entry doors preserve the approved destination and real sign-in displays an existing screen, not the HTML fallback."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-03",
+      "title": {
+        "es": "Consentimiento por finalidad",
+        "en": "Independent consent purposes"
+      },
+      "hu": [
+        "ES-19"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-03, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Consentimiento por finalidad» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Rechazar investigación, notificaciones o compartir no concede permiso ni bloquea el uso permitido; cada decisión se recupera por separado.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-03, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Independent consent purposes” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Declining research, notifications or sharing neither grants access nor blocks allowed use; each decision is recovered separately.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Rechazar investigación, notificaciones o compartir no concede permiso ni bloquea el uso permitido; cada decisión se recupera por separado.",
+            "en": "Declining research, notifications or sharing neither grants access nor blocks allowed use; each decision is recovered separately."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-03, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Consentimiento por finalidad» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Rechazar investigación, notificaciones o compartir no concede permiso ni bloquea el uso permitido; cada decisión se recupera por separado.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-03, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Independent consent purposes” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Declining research, notifications or sharing neither grants access nor blocks allowed use; each decision is recovered separately.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Rechazar investigación, notificaciones o compartir no concede permiso ni bloquea el uso permitido; cada decisión se recupera por separado.",
+            "en": "Declining research, notifications or sharing neither grants access nor blocks allowed use; each decision is recovered separately."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-04",
+      "title": {
+        "es": "Recuperación entre navegadores",
+        "en": "Cross-browser recovery"
+      },
+      "hu": [
+        "ES-20"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-04, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Recuperación entre navegadores» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Tras cerrar contexto y autenticarse en otro navegador, solo se recuperan registros confirmados del mismo titular.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-04, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Cross-browser recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: After closing the context and authenticating in another browser, only confirmed records belonging to the same owner are recovered.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Tras cerrar contexto y autenticarse en otro navegador, solo se recuperan registros confirmados del mismo titular.",
+            "en": "After closing the context and authenticating in another browser, only confirmed records belonging to the same owner are recovered."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-04, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Recuperación entre navegadores» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Tras cerrar contexto y autenticarse en otro navegador, solo se recuperan registros confirmados del mismo titular.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-04, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Cross-browser recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: After closing the context and authenticating in another browser, only confirmed records belonging to the same owner are recovered.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Tras cerrar contexto y autenticarse en otro navegador, solo se recuperan registros confirmados del mismo titular.",
+            "en": "After closing the context and authenticating in another browser, only confirmed records belonging to the same owner are recovered."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-05",
+      "title": {
+        "es": "Espacio privado opcional y silencio",
+        "en": "Optional private space and silence"
+      },
+      "hu": [
+        "ES-15"
+      ],
+      "requiredLayers": [
+        "staging_browser",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-05, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Espacio privado opcional y silencio» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Diario y exploración son opcionales; el silencio y abandono se respetan, sin transferencia a carrera ni seguimiento automático.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-05, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Optional private space and silence” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Journaling and exploration are optional; silence and abandonment are respected, with no transfer to career or automatic follow-up.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Diario y exploración son opcionales; el silencio y abandono se respetan, sin transferencia a carrera ni seguimiento automático.",
+            "en": "Journaling and exploration are optional; silence and abandonment are respected, with no transfer to career or automatic follow-up."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-05, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Espacio privado opcional y silencio» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Diario y exploración son opcionales; el silencio y abandono se respetan, sin transferencia a carrera ni seguimiento automático.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-05, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Optional private space and silence” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Journaling and exploration are optional; silence and abandonment are respected, with no transfer to career or automatic follow-up.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Diario y exploración son opcionales; el silencio y abandono se respetan, sin transferencia a carrera ni seguimiento automático.",
+            "en": "Journaling and exploration are optional; silence and abandonment are respected, with no transfer to career or automatic follow-up."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-06",
+      "title": {
+        "es": "Puente autorizado exacto",
+        "en": "Exact authorized bridge"
+      },
+      "hu": [
+        "ES-26"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-06, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Puente autorizado exacto» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Solo se transfiere la selección exacta confirmada; editar un borrador o ver preview no concede acceso ni transfiere datos.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-06, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Exact authorized bridge” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Only the exact confirmed selection is transferred; editing a draft or viewing a preview does not grant access or transfer data.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Solo se transfiere la selección exacta confirmada; editar un borrador o ver preview no concede acceso ni transfiere datos.",
+            "en": "Only the exact confirmed selection is transferred; editing a draft or viewing a preview does not grant access or transfer data."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-06, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Puente autorizado exacto» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Solo se transfiere la selección exacta confirmada; editar un borrador o ver preview no concede acceso ni transfiere datos.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-06, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Exact authorized bridge” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Only the exact confirmed selection is transferred; editing a draft or viewing a preview does not grant access or transfer data.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Solo se transfiere la selección exacta confirmada; editar un borrador o ver preview no concede acceso ni transfiere datos.",
+            "en": "Only the exact confirmed selection is transferred; editing a draft or viewing a preview does not grant access or transfer data."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-07",
+      "title": {
+        "es": "Contexto directo",
+        "en": "Direct context"
+      },
+      "hu": [
+        "ES-14"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-07, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Contexto directo» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Se puede avanzar por contexto directo sin chat; idioma, zona y disponibilidad provienen de ParticipantContext canónico.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-07, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Direct context” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Direct context works without chat; language, time zone and availability come from canonical ParticipantContext.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Se puede avanzar por contexto directo sin chat; idioma, zona y disponibilidad provienen de ParticipantContext canónico.",
+            "en": "Direct context works without chat; language, time zone and availability come from canonical ParticipantContext."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-07, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Contexto directo» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Se puede avanzar por contexto directo sin chat; idioma, zona y disponibilidad provienen de ParticipantContext canónico.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-07, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Direct context” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Direct context works without chat; language, time zone and availability come from canonical ParticipantContext.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Se puede avanzar por contexto directo sin chat; idioma, zona y disponibilidad provienen de ParticipantContext canónico.",
+            "en": "Direct context works without chat; language, time zone and availability come from canonical ParticipantContext."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-08",
+      "title": {
+        "es": "Evidencia profesional",
+        "en": "Professional evidence"
+      },
+      "hu": [
+        "ES-28"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-08, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Evidencia profesional» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La evidencia propia conserva procedencia y versiones; confirmar y recuperar no mezcla datos de otro titular.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-08, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Professional evidence” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Owned evidence preserves provenance and versions; confirmation and recovery do not mix another owner's data.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La evidencia propia conserva procedencia y versiones; confirmar y recuperar no mezcla datos de otro titular.",
+            "en": "Owned evidence preserves provenance and versions; confirmation and recovery do not mix another owner's data."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-08, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Evidencia profesional» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La evidencia propia conserva procedencia y versiones; confirmar y recuperar no mezcla datos de otro titular.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-08, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Professional evidence” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Owned evidence preserves provenance and versions; confirmation and recovery do not mix another owner's data.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La evidencia propia conserva procedencia y versiones; confirmar y recuperar no mezcla datos de otro titular.",
+            "en": "Owned evidence preserves provenance and versions; confirmation and recovery do not mix another owner's data."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-09",
+      "title": {
+        "es": "Mapa trazable nullable",
+        "en": "Traceable nullable map"
+      },
+      "hu": [
+        "ES-30"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-09, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Mapa trazable nullable» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Sin evidencia el nivel es null; las pistas propia y humana se distinguen y cada afirmación tiene evidencia/versiones pertinentes.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-09, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Traceable nullable map” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Without evidence the level is null; self and human tracks are separate and each claim has relevant evidence and versions.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Sin evidencia el nivel es null; las pistas propia y humana se distinguen y cada afirmación tiene evidencia/versiones pertinentes.",
+            "en": "Without evidence the level is null; self and human tracks are separate and each claim has relevant evidence and versions."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-09, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Mapa trazable nullable» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Sin evidencia el nivel es null; las pistas propia y humana se distinguen y cada afirmación tiene evidencia/versiones pertinentes.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-09, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Traceable nullable map” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Without evidence the level is null; self and human tracks are separate and each claim has relevant evidence and versions.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Sin evidencia el nivel es null; las pistas propia y humana se distinguen y cada afirmación tiene evidencia/versiones pertinentes.",
+            "en": "Without evidence the level is null; self and human tracks are separate and each claim has relevant evidence and versions."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-10",
+      "title": {
+        "es": "Rutas no técnicas pertinentes",
+        "en": "Relevant nontechnical routes"
+      },
+      "hu": [
+        "ES-32"
+      ],
+      "requiredLayers": [
+        "staging_browser",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-10, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Rutas no técnicas pertinentes» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Hay razones, límites, brechas y fuentes oficiales fechadas pertinentes para contextos no técnicos, sin promesa de empleo.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-10, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Relevant nontechnical routes” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Reasons, limits, gaps and dated official sources are relevant for nontechnical contexts, with no employment promise.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Hay razones, límites, brechas y fuentes oficiales fechadas pertinentes para contextos no técnicos, sin promesa de empleo.",
+            "en": "Reasons, limits, gaps and dated official sources are relevant for nontechnical contexts, with no employment promise."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-10, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Rutas no técnicas pertinentes» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Hay razones, límites, brechas y fuentes oficiales fechadas pertinentes para contextos no técnicos, sin promesa de empleo.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-10, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Relevant nontechnical routes” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Reasons, limits, gaps and dated official sources are relevant for nontechnical contexts, with no employment promise.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Hay razones, límites, brechas y fuentes oficiales fechadas pertinentes para contextos no técnicos, sin promesa de empleo.",
+            "en": "Reasons, limits, gaps and dated official sources are relevant for nontechnical contexts, with no employment promise."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-11",
+      "title": {
+        "es": "Límites del catálogo",
+        "en": "Catalogue limitations"
+      },
+      "hu": [
+        "ES-31"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-11, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Límites del catálogo» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La ausencia de catálogo pertinente o de oferta vigente se informa; no se fabrican fuentes, salarios ni vacantes.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-11, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Catalogue limitations” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Missing relevant catalogue content or a current listing is disclosed; sources, salaries and vacancies are not invented.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La ausencia de catálogo pertinente o de oferta vigente se informa; no se fabrican fuentes, salarios ni vacantes.",
+            "en": "Missing relevant catalogue content or a current listing is disclosed; sources, salaries and vacancies are not invented."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-11, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Límites del catálogo» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La ausencia de catálogo pertinente o de oferta vigente se informa; no se fabrican fuentes, salarios ni vacantes.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-11, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Catalogue limitations” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Missing relevant catalogue content or a current listing is disclosed; sources, salaries and vacancies are not invented.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La ausencia de catálogo pertinente o de oferta vigente se informa; no se fabrican fuentes, salarios ni vacantes.",
+            "en": "Missing relevant catalogue content or a current listing is disclosed; sources, salaries and vacancies are not invented."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-12",
+      "title": {
+        "es": "Experimento y costo conocido",
+        "en": "Experiment and known cost"
+      },
+      "hu": [
+        "ES-33"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-12, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Experimento y costo conocido» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La prueba tiene pregunta, rúbrica, entrega, tarea de20–45min y costo conocido; costo por confirmar no satisface este criterio.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-12, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Experiment and known cost” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The experiment has a question, rubric, submission,20–45min initial task and known cost; unconfirmed cost does not satisfy this criterion.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La prueba tiene pregunta, rúbrica, entrega, tarea de20–45min y costo conocido; costo por confirmar no satisface este criterio.",
+            "en": "The experiment has a question, rubric, submission,20–45min initial task and known cost; unconfirmed cost does not satisfy this criterion."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-12, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Experimento y costo conocido» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La prueba tiene pregunta, rúbrica, entrega, tarea de20–45min y costo conocido; costo por confirmar no satisface este criterio.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-12, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Experiment and known cost” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The experiment has a question, rubric, submission,20–45min initial task and known cost; unconfirmed cost does not satisfy this criterion.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La prueba tiene pregunta, rúbrica, entrega, tarea de20–45min y costo conocido; costo por confirmar no satisface este criterio.",
+            "en": "The experiment has a question, rubric, submission,20–45min initial task and known cost; unconfirmed cost does not satisfy this criterion."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-13",
+      "title": {
+        "es": "Entrega, ayuda y decisión",
+        "en": "Submission, assistance and decision"
+      },
+      "hu": [
+        "ES-33"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-13, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Entrega, ayuda y decisión» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Entrega, reflexión, ayuda y decisión razonada persisten; curso/checkbox/ayuda de IA no se presentan como capacidad autónoma observada.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-13, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Submission, assistance and decision” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Submission, reflection, assistance and reasoned decision persist; course/checkbox/AI help are not presented as observed autonomous ability.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Entrega, reflexión, ayuda y decisión razonada persisten; curso/checkbox/ayuda de IA no se presentan como capacidad autónoma observada.",
+            "en": "Submission, reflection, assistance and reasoned decision persist; course/checkbox/AI help are not presented as observed autonomous ability."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-13, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Entrega, ayuda y decisión» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Entrega, reflexión, ayuda y decisión razonada persisten; curso/checkbox/ayuda de IA no se presentan como capacidad autónoma observada.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-13, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Submission, assistance and decision” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Submission, reflection, assistance and reasoned decision persist; course/checkbox/AI help are not presented as observed autonomous ability.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Entrega, reflexión, ayuda y decisión razonada persisten; curso/checkbox/ayuda de IA no se presentan como capacidad autónoma observada.",
+            "en": "Submission, reflection, assistance and reasoned decision persist; course/checkbox/AI help are not presented as observed autonomous ability."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-14",
+      "title": {
+        "es": "Revisión asignada y objeción",
+        "en": "Assigned review and objection"
+      },
+      "hu": [
+        "ES-35"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-14, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revisión asignada y objeción» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Solo un revisor asignado con material/versión autorizados registra feedback con autor/fecha/evidencia; el titular puede objetar y recuperar historia.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-14, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Assigned review and objection” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Only an assigned reviewer with authorized material/version records feedback with author/date/evidence; the owner can object and recover history.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Solo un revisor asignado con material/versión autorizados registra feedback con autor/fecha/evidencia; el titular puede objetar y recuperar historia.",
+            "en": "Only an assigned reviewer with authorized material/version records feedback with author/date/evidence; the owner can object and recover history."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-14, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revisión asignada y objeción» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Solo un revisor asignado con material/versión autorizados registra feedback con autor/fecha/evidencia; el titular puede objetar y recuperar historia.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-14, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Assigned review and objection” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Only an assigned reviewer with authorized material/version records feedback with author/date/evidence; the owner can object and recover history.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Solo un revisor asignado con material/versión autorizados registra feedback con autor/fecha/evidencia; el titular puede objetar y recuperar historia.",
+            "en": "Only an assigned reviewer with authorized material/version records feedback with author/date/evidence; the owner can object and recover history."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-15",
+      "title": {
+        "es": "Plan 7/30/90 explícito",
+        "en": "Explicit 7/30/90 plan"
+      },
+      "hu": [
+        "ES-34"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-15, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Plan 7/30/90 explícito» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Plan7/30/90 usa disponibilidad y fechas elegidas, dependencias válidas y aceptación explícita; recordatorios opcionales no se activan por defecto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-15, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Explicit 7/30/90 plan” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The7/30/90 plan uses availability, chosen dates, valid dependencies and explicit acceptance; optional reminders are not enabled by default.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Plan7/30/90 usa disponibilidad y fechas elegidas, dependencias válidas y aceptación explícita; recordatorios opcionales no se activan por defecto.",
+            "en": "The7/30/90 plan uses availability, chosen dates, valid dependencies and explicit acceptance; optional reminders are not enabled by default."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-15, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Plan 7/30/90 explícito» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Plan7/30/90 usa disponibilidad y fechas elegidas, dependencias válidas y aceptación explícita; recordatorios opcionales no se activan por defecto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-15, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Explicit 7/30/90 plan” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The7/30/90 plan uses availability, chosen dates, valid dependencies and explicit acceptance; optional reminders are not enabled by default.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Plan7/30/90 usa disponibilidad y fechas elegidas, dependencias válidas y aceptación explícita; recordatorios opcionales no se activan por defecto.",
+            "en": "The7/30/90 plan uses availability, chosen dates, valid dependencies and explicit acceptance; optional reminders are not enabled by default."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-16",
+      "title": {
+        "es": "Invalidación de derivados",
+        "en": "Derived invalidation"
+      },
+      "hu": [
+        "ES-25"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-16, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Invalidación de derivados» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cambiar o revocar un origen invalida derivados afectados y explica su versión; el historial no se reescribe silenciosamente.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-16, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Derived invalidation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Changing or revoking a source invalidates affected derivatives and explains their version; history is not silently rewritten.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cambiar o revocar un origen invalida derivados afectados y explica su versión; el historial no se reescribe silenciosamente.",
+            "en": "Changing or revoking a source invalidates affected derivatives and explains their version; history is not silently rewritten."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-16, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Invalidación de derivados» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cambiar o revocar un origen invalida derivados afectados y explica su versión; el historial no se reescribe silenciosamente.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-16, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Derived invalidation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Changing or revoking a source invalidates affected derivatives and explains their version; history is not silently rewritten.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cambiar o revocar un origen invalida derivados afectados y explica su versión; el historial no se reescribe silenciosamente.",
+            "en": "Changing or revoking a source invalidates affected derivatives and explains their version; history is not silently rewritten."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-17",
+      "title": {
+        "es": "Exportación controlada",
+        "en": "Controlled export"
+      },
+      "hu": [
+        "ES-23"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-17, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Exportación controlada» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La exportación coincide con la selección del titular y permiso vigente; IDs ajenos y permisos retirados no descargan datos.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-17, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Controlled export” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Export matches the owner's selection and current permission; foreign IDs and withdrawn permissions cannot download data.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La exportación coincide con la selección del titular y permiso vigente; IDs ajenos y permisos retirados no descargan datos.",
+            "en": "Export matches the owner's selection and current permission; foreign IDs and withdrawn permissions cannot download data."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-17, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Exportación controlada» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La exportación coincide con la selección del titular y permiso vigente; IDs ajenos y permisos retirados no descargan datos.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-17, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Controlled export” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Export matches the owner's selection and current permission; foreign IDs and withdrawn permissions cannot download data.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La exportación coincide con la selección del titular y permiso vigente; IDs ajenos y permisos retirados no descargan datos.",
+            "en": "Export matches the owner's selection and current permission; foreign IDs and withdrawn permissions cannot download data."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-18",
+      "title": {
+        "es": "Propiedad, roles y sesiones",
+        "en": "Ownership, roles and sessions"
+      },
+      "hu": [
+        "ES-18"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-owner-a",
+          "locale": "es",
+          "edge": "owner-a",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-owner-a; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-owner-a; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-foreign-user-b",
+          "locale": "es",
+          "edge": "foreign-user-b",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-foreign-user-b; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-foreign-user-b; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-unassigned-facilitator",
+          "locale": "es",
+          "edge": "unassigned-facilitator",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-unassigned-facilitator; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-unassigned-facilitator; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-assigned-facilitator",
+          "locale": "es",
+          "edge": "assigned-facilitator",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-assigned-facilitator; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-assigned-facilitator; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-admin-unassigned",
+          "locale": "es",
+          "edge": "admin-unassigned",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-admin-unassigned; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-admin-unassigned; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-superadmin-unassigned",
+          "locale": "es",
+          "edge": "superadmin-unassigned",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-superadmin-unassigned; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-superadmin-unassigned; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-therapist",
+          "locale": "es",
+          "edge": "therapist",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-therapist; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-therapist; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-board",
+          "locale": "es",
+          "edge": "board",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-board; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-board; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-revoked-session",
+          "locale": "es",
+          "edge": "revoked-session",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante es-revoked-session; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant es-revoked-session; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-owner-a",
+          "locale": "en",
+          "edge": "owner-a",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-owner-a; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-owner-a; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-foreign-user-b",
+          "locale": "en",
+          "edge": "foreign-user-b",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-foreign-user-b; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-foreign-user-b; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-unassigned-facilitator",
+          "locale": "en",
+          "edge": "unassigned-facilitator",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-unassigned-facilitator; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-unassigned-facilitator; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-assigned-facilitator",
+          "locale": "en",
+          "edge": "assigned-facilitator",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-assigned-facilitator; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-assigned-facilitator; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-admin-unassigned",
+          "locale": "en",
+          "edge": "admin-unassigned",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-admin-unassigned; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-admin-unassigned; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-superadmin-unassigned",
+          "locale": "en",
+          "edge": "superadmin-unassigned",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-superadmin-unassigned; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-superadmin-unassigned; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-therapist",
+          "locale": "en",
+          "edge": "therapist",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-therapist; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-therapist; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-board",
+          "locale": "en",
+          "edge": "board",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-board; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-board; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-revoked-session",
+          "locale": "en",
+          "edge": "revoked-session",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-18, variante en-revoked-session; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Propiedad, roles y sesiones» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-18, variant en-revoked-session; do not start if its dependency is missing.",
+              "Perform the “Ownership, roles and sessions” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Cada actor solo accede al alcance autorizado; falta de rol/asignación/propiedad o sesión revocada rechaza sin revelar existencia ajena.",
+            "en": "Each actor accesses only authorized scope; missing role/assignment/ownership or revoked session denies without disclosing foreign existence."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-19",
+      "title": {
+        "es": "Revocación concurrente",
+        "en": "Concurrent revocation"
+      },
+      "hu": [
+        "ES-19"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-before",
+          "locale": "es",
+          "edge": "before",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante es-before; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant es-before; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-during",
+          "locale": "es",
+          "edge": "during",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante es-during; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant es-during; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-before-commit",
+          "locale": "es",
+          "edge": "before-commit",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante es-before-commit; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant es-before-commit; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-after-publication",
+          "locale": "es",
+          "edge": "after-publication",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante es-after-publication; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant es-after-publication; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-before",
+          "locale": "en",
+          "edge": "before",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante en-before; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant en-before; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-during",
+          "locale": "en",
+          "edge": "during",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante en-during; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant en-during; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-before-commit",
+          "locale": "en",
+          "edge": "before-commit",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante en-before-commit; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant en-before-commit; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-after-publication",
+          "locale": "en",
+          "edge": "after-publication",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-19, variante en-after-publication; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Revocación concurrente» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-19, variant en-after-publication; do not start if its dependency is missing.",
+              "Perform the “Concurrent revocation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "En el momento de revocación indicado, la nueva operación y el commit revalidan permisos; ninguna publicación posterior conserva acceso residual.",
+            "en": "At the indicated revocation point, new operations and commit revalidate permissions; later publication preserves no residual access."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-20",
+      "title": {
+        "es": "Idempotencia y recuperación",
+        "en": "Idempotency and recovery"
+      },
+      "hu": [
+        "ES-22"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-double-send",
+          "locale": "es",
+          "edge": "double-send",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-20, variante es-double-send; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Idempotencia y recuperación» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-20, variant es-double-send; do not start if its dependency is missing.",
+              "Perform the “Idempotency and recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+            "en": "Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-lost-ack",
+          "locale": "es",
+          "edge": "lost-ack",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-20, variante es-lost-ack; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Idempotencia y recuperación» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-20, variant es-lost-ack; do not start if its dependency is missing.",
+              "Perform the “Idempotency and recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+            "en": "Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-restart",
+          "locale": "es",
+          "edge": "restart",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-20, variante es-restart; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Idempotencia y recuperación» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-20, variant es-restart; do not start if its dependency is missing.",
+              "Perform the “Idempotency and recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+            "en": "Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-double-send",
+          "locale": "en",
+          "edge": "double-send",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-20, variante en-double-send; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Idempotencia y recuperación» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-20, variant en-double-send; do not start if its dependency is missing.",
+              "Perform the “Idempotency and recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+            "en": "Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-lost-ack",
+          "locale": "en",
+          "edge": "lost-ack",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-20, variante en-lost-ack; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Idempotencia y recuperación» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-20, variant en-lost-ack; do not start if its dependency is missing.",
+              "Perform the “Idempotency and recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+            "en": "Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-restart",
+          "locale": "en",
+          "edge": "restart",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-20, variante en-restart; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Idempotencia y recuperación» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-20, variant en-restart; do not start if its dependency is missing.",
+              "Perform the “Idempotency and recovery” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "El reintento conserva requestId/cuerpo exactos: una sola escritura/consumo y ningún guardado falso; un cuerpo distinto produce conflicto.",
+            "en": "Retry keeps the exact requestId/body: a single write/charge and no false saved state; a different body conflicts."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-21",
+      "title": {
+        "es": "Presupuesto y fallos de IA",
+        "en": "AI budget and failures"
+      },
+      "hu": [
+        "ES-22"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-budget",
+          "locale": "es",
+          "edge": "budget",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-21, variante es-budget; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Presupuesto y fallos de IA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-21, variant es-budget; do not start if its dependency is missing.",
+              "Perform the “AI budget and failures” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+            "en": "The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-timeout",
+          "locale": "es",
+          "edge": "timeout",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-21, variante es-timeout; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Presupuesto y fallos de IA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-21, variant es-timeout; do not start if its dependency is missing.",
+              "Perform the “AI budget and failures” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+            "en": "The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-provider-error",
+          "locale": "es",
+          "edge": "provider-error",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-21, variante es-provider-error; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Presupuesto y fallos de IA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-21, variant es-provider-error; do not start if its dependency is missing.",
+              "Perform the “AI budget and failures” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+            "en": "The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-budget",
+          "locale": "en",
+          "edge": "budget",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-21, variante en-budget; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Presupuesto y fallos de IA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-21, variant en-budget; do not start if its dependency is missing.",
+              "Perform the “AI budget and failures” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+            "en": "The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-timeout",
+          "locale": "en",
+          "edge": "timeout",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-21, variante en-timeout; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Presupuesto y fallos de IA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-21, variant en-timeout; do not start if its dependency is missing.",
+              "Perform the “AI budget and failures” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+            "en": "The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-provider-error",
+          "locale": "en",
+          "edge": "provider-error",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-21, variante en-provider-error; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Presupuesto y fallos de IA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-21, variant en-provider-error; do not start if its dependency is missing.",
+              "Perform the “AI budget and failures” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La condición de fallo permite recuperación visible sin pérdida ni consumo no autorizado; usar proveedor real exige permiso y presupuesto.",
+            "en": "The failure condition allows visible recovery without loss or unauthorized usage; real provider use requires permission and budget."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-22",
+      "title": {
+        "es": "Frontera privada",
+        "en": "Private boundary"
+      },
+      "hu": [
+        "ES-21"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_api",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-22, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Frontera privada» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Canarios ficticios del dominio privado no aparecen en carrera, terceros, prompts profesionales ni logs; revisión técnica acotada.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-22, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Private boundary” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Fictional private-domain canaries do not appear in career, third parties, professional prompts or logs; technical inspection is scoped.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Canarios ficticios del dominio privado no aparecen en carrera, terceros, prompts profesionales ni logs; revisión técnica acotada.",
+            "en": "Fictional private-domain canaries do not appear in career, third parties, professional prompts or logs; technical inspection is scoped."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-22, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Frontera privada» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Canarios ficticios del dominio privado no aparecen en carrera, terceros, prompts profesionales ni logs; revisión técnica acotada.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-22, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Private boundary” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Fictional private-domain canaries do not appear in career, third parties, professional prompts or logs; technical inspection is scoped.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Canarios ficticios del dominio privado no aparecen en carrera, terceros, prompts profesionales ni logs; revisión técnica acotada.",
+            "en": "Fictional private-domain canaries do not appear in career, third parties, professional prompts or logs; technical inspection is scoped."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-23",
+      "title": {
+        "es": "Borrado y proveedores pendientes",
+        "en": "Deletion and pending providers"
+      },
+      "hu": [
+        "ES-23"
+      ],
+      "requiredLayers": [
+        "db_real",
+        "staging_browser"
+      ],
+      "destructive": true,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-23, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Borrado y proveedores pendientes» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Solo se borra el recurso sintético autorizado; recibo/reintento y derivados son verificables; proveedores/backups pendientes no se declaran purgados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-23, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Deletion and pending providers” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Only the authorized synthetic resource is deleted; receipt/retry and derivatives are verifiable; pending providers/backups are not declared purged.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Solo se borra el recurso sintético autorizado; recibo/reintento y derivados son verificables; proveedores/backups pendientes no se declaran purgados.",
+            "en": "Only the authorized synthetic resource is deleted; receipt/retry and derivatives are verifiable; pending providers/backups are not declared purged."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-23, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Borrado y proveedores pendientes» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Solo se borra el recurso sintético autorizado; recibo/reintento y derivados son verificables; proveedores/backups pendientes no se declaran purgados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-23, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Deletion and pending providers” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Only the authorized synthetic resource is deleted; receipt/retry and derivatives are verifiable; pending providers/backups are not declared purged.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Solo se borra el recurso sintético autorizado; recibo/reintento y derivados son verificables; proveedores/backups pendientes no se declaran purgados.",
+            "en": "Only the authorized synthetic resource is deleted; receipt/retry and derivatives are verifiable; pending providers/backups are not declared purged."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-24",
+      "title": {
+        "es": "Interacción bilingüe accesible",
+        "en": "Bilingual accessible interaction"
+      },
+      "hu": [
+        "ES-38"
+      ],
+      "requiredLayers": [
+        "staging_browser",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-mobile-320",
+          "locale": "es",
+          "edge": "mobile-320",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-mobile-320; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-mobile-320; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-mobile-375",
+          "locale": "es",
+          "edge": "mobile-375",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-mobile-375; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-mobile-375; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-tablet-768",
+          "locale": "es",
+          "edge": "tablet-768",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-tablet-768; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-tablet-768; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-desktop-1440",
+          "locale": "es",
+          "edge": "desktop-1440",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-desktop-1440; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-desktop-1440; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-keyboard",
+          "locale": "es",
+          "edge": "keyboard",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-keyboard; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-keyboard; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-zoom-200",
+          "locale": "es",
+          "edge": "zoom-200",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-zoom-200; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-zoom-200; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-dark",
+          "locale": "es",
+          "edge": "dark",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-dark; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-dark; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "es-reduced-motion",
+          "locale": "es",
+          "edge": "reduced-motion",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante es-reduced-motion; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant es-reduced-motion; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-mobile-320",
+          "locale": "en",
+          "edge": "mobile-320",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-mobile-320; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-mobile-320; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-mobile-375",
+          "locale": "en",
+          "edge": "mobile-375",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-mobile-375; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-mobile-375; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-tablet-768",
+          "locale": "en",
+          "edge": "tablet-768",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-tablet-768; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-tablet-768; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-desktop-1440",
+          "locale": "en",
+          "edge": "desktop-1440",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-desktop-1440; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-desktop-1440; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-keyboard",
+          "locale": "en",
+          "edge": "keyboard",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-keyboard; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-keyboard; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-zoom-200",
+          "locale": "en",
+          "edge": "zoom-200",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-zoom-200; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-zoom-200; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-dark",
+          "locale": "en",
+          "edge": "dark",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-dark; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-dark; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-reduced-motion",
+          "locale": "en",
+          "edge": "reduced-motion",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-24, variante en-reduced-motion; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Interacción bilingüe accesible» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-24, variant en-reduced-motion; do not start if its dependency is missing.",
+              "Perform the “Bilingual accessible interaction” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La variante visual/teclado/idioma mantiene foco, contenido legible y estados completos; no basta una captura o respuesta200.",
+            "en": "The visual/keyboard/language variant preserves focus, readable content and complete states; a screenshot or200 response is insufficient."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-25",
+      "title": {
+        "es": "Facilitación restringida",
+        "en": "Restricted facilitation"
+      },
+      "hu": [
+        "ES-35"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-25, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Facilitación restringida» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Asignación y selección se verifican en servidor; no hay chats, ánimo, crisis ni estadísticas por EN o combinaciones identificables.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-25, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Restricted facilitation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Assignment and selection are verified by the server; no chats, mood, crisis or statistics by EN or identifying combinations are shown.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Asignación y selección se verifican en servidor; no hay chats, ánimo, crisis ni estadísticas por EN o combinaciones identificables.",
+            "en": "Assignment and selection are verified by the server; no chats, mood, crisis or statistics by EN or identifying combinations are shown."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-25, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Facilitación restringida» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Asignación y selección se verifican en servidor; no hay chats, ánimo, crisis ni estadísticas por EN o combinaciones identificables.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-25, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Restricted facilitation” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Assignment and selection are verified by the server; no chats, mood, crisis or statistics by EN or identifying combinations are shown.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Asignación y selección se verifican en servidor; no hay chats, ánimo, crisis ni estadísticas por EN o combinaciones identificables.",
+            "en": "Assignment and selection are verified by the server; no chats, mood, crisis or statistics by EN or identifying combinations are shown."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-26",
+      "title": {
+        "es": "Utilidad opcional",
+        "en": "Optional usefulness"
+      },
+      "hu": [
+        "ES-36"
+      ],
+      "requiredLayers": [
+        "staging_api",
+        "staging_browser",
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-26, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Utilidad opcional» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Responder utilidad es opcional, con denominadores y ausencias; valor emocional no exige carrera y metas no se muestran como resultados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-26, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Optional usefulness” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Usefulness answers are optional, with denominators and missingness; emotional value does not require career use and targets are not shown as results.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Responder utilidad es opcional, con denominadores y ausencias; valor emocional no exige carrera y metas no se muestran como resultados.",
+            "en": "Usefulness answers are optional, with denominators and missingness; emotional value does not require career use and targets are not shown as results."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-26, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Utilidad opcional» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: Responder utilidad es opcional, con denominadores y ausencias; valor emocional no exige carrera y metas no se muestran como resultados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-26, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Optional usefulness” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Usefulness answers are optional, with denominators and missingness; emotional value does not require career use and targets are not shown as results.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "Responder utilidad es opcional, con denominadores y ausencias; valor emocional no exige carrera y metas no se muestran como resultados.",
+            "en": "Usefulness answers are optional, with denominators and missingness; emotional value does not require career use and targets are not shown as results."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-27",
+      "title": {
+        "es": "Puertas operativas y de QA",
+        "en": "Operational and QA gates"
+      },
+      "hu": [
+        "ES-43"
+      ],
+      "requiredLayers": [
+        "human_review"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-journey",
+          "locale": "es",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-27, variante es-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Puertas operativas y de QA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: QA/Infra/PO referencian puertas, soporte y responsable de incidente antes de decidir invitación; un script no concede aprobación.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-27, variant es-journey; do not start if its dependency is missing.",
+              "Perform the “Operational and QA gates” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: QA/Infra/PO reference gates, support and an incident owner before deciding invitation; a script does not grant approval.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "QA/Infra/PO referencian puertas, soporte y responsable de incidente antes de decidir invitación; un script no concede aprobación.",
+            "en": "QA/Infra/PO reference gates, support and an incident owner before deciding invitation; a script does not grant approval."
+          },
+          "followupDays": null
+        },
+        {
+          "id": "en-journey",
+          "locale": "en",
+          "edge": "journey",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-27, variante en-journey; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Puertas operativas y de QA» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: QA/Infra/PO referencian puertas, soporte y responsable de incidente antes de decidir invitación; un script no concede aprobación.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-27, variant en-journey; do not start if its dependency is missing.",
+              "Perform the “Operational and QA gates” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: QA/Infra/PO reference gates, support and an incident owner before deciding invitation; a script does not grant approval.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "QA/Infra/PO referencian puertas, soporte y responsable de incidente antes de decidir invitación; un script no concede aprobación.",
+            "en": "QA/Infra/PO reference gates, support and an incident owner before deciding invitation; a script does not grant approval."
+          },
+          "followupDays": null
+        }
+      ]
+    },
+    {
+      "id": "E45-28",
+      "title": {
+        "es": "Seguimiento solo observado",
+        "en": "Observed follow-up only"
+      },
+      "hu": [
+        "ES-45"
+      ],
+      "requiredLayers": [
+        "followup"
+      ],
+      "destructive": false,
+      "variants": [
+        {
+          "id": "es-day-7",
+          "locale": "es",
+          "edge": "day-7",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-28, variante es-day-7; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Seguimiento solo observado» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-28, variant es-day-7; do not start if its dependency is missing.",
+              "Perform the “Observed follow-up only” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Observation is recorded only after its window following the real pilot start; unobserved data remain pending.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+            "en": "Observation is recorded only after its window following the real pilot start; unobserved data remain pending."
+          },
+          "followupDays": 7
+        },
+        {
+          "id": "es-day-30",
+          "locale": "es",
+          "edge": "day-30",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-28, variante es-day-30; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Seguimiento solo observado» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-28, variant es-day-30; do not start if its dependency is missing.",
+              "Perform the “Observed follow-up only” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Observation is recorded only after its window following the real pilot start; unobserved data remain pending.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+            "en": "Observation is recorded only after its window following the real pilot start; unobserved data remain pending."
+          },
+          "followupDays": 30
+        },
+        {
+          "id": "en-day-7",
+          "locale": "en",
+          "edge": "day-7",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-28, variante en-day-7; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Seguimiento solo observado» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-28, variant en-day-7; do not start if its dependency is missing.",
+              "Perform the “Observed follow-up only” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Observation is recorded only after its window following the real pilot start; unobserved data remain pending.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+            "en": "Observation is recorded only after its window following the real pilot start; unobserved data remain pending."
+          },
+          "followupDays": 7
+        },
+        {
+          "id": "en-day-30",
+          "locale": "en",
+          "edge": "day-30",
+          "steps": {
+            "es": [
+              "Preparar cuenta y recursos sintéticos autorizados para E45-28, variante en-day-30; sin iniciar la prueba si falta su dependencia.",
+              "Realizar el recorrido de «Seguimiento solo observado» en la app integrada; registrar operaciones y pantallas sin sustituirlas por scripts.",
+              "Comprobar: La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+              "Registrar capa, entorno, SHA, resultado obtenido y evidencia saneada; si no se ejecuta, marcar not_run o blocked."
+            ],
+            "en": [
+              "Prepare authorized synthetic account and resources for E45-28, variant en-day-30; do not start if its dependency is missing.",
+              "Perform the “Observed follow-up only” journey in the integrated app; record operations and screens without replacing them with scripts.",
+              "Check: Observation is recorded only after its window following the real pilot start; unobserved data remain pending.",
+              "Record layer, environment, SHA, observed result and sanitized evidence; if not executed, mark not_run or blocked."
+            ]
+          },
+          "expected": {
+            "es": "La observación se registra solo al cumplir la ventana posterior al inicio real del piloto; se mantienen pendientes los datos no observados.",
+            "en": "Observation is recorded only after its window following the real pilot start; unobserved data remain pending."
+          },
+          "followupDays": 30
+        }
+      ]
+    }
+  ]
+}
