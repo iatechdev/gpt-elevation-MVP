@@ -39,7 +39,7 @@
  "admin /admin/pilot-metrics": "frame",
  "admin /admin/route-catalog": "frame",
  "admin /admin/skill-catalog": "frame",
- "admin /admin/users": "noAccess",
+ "admin /admin/users": "frame",
  "admin /admin/manifest": "noAccess",
  "admin /therapist/dashboard": "noAccess",
  "admin /therapist/patient/1": "noAccess",

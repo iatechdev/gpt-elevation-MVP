@@ -45,9 +45,9 @@
   "detail": "{\"user\":{\"admin\":403,\"adminUsers\":403,\"therapist\":403,\"board\":403,\"superadmin\":403},\"admin\":{\"admin\":404,\"adminUsers\":200,\"therapist\":403,\"board\":403,\"superadmin\":403},\"superadmin\":{\"admin\":404,\"adminUsers\":200,\"therapist\":403,\"board\":200,\"superadmin\":200},\"therapist\":{\"admin\":403,\"adminUsers\":403,\"therapist\":404,\"board\":403,\"superadmin\":403},\"board\":{\"admin\":403,\"adminUsers\":403,\"therapist\":403,\"board\":200,\"superadmin\":403}}"
  },
  {
-  "id": "B2 (documentado) el servidor SÍ deja a admin listar usuarios (/api/admin/usuarios) aunque la interfaz nueva lo bloquea en /admin/users",
+  "id": "B2 (QA-153-01 resuelto) admin entra a /admin/users en la interfaz y el servidor le permite listar usuarios (coinciden); /admin/manifest sigue solo superadmin en la interfaz",
   "ok": true,
-  "detail": "admin GET /api/admin/usuarios=200 · interfaz: admin /admin/users=noAccess"
+  "detail": "servidor admin GET /api/admin/usuarios=200 · interfaz admin /admin/users=frame · admin /admin/manifest=noAccess"
  },
  {
   "id": "T1 persona (user) con elevation_role=superadmin manipulado en el navegador: /admin/dashboard muestra «sin acceso» y el rol guardado se realinea a lo que dijo el servidor",
@@ -142,7 +142,7 @@
  {
   "id": "F3 /api/session colgada: tras el tiempo de espera (≈8 s) pasa a «sin conexión» (no queda «verificando» para siempre)",
   "ok": true,
-  "detail": "vista=unavailable tras 8524 ms"
+  "detail": "vista=unavailable tras 8521 ms"
  },
  {
   "id": "F4 fallo pasajero de /api/session al cambiar de ruta con sesión ya verificada: no expulsa a la persona (el servidor sigue decidiendo en cada API)",
@@ -157,7 +157,7 @@
  {
   "id": "C2 navegación rápida entre 6 rutas con distintos permisos: la vista final corresponde a la última ruta (/therapist/dashboard ⇒ sin acceso para board) y no se rompe",
   "ok": true,
-  "detail": "final=noAccess peticiones=5"
+  "detail": "final=noAccess peticiones=3"
  },
  {
   "id": "C3 401 tardío de /api/session en una ruta: la sesión se invalida y lleva a /login",
@@ -167,7 +167,7 @@
  {
   "id": "P1 /api/session: 200 peticiones, 10 en paralelo (≈6 personas con margen)",
   "ok": true,
-  "detail": "p50=68 ms · p95=107 ms · máx=138 ms · 139 req/s"
+  "detail": "p50=65 ms · p95=112 ms · máx=149 ms · 142 req/s"
  },
  {
   "id": "P2 una petición /api/session por cambio de ruta protegida (3 cambios ⇒ 3 peticiones, sin ráfagas)",

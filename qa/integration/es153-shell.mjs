@@ -40,7 +40,7 @@ const expect = (role, p) => {
   const member = ['/app/data', '/app/professional-reviews', '/facilitation'].some(b => p === b || p.startsWith(b + '/'));
   if (member) return true;
   if (p.startsWith('/app')) return role === 'user';
-  if (p === '/admin/users' || p === '/admin/manifest') return role === 'superadmin';
+  if (p === '/admin/manifest') return role === 'superadmin';
   if (p.startsWith('/admin')) return role === 'admin' || role === 'superadmin';
   if (p.startsWith('/therapist')) return role === 'therapist';
   if (p.startsWith('/board')) return role === 'board' || role === 'superadmin';
@@ -77,7 +77,7 @@ const apiRows = {}; for (const role of ROLES) { apiRows[role] = {}; for (const [
 fs.writeFileSync(path.join(EVID, 'ES-153-matriz-api.json'), JSON.stringify(apiRows, null, 1));
 const apiBad = []; for (const role of ROLES) { for (const k of ['therapist']) { const ok = role === 'therapist' ? apiRows[role][k] < 400 || apiRows[role][k] === 404 : apiRows[role][k] === 403; if (!ok) apiBad.push(`${role} ${k}=${apiRows[role][k]}`); } if (role === 'user' || role === 'therapist' || role === 'board') for (const k of ['admin', 'adminUsers', 'superadmin']) if (apiRows[role][k] !== 403) apiBad.push(`${role} ${k}=${apiRows[role][k]}`); if (role === 'admin' && apiRows[role].superadmin !== 403) apiBad.push(`admin superadmin=${apiRows[role].superadmin}`); if (role === 'user' || role === 'admin' || role === 'therapist') if (apiRows[role].board !== 403) apiBad.push(`${role} board=${apiRows[role].board}`); }
 check('B1 API como barrera real: user/therapist/board no entran a endpoints de administración ni superadmin (403); admin no entra a superadmin ni a board; solo therapist al panel profesional', apiBad.length === 0, apiBad.length ? apiBad.join(' | ') : JSON.stringify(apiRows));
-check('B2 (documentado) el servidor SÍ deja a admin listar usuarios (/api/admin/usuarios) aunque la interfaz nueva lo bloquea en /admin/users', apiRows.admin.adminUsers === 200, 'admin GET /api/admin/usuarios=' + apiRows.admin.adminUsers + ' · interfaz: admin /admin/users=' + matrix['admin /admin/users']);
+check('B2 (QA-153-01 resuelto) admin entra a /admin/users en la interfaz y el servidor le permite listar usuarios (coinciden); /admin/manifest sigue solo superadmin en la interfaz', apiRows.admin.adminUsers === 200 && matrix['admin /admin/users'] !== 'noAccess' && matrix['admin /admin/manifest'] === 'noAccess', 'servidor admin GET /api/admin/usuarios=' + apiRows.admin.adminUsers + ' · interfaz admin /admin/users=' + matrix['admin /admin/users'] + ' · admin /admin/manifest=' + matrix['admin /admin/manifest']);
 
 // ── Rol manipulado en el navegador ──
 { const { ctx, page } = await newPage({ token: U.user.token, storedRole: 'superadmin' }); await page.goto(api + '/admin/dashboard', { waitUntil: 'domcontentloaded' }); const c = await settle(page); const stored = await page.evaluate(() => localStorage.getItem('elevation_role'));
