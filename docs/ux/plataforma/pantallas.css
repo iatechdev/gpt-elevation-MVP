@@ -226,3 +226,20 @@ code{font:500 .95rem ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
 h1 code,h2 code{font:600 .6em ui-monospace,Consolas,monospace;text-transform:none;letter-spacing:0}
 .cards-m{display:none}
 @media (max-width:700px){.tbl-d{display:none}.cards-m{display:grid}}
+
+/* radar del mapa */
+.radar{position:relative;border:2px solid var(--ink);background:var(--ground);aspect-ratio:5/4;overflow:hidden}
+.radar svg{position:absolute;inset:0;width:100%;height:100%}
+.radar .rg{fill:none;stroke:var(--line);stroke-width:1}
+.radar .rg.out{stroke:var(--ink);stroke-width:1.5}
+.radar .rx{stroke:var(--line);stroke-width:1}
+.radar .rt{fill:var(--muted);font:700 11px var(--cond)}
+.radar .rf{fill:var(--mark);fill-opacity:.16}
+.radar .rl{fill:none;stroke:var(--mark);stroke-width:2.5;stroke-linejoin:round}
+.radar .rd{fill:var(--mark);stroke:var(--ground);stroke-width:2}
+.rax{position:absolute;max-width:24%;min-height:44px;min-width:44px;background:var(--ground);border:1.5px solid transparent;padding:.15rem .3rem;color:var(--ink);cursor:pointer;text-align:center;line-height:1.15;font-family:var(--sans)}
+.rax b{display:block;font:700 .85rem var(--cond);letter-spacing:.04em;text-transform:uppercase}
+.rax span{display:block;font-size:.8rem;color:var(--muted)}
+.rax[aria-pressed=true]{border-color:var(--mark)}
+.rax:focus-visible{outline:3px solid var(--mark);outline-offset:1px}
+@media(max-width:560px){.rax b{font-size:.72rem}.rax span{font-size:.7rem}}

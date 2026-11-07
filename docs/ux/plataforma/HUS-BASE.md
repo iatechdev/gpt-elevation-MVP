@@ -26,6 +26,7 @@ El prototipo es **referencia de diseño, no código para copiar**: son scripts s
 8. **Tema.** Claro y oscuro con los tokens del sistema; el rojo se usa solo para errores; el azul tinta es la única marca.
 9. **Reglas no negociables** (CLAUDE.md): producto no clínico (sin diagnóstico, prescripción ni promesas de empleo); nivel `null` cuando falta evidencia; sin datos, fuentes, ofertas o métricas inventados (los ejemplos del prototipo se sustituyen por datos reales del servidor o por estados vacíos); privacidad verificada en el servidor en cada acceso; ningún secreto ni dato personal en Git, PR, registros o chat.
 10. **Pruebas** del propio código: unitarias para la lógica, integración con base de datos real donde la historia lo pide, y un caso de abuso por criterio sensible (IDs ajenos, revocación, concurrencia, entrada maliciosa).
+12. **Nada administrable va quemado en el código** (decisión del PO, 7-nov). Etiquetas de «ejemplo», «datos ficticios» o «contenido de prueba»: las pone el servidor según un indicador guardado en el dato (`esSintetico` o equivalente), no el componente. Líneas de emergencia y datos de contacto, planes y precios, ejercicios, textos públicos, guías de la IA: se editan desde administración. Si un valor inicial no está verificado se marca así en el PR.
 11. **PR** con resumen, criterios cubiertos (casillas), pruebas con su salida real, riesgos y «no verificado». No se fusiona el propio PR.
 
 ## 3. Pruebas base de QA (cada historia las hereda)
@@ -98,5 +99,21 @@ Orden recomendado: HU-P00 (aprobación) → P01 a P03 y P38 (base) → pantallas
 | P37 | ES-188 | Catálogo de habilidades |
 | P38 | ES-189 | Privacidad y seguridad transversales |
 | P39 | ES-190 | Calidad transversal y e2e |
+| P40 | ES-191 | Validación en servidor de las guías de la IA (nueva, 7-nov) |
+| P41 | ES-192 | Invitación por enlace y contraseña con las reglas del registro (nueva) |
+| P42 | ES-193 | Datos de contacto y línea de emergencia editables desde Contenido (nueva) |
+| P43 | ES-194 | Administración de ejercicios: crear, editar y publicar (nueva) |
 
 Las historias no tienen responsable ni estimación: Dev estima las suyas tras la aprobación del diseño (HU-P00).
+
+## 7. Reparto entre desarrolladores (decisión del PO, 7-nov)
+
+Se reparte por **etiqueta de Jira** (`dev-claude`, `dev-claude-2`, `dev-codex`) para que cada quien trabaje bloques de pantallas distintos y no se pisen archivos. La asignación nominal en Jira la hace el PO (las cuentas de cada desarrollador no se pudieron verificar desde aquí).
+
+| Etiqueta | Bloque | Historias |
+|---|---|---|
+| `dev-claude` | Base, públicas, mapa, Hoy, datos | ES-152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 174, 189 |
+| `dev-codex` | Experiencia de la persona (conversación a catálogo y progreso), revisiones recibidas y calidad | ES-162 a 173, 175, 190 |
+| `dev-claude-2` | Familia profesional y administración, y las historias nuevas | ES-176 a 188, 191 a 194 |
+
+**Orden:** ES-151 (aprobación) primero. Después ES-152, 153 y 154 (`dev-claude`) desbloquean a todos; mientras tanto `dev-codex` y `dev-claude-2` pueden preparar contratos de API, modelos y pruebas sin tocar `frontend/src/styles` ni la navegación. ES-189 (privacidad) y ES-191 (validación de guías) se integran antes de liberar las pantallas que dependen de ellas.

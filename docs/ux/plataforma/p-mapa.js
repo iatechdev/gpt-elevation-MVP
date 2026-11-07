@@ -6,7 +6,7 @@
 copy({
  mp_by:'Registrado por ti con {k}.',mp_h:'Tu mapa de capacidades',mp_intro:'Territorios laborales donde tus capacidades tienen impacto. Solo cruza lo que tú autorizas.',
  mp_read:'El nivel no certifica: muestra qué evidencia hay hoy. Lo que aún no evaluaste queda plano, no en cero.',
- mp_cat:'Versión del catálogo: {v}',mp_views:'Vista del mapa',mp_v1:'Relieve',mp_v2:'Lista',
+ mp_cat:'Versión del catálogo: {v}',mp_views:'Vista del mapa',mp_v1:'Relieve',mp_v2:'Lista',mp_v3:'Radar',mp_rad_alt:'Radar de capacidades: un eje por capacidad, del nivel 1 al 4. Los niveles están también en la tabla de abajo.',mp_rad_p:'Cada eje es una capacidad y el anillo exterior es el nivel 4. Una capacidad sin punto no tiene nivel con evidencia: no es un cero.',mp_rad_gap:'{n} capacidades sin nivel todavía. Se unen solo los puntos vecinos que sí tienen nivel.',mp_rad_no:'Sin nivel',mp_rad_tb:'Ver los niveles como tabla',mp_rad_c:'Capacidad',mp_rad_l:'Nivel',
  mp_ai:'Analizar mi evidencia con IA',mp_ref:'Actualizar mapa',mp_rev:'Revocar todos',mp_loading:'Cargando tu mapa…',mp_upd:'Mapa actualizado.',
  mp_e_load:'No pudimos cargar tu mapa.',mp_e_unav:'Tu mapa aún no está disponible.',mp_retry:'Reintentar',
  mp_s_t:'Tus puntos más fuertes',mp_s_few:'Tus puntos más fuertes (por ahora)',mp_s_only:'Por ahora solo hay evidencia suficiente para {n} capacidades; no se rellena con otras.',
@@ -61,7 +61,7 @@ copy({
 },{
  mp_by:'Recorded by you with {k}.',mp_h:'Your skills map',mp_intro:'Work territories where your skills have impact. Only what you authorize crosses.',
  mp_read:'The level does not certify: it shows what evidence exists today. What you have not assessed yet stays flat, not at zero.',
- mp_cat:'Catalog version: {v}',mp_views:'Map view',mp_v1:'Relief',mp_v2:'List',
+ mp_cat:'Catalog version: {v}',mp_views:'Map view',mp_v1:'Relief',mp_v2:'List',mp_v3:'Radar',mp_rad_alt:'Capability radar: one axis per capability, from level 1 to 4. The levels are also in the table below.',mp_rad_p:'Each axis is a capability and the outer ring is level 4. A capability with no point has no level backed by evidence: it is not a zero.',mp_rad_gap:'{n} capabilities have no level yet. Only neighbouring points that do have a level are joined.',mp_rad_no:'No level',mp_rad_tb:'See the levels as a table',mp_rad_c:'Capability',mp_rad_l:'Level',
  mp_ai:'Analyze my evidence with AI',mp_ref:'Refresh map',mp_rev:'Revoke all',mp_loading:'Loading your map…',mp_upd:'Map updated.',
  mp_e_load:'We could not load your map.',mp_e_unav:'Your map is not available yet.',mp_retry:'Retry',
  mp_s_t:'Your strongest points',mp_s_few:'Your strongest points (so far)',mp_s_only:'So far there is enough evidence for only {n} skills; it is not filled in with others.',
@@ -147,6 +147,22 @@ function mpRelief(){return'<div class="mapbox" id="mb"><canvas id="c-home" aria-
    return'<button type="button" class="place'+(p.x>.55?' r':'')+'" data-act="pick" data-v="'+p.id+'" style="left:'+(p.x*100)+'%;top:'+(p.y*100)+'%" aria-pressed="'+(S.selId===p.id)+'" aria-label="'+esc(lab)+'"><i class="sym '+st+'"></i><span class="lb">'+esc(capName(p.id))+'</span></button>'}).join('')+'</div>'+
    '<ul class="lg" aria-label="'+t('mp_leg')+'"><li><i class="dotm f" aria-hidden="true"></i>'+t('mp_l1')+'</li><li><i class="dotm" aria-hidden="true"></i>'+t('mp_l2')+'</li></ul>'+
    '<div class="title-block"><span><b>'+t('map_src')+'</b>'+t('map_src_v')+'</span><span><b>'+t('map_rev')+'</b>'+t('map_rev_v')+'</span><span><b>'+t('map_sc')+'</b>'+t('map_sc_v')+'</span></div>'}
+/* ---------- radar (vista adicional; decisión 1 resuelta) ---------- */
+function mpRadar(){var n=P.length,cx=250,cy=200,R=120,LR=134,pts=[],lab='';
+  function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/n;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]}
+  var g='';[1,2,3,4].forEach(function(l){var d=P.map(function(p,i){var q=pt(i,R*l/4);return(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)}).join('')+'Z';g+='<path d="'+d+'" class="rg'+(l===4?' out':'')+'"/>'});
+  P.forEach(function(p,i){var q=pt(i,R);g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" class="rx"/>'});
+  [1,2,3,4].forEach(function(l){g+='<text x="'+(cx+4)+'" y="'+(cy-R*l/4-3)+'" class="rt">'+l+'</text>'});
+  var all=P.every(function(p){return p.lv}),d='',dots='';
+  P.forEach(function(p,i){var j=(i+1)%n;if(p.lv){var a=pt(i,R*p.lv/4);dots+='<circle cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="5" class="rd"/>';if(P[j].lv&&(all||j>i)){var b=pt(j,R*P[j].lv/4);d+='M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+'L'+b[0].toFixed(1)+' '+b[1].toFixed(1)}}});
+  var shape=all?'<path d="'+P.map(function(p,i){var q=pt(i,R*p.lv/4);return(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)}).join('')+'Z" class="rf"/>':'';
+  P.forEach(function(p,i){var q=pt(i,LR),st=p.lv?t('lv_of',{n:p.lv}):t('mp_rad_no'),co=Math.cos(-Math.PI/2+i*2*Math.PI/n),si=Math.sin(-Math.PI/2+i*2*Math.PI/n),
+      tx=co>.3?'0':co<-.3?'-100%':'-50%',ty=Math.abs(co)>.3?'-50%':(si<0?'-100%':'0'),ta=co>.3?'left':co<-.3?'right':'center';
+    lab+='<button type="button" class="rax" data-act="pick" data-v="'+p.id+'" style="left:'+(q[0]/5)+'%;top:'+(q[1]/4)+'%;transform:translate('+tx+','+ty+');text-align:'+ta+'" aria-pressed="'+(S.selId===p.id)+'"><b>'+esc(capName(p.id))+'</b><span>'+st+'</span></button>'});
+  var nolv=P.filter(function(p){return !p.lv}).length;
+  return'<div class="radar" id="rd"><svg viewBox="0 0 500 400" role="img" aria-label="'+t('mp_rad_alt')+'">'+g+shape+'<path d="'+d+'" class="rl"/>'+dots+'</svg>'+lab+'</div>'+
+   '<p class="small muted" style="margin:.5rem 0">'+t('mp_rad_p')+'</p>'+(nolv?'<p class="small" style="margin:.2rem 0">'+t('mp_rad_gap',{n:nolv})+'</p>':'')+
+   '<details class="rub"><summary>'+t('mp_rad_tb')+'</summary><table class="tbl"><thead><tr><th scope="col">'+t('mp_rad_c')+'</th><th scope="col">'+t('mp_rad_l')+'</th></tr></thead><tbody>'+P.map(function(p){return'<tr><th scope="row">'+esc(capName(p.id))+'</th><td>'+(p.lv?t('lv_of',{n:p.lv}):t('mp_rad_no'))+'</td></tr>'}).join('')+'</tbody></table></details>'}
 function mpUnassigned(){var un=[0,1,2,3,4,5,6,7].filter(function(i){return !MD[i].t.length});if(!un.length)return'';
   return'<section class="card tr" aria-labelledby="tg-un" style="margin-top:1rem"><h3 id="tg-un">'+t('mp_unas')+'</h3><p class="small muted" style="margin:.1rem 0 .4rem">'+t('mp_unas_p')+'</p><ul class="pk">'+un.map(mpItem).join('')+'</ul></section>'}
 /* ---------- detalle ---------- */
@@ -210,14 +226,14 @@ function mpRad(i,v,lab,cur){return'<label class="check"><input type="radio" name
 V.inicio=function(){var m=S.mp,h='';
   var rvOff=m.bridge!=='granted',msg=m.note==='done'?t('mp_rv_done'):m.note==='err'?t('mp_rv_err'):m.note==='upd'?t('mp_upd'):m.note==='saved'?t('mp_saved'):m.note==='retired'?t('mp_retired'):(rvOff?t('mp_rv_none'):'');
   h+='<main><div class="mph"><p class="tag">'+t('map_sheet')+' <span class="chip">'+t('ex')+'</span></p><h1 class="s" id="mt" tabindex="-1" style="margin:.2rem 0 .3rem">'+t('mp_h')+'</h1><p style="margin:0;max-width:42rem;font-size:1.1rem">'+t('mp_intro')+'</p><p class="muted small" style="margin:.4rem 0 0;max-width:42rem">'+t('mp_read')+'</p></div>';
-  h+='<div class="mtools"><div class="seg" role="group" aria-label="'+t('mp_views')+'"><button type="button" aria-pressed="'+(m.view==='rel')+'" data-act="mpview" data-v="rel">'+t('mp_v1')+'</button><button type="button" aria-pressed="'+(m.view==='list')+'" data-act="mpview" data-v="list">'+t('mp_v2')+'</button></div>'+
+  h+='<div class="mtools"><div class="seg" role="group" aria-label="'+t('mp_views')+'"><button type="button" aria-pressed="'+(m.view==='rel')+'" data-act="mpview" data-v="rel">'+t('mp_v1')+'</button><button type="button" aria-pressed="'+(m.view==='list')+'" data-act="mpview" data-v="list">'+t('mp_v2')+'</button><button type="button" aria-pressed="'+(m.view==='rad')+'" data-act="mpview" data-v="rad">'+t('mp_v3')+'</button></div>'+
    '<div class="row" style="margin:0"><button class="btn ghost" data-act="mpai" data-v="all">'+t('mp_ai')+'</button><button class="btn ghost" id="b-rv" data-act="mprv" '+(rvOff||m.busy==='rv'?'disabled':'')+'>'+t('mp_rev')+'</button><button class="btn ghost" data-act="mpref" '+(m.loading?'disabled':'')+'>'+t('mp_ref')+'</button></div></div>';
   h+='<p class="small muted" role="status" style="margin:.2rem 0">'+t('mp_cat',{v:m.cat})+' <span class="chip">'+t('ex')+'</span></p><p class="sps'+(m.note==='err'?' bad':'')+'" role="status" aria-live="polite">'+msg+'</p>';
   if(m.loading)return h+'<div class="pulse" role="img" aria-label="'+t('mp_loading')+'"></div><p role="status">'+t('mp_loading')+'</p></main>'+mpDialogs();
   if(m.err)return h+'<div class="banner bad" role="alert" id="mp-err" tabindex="-1"><b>'+t(m.err==='load'?'mp_e_load':'mp_e_unav')+'</b><div class="row"><button class="btn" data-act="mpref">'+t('mp_retry')+'</button></div></div></main>';
   if(!mpAnyLevel())h+=mpGuide();
   h+=mpSummary();
-  h+='<div class="sheet"><section aria-label="'+t('mp_views')+'">'+(m.view==='rel'?mpRelief():mpList())+(m.view==='rel'?mpUnassigned():'')+'</section><aside class="field" aria-live="polite" aria-label="'+t('mp_detail')+'">'+mpDetail()+'</aside></div>';
+  h+='<div class="sheet"><section aria-label="'+t('mp_views')+'">'+(m.view==='rel'?mpRelief():m.view==='rad'?mpRadar():mpList())+(m.view==='rel'?mpUnassigned():'')+'</section><aside class="field" aria-live="polite" aria-label="'+t('mp_detail')+'">'+mpDetail()+'</aside></div>';
   h+=mpAi();
   h+='<p class="small muted" style="margin:1rem 0 1.5rem">'+t('mp_rv_scope')+'</p></main>'+mpDialogs();return h};
 function mpDialogs(){var m=S.mp;if(!m.dlg)return'';var rv=m.dlg==='rv',b=m.busy;

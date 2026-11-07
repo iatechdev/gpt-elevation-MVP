@@ -107,8 +107,25 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 34. **Precios.** Los planes de ejemplo no son los reales. La página pública y «Mi plan» comparten catálogo. Con sesión, una solicitud en revisión bloquea otra; un resultado incierto pide comprobar antes de reintentar.
 35. **Acceso por rol.** El prototipo permite ver las pantallas como administración, superadministración y junta. La junta solo ve el manifiesto. Si un rol no tiene acceso se muestra una explicación en lugar de redirigir en silencio.
 
+### Respuestas del PO a las decisiones abiertas (7-nov-2026)
+
+Respondió Mauricio Roldán. Quedan como decisiones tomadas; lo que cambia el diseño ya está aplicado.
+
+36. **Decisión 22 (texto de las guías de la IA): aprobada.** El servidor debe devolver el texto de cada versión; sin eso no se puede aprobar. Principio de producto: **toda la información es administrable por superadministración**, no queda quemada en el código.
+37. **Decisión 18 (validación de las guías): aprobada como historia aparte** (ES-191). Mantiene a ES-181 pequeña; ES-181 queda bloqueada para aprobar hasta que ES-191 esté en QA.
+38. **Decisión 24 (contraseña de otra persona): aprobada.** Se sustituye por «Enviar enlace de restablecimiento».
+39. **Decisión 25 (crear cuenta): se mantienen los dos caminos.** Registro propio (como hoy) e **invitación por enlace** (ES-192). La contraseña, en cualquier camino: mínimo 8 caracteres con mayúscula, minúscula, número y carácter especial. Quien puede enviar invitaciones se confirma (ver pregunta abierta).
+40. **Decisiones 10 y 19 (opinión, facilitación, revisiones) y toda etiqueta «ejemplo» / «datos ficticios».** La etiqueta **no se escribe en el componente**: la pone el servidor según un indicador del dato (por ejemplo `esSintetico` en el registro guardado en la base). Si el dato es real, no hay etiqueta; si lo creamos para pruebas, la lleva sola. Así nadie confunde a la persona usuaria ni a quien desarrolla. En el prototipo siguen escritas a mano porque es un prototipo. Está en la definición de listo (HUS-BASE) y en ES-152, ES-173, ES-176 y ES-183.
+41. **Decisiones 2, 12 y 3 (vocabulario y tema «Ansiedad»): aprobadas.** «Profesional de acompañamiento», «personas», «notas de seguimiento», «resumen con IA» y «Estrés y carga».
+42. **Decisión 16 (sala con «Iniciar sesión»): aprobada**, con servidor idempotente.
+43. **Decisión 1 (radar): se diseña aparte.** Hecho: la pantalla Mapa tiene tres vistas (Relieve, Lista, Radar). Un eje por capacidad, anillos de nivel 1 a 4, etiqueta de cada eje con su nivel o «Sin nivel». **Una capacidad sin nivel no tiene punto (no se dibuja como cero)**; solo se unen los puntos vecinos que tienen nivel y el relleno aparece únicamente cuando las ocho tienen nivel. Alternativa accesible: tabla bajo el gráfico. Cada eje es un botón que abre el mismo detalle de la capacidad. Pendiente de aprobación visual.
+44. **Decisión 33 (enlace de profesionales): solo `https://`.** Se unifica regla y mensaje.
+45. **Decisión 7 (ejercicios), 34 (planes) y datos de contexto: se administran desde la aplicación.** El contenido real es el que se crea en la aplicación; un cambio se hace ahí y se habilita con el mismo cambio (publicar). Planes y precios: se dejan como recomendación y los cambia superadministración o administración desde Contenido. **La línea de emergencia (y otros datos de contacto) también se edita desde Contenido**, con valor inicial para Colombia pendiente de verificar (ES-193). Ningún número va en el código.
+46. **Asignación:** las historias se reparten entre Dev-Claude, Dev-Claude 2 y Dev-Codex en bloques de pantallas distintas, para que no editen los mismos archivos (ver HUS-BASE sección 7). El diseño lo aprueba Mauricio.
+
 ## Qué se verificó
 
+- Vista de radar del mapa: ES y EN, claro y oscuro, 390 y 1360 px, sin desborde, axe sin hallazgos graves, consola limpia, cada eje abre el detalle. En 390 px el gráfico es pequeño: la tabla alternativa es la lectura fiable ahí (a revisar con quien apruebe).
 - Entrega 6: barrido de las 16 pantallas nuevas en ES/EN, claro y oscuro, 390 y 1360 px (sin desborde, un solo h1, axe sin hallazgos graves ni críticos) y más de 90 comprobaciones de flujo con Playwright (permisos por rol, aprobar y rechazar, errores con el diálogo abierto, confirmación incierta, guardia al salir, límites de caracteres, precarga entre pantallas). Claves de texto duplicadas entre archivos: 0.
 
 - Entrega 5: barrido de las 7 pantallas profesionales en ES/EN, claro y oscuro, 390 y 1360 px (sin desborde, un solo h1, axe sin hallazgos graves ni críticos) y flujos de punta a punta con Playwright (revisión con evidencia, vista previa, guardia al salir, error y reintento del mismo envío, confirmación incierta sin duplicar, conflicto, acceso retirado, invitación; objeción; panel con errores por sección, validación y guía; ficha con resumen IA, notas, filtro, edición con error, agendar; sala con autoguardado, error y cierre).
