@@ -16,6 +16,7 @@
     "test:integration:pg": "node --test test/integration/es-integration-consent-hooks.cjs",
     "test:insights:pg": "node --test test/integration/es-121-postgres.cjs",
     "test:passwordreset:pg": "node --test test/integration/es-132-postgres.cjs",
+    "test:contact-entries:pg": "node --test test/integration/es-193-postgres.cjs",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
     "eval:validate": "node evaluation/es44/cli.cjs --mode=validate",
     "eval:mock": "node evaluation/es44/cli.cjs --mode=mock",
