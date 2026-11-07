@@ -186,7 +186,13 @@ test('ES-191 PostgreSQL: las guías de la IA se revisan en el servidor y nada se
     for (const body of [{}, { key: 'abuso' }, { key: 'abuso', content: '' }, { key: 'abuso', content: '   ' }, { key: 'abuso', content: 12 }, { key: 'abuso', content: ['x'] }, { key: null, content: GOOD }, { key: 'con espacio', content: GOOD }, { key: 'a'.repeat(101), content: GOOD }]) {
       assert.equal((await call(adm, 'POST', '/api/admin/prompt/propose', body)).status, 400, JSON.stringify(body).slice(0, 50));
     }
-    assert.equal((await call(adm, 'POST', '/api/admin/prompt', { key: 'abuso', content: GOOD + ' Diagnostica.' })).status, 422); // el guardado directo tampoco se salta la revisión
+    for (const [who, prefix] of [[adm, '/api/admin'], [sup, '/api/admin'], [sup, '/api/superadmin']]) { // el guardado directo se retiró: ni admin ni superadmin activan sin aprobación
+      const removed = await call(who, 'POST', prefix + '/prompt', { key: 'abuso', content: GOOD });
+      assert.equal(removed.status, 410); assert.equal(removed.body.code, 'prompt_direct_save_removed');
+    }
+    assert.equal((await call(thA, 'POST', '/api/admin/prompt', { key: 'abuso', content: GOOD })).status, 403);
+    assert.equal(typeof require('../../promptVault').savePrompt, 'undefined'); // el vault REAL ya no ofrece activar una guía sin aprobación
+    assert.equal((await rows('abuso')).filter((r) => r.status === 'active').length, 0);
     assert.equal((await rows('abuso')).filter((r) => r.status === 'active').length, 0);
     assert.equal((await call(thA, 'POST', '/api/therapist/prompt/propose', { content: 'corto' })).status, 400);
     // límite de propuestas por clave y hora: la 11.ª se frena

@@ -110,30 +110,6 @@ const getActivePrompt = async (promptKey) => {
 };
 
 // ============================================
-// 💾 GUARDAR PROMPT ACTIVO DIRECTO (solo para seed/migración)
-// ============================================
-const savePrompt = async (promptKey, plainText, adminEmail) => {
-  const encrypted = encryptPrompt(plainText);
-  const existing = await PromptVault.findOne({ where: { key: promptKey, status: 'active' } });
-
-  if (existing) {
-    await existing.update({
-      contentEncrypted: encrypted,
-      version: existing.version + 1,
-      updatedBy: adminEmail
-    });
-  } else {
-    await PromptVault.create({
-      key: promptKey,
-      contentEncrypted: encrypted,
-      updatedBy: adminEmail,
-      status: 'active',
-      isActive: true
-    });
-  }
-};
-
-// ============================================
 // 📤 PROPONER NUEVA VERSIÓN (rol: admin)
 // Crea una versión pending_review sin tocar el activo
 // ============================================
@@ -248,7 +224,6 @@ const rollbackPrompt = async (versionId, superAdminEmail) => {
 module.exports = {
   PromptVault,
   getActivePrompt,
-  savePrompt,
   proposePrompt,
   reviewStored,
   approvePrompt,

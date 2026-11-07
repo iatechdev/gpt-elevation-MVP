@@ -66,7 +66,7 @@ const database = {
 const storage = { uploadFile: unexpected, getSignedUrl: unexpected };
 const anthropic = { messages: { create: unexpected } };
 const promptVault = {
-  PromptVault: {}, getActivePrompt: unexpected, savePrompt: unexpected,
+  PromptVault: {}, getActivePrompt: unexpected,
   proposePrompt: unexpected, approvePrompt: unexpected,
   rejectPrompt: unexpected, rollbackPrompt: unexpected, decryptPrompt: unexpected, // ES-191
 };

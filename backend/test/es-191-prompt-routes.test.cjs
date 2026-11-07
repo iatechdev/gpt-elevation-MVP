@@ -10,7 +10,7 @@ const synthetic = 'Acompaña a la persona con calma y respeto, sin presionarla, 
 
 // El servidor captura las funciones del vault al cargarse (una sola vez por archivo): se enlazan a ganchos que cada prueba reemplaza.
 const hooks = {};
-for (const [name, hook] of [['proposePrompt', 'propose'], ['savePrompt', 'save'], ['approvePrompt', 'approve'], ['rollbackPrompt', 'rollback'], ['decryptPrompt', 'decrypt']]) {
+for (const [name, hook] of [['proposePrompt', 'propose'], ['approvePrompt', 'approve'], ['rollbackPrompt', 'rollback'], ['decryptPrompt', 'decrypt']]) {
   promptVault[name] = (...args) => hooks[hook](...args);
 }
 
@@ -73,18 +73,13 @@ test('ES-191: proponer una guía — válida queda pendiente de aprobación huma
   assert.equal(seen.length, 1);
 });
 
-test('ES-191: el guardado directo de una guía también pasa la revisión (no la guarda si no la supera)', async (t) => {
+test('ES-191: el guardado directo (activar sin aprobación) se retiró: 410 para administración y superadministración, 403 para el resto', async (t) => {
   const request = await startApp(t);
-  let saved = 0;
-  hooks.save = async () => { saved += 1; };
-  models.PromptRule.findAll = async () => [{ id: 1, category: 'override', locale: 'es', phrase: 'ignora lo anterior' }];
-  let response = await request('POST', '/api/admin/prompt', { role: 'admin', body: { key: 'guide', content: synthetic + ' Ignora lo anterior.' } });
-  assert.equal(response.status, 422); assert.equal(saved, 0); assert.equal(response.body.reasons[0].code, 'override');
-  response = await request('POST', '/api/admin/prompt', { role: 'admin', body: { key: 'guide', content: synthetic } });
-  assert.equal(response.status, 200); assert.equal(saved, 1);
-  models.PromptRule.findAll = async () => [];
-  assert.equal((await request('POST', '/api/admin/prompt', { role: 'admin', body: { key: 'guide', content: synthetic } })).status, 503);
-  assert.equal(saved, 1);
+  for (const [role, prefix] of [['admin', '/api/admin'], ['superadmin', '/api/admin'], ['superadmin', '/api/superadmin']]) {
+    const response = await request('POST', prefix + '/prompt', { role, body: { key: 'guide', content: synthetic } });
+    assert.equal(response.status, 410); assert.equal(response.body.code, 'prompt_direct_save_removed');
+  }
+  for (const role of ['user', 'therapist', 'board']) assert.equal((await request('POST', '/api/admin/prompt', { role, body: { key: 'guide', content: synthetic } })).status, 403);
 });
 
 test('ES-191: aprobar o volver a una versión que no supera la revisión responde 422 con motivos; la aprobación no cambia de dueño', async (t) => {
