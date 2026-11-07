@@ -57,12 +57,12 @@
  {
   "id": "P1 migrate-deploy sin pendientes (umbral propuesto ≤ 5 s)",
   "ok": true,
-  "detail": "4329 ms"
+  "detail": "4965 ms"
  },
  {
   "id": "F1 base nueva: migrate-deploy aplica todas las migraciones y queda registrada la lista completa",
   "ok": true,
-  "detail": "exit=0 4989 ms"
+  "detail": "exit=0 7323 ms"
  },
  {
   "id": "F13 forma del CMD (sh -c «migrate && servidor»): con migraciones al día arranca el servidor",
@@ -82,7 +82,7 @@
  {
   "id": "P2 base vacía → migraciones → servidor listo (umbral propuesto ≤ 60 s)",
   "ok": true,
-  "detail": "6879 ms"
+  "detail": "11783 ms"
  },
  {
   "id": "F9 DB_SYNC_DISABLED=\"true\": NO llama a sync() (la tabla borrada NO reaparece)",

@@ -5,7 +5,8 @@
 {"id":"A5 [es] administrador: /admin/prompts carga, sin voseo ni desborde","ok":true,"d":" /admin/prompts"}
 {"id":"A5 [es] administrador: /admin/metrics carga, sin voseo ni desborde","ok":true,"d":" /admin/metrics"}
 {"id":"A5 [es] administrador: /therapist/dashboard (no le corresponde) no muestra datos ajenos","ok":true,"d":"url=/"}
-{"id":"A5 [es] administrador: hay botón de cerrar sesión en su panel","ok":false,"d":""}
+{"id":"A5 [es] administrador: hay botón de cerrar sesión en su panel","ok":true,"d":""}
+{"id":"A5 [es] administrador: tras cerrar sesión el token se borra y «Atrás» no vuelve al panel","ok":true,"d":"token=borrado url=/login"}
 {"id":"A5 [es] administrador: sin errores de página","ok":true,"d":""}
 {"id":"A5 [es] terapeuta: ingreso por la interfaz llega a su panel","ok":true,"d":"/therapist/dashboard"}
 {"id":"A5 [es] terapeuta: /therapist/dashboard carga, sin voseo ni desborde","ok":true,"d":" /therapist/dashboard"}
@@ -31,5 +32,6 @@
 {"id":"A5 [es] superadministrador: /admin/manifest carga, sin voseo ni desborde","ok":true,"d":" /admin/manifest"}
 {"id":"A5 [es] superadministrador: /admin/pilot-metrics carga, sin voseo ni desborde","ok":true,"d":" /admin/pilot-metrics"}
 {"id":"A5 [es] superadministrador: /therapist/dashboard (no le corresponde) no muestra datos ajenos","ok":true,"d":"url=/"}
-{"id":"A5 [es] superadministrador: hay botón de cerrar sesión en su panel","ok":false,"d":""}
+{"id":"A5 [es] superadministrador: hay botón de cerrar sesión en su panel","ok":true,"d":""}
+{"id":"A5 [es] superadministrador: tras cerrar sesión el token se borra y «Atrás» no vuelve al panel","ok":true,"d":"token=borrado url=/login"}
 {"id":"A5 [es] superadministrador: sin errores de página","ok":true,"d":""}

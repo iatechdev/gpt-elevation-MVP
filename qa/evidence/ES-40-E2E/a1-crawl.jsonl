@@ -25,28 +25,28 @@
 {"id":"A1 publico es 320x568 /pricing","ok":true,"d":"ok"}
 {"id":"A1 publico es 320x568 /profesionales","ok":true,"d":"ok"}
 {"id":"A1 publico en 1920x1080 /","ok":true,"d":"ok"}
-{"id":"A1 publico en 1920x1080 /login","ok":false,"d":"texto en español en EN «Tu »"}
-{"id":"A1 publico en 1920x1080 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 1920x1080 /login","ok":true,"d":"ok"}
+{"id":"A1 publico en 1920x1080 /login?mode=register","ok":true,"d":"ok"}
 {"id":"A1 publico en 1920x1080 /pricing","ok":true,"d":"ok"}
 {"id":"A1 publico en 1920x1080 /profesionales","ok":true,"d":"ok"}
 {"id":"A1 publico en 1440x900 /","ok":true,"d":"ok"}
-{"id":"A1 publico en 1440x900 /login","ok":false,"d":"texto en español en EN «Tu »"}
-{"id":"A1 publico en 1440x900 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 1440x900 /login","ok":true,"d":"ok"}
+{"id":"A1 publico en 1440x900 /login?mode=register","ok":true,"d":"ok"}
 {"id":"A1 publico en 1440x900 /pricing","ok":true,"d":"ok"}
 {"id":"A1 publico en 1440x900 /profesionales","ok":true,"d":"ok"}
 {"id":"A1 publico en 768x1024 /","ok":true,"d":"ok"}
-{"id":"A1 publico en 768x1024 /login","ok":false,"d":"texto en español en EN «Tu »"}
-{"id":"A1 publico en 768x1024 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 768x1024 /login","ok":true,"d":"ok"}
+{"id":"A1 publico en 768x1024 /login?mode=register","ok":true,"d":"ok"}
 {"id":"A1 publico en 768x1024 /pricing","ok":true,"d":"ok"}
 {"id":"A1 publico en 768x1024 /profesionales","ok":true,"d":"ok"}
-{"id":"A1 publico en 390x844 /","ok":false,"d":"texto en español en EN «Conversación»"}
-{"id":"A1 publico en 390x844 /login","ok":false,"d":"texto en español en EN «Tu »"}
-{"id":"A1 publico en 390x844 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 390x844 /","ok":true,"d":"ok"}
+{"id":"A1 publico en 390x844 /login","ok":true,"d":"ok"}
+{"id":"A1 publico en 390x844 /login?mode=register","ok":true,"d":"ok"}
 {"id":"A1 publico en 390x844 /pricing","ok":true,"d":"ok"}
 {"id":"A1 publico en 390x844 /profesionales","ok":true,"d":"ok"}
-{"id":"A1 publico en 320x568 /","ok":false,"d":"texto en español en EN «Conversación»"}
-{"id":"A1 publico en 320x568 /login","ok":false,"d":"texto en español en EN «Tu »"}
-{"id":"A1 publico en 320x568 /login?mode=register","ok":false,"d":"texto en español en EN «Tu »"}
+{"id":"A1 publico en 320x568 /","ok":true,"d":"ok"}
+{"id":"A1 publico en 320x568 /login","ok":true,"d":"ok"}
+{"id":"A1 publico en 320x568 /login?mode=register","ok":true,"d":"ok"}
 {"id":"A1 publico en 320x568 /pricing","ok":true,"d":"ok"}
 {"id":"A1 publico en 320x568 /profesionales","ok":true,"d":"ok"}
 {"id":"A1 persona es 1920x1080 /app/dashboard","ok":true,"d":"ok"}
@@ -64,7 +64,7 @@
 {"id":"A1 persona es 1920x1080 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona es 1920x1080 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona es 1920x1080 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona es 1920x1080 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 1920x1080 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona es 1920x1080 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona es 1920x1080 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona es 1920x1080 /app/next-step/plan","ok":true,"d":"ok"}
@@ -88,7 +88,7 @@
 {"id":"A1 persona es 1440x900 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona es 1440x900 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona es 1440x900 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona es 1440x900 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 1440x900 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona es 1440x900 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona es 1440x900 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona es 1440x900 /app/next-step/plan","ok":true,"d":"ok"}
@@ -112,7 +112,7 @@
 {"id":"A1 persona es 768x1024 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona es 768x1024 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona es 768x1024 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona es 768x1024 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 768x1024 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona es 768x1024 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona es 768x1024 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona es 768x1024 /app/next-step/plan","ok":true,"d":"ok"}
@@ -136,7 +136,7 @@
 {"id":"A1 persona es 390x844 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona es 390x844 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona es 390x844 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona es 390x844 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 390x844 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona es 390x844 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona es 390x844 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona es 390x844 /app/next-step/plan","ok":true,"d":"ok"}
@@ -148,7 +148,7 @@
 {"id":"A1 persona es 320x568 /app/dashboard","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/chat","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/checkin","ok":true,"d":"ok"}
-{"id":"A1 persona es 320x568 /app/progress","ok":false,"d":"desborde horizontal"}
+{"id":"A1 persona es 320x568 /app/progress","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/diary","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/diary/new","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/space/tools","ok":true,"d":"ok"}
@@ -160,7 +160,7 @@
 {"id":"A1 persona es 320x568 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona es 320x568 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona es 320x568 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona es 320x568 /app/next-step/plan","ok":true,"d":"ok"}
@@ -184,7 +184,7 @@
 {"id":"A1 persona en 1920x1080 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona en 1920x1080 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona en 1920x1080 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona en 1920x1080 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 1920x1080 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona en 1920x1080 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona en 1920x1080 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona en 1920x1080 /app/next-step/plan","ok":true,"d":"ok"}
@@ -208,7 +208,7 @@
 {"id":"A1 persona en 1440x900 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona en 1440x900 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona en 1440x900 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona en 1440x900 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 1440x900 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona en 1440x900 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona en 1440x900 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona en 1440x900 /app/next-step/plan","ok":true,"d":"ok"}
@@ -232,7 +232,7 @@
 {"id":"A1 persona en 768x1024 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona en 768x1024 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona en 768x1024 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona en 768x1024 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 768x1024 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona en 768x1024 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona en 768x1024 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona en 768x1024 /app/next-step/plan","ok":true,"d":"ok"}
@@ -256,7 +256,7 @@
 {"id":"A1 persona en 390x844 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona en 390x844 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona en 390x844 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona en 390x844 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 390x844 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona en 390x844 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona en 390x844 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona en 390x844 /app/next-step/plan","ok":true,"d":"ok"}
@@ -280,7 +280,7 @@
 {"id":"A1 persona en 320x568 /app/evidence/resume-skills","ok":true,"d":"ok"}
 {"id":"A1 persona en 320x568 /app/context/resumes","ok":true,"d":"ok"}
 {"id":"A1 persona en 320x568 /app/skill-map","ok":true,"d":"ok"}
-{"id":"A1 persona en 320x568 /app/route-catalog","ok":false,"d":"API 503 /api/route-catalog"}
+{"id":"A1 persona en 320x568 /app/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 persona en 320x568 /app/next-step","ok":true,"d":"ok"}
 {"id":"A1 persona en 320x568 /app/next-step/experiments","ok":true,"d":"ok"}
 {"id":"A1 persona en 320x568 /app/next-step/plan","ok":true,"d":"ok"}
@@ -334,47 +334,47 @@
 {"id":"A1 admin es 320x568 /admin/skill-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin es 320x568 /admin/pilot-metrics","ok":true,"d":"ok"}
 {"id":"A1 admin es 320x568 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
-{"id":"A1 admin en 1920x1080 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1920x1080 /admin/dashboard","ok":true,"d":"ok"}
 {"id":"A1 admin en 1920x1080 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
-{"id":"A1 admin en 1920x1080 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
-{"id":"A1 admin en 1920x1080 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
-{"id":"A1 admin en 1920x1080 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1920x1080 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 1920x1080 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin en 1920x1080 /admin/metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 1920x1080 /admin/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 1920x1080 /admin/skill-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 1920x1080 /admin/pilot-metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 1920x1080 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
-{"id":"A1 admin en 1440x900 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1440x900 /admin/dashboard","ok":true,"d":"ok"}
 {"id":"A1 admin en 1440x900 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
-{"id":"A1 admin en 1440x900 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
-{"id":"A1 admin en 1440x900 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
-{"id":"A1 admin en 1440x900 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 1440x900 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 1440x900 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin en 1440x900 /admin/metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 1440x900 /admin/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 1440x900 /admin/skill-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 1440x900 /admin/pilot-metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 1440x900 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
-{"id":"A1 admin en 768x1024 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 768x1024 /admin/dashboard","ok":true,"d":"ok"}
 {"id":"A1 admin en 768x1024 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
-{"id":"A1 admin en 768x1024 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
-{"id":"A1 admin en 768x1024 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
-{"id":"A1 admin en 768x1024 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 768x1024 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 768x1024 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin en 768x1024 /admin/metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 768x1024 /admin/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 768x1024 /admin/skill-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 768x1024 /admin/pilot-metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 768x1024 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
-{"id":"A1 admin en 390x844 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 390x844 /admin/dashboard","ok":true,"d":"ok"}
 {"id":"A1 admin en 390x844 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
-{"id":"A1 admin en 390x844 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
-{"id":"A1 admin en 390x844 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
-{"id":"A1 admin en 390x844 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 390x844 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 390x844 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin en 390x844 /admin/metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 390x844 /admin/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 390x844 /admin/skill-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 390x844 /admin/pilot-metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 390x844 /admin/manifest","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
-{"id":"A1 admin en 320x568 /admin/dashboard","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 320x568 /admin/dashboard","ok":true,"d":"ok"}
 {"id":"A1 admin en 320x568 /admin/prompts","ok":false,"d":"posible clave i18n «elevation_system_prompt»"}
-{"id":"A1 admin en 320x568 /admin/content","ok":false,"d":"texto en español en EN «Contenido»"}
-{"id":"A1 admin en 320x568 /admin/users","ok":false,"d":"texto en español en EN «Usuarios»"}
-{"id":"A1 admin en 320x568 /admin/metrics","ok":false,"d":"texto en español en EN «Usuarios»"}
+{"id":"A1 admin en 320x568 /admin/content","ok":true,"d":"ok (API 401/403 esperadas: 1)"}
+{"id":"A1 admin en 320x568 /admin/users","ok":true,"d":"ok"}
+{"id":"A1 admin en 320x568 /admin/metrics","ok":true,"d":"ok"}
 {"id":"A1 admin en 320x568 /admin/route-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 320x568 /admin/skill-catalog","ok":true,"d":"ok"}
 {"id":"A1 admin en 320x568 /admin/pilot-metrics","ok":true,"d":"ok"}

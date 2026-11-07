@@ -8,10 +8,11 @@
 {"id":"S8h el token tiene vencimiento (exp) y su vigencia es ≤ 24 h","ok":true,"d":"vigencia=8 h"}
 {"id":"S8i el admin desactiva la cuenta: el token vivo deja de servir (401) y no puede volver a ingresar","ok":true,"d":"desactivar=200 token=401 ingreso=403"}
 {"id":"S8j al reactivarla vuelve a ingresar (200)","ok":true,"d":"reactivar=200 ingreso=200"}
-{"id":"S8k tras varios intentos fallidos la cuenta se bloquea (423) y la contraseña correcta también se rechaza","ok":true,"d":"intentos=401,401,429,423,423,423,423 correcta=423 mensaje=\"Cuenta bloqueada. Inténtalo de nuevo en 15 minutos.\""}
-{"id":"S8l el mensaje de bloqueo está en tuteo (sin «Intentá»)","ok":true,"d":"\"Cuenta bloqueada. Inténtalo de nuevo en 15 minutos.\""}
+{"id":"S8k tras varios intentos fallidos la cuenta se bloquea (423) y la contraseña correcta también se rechaza","ok":true,"d":"intentos=401,401,423,423,423,423,423 correcta=423 mensaje=\"Cuenta bloqueada. Inténtalo de nuevo en 14 minutos.\""}
+{"id":"S8l el mensaje de bloqueo está en tuteo (sin «Intentá»)","ok":true,"d":"\"Cuenta bloqueada. Inténtalo de nuevo en 14 minutos.\""}
 {"id":"S8m el admin desbloquea la cuenta y la persona vuelve a ingresar","ok":true,"d":"desbloqueo=200 ingreso=200"}
-{"id":"S8n la lista pública de planes responde 200 y NO inventa importes (precios con formato válido o ausentes)","ok":true,"d":"planes=0"}
-{"id":"S8o solicitud de plan","ok":false,"d":"no hay planes publicados en staging (precondición: sembrar planes de prueba)"}
+{"id":"S8n la lista pública de planes responde 200 y NO inventa importes (precios con formato válido o ausentes)","ok":true,"d":"planes=2"}
+{"id":"S8o solicitar un plan: 201 y la segunda solicitud pendiente da 409 con mensaje en tuteo","ok":true,"d":"1ª=201 2ª=409 Ya tienes una solicitud de plan pendiente. Espera a que el equipo la procese."}
+{"id":"S8p solicitud de plan con datos inválidos: 4xx, no 5xx","ok":true,"d":"http=400"}
 {"id":"S8q solicitud pública de profesionales con datos vacíos: 4xx, no 5xx","ok":true,"d":"http=400"}
 {"id":"S8r el listado de solicitudes de profesionales NO es público (401/403)","ok":true,"d":"http=403"}
