@@ -1,0 +1,52 @@
+[
+ {
+  "id": "R1 estilos computados de las pantallas públicas existentes (/, /login, /forgot-password, /pricing, /privacy × ES/EN × 390/1440 px): idénticos entre main y el PR",
+  "ok": true,
+  "detail": "20 comparaciones, con diferencias=0"
+ },
+ {
+  "id": "R2 CLS de la landing (ES/EN, 320/390/1440): el PR no empeora y cumple ≤ 0,1",
+  "ok": true,
+  "detail": "main=0.0023 PR=0.0023"
+ },
+ {
+  "id": "T1a la landing del PR no descarga fuentes nuevas (las mismas que main) y no pide nada a terceros",
+  "ok": true,
+  "detail": "fuentes landing PR=inter-latin-wght-normal.woff2 · main=inter-latin-wght-normal.woff2 · externos=ninguno"
+ },
+ {
+  "id": "T1b /design-system: fuentes autoalojadas (Barlow Condensed, Barlow, Spectral), 0 hosts externos, MIME woff2",
+  "ok": true,
+  "detail": "descargadas=6 cargadas=Inter 100 900 normal; Barlow Condensed 600 normal; Barlow Condensed 700 normal; Barlow 400 normal; Barlow 600 normal; Spectral 500 italic"
+ },
+ {
+  "id": "S1 /design-system: se sirve sin sesión, no llama a la API y no muestra datos de personas",
+  "ok": true,
+  "detail": "llamadas a /api=0 robots=sin meta (indexable) texto=Saltar al contenido IDIOMA ES EN TEMA Sistema Claro Oscuro SISTEMA DE DISEÑO Tokens y comp"
+ },
+ {
+  "id": "INFO S1b la ruta queda pública e indexable (sin meta robots/noindex); decidir si debe existir en producción",
+  "ok": true,
+  "detail": "sin meta robots"
+ },
+ {
+  "id": "P1a peso inicial: JS y CSS gzip del PR frente a main (≤ +1 kB JS, ≤ +0,5 kB CSS) y presupuesto (150 / 20 kB)",
+  "ok": true,
+  "detail": "JS 141.9→142.0 kB · CSS 16.1→16.1 kB · archivos 83→91"
+ },
+ {
+  "id": "P1b el sistema de diseño va en bloque aparte (carga diferida) y no en el inicial",
+  "ok": true,
+  "detail": "bloques=DesignSystemPage-BJGkkUT0.js,DesignSystemPage-Ds2qnct4.css"
+ },
+ {
+  "id": "P1c relieve (canvas): al dibujar y redimensionar no hay tareas largas > 100 ms (umbral propuesto; sin bucle de animación continuo en el código)",
+  "ok": true,
+  "detail": "canvas=2 tareas largas=0 máx=0 ms"
+ },
+ {
+  "id": "A1b contraste real de todo el texto visible de /design-system (AA: 4,5:1; texto grande 3:1; excluye deshabilitados), claro y oscuro, ES y EN, 390 y 1360 px",
+  "ok": true,
+  "detail": "elementos medidos=1416 bajo umbral=0"
+ }
+]
