@@ -19,6 +19,7 @@ const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const ClinicalNote = require('../ClinicalNote');
 const { validateBody, nonempty, text, date, optional } = require('../middlewares/validateBody');
+const { replyProposal, replyReviewError } = require('../utils/promptHttp'); // ES-191
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
@@ -319,10 +320,10 @@ router.post('/prompt/propose', validateBody({ content: nonempty }), async (req, 
       });
     }
 
-    await proposePrompt(promptKey, content, req.user.name);
-
-    res.json({ message: 'Prompt submitted for superadmin review.' });
+    // ES-191: la revisión automática decide entre «pendiente de aprobación humana» y «rechazada con motivos»; nunca aprueba.
+    return replyProposal(res, await proposePrompt(promptKey, content, req.user.name));
   } catch (error) {
+    if (replyReviewError(res, error)) return;
     console.error('❌ Error proposing therapist prompt:', error);
     res.status(500).json({ error: 'Could not submit prompt.' });
   }
