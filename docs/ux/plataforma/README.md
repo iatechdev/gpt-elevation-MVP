@@ -10,6 +10,8 @@
 | `pantallas.css` | Piezas de las pantallas nuevas. |
 | `nucleo.js` | Textos base, relieve, rutas, menú, pantallas públicas, mapa, conversación y planes. |
 | `p-*.js` | Una pantalla o familia por archivo, con sus textos ES/EN. |
+| `p-admin.js`, `p-admin2.js` | Administración y junta (estructura, panel, métricas, guías de la IA, manifiesto, contenido, personas usuarias, catálogos, piloto). |
+| `p-publicas.js` | Restablecer contraseña, solicitud de profesionales y precios. |
 | `inicio.js` | Arranque. |
 
 La barra de arriba del prototipo permite elegir pantalla, simular errores del servidor («Chat: sin conexión» sirve para todas), cambiar tema claro/oscuro y cambiar ES/EN.
@@ -19,7 +21,9 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 | Ruta real | Pantalla del prototipo | Estado |
 |---|---|---|
 | `/`, `/login`, `/forgot-password` | portada, entrar, recuperar | Hecho |
-| `/reset-password`, `/profesionales`, `/pricing` | (planes ya está) | Falta restablecer y profesionales |
+| `/reset-password` | `restablecer` (`p-publicas.js`) | Hecho: formulario con requisitos en vivo, enlace no válido, contraseña actualizada, contraseña común, demasiados intentos, error de red |
+| `/profesionales` | `profesionales` | Hecho: formulario completo con validación por campo, hoja de vida en PDF, error de red, demasiados intentos, error del servidor, solicitud recibida |
+| `/pricing` | `precios` | Hecho: visitante y con sesión, cargando, error, vacío, plan retirado, solicitud en revisión, resultado incierto, enviando. Planes de EJEMPLO |
 | `/app/onboarding` | `punto` | Hecho |
 | `/app/checkin` | `checkin` | Hecho |
 | `/app/skill-map`, `/app/dashboard` | `inicio` (mapa, `p-mapa.js`) | Hecho: relieve y lista por territorios, autoevaluación y revisión humana por separado, confianza, criterios, registrar/cambiar/retirar nivel, análisis con IA en 3 pasos, revocar todos, actualizar, guía sin niveles. Pendiente de decisión: el radar |
@@ -44,7 +48,17 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 | `/therapist/dashboard` | `panel_pro` | Hecho: resumen, próximas sesiones, personas, avisos, validación académica (subir, estados, rechazo), guía para la IA (proponer, pendiente, rechazada); cada sección con su error |
 | `/therapist/patient/:id` | `paciente_pro` | Hecho: resumen con IA, notas de seguimiento (filtrar, crear, editar), historial emocional, valoraciones, agendar sesión, sin autorización |
 | `/therapist/session/:id` | `sala_pro` | Hecho: pantalla previa, conectando, error al iniciar, en sesión con notas en vivo (autoguardado y error), cierre con ánimo y nota |
-| Administración, junta, `/reset-password`, `/profesionales`, `/pricing` real | | Pendiente |
+| `/admin/dashboard` | `adm_panel` (`p-admin.js`) | Hecho: 7 cifras, gráfica de 30 días con alternativa en tabla, profesionales con más personas, avisos con error propio |
+| `/admin/metrics` | `adm_metricas` | Hecho: tres cifras, gráfica ampliada y tabla |
+| `/admin/prompts` | `adm_prompts` («Guías de la IA») | Hecho: lista, versión activa, historial, proponer (administración), publicar y crear (superadministración), leer el texto propuesto, aprobar y rechazar con diálogo, errores |
+| `/admin/manifest` y `/board/manifest` | `junta_manifiesto` | Hecho: versión activa, historial, nueva versión con confirmación, reactivar con confirmación; los tres roles (administración sin acceso, superadministración y junta) |
+| `/admin/content` | `adm_contenido` | Hecho: validaciones de profesionales, solicitudes (filtros, aprobar, rechazar, eliminar, hoja de vida, formulario cerrado por tope), planes (crear, editar, desactivar) y textos públicos (pendientes y otros) |
+| `/admin/users` | `adm_usuarios` | Hecho: lista con filtros (tabla y tarjetas), gestionar, crear cuenta (con precarga desde una solicitud aprobada), desactivar, desbloquear, asignar profesional, enlace de restablecimiento, eliminar con nombre, emparejamientos, solicitudes de plan |
+| `/admin/route-catalog`, `/:id`, `/:id/:kind/:itemKey` | `adm_rutas`, `adm_rutas_borrador`, `adm_rutas_item` | Hecho: versiones, borrador por tipo, editor generado desde la especificación de campos, datos que faltan, guardia al salir, guardado incierto, publicar con revisión, solo lectura |
+| `/admin/skill-catalog`, `/:id`, `/:id/skills/:skillKey` | `adm_habilidades`, `adm_habilidades_borrador`, `adm_habilidad` | Hecho: mismo patrón con niveles 1 a 4 en ES y EN, fuente, verificación y territorios |
+| `/admin/pilot-metrics` | `adm_piloto` | Hecho: cuatro métricas con sus estados, datos protegidos, sin configurar. Vista preliminar con datos sintéticos |
+
+**Con esto todas las rutas de `App.tsx` que tienen pantalla propia están diseñadas en el prototipo (el resto son redirecciones o el comodín).**
 
 ## Decisiones que necesito de Alejo y Mauricio (de esta entrega)
 
@@ -75,12 +89,32 @@ La barra de arriba del prototipo permite elegir pantalla, simular errores del se
 19. **Facilitación y «Revisiones profesionales».** Son una vista preliminar con datos sintéticos y el permiso real depende del contrato; se mantiene la franja y «Solicitar invitación» sigue siendo una simulación. En el código, «Mis revisiones» solo se llega desde la consola de facilitación; el prototipo la añade al menú de la persona (no verifiqué si existe otro acceso).
 20. **Cifra «Total de sesiones».** En la ficha, el código la calcula contando registros de ánimo. El diseño la renombra «Registros de ánimo». Si se quiere contar sesiones, el servidor debe entregarlo.
 
+### Decisiones de la entrega 6 (administración, junta y públicas)
+
+21. **Nombre «Guías de la IA».** El código las llama «prompts». Para quien administra son las instrucciones con las que conversa la IA; el identificador técnico se conserva en pantalla.
+22. **Hallazgo grave: quien aprueba una guía no ve su texto.** El servidor de versiones devuelve todo menos `content` (`backend/routes/adminPrompts.js`, `attributes`). Superadministración aprueba o rechaza a ciegas. El diseño muestra el texto de cada versión. **Requiere que el servidor lo devuelva**; sin eso, no se debe aprobar.
+23. **Aprobar, publicar y reactivar piden confirmación propia.** Cambian cómo se comporta la IA para todas las personas. Hoy aprobar no pide nada y reactivar el manifiesto usa `window.confirm`. El diálogo dice el efecto y el camino de vuelta.
+24. **Definir la contraseña de otra persona.** El código deja a administración escribir una contraseña nueva (mínimo 6) para otra cuenta. Posible objeción: la administración no debería conocer contraseñas ajenas y la regla de 6 es más débil que la del registro (8 con mayúscula, minúscula, número y símbolo). El diseño la sustituye por «Enviar enlace de restablecimiento». Requiere un endpoint o reutilizar el de recuperación.
+25. **Crear cuenta con contraseña inicial.** Se mantiene (es lo que hace el código) pero con las mismas reglas del registro. Alternativa recomendada: invitación por enlace. Decide Mauricio.
+26. **Desactivar y eliminar cuentas.** Desactivar pide confirmación con su consecuencia; eliminar exige escribir el nombre (ya lo hace el código) y avisa que no se deshace. Eliminar solicitudes de profesionales avisa lo mismo (hoy es `window.confirm`).
+27. **Gráfica de actividad accesible.** El código dibuja barras sin texto y con un mínimo de 8 % de altura aun con cero sesiones (parece que hubo). El diseño pone cero como una línea, un resumen de texto y la tabla de los 30 días.
+28. **Estrellas, emojis y «% de ánimo».** Se sustituyen por «4,5 de 5» y palabras. Coherente con las decisiones 13 y 17.
+29. **El panel de avisos falla en silencio en el código.** El diseño le da su error con reintento (decisión 15 aplicada a administración).
+30. **Catálogos.** El editor se genera desde la especificación de campos (`schema.ts` y `model.ts`): los campos del prototipo son un subconjunto representativo, la fuente de verdad es el código. Publicar se bloquea con una lista de lo que falta en lugar de fallar en el servidor. Contenido de prueba no publicable: se muestra el motivo.
+31. **Piloto.** Es una vista preliminar con datos sintéticos y permiso pendiente de contrato; se mantiene la franja. Las metas propuestas no se muestran con cifras porque el texto real no se verificó.
+32. **Restablecer contraseña.** Los requisitos se muestran en vivo con símbolo y palabra (no solo color). El enlace llega en la dirección y se quita de la barra al abrir (se conserva). El mensaje «Este enlace ya no sirve» no distingue entre vencido y usado: correcto, evita dar pistas.
+33. **Solicitud de profesionales: inconsistencia.** El texto dice que el enlace «debe empezar por https://» pero la regla acepta también `http://`. El diseño unifica el mensaje con la regla (o la regla con el mensaje). Pendiente de decisión.
+34. **Precios.** Los planes de ejemplo no son los reales. La página pública y «Mi plan» comparten catálogo. Con sesión, una solicitud en revisión bloquea otra; un resultado incierto pide comprobar antes de reintentar.
+35. **Acceso por rol.** El prototipo permite ver las pantallas como administración, superadministración y junta. La junta solo ve el manifiesto. Si un rol no tiene acceso se muestra una explicación en lugar de redirigir en silencio.
+
 ## Qué se verificó
+
+- Entrega 6: barrido de las 16 pantallas nuevas en ES/EN, claro y oscuro, 390 y 1360 px (sin desborde, un solo h1, axe sin hallazgos graves ni críticos) y más de 90 comprobaciones de flujo con Playwright (permisos por rol, aprobar y rechazar, errores con el diálogo abierto, confirmación incierta, guardia al salir, límites de caracteres, precarga entre pantallas). Claves de texto duplicadas entre archivos: 0.
 
 - Entrega 5: barrido de las 7 pantallas profesionales en ES/EN, claro y oscuro, 390 y 1360 px (sin desborde, un solo h1, axe sin hallazgos graves ni críticos) y flujos de punta a punta con Playwright (revisión con evidencia, vista previa, guardia al salir, error y reintento del mismo envío, confirmación incierta sin duplicar, conflicto, acceso retirado, invitación; objeción; panel con errores por sección, validación y guía; ficha con resumen IA, notas, filtro, edición con error, agendar; sala con autoguardado, error y cierre).
 - Colisión de claves de texto entre archivos: se detectó y corrigió (`rv_t`, `sp_back`, `sp_save` ya existían en otros módulos).
 
-- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 39 pantallas (32 anteriores + 7 profesionales).
+- Carga sin errores de consola ni desborde horizontal en 390 y 1360 px, ES y EN, para las 39 pantallas de la entrega 5; la entrega 6 añade 16 (55 pantallas del prototipo en total).
 - Entrega 4: flujos de punta a punta con Playwright (ejercicio con notas y diálogo, error de copiado, brújula con campos, texto no compartible, vista previa, confirmación incierta, reintento, retirar, versión activa, vencida y pendiente de revisar; catálogo con filtros y fichas; progreso; opinión con guardado incierto, consulta de estado, retirar y conflicto) y axe-core sin hallazgos graves ni críticos en claro y oscuro, ES y EN.
 - Corrección de dos fallos de la primera fase: el botón «Crear cuenta» de la barra tenía el texto del color del fondo, y los botones secundarios desactivados salían como un bloque gris sin texto. Además, los enlaces de texto usaban el azul del navegador.
 - axe-core (WCAG 2 A/AA), nivel grave y crítico, en claro y oscuro, ES y EN: 0 hallazgos.

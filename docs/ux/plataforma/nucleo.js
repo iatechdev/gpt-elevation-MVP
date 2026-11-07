@@ -116,7 +116,7 @@ function raise(p,to){p.th=to;if(reduce){p.h=to;drawAll();return}(function step()
 var PUB=['portada','registro','entrar','recuperar'],ROUTES=['portada','registro','entrar','recuperar','inicio','evidencias','chat','planes','estados'];
 var SEC={evidencias:['evidencia_nueva','evidencia_detalle','evidencia_editar','resumen_habilidades'],siguiente:['experimentos','experimento','plan_accion']};
 function on(r){return S.route===r||(SEC[r]||[]).indexOf(S.route)>-1}
-function header(){if(S.route==='sesion'||S.route==='sala_pro')return'';if(window.proHeader&&proHeader())return proHeader();var pub=PUB.indexOf(S.route)>-1;
+function header(){if(S.route==='sesion'||S.route==='sala_pro')return'';if(window.proHeader&&proHeader())return proHeader();if(window.admHeader&&admHeader())return admHeader();var pub=PUB.indexOf(S.route)>-1;
   if(pub)return'<header class="top"><a class="brand" href="#portada" aria-label="Elevation">Elevation<i>.</i></a><nav class="main" aria-label="'+t('nav_how')+'"><a href="#portada">'+t('nav_how')+'</a><a href="#portada">'+t('nav_priv')+'</a><a href="#entrar">'+t('nav_in')+'</a><a class="btn" href="#registro">'+t('nav_up')+'</a></nav></header>';
   var l=[['inicio','nav_map'],['chat','nav_chat'],['evidencias','nav_ev'],['diario','nav_diary'],['siguiente','nav_next']];
   var menu=[['checkin','nav_today'],['puente','nav_bridge'],['terapeuta','nav_th'],['herramientas','nav_tools'],['progreso','nav_prog'],['planes','nav_plan'],['resumes','nav_cv'],['mis_revisiones','pf_nav_rv'],['datos','nav_data'],['opinion','nav_op']];
