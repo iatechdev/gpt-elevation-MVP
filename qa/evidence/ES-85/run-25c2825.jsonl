@@ -1,0 +1,34 @@
+{"id":"ES85-M01 las migraciones aplican limpias desde cero (con los roles de Supabase simulados)","ok":true,"detail":"ok"}
+{"id":"ES85-M02 [SEG] el `down` se niega sin ALLOW_DESTRUCTIVE_MIGRATION y con NODE_ENV=production aunque se permita; no cambia nada","ok":true,"detail":"sinPermiso=1 funciones=5"}
+{"id":"ES85-M03 con permiso, deshacer las dos migraciones quita funciones y tablas sin dejar huérfanos","ok":true,"detail":"undo=0/0 funciones=0 tablas=0 roles_restantes=ninguno"}
+{"id":"ES85-M04 volver a subir deja el mismo estado (subir→bajar→subir) y una segunda subida no falla","ok":true,"detail":"up=0"}
+{"id":"ES85-P01 [SEG] el rol worker no puede leer, borrar ni vaciar NINGUNA de las tablas del esquema salvo las dos de presupuesto","ok":true,"detail":"48 tablas barridas"}
+{"id":"ES85-P02 [SEG] el worker no puede crear objetos en el esquema, crear roles, cambiar de rol ni usar las secuencias de las tablas del worker","ok":true,"detail":"{\"create\":true,\"createFn\":true,\"role\":true,\"su\":true,\"seqUse\":true,\"createRole\":true,\"alter\":true}"}
+{"id":"ES85-P03 [SEG] el rol worker no es superusuario ni crea roles/bases ni evita RLS ni replica; no pertenece a otros roles y se crea SIN contraseña","ok":true,"detail":"{\"rolcanlogin\":true,\"rolsuper\":false,\"rolcreaterole\":false,\"rolcreatedb\":false,\"rolbypassrls\":false,\"rolreplication\":false,\"pw\":true,\"miembroDe\":0,\"sinContraseña\":true}"}
+{"id":"ES85-P04 [SEG] anon, authenticated, service_role y PUBLIC no pueden ejecutar ninguna de las 5 funciones; el worker solo las 4 públicas (no la de versión)","ok":true,"detail":"[\"elevation_worker:worker_heartbeat\",\"elevation_worker:worker_publish\",\"elevation_worker:worker_claim\",\"elevation_worker:worker_fail\"]"}
+{"id":"ES85-P05 [SEG] el dueño de las funciones no puede cambiar `status` ni `version` del consentimiento, ni leer Users/ChatTurns, ni borrar jobs ni consentimientos","ok":true,"detail":"{\"status\":true,\"version\":true,\"users\":true,\"chat\":true,\"del\":true,\"cons\":true}"}
+{"id":"ES85-P06 las 5 funciones pertenecen al dueño sin login; las 5 son SECURITY DEFINER con `search_path` fijo (la de versión es SQL puro: se informa)","ok":true,"detail":"{\"fijas\":4,\"propias\":5}"}
+{"id":"ES85-P07 [SEG] una tabla temporal `AiJobs` con el mismo nombre y un `search_path` hostil no desvían la función (reclama el job real)","ok":true,"detail":"job reclamado=1 esperado≈1"}
+{"id":"ES85-P08 [INFO] el worker puede escribir en AiUsages (cifras de uso); columnas","info":"{\"a\":\"42703\",\"cols\":[\"id\",\"UserId\",\"kind\",\"requestId\",\"model\",\"appVersion\",\"periodKey\",\"status\",\"reservedTokens\",\"inputTokens\",\"outputTokens\",\"costMicros\",\"currency\",\"priceVersion\",\"latencyMs\",\"errorCode\",\"createdAt\",\"updatedAt\"]}"}
+{"id":"ES85-T01 la matriz de transiciones del job (42 pares) se impone en la tabla: solo las 12 legales pasan","ok":true,"detail":"42 pares"}
+{"id":"ES85-T02 los campos inmutables del job no se pueden cambiar y el `fence` solo crece","ok":true,"detail":"modificables=ninguno bajar fence=23514"}
+{"id":"ES85-T03 transiciones de candidata (12 pares) correctas; una candidata no puede pertenecer a otra persona que su job (FK compuesta) y el nivel fuera de 1–4 se rechaza","ok":true,"detail":"mal=ninguna otraPersona=23503 nivel9=23514"}
+{"id":"ES85-S01 [SEG] 18 salidas inválidas o hostiles del modelo (forma, campo extra, catálogo, nivel, citas, repetidas, SQL/HTML) se rechazan con 22023 sin escribir nada; el job sigue RUNNING","ok":true,"detail":"estado=RUNNING candidatas=0"}
+{"id":"ES85-S02 una salida válida (nivel null permitido) se publica: 2 candidatas, job en REVIEW_REQUIRED; publicar de nuevo con el mismo intento da `fenced` y no escribe","ok":true,"detail":"[{\"ok\":true,\"candidates\":2},{\"ok\":false,\"reason\":\"fenced\"},\"REVIEW_REQUIRED\"]"}
+{"id":"ES85-S03 una lista vacía de candidatas termina el job en COMPLETED sin filas","ok":true,"detail":"{\"ok\":true,\"candidates\":0}"}
+{"id":"ES85-C01 heartbeat: con el `fence` viejo o de otro dueño devuelve false; con el correcto true","ok":true,"detail":"false/false/true"}
+{"id":"ES85-C02 un lease vencido se recupera: otro dueño reclama el job con `fence` mayor y la publicación del intento viejo es `fenced` sin escribir","ok":true,"detail":"fence 1→2 publicación=fenced"}
+{"id":"ES85-C03 tras el máximo de intentos con lease vencido el job pasa a FAILED (`lease_expired`) y no se reclama más","ok":true,"detail":"{\"status\":\"FAILED\",\"errorCode\":\"lease_expired\",\"attempt\":3}"}
+{"id":"ES85-C04 fallo reintentable vuelve a PENDING; repetirlo con el mismo `fence` es `fenced`; un código de error con SQL se guarda como `unknown`","ok":true,"detail":"[{\"ok\":true,\"status\":\"PENDING\"},{\"ok\":false,\"reason\":\"fenced\"},{\"ok\":true,\"status\":\"FAILED\"},\"unknown\"]"}
+{"id":"ES85-K01 [PRIV] un job de una persona con consentimiento revocado no se reclama: queda INVALIDATED (`consent_revoked`) y nada sale al worker","ok":true,"detail":"{\"status\":\"INVALIDATED\",\"errorCode\":\"consent_revoked\"}"}
+{"id":"ES85-K02 [PRIV] consentimiento con versión vieja (0 < requerida) tampoco se reclama","ok":true,"detail":"INVALIDATED"}
+{"id":"ES85-K03 [PRIV] una persona con eliminación solicitada no se reclama (INVALIDATED)","ok":true,"detail":"INVALIDATED"}
+{"id":"ES85-K04 si el contexto cambió después del reclamo, publicar da `context_changed` e INVALIDATED sin candidatas","ok":true,"detail":"{\"ok\":false,\"reason\":\"context_changed\"}"}
+{"id":"ES85-K05 [PRIV] una publicación que coincide con una revocación en curso espera a que termine y NO publica (consent_revoked, sin candidatas)","ok":true,"detail":"esperó=true resultado={\"ok\":false,\"reason\":\"consent_revoked\"}"}
+(node:19252) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"ES85-C05 60 reclamos simultáneos (5 conexiones) sobre 40 jobs: cada job se reclama una sola vez, sin errores ni interbloqueos y sin pendientes","ok":true,"detail":"reclamados=40 únicos=40 errores=0 pendientes=0"}
+{"id":"ES85-D01 [PRIV] las tablas no tienen columnas de texto libre: solo cadenas ≤ 64 y las citas (claves) en JSON; tras el flujo, las citas guardan solo claves de la lista","ok":true,"detail":"columnas largas=ninguna citas_max=28"}
+{"id":"ES85-R01 [PERF] con 1000 jobs pendientes, `worker_claim` p95 < 50 ms (umbral propuesto)","ok":true,"detail":"p95=1.0 ms (n=40)"}
+{"id":"ES85-R02 [INFO] base de pruebas","info":"qa85_9f00526499"}
+{"fin":true}

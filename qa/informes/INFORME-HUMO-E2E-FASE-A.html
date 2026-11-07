@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe de QA — Humo E2E de staging, fase A</title>
+<style>
+:root{--bg:#faf8f4;--fg:#1f2a24;--mut:#5f6b64;--card:#ffffff;--line:#dcd8cf;--ok:#2f6b3f;--warn:#9a6a00;--bad:#a23a2a;--acc:#3f5b45}
+@media (prefers-color-scheme:dark){:root{--bg:#161b18;--fg:#e8ece9;--mut:#a3aea7;--card:#1f2622;--line:#34403a;--ok:#74c28a;--warn:#e0b44c;--bad:#e58a78;--acc:#9cc4a6}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.7rem;margin:.2em 0}h2{font-size:1.25rem;margin:2em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.05rem;margin:1.2em 0 .3em}
+.meta{color:var(--mut);font-size:.92rem}
+.verdict{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--warn);border-radius:8px;padding:14px 16px;margin:16px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card b{display:block;font-size:1.5rem}.card span{color:var(--mut);font-size:.85rem}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;background:var(--card);font-size:.92rem}th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}th{background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}.bad{color:var(--bad);font-weight:600}
+code{background:color-mix(in srgb,var(--acc) 12%,var(--card));padding:1px 5px;border-radius:4px;font-size:.88em}
+ul{padding-left:1.2em}li{margin:.25em 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Informe de QA — Humo E2E de staging, fase A</h1>
+<p class="meta">Elevation + Skill Map · [QA-Claude] · 31-oct-2026 · Staging: <code>b942b34</code> (incluye #110 y #111); la ejecución inicial fue sobre <code>e9f3845</code> y se repitió un subconjunto sobre <code>b942b34</code> con el mismo resultado · Ticket: ES-40 · Evidencia: PR #6 (<code>qa/e2e</code>, <code>qa/evidence/ES-40-E2E</code>)</p>
+
+<div class="verdict">
+<strong>Veredicto de la fase A (sin IA): CAMBIOS REQUERIDOS.</strong>
+No hay hallazgos Críticos ni Altos de seguridad. Hay 2 hallazgos Medios funcionales nuevos (ES-135, ES-136), 2 Bajos nuevos (ES-137, ES-138) y 4 Medios preexistentes ya registrados (ES-126, 127, 128, 129). La fase B (IA real, hoja de vida real, worker) está pendiente: arranca cuando se reinicie el cupo de la cohorte (00:00 UTC del 1-nov = 19:00 Bogotá). Este informe no aprueba el humo completo ni el Corte 4.
+</div>
+
+<div class="verdict" style="border-left-color:var(--bad)">
+<strong>Correcciones posteriores a la publicación de este informe (31-oct, tarde)</strong>
+<ul>
+<li><strong>Reparto de hallazgos:</strong> ES-126, ES-127 y ES-128 ya los había entregado Dev-Codex (PR #113, #115 y #114) y ES-133 lo tiene Dev Elevation 2 (PR #117). La tabla de la sección 3 queda desactualizada en esas filas. Reparto vigente: Dev Elevation: ES-137, ES-134, ES-135 y ES-132; Dev Elevation 2: ES-138 (PR #119), ES-129, ES-136 y ES-133.</li>
+<li><strong>ES-127, «Mi terapeuta»:</strong> mi hallazgo era un error de mi prueba (usaba claves de idioma equivocadas; la real es <code>elv_lang</code>). Con la clave correcta la pantalla sale en inglés. Lo que sí estaba en español fijo eran las 4 pantallas de administración. Los resultados en EN de pantallas sin botón de idioma de la fase A se repetirán con la clave correcta.</li>
+<li><strong>PR de Dev-Codex ya probados:</strong> #114 (ES-128) y #113 (ES-126) APROBADOS; #115 (ES-127) bloqueado por conflictos con main.</li>
+</ul></div>
+<div class="cards">
+<div class="card"><b>390</b><span>páginas recorridas (rol × idioma × tamaño)</span></div>
+<div class="card"><b>0</b><span>errores de página / voseo visible</span></div>
+<div class="card"><b>50</b><span>casos de seguridad y API (49 OK)</span></div>
+<div class="card"><b>21/21</b><span>archivos de hoja de vida no válidos rechazados antes de la IA</span></div>
+<div class="card"><b>0</b><span>tokens de IA gastados en la fase A</span></div>
+</div>
+
+<h2>1. Alcance y método</h2>
+<ul>
+<li>Entorno: staging de Railway/Supabase, solo cuentas <strong>sintéticas</strong> de QA (persona, terapeuta, administrador, junta y superadministrador); ninguna prueba toca producción ni datos reales. Las cuentas de demostración del cliente no se usaron.</li>
+<li>Tamaños: 1920×1080, 1440×900, 768×1024, 390×844, 360×740 y 320×568. Idiomas: ES y EN. Capturas guardadas fuera del repositorio.</li>
+<li>Comparación contra la regla de proyecto: producto no clínico, privacidad por dueño verificada en el servidor, sin datos inventados, ES/EN completo, tuteo (nunca voseo).</li>
+</ul>
+
+<h2>2. Resultados por bloque</h2>
+<div class="tw"><table>
+<tr><th>Bloque</th><th>Qué se probó</th><th>Resultado</th></tr>
+<tr><td>A1 Recorrido de rutas</td><td>39 rutas × público/persona/admin/terapeuta × ES/EN × 5 tamaños: errores de página y de consola, API 4xx/5xx, desborde horizontal, texto mezclado, voseo, claves de traducción visibles</td><td><span class="ok">0 voseo, 0 errores de página, 0 errores 5xx</span> salvo el 503 «catálogo no disponible» (resuelto después cuando Infra cargó el catálogo sintético). Hallazgos: ver sección 3</td></tr>
+<tr><td>A2 Ruta completa de una persona</td><td>Landing → registro (vacío, correo inválido, repetido) → login (errónea, correcta) → persistencia al recargar → onboarding → check-in → dashboard → diario (texto, XSS, 1.900 caracteres, doble clic) → evidencia → Puente (autorizar y retirar) → Skill Map → catálogo → cierre de sesión</td><td><span class="ok">Pasa</span> en ES (1920, 1440, 768, 390, 320) y EN (1440, 390), salvo ES-135, ES-136 y ES-126</td></tr>
+<tr><td>A3 Seguridad y API (50 casos)</td><td>Aislamiento entre personas A/B en diario, evidencias y exportaciones; JWT manipulado, «none» y vacío; permisos por rol; inyección SQL, JSON roto, cuerpo de 12 MB; cabeceras y CORS; sin enumeración de cuentas; exportación y borrado de cuenta</td><td><span class="ok">49/50</span>. Falla solo Cache-Control en respuestas autenticadas (ES-137, Bajo)</td></tr>
+<tr><td>A4 Hoja de vida no válida</td><td>Vacío, ejecutable renombrado a .pdf, texto/HTML con extensión .pdf, corrupto, 5 MB + 1, 16 páginas, sin texto, nombres de archivo hostiles, sin sesión, IDs ajenos, inyección</td><td><span class="ok">21/21</span> rechazados con el código correcto antes de llamar a la IA; consumo de IA 0 → 0</td></tr>
+<tr><td>A5 Roles por interfaz</td><td>Administrador, terapeuta, junta y superadministrador (ES/EN): ingreso, panel, URLs prohibidas, cierre de sesión, «Atrás»; y por API</td><td><span class="ok">Pasa</span> el control de acceso. Falla solo el «Cerrar sesión» ausente (ES-136)</td></tr>
+<tr><td>A6 Radar del Skill Map</td><td>7 tamaños × ES/EN: queda completo en pantalla, rueda, Ctrl+rueda y arrastre sin errores</td><td><span class="ok">Pasa</span>. El Radar no tiene zoom ni paneo ni controles (es un SVG estático con nodos enfocables por teclado)</td></tr>
+<tr><td>A7 Chat y hoja de vida por la interfaz</td><td>Contador desde 3.600 de 4.000, pegado de 200.000 caracteres (queda en 4.000), doble clic con campo vacío, pausa, archivos no válidos con mensaje en el idioma</td><td><span class="ok">14/14</span> en ES y EN, 1440 y 390 px; consumo de IA 0</td></tr>
+<tr><td>A8 Sesión y límites</td><td>Límites del chat en el servidor (4.001, vacío, no texto, requestId inválido, sin sesión); vigencia del token (8 h); desactivación por administrador; bloqueo a los 3 intentos y desbloqueo; solicitud pública de profesionales</td><td><span class="ok">16/17</span>. La excepción es una precondición: no hay planes en staging</td></tr>
+<tr><td>A9 Rutas (catálogo sintético)</td><td>Catálogo, ficha de rol, contenido ES/EN, marcado «[SINTÉTICO]», sin sueldos ni promesas de empleo</td><td><span class="ok">13/13</span>. «Siguiente paso / Experimentos / Plan» está apagado por bandera de build: no verificable</td></tr>
+</table></div>
+<p><strong>Rendimiento (sin IA):</strong> lecturas con mediana de 150 ms y p95 de 192 ms; 6 personas simultáneas, p95 de 343 ms y 0 errores 5xx. El frontend es un solo bloque de 1,05 MB (6,8 s en red Fast 3G emulada), registrado en ES-129.</p>
+
+<h2>3. Hallazgos y reparto entre los desarrolladores</h2>
+<p>Propuesta de reparto para empezar las correcciones antes de la próxima corrida. Cada ticket va en su propia rama y PR contra main, con puerta de diseño antes de tocar frontend y sin fusionar el propio PR.</p>
+<div class="tw"><table>
+<tr><th>Ticket</th><th>Sev.</th><th>Hallazgo</th><th>Desarrollador propuesto</th></tr>
+<tr><td>ES-128</td><td class="warn">Medio</td><td>El registro acepta contraseñas como «123»; no hay política mínima ni alerta</td><td>Dev Elevation (Dev-Claude)</td></tr>
+<tr><td>ES-137</td><td>Bajo</td><td>Respuestas autenticadas de la API sin Cache-Control (datos privados sin «no-store»)</td><td>Dev Elevation (Dev-Claude)</td></tr>
+<tr><td>ES-134</td><td class="warn">Medio</td><td>Chat: aviso de límite sin alcance ni fecha, error sin traducir en EN, mensaje no confirmado que se pierde al navegar (ya conocido, de ES-131)</td><td>Dev Elevation (Dev-Claude)</td></tr>
+<tr><td>ES-135</td><td class="warn">Medio</td><td>No hay acceso en la interfaz para exportar los datos ni eliminar la cuenta (el backend funciona)</td><td>Dev Elevation (Dev-Claude)</td></tr>
+<tr><td>ES-132</td><td class="warn">Medio</td><td>Recuperación de contraseña inexistente (de ES-131). La parte de pantalla espera a que se fusione #107 (mismo archivo de login)</td><td>Dev Elevation (Dev-Claude)</td></tr>
+<tr><td>ES-136</td><td class="warn">Medio</td><td>Sin «Cerrar sesión» en el dashboard de la persona ni en los paneles de administración, junta y superadministrador; el cierre es solo del navegador (token válido 8 h). #107 cubre parte del panel admin</td><td>Dev Elevation 2 (Dev-Worker-Claude); el cierre de sesión del servidor requiere decisión de Mauricio</td></tr>
+<tr><td>ES-126</td><td class="warn">Medio</td><td>/app/progress desborda horizontalmente a 320 px (ES y EN)</td><td>Dev Elevation 2 (Dev-Worker-Claude)</td></tr>
+<tr><td>ES-127</td><td class="warn">Medio</td><td>«Mi terapeuta» y el panel de administración no tienen versión en inglés</td><td>Dev Elevation 2 (Dev-Worker-Claude); las pantallas admin esperan a #107</td></tr>
+<tr><td>ES-138</td><td>Bajo</td><td>Diario: «Nueva entrada» no rellena la fecha y el error es solo la burbuja nativa del navegador</td><td>Dev Elevation 2 (Dev-Worker-Claude)</td></tr>
+<tr><td>ES-129</td><td class="warn">Medio</td><td>Frontend en un solo bloque de 1,05 MB; /login tarda 6,8 s en red lenta (umbral propuesto: 3 s)</td><td>Dev Elevation 2 (Dev-Worker-Claude); relacionado con ES-130</td></tr>
+</table></div>
+<h3>Fuera del reparto a los dos desarrolladores</h3>
+<ul>
+<li><strong>ES-133</strong> (calidad de la landing, pedido de Alejo): diseño y contenido; incluye la ausencia de botón de ingreso visible en móvil y texto en español en el menú móvil con EN activo.</li>
+<li><strong>#107 (ES-38)</strong>, #98, #87, #69, #85, #82, #68 y #56: están a cargo de Dev-Codex; QA aprobó el tramo de #107 en <code>dfce8a8</code>.</li>
+<li><strong>Planes y tarifas</strong>: contenido de Alejo; sin planes en staging, la solicitud de plan queda sin probar.</li>
+<li><strong>Bandera del recorrido de carrera</strong> (<code>VITE_ENABLE_CAREER_PREVIEW</code>): decisión de Mauricio y Alejo.</li>
+<li><strong>ES43-QA-03</strong> (líneas de ayuda por país) y revisión del especialista (ES-24/ES-46): contenido y especialista.</li>
+</ul>
+<h3>Orden y dependencias sugeridos</h3>
+<ul>
+<li>Primero lo independiente: ES-128, ES-137, ES-126, ES-138 y ES-129.</li>
+<li>Después de fusionar #107: ES-136 (interfaz), ES-127 (pantallas admin) y la pantalla de ES-132, porque tocan los mismos archivos de login y de layout.</li>
+<li>ES-135 es una pantalla nueva con su propia puerta de diseño; su acceso desde el encabezado se coordina con ES-136.</li>
+</ul>
+
+<h2>4. Observaciones sin ticket propio</h2>
+<ul>
+<li>Todas las rutas de derechos de datos funcionan por API (vista previa 201, descarga solo de datos del dueño, borrado 202 y token 401 después; la exportación profesional responde 503 controlado hasta que se cierre su contrato).</li>
+<li>El tagline del login «Tu santuario digital · Your digital sanctuary» aparece bilingüe en ambos idiomas; parece intencional (consulta para el PO).</li>
+<li>El Radar no tiene zoom ni paneo: si la cobertura pendiente de ES-131 lo exige, es una funcionalidad por construir y no un defecto.</li>
+<li>El cierre de sesión revoca la sesión solo en el navegador; la desactivación por un administrador sí invalida el token al instante.</li>
+</ul>
+
+<h2>5. Lo que no se verificó</h2>
+<ul>
+<li><strong>Fase B (IA real):</strong> chat con Claude real (primera respuesta, turnos largos y que no se corten), hoja de vida real del Tech Lead en cuenta sintética (análisis ES y EN, habilidades, confirmación, revocación y borrado), Puente, evidencias, Brújula, job del worker (completo y con revocación), recomendaciones por idioma, emparejamiento y resumen del terapeuta.</li>
+<li>Planes y solicitud de plan; «Siguiente paso», experimentos y plan (bandera apagada).</li>
+<li>Móvil físico; producción; correo y DNS; reversión del despliegue de Railway; copias de seguridad de Supabase; carga real de IA.</li>
+<li>Líneas de ayuda por país (ES43-QA-03) y la revisión del especialista.</li>
+<li>El voseo que pudiera estar guardado en la base de datos (prompts y planes ya cargados).</li>
+</ul>
+
+<h2>6. Próxima corrida</h2>
+<ol>
+<li>Los dos desarrolladores abren una rama y un PR por ticket; QA reprueba cada PR con su plan y SHA exacto.</li>
+<li>Staging se congela en el commit acordado durante cada fase (sin fusionar PRs mientras dura).</li>
+<li>Fase B tras el reinicio del cupo, con gasto máximo de 380.000 tokens y confirmación de Mauricio ya dada; Infra aporta consumo de la cohorte, log del worker y metadatos por solicitud (sin contenidos).</li>
+<li>Se repite la fase A completa sobre el commit final y se entrega el documento final con capturas por paso.</li>
+</ol>
+
+<h2>7. Evidencia y reproducción</h2>
+<ul>
+<li>Scripts reproducibles en <code>qa/e2e/</code> (a1-crawl, a2-journey, a3-security-api, a4-cv-invalid, a5-roles-ui, a6-radar, a7-chat-cv-ui, a8-session-limits, a9-routes) y resultados en <code>qa/evidence/ES-40-E2E/</code> (PR #6, solo datos sintéticos).</li>
+<li>Capturas por paso: carpeta local de QA fuera del repositorio (≈ 52 MB), para el documento final.</li>
+</ul>
+</main>
+</body>
+</html>

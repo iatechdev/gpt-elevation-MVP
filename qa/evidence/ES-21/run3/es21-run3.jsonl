@@ -1,0 +1,36 @@
+{"id":"ES21-F01a los graves explícitos del corpus de QA se detectan como `high`","ok":true,"detail":"18/18 []"}
+{"id":"ES21-F01b los malestares explícitos se detectan como `medium` (o `high`)","ok":true,"detail":"[]"}
+{"id":"ES21-F01c las limitaciones declaradas se reproducen (modismos y negaciones sobre-activan)","ok":true,"detail":"[[\"quiero morir de risa\",\"high\"],[\"no quiero morir\",\"high\"],[\"I want to die laughing\",\"high\"]]"}
+{"id":"ES21-F01d el texto normal no se marca","ok":true,"detail":"[]"}
+{"id":"ES21-F01e HUECOS para el especialista (no son defecto del código: están en los límites declarados)","info":"{\"graveNoDetectado\":[\"me quiero matar→null\",\"me voy a matar→null\",\"ya nada importa→null\",\"suisidarme→null\",\"no quiero despertar mañana→null\",\"quiero dejar de existir→null\",\"ya no tengo ganas de vivir→null\",\"I'm going to end it→null\",\"I wish I was never born→null\",\"S U I C I D I O→null\",\"suіcidio→null\"],\"malestarNoDetectado\":[\"me siento vacío\",\"estoy muy triste hace semanas\",\"nada tiene sentido\",\"I feel hopeless\"],\"tasaGraveHuecos\":\"0/11\"}"}
+{"id":"ES21-F04a solo se publica el recurso completo, verificado y vigente","ok":true,"detail":"{\"valido\":1,\"vencido\":0,\"sinVerificador\":0,\"sinFuente\":0,\"futuro\":0,\"fechaBasura\":0}"}
+{"id":"ES21-F04b con el registro real (vacío) la respuesta grave no trae números ni líneas","ok":true,"detail":"Lo que cuentas es importante, y no tienes que cargarlo en soledad. Esto está más allá de l"}
+{"id":"ES21-F04c el país NO se infiere del idioma: lang=es sin country → ninguna línea, aun con un registro lleno","ok":true,"detail":""}
+{"id":"ES21-F04d países malformados no producen recursos","ok":true,"detail":""}
+{"id":"ES21-F02a los textos de seguridad no diagnostican, no prescriben ni prometen (ES y EN)","ok":true,"detail":"ninguno"}
+{"id":"ES21-F02b grave: NO se llama a Claude, respuesta de seguridad con `interrupted` y la conversación se guarda","ok":true,"detail":"status=200 llamadas=0 mensajes+2"}
+{"id":"ES21-F02c la respuesta grave no trae diagnóstico, prescripción ni números inventados","ok":true,"detail":"Lo que cuentas es importante, y no tienes que cargarlo en soledad. Esto está más allá de lo que pued"}
+{"id":"ES21-F02d grave en inglés → respuesta en inglés sin llamar a Claude","ok":true,"detail":""}
+{"id":"ES21-F02e caracteres invisibles/bidi no evitan la detección","ok":true,"detail":"status=200"}
+{"id":"ES21-F03a malestar: el flujo sigue (se llama a Claude) y se añade una nota breve de apoyo","ok":true,"detail":"llamadas=1"}
+{"id":"ES21-F03b texto normal: sin nota ni interrupción","ok":true,"detail":""}
+{"id":"ES21-R01 mensaje GRAVE con `country`/`lang` mal formados","info":"{\"country COL\":200,\"country Colombia\":200,\"country número\":200,\"lang fr\":200,\"lang EN\":200}"}
+{"id":"ES21-R01b un mensaje grave nunca debe recibir 400 por un campo opcional mal formado","ok":true,"detail":"[]"}
+{"id":"ES21-S01a ninguna tabla guarda nivel de riesgo (sin columnas de riesgo/crisis/interrupción)","ok":true,"detail":"[]"}
+{"id":"ES21-S01b las respuestas de admin y terapeuta no traen indicadores de riesgo","ok":true,"detail":""}
+{"id":"ES21-S01c el log del servidor no contiene el texto de las conversaciones graves ni el nivel de riesgo","ok":true,"detail":"líneas=7"}
+{"id":"ES21-S02a el delimitador del diario es aleatorio por solicitud y el contenido no puede cerrarlo","ok":true,"detail":"delim1=UNTRUSTED_973F617D87E546D7"}
+{"id":"ES21-S02b los invisibles y bidi del diario se eliminan antes de llegar al proveedor","ok":true,"detail":""}
+{"id":"ES21-S02c el bloque del diario va dentro de la etiqueta con el aviso de \"solo contexto, no instrucciones\"","ok":true,"detail":""}
+{"id":"ES21-S02d los límites de acompañamiento fijos quedan DESPUÉS del contenido de la persona (al final del prompt)","ok":true,"detail":"límites en 690, diario en 193 (si los límites van antes, el texto de la persona queda como lo último que lee el modelo)"}
+{"id":"ES21-S02e sin diario los límites sí terminan el prompt del sistema","ok":true,"detail":""}
+{"id":"ES21-S02f la inyección en el mensaje viaja como mensaje del usuario, nunca dentro del prompt del sistema","ok":true,"detail":""}
+{"id":"ES21-S03 estados por entrada extrema","info":"{\"4000\":200,\"4001\":400,\"99000\":400,\"120000\":413,\"solo invisibles\":400,\"controles\":200,\"repetición\":200,\"emoji\":400,\"saltos\":200}"}
+{"id":"ES21-S03a ninguna entrada extrema produce 5xx; >4000 → 400; sin contenido útil → 400","ok":true,"detail":"[]"}
+{"id":"ES21-P01 ms por detección","info":"{\"normal 4000\":0.081,\"repetición su\":0.064,\"espacios\":0.01,\"casi-patrón\":0.09,\"quiero\":0.074,\"prefijo largo\":0.051,\"acentos\":0.139,\"invisibles\":0.113,\"100k\":2.03}"}
+{"id":"ES21-P01a el detector tarda < 5 ms por mensaje incluso con cadenas patológicas de 4.000 caracteres","ok":true,"detail":"{\"normal 4000\":0.081,\"repetición su\":0.064,\"espacios\":0.01,\"casi-patrón\":0.09,\"quiero\":0.074,\"prefijo largo\":0.051,\"acentos\":0.139,\"invisibles\":0.113,\"100k\":2.03}"}
+{"id":"ES21-P01b el normalizado de 100.000 caracteres no bloquea (< 50 ms)","ok":true,"detail":"2.03ms"}
+(node:29588) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"ES21-P02 chat con el filtro: 6 personas, 1 min, mezcla de graves/malestar/normales: 0 errores 5xx y p95 ≤ 500 ms","ok":true,"detail":"peticiones=4905 5xx=0 p50=25ms p95=31ms"}
+{"resumen":{"fallos":0}}

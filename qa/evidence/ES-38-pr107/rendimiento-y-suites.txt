@@ -1,0 +1,5 @@
+P2 (Fast 3G emulado, 3 corridas, ms)
+PR #107: 6815,6774,6741
+main 972388c: 6805,6779,6738
+Tamanos: main JS 1054.58 kB / CSS 166.24 kB; PR JS 1053.50 kB / CSS 172.57 kB
+lint exit 0; tsc 0; tests 280/280 (merge); npm audit 0 vulnerabilidades; sin secretos en dist

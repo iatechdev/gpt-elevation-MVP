@@ -1,0 +1,13 @@
+{"id":"SEED-A01 la persona de demostración entra con la clave del operador","ok":true,"detail":"status=200"}
+{"id":"SEED-A02 rol user y activa","ok":true,"detail":"{\"id\":1,\"name\":\"Persona sintética (demostración)\",\"role\":\"user\",\"active\":true}"}
+{"id":"SEED-M01 el mapa tiene 8 habilidades: comunicación 3, planificación 2, análisis 3 y 5 en null (nunca 0)","ok":true,"detail":"{\"adaptabilidad\":null,\"analisis_informacion\":3,\"aprendizaje_autonomo\":null,\"comunicacion\":3,\"influencia_liderazgo\":null,\"planificacion_organizacion\":2,\"resolucion_problemas\":null,\"trabajo_en_equipo\":null}"}
+{"id":"SEED-M02 cada nivel declara su evidencia","ok":true,"detail":"{\"level\":3,\"state\":\"initial\",\"stale\":false,\"catalogOutdated\":false,\"confidence\":\"low\",\"confidenceReason\":{\"es\":\"Se apoya en una sola evidencia.\",\"en\":\"It rests "}
+{"id":"SEED-M03 todas las etiquetas del catálogo llevan el rótulo sintético en ES y EN","ok":true,"detail":"[SINTÉTICO] Adaptabilidad | [SINTÉTICO] Análisis de información"}
+{"id":"SEED-E01 tres evidencias confirmadas, sin porcentajes","ok":true,"detail":"status=200 n=3"}
+{"id":"SEED-E02 las evidencias llevan el rótulo sintético","ok":true,"detail":"{\"evidence\":[{\"id\":1,\"version\":1,\"status\":\"confirmed\",\"authoring\":\"person\",\"createdAt\":\"2026-10-28T23:01:06.802Z\",\"paylo"}
+{"id":"SEED-I01 otra persona no ve evidencias ni evaluaciones de la demostración","ok":true,"detail":"mapaB=200 evB=200"}
+{"id":"SEED-I02 B pide una evidencia de la demostración por ID → 404","ok":true,"detail":"status=404"}
+{"id":"SEED-R01 el catálogo de rutas responde y marca su contenido como sintético","ok":true,"detail":"status=200"}
+{"id":"SEED-X01 la exportación personal de la demostración incluye sus evidencias y autoevaluaciones","ok":true,"detail":"status=201 ev=3 sa=3"}
+{"id":"SEED-D01 la persona de demostración se borra con el flujo de ES-23: 0 evidencias y 0 evaluaciones","ok":true,"detail":"{\"evidencia\":0,\"evaluaciones\":0} exit=0"}
+{"id":"SEED-D02 los catálogos sintéticos siguen publicados tras borrar a la persona","ok":true,"detail":""}

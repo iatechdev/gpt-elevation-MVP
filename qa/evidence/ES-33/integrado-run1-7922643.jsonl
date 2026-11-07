@@ -1,0 +1,35 @@
+{"id":"INT-00a catálogo de rutas sintético publicado","ok":true,"detail":""}
+{"id":"INT-00b catálogo de habilidades sintético publicado","ok":true,"detail":""}
+{"id":"INT-01 preparación real de A: contexto completado, restricciones y elección aceptada de ES-32","ok":true,"detail":"elección=201"}
+{"id":"INT-02 proponer experimento con contexto y ruta reales → 200, bilingüe, sin persistir","ok":true,"detail":"status=200 {\"proposal\":{\"schemaVersion\":1,\"templateVersion\":1,\"choiceId\":1,\"basisHash\":\"a2e"}
+{"id":"INT-03 la propuesta usa la disponibilidad y la zona horaria del contexto real (300 min, America/Bogota)","ok":true,"detail":"{\"version\":1,\"weeklyMinutes\":300,\"timeZone\":\"America/Bogota\",\"locale\":\"es\"}"}
+{"id":"INT-04 crear el experimento → 201","ok":true,"detail":"status=201"}
+{"id":"INT-05 ciclo completo hasta la decisión (versión 5)","ok":true,"detail":"v=5"}
+{"id":"INT-06 proponer y aceptar el plan a 7/30/90 días con la disponibilidad real","ok":true,"detail":"200/201 {\"plan\":{\"id\":1,\"experimentId\":1,\"version\":1,\"status\":\"accepted\",\"payload\":{\"sch"}
+{"id":"INT-07 el contenido del experimento se guarda cifrado (v2:)","ok":true,"detail":"v2:dbf6b"}
+{"id":"INT-08 B no lee ni modifica lo de A, ni propone sobre la elección de A (404/409, nunca 200/201)","ok":true,"detail":"404,404,404,404"}
+{"id":"INT-09 el listado de B no trae nada de A","ok":true,"detail":""}
+{"id":"INT-10 th no propone sobre elecciones ajenas → 403","ok":true,"detail":"status=403"}
+{"id":"INT-10 brd no propone sobre elecciones ajenas → 403","ok":true,"detail":"status=403"}
+{"id":"INT-10b superadmin → 403","ok":true,"detail":""}
+{"id":"INT-11 sin contexto → 409 context_incomplete con mensaje a Mi contexto (ES y EN) y nada se crea","ok":true,"detail":"status=409 code=context_incomplete"}
+{"id":"INT-12 con borrador de contexto (sin «continuar») → 409 context_incomplete; un borrador no se usa","ok":true,"detail":"status=409 code=context_incomplete"}
+{"id":"INT-13i","info":"contexto con disponibilidad null: elección=201 propuesta=409 availability_unknown"}
+{"id":"INT-13 disponibilidad desconocida (null) → 409 availability_unknown; no se inventa un valor","ok":true,"detail":"status=409 code=availability_unknown"}
+{"id":"INT-14i","info":"contexto con zona null: continuar=1 propuesta=409 timezone_unknown"}
+{"id":"INT-14 zona horaria desconocida (null) → 409 timezone_unknown (o ES-14 impide completarla sin zona)","ok":true,"detail":"status=409 code=timezone_unknown"}
+{"id":"INT-15 disponibilidad de 10 min/semana con una tarea de 20 → 422 needs_scope_reduction","ok":true,"detail":"status=422 code=needs_scope_reduction"}
+{"id":"INT-16 antes de editar el contexto la base es vigente; tras editarlo el experimento y el plan pasan a needs_review (basis_changed)","ok":true,"detail":"antes=current edit=200 exp=needs_review plan=needs_review"}
+{"id":"INT-17 lo ya guardado no se reescribe (la versión del experimento sigue siendo la 5)","ok":true,"detail":"v=5"}
+{"id":"INT-18 rebase explícito crea la versión 6 en ready","ok":true,"detail":"status=201"}
+{"id":"INT-19 si cambian las restricciones de ES-32 el experimento pasa a needs_review","ok":true,"detail":"crear=201 base=needs_review"}
+{"id":"INT-20 sobre una elección RECHAZADA no se propone (409)","ok":true,"detail":"rechazo=201 propuesta=409"}
+{"id":"INT-21 sobre un ID de elección inexistente → 404/409, sin 500","ok":true,"detail":""}
+{"id":"INT-22 con eliminación pendiente se rechaza (401 por sesión revocada o 403)","ok":true,"detail":"status=401"}
+{"id":"carga","info":"201@804 201@440 201@823 201@1165 201@462 201@1173"}
+{"id":"INT-23 6 personas crean un experimento a la vez con lecturas reales y pool 5: ningún 5xx y todo en menos de 3 s","ok":true,"detail":"201,201,201,201,201,201"}
+{"id":"INT-24 12 cambios simultáneos de una persona: 1 creado, el resto 409, sin 5xx y en menos de 3 s","ok":true,"detail":"409,409,201,409,409,409,409,409,409,409,409,409"}
+{"id":"INT-25 la exportación personal de A incluye contexto, rutas y datos de ES-33 y no los de B","ok":true,"detail":"status=201 claves=planRequests,careerContext,careerReminders,careerPlans,careerReviews,careerExperimentVersions,careerExperiments"}
+{"id":"INT-26 la purga deja 0 filas de contexto, rutas, experimentos, versiones y planes de A","ok":true,"detail":"{\"contexto\":0,\"restricciones\":0,\"elecciones\":0,\"experimentos\":0,\"versiones\":0,\"planes\":0} exit=0"}
+{"id":"INT-27 lo de B sigue intacto y el replay es idempotente","ok":true,"detail":""}
+{"fin":true}

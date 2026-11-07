@@ -1,0 +1,22 @@
+{"id":"PRE-bloques-iniciales","ok":true,"detail":"/assets/index-D27nI4sY.js,/assets/jsx-runtime-DJ0HuzlU.js,/assets/api-CzQz_9sJ.js"}
+{"id":"F-404-es-320","ok":true,"detail":"{\"alert\":\"Hay una versión nueva de la aplicación. Recarga la página para continuar.\\n\\nRecargar\",\"focusBtn\":true,\"btnText\":\"Recargar\",\"rootText\":83,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-404-es-1440","ok":true,"detail":"{\"alert\":\"Hay una versión nueva de la aplicación. Recarga la página para continuar.\\n\\nRecargar\",\"focusBtn\":true,\"btnText\":\"Recargar\",\"rootText\":83,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-404-en-320","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-404-en-1440","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-html-es-320","ok":true,"detail":"{\"alert\":\"Hay una versión nueva de la aplicación. Recarga la página para continuar.\\n\\nRecargar\",\"focusBtn\":true,\"btnText\":\"Recargar\",\"rootText\":83,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-html-es-1440","ok":true,"detail":"{\"alert\":\"Hay una versión nueva de la aplicación. Recarga la página para continuar.\\n\\nRecargar\",\"focusBtn\":true,\"btnText\":\"Recargar\",\"rootText\":83,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-html-en-320","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-html-en-1440","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-red-es-320","ok":true,"detail":"{\"alert\":\"Hay una versión nueva de la aplicación. Recarga la página para continuar.\\n\\nRecargar\",\"focusBtn\":true,\"btnText\":\"Recargar\",\"rootText\":83,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-red-es-1440","ok":true,"detail":"{\"alert\":\"Hay una versión nueva de la aplicación. Recarga la página para continuar.\\n\\nRecargar\",\"focusBtn\":true,\"btnText\":\"Recargar\",\"rootText\":83,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-red-en-320","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F-red-en-1440","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F4-recarga-click","ok":true,"detail":"{\"alert\":null,\"focusBtn\":false,\"btnText\":null,\"rootText\":930,\"hscroll\":false,\"btnH\":0,\"navs\":2,\"before\":1}"}
+{"id":"F4-recarga-enter","ok":true,"detail":"{\"alert\":null,\"focusBtn\":false,\"btnText\":null,\"rootText\":930,\"hscroll\":false,\"btnH\":0,\"navs\":2,\"before\":1}"}
+{"id":"F5-sin-bucle-si-sigue-fallando","ok":true,"detail":"navs=2 antes=1"}
+{"id":"F6-navegacion-interna-aviso-y-recupera","ok":true,"detail":"{\"aviso\":true,\"navs\":0,\"tras_cambiar_ruta_alert\":null}"}
+{"id":"F7-protegida-con-sesion-EN-390","ok":true,"detail":"{\"alert\":\"A new version of the app is available. Reload the page to continue.\\n\\nReload\",\"focusBtn\":true,\"btnText\":\"Reload\",\"rootText\":75,\"hscroll\":false,\"btnH\":44,\"navs\":1}"}
+{"id":"F8-camino-feliz-es","ok":true,"detail":"{\"alert\":null,\"focusBtn\":false,\"btnText\":null,\"rootText\":930,\"hscroll\":false,\"btnH\":0}"}
+{"id":"F8-camino-feliz-en","ok":true,"detail":"{\"alert\":null,\"focusBtn\":false,\"btnText\":null,\"rootText\":906,\"hscroll\":false,\"btnH\":0}"}
+{"id":"F9-500-de-API-no-es-aviso-de-version","ok":true,"detail":"{\"alert\":null,\"focusBtn\":false,\"btnText\":null,\"rootText\":118,\"hscroll\":false,\"btnH\":0}"}
+RESUMEN 21/21

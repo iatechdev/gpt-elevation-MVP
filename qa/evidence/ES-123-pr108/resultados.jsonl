@@ -1,0 +1,90 @@
+{"id":"C1 /app/chat 1440x900-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 1440x900-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":76,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 1440x900-es: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"D4 /app/dashboard 1440x900-es: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Enviar\"}"}
+{"id":"D1 /app/dashboard 1440x900-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 1440x900-es: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 1440x900-es: sin límites 4.000/2.000 visibles","ok":false,"detail":"Mensaje (hasta 4.000 caracteres)"}
+{"id":"C1 /app/chat 1440x900-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 1440x900-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":68,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 1440x900-en: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"C4 /app/chat 1440x900-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON OCTOBER "}
+{"id":"D4 /app/dashboard 1440x900-en: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Send\"}"}
+{"id":"D1 /app/dashboard 1440x900-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 1440x900-en: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 1440x900-en: sin límites 4.000/2.000 visibles","ok":false,"detail":"Message (up to 4,000 characters)"}
+{"id":"C1 /app/chat 768x1024-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 768x1024-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":76,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 768x1024-es: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"D4 /app/dashboard 768x1024-es: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Enviar\"}"}
+{"id":"D1 /app/dashboard 768x1024-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 768x1024-es: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 768x1024-es: sin límites 4.000/2.000 visibles","ok":false,"detail":"Mensaje (hasta 4.000 caracteres)"}
+{"id":"C1 /app/chat 768x1024-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 768x1024-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":68,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 768x1024-en: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"C4 /app/chat 768x1024-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON OCTOBER "}
+{"id":"D4 /app/dashboard 768x1024-en: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Send\"}"}
+{"id":"D1 /app/dashboard 768x1024-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 768x1024-en: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 768x1024-en: sin límites 4.000/2.000 visibles","ok":false,"detail":"Message (up to 4,000 characters)"}
+{"id":"C1 /app/chat 390x844-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 390x844-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":358,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 390x844-es: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"D4 /app/dashboard 390x844-es: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Enviar\"}"}
+{"id":"D1 /app/dashboard 390x844-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 390x844-es: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 390x844-es: sin límites 4.000/2.000 visibles","ok":false,"detail":"Mensaje (hasta 4.000 caracteres)"}
+{"id":"C1 /app/chat 390x844-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 390x844-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":358,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 390x844-en: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"C4 /app/chat 390x844-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON OCTOBER "}
+{"id":"D4 /app/dashboard 390x844-en: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Send\"}"}
+{"id":"D1 /app/dashboard 390x844-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 390x844-en: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 390x844-en: sin límites 4.000/2.000 visibles","ok":false,"detail":"Message (up to 4,000 characters)"}
+{"id":"C1 /app/chat 364x740-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 364x740-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":332,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 364x740-es: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"D4 /app/dashboard 364x740-es: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Enviar\"}"}
+{"id":"D1 /app/dashboard 364x740-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 364x740-es: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 364x740-es: sin límites 4.000/2.000 visibles","ok":false,"detail":"Mensaje (hasta 4.000 caracteres)"}
+{"id":"C1 /app/chat 364x740-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 364x740-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":332,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 364x740-en: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"C4 /app/chat 364x740-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON OCTOBER "}
+{"id":"D4 /app/dashboard 364x740-en: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Send\"}"}
+{"id":"D1 /app/dashboard 364x740-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 364x740-en: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 364x740-en: sin límites 4.000/2.000 visibles","ok":false,"detail":"Message (up to 4,000 characters)"}
+{"id":"C1 /app/chat 360x740-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 360x740-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":328,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 360x740-es: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"D4 /app/dashboard 360x740-es: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Enviar\"}"}
+{"id":"D1 /app/dashboard 360x740-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 360x740-es: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 360x740-es: sin límites 4.000/2.000 visibles","ok":false,"detail":"Mensaje (hasta 4.000 caracteres)"}
+{"id":"C1 /app/chat 360x740-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 360x740-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":328,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 360x740-en: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"C4 /app/chat 360x740-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON OCTOBER "}
+{"id":"D4 /app/dashboard 360x740-en: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Send\"}"}
+{"id":"D1 /app/dashboard 360x740-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 360x740-en: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 360x740-en: sin límites 4.000/2.000 visibles","ok":false,"detail":"Message (up to 4,000 characters)"}
+{"id":"C1 /app/chat 320x568-es: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 320x568-es: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":76,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 320x568-es: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"D4 /app/dashboard 320x568-es: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Enviar\"}"}
+{"id":"D1 /app/dashboard 320x568-es: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 320x568-es: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 320x568-es: sin límites 4.000/2.000 visibles","ok":false,"detail":"Mensaje (hasta 4.000 caracteres)"}
+{"id":"C1 /app/chat 320x568-en: sin scroll horizontal","ok":true,"detail":"{\"sw\":false}"}
+{"id":"C2 /app/chat 320x568-en: «Enviar» visible, clicable (no tapado) y ≥44 px de alto","ok":true,"detail":"{\"vis\":true,\"w\":68,\"h\":44,\"top_is_button\":true}"}
+{"id":"C3 /app/chat 320x568-en: sin límites técnicos 4.000/2.000 como texto visible fijo","ok":false,"detail":"{\"hasLimit4000\":true,\"has2000\":false}"}
+{"id":"C4 /app/chat 320x568-en: EN sin texto de interfaz en español","ok":true,"detail":"Skip to content | ELEVATION | ES | EN | CONVERSATION | JOURNAL | ☰ | MENU | CONVERSATION |  | Private · Only visible to you |  | ⏸ PAUSE | AI USE THIS PERIOD | 0% USED · RENEWS ON OCTOBER "}
+{"id":"D4 /app/dashboard 320x568-en: con la página desplazada hasta «Enviar», nada lo tapa","ok":true,"detail":"{\"covered\":false,\"by\":\"BUTTON:elv-btn elv-btn-primary:Send\"}"}
+{"id":"D1 /app/dashboard 320x568-en: sin scroll horizontal","ok":true,"detail":"{\"dsw\":false}"}
+{"id":"D2 /app/dashboard 320x568-en: «Enviar» NO se superpone con «Catálogo de rutas» / «Brújula profesional»","ok":true,"detail":"{\"n\":2,\"overlapSend\":false,\"hasSend\":true}"}
+{"id":"D3 /app/dashboard 320x568-en: sin límites 4.000/2.000 visibles","ok":false,"detail":"Message (up to 4,000 characters)"}

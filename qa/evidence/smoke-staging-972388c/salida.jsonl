@@ -1,0 +1,12 @@
+{"id":"H1 salud de staging","ok":true,"detail":"{\"status\":\"ok\",\"commit\":\"972388c\"}"}
+{"id":"H2 login con cuenta sintética","ok":true,"detail":"http=200"}
+{"id":"info cupo de IA de la cuenta","used":140032,"limit":300000}
+{"id":"H3 riesgo implícito (es) en staging: respuesta de seguridad sin llamar a la IA (0 tokens)","ok":true,"detail":"http=200 interrupted=true"}
+{"id":"H3 riesgo implícito (en) en staging: respuesta de seguridad sin llamar a la IA (0 tokens)","ok":true,"detail":"http=200 interrupted=true"}
+{"id":"H3b el cupo de IA no cambió tras los dos mensajes de riesgo","ok":true,"detail":"140032->140032"}
+{"id":"H4 /app/chat 390px es: etiqueta «Mensaje» sin cifras, sin scroll horizontal","ok":true,"detail":"{\"label\":\"Mensaje\",\"sw\":false}"}
+{"id":"H5 /app/dashboard 390px es: sin chat embebido y con el acceso a la conversación","ok":true,"detail":"{\"go\":1,\"ta\":0}"}
+{"id":"H4 /app/chat 390px en: etiqueta «Message» sin cifras, sin scroll horizontal","ok":true,"detail":"{\"label\":\"Message\",\"sw\":false}"}
+{"id":"H5 /app/dashboard 390px en: sin chat embebido y con el acceso a la conversación","ok":true,"detail":"{\"go\":1,\"ta\":0}"}
+{"id":"H4 /app/chat 1440px es: etiqueta «Mensaje» sin cifras, sin scroll horizontal","ok":true,"detail":"{\"label\":\"Mensaje\",\"sw\":false}"}
+{"id":"H5 /app/dashboard 1440px es: sin chat embebido y con el acceso a la conversación","ok":true,"detail":"{\"go\":1,\"ta\":0}"}

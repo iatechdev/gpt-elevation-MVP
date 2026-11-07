@@ -1,0 +1,314 @@
+{
+  "chat 1440x900-es": {
+    "textarea": {
+      "x": 364,
+      "y": 792,
+      "w": 624,
+      "h": 96,
+      "b": 888
+    },
+    "send": {
+      "vis": true,
+      "w": 76,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 1440x900-es": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 1440x900-en": {
+    "textarea": {
+      "x": 364,
+      "y": 792,
+      "w": 632,
+      "h": 96,
+      "b": 888
+    },
+    "send": {
+      "vis": true,
+      "w": 68,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 1440x900-en": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 768x1024-es": {
+    "textarea": {
+      "x": 28,
+      "y": 916,
+      "w": 624,
+      "h": 96,
+      "b": 1012
+    },
+    "send": {
+      "vis": true,
+      "w": 76,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 768x1024-es": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 768x1024-en": {
+    "textarea": {
+      "x": 28,
+      "y": 916,
+      "w": 632,
+      "h": 96,
+      "b": 1012
+    },
+    "send": {
+      "vis": true,
+      "w": 68,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 768x1024-en": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 390x844-es": {
+    "textarea": {
+      "x": 16,
+      "y": 712,
+      "w": 358,
+      "h": 64,
+      "b": 776
+    },
+    "send": {
+      "vis": true,
+      "w": 358,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 390x844-es": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 390x844-en": {
+    "textarea": {
+      "x": 16,
+      "y": 712,
+      "w": 358,
+      "h": 64,
+      "b": 776
+    },
+    "send": {
+      "vis": true,
+      "w": 358,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 390x844-en": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 364x740-es": {
+    "textarea": {
+      "x": 16,
+      "y": 608,
+      "w": 332,
+      "h": 64,
+      "b": 672
+    },
+    "send": {
+      "vis": true,
+      "w": 332,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 364x740-es": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 364x740-en": {
+    "textarea": {
+      "x": 16,
+      "y": 608,
+      "w": 332,
+      "h": 64,
+      "b": 672
+    },
+    "send": {
+      "vis": true,
+      "w": 332,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 364x740-en": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 360x740-es": {
+    "textarea": {
+      "x": 16,
+      "y": 608,
+      "w": 328,
+      "h": 64,
+      "b": 672
+    },
+    "send": {
+      "vis": true,
+      "w": 328,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 360x740-es": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 360x740-en": {
+    "textarea": {
+      "x": 16,
+      "y": 608,
+      "w": 328,
+      "h": 64,
+      "b": 672
+    },
+    "send": {
+      "vis": true,
+      "w": 328,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 360x740-en": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 320x568-es": {
+    "textarea": {
+      "x": 16,
+      "y": 504,
+      "w": 200,
+      "h": 52,
+      "b": 556
+    },
+    "send": {
+      "vis": true,
+      "w": 76,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 320x568-es": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  },
+  "chat 320x568-en": {
+    "textarea": {
+      "x": 16,
+      "y": 504,
+      "w": 208,
+      "h": 52,
+      "b": 556
+    },
+    "send": {
+      "vis": true,
+      "w": 68,
+      "h": 44,
+      "top_is_button": true
+    },
+    "scrollH": false,
+    "limit4000_visible": true,
+    "limit2000_visible": false
+  },
+  "dashboard 320x568-en": {
+    "scrollH": false,
+    "links": {
+      "n": 2,
+      "overlapSend": false,
+      "hasSend": true
+    }
+  }
+}

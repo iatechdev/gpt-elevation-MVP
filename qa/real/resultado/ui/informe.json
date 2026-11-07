@@ -1,0 +1,98 @@
+{
+  "es": {
+    "tras_login": "https://backend-staging-e3a6.up.railway.app/app/dashboard",
+    "/app/chat": {
+      "url": "https://backend-staging-e3a6.up.railway.app/app/chat",
+      "texto": "Saltar al contenido\nELEVATION\nES\nEN\nCONVERSACIÓN\nDIARIO\n☰\nMENÚ\nCONVERSACIÓN\n\nPrivada · Solo visible para ti\n\n⏸ PAUSAR\nUSO DE IA ESTE PERIODO\n47 % USADO · SE RENUEVA EL 1 DE NOVIEMBRE\nQuiero pasar de dar clases a trabajar con datos, pero tengo poco tiempo entre semana. ¿Por dónde empiezo?\n✦ ELEVATION\n\nGracias por contarlo. Lo que tengo hasta ahora son tres datos: das clases, quieres moverte hacia trabajar con datos y entre semana tu tiempo es limitado.\n\nCon poco tiempo, creo que conviene empezar por aclarar, antes de apuntarte a un curso o elegir herramientas. \"Trabajar con datos\" abarca cosas muy distintas: analizar y explicar resultados, construir paneles, preparar y limpiar información, o trabajar con datos educativos. Saber qué te atrae de ese mundo te ahorra horas en el camino equivocado.\n\nAdemás, es posible que tu experiencia docente ya incluya algo de trabajo con datos, como seguir resultados de alumnos, comparar evaluaciones o ajustar tu enseñanza según lo que observas. No lo doy por hecho, pero si lo has hecho, puede ser un buen punto de partida para identificar competencias transferibles. Si quieres, podemos explorarlo después con SkillMap, donde trabajaríamos con ejemplos profesionales que tú elijas.\n\nPara ir paso a paso: ¿qué es lo que te atrae de trabajar con datos? Puede ser algo concreto que hayas visto o hecho, o simplemente una intuición.\n\nQuiero un plan detallado de tres meses para pasar de docente a analista de datos con cinco horas semanales: semana por semana, con ejercicios y cómo reflexionar sobre cada paso.\n✦ ELEVATION\n\nEste plan es una hipótesis de trabajo, no un camino garantizado ni un requisito oficial de ningún puesto. No sé tu nivel actual ni qué tipo de rol buscas, así que la semana 1 sirve para ajustarlo. Tampoco puede prometer un resultado laboral: lo que sí puede darte es práctica, un portafolio pequeño y claridad sobre lo que te gusta.\n\n**Ritmo de 5 horas por semana:** 2 h de aprendizaje, 2 h de práctica y 1 h de reflexión y registro (puedes repartirlas en bloques de 30 a 60 minutos). Para los ejercicios usa datos públicos o inventados. Si usas datos de tu aula, anonimízalos del todo y evita cualquier información identificable de alumnos.\n\n**Bloque 1: Orientación y bases (semanas 1-3)**\n- **Semana 1. Explorar el terreno.** Lee 5 ofertas de roles con datos que te llamen la atención y anota qué tareas se repiten. Reflexión: ¿qué tareas me despiertan curiosidad y cuáles me desaniman?\n- **Semana 2. Hojas de cálculo.** Aprende filtros, tablas dinámicas y fórmulas básicas con un conjunto de datos público. Reflexión: ¿qué me resultó natural y qué me costó?\n- **Semana 3. Tu experiencia como evidencia.** Escribe 3 situaciones docentes en las que observaste información y tomaste una decisión (por ejemplo, ajustar una clase). Reflexión: ¿qué hice exactamente, qué sé con certeza y qué es solo una interpretación mía?\n\n**Bloque 2: Preguntas y limpieza (semanas 4-6)**\n- **Semana 4. Formular preguntas.** Elige un conjunto de dat",
+      "cajas": [
+        {
+          "tag": "SECTION",
+          "cls": "space-scope space-chatbar",
+          "w": 632,
+          "h": 111
+        },
+        {
+          "tag": "DIV",
+          "cls": "space-chatbar-head",
+          "w": 632,
+          "h": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "cls": "elv-textarea space-message",
+          "w": 632,
+          "h": 88
+        }
+      ]
+    },
+    "/app/dashboard": {
+      "url": "https://backend-staging-e3a6.up.railway.app/app/dashboard",
+      "texto": "Saltar al contenido\nELEVATION\nES\nEN\nMi progreso\nMi terapeuta\nCONVERSACIÓN\nDIARIO\n☰\nMENÚ\n\nZONA PROFESIONAL\n\nMapa de competencias\n\nMira tus competencias por territorios laborales y decide qué cruza a tu zona profesional. El nivel no certifica: muestra qué evidencia hay hoy.\n\nAbrir mi mapa\nMi contexto\nMis evidencias\n♡ ESTADO EMOCIONAL\n\n¿Cómo llegás hoy?\n\n😞\n😔\n😐\n🙂\n😊\n↗ TU PROGRESO\n0\nsesiones esta semana\nTendencia emocional\n📅 PRÓXIMA SESIÓN\n\nTu terapeuta aún no ha agendado una sesión.\n\n◇ MI PLAN\nBÁSICO\nGratis\nMensajes IA / día\n10\nSesiones / mes\n0\nVer planes →\nAsistente de IA\n💬\n\nSeleccioná cómo llegás hoy para comenzar tu conversación.\n\nCatálogo de rutasBrújula profesional\n✨ Recomendaciones para vos\nGenerar nuevas\nAún no tenés recomendaciones. ¡Generá las primeras!",
+      "cajas": []
+    }
+  },
+  "en": {
+    "tras_login": "https://backend-staging-e3a6.up.railway.app/app/dashboard",
+    "/app/chat": {
+      "url": "https://backend-staging-e3a6.up.railway.app/app/chat",
+      "texto": "Skip to content\nELEVATION\nES\nEN\nCONVERSATION\nJOURNAL\n☰\nMENU\nCONVERSATION\n\nPrivate · Only visible to you\n\n⏸ PAUSE\nAI USE THIS PERIOD\n47% USED · RENEWS ON NOVEMBER 1\nQuiero pasar de dar clases a trabajar con datos, pero tengo poco tiempo entre semana. ¿Por dónde empiezo?\n✦ ELEVATION\n\nGracias por contarlo. Lo que tengo hasta ahora son tres datos: das clases, quieres moverte hacia trabajar con datos y entre semana tu tiempo es limitado.\n\nCon poco tiempo, creo que conviene empezar por aclarar, antes de apuntarte a un curso o elegir herramientas. \"Trabajar con datos\" abarca cosas muy distintas: analizar y explicar resultados, construir paneles, preparar y limpiar información, o trabajar con datos educativos. Saber qué te atrae de ese mundo te ahorra horas en el camino equivocado.\n\nAdemás, es posible que tu experiencia docente ya incluya algo de trabajo con datos, como seguir resultados de alumnos, comparar evaluaciones o ajustar tu enseñanza según lo que observas. No lo doy por hecho, pero si lo has hecho, puede ser un buen punto de partida para identificar competencias transferibles. Si quieres, podemos explorarlo después con SkillMap, donde trabajaríamos con ejemplos profesionales que tú elijas.\n\nPara ir paso a paso: ¿qué es lo que te atrae de trabajar con datos? Puede ser algo concreto que hayas visto o hecho, o simplemente una intuición.\n\nQuiero un plan detallado de tres meses para pasar de docente a analista de datos con cinco horas semanales: semana por semana, con ejercicios y cómo reflexionar sobre cada paso.\n✦ ELEVATION\n\nEste plan es una hipótesis de trabajo, no un camino garantizado ni un requisito oficial de ningún puesto. No sé tu nivel actual ni qué tipo de rol buscas, así que la semana 1 sirve para ajustarlo. Tampoco puede prometer un resultado laboral: lo que sí puede darte es práctica, un portafolio pequeño y claridad sobre lo que te gusta.\n\n**Ritmo de 5 horas por semana:** 2 h de aprendizaje, 2 h de práctica y 1 h de reflexión y registro (puedes repartirlas en bloques de 30 a 60 minutos). Para los ejercicios usa datos públicos o inventados. Si usas datos de tu aula, anonimízalos del todo y evita cualquier información identificable de alumnos.\n\n**Bloque 1: Orientación y bases (semanas 1-3)**\n- **Semana 1. Explorar el terreno.** Lee 5 ofertas de roles con datos que te llamen la atención y anota qué tareas se repiten. Reflexión: ¿qué tareas me despiertan curiosidad y cuáles me desaniman?\n- **Semana 2. Hojas de cálculo.** Aprende filtros, tablas dinámicas y fórmulas básicas con un conjunto de datos público. Reflexión: ¿qué me resultó natural y qué me costó?\n- **Semana 3. Tu experiencia como evidencia.** Escribe 3 situaciones docentes en las que observaste información y tomaste una decisión (por ejemplo, ajustar una clase). Reflexión: ¿qué hice exactamente, qué sé con certeza y qué es solo una interpretación mía?\n\n**Bloque 2: Preguntas y limpieza (semanas 4-6)**\n- **Semana 4. Formular preguntas.** Elige un conjunto de datos público y redact",
+      "cajas": [
+        {
+          "tag": "SECTION",
+          "cls": "space-scope space-chatbar",
+          "w": 632,
+          "h": 111
+        },
+        {
+          "tag": "DIV",
+          "cls": "space-chatbar-head",
+          "w": 632,
+          "h": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "cls": "elv-textarea space-message",
+          "w": 632,
+          "h": 88
+        }
+      ]
+    },
+    "/app/dashboard": {
+      "url": "https://backend-staging-e3a6.up.railway.app/app/dashboard",
+      "texto": "Skip to content\nELEVATION\nES\nEN\nMy progress\nMy therapist\nCONVERSATION\nJOURNAL\n☰\nMENU\n\nPROFESSIONAL ZONE\n\nSkills map\n\nSee your skills by work territory and decide what crosses into your professional zone. A level does not certify: it shows what evidence exists today.\n\nOpen my map\nMy context\nMy evidence\n♡ EMOTIONAL STATE\n\nHow are you arriving today?\n\n😞\n😔\n😐\n🙂\n😊\n↗ YOUR PROGRESS\n0\nsessions this week\nEmotional trend\n📅 UPCOMING SESSION\n\nYour therapist has not scheduled a session yet.\n\n◇ MY PLAN\nBASIC\nFree\nAI messages / day\n10\nSessions / month\n0\nView plans →\nAI assistant\n💬\n\nSelect how you're arriving today to start your conversation.\n\nRoute catalogCareer compass\n✨ Recommendations for you\nGenerate new\nNo recommendations yet. Generate your first ones!",
+      "cajas": []
+    }
+  },
+  "es-m": {
+    "tras_login": "https://backend-staging-e3a6.up.railway.app/app/dashboard",
+    "/app/chat": {
+      "url": "https://backend-staging-e3a6.up.railway.app/app/chat",
+      "texto": "Saltar al contenido\nELEVATION\nES\nEN\nCONVERSACIÓN\nDIARIO\n☰\nMENÚ\nCONVERSACIÓN\n\nPrivada · Solo visible para ti\n\n⏸ PAUSAR\nUSO DE IA ESTE PERIODO\n47 % USADO · SE RENUEVA EL 1 DE NOVIEMBRE\nQuiero pasar de dar clases a trabajar con datos, pero tengo poco tiempo entre semana. ¿Por dónde empiezo?\n✦ ELEVATION\n\nGracias por contarlo. Lo que tengo hasta ahora son tres datos: das clases, quieres moverte hacia trabajar con datos y entre semana tu tiempo es limitado.\n\nCon poco tiempo, creo que conviene empezar por aclarar, antes de apuntarte a un curso o elegir herramientas. \"Trabajar con datos\" abarca cosas muy distintas: analizar y explicar resultados, construir paneles, preparar y limpiar información, o trabajar con datos educativos. Saber qué te atrae de ese mundo te ahorra horas en el camino equivocado.\n\nAdemás, es posible que tu experiencia docente ya incluya algo de trabajo con datos, como seguir resultados de alumnos, comparar evaluaciones o ajustar tu enseñanza según lo que observas. No lo doy por hecho, pero si lo has hecho, puede ser un buen punto de partida para identificar competencias transferibles. Si quieres, podemos explorarlo después con SkillMap, donde trabajaríamos con ejemplos profesionales que tú elijas.\n\nPara ir paso a paso: ¿qué es lo que te atrae de trabajar con datos? Puede ser algo concreto que hayas visto o hecho, o simplemente una intuición.\n\nQuiero un plan detallado de tres meses para pasar de docente a analista de datos con cinco horas semanales: semana por semana, con ejercicios y cómo reflexionar sobre cada paso.\n✦ ELEVATION\n\nEste plan es una hipótesis de trabajo, no un camino garantizado ni un requisito oficial de ningún puesto. No sé tu nivel actual ni qué tipo de rol buscas, así que la semana 1 sirve para ajustarlo. Tampoco puede prometer un resultado laboral: lo que sí puede darte es práctica, un portafolio pequeño y claridad sobre lo que te gusta.\n\n**Ritmo de 5 horas por semana:** 2 h de aprendizaje, 2 h de práctica y 1 h de reflexión y registro (puedes repartirlas en bloques de 30 a 60 minutos). Para los ejercicios usa datos públicos o inventados. Si usas datos de tu aula, anonimízalos del todo y evita cualquier información identificable de alumnos.\n\n**Bloque 1: Orientación y bases (semanas 1-3)**\n- **Semana 1. Explorar el terreno.** Lee 5 ofertas de roles con datos que te llamen la atención y anota qué tareas se repiten. Reflexión: ¿qué tareas me despiertan curiosidad y cuáles me desaniman?\n- **Semana 2. Hojas de cálculo.** Aprende filtros, tablas dinámicas y fórmulas básicas con un conjunto de datos público. Reflexión: ¿qué me resultó natural y qué me costó?\n- **Semana 3. Tu experiencia como evidencia.** Escribe 3 situaciones docentes en las que observaste información y tomaste una decisión (por ejemplo, ajustar una clase). Reflexión: ¿qué hice exactamente, qué sé con certeza y qué es solo una interpretación mía?\n\n**Bloque 2: Preguntas y limpieza (semanas 4-6)**\n- **Semana 4. Formular preguntas.** Elige un conjunto de dat",
+      "cajas": [
+        {
+          "tag": "SECTION",
+          "cls": "space-scope space-chatbar",
+          "w": 342,
+          "h": 134
+        },
+        {
+          "tag": "DIV",
+          "cls": "space-chatbar-head",
+          "w": 342,
+          "h": 44
+        },
+        {
+          "tag": "TEXTAREA",
+          "cls": "elv-textarea space-message",
+          "w": 342,
+          "h": 88
+        }
+      ]
+    },
+    "/app/dashboard": {
+      "url": "https://backend-staging-e3a6.up.railway.app/app/dashboard",
+      "texto": "Saltar al contenido\nELEVATION\nES\nEN\nMi progreso\nMi terapeuta\nCONVERSACIÓN\nDIARIO\n☰\nMENÚ\n\nZONA PROFESIONAL\n\nMapa de competencias\n\nMira tus competencias por territorios laborales y decide qué cruza a tu zona profesional. El nivel no certifica: muestra qué evidencia hay hoy.\n\nAbrir mi mapa\nMi contexto\nMis evidencias\n♡ ESTADO EMOCIONAL\n\n¿Cómo llegás hoy?\n\n😞\n😔\n😐\n🙂\n😊\n↗ TU PROGRESO\n0\nsesiones esta semana\nTendencia emocional\n📅 PRÓXIMA SESIÓN\n\nTu terapeuta aún no ha agendado una sesión.\n\n◇ MI PLAN\nBÁSICO\nGratis\nMensajes IA / día\n10\nSesiones / mes\n0\nVer planes →\nAsistente de IA\n💬\n\nSeleccioná cómo llegás hoy para comenzar tu conversación.\n\nCatálogo de rutasBrújula profesional\n✨ Recomendaciones para vos\nGenerar nuevas\nAún no tenés recomendaciones. ¡Generá las primeras!",
+      "cajas": []
+    }
+  }
+}

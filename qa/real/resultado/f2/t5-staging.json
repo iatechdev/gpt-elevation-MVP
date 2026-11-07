@@ -1,0 +1,18 @@
+{
+  "generado": "2026-10-30T09:53:49.573Z",
+  "entorno": "staging",
+  "api": "https://backend-staging-e3a6.up.railway.app",
+  "turnos": [
+    {
+      "n": 1,
+      "cuenta": "P1",
+      "requestId": "qa5660b98112f7d113",
+      "http": 200,
+      "ms": 10177,
+      "caracteres": 2799,
+      "termina_en_puntuacion": true,
+      "final": "e esto a explicar algo en clase y en qué se diferencia?\n- **Semana 12.",
+      "tokens_usados": 15797
+    }
+  ]
+}

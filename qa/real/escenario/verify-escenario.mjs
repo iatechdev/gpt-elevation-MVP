@@ -1,0 +1,16 @@
+// [QA-Claude] Verifica que el escenario sembrado funciona: ingreso de todas las cuentas, permisos por rol, aislamiento básico y datos esperados.
+// Uso: QA_ENV=local|staging node qa/real/escenario/verify-escenario.mjs   (lee qa/real/escenario/credenciales-<QA_ENV>.json; no imprime contraseñas)
+import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
+const here = path.dirname(fileURLToPath(import.meta.url)); const ENV = process.env.QA_ENV || 'local'; const cfg = JSON.parse(fs.readFileSync(path.join(here, `credenciales-${ENV}.json`), 'utf8')); const API = cfg.api.replace(/\/$/, '');
+const j = async (m, u, t) => { const r = await fetch(API + u, { method: m, headers: t ? { Authorization: 'Bearer ' + t } : {} }); const text = await r.text(); let json = null; try { json = JSON.parse(text); } catch { /* */ } return { status: r.status, json, text }; };
+const check = (id, ok, d = '') => console.log(JSON.stringify({ id, ok: !!ok, detail: String(d).slice(0, 200) })); const tok = {};
+for (const [k, a] of Object.entries(cfg.cuentas)) { let r; for (let i = 0; i < 3; i++) { r = await fetch(API + '/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: a.email, password: a.password }) }); if (r.status !== 429) break; await new Promise(x => setTimeout(x, 62000)); } const js = await r.json().catch(() => ({})); tok[k] = js.token ?? js.accessToken; check(`ingreso ${k} (${a.rol})`, r.status === 200 && !!tok[k], 'status ' + r.status); }
+const adm = await j('GET', '/api/admin/usuarios', tok.ADM); check('el administrador entra al panel de usuarios', adm.status === 200, '' + adm.status);
+for (const k of ['P1', 'P2', 'P4']) { const r = await j('GET', '/api/admin/usuarios', tok[k]); check(`la persona ${k} NO entra al panel de administración`, r.status === 403 || r.status === 401, '' + r.status); }
+const p1d = await j('GET', '/api/diary', tok.P1); const p4d = await j('GET', '/api/diary', tok.P4); const n = x => (Array.isArray(x.json) ? x.json : x.json?.entries ?? x.json?.items ?? []).length;
+check('Lucía (P1) tiene entradas de diario y Nora (P4) ninguna (estado vacío)', n(p1d) >= 2 && n(p4d) === 0, `P1=${n(p1d)} P4=${n(p4d)}`);
+const ctx1 = await j('GET', '/api/user/context', tok.P1); const ctx4 = await j('GET', '/api/user/context', tok.P4); check('Lucía tiene contexto guardado y Nora no', ctx1.status === 200 && /Docente/.test(ctx1.text) && !/Docente/.test(ctx4.text), `${ctx1.status}/${ctx4.status}`);
+const t1 = await j('GET', '/api/therapist/pacientes', tok.T1); const t2 = await j('GET', '/api/therapist/pacientes', tok.T2); const cnt = x => (Array.isArray(x.json) ? x.json : x.json?.pacientes ?? x.json?.patients ?? []).length;
+check('la terapeuta 1 ve a Lucía y la terapeuta 2 no ve a nadie', t1.status === 200 && cnt(t1) >= 1 && t2.status === 200 && cnt(t2) === 0, `T1=${cnt(t1)} T2=${cnt(t2)} (${t1.status}/${t2.status})`);
+for (const k of ['P1', 'P2']) { const r = await j('GET', '/api/therapist/pacientes', tok[k]); check(`la persona ${k} NO entra al panel de terapeuta`, [401, 403].includes(r.status), '' + r.status); }
+const sm = await j('GET', '/api/skill-map', tok.P1); check('Lucía abre el Skill Map', sm.status === 200, '' + sm.status);

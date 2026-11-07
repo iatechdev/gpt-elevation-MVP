@@ -1,0 +1,129 @@
+{
+ "label": "p85off",
+ "langs": {
+  "es": {
+   "widths": {
+    "320": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.0013,
+     "btnsNoName": 0
+    },
+    "375": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.1265,
+     "btnsNoName": 0
+    },
+    "768": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.0083,
+     "btnsNoName": 0
+    },
+    "1024": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.0092,
+     "btnsNoName": 0
+    },
+    "1440": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.0058,
+     "btnsNoName": 0
+    }
+   },
+   "h2": [
+    "Ordenar lo que estoy viviendo",
+    "Reconocer lo que puedo aportar",
+    "Cambiar de rumbo no debería significar empezar de cero.",
+    "Dos módulos, un mismo recorrido",
+    "Un recorrido que tú diriges",
+    "Qué ofrece a las personas",
+    "Tu experiencia, convertida en capacidades con evidencia",
+    "Elige cómo quieres acompañarte",
+    "Lo que queremos lograr, y dónde estamos",
+    "Empezar es sencillo"
+   ],
+   "mains": 1,
+   "footers": 1,
+   "footerInMain": false,
+   "links": [
+    "#contenido",
+    "/",
+    "#como-funciona",
+    "#skill-map",
+    "#planes",
+    "/login",
+    "/login?mode=register",
+    "/profesionales"
+   ],
+   "htmlLang": "es",
+   "tabStops": 38,
+   "tabSinIndicador": []
+  },
+  "en": {
+   "widths": {
+    "320": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.0013,
+     "btnsNoName": 0
+    },
+    "375": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.1047,
+     "btnsNoName": 0
+    },
+    "768": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.009,
+     "btnsNoName": 0
+    },
+    "1024": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.01,
+     "btnsNoName": 0
+    },
+    "1440": {
+     "overflow": 0,
+     "errs": [],
+     "cls": 0.0053,
+     "btnsNoName": 0
+    }
+   },
+   "h2": [
+    "Sort out what I am going through",
+    "Recognise what I can contribute",
+    "Changing direction should not mean starting from zero.",
+    "Two modules, one journey",
+    "A journey you direct",
+    "What it offers people",
+    "Your experience, turned into capabilities with evidence",
+    "Choose how you want to be supported",
+    "What we want to achieve, and where we are",
+    "Getting started is simple"
+   ],
+   "mains": 1,
+   "footers": 1,
+   "footerInMain": false,
+   "links": [
+    "#contenido",
+    "/",
+    "#como-funciona",
+    "#skill-map",
+    "#planes",
+    "/login",
+    "/login?mode=register",
+    "/profesionales"
+   ],
+   "htmlLang": "en",
+   "tabStops": 38,
+   "tabSinIndicador": []
+  }
+ }
+}

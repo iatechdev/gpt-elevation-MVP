@@ -1,0 +1,16 @@
+{"id":"ES94-A01 el GET público (ES y EN) trae los tres textos de las rutas literalmente como los muestra el PR y la frase «Tú decides…» en el cuerpo","ok":true,"detail":""}
+{"id":"ES94-A02 sin la frase provisional «se mostrarán cuando el catálogo esté verificado», sin corchetes y sin la clave eliminada en ninguna clave de ES ni EN","ok":true,"detail":"claves ES=176 EN=176"}
+{"id":"ES94-A03 los textos nuevos de las rutas no prometen empleo, ingresos, plazos ni porcentajes","ok":true,"detail":"sin coincidencias"}
+{"id":"ES94-A04 [INFO] coherencia con el contrato de rutas (ES-32): continuidad = rol del contexto de origen; adyacencia = fuera del contexto con al menos una capacidad esencial demostrada compartida; exploración = intereses con transferencia aún insuficiente y una tarea de verificación pequeña","info":"los tres textos coinciden con §4 de 24-CONTRATO-RUTAS.md; el contrato permite casillas vacías («sin ese fundamento la casilla queda vacía»), mientras el cuerpo sigue abriendo con «Tres rutas fundamentadas con fuentes y fechas»"}
+{"id":"ES94-C01 PUT a la clave eliminada → 400; el superadmin edita las demás (200); administrador y participante 403; sin sesión 401/403","ok":true,"detail":"400/200/403/403/403"}
+{"id":"ES94-C02 lo editado se publica en ES y el EN conserva su texto","ok":true,"detail":""}
+{"id":"ES94-C03 un override viejo de la clave eliminada en la base queda huérfano: no se publica y no rompe el GET","ok":false,"detail":"status=200 publicada=true"}
+{"id":"ES94-U01 la landing muestra las tres explicaciones y la frase «Tú decides…» en ES y EN, a 320, 375, 768 y 1440 px","ok":true,"detail":"[]"}
+{"id":"ES94-U02 sin «se mostrarán…», sin corchetes, sin desplazamiento horizontal, un h1, sin errores de página y solo el propio origen y las fuentes","ok":true,"detail":"[]"}
+{"id":"ES94-U03 Elevation no lleva etiqueta de estado y Skill Map conserva «Próximamente» (una sola etiqueta en la sección), en ES y EN","ok":true,"detail":"[{\"title\":\"Elevation\",\"status\":null},{\"title\":\"Skill Map\",\"status\":\"Próximamente\"}]"}
+{"id":"ES94-U04 contraste AA de todo el texto de la landing","ok":true,"detail":"{\"n\":0,\"worst\":5.54}"}
+{"id":"ES94-P01 superadmin: la pestaña Landing no muestra el panel «Pendientes de contenido» (sin pendientes) y la lista general de campos sigue editable (incluye las tres rutas)","ok":true,"detail":"panel=0 campos=176"}
+{"id":"ES94-P01 administrador: la pestaña Landing no muestra el panel «Pendientes de contenido» (sin pendientes) y la lista general de campos sigue editable (lista visible)","ok":true,"detail":"panel=0 campos=176"}
+{"id":"ES94-P02 la clave de la ruta de continuidad aparece ahora en la lista general (editable por el superadmin)","ok":true,"detail":"visible=true"}
+{"id":"ES94-P03 la clave eliminada de Elevation ya no aparece en la lista general","ok":true,"detail":""}
+{"fin":true}

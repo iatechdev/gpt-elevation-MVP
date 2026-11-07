@@ -1,0 +1,22 @@
+{"id":"REAL-T01 tablas nuevas creadas por sync()","ok":true,"detail":"[[\"RevokedTokens\",true],[\"AuthRevocations\",true],[\"Consents\",true],[\"ConsentEvents\",true]]"}
+{"id":"REAL-T02 restricción única de Consents (UserId, purpose, scope)","ok":true,"detail":"Consents_pkey,consents__user_id_purpose_scope"}
+{"nota":"codificación de la base","server_encoding":"UTF8"}
+{"id":"REAL-S01 el login real emite jti e iatMs","ok":true,"detail":"jti=string iatMs=number"}
+{"id":"REAL-S02 token válido accede","ok":true,"detail":""}
+{"id":"REAL-S03 logout revoca solo ese token","ok":true,"detail":""}
+{"id":"REAL-S04 la revocación quedó guardada en Postgres","ok":true,"detail":"filas=1"}
+{"id":"REAL-S05 logout-all corta todas y un login inmediato vale","ok":true,"detail":""}
+{"id":"REAL-S06 token emitido tras el corte vale (precisión de ms)","ok":true,"detail":""}
+{"id":"REAL-S07 admin desactiva a B: su sesión previa queda cortada y no puede volver a entrar","ok":true,"detail":""}
+{"id":"REAL-AB01 B no ve el ánimo de A","ok":true,"detail":"filas de B=0"}
+{"id":"REAL-AB02 B no puede marcar la recomendación de A (404) y la fila no cambia","ok":true,"detail":"status=404 seenByUser=false"}
+{"id":"REAL-AB03 A sí puede marcar la suya","ok":true,"detail":""}
+{"id":"REAL-AB04 usuario común recibe 403 en rutas de terapeuta; el terapeuta no","ok":true,"detail":""}
+{"id":"REAL-AB05 el admin no recibe entradas individuales ni promedio con pocos datos","ok":true,"detail":""}
+{"id":"REAL-C01 B no ve el consentimiento de A","ok":true,"detail":""}
+{"id":"REAL-C02 historial de B vacío","ok":true,"detail":""}
+{"id":"REAL-C03 25 primeras decisiones simultáneas: 0 errores 5xx y una sola fila","ok":true,"detail":"códigos=200 filas=1 eventos=1"}
+{"id":"REAL-C04 las decisiones idénticas no duplican eventos (idempotencia)","ok":true,"detail":"eventos=1"}
+{"id":"REAL-C05 40 decisiones contradictorias simultáneas: sin 5xx, una fila, y el estado final coincide con el último evento","ok":true,"detail":"códigos=200 filas=1 final=granted últimoEvento=granted eventos=25"}
+{"id":"REAL-F01 sin la tabla RevokedTokens toda petición autenticada da 503 (y vuelve a 200 al restaurarla)","ok":true,"detail":"sin tabla=503 restaurada=200"}
+{"resumen":{"total":20,"fallos":0}}

@@ -1,0 +1,177 @@
+[
+ {
+  "id": "E1 /api/health 200 con el commit desplegado",
+  "ok": true,
+  "detail": "commit=3ab3a41"
+ },
+ {
+  "id": "E1b páginas públicas y /api/plans 200",
+  "ok": true,
+  "detail": "200,200,200"
+ },
+ {
+  "id": "E2 registro y login de las cuentas A y B",
+  "ok": true,
+  "detail": "ok"
+ },
+ {
+  "id": "D2a vista previa de A: 201, id UUID, con diario propio y sin hashes, contraseñas ni nada de B",
+  "ok": true,
+  "detail": "http=201 secciones=34"
+ },
+ {
+  "id": "D2b descarga de A: 200, adjunto elevation-personal.json, mismo contenido",
+  "ok": true,
+  "detail": "http=200 cd=attachment; filename=\"elevation-personal.json\""
+ },
+ {
+  "id": "D3a solicitud repetida (6 seguidas y 4 concurrentes): reutiliza (200/201) o limita (429), nunca 5xx",
+  "ok": true,
+  "detail": "200,200,200,200,200,429 | 429,429,429,429"
+ },
+ {
+  "id": "D3b ID ajeno (B sobre la exportación de A) → 404 sin contenido; ID mal formado → 404; campo extra o idioma inválido → 400",
+  "ok": false,
+  "detail": "ajeno=404 malformado=404 extra=429 idioma=429"
+ },
+ {
+  "id": "INFO D3c exportación professional (declarada como no disponible en el servidor)",
+  "ok": true,
+  "detail": "http=429 code=rate_limited"
+ },
+ {
+  "id": "S1 exportar o borrar SIN sesión → 403",
+  "ok": true,
+  "detail": "403,403"
+ },
+ {
+  "id": "S3 borrado con cuerpo inválido (confirm distinto de true, campo extra, vacío) → 400 y NO borra (A sigue entrando)",
+  "ok": true,
+  "detail": "400,400,400,400"
+ },
+ {
+  "id": "D6a token manipulado/expirado → 401/403 (sin leer nada)",
+  "ok": true,
+  "detail": "http=401"
+ },
+ {
+  "id": "D5 4 solicitudes de borrado a la vez: todas 200/202, una sola solicitud (mismo id), nunca 5xx",
+  "ok": true,
+  "detail": "estados=202,200,200,200 ids=1"
+ },
+ {
+  "id": "D6b reintento con la sesión ya revocada: solo repite SU solicitud (200/202) sin leer datos",
+  "ok": true,
+  "detail": "http=200 repeated=true"
+ },
+ {
+  "id": "D7a tras pedir el borrado la persona ya no lee ni exporta lo suyo (401/403)",
+  "ok": true,
+  "detail": "401,401,401"
+ },
+ {
+  "id": "D7b no puede volver a iniciar sesión con la cuenta pendiente de borrado (4xx)",
+  "ok": true,
+  "detail": "http=403"
+ },
+ {
+  "id": "D1a es el dashboard ofrece el acceso «Mis datos»",
+  "ok": true,
+  "detail": "enlaces=2/1"
+ },
+ {
+  "id": "P1a es /app/data carga y muestra el título ≤ 3 s (medida única, red real)",
+  "ok": true,
+  "detail": "521 ms"
+ },
+ {
+  "id": "D2c es vista previa: lista las secciones sin mostrar su contenido (no aparece el texto del diario)",
+  "ok": true,
+  "detail": "Qué incluye: Perfil · Mensajes (0) · Turnos del chat (0) · Diario (1) · Estados de ánimo (0) · Valoraciones (0"
+ },
+ {
+  "id": "D2d es descarga por pantalla: archivo JSON válido con lo propio y el aviso «Archivo descargado.»",
+  "ok": true,
+  "detail": "elevation-personal.json"
+ },
+ {
+  "id": "D4a es eliminar: el panel deshabilita «Eliminar mi cuenta» hasta marcar la casilla y mueve el foco dentro",
+  "ok": true,
+  "detail": "deshabilitado=true foco=INPUT"
+ },
+ {
+  "id": "D4b es Escape cierra el panel sin borrar",
+  "ok": true,
+  "detail": "panel cerrado"
+ },
+ {
+  "id": "D1b es sin errores de página ni de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "D1c es 320–1440 px sin desborde horizontal",
+  "ok": true,
+  "detail": "desbordes=0,0,0,0,0"
+ },
+ {
+  "id": "D1a en el dashboard ofrece el acceso «My data»",
+  "ok": true,
+  "detail": "enlaces=2/1"
+ },
+ {
+  "id": "P1a en /app/data carga y muestra el título ≤ 3 s (medida única, red real)",
+  "ok": true,
+  "detail": "492 ms"
+ },
+ {
+  "id": "D2c en vista previa: lista las secciones sin mostrar su contenido (no aparece el texto del diario)",
+  "ok": true,
+  "detail": "What it includes: Profile · Messages (0) · Chat turns (0) · Journal (1) · Moods (0) · Ratings (0) · Recommenda"
+ },
+ {
+  "id": "D2d en descarga por pantalla: archivo JSON válido con lo propio y el aviso «File downloaded.»",
+  "ok": true,
+  "detail": "elevation-personal.json"
+ },
+ {
+  "id": "D4a en eliminar: el panel deshabilita «Delete my account» hasta marcar la casilla y mueve el foco dentro",
+  "ok": true,
+  "detail": "deshabilitado=true foco=INPUT"
+ },
+ {
+  "id": "D4b en Escape cierra el panel sin borrar",
+  "ok": true,
+  "detail": "panel cerrado"
+ },
+ {
+  "id": "D1b en sin errores de página ni de consola",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "D1c en 320–1440 px sin desborde horizontal",
+  "ok": true,
+  "detail": "desbordes=0,0,0,0,0"
+ },
+ {
+  "id": "D4c es eliminar por pantalla (móvil 390 px): confirmación, sin promesa de plazo, sesión revocada (401/403) y no vuelve a entrar",
+  "ok": true,
+  "detail": "mensajes=401 relogin=403"
+ },
+ {
+  "id": "D4c en eliminar por pantalla (móvil 390 px): confirmación, sin promesa de plazo, sesión revocada (401/403) y no vuelve a entrar",
+  "ok": true,
+  "detail": "mensajes=401 relogin=403"
+ },
+ {
+  "id": "P1b vista previa de exportación (cuenta pequeña, 4 muestras bajo el límite por minuto): máx ≤ 1 s (propuesta)",
+  "ok": true,
+  "detail": "muestras=274,290,437,530 ms"
+ },
+ {
+  "id": "D3b-bis campo extra → 400, idioma inválido → 400; la exportación professional responde sin 5xx inesperado",
+  "ok": true,
+  "detail": "extra=400 idioma=400 professional=503 professional_contract_pending"
+ }
+]

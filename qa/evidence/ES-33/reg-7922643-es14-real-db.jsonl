@@ -1,0 +1,63 @@
+{"id":"ES14-S01 GET sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES14-S01b PUT sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES14-S01c token inválido → rechazado","ok":true,"detail":"status=401"}
+{"id":"ES14-S03 admin → 403 en GET y PUT","ok":true,"detail":"GET=403 PUT=403"}
+{"id":"ES14-S03 superadmin → 403 en GET y PUT","ok":true,"detail":"GET=403 PUT=403"}
+{"id":"ES14-S03 terapeuta → 403 en GET y PUT","ok":true,"detail":"GET=403 PUT=403"}
+{"id":"ES14-S03 board → 403 en GET y PUT","ok":true,"detail":"GET=403 PUT=403"}
+{"id":"ES14-S04 token vigente de una cuenta desactivada → 403","ok":true,"detail":"status=403"}
+{"id":"ES14-S04b token con rol «user» pero la base ya dice terapeuta → 403","ok":true,"detail":"status=403"}
+{"id":"ES14-F01 GET inicial: version 0, context null, completedAt null, sin inventar datos","ok":true,"detail":"{\"schemaVersion\":1,\"version\":0,\"context\":null,\"savedAt\":null,\"completedAt\":null}"}
+{"id":"ES14-S07 no-store","ok":true,"detail":"no-store"}
+{"id":"ES14-F08a guardar borrador parcial (solo idioma) → 200 versión 1 y sin completedAt","ok":true,"detail":"status=200 {\"schemaVersion\":1,\"version\":1,\"context\":{\"preferredLanguage\":\"es\",\"residenceCountry\":null,\"targetMarket\":null,\"timeZone"}
+{"id":"ES14-F08b recuperar tras «recarga»: los mismos valores","ok":true,"detail":""}
+{"id":"ES14-F03 guardar todos los campos: cada valor en su campo y sin completedAt","ok":true,"detail":"status=200"}
+{"id":"ES14-F13a continuar → completedAt confirmado por el servidor","ok":true,"detail":"status=200"}
+{"id":"F13-continuar-casi-vacío","info":"status=200 completedAt=sí (solo el idioma es obligatorio)"}
+{"id":"ES14-F13b continuar sin idioma → 400 invalid_context (preferredLanguage)","ok":true,"detail":""}
+{"id":"ES14-F13c editar tras completar conserva completedAt y sube la versión","ok":true,"detail":"status=200"}
+{"id":"ES14-S06 el contenido está cifrado v2 en la base y no hay texto plano","ok":true,"detail":"v2:880bb"}
+{"id":"ES14-S06b descifrado coincide con lo enviado y no contiene claves de puerta ni relato","ok":true,"detail":""}
+{"id":"ES14-S08 las ediciones generan DerivedInvalidation (participant_context) sin contenido","ok":true,"detail":"eventos=3"}
+{"id":"ES14-F09 versión vieja → 409 context_conflict y no se pisa","ok":true,"detail":"status=409"}
+{"id":"ES14-F09b versión futura → 409","ok":true,"detail":"status=409"}
+{"id":"ES14-V01 clave extra en el cuerpo → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_request\"}"}
+{"id":"ES14-V02 clave extra en el contexto → 400 invalid_context","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[]}"}
+{"id":"ES14-V03 schemaVersion distinta → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_request\"}"}
+{"id":"ES14-V04 action desconocida → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_request\"}"}
+{"id":"ES14-V05 expectedVersion negativa, decimal o texto → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_request\"}"}
+{"id":"ES14-V05b expectedVersion decimal → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_request\"}"}
+{"id":"ES14-V05c expectedVersion como texto → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_request\"}"}
+{"id":"ES14-V06 país fuera de la lista cerrada → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"residenceCountry\"]}"}
+{"id":"ES14-V06b mercado con SQL → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"targetMarket\"]}"}
+{"id":"ES14-V07 zona horaria inválida → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"timeZone\"]}"}
+{"id":"ES14-V07b zona horaria sin «/» salvo UTC → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"timeZone\"]}"}
+{"id":"ES14-V08 minutos negativos → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"availabilityMinutesPerWeek\"]}"}
+{"id":"ES14-V08b minutos fraccionarios → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"availabilityMinutesPerWeek\"]}"}
+{"id":"ES14-V08c minutos 10081 (más de una semana) → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"availabilityMinutesPerWeek\"]}"}
+{"id":"ES14-V08d minutos como texto → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"availabilityMinutesPerWeek\"]}"}
+{"id":"ES14-V09 idioma «fr» → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"preferredLanguage\"]}"}
+{"id":"ES14-V10 profesión de 121 caracteres → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"profession\"]}"}
+{"id":"ES14-V10b intereses de 501 caracteres → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"interests\"]}"}
+{"id":"ES14-V10c texto como objeto → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"profession\"]}"}
+{"id":"ES14-V11 contexto con campo faltante (undefined) → 400","ok":true,"detail":"status=400 {\"error\":\"invalid_context\",\"fields\":[\"interests\"]}"}
+{"id":"ES14-V12 __proto__ → 400","ok":true,"detail":"status=400"}
+{"id":"ES14-V13 cuerpo que no es objeto → 400","ok":true,"detail":"status=400"}
+{"id":"ES14-V14 HTML y plantillas se guardan como dato (200, JSON)","ok":true,"detail":"status=200"}
+{"id":"ES14-V15 cadenas vacías o de espacios se guardan como null (sin inventar)","ok":true,"detail":"[null,null]"}
+{"id":"ES14-S02 B con query ?userId= no obtiene datos de A (400/404/403, nunca 200 con datos)","ok":true,"detail":"status=400"}
+{"id":"ES14-S02 B con ruta /:id no obtiene datos de A (400/404/403, nunca 200 con datos)","ok":true,"detail":"status=404"}
+{"id":"ES14-S02 B con ruta /:id PUT no obtiene datos de A (400/404/403, nunca 200 con datos)","ok":true,"detail":"status=404"}
+{"id":"ES14-S02 B con DELETE no obtiene datos de A (400/404/403, nunca 200 con datos)","ok":true,"detail":"status=404"}
+{"id":"ES14-S02b el GET de B devuelve su propio estado vacío, sin nada de A","ok":true,"detail":""}
+{"id":"ES14-S02c B escribe solo en su propio contexto; el de A no cambia","ok":true,"detail":""}
+{"id":"ES14-C01 8 primeros guardados simultáneos: una sola fila, uno gana y 7 con 409, ningún 5xx","ok":true,"detail":"filas=1 estados=200,409,409,409,409,409,409,409"}
+{"id":"ES14-C01b 8 ediciones con la misma versión: una gana y 7 con 409","ok":true,"detail":"estados=200,409,409,409,409,409,409,409"}
+{"id":"ES14-C01c la versión final es consecutiva (2)","ok":true,"detail":""}
+{"id":"ES14-C02 la migración se aplica dos veces sobre una tabla ya creada por sync() sin error y sin tocar datos","ok":true,"detail":"nt committing .env to code: https://dotenvx.com/precommit\nOK | om .env -- tip: 🛡️ auth for agents: https://vestauth.com\nOK"}
+{"id":"ES14-C03 FK con CASCADE y UserId único","ok":true,"detail":"fk=c idx=2"}
+{"id":"ES14-C04 borrar la cuenta (fila de User) elimina el contexto por CASCADE","ok":true,"detail":""}
+{"id":"ES14-F13d el login no incluye el contexto del participante","ok":true,"detail":"status=200"}
+{"id":"ES14-P01 GET p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=25ms"}
+{"id":"ES14-P02 PUT p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=30ms"}
+{"fin":true,"canario":"CANARIO-CTX-b615d0"}

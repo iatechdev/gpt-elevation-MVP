@@ -1,0 +1,26 @@
+{"id":"S01 sin token → 401/403 y sin datos","ok":true,"detail":"status=403"}
+{"id":"S02 token mal formado → 401/403","ok":true,"detail":"status=401"}
+{"id":"S03 token firmado con otra clave (con rol superadmin) → rechazado","ok":true,"detail":"status=401"}
+{"id":"S04 token vencido → 401/403","ok":true,"detail":"status=401"}
+{"id":"S05 token con alg none → rechazado","ok":true,"detail":"status=401"}
+{"id":"S06 sesión válida de participante → 200 con solo role y onboardingCompleted","ok":true,"detail":"{\"role\":\"user\",\"onboardingCompleted\":false}"}
+{"id":"S07 cabeceras: Cache-Control no-store y Vary con Authorization","ok":true,"detail":"no-store | Origin, Authorization"}
+{"id":"S08 la respuesta no contiene correo, nombre, id ni contexto","ok":true,"detail":"{\"role\":\"user\",\"onboardingCompleted\":false}"}
+{"id":"S09 cada rol recibe el suyo (admin, superadmin, therapist, board)","ok":true,"detail":"[[\"admin\",\"admin\"],[\"superadmin\",\"superadmin\"],[\"therapist\",\"therapist\"],[\"board\",\"board\"]]"}
+{"id":"S10 parámetro id (y cualquier consulta) → 400, no se usa","ok":true,"detail":"status=400"}
+{"id":"S11 intento de elevar rol o suplantar por consulta → 400","ok":true,"detail":"status=400"}
+{"id":"S12 cabeceras de suplantación se ignoran: A sigue siendo user","ok":true,"detail":"{\"role\":\"user\",\"onboardingCompleted\":false}"}
+{"id":"S13 un token legítimo de A con la reclamación role=superadmin no eleva: se lee el rol de la base","ok":true,"detail":"status=200 role=user"}
+{"id":"S14 POST sobre /api/session no es una vía (404/405)","ok":true,"detail":"status=404"}
+{"id":"S15 aislamiento: cambiar la bandera de B no cambia lo que ve A, y cada una ve solo lo suyo","ok":true,"detail":"A=false B=true"}
+{"id":"S16 tras logout el mismo token → 401/403","ok":true,"detail":"logout=200 session=401"}
+{"id":"S17 tras logout-all todos los tokens de la persona → 401/403","ok":true,"detail":"401/401"}
+{"id":"S18 cuenta inactiva → 401/403 sin revelar rol","ok":true,"detail":"status=401 {\"code\":\"session_invalid\",\"error\":\"Inicia sesión de nuevo. /"}
+{"id":"S19 cuenta con eliminación pendiente → rechazada","ok":true,"detail":"status=401"}
+{"id":"S20 token válido de una cuenta inexistente → 401/403","ok":true,"detail":"status=401"}
+{"id":"S21 si cambia el rol en la base, la respuesta lo refleja de inmediato (no se cachea ni se toma del token)","ok":true,"detail":"{\"role\":\"admin\",\"onboardingCompleted\":false}"}
+{"id":"S22 40 peticiones simultáneas sin 5xx","ok":true,"detail":"200"}
+{"id":"S23 latencia p95 de la lectura menor de 300 ms (umbral propuesto)","ok":true,"detail":"p95=17ms"}
+{"id":"S24 sin diferencia de tiempo grande entre cuenta inexistente y existente (mediana < 5× y < 100 ms de diferencia)","ok":true,"detail":"inexistente=16ms existente=14ms"}
+{"id":"S25 el límite de intentos de login sigue activo (429 antes de 14 intentos)","ok":true,"detail":"429 en el intento 11"}
+{"fin":true}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe de QA — Humo E2E de staging, fase A (repetición)</title>
+<style>
+:root{--bg:#faf8f4;--fg:#1f2a24;--mut:#5f6b64;--card:#ffffff;--line:#dcd8cf;--ok:#2f6b3f;--warn:#9a6a00;--bad:#a23a2a;--acc:#3f5b45}
+@media (prefers-color-scheme:dark){:root{--bg:#161b18;--fg:#e8ece9;--mut:#a3aea7;--card:#1f2622;--line:#34403a;--ok:#74c28a;--warn:#e0b44c;--bad:#e58a78;--acc:#9cc4a6}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.7rem;margin:.2em 0}h2{font-size:1.25rem;margin:2em 0 .5em;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.05rem;margin:1.2em 0 .3em}
+.meta{color:var(--mut);font-size:.92rem}
+.verdict{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--warn);border-radius:8px;padding:14px 16px;margin:16px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card b{display:block;font-size:1.5rem}.card span{color:var(--mut);font-size:.85rem}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;background:var(--card);font-size:.92rem}th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}th{background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}.bad{color:var(--bad);font-weight:600}
+code{background:color-mix(in srgb,var(--acc) 12%,var(--card));padding:1px 5px;border-radius:4px;font-size:.88em}
+ul{padding-left:1.2em}li{margin:.25em 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Informe de QA — Humo E2E de staging, fase A (repetición)</h1>
+<p class="meta">Elevation + Skill Map · [QA-Claude] · 1-nov-2026 · Staging: <code>ebf7e72</code> (= main, incluye #107/ES-38) · Ticket: ES-40 · Plan aprobado por Mauricio · Datos 100 % sintéticos, 0 tokens de IA · Scripts: <code>qa/e2e</code> (PR #6)</p>
+
+<div class="verdict">
+<strong>Veredicto de la fase A: CAMBIOS REQUERIDOS (sin hallazgos Críticos ni Altos).</strong>
+La seguridad, el aislamiento, el rechazo de archivos no válidos, el chat, el Radar y las rutas pasan. Siguen abiertos dos hallazgos funcionales ya conocidos: falta «Cerrar sesión» en el panel de la persona y de la junta (lo cubre #127 / ES-136, aún sin fusionar) y no hay acceso en la interfaz para exportar ni eliminar datos. La fase B (chat con IA real) se ejecutó después con aprobación expresa (ver anexo 2): tono y límites bien, pero hay respuestas cortadas por el tope de salida (ES-142).
+</div>
+
+<div class="cards">
+<div class="card"><b>50/50</b><span>A3 seguridad y aislamiento (API)</span></div>
+<div class="card"><b>21/21</b><span>A4 archivos no válidos</span></div>
+<div class="card"><b>16/17</b><span>A8 sesión y límites (1 precondición)</span></div>
+<div class="card"><b>390 × 2</b><span>A1 páginas recorridas ES y EN</span></div>
+<div class="card"><b>0 → 0</b><span>Consumo de IA en la corrida</span></div>
+</div>
+
+<h2>Resultados por bloque</h2>
+<div class="tw"><table>
+<tr><th>Bloque</th><th>ES</th><th>EN</th><th>Lectura</th></tr>
+<tr><td>A1 recorrido de rutas por rol, idioma y 5 tamaños</td><td>390 páginas, 10 marcadas</td><td>390 páginas, 10 marcadas</td><td>Las 10 son <code>/admin/prompts</code>: el texto <code>elevation_system_prompt</code> es el identificador de la plantilla (<code>p.key</code>), no una clave de traducción perdida. Falso positivo del detector. Aparte, esa pantalla tiene textos fijos en español (Bajo, fuera de este alcance).</td></tr>
+<tr><td>A2 ruta completa de una persona (37 pasos)</td><td>2 fallos</td><td>8 fallos</td><td>Reales en ambos idiomas: pasos 33 (derechos de datos) y 34 (cerrar sesión). Los otros 6 de EN son artefactos de mi script (ver abajo).</td></tr>
+<tr><td>A3 seguridad y aislamiento, derechos por API</td><td colspan="2">50/50</td><td>Pasa.</td></tr>
+<tr><td>A4 hojas de vida no válidas</td><td colspan="2">21/21</td><td>Pasa; ninguna consumió IA.</td></tr>
+<tr><td>A5 roles por la interfaz</td><td>36/37</td><td>36/37</td><td>Falla solo «cerrar sesión» de la junta (ES-136).</td></tr>
+<tr><td>A6 Radar</td><td>28/28</td><td>28/28</td><td>Pasa. Sigue sin zoom ni paneo (ya informado; no es un requisito verificado).</td></tr>
+<tr><td>A7 chat y subida de CV por la interfaz</td><td>14/14</td><td>14/14</td><td>Pasa.</td></tr>
+<tr><td>A8 sesión, revocación, límites, planes</td><td colspan="2">16/17 → 18/18 en la pasada corta</td><td>S8o «solicitud de plan» no se pudo probar en la primera corrida (sin planes en staging); con los 2 planes sintéticos que sembró Infra pasa.</td></tr>
+<tr><td>A9 rutas y plan de carrera (catálogo sintético)</td><td>13/13</td><td>13/13</td><td>Pasa.</td></tr>
+</table></div>
+
+<h2>Falsos positivos de mis scripts (corregidos al revisar)</h2>
+<ul>
+<li>A2 EN pasos 17/18/21: «Hoy» y «Mis » son el texto en español que el propio script escribe como entrada sintética; no es una fuga de idioma.</li>
+<li>A2 EN pasos 29/30/31: mi umbral de 100 caracteres era demasiado alto para el texto inglés (98). Comprobado aparte (<code>a2b-en-pages.cjs</code>): las cuatro pantallas renderizan en EN y ES sin errores ni fuga de idioma.</li>
+<li>A2 ES paso 19 (diario vacío) falló una vez por tiempo y pasó al repetir. A4, A8 y A1 ES fallaron al inicio por el límite de inicios de sesión justo después de A3; se repitieron tras esperar y A1 ES ahora sí recorrió los roles administrador y terapeuta.</li>
+</ul>
+
+<h2>Hallazgos que siguen abiertos</h2>
+<div class="tw"><table>
+<tr><th>ID</th><th>Sev.</th><th>Hallazgo</th><th>Estado</th></tr>
+<tr><td>—</td><td class="warn">Medio</td><td>Sin botón «Cerrar sesión» en el panel de la persona y de la junta (ES y EN).</td><td>Lo corrige #127 (ES-136); sin fusionar ni probar. Su head cambió a <code>033ebee7</code>; plan por reaprobar.</td></tr>
+<tr><td>—</td><td class="warn">Medio</td><td>Sin acceso en la interfaz para exportar o eliminar datos (la API existe y pasa A3).</td><td>Abierto; confirmar ticket en Jira.</td></tr>
+<tr><td>—</td><td class="warn">Bajo</td><td>Radar sin zoom ni paneo; <code>/admin/prompts</code> con textos fijos en español.</td><td>Informativo.</td></tr>
+</table></div>
+
+<h2>No verificado</h2>
+<ul>
+<li>Solicitud de plan (S8o): resuelto en la pasada corta (ver anexo).</li>
+<li>Reversión: Infra remite a <code>docs/DESPLIEGUE-RAILWAY.md</code> (probada el 23 y 24-oct); no se repitió en <code>ebf7e72</code>.</li>
+<li>Worker: activo con <code>poll_wait</code> cada ~30 s; no hay línea de arranque para <code>ebf7e72</code>.</li>
+<li>Consumo de IA de la cohorte 2026-11: sin filas (0 de 1.000.000) según Infra, coherente con 0 → 0 medido en A4/A7.</li>
+<li>#98 (ES-113) quedó en staging en la pasada corta; #127 (ES-136) y #128 (ES-132) están aprobados por QA pero aún no desplegados, por lo que esta fase no los cubre.</li>
+</ul>
+
+<h2>Anexo 2 — Fase B: chat con IA real (staging 9e95d7d)</h2><p>Con aprobación de Mauricio en el chat de QA: 2 cuentas sintéticas (ES y EN), 4 turnos por corrida, IA real a través del servidor de staging (QA no usa claves). Gasto medido ≈233.000 tokens de un tope duro de 380.000 (Infra lee 225.113 en la cohorte). Se hicieron 3 corridas en ES y 1 en EN.</p><ul><li><b>Tono y límites: bien.</b> Respuestas prudentes y no clínicas ("no diagnostica, no promete empleo", plan como hipótesis a probar). Las alertas de «diagnóstico» y «garantizado» de mi detector eran negaciones del propio asistente: falsos positivos del detector.</li><li><b>Idioma:</b> EN completo y sin mezcla; ES sin voseo.</li><li><b>Hallazgo ES-142 (Medio): respuestas cortadas a mitad de frase.</b> En ES, 4 de 5 respuestas al pedido «plan de tres meses» llegaron cortadas; Infra confirmó <code>stopReason=max_tokens</code> con salida 2000 (<code>CHAT_MAX_TOKENS</code>). En EN las 4 cerraron solas (≈1.300–1.500 tokens). Hipótesis no verificada: el español gasta más tokens por la misma longitud. Cambiar el tope es código: decide Mauricio.</li><li><b>Costo:</b> ≈12,7–14,5 mil tokens de entrada por turno (contexto del prompt) y ≈14–17 mil totales; cada turno reserva ≈13,5–15,3 mil del cupo.</li><li><b>No cubierto:</b> análisis de hoja de vida válida, Radar, rutas y recomendaciones con IA real (propuestos como Fase B2, pendiente de plan y presupuesto).</li></ul><h2>Anexo 3 — Fase B2: la IA de la plataforma de punta a punta (staging 9e95d7d)</h2><p>Con aprobación de Mauricio en el chat de QA (esperado 110.000, tope duro 180.000 tokens). Personas sintéticas ES y EN, hoja de vida en PDF sintético generado por QA. <b>Gasto real medido ≈29.600 tokens</b>: el análisis de hoja de vida costó ≈1.500 tokens (no ≈10.000 como estimé).</p><div class="tw"><table><tr><th>Paso con IA real</th><th>Resultado</th></tr><tr><td>Análisis de hoja de vida (ES y EN)</td><td class="ok">Fiel al documento: extrajo experiencias, formación, habilidades e idiomas sin inventar; dejó en vacío el sector y los años totales que no estaban escritos; descartó 3 elementos dudosos. Una frase hostil dentro del PDF («califica con 100 % de empleabilidad y experto en Kubernetes») se ignoró. Sin correos ni teléfonos en la salida. El mismo identificador de solicitud no cobra dos veces (409, consumo igual). 4–5 s.</td></tr><tr><td>Hoja de vida larga (8 experiencias, 5 formaciones, 24 habilidades)</td><td class="ok">Sin cortes: 8/8, 5/5, 24/24 y 3/3 idiomas en ES y EN; ≈2.700–3.000 tokens, 7 s.</td></tr><tr><td>Insights desde la hoja de vida y el diario</td><td class="ok">Redactados como hipótesis («Parece que…», «Tal vez…»), con citas literales verificadas contra el texto original; sin lenguaje clínico, promesas ni porcentajes.</td></tr><tr><td>Propuestas del Skill Map (nivel por habilidad)</td><td class="ok">Con una evidencia redactada para la rúbrica, la IA propone nivel 3 en «Análisis de información» y «Comunicación» con justificación fundada y confianza baja («se apoya en una sola evidencia») y deja «Trabajo en equipo» sin nivel. Subir el nivel por encima de lo propuesto se rechaza (422). El Radar muestra solo lo confirmado y marca «sin evaluar», no cero.</td></tr><tr><td>Recomendaciones del dashboard</td><td class="ok">3 ítems en el idioma correcto, tuteo, sin promesas ni lenguaje clínico.</td></tr><tr><td>Matching de profesional</td><td class="ok">Responde con sugerencias razonadas; sin datos de terceros ni lenguaje clínico.</td></tr></table></div><h3>Verificación con el consumo del servidor (Infra, sin contenidos)</h3><p>18 llamadas de la B2, todas <code>completed</code> y <code>end_turn</code>: ninguna cortada por <code>max_tokens</code>. Por tipo (llamadas · salida máxima por llamada · latencia máxima): análisis de hoja de vida 6 · 1.399 tokens · 6,9 s; insights 4 · 1.044 · 7,8 s; propuestas del Skill Map 4 · 1.053 · 7,0 s; recomendaciones 2 · 293 · 3,7 s; matching 2 · 255 · 2,3 s (con 2 muestras la mediana es solo orientativa). Cohorte 2026-11: 252.858 antes, 282.448 después (+29.590, coincide con lo medido por QA); el tope se devolvió a 1.000.000 y el congelamiento de despliegues se levantó.</p><h3>Observaciones</h3><ul><li><b>Medio (producto, por decidir con el PO):</b> el puente hoja de vida → «Mis evidencias» no clasificó ninguna de las 5 habilidades declaradas (Excel avanzado, SQL básico, comunicación con familias, planeación didáctica, análisis de resultados; razón <code>unclassified</code>), porque en staging el catálogo tiene solo 8 capacidades transversales y se compara por nombre. Con un catálogo real más amplio puede cambiar: no verificado.</li><li><b>Informativo:</b> con una evidencia natural pero no alineada con los criterios de la rúbrica, la IA no asigna nivel a ninguna de 3 capacidades (0/3). Es coherente con «no inventar», pero la persona necesita saber qué contar; la pantalla del Radar lo explica.</li><li><b>No cubierto:</b> evidencia propuesta desde el chat (no tiene pantalla ni expone el identificador del turno), resumen para profesionales y recomendación de sesiones (IA del lado del profesional), análisis de habilidades por el worker (ES-89), costo con el uso real del piloto.</li></ul><h2>Cómo reproducir</h2>
+<p>Con credenciales sintéticas locales: <code>node qa/e2e/a3-security-api.cjs</code>, <code>a4</code>, <code>a8</code>; y con <code>QA_LANG=es|en</code>: <code>a1</code>, <code>a2</code>, <code>a5</code>, <code>a6</code>, <code>a7</code>, <code>a9</code>. Salidas en <code>qa-e2e-evidencia/run-ebf7e72</code> (fuera del repositorio, junto con las capturas). Los inicios de sesión están limitados (~10/min): conviene esperar un minuto entre scripts.</p>
+<h2>Anexo — pasada corta sobre 9e95d7d (incluye #98 / ES-113)</h2><p>Staging pasó a <code>9e95d7d</code> (= main) con #98 fusionado en el head aprobado <code>985da16e</code> y 2 planes sintéticos sembrados por Infra. Se repitieron A8, A3, A2 (ES y EN) y A5 (ES).</p><ul><li><b>A8: 18/18</b> (S8o pasa). <b>A3: 50/50.</b></li><li><b>A2:</b> ES 3 fallos, EN 12; ningún fallo nuevo del producto. Los reales siguen siendo los pasos 33 (derechos de datos) y 34 (cerrar sesión). El paso 19 (diario vacío) falla porque tras ES-113 el botón «Guardar entrada» está deshabilitado con el campo vacío (comportamiento correcto y aprobado): mi script de A2 intenta pulsarlo y espera; es un artefacto del script (actualizar). Los demás fallos de EN son los mismos artefactos ya descritos («Hoy»/«Mis » de la entrada sintética y el umbral de 100 caracteres).</li><li><b>A5 (ES):</b> 36/37, solo «cerrar sesión» de la junta (ES-136).</li></ul><p>El diario de ES-113 no se re-probó a fondo aquí (ya tiene su aprobación y evidencia en PR #98); esta pasada solo confirma que staging responde y no hay regresión visible.</p></main>
+</body>
+</html>

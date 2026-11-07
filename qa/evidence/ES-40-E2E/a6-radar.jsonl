@@ -1,0 +1,28 @@
+{"id":"A6 es-1920: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":435,\"w\":530},\"sw\":false}"}
+{"id":"A6 es-1920: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 es-1440: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":195,\"w\":530},\"sw\":false}"}
+{"id":"A6 es-1440: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 es-1024: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":57,\"w\":455},\"sw\":false}"}
+{"id":"A6 es-1024: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 es-768: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":49,\"w\":670},\"sw\":false}"}
+{"id":"A6 es-768: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 es-390: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":33,\"w\":324},\"sw\":false}"}
+{"id":"A6 es-390: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 es-360: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":33,\"w\":294},\"sw\":false}"}
+{"id":"A6 es-360: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 es-320: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":33,\"w\":254},\"sw\":false}"}
+{"id":"A6 es-320: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-1920: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":435,\"w\":530},\"sw\":false}"}
+{"id":"A6 en-1920: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-1440: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":195,\"w\":530},\"sw\":false}"}
+{"id":"A6 en-1440: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-1024: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":57,\"w\":455},\"sw\":false}"}
+{"id":"A6 en-1024: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-768: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":49,\"w\":670},\"sw\":false}"}
+{"id":"A6 en-768: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-390: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":33,\"w\":324},\"sw\":false}"}
+{"id":"A6 en-390: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-360: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":33,\"w\":294},\"sw\":false}"}
+{"id":"A6 en-360: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}
+{"id":"A6 en-320: el Radar se muestra completo dentro de la pantalla y sin desborde horizontal","ok":true,"d":"{\"box\":{\"x\":33,\"w\":254},\"sw\":false}"}
+{"id":"A6 en-320: rueda, Ctrl+rueda y arrastre sobre el Radar no rompen la página (sin errores ni desborde)","ok":true,"d":"errores=0 desborde=false"}

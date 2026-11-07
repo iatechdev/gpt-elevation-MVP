@@ -1,0 +1,107 @@
+[
+ {
+  "id": "T2a max_tokens: 200, truncated:true y texto tal cual (sin recorte)",
+  "ok": true,
+  "detail": "http=200 truncated=true igual=true len=253/253"
+ },
+ {
+  "id": "T5a la petición al proveedor usa max_tokens=3000",
+  "ok": true,
+  "detail": "[3000]"
+ },
+ {
+  "id": "T5b el gasto se descuenta (usage.used sube)",
+  "ok": true,
+  "detail": "antes=0 después=3200"
+ },
+ {
+  "id": "T2b end_turn: 200 y sin truncated",
+  "ok": true,
+  "detail": "http=200 keys=reply,requestId"
+ },
+ {
+  "id": "T2c proveedor sin stop_reason: 200 y sin truncated",
+  "ok": true,
+  "detail": "http=200 keys=reply,requestId"
+ },
+ {
+  "id": "T2d otro stop_reason (refusal): sin truncated",
+  "ok": true,
+  "detail": "http=200 keys=reply,requestId"
+ },
+ {
+  "id": "T3 repetición con el mismo requestId: replayed, truncated:true, mismo texto, sin llamada nueva ni gasto",
+  "ok": true,
+  "detail": "http=200 replayed=true truncated=true llamadas=4/4"
+ },
+ {
+  "id": "T3b mismo requestId con otro mensaje: rechazado (409)",
+  "ok": true,
+  "detail": "http=409"
+ },
+ {
+  "id": "T4a GET turno cortado: completed, truncated:true, texto completo",
+  "ok": true,
+  "detail": "http=200 {\"requestId\":\"32ee356e-57f7-4391-84c6-0c79affc58f8\",\"status\":\"completed\",\"retryable\":false,\"truncated\":true}"
+ },
+ {
+  "id": "T4b GET turno normal: sin truncated",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "T4c GET /api/messages: la respuesta cortada lleva truncated:true y las demás no",
+  "ok": true,
+  "detail": "http=200 bots=4 truncated=1"
+ },
+ {
+  "id": "T6a turno ajeno (usuario B): no revela contenido ni truncated",
+  "ok": true,
+  "detail": "http=404 {\"error\":\"Turno no encontrado. / Turn not found.\"}"
+ },
+ {
+  "id": "T6b mensajes de B no incluyen los de A",
+  "ok": true,
+  "detail": "http=200 n=0"
+ },
+ {
+  "id": "T6c sin token: rechazado (401 o 403, comportamiento previo del middleware)",
+  "ok": true,
+  "detail": "http=403"
+ },
+ {
+  "id": "T6d el cliente no puede fijar truncated (campo ajeno: 200 sin truncated, o 400; nunca 500)",
+  "ok": true,
+  "detail": "http=200 truncated=undefined"
+ },
+ {
+  "id": "T6e entrada inválida (requestId inválido): 4xx, nunca 500",
+  "ok": true,
+  "detail": "http=400"
+ },
+ {
+  "id": "T6e entrada inválida (mensaje vacío): 4xx, nunca 500",
+  "ok": true,
+  "detail": "http=400"
+ },
+ {
+  "id": "T6e entrada inválida (mensaje no texto): 4xx, nunca 500",
+  "ok": true,
+  "detail": "http=400"
+ },
+ {
+  "id": "T6e entrada inválida (id de turno inválido): 4xx, nunca 500",
+  "ok": true,
+  "detail": "http=404"
+ },
+ {
+  "id": "T7a /api/ai/usage no expone contenido ni truncated",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "T7b exportación propia (si existe): sin romper",
+  "ok": true,
+  "detail": "http=404 contiene truncated=false"
+ }
+]

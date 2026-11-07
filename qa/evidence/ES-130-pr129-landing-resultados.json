@@ -1,0 +1,32 @@
+[
+ {
+  "id": "F1 sin hosts externos: la landing del PR no pide nada a terceros (en main sí: Google Fonts)",
+  "ok": true,
+  "detail": "PR=ninguno · main=fonts.googleapis.com"
+ },
+ {
+  "id": "F3 las fuentes del PR se sirven 200 con MIME font/woff2",
+  "ok": true,
+  "detail": "peticiones woff2=30"
+ },
+ {
+  "id": "F4 Inter se carga realmente en la landing del PR (document.fonts)",
+  "ok": true,
+  "detail": "Elevation Landing Inter Fallback normal normal; Elevation Landing Inter 100 900 normal; Inter 100 900 normal"
+ },
+ {
+  "id": "P1 CLS de la landing del PR ≤ 0,1 en ES y EN, 320–1440 px y con woff2 retrasado 0/2,5/5 s",
+  "ok": true,
+  "detail": "máx PR=0.0023 (ES 0.0023 · EN 0.0012) · máx main=0.1265 (ES 0.1265 · EN 0.1049)"
+ },
+ {
+  "id": "INFO P1 casos del PR con CLS > 0,05",
+  "ok": true,
+  "detail": "ninguno"
+ },
+ {
+  "id": "F2 sin desborde horizontal en ningún caso del PR",
+  "ok": true,
+  "detail": "máx desborde=0"
+ }
+]

@@ -1,0 +1,20 @@
+# ES9-04 tras Rollback · 2026-10-24T10:54:12Z
+{"status":"ok"}
+{"status":"ok"}
+{"status":"ok"}
+## health
+{"id":"ES9-01 /api/health","esperado":200,"obtenido":200,"ok":true,"extra":"557ms {\"status\":\"ok\"}"}
+{"id":"ES9-01 /api/health","esperado":200,"obtenido":200,"ok":true,"extra":"327ms {\"status\":\"ok\"}"}
+{"id":"ES9-01 /","esperado":200,"obtenido":200,"ok":true,"extra":"166ms root=true"}
+{"id":"ES9-01 /login","esperado":200,"obtenido":200,"ok":true,"extra":"199ms root=true"}
+## smoke
+{"id":"ES9-02 registro","esperado":201,"obtenido":201,"ok":true,"extra":"1123ms"}
+{"id":"ES9-02 login","esperado":"200 + token","obtenido":200,"ok":true,"extra":"448ms rol=user"}
+{"id":"ES9-02 historial sin token","esperado":"denegado","obtenido":403,"ok":true,"extra":"171ms"}
+{"id":"ES9-02 admin con usuario común","esperado":"denegado","obtenido":403,"ok":true,"extra":"185ms"}
+{"id":"ES9-02 POST pricing sin token","esperado":"denegado","obtenido":403,"ok":true,"extra":"144ms"}
+{"id":"ES9-02 chat (Claude real, 1 llamada)","esperado":200,"obtenido":200,"ok":true,"extra":"2473ms respuesta_texto=true"}
+{"id":"ES9-02 historial propio","esperado":200,"obtenido":200,"ok":true,"extra":"209ms n=2"}
+{"nota":"Usuario sintético creado en staging; no hay ruta pública de borrado. Pedir a Mauricio/Infra que lo elimine.","email":"smoke-qa-1792839255889@example.test"}
+## anon
+{"id":"ES9-03 mutaciones sin sesión","esperado":"todas 401/403","obtenido":"63/63","ok":true,"extra":"[]"}

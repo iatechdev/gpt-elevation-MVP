@@ -1,0 +1,22 @@
+{"id":"ES95-U01 el botón «Unirme como profesional» de la landing lleva a /profesionales y no se envía nada antes de enviar el formulario","ok":true,"detail":"botón=1 destino=/profesionales"}
+{"id":"ES95-U01b /profesionales abre sin sesión, con un formulario y sin redirigir al inicio de sesión","ok":true,"detail":"/profesionales"}
+{"id":"ES95-U02 enviar vacío: no envía, muestra un error por campo obligatorio y mueve el foco al primero con error","ok":true,"detail":"foco=pro-name errores=7"}
+{"id":"ES95-U02b correo inválido: error en el campo y el foco va al correo","ok":true,"detail":"foco=pro-email"}
+{"id":"ES95-U02c enlace de perfil con `javascript:` rechazado en pantalla","ok":true,"detail":"foco=pro-profileUrl"}
+{"id":"ES95-U03 archivo: un .txt y un PDF de más de 5 MB se rechazan en pantalla con mensaje; un PDF válido muestra nombre, tamaño y «Quitar»","ok":true,"detail":"quitar=1"}
+{"id":"ES95-U03b «Quitar» elimina el archivo elegido","ok":true,"detail":""}
+{"id":"ES95-U04 [SEG] el campo trampa es invisible, fuera del orden de tabulación, con autocompletado apagado y oculto a lectores de pantalla (una persona real no debe llegar a rellenarlo)","ok":true,"detail":"{\"tab\":-1,\"ac\":\"off\",\"x\":-10000,\"y\":1389,\"w\":215,\"h\":26,\"hidden\":false,\"ariaHidden\":true,\"inert\":false,\"label\":\"Website\",\"inText\":true}"}
+{"id":"ES95-U04b [INFO] si un navegador o gestor de contraseñas rellena un campo llamado «website», la solicitud se descarta con un «éxito» falso","info":"nombre del campo=website (blanco habitual del autocompletado); `autocomplete=off` no siempre se respeta"}
+{"id":"ES95-U05 envío real en español: mensaje de éxito, solicitud `pending` en la base con el consentimiento, sin cuenta creada","ok":true,"detail":"fila=pending"}
+{"id":"ES95-U05b tras el éxito no quedan datos del envío en el almacenamiento ni en la URL","ok":true,"detail":""}
+{"id":"ES95-U05c sin errores de página ni 5xx en el envío","ok":true,"detail":""}
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: /Send request|Submit/i })[22m
+
+    at C:\Users\Usuario\Documents\gpt-elevation-qa\qa\integration\es95-ui.cjs:41:586 {
+  log: [
+    "  - waiting for getByRole('button', { name: /Send request|Submit/i })"
+  ],
+  name: 'TimeoutError'
+}

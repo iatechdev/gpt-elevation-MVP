@@ -1,0 +1,29 @@
+{"id":"ES98-B1 [SEG] 180 llamadas con ids mal formados (15 variantes × 12 rutas): nunca 5xx, sin trazas ni HTML, respuesta 4xx","ok":true,"detail":"180 llamadas"}
+{"id":"ES98-B1b el 404 de un id mal formado es uniforme (`not_found`, ES/EN, sin eco) y no se distingue de un id inexistente","ok":true,"detail":"[\"404:not_found\"] inexistente=404"}
+{"id":"ES98-B1c el id malicioso no se refleja en la respuesta","ok":true,"detail":"{\"code\":\"not_found\",\"error\":\"No se encontró. / Not found.\"}"}
+{"id":"ES98-B1d [SEG] ids válidos siguen funcionando (200) y un paciente ajeno responde igual que uno inexistente (no abre un oráculo de existencia)","ok":true,"detail":"200/404/404"}
+{"id":"ES98-B2 editar una nota: los 3 tipos válidos → 200; tipo desconocido, vacío, nulo, número, mayúsculas, SQL o HTML → 400 sin cambiar la nota y sin 5xx","ok":true,"detail":"{\"5\":400,\"session_note\":200,\"observation\":200,\"goal\":200,\"diagnostico\":400,\"\":400,\"null\":400,\"GOAL\":400,\"x'; DROP TAB\":400,\"<b>\":400} tipoFinal=goal"}
+{"id":"ES98-B2b [SEG] otro terapeuta no puede editar la nota (404/403)","ok":true,"detail":"status=404"}
+{"id":"ES98-M2 [SEG] por PUT no se puede pasar a completed, in_progress, texto inventado, null, objeto, arreglo ni número (siempre 4xx, nunca 5xx) y la sesión sigue `scheduled`","ok":true,"detail":"{\"completed\":\"400:invalid_status\",\"in_progress\":\"400:invalid_status\",\"texto\":\"400:invalid_status\",\"null\":\"400\",\"objeto\":\"400\",\"array\":\"400\",\"numero\":\"400\"} estado=scheduled"}
+{"id":"ES98-M2b cancelReason: 0, 1 y 255 caracteres → 200; 256 y 1000 → 400 (antes 500 por el VARCHAR)","ok":true,"detail":"{\"0\":200,\"1\":200,\"255\":200,\"256\":400,\"1000\":400}"}
+{"id":"ES98-M2c duración: 15, 120 y \"60\" → 201; 14, 121, 30.5, texto, negativo y 0 → 4xx; sin 5xx","ok":true,"detail":"{\"0\":400,\"14\":400,\"15\":201,\"60\":201,\"120\":201,\"121\":400,\"30.5\":400,\"abc\":400,\"-5\":400,\"null\":400}"}
+{"id":"ES98-M2d reprogramar y cancelar una agendada → 200; una cancelada no se edita (`session_final`)","ok":true,"detail":"200/200/400:session_final"}
+{"id":"ES98-M2e el flujo real /start y /end sigue funcionando; en curso, el PUT responde `session_in_progress`; terminada, `session_final`","ok":true,"detail":"start=200 session_in_progress/session_in_progress end=200 session_final"}
+{"id":"ES98-B5 [SEG] mismo terapeuta con otra persona: solapes parciales, mismo horario y contenida → 409 `session_conflict`; contiguas y lejanas → 201","ok":true,"detail":"7 casos"}
+{"id":"ES98-B5b la MISMA persona no puede tener dos sesiones solapadas aunque sean con terapeutas distintos (409)","ok":true,"detail":"201/409"}
+{"id":"ES98-B5c reprogramar a un hueco ocupado → 409; reprogramarse sobre sí misma no choca (200); cancelar libera el horario (201)","ok":true,"detail":"409/200/201"}
+{"id":"ES98-B5d [SEG] 20 altas simultáneas al mismo horario con el mismo terapeuta: exactamente 1 creada, el resto 409, sin 5xx y 1 fila","ok":true,"detail":"201=1 409=19 otros=0 filas=1"}
+{"id":"ES98-B5e fecha pasada y fecha inválida → 400; persona de otro terapeuta → 403","ok":true,"detail":"400/400/403"}
+{"id":"ES98-M1 [SEG] elegir un terapeuta inexistente, que es participante, administrador, inactivo o que no acepta nuevas personas → 4xx (409 `therapist_unavailable`/404/400), nunca 5xx y la solicitud sigue abierta","ok":true,"detail":"{\"inexistente\":\"409:therapist_unavailable\",\"participante\":\"409:therapist_unavailable\",\"admin\":\"409:therapist_unavailable\",\"inactivo\":\"409:therapist_unavailable\",\"cerrado\":\"409:therapist_unavailable\",\"texto\":\"400\",\"negativo\":\"400\"}"}
+{"id":"ES98-M1b elegir uno válido → 2xx; antes de confirmar se puede cambiar de elección (2xx, diseño del PR: la solicitud sigue `pending`); otra persona no puede elegir sobre la solicitud ajena (4xx)","ok":true,"detail":"200/200/404"}
+{"id":"ES98-M1c confirmar vincula a la persona; confirmar dos veces → 409 `request_closed`; participante/terapeuta no pueden confirmar (403)","ok":true,"detail":"200/409 vinculada=true"}
+{"id":"ES98-M1c2 una solicitud confirmada no se reabre: elegir de nuevo → 409 `request_closed`","ok":true,"detail":"409:request_closed"}
+{"id":"ES98-M1d [SEG] confirmar con una persona inactiva (`person_unavailable`) o con el terapeuta desactivado entre la elección y la confirmación (`therapist_unavailable`) → 409 y no vincula","ok":true,"detail":"409:person_unavailable 409:therapist_unavailable"}
+{"id":"ES98-M1e 10 confirmaciones simultáneas de la misma solicitud: ninguna da 5xx y la persona queda vinculada una sola vez","ok":true,"detail":"aceptadas=10 estados=200"}
+{"id":"ES98-M1e2 [INFO] cuántas de las 10 confirmaciones simultáneas devolvieron 2xx (la comprobación del estado no es atómica)","info":"10"}
+{"id":"ES98-M1f el promedio de ánimo del matching es el de los valores registrados (3,5, no el doble) y no se corrigió dos veces","ok":true,"detail":"Average mood (1-5): 3.5"}
+{"id":"ES98-B3 [SEG] GET /api/rating/avg: sin sesión 401/403, participante 403, terapeuta 403, administrador 200","ok":true,"detail":"{\"sinSesión\":403,\"participante\":403,\"terapeuta\":403,\"admin\":200}"}
+{"id":"ES98-S1 [SEG] entradas maliciosas (XSS, operadores NoSQL, SQL, tipos inesperados, cuerpo enorme) → 4xx, nunca 5xx","ok":true,"detail":"5 casos"}
+{"id":"ES98-R1 [PERF] alta de sesión p95 < 300 ms (umbral propuesto)","ok":true,"detail":"p95=35 ms"}
+{"id":"ES98-L1 [PRIV] los registros del servidor no contienen correos ni nombres","ok":true,"detail":"líneas=13"}
+{"fin":true}

@@ -1,0 +1,24 @@
+{"id":"ES90-U01 el panel va primero, con las 5 etiquetas legibles, «Falta: …» y chip Pendiente en cada una","ok":true,"detail":"etiquetas=Estado de Elevation | Ruta de continuidad | Ruta adyacente | Ruta exploratoria | Alta de profesionales"}
+{"id":"ES90-U02 contador inicial «5 pendientes · 0 listos (ES)»","ok":true,"detail":""}
+{"id":"ES90-U03 los 5 campos no se repiten en la lista general (ninguna etiqueta con la clave técnica)","ok":true,"detail":"repetidos=0"}
+{"id":"ES90-U04 el campo muestra el texto provisional vigente (lo que ve la landing)","ok":true,"detail":"Las fuentes, fechas, barreras y brechas "}
+{"id":"ES90-U05 guardar con el PUT existente: «✓ Guardado», chip Listo y contador «4 pendientes · 1 listos»","ok":true,"detail":""}
+{"id":"ES90-U06 recargar conserva el valor y el estado Listo","ok":true,"detail":""}
+{"id":"ES90-U07 en EN el mismo campo sigue Pendiente (estado independiente por idioma): «5 pendientes · 0 listos (EN)»","ok":true,"detail":"Sources, dates, barriers and gaps will b"}
+{"id":"ES90-U08 (informativo) «Listo» ante variantes del texto provisional","ok":true,"detail":"{\"mayúsculas\":\"Listo\",\"espacios\":\"Pendiente\",\"minúsculas\":\"Listo\",\"corchetes\":\"Pendiente\",\"vacío\":\"Pendiente\"}"}
+{"id":"ES90-U09 volver a guardar el texto provisional devuelve el campo a Pendiente","ok":true,"detail":""}
+{"id":"ES90-U10 sin errores de página en el recorrido del panel","ok":true,"detail":""}
+{"id":"ES90-U11 administrador (no superadmin): el servidor no deja guardar y lo dice; lo publicado no cambia","ok":true,"detail":"panelVisibleParaAdmin=true mensaje=«Acceso exclusivo para superadmin.»"}
+{"id":"ES90-U12 un participante no entra a /admin/content ni ve el panel","ok":true,"detail":"/app/onboarding"}
+{"id":"ES90-U13 sin sesión no entra a /admin/content","ok":true,"detail":"/login"}
+{"id":"ES90-L01 la landing pública (ES/EN, 320 a 1440 px) no muestra ningún corchete","ok":true,"detail":"[]"}
+{"id":"ES90-L02 se ven los textos provisionales: «En piloto/In pilot», rutas «se mostrarán cuando…» y alta de profesionales «no está disponible»","ok":true,"detail":"[]"}
+{"id":"ES90-L03 sin desplazamiento horizontal, sin errores de página y solo el propio origen y las fuentes","ok":true,"detail":"[]"}
+{"id":"ES90-L04 lo que guarda el superadmin se ve en la landing pública (ES) y EN conserva su provisional","ok":true,"detail":"visibleEnLanding=true"}
+{"id":"ES90-R01 el panel no desborda a 320, 375, 768 y 1440 px","ok":true,"detail":"[]"}
+{"id":"ES90-R02 contraste AA del texto del panel","ok":false,"detail":"peor=4.33 [\"5 pendientes ·=4.33@12px\",\"Guardar=4.46@13px\",\"Guardar=4.46@13px\",\"Guardar=4.46@13px\"]"}
+{"id":"ES90-R03 botones Guardar ≥ 44 px de alto","ok":false,"detail":"min=39"}
+{"id":"ES90-R04 cada campo tiene etiqueta asociada y descripción («Falta: …») accesible","ok":true,"detail":""}
+{"id":"ES90-R05 teclado: de un campo se llega a su «Guardar» y al campo siguiente, con foco visible","ok":true,"detail":"[{\"t\":\"Guardar\",\"fv\":true,\"o\":true},{\"t\":\"pending-landing.skillmap\",\"fv\":true,\"o\":false},{\"t\":\"Guardar\",\"fv\":true,\"o\":true},{\"t\":\"pending-landing.skillmap\",\"fv\":true,\"o\":false}]"}
+{"id":"ES90-R06 guardar con Enter desde el teclado","ok":true,"detail":""}
+{"fin":true}

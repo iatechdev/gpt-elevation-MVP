@@ -1,0 +1,14 @@
+{"id":"ES93-F03a solo el terapeuta ve /therapist/*; los demás roles son redirigidos (login o inicio)","ok":true,"detail":"{\"terapeuta\":[\"/therapist/dashboard\",\"/therapist/patient/84\"],\"participante\":[\"/\",\"/\"],\"administrador\":[\"/\",\"/\"],\"superadmin\":[\"/\",\"/\"],\"junta\":[\"/\",\"/\"],\"anónimo\":[\"/login\",\"/login\"]}"}
+{"id":"ES93-F13a [INFO] líneas idénticas en ES y EN (posibles textos sin traducir)","info":{"panel":["ELEVATION THERAPIST","Therapist","THERAPIST"],"paciente":["ELEVATION THERAPIST","Therapist","THERAPIST","Nota sintética de la sesión"],"sala":["Cannot start a session with status 'in_progress'.","Volver al dashboard"]}}
+{"id":"ES93-F13b el panel, la ficha del paciente y la sala se traducen (pocas o ninguna línea idéntica en ES y EN)","ok":false,"detail":"panel=3 ficha=4 sala=2"}
+{"id":"ES93-F13c sin errores de página ni respuestas 5xx en el recorrido del terapeuta (ES/EN)","ok":true,"detail":"[[[],[]],[[],[]]]"}
+{"id":"ES93-S13c [INFO] lo que la ficha del paciente muestra al terapeuta","info":{"correo":true,"notas":true,"estados":true}}
+{"id":"ES93-F13d [INFO] «Mi terapeuta» y sala de la persona: líneas idénticas en ES y EN","info":{"miTerapeuta":["ELEVATION"],"sala":["Elevation — Sesión en curso","Salir"],"nombreVisible":true,"correoVisible":true}}
+{"id":"ES93-F13e «Mi terapeuta» y la sala de la persona se traducen","ok":true,"detail":"miTerapeuta=1 sala=2"}
+{"id":"ES93-F13f sin errores de página ni 5xx del lado de la persona","ok":true,"detail":""}
+{"id":"ES93-F13g sin desplazamiento horizontal a 320, 375, 768 y 1440 px (panel, ficha y «Mi terapeuta»)","ok":false,"detail":"[\"/therapist/dashboard@320\",\"/therapist/patient/N@320\",\"/therapist/dashboard@375\",\"/therapist/patient/N@375\"]"}
+{"id":"ES93-F13h contraste AA del texto (≥ 4,5:1; 3:1 en texto grande)","ok":false,"detail":"peor=1.13 fallan=/therapist/dashboard:6,/therapist/patient/N:16,/app/my-therapist:3"}
+{"id":"ES93-F13i [INFO] botones o enlaces de menos de 44 px y campos sin etiqueta","info":{"botones":["/therapist/dashboard@320:4","/therapist/patient/N@320:6","/app/my-therapist@320:2","/therapist/dashboard@375:4","/therapist/patient/N@375:8","/app/my-therapist@375:2","/therapist/dashboard@768:6","/therapist/patient/N@768:8"],"camposSinEtiqueta":["/therapist/patient/N:1"]}}
+{"id":"ES93-F13j cada pantalla tiene un h1 y solo pide al propio origen y a las fuentes","ok":true,"detail":"[]"}
+{"id":"ES93-F13k teclado: el panel del terapeuta es alcanzable con Tab y el foco es visible","ok":false,"detail":"[{\"t\":\"ELEVATION THERAPIST\\n\",\"fv\":false,\"o\":false}]"}
+{"fin":true}

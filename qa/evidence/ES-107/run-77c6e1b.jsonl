@@ -1,0 +1,31 @@
+{"id":"ES107-B1 un PDF de 5 MB exactos ocupa PDF + 29 bytes en la base (antes ≈ 14 MB) y se acepta","ok":true,"detail":"status=201 bytes_base=5242909 esperado=5242909"}
+{"id":"ES107-B2 la descarga del administrador devuelve exactamente los mismos bytes (hash idéntico) y con tipo PDF","ok":true,"detail":"status=200 hash=true"}
+{"id":"ES107-B3 [PRIV] los bytes guardados no contienen el texto en claro (ni la firma %PDF ni el canario, ni base64 del archivo)","ok":true,"detail":"primeros bytes=0244a3c4"}
+{"id":"ES107-B4 el mismo archivo dos veces produce bytes distintos (IV aleatorio por subida) y misma huella de contenido","ok":true,"detail":"iv distintos"}
+{"id":"ES107-B5 bordes: PDF mínimo de 20 bytes → 201; 5 MB + 1 byte → 400 `invalid_fields`","ok":true,"detail":"201/400"}
+{"id":"ES107-C1 [SEG] un byte alterado (IV, etiqueta, cuerpo), truncado, vacío o con otra versión → la descarga falla de forma controlada (4xx/5xx JSON), sin traza ni contenido","ok":true,"detail":"iv:500 tag:500 cuerpo:500 trunca:500 vacio:500 version:500"}
+{"id":"ES107-C1b [INFO] qué estado devuelve la descarga con datos alterados","info":"iv=500 tag=500 cuerpo=500 trunca=500 vacio=500 version=500 (5xx: se recomienda 4xx/409 controlado con código)"}
+{"id":"ES107-T1 [SEG] tope 5 y 60 envíos simultáneos: exactamente 5 creados y 55 respuestas 503 `not_accepting`, sin 5xx distintos y sin filas de más","ok":true,"detail":"201=5 503=55 otros=0 filas=5"}
+{"id":"ES107-T6 [PRIV] el 503 es igual para todos, bilingüe y no revela cifras (ni 5, ni 200, ni bytes, ni tope)","ok":true,"detail":"{\"error\":\"Por ahora no estamos recibiendo solicitudes. Inténtalo más tarde. / We are not accepting requests right now. Please try again later.\",\"code\":\"not_acce"}
+{"id":"ES107-T3 un correo con solicitud abierta recibe su respuesta normal (201) aunque esté lleno; uno nuevo recibe 503","ok":true,"detail":"repetido=201 nuevo=503"}
+{"id":"ES107-T3b [HALLAZGO candidato] con el formulario lleno, 201 para un correo repetido y 503 para uno nuevo permite saber si un correo ya tiene solicitud abierta","info":"repetido=201 nuevo=503: un tercero puede sondear correos mientras el tope está alcanzado"}
+{"id":"ES107-A2 `capacity` informa full=true, pending=5, maxPending=5 con el tope alcanzado","ok":true,"detail":"{\"full\":true,\"pending\":5,\"maxPending\":5,\"bytes\":10000,\"maxBytes\":1073741824}"}
+{"id":"ES107-T4 al aprobar y rechazar se libera cupo de pendientes (pending baja a 3, full=false) y vuelve a aceptar","ok":true,"detail":"aprobar=200 rechazar=200 pending=3 nuevo=201"}
+{"id":"ES107-T2 tope de peso 12 MiB: tres hojas de 2,5 MB entran (se reserva el espacio de una de 5 MB) y la cuarta da 503; capacity full=true","ok":true,"detail":"201/201/201/503 capacity={\"full\":true,\"pending\":3,\"maxPending\":200,\"bytes\":7680000,\"maxBytes\":12582912}"}
+{"id":"ES107-T2b [HALLAZGO candidato] al rechazar TODAS las solicitudes, el peso de las hojas ya revisadas sigue contando: el formulario no se reabre aunque no quede ninguna pendiente","ok":false,"detail":"tras rechazar las 3: nuevo=503 capacity={\"full\":true,\"pending\":0,\"maxPending\":200,\"bytes\":7680000,\"maxBytes\":12582912}"}
+{"id":"ES107-T5 variables inválidas (`abc`, negativo) se ignoran: rigen 200 pendientes y 1 GiB","ok":true,"detail":"{\"full\":false,\"pending\":0,\"maxPending\":200,\"bytes\":0,\"maxBytes\":1073741824}"}
+{"id":"ES107-A1 [SEG] `capacity`: sin sesión 401/403, participante y terapeuta 403, admin y superadmin 200; no existe en la ruta pública; `no-store`; sin datos personales","ok":true,"detail":"{\"sinSesión\":403,\"participante\":403,\"terapeuta\":403,\"admin\":200,\"superadmin\":200} pública=403 cache=no-store"}
+{"id":"ES107-S1 [SEG] archivo falso → 400, XSS en un campo se acepta como texto inerte (201), campo trampa → 201 sin guardar","ok":true,"detail":"archivo falso:400 XSS:201 campo trampa:201"}
+{"id":"ES107-S2 30 envíos inválidos seguidos y luego uno válido: el candado no queda retenido (201 rápido)","ok":true,"detail":"válido tras errores=201 15 ms"}
+{"id":"ES107-R1 [PERF] envío de 5 MB: p95 < 3 s (umbral propuesto)","ok":true,"detail":"max=370 ms de 6"}
+{"id":"ES107-R2 [PERF] 20 envíos simultáneos de 5 MB terminan en < 12 s (antes 17–22 s) sin 5xx","ok":true,"detail":"total=9384 ms estados=201"}
+{"id":"ES107-M0 la base de prueba se deja en el estado anterior (hasta ES-95)","ok":true,"detail":"ok"}
+{"id":"ES107-M1 migrar 4 filas del formato anterior (1,5 KB, 200 KB, 5 MB y 5 bytes): todas convertidas sin pérdida (huella y tamaño idénticos), la columna `content` desaparece y `data` es bytea","ok":true,"detail":"migración=0 idénticas=true antes=[id:integer,ApplicationId:integer,size:integer,sha256:character varying,content:text,createdAt:timestamp with time zone,updatedAt:timestamp with time zone] después=[id:integer,ApplicationId:integer,size:integer,sha256:character varying,createdAt:timestamp with time zone,updatedAt:timestamp with time zone,data:bytea]"}
+{"id":"ES107-M1b [INFO] la hoja de 5 MB tras migrar ocupa","info":"5242909 bytes (PDF=5242880+29)"}
+{"id":"ES107-M2 `down` (con permiso) devuelve el formato anterior sin pérdida y volver a subir también","ok":true,"detail":"down=0 up=0 idénticas=true/true"}
+{"id":"ES107-M3 [SEG] el `down` se niega sin permiso y con NODE_ENV=production aunque se permita; la base no cambia","ok":true,"detail":"sinPermiso=1 producción=1 columna=bytea"}
+{"id":"ES107-M4 [SEG] una fila corrupta detiene la migración con error y NO destruye datos: la columna `content` sigue y todas las filas conservan su contenido","ok":true,"detail":"migración=1 columnas=[id,ApplicationId,size,sha256,createdAt,updatedAt,content,data] filas=4/4 salida=\"undefined\""}
+{"id":"ES107-M4b [INFO] tras el fallo la migración queda sin registrar en SequelizeMeta","info":"registros es107=0; columna data residual=true (si quedó, un reintento fallaría con «column already exists»)"}
+{"id":"ES107-M5 sobre una base vacía: subir, bajar y subir otra vez funciona","ok":true,"detail":"0/0/0"}
+{"id":"ES107-L1 [PRIV] los registros del servidor no contienen correos, nombres ni contenido de las hojas de vida","ok":true,"detail":"líneas=13"}
+{"fin":true}

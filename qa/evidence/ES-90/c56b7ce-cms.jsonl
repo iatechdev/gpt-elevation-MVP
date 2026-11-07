@@ -1,0 +1,9 @@
+{"id":"ES90-C01 fallo «sin_fallo»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C01 fallo «503»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C01 fallo «vacio»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C01 fallo «jsonInvalido»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C01 fallo «tiposRaros»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C01 fallo «html»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C01 fallo «larga»: sin undefined/null, sin ejecutar HTML, sin desbordar a 320 px, sin errores y con las mismas secciones","ok":true,"detail":"bad=false xss=false img=0 hs=false h2=9/9 err=0"}
+{"id":"ES90-C02 una respuesta ES lenta no reemplaza la vista en EN","ok":true,"detail":"Skip to content | elevation | How it works | Skill Map | ES | EN | Log in | SUPPORT + CAREER E"}
+{"fin":true}

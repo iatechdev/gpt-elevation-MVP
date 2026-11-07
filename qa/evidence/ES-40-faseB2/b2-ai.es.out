@@ -1,0 +1,21 @@
+{"id":"B2-1 análisis de hoja de vida 200","ok":true,"detail":"http=200"}
+{"id":"info B2-1 hoja de vida gasto","tokens":1480,"ms":3593}
+{"id":"B2-3 insights desde la hoja de vida: 200","ok":true,"detail":"http=200 {\"insights\":[{\"key\":\"interests\",\"text\":\"Parece que te atrae el análisis de datos como siguiente etapa profesional: te presentas como docente de matemáticas en transición hacia ese campo. Es una hipóte"}
+{"id":"B2-3 insights (hoja de vida): citas textuales verificables, no clínico, sin promesas ni porcentajes","ok":true,"detail":"citas=5 no literales=[] clínico=false promesa=false porcentaje=false"}
+{"id":"info B2-3 insights desde la hoja de vida gasto","tokens":2280,"ms":8314}
+{"id":"B2-3 insights desde el diario: 200","ok":true,"detail":"http=200 {\"insights\":[{\"key\":\"interests\",\"text\":\"Parece que te atrae encontrar patrones en los resultados de tus grupos. Lo mencionas como algo que disfrutas, lo que podría indicar interés por el análisis de d"}
+{"id":"B2-3 insights (diario): citas textuales verificables, no clínico, sin promesas ni porcentajes","ok":true,"detail":"citas=4 no literales=[] clínico=false promesa=false porcentaje=false"}
+{"id":"info B2-3 insights desde el diario gasto","tokens":1624,"ms":4587}
+{"id":"B2-4 evidencia propia confirmada","ok":true,"detail":"http=201 {\"id\":54,\"version\":1,\"status\":\"confirmed\",\"created\":true}"}
+{"id":"B2-4 propuestas del Skill Map: 200","ok":true,"detail":"http=200 n=3 [{\"k\":\"analisis_informacion\",\"l\":null,\"c\":null},{\"k\":\"comunicacion\",\"l\":null,\"c\":null},{\"k\":\"trabajo_en_equipo\",\"l\":null,\"c\":null}]"}
+{"id":"B2-4 sin nivel inventado: todo nivel con evidencia citada; sin déficits ni puntajes; no clínico","ok":true,"detail":"niveles sin evidencia=0"}
+{"id":"info B2-4 propuestas del Skill Map gasto","tokens":2074,"ms":5375}
+{"id":"B2-4 ninguna propuesta con nivel para confirmar","ok":true,"detail":"todas null"}
+{"id":"B2-4 Radar: Skill Map con los niveles confirmados","ok":true,"detail":"habilidades con evaluación=0"}
+{"id":"B2-4 la pantalla del Radar muestra los datos y no inventa déficits","ok":false,"detail":"texto=2029 caracteres"}
+{"id":"B2-5 recomendaciones: 200, 3 ítems, idioma correcto, no clínico, sin promesas","ok":true,"detail":"http=200 n=3 idioma_ok=true clínico=false promesa=false"}
+{"id":"info B2-5 recomendaciones del dashboard gasto","tokens":684,"ms":3673}
+{"id":"B2-6 matching: respuesta controlada, no clínico, sin datos de terceros","ok":true,"detail":"http=200 {\"requestId\":1,\"suggestions\":[{\"therapistId\":79,\"score\":6,\"reason\":\"Habla español y ofrece un enfoque de bienestar general adecuado para quien aún no ha definido su área de trabajo, y no tiene vínculos previos con otros "}
+{"id":"info B2-6 matching de profesional gasto","tokens":577,"ms":2175}
+{"id":"info B2 [es] gasto total de la persona","tokens":8719}
+RESUMEN-B2AI {"lang":"es","total":13,"fallos":1,"tokens":8719}

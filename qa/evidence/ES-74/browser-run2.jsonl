@@ -1,0 +1,24 @@
+{"id":"B01 sin sesión: puertas, Ingresar y CTA final apuntan a /login","ok":true,"detail":"[[\"Ingresar\",\"/login\"],[\"01 · HACER ESPACIO\\nORDENAR LO \",\"/login\"],[\"02 · MIRAR OTRA VEZ\\nRECONOCER \",\"/login\"],[\"Crear cuenta\",\"/login?mode=register\"]]"}
+{"id":"B02 sin sesión: ninguna puerta lleva a otro origen ni a /app o /admin","ok":true,"detail":""}
+{"id":"B03 existe «Crear cuenta» con /login?mode=register","ok":true,"detail":"n=1"}
+{"id":"R01 parámetros next, redirect, returnTo, mode con URL externas o javascript: nunca sacan del origen ni ejecutan","ok":true,"detail":"navegaciones=10"}
+{"id":"R02 ?mode=register abre el alta y descarta el resto de parámetros","ok":true,"detail":"botones=1"}
+{"id":"D01 sesión newbie: la puerta lleva a /app/onboarding","ok":true,"detail":"llegó a /app/onboarding errores=0"}
+{"id":"D01 sesión done: la puerta lleva a /app/dashboard","ok":true,"detail":"llegó a /app/dashboard errores=0"}
+{"id":"D01 sesión doneEn: la puerta lleva a /app/dashboard","ok":true,"detail":"llegó a /app/dashboard errores=0"}
+{"id":"D01 sesión legacy: la puerta lleva a /app/onboarding","ok":true,"detail":"llegó a /app/onboarding errores=0"}
+{"id":"D01 sesión adm: la puerta lleva a /admin/dashboard","ok":true,"detail":"llegó a /admin/dashboard errores=0"}
+{"id":"D01 sesión su: la puerta lleva a /admin/dashboard","ok":true,"detail":"llegó a /admin/dashboard errores=0"}
+{"id":"D01 sesión th: la puerta lleva a /therapist/dashboard","ok":true,"detail":"llegó a /therapist/dashboard errores=0"}
+{"id":"D01 sesión br: la puerta lleva a /board/manifest","ok":true,"detail":"llegó a /board/manifest errores=0"}
+{"id":"D02 el idioma persistido en el contexto (EN) gana sobre el del navegador (ES)","ok":true,"detail":"lang=en"}
+{"id":"D03 el cliente no persiste la puerta elegida ni datos de la verificación (solo token, rol y nombre del flujo existente)","ok":true,"detail":"elevation_role,elevation_token,elv_lang"}
+{"id":"D04 el rol guardado en el navegador no decide: con elevation_role=user falso, el administrador va a su panel y el rol se corrige","ok":true,"detail":"http://127.0.0.1:8174/admin/dashboard"}
+{"id":"D05 con elevation_role=superadmin falso, un participante NO llega al panel de administración","ok":true,"detail":"http://127.0.0.1:8174/app/dashboard"}
+{"id":"E01 si la verificación falla (503) se conserva el token y se ofrece reintentar","ok":true,"detail":"token=true url=http://127.0.0.1:8174/login reintentar=1"}
+{"id":"E02 un 401 del servidor invalida el token comprobado y se queda en la landing","ok":false,"detail":"token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjAsIm5hbWUiOiJRQTc0QiBkb25lIiwicm9sZSI6InVzZXIiLCJpYXRNcyI6MTc5MzIzMjIzNDMzMywiaWF0IjoxNzkzMjMyMjM0LCJleHAiOjE3OTMyNjEwMzQsImp0aSI6Ijg4ZTRjMTE5NDc3ODMyOTExYTkzOTAyOWNlZmE5MTU4In0.4-T2W01dkVmG6GQs-k9jUg-ND-3FMSFVeJdG9Km3Owg url=http://127.0.0.1:8174/"}
+{"id":"E03 una respuesta 401 tardía de la sesión vieja no borra el token de un inicio de sesión nuevo","ok":true,"detail":"token_nuevo_conservado=true"}
+{"id":"E04 con el token revocado en el servidor el navegador lo descarta y la puerta lleva a /login","ok":true,"detail":"token=true destino=/login"}
+{"id":"C01 el alta muestra confirmación y NO inicia sesión automática; el nombre con HTML no se ejecuta","ok":true,"detail":"token=false xss=false url=http://127.0.0.1:8174/login"}
+{"id":"C02 correo duplicado: error traducido y sin sesión","ok":true,"detail":"ES | EN | ELEVATION | Tu santuario digital · Your digital sanctuary | 👁 | ❌ El correo "}
+{"fin":true}

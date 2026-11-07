@@ -1,0 +1,196 @@
+{
+ "level": "140",
+ "base": "http://127.0.0.1:9977",
+ "resultados": [
+  {
+   "id": "C1-ES141-assets-immutable",
+   "ok": true,
+   "detail": {
+    "archivos": 3,
+    "fallos": []
+   }
+  },
+  {
+   "id": "C2-ES141-spa-sin-cache-larga",
+   "ok": true,
+   "detail": {
+    "rutas": 7,
+    "fallos": []
+   }
+  },
+  {
+   "id": "C3-ES141-sin-hash",
+   "ok": true,
+   "detail": {
+    "fallos": []
+   }
+  },
+  {
+   "id": "C4-API-sin-cambios",
+   "ok": true,
+   "detail": {
+    "inexistente": [
+     403,
+     "no-store",
+     null
+    ],
+    "health": [
+     200,
+     null,
+     null
+    ]
+   }
+  },
+  {
+   "id": "C5-borde",
+   "ok": true,
+   "detail": {
+    "etag": true,
+    "if_none_match": 304,
+    "head": 200,
+    "dotdot": [
+     404,
+     200,
+     200
+    ],
+    "cc_head": "public, max-age=31536000, immutable"
+   }
+  },
+  {
+   "id": "C1-ES140-asset-inexistente-404",
+   "ok": false,
+   "detail": {
+    "casos": 7,
+    "fallos": [
+     "/assets/INDEX-DYO6YGEO.CSS",
+     "/assets"
+    ],
+    "muestra": [
+     [
+      "/assets/inexistente-AbCdEf12.js",
+      404,
+      "text/plain; charset=utf-8",
+      "no-store",
+      false
+     ],
+     [
+      "/assets/inexistente-AbCdEf12.css",
+      404,
+      "text/plain; charset=utf-8",
+      "no-store",
+      false
+     ],
+     [
+      "/assets/sub/dir/otro-Zz9Zz9Zz.js",
+      404,
+      "text/plain; charset=utf-8",
+      "no-store",
+      false
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C5-ES140-metodos",
+   "ok": true,
+   "detail": {
+    "post": 404,
+    "head": 404
+   }
+  },
+  {
+   "id": "C1C2-ES139-gzip",
+   "ok": false,
+   "detail": {
+    "archivos": 2,
+    "muestra": [
+     {
+      "f": "index-Dcgu7QFl.js",
+      "plain": 1073628,
+      "gzip": 1073628,
+      "enc": null,
+      "same": null,
+      "vary": false,
+      "plain_enc": null
+     },
+     {
+      "f": "index-DYo6YgEo.css",
+      "plain": 166737,
+      "gzip": 166737,
+      "enc": null,
+      "same": null,
+      "vary": false,
+      "plain_enc": null
+     }
+    ],
+    "total_plano": 1240365,
+    "total_gzip": 1240365
+   }
+  },
+  {
+   "id": "C3-ES139-API-no-comprime",
+   "ok": true,
+   "detail": {
+    "apis": [
+     [
+      "/api/health",
+      200,
+      null
+     ],
+     [
+      "/api/landing-content",
+      200,
+      null
+     ],
+     [
+      "/api/plans",
+      500,
+      null
+     ],
+     [
+      "/api/pricing",
+      500,
+      null
+     ]
+    ]
+   }
+  },
+  {
+   "id": "C7-ES139-borde",
+   "ok": true,
+   "detail": {
+    "pequenos": [
+     [
+      "/favicon.svg",
+      200,
+      9522,
+      null
+     ],
+     [
+      "/icons.svg",
+      200,
+      5055,
+      null
+     ]
+    ],
+    "range": [
+     206,
+     null,
+     100
+    ],
+    "head_gzip": [
+     200,
+     null
+    ]
+   }
+  },
+  {
+   "id": "C-regresion-index-referencia-assets-existentes",
+   "ok": true,
+   "detail": {
+    "referencias": 2,
+    "fallos": []
+   }
+  }
+ ]
+}

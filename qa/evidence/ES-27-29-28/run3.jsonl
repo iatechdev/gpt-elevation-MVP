@@ -1,0 +1,144 @@
+{"id":"ES27-S01 sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES27-F01 crear evidencia confirmada → 201 {id, version 1}","ok":true,"detail":"status=201 {\"id\":1,\"version\":1,\"status\":\"confirmed\",\"created\":true}"}
+{"id":"ES27-F02 no-store","ok":true,"detail":""}
+{"id":"ES27-F03 meta, entrega y efecto observado quedan SEPARADOS y sin fusionar","ok":true,"detail":""}
+{"id":"ES27-F04 el contenido se guarda cifrado v2 en la base","ok":true,"detail":"v2:350abf0"}
+{"id":"ES27-F05 resultado desconocido es válido y se conserva","ok":true,"detail":""}
+{"id":"ES27-F06 borrador incompleto permitido","ok":true,"detail":"status=201 {\"id\":3,\"version\":1,\"status\":\"draft\",\"created\":true}"}
+{"id":"ES27-F07 confirmar sin los campos obligatorios → 422/400 con lo que falta, no 500","ok":true,"detail":"status=422 {\"code\":\"incomplete_evidence\",\"error\":\"Faltan campos obligatorios para confirmar. / Required fields are missing to confi"}
+{"id":"ES27-F08 mismo requestId → mismo resultado, una sola evidencia","ok":true,"detail":"201/200"}
+{"id":"ES27-V01 editar con baseVersion correcta → versión 2","ok":true,"detail":"status=201"}
+{"id":"ES27-V02 baseVersion obsoleta → 409 version_conflict","ok":true,"detail":"status=409"}
+{"id":"ES27-V03 editar sin baseVersion → 400","ok":true,"detail":"status=400"}
+{"id":"ES27-V04 versiones inmutables: la v1 sigue ahí y distinta de la v2","ok":true,"detail":"versiones=2"}
+{"id":"ES27-K01 8 ediciones simultáneas con la misma baseVersion: una gana, las demás 409 y ningún 5xx","ok":true,"detail":"ganan=1 409=7 estados=201,409"}
+{"id":"ES27-K02 8 creaciones simultáneas con el mismo requestId → una sola evidencia, sin 5xx","ok":true,"detail":"estados=200,201"}
+{"id":"ES27-E01 clave extra → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 title vacío → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 title 121 → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 9 acciones → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 source ajeno artifact_examined → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 source exercise_observed → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 autonomía inválida → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 actions no arreglo → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 observedEffect mal formado → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 ref http → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 ref con credenciales → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 ref javascript: → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 ref file: → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 6 referencias → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E01 texto como objeto → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES27-E02 __proto__ → 400/422","ok":true,"detail":"status=400"}
+{"id":"ES27-E03 la persona puede declarar self_report explícito","ok":true,"detail":"status=201"}
+{"id":"ES27-E04 referencias https y extracto se guardan como dato (no se descargan)","ok":true,"detail":"status=201"}
+{"id":"ES27-E05 instrucciones/HTML incrustados se guardan como dato","ok":true,"detail":"status=201"}
+{"id":"ES27-I01 B GET evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 admin GET evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 terapeuta GET evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 superadmin GET evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 B PUT evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 admin PUT evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 terapeuta PUT evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 superadmin PUT evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 B DELETE evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 admin DELETE evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 terapeuta DELETE evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I01 superadmin DELETE evidencia de A → 404 y sin datos","ok":true,"detail":"status=404"}
+{"id":"ES27-I02 la lista de B no contiene evidencias de A","ok":true,"detail":""}
+{"id":"ES27-I03 id «abc» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES27-I03 id «0» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES27-I03 id «-1» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES27-I03 id «99999999999» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES27-I03 id «1;drop» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES27-I03 id «1%20OR%201=1» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES27-D01 borrar vacía el contenido y registra la invalidación","ok":true,"detail":"status=200 payload=v2:91fa86b07"}
+{"id":"ES27-D02 la evidencia borrada da 404 y no aparece en la lista","ok":true,"detail":""}
+{"id":"ES27-D03 editar genera evento de invalidación (edited)","ok":true,"detail":""}
+{"id":"ES27-D04 borrar dos veces → 404","ok":true,"detail":"status=404"}
+{"id":"ES29-C01 sin catálogo publicado el mapa responde 503 catalog_unavailable","ok":true,"detail":"status=503"}
+{"id":"ES29-C02 usuario no puede crear borradores de catálogo (403)","ok":true,"detail":"status=403"}
+{"id":"ES29-C02 terapeuta no puede crear borradores de catálogo (403)","ok":true,"detail":"status=403"}
+{"id":"ES29-C02b usuario no lista el catálogo (403)","ok":true,"detail":"status=403"}
+{"id":"ES29-C03 admin crea borrador (201)","ok":true,"detail":"status=201"}
+{"id":"ES29-C04 admin agrega habilidades","ok":true,"detail":""}
+{"id":"ES29-C05 publicar con una habilidad incompleta → 422 con la lista de lo que falta","ok":true,"detail":"status=422 {\"code\":\"incomplete_catalog\",\"error\":\"Faltan datos obligatorios para publicar. / Required data is missing to publish.\",\"missing\":{\"incompleta\":[\"labels.en\",\"rub"}
+{"id":"ES29-C06 clave en mayúsculas → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-C06 etiqueta en francés → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-C06 nivel 5 → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-C06 fecha futura → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-C06 tipo inventado → 400/422 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-C07 publicar catálogo completo → 200","ok":true,"detail":"status=200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-10-27T14:39:38.907Z\",\"skillCount\":2}"}
+{"id":"ES29-C08 lo publicado es inmutable (editarlo → 409/4xx)","ok":true,"detail":"status=409"}
+{"id":"ES29-M01 el mapa lista una entrada por habilidad con nivel null sin evidencia","ok":true,"detail":"status=200 n=2"}
+{"id":"ES29-M02 el mapa no contiene porcentajes, empleabilidad ni ánimo","ok":true,"detail":""}
+{"id":"ES29-M03 autoevaluación con evidencia propia confirmada y vigente → 201","ok":true,"detail":"status=201 {\"assessment\":{\"skillKey\":\"comunicacion\",\"track\":\"self\",\"level\":2,\"state\":\"initial\",\"confidence\":\"low\",\"confidenceReason\":{\"es\":\"Se apoya en"}
+{"id":"ES29-M04 nivel sin evidencia → 4xx","ok":true,"detail":"status=422"}
+{"id":"ES29-M05 evidencia en borrador no sirve → 4xx","ok":true,"detail":"status=422"}
+{"id":"ES29-M06 evidencia de OTRA persona no sirve → 4xx y sin nivel para A","ok":true,"detail":"status=422"}
+{"id":"ES29-M07 versión inexistente → 4xx","ok":true,"detail":"status=422"}
+{"id":"ES29-M08 nivel 0 → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-M08 nivel 5 → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-M08 nivel texto → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-M08 nivel decimal → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-M08 skill inexistente → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-M08 clave extra → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES29-M08 porcentaje → 400/422/404 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"mapa-comunicacion","info":"{\"level\":2,\"state\":\"initial\",\"stale\":false,\"catalogOutdated\":false,\"confidence\":\"low\",\"confidenceReason\":{\"es\":\"Se apoya en una sola evidencia.\",\"en\":\"It rests on a single piece of evidence.\"},\"evidenceCount\":1,\"authoring\":\"person\",\"rationale\":\"Coordiné al equipo\",\"needsReview\":false}"}
+{"id":"ES29-M09 nivel 2 vigente, confianza no es high con solo autorreporte, motivo bilingüe presente","ok":true,"detail":"[2,\"low\"]"}
+{"id":"ES29-M10 B no ve el nivel de A (su mapa sigue en null)","ok":true,"detail":""}
+{"id":"ES29-M11 mismo requestId → mismo resultado, una sola fila","ok":true,"detail":"201/200"}
+{"id":"ES29-K01 8 autoevaluaciones simultáneas: ningún 5xx y una sola vigente","ok":true,"detail":"estados=201"}
+{"id":"ES29-M12 level null retira la autoevaluación","ok":true,"detail":"status=200"}
+{"id":"ES29-M13 discrepancia de 2 o más niveles con la autonomía declarada → estado contradictory","ok":true,"detail":"status=201 estado=contradictory confianza=low"}
+{"id":"ES29-M14 editar la evidencia citada → nivel null (stale), sin conservar el nivel viejo","ok":true,"detail":"[null,true,\"stale\"]"}
+{"id":"ES29-M15 los eventos de invalidación de esa evidencia quedan procesados (handledAt)","ok":true,"detail":""}
+{"id":"turnos","info":"chat=200/200/200 turnos=3"}
+{"id":"ES28-A01 sin professional_bridge → 403 y CERO llamadas al proveedor","ok":true,"detail":"status=403 code=consent_required llamadas=0"}
+{"id":"ES28-A02 con consentimiento: 200 con borrador, token, y una sola llamada","ok":true,"detail":"status=200 llamadas=1 {\"proposal\":{\"payload\":{\"title\":\"Migración de facturación\",\"situation\":\"La empresa cambió de sistema de facturación.\",\"responsibility\":{\"tex"}
+{"id":"ES28-A03 al modelo solo llegan mensajes de la persona: ni respuestas del asistente, ni diario, ni ánimo, ni otros turnos","ok":true,"detail":"bytes=1973"}
+{"id":"ES28-A04 el texto de la persona va delimitado como dato no confiable","ok":true,"detail":""}
+{"id":"ES28-A05 la IA no propone autonomía y la procedencia es self_report","ok":true,"detail":""}
+{"id":"ES28-A06 la propuesta no se guarda (0 filas de evidencia nuevas para P)","ok":true,"detail":""}
+{"id":"ES28-A07 el uso se registra en AiUsages (kind evidence_proposal) sin contenido","ok":true,"detail":"{\"kind\":\"evidence_proposal\",\"status\":\"completed\",\"inputTokens\":1}"}
+{"id":"ES28-A08 turno de otra persona → 404 y 0 llamadas al proveedor","ok":false,"detail":"status=502 llamadas=1"}
+{"id":"ES28-A08 sin turnIds → 400 y 0 llamadas al proveedor","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES28-A08 turnIds vacío → 400 y 0 llamadas al proveedor","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES28-A08 turnIds no numéricos → 400 y 0 llamadas al proveedor","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES28-A08 13 turnos → 400 y 0 llamadas al proveedor","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES28-A08 clave extra → 400 y 0 llamadas al proveedor","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES28-A08 locale inválido → 400 y 0 llamadas al proveedor","ok":true,"detail":"status=400 llamadas=0"}
+{"id":"ES28-A09 un turno marcado por riesgo no llega al modelo ni sirve como fuente (0 llamadas)","ok":true,"detail":"status=422 llamadas=0 {\"code\":\"no_usable_source\",\"error\":\"Ningún fragmento se puede usar como fuente. / None of the excerp"}
+{"id":"ES28-A10 mezcla de turno normal y de riesgo: el de riesgo se excluye del prompt","ok":true,"detail":"status=200 llamadas=1"}
+{"id":"ES28-H01 salida hostil «cita inventada»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-H01 salida hostil «cita de turno ajeno»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":true,"detail":"status=200 code=undefined"}
+{"id":"ES28-H01 salida hostil «JSON roto»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-H01 salida hostil «texto libre»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-H01 salida hostil «clave extra (empleabilidad)»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-H01 salida hostil «porcentaje no escrito por la persona»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-H01 salida hostil «diagnóstico»: rechazada (4xx/5xx controlado) o neutralizada, nunca entregada tal cual","ok":false,"detail":"status=200 code=undefined"}
+{"id":"ES28-H02 meta repetida como logro (120) → advertencia goal_number_in_outcome o rechazo; nunca se acepta en silencio","ok":true,"detail":"status=200 warnings=[\"goal_number_in_outcome\"]"}
+{"id":"ES28-H03 número inventado en la entrega (300) → rechazado o advertido","ok":true,"detail":"status=502 warnings=undefined"}
+{"id":"chat-fail","info":"status=502 (el chat falla a propósito)"}
+{"id":"ES28-A11 confirmar con proposalToken válido → evidencia con authoring ai_proposed (lo fija el servidor)","ok":true,"detail":"status=201 authoring=ai_proposed {\"id\":17,\"version\":1,\"status\":\"confirmed\",\"created\":true}"}
+{"id":"ES28-A12 proposalToken falsificado → rechazado (no se marca ai_proposed)","ok":true,"detail":"status=409"}
+{"id":"ES28-A13 proposalToken emitido a P usado por A → rechazado","ok":true,"detail":"status=409"}
+{"id":"ES28-B01 propuesta B: 200 y el nivel queda topado por la autonomía declarada (assisted = 2 como máximo)","ok":true,"detail":"status=200 nivel=2 aviso=[{\"skillKey\":\"comunicacion\",\"code\":\"level_capped\"}]"}
+{"id":"ES28-B02 la confianza la calcula el servidor (no es high con solo autorreporte)","ok":true,"detail":"confianza=low"}
+{"id":"ES28-B03 el prompt de B solo lleva evidencias confirmadas de la persona (sin chat crudo ni diario)","ok":true,"detail":""}
+{"id":"ES28-B04 sin evidencias confirmadas → 422 no_evidence, sin llamada a la IA","ok":true,"detail":"status=422 code=no_evidence"}
+{"id":"ES28-B05 salida hostil «confianza declarada» → 502 invalid_model_output o neutralizada","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-B05 salida hostil «evidencia ajena» → 502 invalid_model_output o neutralizada","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-B05 salida hostil «habilidad fuera del catálogo» → 502 invalid_model_output o neutralizada","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-B05 salida hostil «nivel 7» → 502 invalid_model_output o neutralizada","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-B05 salida hostil «texto libre» → 502 invalid_model_output o neutralizada","ok":true,"detail":"status=502 code=invalid_model_output"}
+{"id":"ES28-B06 confirmar subiendo el nivel (de 2 a 4) → rechazado","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES28-B07 token de P usado por A → rechazado","ok":true,"detail":"status=400"}
+{"id":"ES28-B08 token con firma alterada → rechazado","ok":true,"detail":"status=400"}
+{"id":"ES28-B09 aceptar algo que no se propuso → rechazado","ok":true,"detail":"status=400"}
+{"id":"ES28-B10 confirmar bajando el nivel (a 1) → 201/200 y queda vigente","ok":false,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES28-B11 la autoevaluación resultante figura como propuesta por IA y confirmada por la persona","ok":false,"detail":""}
+{"id":"ES28-B12 la evidencia cambió entre propuesta y confirmación → rechazado (se revalida)","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES28-P01 propuesta A (proveedor simulado) p95 < 3000 ms (propuesto)","ok":true,"detail":"p95=16ms"}
+{"id":"ES29-P01 lectura del Skill Map p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=27ms"}
+{"id":"ES27-P01 alta de evidencia p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=9ms"}
+{"fin":true}

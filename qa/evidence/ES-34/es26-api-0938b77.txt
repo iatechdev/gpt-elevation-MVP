@@ -1,0 +1,7 @@
+PASS real preview normalizes exact representation and persists no version
+PASS owner B cannot reuse A preview token or see A context
+PASS actual confirmation is idempotent; owner-scoped readback, encrypted storage and engine whitelist agree
+PASS built React performs exact preview, explicit confirmation, complete replacement and real GET verification
+PASS real UI withdrawal removes engine access, leaves history and does not expose another owner
+PASS actual revoked JWT gets 401 and no private UI content; no other endpoints or methods
+ES-26 real API/browser: 6 checks passed. HTTP/JWT/ORM/crypto/PostgreSQL are real; no response mocks, model provider or production.

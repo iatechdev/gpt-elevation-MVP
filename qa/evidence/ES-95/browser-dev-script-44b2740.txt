@@ -1,0 +1,10 @@
+PASS enviar vacío no envía, enfoca el primer campo inválido y marca hoja de vida y consentimiento
+PASS un archivo que no es PDF se rechaza en el cliente
+PASS envío válido: multipart con los campos y el PDF, sin nombre de archivo, sin rol ni estado, éxito con foco y nada guardado en el navegador
+PASS límite de intentos, error del servidor, campos inválidos del servidor y caída de red muestran su aviso y conservan lo escrito
+PASS EN, móvil 375 px sin scroll horizontal, orden de foco lógico y el campo trampa no recibe foco
+PASS responsive 320, 375 y 768 px: sin desborde (también con archivo de nombre largo y errores visibles) y campos de al menos 44 px
+PASS pestaña Solicitudes: lista pendientes y el texto de la persona se muestra escapado
+PASS descarga la hoja de vida con la sesión (archivo solicitud-7-hoja-de-vida.pdf)
+PASS rechazar exige el motivo y lo envía
+PASS «Crear cuenta de terapeuta» abre Crear usuario con nombre y correo, sin contraseña y limpia la URL

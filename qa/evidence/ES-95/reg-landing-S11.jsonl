@@ -1,0 +1,15 @@
+{"id":"ES95-T01 ES: las 9 frases de S11 del documento aparecen literalmente","ok":true,"detail":""}
+{"id":"ES95-T02 ES: sin promesas ni cifras en toda la página","ok":true,"detail":"empleabil"}
+{"id":"ES95-T03 ES: sin frases de Figma no aprobadas","ok":true,"detail":""}
+{"id":"ES95-T01 EN: las 9 frases de S11 del documento aparecen literalmente","ok":true,"detail":""}
+{"id":"ES95-T02 EN: sin promesas ni cifras en toda la página","ok":true,"detail":"employab"}
+{"id":"ES95-T03 EN: sin frases de Figma no aprobadas","ok":true,"detail":""}
+{"id":"ES95-A01 un h1, landmarks completos, enlace de saltar y anclas que existen","ok":true,"detail":"{\"h1\":1,\"landmarks\":\"header:1 nav:1 main:1 footer:1\",\"anchors\":[\"#contenido→ok\",\"#como-funciona→ok\",\"#skill-map→ok\"],\"skip\":\"#contenido\"}"}
+{"id":"ES95-R01 sin desplazamiento ni texto cortado a 320, 375, 390, 768, 1024 y 1440 px en ES y EN","ok":true,"detail":"ok"}
+{"id":"ES95-A02 contraste AA en light","ok":true,"detail":"{\"n\":0,\"worst\":5.54,\"theme\":\"elevation-landing-light\"}"}
+{"id":"ES95-A02 contraste AA en dark","ok":true,"detail":"{\"n\":0,\"worst\":6.71,\"theme\":\"elevation-landing-dark\"}"}
+{"id":"ES95-A03 el primer foco con teclado es «saltar al contenido» y es visible","ok":true,"detail":"{\"t\":\"Skip to content\",\"fv\":true,\"o\":\"solid\"}"}
+{"id":"ES95-S01 la landing solo pide al propio origen y a las fuentes ya existentes","ok":true,"detail":""}
+{"id":"ES95-S02 el almacenamiento local solo tiene el idioma","ok":true,"detail":"elv_lang"}
+{"id":"ES95-E01 sin errores de página","ok":true,"detail":""}
+{"fin":true}

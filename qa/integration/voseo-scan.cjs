@@ -1,0 +1,10 @@
+// [QA-Claude] Barrido de voseo en el código fuente (Unicode: las formas acabadas en á/é/í se detectan bien, a diferencia de \b en grep).
+// Uso: node qa/integration/voseo-scan.cjs <carpeta-raíz-del-clon>
+const fs = require('fs'), path = require('path'); const ROOT = process.argv[2];
+const IMP = /(?<![\p{L}])(Seleccion|Gener|Escrib|Explic|Comunic|Agreg|Cre|Encontr|Establec|Reflexion|Segu|Intent|Volv|Esper|Tom|Mir|Cont|Eleg|Revis|Prob|Guard|Complet|Cambi|Ingres|Sub|Descarg|Busc|Pon|Ven|Habl|Dej|Ayud|Respond|Confirm|Fij|Acord|Pens|Dec|Mostr|Avis|Contest|Us|Abr|Cerr|Elij|Llam|Compart|Escuch|Sent|Prepar|Defin|Recib|Anot|Ten|Hac|Ped|Registr|Verific|Sigu|Conect|Actualiz|Reintent|Mand|Pas|Entr|Sal)(á|é|í)(?![\p{L}])/iu;
+const PRON = /(?<![\p{L}])(vos|tenés|podés|querés|sabés|sentís|preferís|decís|hacés|llegás|aprobás|rechazás|vivís|estás|elegís|necesitás|prefirás|sos)(?![\p{L}])/u;
+// excluir palabras normales terminadas en vocal acentuada (no voseo)
+const OK = /(?<![\p{L}])(Está|Será|Verá|Podrá|Hará|Tendrá|Sabrá|Dará|Irá|Estará|Quedará|Aparecerá|Mostrará|Permitirá|Pondrá|Saldrá|Vendrá|Cree|Fue|Qué|Sí|Más|Allá|Acá|Así|Aquí|Allí|Ahí|Está|Café|Bebé|Mamá|Papá|Sofá|Menú|Canapé|Pasé|Tomé|Creé|Sentí|Pedí|Subí|Sigué|Entré|Salí|Pasá|Salé)(?![\p{L}])/u;
+const hits = [];
+(function walk(d) { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, f.name); if (['node_modules', 'dist', '.git', 'coverage'].includes(f.name)) continue; if (f.isDirectory()) { if (/^(test|tests|__tests__|migrations|docs)$/.test(f.name)) continue; walk(p); } else if (/\.(ts|tsx|js|cjs|mjs|json|html)$/.test(f.name) && !/\.test\./.test(f.name)) { fs.readFileSync(p, 'utf8').split('\n').forEach((l, i) => { if (/^\s*(\/\/|\*|\/\*)/.test(l)) return; const m = PRON.exec(l) || IMP.exec(l); if (m) hits.push(path.relative(ROOT, p).split(path.sep).join('/') + ':' + (i + 1) + ' [' + m[0] + '] ' + l.trim().slice(0, 140)); }); } } })(path.join(ROOT, process.argv[3] || '.'));
+console.log(hits.length + ' coincidencias'); console.log(hits.slice(0, 80).join('\n'));

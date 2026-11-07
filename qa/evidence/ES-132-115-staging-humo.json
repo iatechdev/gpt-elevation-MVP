@@ -1,0 +1,67 @@
+[
+ {
+  "id": "H1 /api/health 200 con el commit desplegado (migración al arrancar OK)",
+  "ok": true,
+  "detail": "commit=3ab3a41"
+ },
+ {
+  "id": "H2 registro y login de dos cuentas sintéticas",
+  "ok": true,
+  "detail": "registro=201/201"
+ },
+ {
+  "id": "H3 diario bajo RLS y la nueva migración: escribir y leer",
+  "ok": true,
+  "detail": "post=201 get=200 n=1"
+ },
+ {
+  "id": "H4 aislamiento: B no lee la entrada de A (404)",
+  "ok": true,
+  "detail": "http=404"
+ },
+ {
+  "id": "H5 /api/messages y /api/ai/usage 200",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "R1 solicitar recuperación: respuesta neutra igual para una cuenta que existe y una que no (sin enumeración) y sin 5xx aunque no haya proveedor de correo",
+  "ok": true,
+  "detail": "existe=202 no-existe=202 iguales=true"
+ },
+ {
+  "id": "R2 token inventado: 4xx, nunca 5xx",
+  "ok": true,
+  "detail": "http=400"
+ },
+ {
+  "id": "R3 entradas inválidas en la solicitud: vacío → 400; correo mal formado o larguísimo → 202 neutro por diseño (la ruta responde 202 a cualquier texto no vacío, sin enumeración); nunca 5xx",
+  "ok": true,
+  "detail": "400,202,202 (criterio corregido tras leer routes/passwordReset.js: mi expectativa inicial de 4xx era errónea)"
+ },
+ {
+  "id": "R4 solicitar una recuperación no cierra ni cambia la contraseña actual (la cuenta sigue entrando)",
+  "ok": true,
+  "detail": "login ok"
+ },
+ {
+  "id": "U1 es enlace «¿Olvidaste tu contraseña?» en el login",
+  "ok": true,
+  "detail": "enlaces=1"
+ },
+ {
+  "id": "U2 es pantalla de recuperación en 320 px: mensaje neutro, sin desborde y sin errores de página",
+  "ok": true,
+  "detail": "ruta=true desborde=0 errores=0"
+ },
+ {
+  "id": "U1 en enlace «Forgot your password?» en el login",
+  "ok": true,
+  "detail": "enlaces=1"
+ },
+ {
+  "id": "U2 en pantalla de recuperación en 320 px: mensaje neutro, sin desborde y sin errores de página",
+  "ok": true,
+  "detail": "ruta=true desborde=0 errores=0"
+ }
+]

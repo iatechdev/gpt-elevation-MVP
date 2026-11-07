@@ -1,0 +1,21 @@
+=== M1-sin-consentimiento
+d75875e Merge branch 'qa102' into HEAD
+mutacion aplicada
+
+ok=21
+{"id":"R1 [PRIV] con hoja de vida y `resume_ai_reading` pero SIN `insights_resume` no se lee la hoja (403) y no hay llamada al proveedor","ok":false,"detail":"subida=200 propuesta=502 llamadas=1"}
+{"id":"R1b autorizar OTRO propósito (`research`) tampoco habilita la hoja","ok":false,"detail":"502"}
+{"id":"R7 [PRIV] revocar `insights_resume` detiene análisis nuevos (403); lo ya autorizado sigue activo (como chat y diario)","ok":false,"detail":"revocar=200 nueva=200 activa=2 needsReview=false"}
+=== M2-hoja-ajena
+4a69bfb Merge branch 'qa102' into HEAD
+mutacion aplicada
+
+ok=23
+{"id":"R3 [SEG] pedir la hoja de OTRA persona por `resumeId` → 404 y sin llamada al proveedor","ok":false,"detail":"status=502 llamadas=1"}
+=== M3-sin-depurar-contacto
+187c9e1 Merge branch 'qa102' into HEAD
+mutacion aplicada
+
+ok=23
+{"id":"R4 [PRIV] el texto enviado al proveedor no contiene correo, teléfono, dirección ni enlace de la hoja","ok":false,"detail":"llamadas=1 filtrados=4"}
+FIN5

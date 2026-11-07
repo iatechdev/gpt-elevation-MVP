@@ -1,0 +1,67 @@
+[
+ {
+  "id": "H1 /api/health 200",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "H2 /api/plans 200 (lectura pública)",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "H3 registro y login de dos cuentas sintéticas A y B",
+  "ok": true,
+  "detail": "registro=201/201"
+ },
+ {
+  "id": "H4 escribir en el diario (INSERT con RLS activo)",
+  "ok": true,
+  "detail": "http=201"
+ },
+ {
+  "id": "H5 leer el diario propio (SELECT)",
+  "ok": true,
+  "detail": "http=200 entradas=1"
+ },
+ {
+  "id": "H6 editar la entrada (UPDATE)",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "H7 aislamiento: la cuenta B no puede leer la entrada de A (404/403)",
+  "ok": true,
+  "detail": "http=404"
+ },
+ {
+  "id": "H8 aislamiento: B no puede borrar la entrada de A",
+  "ok": true,
+  "detail": "http=404"
+ },
+ {
+  "id": "H9 /api/messages de cuenta nueva: 200 y vacío (sin crisis ni errores)",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "H10 /api/ai/usage 200 (AiUsages/AiBudgetCounters legibles)",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "H11 sin token: rechazado (401/403)",
+  "ok": true,
+  "detail": "http=403"
+ },
+ {
+  "id": "H12 borrar la entrada propia (DELETE)",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "H13 el diario queda vacío tras borrar",
+  "ok": true,
+  "detail": "entradas=0"
+ }
+]

@@ -1,0 +1,21 @@
+{"id":"ES122-L1 el campo se rotula «Disponibilidad (horas por semana)», ya no hay etiqueta con «minutos» y la ayuda explica 0 a 168 con el ejemplo 7,5","ok":true,"detail":"ayuda=\"Horas que puedes dedicar cada semana, de 0 a 168 (por ejemplo 7,5). Deja el campo vacío si está por confirmar.\""}
+{"id":"ES122-L2 el campo es de texto con teclado decimal (`inputMode=decimal`), etiqueta asociada y descrito por la ayuda","ok":true,"detail":"{\"type\":\"text\",\"mode\":\"decimal\",\"ac\":\"off\",\"lbl\":true,\"desc\":\"minutes-help\"}"}
+{"id":"ES122-L3 EN: «Availability (hours per week)» y ayuda «from 0 to 168», sin restos en español ni «minutes»","ok":true,"detail":"ayuda=\"Hours you can dedicate each week, from 0 to 168 (for example 7.5). Leave blank if to be confirmed.\""}
+{"id":"ES122-C1 [PRIV] 7,5→450; 7.5→450; 10→600; 0→0; 168→10 080; 168,00; 0,5→30; 1,25→75; 1.67→100; 0,01→1; 07→420; vacío→null: lo GUARDADO en el servidor son minutos enteros exactos","ok":true,"detail":"12 casos"}
+{"id":"ES122-R1 [SEG] 19 entradas inválidas u hostiles (168,01, 169, −3, abc, 1,234, 7h, 1e2, «7 8», HTML, __proto__, 10 000 caracteres, «.5», «7,»…): no se envía nada, el campo queda `aria-invalid` con mensaje asociado y lo guardado no cambia; sin ejecutar scripts","ok":true,"detail":"sin fallos guardado=300"}
+{"id":"ES122-R1b [OBS] «.5» y «7,» (formas incompletas) se rechazan","info":"comprobado con el mismo bucle"}
+{"id":"ES122-R2 el campo inválido muestra un mensaje asociado (`aria-describedby`) que no culpa a la persona","ok":true,"detail":"mensaje=\"Introduce un valor válido dentro del límite indicado.\" role=null"}
+{"id":"ES122-R2b [OBS] el texto del error es genérico («valor válido dentro del límite indicado»): no repite «horas» ni «0 a 168»; la ayuda de debajo sí lo dice","info":"mensaje=\"Introduce un valor válido dentro del límite indicado.\" role=null"}
+{"id":"ES122-R3 al enviar con un valor inválido el foco va al primer campo inválido (o a un resumen de errores) y no se envía nada","ok":true,"detail":"foco= PUT=0"}
+{"id":"ES122-S1 [PRIV] lo ya guardado se muestra en horas (100→1.67, 2400→40, 7→0.12, 59→0.98, 10 079→167.98…) y guardar SIN tocar el campo conserva los minutos exactos (sin deriva silenciosa)","ok":true,"detail":"10 valores"}
+{"id":"ES122-S2 abrir la pantalla y salir del campo sin escribir no envía ni modifica nada","ok":true,"detail":"PUT=0"}
+{"id":"ES122-S3 [PRIV] ida y vuelta por la interfaz: 71 valores de minutos mostrados y guardados sin tocar no cambian (incluidos los que no son múltiplos de 6)","ok":true,"detail":"71 valores"}
+{"id":"ES122-P1 [PRIV] el plan de carrera (ES-33, `careerPlanContracts.getContext`) recibe `weeklyMinutes` = 450 en MINUTOS tras escribir 7,5 horas en la pantalla (no 7,5 ni 7.5×60 mal convertido)","ok":true,"detail":"{\"weeklyMinutes\":450,\"version\":2}"}
+{"id":"ES122-P2 [SEG] el servidor sigue siendo la frontera: 10 081, −1, 1,5, «450» (texto), objeto, 1e21 y «NaN» se rechazan con 4xx directo por API (null = por confirmar sí vale); sin 5xx","ok":true,"detail":"8 casos"}
+{"id":"ES122-H1 [PRIV] el análisis de la hoja de vida (ES-109) no propone ni reescribe `availabilityMinutesPerWeek`: el backend lo EXCLUYE de las sugerencias y la lógica del cliente no lo menciona","ok":true,"detail":"excluido en resumeAnalysis.js y sin referencias en el cliente"}
+{"id":"ES122-U1 a 320, 375, 768 y 1440 px (ES y EN) no hay desborde horizontal en el formulario","ok":true,"detail":"288:sw320/cw320 343:sw375/cw375 640:sw768/cw768 640:sw1440/cw1440"}
+{"id":"ES122-U2 el campo mide al menos 44 px de alto y su etiqueta, ayuda y texto tienen contraste ≥ 4.5:1","ok":true,"detail":"ok"}
+{"id":"ES122-U3 teclado: el campo recibe el foco con foco visible y se puede editar solo con teclado","ok":true,"detail":"foco_visible=true"}
+{"id":"ES122-E1 sin errores de consola ni excepciones en el flujo","ok":true,"detail":"ok"}
+{"id":"ES122-U4 el resto del formulario (idioma, país, zona horaria, mercado) sigue presente y sin cambios","ok":true,"detail":"controles=3"}
+{"fin":true}

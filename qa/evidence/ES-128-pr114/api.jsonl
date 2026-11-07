@@ -1,0 +1,42 @@
+{"id":"F1a 10 caracteres rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F1b 11 caracteres rechazada con política","ok":true,"detail":"400 password_policy"}
+{"id":"F1c 12 caracteres exactos aceptada (201)","ok":true,"detail":"201"}
+{"id":"F1d 13 caracteres aceptada (201)","ok":true,"detail":"201"}
+{"id":"F1e 12+ caracteres con acentos y ñ aceptada (cuenta caracteres, no bytes)","ok":true,"detail":"201"}
+{"id":"F1f 11 caracteres con acentos (más de 11 bytes) sigue rechazada","ok":true,"detail":"400"}
+{"id":"F2a 72 bytes exactos (ASCII) aceptada","ok":true,"detail":"201"}
+{"id":"F2b 73 bytes rechazada con política","ok":true,"detail":"400 password_policy"}
+{"id":"F2c 18 emojis (72 bytes, 18 caracteres) aceptada","ok":true,"detail":"201"}
+{"id":"F2d 19 emojis (76 bytes; pasa 12 caracteres, supera 72 bytes) rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F2e 26 caracteres de 3 bytes (78 bytes) rechazada, sin 5xx","ok":true,"detail":"400"}
+{"id":"F3 contraseña común «password1234»: rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F3 contraseña común «123456789012»: rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F3 contraseña común «Password1234»: rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F3 contraseña común «123456789012»: rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F3 contraseña común «PASSWORD123456»: rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F3 contraseña común «qwertyuiop12»: rechazada","ok":true,"detail":"400 password_policy"}
+{"id":"F3b una variante que no está en la lista se acepta (límite documentado, no defecto)","ok":true,"detail":"201"}
+{"id":"F3c 12 espacios rechazada","ok":false,"detail":"400"}
+{"id":"F5 contraseña null: 4xx controlado (no 5xx)","ok":true,"detail":"400 "}
+{"id":"F5 contraseña número: 4xx controlado (no 5xx)","ok":true,"detail":"400 "}
+{"id":"F5 contraseña arreglo: 4xx controlado (no 5xx)","ok":true,"detail":"400 "}
+{"id":"F5 contraseña objeto: 4xx controlado (no 5xx)","ok":true,"detail":"400 "}
+{"id":"F5 contraseña booleano: 4xx controlado (no 5xx)","ok":true,"detail":"400 "}
+{"id":"F5 contraseña cadena de 1 MB: 4xx controlado (no 5xx)","ok":true,"detail":"413 invalid_input"}
+{"id":"F5 contraseña cadena vacía: 4xx controlado (no 5xx)","ok":true,"detail":"400 "}
+{"id":"F6 registro válido: 201, rol «user», contraseña con hash bcrypt (no en claro)","ok":true,"detail":"201 rol=user hash=$2b$"}
+{"id":"F7 una cuenta antigua con contraseña corta sigue entrando (200)","ok":true,"detail":"200"}
+{"id":"F8a correo ya registrado + contraseña débil: política (400), sin revelar si el correo existe","ok":true,"detail":"400 password_policy"}
+{"id":"F8b correo ya registrado + contraseña válida: sigue el comportamiento anterior (4xx de duplicado)","ok":true,"detail":"400 {\"error\":\"El correo ya está registrado.\"}"}
+{"id":"F6b registrar de nuevo una cuenta inactiva: 403 y NO se reactiva","ok":true,"detail":"403 active=false"}
+{"id":"S4 el registro público no acepta rol ni propietario del cliente (rol final «user» o rechazo)","ok":true,"detail":"201 rol=user"}
+{"id":"S1 la respuesta no devuelve la contraseña ni el hash","ok":true,"detail":""}
+{"id":"S3 nombre con SQL: sin 5xx","ok":true,"detail":"201"}
+{"id":"S3 nombre con HTML: sin 5xx","ok":true,"detail":"201"}
+{"id":"S3 nombre con nulos y RTL: sin 5xx","ok":true,"detail":"201"}
+{"id":"S3b la tabla Users sigue íntegra tras la inyección","ok":true,"detail":""}
+{"id":"S5 una contraseña que difiere solo después del byte 72 se rechaza (evita el truncado silencioso de bcrypt)","ok":true,"detail":"400"}
+{"id":"P3 el rechazo por política responde en < 100 ms (mediana) y mucho antes que un registro válido","ok":true,"detail":"rechazo mediana=3ms registro válido mediana=148ms"}
+{"id":"P1 registro válido: mediana < 1 s","ok":true,"detail":"148ms"}
+{"id":"P2 10 registros simultáneos (5 válidos, 5 débiles): 201/400 correctos y 0 errores 5xx","ok":true,"detail":"201,400,201,400,201,400,201,400,201,400"}
+RESUMEN {"total":41,"ok":40,"fallos":["F3c 12 espacios rechazada"]}

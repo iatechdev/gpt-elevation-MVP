@@ -1,0 +1,80 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+{"id":"V4a admin crea rol privilegiado → 403 con texto en tuteo","ok":true,"detail":"403 No tienes permisos para crear usuarios con ese rol."}
+{"id":"V4b admin modifica su propio usuario → 403 con tuteo","ok":true,"detail":"403 No puedes modificar tu propio usuario."}
+{"id":"V4c admin asigna rol privilegiado → 403 con tuteo","ok":true,"detail":"403 No tienes permisos para asignar ese rol."}
+{"id":"V4d superadmin se elimina a sí mismo → 403 con tuteo","ok":true,"detail":"403 No puedes eliminar tu propio usuario."}
+{"id":"V4e segunda solicitud de plan pendiente → 4xx con tuteo («tienes… Espera»)","ok":true,"detail":"201/409 Ya tienes una solicitud de plan pendiente. Espera a que el equipo la procese."}
+{"id":"V4f entradas inválidas en las mismas rutas: sin 5xx","ok":true,"detail":"400,400,400"}
+{"id":"V2 1440-es_app_dashboard: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_app_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_app_progress: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_app_progress: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_app_my-therapist: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_app_my-therapist: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_app_chat: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_app_chat: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_admin_dashboard: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_admin_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_admin_users: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_admin_users: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_admin_content: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_admin_content: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_admin_prompts: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_admin_prompts: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 1440-es_admin_metrics: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 1440-es_admin_metrics: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_app_dashboard: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 1440-en_app_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_app_progress: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 1440-en_app_progress: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_app_my-therapist: EN sin texto de interfaz en español","ok":false,"detail":"← Volver ELEVATION Mi terapeuta 🤝 Aún no tienes un terapeu"}
+{"id":"V6 1440-en_app_my-therapist: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_app_chat: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 1440-en_app_chat: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_admin_dashboard: EN sin texto de interfaz en español","ok":false,"detail":" de la plataforma  10 Total usuarios 10 Usuarios activos 0 Terapeutas 5 Total se"}
+{"id":"V6 1440-en_admin_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_admin_users: EN sin texto de interfaz en español","ok":false,"detail":"tent Metrics  Elevation MVP · Sprint 9  Usuarios  20 usuarios registrados  💳 4 "}
+{"id":"V6 1440-en_admin_users: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_admin_content: EN sin texto de interfaz en español","ok":false,"detail":"tent Metrics  Elevation MVP · Sprint 9  Contenido  Gestión de validaciones, prec"}
+{"id":"V6 1440-en_admin_content: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_admin_prompts: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 1440-en_admin_prompts: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 1440-en_admin_metrics: EN sin texto de interfaz en español","ok":false,"detail":" de la plataforma  10 Total usuarios 10 Usuarios activos 0 Terapeutas activos 5 "}
+{"id":"V6 1440-en_admin_metrics: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_app_dashboard: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_app_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_app_progress: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_app_progress: sin scroll horizontal y sin errores de página","ok":false,"detail":"{\"sw\":true,\"errs\":[]}"}
+{"id":"V2 320-es_app_my-therapist: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_app_my-therapist: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_app_chat: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_app_chat: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_admin_dashboard: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_admin_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_admin_users: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_admin_users: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_admin_content: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_admin_content: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_admin_prompts: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_admin_prompts: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V2 320-es_admin_metrics: sin voseo visible","ok":true,"detail":""}
+{"id":"V6 320-es_admin_metrics: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_app_dashboard: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 320-en_app_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_app_progress: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 320-en_app_progress: sin scroll horizontal y sin errores de página","ok":false,"detail":"{\"sw\":true,\"errs\":[]}"}
+{"id":"V3 320-en_app_my-therapist: EN sin texto de interfaz en español","ok":false,"detail":"← Volver ELEVATION Mi terapeuta 🤝 Aún no tienes un terapeu"}
+{"id":"V6 320-en_app_my-therapist: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_app_chat: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 320-en_app_chat: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_admin_dashboard: EN sin texto de interfaz en español","ok":false,"detail":" de la plataforma  10 Total usuarios 10 Usuarios activos 0 Terapeutas 5 Total se"}
+{"id":"V6 320-en_admin_dashboard: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_admin_users: EN sin texto de interfaz en español","ok":false,"detail":"tent Metrics  Elevation MVP · Sprint 9  Usuarios  20 usuarios registrados  💳 4 "}
+{"id":"V6 320-en_admin_users: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_admin_content: EN sin texto de interfaz en español","ok":false,"detail":"tent Metrics  Elevation MVP · Sprint 9  Contenido  Gestión de validaciones, prec"}
+{"id":"V6 320-en_admin_content: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_admin_prompts: EN sin texto de interfaz en español","ok":true,"detail":""}
+{"id":"V6 320-en_admin_prompts: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+{"id":"V3 320-en_admin_metrics: EN sin texto de interfaz en español","ok":false,"detail":" de la plataforma  10 Total usuarios 10 Usuarios activos 0 Terapeutas activos 5 "}
+{"id":"V6 320-en_admin_metrics: sin scroll horizontal y sin errores de página","ok":true,"detail":"{\"sw\":false,\"errs\":[]}"}
+RESUMEN {"total":78,"ok":66,"fallos":["V3 1440-en_app_my-therapist: EN sin texto de interfaz en español","V3 1440-en_admin_dashboard: EN sin texto de interfaz en español","V3 1440-en_admin_users: EN sin texto de interfaz en español","V3 1440-en_admin_content: EN sin texto de interfaz en español","V3 1440-en_admin_metrics: EN sin texto de interfaz en español","V6 320-es_app_progress: sin scroll horizontal y sin errores de página","V6 320-en_app_progress: sin scroll horizontal y sin errores de página","V3 320-en_app_my-therapist: EN sin texto de interfaz en español","V3 320-en_admin_dashboard: EN sin texto de interfaz en español","V3 320-en_admin_users: EN sin texto de interfaz en español","V3 320-en_admin_content: EN sin texto de interfaz en español","V3 320-en_admin_metrics: EN sin texto de interfaz en español"]}

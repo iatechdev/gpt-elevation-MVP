@@ -1,0 +1,57 @@
+[
+ {
+  "id": "SET planes sembrados por el administrador",
+  "ok": true,
+  "detail": "seed=200 planes=4"
+ },
+ {
+  "id": "PL1 GET /api/plans con caché: 200, Cache-Control no-store, mismo cuerpo que sin caché (TTL=0) y misma forma",
+  "ok": true,
+  "detail": "cc=no-store iguales=true"
+ },
+ {
+  "id": "PL7 respuesta pública y global: sin Set-Cookie, igual con y sin token, sin campos privados",
+  "ok": true,
+  "detail": "sin datos por persona"
+ },
+ {
+  "id": "PL2 12 cambios de precio por la API de administración: cada lectura inmediata ve el precio nuevo (misma instancia)",
+  "ok": true,
+  "detail": "12/12 inmediatas"
+ },
+ {
+  "id": "PL6 crear un plan lo muestra al instante y desactivarlo lo oculta al instante",
+  "ok": true,
+  "detail": "crear=201 visible=true oculto=true"
+ },
+ {
+  "id": "PL3 escritura por SQL directo (salta los hooks): sin caché (B) se ve al instante; con caché (A) tarda ≤ 10 s (límite declarado)",
+  "ok": true,
+  "detail": "B=777.00 A tardó 10272 ms"
+ },
+ {
+  "id": "PL5 carrera: una lectura que EMPIEZA después de invalidar mientras otra anterior sigue en curso recibe el valor viejo (una vez); la caché no se repuebla con datos previos",
+  "ok": true,
+  "detail": "lectura en curso=1 · lectura nueva tras invalidar=1 (VIEJO: se une a la consulta en curso) · una posterior=2 (fresco)"
+ },
+ {
+  "id": "PL4 valores de PLANS_CACHE_TTL_MS: 0 → sin caché (3 consultas); basura, negativos, vacío → TTL por defecto (1 consulta); enorme → tope; sin 5xx",
+  "ok": true,
+  "detail": "{\"\\\"0\\\"\":3,\"\\\"abc\\\"\":1,\"\\\"-5\\\"\":1,\"\\\"\\\"\":1,\"\\\"1e9\\\"\":1,\"\\\"5000\\\"\":1,\"\\\" 3000 \\\"\":1}"
+ },
+ {
+  "id": "PL8 20 000 lecturas y 200 invalidaciones: memoria estable (< 20 MB de crecimiento)",
+  "ok": true,
+  "detail": "crecimiento=0.4 MB"
+ },
+ {
+  "id": "PL5b 24 lecturas y 6 escrituras simultáneas: ningún 5xx y cuerpos válidos",
+  "ok": true,
+  "detail": "200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200"
+ },
+ {
+  "id": "PL9 latencia local de GET /api/plans: con caché vs sin caché (orientativo; la latencia real depende de red y base remota)",
+  "ok": true,
+  "detail": "con caché p50=2.4 p95=5.1 ms · sin caché p50=3.7 p95=4.5 ms"
+ }
+]

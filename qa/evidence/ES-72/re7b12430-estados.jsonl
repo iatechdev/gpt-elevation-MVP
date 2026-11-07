@@ -1,0 +1,11 @@
+{"id":"ST-01 el estado inicial es «Próximamente» / «Coming soon»","ok":true,"detail":"{\"es\":\"Próximamente\",\"en\":\"Coming soon\"}"}
+{"id":"ST-02 administrador, usuario y sin token no pueden editar un estado","ok":true,"detail":""}
+{"id":"ST-03 superadmin cambia el estado ES a «Disponible» → 200","ok":true,"detail":"status=200"}
+{"id":"ST-04 el cambio en ES no altera EN (independientes)","ok":true,"detail":""}
+{"id":"ST-05 valor vacío → 400 y no cambia","ok":true,"detail":""}
+{"id":"ST-05 valor solo espacios → 400 y no cambia","ok":true,"detail":""}
+{"id":"ST-05 valor 5001 caracteres → 400 y no cambia","ok":true,"detail":""}
+{"id":"ST-06 ES: el chip refleja el texto editado, HTML como texto sin ejecutar y sin desbordar a 320 px","ok":true,"detail":"x=false img=0 hs=false"}
+{"id":"ST-06 EN: el chip refleja el texto editado, HTML como texto sin ejecutar y sin desbordar a 320 px","ok":true,"detail":"x=false img=0 hs=false"}
+{"id":"ST-07 se restauran los textos originales","ok":true,"detail":""}
+{"fin":true}

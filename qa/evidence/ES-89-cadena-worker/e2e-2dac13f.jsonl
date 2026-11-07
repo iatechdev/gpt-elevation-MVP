@@ -1,0 +1,49 @@
+{"id":"CH-B1 [SEG] el worker se niega a arrancar: DATA_ENCRYPTION_KEY","ok":true,"detail":"código=2 filtró=false"}
+{"id":"CH-B1 [SEG] el worker se niega a arrancar: JWT_SECRET","ok":true,"detail":"código=2 filtró=false"}
+{"id":"CH-B1 [SEG] el worker se niega a arrancar: DATABASE_URL","ok":true,"detail":"código=2 filtró=false"}
+{"id":"CH-B1 [SEG] el worker se niega a arrancar: PROMPT_ENCRYPTION_KEY","ok":true,"detail":"código=2 filtró=false"}
+{"id":"CH-B1 [SEG] el worker se niega a arrancar: sin clave profesional","ok":true,"detail":"código=2 filtró=false"}
+{"id":"CH-B1 [SEG] el worker se niega a arrancar: clave profesional corta","ok":true,"detail":"código=2 filtró=false"}
+{"id":"CH-setup","info":"catálogo publicado=200"}
+{"id":"CH-setup","info":"contexto A={\"pv\":200,\"cf\":201} B={\"pv\":200,\"cf\":201} C={\"pv\":200,\"cf\":201}"}
+{"id":"CH-A1 [SEG] el contexto confirmado se guarda con `v2p:` (clave profesional) y sin texto claro","ok":true,"detail":"v2p:p1,v2p:p1"}
+{"id":"CH-A1b el titular lee su contexto (descifra `v2p:`) y no ve el de B","ok":true,"detail":""}
+{"id":"CH-D1 [SEG] sin token todas las rutas rechazan (401/403)","ok":true,"detail":""}
+{"id":"CH-D2a sin consentimiento/contexto no se crea el análisis (4xx, sin 500)","ok":true,"detail":"status 403"}
+{"id":"CH-D2b entradas inválidas en crear: ningún 500","ok":true,"detail":""}
+{"id":"CH-D2c crear es idempotente por requestId (201 y luego 200 con el mismo id)","ok":true,"detail":"201/200"}
+{"id":"CH-D2d 6 altas simultáneas de personas distintas peticiones = 1 análisis vivo; ningún 5xx","ok":true,"detail":"vivos=1 estados=201,409,409,409,409,409"}
+{"id":"CH-D3 [PRIV] la respuesta de crear no expone hash, fence, lease, requestId, UserId, errorCode ni payload","ok":true,"detail":"{\"id\":1,\"status\":\"PENDING\",\"contextVersion\":1,\"attempt\":0,\"reason\":null,\"retryAt\":null,\"createdAt\":\"2026-10-29T22:59:48.057Z\",\"startedAt\":null,\"finishedAt\":null}"}
+{"id":"CH-D1b [SEG] otra persona no puede leer ni cancelar el job de A (404)","ok":true,"detail":"404/404"}
+{"id":"CH-D1b [SEG] terapeuta no puede leer ni cancelar el job de A (404)","ok":true,"detail":"404/404"}
+{"id":"CH-D1b [SEG] admin no puede leer ni cancelar el job de A (404)","ok":true,"detail":"404/404"}
+{"id":"CH-D1b [SEG] persona sin contexto no puede leer ni cancelar el job de A (404)","ok":true,"detail":"404/404"}
+{"id":"CH-D1c ids mal formados responden 404 (sin 500 ni pistas)","ok":true,"detail":""}
+{"id":"CH-D1d [PRIV] terapeuta no ve jobs ni candidatas de nadie","ok":true,"detail":"200/200"}
+{"id":"CH-D1d [PRIV] admin no ve jobs ni candidatas de nadie","ok":true,"detail":"200/200"}
+{"id":"CH-B3-log","info":"{\"t\":\"2026-10-29T22:59:48.837Z\",\"event\":\"worker_started\",\"owner\":\"DESKTOP-L9K23GJ-1448\",\"pollMs\":500,\"leaseSeconds\":60,\"maxAttempts\":3}\n{\"t\":\"2026-10-29T22:59:48.968Z\",\"event\":\"job_claimed\",\"jobId\":1,\"fence\":1,\"attempt\":1}\n{\"t\":\"2026-10-29T22:59:49.030Z\",\"event\":\"job_published\",\"jobId\":1,\"fence\":1,\"candidates\":2,\"discarded\":4,\"ms\":62}\n{\"t\":\"2026-10-29T22:59:49.033Z\",\"event\":\"job_claimed\",\"jobId\":2,\"fence\":1,\"attempt\":1}\n{\"t\":\"2026-10-29T22:59:49.062Z\",\"event\":\"job_published\",\"jobId\":2,\"fence\":1,\"candidates\":2,\"discarded\":4,\"ms\":29}\n{\"t\":\"2026-10-29T22:59:49.064Z\",\"event\":\"poll_wait\",\"waitMs\":451,\"reason\":\"idle\"}\n"}
+{"id":"CH-B3 el worker publica el análisis (REVIEW_REQUIRED) sin error","ok":true,"detail":"estado=REVIEW_REQUIRED {\"id\":1,\"status\":\"REVIEW_REQUIRED\",\"contextVersion\":1,\"attempt\":1,\"reason\":null,\"retryAt\":null,\"createdAt\":\"2026-10-29T22:59:48.057Z\",\"startedAt\":\"2026-10-29T22"}
+{"id":"CH-B3b [SEG] solo quedan candidatas canónicas: se descartan habilidad fuera de catálogo, duplicada, nivel fuera de rango y cita falsa (queda liderazgo y datos)","ok":true,"detail":"candidatas=datos,liderazgo"}
+{"id":"CH-B3c [SEG] sin confianza, notas ni campos libres del modelo en las candidatas","ok":true,"detail":"[{\"id\":2,\"jobId\":1,\"skillKey\":\"datos\",\"label\":{\"es\":\"Habilidad datos\",\"en\":\"Skill datos\"},\"level\":2,\"confirmedLevel\":null,\"citations\":[\"values\"],\"status\":\"REVIEW_REQUIRED\",\"reviewedAt\":null},{\"id\":1,\""}
+{"id":"CH-B3d [PRIV] el prompt enviado al proveedor no lleva correo, nombre ni id de la persona y el texto de la persona va en bloque no confiable","ok":true,"detail":""}
+{"id":"CH-B3e se hizo 1 llamada al proveedor por job (los de A y de B = 2)","ok":true,"detail":"llamadas=2"}
+{"id":"CH-B3f [SEG] el registro del worker no contiene texto de la persona, claves, contraseña ni correo","ok":true,"detail":"7 líneas"}
+{"id":"CH-B2 [SEG] el rol `elevation_worker` NO puede leer chats, diario, mensajes, usuarios ni el contexto profesional directamente","ok":true,"detail":"puede leer: "}
+{"id":"CH-D1e [SEG] otra persona no puede revisar la candidata de A (404)","ok":true,"detail":"404"}
+{"id":"CH-D4a aceptar con nivel mayor al propuesto → 422 cannot_raise_level","ok":true,"detail":"422 {\"code\":\"cannot_raise_level\",\"error\":\"No se puede subir un nivel por encima del "}
+{"id":"CH-D4b entradas inválidas de revisión: ningún 500","ok":true,"detail":""}
+{"id":"CH-D4c aceptar bajando a nivel 2 funciona y repetirlo es idempotente","ok":true,"detail":"200/200"}
+{"id":"CH-D4d la decisión es final: rechazar lo aceptado no cambia nada (4xx, no 5xx)","ok":true,"detail":"409"}
+{"id":"CH-D4e rechazar funciona","ok":true,"detail":"200"}
+{"id":"CH-D4f en la base la propuesta de la IA queda inmutable (level=3) y la decisión va aparte (confirmedLevel=2)","ok":true,"detail":"level=3 confirmedLevel=2"}
+{"id":"CH-D4g sin pendientes el análisis pasa a COMPLETED","ok":true,"detail":"COMPLETED"}
+{"id":"CH-D5 [DATOS] aceptar NO crea una evaluación con nivel en el Skill Map (nivel null sin evidencia)","ok":true,"detail":"{\"catalogVersion\":1,\"skills\":[{\"skillKey\":\"datos\",\"type\":\"transversal\",\"labels\":{\"es\":\"Habilidad datos\",\"en\":\"Skill datos\"},\"territories\":[],\"rubric\":{\"levels\":"}
+{"id":"CH-C3 [PRIV] la exportación de A incluye su análisis y decisión y nada de B","ok":true,"detail":"status 200"}
+{"id":"CH-C1 [PRIV] revocar `professional_bridge` con un job PENDING lo invalida en la misma operación","ok":true,"detail":"antes=PENDING después=INVALIDATED API=INVALIDATED"}
+{"id":"CH-C1b tras revocar no se puede crear otro análisis (4xx)","ok":true,"detail":"403"}
+{"id":"CH-C1c el worker no produjo nada para C tras la revocación","ok":true,"detail":""}
+{"id":"CH-C4","info":"job B tras worker: REVIEW_REQUIRED"}
+{"id":"CH-D4h cancelar es idempotente (sin 5xx)","ok":true,"detail":"200/200"}
+{"id":"CH-C1d [PRIV] revocar invalida las candidatas vigentes de B (ninguna REVIEW_REQUIRED/ACCEPTED)","ok":true,"detail":"REJECTED,REJECTED"}
+{"id":"CH-C2","info":"solicitud de borrado B=202"}
+{"id":"CH-A5 el payload profesional no contiene el prefijo/ formato de datos (`v2:`) ni texto claro","ok":true,"detail":""}

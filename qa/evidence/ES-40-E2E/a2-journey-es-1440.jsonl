@@ -1,0 +1,37 @@
+{"id":"A2 [es 1440] 01-landing","ok":true,"d":"caracteres=6838"}
+{"id":"A2 [es 1440] 02-landing-acceso","ok":true,"d":"/login"}
+{"id":"A2 [es 1440] 03-registro-campos-vacios","ok":true,"d":"valueMissing=true"}
+{"id":"A2 [es 1440] 04-registro-correo-invalido","ok":true,"d":"typeMismatch=true"}
+{"id":"A2 [es 1440] 05-registro-ok","ok":true,"d":"estado=\"Registro exitoso. Ahora inicia sesión.\""}
+{"id":"A2 [es 1440] 06-registro-correo-repetido","ok":true,"d":"alerta=\"El correo ya está registrado.\""}
+{"id":"A2 [es 1440] 07-login-contrasena-erronea","ok":true,"d":"alerta=\"Credenciales incorrectas.\""}
+{"id":"A2 [es 1440] 08-login-ok","ok":true,"d":"/app/onboarding"}
+{"id":"A2 [es 1440] 09-persistencia-al-recargar","ok":true,"d":"/app/onboarding"}
+{"id":"A2 [es 1440] 10-onboarding-vista","ok":true,"d":"h1=Tu punto de partida"}
+{"id":"A2 [es 1440] 11-onboarding-guardar-sin-elegir-entrada","ok":true,"d":"error=\"Elige por dónde quieres empezar.\""}
+{"id":"A2 [es 1440] 12-onboarding-completar-y-guardar","ok":true,"d":"nece ita  contar experiencia  íntima .\n\nContexto guardado\nSeguir editando\nVer mi  hoja  de vida\nRevi"}
+{"id":"A2 [es 1440] 13-onboarding-persistencia-al-recargar","ok":true,"d":"profesión guardada=\"Docente de matemáticas\""}
+{"id":"A2 [es 1440] 14-checkin","ok":true,"d":"/app/chat"}
+{"id":"A2 [es 1440] 15-dashboard","ok":true,"d":"caracteres=800"}
+{"id":"A2 [es 1440] 16-progreso","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 17-diario-crear-a","ok":true,"d":"url=/app/diary/89 XSS ejecutado=false"}
+{"id":"A2 [es 1440] 17-diario-crear-xss","ok":true,"d":"url=/app/diary/90 XSS ejecutado=false"}
+{"id":"A2 [es 1440] 17-diario-crear-largo","ok":true,"d":"url=/app/diary/91 XSS ejecutado=false"}
+{"id":"A2 [es 1440] 18-diario-lista","ok":true,"d":"entradas visibles; XSS ejecutado=false"}
+{"id":"A2 [es 1440] 19-diario-vacio-no-guarda","ok":false,"d":"EXCEPCIÓN TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Guardar|Save/ }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled class=\"el"}
+{"id":"A2 [es 1440] 20-diario-doble-clic-guardar","ok":true,"d":"entradas con ese texto=1"}
+{"id":"A2 [es 1440] 21-evidencia-nueva-borrador","ok":true,"d":"/app/evidence/new"}
+{"id":"A2 [es 1440] 22-evidencia-lista","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 23-puente-vista","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 24-puente-consentimiento-chat","ok":true,"d":"estado: undecided → granted → revoked (autorizar pide confirmación: true; retirar pide confirmación: false)"}
+{"id":"A2 [es 1440] 25-skillmap-radar","ok":true,"d":"competencias con nivel null como «Sin evaluar»"}
+{"id":"A2 [es 1440] 26-skillmap-territorios","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 27-skillmap-detalle","ok":true,"d":"/app/skill-map"}
+{"id":"A2 [es 1440] 28-catalogo-rutas","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 29-siguiente-paso","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 30-plan","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 31-herramientas-ejercicios","ok":true,"d":"tools=162"}
+{"id":"A2 [es 1440] 32-hojas-de-vida-vacia","ok":true,"d":"ok"}
+{"id":"A2 [es 1440] 33-derechos-de-datos-en-la-interfaz","ok":false,"d":"NO hay ningún acceso en la interfaz para exportar ni eliminar datos (la API existe)"}
+{"id":"A2 [es 1440] 34-logout-y-atras","ok":false,"d":"no hay botón de cerrar sesión visible en el dashboard"}
+{"id":"A2 [es 1440] errores de página en todo el recorrido","ok":true,"d":""}

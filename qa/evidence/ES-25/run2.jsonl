@@ -1,0 +1,62 @@
+{"id":"ES25-S01 sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES25-S01b GET /api/career-context sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES25-S01b POST /api/career-context/revoke sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES25-F01a vista previa directa sin consentimiento: 200, token y representación {key,text}","ok":true,"detail":"status=200"}
+{"id":"ES25-F01b no-store y no guarda nada al previsualizar","ok":true,"detail":""}
+{"id":"ES25-F02a confirmar → 201 con versión 1 activa","ok":true,"detail":"status=201 {\"version\":1,\"status\":\"active\",\"approvedAt\":\"2026-10-27T16:31:14.414Z\",\"revokedAt\":null,\"fields\":[{\"key\":\"motivations\",\""}
+{"id":"ES25-F02b mismo requestId → misma versión, sin versión nueva","ok":true,"detail":"status=200"}
+{"id":"ES25-F03 el motor recibe exactamente {version, approvedAt, fields:[{key,text}]} y lo mismo que la vista previa","ok":true,"detail":"{\"version\":1,\"approvedAt\":\"2026-10-27T16:31:14.414Z\",\"fields\":[{\"key\":\"motivations\",\"text\":\"Busco un trabajo con impacto social\"},{\"key\":\"values\",\"text\":\"Honestidad y aprendizaje continuo\"}]}"}
+{"id":"ES25-F04 el motor no recibe canarios del diario, del chat ni de crisis, ni IDs, correo o nombre","ok":true,"detail":""}
+{"id":"ES25-F05 BridgeTransfers registra la lectura con claves y hash, sin texto","ok":true,"detail":"[\"id\",\"UserId\",\"version\",\"keys\",\"hash\",\"consumer\",\"createdAt\"]"}
+{"id":"ES25-F06 el contexto se guarda cifrado v2 (sin texto plano en la base)","ok":true,"detail":"v2:c8ae6f819"}
+{"id":"ES25-V01 clave fuera de la lista cerrada → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V02 texto de 501 caracteres → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V03 4 campos de la misma clave → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V04 13 campos en total → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V05 lista vacía → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V06 campo con clave extra → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V07 texto no cadena (objeto, número, arreglo) → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V08 cuerpo con clave extra → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V09 origen con tipo desconocido → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V10 origen con id no entero → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V11 locale inválido → 400","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES25-V12 cuerpo que no es objeto → 400","ok":true,"detail":"status=400"}
+{"id":"ES25-V13 __proto__ en el campo → 400 (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES25-R01 texto marcado por el detector de riesgo → 422 field_not_shareable con fieldIndex, sin motivo y sin eco del texto","ok":true,"detail":"status=422 {\"code\":\"field_not_shareable\",\"error\":\"Este texto no se puede compartir. Reescríbelo o déjalo fuera. / This text cannot be shared. Rewrite it or leave it out.\","}
+{"id":"ES25-R02 lo marcado no deja rastro en la base (ni versión ni auditoría con ese texto)","ok":true,"detail":""}
+{"id":"ES25-S10 texto con instrucciones/HTML se trata como dato: se previsualiza tal cual, sin ejecutarse ni dar 500","ok":true,"detail":"status=200"}
+{"id":"ES25-S11 un secreto con forma de clave se enmascara en la vista previa","ok":true,"detail":"status=200"}
+{"id":"ES25-T01 campos distintos a los de la vista previa → 409 preview_mismatch","ok":true,"detail":"status=409"}
+{"id":"ES25-T02 token de vista previa de A usado por B → rechazado (409) y B sin versión","ok":true,"detail":"status=409"}
+{"id":"ES25-T03 token con la firma alterada → rechazado","ok":true,"detail":"status=409"}
+{"id":"ES25-T04 token con formato inválido → 400","ok":true,"detail":"status=400"}
+{"id":"ES25-T05 sin token → 400","ok":true,"detail":"status=400"}
+{"id":"ES25-T06 token vencido con firma falsa → rechazado (nunca 201)","ok":true,"detail":"status=409 code=preview_mismatch"}
+{"id":"ES25-C01 camino A sin consentimiento professional_bridge → 403 consent_required","ok":true,"detail":"status=403"}
+{"id":"ES25-O01 origen del diario de OTRA persona → 404 origin_not_found (sin pedir consentimiento antes)","ok":true,"detail":"status=404 code=origin_not_found"}
+{"id":"ES25-C02 conceder el consentimiento","ok":true,"detail":""}
+{"id":"ES25-C03 camino A con consentimiento: 200 y la representación no trae el contenido del diario","ok":true,"detail":"status=200"}
+{"id":"ES25-C04 consentimiento revocado entre vista previa y confirmación → 403 y sin versión nueva","ok":true,"detail":"status=403 code=consent_required"}
+{"id":"ES25-C05 confirmar camino A con consentimiento → 201 versión 2; la 1 pasa a superseded","ok":true,"detail":"status=201"}
+{"id":"ES25-C06 el motor entrega solo claves y texto aprobados de la v2; sin IDs de origen ni contenido del diario","ok":true,"detail":"{\"version\":2,\"approvedAt\":\"2026-10-27T16:31:15.172Z\",\"fields\":[{\"key\":\"motivations\",\"text\":\"Me motiva ayudar a otros\"}]}"}
+{"id":"lista","info":"{\"active\":{\"version\":2,\"status\":\"active\",\"approvedAt\":\"2026-10-27T16:31:15.172Z\",\"revokedAt\":null,\"fields\":[{\"key\":\"motivations\",\"text\":\"Me motiva ayudar a otros\"}],\"needsReview\":true},\"versions\":[{\"version\":2,\"status\":\"active\",\"approvedAt\":\"2026-10-27T16:31:15.172Z\",\"revokedAt\":null,\"fields\":[{\"key"}
+{"id":"ES25-N01 editar el origen marca needsReview y NO cambia el contexto del motor","ok":true,"detail":""}
+{"id":"ES25-N02 GET del dueño no trae contenido del diario ni IDs de origen","ok":true,"detail":""}
+{"id":"ES25-C07 revocar professional_bridge: la versión con camino A pasa a revoked, el motor deja de leerla y se emite DerivedInvalidation","ok":true,"detail":"estados=superseded,revoked motor={\"error\":\"no_context\",\"status\":404} eventos=1->2"}
+{"id":"ES25-C08 no se crea ninguna versión nueva sola tras revocar","ok":true,"detail":"versiones=2"}
+{"id":"ES25-V14 POST /revoke: 200, la versión pasa a revoked y el motor no la lee","ok":true,"detail":"status=200"}
+{"id":"ES25-V15 /revoke con cuerpo no vacío → 400","ok":true,"detail":"status=400"}
+{"id":"ES25-I01 B no ve nada de A (historial vacío y sin textos de A)","ok":true,"detail":"status=200"}
+{"id":"ES25-I02 admin solo ve su propio historial (vacío), nunca el de A","ok":true,"detail":"status=200"}
+{"id":"ES25-I02 terapeuta solo ve su propio historial (vacío), nunca el de A","ok":true,"detail":"status=200"}
+{"id":"ES25-I03 GET /career-context/:id no existe (404, sin datos)","ok":true,"detail":"status=404"}
+{"id":"ES25-I03 DELETE /career-context/:id no existe (404, sin datos)","ok":true,"detail":"status=404"}
+{"id":"ES25-I03 PUT /career-context/:id no existe (404, sin datos)","ok":true,"detail":"status=404"}
+{"id":"ES25-I04 mismo requestId de otra persona no devuelve la versión de A","ok":true,"detail":"status=409"}
+{"id":"ES25-K01 10 confirmaciones simultáneas: ningún 5xx, versiones consecutivas y exactamente una activa","ok":true,"detail":"estados=201 versiones=10 activas=1"}
+{"id":"ES25-K02 8 confirmaciones simultáneas con el mismo requestId → una sola versión nueva","ok":true,"detail":"201=1"}
+{"id":"ES25-K03 confirmar vs. revocar el consentimiento (6 rondas): nunca queda una versión activa con consentimiento revocado","ok":true,"detail":"activas con consentimiento revocado=0"}
+{"id":"ES25-P01 vista previa p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=6ms"}
+{"id":"ES25-P02 confirmación p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=11ms"}
+{"id":"ES25-P03 la tabla de auditoría no guarda texto de ninguna persona","ok":true,"detail":""}
+{"fin":true}

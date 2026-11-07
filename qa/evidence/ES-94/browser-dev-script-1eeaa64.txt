@@ -1,0 +1,3 @@
+PASS es 1280px: las tres rutas explicadas, sin «se mostrarán…», sin corchetes, solo Skill Map con etiqueta y sin desbordes
+PASS en 375px: las tres rutas explicadas, sin «se mostrarán…», sin corchetes, solo Skill Map con etiqueta y sin desbordes
+PASS administrador: sin panel de pendientes y la pestaña Landing sigue funcionando

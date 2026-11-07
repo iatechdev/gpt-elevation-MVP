@@ -1,0 +1,148 @@
+{
+ "llamadas": 10,
+ "tokensTotales": 178743,
+ "filas": [
+  {
+   "lang": "es",
+   "n": 1,
+   "http": 200,
+   "truncated": false,
+   "chars": 5421,
+   "words": 839,
+   "tokensUsed": 15213,
+   "ms": 22807,
+   "endsClean": true
+  },
+  {
+   "lang": "es",
+   "n": 2,
+   "http": 200,
+   "truncated": false,
+   "chars": 4533,
+   "words": 752,
+   "tokensUsed": 16788,
+   "ms": 21608,
+   "endsClean": true
+  },
+  {
+   "lang": "es",
+   "n": 3,
+   "http": 200,
+   "truncated": false,
+   "chars": 3862,
+   "words": 639,
+   "tokensUsed": 18181,
+   "ms": 16213,
+   "endsClean": true
+  },
+  {
+   "lang": "es",
+   "n": 4,
+   "http": 200,
+   "truncated": false,
+   "chars": 4478,
+   "words": 692,
+   "tokensUsed": 19673,
+   "ms": 17029,
+   "endsClean": true
+  },
+  {
+   "lang": "es",
+   "n": 5,
+   "http": 200,
+   "truncated": false,
+   "chars": 4352,
+   "words": 763,
+   "tokensUsed": 22003,
+   "ms": 20968,
+   "endsClean": true
+  },
+  {
+   "lang": "en",
+   "n": 1,
+   "http": 200,
+   "truncated": false,
+   "chars": 5313,
+   "words": 881,
+   "tokensUsed": 14544,
+   "ms": 21483,
+   "endsClean": true
+  },
+  {
+   "lang": "en",
+   "n": 2,
+   "http": 200,
+   "truncated": false,
+   "chars": 4249,
+   "words": 697,
+   "tokensUsed": 15961,
+   "ms": 19490,
+   "endsClean": true
+  },
+  {
+   "lang": "en",
+   "n": 3,
+   "http": 200,
+   "truncated": false,
+   "chars": 3694,
+   "words": 638,
+   "tokensUsed": 17290,
+   "ms": 15111,
+   "endsClean": true
+  },
+  {
+   "lang": "en",
+   "n": 4,
+   "http": 200,
+   "truncated": false,
+   "chars": 5315,
+   "words": 805,
+   "tokensUsed": 19095,
+   "ms": 20953,
+   "endsClean": true
+  },
+  {
+   "lang": "en",
+   "n": 5,
+   "http": 200,
+   "truncated": false,
+   "chars": 3763,
+   "words": 670,
+   "tokensUsed": 19995,
+   "ms": 15312,
+   "endsClean": true
+  }
+ ],
+ "checks": [
+  {
+   "id": "ES142-REAL es: repetición del mismo requestId no gasta ni cambia truncated",
+   "ok": true,
+   "detail": "http=200 replayed=true gasto=0"
+  },
+  {
+   "id": "ES142-REAL es: GET /api/messages coincide con las respuestas (truncated:true = 0)",
+   "ok": true,
+   "detail": "bots=5 truncadas=0"
+  },
+  {
+   "id": "ES142-REAL en: repetición del mismo requestId no gasta ni cambia truncated",
+   "ok": true,
+   "detail": "http=200 replayed=true gasto=0"
+  },
+  {
+   "id": "ES142-REAL en: GET /api/messages coincide con las respuestas (truncated:true = 0)",
+   "ok": true,
+   "detail": "bots=5 truncadas=0"
+  },
+  {
+   "id": "ES142-REAL es: cuántas de 5 respuestas largas cierran por tope de 3000 (truncated:true)",
+   "ok": true,
+   "detail": "truncadas=0/5 · palabras (mín–máx)=639–839 · tokens gastados por llamada=15213,16788,18181,19673,22003 · terminan en signo de cierre=5/5"
+  },
+  {
+   "id": "ES142-REAL en: cuántas de 5 respuestas largas cierran por tope de 3000 (truncated:true)",
+   "ok": true,
+   "detail": "truncadas=0/5 · palabras (mín–máx)=638–881 · tokens gastados por llamada=14544,15961,17290,19095,19995 · terminan en signo de cierre=5/5"
+  }
+ ]
+}

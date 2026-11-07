@@ -1,0 +1,32 @@
+[
+ {
+  "id": "F5 detector de teléfonos: positivos (16 formatos ES/EN/CO/MX/ES) y negativos (10 con años, cantidades, fechas, planes)",
+  "ok": true,
+  "detail": "omisiones=0 falsos positivos=0"
+ },
+ {
+  "id": "F3/F4 las respuestas fijas de seguridad y la nota de apoyo (72 combinaciones de idioma y país) no traen teléfonos ni lanzan excepciones",
+  "ok": true,
+  "detail": "72 combinaciones limpias; registro verificado=[]"
+ },
+ {
+  "id": "F1/F2 el prompt real de cada llamada (5, con peticiones de teléfono en ES y EN y un intento de inyección): lleva la regla al final, no trae teléfonos y no cambia por lo que escribe la persona",
+  "ok": true,
+  "detail": "llamadas=5 regla=true al_final=true sin_telefonos=true variantes_de_prompt=1"
+ },
+ {
+  "id": "F2b con historial largo (25 turnos) y diario con un número: la regla sigue al final del prompt de sistema y el texto de la persona viaja solo como mensaje",
+  "ok": true,
+  "detail": "largo del prompt=1671"
+ },
+ {
+  "id": "F7 riesgo: es43-t109 (48 casos): ideación ALTO/MEDIO ES y EN, negativos sin falsos positivos, interrupción sin llamar al proveedor, sin persistir riesgo",
+  "ok": true,
+  "detail": "48/48"
+ },
+ {
+  "id": "F6b 12 turnos a la vez con proveedor de 2 s (pool 5): todos 200, sin 5xx",
+  "ok": true,
+  "detail": "200,200,200,200,200,200,200,200,200,200,200,200"
+ }
+]

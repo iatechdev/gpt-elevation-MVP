@@ -1,0 +1,50 @@
+{"id":"A3-0 dos personas sintéticas A y B","ok":true,"d":""}
+{"id":"S1a A crea una entrada de diario","ok":true,"d":"http=201 id=87"}
+{"id":"S1b B intenta GET sobre la entrada de A: 403/404","ok":true,"d":"http=404"}
+{"id":"S1b B intenta PUT sobre la entrada de A: 403/404","ok":true,"d":"http=404"}
+{"id":"S1b B intenta DELETE sobre la entrada de A: 403/404","ok":true,"d":"http=404"}
+{"id":"S1c B no ve entradas de A en su lista","ok":true,"d":"http=200"}
+{"id":"S1d la entrada de A sigue intacta tras los intentos de B","ok":true,"d":"http=200"}
+{"id":"S1e A crea una evidencia (borrador)","ok":true,"d":"http=201 {\"id\":51,\"version\":1,\"status\":\"draft\",\"created\":true}"}
+{"id":"S1f B intenta GET sobre la evidencia de A: 403/404 (no 200)","ok":true,"d":"http=404"}
+{"id":"S1f B intenta PUT sobre la evidencia de A: 403/404 (no 200)","ok":true,"d":"http=400"}
+{"id":"S1f B intenta DELETE sobre la evidencia de A: 403/404 (no 200)","ok":true,"d":"http=404"}
+{"id":"U16a A: vista previa de exportación personal (201) con sus propios datos","ok":true,"d":"http=201 {\"id\":\"d11a33d1-2dd1-4e10-937e-feb3826c3a0f\",\"expiresAt\":\"2026-11-02T15:11:37.548Z\",\"data\":{\"schemaVersion\":1,\"type\":\"pe"}
+{"id":"S1g B no puede descargar la exportación de A: 403/404","ok":true,"d":"http=404"}
+{"id":"U16b A descarga su exportación (200) y contiene su entrada y nada de B","ok":true,"d":"http=200"}
+{"id":"U16c exportación profesional: 4xx/503 controlado, nunca 5xx genérico ni datos de otros","ok":true,"d":"http=503 {\"code\":\"professional_contract_pending\",\"error\":\"La exportación profesional aún "}
+{"id":"S2a exportación sin sesión: 401/403","ok":true,"d":"http=403"}
+{"id":"S2b token firma manipulada (rol cambiado a superadmin): 401/403","ok":true,"d":"http=401"}
+{"id":"S2b token algoritmo «none»: 401/403","ok":true,"d":"http=401"}
+{"id":"S2b token basura: 401/403","ok":true,"d":"http=401"}
+{"id":"S2b token vacío: 401/403","ok":true,"d":"http=403"}
+{"id":"S2c persona usuaria en /api/admin/usuarios: 403","ok":true,"d":"http=403"}
+{"id":"S2d persona usuaria en /api/superadmin/ai-usage: 401/403/404 (nunca 200)","ok":true,"d":"http=403"}
+{"id":"S2d persona usuaria en /api/admin/metrics: 401/403/404 (nunca 200)","ok":true,"d":"http=403"}
+{"id":"S2d persona usuaria en /api/admin/pricing: 401/403/404 (nunca 200)","ok":true,"d":"http=403"}
+{"id":"S2d persona usuaria en /api/admin/matching: 401/403/404 (nunca 200)","ok":true,"d":"http=403"}
+{"id":"S2d persona usuaria en /api/therapist/validation: 401/403/404 (nunca 200)","ok":true,"d":"http=403"}
+{"id":"S2d persona usuaria en /api/board/manifest: 401/403/404 (nunca 200)","ok":true,"d":"http=403"}
+{"id":"A3-1 sesiones sintéticas de admin y terapeuta","ok":true,"d":"admin/therapist"}
+{"id":"S2e terapeuta en /api/admin/usuarios: 403","ok":true,"d":"http=403"}
+{"id":"S2f admin NO puede crear superadmin (403) y el mensaje está en tuteo","ok":true,"d":"http=403 No tienes permisos para crear usuarios con ese rol."}
+{"id":"S2g admin en ruta de superadmin: 403","ok":true,"d":"http=403"}
+{"id":"S2h admin lista usuarios (permitido) sin exponer contraseñas ni claves","ok":true,"d":"http=200"}
+{"id":"S1h terapeuta no accede a hojas de vida de personas (403)","ok":true,"d":"http=403"}
+{"id":"S3a inyección SQL en login: 4xx, no 5xx ni sesión","ok":true,"d":"http=401"}
+{"id":"S3b JSON roto: 400, no 5xx","ok":true,"d":"http=400"}
+{"id":"S3c cuerpo de 12 MB: 413/400, no 5xx","ok":true,"d":"http=413"}
+{"id":"S3d entrada de diario de 20.000 caracteres: 400 (límite) y no 5xx","ok":true,"d":"http=400"}
+{"id":"S3e HTML, nulos y RTL en el diario: sin 5xx","ok":true,"d":"http=201"}
+{"id":"S4a cabeceras: nosniff, DENY, CSP, HSTS, sin X-Powered-By","ok":true,"d":"{\"xcto\":\"nosniff\",\"xfo\":\"DENY\",\"csp\":true,\"hsts\":true}"}
+{"id":"S4b CORS: el origen https://evil.example NO recibe Access-Control-Allow-Origin","ok":true,"d":"acao=https://backend-staging-e3a6.up.railway.app"}
+{"id":"S4c respuestas autenticadas sin caché pública (Cache-Control no-store/private)","ok":true,"d":"cache-control=no-store"}
+{"id":"S5 login con cuentas inexistentes: mismo código que contraseña errónea (sin enumeración de cuentas)","ok":true,"d":"401,401,401,401"}
+{"id":"R1 endpoints de lectura sin IA (40 llamadas): mediana < 500 ms y p95 < 1500 ms","ok":true,"d":"mediana=154ms p95=193ms"}
+{"id":"R4 6 personas simultáneas (90 lecturas, sin IA): 0 respuestas 5xx y p95 < 2 s","ok":true,"d":"5xx=0 p95=302ms total=2590ms"}
+{"id":"R5 la página inicial responde 200 y /api/health responde OK","ok":true,"d":"health=200 landing=91ms"}
+{"id":"U16d B solicita borrar su cuenta con confirmación: 202","ok":true,"d":"http=202 {\"id\":\"51a47f13-2cc4-437b-a699-3e51f373ee31\",\"status\":\"accepted\",\"requestedAt\":\""}
+{"id":"U16e tras borrar la cuenta, el token de B da 401","ok":true,"d":"http=401"}
+{"id":"U16f B ya no puede iniciar sesión (4xx)","ok":true,"d":"http=403"}
+{"id":"U16g el borrado de B no afectó a los datos de A","ok":true,"d":"http=200"}
+{"id":"U16h pedir el borrado SIN confirmar es rechazado (4xx) y A sigue activa","ok":true,"d":"http=400"}

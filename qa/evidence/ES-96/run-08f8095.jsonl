@@ -1,0 +1,33 @@
+{"id":"ES96-L3 [PRIV] sin autorización: historial, historia, alta de nota y resumen → 403 `consent_required` ES/EN, sin datos y sin llamar a la IA","ok":true,"detail":"403/403/403/403 llamadasIA=0"}
+{"id":"ES96-L1 [PRIV] la lista de pacientes sin autorización trae solo id y nombre (campos neutros) y `sharing:false`: sin correo, ánimo ni valoración","ok":true,"detail":"{\"id\":71,\"name\":\"Nombre Real p1\",\"email\":\"\",\"active\":true,\"createdAt\":\"2026-10-29T11:05:07.624Z\",\"sharing\":false,\"lastMood\":null,\"moodTrend\":\"neutral\",\"avgRating\":null,\"totalSessions\":0,\"sessionsThisW"}
+{"id":"ES96-L2 las alertas omiten a la persona sin autorización","ok":true,"detail":"status=200"}
+{"id":"ES96-L2b [INFO] lista de sesiones del terapeuta sin autorización","info":"status=200"}
+{"id":"ES96-L4 con autorización: historial, historia, nota y resumen responden 200/201 y la lista trae `sharing:true`","ok":true,"detail":"200/200/201/200 put=200"}
+{"id":"ES96-P1 [PRIV] ni el diario ni el chat de la persona llegan al terapeuta por ninguna de estas rutas, ni con autorización","ok":true,"detail":"revisado 4 rutas"}
+{"id":"ES96-L6 [PRIV] al reasignar a la persona a otro terapeuta, el nuevo NO hereda la autorización (403) y el anterior pierde el acceso (404)","ok":true,"detail":"nuevo=403,403,403,403 anterior=404,404,404,404"}
+{"id":"ES96-L6b [INFO] estado que ve la persona tras la reasignación","info":"{\"purpose\":\"therapist_sharing\",\"required\":false,\"scope\":\"therapist-68\",\"applicable\":true,\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null}"}
+{"id":"ES96-L6c [PRIV] si vuelve al terapeuta original SIN que la persona lo ratifique, la autorización anterior sigue vigente (alcance por terapeuta) — se informa el comportamiento","ok":true,"detail":"volver al original: 200,200,201,200"}
+{"id":"ES96-L7 [SEG] la persona no puede elegir el alcance: un `scope` en el cuerpo se rechaza (400) y no se crea autorización para otro terapeuta","ok":true,"detail":"400/400 filas=0"}
+{"id":"ES96-L7c sin terapeuta vinculado no se puede autorizar (409 `no_therapist`) y no queda fila","ok":true,"detail":"status=409"}
+{"id":"ES96-L8 [SEG] terapeuta sin vínculo → 404; participante y administrador → 403; sin sesión → 401/403","ok":true,"detail":"404,404,404,404 403,403,403,403 403,403,403,403 403"}
+{"id":"ES96-R1 [PRIV] tras revocar, la siguiente lectura ya es 403 en todas las rutas","ok":true,"detail":"200,200,201,200 → 403,403,403,403"}
+{"id":"ES96-R1b volver a autorizar restablece el acceso","ok":true,"detail":"200/200/201/200"}
+{"id":"ES96-R2 la persona se desvincula: 200 idempotente (segunda llamada también), el terapeuta pierde el acceso (404), la sesión futura queda cancelada con motivo y la autorización retirada","ok":true,"detail":"d=200/200 acceso=404,404,404,404 sesión={\"status\":\"cancelled\",\"cancelReason\":\"unlinked_by_person\"} consent=[{\"status\":\"revoked\",\"scope\":\"therapist-67\"}]"}
+{"id":"ES96-R2b [PRIV] si un administrador la vuelve a vincular al MISMO terapeuta, no ve nada hasta que la persona autorice de nuevo (la autorización se retiró)","ok":true,"detail":"403/403/403/403"}
+{"id":"ES96-R3 [SEG] una persona solo afecta a su propia autorización y vínculo: el DELETE de P1 no desvincula a X ni cambia su consentimiento","ok":true,"detail":"P1 unlink=true X sigue vinculada=true"}
+{"id":"ES96-R4 entradas inválidas en el consentimiento (estado, cuerpo vacío, tipo, SQL) → 4xx sin 500; propósito desconocido 4xx; sin sesión 401/403; un terapeuta no usa el DELETE de la persona (403)","ok":true,"detail":"ok desconocido=404 sinSesión=403 terapeuta=403 admin=409"}
+{"id":"ES96-E1 [PRIV] aceptar la eliminación desvincula, desactiva, cancela las sesiones futuras con motivo y corta el acceso al instante (404 en todas las rutas; ausente de la lista)","ok":true,"detail":"del=202 acceso=404,404,404,404 sesión=cancelled/account_deletion"}
+{"id":"ES96-E2 [PRIV] una solicitud de eliminación anterior al cambio (fila sin desvincular) también corta el acceso","ok":true,"detail":"404/404/404/404"}
+{"id":"ES96-E3 una cuenta inactiva deja de ser accesible","ok":true,"detail":"404/404/404/404"}
+{"id":"ES96-E4 [SEG] si la desvinculación falla a mitad, la solicitud de eliminación no queda a medias (todo o nada) y no hay 200","ok":true,"detail":"status=503 solicitudes=0 vinculada=true activa=true"}
+{"id":"ES96-C1 [PRIV] 20 lecturas simultáneas con una revocación: ninguna da 5xx y TODAS las lecturas iniciadas después de confirmada la revocación dan 403","ok":true,"detail":"durante: 403 después: 403"}
+{"id":"ES96-C2 una revocación concurrente con un resumen en curso termina rápido (< 2 s) y no queda colgada por el bloqueo","ok":true,"detail":"revocación=200 total=24 ms resumen=403"}
+{"id":"ES96-C3 50 listas simultáneas del terapeuta: sin 5xx y el servidor sigue sano","ok":true,"detail":"estados=200 p95=690 ms"}
+{"id":"ES96-H1 `Cache-Control: no-store` en las respuestas de los routers del terapeuta y de sesiones, también en errores 403/404","ok":true,"detail":"10 respuestas"}
+{"id":"ES96-S1 [INFO] crear sesión con una persona sin autorización","info":"status=201"}
+{"id":"ES96-S2 [PRIV] la lista de sesiones del terapeuta no muestra el correo de quien no autorizó","ok":true,"detail":"status=200"}
+{"id":"ES96-S3 [INFO] rutas de sesión sin autorización de compartir (start/notas/end)","info":"start=200 nota=201 leer=200 end=200 correoEnRespuestas=false"}
+{"id":"ES96-S4 [PRIV] ninguna respuesta de la sesión (inicio, notas, cierre) expone el correo de quien no autorizó","ok":true,"detail":""}
+{"id":"ES96-L5 [PRIV] los registros del servidor no contienen correos, canarios ni nombres","ok":true,"detail":"líneas=161"}
+{"id":"ES96-R5 [PERF] lista de 50 pacientes (25 con autorización): p95 < 300 ms (umbral propuesto)","ok":true,"detail":"p95=61 ms"}
+{"fin":true}

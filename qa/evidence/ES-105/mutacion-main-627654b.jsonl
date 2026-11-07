@@ -1,0 +1,9 @@
+{"id":"ES105-M01 los 9 casos de borde dan el mismo promedio correcto en resumen, recomendaciones y matching (sin registros/nulos: sin número inventado)","ok":false,"detail":"recomend 1 registro (4,5): 9.0 (502) | matching 1 registro (4,5): 9.0 (502) | recomend 2 registros (4,5)(3,3): 7.5 (502) | matching 2 registros (4,5)(3,3): 7.5 (502) | recomend ambos nulos: 0.0 (502) | matching ambos nulos: 0.0 (502) | recomend mezclados: 3.7 (502) | matching mezclados: 3.7 (502) | recomend todos 5: 10.0 (502) | matching todos 5: 10.0 (502) | recomend todos 1: 2.0 (502) | matching todos 1: 2.0 (502)"}
+{"id":"ES105-M02 con 30 registros aleatorios: resumen sobre 30, recomendaciones sobre los 7 más recientes, matching sobre los 14 más recientes; todos dentro de 1–5","ok":false,"detail":"resumen=3.1/3.1 recomend=6.0/3.0 matching=6.4/3.2"}
+{"id":"ES105-V01 valores fuera de 1–5 (7, 0, -3, 99) se ignoran en las tres rutas; el promedio se calcula con los válidos","ok":false,"detail":"esperado=3.5 resumen=16.7 recomend=29.3 matching=29.3"}
+{"id":"ES105-V02 si todos los valores están fuera de rango no se inventa un promedio (N/A / No data)","ok":false,"detail":"9.0 | 9.0 | 9.0"}
+{"id":"ES105-F01 respuesta vacía (content []) y solo espacios del proveedor → 502 `provider_unavailable` reintentable, sin `summary` vacío","ok":false,"detail":"200/502 {\"error\":\"Could not generate summary.\",\"code\":\"provider_unavailable\",\"retryable\":true}"}
+{"id":"ES105-F02 una respuesta con texto sigue dando 200 con `summary` y `basedOn`","ok":true,"detail":"status=200 summary=\"Resumen breve y neutral.\""}
+{"id":"ES105-F03 [INFO] el resumen se devuelve recortado (trim)","info":"\"  \\n Con espacios alrededor.  \\n\""}
+{"id":"ES105-S01 [PRIV] otro terapeuta → 404 y participante → 403 (sin cambios)","ok":true,"detail":"404/403"}
+{"fin":true}

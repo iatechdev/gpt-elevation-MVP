@@ -1,0 +1,117 @@
+{
+  "generado": "2026-10-30T10:09:03.793Z",
+  "entorno": "staging",
+  "api": "https://backend-staging-e3a6.up.railway.app",
+  "turnos": [
+    {
+      "n": 1,
+      "cuenta": "P1",
+      "requestId": "qaaa563e57ac0b8f82",
+      "http": 200,
+      "ms": 10000,
+      "caracteres": 3406,
+      "termina_en_puntuacion": true,
+      "final": "lo con SkillMap, usando solo los ejemplos profesionales que tú elijas.",
+      "tokens_usados": 19649
+    },
+    {
+      "n": 2,
+      "cuenta": "P1",
+      "requestId": "qad5f032d5718ad276",
+      "http": 200,
+      "ms": 5529,
+      "caracteres": 2046,
+      "termina_en_puntuacion": true,
+      "final": "uieres, elige una y la exploramos juntos, o volvemos al plan de datos.",
+      "tokens_usados": 20447
+    },
+    {
+      "n": 3,
+      "cuenta": "P2",
+      "requestId": "qa316b4fd9840a5ecb",
+      "http": 200,
+      "ms": 7706,
+      "caracteres": 1769,
+      "termina_en_puntuacion": true,
+      "final": "cias de tu país o avisa a alguien de confianza. Aquí sigo, a tu ritmo.",
+      "tokens_usados": 17482
+    },
+    {
+      "n": 4,
+      "cuenta": "P2",
+      "requestId": "qa942ac053af61df33",
+      "http": 200,
+      "ms": 5257,
+      "caracteres": 1931,
+      "termina_en_puntuacion": true,
+      "final": "cias de tu país o avisa a alguien de confianza. Aquí sigo, a tu ritmo.",
+      "tokens_usados": 18179
+    },
+    {
+      "n": 5,
+      "cuenta": "P3",
+      "requestId": "qab118743acf9ad545",
+      "http": 200,
+      "ms": 6616,
+      "caracteres": 3065,
+      "termina_en_puntuacion": true,
+      "final": "tform's own controls.\n\nWhich month feels like the best place to start?",
+      "tokens_usados": 18508
+    },
+    {
+      "n": 6,
+      "cuenta": "P3",
+      "requestId": "qa7ffc9d724d8cbc36",
+      "http": 200,
+      "ms": 7774,
+      "caracteres": 3405,
+      "termina_en_puntuacion": true,
+      "final": "t and we can look together at what it shows and what is still missing.",
+      "tokens_usados": 19764
+    },
+    {
+      "n": 7,
+      "cuenta": "P6",
+      "requestId": "qad32e6a0604672cbd",
+      "http": 200,
+      "ms": 5740,
+      "caracteres": 2243,
+      "termina_en_puntuacion": true,
+      "final": "\n\nSi quieres, retomamos la exploración profesional cuando te convenga.",
+      "tokens_usados": 19092
+    },
+    {
+      "n": 8,
+      "cuenta": "P6",
+      "requestId": "qa5b69d49eefc898f8",
+      "http": 200,
+      "ms": 6410,
+      "caracteres": 2432,
+      "termina_en_puntuacion": true,
+      "final": "res que adapte los ejercicios a tu contexto de contadora o de docente?",
+      "tokens_usados": 20175
+    },
+    {
+      "n": 9,
+      "cuenta": "P5",
+      "requestId": "qa52fc42fcb53195b9",
+      "http": 200,
+      "ms": 6241,
+      "caracteres": 2512,
+      "termina_en_puntuacion": true,
+      "final": "e hayas hecho? Si me lo cuentas con tus palabras, lo ordenamos juntos.",
+      "tokens_usados": 18867
+    },
+    {
+      "n": 10,
+      "cuenta": "P5",
+      "requestId": "qa9f9ed807f0594ba8",
+      "http": 200,
+      "ms": 6314,
+      "caracteres": 3146,
+      "termina_en_puntuacion": true,
+      "final": "l, not in this chat.\n\nIf you want, I can go deeper on any single week.",
+      "tokens_usados": 19997
+    }
+  ]
+}

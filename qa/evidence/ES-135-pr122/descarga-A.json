@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "type": "personal",
+  "locale": "es",
+  "profile": {
+    "id": 12,
+    "name": "<img src=x onerror=alert(1)> A",
+    "email": "qa135-a-1793495374160@example.test",
+    "role": "user",
+    "active": true,
+    "onboardingCompleted": false,
+    "motivation": null,
+    "planId": null,
+    "createdAt": "2026-11-01T01:09:34.349Z",
+    "updatedAt": "2026-11-01T01:09:34.349Z"
+  },
+  "messages": [
+    {
+      "id": 3,
+      "role": "user",
+      "content": "Mensaje de chat de A CANARIO-A-1793495374160",
+      "createdAt": "2026-11-01T01:09:35.136Z",
+      "updatedAt": "2026-11-01T01:09:35.136Z"
+    },
+    {
+      "id": 4,
+      "role": "assistant",
+      "content": "Respuesta sintética #3",
+      "createdAt": "2026-11-01T01:09:35.137Z",
+      "updatedAt": "2026-11-01T01:09:35.137Z"
+    }
+  ],
+  "chatTurns": [
+    {
+      "id": 2,
+      "requestId": "q1351793495374160",
+      "status": "completed",
+      "userContent": "Mensaje de chat de A CANARIO-A-1793495374160",
+      "replyContent": "Respuesta sintética #3",
+      "failureCode": null,
+      "createdAt": "2026-11-01T01:09:35.111Z",
+      "updatedAt": "2026-11-01T01:09:35.138Z"
+    }
+  ],
+  "diary": [
+    {
+      "id": 206,
+      "entryDate": "2026-11-01",
+      "content": "Diario 0 CANARIO-A-1793495374160",
+      "createdAt": "2026-11-01T01:09:35.077Z",
+      "updatedAt": "2026-11-01T01:09:35.077Z"
+    },
+    {
+      "id": 207,
+      "entryDate": "2026-10-31",
+      "content": "Diario 1 CANARIO-A-1793495374160",
+      "createdAt": "2026-11-01T01:09:35.087Z",
+      "updatedAt": "2026-11-01T01:09:35.087Z"
+    },
+    {
+      "id": 208,
+      "entryDate": "2026-10-30",
+      "content": "Diario 2 CANARIO-A-1793495374160",
+      "createdAt": "2026-11-01T01:09:35.095Z",
+      "updatedAt": "2026-11-01T01:09:35.095Z"
+    }
+  ],
+  "moods": [
+    {
+      "id": 2,
+      "checkin_mood": 3,
+      "checkout_mood": 4,
+      "date": "2026-11-01",
+      "createdAt": "2026-11-01T01:09:35.107Z",
+      "updatedAt": "2026-11-01T01:09:35.107Z"
+    }
+  ],
+  "ratings": [],
+  "recommendations": [],
+  "consents": [],
+  "consentHistory": [],
+  "planRequests": [],
+  "aiUsage": [
+    {
+      "id": 2,
+      "kind": "chat",
+      "requestId": "q1351793495374160",
+      "model": "claude-haiku-5-5",
+      "periodKey": "2026-11-01",
+      "status": "completed",
+      "inputTokens": 1,
+      "outputTokens": 1,
+      "costMicros": null,
+      "currency": null,
+      "latencyMs": 10,
+      "errorCode": null,
+      "createdAt": "2026-11-01T01:09:35.124Z"
+    }
+  ],
+  "aiBudget": [
+    {
+      "id": 3,
+      "periodKey": "2026-11-01",
+      "used": 2,
+      "createdAt": "2026-11-01T01:09:35.121Z",
+      "updatedAt": "2026-11-01T01:09:35.132Z"
+    }
+  ],
+  "careerContext": [],
+  "bridgeTransfers": [],
+  "evidence": [],
+  "evidenceVersions": [],
+  "participantContext": [],
+  "participantResumes": [],
+  "skillAssessments": [],
+  "skillCandidates": [],
+  "aiJobs": [],
+  "routeConstraints": [],
+  "routeChoices": [],
+  "routeReviewRequests": [],
+  "invalidations": [],
+  "careerReminders": [],
+  "careerPlans": [],
+  "careerReviews": [],
+  "careerExperimentVersions": [],
+  "careerExperiments": []
+}

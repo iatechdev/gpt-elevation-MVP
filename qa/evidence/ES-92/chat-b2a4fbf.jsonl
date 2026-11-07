@@ -1,0 +1,13 @@
+{"id":"ES92-I01 chat normal: las frases nuevas de nivel alto interrumpen con el mensaje de seguridad","ok":true,"detail":"4/4"}
+{"id":"ES92-I02 chat normal: en nivel alto el proveedor de IA no recibe ninguna llamada","ok":true,"detail":"llamadas=0"}
+{"id":"ES92-I03 chat normal: las de nivel medio responden y añaden la nota de apoyo","ok":true,"detail":"4/4"}
+{"id":"ES92-I04 chat normal: en nivel medio el proveedor recibe una llamada por mensaje","ok":true,"detail":"llamadas=4"}
+{"id":"ES92-I05 chat normal: un uso normal («me quiero cortar el pelo…») se responde sin nota de crisis","ok":true,"detail":"status=200"}
+{"id":"ES92-I01 Brújula: las frases nuevas de nivel alto interrumpen con el mensaje de seguridad","ok":true,"detail":"4/4"}
+{"id":"ES92-I02 Brújula: en nivel alto el proveedor de IA no recibe ninguna llamada","ok":true,"detail":"llamadas=0"}
+{"id":"ES92-I03 Brújula: las de nivel medio responden y añaden la nota de apoyo","ok":true,"detail":"4/4"}
+{"id":"ES92-I04 Brújula: en nivel medio el proveedor recibe una llamada por mensaje","ok":true,"detail":"llamadas=4"}
+{"id":"ES92-I05 Brújula: un uso normal («me quiero cortar el pelo…») se responde sin nota de crisis","ok":true,"detail":"status=200"}
+{"id":"ES92-P01 ninguna columna guarda nivel de riesgo (nada de riesgo en la base)","ok":true,"detail":"[]"}
+{"id":"ES92-P02 los mensajes del usuario se guardan como en el chat normal (cifrados) y sin marca de riesgo","ok":true,"detail":"mensajes=36"}
+{"fin":true}
