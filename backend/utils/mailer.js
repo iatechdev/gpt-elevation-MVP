@@ -45,4 +45,44 @@ async function sendPasswordReset({ to, link, locale, minutes }) {
   return { sent: true };
 }
 
-module.exports = { providers, sendPasswordReset, passwordResetMessage };
+// ES-192: invitación por enlace. Mismo contrato que el restablecimiento: sin proveedor no se envía; nunca se registra el enlace ni el destinatario.
+const INVITATION = {
+  es: {
+    subject: 'Te invitaron a Elevation',
+    body: ({ link, hours }) => [
+      'Te invitaron a crear tu cuenta en Elevation.',
+      '',
+      `Abre este enlace para elegir tu contraseña (sirve una sola vez y caduca en ${hours} horas):`,
+      link,
+      '',
+      'Si no esperabas esta invitación, ignora este mensaje: no se crea ninguna cuenta.',
+    ].join('\n'),
+  },
+  en: {
+    subject: 'You have been invited to Elevation',
+    body: ({ link, hours }) => [
+      'You have been invited to create your Elevation account.',
+      '',
+      `Open this link to choose your password (it works once and expires in ${hours} hours):`,
+      link,
+      '',
+      'If you did not expect this invitation, ignore this message: no account is created.',
+    ].join('\n'),
+  },
+};
+
+function invitationMessage({ link, locale, hours }) {
+  const copy = INVITATION[locale === 'en' ? 'en' : 'es'];
+  return { subject: copy.subject, text: copy.body({ link, hours }) };
+}
+
+async function sendInvitation({ to, link, locale, hours }) {
+  const name = process.env.MAIL_PROVIDER;
+  if (!name) return { sent: false };
+  const send = providers[name];
+  if (typeof send !== 'function') throw new Error('Proveedor de correo no soportado.');
+  await send({ to, from: process.env.MAIL_FROM, ...invitationMessage({ link, locale, hours }) });
+  return { sent: true };
+}
+
+module.exports = { providers, sendPasswordReset, passwordResetMessage, sendInvitation, invitationMessage };
