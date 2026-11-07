@@ -19,6 +19,7 @@ const ResetPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').t
 const CheckinPage = lazy(() => import('./pages/CheckinPage.tsx').then(m => ({ default: m.CheckinPage })))
 const ChatPage = lazy(() => import('./pages/ChatPage.tsx').then(m => ({ default: m.ChatPage })))
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx').then(m => ({ default: m.PricingPage })))
+const DesignSystemPage = lazy(() => import('./cartografia/DesignSystemPage.tsx').then(m => ({ default: m.DesignSystemPage }))) // ES-152 — página interna de componentes
 const AdminLayout = lazy(() => import('./layouts/AdminLayout.tsx').then(m => ({ default: m.AdminLayout })))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard.tsx').then(m => ({ default: m.AdminDashboard })))
 const AdminPrompts = lazy(() => import('./pages/admin/AdminPrompts.tsx').then(m => ({ default: m.AdminPrompts })))
@@ -83,6 +84,7 @@ export default function App() {
       <Route path="/reset-password"  element={<ResetPasswordPage />} />
       <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/design-system" element={<DesignSystemPage />} /> {/* ES-152 — sin datos ni navegación; solo documenta el sistema */}
 
       {/* Regular user */}
       <Route element={<ProtectedRoute />}>
