@@ -54,7 +54,7 @@ const noAccessVisible = page => page.getByText(/Tu rol no tiene acceso a esta pa
   const cases = [
     ['user', '/app/chat', true], ['user', '/admin/dashboard', false], ['user', '/therapist/dashboard', false], ['user', '/board/manifest', false],
     ['therapist', '/therapist/dashboard', true], ['therapist', '/admin/dashboard', false], ['therapist', '/app/chat', false],
-    ['admin', '/admin/dashboard', true], ['admin', '/admin/users', false], ['admin', '/admin/manifest', false], ['admin', '/therapist/dashboard', false], ['admin', '/board/manifest', false],
+    ['admin', '/admin/dashboard', true], ['admin', '/admin/users', true], ['admin', '/admin/manifest', false], ['admin', '/therapist/dashboard', false], ['admin', '/board/manifest', false],
     ['superadmin', '/admin/users', true], ['superadmin', '/admin/manifest', true], ['superadmin', '/board/manifest', true], ['superadmin', '/app/chat', false],
     ['board', '/board/manifest', true], ['board', '/admin/dashboard', false], ['board', '/admin/manifest', false],
     ['user', '/app/data', true], ['admin', '/app/data', true],
@@ -81,7 +81,7 @@ const noAccessVisible = page => page.getByText(/Tu rol no tiene acceso a esta pa
 
   // 3. Marcos: estructura, teclado, 390 px y axe en ES/EN
   const frames = [
-    ['admin', '/admin/dashboard', { 'Panel': 1, 'Guías de la IA': 1, 'Personas usuarias': 0, 'Manifiesto ético': 0 }],
+    ['admin', '/admin/dashboard', { 'Panel': 1, 'Guías de la IA': 1, 'Personas usuarias': 1, 'Manifiesto ético': 0 }],
     ['superadmin', '/admin/dashboard', { 'Personas usuarias': 1, 'Manifiesto ético': 1 }],
     ['board', '/board/manifest', { 'Manifiesto ético': 1, 'Guías de la IA': 0 }],
     ['therapist', '/therapist/dashboard', { 'Panel': 1, 'Personas en facilitación': 1, 'Guías de la IA': 0 }],
@@ -138,7 +138,7 @@ const noAccessVisible = page => page.getByText(/Tu rol no tiene acceso a esta pa
   // 5. Pantalla «sin acceso»: foco, enlace al inicio del rol, axe
   for (const lang of ['es', 'en']) {
     const { ctx, page } = await open(browser, { role: 'admin', lang })
-    await page.goto(BASE + '/admin/users', { waitUntil: 'networkidle' }); await page.waitForSelector('.cg-gate')
+    await page.goto(BASE + '/admin/manifest', { waitUntil: 'networkidle' }); await page.waitForSelector('.cg-gate')
     log(`sin acceso/${lang}: enlace al inicio de su rol`, (await page.locator('.cg-gate a').getAttribute('href')) === '/admin/dashboard')
     log(`sin acceso/${lang}: el foco va al título`, await page.evaluate(() => document.activeElement?.tagName === 'H1'))
     log(`sin acceso/${lang}: un solo h1 y un solo main`, (await page.locator('h1').count()) === 1 && (await page.locator('main').count()) === 1)

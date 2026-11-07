@@ -89,7 +89,7 @@ test('ES-38: admin and superadmin keep their distinct destinations; skill catalo
   for (role of ['admin', 'superadmin']) {
     const markup = render(AdminLayout, '/admin/dashboard') // ES-153: la navegación sale del marco de administración
     for (const path of ['route-catalog', 'skill-catalog', 'dashboard', 'prompts', 'content', 'metrics', 'pilot-metrics']) assert.ok(markup.includes(`href="/admin/${path}"`))
-    assert.equal(markup.includes('href="/admin/users"'), role === 'superadmin')
+    assert.equal(markup.includes('href="/admin/users"'), true) // QA-153-01: admin y superadmin administran «Personas usuarias»
     assert.equal(markup.includes('href="/admin/manifest"'), role === 'superadmin')
     assert.match(markup, /aria-current="page"/)
   }

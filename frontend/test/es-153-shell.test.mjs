@@ -19,7 +19,7 @@ const MATRIX = {
   '/admin/dashboard': ['admin', 'superadmin'], '/admin/prompts': ['admin', 'superadmin'], '/admin/content': ['admin', 'superadmin'],
   '/admin/metrics': ['admin', 'superadmin'], '/admin/route-catalog/5': ['admin', 'superadmin'], '/admin/skill-catalog': ['admin', 'superadmin'],
   '/admin/pilot-metrics': ['admin', 'superadmin'],
-  '/admin/users': ['superadmin'], '/admin/manifest': ['superadmin'],
+  '/admin/users': ['admin', 'superadmin'], '/admin/manifest': ['superadmin'],
   '/board/manifest': ['board', 'superadmin'],
 }
 // Guardián declarado en App.tsx por grupo de rutas.
@@ -42,8 +42,8 @@ test('ES-153 estados de la compuerta: sin sesión → /login; verificando y sin 
   }
 })
 
-test('ES-153 zonas: /admin/users y /admin/manifest exigen superadministración; rutas desconocidas no tienen zona', () => {
-  assert.equal(zoneForPath('/admin/users'), 'adminSuper'); assert.equal(zoneForPath('/admin/manifest'), 'adminSuper')
+test('ES-153 zonas: /admin/manifest exige superadministración y /admin/users es de admin y superadmin; rutas desconocidas no tienen zona', () => {
+  assert.equal(zoneForPath('/admin/users'), 'admin'); assert.equal(zoneForPath('/admin/manifest'), 'adminSuper')
   assert.equal(zoneForPath('/admin/dashboard'), 'admin'); assert.equal(zoneForPath('/board/manifest'), 'board')
   assert.equal(zoneForPath('/therapist/dashboard'), 'professional'); assert.equal(zoneForPath('/app/chat'), 'person')
   assert.equal(zoneForPath('/app/data'), 'member'); assert.equal(zoneForPath('/facilitation'), 'member')
@@ -73,7 +73,7 @@ test('ES-153 navegación: cada marco muestra solo las rutas de su rol y todas ex
     const nested = /^\/(admin|board)\//.test(path) &&new RegExp(`path="${path.split('/').pop()}"`).test(app)
     assert.ok(pattern.test(app) || nested, `ruta sin pantalla: ${path}`)
   }
-  assert.deepEqual(visibleFor(ADMIN_NAV, 'admin').map(item => item.to).includes('/admin/users'), false)
+  assert.deepEqual(visibleFor(ADMIN_NAV, 'admin').map(item => item.to).includes('/admin/users'), true)
   assert.deepEqual(visibleFor(ADMIN_NAV, 'superadmin').map(item => item.to).includes('/admin/users'), true)
   assert.equal(visibleFor(ADMIN_BOARD_GROUP, 'admin').length, 0); assert.equal(visibleFor(ADMIN_BOARD_GROUP, 'superadmin').length, 1)
   assert.deepEqual(BOARD_NAV.map(item => item.to), ['/board/manifest']) // la junta solo ve el manifiesto

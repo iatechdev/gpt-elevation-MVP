@@ -9,7 +9,7 @@ export const ZONE_ROLES: Record<Zone, readonly Role[]> = {
   person: ['user'],
   professional: ['therapist'],
   admin: ['admin', 'superadmin'],
-  adminSuper: ['superadmin'], // Personas usuarias y Manifiesto ético dentro de administración
+  adminSuper: ['superadmin'], // Manifiesto ético dentro de administración (Personas usuarias es de admin y superadmin: QA-153-01, decisión de Mauricio)
   board: ['board', 'superadmin'],
   member: ['user', 'admin', 'superadmin', 'therapist', 'board'], // cualquier sesión válida (Mis datos, revisiones profesionales)
 }
@@ -18,7 +18,7 @@ export const canEnter = (role: Role, zone: Zone) => ZONE_ROLES[zone].includes(ro
 
 // Rutas de /app y /facilitation que no son solo de la persona usuaria.
 const MEMBER_PATHS = ['/app/data', '/app/professional-reviews', '/facilitation']
-const ADMIN_SUPER_PATHS = ['/admin/users', '/admin/manifest']
+const ADMIN_SUPER_PATHS = ['/admin/manifest']
 
 const under = (pathname: string, base: string) => pathname === base || pathname.startsWith(`${base}/`)
 

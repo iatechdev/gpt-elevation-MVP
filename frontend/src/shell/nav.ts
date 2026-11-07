@@ -42,7 +42,7 @@ export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/dashboard', label: 'adPanel' },
   { to: '/admin/prompts', label: 'adGuides' },
   { to: '/admin/content', label: 'adContent' },
-  { to: '/admin/users', label: 'adUsers', roles: ['superadmin'] },
+  { to: '/admin/users', label: 'adUsers' },
   { to: '/admin/metrics', label: 'adMetrics' },
   { to: '/admin/route-catalog', label: 'adRoutes' },
   { to: '/admin/skill-catalog', label: 'adSkills' },
