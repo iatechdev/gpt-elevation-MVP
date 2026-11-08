@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/*.test.cjs",
+    "test": "node --require ./test/quiet-console.cjs --test test/*.test.cjs",
     "test:context:postgres": "node scripts/test-context-postgres.cjs",
     "db:local": "node scripts/db-local.cjs",
     "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs",

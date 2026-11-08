@@ -54,12 +54,13 @@ test('ES-87 configuración: valores por defecto y topes duros', () => {
 test('ES-87 registro: solo campos permitidos y valores escalares cortos; nada de texto de personas', () => {
   const lines = [];
   const log = createLogger((l) => lines.push(l));
-  log('job_failed', { jobId: 7, fence: 2, errorCode: 'invalid_output', retryable: true, text: 'CANARIO-TEXTO', payload: 'CANARIO-PAYLOAD', userId: 99, email: 'a@b.c',
+  log('job_failed', { jobId: 7, fence: 2, errorCode: 'invalid_output', retryable: true, text: 'CANARIO-TEXTO', payload: 'CANARIO-PAYLOAD', userId: 9876543, email: 'a@b.c',
     reason: 'x'.repeat(200) + ' con espacios y ñ', extra: { deep: 'CANARIO-OBJ' } });
   const entry = JSON.parse(lines[0]);
   assert.deepEqual(Object.keys(entry).sort(), ['errorCode', 'event', 'fence', 'jobId', 'reason', 'retryable', 't']);
   assert.ok(entry.reason.length <= 64 && /^[A-Za-z0-9_.:-]+$/.test(entry.reason));
-  assert.ok(!lines[0].includes('CANARIO') && !lines[0].includes('99') && !lines[0].includes('@'));
+  // ES-144: el canario del userId es largo: con '99' la prueba fallaba al azar cuando el sello de tiempo (t) traía esos dígitos.
+  assert.ok(!lines[0].includes('CANARIO') && !lines[0].includes('9876543') && !lines[0].includes('@'));
   // El código de un error nunca es su mensaje.
   const error = Object.assign(new Error('SELECT * FROM "Users" WHERE email=\'secreto@x.y\''), { name: 'SequelizeDatabaseError', parent: { code: '42501' } });
   assert.equal(codeOf(error), '42501');
