@@ -11,7 +11,7 @@ const ROLE = { persona: 'user', terapeuta: 'therapist', admin: 'admin', superadm
 // Acepta «correo: clave», «correo | clave», «correo = clave», «correo clave» o un bloque con una línea de clave/password debajo del correo.
 const secretFor = email => {
   const i = lines.findIndex(l => l.toLowerCase().includes(email)); if (i < 0) return null
-  const same = lines[i].slice(lines[i].toLowerCase().indexOf(email) + email.length).replace(/^[\s:=|,;\-–>]+/, '').trim(); if (same) return same.split(/\s+\|\s+|\s{2,}/)[0].trim()
+  const same = lines[i].slice(lines[i].toLowerCase().indexOf(email) + email.length).replace(/^[\s:=|,;\-–>]+/, '').trim(); if (same) return same.replace(/^(?:clave|contrase(?:ñ|n)a|password|pass|pwd)\s*[:=]\s*/i, '').split(/\s+\|\s+|\s{2,}/)[0].trim()
   for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) { const m = lines[j].match(/(?:clave|contrase(?:ñ|n)a|password|pass|pwd)\s*[:=]\s*(.+)$/i); if (m) return m[1].trim() }
   return null
 }
