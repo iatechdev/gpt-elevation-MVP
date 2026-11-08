@@ -1,14 +1,9 @@
 
 // HU-046 — Route guard for /therapist/* paths
+// ES-153: rol profesional verificado en el servidor; otro rol ve la pantalla «sin acceso».
 
-import { Navigate, Outlet } from 'react-router-dom'
+import { RoleGate } from '../shell/RoleGate'
 
 export function TherapistRoute() {
-  const token = localStorage.getItem('elevation_token')
-  const role  = localStorage.getItem('elevation_role')
-
-  if (!token) return <Navigate to="/login" replace />
-  if (role !== 'therapist') return <Navigate to="/" replace />
-
-  return <Outlet />
+  return <RoleGate zone="professional" />
 }

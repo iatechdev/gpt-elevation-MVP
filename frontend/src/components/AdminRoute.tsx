@@ -1,11 +1,8 @@
-import { Navigate } from 'react-router-dom'
 import { type ReactNode } from 'react'
+import { RoleGate } from '../shell/RoleGate'
 
+// ES-153: administración y superadministración; /admin/manifest exige superadministración (Personas usuarias: admin y superadmin) (shell/access.ts).
+// Un rol sin permiso ve la pantalla «Tu rol no tiene acceso a esta pantalla» en vez de una redirección silenciosa.
 export function AdminRoute({ children }: { children: ReactNode }) {
-  const token = localStorage.getItem('elevation_token')
-  const role  = localStorage.getItem('elevation_role')
-  if (!token || (role !== 'admin' && role !== 'superadmin')) {
-    return <Navigate to="/login" replace />
-  }
-  return <>{children}</>
+  return <RoleGate zone="admin">{children}</RoleGate>
 }
