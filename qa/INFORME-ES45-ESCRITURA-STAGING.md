@@ -66,3 +66,46 @@ Staging: la versión desplegada cambió durante las pruebas (commit 8836e76 al i
 Persona4 y persona5 desechables desactivadas; entradas de diario QA2 eliminadas; hoja de vida de persona4 eliminada; las 4 cuentas del equipo no se tocaron. Consumo de IA de esta ronda: 1 PDF + 1 mensaje de chat (por debajo de los ≈ 45.000 tokens aprobados; no medido con exactitud).
 
 Scripts: qa/staging-es45-b-api.cjs, qa/staging-es45-b-ui.cjs (PR #100).
+
+---
+
+# Cadena positiva (plan Jira ES-45 comentario 11040, aprobado por Mauricio)
+
+8-nov-2026 · staging commit 5cad756 · personas desechables QA2 A y B · IA real: 4 llamadas (2 mensajes de chat + 2 propuestas de Skill Map; dentro del tope aprobado de 4 llamadas / ≈ 60.000 tokens; el consumo exacto no se midió).
+Scripts: `qa/staging-es45-cadena.cjs` (API, 56 comprobaciones en la corrida final: 56 OK, 0 FALLA) y `qa/staging-es45-cadena-ui.cjs` (pantallas).
+
+## Veredicto: sin Críticos ni Altos. 1 Medio de rendimiento a decidir y varias partes sin verificar (ver abajo).
+
+## Resultados (API)
+- **C1** contexto de persona (`PUT /api/user/context`) y restricciones de rutas (201, versión 1).
+- **C2** dos evidencias confirmadas y un borrador (201); confirmar sin campos obligatorios → 422 `incomplete_evidence`.
+- **C3** nivel sin referencias → 422 `evidence_required`; con dos evidencias confirmadas → 201; un **borrador no cuenta** (422 `evidence_not_valid`); el mapa muestra 1 nivel y el resto sin nivel (sin déficits ficticios).
+- **C5** rutas calculadas con el contexto; elegir ruta → 201; base ajena/alterada → 409 `conflict`; solicitud de revisión → 201.
+- **C6** proponer experimento (token firmado) → crear (201) → iniciar → entregar → reflexionar → decidir, versiones 1→5; decidir antes de reflexionar → 409 `transition_not_allowed`; propuesta alterada con el mismo token → 409 `invalid_proposal`; token de A usado por B → 409.
+- **C7** propuesta de plan → versión guardada (201) → lectura persistente (3 acciones).
+- **C8 idempotencia:** repetir autoevaluación, elección de ruta, creación de experimento y plan con el mismo `requestId` no duplica (200, `created:false`; un solo experimento).
+- **C9 derivados:** al editar una evidencia confirmada, el nivel pasa a `stale` (nivel null, sin borrarse en silencio), el experimento y el plan pasan a `needs_review` (`basis_changed`); no se borran. Eliminar una evidencia citada → 200 y el nivel sigue `stale`.
+- **C11 aislamiento A/B:** B no lee experimento, revisiones, ruta elegida, evidencia ni plan de A (404); no escribe sobre el experimento de A (404); no puede citar la evidencia de A en su Skill Map (422); los listados y el Skill Map de B no contienen nada de A.
+- **C12 concurrencia:** dos escrituras con el mismo `expectedVersion` → una 201 y la otra 409; `currentVersion` consistente (sin versión duplicada).
+- **C13:** ninguna propuesta revisada (experimento, plan, Skill Map de IA) contiene diagnóstico, prescripción, promesas de empleo, porcentajes de reemplazo por IA, vacantes ni tarifas (revisión por patrones sobre el texto de la respuesta).
+- **C14:** evidencia con `<img onerror>`, `<script>` e «ignora tus reglas» se guarda como texto (201, sin 5xx); procedencia distinta de autorreporte → 400 `invalid_source`; enlace `javascript:` → 400.
+- **C4 (IA):** con el puente profesional autorizado, el chat respondió (3,8–4,9 s) y las propuestas de Skill Map (4,5–5,2 s, mediana < 15 s) **no guardaron nada** (mapa idéntico antes y después).
+- **C10:** al revocar el puente profesional la respuesta es 200 y las evidencias escritas directamente siguen (contrato documentado en el código: solo las del chat dependen del consentimiento).
+
+## Resultados (UI, C15; 4 variantes ES/EN × 390/1440 px, Chromium)
+`/app/skill-map`, `/app/evidence`, `/app/evidence/new` y `/app/route-catalog`: cargan con contenido, sin desborde horizontal, sin claves de traducción crudas, con foco visible tras Tab y sin errores de página ni 5xx. **`/app/next-step` y `/app/professional-reviews` muestran «Este recorrido aún no está disponible» / «La vista preliminar no está habilitada»**: son pantallas deshabilitadas por configuración en staging, no defectos; por eso la UI de experimento y plan **no se pudo verificar**. Capturas en la carpeta local de evidencia.
+
+## Hallazgo
+| ID | Sev. | Detalle |
+|---|---|---|
+| P1 | Medio (decisión) | Las escrituras de la cadena ES-33 superan el umbral propuesto de 0,8 s en 3 de 4 corridas: elegir ruta 0,3–1,3 s, proponer experimento 0,4–1,8 s, crear experimento 0,65–1,0 s, nueva versión 0,6–1,1 s, guardar plan 0,9–1,3 s (la corrida con menor carga fue la más rápida; hay varianza de staging). Cada escritura recalcula la base de la ruta varias veces. Apto para 6 personas, pero incumple el umbral propuesto: Mauricio/Alejo deciden si se mantiene el umbral o se abre ticket a Dev. |
+
+## Observaciones
+- **I4:** tras editar una evidencia, la **elección de ruta** sigue `basisChanged:false` mientras el experimento y el plan pasan a `needs_review`. Es coherente si la ruta propuesta no cambió, pero conviene que Dev confirme que es la intención.
+- **I5:** `GET /api/messages` devuelve solo `role` y `text` (sin id de turno), así que desde la API pública no se pueden obtener los `turnIds` que exige `POST /api/evidence/proposals`; la propuesta de evidencia con IA solo se alcanza desde la interfaz.
+
+## No verificado
+Propuesta de evidencia con IA (sin `turnId` por API); confirmar propuestas de Skill Map bajando y subiendo el nivel (el modelo devolvió nivel `null` para la habilidad evaluada, así que no hubo nivel que bajar; el rechazo `cannot_raise_level` quedó sin ejercitar); evidencia con origen del chat y su invalidación al revocar el puente (C10 completo); UI de experimento y plan (pantallas deshabilitadas); porcentaje de mensajes de IA que respetan los límites más allá de las 2 llamadas; lector de pantalla y móvil físico; ES-206/209/210/205 (sin cabeza nueva de Dev).
+
+## Limpieza
+Evidencias QA2 eliminadas; las personas A, B y la de la UI se desactivaron; el puente profesional de A quedó revocado. Las 4 cuentas del equipo no se tocaron.
