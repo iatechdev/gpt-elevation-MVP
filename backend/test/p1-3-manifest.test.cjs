@@ -2,9 +2,9 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { models, database, transaction, record, startApp } = require('./support.cjs');
 
-test('P1-3: only the active manifest is public, history and mutations require board', async t => {
+test('P1-3 (ES-207): only the active manifest is public, history and mutations require admin or superadmin', async t => {
   let calls = 0;
-  const manifest = record({ id: 7, version: 'v1', content: 'Synthetic public manifest', isActive: true });
+  const manifest = record({ id: 7, version: 'v1', content: 'Synthetic public manifest', isActive: true, updatedAt: new Date('2026-11-08T12:00:00Z') });
   models.EthicManifest.findOne = async () => { calls++; return manifest; };
   models.EthicManifest.findAll = async () => { calls++; return [manifest]; };
   models.EthicManifest.findByPk = async () => { calls++; return manifest; };
@@ -14,7 +14,7 @@ test('P1-3: only the active manifest is public, history and mutations require bo
   const request = await startApp(t);
   const publicRead = await request('GET', '/api/manifest/active');
   assert.equal(publicRead.status, 200);
-  assert.deepEqual(publicRead.body, { version: 'v1', content: manifest.content });
+  assert.deepEqual(publicRead.body, { version: 'v1', content: manifest.content, publishedAt: '2026-11-08T12:00:00.000Z' });
 
   for (const [method, suffix, body, success] of [
     ['GET', '/manifest', undefined, 200],
@@ -22,7 +22,7 @@ test('P1-3: only the active manifest is public, history and mutations require bo
     ['PUT', '/manifest/7/activate', {}, 200],
   ]) await t.test(method + ' ' + suffix, async () => {
     for (const prefix of ['/api/manifest', '/api/board']) {
-      for (const role of [undefined, 'user', 'therapist', 'admin']) {
+      for (const role of [undefined, 'user', 'therapist', 'board']) {
         const before = calls;
         assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
         assert.equal(calls, before, 'No database work or transaction on denial');
@@ -30,7 +30,7 @@ test('P1-3: only the active manifest is public, history and mutations require bo
       assert.equal((await request(method, prefix + suffix, {
         body, headers: { Authorization: 'Bearer invalid' },
       })).status, 401);
-      for (const role of ['board', 'superadmin']) {
+      for (const role of ['admin', 'superadmin']) {
         assert.equal((await request(method, prefix + suffix, { role, body })).status, success);
       }
     }

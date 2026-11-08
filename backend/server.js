@@ -16,7 +16,7 @@ const {
   verificarToken,
   verificarAdmin,
   verificarSuperAdmin,
-  verificarBoard,
+  verificarEditorManifiesto,
   verificarTerapeuta,
 } = require('./middlewares/auth');
 
@@ -156,7 +156,7 @@ app.use('/api/admin',      verificarAdmin,      adminPromptsRouter);
 app.use('/api/superadmin', verificarSuperAdmin, adminPromptsRouter);
 
 // ── Rutas board (Ethics Board) ────────────────────────────────────────────────
-app.use('/api/board',      verificarBoard,      require('./routes/board'));
+app.use('/api/board',      verificarEditorManifiesto, require('./routes/board')); // ES-207: edición del manifiesto = admin + superadmin
 app.use('/api/junta',      verificarSuperAdmin, require('./routes/validation'));
 
 // QA-SMK-01: una ruta /api/* que ninguna ruta atendió responde 404 JSON. Sin esto, con sesión caía en el comodín de la SPA y devolvía el

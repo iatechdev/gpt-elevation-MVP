@@ -1,0 +1,8 @@
+/* ES-207: página pública del manifiesto. Solo tokens --cg-*; una columna, sin altura máxima ni scroll interno. */
+.manifesto { max-width: 68ch; margin: 0 auto; padding: 1.5rem 0 2.5rem; min-width: 0; }
+.manifesto__title { overflow-wrap: anywhere; }
+.manifesto__meta { margin: 0.9rem 0 0; padding-bottom: 1rem; border-bottom: 1px solid var(--cg-line); }
+.manifesto__body { margin-top: 1.4rem; }
+.manifesto__body p { margin: 0 0 1.1rem; line-height: 1.7; white-space: pre-line; overflow-wrap: anywhere; }
+.manifesto__empty { margin: 1.2rem 0; line-height: 1.7; }
+.manifesto__back { margin: 1.8rem 0 0; }

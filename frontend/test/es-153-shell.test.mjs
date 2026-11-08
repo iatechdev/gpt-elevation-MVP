@@ -19,7 +19,7 @@ const MATRIX = {
   '/admin/dashboard': ['admin', 'superadmin'], '/admin/prompts': ['admin', 'superadmin'], '/admin/content': ['admin', 'superadmin'],
   '/admin/metrics': ['admin', 'superadmin'], '/admin/route-catalog/5': ['admin', 'superadmin'], '/admin/skill-catalog': ['admin', 'superadmin'],
   '/admin/pilot-metrics': ['admin', 'superadmin'],
-  '/admin/users': ['admin', 'superadmin'], '/admin/manifest': ['superadmin'],
+  '/admin/users': ['admin', 'superadmin'], '/admin/manifest': ['admin', 'superadmin'], // ES-207: la edición del manifiesto pasa a admin + superadmin
   '/board/manifest': ['board', 'superadmin'],
 }
 // Guardián declarado en App.tsx por grupo de rutas.
@@ -42,14 +42,14 @@ test('ES-153 estados de la compuerta: sin sesión → /login; verificando y sin 
   }
 })
 
-test('ES-153 zonas: /admin/manifest exige superadministración y /admin/users es de admin y superadmin; rutas desconocidas no tienen zona', () => {
-  assert.equal(zoneForPath('/admin/users'), 'admin'); assert.equal(zoneForPath('/admin/manifest'), 'adminSuper')
+test('ES-153 zonas: /admin/manifest y /admin/users son de admin y superadmin (ES-207); rutas desconocidas no tienen zona', () => {
+  assert.equal(zoneForPath('/admin/users'), 'admin'); assert.equal(zoneForPath('/admin/manifest'), 'admin')
   assert.equal(zoneForPath('/admin/dashboard'), 'admin'); assert.equal(zoneForPath('/board/manifest'), 'board')
   assert.equal(zoneForPath('/therapist/dashboard'), 'professional'); assert.equal(zoneForPath('/app/chat'), 'person')
   assert.equal(zoneForPath('/app/data'), 'member'); assert.equal(zoneForPath('/facilitation'), 'member')
   assert.equal(zoneForPath('/adminx'), null); assert.equal(zoneForPath('/'), null); assert.equal(zoneForPath('/pricing'), null)
   assert.equal(canEnter('board', 'admin'), false); assert.equal(canEnter('admin', 'board'), false); assert.equal(canEnter('superadmin', 'board'), true)
-  assert.deepEqual([...ZONE_ROLES.adminSuper], ['superadmin'])
+  assert.equal('adminSuper' in ZONE_ROLES, false) // ES-207: ya no hay zona solo de superadmin
 })
 
 test('ES-153 guardianes: delegan en RoleGate y ya no deciden con el rol guardado en el navegador', () => {
@@ -75,8 +75,8 @@ test('ES-153 navegación: cada marco muestra solo las rutas de su rol y todas ex
   }
   assert.deepEqual(visibleFor(ADMIN_NAV, 'admin').map(item => item.to).includes('/admin/users'), true)
   assert.deepEqual(visibleFor(ADMIN_NAV, 'superadmin').map(item => item.to).includes('/admin/users'), true)
-  assert.equal(visibleFor(ADMIN_BOARD_GROUP, 'admin').length, 0); assert.equal(visibleFor(ADMIN_BOARD_GROUP, 'superadmin').length, 1)
-  assert.deepEqual(BOARD_NAV.map(item => item.to), ['/board/manifest']) // la junta solo ve el manifiesto
+  assert.equal(visibleFor(ADMIN_BOARD_GROUP, 'admin').length, 1); assert.equal(visibleFor(ADMIN_BOARD_GROUP, 'superadmin').length, 1) // ES-207
+  assert.deepEqual(BOARD_NAV.map(item => item.to), ['/manifiesto']) // la junta solo ve el manifiesto (página pública)
   assert.equal(PERSON_NAV.length, 5); assert.equal(PROFESSIONAL_NAV.length, 2)
   // Una persona usuaria no ve enlaces de otros roles, ni un profesional los de administración.
   for (const item of [...PERSON_NAV, ...PERSON_MENU]) assert.equal(/^\/(admin|board|therapist)/.test(item.to), false, item.to)

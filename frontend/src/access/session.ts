@@ -22,7 +22,7 @@ export function sessionDestination(session: SessionInfo): string {
   switch (session.role) {
     case 'admin': case 'superadmin': return '/admin/dashboard'
     case 'therapist': return '/therapist/dashboard'
-    case 'board': return '/board/manifest'
+    case 'board': return '/manifiesto'
     case 'user': return session.onboardingCompleted ? '/app/dashboard' : '/app/onboarding'
     default: throw new Error('Unsupported session role')
   }

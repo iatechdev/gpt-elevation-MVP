@@ -13,6 +13,7 @@
 .cg-nav { display: flex; gap: 0.2rem 1.3rem; flex-wrap: wrap; align-items: center; font: 600 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; }
 .cg-nav a:not(.cg-btn), .cg-sidenav a { color: var(--cg-ink); text-decoration: none; border-bottom: 3px solid transparent; display: inline-flex; align-items: center; min-height: var(--cg-touch); }
 .cg-nav a:not(.cg-btn):hover { border-color: var(--cg-mark); }
+.cg-nav a.cg-btn { color: var(--cg-ground); } /* ES-207: «Crear cuenta» del marco público; el color de enlace global le ganaba al del botón (contraste 2,05:1) */
 .cg-nav a[aria-current='page'] { border-color: var(--cg-ink); }
 .cg-header__end { display: flex; align-items: center; gap: 0.7rem 1rem; flex-wrap: wrap; margin-left: auto; }
 .cg-role { font: 600 0.78rem var(--cg-font-cond); letter-spacing: 0.12em; text-transform: uppercase; color: var(--cg-muted); }
