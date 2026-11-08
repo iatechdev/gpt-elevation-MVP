@@ -40,6 +40,12 @@ const BUDGET_REPLY = {
   es: 'Por ahora alcanzaste el límite de uso del asistente. Tu conversación y tus avances están guardados; podrás continuar cuando se renueve el periodo.',
   en: 'You have reached the assistant usage limit for now. Your conversation and progress are saved; you can continue when the period renews.',
 };
+// ES-205: el prompt base está en inglés y solo la Brújula pedía responder en el idioma de la persona; el chat normal podía contestar en inglés con la interfaz en español.
+// Va antes de los límites (que siguen siendo lo último que lee el modelo). `lang` es el idioma activo de la interfaz (o el del mensaje de riesgo).
+const REPLY_LANGUAGE = {
+  es: 'REPLY LANGUAGE (fixed): Reply in Spanish, the language active in the person\'s interface. If the person\'s latest message is written in English, reply in English instead. Never mix both languages in one reply.',
+  en: 'REPLY LANGUAGE (fixed): Reply in English, the language active in the person\'s interface. If the person\'s latest message is written in Spanish, reply in Spanish instead. Never mix both languages in one reply.',
+};
 const NOT_CONFIGURED_REPLY = {
   es: 'El asistente no está disponible por el momento. Tu conversación y tus avances están guardados.',
   en: 'The assistant is not available at the moment. Your conversation and progress are saved.',
@@ -220,6 +226,7 @@ ${manifest}
       systemPrompt += `\n\n---\n${block}\n---`;
     }
     // Los límites van al final: lo último que lee el modelo no es texto de la persona (QA-21-02).
+    systemPrompt += `\n\n---\n${REPLY_LANGUAGE[lang] ?? REPLY_LANGUAGE.es}\n---`;
     systemPrompt += `\n\n---\n${COMPANION_LIMITS}\n---`;
 
     // ── Historial: los mensajes MÁS RECIENTES, en orden, empezando por un turno del usuario ──
