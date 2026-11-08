@@ -331,7 +331,7 @@ export function BoardManifest() {
                       {activating === v.id ? '...' : t('board_rollback')}
                     </button>
                   )}
-                  <span style={{ fontSize: 11, color: '#D6D2C4' }}>
+                  <span aria-hidden="true" style={{ fontSize: 11, color: '#D6D2C4' }}>
                     {expandedId === v.id ? '▲' : '▼'}
                   </span>
                 </div>

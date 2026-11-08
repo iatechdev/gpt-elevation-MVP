@@ -162,7 +162,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
         </div>
 
         {error && (
-          <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.82rem', marginBottom: '1rem' }}>
+          <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.82rem', marginBottom: '1rem' }}>
             {error}
           </div>
         )}

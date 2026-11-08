@@ -72,7 +72,7 @@ const btnSecondary: React.CSSProperties = {
   fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
 }
 const btnDanger: React.CSSProperties = {
-  background: 'transparent', color: '#DC2626', border: '0.5px solid #DC2626',
+  background: 'transparent', color: '#B91C1C', border: '0.5px solid #DC2626',
   borderRadius: '0.75rem', padding: '0.5rem 1rem',
   fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
 }
@@ -203,7 +203,7 @@ function ValidationsTab() {
       {msg && (
         <div style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem',
           background: msg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2',
-          color: msg.startsWith('✓') ? '#4A6741' : '#DC2626', fontSize: 13 }}>
+          color: msg.startsWith('✓') ? '#4A6741' : '#B91C1C', fontSize: 13 }}>
           {tr(msg)}
         </div>
       )}
@@ -271,7 +271,7 @@ function ValidationsTab() {
                 rows={3}
                 style={{ ...input, resize: 'vertical', lineHeight: 1.5 }} />
             </div>
-            {msg && <p style={{ fontSize: 12, color: '#DC2626', margin: '0 0 1rem' }}>{tr(msg)}</p>}
+            {msg && <p style={{ fontSize: 12, color: '#B91C1C', margin: '0 0 1rem' }}>{tr(msg)}</p>}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button style={btnSecondary} onClick={() => { setActionDoc(null); setActionType(null); setMsg('') }}>{tr("Cancelar")}{' '}</button>
               <button onClick={submitAction} disabled={saving}
@@ -385,7 +385,7 @@ function PricingTab() {
               <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{p.name_es}</span>
               <span style={{ fontSize: 11, color: '#6F6963' }}>/ {p.name_en}</span>
               {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#5C6B4E', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>{tr("DESTACADO")}</span>}
-              {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: 10 }}>{tr("INACTIVO")}</span>}
+              {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#B91C1C', padding: '2px 8px', borderRadius: 10 }}>{tr("INACTIVO")}</span>}
             </div>
             <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
               <strong>${p.price}</strong> {p.currency} / {p.period}
@@ -516,7 +516,7 @@ function PricingTab() {
                   </div>
                 </div>
               </div>
-              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#5C6B4E', margin: 0 }}>{tr(msg)}</p>}
+              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#B91C1C' : '#5C6B4E', margin: 0 }}>{tr(msg)}</p>}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: '0.5rem' }}>
                 <button style={btnSecondary} onClick={() => setShowForm(false)}>{tr("Cancelar")}{' '}</button>
                 <button style={btnPrimary} onClick={save} disabled={saving}>
@@ -595,7 +595,7 @@ function LandingTab() {
             </button>
           </div>
           {msgs[f.key] && (
-            <p style={{ fontSize: 11, color: msgs[f.key].startsWith('✓') ? '#5C6B4E' : '#DC2626', margin: '4px 0 0' }}>
+            <p style={{ fontSize: 11, color: msgs[f.key].startsWith('✓') ? '#5C6B4E' : '#B91C1C', margin: '4px 0 0' }}>
               {msgs[f.key]}
             </p>
           )}

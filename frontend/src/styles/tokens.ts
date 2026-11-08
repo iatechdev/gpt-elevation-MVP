@@ -15,7 +15,7 @@ export const colors = {
   bg:           '#F9F9F7',  // fondo global
   bgCard:       '#FFFFFF',  // fondo cards
   bgMuted:      '#F5F3EF',  // fondo alternativo filas, secciones
-  danger:       '#DC2626',  // rojo errores
+  danger:       '#B91C1C',  // rojo errores
   dangerLight:  '#FEE2E2',  // rojo claro — fondos alertas
   warning:      '#92400E',  // ámbar oscuro — texto alertas
   warningLight: '#FEF3C7',  // ámbar claro — fondos alertas

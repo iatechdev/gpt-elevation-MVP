@@ -98,7 +98,7 @@ export function TherapistDashboard() {
   const TREND_BADGE: Record<string, { label: string; bg: string; color: string; icon: string }> = {
     improving: { label: t('therapist_improving'), bg: '#EAF0E6', color: '#4A6741', icon: '📈' },
     stable:    { label: t('therapist_stable'),    bg: '#E0F2FE', color: '#0369A1', icon: '📊' },
-    declining: { label: t('therapist_declining'), bg: '#FEE2E2', color: '#DC2626', icon: '📉' },
+    declining: { label: t('therapist_declining'), bg: '#FEE2E2', color: '#B91C1C', icon: '📉' },
   }
 
   const [patients, setPatients] = useState<Patient[]>([])
@@ -500,7 +500,7 @@ export function TherapistDashboard() {
                   </span>
                 )}
                 {promptData?.rejected && !promptData?.active && !promptData?.pending && (
-                  <span style={{ fontSize: '0.72rem', background: '#FEE2E2', color: '#DC2626', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.72rem', background: '#FEE2E2', color: '#B91C1C', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 600 }}>
                     {t('therapist_prompt_rejected')}
                   </span>
                 )}
@@ -526,11 +526,11 @@ export function TherapistDashboard() {
 
           {promptData?.rejected && !promptData?.active && !promptData?.pending && (
             <div style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: '#FEE2E2', border: '0.5px solid #FCA5A5', borderRadius: '0.65rem' }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#DC2626', marginBottom: '0.25rem' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#B91C1C', marginBottom: '0.25rem' }}>
                 {t('therapist_prompt_rejected')} v{promptData.rejected.version} — {promptData.rejected.rejected_by}
               </div>
               {promptData.rejected.rejection_note && (
-                <div style={{ fontSize: '0.75rem', color: '#DC2626', fontStyle: 'italic', marginBottom: '0.35rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#B91C1C', fontStyle: 'italic', marginBottom: '0.35rem' }}>
                   "{promptData.rejected.rejection_note}"
                 </div>
               )}
@@ -552,7 +552,7 @@ export function TherapistDashboard() {
 
       {/* LOADING / ERROR */}
       {loading && <p style={{ color: '#57534E', fontSize: '0.875rem' }}>{t('therapist_loading')}</p>}
-      {error   && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{error}</p>}
+      {error   && <p style={{ color: '#B91C1C', fontSize: '0.875rem' }}>{error}</p>}
 
       {/* TWO COLUMN LAYOUT */}
       {!loading && !error && (
@@ -677,7 +677,7 @@ export function TherapistDashboard() {
                 🔔 {t('therapist_alerts')}
               </div>
               {totalAlerts > 0 && (
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#FEE2E2', color: '#DC2626', padding: '0.15rem 0.5rem', borderRadius: '999px' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#FEE2E2', color: '#B91C1C', padding: '0.15rem 0.5rem', borderRadius: '999px' }}>
                   {totalAlerts}
                 </span>
               )}
@@ -747,7 +747,7 @@ export function TherapistDashboard() {
               {t('admin_prompt_info_body')}
             </p>
 
-            {proposeError   && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{proposeError}</div>}
+            {proposeError   && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{proposeError}</div>}
             {proposeSuccess && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{proposeSuccess}</div>}
 
             <textarea

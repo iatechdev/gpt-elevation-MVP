@@ -60,7 +60,7 @@ const btnSecondary: React.CSSProperties = {
 }
 
 const btnDanger: React.CSSProperties = {
-  background: 'transparent', color: '#DC2626',
+  background: 'transparent', color: '#B91C1C',
   border: '0.5px solid #DC2626', borderRadius: '0.65rem',
   padding: '0.5rem 1rem', fontSize: 13,
   cursor: 'pointer', fontFamily: 'Inter, sans-serif',
@@ -70,7 +70,7 @@ const STATUS_BADGE: Record<string, { bg: string; color: string; label: string }>
   active:         { bg: '#EAF0E6', color: '#4A6741', label: '● Activo' },
   approved:       { bg: '#EAF0E6', color: '#4A6741', label: '● Aprobado' },
   pending_review: { bg: '#FEF3C7', color: '#92400E', label: '⏳ Pendiente' },
-  rejected:       { bg: '#FEE2E2', color: '#DC2626', label: '✗ Rechazado' },
+  rejected:       { bg: '#FEE2E2', color: '#B91C1C', label: '✗ Rechazado' },
   archived:       { bg: '#F5F3EF', color: '#6F6963', label: '● Archivado' },
 }
 
@@ -462,7 +462,7 @@ export function AdminPrompts() {
               {proposeContent.length} caracteres
             </div>
 
-            {proposeError && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{proposeError}</div>}
+            {proposeError && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{proposeError}</div>}
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={() => setShowPropose(false)} style={{ ...btnSecondary, flex: 1, padding: '0.7rem' }}>Cancelar</button>
@@ -511,7 +511,7 @@ export function AdminPrompts() {
               />
             </div>
 
-            {createError && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{createError}</div>}
+            {createError && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{createError}</div>}
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={() => setShowCreate(false)} style={{ ...btnSecondary, flex: 1, padding: '0.7rem' }}>Cancelar</button>
@@ -549,7 +549,7 @@ export function AdminPrompts() {
               <button
                 onClick={handleReject}
                 disabled={!rejectNote.trim() || actionId === showReject.id}
-                style={{ ...btnDanger, flex: 1, padding: '0.65rem', background: !rejectNote.trim() ? '#F5F3EF' : 'transparent', color: !rejectNote.trim() ? '#6F6963' : '#DC2626', cursor: !rejectNote.trim() ? 'not-allowed' : 'pointer' }}
+                style={{ ...btnDanger, flex: 1, padding: '0.65rem', background: !rejectNote.trim() ? '#F5F3EF' : 'transparent', color: !rejectNote.trim() ? '#6F6963' : '#B91C1C', cursor: !rejectNote.trim() ? 'not-allowed' : 'pointer' }}
               >
                 {actionId === showReject.id ? 'Procesando...' : 'Confirmar rechazo'}
               </button>

@@ -219,7 +219,7 @@ export function UserProgress() {
           </p>
         </div>
 
-        {error && <p style={{ color: '#DC2626', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
+        {error && <p style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
 
         {/* STATS CARDS */}
         {stats && (
@@ -336,7 +336,7 @@ export function UserProgress() {
               <button onClick={closeMatching} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F' }}>✕</button>
             </div>
 
-            {matchingError   && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{matchingError}</div>}
+            {matchingError   && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{matchingError}</div>}
             {matchingSuccess && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{matchingSuccess}</div>}
 
             {matchingStep === 'questionnaire' && (

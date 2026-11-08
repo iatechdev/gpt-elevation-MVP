@@ -390,7 +390,7 @@ export function AdminUsers() {
         <div style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #A5B4FC', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>{tr("💳 Solicitudes de plan pendientes")}{' '}</h2>
           {planMsg && (
-            <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem', background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: planMsg.startsWith('✓') ? '#4A6741' : '#DC2626' }}>
+            <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem', background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: planMsg.startsWith('✓') ? '#4A6741' : '#B91C1C' }}>
               {tr(planMsg)}
             </div>
           )}
@@ -413,7 +413,7 @@ export function AdminUsers() {
                       <button onClick={() => void approvePlanRequest(req)} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: planActionId === req.id ? '#A8B5A2' : '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                         {planActionId === req.id ? tr('Procesando...') : tr('✓ Aprobar')}
                       </button>
-                      <button onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: 'transparent', color: '#DC2626', border: '0.5px solid #DC2626', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{tr("✕ Rechazar")}{' '}</button>
+                      <button onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: 'transparent', color: '#B91C1C', border: '0.5px solid #DC2626', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{tr("✕ Rechazar")}{' '}</button>
                     </div>
                   </div>
                 ))}
@@ -463,7 +463,7 @@ export function AdminUsers() {
       </div>
 
       {cargando && <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{tr("Cargando usuarios...")}</p>}
-      {error    && <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{tr(error)}</p>}
+      {error    && <p style={{ color: '#B91C1C', fontSize: '0.875rem' }}>{tr(error)}</p>}
 
       {!cargando && !error && (
         <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
@@ -589,7 +589,7 @@ export function AdminUsers() {
 
               {/* Feedback desbloqueo */}
               {unlockMsg && (
-                <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.78rem', marginBottom: '0.75rem', background: unlockMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: unlockMsg.startsWith('✓') ? '#4A6741' : '#DC2626' }}>
+                <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.78rem', marginBottom: '0.75rem', background: unlockMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: unlockMsg.startsWith('✓') ? '#4A6741' : '#B91C1C' }}>
                   {tr(unlockMsg)}
                 </div>
               )}
@@ -617,7 +617,7 @@ export function AdminUsers() {
               <button onClick={() => toggleActivo(usuarioSeleccionado)} style={{
                 width: '100%', padding: '0.6rem', borderRadius: '0.85rem', border: 'none',
                 background: usuarioSeleccionado.active ? '#FEE2E2' : '#EAF0E6',
-                color: usuarioSeleccionado.active ? '#DC2626' : '#4A6741',
+                color: usuarioSeleccionado.active ? '#B91C1C' : '#4A6741',
                 fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif', marginBottom: '0.5rem',
               }}>
@@ -645,7 +645,7 @@ export function AdminUsers() {
                   style={{
                     width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
                     border: '0.5px solid #DC2626', background: 'transparent',
-                    color: '#DC2626', fontWeight: 500, fontSize: '0.875rem',
+                    color: '#B91C1C', fontWeight: 500, fontSize: '0.875rem',
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                   }}
                 >{tr("Eliminar permanentemente")}{' '}</button>
@@ -681,7 +681,7 @@ export function AdminUsers() {
                   boxSizing: 'border-box', outline: 'none',
                 }}
               />
-              {resetError && <p style={{ fontSize: '0.75rem', color: '#DC2626', margin: '0.25rem 0 0' }}>{tr(resetError)}</p>}
+              {resetError && <p style={{ fontSize: '0.75rem', color: '#B91C1C', margin: '0.25rem 0 0' }}>{tr(resetError)}</p>}
             </div>
 
             {resetMsg && (
@@ -719,7 +719,7 @@ export function AdminUsers() {
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🗑️</div>
               <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("Eliminar usuario")}{' '}</h3>
             </div>
-            <p style={{ fontSize: '0.875rem', color: '#6B645F', marginBottom: '0.5rem', lineHeight: 1.6 }}>{tr("Esta acción es")}{' '}<strong style={{ color: '#DC2626' }}>{tr("permanente e irreversible")}</strong>.
+            <p style={{ fontSize: '0.875rem', color: '#6B645F', marginBottom: '0.5rem', lineHeight: 1.6 }}>{tr("Esta acción es")}{' '}<strong style={{ color: '#B91C1C' }}>{tr("permanente e irreversible")}</strong>.
             </p>
             <div style={{ background: '#FEF2F2', border: '0.5px solid #FECACA', borderRadius: '0.65rem', padding: '0.75rem 1rem', marginBottom: '1.25rem' }}>
               <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1C1917' }}>{confirmDelete.name}</div>
@@ -733,7 +733,7 @@ export function AdminUsers() {
               placeholder={confirmDelete.name}
               style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: `0.5px solid ${deleteError ? '#DC2626' : '#E7E5E4'}`, fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none', marginBottom: '0.5rem' }}
             />
-            {deleteError && <p style={{ fontSize: '0.78rem', color: '#DC2626', margin: '0 0 1rem' }}>{tr(deleteError)}</p>}
+            {deleteError && <p style={{ fontSize: '0.78rem', color: '#B91C1C', margin: '0 0 1rem' }}>{tr(deleteError)}</p>}
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
               <button onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#6B645F', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
               <button
@@ -779,7 +779,7 @@ export function AdminUsers() {
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>{tr("Crear usuario")}</h2>
               <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F' }}>✕</button>
             </div>
-            {errorModal && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
+            {errorModal && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
             {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
             {[
               { label: tr('Nombre completo'),     key: 'name',     type: 'text',     placeholder: 'Ana García' },
