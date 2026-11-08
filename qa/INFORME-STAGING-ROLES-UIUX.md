@@ -3,7 +3,7 @@
 Staging: https://backend-staging-e3a6.up.railway.app · 8-nov-2026 · Cuentas sintéticas qa.persona / qa.terapeuta / qa.admin / qa.superadmin @example.test (uso autorizado por Mauricio en el chat; las claves no se imprimen ni se guardan en ningún informe).
 Alcance: solo lectura (inicio de sesión y navegación; no se enviaron formularios ni se crearon datos). 0 llamadas a IA. Autorización de alcance: Mauricio pidió «pruebas de UI/UX sin interrupciones»; no hubo plan formal previo, por lo que este informe es un barrido (no una puerta de aceptación).
 
-## Veredicto: sin bloqueos de seguridad; 1 Alto por confirmar (datos), 2 Medios de UX, varios Bajos.
+## Veredicto: sin bloqueos de seguridad; 2 Medios de UX (M1, M2), varios Bajos. A1 cerrado como sin defecto.
 
 ## Qué pasó (OK)
 - Inicio de sesión de los 4 roles con el rol correcto (4/4).
@@ -15,7 +15,7 @@ Alcance: solo lectura (inicio de sesión y navegación; no se enviaron formulari
 ## Hallazgos
 | ID | Sev. | Dónde | Evidencia | Sugerencia |
 |---|---|---|---|---|
-| A1 | Alto (por confirmar) | Admin → Usuarios | El staging tiene 226 usuarios; entre ellos hay una cuenta con nombre y correo gmail de apariencia personal real. Staging debe tener solo datos sintéticos | Mauricio confirma si es una persona real; si lo es, retirar o anonimizar en staging |
+| A1 | Cerrado: sin defecto (Mauricio confirmó, vía Infra, que es una cuenta de PRUEBA del equipo; las cuentas de prueba pueden parecer reales) · antes: Alto por confirmar | Admin → Usuarios | El staging tiene 226 usuarios; entre ellos hay una cuenta con nombre y correo gmail de apariencia personal real. Staging debe tener solo datos sintéticos | Mauricio confirma si es una persona real; si lo es, retirar o anonimizar en staging |
 | M1 | Medio | Terapeuta → /therapist/dashboard a 390 px | El encabezado fijo mide 133 px y tapa el título «Mis pacientes» (empieza en 96 px) | Dar al contenido un margen superior igual a la altura del encabezado o evitar que el encabezado se parta en 3 líneas |
 | M2 | Medio | Persona → Conversación (390 px) | El último mensaje de la IA aparece en inglés con la interfaz en español. Puede venir de pruebas E2E anteriores | Verificar que la IA responde en el idioma activo de la persona |
 | B1 | Bajo | Persona → Dashboard y Conversación | Sin `<h1>` (h1 = 0) en ES y EN | Añadir un h1 (puede ser visualmente oculto) |
