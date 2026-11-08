@@ -3,6 +3,7 @@
 // La autorización por ruta protege también el montaje público /api/manifest.
 
 const express       = require('express');
+const { Transaction, Op } = require('sequelize');
 const router        = express.Router();
 const { sequelize } = require('../database');
 const EthicManifest = require('../EthicManifest');
@@ -24,6 +25,8 @@ router.post('/manifest', verificarEditorManifiesto, validateBody({ content: none
 
   const t = await sequelize.transaction();
   try {
+    // ES-211: mismo bloqueo que al reactivar, para que subir y reactivar a la vez no dejen dos activas ni repitan el número de versión.
+    await EthicManifest.findAll({ attributes: ['id'], lock: Transaction.LOCK.UPDATE, transaction: t });
     // Calculate next version number
     const latest = await EthicManifest.findOne({
       order: [['createdAt', 'DESC']],
@@ -104,21 +107,21 @@ router.put('/manifest/:id/activate', verificarEditorManifiesto, async (req, res)
 
   const t = await sequelize.transaction();
   try {
+    // ES-211: bloquea las filas del manifiesto para que dos activaciones (o una activación y una subida) se serialicen; la tabla es pequeña.
+    await EthicManifest.findAll({ attributes: ['id'], lock: Transaction.LOCK.UPDATE, transaction: t });
     const manifest = await EthicManifest.findByPk(id, { transaction: t });
     if (!manifest) {
       await t.rollback();
       return res.status(404).json({ error: 'Manifest not found.' });
     }
 
-    // Deactivate all
+    // Desactiva las demás y activa esta en la misma transacción. Reactivar la versión ya activa es idempotente: antes se desactivaba
+    // en la base pero el objeto en memoria seguía «activo», así que save() no escribía nada y quedaban 0 versiones activas.
     await EthicManifest.update(
       { isActive: false },
-      { where: { isActive: true }, transaction: t }
+      { where: { isActive: true, id: { [Op.ne]: manifest.id } }, transaction: t }
     );
-
-    // Activate selected version
-    manifest.isActive = true;
-    await manifest.save({ transaction: t });
+    await EthicManifest.update({ isActive: true }, { where: { id: manifest.id }, transaction: t });
 
     await t.commit();
 
