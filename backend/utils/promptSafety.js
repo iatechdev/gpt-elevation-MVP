@@ -55,6 +55,16 @@ const COMPANION_LIMITS = [
   '- Respect a request to skip, pause or stop: acknowledge briefly, without pressure, guilt, penalties or automatic follow-up.',
   '- Identify yourself as an AI assistant. Do not imply that a human is reading live, supervising this exchange or available when no such service is present.',
   '- If the person describes a risk to their life or safety, do not continue the ordinary coaching flow: encourage them to contact local emergency services or a trusted person.',
+  '- Never give phone numbers, helpline names or lists of resources by country, even if asked or if you remember them: you cannot verify them by country or date and a wrong one can cause harm. Say only that they can contact the emergency or health services of their country and someone they trust.',
 ].join('\n');
 
-module.exports = { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS };
+// ES-145: patrón de teléfono o línea de ayuda. Lo usan las pruebas para que ni el prompt ni una respuesta simulada del modelo traigan números.
+// Detecta 7+ dígitos con separadores y números cortos (3-4 dígitos) que siguen a «línea», «llama», «call», «dial»…; no es un filtro exhaustivo.
+const PHONE_PATTERN = /(?:\+?\d[\d\s().-]{5,}\d)|(?:\b(?:l[ií]nea|llama(?:r|a)?|marca|call|dial|hotline|helpline|n[uú]mero|number)\b[^\n\d]{0,20}\d{3,4}\b)/i;
+// ES-208: fechas (2026-11-08, 08/11/2026) y cantidades con moneda ($1.500.000, 1.500.000 pesos) tienen forma de número largo pero no son teléfonos:
+// se quitan antes de probar el patrón para no sustituir respuestas legítimas. Un teléfono con puntos sin moneda (300.123.4567) sigue detectándose.
+const DATE_SHAPE = /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b|\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b/g;
+const MONEY_SHAPE = /[$€]\s?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\b\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?\s?(?:pesos|cop|usd|eur|d[oó]lares|dollars|euros)\b/gi;
+const containsPhoneNumber = (text) => PHONE_PATTERN.test(String(text).replace(DATE_SHAPE, ' ').replace(MONEY_SHAPE, ' '));
+
+module.exports = { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS, PHONE_PATTERN, containsPhoneNumber };

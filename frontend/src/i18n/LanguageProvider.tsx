@@ -1,8 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { LanguageContext, type Lang } from './context'
 import { resolveInitialLang } from './resolveLang'
 import { es } from './es'
 import { en } from './en'
+import { getCatalog, loadCatalog, subscribeCatalog } from './catalog'
+import { interpolate, type Params } from './format'
 
 const translations: Record<string, Record<string, string>> = { es, en }
 
@@ -27,7 +29,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     saveLang(l)
   }
 
-  const t = (key: string): string => translations[lang][key] ?? key
+  // ES-154: el catálogo completo (textos.json) se descarga para el idioma activo; mientras tanto valen los diccionarios actuales.
+  useEffect(() => { void loadCatalog(lang) }, [lang])
+  const catalog = useSyncExternalStore(subscribeCatalog, () => getCatalog(lang))
+
+  const t = (key: string, params?: Params): string => interpolate(translations[lang][key] ?? catalog?.[key] ?? key, params)
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>

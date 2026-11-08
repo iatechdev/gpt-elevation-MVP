@@ -1,6 +1,6 @@
 // backend/routes/board.js
-// Endpoints for the Ethics Board role
-// Route-level authorization also protects the public /api/manifest mount.
+// Manifiesto ético: lectura pública (GET /active) y edición de administración/superadmin (ES-207).
+// La autorización por ruta protege también el montaje público /api/manifest.
 
 const express       = require('express');
 const router        = express.Router();
@@ -8,13 +8,13 @@ const { sequelize } = require('../database');
 const EthicManifest = require('../EthicManifest');
 const User          = require('../User');
 const { encriptar, desencriptar } = require('../utils/crypto');
-const { verificarBoard } = require('../middlewares/auth');
+const { verificarEditorManifiesto } = require('../middlewares/auth');
 const { validateBody, nonempty, text, optional } = require('../middlewares/validateBody');
 
 // ── POST /api/board/manifest ──────────────────────────────────────────────────
 // Upload a new version of the ethics manifest
 // Body: { content: string, note?: string }
-router.post('/manifest', verificarBoard, validateBody({ content: nonempty, note: optional(text) }), async (req, res) => {
+router.post('/manifest', verificarEditorManifiesto, validateBody({ content: nonempty, note: optional(text) }), async (req, res) => {
   const { content, note } = req.body;
   const uploadedBy = req.user.id;
 
@@ -69,7 +69,7 @@ router.post('/manifest', verificarBoard, validateBody({ content: nonempty, note:
 
 // ── GET /api/board/manifest ───────────────────────────────────────────────────
 // Full version history — decrypted, only for board members
-router.get('/manifest', verificarBoard, async (req, res) => {
+router.get('/manifest', verificarEditorManifiesto, async (req, res) => {
   try {
     const manifests = await EthicManifest.findAll({
       order: [['createdAt', 'DESC']],
@@ -99,7 +99,7 @@ router.get('/manifest', verificarBoard, async (req, res) => {
 
 // ── PUT /api/board/manifest/:id/activate ─────────────────────────────────────
 // Reactivate a previous version (rollback)
-router.put('/manifest/:id/activate', verificarBoard, async (req, res) => {
+router.put('/manifest/:id/activate', verificarEditorManifiesto, async (req, res) => {
   const { id } = req.params;
 
   const t = await sequelize.transaction();
@@ -135,8 +135,8 @@ router.put('/manifest/:id/activate', verificarBoard, async (req, res) => {
 });
 
 // ── GET /api/manifest/active ──────────────────────────────────────────────────
-// Consumed internally by chat.js to inject context into Claude
-// No auth required here — handled by server.js mount point
+// Lectura pública del manifiesto activo (página /manifiesto). El chat NO usa este endpoint.
+// Sin sesión a propósito; las demás rutas de este router exigen verificarEditorManifiesto.
 router.get('/active', async (req, res) => {
   try {
     const active = await EthicManifest.findOne({
@@ -146,13 +146,16 @@ router.get('/active', async (req, res) => {
 
     if (!active) return res.json({ content: null });
 
+    // ES-207: lectura pública. Solo versión, texto y fecha de publicación (activación); nunca nota, autor ni IDs.
     res.json({
       version: active.version,
       content: desencriptar(active.content),
+      publishedAt: active.updatedAt ? new Date(active.updatedAt).toISOString() : null,
     });
   } catch (error) {
+    // ES-207: un fallo ya no se disfraza de «vacío» (el chat no usa este endpoint: lee la base directo).
     console.error('❌ Error fetching active manifest:', error);
-    res.json({ content: null }); // silent fail — chat keeps working
+    res.status(500).json({ error: 'Could not load manifest.' });
   }
 });
 

@@ -1,5 +1,6 @@
 // frontend/src/pages/board/BoardManifest.tsx
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -120,7 +121,7 @@ export function BoardManifest() {
         }}>
           {t('board_manifest_title')}
         </h1>
-        <p style={{ fontSize: 13, color: '#A8A29E', margin: '0.4rem 0 0' }}>
+        <p style={{ fontSize: 13, color: '#6F6963', margin: '0.4rem 0 0' }}>
           {t('board_manifest_subtitle')}
         </p>
       </div>
@@ -155,18 +156,18 @@ export function BoardManifest() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <span style={{
                 width: 8, height: 8, borderRadius: '50%',
-                background: '#6B7D5C', display: 'inline-block',
+                background: '#5C6B4E', display: 'inline-block',
               }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#4B5E3F', letterSpacing: '0.05em' }}>
                 {t('board_active_version')} — {active.version}
               </span>
             </div>
-            <span style={{ fontSize: 11, color: '#A8A29E' }}>
+            <span style={{ fontSize: 11, color: '#6F6963' }}>
               {fmtDate(active.createdAt)} · {active.uploader?.name}
             </span>
           </div>
           {active.note && (
-            <p style={{ fontSize: 12, color: '#78716C', fontStyle: 'italic', margin: '0 0 0.75rem' }}>
+            <p style={{ fontSize: 12, color: '#6B645F', fontStyle: 'italic', margin: '0 0 0.75rem' }}>
               {active.note}
             </p>
           )}
@@ -181,19 +182,21 @@ export function BoardManifest() {
       )}
 
       {/* Botón nueva versión */}
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <button
           onClick={() => setShowForm(f => !f)}
           style={{
             padding: '0.55rem 1.25rem', fontSize: 13, fontWeight: 500,
             borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
             background: showForm ? '#F5F3EF' : '#4B5E3F',
-            color: showForm ? '#78716C' : '#fff',
+            color: showForm ? '#6B645F' : '#fff',
             border: showForm ? '0.5px solid #D6D2C4' : 'none',
           }}
         >
           {showForm ? t('board_cancel') : t('board_new_version')}
         </button>
+        {/* ES-207 — enlace a la página pública */}
+        <Link to="/manifiesto" style={{ fontSize: 13, color: '#4B5E3F', textDecoration: 'underline', minHeight: 24, display: 'inline-flex', alignItems: 'center' }}>{t('manifest_view_public')}</Link>
       </div>
 
       {/* Formulario nueva versión */}
@@ -207,7 +210,7 @@ export function BoardManifest() {
           </h3>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: 12, color: '#78716C', display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 12, color: '#6B645F', display: 'block', marginBottom: 6 }}>
               {t('board_form_note')}
             </label>
             <input
@@ -225,7 +228,7 @@ export function BoardManifest() {
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: 12, color: '#78716C', display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 12, color: '#6B645F', display: 'block', marginBottom: 6 }}>
               {t('board_form_content')} <span style={{ color: '#B91C1C' }}>*</span>
             </label>
             <textarea
@@ -240,7 +243,7 @@ export function BoardManifest() {
                 boxSizing: 'border-box', outline: 'none', fontFamily: 'Inter, sans-serif',
               }}
             />
-            <span style={{ fontSize: 11, color: '#A8A29E' }}>
+            <span style={{ fontSize: 11, color: '#6F6963' }}>
               {newContent.length} {t('board_form_chars')}
             </span>
           </div>
@@ -262,16 +265,16 @@ export function BoardManifest() {
 
       {/* Historial de versiones */}
       <div>
-        <h3 style={{ fontSize: 13, fontWeight: 600, color: '#78716C', letterSpacing: '0.08em', margin: '0 0 1rem', textTransform: 'uppercase' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 600, color: '#6B645F', letterSpacing: '0.08em', margin: '0 0 1rem', textTransform: 'uppercase' }}>
           {t('board_history_title')}
         </h3>
 
         {loading && (
-          <p style={{ fontSize: 13, color: '#A8A29E' }}>{t('board_loading')}</p>
+          <p style={{ fontSize: 13, color: '#6F6963' }}>{t('board_loading')}</p>
         )}
 
         {!loading && versions.length === 0 && (
-          <p style={{ fontSize: 13, color: '#A8A29E' }}>{t('board_empty')}</p>
+          <p style={{ fontSize: 13, color: '#6F6963' }}>{t('board_empty')}</p>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -292,7 +295,7 @@ export function BoardManifest() {
                   {v.isActive && (
                     <span style={{
                       width: 7, height: 7, borderRadius: '50%',
-                      background: '#6B7D5C', display: 'inline-block', flexShrink: 0,
+                      background: '#5C6B4E', display: 'inline-block', flexShrink: 0,
                     }} />
                   )}
                   <span style={{ fontSize: 13, fontWeight: v.isActive ? 600 : 400, color: '#1C1917' }}>
@@ -308,13 +311,13 @@ export function BoardManifest() {
                     </span>
                   )}
                   {v.note && (
-                    <span style={{ fontSize: 12, color: '#A8A29E', fontStyle: 'italic' }}>
+                    <span style={{ fontSize: 12, color: '#6F6963', fontStyle: 'italic' }}>
                       {v.note}
                     </span>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ fontSize: 11, color: '#A8A29E' }}>
+                  <span style={{ fontSize: 11, color: '#6F6963' }}>
                     {fmtDate(v.createdAt)} · {v.uploader?.name}
                   </span>
                   {!v.isActive && (
@@ -324,14 +327,14 @@ export function BoardManifest() {
                       style={{
                         fontSize: 11, padding: '3px 10px', borderRadius: 6,
                         border: '0.5px solid #D6D2C4', background: '#fff',
-                        color: '#78716C', cursor: activating === v.id ? 'not-allowed' : 'pointer',
+                        color: '#6B645F', cursor: activating === v.id ? 'not-allowed' : 'pointer',
                         transition: 'all 0.15s',
                       }}
                     >
                       {activating === v.id ? '...' : t('board_rollback')}
                     </button>
                   )}
-                  <span style={{ fontSize: 11, color: '#D6D2C4' }}>
+                  <span aria-hidden="true" style={{ fontSize: 11, color: '#D6D2C4' }}>
                     {expandedId === v.id ? '▲' : '▼'}
                   </span>
                 </div>

@@ -16,7 +16,7 @@ import { LandingJoin } from '../components/landing/LandingJoin'
 import { LandingPlans } from '../components/landing/LandingPlans'
 import { useLandingContent } from '../content/useLandingContent'
 export function LandingPage() {
-  const { lang, setLang } = useLanguage()
+  const { lang, setLang, t } = useLanguage()
   const landing = useLandingContent(lang)
   const routes = useSpaceRoutes()
   const showProfessionals = professionalsEnabled(import.meta.env.VITE_ENABLE_LANDING_PROFESSIONALS)
@@ -54,7 +54,7 @@ export function LandingPage() {
 
         </main>
 
-        <LandingFooter text={landing.text} />
+        <LandingFooter text={landing.text} manifestLabel={t('manifest_public_title')} />
 
       </div>
     </LandingSurface>

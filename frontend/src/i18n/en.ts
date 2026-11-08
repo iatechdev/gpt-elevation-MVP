@@ -375,6 +375,16 @@ const en: Record<string, string> = {
   board_success_upload: '✅ Manifest published and activated:',
   board_success_activate: '✅ Version reactivated:',
 
+  // ── ES-207: public manifesto page ──
+  manifest_public_title: 'Ethical manifesto',
+  manifest_public_version: 'Version {version} · published {date}',
+  manifest_public_loading: 'Loading the manifesto…',
+  manifest_public_empty: 'No manifesto has been published yet.',
+  manifest_public_error: 'We could not load the manifesto.',
+  manifest_public_retry: 'Try again',
+  manifest_public_back: 'Back to home',
+  manifest_view_public: 'View public page',
+
   // ── Chat check-out (ES-123: previously hard-coded in the component) ───────
   checkout_label: 'CHECK-OUT',
   checkout_title: 'How are you leaving?',

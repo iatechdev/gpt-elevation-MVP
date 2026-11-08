@@ -300,7 +300,7 @@ export function ChatPage() {
               </button>
             ))}
             {['admin', 'superadmin'].includes(role) && (
-              <button onClick={openAdmin} title={t('admin_title')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4 }}>
+              <button onClick={openAdmin} title={t('admin_title')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
                 </svg>
@@ -311,7 +311,7 @@ export function ChatPage() {
               onClick={() => chat.canLeave() && navigate('/app/progress')}
               title={copy[lang].progress}
               aria-label={copy[lang].progress}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -322,13 +322,13 @@ export function ChatPage() {
               onClick={() => setShowRecs(!showRecs)}
               title={t('rec_title')}
               aria-label={t('rec_title')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: showRecs ? '#6B7D5C' : '#A8A29E', display: 'flex', padding: 4 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: showRecs ? '#5C6B4E' : '#6F6963', display: 'flex', padding: 4 }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </button>
-            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
               </svg>
@@ -373,15 +373,15 @@ export function ChatPage() {
           <ChatContext chat={chat} />
           {/* HU-051 — Wellness Recommendations */}
           {showRecs && (
-            <div style={{ borderLeft: '2px solid #6B7D5C', paddingLeft: '1.25rem' }}>
-              <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#6B7D5C', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+            <div style={{ borderLeft: '2px solid #5C6B4E', paddingLeft: '1.25rem' }}>
+              <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#5C6B4E', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
                 {t('rec_title')}
               </span>
-              <p style={{ fontSize: '0.78rem', color: '#78716C', margin: '0 0 1rem', fontFamily: 'Inter, sans-serif' }}>
+              <p style={{ fontSize: '0.78rem', color: '#6B645F', margin: '0 0 1rem', fontFamily: 'Inter, sans-serif' }}>
                 {t('rec_subtitle')}
               </p>
               {loadingRecs && (
-                <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#A8A29E' }}>
+                <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#6F6963' }}>
                   {t('rec_loading')}
                 </p>
               )}
@@ -396,7 +396,7 @@ export function ChatPage() {
                       border: '0.5px solid #E7E5E4', padding: '0.85rem 1rem',
                       boxShadow: '0 2px 8px rgba(26,28,27,0.04)',
                     }}>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', marginBottom: '0.35rem', fontFamily: 'Inter, sans-serif' }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.35rem', fontFamily: 'Inter, sans-serif' }}>
                         {t(`rec_category_${rec.category}`)}
                       </div>
                       <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.65, margin: 0 }}>
@@ -410,8 +410,8 @@ export function ChatPage() {
                 onClick={() => { void handleGenerateRecs() }}
                 disabled={loadingRecs}
                 style={{
-                  fontSize: '0.78rem', color: '#6B7D5C', background: 'none',
-                  border: '0.5px solid #6B7D5C', borderRadius: '0.65rem',
+                  fontSize: '0.78rem', color: '#5C6B4E', background: 'none',
+                  border: '0.5px solid #5C6B4E', borderRadius: '0.65rem',
                   padding: '0.4rem 0.85rem', cursor: loadingRecs ? 'not-allowed' : 'pointer',
                   fontFamily: 'Inter, sans-serif',
                 }}
@@ -433,11 +433,11 @@ export function ChatPage() {
       {showCheckout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>{t('checkout_label')}</p>
+            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#6F6963', margin: 0, textTransform: 'uppercase' }}>{t('checkout_label')}</p>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
               {t('checkout_title')}
             </h3>
-            <p style={{ fontSize: '0.85rem', color: '#78716C', margin: 0, textAlign: 'center' }}>
+            <p style={{ fontSize: '0.85rem', color: '#6B645F', margin: 0, textAlign: 'center' }}>
               {t('checkout_hint')}
             </p>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -456,7 +456,7 @@ export function ChatPage() {
             </div>
             {checkoutMood !== null && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
-                <p style={{ fontSize: '0.8rem', color: '#78716C', margin: 0 }}>
+                <p style={{ fontSize: '0.8rem', color: '#6B645F', margin: 0 }}>
                   {t('checkout_rating')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -466,12 +466,12 @@ export function ChatPage() {
                       onMouseEnter={() => setStarHover(star)}
                       onMouseLeave={() => setStarHover(null)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: 28, lineHeight: 1, transition: 'transform 0.1s', transform: starHover === star ? 'scale(1.2)' : 'scale(1)' }}>
-                      <span style={{ color: star <= (starHover ?? starRating ?? 0) ? '#6B7D5C' : '#D6D2C4' }}>★</span>
+                      <span style={{ color: star <= (starHover ?? starRating ?? 0) ? '#5C6B4E' : '#D6D2C4' }}>★</span>
                     </button>
                   ))}
                 </div>
                 {starRating && (
-                  <p style={{ fontSize: '0.75rem', color: '#A8A29E', margin: 0 }}>
+                  <p style={{ fontSize: '0.75rem', color: '#6F6963', margin: 0 }}>
                     {['', t('star_1'), t('star_2'), t('star_3'), t('star_4'), t('star_5')][starRating]}
                   </p>
                 )}
@@ -484,7 +484,7 @@ export function ChatPage() {
                 style={{
                   flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none',
                   background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4',
-                  color: checkoutMood !== null ? 'white' : '#A8A29E',
+                  color: checkoutMood !== null ? 'white' : '#6F6963',
                   fontSize: '0.875rem', fontWeight: 500,
                   cursor: checkoutMood !== null ? 'pointer' : 'not-allowed',
                   fontFamily: 'Inter, sans-serif',
@@ -492,7 +492,7 @@ export function ChatPage() {
                 {checkoutSaving ? '...' : t('checkout_signout')}
               </button>
               <button onClick={handleLogout}
-                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#6B645F', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                 {t('checkout_skip')}
               </button>
             </div>
@@ -507,7 +507,7 @@ export function ChatPage() {
           <aside style={{ position: 'relative', width: '100%', maxWidth: 480, height: '100%', background: '#F5F3EF', borderLeft: '1px solid #E7E5E4', display: 'flex', flexDirection: 'column', overflowY: 'auto', boxShadow: '0 0 60px rgba(0,0,0,0.08)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 2rem', borderBottom: '1px solid #E7E5E4' }}>
               <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#1C1917', margin: 0 }}>{t('admin_title')}</h2>
-              <button onClick={() => setAdminOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#78716C', padding: 4 }}>
+              <button onClick={() => setAdminOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B645F', padding: 4 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
@@ -517,7 +517,7 @@ export function ChatPage() {
               <div style={{ display: 'flex', borderBottom: '1px solid #E7E5E4', background: '#FAF8F4' }}>
                 {([['prompts', 'Prompts'], ['landing', 'Contenido Landing']] as const).map(([tab, label]) => (
                   <button key={tab} onClick={() => setAdminTab(tab)}
-                    style={{ flex: 1, padding: '0.75rem', fontSize: 12, fontWeight: adminTab === tab ? 600 : 400, color: adminTab === tab ? '#1C1917' : '#78716C', background: 'none', border: 'none', borderBottom: adminTab === tab ? '2px solid #6B7D5C' : '2px solid transparent', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                    style={{ flex: 1, padding: '0.75rem', fontSize: 12, fontWeight: adminTab === tab ? 600 : 400, color: adminTab === tab ? '#1C1917' : '#6B645F', background: 'none', border: 'none', borderBottom: adminTab === tab ? '2px solid #5C6B4E' : '2px solid transparent', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                     {label}
                   </button>
                 ))}
@@ -532,7 +532,7 @@ export function ChatPage() {
                       <span style={{ padding: '0.2rem 0.75rem', borderRadius: 9999, background: '#F0FDFA', color: '#065f46', fontSize: 11, fontWeight: 500 }}>
                         {activePrompt ? `v${activePrompt.version}` : '—'} · {t('admin_active')}
                       </span>
-                      {activePrompt?.approved_by && <span style={{ fontSize: 11, color: '#A8A29E' }}>{t('admin_approved_by')} {activePrompt.approved_by}</span>}
+                      {activePrompt?.approved_by && <span style={{ fontSize: 11, color: '#6F6963' }}>{t('admin_approved_by')} {activePrompt.approved_by}</span>}
                       {role === 'superadmin' && pendingVersions.length > 0 && (
                         <span style={{ padding: '0.2rem 0.75rem', borderRadius: 9999, background: '#FEF3C7', color: '#92400E', fontSize: 11, fontWeight: 600 }}>
                           ⏳ {pendingVersions.length} {pendingVersions.length > 1 ? t('admin_pending_plural') : t('admin_pending')}
@@ -544,16 +544,16 @@ export function ChatPage() {
                   {['admin', 'superadmin'].includes(role) && (
                     <>
                       <textarea value={promptText} onChange={promptMode === 'edit' ? e => setPromptText(e.target.value) : undefined} readOnly={promptMode === 'view'}
-                        style={{ width: '100%', height: 260, padding: '1.25rem', background: promptMode === 'edit' ? 'white' : '#FAFAFA', border: `1px solid ${promptMode === 'edit' ? '#0d9488' : '#E7E5E4'}`, borderRadius: '0.75rem', fontFamily: 'monospace', fontSize: '0.82rem', lineHeight: 1.7, color: promptMode === 'edit' ? '#1C1917' : '#78716C', resize: 'none', outline: 'none', boxSizing: 'border-box' }} />
+                        style={{ width: '100%', height: 260, padding: '1.25rem', background: promptMode === 'edit' ? 'white' : '#FAFAFA', border: `1px solid ${promptMode === 'edit' ? '#0d9488' : '#E7E5E4'}`, borderRadius: '0.75rem', fontFamily: 'monospace', fontSize: '0.82rem', lineHeight: 1.7, color: promptMode === 'edit' ? '#1C1917' : '#6B645F', resize: 'none', outline: 'none', boxSizing: 'border-box' }} />
                       {promptMode === 'view' ? (
                         <button onClick={() => setPromptMode('edit')} style={{ padding: '0.75rem', borderRadius: '0.75rem', border: '1px solid #0d9488', background: 'transparent', color: '#0d9488', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>{t('admin_propose')}</button>
                       ) : (
                         <div style={{ display: 'flex', gap: '0.75rem' }}>
                           <button onClick={() => { void proposePrompt() }} disabled={promptSaving || !promptText.trim()}
-                            style={{ flex: 1, padding: '0.75rem', borderRadius: '0.75rem', border: 'none', background: promptSaving || !promptText.trim() ? '#E7E5E4' : 'linear-gradient(135deg,#00685f,#008378)', color: promptSaving || !promptText.trim() ? '#A8A29E' : 'white', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
+                            style={{ flex: 1, padding: '0.75rem', borderRadius: '0.75rem', border: 'none', background: promptSaving || !promptText.trim() ? '#E7E5E4' : 'linear-gradient(135deg,#00685f,#008378)', color: promptSaving || !promptText.trim() ? '#6F6963' : 'white', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
                             {promptSaving ? t('admin_sending') : t('admin_send')}
                           </button>
-                          <button onClick={() => { setPromptMode('view'); void loadActivePrompt() }} style={{ background: 'none', border: 'none', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer', padding: '0.5rem 1rem' }}>{t('admin_cancel')}</button>
+                          <button onClick={() => { setPromptMode('view'); void loadActivePrompt() }} style={{ background: 'none', border: 'none', color: '#6B645F', fontSize: '0.875rem', cursor: 'pointer', padding: '0.5rem 1rem' }}>{t('admin_cancel')}</button>
                         </div>
                       )}
                     </>
@@ -562,12 +562,12 @@ export function ChatPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1C1917', margin: 0 }}>{t('admin_versions_pending')}</h4>
                       {pendingVersions.length === 0
-                        ? <p style={{ fontSize: '0.8rem', color: '#A8A29E', margin: 0 }}>{t('admin_no_pending')}</p>
+                        ? <p style={{ fontSize: '0.8rem', color: '#6F6963', margin: 0 }}>{t('admin_no_pending')}</p>
                         : pendingVersions.map(v => (
                           <div key={v.id} style={{ background: 'white', border: '1px solid #E7E5E4', borderRadius: '0.75rem', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1C1917' }}>v{v.version}</span>
-                              <span style={{ fontSize: 11, color: '#A8A29E' }}>{t('admin_proposed_by')} {v.proposed_by}</span>
+                              <span style={{ fontSize: 11, color: '#6F6963' }}>{t('admin_proposed_by')} {v.proposed_by}</span>
                             </div>
                             {rejectingId === v.id ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -593,12 +593,12 @@ export function ChatPage() {
                             <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', background: 'white', border: '1px solid #E7E5E4', borderRadius: '0.75rem' }}>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                                 <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1C1917' }}>v{v.version}</span>
-                                <span style={{ fontSize: 11, color: v.status === 'active' ? '#059669' : '#A8A29E' }}>
+                                <span style={{ fontSize: 11, color: v.status === 'active' ? '#059669' : '#6F6963' }}>
                                   {v.status === 'active' ? t('admin_status_active') : v.status === 'approved' ? t('admin_status_approved') : v.status === 'rejected' ? t('admin_status_rejected') : t('admin_status_archived')}
                                 </span>
                               </div>
                               {v.status !== 'active' && (
-                                <button onClick={() => { void rollbackVersion(v.id) }} style={{ padding: '0.35rem 0.75rem', borderRadius: '0.5rem', border: '1px solid #E7E5E4', background: 'none', fontSize: 11, color: '#78716C', cursor: 'pointer' }}>{t('admin_rollback')}</button>
+                                <button onClick={() => { void rollbackVersion(v.id) }} style={{ padding: '0.35rem 0.75rem', borderRadius: '0.5rem', border: '1px solid #E7E5E4', background: 'none', fontSize: 11, color: '#6B645F', cursor: 'pointer' }}>{t('admin_rollback')}</button>
                               )}
                             </div>
                           ))}
@@ -613,7 +613,7 @@ export function ChatPage() {
                   <div style={{ display: 'flex', gap: 6 }}>
                     {(['es', 'en'] as const).map(l => (
                       <button key={l} onClick={() => setLandingTab(l)}
-                        style={{ padding: '0.4rem 1rem', borderRadius: '0.5rem', border: '0.5px solid #D6D2C4', background: landingTab === l ? '#6B7D5C' : 'transparent', color: landingTab === l ? '#FAF8F4' : '#78716C', fontSize: 12, fontWeight: landingTab === l ? 600 : 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                        style={{ padding: '0.4rem 1rem', borderRadius: '0.5rem', border: '0.5px solid #D6D2C4', background: landingTab === l ? '#5C6B4E' : 'transparent', color: landingTab === l ? '#FAF8F4' : '#6B645F', fontSize: 12, fontWeight: landingTab === l ? 600 : 400, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
                         {l.toUpperCase()}
                       </button>
                     ))}
@@ -631,9 +631,9 @@ export function ChatPage() {
                             value={landingEdits[landingTab][key] ?? ''}
                             onChange={e => setLandingEdits(prev => ({ ...prev, [landingTab]: { ...prev[landingTab], [key]: e.target.value } }))}
                             rows={2}
-                            style={{ flex: 1, padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: `0.5px solid ${hasChanged ? '#6B7D5C' : '#D6D2C4'}`, background: '#FAF8F4', fontSize: 13, color: '#1C1917', resize: 'vertical', outline: 'none', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 }} />
+                            style={{ flex: 1, padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: `0.5px solid ${hasChanged ? '#5C6B4E' : '#D6D2C4'}`, background: '#FAF8F4', fontSize: 13, color: '#1C1917', resize: 'vertical', outline: 'none', fontFamily: 'Inter, sans-serif', lineHeight: 1.5 }} />
                           <button onClick={() => { void saveLandingField(key, landingTab) }} disabled={isSaving || !hasChanged}
-                            style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none', background: isSaving || !hasChanged ? '#E7E5E4' : '#6B7D5C', color: isSaving || !hasChanged ? '#A8A29E' : '#FAF8F4', fontSize: 11, cursor: isSaving || !hasChanged ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap', marginTop: 1 }}>
+                            style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: 'none', background: isSaving || !hasChanged ? '#E7E5E4' : '#5C6B4E', color: isSaving || !hasChanged ? '#6F6963' : '#FAF8F4', fontSize: 11, cursor: isSaving || !hasChanged ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap', marginTop: 1 }}>
                             {isSaving ? '...' : 'Guardar'}
                           </button>
                         </div>

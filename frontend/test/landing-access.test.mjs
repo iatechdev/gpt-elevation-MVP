@@ -16,7 +16,7 @@ test('ES-74/ES-14: persisted context is canonical over the legacy onboarding fla
 })
 
 test('ES-74: destination allowlist follows canonical role and onboarding, never arbitrary URLs', () => {
-  for (const [role, destination] of [['admin', '/admin/dashboard'], ['superadmin', '/admin/dashboard'], ['therapist', '/therapist/dashboard'], ['board', '/board/manifest']]) {
+  for (const [role, destination] of [['admin', '/admin/dashboard'], ['superadmin', '/admin/dashboard'], ['therapist', '/therapist/dashboard'], ['board', '/manifiesto']]) {
     assert.equal(sessionDestination({ role, onboardingCompleted: false }), destination)
   }
   assert.equal(sessionDestination({ role: 'user', onboardingCompleted: false }), '/app/onboarding')

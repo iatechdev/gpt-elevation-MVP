@@ -41,7 +41,7 @@ test('ES-137: GET /api/pricing/all y /api/manifest/manifest (con sesión) llevan
   models.PricingPlan.findAll = async () => [];
   models.EthicManifest.findAll = async () => [];
   const request = await startApp(t);
-  for (const [url, actor] of [['/api/pricing/all', { role: 'superadmin', id: 1 }], ['/api/manifest/manifest', { role: 'board', id: 2 }], ['/api/pricing/all', {}], ['/api/manifest/manifest', {}], ['/api/plans/me', user]]) {
+  for (const [url, actor] of [['/api/pricing/all', { role: 'superadmin', id: 1 }], ['/api/manifest/manifest', { role: 'admin', id: 2 }], ['/api/pricing/all', {}], ['/api/manifest/manifest', {}], ['/api/plans/me', user]]) {
     const response = await request('GET', url, actor);
     assert.equal(response.headers.get('cache-control'), 'no-store', `${url} ${JSON.stringify(actor)} -> ${response.status}`);
     assert.match(response.headers.get('vary') || '', /Authorization/i, url);

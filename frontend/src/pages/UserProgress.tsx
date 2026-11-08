@@ -166,7 +166,7 @@ export function UserProgress() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#f9f9f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
-      <p style={{ color: '#78716C', fontSize: '0.875rem' }}>
+      <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>
         {lang === 'es' ? 'Cargando tu progreso...' : 'Loading your progress...'}
       </p>
     </div>
@@ -185,19 +185,19 @@ export function UserProgress() {
         <div style={{ maxWidth: 760, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button onClick={() => navigate('/app/chat')} style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#78716C', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif',
+            color: '#6B645F', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif',
             display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0,
           }}>
             ← {lang === 'es' ? 'Volver al chat' : 'Back to chat'}
           </button>
-          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#6F6963', textTransform: 'uppercase' }}>
             {t('logo')}
           </span>
           {/* HU-060 — Find therapist button */}
           <button
             onClick={() => setShowMatching(true)}
             style={{
-              padding: '0.4rem 0.85rem', background: '#6B7D5C', color: '#fff',
+              padding: '0.4rem 0.85rem', background: '#5C6B4E', color: '#fff',
               border: 'none', borderRadius: '0.85rem', fontSize: '0.78rem',
               fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}
@@ -214,12 +214,12 @@ export function UserProgress() {
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
             {lang === 'es' ? 'Tu progreso' : 'Your progress'}
           </h1>
-          <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0.25rem 0 0' }}>
+          <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0.25rem 0 0' }}>
             {lang === 'es' ? 'Últimos 30 días' : 'Last 30 days'}
           </p>
         </div>
 
-        {error && <p style={{ color: '#DC2626', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
+        {error && <p style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
 
         {/* STATS CARDS */}
         {stats && (
@@ -232,7 +232,7 @@ export function UserProgress() {
             ].map(card => (
               <div key={card.label} style={cardStyle}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>{card.value}</div>
-                <div style={{ fontSize: '0.75rem', color: '#78716C', marginTop: '0.2rem' }}>{card.label}</div>
+                <div style={{ fontSize: '0.75rem', color: '#6B645F', marginTop: '0.2rem' }}>{card.label}</div>
               </div>
             ))}
           </div>
@@ -247,7 +247,7 @@ export function UserProgress() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
               {recommendations.map(rec => (
                 <div key={rec.id} style={{ padding: '0.85rem 1rem', background: '#F5F3EF', borderRadius: '0.75rem' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', marginBottom: '0.3rem', fontFamily: 'Inter, sans-serif' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.3rem', fontFamily: 'Inter, sans-serif' }}>
                     {t(`rec_category_${rec.category}`)}
                   </div>
                   <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.6, margin: 0 }}>
@@ -267,12 +267,12 @@ export function UserProgress() {
               {lang === 'es' ? 'Historial emocional' : 'Emotional history'}
             </h2>
             {moodLogs.length === 0 ? (
-              <p style={{ color: '#78716C', fontSize: '0.875rem' }}>{lang === 'es' ? 'Aún no hay registros.' : 'No records yet.'}</p>
+              <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{lang === 'es' ? 'Aún no hay registros.' : 'No records yet.'}</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {moodLogs.map(log => (
                   <div key={log.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#78716C' }}>{formatDate(log.date)}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#6B645F' }}>{formatDate(log.date)}</span>
                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                       {log.checkin_mood != null && (
                         <div style={{ textAlign: 'center' }}>
@@ -304,12 +304,12 @@ export function UserProgress() {
               {lang === 'es' ? 'Calificaciones' : 'Session ratings'}
             </h2>
             {ratings.length === 0 ? (
-              <p style={{ color: '#78716C', fontSize: '0.875rem' }}>{lang === 'es' ? 'Aún no hay calificaciones.' : 'No ratings yet.'}</p>
+              <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{lang === 'es' ? 'Aún no hay calificaciones.' : 'No ratings yet.'}</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {ratings.map(r => (
                   <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#78716C' }}>{formatDate(r.date)}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#6B645F' }}>{formatDate(r.date)}</span>
                     <span style={{ fontSize: '0.85rem', letterSpacing: '0.05em' }}>
                       {'★'.repeat(r.rating)}
                       <span style={{ color: '#D6D2C4' }}>{'★'.repeat(5 - r.rating)}</span>
@@ -333,16 +333,16 @@ export function UserProgress() {
                   ? (lang === 'es' ? '🤝 Encuentra tu terapeuta' : '🤝 Find your therapist')
                   : (lang === 'es' ? '✨ Tus matches' : '✨ Your matches')}
               </h2>
-              <button onClick={closeMatching} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C' }}>✕</button>
+              <button onClick={closeMatching} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F' }}>✕</button>
             </div>
 
-            {matchingError   && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{matchingError}</div>}
+            {matchingError   && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{matchingError}</div>}
             {matchingSuccess && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{matchingSuccess}</div>}
 
             {matchingStep === 'questionnaire' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
                     {lang === 'es' ? '¿En qué área quieres trabajar?' : 'What area do you want to work on?'}
                   </label>
                   <select value={matchingAnswers.area} onChange={e => setMatchingAnswers(p => ({ ...p, area: e.target.value }))} style={selectStyle}>
@@ -356,7 +356,7 @@ export function UserProgress() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
                     {lang === 'es' ? '¿Qué estilo prefieres?' : 'What style do you prefer?'}
                   </label>
                   <select value={matchingAnswers.style} onChange={e => setMatchingAnswers(p => ({ ...p, style: e.target.value }))} style={selectStyle}>
@@ -368,7 +368,7 @@ export function UserProgress() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
                     {lang === 'es' ? 'Idioma preferido para las sesiones' : 'Preferred session language'}
                   </label>
                   <select value={matchingAnswers.language} onChange={e => setMatchingAnswers(p => ({ ...p, language: e.target.value }))} style={selectStyle}>
@@ -383,7 +383,7 @@ export function UserProgress() {
                   disabled={loadingMatching || !matchingAnswers.area || !matchingAnswers.style || !matchingAnswers.language}
                   style={{
                     width: '100%', padding: '0.75rem',
-                    background: loadingMatching || !matchingAnswers.area || !matchingAnswers.style || !matchingAnswers.language ? '#A8B5A2' : '#6B7D5C',
+                    background: loadingMatching || !matchingAnswers.area || !matchingAnswers.style || !matchingAnswers.language ? '#A8B5A2' : '#5C6B4E',
                     color: '#fff', border: 'none', borderRadius: '0.85rem',
                     fontSize: '0.9rem', fontWeight: 500,
                     cursor: loadingMatching || !matchingAnswers.area || !matchingAnswers.style || !matchingAnswers.language ? 'not-allowed' : 'pointer',
@@ -399,13 +399,13 @@ export function UserProgress() {
 
             {matchingStep === 'results' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.5rem' }}>
+                <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: '0 0 0.5rem' }}>
                   {lang === 'es' ? 'Según tus respuestas, estos son tus mejores matches:' : 'Based on your answers, here are your top matches:'}
                 </p>
                 {matchingSuggestions.map((s, i) => (
                   <div key={s.therapistId} style={{
                     padding: '1rem', background: '#F5F3EF', borderRadius: '0.85rem',
-                    border: i === 0 ? '1.5px solid #6B7D5C' : '0.5px solid #E7E5E4',
+                    border: i === 0 ? '1.5px solid #5C6B4E' : '0.5px solid #E7E5E4',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917' }}>{s.therapistName}</div>
@@ -413,11 +413,11 @@ export function UserProgress() {
                         {s.score}/10
                       </div>
                     </div>
-                    <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.75rem', lineHeight: 1.5 }}>{s.reason}</p>
+                    <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: '0 0 0.75rem', lineHeight: 1.5 }}>{s.reason}</p>
                     <button
                       onClick={() => handleChooseTherapist(s.therapistId)}
                       style={{
-                        padding: '0.45rem 1rem', background: '#6B7D5C', color: '#fff',
+                        padding: '0.45rem 1rem', background: '#5C6B4E', color: '#fff',
                         border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem',
                         fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                       }}
@@ -428,7 +428,7 @@ export function UserProgress() {
                 ))}
                 <button
                   onClick={() => setMatchingStep('questionnaire')}
-                  style={{ background: 'none', border: 'none', color: '#78716C', fontSize: '0.82rem', cursor: 'pointer', textAlign: 'center', padding: '0.25rem' }}
+                  style={{ background: 'none', border: 'none', color: '#6B645F', fontSize: '0.82rem', cursor: 'pointer', textAlign: 'center', padding: '0.25rem' }}
                 >
                   ← {lang === 'es' ? 'Volver al cuestionario' : 'Back to questionnaire'}
                 </button>
