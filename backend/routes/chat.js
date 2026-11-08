@@ -22,9 +22,9 @@ const { encriptar, encriptarV2, desencriptar } = require('../utils/crypto');
 const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
 const { validateBody, nonempty, optional } = require('../middlewares/validateBody');
-const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS } = require('../utils/promptSafety');
+const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS, containsPhoneNumber } = require('../utils/promptSafety');
 const { detectRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
-const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY } = require('../utils/companionTone');
+const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY, PHONE_FILTER_REPLY } = require('../utils/companionTone');
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
 const HISTORY_LIMIT = 20;
@@ -267,6 +267,14 @@ ${manifest}
       return res.status(502).json({
         reply: FALLBACK_REPLY[replyLang], code: 'provider_unavailable', retryable: true, requestId: requestId ?? null,
       });
+    }
+
+    // ES-208 (QA-145-01): defensa en profundidad. Si el modelo trae un teléfono o línea de ayuda, se entrega un texto fijo sin números.
+    // La respuesta original no se guarda ni se registra; el consumo ya hecho se liquidó en callClaude y no se reintenta la llamada.
+    if (containsPhoneNumber(respuestaIA)) {
+      console.warn('⚠️ ai_reply_phone_filtered', { kind: compass ? 'compass' : 'chat' }); // evento sin texto ni identificadores
+      respuestaIA = PHONE_FILTER_REPLY[lang] ?? PHONE_FILTER_REPLY.es;
+      truncated = false;
     }
 
     // Malestar: la respuesta ordinaria se acompaña de una nota breve de apoyo (con recursos solo si están verificados).
