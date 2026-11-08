@@ -64,12 +64,12 @@ export function AdminFrame({ children, pilotPreview = false }: { children: React
   )
 }
 
-/** Junta: solo el manifiesto, sin barra lateral. */
+/** Junta: solo el manifiesto (página pública /manifiesto, ES-207), sin barra lateral. */
 export function BoardFrame({ children }: { children: ReactNode }) {
   const { c } = useShellCopy()
   return (
     <Frame
-      brandTo="/board/manifest" nav={<NavLinks items={BOARD_NAV} label={c.boardRole} />}
+      brandTo="/manifiesto" nav={<NavLinks items={BOARD_NAV} label={c.boardRole} />}
       account={<><span className="cg-role">{c.boardRole}</span><span className="cg-name cg-who">{readName(c.boardRole)}</span><SignOutButton /></>} mainClassName="elv-theme"
     >{children}</Frame>
   )

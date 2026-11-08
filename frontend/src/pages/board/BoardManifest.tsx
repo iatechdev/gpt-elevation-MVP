@@ -1,5 +1,6 @@
 // frontend/src/pages/board/BoardManifest.tsx
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -181,7 +182,7 @@ export function BoardManifest() {
       )}
 
       {/* Botón nueva versión */}
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <button
           onClick={() => setShowForm(f => !f)}
           style={{
@@ -194,6 +195,8 @@ export function BoardManifest() {
         >
           {showForm ? t('board_cancel') : t('board_new_version')}
         </button>
+        {/* ES-207 — enlace a la página pública */}
+        <Link to="/manifiesto" style={{ fontSize: 13, color: '#4B5E3F', textDecoration: 'underline', minHeight: 24, display: 'inline-flex', alignItems: 'center' }}>{t('manifest_view_public')}</Link>
       </div>
 
       {/* Formulario nueva versión */}
