@@ -53,7 +53,7 @@ const card: React.CSSProperties = {
   borderRadius: '1rem', padding: '1.5rem', marginBottom: '1rem',
 }
 const label: React.CSSProperties = {
-  fontSize: 12, fontWeight: 500, color: '#78716C',
+  fontSize: 12, fontWeight: 500, color: '#6B645F',
   letterSpacing: '0.05em', display: 'block', marginBottom: 4,
 }
 const input: React.CSSProperties = {
@@ -62,12 +62,12 @@ const input: React.CSSProperties = {
   fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box',
 }
 const btnPrimary: React.CSSProperties = {
-  background: '#6B7D5C', color: '#fff', border: 'none',
+  background: '#5C6B4E', color: '#fff', border: 'none',
   borderRadius: '0.75rem', padding: '0.6rem 1.25rem',
   fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
 }
 const btnSecondary: React.CSSProperties = {
-  background: 'transparent', color: '#6B7D5C', border: '0.5px solid #A8B5A2',
+  background: 'transparent', color: '#5C6B4E', border: '0.5px solid #A8B5A2',
   borderRadius: '0.75rem', padding: '0.6rem 1.25rem',
   fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
 }
@@ -77,7 +77,7 @@ const btnDanger: React.CSSProperties = {
   fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
 }
 const sectionTitle: React.CSSProperties = {
-  fontSize: 11, fontWeight: 600, color: '#6B7D5C',
+  fontSize: 11, fontWeight: 600, color: '#5C6B4E',
   letterSpacing: '0.08em', textTransform: 'uppercase',
   margin: '0 0 0.75rem', paddingBottom: '0.4rem',
   borderBottom: '0.5px solid #EAF0E6',
@@ -99,7 +99,7 @@ export function AdminContent() {
   return (
     <div>
       <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.8rem', color: '#1C1917', marginBottom: '0.25rem' }}>{tr("Contenido")}{' '}</h1>
-      <p style={{ fontSize: '0.875rem', color: '#78716C', marginBottom: '1.5rem' }}>{tr("Gestión de validaciones, precios y páginas públicas")}{' '}</p>
+      <p style={{ fontSize: '0.875rem', color: '#6B645F', marginBottom: '1.5rem' }}>{tr("Gestión de validaciones, precios y páginas públicas")}{' '}</p>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem', borderBottom: '0.5px solid #E7E5E4' }}>
@@ -108,8 +108,8 @@ export function AdminContent() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 500, padding: '0.5rem 1rem',
-              color: tab === t.key ? '#6B7D5C' : '#78716C',
-              borderBottom: tab === t.key ? '2px solid #6B7D5C' : '2px solid transparent',
+              color: tab === t.key ? '#5C6B4E' : '#6B645F',
+              borderBottom: tab === t.key ? '2px solid #5C6B4E' : '2px solid transparent',
               fontFamily: 'Inter, sans-serif', marginBottom: -1,
             }}>
             {tr(t.label)}
@@ -190,12 +190,12 @@ function ValidationsTab() {
     finally { setSaving(false) }
   }
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>{tr("Cargando documentos pendientes...")}</p>
+  if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando documentos pendientes...")}</p>
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <p style={{ fontSize: 13, color: '#78716C', margin: 0 }}>
+        <p style={{ fontSize: 13, color: '#6B645F', margin: 0 }}>
           {docs.length}{' '}{tr("documento(s) pendiente(s) de revisión")}{' '}</p>
         <button style={btnSecondary} onClick={load}>{tr("↻ Actualizar")}</button>
       </div>
@@ -209,7 +209,7 @@ function ValidationsTab() {
       )}
 
       {docs.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: 13 }}>
+        <div style={{ ...card, textAlign: 'center', padding: '3rem', color: '#6B645F', fontSize: 13 }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>{tr("No hay documentos pendientes de revisión.")}{' '}</div>
       )}
 
@@ -218,22 +218,22 @@ function ValidationsTab() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EAF0E6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#6B7D5C', fontWeight: 600, flexShrink: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EAF0E6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#5C6B4E', fontWeight: 600, flexShrink: 0 }}>
                   {doc.therapist.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{doc.therapist.name}</div>
-                  <div style={{ fontSize: 11, color: '#78716C' }}>{doc.therapist.email}</div>
+                  <div style={{ fontSize: 11, color: '#6B645F' }}>{doc.therapist.email}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span style={{ fontSize: 12, background: '#F5F5F3', color: '#4A4A4A', padding: '2px 10px', borderRadius: 8 }}>
                   📄 {doc.documentName}
                 </span>
-                <span style={{ fontSize: 11, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 8 }}>
+                <span style={{ fontSize: 11, background: '#EAF0E6', color: '#5C6B4E', padding: '2px 8px', borderRadius: 8 }}>
                   {doc.documentType}
                 </span>
-                <span style={{ fontSize: 11, color: '#A8A29E' }}>
+                <span style={{ fontSize: 11, color: '#6F6963' }}>
                   {new Date(doc.submittedAt).toLocaleDateString(tr('es-CO'), { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
               </div>
@@ -259,7 +259,7 @@ function ValidationsTab() {
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
               {actionType === 'approve' ? tr('✓ Aprobar terapeuta') : tr('✗ Rechazar documento')}
             </h3>
-            <p style={{ fontSize: 13, color: '#78716C', margin: '0 0 1.25rem' }}>
+            <p style={{ fontSize: 13, color: '#6B645F', margin: '0 0 1.25rem' }}>
               {actionType === 'approve'
                 ? tr(`¿Apruebas la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`)
                 : tr(`Explica por qué rechazas el documento de ${actionDoc.therapist.name}.`)}
@@ -368,12 +368,12 @@ function PricingTab() {
     load()
   }
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>{tr("Cargando planes...")}</p>
+  if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando planes...")}</p>
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <p style={{ fontSize: 13, color: '#78716C', margin: 0 }}>
+        <p style={{ fontSize: 13, color: '#6B645F', margin: 0 }}>
           {plans.filter(p => p.isActive).length}{' '}{tr("plan(es) activo(s)")}{' '}</p>
         <button style={btnPrimary} onClick={openNew}>{tr("+ Nuevo plan")}</button>
       </div>
@@ -383,8 +383,8 @@ function PricingTab() {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{p.name_es}</span>
-              <span style={{ fontSize: 11, color: '#A8A29E' }}>/ {p.name_en}</span>
-              {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#6B7D5C', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>{tr("DESTACADO")}</span>}
+              <span style={{ fontSize: 11, color: '#6F6963' }}>/ {p.name_en}</span>
+              {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#5C6B4E', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>{tr("DESTACADO")}</span>}
               {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: 10 }}>{tr("INACTIVO")}</span>}
             </div>
             <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
@@ -404,7 +404,7 @@ function PricingTab() {
       ))}
 
       {plans.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', color: '#78716C', fontSize: 13 }}>{tr("No hay planes. Crea el primero.")}</div>
+        <div style={{ ...card, textAlign: 'center', color: '#6B645F', fontSize: 13 }}>{tr("No hay planes. Crea el primero.")}</div>
       )}
 
       {showForm && (
@@ -481,7 +481,7 @@ function PricingTab() {
                   {form.features_es.map((f, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F5F3', borderRadius: 8, padding: '4px 10px' }}>
                       <span style={{ flex: 1, fontSize: 12, color: '#1C1917' }}>{f}</span>
-                      <button onClick={() => removeFeature('es', i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', fontSize: 16 }}>×</button>
+                      <button onClick={() => removeFeature('es', i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', fontSize: 16 }}>×</button>
                     </div>
                   ))}
                 </div>
@@ -496,7 +496,7 @@ function PricingTab() {
                   {form.features_en.map((f, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F5F3', borderRadius: 8, padding: '4px 10px' }}>
                       <span style={{ flex: 1, fontSize: 12, color: '#1C1917' }}>{f}</span>
-                      <button onClick={() => removeFeature('en', i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A8A29E', fontSize: 16 }}>×</button>
+                      <button onClick={() => removeFeature('en', i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', fontSize: 16 }}>×</button>
                     </div>
                   ))}
                 </div>
@@ -516,7 +516,7 @@ function PricingTab() {
                   </div>
                 </div>
               </div>
-              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#6B7D5C', margin: 0 }}>{tr(msg)}</p>}
+              {msg && <p style={{ fontSize: 12, color: msg.includes('Error') || msg.includes('requerido') ? '#DC2626' : '#5C6B4E', margin: 0 }}>{tr(msg)}</p>}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: '0.5rem' }}>
                 <button style={btnSecondary} onClick={() => setShowForm(false)}>{tr("Cancelar")}{' '}</button>
                 <button style={btnPrimary} onClick={save} disabled={saving}>
@@ -572,14 +572,14 @@ function LandingTab() {
     } finally { setSaving(null) }
   }
 
-  if (loading) return <p style={{ color: '#78716C', fontSize: 13 }}>{tr("Cargando contenido...")}</p>
+  if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando contenido...")}</p>
 
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.25rem' }}>
         {(['es', 'en'] as const).map(l => (
           <button key={l} onClick={() => setLang(l)}
-            style={{ ...btnSecondary, background: lang === l ? '#6B7D5C' : 'transparent', color: lang === l ? '#fff' : '#6B7D5C' }}>
+            style={{ ...btnSecondary, background: lang === l ? '#5C6B4E' : 'transparent', color: lang === l ? '#fff' : '#5C6B4E' }}>
             {l.toUpperCase()}
           </button>
         ))}
@@ -595,7 +595,7 @@ function LandingTab() {
             </button>
           </div>
           {msgs[f.key] && (
-            <p style={{ fontSize: 11, color: msgs[f.key].startsWith('✓') ? '#6B7D5C' : '#DC2626', margin: '4px 0 0' }}>
+            <p style={{ fontSize: 11, color: msgs[f.key].startsWith('✓') ? '#5C6B4E' : '#DC2626', margin: '4px 0 0' }}>
               {msgs[f.key]}
             </p>
           )}

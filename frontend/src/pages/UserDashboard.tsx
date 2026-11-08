@@ -53,8 +53,8 @@ const CHECKOUT_MOODS = [
 ]
 
 const PLAN_COLORS: Record<string, { bg: string; border: string; badge: string; text: string }> = {
-  basic:     { bg: '#F5F3EF', border: '#E7E5E4', badge: '#78716C', text: '#78716C' },
-  essential: { bg: '#EAF0E6', border: '#A8B5A2', badge: '#6B7D5C', text: '#6B7D5C' },
+  basic:     { bg: '#F5F3EF', border: '#E7E5E4', badge: '#6B645F', text: '#6B645F' },
+  essential: { bg: '#EAF0E6', border: '#A8B5A2', badge: '#5C6B4E', text: '#5C6B4E' },
   plus:      { bg: '#EEF2FF', border: '#A5B4FC', badge: '#4F46E5', text: '#4F46E5' },
   pro:       { bg: '#FFF7ED', border: '#FCD34D', badge: '#D97706', text: '#D97706' },
 }
@@ -237,7 +237,7 @@ export function UserDashboard() {
 
   const trendColor = (avg: number | null) => {
     if (avg === null)  return '#E7E5E4'
-    if (avg >= 3.5)    return '#6B7D5C'
+    if (avg >= 3.5)    return '#5C6B4E'
     if (avg >= 2.5)    return '#F59E0B'
     return '#EF4444'
   }
@@ -284,23 +284,23 @@ export function UserDashboard() {
         minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <div style={{ maxWidth: 1100, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#A8A29E', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#6F6963', textTransform: 'uppercase' }}>
             {t('logo')}
           </span>
 
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {(['es', 'en'] as const).map(l => (
               <button key={l} onClick={() => setLang(l)}
-                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '0.5px solid #D6D2C4', background: lang === l ? '#6B7D5C' : 'transparent', color: lang === l ? '#FAF8F4' : '#A8A29E', cursor: 'pointer' }}>
+                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '0.5px solid #D6D2C4', background: lang === l ? '#5C6B4E' : 'transparent', color: lang === l ? '#FAF8F4' : '#6F6963', cursor: 'pointer' }}>
                 {l.toUpperCase()}
               </button>
             ))}
             <button onClick={() => navigate('/app/progress')}
-              style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
+              style={{ fontSize: '0.78rem', color: '#6B645F', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi progreso' : 'My progress'}
             </button>
             <button onClick={() => navigate('/app/my-therapist')}
-              style={{ fontSize: '0.78rem', color: '#78716C', background: 'none', border: 'none', cursor: 'pointer' }}>
+              style={{ fontSize: '0.78rem', color: '#6B645F', background: 'none', border: 'none', cursor: 'pointer' }}>
               {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
             </button>
             <SessionControl onRequestSignOut={() => setShowCheckout(true)} />
@@ -329,19 +329,19 @@ export function UserDashboard() {
 
           {/* Widget 1 — Estado emocional */}
           <div style={cardStyle}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
               ♡ {lang === 'es' ? 'Estado emocional' : 'Emotional state'}
             </div>
             {checkedIn ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                 <div style={{ fontSize: '2rem' }}>{MOOD_EMOJI[todayMood ?? 3]}</div>
-                <div style={{ fontSize: '0.78rem', color: '#6B7D5C' }}>
+                <div style={{ fontSize: '0.78rem', color: '#5C6B4E' }}>
                   {lang === 'es' ? '✓ Ya registraste tu estado de hoy' : '✓ Check-in done for today'}
                 </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
+                <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: 0 }}>
                   {lang === 'es' ? '¿Cómo llegas hoy?' : 'How are you arriving today?'}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -355,7 +355,7 @@ export function UserDashboard() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'all 0.15s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#6B7D5C'; e.currentTarget.style.background = '#EAF0E6' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#5C6B4E'; e.currentTarget.style.background = '#EAF0E6' }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = '#E7E5E4'; e.currentTarget.style.background = 'white' }}
                     >
                       {m.emoji}
@@ -368,16 +368,16 @@ export function UserDashboard() {
 
           {/* Widget 2 — Tu progreso */}
           <div style={cardStyle}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
               ↗ {lang === 'es' ? 'Tu progreso' : 'Your progress'}
             </div>
             <div style={{ marginBottom: '0.75rem' }}>
               <div style={{ fontSize: '1.4rem', fontWeight: 600, color: '#1C1917' }}>{sessionsWeek}</div>
-              <div style={{ fontSize: '0.75rem', color: '#78716C' }}>
+              <div style={{ fontSize: '0.75rem', color: '#6B645F' }}>
                 {lang === 'es' ? 'sesiones esta semana' : 'sessions this week'}
               </div>
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#78716C', marginBottom: '0.4rem' }}>
+            <div style={{ fontSize: '0.72rem', color: '#6B645F', marginBottom: '0.4rem' }}>
               {lang === 'es' ? 'Tendencia emocional' : 'Emotional trend'}
             </div>
             <div style={{ display: 'flex', gap: '4px' }}>
@@ -391,10 +391,10 @@ export function UserDashboard() {
           {/* Widget 3 — Próxima sesión — HU-067 activado */}
           <div style={{
             ...cardStyle,
-            ...(sessionIsLive ? { border: '1px solid #6B7D5C', background: '#EAF0E6' } : {}),
+            ...(sessionIsLive ? { border: '1px solid #5C6B4E', background: '#EAF0E6' } : {}),
             ...(sessionIsImminent ? { border: '1px solid #A8B5A2' } : {}),
           }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
               {sessionIsLive
                 ? '🔴 ' + (lang === 'es' ? 'Sesión en curso' : 'Session live')
                 : '📅 ' + (lang === 'es' ? 'Próxima sesión' : 'Upcoming session')}
@@ -405,7 +405,7 @@ export function UserDashboard() {
                 <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>
                   {lang === 'es' ? 'Con' : 'With'} {upcomingSession.therapistName}
                 </div>
-                <div style={{ fontSize: '0.78rem', color: '#78716C' }}>
+                <div style={{ fontSize: '0.78rem', color: '#6B645F' }}>
                   {formatSession(upcomingSession.scheduledAt)} — {upcomingSession.duration} min
                 </div>
 
@@ -416,7 +416,7 @@ export function UserDashboard() {
                     onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
                     style={{
                       marginTop: '0.5rem', padding: '0.6rem 0.85rem',
-                      background: '#6B7D5C', color: '#fff',
+                      background: '#5C6B4E', color: '#fff',
                       border: 'none', borderRadius: '0.65rem',
                       fontSize: '0.82rem', fontWeight: 600,
                       cursor: 'pointer', fontFamily: 'Inter, sans-serif',
@@ -444,7 +444,7 @@ export function UserDashboard() {
                   <div style={{
                     marginTop: '0.5rem', padding: '0.5rem 0.85rem',
                     background: '#F5F3EF', borderRadius: '0.65rem',
-                    fontSize: '0.78rem', color: '#78716C',
+                    fontSize: '0.78rem', color: '#6B645F',
                     display: 'flex', alignItems: 'center', gap: '0.4rem',
                   }}>
                     🕐 {lang === 'es'
@@ -454,12 +454,12 @@ export function UserDashboard() {
                 )}
               </div>
             ) : therapistId ? (
-              <p style={{ fontSize: '0.82rem', color: '#78716C', margin: 0 }}>
+              <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: 0 }}>
                 {lang === 'es' ? 'Tu terapeuta aún no ha agendado una sesión.' : 'Your therapist has not scheduled a session yet.'}
               </p>
             ) : (
               <button onClick={() => setShowMatching(true)}
-                style={{ padding: '0.5rem 0.85rem', background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', cursor: 'pointer' }}>
+                style={{ padding: '0.5rem 0.85rem', background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', cursor: 'pointer' }}>
                 🤝 {lang === 'es' ? 'Buscar mi terapeuta' : 'Find my therapist'}
               </button>
             )}
@@ -472,7 +472,7 @@ export function UserDashboard() {
             border: `0.5px solid ${planColors.border}`,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 ◇ {lang === 'es' ? 'Mi plan' : 'My plan'}
               </div>
               <span style={{
@@ -491,12 +491,12 @@ export function UserDashboard() {
                   <span style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>
                     ${userPlan.price}
                   </span>
-                  <span style={{ fontSize: '0.72rem', color: '#78716C' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#6B645F' }}>
                     {userPlan.currency} / {lang === 'es' ? 'mes' : 'month'}
                   </span>
                 </div>
               ) : (
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#78716C' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#6B645F' }}>
                   {lang === 'es' ? 'Gratis' : 'Free'}
                 </div>
               )}
@@ -504,13 +504,13 @@ export function UserDashboard() {
 
             {planLimits && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#6B645F' }}>
                   <span>{lang === 'es' ? 'Mensajes IA / día' : 'AI messages / day'}</span>
                   <span style={{ fontWeight: 600, color: planColors.text }}>
                     {formatLimit(planLimits.chatMessagesDay)}
                   </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#78716C' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#6B645F' }}>
                   <span>{lang === 'es' ? 'Sesiones / mes' : 'Sessions / month'}</span>
                   <span style={{ fontWeight: 600, color: planColors.text }}>
                     {formatLimit(planLimits.sessionsMonth)}
@@ -522,7 +522,7 @@ export function UserDashboard() {
             {planFeatures.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '0.75rem' }}>
                 {planFeatures.slice(0, 3).map((f, i) => (
-                  <div key={i} style={{ fontSize: '0.72rem', color: '#78716C', display: 'flex', gap: '0.35rem' }}>
+                  <div key={i} style={{ fontSize: '0.72rem', color: '#6B645F', display: 'flex', gap: '0.35rem' }}>
                     <span style={{ color: planColors.text }}>✓</span>
                     <span>{f}</span>
                   </div>
@@ -555,7 +555,7 @@ export function UserDashboard() {
           {!checkedIn ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>
               <div style={{ fontSize: '2.5rem' }}>💬</div>
-              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#A8A29E', textAlign: 'center', margin: 0 }}>
+              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#6F6963', textAlign: 'center', margin: 0 }}>
                 {lang === 'es'
                   ? 'Selecciona cómo llegas hoy para comenzar tu conversación.'
                   : 'Select how you\'re arriving today to start your conversation.'}
@@ -582,13 +582,13 @@ export function UserDashboard() {
             ✨ {lang === 'es' ? 'Recomendaciones para ti' : 'Recommendations for you'}
           </h2>
           <button onClick={() => void handleGenerateRecs()} disabled={loadingRecs}
-            style={{ fontSize: '0.78rem', color: '#6B7D5C', background: 'none', border: '0.5px solid #6B7D5C', borderRadius: '0.65rem', padding: '0.35rem 0.75rem', cursor: loadingRecs ? 'not-allowed' : 'pointer' }}>
+            style={{ fontSize: '0.78rem', color: '#5C6B4E', background: 'none', border: '0.5px solid #5C6B4E', borderRadius: '0.65rem', padding: '0.35rem 0.75rem', cursor: loadingRecs ? 'not-allowed' : 'pointer' }}>
             {loadingRecs ? '...' : lang === 'es' ? 'Generar nuevas' : 'Generate new'}
           </button>
         </div>
 
         {recommendations.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#A8A29E', fontSize: '0.875rem' }}>
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#6F6963', fontSize: '0.875rem' }}>
             {lang === 'es' ? 'Aún no tienes recomendaciones. ¡Genera las primeras!' : 'No recommendations yet. Generate your first ones!'}
           </div>
         ) : (
@@ -596,13 +596,13 @@ export function UserDashboard() {
             {recommendations.map(rec => (
               <div key={rec.id} style={{ ...cardStyle, cursor: 'pointer' }}
                 onClick={() => setExpandedRec(rec)}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', marginBottom: '0.35rem' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.35rem' }}>
                   {t(`rec_category_${rec.category}`)}
                 </div>
                 <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.88rem', color: '#1C1917', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
                   {rec.content.length > 100 ? rec.content.slice(0, 100) + '...' : rec.content}
                 </p>
-                <span style={{ fontSize: '0.75rem', color: '#6B7D5C' }}>
+                <span style={{ fontSize: '0.75rem', color: '#5C6B4E' }}>
                   {lang === 'es' ? 'Explorar →' : 'Explore →'}
                 </span>
               </div>
@@ -617,14 +617,14 @@ export function UserDashboard() {
           onClick={() => setExpandedRec(null)}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', maxWidth: 480, width: '90%', boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}
             onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B7D5C', marginBottom: '0.5rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.5rem' }}>
               {t(`rec_category_${expandedRec.category}`)}
             </div>
             <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#1C1917', lineHeight: 1.75, margin: '0 0 1.5rem' }}>
               {expandedRec.content}
             </p>
             <button onClick={() => setExpandedRec(null)}
-              style={{ padding: '0.5rem 1.25rem', background: '#6B7D5C', color: '#fff', border: 'none', borderRadius: '0.65rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+              style={{ padding: '0.5rem 1.25rem', background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', cursor: 'pointer', fontSize: '0.875rem' }}>
               {lang === 'es' ? 'Cerrar' : 'Close'}
             </button>
           </div>
@@ -635,7 +635,7 @@ export function UserDashboard() {
       {showCheckout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
           <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#A8A29E', margin: 0, textTransform: 'uppercase' }}>CHECK-OUT</p>
+            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#6F6963', margin: 0, textTransform: 'uppercase' }}>CHECK-OUT</p>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
               {lang === 'es' ? '¿Cómo te vas?' : 'How are you leaving?'}
             </h3>
@@ -649,14 +649,14 @@ export function UserDashboard() {
             </div>
             {checkoutMood !== null && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                <p style={{ fontSize: '0.8rem', color: '#78716C', margin: 0 }}>
+                <p style={{ fontSize: '0.8rem', color: '#6B645F', margin: 0 }}>
                   {lang === 'es' ? '¿Cómo fue la conversación?' : 'How was the conversation?'}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <button key={star} onClick={() => setStarRating(star)}
                       onMouseEnter={() => setStarHover(star)} onMouseLeave={() => setStarHover(null)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, color: star <= (starHover ?? starRating ?? 0) ? '#6B7D5C' : '#D6D2C4' }}>★</button>
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, color: star <= (starHover ?? starRating ?? 0) ? '#5C6B4E' : '#D6D2C4' }}>★</button>
                   ))}
                 </div>
               </div>
@@ -664,11 +664,11 @@ export function UserDashboard() {
             <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
               <button onClick={() => { if (checkoutMood !== null) void handleCheckout(checkoutMood) }}
                 disabled={checkoutMood === null || checkoutSaving}
-                style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#A8A29E', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
+                style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#6F6963', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
                 {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
               </button>
               <button onClick={() => { void signOut(API).then(() => navigate('/', { replace: true })) }}
-                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#78716C', fontSize: '0.875rem', cursor: 'pointer' }}>
+                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#6B645F', fontSize: '0.875rem', cursor: 'pointer' }}>
                 {lang === 'es' ? 'Saltar' : 'Skip'}
               </button>
             </div>

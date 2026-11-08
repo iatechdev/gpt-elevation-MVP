@@ -4,12 +4,12 @@
 // Importar desde cualquier componente: import { colors, radius, shadow, spacing } from '../../styles/tokens'
 
 export const colors = {
-  primary:      '#6B7D5C',  // olive — color principal Elevation
+  primary:      '#5C6B4E',  // olive — color principal Elevation
   primaryLight: '#EAF0E6',  // olive muy claro — fondos, badges
   primaryDark:  '#4A6741',  // olive oscuro — texto sobre primaryLight
   text:         '#1C1917',  // casi negro — texto principal
-  textMuted:    '#78716C',  // gris cálido — subtítulos, labels
-  textSubtle:   '#A8A29E',  // gris más claro — textos secundarios
+  textMuted:    '#6B645F',  // gris cálido — subtítulos, labels
+  textSubtle:   '#6F6963',  // gris más claro — textos secundarios
   border:       '#E7E5E4',  // borde estándar
   borderLight:  '#D6D2C4',  // borde inputs
   bg:           '#F9F9F7',  // fondo global

@@ -118,9 +118,9 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
   const chipStyle = (selected: boolean): React.CSSProperties => ({
     padding: '0.45rem 0.85rem',
     borderRadius: '999px',
-    border: `1px solid ${selected ? '#6B7D5C' : '#E7E5E4'}`,
+    border: `1px solid ${selected ? '#5C6B4E' : '#E7E5E4'}`,
     background: selected ? '#EAF0E6' : '#fff',
-    color: selected ? '#4A6741' : '#78716C',
+    color: selected ? '#4A6741' : '#6B645F',
     fontSize: '0.82rem',
     fontWeight: selected ? 600 : 400,
     cursor: 'pointer',
@@ -156,7 +156,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
               : (lang === 'es' ? 'Encontremos tu terapeuta ideal' : 'Let\'s find your ideal therapist')}
           </h2>
           <button onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#78716C', padding: 4 }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F', padding: 4 }}>
             ✕
           </button>
         </div>
@@ -172,7 +172,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
             <div>
-              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#78716C', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', marginBottom: '0.5rem' }}>
                 {lang === 'es' ? '¿Qué quieres trabajar?' : 'What do you want to work on?'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -185,7 +185,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
             </div>
 
             <div>
-              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#78716C', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', marginBottom: '0.5rem' }}>
                 {lang === 'es' ? '¿Qué enfoque prefieres?' : 'What approach do you prefer?'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -198,7 +198,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
             </div>
 
             <div>
-              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#78716C', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', marginBottom: '0.5rem' }}>
                 {lang === 'es' ? '¿En qué idioma?' : 'In which language?'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -215,8 +215,8 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
               disabled={!canSearch || searching}
               style={{
                 width: '100%', padding: '0.85rem',
-                background: canSearch ? '#6B7D5C' : '#E7E5E4',
-                color: canSearch ? '#fff' : '#A8A29E',
+                background: canSearch ? '#5C6B4E' : '#E7E5E4',
+                color: canSearch ? '#fff' : '#6F6963',
                 border: 'none', borderRadius: '0.85rem',
                 fontSize: '0.9rem', fontWeight: 500,
                 cursor: canSearch ? 'pointer' : 'not-allowed',
@@ -235,7 +235,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
         {step === 'results' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {suggestions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem', color: '#78716C', fontSize: '0.875rem' }}>
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#6B645F', fontSize: '0.875rem' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>😔</div>
                 {lang === 'es'
                   ? 'No encontramos terapeutas disponibles ahora. Vuelve a intentarlo más tarde.'
@@ -243,7 +243,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
               </div>
             ) : (
               <>
-                <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.5rem' }}>
+                <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: '0 0 0.5rem' }}>
                   {lang === 'es'
                     ? `Encontramos ${suggestions.length} terapeuta${suggestions.length !== 1 ? 's' : ''} compatible${suggestions.length !== 1 ? 's' : ''} con tu perfil:`
                     : `We found ${suggestions.length} compatible therapist${suggestions.length !== 1 ? 's' : ''} for you:`}
@@ -260,7 +260,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
                         width: 38, height: 38, borderRadius: '50%',
                         background: '#EAF0E6', flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1rem', fontWeight: 600, color: '#6B7D5C',
+                        fontSize: '1rem', fontWeight: 600, color: '#5C6B4E',
                       }}>
                         {s.therapistName.charAt(0).toUpperCase()}
                       </div>
@@ -268,12 +268,12 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
                         <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917' }}>
                           {s.therapistName}
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: '#6B7D5C', fontWeight: 600 }}>
+                        <div style={{ fontSize: '0.72rem', color: '#5C6B4E', fontWeight: 600 }}>
                           {lang === 'es' ? 'Compatibilidad' : 'Match'}: {s.score}/10
                         </div>
                       </div>
                     </div>
-                    <p style={{ fontSize: '0.82rem', color: '#78716C', margin: '0 0 0.75rem', lineHeight: 1.5, fontStyle: 'italic' }}>
+                    <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: '0 0 0.75rem', lineHeight: 1.5, fontStyle: 'italic' }}>
                       {s.reason}
                     </p>
                     <button
@@ -281,7 +281,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
                       disabled={choosing}
                       style={{
                         width: '100%', padding: '0.6rem',
-                        background: choosing ? '#A8B5A2' : '#6B7D5C',
+                        background: choosing ? '#A8B5A2' : '#5C6B4E',
                         color: '#fff', border: 'none', borderRadius: '0.65rem',
                         fontSize: '0.82rem', fontWeight: 500,
                         cursor: choosing ? 'not-allowed' : 'pointer',
@@ -296,7 +296,7 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
                 ))}
                 <button
                   onClick={() => setStep('form')}
-                  style={{ background: 'none', border: 'none', color: '#A8A29E', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginTop: '0.25rem' }}
+                  style={{ background: 'none', border: 'none', color: '#6F6963', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginTop: '0.25rem' }}
                 >
                   ← {lang === 'es' ? 'Volver a buscar' : 'Search again'}
                 </button>
