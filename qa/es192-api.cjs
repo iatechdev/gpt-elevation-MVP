@@ -70,6 +70,6 @@ const STRONG = 'Sint3tica-QA-pass1!'
   const rg = await call('POST', '/api/register', null, { name: 'Reg', email: `reg-${tag}@example.test`, password: 'abc123' }); ck('I12 registro propio rechaza «abc123» (política completa)', rg.s === 400 && rg.j?.code === 'password_policy', `HTTP ${rg.s}`); await sleep(500)
   const rg2 = await call('POST', '/api/register', null, { name: 'Reg', email: `reg2-${tag}@example.test`, password: STRONG }); ck('I12 registro propio con contraseña fuerte → 201', rg2.s === 201, `HTTP ${rg2.s}`)
   // ---- logs sin token
-  const logs = fs.readFileSync('C:/Users/Usuario/tools/qa2/be-h145.log', 'utf8') + fs.readFileSync('C:/Users/Usuario/tools/qa2/be-h145b.log', 'utf8'); ck('I2 los logs del backend no contienen ningún token sembrado, el hash ni contraseñas', ![t1, tc, tex, rt, rt2, STRONG, 'Nueva1!Clave99'].some(s => logs.includes(s)), `líneas de log=${logs.split('\n').length}`)
+  const logs = fs.readFileSync('C:/Users/Usuario/tools/qa2/be-h145c.log', 'utf8') + fs.readFileSync('C:/Users/Usuario/tools/qa2/be-h145c.log', 'utf8'); ck('I2 los logs del backend no contienen ningún token sembrado, el hash ni contraseñas', ![t1, tc, tex, rt, rt2, STRONG, 'Nueva1!Clave99'].some(s => logs.includes(s)), `líneas de log=${logs.split('\n').length}`)
   await db.end(); console.log(f ? `\nFALLAS ${f}` : '\nTODO OK'); process.exit(f ? 1 : 0)
 })().catch(e => { console.error('EXCEPCIÓN', e.stack?.slice(0, 500)); process.exit(3) })
