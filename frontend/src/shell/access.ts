@@ -3,14 +3,13 @@
 import type { SessionInfo } from '../access/session'
 
 export type Role = SessionInfo['role']
-export type Zone = 'person' | 'professional' | 'admin' | 'adminSuper' | 'board' | 'member'
+export type Zone = 'person' | 'professional' | 'admin' | 'board' | 'member'
 
 export const ZONE_ROLES: Record<Zone, readonly Role[]> = {
   person: ['user'],
   professional: ['therapist'],
   admin: ['admin', 'superadmin'],
-  adminSuper: ['superadmin'], // Manifiesto ético dentro de administración (Personas usuarias es de admin y superadmin: QA-153-01, decisión de Mauricio)
-  board: ['board', 'superadmin'],
+  board: ['board', 'superadmin'], // ES-207: la junta ya no edita el manifiesto; su sesión aterriza en la página pública /manifiesto
   member: ['user', 'admin', 'superadmin', 'therapist', 'board'], // cualquier sesión válida (Mis datos, revisiones profesionales)
 }
 
@@ -18,14 +17,12 @@ export const canEnter = (role: Role, zone: Zone) => ZONE_ROLES[zone].includes(ro
 
 // Rutas de /app y /facilitation que no son solo de la persona usuaria.
 const MEMBER_PATHS = ['/app/data', '/app/professional-reviews', '/facilitation']
-const ADMIN_SUPER_PATHS = ['/admin/manifest']
 
 const under = (pathname: string, base: string) => pathname === base || pathname.startsWith(`${base}/`)
 
 /** Zona de una ruta protegida. Lo no listado es de la persona usuaria (/app) o de administración (/admin). */
 export function zoneForPath(pathname: string): Zone | null {
   if (MEMBER_PATHS.some(base => under(pathname, base))) return 'member'
-  if (ADMIN_SUPER_PATHS.some(base => under(pathname, base))) return 'adminSuper'
   if (under(pathname, '/admin')) return 'admin'
   if (under(pathname, '/board')) return 'board'
   if (under(pathname, '/therapist')) return 'professional'

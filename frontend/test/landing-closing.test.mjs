@@ -49,3 +49,13 @@ test('ES-65: CMS edits affect all copy, are escaped and cannot change destinatio
     t.mock.restoreAll()
   }
 })
+
+test('ES-207: con «manifestLabel» el pie lleva un solo enlace interno al manifiesto público; sin él sigue sin enlaces', () => {
+  for (const [lang, label] of [['es', 'Manifiesto ético'], ['en', 'Ethical manifesto']]) {
+    const props = { text: key => landingText(key, lang), manifestLabel: label }
+    const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LandingFooter, props)))
+    assert.equal((html.match(/<a /g) ?? []).length, 1)
+    assert.match(html, new RegExp(`<a class="elv-link" href="/manifiesto"[^>]*>${label}</a>`))
+    assert.doesNotMatch(html, /mailto:|tel:|href="#"/)
+  }
+})
