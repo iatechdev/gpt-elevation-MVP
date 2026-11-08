@@ -61,6 +61,10 @@ const COMPANION_LIMITS = [
 // ES-145: patrón de teléfono o línea de ayuda. Lo usan las pruebas para que ni el prompt ni una respuesta simulada del modelo traigan números.
 // Detecta 7+ dígitos con separadores y números cortos (3-4 dígitos) que siguen a «línea», «llama», «call», «dial»…; no es un filtro exhaustivo.
 const PHONE_PATTERN = /(?:\+?\d[\d\s().-]{5,}\d)|(?:\b(?:l[ií]nea|llama(?:r|a)?|marca|call|dial|hotline|helpline|n[uú]mero|number)\b[^\n\d]{0,20}\d{3,4}\b)/i;
-const containsPhoneNumber = (text) => PHONE_PATTERN.test(String(text));
+// ES-208: fechas (2026-11-08, 08/11/2026) y cantidades con moneda ($1.500.000, 1.500.000 pesos) tienen forma de número largo pero no son teléfonos:
+// se quitan antes de probar el patrón para no sustituir respuestas legítimas. Un teléfono con puntos sin moneda (300.123.4567) sigue detectándose.
+const DATE_SHAPE = /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b|\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b/g;
+const MONEY_SHAPE = /[$€]\s?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\b\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?\s?(?:pesos|cop|usd|eur|d[oó]lares|dollars|euros)\b/gi;
+const containsPhoneNumber = (text) => PHONE_PATTERN.test(String(text).replace(DATE_SHAPE, ' ').replace(MONEY_SHAPE, ' '));
 
 module.exports = { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS, PHONE_PATTERN, containsPhoneNumber };
