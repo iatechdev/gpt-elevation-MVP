@@ -214,7 +214,7 @@ export function AdminDashboard() {
                   <div style={{ fontSize: '0.72rem', color: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warning : colors.textSubtle, marginBottom: spacing.sm }}>{tr("Esperando revisión ética")}{' '}</div>
                   <button
                     onClick={() => navigate('/admin/prompts')}
-                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, cursor: 'pointer', fontFamily: typography.fontBody }}>{tr("Revisar →")}{' '}{' '}</button>
+                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, minHeight: 44, cursor: 'pointer', fontFamily: typography.fontBody }}>{tr("Revisar →")}{' '}{' '}</button>
                 </div>
 
                 {/* Terapeutas sin perfil */}
@@ -228,7 +228,7 @@ export function AdminDashboard() {
                   <div style={{ fontSize: '0.72rem', color: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.info : colors.textSubtle, marginBottom: spacing.sm }}>{tr("TherapistProfile incompleto")}{' '}</div>
                   <button
                     onClick={() => navigate('/admin/usuarios?role=therapist')}
-                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, cursor: 'pointer', fontFamily: typography.fontBody }}>{tr("Revisar →")}{' '}{' '}</button>
+                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, minHeight: 44, cursor: 'pointer', fontFamily: typography.fontBody }}>{tr("Revisar →")}{' '}{' '}</button>
                 </div>
 
                 {/* Manifiesto ético */}

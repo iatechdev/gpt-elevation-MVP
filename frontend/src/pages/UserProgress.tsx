@@ -186,7 +186,7 @@ export function UserProgress() {
           <button onClick={() => navigate('/app/chat')} style={{
             background: 'none', border: 'none', cursor: 'pointer',
             color: '#6B645F', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif',
-            display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0,
+            display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0, minHeight: 44,
           }}>
             ← {lang === 'es' ? 'Volver al chat' : 'Back to chat'}
           </button>
