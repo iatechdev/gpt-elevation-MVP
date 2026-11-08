@@ -35,3 +35,34 @@ Edición de una entrada por la interfaz (el script abrió la entrada pero no pul
 
 ## Reproducir
 qa/staging-es45-api.cjs, qa/staging-es45-seguimiento.cjs, qa/staging-es45-chat.cjs, qa/staging-es45-ui.cjs (PR #100). Variables: STAGING_URL, CRED_FILE, PLAYWRIGHT_MODULE, OUT.
+
+---
+
+# Ronda complementaria (plan Jira ES-45 comentario 11037, aprobado por Mauricio con gasto de IA e instalación de navegadores)
+
+Staging: la versión desplegada cambió durante las pruebas (commit 8836e76 al inicio; `/api/health` informó 5cad756 al final). Los resultados de la ronda anterior y de esta pueden mezclar ambas versiones; no se puede atribuir el comportamiento de ES-145 (teléfonos) a un commit concreto.
+
+## Resultados
+- **A1 editar entrada por UI:** OK en Chromium, Firefox y WebKit (ES 1440 px y EN 390 px): «Editar» muestra el editor y la edición aparece en la lista.
+- **A2 hoja de vida (persona desechable, 1 llamada de IA):** sin autorización → 403 `consent_required`; con autorización: firma falsa → 400 `not_pdf`, PDF corrupto → 422 `corrupt`, > 5 MB → 400 `too_large`, tipo .exe → 400 `not_pdf` (sin llamada a IA); PDF sintético válido → 200 (con sugerencias); listado y eliminación propia OK.
+- **A3 experimentos y plan:** persona nueva sin experimentos; experimento ajeno por ID → 404; crear con propuesta/token falsos → 409 `invalid_proposal`; proponer sin ruta elegida → 404 `route_record_not_found`; plan vacío → 400. **La creación VÁLIDA (ruta elegida → propuesta → experimento → versión → revisión → plan) no se ejecutó**: exige una cadena de rutas con evidencia confirmada que no cabía en esta ronda.
+- **A4 Skill Map:** persona sin evidencia: 8 competencias, 0 con nivel; nivel sin evidencia → 422 `evidence_required`; nivel fuera de rango → 400; evidencia inexistente → 422; propuestas de IA sin evidencia confirmada → 422 `no_evidence` (sin gastar IA). **No se confirmó una evidencia ni se pidieron propuestas con IA** (cadena positiva sin ejecutar).
+- **A5 XSS en el chat (1 mensaje de IA):** sin imágenes, scripts ni enlaces `javascript:` inyectados y sin diálogos; el texto se muestra literal.
+- **A7 admin:** 3 fallos → bloqueo 423; el administrador desbloquea y la persona entra; el administrador NO puede restablecer contraseñas (403); el superadmin sí.
+- **A8 navegadores (Chromium, Firefox 1555, WebKit 2370; ES 1440 px y EN 390 px):** 42/42 comprobaciones OK: landing con contenido y sin desborde, dashboard de la persona, «Nueva entrada» con la fecha de hoy, guardar y listar, editar, sin errores de página.
+
+## Hallazgo nuevo
+| ID | Sev. | Detalle |
+|---|---|---|
+| M1 | Medio | **Restablecer contraseña (superadmin) acepta «abc123»** (6 caracteres, sin mayúscula ni carácter especial): la ruta `PUT /api/admin/usuarios/:id/reset-password` no aplica la política de ES-128. Dev ya había propuesto un ticket aparte para alinear las rutas de administración; sigue abierto. Mitigación: solo el superadmin la usa. |
+
+## No ejecutado en esta ronda (motivo)
+- **A6 borradores de catálogo:** no se ejecutó. La API permite crear un borrador (`POST /api/admin/skill-catalog`) pero no descartarlo; crearlo dejaría un borrador abierto en staging que bloquearía el sembrado y que QA no puede limpiar. Se pide a Dev un endpoint de descarte o aprobación explícita para crearlo.
+- **A9 lector de pantalla y móvil físico:** no automatizables; lista manual en `qa/LISTA-VERIFICACION-MANUAL-LECTOR-Y-MOVIL.md`.
+- **Bloque B (tras las correcciones de Dev):** no hay head nuevo para ES-209 ni ES-206; el PR #140 (ES-154) sigue abierto y sin probar. Se repite cuando Dev avise.
+- Cadena positiva de experimentos/plan y de Skill Map con evidencia confirmada y propuestas de IA (arriba).
+
+## Limpieza
+Persona4 y persona5 desechables desactivadas; entradas de diario QA2 eliminadas; hoja de vida de persona4 eliminada; las 4 cuentas del equipo no se tocaron. Consumo de IA de esta ronda: 1 PDF + 1 mensaje de chat (por debajo de los ≈ 45.000 tokens aprobados; no medido con exactitud).
+
+Scripts: qa/staging-es45-b-api.cjs, qa/staging-es45-b-ui.cjs (PR #100).
