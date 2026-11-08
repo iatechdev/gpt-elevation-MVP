@@ -14,14 +14,14 @@ export function parseCapacity(body: unknown): Capacity | null {
 }
 
 // -> null cuando el formulario recibe solicitudes (no hay aviso).
-export function capacityNotice(capacity: Capacity | null): { title: string; body: string } | null {
+export function capacityNotice(capacity: Capacity | null, tr: (value: string) => string = value => value): { title: string; body: string } | null {
   if (!capacity || !capacity.full) return null
   const used = Math.round(capacity.bytes / MB)
   const max = Math.round(capacity.maxBytes / MB)
   return {
-    title: 'El formulario público está cerrado',
-    body: `Se alcanzó el tope de solicitudes: ${capacity.pending} de ${capacity.maxPending} pendientes (hojas de vida: ${used} de ${max} MB). `
-      + 'Quien intente enviar una solicitud ve «Por ahora no estamos recibiendo solicitudes». '
-      + 'Revisa, aprueba o rechaza las pendientes, o elimina las que ya no necesites, para volver a recibir.',
+    title: tr('El formulario público está cerrado'),
+    body: tr(`Se alcanzó el tope de solicitudes: ${capacity.pending} de ${capacity.maxPending} pendientes (hojas de vida: ${used} de ${max} MB). `)
+      + tr('Quien intente enviar una solicitud ve «Por ahora no estamos recibiendo solicitudes». ')
+      + tr('Revisa, aprueba o rechaza las pendientes, o elimina las que ya no necesites, para volver a recibir.'),
   }
 }
