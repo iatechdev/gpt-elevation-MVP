@@ -102,7 +102,7 @@ export function AdminContent() {
       <p style={{ fontSize: '0.875rem', color: '#6B645F', marginBottom: '1.5rem' }}>{tr("Gestión de validaciones, precios y páginas públicas")}{' '}</p>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem', borderBottom: '0.5px solid #E7E5E4' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1.5rem', borderBottom: '0.5px solid #E7E5E4' }}>
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             style={{

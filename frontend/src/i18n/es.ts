@@ -232,14 +232,15 @@ const es: Record<string, string> = {
 
   // ── Therapist — general ───────────────────────────────────────────────────
   therapist_my_patients: 'Mis pacientes',
-  therapist_assigned: 'Asignados',
+  therapist_assigned: 'personas asignadas',
+  therapist_assigned_one: 'persona asignada',
   therapist_active_week: 'Activos esta semana',
   therapist_avg_mood: 'Ánimo promedio',
   therapist_avg_rating: 'Calificación promedio',
   therapist_prompt: 'Mi prompt terapéutico',
   therapist_no_prompt: 'Sin prompt activo',
   therapist_view_current: 'Ver prompt actual',
-  therapist_create_prompt: 'Crear prompt',
+  therapist_create_prompt: 'Crear guía',
   therapist_alerts: 'Alertas',
   therapist_no_alerts: 'Sin alertas activas',
   therapist_view_history: 'Ver historial',
