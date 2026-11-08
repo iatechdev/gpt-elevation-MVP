@@ -237,6 +237,56 @@ test('ES-192 PostgreSQL: invitación por enlace y contraseña con las reglas del
     assert.ok(await bcrypt.compare('Otra-Clave-91!', (await User.findByPk(target.id)).password)); // el PUT retirado no cambió nada
   });
 
+  await t.test('ES-210: «abc123», vacía, de otro tipo y muy larga se rechazan en el servidor por reset-link y por la aceptación; 72 bytes pasan y 73 no; ningún rol escribe contraseñas ajenas', async () => {
+    const POLICY = require('../../../shared/registration-password-policy.json');
+    const at72 = 'Aa1!' + 'x'.repeat(POLICY.maxUtf8Bytes - 4); const at73 = at72 + 'x';
+    assert.equal(Buffer.byteLength(at72), POLICY.maxUtf8Bytes); assert.equal(Buffer.byteLength(at73), POLICY.maxUtf8Bytes + 1);
+    const ñ72 = 'Ña1!' + 'ñ'.repeat(34); // caracteres de 2 bytes: la medida es en bytes, no en caracteres
+    assert.ok(Buffer.byteLength(ñ72) > POLICY.maxUtf8Bytes);
+    const hostile = [['abc123', null], ['', null], ['   ', null], [null, null], [12345678, null], [['Mapa-Rumbo-47!'], null], [{ $ne: 1 }, null], ['x'.repeat(100000), 'max_bytes'], [at73, 'max_bytes'], [ñ72, 'max_bytes']];
+    // 1) Restablecimiento por enlace: ninguna gasta el enlace, nada da 500 y la contraseña no cambia.
+    const victim = await person('user', 'Victima210');
+    const before = (await User.findByPk(victim.id)).password;
+    sent.length = 0;
+    assert.equal((await call(sup, 'POST', `/api/admin/usuarios/${victim.id}/reset-link`, { locale: 'en' })).status, 202);
+    await passwordReset.idle();
+    const resetToken = tokenOf(sent[0]);
+    for (const [password, code] of hostile) {
+      const r = await call(null, 'POST', '/api/password-reset/confirm', { token: resetToken, password });
+      assert.equal(r.status, 400, `reset: ${JSON.stringify(password)?.slice(0, 30)}`);
+      if (code) assert.ok(r.body.missing?.includes(code), `reset ${code}`);
+    }
+    assert.equal((await User.findByPk(victim.id)).password, before); // ni una pasó
+    assert.equal((await call(null, 'POST', '/api/password-reset/confirm', { token: resetToken, password: at72 })).status, 200); // el enlace seguía vivo; 72 bytes exactos valen
+    assert.ok(await bcrypt.compare(at72, (await User.findByPk(victim.id)).password));
+    // 2) Aceptación de invitación: igual.
+    const { token } = await invite(admA, 'abuso210@example.invalid');
+    for (const [password, code] of hostile) {
+      const r = await accept(token, password);
+      assert.equal(r.status, 400, `accept: ${JSON.stringify(password)?.slice(0, 30)}`);
+      if (code) assert.ok(r.body.missing?.includes(code), `accept ${code}`);
+    }
+    assert.equal(await User.count({ where: { email: 'abuso210@example.invalid' } }), 0); // la cuenta no se creó
+    assert.equal((await accept(token, at72)).status, 201); // el enlace seguía vivo
+    // 3) Ningún rol escribe la contraseña de otra persona: ni profesional (sin acceso), ni administración, ni superadministración.
+    const pro = await person('therapist', 'Pro210');
+    const target = await User.findOne({ where: { email: 'ana@example.invalid' } }); const snapshot = target.password;
+    for (const [who, label] of [[pro, 'profesional'], [admA, 'admin'], [sup, 'superadmin']]) {
+      for (const [method, path, body] of [
+        ['PUT', `/api/admin/usuarios/${target.id}/reset-password`, { newPassword: 'abc123' }],
+        ['PUT', `/api/admin/usuarios/${target.id}`, { password: 'abc123', newPassword: 'abc123', name: 'Ana' }],
+        ['POST', '/api/admin/usuarios', { name: 'Y', email: 'y210@example.invalid', password: 'abc123', role: 'user' }],
+      ]) {
+        const r = await call(who, method, path, body);
+        // PUT /:id solo lee rol y activo: el campo de contraseña se ignora (200 sin efecto); lo que importa es que la contraseña no cambie, abajo.
+        const okStatus = path.endsWith(`/${target.id}`) ? [200, 403, 404] : [403, 404, 410];
+        assert.ok(okStatus.includes(r.status), `${label} ${method} ${path} → ${r.status}`);
+      }
+    }
+    assert.equal((await User.findByPk(target.id)).password, snapshot);
+    assert.equal(await User.count({ where: { email: 'y210@example.invalid' } }), 0);
+  });
+
   await t.test('el token, el enlace y las contraseñas no quedan en los registros del servidor ni en ninguna respuesta', async () => {
     assert.ok(logged.length > 0, 'la captura de registros funciona');
     const text = logged.join('\n');
