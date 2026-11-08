@@ -1,0 +1,7 @@
+const {createRequire}=require('module');const {Client}=createRequire(process.env.BACKEND+'/package.json')('pg');const API='http://localhost:8090';const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const call=async(m,p,t,b)=>{const r=await fetch(API+p,{method:m,headers:{'content-type':'application/json',...(t?{Authorization:'Bearer '+t}:{})},body:b?JSON.stringify(b):undefined});return {s:r.status,j:await r.json().catch(()=>null)}};
+(async()=>{const db=new Client({connectionString:process.env.DATABASE_URL});await db.connect();const email='qa2-c211b-'+Date.now()+'@example.test',pw='Sint3tica-QA-pass1!';await call('POST','/api/register',null,{name:'c',email,password:pw});await db.query('UPDATE "Users" SET role=$1 WHERE email=$2',['admin',email]);await sleep(500);const tk=(await call('POST','/api/login',null,{email,password:pw})).j.token;
+const T='x'.repeat(60);let tot={};
+for(const k of [2,3,5]){let e500=0,n=0,bad=0;for(let rep=0;rep<20;rep++){await db.query('DELETE FROM "EthicManifests"');const a=(await call('POST','/api/manifest/manifest',tk,{content:T})).j.id,b=(await call('POST','/api/manifest/manifest',tk,{content:T})).j.id;
+const res=await Promise.all(Array(k).fill(0).map((_,i)=>call('PUT',`/api/manifest/manifest/${i%2?a:b}/activate`,tk)));n+=k;e500+=res.filter(r=>r.s>=500).length;const act=(await db.query('SELECT count(*)::int n FROM "EthicManifests" WHERE "isActive"')).rows[0].n;if(act!==1)bad++}
+console.log(`${k} PUT cruzados simultáneos × 20 repeticiones: ${e500} de ${n} peticiones con 5xx; repeticiones con ≠1 activa: ${bad}`)}await db.end()})()
