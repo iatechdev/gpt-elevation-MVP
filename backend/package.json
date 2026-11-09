@@ -21,6 +21,7 @@
     "test:prompt-review:pg": "node --test test/integration/es-191-postgres.cjs",
     "test:invitations:pg": "node --test test/integration/es-192-postgres.cjs",
     "test:admin-rank:pg": "node --test test/integration/es-215-postgres.cjs",
+    "test:admin-unlock:pg": "node --test test/integration/es-217-postgres.cjs",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
     "eval:validate": "node evaluation/es44/cli.cjs --mode=validate",
     "eval:mock": "node evaluation/es44/cli.cjs --mode=mock",
