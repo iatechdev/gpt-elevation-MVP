@@ -1,0 +1,85 @@
+{
+ "label": "B3",
+ "runs": {
+  "30": {
+   "scansEvidencesPorGET": 8,
+   "scansVersionsPorGET": 52,
+   "seqP50": 59,
+   "seqP95": 76,
+   "concP95": 299,
+   "status": 200
+  },
+  "200": {
+   "scansEvidencesPorGET": 4,
+   "scansVersionsPorGET": 63,
+   "seqP50": 97,
+   "seqP95": 158,
+   "concP95": 722,
+   "status": 200
+  }
+ },
+ "s1": {
+  "experimentoAjeno": 404,
+  "evidenciaAjena": 404
+ },
+ "s2": {
+  "delete": 200,
+  "put": 400,
+  "evBefore": 30,
+  "evAfter": 29
+ },
+ "c1sha": "5f6151b7ee099b8c",
+ "c1bytes": 54629,
+ "cadena": [
+  {
+   "n": "autoevaluacion",
+   "ms": 43,
+   "s": 201
+  },
+  {
+   "n": "autoevaluacion",
+   "ms": 34,
+   "s": 201
+  },
+  {
+   "n": "autoevaluacion",
+   "ms": 40,
+   "s": 201
+  },
+  {
+   "n": "experimento:start",
+   "ms": 51,
+   "s": 409
+  },
+  {
+   "n": "experimento:submit",
+   "ms": 41,
+   "s": 409
+  },
+  {
+   "n": "experimento:reflect",
+   "ms": 41,
+   "s": 409
+  },
+  {
+   "n": "lectura",
+   "ms": 39,
+   "s": 200
+  },
+  {
+   "n": "lectura",
+   "ms": 42,
+   "s": 200
+  },
+  {
+   "n": "lectura",
+   "ms": 40,
+   "s": 200
+  }
+ ],
+ "escrituras": {
+  "evidenciasP95": 15,
+  "evidenciasMax": 20,
+  "n": 250
+ }
+}
