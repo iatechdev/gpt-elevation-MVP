@@ -1,4 +1,5 @@
 // ES-110: de dónde sale una evidencia que vino de una hoja de vida, y la diferencia entre «declarada» y «respaldada» (por FORMA, no solo por color).
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useLanguage } from '../i18n/useLanguage'
 import type { Evidence } from './model'
 import { formatDate } from './resumeSkills'

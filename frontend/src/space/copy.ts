@@ -1,6 +1,7 @@
+import { skipCopy } from './skipCopy.ts'
 export const copy = {
   es: {
-    space: 'Mi espacio', tools: 'Mis herramientas', talk: 'Conversar', journal: 'Diario', title: 'Mi diario privado', home: 'Volver al inicio', skip: 'Saltar al contenido',
+    space: 'Mi espacio', tools: 'Mis herramientas', talk: 'Conversar', journal: 'Diario', title: 'Mi diario privado', home: 'Volver al inicio', skip: skipCopy.es,
     privacy: 'Guarda solo lo que quieras conservar. Guardar no comparte con otras personas ni con el recorrido profesional.',
     limit: 'Hasta las 100 entradas más recientes; esta lista puede no incluir todo tu diario.', empty: 'Aún no tienes entradas guardadas.',
     new: 'Nueva entrada', open: 'Abrir', edit: 'Editar', remove: 'Borrar', date: 'Fecha', content: 'Contenido', updated: 'Última edición',
@@ -39,7 +40,7 @@ export const copy = {
     diaryNone: 'Diario: sin seleccionar', diaryCount: 'Diario: {n}/3', howTitle: 'Cómo se usa tu diario en el chat', close: 'Cerrar', progress: 'Mi progreso', signOut: 'Cerrar sesión',
   },
   en: {
-    space: 'My space', tools: 'My tools', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: 'Skip to content',
+    space: 'My space', tools: 'My tools', talk: 'Talk', journal: 'Journal', title: 'My private journal', home: 'Back to home', skip: skipCopy.en,
     privacy: 'Save only what you want to keep. Saving does not share with other people or with your career journey.',
     limit: 'Up to the 100 most recent entries; this list may not include your entire journal.', empty: 'You do not have any saved entries yet.',
     new: 'New entry', open: 'Open', edit: 'Edit', remove: 'Delete', date: 'Date', content: 'Content', updated: 'Last edited',

@@ -1,3 +1,4 @@
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useLanguage } from '../i18n/useLanguage'
 import type { Payload, Claim } from './model'
 export function EvidenceContent({ payload }: { payload: Payload }) {

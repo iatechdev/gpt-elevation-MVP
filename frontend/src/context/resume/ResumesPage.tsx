@@ -1,4 +1,6 @@
 // ES-109: «Mis hojas de vida». Solo la persona dueña ve, descarga y borra sus versiones (el servidor lo verifica en cada acceso).
+import '../register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'

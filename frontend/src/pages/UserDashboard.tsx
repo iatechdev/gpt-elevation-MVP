@@ -3,6 +3,9 @@
 // HU-077 — Widget Mi Plan
 // HU-067 — Botón videollamada activo
 
+import '../compass/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
+import '../evidence/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
+import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'

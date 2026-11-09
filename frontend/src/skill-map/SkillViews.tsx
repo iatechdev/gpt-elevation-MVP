@@ -1,3 +1,4 @@
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { trackView, type Assessment, type LocalizedText, type Skill } from './model'
 import { CANVAS_W, CHIP_H, CHIP_W, edgePoint, layoutChips, territoryBoxes } from './layout'
 import { hasLevel, skillStatus, type SkillStatus } from './status'

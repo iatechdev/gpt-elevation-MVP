@@ -1,3 +1,4 @@
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import type { ReactNode, MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'

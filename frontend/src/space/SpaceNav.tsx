@@ -5,10 +5,8 @@ import { dataCopy } from './dataCopy'
 import { planCopy } from './planCopy'
 import { useSpaceRoutes } from './routesContext'
 import './space.css'
-export function SpaceSkip() {
-  const { lang } = useLanguage()
-  return <a className="space-skip space-scope" href="#space-main">{copy[lang].skip}</a>
-}
+import { SpaceSkip } from './SpaceSkip'
+export { SpaceSkip } // ES-232: el componente vive en SpaceSkip.tsx
 export function SpaceNav() {
   const { lang } = useLanguage(); const c = copy[lang]; const routes = useSpaceRoutes(); const { pathname } = useLocation()
   return <div className="space-scope space-nav">

@@ -1,3 +1,4 @@
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useLanguage } from '../i18n/useLanguage'
 import type { Draft } from './model'
 export function EvidenceFormFields({ draft, change, errors }: { draft: Draft; change: <K extends keyof Draft>(key: K, value: Draft[K]) => void; errors: string[] }) {

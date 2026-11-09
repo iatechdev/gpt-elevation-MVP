@@ -1,5 +1,6 @@
 // ES-109: tarjeta «Empieza desde tu hoja de vida» (maqueta aprobada): elegir PDF → autorización → analizando → listo / error.
 // Nada sale del dispositivo hasta que la persona marca la autorización y pulsa «Analizar». Lo sugerido NO se guarda aquí: se entrega al formulario.
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { analyzeResume, checkFile, setResumeConsent, type AnalyzeResult, type ErrorCode } from './resumeApi'
