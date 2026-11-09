@@ -4,7 +4,6 @@
 // verificarAdmin / verificarSuperAdmin aplicados en server.js
 
 const express = require('express');
-const { Op } = require('sequelize');
 const router  = express.Router();
 const { PromptVault, getActivePrompt, proposePrompt, approvePrompt, rejectPrompt, rollbackPrompt, decryptPrompt } = require('../promptVault');
 const PromptRule = require('../PromptRule');
@@ -92,8 +91,8 @@ router.post('/prompt/propose', validateBody({ key: nonempty, content: nonempty }
 // ES-181: superadministración PUBLICA (propone + aprueba en una sola acción) o CREA una guía. Sigue siendo una persona quien decide:
 // la revisión automática corre igual y, si la rechaza, no se activa nada. No es el guardado directo retirado en ES-191.
 const KEY_NEW = /^[a-z][a-z0-9_]{0,99}$/;
-const publishVersion = async (res, key, content, actor) => {
-  const proposal = await proposePrompt(key, content, actor);
+const publishVersion = async (res, key, content, actor, options = {}) => {
+  const proposal = await proposePrompt(key, content, actor, options);
   if (proposal.status === 'rejected') return replyProposal(res, proposal);
   await approvePrompt(proposal.id, actor);
   return res.json({ message: 'Guía activa. / Guide is now active.', version: { id: proposal.id, version: proposal.version, status: 'active' } });
@@ -119,8 +118,8 @@ router.post('/prompt/create', verificarSuperAdmin, validateBody({ key: nonempty,
     const { key, content } = req.body;
     if (!KEY_NEW.test(key)) return res.status(400).json({ code: 'invalid_key', error: 'Identificador inválido: usa minúsculas, números y guion bajo, empezando por una letra. / Invalid identifier: lowercase letters, digits and underscore, starting with a letter.' });
     // Una guía cuya única versión fue RECHAZADA por la revisión no existe todavía: se puede corregir el texto y volver a crearla con el mismo identificador.
-    if (await PromptVault.count({ where: { key, status: { [Op.ne]: 'rejected' } } })) return res.status(409).json({ code: 'key_exists', error: 'Ya existe una guía con ese identificador. / A guide with that identifier already exists.' });
-    return await publishVersion(res, key, content, req.user.name);
+    // ES-219: «no existe» se decide DENTRO del bloqueo de la clave (mustBeNew): de varias creaciones simultáneas solo una gana, las demás reciben 409.
+    return await publishVersion(res, key, content, req.user.name, { mustBeNew: true });
   } catch (error) {
     if (replyReviewError(res, error)) return;
     console.error('❌ Error creando prompt:', error);

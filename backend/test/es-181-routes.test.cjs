@@ -3,6 +3,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { promptVault, startApp } = require('./support.cjs');
+const { PromptReviewError } = require('../utils/promptReview');
 
 const synthetic = 'Acompaña a la persona con calma y respeto, sin presionarla, y ayúdala a nombrar lo que ya hace bien.';
 const hooks = {};
@@ -66,7 +67,7 @@ test('ES-181: publicar propone y aprueba; una guía rechazada por la revisión n
 
 test('ES-181: crear exige identificador [a-z][a-z0-9_]* único; un cuerpo mal formado nunca da 500', async (t) => {
   calls.length = 0; existing.clear(); existing.add('ya_existe');
-  hooks.propose = async (key) => { calls.push(['propose', key]); return { id: 11, version: 2, status: 'pending_review', reasons: [] }; };
+  hooks.propose = async (key, content, actor, options = {}) => { if (options.mustBeNew && existing.has(key)) throw new PromptReviewError('key_exists'); calls.push(['propose', key]); return { id: 11, version: 2, status: 'pending_review', reasons: [] }; };
   hooks.approve = async () => { calls.push(['approve']); };
   const request = await startApp(t);
   const create = (body) => request('POST', '/api/superadmin/prompt/create', { role: 'superadmin', body });
@@ -81,7 +82,7 @@ test('ES-181: crear exige identificador [a-z][a-z0-9_]* único; un cuerpo mal fo
 
 test('ES-181 (Codex P2): una guía cuya única versión fue rechazada se puede volver a crear con el mismo identificador', async (t) => {
   calls.length = 0; existing.clear(); rejectedOnly.clear(); existing.add('solo_rechazada'); rejectedOnly.add('solo_rechazada'); existing.add('con_activa');
-  hooks.propose = async (key) => { calls.push(['propose', key]); return { id: 20, version: 3, status: 'pending_review', reasons: [] }; };
+  hooks.propose = async (key, content, actor, options = {}) => { if (options.mustBeNew && existing.has(key) && !rejectedOnly.has(key)) throw new PromptReviewError('key_exists'); calls.push(['propose', key]); return { id: 20, version: 3, status: 'pending_review', reasons: [] }; };
   hooks.approve = async () => { calls.push(['approve']); };
   const request = await startApp(t);
   const create = (key) => request('POST', '/api/superadmin/prompt/create', { role: 'superadmin', body: { key, content: synthetic } });

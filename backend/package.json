@@ -22,6 +22,8 @@
     "test:contact-entries:pg": "node --test test/integration/es-193-postgres.cjs",
     "test:prompt-review:pg": "node --test test/integration/es-191-postgres.cjs",
     "test:invitations:pg": "node --test test/integration/es-192-postgres.cjs",
+    "test:prompt-unique:pg": "node --test test/integration/es-219-postgres.cjs",
+    "check:prompt-duplicates": "node scripts/checkPromptDuplicates.cjs",
     "test:experiment-read:pg": "node --test test/integration/es-216-postgres.cjs",
     "test:admin-rank:pg": "node --test test/integration/es-215-postgres.cjs",
     "test:admin-unlock:pg": "node --test test/integration/es-217-postgres.cjs",
