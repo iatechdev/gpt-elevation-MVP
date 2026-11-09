@@ -10,7 +10,7 @@ const REQUIRED: (keyof Values)[] = ['name', 'email', 'country', 'profession']
 const EMAIL = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/
 
 export const validProfileUrl = (value: string): boolean => {
-  try { const url = new URL(value); return url.protocol === 'https:' || url.protocol === 'http:' ? !url.username && !url.password : false } catch { return false }
+  try { const url = new URL(value); return url.protocol === 'https:' ? !url.username && !url.password : false } catch { return false }
 }
 
 // Devuelve los campos con problema, en el orden del formulario.

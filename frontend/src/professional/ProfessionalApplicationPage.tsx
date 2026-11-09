@@ -10,7 +10,7 @@ import type { FieldKey, Values } from './validation'
 import '../space/space.css'
 import './professional.css'
 
-type Phase = 'idle' | 'sending' | 'success' | 'network' | 'rate' | 'server'
+type Phase = 'idle' | 'sending' | 'success' | 'network' | 'rate' | 'server' | 'closed'
 
 export function ProfessionalApplicationPage() {
   const { lang, setLang } = useLanguage()
@@ -28,7 +28,9 @@ export function ProfessionalApplicationPage() {
   useEffect(() => { document.title = `${c.title} · Elevation` }, [c.title])
   useEffect(() => { if (phase === 'success') title.current?.focus() }, [phase])
 
-  const set = (key: keyof Values) => (value: string) => setValues(current => ({ ...current, [key]: value }))
+  // ES-157: tras «no recibimos solicitudes» el envío queda inactivo hasta que la persona edite algo (reintentar).
+  const reopen = () => setPhase(current => current === 'closed' ? 'idle' : current)
+  const set = (key: keyof Values) => (value: string) => { reopen(); setValues(current => ({ ...current, [key]: value })) }
   const has = (key: FieldKey) => errors.includes(key)
   const cvProblem = fileProblem(file)
   const cvMessage = cvProblem === 'type' ? c.cvType : cvProblem === 'size' ? c.cvSize : c.cvRequired
@@ -50,7 +52,7 @@ export function ProfessionalApplicationPage() {
     lock.current = false
     if (result.status === 'ok') { setPhase('success'); setValues(EMPTY); setFile(null); setConsent(false); setErrors([]); return }
     if (result.status === 'invalid') { const bad2 = result.fields.length ? result.fields : (['cv'] as FieldKey[]); setErrors(bad2); setPhase('idle'); focusFirst(bad2); return }
-    setPhase(result.status === 'rate_limited' ? 'rate' : result.status === 'server' ? 'server' : 'network')
+    setPhase(result.status === 'rate_limited' ? 'rate' : result.status === 'closed' ? 'closed' : result.status === 'server' ? 'server' : 'network')
   }
 
   const text = (key: keyof Values, label: string, opts: { required?: boolean; help?: string; type?: string; multiline?: boolean } = {}) => {
@@ -68,7 +70,7 @@ export function ProfessionalApplicationPage() {
     </div>
   }
 
-  const banner = phase === 'network' ? c.networkError : phase === 'rate' ? c.rateLimited : phase === 'server' ? c.serverError : errors.length ? c.invalidSummary : ''
+  const banner = phase === 'network' ? c.networkError : phase === 'rate' ? c.rateLimited : phase === 'closed' ? c.closed : phase === 'server' ? c.serverError : errors.length ? c.invalidSummary : ''
 
   return <div className="space-scope space-page pro-page">
     <a className="space-skip space-scope" href="#pro-main">{c.skip}</a>
@@ -103,7 +105,7 @@ export function ProfessionalApplicationPage() {
               <label htmlFor="pro-cv">{c.cv} · {c.required}</label>
               <input id="pro-cv" ref={fileInput} type="file" accept="application/pdf,.pdf" disabled={phase === 'sending'} aria-invalid={has('cv') || undefined}
                 aria-describedby={`pro-cv-help${has('cv') ? ' pro-cv-error' : ''}`}
-                onChange={e => { setFile(e.target.files?.[0] ?? null); setErrors(current => current.filter(k => k !== 'cv')) }} />
+                onChange={e => { reopen(); setFile(e.target.files?.[0] ?? null); setErrors(current => current.filter(k => k !== 'cv')) }} />
               <small id="pro-cv-help">{c.cvHelp}</small>
               {file && <p className="pro-file" role="status">{c.cvChosen}: {file.name} ({Math.max(1, Math.round(file.size / 1024))} KB){' '}
                 <button type="button" className="elv-btn" onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}>{c.cvRemove}</button></p>}
@@ -111,12 +113,12 @@ export function ProfessionalApplicationPage() {
             </div>
             <div className="pro-field pro-consent">
               <label><input id="pro-consent" type="checkbox" className="elv-checkbox" checked={consent} disabled={phase === 'sending'} aria-invalid={has('consent') || undefined}
-                aria-describedby={has('consent') ? 'pro-consent-error' : undefined} onChange={e => setConsent(e.target.checked)} /> {c.consent}</label>
+                aria-describedby={has('consent') ? 'pro-consent-error' : undefined} onChange={e => { reopen(); setConsent(e.target.checked) }} /> {c.consent}</label>
               {has('consent') && <span id="pro-consent-error" className="pro-error">{c.consentRequired}</span>}
             </div>
             <div className="pro-trap" aria-hidden="true"><label>Leave empty<input tabIndex={-1} autoComplete="off" name="bot_trap" value={trap} onChange={e => setTrap(e.target.value)} /></label></div>
             <div className="space-actions">
-              <button type="submit" className="elv-btn elv-btn-primary" disabled={phase === 'sending'}>{phase === 'sending' ? c.sending : c.submit}</button>
+              <button type="submit" className="elv-btn elv-btn-primary" disabled={phase === 'sending' || phase === 'closed'}>{phase === 'sending' ? c.sending : c.submit}</button>
             </div>
             <p className="space-note">{c.notice}</p>
           </form>

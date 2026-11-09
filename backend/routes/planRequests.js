@@ -31,7 +31,7 @@ router.post('/', validateBody({ planId: id }), async (req, res) => {
     // Verificar que el plan existe y está activo
     transaction = await sequelize.transaction();
     // Serialize all submissions for this owner. No client-supplied owner is accepted.
-    const owner = await User.findByPk(userId, { attributes: ['id', 'active'], transaction, lock: transaction.LOCK?.UPDATE ?? true });
+    const owner = await User.findByPk(userId, { attributes: ['id', 'active', 'planId'], transaction, lock: transaction.LOCK?.UPDATE ?? true });
     if (!owner || owner.active !== true) {
       await transaction.rollback();
       return res.status(401).json({ code: 'session_invalid' });
@@ -40,6 +40,12 @@ router.post('/', validateBody({ planId: id }), async (req, res) => {
     if (!plan) {
       await transaction.rollback();
       return res.status(404).json({ error: 'Plan no encontrado o inactivo.' });
+    }
+
+    // ES-223: pedir el plan que ya tiene no crea una solicitud redundante para el equipo. El plan actual sale de la fila del dueño (candado de arriba), nunca del cuerpo.
+    if (owner.planId !== null && owner.planId !== undefined && Number(owner.planId) === plan.id) {
+      await transaction.rollback();
+      return res.status(409).json({ code: 'already_on_plan', error: 'Ya tienes este plan. / You already have this plan.' });
     }
 
     // Verificar que el usuario no tenga ya una solicitud pendiente

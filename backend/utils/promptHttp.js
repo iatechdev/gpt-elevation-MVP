@@ -29,6 +29,8 @@ const replyReviewError = (res, error) => {
     res.status(404).json({ error: 'Versión no encontrada. / Version not found.' });
   } else if (error.code === 'not_pending') {
     res.status(409).json({ code: 'not_pending', error: 'La versión no está pendiente de revisión. / The version is not pending review.' });
+  } else if (error.code === 'key_exists') {
+    res.status(409).json({ code: 'key_exists', error: 'Ya existe una guía con ese identificador. / A guide with that identifier already exists.' });
   } else if (error.code === 'rate_limited') {
     res.status(429).json({ code: 'rate_limited', error: 'Demasiadas propuestas seguidas. Espera un rato. / Too many proposals in a row. Wait a while.' });
   } else {

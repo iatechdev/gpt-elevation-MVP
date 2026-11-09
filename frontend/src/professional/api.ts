@@ -7,6 +7,7 @@ export type SubmitResult =
   | { status: 'ok' }
   | { status: 'invalid'; fields: FieldKey[] }
   | { status: 'rate_limited' }
+  | { status: 'closed' }
   | { status: 'network' }
   | { status: 'server' }
 
@@ -29,6 +30,11 @@ export async function submitApplication(data: FormData): Promise<SubmitResult> {
       const body = await response.json().catch(() => null) as { fields?: unknown } | null
       const fields = Array.isArray(body?.fields) ? body.fields.filter((f): f is FieldKey => KNOWN.includes(f as FieldKey)) : []
       return { status: 'invalid', fields }
+    }
+    // ES-157: tope global alcanzado (503 not_accepting): estado propio, distinto de un fallo del servidor.
+    if (response.status === 503) {
+      const body = await response.json().catch(() => null) as { code?: unknown } | null
+      if (body?.code === 'not_accepting') return { status: 'closed' }
     }
     return { status: 'server' }
   } catch { return { status: 'network' } }
