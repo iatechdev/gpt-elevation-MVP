@@ -1,0 +1,77 @@
+// QA-Claude-2 — ES-232 (PR #174): carga EN FRÍO de las pantallas cuyos textos salieron del arranque. Backend REAL local (:8090, se mantiene entre fases para conservar sesiones) + `vite preview` del build (:5173).
+// PHASE=main  → build de main: guarda instantáneas de texto visible (L3) y tiempos (W2) en OUT/main.json.
+// PHASE=pr    → build de #174: L1 L2 L3 L4 L5 L6 W2 + axe; compara con OUT/main.json.   0 IA. Datos sintéticos. Solo local.
+// Env: PLAYWRIGHT_MODULE, BACKEND, DATABASE_URL, AXE, OUT, PHASE.
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const fs = require('fs'), crypto = require('crypto'), { createRequire } = require('module'); const { Client } = createRequire(process.env.BACKEND + '/package.json')('pg')
+const API = 'http://localhost:8090', UI = 'http://localhost:5173', OUT = process.env.OUT, PHASE = process.env.PHASE || 'pr'; fs.mkdirSync(OUT, { recursive: true }); const AXE = fs.readFileSync(process.env.AXE, 'utf8')
+let f = 0; const ck = (n, ok, x = '') => { if (!ok) f++; console.log((ok ? 'OK   ' : 'FALLA ') + n, x) }; const info = (...a) => console.log('INFO', ...a); const sleep = ms => new Promise(r => setTimeout(r, ms))
+const PASS = crypto.randomBytes(9).toString('hex') + 'Aa1!', tag = Date.now().toString(36)
+const call = async (m, p, t, b) => { const r = await fetch(API + p, { method: m, headers: { 'content-type': 'application/json', ...(t ? { Authorization: 'Bearer ' + t } : {}) }, body: b === undefined ? undefined : JSON.stringify(b) }); let j = null; try { j = await r.json() } catch {} return { s: r.status, j } }
+const dbq = async (q, a) => { const d = new Client({ connectionString: process.env.DATABASE_URL }); await d.connect(); try { return (await d.query(q, a)).rows } finally { await d.end() } }
+const SCREENS = [ // [ruta, usuario, texto propio ES, EN]
+  ['/app/dashboard', 'done', /Mi panel|Panel|Hola|Conversación/i, /My dashboard|Dashboard|Hello|Conversation/i], ['/app/chat', 'done', /Conversación/i, /Conversation/i], ['/app/diary', 'done', /Diario/i, /Journal|Diary/i],
+  ['/app/compass', 'done', 'Brújula profesional', 'Career compass'], ['/app/evidence', 'done', 'Mis evidencias', 'My evidence'], ['/app/evidence/new', 'done', 'Nueva evidencia', 'New evidence'],
+  ['/app/evidence/resume-skills', 'done', /habilidades|evidencia/i, /skills|evidence/i], ['/app/context/resumes', 'done', 'Mis hojas de vida', 'My résumés'], ['/app/onboarding', 'new', 'Tu punto de partida', 'Your starting point'], ['/app/skill-map', 'done', 'Mapa de competencias', 'Skills map']]
+// clave cruda = nodo de texto que ES una clave, o contiene una clave de los prefijos conocidos de los catálogos movidos
+const RAW = String.raw`(?:^|[\s(«"'])((?:compass|evidence|skill_map|space|chat|journal|diary|landing|admin|onb|resume)\.[a-z0-9_]+(?:\.[a-z0-9_]+)*|context_[a-z_]+|resume_[a-z_]+|skill_map\.[a-z_.]+)(?=$|[\s.,;:)»"'])`
+const observer = (RAW) => { window.__raw = new Set(); window.__empty = new Set(); window.__nav = []
+  const re = new RegExp(RAW); const scan = n => { const t = n.nodeType === 3 ? n.nodeValue : n.nodeType === 1 && n.children.length === 0 ? n.textContent : ''; const m = re.exec(t || ''); if (m) window.__raw.add(m[1]) }
+  const empties = () => { document.querySelectorAll('h1,h2,h3,button,label,a,th,legend,summary').forEach(e => { if (!e.offsetParent && e.tagName !== 'H1') return; const name = (e.getAttribute('aria-label') || e.textContent || e.title || '').trim() || e.querySelector('img[alt]:not([alt=""]),svg title'); if (!name && !e.querySelector('svg,img')) window.__empty.add(e.tagName.toLowerCase() + (e.className ? '.' + String(e.className).split(' ')[0] : '')) }) }
+  new MutationObserver(list => { for (const m of list) { if (m.type === 'characterData') scan(m.target); for (const n of m.addedNodes) { scan(n); if (n.nodeType === 1) n.querySelectorAll?.('*').forEach(scan) } } empties() }).observe(document, { subtree: true, childList: true, characterData: true }) }
+;(async () => {
+  const b = await chromium.launch(); const stateFile = OUT + '/state.json'; let S
+  if (PHASE === 'main') { // siembra: persona con incorporación completa y persona nueva; datos para chat y diario
+    const mk = async (done) => { const email = `qa2-e232-${tag}-${done ? 'a' : 'b'}@example.test`; await call('POST', '/api/register', null, { name: 'QA2 e232 ' + (done ? 'A' : 'B'), email, password: PASS }); if (done) await dbq('UPDATE "Users" SET "onboardingCompleted"=true WHERE email=$1', [email]); const tk = (await call('POST', '/api/login', null, { email, password: PASS })).j?.token; return { email, token: tk } }
+    S = { done: await mk(true), new: await mk(false) }; await call('POST', '/api/diary', S.done.token, { content: 'Entrada sintética de diario ' + tag, date: new Date().toISOString().slice(0, 10) }).catch(() => {}); fs.writeFileSync(stateFile, JSON.stringify(S))
+  } else S = JSON.parse(fs.readFileSync(stateFile, 'utf8'))
+  const tokenOf = who => S[who].token
+  const newCtx = async (who, lang, w = 1360, opts = {}) => { const c = await b.newContext({ viewport: { width: w, height: 900 }, isMobile: w < 500, colorScheme: 'light', reducedMotion: 'reduce' }); await c.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l) }, [tokenOf(who), lang]); await c.addInitScript(`(${observer.toString()})(${JSON.stringify(RAW)})`); return c }
+  const cold = async (who, lang, w, route, throttle) => { const c = await newCtx(who, lang, w); const p = await c.newPage(); p.errs = []; p.reqs = []; p.cons = []; p.on('pageerror', e => p.errs.push(e.message.slice(0, 120))); p.on('console', m => { if (m.type() === 'error') p.cons.push(m.text().slice(0, 120)) }); p.on('request', r => p.reqs.push(new URL(r.url()).pathname))
+    let cdp = null; if (throttle) { cdp = await c.newCDPSession(p); await cdp.send('Network.enable'); await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 400, downloadThroughput: (400 * 1024) / 8, uploadThroughput: (400 * 1024) / 8 }); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 }) }
+    const t0 = Date.now(); await p.goto(UI + route, { waitUntil: 'domcontentloaded', timeout: 90000 }); return { c, p, t0, cdp } }
+  const settle = async (p, ms = 1800) => { await p.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {}); await sleep(ms) }
+  const snapshot = async p => ({ text: (await p.locator('body').innerText()).replace(/\s+/g, ' ').trim(), lang: await p.evaluate(() => document.documentElement.lang), raw: await p.evaluate(() => [...window.__raw]), empty: await p.evaluate(() => [...window.__empty]) })
+  const axe = async (p, nm, fails) => { await p.evaluate(AXE); const r = await p.evaluate(async () => (await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } })).violations.map(v => v.id + ':' + v.nodes.length)); if (fails) fails.push(...r.map(x => nm + ' ' + x)); return r }
+
+  const snaps = {}; const times = {}
+  for (const lang of ['es', 'en']) for (const w of [1360, 390]) for (const [route, who, es, en] of SCREENS) { const key = `${lang}|${w}|${route}`; const { c, p, t0 } = await cold(who, lang, w, route); const exp = lang === 'es' ? es : en
+    try { await p.waitForFunction(([e, isRe]) => (isRe ? new RegExp(e[0], e[1]).test(document.body.innerText) : document.body.innerText.includes(e)), [exp instanceof RegExp ? [exp.source, exp.flags] : exp, exp instanceof RegExp], { timeout: 30000 }); times[key] = Date.now() - t0 } catch { times[key] = null }
+    await settle(p); const s = await snapshot(p); snaps[key] = s
+    if (PHASE === 'pr') { const own = exp instanceof RegExp ? exp.test(s.text) : s.text.includes(exp)
+      ck(`L1 ${lang}/${w} ${route}: carga en frío muestra su texto, sin claves crudas ni vacíos ni errores`, own && s.raw.length === 0 && s.empty.length === 0 && p.errs.length === 0 && s.lang === lang, `texto=${own} crudas=[${s.raw}] vacíos=[${s.empty}] lang=${s.lang} errores=${p.errs.join('|')}`)
+      ck(`L1 ${lang}/${w} ${route}: sin texto con forma de clave en la pantalla final ni undefined/NaN/[object`, !new RegExp(RAW).test(s.text) && !/undefined|NaN|\[object/.test(s.text)) }
+    await c.close() }
+  fs.writeFileSync(`${OUT}/${PHASE}-snaps.json`, JSON.stringify({ snaps, times }))
+  if (PHASE === 'main') { await b.close(); console.log('Fase main guardada: ' + Object.keys(snaps).length + ' instantáneas'); process.exit(0) }
+
+  // ===== L3 igualdad con main
+  const M = JSON.parse(fs.readFileSync(`${OUT}/main-snaps.json`, 'utf8')); let diffs = 0
+  for (const k of Object.keys(snaps)) { const a = M.snaps[k]?.text, bb = snaps[k].text; if (a !== bb) { diffs++; const i = [...a].findIndex((ch, j) => ch !== bb[j]); info(`L3 DIFERENCIA ${k}: main «${a.slice(Math.max(0, i - 30), i + 60)}» vs #174 «${bb.slice(Math.max(0, i - 30), i + 60)}»`) } }
+  ck(`L3 texto visible idéntico entre main y #174 en ${Object.keys(snaps).length} cargas en frío (ES/EN × 390/1360 × ${SCREENS.length} pantallas)`, diffs === 0, `diferencias=${diffs}`)
+  // ===== L2 parpadeo con red lenta y CPU 4x
+  for (const lang of ['es', 'en']) for (const [route, who, es, en] of SCREENS) { const { c, p } = await cold(who, lang, 1360, route, true); await settle(p, 2500); const s = await snapshot(p); ck(`L2 ${lang} ${route} (red lenta 400 kbps + latencia 400 ms, CPU 4×): 0 claves crudas y 0 vacíos en cualquier instante`, s.raw.length === 0 && s.empty.length === 0 && p.errs.length === 0, `crudas=[${s.raw}] vacíos=[${s.empty}] errores=${p.errs.join('|')}`); await c.close() }
+  // ===== W2 tiempo hasta contenido (frío, normal) main vs #174
+  for (const key of Object.keys(times).filter(k => k.startsWith('es|1360'))) { const a = M.times[key], bb = times[key]; info(`W2 ${key}: main ${a} ms → #174 ${bb} ms ${a && bb ? '(' + (bb - a >= 0 ? '+' : '') + (bb - a) + ' ms)' : ''}`) }
+  // ===== L4 idioma en caliente
+  for (const route of ['/app/evidence', '/app/compass', '/app/skill-map', '/app/chat']) { const { c, p } = await cold('done', 'es', 1360, route); await settle(p); const btn = n => p.getByRole('button', { name: n, exact: true }).first(); await btn('EN').click(); await sleep(900); let s = await snapshot(p); const en = SCREENS.find(x => x[0] === route)[3]
+    ck(`L4 ${route}: ES→EN en caliente traduce (texto EN presente, sin español de la pantalla ni claves, lang=en)`, (en instanceof RegExp ? en.test(s.text) : s.text.includes(en)) && s.raw.length === 0 && s.lang === 'en', `lang=${s.lang} crudas=[${s.raw}]`)
+    await btn('ES').click(); await sleep(900); s = await snapshot(p); const es = SCREENS.find(x => x[0] === route)[2]; ck(`L4 ${route}: EN→ES vuelve a español sin claves`, (es instanceof RegExp ? es.test(s.text) : s.text.includes(es)) && s.raw.length === 0 && s.lang === 'es')
+    await p.reload({ waitUntil: 'domcontentloaded' }); await settle(p); s = await snapshot(p); ck(`L4 ${route}: tras recargar se conserva el idioma elegido (es)`, s.lang === 'es' && s.raw.length === 0); await c.close() }
+  // ===== L5 navegación SPA, chunks una vez
+  { const { c, p } = await cold('done', 'es', 1360, '/app/dashboard'); await settle(p); p.reqs.length = 0; const order = ['/app/chat', '/app/diary', '/app/evidence', '/app/skill-map', '/app/compass', '/app/chat', '/app/evidence', '/app/dashboard']
+    for (const r of order) { await p.evaluate(path => { window.history.pushState({}, '', path); window.dispatchEvent(new PopStateEvent('popstate')) }, r); await sleep(1200) }
+    const chunks = p.reqs.filter(x => /\/assets\/.*\.js$/.test(x)); const dup = [...new Set(chunks.filter((x, i) => chunks.indexOf(x) !== i))]; const sN = await snapshot(p)
+    ck('L5 navegación SPA de ida y vuelta (8 pasos): cada chunk JS se descarga una sola vez', dup.length === 0, `repetidos=${dup.join(',')} chunks=${new Set(chunks).size}`); ck('L5 sin claves crudas, sin vacíos y sin errores de página/consola durante la navegación', sN.raw.length === 0 && sN.empty.length === 0 && p.errs.length === 0 && p.cons.length === 0, `crudas=[${sN.raw}] vacíos=[${sN.empty}] errores=${p.errs.join('|')} consola=${p.cons.join('|')}`)
+    await c.close() }
+  { const { c, p } = await cold('done', 'es', 1360, '/app/dashboard'); await settle(p); const menu = p.getByRole('button', { name: /Menú/i }).first(); if (await menu.count()) { await menu.click(); await sleep(400); const links = await p.locator('nav a').allInnerTexts(); info('L5 enlaces del menú:', links.map(x => x.trim()).filter(Boolean).slice(0, 12).join(' | ')); const mapa = p.locator('nav a').filter({ hasText: /Mapa/i }).first(); if (await mapa.count()) { await mapa.click(); await sleep(1500); const s = await snapshot(p); ck('L5 desde «☰ Menú» al mapa de competencias: texto presente y sin claves', /Mapa de competencias/.test(s.text) && s.raw.length === 0) } } else info('L5 no hallé el botón de menú'); await c.close() }
+  // ===== L6 fallo de carga de un chunk
+  for (const mode of ['404', 'abort']) { const { c, p } = await cold('done', 'es', 1360, '/app/dashboard'); await settle(p); await p.route(/\/assets\/(EvidencePages|SkillMapPage|CompassPage)-[^/]*\.js$/, r => mode === '404' ? r.fulfill({ status: 404, body: 'no' }) : r.abort('failed')); let n = 0; p.on('request', r => { if (/\/assets\/(EvidencePages|SkillMapPage|CompassPage)-/.test(r.url())) n++ })
+    await p.evaluate(() => { window.history.pushState({}, '', '/app/evidence'); window.dispatchEvent(new PopStateEvent('popstate')) }); await sleep(3500); const t = (await p.locator('body').innerText()).trim(); const blank = t.length < 40; info(`L6 ${mode}: tras fallar el chunk de Evidencias el cuerpo tiene ${t.length} caracteres: «${t.replace(/\s+/g, ' ').slice(0, 100)}» (intentos de descarga=${n}, errores de página=${p.errs.length})`)
+    ck(`L6 ${mode}: NO queda pantalla en blanco y no hay bucle de reintentos (≤ 3 descargas del chunk)`, !blank && n <= 3, `largo=${t.length} intentos=${n}`)
+    await p.unroute(/\/assets\//); await p.evaluate(() => { window.history.pushState({}, '', '/app/chat'); window.dispatchEvent(new PopStateEvent('popstate')) }); await sleep(1500); const t2 = await p.locator('body').innerText(); ck(`L6 ${mode}: el resto de la app sigue navegable (Conversación carga)`, /Conversación/.test(t2)); await c.close() }
+  { const { c, p } = await cold('done', 'es', 1360, '/app/dashboard'); await settle(p); await c.setOffline(true); await p.evaluate(() => { window.history.pushState({}, '', '/app/skill-map'); window.dispatchEvent(new PopStateEvent('popstate')) }); await sleep(3000); const t = (await p.locator('body').innerText()).trim(); info(`L6 offline: cuerpo ${t.length} caracteres: «${t.replace(/\s+/g, ' ').slice(0, 100)}»`); ck('L6 offline: no queda pantalla en blanco', t.length >= 40); await c.setOffline(false); await c.close() }
+  // ===== axe en las pantallas movidas (y comparación con main)
+  const axeFails = []; for (const lang of ['es', 'en']) for (const w of [1360, 390]) for (const [route, who] of SCREENS) { const { c, p } = await cold(who, lang, w, route); await settle(p, 1000); await axe(p, `${lang}/${w} ${route}`, axeFails); await c.close() }
+  ck(`axe WCAG A/AA/2.2 AA en ${SCREENS.length * 4} cargas en frío (pantallas movidas, ES/EN, 390/1360)`, axeFails.length === 0, axeFails.slice(0, 8).join(' | '))
+  await b.close(); console.log(f ? `\nFALLAS ${f}` : '\nTODO OK'); process.exit(f ? 1 : 0)
+})().catch(e => { console.error('EXCEPCIÓN', e.stack?.slice(0, 800)); process.exit(3) })
