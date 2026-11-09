@@ -1,0 +1,27 @@
+[
+ {
+  "id": "N1 cuenta REAL: 401,401,423; vencido el bloqueo, el primer fallo vuelve a bloquear (423) y el contador no se reinició",
+  "ok": true,
+  "detail": "401,401,423 · tras vencer: 423 · BD intentos=4"
+ },
+ {
+  "id": "N2 cuenta REAL: tras vencer el bloqueo, la contraseña CORRECTA entra (200) y limpia contador y bloqueo",
+  "ok": true,
+  "detail": "login=200 intentos=0 bloqueo=null"
+ },
+ {
+  "id": "N3 correo INEXISTENTE (reloj simulado): false,false,true; vencido el bloqueo, el primer fallo vuelve a bloquear — igual que la cuenta real",
+  "ok": true,
+  "detail": "false,false,true · tras vencer: bloqueado=true"
+ },
+ {
+  "id": "N4 sin decaimiento: dos fallos, una espera de 45 min y un tercero bloquean (como la cuenta real, cuyos intentos tampoco decaen)",
+  "ok": true,
+  "detail": "tercer fallo tras 45 min: bloqueado=true"
+ },
+ {
+  "id": "N5 20 simultáneos sobre una cuenta real: exactamente 2 respuestas 401 y 18 con 423 (igual que un correo inexistente), sin 5xx",
+  "ok": true,
+  "detail": "401=2 423=18 BD intentos=20"
+ }
+]

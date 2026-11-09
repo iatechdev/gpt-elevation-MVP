@@ -1,29 +1,29 @@
 [
  {
   "round": 0,
-  "real": "401,401,401,401,401",
+  "real": "401,401,423,423,423",
   "inexistente": "401,401,423,423,423",
   "inactiva": "401,401,423,423,423",
-  "bdIntentosReal": 1,
-  "realBloqueada": false,
-  "loginCorrectoDespues": 200
+  "bdIntentosReal": 5,
+  "realBloqueada": true,
+  "loginCorrectoDespues": 423
  },
  {
   "round": 1,
-  "real": "401,401,401,401,401",
+  "real": "401,401,423,423,423",
   "inexistente": "401,401,423,423,423",
   "inactiva": "401,401,423,423,423",
-  "bdIntentosReal": 1,
-  "realBloqueada": false,
-  "loginCorrectoDespues": 200
+  "bdIntentosReal": 5,
+  "realBloqueada": true,
+  "loginCorrectoDespues": 423
  },
  {
   "round": 2,
-  "real": "401,401,401,401,401",
+  "real": "401,401,423,423,423",
   "inexistente": "401,401,423,423,423",
   "inactiva": "401,401,423,423,423",
-  "bdIntentosReal": 1,
-  "realBloqueada": false,
-  "loginCorrectoDespues": 200
+  "bdIntentosReal": 5,
+  "realBloqueada": true,
+  "loginCorrectoDespues": 423
  }
 ]

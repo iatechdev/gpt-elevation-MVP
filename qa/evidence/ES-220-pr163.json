@@ -12,12 +12,12 @@
  {
   "id": "E2a tiempo: inexistente vs existente-incorrecta vs inactiva-incorrecta (24 intentos cada una, un correo distinto por intento): medianas dentro de 15 % y 30 ms",
   "ok": true,
-  "detail": "inexistente={\"p50\":286,\"min\":283,\"max\":304} existente={\"p50\":300,\"min\":285,\"max\":310} inactiva={\"p50\":300,\"min\":284,\"max\":302}"
+  "detail": "inexistente={\"p50\":300,\"min\":284,\"max\":315} existente={\"p50\":301,\"min\":286,\"max\":318} inactiva={\"p50\":300,\"min\":284,\"max\":304}"
  },
  {
   "id": "E2b tiempo en estado BLOQUEADO: cuenta real bloqueada vs correo inexistente bloqueado (24 intentos): medianas dentro de 15 % y 30 ms",
   "ok": true,
-  "detail": "real={\"p50\":3,\"min\":3,\"max\":3} inexistente={\"p50\":3,\"min\":3,\"max\":4}"
+  "detail": "real={\"p50\":3,\"min\":3,\"max\":4} inexistente={\"p50\":3,\"min\":3,\"max\":4}"
  },
  {
   "id": "E5 normalización: mayúsculas/minúsculas y espacios comparten contador para un correo inexistente (3er intento → 423)",
@@ -31,13 +31,13 @@
  },
  {
   "id": "E8a 20 intentos fallidos SIMULTÁNEOS: ningún 5xx, y tanto la cuenta real como el correo inexistente quedan bloqueados (423) después",
-  "ok": false,
-  "detail": "real: 401=20 423=0, BD intentos=2 bloqueada=false · inexistente: 401=2 423=18 · después real=200 inexistente=423"
+  "ok": true,
+  "detail": "real: 401=2 423=18, BD intentos=11 bloqueada=true · inexistente: 401=2 423=18 · después real=423 inexistente=423"
  },
  {
   "id": "E8b (límite de intentos simultáneos) el nº de intentos fallidos aceptados antes del bloqueo no supera el umbral de 3 por mucho: real vs inexistente",
-  "ok": false,
-  "detail": "cuenta real dejó pasar 20 intentos con 401; correo inexistente 2 (umbral 3)"
+  "ok": true,
+  "detail": "cuenta real dejó pasar 2 intentos con 401; correo inexistente 2 (umbral 3)"
  },
  {
   "id": "E10 entradas raras (vacío, null, número, objeto, arreglo, __proto__, 200 kB, nulos, JSON roto): 4xx controlado, nunca 5xx",
