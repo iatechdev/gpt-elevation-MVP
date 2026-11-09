@@ -40,6 +40,7 @@ export function EvidenceListPage() {
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [deleteError, setDeleteError] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'draft' | 'confirmed'>('all')
   const added = Number((location.state as { added?: unknown } | null)?.added) || 0
   const opener = useRef<HTMLElement | null>(null); const dialog = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -62,6 +63,7 @@ export function EvidenceListPage() {
     setBusy(true); setDeleteError(false)
     try { await api.remove(id); setConfirmId(null); setNotice(t('evidence.deleted_live')); setAttempt(v => v + 1) } catch { setDeleteError(true) } finally { setBusy(false) }
   }
+  const shown = state.rows ? state.rows.filter(row => filter === 'all' || row.status === filter) : []
   return <EvidenceShell title={t('evidence.title')}>
     <p>{t('evidence.intro')}</p><Link className="elv-btn" to="/app/evidence/new">{t('evidence.new')}</Link>
     {added > 0 && <div className="evidence-ok" role="status"><strong>{t('evidence.rs_added_ok').replace('{n}', String(added))}</strong><p>{t('evidence.rs_added_help')}</p></div>}
@@ -69,8 +71,13 @@ export function EvidenceListPage() {
     {toReview > 0 && <section className="evidence-banner" aria-labelledby="rs-banner"><div><h2 id="rs-banner">{t('evidence.rs_banner_title')}</h2><p>{t('evidence.rs_banner_body')}</p></div>
       <Link className="elv-btn elv-btn-primary" to="/app/evidence/resume-skills">{t('evidence.rs_banner_cta')}</Link></section>}
     {!token || token !== readEvidenceToken() ? <ReadError status={401} /> : same && state.error ? <ReadError status={state.error} retry={retry} />
-      : same && state.rows ? state.rows.length ? <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {state.rows.map(row => <article className={'elv-card evidence-card' + (row.origin?.needsReview ? ' evidence-card-review' : '')} key={row.id}><div className="elv-card-body">
+      : same && state.rows ? state.rows.length ? <>
+      <fieldset className="evidence-filter"><legend>{t('evidence.filter_status')}</legend>
+        {(['all', 'draft', 'confirmed'] as const).map(value => <label key={value}><input type="radio" name="evidence-status" checked={filter === value} onChange={() => setFilter(value)} /> {t(value === 'all' ? 'evidence.filter_all' : 'evidence.' + value)}</label>)}
+      </fieldset>
+      <p role="status" aria-live="polite" className="evidence-count">{shown.length === 1 ? t('evidence.filter_count_one') : t('evidence.filter_count').replace('{n}', String(shown.length))}</p>
+      {shown.length ? <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {shown.map(row => <article className={'elv-card evidence-card' + (row.origin?.needsReview ? ' evidence-card-review' : '')} key={row.id}><div className="elv-card-body">
           <h2 className="elv-card-title">{row.payload.title}</h2><Metadata row={row} /><OriginBlock row={row} />
           <p><strong>{t('evidence.goal')}: </strong>{row.payload.goal || t('evidence.not_indicated')}</p>
           <p><strong>{t('evidence.delivered')}: </strong>{row.payload.delivered?.text || t('evidence.not_indicated')}</p>
@@ -87,7 +94,7 @@ export function EvidenceListPage() {
             <div className="evidence-actions"><button type="button" className="elv-btn evidence-danger" disabled={busy} onClick={() => void remove(row.id)}>{t('evidence.delete_yes')}</button>
               <button type="button" className="elv-btn" disabled={busy} onClick={cancel}>{t('evidence.delete_cancel')}</button></div></div>}
         </div></article>)}
-      </div> : <p role="status">{t('evidence.empty')}</p> : <p role="status">{t('evidence.loading')}</p>}
+      </div> : <p>{t('evidence.filter_none')} <button type="button" className="elv-link" onClick={() => setFilter('all')}>{t('evidence.filter_show_all')}</button></p>}</> : <p role="status">{t('evidence.empty')}</p> : <p role="status">{t('evidence.loading')}</p>}
   </EvidenceShell>
 }
 export function EvidenceDetailPage() {
@@ -195,7 +202,7 @@ function EvidenceEditor({ token, edit }: { token: string; edit?: EditTarget }) {
         </fieldset>
       </form>}
       {phase === 'review' && preview && <>
-        <h2 ref={heading} tabIndex={-1}>{l('review')}</h2><p className="evidence-warning">{l('warning')}</p><EvidenceContent payload={preview} />
+        <h2 ref={heading} tabIndex={-1}>{l('review')}</h2><p>{l('review_effect')}</p><p className="evidence-warning">{l('warning')}</p><EvidenceContent payload={preview} />
         <label className="evidence-choice"><input type="checkbox" className="elv-checkbox" checked={reviewed} onChange={event => setReviewed(event.target.checked)} />{l('reviewed')}</label>
         <div className="evidence-actions"><button className="elv-btn" onClick={() => setPhase('editing')}>{l('edit')}</button>
           <button className="elv-btn elv-btn-primary" disabled={!reviewed} onClick={() => { if (reviewed) void write({ body: bodyFor(preview, 'confirmed') }) }}>{l('confirm')}</button>

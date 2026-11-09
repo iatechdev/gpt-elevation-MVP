@@ -82,3 +82,9 @@
 @media (prefers-reduced-motion: no-preference) { .evidence-scope .evidence-skeleton { background: linear-gradient(90deg, #ece9df 25%, #f6f4ee 50%, #ece9df 75%); background-size: 200% 100%; animation: evidence-shimmer 1.4s linear infinite; } }
 @keyframes evidence-shimmer { to { background-position: -200% 0; } }
 @media (max-width: 639px) { .evidence-scope .evidence-sticky .elv-btn, .evidence-scope .evidence-dialog .evidence-actions .elv-btn { width: 100%; } .evidence-scope .evidence-banner .elv-btn { width: 100%; } }
+.evidence-scope .evidence-filter { border: 0; padding: 0; margin-block: 16px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.evidence-scope .evidence-filter legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+.evidence-scope .evidence-filter label { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; }
+.evidence-scope .evidence-filter input { width: 20px; height: 20px; }
+.evidence-scope .evidence-count { margin-block: 8px; }
+.evidence-scope button.elv-link { min-height: 32px; min-width: 32px; padding: 4px 8px; background: none; border: 0; text-decoration: underline; cursor: pointer; font: inherit; color: inherit; }
