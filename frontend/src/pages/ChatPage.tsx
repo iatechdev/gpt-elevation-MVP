@@ -5,6 +5,7 @@ import { ChatBar } from '../space/ChatBar'
 import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput, TruncatedNotice } from '../space/ChatControls'
+import { ChatLimitsNotice } from '../space/ChatLimitsNotice'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
 import { clearPending } from '../space/pending'
@@ -426,6 +427,7 @@ export function ChatPage() {
         </div>
         <div className="chat-input-bar">
           <ChatInput chat={chat} />
+          <ChatLimitsNotice />
         </div>
       </main>
 
