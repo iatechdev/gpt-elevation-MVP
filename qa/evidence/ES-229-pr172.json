@@ -1,0 +1,82 @@
+[
+ {
+  "id": "SET dos personas con versión del Puente confirmada (campo directo, de diario y de chat)",
+  "ok": true,
+  "detail": "A preview=200 confirm=201  · B confirm=201"
+ },
+ {
+  "id": "C0 antes de revocar, el motor recibe los 3 textos (directo, diario, chat)",
+  "ok": true,
+  "detail": "campos=3"
+ },
+ {
+  "id": "C1a retirar insights_diary: el motor deja de recibir el texto del diario en la siguiente lectura; conserva el directo y el del chat",
+  "ok": true,
+  "detail": "PUT=200 textos=TEXTO-DIRECTO-QA229 | TEXTO-DEL-CHAT-QA229"
+ },
+ {
+  "id": "C1b lo confirmado no se borra ni se reescribe: misma versión y estado activo; el contenido sigue en su sitio",
+  "ok": true,
+  "detail": "versión 1→1 activa=active"
+ },
+ {
+  "id": "C1c la persona ve el estado: needsReview verdadero con reviewReason «source_revoked» en su lectura propia; ni ids de origen ni contenido ajeno",
+  "ok": true,
+  "detail": "needsReview=true reviewReason=true fugaMarca=false"
+ },
+ {
+  "id": "C1d se registra la invalidación de lo derivado (una fila nueva) y se invalidan jobs derivados",
+  "ok": true,
+  "detail": "invalidaciones 0→1"
+ },
+ {
+  "id": "C2 retirar después insights_chat: solo entonces desaparece el texto del chat; el directo permanece",
+  "ok": true,
+  "detail": "textos=TEXTO-DIRECTO-QA229"
+ },
+ {
+  "id": "C3 la otra persona (B) no cambia cuando A retira permisos: el motor sigue recibiendo sus 3 textos y su versión no cambia",
+  "ok": true,
+  "detail": "B textos=3 origins iguales=true"
+ },
+ {
+  "id": "C4 10 retiros simultáneos + uno repetido: sin 5xx, UNA sola invalidación, UNA sola marca (la del diario) y ningún evento duplicado",
+  "ok": true,
+  "detail": "estados=200 invalidaciones 0→1→1 marcas=1 eventosDeConsentimiento 3→4"
+ },
+ {
+  "id": "C9 historial: un solo evento «revoked» de insights_diary por el cambio real (las repeticiones idénticas no crean otro)",
+  "ok": true,
+  "detail": "eventos revoked=1"
+ },
+ {
+  "id": "C5 volver a conceder el permiso NO devuelve lo marcado a vigente: el motor sigue sin el texto del diario, la versión no cambia y la persona sigue viendo «para revisión»; no se crea versión sola",
+  "ok": true,
+  "detail": "PUT=200 textoDiarioEntregado=false misma versión=true sigueMarcada=true"
+ },
+ {
+  "id": "C8 atomicidad: si falla la marca (tabla de invalidaciones inaccesible), el retiro del permiso se revierte (no queda retirado sin marca) y la respuesta es un error controlado",
+  "ok": true,
+  "detail": "{\"rf\":500,\"cons\":\"granted\",\"marcas\":0,\"body\":\"{\\\"error\\\":\\\"No se pudo guardar la decisión.\\\"}\"}"
+ },
+ {
+  "id": "C8b tras restaurar la tabla, el retiro funciona y marca",
+  "ok": true,
+  "detail": "PUT=200"
+ },
+ {
+  "id": "C10 otros permisos: necessary no se puede retirar (409); therapist_sharing sin terapeuta 409; professional_bridge revoca la versión (revoked) y el motor no entrega nada",
+  "ok": true,
+  "detail": "necessary=409 therapist=409 bridge=200 versión=revoked motor={\"error\":\"no_context\",\"status\":404}"
+ },
+ {
+  "id": "C11a (hueco declarado) una vista previa NUEVA que cita una fuente con el permiso retirado: se rechaza (4xx)",
+  "ok": false,
+  "detail": "estado=200 {\"token\":\"1794260253879.f0e2d73e9593a9fba72b9a447bf40377d277f21b2fd6acbc3287cbf3af051e30\",\"expiresAt"
+ },
+ {
+  "id": "C11b (hueco declarado) confirmar con la vista previa de ANTES de retirar el permiso: se rechaza y no entrega al motor el texto de la fuente retirada",
+  "ok": false,
+  "detail": "retiro=200 confirmación=201 {\"version\":1,\"status\":\"active\",\"approvedAt\":\"2026-11-09T21:27:33.913Z\",\"revokedA · motor entrega el texto de la fuente retirada=true"
+ }
+]
