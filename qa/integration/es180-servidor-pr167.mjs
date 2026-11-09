@@ -1,0 +1,90 @@
+// [QA-Claude] ES-42 · Corte 3 · matriz consolidada de ownership (O1), roles (O2), frontera privada con el terapeuta (O5) y entradas maliciosas (O9) + carga acotada (P1).
+// Servidor real del merge local de main (3ab3a41) + PostgreSQL embebido, proveedor de IA SIMULADO, datos sintéticos, 0 tokens. No imprime secretos.
+import { createRequire } from 'node:module';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+const BACK = 'C:/Users/Usuario/Documents/qa-pr-test/backend', S = 'C:/Users/Usuario/Documents/qa13';
+const req = createRequire(BACK + '/package.json'); const { Client } = req('pg'); const jwt = req('jsonwebtoken');
+const JWT = fs.readFileSync(S + '/jwt', 'utf8').trim(), DEK = fs.readFileSync(S + '/dek', 'utf8').trim(), PEK = fs.readFileSync(S + '/pek', 'utf8').trim();
+const DBN = 'q180', PORT = 8259, api = `http://127.0.0.1:${PORT}`, dbUrl = `postgres://elevation:elevation_local@127.0.0.1:54459/${DBN}`;
+const admin = new Client({ connectionString: 'postgres://elevation:elevation_local@127.0.0.1:54459/postgres' }); await admin.connect(); await admin.query(`DROP DATABASE IF EXISTS ${DBN} WITH (FORCE)`); await admin.query(`CREATE DATABASE ${DBN}`);
+const out = []; const check = (id, ok, d = '') => { out.push({ id, ok: !!ok, detail: String(d).slice(0, 420) }); console.log(JSON.stringify({ id, ok: !!ok, detail: String(d).slice(0, 340) })); };
+const sleep = ms => new Promise(r => setTimeout(r, ms)); const kids = [];
+kids.push(spawn(process.execPath, [S + '/m142mock.cjs', '9959'], { stdio: 'ignore' }));
+kids.push(spawn(process.execPath, ['server.js'], { cwd: BACK, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), DATABASE_URL: dbUrl, DB_SSL: 'false', JWT_SECRET: JWT, DATA_ENCRYPTION_KEY: DEK, PROMPT_ENCRYPTION_KEY: PEK, DATA_RIGHTS_ENABLED: 'true', NODE_ENV: 'development', ANTHROPIC_API_KEY: 'sk-synthetic-not-real', ANTHROPIC_BASE_URL: 'http://127.0.0.1:9959', AI_BUDGET_TOKENS_PER_USER: '50000000', AI_BUDGET_TOKENS_COHORT: '500000000' } }));
+for (let i = 0; i < 80; i++) { try { if ((await fetch(api + '/api/health')).ok) break; } catch { /* */ } await sleep(500); }
+const db = new Client({ connectionString: dbUrl, ssl: false }); await db.connect(); for (let i = 0; i < 120; i++) { if ((await db.query(`select to_regclass('"Users"') t, to_regclass('"Messages"') m, to_regclass('"DiaryEntries"') d`)).rows[0].d) break; await sleep(500); } await sleep(2500);
+const q = async (s, p = []) => (await db.query(s, p)).rows;
+const call = async (method, url, { token, body } = {}) => { const h = {}; if (token) h.Authorization = 'Bearer ' + token; if (body !== undefined) h['Content-Type'] = 'application/json'; const t0 = performance.now(); const r = await fetch(api + url, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }); const text = await r.text(); let json = null; try { json = JSON.parse(text); } catch { /* */ } return { s: r.status, json, text, ms: performance.now() - t0 }; };
+const stamp = Date.now(); const mint = u => jwt.sign({ id: u.id, name: u.name, role: u.role, iatMs: Date.now() }, JWT, { expiresIn: '8h', jwtid: randomBytes(16).toString('hex') });
+const mkUser = async (tag, role = 'user') => { const email = `qa42-${tag}-${stamp}@example.test`, password = randomBytes(14).toString('base64url') + 'aA1!'; const r = await call('POST', '/api/register', { body: { name: 'QA42 ' + tag, email, password } }); if (r.s !== 201) throw new Error('registro ' + tag + ' ' + r.s); if (role !== 'user') await q('update "Users" set role=$1 where email=$2', [role, email]); const u = (await q('select id,name,role from "Users" where email=$1', [email]))[0]; return { ...u, email, password, token: mint(u) }; };
+const A = await mkUser('A'), B = await mkUser('B');
+// ── ES-180 · PR #167 · servidor: roles, cifras = base, null honesto, 30 días, privacidad, avisos, entradas raras (B1–B9) ──
+const bogotaDay = (offset = 0) => { const d = new Date(Date.now() + offset * 86400000); return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(d); };
+const utcDay = (offset = 0) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+const ADM = await mkUser('adm', 'admin'), SUP = await mkUser('sup', 'superadmin'), BRD = await mkUser('brd', 'board'), PER = await mkUser('per');
+const get = (u, p) => call('GET', p, { token: u?.token });
+// ── B3: base casi vacía → null honesto, 30 días en cero ──
+const m0 = await get(ADM, '/api/admin/metrics'); const j0 = m0.json ?? {};
+check('B3 sin registros: avgMood y avgRating son null (no 0), totalSessions 0, 30 días en cero, máximo null, sin profesionales', m0.s === 200 && j0.avgMood === null && j0.avgRating === null && j0.totalSessions === 0 && j0.days30?.length === 30 && j0.days30.every(d => d.count === 0) && j0.max30 === null && j0.total30 === 0 && j0.dailyAverage30 === 0 && Array.isArray(j0.topTherapists) && j0.topTherapists.length === 0, JSON.stringify({ avgMood: j0.avgMood, avgRating: j0.avgRating, ts: j0.totalSessions, n: j0.days30?.length, max: j0.max30, tt: j0.topTherapists?.length }));
+// ── datos sintéticos con respuesta conocida (calculada aquí a mano, no con SQL) ──
+const act = async (tag, role = 'user') => mkUser(tag, role);
+const U = []; for (let i = 1; i <= 5; i++) U.push(await act('u' + i)); const UI = [await act('i1'), await act('i2')]; for (const x of UI) await q('update "Users" set active=false where id=$1', [x.id]);
+const T = [await act('t1', 'therapist'), await act('t2', 'therapist'), await act('t3', 'therapist')]; const TI = await act('t4', 'therapist'); await q('update "Users" set active=false where id=$1', [TI.id]);
+const link = (u, t) => q('update "Users" set "therapistId"=$2 where id=$1', [u.id, t.id]); for (const u of [U[0], U[1], U[2]]) await link(u, T[0]); await link(U[3], T[1]); await link(UI[0], T[0]);
+const mood = (u, off, ci, co) => q('insert into "MoodLogs"("UserId","date",checkin_mood,checkout_mood,"createdAt","updatedAt") values($1,$2,$3,$4,now(),now())', [u.id, bogotaDay(off), ci, co]);
+await mood(U[0], 0, 4, 5); await mood(U[0], -1, 3, null); await mood(U[1], -3, 2, 4); await mood(U[2], -8, 5, 5); await mood(U[3], -29, 1, 3); await mood(U[4], -30, 4, 4); await mood(U[1], 0, null, 2);
+const rate = (u, r) => q('insert into "SessionRatings"("UserId",rating,"date","createdAt","updatedAt") values($1,$2,$3,now(),now())', [u.id, r, bogotaDay(-2)]); await rate(U[0], 5); await rate(U[1], 4); await rate(U[3], 3);
+// esperado a mano
+const moodVals = [4, 5, 3, 2, 4, 5, 5, 1, 3, 4, 4, 2]; const expMood = Math.round(moodVals.reduce((a, b) => a + b, 0) / moodVals.length * 10) / 10; const expRating = Math.round((5 + 4 + 3) / 3 * 10) / 10;
+const expTotal = 7, expTotal30 = 5 /* hoy×2 (U0 y U1), -1, -3, -29 */; const expMax = { date: bogotaDay(0), count: 2 };
+const personasUsuario = (await q(`select count(*)::int n from "Users" where role='user'`))[0].n; // contraste solo del total de filas role=user (puro conteo)
+const m = await get(ADM, '/api/admin/metrics'); const j = m.json ?? {}; const week = new Set([0, 1, 2, 3, 4, 5, 6, 7].map(k => bogotaDay(-k)));
+check('B2a cifras de población: personas usuarias, activas, profesionales activos', m.s === 200 && j.totalUsers === personasUsuario && j.activeUsers === personasUsuario - UI.length - 0 && j.totalTherapists === 3, `usuarios=${j.totalUsers}/${personasUsuario} activas=${j.activeUsers} profesionales=${j.totalTherapists} (esperado 3; el inactivo no cuenta)`);
+check('B2b cifras de uso: registros de ánimo, ánimo promedio, valoración promedio, activas esta semana', j.totalSessions === expTotal && j.avgMood === expMood && j.avgRating === expRating && j.activeThisWeek === 2, `registros=${j.totalSessions}/${expTotal} ánimo=${j.avgMood}/${expMood} valoración=${j.avgRating}/${expRating} activasSemana=${j.activeThisWeek} (esperado 2: U0 y U1 con registro en los últimos 7 días; U2 a -8 queda fuera)`);
+const tt = j.topTherapists ?? []; const t1 = tt.find(t => t.id === T[0].id), t2 = tt.find(t => t.id === T[1].id), t3 = tt.find(t => t.id === T[2].id);
+check('B2c profesionales con más personas: T1 3 personas (el inactivo UI0 también cuenta como role=user: 4) valoración 4,5; T2 1 persona 3,0; T3 0 personas y valoración null; el profesional inactivo no aparece; orden por personas', !!t1 && !!t2 && !!t3 && t1.patientCount === 4 && t1.avgRating === 4.5 && t2.patientCount === 1 && t2.avgRating === 3 && t3.patientCount === 0 && t3.avgRating === null && !tt.some(t => t.id === TI.id) && tt[0].id === T[0].id, JSON.stringify(tt.map(t => [t.patientCount, t.avgRating])));
+// ── B4: 30 días ──
+const d30 = j.days30 ?? []; const byDate = Object.fromEntries(d30.map(d => [d.date, d.count]));
+check('B4a 30 días completos y consecutivos, terminando HOY en America/Bogotá, con 0 en los días sin registros', d30.length === 30 && d30[29].date === bogotaDay(0) && d30[0].date === bogotaDay(-29) && j.range?.start === bogotaDay(-29) && j.range?.end === bogotaDay(0) && d30.every((d, i) => d.date === bogotaDay(-29 + i)), `rango=${j.range?.start}→${j.range?.end} (hoy Bogotá ${bogotaDay(0)}, hoy UTC ${utcDay(0)})`);
+check('B4b conteos por día, total30, máximo y promedio diario coherentes: hoy 2, ayer 1, hace 3 días 1, hace 29 días 1; hace 30 y 8 días no entran / el de hace 8 sí', byDate[bogotaDay(0)] === 2 && byDate[bogotaDay(-1)] === 1 && byDate[bogotaDay(-3)] === 1 && byDate[bogotaDay(-29)] === 1 && !(bogotaDay(-30) in byDate) && byDate[bogotaDay(-8)] === 1 && j.total30 === expTotal30 + 1 && j.max30?.count === 2 && j.max30?.date === expMax.date && j.dailyAverage30 === Math.round(((expTotal30 + 1) / 30) * 10) / 10, JSON.stringify({ total30: j.total30, max30: j.max30, prom: j.dailyAverage30 }));
+check('B4c el campo anterior sessionsByDay se conserva y solo trae los días CON registros', Array.isArray(j.sessionsByDay) && j.sessionsByDay.every(d => d.count > 0) && j.sessionsByDay.length === 5, `días con registros=${j.sessionsByDay?.length}`);
+// ── B5: campos de siempre presentes ──
+const legacy = ['totalUsers', 'activeUsers', 'totalTherapists', 'totalSessions', 'avgMood', 'avgRating', 'activeThisWeek', 'sessionsByDay', 'topTherapists'];
+check('B5 contrato anterior: todos los campos de siempre siguen presentes con su tipo (números/null/arreglos)', legacy.every(k => k in j) && typeof j.totalUsers === 'number' && Array.isArray(j.topTherapists) && j.topTherapists.every(t => ['id', 'name', 'patientCount', 'avgRating'].every(k => k in t)), legacy.filter(k => !(k in j)).join(',') || 'completo');
+// ── B1: roles ──
+const roles = { admin: ADM, superadmin: SUP, board: BRD, persona: PER, profesional: T[0], sinToken: null }; const r1 = {};
+for (const [k, u] of Object.entries(roles)) { const a = await get(u, '/api/admin/metrics'), b = await get(u, '/api/admin/usuarios/alerts'); r1[k] = `${a.s}/${b.s}`; }
+check('B1 roles: admin y superadmin 200/200; junta, persona y profesional 403/403 (sesión válida); sin token 401-403; ningún 5xx', r1.admin === '200/200' && r1.superadmin === '200/200' && ['board', 'persona', 'profesional'].every(k => r1[k] === '403/403') && /^(401|403)\/(401|403)$/.test(r1.sinToken), JSON.stringify(r1));
+// ── B6: privacidad ──
+const allKeys = new Set(); const walk = (o) => { if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) { allKeys.add(k); walk(v); } }; walk(j);
+const bad = ['email', 'password', 'content', 'note', 'message', 'diary', 'crisis', 'risk', 'text']; const found = [...allKeys].filter(k => bad.includes(k.toLowerCase()));
+const emails = JSON.stringify(j).match(/[A-Za-z0-9._-]+@[A-Za-z0-9.-]+/g) || []; const personNames = U.concat(UI).map(x => x.name).filter(Boolean).filter(n => JSON.stringify(j).includes(n));
+check('B6a métricas: solo agregados; sin claves de contenido/correo, sin correos ni nombres de personas usuarias; los profesionales solo con id, nombre, personas y valoración', found.length === 0 && emails.length === 0 && personNames.length === 0 && j.topTherapists.every(t => Object.keys(t).sort().join() === 'avgRating,id,name,patientCount'), `claves sospechosas=${found.join(',') || 'ninguna'} correos=${emails.length} nombres de personas=${personNames.length}`);
+// ── avisos ──
+const manifestAnt = await q(`insert into "EthicManifests"(content,version,"isActive","uploadedBy","createdAt","updatedAt") values('contenido sintético QA','v7.0',true,${ADM.id},now() - interval '3 days',now()) returning id`).catch(e => ({ err: e.message }));
+const tpl = T[0]; let seeded = 0, seedErr = ''; for (let i = 0; i < 7; i++) { try { await q(`insert into "PromptVaults"(key,"contentEncrypted",version,status,"isActive","updatedBy",proposed_by,"createdAt","updatedAt") values($1,'x',$2,'pending_review',false,'qa',$3,now(),now())`, [`therapist_prompt_${T[i % 3].id}`, 100 + i, `profesional${i}@example.test`]); seeded++; } catch (e) { seedErr = e.message.slice(0, 100); break; } }
+try { await q(`insert into "PromptVaults"(key,"contentEncrypted",version,status,"isActive","updatedBy",proposed_by,"createdAt","updatedAt") values($1,'x',900,'rejected',false,'qa','otra@example.test',now(),now())`, [`therapist_prompt_${T[0].id}`]); } catch { /* */ }
+const a1 = await get(ADM, '/api/admin/usuarios/alerts'); const aj = a1.json ?? {}; const s = aj.sections ?? {};
+check('B-avisos-a guías por revisar: cuenta real (7, sin tope de 5, sin las rechazadas), lista de 5 como máximo, y estado propio por aviso', seeded === 7 && s.guides?.status === 'ok' && s.guides?.count === 7 && s.guides?.items?.length === 5 && aj.pendingPrompts === 7 && s.professionalsIncomplete?.status === 'ok' && s.manifest?.status === 'ok', `sembradas=${seeded}${seedErr ? ' ERR ' + seedErr : ''} cuenta=${s.guides?.count} lista=${s.guides?.items?.length} estados=${s.guides?.status}/${s.professionalsIncomplete?.status}/${s.manifest?.status}`);
+check('B-avisos-b perfil incompleto: cuenta solo profesionales ACTIVOS sin perfil/biografía/especialidades (T1,T2,T3 sin perfil = 3; el inactivo no)', s.professionalsIncomplete?.count === 3 && aj.therapistsWithoutProfile === 3, `cuenta=${s.professionalsIncomplete?.count}`);
+check('B-avisos-c manifiesto: versión y fecha reales del manifiesto ACTIVO (no v1.0 / 2026-04-02 escritos a mano)', !manifestAnt.err && s.manifest?.version === 'v7.0' && s.manifest?.date === utcDay(-3) && aj.manifestoVersion === 'v7.0', `versión=${s.manifest?.version} fecha=${s.manifest?.date} (creado hace 3 días UTC=${utcDay(-3)}) ${manifestAnt.err ?? ''}`);
+const ajs = JSON.stringify(aj); const mails = ajs.match(/[A-Za-z0-9._-]+@[A-Za-z0-9.-]+/g) || [];
+check('B6b (informativo) los avisos de guías incluyen quién propuso (campo proposedBy) — puede ser un correo de profesional; visible solo para administración', true, `correos en la respuesta de avisos=${mails.length} ${mails.slice(0, 2).join(' ')} (privacidad: dato de profesionales, no de personas usuarias)`);
+// F4 (datos): fallo parcial del servidor — renombro una tabla para forzar el error de UN aviso y la restituyo
+await q('alter table "TherapistProfiles" rename to "TherapistProfiles_qa"').catch(() => {}); const a2 = await get(ADM, '/api/admin/usuarios/alerts'); await q('alter table "TherapistProfiles_qa" rename to "TherapistProfiles"').catch(() => {});
+const s2 = a2.json?.sections ?? {}; const leak = JSON.stringify(a2.json ?? {});
+check('B-avisos-d fallo parcial: si falla el aviso de perfiles, ese aviso lleva status "error" SIN detalles internos y los demás se entregan (200)', a2.s === 200 && s2.professionalsIncomplete?.status === 'error' && s2.guides?.status === 'ok' && s2.manifest?.status === 'ok' && !/relation|TherapistProfiles|SELECT|stack|sequelize/i.test(leak) && a2.json?.therapistsWithoutProfile === null, `estado=${a2.s} perfiles=${s2.professionalsIncomplete?.status} guías=${s2.guides?.status} manifiesto=${s2.manifest?.status} fuga=${/relation|SELECT|stack/i.test(leak)}`);
+const a3 = await get(ADM, '/api/admin/usuarios/alerts'); check('B-avisos-e tras restaurar la tabla el aviso vuelve a ok (reintento funciona)', a3.json?.sections?.professionalsIncomplete?.status === 'ok', `estado=${a3.json?.sections?.professionalsIncomplete?.status}`);
+// ── B9 entradas raras ──
+const odd = []; for (const p of ['/api/admin/metrics?x=1', '/api/admin/metrics?range=abc&days=-1', '/api/admin/metrics?days=99999999', '/api/admin/metrics/../usuarios', '/api/admin/metrics/%00', '/api/admin/usuarios/alerts?limit=-5']) odd.push((await get(ADM, p)).s);
+const post = await call('POST', '/api/admin/metrics', { token: ADM.token, body: {} }), del = await call('DELETE', '/api/admin/metrics', { token: ADM.token }); const hdr = (await fetch(api + '/api/admin/metrics', { headers: { Authorization: 'Bearer ' + ADM.token } })).headers.get('cache-control');
+check('B9 parámetros raros y métodos incorrectos: ningún 5xx; respuesta con Cache-Control: no-store', odd.every(s => s < 500) && post.s < 500 && del.s < 500 && /no-store/.test(hdr || ''), `consultas=${odd.join(',')} POST=${post.s} DELETE=${del.s} cache=${hdr}`);
+// ── B7 etiqueta en pantalla (revisión del código fuente) ──
+const front = fs.readFileSync(BACK + '/../frontend/src/i18n/adminCopy.ts', 'utf8') + fs.readFileSync(BACK + '/../frontend/src/pages/admin/adminOverview.tsx', 'utf8') + fs.readFileSync(BACK + '/../frontend/src/pages/admin/AdminDashboard.tsx', 'utf8');
+check('B7 la cifra de totalSessions se rotula «Registros de ánimo» (no «sesiones»), como acordó el diseño', /Registros de ánimo/.test(front) && /Mood check-ins|mood (log|check-in)s?/i.test(front), `«Registros de ánimo» en el código=${/Registros de ánimo/.test(front)}`);
+fs.writeFileSync(path.join('C:/Users/Usuario/Documents/gpt-elevation-qa/qa/evidence', 'ES-180-servidor-pr167.json'), JSON.stringify(out, null, 1));
+console.log('RESUMEN-ES180 ' + JSON.stringify({ total: out.length, fallos: out.filter(o => !o.ok).length, fallan: out.filter(o => !o.ok).map(o => o.id.slice(0, 50)) }));
+for (const k of kids) { try { k.kill(); } catch { /* */ } } process.exit(0);

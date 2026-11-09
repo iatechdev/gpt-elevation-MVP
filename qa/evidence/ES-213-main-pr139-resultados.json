@@ -37,7 +37,7 @@
  {
   "id": "M1 matriz 5 roles × 23 rutas = 115 combinaciones, servidor real: permitido ⇒ contenido en marco; no permitido ⇒ pantalla «sin acceso»",
   "ok": false,
-  "detail": "user /board/manifest: esperado noAccess, vio frame (/manifiesto) | user /board: esperado noAccess, vio frame (/manifiesto) | admin /board/manifest: esperado noAccess, vio frame (/manifiesto) | admin /board: esperado noAccess, vio frame (/manifiesto) | therapist /board/manifest: esperado noAccess, vio frame (/manifiesto) | therapist /board: esperado noAccess, vio frame (/manifiesto)"
+  "detail": "user /board/manifest: esperado noAccess, vio frame (/manifiesto) | user /board: esperado noAccess, vio frame (/manifiesto) | admin /admin/metrics: esperado frame, vio blank (/admin/metrics) | admin /board/manifest: esperado noAccess, vio frame (/manifiesto) | admin /board: esperado noAccess, vio frame (/manifiesto) | superadmin /admin/metrics: esperado frame, vio blank (/admin/metrics) | therapist /board/manifest: esperado noAccess, vio frame (/manifiesto) | therapist /board: esperado noAccess, vio frame (/manifiesto)"
  },
  {
   "id": "B1 API como barrera real: user/therapist/board no entran a endpoints de administración ni superadmin (403); admin no entra a superadmin ni a board; solo therapist al panel profesional",
@@ -142,7 +142,7 @@
  {
   "id": "F3 /api/session colgada: tras el tiempo de espera (≈8 s) pasa a «sin conexión» (no queda «verificando» para siempre)",
   "ok": true,
-  "detail": "vista=unavailable tras 8794 ms"
+  "detail": "vista=unavailable tras 9024 ms"
  },
  {
   "id": "F4 fallo pasajero de /api/session al cambiar de ruta con sesión ya verificada: no expulsa a la persona (el servidor sigue decidiendo en cada API)",
@@ -156,18 +156,18 @@
  },
  {
   "id": "C2 navegación rápida entre 6 rutas con distintos permisos: la vista final corresponde a la última ruta (/therapist/dashboard ⇒ sin acceso para board) y no se rompe",
-  "ok": false,
-  "detail": "final=frame peticiones=1"
+  "ok": true,
+  "detail": "final=noAccess peticiones=3"
  },
  {
   "id": "C3 401 tardío de /api/session en una ruta: la sesión se invalida y lleva a /login",
-  "ok": true,
-  "detail": "login"
+  "ok": false,
+  "detail": "frame"
  },
  {
   "id": "P1 /api/session: 200 peticiones, 10 en paralelo (≈6 personas con margen)",
   "ok": true,
-  "detail": "p50=55 ms · p95=87 ms · máx=102 ms · 176 req/s"
+  "detail": "p50=194 ms · p95=337 ms · máx=479 ms · 50 req/s"
  },
  {
   "id": "P2 una petición /api/session por cambio de ruta protegida (3 cambios ⇒ 3 peticiones, sin ráfagas)",

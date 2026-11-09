@@ -45,7 +45,7 @@
   "width": 390,
   "frameViolations": [],
   "legacyViolations": [],
-  "horizontalScroll": "contenido-antiguo"
+  "horizontalScroll": false
  },
  {
   "role": "admin",
@@ -61,7 +61,7 @@
   "width": 390,
   "frameViolations": [],
   "legacyViolations": [],
-  "horizontalScroll": "contenido-antiguo"
+  "horizontalScroll": false
  },
  {
   "role": "superadmin",

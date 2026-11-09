@@ -1,0 +1,92 @@
+[
+ {
+  "id": "B3 sin registros: avgMood y avgRating son null (no 0), totalSessions 0, 30 días en cero, máximo null, sin profesionales",
+  "ok": true,
+  "detail": "{\"avgMood\":null,\"avgRating\":null,\"ts\":0,\"n\":30,\"max\":null,\"tt\":0}"
+ },
+ {
+  "id": "B2a cifras de población: personas usuarias, activas, profesionales activos",
+  "ok": true,
+  "detail": "usuarios=10/10 activas=8 profesionales=3 (esperado 3; el inactivo no cuenta)"
+ },
+ {
+  "id": "B2b cifras de uso: registros de ánimo, ánimo promedio, valoración promedio, activas esta semana",
+  "ok": true,
+  "detail": "registros=7/7 ánimo=3.5/3.5 valoración=4/4 activasSemana=2 (esperado 2: U0 y U1 con registro en los últimos 7 días; U2 a -8 queda fuera)"
+ },
+ {
+  "id": "B2c profesionales con más personas: T1 3 personas (el inactivo UI0 también cuenta como role=user: 4) valoración 4,5; T2 1 persona 3,0; T3 0 personas y valoración null; el profesional inactivo no aparece; orden por personas",
+  "ok": true,
+  "detail": "[[4,4.5],[1,3],[0,null]]"
+ },
+ {
+  "id": "B4a 30 días completos y consecutivos, terminando HOY en America/Bogotá, con 0 en los días sin registros",
+  "ok": true,
+  "detail": "rango=2026-10-11→2026-11-09 (hoy Bogotá 2026-11-09, hoy UTC 2026-11-09)"
+ },
+ {
+  "id": "B4b conteos por día, total30, máximo y promedio diario coherentes: hoy 2, ayer 1, hace 3 días 1, hace 29 días 1; hace 30 y 8 días no entran / el de hace 8 sí",
+  "ok": true,
+  "detail": "{\"total30\":6,\"max30\":{\"date\":\"2026-11-09\",\"count\":2},\"prom\":0.2}"
+ },
+ {
+  "id": "B4c el campo anterior sessionsByDay se conserva y solo trae los días CON registros",
+  "ok": true,
+  "detail": "días con registros=5"
+ },
+ {
+  "id": "B5 contrato anterior: todos los campos de siempre siguen presentes con su tipo (números/null/arreglos)",
+  "ok": true,
+  "detail": "completo"
+ },
+ {
+  "id": "B1 roles: admin y superadmin 200/200; junta, persona y profesional 403/403 (sesión válida); sin token 401-403; ningún 5xx",
+  "ok": true,
+  "detail": "{\"admin\":\"200/200\",\"superadmin\":\"200/200\",\"board\":\"403/403\",\"persona\":\"403/403\",\"profesional\":\"403/403\",\"sinToken\":\"403/403\"}"
+ },
+ {
+  "id": "B6a métricas: solo agregados; sin claves de contenido/correo, sin correos ni nombres de personas usuarias; los profesionales solo con id, nombre, personas y valoración",
+  "ok": true,
+  "detail": "claves sospechosas=ninguna correos=0 nombres de personas=0"
+ },
+ {
+  "id": "B-avisos-a guías por revisar: cuenta real (7, sin tope de 5, sin las rechazadas), lista de 5 como máximo, y estado propio por aviso",
+  "ok": true,
+  "detail": "sembradas=7 cuenta=7 lista=5 estados=ok/ok/ok"
+ },
+ {
+  "id": "B-avisos-b perfil incompleto: cuenta solo profesionales ACTIVOS sin perfil/biografía/especialidades (T1,T2,T3 sin perfil = 3; el inactivo no)",
+  "ok": true,
+  "detail": "cuenta=3"
+ },
+ {
+  "id": "B-avisos-c manifiesto: versión y fecha reales del manifiesto ACTIVO (no v1.0 / 2026-04-02 escritos a mano)",
+  "ok": true,
+  "detail": "versión=v7.0 fecha=2026-11-06 (creado hace 3 días UTC=2026-11-06) "
+ },
+ {
+  "id": "B6b (informativo) los avisos de guías incluyen quién propuso (campo proposedBy) — puede ser un correo de profesional; visible solo para administración",
+  "ok": true,
+  "detail": "correos en la respuesta de avisos=10 profesional0@example.test profesional1@example.test (privacidad: dato de profesionales, no de personas usuarias)"
+ },
+ {
+  "id": "B-avisos-d fallo parcial: si falla el aviso de perfiles, ese aviso lleva status \"error\" SIN detalles internos y los demás se entregan (200)",
+  "ok": true,
+  "detail": "estado=200 perfiles=error guías=ok manifiesto=ok fuga=false"
+ },
+ {
+  "id": "B-avisos-e tras restaurar la tabla el aviso vuelve a ok (reintento funciona)",
+  "ok": true,
+  "detail": "estado=ok"
+ },
+ {
+  "id": "B9 parámetros raros y métodos incorrectos: ningún 5xx; respuesta con Cache-Control: no-store",
+  "ok": true,
+  "detail": "consultas=200,200,200,200,404,200 POST=404 DELETE=404 cache=no-store"
+ },
+ {
+  "id": "B7 la cifra de totalSessions se rotula «Registros de ánimo» (no «sesiones»), como acordó el diseño",
+  "ok": true,
+  "detail": "«Registros de ánimo» en el código=true"
+ }
+]
