@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../database');
-const { Op } = require('sequelize');
+const { Op, Transaction } = require('sequelize');
 const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
@@ -30,6 +30,9 @@ const averageOf = (values) => (values.length >= MIN_AVERAGE_SAMPLE
 // ==========================================
 const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
 const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
+// ES-215 (QA-42-01): una cuenta no puede cambiar el rol ni el estado de otra de rango igual o mayor. admin = 2, superadmin = 3; el resto no tiene rango de gestión.
+const RANK = { admin: 2, superadmin: 3 };
+const rankOf = (role) => RANK[role] || 0;
 
 // ES-192 (decisión 24): administración ya no define la contraseña de otra persona. Se invita por enlace (POST /api/admin/invitations):
 // la persona elige su propia contraseña con las reglas del registro. Esta ruta quedó retirada.
@@ -107,9 +110,6 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
       return res.status(403).json({ error: 'No puedes modificar tu propio usuario.' });
     }
 
-    const usuario = await User.findByPk(id);
-    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
-
     if (role !== undefined) {
       if (!ROLES_VALIDOS.includes(role)) {
         return res.status(400).json({ error: `Rol inválido. Roles válidos: ${ROLES_VALIDOS.join(', ')}.` });
@@ -123,7 +123,29 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
     if (role !== undefined) updates.role = role;
     if (active !== undefined) updates.active = active;
 
-    await usuario.update(updates);
+    // ES-215: todo ocurre en una transacción con las filas de superadministración bloqueadas (en orden fijo), así dos cambios
+    // simultáneos no pueden dejar la plataforma sin superadmin activo ni saltarse la regla de rango con un rol leído a destiempo.
+    const tx = await sequelize.transaction();
+    let usuario; let refused = null;
+    try {
+      const supers = await User.findAll({ where: { role: 'superadmin' }, attributes: ['id', 'active'], order: [['id', 'ASC']], lock: Transaction.LOCK.UPDATE, transaction: tx });
+      usuario = await User.findByPk(id, { transaction: tx, lock: Transaction.LOCK.UPDATE });
+      if (!usuario) refused = [404, { error: 'Usuario no encontrado.' }];
+      else if (adminRole !== 'superadmin' && rankOf(usuario.role) >= rankOf(adminRole) && (role !== undefined || active !== undefined)) {
+        // Una cuenta admin no cambia el rol ni el estado de otra admin ni de una superadmin; solo superadmin lo hace.
+        refused = [403, { code: 'target_rank', error: 'No tienes permisos para cambiar el rol o el estado de una cuenta de administración. / You cannot change the role or status of an administration account.' }];
+      } else if (usuario.role === 'superadmin' && ((role !== undefined && role !== 'superadmin') || active === false)
+        && !(Array.isArray(supers) ? supers : []).some((s) => s.id !== usuario.id && s.active)) {
+        refused = [409, { code: 'last_superadmin', error: 'La plataforma debe conservar al menos una cuenta superadmin activa. / The platform must keep at least one active superadmin account.' }];
+      } else {
+        await usuario.update(updates, { transaction: tx });
+      }
+      if (refused) await tx.rollback(); else await tx.commit();
+    } catch (error) {
+      await tx.rollback().catch(() => {});
+      throw error;
+    }
+    if (refused) return res.status(refused[0]).json(refused[1]);
     // ES-18: un cambio de rol o estado corta las sesiones anteriores de esa cuenta
     if (role !== undefined || active !== undefined) await revokeUserSessions(usuario.id);
 
