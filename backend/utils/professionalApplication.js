@@ -17,10 +17,13 @@ const FIELDS = {
 // %PDF- al inicio: no se confía en el tipo MIME ni en la extensión que declara el cliente.
 const isPdf = (buffer) => Buffer.isBuffer(buffer) && buffer.length > 8 && buffer.subarray(0, 5).toString('latin1') === '%PDF-';
 
+// ES-157/ES-225 (decisión 33): solo «https://» seguido de un host. El parser WHATWG tolera «https:x», «https:/x» y «https:///x»: se exige el prefijo literal
+// con dos barras y un primer carácter de host real, sin espacios, tabulaciones ni saltos de línea en ninguna parte.
 function validProfileUrl(value) {
+  if (typeof value !== 'string' || /\s/.test(value) || !/^https:\/\/[^/\\?#@]/i.test(value)) return false;
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && !url.username && !url.password;
+    return url.protocol === 'https:' && url.hostname !== '' && !url.username && !url.password;
   } catch { return false; }
 }
 

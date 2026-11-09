@@ -55,7 +55,7 @@ test('ES-95 validación pura: campos obligatorios, límites, correo, URL, consen
   }
   const optional = good(); delete optional.licenseNumber; delete optional.profileUrl; delete optional.message;
   assert.equal(validateApplication(optional, file).ok, true);
-  for (const [key, value] of [['name', 'x'.repeat(121)], ['email', 'sin-arroba'], ['email', 'a@b'], ['profileUrl', 'javascript:alert(1)'], ['profileUrl', 'ftp://example.test'], ['profileUrl', 'http://example.test/perfil'], ['profileUrl', 'HTTP://EXAMPLE.TEST'], ['profileUrl', 'https://user:pass@example.test'], ['message', 'x'.repeat(1001)], ['licenseNumber', 'x'.repeat(61)]]) {
+  for (const [key, value] of [['name', 'x'.repeat(121)], ['email', 'sin-arroba'], ['email', 'a@b'], ['profileUrl', 'javascript:alert(1)'], ['profileUrl', 'ftp://example.test'], ['profileUrl', 'http://example.test/perfil'], ['profileUrl', 'HTTP://EXAMPLE.TEST'], ['profileUrl', 'https:/x'], ['profileUrl', 'https:x'], ['profileUrl', 'https://'], ['profileUrl', 'https:///x'], ['profileUrl', 'https:\\\\x'], ['profileUrl', 'https://exa mple.test'], ['profileUrl', 'https://example.test/a b'], ['profileUrl', 'https://exa\tmple.test'], ['profileUrl', 'https://exa\nmple.test'], ['profileUrl', 'https://@x'], ['profileUrl', 'https://?x'], ['profileUrl', 'https://#x'], ['profileUrl', 'javascript:https://x'], ['profileUrl', 'https://user:pass@example.test'], ['message', 'x'.repeat(1001)], ['licenseNumber', 'x'.repeat(61)]]) {
     const result = validateApplication(good({ [key]: value }), file); assert.equal(result.ok, false, key); assert.ok(result.fields.includes(key), key);
   }
   assert.equal(validateApplication(good({ name: ['a'] }), file).ok, false); // un campo repetido llega como arreglo: se rechaza
@@ -277,6 +277,12 @@ test('ES-157 (decisión 33): el enlace del perfil exige https:// también por HT
   assert.equal(http.status, 400); assert.ok(http.body.fields.includes('profileUrl'));
   const https = await post(request, good({ email: 'https@example.test', profileUrl: 'https://example.test/perfil' }));
   assert.equal(https.status, 201);
+  // ES-225: «https:/x» y «https:x» ya no pasan por HTTP real; ni siquiera guardan la solicitud.
+  for (const [n, bad] of ['https:/x', 'https:x', 'https:///x', 'https://'].entries()) {
+    const r = await post(request, good({ email: `bad${n}@example.test`, profileUrl: bad }));
+    assert.equal(r.status, 400, bad); assert.ok(r.body.fields.includes('profileUrl'), bad);
+  }
+  assert.equal((await post(request, good({ email: 'mayus@example.test', profileUrl: 'HTTPS://example.test/p' }))).status, 201);
   const empty = await post(request, good({ email: 'vacio@example.test', profileUrl: '' }));
   assert.equal(empty.status, 201); // el enlace sigue siendo opcional
 });
