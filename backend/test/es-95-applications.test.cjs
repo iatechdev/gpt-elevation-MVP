@@ -55,7 +55,7 @@ test('ES-95 validación pura: campos obligatorios, límites, correo, URL, consen
   }
   const optional = good(); delete optional.licenseNumber; delete optional.profileUrl; delete optional.message;
   assert.equal(validateApplication(optional, file).ok, true);
-  for (const [key, value] of [['name', 'x'.repeat(121)], ['email', 'sin-arroba'], ['email', 'a@b'], ['profileUrl', 'javascript:alert(1)'], ['profileUrl', 'ftp://example.test'], ['profileUrl', 'https://user:pass@example.test'], ['message', 'x'.repeat(1001)], ['licenseNumber', 'x'.repeat(61)]]) {
+  for (const [key, value] of [['name', 'x'.repeat(121)], ['email', 'sin-arroba'], ['email', 'a@b'], ['profileUrl', 'javascript:alert(1)'], ['profileUrl', 'ftp://example.test'], ['profileUrl', 'http://example.test/perfil'], ['profileUrl', 'HTTP://EXAMPLE.TEST'], ['profileUrl', 'https://user:pass@example.test'], ['message', 'x'.repeat(1001)], ['licenseNumber', 'x'.repeat(61)]]) {
     const result = validateApplication(good({ [key]: value }), file); assert.equal(result.ok, false, key); assert.ok(result.fields.includes(key), key);
   }
   assert.equal(validateApplication(good({ name: ['a'] }), file).ok, false); // un campo repetido llega como arreglo: se rechaza
@@ -269,4 +269,14 @@ test('ES-107: GET /capacity es solo del backoffice y avisa si el formulario est�
   await post(request, good({ email: 'a@example.test' }));
   const full = await request('GET', url, { role: 'admin', id: 9 });
   assert.equal(full.body.full, true); assert.equal(full.body.pending, 1); assert.equal(full.body.maxPending, 1);
+});
+
+test('ES-157 (decisión 33): el enlace del perfil exige https:// también por HTTP real; http:// se rechaza con el mismo campo y no guarda nada', async t => {
+  install(); const request = await startApp(t);
+  const http = await post(request, good({ email: 'http@example.test', profileUrl: 'http://example.test/perfil' }));
+  assert.equal(http.status, 400); assert.ok(http.body.fields.includes('profileUrl'));
+  const https = await post(request, good({ email: 'https@example.test', profileUrl: 'https://example.test/perfil' }));
+  assert.equal(https.status, 201);
+  const empty = await post(request, good({ email: 'vacio@example.test', profileUrl: '' }));
+  assert.equal(empty.status, 201); // el enlace sigue siendo opcional
 });
