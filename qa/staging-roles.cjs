@@ -32,7 +32,7 @@ let f = 0; const ck = (n, ok, x = '') => { if (!ok) f++; console.log((ok ? 'OK  
     ['/api/admin/skill-catalog', { persona: 'no', terapeuta: 'no', admin: 'ok', superadmin: 'ok' }],
     ['/api/superadmin/ai-usage', { persona: 'no', terapeuta: 'no', admin: 'no', superadmin: 'ok' }],
     ['/api/junta/pending', { persona: 'no', terapeuta: 'no', admin: 'no', superadmin: 'any' }],
-    ['/api/board/', { persona: 'no', terapeuta: 'no', admin: 'no', superadmin: 'any' }],
+    ['/api/board/', { persona: 'no', terapeuta: 'no', admin: 'nf', superadmin: 'any' }],
     ['/api/therapist/patients', { persona: 'no', terapeuta: 'any', admin: 'no', superadmin: 'any' }],
     ['/api/ai/usage', { persona: 'ok', terapeuta: 'any', admin: 'any', superadmin: 'any' }],
     ['/api/skill-map', { persona: 'ok', terapeuta: 'any', admin: 'any', superadmin: 'any' }],
@@ -42,10 +42,10 @@ let f = 0; const ck = (n, ok, x = '') => { if (!ok) f++; console.log((ok ? 'OK  
   const codes = {}
   for (const [path, exp] of M) for (const k of need) {
     const r = await call('GET', path, tok[k]); codes[path + k] = r.s; const e = exp[k]
-    const ok = e === 'ok' ? r.s >= 200 && r.s < 300 : e === 'no' ? (r.s === 401 || r.s === 403) : r.s < 500
-    ck(`R2 GET ${path} como ${k} → ${e === 'any' ? 'sin 5xx' : e === 'ok' ? '2xx' : '401/403'}`, ok, `HTTP ${r.s}`)
+    const ok = e === 'ok' ? r.s >= 200 && r.s < 300 : e === 'no' ? (r.s === 401 || r.s === 403) : e === 'nf' ? [401, 403, 404].includes(r.s) : r.s < 500
+    ck(`R2 GET ${path} como ${k} → ${e === 'any' ? 'sin 5xx' : e === 'ok' ? '2xx' : e === 'nf' ? '401/403/404 (ES-207: /api/board/ solo sirve el manifiesto)' : '401/403'}`, ok, `HTTP ${r.s}`)
   }
-  for (const path of ['/api/admin/usuarios', '/api/ai/usage', '/api/diary']) { const a = await call('GET', path), b = await call('GET', path, 'x.y.z'); ck(`R3 ${path} sin sesión → 401 y con token inválido → 401`, a.s === 401 && b.s === 401, `${a.s}/${b.s}`) }
+  for (const path of ['/api/admin/usuarios', '/api/ai/usage', '/api/diary']) { const a = await call('GET', path), b = await call('GET', path, 'x.y.z'); ck(`R3 ${path} sin cabecera Authorization → 403 (decisión de Mauricio, ES-206 punto 5) y con token inválido → 401`, a.s === 403 && b.s === 401, `${a.s}/${b.s}`) }
   // Aislamiento: la persona asignada al terapeuta; el diario de otro rol no trae datos de la persona
   const list = await call('GET', '/api/admin/usuarios', tok.admin); const users = Array.isArray(list.j) ? list.j : []
   const p = users.find(u => u.email === EMAILS.persona), t = users.find(u => u.email === EMAILS.terapeuta)
