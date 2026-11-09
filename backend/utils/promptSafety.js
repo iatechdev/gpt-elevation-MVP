@@ -63,8 +63,36 @@ const COMPANION_LIMITS = [
 const PHONE_PATTERN = /(?:\+?\d[\d\s().-]{5,}\d)|(?:\b(?:l[ií]nea|llama(?:r|a)?|marca|call|dial|hotline|helpline|n[uú]mero|number)\b[^\n\d]{0,20}\d{3,4}\b)/i;
 // ES-208: fechas (2026-11-08, 08/11/2026) y cantidades con moneda ($1.500.000, 1.500.000 pesos) tienen forma de número largo pero no son teléfonos:
 // se quitan antes de probar el patrón para no sustituir respuestas legítimas. Un teléfono con puntos sin moneda (300.123.4567) sigue detectándose.
+// ES-214 (E208-1): una cantidad con moneda no puede quedar pegada a más dígitos ni a otro grupo ((?<![\d.,]) / (?!\d)) y los decimales son de 1-2 dígitos;
+// así «300.123.4567 pesos» (grupo final de 4 dígitos) ya no se toma por dinero y sigue siendo un teléfono.
 const DATE_SHAPE = /\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b|\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b/g;
-const MONEY_SHAPE = /[$€]\s?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\b\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?\s?(?:pesos|cop|usd|eur|d[oó]lares|dollars|euros)\b/gi;
-const containsPhoneNumber = (text) => PHONE_PATTERN.test(String(text).replace(DATE_SHAPE, ' ').replace(MONEY_SHAPE, ' '));
+const MONEY_SHAPE = /[$€]\s?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?(?!\d)|(?<![\d.,])\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?(?![\d.,]*\d)\s?(?:pesos|cop|usd|eur|d[oó]lares|dollars|euros)\b/gi;
+
+// ES-214 (E208-1): lo que el modelo escribe puede esconder un número con otra escritura. Antes de probar el patrón se lleva a dígitos ASCII:
+// NFKC (dígitos de ancho completo), cualquier otro dígito Unicode (árabe-índico, devanagari…), caracteres invisibles fuera, y dígitos sueltos separados
+// por espacio, punto, guion o guion bajo («1 0 6», «1-0-6», «3_0_0…») unidos. No entiende números escritos con palabras («uno cero seis»): límite declarado.
+const digitValue = (char) => {
+  const code = char.codePointAt(0);
+  let start = code;
+  while (/\p{Nd}/u.test(String.fromCodePoint(start - 1))) start -= 1;
+  return (code - start) % 10; // los dígitos Unicode van en tandas de 10 consecutivas desde el cero
+};
+const toAsciiDigits = (text) => String(text).normalize('NFKC').replace(INVISIBLE, '')
+  .replace(/\p{Nd}/gu, (char) => (/[0-9]/.test(char) ? char : String(digitValue(char))));
+const SPACED_DIGITS = /(?<!\d)\d(?:[\s._-]\d){2,}(?!\d)/g;
+
+// ES-214 (E208-1): un número de 3 dígitos suelto («En Estados Unidos, 988») no es un teléfono por sí solo (3 pasos, 100 %, 300 clientes). Se detecta solo si
+// el texto habla de emergencias o crisis y el número no lleva unidad, porcentaje, moneda ni decimales. Si falla, falla del lado seguro (se sustituye la respuesta).
+const EMERGENCY_CONTEXT = /emergenc|urgenc|crisis|hotline|helpline|l[ií]nea\s+(?:de\s+)?(?:ayuda|crisis|prevenci[oó]n)|suicid|polic[ií]a|police|ambulanc|bomberos|\b911\b|\b112\b/i;
+const UNIT_AFTER = '%|por ciento|percent|d[ií]as?|days?|mes(?:es)?|months?|semanas?|weeks?|a[ñn]os?|years?|horas?|hours?|minutos?|minutes?|min\\b|segundos?|seconds?|veces|times|personas?|people|clientes?|customers?|usuarios?|users?|puntos?|points?|palabras?|words?|pesos|cop|usd|eur|d[oó]lares|dollars|euros|km|kg|cm|mb|gb';
+const SHORT_NUMBER = new RegExp(`(?<![\\d.,$€#/-])\\b\\d{3}\\b(?![.,]\\d)(?![/-]\\d)(?!\\s?(?:${UNIT_AFTER}))`, 'i');
+
+// ES-214: «En Estados Unidos, 988.»: un lugar seguido de un número de 3 dígitos que cierra la frase. Una cantidad con sustantivo («En Colombia, 120 empresas…») no cierra la frase y no entra.
+const PLACE_NUMBER = /\b(?:[Ee]n|[Ii]n)\s+(?:(?:the|el|la|los|las)\s+)?(?:[A-ZÁÉÍÓÚÑ][\p{L}.]*\s?){1,4},\s*(?<![\d.,$€])\d{3}(?![\d.,]*\d)\s*(?:[.;!?)]|$)/mu;
+const containsPhoneNumber = (text) => {
+  const plain = toAsciiDigits(text).replace(DATE_SHAPE, ' ').replace(MONEY_SHAPE, ' ');
+  const joined = plain.replace(SPACED_DIGITS, (run) => run.replace(/[\s._-]/g, ''));
+  return PHONE_PATTERN.test(joined) || PLACE_NUMBER.test(joined) || (EMERGENCY_CONTEXT.test(joined) && SHORT_NUMBER.test(joined));
+};
 
 module.exports = { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS, PHONE_PATTERN, containsPhoneNumber };
