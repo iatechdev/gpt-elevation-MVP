@@ -8,6 +8,7 @@ const router    = express.Router();
 const bcrypt    = require('bcryptjs');
 const { issueToken } = require('../utils/sessions');
 const rateLimit = require('express-rate-limit');
+const { loginRateMax } = require('../utils/loginRateLimit');
 const User      = require('../User');
 const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
@@ -55,7 +56,7 @@ const lockedBody = (until) => {
 
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: Number(process.env.LOGIN_RATE_LIMIT_MAX) || 10, // por IP y minuto; la variable existe para las pruebas con ráfagas (el valor real es 10)
+  max: loginRateMax(), // por IP y minuto: 10 (LOGIN_RATE_LIMIT_MAX solo se respeta fuera de producción, ver utils/loginRateLimit.js)
   message: { error: 'Demasiados intentos. Inténtalo de nuevo en un minuto.' },
   standardHeaders: true,
   legacyHeaders: false,

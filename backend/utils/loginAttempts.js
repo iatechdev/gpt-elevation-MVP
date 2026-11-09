@@ -13,8 +13,14 @@ const keyOf = (email) => crypto.createHash('sha256').update(String(email ?? '').
 
 // Igual que una cuenta real, el contador NO decae con el tiempo (solo un acierto lo limpia, y un correo sin cuenta nunca acierta): si decayera, dos fallos,
 // una espera y un tercero bloquearían a la cuenta real pero no al correo inexistente (otra diferencia observable). Solo la cota de memoria descarta entradas.
-function prune() {
-  while (store.size >= MAX_ENTRIES) store.delete(store.keys().next().value); // Map conserva el orden de inserción
+// QA-220-02: al llegar al tope se descarta primero la entrada más antigua que NO esté bloqueada; así inundar el mapa con miles de correos distintos no libera
+// los bloqueos vigentes (solo si todas las entradas estuvieran bloqueadas a la vez se descarta la más antigua).
+function prune(now) {
+  while (store.size >= MAX_ENTRIES) {
+    let victim;
+    for (const [key, entry] of store) { if (entry.lockedUntil <= now) { victim = key; break; } }
+    store.delete(victim ?? store.keys().next().value); // Map conserva el orden de inserción
+  }
 }
 
 /** Fin del bloqueo vigente (Date) o null. */
@@ -27,7 +33,7 @@ function lockedUntil(email, now = Date.now()) {
 function recordFailure(email, now = Date.now()) {
   const key = keyOf(email);
   let entry = store.get(key);
-  if (!entry) { prune(); entry = { attempts: 0, lockedUntil: 0, touched: now }; store.set(key, entry); }
+  if (!entry) { prune(now); entry = { attempts: 0, lockedUntil: 0, touched: now }; store.set(key, entry); }
   // Como en una cuenta real, vencido un bloqueo el contador sigue en el umbral: el siguiente fallo vuelve a bloquear.
   entry.attempts += 1; entry.touched = now;
   if (entry.attempts >= MAX_ATTEMPTS) {
