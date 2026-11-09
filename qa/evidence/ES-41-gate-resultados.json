@@ -2,12 +2,12 @@
  {
   "id": "C1 el prompt de sistema real (ES y EN) contiene las reglas: no clínico, sin promesas, una pregunta a la vez, respetar la pausa, riesgo/crisis y no inventar",
   "ok": true,
-  "detail": "{\"no clínico (diagnóstico/terapia)\":\"es=true en=true\",\"sin promesas ni garantías\":\"es=true en=true\",\"una pregunta a la vez\":\"es=true en=true\",\"pausa / respetar el silencio\":\"es=true en=true\",\"riesgo / crisis\":\"es=true en=true\",\"no inventar datos\":\"es=true en=true\"} · largo es=1376 en=1376"
+  "detail": "{\"no clínico (diagnóstico/terapia)\":\"es=true en=true\",\"sin promesas ni garantías\":\"es=true en=true\",\"una pregunta a la vez\":\"es=true en=true\",\"pausa / respetar el silencio\":\"es=true en=true\",\"riesgo / crisis\":\"es=true en=true\",\"no inventar datos\":\"es=true en=true\"} · largo es=1888 en=1888"
  },
  {
   "id": "C13 inyección en el mensaje y en el historial: el prompt de sistema es idéntico entre llamadas y NO contiene el texto inyectado; este viaja solo como mensaje de la persona (rol user)",
   "ok": true,
-  "detail": "hash=842fb4fd4b05/842fb4fd4b05 roles ok"
+  "detail": "hash=e112d0b54da6/e112d0b54da6 roles ok"
  },
  {
   "id": "C14 el diario y los mensajes de A no entran al prompt de B, ni al revés (3 llamadas inspeccionadas)",
@@ -42,7 +42,7 @@
  {
   "id": "C10 las claves de texto de usuario de ES y EN coinciden (i18n/es.ts frente a en.ts)",
   "ok": true,
-  "detail": "claves=330/330 solo-es= solo-en="
+  "detail": "claves=339/339 solo-es= solo-en="
  },
  {
   "id": "C2 barrido por patrones de las salidas reales archivadas (muestra de 7 y corpus de 8): las banderas son negaciones o falsos positivos (revisión humana de las que no traen negación)",
@@ -61,8 +61,8 @@
  },
  {
   "id": "C12b la pantalla del chat declara sus límites (no sustituye atención profesional / no es un servicio de emergencia) en ES y EN — la landing y el área profesional sí lo dicen",
-  "ok": false,
-  "detail": "[\"es320: limites=false\",\"es1440: limites=false\",\"en320: limites=false\",\"en1440: limites=false\"] · texto de la pantalla: Saltar al contenido ELEVATION ES EN CONVERSACIÓN DIARIO ☰ MENÚ CONVERSACIÓN Privada · Solo visible para ti ⏸ PAUSAR USO "
+  "ok": true,
+  "detail": "[\"es320: limites=true\",\"es1440: limites=true\",\"en320: limites=true\",\"en1440: limites=true\"] · texto de la pantalla: Saltar al contenido Conversación ELEVATION ES EN CONVERSACIÓN DIARIO ☰ MENÚ CONVERSACIÓN Privada · Solo visible para ti "
  },
  {
   "id": "C8 los ejercicios acompañantes están apagados por defecto: la URL directa dice «aún no están disponibles» y el dashboard no enlaza a ellos (ES y EN)",
@@ -72,11 +72,11 @@
  {
   "id": "P2 primera respuesta del servidor con proveedor instantáneo: p95 ≤ 500 ms (umbral propuesto)",
   "ok": true,
-  "detail": "p50=59 p95=69 ms (n=20)"
+  "detail": "p50=64 p95=100 ms (n=20)"
  },
  {
   "id": "P1 12 turnos de chat a la vez con un proveedor de 3 s (pool 5): todos 200, ninguno 5xx y una persona ajena sigue siendo atendida (≤ 500 ms) mientras tanto",
   "ok": true,
-  "detail": "turnos=200,200,200,200,200,200,200,200,200,200,200,200 total=3414 ms espectadora máx=23 ms"
+  "detail": "turnos=200,200,200,200,200,200,200,200,200,200,200,200 total=3287 ms espectadora máx=17 ms"
  }
 ]

@@ -1,0 +1,27 @@
+[
+ {
+  "id": "G5 idioma activo: la instrucción de idioma del prompt sigue a `lang` (es → español, en → inglés)",
+  "ok": true,
+  "detail": "es=200 en=200 llamadas=2"
+ },
+ {
+  "id": "G4c un número de teléfono que el modelo escriba por su cuenta no llega a la persona",
+  "ok": true,
+  "detail": "status=200 contieneNumero=false"
+ },
+ {
+  "id": "G4a crisis sin entradas activas: respuesta de seguridad sin número, sin llamar al modelo",
+  "ok": true,
+  "detail": "status=200 llamadasModelo=0 interrupted=true"
+ },
+ {
+  "id": "G4b con una entrada activa, la lista pública la muestra y la respuesta de crisis usa ese número (no uno del código)",
+  "ok": true,
+  "detail": "crear=201 activar=200 {\"id\":1,\"country\":\"CO\",\"name\":\"Línea ficticia QA\",\"contact\":\"000 000 0001\",\"desc · publico=200 · crisis usa=true"
+ },
+ {
+  "id": "G4d al desactivar la entrada, la crisis ya no muestra el número anterior",
+  "ok": true,
+  "detail": "desactivar=200 muestraNumeroViejo=false"
+ }
+]
