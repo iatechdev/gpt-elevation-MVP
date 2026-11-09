@@ -28,7 +28,7 @@ const SECRET_PATTERNS = [
   /\bAKIA[0-9A-Z]{16}\b/g,
   /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g,
   /\bBearer\s+[A-Za-z0-9._~+/-]{20,}=*/gi,
-  /\b[a-z][a-z0-9+.-]*:\/\/[^\s:@/]+:[^\s@/]+@\S+/gi,
+  /\b[a-z][a-z0-9+.-]{0,31}:\/\/[^\s:@/]+:[^\s@/]+@\S+/gi,
   /\b(api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S{8,}/gi,
 ];
 const redactSecrets = (text) => SECRET_PATTERNS.reduce((acc, pattern) => acc.replace(pattern, '[secreto omitido]'), String(text));

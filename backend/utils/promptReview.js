@@ -69,9 +69,24 @@ const negated = (text, index) => {
   return before.some((word) => NEGATORS.has(word));
 };
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+// Correo sin regex con repeticiones anidadas: recorre cada «@» y mira solo su vecindad (tiempo lineal; ES-191 E191-1).
+const LOCAL_CHAR = /[A-Za-z0-9._%+-]/;
+const DOMAIN_CHAR = /[A-Za-z0-9.-]/;
+const hasEmail = (text) => {
+  for (let at = text.indexOf('@'); at !== -1; at = text.indexOf('@', at + 1)) {
+    if (at === 0 || !LOCAL_CHAR.test(text[at - 1])) continue;
+    let end = at + 1;
+    while (end < text.length && DOMAIN_CHAR.test(text[end])) end += 1;
+    const domain = text.slice(at + 1, end);
+    // «dominio.xx»: un punto con al menos un carácter antes y dos letras después.
+    for (let dot = domain.indexOf('.', 1); dot !== -1; dot = domain.indexOf('.', dot + 1)) {
+      if (/^[A-Za-z]{2}/.test(domain.slice(dot + 1, dot + 3))) return true;
+    }
+  }
+  return false;
+};
 const PHONE = /(?:\+?\d[\s().-]?){8,}/;
-const hasPersonalData = (text) => EMAIL.test(text) || (PHONE.test(text) && (text.match(PHONE)[0].match(/\d/g) || []).length >= 8);
+const hasPersonalData = (text) => hasEmail(text) || (PHONE.test(text) && (text.match(PHONE)[0].match(/\d/g) || []).length >= 8);
 
 /**
  * rules: [{ id, category, locale, phrase }] activas. Devuelve { outcome: 'passed' | 'rejected', reasons: [{ code, category?, ruleId?, phrase? }] }.

@@ -229,4 +229,21 @@ test('ES-191 PostgreSQL: las guías de la IA se revisan en el servidor y nada se
     assert.ok(all.length > 20);
     assert.ok(all.every((row) => !/Acompaña|Diagnostica|garantiza/i.test(row.contentEncrypted)));
   });
+  // E191-2 (QA): aprobar o volver a versiones de una misma clave a la vez no puede dejar más de una activa ni repetir una aprobación.
+  await t.test('aprobaciones y vueltas a versión simultáneas dejan UNA sola guía activa por clave', async () => {
+    const { proposePrompt, approvePrompt, rollbackPrompt } = require('../../promptVault');
+    const key = 'concurrent_key';
+    const ids = [];
+    for (let i = 0; i < 3; i += 1) ids.push((await proposePrompt(key, GOOD + ' Variante ' + i + '.', 'pro@example.test')).id);
+    const results = await Promise.allSettled([...ids, ids[0], ids[1]].map((id) => approvePrompt(id, 'super@example.test')));
+    assert.equal(results.filter((r) => r.status === 'fulfilled').length, 3, 'cada versión se aprueba una sola vez; las repetidas fallan con not_pending');
+    assert.ok(results.filter((r) => r.status === 'rejected').every((r) => r.reason && r.reason.code === 'not_pending'));
+    const active = (await rows(key)).filter((r) => r.status === 'active');
+    assert.equal(active.length, 1); assert.equal(active[0].isActive, true);
+    assert.equal((await rows(key)).filter((r) => r.isActive).length, 1);
+    await Promise.allSettled(ids.map((id) => rollbackPrompt(id, 'super@example.test')));
+    assert.equal((await rows(key)).filter((r) => r.status === 'active').length, 1);
+    assert.equal((await rows(key)).filter((r) => r.isActive).length, 1);
+  });
+
 });

@@ -94,3 +94,21 @@ test('ES-191: las reglas iniciales cubren las cuatro categorías en ES y EN y es
   const source = require('node:fs').readFileSync(require.resolve('../migrations/20261107000000-es191-prompt-review.cjs'), 'utf8');
   assert.match(source, /NO VERIFICADO/); assert.match(source, /'initial'/);
 });
+
+// E191-1 (QA): un texto de 20.000 caracteres sin espacios bloqueaba el servidor 1–3 s por expresiones regulares cuadráticas.
+test('ES-191: la revisión es de tiempo lineal con textos largos sin espacios (rendimiento, E191-1)', () => {
+  const size = maxChars();
+  for (const text of ['a'.repeat(size), 'a.'.repeat(size / 2), 'a@'.repeat(size / 2), 'a:'.repeat(size / 2), 'a-'.repeat(size / 2), 'a1.'.repeat(Math.floor(size / 3)) + '://']) {
+    const started = process.hrtime.bigint();
+    reviewPrompt(text, RULES);
+    const ms = Number(process.hrtime.bigint() - started) / 1e6;
+    assert.ok(ms < 150, `la revisión tardó ${ms.toFixed(0)} ms con ${text.length} caracteres`);
+  }
+});
+
+test('ES-191: la detección de correos sin regex cuadrática mantiene el mismo resultado', () => {
+  const ok = [' escribe a ana.perez+x@correo.com hoy', 'x@a.bc', 'a@b.co.uk', 'u_1@sub-dom.example.org.']
+  const no = ['sin arroba aquí', '@correo.com', 'ana@correo', 'ana@.com', 'ana@correo.c', 'ana @correo.com', 'ana@-.c1', 'ana@a.1b']
+  for (const s of ok) assert.ok(codes(BASE + s).includes('personal_data'), s);
+  for (const s of no) assert.ok(!codes(BASE + s).includes('personal_data'), s);
+});

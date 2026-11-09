@@ -116,12 +116,13 @@ const getActivePrompt = async (promptKey) => {
 // ES-191: la revisión automática ocurre ANTES de guardar y decide solo entre 'pending_review' (pendiente de aprobación humana)
 // y 'rejected' (con motivos). Nunca deja una versión activa ni aprobada. Devuelve { id, version, status, outcome, reasons }.
 const proposePrompt = async (promptKey, plainText, adminEmail) => {
-  const review = reviewPrompt(plainText, await loadActiveRules(PromptRule));
-  const encrypted = encryptPrompt(plainText);
   // Límite de propuestas por clave y hora: las rechazadas también se guardan, no deben poder inundar la tabla.
   const perHour = Number.isInteger(Number(process.env.PROMPT_PROPOSALS_PER_HOUR)) && Number(process.env.PROMPT_PROPOSALS_PER_HOUR) > 0 ? Number(process.env.PROMPT_PROPOSALS_PER_HOUR) : 10;
   const recent = await PromptVault.count({ where: { key: promptKey, createdAt: { [Op.gt]: new Date(Date.now() - 3600 * 1000) } } });
   if (recent >= perHour) throw new PromptReviewError('rate_limited');
+  // El límite va ANTES de revisar y cifrar: una ráfaga sobre el límite no gasta CPU (ES-191 E191-1).
+  const review = reviewPrompt(plainText, await loadActiveRules(PromptRule));
+  const encrypted = encryptPrompt(plainText);
 
   // Buscar la versión más alta existente para ese key
   const maxVersion = await PromptVault.max('version', { where: { key: promptKey } });
@@ -146,27 +147,44 @@ const proposePrompt = async (promptKey, plainText, adminEmail) => {
 
 // ES-191: la revisión de una guía ya guardada (versiones previas a ES-191, o antes de aprobar / volver a una versión).
 // Falla cerrado: si las reglas no están disponibles, lanza PromptReviewError('rules_unavailable').
-const reviewStored = async (record) => {
+const reviewStored = async (record, options = {}) => {
   const review = reviewPrompt(decryptPrompt(record.contentEncrypted), await loadActiveRules(PromptRule));
-  await record.update({ reviewOutcome: review.outcome, reviewReasons: JSON.stringify(review.reasons), reviewedAt: new Date() });
+  await record.update({ reviewOutcome: review.outcome, reviewReasons: JSON.stringify(review.reasons), reviewedAt: new Date() }, options);
   return review;
 };
+
+// ES-191 (E191-2): cambiar la guía activa de una clave es una sola operación serializada. Se bloquean las filas de esa clave
+// dentro de una transacción y la versión se vuelve a leer ya con el bloqueo, así dos aprobaciones o volver-a-versión
+// simultáneos no dejan dos versiones activas ni repiten la misma aprobación.
+// Antes del bloqueo se deja registrada la revisión de una guía anterior a ES-191: si no pasa, el rechazo de la operación
+// no debe deshacer ese registro (la transacción se revierte entera).
+const withKeyLock = async (versionId, work, reviewable) => {
+  const stored = await PromptVault.findByPk(versionId);
+  if (stored && !stored.reviewOutcome && reviewable(stored)) await reviewStored(stored);
+  return withKeyLockTx(versionId, work);
+};
+const withKeyLockTx = async (versionId, work) => sequelize.transaction(async (transaction) => {
+  const first = await PromptVault.findByPk(versionId, { transaction });
+  if (!first) throw new PromptReviewError('not_found');
+  await PromptVault.findAll({ where: { key: first.key }, attributes: ['id'], order: [['id', 'ASC']], lock: transaction.LOCK.UPDATE, transaction });
+  const record = await PromptVault.findByPk(versionId, { transaction });
+  if (!record) throw new PromptReviewError('not_found');
+  return work(record, transaction);
+});
 
 // ============================================
 // ✅ APROBAR UNA VERSIÓN (rol: superadmin)
 // ============================================
-const approvePrompt = async (versionId, superAdminEmail) => {
-  const proposed = await PromptVault.findByPk(versionId);
-  if (!proposed) throw new PromptReviewError('not_found');
+const approvePrompt = async (versionId, superAdminEmail) => withKeyLock(versionId, async (proposed, transaction) => {
   if (proposed.status !== 'pending_review') throw new PromptReviewError('not_pending');
   // ES-191: nada se activa sin revisión automática superada (la versión anterior a ES-191 se revisa ahora).
-  const review = proposed.reviewOutcome ? { outcome: proposed.reviewOutcome } : await reviewStored(proposed);
+  const review = proposed.reviewOutcome ? { outcome: proposed.reviewOutcome } : await reviewStored(proposed, { transaction });
   if (review.outcome !== 'passed') throw new PromptReviewError('review_failed', JSON.parse(proposed.reviewReasons || '[]'));
 
   // Archivar la versión activa anterior
   await PromptVault.update(
     { status: 'approved', isActive: false },
-    { where: { key: proposed.key, status: 'active' } }
+    { where: { key: proposed.key, status: 'active' }, transaction }
   );
 
   // Activar la versión propuesta
@@ -175,8 +193,8 @@ const approvePrompt = async (versionId, superAdminEmail) => {
     isActive: true,
     approved_by: superAdminEmail,
     approved_at: new Date()
-  });
-};
+  }, { transaction });
+}, (row) => row.status === 'pending_review');
 
 // ============================================
 // ❌ RECHAZAR UNA VERSIÓN (rol: superadmin)
@@ -198,18 +216,16 @@ const rejectPrompt = async (versionId, superAdminEmail, note = '') => {
 // ============================================
 // 🔁 ROLLBACK A VERSIÓN ANTERIOR (rol: superadmin)
 // ============================================
-const rollbackPrompt = async (versionId, superAdminEmail) => {
-  const target = await PromptVault.findByPk(versionId);
-  if (!target) throw new PromptReviewError('not_found');
+const rollbackPrompt = async (versionId, superAdminEmail) => withKeyLock(versionId, async (target, transaction) => {
   // ES-191: no se vuelve a una versión rechazada ni a una que la revisión automática no supera hoy.
   if (target.status === 'rejected' || target.status === 'pending_review') throw new PromptReviewError('review_failed', []);
-  const review = target.reviewOutcome ? { outcome: target.reviewOutcome } : await reviewStored(target);
+  const review = target.reviewOutcome ? { outcome: target.reviewOutcome } : await reviewStored(target, { transaction });
   if (review.outcome !== 'passed') throw new PromptReviewError('review_failed', JSON.parse(target.reviewReasons || '[]'));
 
   // Archivar la activa actual
   await PromptVault.update(
     { status: 'approved', isActive: false },
-    { where: { key: target.key, status: 'active' } }
+    { where: { key: target.key, status: 'active' }, transaction }
   );
 
   // Activar la versión objetivo
@@ -218,8 +234,8 @@ const rollbackPrompt = async (versionId, superAdminEmail) => {
     isActive: true,
     approved_by: superAdminEmail,
     approved_at: new Date()
-  });
-};
+  }, { transaction });
+}, (row) => row.status !== 'rejected' && row.status !== 'pending_review');
 
 module.exports = {
   PromptVault,
