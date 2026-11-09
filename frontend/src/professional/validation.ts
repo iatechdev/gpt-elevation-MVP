@@ -9,8 +9,10 @@ export const LIMITS: Record<keyof Values, number> = { name: 120, email: 254, cou
 const REQUIRED: (keyof Values)[] = ['name', 'email', 'country', 'profession']
 const EMAIL = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/
 
+// ES-157/ES-225 (decisión 33): igual que el servidor; solo «https://» con host, sin espacios ni variantes que el parser tolera («https:x», «https:/x», «https:///x»).
 export const validProfileUrl = (value: string): boolean => {
-  try { const url = new URL(value); return url.protocol === 'https:' ? !url.username && !url.password : false } catch { return false }
+  if (typeof value !== 'string' || /\s/.test(value) || !/^https:\/\/[^/\\?#@]/i.test(value)) return false
+  try { const url = new URL(value); return url.protocol === 'https:' && url.hostname !== '' && !url.username && !url.password } catch { return false }
 }
 
 // Devuelve los campos con problema, en el orden del formulario.

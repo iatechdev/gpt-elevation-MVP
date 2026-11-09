@@ -31,6 +31,10 @@ test('ES-95: validación del cliente: obligatorios, correo, enlace, consentimien
   // ES-157 (decisión 33): solo https://
   assert.equal(validProfileUrl('http://example.test/perfil'), false); assert.equal(validProfileUrl('HTTP://EXAMPLE.TEST'), false); assert.equal(validProfileUrl('https://example.test/perfil'), true)
   assert.deepEqual(validate({ ...good, profileUrl: 'http://example.test/perfil' }, pdf, true), ['profileUrl'])
+  // ES-225: variantes que el parser tolera pero que no son «https://» + host
+  for (const bad of ['https:/x', 'https:x', 'https://', 'https:///x', 'https:\\\\x', 'https://exa mple.test', 'https://example.test/a b', 'https://exa\tmple.test', 'https://exa\nmple.test', 'https://@x', 'https://?x', 'https://#x', 'https://user:pass@example.test', 'javascript:https://x', ' https://x']) assert.equal(validProfileUrl(bad), false, JSON.stringify(bad))
+  for (const ok of ['https://x', 'HTTPS://X', 'https://example.test/perfil?a=1#b', 'https://sub.example.test:8443/p']) assert.equal(validProfileUrl(ok), true, ok)
+  assert.deepEqual(validate({ ...good, profileUrl: 'https:/x' }, pdf, true), ['profileUrl'])
 })
 
 test('ES-95: la hoja de vida solo se acepta como PDF de hasta 5 MB, y quitarla vuelve a exigirla', () => {
