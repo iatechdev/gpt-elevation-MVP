@@ -12,12 +12,12 @@
  {
   "id": "E2a tiempo: inexistente vs existente-incorrecta vs inactiva-incorrecta (24 intentos cada una, un correo distinto por intento): medianas dentro de 15 % y 30 ms",
   "ok": true,
-  "detail": "inexistente={\"p50\":300,\"min\":284,\"max\":315} existente={\"p50\":301,\"min\":286,\"max\":318} inactiva={\"p50\":300,\"min\":284,\"max\":304}"
+  "detail": "inexistente={\"p50\":318,\"min\":301,\"max\":440} existente={\"p50\":331,\"min\":298,\"max\":371} inactiva={\"p50\":331,\"min\":299,\"max\":391}"
  },
  {
   "id": "E2b tiempo en estado BLOQUEADO: cuenta real bloqueada vs correo inexistente bloqueado (24 intentos): medianas dentro de 15 % y 30 ms",
   "ok": true,
-  "detail": "real={\"p50\":3,\"min\":3,\"max\":4} inexistente={\"p50\":3,\"min\":3,\"max\":4}"
+  "detail": "real={\"p50\":3,\"min\":3,\"max\":4} inexistente={\"p50\":4,\"min\":3,\"max\":5}"
  },
  {
   "id": "E5 normalización: mayúsculas/minúsculas y espacios comparten contador para un correo inexistente (3er intento → 423)",
@@ -32,7 +32,7 @@
  {
   "id": "E8a 20 intentos fallidos SIMULTÁNEOS: ningún 5xx, y tanto la cuenta real como el correo inexistente quedan bloqueados (423) después",
   "ok": true,
-  "detail": "real: 401=2 423=18, BD intentos=11 bloqueada=true · inexistente: 401=2 423=18 · después real=423 inexistente=423"
+  "detail": "real: 401=2 423=18, BD intentos=20 bloqueada=true · inexistente: 401=2 423=18 · después real=423 inexistente=423"
  },
  {
   "id": "E8b (límite de intentos simultáneos) el nº de intentos fallidos aceptados antes del bloqueo no supera el umbral de 3 por mucho: real vs inexistente",
@@ -72,7 +72,7 @@
  {
   "id": "E7b (informativo) una inundación de correos inexistentes desaloja entradas bloqueadas más antiguas: el bloqueo de un correo inexistente puede levantarse inundando el mapa",
   "ok": true,
-  "detail": "bloqueado antes=true después de 25.000 distintos=false (solo afecta a correos sin cuenta activa; las cuentas reales usan la base de datos)"
+  "detail": "bloqueado antes=true después de 25.000 distintos=true (solo afecta a correos sin cuenta activa; las cuentas reales usan la base de datos)"
  },
  {
   "id": "E11 ningún console.* de auth.js ni loginAttempts.js incluye correo ni contraseña (revisión de código)",
