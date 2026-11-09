@@ -1,0 +1,67 @@
+[
+ {
+  "id": "R-c2 admin desactiva a un superadmin → 403 target_rank, el superadmin sigue activo y su token vale",
+  "ok": true,
+  "detail": "PUT=403 code=target_rank activa=true token antes/después=200/200"
+ },
+ {
+  "id": "R-c3 admin degrada a un superadmin a user → 403 y el rol no cambia",
+  "ok": true,
+  "detail": "PUT=403 rol=superadmin"
+ },
+ {
+  "id": "R-c4 admin sobre otro admin (degradar, desactivar, cambiar rol) → 403 y sin cambios",
+  "ok": true,
+  "detail": "degradar=403 desactivar=403 rol=403 estado=admin/true"
+ },
+ {
+  "id": "R-c1 admin no asciende a nadie a superadmin ni a admin (sin regresión)",
+  "ok": true,
+  "detail": "superadmin=403 admin=403 rol=user"
+ },
+ {
+  "id": "R-c6 una cuenta no se modifica a sí misma (regla existente)",
+  "ok": true,
+  "detail": "PUT=403"
+ },
+ {
+  "id": "A1 admin sigue gestionando personas y profesionales (rol/estado) y la sesión anterior se revoca",
+  "ok": true,
+  "detail": "desactivar=200 token=401 reactivar=200 rolProf=200 tokenProf=401"
+ },
+ {
+  "id": "S1 superadmin sí puede cambiar a un admin y bajar a otro superadmin (hay más superadmins activos)",
+  "ok": true,
+  "detail": "admin→user=200 superadmin→admin=200 rol=admin"
+ },
+ {
+  "id": "S2a (precondición) queda un solo superadmin activo; si es la misma cuenta, la regla \"no modificarse a sí misma\" ya lo cubre",
+  "ok": true,
+  "detail": "activos=1 auto-degradar=403 auto-desactivar=403"
+ },
+ {
+  "id": "S2b con X como único otro superadmin: X puede bajar a Y; Y (ya admin) no puede desactivar a X (403); nunca quedan 0 superadmins activos",
+  "ok": false,
+  "detail": "X baja a Y=200 Y→X=401 X activo=true"
+ },
+ {
+  "id": "S3 dos superadmins se desactivan mutuamente a la vez (6 rondas): nunca quedan 0 activos y sin 5xx",
+  "ok": true,
+  "detail": "200/409→activos=1 | 409/200→activos=1 | 200/409→activos=1 | 200/409→activos=1 | 200/409→activos=1 | 409/200→activos=1"
+ },
+ {
+  "id": "A2 entradas raras (id texto/negativo/inexistente, cuerpo vacío, rol inválido o con tipo raro): 4xx, nunca 5xx",
+  "ok": false,
+  "detail": "500,404,404,200,400,400,400,404"
+ },
+ {
+  "id": "U1 (informativo) PUT /:id/unlock por un admin sobre un admin desactivado",
+  "ok": true,
+  "detail": "unlock=200 activa después=true (true = el unlock reactiva cuentas de rango igual)"
+ },
+ {
+  "id": "E1 ES-210 sigue: reset-password de administración → 410",
+  "ok": true,
+  "detail": "status=410"
+ }
+]
