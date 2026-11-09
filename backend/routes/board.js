@@ -12,6 +12,17 @@ const { encriptar, desencriptar } = require('../utils/crypto');
 const { verificarEditorManifiesto } = require('../middlewares/auth');
 const { validateBody, nonempty, text, optional } = require('../middlewares/validateBody');
 
+// ES-218: subir y activar versiones se serializan con UN bloqueo consultivo de transacción (pg_advisory_xact_lock) tomado antes de tocar filas.
+// ES-211 bloqueaba todas las filas con SELECT … FOR UPDATE sin orden: al cambiar de lugar las versiones de fila con cada UPDATE, dos transacciones podían
+// recorrer y bloquear las filas en órdenes distintos y Postgres abortaba una con «deadlock detected» (≈ 1 de cada 20 corridas locales). El bloqueo consultivo
+// es de la transacción (se suelta al confirmar o deshacer, también con el pooler en modo transacción) y no depende del orden de las filas. Las filas se
+// siguen bloqueando, ahora en orden por id, por si otra ruta futura toca la tabla. Con motores que no son Postgres (pruebas con almacén simulado) solo se bloquean las filas.
+const MANIFEST_LOCK_KEY = 21100218;
+async function lockManifests(t) {
+  if (sequelize.getDialect?.() === 'postgres') await sequelize.query('SELECT pg_advisory_xact_lock(:key)', { replacements: { key: MANIFEST_LOCK_KEY }, transaction: t });
+  await EthicManifest.findAll({ attributes: ['id'], order: [['id', 'ASC']], lock: Transaction.LOCK.UPDATE, transaction: t });
+}
+
 // ── POST /api/board/manifest ──────────────────────────────────────────────────
 // Upload a new version of the ethics manifest
 // Body: { content: string, note?: string }
@@ -26,7 +37,7 @@ router.post('/manifest', verificarEditorManifiesto, validateBody({ content: none
   const t = await sequelize.transaction();
   try {
     // ES-211: mismo bloqueo que al reactivar, para que subir y reactivar a la vez no dejen dos activas ni repitan el número de versión.
-    await EthicManifest.findAll({ attributes: ['id'], lock: Transaction.LOCK.UPDATE, transaction: t });
+    await lockManifests(t);
     // Calculate next version number
     const latest = await EthicManifest.findOne({
       order: [['createdAt', 'DESC']],
@@ -108,7 +119,7 @@ router.put('/manifest/:id/activate', verificarEditorManifiesto, async (req, res)
   const t = await sequelize.transaction();
   try {
     // ES-211: bloquea las filas del manifiesto para que dos activaciones (o una activación y una subida) se serialicen; la tabla es pequeña.
-    await EthicManifest.findAll({ attributes: ['id'], lock: Transaction.LOCK.UPDATE, transaction: t });
+    await lockManifests(t);
     const manifest = await EthicManifest.findByPk(id, { transaction: t });
     if (!manifest) {
       await t.rollback();
