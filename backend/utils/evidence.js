@@ -325,13 +325,15 @@ async function revokeForConsent(userId, transaction) {
 // se entregan con el consentimiento vigente; si no lo hay, se entregan solo las escritas directamente.
 async function getConfirmedEvidence(userId, consumer) {
   const collect = async (transaction, includeChat) => {
-    const rows = await EvidenceVersion.findAll({ where: { UserId: userId, status: 'confirmed' }, transaction });
+    const rows = (await EvidenceVersion.findAll({ where: { UserId: userId, status: 'confirmed' }, transaction })).filter((row) => includeChat || !row.hasChatOrigin);
+    if (rows.length === 0) return [];
+    // ES-216: UNA consulta para todas las evidencias vigentes (antes, una por cada versión confirmada).
+    const live = await Evidence.findAll({ where: { id: rows.map((row) => row.EvidenceId), UserId: userId, deletedAt: null }, attributes: ['id', 'currentVersion'], transaction });
+    const current = new Map(live.map((ev) => [ev.id, ev.currentVersion]));
     const out = [];
     for (const row of rows) {
-      if (row.hasChatOrigin && !includeChat) continue;
-      const ev = await Evidence.findOne({ where: { id: row.EvidenceId, UserId: userId, deletedAt: null }, transaction });
-      if (!ev || ev.currentVersion !== row.version) continue;
-      out.push({ evidenceId: ev.id, version: row.version, payload: decode(row) });
+      if (current.get(row.EvidenceId) !== row.version) continue;
+      out.push({ evidenceId: row.EvidenceId, version: row.version, payload: decode(row) });
     }
     return out.sort((a, b) => a.evidenceId - b.evidenceId);
   };

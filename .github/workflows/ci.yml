@@ -226,3 +226,7 @@ jobs:
         run: npm run test:invitations:pg
         env:
           ES192_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-216 lectura y escritura del experimento con muchas evidencias (PostgreSQL)"
+        run: npm run test:experiment-read:pg
+        env:
+          ES216_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
