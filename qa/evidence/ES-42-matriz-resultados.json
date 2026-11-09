@@ -87,7 +87,7 @@
  {
   "id": "O4 conceder y revocar a la vez (4 clientes): sin 5xx, estado final coherente y el acceso del terapeuta coincide con ese estado",
   "ok": true,
-  "detail": "estados=200,200,200,200 final=revoked eventos=4 acceso=403"
+  "detail": "estados=200,200,200,200 final=revoked eventos=6 acceso=403"
  },
  {
   "id": "O5b la lista de administración no expone el diario ni el texto de crisis",
@@ -102,6 +102,6 @@
  {
   "id": "P1 6 personas + 1 terapeuta a la vez sobre las rutas principales, 0 IA: ningún 5xx y p95 ≤ 1 s (umbral propuesto)",
   "ok": true,
-  "detail": "solicitudes=39 p50=50 p95=171 ms total=451 ms 5xx=0"
+  "detail": "solicitudes=39 p50=120 p95=349 ms total=888 ms 5xx=0"
  }
 ]

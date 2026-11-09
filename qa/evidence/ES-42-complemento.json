@@ -31,18 +31,18 @@
  },
  {
   "id": "R-c2 un admin NO puede desactivar a un superadmin ni cortarle la sesión (jerarquía de roles)",
-  "ok": false,
-  "detail": "antes=200 PUT active=false → 200; activa=false; sesión del superadmin después=401"
+  "ok": true,
+  "detail": "antes=200 PUT active=false → 403; activa=true; sesión del superadmin después=200"
  },
  {
   "id": "R-c3 un admin NO puede degradar el rol de un superadmin",
-  "ok": false,
-  "detail": "PUT role=user → 200; el rol queda user"
+  "ok": true,
+  "detail": "PUT role=user → 403; el rol queda superadmin"
  },
  {
   "id": "R-c4 (informativo) un admin sobre OTRO admin: degradar a user",
   "ok": true,
-  "detail": "PUT role=user → 200; rol queda user"
+  "detail": "PUT role=user → 403; rol queda admin"
  },
  {
   "id": "R-c5 un admin no borra a un superadmin (el borrado es solo del superadmin)",

@@ -72,11 +72,11 @@
  {
   "id": "P2 primera respuesta del servidor con proveedor instantáneo: p95 ≤ 500 ms (umbral propuesto)",
   "ok": true,
-  "detail": "p50=64 p95=100 ms (n=20)"
+  "detail": "p50=63 p95=74 ms (n=20)"
  },
  {
   "id": "P1 12 turnos de chat a la vez con un proveedor de 3 s (pool 5): todos 200, ninguno 5xx y una persona ajena sigue siendo atendida (≤ 500 ms) mientras tanto",
   "ok": true,
-  "detail": "turnos=200,200,200,200,200,200,200,200,200,200,200,200 total=3287 ms espectadora máx=17 ms"
+  "detail": "turnos=200,200,200,200,200,200,200,200,200,200,200,200 total=3463 ms espectadora máx=24 ms"
  }
 ]

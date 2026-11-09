@@ -167,7 +167,7 @@
  {
   "id": "S3 el payload guardado está cifrado (v2:) y no contiene el texto en claro",
   "ok": true,
-  "detail": "v2:d51"
+  "detail": "v2:64f"
  },
  {
   "id": "C1 mismo requestId ×3: una sola versión nueva (6 en total), sin 5xx",
@@ -196,12 +196,12 @@
  },
  {
   "id": "P1 GET del experimento con 200 evidencias: p95 ≤ 300 ms (umbral propuesto)",
-  "ok": false,
-  "detail": "p50=599 p95=748 ms"
+  "ok": true,
+  "detail": "p50=218 p95=247 ms"
  },
  {
   "id": "P2 rebase: p95 ≤ 500 ms (umbral propuesto)",
   "ok": true,
-  "detail": "p95=152 ms (n=8)"
+  "detail": "p95=198 ms (n=8)"
  }
 ]
