@@ -1,0 +1,226 @@
+{
+ "out": [
+  {
+   "id": "X2 EN 1360 /admin/dashboard: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/prompts: sin español fuera de datos",
+   "ok": false,
+   "detail": "[\"Visualización y propuesta de prompts\",\"No hay prompts configurados aún.\"]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/content: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/metrics: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/pilot-metrics: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/route-catalog: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/skill-catalog: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/users: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2 EN 1360 /admin/manifest: sin español fuera de datos",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/dashboard: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/prompts: sin español",
+   "ok": false,
+   "detail": "[\"Gestión completa de prompts terapéuticos\",\"+ Nuevo prompt\",\"No hay prompts configurados aún.\"]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/content: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/metrics: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/pilot-metrics: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/route-catalog: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/skill-catalog: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/users: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2s EN 1360 superadmin /admin/manifest: sin español",
+   "ok": true,
+   "detail": "[]"
+  },
+  {
+   "id": "X2m EN 390 /admin/dashboard: sin desborde horizontal",
+   "ok": false,
+   "detail": "sw=485 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/prompts: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/content: sin desborde horizontal",
+   "ok": false,
+   "detail": "sw=423 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/metrics: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/pilot-metrics: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/route-catalog: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/skill-catalog: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/users: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2m EN 390 /admin/manifest: sin desborde horizontal",
+   "ok": true,
+   "detail": "sw=390 vw=390"
+  },
+  {
+   "id": "X2e ES 1360 /admin/dashboard: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=750"
+  },
+  {
+   "id": "X2e ES 1360 /admin/prompts: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=378"
+  },
+  {
+   "id": "X2e ES 1360 /admin/content: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=514"
+  },
+  {
+   "id": "X2e ES 1360 /admin/metrics: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=632"
+  },
+  {
+   "id": "X2e ES 1360 /admin/pilot-metrics: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=401"
+  },
+  {
+   "id": "X2e ES 1360 /admin/route-catalog: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=96"
+  },
+  {
+   "id": "X2e ES 1360 /admin/skill-catalog: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=289"
+  },
+  {
+   "id": "X2e ES 1360 /admin/users: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=654"
+  },
+  {
+   "id": "X2e ES 1360 /admin/manifest: renderiza (sin claves crudas)",
+   "ok": true,
+   "detail": "len=488"
+  },
+  {
+   "id": "X2l el atributo lang del documento acompaña al idioma",
+   "ok": true,
+   "detail": "en=en es=es"
+  },
+  {
+   "id": "X1p la API de prompts responde al superadmin (precondición)",
+   "ok": true,
+   "detail": "http=200"
+  }
+ ],
+ "en": {
+  "/admin/dashboard": {
+   "spanish": []
+  },
+  "/admin/prompts": {
+   "spanish": [
+    "Visualización y propuesta de prompts",
+    "No hay prompts configurados aún."
+   ]
+  },
+  "/admin/content": {
+   "spanish": []
+  },
+  "/admin/metrics": {
+   "spanish": []
+  },
+  "/admin/pilot-metrics": {
+   "spanish": []
+  },
+  "/admin/route-catalog": {
+   "spanish": []
+  },
+  "/admin/skill-catalog": {
+   "spanish": []
+  },
+  "/admin/users": {
+   "spanish": []
+  },
+  "/admin/manifest": {
+   "spanish": []
+  }
+ }
+}

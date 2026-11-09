@@ -142,7 +142,7 @@
  {
   "id": "F3 /api/session colgada: tras el tiempo de espera (≈8 s) pasa a «sin conexión» (no queda «verificando» para siempre)",
   "ok": true,
-  "detail": "vista=unavailable tras 8494 ms"
+  "detail": "vista=unavailable tras 8484 ms"
  },
  {
   "id": "F4 fallo pasajero de /api/session al cambiar de ruta con sesión ya verificada: no expulsa a la persona (el servidor sigue decidiendo en cada API)",
@@ -156,8 +156,8 @@
  },
  {
   "id": "C2 navegación rápida entre 6 rutas con distintos permisos: la vista final corresponde a la última ruta (/therapist/dashboard ⇒ sin acceso para board) y no se rompe",
-  "ok": false,
-  "detail": "final=frame peticiones=0"
+  "ok": true,
+  "detail": "final=noAccess peticiones=2"
  },
  {
   "id": "C3 401 tardío de /api/session en una ruta: la sesión se invalida y lleva a /login",
@@ -167,7 +167,7 @@
  {
   "id": "P1 /api/session: 200 peticiones, 10 en paralelo (≈6 personas con margen)",
   "ok": true,
-  "detail": "p50=41 ms · p95=72 ms · máx=81 ms · 223 req/s"
+  "detail": "p50=31 ms · p95=48 ms · máx=76 ms · 299 req/s"
  },
  {
   "id": "P2 una petición /api/session por cambio de ruta protegida (3 cambios ⇒ 3 peticiones, sin ráfagas)",

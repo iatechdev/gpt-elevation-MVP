@@ -99,7 +99,7 @@
  "board /app/next-step": "noAccess",
  "board /app/my-therapist": "noAccess",
  "board /app/data": "frame",
- "board /app/professional-reviews": "content",
+ "board /app/professional-reviews": "frame",
  "board /facilitation": "frame",
  "board /admin/dashboard": "noAccess",
  "board /admin/prompts": "noAccess",
