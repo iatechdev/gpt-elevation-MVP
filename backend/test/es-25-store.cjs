@@ -4,6 +4,7 @@ const { models, database } = require('./support.cjs');
 
 const matches = (row, where = {}) => Object.entries(where).every(([key, value]) => {
   if (value === null) return row[key] == null;
+  if (Array.isArray(value)) return value.includes(row[key]); // como Sequelize: { id: [1, 2] } es «id IN (1, 2)»
   if (value instanceof Date) return row[key] instanceof Date && row[key].getTime() === value.getTime();
   return row[key] === value;
 });
