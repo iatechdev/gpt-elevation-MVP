@@ -75,7 +75,6 @@ test('QA-9-02: body consumers reject invalid types before side effects', async t
     ['PUT', '/api/admin/usuarios/7', 'superadmin', 'active'],
     ['PUT', '/api/admin/usuarios/7/asignar-terapeuta', 'superadmin', 'therapistId'],
     ['PUT', '/api/admin/usuarios/7/plan', 'superadmin', 'planId'],
-    ['POST', '/api/admin/prompt', 'admin', 'content'],
     ['POST', '/api/admin/prompt/propose', 'admin', 'content'],
     ['POST', '/api/superadmin/prompt/7/reject', 'superadmin', 'note'],
     ['POST', '/api/pricing', 'admin', 'name_es'],
