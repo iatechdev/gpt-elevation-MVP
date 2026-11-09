@@ -5,17 +5,19 @@ const { deletionPending } = require('./deletionGuard');
 const { desencriptar } = require('./crypto');
 const { problem } = require('./careerPlanRules');
 
-async function getRoute(userId, choiceId) {
+async function getRoute(userId, choiceId, { allowBasisChange = false } = {}) {
   let routes;
   try { require.resolve('./routes'); } catch { throw problem('route_contract_pending', 'ES-32 aún no está integrado.', 'ES-32 is not integrated yet.', 503); }
   routes = require('./routes');
-  const choice = await routes.getAcceptedChoice(userId, choiceId);
+  // QA-33-02: un experimento YA creado se compara por las capacidades de su ruta, no por el hash global de ES-32; por eso acepta una elección con basisChanged.
+  // Un experimento NUEVO sigue exigiendo una elección sin basisChanged (allowBasisChange=false).
+  const choice = await routes.getAcceptedChoice(userId, choiceId, { allowBasisChange });
   const basis = await routes.getRoutes(userId);
   const route = basis.routes.find(route => route.roleKey === choice.roleKey && route.slot === choice.slot);
   if (!route || basis.basisHash === null) throw problem('basis_changed', 'Revisa la ruta elegida.', 'Review the chosen route.', 409);
   // Segunda comprobación frente a cambios entre ambos helpers; sin prometer snapshot global.
-  if ((await routes.getAcceptedChoice(userId, choiceId)).basisChanged) throw problem('basis_changed', 'La base cambió.', 'The basis changed.', 409);
-  return { basisHash: basis.basisHash, route };
+  await routes.getAcceptedChoice(userId, choiceId, { allowBasisChange });
+  return { basisHash: basis.basisHash, route, rules: { ruleVersion: basis.ruleVersion, catalogVersion: basis.catalogVersion, constraintsVersion: basis.constraintsVersion } };
 }
 
 // Lector mínimo del contexto canónico de ES-14 (disponibilidad, zona horaria e idioma). Solo del dueño que pide, nunca de otra persona.

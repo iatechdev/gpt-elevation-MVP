@@ -113,10 +113,11 @@ async function getChoice(userId, id) {
   return { choice: choiceDto(row, await activeBasis(userId)) };
 }
 // Contrato para ES-33: una elección rechazada, reemplazada o con fundamento cambiado no autoriza un experimento.
-async function getAcceptedChoice(userId, id) {
+// QA-33-02: allowBasisChange=true devuelve la elección vigente y aceptada aunque el hash global de rutas haya cambiado; el comportamiento por defecto no cambia.
+async function getAcceptedChoice(userId, id, { allowBasisChange = false } = {}) {
   await authorize(userId);
   const { choice } = await getChoice(userId, id);
-  if (choice.status !== 'current' || choice.decision !== 'accepted' || choice.basisChanged) throw conflict();
+  if (choice.status !== 'current' || choice.decision !== 'accepted' || (choice.basisChanged && !allowBasisChange)) throw conflict();
   return choice;
 }
 async function choose(userId, input) {
