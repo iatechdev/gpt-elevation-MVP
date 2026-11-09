@@ -18,11 +18,11 @@ const walk = dir => readdirSync(dir).flatMap(name => { const p = join(dir, name)
 const files = walk(SRC).map(p => ({ path: relative(SRC, p).replaceAll('\\', '/'), text: readFileSync(p, 'utf8') }))
 
 const catalogs = {
-  compass: { es: compassEs, en: compassEn, register: 'compass/register', prefix: /['"`]compass\./ },
-  evidence: { es: evidenceEs, en: evidenceEn, register: 'evidence/register', prefix: /['"`]evidence\./ },
-  'skill-map': { es: skillMapEs, en: skillMapEn, register: 'skill-map/register', prefix: /['"`]skill_map\./ },
-  context: { es: contextEs, en: contextEn, register: 'context/register', prefix: /['"`]context_/ },
-  resume: { es: resumeEs, en: resumeEn, register: 'context/resume/register', prefix: /['"`]resume_/ },
+  compass: { es: compassEs, en: compassEn, register: 'compass/register', lead: 'compass.' },
+  evidence: { es: evidenceEs, en: evidenceEn, register: 'evidence/register', lead: 'evidence.' },
+  'skill-map': { es: skillMapEs, en: skillMapEn, register: 'skill-map/register', lead: 'skill_map.' },
+  context: { es: contextEs, en: contextEn, register: 'context/register', lead: 'context_' },
+  resume: { es: resumeEs, en: resumeEn, register: 'context/resume/register', lead: 'resume_' },
 }
 
 test('ES-232: el diccionario del arranque (es.ts / en.ts) ya no importa ni reparte esos catálogos', () => {
@@ -48,17 +48,22 @@ test('ES-232: registrar un catálogo devuelve exactamente los mismos textos que 
 })
 
 test('ES-232: cada módulo que escribe claves de un catálogo perezoso importa su registro (si no, se vería la clave cruda)', () => {
-  // Falsos positivos conocidos: aparecen como identificadores de datos, no como claves de texto.
-  // resumeApi.ts: códigos de error («resume_limit») y propósitos de consentimiento («resume_ai_reading»), no claves de texto.
-  // territories.ts y aiProposalApi.ts: lógica pura del mapa que las pruebas cargan por separado (data:); solo las usa SkillMapPage y sus paneles, que sí registran el catálogo.
-  const notKeys = new Set(['bridge/sources.ts', 'compass/model.ts', 'bridge/copy.ts', 'evidence/model.ts', 'context/resume/resumeApi.ts', 'skill-map/territories.ts', 'skill-map/aiProposalApi.ts'])
-  const owners = new Set(Object.values(catalogs).flatMap(c => [c.register + '.ts']))
+  // Se buscan cadenas entre comillas que sean EXACTAMENTE una clave del catálogo, o una clave armada («evidence.${x}») que empiece por su prefijo.
+  // Así un identificador de datos parecido a una clave (p. ej. el código de motivo 'context_changed' del simulador) no se confunde con un texto.
+  // Excepciones documentadas: territories.ts y aiProposalApi.ts son lógica pura del mapa que las pruebas cargan por separado (data:); solo las usan SkillMapPage y sus paneles, que sí registran el catálogo.
+  const noImport = new Set(['skill-map/territories.ts', 'skill-map/aiProposalApi.ts'])
+  const owners = new Set(Object.values(catalogs).map(c => c.register + '.ts'))
+  const quoted = /(['"`])((?:(?!\1)[^\n\\]){1,120})\1/g
   const problems = []
   for (const [name, c] of Object.entries(catalogs)) {
+    const keys = new Set(Object.keys(c.es))
+    const registerImport = new RegExp(`^import '[./]+/?(?:[\\w-]+/)*${c.register.split('/').pop()}(?:\\.ts)?'`, 'm')
     for (const f of files) {
-      if (owners.has(f.path) || /(^|\/)(copy|contextCopy|resumeCopy)\.ts$/.test(f.path) || f.path.startsWith('i18n/') || notKeys.has(f.path)) continue
-      if (!c.prefix.test(f.text)) continue
-      if (!new RegExp(`^import '[./]+/?(?:[\\w-]+/)*${c.register.split('/').pop()}(?:\\.ts)?'`, 'm').test(f.text)) problems.push(`${f.path} usa claves de «${name}» sin importar ${c.register}`)
+      if (owners.has(f.path) || /(^|\/)(copy|contextCopy|resumeCopy)\.ts$/.test(f.path) || f.path.startsWith('i18n/') || noImport.has(f.path)) continue
+      // «resume_version» es a la vez una clave de texto («Versión {n}») y el TIPO de origen de datos en bridge/sources.ts y compass/model.ts: allí es un identificador, no un texto.
+      if (name === 'resume' && (f.path === 'bridge/sources.ts' || f.path === 'compass/model.ts')) continue
+      const uses = [...f.text.matchAll(quoted)].map(m => m[2]).filter(t => keys.has(t) || (t.startsWith(c.lead) && t.includes('${')))
+      if (uses.length && !registerImport.test(f.text)) problems.push(`${f.path} usa claves de «${name}» (${uses[0]}) sin importar ${c.register}`)
     }
   }
   assert.deepEqual(problems, [])
