@@ -32,6 +32,7 @@ function JournalSession({ token }: { token: string }) {
   const [inspection, setInspection] = useState(false); const [conflict, setConflict] = useState<Entry | null>(null)
   const [dialog, setDialog] = useState<'delete' | 'cancel' | 'discard' | null>(null)
   const alive = useRef(true); const lock = useRef(false); const acknowledgedId = useRef<number | null>(null)
+  const requestId = useRef(crypto.randomUUID()) // ES-163: identifica este borrador nuevo; reintentar con el mismo no duplica la entrada
   const current = useCallback(() => alive.current && localStorage.getItem('elevation_token') === token, [token])
   const dirty = editing && (date !== (saved?.date || (isNew ? defaultDate : '')) || content !== (saved?.content || ''))
   useDraftGuard(!expired && (dirty || busy || !!uncertain), c.leave)
@@ -77,8 +78,8 @@ function JournalSession({ token }: { token: string }) {
       else failure(error, c.loadError)
     } finally { if (current()) setBusy(false); lock.current = false }
   }
-  const save = async () => {
-    if (lock.current || uncertain || conflict) return
+  const save = async (retry = false) => {
+    if (lock.current || (uncertain && !retry) || conflict) return
     // ES-138: errores propios (ES/EN) asociados a cada campo en lugar de la burbuja nativa del navegador.
     const found = { date: !date ? c.dateMissing : !validDate(date) ? c.dateInvalid : undefined, content: !content.trim() ? c.contentMissing : undefined }
     if (found.date || found.content || !validDraft(date, content)) {
@@ -87,6 +88,7 @@ function JournalSession({ token }: { token: string }) {
     }
     setErrors({})
     lock.current = true; setBusy(true); setNotice('')
+    if (retry) { setUncertain(null); setInspection(false) } // «Reintentar guardar»: mismo requestId, el servidor devuelve la entrada ya creada si el intento anterior llegó
     let attempted = false
     try {
       if (saved) {
@@ -95,12 +97,12 @@ function JournalSession({ token }: { token: string }) {
         if (latest.updatedAt !== saved.updatedAt) { setConflict(latest); setNotice(c.changed); return }
       }
       attempted = true
-      const acknowledged = entry(await request(token, saved ? `/api/diary/${saved.id}` : '/api/diary', { method: saved ? 'PUT' : 'POST', body: JSON.stringify({ date, content }) }))
+      const acknowledged = entry(await request(token, saved ? `/api/diary/${saved.id}` : '/api/diary', { method: saved ? 'PUT' : 'POST', body: JSON.stringify(saved ? { date, content } : { date, content, requestId: requestId.current }) }))
       acknowledgedId.current = acknowledged.id
       const row = await readEntry(token, acknowledged.id)
       if (!current()) return
       if (row.date !== date || row.content !== content) { setSaved(row); setConflict(row); setNotice(c.changed); return }
-      setSaved(row); setEditing(false); setNotice(c.saved)
+      setSaved(row); setEditing(false); setNotice(c.saved); requestId.current = crypto.randomUUID()
       if (isNew) navigate(`/app/diary/${row.id}`, { replace: true })
     } catch (error) {
       if (current() && attempted && !(error instanceof SpaceError && [400, 401, 403, 404].includes(error.status))) { setUncertain(saved || acknowledgedId.current ? 'edit' : 'create'); setNotice(saved || acknowledgedId.current ? j.unconfirmed : c.unknown) }
@@ -134,7 +136,7 @@ function JournalSession({ token }: { token: string }) {
       </form> : saved && <article><h3><time dateTime={saved.date}>{journalDate(saved.date, lang)}</time></h3><p className="space-note">{c.updated}: {new Date(saved.updatedAt).toLocaleString(lang)}</p><p className="space-private-text journal-paper journal-reading">{saved.content}</p><p className="journal-privacy">{c.privacy}</p><div className="space-actions"><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => { setEditing(true); setNotice('') }}>{c.edit}</button><button className="elv-btn" disabled={busy || !!uncertain} onClick={() => setDialog('delete')}>{c.remove}</button><Link className="elv-link" to="/app/chat?journal=choose">{c.chooseChat}</Link></div></article>}
       {conflict && <button type="button" className="elv-btn" onClick={() => { if (!dirty || window.confirm(c.leave)) { setSaved(conflict); setDate(conflict.date); setContent(conflict.content); setConflict(null); setUncertain(null); setNotice('') } }}>{c.review}</button>}
       {!saved && !isNew && !unavailable && notice === c.loadError && <button className="elv-btn" onClick={() => { setNotice(''); setLoading(true); setLoadAttempt(value => value + 1) }}>{c.retry}</button>}
-      {uncertain && <div className="space-card"><p>{uncertain === 'create' ? c.unknown : uncertain === 'delete' ? c.deleteError : j.unconfirmed}</p><button className="elv-btn" disabled={busy} onClick={() => void inspect()}>{c.inspect}</button>{uncertain === 'create' && <><p>{c.duplicate}</p><button className="elv-btn" disabled={busy} onClick={() => setDialog('discard')}>{c.discard}</button></>}{inspection && rows}</div>}
+      {uncertain && <div className="space-card"><p>{uncertain === 'create' ? c.unknown : uncertain === 'delete' ? c.deleteError : j.unconfirmed}</p>{uncertain === 'create' && <><button className="elv-btn elv-btn-primary" disabled={busy} onClick={() => void save(true)}>{j.retrySave}</button><p className="space-note">{j.retryHint}</p></>}<button className="elv-btn" disabled={busy} onClick={() => void inspect()}>{c.inspect}</button>{uncertain === 'create' && <><p>{c.duplicate}</p><button className="elv-btn" disabled={busy} onClick={() => setDialog('discard')}>{c.discard}</button></>}{inspection && rows}</div>}
       <p className="space-note">{c.deleteLimit}</p><Link className="elv-link" to="/app/diary">{c.journal}</Link>
     </>}
     </section><JournalRecent key={`${saved?.updatedAt || ''}:${unavailable}`} token={token} lang={lang} selected={id} onSessionExpired={() => failure(new SpaceError(401), c.loadError)} /></div>}
