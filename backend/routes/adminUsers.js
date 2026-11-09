@@ -321,59 +321,51 @@ router.get('/:id/stats', async (req, res) => {
 // HU-063 — GET /api/admin/alerts
 // ==========================================
 router.get('/alerts', async (req, res) => {
-  try {
+  // ES-180 (HU-P29): cada aviso se calcula por separado y lleva su propio estado; si uno falla los demás se entregan igual (la pantalla muestra
+  // «Reintentar» solo en el que falló). Se conservan los campos de siempre para la pantalla actual. La versión y la fecha del manifiesto salen del
+  // manifiesto activo (antes estaban escritas a mano en el código).
+  res.set('Cache-Control', 'no-store');
+  const section = async (name, work) => {
+    try { return { status: 'ok', ...(await work()) }; } catch (error) { console.error('Error en el aviso de administración.', name); return { status: 'error' }; }
+  };
+  const guides = await section('guides', async () => {
     const { PromptVault } = require('../promptVault');
-    const TherapistProfile = require('../TherapistProfile');
-
-    const pendingPrompts = await PromptVault.findAll({
-      where: { status: 'pending_review' },
-      attributes: ['id', 'key', 'version', 'proposed_by', 'createdAt'],
-      order: [['createdAt', 'ASC']],
-      limit: 5,
-    });
-
-    const pendingPromptsList = await Promise.all(
-      pendingPrompts.map(async (p) => {
-        const match = p.key.match(/therapist_prompt_(\d+)/);
-        let therapistName = p.proposed_by ?? 'Unknown';
-        if (match) {
-          const therapist = await User.findByPk(match[1], { attributes: ['name'] });
-          if (therapist) therapistName = therapist.name;
-        }
-        return {
-          id: p.id,
-          therapistName,
-          version: p.version,
-          proposedBy: p.proposed_by,
-          createdAt: p.createdAt,
-        };
-      })
-    );
-
-    const therapists = await User.findAll({
-      where: { role: 'therapist', active: true },
-      attributes: ['id', 'name'],
-    });
-
-    let therapistsWithoutProfile = 0;
-    await Promise.all(therapists.map(async (t) => {
-      const profile = await TherapistProfile.findOne({ where: { UserId: t.id } });
-      if (!profile || !profile.bio || !profile.specialties) {
-        therapistsWithoutProfile++;
-      }
-    }));
-
-    res.json({
-      pendingPrompts: pendingPromptsList.length,
-      pendingPromptsList,
-      therapistsWithoutProfile,
-      manifestoVersion: 'v1.0',
-      manifestoDate: '2026-04-02',
-    });
-  } catch (error) {
-    console.error('Error fetching admin alerts.');
-    res.status(500).json({ error: 'Could not fetch admin alerts.' });
-  }
+    const { Op } = require('sequelize');
+    // Guías por revisar: solo las que esperan a una persona (no las rechazadas por la revisión automática).
+    const where = { status: 'pending_review' };
+    const total = await PromptVault.count({ where });
+    const rows = await PromptVault.findAll({ where, attributes: ['id', 'key', 'version', 'proposed_by', 'createdAt'], order: [['createdAt', 'ASC'], ['id', 'ASC']], limit: 5 });
+    const ids = [...new Set(rows.map((p) => (p.key.match(/^therapist_prompt_([0-9]+)$/) || [])[1]).filter(Boolean).map(Number))];
+    const names = new Map((ids.length ? await User.findAll({ where: { id: { [Op.in]: ids } }, attributes: ['id', 'name'] }) : []).map((u) => [u.id, u.name]));
+    return {
+      count: total,
+      items: rows.map((p) => {
+        const m = p.key.match(/^therapist_prompt_([0-9]+)$/);
+        return { id: p.id, key: p.key, therapistName: (m && names.get(Number(m[1]))) || p.proposed_by || null, version: p.version, proposedBy: p.proposed_by, createdAt: p.createdAt };
+      }),
+    };
+  });
+  const incomplete = await section('professionalsIncomplete', async () => {
+    // Perfil incompleto = activa sin perfil, o con perfil sin biografía o sin especialidades (vacías o «[]»).
+    const [row] = await sequelize.query(`SELECT count(*)::int AS n FROM "Users" u LEFT JOIN "TherapistProfiles" tp ON tp."UserId" = u."id"
+      WHERE u."role" = 'therapist' AND u."active" = true
+        AND (tp."id" IS NULL OR COALESCE(btrim(tp."bio"), '') = '' OR COALESCE(btrim(tp."specialties"), '') IN ('', '[]'))`, { type: 'SELECT' });
+    return { count: row.n };
+  });
+  const manifest = await section('manifest', async () => {
+    const EthicManifest = require('../EthicManifest');
+    const active = await EthicManifest.findOne({ where: { isActive: true }, attributes: ['version', 'createdAt'], order: [['createdAt', 'DESC'], ['id', 'DESC']] });
+    return active ? { version: active.version, date: active.createdAt.toISOString().slice(0, 10) } : { version: null, date: null };
+  });
+  res.json({
+    sections: { guides, professionalsIncomplete: incomplete, manifest },
+    // Campos de siempre (la pantalla actual los lee); `null` cuando el aviso falló.
+    pendingPrompts: guides.status === 'ok' ? guides.count : null,
+    pendingPromptsList: guides.status === 'ok' ? guides.items.map(({ id, therapistName, version, proposedBy, createdAt }) => ({ id, therapistName, version, proposedBy, createdAt })) : [],
+    therapistsWithoutProfile: incomplete.status === 'ok' ? incomplete.count : null,
+    manifestoVersion: manifest.status === 'ok' ? manifest.version : null,
+    manifestoDate: manifest.status === 'ok' ? manifest.date : null,
+  });
 });
 
 // ==========================================
