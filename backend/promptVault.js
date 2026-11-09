@@ -73,6 +73,12 @@ const PromptVault = sequelize.define('PromptVault', {
     type: DataTypes.DATE,
     allowNull: true
   }
+}, {
+  // ES-219: los mismos índices que crea la migración 20261109010000-es219-prompt-version-unique (la deriva de esquema, ES-59, los compara).
+  indexes: [
+    { name: 'prompt_vaults__key_version', unique: true, fields: ['key', 'version'] },
+    { name: 'prompt_vaults__key_active', unique: true, fields: ['key'], where: { status: 'active' } },
+  ],
 });
 
 // ============================================
@@ -115,33 +121,45 @@ const getActivePrompt = async (promptKey) => {
 // ============================================
 // ES-191: la revisión automática ocurre ANTES de guardar y decide solo entre 'pending_review' (pendiente de aprobación humana)
 // y 'rejected' (con motivos). Nunca deja una versión activa ni aprobada. Devuelve { id, version, status, outcome, reasons }.
-const proposePrompt = async (promptKey, plainText, adminEmail) => {
+// ES-219: options.mustBeNew = la clave no puede tener ninguna versión viva (no rechazada): lo decide aquí, DENTRO del bloqueo de la clave.
+const proposePrompt = async (promptKey, plainText, adminEmail, options = {}) => {
   // Límite de propuestas por clave y hora: las rechazadas también se guardan, no deben poder inundar la tabla.
   const perHour = Number.isInteger(Number(process.env.PROMPT_PROPOSALS_PER_HOUR)) && Number(process.env.PROMPT_PROPOSALS_PER_HOUR) > 0 ? Number(process.env.PROMPT_PROPOSALS_PER_HOUR) : 10;
-  const recent = await PromptVault.count({ where: { key: promptKey, createdAt: { [Op.gt]: new Date(Date.now() - 3600 * 1000) } } });
-  if (recent >= perHour) throw new PromptReviewError('rate_limited');
-  // El límite va ANTES de revisar y cifrar: una ráfaga sobre el límite no gasta CPU (ES-191 E191-1).
+  const since = () => new Date(Date.now() - 3600 * 1000);
+  // Comprobación barata ANTES de revisar y cifrar: una ráfaga sobre el límite no gasta CPU (ES-191 E191-1). La definitiva va dentro del bloqueo.
+  if (await PromptVault.count({ where: { key: promptKey, createdAt: { [Op.gt]: since() } } }) >= perHour) throw new PromptReviewError('rate_limited');
   const review = reviewPrompt(plainText, await loadActiveRules(PromptRule));
   const encrypted = encryptPrompt(plainText);
-
-  // Buscar la versión más alta existente para ese key
-  const maxVersion = await PromptVault.max('version', { where: { key: promptKey } });
-  const nextVersion = maxVersion ? Number(maxVersion) + 1 : 2;
   const rejected = review.outcome === 'rejected';
 
-  // Crear nueva versión (NO toca el activo)
-  const row = await PromptVault.create({
-    key: promptKey,
-    contentEncrypted: encrypted,
-    version: nextVersion,
-    status: rejected ? 'rejected' : 'pending_review',
-    isActive: false,
-    proposed_by: adminEmail,
-    ...(rejected ? { rejected_by: 'revision-automatica', rejection_note: 'Rechazada por la revisión automática. / Rejected by the automatic review.', rejected_at: new Date() } : {}),
-    reviewOutcome: review.outcome,
-    reviewReasons: JSON.stringify(review.reasons),
-    reviewedAt: new Date()
-  });
+  // ES-219: contar, calcular la versión siguiente y crear ocurren en UNA transacción con un bloqueo por clave (advisory lock de la transacción):
+  // dos propuestas simultáneas de la misma clave se hacen en fila, con versiones consecutivas distintas y respetando el límite por hora.
+  const tx = await sequelize.transaction();
+  let row;
+  try {
+    if (sequelize.getDialect() === 'postgres') await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('promptvault:' || :key))", { replacements: { key: promptKey }, transaction: tx });
+    if (await PromptVault.count({ where: { key: promptKey, createdAt: { [Op.gt]: since() } }, transaction: tx }) >= perHour) throw new PromptReviewError('rate_limited');
+    if (options.mustBeNew && await PromptVault.count({ where: { key: promptKey, status: { [Op.ne]: 'rejected' } }, transaction: tx })) throw new PromptReviewError('key_exists');
+    const maxVersion = await PromptVault.max('version', { where: { key: promptKey }, transaction: tx });
+    const nextVersion = maxVersion ? Number(maxVersion) + 1 : 2;
+    // Crear nueva versión (NO toca el activo)
+    row = await PromptVault.create({
+      key: promptKey,
+      contentEncrypted: encrypted,
+      version: nextVersion,
+      status: rejected ? 'rejected' : 'pending_review',
+      isActive: false,
+      proposed_by: adminEmail,
+      ...(rejected ? { rejected_by: 'revision-automatica', rejection_note: 'Rechazada por la revisión automática. / Rejected by the automatic review.', rejected_at: new Date() } : {}),
+      reviewOutcome: review.outcome,
+      reviewReasons: JSON.stringify(review.reasons),
+      reviewedAt: new Date()
+    }, { transaction: tx });
+    await tx.commit();
+  } catch (error) {
+    await tx.rollback().catch(() => {});
+    throw error;
+  }
   return { id: row.id, version: row.version, status: row.status, outcome: review.outcome, reasons: review.reasons };
 };
 
