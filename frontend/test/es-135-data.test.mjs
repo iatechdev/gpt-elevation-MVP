@@ -75,15 +75,15 @@ test('ES-135: cada código del servidor produce un aviso en ES y en EN, sin text
 
 test('ES-135: los textos existen en ES y EN con las mismas claves, sin plazos prometidos', () => {
   assert.deepEqual(Object.keys(dataCopy.es).sort(), Object.keys(dataCopy.en).sort())
-  for (const lang of ['es', 'en']) for (const [key, text] of Object.entries(dataCopy[lang])) assert.ok(text.trim(), `${lang}.${key}`)
+  for (const lang of ['es', 'en']) for (const [key, text] of Object.entries(dataCopy[lang])) assert.ok([text].flat().every((line) => line.trim()), `${lang}.${key}`)
   assert.match(dataCopy.es.deleteDone, /Todavía no podemos indicarte una fecha/); assert.match(dataCopy.en.deleteDone, /cannot give you a date/)
   assert.doesNotMatch(dataCopy.es.deleteDone + dataCopy.en.deleteDone, /\b\d+\s*(días|dias|days|horas|hours)\b/i)
 })
 
 test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está accesible desde la ruta y el menú', () => {
   const page = read('../src/space/DataPage.tsx')
-  assert.match(page, /disabled=\{!ack \|\| !!busy\}/); assert.doesNotMatch(page, /window\.confirm/)
-  assert.match(page, /invalidateStoredSession\(token\)/); assert.match(page, /event\.key === 'Escape'/)
+  assert.match(page, /disabled=\{!matches \|\| busy === 'delete'\}/); assert.doesNotMatch(page, /window\.confirm/) // ES-174: la casilla pasó a palabra de confirmación
+  assert.match(page, /invalidateStoredSession\(deletedToken\.current\)/); assert.match(read('../src/space/SpaceDialog.tsx'), /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/) // Escape llega como «cancel» del <dialog>
   assert.match(read('../src/App.tsx'), /path="\/app\/data" element=\{<DataPage \/>\}/)
   assert.match(read('../src/space/SpaceNav.tsx'), /to="\/app\/data"/)
 })
@@ -91,9 +91,9 @@ test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está acces
 // QA-135-01: al cerrar el paso 2 el botón de inicio se vuelve a montar; el foco se devuelve DESPUÉS del render (verificado también en navegador real, 390 y 1440 px, ES y EN).
 test('ES-135: el foco vuelve al botón de inicio después del render, no antes', () => {
   const page = read('../src/space/DataPage.tsx')
-  assert.match(page, /const closePanel = \(\) => \{ refocus\.current = true; setConfirming\(false\); setAck\(false\) \}/)
-  assert.match(page, /else if \(refocus\.current\) \{ refocus\.current = false; startRef\.current\?\.focus\(\) \}/)
-  assert.doesNotMatch(page, /setAck\(false\); startRef\.current\?\.focus\(\)/)
+  // ES-174: el botón de inicio ya no se desmonta al abrir el diálogo; <dialog>.showModal() devuelve el foco al disparador al cerrar (verificado en navegador real).
+  assert.match(page, /<button className="elv-btn space-danger" disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => setOpen\(true\)\}>/)
+  assert.doesNotMatch(page, /startRef|refocus/)
 })
 
 test('ES-135: la lista «Qué incluye» usa etiquetas ES/EN, oculta metadatos y deja la clave desconocida tal cual', () => {
@@ -108,5 +108,5 @@ test('ES-135: si el servidor responde que la función no está disponible, no se
   const page = read('../src/space/DataPage.tsx')
   assert.match(page, /if \(k === 'unavailable'\) \{ setOff\(true\)/)
   assert.match(page, /disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => void prepare\(\)\}/)
-  assert.match(page, /disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => setConfirming\(true\)\}/)
+  assert.match(page, /disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => setOpen\(true\)\}/)
 })
