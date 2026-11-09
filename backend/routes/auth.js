@@ -19,6 +19,35 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const loginAttempts = require('../utils/loginAttempts');
 const DECOY_HASH = bcrypt.hashSync('es220-señuelo-que-nunca-coincide', 10); // mismo costo (10) que los hashes reales: tiempo equivalente
 const INVALID_CREDENTIALS = { error: 'Credenciales incorrectas.' };
+// ES-220 (QA-220-01): el conteo de intentos fallidos de una cuenta real es ATÓMICO en la base. Con leer-sumar-escribir, cinco intentos simultáneos leían todos
+// loginAttempts = 0 y ninguno bloqueaba, mientras el contador en memoria de un correo sin cuenta (síncrono) sí bloqueaba: otra vez un oráculo de existencia.
+// Un solo UPDATE … RETURNING suma y decide el bloqueo con la fila bloqueada; el 3.er, 4.º y 5.º intento en paralelo reciben 423, igual que un correo inexistente.
+// Semántica idéntica a la anterior (umbral 3, 15 min, la cuenta no se desbloquea hasta un acierto): el bloqueo solo se fija si no había uno vigente.
+async function failRealAttempt(real) {
+  const sequelize = User.sequelize;
+  if (sequelize?.getDialect?.() === 'postgres') {
+    const table = sequelize.getQueryInterface().queryGenerator.quoteTable(User.getTableName());
+    const [rows] = await sequelize.query(
+      `UPDATE ${table} SET "loginAttempts" = COALESCE("loginAttempts", 0) + 1,
+         "lockedUntil" = CASE WHEN COALESCE("loginAttempts", 0) + 1 >= :max AND ("lockedUntil" IS NULL OR "lockedUntil" <= NOW()) THEN :until ELSE "lockedUntil" END
+       WHERE "id" = :id RETURNING "loginAttempts", "lockedUntil"`,
+      { replacements: { max: loginAttempts.MAX_ATTEMPTS, until: new Date(Date.now() + loginAttempts.LOCK_MS), id: real.id } },
+    );
+    const row = rows[0];
+    if (!row) return { locked: false, until: null };
+    const until = row.lockedUntil ? new Date(row.lockedUntil) : null;
+    return row.loginAttempts >= loginAttempts.MAX_ATTEMPTS && until && until.getTime() > Date.now() ? { locked: true, until } : { locked: false, until: null };
+  }
+  // Sin Postgres (almacén simulado de las pruebas): leer-sumar-escribir como antes.
+  const attemptsNow = (real.loginAttempts || 0) + 1;
+  if (attemptsNow >= loginAttempts.MAX_ATTEMPTS) {
+    const until = new Date(Date.now() + loginAttempts.LOCK_MS);
+    await real.update({ loginAttempts: attemptsNow, lockedUntil: until });
+    return { locked: true, until };
+  }
+  await real.update({ loginAttempts: attemptsNow });
+  return { locked: false, until: null };
+}
 const lockedBody = (until) => {
   const minutes = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 60000));
   return { error: `Cuenta bloqueada. Inténtalo de nuevo en ${minutes} minuto${minutes > 1 ? 's' : ''}.`, locked: true };
@@ -26,7 +55,7 @@ const lockedBody = (until) => {
 
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 10,
+  max: Number(process.env.LOGIN_RATE_LIMIT_MAX) || 10, // por IP y minuto; la variable existe para las pruebas con ráfagas (el valor real es 10)
   message: { error: 'Demasiados intentos. Inténtalo de nuevo en un minuto.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -94,13 +123,8 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
 
     if (!user || !validPassword) {
       if (real) {
-        const nuevosIntentos = (real.loginAttempts || 0) + 1;
-        if (nuevosIntentos >= loginAttempts.MAX_ATTEMPTS) {
-          const bloqueadoHasta = new Date(Date.now() + loginAttempts.LOCK_MS);
-          await real.update({ loginAttempts: nuevosIntentos, lockedUntil: bloqueadoHasta });
-          return res.status(423).json(lockedBody(bloqueadoHasta));
-        }
-        await real.update({ loginAttempts: nuevosIntentos });
+        const failure = await failRealAttempt(real);
+        if (failure.locked) return res.status(423).json(lockedBody(failure.until));
       } else {
         const failure = loginAttempts.recordFailure(email);
         if (failure.locked) return res.status(423).json(lockedBody(failure.until));

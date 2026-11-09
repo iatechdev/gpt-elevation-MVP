@@ -6,15 +6,14 @@ const crypto = require('crypto');
 
 const MAX_ATTEMPTS = 3;                 // mismo umbral que el bloqueo por cuenta (no se cambia en ES-220)
 const LOCK_MS = 15 * 60 * 1000;         // misma duración
-const MAX_ENTRIES = 10000;              // cota de memoria: se purgan primero las entradas vencidas y luego las más antiguas
+const MAX_ENTRIES = 10000;              // cota de memoria: al llegar al tope se descarta la entrada más antigua
 
 const store = new Map();                // clave -> { attempts, lockedUntil (ms), touched (ms) }
 const keyOf = (email) => crypto.createHash('sha256').update(String(email ?? '').trim().toLowerCase()).digest('hex');
 
-function prune(now) {
-  for (const [key, entry] of store) {
-    if (entry.lockedUntil <= now && now - entry.touched > LOCK_MS) store.delete(key);
-  }
+// Igual que una cuenta real, el contador NO decae con el tiempo (solo un acierto lo limpia, y un correo sin cuenta nunca acierta): si decayera, dos fallos,
+// una espera y un tercero bloquearían a la cuenta real pero no al correo inexistente (otra diferencia observable). Solo la cota de memoria descarta entradas.
+function prune() {
   while (store.size >= MAX_ENTRIES) store.delete(store.keys().next().value); // Map conserva el orden de inserción
 }
 
@@ -28,10 +27,13 @@ function lockedUntil(email, now = Date.now()) {
 function recordFailure(email, now = Date.now()) {
   const key = keyOf(email);
   let entry = store.get(key);
-  if (!entry) { prune(now); entry = { attempts: 0, lockedUntil: 0, touched: now }; store.set(key, entry); }
-  if (entry.lockedUntil <= now && entry.attempts >= MAX_ATTEMPTS) entry.attempts = 0; // el bloqueo anterior ya venció
+  if (!entry) { prune(); entry = { attempts: 0, lockedUntil: 0, touched: now }; store.set(key, entry); }
+  // Como en una cuenta real, vencido un bloqueo el contador sigue en el umbral: el siguiente fallo vuelve a bloquear.
   entry.attempts += 1; entry.touched = now;
-  if (entry.attempts >= MAX_ATTEMPTS) { entry.lockedUntil = now + LOCK_MS; return { locked: true, until: new Date(entry.lockedUntil) }; }
+  if (entry.attempts >= MAX_ATTEMPTS) {
+    if (entry.lockedUntil <= now) entry.lockedUntil = now + LOCK_MS; // como la cuenta real: un bloqueo vigente no se prolonga con más fallos
+    return { locked: true, until: new Date(entry.lockedUntil) };
+  }
   return { locked: false, until: null };
 }
 

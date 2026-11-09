@@ -73,7 +73,10 @@ test('ES-220: el contador de correos sin cuenta usa el umbral y la duración del
   assert.ok(attempts.lockedUntil('ghost@example.invalid', t0 + 1000));
   assert.equal(attempts.lockedUntil('otro@example.invalid', t0 + 1000), null);
   assert.equal(attempts.lockedUntil('ghost@example.invalid', t0 + 3 + attempts.LOCK_MS), null); // vence
-  assert.equal(attempts.recordFailure('ghost@example.invalid', t0 + 4 + attempts.LOCK_MS).locked, false); // vuelve a empezar de cero
+  // Igual que una cuenta real (loginAttempts no se limpia solo): vencido el bloqueo, el siguiente fallo vuelve a bloquear y el contador no decae con el tiempo.
+  assert.equal(attempts.recordFailure('ghost@example.invalid', t0 + 4 + attempts.LOCK_MS).locked, true)
+  assert.equal(attempts.recordFailure('lento@example.invalid', t0).locked, false); assert.equal(attempts.recordFailure('lento@example.invalid', t0 + 1).locked, false)
+  assert.equal(attempts.recordFailure('lento@example.invalid', t0 + 10 * attempts.LOCK_MS).locked, true) // 2 fallos, una espera larga y un tercero: bloquea, como la cuenta real
   // Acotado: nunca más de MAX_ENTRIES entradas aunque lleguen correos distintos sin parar.
   attempts.reset();
   for (let i = 0; i < attempts.MAX_ENTRIES + 500; i++) attempts.recordFailure(`bot${i}@example.invalid`, t0 + i);

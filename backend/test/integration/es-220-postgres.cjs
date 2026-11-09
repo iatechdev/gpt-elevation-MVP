@@ -28,6 +28,7 @@ test('ES-220 PostgreSQL: inexistente, inactiva y bloqueada responden igual y el 
   target.pathname = '/' + dbName;
   sequelize = new Sequelize(target.toString(), { logging: false, dialectOptions: { ssl: false } });
   process.env.JWT_SECRET = randomBytes(32).toString('hex');
+  process.env.LOGIN_RATE_LIMIT_MAX = '200'; // este archivo hace ráfagas desde una sola IP; el límite por IP de producción (10/min) no es lo que se prueba aquí
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
   require('../../PricingPlan');
@@ -70,4 +71,20 @@ test('ES-220 PostgreSQL: inexistente, inactiva y bloqueada responden igual y el 
   const fine = await login('fine@example.invalid', good);
   assert.equal(fine.status, 200); assert.ok(fine.body.token);
   assert.equal((await User.findOne({ where: { email: 'fine@example.invalid' } })).loginAttempts, 0);
+
+  // QA-220-01: intentos SIMULTÁNEOS. Cinco fallos en paralelo desde una IP deben verse igual para la cuenta real, el correo inexistente y la cuenta inactiva:
+  // 2 × 401 y 3 × 423, en cada ronda. Con leer-sumar-escribir la cuenta real respondía 401 × 5 y dejaba pasar más de 3 intentos.
+  const burst = (email) => Promise.all(Array.from({ length: 5 }, () => login(email, wrong)));
+  const shape = (rows) => rows.map((r) => r.status).sort().join(',');
+  for (let round = 0; round < 6; round++) {
+    const names = ['real', 'ghost', 'inactive'].map((kind) => `${kind}-p${round}@example.invalid`);
+    await make(names[0]); await make(names[2], { active: false });
+    const [real, ghost, inactive] = await Promise.all(names.map(burst));
+    assert.equal(shape(real), '401,401,423,423,423', `ronda ${round} cuenta real: ${shape(real)}`);
+    assert.equal(shape(ghost), shape(real), `ronda ${round} inexistente: ${shape(ghost)}`);
+    assert.equal(shape(inactive), shape(real), `ronda ${round} inactiva: ${shape(inactive)}`);
+    for (const rows of [real, ghost, inactive]) for (const r of rows.filter((x) => x.status === 423)) assert.deepEqual(r.body, ghost.find((x) => x.status === 423).body);
+    const row = await User.findOne({ where: { email: names[0] } });
+    assert.equal(row.loginAttempts, 5); assert.ok(row.lockedUntil.getTime() - Date.now() > 14 * 60 * 1000 && row.lockedUntil.getTime() - Date.now() <= 15 * 60 * 1000); // ningún intento extra alarga el bloqueo
+  }
 });
