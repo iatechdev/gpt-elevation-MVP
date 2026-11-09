@@ -220,7 +220,7 @@ test('ES-25 frontera en el código: el puente solo pide id y marca de tiempo de 
   assert.equal((source.match(/attributes: \['id', 'updatedAt'\]/g) || []).length, 2); // findOrigin (lo usan resolveOrigins y needsReviewFor): diario y chat
   assert.equal((source.match(/attributes: \['id', 'createdAt'\]/g) || []).length, 1); // y la hoja de vida: solo id y fecha de creación, nunca el PDF
   assert.doesNotMatch(source, /\.content\b|userContent|replyContent/);
-  assert.deepEqual(Object.keys(bridge).sort(), ['BridgeError', 'FIELD_KEYS', 'confirm', 'getApprovedContext', 'list', 'normalizeFields', 'preview', 'revoke', 'revokeForConsent']);
+  assert.deepEqual(Object.keys(bridge).sort(), ['BridgeError', 'FIELD_KEYS', 'confirm', 'getApprovedContext', 'list', 'markSourceRevoked', 'normalizeFields', 'preview', 'revoke', 'revokeForConsent']); // ES-229: markSourceRevoked lo llama utils/consent.js
   const routes = fs.readFileSync(path.resolve(__dirname, '..', 'routes', 'careerContext.js'), 'utf8');
   assert.doesNotMatch(routes.split(String.fromCharCode(10)).filter((line) => !line.startsWith(String.fromCharCode(47, 47))).join(String.fromCharCode(10)), /getApprovedContext|DiaryEntry|ChatTurn/); // ninguna ruta HTTP entrega el contexto al motor
 });

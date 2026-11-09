@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom'
 import { useCareer } from './context'
 import { useDraft } from './useDraft'
 import { blockReason } from './reason'
-import { isCurrent, planCurrent, preferenceFor, routesFor, validActions } from './fixture'
-import type { Action, Arrangement, Assistance, Constraints, ContextKey, Decision, Experiment, Plan, Route } from './fixture'
+import { isCurrent, planCurrent, preferenceFor, reasonsFor, routesFor, validActions } from './fixture'
+import type { Action, Arrangement, Assistance, Constraints, ContextKey, Decision, Experiment, Part, Plan, Reason, Route } from './fixture'
 import type { CopyKey } from './copy'
 
 const base = '/app/next-step'
@@ -87,11 +87,48 @@ function ReviewBox({ experiment: e }: { experiment: Experiment }) {
   if (!e.sample) return null
   return <section><h3>{c.t('humanReview')}</h3><label><input type="checkbox" className="elv-checkbox" checked={selected} disabled={c.busy || c.uncertain || e.review} onChange={event => setSelected(event.target.checked)} />{c.t('shareSample')}</label><Button disabled={c.busy || c.uncertain || c.dirty || (!e.review && !selected)} onClick={() => void c.send({ type: 'review', id: e.id, selected })}>{c.t(e.review ? 'withdraw' : 'requestReview')}</Button>{e.review && <p>{c.t('requested')}</p>}</section>
 }
+const reasonKey: Record<Reason, CopyKey> = { route_evidence_changed: 'reasonRouteEvidence', cited_evidence_changed: 'reasonCitedEvidence', context_changed: 'reasonContext', route_choice_changed: 'reasonChoice', rules_changed: 'reasonRules' }
+const partKey: Record<Part, CopyKey> = { submission: 'partSubmission', reflection: 'partReflection', decision: 'partDecision' }
+// El foco pasa al borrador pendiente o, si ya no hay, al título del experimento: el botón pulsado desaparece del árbol.
+const refocus = () => window.setTimeout(() => (document.getElementById('career-carried-title') ?? document.getElementById('career-experiment-title'))?.focus(), 0)
+// QA-33-02: avisa POR QUÉ cambió la base y qué se conserva al empezar otra versión.
+function BasisNotice({ experiment: e, blocked }: { experiment: Experiment; blocked: boolean }) {
+  const c = useCareer(), reasons = reasonsFor(c.state, e), hasWork = Boolean(e.sample || e.observation || e.decision || e.carried)
+  const rebase = async () => { const result = await c.send({ type: 'rebase', id: e.id }); if (result.ok) refocus() }
+  return <div className="elv-alert career-notice" role="status"><h3>{c.t('basisTitle')}</h3>
+    {reasons.length > 0 && <><p>{c.t('basisWhat')}</p><ul>{reasons.map(r => <li key={r}>{c.t(reasonKey[r])}</li>)}</ul></>}
+    <p className="career-hint">{c.t(hasWork ? 'basisKeep' : 'basisKeepEmpty')}</p>
+    <div className="career-actions"><Button disabled={blocked} onClick={() => void rebase()}>{c.t('rebase')}</Button></div></div>
+}
+// Entrega, reflexión y decisión de la versión anterior: borrador por revisar, nunca resultado vigente; se usan o se descartan parte por parte y en orden.
+function CarriedDrafts({ experiment: e, blocked }: { experiment: Experiment; blocked: boolean }) {
+  const c = useCareer(), [asking, setAsking] = useState<Part | null>(null), carried = e.carried
+  if (!carried) return null
+  const can: Record<Part, boolean> = { submission: ['ready', 'in_progress'].includes(e.phase), reflection: ['submitted', 'self_reviewed'].includes(e.phase), decision: ['self_reviewed', 'decided'].includes(e.phase) }
+  const first: Record<Part, CopyKey | null> = { submission: null, reflection: 'firstSubmission', decision: 'firstReflection' }
+  const act = async (type: 'adopt' | 'discard', part: Part) => { setAsking(null); const result = await c.send({ type, id: e.id, expected: e.version, part }); if (result.ok) refocus() }
+  return <section className="career-carried" aria-labelledby="career-carried-title"><h3 id="career-carried-title" tabIndex={-1}>{c.t('carriedTitle')}</h3><p className="career-hint">{c.t('carriedNotCurrent')}</p>
+    {(['submission', 'reflection', 'decision'] as const).filter(part => carried[part]).map(part => {
+      const draft = carried[part]!, lines = part === 'submission' ? [(draft as NonNullable<typeof carried.submission>).sample] : part === 'reflection' ? [(draft as NonNullable<typeof carried.reflection>).observation, (draft as NonNullable<typeof carried.reflection>).interpretation] : [(draft as NonNullable<typeof carried.decision>).reason]
+      const retired = part === 'submission' ? carried.submission!.retired : 0
+      return <article className="career-draft" key={part}><h4>{c.t(partKey[part])}</h4><p className="career-tag">{c.t('carriedDraft')} · {c.t('fromVersion')} {draft.from}</p>
+        {part === 'decision' && <p>{c.t(carried.decision!.decision)}</p>}
+        {lines.filter(Boolean).map((line, index) => <p className="career-original" key={index}>{line}</p>)}
+        {part === 'submission' && carried.submission!.evidence && <p className="career-hint">{c.t('evidenceCited')}</p>}
+        {retired > 0 && <p className="career-hint">{c.t('retiredEvidence')} {retired}</p>}
+        {asking === part ? <><p role="status">{c.t('discardAsk')}</p><div className="career-actions"><Button disabled={blocked} onClick={() => void act('discard', part)}>{c.t('discardYes')}</Button><Button onClick={() => setAsking(null)}>{c.t('keepDraft')}</Button></div></>
+          : <div className="career-actions"><Button primary disabled={blocked || !can[part]} own={can[part] ? null : first[part]} onClick={() => void act('adopt', part)}>{c.t('useDraft')}</Button><Button disabled={blocked} onClick={() => setAsking(part)}>{c.t('discardDraft')}</Button></div>}
+      </article>
+    })}
+  </section>
+}
 export function ExperimentScreen() {
   const { id } = useParams(), c = useCareer(), e = c.state.experiments.find(e => String(e.id) === id)
   if (!e) return <p role="status">{c.t('empty')}</p>
   const blocked = c.busy || c.uncertain || c.dirty, current = isCurrent(c.state, e)
-  return <article className="elv-card"><Button onClick={() => c.navigate(`${base}/experiments`)}>{c.t('experiments')}</Button><h2>{c.t('experiment')} · {e.route.title[c.lang]}</h2><p>{c.t('version')} {e.version} · {c.t(e.phase)} · {c.t(current ? 'current' : 'needsReview')}</p>
+  return <article className="elv-card"><Button onClick={() => c.navigate(`${base}/experiments`)}>{c.t('experiments')}</Button><h2 id="career-experiment-title" tabIndex={-1}>{c.t('experiment')} · {e.route.title[c.lang]}</h2><p>{c.t('version')} {e.version} · {c.t(e.phase)} · {c.t(current ? 'current' : 'needsReview')}</p>
+    {!current && <BasisNotice experiment={e} blocked={blocked} />}
+    <CarriedDrafts experiment={e} blocked={blocked} />
     <h3>{c.t('question')}</h3><p>{c.t('questionText')}</p><p>{c.t('taskText')}</p><p>{e.minutes} {c.t('minutes')} · {c.t('costUnknown')}</p><details><summary>{c.t('criteria')}</summary><p>{c.t('criteriaText')}</p><p>{c.t('limitation')}</p></details>
     {e.phase === 'ready' && <Button primary disabled={blocked || !current} own={current ? null : 'needsReview'} onClick={() => void c.send({ type: 'change', id: e.id, expected: e.version, phase: 'in_progress', value: {} })}>{c.t('start')}</Button>}
     {e.sample && <section><h3>{c.t('sample')}</h3><p className="career-original">{e.sample}</p><p>{c.t('help')}: {e.assistance && c.t(e.assistance)}</p></section>}
@@ -99,7 +136,7 @@ export function ExperimentScreen() {
     <ExperimentForm key={`${e.id}-${e.version}`} experiment={e} /><ReviewBox key={`review-${e.id}-${e.version}`} experiment={e} />
     {e.decision && <p>{c.t(e.decision)}: <span className="career-original">{e.reason}</span></p>}
     {e.phase === 'decided' && ['continue', 'adjust'].includes(e.decision) && <Button disabled={blocked || !current} own={current ? null : 'needsReview'} onClick={() => c.navigate(`${base}/plan`)}>{c.t('proposePlan')}</Button>}
-    <div className="career-actions"><Button disabled={blocked} onClick={() => void c.send({ type: 'rebase', id: e.id })}>{c.t('rebase')}</Button></div>
+    {current && <div className="career-actions"><Button disabled={blocked} onClick={() => void c.send({ type: 'rebase', id: e.id })}>{c.t('rebase')}</Button></div>}
     <details><summary>{c.t('versions')}</summary>{e.versions.map(v => <section key={v.version}><h3>{c.t('version')} {v.version} · {c.t(v.phase)}</h3><p>{c.t(v.basis === c.state.basis ? 'current' : 'needsReview')}</p>{[v.sample, v.observation, v.interpretation, v.reason].filter(Boolean).map((value, index) => <p className="career-original" key={index}>{value}</p>)}</section>)}</details>
   </article>
 }

@@ -130,3 +130,8 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .space-plan .elv-btn { margin-top: auto; align-self: flex-start; }
 .space-plan-price { font-weight: 600; }
 @media(min-width: 900px) { .space-plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .space-page:has(.space-plan-grid) > main { max-width: 1040px; } }
+
+/* ES-162: aviso de demora con «Dejar de esperar» y casilla «Enter envía». */
+.chat-composer .chat-slow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.chat-composer .chat-slow p { margin: 0; flex: 1 1 16rem; }
+.chat-composer .chat-enter { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; min-height: 24px; }

@@ -64,17 +64,46 @@ async function ownPlan(userId, planId, transaction) {
   id(planId); const row = await Plan.findOne({ where: { UserId: userId, id: planId }, transaction });
   if (!row) throw missing(); return row;
 }
-async function basis(userId, choiceId) {
-  const route = await contracts.getRoute(userId, choiceId);
+// QA-33-02: la huella se parte en piezas para poder explicar POR QUÉ cambió. «Evidencia relevante» es la que cambia las pistas de las capacidades de ESTA ruta
+// (lo que ES-32 ya calcula como evidencia que la sostiene) o la que la persona citó en su entrega; el resto de su evidencia no invalida el experimento.
+// No existe vínculo evidencia→tarea en los datos de hoy: relevante es «para la ruta», no «para el texto de la tarea».
+const byKey = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+const capabilitiesOf = route => (route.dimensions?.demonstratedTransfer?.capabilities ?? [])
+  .map(c => ({ skillKey: c.skillKey, importance: c.importance, tracks: (c.tracks ?? []).map(t => ({ track: t.track, level: t.level, evidenceCount: t.evidenceCount })) }))
+  .sort((a, b) => byKey(a.skillKey, b.skillKey));
+const REASONS = { choice: 'route_choice_changed', rules: 'rules_changed', context: 'context_changed', route: 'route_evidence_changed', cited: 'cited_evidence_changed' };
+async function basis(userId, choiceId, fresh = false) {
+  const route = await contracts.getRoute(userId, choiceId, { allowBasisChange: !fresh });
   const context = rules.contextSnapshot(await contracts.getContext(userId));
   const confirmed = await evidence.getConfirmedEvidence(userId, 'career-plan');
   const refs = confirmed.map(e => ({ evidenceId: e.evidenceId, version: e.version })).sort((a, b) => a.evidenceId - b.evidenceId);
-  return { route: route.route, context, confirmed, hash: hash({ userId, choiceId, routeHash: route.basisHash, context, refs, templateVersion: rules.TEMPLATE_VERSION, templateHash: hash(rules.TEMPLATE) }) };
+  const template = { templateVersion: rules.TEMPLATE_VERSION, templateHash: hash(rules.TEMPLATE) };
+  const parts = {
+    choice: hash({ userId, choiceId, roleKey: route.route.roleKey, slot: route.route.slot }),
+    rules: hash({ rules: route.rules ?? null, ...template }),
+    context: hash(context),
+    route: hash(capabilitiesOf(route.route)),
+  };
+  // legacyHash: la huella global anterior, solo para comparar versiones guardadas con payload v1 (sin basisParts).
+  return { route: route.route, context, confirmed, parts, hash: hash(parts), legacyHash: hash({ userId, choiceId, routeHash: route.basisHash, context, refs, ...template }) };
 }
+const citedPart = (live, refs = []) => {
+  const found = new Map(live.confirmed.map(e => [e.evidenceId, e.version]));
+  return hash(refs.map(ref => ({ evidenceId: ref.evidenceId, version: ref.version, valid: found.get(ref.evidenceId) === ref.version })).sort((a, b) => a.evidenceId - b.evidenceId));
+};
+function fingerprint(live, refs = []) { const parts = { ...live.parts, cited: citedPart(live, refs) }; return { parts, hash: hash(parts) }; }
+// Hash que debe tener guardada una versión para seguir vigente: payload v2 usa las piezas; payload v1 conserva la huella global anterior.
+const expectedHash = (live, payload) => payload.basisParts ? fingerprint(live, payload.submission?.evidenceRefs).hash : live.legacyHash;
+const reasonsFor = (stored, now) => Object.keys(REASONS).filter(key => stored[key] !== now[key]).map(key => REASONS[key]);
+const choiceErrors = new Set(['basis_changed', 'conflict']);
+const contextErrors = new Set(['context_incomplete', 'availability_unknown', 'timezone_unknown', 'needs_availability']);
 async function stillCurrent(userId, experiment, row) {
-  try { return (await basis(userId, experiment.choiceId)).hash === row.basisHash ? { status: 'current', reasons: [] } : { status: 'needs_review', reasons: ['basis_changed'] }; }
-  catch (error) {
-    if ([403, 404, 409, 422, 503].includes(error.status)) return { status: 'needs_review', reasons: [error.code] };
+  try {
+    const live = await basis(userId, experiment.choiceId), payload = unpack(row);
+    if (row.basisHash === expectedHash(live, payload)) return { status: 'current', reasons: [] };
+    return { status: 'needs_review', reasons: payload.basisParts ? reasonsFor(payload.basisParts, fingerprint(live, payload.submission?.evidenceRefs).parts) : ['basis_changed'] };
+  } catch (error) {
+    if ([403, 404, 409, 422, 503].includes(error.status)) return { status: 'needs_review', reasons: [choiceErrors.has(error.code) ? 'route_choice_changed' : contextErrors.has(error.code) ? 'context_changed' : error.code] };
     throw error;
   }
 }
@@ -104,8 +133,9 @@ async function listReviews(userId, experimentId, after = 0) {
 }
 async function proposeExperiment(userId, input) {
   shape(input, ['choiceId', 'taskIndex', 'minutes']); id(input.choiceId);
-  const live = await basis(userId, input.choiceId);
-  const proposal = rules.experimentProposal({ ...input, route: live.route, context: live.context, basisHash: live.hash });
+  const live = await basis(userId, input.choiceId, true);
+  const start = fingerprint(live);
+  const proposal = rules.experimentProposal({ ...input, route: live.route, context: live.context, basisHash: start.hash, basisParts: start.parts });
   return { proposal, ...tokens.sign('es33-experiment', userId, hash(proposal)) };
 }
 function checkToken(purpose, userId, input) {
@@ -118,12 +148,13 @@ async function createExperiment(userId, input) {
     const repeat = await repeated(Experiment, userId, input, transaction);
     if (repeat) return { experimentId: repeat.id, created: false };
     checkToken('es33-experiment', userId, input);
-    const live = await basis(userId, input.proposal.choiceId);
-    const expected = rules.experimentProposal({ choiceId: input.proposal.choiceId, route: live.route, taskIndex: input.proposal.taskIndex, minutes: input.proposal.minutes, context: live.context, basisHash: live.hash });
+    const live = await basis(userId, input.proposal.choiceId, true);
+    const start = fingerprint(live);
+    const expected = rules.experimentProposal({ choiceId: input.proposal.choiceId, route: live.route, taskIndex: input.proposal.taskIndex, minutes: input.proposal.minutes, context: live.context, basisHash: start.hash, basisParts: start.parts });
     if (hash(expected) !== hash(input.proposal)) throw conflict();
     const experiment = await Experiment.create({ ...command(userId, input), choiceId: expected.choiceId, currentVersion: 1 }, { transaction });
-    await ExperimentVersion.create({ ...command(userId, input), experimentId: experiment.id, version: 1, lifecycle: 'ready', payload: pack(expected), basisHash: live.hash }, { transaction });
-    if ((await basis(userId, expected.choiceId)).hash !== live.hash) throw conflict();
+    await ExperimentVersion.create({ ...command(userId, input), experimentId: experiment.id, version: 1, lifecycle: 'ready', payload: pack(expected), basisHash: start.hash }, { transaction });
+    if ((await basis(userId, expected.choiceId, true)).hash !== live.hash) throw conflict();
     return { experimentId: experiment.id, created: true };
   });
 }
@@ -140,16 +171,23 @@ async function change(userId, experimentId, input) {
     const row = await currentVersion(userId, experiment, transaction);
     if (row.version !== input.expectedVersion) throw conflict();
     const previous = unpack(row), live = await basis(userId, experiment.choiceId);
-    let next;
+    let next, stored = live.legacyHash;
     if (input.change?.action === 'rebase') {
       shape(input.change, ['action']);
-      next = rules.experimentProposal({ choiceId: experiment.choiceId, route: live.route, taskIndex: previous.taskIndex, minutes: previous.minutes, context: live.context, basisHash: live.hash });
+      const start = fingerprint(live), found = new Map(live.confirmed.map(e => [e.evidenceId, e.version]));
+      next = rules.experimentProposal({ choiceId: experiment.choiceId, route: live.route, taskIndex: previous.taskIndex, minutes: previous.minutes, context: live.context, basisHash: start.hash, basisParts: start.parts });
+      // La versión anterior queda intacta; su trabajo propio viaja como borrador por revisar y se reconfirma parte por parte.
+      const carried = rules.carryOver(previous, row.version, ref => found.get(ref.evidenceId) === ref.version);
+      if (carried) next.carriedOver = carried;
+      stored = start.hash;
     } else {
-      if (row.basisHash !== live.hash) throw conflict();
+      if (row.basisHash !== expectedHash(live, previous)) throw conflict();
       next = rules.changeExperiment(previous, input.change);
-      if (input.change.action === 'submit') { validateRefs(next.submission.evidenceRefs, live); next.submission.version = row.version + 1; }
+      const adopted = input.change.action === 'adopt' && input.change.part === 'submission';
+      if (input.change.action === 'submit' || adopted) { validateRefs(next.submission.evidenceRefs, live); next.submission.version = row.version + 1; }
+      if (next.basisParts) { const now = fingerprint(live, next.submission?.evidenceRefs); next.basisParts = now.parts; stored = now.hash; }
     }
-    const saved = await ExperimentVersion.create({ ...command(userId, input), experimentId, version: row.version + 1, lifecycle: next.lifecycle, payload: pack(next), basisHash: live.hash }, { transaction });
+    const saved = await ExperimentVersion.create({ ...command(userId, input), experimentId, version: row.version + 1, lifecycle: next.lifecycle, payload: pack(next), basisHash: stored }, { transaction });
     await experiment.update({ currentVersion: saved.version }, { transaction });
     if ((await basis(userId, experiment.choiceId)).hash !== live.hash) throw conflict();
     return { version: versionDto(saved), created: true };
@@ -178,7 +216,7 @@ async function requestReview(userId, experimentId, input) {
       if (!refs.length && !input.includeSample) throw invalid();
       if (input.includeSample && !current.submission.sample) throw invalid();
       if (refs.some(ref => !current.submission.evidenceRefs.some(allowed => allowed.evidenceId === ref.evidenceId && allowed.version === ref.version))) throw invalid();
-      const live = await basis(userId, experiment.choiceId); if (row.basisHash !== live.hash) throw conflict(); validateRefs(refs, live);
+      const live = await basis(userId, experiment.choiceId); if (row.basisHash !== expectedHash(live, current)) throw conflict(); validateRefs(refs, live);
       payload = { evidenceRefs: refs, includeSample: input.includeSample, shared: false }; submissionVersion = input.submissionVersion; status = 'pending_authorization';
     } else throw invalid();
     const saved = await Review.create({ ...command(userId, input), experimentId, submissionVersion, status, payload: pack(payload) }, { transaction });
@@ -189,7 +227,7 @@ async function proposePlan(userId, input) {
   shape(input, ['experimentId', 'expectedVersion', 'budget']); id(input.experimentId); version(input.expectedVersion);
   const experiment = await ownExperiment(userId, input.experimentId), row = await currentVersion(userId, experiment);
   if (row.version !== input.expectedVersion) throw conflict();
-  const live = await basis(userId, experiment.choiceId); if (row.basisHash !== live.hash) throw conflict();
+  const live = await basis(userId, experiment.choiceId); if (row.basisHash !== expectedHash(live, unpack(row))) throw conflict();
   const proposal = { ...rules.proposePlan({ ...unpack(row), basisHash: row.basisHash }, row.version, live.context, live.route.resources, input.budget ?? null), experimentId: experiment.id };
   return { proposal, ...tokens.sign('es33-plan', userId, hash(proposal)) };
 }
@@ -217,7 +255,7 @@ async function savePlan(userId, input) {
       checkToken('es33-plan', userId, input);
       experimentId = id(input.proposal?.experimentId);
       const experiment = await ownExperiment(userId, experimentId, transaction), row = await currentVersion(userId, experiment, transaction);
-      live = await basis(userId, experiment.choiceId); if (row.basisHash !== live.hash || row.version !== input.proposal.experimentVersion) throw conflict();
+      live = await basis(userId, experiment.choiceId); if (row.basisHash !== expectedHash(live, unpack(row)) || row.version !== input.proposal.experimentVersion) throw conflict();
       const expected = { ...rules.proposePlan({ ...unpack(row), basisHash: row.basisHash }, row.version, live.context, live.route.resources, input.proposal.budget ?? null), experimentId };
       if (hash(expected) !== hash(input.proposal)) throw conflict();
       next = rules.acceptPlan(expected, input.selections);

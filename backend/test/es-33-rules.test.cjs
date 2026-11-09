@@ -106,3 +106,35 @@ for (const [name, before, after, check] of [
   const context = { module: { exports: {} }, structuredClone }; vm.runInNewContext(source.replace(before, after), context);
   assert.doesNotThrow(() => check(context.module.exports));
 });
+
+// QA-33-02: lo escrito en la versión anterior viaja como borrador por revisar; solo texto propio y evidencia que sigue siendo válida.
+test('QA-33-02: carryOver conserva solo texto propio y cuenta la evidencia retirada sin su contenido', () => {
+  const { decided } = require('./es-33-fixture.cjs');
+  const previous = decided();
+  previous.submission.evidenceRefs = [{ evidenceId: 1, version: 1 }, { evidenceId: 2, version: 3 }];
+  const carried = rules.carryOver(previous, 4, ref => ref.evidenceId === 1);
+  assert.equal(carried.status, 'previous_version_to_review');
+  assert.deepEqual(carried.submission, { fromVersion: 4, sample: 'SYNTHETIC SAMPLE', assistance: 'drafting', evidenceRefs: [{ evidenceId: 1, version: 1 }], retiredEvidence: 1 });
+  assert.deepEqual(carried.reflection, { fromVersion: 4, observation: 'Synthetic observation', interpretation: 'Synthetic interpretation' });
+  assert.deepEqual(carried.decision, { fromVersion: 4, value: 'continue', reason: 'Synthetic reason' });
+  assert.equal(rules.carryOver(rules.experimentProposal(proposalInputForCarry()), 1, () => true), undefined); // sin trabajo propio no hay nada que arrastrar
+  const again = rules.carryOver({ lifecycle: 'ready', carriedOver: carried }, 5, () => true);
+  assert.deepEqual(again, carried); // un borrador sin resolver sobrevive a otro rebase y conserva su versión de origen
+});
+test('QA-33-02: adoptar valida como lo escrito a mano, respeta el orden y descartar no crea resultado', () => {
+  const { decided } = require('./es-33-fixture.cjs');
+  const carried = rules.carryOver(decided(), 4, () => true);
+  const ready = { ...rules.experimentProposal(proposalInputForCarry()), carriedOver: carried };
+  assert.throws(() => rules.changeExperiment(ready, { action: 'adopt', part: 'reflection' }), { status: 409 });
+  assert.throws(() => rules.changeExperiment(ready, { action: 'adopt', part: 'unknown' }), { code: 'nothing_to_adopt' });
+  assert.throws(() => rules.changeExperiment(ready, { action: 'adopt', part: 'submission', sample: 'x' }), { status: 400 });
+  const dropped = rules.changeExperiment(ready, { action: 'discard', part: 'submission' });
+  assert.equal(dropped.lifecycle, 'ready'); assert.equal(dropped.submission, undefined); assert.equal(dropped.carriedOver.submission, undefined);
+  const submitted = rules.changeExperiment(ready, { action: 'adopt', part: 'submission' });
+  assert.equal(submitted.lifecycle, 'submitted'); assert.equal(submitted.submission.sample, 'SYNTHETIC SAMPLE'); assert.equal(submitted.submission.assistance.source, 'self_report');
+  const reflected = rules.changeExperiment(submitted, { action: 'adopt', part: 'reflection' });
+  const decidedAgain = rules.changeExperiment(reflected, { action: 'adopt', part: 'decision' });
+  assert.equal(decidedAgain.lifecycle, 'decided'); assert.equal(decidedAgain.carriedOver, undefined);
+  assert.equal(ready.carriedOver.submission.sample, 'SYNTHETIC SAMPLE'); // el borrador de entrada no se muta
+});
+function proposalInputForCarry() { return require('./es-33-fixture.cjs').proposalInput(); }
