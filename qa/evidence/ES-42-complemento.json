@@ -1,0 +1,77 @@
+[
+ {
+  "id": "R-0 sanidad: una cuenta recién registrada puede iniciar sesión con su correo y contraseña",
+  "ok": true,
+  "detail": "200 {\"message\":\"Inicio de sesión exitoso\",\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFt pwlen=23"
+ },
+ {
+  "id": "R-a bajar el rol por la API de administración: el token viejo del profesional deja de valer (401) en la API y en /api/session",
+  "ok": true,
+  "detail": "antes=200 PUT=200 después=401 session=401"
+ },
+ {
+  "id": "R-b desactivar la cuenta: token vigente → 401 y no se obtiene un token nuevo",
+  "ok": true,
+  "detail": "antes=200 PUT=200 después=401 login=403 {\"error\":\"Cuenta inactiva. Contacta con soporte. / Inactive account. Contact support.\",\"deactivated\""
+ },
+ {
+  "id": "R-b2 reactivar es una acción explícita aparte y permite ingresar de nuevo",
+  "ok": true,
+  "detail": "PUT=200 login=200 {\"message\":\"Inicio de sesión exitoso\",\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywibmFt"
+ },
+ {
+  "id": "R-d administración no puede fijar contraseñas ajenas (ES-210): 410 incluso para superadmin",
+  "ok": true,
+  "detail": "status=410"
+ },
+ {
+  "id": "R-c1 un admin no asciende a otra persona a superadmin",
+  "ok": true,
+  "detail": "ascenso=403 rol=user"
+ },
+ {
+  "id": "R-c2 un admin NO puede desactivar a un superadmin ni cortarle la sesión (jerarquía de roles)",
+  "ok": false,
+  "detail": "antes=200 PUT active=false → 200; activa=false; sesión del superadmin después=401"
+ },
+ {
+  "id": "R-c3 un admin NO puede degradar el rol de un superadmin",
+  "ok": false,
+  "detail": "PUT role=user → 200; el rol queda user"
+ },
+ {
+  "id": "R-c4 (informativo) un admin sobre OTRO admin: degradar a user",
+  "ok": true,
+  "detail": "PUT role=user → 200; rol queda user"
+ },
+ {
+  "id": "R-c5 un admin no borra a un superadmin (el borrado es solo del superadmin)",
+  "ok": true,
+  "detail": "DELETE=403 sigue=1"
+ },
+ {
+  "id": "R-e logout-all cierra todas las sesiones propias (ambos tokens → 401)",
+  "ok": true,
+  "detail": "logout-all=200 t1=401 t2=401 login=200 {\"message\":\"Inicio de sesión exitoso\",\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsIm5h"
+ },
+ {
+  "id": "R-f1 sin consentimiento el profesional no crea notas sobre la persona (403); con consentimiento sí (201)",
+  "ok": true,
+  "detail": "sin=403 con=201"
+ },
+ {
+  "id": "R-f2 la nota queda cifrada en la base (sin el texto plano) y el texto malicioso no daña la base",
+  "ok": true,
+  "detail": "cifrada=true usuariosIntactos=true"
+ },
+ {
+  "id": "R-f3 un profesional no asignado no edita ni lee la nota; la persona y otra persona tampoco acceden a la ruta profesional; la nota no cambió",
+  "ok": true,
+  "detail": "T2 put=404 get=404 persona=403 otra=403 intacta=true"
+ },
+ {
+  "id": "R-f4 al revocar, el profesional pierde la lectura inmediatamente y la respuesta no trae la nota",
+  "ok": true,
+  "detail": "status=403 contieneNota=false"
+ }
+]

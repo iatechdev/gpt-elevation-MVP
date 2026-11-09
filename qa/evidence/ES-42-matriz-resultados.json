@@ -41,8 +41,8 @@
  },
  {
   "id": "O2a matriz de roles (5 roles × 6 grupos de rutas): cada rol solo entra donde corresponde; los demás 401/403; ninguno 5xx",
-  "ok": true,
-  "detail": "30 combinaciones correctas"
+  "ok": false,
+  "detail": "admin /api/board/manifest=200 (debía ser 401/403) | board /api/board/manifest=403 (debía poder)"
  },
  {
   "id": "O2b sin token todas las rutas protegidas → 401/403",
@@ -102,6 +102,6 @@
  {
   "id": "P1 6 personas + 1 terapeuta a la vez sobre las rutas principales, 0 IA: ningún 5xx y p95 ≤ 1 s (umbral propuesto)",
   "ok": true,
-  "detail": "solicitudes=39 p50=71 p95=219 ms total=577 ms 5xx=0"
+  "detail": "solicitudes=39 p50=50 p95=171 ms total=451 ms 5xx=0"
  }
 ]
