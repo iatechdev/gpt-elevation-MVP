@@ -35,7 +35,9 @@ const RANK = { admin: 2, superadmin: 3 };
 const rankOf = (role) => RANK[role] || 0;
 
 // ES-217 (QA-215-01): un id que no es un entero positivo es un 400, nunca un 500 de la base. Cubre todas las rutas con :id de este archivo.
-router.param('id', (req, res, next, value) => (/^[1-9][0-9]{0,9}$/.test(value) ? next()
+// QA-217-01: además debe caber en la columna (int32, máx. 2147483647): un id de 10 dígitos mayor daba 500 de la base.
+const MAX_INT32 = 2147483647;
+router.param('id', (req, res, next, value) => (/^[1-9][0-9]{0,9}$/.test(value) && Number(value) <= MAX_INT32 ? next()
   : res.status(400).json({ code: 'invalid_id', error: 'Identificador inválido. / Invalid identifier.' })));
 
 // ES-192 (decisión 24): administración ya no define la contraseña de otra persona. Se invita por enlace (POST /api/admin/invitations):

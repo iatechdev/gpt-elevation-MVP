@@ -107,12 +107,13 @@ test('ES-217 PostgreSQL: unlock solo levanta bloqueos por intentos, con jerarqu�
   });
 
   await t.test('QA-215-01: un id que no es un entero positivo da 400 (nunca 500) en todas las rutas con :id', async () => {
-    for (const bad of ['abc', '0', '-1', '1.5', '99999999999', '1e3', '%20']) {
+    for (const bad of ['abc', '0', '-1', '1.5', '99999999999', '1e3', '%20', '2147483648', '3000000000', '9999999999']) { // QA-217-01: > int32 también
       for (const [method, suffix, body] of [['PUT', '', { active: true }], ['PUT', '/unlock'], ['DELETE', ''], ['PUT', '/plan', { planId: null }], ['GET', '/stats'], ['POST', '/reset-link', {}]]) {
         const r = await call(sup, method, `/api/admin/usuarios/${bad}${suffix}`, body);
         assert.equal(r.status, 400, `${method} ${bad}${suffix} → ${r.status}`); assert.equal(r.body.code, 'invalid_id');
       }
     }
+    assert.equal((await call(sup, 'PUT', '/api/admin/usuarios/2147483647', { active: true })).status, 404, 'el máximo int32 es un id válido que no existe');
     assert.equal((await call(sup, 'PUT', '/api/admin/usuarios/987654', { active: true })).status, 404);
     assert.equal((await call(sup, 'PUT', '/api/admin/usuarios/987654/unlock')).status, 404);
   });
