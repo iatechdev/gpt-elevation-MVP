@@ -148,11 +148,13 @@ test('ES-21 chat: malestar mantiene el flujo ordinario y añade una nota de apoy
 test('ES-21 chat: el país declarado muestra recursos verificados; el idioma nunca los infiere', async t => {
   setup();
   const request = await startApp(t);
-  registry.countries.XX = { name: 'País sintético', resources: [
-    { label: 'Línea sintética', contact: 'TEST-0000', source: 'https://example.invalid/oficial', verifiedBy: 'Revisor sintético', verifiedAt: isoDaysAgo(5) },
-    { label: 'Vencida', contact: 'TEST-9999', source: 'https://example.invalid/vieja', verifiedBy: 'Revisor', verifiedAt: isoDaysAgo(500) },
-  ] };
-  t.after(() => { delete registry.countries.XX; });
+  // ES-193: los recursos salen de la base (ContactEntry), no del archivo; aquí se simula la tabla con filas sintéticas.
+  const before = models.ContactEntry.findAll;
+  models.ContactEntry.findAll = async () => [
+    { id: 1, country: 'XX', name: 'Línea sintética', contact: 'TEST-0000', active: true, position: 0, source: 'https://example.invalid/oficial', verifiedBy: 'Revisor sintético', verifiedAt: isoDaysAgo(5) },
+    { id: 2, country: 'XX', name: 'Vencida', contact: 'TEST-9999', active: true, position: 1, source: 'https://example.invalid/vieja', verifiedBy: 'Revisor', verifiedAt: isoDaysAgo(500) },
+  ];
+  t.after(() => { models.ContactEntry.findAll = before; });
   const withCountry = await post(request, { message: 'quiero morir', country: 'xx' });
   assert.match(withCountry.body.reply, /Línea sintética: TEST-0000/);
   assert.doesNotMatch(withCountry.body.reply, /TEST-9999/);

@@ -24,6 +24,7 @@ const EthicManifest               = require('../EthicManifest');
 const { validateBody, nonempty, optional } = require('../middlewares/validateBody');
 const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS, containsPhoneNumber } = require('../utils/promptSafety');
 const { detectRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
+const { loadSafetyRegistry } = require('../utils/contactEntries'); // ES-193: los recursos de ayuda salen de la base (editables, con procedencia vigente)
 const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY, PHONE_FILTER_REPLY } = require('../utils/companionTone');
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
 
@@ -180,7 +181,7 @@ router.post('/chat', validateBody({
     const country = normalizeCountry(req.body.country); // solo un país declarado; nunca se infiere del idioma
     if (risk.level === 'high') {
       // Escenario grave: se interrumpe el flujo ordinario y NO se llama al proveedor de IA.
-      const reply = buildSafetyReply({ lang, country });
+      const reply = buildSafetyReply({ lang, country, registry: await loadSafetyRegistry() });
       await confirmTurn(reply);
       return res.json(requestId ? { reply, requestId, interrupted: true } : { reply, interrupted: true });
     }
@@ -285,7 +286,7 @@ ${manifest}
     }
 
     // Malestar: la respuesta ordinaria se acompaña de una nota breve de apoyo (con recursos solo si están verificados).
-    if (risk.level === 'medium') respuestaIA = `${respuestaIA}\n\n${buildSupportNote({ lang, country })}`;
+    if (risk.level === 'medium') respuestaIA = `${respuestaIA}\n\n${buildSupportNote({ lang, country, registry: await loadSafetyRegistry() })}`;
 
     // ── Se confirma el turno completo (mensaje + respuesta) ──
     await confirmTurn(respuestaIA, truncated);
