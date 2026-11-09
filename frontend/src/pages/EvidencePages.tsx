@@ -209,7 +209,7 @@ function EvidenceEditor({ token, edit }: { token: string; edit?: EditTarget }) {
         </div>
       </>}
       {(phase === 'saving' || phase === 'uncertain') && pending && <>
-        <p role="status">{phase === 'saving' ? l('saving') : l(pending.ack ? 'uncertain' : 'uncertain_write')}</p><EvidenceContent payload={pending.body.payload} />
+        {phase === 'saving' && <p role="status">{l('saving')}</p>}<EvidenceContent payload={pending.body.payload} />
         {phase === 'uncertain' && <button type="button" className="elv-btn" onClick={() => void write(pending)}>{l('retry')}</button>}
       </>}
       {phase === 'saved' && saved && <>

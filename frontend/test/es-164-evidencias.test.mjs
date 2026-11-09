@@ -35,3 +35,10 @@ test('ES-164: textos ES/EN del filtro, borrar, revisar e incierto, sin promesas 
 test('ES-164: la línea «queda como respaldo de tu nivel» va sobre el aviso de la revisión', () => {
   assert.match(page, /<p>\{l\('review_effect'\)\}<\/p><p className="evidence-warning">\{l\('warning'\)\}<\/p>/)
 })
+
+test('ES-164: el mensaje de resultado incierto del editor se anuncia UNA vez (role=alert); role=status solo para «Guardando…»', () => {
+  assert.match(page, /\{phase === 'saving' && <p role="status">\{l\('saving'\)\}<\/p>\}/)
+  assert.ok(!/l\(pending\.ack \? 'uncertain' : 'uncertain_write'\)/.test(page), 'el texto de incierto no se repite en un status')
+  const editor = page.slice(page.indexOf('function EvidenceEditor'))
+  assert.equal((editor.match(/role="alert" className="evidence-error-box"/g) || []).length, 1)
+})
