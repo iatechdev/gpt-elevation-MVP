@@ -5,6 +5,8 @@
 // ES-180 (HU-P29): todo con agregados en SQL (antes cargaba todos los registros en memoria y hacía 2–3 consultas por profesional).
 // Mismo contrato de campos que antes (+ `range`, `days30`, `total30`, `max30` y `dailyAverage30`). `sessionsByDay` se conserva (solo los días con
 // registros) para la pantalla actual; `days30` trae SIEMPRE los 30 días, con 0 en los días sin registros. Los 30 días se cuentan en America/Bogotá.
+// Contrato: `max30` es `{ date: 'AAAA-MM-DD', count }` (el primer día con más registros) o `null` si no hay ninguno; NUNCA un número. La pantalla
+// (adminOverviewData.ts) y el fixture frontend/test/fixtures/es-180-metrics-*.json lo reflejan; la prueba PG falla si la forma cambia.
 // Nota de datos: «sesiones» (`totalSessions`) cuenta REGISTROS DE ÁNIMO (MoodLog), no sesiones con profesional.
 
 const express = require('express');

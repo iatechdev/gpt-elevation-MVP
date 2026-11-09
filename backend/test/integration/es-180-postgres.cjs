@@ -10,6 +10,19 @@ const { once } = require('node:events');
 const express = require('express');
 const { Sequelize } = require('sequelize');
 
+// Contrato con la pantalla: la respuesta REAL de /api/admin/metrics se guarda como fixture del frontend (ES180_WRITE_FIXTURE=1) y cada corrida
+// comprueba que la forma (claves y tipos) sigue igual. Así la prueba del componente usa datos con la forma verdadera y no una forma supuesta.
+const fs = require('node:fs'); const path = require('node:path');
+const FIXTURES = path.join(__dirname, '..', '..', '..', 'frontend', 'test', 'fixtures');
+const shapeOf = (v) => (v === null ? null : Array.isArray(v) ? [v.length ? shapeOf(v[0]) : null] : (v && typeof v === 'object') ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, shapeOf(v[k])])) : typeof v);
+const sameShape = (a, b) => (a === null || b === null) ? true : (Array.isArray(a) ? Array.isArray(b) && sameShape(a[0] ?? null, b[0] ?? null) : (a && typeof a === 'object') ? (b && typeof b === 'object' && !Array.isArray(b) && JSON.stringify(Object.keys(a)) === JSON.stringify(Object.keys(b)) && Object.keys(a).every((k) => sameShape(a[k], b[k]))) : a === b);
+function contractFixture(name, body) {
+  const file = path.join(FIXTURES, name);
+  if (process.env.ES180_WRITE_FIXTURE) { fs.mkdirSync(FIXTURES, { recursive: true }); fs.writeFileSync(file, JSON.stringify(body, null, 2) + String.fromCharCode(10)); return; }
+  const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.ok(sameShape(shapeOf(saved), shapeOf(body)), `la respuesta de /api/admin/metrics cambió de forma respecto de ${name}; regenera con ES180_WRITE_FIXTURE=1 y revisa la pantalla`);
+}
+
 test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 300000 }, async (t) => {
   const source = process.env.ES180_TEST_DATABASE_URL;
   assert.ok(source, 'ES180_TEST_DATABASE_URL debe apuntar a un PostgreSQL local desechable.');
@@ -80,6 +93,8 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     assert.equal(m.total30, 0); assert.equal(m.max30, null); assert.equal(m.dailyAverage30, 0);
     assert.deepEqual(m.range, { start: dayOffset(29), end: dayOffset(0), timeZone: 'America/Bogota' });
     assert.deepEqual(m.topTherapists.map((x) => [x.name, x.patientCount, x.avgRating]), [['Pro', 0, null]]);
+    assert.equal(m.max30, null, 'sin registros el máximo es null (no un número)');
+    contractFixture('es-180-metrics-empty.json', m);
   });
 
   // ~10.000 registros de ánimo: 330 personas × 40 días, con profesionales, valoraciones y días en cero.
@@ -121,6 +136,9 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     assert.deepEqual(m.sessionsByDay, m.days30.filter((d) => d.count > 0), 'sessionsByDay conserva solo los días con registros (pantalla actual)');
     assert.equal(m.total30, m.days30.reduce((n, d) => n + d.count, 0));
     assert.equal(m.max30.count, Math.max(...m.days30.map((d) => d.count)));
+    assert.deepEqual(Object.keys(m.max30).sort(), ['count', 'date'], 'max30 es { date, count }');
+    assert.equal(m.max30.date, m.days30.find((d) => d.count === m.max30.count).date, 'max30.date es el primer día con ese máximo');
+    contractFixture('es-180-metrics-full.json', m);
     assert.equal(m.dailyAverage30, round1(m.total30 / 30));
     // profesionales con más personas (hasta 5), orden por personas y nombre; valoración null si no hay datos
     const expected = therapists.map((th) => {

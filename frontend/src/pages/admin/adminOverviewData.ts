@@ -16,7 +16,7 @@ export interface Metrics {
   activeThisWeek: number
   days30: { date: string; count: number }[]
   total30: number
-  max30: number
+  max30: { date: string; count: number } | null // día con más registros; null si no hay ninguno (contrato del servidor)
   dailyAverage30: number
   range: { start: string; end: string; timeZone: string }
   topTherapists: { id: number; name: string; patientCount: number; avgRating: number | null }[]

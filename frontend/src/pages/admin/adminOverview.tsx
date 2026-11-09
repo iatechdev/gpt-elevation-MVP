@@ -47,11 +47,12 @@ export function ActivityChart({ metrics, height = 80, showSummary = false }: { m
   const tr = useAdminText()
   const f = useFormat()
   const [asTable, setAsTable] = useState(false)
-  const { days30, total30, max30, range } = metrics
-  const peak = days30.find((d) => d.count === max30 && max30 > 0)
-  const alt = total30 === 0
+  const { days30, total30, range } = metrics
+  // Contrato: `max30` es `{ date, count }` o `null` (sin registros). El pico sale del objeto, no de un número.
+  const maxCount = metrics.max30?.count ?? 0
+  const alt = total30 === 0 || !metrics.max30
     ? `${tr('Sin registros entre')} ${f.day(range.start)} ${tr('y')} ${f.day(range.end, true)}.`
-    : `${tr('Total')} ${f.number(total30)} ${tr('registros')}; ${tr('máximo')} ${f.number(max30)} ${tr('el')} ${peak ? f.day(peak.date) : ''}.`
+    : `${tr('Total')} ${f.number(total30)} ${tr('registros')}; ${tr('máximo')} ${f.number(maxCount)} ${tr('el')} ${f.day(metrics.max30.date)}.`
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm }}>
@@ -81,7 +82,7 @@ export function ActivityChart({ metrics, height = 80, showSummary = false }: { m
           <div role="img" aria-label={alt} style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height, minWidth: 30 * 9 }}>
             {days30.map((d) => (
               <div key={d.date} title={`${f.day(d.date, true)}: ${f.number(d.count)}`}
-                style={{ flex: 1, height: d.count === 0 ? 1 : `${Math.max((d.count / Math.max(max30, 1)) * 100, 4)}%`, background: d.count === 0 ? colors.border : colors.primary, borderRadius: d.count === 0 ? 0 : `${radius.sm} ${radius.sm} 0 0`, opacity: 0.85 }} />
+                style={{ flex: 1, height: d.count === 0 ? 1 : `${Math.max((d.count / Math.max(maxCount, 1)) * 100, 4)}%`, background: d.count === 0 ? colors.border : colors.primary, borderRadius: d.count === 0 ? 0 : `${radius.sm} ${radius.sm} 0 0`, opacity: 0.85 }} />
             ))}
           </div>
         </div>
@@ -91,7 +92,7 @@ export function ActivityChart({ metrics, height = 80, showSummary = false }: { m
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.xl, marginTop: spacing.lg, paddingTop: spacing.lg, borderTop: `0.5px solid ${colors.border}` }}>
           <Figure value={f.number(total30)} label={tr('registros en 30 días')} />
           <Figure value={f.number(metrics.dailyAverage30, 1)} label={tr('promedio diario')} />
-          <Figure value={f.number(max30)} label={tr('máximo en un día')} />
+          <Figure value={f.number(maxCount)} label={tr('máximo en un día')} />
         </div>
       )}
     </div>
