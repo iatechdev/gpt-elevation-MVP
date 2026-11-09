@@ -352,7 +352,9 @@ export function ChatPage() {
           {messages.map((msg, i) => (
             <div key={i}>
               {msg.role === 'user' ? (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  {/* ES-162: quién habla va en una etiqueta, no solo en el color */}
+                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#5E5E5A', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{copy[lang].you}</span>
                   <div style={{ maxWidth: '85%', background: '#1A1A18', borderRadius: 4, padding: '0.9rem 1.1rem', color: '#FAFAF9', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                     {msg.text}
                   </div>

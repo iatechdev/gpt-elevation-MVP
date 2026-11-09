@@ -6,6 +6,7 @@ import { useDraftGuard, useSpaceToken } from './hooks'
 import { isAlert, noticeForError, noticeText } from './notices'
 import type { Notice } from './notices'
 import { clearPending, loadPending, savePending } from './pending'
+import { isNetworkFailure, SLOW_AFTER_MS } from './chatKeys'
 export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compass') {
   const token = useSpaceToken(); const c = copy[lang]
   const [messages, setMessages] = useState<ChatMessage[]>([]); const [input, setInput] = useState('')
@@ -17,6 +18,10 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
   const [pickerLoading, setPickerLoading] = useState(false); const [pickerError, setPickerError] = useState(false)
   const [intent, setIntent] = useState<Intent | null>(() => (token ? loadPending(token) : null)); const [retryable, setRetryable] = useState(false)
   const lock = useRef(false); const alive = useRef(true)
+  // ES-162: petición de envío en curso (para «Dejar de esperar»), demora, y el texto de la respuesta nueva que anuncia el lector de pantalla (solo tras un envío).
+  const [waiting, setWaiting] = useState(false); const [slow, setSlow] = useState(false)
+  const [announcement, setAnnouncement] = useState(''); const [announceKey, setAnnounceKey] = useState(0)
+  const abortRef = useRef<AbortController | null>(null); const stoppedRef = useRef(false)
   const current = useCallback(() => alive.current && localStorage.getItem('elevation_token') === token, [token])
   useDraftGuard(!expired && (!!input || !!intent), c.leave)
   useEffect(() => { if (intent && token && !expired) savePending(token, intent); else clearPending() }, [intent, token, expired])
@@ -28,6 +33,7 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
   const reload = useCallback(async () => {
     const rows = await history(token)
     if (current()) { setMessages(rows); setLoaded(true) }
+    return rows
   }, [token, current])
   useEffect(() => {
     alive.current = true
@@ -54,24 +60,39 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     })
     return () => { active = false }
   }, [picker, token, current])
+  useEffect(() => {
+    if (!waiting) return
+    const timer = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS)
+    return () => window.clearTimeout(timer)
+  }, [waiting])
   const confirm = async (sent?: Intent) => {
-    await reload()
+    const rows = await reload()
     if (!current()) return
+    // ES-162: la respuesta nueva se anuncia solo cuando llega tras un envío (nunca al cargar el historial ni al cambiar de idioma).
+    const last = rows[rows.length - 1]
+    if (sent && last?.role === 'bot') { setAnnouncement(last.text); setAnnounceKey(k => k + 1) }
     // ES-142: «Continuar» envía un texto fijo; si en la caja hay otro borrador, se conserva con su selección de diario.
     if (sent && input.trim() !== sent.message) { setIntent(null); setRetryable(false); setNotice({ k: 'confirmed' }); return }
     setIntent(null); setInput(''); setSelected([]); setPicker(false); setEntries([]); setRetryable(false); setNotice({ k: 'confirmed' })
   }
   const post = async (body: Intent) => {
+    const controller = new AbortController(); abortRef.current = controller; stoppedRef.current = false; setWaiting(true); setSlow(false)
     try {
-      const response = await request(token, '/api/chat', { method: 'POST', body: JSON.stringify(body) }) as { reply?: unknown; requestId?: unknown }
+      const response = await request(token, '/api/chat', { method: 'POST', body: JSON.stringify(body), signal: controller.signal }) as { reply?: unknown; requestId?: unknown }
       if (typeof response?.reply !== 'string' || response.requestId !== body.requestId) throw new SpaceError(502)
       await confirm(body)
     } catch (error) {
       if (!current()) return
-      setRetryable(error instanceof SpaceError && error.retryable)
+      // ES-162: dejar de esperar corta la espera del navegador, NO al servidor; el envío queda sin confirmar y «Consultar estado» dice si ya se guardó.
+      if (stoppedRef.current && error instanceof DOMException && error.name === 'AbortError') { setRetryable(false); setNotice({ k: 'stopped' }); return }
+      setRetryable((error instanceof SpaceError && error.retryable) || isNetworkFailure(error)) // sin conexión: el mismo requestId se puede reintentar sin duplicar
       fail(error, noticeForError(error))
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null
+      setWaiting(false); setSlow(false)
     }
   }
+  const stop = () => { if (abortRef.current) { stoppedRef.current = true; abortRef.current.abort() } }
   const send = async () => {
     if (!enabled || lock.current || intent || !input.trim() || input.trim().length > 4000 || expired || !loaded) return
     lock.current = true; setBusy(true); setNotice(null)
@@ -117,6 +138,6 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     try { await post(intent) } finally { if (current()) setBusy(false); lock.current = false }
   }
   const canLeave = () => expired || (!input && !intent) || window.confirm(c.leave)
-  return { messages, input, setInput, busy, expired, loaded, notice: noticeText(notice, lang), alert: isAlert(notice), selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, continueReply, check, retry, loadPicker, reload, canLeave, c }
+  return { waiting, slow, stop, announcement, announceKey, messages, input, setInput, busy, expired, loaded, notice: noticeText(notice, lang), alert: isAlert(notice), selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, continueReply, check, retry, loadPicker, reload, canLeave, c }
 }
 export type PersonalChat = ReturnType<typeof usePersonalChat>
