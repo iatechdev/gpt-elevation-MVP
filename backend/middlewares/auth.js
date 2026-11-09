@@ -72,4 +72,16 @@ const verificarBoard = (req, res, next) => {
   });
 };
 
-module.exports = { verificarToken, verificarTokenParaBorrado, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };
+// ES-207: editar el manifiesto ético (subir versión, ver historial, reactivar) es de administración y superadmin.
+// La junta ética conserva la lectura pública como cualquier persona, pero no edita.
+const MANIFEST_EDITOR_ROLES = ['admin', 'superadmin'];
+const verificarEditorManifiesto = (req, res, next) => {
+  verificarToken(req, res, () => {
+    if (!MANIFEST_EDITOR_ROLES.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Acceso denegado. Solo administración puede editar el manifiesto.' });
+    }
+    next();
+  });
+};
+
+module.exports = { verificarEditorManifiesto, verificarToken, verificarTokenParaBorrado, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };

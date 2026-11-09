@@ -50,13 +50,13 @@ export function CheckinPage() {
       <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', minHeight: 'calc(100vh - 8rem)', gap: '2rem' }}>
 
         <div style={{ textAlign: 'center', width: '100%' }}>
-          <span style={{ display: 'block', fontSize: 10, letterSpacing: '0.2em', color: '#A8A29E', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+          <span style={{ display: 'block', fontSize: 10, letterSpacing: '0.2em', color: '#6F6963', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
             {t('checkin_label')}
           </span>
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '2.2rem', color: '#1C1917', marginBottom: '0.5rem' }}>
             {t('checkin_title')}
           </h1>
-          <p style={{ color: '#78716C', fontSize: '1rem', margin: 0 }}>
+          <p style={{ color: '#6B645F', fontSize: '1rem', margin: 0 }}>
             {t('checkin_subtitle')}
           </p>
         </div>
@@ -74,7 +74,7 @@ export function CheckinPage() {
                   fontFamily: 'Inter, sans-serif',
                 }}>
                 <span style={{ fontSize: '2rem' }}>{m.emoji}</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 500, color: mood?.value === m.value ? '#0d9488' : '#78716C' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 500, color: mood?.value === m.value ? '#0d9488' : '#6B645F' }}>
                   {t(m.label_key)}
                 </span>
               </button>
@@ -86,7 +86,7 @@ export function CheckinPage() {
           <button onClick={handleCheckin} disabled={!mood || loading}
             style={{
               width: '100%', padding: '1rem',
-              color: mood && !loading ? 'white' : '#A8A29E',
+              color: mood && !loading ? 'white' : '#6F6963',
               fontWeight: 500, borderRadius: '1.25rem', border: 'none',
               fontSize: '1rem', cursor: mood && !loading ? 'pointer' : 'not-allowed',
               transition: 'all 0.3s',

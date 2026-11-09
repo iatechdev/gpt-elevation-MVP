@@ -132,12 +132,13 @@ test('ES-18: un administrador que cambia rol/estado, borra o restablece la contr
   assert.equal(cutoffs.get(7).UserId, 7);
   assert.equal((await call(request, 'PUT', '/api/admin/usuarios/8', superadmin, { role: 'therapist' })).status, 200);
   assert.equal(cutoffs.get(8).UserId, 8);
-  assert.equal((await call(request, 'PUT', '/api/admin/usuarios/9/reset-password', superadmin, { newPassword: 'clave-temporal-1' })).status, 200);
-  assert.equal(cutoffs.get(9).UserId, 9);
+  // ES-192: administración ya no escribe la contraseña de otra cuenta (410); las sesiones se cortan cuando la persona confirma su enlace (ES-132).
+  assert.equal((await call(request, 'PUT', '/api/admin/usuarios/9/reset-password', superadmin, { newPassword: 'clave-temporal-1' })).status, 410);
+  assert.equal(cutoffs.has(9), false);
   assert.equal((await call(request, 'DELETE', '/api/admin/usuarios/8', superadmin)).status, 200);
   // El administrador sin permiso no corta nada.
   cutoffs.clear();
   assert.equal((await call(request, 'DELETE', '/api/admin/usuarios/9', admin)).status, 403);
-  assert.equal((await call(request, 'PUT', '/api/admin/usuarios/9/reset-password', admin, { newPassword: 'clave-temporal-1' })).status, 403);
+  assert.equal((await call(request, 'PUT', '/api/admin/usuarios/9/reset-password', admin, { newPassword: 'clave-temporal-1' })).status, 410);
   assert.equal(cutoffs.size, 0);
 });

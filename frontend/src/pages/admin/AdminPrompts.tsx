@@ -46,21 +46,21 @@ const cardStyle: React.CSSProperties = {
 }
 
 const btnPrimary: React.CSSProperties = {
-  background: '#6B7D5C', color: '#fff', border: 'none',
+  background: '#5C6B4E', color: '#fff', border: 'none',
   borderRadius: '0.65rem', padding: '0.5rem 1rem',
   fontSize: 13, fontWeight: 500, cursor: 'pointer',
   fontFamily: 'Inter, sans-serif',
 }
 
 const btnSecondary: React.CSSProperties = {
-  background: 'transparent', color: '#6B7D5C',
+  background: 'transparent', color: '#5C6B4E',
   border: '0.5px solid #A8B5A2', borderRadius: '0.65rem',
   padding: '0.5rem 1rem', fontSize: 13, fontWeight: 500,
   cursor: 'pointer', fontFamily: 'Inter, sans-serif',
 }
 
 const btnDanger: React.CSSProperties = {
-  background: 'transparent', color: '#DC2626',
+  background: 'transparent', color: '#B91C1C',
   border: '0.5px solid #DC2626', borderRadius: '0.65rem',
   padding: '0.5rem 1rem', fontSize: 13,
   cursor: 'pointer', fontFamily: 'Inter, sans-serif',
@@ -70,8 +70,8 @@ const STATUS_BADGE: Record<string, { bg: string; color: string; label: string }>
   active:         { bg: '#EAF0E6', color: '#4A6741', label: '● Activo' },
   approved:       { bg: '#EAF0E6', color: '#4A6741', label: '● Aprobado' },
   pending_review: { bg: '#FEF3C7', color: '#92400E', label: '⏳ Pendiente' },
-  rejected:       { bg: '#FEE2E2', color: '#DC2626', label: '✗ Rechazado' },
-  archived:       { bg: '#F5F3EF', color: '#A8A29E', label: '● Archivado' },
+  rejected:       { bg: '#FEE2E2', color: '#B91C1C', label: '✗ Rechazado' },
+  archived:       { bg: '#F5F3EF', color: '#6F6963', label: '● Archivado' },
 }
 
 const formatDate = (iso: string) =>
@@ -253,7 +253,7 @@ export function AdminPrompts() {
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
             Prompts
           </h1>
-          <p style={{ fontSize: '0.875rem', color: '#78716C', margin: '0.25rem 0 0' }}>
+          <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0.25rem 0 0' }}>
             {esSuperAdmin ? 'Gestión completa de prompts terapéuticos' : 'Visualización y propuesta de prompts'}
           </p>
         </div>
@@ -281,7 +281,7 @@ export function AdminPrompts() {
         </div>
       )}
 
-      {loading && <p style={{ color: '#78716C', fontSize: 13 }}>Cargando prompts...</p>}
+      {loading && <p style={{ color: '#6B645F', fontSize: 13 }}>Cargando prompts...</p>}
 
       {!loading && (
         <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
@@ -289,7 +289,7 @@ export function AdminPrompts() {
           {/* LISTA DE PROMPTS */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {prompts.length === 0 ? (
-              <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#78716C', fontSize: 13 }}>
+              <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#6B645F', fontSize: 13 }}>
                 No hay prompts configurados aún.
               </div>
             ) : (
@@ -303,7 +303,7 @@ export function AdminPrompts() {
                     style={{
                       ...cardStyle,
                       cursor: 'pointer',
-                      border: isSelected ? '1px solid #6B7D5C' : '0.5px solid #E7E5E4',
+                      border: isSelected ? '1px solid #5C6B4E' : '0.5px solid #E7E5E4',
                       background: isSelected ? '#EAF0E6' : '#fff',
                       display: 'flex', alignItems: 'center',
                       justifyContent: 'space-between', gap: '1rem',
@@ -311,7 +311,7 @@ export function AdminPrompts() {
                   >
                     <div>
                       <div style={{ fontWeight: 500, fontSize: 14, color: '#1C1917' }}>{p.key}</div>
-                      <div style={{ fontSize: 12, color: '#78716C', marginTop: 2 }}>
+                      <div style={{ fontSize: 12, color: '#6B645F', marginTop: 2 }}>
                         v{p.version} · Actualizado por {p.updatedBy} · {formatDate(p.updatedAt)}
                       </div>
                     </div>
@@ -330,10 +330,10 @@ export function AdminPrompts() {
 
               {/* Info del prompt */}
               <div style={cardStyle}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
                   {selected.key}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: 12, color: '#78716C', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: 12, color: '#6B645F', marginBottom: '1rem' }}>
                   <div>Versión activa: <strong style={{ color: '#1C1917' }}>v{selected.version}</strong></div>
                   {selected.approved_by && <div>Aprobado por: <strong style={{ color: '#1C1917' }}>{selected.approved_by}</strong></div>}
                   {selected.approved_at && <div>Fecha: {formatDate(selected.approved_at)}</div>}
@@ -365,13 +365,13 @@ export function AdminPrompts() {
               {/* Historial de versiones (solo superadmin) */}
               {esSuperAdmin && (
                 <div style={cardStyle}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
                     Historial de versiones
                   </div>
                   {loadingVersions ? (
-                    <p style={{ fontSize: 12, color: '#78716C', margin: 0 }}>Cargando...</p>
+                    <p style={{ fontSize: 12, color: '#6B645F', margin: 0 }}>Cargando...</p>
                   ) : versions.length === 0 ? (
-                    <p style={{ fontSize: 12, color: '#78716C', margin: 0 }}>Sin versiones anteriores.</p>
+                    <p style={{ fontSize: 12, color: '#6B645F', margin: 0 }}>Sin versiones anteriores.</p>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                       {versions.map(v => {
@@ -385,7 +385,7 @@ export function AdminPrompts() {
                                 {badge.label}
                               </span>
                             </div>
-                            <div style={{ fontSize: 11, color: '#78716C' }}>
+                            <div style={{ fontSize: 11, color: '#6B645F' }}>
                               {v.proposed_by && <div>Propuesto por: {v.proposed_by}</div>}
                               {v.approved_by && <div>Aprobado por: {v.approved_by}</div>}
                               {v.rejected_by && <div>Rechazado por: {v.rejected_by}</div>}
@@ -398,7 +398,7 @@ export function AdminPrompts() {
                                 <button
                                   onClick={() => handleApprove(v)}
                                   disabled={actionId === v.id}
-                                  style={{ ...btnPrimary, fontSize: 11, padding: '0.3rem 0.65rem', flex: 1, background: actionId === v.id ? '#A8B5A2' : '#6B7D5C' }}
+                                  style={{ ...btnPrimary, fontSize: 11, padding: '0.3rem 0.65rem', flex: 1, background: actionId === v.id ? '#A8B5A2' : '#5C6B4E' }}
                                 >
                                   {actionId === v.id ? '...' : '✓ Aprobar'}
                                 </button>
@@ -421,7 +421,7 @@ export function AdminPrompts() {
 
               {/* Panel para admin — info sobre su rol */}
               {!esSuperAdmin && (
-                <div style={{ ...cardStyle, background: '#F5F3EF', fontSize: 12, color: '#78716C', lineHeight: 1.6 }}>
+                <div style={{ ...cardStyle, background: '#F5F3EF', fontSize: 12, color: '#6B645F', lineHeight: 1.6 }}>
                   <div style={{ fontWeight: 600, color: '#1C1917', marginBottom: '0.35rem' }}>ℹ️ Sobre las propuestas</div>
                   Al proponer una nueva versión, el superadmin recibirá una notificación para revisarla. La versión actual permanece activa hasta que sea aprobada la nueva.
                 </div>
@@ -439,10 +439,10 @@ export function AdminPrompts() {
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>
                 {esSuperAdmin ? 'Editar prompt' : 'Proponer nueva versión'}
               </h2>
-              <button onClick={() => setShowPropose(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#78716C' }}>✕</button>
+              <button onClick={() => setShowPropose(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#6B645F' }}>✕</button>
             </div>
 
-            <div style={{ marginBottom: '0.75rem', fontSize: 12, color: '#78716C' }}>
+            <div style={{ marginBottom: '0.75rem', fontSize: 12, color: '#6B645F' }}>
               Prompt: <strong style={{ color: '#1C1917' }}>{selected?.key}</strong>
               {!esSuperAdmin && (
                 <span style={{ marginLeft: 8, fontSize: 11, background: '#FEF3C7', color: '#92400E', padding: '1px 8px', borderRadius: 999 }}>
@@ -458,18 +458,18 @@ export function AdminPrompts() {
               placeholder="Contenido del prompt..."
               style={{ width: '100%', padding: '0.75rem', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none', resize: 'vertical', lineHeight: 1.6 }}
             />
-            <div style={{ fontSize: 11, color: '#A8A29E', marginTop: '0.25rem', marginBottom: '1rem' }}>
+            <div style={{ fontSize: 11, color: '#6F6963', marginTop: '0.25rem', marginBottom: '1rem' }}>
               {proposeContent.length} caracteres
             </div>
 
-            {proposeError && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{proposeError}</div>}
+            {proposeError && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{proposeError}</div>}
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={() => setShowPropose(false)} style={{ ...btnSecondary, flex: 1, padding: '0.7rem' }}>Cancelar</button>
               <button
                 onClick={handlePropose}
                 disabled={proposing}
-                style={{ ...btnPrimary, flex: 2, padding: '0.7rem', background: proposing ? '#A8B5A2' : '#6B7D5C', cursor: proposing ? 'not-allowed' : 'pointer' }}
+                style={{ ...btnPrimary, flex: 2, padding: '0.7rem', background: proposing ? '#A8B5A2' : '#5C6B4E', cursor: proposing ? 'not-allowed' : 'pointer' }}
               >
                 {proposing ? 'Enviando...' : esSuperAdmin ? 'Guardar y activar' : 'Enviar para aprobación'}
               </button>
@@ -486,22 +486,22 @@ export function AdminPrompts() {
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>
                 Nuevo prompt
               </h2>
-              <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#78716C' }}>✕</button>
+              <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#6B645F' }}>✕</button>
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Key del prompt *</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Key del prompt *</label>
               <input
                 value={createKey}
                 onChange={e => setCreateKey(e.target.value.toLowerCase().replace(/\s/g, '_'))}
                 placeholder="ej: elevation_system_prompt"
                 style={{ width: '100%', padding: '0.6rem 0.75rem', border: '0.5px solid #E7E5E4', borderRadius: '0.65rem', fontSize: 13, fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none' }}
               />
-              <div style={{ fontSize: 11, color: '#A8A29E', marginTop: 3 }}>Solo minúsculas y guiones bajos</div>
+              <div style={{ fontSize: 11, color: '#6F6963', marginTop: 3 }}>Solo minúsculas y guiones bajos</div>
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Contenido *</label>
+              <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Contenido *</label>
               <textarea
                 value={createContent}
                 onChange={e => setCreateContent(e.target.value)}
@@ -511,14 +511,14 @@ export function AdminPrompts() {
               />
             </div>
 
-            {createError && <div style={{ background: '#FEE2E2', color: '#DC2626', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{createError}</div>}
+            {createError && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: 13, marginBottom: '1rem' }}>{createError}</div>}
 
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button onClick={() => setShowCreate(false)} style={{ ...btnSecondary, flex: 1, padding: '0.7rem' }}>Cancelar</button>
               <button
                 onClick={handleCreate}
                 disabled={creating}
-                style={{ ...btnPrimary, flex: 2, padding: '0.7rem', background: creating ? '#A8B5A2' : '#6B7D5C', cursor: creating ? 'not-allowed' : 'pointer' }}
+                style={{ ...btnPrimary, flex: 2, padding: '0.7rem', background: creating ? '#A8B5A2' : '#5C6B4E', cursor: creating ? 'not-allowed' : 'pointer' }}
               >
                 {creating ? 'Creando...' : 'Crear y activar'}
               </button>
@@ -534,7 +534,7 @@ export function AdminPrompts() {
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
               ✗ Rechazar versión v{showReject.version}
             </h3>
-            <p style={{ fontSize: 13, color: '#78716C', margin: '0 0 1rem' }}>
+            <p style={{ fontSize: 13, color: '#6B645F', margin: '0 0 1rem' }}>
               Propuesta por <strong>{showReject.proposed_by}</strong>. Explica el motivo del rechazo.
             </p>
             <textarea
@@ -549,7 +549,7 @@ export function AdminPrompts() {
               <button
                 onClick={handleReject}
                 disabled={!rejectNote.trim() || actionId === showReject.id}
-                style={{ ...btnDanger, flex: 1, padding: '0.65rem', background: !rejectNote.trim() ? '#F5F3EF' : 'transparent', color: !rejectNote.trim() ? '#A8A29E' : '#DC2626', cursor: !rejectNote.trim() ? 'not-allowed' : 'pointer' }}
+                style={{ ...btnDanger, flex: 1, padding: '0.65rem', background: !rejectNote.trim() ? '#F5F3EF' : 'transparent', color: !rejectNote.trim() ? '#6F6963' : '#B91C1C', cursor: !rejectNote.trim() ? 'not-allowed' : 'pointer' }}
               >
                 {actionId === showReject.id ? 'Procesando...' : 'Confirmar rechazo'}
               </button>

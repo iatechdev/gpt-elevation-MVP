@@ -4,7 +4,6 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../database');
-const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const User = require('../User');
 const MoodLog = require('../MoodLog');
@@ -26,51 +25,18 @@ const averageOf = (values) => (values.length >= MIN_AVERAGE_SAMPLE
   ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
   : null);
 
-const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
-const ROLES_ADMIN_PUEDE_CREAR = ['user', 'therapist'];
-const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
-
 // ==========================================
 // POST /api/admin/usuarios — Crear usuario
 // ==========================================
-router.post('/', validateBody({ name: nonempty, email: nonempty, password: nonempty, role: nonempty }), async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-    const adminRole = req.user.role;
+const ROLES_VALIDOS = ['user', 'therapist', 'admin', 'superadmin', 'board'];
+const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
 
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: 'name, email, password y role son requeridos.' });
-    }
-    if (!ROLES_VALIDOS.includes(role)) {
-      return res.status(400).json({ error: `Rol inválido. Roles válidos: ${ROLES_VALIDOS.join(', ')}.` });
-    }
-    if (adminRole === 'admin' && ROLES_PRIVILEGIADOS.includes(role)) {
-      return res.status(403).json({ error: 'No tienes permisos para crear usuarios con ese rol.' });
-    }
-
-    const existente = await User.findOne({ where: { email } });
-    if (existente) {
-      return res.status(409).json({ error: 'Ya existe un usuario con ese email.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const nuevoUsuario = await User.create({
-      name, email, password: hashedPassword, role, active: true,
-    });
-
-    res.status(201).json({
-      message: `Usuario ${nuevoUsuario.name} creado exitosamente.`,
-      usuario: {
-        id: nuevoUsuario.id, name: nuevoUsuario.name,
-        email: nuevoUsuario.email, role: nuevoUsuario.role,
-        active: nuevoUsuario.active, createdAt: nuevoUsuario.createdAt,
-      }
-    });
-  } catch (error) {
-    console.error('Error creando usuario.');
-    res.status(500).json({ error: 'No se pudo crear el usuario.' });
-  }
-});
+// ES-192 (decisión 24): administración ya no define la contraseña de otra persona. Se invita por enlace (POST /api/admin/invitations):
+// la persona elige su propia contraseña con las reglas del registro. Esta ruta quedó retirada.
+router.post('/', (req, res) => res.status(410).json({
+  code: 'user_create_with_password_removed',
+  error: 'Esta ruta se retiró: invita a la persona por enlace. / This route was removed: invite the person by link.',
+}));
 
 // ==========================================
 // GET /api/admin/usuarios — Listar usuarios
@@ -418,43 +384,29 @@ router.put('/:id/unlock', async (req, res) => {
 // Reset de contraseña por superadmin
 // El admin establece una contraseña temporal
 // ==========================================
-router.put('/:id/reset-password', async (req, res) => {
+// ES-192 (decisión 24): administración NO escribe ni ve la contraseña de otra cuenta. Esta ruta quedó retirada; ver POST /:id/reset-link.
+router.put('/:id/reset-password', (req, res) => res.status(410).json({
+  code: 'admin_password_reset_removed',
+  error: 'Esta ruta se retiró: envía un enlace de restablecimiento. / This route was removed: send a reset link.',
+}));
+
+// POST /api/admin/usuarios/:id/reset-link — «Enviar enlace de restablecimiento» (sustituye a la contraseña escrita por administración).
+// El enlace (un solo uso, vence) va al correo de la cuenta; la respuesta no lo incluye. Solo superadmin, como el reset anterior.
+router.post('/:id/reset-link', async (req, res) => {
   try {
-    const adminRole = req.user.role;
-
-    // Solo superadmin puede resetear contraseñas
-    if (adminRole !== 'superadmin') {
-      return res.status(403).json({ error: 'Solo el superadmin puede resetear contraseñas.' });
-    }
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Solo el superadmin puede enviar enlaces de restablecimiento.' });
     if (await refuseDeletionPending(req.params.id, res)) return;
-
-    const { newPassword } = req.body ?? {};
-    if (typeof newPassword !== 'string' || newPassword.trim().length < 6) {
-      return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres.' });
-    }
-
     const usuario = await User.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
-
-    // No se puede resetear la contraseña de otro superadmin
-    if (usuario.role === 'superadmin' && usuario.id !== req.user.id) {
-      return res.status(403).json({ error: 'No se puede resetear la contraseña de otro superadmin.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
-    await usuario.update({
-      password:      hashedPassword,
-      loginAttempts: 0,
-      lockedUntil:   null,
-      active:        true,
-    });
-    await revokeUserSessions(usuario.id); // ES-18: la contraseña anterior ya no abre sesiones vivas
-
-    console.log('Restablecimiento administrativo de contraseña ejecutado.');
-    res.json({ message: `Contraseña de ${usuario.name} reseteada correctamente.` });
+    // No se puede restablecer la contraseña de otro superadmin
+    if (usuario.role === 'superadmin' && usuario.id !== req.user.id) return res.status(403).json({ error: 'No se puede restablecer la contraseña de otro superadmin.' });
+    const locale = req.body && req.body.locale === 'en' ? 'en' : 'es';
+    const passwordReset = require('./passwordReset');
+    passwordReset.track(passwordReset.issueLinkForUser(usuario, locale).catch(() => console.error('Error al preparar el enlace de restablecimiento.')));
+    res.status(202).json({ message: 'Si la cuenta puede recibirlo, se envió un enlace de restablecimiento a su correo. / If the account can receive it, a reset link was sent to its email.' });
   } catch (error) {
-    console.error('Error reseteando contraseña.');
-    res.status(500).json({ error: 'No se pudo resetear la contraseña.' });
+    console.error('Error al enviar el enlace de restablecimiento.');
+    res.status(500).json({ error: 'No se pudo enviar el enlace.' });
   }
 });
 

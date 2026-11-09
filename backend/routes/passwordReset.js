@@ -41,6 +41,11 @@ const track = promise => { pending.add(promise); promise.finally(() => pending.d
 // Se ejecuta DESPUÉS de responder: el tiempo de respuesta no depende de si el correo existe.
 async function issueLink(email, locale) {
   const user = await User.findOne({ where: { email } });
+  if (user) await issueLinkForUser(user, locale);
+}
+
+// ES-192: también la usa administración (POST /api/admin/usuarios/:id/reset-link): el enlace va al correo de la cuenta, nunca a quien lo pide.
+async function issueLinkForUser(user, locale) {
   if (!user || user.active === false || await deletionPending(user.id)) return;
   // Contar, invalidar y crear van juntos bajo un bloqueo de la fila de la persona: solicitudes simultáneas se ponen en fila (QA-132-01).
   const token = crypto.randomBytes(32).toString('base64url');
@@ -98,5 +103,7 @@ router.post('/password-reset/confirm', limiter('PASSWORD_RESET_CONFIRM_LIMIT', 1
 
 // Solo para pruebas: espera a que terminen los envíos pendientes.
 router.idle = async () => { while (pending.size) await Promise.allSettled([...pending]); };
+router.issueLinkForUser = issueLinkForUser;
+router.track = track;
 
 module.exports = router;

@@ -7,7 +7,6 @@ import { LoginPage } from './pages/LoginPage.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import { AdminRoute } from './components/AdminRoute.tsx'
 import { TherapistRoute } from './components/TherapistRoute.tsx'
-import { BoardRoute } from './components/BoardRoute.tsx'
 
 import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
@@ -42,7 +41,7 @@ const EvidenceDetailPage = lazy(() => import('./pages/EvidencePages.tsx').then(m
 const EvidenceCreatePage = lazy(() => import('./pages/EvidencePages.tsx').then(m => ({ default: m.EvidenceCreatePage })))
 const EvidenceEditPage = lazy(() => import('./pages/EvidencePages.tsx').then(m => ({ default: m.EvidenceEditPage })))
 const SkillMapPage = lazy(() => import('./pages/SkillMapPage.tsx').then(m => ({ default: m.SkillMapPage })))
-const BoardLayout = lazy(() => import('./layouts/BoardLayout.tsx').then(m => ({ default: m.BoardLayout })))
+const ManifestoPage = lazy(() => import('./pages/ManifestoPage.tsx').then(m => ({ default: m.ManifestoPage }))) // ES-207 — manifiesto ético público
 const BoardManifest = lazy(() => import('./pages/board/BoardManifest.tsx').then(m => ({ default: m.BoardManifest })))
 const FacilitationPreview = lazy(() => import('./facilitation/FacilitationPreview').then(m => ({ default: m.FacilitationPreview })))
 const Participants = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.Participants })))
@@ -84,6 +83,7 @@ export default function App() {
       <Route path="/reset-password"  element={<ResetPasswordPage />} />
       <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/manifiesto" element={<ManifestoPage />} /> {/* ES-207 — lectura pública del manifiesto ético */}
       <Route path="/design-system" element={<DesignSystemPage />} /> {/* ES-152 — sin datos ni navegación; solo documenta el sistema */}
 
       {/* Regular user */}
@@ -162,15 +162,8 @@ export default function App() {
         <Route path="/therapist/session/:id" element={<SessionRoom />} />
       </Route>
 
-      {/* Ethics Board */}
-      <Route path="/board" element={
-        <BoardRoute>
-          <BoardLayout />
-        </BoardRoute>
-      }>
-        <Route index element={<Navigate to="/board/manifest" replace />} />
-        <Route path="manifest" element={<BoardManifest />} />
-      </Route>
+      {/* Ethics Board — ES-207: la junta ya no edita el manifiesto; sus rutas antiguas llevan a la página pública */}
+      <Route path="/board/*" element={<Navigate to="/manifiesto" replace />} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -90,7 +90,7 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
   return (
     <section aria-labelledby="applications-title">
       <h2 id="applications-title" style={{ fontSize: 16, margin: '0 0 4px' }}>Solicitudes de profesionales</h2>
-      <p style={{ fontSize: 12, color: '#78716C', margin: '0 0 12px' }}>
+      <p style={{ fontSize: 12, color: '#6B645F', margin: '0 0 12px' }}>
         Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de terapeuta». Abre las hojas de vida solo en un visor aislado; no se analizan contra virus.
       </p>
       {notice && (
@@ -101,12 +101,12 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
       )}
       <div role="group" aria-label="Filtrar por estado" style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
         {FILTERS.map(f => <button key={f.key} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}
-          style={{ ...s.btnSecondary, background: filter === f.key ? '#6B7D5C' : 'transparent', color: filter === f.key ? '#fff' : '#6B7D5C' }}>{f.label}</button>)}
+          style={{ ...s.btnSecondary, background: filter === f.key ? '#5C6B4E' : 'transparent', color: filter === f.key ? '#fff' : '#5C6B4E' }}>{f.label}</button>)}
       </div>
       {msg && <p role="status" style={{ fontSize: 12, color: '#44403C' }}>{msg}</p>}
-      {loading && <p style={{ color: '#78716C', fontSize: 13 }}>Cargando solicitudes...</p>}
+      {loading && <p style={{ color: '#6B645F', fontSize: 13 }}>Cargando solicitudes...</p>}
       {error && <p role="alert" style={{ color: '#B91C1C', fontSize: 13 }}>{error} <button style={s.btnSecondary} onClick={() => void load()}>Reintentar</button></p>}
-      {!loading && !error && items.length === 0 && <p style={{ color: '#78716C', fontSize: 13 }}>No hay solicitudes en este estado.</p>}
+      {!loading && !error && items.length === 0 && <p style={{ color: '#6B645F', fontSize: 13 }}>No hay solicitudes en este estado.</p>}
       {items.map(item => {
         const profile = safeLink(item.profileUrl); const reviewing = open?.id === item.id
         return (
@@ -118,13 +118,13 @@ export function ProfessionalApplicationsPanel({ s }: { s: Styles }) {
             <p style={{ fontSize: 13, margin: '4px 0' }}>
               <a href={`mailto:${encodeURIComponent(item.email).replace('%40', '@')}`}>{item.email}</a> · {item.country} · {item.profession}
             </p>
-            <p style={{ fontSize: 12, color: '#78716C', margin: '0 0 4px' }}>
+            <p style={{ fontSize: 12, color: '#6B645F', margin: '0 0 4px' }}>
               Recibida {fmtDate(item.createdAt)} · idioma {item.locale.toUpperCase()}
               {item.licenseNumber ? ` · Colegiatura/registro: ${item.licenseNumber}` : ''}
             </p>
             {profile && <p style={{ fontSize: 13, margin: '0 0 4px' }}><a href={profile} target="_blank" rel="noopener noreferrer">Perfil profesional</a></p>}
             {item.message && <p style={{ fontSize: 13, margin: '0 0 4px', whiteSpace: 'pre-wrap' }}>{item.message}</p>}
-            {item.reviewedAt && <p style={{ fontSize: 12, color: '#78716C', margin: '0 0 4px' }}>Revisada por {item.reviewedBy ?? '—'} el {fmtDate(item.reviewedAt)}{item.reviewNote ? ` · Nota: ${item.reviewNote}` : ''}</p>}
+            {item.reviewedAt && <p style={{ fontSize: 12, color: '#6B645F', margin: '0 0 4px' }}>Revisada por {item.reviewedBy ?? '—'} el {fmtDate(item.reviewedAt)}{item.reviewNote ? ` · Nota: ${item.reviewNote}` : ''}</p>}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
               {item.cv && <button style={s.btnSecondary} disabled={busy === item.id} onClick={() => void download(item)}>Descargar hoja de vida ({Math.max(1, Math.round(item.cv.size / 1024))} KB)</button>}
               {item.status === 'pending' && <>

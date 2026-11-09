@@ -375,6 +375,16 @@ const es: Record<string, string> = {
   board_success_upload: '✅ Manifiesto publicado y activado:',
   board_success_activate: '✅ Versión reactivada:',
 
+  // ── ES-207: página pública del manifiesto ──
+  manifest_public_title: 'Manifiesto ético',
+  manifest_public_version: 'Versión {version} · publicada el {date}',
+  manifest_public_loading: 'Cargando el manifiesto…',
+  manifest_public_empty: 'Aún no hay un manifiesto publicado.',
+  manifest_public_error: 'No pudimos cargar el manifiesto.',
+  manifest_public_retry: 'Reintentar',
+  manifest_public_back: 'Volver al inicio',
+  manifest_view_public: 'Ver página pública',
+
   // ── Check-out del chat (ES-123: antes fijos en el componente) ─────────────
   checkout_label: 'CHECK-OUT',
   checkout_title: '¿Cómo te vas?',

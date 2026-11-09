@@ -8,6 +8,7 @@ export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 export const PUBLIC_NAV: NavItem[] = [
   { to: '/#como-funciona', label: 'how' },
   { to: '/#privacidad', label: 'privacy' },
+  { to: '/manifiesto', label: 'adManifest' }, // ES-207 — manifiesto ético público
   { to: '/login', label: 'signIn' },
 ]
 
@@ -30,13 +31,14 @@ export const PERSON_MENU: NavItem[] = [
   { to: '/app/professional-reviews', label: 'reviews' },
   { to: '/app/data', label: 'data' },
   { to: '/app/feedback', label: 'feedback' },
+  { to: '/manifiesto', label: 'adManifest' }, // ES-207
 ]
 
 export const PROFESSIONAL_NAV: NavItem[] = [
   { to: '/therapist/dashboard', label: 'proPanel' },
   { to: '/facilitation', label: 'proFacilitation' },
 ]
-export const PROFESSIONAL_MENU: NavItem[] = [{ to: '/app/professional-reviews', label: 'reviews' }]
+export const PROFESSIONAL_MENU: NavItem[] = [{ to: '/app/professional-reviews', label: 'reviews' }, { to: '/manifiesto', label: 'adManifest' }]
 
 export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/dashboard', label: 'adPanel' },
@@ -48,7 +50,8 @@ export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/skill-catalog', label: 'adSkills' },
   { to: '/admin/pilot-metrics', label: 'adPilot' },
 ]
-export const ADMIN_BOARD_GROUP: NavItem[] = [{ to: '/admin/manifest', label: 'adManifest', roles: ['superadmin'] }]
-export const BOARD_NAV: NavItem[] = [{ to: '/board/manifest', label: 'adManifest' }]
+// ES-207: la edición del manifiesto es de administración y superadministración; la junta ética lo lee en la página pública.
+export const ADMIN_BOARD_GROUP: NavItem[] = [{ to: '/admin/manifest', label: 'adManifest' }]
+export const BOARD_NAV: NavItem[] = [{ to: '/manifiesto', label: 'adManifest' }]
 
 export const visibleFor = (items: NavItem[], role: Role) => items.filter(item => !item.roles || item.roles.includes(role))
