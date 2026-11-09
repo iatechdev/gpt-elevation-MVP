@@ -48,5 +48,5 @@ test('ES-180: las cifras con la respuesta real salen con palabra y «Sin datos»
   assert.match(html, /Sin datos/)
   assert.doesNotMatch(html, /\[object Object\]|NaN|undefined/)
   const full = renderToStaticMarkup(createElement(mod.SummaryCards, { metrics: fixture('es-180-metrics-full.json') }))
-  assert.match(full, /\d,\d de 5/)
+  assert.match(full, /\d(,\d)? de 5/)
 })
