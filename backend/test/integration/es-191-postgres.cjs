@@ -170,8 +170,8 @@ test('ES-191 PostgreSQL: las guías de la IA se revisan en el servidor y nada se
     assert.equal(await getActivePrompt('legacy_ok'), GOOD);
     // un identificador inexistente no es un 500 de la base
     for (const action of ['approve', 'reject', 'rollback']) {
-      assert.equal((await call(sup, 'POST', '/api/superadmin/prompt/999999/' + action, { note: 'x' })).status, 404, action);
-      for (const id of ['abc', '0', '-1', '1.5', '99999999999']) assert.equal((await call(sup, 'POST', `/api/superadmin/prompt/${id}/${action}`, { note: 'x' })).status, 404, id);
+      assert.equal((await call(sup, 'POST', '/api/superadmin/prompt/999999/' + action, { note: 'motivo válido' })).status, 404, action);
+      for (const id of ['abc', '0', '-1', '1.5', '99999999999']) assert.equal((await call(sup, 'POST', `/api/superadmin/prompt/${id}/${action}`, { note: 'motivo válido' })).status, 404, id);
     }
     const already = (await rows('legacy_ok')).find((r) => r.version === 2); // ya aprobada: no está pendiente
     assert.equal((await call(sup, 'POST', `/api/superadmin/prompt/${already.id}/approve`)).status, 409);
@@ -265,6 +265,20 @@ test('ES-191 PostgreSQL: las guías de la IA se revisan en el servidor y nada se
     const entry = list.body.find((g) => g.key === 'guia_es181');
     assert.equal(list.body.filter((g) => g.key === 'guia_es181').length, 1);
     assert.equal(entry.pendingCount, 1); assert.ok(entry.activeVersion >= 2); assert.ok(!JSON.stringify(list.body).includes('Cierra con'));
+  });
+
+  // Codex P2 en #155: si la revisión rechaza el primer texto de una guía nueva, se puede corregir y crear con el mismo identificador.
+  await t.test('ES-181: crear con el mismo identificador tras un rechazo de la revisión; el motivo de rechazo exige 3 caracteres en el servidor', async () => {
+    const first = await call(sup, 'POST', '/api/superadmin/prompt/create', { key: 'guia_corregida', content: BAD });
+    assert.equal(first.status, 422);
+    assert.equal(await getActivePrompt('guia_corregida'), null);
+    const second = await call(sup, 'POST', '/api/superadmin/prompt/create', { key: 'guia_corregida', content: GOOD });
+    assert.equal(second.status, 200); assert.equal(await getActivePrompt('guia_corregida'), GOOD);
+    assert.equal((await call(sup, 'POST', '/api/superadmin/prompt/create', { key: 'guia_corregida', content: GOOD })).status, 409, 'ya con una versión viva, el identificador está ocupado');
+    await call(adm, 'POST', '/api/admin/prompt/propose', { key: 'guia_corregida', content: GOOD + ' Para rechazar.' });
+    const pending = (await rows('guia_corregida')).find((r) => r.status === 'pending_review');
+    for (const note of ['', 'ab', '  a ']) assert.equal((await call(sup, 'POST', `/api/superadmin/prompt/${pending.id}/reject`, { note })).status, 400, note);
+    assert.equal((await call(sup, 'POST', `/api/superadmin/prompt/${pending.id}/reject`, { note: 'Promete empleo' })).status, 200);
   });
 
 });

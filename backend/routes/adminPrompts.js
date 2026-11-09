@@ -4,6 +4,7 @@
 // verificarAdmin / verificarSuperAdmin aplicados en server.js
 
 const express = require('express');
+const { Op } = require('sequelize');
 const router  = express.Router();
 const { PromptVault, getActivePrompt, proposePrompt, approvePrompt, rejectPrompt, rollbackPrompt, decryptPrompt } = require('../promptVault');
 const PromptRule = require('../PromptRule');
@@ -117,7 +118,8 @@ router.post('/prompt/create', verificarSuperAdmin, validateBody({ key: nonempty,
   try {
     const { key, content } = req.body;
     if (!KEY_NEW.test(key)) return res.status(400).json({ code: 'invalid_key', error: 'Identificador inválido: usa minúsculas, números y guion bajo, empezando por una letra. / Invalid identifier: lowercase letters, digits and underscore, starting with a letter.' });
-    if (await PromptVault.count({ where: { key } })) return res.status(409).json({ code: 'key_exists', error: 'Ya existe una guía con ese identificador. / A guide with that identifier already exists.' });
+    // Una guía cuya única versión fue RECHAZADA por la revisión no existe todavía: se puede corregir el texto y volver a crearla con el mismo identificador.
+    if (await PromptVault.count({ where: { key, status: { [Op.ne]: 'rejected' } } })) return res.status(409).json({ code: 'key_exists', error: 'Ya existe una guía con ese identificador. / A guide with that identifier already exists.' });
     return await publishVersion(res, key, content, req.user.name);
   } catch (error) {
     if (replyReviewError(res, error)) return;
@@ -162,7 +164,7 @@ router.post('/prompt/:id/approve', verificarSuperAdmin, validId, async (req, res
 });
 
 // POST /api/superadmin/prompt/:id/reject
-router.post('/prompt/:id/reject', verificarSuperAdmin, validId, validateBody({ note: nonempty }), async (req, res) => {
+router.post('/prompt/:id/reject', verificarSuperAdmin, validId, validateBody({ note: (v) => nonempty(v) && v.trim().length >= 3 && v.length <= 1000 }), async (req, res) => { // ES-181 (E181-2): el mínimo de 3 caracteres lo exige el servidor, no solo la pantalla
   try {
     const { note } = req.body;
     await rejectPrompt(req.params.id, req.user.name, note || '');

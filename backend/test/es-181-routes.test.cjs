@@ -6,10 +6,11 @@ const { promptVault, startApp } = require('./support.cjs');
 
 const synthetic = 'Acompaña a la persona con calma y respeto, sin presionarla, y ayúdala a nombrar lo que ya hace bien.';
 const hooks = {};
-for (const [name, hook] of [['proposePrompt', 'propose'], ['approvePrompt', 'approve']]) promptVault[name] = (...args) => hooks[hook](...args);
+for (const [name, hook] of [['proposePrompt', 'propose'], ['approvePrompt', 'approve'], ['rejectPrompt', 'reject']]) promptVault[name] = (...args) => hooks[hook](...args);
 const calls = [];
 const existing = new Set();
-promptVault.PromptVault.count = async ({ where }) => (existing.has(where.key) ? 1 : 0);
+const rejectedOnly = new Set();
+promptVault.PromptVault.count = async ({ where }) => (existing.has(where.key) && !(where.status && rejectedOnly.has(where.key)) ? 1 : 0);
 
 test('ES-181: la lista trae una fila por guía, sin texto, con versión activa y pendientes', async (t) => {
   const row = (r) => ({ toJSON: () => ({ updatedBy: null, proposed_by: null, approved_by: null, approved_at: null, isActive: false, ...r }) });
@@ -76,4 +77,22 @@ test('ES-181: crear exige identificador [a-z][a-z0-9_]* único; un cuerpo mal fo
   assert.deepEqual(calls, []);
   const ok = await create({ key: 'guia_nueva', content: synthetic });
   assert.equal(ok.status, 200); assert.deepEqual(calls.map((c) => c[0]), ['propose', 'approve']);
+});
+
+test('ES-181 (Codex P2): una guía cuya única versión fue rechazada se puede volver a crear con el mismo identificador', async (t) => {
+  calls.length = 0; existing.clear(); rejectedOnly.clear(); existing.add('solo_rechazada'); rejectedOnly.add('solo_rechazada'); existing.add('con_activa');
+  hooks.propose = async (key) => { calls.push(['propose', key]); return { id: 20, version: 3, status: 'pending_review', reasons: [] }; };
+  hooks.approve = async () => { calls.push(['approve']); };
+  const request = await startApp(t);
+  const create = (key) => request('POST', '/api/superadmin/prompt/create', { role: 'superadmin', body: { key, content: synthetic } });
+  assert.equal((await create('solo_rechazada')).status, 200);
+  assert.equal((await create('con_activa')).status, 409);
+});
+
+test('ES-181 (E181-2): el servidor exige al menos 3 caracteres en el motivo del rechazo', async (t) => {
+  hooks.reject = async () => {};
+  const request = await startApp(t);
+  const reject = (note) => request('POST', '/api/superadmin/prompt/5/reject', { role: 'superadmin', body: { note } });
+  for (const note of ['', ' ', 'ab', '  a ', 7, null, 'x'.repeat(1001)]) assert.equal((await reject(note)).status, 400, String(note).slice(0, 12));
+  assert.equal((await reject('Promete empleo')).status, 200);
 });
