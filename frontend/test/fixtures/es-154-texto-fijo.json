@@ -1,0 +1,23 @@
+{
+ "bridge/SourcesPanel.tsx": 2,
+ "career/CareerPages.tsx": 4,
+ "career/CareerShell.tsx": 2,
+ "cartografia/DesignSystemPage.tsx": 2,
+ "context/resume/ResumesPage.tsx": 1,
+ "evidence/EvidenceContent.tsx": 1,
+ "facilitation/FacilitationPreview.tsx": 1,
+ "pages/admin/AdminContent.tsx": 4,
+ "pages/admin/AdminUsers.tsx": 12,
+ "pages/EvidencePages.tsx": 3,
+ "pages/therapist/TherapistDashboard.tsx": 5,
+ "pages/UserDashboard.tsx": 1,
+ "pages/UserProgress.tsx": 1,
+ "professional/ProfessionalApplicationPage.tsx": 1,
+ "shell/Frame.tsx": 1,
+ "shell/frames.tsx": 1,
+ "skill-catalog/SkillCatalogPages.tsx": 1,
+ "skill-map/AiAnalysisPanel.tsx": 1,
+ "space/ChatControls.tsx": 2,
+ "space/JournalPage.tsx": 3,
+ "space/JournalRecent.tsx": 1
+}

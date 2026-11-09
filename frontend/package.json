@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "build:check": "node scripts/check-bundle-size.mjs",
     "i18n:build": "node scripts/build-catalog.mjs",
+    "i18n:baseline": "node scripts/i18n-baseline.mjs",
     "lint": "eslint .",
     "test": "node --test test/*.test.mjs",
     "preview": "vite preview"

@@ -9,6 +9,10 @@ import { contextEn } from '../context/contextCopy'
 import { resumeEn } from '../context/resume/resumeCopy'
 import { evidenceEn } from '../evidence/copy'
 import { therapistEn } from './therapistCopy'
+import { prefixed } from './format'
+import { interfaceCopy } from '../access/interfaceCopy'
+import { sessionCopy } from '../access/sessionCopy'
+import { shellCopy } from '../shell/copy'
 const en: Record<string, string> = {
   ...catalogEn,
   ...compassEn,
@@ -19,6 +23,10 @@ const en: Record<string, string> = {
   ...evidenceEn,
   ...skillMapEn,
   ...skillCatalogEn,
+  // ES-154 tramo 2: los textos de marcos, interfaz y sesión también se piden por clave con t() (espacios de nombres shell., interface., session.).
+  ...prefixed('shell.', shellCopy.en),
+  ...prefixed('interface.', interfaceCopy.en),
+  ...prefixed('session.', sessionCopy.en),
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'AI emotional support',
