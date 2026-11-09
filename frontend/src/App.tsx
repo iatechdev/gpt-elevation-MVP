@@ -63,6 +63,7 @@ const PilotMetricsPage = lazy(() => import('./pilot/PilotMetricsPage').then(m =>
 const JournalPage = lazy(() => import('./space/JournalPage').then(m => ({ default: m.JournalPage })))
 const BridgePage = lazy(() => import('./bridge/BridgePage').then(m => ({ default: m.BridgePage })))
 const DataPage = lazy(() => import('./space/DataPage').then(m => ({ default: m.DataPage })))
+const PlanPage = lazy(() => import('./space/PlanPage').then(m => ({ default: m.PlanPage })))
 const SpaceToolsPage = lazy(() => import('./space/SpaceToolsPage').then(m => ({ default: m.SpaceToolsPage })))
 
 // Mientras baja el bloque de la ruta se muestra el texto «Cargando...» que ya existe en ES y EN.
@@ -111,6 +112,7 @@ export default function App() {
         <Route path="/app/diary/:id" element={<JournalPage />} />
         <Route path="/app/space/tools" element={<SpaceToolsPage />} />
         <Route path="/app/data" element={<DataPage />} /> {/* ES-135 — Mis datos: exportar y eliminar la cuenta */}
+        <Route path="/app/plan" element={<PlanPage />} /> {/* ES-174 — Mi plan */}
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/context/resumes" element={<ResumesPage />} /> {/* ES-109 — mis hojas de vida */}
         <Route path="/app/checkin"      element={<CheckinPage />} />

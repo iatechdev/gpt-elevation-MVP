@@ -226,3 +226,7 @@ jobs:
         run: npm run test:invitations:pg
         env:
           ES192_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-215 rango del objetivo al cambiar rol o estado de una cuenta (PostgreSQL)"
+        run: npm run test:admin-rank:pg
+        env:
+          ES215_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
