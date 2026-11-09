@@ -28,6 +28,9 @@ test('ES-95: validación del cliente: obligatorios, correo, enlace, consentimien
   assert.deepEqual(validate({ ...good, message: 'x'.repeat(LIMITS.message + 1) }, pdf, true), ['message'])
   assert.deepEqual(validate({ ...good, licenseNumber: '', profileUrl: '', message: '' }, pdf, true), []) // opcionales vacíos
   assert.equal(validProfileUrl('https://user:pass@example.test'), false); assert.equal(validProfileUrl('ftp://example.test'), false)
+  // ES-157 (decisión 33): solo https://
+  assert.equal(validProfileUrl('http://example.test/perfil'), false); assert.equal(validProfileUrl('HTTP://EXAMPLE.TEST'), false); assert.equal(validProfileUrl('https://example.test/perfil'), true)
+  assert.deepEqual(validate({ ...good, profileUrl: 'http://example.test/perfil' }, pdf, true), ['profileUrl'])
 })
 
 test('ES-95: la hoja de vida solo se acepta como PDF de hasta 5 MB, y quitarla vuelve a exigirla', () => {

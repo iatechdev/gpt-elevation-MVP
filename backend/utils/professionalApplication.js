@@ -20,7 +20,7 @@ const isPdf = (buffer) => Buffer.isBuffer(buffer) && buffer.length > 8 && buffer
 function validProfileUrl(value) {
   try {
     const url = new URL(value);
-    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
+    return url.protocol === 'https:' && !url.username && !url.password;
   } catch { return false; }
 }
 
