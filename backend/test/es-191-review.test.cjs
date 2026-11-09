@@ -98,11 +98,18 @@ test('ES-191: las reglas iniciales cubren las cuatro categorías en ES y EN y es
 // E191-1 (QA): un texto de 20.000 caracteres sin espacios bloqueaba el servidor 1–3 s por expresiones regulares cuadráticas.
 test('ES-191: la revisión es de tiempo lineal con textos largos sin espacios (rendimiento, E191-1)', () => {
   const size = maxChars();
+  // ES-226: el ruido de la máquina (GC, otros archivos de prueba en paralelo, antivirus) solo SUMA tiempo, así que se mide el MÍNIMO de varias repeticiones tras una de calentamiento.
+  // El objetivo no se relaja: el umbral sigue en 150 ms y una regex cuadrática tardaba 1–3 s en TODAS las repeticiones, no en algunas.
+  const REPEATS = 5; const LIMIT_MS = 150;
   for (const text of ['a'.repeat(size), 'a.'.repeat(size / 2), 'a@'.repeat(size / 2), 'a:'.repeat(size / 2), 'a-'.repeat(size / 2), 'a1.'.repeat(Math.floor(size / 3)) + '://']) {
-    const started = process.hrtime.bigint();
-    reviewPrompt(text, RULES);
-    const ms = Number(process.hrtime.bigint() - started) / 1e6;
-    assert.ok(ms < 150, `la revisión tardó ${ms.toFixed(0)} ms con ${text.length} caracteres`);
+    reviewPrompt(text, RULES); // calentamiento (compilación JIT y cachés)
+    let best = Infinity;
+    for (let i = 0; i < REPEATS && best >= LIMIT_MS; i += 1) {
+      const started = process.hrtime.bigint();
+      reviewPrompt(text, RULES);
+      best = Math.min(best, Number(process.hrtime.bigint() - started) / 1e6);
+    }
+    assert.ok(best < LIMIT_MS, `la revisión tardó ${best.toFixed(0)} ms (mejor de ${REPEATS}) con ${text.length} caracteres`);
   }
 });
 
