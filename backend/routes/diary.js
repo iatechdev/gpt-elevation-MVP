@@ -1,5 +1,5 @@
 // backend/routes/diary.js
-// POST   /api/diary       — crea una entrada fechada
+// POST   /api/diary       — crea una entrada fechada (con requestId opcional: reintentar no duplica, ES-163)
 // GET    /api/diary       — lista las entradas propias (no borradas)
 // GET    /api/diary/:id   — una entrada propia
 // PUT    /api/diary/:id   — edita contenido y/o fecha (registra invalidación de dependencias)
@@ -28,6 +28,8 @@ const validDate = (value) => {
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return false;
   return parsed.getTime() <= Date.now() + 36 * 3600 * 1000;
 };
+// ES-163: identificador opcional del intento de guardado (el cliente genera uno por borrador nuevo y lo reutiliza al reintentar).
+const validRequestId = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(value);
 const parseId = (raw) => (/^[1-9]\d{0,9}$/.test(String(raw)) ? Number(raw) : null);
 
 const present = (entry) => ({
@@ -54,11 +56,35 @@ const inTransaction = async (fn) => {
   }
 };
 
-router.post('/', validateBody({ date: validDate, content: validContent }), async (req, res) => {
+// Repetición de un guardado con el mismo requestId: SOLO de la misma persona (el requestId va en la clave junto con el titular). Mismo contenido y fecha = la entrada ya
+// creada (200, sin duplicar); otro contenido u otra fecha = 409 sin tocar nada; una entrada ya borrada no se puede repetir (su contenido se vació).
+const replay = (res, existing, body) => {
+  if (existing.deletedAt || existing.entryDate !== body.date || desencriptar(existing.content) !== body.content) {
+    return res.status(409).json({ error: 'Este requestId ya se usó con otra entrada. / This requestId was already used with a different entry.', code: 'request_id_reuse' });
+  }
+  return res.status(200).json(present(existing));
+};
+
+router.post('/', validateBody({ date: validDate, content: validContent, requestId: optional(validRequestId) }), async (req, res) => {
+  const { requestId } = req.body;
   try {
-    const entry = await DiaryEntry.create({
-      UserId: req.user.id, entryDate: req.body.date, content: encriptarV2(req.body.content),
-    });
+    if (requestId) {
+      const existing = await DiaryEntry.findOne({ where: { UserId: req.user.id, requestId } });
+      if (existing) return replay(res, existing, req.body);
+    }
+    let entry;
+    try {
+      entry = await DiaryEntry.create({
+        UserId: req.user.id, entryDate: req.body.date, content: encriptarV2(req.body.content), ...(requestId ? { requestId } : {}),
+      });
+    } catch (error) {
+      // Dos guardados simultáneos con el mismo requestId: gana el INSERT de uno; el otro devuelve esa misma entrada.
+      if (requestId && error && error.name === 'SequelizeUniqueConstraintError') {
+        const existing = await DiaryEntry.findOne({ where: { UserId: req.user.id, requestId } });
+        if (existing) return replay(res, existing, req.body);
+      }
+      throw error;
+    }
     res.status(201).json(present(entry));
   } catch (error) {
     console.error('❌ Error creando entrada de diario:', error.message);

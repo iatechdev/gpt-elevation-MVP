@@ -4,12 +4,15 @@ export const journalCopy = {
     entry: 'Entrada privada', bridge: 'Al Puente →', bridgeNote: 'El Puente estará disponible cuando su flujo de autorización esté integrado.',
     manual: 'Guardado manual', draftWarning: 'El texto sin guardar permanece solo en esta pestaña. Guárdalo antes de cerrar.', save: 'Guardar entrada',
     unconfirmed: 'Guardado sin confirmar', count: 'caracteres',
+    // ES-163: reintentar un guardado incierto es seguro (mismo requestId).
+    retrySave: 'Reintentar guardar', retryHint: 'Se guardará una sola vez aunque el intento anterior haya llegado.',
   },
   en: {
     title: 'My diary', private: 'Private · Only for you', recent: 'Recent entries', select: 'Select a recent entry or create a new one.',
     entry: 'Private entry', bridge: 'To the Bridge →', bridgeNote: 'The Bridge will be available once its authorization flow is integrated.',
     manual: 'Manual saving', draftWarning: 'Unsaved text stays only in this tab. Save it before closing.', save: 'Save entry',
     unconfirmed: 'Save not confirmed', count: 'characters',
+    retrySave: 'Try saving again', retryHint: 'It will be saved only once, even if the earlier attempt went through.',
   },
 } as const
 
