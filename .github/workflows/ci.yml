@@ -234,3 +234,7 @@ jobs:
         run: npm run test:admin-rank:pg
         env:
           ES215_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-217 unlock solo levanta bloqueos por intentos y respeta rangos (PostgreSQL)"
+        run: npm run test:admin-unlock:pg
+        env:
+          ES217_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
