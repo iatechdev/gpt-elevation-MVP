@@ -102,6 +102,8 @@ app.use('/api',                 require('./routes/auth'));
 app.use('/api',                 require('./routes/passwordReset'));         // ES-132 — recuperación de contraseña
 app.use('/api/contact-entries',  require('./routes/contactEntries').publicRouter); // ES-193 — datos de contacto y ayuda (sin sesión)
 app.use('/api/admin/contact-entries', verificarAdmin, require('./routes/contactEntries').adminRouter); // ES-193 — administración lee; superadmin edita
+app.use('/api/invitations',      require('./routes/invitations').publicRouter); // ES-192 — la persona invitada elige su contraseña (sin sesión)
+app.use('/api/admin/invitations', verificarAdmin, require('./routes/invitations').adminRouter); // ES-192 — invitar por enlace (administración)
 app.use('/api/landing-content', require('./routes/landingContent'));
 app.use('/api/professional-applications', require('./routes/professionalApplications').publicRouter); // ES-95 — solicitud pública de profesionales
 app.use('/api/pricing',         require('./routes/pricing'));

@@ -55,6 +55,10 @@ const CORE = [
   // ES-132: enlaces de recuperación de contraseña. Se exportan solo cuándo se pidieron, vencieron o se usaron; NUNCA `tokenHash` (es una credencial de un solo uso,
   // aunque esté hasheada). Se purgan con la cuenta: un enlace pendiente no debe sobrevivir al borrado.
   ['passwordResets', 'PasswordReset', 'UserId', ['id', 'expiresAt', 'usedAt', 'createdAt']],
+  // ES-192: la invitación con la que la persona creó su cuenta (acceptedUserId). Se exporta solo cuándo se pidió, venció o se usó y con qué rol; NUNCA
+  // `tokenHash` (credencial de un solo uso) ni el correo de otra persona (`invitedBy` es quien invitó). Se purga con la cuenta. Las invitaciones sin
+  // aceptar no son de nadie y se limpian solas (30 días tras vencer).
+  ['invitations', 'Invitation', 'acceptedUserId', ['id', 'role', 'expiresAt', 'usedAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);

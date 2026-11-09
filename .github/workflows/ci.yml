@@ -214,3 +214,7 @@ jobs:
         run: npm run test:contact-entries:pg
         env:
           ES193_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-192 invitación por enlace y contraseña con las reglas del registro (PostgreSQL)"
+        run: npm run test:invitations:pg
+        env:
+          ES192_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
