@@ -179,7 +179,7 @@ export function AdminUsers() {
       if (!res.ok) { const d = await res.json(); alert(d.error || 'Error'); return; }
       await fetchMatching();
       await fetchUsuarios();
-    } catch { alert('Connection error'); }
+    } catch { alert(tr('Error de conexión.')); }
     finally { setConfirmingId(null); }
   };
 
@@ -246,10 +246,10 @@ export function AdminUsers() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ therapistId }),
       });
-      if (!res.ok) { const d = await res.json(); alert(d.error || 'Error al asignar terapeuta'); return; }
+      if (!res.ok) { const d = await res.json(); alert(d.error || tr('Error al asignar terapeuta')); return; }
       await fetchUsuarios();
       setUsuarioSeleccionado(prev => prev?.id === usuarioId ? { ...prev, therapistId } : prev);
-    } catch { alert('Connection error'); }
+    } catch { alert(tr('Error de conexión.')); }
   };
 
   const crearUsuario = async () => {

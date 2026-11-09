@@ -121,7 +121,7 @@ export function AdminMetrics() {
               {metrics.sessionsByDay.map(s => (
                 <div
                   key={s.date}
-                  title={`${formatDateFull(s.date, tr('es-CO'))}: ${s.count} sesión${s.count !== 1 ? 'es' : ''}`}
+                  title={`${formatDateFull(s.date, tr('es-CO'))}: ${s.count} ${s.count !== 1 ? tr('sesiones') : tr('sesión')}`}
                   style={{
                     flex: 1,
                     height: `${Math.max((s.count / maxCount) * 100, 6)}%`,

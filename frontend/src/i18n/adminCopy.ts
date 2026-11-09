@@ -70,11 +70,60 @@ export const adminEnglish: Record<string, string> = {
   'Sesiones / usuario': 'Sessions / user', 'Actividad de sesiones — últimos 30 días': 'Session activity — last 30 days',
   'sesiones en 30 días': 'sessions in 30 days', 'promedio diario': 'daily average', 'pico máximo': 'highest count',
   'Sin terapeutas activos aún.': 'No active therapists yet.', '✓ Activo': '✓ Active', '○ Nuevo': '○ New',
+  // ES-143: solicitudes de profesionales, pendientes de contenido y avisos
+  'es': 'en', 'Pendientes de contenido': 'Content pending', 'pendientes': 'pending', 'listos': 'ready', 'Listo': 'Ready', 'Pendiente': 'Pending', 'Falta:': 'Missing:',
+  'Mientras un texto siga pendiente, la landing muestra el texto provisional; no se publica ningún dato sin verificar.':
+    'While a text is still pending, the landing page shows the placeholder text; no unverified data is published.',
+  'Solicitudes de profesionales': 'Professional applications',
+  'Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de terapeuta». Abre las hojas de vida solo en un visor aislado; no se analizan contra virus.':
+    'They arrive from the public form. Approving does not create the account: afterwards use “Create therapist account”. Open résumés only in an isolated viewer; they are not scanned for viruses.',
+  'Filtrar por estado': 'Filter by status', 'Pendientes': 'Pending', 'Aprobadas': 'Approved', 'Rechazadas': 'Rejected', 'Todas': 'All',
+  'Aprobada': 'Approved', 'Rechazada': 'Rejected', 'Cargando solicitudes...': 'Loading applications...', 'Reintentar': 'Retry',
+  'No hay solicitudes en este estado.': 'No applications in this status.', 'No se pudieron cargar las solicitudes.': 'Could not load the applications.',
+  'Recibida': 'Received', 'idioma': 'language', 'Colegiatura/registro:': 'License/registration:', 'Perfil profesional': 'Professional profile',
+  'Revisada por': 'Reviewed by', 'el': 'on', 'Nota:': 'Note:', 'Descargar hoja de vida': 'Download résumé', 'Aprobar': 'Approve', 'Rechazar': 'Reject',
+  'Crear cuenta de terapeuta': 'Create therapist account', 'Eliminar': 'Delete', 'Motivo del rechazo (obligatorio)': 'Reason for rejection (required)',
+  'Confirmar aprobación': 'Confirm approval', 'Escribe el motivo del rechazo.': 'Enter the reason for the rejection.',
+  'Otra persona ya revisó esta solicitud.': 'Someone else has already reviewed this application.', 'No se pudo registrar la revisión.': 'Could not record the review.',
+  'Solicitud aprobada.': 'Application approved.', 'Solicitud rechazada.': 'Application rejected.', 'Solicitud eliminada.': 'Application deleted.',
+  'No se pudo eliminar la solicitud.': 'Could not delete the application.', 'No se pudo descargar la hoja de vida.': 'Could not download the résumé.',
+  'El formulario público está cerrado': 'The public form is closed',
+  'Quien intente enviar una solicitud ve «Por ahora no estamos recibiendo solicitudes». ': 'Anyone trying to submit an application sees “We are not receiving applications right now”. ',
+  'Revisa, aprueba o rechaza las pendientes, o elimina las que ya no necesites, para volver a recibir.': 'Review, approve or reject the pending ones, or delete those you no longer need, to start receiving again.',
+  // ES-143: /admin/prompts
+  'Prompts': 'Prompts', 'Gestión completa de prompts terapéuticos': 'Full management of therapeutic prompts',
+  'Visualización y propuesta de prompts': 'View and propose prompts', '+ Nuevo prompt': '+ New prompt',
+  'versión pendiente de aprobación para': 'version pending approval for', 'versiones pendientes de aprobación para': 'versions pending approval for',
+  'Cargando prompts...': 'Loading prompts...', 'No hay prompts configurados aún.': 'No prompts configured yet.',
+  'Actualizado por': 'Updated by', 'Versión activa:': 'Active version:', 'Aprobado por:': 'Approved by:', 'Fecha:': 'Date:',
+  'Ocultar contenido': 'Hide content', 'Ver contenido activo': 'View active content',
+  '✏️ Editar / nueva versión': '✏️ Edit / new version', '✏️ Proponer nueva versión': '✏️ Propose new version',
+  'Historial de versiones': 'Version history', 'Sin versiones anteriores.': 'No previous versions.',
+  'Propuesto por:': 'Proposed by:', 'Rechazado por:': 'Rejected by:', 'ℹ️ Sobre las propuestas': 'ℹ️ About proposals',
+  'Al proponer una nueva versión, el superadmin recibirá una notificación para revisarla. La versión actual permanece activa hasta que sea aprobada la nueva.':
+    'When you propose a new version, the superadmin will be notified to review it. The current version stays active until the new one is approved.',
+  'Editar prompt': 'Edit prompt', 'Proponer nueva versión': 'Propose new version', 'Prompt:': 'Prompt:',
+  'Requiere aprobación del superadmin': 'Requires superadmin approval', 'Contenido del prompt...': 'Prompt content...',
+  'caracteres': 'characters', 'Enviando...': 'Sending...', 'Guardar y activar': 'Save and activate',
+  'Enviar para aprobación': 'Send for approval', 'Nuevo prompt': 'New prompt', 'Key del prompt *': 'Prompt key *',
+  'ej: elevation_system_prompt': 'e.g. elevation_system_prompt', 'Solo minúsculas y guiones bajos': 'Lowercase letters and underscores only',
+  'Contenido *': 'Content *', 'Escribe el contenido del prompt...': 'Write the prompt content...', 'Crear y activar': 'Create and activate',
+  'Rechazar versión': 'Reject version', 'Propuesta por': 'Proposed by', 'Explica el motivo del rechazo.': 'Explain the reason for the rejection.',
+  'Ej: El tono no es coherente con la guía ética...': 'E.g. The tone is not consistent with the ethics guide...',
+  'El contenido debe tener al menos 10 caracteres.': 'The content must be at least 10 characters long.', 'Error al enviar.': 'Could not send.',
+  '✓ Prompt actualizado y activo.': '✓ Prompt updated and active.', '✓ Propuesta enviada al superadmin para revisión.': '✓ Proposal sent to the superadmin for review.',
+  'El key es requerido.': 'The key is required.', 'Error al crear.': 'Could not create.', '✓ Prompt creado y activo.': '✓ Prompt created and active.',
+  '✓ Versión aprobada y activa.': '✓ Version approved and active.', '✓ Versión rechazada.': '✓ Version rejected.',
+  '● Activo': '● Active', '● Aprobado': '● Approved', '⏳ Pendiente': '⏳ Pending', '✗ Rechazado': '✗ Rejected', '● Archivado': '● Archived',
 }
 export function adminText(value: string, lang: 'es' | 'en'): string {
   if (lang === 'es') return value
   const created = /^Usuario (.+) creado exitosamente\.$/.exec(value)
   if (created) return `User ${created[1]} created successfully.`
+  const capacity = /^Se alcanzó el tope de solicitudes: (\d+) de (\d+) pendientes \(hojas de vida: (\d+) de (\d+) MB\)\. $/.exec(value)
+  if (capacity) return `The application limit was reached: ${capacity[1]} of ${capacity[2]} pending (résumés: ${capacity[3]} of ${capacity[4]} MB). `
+  const removal = /^¿Eliminar la solicitud de (.+) y su hoja de vida\? No se puede deshacer\.$/.exec(value)
+  if (removal) return `Delete the application from ${removal[1]} and their résumé? This cannot be undone.`
   const rejected = /^Solicitud de (.+) rechazada\.$/.exec(value)
   if (rejected) return `Request from ${rejected[1]} rejected.`
   const plan = /^✓ Plan (.+) activado para (.+)\.$/.exec(value)
@@ -83,5 +132,7 @@ export function adminText(value: string, lang: 'es' | 'en'): string {
   if (approve) return `Approve validation for ${approve[1]}? This will activate the account on the platform.`
   const reject = /^Explica por qué rechazas el documento de (.+)\.$/.exec(value)
   if (reject) return `Explain why you are rejecting the document from ${reject[1]}.`
+  const application = /^Solicitud de (.+)$/.exec(value)
+  if (application && !(value in adminEnglish)) return `Application from ${application[1]}`
   return adminEnglish[value] ?? value
 }
