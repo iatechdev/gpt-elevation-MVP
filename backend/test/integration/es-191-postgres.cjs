@@ -246,4 +246,25 @@ test('ES-191 PostgreSQL: las guías de la IA se revisan en el servidor y nada se
     assert.equal((await rows(key)).filter((r) => r.isActive).length, 1);
   });
 
+  // ES-181: crear y publicar (superadministración) con rutas y vault reales: la revisión corre igual y la lista agrupa por guía.
+  await t.test('ES-181: crear una guía, publicar una versión nueva y ver la lista por clave', async () => {
+    const created = await call(sup, 'POST', '/api/superadmin/prompt/create', { key: 'guia_es181', content: GOOD });
+    assert.equal(created.status, 200); assert.equal(created.body.version.status, 'active');
+    assert.equal(await getActivePrompt('guia_es181'), GOOD);
+    assert.equal((await call(sup, 'POST', '/api/superadmin/prompt/create', { key: 'guia_es181', content: GOOD })).status, 409);
+    assert.equal((await call(adm, 'POST', '/api/superadmin/prompt/create', { key: 'otra_es181', content: GOOD })).status, 403);
+    assert.equal((await rows('otra_es181')).length, 0);
+    const rejected = await call(sup, 'POST', '/api/superadmin/prompt/publish', { key: 'guia_es181', content: BAD });
+    assert.equal(rejected.status, 422); assert.equal(await getActivePrompt('guia_es181'), GOOD, 'la guía rechazada no se activa');
+    const NEXT = GOOD + ' Cierra con un resumen breve.';
+    assert.equal((await call(sup, 'POST', '/api/superadmin/prompt/publish', { key: 'guia_es181', content: NEXT })).status, 200);
+    assert.equal(await getActivePrompt('guia_es181'), NEXT);
+    assert.equal((await rows('guia_es181')).filter((r) => r.status === 'active').length, 1);
+    await call(adm, 'POST', '/api/admin/prompt/propose', { key: 'guia_es181', content: GOOD + ' Otra variante.' });
+    const list = await call(adm, 'GET', '/api/admin/prompts');
+    const entry = list.body.find((g) => g.key === 'guia_es181');
+    assert.equal(list.body.filter((g) => g.key === 'guia_es181').length, 1);
+    assert.equal(entry.pendingCount, 1); assert.ok(entry.activeVersion >= 2); assert.ok(!JSON.stringify(list.body).includes('Cierra con'));
+  });
+
 });

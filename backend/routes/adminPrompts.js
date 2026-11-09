@@ -25,14 +25,28 @@ router.post('/prompt', (req, res) => res.status(410).json({
 }));
 
 // GET /api/admin/prompts
+// ES-181: UNA fila por guía (clave): versión activa, quién la aprobó y cuándo, y cuántas versiones esperan revisión.
+// Nunca lleva el texto (eso va por /prompt/:key y /prompt/:key/versions).
 router.get('/prompts', async (req, res) => {
   try {
-    const prompts = await PromptVault.findAll({
-      attributes: ['key', 'version', 'isActive', 'updatedBy', 'updatedAt'],
+    res.set('Cache-Control', 'no-store');
+    const rows = await PromptVault.findAll({
+      attributes: ['key', 'version', 'status', 'isActive', 'updatedBy', 'proposed_by', 'approved_by', 'approved_at', 'updatedAt'],
     });
-    res.json(prompts);
+    const byKey = new Map();
+    for (const row of rows.map((r) => r.toJSON())) {
+      const entry = byKey.get(row.key) || { key: row.key, activeVersion: null, activeBy: null, activeAt: null, approvedBy: null, pendingCount: 0, versionCount: 0, lastChangeAt: null };
+      entry.versionCount += 1;
+      if (row.status === 'pending_review') entry.pendingCount += 1;
+      if (row.status === 'active' || (row.isActive && entry.activeVersion === null)) {
+        entry.activeVersion = row.version; entry.activeBy = row.updatedBy || row.proposed_by || null; entry.activeAt = row.approved_at || row.updatedAt; entry.approvedBy = row.approved_by || null;
+      }
+      if (!entry.lastChangeAt || new Date(row.updatedAt) > new Date(entry.lastChangeAt)) entry.lastChangeAt = row.updatedAt;
+      byKey.set(row.key, entry);
+    }
+    res.json([...byKey.values()].sort((a, b) => a.key.localeCompare(b.key)));
   } catch (error) {
-    res.status(500).json({ error: 'No se pudieron obtener los prompts.' });
+    res.status(500).json({ error: 'No se pudieron obtener las guías. / Could not load the guides.' });
   }
 });
 
@@ -74,6 +88,44 @@ router.post('/prompt/propose', validateBody({ key: nonempty, content: nonempty }
   }
 });
 
+// ES-181: superadministración PUBLICA (propone + aprueba en una sola acción) o CREA una guía. Sigue siendo una persona quien decide:
+// la revisión automática corre igual y, si la rechaza, no se activa nada. No es el guardado directo retirado en ES-191.
+const KEY_NEW = /^[a-z][a-z0-9_]{0,99}$/;
+const publishVersion = async (res, key, content, actor) => {
+  const proposal = await proposePrompt(key, content, actor);
+  if (proposal.status === 'rejected') return replyProposal(res, proposal);
+  await approvePrompt(proposal.id, actor);
+  return res.json({ message: 'Guía activa. / Guide is now active.', version: { id: proposal.id, version: proposal.version, status: 'active' } });
+};
+
+// POST /api/superadmin/prompt/publish — nueva versión de una guía que ya existe, activa de inmediato.
+router.post('/prompt/publish', verificarSuperAdmin, validateBody({ key: nonempty, content: nonempty }), async (req, res) => {
+  try {
+    const { key, content } = req.body;
+    if (!KEY.test(key)) return res.status(400).json({ error: 'Clave inválida. / Invalid key.' });
+    if (!(await PromptVault.count({ where: { key } }))) return res.status(404).json({ code: 'guide_not_found', error: 'La guía no existe. / The guide does not exist.' });
+    return await publishVersion(res, key, content, req.user.name);
+  } catch (error) {
+    if (replyReviewError(res, error)) return;
+    console.error('❌ Error publicando prompt:', error);
+    res.status(500).json({ error: 'No se pudo publicar la guía. / Could not publish the guide.' });
+  }
+});
+
+// POST /api/superadmin/prompt/create — guía nueva: identificador [a-z][a-z0-9_]* único, activa de inmediato si supera la revisión.
+router.post('/prompt/create', verificarSuperAdmin, validateBody({ key: nonempty, content: nonempty }), async (req, res) => {
+  try {
+    const { key, content } = req.body;
+    if (!KEY_NEW.test(key)) return res.status(400).json({ code: 'invalid_key', error: 'Identificador inválido: usa minúsculas, números y guion bajo, empezando por una letra. / Invalid identifier: lowercase letters, digits and underscore, starting with a letter.' });
+    if (await PromptVault.count({ where: { key } })) return res.status(409).json({ code: 'key_exists', error: 'Ya existe una guía con ese identificador. / A guide with that identifier already exists.' });
+    return await publishVersion(res, key, content, req.user.name);
+  } catch (error) {
+    if (replyReviewError(res, error)) return;
+    console.error('❌ Error creando prompt:', error);
+    res.status(500).json({ error: 'No se pudo crear la guía. / Could not create the guide.' });
+  }
+});
+
 // GET /api/superadmin/prompt/:key/versions
 // ES-191 (decisión 22): quien aprueba ve el texto de cada versión. Esta ruta solo la alcanzan administración y superadministración
 // (verificarAdmin en server.js); el profesional lee las suyas por /api/therapist/prompt, con su propia clave.
@@ -82,7 +134,7 @@ router.get('/prompt/:key/versions', validKey, async (req, res) => {
     res.set('Cache-Control', 'no-store');
     const versiones = await PromptVault.findAll({
       where: { key: req.params.key },
-      attributes: ['id', 'key', 'version', 'status', 'proposed_by', 'approved_by', 'rejected_by', 'rejection_note', 'approved_at', 'rejected_at', 'updatedAt', 'contentEncrypted', 'reviewOutcome', 'reviewReasons', 'reviewedAt'],
+      attributes: ['id', 'key', 'version', 'status', 'proposed_by', 'approved_by', 'rejected_by', 'rejection_note', 'approved_at', 'rejected_at', 'createdAt', 'updatedAt', 'contentEncrypted', 'reviewOutcome', 'reviewReasons', 'reviewedAt'],
       order: [['version', 'DESC']],
     });
     res.json(versiones.map((row) => {
