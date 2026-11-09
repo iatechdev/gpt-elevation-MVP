@@ -9,6 +9,10 @@ import { contextEs } from '../context/contextCopy'
 import { resumeEs } from '../context/resume/resumeCopy'
 import { evidenceEs } from '../evidence/copy'
 import { therapistEs } from './therapistCopy'
+import { prefixed } from './format'
+import { interfaceCopy } from '../access/interfaceCopy'
+import { sessionCopy } from '../access/sessionCopy'
+import { shellCopy } from '../shell/copy'
 const es: Record<string, string> = {
   ...catalogEs,
   ...compassEs,
@@ -19,6 +23,10 @@ const es: Record<string, string> = {
   ...evidenceEs,
   ...skillMapEs,
   ...skillCatalogEs,
+  // ES-154 tramo 2: los textos de marcos, interfaz y sesión también se piden por clave con t() (espacios de nombres shell., interface., session.).
+  ...prefixed('shell.', shellCopy.es),
+  ...prefixed('interface.', interfaceCopy.es),
+  ...prefixed('session.', sessionCopy.es),
 
   // ── Landing ───────────────────────────────────────────────────────────────
   hero_badge: 'Soporte emocional con IA',
@@ -191,7 +199,7 @@ const es: Record<string, string> = {
   admin_plan_requests_plural: 'plan requests',
   admin_matching_pending: 'matching pending',
   admin_confirm_assignment: 'Confirm assignment',
-  admin_confirming: 'Confirming...',
+  admin_confirming: 'Confirmando...',
 
   // ── Admin — Prompts ───────────────────────────────────────────────────────
   admin_prompts_title: 'Prompts',

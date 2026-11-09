@@ -16,7 +16,7 @@ export const ZONE_ROLES: Record<Zone, readonly Role[]> = {
 export const canEnter = (role: Role, zone: Zone) => ZONE_ROLES[zone].includes(role)
 
 // Rutas de /app y /facilitation que no son solo de la persona usuaria.
-const MEMBER_PATHS = ['/app/data', '/app/professional-reviews', '/facilitation']
+const MEMBER_PATHS = ['/app/data', '/app/plan', '/app/professional-reviews', '/facilitation'] // ES-174: «Mi plan» como «Mis datos», para cualquier sesión válida
 
 const under = (pathname: string, base: string) => pathname === base || pathname.startsWith(`${base}/`)
 
