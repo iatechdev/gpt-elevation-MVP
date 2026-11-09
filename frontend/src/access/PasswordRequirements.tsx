@@ -12,11 +12,13 @@ interface Props {
   showErrors: boolean
   /** Requisitos que el servidor rechazó (puede incluir max_bytes). */
   serverProblems?: PasswordProblem[]
+  /** ES-156: el resumen «n de 5» se ve y es la única región aria-live (en el registro se mantiene oculto). */
+  visibleSummary?: boolean
   text: (key: string) => string
 }
 
 // ES-128: requisitos de la contraseña visibles junto al campo antes de escribir. No depende solo del color: icono y texto oculto.
-export function PasswordRequirements({ id, password, showErrors, serverProblems = [], text }: Props) {
+export function PasswordRequirements({ id, password, showErrors, serverProblems = [], visibleSummary = false, text }: Props) {
   const problems = new Set<PasswordProblem>([...(password ? passwordProblems(password) : PASSWORD_RULES), ...(showErrors ? serverProblems : [])])
   const met = PASSWORD_RULES.filter(rule => !problems.has(rule)).length
   const bytesOver = problems.has('max_bytes')
@@ -39,7 +41,7 @@ export function PasswordRequirements({ id, password, showErrors, serverProblems 
       <p style={{ margin: `${spacing.xs} 0 0`, color: bytesOver ? colors.danger : colors.textMuted, overflowWrap: 'anywhere' }}>
         {text('landing.access.pw.max_bytes')}
       </p>
-      <span aria-live="polite" style={hidden}>{summary}</span>
+      <p aria-live="polite" style={visibleSummary ? { margin: `${spacing.xs} 0 0`, color: colors.textMuted, overflowWrap: 'anywhere' } : { ...hidden, margin: -1 }}>{summary}</p>
     </div>
   )
 }

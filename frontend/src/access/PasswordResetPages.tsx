@@ -42,8 +42,8 @@ function Shell({ title, children }: { title: string; children: React.ReactNode }
 }
 
 type Notice = { text: string; ok: boolean } | null
-const Message = ({ notice }: { notice: Notice }) => notice ? (
-  <p role={notice.ok ? 'status' : 'alert'} style={{ fontSize: '0.85rem', textAlign: 'center', color: notice.ok ? colors.success : colors.danger, margin: 0 }}>{notice.ok ? '✓ ' : '❌ '}{notice.text}</p>
+const Message = ({ notice, innerRef }: { notice: Notice; innerRef?: React.Ref<HTMLParagraphElement> }) => notice ? (
+  <p ref={innerRef} tabIndex={innerRef ? -1 : undefined} role={notice.ok ? 'status' : 'alert'} style={{ fontSize: '0.85rem', textAlign: 'center', color: notice.ok ? colors.success : colors.danger, margin: 0 }}>{notice.ok ? '✓ ' : '❌ '}{notice.text}</p>
 ) : null
 
 // ES-132: paso 1, pedir el enlace. La respuesta es la misma exista o no la cuenta.
@@ -98,7 +98,10 @@ export function ResetPasswordPage() {
   const [invalid, setInvalid] = useState(token === null)
   const [missing, setMissing] = useState<PasswordProblem[]>([])
   const [notice, setNotice] = useState<Notice>(null)
-  const passwordInput = useRef<HTMLInputElement>(null)
+  const messageRef = useRef<HTMLParagraphElement>(null)
+  // ES-156: tras un envío rechazado el foco va al mensaje (no al teclear de nuevo); el contador dispara el efecto una vez por rechazo.
+  const [rejections, setRejections] = useState(0)
+  useEffect(() => { if (rejections > 0) messageRef.current?.focus() }, [rejections])
 
   useEffect(() => {
     if (window.location.hash) window.history.replaceState(null, '', window.location.pathname)
@@ -109,7 +112,7 @@ export function ResetPasswordPage() {
     if (busy || !token) return
     setNotice(null)
     const local = passwordProblems(password)
-    if (local.length) { setMissing(local); passwordInput.current?.focus(); return }
+    if (local.length) { setMissing(local); setRejections(n => n + 1); return }
     setBusy(true); setMissing([])
     try {
       const res = await fetch(`${BACKEND}/api/password-reset/confirm`, {
@@ -119,9 +122,9 @@ export function ResetPasswordPage() {
       const data = await res.json().catch(() => ({})) as { code?: unknown; missing?: unknown }
       const failure = resetFailure(res.status, data.code)
       if (failure === 'reset_invalid') setInvalid(true)
-      else if (failure === 'password_policy') { setMissing(knownProblems(data.missing)); passwordInput.current?.focus() }
-      else setNotice({ text: text(failure === 'rate_limited' ? 'landing.access.rate_limit' : 'landing.access.failed'), ok: false })
-    } catch { setNotice({ text: text('landing.access.failed'), ok: false }) } finally { setBusy(false) }
+      else if (failure === 'password_policy') { setMissing(knownProblems(data.missing)); setRejections(n => n + 1) }
+      else { setNotice({ text: text(failure === 'rate_limited' ? 'landing.access.rate_limit' : 'landing.access.failed'), ok: false }); setRejections(n => n + 1) }
+    } catch { setNotice({ text: text('landing.access.failed'), ok: false }); setRejections(n => n + 1) } finally { setBusy(false) }
   }
 
   if (done) return (
@@ -149,14 +152,14 @@ export function ResetPasswordPage() {
     <Shell title={text('landing.access.reset.title')}>
       <form onSubmit={submit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.xxl }}>
         <div style={{ position: 'relative' }}>
-          <input ref={passwordInput} type={show ? 'text' : 'password'} aria-label={text('landing.access.reset.new_password')} autoComplete="new-password" value={password}
+          <input type={show ? 'text' : 'password'} aria-label={text('landing.access.reset.new_password')} autoComplete="new-password" value={password}
             onChange={e => { setPassword(e.target.value); if (policyError) setMissing([]) }} aria-describedby="pw-req" aria-invalid={policyError || undefined}
             placeholder={text('landing.access.reset.new_password')} required style={{ ...inputStyle, paddingRight: '2rem' }} />
           <button type="button" aria-label={text(show ? 'landing.access.hide_password' : 'landing.access.show_password')} onClick={() => setShow(!show)}
-            style={{ position: 'absolute', right: 0, bottom: spacing.md, background: 'none', border: 'none', cursor: 'pointer', color: colors.textSubtle, fontSize: 16, padding: 0 }}>{show ? '🙈' : '👁'}</button>
+            style={{ position: 'absolute', right: 0, bottom: spacing.md, background: 'none', border: 'none', cursor: 'pointer', color: colors.textSubtle, fontSize: 16, padding: 0, minWidth: 24, minHeight: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{show ? '🙈' : '👁'}</button>
         </div>
-        <PasswordRequirements id="pw-req" password={password} showErrors={policyError} serverProblems={missing} text={text} />
-        <Message notice={policyError ? { text: text('landing.access.pw.missing').replace('{list}', missingList), ok: false } : notice} />
+        <PasswordRequirements id="pw-req" password={password} showErrors={policyError} serverProblems={missing} visibleSummary text={text} />
+        <Message innerRef={messageRef} notice={policyError ? { text: text('landing.access.pw.missing').replace('{list}', missingList), ok: false } : notice} />
         <button type="submit" disabled={busy} style={submitStyle}>{busy ? text('landing.access.submitting') : text('landing.access.reset.save')}</button>
       </form>
     </Shell>
