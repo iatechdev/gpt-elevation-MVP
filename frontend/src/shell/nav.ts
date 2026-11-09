@@ -26,7 +26,7 @@ export const PERSON_MENU: NavItem[] = [
   { to: '/app/my-therapist', label: 'myProfessional' },
   { to: '/app/space/tools', label: 'tools' },
   { to: '/app/progress', label: 'progress' },
-  { to: '/pricing', label: 'plan' },
+  { to: '/app/plan', label: 'plan' }, // ES-174: «Mi plan» lleva a la pantalla propia (antes a /pricing, que sigue público)
   { to: '/app/context/resumes', label: 'resumes' },
   { to: '/app/professional-reviews', label: 'reviews' },
   { to: '/app/data', label: 'data' },

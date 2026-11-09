@@ -26,6 +26,9 @@ export async function requestDeletion(token: string): Promise<void> {
   const receipt = await request(token, '/api/account/deletion-requests', { method: 'POST', body: JSON.stringify({ confirm: true }) }) as { id?: unknown }
   if (typeof receipt?.id !== 'string') throw new SpaceError(502)
 }
+// ES-174: confirmación fuerte para eliminar la cuenta. Se compara con la palabra del idioma activo sin distinguir mayúsculas, tildes ni espacios sobrantes.
+const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').trim().toLocaleUpperCase('en')
+export const confirmMatches = (input: string, word: string) => input.trim() !== '' && fold(input) === fold(word)
 export function dataErrorKey(error: unknown): DataErrorKey {
   if (!(error instanceof SpaceError)) return 'error'
   if (error.status === 401) return 'session'
