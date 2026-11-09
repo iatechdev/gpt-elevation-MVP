@@ -19,7 +19,9 @@ test('P1-9: production entrypoints, signer and verifier fail closed without JWT_
           require.cache[id] = {id, filename:id, loaded:true, exports:{config(){}}};
           require(${JSON.stringify(target)});`;
         const result = spawnSync(process.execPath, ['-e', source], {
-          env, cwd: path.resolve(__dirname, '..'), encoding: 'utf8', timeout: 10000,
+          // ES-227: el hijo carga Sequelize, bcrypt, etc. (~2 s aislado) y con la suite entera en paralelo superó 10 s (ETIMEDOUT). El plazo solo evita cuelgues:
+          // un hijo que no termina sigue fallando (result.error) y las aserciones de abajo (estado ≠ 0 y mensaje exacto) no cambian.
+          env, cwd: path.resolve(__dirname, '..'), encoding: 'utf8', timeout: 60000,
         });
         assert.equal(result.error, undefined);
         assert.notEqual(result.status, 0);
