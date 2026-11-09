@@ -1,18 +1,28 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { PersonalChat } from './usePersonalChat'
 import { useChatBlocked } from './usageStore'
 import { useLanguage } from '../i18n/useLanguage'
+import { enterShouldSend, readEnterSends, writeEnterSends } from './chatKeys'
 const MAX_MESSAGE = 4000 // tope del textarea (maxLength); el contador aparece cuando quedan 400 o menos
 const COUNTER_FROM = 3600
 // ES-123: ChatContext = avisos de la conversación (sesión vencida, error de carga, envío sin confirmar); ChatInput = caja de mensaje con el selector del diario plegable.
+// ES-162: «Copiar» el mensaje sin confirmar. navigator.clipboard.writeText dentro del clic; si el navegador lo rechaza, se selecciona el texto y se pide copiarlo a mano.
+function CopyPending({ message, target, c }: { message: string; target: React.RefObject<HTMLParagraphElement | null>; c: PersonalChat['c'] }) {
+  const [state, setState] = useState<'' | 'ok' | 'fail'>('')
+  const copyMessage = async () => {
+    try { await navigator.clipboard.writeText(message); setState('ok') }
+    catch { if (target.current) window.getSelection()?.selectAllChildren(target.current); setState('fail') }
+  }
+  return <><button type="button" className="elv-btn" onClick={() => void copyMessage()}>{c.copy}</button><span aria-live="polite" role="status" className="space-note">{state === 'ok' ? c.copied : state === 'fail' ? c.copyFailed : ''}</span></>
+}
 export function ChatContext({ chat }: { chat: PersonalChat }) {
-  const { c } = chat
+  const { c } = chat; const pendingText = useRef<HTMLParagraphElement>(null)
   if (chat.expired) return <div className="space-scope" role="alert">{c.session} <Link to="/login">{c.login}</Link></div>
   return <div className="space-scope">
     {!chat.loaded && <button className="elv-btn" onClick={() => void chat.reload().catch(() => {})}>{c.loadError}</button>}
-    {chat.intent && <div className="space-pending"><p>{c.unconfirmed}</p><p className="space-private-text">{chat.intent.message}</p></div>}
-    {chat.intent && <div className="space-actions"><button className="elv-btn" disabled={chat.busy} onClick={() => void chat.check()}>{c.check}</button>{chat.retryable && <button className="elv-btn" disabled={chat.busy} onClick={() => void chat.retry()}>{c.retrySend}</button>}</div>}
+    {chat.intent && <div className="space-pending"><p>{c.unconfirmed}</p><p ref={pendingText} className="space-private-text">{chat.intent.message}</p></div>}
+    {chat.intent && <div className="space-actions"><button className="elv-btn" disabled={chat.busy} onClick={() => void chat.check()}>{c.check}</button>{chat.retryable && <button className="elv-btn" disabled={chat.busy} onClick={() => void chat.retry()}>{c.retrySend}</button>}<CopyPending key={chat.intent.requestId} message={chat.intent.message} target={pendingText} c={c} /></div>}
   </div>
 }
 // ES-142: aviso bajo la última respuesta cortada por longitud. El texto del modelo no se toca; «Continuar» envía un turno normal.
@@ -31,11 +41,13 @@ export function TruncatedNotice({ chat }: { chat: PersonalChat }) {
 export function ChatInput({ chat }: { chat: PersonalChat }) {
   const { c } = chat; const { lang } = useLanguage(); const blocked = useChatBlocked(); const off = blocked.paused || blocked.exhausted
   const toggle = useRef<HTMLButtonElement>(null); const status = useRef<HTMLParagraphElement>(null)
+  const [enterSends, setEnterSends] = useState(readEnterSends) // desactivado por defecto; se recuerda en este navegador
   // ES-134: el aviso de límite recibe el foco al aparecer (el campo de texto queda bloqueado y la persona no debe perderlo).
   useEffect(() => { if (chat.alert && chat.notice) status.current?.focus() }, [chat.alert, chat.notice])
   if (chat.expired) return null
   const locked = chat.busy || !!chat.intent
   const closePicker = () => { chat.setPicker(false); toggle.current?.focus() }
+  const canSend = !(chat.busy || chat.intent || !chat.loaded || off || !chat.input.trim())
   const diary = chat.selected.length ? c.diaryCount.replace('{n}', String(chat.selected.length)) : c.diaryNone
   return <form className="space-scope chat-composer" onSubmit={event => { event.preventDefault(); void chat.send() }}>
     <div className="chat-composer-top">
@@ -53,10 +65,14 @@ export function ChatInput({ chat }: { chat: PersonalChat }) {
       <button type="button" className="elv-btn" onClick={closePicker}>{c.close}</button>
     </div>}
     <p ref={status} tabIndex={chat.alert ? -1 : undefined} role={chat.alert ? 'alert' : 'status'} aria-live={chat.alert ? 'assertive' : 'polite'} className="space-note chat-status">{chat.busy ? c.sending : chat.notice}</p>
+    {chat.waiting && chat.slow && <div className="chat-slow"><p role="status" className="space-note">{c.slow}</p><button type="button" className="elv-btn" onClick={chat.stop}>{c.stopWaiting}</button></div>}
+    <div className="sr-only" aria-live="polite" aria-atomic="true"><span key={chat.announceKey}>{chat.announcement}</span></div>
     <p role="status" aria-live="polite" className="space-note chat-counter">{chat.input.length >= COUNTER_FROM ? (chat.input.length >= MAX_MESSAGE ? c.counterMax : c.counter.replace('{n}', chat.input.length.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US'))) : ''}</p>
     <div className="chat-composer-row">
-      <label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={MAX_MESSAGE} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={3} /></label>
+      <label>{c.composer}<textarea className="elv-textarea space-message" value={chat.input} maxLength={MAX_MESSAGE} disabled={chat.busy || !!chat.intent || !chat.loaded || off} onChange={event => chat.setInput(event.target.value)} rows={3}
+        onKeyDown={event => { if (enterShouldSend({ key: event.key, shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey, metaKey: event.metaKey, isComposing: event.nativeEvent.isComposing, keyCode: event.nativeEvent.keyCode }, enterSends)) { event.preventDefault(); if (canSend) void chat.send() } }} /></label>
       <button className="elv-btn elv-btn-primary" disabled={chat.busy || !!chat.intent || !chat.loaded || off || !chat.input.trim()}>{chat.busy ? c.sending : c.send}</button>
     </div>
+    <label className="chat-enter"><input className="elv-checkbox" type="checkbox" checked={enterSends} onChange={event => { setEnterSends(event.target.checked); writeEnterSends(event.target.checked) }} />{c.enterSends}</label>
   </form>
 }

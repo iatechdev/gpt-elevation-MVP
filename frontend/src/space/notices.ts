@@ -2,7 +2,8 @@
 import { copy } from './copy.ts'
 import { renewalDate } from './usage.ts'
 import { SpaceError } from './api.ts'
-export type Notice = { k: 'sendError' | 'pending' | 'loadError' | 'contextChanged' | 'confirmed' | 'restored' | 'budgetGeneric' | 'budget'; scope?: string; resetsAt?: string }
+import { isNetworkFailure } from './chatKeys.ts'
+export type Notice = { k: 'sendError' | 'pending' | 'loadError' | 'contextChanged' | 'confirmed' | 'restored' | 'budgetGeneric' | 'budget' | 'offline' | 'stopped'; scope?: string; resetsAt?: string }
 type Lang = keyof typeof copy
 export function noticeText(notice: Notice | null, lang: Lang): string {
   if (!notice) return ''
@@ -16,7 +17,8 @@ export function noticeText(notice: Notice | null, lang: Lang): string {
 }
 // Qué aviso corresponde a un fallo del envío: el rechazo de presupuesto conserva el alcance (persona o grupo) y la fecha de reinicio que manda el servidor.
 export function noticeForError(error: unknown): Notice {
-  if (!(error instanceof SpaceError)) return { k: 'sendError' }
+  // ES-162: sin respuesta del servidor (red caída) tiene su propio aviso; los demás fallos no cambian.
+  if (!(error instanceof SpaceError)) return { k: isNetworkFailure(error) ? 'offline' : 'sendError' }
   if (error.code === 'ai_budget_exhausted') return { k: 'budget', scope: error.scope, resetsAt: error.resetsAt }
   if (error.code === 'ai_budget_not_configured') return { k: 'budgetGeneric' }
   return { k: error.code === 'turn_in_progress' ? 'pending' : 'sendError' }
