@@ -1,0 +1,37 @@
+{
+ "user": {
+  "admin": 403,
+  "adminUsers": 403,
+  "therapist": 403,
+  "board": 403,
+  "superadmin": 403
+ },
+ "admin": {
+  "admin": 404,
+  "adminUsers": 200,
+  "therapist": 403,
+  "board": 200,
+  "superadmin": 403
+ },
+ "superadmin": {
+  "admin": 404,
+  "adminUsers": 200,
+  "therapist": 403,
+  "board": 200,
+  "superadmin": 200
+ },
+ "therapist": {
+  "admin": 403,
+  "adminUsers": 403,
+  "therapist": 404,
+  "board": 403,
+  "superadmin": 403
+ },
+ "board": {
+  "admin": 403,
+  "adminUsers": 403,
+  "therapist": 403,
+  "board": 403,
+  "superadmin": 403
+ }
+}
