@@ -298,7 +298,7 @@ export function TherapistDashboard() {
           {t('therapist_my_patients')}
         </h1>
         <p style={{ fontSize: '0.875rem', color: '#57534E', margin: '0.25rem 0 0' }}>
-          {patients.length} {patients.length !== 1 ? t('therapist_assigned') : t('therapist_assigned')}
+          {patients.length} {patients.length === 1 ? t('therapist_assigned_one') : t('therapist_assigned')}
         </p>
       </div>
 

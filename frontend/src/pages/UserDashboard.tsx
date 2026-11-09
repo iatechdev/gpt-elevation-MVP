@@ -275,6 +275,7 @@ export function UserDashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
+      <h1 className="sr-only">{lang === 'es' ? 'Mi panel' : 'My dashboard'}</h1>
 
       {/* ── HEADER ── */}
       <header className="space-dashboard-header" style={{

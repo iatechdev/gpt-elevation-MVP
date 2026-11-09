@@ -363,7 +363,7 @@ export function AdminUsers() {
               borderRadius: '0.85rem', fontSize: '0.875rem',
               fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}>
-              💳 {planRequests.length} plan request{planRequests.length !== 1 ? 's' : ''}
+              💳 {planRequests.length} {tr(planRequests.length === 1 ? 'solicitud de plan' : 'solicitudes de plan')}
             </button>
           )}
           {matchingRequests.length > 0 && (
@@ -374,7 +374,7 @@ export function AdminUsers() {
               borderRadius: '0.85rem', fontSize: '0.875rem',
               fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}>
-              🤝 {matchingRequests.length} matching pending
+              🤝 {matchingRequests.length} {tr(matchingRequests.length === 1 ? 'asignación pendiente' : 'asignaciones pendientes')}
             </button>
           )}
           <button onClick={() => setMostrarModal(true)} style={{
@@ -449,11 +449,11 @@ export function AdminUsers() {
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         <select style={sel} value={filtroRol} onChange={e => setFiltroRol(e.target.value)}>
           <option value="">{tr("Todos los roles")}</option>
-          <option value="user">User</option>
-          <option value="therapist">Therapist</option>
+          <option value="user">{tr("Persona usuaria")}</option>
+          <option value="therapist">{tr("Terapeuta")}</option>
           <option value="admin">Admin</option>
           {esSuperAdmin && <option value="superadmin">Superadmin</option>}
-          {esSuperAdmin && <option value="board">Board</option>}
+          {esSuperAdmin && <option value="board">{tr("Junta ética")}</option>}
         </select>
         <select style={sel} value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
           <option value="">{tr("Todos los estados")}</option>

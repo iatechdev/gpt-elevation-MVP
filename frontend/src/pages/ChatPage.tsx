@@ -287,6 +287,7 @@ export function ChatPage() {
 
   return (
     <div className="chat-shell" style={{ background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
+      <h1 className="sr-only">{lang === 'es' ? 'Conversación' : 'Conversation'}</h1>
 
       {/* Header */}
       <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

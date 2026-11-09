@@ -232,7 +232,8 @@ const en: Record<string, string> = {
 
   // ── Therapist — general ───────────────────────────────────────────────────
   therapist_my_patients: 'My patients',
-  therapist_assigned: 'Assigned',
+  therapist_assigned: 'people assigned',
+  therapist_assigned_one: 'person assigned',
   therapist_active_week: 'Active this week',
   therapist_avg_mood: 'Avg mood',
   therapist_avg_rating: 'Avg rating',

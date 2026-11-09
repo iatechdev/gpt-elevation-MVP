@@ -18,6 +18,7 @@ export const adminEnglish: Record<string, string> = {
   '✅ Manifiesto Ético': '✅ Ethical Manifesto', '— activo desde': '— active since', '02 abr 2026': 'Apr 02, 2026',
   '📋 Prompts pendientes': '📋 Pending prompts', 'Ver todos →': 'View all →', 'Usuarios': 'Users',
   'usuario': 'user', 'registrado': 'registered', '+ Crear usuario': '+ Create user', '💳 Solicitudes de plan pendientes': '💳 Pending plan requests',
+  'Persona usuaria': 'User', 'Junta ética': 'Board', 'solicitud de plan': 'plan request', 'solicitudes de plan': 'plan requests', 'asignación pendiente': 'matching pending', 'asignaciones pendientes': 'matching pending',
   'No hay solicitudes pendientes.': 'No pending requests.', '/mes': '/month', '✓ Aprobar': '✓ Approve', '✕ Rechazar': '✕ Reject',
   'Todos los roles': 'All roles', 'Todos los estados': 'All statuses', 'Activos': 'Active', 'Inactivos': 'Inactive',
   'Cargando usuarios...': 'Loading users...', 'Mood prom.': 'Avg. mood', 'Rating prom.': 'Avg. rating', 'Acción': 'Action',

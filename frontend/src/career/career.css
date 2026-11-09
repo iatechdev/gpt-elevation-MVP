@@ -7,6 +7,7 @@
 .career-scope h1 { font-size:clamp(1.8rem,5vw,2.5rem); } .career-scope h2 { font-size:1.5rem; } .career-scope h3 { font-size:1.25rem; }
 .career-scope p { margin:12px 0; overflow-wrap:anywhere; } .career-scope a { color:var(--elv-link); text-decoration:underline; text-underline-offset:4px; overflow-wrap:anywhere; }
 .career-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--elv-line); }
+.career-header a { display:inline-flex; align-items:center; min-height:44px; } /* ES-206: objetivo táctil ≥ 24 px (antes 20 px) */
 .career-header span { display:block; letter-spacing:.15em; margin-top:8px; } .career-languages { display:flex; gap:8px; }
 .career-scope button,.career-scope input,.career-scope select,.career-scope textarea { font:inherit; }
 .career-scope button,.career-scope nav a,.career-scope summary { min-height:44px; padding:10px 16px; cursor:pointer; }
