@@ -34,6 +34,12 @@ const ROLES_PRIVILEGIADOS = ['admin', 'superadmin', 'board'];
 const RANK = { admin: 2, superadmin: 3 };
 const rankOf = (role) => RANK[role] || 0;
 
+// ES-217 (QA-215-01): un id que no es un entero positivo es un 400, nunca un 500 de la base. Cubre todas las rutas con :id de este archivo.
+// QA-217-01: además debe caber en la columna (int32, máx. 2147483647): un id de 10 dígitos mayor daba 500 de la base.
+const MAX_INT32 = 2147483647;
+router.param('id', (req, res, next, value) => (/^[1-9][0-9]{0,9}$/.test(value) && Number(value) <= MAX_INT32 ? next()
+  : res.status(400).json({ code: 'invalid_id', error: 'Identificador inválido. / Invalid identifier.' })));
+
 // ES-192 (decisión 24): administración ya no define la contraseña de otra persona. Se invita por enlace (POST /api/admin/invitations):
 // la persona elige su propia contraseña con las reglas del registro. Esta ruta quedó retirada.
 router.post('/', (req, res) => res.status(410).json({
@@ -371,18 +377,23 @@ router.get('/alerts', async (req, res) => {
 // ==========================================
 // HU-078 — PUT /api/admin/usuarios/:id/unlock
 // Desbloquear cuenta bloqueada por intentos fallidos
-// Admin y superadmin pueden hacer esto
+// Admin (sobre cuentas de rango menor) y superadmin pueden hacer esto; no reactiva cuentas desactivadas (ES-217)
 // ==========================================
 router.put('/:id/unlock', async (req, res) => {
   try {
     if (await refuseDeletionPending(req.params.id, res)) return;
     const usuario = await User.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    // ES-217: la misma jerarquía de rangos que al cambiar rol o estado (ES-215): admin no actúa sobre admin ni superadmin.
+    if (req.user.role !== 'superadmin' && rankOf(usuario.role) >= rankOf(req.user.role)) {
+      return res.status(403).json({ code: 'target_rank', error: 'No tienes permisos para desbloquear una cuenta de administración. / You cannot unlock an administration account.' });
+    }
 
+    // ES-217: «desbloquear» SOLO levanta el bloqueo por intentos fallidos. Nunca toca `active`: una cuenta desactivada por
+    // administración sigue desactivada (reactivarla es una decisión explícita aparte, PUT /:id con { active: true } según el rango).
     await usuario.update({
       loginAttempts: 0,
       lockedUntil:   null,
-      active:        true,
     });
 
     console.log('Desbloqueo administrativo ejecutado.');

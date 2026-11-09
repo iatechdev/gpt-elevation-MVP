@@ -13,7 +13,7 @@ test('QA-57-01: connection identity and login limit remain enforced', async t =>
   for (let i = 1; i <= 11; i++) {
     const response = await request('POST', '/api/login', {
       headers: { 'X-Forwarded-For': '198.51.100.' + i },
-      body: { email: 'synthetic@example.invalid', password: 'not-an-account-password' },
+      body: { email: `synthetic${i}@example.invalid`, password: 'not-an-account-password' }, // ES-220: un correo distinto por intento; repetir el mismo se bloquea a los 3 (como una cuenta real)
     });
     assert.equal(response.status, i <= 10 ? 401 : 429);
   }

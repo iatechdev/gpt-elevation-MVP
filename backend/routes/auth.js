@@ -15,9 +15,47 @@ const { passwordProblems, policy } = require('../utils/registrationPassword');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// ES-220: respuestas del login que no distinguen si el correo tiene cuenta (ver el bloque de /login).
+const loginAttempts = require('../utils/loginAttempts');
+const DECOY_HASH = bcrypt.hashSync('es220-señuelo-que-nunca-coincide', 10); // mismo costo (10) que los hashes reales: tiempo equivalente
+const INVALID_CREDENTIALS = { error: 'Credenciales incorrectas.' };
+// ES-220 (QA-220-01): el conteo de intentos fallidos de una cuenta real es ATÓMICO en la base. Con leer-sumar-escribir, cinco intentos simultáneos leían todos
+// loginAttempts = 0 y ninguno bloqueaba, mientras el contador en memoria de un correo sin cuenta (síncrono) sí bloqueaba: otra vez un oráculo de existencia.
+// Un solo UPDATE … RETURNING suma y decide el bloqueo con la fila bloqueada; el 3.er, 4.º y 5.º intento en paralelo reciben 423, igual que un correo inexistente.
+// Semántica idéntica a la anterior (umbral 3, 15 min, la cuenta no se desbloquea hasta un acierto): el bloqueo solo se fija si no había uno vigente.
+async function failRealAttempt(real) {
+  const sequelize = User.sequelize;
+  if (sequelize?.getDialect?.() === 'postgres') {
+    const table = sequelize.getQueryInterface().queryGenerator.quoteTable(User.getTableName());
+    const [rows] = await sequelize.query(
+      `UPDATE ${table} SET "loginAttempts" = COALESCE("loginAttempts", 0) + 1,
+         "lockedUntil" = CASE WHEN COALESCE("loginAttempts", 0) + 1 >= :max AND ("lockedUntil" IS NULL OR "lockedUntil" <= NOW()) THEN :until ELSE "lockedUntil" END
+       WHERE "id" = :id RETURNING "loginAttempts", "lockedUntil"`,
+      { replacements: { max: loginAttempts.MAX_ATTEMPTS, until: new Date(Date.now() + loginAttempts.LOCK_MS), id: real.id } },
+    );
+    const row = rows[0];
+    if (!row) return { locked: false, until: null };
+    const until = row.lockedUntil ? new Date(row.lockedUntil) : null;
+    return row.loginAttempts >= loginAttempts.MAX_ATTEMPTS && until && until.getTime() > Date.now() ? { locked: true, until } : { locked: false, until: null };
+  }
+  // Sin Postgres (almacén simulado de las pruebas): leer-sumar-escribir como antes.
+  const attemptsNow = (real.loginAttempts || 0) + 1;
+  if (attemptsNow >= loginAttempts.MAX_ATTEMPTS) {
+    const until = new Date(Date.now() + loginAttempts.LOCK_MS);
+    await real.update({ loginAttempts: attemptsNow, lockedUntil: until });
+    return { locked: true, until };
+  }
+  await real.update({ loginAttempts: attemptsNow });
+  return { locked: false, until: null };
+}
+const lockedBody = (until) => {
+  const minutes = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 60000));
+  return { error: `Cuenta bloqueada. Inténtalo de nuevo en ${minutes} minuto${minutes > 1 ? 's' : ''}.`, locked: true };
+};
+
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 10,
+  max: Number(process.env.LOGIN_RATE_LIMIT_MAX) || 10, // por IP y minuto; la variable existe para las pruebas con ráfagas (el valor real es 10)
   message: { error: 'Demasiados intentos. Inténtalo de nuevo en un minuto.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -70,43 +108,40 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
 
-    if (!user) {
+    // ES-220: tres casos con la MISMA respuesta hacia fuera, para que el login no sea un oráculo de qué correos tienen cuenta:
+    //  - correo inexistente  → se compara contra un hash señuelo (mismo costo de bcrypt) y se cuentan intentos en memoria con el umbral de una cuenta real;
+    //  - cuenta inactiva     → se trata como inexistente mientras la contraseña no sea correcta (sin 403 «inactiva» antes de comprobarla);
+    //  - cuenta bloqueada    → 423 con el mismo cuerpo que un correo inexistente bloqueado (que se bloquea igual tras 3 intentos).
+    // Quien ya tiene la contraseña correcta de una cuenta inactiva sí recibe el aviso de cuenta inactiva (no aprende nada que no sepa).
+    const real = user && user.active !== false ? user : null;
+    const lockedUntilDate = real
+      ? (real.lockedUntil && new Date() < new Date(real.lockedUntil) ? new Date(real.lockedUntil) : null)
+      : loginAttempts.lockedUntil(email);
+    if (lockedUntilDate) return res.status(423).json(lockedBody(lockedUntilDate));
+
+    const validPassword = await bcrypt.compare(password, user ? user.password : DECOY_HASH);
+
+    if (!user || !validPassword) {
+      if (real) {
+        const failure = await failRealAttempt(real);
+        if (failure.locked) return res.status(423).json(lockedBody(failure.until));
+      } else {
+        const failure = loginAttempts.recordFailure(email);
+        if (failure.locked) return res.status(423).json(lockedBody(failure.until));
+      }
       await delay(200);
-      return res.status(401).json({ error: 'Credenciales incorrectas.' });
+      return res.status(401).json(INVALID_CREDENTIALS);
     }
 
-    // Una cuenta inactiva no se recupera mediante el registro público.
-    if (user.active === false) {
+    // Contraseña correcta de una cuenta inactiva: una cuenta inactiva no inicia sesión ni se recupera por el registro público.
+    if (!real) {
       return res.status(403).json({
         error: 'Cuenta inactiva. Contacta con soporte. / Inactive account. Contact support.',
         deactivated: true,
       });
     }
 
-    // Cuenta bloqueada por intentos fallidos
-    if (user.lockedUntil && new Date() < new Date(user.lockedUntil)) {
-      const minutosRestantes = Math.ceil((new Date(user.lockedUntil) - new Date()) / 60000);
-      return res.status(423).json({
-        error: `Cuenta bloqueada. Inténtalo de nuevo en ${minutosRestantes} minuto${minutosRestantes > 1 ? 's' : ''}.`,
-        locked: true,
-      });
-    }
-
-    const validPassword = await bcrypt.compare(password, user.password);
-
-    if (!validPassword) {
-      const nuevosIntentos = (user.loginAttempts || 0) + 1;
-      if (nuevosIntentos >= 3) {
-        const bloqueadoHasta = new Date(Date.now() + 15 * 60 * 1000);
-        await user.update({ loginAttempts: nuevosIntentos, lockedUntil: bloqueadoHasta });
-        return res.status(423).json({ error: 'Cuenta bloqueada por 15 minutos.', locked: true });
-      }
-      await user.update({ loginAttempts: nuevosIntentos });
-      await delay(200);
-      return res.status(401).json({ error: 'Credenciales incorrectas.' });
-    }
-
-    await user.update({ loginAttempts: 0, lockedUntil: null });
+    await real.update({ loginAttempts: 0, lockedUntil: null });
 
     // A permanent tombstone also denies new sessions after administrative reactivation.
     if (await deletionPending(user.id)) return res.status(403).json({

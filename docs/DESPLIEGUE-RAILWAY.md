@@ -62,6 +62,12 @@ El worker de análisis de IA corre como un servicio aparte de Railway, con el mi
 - **Reversión a una versión anterior:** el código anterior acepta los tokens con `jti` pero **no aplica las revocaciones**; los registros quedan en las tablas y vuelven a surtir efecto al volver a la versión nueva. Las tablas no se borran en la reversión.
 - Si no se puede consultar la base, la API responde 503 en las rutas autenticadas (cierra en falla).
 
+## Inicio de sesión sin enumeración de cuentas (ES-220)
+- El login responde igual (mismo estado y cuerpo) para un correo inexistente, una cuenta inactiva y una cuenta con contraseña incorrecta, y hace el mismo trabajo de `bcrypt` (costo 10) en todos los caminos. El bloqueo por cuenta real (3 intentos, 15 min) vive en la base (`Users.loginAttempts` / `lockedUntil`); **el de los correos sin cuenta activa vive en la MEMORIA del proceso** (`backend/utils/loginAttempts.js`, hasta 10.000 correos, solo hashes SHA-256 del correo normalizado, nada personal).
+- **Restricción de despliegue: el servicio `backend` debe correr con UNA sola réplica.** Con varias, cada réplica llevaría su propio contador de correos sin cuenta y aparecería una diferencia observable entre cuentas reales (bloqueo compartido en la base) e inexistentes (bloqueo por réplica). Si se escala a más de una, hay que mover el contador a una tabla (ticket aparte, Medio) **antes** de escalar.
+- Al reiniciar el servicio los contadores en memoria se pierden (un correo sin cuenta vuelve a tener 3 intentos); el bloqueo de una cuenta real no se pierde.
+- Sin variables nuevas ni migraciones. Reversión: volver al despliegue anterior basta (el código anterior no usa estos contadores).
+
 ## Consentimiento por propósito (ES-19)
 - Tablas nuevas `Consents` y `ConsentEvents`: las crea `sync()` al arrancar (no altera tablas existentes). Sin migraciones hasta ES-59.
 - Rutas `/api/consents` (solo la persona autenticada). Contrato completo en `docs/elevation-skillmap/14-CONTRATO-CONSENTIMIENTO.md`.

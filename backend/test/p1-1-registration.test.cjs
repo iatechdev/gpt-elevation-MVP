@@ -23,9 +23,10 @@ test('P1-1: public registration cannot reactivate or replace an inactive account
   assert.equal(account.password, originalHash);
   assert.equal(account.active, false);
   assert.equal(account.role, 'superadmin');
+  // ES-220: con una contraseña que no es la de la cuenta, una cuenta inactiva responde como un correo inexistente (401); el 403 «inactiva» solo lo recibe quien acierta la contraseña.
   assert.equal((await request('POST', '/api/login', {
     body: { email: 'inactive@example.invalid', password },
-  })).status, 403);
+  })).status, 401);
 
   models.User.findOne = async () => null;
   let created;
