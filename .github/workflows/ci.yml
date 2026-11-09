@@ -214,6 +214,10 @@ jobs:
         run: npm run test:contact-entries:pg
         env:
           ES193_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-191 revisión en servidor de las guías de la IA: nada se aprueba sin una persona (PostgreSQL)"
+        run: npm run test:prompt-review:pg
+        env:
+          ES191_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: "ES-192 invitación por enlace y contraseña con las reglas del registro (PostgreSQL)"
         run: npm run test:invitations:pg
         env:
