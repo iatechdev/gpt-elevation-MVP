@@ -110,8 +110,14 @@ const storageKeys = page => page.evaluate(() => JSON.stringify([Object.keys(loca
       const mine = state.entries.filter(e => e.content === 'Entrada con respuesta perdida')
       const ids = new Set(state.posts.map(b => b.requestId))
       report(mine.length === 1 && state.posts.length === 2 && ids.size === 1 && [...ids][0], `reintentar usa el MISMO requestId y NO duplica la entrada ${tag}`, `entradas=${mine.length} POST=${state.posts.length} ids=${ids.size}`)
-      await page.waitForFunction(() => document.body.innerText.includes('Entrada con respuesta perdida'), null, { timeout: 5000 }).catch(() => {}) // la entrada se lee del servidor tras navegar
-      { const shown = await page.locator('body').innerText(); report(shown.includes('Entrada con respuesta perdida'), `tras reintentar se ve la entrada guardada ${tag}`, shown.includes('Entrada con respuesta perdida') ? '' : '| ' + page.url() + ' | ' + shown.replace(/s+/g, ' ').slice(0, 260)) }
+      // la entrada se lee del servidor tras navegar: sondeo por intervalo hasta 10 s (no una espera fija); si falla, adjunta captura y DOM
+      const seen = await page.waitForFunction(() => document.body.innerText.includes('Entrada con respuesta perdida'), null, { timeout: 10000, polling: 100 }).then(() => true, () => false)
+      if (seen) report(true, `tras reintentar se ve la entrada guardada ${tag}`)
+      else {
+        const shot = `es163-fail-${lang}-${width}-${scheme}.png`; await page.screenshot({ path: shot, fullPage: true }).catch(() => {})
+        const dom = await page.evaluate(() => document.body.innerHTML.slice(0, 1500)).catch(() => '')
+        report(false, `tras reintentar se ve la entrada guardada ${tag}`, `| ${page.url()} | captura=${shot} | DOM=${dom.replace(/\s+/g, ' ')}`)
+      }
       report(state.pageErrors.length === 0, `sin errores de página ${tag}`, state.pageErrors.join(' | '))
       await ctx.close()
     }
