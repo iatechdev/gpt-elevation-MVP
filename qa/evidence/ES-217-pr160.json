@@ -31,8 +31,8 @@
  },
  {
   "id": "I1 id inválido en TODAS las rutas /usuarios/:id (12 formas × 7 rutas, como superadmin): ninguna da 5xx",
-  "ok": false,
-  "detail": "PUT 4294967296=500 | DELETE 4294967296=500 | PUT 4294967296/unlock=500 | PUT 4294967296/asignar-terapeuta=500 | PUT 4294967296/plan=500 | PUT 2147483648=500 | DELETE 2147483648=500 | PUT 2147483648/unlock=500"
+  "ok": true,
+  "detail": "84 peticiones, 0 respuestas 5xx; otros códigos: ninguno"
  },
  {
   "id": "I1b el código y la forma de la respuesta: 400 con code invalid_id",
