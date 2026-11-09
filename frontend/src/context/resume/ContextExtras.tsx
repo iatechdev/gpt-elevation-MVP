@@ -1,5 +1,6 @@
 // ES-109: campos que respalda una hoja de vida (experiencia, educación, habilidades, idiomas, sector y años totales) + la marca «Sugerido desde tu hoja de vida».
 // Todo se puede escribir a mano sin hoja de vida. Editar un valor sugerido le quita la marca; quitarlo es de un gesto y tiene «Deshacer».
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useState } from 'react'
 import type { DeclaredSkill, Education, Experience, Language, ParticipantContext } from '../participantContext'
 import { fill } from './resumeCopy'

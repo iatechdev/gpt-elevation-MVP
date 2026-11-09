@@ -1,4 +1,5 @@
 // ES-110: bandeja «Habilidades de tu hoja de vida» (maqueta aprobada). Ninguna marcada por defecto; sin nivel; cada evidencia guarda su origen.
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'

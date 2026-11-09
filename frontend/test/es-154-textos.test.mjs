@@ -51,7 +51,7 @@ test('ES-154 formatos por idioma: coma decimal en ES, punto en EN; fecha inváli
 test('ES-154 proveedor: catálogo bajo demanda por idioma, t() con parámetros, lang del documento y elección guardada', () => {
   const provider = read('../src/i18n/LanguageProvider.tsx'), catalog = read('../src/i18n/catalog.ts'), context = read('../src/i18n/context.tsx')
   assert.ok(provider.includes('loadCatalog(lang)') && provider.includes('useSyncExternalStore') && provider.includes('interpolate('))
-  assert.ok(/translations\[lang\]\[key\] \?\? catalog\?\.\[key\] \?\? key/.test(provider)) // los diccionarios actuales ganan; luego el catálogo; luego la clave
+  assert.ok(/translations\[lang\]\[key\] \?\? lazyText\(lang, key\) \?\? catalog\?\.\[key\] \?\? key/.test(provider)) // los diccionarios actuales ganan; luego el registro perezoso (ES-232); luego el catálogo; luego la clave
   assert.ok(provider.includes('document.documentElement.lang = lang') && provider.includes("localStorage.setItem('elv_lang'"))
   assert.ok(catalog.includes("import('./catalog/es.json')") && catalog.includes("import('./catalog/en.json')")) // un bloque por idioma
   assert.equal(/import .*catalog\/(es|en)\.json/.test(provider + context), false, 'el catálogo no debe ir en el bloque de entrada')

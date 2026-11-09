@@ -5,6 +5,7 @@ import { es } from './es'
 import { en } from './en'
 import { getCatalog, loadCatalog, subscribeCatalog } from './catalog'
 import { interpolate, type Params } from './format'
+import { lazyText } from './lazyCopy'
 
 const translations: Record<string, Record<string, string>> = { es, en }
 
@@ -33,7 +34,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => { void loadCatalog(lang) }, [lang])
   const catalog = useSyncExternalStore(subscribeCatalog, () => getCatalog(lang))
 
-  const t = (key: string, params?: Params): string => interpolate(translations[lang][key] ?? catalog?.[key] ?? key, params)
+  const t = (key: string, params?: Params): string => interpolate(translations[lang][key] ?? lazyText(lang, key) ?? catalog?.[key] ?? key, params)
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>

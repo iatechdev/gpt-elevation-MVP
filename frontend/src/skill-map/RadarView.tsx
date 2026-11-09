@@ -1,3 +1,4 @@
+import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { Link } from 'react-router-dom'
 import type { LocalizedText } from './model'
 import { anyLevel, CENTER, improvement, MAX_LABELS, MAX_LEVEL, RADIUS, radarItems, strongest, VIEW_H, VIEW_W, wedge, wrapName, type RadarItem } from './radar'

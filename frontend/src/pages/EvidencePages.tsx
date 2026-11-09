@@ -1,3 +1,4 @@
+import '../evidence/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
