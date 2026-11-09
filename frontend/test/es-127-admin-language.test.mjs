@@ -31,7 +31,7 @@ function load(file) {
 }
 const render = Component => renderToStaticMarkup(createElement(MemoryRouter, null, createElement(Component)))
 test('ES-127: componentes administrativos reales muestran estados iniciales ES/EN sin traducir datos personales', () => {
-  const cases = [['AdminDashboard', 'Cargando métricas...', 'Loading metrics...'], ['AdminMetrics', 'Cargando métricas...', 'Loading metrics...'], ['AdminUsers', 'Usuarios', 'Users'], ['AdminContent', 'Contenido', 'Content'], ['AdminPrompts', 'Cargando prompts...', 'Loading prompts...']]
+  const cases = [['AdminDashboard', 'Cargando métricas...', 'Loading metrics...'], ['AdminMetrics', 'Cargando métricas...', 'Loading metrics...'], ['AdminUsers', 'Usuarios', 'Users'], ['AdminContent', 'Contenido', 'Content'], ['AdminPrompts', 'Cargando guías...', 'Loading guides...']]
   for (const [name, es, en] of cases) {
     const Component = load(resolve(root, `pages/admin/${name}.tsx`))[name]
     lang = 'es'; assert.ok(render(Component).includes(es), `${name}: ES`)
