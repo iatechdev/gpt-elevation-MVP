@@ -14,11 +14,19 @@ async function main() {
     pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es211', password, port, persistent: false, initdbFlags: ['--encoding=UTF8', '--locale=C'], onLog: () => {}, onError: () => {} });
     await pg.initialise(); await pg.start();
     const source = `postgres://es211:${password}@127.0.0.1:${port}/postgres`;
-    const child = spawn(process.execPath, ['--test', 'test/integration/es-211-postgres.cjs'], {
-      cwd: path.join(__dirname, '..'), stdio: 'inherit', env: { ...process.env, ES211_TEST_DATABASE_URL: source },
-    });
-    const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('exit', resolve); });
-    if (code !== 0) failed = true;
+    // ES-218: ES211_REPEAT=N repite la prueba N veces contra el mismo servidor (cada corrida crea su propia base) para cazar fallos intermitentes.
+    const runs = Math.max(1, Number(process.env.ES211_REPEAT) || 1); let bad = 0;
+    for (let run = 1; run <= runs; run += 1) {
+      const child = spawn(process.execPath, ['--test', 'test/integration/es-211-postgres.cjs'], {
+        cwd: path.join(__dirname, '..'), stdio: runs > 1 ? ['ignore', 'pipe', 'inherit'] : 'inherit', env: { ...process.env, ES211_TEST_DATABASE_URL: source },
+      });
+      let output = ''; child.stdout?.on('data', chunk => { output += chunk; });
+      const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('exit', resolve); });
+      if (code !== 0 && runs > 1) console.log(output.split('\n').filter(line => /error|deadlock|not ok|detail|hint|expected|actual|status/i.test(line)).slice(0, 25).join('\n'));
+      if (runs > 1) console.log(`ES-211 corrida ${run}/${runs}: ${code === 0 ? 'OK' : 'FALLA'}`);
+      if (code !== 0) { failed = true; bad += 1; }
+    }
+    if (runs > 1) console.log(`ES-211 repetidas: ${runs - bad}/${runs} OK`);
   } catch (error) { failed = true; console.error('ES-211 local failed:', error.name); }
   finally {
     if (pg) await pg.stop();
