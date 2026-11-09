@@ -66,7 +66,9 @@ El worker de análisis de IA corre como un servicio aparte de Railway, con el mi
 - El login responde igual (mismo estado y cuerpo) para un correo inexistente, una cuenta inactiva y una cuenta con contraseña incorrecta, y hace el mismo trabajo de `bcrypt` (costo 10) en todos los caminos. El bloqueo por cuenta real (3 intentos, 15 min) vive en la base (`Users.loginAttempts` / `lockedUntil`); **el de los correos sin cuenta activa vive en la MEMORIA del proceso** (`backend/utils/loginAttempts.js`, hasta 10.000 correos, solo hashes SHA-256 del correo normalizado, nada personal).
 - **Restricción de despliegue: el servicio `backend` debe correr con UNA sola réplica.** Con varias, cada réplica llevaría su propio contador de correos sin cuenta y aparecería una diferencia observable entre cuentas reales (bloqueo compartido en la base) e inexistentes (bloqueo por réplica). Si se escala a más de una, hay que mover el contador a una tabla (ticket aparte, Medio) **antes** de escalar.
 - Al reiniciar el servicio los contadores en memoria se pierden (un correo sin cuenta vuelve a tener 3 intentos); el bloqueo de una cuenta real no se pierde.
-- Sin variables nuevas ni migraciones. Reversión: volver al despliegue anterior basta (el código anterior no usa estos contadores).
+- Al llegar a 10.000 correos distintos se descarta primero la entrada más antigua que NO esté bloqueada: inundar con correos nuevos no libera los bloqueos vigentes (QA-220-02).
+- `LOGIN_RATE_LIMIT_MAX` (límite de login por IP y minuto, 10) existe solo para pruebas con ráfagas: **se ignora con `NODE_ENV=production` o `RAILWAY_ENVIRONMENT_ID`** (producción y staging). No hace falta definirla en Railway; si alguien la sube allí, el límite sigue en 10.
+- Sin variables nuevas obligatorias ni migraciones. Reversión: volver al despliegue anterior basta (el código anterior no usa estos contadores).
 
 ## Consentimiento por propósito (ES-19)
 - Tablas nuevas `Consents` y `ConsentEvents`: las crea `sync()` al arrancar (no altera tablas existentes). Sin migraciones hasta ES-59.
