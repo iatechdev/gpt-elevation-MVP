@@ -1,276 +1,87 @@
 import { useAdminText } from '../../i18n/useAdminText'
 // frontend/src/pages/admin/AdminDashboard.tsx
-// HU-047 + HU-063 — Executive metrics dashboard + panel alertas
-// HU-076 — Usa design tokens
-
-import { useState, useEffect } from 'react'
+// HU-047 + HU-063 + ES-180 (HU-P29) — Resumen de la plataforma: cifras con palabra, avisos con estado propio, actividad de 30 días.
 import { useNavigate } from 'react-router-dom'
-import { colors, radius, spacing, typography, cardStyle, labelStyle } from '../../styles/tokens'
-
-const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
-const getToken = () => localStorage.getItem('elevation_token') || ''
-
-interface Metrics {
-  totalUsers: number
-  activeUsers: number
-  totalTherapists: number
-  totalSessions: number
-  avgMood: number | null
-  avgRating: number | null
-  activeThisWeek: number
-  sessionsByDay: { date: string; count: number }[]
-  topTherapists: { id: number; name: string; patientCount: number; avgRating: number | null }[]
-}
-
-interface PendingPrompt {
-  id: number
-  therapistName: string
-  version: number
-  proposedBy: string
-  createdAt: string
-}
-
-interface AdminAlerts {
-  pendingPrompts: number
-  pendingPromptsList: PendingPrompt[]
-  therapistsWithoutProfile: number
-  manifestoVersion: string
-  manifestoDate: string
-}
-
-const MOOD_EMOJI: Record<number, string> = {
-  1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
-}
+import { colors, spacing, typography, cardStyle, labelStyle } from '../../styles/tokens'
+import { ActivityChart, AlertRow, CardTitle, LoadError, SummaryCards, TopProfessionals } from './adminOverview'
+import type { AdminAlerts, Metrics } from './adminOverviewData'
+import { useAdminResource, useFormat } from './adminOverviewData'
 
 export function AdminDashboard() {
   const tr = useAdminText()
-
+  const f = useFormat()
   const navigate = useNavigate()
-  const [metrics, setMetrics] = useState<Metrics | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState('')
-  const [alerts, setAlerts]           = useState<AdminAlerts | null>(null)
-  const [alertsLoading, setAlertsLoading] = useState(true)
+  const metrics = useAdminResource<Metrics>('/api/admin/metrics')
+  const alerts = useAdminResource<AdminAlerts>('/api/admin/usuarios/alerts')
 
-  useEffect(() => {
-    fetch(`${API}/api/admin/metrics`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(data => { setMetrics(data); setLoading(false) })
-      .catch(() => { setError('Could not load metrics.'); setLoading(false) })
-  }, [])
-
-  useEffect(() => {
-    fetch(`${API}/api/admin/usuarios/alerts`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(data => { setAlerts(data); setAlertsLoading(false) })
-      .catch(() => setAlertsLoading(false))
-  }, [])
-
-  const formatDate = (iso: string, locale = 'es-CO') =>
-    new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
-
-  if (loading) return <p style={{ color: colors.textMuted, fontSize: '0.875rem', fontFamily: typography.fontBody }}>{tr("Cargando métricas...")}</p>
-  if (error)   return <p style={{ color: colors.danger,    fontSize: '0.875rem', fontFamily: typography.fontBody }}>{tr(error)}</p>
-  if (!metrics) return null
-
-  const maxCount  = Math.max(...metrics.sessionsByDay.map(s => s.count), 1)
-  const totalAlerts = (alerts?.pendingPrompts ?? 0) + (alerts?.therapistsWithoutProfile ?? 0)
+  const sections = alerts.data?.sections
+  const guides = sections?.guides
+  const incomplete = sections?.professionalsIncomplete
+  const manifest = sections?.manifest
 
   return (
     <div style={{ fontFamily: typography.fontBody }}>
-
-      {/* HEADER */}
       <div style={{ marginBottom: spacing.xxl }}>
-        <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>
-          Dashboard
-        </h1>
-        <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>{tr("Resumen de la plataforma")}{' '}</p>
+        <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>{tr('Panel')}</h1>
+        <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>{tr('Resumen de la plataforma')}</p>
       </div>
 
-      {/* SUMMARY CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: spacing.lg, marginBottom: spacing.xxl }}>
-        {[
-          { label: tr('Total usuarios'),      value: metrics.totalUsers },
-          { label: tr('Usuarios activos'),    value: metrics.activeUsers },
-          { label: tr('Terapeutas'),          value: metrics.totalTherapists },
-          { label: tr('Total sesiones'),      value: metrics.totalSessions },
-          { label: tr('Activos esta semana'), value: metrics.activeThisWeek },
-          {
-            label: tr('Ánimo promedio'),
-            value: metrics.avgMood != null
-              ? `${metrics.avgMood} ${MOOD_EMOJI[Math.round(metrics.avgMood)] ?? ''}`
-              : '—',
-          },
-          {
-            label: tr('Calificación promedio'),
-            value: metrics.avgRating != null ? `${metrics.avgRating} ★` : '—',
-          },
-        ].map(card => (
-          <div key={card.label} style={cardStyle}>
-            <div style={{ fontSize: '1.6rem', fontWeight: 600, color: colors.text }}>{card.value}</div>
-            <div style={{ fontSize: '0.75rem', color: colors.textMuted, marginTop: spacing.xs }}>{card.label}</div>
-          </div>
-        ))}
-      </div>
+      {metrics.state === 'loading' && <p role="status" aria-busy="true" style={{ color: colors.textMuted, fontSize: '0.875rem' }}>{tr('Cargando métricas...')}</p>}
+      {metrics.state === 'error' && <LoadError message={tr('No se pudieron cargar las métricas.')} onRetry={metrics.retry} />}
+      {metrics.state === 'ok' && metrics.data && <SummaryCards metrics={metrics.data} />}
 
-      {/* TWO COLUMN LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: spacing.xl, alignItems: 'start' }}>
-
-        {/* COLUMNA IZQUIERDA */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
-
-          {/* ACTIVITY CHART */}
-          <div style={cardStyle}>
-            <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>{tr("Actividad — últimos 30 días")}{' '}</h2>
-            {metrics.sessionsByDay.length === 0 ? (
-              <p style={{ color: colors.textMuted, fontSize: '0.875rem' }}>{tr("Sin datos de sesiones aún.")}</p>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 80 }}>
-                {metrics.sessionsByDay.map(s => (
-                  <div
-                    key={s.date}
-                    title={`${s.date}: ${s.count} ${s.count !== 1 ? tr('sesiones') : tr('sesión')}`}
-                    style={{
-                      flex: 1,
-                      height: `${Math.max((s.count / maxCount) * 100, 8)}%`,
-                      background: colors.primary,
-                      borderRadius: `${radius.sm} ${radius.sm} 0 0`,
-                      opacity: 0.75,
-                      cursor: 'default',
-                      transition: 'opacity 0.15s',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = '0.75')}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* TOP THERAPISTS */}
-          <div style={cardStyle}>
-            <h2 style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>{tr("Top terapeutas")}{' '}</h2>
-            {metrics.topTherapists.length === 0 ? (
-              <p style={{ color: colors.textMuted, fontSize: '0.875rem' }}>{tr("Sin terapeutas aún.")}</p>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    {[tr('Terapeuta'), tr('Pacientes'), tr('Calificación')].map(h => (
-                      <th key={tr(h)} style={{
-                        padding: `${spacing.sm} ${spacing.md}`, textAlign: 'left',
-                        ...labelStyle, borderBottom: `0.5px solid ${colors.border}`,
-                      }}>{tr(h)}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.topTherapists.map((th, i) => (
-                    <tr key={th.id} style={{ background: i % 2 === 0 ? 'transparent' : colors.bgMuted }}>
-                      <td style={{ padding: `${spacing.md} ${spacing.md}`, fontSize: '0.875rem', color: colors.text }}>{th.name}</td>
-                      <td style={{ padding: `${spacing.md} ${spacing.md}`, fontSize: '0.875rem', color: colors.text }}>{th.patientCount}</td>
-                      <td style={{ padding: `${spacing.md} ${spacing.md}`, fontSize: '0.875rem', color: colors.text }}>
-                        {th.avgRating != null ? `${th.avgRating} ★` : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-
-        {/* COLUMNA DERECHA — ALERTS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, position: 'sticky', top: spacing.xl }}>
-
-          <div style={cardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
-              <div style={labelStyle}>{tr("🔔 Alertas")}</div>
-              {totalAlerts > 0 && (
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: colors.dangerLight, color: colors.danger, padding: `2px ${spacing.sm}`, borderRadius: radius.full }}>
-                  {totalAlerts}
-                </span>
-              )}
-            </div>
-
-            {alertsLoading ? (
-              <p style={{ fontSize: '0.82rem', color: colors.textMuted, margin: 0 }}>{tr("Cargando...")}</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-
-                {/* Prompts pendientes */}
-                <div style={{
-                  padding: spacing.md, borderRadius: radius.md,
-                  background: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warningLight : colors.bgMuted,
-                  border: `0.5px solid ${(alerts?.pendingPrompts ?? 0) > 0 ? '#FCD34D' : colors.border}`,
-                }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warning : colors.textMuted, marginBottom: '0.2rem' }}>
-                    ⚠️ {alerts?.pendingPrompts ?? 0}{' '}{tr((alerts?.pendingPrompts ?? 0) === 1 ? 'prompt pendiente' : 'prompts pendientes')}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: (alerts?.pendingPrompts ?? 0) > 0 ? colors.warning : colors.textSubtle, marginBottom: spacing.sm }}>{tr("Esperando revisión ética")}{' '}</div>
-                  <button
-                    onClick={() => navigate('/admin/prompts')}
-                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, minHeight: 44, cursor: 'pointer', fontFamily: typography.fontBody }}>{tr("Revisar →")}{' '}{' '}</button>
-                </div>
-
-                {/* Terapeutas sin perfil */}
-                <div style={{
-                  padding: spacing.md, borderRadius: radius.md,
-                  background: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.infoLight : colors.bgMuted,
-                  border: `0.5px solid ${(alerts?.therapistsWithoutProfile ?? 0) > 0 ? '#7DD3FC' : colors.border}`,
-                }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.info : colors.textMuted, marginBottom: '0.2rem' }}>
-                    ℹ️ {alerts?.therapistsWithoutProfile ?? 0}{' '}{tr("terapeuta")}{(alerts?.therapistsWithoutProfile ?? 0) !== 1 ? 's' : ''}{' '}{tr("sin perfil")}{' '}</div>
-                  <div style={{ fontSize: '0.72rem', color: (alerts?.therapistsWithoutProfile ?? 0) > 0 ? colors.info : colors.textSubtle, marginBottom: spacing.sm }}>{tr("TherapistProfile incompleto")}{' '}</div>
-                  <button
-                    onClick={() => navigate('/admin/usuarios?role=therapist')}
-                    style={{ fontSize: '0.72rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`, borderRadius: radius.sm, padding: `2px ${spacing.sm}`, minHeight: 44, cursor: 'pointer', fontFamily: typography.fontBody }}>{tr("Revisar →")}{' '}{' '}</button>
-                </div>
-
-                {/* Manifiesto ético */}
-                <div style={{
-                  padding: spacing.md, borderRadius: radius.md,
-                  background: colors.successLight, border: `0.5px solid #A8B5A2`,
-                }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: colors.success, marginBottom: '0.2rem' }}>{tr("✅ Manifiesto Ético")}{' '}</div>
-                  <div style={{ fontSize: '0.72rem', color: colors.success }}>
-                    {alerts?.manifestoVersion ?? 'v1.0'}{' '}{tr("— activo desde")}{' '}{alerts?.manifestoDate ? formatDate(alerts.manifestoDate, tr('es-CO')) : tr('02 abr 2026')}
-                  </div>
-                </div>
-
-              </div>
-            )}
-          </div>
-
-          {/* Lista prompts pendientes */}
-          {(alerts?.pendingPromptsList?.length ?? 0) > 0 && (
-            <div style={cardStyle}>
-              <div style={{ ...labelStyle, marginBottom: spacing.md }}>{tr("📋 Prompts pendientes")}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                {alerts!.pendingPromptsList.map(p => (
-                  <div key={p.id} style={{
-                    padding: `${spacing.sm} ${spacing.md}`,
-                    background: colors.warningLight,
-                    borderRadius: radius.md,
-                    border: `0.5px solid #FCD34D`,
-                  }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: colors.warning }}>{p.therapistName}</div>
-                    <div style={{ fontSize: '0.72rem', color: colors.warning, marginTop: '0.1rem' }}>v{p.version} — {formatDate(p.createdAt, tr('es-CO'))}</div>
-                  </div>
-                ))}
-                <button
-                  onClick={() => navigate('/admin/prompts')}
-                  style={{ fontSize: '0.75rem', color: colors.primary, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: typography.fontBody, padding: `${spacing.xs} 0` }}>{tr("Ver todos →")}{' '}</button>
-              </div>
-            </div>
+      <div className="admin-overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: spacing.xl, alignItems: 'start' }}>
+        <section aria-labelledby="admin-alerts-title" style={cardStyle}>
+          <div id="admin-alerts-title" style={{ ...labelStyle, marginBottom: spacing.lg }}>{tr('Avisos')}</div>
+          {alerts.state === 'loading' && <p role="status" aria-busy="true" style={{ fontSize: '0.82rem', color: colors.textMuted, margin: 0 }}>{tr('Cargando...')}</p>}
+          {alerts.state === 'error' && <LoadError message={tr('No pudimos cargar los avisos.')} onRetry={alerts.retry} />}
+          {alerts.state === 'ok' && sections && (
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, margin: 0, padding: 0 }}>
+              <AlertRow
+                title={tr('Guías de profesionales por revisar')}
+                status={guides?.status === 'ok' ? 'ok' : 'error'}
+                detail={guides?.status === 'ok' ? (guides.count === 0 ? tr('Sin avisos') : `${f.number(guides.count)}`) : ''}
+                actionLabel={guides?.status === 'ok' && guides.count > 0 ? tr('Ver') : undefined}
+                onAction={() => navigate('/admin/prompts')}
+                onRetry={alerts.retry}
+              />
+              <AlertRow
+                title={tr('Perfil incompleto')}
+                status={incomplete?.status === 'ok' ? 'ok' : 'error'}
+                detail={incomplete?.status === 'ok' ? (incomplete.count === 0 ? tr('Sin avisos') : `${f.number(incomplete.count)} ${tr('profesionales')}`) : ''}
+                actionLabel={incomplete?.status === 'ok' && incomplete.count > 0 ? tr('Ver') : undefined}
+                onAction={() => navigate('/admin/usuarios?role=therapist')}
+                onRetry={alerts.retry}
+              />
+              <AlertRow
+                title={tr('Manifiesto vigente')}
+                status={manifest?.status === 'ok' ? 'ok' : 'error'}
+                detail={manifest?.status === 'ok' ? (manifest.version ? `${manifest.version}${manifest.date ? ` · ${f.day(manifest.date, true)}` : ''}` : tr('Sin datos')) : ''}
+                onRetry={alerts.retry}
+              />
+            </ul>
           )}
+          {guides?.status === 'ok' && guides.items.length > 0 && (
+            <ul style={{ margin: `${spacing.lg} 0 0`, padding: 0, display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+              {guides.items.map((p) => (
+                <li key={p.id} style={{ listStyle: 'none', fontSize: '0.78rem', color: colors.textMuted }}>
+                  {p.therapistName ?? tr('Sin datos')} · v{p.version} · {f.day(p.createdAt, true)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-        </div>
+        <section aria-labelledby="admin-top-title" style={cardStyle}>
+          <h2 id="admin-top-title" style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>{tr('Profesionales con más personas')}</h2>
+          {metrics.state === 'ok' && metrics.data ? <TopProfessionals metrics={metrics.data} /> : <p style={{ margin: 0, fontSize: '0.875rem', color: colors.textMuted }}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
+        </section>
       </div>
+
+      <section style={{ ...cardStyle, marginTop: spacing.xl }}>
+        <CardTitle>{tr('Actividad, últimos 30 días')}</CardTitle>
+        {metrics.state === 'ok' && metrics.data ? <ActivityChart metrics={metrics.data} /> : <p style={{ margin: 0, fontSize: '0.875rem', color: colors.textMuted }}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
+      </section>
     </div>
   )
 }
