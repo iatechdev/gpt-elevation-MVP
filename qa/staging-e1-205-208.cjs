@@ -21,8 +21,9 @@ const CASES = [
   await call('POST', '/api/register', null, { name: 'QA2 e1', email, password: pw }); await sleep(600); const lg = await call('POST', '/api/login', null, { email, password: pw }); const tk = lg.j?.token; if (!tk) { console.log('sin sesión'); process.exit(1) }
   console.log('INFO commit staging:', (await call('GET', '/api/health')).j?.commit)
   const u0 = await call('GET', '/api/ai/usage', tk); console.log('INFO /api/ai/usage forma:', JSON.stringify(u0.j).slice(0, 260)); let used = 0, n = 0, f = 0, perCall = 0
-  for (const c of CASES) {
-    if (n > 0 && used + perCall > CAP) { console.log(`PARADA por tope: usado ${used} + estimado ${perCall} > ${CAP}; casos sin ejecutar: ${CASES.slice(n).map(x => x.id).join(', ')}`); break }
+  const ONLY = (process.env.ONLY || '').split(',').filter(Boolean); const RUN = ONLY.length ? ONLY.map(id => CASES.find(c => c.id === id)).filter(Boolean) : CASES
+  for (const c of RUN) {
+    if (n > 0 && used + perCall > CAP) { console.log(`PARADA por tope: usado ${used} + estimado ${perCall} > ${CAP}; casos sin ejecutar: ${RUN.slice(n).map(x => x.id).join(', ')}`); break }
     const before = TOK((await call('GET', '/api/ai/usage', tk)).j)
     const r = await call('POST', '/api/chat', tk, { message: 'QA2: ' + c.msg, requestId: 'qa2e1' + crypto.randomBytes(6).toString('hex'), lang: c.iface }); n++
     const after = TOK((await call('GET', '/api/ai/usage', tk)).j); const cost = (after - before) || 15000; used += cost; perCall = Math.max(perCall, cost)
