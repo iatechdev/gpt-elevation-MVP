@@ -246,7 +246,31 @@ const revoke = (userId) => ownTransaction(async (transaction) => {
 // Las versiones con solo texto ingresado directamente no dependen del consentimiento y se conservan.
 const revokeForConsent = (userId, transaction) => revokeActive(userId, transaction, { onlyWithConsent: true });
 
+// ES-229: retirar un permiso `insights_*` marca, en la misma transacción, los textos de la versión activa que vienen de esa fuente
+// (`sourceRevokedAt` dentro de `origins`, JSON privado: no viaja al motor ni al cliente). Lo confirmado no se borra ni se reescribe:
+// la versión sigue en su historial y la persona decide si la reconfirma (una versión nueva). Volver a otorgar el permiso NO limpia la marca.
+const ORIGIN_OF_PURPOSE = Object.freeze({ insights_chat: 'chat_turn', insights_diary: 'diary_entry', insights_resume: 'resume_version' });
+async function markSourceRevoked(userId, purpose, transaction) {
+  const type = ORIGIN_OF_PURPOSE[purpose];
+  if (!type) return 0;
+  const rows = await CareerContextVersion.findAll({ where: { UserId: userId, status: 'active' }, transaction, lock: Transaction.LOCK.UPDATE });
+  const at = new Date().toISOString();
+  let marked = 0;
+  for (const row of rows) {
+    const origins = Array.isArray(row.origins) ? row.origins : [];
+    if (!origins.some((o) => o.type === type && !o.sourceRevokedAt)) continue; // idempotente: lo ya marcado no se vuelve a marcar
+    await row.update({ origins: origins.map((o) => (o.type === type && !o.sourceRevokedAt ? { ...o, sourceRevokedAt: at } : o)) }, { transaction });
+    await DerivedInvalidation.create({ UserId: userId, sourceType: 'career_context_version', sourceId: row.id, reason: 'source_revoked' }, { transaction });
+    marked++;
+  }
+  // Lo que el worker derivó de esa versión (jobs y candidatas) también se invalida, como al revocar el puente.
+  if (marked) await require('./aiJobs').invalidateForUser(userId, 'consent_revoked', transaction);
+  return marked;
+}
+const sourceRevoked = (origins) => (Array.isArray(origins) ? origins : []).some((o) => o && o.sourceRevokedAt);
+
 async function needsReviewFor(userId, origins) {
+  if (sourceRevoked(origins)) return true;
   for (const origin of origins) {
     if (origin.type === 'direct') continue;
     const row = await findOrigin(userId, origin.type, origin.id);
@@ -269,10 +293,18 @@ async function list(userId) {
   const rows = await CareerContextVersion.findAll({ where: { UserId: userId }, order: [['version', 'DESC']] });
   const versions = [];
   for (const row of rows) {
-    const extra = row.status === 'active' ? { needsReview: await needsReviewFor(userId, row.origins) } : {};
+    const extra = row.status === 'active'
+      ? { needsReview: await needsReviewFor(userId, row.origins), ...(sourceRevoked(row.origins) ? { reviewReason: 'source_revoked' } : {}) } : {};
     versions.push(toRecord(row, withOrigins(JSON.parse(desencriptar(row.payload)), row.origins), extra));
   }
   return { active: versions.find((v) => v.status === 'active') ?? null, versions };
+}
+
+// ES-229: solo clave y texto de lo que sigue autorizado. Los textos que vienen de una fuente cuyo permiso se retiró dejan de entregarse en esta misma petición.
+// Vive fuera de la puerta del motor a propósito: la puerta nunca toca los orígenes (prueba «ES-121 frontera en el código»).
+function deliverableFields(row) {
+  const blocked = new Set((Array.isArray(row.origins) ? row.origins : []).filter((o) => o && o.sourceRevokedAt).map((o) => o.index));
+  return JSON.parse(desencriptar(row.payload)).filter((_, index) => !blocked.has(index)).map(({ key, text }) => ({ key, text }));
 }
 
 // ÚNICA puerta de lectura del motor profesional. Entrega solo clave y texto; sin IDs de origen, correo ni nombre.
@@ -281,7 +313,8 @@ async function getApprovedContext(userId, consumer) {
   const deliver = async (transaction) => {
     const row = await CareerContextVersion.findOne({ where: { UserId: userId, status: 'active' }, transaction });
     if (!row) throw new BridgeError(404, 'no_context', 'No hay contexto profesional autorizado.', 'There is no authorized professional context.');
-    const fields = JSON.parse(desencriptar(row.payload)).map(({ key, text }) => ({ key, text }));
+    const fields = deliverableFields(row); // ES-229: sin lo derivado de una fuente cuyo permiso se retiró
+    if (!fields.length) throw new BridgeError(404, 'no_context', 'No hay contexto profesional autorizado.', 'There is no authorized professional context.');
     const delivered = { version: row.version, approvedAt: row.approvedAt, fields };
     await BridgeTransfer.create({
       UserId: userId, version: row.version, keys: fields.map((f) => f.key),
@@ -300,4 +333,4 @@ async function getApprovedContext(userId, consumer) {
   }
 }
 
-module.exports = { BridgeError, FIELD_KEYS, preview, confirm, revoke, revokeForConsent, list, getApprovedContext, normalizeFields };
+module.exports = { BridgeError, FIELD_KEYS, preview, confirm, revoke, revokeForConsent, markSourceRevoked, list, getApprovedContext, normalizeFields };
