@@ -23,6 +23,8 @@ const handle = (fn) => async (req, res) => {
       const body = { code: error.code, error: error.message };
       if (error.missing) body.missing = error.missing;
       if (error.draftId !== undefined) body.draftId = error.draftId;
+      if (error.current !== undefined) body.current = error.current;
+      if (error.inUse !== undefined) body.inUse = error.inUse;
       return res.status(error.status).json(body);
     }
     console.error('Error en el catálogo de habilidades:', error && error.name);
@@ -35,7 +37,20 @@ const idOf = (req) => (/^[0-9]{1,9}$/.test(req.params.id) ? Number(req.params.id
 router.get('/', handle(async (req, res) => { res.json(await catalog.list()); }));
 router.post('/', handle(async (req, res) => { res.status(201).json(await catalog.createDraft()); }));
 router.get('/:id', handle(async (req, res) => { res.json(await catalog.get(idOf(req))); }));
-router.put('/:id/skills/:skillKey', handle(async (req, res) => { res.json(await catalog.upsertSkill(idOf(req), req.params.skillKey, req.body)); }));
+router.put('/:id/skills/:skillKey', handle(async (req, res) => {
+  // `expectedUpdatedAt` y `updatedAt` son metadatos de versión del cliente: se separan antes de validar el contenido (ES-188).
+  let content = req.body;
+  let expected;
+  if (content && typeof content === 'object' && !Array.isArray(content)) {
+    const { expectedUpdatedAt, updatedAt, ...rest } = content; // eslint-disable-line no-unused-vars
+    content = rest;
+    if (expectedUpdatedAt !== undefined) {
+      expected = typeof expectedUpdatedAt === 'string' ? new Date(expectedUpdatedAt) : new Date(NaN);
+      if (Number.isNaN(expected.getTime())) return res.status(400).json({ code: 'invalid_expected', error: 'expectedUpdatedAt no válida. / Invalid expectedUpdatedAt.' });
+    }
+  }
+  res.json(await catalog.upsertSkill(idOf(req), req.params.skillKey, content, expected));
+}));
 router.delete('/:id/skills/:skillKey', handle(async (req, res) => { res.json(await catalog.removeSkill(idOf(req), req.params.skillKey)); }));
 router.post('/:id/publish', handle(async (req, res) => { res.json(await catalog.publish(idOf(req), req.user.id)); }));
 
