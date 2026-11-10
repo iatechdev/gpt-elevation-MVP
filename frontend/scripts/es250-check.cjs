@@ -51,12 +51,14 @@ const axe = async (page, label) => {
       report(await page.locator('h1').count() >= 1, `A) el resto de la pantalla sigue viva (título presente) ${tag}`)
       report(t.section.test(body) && await page.getByRole('button', { name: t.retry, exact: true }).count() === 1, `A) el bloque que falló se sustituye por «${t.retry}» y el aviso de sección ${tag}`)
       report(await page.getByRole('alert').count() === 1, `A) un solo aviso (role=alert), no toda la pantalla ${tag}`)
+      report(logs.every(l => !/boom|personal@example/.test(l)), `A) ES-256: NINGÚN console.error trae el mensaje del error (ni el registro nativo de React) ${tag}`, logs.find(l => /boom|personal@example/.test(l)) ? `«${logs.find(l => /boom|personal@example/.test(l)).slice(0, 80)}»` : '')
       const mine = logs.filter(l => l.startsWith('[boundary]')); const own = mine[0] || ''
       report(mine.length >= 1 && /^\[boundary\] Error \/app\/bridge /.test(own) && !/boom-section|personal@example/.test(own), `A) el registro propio trae nombre y ruta (componentes minificados en producción), sin el mensaje ${tag}`, `«${own.slice(0, 90)}»`)
       if (width === 1360) await axe(page, `A) aviso de sección ${lang}`)
       await page.evaluate(() => { window.__boom = false }); await page.getByRole('button', { name: t.retry, exact: true }).click()
       await page.waitForTimeout(500)
       report(await page.getByRole('alert').filter({ hasText: t.section }).count() === 0 && await page.locator('#bridge-src-title').count() === 1, `A) «${t.retry}» recupera el bloque ${tag}`)
+      report(await page.waitForFunction(() => document.activeElement && document.activeElement !== document.body, null, { timeout: 3000 }).then(() => true, () => false), `A) ES-256: tras «${t.retry}» con éxito el foco NO cae a body ${tag}`)
       await ctx.close() }
     // B) pantalla entera
     { const { ctx, page } = await open(browser, { width, lang, flags: { __boomRoute: true }, path: '/app/bridge' })
@@ -66,6 +68,7 @@ const axe = async (page, label) => {
       await page.evaluate(() => { window.__boomRoute = false }); await page.getByRole('button', { name: t.retry, exact: true }).click()
       await page.locator('h1').first().waitFor({ timeout: 8000 }).catch(() => {})
       report(await page.locator('h1').count() >= 1 && !t.screen.test(await text(page)), `B) «${t.retry}» recupera la pantalla ${tag}`)
+      report(await page.waitForFunction(() => document.activeElement && document.activeElement !== document.body, null, { timeout: 3000 }).then(() => true, () => false), `B) ES-256: tras «${t.retry}» con éxito el foco NO cae a body ${tag}`)
       await ctx.close() }
   }
   for (const lang of ['es', 'en']) {

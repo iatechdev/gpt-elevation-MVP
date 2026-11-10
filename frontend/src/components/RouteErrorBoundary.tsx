@@ -1,4 +1,4 @@
-import { Component, useEffect, useRef, useState } from 'react'
+import { Component, createRef, useEffect, useRef, useState } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { useLanguage } from '../i18n/useLanguage'
 import { classifyFailure, safeBoundaryLog } from './chunkError'
@@ -35,15 +35,45 @@ function FailureNotice({ kind, scope, onRetry, takeFocus }: { kind: FailureKind;
 interface Props { children: ReactNode; resetKey?: string; scope?: Scope }
 interface State { error: unknown; kind: FailureKind | null; hadFocus: boolean }
 
+// ES-256: tras «Reintentar» con éxito el aviso (y su botón con el foco) se desmonta y el foco caía a body: se coloca en un elemento estable DESPUÉS de renderizar.
+// Solo ocurre tras un reintento con éxito: un cambio de ruta que limpia el aviso no mueve el foco.
+const FOCUSABLE = 'button, a[href], input, select, textarea'
+function focusStable(target: Element | null) {
+  const element = target as HTMLElement | null
+  if (!element) return
+  if (!element.matches(FOCUSABLE) && !element.hasAttribute('tabindex')) element.setAttribute('tabindex', '-1')
+  element.focus()
+}
+
 abstract class Boundary extends Component<Props, State> {
   state: State = { error: null, kind: null, hadFocus: false }
+  recovering = false
   static getDerivedStateFromError(error: unknown): Partial<State> { return { error, kind: classifyFailure(error) } }
-  componentDidCatch(error: unknown, info: ErrorInfo) { console.error(...safeBoundaryLog(error, info.componentStack, window.location.pathname)) }
-  componentDidUpdate(prev: Props) { if (prev.resetKey !== this.props.resetKey && this.state.kind) this.setState({ error: null, kind: null }) }
-  retry = () => this.setState({ error: null, kind: null })
+  componentDidCatch(error: unknown, info: ErrorInfo) { this.recovering = false; console.error(...safeBoundaryLog(error, info.componentStack, window.location.pathname)) }
+  componentDidUpdate(prev: Props, prevState: State) {
+    if (prev.resetKey !== this.props.resetKey && this.state.kind) { this.recovering = false; this.setState({ error: null, kind: null }); return }
+    if (prevState.kind && !this.state.kind && this.recovering) { this.recovering = false; this.refocus() }
+  }
+  retry = () => { this.recovering = true; this.setState({ error: null, kind: null }) }
+  abstract refocus(): void
 }
 
 export class RouteErrorBoundary extends Boundary {
+  // La pantalla puede ser un bloque diferido que aún está bajando cuando el límite se limpia: se espera (hasta ~3 s) a que exista su título o región principal.
+  refocus() {
+    let tries = 0
+    const attempt = () => {
+      const target = document.querySelector('h1') ?? (tries > 20 ? document.querySelector('main') : null)
+      if (target) {
+        focusStable(target)
+        // si la pantalla se vuelve a montar (p. ej. al terminar de cargar sus datos) y el foco cae a body, se repite una vez
+        if (tries < 25) { tries = 25; window.setTimeout(() => { if (document.activeElement === document.body) focusStable(document.querySelector('h1') ?? document.querySelector('main')) }, 500) }
+        return
+      }
+      if (++tries < 30) window.setTimeout(attempt, 100)
+    }
+    attempt()
+  }
   render() {
     if (this.state.kind) return <FailureNotice kind={this.state.kind} scope="route" onRetry={this.retry} takeFocus />
     return this.props.children
@@ -54,8 +84,10 @@ export class RouteErrorBoundary extends Boundary {
 // El foco solo pasa al aviso si estaba dentro del bloque que falló.
 export class SectionBoundary extends Boundary {
   focusInside = false
+  wrapper = createRef<HTMLDivElement>()
+  refocus() { focusStable(this.wrapper.current?.querySelector(`h2, h3, [tabindex="-1"], ${FOCUSABLE}`) ?? null) }
   render() {
     if (this.state.kind) return <FailureNotice kind={this.state.kind} scope="section" onRetry={this.retry} takeFocus={this.focusInside} />
-    return <div className="contents" onFocusCapture={() => { this.focusInside = true }} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null) && event.relatedTarget) this.focusInside = false }}>{this.props.children}</div>
+    return <div ref={this.wrapper} className="contents" onFocusCapture={() => { this.focusInside = true }} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null) && event.relatedTarget) this.focusInside = false }}>{this.props.children}</div>
   }
 }
