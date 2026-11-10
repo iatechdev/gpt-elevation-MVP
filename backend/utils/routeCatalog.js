@@ -273,6 +273,7 @@ async function ownTransaction(fn) {
 }
 
 const describe = (row, count) => ({ id: row.id, version: row.version, status: row.status, publishedAt: row.publishedAt ?? null, itemCount: count });
+const itemsWithVersion = (items) => Object.fromEntries(KINDS.map((k) => [k, items.filter((i) => i.kind === k).map((i) => ({ itemKey: i.itemKey, ...i.data, updatedAt: i.updatedAt }))]));
 const grouped = (items) => Object.fromEntries(KINDS.map((k) => [k, new Map(items.filter((i) => i.kind === k).map((i) => [i.itemKey, i.data]))]));
 
 async function list() {
@@ -290,7 +291,7 @@ async function get(id, policy = defaultPolicy) {
   for (const kind of KINDS) for (const [key, data] of byKind[kind]) { const m = missingFor(kind, data); if (m.length) missing[`${kind}/${key}`] = m; }
   const refs = crossRefs(byKind, policy);
   for (const [k, v] of Object.entries(refs)) missing[k] = [...(missing[k] || []), ...v];
-  return { ...describe(catalog, items.length), items: Object.fromEntries(KINDS.map((k) => [k, [...byKind[k]].map(([itemKey, data]) => ({ itemKey, ...data }))])), missing };
+  return { ...describe(catalog, items.length), items: itemsWithVersion(items), missing };
 }
 
 async function createDraft() {
@@ -318,20 +319,27 @@ async function editableDraft(id, transaction) {
   return catalog;
 }
 
-async function upsertItem(id, kind, key, body) {
+// ES-187: control de edición concurrente por elemento. Si el cliente manda `expectedUpdatedAt` (la `updatedAt` del elemento que cargó) y el elemento
+// cambió o desapareció desde entonces, 409 `item_changed` con la versión vigente y SIN pisar. Sin `expectedUpdatedAt` (clientes anteriores) gana el último.
+// La comprobación y el cambio ocurren con la fila del catálogo bloqueada (editableDraft).
+async function upsertItem(id, kind, key, body, expectedUpdatedAt) {
   if (!KINDS.includes(kind)) throw notFound();
   if (typeof key !== 'string' || !KEY_RE.test(key)) throw invalid('Clave inválida.', 'Invalid key.');
   const data = normalizeItem(kind, body);
   return ownTransaction(async (transaction) => {
     const catalog = await editableDraft(id, transaction);
     const existing = await RouteCatalogItem.findOne({ where: { catalogId: catalog.id, kind, itemKey: key }, transaction });
+    let saved = existing;
+    if (expectedUpdatedAt !== undefined && (!existing || existing.updatedAt.getTime() !== expectedUpdatedAt.getTime())) {
+      throw new CatalogError(409, 'item_changed', 'Otra persona guardó este elemento mientras lo editabas.', 'Someone else saved this item while you were editing it.', { current: existing ? { kind, itemKey: key, ...existing.data, updatedAt: existing.updatedAt, missing: missingFor(kind, existing.data) } : null });
+    }
     if (existing) await existing.update({ data }, { transaction });
     else {
       const count = (await RouteCatalogItem.findAll({ where: { catalogId: catalog.id, kind }, transaction })).length;
       if (count >= DRAFT_CAPS[kind]) throw new CatalogError(409, 'catalog_limit', 'Se alcanzó el máximo de elementos de este tipo.', 'The maximum number of items of this kind was reached.');
-      await RouteCatalogItem.create({ catalogId: catalog.id, kind, itemKey: key, data }, { transaction });
+      saved = await RouteCatalogItem.create({ catalogId: catalog.id, kind, itemKey: key, data }, { transaction });
     }
-    return { kind, itemKey: key, ...data, missing: missingFor(kind, data) };
+    return { kind, itemKey: key, ...data, updatedAt: saved.updatedAt, missing: missingFor(kind, data) };
   });
 }
 

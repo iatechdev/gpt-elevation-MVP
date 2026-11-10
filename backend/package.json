@@ -37,6 +37,7 @@
     "test:admin-unlock:pg": "node --test test/integration/es-217-postgres.cjs",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
     "test:route-skill-labels:pg": "node --test test/integration/es-260-postgres.cjs",
+    "test:routecatalog-items:pg": "node --test test/integration/es-187-postgres.cjs",
     "eval:validate": "node evaluation/es44/cli.cjs --mode=validate",
     "eval:mock": "node evaluation/es44/cli.cjs --mode=mock",
     "eval:local": "node evaluation/es44/cli.cjs --mode=integration",
