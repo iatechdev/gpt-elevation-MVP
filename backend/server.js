@@ -132,6 +132,7 @@ app.use('/api/career-plan',      verificarToken, require('./routes/careerPlan').
 app.use('/api/diary',           verificarToken, require('./routes/diary'));          // ES-20 — diario privado
 app.use('/api/ai/usage',         verificarToken, require('./routes/aiUsage').owner);   // ES-22 — presupuesto de IA de la persona
 app.use('/api/superadmin/ai-usage', verificarSuperAdmin, require('./routes/aiUsage').admin); // ES-22 — resumen agregado
+app.use('/api/superadmin/audit', verificarSuperAdmin, require('./routes/adminAudit')); // ES-186 B — auditoría de acciones de administración (solo lectura)
 app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));

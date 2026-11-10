@@ -6,9 +6,13 @@ const router       = express.Router();
 const PlanRequest  = require('../PlanRequest');
 const PricingPlan  = require('../PricingPlan');
 const User         = require('../User');
+const { Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const { verificarAdmin } = require('../middlewares/auth');
+const { recordAdminAction } = require('../utils/adminAudit'); // ES-186 B
 const { validateBody, id, text, nonempty, optional, nullable } = require('../middlewares/validateBody');
+
+const CLOSED = { code: 'request_closed', error: 'Esta solicitud ya fue resuelta. / This request has already been resolved.' };
 
 // ==========================================
 // POST /api/plan-requests
@@ -139,22 +143,23 @@ router.get('/admin', verificarAdmin, async (req, res) => {
 // Admin — aprueba solicitud y asigna el plan
 // ==========================================
 router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optional(nullable(text)) }), async (req, res) => {
+  // ES-186 (parte A): una transacción con la solicitud BLOQUEADA; la segunda aprobación/rechazo simultáneo espera y recibe 409 request_closed (antes: doble efecto sobre el plan).
+  const transaction = await sequelize.transaction();
+  const reply = async (status, body) => { await transaction.rollback().catch(() => {}); return res.status(status).json(body); };
   try {
     const { id } = req.params;
     const { adminNote } = req.body;
     const adminId = req.user.id;
 
-    const request = await PlanRequest.findByPk(id);
-    if (!request) return res.status(404).json({ error: 'Solicitud no encontrada.' });
-    if (request.status !== 'pending') {
-      return res.status(400).json({ error: 'Esta solicitud ya fue procesada.' });
-    }
+    const request = await PlanRequest.findByPk(id, { transaction, lock: Transaction.LOCK.UPDATE });
+    if (!request) return await reply(404, { error: 'Solicitud no encontrada.' });
+    if (request.status !== 'pending') return await reply(409, CLOSED);
 
     // Asignar el plan al usuario
-    const user = await User.findByPk(request.userId);
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    const user = await User.findByPk(request.userId, { transaction, lock: Transaction.LOCK.UPDATE });
+    if (!user) return await reply(404, { error: 'Usuario no encontrado.' });
 
-    await user.update({ planId: request.planId });
+    await user.update({ planId: request.planId }, { transaction });
 
     // Marcar la solicitud como aprobada
     await request.update({
@@ -162,7 +167,9 @@ router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optio
       adminNote:  adminNote ?? null,
       resolvedBy: adminId,
       resolvedAt: new Date(),
-    });
+    }, { transaction });
+    await recordAdminAction({ actor: req.user, action: 'plan_request.approve', targetType: 'plan_request', targetId: request.id }, { transaction }); // ES-186 B
+    await transaction.commit();
 
     res.json({
       message: 'Solicitud aprobada y plan asignado correctamente.',
@@ -170,7 +177,8 @@ router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optio
       planId:  request.planId,
     });
   } catch (error) {
-    console.error('❌ Error aprobando plan request:', error);
+    await transaction.rollback().catch(() => {});
+    console.error('Error aprobando plan request.');
     res.status(500).json({ error: 'No se pudo aprobar la solicitud.' });
   }
 });
@@ -180,31 +188,32 @@ router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optio
 // Admin — rechaza solicitud
 // ==========================================
 router.put('/admin/:id/reject', verificarAdmin, validateBody({ adminNote: nonempty }), async (req, res) => {
+  const transaction = await sequelize.transaction();
+  const reply = async (status, body) => { await transaction.rollback().catch(() => {}); return res.status(status).json(body); };
   try {
     const { id } = req.params;
     const { adminNote } = req.body;
     const adminId = req.user.id;
 
-    if (!adminNote?.trim()) {
-      return res.status(400).json({ error: 'La nota de rechazo es requerida.' });
-    }
+    if (!adminNote?.trim()) return await reply(400, { error: 'La nota de rechazo es requerida.' });
 
-    const request = await PlanRequest.findByPk(id);
-    if (!request) return res.status(404).json({ error: 'Solicitud no encontrada.' });
-    if (request.status !== 'pending') {
-      return res.status(400).json({ error: 'Esta solicitud ya fue procesada.' });
-    }
+    const request = await PlanRequest.findByPk(id, { transaction, lock: Transaction.LOCK.UPDATE });
+    if (!request) return await reply(404, { error: 'Solicitud no encontrada.' });
+    if (request.status !== 'pending') return await reply(409, CLOSED);
 
     await request.update({
       status:     'rejected',
       adminNote:  adminNote,
       resolvedBy: adminId,
       resolvedAt: new Date(),
-    });
+    }, { transaction });
+    await recordAdminAction({ actor: req.user, action: 'plan_request.reject', targetType: 'plan_request', targetId: request.id }, { transaction }); // ES-186 B
+    await transaction.commit();
 
     res.json({ message: 'Solicitud rechazada correctamente.' });
   } catch (error) {
-    console.error('❌ Error rechazando plan request:', error);
+    await transaction.rollback().catch(() => {});
+    console.error('Error rechazando plan request.');
     res.status(500).json({ error: 'No se pudo rechazar la solicitud.' });
   }
 });
