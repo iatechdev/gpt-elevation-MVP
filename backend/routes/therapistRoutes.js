@@ -216,7 +216,8 @@ router.get('/alerts', async (req, res) => {
               notableProgress.push({
                 userId: p.id,
                 name: p.name,
-                improvementPercent,
+                improved: true, // ES-177: sin porcentajes (decisión 13); la pantalla debe usar esta palabra en vez de la cifra
+                improvementPercent, // DEPRECADO: lo lee la pantalla actual; se elimina en el PR de frontend de ES-177
               });
             }
           }
@@ -321,7 +322,7 @@ router.post('/prompt/propose', validateBody({ content: nonempty }), async (req, 
     }
 
     // ES-191: la revisión automática decide entre «pendiente de aprobación humana» y «rechazada con motivos»; nunca aprueba.
-    return replyProposal(res, await proposePrompt(promptKey, content, req.user.name));
+    return replyProposal(res, await proposePrompt(promptKey, content, req.user.name, { onePending: true })); // ES-177: la regla se vuelve a comprobar dentro del bloqueo (carrera)
   } catch (error) {
     if (replyReviewError(res, error)) return;
     console.error('❌ Error proposing therapist prompt:', error);
