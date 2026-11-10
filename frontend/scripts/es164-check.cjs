@@ -92,6 +92,7 @@ const titles = page => page.locator('article h2').allInnerTexts()
       await axeAndLayout(page, `lista sin resultados del filtro ${tag}`)
       await page.getByRole('button', { name: t.showAll, exact: true }).click()
       report(await page.getByRole('radio', { name: t.all, exact: true }).isChecked() && await page.locator('article').count() === 2, `«${t.showAll}» vuelve a ver todas ${tag}`)
+      report(await page.getByRole('radio', { name: t.all, exact: true }).evaluate(el => el === document.activeElement), `ES-235: tras «${t.showAll}» el foco queda en el radio «${t.all}» (no en body) ${tag}`)
       await ctx.close()
     }
     // 2) Diálogo de borrar con el texto nuevo; foco devuelto al cancelar.
@@ -105,6 +106,9 @@ const titles = page => page.locator('article h2').allInnerTexts()
       await dialog.getByRole('button', { name: lang === 'es' ? 'Cancelar' : 'Cancel' }).click()
       await page.waitForFunction(() => !document.querySelector('[role=alertdialog]'))
       report(await del.evaluate(el => el === document.activeElement) && state.deleted.length === 0, `cancelar devuelve el foco y no borra ${tag}`)
+      await del.click(); await dialog.waitFor(); await page.keyboard.press('Escape')
+      await page.waitForFunction(() => !document.querySelector('[role=alertdialog]'), null, { timeout: 5000 }).catch(() => {})
+      report(await dialog.count() === 0 && await del.evaluate(el => el === document.activeElement) && state.deleted.length === 0, `ES-235: Esc cierra el diálogo de borrar, devuelve el foco y no borra ${tag}`)
       await ctx.close()
     }
     // 3) Revisión («queda como respaldo de tu nivel») e incierto («Tu texto sigue aquí…»).

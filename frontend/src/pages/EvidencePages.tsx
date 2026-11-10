@@ -41,6 +41,7 @@ export function EvidenceListPage() {
   const [notice, setNotice] = useState('')
   const [deleteError, setDeleteError] = useState(false)
   const [filter, setFilter] = useState<'all' | 'draft' | 'confirmed'>('all')
+  const [focusAll, setFocusAll] = useState(false); const allRadio = useRef<HTMLInputElement>(null)
   const added = Number((location.state as { added?: unknown } | null)?.added) || 0
   const opener = useRef<HTMLElement | null>(null); const dialog = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -55,6 +56,7 @@ export function EvidenceListPage() {
     return () => controller.abort()
   }, [token, attempt])
   useEffect(() => { if (confirmId !== null) dialog.current?.focus() }, [confirmId])
+  useEffect(() => { if (focusAll) { allRadio.current?.focus(); setFocusAll(false) } }, [focusAll, filter]) // ES-235: «Ver todas» desaparece al usarse; el foco pasa al radio «Todas»
   const retry = () => { setState({}); setAttempt(v => v + 1) }
   const same = state.token === token && token === readEvidenceToken()
   const ask = (id: number, event: MouseEvent<HTMLElement>) => { opener.current = event.currentTarget; setConfirmId(id); setDeleteError(false); setNotice('') }
@@ -73,7 +75,7 @@ export function EvidenceListPage() {
     {!token || token !== readEvidenceToken() ? <ReadError status={401} /> : same && state.error ? <ReadError status={state.error} retry={retry} />
       : same && state.rows ? state.rows.length ? <>
       <fieldset className="evidence-filter"><legend>{t('evidence.filter_status')}</legend>
-        {(['all', 'draft', 'confirmed'] as const).map(value => <label key={value}><input type="radio" name="evidence-status" checked={filter === value} onChange={() => setFilter(value)} /> {t(value === 'all' ? 'evidence.filter_all' : 'evidence.' + value)}</label>)}
+        {(['all', 'draft', 'confirmed'] as const).map(value => <label key={value}><input ref={value === 'all' ? allRadio : undefined} type="radio" name="evidence-status" checked={filter === value} onChange={() => setFilter(value)} /> {t(value === 'all' ? 'evidence.filter_all' : 'evidence.' + value)}</label>)}
       </fieldset>
       <p role="status" aria-live="polite" className="evidence-count">{shown.length === 1 ? t('evidence.filter_count_one') : t('evidence.filter_count').replace('{n}', String(shown.length))}</p>
       {shown.length ? <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -88,13 +90,13 @@ export function EvidenceListPage() {
             {!row.fromChat && <Link className="elv-btn" aria-label={t('evidence.action_edit') + ': ' + row.payload.title} to={'/app/evidence/' + row.id + '/edit'}>{t('evidence.action_edit')}</Link>}
             <button type="button" className="elv-btn elv-btn-ghost evidence-danger" disabled={busy} aria-label={t('evidence.action_delete') + ': ' + row.payload.title} onClick={event => ask(row.id, event)}>{t('evidence.action_delete')}</button>
           </div>
-          {confirmId === row.id && <div ref={dialog} tabIndex={-1} role="alertdialog" aria-labelledby={'del-title-' + row.id} aria-describedby={'del-body-' + row.id} className="evidence-confirm">
+          {confirmId === row.id && <div ref={dialog} tabIndex={-1} role="alertdialog" onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); cancel() } }} aria-labelledby={'del-title-' + row.id} aria-describedby={'del-body-' + row.id} className="evidence-confirm">
             <h3 id={'del-title-' + row.id}>{t('evidence.delete_title')}</h3><p id={'del-body-' + row.id}>{t('evidence.delete_body')}</p>
             {deleteError && <p role="alert" className="evidence-error">{t('evidence.delete_error')}</p>}
             <div className="evidence-actions"><button type="button" className="elv-btn evidence-danger" disabled={busy} onClick={() => void remove(row.id)}>{t('evidence.delete_yes')}</button>
               <button type="button" className="elv-btn" disabled={busy} onClick={cancel}>{t('evidence.delete_cancel')}</button></div></div>}
         </div></article>)}
-      </div> : <p>{t('evidence.filter_none')} <button type="button" className="elv-link" onClick={() => setFilter('all')}>{t('evidence.filter_show_all')}</button></p>}</> : <p role="status">{t('evidence.empty')}</p> : <p role="status">{t('evidence.loading')}</p>}
+      </div> : <p>{t('evidence.filter_none')} <button type="button" className="elv-link" onClick={() => { setFilter('all'); setFocusAll(true) }}>{t('evidence.filter_show_all')}</button></p>}</> : <p role="status">{t('evidence.empty')}</p> : <p role="status">{t('evidence.loading')}</p>}
   </EvidenceShell>
 }
 export function EvidenceDetailPage() {
