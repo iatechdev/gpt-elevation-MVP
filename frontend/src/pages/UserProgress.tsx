@@ -1,9 +1,10 @@
 // frontend/src/pages/UserProgress.tsx
 // HU-052 + HU-060 — User progress panel + therapist matching
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import './progressCopy.ts' // ES-254: catálogo de textos de esta pantalla (carga perezosa)
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -43,9 +44,9 @@ interface MatchingSuggestion {
   reason: string
 }
 
-const MOOD_EMOJI: Record<number, string> = {
-  1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
-}
+// ES-254: sin emojis ni estrellas. La escala 1–5 se dice «N de 5»; en el historial el ánimo lleva además una palabra (pr_mood_1..5).
+const level = (value: number) => Math.min(5, Math.max(1, Math.round(value)))
+const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [key, value]) => out.replace(`{${key}}`, String(value)), text)
 
 export function UserProgress() {
   const { t, lang } = useLanguage()
@@ -56,8 +57,11 @@ export function UserProgress() {
   const [ratings,         setRatings]         = useState<SessionRating[]>([])
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [loading,         setLoading]         = useState(true)
-  const [error,           setError]           = useState('')
-  const [loadError] = useState(() => lang === 'es' ? 'No se pudo cargar tu progreso.' : 'Could not load your progress.')
+  const [failed,          setFailed]          = useState(false)
+  const [attempt,         setAttempt]         = useState(0)
+  const titleRef = useRef<HTMLHeadingElement>(null); const retryRef = useRef<HTMLButtonElement>(null)
+  // E254-3: el foco se coloca DESPUÉS de renderizar: en «Reintentar» cuando aparece el error (primera lectura o reintento) y en el título tras recuperar (el botón se desmonta), nunca en body.
+  useEffect(() => { if (loading) return; if (failed) retryRef.current?.focus(); else if (attempt > 0) titleRef.current?.focus() }, [attempt, loading, failed])
 
   // HU-060 — Matching
   const [showMatching,        setShowMatching]        = useState(false)
@@ -70,26 +74,32 @@ export function UserProgress() {
   const [matchingSuccess,     setMatchingSuccess]     = useState('')
 
   useEffect(() => {
+    let cancelled = false
     const fetchProgress = async () => {
+      setLoading(true); setFailed(false)
       try {
         const res = await fetch(`${API}/api/user/progress`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         })
         if (!res.ok) throw new Error()
         const data = await res.json()
+        if (cancelled) return
         setStats(data.stats)
-        setMoodLogs(data.moodLogs)
-        setRatings(data.ratings)
-        setRecommendations(data.recommendations)
+        setMoodLogs(data.moodLogs ?? [])
+        setRatings((data.ratings ?? []).filter((row: SessionRating) => typeof row.rating === 'number')) // una calificación vacía no se muestra como «1 de 5»
+        setRecommendations(data.recommendations ?? [])
       } catch {
-        setError(loadError)
+        if (!cancelled) setFailed(true)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
-    fetchProgress()
-  }, [loadError])
+    void fetchProgress()
+    return () => { cancelled = true }
+  }, [attempt])
 
+  const avg = (value: number | string) => Number(value).toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { maximumFractionDigits: 1 })
+  const moodText = (value: number) => `${fill(t('pr_of5'), { n: level(value) })} (${t(`pr_mood_${level(value)}`)})`
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', {
       day: '2-digit', month: 'short', year: 'numeric',
@@ -165,8 +175,8 @@ export function UserProgress() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#f9f9f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
-      <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>
-        {lang === 'es' ? 'Cargando tu progreso...' : 'Loading your progress...'}
+      <p role="status" style={{ color: '#6B645F', fontSize: '0.875rem' }}>
+        {t('pr_loading')}
       </p>
     </div>
   )
@@ -187,7 +197,7 @@ export function UserProgress() {
             color: '#6B645F', fontSize: '0.82rem', fontFamily: 'Inter, sans-serif',
             display: 'flex', alignItems: 'center', gap: '0.35rem', padding: 0, minHeight: 44,
           }}>
-            ← {lang === 'es' ? 'Volver al chat' : 'Back to chat'}
+            ← {t('pr_back')}
           </button>
           <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#6F6963', textTransform: 'uppercase' }}>
             {t('logo')}
@@ -201,7 +211,7 @@ export function UserProgress() {
               fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}
           >
-            🤝 {lang === 'es' ? 'Buscar terapeuta' : 'Find therapist'}
+            {lang === 'es' ? 'Buscar terapeuta' : 'Find therapist'}
           </button>
         </div>
       </header>
@@ -210,24 +220,28 @@ export function UserProgress() {
 
         {/* Title */}
         <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
-            {lang === 'es' ? 'Tu progreso' : 'Your progress'}
+          <h1 ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
+            {t('pr_title')}
           </h1>
           <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0.25rem 0 0' }}>
-            {lang === 'es' ? 'Últimos 30 días' : 'Last 30 days'}
+            {t('pr_period')}
           </p>
+          <p role="note" style={{ fontSize: '0.8rem', color: '#6B645F', margin: '0.5rem 0 0' }}>{t('pr_note')}</p>
         </div>
 
-        {error && <p style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem' }}>{error}</p>}
+        {failed && <div role="alert" style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem' }}>
+          <p style={{ margin: '0 0 0.5rem' }}>{t('pr_error')}</p>
+          <button type="button" ref={retryRef} onClick={() => setAttempt(value => value + 1)} style={{ padding: '0.5rem 1rem', minHeight: 44, borderRadius: '0.65rem', border: '0.5px solid #E7E5E4', background: '#fff', color: '#1C1917', fontSize: '0.85rem', cursor: 'pointer' }}>{t('pr_retry')}</button>
+        </div>}
 
         {/* STATS CARDS */}
         {stats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
             {[
-              { label: lang === 'es' ? 'Sesiones totales' : 'Total sessions', value: stats.totalSessions },
-              { label: lang === 'es' ? 'Mood promedio'   : 'Avg mood',        value: stats.avgMood != null ? `${stats.avgMood} ${MOOD_EMOJI[Math.round(stats.avgMood)] ?? ''}` : '—' },
-              { label: lang === 'es' ? 'Rating promedio' : 'Avg rating',      value: stats.avgRating != null ? `${stats.avgRating} ★` : '—' },
-              { label: lang === 'es' ? 'Racha actual'    : 'Current streak',  value: `${stats.streak} ${lang === 'es' ? (stats.streak === 1 ? 'día' : 'días') : (stats.streak === 1 ? 'day' : 'days')}` },
+              { label: t('pr_stat_sessions'), value: stats.totalSessions },
+              { label: t('pr_stat_mood'),     value: stats.avgMood != null ? fill(t('pr_of5'), { n: avg(stats.avgMood) }) : '—' },
+              { label: t('pr_stat_rating'),   value: stats.avgRating != null ? fill(t('pr_of5'), { n: avg(stats.avgRating) }) : '—' },
+              { label: t('pr_stat_streak'),   value: `${stats.streak} ${t(stats.streak === 1 ? 'pr_day' : 'pr_days')}` },
             ].map(card => (
               <div key={card.label} style={cardStyle}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>{card.value}</div>
@@ -263,59 +277,43 @@ export function UserProgress() {
           {/* MOOD HISTORY */}
           <div style={cardStyle}>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
-              {lang === 'es' ? 'Historial emocional' : 'Emotional history'}
+              {t('pr_mood_title')}
             </h2>
             {moodLogs.length === 0 ? (
-              <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{lang === 'es' ? 'Aún no hay registros.' : 'No records yet.'}</p>
+              <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{t('pr_mood_empty')}</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', listStyle: 'none', margin: 0, padding: 0 }}>
                 {moodLogs.map(log => (
-                  <div key={log.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
+                  <li key={log.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.25rem 0.75rem', padding: '0.5rem 0.75rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
                     <span style={{ fontSize: '0.75rem', color: '#6B645F' }}>{formatDate(log.date)}</span>
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                      {log.checkin_mood != null && (
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.9rem' }}>{MOOD_EMOJI[log.checkin_mood]}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#A8B5A2' }}>in</div>
-                        </div>
-                      )}
-                      {log.checkout_mood != null && (
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.9rem' }}>{MOOD_EMOJI[log.checkout_mood]}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#A8B5A2' }}>out</div>
-                        </div>
-                      )}
-                      {log.checkin_mood != null && log.checkout_mood != null && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: log.checkout_mood >= log.checkin_mood ? '#22C55E' : '#EF4444' }}>
-                          {log.checkout_mood >= log.checkin_mood ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    <span style={{ fontSize: '0.8rem', color: '#1C1917' }}>
+                      {log.checkin_mood != null && <>{t('pr_in')}: {moodText(log.checkin_mood)}</>}
+                      {log.checkin_mood != null && log.checkout_mood != null && ' · '}
+                      {log.checkout_mood != null && <>{t('pr_out')}: {moodText(log.checkout_mood)}</>}
+                      {log.checkin_mood != null && log.checkout_mood != null && <> · <strong>{t(level(log.checkout_mood) > level(log.checkin_mood) ? 'pr_up' : level(log.checkout_mood) < level(log.checkin_mood) ? 'pr_down' : 'pr_same')}</strong></>}
+                    </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
 
           {/* SESSION RATINGS */}
           <div style={cardStyle}>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
-              {lang === 'es' ? 'Calificaciones' : 'Session ratings'}
+              {t('pr_ratings_title')}
             </h2>
             {ratings.length === 0 ? (
-              <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{lang === 'es' ? 'Aún no hay calificaciones.' : 'No ratings yet.'}</p>
+              <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{t('pr_ratings_empty')}</p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', listStyle: 'none', margin: 0, padding: 0 }}>
                 {ratings.map(r => (
-                  <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
+                  <li key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: '#F5F3EF', borderRadius: '0.65rem' }}>
                     <span style={{ fontSize: '0.75rem', color: '#6B645F' }}>{formatDate(r.date)}</span>
-                    <span style={{ fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                      {'★'.repeat(r.rating)}
-                      <span style={{ color: '#D6D2C4' }}>{'★'.repeat(5 - r.rating)}</span>
-                    </span>
-                  </div>
+                    <span style={{ fontSize: '0.85rem', color: '#1C1917' }}>{fill(t('pr_of5'), { n: level(r.rating) })}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
         </div>

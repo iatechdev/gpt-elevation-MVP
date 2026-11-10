@@ -12,6 +12,7 @@ const { loginRateMax } = require('../utils/loginRateLimit');
 const User      = require('../User');
 const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
+const { hasUnsafeChars } = require('../utils/emailGuard'); // ES-252
 const { passwordProblems, policy } = require('../utils/registrationPassword');
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -66,6 +67,8 @@ const loginLimiter = rateLimit({
 router.post('/register', validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    // ES-252: el registro no valida la forma del correo (otro ticket), pero nunca acepta caracteres de control ni de formato Unicode (bidi, ancho cero).
+    if (hasUnsafeChars(email)) return res.status(400).json({ code: 'invalid_email', error: 'Correo inválido. / Invalid email.' });
 
     const missing = passwordProblems(password);
     if (missing.length) {
