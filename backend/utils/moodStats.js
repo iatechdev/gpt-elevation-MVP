@@ -9,6 +9,16 @@ function averageMood(logs) {
   return values.length ? values.reduce((total, value) => total + value, 0) / values.length : null;
 }
 
+// ES-257: promedio de calificaciones de sesión sobre las calificaciones VÁLIDAS (1-5). Una calificación nula no cuenta como 0 ni entra en el conteo;
+// sin ninguna válida -> null (nunca se inventa una cifra).
+function averageRating(rows) {
+  const values = (Array.isArray(rows) ? rows : []).map((row) => row?.rating).filter(VALID);
+  return values.length ? values.reduce((total, value) => total + value, 0) / values.length : null;
+}
+
+// Un decimal (como lo muestra la pantalla); null se queda en null.
+const round1 = (average) => (average === null ? null : Math.round(average * 10) / 10);
+
 const formatAverage = (average, empty) => (average === null ? empty : average.toFixed(1));
 
-module.exports = { averageMood, formatAverage };
+module.exports = { averageMood, averageRating, round1, formatAverage };

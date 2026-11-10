@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { sequelize } = require('./database');
 
 // ES-192: invitaciones por enlace. Solo se guarda el hash SHA-256 del token (nunca el token ni la contraseña).
@@ -13,10 +13,12 @@ const Invitation = sequelize.define('Invitation', {
   expiresAt: { type: DataTypes.DATE, allowNull: false },
   usedAt: { type: DataTypes.DATE, allowNull: true },
   acceptedUserId: { type: DataTypes.INTEGER, allowNull: true },
+  requestId: { type: DataTypes.STRING(64), allowNull: true }, // ES-186 B: invitar es idempotente por (invitedBy, requestId)
 }, {
   indexes: [
     { fields: ['email', 'createdAt'], name: 'invitations__email_created_at' },
     { fields: ['invitedBy', 'createdAt'], name: 'invitations__invited_by_created_at' },
+    { fields: ['invitedBy', 'requestId'], name: 'invitations__invited_by_request_id', unique: true, where: { requestId: { [Op.ne]: null } } },
   ],
 });
 

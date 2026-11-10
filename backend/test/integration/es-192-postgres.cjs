@@ -56,6 +56,7 @@ test('ES-192 PostgreSQL: invitación por enlace y contraseña con las reglas del
     assert.equal((await sequelize.query(`SELECT relrowsecurity FROM pg_class WHERE relname = 'Invitations'`, { type: 'SELECT' }))[0].relrowsecurity, true);
   });
 
+  await require('../../migrations/20261112010000-es186-admin-audit.cjs').up(sequelize); // ES-186 B: auditoría de administración y Invitations.requestId (las rutas los usan)
   const mailer = require('../../utils/mailer');
   const sent = [];
   mailer.providers.test = async (message) => { sent.push(message); };

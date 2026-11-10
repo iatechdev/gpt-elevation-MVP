@@ -23,7 +23,9 @@ test('ES-206 punto 3: panel del terapeuta con concordancia y sin «prompt» en e
   assert.match(es, /therapist_assigned: 'personas asignadas'/); assert.match(es, /therapist_assigned_one: 'persona asignada'/)
   assert.match(en, /therapist_assigned: 'people assigned'/); assert.match(en, /therapist_assigned_one: 'person assigned'/)
   assert.match(es, /therapist_create_prompt: 'Crear guía'/)
-  assert.match(dash, /patients\.length === 1 \? t\('therapist_assigned_one'\) : t\('therapist_assigned'\)/)
+  // ES-177 (B1): el recuento ya no es una frase con concordancia sino una cifra rotulada «Personas»: no hay frase que concordar.
+  const copy = read('../src/i18n/therapistCopy.ts')
+  assert.match(dash, /<SummaryBlock /); assert.match(copy, /panel_people: 'Personas'/); assert.match(copy, /panel_people: 'People'/)
 })
 
 test('ES-206 punto 4: «plan requests», «matching pending» y los roles del filtro salen por el traductor de administración', () => {
