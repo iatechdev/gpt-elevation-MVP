@@ -13,6 +13,6 @@ test('ES-235: «Ver todas» activa el radio «Todas» y le pasa el foco', () => 
 })
 
 test('ES-235: Esc en el diálogo de borrar lo cierra por el mismo camino que «Cancelar» (que devuelve el foco)', () => {
-  assert.match(page, /role="alertdialog" onKeyDown=\{event => \{ if \(event\.key === 'Escape'\) \{ event\.stopPropagation\(\); cancel\(\) \} \}\}/)
+  assert.match(page, /role="alertdialog" onKeyDown=\{event => modalKeyDown\(event, dialog\.current, cancel\)\}/) // ES-236: Esc + Tab atrapado en el helper común
   assert.match(page, /const cancel = \(\) => \{ if \(busy\) return; setConfirmId\(null\); window\.setTimeout\(\(\) => opener\.current\?\.focus\(\), 0\) \}/)
 })
