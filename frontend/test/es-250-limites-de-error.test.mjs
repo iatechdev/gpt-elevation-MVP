@@ -34,7 +34,7 @@ test('ES-250 registro: nombre del error, ruta sin querystring y nombres de compo
 
 test('ES-250 estructura: ya no se relanza el error de código; reintento manual; sin recargas automáticas; SectionBoundary sin cambio de layout', () => {
   assert.doesNotMatch(boundary, /throw this\.state\.error/) // antes: cuerpo en blanco (E234-2)
-  assert.match(boundary, /retry = \(\) => this\.setState\(\{ error: null, kind: null \}\)/)
+  assert.match(boundary, /retry = \(\) => \{ this\.recovering = true; this\.setState\(\{ error: null, kind: null \}\) \}/) // ES-256: además marca la recuperación para colocar el foco
   assert.equal((boundary.match(/location\.reload/g) ?? []).length, 1) // solo al pulsar «Recargar»
   assert.match(boundary, /className="contents"/) // el envoltorio no altera el diseño
   assert.match(boundary, /role="alert"/)
