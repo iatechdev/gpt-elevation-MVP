@@ -9,7 +9,7 @@ const axeSource = fs.readFileSync(process.env.AXE_PATH, 'utf8')
 const BASE = process.env.BASE || 'http://localhost:5299'
 let failures = 0
 const report = (ok, label, extra = '') => { if (!ok) failures++; console.log((ok ? 'OK    ' : 'FALLA ') + label + (extra ? ' ' + extra : '')) }
-const T = { es: { notice: /Hay una versión nueva de la aplicación/i, reload: 'Recargar' }, en: { notice: /A new version of the app is available/i, reload: 'Reload' } }
+const T = { es: { notice: /Sin conexión. Cuando vuelvas|Hay una versión nueva de la aplicación/i, reload: 'Recargar' }, en: { notice: /No connection. Reload once|A new version of the app is available/i, reload: 'Reload' } } // ES-250: sin conexión el aviso es «Sin conexión»; con red y chunk roto, «versión nueva»
 const SCREENS = [['/app/evidence', 'evidencias'], ['/app/diary', 'diario'], ['/app/compass', 'Brújula'], ['/app/context/resumes', 'hojas de vida']]
 
 async function open(browser, { width, lang }) {
