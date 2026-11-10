@@ -1,0 +1,178 @@
+{
+  "pr": 203,
+  "head": "3559ea7e00dc312b279b99cc815781e36d548530",
+  "results": [
+    {
+      "id": "A1pre la persona vinculada a A autoriza compartir con A (consent granted) y A la ve",
+      "ok": true,
+      "detail": "200 [{\"status\":\"granted\",\"version\":1}] A ve=200"
+    },
+    {
+      "id": "A1a confirmar hacia B: vínculo a B; autorización con A en revoked (fila + 1 evento); con B NO existe; B no ve nada; A tampoco",
+      "ok": true,
+      "detail": "200 A=[{\"status\":\"revoked\",\"version\":1}] ev=1 B=[] Bve=403 Ave=404"
+    },
+    {
+      "id": "A1b volver a A: la persona vuelve a A y la autorización con A SIGUE revoked (no revive); A no ve nada; el evento de revocación no se duplica",
+      "ok": true,
+      "detail": "200 [{\"status\":\"revoked\",\"version\":1}] Ave=403 ev=1"
+    },
+    {
+      "id": "A1c solo la decisión de la PERSONA reactiva: al autorizar de nuevo, A la ve",
+      "ok": true,
+      "detail": "200 Ave=200"
+    },
+    {
+      "id": "A1d sin autorización previa: confirmar no crea ninguna fila de consentimiento (ni con A ni con B)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "A1e confirmar al MISMO profesional: no revoca (la autorización con A sigue granted y A la ve)",
+      "ok": true,
+      "detail": "200 [{\"status\":\"granted\",\"version\":1}]"
+    },
+    {
+      "id": "A1f persona sin profesional previo: confirmar vincula y no toca consentimientos",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "A2 el retiro afecta solo (persona, profesional anterior): la otra persona de A conserva su autorización y A la ve; los demás consentimientos de la persona quedan idénticos",
+      "ok": true,
+      "detail": "otros(0) iguales=true antes=1"
+    },
+    {
+      "id": "A3a 2 confirmaciones simultáneas de la MISMA solicitud: una 200, 1 409 request_closed, 0 5xx, un solo cambio de vínculo y UN solo evento de revocación",
+      "ok": true,
+      "detail": "409,200"
+    },
+    {
+      "id": "A3a 8 confirmaciones simultáneas de la MISMA solicitud: una 200, 7 409 request_closed, 0 5xx, un solo cambio de vínculo y UN solo evento de revocación",
+      "ok": true,
+      "detail": "409,409,200,409,409,409,409,409"
+    },
+    {
+      "id": "A3b 8 aprobaciones simultáneas de la misma solicitud de plan: una 200, 7 409 request_closed, plan asignado una vez",
+      "ok": true,
+      "detail": "409,200,409,409,409,409,409,409"
+    },
+    {
+      "id": "A3c aprobar vs rechazar al mismo tiempo: un solo ganador (1×200, resto 409), estado de la solicitud coherente con el plan del usuario",
+      "ok": true,
+      "detail": "409,200,409,409,409,409 estado=rejected plan=null"
+    },
+    {
+      "id": "A4a una persona con 2 solicitudes (B y C) confirmadas a la vez: ambas 200, sin 5xx ni deadlock, vínculo final B o C, autorización con A retirada",
+      "ok": true,
+      "detail": "200,200 final=C 107ms"
+    },
+    {
+      "id": "A4b la autorización con el profesional intermedio no queda viva (ni granted con B ni con C)",
+      "ok": true,
+      "detail": "[[],[]]"
+    },
+    {
+      "id": "A4c 8 personas × 2 solicitudes en paralelo (16 simultáneas, pool 5): todas 200, sin 5xx/deadlock/agotamiento, tiempo acotado (<20 s), 8 autorizaciones con A retiradas",
+      "ok": true,
+      "detail": "200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200 618ms conexiones-pico=6"
+    },
+    {
+      "id": "A4d tras las pruebas no quedan transacciones abiertas (\"idle in transaction\") ni bloqueos",
+      "ok": true,
+      "detail": "idle in tx=0"
+    },
+    {
+      "id": "A5a profesional, persona y sin sesión → 403/401 en confirmar, aprobar y rechazar; la solicitud sigue pending",
+      "ok": true,
+      "detail": "403,403,403,403,403,403,403,403,403"
+    },
+    {
+      "id": "A5b superadmin y admin confirman (200)",
+      "ok": true,
+      "detail": "200 200"
+    },
+    {
+      "id": "A5c ids inexistentes/malformados/enormes (10 y 20 dígitos) → 4xx, nunca 5xx",
+      "ok": false,
+      "detail": "404,404,404,404,404,404,404,404,404,404,500,500,404,404,404,404,500,500,404,500,500,404,500,500"
+    },
+    {
+      "id": "A5d solicitud sin profesional elegido → 400 y nada cambia",
+      "ok": true,
+      "detail": "400"
+    },
+    {
+      "id": "A5e profesional desactivado → 409 therapist_unavailable SIN cambiar vínculo ni retirar la autorización con A",
+      "ok": true,
+      "detail": "409 therapist_unavailable"
+    },
+    {
+      "id": "A5f profesional sin cupo (acceptingNew=false) → 409 therapist_unavailable sin cambios",
+      "ok": true,
+      "detail": "perfil={\"acceptingNew\":false} 409"
+    },
+    {
+      "id": "A5g persona inactiva o con rol distinto de user → 409 person_unavailable sin vincular",
+      "ok": true,
+      "detail": "409 409"
+    },
+    {
+      "id": "A5h confirmar de nuevo una ya resuelta → 409 request_closed con texto bilingüe",
+      "ok": true,
+      "detail": "{\"code\":\"request_closed\",\"error\":\"Esta solicitud ya fue resuelta. / This request has already been resolved.\"}"
+    },
+    {
+      "id": "A5i plan: rechazar una vez 200; rechazar/aprobar después → 409 request_closed (antes 400)",
+      "ok": true,
+      "detail": "200 409 409"
+    },
+    {
+      "id": "A5j rechazo sin nota o con nota vacía → 400 y la solicitud sigue pending",
+      "ok": true,
+      "detail": "400 400"
+    },
+    {
+      "id": "A5k aprobar una solicitud inexistente → 404",
+      "ok": true,
+      "detail": "404"
+    },
+    {
+      "id": "A5l rollback",
+      "info": "ramas de error de confirmar (A5d/e/f/g/h) verificadas sin vínculo a medias ni autorización retirada sin vínculo; error 500 interno forzado no se prueba sin mutar el código (ver mutaciones)"
+    },
+    {
+      "id": "A6a reset-link: admin → 403 superadmin_only; superadmin → otro superadmin → 403 superadmin_target; a sí mismo y a persona 202; inexistente 404",
+      "ok": true,
+      "detail": "403:superadmin_only 403:superadmin_target 202 202 404 prof=403:undefined"
+    },
+    {
+      "id": "A6b el cuerpo del 403 conserva el texto `error` anterior y no refleja entrada",
+      "ok": true,
+      "detail": "{\"code\":\"superadmin_only\",\"error\":\"Solo el superadmin puede enviar enlaces de restablecimiento.\"}"
+    },
+    {
+      "id": "A6c frontend: 0 usos de «ya fue procesada»; `status === 400` en: session.ts,sources.ts,ParticipantContextForm.tsx,api.ts,CatalogPages.tsx,SkillCatalogPages.tsx,aiProposalApi.ts,selfAssessApi.ts",
+      "ok": true,
+      "detail": "procesada="
+    },
+    {
+      "id": "A6d pantalla",
+      "info": "AdminUsers.tsx referencia confirm/approve/reject 3 veces; depende de !res.ok y data.error (revisado a mano)"
+    },
+    {
+      "id": "A7a el registro del servidor no contiene la nota ni la marca ni correos sintéticos",
+      "ok": true,
+      "detail": "log 628 bytes"
+    },
+    {
+      "id": "A7b la respuesta de error (409) no refleja la entrada",
+      "ok": true,
+      "detail": "{\"code\":\"request_closed\",\"error\":\"Esta solicitud ya fue resuelta. / This request has already been resolved.\"}"
+    },
+    {
+      "id": "A7c registro",
+      "info": "líneas con tokens 5xx: 0; tamaño 628"
+    }
+  ]
+}
