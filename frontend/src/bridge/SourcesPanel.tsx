@@ -11,12 +11,13 @@ import type { Failure, ResumeVersion } from './sources'
 import type { Insight, SourceId } from './logic'
 
 type Copy = Record<keyof typeof bridgeCopy.es, string>
-type Props = { baseUrl: string; token: string; lang: 'es' | 'en'; onResult: (source: SourceId, insights: Insight[]) => void; onExpired: () => void }
+type Perms = Record<SourceId, boolean>
+type Props = { baseUrl: string; token: string; lang: 'es' | 'en'; onResult: (source: SourceId, insights: Insight[]) => void; onExpired: () => void; onPerms?: (perms: Perms) => void; reloadKey?: number }
 type Notice = { kind: 'ok' | 'error' | 'info'; text: string; source?: SourceId; retry?: boolean; upload?: boolean } | null
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [key, value]) => out.replace(`{${key}}`, String(value)), text)
 const dateOf = (iso: string, lang: string) => { const d = new Date(iso); return Number.isFinite(d.getTime()) ? d.toLocaleDateString(lang === 'en' ? 'en' : 'es', { day: 'numeric', month: 'short', timeZone: 'UTC' }) : '' }
 
-export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired }: Props) {
+export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerms, reloadKey = 0 }: Props) {
   const c: Copy = bridgeCopy[lang]
   const opts = useMemo(() => ({ baseUrl, token }), [baseUrl, token])
   const [perms, setPerms] = useState<Record<SourceId, boolean> | null>(null); const [loadError, setLoadError] = useState(false)
@@ -24,7 +25,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired }: Prop
   const [saving, setSaving] = useState<SourceId | null>(null); const [analyzing, setAnalyzing] = useState<SourceId | null>(null)
   const [asking, setAsking] = useState<SourceId | null>(null); const [notice, setNotice] = useState<Notice>(null)
   const dialog = useRef<HTMLDivElement | null>(null); const cancelButton = useRef<HTMLButtonElement | null>(null)
-  const alive = useRef(true)
+  const alive = useRef(true); const permsRef = useRef<Perms | null>(null)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
 
   const load = useCallback(async (signal?: AbortSignal) => {
@@ -32,13 +33,31 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired }: Prop
     try {
       const [granted, list] = await Promise.all([readPermissions({ ...opts, signal }), listResumeVersions({ ...opts, signal })])
       if (signal?.aborted) return
-      setPerms(granted); setVersions(list)
+      permsRef.current = granted; setPerms(granted); setVersions(list); onPerms?.(granted)
     } catch (error) {
       if (signal?.aborted) return
       if (error instanceof SourcesError && error.kind === 'expired') onExpired(); else setLoadError(true)
     }
-  }, [opts, onExpired])
-  useEffect(() => { if (!token) return; const controller = new AbortController(); void load(controller.signal); return () => controller.abort() }, [token, load])
+  }, [opts, onExpired, onPerms])
+  useEffect(() => { if (!token) return; const controller = new AbortController(); void load(controller.signal); return () => controller.abort() }, [token, load, reloadKey])
+  // ES-168 (G4): al volver a esta pestaña se releen los permisos; si cambiaron en otra pestaña o dispositivo, se actualizan y se avisa.
+  useEffect(() => {
+    if (!token) return
+    const refresh = async () => {
+      if (document.visibilityState !== 'visible' || !permsRef.current) return
+      try {
+        const fresh = await readPermissions(opts)
+        if (!alive.current || !permsRef.current) return
+        if (sourceIds.some(source => fresh[source] !== permsRef.current?.[source])) {
+          permsRef.current = fresh; setPerms(fresh); onPerms?.(fresh)
+          for (const source of sourceIds) if (!fresh[source]) onResult(source, [])
+          setNotice({ kind: 'info', text: c.permsChanged })
+        }
+      } catch { /* sin red al volver: se queda lo que ya se ve; cada acción relee de todos modos */ }
+    }
+    document.addEventListener('visibilitychange', refresh)
+    return () => document.removeEventListener('visibilitychange', refresh)
+  }, [token, opts, onPerms, onResult, c.permsChanged])
 
   // Diálogo: el foco entra en «Cancelar», Tab se queda dentro, Esc cancela y el foco vuelve al interruptor.
   useEffect(() => { if (asking) cancelButton.current?.focus() }, [asking])
@@ -66,6 +85,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired }: Prop
     try {
       await setPermission(opts, source, granted)
       if (!alive.current) return
+      if (permsRef.current) { permsRef.current = { ...permsRef.current, [source]: granted }; onPerms?.(permsRef.current) }
       setPerms(current => (current ? { ...current, [source]: granted } : current))
       if (!granted) onResult(source, []) // lo propuesto con ese permiso deja de mostrarse
       setNotice({ kind: 'ok', text: c[`src_${granted ? 'granted' : 'revoked'}_${source}` as keyof Copy] })
@@ -127,7 +147,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired }: Prop
       <div ref={dialog} className="bridge-modal" role="dialog" aria-modal="true" aria-labelledby="bridge-dlg-title" onKeyDown={trap}>
         <h3 id="bridge-dlg-title">{fill(c.dlg_title, { source: c[`src_of_${asking}` as keyof Copy] })}</h3>
         <ul>
-          <li>{fill(c.dlg_1, { source: c[`src_of_${asking}` as keyof Copy] })}</li><li>{c.dlg_2}</li><li>{c.dlg_3}</li><li>{c.dlg_4}</li>
+          <li>{fill(c.dlg_1, { source: c[`src_of_${asking}` as keyof Copy] })}</li><li>{c[`dlg_count_${asking}` as keyof Copy]}</li><li>{c.dlg_2}</li><li>{c.dlg_risk}</li><li>{c.dlg_3}</li><li>{c.dlg_4}</li>
           {asking === 'resume' && <li>{c.dlg_resume}</li>}
         </ul>
         <div className="bridge-modal-btns">
