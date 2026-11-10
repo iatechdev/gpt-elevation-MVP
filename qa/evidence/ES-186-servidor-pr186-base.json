@@ -1,0 +1,170 @@
+[
+ {
+  "id": "R1a invitar (superadmin): 201 con {id,email,role,invitedBy,expiresAt,status,emailSent…}; misma forma que el fixture del PR",
+  "ok": true,
+  "detail": "201 claves=createdAt,email,emailSent,expiresAt,id,invitedBy,role,status,usedAt"
+ },
+ {
+  "id": "R1b sin proveedor de correo: emailSent === false (booleano) y la respuesta NO trae enlace, token, hash ni url",
+  "ok": true,
+  "detail": "{\"id\":1,\"email\":\"qa186-inv-r1-1794311338617@example.test\",\"role\":\"therapist\",\"invitedBy\":1,\"expiresAt\":\"2026-11-13T11:48:59.412Z\",\"usedAt\":null,\"createdAt\":\"2026-11-10T11:48:59.418Z\",\"status\":\"pending"
+ },
+ {
+  "id": "R1c en la base solo queda el hash del token (64 hex), no el token",
+  "ok": true,
+  "detail": "64 hex"
+ },
+ {
+  "id": "R1d reset-link: 202 con solo {message}, sin enlace ni token; misma forma que el fixture",
+  "ok": true,
+  "detail": "{\"message\":\"Si la cuenta puede recibirlo, se envió un enlace de restablecimiento a su correo. / If the account can receive it, a reset link was sent to its email.\"}"
+ },
+ {
+  "id": "R1e fila de restablecimiento sin proveedor/base",
+  "info": "0 fila(s)"
+ },
+ {
+  "id": "S1a superadmin invita a los 5 roles (201)",
+  "ok": true,
+  "detail": "user:201 therapist:201 board:201 admin:201 superadmin:201"
+ },
+ {
+  "id": "S1b admin invita solo user/therapist (201) y recibe 403 role_not_allowed para board/admin/superadmin",
+  "ok": true,
+  "detail": "user:201 therapist:201 board:403 admin:403 superadmin:403"
+ },
+ {
+  "id": "S1c el 403 trae code role_not_allowed (la pantalla lo traduce por código)",
+  "ok": true,
+  "detail": "{\"code\":\"role_not_allowed\",\"error\":\"No tienes permiso para invitar con ese rol. / You are not allowed to invite with that role.\"}"
+ },
+ {
+  "id": "S1d profesional, persona, junta, sin sesión y token falso → 401/403 en invitar (sin cabecera: 403 por convención del servidor; token falso: 401)",
+  "ok": true,
+  "detail": "{\"terapeuta\":403,\"persona\":403,\"junta\":403} anon=403 falso=401"
+ },
+ {
+  "id": "S1e reset-link: admin, profesional, persona, junta → 403; sin sesión → 401/403",
+  "ok": true,
+  "detail": "{\"admin\":403,\"terapeuta\":403,\"persona\":403,\"junta\":403,\"anon\":403}"
+ },
+ {
+  "id": "S1f reset-link superadmin → otro superadmin 403; a sí mismo/persona/profesional/admin 202; inexistente 404",
+  "ok": true,
+  "detail": "otroSA=403 propio=202 prof=202 admin=202 inexistente=404"
+ },
+ {
+  "id": "S1g ids raros en reset-link → 4xx, nunca 5xx",
+  "ok": true,
+  "detail": "400,400,400,400,400,400,400,400"
+ },
+ {
+  "id": "I1a invitación repetida (mismo correo): 201 cada vez, sin 5xx, y queda UN solo enlace vivo (el último)",
+  "ok": true,
+  "detail": "201/201/201 vivos=1"
+ },
+ {
+  "id": "I1b correo ya registrado (también en mayúsculas) → 409 email_taken y NO se crea invitación",
+  "ok": true,
+  "detail": "409/409 filas=0"
+ },
+ {
+  "id": "I1c correos vacío/inválido/HTML/CRLF/enorme/Unicode/comilla → 400 (nunca 5xx ni 201)",
+  "ok": false,
+  "detail": "400,400,400,400,400,400,400,201,400,400,201"
+ },
+ {
+  "id": "I1d rol inventado, vacío, con otro tipo o con mayúsculas → 400/403, nunca 5xx ni 201",
+  "ok": true,
+  "detail": "400,403,403,403,403,403,400,400,400,400"
+ },
+ {
+  "id": "I1e cuerpo roto, null, lista o vacío → 400, nunca 5xx",
+  "ok": true,
+  "detail": "400,400,400,400"
+ },
+ {
+  "id": "I1f locale desconocido se acepta sin error (cae a es)",
+  "ok": true,
+  "detail": "201"
+ },
+ {
+  "id": "I1g límite por quien invita: 429 con code rate_limited a partir de la invitación 31, y no afecta a otro invitador",
+  "ok": true,
+  "detail": "primer429=31 final=429"
+ },
+ {
+  "id": "I1h el listado de invitaciones nunca incluye token/hash",
+  "ok": true,
+  "detail": "200 45 filas"
+ },
+ {
+  "id": "I1i las respuestas de invitar no se guardan en caché (Cache-Control: no-store)",
+  "ok": true,
+  "detail": "no-store"
+ },
+ {
+  "id": "E1a POST /api/admin/usuarios y PUT …/reset-password siguen en 410, sin crear la cuenta ni cambiar la contraseña",
+  "ok": true,
+  "detail": "410/410 creada=0"
+ },
+ {
+  "id": "E1b ninguna referencia en frontend/src a POST /api/admin/usuarios ni a …/reset-password de administración",
+  "ok": true,
+  "detail": "hits= sueltas="
+ },
+ {
+  "id": "E1c autoprueba: si se reintroduce una llamada a …/reset-password, la prueba del PR falla (el detector funciona)",
+  "ok": true,
+  "detail": "falla=true"
+ },
+ {
+  "id": "S2a token vencido → 401 en invitar y en reset-link",
+  "ok": true,
+  "detail": "401/401"
+ },
+ {
+  "id": "S2b token firmado con otra clave → 401",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "S2c degradar a un superadmin por la ruta real (PUT) revoca su sesión: el JWT antiguo recibe 401/403 en invitar y reset-link",
+  "ok": true,
+  "detail": "PUT=200 invitar=401 reset=401"
+ },
+ {
+  "id": "S2d reset-link a una cuenta con eliminación pendiente (ES-23) → 409 deletion_pending y no se genera enlace",
+  "ok": true,
+  "detail": "estado=409 filas=0"
+ },
+ {
+  "id": "S2e reset-link a cuenta INACTIVA: no se genera enlace (0 filas nuevas) y la respuesta no revela el estado (202 igual que a una activa)",
+  "ok": true,
+  "detail": "status=202 filas 0->0"
+ },
+ {
+  "id": "S2f admin → reset-link sobre superadmin: 403 (rango, ES-215)",
+  "ok": true,
+  "detail": "403"
+ },
+ {
+  "id": "R3 8 solicitudes simultáneas de enlace a la misma persona: todas 202, sin 5xx, y EXACTAMENTE un enlace vivo",
+  "ok": true,
+  "detail": "202,202,202,202,202,202,202,202 vivos=1"
+ },
+ {
+  "id": "S2g reset-link a una cuenta activa SÍ genera su fila (solo hash) aunque no haya proveedor: el caso inactivo de S2e no es vacío",
+  "ok": true,
+  "detail": "{\"n\":2,\"h\":true}"
+ },
+ {
+  "id": "P1 [base] el log del servidor (5924 bytes) no contiene enlace, token, fragmento #token ni correos completos de las personas invitadas",
+  "ok": true,
+  "detail": "fugas="
+ },
+ {
+  "id": "P1b [base] líneas del log relacionadas",
+  "info": "Correo de invitación no enviado. ‖ Invitación creada sin correo: sin proveedor configurado (ES-12) o fallo de envío. ‖ Error al preparar el enlace de restablecimiento."
+ }
+]
