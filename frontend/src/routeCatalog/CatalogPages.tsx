@@ -151,7 +151,10 @@ function ManagerSession({ session }: { session: string }) {
         const refreshed = await api.get(id); if (!current()) return; setVersion(refreshed); setReady(true)
         if (action === 'save') {
           const persisted = refreshed.items[kind!].find(item => item.itemKey === key)
-          if (acknowledged && persisted && canonical(payload(kind!, persisted, persisted.synthetic === true)) === canonical(payload(kind!, object(acknowledged), synthetic))) { setData(payload(kind!, persisted, persisted.synthetic === true)); setBaseline(canonical(payload(kind!, persisted, persisted.synthetic === true))); stamp.current = string(persisted.updatedAt) || undefined; setClash(null); setShowTheirs(false); message('saved'); if (newItem) navigate(`/admin/route-catalog/${id}/${kind}/${key}`) }
+          // E213-1: respuesta perdida (red o 5xx). El servidor pudo guardar: si lo releído coincide con lo enviado, se adopta su versión y se dice «Guardado»; si no, el siguiente guardado daría un 409 falso contra el propio cambio.
+          const lost = !acknowledged && !(failure instanceof CatalogError && failure.status < 500)
+          const expected = acknowledged ? payload(kind!, object(acknowledged), synthetic) : payload(kind!, data, synthetic)
+          if ((acknowledged || lost) && persisted && canonical(payload(kind!, persisted, persisted.synthetic === true)) === canonical(expected)) { setData(payload(kind!, persisted, persisted.synthetic === true)); setBaseline(canonical(payload(kind!, persisted, persisted.synthetic === true))); stamp.current = string(persisted.updatedAt) || undefined; setClash(null); setShowTheirs(false); message('saved'); if (newItem) navigate(`/admin/route-catalog/${id}/${kind}/${key}`) }
           else if (failure instanceof CatalogError && failure.code === 'item_changed') { setClash({ current: failure.current ?? null }); setShowTheirs(false); message(failure.current ? 'item_changed' : 'item_removed', true) }
           else message(failure instanceof CatalogError && failure.status < 500 ? explain(failure) : 'uncertain', true)
         } else if (action === 'remove') {

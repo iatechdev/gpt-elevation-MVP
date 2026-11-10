@@ -35,3 +35,10 @@ test('ES-187: todos los textos nuevos existen en ES y EN y el aviso de «no dete
   }
   assert.doesNotMatch(copy, /no detecta todas las ediciones simultáneas|does not detect all simultaneous edits/)
 })
+
+// E213-1: si el servidor guarda pero la respuesta se pierde, lo releído que coincide con lo enviado se adopta (versión y «Guardado»); si no, el siguiente guardado daría un 409 falso.
+test('ES-187 (E213-1): la respuesta perdida se resuelve releyendo y adoptando la versión persistida', () => {
+  assert.match(pages, /const lost = !acknowledged && !\(failure instanceof CatalogError && failure\.status < 500\)/)
+  assert.match(pages, /\(acknowledged \|\| lost\) && persisted/)
+  assert.match(pages, /payload\(kind!, data, synthetic\)/)
+})

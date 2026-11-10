@@ -63,7 +63,7 @@ const { pathToFileURL } = require('node:url');
       const errors = []; page.on('pageerror', error => errors.push(error.message)); page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 200)); });
       await page.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elevation_role', 'admin'); localStorage.setItem('elv_lang', l); }, [token, lang]);
       await page.route('**/api/session', r => r.fulfill({ json: { role: 'admin', onboardingCompleted: true } }));
-      await page.route('**/api/admin/route-catalog**', async r => { if (intercept && intercept(r)) return; const url = new URL(r.request().url()); try { const response = await r.fetch({ url: apiUrl + url.pathname + url.search }); return await r.fulfill({ response }); } catch { /* la página ya se cerró: petición en vuelo */ } });
+      await page.route('**/api/admin/route-catalog**', async r => { if (intercept && await intercept(r)) return; const url = new URL(r.request().url()); try { const response = await r.fetch({ url: apiUrl + url.pathname + url.search }); return await r.fulfill({ response }); } catch { /* la página ya se cerró: petición en vuelo */ } });
       await page.goto(frontend + route);
       return { context, page, errors };
     }
@@ -155,6 +155,26 @@ const { pathToFileURL } = require('node:url');
         assert.equal((await dbItem(draftId)).labels.es, 'Sigo aquí', 'tras decidirlo, se recrea con lo mío');
         await context.close();
         check(`${tag}: la otra persona quitó el elemento → aviso propio; no se recrea solo; «${t.keep}» lo recrea`); }
+      await catalog.upsertItem(draftId, 'contexts', KEY, original);
+
+      // F) E213-1: el servidor guarda pero la respuesta se pierde → «Guardado» y la versión se renueva (sin 409 falso en el siguiente guardado)
+      await catalog.upsertItem(draftId, 'contexts', KEY, original);
+      { let dropped = 0;
+        const { context, page } = await open(lang, width, `/admin/route-catalog/${draftId}/contexts/${KEY}`, async r => {
+          if (r.request().method() !== 'PUT' || dropped > 0) return false; dropped++;
+          try { await r.fetch({ url: apiUrl + new URL(r.request().url()).pathname }); await r.abort('connectionreset'); } catch { /* ya cerrada */ } return true;
+        });
+        const input = page.locator('#item-labels-es'); await input.waitFor(); await input.fill('Respuesta perdida');
+        await page.locator('#catalog-save').click(); await page.getByText(t.saved).first().waitFor();
+        assert.equal(dropped, 1, 'se perdió la respuesta del primer guardado');
+        assert.equal((await dbItem(draftId)).labels.es, 'Respuesta perdida', 'el servidor sí guardó');
+        assert.equal(await page.getByText(t.changed, { exact: false }).count(), 0, 'sin aviso de conflicto');
+        await input.fill('Después de la pérdida'); await page.locator('#catalog-save').click();
+        for (let i = 0; i < 30 && (await dbItem(draftId)).labels.es !== 'Después de la pérdida'; i++) await page.waitForTimeout(100);
+        assert.equal((await dbItem(draftId)).labels.es, 'Después de la pérdida', 'el siguiente guardado funciona');
+        assert.equal(await page.getByText(t.changed, { exact: false }).count(), 0, 'sin 409 falso contra el propio cambio');
+        await context.close();
+        check(`${tag}: respuesta perdida → «${t.saved}» sin «No pudimos verificar», y el siguiente guardado no da un 409 falso`); }
       await catalog.upsertItem(draftId, 'contexts', KEY, original);
 
       // E) sesión vencida y sin permiso: pantallas propias
