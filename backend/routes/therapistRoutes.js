@@ -18,6 +18,7 @@ const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');
 const ClinicalNote = require('../ClinicalNote');
+const { Transaction } = require('sequelize');
 const { validateBody, nonempty, text, date, optional } = require('../middlewares/validateBody');
 const { replyProposal, replyReviewError } = require('../utils/promptHttp'); // ES-191
 
@@ -34,6 +35,8 @@ const {
 } = require('../promptVault');
 
 const NOTE_TYPES = ['session_note', 'observation', 'goal'];
+const MAX_NOTE = 10000; // ES-178: máximo de caracteres de una nota de seguimiento (antes sin límite)
+const tooLong = { code: 'too_long', max: MAX_NOTE, error: `La nota supera el máximo de ${MAX_NOTE} caracteres. / The note exceeds the ${MAX_NOTE}-character maximum.` };
 
 // ==========================================
 // HU-062 — Trend calculation helper
@@ -406,6 +409,7 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
     if (!sessionDate) {
       return res.status(400).json({ error: 'Session date is required.' });
     }
+    if (content.length > MAX_NOTE) return res.status(400).json(tooLong);
 
     const noteType = NOTE_TYPES.includes(type) ? type : 'session_note';
 
@@ -429,11 +433,18 @@ router.post('/pacientes/:id/notas', validateBody({ content: nonempty, sessionDat
   }
 });
 
-router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate: optional(date), type: optional(text) }), async (req, res) => {
+// ES-178: editar una nota de seguimiento. `content` vacío ya no se ignora en silencio (400 `content_required`), hay máximo (400 `too_long`) y la edición
+// concurrente deja de perderse: si el cliente manda `expectedUpdatedAt` (la `updatedAt` de la nota que cargó) y la nota cambió desde entonces, 409 `note_changed`
+// con la versión vigente. Sin `expectedUpdatedAt` (clientes anteriores) gana el último, como antes. La comprobación y el cambio ocurren con la fila bloqueada.
+router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate: optional(date), type: optional(text), expectedUpdatedAt: optional(text) }), async (req, res) => {
   try {
     const therapistId = req.user.id;
     const { noteId } = req.params;
     const { content, type, sessionDate } = req.body;
+    if (content !== undefined && !content.trim()) return res.status(400).json({ code: 'content_required', error: 'El texto de la nota es obligatorio. / The note text is required.' });
+    if (content !== undefined && content.length > MAX_NOTE) return res.status(400).json(tooLong);
+    const expected = req.body.expectedUpdatedAt === undefined ? undefined : new Date(req.body.expectedUpdatedAt);
+    if (expected !== undefined && Number.isNaN(expected.getTime())) return res.status(400).json({ code: 'invalid_expected', error: 'expectedUpdatedAt no válida. / Invalid expectedUpdatedAt.' });
 
     const note = await ClinicalNote.findOne({
       where: { id: noteId, therapistId },
@@ -453,11 +464,24 @@ router.put('/notas/:noteId', validateBody({ content: optional(text), sessionDate
     if (sessionDate) updates.sessionDate = sessionDate;
 
     // ES-96: editar una nota sobre una persona exige el mismo acceso que escribirla (vínculo vigente, sin eliminación y con autorización).
-    await withPatientData(req, res, note.UserId, async (patient, transaction) => note.update(updates, { transaction }), ['id']);
+    const outcome = await withPatientData(req, res, note.UserId, async (patient, transaction) => {
+      const locked = await ClinicalNote.findOne({ where: { id: noteId, therapistId }, transaction, lock: Transaction.LOCK.UPDATE });
+      if (!locked) return { missing: true };
+      if (expected !== undefined && new Date(locked.updatedAt).getTime() !== expected.getTime()) return { conflict: locked };
+      await locked.update(updates, { transaction });
+      return { saved: locked };
+    }, ['id']);
     if (res.headersSent) return; // withPatientData ya respondió 404 o 403
+    if (outcome.missing) return res.status(404).json({ error: 'Note not found or not authorized.' });
+    if (outcome.conflict) {
+      const current = outcome.conflict;
+      return res.status(409).json({ code: 'note_changed', error: 'La nota cambió mientras la editabas. / The note changed while you were editing it.',
+        current: { content: desencriptar(current.content), type: current.type, sessionDate: current.sessionDate, updatedAt: current.updatedAt } });
+    }
+    const saved = outcome.saved;
     res.json({
       message: 'Note updated successfully.',
-      note: { ...note.toJSON(), content: content ?? desencriptar(note.content) },
+      note: { ...saved.toJSON(), content: content ?? desencriptar(saved.content) },
     });
   } catch (error) {
     console.error('❌ Error updating clinical note:', error);

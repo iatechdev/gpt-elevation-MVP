@@ -12,6 +12,7 @@
     "test:login:pg": "node --test test/integration/es-220-postgres.cjs",
     "test:insights-revoke:pg": "node --test test/integration/es-229-postgres.cjs",
     "test:admin-invite:pg": "node --test test/integration/es-186-postgres.cjs",
+    "test:followup-notes:pg": "node --test test/integration/es-178-postgres.cjs",
     "test:diary-request:pg": "node --test test/integration/es-163-postgres.cjs",
     "test:planreq:pg": "node --test test/integration/es-223-postgres.cjs",
     "test:manifest:pg": "node --test test/integration/es-211-postgres.cjs",
