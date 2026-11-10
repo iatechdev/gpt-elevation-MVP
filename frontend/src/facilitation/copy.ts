@@ -41,6 +41,8 @@ const words = {
     reviewedEvidence: 'Evidencias examinadas en esta revisión', session: 'La sesión cambió. La simulación se reinició.',
     edit: 'Seguir editando', confirmResponse: 'Confirmar respuesta', responseRecorded: 'Respuesta registrada.',
     exact: 'Comprueba el contenido exacto antes de confirmar. Autor y fecha se asignan al confirmar.',
+    done: 'Hecho', characters: 'caracteres', viewCurrent: 'Ver la versión actual', useCurrent: 'Usar la versión actual y conservar mi texto',
+    currentIs: 'La versión vigente del material es la', draftUses: 'tu borrador usa la', steps: 'Pasos del progreso',
   },
   en: {
     title: 'Facilitation console', language: 'Language', preview: 'Preview · synthetic data · changes are not saved',
@@ -84,6 +86,8 @@ const words = {
     reviewedEvidence: 'Evidence examined in this review', session: 'The session changed. The simulation was reset.',
     edit: 'Keep editing', confirmResponse: 'Confirm response', responseRecorded: 'Response recorded.',
     exact: 'Check the exact content before confirming. Author and date are assigned on confirmation.',
+    done: 'Done', characters: 'characters', viewCurrent: 'See the current version', useCurrent: 'Use the current version and keep my text',
+    currentIs: 'The current version of the material is', draftUses: 'your draft uses', steps: 'Progress steps',
   },
 } as const
 export type Locale = keyof typeof words

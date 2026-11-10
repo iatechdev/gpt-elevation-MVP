@@ -59,6 +59,9 @@ test('QA-35: los dos mensajes nuevos existen en ES y EN, distintos entre sí', (
 test('QA-35: la interfaz usa textProblem y muestra el mensaje del problema (no siempre «required»)', () => {
   const pages = read('../src/facilitation/Pages.tsx')
   assert.match(pages, /textProblem\(draft\.observation, LIMITS\.observation\)/)
-  assert.match(pages, /setError\(noEvidence \? 'selectEvidence' : problem/)
-  assert.match(pages, /aria-invalid=\{invalid && textProblem\(value, max\) !== null\}/)
+  // ES-176: un mensaje POR CAMPO (el que devuelve textProblem: required / tooLong / controlChars), enlazado al campo, y el foco al primero con problema
+  assert.match(pages, /if \(o\) errors\.observation = o/)
+  assert.match(pages, /errors\.evidence = 'selectEvidence'/)
+  assert.match(pages, /aria-invalid=\{Boolean\(problem\)\}/)
+  assert.match(pages, /setFocusField\(first\)/)
 })
