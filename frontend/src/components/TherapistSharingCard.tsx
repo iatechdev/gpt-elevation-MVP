@@ -16,7 +16,7 @@ interface Props {
   onUnlinked: () => void
 }
 
-type Status = 'loading' | 'granted' | 'off' | 'hidden'
+type Status = 'loading' | 'granted' | 'off' | 'hidden' | 'loaderror'
 
 export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
   const { t, lang } = useLanguage()
@@ -26,6 +26,7 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
   const [confirming, setConfirming] = useState(false)
   const [unlinking, setUnlinking] = useState(false)
   const [unlinkError, setUnlinkError] = useState('')
+  const [reloadKey, setReloadKey] = useState(0) // ES-169: «Reintentar» tras un error al leer el permiso
   const openerRef = useRef<HTMLButtonElement | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
 
@@ -41,11 +42,11 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
         // Sin entrada o sin terapeuta vinculado (applicable === false) la tarjeta no se muestra.
         setStatus(!entry || entry.applicable === false ? 'hidden' : entry.status === 'granted' ? 'granted' : 'off')
       } catch {
-        if (alive) setStatus('hidden')
+        if (alive) setStatus('loaderror') // ES-169: un error de lectura ya no oculta la tarjeta en silencio: se dice y se puede reintentar
       }
     })()
     return () => { alive = false }
-  }, [])
+  }, [reloadKey])
 
   const toggle = async () => {
     if (saving || status === 'loading' || status === 'hidden') return
@@ -109,6 +110,14 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
   }
 
   if (status === 'loading' || status === 'hidden') return null
+  if (status === 'loaderror') {
+    return (
+      <div role="alert" style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #FCA5A5', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem' }}>
+        <p style={{ color: '#B91C1C', fontSize: '0.875rem', margin: '0 0 0.75rem' }}>{t('mt_share_load_error')}</p>
+        <button type="button" onClick={() => { setStatus('loading'); setReloadKey(k => k + 1) }} style={{ padding: '0.5rem 1.1rem', background: '#4A6741', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{t('mt_share_retry')}</button>
+      </div>
+    )
+  }
   const on = status === 'granted'
 
   return (
