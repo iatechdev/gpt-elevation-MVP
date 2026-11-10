@@ -25,6 +25,8 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
   const [versions, setVersions] = useState<ResumeVersion[]>([]); const [versionId, setVersionId] = useState<number | null>(null)
   const [saving, setSaving] = useState<SourceId | null>(null); const [analyzing, setAnalyzing] = useState<SourceId | null>(null)
   const [asking, setAsking] = useState<SourceId | null>(null); const [notice, setNotice] = useState<Notice>(null)
+  const [unsure, setUnsure] = useState<{ source: SourceId; granted: boolean } | null>(null) // ES-247: cambio de permiso sin confirmar
+  const section = useRef<HTMLElement | null>(null)
   const dialog = useRef<HTMLDivElement | null>(null); const cancelButton = useRef<HTMLButtonElement | null>(null)
   const alive = useRef(true); const permsRef = useRef<Perms | null>(null)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
@@ -62,7 +64,8 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
 
   // Diálogo: el foco entra en «Cancelar», Tab se queda dentro, Esc cancela y el foco vuelve al interruptor.
   useEffect(() => { if (asking) cancelButton.current?.focus() }, [asking])
-  const close = (source: SourceId) => { setAsking(null); requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-source="${source}"]`)?.focus()) }
+  const focusSwitch = (source: SourceId) => { requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-source="${source}"]`)?.focus()) }
+  const close = (source: SourceId) => { setAsking(null); focusSwitch(source) }
   const trap = (event: ReactKeyboardEvent<HTMLDivElement>) => { if (asking) modalKeyDown(event, dialog.current, () => close(asking)) } // ES-236: Esc y Tab atrapado en el helper común
 
   const fail = (failure: Failure, source: SourceId) => {
@@ -73,20 +76,49 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
     setNotice({ kind: 'error', text, source, retry: retryable(failure) })
   }
 
+  const settle = (source: SourceId, granted: boolean) => {
+    if (permsRef.current) { permsRef.current = { ...permsRef.current, [source]: granted }; onPerms?.(permsRef.current) }
+    setPerms(current => (current ? { ...current, [source]: granted } : current)); setUnsure(null)
+    if (!granted) onResult(source, []) // lo propuesto con ese permiso deja de mostrarse
+    setNotice({ kind: 'ok', text: c[`src_${granted ? 'granted' : 'revoked'}_${source}` as keyof Copy] })
+  }
+  // ES-247: si la respuesta de guardar se pierde (corte, 15 s o error del servidor) el permiso pudo cambiar igual (el PUT es idempotente): se relee el real antes de decir algo.
+  // Si tampoco se puede leer, el interruptor de esa fuente no afirma nada (queda «Sin confirmar» + «Comprobar») y el aviso dice que la IA puede seguir leyendo.
+  const verify = async (source: SourceId, granted: boolean) => {
+    try {
+      const fresh = await readPermissions(opts)
+      if (!alive.current) return
+      permsRef.current = fresh; setPerms(fresh); onPerms?.(fresh)
+      for (const id of sourceIds) if (!fresh[id]) onResult(id, [])
+      if (fresh[source] === granted) { settle(source, granted); return }
+      setUnsure(null)
+      setNotice({ kind: 'error', text: granted ? c.src_save_error : fill(c.src_not_seen_off, { source: c[`src_of_${source}` as keyof Copy] }) })
+    } catch (error) {
+      if (!alive.current) return
+      if (error instanceof SourcesError && error.kind === 'expired') { onExpired(); return }
+      setUnsure({ source, granted })
+      setNotice({ kind: 'error', text: fill(granted ? c.src_unsure_on : c.src_unsure_off, { source: c[`src_of_${source}` as keyof Copy] }) })
+    }
+  }
   const save = async (source: SourceId, granted: boolean) => {
-    setSaving(source); setNotice(null)
+    // E190-1: el botón se desactiva mientras se guarda y el foco caería a body: pasa al diálogo (si está abierto) o a la sección, y al terminar vuelve al interruptor.
+    ;(asking ? dialog.current : section.current)?.focus()
+    setSaving(source); setNotice(null); setUnsure(null)
     try {
       await setPermission(opts, source, granted)
       if (!alive.current) return
-      if (permsRef.current) { permsRef.current = { ...permsRef.current, [source]: granted }; onPerms?.(permsRef.current) }
-      setPerms(current => (current ? { ...current, [source]: granted } : current))
-      if (!granted) onResult(source, []) // lo propuesto con ese permiso deja de mostrarse
-      setNotice({ kind: 'ok', text: c[`src_${granted ? 'granted' : 'revoked'}_${source}` as keyof Copy] })
+      settle(source, granted)
     } catch (error) {
       if (!alive.current) return
-      if (error instanceof SourcesError && error.kind === 'expired') onExpired(); else setNotice({ kind: 'error', text: c.src_save_error })
+      if (error instanceof SourcesError && error.kind === 'expired') onExpired(); else await verify(source, granted)
     } finally { if (alive.current) { setSaving(null); setAsking(null) } }
-    requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-source="${source}"]`)?.focus())
+    focusSwitch(source)
+  }
+  const check = async (source: SourceId, granted: boolean) => {
+    setSaving(source); setNotice(null)
+    await verify(source, granted)
+    if (alive.current) setSaving(null)
+    focusSwitch(source)
   }
 
   const run = async (source: SourceId) => {
@@ -107,7 +139,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
   const busy = saving !== null || analyzing !== null
   const live = analyzing ? c[`src_reading_${analyzing}` as keyof Copy] : saving ? c.saving : notice?.kind === 'ok' ? notice.text : ''
 
-  return <section className="bridge-sources" aria-labelledby="bridge-src-title">
+  return <section ref={section} tabIndex={-1} className="bridge-sources" aria-labelledby="bridge-src-title">
     <h2 id="bridge-src-title">🔒 {c.src_title}</h2>
     <p className="bridge-small">{c.src_intro}</p>
     <p className="bridge-live" role="status" aria-live="polite">{live}</p>
@@ -117,13 +149,15 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
     {!perms && !loadError && <p role="status" aria-busy="true" className="bridge-small">{c.src_loading}</p>}
     {loadError && <p className="bridge-note bridge-error" role="alert"><button type="button" className="elv-link" onClick={() => void load()}>{c.src_perm_load_error}</button></p>}
     {perms && <ul className="bridge-src-list">{sourceIds.map(source => {
-      const on = perms[source]; const rowBusy = saving === source
+      const doubt = unsure?.source === source; const on = perms[source] && !doubt; const rowBusy = saving === source
       return <li key={source} className="bridge-src">
         <div className="bridge-src-text">
-          <h3 id={`src-h-${source}`}>{c[`src_name_${source}` as keyof Copy]} <span className={`bridge-pill${on ? ' bridge-pill-ok' : ' bridge-pill-dash'}`}>{on ? c.src_on : c.src_off}</span></h3>
+          <h3 id={`src-h-${source}`}>{c[`src_name_${source}` as keyof Copy]} <span className={`bridge-pill${on ? ' bridge-pill-ok' : ' bridge-pill-dash'}`}>{doubt ? c.src_unsure : on ? c.src_on : c.src_off}</span></h3>
           <p className="bridge-small" id={`src-d-${source}`}>{c[`src_what_${source}` as keyof Copy]}</p>
         </div>
-        <PermissionSwitch checked={on} busy={rowBusy || analyzing !== null} label={c[`src_switch_${source}` as keyof Copy]} describedBy={`src-d-${source}`} dataSource={source} onToggle={() => toggle(source)} />
+        {doubt && unsure
+          ? <button type="button" className="bridge-cta" data-source={source} disabled={busy} aria-describedby={`src-d-${source}`} onClick={() => void check(source, unsure.granted)}>{c.src_check}</button>
+          : <PermissionSwitch checked={on} busy={rowBusy || analyzing !== null} label={c[`src_switch_${source}` as keyof Copy]} describedBy={`src-d-${source}`} dataSource={source} onToggle={() => toggle(source)} />}
         <div className="bridge-src-actions">
           {source === 'resume' && on && versions.length > 0 && <label className="bridge-small">{c.src_version}{' '}
             <select className="bridge-select" value={versionId ?? ''} disabled={busy} onChange={event => setVersionId(event.target.value ? Number(event.target.value) : null)}>
@@ -137,7 +171,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
     })}</ul>}
     <p className="bridge-small" role="note">{c.src_note}</p>
     {asking && <div className="bridge-modal-bg">
-      <div ref={dialog} className="bridge-modal" role="dialog" aria-modal="true" aria-labelledby="bridge-dlg-title" onKeyDown={trap}>
+      <div ref={dialog} className="bridge-modal" role="dialog" aria-modal="true" aria-labelledby="bridge-dlg-title" tabIndex={-1} onKeyDown={trap}>
         <h3 id="bridge-dlg-title">{fill(c.dlg_title, { source: c[`src_of_${asking}` as keyof Copy] })}</h3>
         <ul>
           <li>{fill(c.dlg_1, { source: c[`src_of_${asking}` as keyof Copy] })}</li><li>{c[`dlg_count_${asking}` as keyof Copy]}</li><li>{c.dlg_2}</li><li>{c.dlg_risk}</li><li>{c.dlg_3}</li><li>{c.dlg_4}</li>
