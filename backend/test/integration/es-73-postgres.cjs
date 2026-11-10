@@ -76,10 +76,15 @@ test('ES-73 PostgreSQL: public edits, protected aliases, A/B, concurrent submiss
   assert.equal((await call('/user/plan/me', bt)).body.plan, null);
   await sequelize.query(`CREATE FUNCTION es73_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic insert failure'; END $$`);
   await sequelize.query(`CREATE TRIGGER es73_fail BEFORE INSERT ON "PlanRequests" FOR EACH ROW EXECUTE FUNCTION es73_fail()`);
-  assert.equal((await call('/plan-requests', at, 'POST', { planId: plan.id })).status, 500);
+  // ES-223: pedir el plan que la persona YA tiene (recién aprobado) responde 409 already_on_plan a propósito. Para probar el rollback se pide OTRO plan activo.
+  const already = await call('/plan-requests', at, 'POST', { planId: plan.id });
+  assert.equal(already.status, 409); assert.equal(already.body.code, 'already_on_plan');
+  const other = await PricingPlan.create({ slug: 'synthetic-other', name_es: 'Otro plan', name_en: 'Other plan', price: 5, currency: 'USD', period: 'month', isActive: true });
+  assert.equal((await call('/plan-requests', at, 'POST', { planId: other.id })).status, 500);
   assert.equal(await PlanRequest.count({ where: { userId: a.id, status: 'pending' } }), 0);
   await sequelize.query('DROP TRIGGER es73_fail ON "PlanRequests"');
-  assert.equal((await call('/plan-requests', at, 'POST', { planId: plan.id })).status, 201);
+  assert.equal((await call('/plan-requests', at, 'POST', { planId: other.id })).status, 201);
+  await PlanRequest.destroy({ where: { planId: other.id } }); await other.destroy(); // el resto de la prueba (copia revisada) cuenta solo el plan original
   const beforeCopy = (await PricingPlan.findByPk(plan.id)).toJSON();
   const { reviewedPricingCopy } = require('../../scripts/reviewedPricingCopy.cjs');
   assert.equal((await reviewedPricingCopy({ sequelize, PricingPlan })).length, 1);
