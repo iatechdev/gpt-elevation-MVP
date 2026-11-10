@@ -69,3 +69,7 @@
   .participant-context-scope .rs-actions .elv-btn { width: 100%; }
 }
 .participant-context-scope .rs-extras-title { font: 500 1.1rem 'Playfair Display', serif; margin: 28px 0 0; }
+/* ES-165: los enlaces de texto de esta pantalla miden al menos 24 px de alto (WCAG 2.2 AA, tamaño del objetivo). */
+.rs-page main a.elv-link { display: inline-flex; align-items: center; min-height: 24px; padding-block: 2px; }
+.rs-page .elv-join-item { min-width: 32px; justify-content: center; }
+.rs-page .context-skip { display: inline-flex; align-items: center; min-height: 24px; }

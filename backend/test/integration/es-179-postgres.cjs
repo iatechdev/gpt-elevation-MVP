@@ -36,7 +36,7 @@ test('ES-179 PostgreSQL + HTTP: start idempotente, una nota en vivo, cierre ató
     env: { ...process.env, DATABASE_URL: urlFor(dbName), DB_SSL: 'false', NODE_ENV: 'test' } });
   assert.equal(migrated.status, 0, `Fallaron las migraciones: ${(migrated.stdout + migrated.stderr).slice(-600)}`);
 
-  app = new Sequelize(urlFor(dbName), { logging: false, dialectOptions: { ssl: false }, pool: { max: 12, min: 0, acquire: 8000 } });
+  app = new Sequelize(urlFor(dbName), { logging: false, dialectOptions: { ssl: false }, pool: { max: 5, min: 0, acquire: 5000 } }); // E179-1: el pool REAL de producción (DB_POOL_MAX=5): con una conexión extra dentro del bloqueo se agota
   process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
   process.env.DATA_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
   process.env.NODE_ENV = 'test';
@@ -237,6 +237,35 @@ test('ES-179 PostgreSQL + HTTP: start idempotente, una nota en vivo, cierre ató
     assert.equal((await http(p1, 'POST', path, { therapistNote: 'Nota válida de cierre.', patientMoodAfter: 3 })).status, 403);
     assert.equal((await row(sid)).status, 'in_progress');
     assert.equal((await http(tA, 'POST', path, { therapistNote: 'x'.repeat(4000), patientMoodAfter: 3 })).status, 200, '4.000 exactos caben');
+  });
+
+  await t.test('E179-1: 12 inicios y 12 cierres SIMULTÁNEOS con el pool real de 5: sin 5xx, sin agotar el pool y otras peticiones no esperan', async () => {
+    const timed = async (fn) => { const t0 = Date.now(); const r = await fn(); return { r, ms: Date.now() - t0 }; };
+    // (a) 12 inicios de LA MISMA sesión + una petición ajena que no debe esperar
+    const one = await mkSession(tA, p1);
+    const startedAll = Date.now();
+    const [bystander, ...starts] = await Promise.all([
+      timed(() => http(tA, 'GET', '/api/sessions/therapist')),
+      ...Array.from({ length: 12 }, () => http(tA, 'POST', `/api/sessions/therapist/${one}/start`)),
+    ]);
+    assert.deepEqual([...new Set(starts.map((r) => r.status))], [200], JSON.stringify(starts.map((r) => r.status)));
+    assert.equal(bystander.r.status, 200); assert.ok(bystander.ms < 2500, `la petición ajena esperó ${bystander.ms} ms`);
+    assert.ok(Date.now() - startedAll < 6000, 'los inicios terminan sin esperar al tiempo de espera del pool');
+    // (b) 12 inicios de 12 sesiones DISTINTAS (cada una crea su sala)
+    const many = await Promise.all(Array.from({ length: 12 }, () => mkSession(tA, p1)));
+    const t1 = Date.now();
+    const all = await Promise.all(many.map((id) => http(tA, 'POST', `/api/sessions/therapist/${id}/start`)));
+    assert.deepEqual([...new Set(all.map((r) => r.status))], [200], JSON.stringify(all.map((r) => r.status)));
+    assert.ok(Date.now() - t1 < 6000, `12 inicios tardaron ${Date.now() - t1} ms`);
+    // (c) 12 cierres de LA MISMA sesión y 12 cierres de sesiones distintas
+    const body = { therapistNote: 'Nota de cierre sintética válida.', patientMoodAfter: 4 };
+    const closing = await Promise.all(Array.from({ length: 12 }, () => http(tA, 'POST', `/api/sessions/therapist/${one}/end`, body)));
+    assert.deepEqual(closing.map((r) => r.status).sort(), [200, ...Array(11).fill(409)], JSON.stringify(closing.map((r) => r.status)));
+    const open = await Promise.all(Array.from({ length: 12 }, () => mkSession(tA, p1, 'in_progress')));
+    const t2 = Date.now();
+    const ends = await Promise.all(open.map((id) => http(tA, 'POST', `/api/sessions/${'therapist'}/${id}/end`, body)));
+    assert.deepEqual([...new Set(ends.map((r) => r.status))], [200], JSON.stringify(ends.map((r) => r.status)));
+    assert.ok(Date.now() - t2 < 8000, `12 cierres tardaron ${Date.now() - t2} ms`);
   });
 
   await t.test('la persona no puede leer las notas de la sesión (ninguna ruta de persona las devuelve)', async () => {

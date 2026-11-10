@@ -252,3 +252,33 @@ test('ES-25 (QA-25-01) si se agotan los reintentos por colisión, la respuesta e
     assert.deepEqual([r.status, r.body.code], [409, 'conflict']);
   } finally { CareerContextVersion.create = originalCreate; }
 });
+
+// ES-171: el texto de la Brújula «Tu profesional dejará de ver este contexto» tiene que ser cierto para el camino DIRECTO (el que usa la pantalla).
+test('ES-171 retirar (POST /revoke) deja vacía la lectura aprobada del motor, también para el contexto directo, y no toca a otra persona', async (t) => {
+  const { state } = setup();
+  const request = await startApp(t);
+  assert.equal((await approve(request, A, direct('Directo de A'), 'req-171-a')).status, 201);
+  assert.equal((await approve(request, B, direct('Directo de B'), 'req-171-b')).status, 201);
+  assert.equal((await bridge.getApprovedContext(101, 'e')).fields[0].text, 'Directo de A');
+  const revoked = await request('POST', '/api/career-context/revoke', A);
+  assert.equal(revoked.status, 200);
+  await assert.rejects(bridge.getApprovedContext(101, 'e'), (e) => e.code === 'no_context'); // el motor ya no recibe nada de A
+  assert.equal((await request('GET', '/api/career-context', A)).body.active, null);
+  assert.equal(state.tables.CareerContextVersion.find((r) => r.UserId === 101).status, 'revoked');
+  assert.equal((await bridge.getApprovedContext(202, 'e')).fields[0].text, 'Directo de B'); // B intacta
+  assert.equal((await request('GET', '/api/career-context', B)).body.active.version, 1);
+});
+
+// ES-171 (E171-1): la forma REAL de las respuestas. El acuse de /confirm trae {key,text}; el GET de la persona trae además `origin`.
+// El cliente (frontend/src/compass/CompassPage.tsx, pairs()) compara solo clave y texto; si esto cambia, hay que cambiar el cliente.
+test('ES-171 forma real: el acuse de /confirm lleva {key,text} y el GET de la persona añade origin; coinciden en clave y texto', async (t) => {
+  setup();
+  const request = await startApp(t);
+  const confirmed = await approve(request, A, direct('  Texto con espacios  '), 'req-171-shape');
+  assert.equal(confirmed.status, 201);
+  assert.deepEqual(confirmed.body.fields, [{ key: 'motivations', text: 'Texto con espacios' }]); // normalizado y SIN origin
+  const read = (await request('GET', '/api/career-context', A)).body.active;
+  assert.deepEqual(read.fields, [{ key: 'motivations', text: 'Texto con espacios', origin: { type: 'direct' } }]);
+  assert.deepEqual(read.fields.map(({ key, text }) => ({ key, text })), confirmed.body.fields);
+  assert.equal(read.version, confirmed.body.version);
+});

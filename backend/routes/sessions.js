@@ -523,23 +523,24 @@ const createDailyRoom = async (therapistId, patientId, sessionId) => {
 // la sesión sigue «scheduled» (no se registró el inicio) y la respuesta lo dice con un código estable.
 router.post('/therapist/:id/start', async (req, res) => {
   const TherapySession = require('../TherapySession');
-  const transaction = await sequelize.transaction();
+  let transaction;
   try {
     if (req.user.role !== 'therapist') {
-      await transaction.rollback();
       return res.status(403).json({ error: 'Therapists only.' });
     }
+    // E179-1: las comprobaciones que usan OTRA conexión (patientBlocked, requireSharing) van ANTES de abrir la transacción con el bloqueo: dentro de ella,
+    // cada solicitud retenía una conexión del pool y pedía una segunda; con el pool lleno todas esperaban (agotamiento, 30 s de bloqueo y 5xx).
+    const peek = await TherapySession.findOne({ where: { id: req.params.id, therapistId: req.user.id } });
+    if (!peek || await patientBlocked(peek.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    if (!(await requireSharing(req, res, peek.patientId))) return; // sin autorización de compartir, no se inicia
+    transaction = await sequelize.transaction();
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
       transaction, lock: Transaction.LOCK.UPDATE,
     });
-    if (!session || await patientBlocked(session.patientId)) { // ES-101
+    if (!session) {
       await transaction.rollback();
       return res.status(404).json({ error: 'Session not found.' });
-    }
-    if (!(await requireSharing(req, res, session.patientId))) { // sin autorización de compartir, no se inicia
-      await transaction.rollback();
-      return;
     }
     if (session.status === 'in_progress' && session.meetingUrl) {
       await transaction.commit();
@@ -568,7 +569,7 @@ router.post('/therapist/:id/start', async (req, res) => {
     console.log(`✅ Session ${session.id} started`);
     res.json({ meetingUrl, sessionId: session.id, startedAt: session.startedAt, resumed: false });
   } catch (error) {
-    await transaction.rollback().catch(() => {});
+    if (transaction) await transaction.rollback().catch(() => {});
     console.error('❌ Error starting session:', error && error.name);
     res.status(500).json({ error: 'Could not start session.' });
   }
@@ -582,18 +583,21 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
   const { textOf }              = require('../utils/claudeText');
   // ES-179: el cierre es atómico. Se bloquea la fila de la sesión: dos cierres simultáneos (doble clic, dos pestañas) no pasan ambos la comprobación;
   // el segundo recibe 409 `already_closed` y NO se genera una segunda recomendación ni se gasta presupuesto de IA dos veces.
-  const transaction = await sequelize.transaction();
+  let transaction;
   let session;
   try {
     if (req.user.role !== 'therapist') {
-      await transaction.rollback();
       return res.status(403).json({ error: 'Therapists only.' });
     }
+    // E179-1: patientBlocked usa otra conexión: se comprueba ANTES de abrir la transacción con el bloqueo (ver /start).
+    const peek = await TherapySession.findOne({ where: { id: req.params.id, therapistId: req.user.id } });
+    if (!peek || await patientBlocked(peek.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    transaction = await sequelize.transaction();
     session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
       transaction, lock: Transaction.LOCK.UPDATE,
     });
-    if (!session || await patientBlocked(session.patientId)) { // ES-101
+    if (!session) {
       await transaction.rollback();
       return res.status(404).json({ error: 'Session not found.' });
     }
@@ -673,7 +677,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
       ...(recommendationSkipped ? { recommendationSkipped } : {}),
     });
   } catch (error) {
-    await transaction.rollback().catch(() => {}); // si el cierre ya se confirmó, no hay nada que deshacer
+    if (transaction) await transaction.rollback().catch(() => {}); // si el cierre ya se confirmó, no hay nada que deshacer
     console.error('❌ Error ending session:', error);
     res.status(500).json({ error: 'Could not end session.' });
   }
