@@ -333,6 +333,11 @@ const en: Record<string, string> = {
   loading: 'Loading...',
   route_error: 'A new version of the app is available. Reload the page to continue.',
   route_error_reload: 'Reload',
+  route_error_retry: 'Retry',
+  route_error_offline: 'No connection. Reload once you are back online to continue.',
+  route_error_resource: 'A part of the screen could not be loaded. Reload to try again.',
+  route_error_section: 'Something went wrong in this section. The rest of the screen is still available.',
+  route_error_screen: 'Something went wrong on this screen. Please try again.',
   error_connection: 'Connection error.',
   no_data: '—',
 

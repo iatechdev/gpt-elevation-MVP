@@ -7,6 +7,7 @@ import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from 
 import type { SkillMap } from '../skill-map/model'
 import { MapGuide } from '../skill-map/MapAccess'
 import { AiAnalysisPanel } from '../skill-map/AiAnalysisPanel'
+import { SectionBoundary } from '../components/RouteErrorBoundary'
 import { RadarBoard } from '../skill-map/RadarView'
 import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
 import { noLevelAnywhere } from '../skill-map/status'
@@ -152,11 +153,11 @@ export function SkillMapPage() {
               </div>
               {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
             </>}
-          {ai && state.status === 'ready' && <div ref={aiRef}><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
-            onSaved={reloadMap} onClose={() => setAi(null)} /></div>}
+          {ai && state.status === 'ready' && <div ref={aiRef}><SectionBoundary><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
+            onSaved={reloadMap} onClose={() => setAi(null)} /></SectionBoundary></div>}
           <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
-            {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} onAnalyze={key => openAi([key])}
-              self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></>
+            {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SectionBoundary resetKey={skill.skillKey}><SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} onAnalyze={key => openAi([key])}
+              self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></SectionBoundary></>
               : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
           </div>
           <p className="skill-map-note">{t('skill_map.revoke_scope')}</p>
