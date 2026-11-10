@@ -29,7 +29,7 @@ const ts = require('typescript');
     sequelize = new Sequelize(`postgres://es26_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
     process.env.JWT_SECRET = randomBytes(32).toString('hex'); process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     const id = fromBackend.resolve('./database'); require.cache[id] = { id, filename: id, loaded: true, exports: { sequelize } };
-    for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'RevokedToken', 'AuthRevocation', 'DeletionRequest']) fromBackend('./' + name);
+    for (const name of ['PricingPlan', 'User', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'RevokedToken', 'AuthRevocation', 'DeletionRequest', 'AiJob', 'SkillCandidate']) fromBackend('./' + name);
     await sequelize.sync();
     const express = fromBackend('express'); const app = express(); app.use(express.json());
     app.use('/api/career-context', fromBackend('./middlewares/auth').verificarToken, fromBackend('./routes/careerContext'));
@@ -55,7 +55,7 @@ const ts = require('typescript');
     const body = { fields, token: preview.token, requestId: 'synthetic-owner-a' };
     const saved = await a.confirm(body); const repeated = await a.confirm(body);
     assert.deepEqual(saved, repeated); assert.equal((await a.read()).versions.length, 1);
-    assert.deepEqual((await a.read()).active.fields, preview.representation);
+    assert.deepEqual(saved.fields, preview.representation); /* el acuse de /confirm NO lleva origin */ assert.deepEqual((await a.read()).active.fields, preview.representation.map(field => ({ ...field, origin: { type: 'direct' } }))); /* el GET sí */
     const engine = await fromBackend('./utils/careerContext').getApprovedContext(101, 'es26-test');
     assert.deepEqual(Object.keys(engine).sort(), ['approvedAt', 'fields', 'version']); assert.deepEqual(engine.fields, preview.representation);
     await assert.rejects(fromBackend('./utils/careerContext').getApprovedContext(202, 'es26-test'), { status: 404, code: 'no_context' });
@@ -67,10 +67,13 @@ const ts = require('typescript');
     page.on('pageerror', error => errors.push(error.message));
     const frontend = process.env.ES26_PREVIEW_URL || 'http://127.0.0.1:4226'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname));
     await page.addInitScript(token => { localStorage.setItem('elevation_token', token); localStorage.setItem('elv_lang', 'es'); }, tokenA);
-    const methods = [];
+    const methods = []; let loseNextConfirm = false;
+    await page.route('**/api/session', route => route.fulfill({ json: { role: 'user', onboardingCompleted: true } })); // el guardián de sesión de la app (no es parte de la Brújula)
     await page.route('**/api/career-context**', async route => {
       const url = new URL(route.request().url()); methods.push(route.request().method());
-      const response = await route.fetch({ url: apiUrl + url.pathname }); await route.fulfill({ response });
+      const response = await route.fetch({ url: apiUrl + url.pathname });
+      if (loseNextConfirm && route.request().method() === 'POST' && url.pathname.endsWith('/confirm')) { loseNextConfirm = false; return route.abort('connectionreset'); } // el servidor REAL guardó; la respuesta no llegó
+      await route.fulfill({ response });
     });
     await page.goto(frontend + '/app/compass');
     await page.getByLabel('Texto que quiero autorizar', { exact: true }).waitFor();
@@ -86,9 +89,24 @@ const ts = require('typescript');
     await page.getByRole('button', { name: 'Confirmar autorización', exact: true }).click();
     await page.getByText('Autorización confirmada', { exact: true }).waitFor();
     const state = await a.read(); assert.equal(state.active.version, 2); assert.equal(state.versions[1].status, 'superseded');
-    assert.deepEqual(state.active.fields, [{ key: 'values', text: 'Synthetic work values' }]);
+    assert.deepEqual(state.active.fields, [{ key: 'values', text: 'Synthetic work values', origin: { type: 'direct' } }]);
     assert.deepEqual(await b.read(), { active: null, versions: [] });
     check('built React performs exact preview, explicit confirmation, complete replacement and real GET verification');
+    // ES-171 (E171-1): ACK perdido contra el servidor REAL (HTTP/ORM/PostgreSQL reales; las formas de /confirm y del GET son las del servidor, no las de un simulador).
+    const before = (await a.read()).versions.length; loseNextConfirm = true;
+    await page.getByLabel('Selecciona una categoría', { exact: true }).selectOption('interests');
+    await page.getByLabel('Texto que quiero autorizar', { exact: true }).fill('Synthetic text after lost reply');
+    await page.getByLabel('Incluir en la autorización', { exact: true }).check();
+    await page.getByRole('button', { name: 'Ver exactamente qué autorizo', exact: true }).click();
+    await page.getByLabel('He revisado estos campos y autorizo su uso profesional.', { exact: true }).check();
+    await page.getByRole('button', { name: 'Confirmar autorización', exact: true }).click();
+    await page.getByText('No pudimos verificar la confirmación. Tu selección sigue aquí.').first().waitFor();
+    assert.equal((await a.read()).versions.length, before + 1); // el servidor sí la guardó
+    await page.getByRole('button', { name: 'Reintentar', exact: true }).click();
+    await page.getByText('Autorización confirmada', { exact: true }).waitFor({ timeout: 8000 });
+    assert.equal(await page.getByText('No pudimos completar la operación', { exact: false }).count(), 0);
+    assert.equal((await a.read()).versions.length, before + 1); assert.equal((await a.read()).active.fields[0].text, 'Synthetic text after lost reply'); // sin duplicar
+    check('real server: lost reply then «Reintentar» (same requestId/token) shows success, never the error, and does not duplicate');
     await page.getByRole('button', { name: 'Retirar contexto vigente', exact: true }).click();
     await page.getByRole('button', { name: 'Retirar contexto', exact: true }).click();
     await page.getByText('Contexto retirado del uso profesional', { exact: true }).waitFor();
