@@ -10,6 +10,7 @@
     "db:local": "node scripts/db-local.cjs",
     "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs",
     "test:login:pg": "node --test test/integration/es-220-postgres.cjs",
+    "test:email-shape:pg": "node --test test/integration/es-259-postgres.cjs",
     "test:insights-revoke:pg": "node --test test/integration/es-229-postgres.cjs",
     "test:admin-invite:pg": "node --test test/integration/es-186-postgres.cjs",
     "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
