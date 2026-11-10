@@ -23,11 +23,16 @@ export const averageMood = (people: PanelPerson[]) =>
 export const averageRating = (people: PanelPerson[]) =>
   mean(sharedOnly(people).map(p => p.avgRating).filter((r): r is number => r != null))
 
-/** Días desde el último registro (0 = hoy); null si no hay. */
-export const daysSince = (iso: string | undefined | null, now = Date.now()) => {
-  if (!iso) return null
-  const time = new Date(iso).getTime()
-  return Number.isNaN(time) ? null : Math.max(0, Math.floor((now - time) / 86400000))
+// E210-1: los días se cuentan entre fechas de CALENDARIO (día local), no en bloques de 24 h. Un registro DATEONLY («2026-11-10») es un día, no un instante en UTC:
+// a las 20:00 en Bogotá un registro de hoy dice «hoy», y en Auckland uno de ayer dice «hace 1 d». `timeZone` solo lo usan las pruebas (por defecto, la del navegador).
+const calendarDay = (instant: number, timeZone?: string) => new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(instant)
+const dayNumber = (ymd: string) => { const [y, m, d] = ymd.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000 }
+/** Días desde el último registro (0 = hoy); null si no hay o no es una fecha. */
+export const daysSince = (value: string | undefined | null, now = Date.now(), timeZone?: string) => {
+  if (!value) return null
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : Number.isNaN(Date.parse(value)) ? null : calendarDay(Date.parse(value), timeZone)
+  if (day === null || Number.isNaN(dayNumber(day))) return null
+  return Math.max(0, dayNumber(calendarDay(now, timeZone)) - dayNumber(day))
 }
 
 /** «Ahora»: desde 15 min antes del inicio hasta el final de la sesión. */

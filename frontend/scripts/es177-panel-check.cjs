@@ -31,11 +31,15 @@ const fixture = (name) => JSON.parse(fs.readFileSync(path.join(__dirname, '../te
     empty: { people: [], alerts: { inactivePatients: [], notableProgress: [] } },
     nobody: { people: [hiddenOf(1), hiddenOf(2)], alerts: { inactivePatients: [], notableProgress: [] } },
   };
+  const longName = 'N'.repeat(120); // sin espacios (E210-3)
+  scenarios.dates = { people: [shaped(1, { name: 'Ana Fecha', lastMood: { checkin_mood: 4, checkout_mood: 4, date: '2026-11-10' } }), shaped(2, { name: 'Beto Fecha', lastMood: { checkin_mood: 3, checkout_mood: 3, date: '2026-11-09' } })], alerts: { inactivePatients: [], notableProgress: [] } };
+  scenarios.long = { people: [shaped(1, { name: longName })], alerts: { inactivePatients: [{ userId: 101, name: longName, daysSinceLastSession: 9 }], notableProgress: [{ userId: 101, name: longName, improved: true }] } };
   const emoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}⭐⬆⬇]|[★☆↑↓]/u;
 
-  async function open(width, lang, scenario, fail = {}) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+  async function open(width, lang, scenario, fail = {}, opts = {}) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce', timezoneId: opts.timezone });
     const page = await context.newPage();
+    if (opts.now) await page.clock.setFixedTime(opts.now);
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
     await page.addInitScript(([l]) => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'therapist'); localStorage.setItem('elv_lang', l); }, [lang]);
@@ -91,6 +95,41 @@ const fixture = (name) => JSON.parse(fs.readFileSync(path.join(__dirname, '../te
     assert.doesNotMatch(body, /—\s*$/m);
     check(`respuesta real de PG ${tag}: nombre/«Persona 2», «Sin datos» en promedios`);
     await context.close();
+
+    // E210-1: el registro es una FECHA; a las 20:00 en Bogotá un registro de hoy dice «hoy», no «hace 1 d»
+    ({ context, page } = await open(width, lang, 'dates', {}, { timezone: 'America/Bogota', now: '2026-11-11T01:00:00Z' }));
+    body = await page.locator('section[aria-labelledby="panel-people-title"]').innerText();
+    const ana = body.split('Ana Fecha')[1].split('Beto Fecha')[0]; const beto = body.split('Beto Fecha')[1];
+    assert.ok(lang === 'es' ? /Último registro: hoy/.test(ana) && /hace 1 d/.test(beto) : /Last entry: today/.test(ana) && /1 d ago/.test(beto), `días por fecha de calendario en Bogotá a las 20:00 (${tag}): ${ana.slice(0, 120)} | ${beto.slice(0, 120)}`);
+    await context.close();
+    ({ context, page } = await open(width, lang, 'dates', {}, { timezone: 'Pacific/Auckland', now: '2026-11-10T20:00:00Z' })); // 11-nov 09:00 allí
+    body = await page.locator('section[aria-labelledby="panel-people-title"]').innerText();
+    assert.ok(lang === 'es' ? /hace 1 d/.test(body.split('Ana Fecha')[1].split('Beto Fecha')[0]) : /1 d ago/.test(body.split('Ana Fecha')[1].split('Beto Fecha')[0]), `un registro de ayer no dice «hoy» en Auckland (${tag})`);
+    await context.close();
+    check(`días por fecha de calendario (${tag}): hoy en Bogotá a las 20:00 y «hace 1 d» en Auckland`);
+
+    // E210-2: objetivos táctiles ≥ 44 px en todos los botones del panel
+    ({ context, page } = await open(width, lang, 'full'));
+    await page.getByRole('heading', { level: 2, name: lang === 'es' ? 'Personas' : 'People' }).waitFor();
+    const small = await page.evaluate(() => [...document.querySelectorAll('section[aria-labelledby^="panel-"] button, section[aria-labelledby^="panel-"] a')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.height < 43.5 || r.width < 43.5); }).map((el) => (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 30) + ' ' + Math.round(el.getBoundingClientRect().width) + 'x' + Math.round(el.getBoundingClientRect().height)));
+    assert.deepEqual(small, [], `botones < 44 px (${tag}): ` + small.join(' | '));
+    await context.close();
+    // E210-3: un nombre de 120 caracteres sin espacios no ensancha la página
+    ({ context, page } = await open(width, lang, 'long'));
+    await page.getByRole('heading', { level: 2, name: lang === 'es' ? 'Personas' : 'People' }).waitFor();
+    assert.equal(await overflow(page), 0, `nombre de 120 caracteres sin desborde (${tag})`);
+    await context.close();
+    check(`botones ≥ 44 px y un nombre de 120 caracteres sin espacios no desborda (${tag})`);
+
+    // accesibilidad: cada «Reintentar» dice su bloque
+    ({ context, page } = await open(width, lang, 'full', { '/api/therapist/pacientes': 1, '/api/therapist/alerts': 1 }));
+    await page.locator('section[aria-labelledby="panel-alerts-title"]').getByRole('alert').waitFor();
+    const retryNames = await page.getByRole('button', { name: new RegExp('^' + (lang === 'es' ? 'Reintentar' : 'Try again')) }).evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? el.textContent));
+    assert.equal(retryNames.length, 3, `tres «Reintentar» (resumen, personas, avisos) (${tag}): ` + retryNames.join(' | '));
+    assert.equal(new Set(retryNames).size, 3, 'nombres accesibles distintos: ' + retryNames.join(' | '));
+    assert.ok(retryNames.every((n) => n.startsWith(lang === 'es' ? 'Reintentar' : 'Try again')), 'el nombre empieza por el texto visible');
+    await context.close();
+    check(`cada «Reintentar» tiene nombre accesible propio (${tag}): ${retryNames.join(' | ')}`);
 
     // vacío y nadie comparte
     ({ context, page } = await open(width, lang, 'empty'));
