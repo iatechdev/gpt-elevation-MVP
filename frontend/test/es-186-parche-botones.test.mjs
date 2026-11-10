@@ -54,6 +54,10 @@ test('ES-186 parche: enlace de restablecimiento → 202 sin prometer el correo; 
   assert.equal(ok.ok, true); assert.match(ok.message, /Si la cuenta puede recibirlo y el envío de correo está configurado/)
   assert.equal(mod.resetLinkOutcome(403).ok, false); assert.match(mod.resetLinkOutcome(403).message, /superadministración/)
   assert.equal(mod.resetLinkOutcome(404).message, 'Usuario no encontrado.')
+  // E186-4: el 403 a OTRO superadmin (forma real del servidor) no dice que quien pide no sea superadmin
+  const other = fixture('es-186-reset-link-superadmin-403.json')
+  const m = mod.resetLinkOutcome(other.status, other.body).message
+  assert.match(m, /otro superadmin/); assert.doesNotMatch(m, /^Solo la superadministración/)
   assert.equal(mod.resetLinkOutcome(500).message, 'No se pudo enviar el enlace.')
 })
 
@@ -78,4 +82,22 @@ test('ES-186 parche: AdminUsers usa invitaciones y reset-link, sin campos de con
   assert.doesNotMatch(text, /type="password"|type:\s*'password'/)
   assert.doesNotMatch(text, /localStorage\.setItem|sessionStorage\.setItem|console\.log/)
   assert.doesNotMatch(text, /[\u{1F300}-\u{1FAFF}]/u.source ? /🔑/ : /x^/, 'sin el emoji del botón anterior')
+})
+
+// E186-1: la fecha de caducidad no se recorta (antes `.replace(/.$/, '')` borraba «m.» / «M»).
+test('ES-186 parche: la fecha de caducidad se muestra completa en ES y EN', () => {
+  const iso = '2026-11-13T12:16:00.000Z'
+  for (const lang of ['es', 'en']) {
+    const shown = mod.formatExpiry(iso, lang)
+    assert.equal(shown, new Date(iso).toLocaleString(lang === 'en' ? 'en-US' : 'es-CO', { dateStyle: 'medium', timeStyle: 'short' }))
+    assert.match(shown, lang === 'en' ? /\d{4}.*\d:\d\d\s?(AM|PM)$/ : /\d{4}.*\d:\d\d\s?[ap]\. ?m\.$/i, shown)
+  }
+})
+
+// E186-2 y E186-3: mensajes del diálogo de invitar en regiones vivas y el select «Rol» con nombre accesible.
+test('ES-186 parche: el diálogo de invitar anuncia errores y éxito y nombra el selector de rol', () => {
+  const tsx = readFileSync(resolve(src, 'pages/admin/AdminUsers.tsx'), 'utf8')
+  assert.match(tsx, /\{errorModal && <div role="alert"/); assert.match(tsx, /\{exitoModal && <div role="status"/)
+  assert.match(tsx, /<label htmlFor="invite-role"/); assert.match(tsx, /<select id="invite-role"/)
+  assert.doesNotMatch(tsx, /\.replace\(\/\.\$\/, ''\)/, 'no se recorta el último carácter de la fecha')
 })

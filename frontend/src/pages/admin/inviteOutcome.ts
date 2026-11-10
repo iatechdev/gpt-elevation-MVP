@@ -24,9 +24,16 @@ export function inviteOutcome(status: number, data: Record<string, unknown> | nu
   return { kind: 'recorded', message: 'Invitación registrada, pero no se envió ningún correo: el envío de correo no está configurado. La persona todavía no tiene su enlace.' }
 }
 
+// E186-1: la fecha de caducidad se muestra COMPLETA (sin recortar ningún carácter del formato local: «7:16 a. m.» / «7:16 AM»).
+export function formatExpiry(iso: string, lang: string): string {
+  return new Date(iso).toLocaleString(lang === 'en' ? 'en-US' : 'es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
 // POST /api/admin/usuarios/:id/reset-link → 202 { message } (no confirma que el correo salga ni devuelve el enlace) | 403 | 404 | 5xx.
-export function resetLinkOutcome(status: number): { ok: boolean; message: string } {
+// El servidor usa 403 para dos cosas: quien pide no es superadmin, u objetivo = OTRO superadmin (texto «…otro superadmin.»; sin código propio).
+export function resetLinkOutcome(status: number, data?: Record<string, unknown> | null): { ok: boolean; message: string } {
   if (status >= 200 && status < 300) return { ok: true, message: 'Solicitud registrada. Si la cuenta puede recibirlo y el envío de correo está configurado, la persona recibirá el enlace.' }
+  if (status === 403 && typeof data?.error === 'string' && /otro superadmin/i.test(data.error)) return { ok: false, message: 'No se puede enviar el enlace a otro superadmin: cada superadmin restablece su propia contraseña.' }
   if (status === 403) return { ok: false, message: 'Solo la superadministración puede enviar enlaces de restablecimiento.' }
   if (status === 404) return { ok: false, message: 'Usuario no encontrado.' }
   return { ok: false, message: 'No se pudo enviar el enlace.' }

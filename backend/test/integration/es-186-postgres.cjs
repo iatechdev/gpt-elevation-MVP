@@ -133,6 +133,10 @@ test('ES-186 PostgreSQL + HTTP: invitaciones y enlace de restablecimiento con la
     contractFixture('es-186-reset-link.json', ok.status, ok.body);
     assert.equal((await http(adm, 'POST', `/api/admin/usuarios/${victim.id}/reset-link`, {})).status, 403);
     assert.equal((await http(sup, 'POST', '/api/admin/usuarios/99999999/reset-link', {})).status, 404);
+    const other = await mkUser('superadmin'); // E186-4: el 403 a OTRO superadmin trae un texto propio; la pantalla lo distingue por «otro superadmin»
+    const toOther = await http(sup, 'POST', `/api/admin/usuarios/${other.id}/reset-link`, {});
+    assert.equal(toOther.status, 403); assert.match(toOther.body.error, /otro superadmin/i);
+    contractFixture('es-186-reset-link-superadmin-403.json', toOther.status, toOther.body);
   });
 
   await t.test('las rutas retiradas por ES-192 siguen en 410 (la pantalla ya no las llama)', async () => {

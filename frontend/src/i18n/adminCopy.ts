@@ -223,6 +223,7 @@ export const adminEnglish: Record<string, string> = {
   'No se pudo crear la invitación.': 'The invitation could not be created.',
   'Invitación enviada a': 'Invitation sent to',
   'El enlace caduca el': 'The link expires on',
+  'No se puede enviar el enlace a otro superadmin: cada superadmin restablece su propia contraseña.': 'The link cannot be sent to another superadmin: each superadmin resets their own password.',
   'Invitación registrada, pero no se envió ningún correo: el envío de correo no está configurado. La persona todavía no tiene su enlace.': 'Invitation recorded, but no email was sent: email sending is not configured. The person does not have their link yet.',
   'Se creará un enlace de un solo uso para que la persona elija su contraseña. Nadie más ve ni define su contraseña.': 'A single-use link will be created so the person chooses their own password. No one else sees or sets their password.',
   'Invitación para': 'Invitation for',

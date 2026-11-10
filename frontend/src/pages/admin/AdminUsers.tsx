@@ -1,6 +1,6 @@
 import { useAdminText } from '../../i18n/useAdminText'
 import { useLanguage } from '../../i18n/useLanguage'
-import { inviteOutcome, resetLinkOutcome } from './inviteOutcome'
+import { inviteOutcome, resetLinkOutcome, formatExpiry } from './inviteOutcome'
 // HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
 import { useState, useEffect, useCallback } from 'react';
@@ -273,7 +273,7 @@ export function AdminUsers() {
       if (outcome.kind === 'error') { setErrorModal(outcome.message); return; }
       if (outcome.kind === 'recorded') setExitoModal(outcome.message);
       else {
-        const until = outcome.expiresAt ? new Date(outcome.expiresAt).toLocaleString(lang === 'en' ? 'en-US' : 'es-CO', { dateStyle: 'medium', timeStyle: 'short' }).replace(/.$/, '') : '';
+        const until = outcome.expiresAt ? formatExpiry(outcome.expiresAt, lang) : '';
         setExitoModal(`${tr('Invitación enviada a')} ${outcome.email}.${until ? ` ${tr('El enlace caduca el')} ${until}.` : ''}`);
       }
       setNuevoUsuario({ email: '', role: 'user' }); setInvitadoPara('');
@@ -333,7 +333,7 @@ export function AdminUsers() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ locale: lang }),
       });
-      const outcome = resetLinkOutcome(res.status);
+      const outcome = resetLinkOutcome(res.status, await res.json().catch(() => null));
       if (outcome.ok) setResetMsg(outcome.message); else setResetError(outcome.message);
     } catch { setResetError('Error de conexión.'); }
     finally { setResetting(false); }
@@ -764,8 +764,8 @@ export function AdminUsers() {
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>{tr("Invitar persona")}</h2>
               <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F' }}>✕</button>
             </div>
-            {errorModal && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
-            {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
+            {errorModal && <div role="alert" style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
+            {exitoModal && <div role="status" style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
             <p style={{ fontSize: '0.85rem', color: '#6B645F', margin: '0 0 1rem', lineHeight: 1.5 }}>{tr("Se creará un enlace de un solo uso para que la persona elija su contraseña. Nadie más ve ni define su contraseña.")}</p>
             {invitadoPara && <p style={{ fontSize: '0.85rem', color: '#1C1917', margin: '0 0 1rem' }}>{tr("Invitación para")}{' '}<strong>{invitadoPara}</strong></p>}
             <div style={{ marginBottom: '1rem' }}>
@@ -777,8 +777,8 @@ export function AdminUsers() {
               />
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr("Rol")}</label>
-              <select style={{ ...sel, width: '100%' }} value={nuevoUsuario.role} onChange={e => setNuevoUsuario(prev => ({ ...prev, role: e.target.value as Role }))}>
+              <label htmlFor="invite-role" style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr("Rol")}</label>
+              <select id="invite-role" style={{ ...sel, width: '100%' }} value={nuevoUsuario.role} onChange={e => setNuevoUsuario(prev => ({ ...prev, role: e.target.value as Role }))}>
                 <option value="user">user</option>
                 <option value="therapist">therapist</option>
                 {esSuperAdmin && <option value="admin">admin</option>}
