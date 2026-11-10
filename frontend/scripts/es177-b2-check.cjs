@@ -74,7 +74,9 @@ const fs = require('node:fs');
     assert.equal(await page.locator('label', { has: page.locator('input[type=file]') }).count(), 1, 'tiene etiqueta visible');
     assert.equal(await overflow(page), 0, `sin desborde (${tag})`);
     assert.deepEqual(await axe(page), [], `axe (${tag})`);
-    check(`${tag}: validación en palabras (${t.rejected}/${t.pending}) con la nota, sin emojis, archivo visible con etiqueta, sin desborde, axe 0`);
+    const tooSmall = await page.evaluate(() => [...document.querySelectorAll('section[aria-labelledby="panel-validation-title"] :is(button, select, input), section[aria-labelledby="panel-guide-title"] :is(button, select, input)')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.height < 43.5 || (el.tagName !== 'INPUT' && r.width < 43.5)); }).map((el) => (el.innerText || el.tagName).trim().slice(0, 30) + ' ' + Math.round(el.getBoundingClientRect().width) + 'x' + Math.round(el.getBoundingClientRect().height)));
+    assert.deepEqual(tooSmall, [], `controles < 44 px (${tag}): ` + tooSmall.join(' | '));
+    check(`${tag}: validación en palabras (${t.rejected}/${t.pending}) con la nota, controles ≥ 44 px, sin emojis, archivo visible con etiqueta, sin desborde, axe 0`);
     await context.close();
 
     ({ context, page } = await open(width, lang, { doc: 'none', guide: 'none' }));

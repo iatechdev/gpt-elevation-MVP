@@ -18,7 +18,7 @@ export interface PromptData {
 type T = (key: string, params?: Record<string, string | number>) => string
 type Reason = { code?: string; es?: string; en?: string }
 
-const primary: CSSProperties = { padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
+const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
 const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' }
 const ERROR_BY_CODE: Record<string, string> = { pending_exists: 'therapist_prompt_pending_exists', prompt_rules_unavailable: 'panel_gp_rules', rate_limited: 'panel_gp_rate' }
 
@@ -67,7 +67,7 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
       {rejected && (
         <div style={{ margin: '0.5rem 0 0', padding: '0.75rem 1rem', borderRadius: '0.65rem', background: '#FEF2F2', border: '0.5px solid #FCA5A5', color: '#7F1D1D', fontSize: '0.85rem' }}>
           <strong>{t('panel_guide_rejected', { v: rejected.version })}</strong>
-          {rejected.rejection_note && <div style={{ marginTop: 4 }}>{t('panel_val_note')}: {rejected.rejection_note}</div>}
+          {rejected.rejection_note && <div style={{ marginTop: 4, overflowWrap: 'anywhere' }}>{t('panel_val_note')}: {rejected.rejection_note}</div>}
           <div style={{ marginTop: 4 }}>{t('panel_guide_retry')}</div>
         </div>
       )}

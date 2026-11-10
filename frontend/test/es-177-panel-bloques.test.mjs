@@ -78,6 +78,7 @@ test('ES-177 B1 (E210-2/3): botones de 44 px, nombres largos que se parten y rei
   assert.match(sections, /primaryBtn: CSSProperties = \{ minHeight: 44, minWidth: 44/)
   assert.ok((sections.match(/overflowWrap: 'anywhere'/g) ?? []).length >= 5)
   assert.match(sections, /aria-label=\{`\$\{t\('panel_retry'\)\}: \$\{sectionName\}`\}/)
+})
 
 test('ES-177 B2: validación y guía sin emojis ni display:none, errores por código y todos los textos en ES y EN', () => {
   const val = read('../src/pages/therapist/ValidationBlock.tsx'), guide = read('../src/pages/therapist/GuideBlock.tsx'), copy = read('../src/i18n/therapistCopy.ts')

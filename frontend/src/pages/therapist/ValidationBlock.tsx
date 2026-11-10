@@ -20,8 +20,8 @@ type T = (key: string, params?: Record<string, string | number>) => string
 const UPLOAD_ERRORS = ['unsupported_file_type', 'file_too_large', 'file_content_mismatch', 'empty_file', 'no_file', 'invalid_upload', 'storage_unavailable']
 const STATUS_KEY = { approved: 'panel_val_approved', pending: 'panel_val_pending', rejected: 'panel_val_rejected' } as const
 const field: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.82rem', color: '#44403C' }
-const control: CSSProperties = { padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', background: '#fff' }
-const primary: CSSProperties = { padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
+const control: CSSProperties = { minHeight: 44, padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', background: '#fff' }
+const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
 
 export function ValidationBlock({ state, t, locale }: { state: SectionState<ValidationDoc[]>; t: T; locale: string }) {
   const docs = state.data ?? []
@@ -57,9 +57,9 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
         <ul style={{ listStyle: 'none', margin: '0.75rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {docs.map(d => (
             <li key={d.id} style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', background: '#F5F3EF', border: '0.5px solid #D6D3D1' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1C1917' }}>{d.documentName} — <strong>{t(STATUS_KEY[d.status])}</strong></div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1C1917', overflowWrap: 'anywhere' }}>{d.documentName} — <strong>{t(STATUS_KEY[d.status])}</strong></div>
               <div style={{ fontSize: '0.78rem', color: '#44403C', marginTop: 2 }}>{t(`panel_doc_${d.documentType}`)} · {new Date(d.submittedAt).toLocaleDateString(locale)}</div>
-              {d.reviewNote && <div style={{ fontSize: '0.78rem', color: '#44403C', marginTop: 4 }}>{t('panel_val_note')}: {d.reviewNote}</div>}
+              {d.reviewNote && <div style={{ fontSize: '0.78rem', color: '#44403C', marginTop: 4, overflowWrap: 'anywhere' }}>{t('panel_val_note')}: {d.reviewNote}</div>}
             </li>
           ))}
         </ul>
