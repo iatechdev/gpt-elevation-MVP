@@ -20,6 +20,7 @@
     "test:exercises:pg": "node --test test/integration/es-194-postgres.cjs",
     "test:diary-request:pg": "node --test test/integration/es-163-postgres.cjs",
     "test:planreq:pg": "node --test test/integration/es-223-postgres.cjs",
+    "test:progress:pg": "node --test test/integration/es-257-postgres.cjs",
     "test:manifest:pg": "node --test test/integration/es-211-postgres.cjs",
     "test:bridge:pg": "node --test test/integration/es-25-postgres.cjs",
     "test:proposals:pg": "node --test test/integration/es-28-postgres.cjs",
