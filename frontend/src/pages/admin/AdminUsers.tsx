@@ -1,4 +1,6 @@
 import { useAdminText } from '../../i18n/useAdminText'
+import { useLanguage } from '../../i18n/useLanguage'
+import { inviteOutcome, resetLinkOutcome, formatExpiry } from './inviteOutcome'
 // HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
 
 import { useState, useEffect, useCallback } from 'react';
@@ -69,6 +71,7 @@ const formatDate = (iso: string, locale = 'es-CO') =>
 
 export function AdminUsers() {
   const tr = useAdminText()
+  const { lang } = useLanguage()
 
   const [usuarios,            setUsuarios]            = useState<Usuario[]>([]);
   const [terapeutas,          setTerapeutas]          = useState<Terapeuta[]>([]);
@@ -78,7 +81,8 @@ export function AdminUsers() {
   const [filtroEstado,        setFiltroEstado]        = useState('');
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [mostrarModal,        setMostrarModal]        = useState(false);
-  const [nuevoUsuario,        setNuevoUsuario]        = useState({ name: '', email: '', password: '', role: 'user' as Role });
+  const [nuevoUsuario,        setNuevoUsuario]        = useState({ email: '', role: 'user' as Role });
+  const [invitadoPara,         setInvitadoPara]        = useState(''); // nombre de la solicitud aprobada (solo se muestra; la invitación no lo envía)
   // ES-95: «Crear cuenta de terapeuta» desde una solicitud aprobada abre este modal con nombre y correo precargados (la contraseña la define quien crea la cuenta).
   // Los datos viajan en el estado de navegación, no en la URL (sin datos personales en el historial ni en los registros del servidor).
   const location = useLocation();
@@ -86,7 +90,8 @@ export function AdminUsers() {
   useEffect(() => {
     const prefill = (location.state as { newTherapist?: { name?: unknown; email?: unknown } } | null)?.newTherapist;
     if (!prefill) return;
-    setNuevoUsuario({ name: String(prefill.name ?? '').slice(0, 120), email: String(prefill.email ?? '').slice(0, 254), password: '', role: 'therapist' });
+    setNuevoUsuario({ email: String(prefill.email ?? '').slice(0, 254), role: 'therapist' });
+    setInvitadoPara(String(prefill.name ?? '').slice(0, 120));
     setMostrarModal(true);
     navigate(location.pathname, { replace: true, state: null });
   }, [location, navigate]);
@@ -117,7 +122,6 @@ export function AdminUsers() {
   const [unlocking,        setUnlocking]        = useState(false);
   const [unlockMsg,        setUnlockMsg]        = useState('');
   const [showResetModal,   setShowResetModal]   = useState(false);
-  const [newPassword,      setNewPassword]      = useState('');
   const [resetting,        setResetting]        = useState(false);
   const [resetMsg,         setResetMsg]         = useState('');
   const [resetError,       setResetError]       = useState('');
@@ -252,24 +256,27 @@ export function AdminUsers() {
     } catch { alert(tr('Error de conexión.')); }
   };
 
+  // ES-186 (parche): ya no se escribe la contraseña de nadie. Se invita por enlace (POST /api/admin/invitations): la persona elige su contraseña.
+  // El servidor NO devuelve el enlace; solo dice si se envió el correo (`emailSent`). Lo que se muestra es exactamente eso.
   const crearUsuario = async () => {
     setErrorModal(''); setExitoModal('');
-    if (!nuevoUsuario.name || !nuevoUsuario.email || !nuevoUsuario.password) {
-      setErrorModal('Todos los campos son obligatorios.'); return;
-    }
+    if (!nuevoUsuario.email.trim()) { setErrorModal('Escribe un correo.'); return; }
     setCreando(true);
     try {
-      const res = await fetch(`${API}/api/admin/usuarios`, {
+      const res = await fetch(`${API}/api/admin/invitations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify(nuevoUsuario),
+        body: JSON.stringify({ email: nuevoUsuario.email.trim(), role: nuevoUsuario.role, locale: lang }),
       });
-      const data = await res.json();
-      if (!res.ok) { setErrorModal(data.error || 'Error al crear usuario'); return; }
-      setExitoModal(`Usuario ${data.usuario.name} creado exitosamente.`);
-      setNuevoUsuario({ name: '', email: '', password: '', role: 'user' });
-      await fetchUsuarios();
-      setTimeout(() => { setMostrarModal(false); setExitoModal(''); }, 2000);
+      const data = await res.json().catch(() => ({}));
+      const outcome = inviteOutcome(res.status, data);
+      if (outcome.kind === 'error') { setErrorModal(outcome.message); return; }
+      if (outcome.kind === 'recorded') setExitoModal(outcome.message);
+      else {
+        const until = outcome.expiresAt ? formatExpiry(outcome.expiresAt, lang) : '';
+        setExitoModal(`${tr('Invitación enviada a')} ${outcome.email}.${until ? ` ${tr('El enlace caduca el')} ${until}.` : ''}`);
+      }
+      setNuevoUsuario({ email: '', role: 'user' }); setInvitadoPara('');
     } catch { setErrorModal('Error de conexión.'); }
     finally { setCreando(false); }
   };
@@ -314,25 +321,20 @@ export function AdminUsers() {
     finally { setUnlocking(false); }
   };
 
-  // HU-078 — Reset contraseña (superadmin)
+  // ES-186 (parche): administración ya no define la contraseña de otra cuenta; envía un enlace de restablecimiento (POST /:id/reset-link, 202).
+  // El servidor no confirma que la cuenta exista ni devuelve el enlace: el texto no promete un correo que quizá no salga.
   const resetPassword = async () => {
     if (!usuarioSeleccionado) return;
     setResetError(''); setResetMsg('');
-    if (newPassword.trim().length < 6) {
-      setResetError('La contraseña debe tener al menos 6 caracteres.'); return;
-    }
     setResetting(true);
     try {
-      const res = await fetch(`${API}/api/admin/usuarios/${usuarioSeleccionado.id}/reset-password`, {
-        method: 'PUT',
+      const res = await fetch(`${API}/api/admin/usuarios/${usuarioSeleccionado.id}/reset-link`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ newPassword: newPassword.trim() }),
+        body: JSON.stringify({ locale: lang }),
       });
-      const data = await res.json();
-      if (!res.ok) { setResetError(data.error || 'Error al resetear.'); return; }
-      setResetMsg(`✓ ${data.message}`);
-      setNewPassword('');
-      setTimeout(() => { setShowResetModal(false); setResetMsg(''); }, 2500);
+      const outcome = resetLinkOutcome(res.status, await res.json().catch(() => null));
+      if (outcome.ok) setResetMsg(outcome.message); else setResetError(outcome.message);
     } catch { setResetError('Error de conexión.'); }
     finally { setResetting(false); }
   };
@@ -381,7 +383,7 @@ export function AdminUsers() {
             display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem',
             background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.85rem',
             fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-          }}>{tr("+ Crear usuario")}{' '}</button>
+          }}>{tr("+ Invitar persona")}</button>
         </div>
       </div>
 
@@ -627,7 +629,7 @@ export function AdminUsers() {
               {/* HU-078 — Reset contraseña (solo superadmin) */}
               {esSuperAdmin && (
                 <button
-                  onClick={() => { setShowResetModal(true); setNewPassword(''); setResetError(''); setResetMsg(''); }}
+                  onClick={() => { setShowResetModal(true); setResetError(''); setResetMsg(''); }}
                   style={{
                     width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
                     border: '0.5px solid #A8B5A2', background: 'transparent',
@@ -635,7 +637,7 @@ export function AdminUsers() {
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                     marginBottom: '0.5rem',
                   }}
-                >{tr("🔑 Resetear contraseña")}{' '}{' '}</button>
+                >{tr("Enviar enlace de restablecimiento")}</button>
               )}
 
               {/* Eliminar — solo superadmin */}
@@ -660,32 +662,15 @@ export function AdminUsers() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 400, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("🔑 Resetear contraseña")}{' '}{' '}</h3>
+              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("Enviar enlace de restablecimiento")}</h3>
               <button onClick={() => setShowResetModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#6B645F' }}>✕</button>
             </div>
 
-            <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0 0 1.25rem', lineHeight: 1.5 }}>{tr("Establece una contraseña temporal para")}{' '}<strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>{tr(". Comunicasela por otro medio (email, WhatsApp, etc.).")}{' '}</p>
+            <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0 0 1.25rem', lineHeight: 1.5 }}>{tr("Se enviará a")}{' '}<strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>{' '}{tr("un enlace de un solo uso para que elija una contraseña nueva. Tú no ves ni defines su contraseña.")}</p>
 
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>{tr("Nueva contraseña temporal")}{' '}</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={e => { setNewPassword(e.target.value); setResetError(''); }}
-                placeholder={tr("Mínimo 6 caracteres")}
-                style={{
-                  width: '100%', padding: '0.6rem 0.85rem',
-                  border: `0.5px solid ${resetError ? '#DC2626' : '#E7E5E4'}`,
-                  borderRadius: '0.65rem', fontSize: '0.875rem',
-                  fontFamily: 'Inter, sans-serif', color: '#1C1917',
-                  boxSizing: 'border-box', outline: 'none',
-                }}
-              />
-              {resetError && <p style={{ fontSize: '0.75rem', color: '#B91C1C', margin: '0.25rem 0 0' }}>{tr(resetError)}</p>}
-            </div>
-
+            {resetError && <p role="alert" style={{ fontSize: '0.8rem', color: '#B91C1C', margin: '0 0 1rem' }}>{tr(resetError)}</p>}
             {resetMsg && (
-              <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem', background: '#EAF0E6', color: '#4A6741' }}>
+              <div role="status" style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem', background: '#EAF0E6', color: '#4A6741' }}>
                 {tr(resetMsg)}
               </div>
             )}
@@ -694,17 +679,17 @@ export function AdminUsers() {
               <button onClick={() => setShowResetModal(false)} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#6B645F', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
               <button
                 onClick={resetPassword}
-                disabled={resetting || newPassword.trim().length < 6}
+                disabled={resetting || Boolean(resetMsg)}
                 style={{
                   flex: 1, padding: '0.65rem',
-                  background: resetting || newPassword.trim().length < 6 ? '#E7E5E4' : '#5C6B4E',
-                  color: resetting || newPassword.trim().length < 6 ? '#6F6963' : '#fff',
+                  background: resetting || resetMsg ? '#E7E5E4' : '#5C6B4E',
+                  color: resetting || resetMsg ? '#6F6963' : '#fff',
                   border: 'none', borderRadius: '0.75rem',
-                  cursor: resetting || newPassword.trim().length < 6 ? 'not-allowed' : 'pointer',
+                  cursor: resetting || resetMsg ? 'not-allowed' : 'pointer',
                   fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif',
                 }}
               >
-                {resetting ? tr('Guardando...') : tr('Confirmar reset')}
+                {resetting ? tr('Enviando...') : tr('Enviar enlace')}
               </button>
             </div>
           </div>
@@ -776,28 +761,24 @@ export function AdminUsers() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>{tr("Crear usuario")}</h2>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>{tr("Invitar persona")}</h2>
               <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F' }}>✕</button>
             </div>
-            {errorModal && <div style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
-            {exitoModal && <div style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
-            {[
-              { label: tr('Nombre completo'),     key: 'name',     type: 'text',     placeholder: 'Ana García' },
-              { label: tr('Email'),               key: 'email',    type: 'email',    placeholder: 'ana@example.com' },
-              { label: tr('Contraseña temporal'), key: 'password', type: 'password', placeholder: tr('Mínimo 8 caracteres') },
-            ].map(campo => (
-              <div key={campo.key} style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{campo.label}</label>
-                <input type={campo.type} placeholder={campo.placeholder}
-                  value={nuevoUsuario[campo.key as keyof typeof nuevoUsuario]}
-                  onChange={e => setNuevoUsuario(prev => ({ ...prev, [campo.key]: e.target.value }))}
-                  style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: '0.5px solid #E7E5E4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none' }}
-                />
-              </div>
-            ))}
+            {errorModal && <div role="alert" style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
+            {exitoModal && <div role="status" style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
+            <p style={{ fontSize: '0.85rem', color: '#6B645F', margin: '0 0 1rem', lineHeight: 1.5 }}>{tr("Se creará un enlace de un solo uso para que la persona elija su contraseña. Nadie más ve ni define su contraseña.")}</p>
+            {invitadoPara && <p style={{ fontSize: '0.85rem', color: '#1C1917', margin: '0 0 1rem' }}>{tr("Invitación para")}{' '}<strong>{invitadoPara}</strong></p>}
+            <div style={{ marginBottom: '1rem' }}>
+              <label htmlFor="invite-email" style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr('Email')}</label>
+              <input id="invite-email" type="email" placeholder={'ana@example.com'} autoComplete="off"
+                value={nuevoUsuario.email}
+                onChange={e => { setNuevoUsuario(prev => ({ ...prev, email: e.target.value })); setErrorModal(''); }}
+                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: '0.5px solid #E7E5E4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr("Rol")}</label>
-              <select style={{ ...sel, width: '100%' }} value={nuevoUsuario.role} onChange={e => setNuevoUsuario(prev => ({ ...prev, role: e.target.value as Role }))}>
+              <label htmlFor="invite-role" style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr("Rol")}</label>
+              <select id="invite-role" style={{ ...sel, width: '100%' }} value={nuevoUsuario.role} onChange={e => setNuevoUsuario(prev => ({ ...prev, role: e.target.value as Role }))}>
                 <option value="user">user</option>
                 <option value="therapist">therapist</option>
                 {esSuperAdmin && <option value="admin">admin</option>}
@@ -806,7 +787,7 @@ export function AdminUsers() {
               </select>
             </div>
             <button onClick={crearUsuario} disabled={creando} style={{ width: '100%', padding: '0.75rem', background: creando ? '#A8B5A2' : '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.9rem', fontWeight: 500, cursor: creando ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
-              {creando ? tr('Creando...') : tr('Crear usuario')}
+              {creando ? tr('Enviando...') : tr('Enviar invitación')}
             </button>
           </div>
         </div>

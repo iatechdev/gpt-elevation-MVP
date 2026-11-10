@@ -1,0 +1,14 @@
+{
+  "status": 201,
+  "body": {
+    "id": 2,
+    "email": "otra.persona@example.test",
+    "role": "user",
+    "invitedBy": 1,
+    "expiresAt": "2026-11-13T01:39:33.589Z",
+    "usedAt": null,
+    "createdAt": "2026-11-10T01:39:33.594Z",
+    "status": "pending",
+    "emailSent": true
+  }
+}
