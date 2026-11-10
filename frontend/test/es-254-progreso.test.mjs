@@ -11,7 +11,7 @@ const page = read('../src/pages/UserProgress.tsx')
 const progressPart = page.slice(0, page.indexOf('HU-060 — MATCHING MODAL'))
 
 test('ES-254: la pantalla de progreso no usa emojis ni estrellas como indicador', () => {
-  assert.doesNotMatch(progressPart.replace('🤝', ''), /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|★|☆/u) // el 🤝 del botón «Buscar terapeuta» es del flujo de matching (ES-169 PR2)
+  assert.doesNotMatch(progressPart, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|★|☆/u) // E254-1: ni el botón «Buscar terapeuta» del encabezado lleva emoji (el modal es de ES-169 PR2)
   assert.doesNotMatch(page, /MOOD_EMOJI/)
   assert.doesNotMatch(progressPart, /'#22C55E'|'#EF4444'/) // sin verde/rojo de tendencia
 })

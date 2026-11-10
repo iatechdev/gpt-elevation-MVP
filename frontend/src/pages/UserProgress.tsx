@@ -60,8 +60,8 @@ export function UserProgress() {
   const [failed,          setFailed]          = useState(false)
   const [attempt,         setAttempt]         = useState(0)
   const titleRef = useRef<HTMLHeadingElement>(null); const retryRef = useRef<HTMLButtonElement>(null)
-  // Tras «Reintentar» la pantalla pasa por «Cargando…» y el botón desaparece: el foco se coloca después de renderizar (título si cargó; «Reintentar» si volvió a fallar), no en body.
-  useEffect(() => { if (attempt === 0 || loading) return; (failed ? retryRef.current : titleRef.current)?.focus() }, [attempt, loading, failed])
+  // E254-3: el foco se coloca DESPUÉS de renderizar: en «Reintentar» cuando aparece el error (primera lectura o reintento) y en el título tras recuperar (el botón se desmonta), nunca en body.
+  useEffect(() => { if (loading) return; if (failed) retryRef.current?.focus(); else if (attempt > 0) titleRef.current?.focus() }, [attempt, loading, failed])
 
   // HU-060 — Matching
   const [showMatching,        setShowMatching]        = useState(false)
@@ -211,7 +211,7 @@ export function UserProgress() {
               fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}
           >
-            🤝 {lang === 'es' ? 'Buscar terapeuta' : 'Find therapist'}
+            {lang === 'es' ? 'Buscar terapeuta' : 'Find therapist'}
           </button>
         </div>
       </header>
