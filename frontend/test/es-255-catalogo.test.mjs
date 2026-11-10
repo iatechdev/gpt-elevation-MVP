@@ -27,3 +27,11 @@ test('ES-255 lista y filtros: industria en la tarjeta, mercado/idioma con nombre
   // un código que el navegador no conoce se dice «Por confirmar», nunca crudo
   assert.match(pages, /out\.toLowerCase\(\) !== value\.toLowerCase\(\) \? out : tr\('unknown'\)/)
 })
+
+// E255-1: la fuente de una tarea se dice con el TÍTULO de la fuente (viene en el payload) o «Fuente por confirmar»; nunca con su clave interna (sourceKey)
+test('ES-255 E255-1: ninguna clave interna de fuente se muestra', () => {
+  assert.doesNotMatch(pages, /string\(exposure\.sourceKey\)/)
+  assert.match(pages, /const sourceTitle = \(key: unknown\) => string\(catalog\.sources\.find\(source => source\.sourceKey === key\)\?\.title\) \|\| tr\('source_unknown'\)/)
+  assert.match(pages, /\$\{sourceTitle\(exposure\.sourceKey\)\}/)
+  assert.match(copy, /source_unknown: \['Fuente por confirmar', 'Source to be confirmed'\]/)
+})

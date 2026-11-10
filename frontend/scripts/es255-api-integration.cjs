@@ -45,6 +45,19 @@ const { pathToFileURL } = require('node:url');
     const token = fromBackend('./utils/sessions').issueToken({ id: person.id, role: 'user' });
     const skillKeys = [...new Set([...published.roles.flatMap(r => (r.capabilities || []).map(c => c.skillKey)), ...published.resources.map(r => r.linkedSkillKey)].filter(Boolean))];
     assert.ok(skillKeys.length > 0, 'el catálogo sintético trae claves de capacidad');
+    // E255-1: NINGUNA clave interna (sourceKey, resourceKey, roleKey, offerKey, contextKey, skillKey…) puede verse: ni en el texto, ni en aria-label / title / alt, ni en los enlaces externos.
+    const allKeys = (() => { const out = new Set(); const walk = (value) => { if (Array.isArray(value)) value.forEach(walk); else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) { if (/Keys?$/.test(k)) [].concat(v).forEach(x => { if (typeof x === 'string') out.add(x); }); walk(v); } }; walk(published); return [...out]; })();
+    assert.ok(allKeys.length >= 20, 'hay claves internas que comprobar: ' + allKeys.length);
+    // El contenido publicado puede nombrar una clave dentro de un texto legítimo (el título sintético de una oferta lleva «(roleKey)»): ese texto se quita antes de buscar claves sueltas.
+    const contentStrings = (() => { const out = new Set(); const walk = (value, key = '') => { if (Array.isArray(value)) value.forEach(v => walk(v, key)); else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) walk(v, k); else if (typeof value === 'string' && !/Keys?$/.test(key) && value.length >= 8) out.add(value); }; walk(published); return [...out].sort((a, b) => b.length - a.length); })();
+    const leaks = async (page) => {
+      let text = await page.locator('body').innerText();
+      for (const content of contentStrings) text = text.split(content).join(' ');
+      const attrs = await page.evaluate(() => [...document.querySelectorAll('[aria-label],[title],[alt]')].flatMap(e => [e.getAttribute('aria-label'), e.getAttribute('title'), e.getAttribute('alt')]).filter(Boolean).concat([...document.querySelectorAll('a[target="_blank"]')].map(a => a.getAttribute('href'))));
+      const found = (hay, key) => new RegExp('(^|[^a-z0-9_])' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9_]|$)').test(hay);
+      const where = (key) => found(text, key) ? 'texto' : 'atributo/enlace: ' + attrs.filter(a => found(a, key)).join(' | ');
+      return allKeys.filter(key => found(text, key) || attrs.some(a => found(a, key))).map(key => key + ' @ ' + where(key));
+    };
 
     const { chromium } = process.env.PLAYWRIGHT_MODULE ? require(process.env.PLAYWRIGHT_MODULE) : await import('playwright');
     browser = await chromium.launch({ headless: true });
@@ -93,7 +106,7 @@ const { pathToFileURL } = require('node:url');
         await page.selectOption('#filter-language_filter', '');
         check(`${tag}: filtro de idioma por idioma del rol (${expected.join(', ')}) → tarjetas = roles con ese idioma, también los sin recursos`);
         const body = await page.locator('body').innerText();
-        for (const key of skillKeys) assert.ok(!body.includes(key), `clave cruda ${key} en la lista`);
+        assert.deepEqual(await leaks(page), [], 'claves internas visibles en la lista');
         await axeCheck(page, `${tag}: lista`); assert.deepEqual(errors, []); await context.close(); }
       // B) ficha de cada rol: enlaces con aviso, sin claves crudas
       { let links = 0;
@@ -104,13 +117,13 @@ const { pathToFileURL } = require('node:url');
           for (let i = 0; i < n; i++) { const a = anchors.nth(i); assert.equal(await a.getAttribute('rel'), 'noopener noreferrer'); assert.ok((await a.innerText()).includes(t.newTab), `aviso en el enlace ${i} de ${role.roleKey}`); assert.ok((await a.getAttribute('href')).startsWith('https://')); }
           links += n;
           const body = await page.locator('body').innerText();
-          for (const key of skillKeys) assert.ok(!body.includes(key), `clave cruda ${key} en la ficha de ${role.roleKey}`);
+          assert.deepEqual(await leaks(page), [], `claves internas visibles en la ficha de ${role.roleKey}`);
           if ((role.capabilities || []).length) assert.ok(body.includes(t.skill), 'capacidad por confirmar');
           if (role === published.roles[0] && width === 1360) await axeCheck(page, `${tag}: ficha`);
           await context.close();
         }
         assert.ok(links > 0, 'el catálogo sintético trae enlaces externos');
-        check(`${tag}: fichas → ${links} enlaces externos, todos con «${t.newTab}», https y noopener; ninguna clave de capacidad cruda (${skillKeys.length} claves)`); }
+        check(`${tag}: fichas → ${links} enlaces externos, todos con «${t.newTab}», https y noopener; ninguna de las ${allKeys.length} claves internas visible (texto, aria-label, title, enlaces externos)`); }
     }
     console.log(`ES-255 servidor real: ${checks.length} comprobaciones superadas. Express + ruta del catálogo + PostgreSQL reales.`);
   } catch (error) {
