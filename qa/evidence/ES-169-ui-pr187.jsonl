@@ -1,0 +1,24 @@
+{"id":"F3a archivos tocados: sin ternarios de idioma (`lang === 'es' ?`) ni emojis en el código","ok":true,"detail":"pages/MyTherapist.tsx, components/TherapistSharingCard.tsx, pages/myProfessionalCopy.ts"}
+{"id":"F1 vocabulario: ni «terapeuta» ni «paciente» (ni therapist/patient) en texto visible ni atributos accesibles, en 5 estados + diálogo × ES/EN","ok":true,"detail":"11 vistas"}
+{"id":"F2 cero emojis ni pictogramas (★ ✓ ℹ) en texto ni atributos, en todos los estados","ok":true,"detail":"11 vistas"}
+{"id":"F3b carga en FRÍO directa de /app/my-therapist ES/EN: sin claves crudas (mp_*, room_t_mood_*, mt_*, therapist_*)","ok":true,"detail":"10 cargas en frío"}
+{"id":"F4a ningún estado deja la pantalla en blanco","ok":true,"detail":""}
+{"id":"F7-join-es","info":"[{\"d\":false,\"t\":\"\"},{\"d\":true,\"t\":\"Disponible 15 minutos antes\"}]"}
+{"id":"F7-join-en","info":"[{\"d\":false,\"t\":\"\"},{\"d\":true,\"t\":\"Available 15 minutes before\"}]"}
+{"id":"F7 sesiones: ánimo 1–5 en palabras «… (n/5)» ES/EN, duración «min», estado «Completada/Completed», «Entrar» habilitado solo en la sesión próxima (5 min) y deshabilitado en la de +30 h","ok":true,"detail":"ES y EN"}
+{"id":"F7b sin sesiones: vacío honesto «aún no ha agendado una sesión» (sin datos inventados)","ok":true,"detail":"Tu profesional aún no ha agendado una sesión."}
+{"id":"F4b fallo 500, corte de red, respuesta vacía y carga lenta: aviso con «Reintentar» (role=alert), estado de carga role=status, nunca en blanco, y Reintentar recupera los datos","ok":true,"detail":"ES/EN × 4 modos"}
+{"id":"F4c sesión vencida (401): la pantalla no queda en blanco (login o aviso)","ok":true,"detail":"url=/app/my-therapist texto=117 chars"}
+{"id":"F5a error de Compartir: al cargar → error propio con «Reintentar» sin perder el perfil; al guardar con 500 → mensaje de error, el interruptor refleja la base y no dice «guardado»","ok":true,"detail":"consent antes=granted después=granted"}
+{"id":"F5b-ui-tras-perdida","info":"interruptor=true base=revoked texto=Compartir mis datos con mi profesional / No se pudo guardar. Inténtalo de nuevo. / Dejar de compartir y desvincularme"}
+{"id":"F5b respuesta perdida REAL al guardar el permiso: el servidor lo aplicó; la pantalla no dice «guardado» sin respuesta y tras recargar queda coherente con la base","ok":true,"detail":"base=revoked"}
+{"id":"F5c","info":"ENCENDER con respuesta perdida: antes interruptor=false; el servidor quedó en «granted»; la pantalla muestra interruptor=false y dice «No se pudo guardar. Inténtalo de nuevo.»"}
+{"id":"F5c [OBSERVACIÓN, preexistente de ES-100] al ENCENDER el permiso con respuesta perdida, la pantalla no muestra «apagado» mientras el servidor ya lo concedió (o lo advierte)","ok":false,"detail":"servidor=granted interruptor=false mensaje=«No se pudo guardar. Inténtalo de nuevo.»"}
+{"id":"F6a interruptor con servidor real: apagar → consentimiento retirado y el profesional ya no ve a la persona (403); encender → vuelve a verla (200); un PUT por clic","ok":true,"detail":"PUT=2"}
+{"id":"F6b desvincular: diálogo con foco inicial en «Cancelar», Tab atrapado, Esc cierra y devuelve el foco, Cancelar no desvincula; confirmar (doble clic) = 1 DELETE, desvinculada, sesiones futuras canceladas y la pantalla pasa a «sin profesional»","ok":true,"detail":"ok"}
+{"id":"F9-api","info":"therapist claves=id,name,email,profile · sesión claves= · correo del profesional en la respuesta: true"}
+{"id":"F9 privacidad A/B: otra persona no ve al profesional ni las sesiones de P1 (pantalla y API), una persona sin profesional no recibe ninguno, y la respuesta no trae notas ni campos privados","ok":true,"detail":"sin cruces"}
+{"id":"F8a axe WCAG A/AA/2.2 AA: 0 violaciones en sin profesional, con profesional, error de carga, error de Compartir (ES/EN × 390/1360 × claro/oscuro) y diálogo de desvincular","ok":true,"detail":"36 corridas"}
+{"id":"F8b-tema","info":"con prefers-color-scheme: dark el fondo es rgb(249, 249, 247) | rgba(0, 0, 0, 0) (pantalla clara por diseño, declarado)"}
+{"id":"F8c sin desborde horizontal de 320 a 1440 px (ES/EN), un solo h1, ≥2 h2 con profesional y ningún control menor de 24 px","ok":true,"detail":"16 combinaciones"}
+{"id":"F8d teclado: el orden de Tab recorre los controles de la pantalla y cada uno muestra foco visible","ok":true,"detail":"← Volver → Activado → Dejar de compartir y desvinc → Entrar a videollamada → ¿Quieres cambiar de profesio"}
