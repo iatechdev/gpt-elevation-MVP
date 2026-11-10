@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": {
+    "inactivePatients": [],
+    "notableProgress": [
+      {
+        "userId": 3,
+        "name": "Sintético 3",
+        "improved": true
+      }
+    ]
+  }
+}

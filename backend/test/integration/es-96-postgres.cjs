@@ -112,8 +112,9 @@ test('ES-96 PostgreSQL + HTTP: el terapeuta ve solo lo autorizado y pierde el ac
       [p1.id, tA.id, require('../../utils/crypto').encriptar('Nota previa sintética'), today]))[0].id;
     const list = await http(tA, 'GET', '/api/therapist/pacientes');
     assert.equal(list.status, 200);
-    assert.deepEqual(list.body.map((p) => [p.id, p.name, p.sharing, p.email, p.lastMood, p.avgRating, p.totalSessions, p.trend]).sort((x, y) => x[0] - y[0]),
-      [[p1.id, 'Persona Uno', false, '', null, null, 0, null], [p2.id, 'Persona Dos', false, '', null, null, 0, null]]);
+    assert.deepEqual(list.body.map((p) => [p.id, p.name, p.ordinal, p.sharing, p.email, p.lastMood, p.avgRating, p.totalSessions, p.trend]).sort((x, y) => x[0] - y[0]),
+      [[p1.id, null, 1, false, '', null, null, 0, null], [p2.id, null, 2, false, '', null, null, 0, null]]); // ES-177: «Persona n», sin nombre
+    assert.ok(!list.text.includes('Persona Uno') && !list.text.includes('Persona Dos'), 'ES-177: el nombre de quien no autorizó no viaja');
     assert.ok(!list.text.includes('canario-correo'), 'ni correo ni cifras de quien no autorizó');
     assert.deepEqual((await http(tA, 'GET', '/api/therapist/alerts')).body, { inactivePatients: [], notableProgress: [] }, 'las alertas usan el ánimo: sin autorización, no hay alertas');
     for (const route of [`/api/therapist/pacientes/${p1.id}/historial`, `/api/therapist/pacientes/${p1.id}/historia`, `/api/therapist/pacientes/${p1.id}/resumen-ia`]) {

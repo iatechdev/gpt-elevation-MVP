@@ -1,6 +1,7 @@
 // HU-046 + HU-049 + HU-062 + HU-065 + HU-067 + HU-082 — Therapist dashboard + i18n
 
 import { useState, useEffect } from 'react'
+import { personInitial, personLabel } from './panelText'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 
@@ -9,7 +10,8 @@ const getToken = () => localStorage.getItem('elevation_token') || ''
 
 interface Patient {
   id: number
-  name: string
+  name: string | null // null cuando la persona no autorizó compartir (ES-177): se muestra «Persona n»
+  ordinal: number // número estable por profesional
   email: string
   active: boolean
   createdAt: string
@@ -59,7 +61,7 @@ interface InactivePatient {
 interface NotableProgress {
   userId: number
   name: string
-  improvementPercent: number
+  improved: true
 }
 
 interface AlertsData {
@@ -215,7 +217,7 @@ export function TherapistDashboard() {
         body: JSON.stringify({ content: newPromptContent }),
       })
       const data = await res.json()
-      if (!res.ok) { setProposeError(data.error || t('error_connection')); return }
+      if (!res.ok) { setProposeError(data.code === 'pending_exists' ? t('therapist_prompt_pending_exists') : (data.error || t('error_connection'))); return }
       setProposeSuccess(t('therapist_prompt_pending'))
       setNewPromptContent('')
       const refreshRes = await fetch(`${API}/api/therapist/prompt`, {
@@ -586,11 +588,11 @@ export function TherapistDashboard() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '1.1rem', fontWeight: 600, color: '#4A6741', flexShrink: 0,
                       }}>
-                        {p.name.charAt(0).toUpperCase()}
+                        {personInitial(p)}
                       </div>
                       <div>
                         <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          {p.name}
+                          {personLabel(p, t('therapist_person'))}
                           {noAccess && <span className="th-badge-muted">🔒 {t('therapist_no_access')}</span>}
                         </div>
                         {noAccess && (
@@ -710,7 +712,7 @@ export function TherapistDashboard() {
                       ✅ {t('therapist_notable_progress')}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#4A6741' }}>
-                      {p.name} +{p.improvementPercent}%
+                      {p.name} · {t('therapist_progress_improved')}
                     </div>
                   </div>
                 ))}
