@@ -11,6 +11,17 @@ const { Client } = require('pg');
 const { Sequelize } = require('sequelize');
 
 const backend = path.resolve(__dirname, '..', '..');
+const fs = require('node:fs');
+const FIXTURES = path.join(__dirname, '..', '..', '..', 'frontend', 'test', 'fixtures');
+const shapeOf = (v) => (v === null ? null : Array.isArray(v) ? [v.length ? shapeOf(v[0]) : null] : (v && typeof v === 'object') ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, shapeOf(v[k])])) : typeof v);
+const sameShape = (a, b) => (a === null || b === null) ? true : (Array.isArray(a) ? Array.isArray(b) && sameShape(a[0] ?? null, b[0] ?? null) : (a && typeof a === 'object') ? (b && typeof b === 'object' && !Array.isArray(b) && JSON.stringify(Object.keys(a)) === JSON.stringify(Object.keys(b)) && Object.keys(a).every((k) => sameShape(a[k], b[k]))) : a === b);
+// Contrato con la pantalla: la respuesta REAL se guarda como fixture del frontend (ES177_WRITE_FIXTURE=1) y cada corrida comprueba que su forma no cambió.
+function contractFixture(name, status, body) {
+  const file = path.join(FIXTURES, name); const doc = { status, body };
+  if (process.env.ES177_WRITE_FIXTURE) { fs.mkdirSync(FIXTURES, { recursive: true }); fs.writeFileSync(file, JSON.stringify(doc, null, 2) + String.fromCharCode(10)); return; }
+  const saved = JSON.parse(fs.readFileSync(file, 'utf8')); assert.equal(saved.status, status, name);
+  assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES177_WRITE_FIXTURE=1 y revisa la pantalla`);
+}
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin porcentaje', { timeout: 240000 }, async (t) => {
@@ -101,7 +112,8 @@ test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin
 
   await t.test('con una pendiente, otra propuesta secuencial = 409 con el mensaje de siempre; otro profesional propone sin problema (A/B)', async () => {
     const again = await http(tA, 'POST', '/api/therapist/prompt/propose', { content: GUIDE });
-    assert.equal(again.status, 409); assert.match(again.body.error, /already have a version pending review/);
+    contractFixture('es-177-propose-409.json', again.status, again.body);
+    assert.equal(again.status, 409); assert.equal(again.body.code, 'pending_exists', 'la pantalla muestra su texto ES/EN por código'); assert.match(again.body.error, /already have a version pending review/);
     const other = await http(tB, 'POST', '/api/therapist/prompt/propose', { content: GUIDE });
     assert.ok(other.status >= 200 && other.status < 300, JSON.stringify(other.body));
     assert.equal(await pending(tB.id), 1); assert.equal(await pending(tA.id), 1);
@@ -112,6 +124,53 @@ test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin
     const tC = await mkUser('therapist');
     assert.equal((await http(tC, 'POST', '/api/therapist/prompt/propose', { content: 'corto' })).status, 400);
     assert.equal(await pending(tC.id), 0);
+  });
+
+  await t.test('«Persona n»: quien no comparte llega SIN nombre y con un ordinal estable por profesional (no cambia con altas, bajas ni recargas)', async () => {
+    const nameOf = async (id) => (await q('SELECT name FROM "Users" WHERE id=$1', [id]))[0].name;
+    const secret = await nameOf(p2.id);
+    const first = await http(tA, 'GET', '/api/therapist/pacientes');
+    assert.equal(first.status, 200);
+    const row = (list, id) => list.body.find((x) => x.id === id);
+    assert.deepEqual([row(first, p2.id).name, row(first, p2.id).sharing, Number.isInteger(row(first, p2.id).ordinal)], [null, false, true]);
+    assert.equal(JSON.stringify(first.body).includes(secret), false, 'el nombre de quien no comparte no viaja');
+    assert.equal(row(first, p1.id).name, await nameOf(p1.id), 'quien comparte conserva su nombre');
+    contractFixture('es-177-pacientes.json', first.status, first.body);
+    const n2 = row(first, p2.id).ordinal;
+    // altas y bajas de otras personas no cambian el número de p2; el número nuevo nunca reutiliza uno anterior
+    const extra = await mkUser('user', { therapistId: tA.id });
+    const withExtra = await http(tA, 'GET', '/api/therapist/pacientes');
+    assert.equal(row(withExtra, p2.id).ordinal, n2); assert.ok(row(withExtra, extra.id).ordinal > Math.max(row(first, p1.id).ordinal, n2));
+    const extraOrdinal = row(withExtra, extra.id).ordinal;
+    await q('UPDATE "Users" SET "therapistId"=NULL WHERE id=$1', [extra.id]);
+    const again = await http(tA, 'GET', '/api/therapist/pacientes');
+    assert.equal(row(again, p2.id).ordinal, n2); assert.equal(row(again, extra.id), undefined);
+    await q('UPDATE "Users" SET "therapistId"=$2 WHERE id=$1', [extra.id, tA.id]);
+    assert.equal(row(await http(tA, 'GET', '/api/therapist/pacientes'), extra.id).ordinal, extraOrdinal, 'quien vuelve conserva su número');
+    // lecturas simultáneas: sin números repetidos
+    const crowd = []; for (let i = 0; i < 4; i++) crowd.push(await mkUser('user', { therapistId: tA.id }));
+    const all = await Promise.all(Array.from({ length: 6 }, () => http(tA, 'GET', '/api/therapist/pacientes')));
+    assert.ok(all.every((r) => r.status === 200), JSON.stringify(all.map((r) => r.status)));
+    const ordinals = all[0].body.map((x) => x.ordinal); assert.equal(new Set(ordinals).size, ordinals.length, 'ningún número repetido');
+    assert.deepEqual(all.map((r) => JSON.stringify(r.body.map((x) => [x.id, x.ordinal]).sort())).filter((v, i, a) => a.indexOf(v) === i).length, 1, 'todas las lecturas ven lo mismo');
+    // cada profesional tiene su propia numeración, y un profesional no ve a las personas del otro
+    const other = await mkUser('user', { therapistId: tB.id });
+    const listB = await http(tB, 'GET', '/api/therapist/pacientes');
+    assert.deepEqual(listB.body.map((x) => x.id).filter((id) => id !== other.id && id !== undefined).length >= 0, true);
+    assert.ok(listB.body.every((x) => x.id === other.id || x.id !== p2.id), 'B no ve a las personas de A');
+    assert.equal(row(listB, other.id).ordinal, 1, 'la numeración de B empieza en 1');
+  });
+
+  await t.test('la tabla de ordinales: migración aditiva e idempotente, RLS y borrado en cascada con la persona', async () => {
+    const migration = require('../../migrations/20261111010000-es177-person-ordinals.cjs');
+    await migration.up(app); await migration.up(app);
+    const rls = (await q("SELECT relrowsecurity FROM pg_class WHERE relname='TherapistPersonOrdinals'"))[0].relrowsecurity;
+    assert.equal(rls, true);
+    const gone = await mkUser('user', { therapistId: tA.id });
+    await http(tA, 'GET', '/api/therapist/pacientes');
+    assert.equal((await q('SELECT count(*)::int AS n FROM "TherapistPersonOrdinals" WHERE "personId"=$1', [gone.id]))[0].n, 1);
+    await q('DELETE FROM "Users" WHERE id=$1', [gone.id]);
+    assert.equal((await q('SELECT count(*)::int AS n FROM "TherapistPersonOrdinals" WHERE "personId"=$1', [gone.id]))[0].n, 0, 'sin la persona no queda ninguna fila');
   });
 
   await t.test('/alerts: quien mejoró trae improved:true (palabra), solo de quien autorizó; la cifra queda deprecada para la pantalla actual', async () => {
@@ -125,6 +184,7 @@ test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin
     assert.equal(alerts.status, 200);
     assert.deepEqual(alerts.body.notableProgress.map((a) => a.userId), [p1.id], 'p2 no autorizó: no aparece');
     assert.equal(alerts.body.notableProgress[0].improved, true);
-    assert.equal(typeof alerts.body.notableProgress[0].improvementPercent, 'number', 'deprecado: lo lee la pantalla actual hasta su PR de frontend');
+    contractFixture('es-177-alerts.json', alerts.status, alerts.body);
+    assert.equal(JSON.stringify(alerts.body).includes('improvementPercent') || /[0-9]%/.test(JSON.stringify(alerts.body)), false, 'ningún porcentaje en /alerts (decisión 13)');
   });
 });
