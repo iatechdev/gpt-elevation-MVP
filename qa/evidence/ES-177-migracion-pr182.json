@@ -1,6 +1,6 @@
 [
  {
-  "id": "M1c migraciones hasta la anterior a ES-177 (20261110000000-es163-diary-request-id.cjs)",
+  "id": "M1c migraciones hasta la anterior a ES-177 (20261111000000-es179-session-note-live.cjs)",
   "ok": true,
   "detail": "exit=0"
  },
@@ -40,9 +40,14 @@
   "detail": "23505/23505/23503/23502"
  },
  {
-  "id": "M1g cascada real: eliminar a la persona borra su fila; eliminar al profesional borra las suyas",
+  "id": "M1h tabla del contador monótono TherapistOrdinalCounters: lastOrdinal INTEGER NOT NULL DEFAULT 0, clave primaria por profesional, FK con ON DELETE CASCADE, RLS habilitada y sin políticas",
   "ok": true,
-  "detail": "persona=0 profesional=0"
+  "detail": "[\"therapistId:NO\",\"lastOrdinal:NO\",\"createdAt:NO\",\"updatedAt:NO\"] fk=[{\"confdeltype\":\"c\"}] rls=true políticas=0"
+ },
+ {
+  "id": "M1g cascada real: eliminar a la persona borra su fila; eliminar al profesional borra las suyas y su contador",
+  "ok": true,
+  "detail": "persona=0 profesional=0 contador=0"
  },
  {
   "id": "M2b down SIN bandera, y con bandera pero en producción, se rechazan (la tabla sigue)",
