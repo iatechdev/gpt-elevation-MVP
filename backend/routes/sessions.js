@@ -24,6 +24,7 @@ const { findConflict, editProblem } = require('../utils/sessionSchedule');
 validateIdParams(router, 'id');
 
 const CONFLICT = { code: 'session_conflict', error: 'Ya hay una sesión en ese horario. / There is already a session at that time.' };
+const MAX_CLOSING_NOTE = 4000; // ES-179: nota de cierre de la sesión
 const MAX_CANCEL_REASON = 255; // TherapySessions.cancelReason es VARCHAR(255)
 // Duración en minutos: entero entre 15 y 120 (acepta un número o un texto numérico, como antes).
 const parseDuration = (value) => (value === undefined ? 50 : Number(value));
@@ -223,7 +224,13 @@ router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duratio
 });
 
 // POST /api/sessions/therapist/:id/notes — agregar nota en vivo
-router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (req, res) => {
+// ES-179: UNA nota en vivo por sesión. El autoguardado manda el texto completo; antes cada envío creaba una fila nueva (decenas de copias por sesión).
+// Ahora se actualiza la misma fila con control de versión: `version` esperada distinta de la guardada → 409 `note_changed` con la versión vigente (otra pestaña guardó antes);
+// `requestId` repetido → 200 sin cambios (reintento de un guardado incierto, idempotente). Sin `version` (clientes anteriores) se sobrescribe la nota en vivo, nunca se duplica.
+const MAX_LIVE_NOTE = 20000;
+const REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
+const isUniqueViolation = (error) => Boolean(error) && (error.name === 'SequelizeUniqueConstraintError' || error.original?.code === '23505');
+router.post('/therapist/:id/notes', validateBody({ content: nonempty, version: optional(numeric), requestId: optional(text) }), async (req, res) => {
   const TherapySession = require('../TherapySession');
   const SessionNote    = require('../SessionNote');
   try {
@@ -238,17 +245,58 @@ router.post('/therapist/:id/notes', validateBody({ content: nonempty }), async (
     if (session.status !== 'in_progress') {
       return res.status(400).json({ error: 'Session is not in progress.' });
     }
-    const { content } = req.body;
+    const { content, requestId } = req.body;
     if (!content?.trim()) return res.status(400).json({ error: 'content is required.' });
-    const note = await SessionNote.create({
-      sessionId:   session.id,
-      therapistId: req.user.id,
-      content:     encriptar(content),
-      timestamp:   new Date(),
-    });
-    res.status(201).json({ message: 'Note saved.', note: { ...note.toJSON(), content } });
+    if (content.length > MAX_LIVE_NOTE) {
+      return res.status(400).json({ code: 'too_long', max: MAX_LIVE_NOTE, error: `La nota supera el máximo de ${MAX_LIVE_NOTE} caracteres. / The note exceeds the ${MAX_LIVE_NOTE}-character maximum.` });
+    }
+    if (requestId !== undefined && !REQUEST_ID_PATTERN.test(requestId)) {
+      return res.status(400).json({ code: 'invalid_request_id', error: 'requestId no válido. / Invalid requestId.' });
+    }
+    const expected = req.body.version === undefined ? undefined : Number(req.body.version);
+    if (expected !== undefined && !(Number.isInteger(expected) && expected >= 0)) {
+      return res.status(400).json({ code: 'invalid_version', error: 'version no válida. / Invalid version.' });
+    }
+    const current = (note) => ({ content: desencriptar(note.content), version: note.version || 1, timestamp: note.timestamp });
+    // Dos intentos: si dos guardados simultáneos intentan crear la primera nota, el índice único hace perder a uno y este reintenta como actualización.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const transaction = await sequelize.transaction();
+      try {
+        const live = await SessionNote.findOne({
+          where: { sessionId: session.id, therapistId: req.user.id, isLive: true },
+          transaction, lock: Transaction.LOCK.UPDATE,
+        });
+        if (!live) {
+          if (expected !== undefined && expected !== 0) {
+            await transaction.rollback();
+            return res.status(409).json({ code: 'note_changed', current: null, error: 'La nota cambió. / The note changed.' });
+          }
+          const created = await SessionNote.create({
+            sessionId: session.id, therapistId: req.user.id, content: encriptar(content), timestamp: new Date(),
+            isLive: true, version: 1, requestId: requestId ?? null,
+          }, { transaction });
+          await transaction.commit();
+          return res.status(201).json({ message: 'Note saved.', note: { ...created.toJSON(), content } });
+        }
+        if (requestId && live.requestId === requestId) { // reintento del mismo guardado: ya está aplicado
+          await transaction.commit();
+          return res.json({ message: 'Note saved.', replayed: true, note: { ...live.toJSON(), content: desencriptar(live.content) } });
+        }
+        if (expected !== undefined && expected !== (live.version || 1)) {
+          await transaction.rollback();
+          return res.status(409).json({ code: 'note_changed', current: current(live), error: 'La nota cambió en otra pestaña. / The note changed in another tab.' });
+        }
+        await live.update({ content: encriptar(content), version: (live.version || 1) + 1, requestId: requestId ?? null, timestamp: new Date() }, { transaction });
+        await transaction.commit();
+        return res.json({ message: 'Note saved.', note: { ...live.toJSON(), content } });
+      } catch (error) {
+        await transaction.rollback().catch(() => {});
+        if (attempt === 0 && isUniqueViolation(error)) continue;
+        throw error;
+      }
+    }
   } catch (error) {
-    console.error('❌ Error saving note:', error);
+    console.error('❌ Error saving note:', error && error.name);
     res.status(500).json({ error: 'Could not save note.' });
   }
 });
@@ -444,6 +492,7 @@ const createDailyRoom = async (therapistId, patientId, sessionId) => {
 
   const response = await fetch('https://api.daily.co/v1/rooms', {
     method: 'POST',
+    signal: AbortSignal.timeout(8000), // ES-179: una sala externa lenta no deja la solicitud colgada
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${process.env.DAILY_API_KEY}`,
@@ -469,33 +518,58 @@ const createDailyRoom = async (therapistId, patientId, sessionId) => {
 };
 
 // POST /api/sessions/therapist/:id/start — iniciar videollamada
+// ES-179: idempotente y atómico. Se bloquea la fila de la sesión: dos solicitudes simultáneas (dos pestañas, doble clic) no crean dos salas y la
+// que llega después, o una repetición tras recargar con la sesión ya en curso, recibe la MISMA sala (`resumed: true`). Si la sala no se puede crear,
+// la sesión sigue «scheduled» (no se registró el inicio) y la respuesta lo dice con un código estable.
 router.post('/therapist/:id/start', async (req, res) => {
   const TherapySession = require('../TherapySession');
+  const transaction = await sequelize.transaction();
   try {
     if (req.user.role !== 'therapist') {
+      await transaction.rollback();
       return res.status(403).json({ error: 'Therapists only.' });
     }
     const session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
+      transaction, lock: Transaction.LOCK.UPDATE,
     });
-    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
-    if (!(await requireSharing(req, res, session.patientId))) return; // sin autorización de compartir, no se inicia
+    if (!session || await patientBlocked(session.patientId)) { // ES-101
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Session not found.' });
+    }
+    if (!(await requireSharing(req, res, session.patientId))) { // sin autorización de compartir, no se inicia
+      await transaction.rollback();
+      return;
+    }
+    if (session.status === 'in_progress' && session.meetingUrl) {
+      await transaction.commit();
+      return res.json({ meetingUrl: session.meetingUrl, sessionId: session.id, startedAt: session.startedAt, resumed: true });
+    }
     if (session.status !== 'scheduled') {
-      return res.status(400).json({ error: `Cannot start a session with status '${session.status}'.` });
+      await transaction.rollback();
+      return res.status(400).json({ code: 'session_not_startable', error: `Cannot start a session with status '${session.status}'.` });
     }
 
-    const meetingUrl = await createDailyRoom(req.user.id, session.patientId, session.id);
-
+    let meetingUrl;
+    try {
+      meetingUrl = await createDailyRoom(req.user.id, session.patientId, session.id);
+    } catch (roomError) {
+      await transaction.rollback();
+      console.error('❌ No se pudo crear la sala:', roomError && roomError.name);
+      return res.status(502).json({ code: 'room_unavailable', retryable: true, error: 'No se ha registrado el inicio de la sesión. / The session start was not recorded.' });
+    }
     await session.update({
       status:     'in_progress',
       startedAt:  new Date(),
       meetingUrl,
-    });
+    }, { transaction });
+    await transaction.commit();
 
-    console.log(`✅ Session ${session.id} started — room: ${meetingUrl}`);
-    res.json({ meetingUrl, sessionId: session.id });
+    console.log(`✅ Session ${session.id} started`);
+    res.json({ meetingUrl, sessionId: session.id, startedAt: session.startedAt, resumed: false });
   } catch (error) {
-    console.error('❌ Error starting session:', error);
+    await transaction.rollback().catch(() => {});
+    console.error('❌ Error starting session:', error && error.name);
     res.status(500).json({ error: 'Could not start session.' });
   }
 });
@@ -506,24 +580,44 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
   const WellnessRecommendation = require('../WellnessRecommendation');
   const anthropic               = require('../utils/anthropic');
   const { textOf }              = require('../utils/claudeText');
+  // ES-179: el cierre es atómico. Se bloquea la fila de la sesión: dos cierres simultáneos (doble clic, dos pestañas) no pasan ambos la comprobación;
+  // el segundo recibe 409 `already_closed` y NO se genera una segunda recomendación ni se gasta presupuesto de IA dos veces.
+  const transaction = await sequelize.transaction();
+  let session;
   try {
     if (req.user.role !== 'therapist') {
+      await transaction.rollback();
       return res.status(403).json({ error: 'Therapists only.' });
     }
-    const session = await TherapySession.findOne({
+    session = await TherapySession.findOne({
       where: { id: req.params.id, therapistId: req.user.id },
+      transaction, lock: Transaction.LOCK.UPDATE,
     });
-    if (!session || await patientBlocked(session.patientId)) return res.status(404).json({ error: 'Session not found.' }); // ES-101
+    if (!session || await patientBlocked(session.patientId)) { // ES-101
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Session not found.' });
+    }
+    if (session.status === 'completed') {
+      await transaction.rollback();
+      return res.status(409).json({ code: 'already_closed', status: session.status, endedAt: session.endedAt, error: 'Esta sesión ya terminó. / This session has already ended.' });
+    }
     if (session.status !== 'in_progress') {
+      await transaction.rollback();
       return res.status(400).json({ error: `Cannot end a session with status '${session.status}'.` });
     }
 
     const { therapistNote, patientMoodAfter } = req.body;
     if (!therapistNote || therapistNote.trim().length < 10) {
+      await transaction.rollback();
       return res.status(400).json({ error: 'therapistNote must be at least 10 characters.' });
     }
-    if (patientMoodAfter === undefined || patientMoodAfter < 1 || patientMoodAfter > 5) {
-      return res.status(400).json({ error: 'patientMoodAfter must be between 1 and 5.' });
+    if (therapistNote.length > MAX_CLOSING_NOTE) {
+      await transaction.rollback();
+      return res.status(400).json({ code: 'too_long', max: MAX_CLOSING_NOTE, error: `La nota de cierre supera el máximo de ${MAX_CLOSING_NOTE} caracteres. / The closing note exceeds the ${MAX_CLOSING_NOTE}-character maximum.` });
+    }
+    if (patientMoodAfter === undefined || !Number.isInteger(Number(patientMoodAfter)) || patientMoodAfter < 1 || patientMoodAfter > 5) {
+      await transaction.rollback();
+      return res.status(400).json({ error: 'patientMoodAfter must be an integer between 1 and 5.' });
     }
 
     await session.update({
@@ -531,7 +625,8 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
       endedAt:          new Date(),
       therapistNote:    encriptar(therapistNote),
       patientMoodAfter: Number(patientMoodAfter),
-    });
+    }, { transaction });
+    await transaction.commit();
 
     // Generar recomendación IA para el paciente (silent fail si Anthropic falla)
     let recommendation = null;
@@ -578,6 +673,7 @@ router.post('/therapist/:id/end', validateBody({ therapistNote: nonempty, patien
       ...(recommendationSkipped ? { recommendationSkipped } : {}),
     });
   } catch (error) {
+    await transaction.rollback().catch(() => {}); // si el cierre ya se confirmó, no hay nada que deshacer
     console.error('❌ Error ending session:', error);
     res.status(500).json({ error: 'Could not end session.' });
   }
