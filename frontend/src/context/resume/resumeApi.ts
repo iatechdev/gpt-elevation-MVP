@@ -61,11 +61,24 @@ export async function readResumeConsent(): Promise<boolean> {
     return list.some(item => item.purpose === 'resume_ai_reading' && item.status === 'granted')
   } catch { return false }
 }
-export async function setResumeConsent(granted: boolean): Promise<boolean> {
+// ES-248: el resultado de cambiar el permiso puede ser INCIERTO. 'ok' = el servidor respondió que sí; 'rejected' = respuesta definitiva de rechazo (4xx);
+// 'uncertain' = sin respuesta (corte o 15 s) o 5xx: el servidor pudo haberlo aplicado (el PUT es idempotente) y hay que releer antes de decir nada.
+export type ConsentChange = 'ok' | 'rejected' | 'uncertain'
+export async function setResumeConsent(granted: boolean): Promise<ConsentChange> {
   try {
-    const response = await fetch(`${backend}/api/consents/resume_ai_reading`, { method: 'PUT', headers: { ...auth(), 'Content-Type': 'application/json' }, body: JSON.stringify({ status: granted ? 'granted' : 'revoked' }) })
-    return response.ok
-  } catch { return false }
+    const response = await fetch(`${backend}/api/consents/resume_ai_reading`, { method: 'PUT', headers: { ...auth(), 'Content-Type': 'application/json' }, body: JSON.stringify({ status: granted ? 'granted' : 'revoked' }), signal: AbortSignal.timeout(15000) })
+    return response.ok ? 'ok' : response.status >= 500 ? 'uncertain' : 'rejected'
+  } catch { return 'uncertain' }
+}
+// Lee el permiso real. 'unknown' = no se pudo leer (a diferencia de readResumeConsent, que cuenta un error como «no autorizado»).
+export async function checkResumeConsent(): Promise<'granted' | 'not_granted' | 'unknown'> {
+  try {
+    const response = await fetch(`${backend}/api/consents`, { headers: auth(), cache: 'no-store', signal: AbortSignal.timeout(15000) })
+    if (!response.ok) return 'unknown'
+    const body = await json(response)
+    const list = (body?.consents ?? []) as { purpose?: string; status?: string }[]
+    return list.some(item => item.purpose === 'resume_ai_reading' && item.status === 'granted') ? 'granted' : 'not_granted'
+  } catch { return 'unknown' }
 }
 
 export async function listResumes(signal?: AbortSignal): Promise<{ resumes: ResumeMeta[]; maxVersions: number } | null> {

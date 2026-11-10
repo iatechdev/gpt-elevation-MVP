@@ -4,7 +4,7 @@ import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
-import { MAX_VERSIONS, deleteResume, fetchResumeBlob, listResumes, readResumeConsent, setResumeConsent, type ResumeMeta } from './resumeApi'
+import { MAX_VERSIONS, checkResumeConsent, deleteResume, fetchResumeBlob, listResumes, readResumeConsent, setResumeConsent, type ResumeMeta } from './resumeApi'
 import { fill } from './resumeCopy'
 import { modalKeyDown } from '../../a11y/modalKeys.ts'
 import './resume.css'
@@ -22,6 +22,7 @@ export function ResumesPage() {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [alert, setAlert] = useState('')
+  const [unsure, setUnsure] = useState(false) // ES-248: el retiro de la autorización quedó incierto: «Comprobar» relee el estado real
   const dialog = useRef<HTMLDivElement>(null)
   const opener = useRef<HTMLElement | null>(null)
 
@@ -57,11 +58,21 @@ export function ResumesPage() {
     if (!ok) { setAlert(t('resume_delete_error')); return }
     setConfirm(null); setMessage(t('resume_deleted_live')); await load()
   }
-  async function confirmWithdraw() {
-    setBusy(true)
-    const ok = await setResumeConsent(false)
+  // ES-248: retirar la autorización BORRA las hojas de vida (ES-109). Si la respuesta se pierde, el servidor pudo haberlo hecho: se relee el estado real antes de decir algo.
+  async function verifyWithdraw() {
+    setBusy(true); setAlert(''); setMessage('')
+    const real = await checkResumeConsent()
     setBusy(false)
-    if (!ok) { setAlert(t('resume_withdraw_error')); return }
+    if (real === 'unknown') { setUnsure(true); setAlert(t('resume_withdraw_unsure')); return }
+    if (real === 'not_granted') { setUnsure(false); setConfirm(null); setMessage(t('resume_withdrawn_live')); await load(); return }
+    setUnsure(true); setConfirm(null); setAlert(t('resume_withdraw_not_seen')); await load()
+  }
+  async function confirmWithdraw() {
+    setBusy(true); setUnsure(false)
+    const result = await setResumeConsent(false)
+    setBusy(false)
+    if (result === 'rejected') { setAlert(t('resume_withdraw_error')); return } // respuesta definitiva: no se retiró
+    if (result === 'uncertain') { setConfirm(null); await verifyWithdraw(); return }
     setConfirm(null); setMessage(t('resume_withdrawn_live')); await load()
   }
 
@@ -77,6 +88,7 @@ export function ResumesPage() {
         <div className="rs-live" role="status" aria-live="polite">{message}</div>
         {message && <p className="rs-ok">{message}</p>}
         {alert && <p className="rs-err" role="alert">{alert}</p>}
+        {unsure && <button type="button" className="elv-btn" disabled={busy} onClick={() => void verifyWithdraw()}>{t('resume_check')}</button>}
 
         {phase === 'loading' && <p role="status">{t('resume_hist_loading')}</p>}
         {phase === 'error' && <div role="alert" className="rs-error"><p>{t('resume_hist_error')}</p><button type="button" className="elv-btn" onClick={() => void load()}>{t('resume_hist_retry')}</button></div>}

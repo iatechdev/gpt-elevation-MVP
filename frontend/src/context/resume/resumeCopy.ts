@@ -62,7 +62,9 @@ export const resumeEs = {
   resume_withdraw_title: 'Tu autorización de lectura con IA', resume_withdraw_body: 'Si la retiras, borramos todas tus hojas de vida y dejamos de analizar nuevas. Puedes volver a autorizar cuando quieras.',
   resume_withdraw: 'Retirar mi autorización', resume_withdraw_confirm_title: '¿Retirar tu autorización?',
   resume_withdraw_confirm_body: 'Borraremos las hojas de vida guardadas, sin copias, y lo derivado de ellas quedará «para revisión». Tu contexto y tus evidencias ya guardados no se borran.',
-  resume_withdraw_yes: 'Sí, retirar y borrar', resume_withdrawn_live: 'Retiramos tu autorización y borramos tus hojas de vida.', resume_withdraw_error: 'No pudimos retirar la autorización. Inténtalo de nuevo.',
+  resume_withdraw_yes: 'Sí, retirar y borrar', resume_withdrawn_live: 'Retiramos tu autorización y borramos tus hojas de vida.', resume_check: 'Comprobar',
+  resume_withdraw_unsure: 'No pudimos confirmar si se retiró la autorización. Puede que tus hojas de vida ya se hayan borrado. Comprueba antes de continuar.',
+  resume_withdraw_not_seen: 'Todavía no vemos que se haya retirado la autorización: tus hojas de vida siguen guardadas. Puedes comprobar de nuevo o intentarlo otra vez.', resume_withdraw_error: 'No pudimos retirar la autorización. Inténtalo de nuevo.',
   resume_back_context: 'Volver a mi contexto', resume_schema_outdated: 'Esta página quedó desactualizada. Recárgala para continuar: no perderás lo ya guardado.',
 }
 export const resumeEn: Record<keyof typeof resumeEs, string> = {
@@ -128,7 +130,9 @@ export const resumeEn: Record<keyof typeof resumeEs, string> = {
   resume_withdraw_title: 'Your AI-reading permission', resume_withdraw_body: 'If you withdraw it, we delete all your résumés and stop analyzing new ones. You can allow it again whenever you want.',
   resume_withdraw: 'Withdraw my permission', resume_withdraw_confirm_title: 'Withdraw your permission?',
   resume_withdraw_confirm_body: 'We will delete the saved résumés, with no copies, and anything derived from them will be marked “for review”. Your saved context and evidence are not deleted.',
-  resume_withdraw_yes: 'Yes, withdraw and delete', resume_withdrawn_live: 'We withdrew your permission and deleted your résumés.', resume_withdraw_error: 'We could not withdraw the permission. Please try again.',
+  resume_withdraw_yes: 'Yes, withdraw and delete', resume_withdrawn_live: 'We withdrew your permission and deleted your résumés.', resume_check: 'Check',
+  resume_withdraw_unsure: 'We could not confirm whether the permission was withdrawn. Your résumés may already have been deleted. Check before continuing.',
+  resume_withdraw_not_seen: 'We do not see the permission withdrawn yet: your résumés are still saved. You can check again or try once more.', resume_withdraw_error: 'We could not withdraw the permission. Please try again.',
   resume_back_context: 'Back to my context', resume_schema_outdated: 'This page is out of date. Reload it to continue: you will not lose what is already saved.',
 }
 export const fill = (template: string, values: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''))
