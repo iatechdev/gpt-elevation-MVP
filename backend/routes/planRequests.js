@@ -9,6 +9,7 @@ const User         = require('../User');
 const { Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const { verificarAdmin } = require('../middlewares/auth');
+const { recordAdminAction } = require('../utils/adminAudit'); // ES-186 B
 const { validateBody, id, text, nonempty, optional, nullable } = require('../middlewares/validateBody');
 
 const CLOSED = { code: 'request_closed', error: 'Esta solicitud ya fue resuelta. / This request has already been resolved.' };
@@ -167,6 +168,7 @@ router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optio
       resolvedBy: adminId,
       resolvedAt: new Date(),
     }, { transaction });
+    await recordAdminAction({ actor: req.user, action: 'plan_request.approve', targetType: 'plan_request', targetId: request.id }, { transaction }); // ES-186 B
     await transaction.commit();
 
     res.json({
@@ -205,6 +207,7 @@ router.put('/admin/:id/reject', verificarAdmin, validateBody({ adminNote: nonemp
       resolvedBy: adminId,
       resolvedAt: new Date(),
     }, { transaction });
+    await recordAdminAction({ actor: req.user, action: 'plan_request.reject', targetType: 'plan_request', targetId: request.id }, { transaction }); // ES-186 B
     await transaction.commit();
 
     res.json({ message: 'Solicitud rechazada correctamente.' });

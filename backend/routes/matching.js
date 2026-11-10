@@ -10,6 +10,7 @@ const router           = express.Router();
 const { Op, Transaction } = require('sequelize');
 const { sequelize }     = require('../database');
 const consent          = require('../utils/consent');
+const { recordAdminAction } = require('../utils/adminAudit'); // ES-186 B
 const User             = require('../User');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
@@ -221,6 +222,7 @@ router.post('/:id/confirm', verificarAdmin, async (req, res) => {
     if (previous !== null && previous !== request.chosenTherapistId) await consent.revokeTherapistSharing(person.id, previous, transaction);
     await person.update({ therapistId: request.chosenTherapistId }, { transaction });
     await request.update({ status: 'confirmed' }, { transaction });
+    await recordAdminAction({ actor: req.user, action: 'matching.confirm', targetType: 'matching_request', targetId: request.id }, { transaction }); // ES-186 B
     await transaction.commit();
     res.json({ message: 'Therapist assigned successfully.' });
   } catch (error) {
