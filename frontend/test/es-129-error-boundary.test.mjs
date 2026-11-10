@@ -16,6 +16,16 @@ test('ES-129 error de bloque: reconoce los tres modos de fallo del navegador y n
   for (const other of [new TypeError("Cannot read properties of undefined (reading 'map')"), new Error('boom'), null, undefined]) assert.equal(isChunkLoadError(other), false)
 })
 
+// ES-234 (E232-1): sin conexión el primer fallo es «Unable to preload CSS for …»; antes no se reconocía y el cuerpo quedaba en blanco.
+test('ES-234 sin conexión: «Unable to preload CSS/…» cuenta como bloque que no se pudo descargar',  () => {
+  for (const message of ['Unable to preload CSS for http://localhost:5299/assets/session-DPGt49nw.css', 'Unable to preload CSS for https://app.example.test/assets/evidence-AbC123.css', 'Unable to preload https://x/assets/a.js']) {
+    assert.equal(isChunkLoadError(new Error(message)), true, message)
+    assert.equal(isChunkLoadError(message), true, message)
+  }
+  // lo que NO es una descarga fallida sigue sin reconocerse (no se tapan errores de render)
+  for (const other of [new Error('Unable to read property of undefined'), new TypeError('x is not a function')]) assert.equal(isChunkLoadError(other), false)
+})
+
 test('ES-129 textos: aviso y botón en ES y EN, con tuteo', () => {
   const es = read('../src/i18n/es.ts'); const en = read('../src/i18n/en.ts')
   assert.ok(es.includes("route_error: 'Hay una versión nueva de la aplicación. Recarga la página para continuar.'"))

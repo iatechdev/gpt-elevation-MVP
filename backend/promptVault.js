@@ -139,6 +139,8 @@ const proposePrompt = async (promptKey, plainText, adminEmail, options = {}) => 
   try {
     if (sequelize.getDialect() === 'postgres') await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('promptvault:' || :key))", { replacements: { key: promptKey }, transaction: tx });
     if (await PromptVault.count({ where: { key: promptKey, createdAt: { [Op.gt]: since() } }, transaction: tx }) >= perHour) throw new PromptReviewError('rate_limited');
+    // ES-177 (H1): «una sola guía pendiente por clave» se comprueba DENTRO del bloqueo; antes se comprobaba fuera y dos envíos simultáneos creaban dos pendientes.
+    if (options.onePending && await PromptVault.count({ where: { key: promptKey, status: 'pending_review' }, transaction: tx })) throw new PromptReviewError('pending_exists');
     if (options.mustBeNew && await PromptVault.count({ where: { key: promptKey, status: { [Op.ne]: 'rejected' } }, transaction: tx })) throw new PromptReviewError('key_exists');
     const maxVersion = await PromptVault.max('version', { where: { key: promptKey }, transaction: tx });
     const nextVersion = maxVersion ? Number(maxVersion) + 1 : 2;

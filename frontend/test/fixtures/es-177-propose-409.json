@@ -1,0 +1,7 @@
+{
+  "status": 409,
+  "body": {
+    "code": "pending_exists",
+    "error": "You already have a version pending review. Wait for superadmin approval before proposing a new one."
+  }
+}

@@ -29,8 +29,9 @@ async function open(browser, { width, lang, path }) {
     if (p === '/api/session') return route.fulfill({ json: { role: 'user', onboardingCompleted: true } })
     if (p === '/api/evidence') return route.fulfill({ json: { evidence: evidenceRows() } })
     if (p === '/api/user/resume-skills') return route.fulfill({ json: { skills: [] } })
-    if (p === '/api/consents') return route.fulfill({ json: { consents: [{ purpose: 'necessary', status: 'granted' }, { purpose: 'resume_ai_reading', status: 'granted' }] } })
+    if (p === '/api/consents') return route.fulfill({ json: { consents: [{ purpose: 'necessary', status: 'granted' }, { purpose: 'resume_ai_reading', status: 'granted' }, { purpose: 'insights_chat', status: 'granted' }, { purpose: 'insights_diary', status: 'revoked' }, { purpose: 'insights_resume', status: 'revoked' }] } })
     if (p === '/api/user/resumes') return route.fulfill({ json: { resumes: resumeRows(), maxVersions: 5 } })
+    if (p === '/api/career-context' && method === 'GET') return route.fulfill({ json: { active: { version: 1, status: 'active', approvedAt: '2026-11-05T12:00:00.000Z', revokedAt: null, fields: [{ key: 'values', text: 'Valoro la autonomía sintética', origin: { type: 'direct' } }], needsReview: false }, versions: [{ version: 1, status: 'active', approvedAt: '2026-11-05T12:00:00.000Z', revokedAt: null, fields: [{ key: 'values', text: 'Valoro la autonomía sintética', origin: { type: 'direct' } }], needsReview: false }] } })
     return route.fulfill({ json: {} })
   })
   await page.addInitScript(l => { localStorage.setItem('elevation_token', 'synthetic-browser-token'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l) }, lang)
@@ -38,10 +39,10 @@ async function open(browser, { width, lang, path }) {
   await page.locator('h1').first().waitFor()
   return { ctx, page, state }
 }
-const inside = page => page.evaluate(() => { const d = document.querySelector('[role=alertdialog]'); return !!d && (d === document.activeElement || d.contains(document.activeElement)) })
+const inside = page => page.evaluate(() => { const d = document.querySelector('[role=alertdialog], [role=dialog]'); return !!d && (d === document.activeElement || d.contains(document.activeElement)) })
 async function exercise(page, state, opener, label) {
-  await opener.click(); await page.getByRole('alertdialog').waitFor()
-  await page.waitForFunction(() => { const d = document.querySelector('[role=alertdialog]'); return d && (d === document.activeElement || d.contains(document.activeElement)) })
+  await opener.click(); await page.locator('[role=alertdialog], [role=dialog]').waitFor()
+  await page.waitForFunction(() => { const d = document.querySelector('[role=alertdialog], [role=dialog]'); return d && (d === document.activeElement || d.contains(document.activeElement)) })
   let stayed = true
   for (let i = 0; i < 12; i++) { await page.keyboard.press('Tab'); stayed = stayed && await inside(page) }
   report(stayed, `${label}: Tab nunca saca el foco del diálogo (12 pulsaciones)`)
@@ -51,9 +52,9 @@ async function exercise(page, state, opener, label) {
   await page.addScriptTag({ content: axeSource })
   const axe = await page.evaluate(() => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length)))
   report(axe.length === 0, `${label}: axe con el diálogo abierto`, `axe=[${axe}]`)
-  await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('[role=alertdialog]'), null, { timeout: 5000 }).catch(() => {})
+  await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('[role=alertdialog], [role=dialog]'), null, { timeout: 5000 }).catch(() => {})
   await page.waitForTimeout(100)
-  report(await page.getByRole('alertdialog').count() === 0 && state.writes.length === 0, `${label}: Esc cierra sin borrar ni retirar nada`, state.writes.join(','))
+  report(await page.locator('[role=alertdialog], [role=dialog]').count() === 0 && state.writes.length === 0, `${label}: Esc cierra sin borrar ni retirar nada`, state.writes.join(','))
   report(await opener.evaluate(el => el === document.activeElement), `${label}: Esc devuelve el foco al botón que abrió el diálogo`)
 }
 
@@ -67,6 +68,10 @@ async function exercise(page, state, opener, label) {
       await exercise(page, state, page.getByRole('button', { name: new RegExp('^' + t.delVersion + ': ') }).first(), `hojas de vida · borrar versión ${tag}`); await ctx.close() }
     { const { ctx, page, state } = await open(browser, { width, lang, path: '/app/context/resumes' }); await page.getByRole('button', { name: t.withdraw, exact: true }).waitFor()
       await exercise(page, state, page.getByRole('button', { name: t.withdraw, exact: true }), `hojas de vida · retirar autorización ${tag}`); await ctx.close() }
+    { const { ctx, page, state } = await open(browser, { width, lang, path: '/app/bridge' }); await page.locator('[data-source="diary"]').waitFor()
+      await exercise(page, state, page.locator('[data-source="diary"]'), `El Puente · activar el Diario ${tag}`); await ctx.close() }
+    { const { ctx, page, state } = await open(browser, { width, lang, path: '/app/bridge' }); await page.locator('[data-withdraw-all]').waitFor()
+      await exercise(page, state, page.locator('[data-withdraw-all]'), `El Puente · Retirar todo ${tag}`); await ctx.close() }
   }
   await browser.close()
   console.log(failures ? `\n${failures} FALLAS` : '\nTODO OK')

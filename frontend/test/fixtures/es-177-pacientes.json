@@ -1,0 +1,35 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 3,
+      "name": "Sintético 3",
+      "ordinal": 1,
+      "email": "canario-correo-3-es177_test_2e26dd95121923d6@example.test",
+      "active": true,
+      "createdAt": "2026-11-10T02:00:52.967Z",
+      "sharing": true,
+      "lastMood": null,
+      "moodTrend": "neutral",
+      "avgRating": null,
+      "totalSessions": 0,
+      "sessionsThisWeek": 0,
+      "trend": null
+    },
+    {
+      "id": 4,
+      "name": null,
+      "ordinal": 2,
+      "email": "",
+      "active": true,
+      "createdAt": "2026-11-10T02:00:52.970Z",
+      "sharing": false,
+      "lastMood": null,
+      "moodTrend": "neutral",
+      "avgRating": null,
+      "totalSessions": 0,
+      "sessionsThisWeek": 0,
+      "trend": null
+    }
+  ]
+}

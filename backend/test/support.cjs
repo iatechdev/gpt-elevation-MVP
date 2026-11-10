@@ -20,7 +20,7 @@ for (const name of ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewReques
 }
 for (const name of [
   'User', 'ParticipantContext', 'ParticipantResume', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
-  'WellnessRecommendation', 'Exercise', 'ExerciseAudit', 'TherapistProfile', 'MatchingRequest',
+  'WellnessRecommendation', 'TherapistPersonOrdinal', 'TherapistOrdinalCounter', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
   'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation',
 ]) {
@@ -30,6 +30,10 @@ for (const name of [
 
 // ES-18: sesiones sin revocar por defecto; las pruebas de sesión sobrescriben estos dobles.
 models.RevokedToken.findByPk = async () => null;
+// ES-177: ordinal «Persona n» estable por profesional (doble en memoria: el número depende del orden de aparición).
+{ const ordinals = []; models.TherapistPersonOrdinal.findAll = async ({ where }) => ordinals.filter(o => o.therapistId === where.therapistId && [].concat(where.personId).includes(o.personId));
+  models.TherapistPersonOrdinal.max = async (field, { where }) => Math.max(0, ...ordinals.filter(o => o.therapistId === where.therapistId).map(o => o.ordinal));
+  models.TherapistPersonOrdinal.create = async (values) => { ordinals.push({ ...values }); return values; }; }
 models.RevokedToken.upsert = async () => {};
 models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;

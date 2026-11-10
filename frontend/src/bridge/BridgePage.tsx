@@ -10,6 +10,7 @@ import type { CareerContext, Field } from '../compass/model'
 import { bridgeCopy } from './copy'
 import { loadInsights } from './insights'
 import { SourcesPanel } from './SourcesPanel'
+import { modalKeyDown } from '../a11y/modalKeys.ts'
 import { readPermissions, setPermission } from './insightsApi'
 import { emptyProposals, sourceIds, withSource } from './sources'
 import { formatDate, pending, sameFields, sortInsights, whyNot, withInsight, withoutField } from './logic'
@@ -88,14 +89,7 @@ export function BridgePage() {
   const anyPerm = !!perms && sourceIds.some(source => perms[source])
   useEffect(() => { if (askAll) cancelAll.current?.focus() }, [askAll])
   const closeAll = () => { setAskAll(false); requestAnimationFrame(() => (document.querySelector('[data-withdraw-all]') as HTMLElement | null)?.focus()) }
-  const trapAll = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') { event.stopPropagation(); if (!busy) closeAll(); return }
-    if (event.key !== 'Tab') return
-    const items = [...(allDialog.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? [])]
-    if (!items.length) return
-    const first = items[0]; const last = items[items.length - 1]
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
-  }
+  const trapAll = (event: React.KeyboardEvent<HTMLDivElement>) => modalKeyDown(event, allDialog.current, () => { if (!busy) closeAll() }) // ES-236: Esc y Tab atrapado en el helper común
   // Retira lo cruzado (si lo hay) y después los permisos activos, uno por uno. Un corte a medias no se declara éxito: se relee todo y se dice la verdad.
   const withdrawAll = async () => {
     setBusy(true); setNotice(null)

@@ -53,7 +53,7 @@ test('ES-105 (F03): una respuesta vacía o de solo espacios del proveedor respon
   assert.equal(ok.status, 200); assert.equal(ok.body.summary, 'Resumen sintético.');
 });
 
-test('ES-105 (O1): el prompt del resumen, del matching y de las recomendaciones lleva el promedio sobre los valores registrados (3,8 y no 7,5)', async t => {
+test('ES-105 (O1): el prompt del resumen y de las recomendaciones lleva el promedio sobre los valores registrados (3,8 y no 7,5); el del emparejamiento ya no lleva ánimo (ES-242)', async t => {
   const prompts = {};
   const keep = (name, reply) => async (body) => { prompts[name] = JSON.stringify(body); return { content: [{ type: 'text', text: reply }], usage: { input_tokens: 10, output_tokens: 10 } }; };
   const request = await startApp(t);
@@ -69,7 +69,8 @@ test('ES-105 (O1): el prompt del resumen, del matching y de las recomendaciones 
   models.User.findAll = async () => [record({ id: 303, name: 'Synthetic therapist' })]; models.MatchingRequest.create = async values => record({ id: 7, ...values });
   anthropic.messages.create = keep('matching', JSON.stringify([{ therapistId: 303, score: 7, reason: 'Sintético' }]));
   assert.equal((await request('POST', '/api/matching/request', { role: 'user', id: 101, body: { answers: { area: 'sintético' } } })).status, 200);
-  assert.match(prompts.matching, /Average mood \(1-5\): 3\.8/); assert.doesNotMatch(prompts.matching, /7\.5/);
+  // ES-242: el emparejamiento ya NO envía el ánimo al proveedor (minimización de datos): ni el promedio correcto ni ninguno.
+  assert.doesNotMatch(prompts.matching, /Average mood|3\.8|7\.5|mood/i);
   // Recomendaciones
   models.WellnessRecommendation.create = async values => record({ id: 1, ...values });
   anthropic.messages.create = keep('recommendations', JSON.stringify([{ category: 'habit', content: 'Una frase breve.' }]));
@@ -79,7 +80,7 @@ test('ES-105 (O1): el prompt del resumen, del matching y de las recomendaciones 
   models.MoodLog.findAll = async () => [];
   anthropic.messages.create = keep('matching', JSON.stringify([{ therapistId: 303, score: 7, reason: 'Sintético' }]));
   assert.equal((await request('POST', '/api/matching/request', { role: 'user', id: 101, body: { answers: { area: 'sintético' } } })).status, 200);
-  assert.match(prompts.matching, /Average mood \(1-5\): No data/);
+  assert.doesNotMatch(prompts.matching, /Average mood|No data|mood/i); // ES-242: sin ánimo, haya o no registros
   anthropic.messages.create = keep('recommendations', JSON.stringify([{ category: 'habit', content: 'Una frase breve.' }]));
   assert.equal((await request('POST', '/api/recommendations/generate', { role: 'user', id: 101 })).status, 200);
   assert.match(prompts.recommendations, /Average mood \(1-5 scale\): No data yet/);

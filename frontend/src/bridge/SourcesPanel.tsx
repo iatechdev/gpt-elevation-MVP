@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { bridgeCopy } from './copy'
 import { analyze, listResumeVersions, readPermissions, setPermission, SourcesError } from './insightsApi'
 import { PermissionSwitch } from './PermissionSwitch'
+import { modalKeyDown } from '../a11y/modalKeys.ts'
 import { retryable, sourceIds } from './sources'
 import type { Failure, ResumeVersion } from './sources'
 import type { Insight, SourceId } from './logic'
@@ -62,15 +63,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
   // Diálogo: el foco entra en «Cancelar», Tab se queda dentro, Esc cancela y el foco vuelve al interruptor.
   useEffect(() => { if (asking) cancelButton.current?.focus() }, [asking])
   const close = (source: SourceId) => { setAsking(null); requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-source="${source}"]`)?.focus()) }
-  const trap = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (!asking) return
-    if (event.key === 'Escape') { event.stopPropagation(); close(asking); return }
-    if (event.key !== 'Tab') return
-    const items = [...(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? [])]
-    if (!items.length) return
-    const first = items[0]; const last = items[items.length - 1]
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
-  }
+  const trap = (event: ReactKeyboardEvent<HTMLDivElement>) => { if (asking) modalKeyDown(event, dialog.current, () => close(asking)) } // ES-236: Esc y Tab atrapado en el helper común
 
   const fail = (failure: Failure, source: SourceId) => {
     if (failure === 'expired') { onExpired(); return }
