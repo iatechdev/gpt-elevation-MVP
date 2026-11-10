@@ -18,7 +18,7 @@ import '../skill-map/radar.css'
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const readToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
 type PageState = { status: 'loading' } | { status: 'ready'; map: SkillMap; token: string } | { status: 'error'; reason: MapFailure }
-type Revoke = 'idle' | 'confirm' | 'saving' | 'done' | 'error' | 'expired'
+type Revoke = 'idle' | 'confirm' | 'saving' | 'done' | 'error' | 'expired' | 'unsure' | 'not_seen' | 'checking'
 
 export function SkillMapPage() {
   const { t, lang, setLang } = useLanguage()
@@ -36,6 +36,7 @@ export function SkillMapPage() {
   const detailRef = useRef<HTMLDivElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const revokeButton = useRef<HTMLButtonElement>(null)
+  const checkButton = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     const controller = new AbortController()
     const token = readToken()
@@ -64,6 +65,14 @@ export function SkillMapPage() {
     const dialog = dialogRef.current; if (!dialog) return
     if (revoke === 'confirm' || revoke === 'saving') { if (!dialog.open) dialog.showModal() } else if (dialog.open) dialog.close()
   }, [revoke])
+  // E249-1: el foco se coloca DESPUÉS de renderizar el resultado y de cerrar el diálogo modal (un setTimeout 0 corría con el botón aún deshabilitado y el foco caía a body).
+  // «Sin confirmar» → «Comprobar»; error / sesión vencida / «todavía no lo vemos» → «Revocar todos» (habilitado); «Listo» deja «Revocar todos» deshabilitado → la región principal.
+  useEffect(() => {
+    if (revoke === 'unsure') { checkButton.current?.focus(); return }
+    if (revoke !== 'done' && revoke !== 'error' && revoke !== 'expired' && revoke !== 'not_seen') return
+    const button = revokeButton.current
+    if (button && !button.disabled) button.focus(); else document.getElementById('skill-map-main')?.focus()
+  }, [revoke])
   const refresh = () => { setState({ status: 'loading' }); setSelected(null); setBridge('loading'); setRevoke('idle'); setAttempt(value => value + 1) }
   const pick = (key: string) => {
     setSelected(key); setSaved('')
@@ -77,11 +86,24 @@ export function SkillMapPage() {
     try { const next = await readSkillMap({ baseUrl: backend, token }); if (readToken() === token) setState({ status: 'ready', map: next, token }) } catch { /* el siguiente «Actualizar mapa» lo reintenta */ }
   }
   const close = () => { setRevoke('idle'); window.setTimeout(() => revokeButton.current?.focus(), 0) }
+  const finish = () => { setBridge('revoked'); setRevoke('done'); void reloadMap() }
+  // ES-249: si la respuesta de «Revocar todos» se pierde, el servidor pudo haber retirado el permiso igual (el PUT es idempotente): se relee el estado real antes de informar.
+  const verify = async () => {
+    setRevoke('checking')
+    try {
+      const real = await readBridgeStatus({ baseUrl: backend, token: readToken(), signal: AbortSignal.timeout(15000) })
+      if (real === 'revoked') finish()
+      else if (real === 'granted' || real === 'outdated') { setBridge(real); setRevoke('not_seen') }
+      else setRevoke('unsure')
+    } catch (error) { setRevoke(error instanceof ConsentError && error.reason === 'expired' ? 'expired' : 'unsure') }
+  }
   const confirm = async () => {
     setRevoke('saving')
-    try { await revokeBridge({ baseUrl: backend, token: readToken() }); setBridge('revoked'); setRevoke('done'); void reloadMap() }
-    catch (error) { setRevoke(error instanceof ConsentError && error.reason === 'expired' ? 'expired' : 'error') }
-    window.setTimeout(() => revokeButton.current?.focus(), 0)
+    try { await revokeBridge({ baseUrl: backend, token: readToken() }); finish() }
+    catch (error) {
+      if (error instanceof ConsentError && error.reason === 'unsure') { await verify(); return }
+      setRevoke(error instanceof ConsentError && error.reason === 'expired' ? 'expired' : 'error')
+    }
   }
   // Never paint a response belonging to a token that has since changed.
   const map = state.status === 'ready' && state.token === readToken() ? state.map : null
@@ -91,7 +113,7 @@ export function SkillMapPage() {
   const noTerritories = !!map && map.skills.length > 0 && resolveTerritories(map.skills, territories).groups.every(group => group.skills.length === 0)
   const nothingToRevoke = bridge === 'revoked' || bridge === 'undecided'
   const message = revoke === 'done' ? t('skill_map.revoke_done') : revoke === 'error' ? t('skill_map.revoke_error') : revoke === 'expired' ? t('skill_map.expired')
-    : nothingToRevoke ? t('skill_map.revoke_none') : ''
+    : revoke === 'checking' ? t('skill_map.revoke_checking') : revoke === 'unsure' ? t('skill_map.revoke_unsure') : revoke === 'not_seen' ? t('skill_map.revoke_not_seen') : nothingToRevoke ? t('skill_map.revoke_none') : ''
   return <div className="skill-map-scope">
     <a href="#skill-map-main" className="skill-map-skip elv-link">{t('skill_map.skip')}</a>
     <header className="skill-map-header">
@@ -126,12 +148,13 @@ export function SkillMapPage() {
             </button>}
           </>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
-            disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving'}>{t('skill_map.revoke_all')}</button>
+            disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving' || revoke === 'checking'}>{t('skill_map.revoke_all')}</button>
           <button type="button" className="elv-btn" onClick={refresh} disabled={state.status === 'loading'}>{t('skill_map.refresh')}</button>
         </div>
       </div>
       <p className="skill-map-reading">{t(view === 'radar' ? 'skill_map.radar_reading' : 'skill_map.reading')}</p>
       <p role="status" aria-live="polite" className="skill-map-revoke-status">{message}</p>
+      {revoke === 'unsure' && <button type="button" className="elv-btn" ref={checkButton} onClick={() => void verify()}>{t('skill_map.revoke_check')}</button>}
       {state.status === 'loading' && <p role="status" aria-live="polite">{t('skill_map.loading')}</p>}
       {error && <div ref={errorRef} tabIndex={-1} role="alert" className="skill-map-error">
         <p>{t(`skill_map.${error}`)}</p>

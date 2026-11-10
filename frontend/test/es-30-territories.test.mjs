@@ -83,7 +83,7 @@ test('ES-30 «Revocar todos»: solo PUT /api/consents/professional_bridge con {s
   assert.equal(url, 'https://api.example.invalid/api/consents/professional_bridge')
   assert.equal(options.method, 'PUT'); assert.equal(options.body, '{"status":"revoked"}'); assert.equal(options.cache, 'no-store')
   assert.equal(options.headers.Authorization, 'Bearer sintetico')
-  for (const [status, reason] of [[401, 'expired'], [409, 'error'], [500, 'error']]) {
+  for (const [status, reason] of [[401, 'expired'], [409, 'error'], [500, 'unsure']]) {
     await assert.rejects(revokeBridge({ baseUrl: 'x', token: 't', fetcher: async () => new Response('{}', { status }) }), e => e instanceof ConsentError && e.reason === reason)
   }
   await assert.rejects(revokeBridge({ baseUrl: 'x', token: '', fetcher: async () => { throw new Error('no debe llamar') } }), e => e.reason === 'expired')
