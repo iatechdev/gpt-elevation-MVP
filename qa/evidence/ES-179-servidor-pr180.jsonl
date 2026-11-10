@@ -1,0 +1,48 @@
+{"id":"S0 autorizaciones de compartir otorgadas (A→T1, A2→T1, B→T2)","ok":true,"detail":"200/200/200"}
+{"id":"S1a start nuevo: 200, meetingUrl, startedAt, resumed:false y UNA sala creada","ok":true,"detail":"status=200 salas=1 {\"meetingUrl\":\"https://synthetic.daily.test/elevation-4-1-1-1be800\",\"sessionId\":1,\"startedAt\":\"2026-11-10T01:23:38.096Z\""}
+{"id":"S1b start repetido (recarga): 200, MISMA meetingUrl y startedAt, resumed:true, sin sala nueva","ok":true,"detail":"status=200 salas=1"}
+{"id":"S1c 3 start simultáneos de la MISMA sesión: todos 200, una sola sala y la misma meetingUrl, sin 5xx ni esperas largas","ok":true,"detail":"n=3 ok=3 salas=1 urls=1 estados=200 ms=544"}
+{"id":"S1c 4 start simultáneos de la MISMA sesión: todos 200, una sola sala y la misma meetingUrl, sin 5xx ni esperas largas","ok":true,"detail":"n=4 ok=4 salas=1 urls=1 estados=200 ms=450"}
+{"id":"S1c 5 start simultáneos de la MISMA sesión: todos 200, una sola sala y la misma meetingUrl, sin 5xx ni esperas largas","ok":false,"detail":"n=5 ok=4 salas=1 urls=1 estados=200,500 ms=30529"}
+{"id":"S1c 6 start simultáneos de la MISMA sesión: todos 200, una sola sala y la misma meetingUrl, sin 5xx ni esperas largas","ok":false,"detail":"n=6 ok=5 salas=1 urls=1 estados=200,500 ms=30600"}
+{"id":"S1c 12 start simultáneos de la MISMA sesión: todos 200, una sola sala y la misma meetingUrl, sin 5xx ni esperas largas","ok":false,"detail":"n=12 ok=4 salas=1 urls=1 estados=500,200 ms=30654"}
+{"id":"S1d 3 start simultáneos de sesiones DISTINTAS (pool de 5): todos 200 en pocos segundos, sin 5xx","ok":true,"detail":"n=3 ok=3 estados=200 ms=840"}
+{"id":"S1d 5 start simultáneos de sesiones DISTINTAS (pool de 5): todos 200 en pocos segundos, sin 5xx","ok":false,"detail":"n=5 ok=2 estados=500,200 ms=30654"}
+{"id":"S1d 8 start simultáneos de sesiones DISTINTAS (pool de 5): todos 200 en pocos segundos, sin 5xx","ok":false,"detail":"n=8 ok=1 estados=500,200 ms=30863"}
+{"id":"S1e sala caída: 502 room_unavailable retryable, la sesión sigue scheduled sin meetingUrl ni startedAt","ok":true,"detail":"status=502 {\"code\":\"room_unavailable\",\"retryable\":true,\"error\":\"No se ha registrado el inicio de la sesión. / T fila={\"status\":\"scheduled\",\"meetingUrl\":null,\"startedAt\":null}"}
+{"id":"S1f reintentar tras la caída: 200 con sala y la sesión pasa a in_progress","ok":true,"detail":"status=200"}
+{"id":"S1g sala externa lenta (>8 s): corta con 502 en ~8–9 s, la sesión sigue scheduled","ok":true,"detail":"status=502 ms=8053 estado=scheduled"}
+{"id":"S1h","info":"con un start lento (4 s) en curso: /api/health 200 en 4 ms; GET /api/sessions/therapist 200 en 142 ms (info: ocupa una conexión del pool de 5 y bloquea la fila de esa sesión mientras dura la llamada a Daily)"}
+{"id":"S1i start de una sesión cancelada: 400 session_not_startable y sin sala","ok":true,"detail":"status=400 session_not_startable"}
+{"id":"N1a primera nota: 201, version 1, sin errores","ok":true,"detail":"status=201 v=1"}
+{"id":"N1b 100 autoguardados (cliente actual, sin version): UNA sola fila viva con la última versión y texto, sin copias","ok":true,"detail":"vivas=1 total=1 version=100"}
+{"id":"N1c el texto está cifrado en la base (el canario no aparece en claro)","ok":true,"detail":""}
+{"id":"N1d versión esperada correcta → 200 (v101); versión vieja (otra pestaña) → 409 note_changed con la nota vigente y SIN pisarla","ok":true,"detail":"ok=200 stale=409 actual=101"}
+{"id":"N1e mismo requestId repetido → 200 replayed, sin cambio de versión ni de texto","ok":true,"detail":"r1=200 r2=200 replayed=true"}
+{"id":"N1f 12 primeras notas simultáneas: 1 sola fila viva, ninguna 5xx","ok":true,"detail":"vivas=1 total=1 estados=200,201"}
+{"id":"N1g 12 guardados simultáneos con la MISMA versión esperada: exactamente 1 gana (200) y 11 reciben 409 note_changed","ok":true,"detail":"200=1 409=11 otros=0"}
+{"id":"N1h 20.000 caracteres sí; 20.001 → 400 too_long","ok":true,"detail":"200/400"}
+{"id":"N1i requestId/version/contenido raros → 4xx, nunca 5xx","ok":true,"detail":"[400,400,400,400,400,400,400,400,400,400,400,400,400,400,400]"}
+{"id":"N1j filas ANTIGUAS (isLive NULL): se conservan, el nuevo guardado crea UNA nota viva aparte y GET las devuelve todas","ok":true,"detail":"antes=3 despues=4 GET=4"}
+{"id":"C1a cierre inválido (ánimo 3,5) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1a cierre inválido (ánimo 0) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1a cierre inválido (ánimo 6) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1a cierre inválido (ánimo texto) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1a cierre inválido (nota corta) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1a cierre inválido (nota 4001) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1a cierre inválido (sin ánimo) → 400 y la sesión sigue in_progress","ok":true,"detail":"status=400"}
+{"id":"C1b nota de cierre de 4.000 caracteres y ánimo 5 → 200","ok":true,"detail":"status=200"}
+{"id":"C1c 2 cierres simultáneos: exactamente 1×200 y el resto 409 already_closed, 1 sola recomendación y 1 sola llamada de IA, sin 5xx","ok":true,"detail":"n=2 200=1 409=1 otros=0() recomendaciones=1 IA=1 ms=127"}
+{"id":"C1c 4 cierres simultáneos: exactamente 1×200 y el resto 409 already_closed, 1 sola recomendación y 1 sola llamada de IA, sin 5xx","ok":true,"detail":"n=4 200=1 409=3 otros=0() recomendaciones=1 IA=1 ms=227"}
+{"id":"C1c 12 cierres simultáneos: exactamente 1×200 y el resto 409 already_closed, 1 sola recomendación y 1 sola llamada de IA, sin 5xx","ok":false,"detail":"n=12 200=1 409=3 otros=8(500,503) recomendaciones=1 IA=1 ms=30288"}
+{"id":"C1d cerrar de nuevo una sesión ya cerrada → 409 already_closed con el estado final","ok":true,"detail":"status=409 {\"code\":\"already_closed\",\"status\":\"completed\",\"endedAt\":\"2026-11-10T01:27:15.250Z\",\"error\":\"Esta ses"}
+{"id":"C1e cerrar una sesión NO iniciada → 400","ok":true,"detail":"status=400"}
+{"id":"P1a un profesional ajeno (T2) en start/GET notas/POST nota/end de la sesión de T1 → 404","ok":true,"detail":"[404,404,404,404]"}
+{"id":"P1b persona, admin y sin sesión no acceden a start/notas/end del profesional (401/403/404)","ok":true,"detail":"[]"}
+{"id":"P1c la persona NO ve las notas ni la de cierre del profesional por sus rutas de sesiones","ok":true,"detail":""}
+{"id":"P1d la nota de cierre y las notas están cifradas en la base","ok":true,"detail":""}
+{"id":"P1e persona desactivada/bloqueada (ES-101): start → 404","ok":true,"detail":"status=404"}
+{"id":"P2a revocar la autorización a mitad de sesión: guardar nota → 403 y start → 403, SIN crear filas y sin perder el texto ya guardado","ok":true,"detail":"nota=403 start=403 vivas=1"}
+{"id":"P2b cerrar tras la revocación: se cierra (200) pero NO se genera recomendación (recommendationSkipped) y no se gasta IA","ok":true,"detail":"status=200 skipped=provider IA=0"}
+{"id":"P2c restaurada la autorización todo vuelve a funcionar","ok":true,"detail":"status=201"}
+{"id":"K1 el cliente actual (que solo mira res.ok): start/notes/end siguen devolviendo 200/201/200 con meetingUrl, note y session","ok":true,"detail":"200/201/200"}

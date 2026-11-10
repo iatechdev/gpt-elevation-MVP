@@ -1,0 +1,57 @@
+[
+ {
+  "id": "M1c migraciones hasta la anterior a ES-179 (20261110000000-es163-diary-request-id.cjs)",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "M1a aplicar ES-179 sobre una base con 3 notas antiguas cifradas: las filas se conservan IDÉNTICAS y quedan con isLive/version/requestId NULL",
+  "ok": true,
+  "detail": "exit=0 filas=3"
+ },
+ {
+  "id": "M1b las 3 columnas son NULLABLE y SIN valor por defecto (isLive BOOLEAN, version INTEGER, requestId VARCHAR(64))",
+  "ok": true,
+  "detail": "[{\"column_name\":\"isLive\",\"is_nullable\":\"YES\",\"column_default\":null,\"data_type\":\"boolean\",\"character_maximum_length\":null},{\"column_name\":\"requestId\",\"is_nullable\":\"YES\",\"column_default\":null,\"data_type\":\"character varying\",\"character_maximum_length\":64},{\"column_name\":\"version\",\"is_nullable\":\"YES\",\"column_default\":null,\"data_type\":\"integer\",\"character_maximum_length\":null}]"
+ },
+ {
+  "id": "M1c índice único PARCIAL (sessionId, therapistId) WHERE isLive = true",
+  "ok": true,
+  "detail": "CREATE UNIQUE INDEX session_notes__live ON public.\"SessionNotes\" USING btree (\"sessionId\", \"therapistId\") WHERE (\"isLive\" = true)"
+ },
+ {
+  "id": "M2a segunda ejecución sin cambios (idempotente)",
+  "ok": true,
+  "detail": "No migrations were executed, database schema was already up to date."
+ },
+ {
+  "id": "M1d el índice permite varias filas antiguas/no vivas, pero rechaza una SEGUNDA nota viva de la misma sesión y profesional (23505)",
+  "ok": true,
+  "detail": "duplicado vivo=23505"
+ },
+ {
+  "id": "M2b down SIN bandera, y con bandera pero en producción, se rechazan (las columnas siguen)",
+  "ok": true,
+  "detail": "sinBandera=1 producción=1 columnas=3"
+ },
+ {
+  "id": "M2c down con bandera, fuera de producción: quita índice y columnas sin borrar notas",
+  "ok": true,
+  "detail": "exit=0 columnas=0 índice=0 notas=6/6"
+ },
+ {
+  "id": "M2d rehacer (up) tras el down: aplica, el índice vuelve y no se pierde ninguna nota",
+  "ok": true,
+  "detail": "exit=0 índice=1 notas=6"
+ },
+ {
+  "id": "M3a db:drift sobre la base migrada: sin deriva",
+  "ok": true,
+  "detail": "exit=0 SIN DERIVA: las migraciones coinciden con sync, también tras deshacer y reaplicar."
+ },
+ {
+  "id": "M3b check:rls: todas las tablas con RLS y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "exit=0 RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ }
+]
