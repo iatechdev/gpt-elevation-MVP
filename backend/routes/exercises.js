@@ -12,6 +12,7 @@ const Exercise = require('../Exercise');
 const ExerciseAudit = require('../ExerciseAudit');
 const { KEY_RE, FIELDS, ExerciseInputError, normalizeContent, missingForPublish, nonClinicalViolations, contentChanged } = require('../utils/exerciseRules');
 
+const IMPORT_LOCK_KEY = 194001;
 const ID = /^[1-9][0-9]{0,9}$/;
 const noStore = (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); };
 const needSuperadmin = (req, res, next) => (req.user && req.user.role === 'superadmin' ? next()
@@ -71,6 +72,8 @@ adminRouter.post('/import-catalog', async (req, res) => {
   const catalog = require('../../shared/companion-exercises.json');
   const transaction = await sequelize.transaction();
   try {
+    // E194-2: las importaciones se serializan (bloqueo consultivo de transacción); la segunda ve lo ya creado y lo salta. 23505 (carrera con POST /) también cuenta como «saltado».
+    if (sequelize.getDialect?.() === 'postgres') await sequelize.query('SELECT pg_advisory_xact_lock(:key)', { replacements: { key: IMPORT_LOCK_KEY }, transaction });
     const created = []; const skipped = [];
     for (const item of catalog.exercises ?? []) {
       if (!KEY_RE.test(String(item.key))) { skipped.push(String(item.key)); continue; }
@@ -85,6 +88,7 @@ adminRouter.post('/import-catalog', async (req, res) => {
   } catch (error) {
     await transaction.rollback().catch(() => {});
     if (error instanceof ExerciseInputError) return badInput(res, error);
+    if (unique(error)) return res.status(409).json({ code: 'import_conflict', error: 'Otra persona creó ejercicios a la vez; vuelve a importar. / Someone created exercises at the same time; import again.' });
     console.error('Error al importar el catálogo de ejercicios.', error && error.name);
     res.status(500).json({ error: 'No se pudo importar el catálogo. / The catalog could not be imported.' });
   }
@@ -131,6 +135,13 @@ adminRouter.put('/:id', async (req, res) => {
     if (row.version !== expected) return { rollback: true, status: 409, body: { code: 'exercise_changed', error: 'Otra persona guardó este ejercicio. / Another person saved this exercise.', current: present(row) } };
     const next = { es: content.es, en: content.en, minutesMin: content.minutesMin, minutesMax: content.minutesMax };
     if (!contentChanged(row, next)) return { rollback: true, status: 200, body: { ...present(row), unchanged: true } }; // idempotente: sin cambios no hay versión nueva
+    // E194-1: un ejercicio PUBLICADO llega a la persona al guardar; se revalidan completitud y reglas no clínicas igual que al publicar y NO se guarda (ni se pasa a borrador en silencio).
+    if (row.status === 'published') {
+      const missing = missingForPublish(next);
+      if (missing.length) return { rollback: true, status: 422, body: { code: 'incomplete', missing, error: 'Faltan datos: el ejercicio está publicado. / Required data is missing: the exercise is published.' } };
+      const violations = nonClinicalViolations(next);
+      if (violations.length) return { rollback: true, status: 422, body: { code: 'non_clinical_rule', violations, error: 'El texto incumple las reglas no clínicas. / The text breaks the non-clinical rules.' } };
+    }
     const updates = { ...next, version: row.version + 1, updatedBy: actorOf(req.user).actorName };
     // Una versión nueva del contenido NO hereda la revisión del especialista.
     if (row.reviewStatus === 'done') Object.assign(updates, { reviewStatus: 'pending', reviewedBy: null, reviewedAt: null });

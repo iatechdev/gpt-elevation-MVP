@@ -234,4 +234,37 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
       const published = await publish(r.id); assert.equal(published.status, 200, `${item.key}: ${JSON.stringify(published.body)}`);
     }
   });
+  await t.test('E194-1: guardar un ejercicio PUBLICADO revalida completitud y reglas no clínicas (422, nada se guarda, sigue publicado)', async () => {
+    const made = await create('situacion_pub'); const id = made.body.id; await publish(id);
+    const base = content(); let version = 1;
+    const cases = [];
+    for (const lang of ['es', 'en']) for (const field of ['title', 'purpose', 'question', 'help']) cases.push([`${lang}.${field} vacío`, { ...base, [lang]: { ...base[lang], [field]: '' } }, 'incomplete']);
+    cases.push(['sin minutos', { ...base, minutes: null }, 'incomplete']);
+    for (const [lang, field, text] of [['es', 'help', 'Este tratamiento te ayuda'], ['es', 'purpose', 'Te garantizamos resultados'], ['es', 'title', 'Mejora un 90% tu ánimo'], ['en', 'question', 'Does this treatment help?'], ['en', 'help', 'We guarantee results'], ['en', 'title', 'Improve 90% of your mood']]) {
+      cases.push([`${lang}.${field} «${text}»`, { ...base, [lang]: { ...base[lang], [field]: text } }, 'non_clinical_rule']);
+    }
+    for (const [name, body, code] of cases) {
+      const out = await http(sup, 'PUT', `${A}/${id}`, { ...body, expectedVersion: version });
+      assert.deepEqual([out.status, out.body.code], [422, code], name);
+    }
+    const row = (await q('SELECT status, version, es, en FROM "Exercises" WHERE id=$1', [id]))[0];
+    assert.deepEqual([row.status, row.version, row.es.title, row.en.help], ['published', 1, base.es.title, base.en.help], 'no se guardó nada ni pasó a borrador');
+    assert.equal((await http(person, 'GET', '/api/exercises/situacion_pub')).status, 200, 'la persona sigue viendo el texto válido');
+    const ok = await http(sup, 'PUT', `${A}/${id}`, { ...base, es: { ...base.es, title: 'Un título válido nuevo' }, expectedVersion: 1 });
+    assert.deepEqual([ok.status, ok.body.status, ok.body.version], [200, 'published', 2], 'un cambio válido sí se guarda');
+    const draft = (await create('situacion_borrador')).body.id; // un borrador sigue admitiendo contenido incompleto
+    assert.equal((await http(sup, 'PUT', `${A}/${draft}`, { ...base, es: { ...base.es, title: '' }, expectedVersion: 1 })).status, 200);
+  });
+
+  await t.test('E194-2: importaciones simultáneas del catálogo (2 y 8): sin 5xx, sin duplicados, idempotentes', async () => {
+    for (const n of [2, 8]) {
+      await q('DELETE FROM "ExerciseAudits" WHERE "exerciseId" IN (SELECT id FROM "Exercises" WHERE key = ANY($1))', [catalog.exercises.map((e) => e.key)]);
+      await q('DELETE FROM "Exercises" WHERE key = ANY($1)', [catalog.exercises.map((e) => e.key)]);
+      const outs = await Promise.all(Array.from({ length: n }, () => http(sup, 'POST', `${A}/import-catalog`, {})));
+      assert.ok(outs.every((o) => o.status === 200), `${n} simultáneas: ${outs.map((o) => o.status)}`);
+      assert.equal(outs.reduce((sum, o) => sum + o.body.created.length, 0), catalog.exercises.length, 'cada ejercicio lo crea exactamente una importación');
+      assert.equal(await COUNT('SELECT count(*)::int AS n FROM "Exercises" WHERE key = ANY($1)', [catalog.exercises.map((e) => e.key)]), catalog.exercises.length);
+      assert.equal(await COUNT("SELECT count(*)::int AS n FROM \"ExerciseAudits\" WHERE action='create' AND \"exerciseId\" IN (SELECT id FROM \"Exercises\" WHERE key = ANY($1))", [catalog.exercises.map((e) => e.key)]), catalog.exercises.length);
+    }
+  });
 });
