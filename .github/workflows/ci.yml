@@ -146,6 +146,10 @@ jobs:
         run: npm run test:login:pg
         env:
           ES220_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-259 registro - forma y longitud del correo, sin 5xx (PostgreSQL real)
+        run: npm run test:email-shape:pg
+        env:
+          ES259_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-229 Puente - retirar un permiso insights_* marca para revisión lo derivado (PostgreSQL real)
         run: npm run test:insights-revoke:pg
         env:
@@ -154,6 +158,10 @@ jobs:
         run: npm run test:admin-invite:pg
         env:
           ES186_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-186 parte A - emparejamiento retira la autorización anterior y resoluciones simultáneas sin doble efecto (PostgreSQL real)
+        run: npm run test:admin-people:pg
+        env:
+          ES186A_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-177 panel profesional - una guía pendiente por profesional y avisos sin porcentaje (PostgreSQL real)
         run: npm run test:therapist-panel:pg
         env:

@@ -9,4 +9,12 @@ function hasUnsafeChars(value) {
   return typeof value === 'string' && UNSAFE.test(value);
 }
 
-module.exports = { hasUnsafeChars };
+// ES-259 · Validación única de correo (forma y longitud) para invitaciones, registro y solicitud profesional.
+// Sin espacios, sin <>"'`,;()[] ni segundo @; parte local ≤ 64, dominio con punto y total ≤ 254 (el límite de RFC 5321 y de las columnas).
+const MAX_EMAIL = 254;
+const EMAIL = /^[^\s@<>"'`,;()[\]\\]{1,64}@[^\s@<>"'`,;()[\]\\]{1,190}\.[^\s@<>"'`,;()[\]\\]{2,}$/;
+function isValidEmail(value) {
+  return typeof value === 'string' && value.length <= MAX_EMAIL && !hasUnsafeChars(value) && EMAIL.test(value);
+}
+
+module.exports = { hasUnsafeChars, isValidEmail, MAX_EMAIL };
