@@ -21,6 +21,7 @@ const ClinicalNote = require('../ClinicalNote');
 const { Transaction } = require('sequelize');
 const { validateBody, nonempty, text, date, optional } = require('../middlewares/validateBody');
 const { replyProposal, replyReviewError } = require('../utils/promptHttp'); // ES-191
+const { ordinalsFor } = require('../utils/personOrdinals'); // ES-177
 
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
@@ -86,13 +87,15 @@ router.get('/pacientes', async (req, res) => {
     const patients = [];
     for (const p of linked) if (!(await deletionPending(p.id))) patients.push(p);
     const sharing = await sharingSet(therapistId, patients.map((p) => p.id));
+    // ES-177: «Persona n» estable por profesional. A quien no autorizó compartir NO se le envía el nombre (solo este número).
+    const ordinals = await ordinalsFor(therapistId, patients.map((p) => p.id));
 
     const patientsWithStats = await Promise.all(
       patients.map(async (p) => {
         if (!sharing.has(p.id)) {
           // Sin autorización: solo identidad mínima del vínculo (id y nombre). Sin correo, ánimo, valoraciones ni tendencias.
           return {
-            id: p.id, name: p.name, email: '', active: p.active, createdAt: p.createdAt, sharing: false,
+            id: p.id, name: null, ordinal: ordinals.get(p.id), email: '', active: p.active, createdAt: p.createdAt, sharing: false,
             lastMood: null, moodTrend: 'neutral', avgRating: null, totalSessions: 0, sessionsThisWeek: 0, trend: null,
           };
         }
@@ -131,6 +134,7 @@ router.get('/pacientes', async (req, res) => {
         return {
           id: p.id,
           name: p.name,
+          ordinal: ordinals.get(p.id),
           email: p.email,
           active: p.active,
           createdAt: p.createdAt,
@@ -219,7 +223,7 @@ router.get('/alerts', async (req, res) => {
               notableProgress.push({
                 userId: p.id,
                 name: p.name,
-                improvementPercent,
+                improved: true, // ES-177: sin porcentajes (decisión 13): el servidor ya no envía la cifra, solo esta señal
               });
             }
           }
@@ -319,12 +323,13 @@ router.post('/prompt/propose', validateBody({ content: nonempty }), async (req, 
 
     if (existing) {
       return res.status(409).json({
+        code: 'pending_exists', // ES-177: la pantalla muestra su propio texto ES/EN según el código
         error: 'You already have a version pending review. Wait for superadmin approval before proposing a new one.',
       });
     }
 
     // ES-191: la revisión automática decide entre «pendiente de aprobación humana» y «rechazada con motivos»; nunca aprueba.
-    return replyProposal(res, await proposePrompt(promptKey, content, req.user.name));
+    return replyProposal(res, await proposePrompt(promptKey, content, req.user.name, { onePending: true })); // ES-177: la regla se vuelve a comprobar dentro del bloqueo (carrera)
   } catch (error) {
     if (replyReviewError(res, error)) return;
     console.error('❌ Error proposing therapist prompt:', error);

@@ -11,6 +11,7 @@
     "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs",
     "test:login:pg": "node --test test/integration/es-220-postgres.cjs",
     "test:insights-revoke:pg": "node --test test/integration/es-229-postgres.cjs",
+    "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
     "test:session-room:pg": "node --test test/integration/es-179-postgres.cjs",
     "test:followup-notes:pg": "node --test test/integration/es-178-postgres.cjs",
     "test:diary-request:pg": "node --test test/integration/es-163-postgres.cjs",
