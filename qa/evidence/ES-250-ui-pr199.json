@@ -1,0 +1,338 @@
+[
+ {
+  "id": "B1a-es-1360 error de código en el panel de fuentes: SOLO ese bloque cae («Reintentar»), el título y el resto siguen vivos, 1 aviso, enlaces 10/10",
+  "ok": true,
+  "detail": "aviso=true h1=true alertas=1 enlaces=10/10 cuerpo=\" Saltar al contenidoVolver al inicioESENConversaciónDiario☰ MenúEl PuenteMapa de\""
+ },
+ {
+  "id": "B6a-es-1360 la línea propia [boundary] trae nombre y ruta sin mensaje, props ni correo",
+  "ok": true,
+  "detail": "[boundary] Error /app/bridge F > div > Ga > section > div > section > main > div"
+ },
+ {
+  "id": "B6b registro NATIVO de React 19 en producción: líneas de consola que contienen el mensaje/correo/token del error",
+  "info": "error:Error: qa-boom persona@example.invalid token=abc123\n    at F (http://127.0.0.1:8250/assets"
+ },
+ {
+  "id": "B6c-nota",
+  "info": "la línea [boundary] propia está limpia; lo que filtra el mensaje es el registro nativo de React (onCaughtError por defecto)"
+ },
+ {
+  "id": "B6c el mensaje, el correo y el token del error NO aparecen en ninguna línea de consola ni pageerror en producción",
+  "ok": false,
+  "detail": "error:Error: qa-boom persona@example.invalid token=abc123\n    at F (http://127.0.0.1:8250/assets"
+ },
+ {
+  "id": "B3a-es-1360 sin recargas automáticas ni bucle de render al fallar",
+  "ok": true,
+  "detail": "navegaciones al cargar=2 líneas=2"
+ },
+ {
+  "id": "A1a-es axe 0 en el aviso de sección",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B3b-es-1360 10 «Reintentar» con el error PERSISTENTE: el aviso vuelve cada vez, el botón se rehabilita (10/10), consola acotada (+20) y 0 recargas",
+  "ok": true,
+  "detail": "+20 líneas navs=2->2"
+ },
+ {
+  "id": "B3c-es-1360 corregido el error, «Reintentar» recupera el bloque",
+  "ok": true,
+  "detail": "foco=BODY"
+ },
+ {
+  "id": "B7b adónde va el foco tras recuperar el bloque",
+  "info": "BODY"
+ },
+ {
+  "id": "B2a-es-1360 excepción al renderizar la ruta: aviso «Reintentar» de pantalla, NO cuerpo en blanco",
+  "ok": true,
+  "detail": "cuerpo=\" Algo salió mal en esta pantalla. Inténtalo de nuevo.Reintentar \""
+ },
+ {
+  "id": "A1b-es axe 0 en el aviso de pantalla",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B2b-es-1360 navegar a otra ruta limpia el aviso (resetKey)",
+  "ok": true,
+  "detail": " Saltar al contenidoELEVATIONESENVolver al inicioVolver a mi"
+ },
+ {
+  "id": "B1a-es-390 error de código en el panel de fuentes: SOLO ese bloque cae («Reintentar»), el título y el resto siguen vivos, 1 aviso, enlaces 10/10",
+  "ok": true,
+  "detail": "aviso=true h1=true alertas=1 enlaces=10/10 cuerpo=\" Saltar al contenidoVolver al inicioESENConversaciónDiario☰ MenúEl PuenteMapa de\""
+ },
+ {
+  "id": "B6a-es-390 la línea propia [boundary] trae nombre y ruta sin mensaje, props ni correo",
+  "ok": true,
+  "detail": "[boundary] Error /app/bridge F > div > Ga > section > div > section > main > div"
+ },
+ {
+  "id": "B3a-es-390 sin recargas automáticas ni bucle de render al fallar",
+  "ok": true,
+  "detail": "navegaciones al cargar=2 líneas=2"
+ },
+ {
+  "id": "B3b-es-390 10 «Reintentar» con el error PERSISTENTE: el aviso vuelve cada vez, el botón se rehabilita (10/10), consola acotada (+20) y 0 recargas",
+  "ok": true,
+  "detail": "+20 líneas navs=2->2"
+ },
+ {
+  "id": "B3c-es-390 corregido el error, «Reintentar» recupera el bloque",
+  "ok": true,
+  "detail": "foco=BODY"
+ },
+ {
+  "id": "B2a-es-390 excepción al renderizar la ruta: aviso «Reintentar» de pantalla, NO cuerpo en blanco",
+  "ok": true,
+  "detail": "cuerpo=\" Algo salió mal en esta pantalla. Inténtalo de nuevo.Reintentar \""
+ },
+ {
+  "id": "B2b-es-390 navegar a otra ruta limpia el aviso (resetKey)",
+  "ok": true,
+  "detail": " Saltar al contenidoELEVATIONESENVolver al inicioVolver a mi"
+ },
+ {
+  "id": "B1a-en-1360 error de código en el panel de fuentes: SOLO ese bloque cae («Retry»), el título y el resto siguen vivos, 1 aviso, enlaces 10/10",
+  "ok": true,
+  "detail": "aviso=true h1=true alertas=1 enlaces=10/10 cuerpo=\" Skip to contentBack to homeESENConversationJournal☰ MenuThe BridgeSkills mapMy \""
+ },
+ {
+  "id": "B6a-en-1360 la línea propia [boundary] trae nombre y ruta sin mensaje, props ni correo",
+  "ok": true,
+  "detail": "[boundary] Error /app/bridge F > div > Ga > section > div > section > main > div"
+ },
+ {
+  "id": "B3a-en-1360 sin recargas automáticas ni bucle de render al fallar",
+  "ok": true,
+  "detail": "navegaciones al cargar=2 líneas=2"
+ },
+ {
+  "id": "A1a-en axe 0 en el aviso de sección",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B3b-en-1360 10 «Retry» con el error PERSISTENTE: el aviso vuelve cada vez, el botón se rehabilita (10/10), consola acotada (+20) y 0 recargas",
+  "ok": true,
+  "detail": "+20 líneas navs=2->2"
+ },
+ {
+  "id": "B3c-en-1360 corregido el error, «Retry» recupera el bloque",
+  "ok": true,
+  "detail": "foco=BODY"
+ },
+ {
+  "id": "B2a-en-1360 excepción al renderizar la ruta: aviso «Retry» de pantalla, NO cuerpo en blanco",
+  "ok": true,
+  "detail": "cuerpo=\" Something went wrong on this screen. Please try again.Retry \""
+ },
+ {
+  "id": "A1b-en axe 0 en el aviso de pantalla",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B2b-en-1360 navegar a otra ruta limpia el aviso (resetKey)",
+  "ok": true,
+  "detail": " Skip to contentELEVATIONESENBack to dashboardBack to my evi"
+ },
+ {
+  "id": "B1a-en-390 error de código en el panel de fuentes: SOLO ese bloque cae («Retry»), el título y el resto siguen vivos, 1 aviso, enlaces 10/10",
+  "ok": true,
+  "detail": "aviso=true h1=true alertas=1 enlaces=10/10 cuerpo=\" Skip to contentBack to homeESENConversationJournal☰ MenuThe BridgeSkills mapMy \""
+ },
+ {
+  "id": "B6a-en-390 la línea propia [boundary] trae nombre y ruta sin mensaje, props ni correo",
+  "ok": true,
+  "detail": "[boundary] Error /app/bridge F > div > Ga > section > div > section > main > div"
+ },
+ {
+  "id": "B3a-en-390 sin recargas automáticas ni bucle de render al fallar",
+  "ok": true,
+  "detail": "navegaciones al cargar=2 líneas=2"
+ },
+ {
+  "id": "B3b-en-390 10 «Retry» con el error PERSISTENTE: el aviso vuelve cada vez, el botón se rehabilita (10/10), consola acotada (+20) y 0 recargas",
+  "ok": true,
+  "detail": "+20 líneas navs=2->2"
+ },
+ {
+  "id": "B3c-en-390 corregido el error, «Retry» recupera el bloque",
+  "ok": true,
+  "detail": "foco=BODY"
+ },
+ {
+  "id": "B2a-en-390 excepción al renderizar la ruta: aviso «Retry» de pantalla, NO cuerpo en blanco",
+  "ok": true,
+  "detail": "cuerpo=\" Something went wrong on this screen. Please try again.Retry \""
+ },
+ {
+  "id": "B2b-en-390 navegar a otra ruta limpia el aviso (resetKey)",
+  "ok": true,
+  "detail": " Skip to contentELEVATIONESENBack to dashboardBack to my evi"
+ },
+ {
+  "id": "B1b-es error en el detalle de habilidad: solo el detalle cae (aviso de sección + «Reintentar»), el mapa y la lista siguen vivos",
+  "ok": true,
+  "detail": "cuerpo=\" Saltar al contenidoELEVATIONESENVolver al inicioZona profes\" alertas=1"
+ },
+ {
+  "id": "B1b2-es «Reintentar» recupera el detalle",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B1c-es error en el panel de análisis de IA: solo ese panel cae, el detalle de la habilidad sigue visible",
+  "ok": true,
+  "detail": "alertas=1 ask=1"
+ },
+ {
+  "id": "B1b-en error en el detalle de habilidad: solo el detalle cae (aviso de sección + «Retry»), el mapa y la lista siguen vivos",
+  "ok": true,
+  "detail": "cuerpo=\" Skip to contentELEVATIONESENBack to dashboardProfessional z\" alertas=1"
+ },
+ {
+  "id": "B1b2-en «Retry» recupera el detalle",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B1c-en error en el panel de análisis de IA: solo ese panel cae, el detalle de la habilidad sigue visible",
+  "ok": true,
+  "detail": "alertas=1 ask=1"
+ },
+ {
+  "id": "B7a el foco estaba DENTRO del bloque que falló → pasa a «Reintentar»",
+  "ok": true,
+  "detail": "BUTTON:Reintentar"
+ },
+ {
+  "id": "B7c foco inicial cuando el bloque falla al cargar (no estaba dentro)",
+  "info": "BODY"
+ },
+ {
+  "id": "B7d «Reintentar» mide ≥ 44 px de alto y se opera con teclado (Enter/Espacio)",
+  "ok": true,
+  "detail": "{\"x\":253,\"y\":451.265625,\"width\":103.71875,\"height\":44}"
+ },
+ {
+  "id": "B7e Enter sobre «Reintentar» recupera el bloque",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B4a-es sin red al abrir una ruta diferida: «Sin conexión», NO «versión nueva»",
+  "ok": true,
+  "detail": " Sin conexión. Cuando vuelvas a estar en línea, recarga para seguir.Recargar "
+ },
+ {
+  "id": "A1c-es axe 0 en el aviso sin conexión",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B4b-es con la red de vuelta, «Recargar» recupera la pantalla",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B4c-es irse sin red con una pantalla ya cargada no la rompe (sigue visible, sin aviso)",
+  "ok": true,
+  "detail": " Saltar al contenidoVolver al inicioESENConversaciónDiario☰ "
+ },
+ {
+  "id": "B5a-es con red y CSS bloqueado: aviso de recurso, NO «versión nueva»",
+  "ok": true,
+  "detail": " No se pudo cargar una parte de la pantalla. Recarga para intentarlo de nuevo.Recargar "
+ },
+ {
+  "id": "A1d-es axe 0 en el aviso de recurso",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B5b-es 404 del chunk JS con red: «versión nueva» (ES-234 se mantiene)",
+  "ok": true,
+  "detail": " Hay una versión nueva de la aplicación. Recarga la página para continuar.Recargar "
+ },
+ {
+  "id": "A1e-es axe 0 en el aviso de versión nueva",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B5c-es index.html servido en lugar del chunk (MIME text/html) con red: «versión nueva»",
+  "ok": true,
+  "detail": " Hay una versión nueva de la aplicación. Recarga la página para continuar.Recargar "
+ },
+ {
+  "id": "B5d-es JS bloqueado SIN red: «Sin conexión»",
+  "ok": true,
+  "detail": " Sin conexión. Cuando vuelvas a estar en línea, recarga para seguir.Recargar "
+ },
+ {
+  "id": "B4a-en sin red al abrir una ruta diferida: «Sin conexión», NO «versión nueva»",
+  "ok": true,
+  "detail": " No connection. Reload once you are back online to continue.Reload "
+ },
+ {
+  "id": "A1c-en axe 0 en el aviso sin conexión",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B4b-en con la red de vuelta, «Reload» recupera la pantalla",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B4c-en irse sin red con una pantalla ya cargada no la rompe (sigue visible, sin aviso)",
+  "ok": true,
+  "detail": " Skip to contentBack to homeESENConversationJournal☰ MenuThe"
+ },
+ {
+  "id": "B5a-en con red y CSS bloqueado: aviso de recurso, NO «versión nueva»",
+  "ok": true,
+  "detail": " A part of the screen could not be loaded. Reload to try again.Reload "
+ },
+ {
+  "id": "A1d-en axe 0 en el aviso de recurso",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B5b-en 404 del chunk JS con red: «versión nueva» (ES-234 se mantiene)",
+  "ok": true,
+  "detail": " A new version of the app is available. Reload the page to continue.Reload "
+ },
+ {
+  "id": "A1e-en axe 0 en el aviso de versión nueva",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B5c-en index.html servido en lugar del chunk (MIME text/html) con red: «versión nueva»",
+  "ok": true,
+  "detail": " A new version of the app is available. Reload the page to continue.Reload "
+ },
+ {
+  "id": "B5d-en JS bloqueado SIN red: «Sin conexión»",
+  "ok": true,
+  "detail": " No connection. Reload once you are back online to continue.Reload "
+ },
+ {
+  "id": "B5e con JavaScript desactivado la página no miente (no dice «versión nueva» ni «Sin conexión»)",
+  "ok": true,
+  "detail": "cuerpo=\"\""
+ },
+ {
+  "id": "T1 las 5 cadenas nuevas existen en ES y EN, sin emojis, sin términos clínicos",
+  "ok": true,
+  "detail": "valores=10"
+ }
+]
