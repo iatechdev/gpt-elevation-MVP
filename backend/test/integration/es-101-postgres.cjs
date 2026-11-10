@@ -42,7 +42,7 @@ test('ES-101: el acceso del terapeuta se corta con la eliminación aceptada y co
   for (const [, model] of CORE) require('../../' + model);
   for (const model of ['PricingPlan', 'ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest',
     'MoodLog', 'SessionRating', 'ClinicalNote', 'TherapySession', 'SessionNote', 'TherapistProfile', 'promptVault', 'AiUsage', 'AiBudgetCounter']) require('../../' + model);
-  require('../../TherapistPersonOrdinal'); // ES-177: /pacientes numera a las personas; la tabla debe existir en este esquema armado con sync()
+  require('../../TherapistPersonOrdinal'); require('../../TherapistOrdinalCounter'); // ES-177: /pacientes numera a las personas; la tabla debe existir en este esquema armado con sync()
   await sequelize.sync();
 
   const User = require('../../User'); const DeletionRequest = require('../../DeletionRequest'); const ClinicalNote = require('../../ClinicalNote');

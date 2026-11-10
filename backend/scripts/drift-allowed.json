@@ -17,6 +17,7 @@
     "skill_candidates_status_check": "ES-85: CHECK de dominio que el modelo no declara",
     "skill_candidates_level_check": "ES-85: CHECK (nivel 1 a 4 o null) que el modelo no declara",
     "TherapistPersonOrdinals_therapistId_fkey": "ES-177: clave foránea con ON DELETE CASCADE hacia Users creada por la migración; el modelo no la declara",
+    "TherapistOrdinalCounters_therapistId_fkey": "ES-177: clave foránea con ON DELETE CASCADE hacia Users creada por la migración; el modelo no la declara",
     "TherapistPersonOrdinals_personId_fkey": "ES-177: clave foránea con ON DELETE CASCADE hacia Users creada por la migración; el modelo no la declara",
     "PasswordResets_UserId_fkey": "ES-132: clave foránea con ON DELETE CASCADE hacia Users creada por la migración; el modelo no la declara",
     "skill_candidates_owner_fk": "ES-85: clave foránea compuesta (UserId, jobId) que garantiza el mismo propietario; el modelo no la declara",

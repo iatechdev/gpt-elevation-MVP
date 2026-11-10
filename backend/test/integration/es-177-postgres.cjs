@@ -161,11 +161,36 @@ test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin
     assert.equal(row(listB, other.id).ordinal, 1, 'la numeración de B empieza en 1');
   });
 
+  await t.test('un número NUNCA se reutiliza: crear 1, 2, 3 → eliminar la persona 3 → la siguiente es 4 (y otra tras vaciar la lista sigue subiendo)', async () => {
+    const tC = await mkUser('therapist');
+    const people = []; for (let i = 0; i < 3; i++) people.push(await mkUser('user', { therapistId: tC.id }));
+    const row = (list, id) => list.body.find((x) => x.id === id);
+    const first = await http(tC, 'GET', '/api/therapist/pacientes');
+    assert.deepEqual(people.map((x) => row(first, x.id).ordinal), [1, 2, 3]);
+    await q('DELETE FROM "Users" WHERE id=$1', [people[2].id]); // se elimina a la persona con la n más alta
+    const afterDelete = await http(tC, 'GET', '/api/therapist/pacientes');
+    assert.deepEqual(afterDelete.body.map((x) => x.ordinal).sort(), [1, 2]);
+    const fresh = await mkUser('user', { therapistId: tC.id });
+    const next = await http(tC, 'GET', '/api/therapist/pacientes');
+    assert.equal(row(next, fresh.id).ordinal, 4, 'la persona nueva es la 4, nunca la 3 (el 3 no se reutiliza)');
+    assert.deepEqual([row(next, people[0].id).ordinal, row(next, people[1].id).ordinal], [1, 2], 'las demás conservan su número');
+    // vaciar la lista no reinicia el contador
+    await q('UPDATE "Users" SET "therapistId"=NULL WHERE "therapistId"=$1', [tC.id]);
+    const later = await mkUser('user', { therapistId: tC.id });
+    assert.equal(row(await http(tC, 'GET', '/api/therapist/pacientes'), later.id).ordinal, 5);
+    // lecturas simultáneas con personas nuevas: el contador sigue siendo único y creciente
+    const crowd = []; for (let i = 0; i < 4; i++) crowd.push(await mkUser('user', { therapistId: tC.id }));
+    const all = await Promise.all(Array.from({ length: 6 }, () => http(tC, 'GET', '/api/therapist/pacientes')));
+    assert.ok(all.every((r) => r.status === 200));
+    const numbers = all[0].body.map((x) => x.ordinal); assert.equal(new Set(numbers).size, numbers.length);
+    assert.equal(Math.max(...numbers), 9, 'el contador llegó a 9 sin repetir ninguno');
+    assert.equal((await q('SELECT "lastOrdinal" FROM "TherapistOrdinalCounters" WHERE "therapistId"=$1', [tC.id]))[0].lastOrdinal, 9);
+  });
+
   await t.test('la tabla de ordinales: migración aditiva e idempotente, RLS y borrado en cascada con la persona', async () => {
     const migration = require('../../migrations/20261111010000-es177-person-ordinals.cjs');
     await migration.up(app); await migration.up(app);
-    const rls = (await q("SELECT relrowsecurity FROM pg_class WHERE relname='TherapistPersonOrdinals'"))[0].relrowsecurity;
-    assert.equal(rls, true);
+    for (const table of ['TherapistPersonOrdinals', 'TherapistOrdinalCounters']) assert.equal((await q('SELECT relrowsecurity FROM pg_class WHERE relname=$1', [table]))[0].relrowsecurity, true, table);
     const gone = await mkUser('user', { therapistId: tA.id });
     await http(tA, 'GET', '/api/therapist/pacientes');
     assert.equal((await q('SELECT count(*)::int AS n FROM "TherapistPersonOrdinals" WHERE "personId"=$1', [gone.id]))[0].n, 1);
