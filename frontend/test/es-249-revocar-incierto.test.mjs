@@ -24,8 +24,16 @@ test('ES-249 pantalla: lo incierto se relee; solo «revoked» completa el flujo 
   assert.match(page, /if \(real === 'revoked'\) finish\(\)/)
   assert.match(page, /else if \(real === 'granted' \|\| real === 'outdated'\) \{ setBridge\(real\); setRevoke\('not_seen'\) \}/)
   assert.match(page, /else setRevoke\('unsure'\)/)
-  assert.match(page, /\{revoke === 'unsure' && <button type="button" className="elv-btn" onClick=\{\(\) => void verify\(\)\}>\{t\('skill_map\.revoke_check'\)\}<\/button>\}/)
+  assert.match(page, /\{revoke === 'unsure' && <button type="button" className="elv-btn" ref=\{checkButton\} onClick=\{\(\) => void verify\(\)\}>\{t\('skill_map\.revoke_check'\)\}<\/button>\}/)
   assert.match(page, /const finish = \(\) => \{ setBridge\('revoked'\); setRevoke\('done'\); void reloadMap\(\) \}/)
+})
+
+// E249-1: el foco se coloca tras renderizar (efecto sobre `revoke`), no con un setTimeout que corría con el botón aún deshabilitado
+test('ES-249 foco: se coloca en un efecto tras renderizar; «Comprobar» si queda sin confirmar; sin setTimeout para el resultado', () => {
+  assert.match(page, /if \(revoke === 'unsure'\) \{ checkButton\.current\?\.focus\(\); return \}/)
+  assert.match(page, /if \(button && !button\.disabled\) button\.focus\(\); else document\.getElementById\('skill-map-main'\)\?\.focus\(\)/)
+  const verifyAndConfirm = page.slice(page.indexOf('const verify = async'), page.indexOf('// Never paint a response'))
+  assert.doesNotMatch(verifyAndConfirm, /setTimeout/)
 })
 
 test('ES-249 textos ES/EN: el aviso incierto no afirma nada y las claves coinciden', () => {
