@@ -10,7 +10,6 @@ const getToken = () => localStorage.getItem('elevation_token') ?? ''
 interface TherapistSuggestion {
   therapistId:   number
   therapistName: string
-  score:         number
   reason:        string
 }
 
@@ -267,9 +266,6 @@ export function MatchingModal({ onClose, onSuccess }: Props) {
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917' }}>
                           {s.therapistName}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: '#5C6B4E', fontWeight: 600 }}>
-                          {lang === 'es' ? 'Compatibilidad' : 'Match'}: {s.score}/10
                         </div>
                       </div>
                     </div>
