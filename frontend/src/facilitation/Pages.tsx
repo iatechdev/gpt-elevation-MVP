@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useCopy, useFacilitation } from './context'
-import { PreviewError, type Command, type Review, type Material } from './fixture'
+import { PreviewError, type Command, type Review, type Material, type Progress } from './fixture'
 import type { TextKey } from './copy'
 import { LIMITS, textProblem } from './validation'
 
@@ -33,7 +33,7 @@ export function ParticipantDetail() {
   return <section><Link className="elv-btn" to="/facilitation">{t('back')}</Link>
     <h2>{t('person')} {person.alias}</h2>
     <div className="fac-columns"><section className="elv-card"><div className="elv-card-body">
-      <h3>{t('progress')}</h3><p>{t(person.progress)}</p><p>{t('invitation')}: {t(person.invitation)}</p>
+      <h3>{t('progress')}</h3><ProgressSteps progress={person.progress} /><p>{t('invitation')}: {t(person.invitation)}</p>
       {person.invitation !== 'accepted' && <button className="elv-btn" disabled={dirty} onClick={() => setInvite(true)}>{t('invite')}</button>}
       {invite && <RecordForm command={{ kind: 'invitation', participantId: person.id }} close={() => setInvite(false)} />}
       <h3>{t('issues')}</h3><p>{t(person.issue ? 'recovery' : 'noIssues')}</p>
@@ -52,6 +52,14 @@ export function ParticipantDetail() {
     <ReviewHistory participantId={person.id} />
   </section>
 }
+const STEPS = ['context', 'choice', 'submitted', 'plan'] as const
+// Progreso por pasos EN PALABRAS (Hecho / Pendiente), no solo color: la lista ordenada dice qué pasos se cumplieron.
+function ProgressSteps({ progress }: { progress: Progress }) {
+  const { t } = useCopy()
+  const reached = (STEPS as readonly string[]).indexOf(progress)
+  return <><ol className="fac-steps" aria-label={t('steps')}>{STEPS.map((step, index) => <li key={step}><span>{t(step)}</span>: <strong>{index <= reached ? t('done') : t('pending')}</strong></li>)}</ol>
+    {progress === 'unknown' && <p>{t('unknown')}</p>}</>
+}
 export function NewReview() {
   const { id } = useParams()
   const [params] = useSearchParams()
@@ -63,7 +71,7 @@ export function NewReview() {
   return <section><Link className="elv-btn" to={'/facilitation/participants/' + person.id}>{t('back')}</Link>
     <h2>{t('review')} · {t('person')} {person.alias}</h2>
     <p>{t('sampleTitle')} · {t('version')} {m.version}</p><p>{t('source')}</p><p>{t('sample')}</p>
-    <RecordForm key={m.id + ':' + m.version} material={m} command={{ kind: 'review', participantId: person.id, shareId: m.id, materialVersion: m.version, evidenceRefs: [], observation: '', limits: '', locale: lang }} />
+    <RecordForm key={m.id} material={m} command={{ kind: 'review', participantId: person.id, shareId: m.id, materialVersion: m.version, evidenceRefs: [], observation: '', limits: '', locale: lang }} />
     <ReviewHistory participantId={person.id} />
   </section>
 }
@@ -103,16 +111,21 @@ function ReviewHistory({ participantId, own = false }: { participantId: string; 
     })}
   </section>
 }
+type TextField = 'observation' | 'limits' | 'reason' | 'response'
+type Field = 'evidence' | TextField
+const FIELD_ORDER: Field[] = ['evidence', 'observation', 'limits', 'reason', 'response']
 function RecordForm({ command, material, close }: { command: Command; material?: Material; close?: () => void }) {
   const { t, lang } = useCopy()
-  const { snapshot, setDirty, write, refresh, dirty: anyDirty } = useFacilitation()
+  const { snapshot, service, setDirty, write, refresh, sync, dirty: anyDirty } = useFacilitation()
   const formId = useId()
   const [draft, setDraft] = useState(command)
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<TextKey | ''>('')
   const [done, setDone] = useState(false)
-  const [invalid, setInvalid] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<Field, TextKey>>>({})
+  const [focusField, setFocusField] = useState<Field | null>(null)
+  const [currentVersion, setCurrentVersion] = useState<number | null>(null)
   const [pending, setPending] = useState<{ id: string; body: Command; revision: number } | null>(null)
   const form = useRef<HTMLFormElement>(null)
   const status = useRef<HTMLParagraphElement>(null)
@@ -121,15 +134,30 @@ function RecordForm({ command, material, close }: { command: Command; material?:
   const otherDirty = anyDirty && !dirty
   useEffect(() => { setDirty(formId, dirty); return () => setDirty(formId, false) }, [dirty, setDirty, formId])
   useEffect(() => { if (done || error) status.current?.focus() }, [done, error])
+  useEffect(() => { if (focusField) { document.getElementById(`${formId}-${focusField}`)?.focus(); setFocusField(null) } }, [focusField, formId])
   const change = (next: Command) => {
     const hasText = draft.kind === 'review' ? Boolean(draft.observation || draft.limits) : draft.kind === 'objection' ? Boolean(draft.reason) : draft.kind === 'response' ? Boolean(draft.response) : false
     setDraft(next.kind !== 'invitation' && !hasText ? { ...next, locale: lang } : next)
-    setError(''); setInvalid(false)
+    setError(''); setFieldErrors({}); setCurrentVersion(null)
   }
   const cancel = () => {
-    setDirty(formId, false); setPreview(false); setPending(null); setDraft(command); setError(''); setInvalid(false)
+    setDirty(formId, false); setPreview(false); setPending(null); setDraft(command); setError(''); setFieldErrors({}); setCurrentVersion(null)
     if (error === 'conflict') refresh()
     close?.()
+  }
+  // Conflicto de versión: se muestra la versión vigente del material (lectura sin «Cargando…») y se ofrece usarla SIN perder lo escrito.
+  function viewCurrent() {
+    if (draft.kind !== 'review') return
+    try {
+      const latest = service.read().participants.find((p) => p.id === draft.participantId)?.materials.find((m) => m.id === draft.shareId && m.active)
+      if (latest) setCurrentVersion(latest.version); else setError('noAccess')
+    } catch { setError('noAccess') }
+  }
+  function adoptCurrentVersion() {
+    if (draft.kind !== 'review' || currentVersion === null) return
+    sync()
+    setDraft({ ...draft, materialVersion: currentVersion, evidenceRefs: [] }) // el texto se conserva; las evidencias se vuelven a elegir sobre la versión vigente
+    setPending(null); setPreview(false); setError(''); setCurrentVersion(null)
   }
   async function confirm() {
     setBusy(true); setError('')
@@ -141,25 +169,34 @@ function RecordForm({ command, material, close }: { command: Command; material?:
     } catch (e) { setError(e instanceof PreviewError && e.code === 'conflict' ? 'conflict' : e instanceof PreviewError && e.code === 'revoked' ? 'noAccess' : 'saveError') }
     finally { setBusy(false) }
   }
-  const textField = (field: 'observation' | 'limits' | 'reason' | 'response', label: TextKey, max: number, value: string) => <label className="fac-field">
-    <span>{t(label)}</span><textarea className="elv-textarea" aria-label={t(label)} required maxLength={max} value={value} disabled={busy || preview || otherDirty} aria-invalid={invalid && textProblem(value, max) !== null} aria-describedby={invalid ? formId : undefined}
+  const textField = (field: TextField, label: TextKey, max: number, value: string) => { const problem = fieldErrors[field]; const near = value.length >= max * 0.9; const base = `${formId}-${field}`; return <div className="fac-field">
+    <label htmlFor={base}>{t(label)}</label><textarea id={base} className="elv-textarea" required maxLength={max} value={value} disabled={busy || preview || otherDirty} aria-invalid={Boolean(problem)} aria-describedby={base + '-count' + (problem ? ' ' + base + '-error' : '')}
       onChange={e => change({ ...draft, [field]: e.target.value } as Command)} />
-    <small>{t('fieldLimit')}: {max}</small>
-  </label>
+    <small id={base + '-count'}>{value.length} / {max} {t('characters')}</small>
+    <span className="fac-sr" aria-live="polite">{near ? `${value.length} / ${max} ${t('characters')}` : ''}</span>
+    {problem && <small id={base + '-error'} role="alert" className="fac-error">{t(problem)}</small>}
+  </div> }
   if (done) return <p ref={status} tabIndex={-1} role="status">{t('synthetic')} {t(draft.kind === 'review' ? 'recorded' : draft.kind === 'objection' ? 'objectionRecorded' : draft.kind === 'response' ? 'responseRecorded' : 'invitationRequested')}</p>
   return <form className="fac-form" ref={form} noValidate onSubmit={e => {
     e.preventDefault()
-    const problem = (draft.kind === 'review' ? [textProblem(draft.observation, LIMITS.observation), textProblem(draft.limits, LIMITS.limits)] : draft.kind === 'objection' ? [textProblem(draft.reason, LIMITS.reason)] : draft.kind === 'response' ? [textProblem(draft.response, LIMITS.response)] : []).find(Boolean) ?? null
-    const noEvidence = draft.kind === 'review' && !draft.evidenceRefs.length
-    if (problem || noEvidence) { setInvalid(true); setError(noEvidence ? 'selectEvidence' : problem as Exclude<typeof problem, null>); return }
-    setPreview(true)
+    const errors: Partial<Record<Field, TextKey>> = {}
+    if (draft.kind === 'review') {
+      if (!draft.evidenceRefs.length) errors.evidence = 'selectEvidence'
+      const o = textProblem(draft.observation, LIMITS.observation); if (o) errors.observation = o
+      const l = textProblem(draft.limits, LIMITS.limits); if (l) errors.limits = l
+    } else if (draft.kind === 'objection') { const r = textProblem(draft.reason, LIMITS.reason); if (r) errors.reason = r }
+    else if (draft.kind === 'response') { const r = textProblem(draft.response, LIMITS.response); if (r) errors.response = r }
+    const first = FIELD_ORDER.find((field) => errors[field])
+    if (first) { setFieldErrors(errors); setFocusField(first); return } // un mensaje por campo y el foco al primero con problema
+    setFieldErrors({}); setPreview(true)
   }}>
     {draft.kind === 'invitation' ? <p>{t('invitationNote')}</p> : <>
       {draft.kind === 'review' && <>
         <fieldset disabled={busy || preview || otherDirty}><legend>{t('examined')}</legend>
-          {material?.evidenceRefs.map(ref => <label className="fac-check" key={ref}><input className="elv-checkbox" type="checkbox" aria-invalid={invalid && !draft.evidenceRefs.length} aria-describedby={invalid ? formId : undefined} checked={draft.evidenceRefs.includes(ref)}
+          {material?.evidenceRefs.map((ref, index) => <label className="fac-check" key={ref}><input id={index === 0 ? `${formId}-evidence` : undefined} className="elv-checkbox" type="checkbox" aria-invalid={Boolean(fieldErrors.evidence)} aria-describedby={fieldErrors.evidence ? `${formId}-evidence-error` : undefined} checked={draft.evidenceRefs.includes(ref)}
             onChange={e => change({ ...draft, evidenceRefs: e.target.checked ? [...draft.evidenceRefs, ref] : draft.evidenceRefs.filter(x => x !== ref) })} />{t('evidenceTitle')} · {t('version')} {material.version}</label>)}
           <p>{t('evidence')}</p>
+          {fieldErrors.evidence && <p id={`${formId}-evidence-error`} role="alert" className="fac-error">{t(fieldErrors.evidence)}</p>}
         </fieldset>
         {textField('observation', 'observation', LIMITS.observation, draft.observation)}
         {textField('limits', 'limits', LIMITS.limits, draft.limits)}
@@ -178,6 +215,11 @@ function RecordForm({ command, material, close }: { command: Command; material?:
       <p>{t('contentLanguage')}: {(draft.kind !== 'invitation' ? draft.locale : lang).toUpperCase()}</p>
     </section>}
     <p id={formId} ref={status} tabIndex={-1} role={error ? 'alert' : 'status'}>{error ? t(error) : busy ? t('saving') : ''}</p>
+    {error === 'conflict' && draft.kind === 'review' && <div className="fac-conflict">
+      {currentVersion === null
+        ? <button className="elv-btn" type="button" onClick={viewCurrent}>{t('viewCurrent')}</button>
+        : <><p>{t('currentIs')} {currentVersion}; {t('draftUses')} {draft.materialVersion}.</p><button className="elv-btn elv-btn-primary" type="button" onClick={adoptCurrentVersion}>{t('useCurrent')}</button></>}
+    </div>}
     <div className="fac-actions">
       {!preview && <button className="elv-btn elv-btn-primary" type="submit" disabled={otherDirty}>{t('previewAction')}</button>}
       {preview && <button className="elv-btn elv-btn-primary" type="button" disabled={busy || error === 'conflict' || error === 'noAccess'} onClick={confirm}>

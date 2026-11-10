@@ -97,6 +97,8 @@ function ActivePreview({ session }: { session: string }) {
     document.addEventListener('click', click, true)
     return () => { setBlocker(null); window.removeEventListener('beforeunload', unload); document.removeEventListener('click', click, true) }
   }, [dirty, navigate, location.pathname])
+  // Lee el estado vigente SIN pasar por «Cargando…»: así un formulario con texto escrito no se desmonta (conflicto de versión).
+  const sync = () => { try { setSnapshot(service.read()) } catch (e) { setFailure(e instanceof PreviewError ? e.code : 'load-error') } }
   async function write(id: string, command: Command, revision: number, actor: 'reviewer' | 'participant') {
     await new Promise(resolve => window.setTimeout(resolve, 180))
     if (!mounted.current || token() !== session) throw new PreviewError('revoked')
@@ -107,7 +109,7 @@ function ActivePreview({ session }: { session: string }) {
   let content: ReactNode = <Outlet />
   if (loading) content = <p role="status">{t('loading')}</p>
   else if (failure) content = <div role="alert"><p>{t(failure === 'revoked' ? 'noAccess' : 'loadError')}</p><p>{t('failedRead')}</p><button className="elv-btn" onClick={refresh}>{t('retry')}</button></div>
-  return <FacilitationContext.Provider value={{ snapshot, service, loading, failure, refresh, write, dirty, setDirty }}>
+  return <FacilitationContext.Provider value={{ snapshot, service, loading, failure, refresh, sync, write, dirty, setDirty }}>
     <section className="fac-scope">
       <a className="fac-skip elv-btn" href="#fac-main">{t('skip')}</a>
       <header className="fac-header"><span>Elevation</span><div className="fac-actions" aria-label={t('language')}>

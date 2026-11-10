@@ -3,7 +3,7 @@ import type { Command, Snapshot, Fixture } from './fixture'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy, type TextKey } from './copy'
 export const FacilitationContext = createContext<{
-  snapshot: Snapshot; service: Fixture; loading: boolean; failure: string; refresh: () => void;
+  snapshot: Snapshot; service: Fixture; loading: boolean; failure: string; refresh: () => void; sync: () => void;
   write: (id: string, command: Command, revision: number, actor: 'reviewer' | 'participant') => Promise<void>;
   dirty: boolean; setDirty: (id: string, value: boolean) => void;
 } | null>(null)
