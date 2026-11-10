@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { therapistEs, therapistEn } from '../src/i18n/therapistCopy.ts'
 
-const room = readFileSync(new URL('../src/pages/user/SessionRoom.tsx', import.meta.url), 'utf8')
+const room = readFileSync(new URL('../src/pages/user/SessionRoom.tsx', import.meta.url), 'utf8').replace(/\r\n/g, '\n') // tolera fin de línea CRLF (Windows)
 const EMOJI = /\p{Extended_Pictographic}/u
 
 test('ES-169 sala: el iframe del video solo se monta en la fase «en curso», después de explicar el permiso y de que la persona pulse «Entrar»', () => {

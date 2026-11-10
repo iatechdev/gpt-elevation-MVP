@@ -1,0 +1,10 @@
+# ES-243: finales de línea LF en el repositorio y en el checkout (Windows incluido). Las pruebas leen archivos fuente y comparan texto con saltos de línea.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
