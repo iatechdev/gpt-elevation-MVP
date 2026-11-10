@@ -5,7 +5,7 @@ export type Origin = { type: 'direct' } | { type: 'chat_turn' | 'diary_entry' | 
 export type Field = { key: FieldKey; text: string; origin?: Origin; skillKey?: string }
 export type DirectField = Field & { origin: Origin }
 export type DraftField = { id: string; key: FieldKey | ''; text: string; selected: boolean }
-export type ContextVersion = { version: number; status: 'active' | 'superseded' | 'revoked'; approvedAt: string; revokedAt: string | null; fields: Field[]; needsReview?: boolean }
+export type ContextVersion = { version: number; status: 'active' | 'superseded' | 'revoked'; approvedAt: string; revokedAt: string | null; fields: Field[]; needsReview?: boolean; reviewReason?: 'source_revoked' }
 export type CareerContext = { active: ContextVersion | null; versions: ContextVersion[] }
 export type Preview = { token: string; expiresAt: string; representation: Field[] }
 const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -36,7 +36,7 @@ export function parseVersion(value: unknown): ContextVersion {
     || !['active', 'superseded', 'revoked'].includes(value.status) || !date(value.approvedAt)
     || (value.revokedAt !== null && !date(value.revokedAt)) || (value.needsReview !== undefined && typeof value.needsReview !== 'boolean')) throw new Error('Invalid version')
   return { version: Number(value.version), status: value.status as ContextVersion['status'], approvedAt: value.approvedAt,
-    revokedAt: value.revokedAt as string | null, fields: parseFields(value.fields), ...(value.needsReview !== undefined ? { needsReview: value.needsReview as boolean } : {}) }
+    revokedAt: value.revokedAt as string | null, fields: parseFields(value.fields), ...(value.needsReview !== undefined ? { needsReview: value.needsReview as boolean } : {}), ...(value.reviewReason === 'source_revoked' ? { reviewReason: 'source_revoked' as const } : {}) }
 }
 export function parseContext(value: unknown): CareerContext {
   if (!object(value) || !Array.isArray(value.versions) || (value.active !== null && !object(value.active))) throw new Error('Invalid context')

@@ -10,7 +10,8 @@ import type { CareerContext, Field } from '../compass/model'
 import { bridgeCopy } from './copy'
 import { loadInsights } from './insights'
 import { SourcesPanel } from './SourcesPanel'
-import { emptyProposals, withSource } from './sources'
+import { readPermissions, setPermission } from './insightsApi'
+import { emptyProposals, sourceIds, withSource } from './sources'
 import { formatDate, pending, sameFields, sortInsights, whyNot, withInsight, withoutField } from './logic'
 import type { DirectField } from '../compass/model'
 import type { Insight, SourceId } from './logic'
@@ -31,6 +32,9 @@ export function BridgePage() {
   const [ctx, setCtx] = useState<CareerContext | null>(null); const [loadError, setLoadError] = useState(false); const [expired, setExpired] = useState(!token)
   const [peek, setPeek] = useState<ReadonlySet<string>>(new Set()); const [confirming, setConfirming] = useState<string | null>(null)
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<Notice>(null); const [askAll, setAskAll] = useState(false)
+  // ES-168: «Retirar todo» retira lo cruzado Y los permisos de lectura de las tres fuentes. SourcesPanel avisa de los permisos y se recarga con reloadKey.
+  const [perms, setPerms] = useState<Record<SourceId, boolean> | null>(null); const [reloadKey, setReloadKey] = useState(0)
+  const cancelAll = useRef<HTMLButtonElement | null>(null); const allDialog = useRef<HTMLDivElement | null>(null)
   const confirmButton = useRef<HTMLButtonElement | null>(null); const proHeading = useRef<HTMLHeadingElement | null>(null)
   const [focusTarget, setFocusTarget] = useState<Focus>(null)
   // El mismo intento (mismas claves y textos) conserva su requestId hasta que sale bien: si se pierde la respuesta, reintentar no crea una versión idéntica de más.
@@ -81,7 +85,35 @@ export function BridgePage() {
   }
   const authorize = (insight: Insight) => commit(current => withInsight(current, insight), c.crossed, { kind: 'pro' })
   const remove = (field: Field) => commit(current => withoutField(current, field), c.removed, { kind: 'pro' })
-  const revokeAll = async () => { setAskAll(false); await commit(() => [], c.revoked, { kind: 'pro' }, false) }
+  const anyPerm = !!perms && sourceIds.some(source => perms[source])
+  useEffect(() => { if (askAll) cancelAll.current?.focus() }, [askAll])
+  const closeAll = () => { setAskAll(false); requestAnimationFrame(() => (document.querySelector('[data-withdraw-all]') as HTMLElement | null)?.focus()) }
+  const trapAll = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') { event.stopPropagation(); if (!busy) closeAll(); return }
+    if (event.key !== 'Tab') return
+    const items = [...(allDialog.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? [])]
+    if (!items.length) return
+    const first = items[0]; const last = items[items.length - 1]
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+  }
+  // Retira lo cruzado (si lo hay) y después los permisos activos, uno por uno. Un corte a medias no se declara éxito: se relee todo y se dice la verdad.
+  const withdrawAll = async () => {
+    setBusy(true); setNotice(null)
+    try {
+      if (active.length) await api.revoke()
+      const opts = { baseUrl: backend, token }
+      const current = await readPermissions(opts)
+      for (const source of sourceIds) if (current[source]) await setPermission(opts, source, false)
+      const after = await readPermissions(opts)
+      setProposals(emptyProposals); setReloadKey(key => key + 1); await load()
+      const fresh = await api.read()
+      const clean = !fresh.active && sourceIds.every(source => !after[source])
+      setNotice(clean ? { kind: 'ok', text: c.withdrawAllDone } : { kind: 'error', text: c.withdrawAllUncertain })
+    } catch (error) {
+      if (error instanceof CompassError && error.status === 401) setExpired(true)
+      else { setReloadKey(key => key + 1); await load().catch(() => undefined); setNotice({ kind: 'error', text: c.withdrawAllUncertain }) }
+    } finally { setBusy(false); setAskAll(false); setFocusTarget({ kind: 'pro' }) }
+  }
   const ask = (id: string) => { setConfirming(id); setNotice(null) }
   const cancel = () => { const id = confirming; setConfirming(null); if (id) setFocusTarget({ kind: 'authorize', id }) }
   const togglePeek = (id: string) => setPeek(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next })
@@ -103,7 +135,7 @@ export function BridgePage() {
       {ctx && <div className="bridge-cols">
         <section className="bridge-col" aria-labelledby="bridge-private">
           <h2 id="bridge-private">🔒 {c.private}</h2>
-          <SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} />
+          <SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} onPerms={setPerms} reloadKey={reloadKey} />
           {!todo.length && <div className="bridge-empty" role="status"><p>{insights.length ? c.nothing : c.empty}</p>{!insights.length && <p className="bridge-small">{c.emptyNote} <Link className="elv-link" to="/app/compass">{c.toCompass}</Link></p>}</div>}
           {todo.map(insight => {
             const open = peek.has(insight.id); const asking = confirming === insight.id; const blocked = whyNot(active, insight)
@@ -126,7 +158,7 @@ export function BridgePage() {
         <div className="bridge-arrow" aria-hidden="true">↓</div>
         <section className="bridge-col" aria-labelledby="bridge-pro">
           <h2 id="bridge-pro" ref={proHeading} tabIndex={-1}>{c.professional}</h2>
-          {version?.needsReview && <div className="bridge-review" role="note"><strong>{c.review}</strong><p>{c.reviewText}</p></div>}
+          {version?.needsReview && <div className="bridge-review" role="note"><strong>{c.review}</strong><p>{version.reviewReason === 'source_revoked' ? c.reviewSourceRevoked : c.reviewText}</p></div>}
           {!active.length && <div className="bridge-empty" role="status"><p>{c.nothing}</p></div>}
           {version && active.length > 0 && <>
             <p className="bridge-small">{c.version.replace('{v}', String(version.version)).replace('{date}', formatDate(version.approvedAt.slice(0, 10), lang))}</p>
@@ -137,10 +169,19 @@ export function BridgePage() {
             </li>)}</ul></>}
         </section>
       </div>}
-      {ctx && active.length > 0 && <footer className="bridge-foot">
-        {askAll ? <div className="bridge-ask" role="group" aria-label={c.revokeAllQ}><p>{c.revokeAllQ}</p><div><button type="button" className="bridge-ok" disabled={busy} onClick={() => void revokeAll()}>{c.confirm}</button><button type="button" className="bridge-no" onClick={() => setAskAll(false)}>{c.cancel}</button></div></div>
-          : <button type="button" className="bridge-link" disabled={busy} onClick={() => setAskAll(true)}>{c.revokeAll}</button>}
+      {ctx && (active.length > 0 || anyPerm) && <footer className="bridge-foot">
+        <button type="button" className="bridge-link" disabled={busy} data-withdraw-all onClick={() => setAskAll(true)}>{c.revokeAll}</button>
       </footer>}
+      {askAll && <div className="bridge-modal-bg">
+        <div ref={allDialog} className="bridge-modal" role="dialog" aria-modal="true" aria-labelledby="bridge-all-title" onKeyDown={trapAll}>
+          <h3 id="bridge-all-title">{c.revokeAllQ}</h3>
+          <ul>{active.length > 0 && <li>{c.withdrawAllCrossed}</li>}{anyPerm && <li>{c.withdrawAllPerms}</li>}<li>{c.withdrawAllKeep}</li></ul>
+          <div className="bridge-modal-btns">
+            <button type="button" ref={cancelAll} className="bridge-no" disabled={busy} onClick={closeAll}>{c.cancel}</button>
+            <button type="button" className="bridge-ok" disabled={busy} onClick={() => void withdrawAll()}>{busy ? c.saving : c.revokeAll}</button>
+          </div>
+        </div>
+      </div>}
     </section>
   </SpaceShell>
 }

@@ -78,9 +78,9 @@ const assert = require('node:assert/strict');
   await page.locator('.bridge-done').first().getByRole('button', { name: /Revocar/ }).click(); await page.waitForFunction(() => document.querySelectorAll('.bridge-done').length === 1);
   assert.equal(state.confirms.at(-1).fields.length, 1); assert.equal(await page.locator('.bridge-card').count(), 2); check('revocar uno confirma la versión sin él y el insight vuelve a la columna del diario');
 
-  // 5 Revocar todos pide confirmación
-  await page.getByRole('button', { name: 'Revocar todos' }).click(); assert.equal(state.revokes, 0); assert.match(await text(page), /Se retirará todo lo que cruzó/); check('«Revocar todos» pregunta antes de actuar');
-  await page.getByRole('group', { name: /Se retirará todo/ }).getByRole('button', { name: 'Confirmar' }).click(); await page.waitForFunction(() => document.querySelectorAll('.bridge-done').length === 0);
+  // 5 «Retirar todo» (ES-168) pide confirmación con las dos consecuencias; la medición completa está en es168-check.cjs
+  await page.getByRole('button', { name: 'Retirar todo', exact: true }).click(); assert.equal(state.revokes, 0); assert.match(await text(page), /Lo que ya cruzó: tu profesional dejará de ver/); check('«Retirar todo» pregunta antes de actuar');
+  await page.getByRole('dialog').getByRole('button', { name: 'Retirar todo', exact: true }).click(); await page.waitForFunction(() => document.querySelectorAll('.bridge-done').length === 0);
   assert.equal(state.revokes, 1); assert.equal(await page.locator('.bridge-card').count(), 3); check('revocar todos revoca la versión activa y todo vuelve a la columna del diario');
   await context.close();
 
