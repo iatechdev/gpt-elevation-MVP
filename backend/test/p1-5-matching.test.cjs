@@ -44,7 +44,7 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
   });
   assert.deepEqual(assigned, { values: { therapistId: 303 }, options: { where: { id: 101 } } });
   assert.equal((await request('POST', '/api/matching/request', {
-    role: 'user', body: { answers: { area: 'synthetic', style: 'synthetic', language: 'en' } },
+    role: 'user', body: { answers: { area: 'other', style: 'any', language: 'en' } },
   })).status, 200);
   match.status = 'pending';
   assert.equal((await request('POST', '/api/matching/choose', {

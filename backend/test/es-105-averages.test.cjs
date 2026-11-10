@@ -68,7 +68,7 @@ test('ES-105 (O1): el prompt del resumen y de las recomendaciones lleva el prome
   // Matching
   models.User.findAll = async () => [record({ id: 303, name: 'Synthetic therapist' })]; models.MatchingRequest.create = async values => record({ id: 7, ...values });
   anthropic.messages.create = keep('matching', JSON.stringify([{ therapistId: 303, score: 7, reason: 'Sintético' }]));
-  assert.equal((await request('POST', '/api/matching/request', { role: 'user', id: 101, body: { answers: { area: 'sintético' } } })).status, 200);
+  assert.equal((await request('POST', '/api/matching/request', { role: 'user', id: 101, body: { answers: { area: 'other' } } })).status, 200);
   // ES-242: el emparejamiento ya NO envía el ánimo al proveedor (minimización de datos): ni el promedio correcto ni ninguno.
   assert.doesNotMatch(prompts.matching, /Average mood|3\.8|7\.5|mood/i);
   // Recomendaciones
@@ -79,7 +79,7 @@ test('ES-105 (O1): el prompt del resumen y de las recomendaciones lleva el prome
   // Sin registros: nada inventado
   models.MoodLog.findAll = async () => [];
   anthropic.messages.create = keep('matching', JSON.stringify([{ therapistId: 303, score: 7, reason: 'Sintético' }]));
-  assert.equal((await request('POST', '/api/matching/request', { role: 'user', id: 101, body: { answers: { area: 'sintético' } } })).status, 200);
+  assert.equal((await request('POST', '/api/matching/request', { role: 'user', id: 101, body: { answers: { area: 'other' } } })).status, 200);
   assert.doesNotMatch(prompts.matching, /Average mood|No data|mood/i); // ES-242: sin ánimo, haya o no registros
   anthropic.messages.create = keep('recommendations', JSON.stringify([{ category: 'habit', content: 'Una frase breve.' }]));
   assert.equal((await request('POST', '/api/recommendations/generate', { role: 'user', id: 101 })).status, 200);

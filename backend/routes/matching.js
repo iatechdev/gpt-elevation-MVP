@@ -29,6 +29,13 @@ const unavailable = { code: 'therapist_unavailable', error: 'Ese terapeuta no es
 // ES-242: solo estas tres respuestas existen; el resto de claves se ignora. Cada valor es una etiqueta corta (letras, números, espacio, punto, guion y guion bajo),
 // no una frase: un texto largo, con saltos de línea, caracteres de control o signos de instrucción se rechaza con 400 `invalid_answers` ANTES de consultar nada ni llamar al modelo.
 const ANSWER_KEYS = ['area', 'style', 'language'];
+// ES-251: catálogo CERRADO por clave. La forma (arriba) no basta: una frase corta con instrucciones también es «letras y espacios». Solo estos valores son válidos; el resto → 400 invalid_answers.
+// Hoy las dos pantallas (MatchingModal y UserProgress) usan listas distintas; el servidor acepta la unión de ambas hasta que ES-169 PR2 las unifique. Añadir un valor es una decisión de producto (cambiar aquí y en las pantallas).
+const ANSWER_CATALOG = {
+  area: ['anxiety', 'depression', 'relationships', 'self-knowledge', 'habits', 'personal growth', 'stress', 'other'],
+  style: ['reflective', 'structured', 'spiritual', 'practical', 'reflective and exploratory', 'structured with goals', 'empathetic and listening', 'any'],
+  language: ['es', 'en', 'both', 'Spanish', 'English', 'No preference'],
+};
 const ANSWER_VALUE = /^[\p{L}\p{N}][\p{L}\p{N} _.-]{0,59}$/u;
 function cleanAnswers(raw) {
   if (!object(raw) || !Object.values(raw).every(value => typeof value === 'string')) return null; // cualquier valor que no sea texto (objeto, lista, número, null) invalida el cuerpo
@@ -39,6 +46,7 @@ function cleanAnswers(raw) {
     const value = raw[key].trim();
     // estricto: si limpiar el texto (NFKC, caracteres invisibles o de control) lo cambia, se rechaza en vez de aceptarlo "arreglado"
     if (normalizeText(value) !== value || !ANSWER_VALUE.test(value) || redactSecrets(value) !== value) return null;
+    if (!ANSWER_CATALOG[key].includes(value)) return null; // ES-251: fuera del catálogo cerrado
     clean[key] = value;
   }
   return Object.keys(clean).length ? clean : null; // sin ninguna respuesta conocida no hay nada con qué emparejar
