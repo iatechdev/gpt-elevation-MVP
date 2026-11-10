@@ -11,6 +11,7 @@ import './compass.css'
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const blank = (): DraftField => ({ id: crypto.randomUUID(), key: '', text: '', selected: false })
 type Review = { preview: Preview; fields: DirectField[]; requestId: string; baseVersion: number }
+// La respuesta de /confirm trae {key,text}; el GET trae además `origin`: se comparan solo clave y texto (la forma real de cada una).
 const pairs = (items: readonly { key: string; text: string }[]) => JSON.stringify(items.map(item => [item.key, item.text]))
 
 export function CompassPage() {
@@ -106,7 +107,7 @@ function CompassSession({ token }: { token: string }) {
     } finally { locked.current = false; if (current()) setBusy('') }
   }
   // ES-171: ¿ya quedó aplicada esta revisión? Con acuse: misma versión y campos. Sin acuse (respuesta perdida): una versión NUEVA con exactamente esos campos.
-  const applied = (value: CareerContext, ack: ContextVersion | null, mine: Review) => !!value.active && (ack ? value.active.version === ack.version && JSON.stringify(value.active.fields) === JSON.stringify(ack.fields) : value.active.version > mine.baseVersion && pairs(value.active.fields) === pairs(mine.preview.representation))
+  const applied = (value: CareerContext, ack: ContextVersion | null, mine: Review) => !!value.active && (ack ? value.active.version === ack.version && pairs(value.active.fields) === pairs(ack.fields) : value.active.version > mine.baseVersion && pairs(value.active.fields) === pairs(mine.preview.representation))
   async function confirm() {
     if (locked.current || !current() || !review || !authorized || Date.parse(review.preview.expiresAt) <= Date.now() || !ready) return
     locked.current = true; setBusy('confirming'); setReady(false); setUnsure(false)

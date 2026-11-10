@@ -268,3 +268,17 @@ test('ES-171 retirar (POST /revoke) deja vacía la lectura aprobada del motor, t
   assert.equal((await bridge.getApprovedContext(202, 'e')).fields[0].text, 'Directo de B'); // B intacta
   assert.equal((await request('GET', '/api/career-context', B)).body.active.version, 1);
 });
+
+// ES-171 (E171-1): la forma REAL de las respuestas. El acuse de /confirm trae {key,text}; el GET de la persona trae además `origin`.
+// El cliente (frontend/src/compass/CompassPage.tsx, pairs()) compara solo clave y texto; si esto cambia, hay que cambiar el cliente.
+test('ES-171 forma real: el acuse de /confirm lleva {key,text} y el GET de la persona añade origin; coinciden en clave y texto', async (t) => {
+  setup();
+  const request = await startApp(t);
+  const confirmed = await approve(request, A, direct('  Texto con espacios  '), 'req-171-shape');
+  assert.equal(confirmed.status, 201);
+  assert.deepEqual(confirmed.body.fields, [{ key: 'motivations', text: 'Texto con espacios' }]); // normalizado y SIN origin
+  const read = (await request('GET', '/api/career-context', A)).body.active;
+  assert.deepEqual(read.fields, [{ key: 'motivations', text: 'Texto con espacios', origin: { type: 'direct' } }]);
+  assert.deepEqual(read.fields.map(({ key, text }) => ({ key, text })), confirmed.body.fields);
+  assert.equal(read.version, confirmed.body.version);
+});

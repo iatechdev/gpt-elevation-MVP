@@ -42,3 +42,9 @@ test('ES-171: conflicto con aviso propio y textos ES/EN de incierto, comprobar y
 test('ES-171: la retirada no se reintenta sola (una pérdida de respuesta nunca dispara otro POST)', () => {
   assert.match(page, /try \{ await api\.revoke\(\); acknowledged = true \} catch \{ \/\* A lost response must never trigger another POST automatically\. \*\/ \}/)
 })
+
+test('ES-171 (E171-1): el acuse de /confirm ({key,text}) y el GET ({key,text,origin}) se comparan por clave y texto, nunca con JSON.stringify de los objetos completos', () => {
+  assert.match(page, /value\.active\.version === ack\.version && pairs\(value\.active\.fields\) === pairs\(ack\.fields\)/)
+  assert.ok(!/JSON\.stringify\(value\.active\.fields\) === JSON\.stringify\(ack\.fields\)/.test(page))
+  // la forma real de ambas respuestas está fijada en backend/test/es-25-bridge.test.cjs («ES-171 forma real»)
+})

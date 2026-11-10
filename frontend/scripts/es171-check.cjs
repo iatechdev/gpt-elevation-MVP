@@ -20,12 +20,13 @@ const T = {
     uncertain: 'We could not verify the confirmation. Your selection is still here.', none: 'We do not see that confirmation yet. You can try again: it will not be duplicated.', conflict: 'There is a newer version of your context. We reloaded it; review it before continuing.',
     withdraw: 'Withdraw current context', withdrawConfirm: 'Withdraw context', cancel: 'Cancel', help: 'Your professional will stop seeing this context. It does not delete your saved texts or other permissions, which are managed separately.', withdrawn: 'Context withdrawn from professional use' },
 }
-const version = (n, text, status = 'active') => ({ version: n, status, approvedAt: '2026-11-01T12:00:00.000Z', revokedAt: status === 'revoked' ? '2026-11-02T12:00:00.000Z' : null, fields: [{ key: 'interests', text }], ...(status === 'active' ? { needsReview: false } : {}) })
+const version = (n, text, status = 'active') => ({ version: n, status, approvedAt: '2026-11-01T12:00:00.000Z', revokedAt: status === 'revoked' ? '2026-11-02T12:00:00.000Z' : null, fields: [{ key: 'interests', text, origin: { type: 'direct' } }], ...(status === 'active' ? { needsReview: false } : {}) })
 
 async function open(browser, { width, lang, scheme, mode = 'ok', withActive = false, ttlMs = 600000 }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' })
   const page = await ctx.newPage()
   const state = { versions: withActive ? [version(1, 'Contexto existente')] : [], confirms: [], revokes: 0, byRequest: new Map(), mode, pageErrors: [] }
+  const ack = v => ({ ...v, fields: v.fields.map(({ key, text }) => ({ key, text })) }) // FORMA REAL del servidor: /confirm responde {key,text}; el GET añade origin
   const snapshot = () => { const active = state.versions.find(v => v.status === 'active') || null; return { active, versions: state.versions } }
   page.on('pageerror', e => state.pageErrors.push(e.message))
   await page.route('**/api/session', route => route.fulfill({ json: { role: 'user', onboardingCompleted: true } }))
@@ -36,14 +37,14 @@ async function open(browser, { width, lang, scheme, mode = 'ok', withActive = fa
     if (p.endsWith('/preview')) return route.fulfill({ json: { token: 'opaque-preview-' + Math.random().toString(16).slice(2, 8), expiresAt: new Date(Date.now() + ttlMs).toISOString(), representation: body.fields.map(f => ({ key: f.key, text: f.text.trim() })) } })
     if (p.endsWith('/confirm')) {
       state.confirms.push(body)
-      if (state.byRequest.has(body.requestId)) return route.fulfill({ status: 201, json: state.byRequest.get(body.requestId) }) // idempotente: la misma versión
+      if (state.byRequest.has(body.requestId)) return route.fulfill({ status: 201, json: ack(state.byRequest.get(body.requestId)) }) // idempotente: la misma versión
       if (state.mode === 'conflict') { state.mode = 'ok'; state.versions = [version(5, 'Cambio hecho en otra pestaña'), ...state.versions.map(v => ({ ...v, status: 'superseded', needsReview: undefined }))]; return route.fulfill({ status: 409, json: { code: 'conflict' } }) }
       if (state.mode === 'drop') { state.mode = 'ok'; return route.abort('connectionreset') } // nunca llegó al servidor
       const next = version((state.versions[0]?.version || 0) + 1, body.fields[0].text.trim())
       state.versions = [next, ...state.versions.map(v => v.status === 'active' ? { ...v, status: 'superseded', needsReview: undefined } : v)]
       state.byRequest.set(body.requestId, next)
       if (state.mode === 'lose-ack') { state.mode = 'ok'; return route.abort('connectionreset') } // el servidor guardó, la respuesta no llegó
-      return route.fulfill({ status: 201, json: next })
+      return route.fulfill({ status: 201, json: ack(next) })
     }
     if (p.endsWith('/revoke')) { state.revokes++; state.versions = state.versions.map(v => v.status === 'active' ? { ...v, status: 'revoked', revokedAt: '2026-11-03T12:00:00.000Z', needsReview: undefined } : v); return route.fulfill({ json: { revoked: true } }) }
     return route.fulfill({ status: 404, json: {} })
