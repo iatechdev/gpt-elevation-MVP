@@ -1,0 +1,111 @@
+[
+ {
+  "id": "E1a REGISTRO: 68 correos con un carácter de control/formato (en la parte local y en el dominio) → 400 invalid_email y ninguna cuenta creada",
+  "ok": true,
+  "detail": "68/68"
+ },
+ {
+  "id": "E1b INVITACIONES: 68 correos con un carácter de control/formato → 400 invalid_email y ninguna invitación creada",
+  "ok": true,
+  "detail": "68/68"
+ },
+ {
+  "id": "E1c SOLICITUD PROFESIONAL: ningún correo con carácter inseguro queda GUARDADO tal cual (se rechaza con 400 o se guarda ya limpio) y no hay 5xx",
+  "ok": true,
+  "detail": "inseguros guardados=ninguno otros estados=ninguno"
+ },
+ {
+  "id": "E1d solicitud profesional: casos que se aceptaron tras LIMPIAR el carácter (correo guardado distinto del enviado)",
+  "info": "42 de 68: U+202E RLO/local→201:qa252x1-1794320275287@example.test ‖ U+202E RLO/domain→201:qa252x2-1794320275287@example.test ‖ U+202D LRO/local→201:qa252x3-1794320275287@example.test ‖ U+202D LRO/domain→201:qa252x4-1794320275287@example.test ‖ U+202A LRE/local→201:qa252x5-1794320275287@example.test ‖ U+202A LRE/domain→201:qa252x6-1794320275287@example.test ‖ U+202B RLE/local→201:qa252x7-1794320275287@example.test ‖ U+202B RLE/domain→201:qa252x8-1794320275287@example.test"
+ },
+ {
+  "id": "E1e solicitud profesional: rechazados con 400 (categorías)",
+  "info": "U+061C ALM, U+180E, LF, CR, TAB, U+2028 LS, U+2029 PS, U+E000 uso privado, U+F8FF uso privado, U+0378 sin asignar, U+FFFF no-carácter, U+E0001 tag (Cf), U+10FFFD privado sup."
+ },
+ {
+  "id": "E2a correos legítimos con acentos, ñ, IDN, CJK, árabe, hebreo, marcas combinadas, +tag y mayúsculas siguen valiendo en REGISTRO",
+  "ok": true,
+  "detail": "12/12"
+ },
+ {
+  "id": "E2b ... y en INVITACIONES (201)",
+  "ok": true,
+  "detail": "12/12"
+ },
+ {
+  "id": "E2c ... y en SOLICITUD PROFESIONAL",
+  "ok": true,
+  "detail": "12/12"
+ },
+ {
+  "id": "E2d normalización a minúsculas",
+  "info": "usuario=ana+tag72-1794320275287@example.test invitación=ana+tag72-1794320275287i@example.test,ana74-1794320275287i@example.test"
+ },
+ {
+  "id": "E3a la forma que el PR no tocó sigue exigiéndose: sin @, doble @, espacios, <>, comillas, vacío, enormes → 400 en INVITACIONES y SOLICITUD; el registro no da 5xx (salvo lo preexistente de E3c)",
+  "ok": true,
+  "detail": "solicitud:coma:201 | registro:254+:500"
+ },
+ {
+  "id": "E3c PREEXISTENTE (el PR no toca ese código; se anota): la solicitud profesional acepta una coma en el correo (201) y el registro responde 500 con un correo de 260+ caracteres",
+  "info": "solicitud:coma:201 | registro:254+:500"
+ },
+ {
+  "id": "E3b email con tipos raros (número, lista, objeto, null, booleano) → 4xx en invitaciones y registro, nunca 5xx",
+  "ok": true,
+  "detail": "400/400 400/400 400/400 400/400 400/400"
+ },
+ {
+  "id": "E4a una cuenta HEREDADA con un carácter hoy rechazado (la inserto en la base) puede seguir entrando con su correo exacto",
+  "ok": true,
+  "detail": "registro=201 login=200"
+ },
+ {
+  "id": "E4b la cuenta heredada puede PEDIR restablecimiento: se genera su fila de enlace",
+  "ok": true,
+  "detail": "filas=1"
+ },
+ {
+  "id": "E4c el enlace de restablecimiento desde administración a la cuenta heredada sigue en 202",
+  "ok": true,
+  "detail": "202"
+ },
+ {
+  "id": "E4d SIN enumeración: pedir restablecimiento de un correo existente, inexistente, con carácter inseguro y heredado da el MISMO estado y el MISMO cuerpo",
+  "ok": true,
+  "detail": "[[202,4],[202,4],[202,5],[202,5]]"
+ },
+ {
+  "id": "E4e el login con credenciales erróneas no distingue existente / inexistente / con carácter inseguro (mismo estado y mensaje)",
+  "ok": true,
+  "detail": "401/401/401 \"Credenciales incorrectas.\""
+ },
+ {
+  "id": "E5 otros puntos de entrada de un correo en el backend (grep de req.body.email)",
+  "info": "solo registro, login, invitaciones y restablecimiento; la aceptación de invitación toma el correo de la invitación (no del cuerpo)"
+ },
+ {
+  "id": "E6a registro con ancho cero ya NO crea una cuenta distinta que se ve igual: 400 y una sola cuenta",
+  "ok": true,
+  "detail": "primero=201 zw=400 cuentas=1"
+ },
+ {
+  "id": "E6b registro repetido del mismo correo (respuesta existente, sin cambio)",
+  "info": "400 {\"error\":\"El correo ya está registrado.\"}"
+ },
+ {
+  "id": "E7a el 400 trae code invalid_email y texto ES/EN, sin eco del correo enviado, y Cache-Control",
+  "ok": true,
+  "detail": "400 {\"code\":\"invalid_email\",\"error\":\"Correo inválido. / Invalid email.\"} cc=no-store"
+ },
+ {
+  "id": "E7b 40 correos con Unicode aleatorio × 3 sitios → nunca 5xx",
+  "ok": true,
+  "detail": "120/120"
+ },
+ {
+  "id": "E7c 12 solicitudes simultáneas (válidas e inseguras): sin 5xx, las inseguras 400 y el servidor sigue respondiendo",
+  "ok": true,
+  "detail": "1990ms"
+ }
+]
