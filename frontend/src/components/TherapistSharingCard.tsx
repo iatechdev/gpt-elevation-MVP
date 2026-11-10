@@ -27,6 +27,11 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
   const [unlinking, setUnlinking] = useState(false)
   const [unlinkError, setUnlinkError] = useState('')
   const [reloadKey, setReloadKey] = useState(0) // ES-169: «Reintentar» tras un error al leer el permiso
+  // ES-244: un cambio de permiso cuyo resultado no se conoce (corte, tiempo agotado, 5xx) NO se da por fallido: se relee el estado real del servidor.
+  // `unsure` guarda el cambio pedido; `unknown` = ni siquiera se pudo releer: entonces no se muestra ningún interruptor (sería un estado inventado).
+  const [unsure, setUnsure] = useState<'granted' | 'revoked' | null>(null)
+  const [unknown, setUnknown] = useState(false)
+  const [checking, setChecking] = useState(false)
   const openerRef = useRef<HTMLButtonElement | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
 
@@ -48,27 +53,55 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
     return () => { alive = false }
   }, [reloadKey])
 
+  // Lee el permiso real (mismo GET que la carga). null = no se pudo leer.
+  const readReal = async (): Promise<'granted' | 'off' | 'hidden' | null> => {
+    try {
+      const res = await fetch(`${API}/api/consents`, { headers: headers(), cache: 'no-store', signal: AbortSignal.timeout(15000) })
+      if (!res.ok) return null
+      const body = await res.json()
+      const entry = (body.consents ?? []).find((c: { purpose: string }) => c.purpose === 'therapist_sharing')
+      return !entry || entry.applicable === false ? 'hidden' : entry.status === 'granted' ? 'granted' : 'off'
+    } catch { return null }
+  }
+  // Tras un resultado incierto: relee y deja la pantalla = lo que dice el servidor. Solo declara éxito si lo leído coincide con lo pedido.
+  const verify = async (target: 'granted' | 'revoked') => {
+    setChecking(true); setMessage(null)
+    const real = await readReal()
+    setChecking(false)
+    if (real === null) { setUnknown(true); setUnsure(target); return }
+    setUnknown(false)
+    if (real === 'hidden') { setStatus('hidden'); setUnsure(null); return }
+    setStatus(real)
+    if ((real === 'granted') === (target === 'granted')) { setUnsure(null); setMessage({ kind: 'ok', text: t('mt_share_saved') }); return }
+    // El servidor aún no muestra el cambio: puede no haberse aplicado o estar aplicándose. Se dice lo que se ve y se deja «Comprobar».
+    setUnsure(target); setMessage({ kind: 'error', text: t(target === 'granted' ? 'mt_share_not_seen_on' : 'mt_share_not_seen_off') })
+  }
+
   const toggle = async () => {
-    if (saving || status === 'loading' || status === 'hidden') return
+    if (saving || checking || status === 'loading' || status === 'hidden' || status === 'loaderror') return
     const next = status === 'granted' ? 'revoked' : 'granted'
     setSaving(true)
-    setMessage(null)
+    setMessage(null); setUnsure(null); setUnknown(false)
+    let uncertain = false
     try {
-      const res = await fetch(`${API}/api/consents/therapist_sharing`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status: next }) })
-      if (!res.ok) {
+      // PUT con el estado deseado: repetirlo es idempotente en el servidor (`changed` indica si hubo cambio), no hace falta requestId.
+      const res = await fetch(`${API}/api/consents/therapist_sharing`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status: next }), signal: AbortSignal.timeout(15000) })
+      if (res.ok) {
+        setStatus(next === 'granted' ? 'granted' : 'off')
+        setMessage({ kind: 'ok', text: t('mt_share_saved') })
+      } else if (res.status >= 500) {
+        uncertain = true // el servidor pudo aplicarlo antes de fallar
+      } else {
         const body = await res.json().catch(() => ({}))
-        setMessage({ kind: 'error', text: localizeServerError(body.error, lang, t('mt_share_error')) })
-        return
+        setMessage({ kind: 'error', text: localizeServerError(body.error, lang, t('mt_share_error')) }) // respuesta definitiva: no se aplicó
       }
-      setStatus(next === 'granted' ? 'granted' : 'off')
-      setMessage({ kind: 'ok', text: t('mt_share_saved') })
     } catch {
-      setMessage({ kind: 'error', text: t('mt_share_error') })
+      uncertain = true // sin respuesta (corte o tiempo agotado): el servidor pudo haberlo aplicado
     } finally {
       setSaving(false)
     }
+    if (uncertain) await verify(next)
   }
-
   const closeDialog = useCallback(() => {
     setConfirming(false)
     setUnlinkError('')
@@ -127,13 +160,18 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
           <div id="mt-share-label" style={{ fontWeight: 600, color: '#1C1917', fontSize: '0.95rem' }}>{t('mt_share_title')}</div>
           <p id="mt-share-desc" style={{ fontSize: '0.82rem', color: '#57534E', lineHeight: 1.55, margin: '0.35rem 0 0' }}>{t('mt_share_desc')}</p>
         </div>
+        {unknown && unsure ? (
+          <button type="button" onClick={() => void verify(unsure)} disabled={checking} style={{ flexShrink: 0, minHeight: 44, padding: '0.5rem 1rem', background: '#4A6741', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.82rem', fontWeight: 500, cursor: checking ? 'wait' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            {checking ? t('mt_share_checking') : t('mt_share_check')}
+          </button>
+        ) : (
         <button
           type="button"
           role="switch"
           aria-checked={on}
           aria-labelledby="mt-share-label"
           aria-describedby="mt-share-desc"
-          disabled={saving}
+          disabled={saving || checking}
           onClick={toggle}
           style={{
             flexShrink: 0, minWidth: 56, minHeight: 44, padding: '0 4px', border: 'none', background: 'none',
@@ -153,11 +191,15 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
             {on ? t('mt_share_on') : t('mt_share_off')}
           </span>
         </button>
+        )}
       </div>
 
       <div role="status" aria-live="polite" style={{ minHeight: '1.2rem', marginTop: '0.5rem', fontSize: '0.78rem', color: message?.kind === 'error' ? '#B91C1C' : '#4A6741' }}>
-        {saving ? t('mt_share_saving') : message?.text ?? ''}
+        {saving ? t('mt_share_saving') : checking ? t('mt_share_checking') : unknown && unsure ? t(unsure === 'granted' ? 'mt_share_unsure_on' : 'mt_share_unsure_off') : message?.text ?? ''}
       </div>
+      {unsure && !unknown && !checking && (
+        <button type="button" onClick={() => void verify(unsure)} style={{ marginTop: '0.5rem', minHeight: 44, padding: '0.45rem 1rem', background: 'transparent', border: '0.5px solid #4A6741', borderRadius: '0.85rem', color: '#4A6741', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{t('mt_share_check')}</button>
+      )}
 
       <button
         type="button"
