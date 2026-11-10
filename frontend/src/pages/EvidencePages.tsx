@@ -7,6 +7,7 @@ import { OriginBlock } from '../evidence/ResumeOrigin'
 import { formatDate, resumeSkillsApi, selectable } from '../evidence/resumeSkills'
 import { blankDraft, draftFromPayload, draftPayload, type Draft, type Payload, type Evidence, type Detail } from '../evidence/model'
 import { EvidenceShell } from '../evidence/Shell'
+import { modalKeyDown } from '../a11y/modalKeys.ts'
 import { EvidenceContent } from '../evidence/EvidenceContent'
 import { EvidenceFormFields } from '../evidence/FormFields'
 import { registerEvidenceGuard } from '../evidence/navigationGuard'
@@ -90,7 +91,7 @@ export function EvidenceListPage() {
             {!row.fromChat && <Link className="elv-btn" aria-label={t('evidence.action_edit') + ': ' + row.payload.title} to={'/app/evidence/' + row.id + '/edit'}>{t('evidence.action_edit')}</Link>}
             <button type="button" className="elv-btn elv-btn-ghost evidence-danger" disabled={busy} aria-label={t('evidence.action_delete') + ': ' + row.payload.title} onClick={event => ask(row.id, event)}>{t('evidence.action_delete')}</button>
           </div>
-          {confirmId === row.id && <div ref={dialog} tabIndex={-1} role="alertdialog" onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); cancel() } }} aria-labelledby={'del-title-' + row.id} aria-describedby={'del-body-' + row.id} className="evidence-confirm">
+          {confirmId === row.id && <div ref={dialog} tabIndex={-1} role="alertdialog" onKeyDown={event => modalKeyDown(event, dialog.current, cancel)} aria-labelledby={'del-title-' + row.id} aria-describedby={'del-body-' + row.id} className="evidence-confirm">
             <h3 id={'del-title-' + row.id}>{t('evidence.delete_title')}</h3><p id={'del-body-' + row.id}>{t('evidence.delete_body')}</p>
             {deleteError && <p role="alert" className="evidence-error">{t('evidence.delete_error')}</p>}
             <div className="evidence-actions"><button type="button" className="elv-btn evidence-danger" disabled={busy} onClick={() => void remove(row.id)}>{t('evidence.delete_yes')}</button>
