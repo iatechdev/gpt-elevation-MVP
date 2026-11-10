@@ -50,7 +50,7 @@ test('ES-177: el 409 de propuesta trae código y la pantalla lo muestra en ES/EN
 })
 
 test('ES-177: la pantalla ya no pinta ni tipa el porcentaje y usa la palabra de ambos idiomas', () => {
-  const screen = read('../src/pages/therapist/TherapistDashboard.tsx')
+  const screen = read('../src/pages/therapist/TherapistDashboard.tsx') + read('../src/pages/therapist/PanelSections.tsx')
   assert.doesNotMatch(screen, /improvementPercent/); assert.doesNotMatch(screen, /\+\{[^}]*\}%/)
   assert.match(screen, /t\('therapist_progress_improved'\)/)
   assert.match(read('../src/i18n/es.ts'), /therapist_progress_improved: 'El ánimo mejoró en los registros recientes'/)
