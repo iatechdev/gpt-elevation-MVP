@@ -17,12 +17,12 @@ const L = {
     recorded: 'Invitación registrada, pero no se envió ningún correo: el envío de correo no está configurado. La persona todavía no tiene su enlace.', sentPre: 'Invitación enviada a', exp: 'El enlace caduca el', forName: 'Invitación para',
     e: { empty: 'Escribe un correo.', invalid: 'Correo inválido.', taken: 'Ya existe una cuenta con ese correo.', role: 'No tienes permiso para invitar con ese rol.', rate: 'Demasiadas invitaciones seguidas. Espera un rato.', other: 'No se pudo crear la invitación.', net: 'Error de conexión.' },
     resetBtn: 'Enviar enlace de restablecimiento', resetTitle: 'Enviar enlace de restablecimiento', resetPre: 'Se enviará a', resetPost: 'un enlace de un solo uso para que elija una contraseña nueva. Tú no ves ni defines su contraseña.', resetSend: 'Enviar enlace',
-    resetOk: 'Solicitud registrada. Si la cuenta puede recibirlo y el envío de correo está configurado, la persona recibirá el enlace.', r403: 'Solo la superadministración puede enviar enlaces de restablecimiento.', r404: 'Usuario no encontrado.', rOther: 'No se pudo enviar el enlace.' },
+    resetOk: 'Solicitud registrada. Si la cuenta puede recibirlo y el envío de correo está configurado, la persona recibirá el enlace.', r403: 'Solo la superadministración puede enviar enlaces de restablecimiento.', r403other: 'No se puede enviar el enlace a otro superadmin: cada superadmin restablece su propia contraseña.', r404: 'Usuario no encontrado.', rOther: 'No se pudo enviar el enlace.' },
   en: { invBtn: '+ Invite person', invTitle: 'Invite person', help: 'A single-use link will be created so the person chooses their own password. No one else sees or sets their password.', email: 'Email', send: 'Send invitation', sending: 'Sending...',
     recorded: 'Invitation recorded, but no email was sent: email sending is not configured. The person does not have their link yet.', sentPre: 'Invitation sent to', exp: 'The link expires on', forName: 'Invitation for',
     e: { empty: 'Enter an email.', invalid: 'Invalid email.', taken: 'An account with that email already exists.', role: 'You do not have permission to invite with that role.', rate: 'Too many invitations in a row. Wait a while.', other: 'The invitation could not be created.', net: 'Connection error.' },
     resetBtn: 'Send reset link', resetTitle: 'Send reset link', resetPre: 'We will send', resetPost: 'a single-use link so they can choose a new password. You neither see nor set their password.', resetSend: 'Send link',
-    resetOk: 'Request recorded. If the account can receive it and email sending is configured, the person will receive the link.', r403: 'Only superadministration can send reset links.', r404: 'User not found.', rOther: 'The link could not be sent.' } }
+    resetOk: 'Request recorded. If the account can receive it and email sending is configured, the person will receive the link.', r403: 'Only superadministration can send reset links.', r403other: 'The link cannot be sent to another superadmin: each superadmin resets their own password.', r404: 'User not found.', rOther: 'The link could not be sent.' } }
 const axeRun = async p => { await p.evaluate(AXE); return p.evaluate(async () => (await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } })).violations.map(v => v.id + '×' + v.nodes.length + '[' + v.nodes.slice(0, 2).map(x => x.target.join(' ')).join(' | ').slice(0, 90) + ']')) }
 let B
 const open = async (u, lang, w = 1360, role) => { const c = await B.newContext({ viewport: { width: w, height: 900 }, isMobile: w < 500, reducedMotion: 'reduce' }); await c.addInitScript(([tk, l, r]) => { localStorage.setItem('elevation_token', tk); localStorage.setItem('elevation_role', r); localStorage.setItem('elv_lang', l) }, [u.token, lang, role || u.role]); const p = await c.newPage(); p.errs = []; p.net = []; p.cons = []; p.resp = []
@@ -76,7 +76,7 @@ const MAIN = LABEL === 'main'
       ck(`U1 ${tg}: sin campo de contraseña ni de nombre en el diálogo de invitar; ${await inviteDlg(p).locator('input').count()} campo(s) de texto`, (await inviteDlg(p).locator('input[type=password]').count()) === 0 && (await inviteDlg(p).locator('input').count()) === 1, '')
       ck(`U1 ${tg}: sin claves crudas ni «undefined» ni emojis`, !/undefined|\[object|NaN/.test(d) && !/\p{Extended_Pictographic}/u.test(d.replace(/✕/g, '')), '')
       info(`U1 ${tg}: etiqueta del rol y opciones: «${(await inviteDlg(p).locator('label').allInnerTexts()).join(' / ')}» opciones=[${(await inviteDlg(p).locator('select option').allInnerTexts()).join(', ')}]`)
-      info(`U9 ${tg}: axe diálogo vacío [${await axeRun(p)}]`)
+      { const axv = await axeRun(p); info(`U9 ${tg}: axe diálogo vacío [${axv}]`); const nameOk = await inviteDlg(p).locator('select').evaluate(e => ({ id: e.id, lbl: e.labels?.length })); ck(`U9 ${tg}: el select «Rol» tiene etiqueta asociada (id=${nameOk.id}, labels=${nameOk.lbl}) y axe ya no lo marca (E186-3)`, nameOk.lbl === 1 && !axv.some(v => /select-name×(3|4|5)/.test(v)), axv.join(' ')) }
       const ov1 = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); ck(`U9 ${tg}: diálogo sin desborde`, ov1 <= 0, 'ov=' + ov1)
       // U3 real: sin proveedor de correo
       const em = fresh(); await fillInvite(p, em, 'user'); const before = p.net.length; await sendBtn(p, lang).click(); await sleep(1500); d = (await inviteDlg(p).innerText()).replace(/\s+/g, ' ')
@@ -86,7 +86,7 @@ const MAIN = LABEL === 'main'
       ck(`U3 ${tg}: sin botón «Copiar», sin enlace ni token en la pantalla ni en la respuesta`, !/Copiar|Copy/.test(d) && !TOKEN_RE.test(d.replace(em, '')) && !/token|link|url|enlace/i.test(Object.keys(rj).join(',')), 'claves=' + Object.keys(rj).join(','))
       ck(`U3 ${tg}: la invitación quedó en la base (1 fila, vigente, sin usar)`, row.length === 1 && row[0].vigente && !row[0].usedAt, JSON.stringify(row))
       ck(`U3 ${tg}: lo escrito se limpia tras el éxito y el rol vuelve a «user»`, (await inviteDlg(p).locator('input#invite-email').inputValue()) === '', '')
-      const live = await inviteDlg(p).locator('[role=alert],[role=status],[aria-live]').count(); info(`U9 ${tg}: el mensaje de éxito del diálogo de invitar ${live ? 'SÍ' : 'NO'} está en una región viva (role=status/alert): ${live}`)
+      const live = await inviteDlg(p).locator('[role=alert],[role=status],[aria-live]').count(); ck(`U9 ${tg}: el mensaje de éxito del diálogo de invitar está en role=status (E186-2)`, (await inviteDlg(p).locator('[role=status]').count()) === 1, 'vivas=' + live)
       info(`U9 ${tg}: axe diálogo con éxito [${await axeRun(p)}]`)
       await c.close() }
 
@@ -105,7 +105,7 @@ const MAIN = LABEL === 'main'
 
   // ============ U6 destinatarios variados (es, 1360) ============
   if (want('U6')) for (const lang of ['es', 'en']) { const t = L[lang]
-    const cases = [['profesional', T, 202, t.resetOk], ['otro superadmin', SA2, 403, t.r403], ['la propia cuenta', SA, 202, t.resetOk]]
+    const cases = [['profesional', T, 202, t.resetOk], ['otro superadmin', SA2, 403, t.r403other], ['la propia cuenta', SA, 202, t.resetOk]]
     for (const [nm, tgt, st, msg] of cases) { const { c, p } = await open(SA, lang); await openManage(p, tgt); await p.locator('body').getByRole('button', { name: t.resetBtn, exact: true }).click(); await sleep(300); const rd = resetDlg(p)
       await rd.getByRole('button', { name: t.resetSend, exact: true }).click(); await sleep(1800); const r = p.resp.filter(x => /reset-link/.test(x.u)).pop(); const tx = (await rd.innerText()).replace(/\s+/g, ' ')
       ck(`U6 ${lang}: a ${nm} → servidor ${r?.s} (esperado ${st}) y la pantalla dice «${msg.slice(0, 38)}…»`, r?.s === st && tx.includes(msg), r?.s !== st ? 'servidor dijo ' + r?.s : '')
@@ -115,6 +115,7 @@ const MAIN = LABEL === 'main'
       await p.route('**/api/admin/usuarios/*/reset-link', r => r.continue({ url: r.request().url().replace(/usuarios\/\d+/, 'usuarios/999999999') })); const rd = resetDlg(p); await rd.getByRole('button', { name: t.resetSend, exact: true }).click(); await sleep(1000)
       const r = p.resp.filter(x => /reset-link/.test(x.u)).pop(); ck(`U6 ${lang}: id inexistente → servidor ${r?.s} → «${t.r404}»`, r?.s === 404 && (await rd.innerText()).includes(t.r404), ''); info(`U9 ${lang}: axe diálogo con error 404 [${await axeRun(p)}]`)
       ck(`U9 ${lang}: el error del enlace está en role=alert`, (await rd.locator('[role=alert]').count()) === 1, ''); await c.close() }
+    { const { c, p } = await open(SA, lang); await openManage(p, P); await p.locator('body').getByRole('button', { name: t.resetBtn, exact: true }).click(); await sleep(300); await p.route('**/api/admin/usuarios/*/reset-link', r => r.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'Solo el superadmin puede enviar enlaces de restablecimiento.' }) })); const rd = resetDlg(p); await rd.getByRole('button', { name: t.resetSend, exact: true }).click(); await sleep(800); ck(`U6 ${lang} (SIMULADO el cuerpo real del servidor): 403 «no eres superadmin» sigue diciendo «${t.r403.slice(0, 30)}…»`, (await rd.innerText()).includes(t.r403) && !(await rd.innerText()).includes(t.r403other), ''); await c.close() }
     { const { c, p } = await open(AD, lang, 1360, 'admin'); await openManage(p, P); const mgr = p.locator('body')
       ck(`U6 ${lang}: un admin NO ve «${t.resetBtn}» (solo superadmin)`, (await mgr.getByRole('button', { name: t.resetBtn, exact: true }).count()) === 0, ''); const x = await call('POST', `/api/admin/usuarios/${P.id}/reset-link`, AD.token, {}); ck(`U6 ${lang}: y el servidor lo rechaza con 403 (${x.s})`, x.s === 403, ''); await c.close() } }
 
@@ -123,7 +124,7 @@ const MAIN = LABEL === 'main'
     const run = async (name, setup, email, role, expectMsg, opts = {}) => { const { c, p } = await open(opts.user || SA, lang, 1360, opts.role); if (setup) await setup(p); await openInvite(p, lang); if (email !== null) await fillInvite(p, email, role); await sendBtn(p, lang).click(); await sleep(opts.wait || 1300)
       const d = inviteDlg(p); const tx = (await d.innerText()).replace(/\s+/g, ' '); const val = email === null ? '' : await d.locator('input#invite-email').inputValue(); const live = await d.locator('[role=alert]').count(); const foc = await p.evaluate(() => document.activeElement?.tagName + ':' + (document.activeElement?.textContent || '').slice(0, 20))
       ck(`U4 ${lang}: ${name} → «${expectMsg.slice(0, 40)}»`, tx.includes(expectMsg), tx.slice(40, 200)); if (email) ck(`U4 ${lang}: ${name}: lo escrito no se pierde`, val === email, val)
-      info(`U4 ${lang}: ${name}: role=alert=${live}, foco=${foc}`); if (opts.after) await opts.after(p, d); return { c, p } }
+      ck(`U4 ${lang}: ${name}: el error está en una región role=alert (E186-2)`, live === 1, 'role=alert=' + live); info(`U4 ${lang}: ${name}: foco=${foc}`); if (opts.after) await opts.after(p, d); return { c, p } }
     await (await run('correo vacío', null, '', null, E.empty)).c.close()
     await (await run('correo inválido (servidor)', null, 'no-es-correo', null, E.invalid)).c.close()
     await (await run('correo ya existente', null, PX.email, 'user', E.taken, { after: async (p) => { const r = p.resp.filter(x => /invitations/.test(x.u)).pop(); ck(`U4 ${lang}: el servidor dio 409`, r?.s === 409, r?.s) } })).c.close()
@@ -165,8 +166,8 @@ const MAIN = LABEL === 'main'
     const want1 = new Date(exp); info(`U3 ${lang} (SIMULADO emailSent:true): mensaje «${d.slice(d.indexOf(t.sentPre), d.indexOf(t.sentPre) + 140)}» · expiresAt del servidor ${exp}`)
     ck(`U3 ${lang} (SIMULADO): dice «${t.sentPre} {correo}» y «${t.exp} {fecha}» con el correo y la fecha del servidor`, d.includes(`${t.sentPre} ${em}.`) && d.includes(t.exp), '')
     const dm = d.match(new RegExp(t.exp + ' (.+?)\\.(?: |$)')); const shown = dm ? dm[1] : ''; const full = want1.toLocaleString(lang === 'en' ? 'en-US' : 'es-CO', { dateStyle: 'medium', timeStyle: 'short' })
-    ck(`U3 ${lang} (SIMULADO): la fecha mostrada «${shown}» conserva la hora completa («${full}»)`, shown.replace(/\s/g, ' ').trim().length >= full.replace(/\s/g, ' ').replace(/\.$/, '').length, `mostrada="${shown}" completa="${full}"`)
-    await c.close() }
+    ck(`U3 ${lang} (SIMULADO): la fecha mostrada «${shown}» conserva la hora completa («${full}»)`, d.replace(/\s/g, ' ').includes((t.exp + ' ' + full).replace(/\s/g, ' ')), `mostrada="${shown}" completa="${full}"`)
+    info(`U3 ${lang} (SIMULADO): ¿termina con doble punto «..»? ${d.replace(/s/g, ' ').includes(full.replace(/s/g, ' ') + '..') ? 'SÍ' : 'no'}`); await c.close() }
 
   // ============ U7 el enlace nunca se expone ============
   if (want('U7')) { const { c, p } = await open(SA, 'es'); await openInvite(p, 'es'); const em = fresh(); await fillInvite(p, em, 'user'); await sendBtn(p, 'es').click(); await sleep(1500); await closeAll(p)
