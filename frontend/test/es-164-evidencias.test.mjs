@@ -12,7 +12,7 @@ test('ES-164: filtro por estado con radios nativos, fieldset/legend y conteo en 
   assert.match(page, /\(\['all', 'draft', 'confirmed'\] as const\)\.map\(value => <label key=\{value\}><input (ref=\{[^}]*\} )?type="radio" name="evidence-status"/)
   assert.match(page, /<p role="status" aria-live="polite" className="evidence-count">/)
   assert.match(page, /state\.rows\.filter\(row => filter === 'all' \|\| row\.status === filter\)/)
-  assert.match(page, /\{t\('evidence\.filter_none'\)\} <button type="button" className="elv-link" onClick=\{\(\) => setFilter\('all'\)\}>/)
+  assert.match(page, /\{t\('evidence\.filter_none'\)\} <button type="button" className="elv-link" onClick=\{\(\) => \{ setFilter\('all'\)(; setFocusAll\(true\))? \}\}>/)
   // el filtro no cambia las llamadas al servidor
   assert.ok(!/api\.list\([^)]*filter/.test(page))
 })
