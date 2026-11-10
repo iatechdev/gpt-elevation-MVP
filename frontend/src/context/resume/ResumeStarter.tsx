@@ -3,7 +3,7 @@
 import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { analyzeResume, checkFile, setResumeConsent, type AnalyzeResult, type ErrorCode } from './resumeApi'
+import { analyzeResume, checkFile, checkResumeConsent, setResumeConsent, type AnalyzeResult, type ErrorCode } from './resumeApi'
 import { fill } from './resumeCopy'
 
 type Stage = 'idle' | 'picked' | 'analyzing' | 'error' | 'done'
@@ -53,7 +53,10 @@ export function ResumeStarter({ t, disabled, historyPath, onResult, onManual }: 
     if (!file || !consent || disabled) return
     const controller = new AbortController(); abort.current = controller
     setSeconds(0); setStage('analyzing'); setError(null)
-    if (!(await setResumeConsent(true))) { if (mounted.current) { setError('consent_required'); setStage('error') } return }
+    // ES-248: si la respuesta de autorizar se pierde, el servidor pudo haberla registrado: se relee antes de decir «falta autorización».
+    let allowed = await setResumeConsent(true)
+    if (allowed === 'uncertain') { const real = await checkResumeConsent(); allowed = real === 'granted' ? 'ok' : real === 'unknown' ? 'uncertain' : 'rejected' }
+    if (allowed !== 'ok') { if (mounted.current) { setError(allowed === 'uncertain' ? 'network' : 'consent_required'); setStage('error') } return }
     const result = await analyzeResume(file, newId(), controller.signal)
     if (!mounted.current) return
     if (result.status === 'ok') { setSaved(true); setStage('done'); setFile(null); if (input.current) input.current.value = ''; onResult(result); return }
