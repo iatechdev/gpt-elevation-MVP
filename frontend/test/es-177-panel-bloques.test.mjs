@@ -78,4 +78,14 @@ test('ES-177 B1 (E210-2/3): botones de 44 px, nombres largos que se parten y rei
   assert.match(sections, /primaryBtn: CSSProperties = \{ minHeight: 44, minWidth: 44/)
   assert.ok((sections.match(/overflowWrap: 'anywhere'/g) ?? []).length >= 5)
   assert.match(sections, /aria-label=\{`\$\{t\('panel_retry'\)\}: \$\{sectionName\}`\}/)
+
+test('ES-177 B2: validación y guía sin emojis ni display:none, errores por código y todos los textos en ES y EN', () => {
+  const val = read('../src/pages/therapist/ValidationBlock.tsx'), guide = read('../src/pages/therapist/GuideBlock.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.doesNotMatch(val + guide, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|[★☆]/u)
+  assert.doesNotMatch(val + guide, /display: 'none'/)
+  assert.match(val, /UPLOAD_ERRORS/); assert.match(guide, /ERROR_BY_CODE/)
+  assert.match(guide, /showModal\(\)/); assert.match(guide, /prompt_rejected/)
+  const keys = [...(val + guide).matchAll(/t\('((?:panel_[a-z_]+))'/g)].map(m => m[1])
+  for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
+  for (const code of ['unsupported_file_type', 'file_too_large', 'file_content_mismatch', 'empty_file', 'no_file', 'invalid_upload', 'storage_unavailable']) assert.equal((copy.match(new RegExp(`panel_up_${code}:`, 'g')) ?? []).length, 2, code)
 })
