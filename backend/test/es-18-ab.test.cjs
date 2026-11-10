@@ -168,3 +168,18 @@ test('El administrador no recibe texto de conversaciones y las respuestas no inc
   assert.doesNotMatch(JSON.stringify(stats.body), /checkin_mood|checkout_mood|ultimosMoods|ultimosRatings/);
   assert.equal(touched, 0);
 });
+
+// ES-169 (PR3, G7): pedir la sala de la persona es una LECTURA. Recargar la página o reintentar no repite ninguna acción: misma respuesta, ningún dato cambia.
+test('ES-169 unirse a la sala es idempotente: dos o tres lecturas devuelven lo mismo y no modifican ninguna sesión', async t => {
+  const data = seed();
+  const request = await startApp(t);
+  const before = JSON.stringify(data.sessions);
+  const first = await request('GET', '/api/sessions/user/41/join', { headers: bearer(A) });
+  const second = await request('GET', '/api/sessions/user/41/join', { headers: bearer(A) });
+  const third = await request('GET', '/api/sessions/user/41/join', { headers: bearer(A) });
+  assert.deepEqual([first.status, second.status, third.status], [200, 200, 200]);
+  assert.deepEqual(second.body, first.body); assert.deepEqual(third.body, first.body);
+  assert.equal(JSON.stringify(data.sessions), before);
+  // el método del endpoint es GET: no hay POST que una recarga pudiera repetir
+  assert.equal((await request('POST', '/api/sessions/user/41/join', { headers: bearer(A), body: {} })).status, 404);
+});
