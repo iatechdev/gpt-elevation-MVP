@@ -295,4 +295,16 @@ test('ES-192 PostgreSQL: invitación por enlace y contraseña con las reglas del
     const tokens = (await sequelize.query('SELECT "tokenHash" FROM "Invitations"', { type: 'SELECT' })).map((r) => r.tokenHash);
     assert.ok(tokens.every((h) => /^[0-9a-f]{64}$/.test(h)));
   });
+  await t.test('ES-252: un correo con caracteres de control o de formato Unicode (bidi, ancho cero, saltos) se rechaza con 400 invalid_email y no crea invitación; los correos con acentos e IDN siguen valiendo', async () => {
+    const before = await Invitation.count();
+    const hostile = ['ana\u202Eexample@x.com', 'an\u200Ba@example.com', 'an\uFEFFa@example.com', 'ana\n@example.com', 'ana\u2028@example.com', 'ana\u00AD@example.com', 'ana\u0000@example.com', 'ana\uE000@example.com'];
+    for (const email of hostile) {
+      const r = await call(admA, 'POST', '/api/admin/invitations', { email, role: 'user' });
+      assert.equal(r.status, 400, JSON.stringify(email)); assert.equal(r.body.code, 'invalid_email');
+    }
+    assert.equal(await Invitation.count(), before, 'ninguna invitación creada');
+    for (const email of ['josé.pérez@example.invalid', 'ñandú@example.invalid', 'usuario@bücher.example']) {
+      assert.equal((await invite(admA, email)).r.status, 201, email);
+    }
+  });
 });

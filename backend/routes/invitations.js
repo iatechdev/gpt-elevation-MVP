@@ -32,6 +32,7 @@ const perInviterPerHour = () => Number(process.env.INVITATION_PER_INVITER_HOUR) 
 const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
 const STALE_AFTER_MS = 30 * 24 * 60 * 60 * 1000; // el correo de quien nunca se registró no se conserva más de 30 días
 
+const { hasUnsafeChars } = require('../utils/emailGuard'); // ES-252
 const EMAIL = /^[^\s@<>"'`,;()[\]\\]{1,64}@[^\s@<>"'`,;()[\]\\]{1,190}\.[^\s@<>"'`,;()[\]\\]{2,}$/;
 const INVALID_LINK = { code: 'invitation_invalid', error: 'Este enlace ya no sirve. Pide una invitación nueva. / This link no longer works. Ask for a new invitation.' };
 
@@ -56,7 +57,7 @@ adminRouter.use((req, res, next) => { res.set('Cache-Control', 'no-store'); next
 adminRouter.post('/', validateBody({ email: nonempty, role: nonempty, locale: optional(text) }), async (req, res) => {
   try {
     const email = String(req.body.email).trim().toLowerCase();
-    if (email.length > 254 || !EMAIL.test(email)) return res.status(400).json({ code: 'invalid_email', error: 'Correo inválido. / Invalid email.' });
+    if (email.length > 254 || hasUnsafeChars(email) || !EMAIL.test(email)) return res.status(400).json({ code: 'invalid_email', error: 'Correo inválido. / Invalid email.' });
     const allowed = INVITER_ROLES[req.user.role] || [];
     if (!allowed.includes(req.body.role)) return res.status(403).json({ code: 'role_not_allowed', error: 'No tienes permiso para invitar con ese rol. / You are not allowed to invite with that role.' });
     const locale = req.body.locale === 'en' ? 'en' : 'es';
