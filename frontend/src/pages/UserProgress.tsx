@@ -40,7 +40,6 @@ interface Stats {
 interface MatchingSuggestion {
   therapistId: number
   therapistName: string
-  score: number
   reason: string
 }
 
@@ -409,9 +408,6 @@ export function UserProgress() {
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917' }}>{s.therapistName}</div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 600, background: '#EAF0E6', color: '#4A6741', padding: '0.15rem 0.5rem', borderRadius: '999px' }}>
-                        {s.score}/10
-                      </div>
                     </div>
                     <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: '0 0 0.75rem', lineHeight: 1.5 }}>{s.reason}</p>
                     <button

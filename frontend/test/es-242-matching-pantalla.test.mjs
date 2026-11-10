@@ -10,3 +10,10 @@ test('ES-242: MatchingModal no pide ni muestra puntuación (ni «Compatibilidad�
   assert.ok(!/Compatibilidad|Match\}?:|\/10/.test(modal), 'no hay texto de compatibilidad ni de x/10')
   assert.match(modal, /\{s\.reason\}/) // sí se muestra la razón
 })
+
+test('ES-242: ninguna otra pantalla consume la puntuación (UserProgress mostraba «{s.score}/10» y saldría «undefined/10»)', () => {
+  const progress = readFileSync(new URL('../src/pages/UserProgress.tsx', import.meta.url), 'utf8')
+  assert.ok(!/\bscore\b/.test(progress.slice(progress.indexOf('interface MatchingSuggestion'), progress.indexOf('interface MatchingSuggestion') + 200)), 'el tipo ya no tiene score')
+  assert.ok(!/\{s\.score\}\/10/.test(progress))
+  assert.ok(!/s\.score/.test(progress))
+})

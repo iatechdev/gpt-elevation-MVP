@@ -78,11 +78,16 @@ router.post('/request', validateBody({ answers: object }), async (req, res) => {
     }));
 
     // ES-242: las respuestas van cercadas como dato (delimitador aleatorio), sin ánimo y sin puntuación; el modelo solo propone y da una razón corta.
-    const { block } = fenceUntrusted('a set of short answers chosen by the person to find a professional', ANSWER_KEYS.map(key => `${key}: ${answers[key] ?? 'not specified'}`).join('\n'));
+    const { block } = fenceUntrusted('short answers chosen by the person', ANSWER_KEYS.map(key => `${key}: ${answers[key] ?? 'not specified'}`).join('\n'));
+    // ES-242: los datos de los PROFESIONALES (nombre, especialidades, enfoque, idiomas) también son texto de terceros: se limpian, se acotan y se cercan como dato,
+    // igual que las respuestas de la persona; un profesional con instrucciones en su enfoque no altera el prompt. Los ids son enteros de la base.
+    const clean = (value, max) => redactSecrets(normalizeText(String(value ?? ''))).replace(/[\r\n]+/g, ' ').slice(0, max);
+    const { block: professionalsBlock } = fenceUntrusted('professional profiles written by the professionals', therapistList.map(t =>
+      `ID: ${Number(t.id)} | Name: ${clean(t.name, 80)} | Specialties: ${clean([].concat(t.specialties).join(', '), 200)} | Approach: ${clean(t.approach, 120)} | Languages: ${clean([].concat(t.languages).join(', '), 80)}`).join('\n'));
     const prompt = `You are a matching assistant for Elevation, a personal-development and career-orientation support platform (not a health service).
 ${block}
 Available professionals:
-${therapistList.map(t => `ID: ${t.id} | Name: ${normalizeText(t.name)} | Specialties: ${normalizeText(t.specialties.join(', '))} | Approach: ${normalizeText(t.approach)} | Languages: ${normalizeText(t.languages.join(', '))}`).join('\n')}
+${professionalsBlock}
 Return ONLY a valid JSON array with the top 3 matches (or fewer if less available). No markdown, no extra text. Do not give scores or percentages:
 [{ "therapistId": <id>, "reason": "<one sentence why this professional fits what the person chose>" }]`;
     let msg;
