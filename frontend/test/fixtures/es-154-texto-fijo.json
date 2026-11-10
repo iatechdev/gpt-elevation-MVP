@@ -1,5 +1,5 @@
 {
- "bridge/SourcesPanel.tsx": 2,
+ "bridge/SourcesPanel.tsx": 1,
  "career/CareerPages.tsx": 4,
  "career/CareerShell.tsx": 2,
  "cartografia/DesignSystemPage.tsx": 2,
@@ -11,7 +11,6 @@
  "pages/EvidencePages.tsx": 3,
  "pages/therapist/TherapistDashboard.tsx": 5,
  "pages/UserDashboard.tsx": 1,
- "pages/UserProgress.tsx": 1,
  "professional/ProfessionalApplicationPage.tsx": 1,
  "shell/Frame.tsx": 1,
  "shell/frames.tsx": 1,
