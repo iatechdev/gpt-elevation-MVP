@@ -78,6 +78,8 @@ const { pathToFileURL } = require('node:url');
     const T = {
       es: { all: 'Revocar todos', yes: 'Sí, revocar', done: 'Listo: ya no cruza nada hacia el recorrido profesional.', unsure: 'No pudimos confirmar la retirada.', notSeen: 'Todavía no vemos retirado el permiso', check: 'Comprobar', error: 'No pudimos revocar.' },
       en: { all: 'Revoke all', yes: 'Yes, revoke', done: 'Done: nothing crosses into the career path anymore.', unsure: 'We could not confirm the withdrawal.', notSeen: 'We do not see the permission withdrawn yet', check: 'Check', error: 'We could not revoke.' } };
+    // Elemento con el foco: id si lo tiene, si no su texto (nunca «BODY» si el foco se conserva)
+    const active = page => page.evaluate(() => { const e = document.activeElement; return !e ? null : e === document.body ? 'BODY' : (e.id || (e.textContent || '').trim().slice(0, 40) || e.tagName) });
     async function start(page) {
       const header = page.getByRole('button', { name: T.es.all, exact: true }).or(page.getByRole('button', { name: T.en.all, exact: true }));
       await header.waitFor(); await page.waitForFunction(() => !document.querySelector('.skill-map-tools button[disabled]:not([aria-pressed])') || true);
@@ -91,6 +93,7 @@ const { pathToFileURL } = require('node:url');
         await header.click(); control.put = 'lose-reply'; await page.getByRole('button', { name: t.yes, exact: true }).click();
         await page.getByText(t.done, { exact: true }).first().waitFor();
         assert.equal(await dbState(), 'no'); assert.equal(await page.getByText(t.error).count(), 0);
+        assert.equal(await active(page), 'skill-map-main', 'E249-1/E249-2: tras «Listo» el foco queda en la región principal (no en body)');
         check(`${lang}: «${t.all}» con la respuesta perdida → base sin permiso; la pantalla dice «${t.done.slice(0, 24)}…», no error`);
         assert.deepEqual(errors, []); await page.unrouteAll({ behavior: 'ignoreErrors' }); await context.close(); }
       // B) La petición no llegó: el permiso sigue vigente; la pantalla NO dice «Listo» y avisa que lo autorizado sigue cruzando.
@@ -99,6 +102,7 @@ const { pathToFileURL } = require('node:url');
         await header.click(); control.put = 'lose-request'; await page.getByRole('button', { name: t.yes, exact: true }).click();
         await page.getByText(t.notSeen, { exact: false }).waitFor();
         assert.equal(await dbState(), 'granted'); assert.equal(await page.getByText(t.done, { exact: true }).count(), 0);
+        assert.equal(await active(page), t.all, 'E249-1: tras «todavía no lo vemos» el foco vuelve a «Revocar todos» (habilitado)');
         check(`${lang}: la petición no llegó → base intacta (permiso vigente); la pantalla dice «${t.notSeen.slice(0, 26)}…», no «Listo»`);
         await page.unrouteAll({ behavior: 'ignoreErrors' }); await context.close(); }
       // C) Respuesta perdida Y la relectura cae: «No pudimos confirmar…» + «Comprobar»; comprobar resuelve con la verdad de la base.
@@ -107,12 +111,14 @@ const { pathToFileURL } = require('node:url');
         await header.click(); control.put = 'lose-reply'; control.failReadsAfterPut = true; await page.getByRole('button', { name: t.yes, exact: true }).click();
         await page.getByText(t.unsure, { exact: false }).waitFor();
         assert.equal(await dbState(), 'no'); // la base SÍ lo retiró; la pantalla no afirma lo contrario
+        assert.equal(await active(page), t.check, 'E249-1: tras «no pudimos confirmar» el foco está en «Comprobar»');
         assert.equal(await page.getByRole('button', { name: t.check, exact: true }).count(), 1); assert.equal(await page.getByText(t.done, { exact: true }).count(), 0);
         check(`${lang}: respuesta perdida y relectura caída → «${t.unsure}» + «${t.check}» (la base ya lo había retirado)`);
         await axeCheck(page, `${lang}: estado «no pudimos confirmar»`);
         control.failReadsAfterPut = false; await page.getByRole('button', { name: t.check, exact: true }).click();
         await page.getByText(t.done, { exact: true }).first().waitFor();
-        check(`${lang}: «${t.check}» relee y la pantalla = base (permiso retirado)`);
+        assert.equal(await active(page), 'skill-map-main', 'tras «Comprobar» y «Listo» el foco queda en la región principal');
+        check(`${lang}: «${t.check}» relee y la pantalla = base (permiso retirado); el foco no cae a body en ningún estado final (Listo / todavía no / sin confirmar)`);
         await page.unrouteAll({ behavior: 'ignoreErrors' }); await context.close(); }
     }
     console.log(`ES-249 servidor real: ${checks.length} comprobaciones superadas. Express + ruta de consentimientos + PostgreSQL reales.`);

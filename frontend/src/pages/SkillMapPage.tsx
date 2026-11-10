@@ -35,6 +35,7 @@ export function SkillMapPage() {
   const detailRef = useRef<HTMLDivElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const revokeButton = useRef<HTMLButtonElement>(null)
+  const checkButton = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     const controller = new AbortController()
     const token = readToken()
@@ -63,6 +64,14 @@ export function SkillMapPage() {
     const dialog = dialogRef.current; if (!dialog) return
     if (revoke === 'confirm' || revoke === 'saving') { if (!dialog.open) dialog.showModal() } else if (dialog.open) dialog.close()
   }, [revoke])
+  // E249-1: el foco se coloca DESPUÉS de renderizar el resultado y de cerrar el diálogo modal (un setTimeout 0 corría con el botón aún deshabilitado y el foco caía a body).
+  // «Sin confirmar» → «Comprobar»; error / sesión vencida / «todavía no lo vemos» → «Revocar todos» (habilitado); «Listo» deja «Revocar todos» deshabilitado → la región principal.
+  useEffect(() => {
+    if (revoke === 'unsure') { checkButton.current?.focus(); return }
+    if (revoke !== 'done' && revoke !== 'error' && revoke !== 'expired' && revoke !== 'not_seen') return
+    const button = revokeButton.current
+    if (button && !button.disabled) button.focus(); else document.getElementById('skill-map-main')?.focus()
+  }, [revoke])
   const refresh = () => { setState({ status: 'loading' }); setSelected(null); setBridge('loading'); setRevoke('idle'); setAttempt(value => value + 1) }
   const pick = (key: string) => {
     setSelected(key); setSaved('')
@@ -86,7 +95,6 @@ export function SkillMapPage() {
       else if (real === 'granted' || real === 'outdated') { setBridge(real); setRevoke('not_seen') }
       else setRevoke('unsure')
     } catch (error) { setRevoke(error instanceof ConsentError && error.reason === 'expired' ? 'expired' : 'unsure') }
-    window.setTimeout(() => revokeButton.current?.focus(), 0)
   }
   const confirm = async () => {
     setRevoke('saving')
@@ -95,7 +103,6 @@ export function SkillMapPage() {
       if (error instanceof ConsentError && error.reason === 'unsure') { await verify(); return }
       setRevoke(error instanceof ConsentError && error.reason === 'expired' ? 'expired' : 'error')
     }
-    window.setTimeout(() => revokeButton.current?.focus(), 0)
   }
   // Never paint a response belonging to a token that has since changed.
   const map = state.status === 'ready' && state.token === readToken() ? state.map : null
@@ -146,7 +153,7 @@ export function SkillMapPage() {
       </div>
       <p className="skill-map-reading">{t(view === 'radar' ? 'skill_map.radar_reading' : 'skill_map.reading')}</p>
       <p role="status" aria-live="polite" className="skill-map-revoke-status">{message}</p>
-      {revoke === 'unsure' && <button type="button" className="elv-btn" onClick={() => void verify()}>{t('skill_map.revoke_check')}</button>}
+      {revoke === 'unsure' && <button type="button" className="elv-btn" ref={checkButton} onClick={() => void verify()}>{t('skill_map.revoke_check')}</button>}
       {state.status === 'loading' && <p role="status" aria-live="polite">{t('skill_map.loading')}</p>}
       {error && <div ref={errorRef} tabIndex={-1} role="alert" className="skill-map-error">
         <p>{t(`skill_map.${error}`)}</p>
