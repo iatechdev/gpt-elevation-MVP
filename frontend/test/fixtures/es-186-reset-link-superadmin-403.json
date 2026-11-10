@@ -1,6 +1,7 @@
 {
   "status": 403,
   "body": {
+    "code": "superadmin_target",
     "error": "No se puede restablecer la contraseña de otro superadmin."
   }
 }

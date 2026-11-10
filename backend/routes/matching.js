@@ -7,7 +7,9 @@
 
 const express          = require('express');
 const router           = express.Router();
-const { Op }           = require('sequelize');
+const { Op, Transaction } = require('sequelize');
+const { sequelize }     = require('../database');
+const consent          = require('../utils/consent');
 const User             = require('../User');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
@@ -197,24 +199,32 @@ router.get('/pending', verificarAdmin, async (req, res) => {
 });
 
 // POST /api/admin/matching/:id/confirm
+// ES-186 (parte A): la confirmación es UNA transacción. Se bloquea la solicitud (la segunda confirmación simultánea espera y recibe 409 request_closed) y la fila de la persona
+// (dos solicitudes distintas de la misma persona se serializan). Al cambiar de profesional se RETIRA la autorización de compartir con el anterior, como en asignar-terapeuta
+// (si la persona vuelve a él después, no revive). Las comprobaciones usan la MISMA conexión (transaction): ninguna otra consulta mientras hay bloqueos.
 router.post('/:id/confirm', verificarAdmin, async (req, res) => {
+  const transaction = await sequelize.transaction();
+  const reply = async (status, body) => { await transaction.rollback().catch(() => {}); return res.status(status).json(body); };
   try {
-    const request = await MatchingRequest.findByPk(req.params.id);
-    if (!request) return res.status(404).json({ error: 'Request not found.' });
-    if (!request.chosenTherapistId)
-      return res.status(400).json({ error: 'No therapist chosen yet.' });
+    const request = await MatchingRequest.findByPk(req.params.id, { transaction, lock: Transaction.LOCK.UPDATE });
+    if (!request) return await reply(404, { error: 'Request not found.' });
+    if (!request.chosenTherapistId) return await reply(400, { error: 'No therapist chosen yet.' });
     if (request.status !== 'pending') {
-      return res.status(409).json({ code: 'request_closed', error: 'Esta solicitud ya fue resuelta. / This request has already been resolved.' });
+      return await reply(409, { code: 'request_closed', error: 'Esta solicitud ya fue resuelta. / This request has already been resolved.' });
     }
     // El terapeuta pudo desactivarse o cambiar de rol desde que se eligió; la persona debe ser un participante activo.
-    const therapist = await User.findOne({ where: { id: request.chosenTherapistId, role: 'therapist', active: true }, attributes: ['id', 'role', 'active'], include: [{ model: TherapistProfile, required: false }] });
-    if (!isAvailableTherapist(therapist)) return res.status(409).json(unavailable);
-    const person = await User.findOne({ where: { id: request.UserId, role: 'user', active: true }, attributes: ['id'] });
-    if (!person) return res.status(409).json({ code: 'person_unavailable', error: 'Esa persona no puede vincularse. / That person cannot be linked.' });
-    await User.update({ therapistId: request.chosenTherapistId }, { where: { id: request.UserId } });
-    await request.update({ status: 'confirmed' });
+    const therapist = await User.findOne({ where: { id: request.chosenTherapistId, role: 'therapist', active: true }, attributes: ['id', 'role', 'active'], transaction, include: [{ model: TherapistProfile, required: false }] });
+    if (!isAvailableTherapist(therapist)) return await reply(409, unavailable);
+    const person = await User.findOne({ where: { id: request.UserId, role: 'user', active: true }, attributes: ['id', 'therapistId'], transaction, lock: Transaction.LOCK.UPDATE });
+    if (!person) return await reply(409, { code: 'person_unavailable', error: 'Esa persona no puede vincularse. / That person cannot be linked.' });
+    const previous = person.therapistId || null;
+    if (previous !== null && previous !== request.chosenTherapistId) await consent.revokeTherapistSharing(person.id, previous, transaction);
+    await person.update({ therapistId: request.chosenTherapistId }, { transaction });
+    await request.update({ status: 'confirmed' }, { transaction });
+    await transaction.commit();
     res.json({ message: 'Therapist assigned successfully.' });
   } catch (error) {
+    await transaction.rollback().catch(() => {});
     res.status(500).json({ error: 'Could not confirm assignment.' });
   }
 });
