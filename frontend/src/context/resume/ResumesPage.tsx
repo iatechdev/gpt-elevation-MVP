@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 import { MAX_VERSIONS, deleteResume, fetchResumeBlob, listResumes, readResumeConsent, setResumeConsent, type ResumeMeta } from './resumeApi'
 import { fill } from './resumeCopy'
+import { modalKeyDown } from '../../a11y/modalKeys.ts'
 import './resume.css'
 
 type Phase = 'loading' | 'ready' | 'error'
@@ -96,7 +97,7 @@ export function ResumesPage() {
             <div className="rs-actions"><Link className="elv-btn elv-btn-primary" to={CONTEXT_PATH}>{t('resume_upload_new')}</Link></div>
           </section>
 
-          {confirm?.kind === 'delete' && <div ref={dialog} tabIndex={-1} role="alertdialog" aria-labelledby="rs-del-title" aria-describedby="rs-del-body" className="rs-card rs-danger-card">
+          {confirm?.kind === 'delete' && <div ref={dialog} tabIndex={-1} role="alertdialog" onKeyDown={event => modalKeyDown(event, dialog.current, () => { if (!busy) close() })} aria-labelledby="rs-del-title" aria-describedby="rs-del-body" className="rs-card rs-danger-card">
             <h3 id="rs-del-title">{fill(t('resume_delete_title'), { n: confirm.item.version, date: date(confirm.item.createdAt) })}</h3><p id="rs-del-body">{t('resume_delete_body')}</p>
             <div className="rs-actions"><button type="button" className="elv-btn rs-danger" disabled={busy} onClick={() => void confirmDelete(confirm.item)}>{t('resume_delete_yes')}</button>
               <button type="button" className="elv-btn" disabled={busy} onClick={close}>{t('resume_cancel_btn')}</button></div></div>}
@@ -105,7 +106,7 @@ export function ResumesPage() {
             <h3 id="rs-withdraw">{t('resume_withdraw_title')}</h3><p className="rs-help">{t('resume_withdraw_body')}</p>
             <div className="rs-actions"><button type="button" className="elv-btn rs-danger" disabled={busy} onClick={event => ask({ kind: 'withdraw' }, event)}>{t('resume_withdraw')}</button></div></section>}
 
-          {confirm?.kind === 'withdraw' && <div ref={dialog} tabIndex={-1} role="alertdialog" aria-labelledby="rs-wd-title" aria-describedby="rs-wd-body" className="rs-card rs-danger-card">
+          {confirm?.kind === 'withdraw' && <div ref={dialog} tabIndex={-1} role="alertdialog" onKeyDown={event => modalKeyDown(event, dialog.current, () => { if (!busy) close() })} aria-labelledby="rs-wd-title" aria-describedby="rs-wd-body" className="rs-card rs-danger-card">
             <h3 id="rs-wd-title">{t('resume_withdraw_confirm_title')}</h3><p id="rs-wd-body">{t('resume_withdraw_confirm_body')}</p>
             <div className="rs-actions"><button type="button" className="elv-btn rs-danger" disabled={busy} onClick={() => void confirmWithdraw()}>{t('resume_withdraw_yes')}</button>
               <button type="button" className="elv-btn" disabled={busy} onClick={close}>{t('resume_cancel_btn')}</button></div></div>}
