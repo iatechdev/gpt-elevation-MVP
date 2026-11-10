@@ -37,7 +37,7 @@
  {
   "id": "B1c revisar \"done\": registra quién y cuándo, no cambia status, la persona ve done sin la identidad",
   "ok": true,
-  "detail": "{\"key\":\"qa194_ej_80378_0\",\"minutes\":[3,5],\"es\":{\"help\":\"Ayuda a\",\"title\":\"Titulo a\",\"purpose\":\"Proposito a\",\"question\":\"Pregunta a\"},\"en\":{\"help\":\"Help a\",\"title\":\"Title a\",\"purpose\":\"Purpose a\",\"ques"
+  "detail": "{\"key\":\"qa194_ej_64212_0\",\"minutes\":[3,5],\"es\":{\"help\":\"Ayuda a\",\"title\":\"Titulo a\",\"purpose\":\"Proposito a\",\"question\":\"Pregunta a\"},\"en\":{\"help\":\"Help a\",\"title\":\"Title a\",\"purpose\":\"Purpose a\",\"ques"
  },
  {
   "id": "B1d guardar SIN cambios es idempotente: 200 unchanged, misma versión, la revisión sigue done, sin historial nuevo",
@@ -91,17 +91,32 @@
  },
  {
   "id": "B3a editar un ejercicio YA PUBLICADO vaciando campos obligatorios debe rechazarse o volver a borrador (422/409); NO llegar vacío a la persona",
-  "ok": false,
-  "detail": "PUT=200 persona=200 titulo_es=\"\" ayuda_en=\"\" status=published"
+  "ok": true,
+  "detail": "PUT=422 persona=200 titulo_es=\"Titulo a\" ayuda_en=\"Help a\" status=published"
  },
  {
   "id": "B3b editar un ejercicio YA PUBLICADO con porcentaje/«tratamiento»/«garantiza» (reglas no clínicas) debe rechazarse; NO llegar a la persona",
-  "ok": false,
-  "detail": "PUT=200 persona=200 propósito=\"Este ejercicio sirve como tratamiento y garantiza un 90% de mejora\""
+  "ok": true,
+  "detail": "PUT=422 persona=200 propósito=\"Proposito a\""
  },
  {
   "id": "B3c la persona recibe al instante el contenido editado de un publicado, con reviewStatus",
-  "info": "reviewStatus=pending version=3"
+  "info": "reviewStatus=done version=1"
+ },
+ {
+  "id": "B3d tras los rechazos: la versión NO subió, sigue publicado, no hay historial de los intentos rechazados; una edición VÁLIDA de un publicado sí se guarda (200, v+1) y la persona la recibe",
+  "ok": true,
+  "detail": "p1=422(incomplete) p2=422(non_clinical_rule) versión=1 válida=200 update_hist=1"
+ },
+ {
+  "id": "B3e vaciar solo un campo del inglés en un publicado → 422 incomplete con la lista (en.title); la persona sigue viendo el contenido anterior",
+  "ok": true,
+  "detail": "422 [\"en.title\"]"
+ },
+ {
+  "id": "B3f editar un RETIRADO o un BORRADOR (no visibles) sigue permitido con texto en progreso (200); la validación se aplica al publicarlo/republicarlo",
+  "ok": true,
+  "detail": "200/200"
  },
  {
   "id": "C1a la heurística bloquea al publicar 17 formulaciones clínicas/porcentajes/promesas (ES y EN) con 422 non_clinical_rule",
@@ -213,7 +228,7 @@
  {
   "id": "E1c publicar y retirar simultáneos: sin 5xx y el estado final coincide con la última acción del historial",
   "ok": true,
-  "detail": "200,200,200,200 final=published último=publish"
+  "detail": "200,200,200,200 final=withdrawn último=withdraw"
  },
  {
   "id": "E1d revisar y editar simultáneos (6 rondas): el estado final es coherente con el historial",
@@ -226,13 +241,13 @@
  },
  {
   "id": "E1f DOS import-catalog simultáneos (catálogo vacío): ninguna respuesta 5xx, sin duplicados y un solo historial \"create\" por ejercicio",
-  "ok": false,
-  "detail": "200,500 filas=[{\"key\":\"contribution\",\"n\":1},{\"key\":\"reflection\",\"n\":1},{\"key\":\"values\",\"n\":1}] historial=3 cuerpo= | No se pudo importar el catálogo. / The c"
+  "ok": true,
+  "detail": "200,200 filas=[{\"key\":\"contribution\",\"n\":1},{\"key\":\"reflection\",\"n\":1},{\"key\":\"values\",\"n\":1}] historial=3 cuerpo= | "
  },
  {
   "id": "E1g 30 solicitudes en paralelo (admin + lectura) sin 5xx y sin bloquear el pool (<8 s)",
   "ok": true,
-  "detail": "149 ms"
+  "detail": "784 ms"
  },
  {
   "id": "E1h 30 revisiones simultáneas alternadas sobre la misma fila (bloqueo por fila) sin 5xx y el pool sigue respondiendo",
@@ -286,11 +301,11 @@
  },
  {
   "id": "LOG líneas de error de ejercicios en el servidor",
-  "info": "1 (Error al importar el catálogo de ejercicios. SequelizeUniqueConstraintError)"
+  "info": "0 ()"
  },
  {
   "id": "LOG el log del servidor no contiene correos de las pruebas, tokens ni textos de los ejercicios",
   "ok": true,
-  "detail": "bytes=439"
+  "detail": "bytes=367"
  }
 ]

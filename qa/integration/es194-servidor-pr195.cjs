@@ -75,12 +75,22 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const emptied = body('a'); emptied.es.title = ''; emptied.en.help = '';
   const p1 = await call(SU, 'PUT', `${A}/${e3}`, { ...emptied, expectedVersion: 1 }); const live1 = await visible(k3);
   const clin = body('a'); clin.es.purpose = 'Este ejercicio sirve como tratamiento y garantiza un 90% de mejora'; clin.en.question = 'This will cure your disorder and guarantee a job';
-  const p2 = await call(SU, 'PUT', `${A}/${e3}`, { ...clin, expectedVersion: p1.json?.version ?? 2 }); const live2 = await visible(k3);
+  const p2 = await call(SU, 'PUT', `${A}/${e3}`, { ...clin, expectedVersion: (p1.status === 200 ? p1.json.version : 1) }); const live2 = await visible(k3);
   const stillPublished = (await q('select status from "Exercises" where id=$1', [e3]))[0].status;
   const B3a = p1.status === 200 && live1.status === 200 && (live1.json.es.title === '' || live1.json.en.help === ''); const B3b = p2.status === 200 && live2.status === 200 && /tratamiento|garantiza|90%/.test(live2.text);
   check('B3a editar un ejercicio YA PUBLICADO vaciando campos obligatorios debe rechazarse o volver a borrador (422/409); NO llegar vacío a la persona', !B3a, `PUT=${p1.status} persona=${live1.status} titulo_es="${live1.json?.es?.title}" ayuda_en="${live1.json?.en?.help}" status=${stillPublished}`);
   check('B3b editar un ejercicio YA PUBLICADO con porcentaje/«tratamiento»/«garantiza» (reglas no clínicas) debe rechazarse; NO llegar a la persona', !B3b, `PUT=${p2.status} persona=${live2.status} propósito="${live2.json?.es?.purpose}"`);
   info('B3c la persona recibe al instante el contenido editado de un publicado, con reviewStatus', `reviewStatus=${live2.json?.reviewStatus} version=${live2.json?.version}`);
+
+  const vNow = (await q('select version,status from "Exercises" where id=$1', [e3]))[0];
+  const okEdit = await call(SU, 'PUT', `${A}/${e3}`, { ...body('valido'), expectedVersion: vNow.version }); const okLive = await visible(k3);
+  const okBlockedHist = (await hist(e3)).filter(h => h.action === 'update').length;
+  check('B3d tras los rechazos: la versión NO subió, sigue publicado, no hay historial de los intentos rechazados; una edición VÁLIDA de un publicado sí se guarda (200, v+1) y la persona la recibe', p1.status !== 200 && p2.status !== 200 && vNow.status === 'published' && vNow.version === 1 && okEdit.status === 200 && okEdit.json.version === 2 && okLive.json.es.title === 'Titulo valido' && okBlockedHist === 1, `p1=${p1.status}(${p1.json?.code}) p2=${p2.status}(${p2.json?.code}) versión=${vNow.version} válida=${okEdit.status} update_hist=${okBlockedHist}`);
+  const partial = body('valido'); partial.en.title = ''; const pe2 = await call(SU, 'PUT', `${A}/${e3}`, { ...partial, expectedVersion: 2 });
+  check('B3e vaciar solo un campo del inglés en un publicado → 422 incomplete con la lista (en.title); la persona sigue viendo el contenido anterior', pe2.status === 422 && pe2.json.code === 'incomplete' && pe2.json.missing.includes('en.title') && (await visible(k3)).json.en.title === 'Title valido', `${pe2.status} ${JSON.stringify(pe2.json?.missing)}`);
+  const wd = await call(SU, 'POST', A, { key: key('wdr'), ...body('w') }); await call(SU, 'POST', `${A}/${wd.json.id}/publish`, { confirm: true }); await call(SU, 'POST', `${A}/${wd.json.id}/withdraw`, { confirm: true });
+  const wdEdit = await call(SU, 'PUT', `${A}/${wd.json.id}`, { ...body('w2'), expectedVersion: 1 }); const dEdit = await create({}, key('dre')); const dEd = await call(SU, 'PUT', `${A}/${dEdit.json.id}`, { ...body('x'), es: { ...txt('x'), help: 'incluye 50% de mejora' }, expectedVersion: 1 });
+  check('B3f editar un RETIRADO o un BORRADOR (no visibles) sigue permitido con texto en progreso (200); la validación se aplica al publicarlo/republicarlo', wdEdit.status === 200 && dEd.status === 200 && (await call(SU, 'POST', `${A}/${dEdit.json.id}/publish`, { confirm: true })).status === 422, `${wdEdit.status}/${dEd.status}`);
 
   // C1
   const probe = async (mut) => { const k = key('c1'); const c = await create({}, k); const b = body('a'); mut(b); const u = await call(SU, 'PUT', `${A}/${c.json.id}`, { ...b, expectedVersion: 1 }); const p = await call(SU, 'POST', `${A}/${c.json.id}/publish`, { confirm: true }); return { u: u.status, p: p.status, code: p.json?.code, terms: (p.json?.violations || []).map(v => v.term).join('/') }; };
