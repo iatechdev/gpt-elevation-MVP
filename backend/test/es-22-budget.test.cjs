@@ -471,8 +471,8 @@ test('ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin co
   anthropic.messages.create = async () => ({ content: [{ type: 'text', text: JSON.stringify([{ therapistId: 303, score: 7, reason: 'Sintético' }]) }], usage: { input_tokens: 10, output_tokens: 10 } });
   assert.equal((await matching()).status, 200);
   // Salida con terapeutas no ofrecidos o puntuaciones fuera de rango: rechazada.
-  for (const item of [{ therapistId: 999, score: 5, reason: 'x' }, { therapistId: 303, score: 11, reason: 'x' }, { therapistId: 303, score: 0, reason: 'x' },
-    { therapistId: 303, score: 5.5, reason: 'x' }, { therapistId: 303, score: 5, reason: 'x'.repeat(301) }, { therapistId: '303', score: 5, reason: 'x' }]) {
+  // ES-242: la puntuación ya no existe en el esquema (se descarta si el modelo la escribe); siguen siendo salida inválida un profesional no ofrecido, una razón larga o un id como texto.
+  for (const item of [{ therapistId: 999, reason: 'x' }, { therapistId: 303, reason: 'x'.repeat(301) }, { therapistId: '303', reason: 'x' }, { therapistId: 303, reason: 7 }]) {
     anthropic.messages.create = async () => ({ content: [{ type: 'text', text: JSON.stringify([item]) }], usage: { input_tokens: 10, output_tokens: 10 } });
     const response = await matching();
     assert.equal(response.status, 502, JSON.stringify(item));

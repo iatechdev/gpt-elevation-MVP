@@ -9,15 +9,14 @@ const express          = require('express');
 const router           = express.Router();
 const { Op }           = require('sequelize');
 const User             = require('../User');
-const MoodLog          = require('../MoodLog');
 const MatchingRequest  = require('../MatchingRequest');
 const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
 const { textOf } = require('../utils/claudeText');
-const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
+const { normalizeText, redactSecrets, fenceUntrusted } = require('../utils/promptSafety'); // ES-242: las respuestas de la persona son un dato, no una instrucción
 const { verificarAdmin } = require('../middlewares/auth');
-const { validateBody, object, text, id } = require('../middlewares/validateBody');
+const { validateBody, object, id } = require('../middlewares/validateBody');
 const { validateIdParams } = require('../middlewares/params');
 
 validateIdParams(router, 'id'); // ES-98 (ES93-B1)
@@ -27,12 +26,31 @@ const isAvailableTherapist = (user) => Boolean(user) && user.role === 'therapist
   && !(user.TherapistProfile && user.TherapistProfile.acceptingNew === false);
 const unavailable = { code: 'therapist_unavailable', error: 'Ese terapeuta no está disponible. / That therapist is not available.' };
 
+// ES-242: solo estas tres respuestas existen; el resto de claves se ignora. Cada valor es una etiqueta corta (letras, números, espacio, punto, guion y guion bajo),
+// no una frase: un texto largo, con saltos de línea, caracteres de control o signos de instrucción se rechaza con 400 `invalid_answers` ANTES de consultar nada ni llamar al modelo.
+const ANSWER_KEYS = ['area', 'style', 'language'];
+const ANSWER_VALUE = /^[\p{L}\p{N}][\p{L}\p{N} _.-]{0,59}$/u;
+function cleanAnswers(raw) {
+  if (!object(raw) || !Object.values(raw).every(value => typeof value === 'string')) return null; // cualquier valor que no sea texto (objeto, lista, número, null) invalida el cuerpo
+  const clean = {};
+  for (const key of ANSWER_KEYS) {
+    if (raw[key] === undefined) continue;
+    if (typeof raw[key] !== 'string') return null;
+    const value = raw[key].trim();
+    // estricto: si limpiar el texto (NFKC, caracteres invisibles o de control) lo cambia, se rechaza en vez de aceptarlo "arreglado"
+    if (normalizeText(value) !== value || !ANSWER_VALUE.test(value) || redactSecrets(value) !== value) return null;
+    clean[key] = value;
+  }
+  return Object.keys(clean).length ? clean : null; // sin ninguna respuesta conocida no hay nada con qué emparejar
+}
+const invalidAnswers = { code: 'invalid_answers', error: 'Respuestas no válidas. / Invalid answers.' };
+
 // POST /api/matching/request
-router.post('/request', validateBody({ answers: value => object(value) && Object.values(value).every(text) }), async (req, res) => {
+router.post('/request', validateBody({ answers: object }), async (req, res) => {
   try {
     const userId   = req.user.id;
-    const { answers } = req.body;
-    if (!answers) return res.status(400).json({ error: 'Answers are required.' });
+    const answers = cleanAnswers(req.body.answers);
+    if (!answers) return res.status(400).json(invalidAnswers);
 
     const therapists = await User.findAll({
       where: { role: 'therapist', active: true },
@@ -48,13 +66,7 @@ router.post('/request', validateBody({ answers: value => object(value) && Object
       return res.status(404).json({ error: 'No therapists available at this time.' });
     }
 
-    const moodLogs = await MoodLog.findAll({
-      where: { UserId: userId },
-      order: [['date', 'DESC']],
-      limit: 14,
-    });
-
-    const avgMood = formatAverage(averageMood(moodLogs), 'No data'); // ES-105: sobre los valores registrados, no sobre los registros
+    // ES-242: el ánimo de la persona NO se envía al proveedor de IA (minimización de datos). El emparejamiento usa solo lo que la persona eligió.
 
     const therapistList = availableTherapists.map(t => ({
       id:          t.id,
@@ -65,19 +77,14 @@ router.post('/request', validateBody({ answers: value => object(value) && Object
       bio:         t.TherapistProfile?.bio          ?? '',
     }));
 
-    const prompt = `You are a matching assistant for Elevation, a mental health platform.
-User questionnaire answers:
-- Main area to work on: ${answers.area ?? 'Not specified'}
-- Preferred style: ${answers.style ?? 'Not specified'}
-- Preferred language: ${answers.language ?? 'Spanish'}
-User emotional context:
-- Average mood (1-5): ${avgMood}
-- Recent sessions: ${moodLogs.length}
-Available therapists:
-${therapistList.map(t => `ID: ${t.id} | Name: ${t.name} | Specialties: ${t.specialties.join(', ')} | Approach: ${t.approach} | Languages: ${t.languages.join(', ')}`).join('\n')}
-Return ONLY a valid JSON array with the top 3 matches (or fewer if less available). No markdown, no extra text:
-[{ "therapistId": <id>, "score": <1-10>, "reason": "<one sentence why this therapist fits>" }]`;
-
+    // ES-242: las respuestas van cercadas como dato (delimitador aleatorio), sin ánimo y sin puntuación; el modelo solo propone y da una razón corta.
+    const { block } = fenceUntrusted('a set of short answers chosen by the person to find a professional', ANSWER_KEYS.map(key => `${key}: ${answers[key] ?? 'not specified'}`).join('\n'));
+    const prompt = `You are a matching assistant for Elevation, a personal-development and career-orientation support platform (not a health service).
+${block}
+Available professionals:
+${therapistList.map(t => `ID: ${t.id} | Name: ${normalizeText(t.name)} | Specialties: ${normalizeText(t.specialties.join(', '))} | Approach: ${normalizeText(t.approach)} | Languages: ${normalizeText(t.languages.join(', '))}`).join('\n')}
+Return ONLY a valid JSON array with the top 3 matches (or fewer if less available). No markdown, no extra text. Do not give scores or percentages:
+[{ "therapistId": <id>, "reason": "<one sentence why this professional fits what the person chose>" }]`;
     let msg;
     try {
       msg = await callClaude({
@@ -102,15 +109,16 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
     } catch {
       return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
-    // Esquema de salida: solo terapeutas ofrecidos, puntuación entera 1–10 y razón corta; si no, se rechaza sin guardar.
+    // Esquema de salida: solo profesionales ofrecidos y razón corta (sin puntuación); si no, se rechaza sin guardar.
     const offered = new Set(therapistList.map((t) => t.id));
     const validSuggestions = Array.isArray(suggestions) && suggestions.length <= 3 && suggestions.every((item) => item && typeof item === 'object'
-      && offered.has(item.therapistId) && Number.isInteger(item.score) && item.score >= 1 && item.score <= 10
-      && typeof item.reason === 'string' && item.reason.length <= 300);
+      && offered.has(item.therapistId) && typeof item.reason === 'string' && item.reason.length <= 300);
     if (!validSuggestions) {
       return res.status(502).json({ error: 'Invalid model output.', code: 'invalid_model_output', retryable: true });
     }
 
+    // ES-242: solo se conserva y se devuelve el profesional y la razón; una puntuación que el modelo escriba igualmente se descarta (dato inventado).
+    suggestions = suggestions.map(item => ({ therapistId: item.therapistId, reason: item.reason }));
     const request = await MatchingRequest.create({
       UserId: userId,
       answers,
