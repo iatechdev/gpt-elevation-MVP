@@ -1,0 +1,45 @@
+{
+  "shape": {
+    "top": [
+      "moodLogs",
+      "ratings",
+      "recommendations",
+      "stats"
+    ],
+    "stats": [
+      "avgMood",
+      "avgRating",
+      "streak",
+      "totalSessions"
+    ],
+    "mood": [
+      "UserId",
+      "checkin_mood",
+      "checkout_mood",
+      "createdAt",
+      "date",
+      "id",
+      "updatedAt"
+    ],
+    "rating": [
+      "UserId",
+      "createdAt",
+      "date",
+      "id",
+      "rating",
+      "updatedAt"
+    ],
+    "types": {
+      "totalSessions": "number",
+      "avgMood": "number",
+      "avgRating": "number",
+      "streak": "number"
+    }
+  },
+  "stats": {
+    "totalSessions": 2,
+    "avgMood": 3.7,
+    "avgRating": 4,
+    "streak": 0
+  }
+}
