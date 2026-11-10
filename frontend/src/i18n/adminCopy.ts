@@ -1,5 +1,11 @@
 // Existing administrative UI copy only. User-written content and API values are never translated.
 export const adminEnglish: Record<string, string> = {
+  'Planes': 'Plans', 'Textos públicos': 'Public texts', 'Introduce un precio válido.': 'Enter a valid price.',
+  'No se pudieron cargar los planes.': 'Could not load plans.', 'Plan desactivado.': 'Plan deactivated.',
+  'No se pudo desactivar el plan.': 'Could not deactivate the plan.', 'No se pudo cargar el contenido.': 'Could not load the content.',
+  'Característica en español': 'Feature in Spanish', 'Característica en inglés': 'Feature in English',
+  'Añadir característica en español': 'Add feature in Spanish', 'Añadir característica en inglés': 'Add feature in English', 'Eliminar característica': 'Remove feature',
+  'Solo superadmin puede guardar textos.': 'Only a superadmin can save texts.',
   'Inactivo': 'Inactive', 'Desbloqueando...': 'Unlocking...', 'Eliminando...': 'Deleting...', 'Procesando...': 'Processing...', 'Actualizar': 'Update',
   'Usuario': 'User', 'usuario registrado': 'registered user', 'usuarios registrados': 'registered users',
   'prompt pendiente': 'pending prompt', 'prompts pendientes': 'pending prompts',

@@ -34,9 +34,11 @@ Catálogo único en shared/landing-content.json, consumido por API, editor, semi
 
 ## Lectura y escritura
 
+Actualización ES-185: el editor usa `GET /api/landing-content/admin?lang=es|en`, protegido para admin y superadmin y con `Cache-Control: no-store`. Devuelve el mismo contenido que la lectura pública cuando la base responde, pero devuelve 503 ante un fallo en vez de presentar valores de respaldo como si se hubieran cargado. La lectura pública y el permiso exclusivo de superadmin para escribir no cambian.
+
 GET /api/landing-content?lang=es o en, público: mezcla defaults y valores persistidos no vacíos del idioma solicitado. Otros idiomas resuelven ES como antes. Si Postgres falla, responde defaults sin datos personales ni detalles del error en logs.
 
-PUT /api/landing-content usa verificarSuperAdmin existente (JWT y rol de servidor); visitante/usuario/terapeuta/board/admin no pueden editar. Idioma ES/EN, valor no vacío de hasta 5000 caracteres, clave de hasta 255. Claves nuevas landing.* fuera del catálogo se rechazan. Conserva claves antiguas y su edición para reversión. No hay nuevos endpoints ni cambios en identidad, esquema o migraciones.
+PUT /api/landing-content usa verificarSuperAdmin existente (JWT y rol de servidor); visitante/usuario/terapeuta/board/admin no pueden editar. Idioma ES/EN, valor no vacío de hasta 5000 caracteres, clave de hasta 255. Claves nuevas landing.* fuera del catálogo se rechazan. Conserva claves antiguas y su edición para reversión. En ES-66 no se añadieron endpoints ni cambios en identidad, esquema o migraciones; ver actualización ES-185 arriba.
 
 El editor conserva los cinco campos anteriores y agrega los nuevos identificados por su clave. Los permisos y estados existentes no cambian. El contrato frontend landingText(key, lang, values) devuelve siempre el respaldo del idioma ante valor ausente, vacío o inválido. loadLandingContent cubre red, HTTP y JSON inválido. useLandingContent cancela peticiones al cambiar idioma y no presenta el idioma anterior mientras carga.
 
