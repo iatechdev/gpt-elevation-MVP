@@ -252,3 +252,19 @@ test('ES-25 (QA-25-01) si se agotan los reintentos por colisión, la respuesta e
     assert.deepEqual([r.status, r.body.code], [409, 'conflict']);
   } finally { CareerContextVersion.create = originalCreate; }
 });
+
+// ES-171: el texto de la Brújula «Tu profesional dejará de ver este contexto» tiene que ser cierto para el camino DIRECTO (el que usa la pantalla).
+test('ES-171 retirar (POST /revoke) deja vacía la lectura aprobada del motor, también para el contexto directo, y no toca a otra persona', async (t) => {
+  const { state } = setup();
+  const request = await startApp(t);
+  assert.equal((await approve(request, A, direct('Directo de A'), 'req-171-a')).status, 201);
+  assert.equal((await approve(request, B, direct('Directo de B'), 'req-171-b')).status, 201);
+  assert.equal((await bridge.getApprovedContext(101, 'e')).fields[0].text, 'Directo de A');
+  const revoked = await request('POST', '/api/career-context/revoke', A);
+  assert.equal(revoked.status, 200);
+  await assert.rejects(bridge.getApprovedContext(101, 'e'), (e) => e.code === 'no_context'); // el motor ya no recibe nada de A
+  assert.equal((await request('GET', '/api/career-context', A)).body.active, null);
+  assert.equal(state.tables.CareerContextVersion.find((r) => r.UserId === 101).status, 'revoked');
+  assert.equal((await bridge.getApprovedContext(202, 'e')).fields[0].text, 'Directo de B'); // B intacta
+  assert.equal((await request('GET', '/api/career-context', B)).body.active.version, 1);
+});

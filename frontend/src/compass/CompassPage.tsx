@@ -10,7 +10,8 @@ import './compass.css'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const blank = (): DraftField => ({ id: crypto.randomUUID(), key: '', text: '', selected: false })
-type Review = { preview: Preview; fields: DirectField[]; requestId: string }
+type Review = { preview: Preview; fields: DirectField[]; requestId: string; baseVersion: number }
+const pairs = (items: readonly { key: string; text: string }[]) => JSON.stringify(items.map(item => [item.key, item.text]))
 
 export function CompassPage() {
   const token = useCompassToken()
@@ -36,6 +37,7 @@ function CompassSession({ token }: { token: string }) {
   const [notice, setNotice] = useState('')
   const [failed, setFailed] = useState(false)
   const [invalid, setInvalid] = useState<string[]>([])
+  const [unsure, setUnsure] = useState(false) // ES-171: la confirmación pudo llegar al servidor; la revisión se conserva con su requestId y su token
   const [now, setNow] = useState(Date.now())
   const current = () => alive.current && readCompassToken() === token
   const dirty = rows.some(row => row.text.length > 0 || row.selected || row.key !== '')
@@ -75,15 +77,15 @@ function CompassSession({ token }: { token: string }) {
     setNotice(key); setFailed(error)
     if (key === 'session') { setContext(null); setReady(false); setRows([blank()]); setReview(null); setAuthorized(false) }
   }
-  const explain = (error: unknown) => error instanceof CompassError ? error.status === 401 ? 'session' : error.status === 403 ? 'forbidden' : error.code === 'field_not_shareable' ? 'not_shareable' : error.status === 410 ? 'expired' : 'error' : 'error'
+  const explain = (error: unknown) => error instanceof CompassError ? error.status === 401 ? 'session' : error.status === 403 ? 'forbidden' : error.code === 'field_not_shareable' ? 'not_shareable' : error.code === 'conflict' ? 'conflict' : error.status === 410 ? 'expired' : 'error' : 'error'
   const leave = () => { if (!busy && (!dirty || window.confirm(tr('leave')))) navigate('/app/dashboard') }
-  const edit = () => { setReview(null); setAuthorized(false); setInvalid([]); message('') }
+  const edit = () => { setReview(null); setAuthorized(false); setInvalid([]); setUnsure(false); message('') }
   const update = (id: string, patch: Partial<DraftField>) => { edit(); setRows(old => old.map(row => row.id === id ? { ...row, ...patch } : row)) }
 
   async function retryRead() {
     if (locked.current || !current()) return
     locked.current = true; setBusy('loading'); setReady(false); setContext(null)
-    try { if (await load()) message('') } catch (error) { if (current()) message(explain(error) === 'session' ? 'session' : 'load_error', true) }
+    try { if (await load()) { if (unsure) message('confirm_uncertain', true); else message('') } } catch (error) { if (current()) message(explain(error) === 'session' ? 'session' : 'load_error', true) }
     finally { locked.current = false; if (current()) setBusy('') }
   }
   async function preview() {
@@ -93,7 +95,7 @@ function CompassSession({ token }: { token: string }) {
     locked.current = true; setBusy('previewing'); edit()
     try {
       const value = await api.preview(selected.fields, lang)
-      if (current()) { setReview({ preview: value, fields: selected.fields, requestId: crypto.randomUUID() }); setNow(Date.now()); message('unconfirmed') }
+      if (current()) { setReview({ preview: value, fields: selected.fields, requestId: crypto.randomUUID(), baseVersion: context?.active?.version ?? 0 }); setNow(Date.now()); message('unconfirmed') }
     } catch (error) {
       if (current()) {
         if (error instanceof CompassError && error.code === 'field_not_shareable' && error.fieldIndex !== undefined) {
@@ -103,20 +105,40 @@ function CompassSession({ token }: { token: string }) {
       }
     } finally { locked.current = false; if (current()) setBusy('') }
   }
+  // ES-171: ¿ya quedó aplicada esta revisión? Con acuse: misma versión y campos. Sin acuse (respuesta perdida): una versión NUEVA con exactamente esos campos.
+  const applied = (value: CareerContext, ack: ContextVersion | null, mine: Review) => !!value.active && (ack ? value.active.version === ack.version && JSON.stringify(value.active.fields) === JSON.stringify(ack.fields) : value.active.version > mine.baseVersion && pairs(value.active.fields) === pairs(mine.preview.representation))
   async function confirm() {
     if (locked.current || !current() || !review || !authorized || Date.parse(review.preview.expiresAt) <= Date.now() || !ready) return
-    locked.current = true; setBusy('confirming'); setReady(false)
+    locked.current = true; setBusy('confirming'); setReady(false); setUnsure(false)
+    const mine = review
     let acknowledged: ContextVersion | null = null
     let failure: unknown
-    try { acknowledged = await api.confirm({ fields: review.fields, token: review.preview.token, requestId: review.requestId }) } catch (error) { failure = error }
+    try { acknowledged = await api.confirm({ fields: mine.fields, token: mine.preview.token, requestId: mine.requestId }) } catch (error) { failure = error }
     if (!current()) { locked.current = false; return }
-    setReview(null); setAuthorized(false); setContext(null)
+    // Sin acuse y sin una respuesta definitiva del servidor (corte, tiempo agotado, 5xx): la revisión se conserva para comprobar o reintentar con el MISMO requestId y token.
+    const doubtful = !acknowledged && !(failure instanceof CompassError && failure.status < 500)
+    if (!doubtful) { setReview(null); setAuthorized(false) }
+    setContext(null)
     try {
       const value = await load()
-      if (value && acknowledged && value.active?.version === acknowledged.version && JSON.stringify(value.active.fields) === JSON.stringify(acknowledged.fields)) {
-        setRows([blank()]); message('confirmed')
-      } else if (value) message(failure instanceof CompassError && failure.status < 500 ? explain(failure) : 'uncertain', true)
-    } catch (error) { if (current()) message(explain(error) === 'session' ? 'session' : 'uncertain', true) }
+      if (value && acknowledged && applied(value, acknowledged, mine)) { // el éxito automático exige el acuse del servidor; sin acuse solo «Comprobar» (a petición) puede inferirlo
+        setReview(null); setAuthorized(false); setUnsure(false); setRows([blank()]); message('confirmed')
+      } else if (value) {
+        if (doubtful) { setUnsure(true); message('confirm_uncertain', true) } else message(explain(failure), true)
+      }
+    } catch (error) { if (current()) { if (doubtful) setUnsure(true); message(explain(error) === 'session' ? 'session' : doubtful ? 'confirm_uncertain' : 'uncertain', true) } }
+    finally { locked.current = false; if (current()) setBusy('') }
+  }
+  async function check() {
+    if (locked.current || !current() || !review) return
+    const mine = review
+    locked.current = true; setBusy('loading'); setReady(false)
+    try {
+      const value = await load()
+      if (value) {
+        if (applied(value, null, mine)) { setReview(null); setAuthorized(false); setUnsure(false); setRows([blank()]); message('confirmed') } else message('check_none', true)
+      }
+    } catch (error) { if (current()) message(explain(error) === 'session' ? 'session' : 'load_error', true) }
     finally { locked.current = false; if (current()) setBusy('') }
   }
   async function withdraw() {
@@ -135,6 +157,7 @@ function CompassSession({ token }: { token: string }) {
   function fields(version: ContextVersion) {
     return <dl>{version.fields.map((field, index) => <div key={index}><dt>{tr(field.key)}</dt><dd>{field.text}</dd></div>)}</dl>
   }
+  const confirmActions = unsure ? <><button className="elv-btn" disabled={!!busy} onClick={() => void check()}>{tr('check')}</button><button className="elv-btn compass-primary" disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('retry')}</button></> : <button className="elv-btn compass-primary" disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('confirm')}</button>
   return <div className="compass-scope">
     <a className="compass-skip" href="#compass-main">{tr('skip')}</a>
     <header><button className="elv-btn" disabled={!!busy} onClick={leave}>{tr('back')}</button>
@@ -173,7 +196,7 @@ function CompassSession({ token }: { token: string }) {
             <p>{tr('expires')}: <time dateTime={review.preview.expiresAt}>{new Date(review.preview.expiresAt).toLocaleTimeString(lang)}</time></p>
             {expired && <p role="alert">{tr('expired')}</p>}
             <label className="compass-check"><input className="elv-checkbox" type="checkbox" checked={authorized} disabled={!!busy || expired} onChange={event => setAuthorized(event.target.checked)} />{tr('authorize')}</label>
-            <div className="compass-actions"><button className="elv-btn" disabled={!!busy} onClick={edit}>{tr('edit')}</button>{expired ? <button className="elv-btn" onClick={() => void preview()}>{tr('renew')}</button> : <button className="elv-btn compass-primary" disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('confirm')}</button>}</div>
+            <div className="compass-actions"><button className="elv-btn" disabled={!!busy} onClick={edit}>{tr('edit')}</button>{expired ? <button className="elv-btn" onClick={() => void preview()}>{tr('renew')}</button> : confirmActions}</div>
           </section>}
         </section>
         {context.active && <p>{tr('unchanged')}</p>}<button className="elv-btn" disabled={!!busy} onClick={leave}>{tr(context.active ? 'no_changes' : 'skip_transfer')}</button>

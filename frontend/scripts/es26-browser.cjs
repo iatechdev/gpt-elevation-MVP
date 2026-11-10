@@ -93,7 +93,7 @@ const path = require('node:path');
     }
     {
       const { page, calls } = await setup({ lostConfirm: true }); await fill(page); await preview(page); await page.getByLabel('He revisado estos campos y autorizo su uso profesional.', { exact: true }).check(); await page.getByRole('button', { name: 'Confirmar autorización', exact: true }).click();
-      await page.getByText('No pudimos verificar esta confirmación. Revisa el contexto vigente antes de crear otra versión.', { exact: true }).waitFor();
+      await page.getByText('No pudimos verificar la confirmación. Tu selección sigue aquí.', { exact: true }).waitFor();
       assert.equal(calls.filter(x => x.endpoint.endsWith('/confirm')).length, 1); assert.ok(await page.getByText(field.text, { exact: true }).first().isVisible());
       assert.equal(await page.getByText('Autorización confirmada', { exact: true }).count(), 0); check('lost confirmation ACK reads actual state and never guesses success or repeats POST'); await page.close();
     }
