@@ -1,32 +1,15 @@
-// HU-046 + HU-049 + HU-062 + HU-065 + HU-067 + HU-082 — Therapist dashboard + i18n
+// HU-046 + HU-049 + HU-062 + HU-065 + HU-067 + HU-082 + ES-177 — Panel profesional + i18n
+// ES-177 (B1): Resumen, Próximas sesiones, Personas y Avisos son bloques con su propio estado (PanelSections.tsx); validación académica y guía para la IA: B2.
 
-import { useState, useEffect } from 'react'
-import { personInitial, personLabel } from './panelText'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useLanguage } from '../../i18n/useLanguage'
+import { useSection } from './useSection'
+import { AlertsBlock, PeopleBlock, SummaryBlock, UpcomingBlock, type AlertsData, type UpcomingSession } from './PanelSections'
+import { cardStyle } from './panelStyles'
+import type { PanelPerson } from './panelFormat'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
-
-interface Patient {
-  id: number
-  name: string | null // null cuando la persona no autorizó compartir (ES-177): se muestra «Persona n»
-  ordinal: number // número estable por profesional
-  email: string
-  active: boolean
-  createdAt: string
-  sharing?: boolean // false: la persona no autorizó compartir (ES-96); sin cifras ni correo
-  totalSessions: number
-  sessionsThisWeek: number
-  avgRating: number | null
-  moodTrend: 'up' | 'down' | 'neutral'
-  trend: 'improving' | 'stable' | 'declining' | null
-  lastMood: {
-    checkin_mood: number | null
-    checkout_mood: number | null
-    date: string
-  } | null
-}
 
 interface PromptData {
   hasPrompt: boolean
@@ -52,23 +35,6 @@ interface PromptData {
   } | null
 }
 
-interface InactivePatient {
-  userId: number
-  name: string
-  daysSinceLastSession: number | null
-}
-
-interface NotableProgress {
-  userId: number
-  name: string
-  improved: true
-}
-
-interface AlertsData {
-  inactivePatients: InactivePatient[]
-  notableProgress: NotableProgress[]
-}
-
 interface ValidationDoc {
   id: number
   documentType: 'titulo' | 'certificado' | 'colegiado' | 'otro'
@@ -79,37 +45,19 @@ interface ValidationDoc {
   reviewedAt: string | null
 }
 
-interface UpcomingSession {
-  id: number
-  patientId: number
-  scheduledAt: string
-  duration: number
-  status: string
-  patientName: string
-}
-
-const MOOD_EMOJI: Record<number, string> = {
-  1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
-}
-
 export function TherapistDashboard() {
-  const navigate = useNavigate()
   const { t, lang } = useLanguage()
   const locale = lang === 'es' ? 'es-CO' : 'en-US'
 
-  const TREND_BADGE: Record<string, { label: string; bg: string; color: string; icon: string }> = {
-    improving: { label: t('therapist_improving'), bg: '#EAF0E6', color: '#4A6741', icon: '📈' },
-    stable:    { label: t('therapist_stable'),    bg: '#E0F2FE', color: '#0369A1', icon: '📊' },
-    declining: { label: t('therapist_declining'), bg: '#FEE2E2', color: '#B91C1C', icon: '📉' },
-  }
+  const people = useSection<PanelPerson[]>('/api/therapist/pacientes')
+  const upcoming = useSection<UpcomingSession[]>('/api/sessions/therapist/upcoming')
+  const alerts = useSection<AlertsData>('/api/therapist/alerts')
+  const promptSection = useSection<PromptData>('/api/therapist/prompt')
+  const validationSection = useSection<ValidationDoc[]>('/api/therapist/validation/status')
+  const promptData = promptSection.data
+  const promptLoading = promptSection.status === 'loading'
+  const validations = validationSection.data ?? []
 
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
-  const [loadError] = useState(() => t('therapist_not_found'))
-
-  const [promptData, setPromptData]               = useState<PromptData | null>(null)
-  const [promptLoading, setPromptLoading]         = useState(true)
   const [showPromptSection, setShowPromptSection] = useState(false)
   const [showProposeModal, setShowProposeModal]   = useState(false)
   const [newPromptContent, setNewPromptContent]   = useState('')
@@ -117,90 +65,10 @@ export function TherapistDashboard() {
   const [proposeError, setProposeError]           = useState('')
   const [proposeSuccess, setProposeSuccess]       = useState('')
 
-  const [alerts, setAlerts]               = useState<AlertsData | null>(null)
-  const [alertsLoading, setAlertsLoading] = useState(true)
-
-  const [validations, setValidations]                     = useState<ValidationDoc[]>([])
   const [showValidationSection, setShowValidationSection] = useState(false)
   const [uploadingDoc, setUploadingDoc]                   = useState(false)
   const [uploadMsg, setUploadMsg]                         = useState('')
   const [selectedDocType, setSelectedDocType]             = useState<string>('titulo')
-
-  const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([])
-
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const res = await fetch(`${API}/api/therapist/pacientes`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setPatients(await res.json())
-      } catch {
-        setError(loadError)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchPatients()
-  }, [loadError])
-
-  useEffect(() => {
-    const fetchUpcoming = async () => {
-      try {
-        const res = await fetch(`${API}/api/sessions/therapist/upcoming`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setUpcomingSessions(await res.json())
-      } catch { /* non-blocking */ }
-    }
-    fetchUpcoming()
-  }, [])
-
-  useEffect(() => {
-    const fetchPrompt = async () => {
-      try {
-        const res = await fetch(`${API}/api/therapist/prompt`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setPromptData(await res.json())
-      } catch { /* non-blocking */ }
-      finally { setPromptLoading(false) }
-    }
-    fetchPrompt()
-  }, [])
-
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const res = await fetch(`${API}/api/therapist/alerts`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setAlerts(await res.json())
-      } catch { /* non-blocking */ }
-      finally { setAlertsLoading(false) }
-    }
-    fetchAlerts()
-  }, [])
-
-  useEffect(() => {
-    const fetchValidations = async () => {
-      try {
-        const res = await fetch(`${API}/api/therapist/validation/status`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
-        if (!res.ok) throw new Error()
-        setValidations(await res.json())
-      } catch { /* non-blocking */ }
-    }
-    fetchValidations()
-  }, [])
-
-  const getNextSessionForPatient = (patientId: number): UpcomingSession | null =>
-    upcomingSessions.find(s => s.patientId === patientId) ?? null
 
   const handleProposePrompt = async () => {
     setProposeError('')
@@ -220,10 +88,7 @@ export function TherapistDashboard() {
       if (!res.ok) { setProposeError(data.code === 'pending_exists' ? t('therapist_prompt_pending_exists') : (data.error || t('error_connection'))); return }
       setProposeSuccess(t('therapist_prompt_pending'))
       setNewPromptContent('')
-      const refreshRes = await fetch(`${API}/api/therapist/prompt`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-      if (refreshRes.ok) setPromptData(await refreshRes.json())
+      promptSection.reload({ silent: true })
       setTimeout(() => { setShowProposeModal(false); setProposeSuccess('') }, 2500)
     } catch {
       setProposeError(t('error_connection'))
@@ -247,10 +112,7 @@ export function TherapistDashboard() {
       const data = await res.json()
       if (!res.ok) return setUploadMsg(data.error ?? t('error_connection'))
       setUploadMsg(`✓ ${t('therapist_prompt_pending')}`)
-      const r2 = await fetch(`${API}/api/therapist/validation/status`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-      if (r2.ok) setValidations(await r2.json())
+      validationSection.reload({ silent: true })
     } catch {
       setUploadMsg(t('error_connection'))
     } finally {
@@ -258,125 +120,36 @@ export function TherapistDashboard() {
     }
   }
 
-  const activeThisWeek = patients.filter(p => p.sessionsThisWeek > 0).length
-  const avgMoodAll = (() => {
-    const moods = patients.map(p => p.lastMood?.checkin_mood).filter((m): m is number => m != null)
-    return moods.length > 0
-      ? Math.round((moods.reduce((a, b) => a + b, 0) / moods.length) * 10) / 10
-      : null
-  })()
-  const avgRatingAll = (() => {
-    const ratings = patients.map(p => p.avgRating).filter((r): r is number => r != null)
-    return ratings.length > 0
-      ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
-      : null
-  })()
-
-  const cardStyle = {
-    background: '#fff',
-    borderRadius: '1rem',
-    border: '0.5px solid #E7E5E4',
-    boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
-    padding: '1.25rem 1.5rem',
-  }
-
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
-  const formatSessionTime = (iso: string) =>
-    new Date(iso).toLocaleString(locale, {
-      weekday: 'short', day: '2-digit', month: 'short',
-      hour: '2-digit', minute: '2-digit',
-    })
-
-  const totalAlerts = (alerts?.inactivePatients.length ?? 0) + (alerts?.notableProgress.length ?? 0)
-
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* HEADER */}
-      <div style={{ marginBottom: '2rem' }}>
+      <header>
         <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
-          {t('therapist_my_patients')}
+          {t('panel_title')}
         </h1>
-        <p style={{ fontSize: '0.875rem', color: '#57534E', margin: '0.25rem 0 0' }}>
-          {patients.length} {patients.length === 1 ? t('therapist_assigned_one') : t('therapist_assigned')}
-        </p>
-      </div>
+      </header>
 
-      {/* SUMMARY CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        {[
-          { label: t('therapist_my_patients'),  value: patients.length },
-          { label: t('therapist_active_week'),  value: activeThisWeek },
-          { label: t('therapist_avg_mood'),      value: avgMoodAll ?? '—' },
-          { label: t('therapist_avg_rating'),    value: avgRatingAll ? `${avgRatingAll} ★` : '—' },
-        ].map(card => (
-          <div key={card.label} style={cardStyle}>
-            <div style={{ fontSize: '1.6rem', fontWeight: 600, color: '#1C1917' }}>{card.value}</div>
-            <div style={{ fontSize: '0.78rem', color: '#57534E', marginTop: '0.25rem' }}>{card.label}</div>
-          </div>
-        ))}
-      </div>
+      <SummaryBlock state={people} t={t} locale={locale} />
+      <UpcomingBlock state={upcoming} t={t} locale={locale} />
 
-      {/* PRÓXIMAS SESIONES */}
-      {upcomingSessions.length > 0 && (
-        <div style={{ ...cardStyle, marginBottom: '2rem' }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
-            🎥 {t('therapist_upcoming_sessions')}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            {upcomingSessions.map(session => {
-              const isNow = (() => {
-                const diff = new Date(session.scheduledAt).getTime() - Date.now()
-                return diff <= 15 * 60 * 1000 && diff >= -session.duration * 60 * 1000
-              })()
-              return (
-                <div key={session.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: '1rem', flexWrap: 'wrap',
-                  padding: '0.75rem 1rem',
-                  background: isNow ? '#EAF0E6' : '#F5F3EF',
-                  borderRadius: '0.65rem',
-                  border: isNow ? '1px solid #A8B5A2' : '1px solid transparent',
-                }}>
-                  <div>
-                    <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.9rem' }}>
-                      {session.patientName}
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: '#57534E', marginTop: '0.15rem' }}>
-                      {formatSessionTime(session.scheduledAt)} · {session.duration} min
-                      {isNow && (
-                        <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 700, color: '#4A6741', background: '#C6D4BF', padding: '0.1rem 0.45rem', borderRadius: 999 }}>
-                          NOW
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/therapist/session/${session.id}`)}
-                    style={{
-                      padding: '0.5rem 1.1rem',
-                      background: isNow ? '#4A6741' : 'transparent',
-                      border: isNow ? 'none' : '0.5px solid #4A6741',
-                      borderRadius: '0.65rem',
-                      color: isNow ? '#fff' : '#4A6741',
-                      fontSize: '0.82rem', fontWeight: 500,
-                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {isNow ? t('therapist_start_session') : t('therapist_sessions')}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
+      <div className="th-two-col">
+        <PeopleBlock state={people} upcoming={upcoming.data ?? []} t={t} locale={locale} />
+        <div className="th-sticky">
+          <AlertsBlock state={alerts} t={t} />
         </div>
-      )}
+      </div>
 
       {/* VALIDACIÓN ACADÉMICA */}
       <div style={{ ...cardStyle, marginBottom: '2rem' }}>
+        {validationSection.status === 'error' ? (
+          <div role="alert" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.875rem', color: '#B91C1C' }}>{t('panel_section_error')}</span>
+            <button type="button" onClick={() => validationSection.reload()} style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #4A6741', borderRadius: '0.65rem', fontSize: '0.82rem', color: '#4A6741', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{t('panel_retry')}</button>
+          </div>
+        ) : <>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -482,11 +255,18 @@ export function TherapistDashboard() {
             )}
           </div>
         )}
+        </>}
       </div>
 
       {/* MY THERAPEUTIC PROMPT */}
       {!promptLoading && (
         <div style={{ ...cardStyle, marginBottom: '2rem' }}>
+        {promptSection.status === 'error' ? (
+          <div role="alert" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.875rem', color: '#B91C1C' }}>{t('panel_section_error')}</span>
+            <button type="button" onClick={() => promptSection.reload()} style={{ padding: '0.45rem 0.85rem', background: 'transparent', border: '0.5px solid #4A6741', borderRadius: '0.65rem', fontSize: '0.82rem', color: '#4A6741', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{t('panel_retry')}</button>
+          </div>
+        ) : <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -549,185 +329,7 @@ export function TherapistDashboard() {
               </p>
             </div>
           )}
-        </div>
-      )}
-
-      {/* LOADING / ERROR */}
-      {loading && <p style={{ color: '#57534E', fontSize: '0.875rem' }}>{t('therapist_loading')}</p>}
-      {error   && <p style={{ color: '#B91C1C', fontSize: '0.875rem' }}>{error}</p>}
-
-      {/* TWO COLUMN LAYOUT */}
-      {!loading && !error && (
-        <div className="th-two-col">
-
-          {/* COLUMNA IZQUIERDA — PATIENT LIST */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {patients.length === 0 ? (
-              <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: '#57534E', fontSize: '0.875rem' }}>
-                {t('therapist_no_patients')}
-              </div>
-            ) : (
-              patients.map(p => {
-                const lastMoodValue = p.lastMood?.checkout_mood ?? p.lastMood?.checkin_mood ?? null
-                const daysSince = p.lastMood
-                  ? Math.floor((Date.now() - new Date(p.lastMood.date).getTime()) / (1000 * 60 * 60 * 24))
-                  : null
-                const trendBadge  = p.trend ? TREND_BADGE[p.trend] : null
-                const nextSession = getNextSessionForPatient(p.id)
-                const noAccess    = p.sharing === false
-
-                return (
-                  <div key={p.id} style={{
-                    ...cardStyle,
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    gap: '1rem', flexWrap: 'wrap', opacity: p.active ? 1 : 0.5,
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                      <div style={{
-                        width: 42, height: 42, borderRadius: '50%', background: '#EAF0E6',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.1rem', fontWeight: 600, color: '#4A6741', flexShrink: 0,
-                      }}>
-                        {personInitial(p)}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          {personLabel(p, t('therapist_person'))}
-                          {noAccess && <span className="th-badge-muted">🔒 {t('therapist_no_access')}</span>}
-                        </div>
-                        {noAccess && (
-                          <div className="th-notice" role="note" style={{ marginTop: '0.4rem' }}>
-                            <span aria-hidden="true">ℹ️</span>
-                            <span>{t('therapist_not_shared')}</span>
-                          </div>
-                        )}
-                        <div style={{ display: noAccess ? 'none' : 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
-                          {lastMoodValue != null && <span style={{ fontSize: '0.85rem' }}>{MOOD_EMOJI[lastMoodValue] ?? '—'}</span>}
-                          {daysSince != null && (
-                            <span style={{ fontSize: '0.75rem', color: '#57534E' }}>
-                              {daysSince === 0 ? t('checkin_label') : `${daysSince}d`}
-                            </span>
-                          )}
-                          {trendBadge && (
-                            <span style={{
-                              fontSize: '0.72rem', fontWeight: 600,
-                              background: trendBadge.bg, color: trendBadge.color,
-                              padding: '0.15rem 0.55rem', borderRadius: '999px',
-                              display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-                            }}>
-                              {trendBadge.icon} {trendBadge.label}
-                            </span>
-                          )}
-                          {nextSession && (
-                            <span style={{
-                              fontSize: '0.7rem', fontWeight: 600,
-                              background: '#E0F2FE', color: '#0369A1',
-                              padding: '0.15rem 0.55rem', borderRadius: '999px',
-                            }}>
-                              📅 {formatSessionTime(nextSession.scheduledAt)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: noAccess ? 'none' : 'flex', gap: '1.5rem', fontSize: '0.82rem', color: '#57534E' }}>
-                      <span>{p.totalSessions} {t('therapist_sessions')}</span>
-                      {p.avgRating != null && (
-                        <span>{'★'.repeat(Math.round(p.avgRating))}{'☆'.repeat(5 - Math.round(p.avgRating))} {p.avgRating}</span>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      {nextSession && (
-                        <button
-                          onClick={() => navigate(`/therapist/session/${nextSession.id}`)}
-                          style={{
-                            padding: '0.5rem 1rem',
-                            background: '#4A6741', border: 'none',
-                            borderRadius: '0.85rem',
-                            color: '#fff', fontSize: '0.82rem', fontWeight: 500,
-                            cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {t('therapist_start_session')}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => navigate(`/therapist/patient/${p.id}`)}
-                        style={{
-                          padding: '0.5rem 1.1rem',
-                          background: 'transparent', border: '0.5px solid #4A6741',
-                          borderRadius: '0.85rem',
-                          color: '#4A6741', fontSize: '0.82rem', fontWeight: 500,
-                          cursor: 'pointer', fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {t('therapist_view_profile')}
-                      </button>
-                    </div>
-                  </div>
-                )
-              })
-            )}
-          </div>
-
-          {/* COLUMNA DERECHA — ALERTS */}
-          <div className="th-sticky" style={cardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#57534E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                🔔 {t('therapist_alerts')}
-              </div>
-              {totalAlerts > 0 && (
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: '#FEE2E2', color: '#B91C1C', padding: '0.15rem 0.5rem', borderRadius: '999px' }}>
-                  {totalAlerts}
-                </span>
-              )}
-            </div>
-
-            {alertsLoading ? (
-              <p style={{ fontSize: '0.82rem', color: '#57534E', margin: 0 }}>{t('loading')}</p>
-            ) : totalAlerts === 0 ? (
-              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>👍</div>
-                <p style={{ fontSize: '0.82rem', color: '#57534E', margin: 0 }}>{t('therapist_no_alerts')}</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {alerts?.inactivePatients.map(p => (
-                  <div key={p.userId} style={{ padding: '0.75rem', borderRadius: '0.65rem', background: '#FEF3C7', border: '0.5px solid #FCD34D' }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E', marginBottom: '0.2rem' }}>
-                      ⚠️ {p.name} — {t('therapist_inactive')}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: '#92400E' }}>
-                      {p.daysSinceLastSession === null
-                        ? t('therapist_no_upcoming')
-                        : `${p.daysSinceLastSession}d`}
-                    </div>
-                  </div>
-                ))}
-                {alerts?.notableProgress.map(p => (
-                  <div key={p.userId} style={{ padding: '0.75rem', borderRadius: '0.65rem', background: '#EAF0E6', border: '0.5px solid #A8B5A2' }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#4A6741', marginBottom: '0.2rem' }}>
-                      ✅ {t('therapist_notable_progress')}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: '#4A6741' }}>
-                      {p.name} · {t('therapist_progress_improved')}
-                    </div>
-                  </div>
-                ))}
-                <div style={{ padding: '0.75rem', borderRadius: '0.65rem', background: '#E0F2FE', border: '0.5px solid #7DD3FC' }}>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#0369A1', marginBottom: '0.2rem' }}>
-                    ℹ️ {t('therapist_ai_summary')}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#0369A1' }}>
-                    {t('therapist_generate_summary')}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
+        </>}
         </div>
       )}
 
