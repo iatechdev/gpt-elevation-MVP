@@ -419,12 +419,12 @@ router.put('/:id/reset-password', (req, res) => res.status(410).json({
 // El enlace (un solo uso, vence) va al correo de la cuenta; la respuesta no lo incluye. Solo superadmin, como el reset anterior.
 router.post('/:id/reset-link', async (req, res) => {
   try {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Solo el superadmin puede enviar enlaces de restablecimiento.' });
+    if (req.user.role !== 'superadmin') return res.status(403).json({ code: 'superadmin_only', error: 'Solo el superadmin puede enviar enlaces de restablecimiento.' });
     if (await refuseDeletionPending(req.params.id, res)) return;
     const usuario = await User.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
     // No se puede restablecer la contraseña de otro superadmin
-    if (usuario.role === 'superadmin' && usuario.id !== req.user.id) return res.status(403).json({ error: 'No se puede restablecer la contraseña de otro superadmin.' });
+    if (usuario.role === 'superadmin' && usuario.id !== req.user.id) return res.status(403).json({ code: 'superadmin_target', error: 'No se puede restablecer la contraseña de otro superadmin.' });
     const locale = req.body && req.body.locale === 'en' ? 'en' : 'es';
     const passwordReset = require('./passwordReset');
     passwordReset.track(passwordReset.issueLinkForUser(usuario, locale).catch(() => console.error('Error al preparar el enlace de restablecimiento.')));
