@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { models, anthropic, record, startApp } = require('./support.cjs');
+const { models, anthropic, record, startApp, transaction } = require('./support.cjs');
 
 test('P1-5: only admin can list or confirm matching; user can request and choose', async t => {
   let calls = 0;
@@ -12,7 +12,7 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
   models.User.findAll = async () => [record({ id: 303, name: 'Synthetic therapist' })];
   // ES-98 (ES93-M1): elegir y confirmar validan que el terapeuta esté activo y que la persona sea un participante activo.
   models.User.findOne = async ({ where }) => (where.role === 'therapist' ? record({ id: where.id, role: 'therapist', active: true })
-    : where.role === 'user' ? record({ id: where.id, role: 'user', active: true }) : null);
+    : where.role === 'user' ? Object.assign(record({ id: where.id, role: 'user', active: true, therapistId: null }), { update: async (values, options) => { calls++; assigned = { values, options }; } }) : null); // ES-186 (A): la confirmación actualiza la fila de la persona dentro de la transacción
   models.MoodLog.findAll = async () => [];
   models.MatchingRequest.create = async values => record({ id: 7, ...values });
   models.MatchingRequest.findOne = async ({ where }) => {
@@ -42,7 +42,7 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
       }
     }
   });
-  assert.deepEqual(assigned, { values: { therapistId: 303 }, options: { where: { id: 101 } } });
+  assert.deepEqual(assigned, { values: { therapistId: 303 }, options: { transaction } });
   assert.equal((await request('POST', '/api/matching/request', {
     role: 'user', body: { answers: { area: 'synthetic', style: 'synthetic', language: 'en' } },
   })).status, 200);
