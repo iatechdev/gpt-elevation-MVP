@@ -100,7 +100,7 @@ const { pathToFileURL } = require('node:url');
         await page.getByText(t.error, { exact: true }).waitFor(); assert.equal(await page.getByRole('alert').count(), 1);
         await axeCheck(page, `${lang}: error`);
         await page.getByRole('button', { name: t.retry, exact: true }).click(); await page.getByText(t.enter, { exact: false }).first().waitFor();
-        assert.equal(await page.getByText(t.error, { exact: true }).count(), 0); check(`${lang}: la primera lectura se pierde → aviso con «${t.retry}»; al reintentar aparecen los datos de la base`);
+        assert.equal(await page.getByText(t.error, { exact: true }).count(), 0); assert.equal(await page.evaluate(() => document.activeElement && document.activeElement.tagName), 'H1', 'tras Reintentar con éxito el foco queda en el título (no en body)'); check(`${lang}: la primera lectura se pierde → aviso con «${t.retry}»; al reintentar aparecen los datos de la base`);
         await context.close(); }
     }
     console.log(`ES-254 servidor real: ${checks.length} comprobaciones superadas. Express + ruta de progreso + PostgreSQL reales.`);

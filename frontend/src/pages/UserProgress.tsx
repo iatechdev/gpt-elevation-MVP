@@ -1,7 +1,7 @@
 // frontend/src/pages/UserProgress.tsx
 // HU-052 + HU-060 — User progress panel + therapist matching
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import './progressCopy.ts' // ES-254: catálogo de textos de esta pantalla (carga perezosa)
@@ -59,6 +59,9 @@ export function UserProgress() {
   const [loading,         setLoading]         = useState(true)
   const [failed,          setFailed]          = useState(false)
   const [attempt,         setAttempt]         = useState(0)
+  const titleRef = useRef<HTMLHeadingElement>(null); const retryRef = useRef<HTMLButtonElement>(null)
+  // Tras «Reintentar» la pantalla pasa por «Cargando…» y el botón desaparece: el foco se coloca después de renderizar (título si cargó; «Reintentar» si volvió a fallar), no en body.
+  useEffect(() => { if (attempt === 0 || loading) return; (failed ? retryRef.current : titleRef.current)?.focus() }, [attempt, loading, failed])
 
   // HU-060 — Matching
   const [showMatching,        setShowMatching]        = useState(false)
@@ -217,7 +220,7 @@ export function UserProgress() {
 
         {/* Title */}
         <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
+          <h1 ref={titleRef} tabIndex={-1} style={{ outline: 'none', fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
             {t('pr_title')}
           </h1>
           <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0.25rem 0 0' }}>
@@ -228,7 +231,7 @@ export function UserProgress() {
 
         {failed && <div role="alert" style={{ color: '#B91C1C', fontSize: '0.875rem', marginBottom: '1rem' }}>
           <p style={{ margin: '0 0 0.5rem' }}>{t('pr_error')}</p>
-          <button type="button" onClick={() => setAttempt(value => value + 1)} style={{ padding: '0.5rem 1rem', minHeight: 44, borderRadius: '0.65rem', border: '0.5px solid #E7E5E4', background: '#fff', color: '#1C1917', fontSize: '0.85rem', cursor: 'pointer' }}>{t('pr_retry')}</button>
+          <button type="button" ref={retryRef} onClick={() => setAttempt(value => value + 1)} style={{ padding: '0.5rem 1rem', minHeight: 44, borderRadius: '0.65rem', border: '0.5px solid #E7E5E4', background: '#fff', color: '#1C1917', fontSize: '0.85rem', cursor: 'pointer' }}>{t('pr_retry')}</button>
         </div>}
 
         {/* STATS CARDS */}
