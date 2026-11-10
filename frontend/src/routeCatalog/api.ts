@@ -4,8 +4,8 @@ export type Item = Data & { itemKey: string }
 export type Detail = Descriptor & { items: Record<Kind, Item[]>; missing: Record<string, string[]> }
 export type Published = { version: number; publishedAt: string; contexts: Data[]; sources: Data[]; roles: Data[]; offers: Data[]; resources: Data[] }
 export class CatalogError extends Error {
-  readonly status: number; readonly code: string; readonly missing: Record<string, string[]>; readonly draftId?: number
-  constructor(status: number, value: unknown) { super('Catalog request failed'); const body = object(value); this.status = status; this.code = string(body.code); this.missing = missing(body.missing); this.draftId = Number.isSafeInteger(body.draftId) ? Number(body.draftId) : undefined }
+  readonly status: number; readonly code: string; readonly missing: Record<string, string[]>; readonly draftId?: number; readonly current?: Data | null // ES-187: versión vigente del elemento en un 409 item_changed (null: ya no existe)
+  constructor(status: number, value: unknown) { super('Catalog request failed'); const body = object(value); this.status = status; this.code = string(body.code); this.missing = missing(body.missing); this.draftId = Number.isSafeInteger(body.draftId) ? Number(body.draftId) : undefined; this.current = body.current === null ? null : body.current !== undefined && typeof body.current === 'object' ? object(body.current) : undefined }
 }
 function missing(v: unknown): Record<string, string[]> { return Object.fromEntries(Object.entries(object(v)).map(([key, values]) => [key, array(values).filter((x): x is string => typeof x === 'string')])) }
 function descriptor(value: unknown): Descriptor {
@@ -57,7 +57,7 @@ export function catalogApi(base: string, token: string) {
     list: async () => { const data = object(await request(root)); if (!Array.isArray(data.catalogs)) throw new Error('Invalid catalog list'); return data.catalogs.map(descriptor) },
     get: async (id: number) => detail(await request(`${root}/${id}`)),
     create: async () => descriptor(await request(root, 'POST', {})),
-    save: async (id: number, kind: Kind, key: string, body: Data) => { if (!validKey(key)) throw new Error('Invalid key'); return object(await request(`${root}/${id}/${kind}/${encodeURIComponent(key)}`, 'PUT', body)) },
+    save: async (id: number, kind: Kind, key: string, body: Data, expectedUpdatedAt?: string) => { if (!validKey(key)) throw new Error('Invalid key'); return object(await request(`${root}/${id}/${kind}/${encodeURIComponent(key)}`, 'PUT', expectedUpdatedAt ? { ...body, expectedUpdatedAt } : body)) },
     remove: async (id: number, kind: Kind, key: string) => { const v = object(await request(`${root}/${id}/${kind}/${encodeURIComponent(key)}`, 'DELETE')); if (v.removed !== true) throw new Error('Invalid removal acknowledgment') },
     publish: async (id: number) => descriptor(await request(`${root}/${id}/publish`, 'POST', {})),
   }
