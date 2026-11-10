@@ -17,4 +17,9 @@ async function recordAdminAction({ actor, action, targetType = null, targetId = 
   }, { transaction });
 }
 
-module.exports = { recordAdminAction, ACTIONS };
+// Una acción NEGADA no cambia nada que revertir: se registra aparte y sin bloquear la respuesta (un fallo de auditoría aquí no convierte el 403 en 500).
+async function recordDenied(actor, action, targetType, targetId) {
+  try { await recordAdminAction({ actor, action, targetType, targetId, result: 'denied' }); } catch { console.error('No se pudo registrar la denegación en la auditoría.'); }
+}
+
+module.exports = { recordAdminAction, recordDenied, ACTIONS };
