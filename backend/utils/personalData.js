@@ -55,6 +55,9 @@ const CORE = [
   // ES-132: enlaces de recuperación de contraseña. Se exportan solo cuándo se pidieron, vencieron o se usaron; NUNCA `tokenHash` (es una credencial de un solo uso,
   // aunque esté hasheada). Se purgan con la cuenta: un enlace pendiente no debe sobrevivir al borrado.
   ['passwordResets', 'PasswordReset', 'UserId', ['id', 'expiresAt', 'usedAt', 'createdAt']],
+  // ES-276: el «Persona n» que un profesional asignó a esta persona (TherapistPersonOrdinal.personId). Se exporta id, número y fecha, NUNCA `therapistId`;
+  // se purga con la persona. El contador monótono (TherapistOrdinalCounters, por profesional, sin personId) NO se toca: el número no se reutiliza.
+  ['therapistOrdinals', 'TherapistPersonOrdinal', 'personId', ['id', 'ordinal', 'createdAt']],
   // ES-192: la invitación con la que la persona creó su cuenta (acceptedUserId). Se exporta solo cuándo se pidió, venció o se usó y con qué rol; NUNCA
   // `tokenHash` (credencial de un solo uso) ni el correo de otra persona (`invitedBy` es quien invitó). Se purga con la cuenta. Las invitaciones sin
   // aceptar no son de nadie y se limpian solas (30 días tras vencer).
