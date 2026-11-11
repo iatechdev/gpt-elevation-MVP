@@ -55,6 +55,7 @@ test('ES-178 PostgreSQL + HTTP: notas de seguimiento con control de edición con
   const api = express(); api.use(express.json());
   api.use('/api/consents', verificarToken, require('../../routes/consents'));
   api.use('/api/therapist', verificarTerapeuta, require('../../routes/therapistRoutes'));
+  api.use('/api/sessions', verificarToken, require('../../routes/sessions')); // ES-178 F2: agendar
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   db = new Client({ connectionString: urlFor(dbName), ssl: false }); await db.connect();
@@ -148,5 +149,31 @@ test('ES-178 PostgreSQL + HTTP: notas de seguimiento con control de edición con
   await t.test('XSS: el texto con marcado se guarda y se devuelve como texto (la pantalla lo escapa)', async () => {
     const xss = await create(tA, p1, '<script>alert(1)</script><img src=x onerror=alert(2)>');
     assert.equal(xss.status, 201); assert.equal(xss.body.note.content, '<script>alert(1)</script><img src=x onerror=alert(2)>');
+  });
+
+  // ES-178 F2: los 400 de agendar traen `code` y `field` (la pantalla marca el campo); el texto de siempre se conserva.
+  await t.test('agendar: errores por campo con code/field; choque 409; sin vínculo o sin autorización 403; creada 201', async () => {
+    const soon = (min) => new Date(Date.now() + min * 60000).toISOString();
+    const post = (who, body) => http(who, 'POST', '/api/sessions/therapist', body);
+    assert.equal((await http(p1, 'PUT', '/api/consents/therapist_sharing', { status: 'granted' })).status, 200);
+    const past = await post(tA, { patientId: p1.id, scheduledAt: soon(-60), duration: 50 });
+    assert.deepEqual([past.status, past.body.code, past.body.field], [400, 'scheduled_in_past', 'scheduledAt']);
+    assert.match(past.body.error, /future/, 'el texto de siempre se conserva');
+    for (const duration of [5, 500]) {
+      const bad = await post(tA, { patientId: p1.id, scheduledAt: soon(600), duration });
+      assert.deepEqual([bad.status, bad.body.code, bad.body.field], [400, 'duration_invalid', 'duration'], String(duration));
+    }
+    const noDate = await post(tA, { patientId: p1.id, scheduledAt: 'no-es-fecha', duration: 50 });
+    assert.deepEqual([noDate.status, noDate.body.code, noDate.body.field], [400, 'invalid_input', 'scheduledAt']);
+    const noPerson = await post(tA, { patientId: 'abc', scheduledAt: soon(600), duration: 50 });
+    assert.deepEqual([noPerson.status, noPerson.body.code, noPerson.body.field], [400, 'invalid_input', 'patientId']);
+    assert.doesNotMatch(JSON.stringify(noDate.body), /no-es-fecha/, 'no repite lo recibido');
+    const ok = await post(tA, { patientId: p1.id, scheduledAt: soon(1000), duration: 50 });
+    assert.equal(ok.status, 201, JSON.stringify(ok.body));
+    const clash = await post(tA, { patientId: p1.id, scheduledAt: soon(1010), duration: 50 });
+    assert.deepEqual([clash.status, clash.body.code], [409, 'session_conflict']);
+    assert.equal((await post(tB, { patientId: p1.id, scheduledAt: soon(2000), duration: 50 })).status, 403, 'otro profesional: sin vínculo');
+    assert.equal((await post(tA, { patientId: p2.id, scheduledAt: soon(2000), duration: 50 })).status, 403, 'sin autorización de compartir');
+    assert.equal((await post(p1, { patientId: p1.id, scheduledAt: soon(2000), duration: 50 })).status, 403, 'una persona no agenda');
   });
 });

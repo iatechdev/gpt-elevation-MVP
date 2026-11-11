@@ -14,8 +14,11 @@ const textArray = value => Array.isArray(value) && value.every(text);
 
 function validateBody(schema) {
   return (req, res, next) => {
-    if (!object(req.body) || !Object.entries(schema).every(([key, check]) => check(req.body[key]))) {
-      return res.status(400).json({ error: 'Datos de entrada inválidos. / Invalid input data.' });
+    if (!object(req.body)) return res.status(400).json({ code: 'invalid_input', error: 'Datos de entrada inválidos. / Invalid input data.' });
+    const failed = Object.entries(schema).find(([key, check]) => !check(req.body[key]));
+    if (failed) {
+      // ES-178: `code` y `field` permiten a la pantalla marcar el campo; el mensaje de siempre se conserva y nunca se repite lo recibido.
+      return res.status(400).json({ code: 'invalid_input', field: failed[0], error: 'Datos de entrada inválidos. / Invalid input data.' });
     }
     next();
   };

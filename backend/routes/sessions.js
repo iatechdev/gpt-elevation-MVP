@@ -41,17 +41,17 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     }
     const { patientId, scheduledAt, duration } = req.body;
     if (!patientId || !scheduledAt) {
-      return res.status(400).json({ error: 'patientId and scheduledAt are required.' });
+      return res.status(400).json({ code: 'required', field: !patientId ? 'patientId' : 'scheduledAt', error: 'patientId and scheduledAt are required.' });
     }
     if (!isRouteId(String(patientId))) {
       return res.status(403).json({ error: 'This patient is not assigned to you.' }); // mismo mensaje que un paciente ajeno: no revela nada
     }
     if (new Date(scheduledAt) <= new Date()) {
-      return res.status(400).json({ error: 'scheduledAt must be in the future.' });
+      return res.status(400).json({ code: 'scheduled_in_past', field: 'scheduledAt', error: 'scheduledAt must be in the future.' });
     }
     const dur = parseDuration(duration);
     if (!Number.isInteger(dur) || dur < 15 || dur > 120) {
-      return res.status(400).json({ error: 'duration must be between 15 and 120 minutes.' });
+      return res.status(400).json({ code: 'duration_invalid', field: 'duration', error: 'duration must be between 15 and 120 minutes.' });
     }
     const patient = await User.findOne({
       where: { id: patientId, therapistId: req.user.id, role: 'user' },

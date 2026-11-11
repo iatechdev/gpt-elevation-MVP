@@ -44,3 +44,14 @@ test('ES-178: bloques sin emojis ni estrellas, la edición manda la versión de 
   const keys = [...(notes + history).matchAll(/t\('((?:fu_|panel_)[a-z_]+)'/g)].map(m => m[1]).concat(['fu_type_session_note', 'fu_type_observation', 'fu_type_goal', 'fu_up', 'fu_down', 'fu_same'])
   for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
 })
+
+test('ES-178 F2: resumen con IA y agendar — códigos del servidor, sin «y n notas», sin reenvío a ciegas y textos en ES y EN', () => {
+  const ai = read('../src/pages/therapist/AiSummaryBlock.tsx'), sch = read('../src/pages/therapist/ScheduleSession.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.doesNotMatch(ai + sch, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|[★☆]/u)
+  for (const code of ['ai_budget_exhausted', 'ai_budget_not_configured']) assert.match(ai, new RegExp(code))
+  assert.match(ai, /retry: false/); assert.doesNotMatch(copy, /y \{n\} notas|and \{n\} notes/)
+  for (const code of ['scheduled_in_past', 'duration_invalid', 'session_conflict', 'invalid_input']) assert.match(sch, new RegExp(code))
+  assert.match(sch, /status=scheduled/); assert.match(sch, /showModal\(\)/); assert.match(sch, /DURATIONS = \[30, 45, 50, 60, 90\]/)
+  const keys = [...(ai + sch).matchAll(/t\('((?:fu_)[a-z_]+)'/g)].map(m => m[1]).concat(['fu_sch_required', 'fu_sch_past', 'fu_sch_duration', 'fu_sch_conflict', 'fu_sch_noaccess', 'fu_sch_error', 'fu_sch_unsure', 'fu_ai_budget', 'fu_ai_budget_nodate'])
+  for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
+})
