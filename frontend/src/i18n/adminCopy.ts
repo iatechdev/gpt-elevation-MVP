@@ -307,6 +307,10 @@ export const adminEnglish: Record<string, string> = {
   'No hay emparejamientos pendientes.': 'There are no pending matches.',
   'Ninguna cuenta coincide con los filtros.': 'No account matches the filters.',
   'Todavía no hay cuentas.': 'There are no accounts yet.',
+  // ES-186 parte D (/admin/users)
+  'Eliminación solicitada. La cuenta ya no puede entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición.': 'Deletion requested. The account can no longer sign in. Data is erased in the maintenance process, except what must be kept under the retention policy, which is being defined.',
+  'Se desactivará la cuenta y la persona no podrá entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición.': 'The account will be deactivated and the person will not be able to sign in. Data is erased in the maintenance process, except what must be kept under the retention policy, which is being defined.',
+  'La eliminación de esta cuenta ya fue solicitada. No se puede gestionar mientras tanto. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición.': 'Deletion of this account has already been requested. It cannot be managed in the meantime. Data is erased in the maintenance process, except what must be kept under the retention policy, which is being defined.',
 }
 export function adminText(value: string, lang: 'es' | 'en'): string {
   if (lang === 'es') return value

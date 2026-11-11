@@ -81,7 +81,7 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
       <div aria-live="polite">{msg && <div role={msg.kind === 'error' ? 'alert' : 'status'} style={notice(msg.kind)}>{tr(msg.text)}</div>}</div>
 
       {locked ? (
-        <p style={{ fontSize: '0.875rem', color: colors.textMuted }}>{tr('La eliminación de esta cuenta ya fue solicitada. No se puede gestionar mientras tanto; sus datos se borran en el proceso de mantenimiento.')}</p>
+        <p style={{ fontSize: '0.875rem', color: colors.textMuted }}>{tr(MSG.deletionLocked)}</p>
       ) : mode === 'deactivate' ? (
         <div style={section}>
           <p style={{ fontSize: '0.875rem', color: colors.text }}>{tr('No podrá entrar; sus datos se conservan.')}</p>
@@ -93,7 +93,7 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
       ) : mode === 'delete' ? (
         <div style={section}>
           <p style={{ fontSize: '0.875rem', color: colors.text, lineHeight: 1.5 }}>
-            {requestsDeletion ? tr('Se desactivará la cuenta y la persona no podrá entrar. El borrado de sus datos se completa en el proceso de mantenimiento.') : tr('Esta acción no se puede deshacer.')}
+            {requestsDeletion ? tr(MSG.deleteDialog) : tr('Esta acción no se puede deshacer.')}
           </p>
           <label style={label} htmlFor="au-delete-name">{tr('Escribe el nombre exacto:')} <strong>{person.name}</strong></label>
           <input id="au-delete-name" style={field} autoFocus value={deleteInput} onChange={(e) => { setDeleteInput(e.target.value); setMsg(null) }} autoComplete="off" />

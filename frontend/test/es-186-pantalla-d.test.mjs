@@ -82,6 +82,19 @@ test('eliminar (parte C): 202 solicitud (y repetida), 200 eliminada, 409 has_dep
   assert.equal(logic.deleteResult(0, null).message, 'Error de conexión.')
 })
 
+test('eliminar: ningún texto promete que el borrado se completa sin más ni da plazo; todos mencionan la política de retención en definición (ES y EN)', () => {
+  for (const key of ['deletionRequested', 'deleteDialog', 'deletionLocked']) {
+    const es = logic.MSG[key]; const en = adminText(es, 'en')
+    assert.match(es, /salvo los que deban conservarse según la política de retención, que está en definición\./, key)
+    assert.match(en, /except what must be kept under the retention policy, which is being defined\./, key + ' (EN)')
+    for (const text of [es, en]) assert.doesNotMatch(text, /\b\d+\s*(días|dias|horas|semanas|days|hours|weeks)\b|inmediat|se completa en el proceso/i, key)
+  }
+  for (const name of ['es-186-delete-requested.json', 'es-186-delete-repeated.json']) {
+    const message = fixture(name).body.message
+    assert.match(message, /política de retención.*retention policy/s, name)
+  }
+})
+
 test('enlace de restablecimiento: se decide por el code del servidor (superadmin_only / superadmin_target), no por su texto', () => {
   const ok = fixture('es-186-reset-link.json'); assert.equal(logic.resetLinkResult(ok.status, ok.body).ok, true)
   const target = fixture('es-186-reset-link-superadmin-403.json')
