@@ -103,7 +103,10 @@ test('ES-23: accepted deletion is atomic, blocks sessions, new login and sharing
   assert.equal(state.tables.DeletionRequest.length, 1);
   assert.equal((await request('PUT', '/api/admin/usuarios/101/unlock', admin)).status, 409);
   assert.equal((await request('PUT', '/api/admin/usuarios/101', { ...admin, body: { active: true } })).status, 409);
-  assert.equal((await request('DELETE', '/api/admin/usuarios/101', admin)).status, 409);
+  // ES-186 C: «Eliminar» de administración sobre una persona con eliminación ya solicitada es IDEMPOTENTE (202 repeated), no crea otra solicitud ni borra la fila.
+  const again = await request('DELETE', '/api/admin/usuarios/101', admin);
+  assert.deepEqual([again.status, again.body.code, again.body.repeated], [202, 'deletion_requested', true]);
+  assert.equal(state.tables.DeletionRequest.length, 1);
   const account = state.tables.User.find(u => u.id === 101);
   account.active = true; // Even an out-of-band reactivation does not lift the tombstone.
   account.password = await bcrypt.hash('synthetic-password', 4);

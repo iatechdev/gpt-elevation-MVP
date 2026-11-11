@@ -112,8 +112,10 @@ const receipt = row => ({
   deadlinesVerified: false,
 });
 
-async function requestDeletion(userId) {
-  return inTransaction(async transaction => {
+async function requestDeletion(userId, { transaction: outer } = {}) {
+  // ES-186 C: con `transaction` ajena, la solicitud y quien la audita comparten la misma transacción (la confirma quien llama).
+  const run = outer ? (fn) => fn(outer) : inTransaction;
+  return run(async transaction => {
     // Same lock order as export and purge. Serializes repeated requests per owner.
     const user = await User.findByPk(userId, { transaction, lock: Transaction.LOCK.UPDATE });
     const existing = await DeletionRequest.findOne({ where: { UserId: userId }, transaction });
