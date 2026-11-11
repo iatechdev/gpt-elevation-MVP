@@ -9,6 +9,7 @@
 // verificarToken aplicado en server.js
 
 const express = require('express');
+const { isBoundedDay } = require('../utils/safeDate'); // E229-1
 const router = express.Router();
 const { sequelize } = require('../database');
 const DiaryEntry = require('../DiaryEntry');
@@ -23,7 +24,7 @@ const MAX_LIMIT = 100;
 const validContent = (value) => nonempty(value) && value.length <= MAX_CONTENT;
 // Fecha de calendario real (AAAA-MM-DD), no posterior a mañana (margen de zona horaria).
 const validDate = (value) => {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  if (!isBoundedDay(value)) return false; // E229-1: año 1900–2999 (PostgreSQL no guarda el año 0) y día real
   const parsed = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return false;
   return parsed.getTime() <= Date.now() + 36 * 3600 * 1000;
