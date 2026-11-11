@@ -72,7 +72,8 @@ const database = {
   connectDB: async () => {},
   sequelize: { sync: async () => {}, transaction: async () => transaction, getDialect: () => 'mock' },
 };
-const storage = { uploadFile: unexpected, getSignedUrl: unexpected };
+// ES-268: el TTL efectivo es el REAL de utils/storage (sin efectos al cargarlo); subir y firmar siguen siendo dobles que fallan si nadie los reemplaza.
+const storage = { uploadFile: unexpected, getSignedUrl: unexpected, signedUrlTtlSeconds: require("../utils/storage").signedUrlTtlSeconds };
 const anthropic = { messages: { create: unexpected } };
 const promptVault = {
   PromptVault: {}, getActivePrompt: unexpected,
