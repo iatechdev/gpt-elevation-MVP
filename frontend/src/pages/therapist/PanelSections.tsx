@@ -9,7 +9,7 @@ import type { SectionState } from './useSection'
 
 type T = (key: string, params?: Record<string, string | number>) => string
 
-export interface UpcomingSession { id: number; patientId: number; scheduledAt: string; duration: number; status: string; patientName: string }
+export interface UpcomingSession { id: number; patientId: number; scheduledAt: string; duration: number; status: string; patientName: string | null; patientOrdinal?: number | null; phase?: 'upcoming' | 'due' | 'in_progress' }
 export interface AlertsData {
   inactivePatients: { userId: number; name: string; daysSinceLastSession: number | null }[]
   notableProgress: { userId: number; name: string; improved: true }[]
@@ -80,11 +80,13 @@ export function UpcomingBlock({ state, t, locale }: { state: SectionState<Upcomi
       {sessions.length === 0 ? <p style={mutedStyle}>{t('panel_no_upcoming')}</p> : (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           {sessions.map(session => {
-            const isNow = sessionIsNow(session.scheduledAt, session.duration)
+            const isNow = session.phase === 'in_progress' || sessionIsNow(session.scheduledAt, session.duration)
+            // ES-241: quien no autorizó compartir llega sin nombre y con un ordinal estable: se muestra «Persona n» (como en la lista de personas).
+            const who = personLabel({ name: session.patientName, ordinal: session.patientOrdinal ?? 0 }, t('therapist_person'))
             return (
               <li key={session.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', padding: '0.75rem 1rem', background: isNow ? '#EAF0E6' : '#F5F3EF', borderRadius: '0.65rem', border: isNow ? '1px solid #A8B5A2' : '1px solid transparent' }}>
                 <div>
-                  <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.9rem', overflowWrap: 'anywhere' }}>{session.patientName}</div>
+                  <div style={{ fontWeight: 500, color: '#1C1917', fontSize: '0.9rem', overflowWrap: 'anywhere' }}>{who}</div>
                   <div style={{ fontSize: '0.78rem', color: '#57534E', marginTop: '0.15rem' }}>
                     {when(session.scheduledAt)} · {session.duration} min
                     {isNow && <strong style={{ marginLeft: '0.5rem', fontSize: '0.72rem', color: '#2F4A29' }}>{t('panel_now')}</strong>}
@@ -92,7 +94,7 @@ export function UpcomingBlock({ state, t, locale }: { state: SectionState<Upcomi
                 </div>
                 <button type="button" style={isNow ? primaryBtn : ghostBtn} onClick={() => navigate(`/therapist/session/${session.id}`)}>
                   {isNow ? t('panel_start') : t('panel_open')}
-                  <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}> · {session.patientName}</span>
+                  <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}> · {who}</span>
                 </button>
               </li>
             )
