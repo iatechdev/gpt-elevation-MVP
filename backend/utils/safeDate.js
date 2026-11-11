@@ -17,4 +17,16 @@ function parseBoundedDate(value) {
   return Number.isFinite(ms) && ms >= MIN_MS && ms <= MAX_MS ? new Date(ms) : null;
 }
 
-module.exports = { parseBoundedDate, MIN_MS, MAX_MS };
+// E229-1 · Día de calendario AAAA-MM-DD que la columna DATEONLY de la base puede guardar: el día existe y el año está entre 1900 y 2999. «0000-01-01» pasaba el regex y
+// Date.parse, pero PostgreSQL no tiene año 0 y terminaba en un 500. -> true | false.
+function isBoundedDay(value) {
+  if (typeof value !== 'string') return false;
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!iso) return false;
+  const [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
+  if (y < 1900 || y > 2999 || m < 1 || m > 12) return false;
+  const probe = new Date(Date.UTC(y, m - 1, d));
+  return probe.getUTCMonth() === m - 1 && probe.getUTCDate() === d;
+}
+
+module.exports = { parseBoundedDate, isBoundedDay, MIN_MS, MAX_MS };

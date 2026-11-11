@@ -59,6 +59,8 @@ test('ES-262 PostgreSQL + HTTP: entradas hostiles de fecha (E227-1) responden 40
   api.use('/api/admin/usuarios', verificarAdmin, require('../../routes/adminUsers'));
   api.use('/api/admin/invitations', verificarAdmin, require('../../routes/invitations').adminRouter);
   api.use('/api/superadmin/audit', verificarSuperAdmin, require('../../routes/adminAudit'));
+  api.use('/api/diary', verificarToken, require('../../routes/diary'));
+  api.use('/api/admin/contact-entries', verificarAdmin, require('../../routes/contactEntries').adminRouter);
   api.use('/api/sessions', verificarToken, require('../../routes/sessions'));
   api.use('/api/therapist', verificarTerapeuta, require('../../routes/therapistRoutes'));
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
@@ -149,6 +151,39 @@ test('ES-262 PostgreSQL + HTTP: entradas hostiles de fecha (E227-1) responden 40
       const out = await http(therapist, 'PUT', `/api/therapist/notas/${noteId}`, { sessionDate });
       assert.equal(out.status, 400, `edición ${JSON.stringify(sessionDate).slice(0, 40)} → ${out.status}`);
     }
+  });
+
+  // E229-1: días de calendario (DATEONLY) con año 0 u otros fuera de rango: la base no tiene año 0 y daba 500.
+  const BAD_DAYS = ['0000-01-01', '0000-02-29', '0000-12-31', '0001-01-01', '1899-12-31', '3000-01-01', '9999-12-31', '2026-02-30', '2026-13-01', '2026-00-10', '2026-1-1', '', ' 2026-01-01', '2026-01-01T00:00:00Z', '+002026-01-01'];
+
+  await t.test('E229-1: POST y PUT /api/diary con una fecha de calendario fuera de rango o inexistente responden 400, nunca 500, y no guardan nada', async () => {
+    const entries = async () => (await q('SELECT count(*)::int n FROM "DiaryEntries"'))[0].n;
+    const before = await entries();
+    for (const date of BAD_DAYS) {
+      const out = await http(person, 'POST', '/api/diary', { date, content: 'Entrada sintética' });
+      assert.equal(out.status, 400, `POST ${JSON.stringify(date)} → ${out.status} ${JSON.stringify(out.body).slice(0, 80)}`);
+    }
+    assert.equal(await entries(), before, 'ninguna entrada creada');
+    const created = await http(person, 'POST', '/api/diary', { date: '2026-11-01', content: 'Entrada sintética' });
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    const id = created.body.entry?.id ?? created.body.id;
+    for (const date of BAD_DAYS) {
+      const out = await http(person, 'PUT', `/api/diary/${id}`, { date });
+      assert.equal(out.status, 400, `PUT ${JSON.stringify(date)} → ${out.status}`);
+    }
+    assert.equal((await q('SELECT to_char("entryDate", $2) d FROM "DiaryEntries" WHERE id=$1', [id, 'YYYY-MM-DD']))[0].d, '2026-11-01', 'la fecha no cambió');
+    assert.equal((await http(person, 'POST', '/api/diary', { date: '1900-01-01', content: 'Límite inferior' })).status, 201, '1900-01-01 sigue siendo válida');
+  });
+
+  await t.test('E229-1 (mismo patrón): verifiedAt de los datos de contacto con año 0 u otro día inválido responde 400, nunca 500', async () => {
+    const root = await mkUser('superadmin');
+    const body = (verifiedAt) => ({ name: 'Línea sintética', contact: '123456', country: 'CO', source: 'Fuente sintética', verifiedBy: 'QA', verifiedAt });
+    for (const verifiedAt of BAD_DAYS.filter((v) => v !== '')) {
+      const out = await http(root, 'POST', '/api/admin/contact-entries', body(verifiedAt));
+      assert.equal(out.status, 400, `${JSON.stringify(verifiedAt)} → ${out.status} ${JSON.stringify(out.body).slice(0, 80)}`);
+    }
+    assert.equal((await q('SELECT count(*)::int n FROM "ContactEntries"'))[0].n, 0);
+    assert.equal((await http(root, 'POST', '/api/admin/contact-entries', body('2026-11-01'))).status, 201);
   });
 
   await t.test('rango exacto: 1900-01-01 y 2999-12-31 son los límites; la validación no depende de la zona horaria ni de espacios', async () => {
