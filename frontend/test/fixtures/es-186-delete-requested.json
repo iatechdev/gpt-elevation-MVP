@@ -1,0 +1,8 @@
+{
+  "status": 202,
+  "body": {
+    "code": "deletion_requested",
+    "repeated": false,
+    "message": "Eliminación solicitada. La cuenta ya no puede entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. / Deletion requested. The account can no longer sign in. Data is erased in the maintenance process, except what must be kept under the retention policy, which is being defined."
+  }
+}
