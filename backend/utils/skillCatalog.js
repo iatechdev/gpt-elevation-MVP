@@ -19,7 +19,8 @@ const TYPES = ['transversal', 'domain'];
 const LEVELS = ['1', '2', '3', '4'];
 const LANGS = ['es', 'en'];
 // ES-116: los cinco territorios laborales del mapa (ids estables; los nombres viven en el frontend, ES/EN).
-const TERRITORIES = ['dir', 'con', 'com', 'ing', 'inn'];
+// E217-1: salen de shared/skill-territories.json (utils/skillTerritories.js), no de una lista fija: añadir un territorio no toca código.
+const { territoryIds } = require('./skillTerritories');
 
 class SkillError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -49,7 +50,8 @@ function normalizeDefinition(body) {
   const out = {};
   if (body.territories !== undefined) {
     const t = body.territories;
-    if (!Array.isArray(t) || t.length > TERRITORIES.length || t.some((id) => typeof id !== 'string' || !TERRITORIES.includes(id)) || new Set(t).size !== t.length) {
+    const known = territoryIds();
+    if (!Array.isArray(t) || t.length > known.length || t.some((id) => typeof id !== 'string' || !known.includes(id)) || new Set(t).size !== t.length) {
       throw invalid('Territorios inválidos: usa ids conocidos, sin repetir.', 'Invalid territories: use known ids, without repeats.');
     }
     out.territories = [...t];
@@ -232,4 +234,4 @@ async function getPublished(transaction) {
   return { version: catalog.version, skills: new Map(defs.map((d) => [d.skillKey, { skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], rubricHash: rubricHash(d) }])) };
 }
 
-module.exports = { TERRITORIES, RESERVED_KEYS, isValidKey, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };
+module.exports = { get TERRITORIES() { return territoryIds(); }, RESERVED_KEYS, isValidKey, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };

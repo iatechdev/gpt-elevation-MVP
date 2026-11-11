@@ -34,6 +34,8 @@ const handle = (fn) => async (req, res) => {
 
 const idOf = (req) => (/^[0-9]{1,9}$/.test(req.params.id) ? Number(req.params.id) : 0);
 
+// E217-1: territorios vigentes (id + estado) para la pantalla de administración; salen de los datos, no del código.
+router.get('/territories', handle(async (req, res) => { res.json({ territories: require('../utils/skillTerritories').territories() }); }));
 router.get('/', handle(async (req, res) => { res.json(await catalog.list()); }));
 router.post('/', handle(async (req, res) => { res.status(201).json(await catalog.createDraft()); }));
 router.get('/:id', handle(async (req, res) => { res.json(await catalog.get(idOf(req))); }));

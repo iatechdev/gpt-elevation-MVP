@@ -6,6 +6,9 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
 const { Sequelize } = require('sequelize');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 test('ES-188 PostgreSQL: publicar sin una habilidad en uso y edición concurrente por habilidad', { timeout: 90000 }, async (t) => {
   const source = process.env.ES188_TEST_DATABASE_URL;
@@ -133,5 +136,57 @@ test('ES-188 PostgreSQL: publicar sin una habilidad en uso y edición concurrent
     const row = await Definition.findOne({ where: { catalogId: draft.id, skillKey: 'meta_x' } });
     assert.equal(row.rubric.updatedAt, undefined); assert.equal(row.labels.updatedAt, undefined);
     assert.equal((await call('PUT', `/${draft.id}/skills/new`, def('reservada'))).status, 400, 'clave reservada');
+  });
+  // QA 217: la prueba tenía que detectar quitar el bloqueo de la fila del catálogo. Sin él, las transacciones apenas se solapan en una prueba rápida; aquí la ventana de carrera
+  // se AMPLÍA (cada lectura de la habilidad espera 40 ms dentro de la transacción), así que sin el bloqueo las 12 pasan la comparación con la misma versión y las 12 guardan.
+  await t.test('H2 con ventana de carrera ampliada: 12 guardados con la misma versión siguen siendo 1×200 + 11×409 (falla si se quita el bloqueo de la fila)', async () => {
+    const draft = (await Catalog.findOne({ where: { status: 'draft' } })).id;
+    const created = await call('PUT', `/${draft}/skills/carrera_ancha`, def('carrera_ancha'));
+    assert.equal(created.status, 200);
+    const original = Definition.findOne;
+    Definition.findOne = async function slowFindOne(...args) { const row = await original.apply(this, args); await new Promise((resolve) => setTimeout(resolve, 40)); return row; };
+    try {
+      for (let round = 0; round < 2; round += 1) {
+        const current = (await call('GET', `/${draft}`)).body.skills.find((x) => x.skillKey === 'carrera_ancha');
+        const results = await Promise.all(Array.from({ length: 12 }, (_, n) => call('PUT', `/${draft}/skills/carrera_ancha`, { ...def(`ancha ${round}-${n}`), expectedUpdatedAt: current.updatedAt })));
+        assert.deepEqual(results.map((r) => r.status).sort(), [200, ...Array(11).fill(409)], `ronda ${round}: ` + JSON.stringify(results.map((r) => [r.status, r.body && r.body.code])));
+        const row = await original.call(Definition, { where: { catalogId: draft, skillKey: 'carrera_ancha' } });
+        assert.equal(row.labels.es, results.find((r) => r.status === 200).body.labels.es, 'el contenido final es el del único ganador');
+      }
+    } finally {
+      Definition.findOne = original;
+    }
+  });
+
+  // E217-1: los territorios salen de DATOS (shared/skill-territories.json), no de una lista fija: un territorio nuevo entra sin tocar código.
+  await t.test('E217-1: añadir territorios en el archivo de datos los hace válidos sin cambiar código; los desconocidos y el exceso siguen rechazados; archivo roto = nada pasa', async () => {
+    const draft = (await call('POST', '')).body.id ?? (await Catalog.findOne({ where: { status: 'draft' } })).id;
+    const base = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', '..', 'shared', 'skill-territories.json'), 'utf8'));
+    const file = path.join(os.tmpdir(), `es188-territories-${randomBytes(6).toString('hex')}.json`);
+    t.after(() => { delete process.env.SKILL_TERRITORIES_FILE; fs.rmSync(file, { force: true }); });
+    try {
+      assert.deepEqual(catalog.TERRITORIES, ['dir', 'con', 'com', 'ing', 'inn'], 'hoy son los cinco definidos');
+      assert.equal((await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['dir', 'nuevo_a'] })).status, 400, 'nuevo_a todavía no existe en los datos');
+      const eight = { territories: [...base.territories, { id: 'nuevo_a', status: 'in_definition' }, { id: 'nuevo_b', status: 'in_definition' }, { id: 'nuevo_c', status: 'in_definition' }] };
+      fs.writeFileSync(file, JSON.stringify(eight)); process.env.SKILL_TERRITORIES_FILE = file;
+      assert.equal(catalog.TERRITORIES.length, 8);
+      const ok = await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['dir', 'nuevo_a', 'nuevo_c'] });
+      assert.equal(ok.status, 200, JSON.stringify(ok.body)); assert.deepEqual(ok.body.territories, ['dir', 'nuevo_a', 'nuevo_c']);
+      const listed = await call('GET', '/territories');
+      assert.equal(listed.status, 200); assert.equal(listed.body.territories.length, 8);
+      assert.deepEqual(listed.body.territories.filter((x) => x.status === 'in_definition').map((x) => x.id), ['nuevo_a', 'nuevo_b', 'nuevo_c'], 'los tres nuevos salen «en definición»');
+      assert.equal((await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['nuevo_d'] })).status, 400, 'un id que no está en los datos se rechaza');
+      assert.equal((await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['dir', 'dir'] })).status, 400, 'repetidos');
+      // archivo ilegible o inválido: falla cerrado (ningún territorio pasa), nunca se cae a una lista fija en silencio
+      fs.writeFileSync(file, '{ no es json'); process.env.SKILL_TERRITORIES_FILE = file;
+      fs.utimesSync(file, new Date(), new Date(Date.now() + 5000));
+      const broken = await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['dir'] });
+      assert.notEqual(broken.status, 200, 'con el archivo roto no se aceptan territorios');
+      fs.writeFileSync(file, JSON.stringify({ territories: [{ id: 'dir', status: 'raro' }] })); fs.utimesSync(file, new Date(), new Date(Date.now() + 10000));
+      assert.notEqual((await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['dir'] })).status, 200, 'estado inválido en los datos');
+    } finally {
+      delete process.env.SKILL_TERRITORIES_FILE;
+    }
+    assert.equal((await call('PUT', `/${draft}/skills/con_nuevo`, { ...def('con_nuevo'), territories: ['nuevo_a'] })).status, 400, 'sin el archivo de prueba vuelve a regir el real');
   });
 });
