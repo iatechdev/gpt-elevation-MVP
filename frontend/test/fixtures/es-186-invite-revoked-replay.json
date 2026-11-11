@@ -1,0 +1,15 @@
+{
+  "status": 200,
+  "body": {
+    "id": 6,
+    "email": "fixture-es186b_test_d913d7df4da434f0@example.test",
+    "role": "user",
+    "invitedBy": 1,
+    "expiresAt": "2026-11-14T06:32:24.688Z",
+    "usedAt": "2026-11-11T06:32:24.742Z",
+    "createdAt": "2026-11-11T06:32:24.697Z",
+    "status": "revoked",
+    "emailSent": null,
+    "replayed": true
+  }
+}

@@ -221,7 +221,7 @@ router.delete('/:id', async (req, res) => {
       await revokeUserSessions(usuario.id); // ES-18
       return res.status(202).json({
         code: 'deletion_requested', repeated: Boolean(receipt.repeated),
-        message: 'Eliminación solicitada: la persona ya no puede entrar. El borrado de sus datos se completa en el proceso de mantenimiento. / Deletion requested: the person can no longer sign in. Their data is erased in the maintenance process.',
+        message: 'Eliminación solicitada. La cuenta ya no puede entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. / Deletion requested. The account can no longer sign in. Data is erased in the maintenance process, except what must be kept under the retention policy, which is being defined.',
       });
     }
 
