@@ -286,14 +286,15 @@ test('ES-88 PostgreSQL: revocación, borrado con worker activo y exportación de
   });
 
   await t.test('registro cerrado: toda tabla con UserId está en el registro de exportación y borrado (ES-23) o en la lista de excepciones revisadas', async () => {
-    const tables = (await q(`SELECT table_name FROM information_schema.columns WHERE table_schema='public' AND column_name IN ('UserId','userId') GROUP BY 1 ORDER BY 1`)).map((r) => r.table_name);
+    const tables = (await q(`SELECT table_name FROM information_schema.columns WHERE table_schema='public' AND column_name IN ('UserId','userId','personId','patientId') GROUP BY 1 ORDER BY 1`)).map((r) => r.table_name);
     const registered = new Set(CORE.map(([, name]) => require('../../' + name).getTableName()));
     // Fuera del registro por decisión revisada: ledger de borrado y exportación y sesiones (se tratan aparte), y los datos clínicos/de terapeutas,
     // que bloquean la exportación y la purga mediante requiresReview (ES-23) hasta que Mauricio defina su retención.
+    // ES-276: el guardián ahora también mira personId y patientId (antes solo UserId/userId). TherapySessions (patientId) es clínico y bloquea por requiresReview igual que ClinicalNotes.
     // ES-95: ProfessionalApplications son solicitudes PÚBLICAS de profesionales (no datos de una cuenta de la plataforma): su userId es opcional
     // (ON DELETE SET NULL) y su retención la regula scripts/purgeProfessionalApplications.js. Decisión a confirmar por Mauricio si se quiere exportar
     // o borrar también esas solicitudes con la cuenta.
-    const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'ClinicalNotes', 'MatchingRequests', 'TherapistProfiles', 'ProfessionalApplications']);
+    const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'ClinicalNotes', 'MatchingRequests', 'TherapistProfiles', 'ProfessionalApplications', 'TherapySessions']);
     const missing = tables.filter((n) => !registered.has(n) && !exceptions.has(n));
     assert.ok(registered.has('AiJobs') && registered.has('SkillCandidates'), 'los dos modelos nuevos están registrados');
     const order = CORE.map(([, name]) => name);
