@@ -81,8 +81,9 @@ const { pathToFileURL } = require('node:url');
     const axeSource = process.env.AXE_PATH ? fs.readFileSync(process.env.AXE_PATH, 'utf8') : '';
     const axe = async (page, label) => { if (!axeSource) return; await page.addScriptTag({ content: axeSource }); const v = await page.evaluate(() => axe.run(document, { runOnly: ['wcag2a', 'wcag2aa'] }).then((r) => r.violations.map((x) => x.id + ':' + x.nodes.map((n) => n.target.join(' ')).join(' ; ')))); assert.deepEqual(v, [], label + ' axe'); };
     const emoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}⭐]|[★☆↑↓]/u;
-    async function open(lang, width, personId, intercept) {
-      const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' }); const page = await context.newPage();
+    async function open(lang, width, personId, intercept, opts = {}) {
+      const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce', timezoneId: opts.timezone }); const page = await context.newPage();
+      if (opts.now) await page.clock.setFixedTime(opts.now);
       const errors = []; page.on('pageerror', (e) => errors.push(e.message)); page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 200)); });
       await page.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elevation_role', 'therapist'); localStorage.setItem('elv_lang', l); }, [therapist.token, lang]);
       await page.route('**/api/session', (r) => r.fulfill({ json: { role: 'therapist', onboardingCompleted: true } }));
@@ -123,6 +124,26 @@ const { pathToFileURL } = require('node:url');
         await axe(page, `ficha ${tag}`);
         assert.deepEqual(errors, []); await context.close();
         check(`${tag}: ficha → nombre real, cifras = base (ánimo ${expectedMood}, valoración ${expectedRating} con NULL fuera), sin emojis/estrellas/flechas, historial en palabras con tope de 60, sin desborde, axe 0`); }
+
+      // A2) E226-2: con el tope de 60 alcanzado, las cifras lo dicen junto al número (sin inventar un total) — la base tiene 62 registros
+      { const { context, page } = await open(lang, width, sharer.id);
+        await page.getByRole('heading', { level: 2, name: t.notes }).waitFor({ timeout: 10000 });
+        const figures = await page.locator('section[aria-label]').first().innerText();
+        assert.ok(lang === 'es' ? figures.includes('Registros de ánimo (últimos 60)') && figures.includes('Ánimo promedio de los últimos 60 registros') : figures.includes('Mood entries (last 60)') && figures.includes('Average mood of the last 60 entries'), 'etiquetas con el tope: ' + figures);
+        assert.ok(figures.includes('60') && !figures.includes('62'), 'muestra 60, no inventa un total');
+        assert.equal((await q('SELECT count(*)::int AS n FROM "MoodLogs" WHERE "UserId"=$1', [sharer.id]))[0].n, 62);
+        await context.close(); }
+
+      // A3) E226-1: la fecha propuesta de una nota nueva es HOY en calendario local (Bogotá 20:00 del 10-nov; Auckland 09:00 del 11-nov)
+      for (const [timezone, now, expected] of [['America/Bogota', '2026-11-11T01:00:00Z', '2026-11-10'], ['Pacific/Auckland', '2026-11-10T20:00:00Z', '2026-11-11']]) {
+        const { context, page } = await open(lang, width, sharer.id, undefined, { timezone, now });
+        await page.getByRole('heading', { level: 2, name: t.notes }).waitFor({ timeout: 10000 });
+        await page.getByRole('button', { name: t.new }).click(); await page.getByRole('dialog').waitFor();
+        assert.equal(await page.locator('input[type=date]').inputValue(), expected, `fecha propuesta en ${timezone}`);
+        assert.equal(await page.locator('input[type=date]').getAttribute('max'), expected, `máximo del campo en ${timezone}`);
+        await context.close();
+      }
+      check(`${tag}: con 62 registros en la base la ficha dice «últimos 60» junto a las cifras; la fecha de una nota nueva es HOY local en Bogotá y en Auckland`);
 
       // B) sin autorización: pantalla propia, cero datos de la persona
       { const { context, page } = await open(lang, width, hidden.id);

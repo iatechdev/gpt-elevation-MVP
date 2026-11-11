@@ -10,9 +10,10 @@ const ofFive = (n: number | null, locale: string, t: T) => (n === null ? t('pane
 
 export function FiguresBlock({ moodLogs, ratings, notesCount, t, locale }: { moodLogs: MoodRow[]; ratings: RatingRow[]; notesCount: number; t: T; locale: string }) {
   const cards = [
-    { label: t('fu_fig_entries'), value: String(moodLogs.length) },
-    { label: t('fu_fig_mood'), value: ofFive(averageMoodOf(moodLogs), locale, t) },
-    { label: t('fu_fig_rating'), value: ofFive(averageRatingOf(ratings), locale, t) },
+    // E226-2: el servidor devuelve como máximo los últimos 60 registros; con el tope alcanzado, las cifras lo dicen junto al número (sin inventar un total).
+    { label: t(moodLogs.length >= MAX_HISTORY ? 'fu_fig_entries_cap' : 'fu_fig_entries', { n: MAX_HISTORY }), value: String(moodLogs.length) },
+    { label: t(moodLogs.length >= MAX_HISTORY ? 'fu_fig_mood_cap' : 'fu_fig_mood', { n: MAX_HISTORY }), value: ofFive(averageMoodOf(moodLogs), locale, t) },
+    { label: t(ratings.length >= MAX_HISTORY ? 'fu_fig_rating_cap' : 'fu_fig_rating', { n: MAX_HISTORY }), value: ofFive(averageRatingOf(ratings), locale, t) },
     { label: t('fu_fig_notes'), value: String(notesCount) },
   ]
   return (
