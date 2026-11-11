@@ -1,0 +1,7 @@
+{
+  "status": 409,
+  "body": {
+    "code": "has_dependent_data",
+    "error": "No se puede eliminar: la cuenta tiene datos o vínculos asociados. / It cannot be deleted: the account has associated data or links."
+  }
+}

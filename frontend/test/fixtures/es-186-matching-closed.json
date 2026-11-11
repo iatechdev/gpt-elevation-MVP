@@ -1,0 +1,7 @@
+{
+  "status": 409,
+  "body": {
+    "code": "request_closed",
+    "error": "Esta solicitud ya fue resuelta. / This request has already been resolved."
+  }
+}
