@@ -82,6 +82,20 @@
    "detail": "POST año 0000→500 ; POST 0000-02-29→500 ; POST 0000-12-31→500 ; PUT año 0000→500"
   },
   {
+   "id": "H6d (E229-1) diario: 20 fechas inválidas (año 0000, antes de 1900, días que no existen incluido 2100-02-29, mes 0/13, formatos raros, fecha con hora) en POST y en PUT → TODAS 400 y ninguna 5xx; fechas válidas (1900-01-01, 29-feb-2000, hoy y ayer) → 201",
+   "ok": false,
+   "detail": "POST 0000-01-01→500 ; POST 0000-02-29→500 ; POST 0000-12-31→500 ; POST 1899-12-31→201 ; POST 1800-06-15→201 ; PUT 0000-01-01→500 ; PUT 0000-02-29→500 ; PUT 0000-12-31→500 ; PUT 1899-12-31→200 ; PUT 1800-06-15→200"
+  },
+  {
+   "id": "H6e-contacto",
+   "info": "[main] alta 201; verifiedAt válida → 409"
+  },
+  {
+   "id": "H6e (E229-1) datos de contacto: `verifiedAt` con año 0000, anterior a 1900, día inexistente, mes 13, texto o número → 400 (alta y edición), sin 5xx; una fecha válida se acepta",
+   "ok": false,
+   "detail": "0000-01-01→500 ; POST 0000-01-01→500 ; 1899-12-31→200 ; POST 1899-12-31→201"
+  },
+  {
    "id": "H7 fechas válidas se aceptan (201) y la hora guardada coincide con la enviada: ISO Z, offset −05:00, milisegundos, sin segundos, 2999-12-31 y datetime-local (sin zona)",
    "ok": true,
    "detail": "ISO con Z→201 · ISO con offset −05:00→201 · con milisegundos→201 · sin segundos con Z→201 · 2999-12-31 a medianoche UTC→201 · datetime-local sin zona→201 · con segundos sin zona→201"

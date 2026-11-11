@@ -1,6 +1,6 @@
 {
  "mode": "pr",
- "head": "d151e615b22ddbdab568341c14f17a17814eaef2",
+ "head": "8c98e0ea76c6e8886d97d4366fdcf736bde7045d",
  "results": [
   {
    "id": "H1-ref",
@@ -56,7 +56,7 @@
   {
    "id": "H5 PUT /api/sessions/therapist/:id con las mismas fechas hostiles → 400 con `field:\"scheduledAt\"`, ningún 5xx y la fila NO cambia",
    "ok": true,
-   "detail": "0 fallos; fila intacta {\"scheduledAt\":\"2026-11-16T07:49:44.282Z\",\"status\":\"scheduled\",\"duration\":50}"
+   "detail": "0 fallos; fila intacta {\"scheduledAt\":\"2026-11-16T08:24:06.541Z\",\"status\":\"scheduled\",\"duration\":50}"
   },
   {
    "id": "H6-ids-sesiones",
@@ -68,18 +68,32 @@
   },
   {
    "id": "H6 POST nota clínica con sessionDate hostil (mismas cadenas y tipos) → 400, ningún 5xx y no se crea ninguna nota",
-   "ok": false,
-   "detail": "fallan 15: fecha máxima JS→201 ; fecha mínima JS→500 ; año 9999→201 ; año 10000→201 ; año 0001→500 ; año 0000→201 ; año 3000→201 ; 30 de febrero→500 ; 29 feb no bisiesto→500 ; «0»→201 ; «1»→201 ; «2030»→201"
+   "ok": true,
+   "detail": "0 fallos; notas 1→1"
   },
   {
    "id": "H6b PUT nota: `sessionDate` hostil → 400; `expectedUpdatedAt` hostil (fecha máxima JS, «abc», 10 KB, año 10000) y ids de nota/persona malformados → ningún 5xx",
-   "ok": false,
-   "detail": "sessionDate fecha máxima JS→200 ; sessionDate 30 de febrero→500 ; sessionDate «0»→200"
+   "ok": true,
+   "detail": "ok"
   },
   {
    "id": "H6c diario (otra ruta con fecha de usuario): fechas hostiles → ningún 5xx",
-   "ok": false,
-   "detail": "POST año 0000→500 ; POST 0000-02-29→500 ; POST 0000-12-31→500 ; PUT año 0000→500"
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "id": "H6d (E229-1) diario: 20 fechas inválidas (año 0000, antes de 1900, días que no existen incluido 2100-02-29, mes 0/13, formatos raros, fecha con hora) en POST y en PUT → TODAS 400 y ninguna 5xx; fechas válidas (1900-01-01, 29-feb-2000, hoy y ayer) → 201",
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "id": "H6e-contacto",
+   "info": "[pr] alta 201; verifiedAt válida → 200"
+  },
+  {
+   "id": "H6e (E229-1) datos de contacto: `verifiedAt` con año 0000, anterior a 1900, día inexistente, mes 13, texto o número → 400 (alta y edición), sin 5xx; una fecha válida se acepta",
+   "ok": true,
+   "detail": "alta 201, edición válida 200"
   },
   {
    "id": "H7 fechas válidas se aceptan (201) y la hora guardada coincide con la enviada: ISO Z, offset −05:00, milisegundos, sin segundos, 2999-12-31 y datetime-local (sin zona)",
@@ -88,8 +102,8 @@
   },
   {
    "id": "H7b notas: 1900-01-01, 2999-12-31, solo fecha, offset y milisegundos → 201; justo fuera del rango (1899-12-31, 3000-01-01) → 400",
-   "ok": false,
-   "detail": "justo bajo el borde inferior→201 ; justo sobre el borde superior→201"
+   "ok": true,
+   "detail": "ok"
   }
  ]
 }
