@@ -54,6 +54,8 @@ test('ES-178 F2: resumen con IA y agendar — códigos del servidor, sin «y n n
   assert.match(sch, /status=scheduled/); assert.match(sch, /showModal\(\)/); assert.match(sch, /DURATIONS = \[30, 45, 50, 60, 90\]/)
   const keys = [...(ai + sch).matchAll(/t\('((?:fu_)[a-z_]+)'/g)].map(m => m[1]).concat(['fu_sch_required', 'fu_sch_past', 'fu_sch_duration', 'fu_sch_conflict', 'fu_sch_noaccess', 'fu_sch_error', 'fu_sch_unsure', 'fu_ai_budget', 'fu_ai_budget_nodate'])
   for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
+})
+
 // E226-1: la fecha propuesta de una nota nueva es HOY en calendario local, no el día UTC.
 test('ES-178 (E226-1): localToday da el día de calendario local en Bogotá y en Auckland', () => {
   assert.equal(mod.localToday(Date.parse('2026-11-11T01:00:00Z'), 'America/Bogota'), '2026-11-10', '20:00 del 10 en Bogotá (antes proponía el 11)')
