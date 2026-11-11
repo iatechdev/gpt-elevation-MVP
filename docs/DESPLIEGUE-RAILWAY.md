@@ -36,7 +36,9 @@ Los valores se cargan en Railway (pestaña Variables); no van en el repo. Nombre
 | `VITE_BACKEND_URL` | URL de la API en el build del frontend | Vacía: el frontend llama al mismo dominio |
 | `VITE_LANDING_EXAMPLE_APPROVED` | Publica la franja de ejemplo de la landing (ES-64) | Variable de compilación; solo `true` cuando el texto esté aprobado por el especialista y por Mauricio o Alejo. Sin ella la franja queda oculta |
 
-No verificado: `DAILY_API_KEY` y `GCS_*` aparecen en el código; si el piloto usa videollamadas o archivos hay que cargarlas.
+No verificado: `DAILY_API_KEY` aparece en el código; si el piloto usa videollamadas hay que cargarla.
+
+**Almacenamiento de documentos (ES-268, Supabase Storage).** Sustituye a Google Cloud Storage. Variables (las carga Mauricio en Railway, por entorno; nunca en Git ni en el chat): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET` (bucket **privado**, sin políticas para anon/authenticated) y, opcional, `STORAGE_SIGNED_URL_TTL_SECONDS` (900 por defecto, entre 60 y 3600). Los entornos de PR usan un bucket distinto del de producción. Sin esas variables la subida responde 503 `storage_unavailable`. Prueba de humo con datos sintéticos: `node backend/scripts/smoke-storage.cjs` (desde `backend/`, con las variables del entorno; `SMOKE_WAIT_EXPIRY=true` comprueba también la expiración).
 
 ## Servicio `worker` (ES-87), un Dockerfile por servicio
 El worker de análisis de IA corre como un servicio aparte de Railway, con el mismo código del repositorio pero **otro arranque** (`node backend/worker.js`, sin puerto ni healthcheck). No puede usar el `Dockerfile` del API, cuyo `CMD` arranca el servidor: en staging, el primer despliegue del worker arrancó el API y falló con `JWT_SECRET must be configured` porque el worker (a propósito) no recibe esa variable. Tampoco se pudo fijar el comando de arranque por la CLI de Railway (`railway environment edit` respondió «No changes to apply») ni por `railway.json`, así que se usa un Dockerfile propio.
