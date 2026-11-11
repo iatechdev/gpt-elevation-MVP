@@ -1,0 +1,151 @@
+{
+  "pr": 221,
+  "mode": "ok",
+  "head": "8711dd4d8fa1eaeccd9a7d64c54f4840e296edcf",
+  "results": [
+    {
+      "id": "S1a `uploadFile` devuelve la ruta; el cliente real hace POST a /storage/v1/object/{bucket}/{ruta} con `x-upsert: false`, el tipo de contenido en el cuerpo, la clave de servicio como credencial y SOLO al bucket de la variable",
+      "ok": true,
+      "detail": "{\"path\":\"/storage/v1/object/qa-bucket/therapist-docs/1/1794374442958_d04c12ce24825a844841518f6422bae3.pdf\",\"upsert\":\"false\",\"authOk\":true}"
+    },
+    {
+      "id": "S1b la 2.ª subida con la MISMA clave NO sobrescribe: error genérico `storage_failed` con estado 409 y el objeto no cambia",
+      "ok": true,
+      "detail": "storage_failed 409"
+    },
+    {
+      "id": "S1c `getSignedUrl` devuelve una URL firmada completa (empieza por el servidor y contiene la ruta firmada) y pide 900 s por defecto",
+      "ok": true,
+      "detail": "http://127.0.0.1:9971/storage/v1/object/sign/qa-bucket/therapist-docs/1/17943744… ttl=900"
+    },
+    {
+      "id": "S1d `deleteFile` es idempotente: borrar dos veces el mismo objeto y uno inexistente no falla; el objeto desaparece",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "S1e las exportaciones antiguas `storage` y `bucket` ya no existen (contrato: uploadFile, getSignedUrl, deleteFile [+ deleteByPrefix, StorageError]) y NADIE más en el servidor las usa",
+      "ok": true,
+      "detail": "uploadFile,getSignedUrl,deleteFile,deleteByPrefix,StorageError,MAX_BYTES,DEFAULT_TTL_SECONDS,_setClientFactoryForTests"
+    },
+    {
+      "id": "S3 TTL de la URL firmada (17 valores): 900 por defecto; inválidos → 900; mínimo 60; máximo 3600; decimales se truncan — medido en lo que RECIBE el almacenamiento",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "S5a vacío, no-Buffer, 10 MB + 1 byte y 9 rutas peligrosas (`..`, absoluta, vacía, nula, número, nulo/control, > 512 caracteres) → error genérico `invalid_upload`/`invalid_path` SIN llamar al almacenamiento; exactamente 10 MB sí pasa",
+      "ok": true,
+      "detail": "llamadas nuevas=0 diezMB=ok"
+    },
+    {
+      "id": "S5b `getSignedUrl`, `deleteFile` y `deleteByPrefix` aplican la misma comprobación de ruta antes de tocar el cliente",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "S4a con el almacenamiento devolviendo un error SUCIO (500 con la URL del proyecto, la ruta del objeto y la clave de servicio en su mensaje): subir, firmar, borrar y borrar por prefijo lanzan `StorageError` con mensaje FIJO «Storage operation failed.», `code: storage_failed` y solo el estado 500; ninguna fuga en mensaje, pila (1.ª línea), JSON ni cadena",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "S4b con el almacenamiento INALCANZABLE (red caída): error genérico `storage_failed` sin la URL, el puerto ni el texto original",
+      "ok": true,
+      "detail": "storage_failed Storage operation failed."
+    },
+    {
+      "id": "S6e (módulo) falta UNA variable → `storage_unavailable` y se recupera al volver a ponerla (no queda un cliente roto en caché); cambiar el bucket crea un cliente nuevo que usa el bucket nuevo",
+      "ok": true,
+      "detail": "storage_unavailable"
+    },
+    {
+      "id": "S6f al cambiar `SUPABASE_STORAGE_BUCKET` la siguiente llamada usa el bucket nuevo (cliente recreado por url|bucket)",
+      "ok": true,
+      "detail": "/storage/v1/object/sign/otro-bucket/therapist-docs/1/b.pdf"
+    },
+    {
+      "id": "S8a `deleteByPrefix` borra 250 objetos por lotes de 100 solo bajo `therapist-docs/7` (conserva `therapist-docs/70` y `/8`), devuelve 250 y una 2.ª llamada devuelve 0 sin bucle",
+      "ok": true,
+      "detail": "250 restantes=2"
+    },
+    {
+      "id": "S8b `deleteByPrefix` NO está cableada: sus únicas referencias son el módulo, las pruebas y el script de humo (ninguna ruta, job ni borrado de cuentas)",
+      "ok": true,
+      "detail": "backend/scripts/smoke-storage.cjs, backend/test/es-268-storage.test.cjs, backend/utils/storage.js"
+    },
+    {
+      "id": "S2a por la ruta REAL de subida (8 nombres: con nombre de persona y acentos, `../`, nulo, 300 caracteres, `.exe`, doble extensión, unicode, barra invertida): la clave es `therapist-docs/{id}/{13 dígitos}_{32 hex}{.pdf|.jpg|.png|.webp}` con la extensión del TIPO validado (nunca la del nombre) y SIN ninguna parte del nombre original; `documentName` queda saneado",
+      "ok": true,
+      "detail": "7/8 aceptados · el nombre con byte nulo se RECHAZA con 400 (válido: no llega al almacenamiento)"
+    },
+    {
+      "id": "S2b 200 subidas del mismo archivo y nombre → 200 claves DISTINTAS (aleatoriedad, sin colisión) y cada una llegó al almacenamiento con `x-upsert: false`",
+      "ok": true,
+      "detail": "200 claves distintas, 207 subidas"
+    },
+    {
+      "id": "S5c por la ruta HTTP: contenido que no es del tipo declarado → 400, archivo vacío → 400, > 10 MB → 413, tipo no permitido → 400, sin archivo → 400; NINGUNO llegó al almacenamiento (contador sin cambios) y ninguno es 5xx",
+      "ok": true,
+      "detail": "400/400/413/400/400 subidas=207/207"
+    },
+    {
+      "id": "S4c con el almacenamiento fallando de forma SUCIA: subir → 503 `storage_unavailable` y descargar → 503, con cuerpo genérico bilingüe (sin la URL del proyecto, la ruta del objeto, la clave ni el texto original); la subida fallida NO deja fila en la base",
+      "ok": true,
+      "detail": "503 {\"code\":\"storage_unavailable\",\"error\":\"No se pudo guardar el documento ahora. Inténtalo más tarde. / The document could  | 503 filas 207→207"
+    },
+    {
+      "id": "S4d el registro del servidor tras los fallos no contiene la URL del proyecto, la ruta del objeto, la clave de servicio ni los nombres originales de los archivos",
+      "ok": true,
+      "detail": "log 551 bytes · mensajes: ❌ Almacenamiento de documentos no disponible: storage_failed"
+    },
+    {
+      "id": "S10a la URL firmada solo se genera para el superadmin (Junta): superadmin 200 con la URL; profesional dueño, otro profesional, persona y admin → 403; sin sesión → 401/403; y los denegados provocan 0 llamadas de firma",
+      "ok": true,
+      "detail": "su=200 {\"profesional dueño\":403,\"otro profesional\":403,\"persona\":403,\"admin\":403,\"sin sesión\":403} firmas 1→1"
+    },
+    {
+      "id": "S10b la respuesta de descarga no incluye la clave de servicio ni credenciales distintas de la URL firmada",
+      "ok": true,
+      "detail": "url,expiresIn"
+    },
+    {
+      "id": "S10c el texto de caducidad que ve quien descarga (`expiresIn`) coincide con la vida REAL de la URL firmada (900 s = 15 minutos)",
+      "ok": false,
+      "detail": "expiresIn mostrado=\"1 hora\" · vida real pedida al almacenamiento=900 s"
+    },
+    {
+      "id": "S5d una `documentPath` corrupta en la base (`..`, absoluta, vacía, con nulo) NO llega al almacenamiento: respuesta controlada (no 200, no crash) y 0 firmas nuevas",
+      "ok": true,
+      "detail": "{\"ruta mala \\\"../../x.pdf\\\"\":503,\"ruta mala \\\"/abs.pdf\\\"\":503,\"ruta mala \\\"\\\"\":503,\"ruta mala \\\"a/\\\\u001fb\\\"\":503}"
+    },
+    {
+      "id": "S7a `grep` del diff completo (excepto el lockfile) con 7 patrones de secretos (JWT `eyJ…`, `sb_secret_`, `sbp_`, URL de proyecto `*.supabase.co` real, `SERVICE_ROLE_KEY=valor`, clave privada, AWS) = 0 coincidencias",
+      "ok": true,
+      "detail": "635 líneas añadidas revisadas"
+    },
+    {
+      "id": "S7b `.env.example`: las variables de almacenamiento están comentadas y SIN valor; ya no hay `GCS_*`; el documento de despliegue nombra las variables sin valores",
+      "ok": true,
+      "detail": "# SUPABASE_URL= | # SUPABASE_SERVICE_ROLE_KEY= | # SUPABASE_STORAGE_BUCKET= | # STORAGE_SIGNED_URL_TTL_SECONDS="
+    },
+    {
+      "id": "S7c `smoke-storage.cjs`: no corre sin las variables, no imprime la clave ni la URL firmada completa, sube bajo un prefijo propio y lo limpia",
+      "ok": true,
+      "detail": "revisado a mano además: ver líneas 1-43"
+    },
+    {
+      "id": "S7d el bundle del cliente (`frontend/dist`) no contiene `SUPABASE_`, `service_role`, `@supabase` ni `supabase-js`",
+      "ok": true,
+      "detail": "ninguno"
+    },
+    {
+      "id": "S9a `package.json`: `@supabase/supabase-js` EXACTA `2.118.0` (sin `^`), sin `@google-cloud/storage`, y ninguna otra dependencia directa nueva ni quitada",
+      "ok": true,
+      "detail": "nuevas=@supabase/supabase-js quitadas=@google-cloud/storage"
+    },
+    {
+      "id": "FIN",
+      "info": "S9b/S9c (lockfile, npm ls, npm audit, npm ci) se miden en el guion de regresión aparte"
+    }
+  ]
+}

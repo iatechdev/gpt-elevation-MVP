@@ -1,0 +1,27 @@
+{
+  "pr": 221,
+  "mode": "novars",
+  "head": "8711dd4d8fa1eaeccd9a7d64c54f4840e296edcf",
+  "results": [
+    {
+      "id": "S6a SIN las tres variables: el servidor ARRANCÓ y responde (/api/health 200 antes y después de usar el almacenamiento: no hay caída)",
+      "ok": true,
+      "detail": "200/200"
+    },
+    {
+      "id": "S6b subir un documento → 503 `storage_unavailable` con cuerpo genérico (sin rutas, claves ni nombres de variables); no queda fila en la base; descargar → 503 `storage_unavailable`",
+      "ok": true,
+      "detail": "503 {\"code\":\"storage_unavailable\",\"error\":\"No se pudo guardar el documento ahora. Inténtalo más tarde. / The document could not be saved right now. Please try again filas=0 | 503 {\"code\":\"storage_unavailable\",\"error\":\"No se pudo generar el enlace de descarga ahora. / The download link could not be "
+    },
+    {
+      "id": "S6c el registro del servidor no menciona valores ni nombres de variables secretas",
+      "ok": true,
+      "detail": "log 476 bytes"
+    },
+    {
+      "id": "S6d sin variables no se hace NINGUNA llamada de red al almacenamiento (el cliente ni se crea)",
+      "ok": true,
+      "detail": "llamadas=0"
+    }
+  ]
+}
