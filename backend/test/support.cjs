@@ -32,6 +32,9 @@ for (const name of [
 models.RevokedToken.findByPk = async () => null;
 // ES-186 B: auditoría de administración; por defecto se acepta y se descarta (las pruebas de auditoría la sobrescriben).
 models.AdminAuditEntry.create = async (values) => values;
+// ES-186 C: el DELETE de cuentas que no son personas cuenta filas en los almacenes de personalData.CORE y desvincula la invitación aceptada; por defecto no hay nada.
+for (const m of Object.values(models)) if (typeof m === "object" && !m.count) m.count = async () => 0;
+models.Invitation.update = models.Invitation.update || (async () => [0]);
 // ES-177: ordinal «Persona n» estable por profesional (doble en memoria: el número depende del orden de aparición).
 { const ordinals = []; models.TherapistPersonOrdinal.findAll = async ({ where }) => ordinals.filter(o => o.therapistId === where.therapistId && [].concat(where.personId).includes(o.personId));
   models.TherapistPersonOrdinal.max = async (field, { where }) => Math.max(0, ...ordinals.filter(o => o.therapistId === where.therapistId).map(o => o.ordinal));
