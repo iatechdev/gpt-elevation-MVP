@@ -15,4 +15,7 @@ export const averageRatingOf = (rows: RatingRow[]) => mean(rows.map(row => row.r
 export const moodChange = (row: MoodRow): 'up' | 'down' | 'same' | null =>
   valid(row.checkin_mood) && valid(row.checkout_mood) ? (row.checkout_mood > row.checkin_mood ? 'up' : row.checkout_mood < row.checkin_mood ? 'down' : 'same') : null
 
+/** E226-1: HOY como fecha de CALENDARIO local (YYYY-MM-DD), no el día UTC: a las 20:00 en Bogotá no es «mañana» ni a la 01:00 en Auckland «ayer». `timeZone` solo lo usan las pruebas. */
+export const localToday = (now = Date.now(), timeZone?: string) => new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
+
 export const MAX_HISTORY = 60 // el servidor devuelve como máximo los últimos 60 registros

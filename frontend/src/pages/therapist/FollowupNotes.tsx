@@ -3,6 +3,7 @@
 // y, si la respuesta se pierde, se relee antes de decir nada («Comprobar»). Sin emojis.
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cardStyle } from './panelStyles'
+import { localToday } from './followupFormat'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -19,7 +20,7 @@ type Problem = { key: string; params?: Record<string, string | number>; check?: 
 const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
 const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' }
 const control: CSSProperties = { minHeight: 44, padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', background: '#fff' }
-const today = () => new Date().toISOString().split('T')[0]
+const today = () => localToday()
 
 export function FollowupNotes({ personId, notes, reload, t, locale }: { personId: string; notes: FollowupNote[]; reload: Reload; t: T; locale: string }) {
   const [filter, setFilter] = useState<'all' | NoteType>('all')

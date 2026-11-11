@@ -44,3 +44,19 @@ test('ES-178: bloques sin emojis ni estrellas, la edición manda la versión de 
   const keys = [...(notes + history).matchAll(/t\('((?:fu_|panel_)[a-z_]+)'/g)].map(m => m[1]).concat(['fu_type_session_note', 'fu_type_observation', 'fu_type_goal', 'fu_up', 'fu_down', 'fu_same'])
   for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
 })
+
+// E226-1: la fecha propuesta de una nota nueva es HOY en calendario local, no el día UTC.
+test('ES-178 (E226-1): localToday da el día de calendario local en Bogotá y en Auckland', () => {
+  assert.equal(mod.localToday(Date.parse('2026-11-11T01:00:00Z'), 'America/Bogota'), '2026-11-10', '20:00 del 10 en Bogotá (antes proponía el 11)')
+  assert.equal(mod.localToday(Date.parse('2026-11-10T20:00:00Z'), 'Pacific/Auckland'), '2026-11-11', '09:00 del 11 en Auckland')
+  assert.equal(mod.localToday(Date.parse('2026-11-10T12:00:00Z'), 'UTC'), '2026-11-10')
+  assert.equal(mod.localToday(Date.parse('2026-11-11T04:59:59Z'), 'America/Bogota'), '2026-11-10'); assert.equal(mod.localToday(Date.parse('2026-11-11T05:00:00Z'), 'America/Bogota'), '2026-11-11')
+  assert.doesNotMatch(read('../src/pages/therapist/FollowupNotes.tsx'), /toISOString\(\)\.split/)
+})
+
+// E226-2: con el tope de 60 las cifras lo dicen (sin inventar un total).
+test('ES-178 (E226-2): las cifras llevan el tope de 60 junto al número cuando se alcanza', () => {
+  const history = read('../src/pages/therapist/FollowupHistory.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.match(history, /fu_fig_entries_cap/); assert.match(history, /fu_fig_mood_cap/); assert.match(history, /fu_fig_rating_cap/)
+  for (const key of ['fu_fig_entries_cap', 'fu_fig_mood_cap', 'fu_fig_rating_cap']) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length, 2, key)
+})
