@@ -10,6 +10,9 @@ import {
 } from '../../styles/tokens'
 import { useLanguage } from '../../i18n/useLanguage'
 import { localizeServerError } from '../../i18n/serverError'
+import { FollowupNotes, type FollowupNote } from './FollowupNotes'
+import { FiguresBlock, MoodHistoryBlock, RatingsBlock } from './FollowupHistory'
+import type { MoodRow, RatingRow } from './followupFormat'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -21,41 +24,10 @@ interface Patient {
   createdAt: string
 }
 
-interface MoodLog {
-  id: number
-  date: string
-  checkin_mood: number | null
-  checkout_mood: number | null
-}
-
-interface SessionRating {
-  id: number
-  date: string
-  rating: number
-}
-
-interface ClinicalNote {
-  id: number
-  content: string
-  type: 'session_note' | 'observation' | 'goal'
-  sessionDate: string
-  createdAt: string
-}
-
 interface AISummary {
   summary: string
   generatedAt: string
   basedOn: { sessions: number; notes: number }
-}
-
-const MOOD_EMOJI: Record<number, string> = {
-  1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😊',
-}
-
-const NOTE_TYPE_COLOR: Record<string, { bg: string; color: string }> = {
-  session_note: { bg: colors.primaryLight,  color: colors.primaryDark },
-  observation:  { bg: colors.infoLight,     color: colors.info },
-  goal:         { bg: colors.warningLight,  color: colors.warning },
 }
 
 const minDateTime = () => {
@@ -72,15 +44,6 @@ const cardStyle: React.CSSProperties = {
   padding:      `${spacing.lg} ${spacing.xl}`,
 }
 
-const rowStyle: React.CSSProperties = {
-  display:        'flex',
-  alignItems:     'center',
-  justifyContent: 'space-between',
-  padding:        `${spacing.md} ${spacing.lg}`,
-  background:     colors.bgMuted,
-  borderRadius:   radius.md,
-}
-
 const inputStyle: React.CSSProperties = {
   width:        '100%',
   padding:      `${spacing.md} ${spacing.md}`,
@@ -94,37 +57,16 @@ const inputStyle: React.CSSProperties = {
   background:   colors.bgCard,
 }
 
-const selStyle: React.CSSProperties = {
-  padding:      `${spacing.sm} ${spacing.md}`,
-  borderRadius: radius.md,
-  border:       `0.5px solid ${colors.border}`,
-  background:   colors.bgCard,
-  fontSize:     13,
-  color:        colors.text,
-  fontFamily:   typography.fontBody,
-  cursor:       'pointer',
-}
-
 export function TherapistPatient() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t, lang } = useLanguage()
   const locale = lang === 'es' ? 'es-CO' : 'en-US'
 
-  const NOTE_TYPE_LABEL: Record<string, string> = {
-    session_note: t('therapist_note_type_session'),
-    observation:  t('therapist_note_type_obs'),
-    goal:         t('therapist_note_type_goal'),
-  }
-
-  const MOOD_LABEL: Record<number, string> = {
-    1: t('emo_1'), 2: t('emo_2'), 3: t('emo_3'), 4: t('emo_4'), 5: t('emo_5'),
-  }
-
   const [patient,  setPatient]  = useState<Patient | null>(null)
-  const [moodLogs, setMoodLogs] = useState<MoodLog[]>([])
-  const [ratings,  setRatings]  = useState<SessionRating[]>([])
-  const [notes,    setNotes]    = useState<ClinicalNote[]>([])
+  const [moodLogs, setMoodLogs] = useState<MoodRow[]>([])
+  const [ratings,  setRatings]  = useState<RatingRow[]>([])
+  const [notes,    setNotes]    = useState<FollowupNote[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState('')
   const [notShared, setNotShared] = useState(false) // ES-96: la persona no autorizó compartir (403 consent_required)
@@ -135,22 +77,6 @@ export function TherapistPatient() {
   const [summaryError,      setSummaryError]      = useState('')
 
   // Note form
-  const [showNoteForm, setShowNoteForm] = useState(false)
-  const [noteContent,  setNoteContent]  = useState('')
-  const [noteType,     setNoteType]     = useState<'session_note' | 'observation' | 'goal'>('session_note')
-  const [noteDate,     setNoteDate]     = useState(new Date().toISOString().split('T')[0])
-  const [savingNote,   setSavingNote]   = useState(false)
-  const [noteError,    setNoteError]    = useState('')
-
-  // Edit note
-  const [editingNote, setEditingNote] = useState<ClinicalNote | null>(null)
-  const [editContent, setEditContent] = useState('')
-  const [savingEdit,  setSavingEdit]  = useState(false)
-
-  // Filter
-  const [filterType, setFilterType] = useState('all')
-
-  // Schedule session
   const [showSchedule,    setShowSchedule]    = useState(false)
   const [schedDateTime,   setSchedDateTime]   = useState(minDateTime())
   const [schedDuration,   setSchedDuration]   = useState(50)
@@ -220,38 +146,16 @@ export function TherapistPatient() {
 
   useEffect(() => { void fetchHistory() }, [fetchHistory])
 
-  const handleSaveNote = async () => {
-    setNoteError('')
-    if (!noteContent.trim()) { setNoteError(t('therapist_note_placeholder')); return }
-    setSavingNote(true)
+  // Releer sin tocar la pantalla (tras guardar una nota o para comprobar una respuesta perdida): si falla, devuelve null y NO sustituye la ficha por un error.
+  const refreshHistory = useCallback(async (): Promise<FollowupNote[] | null> => {
     try {
-      const res = await fetch(`${API}/api/therapist/pacientes/${id}/notas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ content: noteContent, type: noteType, sessionDate: noteDate }),
-      })
-      if (!res.ok) { const d = await res.json(); setNoteError(d.error || t('error_connection')); return }
-      setNoteContent(''); setShowNoteForm(false)
-      await fetchHistory()
-    } catch { setNoteError(t('error_connection')) }
-    finally { setSavingNote(false) }
-  }
-
-  const handleEditNote = async () => {
-    if (!editingNote || !editContent.trim()) return
-    setSavingEdit(true)
-    try {
-      const res = await fetch(`${API}/api/therapist/notas/${editingNote.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ content: editContent }),
-      })
-      if (!res.ok) return
-      setEditingNote(null); setEditContent('')
-      await fetchHistory()
-    } catch { /* silent */ }
-    finally { setSavingEdit(false) }
-  }
+      const res = await fetch(`${API}/api/therapist/pacientes/${id}/historia`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      if (!res.ok) return null
+      const data = await res.json()
+      setPatient(data.patient); setMoodLogs(data.moodLogs); setRatings(data.ratings); setNotes(data.notes)
+      return data.notes as FollowupNote[]
+    } catch { return null }
+  }, [id])
 
   const handleGenerateSummary = async () => {
     setGeneratingSummary(true)
@@ -269,17 +173,6 @@ export function TherapistPatient() {
     } catch { setSummaryError(t('therapist_summary_error')) }
     finally { setGeneratingSummary(false) }
   }
-
-  const avgRating = ratings.length > 0
-    ? Math.round((ratings.reduce((a, r) => a + r.rating, 0) / ratings.length) * 10) / 10
-    : null
-
-  const avgMood = (() => {
-    const all = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter((v): v is number => v != null)
-    return all.length > 0 ? Math.round((all.reduce((a, b) => a + b, 0) / all.length) * 10) / 10 : null
-  })()
-
-  const filteredNotes = filterType === 'all' ? notes : notes.filter(n => n.type === filterType)
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
@@ -358,24 +251,9 @@ export function TherapistPatient() {
         </div>
       </div>
 
-      {/* SUMMARY CARDS */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        gap: spacing.lg,
-        marginBottom: spacing.xxl,
-      }}>
-        {[
-          { label: t('therapist_total_sessions'), value: moodLogs.length },
-          { label: t('therapist_avg_mood_label'), value: avgMood ?? '—' },
-          { label: t('therapist_avg_rating_label'), value: avgRating ? `${avgRating} ★` : '—' },
-          { label: t('therapist_notes_count'),    value: notes.length },
-        ].map(c => (
-          <div key={c.label} style={cardStyle}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600, color: colors.text }}>{c.value}</div>
-            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: spacing.xs }}>{c.label}</div>
-          </div>
-        ))}
+      {/* CIFRAS (ES-178 F1) */}
+      <div style={{ marginBottom: spacing.xxl }}>
+        <FiguresBlock moodLogs={moodLogs} ratings={ratings} notesCount={notes.length} t={t} locale={locale} />
       </div>
 
       {/* AI CLINICAL SUMMARY */}
@@ -391,7 +269,7 @@ export function TherapistPatient() {
             disabled={generatingSummary}
             style={{
               ...btnPrimaryStyle,
-              background: generatingSummary ? colors.textSubtle : '#0d9488',
+              background: generatingSummary ? colors.textSubtle : '#0F766E',
               cursor: generatingSummary ? 'not-allowed' : 'pointer',
               fontSize: 12,
               padding: `${spacing.sm} ${spacing.md}`,
@@ -424,257 +302,15 @@ export function TherapistPatient() {
         )}
       </div>
 
-      {/* CLINICAL NOTES */}
-      <div style={{ ...cardStyle, marginBottom: spacing.lg }}>
-        <div style={{
-          display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: spacing.lg, flexWrap: 'wrap', gap: spacing.md,
-        }}>
-          <h2 style={{
-            fontFamily: typography.fontDisplay, fontWeight: 400,
-            fontSize: '1.1rem', color: colors.text, margin: 0,
-          }}>
-            {t('therapist_clinical_notes')}
-          </h2>
-          <div style={{ display: 'flex', gap: spacing.sm, alignItems: 'center' }}>
-            <select style={selStyle} value={filterType} onChange={e => setFilterType(e.target.value)}>
-              <option value="all">{t('therapist_filter_all')}</option>
-              <option value="session_note">{t('therapist_filter_session')}</option>
-              <option value="observation">{t('therapist_filter_obs')}</option>
-              <option value="goal">{t('therapist_filter_goal')}</option>
-            </select>
-            <button
-              onClick={() => { setShowNoteForm(!showNoteForm); setNoteError('') }}
-              style={{ ...btnPrimaryStyle, fontSize: 12, padding: `${spacing.sm} ${spacing.md}` }}
-            >
-              {t('therapist_new_note')}
-            </button>
-          </div>
-        </div>
-
-        {showNoteForm && (
-          <div style={{
-            background: colors.bg,
-            borderRadius: radius.md,
-            padding: spacing.lg,
-            marginBottom: spacing.lg,
-            border: `0.5px solid ${colors.border}`,
-          }}>
-            <div style={{ display: 'flex', gap: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
-              <select style={selStyle} value={noteType} onChange={e => setNoteType(e.target.value as typeof noteType)}>
-                <option value="session_note">{t('therapist_note_type_session')}</option>
-                <option value="observation">{t('therapist_note_type_obs')}</option>
-                <option value="goal">{t('therapist_note_type_goal')}</option>
-              </select>
-              <input
-                type="date" value={noteDate}
-                onChange={e => setNoteDate(e.target.value)}
-                style={{ ...selStyle, cursor: 'text' }}
-              />
-            </div>
-            <label htmlFor="th-new-note" style={{ display: 'block', fontSize: 12, color: colors.textMuted, marginBottom: spacing.xs }}>
-              {t('therapist_note_label')}
-            </label>
-            <textarea
-              id="th-new-note"
-              value={noteContent}
-              onChange={e => setNoteContent(e.target.value)}
-              placeholder={t('therapist_note_placeholder')}
-              rows={4}
-              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
-            />
-            {noteError && (
-              <p style={{ color: colors.danger, fontSize: 12, margin: `${spacing.xs} 0 0` }}>
-                {noteError}
-              </p>
-            )}
-            <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.md, justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => { setShowNoteForm(false); setNoteError('') }}
-                style={{ ...btnSecondaryStyle, fontSize: 12, padding: `${spacing.sm} ${spacing.md}` }}
-              >
-                {t('btn_cancel')}
-              </button>
-              <button
-                onClick={handleSaveNote}
-                disabled={savingNote}
-                style={{
-                  ...btnPrimaryStyle,
-                  fontSize: 12,
-                  padding: `${spacing.sm} ${spacing.md}`,
-                  background: savingNote ? colors.textSubtle : colors.primary,
-                  cursor: savingNote ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {savingNote ? t('therapist_saving') : t('therapist_save_note_btn')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {filteredNotes.length === 0 ? (
-          <p style={{ color: colors.textMuted, fontSize: 13 }}>
-            {t('therapist_no_notes')}
-          </p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-            {filteredNotes.map(note => (
-              <div key={note.id} style={{
-                padding: `${spacing.md} ${spacing.lg}`,
-                background: colors.bg,
-                borderRadius: radius.md,
-                border: `0.5px solid ${colors.border}`,
-              }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center',
-                  justifyContent: 'space-between', marginBottom: spacing.sm,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600,
-                      padding: `2px ${spacing.sm}`,
-                      borderRadius: radius.full,
-                      background: NOTE_TYPE_COLOR[note.type]?.bg ?? colors.primaryLight,
-                      color:      NOTE_TYPE_COLOR[note.type]?.color ?? colors.primaryDark,
-                    }}>
-                      {NOTE_TYPE_LABEL[note.type] ?? note.type}
-                    </span>
-                    <span style={{ fontSize: 12, color: colors.textMuted }}>
-                      {formatDate(note.sessionDate)}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => { setEditingNote(note); setEditContent(note.content) }}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: 12, color: colors.textSubtle,
-                      fontFamily: typography.fontBody,
-                    }}
-                  >
-                    {t('therapist_edit')}
-                  </button>
-                </div>
-
-                {editingNote?.id === note.id ? (
-                  <div>
-                    <textarea
-                      aria-label={t('therapist_note_label')}
-                      value={editContent}
-                      onChange={e => setEditContent(e.target.value)}
-                      rows={3}
-                      style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
-                    />
-                    <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.sm, justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => { setEditingNote(null); setEditContent('') }}
-                        style={{ ...btnSecondaryStyle, fontSize: 12, padding: `${spacing.xs} ${spacing.md}` }}
-                      >
-                        {t('btn_cancel')}
-                      </button>
-                      <button
-                        onClick={handleEditNote}
-                        disabled={savingEdit}
-                        style={{
-                          ...btnPrimaryStyle,
-                          fontSize: 12,
-                          padding: `${spacing.xs} ${spacing.md}`,
-                          background: savingEdit ? colors.textSubtle : colors.primary,
-                          cursor: savingEdit ? 'not-allowed' : 'pointer',
-                        }}
-                      >
-                        {savingEdit ? t('therapist_saving') : t('btn_save')}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 13, color: colors.text, margin: 0, lineHeight: 1.6 }}>
-                    {note.content}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+      {/* NOTAS DE SEGUIMIENTO (ES-178 F1) */}
+      <div style={{ marginBottom: spacing.lg }}>
+        <FollowupNotes personId={String(id)} notes={notes} reload={refreshHistory} t={t} locale={locale} />
       </div>
 
-      {/* MOOD + RATINGS GRID */}
+      {/* HISTORIAL EMOCIONAL Y VALORACIONES (ES-178 F1) */}
       <div className="th-pair">
-
-        <div style={cardStyle}>
-          <h2 style={{
-            fontFamily: typography.fontDisplay, fontWeight: 400,
-            fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}`,
-          }}>
-            {t('therapist_emotional_history')}
-          </h2>
-          {moodLogs.length === 0 ? (
-            <p style={{ color: colors.textMuted, fontSize: 13 }}>{t('therapist_no_moods')}</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              {moodLogs.map(log => (
-                <div key={log.id} style={rowStyle}>
-                  <span style={{ fontSize: 12, color: colors.textMuted }}>
-                    {formatDate(log.date)}
-                  </span>
-                  <div style={{ display: 'flex', gap: spacing.lg, alignItems: 'center' }}>
-                    {log.checkin_mood != null && (
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '1rem' }}>{MOOD_EMOJI[log.checkin_mood]}</div>
-                        <div style={{ fontSize: 10, color: colors.textSubtle }}>{t('therapist_checkin')}</div>
-                      </div>
-                    )}
-                    {log.checkout_mood != null && (
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '1rem' }}>{MOOD_EMOJI[log.checkout_mood]}</div>
-                        <div style={{ fontSize: 10, color: colors.textSubtle }}>{t('therapist_checkout')}</div>
-                      </div>
-                    )}
-                    {log.checkin_mood != null && log.checkout_mood != null && (
-                      <span style={{
-                        fontSize: 12, fontWeight: 600,
-                        color: log.checkout_mood >= log.checkin_mood ? colors.success : colors.danger,
-                      }}>
-                        {log.checkout_mood >= log.checkin_mood ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div style={cardStyle}>
-          <h2 style={{
-            fontFamily: typography.fontDisplay, fontWeight: 400,
-            fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}`,
-          }}>
-            {t('therapist_session_ratings')}
-          </h2>
-          {ratings.length === 0 ? (
-            <p style={{ color: colors.textMuted, fontSize: 13 }}>{t('therapist_no_ratings')}</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              {ratings.map(r => (
-                <div key={r.id} style={rowStyle}>
-                  <span style={{ fontSize: 12, color: colors.textMuted }}>
-                    {formatDate(r.date)}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                    <span style={{ fontSize: '0.9rem', color: colors.primary }}>
-                      {'★'.repeat(r.rating)}
-                      <span style={{ color: colors.border }}>{'★'.repeat(5 - r.rating)}</span>
-                    </span>
-                    <span style={{ fontSize: 12, color: colors.textMuted }}>
-                      {MOOD_LABEL[r.rating] ?? r.rating}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <MoodHistoryBlock moodLogs={moodLogs} t={t} locale={locale} />
+        <RatingsBlock ratings={ratings} t={t} locale={locale} />
       </div>
 
       {/* MODAL AGENDAR SESIÓN */}
