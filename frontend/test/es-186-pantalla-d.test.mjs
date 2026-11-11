@@ -182,3 +182,14 @@ test('seguridad y privacidad de la pantalla: el nombre exacto sigue siendo oblig
   const invite = source('AdminUsersInvite.tsx')
   assert.match(invite, /attempt\.idFor\(email, role\)/); assert.match(invite, /requestId/); assert.match(invite, /attempt\.renew\(\)/)
 })
+
+test('E228-1: tras el 409 has_dependent_data se ofrece «Desactivar en su lugar» (solo si la cuenta está activa), que pasa por la confirmación de desactivar, con foco y en ES/EN', () => {
+  const manage = source('AdminUsersManage.tsx')
+  assert.ok(manage.includes("setMode('main'); setDeleteInput(''); setBlocked(true)"), 'el 409 cierra el diálogo de eliminar y marca el bloqueo')
+  assert.ok(manage.includes("blocked && mode === 'main' && person.active && !locked"), 'solo con cuenta activa y sin eliminación en curso')
+  assert.ok(manage.includes("autoFocus onClick={() => { setBlocked(false); setMsg(null); setMode('deactivate') }}"), 'con foco y hacia la confirmación existente')
+  assert.ok(manage.includes("{tr('Desactivar en su lugar')}"))
+  assert.ok(manage.includes("setMode('delete'); setMsg(null); setBlocked(false)"), 'volver a abrir eliminar limpia el bloqueo')
+  assert.equal(adminText('Desactivar en su lugar', 'en'), 'Deactivate instead')
+  assert.equal((manage.match(/body: { active }/g) || []).length, 1, 'la acción final sigue siendo la de desactivar, no un camino nuevo al servidor')
+})

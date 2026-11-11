@@ -25,6 +25,7 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
   const [roleDraft, setRoleDraft] = useState<Role>(person.role)
   const [therapistDraft, setTherapistDraft] = useState<string>(person.therapistId ? String(person.therapistId) : '')
   const [deleteInput, setDeleteInput] = useState('')
+  const [blocked, setBlocked] = useState(false) // E228-1: tras un 409 has_dependent_data se ofrece «Desactivar en su lugar»
   const status = statusOf(person)
   const locked = status === 'deletion'
   const requestsDeletion = person.role === 'user'
@@ -62,7 +63,7 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
       setMode('main'); setDeleteInput(''); onChanged()
       setMsg({ kind: 'ok', text: result.repeated ? MSG.deletionRepeated : MSG.deletionRequested })
     } else if (result.kind === 'deleted') { onNotice(MSG.deleted); onChanged(); onClose() }
-    else if (result.kind === 'blocked') { setMode('main'); setMsg({ kind: 'error', text: MSG.deleteBlocked }) }
+    else if (result.kind === 'blocked') { setMode('main'); setDeleteInput(''); setBlocked(true); setMsg({ kind: 'error', text: MSG.deleteBlocked }) }
     else setMsg({ kind: 'error', text: result.message })
   }
 
@@ -79,6 +80,11 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
       </div>
 
       <div aria-live="polite">{msg && <div role={msg.kind === 'error' ? 'alert' : 'status'} style={notice(msg.kind)}>{tr(msg.text)}</div>}</div>
+      {blocked && mode === 'main' && person.active && !locked && (
+        <div style={{ marginBottom: spacing.md }}>
+          <button type="button" style={btn.danger} autoFocus onClick={() => { setBlocked(false); setMsg(null); setMode('deactivate') }} disabled={busy !== null}>{tr('Desactivar en su lugar')}</button>
+        </div>
+      )}
 
       {locked ? (
         <p style={{ fontSize: '0.875rem', color: colors.textMuted }}>{tr(MSG.deletionLocked)}</p>
@@ -138,7 +144,7 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
           {isSuper && (
             <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
               <button type="button" style={btn.ghost} onClick={() => void sendReset()} {...dis('reset')}>{busy === 'reset' ? tr('Enviando...') : tr('Enviar enlace de restablecimiento')}</button>
-              <button type="button" style={btn.danger} onClick={() => { setMode('delete'); setMsg(null) }} disabled={busy !== null}>{requestsDeletion ? tr('Solicitar eliminación…') : tr('Eliminar…')}</button>
+              <button type="button" style={btn.danger} onClick={() => { setMode('delete'); setMsg(null); setBlocked(false) }} disabled={busy !== null}>{requestsDeletion ? tr('Solicitar eliminación…') : tr('Eliminar…')}</button>
             </div>
           )}
         </>

@@ -262,6 +262,7 @@ export const adminEnglish: Record<string, string> = {
   'Asignar': 'Assign',
   'Solicitar eliminación': 'Request deletion',
   'Solicitar eliminación…': 'Request deletion…',
+  'Desactivar en su lugar': 'Deactivate instead',
   'Eliminar…': 'Delete…',
   'Escribe el nombre exacto:': 'Type the exact name:',
   'No podrá entrar; sus datos se conservan.': 'They will not be able to sign in; their data is kept.',
