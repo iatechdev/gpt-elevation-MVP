@@ -9,7 +9,7 @@
     },
     {
       "id": "U1-texto-antes",
-      "info": "Gestionar · Ána Ñandú 1794381971175 qa186d-pr-1794381971175@example.test Persona usuaria Activa Se desactivará la cuenta y la persona no podrá entrar. El borrado de sus datos se completa en el proceso de mantenimiento. ESCRIBE EL NOMBRE EXACTO: ÁNA ÑANDÚ 1794381971175 Cancelar Solicitar eliminación Cerrar"
+      "info": "Gestionar · Ána Ñandú 1794382232136 qa186d-pr-1794382232136@example.test Persona usuaria Activa Se desactivará la cuenta y la persona no podrá entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. ESCRIBE EL NOMBRE EXACTO: ÁNA ÑANDÚ 179"
     },
     {
       "id": "U1b nombre exacto: con mayúsculas/minúsculas distintas, espacio final, sin tildes, incompleto, vacío o con la tilde descompuesta (NFD) el botón «Solicitar eliminación» queda DESHABILITADO y NO se hizo ninguna llamada DELETE; solo con el nombre exacto se habilita",
@@ -18,27 +18,27 @@
     },
     {
       "id": "U1c el texto del diálogo NO promete borrado inmediato ni total y lleva la SALVEDAD DE RETENCIÓN (ES-274: «salvo los que deban conservarse según la política de retención, en definición»)",
-      "ok": false,
-      "detail": "Gestionar · Ána Ñandú 1794381971175 qa186d-pr-1794381971175@example.test Persona usuaria Activa Se desactivará la cuenta y la persona no podrá entrar. El borrado de sus datos se completa en el proceso de mantenimiento. ESCRIBE EL NOMBRE EXACTO: ÁNA ÑANDÚ 1794381971175 Cancelar Solicitar eliminación "
+      "ok": true,
+      "detail": "Gestionar · Ána Ñandú 1794382232136 qa186d-pr-1794382232136@example.test Persona usuaria Activa Se desactivará la cuenta y la persona no podrá entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. ESCRIBE E"
     },
     {
       "id": "U1d 202 → mensaje de éxito (región `role=\"status\"`) «Eliminación solicitada. La cuenta ya no puede entrar; sus datos se borran en el proceso de mantenimiento.»: SIN plazo, fecha, ni número de días/horas; UNA llamada DELETE; solicitud aceptada en la base",
       "ok": true,
-      "detail": "Eliminación solicitada. La cuenta ya no puede entrar; sus datos se borran en el proceso de mantenimiento. · llamadas=1 · base=accepted"
+      "detail": "Eliminación solicitada. La cuenta ya no puede entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. · llamadas=1 · base=accepted"
     },
     {
       "id": "U1-texto-éxito-retención",
-      "info": "¿el mensaje de éxito lleva la salvedad de retención? NO"
+      "info": "¿el mensaje de éxito lleva la salvedad de retención? SÍ"
     },
     {
       "id": "U1e al cerrar, la fila de la persona muestra la etiqueta «Eliminación solicitada» y al reabrir «Gestionar» no hay acciones (no «Desactivar…», no «Solicitar eliminación…», no rol/profesional editable) sino el aviso de que ya fue solicitada",
       "ok": true,
-      "detail": "Ána Ñandú 1794381971175 qa186d-pr-1794381971175@example.test Persona usuaria Eliminación solicitada — — 11 de nov de 2026 Gestionar"
+      "detail": "Ána Ñandú 1794382232136 qa186d-pr-1794382232136@example.test Persona usuaria Eliminación solicitada — — 11 de nov de 2026 Gestionar"
     },
     {
       "id": "U1f tras RECARGAR la página la fila sigue marcada «Eliminación solicitada» (viene de `deletionRequested` del listado), igual que una persona solicitada antes de abrir la pantalla",
       "ok": true,
-      "detail": "Ána Ñandú 1794381971175 qa186d-pr-1794381971175@example.test Persona usuaria Eliminación solicitada  | Beatriz Ya Solicitada 1794381971175 qa186d-pre-1794381971175@example.test Persona usuaria Eliminació"
+      "detail": "Ána Ñandú 1794382232136 qa186d-pr-1794382232136@example.test Persona usuaria Eliminación solicitada  | Beatriz Ya Solicitada 1794382232136 qa186d-pre-1794382232136@example.test Persona usuaria Eliminació"
     },
     {
       "id": "U1g lista desactualizada (la eliminación ya se había pedido por otra vía): el servidor responde `repeated:true` y la pantalla dice «La eliminación ya estaba solicitada.» (no un éxito nuevo)",
@@ -47,15 +47,15 @@
     },
     {
       "id": "U2-dialogo profesional libre",
-      "info": "Gestionar · Eva Profesional Libre 1794381971175 qa186d-tf-1794381971175@example.test Profesional Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
+      "info": "Gestionar · Eva Profesional Libre 1794382232136 qa186d-tf-1794382232136@example.test Profesional Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
     },
     {
       "id": "U2-dialogo junta libre",
-      "info": "Gestionar · Gael Junta Libre 1794381971175 qa186d-bf-1794381971175@example.test Junta ética Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
+      "info": "Gestionar · Gael Junta Libre 1794382232136 qa186d-bf-1794382232136@example.test Junta ética Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
     },
     {
       "id": "U2-dialogo admin libre",
-      "info": "Gestionar · Hilda Admin Libre 1794381971175 qa186d-af-1794381971175@example.test Administración Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
+      "info": "Gestionar · Hilda Admin Libre 1794382232136 qa186d-af-1794382232136@example.test Administración Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
     },
     {
       "id": "U2a profesional, junta y administración SIN dependencias: el botón es «Eliminar…» (no «Solicitar»), el diálogo advierte que «no se puede deshacer», con nombre exacto el servidor responde 200, aparece «Cuenta eliminada.» y la fila desaparece",
@@ -64,7 +64,7 @@
     },
     {
       "id": "U2-dialogo con dependencias",
-      "info": "Gestionar · Félix Profesional Con Personas 1794381971175 qa186d-td-1794381971175@example.test Profesional Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar · filas visibles: 17"
+      "info": "Gestionar · Félix Profesional Con Personas 1794382232136 qa186d-td-1794382232136@example.test Profesional Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar · filas visibles: 17"
     },
     {
       "id": "U2b profesional CON una persona vinculada: 409 `has_dependent_data` → «No se puede eliminar: la cuenta tiene datos o vínculos asociados. Puedes desactivarla; sus datos se conservan.» por `code` (sin el texto crudo del servidor), la cuenta sigue y el vínculo intacto",
@@ -79,7 +79,7 @@
     {
       "id": "U2d «Desactivar» (con confirmación) desactiva la cuenta (PUT activo=false) y se refleja «Inactiva» con el mensaje «La cuenta quedó desactivada. Sus datos se conservan.»",
       "ok": true,
-      "detail": "Gestionar · Félix Profesional Con Personas 1794381971175 qa186d-td-1794381971175@example.test Profesional Inactiva La cuenta quedó desactivada. Sus datos se conservan. Activar ROL Persona usuaria Prof"
+      "detail": "Gestionar · Félix Profesional Con Personas 1794382232136 qa186d-td-1794382232136@example.test Profesional Inactiva La cuenta quedó desactivada. Sus datos se conservan. Activar ROL Persona usuaria Prof"
     },
     {
       "id": "U2e el rol `admin` NO ve «Enviar enlace de restablecimiento», «Solicitar eliminación…» ni «Eliminar…» (acciones de alto impacto solo del superadmin; el servidor las rechaza con 403 `superadmin_only`)",
@@ -89,7 +89,7 @@
     {
       "id": "U3a «Enviar invitación» con DOBLE CLIC: cada solicitud lleva un `requestId` UUID válido (8–64 caracteres seguros), todas las que salieron llevan el MISMO, y en la base hay UNA sola invitación",
       "ok": true,
-      "detail": "solicitudes=1 ids=707a9e73-e0e5-4878-956f-6f0f3bf0293f filas=1"
+      "detail": "solicitudes=1 ids=65c29d0a-1854-4cd3-9b7f-7c1ca4849c1f filas=1"
     },
     {
       "id": "U3b sin proveedor de correo (`emailSent:false`) la pantalla dice «Invitación registrada, pero no se envió ningún correo: el envío de correo no está configurado. La persona todavía no tiene su enlace.» y NUNCA «Invitación enviada»",
@@ -99,7 +99,7 @@
     {
       "id": "U3c tras un éxito el `requestId` se RENUEVA (la siguiente invitación usa otro) y al cambiar el correo también",
       "ok": true,
-      "detail": "707a9e73 → 349e2186 → 9d206757 (1 solicitudes previas)"
+      "detail": "65c29d0a → 9db1cd1f → f060a4f2 (1 solicitudes previas)"
     },
     {
       "id": "U3d respuesta PERDIDA (la invitación se creó pero el navegador no la recibió): la pantalla dice «Error de conexión.», el REINTENTO usa el MISMO `requestId`, el servidor responde `replayed` y la pantalla dice «Invitación ya creada para ese correo. Si no llegó, anúlala y crea otra.» (sin afirmar que el correo salió); UNA invitación en la base",
@@ -129,16 +129,16 @@
     {
       "id": "U3i con `emailSent:true` (respuesta simulada con caducidad) la pantalla dice «Invitación enviada a <correo>. El enlace caduca el <fecha y hora COMPLETAS con a. m./p. m.>.» SIN doble punto (E186-9) y sin recortar la hora (E186-1)",
       "ok": true,
-      "detail": "«Invitación enviada a inv-s-1794381971175@example.test. El enlace caduca el 14/11/2026, 8:01 a. m.»"
+      "detail": "«Invitación enviada a inv-s-1794382232136@example.test. El enlace caduca el 14/11/2026, 8:01 a. m.»"
     },
     {
       "id": "U3-expiración",
-      "info": "caducidad devuelta por el servidor: 2026-11-14T07:27:11.576Z; la fecha local se formatea sin recortes (E186-1) y sin doble punto (E186-9): se comprueba en el recorrido «enviada» solo con proveedor de correo (no disponible aquí)"
+      "info": "caducidad devuelta por el servidor: 2026-11-14T07:31:20.259Z; la fecha local se formatea sin recortes (E186-1) y sin doble punto (E186-9): se comprueba en el recorrido «enviada» solo con proveedor de correo (no disponible aquí)"
     },
     {
       "id": "U4a emparejamientos: «Confirmar emparejamiento» tiene efecto visible («Emparejamiento confirmado: … → …») y en la base la solicitud queda `confirmed`; el contador de la pestaña baja",
       "ok": true,
-      "detail": "Emparejamiento confirmado: Match 2 1794381971175 → QA Prof 1794381971175 · Emparejamientos (2)"
+      "detail": "Emparejamiento confirmado: Match 2 1794382232136 → QA Prof 1794382232136 · Emparejamientos (2)"
     },
     {
       "id": "U4b `request_closed`: dos ventanas ven la misma solicitud de plan; una la aprueba («Solicitud aprobada: …») y la otra intenta aprobarla → «Otra persona ya resolvió esta solicitud. La lista se actualizó.» (por código, sin texto crudo), la lista se RECARGA y la solicitud ya no aparece; la base muestra un solo efecto",
@@ -148,12 +148,12 @@
     {
       "id": "U4c rechazar sin motivo → «Escribe el motivo.» y NO se llama al servidor",
       "ok": true,
-      "detail": "Rechazar solicitud Plan 2 1794381971175 → Plan QA MOTIVO (OBLIGATORIO) Escribe el motivo. Cancelar Rechazar"
+      "detail": "Rechazar solicitud Plan 2 1794382232136 → Plan QA MOTIVO (OBLIGATORIO) Escribe el motivo. Cancelar Rechazar"
     },
     {
       "id": "U4d rechazar con motivo → «Solicitud rechazada: …», se registra la nota y el estado `rejected` en la base",
       "ok": true,
-      "detail": "Solicitud rechazada: Plan 2 1794381971175"
+      "detail": "Solicitud rechazada: Plan 2 1794382232136"
     },
     {
       "id": "U4e una pestaña con error (el servidor devuelve 500 para emparejamientos) muestra «No se pudo cargar esta sección.» con «Reintentar» y la pestaña Personas sigue funcionando",
@@ -193,7 +193,7 @@
     {
       "id": "U6a teclado: al abrir con Enter el foco queda DENTRO del diálogo; con 28 pulsaciones de Tab/Shift+Tab nunca sale; Esc lo cierra y el foco vuelve al botón «Gestionar <nombre>» que lo abrió",
       "ok": true,
-      "detail": "dentro=true trampa=true vuelve a «Gestionar Dora Inglés 1794381971175»"
+      "detail": "dentro=true trampa=true vuelve a «Gestionar Dora Inglés 1794382232136»"
     },
     {
       "id": "U6b roles TRADUCIDOS (E186-8): ni la tabla, ni las etiquetas, ni el filtro muestran `user`/`therapist`/`admin`/`superadmin`/`board` crudos (Persona usuaria, Profesional, Administración, Superadministración, Junta ética)",
