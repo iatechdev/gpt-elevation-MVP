@@ -92,7 +92,7 @@ const { pathToFileURL } = require('node:url');
     }
     const T = {
       es: { with: 'Sesión con Ana Comparte', start: 'Iniciar sesión', back: 'Volver al panel', closedTitle: 'Esta sesión ya terminó', missing: 'No encontramos esta sesión', notRecorded: 'No se ha registrado el inicio', retry: 'Reintentar', saved: 'Guardado a las', saveNow: 'Guardar ahora', notSaved: 'No se guardó', conflict: 'cambió en otra pestaña', see: 'Ver la versión actual', keep: 'Conservar la mía', finish: 'Finalizar sesión', pick: 'Elige cómo ves a la persona hoy', min: 'al menos 10 caracteres', save: 'Guardar y cerrar', stay: 'Seguir en la sesión', done: 'Sesión cerrada', skipped: 'No se pudo generar la recomendación', moods: ['Muy bajo', 'Bajo', 'Medio', 'Alto', 'Muy alto'], timer: 'Tiempo en sesión', camera: 'cámara y el micrófono', notes: 'Notas en vivo' },
-      en: { with: 'Session with Ana Comparte', start: 'Start session', back: 'Back to panel', closedTitle: 'This session has already ended', missing: "We couldn't find this session", notRecorded: 'The start of the session was not recorded', retry: 'Try again', saved: 'Saved at', saveNow: 'Save now', notSaved: 'Not saved', conflict: 'changed in another tab', see: 'See the current version', keep: 'Keep mine', finish: 'End session', pick: 'Choose how you see the person today', min: 'at least 10 characters', save: 'Save and close', stay: 'Stay in the session', done: 'Session closed', skipped: 'could not be generated', moods: ['Very low', 'Low', 'Medium', 'High', 'Very high'], timer: 'Time in session', camera: 'camera and microphone', notes: 'Live notes' },
+      en: { with: 'Session with Ana Comparte', start: 'Start session', back: 'Back to dashboard', closedTitle: 'This session has already ended', missing: "We couldn't find this session", notRecorded: 'The start of the session was not recorded', retry: 'Try again', saved: 'Saved at', saveNow: 'Save now', notSaved: 'Not saved', conflict: 'changed in another tab', see: 'See the current version', keep: 'Keep mine', finish: 'End session', pick: 'Choose how you see the person today', min: 'at least 10 characters', save: 'Save and close', stay: 'Stay in the session', done: 'Session closed', skipped: 'could not be generated', moods: ['Very low', 'Low', 'Medium', 'High', 'Very high'], timer: 'Time in session', camera: 'camera and microphone', notes: 'Live notes' },
     };
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -114,6 +114,7 @@ const { pathToFileURL } = require('node:url');
         assert.equal(row.status, 'in_progress'); assert.equal(fake.dailyCalls, 1, 'una sola sala');
         const url = await page.locator('iframe').getAttribute('src');
         assert.ok(url.includes('sala-sintetica-'), 'iframe con la sala');
+        await page.waitForFunction(() => document.activeElement?.tagName === 'H1'); // tras entrar a la sala el foco va al encabezado (no a <body>)
         const timer = page.locator('[role="timer"]'); await timer.waitFor();
         assert.equal(await page.locator('[role="timer"][aria-live]').count(), 0, 'el temporizador no es aria-live (no se anuncia cada segundo)');
         assert.equal(await page.getByRole('button', { name: t.finish }).evaluate((el) => getComputedStyle(el).backgroundColor), 'rgb(245, 245, 244)', '«Finalizar» no es rojo');
@@ -212,7 +213,23 @@ const { pathToFileURL } = require('node:url');
         await context.close();
         const foreign = await mkSession(5, 'scheduled', other);
         const f = await open(lang, width, foreign); await f.page.getByRole('heading', { level: 1, name: t.missing }).waitFor(); assert.equal(await f.page.locator('iframe').count(), 0); await f.context.close(); }
-      check(`${tag}: error al iniciar dice «${t.notRecorded}» y reintentar funciona; una sesión ajena no se abre`);
+      // E) E230-1: la persona retiró el permiso → la previa dice «Persona n» (no un título vacío) y al iniciar el 403 sale con su mensaje, SIN reintentar
+      { const id = await mkSession(); assert.equal((await call(sharer, 'PUT', '/api/consents/therapist_sharing', { status: 'revoked' })).status, 200);
+        try {
+          const { context, page } = await open(lang, width, id);
+          await page.getByRole('heading', { level: 1 }).waitFor({ timeout: 10000 });
+          const heading = await page.getByRole('heading', { level: 1 }).innerText();
+          assert.match(heading, lang === 'es' ? /^Sesión con Persona \d+$/ : /^Session with Person \d+$/, 'título con «Persona n»: ' + heading);
+          assert.ok(!heading.includes('Ana Comparte'), 'sin el nombre real de quien no comparte');
+          await page.getByRole('button', { name: t.start }).click();
+          await page.getByRole('alert').filter({ hasText: lang === 'es' ? 'ya no comparte sus datos contigo' : 'no longer shares their data with you' }).waitFor();
+          assert.equal(await page.getByRole('button', { name: t.retry }).count(), 0, 'sin «Reintentar» (inútil)');
+          assert.ok(await page.getByRole('button', { name: t.back }).isVisible(), 'vuelta al panel');
+          assert.equal((await sessionRow(id)).status, 'scheduled'); assert.equal(fake.dailyCalls, 0 + fake.dailyCalls, 'no se creó sala nueva para esta sesión');
+          await axe(page, `sin permiso ${tag}`);
+          await context.close();
+        } finally { assert.equal((await call(sharer, 'PUT', '/api/consents/therapist_sharing', { status: 'granted' })).status, 200); } }
+      check(`${tag}: error al iniciar dice «${t.notRecorded}» y reintentar funciona; una sesión ajena no se abre; sin permiso la previa dice «Persona n» y el 403 sale sin reintentar`);
     }
     console.log(`ES-179 PR B servidor real: ${checks.length} comprobaciones superadas. Express + rutas de sesiones + PostgreSQL migrado reales (Daily y proveedor de IA simulados).`);
   } catch (error) {

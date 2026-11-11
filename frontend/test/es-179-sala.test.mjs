@@ -55,3 +55,13 @@ test('ES-179: la sala no usa emojis, «Finalizar» no es rojo, el temporizador n
     .concat(['sr_mood_1', 'sr_mood_2', 'sr_mood_3', 'sr_mood_4', 'sr_mood_5', 'sr_skipped_budget', 'sr_skipped_unavailable', 'sr_skipped_provider', 'sr_milestone_five_left', 'sr_milestone_planned'])
   for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
 })
+
+// E230: quien no comparte se llama «Persona n» (nunca un título vacío) y el 403 al iniciar no ofrece «Reintentar»; el foco entra al encabezado de la sala.
+test('ES-179 (E230): «Persona n» en la previa, 403 sin reintentar y foco al encabezado de la sala', () => {
+  const room = read('../src/pages/therapist/SessionRoom.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.ok(room.includes("session.patientName ?? (session.patientOrdinal ? t('sr_person'"))
+  assert.doesNotMatch(room, /patientName \?\? ''/)
+  assert.ok(room.includes("res.status === 403) { setStartFailure('access')") && room.includes("!(phase === 'start_error' && startFailure === 'access')"))
+  assert.ok(room.includes('<h1 ref={title} tabIndex={-1} className="sr-visually-hidden">'))
+  for (const key of ['sr_person', 'sr_person_plain', 'sr_start_no_access']) assert.equal((copy.match(new RegExp('\\b' + key + ':', 'g')) ?? []).length, 2, key)
+})

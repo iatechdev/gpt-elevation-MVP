@@ -14,7 +14,7 @@ import '../../styles/session-room.css'
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
 
-interface RoomSession { id: number; patientId: number; patientName: string; scheduledAt: string; duration: number | null; status: string; startedAt?: string | null }
+interface RoomSession { id: number; patientId: number; patientName: string | null; patientOrdinal?: number | null; sharing?: boolean; scheduledAt: string; duration: number | null; status: string; startedAt?: string | null }
 type Phase = 'loading' | 'missing' | 'previa' | 'connecting' | 'start_error' | 'room' | 'closed' | 'done'
 
 export function SessionRoom() {
@@ -26,7 +26,7 @@ export function SessionRoom() {
   const [session, setSession] = useState<RoomSession | null>(null)
   const [meetingUrl, setMeetingUrl] = useState('')
   const [startedAt, setStartedAt] = useState<string | null>(null)
-  const [startFailure, setStartFailure] = useState<'room' | 'other'>('other')
+  const [startFailure, setStartFailure] = useState<'room' | 'access' | 'other'>('other')
   const [now, setNow] = useState(() => Date.now())
   const [skipped, setSkipped] = useState<CloseResult['skipped']>(null)
   const notes = useRef<LiveNotesHandle>(null)
@@ -40,6 +40,7 @@ export function SessionRoom() {
       const body = await res.json().catch(() => ({})) as { meetingUrl?: string; startedAt?: string; code?: string }
       if (res.ok && body.meetingUrl) { setMeetingUrl(body.meetingUrl); setStartedAt(body.startedAt ?? null); setPhase('room'); return }
       if (body.code === 'session_not_startable') { setPhase('closed'); return }
+      if (res.status === 403) { setStartFailure('access'); setPhase('start_error'); return } // E230-1: la persona retiró el permiso: no se puede iniciar y reintentar no sirve
       setStartFailure(body.code === 'room_unavailable' ? 'room' : 'other'); setPhase('start_error')
     } catch { setStartFailure('other'); setPhase('start_error') }
   }, [id])
@@ -73,6 +74,8 @@ export function SessionRoom() {
 
   const seconds = elapsedSeconds(startedAt, now)
   const hito = milestone(seconds, session?.duration ?? null)
+  // E230-1: quien no comparte llega sin nombre (patientName null) y con un número estable por profesional: «Persona n», nunca un título vacío.
+  const person = session ? (session.patientName ?? (session.patientOrdinal ? t('sr_person', { n: session.patientOrdinal }) : t('sr_person_plain'))) : ''
   const when = session ? new Date(session.scheduledAt).toLocaleString(locale, { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''
 
   if (phase === 'loading') return <div className="sr-screen sr-center" role="status">{t('sr_loading')}</div>
@@ -91,14 +94,14 @@ export function SessionRoom() {
   )
   if (phase === 'previa' || phase === 'connecting' || phase === 'start_error') return (
     <div className="sr-screen sr-center">
-      <h1 ref={title} tabIndex={-1} className="sr-title">{t('sr_with', { name: session?.patientName ?? '' })}</h1>
+      <h1 ref={title} tabIndex={-1} className="sr-title">{t('sr_with', { name: person })}</h1>
       <p className="sr-hint">{when}{session?.duration ? ` · ${t('sr_minutes', { n: session.duration })}` : ''}</p>
       <p className="sr-body sr-wide">{t('sr_previa_start')}</p>
       <p className="sr-body sr-wide">{t('sr_previa_permissions')}</p>
       <div role="status" aria-busy={phase === 'connecting'} className="sr-hint">{phase === 'connecting' ? t('sr_connecting') : ''}</div>
-      {phase === 'start_error' && <div role="alert" className="sr-problem-dark sr-wide"><p>{t(startFailure === 'room' ? 'sr_start_not_recorded' : 'sr_start_error')}</p></div>}
+      {phase === 'start_error' && <div role="alert" className="sr-problem-dark sr-wide"><p>{t(startFailure === 'room' ? 'sr_start_not_recorded' : startFailure === 'access' ? 'sr_start_no_access' : 'sr_start_error')}</p></div>}
       <div className="sr-actions">
-        <button type="button" className="sr-btn sr-btn-primary" disabled={phase === 'connecting'} onClick={() => void start()}>{phase === 'start_error' ? t('sr_retry') : t('sr_start')}</button>
+        {!(phase === 'start_error' && startFailure === 'access') && <button type="button" className="sr-btn sr-btn-primary" disabled={phase === 'connecting'} onClick={() => void start()}>{phase === 'start_error' ? t('sr_retry') : t('sr_start')}</button>}
         <button type="button" className="sr-btn" disabled={phase === 'connecting'} onClick={back}>{t('room_t_back')}</button>
       </div>
     </div>
@@ -106,6 +109,7 @@ export function SessionRoom() {
 
   return (
     <div className="sr-screen sr-room th-a11y">
+      <h1 ref={title} tabIndex={-1} className="sr-visually-hidden">{t('sr_with', { name: person })}</h1>
       <div className="sr-video">
         <iframe src={meetingUrl} allow="camera; microphone; fullscreen; display-capture; autoplay" title={t('room_iframe_title')} className="sr-iframe" />
         <div className="sr-bar">
