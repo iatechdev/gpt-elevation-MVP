@@ -180,6 +180,7 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
     const ok = await send(superadmin, `/api/junta/${id}/download`, null, 'GET');
     assert.equal(ok.status, 200);
     assert.match(ok.body.url, /^https:\/\/storage\.example\.invalid\//);
+    assert.deepEqual([ok.body.expiresIn, ok.body.expiresInSeconds], ['15 minutos', 900], 'E221-1: la vigencia informada es la efectiva de la URL firmada');
     for (const bad of ['abc', '-1', '0', '99999999999', '1.5']) {
       const r = await send(superadmin, `/api/junta/${bad}/download`, null, 'GET');
       assert.deepEqual([r.status, r.body.code], [404, 'not_found'], bad);
