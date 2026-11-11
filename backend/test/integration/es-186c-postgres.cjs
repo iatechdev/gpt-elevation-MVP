@@ -12,6 +12,19 @@ const { Sequelize } = require('sequelize');
 
 const backend = path.resolve(__dirname, '..', '..');
 
+// ES-186 D · Contrato con la pantalla: la respuesta REAL del servidor se guarda como fixture del frontend (ES186_WRITE_FIXTURE=1) y cada corrida comprueba que su forma no cambió.
+const fixtureFs = require('node:fs');
+const FIXTURES = path.join(__dirname, '..', '..', '..', 'frontend', 'test', 'fixtures');
+const shapeOf = (v) => (v === null ? null : Array.isArray(v) ? [v.length ? shapeOf(v[0]) : null] : (v && typeof v === 'object') ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, shapeOf(v[k])])) : typeof v);
+const sameShape = (a, b) => (a === null || b === null) ? true : (Array.isArray(a) ? Array.isArray(b) && sameShape(a[0] ?? null, b[0] ?? null) : (a && typeof a === 'object') ? (b && typeof b === 'object' && !Array.isArray(b) && JSON.stringify(Object.keys(a)) === JSON.stringify(Object.keys(b)) && Object.keys(a).every((k) => sameShape(a[k], b[k]))) : typeof a === typeof b);
+function contractFixture(name, status, body) {
+  const file = path.join(FIXTURES, name);
+  if (process.env.ES186_WRITE_FIXTURE) { fixtureFs.mkdirSync(FIXTURES, { recursive: true }); fixtureFs.writeFileSync(file, JSON.stringify({ status, body }, null, 2) + String.fromCharCode(10)); return; }
+  const saved = JSON.parse(fixtureFs.readFileSync(file, 'utf8'));
+  assert.equal(saved.status, status, name);
+  assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES186_WRITE_FIXTURE=1 y revisa la pantalla`);
+}
+
 test('ES-186 parte C PostgreSQL + HTTP: «Eliminar» solicita la eliminación por ES-23 (sin huérfanos) y los profesionales solo se eliminan sin dependencias', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES186C_TEST_DATABASE_URL, 'Se requiere ES186C_TEST_DATABASE_URL (clúster desechable en loopback)');
   const target = new URL(process.env.ES186C_TEST_DATABASE_URL);
@@ -236,5 +249,27 @@ test('ES-186 parte C PostgreSQL + HTTP: «Eliminar» solicita la eliminación po
     assert.equal(JSON.stringify(after.body).includes('DeletionRequest'), false, 'sin estado ni identificadores de la solicitud');
     const freshAdmin = await mkUser('admin'); // (la cuenta adm de casos anteriores ya se eliminó)
     assert.equal((await http(freshAdmin, 'GET', '/api/admin/usuarios')).status, 200); // misma guarda de siempre
+  });
+
+  await t.test('contrato con la pantalla: respuestas reales de eliminar (202, repetida, 409 y 200) y un elemento del listado con deletionRequested', async () => {
+    const person = await mkUser('user');
+    const requested = await http(sup, 'DELETE', `/api/admin/usuarios/${person.id}`);
+    assert.equal(requested.status, 202); contractFixture('es-186-delete-requested.json', requested.status, requested.body);
+    const repeated = await http(sup, 'DELETE', `/api/admin/usuarios/${person.id}`);
+    assert.equal(repeated.status, 202); assert.equal(repeated.body.repeated, true); contractFixture('es-186-delete-repeated.json', repeated.status, repeated.body);
+    const patient = await mkUser('user'); const withNotes = await mkUser('therapist');
+    await seed('ClinicalNotes', 'therapistId', withNotes.id, patient.id);
+    const blocked = await http(sup, 'DELETE', `/api/admin/usuarios/${withNotes.id}`);
+    assert.equal(blocked.status, 409); assert.equal(blocked.body.code, 'has_dependent_data'); contractFixture('es-186-delete-blocked.json', blocked.status, blocked.body);
+    const clean = await mkUser('therapist');
+    const deleted = await http(sup, 'DELETE', `/api/admin/usuarios/${clean.id}`);
+    assert.equal(deleted.status, 200); assert.equal(deleted.body.code, 'deleted'); contractFixture('es-186-delete-deleted.json', deleted.status, deleted.body);
+    const list = await http(sup, 'GET', '/api/admin/usuarios');
+    const item = list.body.find((u) => u.id === person.id);
+    assert.equal(item.deletionRequested, true);
+    contractFixture('es-186-user-list.json', list.status, [item]);
+    const someAdmin = await mkUser('admin'); // (la cuenta adm de casos anteriores ya se eliminó)
+    const reset = await http(someAdmin, 'POST', `/api/admin/usuarios/${patient.id}/reset-link`, {});
+    assert.equal(reset.status, 403); assert.equal(reset.body.code, 'superadmin_only'); contractFixture('es-186-reset-link-superadmin-only.json', reset.status, reset.body);
   });
 });
