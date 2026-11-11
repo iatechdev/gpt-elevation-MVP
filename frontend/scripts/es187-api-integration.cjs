@@ -68,8 +68,8 @@ const { pathToFileURL } = require('node:url');
       return { context, page, errors };
     }
     const T = {
-      es: { create: 'Crear borrador', reason: 'Ya hay un borrador abierto', openDraft: 'Abrir borrador', complete: 'Completo', missing: 'Faltan datos', changed: 'Otra persona guardó este elemento mientras lo editabas', removed: 'Otra persona quitó este elemento del borrador', see: 'Ver su versión', hide: 'Ocultar su versión', keep: 'Conservar la mía', save: 'Guardar borrador', saved: 'Guardado en el borrador', session: 'Tu sesión venció', forbidden: 'No tienes permiso', login: 'Iniciar sesión', ready: 'Listo: pulsa' },
-      en: { create: 'Create draft', reason: 'A draft is already open', openDraft: 'Open draft', complete: 'Complete', missing: 'Data missing', changed: 'Someone else saved this item while you were editing it', removed: 'Someone else removed this item from the draft', see: 'See their version', hide: 'Hide their version', keep: 'Keep mine', save: 'Save draft', saved: 'Saved in draft', session: 'Your session expired', forbidden: 'You do not have permission', login: 'Sign in', ready: 'Ready: press' },
+      es: { create: 'Crear borrador', reason: 'Ya hay un borrador abierto', openDraft: 'Abrir borrador', complete: 'Completo', missing: 'Faltan datos', changed: 'Otra persona guardó este elemento mientras lo editabas', exists: 'Otra persona creó un elemento con esta clave', removed: 'Otra persona quitó este elemento del borrador', see: 'Ver su versión', hide: 'Ocultar su versión', keep: 'Conservar la mía', save: 'Guardar borrador', saved: 'Guardado en el borrador', session: 'Tu sesión venció', forbidden: 'No tienes permiso', login: 'Iniciar sesión', ready: 'Listo: pulsa' },
+      en: { create: 'Create draft', reason: 'A draft is already open', openDraft: 'Open draft', complete: 'Complete', missing: 'Data missing', changed: 'Someone else saved this item while you were editing it', exists: 'Someone else created an item with this key', removed: 'Someone else removed this item from the draft', see: 'See their version', hide: 'Hide their version', keep: 'Keep mine', save: 'Save draft', saved: 'Saved in draft', session: 'Your session expired', forbidden: 'You do not have permission', login: 'Sign in', ready: 'Ready: press' },
     };
     let draftId = 0;
     for (const lang of ['es', 'en']) for (const width of [390, 1360]) {
@@ -176,6 +176,25 @@ const { pathToFileURL } = require('node:url');
         await context.close();
         check(`${tag}: respuesta perdida → «${t.saved}» sin «No pudimos verificar», y el siguiente guardado no da un 409 falso`); }
       await catalog.upsertItem(draftId, 'contexts', KEY, original);
+
+      // G) ES-266: dos administradores crean la misma clave de un elemento NUEVO → la segunda no pisa en silencio
+      { const NEW = 'ctx_dos_admins';
+        const { context, page } = await open(lang, width, `/admin/route-catalog/${draftId}/contexts/new?create=1`);
+        await page.locator('#item-key').fill(NEW); await page.locator('#item-labels-es').fill('Mi nuevo'); await page.locator('#item-labels-en').fill('My new');
+        await catalog.upsertItem(draftId, 'contexts', NEW, withLabel('Su nuevo', 'Their new')); // la otra persona crea primero
+        await page.locator('#catalog-save').click();
+        await page.getByRole('alert').filter({ hasText: t.exists }).waitFor();
+        assert.equal((await dbItem(draftId, NEW)).labels.es, 'Su nuevo', 'la base NO se pisó con lo mío');
+        assert.equal(await page.locator('#item-labels-es').inputValue(), 'Mi nuevo', 'lo que escribí sigue en pantalla');
+        await page.waitForFunction(() => document.activeElement?.getAttribute('role') === 'alert');
+        await page.getByRole('button', { name: t.see }).click();
+        assert.ok((await page.locator('.catalog-conflict').innerText()).match(/Su nuevo|Their new/), 'muestra su versión');
+        await page.getByRole('button', { name: t.keep }).click(); await page.locator('#catalog-save').click();
+        for (let i = 0; i < 30 && (await dbItem(draftId, NEW)).labels.es !== 'Mi nuevo'; i++) await page.waitForTimeout(100);
+        assert.equal((await dbItem(draftId, NEW)).labels.es, 'Mi nuevo', 'tras decidirlo, se guarda lo mío');
+        await context.close();
+        check(`${tag}: elemento nuevo con una clave que otra persona ya creó → aviso con foco, la base no se pisa, lo escrito se conserva, «${t.see}» y «${t.keep}»`); }
+      await catalog.removeItem(draftId, 'contexts', 'ctx_dos_admins');
 
       // E) sesión vencida y sin permiso: pantallas propias
       for (const [status, expected] of [[401, t.session], [403, t.forbidden]]) {
