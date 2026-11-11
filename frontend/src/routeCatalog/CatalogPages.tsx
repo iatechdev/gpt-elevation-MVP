@@ -130,12 +130,12 @@ function ManagerSession({ session }: { session: string }) {
   async function run(action: 'create' | 'save' | 'remove' | 'publish') {
     if (locked.current || !ready || !current() || (action !== 'create' && !editable)) return
     if (action === 'save' && (!kind || !validKey(key))) { message('invalid', true); return }
-    if (action === 'save' && newItem && version?.items[kind!].some(item => item.itemKey === key)) { message('conflict', true); return }
+    if (action === 'save' && newItem && !stamp.current && version?.items[kind!].some(item => item.itemKey === key)) { message('conflict', true); return }
     locked.current = true; setBusy(true); setReady(false); dialog.current?.close(); setConfirmation(null); message('')
     let acknowledged: unknown; let failure: unknown
     try {
       if (action === 'create') acknowledged = await api.create()
-      if (action === 'save') acknowledged = await api.save(id, kind!, key, payload(kind!, data, synthetic), newItem ? undefined : stamp.current)
+      if (action === 'save') acknowledged = await api.save(id, kind!, key, payload(kind!, data, synthetic), newItem ? (stamp.current ?? null) : stamp.current)
       if (action === 'remove') { await api.remove(id, kind!, key); acknowledged = true }
       if (action === 'publish') acknowledged = await api.publish(id)
     } catch (e) { failure = e }
@@ -155,7 +155,7 @@ function ManagerSession({ session }: { session: string }) {
           const lost = !acknowledged && !(failure instanceof CatalogError && failure.status < 500)
           const expected = acknowledged ? payload(kind!, object(acknowledged), synthetic) : payload(kind!, data, synthetic)
           if ((acknowledged || lost) && persisted && canonical(payload(kind!, persisted, persisted.synthetic === true)) === canonical(expected)) { setData(payload(kind!, persisted, persisted.synthetic === true)); setBaseline(canonical(payload(kind!, persisted, persisted.synthetic === true))); stamp.current = string(persisted.updatedAt) || undefined; setClash(null); setShowTheirs(false); message('saved'); if (newItem) navigate(`/admin/route-catalog/${id}/${kind}/${key}`) }
-          else if (failure instanceof CatalogError && failure.code === 'item_changed') { setClash({ current: failure.current ?? null }); setShowTheirs(false); message(failure.current ? 'item_changed' : 'item_removed', true) }
+          else if (failure instanceof CatalogError && (failure.code === 'item_changed' || failure.code === 'item_exists')) { setClash({ current: failure.current ?? null }); setShowTheirs(false); message(failure.code === 'item_exists' ? 'item_exists' : failure.current ? 'item_changed' : 'item_removed', true) }
           else message(failure instanceof CatalogError && failure.status < 500 ? explain(failure) : 'uncertain', true)
         } else if (action === 'remove') {
           if (acknowledged && !refreshed.items[kind!].some(item => item.itemKey === key)) navigate(`/admin/route-catalog/${id}`)

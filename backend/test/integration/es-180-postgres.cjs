@@ -222,4 +222,13 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     }
     assert.equal((await call(adm, '/api/admin/usuarios/alerts')).body.sections.professionalsIncomplete.status, 'ok');
   });
+  // ES-263 (E257-2): el promedio de calificaciones de administración usa solo valores 1-5 (un valor fuera de escala no entra).
+  await t.test('ES-263: avgRating (general y por profesional) ignora calificaciones fuera de 1-5', async () => {
+    const before = (await call(adm, '/api/admin/metrics')).body;
+    const owner = people.find((p) => p.therapistId === pro.id) ?? people[0];
+    await sequelize.query('INSERT INTO "SessionRatings" ("UserId","rating","date","createdAt","updatedAt") VALUES ($1,30000,CURRENT_DATE,now(),now()),($1,30000,CURRENT_DATE,now(),now()),($1,0,CURRENT_DATE,now(),now())', { bind: [owner.id] });
+    const after = (await call(adm, '/api/admin/metrics')).body;
+    assert.equal(after.avgRating, before.avgRating, 'tres valores fuera de escala (30000, 30000 y 0) no cambian el promedio general');
+    assert.deepEqual(after.topTherapists.map((x) => [x.id, x.avgRating]), before.topTherapists.map((x) => [x.id, x.avgRating]), 'ni el de ningún profesional');
+  });
 });

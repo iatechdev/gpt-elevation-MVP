@@ -57,7 +57,7 @@ export function catalogApi(base: string, token: string) {
     list: async () => { const data = object(await request(root)); if (!Array.isArray(data.catalogs)) throw new Error('Invalid catalog list'); return data.catalogs.map(descriptor) },
     get: async (id: number) => detail(await request(`${root}/${id}`)),
     create: async () => descriptor(await request(root, 'POST', {})),
-    save: async (id: number, kind: Kind, key: string, body: Data, expectedUpdatedAt?: string) => { if (!validKey(key)) throw new Error('Invalid key'); return object(await request(`${root}/${id}/${kind}/${encodeURIComponent(key)}`, 'PUT', expectedUpdatedAt ? { ...body, expectedUpdatedAt } : body)) },
+    save: async (id: number, kind: Kind, key: string, body: Data, expectedUpdatedAt?: string | null) => { if (!validKey(key)) throw new Error('Invalid key'); return object(await request(`${root}/${id}/${kind}/${encodeURIComponent(key)}`, 'PUT', expectedUpdatedAt !== undefined ? { ...body, expectedUpdatedAt } : body)) },
     remove: async (id: number, kind: Kind, key: string) => { const v = object(await request(`${root}/${id}/${kind}/${encodeURIComponent(key)}`, 'DELETE')); if (v.removed !== true) throw new Error('Invalid removal acknowledgment') },
     publish: async (id: number) => descriptor(await request(`${root}/${id}/publish`, 'POST', {})),
   }

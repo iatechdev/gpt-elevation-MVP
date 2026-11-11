@@ -43,7 +43,8 @@ router.put('/:id/:kind/:key', handle(async (req, res) => {
   if (content && typeof content === 'object' && !Array.isArray(content)) {
     const { expectedUpdatedAt, updatedAt, ...rest } = content; // eslint-disable-line no-unused-vars
     content = rest;
-    if (expectedUpdatedAt !== undefined) {
+    if (expectedUpdatedAt === null) expected = null; // ES-266: «elemento nuevo»
+    else if (expectedUpdatedAt !== undefined) {
       expected = typeof expectedUpdatedAt === 'string' ? new Date(expectedUpdatedAt) : new Date(NaN);
       if (Number.isNaN(expected.getTime())) return res.status(400).json({ code: 'invalid_expected', error: 'expectedUpdatedAt no válida. / Invalid expectedUpdatedAt.' });
     }

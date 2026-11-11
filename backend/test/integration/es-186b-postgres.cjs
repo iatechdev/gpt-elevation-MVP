@@ -58,7 +58,7 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
   api.use('/api/admin/plan-requests', verificarAdmin, require('../../routes/planRequests'));
   api.use('/api/admin/usuarios', verificarAdmin, require('../../routes/adminUsers'));
   api.use('/api/admin/invitations', verificarAdmin, require('../../routes/invitations').adminRouter);
-  api.use('/api/superadmin/audit', verificarSuperAdmin, require('../../routes/adminAudit'));
+  api.use('/api/superadmin/audit', require('../../routes/adminAudit')); // SIN guarda propia del montaje: la guarda de superadmin debe venir del router (ES-264)
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   db = new Client({ connectionString: urlFor(dbName), ssl: false }); await db.connect();
@@ -207,5 +207,44 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
     assert.equal(mine.status, 201); assert.notEqual(mine.body.id, outs[0].body.id);
     for (const bad of ['corto', 'con espacio 12345', 'x'.repeat(65), "req';DROP--1234"]) assert.equal((await http(sup, 'POST', '/api/admin/invitations', { email: `bad-${dbName}@example.test`, role: 'user', requestId: bad })).status, 400, bad);
     assert.equal((await q(`SELECT count(*)::int AS n FROM pg_indexes WHERE indexname='invitations__invited_by_request_id'`))[0].n, 1);
+  });
+
+  await t.test('ES-264 · la auditoría NO admite texto libre: columnas cerradas (sin text/json) y acción, objetivo y resultado de listas cerradas', async () => {
+    const cols = await q(`SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_schema='public' AND table_name='AdminAuditEntries' ORDER BY column_name`);
+    assert.deepEqual(cols.map((c) => `${c.column_name}:${c.data_type}${c.character_maximum_length ? '(' + c.character_maximum_length + ')' : ''}`), [
+      'action:character varying(40)', 'actorId:integer', 'actorRole:character varying(16)', 'createdAt:timestamp with time zone', 'id:integer',
+      'result:character varying(12)', 'targetId:integer', 'targetType:character varying(24)']);
+    const { recordAdminAction } = require('../../utils/adminAudit');
+    const before = (await audit()).length;
+    const actor = { id: sup.id, role: 'superadmin' };
+    for (const bad of [{ action: 'user.update\nnombre@example.test' }, { action: 'texto libre con correo a@b.co' }, { action: 'user.update', targetType: 'correo a@b.co' }, { action: 'user.update', targetType: 'user', result: 'ok; DROP' }]) {
+      await assert.rejects(recordAdminAction({ actor, targetType: 'user', targetId: 1, ...bad }), /desconocid/);
+    }
+    assert.equal((await audit()).length, before, 'ninguna entrada con texto libre se guardó');
+    const stored = await q(`SELECT DISTINCT action, "targetType", result FROM "AdminAuditEntries"`);
+    const { ACTIONS, TARGET_TYPES } = require('../../utils/adminAudit');
+    assert.ok(stored.every((r) => ACTIONS.has(r.action) && (r.targetType === null || TARGET_TYPES.has(r.targetType)) && ['ok', 'denied', 'failed'].includes(r.result)), 'todo lo guardado sale de las listas cerradas');
+  });
+
+  await t.test('ES-264 · la lectura exige superadmin POR EL ROUTER (montado sin guarda externa) y server.js también la monta con verificarSuperAdmin', async () => {
+    assert.equal((await http(adm, 'GET', '/api/superadmin/audit')).status, 403);
+    assert.equal((await http({ token: 'x' }, 'GET', '/api/superadmin/audit')).status, 401);
+    assert.equal((await http(sup, 'GET', '/api/superadmin/audit')).status, 200);
+    const serverSource = require('node:fs').readFileSync(path.join(backend, 'server.js'), 'utf8');
+    assert.match(serverSource, /app\.use\('\/api\/superadmin\/audit', verificarSuperAdmin, require\('\.\/routes\/adminAudit'\)\)/);
+  });
+
+  await t.test('ES-264 · el candado advisory SERIALIZA invitar con el mismo requestId: con el candado tomado por otra conexión la petición espera y, al soltarlo, termina una sola vez', async () => {
+    const requestId = 'req-candado-0001'; const email = `candado-${dbName}@example.test`;
+    await db.query('SELECT pg_advisory_lock(hashtext($1))', [`invitation:${sup.id}:${requestId}`]);
+    let settled = false; let released = false;
+    const pending = http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId }).then((r) => { settled = true; return r; });
+    await new Promise((r) => setTimeout(r, 700));
+    assert.equal(settled, false, 'sin candado la petición habría terminado antes de que se soltara');
+    assert.equal((await q('SELECT count(*)::int n FROM "Invitations" WHERE "requestId"=$1', [requestId]))[0].n, 0, 'nada se creó mientras el candado estaba tomado');
+    await db.query('SELECT pg_advisory_unlock(hashtext($1))', [`invitation:${sup.id}:${requestId}`]); released = true;
+    const out = await pending;
+    assert.equal(released, true); assert.equal(out.status, 201);
+    assert.equal((await q('SELECT count(*)::int n FROM "Invitations" WHERE "requestId"=$1', [requestId]))[0].n, 1);
   });
 });

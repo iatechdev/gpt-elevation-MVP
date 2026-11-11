@@ -41,6 +41,7 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
   // Almacenamiento: doble controlable (el módulo real exige credenciales de Google Cloud que ya no existen).
   const storage = { uploads: [], fail: null, signFail: null };
   const storageModule = require.resolve('../../utils/storage');
+  const realTtl = require('../../utils/storage').signedUrlTtlSeconds; // ES-268: el TTL efectivo es el real (el resto del módulo es un doble)
   require.cache[storageModule] = { id: storageModule, filename: storageModule, loaded: true, exports: {
     uploadFile: async (buffer, destination, mimeType) => {
       if (storage.fail) throw storage.fail;
@@ -48,6 +49,7 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
       return destination;
     },
     getSignedUrl: async (filePath) => { if (storage.signFail) throw storage.signFail; return `https://storage.example.invalid/${encodeURIComponent(filePath)}`; },
+    signedUrlTtlSeconds: realTtl,
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
@@ -109,6 +111,9 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
     }
     assert.equal(storage.uploads.length, 4);
     assert.ok(storage.uploads.every((u) => u.destination.startsWith(`therapist-docs/${therapist.id}/`)));
+    // ES-268: la clave del objeto NO lleva el nombre original (puede traer el nombre de la persona); solo marca de tiempo, 16 bytes aleatorios y la extensión del tipo validado.
+    assert.deepEqual(storage.uploads.map((u) => u.destination.replace(/^therapist-docs\/\d+\/\d+_[0-9a-f]{32}/, '')), ['.pdf', '.jpg', '.png', '.webp']);
+    assert.ok(storage.uploads.every((u) => !/t[ií]tulo|foto|sello|escaneo/i.test(u.destination)));
     // Nombre con rutas y caracteres de control: ni «..» ni separadores, en la ruta y en el nombre que se muestra.
     const nasty = await upload(therapist, [['document', PDF, 'application/pdf', '..\\..\\carpeta/../../etc/passwd.pdf'], ['therapistId', String(other.id)]]);
     assert.equal(nasty.status, 201);
@@ -175,6 +180,7 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
     const ok = await send(superadmin, `/api/junta/${id}/download`, null, 'GET');
     assert.equal(ok.status, 200);
     assert.match(ok.body.url, /^https:\/\/storage\.example\.invalid\//);
+    assert.deepEqual([ok.body.expiresIn, ok.body.expiresInSeconds], ['15 minutos', 900], 'E221-1: la vigencia informada es la efectiva de la URL firmada');
     for (const bad of ['abc', '-1', '0', '99999999999', '1.5']) {
       const r = await send(superadmin, `/api/junta/${bad}/download`, null, 'GET');
       assert.deepEqual([r.status, r.body.code], [404, 'not_found'], bad);
