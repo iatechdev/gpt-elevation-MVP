@@ -1,6 +1,5 @@
 // ES-179: cierre de la sesión. Diálogo nativo (Esc = «Seguir en la sesión»), ánimo 1–5 en palabras (SIN emojis) y nota de cierre ≥ 10 (máx. 4.000). «Finalizar» NO es rojo (decisión 17).
 // Un error conserva TODO (ánimo y texto). 409 `already_closed` = «Esta sesión ya terminó». Si la respuesta se pierde se consulta el estado antes de decir nada.
-// PROPUESTA no verificada (la revisan Mauricio o Alejo en el PR): la pregunta «Cómo ves a la persona hoy» y las etiquetas Muy bajo / Bajo / Medio / Alto / Muy alto.
 import { useEffect, useRef, useState } from 'react'
 import { MAX_CLOSING, MIN_CLOSING, MOODS } from './roomFormat'
 
@@ -85,7 +84,6 @@ export function CloseSession({ sessionId, t, flushNotes, onClosed, onAlreadyClos
                   </label>
                 ))}
               </div>
-              <p className="sr-hint sr-proposal">{t('sr_mood_proposal')}</p>
             </fieldset>
             <label htmlFor="sr-close-note" className="sr-label-dark">{t('sr_close_note')}</label>
             <textarea id="sr-close-note" className="sr-textarea-light" rows={5} value={note} aria-describedby="sr-close-counter sr-close-problem" onChange={event => setNote(event.target.value)} />
