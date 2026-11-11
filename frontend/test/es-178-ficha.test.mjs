@@ -71,3 +71,11 @@ test('ES-178 (E226-2): las cifras llevan el tope de 60 junto al número cuando s
   assert.match(history, /fu_fig_entries_cap/); assert.match(history, /fu_fig_mood_cap/); assert.match(history, /fu_fig_rating_cap/)
   for (const key of ['fu_fig_entries_cap', 'fu_fig_mood_cap', 'fu_fig_rating_cap']) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length, 2, key)
 })
+
+// E227: foco tras el pintado (efecto, no setTimeout), «Generar» con aria-disabled tras el límite, reinicio con zona explícita y error de duración que se limpia.
+test('ES-178 (E227): el foco se mueve desde un efecto, el límite de IA usa aria-disabled y la fecha de reinicio dice UTC', () => {
+  const ai = read('../src/pages/therapist/AiSummaryBlock.tsx'), sch = read('../src/pages/therapist/ScheduleSession.tsx')
+  assert.ok(!ai.includes('setTimeout(') || !/setTimeout\([^)]*focus/.test(ai)); assert.ok(ai.includes('if (!focusAfter.current || busy) return'))
+  assert.ok(!ai.includes(' disabled={busy}')); assert.ok(ai.includes('aria-disabled={busy || limited}')); assert.ok(ai.includes("timeZone: 'UTC'") && ai.includes("timeZoneName: 'short'"))
+  assert.ok(sch.includes("p.field !== 'duration'") && sch.includes("p.field !== 'scheduledAt'"))
+})

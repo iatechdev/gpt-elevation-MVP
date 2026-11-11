@@ -82,10 +82,10 @@ export function ScheduleSession({ personId, personName, t, locale }: { personId:
             <h2 id="fu-sch-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', margin: '0 0 0.25rem' }}>{t('fu_sch_title')}</h2>
             <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#44403C', overflowWrap: 'anywhere' }}>{t('fu_sch_with', { name: personName })}</p>
             <label htmlFor="fu-sch-when" style={{ display: 'block', fontSize: '0.82rem', color: '#44403C', marginBottom: 4 }}>{t('fu_sch_when')}</label>
-            <input ref={whenRef} id="fu-sch-when" type="datetime-local" style={control} value={when} min={earliest()} aria-invalid={whenError ? true : undefined} aria-describedby={whenError ? 'fu-sch-when-error' : undefined} onChange={event => setWhen(event.target.value)} />
+            <input ref={whenRef} id="fu-sch-when" type="datetime-local" style={control} value={when} min={earliest()} aria-invalid={whenError ? true : undefined} aria-describedby={whenError ? 'fu-sch-when-error' : undefined} onChange={event => { setWhen(event.target.value); setProblems(list => list.filter(p => p.field !== 'scheduledAt')) }} />
             <p id="fu-sch-when-error" role="alert" style={{ margin: '0.25rem 0 0.75rem', color: '#B91C1C', fontSize: '0.82rem' }}>{whenError ? t(whenError.key) : ''}</p>
             <label htmlFor="fu-sch-duration" style={{ display: 'block', fontSize: '0.82rem', color: '#44403C', marginBottom: 4 }}>{t('fu_sch_duration_label')}</label>
-            <select ref={durationRef} id="fu-sch-duration" style={control} value={duration} aria-invalid={durationError ? true : undefined} aria-describedby={durationError ? 'fu-sch-duration-error' : undefined} onChange={event => setDuration(Number(event.target.value))}>
+            <select ref={durationRef} id="fu-sch-duration" style={control} value={duration} aria-invalid={durationError ? true : undefined} aria-describedby={durationError ? 'fu-sch-duration-error' : undefined} onChange={event => { setDuration(Number(event.target.value)); setProblems(list => list.filter(p => p.field !== 'duration')) }}>
               {DURATIONS.map(minutes => <option key={minutes} value={minutes}>{t('fu_sch_minutes', { n: minutes })}</option>)}
             </select>
             <p id="fu-sch-duration-error" role="alert" style={{ margin: '0.25rem 0 0.75rem', color: '#B91C1C', fontSize: '0.82rem' }}>{durationError ? t(durationError.key) : ''}</p>

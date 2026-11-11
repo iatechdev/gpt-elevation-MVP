@@ -209,6 +209,7 @@ const { pathToFileURL } = require('node:url');
         await page.getByRole('button', { name: t.aiGen }).click();
         const section = page.locator('section[aria-labelledby="fu-ai-title"]');
         await section.getByText('Resumen sintético.').waitFor();
+        await page.waitForFunction(() => document.activeElement?.id === 'fu-ai-button'); // E227-1: tras generar con éxito el foco sigue en el botón (no en <main>)
         const text = await section.innerText();
         assert.ok(new RegExp(t.aiLabel, 'i').test(text) && /60/.test(text) === false, 'etiqueta «No incluye tus notas»: ' + text);
         assert.doesNotMatch(text, /y \d+ notas|and \d+ notes/i, 'nunca «y n notas»');
@@ -218,12 +219,25 @@ const { pathToFileURL } = require('node:url');
         await axe(page, `resumen ${tag}`);
         await context.close(); }
       { let calls = 0;
-        const { context, page } = await open(lang, width, sharer.id, async (r) => { if (!r.request().url().includes('/resumen-ia')) return false; calls++; if (calls === 1) { await r.fulfill({ status: 429, json: { code: 'ai_budget_exhausted', retryable: false, resetsAt: new Date(Date.now() + 86400000).toISOString() } }); return true; } if (calls === 2) { await r.fulfill({ status: 502, json: { code: 'provider_unavailable', retryable: true } }); return true; } return false; });
-        await page.getByRole('button', { name: t.aiGen }).waitFor({ timeout: 10000 });
-        await page.getByRole('button', { name: t.aiGen }).click(); await page.getByRole('alert').filter({ hasText: new RegExp(t.aiBudget, 'i') }).waitFor();
+        const { context, page } = await open(lang, width, sharer.id, async (r) => { if (!r.request().url().includes('/resumen-ia')) return false; calls++; await r.fulfill({ status: 429, json: { code: 'ai_budget_exhausted', retryable: false, resetsAt: '2026-12-01T00:00:00.000Z' } }); return true; });
+        await page.locator('#fu-ai-button').waitFor({ timeout: 10000 });
+        await page.locator('#fu-ai-button').click(); const alert = page.getByRole('alert').filter({ hasText: new RegExp(t.aiBudget, 'i') }); await alert.waitFor();
+        const budgetText = await alert.first().innerText();
+        assert.ok(/UTC/.test(budgetText) && /(1 (de )?dic|Dec 1|1 Dec)/i.test(budgetText) && /00:00/.test(budgetText), 'fecha de reinicio con zona explícita: ' + budgetText); // E227 (a)
         assert.equal(await page.getByRole('button', { name: t.aiRetry }).count(), 0, 'el límite de IA no se reintenta');
-        await page.getByRole('button', { name: t.aiGen }).click(); await page.getByRole('button', { name: t.aiRetry }).waitFor();
+        assert.equal(await page.locator('#fu-ai-button').getAttribute('aria-disabled'), 'true', '«Generar» con aria-disabled tras el límite'); // E227 (b)
+        assert.equal(await page.locator('#fu-ai-button').getAttribute('aria-describedby'), 'fu-ai-problem');
+        await page.waitForFunction(() => document.activeElement?.id === 'fu-ai-button'); // el foco no se pierde
+        await page.locator('#fu-ai-button').click({ force: true }); await page.waitForTimeout(300);
+        assert.equal(calls, 1, 'con el límite alcanzado no se vuelve a llamar al servidor');
+        await context.close(); }
+      { let calls = 0;
+        const { context, page } = await open(lang, width, sharer.id, async (r) => { if (!r.request().url().includes('/resumen-ia')) return false; calls++; if (calls === 1) { await r.fulfill({ status: 502, json: { code: 'provider_unavailable', retryable: true } }); return true; } return false; });
+        await page.locator('#fu-ai-button').waitFor({ timeout: 10000 });
+        await page.locator('#fu-ai-button').click(); await page.getByRole('button', { name: t.aiRetry }).waitFor();
+        await page.waitForFunction(() => document.activeElement?.id === 'fu-ai-retry'); // E227-1: tras un fallo el foco va a «Reintentar» (no a <body>)
         await page.getByRole('button', { name: t.aiRetry }).click(); await page.locator('section[aria-labelledby="fu-ai-title"]').getByText('Resumen sintético.').waitFor();
+        await page.waitForFunction(() => document.activeElement?.id === 'fu-ai-button'); // y tras recuperar, al botón
         await context.close(); }
       check(`${tag}: resumen con IA → etiqueta sin «y n notas», límite de IA sin reintento, error con reintento que recupera`);
 
@@ -249,6 +263,15 @@ const { pathToFileURL } = require('node:url');
         await page.waitForFunction(() => document.activeElement?.id === 'fu-sch-when');
         assert.equal(await sessions(), before + 1, 'el choque no crea otra sesión');
         await axe(page, `agendar ${tag}`);
+        await context.close(); }
+      { const { context, page } = await open(lang, width, sharer.id, async (r) => { if (r.request().method() !== 'POST' || !r.request().url().endsWith('/api/sessions/therapist')) return false; await r.fulfill({ status: 400, json: { code: 'duration_invalid', field: 'duration', error: 'duration must be between 15 and 120 minutes.' } }); return true; });
+        await page.getByRole('button', { name: t.schOpen }).waitFor({ timeout: 10000 });
+        await page.getByRole('button', { name: t.schOpen }).click(); await page.getByRole('dialog').waitFor();
+        await page.getByRole('dialog').getByRole('button', { name: t.schConfirm, exact: true }).click();
+        await page.waitForFunction(() => (document.querySelector('#fu-sch-duration-error')?.textContent ?? '').length > 0);
+        await page.selectOption('#fu-sch-duration', '60');
+        await page.waitForFunction(() => (document.querySelector('#fu-sch-duration-error')?.textContent ?? '') === ''); // E227 (c): el error se limpia al cambiar el campo
+        assert.equal(await page.locator('#fu-sch-duration').getAttribute('aria-invalid'), null);
         await context.close(); }
       { let dropped = 0; const slotLost = (() => { const d = new Date(Date.now() + (9 + (lang === 'en' ? 40 : 0) + (width === 1360 ? 20 : 0)) * 86400000); d.setHours(11, 0, 0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })();
         const { context, page } = await open(lang, width, sharer.id, async (r) => { if (r.request().method() !== 'POST' || !r.request().url().endsWith('/api/sessions/therapist') || dropped > 0) return false; dropped++; try { const u = new URL(r.request().url()); await r.fetch({ url: apiUrl + u.pathname }); await r.abort('connectionreset'); } catch { /* cerrada */ } return true; });
