@@ -108,4 +108,4 @@ const deleteByPrefix = async (prefix) => {
 // Solo para pruebas: sustituye el cliente de Supabase por un doble y reinicia el cliente en caché.
 const _setClientFactoryForTests = (create) => { factory = create; client = null; clientKey = null; };
 
-module.exports = { uploadFile, getSignedUrl, deleteFile, deleteByPrefix, StorageError, MAX_BYTES, DEFAULT_TTL_SECONDS, _setClientFactoryForTests };
+module.exports = { uploadFile, getSignedUrl, deleteFile, deleteByPrefix, signedUrlTtlSeconds: ttlSeconds, StorageError, MAX_BYTES, DEFAULT_TTL_SECONDS, _setClientFactoryForTests };

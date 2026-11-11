@@ -83,6 +83,7 @@ test('ES-268 URL firmada: 900 s por defecto, acotada entre 60 y 3600 por STORAGE
   for (const [value, expected] of [['10', 60], ['99999', 3600], ['abc', 900], ['-5', 900], ['0', 900], ['120.9', 120], ['3600', 3600], ['60', 60]]) {
     process.env.STORAGE_SIGNED_URL_TTL_SECONDS = value; await storage.getSignedUrl('therapist-docs/7/a.pdf');
     assert.equal(calls.sign.at(-1).ttl, expected, value);
+    assert.equal(storage.signedUrlTtlSeconds(), calls.sign.at(-1).ttl, 'el TTL que se informa es el mismo que se pasa a Supabase: ' + value);
   }
   assert.equal(storage.DEFAULT_TTL_SECONDS, 900);
 });

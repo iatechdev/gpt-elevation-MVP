@@ -41,6 +41,7 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
   // Almacenamiento: doble controlable (el módulo real exige credenciales de Google Cloud que ya no existen).
   const storage = { uploads: [], fail: null, signFail: null };
   const storageModule = require.resolve('../../utils/storage');
+  const realTtl = require('../../utils/storage').signedUrlTtlSeconds; // ES-268: el TTL efectivo es el real (el resto del módulo es un doble)
   require.cache[storageModule] = { id: storageModule, filename: storageModule, loaded: true, exports: {
     uploadFile: async (buffer, destination, mimeType) => {
       if (storage.fail) throw storage.fail;
@@ -48,6 +49,7 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
       return destination;
     },
     getSignedUrl: async (filePath) => { if (storage.signFail) throw storage.signFail; return `https://storage.example.invalid/${encodeURIComponent(filePath)}`; },
+    signedUrlTtlSeconds: realTtl,
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
