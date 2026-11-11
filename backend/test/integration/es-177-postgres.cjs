@@ -59,7 +59,7 @@ test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin
   const anthropicModule = require.resolve('../../utils/anthropic');
   const provider = { calls: 0 };
   require.cache[anthropicModule] = { id: anthropicModule, filename: anthropicModule, loaded: true, exports: {
-    MODEL: 'modelo-sintetico', messages: { create: async () => { provider.calls += 1; return { content: [{ type: 'text', text: 'Recomendación sintética.' }], usage: { input_tokens: 10, output_tokens: 5 } }; } },
+    MODEL: 'modelo-sintetico', messages: { create: async (args) => { provider.calls += 1; provider.last = args; return { content: [{ type: 'text', text: 'Recomendación sintética.' }], usage: { input_tokens: 10, output_tokens: 5 } }; } },
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
@@ -211,5 +211,43 @@ test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin
     assert.equal(alerts.body.notableProgress[0].improved, true);
     contractFixture('es-177-alerts.json', alerts.status, alerts.body);
     assert.equal(JSON.stringify(alerts.body).includes('improvementPercent') || /[0-9]%/.test(JSON.stringify(alerts.body)), false, 'ningún porcentaje en /alerts (decisión 13)');
+  });
+  // ES-263 (E257-1): una calificación NULL no cuenta como 0 ni entra en el divisor, ni en el panel ni en el resumen con IA.
+  const rate = (id, offset, rating) => q('INSERT INTO "SessionRatings" ("UserId","rating","date","createdAt","updatedAt") VALUES ($1,$2,$3,now(),now())', [id, rating, new Date(Date.now() - offset * 86400000).toISOString().slice(0, 10)]);
+  const avgOf = async (who, id) => (await http(who, 'GET', '/api/therapist/pacientes')).body.find((x) => x.id === id).avgRating;
+  const summaryPrompt = () => provider.last.messages[0].content;
+
+  await t.test('ES-263: /pacientes promedia solo calificaciones válidas (4, NULL, 4, NULL -> 4, no 2); solo NULL -> null; 1 y 5 -> 3; un decimal', async () => {
+    await q('DELETE FROM "SessionRatings" WHERE "UserId"=$1', [p1.id]);
+    assert.equal(await avgOf(tA, p1.id), null, 'sin calificaciones -> null');
+    for (const [offset, rating] of [[0, 4], [1, null], [2, 4], [3, null]]) await rate(p1.id, offset, rating);
+    assert.equal(await avgOf(tA, p1.id), 4, 'antes: 2');
+    await q('DELETE FROM "SessionRatings" WHERE "UserId"=$1', [p1.id]);
+    await rate(p1.id, 0, null); await rate(p1.id, 1, null);
+    assert.equal(await avgOf(tA, p1.id), null, 'solo NULL -> null (antes: 0)');
+    await q('DELETE FROM "SessionRatings" WHERE "UserId"=$1', [p1.id]);
+    await rate(p1.id, 0, 1); await rate(p1.id, 1, 5);
+    assert.equal(await avgOf(tA, p1.id), 3);
+    await rate(p1.id, 2, 4); await rate(p1.id, 3, null);
+    assert.equal(await avgOf(tA, p1.id), 3.3, '(1+5+4)/3 = 3,33 -> 3,3');
+  });
+
+  await t.test('ES-263: el resumen con IA manda al proveedor el promedio de las válidas; solo NULL sin ánimo = sin resumen y sin llamada al proveedor', async () => {
+    await q('DELETE FROM "SessionRatings" WHERE "UserId"=$1', [p1.id]);
+    for (const [offset, rating] of [[0, 4], [1, null], [2, 4], [3, null]]) await rate(p1.id, offset, rating);
+    const before = provider.calls;
+    const withData = await http(tA, 'GET', `/api/therapist/pacientes/${p1.id}/resumen-ia`);
+    assert.equal(withData.status, 200);
+    assert.equal(provider.calls, before + 1);
+    assert.match(summaryPrompt(), /Average session rating \(1-5\): 4\.0/, 'promedio de las válidas (antes: 2.0)');
+    // persona nueva que comparte, sin ánimo y con solo calificaciones nulas
+    const p3 = await mkUser('user', { therapistId: tA.id });
+    assert.equal((await http(p3, 'PUT', '/api/consents/therapist_sharing', { status: 'granted' })).status, 200);
+    await rate(p3.id, 0, null); await rate(p3.id, 1, null);
+    const calls = provider.calls;
+    const none = await http(tA, 'GET', `/api/therapist/pacientes/${p3.id}/resumen-ia`);
+    assert.equal(none.status, 200);
+    assert.match(none.body.summary, /no hay datos suficientes|not enough data/i);
+    assert.equal(provider.calls, calls, 'sin datos válidos no se llama al proveedor');
   });
 });
