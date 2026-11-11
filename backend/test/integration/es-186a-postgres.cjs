@@ -56,6 +56,7 @@ test('ES-186 parte A PostgreSQL + HTTP: emparejamiento retira la autorización a
   const api = express(); api.use(express.json());
   api.use('/api/admin/matching', verificarAdmin, require('../../routes/matching'));
   api.use('/api/admin/plan-requests', verificarAdmin, require('../../routes/planRequests'));
+  api.use('/api/plan-requests', verificarToken, require('../../routes/planRequests')); // como en server.js: aquí la guarda de rol es la de CADA ruta (ES-262)
   api.use('/api/admin/usuarios', verificarAdmin, require('../../routes/adminUsers'));
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -176,7 +177,9 @@ test('ES-186 parte A PostgreSQL + HTTP: emparejamiento retira la autorización a
     }
     // la guarda de rol va ANTES: un usuario sin permiso recibe 403 también con un id malo, y nadie recibe 5xx
     const person = await mkUser('user');
-    assert.equal((await http(person, 'PUT', '/api/admin/plan-requests/admin/abc/approve', {})).status, 403);
+    assert.equal((await http(person, 'PUT', '/api/plan-requests/admin/abc/approve', {})).status, 403, 'montaje solo con sesión: la guarda de rol de la ruta va antes que la de id');
+    assert.equal((await http(person, 'PUT', '/api/plan-requests/admin/abc/reject', { adminNote: 'x' })).status, 403);
+    assert.equal((await http(person, 'PUT', '/api/plan-requests/admin/1/approve', {})).status, 403);
     // un id válido sigue funcionando igual
     const plan = (await q(`INSERT INTO "PricingPlans" (slug,"name_es","name_en","description_es","description_en",price,currency,period,"isActive","createdAt","updatedAt") VALUES ('plan-e262','Plan','Plan','','',10,'USD','month',true,now(),now()) RETURNING id`))[0].id;
     const request = (await q(`INSERT INTO "PlanRequests" ("userId","planId",status,"createdAt","updatedAt") VALUES ($1,$2,'pending',now(),now()) RETURNING id`, [person.id, plan]))[0].id;
