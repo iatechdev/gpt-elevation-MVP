@@ -17,11 +17,12 @@ const multer   = require('multer');
 const path     = require('path');
 const User     = require('../User');
 const TherapistValidation = require('../TherapistValidation');
-const { uploadFile, getSignedUrl } = require('../utils/storage');
+const { uploadFile, getSignedUrl, signedUrlTtlSeconds } = require('../utils/storage');
 const { verificarSuperAdmin } = require('../middlewares/auth');
 const { validateBody, optional, text, nonempty } = require('../middlewares/validateBody');
 const { validateIdParams } = require('../middlewares/params');
-const { ALLOWED_TYPES, contentMatches, safeDocumentName, storageName } = require('../utils/uploadSafety');
+const { randomBytes } = require('crypto');
+const { ALLOWED_TYPES, contentMatches, safeDocumentName, extensionFor } = require('../utils/uploadSafety');
 
 validateIdParams(router, 'id'); // ES-99 (ES93-B1): ids de ruta mal formados = 404 uniforme
 
@@ -66,8 +67,9 @@ router.post('/upload', onlyTherapist, uploadDocument, async (req, res) => {
     const validTypes = ['titulo', 'certificado', 'colegiado', 'otro'];
     const docType = validTypes.includes(documentType) ? documentType : 'titulo';
 
-    // Ruta en el almacenamiento: therapist-docs/{therapistId}/{timestamp}_{nombre saneado}
-    const destination = `therapist-docs/${req.user.id}/${Date.now()}_${storageName(req.file.originalname)}`;
+    // Ruta en el almacenamiento (ES-268): therapist-docs/{therapistId}/{timestamp}_{16 bytes aleatorios}{extensión del tipo validado}. SIN el nombre original del archivo
+    // (puede llevar el nombre de la persona); el nombre para mostrar queda saneado en la base (documentName).
+    const destination = `therapist-docs/${req.user.id}/${Date.now()}_${randomBytes(16).toString('hex')}${extensionFor(req.file.mimetype)}`;
 
     try {
       await uploadFile(req.file.buffer, destination, req.file.mimetype);
@@ -155,6 +157,10 @@ router.get('/pending', verificarSuperAdmin, async (req, res) => {
   }
 });
 
+// Texto de la vigencia (ES) a partir de segundos: 900 → «15 minutos», 3600 → «1 hora», 60 → «1 minuto».
+const plural = (n, one, many) => (n === 1 ? `1 ${one}` : `${n} ${many}`);
+const ttlText = (s) => (s % 3600 === 0 ? plural(s / 3600, 'hora', 'horas') : s % 60 === 0 ? plural(s / 60, 'minuto', 'minutos') : `${s} segundos`);
+
 // GET /api/junta/validations/:id/download — genera signed URL temporal
 router.get('/:id/download', verificarSuperAdmin, async (req, res) => {
   try {
@@ -168,7 +174,9 @@ router.get('/:id/download', verificarSuperAdmin, async (req, res) => {
       console.error('❌ Almacenamiento de documentos no disponible:', error && (error.code || error.name));
       return problem(res, 503, 'storage_unavailable', 'No se pudo generar el enlace de descarga ahora.', 'The download link could not be generated right now.');
     }
-    res.json({ url: signedUrl, expiresIn: '1 hora' });
+    // ES-268 (E221-1): la vigencia que se informa sale del TTL EFECTIVO de la URL firmada (900 s por defecto), no de un texto fijo.
+    const ttl = signedUrlTtlSeconds();
+    res.json({ url: signedUrl, expiresIn: ttlText(ttl), expiresInSeconds: ttl });
   } catch (error) {
     console.error('❌ Error generando URL:', error && (error.code || error.name));
     res.status(500).json({ error: 'No se pudo generar el enlace de descarga.' });
