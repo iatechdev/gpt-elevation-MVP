@@ -19,6 +19,30 @@ const { Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const { validateIdParams, isRouteId } = require('../middlewares/params');
 const { findConflict, editProblem } = require('../utils/sessionSchedule');
+const { ordinalsFor } = require('../utils/personOrdinals'); // ES-177 / ES-241: «Persona n»
+
+// ES-267: una sesión sigue «vigente» después de su hora de inicio durante su duración + este margen (valor propuesto al PO en ES-267; ajustable aquí).
+const SESSION_GRACE_MINUTES = 15;
+const MAX_SESSION_MINUTES = 120; // tope de duración que acepta el alta (15–120)
+const MIN_MS = 60 * 1000;
+
+// ES-241 (decisión de Mauricio, 10-nov-2026): a quien NO autorizó compartir sus datos con este profesional solo se le muestra «Persona n» (el ordinal estable del panel,
+// ES-177). El servidor NO lee ni envía su nombre ni su correo: `patientName: null`, `patientEmail: ''`, `patientOrdinal: n`, `sharing: false`. Quien sí autorizó conserva su nombre.
+async function presentPatients(therapistId, sessions) {
+  const User = require('../User');
+  const ids = [...new Set(sessions.map((s) => s.patientId))];
+  const sharing = await sharingSet(therapistId, ids);
+  const sharingIds = ids.filter((id) => sharing.has(id));
+  const hiddenIds = ids.filter((id) => !sharing.has(id));
+  const ordinals = await ordinalsFor(therapistId, hiddenIds);
+  const people = new Map((sharingIds.length ? await User.findAll({ where: { id: sharingIds }, attributes: ['id', 'name', 'email'] }) : []).map((p) => [p.id, p]));
+  return (session) => {
+    const json = session.toJSON();
+    if (!sharing.has(session.patientId)) return { ...json, patientName: null, patientEmail: '', patientOrdinal: ordinals.get(session.patientId) ?? null, sharing: false };
+    const p = people.get(session.patientId);
+    return { ...json, patientName: p?.name ?? 'Unknown', patientEmail: p?.email ?? '', patientOrdinal: null, sharing: true };
+  };
+}
 
 // ES-98 (ES93-B1): un id de ruta mal formado es un 404 uniforme, no un 500 de la base.
 validateIdParams(router, 'id');
@@ -94,28 +118,36 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
 
 // GET /api/sessions/therapist/upcoming — próximas 5 sesiones
 router.get('/therapist/upcoming', async (req, res) => {
-  const User           = require('../User');
   const TherapySession = require('../TherapySession');
   const { Op }         = require('sequelize');
   try {
     if (req.user.role !== 'therapist') {
       return res.status(403).json({ error: 'Therapists only.' });
     }
-    const sessions = await TherapySession.findAll({
+    // ES-267: además de las próximas, la sesión que ya empezó (o cuya hora pasó) sigue visible mientras dure + margen y no esté cerrada. `phase`: upcoming | due (hora
+    // pasada, aún sin iniciar) | in_progress (sala iniciada). Se piden más filas de las 5 mostradas porque el filtro por duración y el de personas bloqueadas se aplican después.
+    const now = Date.now();
+    const cutoff = new Date(now - (MAX_SESSION_MINUTES + SESSION_GRACE_MINUTES) * MIN_MS);
+    const candidates = await TherapySession.findAll({
       where: {
         therapistId: req.user.id,
-        status: 'scheduled',
-        scheduledAt: { [Op.gte]: new Date() },
+        status: { [Op.in]: ['scheduled', 'in_progress'] },
+        [Op.or]: [{ scheduledAt: { [Op.gte]: cutoff } }, { startedAt: { [Op.gte]: cutoff } }],
       },
       order: [['scheduledAt', 'ASC']],
-      limit: 5,
+      limit: 50,
     });
-    const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
-    const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
-      const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
-      return { ...s.toJSON(), patientName: p?.name ?? 'Unknown' };
-    }));
-    res.json(enriched);
+    const live = candidates.filter((s) => {
+      const base = s.status === 'in_progress' && s.startedAt ? Math.max(new Date(s.scheduledAt).getTime(), new Date(s.startedAt).getTime()) : new Date(s.scheduledAt).getTime();
+      return base + ((Number(s.duration) || 50) + SESSION_GRACE_MINUTES) * MIN_MS >= now;
+    });
+    const blocked = await blockedPatientIds(live.map((s) => s.patientId)); // ES-101
+    const shown = live.filter((s) => !blocked.has(s.patientId)).slice(0, 5);
+    const present = await presentPatients(req.user.id, shown);
+    res.json(shown.map((s) => ({
+      ...present(s),
+      phase: s.status === 'in_progress' ? 'in_progress' : (new Date(s.scheduledAt).getTime() > now ? 'upcoming' : 'due'),
+    })));
   } catch (error) {
     console.error('❌ Error fetching upcoming sessions:', error);
     res.status(500).json({ error: 'Could not fetch upcoming sessions.' });
@@ -124,7 +156,6 @@ router.get('/therapist/upcoming', async (req, res) => {
 
 // GET /api/sessions/therapist — todas las sesiones del terapeuta
 router.get('/therapist', async (req, res) => {
-  const User           = require('../User');
   const TherapySession = require('../TherapySession');
   try {
     if (req.user.role !== 'therapist') {
@@ -138,13 +169,10 @@ router.get('/therapist', async (req, res) => {
       order: [['scheduledAt', 'ASC']],
     });
     const blocked = await blockedPatientIds(sessions.map((s) => s.patientId)); // ES-101
-    // ES-96 (ES93-A3): el nombre es parte del vínculo (para agendar); el correo, solo de quien autorizó compartir sus datos con este terapeuta.
-    const sharing = await sharingSet(req.user.id, [...new Set(sessions.map((s) => s.patientId))]);
-    const enriched = await Promise.all(sessions.filter((s) => !blocked.has(s.patientId)).map(async (s) => {
-      const p = await User.findByPk(s.patientId, { attributes: ['name', 'email'] });
-      return { ...s.toJSON(), patientName: p?.name ?? 'Unknown', patientEmail: sharing.has(s.patientId) ? (p?.email ?? '') : '' };
-    }));
-    res.json(enriched);
+    // ES-96 + ES-241: nombre y correo solo de quien autorizó compartir sus datos con este terapeuta; el resto, «Persona n».
+    const visible = sessions.filter((s) => !blocked.has(s.patientId));
+    const present = await presentPatients(req.user.id, visible);
+    res.json(visible.map(present));
   } catch (error) {
     console.error('❌ Error fetching therapist sessions:', error);
     res.status(500).json({ error: 'Could not fetch sessions.' });

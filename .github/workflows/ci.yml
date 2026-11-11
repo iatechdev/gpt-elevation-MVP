@@ -178,6 +178,10 @@ jobs:
         run: npm run test:session-room:pg
         env:
           ES179_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-241 y ES-267 sesiones del profesional - Persona n para quien no comparte y sesión en curso visible (PostgreSQL real)
+        run: npm run test:session-lists:pg
+        env:
+          ES241_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-178 notas de seguimiento - edición concurrente, máximo y texto obligatorio (PostgreSQL real)
         run: npm run test:followup-notes:pg
         env:
