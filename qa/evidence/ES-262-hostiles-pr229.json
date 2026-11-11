@@ -1,0 +1,95 @@
+{
+ "mode": "pr",
+ "head": "d151e615b22ddbdab568341c14f17a17814eaef2",
+ "results": [
+  {
+   "id": "H1-ref",
+   "info": "[pr] inexistente numérico (999999999) approve → 404 {\"error\":\"Solicitud no encontrada.\"}"
+  },
+  {
+   "id": "H1 aprobar y rechazar con 28 ids malformados/enormes/negativos/hostiles × 2 rutas de montaje × 2 acciones (112 llamadas) → TODOS 404 `not_found` y ninguno 5xx",
+   "ok": true,
+   "detail": "112/112 → 404 not_found; cuerpos distintos=1"
+  },
+  {
+   "id": "H1b el 404 de un id malformado que llega a la ruta es el MISMO cuerpo para todos (no revela nada del id) y no repite lo enviado (los ids «..» los resuelve el cliente HTTP/ruteador antes: «Ruta no encontrada», sin id)",
+   "ok": true,
+   "detail": "cuerpos de ids que llegan a la ruta: [{\"code\":\"not_found\",\"error\":\"No se encontró. / Not found.\"}] · sin ruta: {\"code\":\"not_found\",\"error\":\"Ruta no encontrada. / Route not found.\"}"
+  },
+  {
+   "id": "H2 la guarda de id va DESPUÉS de la de rol: persona, profesional y sin sesión con un id malformado → 401/403 (nunca 404, que sería una pista de qué rutas existen)",
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "id": "H3-siembra",
+   "info": "solicitudes: U1→201/1 U2→201/2 U3→201/3"
+  },
+  {
+   "id": "H3-detalle",
+   "info": "[pr] aprobar 200; de nuevo 409 {\"code\":\"request_closed\",\"error\":\"Esta solicitud ya fue resuelta. / This request; rechazar sin nota 400; rechazar 200; de nuevo 409; por montaje admin 200; estados {\"1\":\"approved\",\"2\":\"rejected\",\"3\":\"approved\"}; id máximo 2147483647 → 404"
+  },
+  {
+   "id": "H3 ids válidos: aprobar → 200 y estado `approved`; repetir → 4xx (no 5xx); rechazar sin nota → 400; rechazar con nota → 200 y `rejected`; por el montaje /api/admin → 200; id numérico máximo (2147483647) inexistente → 404 sin 5xx",
+   "ok": true,
+   "detail": "200/409/400/200/409/200/404 {\"1\":\"approved\",\"2\":\"rejected\",\"3\":\"approved\"}"
+  },
+  {
+   "id": "H3b id numérico inexistente → 404 (mismo estado que antes)",
+   "ok": true,
+   "detail": "404 {\"error\":\"Solicitud no encontrada.\"}"
+  },
+  {
+   "id": "H4-códigos",
+   "info": "[pr] 400:scheduled_invalid 400:undefined"
+  },
+  {
+   "id": "H4 POST /api/sessions/therapist con 36 fechas hostiles o de tipo equivocado → 400 con `field:\"scheduledAt\"` y código `scheduled_invalid` (o `invalid_input` si no es texto), ningún 5xx, no se repite lo enviado y no se crea ninguna sesión",
+   "ok": true,
+   "detail": "0 fallos; filas 0→0"
+  },
+  {
+   "id": "H4b fecha pasada válida → 400 (regla de siempre, sin 5xx)",
+   "ok": true,
+   "detail": "400 {\"error\":\"scheduledAt must be in the future.\"}"
+  },
+  {
+   "id": "H5 PUT /api/sessions/therapist/:id con las mismas fechas hostiles → 400 con `field:\"scheduledAt\"`, ningún 5xx y la fila NO cambia",
+   "ok": true,
+   "detail": "0 fallos; fila intacta {\"scheduledAt\":\"2026-11-16T07:49:44.282Z\",\"status\":\"scheduled\",\"duration\":50}"
+  },
+  {
+   "id": "H6-ids-sesiones",
+   "info": "ids malformados en PUT/notas/start/end de sesiones: ningún 5xx"
+  },
+  {
+   "id": "H6-nota-base",
+   "info": "[pr] nota válida → 201 {\"message\":\"Note saved successfully.\",\"note\":{\"id\":1,\"UserId\":7,\"therapistId\":1,\"content\":\"nota sintética QA\",\"type\":\"se"
+  },
+  {
+   "id": "H6 POST nota clínica con sessionDate hostil (mismas cadenas y tipos) → 400, ningún 5xx y no se crea ninguna nota",
+   "ok": false,
+   "detail": "fallan 15: fecha máxima JS→201 ; fecha mínima JS→500 ; año 9999→201 ; año 10000→201 ; año 0001→500 ; año 0000→201 ; año 3000→201 ; 30 de febrero→500 ; 29 feb no bisiesto→500 ; «0»→201 ; «1»→201 ; «2030»→201"
+  },
+  {
+   "id": "H6b PUT nota: `sessionDate` hostil → 400; `expectedUpdatedAt` hostil (fecha máxima JS, «abc», 10 KB, año 10000) y ids de nota/persona malformados → ningún 5xx",
+   "ok": false,
+   "detail": "sessionDate fecha máxima JS→200 ; sessionDate 30 de febrero→500 ; sessionDate «0»→200"
+  },
+  {
+   "id": "H6c diario (otra ruta con fecha de usuario): fechas hostiles → ningún 5xx",
+   "ok": false,
+   "detail": "POST año 0000→500 ; POST 0000-02-29→500 ; POST 0000-12-31→500 ; PUT año 0000→500"
+  },
+  {
+   "id": "H7 fechas válidas se aceptan (201) y la hora guardada coincide con la enviada: ISO Z, offset −05:00, milisegundos, sin segundos, 2999-12-31 y datetime-local (sin zona)",
+   "ok": true,
+   "detail": "ISO con Z→201 · ISO con offset −05:00→201 · con milisegundos→201 · sin segundos con Z→201 · 2999-12-31 a medianoche UTC→201 · datetime-local sin zona→201 · con segundos sin zona→201"
+  },
+  {
+   "id": "H7b notas: 1900-01-01, 2999-12-31, solo fecha, offset y milisegundos → 201; justo fuera del rango (1899-12-31, 3000-01-01) → 400",
+   "ok": false,
+   "detail": "justo bajo el borde inferior→201 ; justo sobre el borde superior→201"
+  }
+ ]
+}
