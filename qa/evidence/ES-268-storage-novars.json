@@ -1,7 +1,7 @@
 {
   "pr": 221,
   "mode": "novars",
-  "head": "8711dd4d8fa1eaeccd9a7d64c54f4840e296edcf",
+  "head": "1ce3154fab7397e5af6dde7f8aa0c27c9369b255",
   "results": [
     {
       "id": "S6a SIN las tres variables: el servidor ARRANCÓ y responde (/api/health 200 antes y después de usar el almacenamiento: no hay caída)",

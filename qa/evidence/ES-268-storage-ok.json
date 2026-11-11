@@ -1,12 +1,12 @@
 {
   "pr": 221,
   "mode": "ok",
-  "head": "8711dd4d8fa1eaeccd9a7d64c54f4840e296edcf",
+  "head": "1ce3154fab7397e5af6dde7f8aa0c27c9369b255",
   "results": [
     {
       "id": "S1a `uploadFile` devuelve la ruta; el cliente real hace POST a /storage/v1/object/{bucket}/{ruta} con `x-upsert: false`, el tipo de contenido en el cuerpo, la clave de servicio como credencial y SOLO al bucket de la variable",
       "ok": true,
-      "detail": "{\"path\":\"/storage/v1/object/qa-bucket/therapist-docs/1/1794374442958_d04c12ce24825a844841518f6422bae3.pdf\",\"upsert\":\"false\",\"authOk\":true}"
+      "detail": "{\"path\":\"/storage/v1/object/qa-bucket/therapist-docs/1/1794375523615_a63168001fe5f609dd5a8a3fdcce9ba0.pdf\",\"upsert\":\"false\",\"authOk\":true}"
     },
     {
       "id": "S1b la 2.ª subida con la MISMA clave NO sobrescribe: error genérico `storage_failed` con estado 409 y el objeto no cambia",
@@ -16,7 +16,7 @@
     {
       "id": "S1c `getSignedUrl` devuelve una URL firmada completa (empieza por el servidor y contiene la ruta firmada) y pide 900 s por defecto",
       "ok": true,
-      "detail": "http://127.0.0.1:9971/storage/v1/object/sign/qa-bucket/therapist-docs/1/17943744… ttl=900"
+      "detail": "http://127.0.0.1:9971/storage/v1/object/sign/qa-bucket/therapist-docs/1/17943755… ttl=900"
     },
     {
       "id": "S1d `deleteFile` es idempotente: borrar dos veces el mismo objeto y uno inexistente no falla; el objeto desaparece",
@@ -26,7 +26,7 @@
     {
       "id": "S1e las exportaciones antiguas `storage` y `bucket` ya no existen (contrato: uploadFile, getSignedUrl, deleteFile [+ deleteByPrefix, StorageError]) y NADIE más en el servidor las usa",
       "ok": true,
-      "detail": "uploadFile,getSignedUrl,deleteFile,deleteByPrefix,StorageError,MAX_BYTES,DEFAULT_TTL_SECONDS,_setClientFactoryForTests"
+      "detail": "uploadFile,getSignedUrl,deleteFile,deleteByPrefix,signedUrlTtlSeconds,StorageError,MAX_BYTES,DEFAULT_TTL_SECONDS,_setClientFactoryForTests"
     },
     {
       "id": "S3 TTL de la URL firmada (17 valores): 900 por defecto; inválidos → 900; mínimo 60; máximo 3600; decimales se truncan — medido en lo que RECIBE el almacenamiento",
@@ -96,7 +96,7 @@
     {
       "id": "S4d el registro del servidor tras los fallos no contiene la URL del proyecto, la ruta del objeto, la clave de servicio ni los nombres originales de los archivos",
       "ok": true,
-      "detail": "log 551 bytes · mensajes: ❌ Almacenamiento de documentos no disponible: storage_failed"
+      "detail": "log 531 bytes · mensajes: ❌ Almacenamiento de documentos no disponible: storage_failed"
     },
     {
       "id": "S10a la URL firmada solo se genera para el superadmin (Junta): superadmin 200 con la URL; profesional dueño, otro profesional, persona y admin → 403; sin sesión → 401/403; y los denegados provocan 0 llamadas de firma",
@@ -106,12 +106,12 @@
     {
       "id": "S10b la respuesta de descarga no incluye la clave de servicio ni credenciales distintas de la URL firmada",
       "ok": true,
-      "detail": "url,expiresIn"
+      "detail": "url,expiresIn,expiresInSeconds"
     },
     {
       "id": "S10c el texto de caducidad que ve quien descarga (`expiresIn`) coincide con la vida REAL de la URL firmada (900 s = 15 minutos)",
-      "ok": false,
-      "detail": "expiresIn mostrado=\"1 hora\" · vida real pedida al almacenamiento=900 s"
+      "ok": true,
+      "detail": "expiresIn mostrado=\"15 minutos\" · vida real pedida al almacenamiento=900 s"
     },
     {
       "id": "S5d una `documentPath` corrupta en la base (`..`, absoluta, vacía, con nulo) NO llega al almacenamiento: respuesta controlada (no 200, no crash) y 0 firmas nuevas",
@@ -121,7 +121,7 @@
     {
       "id": "S7a `grep` del diff completo (excepto el lockfile) con 7 patrones de secretos (JWT `eyJ…`, `sb_secret_`, `sbp_`, URL de proyecto `*.supabase.co` real, `SERVICE_ROLE_KEY=valor`, clave privada, AWS) = 0 coincidencias",
       "ok": true,
-      "detail": "635 líneas añadidas revisadas"
+      "detail": "325 líneas añadidas revisadas"
     },
     {
       "id": "S7b `.env.example`: las variables de almacenamiento están comentadas y SIN valor; ya no hay `GCS_*`; el documento de despliegue nombra las variables sin valores",
