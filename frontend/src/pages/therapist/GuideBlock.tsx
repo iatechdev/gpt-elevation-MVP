@@ -28,8 +28,10 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<{ key: string; reasons: Reason[] } | null>(null)
+  const [error, setError] = useState<{ key: string; reasons: Reason[]; check?: boolean } | null>(null)
   const [sent, setSent] = useState(false)
+  const [touched, setTouched] = useState(false) // E218-2: lo escrito se conserva al cerrar (Esc, Cancelar) y reabrir; solo se descarta al enviar con éxito
+  const before = useRef<{ pending: number | null; rejected: number | null }>({ pending: null, rejected: null })
   const dialog = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLButtonElement>(null)
   const date = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
@@ -37,23 +39,43 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   useEffect(() => { if (open && dialog.current && !dialog.current.open) dialog.current.showModal() }, [open])
   const close = () => { dialog.current?.close() }
   const onClosed = () => { setOpen(false); setError(null); opener.current?.focus() }
-  const start = () => { setText(data?.content ?? ''); setError(null); setSent(false); setOpen(true) }
+  const start = () => { if (!touched) setText(data?.content ?? ''); setError(null); setSent(false); setOpen(true) }
+  const done = () => { setSent(true); setTouched(false); setText(''); close(); state.reload({ silent: true }) }
+
+  // E218-3: si la respuesta se pierde (corte de red o 5xx) el servidor pudo guardar. Se relee la guía: una propuesta pendiente nueva = enviada; un rechazo nuevo = ya está registrado
+  // (se muestra en el bloque); si no se puede saber, «Sin confirmar» con «Comprobar» (nunca se reenvía a ciegas).
+  async function reconcile() {
+    setBusy(true)
+    try {
+      const res = await fetch(`${API}/api/therapist/prompt`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      if (!res.ok) throw new Error(String(res.status))
+      const fresh = await res.json() as PromptData
+      if (fresh.pending && fresh.pending.id !== before.current.pending) { done(); return }
+      if (fresh.rejected && fresh.rejected.id !== before.current.rejected && !fresh.pending) { setTouched(false); close(); state.reload({ silent: true }); return }
+      setError({ key: 'panel_gp_unsure', reasons: [], check: true })
+    } catch { setError({ key: 'panel_gp_unsure', reasons: [], check: true }) } finally { setBusy(false) }
+  }
 
   async function send() {
     if (busy) return
     if (text.trim().length < MIN_GUIDE_CHARS) { setError({ key: 'panel_gp_short', reasons: [] }); return }
     setBusy(true); setError(null)
+    before.current = { pending: data?.pending?.id ?? null, rejected: data?.rejected?.id ?? null }
+    let lost = false
     try {
       const res = await fetch(`${API}/api/therapist/prompt/propose`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ content: text }) })
       const body = await res.json().catch(() => ({})) as { code?: string; reasons?: Reason[] }
-      if (res.ok) { setSent(true); close(); state.reload({ silent: true }); return }
-      if (body.code === 'prompt_rejected' || body.code === 'prompt_review_failed') setError({ key: 'panel_gp_prompt_rejected', reasons: Array.isArray(body.reasons) ? body.reasons : [] })
+      if (res.ok) { done(); return }
+      if (res.status >= 500 && !ERROR_BY_CODE[String(body.code)]) lost = true // 503 «reglas no disponibles» es una respuesta conocida, no una pérdida
+      else if (body.code === 'prompt_rejected' || body.code === 'prompt_review_failed') setError({ key: 'panel_gp_prompt_rejected', reasons: Array.isArray(body.reasons) ? body.reasons : [] })
       else setError({ key: ERROR_BY_CODE[String(body.code)] ?? (res.status === 400 ? 'panel_gp_short' : 'panel_gp_error'), reasons: [] })
-    } catch { setError({ key: 'panel_gp_error', reasons: [] }) } finally { setBusy(false) }
+    } catch { lost = true } finally { setBusy(false) }
+    if (lost) await reconcile()
   }
 
   const pending = data?.pending ?? null
-  const rejected = data?.rejected && !data.active && !pending ? data.rejected : null
+  // E218-1: un rechazo más nuevo que la versión activa se muestra aunque haya guía activa (y mientras no haya una propuesta pendiente).
+  const rejected = data?.rejected && !pending && (!data.active || data.rejected.version > data.active.version) ? data.rejected : null
   return (
     <PanelBlock id="panel-guide" title={t('panel_guide')} state={state} t={t}>
       <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500, color: '#1C1917' }}>
@@ -84,12 +106,13 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
             <h2 id="panel-guide-dialog-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', margin: '0 0 0.75rem' }}>{data?.hasPrompt ? t('panel_guide_propose') : t('panel_guide_create')}</h2>
             <p className="th-notice" style={{ margin: '0 0 0.75rem' }}>{t('panel_guide_reminder')}</p>
             <label htmlFor="panel-guide-text" style={{ display: 'block', fontSize: '0.82rem', color: '#44403C', marginBottom: 4 }}>{t('panel_guide_field')}</label>
-            <textarea id="panel-guide-text" value={text} rows={8} aria-describedby="panel-guide-counter panel-guide-error" onChange={event => setText(event.target.value)}
+            <textarea id="panel-guide-text" value={text} rows={8} aria-describedby="panel-guide-counter panel-guide-error" onChange={event => { setText(event.target.value); setTouched(true) }}
               style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', resize: 'vertical', lineHeight: 1.6 }} />
             <p id="panel-guide-counter" style={{ margin: '0.35rem 0 0.75rem', fontSize: '0.78rem', color: '#44403C' }}>{t('panel_guide_counter', { n: text.trim().length, min: MIN_GUIDE_CHARS })}</p>
             <div id="panel-guide-error" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
               {error && <>
                 <p style={{ margin: 0 }}>{t(error.key)}</p>
+                {error.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile()}>{t('panel_gp_check')}</button>}
                 {error.reasons.length > 0 && <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>{error.reasons.map((reason, index) => <li key={`${reason.code}-${index}`}>{reason[lang] ?? reason.code}</li>)}</ul>}
               </>}
             </div>

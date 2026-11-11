@@ -29,7 +29,8 @@ const fs = require('node:fs');
   };
   const longText = 'Acompaña con preguntas abiertas sobre trayectoria y valores, sin diagnóstico ni promesas.';
 
-  async function open(width, lang, { doc = 'mixed', guide = 'pending', upload, propose } = {}) {
+  guides.activeRejected = { ...guides.pending, pending: null, rejected: { id: 8, version: 3, rejected_by: 'Junta', rejection_note: 'Sin promesas de empleo', rejected_at: iso(1) } };
+  async function open(width, lang, { doc = 'mixed', guide = 'pending', upload, propose, dyn } = {}) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     page.on('pageerror', (e) => errors.push(e.message));
@@ -40,9 +41,9 @@ const fs = require('node:fs');
       const request = route.request(); const p = new URL(request.url()).pathname;
       if (p === '/api/session') return route.fulfill({ json: { role: 'therapist', onboardingCompleted: true } });
       if (p === '/api/therapist/validation/status') return route.fulfill({ json: docs[doc] });
-      if (p === '/api/therapist/prompt') return route.fulfill({ json: guides[guide] });
+      if (p === '/api/therapist/prompt') return route.fulfill({ json: dyn ? dyn.current : guides[guide] });
       if (p === '/api/therapist/validation/upload') { seen.upload++; return route.fulfill(upload ? upload(seen) : { status: 201, json: { validation: { id: 9, status: 'pending' } } }); }
-      if (p === '/api/therapist/prompt/propose') { seen.propose++; seen.proposeBody = request.postDataJSON(); return route.fulfill(propose ? propose(seen) : { json: { version: { id: 6, version: 3, status: 'pending_review' } } }); }
+      if (p === '/api/therapist/prompt/propose') { seen.propose++; seen.proposeBody = request.postDataJSON(); const reply = propose ? propose(seen) : { json: { version: { id: 6, version: 3, status: 'pending_review' } } }; if (reply.abort) return route.abort('connectionreset'); return route.fulfill(reply); }
       if (p === '/api/therapist/pacientes' || p === '/api/sessions/therapist/upcoming') return route.fulfill({ json: [] });
       if (p === '/api/therapist/alerts') return route.fulfill({ json: { inactivePatients: [], notableProgress: [] } });
       return route.fulfill({ json: [] });
@@ -147,6 +148,50 @@ const fs = require('node:fs');
     await page.waitForFunction((name) => document.activeElement?.textContent === name, t.create);
     await context.close();
     check(`${tag}: Esc cierra el diálogo y el foco vuelve a «${t.create}»`);
+
+    // E218-1: guía ACTIVA v2 + propuesta v3 RECHAZADA con nota (sin pendiente) → el rechazo se ve
+    ({ context, page } = await open(width, lang, { guide: 'activeRejected' }));
+    body = await page.locator('section[aria-labelledby="panel-guide-title"]').innerText();
+    assert.ok(body.includes(t.activeV) && body.includes(lang === 'es' ? 'Propuesta v3 rechazada' : 'Proposal v3 rejected') && body.includes('Sin promesas de empleo') && body.includes(t.retry), `rechazo visible con guía activa (${tag}): ${body.slice(0, 200)}`);
+    await context.close();
+    // rechazo VIEJO (versión menor que la activa) no se muestra
+    ({ context, page } = await open(width, lang, { dyn: { current: { ...guides.activeRejected, rejected: { ...guides.activeRejected.rejected, version: 1 } } } }));
+    body = await page.locator('section[aria-labelledby="panel-guide-title"]').innerText();
+    assert.ok(!body.includes(lang === 'es' ? 'rechazada' : 'rejected'), 'un rechazo anterior a la versión activa no se muestra');
+    await context.close();
+    check(`${tag}: rechazo más nuevo que la guía activa se muestra con su nota; uno anterior no`);
+
+    // E218-2: Esc conserva lo escrito al reabrir
+    ({ context, page } = await open(width, lang, { guide: 'none' }));
+    await page.getByRole('button', { name: t.create }).click(); await page.getByRole('dialog').waitFor();
+    await page.locator('#panel-guide-text').fill(longText); await page.keyboard.press('Escape'); await page.getByRole('dialog').waitFor({ state: 'detached' });
+    await page.getByRole('button', { name: t.create }).click(); await page.getByRole('dialog').waitFor();
+    assert.equal(await page.locator('#panel-guide-text').inputValue(), longText, 'el borrador sobrevive a Esc');
+    await context.close();
+    check(`${tag}: Esc no pierde lo escrito (se conserva al reabrir)`);
+
+    // E218-3: corte DESPUÉS de que el servidor guardó → se relee y se muestra «Propuesta enviada»; si no se puede saber, «Sin confirmar» + «Comprobar»
+    const saved = { ...guides.none, hasPrompt: false, pending: { id: 40, version: 1, proposed_by: 'P', createdAt: iso(0) } };
+    const dyn = { current: guides.none };
+    ({ context, page } = await open(width, lang, { dyn, propose: () => { dyn.current = saved; return { abort: true }; } }));
+    await page.getByRole('button', { name: t.create }).click(); await page.getByRole('dialog').waitFor();
+    await page.locator('#panel-guide-text').fill(longText); await page.getByRole('button', { name: t.send }).click();
+    await page.getByText(t.proposalSent).waitFor(); await page.getByRole('dialog').waitFor({ state: 'detached' });
+    assert.ok((await page.locator('section[aria-labelledby="panel-guide-title"]').innerText()).includes(lang === 'es' ? 'Propuesta v1 en revisión' : 'Proposal v1 under review'));
+    await context.close();
+    const dyn2 = { current: guides.none };
+    ({ context, page } = await open(width, lang, { dyn: dyn2, propose: () => ({ abort: true }) })); // el servidor NO guardó
+    await page.getByRole('button', { name: t.create }).click(); await page.getByRole('dialog').waitFor();
+    await page.locator('#panel-guide-text').fill(longText); await page.getByRole('button', { name: t.send }).click();
+    await page.getByRole('alert').filter({ hasText: lang === 'es' ? 'No pudimos confirmar' : "couldn't confirm" }).waitFor();
+    assert.equal(await page.locator('#panel-guide-text').inputValue(), longText, 'el texto sigue ahí');
+    await page.getByRole('button', { name: lang === 'es' ? 'Comprobar' : 'Check' }).click();
+    await page.getByRole('alert').filter({ hasText: lang === 'es' ? 'No pudimos confirmar' : "couldn't confirm" }).waitFor();
+    dyn2.current = saved; // ahora sí aparece guardada
+    await page.getByRole('button', { name: lang === 'es' ? 'Comprobar' : 'Check' }).click();
+    await page.getByText(t.proposalSent).waitFor();
+    await context.close();
+    check(`${tag}: corte después de guardar → se relee: «${t.proposalSent}»; si no se sabe, «Sin confirmar» + «Comprobar» sin reenviar a ciegas`);
   }
   assert.deepEqual(errors, [], 'errores de consola o de página: ' + errors.join(' | '));
   console.log(`\nES-177 B2: ${checks.length} comprobaciones (ES/EN × 390/1360) OK`);

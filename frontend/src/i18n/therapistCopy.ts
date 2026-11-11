@@ -91,6 +91,8 @@ export const therapistEs: Record<string, string> = {
   panel_gp_rate: 'Demasiadas propuestas seguidas. Espera un rato.',
   panel_gp_short: 'La guía necesita al menos 50 caracteres.',
   panel_gp_error: 'No pudimos enviar la propuesta. Tu texto sigue aquí; inténtalo de nuevo.',
+  panel_gp_unsure: 'No pudimos confirmar si la propuesta se envió. Comprueba antes de volver a enviar: tu texto sigue aquí.',
+  panel_gp_check: 'Comprobar',
 
   mt_share_title: 'Compartir mis datos con mi profesional',
   mt_share_desc: 'Verá tu correo, tu ánimo y tus valoraciones. No verá tus chats, tu diario ni tu mapa de carrera. Puedes retirarlo cuando quieras.',
@@ -244,6 +246,8 @@ export const therapistEn: Record<string, string> = {
   panel_gp_rate: 'Too many proposals in a row. Please wait a while.',
   panel_gp_short: 'The guide needs at least 50 characters.',
   panel_gp_error: "We couldn't send the proposal. Your text is still here; please try again.",
+  panel_gp_unsure: "We couldn't confirm whether the proposal was sent. Check before sending again: your text is still here.",
+  panel_gp_check: 'Check',
 
   mt_share_title: 'Share my data with my professional',
   mt_share_desc: 'They will see your email, mood and ratings. They will not see your chats, journal or career map. You can withdraw this at any time.',
