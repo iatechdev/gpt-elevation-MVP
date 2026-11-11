@@ -1,0 +1,77 @@
+{
+ "results": [
+  {
+   "id": "siembra",
+   "info": "bases qa275_pr/qa275_main/qa275_decoy: migraciones 0/0/0; solicitudes 202:13aef9e4,202:fd00ebae | 202,202 | 202,202"
+  },
+  {
+   "id": "N5 7 combinaciones de argumentos inválidos (sin UUID, mal formado, mayúsculas, v1, sin flag, flag equivocado, tercer argumento mal escrito) con y sin DATABASE_URL → exit 2 «Expected request UUID…», stdout vacío, sin traza y SIN conectar (la actividad de la base no sube sobre la línea base)",
+   "ok": true,
+   "detail": "ok · Δ transacciones 0 (base 0)"
+  },
+  {
+   "id": "N5-observacion",
+   "info": "un CUARTO argumento sobrante se ignora (exit 2 sin DATABASE_URL: pasa la validación de argumentos y falla por la variable); es la conducta de main (misma desestructuración), no una regresión"
+  },
+  {
+   "id": "N1 (bloqueante) sin `DATABASE_URL` (aun con DB_HOST/DB_USER/DB_PASSWORD/DB_NAME definidos, y sin nada) → exit 2, mensaje «DATABASE_URL is required», stdout vacío, SIN conectar y la solicitud sigue `accepted`",
+   "ok": false,
+   "detail": "exit 0/2; stderr «Environment: 127.0.0.1:54459/qa275_pr»; Δ 7 (base 0); estado accepted"
+  },
+  {
+   "id": "N1-control-main",
+   "info": "[main] mismo comando sin DATABASE_URL pero con DB_* → exit 1; stdout «»; la solicitud pasó a accepted (cae en DB_*)"
+  },
+  {
+   "id": "N2-control-main",
+   "info": "[main] con el mismo .env y sin DATABASE_URL → exit 0; la solicitud de la base SEÑUELO pasó a awaiting_verification (main LEE .env)"
+  },
+  {
+   "id": "N2 (bloqueante) `.env` señuelo en backend/ (con DATABASE_URL y DB_* de la base B): sin variable en el entorno → exit 2 y la base B NO cambia; con `DATABASE_URL`=A → se procesa SOLO A (B intacta); el `.env` se borró",
+   "ok": true,
+   "detail": "sin variable exit 2; B accepted→accepted; con variable exit 0; A → awaiting_verification"
+  },
+  {
+   "id": "N3 (bloqueante) salida limpia: stdout es UN JSON parseable de punta a punta (`{\"status\":…,\"deadlinesVerified\":false}`), sin banner/línea de dotenv; «Environment: host:puerto/base» va por stderr y no hay trazas",
+   "ok": true,
+   "detail": "stdout «{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}» stderr «Environment: 127.0.0.1:54459/qa275_pr»"
+  },
+  {
+   "id": "N7-detalle",
+   "info": "PR {\"j\":[{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":1,\"json\":\"\"}],\"final\":{\"status\":\"awaiting_verification\",\"failureCode\":null,\"purged\":true},\"users\":2} · main {\"j\":[{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":1,\"json\":\"\"}],\"final\":{\"status\":\"awaiting_verification\",\"failureCode\":null,\"purged\":true},\"users\":2}"
+  },
+  {
+   "id": "N7 `processDeletion` y `--replay` intactos: la misma secuencia (purga nueva, repetición idempotente, `--replay` de una ya procesada, UUID desconocido) da los MISMOS exit codes, JSON de estado y estado final que el script de main (sobre bases gemelas)",
+   "ok": true,
+   "detail": "{\"j\":[{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":0,\"json\":\"{\\\"status\\\":\\\"awaiting_verification\\\",\\\"deadlinesVerified\\\":false}\"},{\"st\":1,\"json\":\"\"}],\"final\":{\"status\":\""
+  },
+  {
+   "id": "N4 (bloqueante) credenciales: con usuario y clave con caracteres especiales (`!#%:/@`) y `?sslmode`, en el caso OK, base inexistente, clave incorrecta y host inalcanzable NI el usuario NI la clave (cruda o codificada) aparecen en stdout/stderr y no hay trazas",
+   "ok": true,
+   "detail": "OK con rol y clave especial + ?sslmode: exit 1 «Purge not completed. Review the protected request ledger.» | base inexistente: exit 1 «Purge not completed. Review the protected request ledger.» | clave incorrecta: exit 1 «Purge not completed. Review the protected request ledger.» | host inalcanzable: exit 1 «Purge not completed. Review the protected request ledger.»"
+  },
+  {
+   "id": "N6 URL inválida (texto, mysql://, sin host, vacía, http://, espacios) → exit 2 con mensaje claro, sin traza y sin conectar",
+   "ok": true,
+   "detail": "Δ 0 (base 0)"
+  },
+  {
+   "id": "N8 SSL (heredado de `database.js`: activo salvo `DB_SSL=false`): contra mi Postgres local SIN SSL, sin `DB_SSL=false` falla con mensaje corto (exit 1, sin URL ni clave ni traza); con `DB_SSL=false` funciona",
+   "ok": true,
+   "detail": "sin: exit 1 «Purge not completed. Review the protected request ledger.» · con: exit 0 {\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}"
+  },
+  {
+   "id": "N9-JWT_SECRET",
+   "info": "exit 2 «Cannot start the purge: JWT_SECRET must be configured before starting the backend.. Run it with the environment variables of the target serv» stdout «»"
+  },
+  {
+   "id": "N9-observacion-DEK",
+   "info": "sin DATA_ENCRYPTION_KEY: exit 0 (la purga no necesita descifrar: borra filas; la clave solo se exige al iniciar el servidor)"
+  },
+  {
+   "id": "N9 sin JWT_SECRET (las variables que exigen los módulos de la aplicación) → exit ≠ 0 con mensaje legible (no una traza) y sin cambiar nada",
+   "ok": true,
+   "detail": "ok (ver N9-*)"
+  }
+ ]
+}
