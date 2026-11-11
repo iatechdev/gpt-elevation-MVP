@@ -109,6 +109,9 @@ test('ES-99 PostgreSQL + HTTP: errores controlados y contenido verificado en la 
     }
     assert.equal(storage.uploads.length, 4);
     assert.ok(storage.uploads.every((u) => u.destination.startsWith(`therapist-docs/${therapist.id}/`)));
+    // ES-268: la clave del objeto NO lleva el nombre original (puede traer el nombre de la persona); solo marca de tiempo, 16 bytes aleatorios y la extensión del tipo validado.
+    assert.deepEqual(storage.uploads.map((u) => u.destination.replace(/^therapist-docs\/\d+\/\d+_[0-9a-f]{32}/, '')), ['.pdf', '.jpg', '.png', '.webp']);
+    assert.ok(storage.uploads.every((u) => !/t[ií]tulo|foto|sello|escaneo/i.test(u.destination)));
     // Nombre con rutas y caracteres de control: ni «..» ni separadores, en la ruta y en el nombre que se muestra.
     const nasty = await upload(therapist, [['document', PDF, 'application/pdf', '..\\..\\carpeta/../../etc/passwd.pdf'], ['therapistId', String(other.id)]]);
     assert.equal(nasty.status, 201);

@@ -21,7 +21,8 @@ const { uploadFile, getSignedUrl } = require('../utils/storage');
 const { verificarSuperAdmin } = require('../middlewares/auth');
 const { validateBody, optional, text, nonempty } = require('../middlewares/validateBody');
 const { validateIdParams } = require('../middlewares/params');
-const { ALLOWED_TYPES, contentMatches, safeDocumentName, storageName } = require('../utils/uploadSafety');
+const { randomBytes } = require('crypto');
+const { ALLOWED_TYPES, contentMatches, safeDocumentName, extensionFor } = require('../utils/uploadSafety');
 
 validateIdParams(router, 'id'); // ES-99 (ES93-B1): ids de ruta mal formados = 404 uniforme
 
@@ -66,8 +67,9 @@ router.post('/upload', onlyTherapist, uploadDocument, async (req, res) => {
     const validTypes = ['titulo', 'certificado', 'colegiado', 'otro'];
     const docType = validTypes.includes(documentType) ? documentType : 'titulo';
 
-    // Ruta en el almacenamiento: therapist-docs/{therapistId}/{timestamp}_{nombre saneado}
-    const destination = `therapist-docs/${req.user.id}/${Date.now()}_${storageName(req.file.originalname)}`;
+    // Ruta en el almacenamiento (ES-268): therapist-docs/{therapistId}/{timestamp}_{16 bytes aleatorios}{extensión del tipo validado}. SIN el nombre original del archivo
+    // (puede llevar el nombre de la persona); el nombre para mostrar queda saneado en la base (documentName).
+    const destination = `therapist-docs/${req.user.id}/${Date.now()}_${randomBytes(16).toString('hex')}${extensionFor(req.file.mimetype)}`;
 
     try {
       await uploadFile(req.file.buffer, destination, req.file.mimetype);
