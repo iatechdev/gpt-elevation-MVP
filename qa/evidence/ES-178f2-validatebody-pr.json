@@ -1,0 +1,130 @@
+[
+ {
+  "ruta": "POST /api/register",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "name"
+ },
+ {
+  "ruta": "POST /api/login",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "password"
+ },
+ {
+  "ruta": "POST /api/rating",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "rating"
+ },
+ {
+  "ruta": "POST /api/mood/checkin",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "mood"
+ },
+ {
+  "ruta": "POST /api/plan-requests",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "planId"
+ },
+ {
+  "ruta": "PUT /api/admin/plan-requests/admin/1/reject",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "adminNote"
+ },
+ {
+  "ruta": "PUT /api/admin/usuarios/1",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "role"
+ },
+ {
+  "ruta": "PUT /api/admin/usuarios/1/plan",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "planId"
+ },
+ {
+  "ruta": "POST /api/matching/request",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "answers"
+ },
+ {
+  "ruta": "POST /api/diary",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "date"
+ },
+ {
+  "ruta": "POST /api/therapist/pacientes/1/notas",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "content"
+ },
+ {
+  "ruta": "PUT /api/therapist/notas/1",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "content"
+ },
+ {
+  "ruta": "POST /api/sessions/therapist/1/notes",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "content"
+ },
+ {
+  "ruta": "POST /api/password-reset/request",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "email"
+ },
+ {
+  "ruta": "PUT /api/consents/insights",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "status"
+ },
+ {
+  "ruta": "POST /api/therapist/prompt/propose",
+  "status": 400,
+  "keys": "code,error,field",
+  "error": "Datos de entrada inválidos. / Invalid input data.",
+  "code": "invalid_input",
+  "field": "content"
+ }
+]
