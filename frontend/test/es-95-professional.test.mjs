@@ -56,13 +56,13 @@ test('ES-95: el formulario no guarda nada en el navegador ni en la URL, no enví
 })
 
 test('ES-95 backoffice: la pestaña lista, aprueba, rechaza con motivo, descarga con sesión y precarga «Invitar persona» sin contraseña', () => {
-  const panel = read('../src/pages/admin/ProfessionalApplicationsPanel.tsx'); const users = read('../src/pages/admin/AdminUsers.tsx')
+  const panel = read('../src/pages/admin/ProfessionalApplicationsPanel.tsx'); const users = read('../src/pages/admin/AdminUsers.tsx'); const invite = read('../src/pages/admin/AdminUsersInvite.tsx')
   assert.match(read('../src/pages/admin/AdminContent.tsx'), /<ProfessionalApplicationsPanel s=\{\{ card, label, input, btnPrimary, btnSecondary \}\} \/>/)
   assert.match(panel, /Aprobar no crea la cuenta/); assert.match(panel, /Escribe el motivo del rechazo/); assert.match(panel, /target="_blank" rel="noopener noreferrer"/)
   assert.match(panel, /Authorization: `Bearer \$\{token\}`/); assert.match(panel, /createObjectURL/); assert.doesNotMatch(panel, /window\.open|href=\{`\$\{API\}/) // sin URL pública de la hoja de vida
   assert.match(panel, /item\.status === 'approved' && <Link/); assert.match(panel, /to="\/admin\/users" state=\{\{ newTherapist: \{ name: item\.name, email: item\.email \} \}\}/); assert.doesNotMatch(panel, /\?newTherapist|[?&]name=|[?&]email=/) // sin datos personales en la URL
   assert.doesNotMatch(panel, /password/i) // la contraseña la define quien crea la cuenta
-  assert.match(users, /location\.state as \{ newTherapist\?/); assert.match(users, /email: String\(prefill\.email \?\? ''\)\.slice\(0, 254\), role: 'therapist'/); assert.doesNotMatch(users, /password: ''/); /* ES-186: la precarga ya no lleva contraseña, invita por correo */ assert.match(users, /navigate\(location\.pathname, \{ replace: true, state: null \}\)/); assert.doesNotMatch(users, /searchParams\.get\('newTherapist'\)/)
+  assert.match(users, /state as \{ newTherapist\?/); assert.match(users, /email: String\(data\.email \?\? ''\)\.slice\(0, 254\)/); assert.match(invite, /prefill \? 'therapist' : 'user'/); assert.doesNotMatch(users, /password: ''/); /* ES-186: la precarga ya no lleva contraseña, invita por correo */ assert.match(users, /navigate\(location\.pathname, \{ replace: true, state: null \}\)/); assert.doesNotMatch(users, /searchParams\.get\('newTherapist'\)/)
 })
 
 test('ES-95 landing: el bloque de profesionales enlaza al formulario y el texto del catálogo deja de ser provisional', () => {
