@@ -4,10 +4,12 @@
 // demanda ni elegibilidad: guarda lo que el cliente curó, exige fuente y fecha, y marca como «por confirmar», «no publicado» o
 // «desactualizado» lo que no esté verificado. «Vigente», «accesible» y «verificada» son afirmaciones de una persona con nombre y fecha.
 
-const { Transaction } = require('sequelize');
+const { Op, Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const RouteCatalog = require('../RouteCatalog');
 const RouteCatalogItem = require('../RouteCatalogItem');
+const SkillCatalog = require('../SkillCatalog');
+const SkillDefinition = require('../SkillDefinition');
 const defaultPolicy = require('../config/routeCatalogPolicy.json');
 const { normalizeText, redactSecrets } = require('./promptSafety');
 
@@ -379,6 +381,21 @@ async function publish(id, adminId, { policy = defaultPolicy, allowSynthetic = p
 // ---------- lectura para participantes y para ES-32: solo lo publicado, con la frescura ya calculada ----------
 const daysBetween = (isoDate, now) => Math.floor((Date.parse(todayIso(now)) - Date.parse(isoDate)) / 86400000);
 
+// ES-260 · Nombres {es, en} de las habilidades que el catálogo de rutas referencia (capacidades de roles y recurso vinculado), tomados del catálogo de
+// habilidades VIGENTE. Solo nombres: sin niveles, rúbrica ni datos de personas. Una clave que no existe en el vigente se omite (no se inventa).
+async function skillLabelsFor(keys) {
+  const out = {};
+  if (!keys.length) return out;
+  const current = await SkillCatalog.findOne({ where: { status: 'published' } });
+  if (!current) return out;
+  const defs = await SkillDefinition.findAll({ where: { catalogId: current.id, skillKey: { [Op.in]: keys } }, attributes: ['skillKey', 'labels'] });
+  for (const d of defs) {
+    const { es, en } = d.labels || {};
+    if (typeof es === 'string' && es && typeof en === 'string' && en) out[d.skillKey] = { es, en };
+  }
+  return out;
+}
+
 async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPolicy } = {}) {
   const catalog = await RouteCatalog.findOne({ where: { status: 'published' } });
   if (!catalog) return null;
@@ -403,7 +420,8 @@ async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPoli
   });
   const resources = [...byKind.resources].map(([resourceKey, r]) => ({ resourceKey, ...r }));
   const contexts = [...byKind.contexts].map(([contextKey, c]) => ({ contextKey, ...c }));
-  return { version: catalog.version, publishedAt: catalog.publishedAt, contexts, sources, roles, offers, resources };
+  const skillKeys = [...new Set([...roles.flatMap((r) => (r.capabilities || []).map((c) => c.skillKey)), ...resources.map((r) => r.linkedSkillKey)].filter(Boolean))];
+  return { version: catalog.version, publishedAt: catalog.publishedAt, contexts, sources, roles, offers, resources, skillLabels: await skillLabelsFor(skillKeys) };
 }
 
 module.exports = {
