@@ -1,11 +1,11 @@
 {
   "pr": 217,
-  "head": "049f763eeb643c254aa178cc06edac67d51b56d1",
+  "head": "f382b151f8242b11acb31bea9078d86079e49f28",
   "results": [
     {
       "id": "PRE catálogo v1 publicado con 3 habilidades por la ruta real",
       "ok": true,
-      "detail": "200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-11-10T22:28:46.023Z\",\"skillCount\":3}"
+      "detail": "200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-11-11T04:47:45.692Z\",\"skillCount\":3}"
     },
     {
       "id": "siembra",
@@ -54,7 +54,7 @@
     {
       "id": "H1i sin evaluaciones ni propuestas, quitar habilidades sí se puede publicar",
       "ok": true,
-      "detail": "200 {\"id\":3,\"version\":3,\"status\":\"published\",\"publishedAt\":\"2026-11-10T22:28:47.250Z\",\"skillCount\":1}"
+      "detail": "200 {\"id\":3,\"version\":3,\"status\":\"published\",\"publishedAt\":\"2026-11-11T04:47:47.301Z\",\"skillCount\":1}"
     },
     {
       "id": "H1j primera publicación",
@@ -63,12 +63,12 @@
     {
       "id": "H2a PUT devuelve `updatedAt` y el GET trae la MISMA `updatedAt` por habilidad",
       "ok": true,
-      "detail": "2026-11-10T22:28:47.294Z / 2026-11-10T22:28:47.294Z"
+      "detail": "2026-11-11T04:47:47.373Z / 2026-11-11T04:47:47.373Z"
     },
     {
       "id": "H2b con `expectedUpdatedAt` = la leída → 200 y `updatedAt` nueva (distinta)",
       "ok": true,
-      "detail": "200 2026-11-10T22:28:47.333Z"
+      "detail": "200 2026-11-11T04:47:47.438Z"
     },
     {
       "id": "H2c con la versión VIEJA → 409 `skill_changed` con la versión vigente (`current` con etiquetas y `updatedAt`) y SIN pisar (en base sigue «dos»)",
@@ -124,18 +124,18 @@
     },
     {
       "id": "H3a 8 guardados simultáneos con el MISMO expectedUpdatedAt: 1×200 + 7×409 `skill_changed`, 0 5xx, el contenido final es el del ganador",
-      "ok": false,
-      "detail": "200,200,409,200,409,409,409,409 final=c8-3"
+      "ok": true,
+      "detail": "200,409,409,409,409,409,409,409 final=c8-0"
     },
     {
       "id": "H3b guardar vs quitar a la vez (con y sin versión): sin 5xx ni deadlock; el estado final es coherente (la habilidad existe o no, sin filas duplicadas)",
       "ok": true,
-      "detail": "200,200,200,200"
+      "detail": "200,200,409,404"
     },
     {
       "id": "H3c publicar vs guardar a la vez (pool 5): sin 5xx ni deadlock; un solo publicado vigente; lo publicado coincide con lo contado en la respuesta; ediciones tardías → 409 `catalog_not_editable`/similar, no se pierde en silencio",
       "ok": true,
-      "detail": "200: 200: 200: 200: publicado=published habilidades=3"
+      "detail": "200: 200: 200: 409:catalog_not_editable publicado=published habilidades=3"
     },
     {
       "id": "H3d no quedan transacciones colgadas",
@@ -168,6 +168,40 @@
       "detail": "400/413"
     },
     {
+      "id": "H4f1 GET /territories: admin y superadmin → 200 con los 5 actuales (id + estado `defined`); profesional, persona, junta y sin sesión → 401/403",
+      "ok": true,
+      "detail": "200 {\"territories\":[{\"id\":\"dir\",\"status\":\"defined\"},{\"id\":\"con\",\"status\":\"defined\"},{\"id\":\"com\",\"status\":\"defined\"},{\"id\":\"ing\",\"status\":\"defined\"},{\"id\":\"inn\",\"sta profesional:403,persona:403,junta:403,anon:403"
+    },
+    {
+      "id": "H4f2 añadir 3 territorios «in_definition» SOLO editando el archivo de datos (sin reiniciar ni tocar código): antes `nuevo1` → 400; después GET los lista 8 (3 `in_definition`), una habilidad puede usar los nuevos (200) y los 8 a la vez (200); un noveno desconocido → 400",
+      "ok": true,
+      "detail": "antes=400 lista=8 nuevos=200 los8=200 noveno=400"
+    },
+    {
+      "id": "H4f3 los territorios nuevos son SOLO id + estado: no traen niveles, nombres, habilidades ni roles inventados; la habilidad que los usa guarda solo lo que se le envió",
+      "ok": true,
+      "detail": "[{\"id\":\"dir\",\"status\":\"defined\"},{\"id\":\"con\",\"status\":\"defined\"},{\"id\":\"com\",\"status\":\"defined\"},{\"id\":\"ing\",\"status\":\"defined\"},{\"id\":\"inn\",\"status\":\"defined\"},{\"id\":\"nuevo1\",\"status\":\"in_definition\""
+    },
+    {
+      "id": "H4f4 al quitar los 3 del archivo vuelve a leer 5 (relectura por cambio de fecha del archivo) y `nuevo1` vuelve a dar 400; la habilidad guardada con territorios que ya no existen sigue siendo legible (GET 200)",
+      "ok": true,
+      "detail": "5 400 200"
+    },
+    {
+      "id": "H4f5 archivo ROTO (8 variantes: JSON ilegible, vacío, sin lista, repetidos, estado inválido, id mal formado, entrada nula, lista vacía): FALLA CERRADO — ni la lectura ni guardar territorios devuelven 200 (ni aceptan ids cualquiera), sin filtrar rutas ni pilas; guardar una habilidad SIN territorios sigue funcionando",
+      "ok": true,
+      "detail": "JSON ilegible: get=500 dir=500 cualquiera=500 sin=200 | lista vacía: get=500 dir=500 cualquiera=500 sin=200 | sin lista: get=500 dir=500 cualquiera=500 sin=200 | ids repetidos: get=500 dir=500 cualquiera=500 sin=200 | estado inválido: get=500 dir=500 cualquiera=500 sin=200 | id mal formado: get=500 dir=500 cualquiera=500 sin=200 | entrada nula: get=500 dir=500 cualquiera=500 sin=200 | archivo vacío: get=500 dir=500 cualquiera=500 sin=200"
+    },
+    {
+      "id": "H4f6 códigos con el archivo roto",
+      "info": "lectura y guardado devuelven: 500 (5xx controlado = el servidor no acepta territorios; ver cuerpo para fuga)"
+    },
+    {
+      "id": "H4f7 tras restaurar el archivo, los 5 actuales funcionan como antes (200) y los repetidos siguen dando 400",
+      "ok": true,
+      "detail": "200/400"
+    },
+    {
       "id": "cierre",
       "info": "borrador de H4 publicado: 200"
     },
@@ -197,7 +231,7 @@
     {
       "id": "LOG el registro del servidor no contiene correos ni contenido de habilidades",
       "ok": true,
-      "detail": "log 356 bytes"
+      "detail": "log 1425 bytes"
     }
   ]
 }
