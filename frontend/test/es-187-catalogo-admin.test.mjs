@@ -11,8 +11,8 @@ const read = (p) => readFileSync(resolve(here, p), 'utf8')
 const api = read('../src/routeCatalog/api.ts'), pages = read('../src/routeCatalog/CatalogPages.tsx'), copy = read('../src/routeCatalog/copy.ts')
 
 test('ES-187: el guardado manda expectedUpdatedAt y la versión se renueva tras guardar', () => {
-  assert.match(api, /expectedUpdatedAt \? \{ \.\.\.body, expectedUpdatedAt \} : body/)
-  assert.match(pages, /api\.save\(id, kind!, key, payload\(kind!, data, synthetic\), newItem \? undefined : stamp\.current\)/)
+  assert.match(api, /expectedUpdatedAt !== undefined \? \{ \.\.\.body, expectedUpdatedAt \} : body/)
+  assert.match(pages, /api\.save\(id, kind!, key, payload\(kind!, data, synthetic\), newItem \? \(stamp\.current \?\? null\) : stamp\.current\)/) // ES-266: elemento nuevo = null
   assert.match(pages, /stamp\.current = string\(persisted\.updatedAt\)/)
 })
 
@@ -37,6 +37,14 @@ test('ES-187: todos los textos nuevos existen en ES y EN y el aviso de «no dete
 })
 
 // E213-1: si el servidor guarda pero la respuesta se pierde, lo releído que coincide con lo enviado se adopta (versión y «Guardado»); si no, el siguiente guardado daría un 409 falso.
+// ES-266: un elemento NUEVO manda expectedUpdatedAt null; si la clave ya existe, 409 item_exists abre el mismo aviso de conflicto.
+test('ES-187 (ES-266): elemento nuevo manda expectedUpdatedAt null y item_exists abre el aviso de conflicto', () => {
+  assert.match(pages, /newItem \? \(stamp\.current \?\? null\) : stamp\.current/)
+  assert.match(pages, /failure\.code === 'item_exists'/)
+  assert.match(api, /expectedUpdatedAt !== undefined \? \{ \.\.\.body, expectedUpdatedAt \} : body/)
+  assert.match(copy, /item_exists: \['Otra persona creó/)
+})
+
 test('ES-187 (E213-1): la respuesta perdida se resuelve releyendo y adoptando la versión persistida', () => {
   assert.match(pages, /const lost = !acknowledged && !\(failure instanceof CatalogError && failure\.status < 500\)/)
   assert.match(pages, /\(acknowledged \|\| lost\) && persisted/)
