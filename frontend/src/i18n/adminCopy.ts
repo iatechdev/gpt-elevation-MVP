@@ -1,5 +1,14 @@
 // Existing administrative UI copy only. User-written content and API values are never translated.
 export const adminEnglish: Record<string, string> = {
+  'Usa hasta 20 letras minúsculas, números o guiones.': 'Use up to 20 lowercase letters, numbers or hyphens.',
+  'Este identificador ya existe.': 'This identifier already exists.',
+  'Usa como máximo 255 caracteres.': 'Use no more than 255 characters.',
+  'Este campo es obligatorio.': 'This field is required.',
+  'Características en español, una por línea': 'Features in Spanish, one per line',
+  'Características en inglés, una por línea': 'Features in English, one per line',
+  'Período desconocido': 'Unknown period',
+  'Otros textos': 'Other texts',
+  'El plan deja de verse en precios; las solicitudes realizadas se conservan. Puedes reactivarlo editándolo.': 'The plan will no longer appear in pricing; existing requests are kept. You can reactivate it by editing it.',
   'Planes': 'Plans', 'Textos públicos': 'Public texts', 'Introduce un precio válido.': 'Enter a valid price.',
   'No se pudieron cargar los planes.': 'Could not load plans.', 'Plan desactivado.': 'Plan deactivated.',
   'No se pudo desactivar el plan.': 'Could not deactivate the plan.', 'No se pudo cargar el contenido.': 'Could not load the content.',

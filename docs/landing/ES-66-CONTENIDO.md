@@ -40,7 +40,7 @@ GET /api/landing-content?lang=es o en, público: mezcla defaults y valores persi
 
 PUT /api/landing-content usa verificarSuperAdmin existente (JWT y rol de servidor); visitante/usuario/terapeuta/board/admin no pueden editar. Idioma ES/EN, valor no vacío de hasta 5000 caracteres, clave de hasta 255. Claves nuevas landing.* fuera del catálogo se rechazan. Conserva claves antiguas y su edición para reversión. En ES-66 no se añadieron endpoints ni cambios en identidad, esquema o migraciones; ver actualización ES-185 arriba.
 
-El editor conserva los cinco campos anteriores y agrega los nuevos identificados por su clave. Los permisos y estados existentes no cambian. El contrato frontend landingText(key, lang, values) devuelve siempre el respaldo del idioma ante valor ausente, vacío o inválido. loadLandingContent cubre red, HTTP y JSON inválido. useLandingContent cancela peticiones al cambiar idioma y no presenta el idioma anterior mientras carga.
+El editor conserva los campos anteriores y presenta los campos nuevos con etiquetas descriptivas en el idioma de la interfaz. Cada nuevo segmento de clave del catálogo debe tener una etiqueta ES/EN en `frontend/src/pages/admin/landingLabels.ts`; la prueba de ES-185 comprueba su cobertura y unicidad. El selector ES/EN del editor cambia el idioma del contenido que se edita, no el de las etiquetas. Cada campo se guarda por separado y el permiso de escritura no cambia. El contrato frontend landingText(key, lang, values) devuelve siempre el respaldo del idioma ante valor ausente, vacío o inválido. loadLandingContent cubre red, HTTP y JSON inválido. useLandingContent cancela peticiones al cambiar idioma y no presenta el idioma anterior mientras carga.
 
 ## Claves antiguas
 

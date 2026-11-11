@@ -36,6 +36,6 @@ test('ES-94: la pestaña Landing monta el panel antes de la lista general, pero 
   assert.match(admin, /landingFields\.filter\(\(\{ key \}\) => !PENDING_KEYS\.has\(key\)\)/)
   assert.ok(admin.indexOf('<LandingPendingPanel') < admin.indexOf('{fields.map(f =>'))
   const panel = read('../src/pages/admin/LandingPendingPanel.tsx')
-  assert.match(panel, /if \(PENDING_ITEMS\.length === 0\) return null/)
+  assert.match(panel, /if \(pending === 0\) return null/)
   assert.match(panel, /<section aria-labelledby="landing-pending-title"/); assert.doesNotMatch(panel, /fetch\(/)
 })

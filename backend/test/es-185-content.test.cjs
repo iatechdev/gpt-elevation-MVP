@@ -30,3 +30,32 @@ test('ES-185: administrative content requires admin and reports database errors'
   assert.equal(publicResponse.status, 200);
   assert.ok(publicResponse.body.hero_title);
 });
+
+test('ES-185: updating a plan never changes its identifier', async t => {
+  const plan = {
+    slug: 'original',
+    name_es: 'Anterior',
+    async update(values) { Object.assign(this, values); },
+  };
+  models.PricingPlan.findByPk = async () => plan;
+  const request = await startApp(t);
+  const response = await request('PUT', '/api/admin/pricing/1', {
+    role: 'admin',
+    body: { slug: 'reemplazo', name_es: 'Actualizado' },
+  });
+  assert.equal(response.status, 200);
+  assert.equal(plan.slug, 'original');
+  assert.equal(plan.name_es, 'Actualizado');
+});
+
+test('ES-185: creating a plan preserves its selected active state', async t => {
+  let created;
+  models.PricingPlan.create = async values => { created = values; return values; };
+  const request = await startApp(t);
+  const response = await request('POST', '/api/admin/pricing', {
+    role: 'admin',
+    body: { slug: 'fixture', name_es: 'Plan ficticio', name_en: 'Fixture plan', price: 0, isActive: false },
+  });
+  assert.equal(response.status, 201);
+  assert.equal(created.isActive, false);
+});

@@ -1,8 +1,10 @@
 import { useAdminText } from '../../i18n/useAdminText'
+import { useLanguage } from '../../i18n/useLanguage'
 import landingFields from '../../../../shared/landing-content.json'
 import { LandingPendingPanel } from './LandingPendingPanel'
 import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
+import { landingFieldLabel } from './landingLabels'
 import { modalKeyDown } from '../../a11y/modalKeys'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
@@ -290,6 +292,7 @@ function ValidationsTab() {
 // ── Tab Precios ───────────────────────────────────────────────────────────────
 function PricingTab() {
   const tr = useAdminText()
+  const { lang } = useLanguage()
 
   const token = localStorage.getItem('elevation_token') ?? ''
   const [plans, setPlans]         = useState<PricingPlan[]>([])
@@ -299,14 +302,19 @@ function PricingTab() {
   const [form, setForm]           = useState<PricingPlan>(emptyPlan)
   const [featInputEs, setFeatInputEs] = useState('')
   const [featInputEn, setFeatInputEn] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [deactivating, setDeactivating] = useState<PricingPlan | null>(null)
   const [saving, setSaving]       = useState(false)
   const [msg, setMsg]             = useState('')
   const [loadError, setLoadError] = useState(false)
   const dialogRef = useRef<HTMLDivElement>(null)
+  const confirmRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
+  const restoreFocus = useRef(false)
+  const busyRef = useRef(false)
 
-  const load = useCallback(() => {
-    setLoading(true)
+  const load = useCallback((initial = false) => {
+    if (initial) setLoading(true)
     setLoadError(false)
     fetch(`${API}/api/admin/pricing/all`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -317,48 +325,52 @@ function PricingTab() {
       .finally(() => setLoading(false))
   }, [token])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(true) }, [load])
   useEffect(() => { if (showForm) dialogRef.current?.querySelector<HTMLInputElement>('input')?.focus() }, [showForm])
+  useEffect(() => { if (deactivating) confirmRef.current?.querySelector<HTMLButtonElement>('button')?.focus() }, [deactivating])
+  useEffect(() => {
+    if (!saving && !showForm && !deactivating && restoreFocus.current) {
+      triggerRef.current?.focus()
+      restoreFocus.current = false
+    }
+  }, [saving, showForm, deactivating])
 
   const closeForm = () => {
+    restoreFocus.current = true
     setShowForm(false)
-    triggerRef.current?.focus()
   }
 
   const openNew = () => {
     triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    setForm(emptyPlan); setFeatInputEs(''); setFeatInputEn('')
+    setForm(emptyPlan); setFeatInputEs(''); setFeatInputEn(''); setErrors({})
     setEditing(null); setShowForm(true); setMsg('')
   }
 
   const openEdit = (p: PricingPlan) => {
     triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    setForm({ ...p }); setFeatInputEs(''); setFeatInputEn('')
+    setForm({ ...p }); setFeatInputEs((p.features_es ?? []).join('\n')); setFeatInputEn((p.features_en ?? []).join('\n')); setErrors({})
     setEditing(p); setShowForm(true); setMsg('')
   }
 
-  const addFeature = (lang: 'es' | 'en') => {
-    if (lang === 'es') {
-      if (!featInputEs.trim()) return
-      setForm(f => ({ ...f, features_es: [...f.features_es, featInputEs.trim()] }))
-      setFeatInputEs('')
-    } else {
-      if (!featInputEn.trim()) return
-      setForm(f => ({ ...f, features_en: [...f.features_en, featInputEn.trim()] }))
-      setFeatInputEn('')
-    }
-  }
-
-  const removeFeature = (lang: 'es' | 'en', i: number) => {
-    if (lang === 'es') setForm(f => ({ ...f, features_es: f.features_es.filter((_, idx) => idx !== i) }))
-    else setForm(f => ({ ...f, features_en: f.features_en.filter((_, idx) => idx !== i) }))
-  }
-
   const save = async () => {
-    if (!form.slug.trim() || !form.name_es.trim() || !form.name_en.trim())
-      return setMsg('El slug, nombre en español e inglés son requeridos.')
-    if (form.price === '' || !Number.isFinite(Number(form.price)) || Number(form.price) < 0)
-      return setMsg('Introduce un precio válido.')
+    if (busyRef.current) return
+    const nextErrors: Record<string, string> = {}
+    if (!editing && (!/^[a-z0-9-]+$/.test(form.slug) || form.slug.length > 20)) nextErrors['plan-slug'] = 'Usa hasta 20 letras minúsculas, números o guiones.'
+    else if (!editing && plans.some(plan => plan.slug === form.slug)) nextErrors['plan-slug'] = 'Este identificador ya existe.'
+    if (!form.name_es.trim()) nextErrors['plan-name-es'] = 'Este campo es obligatorio.'
+    else if (form.name_es.length > 255) nextErrors['plan-name-es'] = 'Usa como máximo 255 caracteres.'
+    if (!form.name_en.trim()) nextErrors['plan-name-en'] = 'Este campo es obligatorio.'
+    else if (form.name_en.length > 255) nextErrors['plan-name-en'] = 'Usa como máximo 255 caracteres.'
+    if (String(form.price).trim() === '' || !Number.isFinite(Number(form.price)) || Number(form.price) < 0 || Number(form.price) > 99999999.99 || !/^\d+(\.\d{1,2})?$/.test(String(form.price)))
+      nextErrors['plan-price'] = 'Introduce un precio válido.'
+    setErrors(nextErrors)
+    const firstError = Object.keys(nextErrors)[0]
+    if (firstError) {
+      document.getElementById(firstError)?.focus()
+      return
+    }
+    busyRef.current = true
+    dialogRef.current?.focus()
     setSaving(true); setMsg('')
     try {
       const url    = editing?.id ? `${API}/api/admin/pricing/${editing.id}` : `${API}/api/admin/pricing`
@@ -366,35 +378,50 @@ function PricingTab() {
       const r = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          features_es: featInputEs.split(/\r?\n/).map(line => line.trim()).filter(Boolean),
+          features_en: featInputEn.split(/\r?\n/).map(line => line.trim()).filter(Boolean),
+        }),
       })
       if (!r.ok) return setMsg('Error guardando.')
       setMsg(editing ? 'Plan actualizado.' : 'Plan creado.')
       closeForm(); load()
     } catch { setMsg('Error de conexión.') }
-    finally { setSaving(false) }
+    finally { busyRef.current = false; setSaving(false) }
   }
 
-  const deactivate = async (id: number) => {
-    if (!confirm(tr('¿Desactivar este plan?'))) return
+  const closeConfirm = () => {
+    restoreFocus.current = true
+    setDeactivating(null)
+  }
+
+  const deactivate = async () => {
+    if (!deactivating?.id || busyRef.current) return
+    busyRef.current = true
+    confirmRef.current?.focus()
     setSaving(true); setMsg('')
     try {
-      const response = await fetch(`${API}/api/admin/pricing/${id}`, {
+      const response = await fetch(`${API}/api/admin/pricing/${deactivating.id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
       })
       if (!response.ok) throw new Error('deactivate')
       setMsg('Plan desactivado.')
+      if (triggerRef.current?.previousElementSibling instanceof HTMLElement) {
+        triggerRef.current = triggerRef.current.previousElementSibling
+      }
+      closeConfirm()
       load()
     } catch { setMsg('No se pudo desactivar el plan.') }
-    finally { setSaving(false) }
+    finally { busyRef.current = false; setSaving(false) }
   }
 
   if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando planes...")}</p>
-  if (loadError) return <div role="alert"><p>{tr('No se pudieron cargar los planes.')}</p><button style={btnSecondary} onClick={load}>{tr('Reintentar')}</button></div>
+  if (loadError) return <div role="alert"><p>{tr('No se pudieron cargar los planes.')}</p><button style={btnSecondary} onClick={() => load(true)}>{tr('Reintentar')}</button></div>
 
   return (
     <div>
-      {!showForm && msg && <p role="status">{tr(msg)}</p>}
+      {!showForm && !deactivating && msg && <p role="status">{tr(msg)}</p>}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <p style={{ fontSize: 13, color: '#6B645F', margin: 0 }}>
           {plans.filter(p => p.isActive).length}{' '}{tr("plan(es) activo(s)")}{' '}</p>
@@ -405,23 +432,23 @@ function PricingTab() {
         <div key={p.id} style={{ ...card, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', opacity: p.isActive ? 1 : 0.5 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{p.name_es}</span>
-              <span style={{ fontSize: 11, color: '#6F6963' }}>/ {p.name_en}</span>
+              <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{lang === 'en' ? p.name_en : p.name_es}</span>
               {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#5C6B4E', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>{tr("DESTACADO")}</span>}
               {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#B91C1C', padding: '2px 8px', borderRadius: 10 }}>{tr("INACTIVO")}</span>}
             </div>
             <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
-              <strong>${p.price}</strong> {p.currency} / {p.period}
+              <strong>{['USD', 'COP', 'EUR'].includes(p.currency) && Number.isFinite(Number(p.price)) ? new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: p.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(p.price)) : `${p.price} ${p.currency}`}</strong>{' · '}{tr(({ month: 'Mensual', year: 'Anual', forever: 'Para siempre' } as Record<string, string>)[p.period] ?? 'Período desconocido')}
             </p>
+            <p style={{ margin: '0 0 4px', fontSize: 12 }}>{tr('Identificador')}: {p.slug}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-              {(p.features_es ?? []).map((f, i) => (
+              {((lang === 'en' ? p.features_en : p.features_es) ?? []).map((f, i) => (
                 <span key={i} style={{ fontSize: 11, background: '#F5F5F3', color: '#4A4A4A', padding: '2px 8px', borderRadius: 8 }}>{f}</span>
               ))}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button style={btnSecondary} onClick={() => openEdit(p)}>{tr("Editar")}</button>
-            {p.isActive && <button style={btnDanger} disabled={saving} onClick={() => deactivate(p.id!)}>{tr("Desactivar")}</button>}
+            {p.isActive && <button style={btnDanger} disabled={saving} onClick={() => { triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setMsg(''); setDeactivating(p) }}>{tr("Desactivar")}</button>}
           </div>
         </div>
       ))}
@@ -432,7 +459,7 @@ function PricingTab() {
 
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="plan-form-title" onKeyDown={e => modalKeyDown(e, dialogRef.current, () => { if (!saving) closeForm() })} style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto' }}>
+          <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="plan-form-title" onKeyDown={e => { if (saving && e.key === 'Tab') e.preventDefault(); else modalKeyDown(e, dialogRef.current, () => { if (!saving) closeForm() }) }} style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 id="plan-form-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: '0 0 1.5rem' }}>
               {editing ? tr('Editar plan') : tr('Nuevo plan')}
             </h3>
@@ -442,18 +469,21 @@ function PricingTab() {
                 <p style={sectionTitle}>{tr("Identificador")}</p>
                 <div style={{ marginBottom: 8 }}>
                   <label htmlFor="plan-slug" style={label}>{tr("Slug * (sin espacios, ej: basic, essential, plus, pro)")}</label>
-                  <input id="plan-slug" style={input} value={form.slug} placeholder={tr("ej: basic")}
-                    onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-') }))} />
+                  <input id="plan-slug" style={input} value={form.slug} readOnly={!!editing} aria-invalid={!!errors['plan-slug']} aria-describedby={errors['plan-slug'] ? 'plan-slug-error' : undefined} placeholder={tr("ej: basic")}
+                    onChange={e => { setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-') })); setErrors(current => ({ ...current, 'plan-slug': '' })) }} />
+                  {errors['plan-slug'] && <p id="plan-slug-error" role="alert">{tr(errors['plan-slug'])}</p>}
                 </div>
                 <p style={sectionTitle}>{tr("Nombre del plan")}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>
                     <label htmlFor="plan-name-es" style={label}>{tr("Español *")}</label>
-                    <input id="plan-name-es" style={input} value={form.name_es} placeholder={tr("ej: Gratis")} onChange={e => setForm(f => ({ ...f, name_es: e.target.value }))} />
+                    <input id="plan-name-es" style={input} value={form.name_es} aria-invalid={!!errors['plan-name-es']} aria-describedby={errors['plan-name-es'] ? 'plan-name-es-error' : undefined} placeholder={tr("ej: Gratis")} onChange={e => { setForm(f => ({ ...f, name_es: e.target.value })); setErrors(current => ({ ...current, 'plan-name-es': '' })) }} />
+                    {errors['plan-name-es'] && <p id="plan-name-es-error" role="alert">{tr(errors['plan-name-es'])}</p>}
                   </div>
                   <div>
                     <label htmlFor="plan-name-en" style={label}>{tr("Inglés *")}</label>
-                    <input id="plan-name-en" style={input} value={form.name_en} placeholder={tr("ej: Free")} onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))} />
+                    <input id="plan-name-en" style={input} value={form.name_en} aria-invalid={!!errors['plan-name-en']} aria-describedby={errors['plan-name-en'] ? 'plan-name-en-error' : undefined} placeholder={tr("ej: Free")} onChange={e => { setForm(f => ({ ...f, name_en: e.target.value })); setErrors(current => ({ ...current, 'plan-name-en': '' })) }} />
+                    {errors['plan-name-en'] && <p id="plan-name-en-error" role="alert">{tr(errors['plan-name-en'])}</p>}
                   </div>
                 </div>
               </div>
@@ -475,7 +505,8 @@ function PricingTab() {
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 8 }}>
                   <div>
                     <label htmlFor="plan-price" style={label}>{tr("Precio")}</label>
-                    <input id="plan-price" style={input} type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
+                    <input id="plan-price" style={input} type="number" min="0" step="0.01" value={form.price} aria-invalid={!!errors['plan-price']} aria-describedby={errors['plan-price'] ? 'plan-price-error' : undefined} onChange={e => { setForm(f => ({ ...f, price: e.target.value })); setErrors(current => ({ ...current, 'plan-price': '' })) }} />
+                    {errors['plan-price'] && <p id="plan-price-error" role="alert">{tr(errors['plan-price'])}</p>}
                   </div>
                   <div>
                     <label htmlFor="plan-currency" style={label}>{tr("Moneda")}</label>
@@ -496,34 +527,12 @@ function PricingTab() {
                 </div>
               </div>
               <div>
-                <p style={sectionTitle}>{tr("Características en Español")}</p>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <input aria-label={tr('Característica en español')} style={{ ...input, flex: 1, minWidth: 0 }} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('es')} placeholder={tr("ej: Conversaciones ilimitadas")} />
-                  <button aria-label={tr('Añadir característica en español')} style={btnSecondary} onClick={() => addFeature('es')}>+</button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {form.features_es.map((f, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F5F3', borderRadius: 8, padding: '4px 10px' }}>
-                      <span style={{ flex: 1, fontSize: 12, color: '#1C1917' }}>{f}</span>
-                      <button aria-label={`${tr('Eliminar característica')}: ${f}`} onClick={() => removeFeature('es', i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', fontSize: 16 }}>×</button>
-                    </div>
-                  ))}
-                </div>
+                <label htmlFor="plan-features-es" style={sectionTitle}>{tr('Características en español, una por línea')}</label>
+                <textarea id="plan-features-es" style={input} rows={4} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} />
               </div>
               <div>
-                <p style={sectionTitle}>{tr("Características en Inglés")}</p>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <input aria-label={tr('Característica en inglés')} style={{ ...input, flex: 1, minWidth: 0 }} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} onKeyDown={e => e.key === 'Enter' && addFeature('en')} placeholder={tr("ej: Unlimited conversations")} />
-                  <button aria-label={tr('Añadir característica en inglés')} style={btnSecondary} onClick={() => addFeature('en')}>+</button>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {form.features_en.map((f, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F5F5F3', borderRadius: 8, padding: '4px 10px' }}>
-                      <span style={{ flex: 1, fontSize: 12, color: '#1C1917' }}>{f}</span>
-                      <button aria-label={`${tr('Eliminar característica')}: ${f}`} onClick={() => removeFeature('en', i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', fontSize: 16 }}>×</button>
-                    </div>
-                  ))}
-                </div>
+                <label htmlFor="plan-features-en" style={sectionTitle}>{tr('Características en inglés, una por línea')}</label>
+                <textarea id="plan-features-en" style={input} rows={4} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} />
               </div>
               <div>
                 <p style={sectionTitle}>{tr("Opciones")}</p>
@@ -552,6 +561,19 @@ function PricingTab() {
           </div>
         </div>
       )}
+      {deactivating && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div ref={confirmRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="plan-deactivate-title" aria-describedby="plan-deactivate-description" onKeyDown={e => modalKeyDown(e, confirmRef.current, () => { if (!saving) closeConfirm() })} style={{ ...card, width: '100%', maxWidth: 480 }}>
+            <h3 id="plan-deactivate-title">{tr('¿Desactivar este plan?')}</h3>
+            <p id="plan-deactivate-description">{tr('El plan deja de verse en precios; las solicitudes realizadas se conservan. Puedes reactivarlo editándolo.')}</p>
+            {msg && <p role="alert">{tr(msg)}</p>}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button style={btnSecondary} disabled={saving} onClick={closeConfirm}>{tr('Cancelar')}</button>
+              <button style={btnDanger} disabled={saving} onClick={deactivate}>{saving ? tr('Procesando...') : tr('Desactivar')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -559,6 +581,7 @@ function PricingTab() {
 // ── Tab Landing ───────────────────────────────────────────────────────────────
 function LandingTab() {
   const tr = useAdminText()
+  const { lang: interfaceLang } = useLanguage()
 
   const token = localStorage.getItem('elevation_token') ?? ''
   const [lang, setLang]       = useState<'es' | 'en'>('es')
@@ -568,12 +591,13 @@ function LandingTab() {
   const [msgs, setMsgs]       = useState<Record<string, string>>({})
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const savingRef = useRef(false)
 
   const fields = [
     { key: 'hero_title',         label: 'Título Hero' },
     { key: 'hero_subtitle',      label: 'Subtítulo Hero' },
     { key: 'cta_primary',        label: 'CTA Principal' },
-    ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: key })), // ES-90: los pendientes se editan en su panel
+    ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: landingFieldLabel(key, interfaceLang) })), // ES-90: los pendientes se editan en su panel
   ]
 
   useEffect(() => {
@@ -595,7 +619,8 @@ function LandingTab() {
   }, [lang, token, attempt])
 
   const saveField = async (key: string) => {
-    if (saving !== null) return
+    if (savingRef.current) return
+    savingRef.current = true
     setSaving(key); setMsgs(m => ({ ...m, [key]: '' }))
     try {
       const r = await fetch(`${API}/api/landing-content`, {
@@ -606,7 +631,7 @@ function LandingTab() {
       setMsgs(m => ({ ...m, [key]: r.ok ? '✓ Guardado' : r.status === 403 ? 'Solo superadmin puede guardar textos.' : 'Error guardando.' }))
     } catch {
       setMsgs(m => ({ ...m, [key]: 'Error de conexión.' }))
-    } finally { setSaving(null) }
+    } finally { savingRef.current = false; setSaving(null) }
   }
 
   if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando contenido...")}</p>
@@ -623,12 +648,13 @@ function LandingTab() {
         ))}
       </div>
       <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={saveField} saving={saving} msgs={msgs} s={{ card, label, input, btnPrimary }} />
+      <h2>{tr('Otros textos')}</h2>
       {fields.map(f => (
         <div key={f.key} style={card}>
           <label htmlFor={`landing-${f.key}`} style={label}>{tr(f.label)}</label>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <input id={`landing-${f.key}`} disabled={saving === f.key} style={{ ...input, flex: 1 }} value={content[f.key] ?? ''} onChange={e => { setContent(c => ({ ...c, [f.key]: e.target.value })); setMsgs(m => ({ ...m, [f.key]: '' })) }} />
-            <button style={btnPrimary} onClick={() => saveField(f.key)} disabled={saving !== null}>
+            <button style={btnPrimary} onClick={() => saveField(f.key)} aria-disabled={saving !== null}>
               {saving === f.key ? '...' : tr('Guardar')}
             </button>
           </div>
