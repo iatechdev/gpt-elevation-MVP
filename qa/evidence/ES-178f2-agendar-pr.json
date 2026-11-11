@@ -1,7 +1,7 @@
 {
   "pr": 227,
   "mode": "pr",
-  "head": "afec07ae52e29a630669198262905c171ac89777",
+  "head": "b9d9e06e85f9d9ab786d9281a8e087da3c618e47",
   "results": [
     {
       "id": "A1-control",
@@ -63,8 +63,8 @@
     },
     {
       "id": "A3a 8 altas simultáneas idénticas (pool 5) → 1×201 + 7×409 `session_conflict`, UNA fila, sin 5xx; reintentar después → 409",
-      "ok": false,
-      "detail": "201 409 201 201 201 409 409 409 filas=4"
+      "ok": true,
+      "detail": "201 409 409 409 409 409 409 409 filas=1"
     },
     {
       "id": "A3b 8 altas simultáneas a horarios DISTINTOS (separados 3 h) → todas 201, sin choques ni deadlock y sin transacciones colgadas",
@@ -108,7 +108,7 @@
     {
       "id": "A6 `Cache-Control: no-store` en las respuestas de sesiones (200, 400, 403, 409); el registro del servidor no contiene correos, la marca ni el cuerpo recibido",
       "ok": true,
-      "detail": "cache=no-store | no-store | no-store | no-store | no-store log=5520"
+      "detail": "cache=no-store | no-store | no-store | no-store | no-store log=5509"
     }
   ]
 }
