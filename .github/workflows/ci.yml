@@ -194,6 +194,10 @@ jobs:
         run: npm run test:exercises:pg
         env:
           ES194_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-261 suites PostgreSQL antiguas (ES-16 pausa, ES-74 sesión, ES-113 diario) que no corrían en CI
+        run: npm run test:older-pg-suites
+        env:
+          ES74_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-163 Diario - guardado idempotente con requestId y migración (PostgreSQL real)
         run: npm run test:diary-request:pg
         env:
