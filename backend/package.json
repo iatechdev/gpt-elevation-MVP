@@ -19,6 +19,7 @@
     "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
     "test:session-room:pg": "node --test test/integration/es-179-postgres.cjs",
     "test:session-lists:pg": "node --test test/integration/es-241-postgres.cjs",
+    "test:hostile-dates:pg": "node --test test/integration/es-262-postgres.cjs",
     "test:followup-notes:pg": "node --test test/integration/es-178-postgres.cjs",
     "test:exercises:pg": "node --test test/integration/es-194-postgres.cjs",
     "test:diary-request:pg": "node --test test/integration/es-163-postgres.cjs",
