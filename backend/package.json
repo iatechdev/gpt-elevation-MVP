@@ -24,6 +24,7 @@
     "test:hostile-dates:pg": "node --test test/integration/es-262-postgres.cjs",
     "test:followup-notes:pg": "node --test test/integration/es-178-postgres.cjs",
     "test:exercises:pg": "node --test test/integration/es-194-postgres.cjs",
+    "test:older-pg-suites": "node --test test/integration/es-16-postgres.cjs test/integration/es-74-session-postgres.cjs test/integration/es-113-diary-postgres.cjs",
     "test:diary-request:pg": "node --test test/integration/es-163-postgres.cjs",
     "test:planreq:pg": "node --test test/integration/es-223-postgres.cjs",
     "test:pricing-plans:pg": "node --test test/integration/es-73-postgres.cjs",
