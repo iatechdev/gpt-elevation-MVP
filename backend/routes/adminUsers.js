@@ -12,6 +12,8 @@ const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
 const { revokeUserSessions } = require('../utils/sessions');
 const { deletionPending } = require('../utils/deletionGuard');
+const { requestDeletion } = require('../utils/dataRights');
+const { CORE } = require('../utils/personalData');
 const { recordAdminAction, recordDenied } = require('../utils/adminAudit'); // ES-186 B
 
 const refuseDeletionPending = async (id, res) => {
@@ -185,12 +187,11 @@ router.delete('/:id', async (req, res) => {
       await recordDenied(req.user, 'user.delete', 'user', Number(id));
       return res.status(403).json({ error: 'Solo el superadmin puede eliminar usuarios permanentemente.' });
     }
-    if (await refuseDeletionPending(id, res)) return;
     if (parseInt(id) === adminId) {
       return res.status(403).json({ error: 'No puedes eliminar tu propio usuario.' });
     }
 
-    const usuario = await User.findByPk(id);
+    const usuario = await User.findByPk(Number(id));
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
@@ -198,20 +199,55 @@ router.delete('/:id', async (req, res) => {
       return res.status(403).json({ error: 'No se puede eliminar a un superadmin.' });
     }
 
+    // ES-186 C (decisión de Infra, objeción de la medición): una PERSONA usuaria no se borra con DELETE físico (dejaba diario, chat, consentimientos y evidencias
+    // huérfanos y fallaba con 500 si tenía carrera o rutas). Se solicita su eliminación por el circuito de derechos de datos (ES-23): idempotente, la cuenta deja de
+    // poder entrar al instante y el borrado de sus datos lo completa el proceso de mantenimiento (sin plazo prometido).
+    if (usuario.role === 'user') {
+      const tx = await sequelize.transaction();
+      let receipt;
+      try {
+        receipt = await requestDeletion(usuario.id, { transaction: tx });
+        if (!receipt.repeated) await recordAdminAction({ actor: req.user, action: 'user.delete_request', targetType: 'user', targetId: usuario.id }, { transaction: tx });
+        await tx.commit();
+      } catch (error) {
+        await tx.rollback().catch(() => {});
+        throw error;
+      }
+      await revokeUserSessions(usuario.id); // ES-18
+      return res.status(202).json({
+        code: 'deletion_requested', repeated: Boolean(receipt.repeated),
+        message: 'Eliminación solicitada: la persona ya no puede entrar. El borrado de sus datos se completa en el proceso de mantenimiento. / Deletion requested: the person can no longer sign in. Their data is erased in the maintenance process.',
+      });
+    }
+
+    // Profesionales, junta y administración: DELETE físico solo si no tienen datos ni vínculos que lo impidan (si no, 409 has_dependent_data; nunca 500).
+    if (await refuseDeletionPending(id, res)) return;
     const nombreUsuario = usuario.name;
     const tx = await sequelize.transaction();
+    let blocked = false;
     try {
-      await usuario.destroy({ transaction: tx });
-      await recordAdminAction({ actor: req.user, action: 'user.delete', targetType: 'user', targetId: usuario.id }, { transaction: tx });
-      await tx.commit();
+      for (const [, name, owner] of CORE) {
+        if (name === 'Invitation' || name === 'PasswordReset') continue; // la invitación aceptada se desvincula; los enlaces de restablecimiento se borran en cascada
+        if (await require('../' + name).count({ where: { [owner]: usuario.id }, transaction: tx })) { blocked = true; break; }
+      }
+      if (!blocked) {
+        await require('../Invitation').update({ acceptedUserId: null }, { where: { acceptedUserId: usuario.id }, transaction: tx });
+        await usuario.destroy({ transaction: tx });
+        await recordAdminAction({ actor: req.user, action: 'user.delete', targetType: 'user', targetId: usuario.id }, { transaction: tx });
+      }
+      if (blocked) await tx.rollback(); else await tx.commit();
     } catch (error) {
       await tx.rollback().catch(() => {});
-      throw error;
+      if (error && error.name === 'SequelizeForeignKeyConstraintError') blocked = true; // notas, validaciones, personas vinculadas…: la base lo impide
+      else throw error;
+    }
+    if (blocked) {
+      return res.status(409).json({ code: 'has_dependent_data', error: 'No se puede eliminar: la cuenta tiene datos o vínculos asociados. / It cannot be deleted: the account has associated data or links.' });
     }
     await revokeUserSessions(usuario.id); // ES-18
 
     console.log('Borrado administrativo ejecutado.');
-    res.json({ message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
+    res.json({ code: 'deleted', message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
   } catch (error) {
     console.error('Error eliminando usuario.');
     res.status(500).json({ error: 'No se pudo eliminar el usuario.' });
