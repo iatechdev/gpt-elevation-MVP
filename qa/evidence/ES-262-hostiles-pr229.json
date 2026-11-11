@@ -1,6 +1,6 @@
 {
  "mode": "pr",
- "head": "8c98e0ea76c6e8886d97d4366fdcf736bde7045d",
+ "head": "f62759dba42a00100d4cdbc520595a505d442a0f",
  "results": [
   {
    "id": "H1-ref",
@@ -56,7 +56,7 @@
   {
    "id": "H5 PUT /api/sessions/therapist/:id con las mismas fechas hostiles → 400 con `field:\"scheduledAt\"`, ningún 5xx y la fila NO cambia",
    "ok": true,
-   "detail": "0 fallos; fila intacta {\"scheduledAt\":\"2026-11-16T08:24:06.541Z\",\"status\":\"scheduled\",\"duration\":50}"
+   "detail": "0 fallos; fila intacta {\"scheduledAt\":\"2026-11-16T08:53:23.351Z\",\"status\":\"scheduled\",\"duration\":50}"
   },
   {
    "id": "H6-ids-sesiones",
