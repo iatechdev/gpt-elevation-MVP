@@ -1,0 +1,11 @@
+/* ES-186 parte D · /admin/users: tabla en escritorio y tarjetas en móvil (390 px). */
+.au-wide { display: none; }
+.au-narrow { display: flex; }
+@media (min-width: 820px) {
+  .au-wide { display: block; }
+  .au-narrow { display: none; }
+}
+.au-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; border-bottom: 0.5px solid #E7E5E4; margin-bottom: 1.25rem; }
+.au-tab { min-height: 44px; padding: 0 1rem; background: none; border: none; border-bottom: 2px solid transparent; font-family: Inter, sans-serif; font-size: 0.9rem; color: #6B645F; cursor: pointer; }
+.au-tab[aria-selected="true"] { color: #1C1917; font-weight: 600; border-bottom-color: #5C6B4E; }
+.au-tab:focus-visible, .au-wide button:focus-visible, .au-narrow button:focus-visible { outline: 2px solid #5C6B4E; outline-offset: 2px; }

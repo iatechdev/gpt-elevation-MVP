@@ -12,6 +12,19 @@ const { Sequelize } = require('sequelize');
 
 const backend = path.resolve(__dirname, '..', '..');
 
+// ES-186 D · Contrato con la pantalla: la respuesta REAL del servidor se guarda como fixture del frontend (ES186_WRITE_FIXTURE=1) y cada corrida comprueba que su forma no cambió.
+const fixtureFs = require('node:fs');
+const FIXTURES = path.join(__dirname, '..', '..', '..', 'frontend', 'test', 'fixtures');
+const shapeOf = (v) => (v === null ? null : Array.isArray(v) ? [v.length ? shapeOf(v[0]) : null] : (v && typeof v === 'object') ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, shapeOf(v[k])])) : typeof v);
+const sameShape = (a, b) => (a === null || b === null) ? true : (Array.isArray(a) ? Array.isArray(b) && sameShape(a[0] ?? null, b[0] ?? null) : (a && typeof a === 'object') ? (b && typeof b === 'object' && !Array.isArray(b) && JSON.stringify(Object.keys(a)) === JSON.stringify(Object.keys(b)) && Object.keys(a).every((k) => sameShape(a[k], b[k]))) : typeof a === typeof b);
+function contractFixture(name, status, body) {
+  const file = path.join(FIXTURES, name);
+  if (process.env.ES186_WRITE_FIXTURE) { fixtureFs.mkdirSync(FIXTURES, { recursive: true }); fixtureFs.writeFileSync(file, JSON.stringify({ status, body }, null, 2) + String.fromCharCode(10)); return; }
+  const saved = JSON.parse(fixtureFs.readFileSync(file, 'utf8'));
+  assert.equal(saved.status, status, name);
+  assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES186_WRITE_FIXTURE=1 y revisa la pantalla`);
+}
+
 test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la misma transacción, lectura solo superadmin e invitar idempotente por requestId', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES186B_TEST_DATABASE_URL, 'Se requiere ES186B_TEST_DATABASE_URL (clúster desechable en loopback)');
   const target = new URL(process.env.ES186B_TEST_DATABASE_URL);
@@ -207,6 +220,27 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
     assert.equal(mine.status, 201); assert.notEqual(mine.body.id, outs[0].body.id);
     for (const bad of ['corto', 'con espacio 12345', 'x'.repeat(65), "req';DROP--1234"]) assert.equal((await http(sup, 'POST', '/api/admin/invitations', { email: `bad-${dbName}@example.test`, role: 'user', requestId: bad })).status, 400, bad);
     assert.equal((await q(`SELECT count(*)::int AS n FROM pg_indexes WHERE indexname='invitations__invited_by_request_id'`))[0].n, 1);
+  });
+
+  await t.test('contrato con la pantalla: respuestas reales de invitar con requestId (201, 200 replayed y replay de una invitación anulada)', async () => {
+    const email = `fixture-${dbName}@example.test`; const requestId = 'req-fixture-0001';
+    process.env.APP_BASE_URL = 'http://localhost:5173'; // con el correo configurado el servidor confirma el envío (emailSent: true)
+    const first = await http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId });
+    delete process.env.APP_BASE_URL;
+    assert.equal(first.status, 201); assert.equal(first.body.emailSent, true);
+    contractFixture('es-186-invite-created.json', first.status, first.body);
+    const again = await http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId });
+    assert.equal(again.status, 200); assert.equal(again.body.replayed, true);
+    contractFixture('es-186-invite-replayed.json', again.status, again.body);
+    assert.equal((await http(sup, 'POST', `/api/admin/invitations/${first.body.id}/revoke`, {})).status, 200);
+    const revoked = await http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId });
+    assert.equal(revoked.status, 200); assert.equal(revoked.body.replayed, true); assert.equal(revoked.body.status, 'revoked');
+    contractFixture('es-186-invite-revoked-replay.json', revoked.status, revoked.body);
+    // E212-2: el mismo requestId con OTRO correo devuelve la primera invitación (la pantalla debe detectarlo)
+    const other = await http(sup, 'POST', '/api/admin/invitations', { email: `otro-${dbName}@example.test`, role: 'user', requestId: 'req-fixture-0002' });
+    const mismatch = await http(sup, 'POST', '/api/admin/invitations', { email: `distinto-${dbName}@example.test`, role: 'user', requestId: 'req-fixture-0002' });
+    assert.equal(other.status, 201); assert.equal(mismatch.status, 200); assert.equal(mismatch.body.email, other.body.email);
+    contractFixture('es-186-invite-replayed-other-email.json', mismatch.status, mismatch.body);
   });
 
   await t.test('ES-264 · la auditoría NO admite texto libre: columnas cerradas (sin text/json) y acción, objetivo y resultado de listas cerradas', async () => {

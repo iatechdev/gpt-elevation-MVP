@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "id": 22,
+      "name": "Sintético 22",
+      "email": "canario-correo-22-es186c_test_5dc223c579295fc9@example.test",
+      "role": "user",
+      "active": false,
+      "therapistId": null,
+      "createdAt": "2026-11-11T06:56:53.916Z",
+      "plan": null,
+      "sesiones": 0,
+      "ratingPromedio": null,
+      "moodPromedio": null,
+      "isLocked": false,
+      "lockedUntil": null,
+      "loginAttempts": 0,
+      "deletionRequested": true
+    }
+  ]
+}
