@@ -3,7 +3,7 @@
 const AdminAuditEntry = require('../AdminAuditEntry');
 
 const ACTIONS = new Set([
-  'user.update', 'user.delete', 'user.assign_therapist', 'user.set_plan', 'user.unlock', 'user.reset_link',
+  'user.update', 'user.delete', 'user.delete_request', 'user.assign_therapist', 'user.set_plan', 'user.unlock', 'user.reset_link',
   'invitation.create', 'invitation.revoke', 'matching.confirm', 'plan_request.approve', 'plan_request.reject',
 ]);
 const RESULTS = new Set(['ok', 'denied', 'failed']);

@@ -119,7 +119,7 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
     assert.equal(inv.status, 201);
     assert.equal((await lastAudit()).action, 'invitation.create'); assert.equal((await lastAudit()).targetId, inv.body.id);
     await expectOne('anular invitación', 'invitation.revoke', 'invitation', inv.body.id, () => http(sup, 'POST', `/api/admin/invitations/${inv.body.id}/revoke`, {}));
-    await expectOne('eliminar usuario', 'user.delete', 'user', doomed.id, () => http(sup, 'DELETE', `/api/admin/usuarios/${doomed.id}`));
+    await expectOne('eliminar persona (ES-186 C: solicita la eliminación por ES-23)', 'user.delete_request', 'user', doomed.id, () => http(sup, 'DELETE', `/api/admin/usuarios/${doomed.id}`));
     const text = JSON.stringify(await audit());
     for (const leak of ['@example.test', 'tokenHash', 'password', 'canario']) assert.equal(text.includes(leak), false, 'la auditoría no guarda ' + leak);
     // revocar algo que ya no se puede anular (404) no deja entrada
