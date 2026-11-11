@@ -1,0 +1,99 @@
+{
+ "mode": "pr",
+ "head": "5a1314e3bb4209a80d822fcf9c6fe6889af1e779",
+ "results": [
+  {
+   "id": "C1 (bloqueante) GET /api/landing-content/admin: `admin` y `superadmin` → 200; persona, profesional, junta y sin sesión → 401/403; token vencido o firmado con otra clave → 401/403; cabeceras raras no lo saltan",
+   "ok": true,
+   "detail": "{\"admin\":200,\"superadmin\":200,\"persona\":403,\"profesional\":403,\"junta\":403,\"sin sesión\":403} vencido 401 otra clave 401 · Authorization vacío→403 Bearer sin token→401 esquema raro→401 token basura→401 dos cabeceras→401 x-forwarded→403"
+  },
+  {
+   "id": "C2-detalle",
+   "info": "[pr] admin Cache-Control «no-store» ETag «W/\"5ebe-/Ur4klvop7HjszyHPrNrbdx9lR4\"» con If-None-Match → 200; público Cache-Control «null»"
+  },
+  {
+   "id": "C2 `Cache-Control: no-store` en el GET administrativo y nunca 304 con `If-None-Match`; la ruta pública conserva su regla de caché de siempre",
+   "ok": true,
+   "detail": "no-store · 200 · público null"
+  },
+  {
+   "id": "C3 el GET administrativo devuelve un mapa clave→texto con lo GUARDADO (es/en según `lang`), sin `updated_by`, ids ni fechas; coincide con el público en lo guardado; valores en blanco y claves no aprobadas se ignoran; `lang` raro → 200 sin 500",
+   "ok": true,
+   "detail": "200 hero_title «Título guardado ES» EN «Saved title EN» subtítulo «Tu compañero privado para la c» claves 309 · lang ok"
+  },
+  {
+   "id": "C4-detalle",
+   "info": "[pr] base «caída»: admin → 503 {\"error\":\"No se pudo cargar el contenido.\"} · cabecera no-store · público → 200 (claves 309)"
+  },
+  {
+   "id": "C4 (bloqueante) con la base fallando (tabla ausente, en servidor real): el GET administrativo responde 503 `{error:\"No se pudo cargar el contenido.\"}` (cuerpo fijo, sin texto interno ni pila, `no-store`) y NUNCA valores de respaldo; el público sigue 200 con los de respaldo",
+   "ok": true,
+   "detail": "503/503 {\"error\":\"No se pudo cargar el contenido.\"} · público 200"
+  },
+  {
+   "id": "C4b al volver la base, el administrativo vuelve a 200 con lo guardado (no queda estado «pegado»)",
+   "ok": true,
+   "detail": "200"
+  },
+  {
+   "id": "C5a `PUT /api/landing-content` solo superadmin: admin, profesional, persona, junta → 403 y sin sesión 401, y NO guardan nada; validaciones intactas (key/lang/value obligatorios, lang ∈ {es,en}, clave desconocida, key > 255, value > 5000, solo espacios, tipos raros) → 400",
+   "ok": true,
+   "detail": "roles ok · sin cambios=true · 400 ok"
+  },
+  {
+   "id": "C5b guardar y releer: el cambio se ve en la ruta pública y en la administrativa; `updated_by` registra al actor; el HTML se guarda como TEXTO tal cual (la pantalla lo escapa)",
+   "ok": true,
+   "detail": "200 público «Texto ficticio QA 185» admin «Texto ficticio QA 185» updated_by «QA185 su» · HTML <img src=x onerror=alert(1)>"
+  },
+  {
+   "id": "C6 20 lecturas simultáneas del administrativo (pool 5) → todas 200 y rápidas; un PUT concurrente con lecturas: cada lectura ve el valor anterior o el nuevo (nunca uno mezclado), sin 5xx ni transacciones colgadas",
+   "ok": true,
+   "detail": "20 lecturas 156 ms · mezcla 200200200200200200200200200200200200200200200200200200200200200 valores Texto A QA|Texto B QA · idle in tx 0"
+  },
+  {
+   "id": "P-PUT",
+   "info": "[pr] creación 201/201; PUT con slug nuevo → 200 slug ahora «qa-a-427611268»; con slug de OTRO plan → 200 «qa-a-427611268»; con slug hostil → 200 «qa-a-427611268»; PUT sin slug (precio, activo, destacado, orden) → 200 {\"slug\":\"qa-a-427611268\",\"name_es\":\"Colisión\",\"price\":\"9.00\",\"isActive\":false,\"isHighlighted\":true,\"order\":4}"
+  },
+  {
+   "id": "P1 (bloqueante) `PUT /api/admin/pricing/:id` NO cambia el `slug` aunque venga en el cuerpo (nuevo, de otro plan o hostil): responde 200 (sin 500 por choque) y el identificador de la base queda igual; el resto de campos sí se actualiza",
+   "ok": true,
+   "detail": "PUT slug nuevo 200→«qa-a-427611268» · otro plan 200→«qa-a-427611268» · hostil 200 · campos {\"slug\":\"qa-a-427611268\",\"name_es\":\"Colisión\",\"price\":\"9.00\",\"isActive\":false,\"isHighlighted\":true,\"order\":4}"
+  },
+  {
+   "id": "P-PUT-2",
+   "info": "[pr] PUT con SOLO slug → 200 slug «qa-b-427611268»; plan inexistente → 404; ids malformados abc→500 -1→404 99999→500 1.5→500"
+  },
+  {
+   "id": "P1b PUT con solo `slug` → 200 sin cambiar nada (o 400, nunca 5xx) y el plan inexistente → 404; ids malformados: se informa (sin 5xx deseable)",
+   "ok": true,
+   "detail": "200 «qa-b-427611268» · inexistente 404 · abc→500 -1→404 99999→500 1.5→500"
+  },
+  {
+   "id": "P1c control de acceso del PUT y del POST de planes: persona, profesional, junta y sin sesión → 401/403 y no crean ni cambian nada",
+   "ok": true,
+   "detail": "ok"
+  },
+  {
+   "id": "P-POST",
+   "info": "[pr] isActive:false → 201 fila {\"a\":false}; true → 201 {\"a\":true}; omitido → 201 {\"a\":true}; «false» (texto) → 400 undefined"
+  },
+  {
+   "id": "P2 (bloqueante) `POST /api/admin/pricing` respeta `isActive`: `false` → plan inactivo (fuera de `GET /api/pricing`, presente en `/all`); `true` y omitido → activo; un valor que no es booleano → 400",
+   "ok": true,
+   "detail": "201:false 201:true 201:true texto→400"
+  },
+  {
+   "id": "P-regresion",
+   "info": "[pr] slug duplicado → 500; GET /api/pricing público 200 (3 planes activos)"
+  },
+  {
+   "id": "P3-preexistente",
+   "info": "[pr] slug duplicado → 500 (500 = hallazgo PREEXISTENTE E216-4, fuera de este PR); ids malformados en PUT de planes → abc→500 -1→404 99999→500 1.5→500 (500 en texto/decimal/enorme = mismo patrón de ES-262, preexistente)"
+  },
+  {
+   "id": "P3 regresión de planes: el GET público de planes responde 200 solo con activos y la lista administrativa `/all` incluye también los inactivos",
+   "ok": true,
+   "detail": "público 200 (3) · /all 5"
+  }
+ ]
+}
