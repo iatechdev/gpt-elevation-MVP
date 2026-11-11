@@ -13,6 +13,7 @@ const { validateBody, nonempty, optional, nullable, id, boolean } = require('../
 const { revokeUserSessions } = require('../utils/sessions');
 const { deletionPending } = require('../utils/deletionGuard');
 const { requestDeletion } = require('../utils/dataRights');
+const DeletionRequest = require('../DeletionRequest');
 const { CORE } = require('../utils/personalData');
 const { recordAdminAction, recordDenied } = require('../utils/adminAudit'); // ES-186 B
 
@@ -68,6 +69,9 @@ router.get('/', async (req, res) => {
       order: [['createdAt', 'DESC']],
     });
 
+    // ES-186 D0: ¿la cuenta tiene una solicitud de eliminación? Solo un booleano (sin estado ni identificador de la solicitud). Una consulta para toda la lista.
+    const pendientes = usuarios.length ? new Set((await DeletionRequest.findAll({ where: { UserId: usuarios.map((u) => u.id) }, attributes: ['UserId'] })).map((r) => r.UserId)) : new Set();
+
     const usuariosConStats = await Promise.all(
       usuarios.map(async (u) => {
         const sesiones = await MoodLog.count({ where: { UserId: u.id } });
@@ -93,6 +97,7 @@ router.get('/', async (req, res) => {
           isLocked: !!isLocked,
           lockedUntil: u.lockedUntil,
           loginAttempts: u.loginAttempts,
+          deletionRequested: pendientes.has(u.id),
         };
       })
     );

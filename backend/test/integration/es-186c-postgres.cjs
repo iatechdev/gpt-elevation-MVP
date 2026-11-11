@@ -218,4 +218,23 @@ test('ES-186 parte C PostgreSQL + HTTP: «Eliminar» solicita la eliminación po
     assert.equal((await q('SELECT active FROM "Users" WHERE id=$1', [victim.id]))[0].active, true);
     assert.deepEqual((await audit()).slice(before).map((e) => [e.action, e.result]), [['user.delete', 'denied'], ['user.delete', 'ok']]);
   });
+
+  await t.test('ES-186 D0: el listado marca deletionRequested (solo un booleano) en la cuenta con eliminación solicitada y en ninguna otra; conserva lockedUntil, plan y profesional', async () => {
+    const requested = await mkUser('user'); const plain = await mkUser('user');
+    const before = await http(sup, 'GET', '/api/admin/usuarios');
+    assert.equal(before.status, 200);
+    const beforeById = new Map(before.body.map((u) => [u.id, u]));
+    assert.deepEqual([beforeById.get(requested.id).deletionRequested, beforeById.get(plain.id).deletionRequested], [false, false], 'ninguna de las dos la tiene antes de pedirla');
+    assert.ok(before.body.every((u) => typeof u.deletionRequested === 'boolean'));
+    assert.equal((await http(sup, 'DELETE', `/api/admin/usuarios/${requested.id}`)).status, 202);
+    const after = await http(sup, 'GET', '/api/admin/usuarios');
+    const byId = new Map(after.body.map((u) => [u.id, u]));
+    assert.equal(byId.get(requested.id).deletionRequested, true);
+    assert.equal(byId.get(plain.id).deletionRequested, false);
+    assert.equal(after.body.filter((u) => u.deletionRequested).every((u) => typeof u.deletionRequested === 'boolean'), true);
+    for (const key of ['lockedUntil', 'isLocked', 'plan', 'therapistId', 'active']) assert.ok(Object.hasOwn(byId.get(plain.id), key), key);
+    assert.equal(JSON.stringify(after.body).includes('DeletionRequest'), false, 'sin estado ni identificadores de la solicitud');
+    const freshAdmin = await mkUser('admin'); // (la cuenta adm de casos anteriores ya se eliminó)
+    assert.equal((await http(freshAdmin, 'GET', '/api/admin/usuarios')).status, 200); // misma guarda de siempre
+  });
 });
