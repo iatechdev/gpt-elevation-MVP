@@ -1,0 +1,29 @@
+head local b92aef5c0eef7b6b224d8a5727f5d24d87d7745e
+M1 | es-159-hoy: fail 1 | es159-check:   ]   | mi guion: FALLA H1 FALLA H2 RESUMEN 6/8 
+M2 | es-159-hoy: fail 1 | es159-check: [2m  - waiting for getByRole('alert').filter({ hasText: 'No pudimos guardar tu registro' }) to be visible[22 | mi guion: FATAL locator.click: Timeout 30000ms exc 
+M3 | es-159-hoy: fail 1 | es159-check: waiting for navigation to "**/app/chat" until "load" ========================================================= | mi guion: FALLA H1 FALLA H2 FALLA H3 RESUMEN 5/8 
+M4 | es-159-hoy: fail 1 | es159-check:  Línea 106  | mi guion: FALLA H3 RESUMEN 7/8 
+M5 | es-159-hoy: fail 0 | es159-check:  ES-159: 11 comprobaciones OK  | mi guion: FALLA H3 FALLA H5 RESUMEN 6/8 
+M6 (backend): ánimo sin req.user.id
+node:fs:440
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open 'C:\c\Users\Usuario\Documents\qa-pr-221\backend\routes\mood.js'
+    at Object.readFileSync (node:fs:440:20)
+    at [eval]:1:103
+    at runScriptInThisContext (node:internal/vm:209:10)
+    at node:internal/process/execution:446:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:444:60)
+    at evalFunction (node:internal/process/execution:279:30)
+    at evalTypeScript (node:internal/process/execution:291:3)
+    at node:internal/main/eval_string:74:3 {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\c\\Users\\Usuario\\Documents\\qa-pr-221\\backend\\routes\\mood.js'
+}
+
+Node.js v22.23.4
+FIN
