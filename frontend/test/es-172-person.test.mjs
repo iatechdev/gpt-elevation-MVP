@@ -61,5 +61,4 @@ test('ES-172 D1=B: la pantalla no guarda nada del mapa (sin storage ni caché) y
 test('ES-172 E259-2: las frases con fecha tienen su variante «por confirmar» en ES y EN (nunca «el Por confirmar»)', () => {
   const copy = readFileSync(new URL('../src/routeCatalog/copy.ts', import.meta.url), 'utf8'); const screen = readFileSync(new URL('../src/routeCatalog/PersonCatalog.tsx', import.meta.url), 'utf8')
   assert.ok(!screen.includes("{tr('consulted')} {when")); assert.ok(screen.includes("dated('consulted', source.consultedAt)"))
-  assert.doesNotMatch(screen, /{tr('consulted')} {when/); assert.match(screen, /dated('consulted', source.consultedAt)/)
 })
