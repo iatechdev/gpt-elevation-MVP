@@ -47,3 +47,31 @@ test('ES-200: ninguna lectura actualiza estado si la señal se canceló', () => 
     assert.match(dashboard.slice(Math.max(0, idx - 200), idx), /signal\.aborted/, `${setter} va tras comprobar signal.aborted`)
   }
 })
+
+// ---- seguimiento (O251-A / O251-B) ----
+test('ES-200 (O251-B): el efecto del panel no encadena las lecturas (sin await ni .then entre ellas) aunque alguien lo reescriba', () => {
+  const start = dashboard.indexOf('const controller = new AbortController()')
+  const end = dashboard.indexOf('return () => controller.abort()', start)
+  assert.ok(start > 0 && end > start)
+  const body = dashboard.slice(start, end)
+  assert.doesNotMatch(body, /\bawait\b/); assert.doesNotMatch(body, /\.then\(/); assert.doesNotMatch(body, /Promise\.all|\.finally\(/)
+  assert.equal((body.match(/^\s*void load\w+\(signal\)$/gm) ?? []).length, 5) // las cinco lecturas, cada una suelta
+  for (const loader of ['loadUpcomingSession', 'loadTherapist']) { // ninguna lectura espera a otra dentro de su propio cuerpo
+    const from = dashboard.indexOf(`const ${loader} = async`); const to = dashboard.indexOf('\n  }\n', from)
+    assert.doesNotMatch(dashboard.slice(from, to), /await load\w+\(/, loader)
+  }
+})
+
+test('ES-200 (O251-A): si falla la próxima sesión o el profesional se muestra un error con «Reintentar», no «aún no ha agendado» ni «Buscar mi terapeuta»', () => {
+  assert.match(dashboard, /const \[nextFailed, setNextFailed\] = useState\(\{ upcoming: false, therapist: false \}\)/)
+  for (const key of ['upcoming', 'therapist']) {
+    assert.ok(dashboard.includes(`setNextFailed(f => ({ ...f, ${key}: true }))`), key) // error de respuesta y de red
+    assert.ok(dashboard.includes(`setNextFailed(f => ({ ...f, ${key}: false }))`), key) // se limpia al leer bien
+  }
+  const errorBranch = dashboard.indexOf('(nextFailed.upcoming || nextFailed.therapist) ? (')
+  const emptyBranch = dashboard.indexOf(': therapistId ? (')
+  assert.ok(errorBranch > 0 && emptyBranch > errorBranch, 'el error se evalúa ANTES de decir que no hay sesión agendada')
+  assert.ok(dashboard.includes('onClick={retryNextSession}') && dashboard.includes('role="alert"'))
+  const copySrc = readFileSync(resolve(here, '../src/space/copy.ts'), 'utf8')
+  assert.equal((copySrc.match(/nextSessionError:/g) ?? []).length, 2) // ES y EN
+})

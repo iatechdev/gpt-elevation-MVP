@@ -91,6 +91,8 @@ export function UserDashboard() {
   // ── Upcoming session ─────────────────────────────────────────────────────
   const [upcomingSession, setUpcomingSession] = useState<UpcomingSession | null>(null)
   const [therapistId,     setTherapistId]     = useState<number | null>(null)
+  // O251-A: si falla la lectura de la próxima sesión o la del profesional NO se dice «aún no ha agendado» ni «Buscar mi terapeuta» (sería falso): se muestra un error con «Reintentar».
+  const [nextFailed, setNextFailed] = useState({ upcoming: false, therapist: false })
 
   // ── Recommendations ──────────────────────────────────────────────────────
   const [recommendations,  setRecommendations]  = useState<Recommendation[]>([])
@@ -99,6 +101,12 @@ export function UserDashboard() {
 
   // ── Matching modal ───────────────────────────────────────────────────────
   const [showMatching, setShowMatching] = useState(false)
+  const retryNextSession = () => {
+    const { signal } = new AbortController() // lectura iniciada por la persona
+    setNextFailed({ upcoming: false, therapist: false })
+    void loadUpcomingSession(signal)
+    void loadTherapist(signal)
+  }
   const handleMatchingSuccess = () => {
     setShowMatching(false)
     const { signal } = new AbortController() // lectura iniciada por la persona (no se cancela al salir: la respuesta solo actualiza esta pantalla)
@@ -160,20 +168,22 @@ export function UserDashboard() {
   const loadUpcomingSession = async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/sessions/user/upcoming', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setNextFailed(f => ({ ...f, upcoming: true })); return }
       const data = await res.json()
-      if (!signal.aborted) setUpcomingSession(data.session ?? null)
-    } catch { /* silent */ }
+      if (!signal.aborted) { setUpcomingSession(data.session ?? null); setNextFailed(f => ({ ...f, upcoming: false })) }
+    } catch { if (!signal.aborted) setNextFailed(f => ({ ...f, upcoming: true })) }
   }
 
   // ES-200: antes esta lectura esperaba a que terminara la de la próxima sesión (cascada evitable: no depende de ella).
   const loadTherapist = async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/sessions/user/my-therapist', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setNextFailed(f => ({ ...f, therapist: true })); return }
       const data = await res.json()
-      if (!signal.aborted) setTherapistId(data.therapist?.id ?? null)
-    } catch { /* silent */ }
+      if (!signal.aborted) { setTherapistId(data.therapist?.id ?? null); setNextFailed(f => ({ ...f, therapist: false })) }
+    } catch { if (!signal.aborted) setNextFailed(f => ({ ...f, therapist: true })) }
   }
 
   const loadRecommendations = async (signal: AbortSignal) => {
@@ -468,6 +478,14 @@ export function UserDashboard() {
                       : 'Link will be available when your therapist starts the session'}
                   </div>
                 )}
+              </div>
+            ) : (nextFailed.upcoming || nextFailed.therapist) ? (
+              <div role="alert">
+                <p style={{ fontSize: '0.82rem', color: '#B91C1C', margin: '0 0 0.6rem' }}>{copy[lang].nextSessionError}</p>
+                <button onClick={retryNextSession}
+                  style={{ minHeight: 44, padding: '0.5rem 0.85rem', background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                  {copy[lang].retry}
+                </button>
               </div>
             ) : therapistId ? (
               <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: 0 }}>
