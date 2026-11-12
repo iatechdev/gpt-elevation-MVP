@@ -1,0 +1,1421 @@
+{
+ "POST /api/register": {
+  "denied": [],
+  "session": false
+ },
+ "POST /api/login": {
+  "denied": [],
+  "session": false
+ },
+ "POST /api/password-reset/request": {
+  "denied": [],
+  "session": false
+ },
+ "POST /api/password-reset/confirm": {
+  "denied": [],
+  "session": false
+ },
+ "GET /api/contact-entries/": {
+  "denied": [],
+  "session": false
+ },
+ "GET /api/admin/contact-entries/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/contact-entries/:id/history": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/contact-entries/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/contact-entries/order": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/contact-entries/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/exercises/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/exercises/import-catalog": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/exercises/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/exercises/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/exercises/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/exercises/:id/publish": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/exercises/:id/withdraw": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/exercises/:id/review": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/exercises/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/exercises/:key": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/invitations/accept": {
+  "denied": [],
+  "session": false
+ },
+ "POST /api/admin/invitations/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/invitations/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/invitations/:id/revoke": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/landing-content/": {
+  "denied": [],
+  "session": false
+ },
+ "PUT /api/landing-content/": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/professional-applications/": {
+  "denied": [],
+  "session": false
+ },
+ "GET /api/pricing/": {
+  "denied": [],
+  "session": false
+ },
+ "GET /api/pricing/all": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/pricing/seed": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/pricing/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/pricing/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "DELETE /api/pricing/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/plans/": {
+  "denied": [],
+  "session": false
+ },
+ "GET /api/plans/me": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/manifest/manifest": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/manifest/manifest": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/manifest/manifest/:id/activate": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/manifest/active": {
+  "denied": [],
+  "session": false
+ },
+ "POST /api/exports/preview": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/exports/:id/download": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/account/deletion-requests": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/chat": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/chat/turns/:requestId": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/messages": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/session": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/logout": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/logout-all": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/consents/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/consents/history": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/consents/:purpose": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/career-context/preview": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/career-context/confirm": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/career-context/revoke": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/career-context/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/skill-map/": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/skill-map/self": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/skill-map/proposals": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/skill-map/proposals/confirm": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/skill-analysis/jobs": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/skill-analysis/jobs": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/skill-analysis/jobs/:id": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/skill-analysis/jobs/:id/cancel": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/skill-analysis/candidates": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/skill-analysis/candidates/:id/review": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/evidence/proposals": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/evidence/": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/evidence/:id": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/evidence/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/evidence/:id": {
+  "denied": [],
+  "session": true
+ },
+ "DELETE /api/evidence/:id": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/insights/proposals": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/route-catalog/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/route-catalog/roles/:roleKey": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/routes/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/routes/constraints": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/routes/constraints": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/routes/choices": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/routes/choices/:id": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/routes/choices": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/routes/review-requests": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/routes/review-requests": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/experiments/proposals": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/experiments/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/experiments/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/experiments/:id": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/experiments/:id/review-requests": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/experiments/:id/versions": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/experiments/:id/review-requests": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/career-plan/proposals": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/career-plan/versions": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/career-plan/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/career-plan/versions/:id": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/career-plan/reminders": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/career-plan/reminders": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/diary/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/diary/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/diary/:id": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/diary/:id": {
+  "denied": [],
+  "session": true
+ },
+ "DELETE /api/diary/:id": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/ai/usage/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/superadmin/ai-usage/": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/superadmin/audit/": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/mood/checkin": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/mood/checkout": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/mood/history": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/rating": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/rating/avg": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/recommendations/generate": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/recommendations/": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/recommendations/:id/seen": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/context/": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/user/context/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/resumes/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/resumes/:id/file": {
+  "denied": [],
+  "session": true
+ },
+ "DELETE /api/user/resumes/:id": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/user/resumes/analyze": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/resume-skills/": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/user/resume-skills/promote": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/progress": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/user/onboarding-complete": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/plan/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/user/plan/me": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/plan-requests/": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/plan-requests/me": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/plan-requests/admin": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/plan-requests/admin/:id/approve": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/plan-requests/admin/:id/reject": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/matching/request": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/matching/choose": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/matching/pending": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/matching/:id/confirm": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/sessions/therapist": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/therapist/upcoming": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/therapist": {
+  "denied": [],
+  "session": true
+ },
+ "PUT /api/sessions/therapist/:id": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/sessions/therapist/:id/notes": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/therapist/:id/notes": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/user/upcoming": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/user": {
+  "denied": [],
+  "session": true
+ },
+ "DELETE /api/sessions/user/my-therapist": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/user/my-therapist": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/sessions/therapist/:id/start": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/sessions/therapist/:id/end": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/sessions/user/:id/join": {
+  "denied": [],
+  "session": true
+ },
+ "POST /api/therapist/validation/upload": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/therapist/validation/status": {
+  "denied": [],
+  "session": true
+ },
+ "GET /api/therapist/validation/pending": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/validation/:id/download": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/therapist/validation/:id/approve": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/therapist/validation/:id/reject": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/pacientes": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/alerts": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/pacientes/:id/historial": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/prompt": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "POST /api/therapist/prompt/propose": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/prompt/versions": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/pacientes/:id/historia": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "POST /api/therapist/pacientes/:id/notas": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "PUT /api/therapist/notas/:noteId": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/therapist/pacientes/:id/resumen-ia": {
+  "denied": [
+   "user",
+   "admin",
+   "superadmin"
+  ],
+  "session": true
+ },
+ "GET /api/admin/skill-catalog/territories": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/skill-catalog/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/skill-catalog/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/skill-catalog/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/skill-catalog/:id/skills/:skillKey": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "DELETE /api/admin/skill-catalog/:id/skills/:skillKey": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/skill-catalog/:id/publish": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/route-catalog/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/route-catalog/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/route-catalog/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/route-catalog/:id/:kind/:key": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "DELETE /api/admin/route-catalog/:id/:kind/:key": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/route-catalog/:id/publish": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/usuarios/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/usuarios/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/usuarios/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "DELETE /api/admin/usuarios/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/usuarios/:id/asignar-terapeuta": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/usuarios/:id/plan": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/usuarios/:id/stats": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/usuarios/alerts": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/usuarios/:id/unlock": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/usuarios/:id/reset-password": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/usuarios/:id/reset-link": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/professional-applications/capacity": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/professional-applications/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/professional-applications/:id/cv": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/professional-applications/:id/approve": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/professional-applications/:id/reject": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "DELETE /api/admin/professional-applications/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/metrics/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/matching/request": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/matching/choose": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/matching/pending": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/matching/:id/confirm": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/pricing/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/pricing/all": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/pricing/seed": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/pricing/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/pricing/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "DELETE /api/admin/pricing/:id": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/plan-requests/": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/plan-requests/me": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/plan-requests/admin": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/plan-requests/admin/:id/approve": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/plan-requests/admin/:id/reject": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/prompts": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/admin/prompt/:key": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt/propose": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt/publish": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt/create": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/admin/prompt/:key/versions": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt/:id/approve": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt/:id/reject": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt/:id/rollback": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/admin/prompt-rules": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/admin/prompt-rules": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "PUT /api/admin/prompt-rules/:id": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "DELETE /api/admin/prompt-rules/:id": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/superadmin/prompts": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/superadmin/prompt/:key": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt/propose": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt/publish": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt/create": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/superadmin/prompt/:key/versions": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt/:id/approve": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt/:id/reject": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt/:id/rollback": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/superadmin/prompt-rules": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/superadmin/prompt-rules": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "PUT /api/superadmin/prompt-rules/:id": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "DELETE /api/superadmin/prompt-rules/:id": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/board/manifest": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/board/manifest": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "PUT /api/board/manifest/:id/activate": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "GET /api/board/active": {
+  "denied": [
+   "user",
+   "therapist"
+  ],
+  "session": true
+ },
+ "POST /api/junta/upload": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/junta/status": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/junta/pending": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "GET /api/junta/:id/download": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/junta/:id/approve": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ },
+ "POST /api/junta/:id/reject": {
+  "denied": [
+   "user",
+   "therapist",
+   "admin"
+  ],
+  "session": true
+ }
+}
