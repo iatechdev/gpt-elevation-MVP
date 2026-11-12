@@ -2,7 +2,7 @@
 export const checkinEs = {
   'checkin.eyebrow': 'Registro del día',
   'checkin.title': '¿Cómo llegas hoy?',
-  'checkin.intro': 'Elige la palabra que más se acerca. Solo tú ves esto y puedes cambiarlo cuando quieras.',
+  'checkin.intro': 'Elige la palabra que más se acerca. Lo ves tú y puedes cambiarlo cuando quieras. Si autorizaste compartir con tu profesional, también lo ve; si no, nadie más.',
   'checkin.legend': 'Cómo llegas hoy',
   'checkin.mood_1': 'Cargado', 'checkin.mood_2': 'Bajo', 'checkin.mood_3': 'Regular', 'checkin.mood_4': 'Bien', 'checkin.mood_5': 'Con energía',
   'checkin.note': 'Esto no es un diagnóstico ni una medición de salud. Es un registro tuyo.',
@@ -21,7 +21,7 @@ export const checkinEs = {
 export const checkinEn: Record<keyof typeof checkinEs, string> = {
   'checkin.eyebrow': 'Daily check-in',
   'checkin.title': 'How are you arriving today?',
-  'checkin.intro': 'Pick the word that fits best. Only you see this, and you can change it whenever you want.',
+  'checkin.intro': 'Pick the word that fits best. You can see this and change it whenever you want. If you allowed sharing with your professional, they can see it too; if not, no one else can.',
   'checkin.legend': 'How you are arriving today',
   'checkin.mood_1': 'Weighed down', 'checkin.mood_2': 'Low', 'checkin.mood_3': 'So-so', 'checkin.mood_4': 'Good', 'checkin.mood_5': 'Energised',
   'checkin.note': 'This is not a diagnosis or a health measurement. It is your own record.',

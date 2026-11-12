@@ -84,3 +84,9 @@ test('ES-159: el punto de partida va en el marco de persona con el tema de Carto
   const css = read('../src/context/onboardingCartografia.css')
   assert.ok(!/#[0-9a-fA-F]{3,6}\b/.test(css), 'la hoja de Cartografía no trae colores fijos: todo sale de --cg-*')
 })
+
+test('ES-159 (E264-1): el texto de privacidad es verdadero con y sin autorización de compartir: no afirma que solo la persona lo ve', () => {
+  assert.ok(!/solo t[úu] ves|only you see/i.test(checkinEs['checkin.intro'] + checkinEn['checkin.intro']), 'sin la afirmación absoluta')
+  assert.match(checkinEs['checkin.intro'], /autorizaste compartir con tu profesional, también lo ve; si no, nadie más/)
+  assert.match(checkinEn['checkin.intro'], /allowed sharing with your professional, they can see it too; if not, no one else can/)
+})
