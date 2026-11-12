@@ -170,6 +170,10 @@ jobs:
         run: npm run test:admin-delete:pg
         env:
           ES186C_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-275 comando de purga - DATABASE_URL explícita, sin .env y salida limpia (PostgreSQL real)
+        run: npm run test:purge-command:pg
+        env:
+          ES275_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-276 purga y exportación de «Persona n» (TherapistPersonOrdinals, PostgreSQL real)
         run: npm run test:purge-ordinals:pg
         env:
@@ -186,6 +190,10 @@ jobs:
         run: npm run test:session-lists:pg
         env:
           ES241_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-262 entradas hostiles de fecha y de id en sesiones, notas y solicitudes de plan (PostgreSQL real)
+        run: npm run test:hostile-dates:pg
+        env:
+          ES262_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-178 notas de seguimiento - edición concurrente, máximo y texto obligatorio (PostgreSQL real)
         run: npm run test:followup-notes:pg
         env:
@@ -194,6 +202,12 @@ jobs:
         run: npm run test:exercises:pg
         env:
           ES194_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-261 suites PostgreSQL antiguas (ES-16 pausa, ES-74 sesión, ES-113 diario) que no corrían en CI
+        run: npm run test:older-pg-suites
+        env:
+          ES74_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES16_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES113_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-163 Diario - guardado idempotente con requestId y migración (PostgreSQL real)
         run: npm run test:diary-request:pg
         env:
