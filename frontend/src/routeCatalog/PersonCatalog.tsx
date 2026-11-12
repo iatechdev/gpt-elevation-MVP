@@ -73,7 +73,7 @@ function BrowserSession({ session }: { session: string }) {
       {status === 'empty' && <Notice kind="note" title={tr('empty')} />}
       {catalog && !status && (
         <>
-          <p className="cg-tag cgp-meta">{tr('version')} {catalog.version} · {tr('publishedAt')} {when ?? tr('unknown')}</p>
+          <p className="cg-tag cgp-meta">{tr('version')} {catalog.version} · {when ? `${tr('publishedAt')} ${when}` : tr('publishedAt_unknown')}</p>
           {(['contexts', 'sources', 'roles', 'offers', 'resources'] as const).some(kind => catalog[kind].some(item => item.synthetic === true)) && <Banner title={tr('synthetic')} />}
           {roleKey
             ? role ? <RoleDetail role={role} catalog={catalog} session={session} /> : <><h1 className="cg-h1">{tr('title')}</h1><Notice kind="note" title={tr('not_found')} /><p><Link className="cg-btn cg-btn--ghost" to="/app/route-catalog">{tr('catalog_back')}</Link></p></>
@@ -147,7 +147,8 @@ function RoleDetail({ role, catalog, session }: { role: Data; catalog: Published
   const title = useRef<HTMLHeadingElement>(null)
   useEffect(() => { title.current?.focus() }, [role.roleKey])
   const localized = (v: unknown) => string(object(v)[lang]) || tr('unknown')
-  const when = (value: unknown) => dateText(value, lang) ?? tr('unknown')
+  // E259-2: sin fecha válida la frase entera dice «por confirmar» (nunca «Consultada el Por confirmar»).
+  const dated = (key: 'review' | 'consulted' | 'checked', value: unknown) => { const text = dateText(value, lang); return text ? `${tr(key)} ${text}` : tr(`${key}_unknown`) }
   const skillName = (key: unknown) => skills.get(string(key)) ?? tr('skill_unknown')
   const sourceTitle = (key: unknown) => string(catalog.sources.find(source => source.sourceKey === key)?.title) || tr('source_unknown')
   const resources = catalog.resources.filter(resource => array(resource.roleKeys).includes(role.roleKey))
@@ -162,7 +163,7 @@ function RoleDetail({ role, catalog, session }: { role: Data; catalog: Published
       <p className="cg-muted">{localized(role.industry)} · {names.country(role.market)}</p>
       <p className="cg-muted">{array(role.languagesRequired).map(value => names.language(value)).join(', ')} · {array(role.modality).map(value => tr(string(value))).join(', ')}</p>
       <p>
-        {review.present === true && <span className="cg-small cg-muted">{tr('review')} {when(review.at)} </span>}
+        {review.present === true && <span className="cg-small cg-muted">{dated('review', review.at)} </span>}
         {role.verificationTask === true && <Chip tone="wait" symbol="⚑">{tr('verificationTask')}</Chip>}
       </p>
       <div className="cgp-sections">
@@ -187,7 +188,7 @@ function RoleDetail({ role, catalog, session }: { role: Data; catalog: Published
           <ul className="cg-items">{sources.map(source => (
             <li className="cg-item" key={string(source.sourceKey)}>
               <Outbound url={source.url}>{string(source.title)}</Outbound>
-              <p className="cg-small cg-muted">{tr('consulted')} {when(source.consultedAt)} · {names.language(source.language)}</p>
+              <p className="cg-small cg-muted">{dated('consulted', source.consultedAt)} · {names.language(source.language)}</p>
               {sourceNotice(source) && <p><StatusChip view={sourceNotice(source)!} /></p>}
             </li>))}</ul>
         </Card>
@@ -197,7 +198,7 @@ function RoleDetail({ role, catalog, session }: { role: Data; catalog: Published
             <li className="cg-item" key={string(offer.offerKey)}>
               <h3 className="cgp-h3"><Outbound url={offer.url}>{string(offer.title)}</Outbound></h3>
               <p className="cg-small">{string(offer.organization)} · {names.country(offer.market)} · {names.language(offer.language)} · {tr(string(offer.modality))}</p>
-              <p className="cg-small"><Chip tone={state.tone} symbol={state.symbol}>{state.key === 'checked' ? `${tr('checked')} ${when(offer.verifiedAt)}` : tr(state.key)}</Chip> {object(offer.salary).published === true ? string(object(offer.salary).text) : tr('unpublished_salary')}</p>
+              <p className="cg-small"><Chip tone={state.tone} symbol={state.symbol}>{state.key === 'checked' ? dated('checked', offer.verifiedAt) : tr(state.key)}</Chip> {object(offer.salary).published === true ? string(object(offer.salary).text) : tr('unpublished_salary')}</p>
               {typeof offer.extract === 'string' && <p>{string(offer.extract)}</p>}
             </li>) })}</ul>
         </Card>

@@ -40,3 +40,7 @@
 .cgp a.cg-btn:hover { color: var(--cg-ground); }
 .cgp a.cg-btn--ghost { color: var(--cg-ink); }
 .cgp a.cg-btn--ghost:hover { color: var(--cg-mark); }
+
+/* E259-1 (WCAG 1.4.10): un título largo sin espacios nunca desborda a 390 px; los hijos de una rejilla pueden encogerse. */
+.cgp-main, .cgp-main * { overflow-wrap: anywhere; }
+.cgp-grid > li, .cgp-sections > *, .cgp-role, .cgp-detail, .cgp-section { min-width: 0; }

@@ -136,6 +136,22 @@ const { pathToFileURL } = require('node:url');
         await context.close();
       }
       check('ES-172 D1=B: nombres de capacidad desde las etiquetas del mapa (ES/EN), sin claves, sin niveles ni evidencias y sin guardar nada del mapa'); }
+    // E259-1 (WCAG 1.4.10) y E259-2: títulos largos SIN espacios (30 en el rol, 60 en la fuente) no desbordan a 390 px; una fecha inválida dice la frase entera «por confirmar».
+    { const role = published.roles.find(r => (r.capabilities || []).length); const longRole = 'R'.repeat(30); const longSource = 'S'.repeat(60);
+      const tweak = body => { const copy = JSON.parse(JSON.stringify(body)); for (const r of copy.roles) { r.labels.es = longRole; r.labels.en = longRole; }
+        for (const src of copy.sources) { src.title = longSource; src.consultedAt = '2026-02-30'; } return copy; };
+      for (const lang of ['es', 'en']) for (const route of ['/app/route-catalog', '/app/route-catalog/roles/' + role.roleKey]) {
+        const context = await browser.newContext({ viewport: { width: 390, height: 900 } }); const page = await context.newPage();
+        await page.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elv_lang', l); }, [token, lang]);
+        await page.route('**/api/session', r => r.fulfill({ json: { role: 'user', onboardingCompleted: true } })); await page.route('**/api/skill-map', r => r.fulfill({ status: 503, json: {} }));
+        await page.route('**/api/route-catalog**', async r => { const url = new URL(r.request().url()); const response = await r.fetch({ url: apiUrl + url.pathname + url.search }); return r.fulfill({ json: tweak(await response.json()) }); });
+        await page.goto(frontend + route); await page.locator('.cgp-role, .cgp-detail').first().waitFor();
+        assert.ok((await page.locator('body').innerText()).includes(longRole), 'el título largo se muestra');
+        const widths = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]); assert.ok(widths[0] <= widths[1], `sin scroll horizontal a 390 px (${widths.join(' > ')}) en ${route} ${lang}`);
+        const body = await page.locator('body').innerText(); assert.ok(!/(el|on) (Por confirmar|To be confirmed)/.test(body), 'sin «… el Por confirmar»');
+        if (route.includes('roles/')) assert.ok(body.includes(lang === 'es' ? 'Fecha de consulta por confirmar' : 'Consultation date to be confirmed'));
+        await context.close(); }
+      check('E259-1/E259-2: título de 30 y 60 caracteres sin espacios sin scroll horizontal a 390 px (lista y ficha, ES/EN) y fechas inválidas con la frase entera «por confirmar»'); }
     // Capturas opcionales (SHOTS_DIR): lista y ficha, ES, 390/1360, claro y oscuro del sistema.
     if (process.env.SHOTS_DIR) { fs.mkdirSync(process.env.SHOTS_DIR, { recursive: true });
       for (const scheme of ['light', 'dark']) for (const width of [390, 1360]) for (const [name, route] of [['lista', '/app/route-catalog'], ['ficha', '/app/route-catalog/roles/' + published.roles.find(r => (r.capabilities || []).length).roleKey]]) {
