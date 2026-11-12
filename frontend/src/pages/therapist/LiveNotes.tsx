@@ -4,6 +4,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { MAX_LIVE, newRequestId } from './roomFormat'
 import { invalidateStoredSession } from '../../access/session'
+import { enterAgain } from './sessionEnter'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -99,7 +100,7 @@ export const LiveNotes = forwardRef<LiveNotesHandle, { sessionId: string; t: T; 
       <label htmlFor="sr-live-notes" className="sr-label">{t('sr_notes')}</label>
       <textarea id="sr-live-notes" className="sr-textarea" value={text} disabled={!loaded} maxLength={MAX_LIVE} placeholder={t('sr_notes_placeholder')} onChange={event => change(event.target.value)} aria-describedby="sr-note-status" />
       <div id="sr-note-status" role="status" className={status === 'error' || status === 'conflict' || status === 'expired' ? 'sr-status sr-status-bad' : 'sr-status'}>{message}</div>
-      {status === 'expired' && <button type="button" className="sr-btn sr-btn-primary" onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button>}
+      {status === 'expired' && <button type="button" className="sr-btn sr-btn-primary" onClick={() => { if (!enterAgain(usedToken.current)) { setErrorKey('session_renewed'); setStatus('error'); document.getElementById('sr-live-notes')?.focus() } }}>{t('session_enter')}</button>}
       {showSaveNow && <button type="button" className="sr-btn" onClick={() => void save()}>{t('sr_save_now')}</button>}
       {status === 'conflict' && (
         <div className="sr-conflict">

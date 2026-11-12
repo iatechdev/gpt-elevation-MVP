@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cardStyle } from './panelStyles'
 import { localToday } from './followupFormat'
-import { invalidateStoredSession } from '../../access/session'
+import { enterAgain } from './sessionEnter'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -37,6 +37,7 @@ export function FollowupNotes({ personId, notes, reload, t, locale }: { personId
   const [notice, setNotice] = useState('')
   const dialog = useRef<HTMLDialogElement>(null)
   const usedToken = useRef('') // ES-265: token con que se envió la nota
+  const enterButton = useRef<HTMLButtonElement>(null)
   const opener = useRef<HTMLElement | null>(null)
   // Lo escrito sobrevive a Esc/Cancelar y a reabrir (una nota nueva o cada nota que se edita tiene su borrador); solo se descarta al guardar con éxito.
   const drafts = useRef(new Map<string | number, { type: NoteType; date: string; text: string }>())
@@ -46,6 +47,12 @@ export function FollowupNotes({ personId, notes, reload, t, locale }: { personId
   const shown = filter === 'all' ? notes : notes.filter(note => note.type === filter)
 
   useEffect(() => { if (editing && dialog.current && !dialog.current.open) dialog.current.showModal() }, [editing])
+  // E243-1: al aparecer el aviso de sesión vencida el botón «Guardar» se desactiva y el foco caía a body: pasa a «Entrar» (sin quitárselo a quien ya se movió a otro control).
+  useEffect(() => {
+    if (!problem?.enter) return
+    const active = document.activeElement
+    if (active === null || active === document.body || dialog.current?.contains(active)) enterButton.current?.focus()
+  }, [problem])
   useEffect(() => { const key = draftKey(editing); if (key !== null) drafts.current.set(key, { type, date, text }) }, [editing, type, date, text])
   const closeDialog = () => dialog.current?.close()
   const onClosed = () => { setEditing(null); setProblem(null); setCurrent(null); setShowCurrent(false); opener.current?.focus() }
@@ -150,7 +157,7 @@ export function FollowupNotes({ personId, notes, reload, t, locale }: { personId
             <div id="fu-problem" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
               {problem && <>
                 <p style={{ margin: 0 }}>{t(problem.key, problem.params)}</p>
-                {problem.enter && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button>}
+                {problem.enter && <button ref={enterButton} type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => { if (!enterAgain(usedToken.current)) { setProblem({ key: 'session_renewed' }); window.setTimeout(() => document.getElementById('fu-text')?.focus(), 0) } }}>{t('session_enter')}</button>}
                 {problem.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile(editing, new Set(notes.map(n => n.id)))}>{t('fu_check')}</button>}
               </>}
             </div>
