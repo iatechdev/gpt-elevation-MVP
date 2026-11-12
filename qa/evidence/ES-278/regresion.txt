@@ -1,0 +1,12 @@
+es278.1 | exit=0 | # pass 6 # fail 0 # skipped 0  | 11s
+es278.2 | exit=0 | # pass 6 # fail 0 # skipped 0  | 7s
+es278.3 | exit=0 | # pass 6 # fail 0 # skipped 0  | 12s
+es73 | exit=0 | # pass 1 # fail 0 # skipped 0  | 4s
+es280 | exit=0 | # pass 8 # fail 0 # skipped 0  | 50s
+es281 | exit=0 | # pass 8 # fail 0 # skipped 0  | 64s
+npmtest | exit=0 | # pass 651 # fail 0 # skipped 0  | 63s
+fe-tests | exit=0 | # pass 591 # fail 0 # skipped 0  | 30s
+fe-tsc | exit=0 |  | 28s
+fe-eslint | exit=0 |  | 55s
+fe-bundle | exit=0 |  | 1s
+FIN

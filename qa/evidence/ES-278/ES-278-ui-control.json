@@ -1,0 +1,75 @@
+[
+ {
+  "id": "U1 identificador y precio: atributos y filtro (390px es) [control]",
+  "ok": true,
+  "detail": "maxlength null; precio min 0 max null step 0.01; «ABC def_ñ!x» → «abc-def_ñ!x»; 30 letras → 30 caracteres"
+ },
+ {
+  "id": "U2 crear un plan válido desde la pantalla (390px es) [control]",
+  "ok": true,
+  "detail": "estado 201; fila guardada: {\"slug\":\"qacdc676es390\",\"name_es\":\"Plan de prueba\",\"price\":\"12.50\",\"period\":\"month\"}"
+ },
+ {
+  "id": "U3 formulario abierto: axe y sin desborde (390px es) [control]",
+  "ok": false,
+  "detail": "axe [\"label:2\",\"select-name:2\"]; sin desborde false"
+ },
+ {
+  "id": "U1 identificador y precio: atributos y filtro (320px es) [control]",
+  "ok": true,
+  "detail": "maxlength null; precio min 0 max null step 0.01; «ABC def_ñ!x» → «abc-def_ñ!x»; 30 letras → 30 caracteres"
+ },
+ {
+  "id": "U2 crear un plan válido desde la pantalla (320px es) [control]",
+  "ok": true,
+  "detail": "estado 201; fila guardada: {\"slug\":\"qa8522f9es320\",\"name_es\":\"Plan de prueba\",\"price\":\"12.50\",\"period\":\"month\"}"
+ },
+ {
+  "id": "U3 formulario abierto: axe y sin desborde (320px es) [control]",
+  "ok": false,
+  "detail": "axe [\"label:2\",\"select-name:2\"]; sin desborde false"
+ },
+ {
+  "id": "U1 identificador y precio: atributos y filtro (1360px es) [control]",
+  "ok": true,
+  "detail": "maxlength null; precio min 0 max null step 0.01; «ABC def_ñ!x» → «abc-def_ñ!x»; 30 letras → 30 caracteres"
+ },
+ {
+  "id": "U2 crear un plan válido desde la pantalla (1360px es) [control]",
+  "ok": true,
+  "detail": "estado 201; fila guardada: {\"slug\":\"qa29666ees1360\",\"name_es\":\"Plan de prueba\",\"price\":\"12.50\",\"period\":\"month\"}"
+ },
+ {
+  "id": "U3 formulario abierto: axe y sin desborde (1360px es) [control]",
+  "ok": false,
+  "detail": "axe [\"label:2\",\"select-name:2\"]; sin desborde true"
+ },
+ {
+  "id": "U4 precio 100 000 000: 400 del servidor, la pantalla muestra el motivo y conserva lo escrito (es) [control]",
+  "ok": true,
+  "detail": "estado 400; datos conservados true; texto visible: ICAS EN INGLÉS + OPCIONES Orden Destacado Activo El precio debe ser un número entre 0 y 99 999 999,99 con a lo sumo dos decimales. / The price must be a number from 0 to 99,999,999.99 with at most two decimals. Cancelar Crear plan"
+ },
+ {
+  "id": "U5 identificador repetido: 409 y mensaje claro, formulario abierto (es) [control]",
+  "ok": true,
+  "detail": "estado 409; texto: mpre CARACTERÍSTICAS EN ESPAÑOL + CARACTERÍSTICAS EN INGLÉS + OPCIONES Orden Destacado Activo Ya existe un plan con ese identificador. / A plan with that identifier already exists. Cancelar Crear plan"
+ },
+ {
+  "id": "U6 abrir y guardar sin cambios cada plan (los 5 primeros, incluida la semilla) → 200 (es) [control]",
+  "ok": true,
+  "detail": "8 botones «Editar»; todos 200"
+ },
+ {
+  "id": "U7 plan heredado «plan_heredado» (identificador con guion bajo, válido antes): cambiar solo el precio (es) [control]",
+  "info": "estado 400; texto visible: CAS EN INGLÉS + OPCIONES Orden Destacado Activo El identificador usa solo minúsculas, números y guion (máximo 20). / The identifier uses only lowercase letters, numbers and hyphens (max 20). Cancelar Actualizar"
+ },
+ {
+  "id": "U7b tras corregir el identificador desde la pantalla (es)",
+  "info": "estado 200 (la persona administradora PUEDE corregirlo en el mismo formulario: true)"
+ },
+ {
+  "id": "sin errores de consola ni de página [control]",
+  "ok": true,
+  "detail": "ninguno"
+ }
+]
