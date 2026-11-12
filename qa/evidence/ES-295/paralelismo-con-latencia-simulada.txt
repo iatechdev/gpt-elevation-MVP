@@ -1,0 +1,1 @@
+PR (50 ms simulados): razon 9.0 | M2 global: 26.8 | M3 por habilidad: 26.6 | main: 8.8
