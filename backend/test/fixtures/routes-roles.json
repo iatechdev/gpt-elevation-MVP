@@ -604,6 +604,14 @@
     "denied": [],
     "session": true
   },
+  "GET /api/sessions/user/my-therapist/profile": {
+    "denied": [],
+    "session": true
+  },
+  "GET /api/sessions/user/my-therapist/sessions": {
+    "denied": [],
+    "session": true
+  },
   "GET /api/sessions/user/upcoming": {
     "denied": [],
     "session": true

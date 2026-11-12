@@ -449,64 +449,95 @@ router.delete('/user/my-therapist', async (req, res) => {
   }
 });
 
-// GET /api/sessions/user/my-therapist — terapeuta asignado + sesiones (HU-071)
-router.get('/user/my-therapist', async (req, res) => {
+// ES-240: «Mi profesional» se lee en secciones independientes (perfil / sesiones) para que el fallo de una no oculte la otra. Las dos salen del mismo código que la lectura
+// completa de siempre (HU-071), así que el contrato de privacidad es el mismo: solo el propietario (rol «user»), solo SU vínculo vigente leído de la base en cada petición
+// (si la persona se desvinculó entre una petición y otra, no se devuelve nada del profesional anterior), y nunca diario ni indicadores de crisis.
+// Vínculo vigente de la persona, leído de la base en cada petición.
+async function currentTherapistId(userId) {
+  const User = require('../User');
+  const user = await User.findByPk(userId, { attributes: ['therapistId'] });
+  return user?.therapistId ?? null;
+}
+
+async function myTherapistProfile(userId) {
   const User             = require('../User');
-  const TherapySession   = require('../TherapySession');
   const TherapistProfile = require('../TherapistProfile');
-  const { Op }           = require('sequelize');
+  const therapistId = await currentTherapistId(userId);
+  if (!therapistId) return { therapistId: null, therapist: null };
+  const therapist = await User.findByPk(therapistId, { attributes: ['id', 'name', 'email'] });
+  const profile = await TherapistProfile.findOne({ where: { UserId: therapistId } });
+  return {
+    therapistId,
+    therapist: {
+      id: therapist.id, name: therapist.name, email: therapist.email,
+      profile: profile ? {
+        specialties: profile.specialties, approach: profile.approach,
+        languages:   profile.languages,   bio:      profile.bio,
+      } : null,
+    },
+  };
+}
+
+async function myTherapistSessions(userId, therapistId) {
+  const TherapySession = require('../TherapySession');
+  const { Op }         = require('sequelize');
+  if (!therapistId) return { upcomingSessions: [], pastSessions: [] };
+  const upcomingSessions = await TherapySession.findAll({
+    where: { patientId: userId, therapistId, status: 'scheduled', scheduledAt: { [Op.gte]: new Date() } },
+    order: [['scheduledAt', 'ASC']],
+    limit: 3,
+  });
+  const pastSessions = await TherapySession.findAll({
+    where: { patientId: userId, therapistId, status: 'completed' },
+    order: [['scheduledAt', 'DESC']],
+    limit: 10,
+  });
+  return {
+    upcomingSessions: upcomingSessions.map(s => ({
+      id: s.id, scheduledAt: s.scheduledAt, duration: s.duration,
+      meetingUrl: s.meetingUrl, status: s.status,
+    })),
+    pastSessions: pastSessions.map(s => ({
+      id: s.id, scheduledAt: s.scheduledAt,
+      patientMoodAfter: s.patientMoodAfter, status: s.status,
+    })),
+  };
+}
+
+// GET /api/sessions/user/my-therapist — terapeuta asignado + sesiones (HU-071). Se conserva igual para los clientes que ya lo usan (p. ej. el panel de la persona).
+router.get('/user/my-therapist', async (req, res) => {
   try {
     if (req.user.role !== 'user') {
       return res.status(403).json({ error: 'Users only.' });
     }
-    const user = await User.findByPk(req.user.id, { attributes: ['therapistId'] });
-    if (!user?.therapistId) return res.json({ therapist: null });
-
-    const therapist = await User.findByPk(user.therapistId, {
-      attributes: ['id', 'name', 'email'],
-    });
-    const profile = await TherapistProfile.findOne({ where: { UserId: user.therapistId } });
-
-    const upcomingSessions = await TherapySession.findAll({
-      where: {
-        patientId:   req.user.id,
-        therapistId: user.therapistId,
-        status:      'scheduled',
-        scheduledAt: { [Op.gte]: new Date() },
-      },
-      order: [['scheduledAt', 'ASC']],
-      limit: 3,
-    });
-
-    const pastSessions = await TherapySession.findAll({
-      where: {
-        patientId:   req.user.id,
-        therapistId: user.therapistId,
-        status:      'completed',
-      },
-      order: [['scheduledAt', 'DESC']],
-      limit: 10,
-    });
-
-    res.json({
-      therapist: {
-        id: therapist.id, name: therapist.name, email: therapist.email,
-        profile: profile ? {
-          specialties: profile.specialties, approach: profile.approach,
-          languages:   profile.languages,   bio:      profile.bio,
-        } : null,
-      },
-      upcomingSessions: upcomingSessions.map(s => ({
-        id: s.id, scheduledAt: s.scheduledAt, duration: s.duration,
-        meetingUrl: s.meetingUrl, status: s.status,
-      })),
-      pastSessions: pastSessions.map(s => ({
-        id: s.id, scheduledAt: s.scheduledAt,
-        patientMoodAfter: s.patientMoodAfter, status: s.status,
-      })),
-    });
+    const { therapistId, therapist } = await myTherapistProfile(req.user.id);
+    if (!therapistId) return res.json({ therapist: null });
+    res.json({ therapist, ...(await myTherapistSessions(req.user.id, therapistId)) });
   } catch (error) {
     console.error('❌ Error fetching my-therapist:', error);
+    res.status(500).json({ error: 'Could not fetch therapist info.' });
+  }
+});
+
+// GET /api/sessions/user/my-therapist/profile — solo el perfil del profesional vigente (ES-240).
+router.get('/user/my-therapist/profile', async (req, res) => {
+  try {
+    if (req.user.role !== 'user') return res.status(403).json({ error: 'Users only.' });
+    const { therapist } = await myTherapistProfile(req.user.id);
+    res.json({ therapist });
+  } catch (error) {
+    console.error('❌ Error fetching my-therapist profile:', error);
+    res.status(500).json({ error: 'Could not fetch therapist info.' });
+  }
+});
+
+// GET /api/sessions/user/my-therapist/sessions — solo las sesiones con el profesional vigente (ES-240). Sin vínculo: listas vacías.
+router.get('/user/my-therapist/sessions', async (req, res) => {
+  try {
+    if (req.user.role !== 'user') return res.status(403).json({ error: 'Users only.' });
+    res.json(await myTherapistSessions(req.user.id, await currentTherapistId(req.user.id)));
+  } catch (error) {
+    console.error('❌ Error fetching my-therapist sessions:', error);
     res.status(500).json({ error: 'Could not fetch therapist info.' });
   }
 });
