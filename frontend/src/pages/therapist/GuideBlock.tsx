@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { PanelBlock } from './PanelSections'
 import type { SectionState } from './useSection'
-import { invalidateStoredSession } from '../../access/session'
+import { enterAgain } from './sessionEnter'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -30,6 +30,7 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<{ key: string; reasons: Reason[]; check?: boolean; enter?: boolean } | null>(null)
+  const enterButton = useRef<HTMLButtonElement>(null)
   const usedToken = useRef('') // ES-285: token con que se envió, para no cerrar un inicio de sesión más nuevo
   const [sent, setSent] = useState(false)
   const [touched, setTouched] = useState(false) // E218-2: lo escrito se conserva al cerrar (Esc, Cancelar) y reabrir; solo se descarta al enviar con éxito
@@ -39,6 +40,12 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const date = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
   useEffect(() => { if (open && dialog.current && !dialog.current.open) dialog.current.showModal() }, [open])
+  // E243-1: al aparecer el aviso de sesión vencida el botón «Enviar» queda desactivado y el foco caía a body: pasa a «Entrar» (sin quitárselo a quien ya se movió a otro control).
+  useEffect(() => {
+    if (!error?.enter) return
+    const active = document.activeElement
+    if (active === null || active === document.body || dialog.current?.contains(active)) enterButton.current?.focus()
+  }, [error])
   const close = () => { dialog.current?.close() }
   const onClosed = () => { setOpen(false); setError(null); opener.current?.focus() }
   const start = () => { if (!touched) setText(data?.content ?? ''); setError(null); setSent(false); setOpen(true) }
@@ -118,7 +125,7 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
             <div id="panel-guide-error" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
               {error && <>
                 <p style={{ margin: 0 }}>{t(error.key)}</p>
-                {error.enter && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button>}
+                {error.enter && <button ref={enterButton} type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => { if (!enterAgain(usedToken.current)) setError({ key: 'session_renewed', reasons: [] }) }}>{t('session_enter')}</button>}
                 {error.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile()}>{t('panel_gp_check')}</button>}
                 {error.reasons.length > 0 && <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>{error.reasons.map((reason, index) => <li key={`${reason.code}-${index}`}>{reason[lang] ?? reason.code}</li>)}</ul>}
               </>}

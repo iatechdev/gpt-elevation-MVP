@@ -1,8 +1,8 @@
 // ES-177 (B2): validación académica del profesional. Estado en palabras (sin emojis), aviso de datos personales, etiquetas visibles (sin `display:none`) y errores de la subida por código en ES/EN.
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { PanelBlock } from './PanelSections'
 import type { SectionState } from './useSection'
-import { invalidateStoredSession } from '../../access/session'
+import { enterAgain } from './sessionEnter'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -23,6 +23,7 @@ const STATUS_KEY = { approved: 'panel_val_approved', pending: 'panel_val_pending
 const field: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.82rem', color: '#44403C' }
 const control: CSSProperties = { minHeight: 44, padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', background: '#fff' }
 const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
+const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' } // E243-3: mismo estilo de «Entrar» que en la guía
 
 export function ValidationBlock({ state, t, locale }: { state: SectionState<ValidationDoc[]>; t: T; locale: string }) {
   const docs = state.data ?? []
@@ -33,6 +34,13 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ text: string; failed: boolean; enter?: boolean } | null>(null)
   const usedToken = useRef('') // ES-285
+  const enterButton = useRef<HTMLButtonElement>(null)
+  // E243-1: al aparecer el aviso el botón de subir queda desactivado y el foco caía a body: pasa a «Entrar» (sin quitárselo a quien ya se movió a otro control).
+  useEffect(() => {
+    if (!message?.enter) return
+    const active = document.activeElement
+    if (active === null || active === document.body || enterButton.current?.closest('form')?.contains(active)) enterButton.current?.focus()
+  }, [message])
   const input = useRef<HTMLInputElement>(null)
 
   async function upload() {
@@ -82,7 +90,7 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
           </label>
           <div><button type="submit" style={{ ...primary, opacity: busy ? 0.7 : 1 }} disabled={busy}>{busy ? t('panel_val_uploading') : t('panel_val_upload')}</button></div>
           <p role={message?.failed ? 'alert' : 'status'} style={{ margin: 0, fontSize: '0.85rem', color: message?.failed ? '#B91C1C' : '#2F4A29' }}>{message?.text ?? ''}</p>
-          {message?.enter && <div><button type="button" style={primary} onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button></div>}
+          {message?.enter && <div><button ref={enterButton} type="button" style={ghost} onClick={() => { if (!enterAgain(usedToken.current)) setMessage({ text: t('session_renewed'), failed: true }) }}>{t('session_enter')}</button></div>}
         </form>
       )}
     </PanelBlock>

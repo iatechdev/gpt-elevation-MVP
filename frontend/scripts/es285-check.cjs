@@ -13,8 +13,8 @@ const fs = require('node:fs');
   const errors = []; let count = 0;
   const check = (label) => { count++; console.log('PASS ' + label); };
   const T = {
-    es: { create: 'Crear guía', enter: 'Entrar', guideWarn: /Tu propuesta no se envió/, fileWarn: /El documento no se subió/, forbid: 'No tienes permiso para esta acción.' },
-    en: { create: 'Create guide', enter: 'Sign in', guideWarn: /Your proposal was not sent/, fileWarn: /The document was not uploaded/, forbid: "You don't have permission for this action." },
+    es: { create: 'Crear guía', enter: 'Entrar', guideWarn: /Tu propuesta no se envió/, fileWarn: /El documento no se subió/, forbid: 'No tienes permiso para esta acción.', renewed: 'Ya iniciaste sesión de nuevo' },
+    en: { create: 'Create guide', enter: 'Sign in', guideWarn: /Your proposal was not sent/, fileWarn: /The document was not uploaded/, forbid: "You don't have permission for this action.", renewed: 'You have already signed in again' },
   };
   async function open(width, lang, status) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
@@ -50,12 +50,28 @@ const fs = require('node:fs');
       assert.equal(await tokenOf(page), 't', `sesión viva (${tag})`);
       assert.deepEqual(await axe(page), [], `axe (${tag})`);
       const enter = box.getByRole('button', { name: c.enter, exact: true });
+      assert.equal(await enter.evaluate((el) => el === document.activeElement), true, `el foco pasa a «Entrar» (${tag})`); // E243-1
       assert.ok((await enter.boundingBox()).height >= 44, `≥ 44 px (${tag})`);
       await enter.click(); await page.waitForURL('**/login', { timeout: 8000 });
       assert.equal(await tokenOf(page), null);
       await context.close();
     }
-    check(`guía + 401 (${tag}): aviso, texto intacto, sesión viva hasta «Entrar», axe 0, ≥ 44 px, luego /login`);
+    check(`guía + 401 (${tag}): aviso, foco en «Entrar», texto intacto, sesión viva hasta «Entrar», axe 0, ≥ 44 px, luego /login`);
+
+    { // E243-2: otro inicio de sesión reemplazó el token → «Entrar» no cierra la sesión nueva y lo dice
+      const { context, page } = await open(width, lang, 401);
+      await page.getByRole('button', { name: c.create }).click();
+      await page.locator('#panel-guide-text').fill('x'.repeat(80));
+      await page.locator('dialog[open] button[type="submit"]').click();
+      const box = page.locator('#panel-guide-error'); await box.getByText(c.guideWarn).waitFor();
+      await page.evaluate(() => localStorage.setItem('elevation_token', 'nuevo'));
+      await box.getByRole('button', { name: c.enter, exact: true }).click();
+      await box.getByText(c.renewed).waitFor();
+      assert.equal(await tokenOf(page), 'nuevo', `la sesión nueva se conserva (${tag})`);
+      assert.ok(!page.url().includes('/login'), `sigue en el panel (${tag})`);
+      await context.close();
+    }
+    check(`guía + sesión más nueva (${tag}): «Entrar» no la cierra y avisa`);
 
     { // Guía: 403 → mensaje propio, sesión intacta
       const { context, page } = await open(width, lang, 403);
@@ -74,11 +90,25 @@ const fs = require('node:fs');
       await page.locator('form:has(input[type="file"]) button[type="submit"]').click();
       await page.locator('form:has(input[type="file"]) p[role="alert"]').getByText(c.fileWarn).waitFor();
       assert.equal(await tokenOf(page), 't');
+      assert.equal(await page.locator('form:has(input[type="file"])').getByRole('button', { name: c.enter, exact: true }).evaluate((el) => el === document.activeElement), true, `el foco pasa a «Entrar» (${tag})`); // E243-1
       assert.deepEqual(await axe(page), [], `axe (${tag})`);
       await page.locator('form:has(input[type="file"])').getByRole('button', { name: c.enter, exact: true }).click(); await page.waitForURL('**/login', { timeout: 8000 });
       await context.close();
     }
-    check(`validación + 401 (${tag}): aviso, sesión viva hasta «Entrar», axe 0, luego /login`);
+    check(`validación + 401 (${tag}): aviso, foco en «Entrar», sesión viva hasta «Entrar», axe 0, luego /login`);
+
+    { // E243-2 en la validación
+      const { context, page } = await open(width, lang, 401);
+      await page.locator('input[type="file"]').setInputFiles(pdf);
+      await page.locator('form:has(input[type="file"]) button[type="submit"]').click();
+      await page.locator('form:has(input[type="file"]) p[role="alert"]').getByText(c.fileWarn).waitFor();
+      await page.evaluate(() => localStorage.setItem('elevation_token', 'nuevo'));
+      await page.locator('form:has(input[type="file"])').getByRole('button', { name: c.enter, exact: true }).click();
+      await page.locator('form:has(input[type="file"]) p[role="alert"]').getByText(c.renewed).waitFor();
+      assert.equal(await tokenOf(page), 'nuevo');
+      await context.close();
+    }
+    check(`validación + sesión más nueva (${tag}): «Entrar» no la cierra y avisa`);
 
     { // Validación: 403
       const { context, page } = await open(width, lang, 403);
