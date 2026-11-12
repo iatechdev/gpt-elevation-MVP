@@ -1,0 +1,18 @@
+O1-diario-sin-dueno | es280: - | es281: # fail 2
+O2-hoja-de-vida-sin-dueno | es280: - | es281: # fail 2
+O3-eleccion-ruta-sin-dueno | es280: - | es281: # fail 2
+O4-plan-sin-dueno | es280: - | es281: # fail 2
+O5-sesion-join-sin-dueno | es280: - | es281: # fail 2
+FIN-owner
+G1-matching-confirm-sin-admin | es280: - | es281: # fail 0
+G2-plan-requests-approve-sin-admin | es280: - | es281: # fail 0
+G3-validation-approve-sin-superadmin | es280: - | es281: # fail 0
+G4-landing-put-sin-superadmin | es280: - | es281: # fail 0
+FIN-guards
+E1-ruta-nueva-en-server | es280: # fail 3 | es281: -
+E2-ruta-nueva-en-router | es280: # fail 2 | es281: -
+E3-approve-error-message | es280: # fail 2 | es281: -
+E4-apiErrors-500-con-mensaje | es280: # fail 2 | es281: -
+E5-pricing-sin-guard-id | es280: # fail 1 | es281: -
+E6-apiErrors-URIError-quitado | es280: # fail 2 | es281: -
+FIN-e236

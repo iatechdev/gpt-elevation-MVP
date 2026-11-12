@@ -1,0 +1,63 @@
+{
+ "results": [
+  {
+   "id": "inventario",
+   "info": "rutas 245; con guarda 234; con restricción de rol 131; la restricción de rol está SOLO dentro de la ruta (no en el montaje): 19; sin guarda alguna (públicas): 11"
+  },
+  {
+   "id": "sin guarda (públicas)",
+   "info": "POST /api/register ; POST /api/login ; POST /api/password-reset/request ; POST /api/password-reset/confirm ; GET /api/contact-entries/ ; POST /api/invitations/accept ; GET /api/landing-content/ ; POST /api/professional-applications/ ; GET /api/pricing/ ; GET /api/plans/ ; GET /api/manifest/active"
+  },
+  {
+   "id": "rol solo en la ruta",
+   "info": "PUT /api/landing-content/ ; GET /api/pricing/all ; POST /api/pricing/seed ; POST /api/pricing/ ; PUT /api/pricing/:id ; DELETE /api/pricing/:id ; POST /api/manifest/manifest ; GET /api/manifest/manifest ; PUT /api/manifest/manifest/:id/activate ; GET /api/rating/avg ; GET /api/plan-requests/admin ; PUT /api/plan-requests/admin/:id/approve ; PUT /api/plan-requests/admin/:id/reject ; GET /api/matching/pending ; POST /api/matching/:id/confirm ; GET /api/therapist/validation/pending ; GET /api/therapist/validation/:id/download ; POST /api/therapist/validation/:id/approve ; POST /api/therapist/validation/:id/reject"
+  },
+  {
+   "id": "R1 cada rol no permitido (por montaje Y por ruta) recibe 403 en toda ruta con restricción de rol",
+   "ok": true,
+   "detail": "439 solicitudes; 0 fallos: "
+  },
+  {
+   "id": "R1b la base no cambia con esas solicitudes",
+   "ok": true,
+   "detail": "tablas cambiadas: "
+  },
+  {
+   "id": "logout para revocar",
+   "info": "estado 200"
+  },
+  {
+   "id": "estados",
+   "info": "{\"sinSesion\":{\"403\":231},\"basura\":{\"401\":231},\"vencido\":{\"401\":231},\"revocado\":{\"401\":231}}"
+  },
+  {
+   "id": "R2 sin cabecera Authorization → 403 en TODA ruta con guarda (uniforme)",
+   "ok": true,
+   "detail": "uniforme"
+  },
+  {
+   "id": "R3 token basura, vencido o revocado → 401 en TODA ruta con guarda (uniforme)",
+   "ok": true,
+   "detail": "uniforme"
+  },
+  {
+   "id": "R4 las rutas sin guarda no dan 5xx ni devuelven datos de personas sin sesión",
+   "ok": true,
+   "detail": "11 rutas públicas revisadas"
+  }
+ ],
+ "tally": {
+  "sinSesion": {
+   "403": 231
+  },
+  "basura": {
+   "401": 231
+  },
+  "vencido": {
+   "401": 231
+  },
+  "revocado": {
+   "401": 231
+  }
+ }
+}
