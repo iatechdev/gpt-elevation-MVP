@@ -28,6 +28,10 @@ const PREVIEW_TTL_MS = 10 * 60 * 1000;
 const PURPOSE = 'professional_bridge';
 const MAX_ATTEMPTS = 6;
 const ORIGIN_TYPES = ['direct', 'diary_entry', 'chat_turn', 'resume_version'];
+// ES-233: citar una fuente propia como origen EXIGE el permiso de análisis de esa fuente (insights_*), el más estricto; el permiso del puente solo autoriza compartir.
+// Se comprueba al previsualizar y, de nuevo, al confirmar DENTRO de la misma transacción (una retirada entre las dos pestañas ya no deja pasar el texto).
+const SOURCE_PURPOSE = Object.freeze({ diary_entry: 'insights_diary', chat_turn: 'insights_chat', resume_version: 'insights_resume' });
+const sourcePurposes = (fields) => [...new Set(fields.map((f) => SOURCE_PURPOSE[f.origin.type]).filter(Boolean))];
 
 class BridgeError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -38,6 +42,8 @@ class BridgeError extends Error {
   }
 }
 const invalid = (es = 'Datos inválidos.', en = 'Invalid data.') => new BridgeError(400, 'invalid_input', es, en);
+const sourceConsentError = (code) => new BridgeError(403, code,
+  'Autoriza el análisis de esa fuente antes de usarla como origen.', 'Authorize the analysis of that source before using it as an origin.');
 const consentError = () => new BridgeError(403, 'consent_required',
   'Necesitas autorizar el puente profesional.', 'You need to authorize the professional bridge.');
 
@@ -137,6 +143,7 @@ async function preview(userId, { fields }) {
   await assertSkillKeys(clean);
   await resolveOrigins(userId, clean);
   if (needsBridge(clean) && !await consent.hasConsent(userId, PURPOSE)) throw consentError();
+  for (const purpose of sourcePurposes(clean)) if (!await consent.hasConsent(userId, purpose)) throw sourceConsentError('source_consent_required');
   const expiresAtMs = Date.now() + PREVIEW_TTL_MS;
   return {
     token: `${expiresAtMs}.${sign(userId, expiresAtMs, clean)}`,
@@ -185,6 +192,7 @@ async function confirm(userId, { fields, token, requestId }) {
     const repeated = rows.find((r) => r.requestId === requestId);
     if (repeated) return { record: toRecord(repeated, JSON.parse(desencriptar(repeated.payload))), created: false };
     const origins = await resolveOrigins(userId, clean, transaction);
+    for (const purpose of sourcePurposes(clean)) if (!await consent.isGrantedIn(userId, purpose, transaction)) throw sourceConsentError('source_consent_revoked');
     for (const previous of rows.filter((r) => r.status === 'active')) {
       await previous.update({ status: 'superseded' }, { transaction });
       await DerivedInvalidation.create({ UserId: userId, sourceType: 'career_context_version', sourceId: previous.id, reason: 'superseded' }, { transaction });

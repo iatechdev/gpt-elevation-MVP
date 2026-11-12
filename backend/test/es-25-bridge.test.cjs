@@ -22,7 +22,11 @@ function setup() {
   return { state, add, diary, diaryB, turn };
 }
 const post = (request, route, actor, body) => request('POST', `/api/career-context/${route}`, { ...actor, body });
-const grant = (request, actor, status = 'granted') => request('PUT', '/api/consents/professional_bridge', { ...actor, body: { status } });
+// ES-233: citar una fuente como origen exige además el permiso de análisis de esa fuente (insights_*); al AUTORIZAR el puente también se autorizan, al retirarlo solo se retira el puente.
+const grant = async (request, actor, status = 'granted') => {
+  if (status === 'granted') for (const purpose of ['insights_chat', 'insights_diary', 'insights_resume']) await request('PUT', `/api/consents/${purpose}`, { ...actor, body: { status } });
+  return request('PUT', '/api/consents/professional_bridge', { ...actor, body: { status } });
+};
 const direct = (text = 'Quiero trabajar con autonomía') => [{ key: 'motivations', text }];
 async function approve(request, actor, fields, requestId = 'req-' + Math.random().toString(16).slice(2, 12)) {
   const p = await post(request, 'preview', actor, { fields });

@@ -129,7 +129,7 @@ test('ES-121 hoja de vida: solo la propia; id ajeno o inexistente = 404; sin hoj
 test('ES-121 hoja de vida: un insight con origen de hoja de vida se autoriza con el flujo de ES-25; solo el titular ve el origen; borrarla lo marca para revisión', async (t) => {
   const { state, mine, foreign } = setup();
   const request = await startApp(t);
-  await put(request, U, 'professional_bridge');
+  await put(request, U, 'professional_bridge'); await put(request, U, 'insights_resume'); // ES-233: citar la hoja de vida exige su permiso de análisis
   const field = { key: 'energy_gives', text: GOOD_TEXT, origin: { type: 'resume_version', id: mine.id } };
   const preview = (fields) => request('POST', '/api/career-context/preview', { ...U, body: { fields } });
   for (const origin of [{ type: 'resume_version', id: foreign.id }, { type: 'resume_version', id: 99999 }]) {
