@@ -8,6 +8,7 @@ import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from 
 import type { SkillMap } from '../skill-map/model'
 import { MapGuide } from '../skill-map/MapAccess'
 import { AiAnalysisPanel } from '../skill-map/AiAnalysisPanel'
+import { MAX_SKILLS } from '../skill-map/aiProposalApi'
 import { SectionBoundary } from '../components/RouteErrorBoundary'
 import { RadarBoard } from '../skill-map/RadarView'
 import { SkillDetail, TerritoryList } from '../skill-map/SkillViews'
@@ -18,6 +19,7 @@ import { resolveTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 import '../skill-map/radar.css'
 import '../skill-map/mapCartografia.css' // ES-160: el mapa usa los tokens de Cartografía (claro/oscuro)
+import '../skill-map/aiCartografia.css' // ES-161: panel de análisis con IA y diálogo de revocación
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const readToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
@@ -88,7 +90,10 @@ function SkillMapContent() {
     window.setTimeout(() => detailRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0)
   }
   const register = (key: string) => { pick(key); window.setTimeout(() => detailRef.current?.focus(), 0) }
-  const openAi = (keys: string[]) => { setAi(keys); window.setTimeout(() => aiRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0) }
+  const aiOpener = useRef<HTMLElement | null>(null)
+  const openAi = (keys: string[]) => { aiOpener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setAi(keys); window.setTimeout(() => aiRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' }), 0) }
+  // ES-161: al cerrar el panel el foco vuelve al botón que lo abrió (si sigue en pantalla).
+  const closeAi = () => { setAi(null); window.setTimeout(() => { const target = aiOpener.current; aiOpener.current = null; if (target?.isConnected) target.focus() }, 0) }
   // Se vuelve a leer el mapa SIN pasar por «cargando» tras guardar propuestas de la IA (para no desmontar el panel con el resultado) y tras «Revocar todos» (QA H-86-03).
   const reloadMap = async () => {
     const token = readToken(); if (!token) return
@@ -139,6 +144,7 @@ function SkillMapContent() {
             <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('skill_map.view_list_short')}</button>
             <button type="button" aria-pressed={view === 'radar'} onClick={() => setView('radar')}>{t('skill_map.view_radar')}</button>
           </div>
+          {state.status === 'ready' && view !== 'radar' && <button type="button" className="elv-btn skill-map-primary" onClick={() => openAi(state.map.skills.slice(0, MAX_SKILLS).map(item => item.skillKey))}>{t('skill_map.ai_open')}</button>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
             disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving' || revoke === 'checking'}>{t('skill_map.revoke_all')}</button>
           <button type="button" className="elv-btn" onClick={refresh} disabled={state.status === 'loading'}>{t('skill_map.refresh')}</button>
@@ -161,7 +167,7 @@ function SkillMapContent() {
           {view === 'radar' ? <>
             <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} onAnalyze={() => openAi(map.skills.slice(0, 8).map(item => item.skillKey))} lang={lang} t={t} />
           {ai && state.status === 'ready' && <div ref={aiRef}><SectionBoundary><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
-            onSaved={reloadMap} onClose={() => setAi(null)} /></SectionBoundary></div>}
+            onSaved={reloadMap} onClose={closeAi} /></SectionBoundary></div>}
           <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
             {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SectionBoundary resetKey={skill.skillKey}><SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} onAnalyze={key => openAi([key])}
               self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></SectionBoundary></>
@@ -183,7 +189,7 @@ function SkillMapContent() {
               </aside>
             </div>
           {ai && state.status === 'ready' && <div ref={aiRef}><SectionBoundary><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
-            onSaved={reloadMap} onClose={() => setAi(null)} /></SectionBoundary></div>}
+            onSaved={reloadMap} onClose={closeAi} /></SectionBoundary></div>}
           </>}
           <p className="skill-map-note">{t('skill_map.revoke_scope')}</p>
         </>}
