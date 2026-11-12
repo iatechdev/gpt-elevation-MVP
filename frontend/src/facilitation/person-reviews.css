@@ -1,0 +1,22 @@
+/* ES-175 (HU-P24): «Mis revisiones» de la persona con Cartografía. Solo tokens --cg-*. */
+@import '../shell/shell.css';
+.cgf { min-height: 100dvh; padding: 0 var(--cg-s4); }
+.cgf-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 60rem; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
+.cgf-main > p { margin: 0; }
+.cgf-main:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
+.cgf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cg-s4); }
+.cgf-review { display: grid; gap: var(--cg-s3); }
+.cgf-review p, .cgf-review h2, .cgf-review h3 { margin: 0; }
+.cgf-chips { display: flex; gap: var(--cg-s2); flex-wrap: wrap; }
+.cgf-event { border-left: 3px solid var(--cg-mark); padding-left: var(--cg-s4); display: grid; gap: var(--cg-s2); }
+.cgf-form { display: grid; gap: var(--cg-s3); border-top: 1px solid var(--cg-line); padding-top: var(--cg-s4); }
+.cgf-form p { margin: 0; }
+.cgf-form .cg-textarea { width: 100%; }
+.cgf .cg-dialog { margin: auto; }
+.cgf a.cg-btn { color: var(--cg-ground); text-decoration: none; }
+.cgf a.cg-btn--ghost { color: var(--cg-ink); }
+.cgf a.cg-btn--ghost:hover { color: var(--cg-mark); }
+.cgf .fac-prose { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cgf .fac-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.cgf-main > section { display: grid; gap: var(--cg-s4); }
+.cgf-main > section > p { margin: 0; }
