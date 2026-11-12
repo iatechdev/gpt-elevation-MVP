@@ -6,7 +6,7 @@ const ExportRequest = require('../ExportRequest');
 const DeletionRequest = require('../DeletionRequest');
 const JWT_SECRET = require('../config/jwt');
 const { deletionPending } = require('./deletionGuard');
-const { personalData, requiresReview } = require('./personalData');
+const { personalData, blocksPurge, retainedCategories } = require('./personalData');
 const { revokeForDeletion } = require('./consent');
 const DataRightsError = require('./dataRightsError');
 const problem = (status, code, es, en) => new DataRightsError(status, code, es, en);
@@ -57,7 +57,7 @@ async function inTransaction(fn, options = {}) {
 async function exportOwner(userId, transaction) {
   const user = await User.findByPk(userId, { transaction, lock: Transaction.LOCK.SHARE });
   if (!user || user.active === false || await deletionPending(userId, transaction)) throw blocked();
-  if (user.role !== 'user' || await requiresReview(userId, transaction)) throw reviewRequired();
+  if (user.role !== 'user' || await blocksPurge(userId, transaction)) throw reviewRequired();
   return user;
 }
 
@@ -106,10 +106,12 @@ async function download(userId, id, publish) {
   }, { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ }), () => !published);
 }
 
-const receipt = row => ({
+// `retained`: categorías (sin contenido) de lo que escribió el profesional y se conserva (ES-274); no se afirma que esté anonimizado ni desvinculado.
+const receipt = (row, retained = []) => ({
   id: row.id, status: row.status, requestedAt: row.createdAt, activePurgedAt: row.activePurgedAt ?? null,
   // No unverified promises about active data or backups.
   deadlinesVerified: false,
+  ...(retained.length ? { retained } : {}),
 });
 
 async function requestDeletion(userId, { transaction: outer } = {}) {
@@ -119,7 +121,7 @@ async function requestDeletion(userId, { transaction: outer } = {}) {
     // Same lock order as export and purge. Serializes repeated requests per owner.
     const user = await User.findByPk(userId, { transaction, lock: Transaction.LOCK.UPDATE });
     const existing = await DeletionRequest.findOne({ where: { UserId: userId }, transaction });
-    if (existing) return { ...receipt(existing), repeated: true };
+    if (existing) return { ...receipt(existing, await retainedCategories(userId, transaction)), repeated: true };
     if (!user) throw blocked();
     const row = await DeletionRequest.create({
       id: randomUUID(), UserId: userId, status: 'accepted', attempts: 0,
@@ -130,7 +132,7 @@ async function requestDeletion(userId, { transaction: outer } = {}) {
     await require('./aiJobs').invalidateForUser(userId, 'deletion_requested', transaction); // ES-88: el worker deja de producir para esta persona
     await user.update({ active: false }, { transaction });
     await ExportRequest.destroy({ where: { UserId: userId }, transaction });
-    return { ...receipt(row), repeated: false };
+    return { ...receipt(row, await retainedCategories(userId, transaction)), repeated: false };
   });
 }
 

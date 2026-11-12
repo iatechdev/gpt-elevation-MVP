@@ -67,16 +67,31 @@ const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted',
 const model = name => require('../' + name);
 const pick = (row, fields) => Object.fromEntries(fields.map(field => [field, row[field] ?? null]));
 
-// These records mix people, files or professional obligations. Never silently omit them
-// from a purportedly complete export, or erase them without Mauricio's retention contract.
-async function requiresReview(userId, transaction) {
+// ES-274 (opción A, decisión de Mauricio del 11-nov-2026): al atender una solicitud de eliminación se purgan los datos DE LA PERSONA y se conserva únicamente lo que
+// ESCRIBIÓ EL PROFESIONAL. Lo conservado queda en la base con la fila de usuario de la persona ya reemplazada por la lápida (sin nombre ni correo), pero el texto libre de
+// las notas puede contener datos que la identifiquen y no se puede depurar: NUNCA se afirma que quede «anonimizado» o «desvinculado» (ni en textos ni en el recibo).
+// Plazo y base legal de conservación: en definición.
+//   RETAINED: [categoría del recibo, modelo, columna de la persona, por qué se conserva]. No se exporta ni se borra en la purga de la persona.
+const RETAINED = [
+  ['clinicalNotes', 'ClinicalNote', 'UserId', 'notas que escribió el profesional sobre la persona'],
+  ['sessionNotes', 'SessionNote', null, 'notas en vivo del profesional (se ligan a la sesión, no a la persona)'],
+  ['therapySessions', 'TherapySession', 'patientId', 'agenda del profesional y su nota de la sesión (se limpian los campos de la persona: ver SESSION_PERSON_FIELDS)'],
+];
+// Campos de la fila de sesión que son de la persona o ambiguos (enlaces, motivos, ánimo posterior): se ponen en NULL al purgar.
+const SESSION_PERSON_FIELDS = ['patientMoodAfter', 'cancelReason', 'meetingUrl', 'recordingUrl', 'googleEventId'];
+// Datos de la persona fuera de CORE (no se exportan: contienen datos de terceros como las sugerencias de profesionales) que la purga borra igualmente.
+const PURGE_ALSO = [['MatchingRequest', 'UserId']];
+
+// Referencias DEL LADO DEL PROFESIONAL o de administración: describen a quien escribe o administra, no a una persona. Siguen mandando a revisión (nunca se borran por la
+// solicitud de eliminación de una persona). Lo que la persona tiene con sus profesionales (notas sobre ella, sesiones como paciente, emparejamientos) ya NO bloquea.
+async function blocksPurge(userId, transaction) {
   const refs = [
-    ['ClinicalNote', { [Op.or]: [{ UserId: userId }, { therapistId: userId }] }],
-    ['TherapySession', { [Op.or]: [{ patientId: userId }, { therapistId: userId }] }],
+    ['ClinicalNote', { therapistId: userId }],
+    ['TherapySession', { therapistId: userId }],
     ['SessionNote', { therapistId: userId }],
     ['TherapistProfile', { UserId: userId }],
     ['TherapistValidation', { therapistId: userId }],
-    ['MatchingRequest', { [Op.or]: [{ UserId: userId }, { chosenTherapistId: userId }] }],
+    ['MatchingRequest', { chosenTherapistId: userId }],
     ['EthicManifest', { uploadedBy: userId }],
     ['PlanRequest', { resolvedBy: userId }],
     ['User', { therapistId: userId }],
@@ -85,6 +100,18 @@ async function requiresReview(userId, transaction) {
     if (await model(name).findOne({ where, attributes: ['id'], transaction })) return true;
   }
   return false;
+}
+
+// Categorías (sin contenido) de lo que se conserva de esta persona; vacío si no hay nada. Para el recibo y el aviso de la exportación.
+async function retainedCategories(userId, transaction) {
+  const found = [];
+  if (await model('ClinicalNote').findOne({ where: { UserId: userId }, attributes: ['id'], transaction })) found.push('clinicalNotes');
+  const sessions = await model('TherapySession').findAll({ where: { patientId: userId }, attributes: ['id'], transaction });
+  if (sessions.length) {
+    found.push('therapySessions');
+    if (await model('SessionNote').findOne({ where: { sessionId: sessions.map(s => s.id) }, attributes: ['id'], transaction })) found.push('sessionNotes');
+  }
+  return found.sort((a, b) => RETAINED.findIndex(r => r[0] === a) - RETAINED.findIndex(r => r[0] === b));
 }
 
 async function personalData(user, locale, transaction) {
@@ -106,7 +133,13 @@ async function personalData(user, locale, transaction) {
       return output;
     }).filter(keep);
   }
+  // ES-274: lo que escribió el profesional sobre la persona es SU registro profesional: no se incluye aquí y se dice (sin contenido ni conteos).
+  if ((await retainedCategories(user.id, transaction)).length) {
+    data.notices = [{ code: 'professional_notes_not_included', message: locale === 'en'
+      ? 'Notes and records written by your professional about you are their professional record and are not included in this export.'
+      : 'Las notas y registros que tu profesional escribió sobre ti son su registro profesional y no se incluyen en esta exportación.' }];
+  }
   return data;
 }
 
-module.exports = { CORE, personalData, requiresReview };
+module.exports = { CORE, RETAINED, PURGE_ALSO, SESSION_PERSON_FIELDS, personalData, blocksPurge, retainedCategories };
