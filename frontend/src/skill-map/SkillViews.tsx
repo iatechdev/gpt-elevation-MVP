@@ -17,12 +17,14 @@ export function TerritoryList({ skills, territories, selected, onSelect, lang, t
   const { groups, unassigned, links } = resolveTerritories(skills, territories)
   const byId = new Map(territories.map(territory => [territory.id, territory]))
   const row = (skill: Skill, here?: string) => {
+    const level = trackView(skill.self).level // ES-300 (E258-3): el nivel va en el nombre accesible de la capacidad (la misma regla única: la autoevaluación)
     const status = skillStatus(skill), others = links(skill).filter(id => id !== here).map(id => byId.get(id)?.labels[lang]).filter(Boolean)
     return <li key={skill.skillKey}>
       <button type="button" className="skill-map-pick" aria-pressed={selected === skill.skillKey} onClick={() => onSelect(skill.skillKey)}>
         <span className={`skill-map-dot ${hasLevel(status) ? 'dot-level' : 'dot-none'}`} aria-hidden="true" />
         <span className="skill-map-pick-text">
           <span className="skill-map-pick-name">{label(skill.labels, lang, t)}</span>
+          {level !== null && <span className="skill-map-pick-level">{t('skill_map.radar_level_of').replace('{n}', String(level)).replace('{max}', '4')}</span>}
           <span className="skill-map-pick-status">{t(statusKey(status))}</span>
           {others.length > 0 && <span className="skill-map-pick-also">{t('skill_map.also_in')}: {others.join(' · ')}</span>}
         </span>

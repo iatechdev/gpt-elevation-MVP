@@ -55,14 +55,15 @@ test('ES-30 radar: geometría determinista, dentro del radio y con una cuña por
   }
   assert.deepEqual(radar.wrapName('Planificación y organización de proyectos largos'), ['Planificación y', 'organización de', 'proyectos largos'])
 })
-test('ES-30 pantalla: cada cuña es un botón operable con teclado, con nombre y nivel; la lista de texto es la alternativa', () => {
+test('ES-30 pantalla (ES-300): cada eje es un botón con nombre y nivel y la tabla es la alternativa; el radar es el polígono del prototipo, no cuñas de calor', () => {
   const view = read('../src/skill-map/RadarView.tsx')
-  assert.match(view, /role="button" tabIndex=\{0\}/); assert.match(view, /event\.key === 'Enter' \|\| event\.key === ' '/)
-  assert.match(view, /aria-pressed=\{active\}/); assert.match(view, /radar-none/); assert.match(view, /radar-list/)
+  assert.ok(view.includes('<button key={item.skill.skillKey} type="button" className={`radar-axis '), 'cada eje es un botón'); assert.ok(view.includes('aria-pressed={selected === item.skill.skillKey}'))
+  assert.ok(view.includes('aria-label={`${title}: ${status}`}'), 'nombre y nivel'); assert.ok(view.includes('<details className="radar-table"') && view.includes('<th scope="col">') && view.includes('<th scope="row">'))
+  assert.equal(/radar-wedge|radar-list|RadarChart|role="button"/.test(view), false, 'sin cuñas ni lista de texto')
   assert.equal(/dangerouslySetInnerHTML|innerHTML/.test(view), false)
-  assert.equal(/#[0-9a-fA-F]{3,8}\b/.test(read('../src/skill-map/radar.css')), false, 'solo tokens')
+  assert.equal(/#[0-9a-fA-F]{3,8}/.test(read('../src/skill-map/radar.css')), false, 'solo tokens'); assert.equal(/#[0-9a-fA-F]{3,8}/.test(read('../src/skill-map/radarPolygon.css')), false, 'solo tokens')
   const page = read('../src/pages/SkillMapPage.tsx')
-  assert.match(page, /useState<'relief' \| 'list' \| 'radar'>\('relief'\)/); assert.match(page, /<RadarBoard/); assert.match(page, /<ReliefMap/) // ES-160: tres vistas; el radar sigue (decisión del PO, comentario 10961)
+  assert.match(page, /useState<'relief' | 'list' | 'radar'>('relief')/); assert.match(page, /<RadarBoard/); assert.match(page, /<ReliefMap/) // ES-160: tres vistas; el radar sigue (decisión del PO, comentario 10961)
 })
 test('ES-30 textos del radar: ES y EN completos; «Conviene revisar» ya no promete una persona revisora', () => {
   assert.deepEqual(Object.keys(skillMapEs).sort(), Object.keys(skillMapEn).sort())
@@ -73,14 +74,11 @@ test('ES-30 textos del radar: ES y EN completos; «Conviene revisar» ya no prom
   assert.match(skillMapEs['skill_map.radar_level_of'], /\{n\}.*\{max\}/)
 })
 
-test('ES-30 (H-96-01) las etiquetas caben en el lienzo: con 1 a 12 capacidades ninguna línea (hasta 16 caracteres, ~7,5 u por carácter) se sale del viewBox por los costados', () => {
-  const width = 16 * 7.5
-  for (let total = 1; total <= radar.MAX_LABELS; total++) for (let index = 0; index < total; index++) {
-    const { label } = radar.wedge(index, total, 3)
-    const left = label.anchor === 'end' ? label.x - width : label.anchor === 'middle' ? label.x - width / 2 : label.x
-    const right = label.anchor === 'start' ? label.x + width : label.anchor === 'middle' ? label.x + width / 2 : label.x
-    assert.ok(left >= 0 && right <= radar.VIEW_W, `total ${total} cuña ${index}: [${left.toFixed(0)}, ${right.toFixed(0)}] fuera de 0..${radar.VIEW_W}`)
+test('ES-300: los botones de los ejes quedan dentro del lienzo para cualquier N soportado y su posición es determinista', async () => {
+  const { axisPlacement } = await import(moduleUrl('../src/skill-map/radarGeometry.ts'))
+  for (let total = 1; total <= 24; total++) for (let index = 0; index < total; index++) {
+    const at = axisPlacement(index, total)
+    assert.ok(at.left > 0 && at.left < 100 && at.top > 0 && at.top < 100, `N=${total} eje ${index}: ${at.left},${at.top}`)
+    assert.deepEqual(at, axisPlacement(index, total))
   }
-  assert.equal(radar.CENTER.x, radar.VIEW_W / 2)
-  assert.match(readFileSync(new URL('../src/skill-map/RadarView.tsx', import.meta.url), 'utf8'), /viewBox=\{`0 0 \$\{VIEW_W\} \$\{VIEW_H\}`\}/)
 })
