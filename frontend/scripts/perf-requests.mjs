@@ -38,7 +38,11 @@ export function summarize(requests) {
     const wave = waves[waves.length - 1]
     if (wave && r.start < wave.firstEnd) { wave.items.push(r); wave.firstEnd = Math.min(wave.firstEnd, r.end) } else waves.push({ items: [r], firstEnd: r.end })
   }
-  return { total: requests.length, unique: byKey.size, duplicates, waves: waves.map(w => w.items.length), cascadeDepth: waves.length, bytes: requests.reduce((s, r) => s + (r.bytes ?? 0), 0) }
+  // «datos»: las peticiones que no son la verificación de sesión; el contenido útil llega cuando termina la última
+  const data = requests.filter(r => !r.key.endsWith('/api/session'))
+  const dataStart = data.length ? Math.min(...data.map(r => r.start)) : null
+  const dataEnd = data.length ? Math.max(...data.map(r => r.end)) : null
+  return { dataStart, dataEnd, total: requests.length, unique: byKey.size, duplicates, waves: waves.map(w => w.items.length), cascadeDepth: waves.length, bytes: requests.reduce((s, r) => s + (r.bytes ?? 0), 0) }
 }
 
 async function main() {
@@ -74,7 +78,7 @@ async function main() {
   } finally { await browser.close(); server.close() }
   if (process.argv.includes('--json')) { console.log(JSON.stringify({ delayMs: DELAY, rows }, null, 2)); return }
   console.log(`Peticiones a /api/** por pantalla (respuesta retrasada ${DELAY} ms; «oleadas» = grupos de peticiones en paralelo, una tras otra)`)
-  for (const r of rows) console.log(`${r.label.padEnd(18)} ${String(r.total).padStart(2)} peticiones (${r.unique} distintas) · oleadas ${JSON.stringify(r.waves)} · duplicadas ${r.duplicates.map(d => `${d.key}×${d.count}`).join(', ') || '-'} · ${(r.bytes / 1000).toFixed(1)} kB`)
+  for (const r of rows) console.log(`${r.label.padEnd(18)} ${String(r.total).padStart(2)} peticiones (${r.unique} distintas) · oleadas ${JSON.stringify(r.waves)} · duplicadas ${r.duplicates.map(d => `${d.key}×${d.count}`).join(', ') || '-'} · datos desde ${r.dataStart ?? '-'} ms hasta ${r.dataEnd ?? '-'} ms · ${(r.bytes / 1000).toFixed(1)} kB`)
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch(error => { console.error('FAIL', error.message); process.exit(1) })
