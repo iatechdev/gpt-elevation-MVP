@@ -1,0 +1,40 @@
+[
+ {
+  "id": "Evidence (otra tabla de lo de la persona): rollback total de TODA la base, failed con código genérico, el reintento completa [\"Evidence\"]",
+  "ok": true,
+  "detail": "lanzó true; tablas cambiadas: ninguna; solicitud failed/active_purge_failed; mensaje genérico true; reintento awaiting_verification; diario restante 0"
+ },
+ {
+  "id": "DiaryEntries (borrado del diario): rollback total de TODA la base, failed con código genérico, el reintento completa [\"DiaryEntries\"]",
+  "ok": true,
+  "detail": "lanzó true; tablas cambiadas: ninguna; solicitud failed/active_purge_failed; mensaje genérico true; reintento awaiting_verification; diario restante 0"
+ },
+ {
+  "id": "ExportRequests (paso posterior a las sesiones): rollback total de TODA la base, failed con código genérico, el reintento completa [\"ExportRequests\"]",
+  "ok": true,
+  "detail": "lanzó true; tablas cambiadas: ninguna; solicitud failed/active_purge_failed; mensaje genérico true; reintento awaiting_verification; diario restante 0"
+ },
+ {
+  "id": "solicitud → awaiting_verification (el ÚLTIMO paso): rollback total de TODA la base, failed con código genérico, el reintento completa [\"DeletionRequests\"]",
+  "ok": true,
+  "detail": "lanzó true; tablas cambiadas: ninguna; solicitud failed/active_purge_failed; mensaje genérico true; reintento awaiting_verification; diario restante 0"
+ },
+ {
+  "id": "lo de otra persona (2 filas) sigue intacto tras 4 fallos y 4 purgas",
+  "ok": true,
+  "detail": "MoodLogs + DiaryEntries de la otra persona"
+ },
+ {
+  "id": "C6 ProfessionalApplications tras la purga de la persona vinculada",
+  "info": "purga awaiting_verification; la solicitud SIGUE (true); columnas con dato: name,email,country,profession,licenseNumber,message; userId apunta a la lápida (mismo id); archivos de la solicitud: 1 (hoja de vida); columnas de la tabla: id,name,email,country,profession,licenseNumber,profileUrl,message,locale,status,reviewedBy,reviewNote,reviewedAt,consentAt,userId,createdAt,updatedAt"
+ },
+ {
+  "id": "C6b la cuenta sí queda anonimizada mientras la solicitud conserva nombre y correo reales (la contradicción que la pregunta de ES-283 plantea)",
+  "ok": true,
+  "detail": "usuario: Cuenta eliminada / Deleted account / 78910b08-1ebf-45fa-9bd5-918c9b6d9d5d@deleted.invalid; solicitud: Solicitante Sintético QA / qa-solicitante@example.test"
+ },
+ {
+  "id": "C6c lo que declara el recibo",
+  "info": "[\"id\",\"status\",\"requestedAt\",\"activePurgedAt\",\"deadlinesVerified\"]"
+ }
+]
