@@ -5,7 +5,7 @@
 const express = require('express');
 const router  = express.Router();
 const LandingContent = require('../LandingContent');
-const { verificarSuperAdmin } = require('../middlewares/auth');
+const { verificarAdmin, verificarSuperAdmin } = require('../middlewares/auth');
 const { defaults, catalog } = require('../content/landingDefaults');
 const approvedKeys = new Set(catalog.map(entry => entry.key));
 
@@ -26,10 +26,7 @@ const LANDING_DEFAULTS = {
   },
 };
 
-// GET /api/landing-content
-router.get('/', async (req, res) => {
-  try {
-    const lang = req.query.lang === 'en' ? 'en' : 'es';
+async function loadContent(lang) {
     const registros = await LandingContent.findAll({ where: { lang } });
     const content = { ...LANDING_DEFAULTS[lang], ...defaults[lang] };
     registros.forEach(r => {
@@ -37,7 +34,26 @@ router.get('/', async (req, res) => {
       if (typeof r.key === 'string' && r.key.startsWith('landing.') && !approvedKeys.has(r.key)) return;
       if (typeof r.value === 'string' && r.value.trim()) content[r.key] = r.value;
     });
-    res.json(content);
+    return content;
+}
+
+// The administrative view must not mistake a database failure for loaded content.
+router.get('/admin', verificarAdmin, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const lang = req.query.lang === 'en' ? 'en' : 'es';
+    res.json(await loadContent(lang));
+  } catch {
+    console.error('Error obteniendo contenido landing para administración.');
+    res.status(503).json({ error: 'No se pudo cargar el contenido.' });
+  }
+});
+
+// GET /api/landing-content
+router.get('/', async (req, res) => {
+  try {
+    const lang = req.query.lang === 'en' ? 'en' : 'es';
+    res.json(await loadContent(lang));
   } catch {
     console.error('Error obteniendo contenido landing.');
     const lang = req.query.lang === 'en' ? 'en' : 'es';
