@@ -8,6 +8,7 @@
     "test": "node --require ./test/quiet-console.cjs --test test/*.test.cjs",
     "test:context:postgres": "node scripts/test-context-postgres.cjs",
     "db:local": "node scripts/db-local.cjs",
+    "test:pg": "node scripts/runPgSuites.cjs",
     "test:data-rights:pg": "node --test test/integration/es-23-postgres.cjs",
     "test:login:pg": "node --test test/integration/es-220-postgres.cjs",
     "test:email-shape:pg": "node --test test/integration/es-259-postgres.cjs",
