@@ -19,6 +19,8 @@ La persona **escribe o aprueba, campo por campo, un texto profesional**; el sist
 
 Una versión que mezcla ambos requiere el consentimiento (basta un campo del camino A). La IA no propone ni reescribe campos en esta HU.
 
+**ES-233 · permiso de la fuente.** Citar una fuente propia como origen exige además el permiso de análisis de esa fuente (`insights_diary`, `insights_chat` o `insights_resume`): el del puente solo autoriza compartir. Se comprueba en la vista previa (403 `source_consent_required`) y de nuevo en la confirmación, dentro de la misma transacción y con bloqueo compartido (403 `source_consent_revoked`); una retirada entre las dos pestañas no deja pasar el texto. El texto escrito directamente no depende de ninguno de estos permisos.
+
 ## 4. Flujo (vista previa → confirmación)
 
 1. `POST /api/career-context/preview` `{ fields: [{key, text, origin?}], locale }` → `200 { token, expiresAt, representation }`. La `representation` es **exactamente** lo que verá el motor (clave + texto). No guarda nada. El `token` está firmado, ligado a la persona y a esos campos, y vence en 10 minutos.
