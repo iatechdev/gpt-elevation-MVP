@@ -1,6 +1,7 @@
 {
   "DELETE /api/admin/pricing/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -8,6 +9,7 @@
   },
   "DELETE /api/admin/professional-applications/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -16,6 +18,7 @@
   "DELETE /api/admin/prompt-rules/:id": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -23,6 +26,7 @@
   },
   "DELETE /api/admin/route-catalog/:id/:kind/:key": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -30,6 +34,7 @@
   },
   "DELETE /api/admin/skill-catalog/:id/skills/:skillKey": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -37,6 +42,7 @@
   },
   "DELETE /api/admin/usuarios/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -52,6 +58,7 @@
   },
   "DELETE /api/pricing/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -64,6 +71,7 @@
   "DELETE /api/superadmin/prompt-rules/:id": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -75,6 +83,7 @@
   },
   "GET /api/admin/contact-entries/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -82,6 +91,7 @@
   },
   "GET /api/admin/contact-entries/:id/history": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -89,6 +99,7 @@
   },
   "GET /api/admin/exercises/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -96,6 +107,7 @@
   },
   "GET /api/admin/exercises/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -103,6 +115,7 @@
   },
   "GET /api/admin/invitations/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -110,6 +123,7 @@
   },
   "GET /api/admin/matching/pending": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -117,6 +131,7 @@
   },
   "GET /api/admin/metrics/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -124,6 +139,7 @@
   },
   "GET /api/admin/plan-requests/admin": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -131,6 +147,7 @@
   },
   "GET /api/admin/plan-requests/me": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -138,6 +155,7 @@
   },
   "GET /api/admin/pricing/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -145,6 +163,7 @@
   },
   "GET /api/admin/pricing/all": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -152,6 +171,7 @@
   },
   "GET /api/admin/professional-applications/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -159,6 +179,7 @@
   },
   "GET /api/admin/professional-applications/:id/cv": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -166,6 +187,7 @@
   },
   "GET /api/admin/professional-applications/capacity": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -174,6 +196,7 @@
   "GET /api/admin/prompt-rules": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -181,6 +204,7 @@
   },
   "GET /api/admin/prompt/:key": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -188,6 +212,7 @@
   },
   "GET /api/admin/prompt/:key/versions": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -195,6 +220,7 @@
   },
   "GET /api/admin/prompts": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -202,6 +228,7 @@
   },
   "GET /api/admin/route-catalog/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -209,6 +236,7 @@
   },
   "GET /api/admin/route-catalog/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -216,6 +244,7 @@
   },
   "GET /api/admin/skill-catalog/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -223,6 +252,7 @@
   },
   "GET /api/admin/skill-catalog/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -230,6 +260,7 @@
   },
   "GET /api/admin/skill-catalog/territories": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -237,6 +268,7 @@
   },
   "GET /api/admin/usuarios/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -244,6 +276,7 @@
   },
   "GET /api/admin/usuarios/:id/stats": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -251,6 +284,7 @@
   },
   "GET /api/admin/usuarios/alerts": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -262,6 +296,7 @@
   },
   "GET /api/board/active": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -269,6 +304,7 @@
   },
   "GET /api/board/manifest": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -342,9 +378,14 @@
     "denied": [],
     "session": true
   },
+  "GET /api/health": {
+    "denied": [],
+    "session": false
+  },
   "GET /api/junta/:id/download": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -353,6 +394,7 @@
   "GET /api/junta/pending": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -361,6 +403,7 @@
   "GET /api/junta/status": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -376,6 +419,7 @@
   },
   "GET /api/manifest/manifest": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -383,6 +427,7 @@
   },
   "GET /api/matching/pending": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -398,6 +443,7 @@
   },
   "GET /api/plan-requests/admin": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -421,6 +467,7 @@
   },
   "GET /api/pricing/all": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -428,6 +475,7 @@
   },
   "GET /api/rating/avg": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -516,6 +564,7 @@
   "GET /api/superadmin/ai-usage/": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -524,6 +573,7 @@
   "GET /api/superadmin/audit/": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -532,6 +582,7 @@
   "GET /api/superadmin/prompt-rules": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -540,6 +591,7 @@
   "GET /api/superadmin/prompt/:key": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -548,6 +600,7 @@
   "GET /api/superadmin/prompt/:key/versions": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -556,6 +609,7 @@
   "GET /api/superadmin/prompts": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -563,42 +617,63 @@
   },
   "GET /api/therapist/alerts": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "GET /api/therapist/pacientes": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "GET /api/therapist/pacientes/:id/historia": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "GET /api/therapist/pacientes/:id/historial": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "GET /api/therapist/pacientes/:id/resumen-ia": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "GET /api/therapist/prompt": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "GET /api/therapist/prompt/versions": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
@@ -606,6 +681,7 @@
   "GET /api/therapist/validation/:id/download": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -614,6 +690,7 @@
   "GET /api/therapist/validation/pending": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -651,12 +728,17 @@
     "denied": [],
     "session": true
   },
-  "POST /api/account/deletion-requests": {
+  "GET /{*path}": {
     "denied": [],
     "session": false
   },
+  "POST /api/account/deletion-requests": {
+    "denied": [],
+    "session": true
+  },
   "POST /api/admin/contact-entries/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -664,6 +746,7 @@
   },
   "POST /api/admin/exercises/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -671,6 +754,7 @@
   },
   "POST /api/admin/exercises/:id/publish": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -678,6 +762,7 @@
   },
   "POST /api/admin/exercises/:id/review": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -685,6 +770,7 @@
   },
   "POST /api/admin/exercises/:id/withdraw": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -692,6 +778,7 @@
   },
   "POST /api/admin/exercises/import-catalog": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -699,6 +786,7 @@
   },
   "POST /api/admin/invitations/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -706,6 +794,7 @@
   },
   "POST /api/admin/invitations/:id/revoke": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -713,6 +802,7 @@
   },
   "POST /api/admin/matching/:id/confirm": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -720,6 +810,7 @@
   },
   "POST /api/admin/matching/choose": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -727,6 +818,7 @@
   },
   "POST /api/admin/matching/request": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -734,6 +826,7 @@
   },
   "POST /api/admin/plan-requests/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -741,6 +834,7 @@
   },
   "POST /api/admin/pricing/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -748,6 +842,7 @@
   },
   "POST /api/admin/pricing/seed": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -755,6 +850,7 @@
   },
   "POST /api/admin/prompt": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -763,6 +859,7 @@
   "POST /api/admin/prompt-rules": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -771,6 +868,7 @@
   "POST /api/admin/prompt/:id/approve": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -779,6 +877,7 @@
   "POST /api/admin/prompt/:id/reject": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -787,6 +886,7 @@
   "POST /api/admin/prompt/:id/rollback": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -795,6 +895,7 @@
   "POST /api/admin/prompt/create": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -802,6 +903,7 @@
   },
   "POST /api/admin/prompt/propose": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -810,6 +912,7 @@
   "POST /api/admin/prompt/publish": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -817,6 +920,7 @@
   },
   "POST /api/admin/route-catalog/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -824,6 +928,7 @@
   },
   "POST /api/admin/route-catalog/:id/publish": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -831,6 +936,7 @@
   },
   "POST /api/admin/skill-catalog/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -838,6 +944,7 @@
   },
   "POST /api/admin/skill-catalog/:id/publish": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -845,6 +952,7 @@
   },
   "POST /api/admin/usuarios/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -852,6 +960,7 @@
   },
   "POST /api/admin/usuarios/:id/reset-link": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -859,6 +968,7 @@
   },
   "POST /api/board/manifest": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -939,6 +1049,7 @@
   "POST /api/junta/:id/approve": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -947,6 +1058,7 @@
   "POST /api/junta/:id/reject": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -955,6 +1067,7 @@
   "POST /api/junta/upload": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -974,6 +1087,7 @@
   },
   "POST /api/manifest/manifest": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -981,6 +1095,7 @@
   },
   "POST /api/matching/:id/confirm": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1016,6 +1131,7 @@
   },
   "POST /api/pricing/": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1023,6 +1139,7 @@
   },
   "POST /api/pricing/seed": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1095,6 +1212,7 @@
   "POST /api/superadmin/prompt": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1103,6 +1221,7 @@
   "POST /api/superadmin/prompt-rules": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1111,6 +1230,7 @@
   "POST /api/superadmin/prompt/:id/approve": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1119,6 +1239,7 @@
   "POST /api/superadmin/prompt/:id/reject": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1127,6 +1248,7 @@
   "POST /api/superadmin/prompt/:id/rollback": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1135,6 +1257,7 @@
   "POST /api/superadmin/prompt/create": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1143,6 +1266,7 @@
   "POST /api/superadmin/prompt/propose": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1151,6 +1275,7 @@
   "POST /api/superadmin/prompt/publish": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1158,12 +1283,18 @@
   },
   "POST /api/therapist/pacientes/:id/notas": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
   },
   "POST /api/therapist/prompt/propose": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true
@@ -1171,6 +1302,7 @@
   "POST /api/therapist/validation/:id/approve": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1179,6 +1311,7 @@
   "POST /api/therapist/validation/:id/reject": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1198,6 +1331,7 @@
   },
   "PUT /api/admin/contact-entries/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1205,6 +1339,7 @@
   },
   "PUT /api/admin/contact-entries/order": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1212,6 +1347,7 @@
   },
   "PUT /api/admin/exercises/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1219,6 +1355,7 @@
   },
   "PUT /api/admin/plan-requests/admin/:id/approve": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1226,6 +1363,7 @@
   },
   "PUT /api/admin/plan-requests/admin/:id/reject": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1233,6 +1371,7 @@
   },
   "PUT /api/admin/pricing/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1240,6 +1379,7 @@
   },
   "PUT /api/admin/professional-applications/:id/approve": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1247,6 +1387,7 @@
   },
   "PUT /api/admin/professional-applications/:id/reject": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1255,6 +1396,7 @@
   "PUT /api/admin/prompt-rules/:id": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1262,6 +1404,7 @@
   },
   "PUT /api/admin/route-catalog/:id/:kind/:key": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1269,6 +1412,7 @@
   },
   "PUT /api/admin/skill-catalog/:id/skills/:skillKey": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1276,6 +1420,7 @@
   },
   "PUT /api/admin/usuarios/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1283,6 +1428,7 @@
   },
   "PUT /api/admin/usuarios/:id/asignar-terapeuta": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1290,6 +1436,7 @@
   },
   "PUT /api/admin/usuarios/:id/plan": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1297,6 +1444,7 @@
   },
   "PUT /api/admin/usuarios/:id/reset-password": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1304,6 +1452,7 @@
   },
   "PUT /api/admin/usuarios/:id/unlock": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1311,6 +1460,7 @@
   },
   "PUT /api/board/manifest/:id/activate": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1331,6 +1481,7 @@
   "PUT /api/landing-content/": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1338,6 +1489,7 @@
   },
   "PUT /api/manifest/manifest/:id/activate": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1345,6 +1497,7 @@
   },
   "PUT /api/plan-requests/admin/:id/approve": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1352,6 +1505,7 @@
   },
   "PUT /api/plan-requests/admin/:id/reject": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1359,6 +1513,7 @@
   },
   "PUT /api/pricing/:id": {
     "denied": [
+      "board",
       "therapist",
       "user"
     ],
@@ -1379,6 +1534,7 @@
   "PUT /api/superadmin/prompt-rules/:id": {
     "denied": [
       "admin",
+      "board",
       "therapist",
       "user"
     ],
@@ -1386,6 +1542,9 @@
   },
   "PUT /api/therapist/notas/:noteId": {
     "denied": [
+      "admin",
+      "board",
+      "superadmin",
       "user"
     ],
     "session": true

@@ -10,7 +10,7 @@ const { makeSeeder } = require('../support/seedRow.cjs');
 
 test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato crisis/diario/no compartir (ES-189 PR-2)', { timeout: 600000 }, async (t) => {
   process.env.DATA_RIGHTS_ENABLED = 'true'; // la función de derechos de datos está detrás de un interruptor
-  const { q, mkUser, http, MOUNTS, base, provider } = await startRealApi(t, { envVar: 'ES281_TEST_DATABASE_URL', prefix: 'es281' });
+  const { q, mkUser, http, MOUNTS, base, provider, api } = await startRealApi(t, { envVar: 'ES281_TEST_DATABASE_URL', prefix: 'es281' });
 
   // ── Utilidades ────────────────────────────────────────────────────────────────────────────────────────────────
   const seed = makeSeeder(q);
@@ -123,31 +123,43 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
   // Recorre los montajes del server.js real: persona y profesional ante rutas de administración, administración ante las de superadministración, y nadie sin sesión ante nada protegido.
   // Siempre 401/403 (nunca 2xx ni 5xx) y la base no cambia en una sola fila.
   const auth = require('../../middlewares/auth');
-  const adminUser = await mkUser('admin'); const superUser = await mkUser('superadmin');
-  const GUARD_ROLES = new Map([[auth.verificarAdmin, ['user', 'therapist']], [auth.verificarSuperAdmin, ['user', 'therapist', 'admin']], [auth.verificarEditorManifiesto, ['user', 'therapist']], [auth.verificarTerapeuta, ['user']]]);
+  // E244-3 (QA): las guardas se modelan por los roles PERMITIDOS (no por una lista de rechazados que puede quedarse corta): lo que cada middleware deja pasar, tal como está en middlewares/auth.js.
+  // Rechazados de una ruta = todos los roles menos la INTERSECCIÓN de lo que permiten sus guardas. verificarTokenParaBorrado es una guarda de sesión (con el recibo de borrado).
+  const ROLES = ['user', 'therapist', 'admin', 'superadmin', 'board'];
+  const ALLOWED = new Map([
+    [auth.verificarToken, ROLES], [auth.verificarTokenParaBorrado, ROLES],
+    [auth.verificarAdmin, ['admin', 'superadmin']], [auth.verificarSuperAdmin, ['superadmin']], [auth.verificarEditorManifiesto, ['admin', 'superadmin']],
+    [auth.verificarTerapeuta, ['therapist']], [auth.verificarBoard, ['board', 'superadmin']],
+  ]);
+  const adminUser = await mkUser('admin'); const superUser = await mkUser('superadmin'); const boardUser = await mkUser('board');
   const routesWithGuards = [];
-  // E239-1 (ES-282): se leen las guardas de TRES sitios: las del montaje en server.js, las de router.use(guarda) (valen para las rutas que vienen después) y las puestas en la propia ruta.
+  // Cada ruta junta las guardas de CUATRO sitios: el montaje en server.js, router.use(guarda) (vale para las rutas siguientes), las de la propia ruta y, para las rutas puestas directamente en la aplicación (app.get...), las de su cadena.
+  const stateOf = (guards) => { const allowed = new Set(ROLES); let session = false; for (const fn of guards) { const set = ALLOWED.get(fn); if (!set) continue; session = true; for (const role of [...allowed]) if (!set.includes(role)) allowed.delete(role); } return { denied: ROLES.filter((r) => !allowed.has(r)), session }; };
   for (const mount of MOUNTS) {
-    const denied = new Set(); let tokenGuarded = false;
-    const apply = (fn, into) => { for (const role of (GUARD_ROLES.get(fn) || [])) into.denied.add(role); if (fn === auth.verificarToken) into.token = true; };
-    const running = { denied, token: false };
-    for (const fn of mount.guardFns) apply(fn, running);
+    const running = [...mount.guardFns];
     for (const layer of mount.router.stack) {
-      if (!layer.route) { apply(layer.handle, running); continue; }
-      const own = { denied: new Set(running.denied), token: running.token };
-      for (const inner of layer.route.stack) apply(inner.handle, own);
-      for (const method of Object.keys(layer.route.methods)) routesWithGuards.push({ method: method.toUpperCase(), path: (mount.prefix === '/' ? '' : mount.prefix) + layer.route.path, denied: [...own.denied], tokenGuarded: own.token || own.denied.size > 0 });
+      if (!layer.route) { running.push(layer.handle); continue; }
+      const state = stateOf([...running, ...layer.route.stack.map((inner) => inner.handle)]);
+      for (const method of Object.keys(layer.route.methods)) routesWithGuards.push({ method: method.toUpperCase(), path: (mount.prefix === '/' ? '' : mount.prefix) + layer.route.path, ...state });
+    }
+  }
+  { // rutas de la aplicación (G10): una ruta nueva puesta en server.js sin guarda entra aquí y debe declararse
+    const root = api.router || api._router; // solo las guardas de la propia ruta: los app.use(prefijo, guarda) valen para su prefijo y ya entran por los montajes
+    for (const layer of root.stack) {
+      if (!layer.route) continue;
+      const state = stateOf(layer.route.stack.map((inner) => inner.handle));
+      for (const method of Object.keys(layer.route.methods)) routesWithGuards.push({ method: method.toUpperCase(), path: layer.route.path, ...state });
     }
   }
   // E239-1 (ES-282): la expectativa NO sale solo del código (si fuera así, quitar una guarda quitaría también la expectativa). El fixture routes-roles.json es la política escrita:
   // para cada ruta, qué roles se rechazan y si exige sesión. Cambiar una guarda o añadir una ruta obliga a editar el fixture a propósito (ES281_WRITE_FIXTURE=1).
   const rolesFixture = path.join(__dirname, '..', 'fixtures', 'routes-roles.json');
-  const derived = {}; for (const r of routesWithGuards) derived[r.method + ' ' + r.path] = { denied: [...r.denied].sort(), session: r.tokenGuarded };
+  const derived = {}; for (const r of routesWithGuards) derived[r.method + ' ' + r.path] = { denied: [...r.denied].sort(), session: r.session };
   if (process.env.ES281_WRITE_FIXTURE === '1') fs.writeFileSync(rolesFixture, JSON.stringify(Object.fromEntries(Object.entries(derived).sort(([x], [y]) => (x < y ? -1 : 1))), null, 2) + '\n');
   const policy = JSON.parse(fs.readFileSync(rolesFixture, 'utf8'));
   const fill = (path) => path.replace(/:(id|requestId|noteId)\b/g, String(NONEXISTENT)).replace(/:[A-Za-z]+/g, 'x');
   const BODY = (method) => (method === 'GET' || method === 'DELETE' ? undefined : {});
-  const SKIP_ROLE = /\/(logout|logout-all|deletion-requests)$/;
+  const SKIP_ROLE = /\/(logout|logout-all|deletion-requests)$/; // solo para la batería hostil: sus llamadas con sesión cerrarían o borrarían a quien las hace
   await t.test('política de roles cerrada: las guardas que lee el código coinciden con el fixture escrito (quitar una guarda o añadir una ruta sin declarar falla)', async () => {
     const problems = [];
     for (const [route, value] of Object.entries(derived)) { if (!policy[route]) problems.push('ruta sin política escrita: ' + route); else if (JSON.stringify(policy[route]) !== JSON.stringify(value)) problems.push(`guarda distinta de la política: ${route} código=${JSON.stringify(value)} política=${JSON.stringify(policy[route])}`); }
@@ -155,25 +167,26 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
     assert.deepEqual(problems, []);
   });
 
-  await t.test('matriz de roles: 401/403 sin sesión en todo lo protegido; 403 al rol sin permiso en administración, superadministración, manifiesto y profesional; la base no cambia', async () => {
-    const actors = { user: await mkUser('user'), therapist: await mkUser('therapist'), admin: adminUser };
+  await t.test('matriz de roles: 401/403 sin sesión en todo lo protegido; 403 a cada rol sin permiso (administración, superadministración, manifiesto, profesional, junta); la base no cambia', async () => {
+    const actors = { user: await mkUser('user'), therapist: await mkUser('therapist'), admin: adminUser, superadmin: superUser, board: boardUser };
     assert.ok(routesWithGuards.filter((r) => r.denied.length).length >= 75, 'rutas con guarda de rol: ' + routesWithGuards.filter((r) => r.denied.length).length);
     const problems = []; const before = await fingerprint(); let probes = 0;
-    for (const r of routesWithGuards.map((x) => ({ ...x, ...policy[x.method + ' ' + x.path], tokenGuarded: policy[x.method + ' ' + x.path]?.session ?? x.tokenGuarded }))) {
-      if (SKIP_ROLE.test(r.path)) continue;
+    for (const r of routesWithGuards) {
+      const expected = policy[r.method + ' ' + r.path]; // la expectativa sale de la política ESCRITA, no del código
+      if (!expected) continue; // la prueba de política cerrada ya la reporta
       const url = fill(r.path);
-      if (r.tokenGuarded) {
+      if (expected.session) {
         const out = await http(null, r.method, url, BODY(r.method)); probes += 1;
         if (![401, 403].includes(out.status)) problems.push(`sin sesión ${r.method} ${r.path}: ${out.status}`);
       }
-      for (const role of (policy[r.method + ' ' + r.path]?.denied ?? r.denied)) {
+      for (const role of expected.denied) {
         const out = await http(actors[role], r.method, url, BODY(r.method)); probes += 1;
         if (out.status !== 403) problems.push(`${role} ${r.method} ${r.path}: ${out.status} ${JSON.stringify(out.body).slice(0, 70)}`);
       }
     }
     const diff = changed(before, await fingerprint());
     if (diff.length) problems.push('la base cambió: ' + diff.join(', '));
-    assert.ok(probes > 300, 'solicitudes de la matriz: ' + probes);
+    assert.ok(probes > 600, 'solicitudes de la matriz: ' + probes);
     assert.deepEqual(problems, []);
   });
 
