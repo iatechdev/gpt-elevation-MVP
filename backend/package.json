@@ -25,6 +25,7 @@
     "test:purge-hardening:pg": "node --test test/integration/es-283-postgres.cjs",
     "test:transversal:pg": "node --test test/integration/es-282-postgres.cjs",
     "test:pricing-validation:pg": "node --test test/integration/es-278-postgres.cjs",
+    "test:evidence-source-revoke:pg": "node --test test/integration/es-296-postgres.cjs",
     "test:purge-option-a:pg": "node --test test/integration/es-274-postgres.cjs",
     "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
     "test:session-room:pg": "node --test test/integration/es-179-postgres.cjs",
