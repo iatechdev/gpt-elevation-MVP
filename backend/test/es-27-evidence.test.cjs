@@ -259,7 +259,7 @@ test('ES-27 secretos y caracteres invisibles se sanean antes de guardar', async 
 });
 
 test('ES-27 frontera en el código: ninguna ruta entrega evidencia al motor y el módulo expone solo lo previsto', () => {
-  assert.deepEqual(Object.keys(evidence).sort(), ['EvidenceError', 'create', 'getConfirmedEvidence', 'get', 'list', 'normalizePayload', 'remove', 'revokeForConsent', 'update'].sort());
+  assert.deepEqual(Object.keys(evidence).sort(), ['EvidenceError', 'create', 'getConfirmedEvidence', 'get', 'list', 'normalizePayload', 'markSourceRevoked', 'remove', 'revokeForConsent', 'update'].sort());
   const routes = fs.readFileSync(path.resolve(__dirname, '..', 'routes', 'evidence.js'), 'utf8')
     .split('\n').filter((line) => !line.startsWith('//')).join('\n');
   assert.doesNotMatch(routes, /getConfirmedEvidence|ChatTurn|DiaryEntry/);
