@@ -22,16 +22,20 @@ const PURPOSES = Object.freeze({
   insights_chat: { required: false },
   insights_diary: { required: false },
   insights_resume: { required: false },
+  // ES-175 (HU-P24): autorizar a UN revisor a ver material que la persona marcó y a que su revisión pueda ser objetada. Ligado al revisor por el alcance `reviewer-<id>`; separado de facilitator_sharing.
+  professional_review: { required: false },
 });
 const SCOPES = Object.freeze(['default']); // ES-25 amplía el alcance por campos del puente
 const THERAPIST_SCOPE = /^therapist-[1-9][0-9]{0,9}$/; // ES-96: el alcance de therapist_sharing es el terapeuta al que se autoriza
 const therapistScope = (therapistId) => `therapist-${Number(therapistId)}`;
-const isValidScope = (purpose, scope) => (purpose === 'therapist_sharing' ? THERAPIST_SCOPE.test(String(scope)) : SCOPES.includes(scope));
+const REVIEWER_SCOPE = /^reviewer-[1-9][0-9]{0,9}$/; // ES-175: el alcance de professional_review es el revisor al que se autoriza
+const reviewerScope = (reviewerId) => `reviewer-${Number(reviewerId)}`;
+const isValidScope = (purpose, scope) => (purpose === 'therapist_sharing' ? THERAPIST_SCOPE.test(String(scope)) : purpose === 'professional_review' ? REVIEWER_SCOPE.test(String(scope)) : SCOPES.includes(scope));
 const DEFAULT_SCOPE = 'default';
 const STATUSES = Object.freeze(['granted', 'revoked']);
 // Versión de política exigida por propósito: un «granted» con versión anterior deja de valer (hay que volver a consentir).
 const REQUIRED_VERSION = Object.freeze({
-  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, therapist_sharing: 1, resume_ai_reading: 1, insights_chat: 1, insights_diary: 1, insights_resume: 1,
+  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, therapist_sharing: 1, resume_ai_reading: 1, insights_chat: 1, insights_diary: 1, insights_resume: 1, professional_review: 1,
 });
 
 class ConsentRequiredError extends Error {
@@ -161,7 +165,8 @@ async function listConsents(userId, { therapistId = null } = {}) {
   const byPurpose = new Map(rows.map((row) => [row.purpose, row]));
   // ES-96: therapist_sharing se lee con el alcance del terapeuta actual; sin terapeuta no hay a quién autorizar (applicable: false).
   const therapistRow = therapistId ? await Consent.findOne({ where: keyOf(userId, 'therapist_sharing', therapistScope(therapistId)) }) : null;
-  return Object.keys(PURPOSES).map((purpose) => {
+  // ES-175: `professional_review` es por revisor (alcance reviewer-<id>) y se gestiona desde /api/me/review-shares; no es un interruptor global de esta lista.
+  return Object.keys(PURPOSES).filter((purpose) => purpose !== 'professional_review').map((purpose) => {
     const sharing = purpose === 'therapist_sharing';
     const row = sharing ? therapistRow : byPurpose.get(purpose);
     let status = 'undecided';
@@ -203,7 +208,7 @@ const requireConsent = (purpose, ownerOf, scope = DEFAULT_SCOPE) => async (req, 
 };
 
 module.exports = {
-  PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, isValidScope,
+  PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, REVIEWER_SCOPE, reviewerScope, isValidScope,
   ConsentRequiredError, isPurpose, isEffective,
   hasConsent, isGrantedIn, withConsent, setConsent, listConsents, listHistory, requireConsent,
   revokeForDeletion, revokeTherapistSharing, therapistScope,
