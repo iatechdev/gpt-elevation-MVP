@@ -5,27 +5,28 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8').replace(/\r\n/g, '\n')
-const pages = read('../src/routeCatalog/CatalogPages.tsx'); const copy = read('../src/routeCatalog/copy.ts')
+const pages = read('../src/routeCatalog/PersonCatalog.tsx'); const shared = read('../src/routeCatalog/shared.ts'); const logic = read('../src/routeCatalog/person.ts'); const copy = read('../src/routeCatalog/copy.ts')
 
 test('ES-255 enlaces externos: el aviso va dentro del mismo enlace, que sigue siendo https con noopener', () => {
-  assert.match(pages, /<a className="elv-link" href=\{safe\} target="_blank" rel="noopener noreferrer">\{children\} · \{new URL\(safe\)\.hostname\} <small>\(\{tr\('new_tab'\)\}\)<\/small><\/a>/)
+  assert.match(pages, /<a className="cgp-out" href=\{safe\} target="_blank" rel="noopener noreferrer">\{children\} · \{new URL\(safe\)\.hostname\} <small>\(\{tr\('new_tab'\)\}\)<\/small><\/a>/)
   assert.match(copy, /new_tab: \['se abre en una pestaña nueva', 'opens in a new tab'\]/)
 })
 
 test('ES-255 claves crudas: ninguna skillKey / linkedSkillKey se muestra; sin nombre disponible se dice «Capacidad por confirmar»', () => {
   assert.doesNotMatch(pages, /\{string\(object\(v\)\.skillKey\)\}/); assert.doesNotMatch(pages, /\{string\(resource\.linkedSkillKey\)\}/)
-  assert.match(pages, /\{tr\('skill_unknown'\)\} · \{tr\(string\(object\(v\)\.importance\)\)\}/)
+  assert.match(pages, /\{skillName\(object\(v\)\.skillKey\)\} · \{tr\(string\(object\(v\)\.importance\)\)\}/)
+  assert.match(pages, /skills\.get\(string\(key\)\) \?\? tr\('skill_unknown'\)/) // ES-172 D1=B: nombre desde las etiquetas del mapa; sin él, «Capacidad por confirmar»
   assert.match(copy, /skill_unknown: \['Capacidad por confirmar', 'Skill to be confirmed'\]/)
 })
 
 test('ES-255 lista y filtros: industria en la tarjeta, mercado/idioma con nombre (Intl.DisplayNames) y filtro de idioma por idioma del ROL', () => {
   assert.match(pages, /\{string\(object\(row\.industry\)\[lang\]\) \|\| tr\('unknown'\)\} · \{names\.country\(row\.market\)\}/)
-  assert.match(pages, /new Intl\.DisplayNames\(\[lang\], \{ type \}\)/)
-  assert.match(pages, /\(!language \|\| array\(row\.languagesRequired\)\.includes\(language\)\)/) // antes: por los idiomas de los recursos
-  assert.doesNotMatch(pages, /resource\.language === language/)
+  assert.match(shared, /new Intl\.DisplayNames\(\[lang\], \{ type \}\)/)
+  assert.match(logic, /\(!filters\.language \|\| array\(role\.languagesRequired\)\.includes\(filters\.language\)\)/) // antes: por los idiomas de los recursos
+  assert.doesNotMatch(pages + logic, /resource\.language === language/)
   assert.match(copy, /language_filter: \['Idioma del rol', 'Role language'\]/)
   // un código que el navegador no conoce se dice «Por confirmar», nunca crudo
-  assert.match(pages, /out\.toLowerCase\(\) !== value\.toLowerCase\(\) \? out : tr\('unknown'\)/)
+  assert.match(shared, /out\.toLowerCase\(\) !== value\.toLowerCase\(\) \? out : tr\('unknown'\)/)
 })
 
 // E255-1: la fuente de una tarea se dice con el TÍTULO de la fuente (viene en el payload) o «Fuente por confirmar»; nunca con su clave interna (sourceKey)
