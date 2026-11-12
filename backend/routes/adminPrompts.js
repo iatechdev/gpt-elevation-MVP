@@ -52,7 +52,9 @@ router.get('/prompts', async (req, res) => {
 });
 
 // GET /api/admin/prompt/:key
-router.get('/prompt/:key', validKey, async (req, res) => {
+// ES-280: una clave con forma inválida no existe (404, como antes para claves desconocidas); antes `%D9%A3` daba un 500.
+const knownKeyShape = (req, res, next) => (KEY.test(req.params.key) ? next() : res.status(404).json({ error: 'Prompt no encontrado.' }));
+router.get('/prompt/:key', knownKeyShape, async (req, res) => {
   try {
     let prompt = await PromptVault.findOne({
       where: { key: req.params.key, status: 'active' },
