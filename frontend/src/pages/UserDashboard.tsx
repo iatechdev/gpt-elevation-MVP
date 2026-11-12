@@ -101,7 +101,9 @@ export function UserDashboard() {
   const [showMatching, setShowMatching] = useState(false)
   const handleMatchingSuccess = () => {
     setShowMatching(false)
-    void loadUpcomingSession()
+    const { signal } = new AbortController() // lectura iniciada por la persona (no se cancela al salir: la respuesta solo actualiza esta pantalla)
+    void loadUpcomingSession(signal) // antes la segunda lectura (profesional) iba encadenada a esta: se refrescan las dos
+    void loadTherapist(signal)
   }
 
   // ── Checkout modal ───────────────────────────────────────────────────────
@@ -125,19 +127,24 @@ export function UserDashboard() {
     const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
     setCheckedIn(alreadyCheckedIn)
 
-    void loadProgress()
-    void loadUpcomingSession()
-    void loadRecommendations()
-    void loadUserPlan()
-
+    // ES-200: las cinco lecturas son independientes y salen a la vez; al salir de la pantalla se cancelan y no actualizan estado.
+    const controller = new AbortController()
+    const { signal } = controller
+    void loadProgress(signal)
+    void loadUpcomingSession(signal)
+    void loadTherapist(signal)
+    void loadRecommendations(signal)
+    void loadUserPlan(signal)
+    return () => controller.abort()
   }, [navigate])
 
   // ── Data loaders ──────────────────────────────────────────────────────────
-  const loadProgress = async () => {
+  const loadProgress = async (signal: AbortSignal) => {
     try {
-      const res = await apiFetch('/api/user/progress')
-      if (!res.ok) return
+      const res = await apiFetch('/api/user/progress', { signal })
+      if (!res.ok || signal.aborted) return
       const data = await res.json()
+      if (signal.aborted) return
       setMoodLogs(data.moodLogs ?? [])
 
       const monday = new Date()
@@ -150,35 +157,40 @@ export function UserDashboard() {
     } catch { /* silent */ }
   }
 
-  const loadUpcomingSession = async () => {
+  const loadUpcomingSession = async (signal: AbortSignal) => {
     try {
-      const res = await apiFetch('/api/sessions/user/upcoming')
-      if (!res.ok) return
+      const res = await apiFetch('/api/sessions/user/upcoming', { signal })
+      if (!res.ok || signal.aborted) return
       const data = await res.json()
-      setUpcomingSession(data.session ?? null)
-
-      const userRes = await apiFetch('/api/sessions/user/my-therapist')
-      if (userRes.ok) {
-        const userData = await userRes.json()
-        setTherapistId(userData.therapist?.id ?? null)
-      }
+      if (!signal.aborted) setUpcomingSession(data.session ?? null)
     } catch { /* silent */ }
   }
 
-  const loadRecommendations = async () => {
+  // ES-200: antes esta lectura esperaba a que terminara la de la próxima sesión (cascada evitable: no depende de ella).
+  const loadTherapist = async (signal: AbortSignal) => {
     try {
-      const res = await apiFetch('/api/recommendations')
-      if (!res.ok) return
+      const res = await apiFetch('/api/sessions/user/my-therapist', { signal })
+      if (!res.ok || signal.aborted) return
       const data = await res.json()
-      setRecommendations(data.slice(0, 4))
+      if (!signal.aborted) setTherapistId(data.therapist?.id ?? null)
     } catch { /* silent */ }
   }
 
-  const loadUserPlan = async () => {
+  const loadRecommendations = async (signal: AbortSignal) => {
     try {
-      const res = await apiFetch('/api/user/plan/me')
-      if (!res.ok) return
+      const res = await apiFetch('/api/recommendations', { signal })
+      if (!res.ok || signal.aborted) return
       const data = await res.json()
+      if (!signal.aborted) setRecommendations(data.slice(0, 4))
+    } catch { /* silent */ }
+  }
+
+  const loadUserPlan = async (signal: AbortSignal) => {
+    try {
+      const res = await apiFetch('/api/user/plan/me', { signal })
+      if (!res.ok || signal.aborted) return
+      const data = await res.json()
+      if (signal.aborted) return
       setUserPlan(data.plan ?? null)
       setPlanLimits(data.limits ?? null)
     } catch { /* silent */ }

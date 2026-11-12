@@ -94,6 +94,8 @@ export function startServer(log = new Map()) {
 }
 
 let currentRole = 'user'
+/** Cambia el rol con el que responde el servidor sintético (lo usan los scripts de medición que recorren pantallas de varios roles). */
+export const setCurrentRole = role => { currentRole = role }
 
 async function main() {
   if (!process.env.LH_DIR) throw new Error('Falta LH_DIR (carpeta donde instalaste lighthouse@13.5.0; ver el encabezado)')
