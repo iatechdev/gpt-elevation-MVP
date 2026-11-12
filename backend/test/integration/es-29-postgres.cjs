@@ -91,6 +91,64 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
     assert.doesNotMatch(row.rationale, /nota/);
   });
 
+  await t.test('ES-295: 30 autoevaluaciones simultáneas de la misma habilidad, en 4 rondas → 0 rechazos (sin 409), una sola vigente y todas guardadas', async () => {
+    // Antes de ES-295 la última de N simultáneas podía agotar los 6 reintentos y recibir 409; con 30 por ronda pasaba de forma casi segura (la prueba de 8 lo hacía solo a veces).
+    const e = await evidence.create(4, evBody());
+    const refs = [{ evidenceId: e.id, version: 1 }];
+    for (let round = 0; round < 4; round += 1) {
+      const results = await Promise.allSettled(Array.from({ length: 30 }, (_, i) =>
+        skillMap.selfAssess(4, { skillKey: 'comunicacion', level: (i % 4) + 1, evidenceRefs: refs, requestId: rid(), rationale: `ronda ${round} nota ${i}` })));
+      assert.deepEqual(results.filter((r) => r.status === 'rejected').map((r) => r.reason.message), [], 'ronda ' + round);
+      assert.equal(await Assessment.count({ where: { UserId: 4, skillKey: 'comunicacion', track: 'self', status: 'current' } }), 1, 'una sola vigente, ronda ' + round);
+    }
+    assert.equal(await Assessment.count({ where: { UserId: 4, skillKey: 'comunicacion' } }), 120, 'las 120 quedaron guardadas (1 vigente y 119 sustituidas)');
+  });
+
+  // E256-1 (QA): la prueba anterior no detectaba tres cosas. (1) La cola por persona debe VACIARSE (si no, fuga de memoria y orden roto). (2) El 409 de respaldo y los reintentos acotados deben seguir
+  // (con varias réplicas la cola no ayuda). (3) La clave de la cola debe ser la PERSONA: una clave equivocada (p. ej. constante) serializaría a todo el mundo y perdería paralelismo; sin cola, una misma persona pierde el orden.
+  await t.test('E256-1: la cola por persona se vacía al terminar (también tras un rechazo) y sigue atendiendo', async () => {
+    assert.equal(skillMap.shared.queueSize(), 0, 'al empezar no hay colas pendientes');
+    const e = await evidence.create(5, evBody()); const refs = [{ evidenceId: e.id, version: 1 }];
+    await Promise.all(Array.from({ length: 6 }, (_, i) => skillMap.selfAssess(5, { skillKey: 'comunicacion', level: (i % 4) + 1, evidenceRefs: refs, requestId: rid() })));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(skillMap.shared.queueSize(), 0, 'la cola de la persona se vació tras terminar');
+    await assert.rejects(skillMap.selfAssess(5, { skillKey: 'comunicacion', level: 9, evidenceRefs: refs, requestId: rid() })); // entrada inválida: rechazo
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(skillMap.shared.queueSize(), 0, 'un rechazo tampoco deja la cola colgada');
+    assert.equal((await skillMap.selfAssess(5, { skillKey: 'comunicacion', level: 2, evidenceRefs: refs, requestId: rid() })).created, true, 'y la cola sigue atendiendo');
+  });
+
+  await t.test('E256-1: el respaldo sigue vivo — un choque del índice único que no cede se reintenta MAX_ATTEMPTS veces y termina en 409 «conflict» (nunca un error crudo de la base)', async () => {
+    const { UniqueConstraintError } = require('sequelize');
+    const e = await evidence.create(6, evBody()); const refs = [{ evidenceId: e.id, version: 1 }];
+    const original = Assessment.create; let calls = 0;
+    Assessment.create = async function failing() { calls += 1; throw new UniqueConstraintError({ message: 'choque simulado de otra réplica' }); };
+    try {
+      await assert.rejects(skillMap.selfAssess(6, { skillKey: 'comunicacion', level: 2, evidenceRefs: refs, requestId: rid() }), (error) => error.status === 409 && error.code === 'conflict');
+    } finally { Assessment.create = original; }
+    assert.equal(calls, skillMap.shared.MAX_ATTEMPTS, 'reintentos acotados, ni más ni menos');
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(skillMap.shared.queueSize(), 0);
+    assert.equal(await Assessment.count({ where: { UserId: 6 } }), 0, 'el intento fallido no dejó filas');
+  });
+
+  await t.test('E256-1: la clave de la cola es la PERSONA — la misma persona se atiende en serie y personas distintas en paralelo (latencia simulada)', async () => {
+    const DELAY = 400;
+    const refsOf = async (userId) => { const e = await evidence.create(userId, evBody()); return [{ evidenceId: e.id, version: 1 }]; };
+    const original = Assessment.create;
+    Assessment.create = async function slow(...args) { await new Promise((resolve) => setTimeout(resolve, DELAY)); return original.apply(this, args); };
+    try {
+      const same = await refsOf(7); const t0 = Date.now();
+      await Promise.all([1, 2, 3].map((level) => skillMap.selfAssess(7, { skillKey: 'comunicacion', level, evidenceRefs: same, requestId: rid() })));
+      const sameMs = Date.now() - t0;
+      assert.ok(sameMs >= DELAY * 2.5, `la misma persona se atiende de una en una: 3 altas tardaron ${sameMs} ms (≥ ${DELAY * 2.5})`);
+      const refs = await Promise.all([8, 9, 10, 11].map(refsOf)); const t1 = Date.now();
+      await Promise.all([8, 9, 10, 11].map((userId, i) => skillMap.selfAssess(userId, { skillKey: 'comunicacion', level: 2, evidenceRefs: refs[i], requestId: rid() })));
+      const diffMs = Date.now() - t1;
+      assert.ok(diffMs < DELAY * 2.5, `personas distintas van en paralelo: 4 altas tardaron ${diffMs} ms (< ${DELAY * 2.5}; en serie serían ≥ ${DELAY * 4})`);
+    } finally { Assessment.create = original; }
+  });
+
   await t.test('el mismo requestId repetido a la vez crea una sola evaluación', async () => {
     const e = await evidence.create(2, evBody());
     const body = { skillKey: 'planificacion', level: 2, evidenceRefs: [{ evidenceId: e.id, version: 1 }], requestId: 'pg-same-000001' };
