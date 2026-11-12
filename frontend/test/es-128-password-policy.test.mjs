@@ -44,7 +44,7 @@ test('ES-128: el formulario muestra los requisitos solo al registrarse, enlazado
   assert.match(page, /aria-describedby=\{isRegistering \? 'pw-req' : undefined\}/)
   assert.match(page, /role=\{authMessage\.success \? 'status' : 'alert'\}/)
   assert.match(page, /passwordInput\.current\?\.focus\(\)/)
-  assert.match(page, /aria-invalid=\{policyError \? true : undefined\}/)
+  assert.match(page, /invalid=\{policyError\}/) // ES-155: el campo (AccessField) marca aria-invalid cuando hay error de requisitos
   assert.match(box, /aria-live="polite"/); assert.match(box, /aria-hidden="true"/)
   assert.match(box, /landing\.access\.pw\.met/); assert.match(box, /landing\.access\.pw\.pending/)
 })

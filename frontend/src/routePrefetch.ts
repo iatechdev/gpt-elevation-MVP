@@ -7,6 +7,7 @@ type Loader = () => Promise<unknown>
 export type Connection = { saveData?: boolean; effectiveType?: string } | undefined
 
 export const ROUTE_LOADERS: Record<string, Loader[]> = {
+  '/login': [() => import('./pages/LoginPage.tsx')],
   '/app/skill-map': [() => import('./pages/SkillMapPage.tsx')],
   '/app/chat': [() => import('./pages/ChatPage.tsx')],
   '/app/evidence': [() => import('./pages/EvidencePages.tsx')],
