@@ -1,3 +1,4 @@
+// @pg-env DATA_RIGHTS_ENABLED=true
 // ES-283 (E235-1) · Endurece las pruebas de la purga de ES-274 contra PostgreSQL REAL: (1) cada referencia del lado del profesional bloquea la purga POR SÍ SOLA (mata la mutación
 // «blocksPurge sin chosenTherapistId» y cualquier otra de una referencia); (2) un fallo REAL de la base (trigger) en cada paso de la purga revierte TODO (mata «el UPDATE de sesiones
 // fuera de la transacción»); (3) caracteriza lo que hoy pasa con ProfessionalApplications, para que cambiar esa decisión sea deliberado. No cambia comportamiento de producción.

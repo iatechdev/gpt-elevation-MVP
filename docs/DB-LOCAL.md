@@ -50,3 +50,23 @@ El job `backend` levanta un `postgres:17` desechable y comprueba que el servidor
 - **Codificación:** la base local se crea con `--encoding=UTF8 --locale=C` (en Windows `initdb` tomaba WIN1252 y fallaba con emojis). Si tu `backend/.pgdata` es anterior a este cambio, ejecuta `npm run db:local -- --reset` para recrearla.
 - **Docker:** el puerto se publica solo en `127.0.0.1`, no en todas las interfaces.
 - **Producción (no verificado):** `embedded-postgres` está en `devDependencies`; no se comprobó en Railway que el build con `NODE_ENV=production` omita las devDependencies. Revisar el tiempo y el tamaño del build en el primer despliegue.
+
+## Pruebas con PostgreSQL real: un runner que descubre las suites (ES-245)
+
+Todas las suites de `backend/test/integration/*.cjs` se corren con **un solo comando**; una suite nueva entra sola, **sin tocar `.github/workflows/ci.yml` ni `backend/package.json`** (antes cada historia añadía su paso y su script, y los PR abiertos chocaban en esas listas).
+
+```bash
+cd backend
+PG_TEST_URL=postgres://elevation:elevation_local@127.0.0.1:54329/postgres npm run test:pg
+npm run test:pg -- --list            # qué correría y por qué (no ejecuta nada)
+npm run test:pg -- --only es-28      # solo los archivos cuyo nombre contiene ese texto
+```
+
+Convención al crear una suite:
+
+1. El archivo vive en `backend/test/integration/` (`es-NNN-postgres.cjs`) y **declara en su propio texto** la variable que lee, `ESNNN_TEST_DATABASE_URL`; el runner la detecta y le da `PG_TEST_URL` (en CI, el servicio PostgreSQL desechable del job `data-rights-postgres`). La suite crea y borra su propia base aleatoria y exige bucle local.
+2. Si necesita otra variable de entorno, una línea `// @pg-env CLAVE=valor` (p. ej. `// @pg-env DATA_RIGHTS_ENABLED=true`).
+3. Los archivos `zz-*.cjs` se ignoran (sondas locales). Las exclusiones (con su motivo) viven en `EXCLUDE` de `backend/scripts/runPgSuites.cjs`; hoy: `es-14` (corre en el job `backend` con su base) y `es-15` (PostgreSQL embebido y navegador).
+4. Una prueba unitaria (`test/es-245-pg-runner.test.cjs`) falla si una suite no declara su variable: no puede quedar fuera de la CI en silencio.
+
+El runner corre las suites **en serie** (como antes), no se detiene en el primer fallo, agrupa la salida por archivo y termina con un resumen que lista **por nombre** las que fallaron. Los scripts `npm run test:xxx:pg` existentes siguen sirviendo para correr una suite suelta, pero ya no son necesarios para la CI.
