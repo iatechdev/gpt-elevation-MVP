@@ -1,7 +1,7 @@
 {
   "pr": 227,
   "mode": "pr",
-  "head": "b9d9e06e85f9d9ab786d9281a8e087da3c618e47",
+  "head": "53fc72f8e465fd7f26be2f9b23dd8198b27f9342",
   "results": [
     {
       "id": "A1-control",
@@ -24,18 +24,18 @@
     },
     {
       "id": "A1d campos faltantes o mal formados (patientId ausente/texto/negativo/decimal; scheduledAt ausente/vacía/basura/número/unicode; cuerpo arreglo, nulo y texto; JSON roto) → 400 `invalid_input` con el `field` del PRIMER campo inválido; JSON roto → 400 sin 5xx",
-      "ok": true,
-      "detail": "ok"
+      "ok": false,
+      "detail": "scheduledAt basura→500:undefined/undefined | scheduledAt unicode→500:undefined/undefined"
     },
     {
       "id": "A1e la respuesta de error NUNCA repite lo recibido (la marca sintética enviada en `scheduledAt`, `duration`, `patientId` o campos extra no aparece en ningún 400)",
       "ok": true,
-      "detail": "400:scheduledAt 400:patientId"
+      "detail": "400:duration 400:patientId"
     },
     {
       "id": "A1f entradas hostiles (fechas extremas, 10k caracteres, ids enormes o 2^53, `__proto__`) → ningún 5xx",
       "ok": false,
-      "detail": "fecha máxima→500 ; fecha mínima→400 ; año 9999→201 ; 10k caracteres→400 ; patientId enorme→400 ; patientId 2^53→400 ; prototipo→201 · 5xx: fecha máxima→500"
+      "detail": "fecha máxima→500 ; fecha mínima→400 ; año 9999→201 ; 10k caracteres→500 ; patientId enorme→400 ; patientId 2^53→400 ; prototipo→201 · 5xx: fecha máxima→500,10k caracteres→500"
     },
     {
       "id": "A2a rol profesional (persona y administración → 403; sin sesión 401/403); persona AJENA, inexistente y con id de forma inválida → el MISMO 403 «This patient is not assigned to you.» (cuerpo idéntico, sin datos)",
@@ -108,7 +108,7 @@
     {
       "id": "A6 `Cache-Control: no-store` en las respuestas de sesiones (200, 400, 403, 409); el registro del servidor no contiene correos, la marca ni el cuerpo recibido",
       "ok": true,
-      "detail": "cache=no-store | no-store | no-store | no-store | no-store log=5509"
+      "detail": "cache=no-store | no-store | no-store | no-store | no-store log=20747"
     }
   ]
 }
