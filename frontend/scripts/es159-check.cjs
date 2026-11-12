@@ -49,7 +49,7 @@ const fs = require('node:fs');
     return { context, page, seen };
   }
   const CTX = (residence) => ({ preferredLanguage: null, residenceCountry: residence, targetMarket: null, timeZone: null, profession: null, interests: null, availabilityMinutesPerWeek: null, careerGoal: null, careerConstraints: null, sector: null, totalYearsExperience: null, experience: [], education: [], declaredSkills: [], languages: [] });
-  const axe = async (page) => { await page.evaluate(axeSource); return page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] })).violations.map((v) => v.id + ':' + v.nodes.length)); };
+  const axe = async (page) => { await page.evaluate(axeSource); return page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((v) => v.id + ':' + v.nodes.length)); };
   const overflow = (page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   const radio = (page, n) => page.locator(`input[name="mood"][value="${n}"]`);
   const pick = (page, n) => page.locator('.ck-option').nth(n - 1).click();
