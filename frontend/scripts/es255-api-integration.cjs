@@ -30,7 +30,7 @@ const { pathToFileURL } = require('node:url');
     sequelize = new Sequelize(`postgres://es255_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
     process.env.JWT_SECRET = randomBytes(32).toString('hex'); process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     const id = fromBackend.resolve('./database'); require.cache[id] = { id, filename: id, loaded: true, exports: { sequelize } };
-    for (const name of ['PricingPlan', 'User', 'RouteCatalog', 'RouteCatalogItem', 'RevokedToken', 'AuthRevocation', 'DeletionRequest']) fromBackend('./' + name);
+    for (const name of ['PricingPlan', 'User', 'RouteCatalog', 'RouteCatalogItem', 'SkillCatalog', 'RevokedToken', 'AuthRevocation', 'DeletionRequest']) fromBackend('./' + name);
     await sequelize.sync();
     const User = fromBackend('./User'); const catalog = fromBackend('./utils/routeCatalog'); const { build } = fromBackend('./seeds/routeCatalogSynthetic.cjs');
     const person = await User.create({ name: 'Persona Sintética', email: 'persona@example.invalid', password: 'x', role: 'user' });
@@ -66,14 +66,15 @@ const { pathToFileURL } = require('node:url');
     async function axeCheck(page, label) {
       if (!axeSource) return;
       await page.addScriptTag({ content: axeSource });
-      const violations = await page.evaluate(() => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length)));
+      const violations = await page.evaluate((debug) => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length + (debug ? ' ' + v.nodes.slice(0, 3).map(n => n.target.join(' ') + ' => ' + (n.any[0] && n.any[0].message)).join(' | ') : ''))), Boolean(process.env.DBG));
       assert.deepEqual(violations, [], label + ' axe'); check(label + ': axe 0');
     }
-    async function open(lang, width, route) {
+    async function open(lang, width, route, { skillMap } = {}) {
       const context = await browser.newContext({ viewport: { width, height: 900 } }); const page = await context.newPage();
       const errors = []; page.on('pageerror', error => errors.push(error.message)); page.on('console', m => { if (m.type() === 'error') errors.push(m.text().slice(0, 200)); });
       await page.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elv_lang', l); }, [token, lang]);
       await page.route('**/api/session', r => r.fulfill({ json: { role: 'user', onboardingCompleted: true } }));
+      await page.route('**/api/skill-map', r => (skillMap ? r.fulfill({ json: skillMap }) : r.fulfill({ status: 503, json: {} })));
       await page.route('**/api/route-catalog**', async r => { const url = new URL(r.request().url()); const response = await r.fetch({ url: apiUrl + url.pathname + url.search }); return r.fulfill({ response }); });
       await page.goto(frontend + route);
       return { context, page, errors };
@@ -84,10 +85,10 @@ const { pathToFileURL } = require('node:url');
       const regions = new Intl.DisplayNames([lang], { type: 'region' }); const languages = new Intl.DisplayNames([lang], { type: 'language' });
       // A) lista
       { const { context, page, errors } = await open(lang, width, '/app/route-catalog');
-        await page.locator('.catalog-card').first().waitFor({ timeout: 8000 }).catch(async () => { throw new Error('sin tarjetas; errores: ' + errors.join(' / ').slice(0, 400) + ' html: ' + (await page.locator('body').innerHTML()).slice(0, 700)); });
-        assert.equal(await page.locator('.catalog-card').count(), published.roles.length);
+        await page.locator('.cgp-role').first().waitFor({ timeout: 8000 }).catch(async () => { throw new Error('sin tarjetas; errores: ' + errors.join(' / ').slice(0, 400) + ' html: ' + (await page.locator('body').innerHTML()).slice(0, 700)); });
+        assert.equal(await page.locator('.cgp-role').count(), published.roles.length);
         for (const role of published.roles) {
-          const card = page.locator('.catalog-card', { hasText: role.labels[lang] }).first();
+          const card = page.locator('.cgp-role', { hasText: role.labels[lang] }).first();
           const text = await card.innerText();
           assert.ok(text.includes(role.industry[lang]), `industria en la tarjeta de ${role.roleKey}`);
           assert.ok(text.includes(regions.of(role.market)), `mercado con nombre (${regions.of(role.market)})`);
@@ -96,14 +97,14 @@ const { pathToFileURL } = require('node:url');
         }
         check(`${tag}: lista → industria, mercado e idiomas con nombre en cada una de las ${published.roles.length} tarjetas`);
         // filtro de idioma por idioma del ROL
-        const options = await page.locator('#filter-language_filter option').evaluateAll(list => list.map(o => o.value).filter(Boolean));
+        const options = await page.locator('.cgp-filters .cg-field:nth-child(2) option').evaluateAll(list => list.map(o => o.value).filter(Boolean));
         const expected = [...new Set(published.roles.flatMap(r => r.languagesRequired))].filter(code => code !== 'unknown').sort();
         assert.deepEqual([...options].sort(), expected);
         for (const code of expected) {
-          await page.selectOption('#filter-language_filter', code);
-          assert.equal(await page.locator('.catalog-card').count(), published.roles.filter(r => r.languagesRequired.includes(code)).length, `filtro ${code}`);
+          await page.selectOption('.cgp-filters .cg-field:nth-child(2) select', code);
+          assert.equal(await page.locator('.cgp-role').count(), published.roles.filter(r => r.languagesRequired.includes(code)).length, `filtro ${code}`);
         }
-        await page.selectOption('#filter-language_filter', '');
+        await page.selectOption('.cgp-filters .cg-field:nth-child(2) select', '');
         check(`${tag}: filtro de idioma por idioma del rol (${expected.join(', ')}) → tarjetas = roles con ese idioma, también los sin recursos`);
         const body = await page.locator('body').innerText();
         assert.deepEqual(await leaks(page), [], 'claves internas visibles en la lista');
@@ -112,7 +113,7 @@ const { pathToFileURL } = require('node:url');
       { let links = 0;
         for (const role of published.roles) {
           const { context, page } = await open(lang, width, `/app/route-catalog/roles/${role.roleKey}`);
-          await page.locator('.catalog-detail').waitFor();
+          await page.locator('.cgp-detail').waitFor();
           const anchors = page.locator('a[target="_blank"]'); const n = await anchors.count();
           for (let i = 0; i < n; i++) { const a = anchors.nth(i); assert.equal(await a.getAttribute('rel'), 'noopener noreferrer'); assert.ok((await a.innerText()).includes(t.newTab), `aviso en el enlace ${i} de ${role.roleKey}`); assert.ok((await a.getAttribute('href')).startsWith('https://')); }
           links += n;
@@ -124,6 +125,44 @@ const { pathToFileURL } = require('node:url');
         }
         assert.ok(links > 0, 'el catálogo sintético trae enlaces externos');
         check(`${tag}: fichas → ${links} enlaces externos, todos con «${t.newTab}», https y noopener; ninguna de las ${allKeys.length} claves internas visible (texto, aria-label, title, enlaces externos)`); }
+    }
+    // ES-172 D1=B: con las etiquetas de GET /api/skill-map la ficha dice el NOMBRE de la capacidad (nunca la clave); la petición solo lleva el token y no se guarda nada.
+    { const labels = Object.fromEntries(skillKeys.map((key, i) => [key, { es: 'Habilidad sintética ' + (i + 1), en: 'Synthetic skill ' + (i + 1) }]));
+      for (const lang of ['es', 'en']) {
+        const { context, page } = await open(lang, 1360, '/app/route-catalog/roles/' + published.roles.find(r => (r.capabilities || []).length).roleKey, { skillMap: { skills: skillKeys.map(key => ({ skillKey: key, labels: labels[key], level: 4, evidence: ['no debe verse'] })) } });
+        await page.locator('.cgp-detail').waitFor(); await page.getByText(lang === 'es' ? 'Habilidad sintética' : 'Synthetic skill').first().waitFor({ timeout: 8000 });
+        const body = await page.locator('body').innerText(); assert.ok(!body.includes('no debe verse')); assert.deepEqual(await leaks(page), []);
+        assert.equal(await page.evaluate(() => JSON.stringify([sessionStorage.length, Object.entries(localStorage), Object.keys(sessionStorage)]).match(/Habilidad sint|Synthetic skill|no debe verse|skillKey/) === null), true, 'nada del mapa en localStorage ni sessionStorage');
+        await context.close();
+      }
+      check('ES-172 D1=B: nombres de capacidad desde las etiquetas del mapa (ES/EN), sin claves, sin niveles ni evidencias y sin guardar nada del mapa'); }
+    // E259-1 (WCAG 1.4.10) y E259-2: títulos largos SIN espacios (30 en el rol, 60 en la fuente) no desbordan a 390 px; una fecha inválida dice la frase entera «por confirmar».
+    { const role = published.roles.find(r => (r.capabilities || []).length); const longRole = 'R'.repeat(30); const longSource = 'S'.repeat(60);
+      const tweak = body => { const copy = JSON.parse(JSON.stringify(body)); for (const r of copy.roles) { r.labels.es = longRole; r.labels.en = longRole; }
+        for (const src of copy.sources) { src.title = longSource; src.consultedAt = '2026-02-30'; } return copy; };
+      for (const lang of ['es', 'en']) for (const route of ['/app/route-catalog', '/app/route-catalog/roles/' + role.roleKey]) {
+        const context = await browser.newContext({ viewport: { width: 390, height: 900 } }); const page = await context.newPage();
+        await page.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elv_lang', l); }, [token, lang]);
+        await page.route('**/api/session', r => r.fulfill({ json: { role: 'user', onboardingCompleted: true } })); await page.route('**/api/skill-map', r => r.fulfill({ status: 503, json: {} }));
+        await page.route('**/api/route-catalog**', async r => { const url = new URL(r.request().url()); const response = await r.fetch({ url: apiUrl + url.pathname + url.search }); return r.fulfill({ json: tweak(await response.json()) }); });
+        await page.goto(frontend + route); await page.locator('.cgp-role, .cgp-detail').first().waitFor();
+        assert.ok((await page.locator('body').innerText()).includes(longRole), 'el título largo se muestra');
+        const widths = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]); assert.ok(widths[0] <= widths[1], `sin scroll horizontal a 390 px (${widths.join(' > ')}) en ${route} ${lang}`);
+        const body = await page.locator('body').innerText(); assert.ok(!/(el|on) (Por confirmar|To be confirmed)/.test(body), 'sin «… el Por confirmar»');
+        if (route.includes('roles/')) assert.ok(body.includes(lang === 'es' ? 'Fecha de consulta por confirmar' : 'Consultation date to be confirmed'));
+        await context.close(); }
+      check('E259-1/E259-2: título de 30 y 60 caracteres sin espacios sin scroll horizontal a 390 px (lista y ficha, ES/EN) y fechas inválidas con la frase entera «por confirmar»'); }
+    // Capturas opcionales (SHOTS_DIR): lista y ficha, ES, 390/1360, claro y oscuro del sistema.
+    if (process.env.SHOTS_DIR) { fs.mkdirSync(process.env.SHOTS_DIR, { recursive: true });
+      for (const scheme of ['light', 'dark']) for (const width of [390, 1360]) for (const [name, route] of [['lista', '/app/route-catalog'], ['ficha', '/app/route-catalog/roles/' + published.roles.find(r => (r.capabilities || []).length).roleKey]]) {
+        const { context, page } = await open('es', width, route); await context.close();
+        const shot = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme }); const p2 = await shot.newPage();
+        await p2.addInitScript(([t]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elv_lang', 'es'); }, [token]);
+        await p2.route('**/api/session', r => r.fulfill({ json: { role: 'user', onboardingCompleted: true } }));
+        await p2.route('**/api/skill-map', r => r.fulfill({ status: 503, json: {} }));
+        await p2.route('**/api/route-catalog**', async r => { const url = new URL(r.request().url()); return r.fulfill({ response: await r.fetch({ url: apiUrl + url.pathname + url.search }) }); });
+        await p2.goto(frontend + route); await p2.locator(name === 'lista' ? '.cgp-role' : '.cgp-detail').first().waitFor(); await p2.waitForTimeout(400);
+        await p2.screenshot({ path: path.join(process.env.SHOTS_DIR, name + '-' + width + '-' + scheme + '.png'), fullPage: true }); await shot.close(); }
     }
     console.log(`ES-255 servidor real: ${checks.length} comprobaciones superadas. Express + ruta del catálogo + PostgreSQL reales.`);
   } catch (error) {
