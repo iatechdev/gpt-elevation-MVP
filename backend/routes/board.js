@@ -5,6 +5,8 @@
 const express       = require('express');
 const { Transaction, Op } = require('sequelize');
 const router        = express.Router();
+const { validateIdParams } = require('../middlewares/params');
+validateIdParams(router, 'id'); // ES-280: cubre todos los montajes del router (/api/board y /api/manifest)
 const { sequelize } = require('../database');
 const EthicManifest = require('../EthicManifest');
 const User          = require('../User');

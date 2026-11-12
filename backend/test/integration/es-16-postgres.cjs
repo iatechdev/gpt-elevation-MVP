@@ -14,19 +14,20 @@ const { pathToFileURL } = require('node:url');
   const backendDirectory = path.resolve(__dirname, '../..');
   const fromBackend = createRequire(path.join(backendDirectory, 'package.json'));
   const { default: EmbeddedPostgres } = await import(pathToFileURL(fromBackend.resolve('embedded-postgres')).href);
+  const external = await require('../support/externalPostgres.cjs').openExternalPostgres('ES16_TEST_DATABASE_URL', 'es16'); // ES-261: en CI se usa el servicio PostgreSQL
   const parent = path.resolve(os.tmpdir()); const directory = fs.mkdtempSync(path.join(parent, 'es16-pg-'));
   assert.equal(path.dirname(path.resolve(directory)), parent); assert.ok(path.basename(directory).startsWith('es16-pg-'));
   const probe = net.createServer();
   const port = await new Promise((resolve, reject) => { probe.once('error', reject); probe.listen(0, '127.0.0.1', () => { const selected = probe.address().port; probe.close(() => resolve(selected)); }); });
   const password = randomBytes(24).toString('hex');
-  const pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es16_test', password, port, persistent: false,
+  const pg = external ? external.shim : new EmbeddedPostgres({ databaseDir: directory, user: 'es16_test', password, port, persistent: false,
     initdbFlags: ['--encoding=UTF8', '--locale=C'], postgresFlags: ['-h', '127.0.0.1'], onLog() {}, onError() {} });
   let started = false; let sequelize; let server;
   const checks = []; const check = label => { checks.push(label); console.log('PASS ' + label); };
   try {
     await pg.initialise(); await pg.start(); started = true;
     const { Sequelize } = fromBackend('sequelize');
-    sequelize = new Sequelize(`postgres://es16_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
+    sequelize = new Sequelize(external ? external.url : `postgres://es16_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
     process.env.JWT_SECRET = randomBytes(32).toString('hex'); process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     const databaseModuleId = fromBackend.resolve('./database'); require.cache[databaseModuleId] = { id: databaseModuleId, filename: databaseModuleId, loaded: true, exports: { sequelize } };
     const providerCalls = [];

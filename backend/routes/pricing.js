@@ -1,6 +1,8 @@
 // backend/routes/pricing.js
 const express     = require('express');
 const router      = express.Router();
+const { validateIdParams } = require('../middlewares/params');
+validateIdParams(router, 'id'); // ES-280: un id no entero o fuera de rango es 404 uniforme, no un 500
 const PricingPlan = require('../PricingPlan');
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, nonempty, text, numeric, boolean, textArray, optional, nullable } = require('../middlewares/validateBody');
