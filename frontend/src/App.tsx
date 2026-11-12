@@ -48,7 +48,7 @@ const Participants = lazy(() => import('./facilitation/Pages').then(m => ({ defa
 const ParticipantDetail = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.ParticipantDetail })))
 const NewReview = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.NewReview })))
 const OwnReviews = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.OwnReviews })))
-const CatalogBrowser = lazy(() => import('./routeCatalog/CatalogPages').then(m => ({ default: m.CatalogBrowser })))
+const CatalogBrowser = lazy(() => import('./routeCatalog/PersonCatalog.tsx').then(m => ({ default: m.CatalogBrowser })))
 const CatalogManager = lazy(() => import('./routeCatalog/CatalogPages').then(m => ({ default: m.CatalogManager })))
 const CompassPage = lazy(() => import('./compass/CompassPage').then(m => ({ default: m.CompassPage })))
 const CareerShell = lazy(() => import('./career/CareerShell').then(m => ({ default: m.CareerShell })))

@@ -1,85 +1,21 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useLanguage } from '../i18n/useLanguage'
 import { registerCatalogGuard } from '../catalogGuard'
-import { catalogApi, CatalogError, type Descriptor, type Detail, type Published } from './api'
-import { array, canonical, fieldLabel, kinds, object, payload, safeUrl, schemas, string, validKey, type Data, type Kind } from './schema'
+import { CatalogError, type Descriptor, type Detail } from './api'
+import { canonical, fieldLabel, kinds, object, payload, schemas, string, validKey, type Data, type Kind } from './schema'
 import { CatalogFields } from './CatalogFields'
 import './catalog.css'
 
-const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
-const readSession = () => { try { return JSON.stringify([localStorage.getItem('elevation_token') ?? '', localStorage.getItem('elevation_role') ?? '']) } catch { return '["",""]' } }
-function useSession() {
-  const [session, setSession] = useState(readSession)
-  useEffect(() => { const update = () => setSession(readSession()); window.addEventListener('storage', update); window.addEventListener('focus', update); return () => { window.removeEventListener('storage', update); window.removeEventListener('focus', update) } }, [])
-  return session
-}
-function useWords() { const language = useLanguage(); return { ...language, tr: (key: string) => language.t(`catalog.${key}`) } }
-// ES-255: mercado (país ISO) e idioma salen con su nombre en el idioma de la pantalla; si el navegador no lo conoce, «Por confirmar» (nunca el código crudo).
-function useNames() {
-  const { lang, tr } = useWords()
-  return useMemo(() => {
-    const make = (type: 'region' | 'language') => { try { return new Intl.DisplayNames([lang], { type }) } catch { return null } }
-    const regions = make('region'); const languages = make('language')
-    const named = (names: Intl.DisplayNames | null, code: unknown) => { const value = string(code); if (!value || value === 'unknown') return tr('unknown'); try { const out = names?.of(value); return out && out.toLowerCase() !== value.toLowerCase() ? out : tr('unknown') } catch { return tr('unknown') } }
-    return { country: (code: unknown) => named(regions, code), language: (code: unknown) => named(languages, code) }
-  }, [lang, tr])
-}
-function useClient(session: string) {
-  const token = (JSON.parse(session) as string[])[0]
-  const api = useMemo(() => catalogApi(API, token), [token])
-  const live = useRef(false)
-  useEffect(() => { live.current = true; return () => { live.current = false } }, [])
-  return { api, current: () => live.current && session === readSession() }
-}
+import { readSession, useClient, useSession, useWords } from './shared'
 function Shell({ admin = false, go, children }: { admin?: boolean; go?: (path: string) => void; children: ReactNode }) {
   const { lang, setLang, tr } = useWords(); const navigate = useNavigate()
   return <div className="route-catalog-scope"><a className="catalog-skip" href="#catalog-main">{tr('skip')}</a><header><button className="elv-btn" onClick={() => (go ?? navigate)(admin ? '/admin/dashboard' : '/app/dashboard')}>{tr(admin ? 'admin_back' : 'back')}</button><div role="group" aria-label={tr('language')}>{(['es', 'en'] as const).map(l => <button className="elv-btn" key={l} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header><main id="catalog-main" tabIndex={-1}>{children}</main></div>
 }
-function Outbound({ url, children }: { url: unknown; children: ReactNode }) { const { tr } = useWords(); const safe = safeUrl(url); return safe ? <a className="elv-link" href={safe} target="_blank" rel="noopener noreferrer">{children} · {new URL(safe).hostname} <small>({tr('new_tab')})</small></a> : <span>{children}</span> }
 function Notice({ text, error = false, focus = true }: { text: string; error?: boolean; focus?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => { if (text && focus) ref.current?.focus() }, [text, focus])
   return <div ref={ref} tabIndex={-1} role={error ? 'alert' : 'status'} className={error ? 'catalog-error' : 'catalog-notice'}>{text}</div>
 }
-export function CatalogBrowser() {
-  const session = useSession(); const location = useLocation(); const token = (JSON.parse(session) as string[])[0]
-  return token ? <BrowserSession key={session + location.pathname + location.search} session={session} /> : <Navigate to="/login" replace />
-}
-function BrowserSession({ session }: { session: string }) {
-  const { api, current } = useClient(session); const { tr, lang } = useWords(); const names = useNames(); const { roleKey } = useParams()
-  const [catalog, setCatalog] = useState<Published | null>(null); const [status, setStatus] = useState('loading'); const [attempt, setAttempt] = useState(0)
-  const [market, setMarket] = useState(''); const [context, setContext] = useState(''); const [language, setLanguage] = useState('')
-  useEffect(() => {
-    let cancelled = false
-    void api.published().then(value => { if (!cancelled && readSession() === session) { setCatalog(value); setStatus('') } }).catch(error => { if (!cancelled && readSession() === session) setStatus(error instanceof CatalogError && error.status === 401 ? 'session' : error instanceof CatalogError && error.code === 'catalog_unavailable' ? 'empty' : 'error') })
-    return () => { cancelled = true }
-  }, [api, session, attempt])
-  const label = (item: Data) => string(object(item.labels)[lang]) || tr('unknown')
-  const role = catalog?.roles.find(row => row.roleKey === roleKey)
-  const filtered = catalog?.roles.filter(row => (!market || row.market === market) && (!context || array(row.contexts).includes(context)) && (!language || array(row.languagesRequired).includes(language))) ?? []
-  return <Shell><h1>{tr('title')}</h1><p>{tr('intro')}</p>{status && <><Notice text={tr(status)} focus={status !== 'loading'} error={status === 'error' || status === 'session'} />{status === 'session' ? <Link to="/login">{tr('login')}</Link> : status !== 'loading' && <button className="elv-btn" onClick={() => { if (current()) { setStatus('loading'); setAttempt(n => n + 1) } }}>{tr('retry')}</button>}</>}
-    {catalog && !status && <><p>{tr('version')} {catalog.version} · {tr('publishedAt')} {new Date(catalog.publishedAt).toLocaleDateString(lang)}</p>{kinds.some(kind => catalog[kind].some(item => item.synthetic === true)) && <p className="catalog-warning">{tr('synthetic')}</p>}
-      {roleKey ? <><Link className="elv-link" to="/app/route-catalog">{tr('catalog_back')}</Link>{role ? <RoleDetail role={role} catalog={catalog} /> : <Notice text={tr('not_found')} />}</> : <><div className="catalog-filters">{[{ name: 'market', value: market, set: setMarket, options: [...new Set(catalog.roles.map(r => string(r.market)))] }, { name: 'language_filter', value: language, set: setLanguage, options: [...new Set(catalog.roles.flatMap(r => array(r.languagesRequired).map(string)))].filter(option => option !== 'unknown') }, { name: 'context', value: context, set: setContext, options: catalog.contexts.map(c => string(c.contextKey)) }].map(filter => <div key={filter.name}><label htmlFor={`filter-${filter.name}`}>{tr(filter.name)}</label><select id={`filter-${filter.name}`} className="elv-select" value={filter.value} onChange={event => filter.set(event.target.value)}><option value="">{tr('all')}</option>{filter.options.filter(Boolean).map(option => <option key={option} value={option}>{filter.name === 'context' ? label(catalog.contexts.find(c => c.contextKey === option) ?? {}) : filter.name === 'market' ? names.country(option) : names.language(option)}</option>)}</select></div>)}</div><div className="catalog-grid">{filtered.map(row => <article className="elv-card catalog-card" key={string(row.roleKey)}><h2>{label(row)}</h2><p>{string(object(row.industry)[lang]) || tr('unknown')} · {names.country(row.market)} · {array(row.languagesRequired).map(value => names.language(value)).join(', ')}</p><p>{tr(row.verificationTask ? 'verificationTask' : 'sources_current')}</p>{row.synthetic === true && <p>{tr('synthetic')}</p>}<Link className="elv-btn" to={`/app/route-catalog/roles/${encodeURIComponent(string(row.roleKey))}`}>{tr('profile')}</Link></article>)}</div>{!filtered.length && <p>{tr('no_results')}</p>}</>}
-    </>}
-  </Shell>
-}
-function RoleDetail({ role, catalog }: { role: Data; catalog: Published }) {
-  const { tr, lang } = useWords(); const names = useNames(); const localized = (v: unknown) => string(object(v)[lang]) || tr('unknown')
-  const sourceTitle = (key: unknown) => string(catalog.sources.find(source => source.sourceKey === key)?.title) || tr('source_unknown')
-  const resources = catalog.resources.filter(resource => array(resource.roleKeys).includes(role.roleKey))
-  const sourceKeys = new Set([...array(role.sourceKeys), ...array(role.tasks).map(task => object(object(task).aiExposure).sourceKey), object(role.regulated).sourceKey, ...resources.map(resource => resource.sourceKey)])
-  return <article className="catalog-detail"><h2>{localized(role.labels)}</h2><p>{localized(role.industry)} · {names.country(role.market)}</p><p>{array(role.languagesRequired).map(value => names.language(value)).join(', ')} · {array(role.modality).map(value => tr(string(value))).join(', ')}</p>
-    {object(role.domainReview).present === true && <p>{tr('review')} {string(object(role.domainReview).at)}</p>}{role.verificationTask === true && <p className="catalog-warning">{tr('verificationTask')}</p>}
-    <section className="catalog-card"><h3>{tr('tasks')}</h3>{array(role.tasks).map((value, index) => { const task = object(value); const exposure = object(task.aiExposure); return <div key={index}><p>{localized(task.text)}</p><p>{tr(string(exposure.status) || 'unknown')}{exposure.note ? ` · ${localized(exposure.note)}` : ''}{exposure.sourceKey ? ` · ${sourceTitle(exposure.sourceKey)}` : ''}</p></div> })}</section>
-    <section className="catalog-card"><h3>{tr('barriers')}</h3>{array(role.barriers).length ? <ul>{array(role.barriers).map((v, index) => <li key={index}>{localized(v)}</li>)}</ul> : <p>{tr('none')}</p>}<h3>{tr('capabilities')}</h3><p>{tr('requirement')}</p><ul>{array(role.capabilities).map((v, index) => <li key={index}>{tr('skill_unknown')} · {tr(string(object(v).importance))}</li>)}</ul></section>
-    {object(role.regulated).isRegulated === true && <section className="catalog-card catalog-warning"><p>{tr('licensing')}</p><p>{localized(object(role.regulated).note)}</p></section>}
-    <section className="catalog-card"><h3>{tr('sources')}</h3>{catalog.sources.filter(s => sourceKeys.has(s.sourceKey)).map(source => <article key={string(source.sourceKey)}><Outbound url={source.url}>{string(source.title)}</Outbound><p>{string(source.consultedAt)} · {names.language(source.language)}</p>{source.stale === true && <p className="catalog-warning">{tr('stale')}</p>}</article>)}</section>
-    <section className="catalog-card"><h3>{tr('offers')}</h3>{!catalog.offers.some(offer => offer.roleKey === role.roleKey) && <p>{tr('none')}</p>}{catalog.offers.filter(offer => offer.roleKey === role.roleKey).map(offer => <article key={string(offer.offerKey)}><h4><Outbound url={offer.url}>{string(offer.title)}</Outbound></h4><p>{string(offer.organization)} · {names.country(offer.market)} · {names.language(offer.language)} · {tr(string(offer.modality))}</p><p>{offer.status === 'current' ? `${tr('checked')} ${string(offer.verifiedAt)}` : tr(offer.status === 'expired' ? 'expired' : 'unverified')}</p><p>{object(offer.salary).published === true ? string(object(offer.salary).text) : tr('unpublished_salary')}</p>{typeof offer.extract === 'string' && <p>{string(offer.extract)}</p>}</article>)}</section>
-    <section className="catalog-card"><h3>{tr('resources')}</h3><p>{tr('course_limit')}</p>{!resources.length && <p>{tr('none')}</p>}{resources.map(resource => <article key={string(resource.resourceKey)}><h4><Outbound url={resource.url}>{string(resource.title)}</Outbound></h4><p>{string(resource.provider)} · {names.language(resource.language)} · {tr(string(resource.level))}</p><p>{tr('purpose')}: {localized(resource.purpose)}</p><p>{tr('duration')}: {typeof object(resource.duration).minutes === 'number' ? `${object(resource.duration).minutes} ${tr('minutes')}` : string(object(resource.duration).text)}</p><p>{tr('price')}: {object(resource.price).published === true ? `${object(resource.price).amount} ${string(object(resource.price).currency)}` : tr('unknown_price')}</p><p>{tr('skill')}: {tr('skill_unknown')}</p><p>{tr('exercise')}: {localized(resource.exercise)}</p></article>)}</section>
-  </article>
-}
-
 export function CatalogManager() {
   const session = useSession(); const location = useLocation(); const [token, role] = JSON.parse(session) as string[]
   const params = useParams(); const { tr } = useWords()

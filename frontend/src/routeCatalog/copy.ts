@@ -11,6 +11,8 @@ const copy = {
   synthetic: ['Contenido de prueba; no describe ofertas ni precios reales.', 'Test content; it does not describe real vacancies or prices.'],
   contexts: ['Contextos', 'Contexts'], sources: ['Fuentes', 'Sources'], roles: ['Roles y rutas', 'Roles and routes'], offers: ['Ofertas', 'Vacancies'], resources: ['Recursos', 'Resources'], tasks: ['Tareas y exposición a IA', 'Tasks and AI exposure'], barriers: ['Barreras', 'Barriers'], capabilities: ['Capacidades requeridas', 'Required capabilities'],
   requirement: ['Requisito del rol, no evaluación personal.', 'Role requirement, not a personal assessment.'], course_limit: ['Completar un curso no acredita competencia.', 'Completing a course does not demonstrate competence.'], unknown: ['Por confirmar', 'To be confirmed'],
+  clear_filters: ['Quitar filtros', 'Clear filters'], roles_count: ['{n} de {total} roles', '{n} of {total} roles'], synthetic_short: ['Contenido de prueba', 'Test content'], licensing_title: ['Habilitación profesional', 'Professional licensing'],
+  consulted: ['Consultada el', 'Consulted on'],
   create: ['Crear borrador', 'Create draft'], open: ['Abrir', 'Open'], draft: ['Borrador', 'Draft'], published: ['Publicada', 'Published'], archived: ['Archivada', 'Archived'],
   draft_back: ['Volver a la versión', 'Back to version'], add: ['Añadir elemento', 'Add item'], key: ['Clave estable', 'Stable key'], edit: ['Editar', 'Edit'], read: ['Consultar', 'View'],
   save: ['Guardar borrador', 'Save draft'], unsaved: ['Aún no guardado', 'Not saved yet'], saving: ['Guardando…', 'Saving…'], saved: ['Guardado en el borrador', 'Saved in draft'],

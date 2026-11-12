@@ -1,0 +1,42 @@
+/* ES-172 (HU-P21): catálogo de rutas, vista de la persona. Solo tokens --cg-*; sin colores propios. */
+@import '../shell/shell.css';
+
+.cgp { min-height: 100dvh; padding: 0 var(--cg-s4); }
+.cgp-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 1240px; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
+.cgp-main:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
+.cgp-lead { max-width: 46rem; margin: 0; }
+.cgp-meta { margin: 0; }
+.cgp-loading { max-width: 46rem; }
+.cgp-notice { outline: none; }
+.cgp-notice:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
+
+.cgp-filters { display: grid; gap: var(--cg-s3); grid-template-columns: 1fr; }
+.cgp-count { align-items: center; justify-content: space-between; }
+.cgp-count p { margin: 0; }
+
+.cgp-grid, .cgp-sections { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cg-s4); grid-template-columns: 1fr; }
+.cgp-role { height: 100%; display: grid; gap: var(--cg-s3); align-content: start; }
+.cgp-role p { margin: 0; }
+.cgp-detail { display: grid; gap: var(--cg-s3); }
+.cgp-detail > p { margin: 0; }
+.cgp-section h2 { margin-bottom: var(--cg-s3); }
+.cgp-list { margin: 0; padding-left: 1.2rem; display: grid; gap: var(--cg-s2); }
+.cgp-h3 { font: 700 1.05rem var(--cg-font-sans); margin: 0; overflow-wrap: anywhere; }
+.cgp-out { overflow-wrap: anywhere; }
+.cgp-out small { color: var(--cg-muted); }
+
+@media (min-width: 640px) {
+  .cgp-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cgp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .cgp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cgp-sections { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .cgp-wide { grid-column: 1 / -1; }
+}
+
+/* `.cg a` (color de marca) pesa más que `.cg-btn`: un enlace que hace de botón conserva el color del botón (contraste 4,5:1). Brecha del sistema; se corrige aquí sin tocar cartografia.css. */
+.cgp a.cg-btn { color: var(--cg-ground); text-decoration: none; }
+.cgp a.cg-btn:hover { color: var(--cg-ground); }
+.cgp a.cg-btn--ghost { color: var(--cg-ink); }
+.cgp a.cg-btn--ghost:hover { color: var(--cg-mark); }
