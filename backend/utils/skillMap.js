@@ -47,6 +47,19 @@ function confidenceFor(evidences) {
 }
 
 const isoNow = () => new Date();
+// ES-295 (como QA-25-01 en el Puente): las autoevaluaciones de una MISMA persona se atienden de una en una dentro de este proceso. Antes, con N simultáneas de la misma habilidad solo una
+// ganaba el INSERT por ronda y la última podía necesitar N intentos (> MAX_ATTEMPTS) → 409 aunque no hubiera ningún error real. Límite conocido: la cola es por PROCESO (una sola réplica); con más de
+// una réplica el índice único sigue siendo el respaldo y el 409 reintentable (abajo) NO cambia.
+const ownerQueues = new Map();
+function serialize(userId, fn) {
+  const previous = ownerQueues.get(userId) || Promise.resolve();
+  const run = previous.then(fn, fn);
+  const tail = run.then(() => {}, () => {});
+  ownerQueues.set(userId, tail);
+  tail.then(() => { if (ownerQueues.get(userId) === tail) ownerQueues.delete(userId); });
+  return run;
+}
+
 async function ownTransaction(fn) {
   const transaction = await sequelize.transaction();
   try {
@@ -123,7 +136,7 @@ async function selfAssess(userId, body) {
   // Discrepancia entre el nivel de la persona y lo que declaran sus propias evidencias: requiere revisión humana, no se resuelve sola.
   const state = autonomies.length && Math.abs(input.level - Math.max(...autonomies)) >= 2 ? 'contradictory' : 'initial';
 
-  for (let attempt = 1; ; attempt++) {
+  return serialize(userId, async () => { for (let attempt = 1; ; attempt++) {
     try {
       return await ownTransaction(async (transaction) => {
         const repeated = await SkillAssessment.findOne({ where: { UserId: userId, requestId: input.requestId }, transaction });
@@ -142,7 +155,7 @@ async function selfAssess(userId, body) {
       if (error && error.name === 'SequelizeUniqueConstraintError') throw new SkillMapError(409, 'conflict', 'Otro cambio ocurrió al mismo tiempo. Reintenta.', 'Another change happened at the same time. Retry.');
       throw error;
     }
-  }
+  } });
 }
 
 // El mapa: una entrada por habilidad del catálogo vigente. Sin evidencia vigente el nivel es null. Sin agregados ni porcentajes.

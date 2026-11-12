@@ -91,6 +91,19 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
     assert.doesNotMatch(row.rationale, /nota/);
   });
 
+  await t.test('ES-295: 30 autoevaluaciones simultáneas de la misma habilidad, en 4 rondas → 0 rechazos (sin 409), una sola vigente y todas guardadas', async () => {
+    // Antes de ES-295 la última de N simultáneas podía agotar los 6 reintentos y recibir 409; con 30 por ronda pasaba de forma casi segura (la prueba de 8 lo hacía solo a veces).
+    const e = await evidence.create(4, evBody());
+    const refs = [{ evidenceId: e.id, version: 1 }];
+    for (let round = 0; round < 4; round += 1) {
+      const results = await Promise.allSettled(Array.from({ length: 30 }, (_, i) =>
+        skillMap.selfAssess(4, { skillKey: 'comunicacion', level: (i % 4) + 1, evidenceRefs: refs, requestId: rid(), rationale: `ronda ${round} nota ${i}` })));
+      assert.deepEqual(results.filter((r) => r.status === 'rejected').map((r) => r.reason.message), [], 'ronda ' + round);
+      assert.equal(await Assessment.count({ where: { UserId: 4, skillKey: 'comunicacion', track: 'self', status: 'current' } }), 1, 'una sola vigente, ronda ' + round);
+    }
+    assert.equal(await Assessment.count({ where: { UserId: 4, skillKey: 'comunicacion' } }), 120, 'las 120 quedaron guardadas (1 vigente y 119 sustituidas)');
+  });
+
   await t.test('el mismo requestId repetido a la vez crea una sola evaluación', async () => {
     const e = await evidence.create(2, evBody());
     const body = { skillKey: 'planificacion', level: 2, evidenceRefs: [{ evidenceId: e.id, version: 1 }], requestId: 'pg-same-000001' };
