@@ -248,6 +248,23 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     assert.equal(Number((await q('SELECT count(*) n FROM "ReviewShares" WHERE "UserId"=$1', [lim.id]))[0].n), 30);
   });
 
+  await t.test('E262-7: el tope de 30 INTENTOS por persona y hora es UNIFORME: la 31.ª petición da el mismo 429 con un revisor utilizable, inexistente, persona o admin; la ventana se libera', async () => {
+    const reviews = require('../../utils/reviews'); const reviewer = await mkUser('therapist'); const plain = await mkUser('user'); const admin = await mkUser('admin');
+    const kinds = [['utilizable', reviewer.id], ['inexistente', 99999999], ['persona', plain.id], ['admin', admin.id]];
+    let clockNow = Date.now(); reviews._test.setClock(() => clockNow);
+    try {
+      const out = [];
+      for (const [kind, reviewerId] of kinds) {
+        const me = await mkUser('user'); const ev = await evidence(me);
+        for (let i = 0; i < 30; i++) { const r = await http(me, 'POST', '/api/me/review-shares', { reviewerId, evidenceIds: [ev], requestId: rid() }); assert.notEqual(r.status, 429, `${kind}: el intento ${i + 1} aún cabe`); }
+        const over = await http(me, 'POST', '/api/me/review-shares', { reviewerId, evidenceIds: [ev], requestId: rid() }); out.push([kind, over.status, over.body.code]);
+        const again = await http(me, 'POST', '/api/me/review-shares', { reviewerId: 12345678, evidenceIds: [ev], requestId: rid() }); out.push(['otro id', again.status, again.body.code]);
+        if (kind === 'utilizable') { clockNow += 3600 * 1000 + 1000; const freed = await http(me, 'POST', '/api/me/review-shares', { reviewerId, evidenceIds: [ev], requestId: rid() }); assert.equal(freed.status, 201, 'pasada la hora, el tope se libera: ' + JSON.stringify(freed.body)); }
+      }
+      assert.ok(out.every(([, status, code]) => status === 429 && code === 'rate_limited'), JSON.stringify(out));
+    } finally { reviews._test.setClock(() => Date.now()); reviews._test.reset(); }
+  });
+
   await t.test('ES-23: las 4 tablas entran a personalData.CORE (se exporta descifrado, sin requestId) y la autorización queda en el historial de consentimientos', async () => {
     const s = await scene(); await object(s.person, s.reviewId, 'Para la exportación');
     const { personalData, CORE } = require('../../utils/personalData'); const User = require('../../User');

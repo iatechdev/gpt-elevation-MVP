@@ -34,4 +34,4 @@ Revisor (lado mínimo, sin pantallas): `GET /api/reviewer/shares`; `POST /api/re
 - **E262-3:** una evidencia borrada no aparece en el material del revisor y `POST /api/reviewer/reviews` la rechaza con 400 `invalid_evidence`.
 - **E262-4:** el permiso (`consent.grantIn`) y la autorización se crean en UNA transacción.
 - **E262-5:** `listReviews` y `reviewerObjections` por lotes (una comprobación de permiso por persona).
-- **E262-7:** tope de 30 autorizaciones por persona y hora (429 `rate_limited`).
+- **E262-7 (revisado tras la reverificación):** tope de 30 INTENTOS de autorizar por persona y hora, comprobado ANTES de validar evidencias o revisor: la 31.ª petición da el mismo 429 `rate_limited` con un revisor utilizable, inexistente, persona o admin. En memoria del proceso (como el límite de inicio de sesión): con varias réplicas el tope se multiplica (declarado).

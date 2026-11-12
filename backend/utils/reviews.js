@@ -7,7 +7,7 @@
 //   - el revisor es un usuario con rol `therapist` (confirmado por Infra el 12-nov-2026).
 // Propietario y permiso se verifican en el SERVIDOR en CADA acceso (withConsent: bloqueo compartido, una retirada concurrente espera). Un id ajeno responde el mismo 404 que uno inexistente.
 // NUNCA llega al revisor: crisis, diario, chat, correo, evidencias con origen en el chat ni las no marcadas por la persona.
-const { Op, Transaction, UniqueConstraintError } = require('sequelize');
+const { Transaction, UniqueConstraintError } = require('sequelize');
 const { sequelize } = require('../database');
 const User = require('../User');
 const Evidence = require('../Evidence');
@@ -24,7 +24,18 @@ const { encriptar, desencriptar } = require('./crypto');
 const PURPOSE = 'professional_review';
 const MAX_TEXT = 2000;
 const MAX_EVIDENCE = 20;
-const MAX_SHARES_PER_HOUR = 30;
+const MAX_ATTEMPTS_PER_HOUR = 30;
+// E262-7: tope de INTENTOS de autorizar por persona y hora (cuenta todo intento válido en forma, tenga éxito o no: con un revisor utilizable, inexistente, persona o admin la respuesta es la misma 429).
+// En memoria de este proceso (como loginRateLimit): con varias réplicas el tope se multiplica; declarado. El reloj se puede sustituir en las pruebas.
+let clock = () => Date.now();
+const attempts = new Map();
+function takeAttempt(userId) {
+  const cutoff = clock() - 3600 * 1000;
+  const recent = (attempts.get(userId) || []).filter((at) => at > cutoff);
+  if (recent.length >= MAX_ATTEMPTS_PER_HOUR) { attempts.set(userId, recent); throw new ReviewError(429, 'rate_limited', 'Demasiados intentos seguidos. Inténtalo más tarde.', 'Too many attempts in a row. Try again later.'); }
+  recent.push(clock()); attempts.set(userId, recent);
+  if (attempts.size > 20000) for (const [key, list] of attempts) { if (!list.some((at) => at > cutoff)) attempts.delete(key); }
+}
 const LOCALES = ['es', 'en'];
 
 class ReviewError extends Error {
@@ -94,6 +105,7 @@ async function authorize(userId, body) {
     || !Array.isArray(body.evidenceIds) || body.evidenceIds.length < 1 || body.evidenceIds.length > MAX_EVIDENCE || !body.evidenceIds.every(isId)) throw invalid();
   const evidenceIds = [...new Set(body.evidenceIds)].sort((a, b) => a - b);
   if (evidenceIds.length !== body.evidenceIds.length) throw invalid();
+  takeAttempt(userId); // ANTES de validar evidencias o revisor: el tope es el mismo para cualquier reviewerId
   const replay = async () => {
     const found = await ReviewShare.findOne({ where: { UserId: userId, requestId: body.requestId } });
     if (!found) return null;
@@ -106,8 +118,6 @@ async function authorize(userId, body) {
   // y cualquier revisor no utilizable (inexistente, sin rol therapist, inactivo, borrándose o uno mismo) da el mismo 404.
   const refs = await shareableRefs(userId, evidenceIds);
   if (!await reviewerOf(body.reviewerId) || body.reviewerId === userId) throw new ReviewError(404, 'reviewer_not_found', 'No se encontró a esa persona revisora.', 'That reviewer was not found.');
-  // E262-7: tope por persona (cada autorización sustituye a la anterior; no debe poder acumular filas sin límite).
-  if (await ReviewShare.count({ where: { UserId: userId, createdAt: { [Op.gt]: new Date(Date.now() - 3600 * 1000) } } }) >= MAX_SHARES_PER_HOUR) throw new ReviewError(429, 'rate_limited', 'Demasiadas autorizaciones seguidas. Inténtalo más tarde.', 'Too many authorizations in a row. Try again later.');
   // E262-4: el permiso y la autorización se crean en UNA transacción: si falla la autorización no queda el permiso concedido.
   for (let attempt = 1; ; attempt++) {
     try {
@@ -334,4 +344,4 @@ async function respond(reviewerId, objectionId, body) {
   }
 }
 
-module.exports = { ReviewError, authorize, revoke, listShares, listReviews, object, reviewerShares, createReview, reviewerObjections, respond, MAX_TEXT };
+module.exports = { _test: { setClock: (fn) => { clock = fn; }, reset: () => attempts.clear() }, ReviewError, authorize, revoke, listShares, listReviews, object, reviewerShares, createReview, reviewerObjections, respond, MAX_TEXT };
