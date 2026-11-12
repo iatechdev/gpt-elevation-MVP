@@ -190,6 +190,18 @@ jobs:
         run: npm run test:landing-concurrency:pg
         env:
           ES279_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-282 contraseñas, no enumeración, cabeceras/CORS, guías, requestId y sanitización del prompt (PostgreSQL real)
+        run: npm run test:transversal:pg
+        env:
+          ES282_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-31 catálogo de rutas - índices parciales y publicaciones simultáneas (PostgreSQL real; E239-2)
+        run: npm run test:routecatalog:pg
+        env:
+          ES31_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-278 planes de precio - el servidor valida identificador, precio y rangos (PostgreSQL real)
+        run: npm run test:pricing-validation:pg
+        env:
+          ES278_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-274 purga de la persona conservando lo que escribió el profesional (PostgreSQL real)
         run: npm run test:purge-option-a:pg
         env:
