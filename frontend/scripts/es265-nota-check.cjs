@@ -14,8 +14,8 @@ const fs = require('node:fs');
   const errors = []; let count = 0;
   const check = (label) => { count++; console.log('PASS ' + label); };
   const T = {
-    es: { warn: /Tu sesión venció\. Tu nota no se guardó/, enter: 'Entrar', neu: 'Nueva nota', save: 'Guardar', textLabel: 'Texto' },
-    en: { warn: /Your session has expired\. Your note was not saved/, enter: 'Sign in', neu: 'New note', save: 'Save', textLabel: 'Text' },
+    es: { warn: /Tu sesión venció\. Tu nota no se guardó/, enter: 'Entrar', renewed: 'Ya iniciaste sesión de nuevo', neu: 'Nueva nota', save: 'Guardar', textLabel: 'Texto' },
+    en: { warn: /Your session has expired\. Your note was not saved/, enter: 'Sign in', renewed: 'You have already signed in again', neu: 'New note', save: 'Save', textLabel: 'Text' },
   };
   const history = { patient: { id: 7, name: 'Persona Sintética', email: 'sintetica@example.test', createdAt: '2026-10-01T00:00:00Z' }, moodLogs: [], ratings: [], notes: [] };
   const session = { id: 9, patientId: 7, patientName: 'Persona Sintética', sharing: true, scheduledAt: '2026-11-12T15:00:00Z', duration: 50, status: 'in_progress', startedAt: '2026-11-12T15:00:00Z' };
@@ -112,6 +112,39 @@ const fs = require('node:fs');
       await context.close();
     }
     check(`sala, cierre + 401 (${tag}): aviso en el diálogo, texto intacto, «Entrar» → /login`);
+
+    // enterAgain en las tres superficies: foco en «Entrar» (diálogos), sesión más nueva → aviso + foco al cuadro, token ausente → /login sin aviso falso
+    const surfaces = {
+      ficha: async (page) => { await page.getByRole('button', { name: c.neu }).click(); await page.locator('#fu-text').fill('Texto de la nota'); await page.getByRole('button', { name: c.save, exact: true }).click(); const box = page.locator('#fu-problem'); await box.getByText(c.warn).waitFor(); return { scope: box, field: 'fu-text', dialog: true }; },
+      viva: async (page) => { const live = page.locator('#sr-live-notes'); await live.waitFor(); await page.waitForFunction(() => !document.querySelector('#sr-live-notes').disabled); await live.fill('Nota en vivo'); await page.locator('#sr-note-status').getByText(c.warn).waitFor({ timeout: 8000 }); return { scope: page.locator('.sr-notes'), field: 'sr-live-notes', dialog: false }; },
+      cierre: async (page) => { await page.locator('.sr-btn-finish').click(); await page.locator('input[name="sr-mood"]').first().check({ force: true }); await page.locator('#sr-close-note').fill('Cierre de la sesión con suficiente texto'); await page.locator('.sr-btn-primary-light').click(); const box = page.locator('#sr-close-problem'); await box.getByText(c.warn).waitFor({ timeout: 8000 }); return { scope: box, field: 'sr-close-note', dialog: true }; },
+    };
+    const opts = { ficha: { notesPost: 401 }, viva: { liveNotePost: 401 }, cierre: { endStatus: 401 } };
+    const paths = { ficha: '/therapist/patient/7', viva: '/therapist/session/9', cierre: '/therapist/session/9' };
+    for (const name of ['ficha', 'viva', 'cierre']) {
+      { // (a) foco en «Entrar» (solo en los diálogos: en la nota en vivo el foco sigue en el cuadro donde se escribe) y (b) sesión más nueva
+        const { context, page } = await open(width, lang, paths[name], opts[name]);
+        const { scope, field, dialog } = await surfaces[name](page);
+        const enter = scope.getByRole('button', { name: c.enter, exact: true });
+        if (dialog) await page.waitForFunction(() => document.activeElement && document.activeElement.textContent && /^(Entrar|Sign in)$/.test(document.activeElement.textContent.trim()), null, { timeout: 3000 }).catch(() => { throw new Error(`el foco pasa a «Entrar» (${name}, ${tag})`); });
+        await page.evaluate(() => localStorage.setItem('elevation_token', 'nuevo'));
+        await enter.click();
+        await scope.getByText(c.renewed).waitFor();
+        await page.waitForFunction((id) => document.activeElement && document.activeElement.id === id, field, { timeout: 3000 }).catch(() => { throw new Error(`el foco vuelve al cuadro de texto (${name}, ${tag})`); });
+        assert.equal(await tokenOf(page), 'nuevo', `la sesión nueva se conserva (${name}, ${tag})`);
+        assert.ok(!page.url().includes('/login'), `sigue en la pantalla (${name}, ${tag})`);
+        await context.close();
+      }
+      { // (c) token ausente → /login, sin el aviso falso
+        const { context, page } = await open(width, lang, paths[name], opts[name]);
+        const { scope } = await surfaces[name](page);
+        await page.evaluate(() => localStorage.removeItem('elevation_token'));
+        await scope.getByRole('button', { name: c.enter, exact: true }).click(); await page.waitForURL('**/login', { timeout: 8000 });
+        assert.equal(await page.getByText(c.renewed).count(), 0, `sin el aviso falso (${name}, ${tag})`);
+        await context.close();
+      }
+    }
+    check(`«Entrar» en nota, sala y cierre (${tag}): foco coherente, sesión más nueva no se cierra y avisa, token ausente va a /login`);
   }
 
   assert.deepEqual(errors, [], 'errores de consola o de página: ' + errors.join(' | '));
