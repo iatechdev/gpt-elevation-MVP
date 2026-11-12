@@ -413,6 +413,15 @@
     "denied": [],
     "session": false
   },
+  "GET /api/landing-content/versions": {
+    "denied": [
+      "admin",
+      "board",
+      "therapist",
+      "user"
+    ],
+    "session": true
+  },
   "GET /api/manifest/active": {
     "denied": [],
     "session": false
