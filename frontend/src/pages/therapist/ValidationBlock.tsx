@@ -2,6 +2,7 @@
 import { useRef, useState, type CSSProperties } from 'react'
 import { PanelBlock } from './PanelSections'
 import type { SectionState } from './useSection'
+import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -30,7 +31,8 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
   const [docType, setDocType] = useState<ValidationDoc['documentType']>('titulo')
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<{ text: string; failed: boolean } | null>(null)
+  const [message, setMessage] = useState<{ text: string; failed: boolean; enter?: boolean } | null>(null)
+  const usedToken = useRef('') // ES-285
   const input = useRef<HTMLInputElement>(null)
 
   async function upload() {
@@ -39,7 +41,10 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
     setBusy(true); setMessage(null)
     try {
       const form = new FormData(); form.append('document', file); form.append('documentType', docType)
-      const res = await fetch(`${API}/api/therapist/validation/upload`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}` }, body: form })
+      const token = getToken(); usedToken.current = token
+      const res = await fetch(`${API}/api/therapist/validation/upload`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: form })
+      if (res.status === 401) { setMessage({ text: t('session_expired_file'), failed: true, enter: true }); return } // ES-285: sesión vencida → aviso con «Entrar»
+      if (res.status === 403) { setMessage({ text: t('panel_action_forbidden'), failed: true }); return }
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { code?: string }
         setMessage({ text: t(UPLOAD_ERRORS.includes(String(body.code)) ? `panel_up_${body.code}` : 'panel_up_error'), failed: true })
@@ -77,6 +82,7 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
           </label>
           <div><button type="submit" style={{ ...primary, opacity: busy ? 0.7 : 1 }} disabled={busy}>{busy ? t('panel_val_uploading') : t('panel_val_upload')}</button></div>
           <p role={message?.failed ? 'alert' : 'status'} style={{ margin: 0, fontSize: '0.85rem', color: message?.failed ? '#B91C1C' : '#2F4A29' }}>{message?.text ?? ''}</p>
+          {message?.enter && <div><button type="button" style={primary} onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button></div>}
         </form>
       )}
     </PanelBlock>
