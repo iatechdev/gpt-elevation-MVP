@@ -179,6 +179,7 @@ const summary = (ev, row, existingResumes) => {
   const resume = (Array.isArray(row.origins) ? row.origins : []).find((o) => o && o.type === 'resume');
   if (resume) out.origin = { kind: 'resume', version: resume.version, date: resume.stamp, needsReview: !(existingResumes && existingResumes.has(resume.id)) };
   if (row.hasChatOrigin) out.fromChat = true;
+  if (sourceRevoked(row)) { out.needsReview = true; out.reviewReason = 'source_revoked'; } // ES-296: solo el hecho, nunca ids ni citas del chat
   return out;
 };
 const resumeIdsOf = async (userId, rows) => (rows.some((r) => Array.isArray(r.origins) && r.origins.some((o) => o && o.type === 'resume'))
@@ -321,11 +322,34 @@ async function revokeForConsent(userId, transaction) {
   return revoked;
 }
 
+// ES-296 (equivalente de ES-229 para la evidencia): retirar el permiso de análisis del chat (insights_chat) marca «para revisión», en la MISMA transacción, la versión vigente de cada evidencia
+// confirmada con origen del chat (`sourceRevokedAt` dentro de `origins`, JSON privado: no viaja al motor ni al cliente) y registra la invalidación de lo derivado (evaluaciones y rutas recalculan).
+// Nada se borra ni se reescribe: la versión sigue en el historial y la persona decide si la reconfirma (una versión NUEVA, que exige el permiso). Volver a otorgar el permiso NO limpia la marca.
+// Idempotente: lo ya marcado no se vuelve a marcar ni a registrar. Orden de bloqueo: el consentimiento ya está tomado por setConsent; aquí solo se bloquean versiones de evidencia (consentimiento → evidencia).
+// Los orígenes de diario y de hoja de vida no existen en la evidencia (la procedencia «hoja de vida» sigue a resume_ai_reading, ES-109): solo insights_chat aplica.
+async function markSourceRevoked(userId, purpose, transaction) {
+  if (purpose !== 'insights_chat') return 0;
+  const rows = await EvidenceVersion.findAll({ where: { UserId: userId, status: 'confirmed', hasChatOrigin: true }, transaction, lock: Transaction.LOCK.UPDATE });
+  const at = new Date().toISOString();
+  let marked = 0;
+  for (const row of rows) {
+    const origins = Array.isArray(row.origins) ? row.origins : [];
+    if (!origins.some((o) => o && o.type === 'chat_turn' && !o.sourceRevokedAt)) continue; // idempotente
+    const ev = await Evidence.findOne({ where: { id: row.EvidenceId, UserId: userId, deletedAt: null }, transaction });
+    if (!ev || ev.currentVersion !== row.version) continue; // solo la versión vigente
+    await row.update({ origins: origins.map((o) => (o && o.type === 'chat_turn' && !o.sourceRevokedAt ? { ...o, sourceRevokedAt: at } : o)) }, { transaction });
+    await DerivedInvalidation.create({ UserId: userId, sourceType: 'evidence', sourceId: ev.id, reason: 'source_revoked' }, { transaction });
+    marked++;
+  }
+  return marked;
+}
+const sourceRevoked = (row) => (Array.isArray(row.origins) ? row.origins : []).some((o) => o && o.sourceRevokedAt);
+
 // ÚNICA puerta de lectura del motor: versiones confirmadas y vigentes, sin turnos, citas ni IDs del chat. Las que vienen del chat solo
 // se entregan con el consentimiento vigente; si no lo hay, se entregan solo las escritas directamente.
 async function getConfirmedEvidence(userId, consumer) {
   const collect = async (transaction, includeChat) => {
-    const rows = (await EvidenceVersion.findAll({ where: { UserId: userId, status: 'confirmed' }, transaction })).filter((row) => includeChat || !row.hasChatOrigin);
+    const rows = (await EvidenceVersion.findAll({ where: { UserId: userId, status: 'confirmed' }, transaction })).filter((row) => (includeChat || !row.hasChatOrigin) && !sourceRevoked(row)); // ES-296: lo marcado «para revisión» no viaja al motor
     if (rows.length === 0) return [];
     // ES-216: UNA consulta para todas las evidencias vigentes (antes, una por cada versión confirmada).
     const live = await Evidence.findAll({ where: { id: rows.map((row) => row.EvidenceId), UserId: userId, deletedAt: null }, attributes: ['id', 'currentVersion'], transaction });
@@ -349,5 +373,5 @@ async function getConfirmedEvidence(userId, consumer) {
 }
 
 module.exports = {
-  EvidenceError, create, update, list, get, remove, revokeForConsent, getConfirmedEvidence, normalizePayload,
+  EvidenceError, create, update, list, get, remove, revokeForConsent, markSourceRevoked, getConfirmedEvidence, normalizePayload,
 };

@@ -104,6 +104,8 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (purpose === 'resume_ai_reading' && status === 'revoked') await require('./resumes').revokeForConsent(userId, transaction);
       // ES-229: retirar la lectura con IA de una fuente (chat, diario u hoja de vida) marca «para revisión» lo derivado de ella, en la misma transacción.
       if (status === 'revoked' && String(purpose).startsWith('insights_')) await require('./careerContext').markSourceRevoked(userId, purpose, transaction);
+      // ES-296: lo mismo para la EVIDENCIA (ES-27) confirmada con origen del chat: retirar insights_chat la marca «para revisión» y deja de viajar al motor hasta que la persona la reconfirme.
+      if (status === 'revoked' && String(purpose).startsWith('insights_')) await require('./evidence').markSourceRevoked(userId, purpose, transaction);
       // ES-88: revocar el puente invalida, en la misma transacción, los jobs de análisis de IA y las candidatas de la persona (worker de ES-84).
       if (purpose === 'professional_bridge' && status === 'revoked') await require('./aiJobs').invalidateForUser(userId, 'consent_revoked', transaction);
       await transaction.commit();
