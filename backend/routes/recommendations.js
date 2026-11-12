@@ -22,6 +22,8 @@ const RECOMMENDATIONS_MAX_TOKENS = 1200;
 const RECOMMENDATIONS_OUTPUT_CONFIG = { effort: 'low' };
 
 const router                 = express.Router();
+const { intIdParam, isIntId } = require('../utils/routeParams'); // ES-280
+router.param('id', intIdParam({ error: 'Recommendation not found.' })); // ES-280
 const MoodLog                = require('../MoodLog');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const anthropic              = require('../utils/anthropic');

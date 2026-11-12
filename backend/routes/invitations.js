@@ -11,6 +11,7 @@
 
 const crypto = require('crypto');
 const express = require('express');
+const { isIntId } = require('../utils/routeParams'); // ES-280
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const { Op, fn, col, where: sqlWhere } = require('sequelize');
@@ -126,7 +127,7 @@ adminRouter.get('/', async (req, res) => {
 
 adminRouter.post('/:id/revoke', async (req, res) => {
   try {
-    if (!/^[1-9][0-9]{0,9}$/.test(req.params.id)) return res.status(404).json({ error: 'Invitación no encontrada. / Invitation not found.' });
+    if (!isIntId(req.params.id)) return res.status(404).json({ error: 'Invitación no encontrada. / Invitation not found.' });
     const mine = req.user.role === 'superadmin' ? {} : { invitedBy: req.user.id };
     const transaction = await sequelize.transaction();
     let changed;

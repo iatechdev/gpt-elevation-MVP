@@ -5,6 +5,8 @@
 const express       = require('express');
 const { Transaction, Op } = require('sequelize');
 const router        = express.Router();
+const { intIdParam, isIntId } = require('../utils/routeParams'); // ES-280
+router.param('id', intIdParam({ error: 'Version not found.' })); // ES-280
 const { sequelize } = require('../database');
 const EthicManifest = require('../EthicManifest');
 const User          = require('../User');

@@ -11,10 +11,11 @@ const { verificarSuperAdmin } = require('../middlewares/auth');
 const { validateBody, nonempty, optional, boolean } = require('../middlewares/validateBody');
 const { CATEGORIES, fold, describeReasons } = require('../utils/promptReview'); // ES-191
 const { KEY, replyProposal, replyReviewError } = require('../utils/promptHttp');
+const { isIntId } = require('../utils/routeParams'); // ES-280
 
 // ES-191: la clave de una guía es un identificador corto; cualquier otra cosa es 400, no un 500 de la base.
 // Los ids de versión son enteros positivos: cualquier otra cosa es 404 (antes, un 500 de la base).
-const validId = (req, res, next) => (/^[1-9][0-9]{0,9}$/.test(req.params.id) ? next() : res.status(404).json({ error: 'Versión no encontrada. / Version not found.' }));
+const validId = (req, res, next) => (isIntId(req.params.id) ? next() : res.status(404).json({ error: 'Versión no encontrada. / Version not found.' }));
 const validKey = (req, res, next) => (KEY.test(req.params.key) ? next() : res.status(400).json({ error: 'Clave inválida. / Invalid key.' }));
 
 // POST /api/admin/prompt y /api/superadmin/prompt — RETIRADA (ES-191, decisión de Mauricio): guardaba y ACTIVABA una guía al instante,
@@ -51,7 +52,7 @@ router.get('/prompts', async (req, res) => {
 });
 
 // GET /api/admin/prompt/:key
-router.get('/prompt/:key', async (req, res) => {
+router.get('/prompt/:key', validKey, async (req, res) => {
   try {
     let prompt = await PromptVault.findOne({
       where: { key: req.params.key, status: 'active' },
@@ -158,7 +159,7 @@ router.post('/prompt/:id/approve', verificarSuperAdmin, validId, async (req, res
   } catch (error) {
     if (replyReviewError(res, error)) return;
     console.error('❌ Error aprobando prompt:', error);
-    res.status(500).json({ error: error.message || 'No se pudo aprobar la versión.' });
+    res.status(500).json({ error: 'No se pudo aprobar la versión. / The version could not be approved.' }); // ES-280: cuerpo fijo; nunca el texto del error interno
   }
 });
 
@@ -171,7 +172,7 @@ router.post('/prompt/:id/reject', verificarSuperAdmin, validId, validateBody({ n
   } catch (error) {
     if (replyReviewError(res, error)) return;
     console.error('❌ Error rechazando prompt:', error);
-    res.status(500).json({ error: error.message || 'No se pudo rechazar la versión.' });
+    res.status(500).json({ error: 'No se pudo rechazar la versión. / The version could not be rejected.' });
   }
 });
 
@@ -183,7 +184,7 @@ router.post('/prompt/:id/rollback', verificarSuperAdmin, validId, async (req, re
   } catch (error) {
     if (replyReviewError(res, error)) return;
     console.error('❌ Error en rollback:', error);
-    res.status(500).json({ error: error.message || 'No se pudo hacer rollback.' });
+    res.status(500).json({ error: 'No se pudo hacer el rollback. / The rollback could not be done.' });
   }
 });
 
@@ -191,7 +192,7 @@ router.post('/prompt/:id/rollback', verificarSuperAdmin, validId, async (req, re
 // ES-191 — Reglas de la revisión automática (datos administrables; solo superadministración)
 // ==========================================
 const LOCALES = ['es', 'en', 'any'];
-const ruleId = (req, res, next) => (/^[1-9][0-9]{0,9}$/.test(req.params.id) ? next() : res.status(404).json({ error: 'Regla no encontrada. / Rule not found.' }));
+const ruleId = (req, res, next) => (isIntId(req.params.id) ? next() : res.status(404).json({ error: 'Regla no encontrada. / Rule not found.' }));
 const validPhrase = (value) => typeof value === 'string' && value.length <= 160 && fold(value).replace(/[*\s|]/g, '').length >= 3;
 const ruleSchema = { category: (v) => CATEGORIES.includes(v), locale: (v) => LOCALES.includes(v), phrase: validPhrase };
 const ruleJson = (r) => ({ id: r.id, category: r.category, locale: r.locale, phrase: r.phrase, active: r.active, source: r.source, updatedBy: r.updatedBy, updatedAt: r.updatedAt });
