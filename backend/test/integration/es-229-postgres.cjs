@@ -104,6 +104,7 @@ test('ES-229 PostgreSQL: retirar insights_* marca para revisión lo derivado de 
 
   await t.test('(4) volver a otorgar el permiso NO limpia la marca; reconfirmar crea una versión nueva y vigente', async () => {
     await consent.setConsent(1, 'insights_diary', 'granted');
+    await consent.setConsent(1, 'insights_chat', 'granted'); // ES-233: reconfirmar un texto del chat exige también el permiso del chat
     assert.deepEqual(await delivered(1), ['Texto directo'], 'sigue en revisión hasta que la persona reconfirme');
     assert.equal((await bridge.list(1)).active.needsReview, true);
     await confirm(1, fields1, 'req-es229-p1-0002');
