@@ -1,0 +1,21 @@
+es279.1 | exit=0 | # pass 7 # fail 0 # skipped 0  | 62s
+es279.2 | exit=0 | # pass 7 # fail 0 # skipped 0  | 58s
+es279.3 | exit=0 | # pass 7 # fail 0 # skipped 0  | 42s
+es283 | exit=0 | # pass 16 # fail 0 # skipped 0  | 27s
+es281 | exit=0 | # pass 9 # fail 0 # skipped 0  | 196s
+es282static | exit=0 | # pass 3 # fail 0 # skipped 1  | 2s
+--- mi guion sobre la cabeza limpia:
+RESUMEN 13/13
+M2 es-279 run1:  fail 2 | #2 carrera: 40 guardados simultáneos con l;
+M2 es-279 run2:  fail 2 | #2 carrera: 40 guardados simultáneos con l;
+M2 es-279 run3:  fail 2 | #2 carrera: 40 guardados simultáneos con l;
+M2 mi guion:
+{"id":"C3a 30 PUT simultáneos con la misma versión × 5 rondas (pool de 5): exactamente 1 ganador por ronda, 29 × 409, 0 5xx, la fila es la del ganador [mM2]","ok":false,"detail":"ganadores/409/otros por ronda: 5/25/0 0/30/0 0/
+RESUMEN 12/13
+E2 es-279 run1:  fail 2 | #4 esperaba un registro que no existe → 4;
+E2 es-279 run2:  fail 2 | #4 esperaba un registro que no existe → 4;
+E2 es-279 run3:  fail 2 | #4 esperaba un registro que no existe → 4;
+E2 mi guion:
+{"id":"C4a null con registro existente → 409; versión inexistente → 409; 17 formatos inválidos → 400 y NUNCA escribe [mE2]","ok":false,"detail":"fecha imposible 2026-02-30: 409 (esperaba 400)"}
+RESUMEN 12/13
+FIN

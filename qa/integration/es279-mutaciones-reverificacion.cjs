@@ -1,0 +1,14 @@
+const fs = require('fs'); const F = 'C:/Users/Usuario/Documents/qa-pr-250/backend/routes/landingContent.js'; const m = process.argv[2];
+const edit = (a, b) => { let s = fs.readFileSync(F, 'utf8'); if (s.split(a).length !== 2) throw new Error('no único/no encontrado ' + m + ': ' + a.slice(0, 50)); fs.writeFileSync(F, s.replace(a, () => b)); };
+if (m === 'M1') edit("if (expected.at === null || row.updatedAt.getTime() !== expected.at.getTime()) return { conflict: versionOf(row) };", "if (expected.at === null) return { conflict: versionOf(row) };");
+if (m === 'M2') edit("{ where: { key, lang }, transaction, lock: transaction.LOCK.UPDATE }", "{ where: { key, lang }, transaction }");
+if (m === 'M3') edit("row.updatedAt.getTime() !== expected.at.getTime()", "row.updatedAt !== expected.at");
+if (m === 'M4') edit(".catch((error) => (error && error.name === 'SequelizeUniqueConstraintError' ? { conflict: undefined } : Promise.reject(error)));", ";");
+if (m === 'M5') edit("|| !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$/.test(raw)", "");
+if (m === 'M6') edit("router.get('/versions', verificarSuperAdmin,", "router.get('/versions',");
+if (m === 'M7') edit("updatedBy: row.updated_by });", "});");
+if (m === 'M8') edit("if (expected.at === null || row.updatedAt.getTime() !== expected.at.getTime()) return { conflict: versionOf(row) };", "if (expected.at !== null && row.updatedAt.getTime() !== expected.at.getTime()) return { conflict: versionOf(row) };");
+if (m === 'M9') edit("await row.update({ value, updated_by: req.user.name }, { transaction });", "await row.update({ value, updated_by: req.user.name });");
+if (m === 'M10') edit("if (!row) {\n        if (expected.at !== null) return { conflict: null };", "if (!row) {\n        if (false) return { conflict: null };");
+console.log('M apl ' + m);
+if (m === 'E2') edit("if (Number.isNaN(at.getTime()) || at.toISOString().slice(0, 19) !== raw.slice(0, 19)) return { invalid: true };", "if (Number.isNaN(at.getTime())) return { invalid: true };");
