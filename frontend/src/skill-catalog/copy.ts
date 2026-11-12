@@ -40,6 +40,12 @@ export const skillCatalogEs = {
   'skcat.missing_verified_by': 'Verificada por', 'skcat.missing_verified_at': 'Fecha de verificación', 'skcat.missing_other': 'Datos obligatorios',
   'skcat.rm_title': '¿Quitar «{name}» del borrador?', 'skcat.rm_body': 'Se quita solo del borrador. Las versiones publicadas no cambian.', 'skcat.rm_yes': 'Sí, quitar',
   'skcat.leave': 'Hay cambios sin guardar. ¿Salir sin guardar?',
+  'skcat.rubric_note': 'La rúbrica describe criterios de cada nivel; no decide el nivel de ninguna persona.',
+  'skcat.conflict_changed': 'Otra persona guardó esta habilidad mientras la editabas. Tus cambios no se enviaron.',
+  'skcat.conflict_load': 'Cargar lo guardado',
+  'skcat.conflict_removed': 'Otra persona quitó esta habilidad del borrador mientras la editabas. Se vuelve al borrador sin guardar tus cambios.',
+  'skcat.pub_in_use': 'No se puede publicar: estas habilidades tienen niveles registrados y el borrador no las incluye:',
+  'skcat.in_use_people': '{n} persona(s)',
 }
 export const skillCatalogEn: Record<keyof typeof skillCatalogEs, string> = {
   'skcat.menu': 'Skills catalog', 'skcat.skip': 'Skip to content', 'skcat.back': 'Back to dashboard',
@@ -83,4 +89,10 @@ export const skillCatalogEn: Record<keyof typeof skillCatalogEs, string> = {
   'skcat.missing_verified_by': 'Verified by', 'skcat.missing_verified_at': 'Verification date', 'skcat.missing_other': 'Required data',
   'skcat.rm_title': 'Remove “{name}” from the draft?', 'skcat.rm_body': 'It is removed from the draft only. Published versions do not change.', 'skcat.rm_yes': 'Yes, remove',
   'skcat.leave': 'You have unsaved changes. Leave without saving?',
+  'skcat.rubric_note': 'The rubric describes the criteria of each level; it does not decide anyone’s level.',
+  'skcat.conflict_changed': 'Someone else saved this skill while you were editing it. Your changes were not sent.',
+  'skcat.conflict_load': 'Load what was saved',
+  'skcat.conflict_removed': 'Someone else removed this skill from the draft while you were editing it. You return to the draft without saving your changes.',
+  'skcat.pub_in_use': 'Cannot publish: these skills have recorded levels and the draft does not include them:',
+  'skcat.in_use_people': '{n} people',
 }

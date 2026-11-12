@@ -60,3 +60,12 @@ export function missingLabel(path: string): { key: string; level?: string; lang?
   if (path === 'rubric.verifiedAt') return { key: 'missing_verified_at' }
   return { key: 'missing_other' }
 }
+/** Ancla del primer campo que falta en el editor de la habilidad (el panel de publicación enlaza aquí). */
+export function missingFieldAnchor(path: string): string {
+  const m = /^rubric\.levels\.([1-4])\.(es|en)$/.exec(path); if (m) return `skcat-l${m[1]}${m[2]}`
+  const l = /^labels\.(es|en)$/.exec(path); if (l) return `skcat-label-${l[1]}`
+  if (path === 'rubric.source') return 'skcat-source'
+  if (path === 'rubric.verifiedBy') return 'skcat-verifiedBy'
+  if (path === 'rubric.verifiedAt') return 'skcat-date'
+  return 'skcat-key'
+}
