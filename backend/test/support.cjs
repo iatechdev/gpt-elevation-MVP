@@ -22,7 +22,7 @@ for (const name of [
   'User', 'ParticipantContext', 'ParticipantResume', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'Exercise', 'ExerciseAudit', 'AdminAuditEntry', 'TherapistPersonOrdinal', 'TherapistOrdinalCounter', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation',
+  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation', 'ReviewShare', 'ProfessionalReview', 'ReviewObjection', 'ReviewResponse',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);

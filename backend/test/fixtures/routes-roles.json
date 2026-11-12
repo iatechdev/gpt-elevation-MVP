@@ -56,6 +56,10 @@
     "denied": [],
     "session": true
   },
+  "DELETE /api/me/review-shares/:id": {
+    "denied": [],
+    "session": true
+  },
   "DELETE /api/pricing/:id": {
     "denied": [
       "board",
@@ -442,6 +446,14 @@
     ],
     "session": true
   },
+  "GET /api/me/professional-reviews": {
+    "denied": [],
+    "session": true
+  },
+  "GET /api/me/review-shares": {
+    "denied": [],
+    "session": true
+  },
   "GET /api/messages": {
     "denied": [],
     "session": true
@@ -492,6 +504,24 @@
   },
   "GET /api/recommendations/": {
     "denied": [],
+    "session": true
+  },
+  "GET /api/reviewer/objections": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
+    "session": true
+  },
+  "GET /api/reviewer/shares": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
     "session": true
   },
   "GET /api/route-catalog/": {
@@ -1118,6 +1148,14 @@
     "denied": [],
     "session": true
   },
+  "POST /api/me/professional-reviews/:id/objection": {
+    "denied": [],
+    "session": true
+  },
+  "POST /api/me/review-shares": {
+    "denied": [],
+    "session": true
+  },
   "POST /api/mood/checkin": {
     "denied": [],
     "session": true
@@ -1169,6 +1207,24 @@
   "POST /api/register": {
     "denied": [],
     "session": false
+  },
+  "POST /api/reviewer/objections/:id/response": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
+    "session": true
+  },
+  "POST /api/reviewer/reviews": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
+    "session": true
   },
   "POST /api/routes/choices": {
     "denied": [],

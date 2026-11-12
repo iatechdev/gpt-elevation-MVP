@@ -61,6 +61,12 @@ const CORE = [
   // ES-192: la invitación con la que la persona creó su cuenta (acceptedUserId). Se exporta solo cuándo se pidió, venció o se usó y con qué rol; NUNCA
   // `tokenHash` (credencial de un solo uso) ni el correo de otra persona (`invitedBy` es quien invitó). Se purga con la cuenta. Las invitaciones sin
   // aceptar no son de nadie y se limpian solas (30 días tras vencer).
+  // ES-175: autorizaciones a un revisor (solo referencias), revisiones que recibió (observation y limits cifrados v2: se entregan descifrados), su objeción (reason cifrado) y la respuesta (text cifrado).
+  // No se exportan `requestId` ni `reviewerId` de la respuesta (referencia técnica); sí el id del revisor en la autorización y la revisión, que son suyos. Se purgan con la cuenta (hijos antes que padres).
+  ['reviewResponses', 'ReviewResponse', 'UserId', ['id', 'objectionId', 'text', 'locale', 'createdAt'], ['text']],
+  ['reviewObjections', 'ReviewObjection', 'UserId', ['id', 'reviewId', 'reason', 'locale', 'createdAt'], ['reason']],
+  ['professionalReviews', 'ProfessionalReview', 'UserId', ['id', 'shareId', 'reviewerId', 'materialVersion', 'evidenceRefs', 'observation', 'limits', 'locale', 'supersedesId', 'createdAt'], ['observation', 'limits']],
+  ['reviewShares', 'ReviewShare', 'UserId', ['id', 'reviewerId', 'materialVersion', 'evidenceRefs', 'status', 'revokedAt', 'createdAt']],
   ['invitations', 'Invitation', 'acceptedUserId', ['id', 'role', 'expiresAt', 'usedAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
@@ -95,6 +101,8 @@ async function blocksPurge(userId, transaction) {
     ['EthicManifest', { uploadedBy: userId }],
     ['PlanRequest', { resolvedBy: userId }],
     ['User', { therapistId: userId }],
+    ['ProfessionalReview', { reviewerId: userId }], // ES-175: lo que el profesional escribió sobre otras personas manda a revisión, no se borra
+    ['ReviewShare', { reviewerId: userId }],
   ];
   for (const [name, where] of refs) {
     if (await model(name).findOne({ where, attributes: ['id'], transaction })) return true;
