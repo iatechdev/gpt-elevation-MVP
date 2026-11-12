@@ -2,7 +2,7 @@
 // Un error conserva TODO (ánimo y texto). 409 `already_closed` = «Esta sesión ya terminó». Si la respuesta se pierde se consulta el estado antes de decir nada.
 import { useEffect, useRef, useState } from 'react'
 import { MAX_CLOSING, MIN_CLOSING, MOODS } from './roomFormat'
-import { invalidateStoredSession } from '../../access/session'
+import { enterAgain } from './sessionEnter'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -17,10 +17,17 @@ export function CloseSession({ sessionId, t, flushNotes, onClosed, onAlreadyClos
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<{ key: string; check?: boolean; enter?: boolean } | null>(null)
   const usedToken = useRef('') // ES-265: token con que se envió el cierre
+  const enterButton = useRef<HTMLButtonElement>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLButtonElement>(null)
 
   useEffect(() => { if (open && dialog.current && !dialog.current.open) dialog.current.showModal() }, [open])
+  // E243-1: tras el aviso de sesión vencida el foco pasa a «Entrar» (el botón de guardar queda desactivado mientras se envía).
+  useEffect(() => {
+    if (!problem?.enter) return
+    const active = document.activeElement
+    if (active === null || active === document.body || dialog.current?.contains(active)) enterButton.current?.focus()
+  }, [problem])
   const closeDialog = () => dialog.current?.close()
   const onDialogClosed = () => { setOpen(false); setProblem(null); opener.current?.focus() }
 
@@ -95,7 +102,7 @@ export function CloseSession({ sessionId, t, flushNotes, onClosed, onAlreadyClos
             <div id="sr-close-problem" role="alert" className="sr-problem">
               {problem && <>
                 <p>{t(problem.key)}</p>
-                {problem.enter && <button type="button" className="sr-btn-light" onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button>}
+                {problem.enter && <button ref={enterButton} type="button" className="sr-btn-light" onClick={() => { if (!enterAgain(usedToken.current)) { setProblem({ key: 'session_renewed' }); window.setTimeout(() => document.getElementById('sr-close-note')?.focus(), 0) } }}>{t('session_enter')}</button>}
                 {problem.check && <button type="button" className="sr-btn-light" disabled={busy} onClick={() => void checkNow()}>{t('sr_check')}</button>}
               </>}
             </div>
