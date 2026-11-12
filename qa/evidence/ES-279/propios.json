@@ -1,0 +1,79 @@
+[
+ {
+  "id": "C2a B (versión vieja) → 409 version_conflict con el texto vigente y quién lo guardó, y la tabla NO cambia [pr]",
+  "ok": true,
+  "detail": "primer guardado 200; 409 409; current {\"value\":\"Texto de A\",\"updatedAt\":\"2026-11-12T16:49:55.470Z\",\"updatedBy\":\"Superadmin A QA\"}; huella igual true"
+ },
+ {
+  "id": "C2b B con la versión vigente guarda; A con la suya vieja → 409 con el texto de B [pr]",
+  "ok": true,
+  "detail": "200/409; quién: Superadmin B QA"
+ },
+ {
+  "id": "C3a 30 PUT simultáneos con la misma versión × 5 rondas (pool de 5): exactamente 1 ganador por ronda, 29 × 409, 0 5xx, la fila es la del ganador [pr]",
+  "ok": true,
+  "detail": "ganadores/409/otros por ronda: 1/29/0 1/29/0 1/29/0 1/29/0 1/29/0; sin problemas"
+ },
+ {
+  "id": "C3b 20 primeros guardados simultáneos (expectedUpdatedAt=null): 1 crea, 19 × 409, 1 fila, 0 5xx [pr]",
+  "ok": true,
+  "detail": "estados {\"200\":1,\"409\":19}; filas 1"
+ },
+ {
+  "id": "C3c mezcla de PUT con y sin versión (30 simultáneos): 0 5xx y 1 fila [pr]",
+  "ok": true,
+  "detail": "estados {\"200\":10,\"409\":20}; filas 1"
+ },
+ {
+  "id": "C3d tras las tormentas no quedan transacciones abiertas y la API responde [pr]",
+  "ok": true,
+  "detail": "«idle in transaction»: 0; salud 200"
+ },
+ {
+  "id": "C4a null con registro existente → 409; versión inexistente → 409; 17 formatos inválidos → 400 y NUNCA escribe [pr]",
+  "ok": false,
+  "detail": "fecha imposible 2026-02-30: 409 (esperaba 400)"
+ },
+ {
+  "id": "C4b precisión: fila de SQL con microsegundos [pr]",
+  "info": "versión entregada «2026-11-01T10:00:00.123Z»; PUT con esa versión → 200; luego PUT con «…123456Z» (versión vieja) → 409 (409 esperado: la fila ya cambió)"
+ },
+ {
+  "id": "C4c la versión que entrega GET /versions sirve de expectedUpdatedAt para una fila escrita por SQL con microsegundos (sin falso 409) [pr]",
+  "ok": true,
+  "detail": "estado 200 {\"message\":\"Contenido 'cta_final_desc' (es) actualizado correctamente.\",\"updatedAt\":\"2026-11-12T16:4"
+ },
+ {
+  "id": "C7a sin expectedUpdatedAt el servidor guarda como antes (el último gana) [pr]",
+  "ok": true,
+  "detail": "estado 200"
+ },
+ {
+  "id": "C5a sin sesión, persona, profesional, administración y junta: PUT y GET /versions → 401/403 [pr]",
+  "ok": true,
+  "detail": "10 solicitudes rechazadas; el texto no cambió"
+ },
+ {
+  "id": "C5b la lectura pública no expone versión, quién guardó ni nombres de superadministración [pr]",
+  "ok": true,
+  "detail": "estado 200"
+ },
+ {
+  "id": "C5c qué devuelve /versions a superadministración [pr]",
+  "info": "2 textos; claves de cada uno: key,lang,value,updatedAt,updatedBy"
+ },
+ {
+  "id": "C6 59 entradas hostiles en PUT y /versions (claves, tipos, 5 001 caracteres, inyección, NUL, JSON roto, 400 KB): 0 5xx y sin texto de PostgreSQL [pr]",
+  "ok": true,
+  "detail": "sin problemas; JSON roto 400; 400 KB 413"
+ },
+ {
+  "id": "C9 latencia [pr]",
+  "info": "PUT con versión: mediana 8.9 ms, p95 12.6 ms | PUT sin versión (camino anterior): mediana 7.2 ms, p95 11.0 ms"
+ },
+ {
+  "id": "C9 p95 de ambos caminos < 300 ms (propuesta) [pr]",
+  "ok": true,
+  "detail": "con versión 12.6 ms; sin versión 11.0 ms"
+ }
+]
