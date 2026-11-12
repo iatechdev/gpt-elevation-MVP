@@ -3,6 +3,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const path = require('node:path');
+const fs = require('node:fs');
 const { startRealApi } = require('../support/realApi.cjs');
 
 test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato crisis/diario/no compartir (ES-189 PR-2)', { timeout: 600000 }, async (t) => {
@@ -147,29 +149,47 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
   const adminUser = await mkUser('admin'); const superUser = await mkUser('superadmin');
   const GUARD_ROLES = new Map([[auth.verificarAdmin, ['user', 'therapist']], [auth.verificarSuperAdmin, ['user', 'therapist', 'admin']], [auth.verificarEditorManifiesto, ['user', 'therapist']], [auth.verificarTerapeuta, ['user']]]);
   const routesWithGuards = [];
+  // E239-1 (ES-282): se leen las guardas de TRES sitios: las del montaje en server.js, las de router.use(guarda) (valen para las rutas que vienen después) y las puestas en la propia ruta.
   for (const mount of MOUNTS) {
     const denied = new Set(); let tokenGuarded = false;
-    for (const fn of mount.guardFns) { for (const role of (GUARD_ROLES.get(fn) || [])) denied.add(role); if (fn === auth.verificarToken) tokenGuarded = true; }
+    const apply = (fn, into) => { for (const role of (GUARD_ROLES.get(fn) || [])) into.denied.add(role); if (fn === auth.verificarToken) into.token = true; };
+    const running = { denied, token: false };
+    for (const fn of mount.guardFns) apply(fn, running);
     for (const layer of mount.router.stack) {
-      if (!layer.route) continue;
-      for (const method of Object.keys(layer.route.methods)) routesWithGuards.push({ method: method.toUpperCase(), path: (mount.prefix === '/' ? '' : mount.prefix) + layer.route.path, denied: [...denied], tokenGuarded: tokenGuarded || denied.size > 0 });
+      if (!layer.route) { apply(layer.handle, running); continue; }
+      const own = { denied: new Set(running.denied), token: running.token };
+      for (const inner of layer.route.stack) apply(inner.handle, own);
+      for (const method of Object.keys(layer.route.methods)) routesWithGuards.push({ method: method.toUpperCase(), path: (mount.prefix === '/' ? '' : mount.prefix) + layer.route.path, denied: [...own.denied], tokenGuarded: own.token || own.denied.size > 0 });
     }
   }
+  // E239-1 (ES-282): la expectativa NO sale solo del código (si fuera así, quitar una guarda quitaría también la expectativa). El fixture routes-roles.json es la política escrita:
+  // para cada ruta, qué roles se rechazan y si exige sesión. Cambiar una guarda o añadir una ruta obliga a editar el fixture a propósito (ES281_WRITE_FIXTURE=1).
+  const rolesFixture = path.join(__dirname, '..', 'fixtures', 'routes-roles.json');
+  const derived = {}; for (const r of routesWithGuards) derived[r.method + ' ' + r.path] = { denied: [...r.denied].sort(), session: r.tokenGuarded };
+  if (process.env.ES281_WRITE_FIXTURE === '1') fs.writeFileSync(rolesFixture, JSON.stringify(Object.fromEntries(Object.entries(derived).sort(([x], [y]) => (x < y ? -1 : 1))), null, 2) + '\n');
+  const policy = JSON.parse(fs.readFileSync(rolesFixture, 'utf8'));
   const fill = (path) => path.replace(/:(id|requestId|noteId)\b/g, String(NONEXISTENT)).replace(/:[A-Za-z]+/g, 'x');
   const BODY = (method) => (method === 'GET' || method === 'DELETE' ? undefined : {});
   const SKIP_ROLE = /\/(logout|logout-all|deletion-requests)$/;
+  await t.test('política de roles cerrada: las guardas que lee el código coinciden con el fixture escrito (quitar una guarda o añadir una ruta sin declarar falla)', async () => {
+    const problems = [];
+    for (const [route, value] of Object.entries(derived)) { if (!policy[route]) problems.push('ruta sin política escrita: ' + route); else if (JSON.stringify(policy[route]) !== JSON.stringify(value)) problems.push(`guarda distinta de la política: ${route} código=${JSON.stringify(value)} política=${JSON.stringify(policy[route])}`); }
+    for (const route of Object.keys(policy)) if (!derived[route]) problems.push('ruta de la política que ya no existe: ' + route);
+    assert.deepEqual(problems, []);
+  });
+
   await t.test('matriz de roles: 401/403 sin sesión en todo lo protegido; 403 al rol sin permiso en administración, superadministración, manifiesto y profesional; la base no cambia', async () => {
     const actors = { user: await mkUser('user'), therapist: await mkUser('therapist'), admin: adminUser };
-    assert.ok(routesWithGuards.filter((r) => r.denied.length).length >= 60, 'rutas con guarda de rol: ' + routesWithGuards.filter((r) => r.denied.length).length);
+    assert.ok(routesWithGuards.filter((r) => r.denied.length).length >= 75, 'rutas con guarda de rol: ' + routesWithGuards.filter((r) => r.denied.length).length);
     const problems = []; const before = await fingerprint(); let probes = 0;
-    for (const r of routesWithGuards) {
+    for (const r of routesWithGuards.map((x) => ({ ...x, ...policy[x.method + ' ' + x.path], tokenGuarded: policy[x.method + ' ' + x.path]?.session ?? x.tokenGuarded }))) {
       if (SKIP_ROLE.test(r.path)) continue;
       const url = fill(r.path);
       if (r.tokenGuarded) {
         const out = await http(null, r.method, url, BODY(r.method)); probes += 1;
         if (![401, 403].includes(out.status)) problems.push(`sin sesión ${r.method} ${r.path}: ${out.status}`);
       }
-      for (const role of r.denied) {
+      for (const role of (policy[r.method + ' ' + r.path]?.denied ?? r.denied)) {
         const out = await http(actors[role], r.method, url, BODY(r.method)); probes += 1;
         if (out.status !== 403) problems.push(`${role} ${r.method} ${r.path}: ${out.status} ${JSON.stringify(out.body).slice(0, 70)}`);
       }
