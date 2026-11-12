@@ -21,7 +21,7 @@ const fs = require('node:fs');
   };
 
   async function open(route, width, lang, opts = {}) {
-    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce', colorScheme: opts.scheme ?? 'light' });
     const page = await context.newPage();
     const seen = { login: [], register: [], reset: [] };
     page.on('pageerror', (e) => errors.push(e.message));
@@ -49,17 +49,23 @@ const fs = require('node:fs');
     assert.equal(await page.locator('main#main').count(), 1, `un main (${tag})`);
     assert.ok(await page.locator('header.cg-header').count() === 1 && await page.locator('footer').count() >= 1, `encabezado y pie del marco (${tag})`);
     assert.ok((await overflow(page)) <= 0, `sin desborde (${tag})`);
+    // tema del sistema (E263-1): el fondo del marco y de la tarjeta sigue prefers-color-scheme
+    const lum = await page.evaluate(() => { const bg = getComputedStyle(document.querySelector('.ac-card')).backgroundColor; const nums = bg.match(/[0-9.]+/g).map(Number).slice(0, 3); const rgb = bg.startsWith('color(') ? nums.map((v) => v * 255) : nums; return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255; });
+    assert.ok(tag.includes('dark') ? lum < 0.35 : lum > 0.65, `la tarjeta sigue el tema del sistema (${tag}), luminancia ${lum.toFixed(2)}`);
   };
 
-  for (const [width, lang] of [[390, 'es'], [1360, 'en']]) {
-    const c = T[lang]; const tag = `${width}px ${lang}`;
+  for (const [width, lang, scheme] of [[390, 'es', 'dark'], [1360, 'en', 'light']]) {
+    const c = T[lang]; const tag = `${width}px ${lang} ${scheme}`;
     // 1. Entrar: marco, axe, errores por campo con foco al primero, texto conservado, «Mostrar», 401 con foco al aviso
-    { const { context, page, seen } = await open('/login', width, lang);
+    { const { context, page, seen } = await open('/login', width, lang, { scheme });
       await frame(page, tag); assert.equal((await page.locator('h1').innerText()).toLowerCase(), c.signInTitle.toLowerCase(), `título (${tag})`);
       assert.deepEqual(await axe(page), [], `axe entrar (${tag})`);
       await page.locator('form button[type="submit"]').click();
       await page.getByText(c.errEmail).waitFor(); await page.getByText(c.errPassword).waitFor();
       assert.equal(await active(page), 'access-email', `foco al primer campo con error (${tag})`);
+      assert.equal(await page.locator('#access-email').getAttribute('aria-invalid'), 'true', `aria-invalid en el correo (${tag})`);
+      assert.equal(await page.locator('#access-password').getAttribute('aria-invalid'), 'true', `aria-invalid en la contraseña (${tag})`);
+      assert.match(await page.locator('#access-email').getAttribute('aria-describedby'), /access-email-error/, `el error enlazado al campo (${tag})`);
       assert.deepEqual(await axe(page), [], `axe con errores por campo (${tag})`);
       assert.equal(seen.login.length, 0, `con campos inválidos no se envía nada (${tag})`);
       await page.getByLabel(c.email, { exact: true }).fill('persona@example.invalid');
@@ -75,19 +81,21 @@ const fs = require('node:fs');
       await page.locator('form button[type="submit"]').click();
       const alert = page.getByRole('alert').filter({ hasText: /./ }).last(); await alert.waitFor();
       assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('role')), 'alert', `foco al aviso tras el rechazo (${tag})`);
+      const stored = await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }) + document.cookie);
+      assert.ok(!stored.includes('clave-sintetica'), `la contraseña no queda en el almacenamiento del navegador (${tag})`);
       assert.equal(seen.login.length, 1); assert.deepEqual(seen.login[0], { email: 'persona@example.invalid', password: 'clave-sintetica' });
       assert.deepEqual(await axe(page), [], `axe tras rechazo (${tag})`);
       assert.ok(await page.getByRole('link', { name: /olvidaste|forgot/i }).count() >= 1, `enlace de recuperar (${tag})`);
       await context.close(); }
     // 2. Entrar bloqueado: el botón queda deshabilitado con el texto de bloqueo
-    { const { context, page } = await open('/login', width, lang, { loginStatus: 423, loginBody: { error: 'x', locked: true } });
+    { const { context, page } = await open('/login', width, lang, { scheme, loginStatus: 423, loginBody: { error: 'x', locked: true } });
       await page.getByLabel(c.email, { exact: true }).fill('persona@example.invalid'); await page.getByLabel(c.password, { exact: true }).fill('x');
       await page.locator('form button[type="submit"]').click(); await page.getByText(c.locked).first().waitFor();
       assert.equal(await page.locator('form button[type="submit"]').isDisabled(), true, `bloqueado: botón deshabilitado (${tag})`); await context.close(); }
     check(`entrar (${tag}): marco, axe wcag22aa 0, error por campo con foco al primero, texto conservado, Mostrar, aviso con foco, bloqueo`);
 
     // 3. Crear cuenta: error por campo en orden, contraseña débil, aviso de pago, nota de privacidad SIN «consentimiento», cuenta creada
-    { const { context, page, seen } = await open('/login?mode=register', width, lang);
+    { const { context, page, seen } = await open('/login?mode=register', width, lang, { scheme });
       await frame(page, tag); assert.deepEqual(await axe(page), [], `axe crear cuenta (${tag})`);
       const body = await page.locator('main').innerText();
       assert.ok(body.includes(c.noPay), `aviso de que no hay pago en línea (${tag})`);
@@ -109,7 +117,7 @@ const fs = require('node:fs');
     check(`crear cuenta (${tag}): axe 0, errores por campo en orden, requisitos, aviso de pago, nota de privacidad sin consentimiento ni casilla, contrato intacto`);
 
     // 4. Recuperar: correo inválido, misma respuesta 202, red caída y 429 conservan el correo y devuelven el foco
-    { const { context, page, seen } = await open('/forgot-password', width, lang);
+    { const { context, page, seen } = await open('/forgot-password', width, lang, { scheme });
       await frame(page, tag); assert.equal((await page.locator('h1').innerText()).toLowerCase(), c.forgotTitle.toLowerCase());
       assert.deepEqual(await axe(page), [], `axe recuperar (${tag})`);
       await page.locator('form button[type="submit"]').click(); await page.getByText(c.errEmail).waitFor();
@@ -117,11 +125,11 @@ const fs = require('node:fs');
       await page.getByLabel(c.email, { exact: true }).fill('nadie@example.invalid');
       await page.locator('form button[type="submit"]').click(); await page.getByText(c.sent).waitFor();
       assert.deepEqual(seen.reset[0].email, 'nadie@example.invalid'); assert.deepEqual(await axe(page), [], `axe recuperar enviado (${tag})`); await context.close(); }
-    { const { context, page } = await open('/forgot-password', width, lang, { resetAbort: true });
+    { const { context, page } = await open('/forgot-password', width, lang, { scheme, resetAbort: true });
       await page.getByLabel(c.email, { exact: true }).fill('nadie@example.invalid'); await page.locator('form button[type="submit"]').click();
       await page.getByText(c.failed).waitFor(); assert.equal(await active(page), 'reset-email', `error de red: el foco vuelve al correo (${tag})`);
       assert.equal(await page.getByLabel(c.email, { exact: true }).inputValue(), 'nadie@example.invalid', `error de red conserva el correo (${tag})`); await context.close(); }
-    { const { context, page } = await open('/forgot-password', width, lang, { resetStatus: 429 });
+    { const { context, page } = await open('/forgot-password', width, lang, { scheme, resetStatus: 429 });
       await page.getByLabel(c.email, { exact: true }).fill('nadie@example.invalid'); await page.locator('form button[type="submit"]').click();
       await page.getByText(c.rate).waitFor(); assert.equal(await active(page), 'reset-email');
       assert.equal(await page.getByLabel(c.email, { exact: true }).inputValue(), 'nadie@example.invalid', `demasiados intentos conserva el correo (${tag})`); await context.close(); }

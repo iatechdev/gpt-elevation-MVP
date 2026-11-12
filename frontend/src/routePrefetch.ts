@@ -30,6 +30,7 @@ export const ROUTE_LOADERS: Record<string, Loader[]> = {
 
 // Rutas que se precargan en reposo, según el área en la que está la persona.
 export const IDLE_ROUTES: Record<string, string[]> = {
+  '/': ['/login'], // ES-155: desde la portada, «Entrar» es lo más probable; así el clic en móvil (sin cursor) ya tiene el bloque
   '/app': ['/app/skill-map', '/app/chat', '/app/evidence'],
   '/therapist': ['/therapist/dashboard'],
   '/admin': ['/admin/users', '/admin/prompts'],

@@ -7,7 +7,7 @@ import './accessCartografia.css'
 export function AccessCard({ title, intro, children }: { title: string; intro?: string; children: ReactNode }) {
   const titleId = useId()
   return (
-    <PublicFrame>
+    <PublicFrame migrated>
       <div className="ac-wrap">
         <section className="ac-card" aria-labelledby={titleId}>
           <header className="ac-heading">

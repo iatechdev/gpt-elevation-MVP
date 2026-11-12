@@ -50,7 +50,23 @@ test('ES-155: el contrato con el servidor no cambia (rutas, cuerpos y requisitos
 
 test('ES-155: las pantallas usan el marco público de Cartografía (un solo main) y no la hoja del tema anterior', () => {
   const card = read('../src/access/AccessCard.tsx')
-  assert.ok(card.includes('<PublicFrame>') && !/<main[ >]/.test(card))
+  assert.ok(card.includes('<PublicFrame migrated>') && !/<main[ >]/.test(card))
   assert.ok(!read('../src/pages/LoginPage.tsx').includes('accessAdmin.css') && !read('../src/pages/LoginPage.tsx').includes('elv-theme'))
   assert.ok(!/#[0-9a-fA-F]{3,6}\b/.test(read('../src/access/accessCartografia.css')), 'la hoja no trae colores fijos: todo sale de --cg-*')
+})
+
+test('ES-155 (E263): cada campo con error lleva aria-invalid y aria-describedby, el foco va al primero, «Mostrar» alterna type y la contraseña nunca se guarda en el navegador', () => {
+  const card = read('../src/access/AccessCard.tsx')
+  assert.ok(card.includes('aria-invalid={error || invalid ? true : undefined}'), 'aria-invalid por campo')
+  assert.ok(card.includes('id={`${id}-error`}') && card.includes('role="alert"') && card.includes('aria-describedby={describedBy}'), 'el error se lee y se enlaza al campo')
+  const page = read('../src/pages/LoginPage.tsx')
+  assert.ok(/const first = firstInvalid\(found\)\s*\n\s*if \(first\) \{ inputs\[first\]\.current\?\.focus\(\); return \}/.test(page), 'foco al primer campo con error y no se envía')
+  assert.ok(page.includes("type={showPassword ? 'text' : 'password'}"), 'Mostrar alterna el tipo del campo')
+  const reset = read('../src/access/PasswordResetPages.tsx')
+  assert.ok(reset.includes("type={show ? 'text' : 'password'}"))
+  for (const [name, src] of [['LoginPage', page], ['PasswordResetPages', reset]]) {
+    assert.ok(!/sessionStorage/.test(src), `${name} no usa sessionStorage`)
+    for (const match of src.matchAll(/localStorage\.setItem\(([^)]*)\)/g)) assert.ok(!/password/i.test(match[1]), `${name} no guarda la contraseña: ${match[0]}`)
+  }
+  assert.deepEqual([...page.matchAll(/localStorage\.setItem\('([^']+)'/g)].map(match => match[1]).sort(), ['elevation_name', 'elevation_role', 'elevation_token'], 'solo se guarda la sesión')
 })

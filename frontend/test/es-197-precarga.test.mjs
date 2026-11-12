@@ -21,8 +21,9 @@ test('ES-197: la ruta se resuelve por el segmento padre más largo; rutas ajenas
   assert.equal(routeKey('/app/evidence/new'), '/app/evidence')
   assert.equal(routeKey('/app/space/tools'), '/app/space/tools')
   assert.equal(routeKey('/app/skill-map/'), '/app/skill-map')
-  assert.equal(routeKey('/login'), '/login') // ES-155: «Entrar» se precarga al pasar el cursor
+  assert.equal(routeKey('/login'), '/login') // ES-155: «Entrar» se precarga (hover y reposo en la portada)
   assert.equal(routeKey('/manifiesto'), null)
+  assert.deepEqual(idleRoutesFor('/'), ['/login'])
   assert.equal(routeKey('/app/otra'), null)
   assert.deepEqual(idleRoutesFor('/app/dashboard'), IDLE_ROUTES['/app'])
   assert.deepEqual(idleRoutesFor('/login'), [])
