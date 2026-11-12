@@ -1,0 +1,22 @@
+
+> frontend@0.0.0 perf:report
+> node scripts/perf-report.mjs
+
+ES-195 · informe de peso (2026-11-12T12:42:32.095Z, Node v22.23.4); kB = 1000 bytes
+
+Carga inicial (lo que referencia index.html)
+  JS :    432.43 kB bruto ·    130.63 kB gzip   (presupuesto vigente: 150 kB gzip)  [assets/index-MpCT1UtM.js, assets/jsx-runtime-DJ0HuzlU.js, assets/api-CNWwbwBo.js, assets/pending-DTB18Oii.js]
+  CSS:    102.09 kB bruto ·     16.74 kB gzip   (presupuesto vigente: 20 kB gzip)  [assets/index-DZQ1KekD.css]
+
+Bloques (98) — bruto / gzip, kB
+     420.59    125.66  js  index-MpCT1UtM.js
+     135.39     48.28  js  es-DDpuwzXk.js
+     131.38     47.20  js  en-dW8Aqch7.js
+     102.09     16.74  css index-DZQ1KekD.css
+      52.51     13.34  js  SkillMapPage-CDeaw2Mc.js
+      38.54     10.53  js  Onboarding-DXzCUbuQ.js
+      38.12     10.51  js  ChatPage-C7BaMfPc.js
+      37.55     12.07  js  BridgePage-Bwpsegf0.js
+      33.77      9.55  js  AdminUsers-aAX4284Y.js
+      33.62     10.38  js  CatalogPages-BAX7ckPO.js
+      30.47      8.18  js  AdminContent-Dl6SRjWQ.js
