@@ -20,6 +20,7 @@
     "test:purge-ordinals:pg": "node --test test/integration/es-276-postgres.cjs",
     "test:hostile-ids:pg": "node --test test/integration/es-280-postgres.cjs",
     "test:owner-matrix:pg": "node --test test/integration/es-281-postgres.cjs",
+    "test:transversal:pg": "node --test test/integration/es-282-postgres.cjs",
     "test:pricing-validation:pg": "node --test test/integration/es-278-postgres.cjs",
     "test:purge-option-a:pg": "node --test test/integration/es-274-postgres.cjs",
     "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
