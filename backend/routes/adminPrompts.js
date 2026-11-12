@@ -11,11 +11,11 @@ const { verificarSuperAdmin } = require('../middlewares/auth');
 const { validateBody, nonempty, optional, boolean } = require('../middlewares/validateBody');
 const { CATEGORIES, fold, describeReasons } = require('../utils/promptReview'); // ES-191
 const { KEY, replyProposal, replyReviewError } = require('../utils/promptHttp');
-const { isIntId } = require('../utils/routeParams'); // ES-280
+const { isRouteId } = require('../middlewares/params'); // ES-280
 
 // ES-191: la clave de una guía es un identificador corto; cualquier otra cosa es 400, no un 500 de la base.
 // Los ids de versión son enteros positivos: cualquier otra cosa es 404 (antes, un 500 de la base).
-const validId = (req, res, next) => (isIntId(req.params.id) ? next() : res.status(404).json({ error: 'Versión no encontrada. / Version not found.' }));
+const validId = (req, res, next) => (isRouteId(req.params.id) ? next() : res.status(404).json({ error: 'Versión no encontrada. / Version not found.' }));
 const validKey = (req, res, next) => (KEY.test(req.params.key) ? next() : res.status(400).json({ error: 'Clave inválida. / Invalid key.' }));
 
 // POST /api/admin/prompt y /api/superadmin/prompt — RETIRADA (ES-191, decisión de Mauricio): guardaba y ACTIVABA una guía al instante,
@@ -194,7 +194,7 @@ router.post('/prompt/:id/rollback', verificarSuperAdmin, validId, async (req, re
 // ES-191 — Reglas de la revisión automática (datos administrables; solo superadministración)
 // ==========================================
 const LOCALES = ['es', 'en', 'any'];
-const ruleId = (req, res, next) => (isIntId(req.params.id) ? next() : res.status(404).json({ error: 'Regla no encontrada. / Rule not found.' }));
+const ruleId = (req, res, next) => (isRouteId(req.params.id) ? next() : res.status(404).json({ error: 'Regla no encontrada. / Rule not found.' }));
 const validPhrase = (value) => typeof value === 'string' && value.length <= 160 && fold(value).replace(/[*\s|]/g, '').length >= 3;
 const ruleSchema = { category: (v) => CATEGORIES.includes(v), locale: (v) => LOCALES.includes(v), phrase: validPhrase };
 const ruleJson = (r) => ({ id: r.id, category: r.category, locale: r.locale, phrase: r.phrase, active: r.active, source: r.source, updatedBy: r.updatedBy, updatedAt: r.updatedAt });

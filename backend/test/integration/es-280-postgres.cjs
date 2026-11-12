@@ -73,9 +73,12 @@ test('ES-280 PostgreSQL + HTTP: IDs hostiles en todas las rutas con parámetro (
     ['/api/admin/usuarios', verificarAdmin, R('adminUsers')], ['/api/admin/professional-applications', verificarAdmin, R('professionalApplications').adminRouter],
     ['/api/admin/matching', verificarAdmin, R('matching')], ['/api/admin/pricing', verificarAdmin, R('pricing')], ['/api/admin/plan-requests', verificarAdmin, R('planRequests')],
     ['/api/admin', verificarAdmin, adminPrompts], ['/api/superadmin', verificarSuperAdmin, adminPrompts], ['/api/board', verificarEditorManifiesto, R('board')], ['/api/junta', verificarSuperAdmin, R('validation')],
+    ['/api/contact-entries', null, R('contactEntries').publicRouter], ['/api/invitations', null, R('invitations').publicRouter], ['/api/landing-content', null, R('landingContent')],
+    ['/api/plans', null, R('plans')], ['/api/manifest', null, R('board')], ['/api', null, R('dataRights')],
     ['/api/superadmin/audit', verificarSuperAdmin, R('adminAudit')], ['/api/superadmin/ai-usage', verificarSuperAdmin, R('aiUsage').admin], ['/api/ai/usage', verificarToken, R('aiUsage').owner],
   ];
   for (const [prefix, guard, router] of MOUNTS) guard ? api.use(prefix, guard, router) : api.use(prefix, router);
+  api.use('/api', require('../../middlewares/apiErrors').apiErrors); // el mismo último eslabón que server.js
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   db = new Client({ connectionString: urlFor(dbName), ssl: false }); await db.connect();
@@ -126,26 +129,49 @@ test('ES-280 PostgreSQL + HTTP: IDs hostiles en todas las rutas con parámetro (
   });
 
   await t.test('IDs hostiles: ninguna de las rutas con parámetro responde 5xx ni filtra detalle interno, con persona, profesional, administración y superadministración', async () => {
-    const HOSTILE = ['abc', '0', '-1', '1.5', '01', '1e3', '99999999999', '2147483648', 'NaN', '%20', '1%3BDROP', '%D9%A3', '%00', '%27%20OR%201%3D1--', 'x'.repeat(200)];
+    process.env.DATA_RIGHTS_ENABLED = 'true'; // la función de derechos de datos está detrás de un interruptor: con él apagado todo responde 503 y no se ejercita el id
+  const HOSTILE = ['abc', '0', '-1', '1.5', '01', '1e3', '99999999999', '2147483648', 'NaN', '%20', '1%3BDROP', '%D9%A3', '%00', '%27%20OR%201%3D1--', '%E0%A4%A', 'x'.repeat(200)];
     const sup = await mkUser('superadmin'); const th = await mkUser('therapist'); const person = await mkUser('user', { therapistId: th.id });
     const who = [person, th, sup]; // superadmin atraviesa también las guardas de administración; el rol sin permiso se corta antes de leer el id
     const LEAK = /SequelizeDatabaseError|invalid input syntax|out of range for type|violates|relation ".*" does not exist|PROMPT_ENCRYPTION|JWT_SECRET|DATA_ENCRYPTION|\n\s+at \w|node_modules|ECONN/i;
-    const failures = [];
+    const failures = []; const times = [];
     for (const [method, pattern] of routes) {
       if (/\/(logout|logout-all)$/.test(pattern)) continue;
       for (const hostile of HOSTILE) {
         const url = pattern.replace(/:[A-Za-z]+/g, hostile);
-        const outs = await Promise.all(who.map(async (actor) => { let out; try { out = await http(actor, method, url, ['GET', 'DELETE'].includes(method) ? undefined : {}); } catch (e) { out = { status: -1, body: { e: String(e) } }; } return [actor, out]; }));
+        const outs = await Promise.all(who.map(async (actor) => { const t0 = performance.now(); let out; try { out = await http(actor, method, url, ['GET', 'DELETE'].includes(method) ? undefined : {}); times.push(performance.now() - t0); } catch (e) { out = { status: -1, body: { e: String(e) } }; } return [actor, out]; }));
         for (const [actor, out] of outs) {
           const text = JSON.stringify(out.body || {});
           const stateDependent = out.status === 503 && out.body && out.body.code === 'catalog_unavailable'; // catálogo vacío: pasa con cualquier id, no depende de él
           if ((out.status >= 500 || out.status === -1) && !stateDependent) failures.push(`${method} ${pattern} <- ${JSON.stringify(hostile).slice(0, 18)} as ${actor.role} => ${out.status} ${text.slice(0, 70)}`);
+          else if (out.status >= 400 && out.body === null) failures.push(`${method} ${pattern} <- ${JSON.stringify(hostile).slice(0, 18)} as ${actor.role} => ${out.status} SIN JSON (página HTML o vacía)`);
           else if (LEAK.test(text)) failures.push(`${method} ${pattern} <- ${JSON.stringify(hostile).slice(0, 18)} as ${actor.role} => ${out.status} FILTRA ${text.slice(0, 70)}`);
         }
       }
     }
     const byRoute = {}; for (const f of failures) (byRoute[f.split(' <- ')[0]] ||= []).push(f);
+    times.sort((x, y) => x - y); console.log('# TIEMPOS ids hostiles (ms): n=' + times.length + ' p50=' + times[Math.floor(times.length * 0.5)].toFixed(1) + ' p95=' + times[Math.floor(times.length * 0.95)].toFixed(1) + ' max=' + times[times.length - 1].toFixed(1));
     assert.deepEqual(Object.keys(byRoute), [], Object.entries(byRoute).map(([k, v]) => `${k} x${v.length} p.ej. ${v[0].split(' <- ')[1]}`).join('\n'));
+  });
+
+  await t.test('porcentaje mal formado en la URL: 400 JSON fijo, sin página HTML ni traza (también en rutas sin parámetro)', async () => {
+    const person = await mkUser('user');
+    for (const url of ['/api/diary/%E0%A4%A', '/api/mood/history?x=1', '/api/user/resumes/%E0%A4%A/file']) {
+      const res = await fetch(base + url, { headers: { Authorization: 'Bearer ' + person.token } });
+      const raw = await res.text();
+      if (url.includes('%E0%A4%A')) {
+        assert.equal(res.status, 400, url + ' ' + raw.slice(0, 80));
+        assert.ok((res.headers.get('content-type') || '').includes('application/json'), 'JSON');
+        assert.deepEqual(JSON.parse(raw), { code: 'invalid_input', error: 'Datos inválidos. / Invalid data.' });
+        assert.ok(!/<html|<pre>|node_modules/i.test(raw) && !raw.includes(' at '), 'sin página HTML ni traza');
+      }
+    }
+  });
+
+  await t.test('server.js monta el último eslabón de errores JSON de /api después de las rutas', async () => {
+    const server = fs.readFileSync(path.join(__dirname, '..', '..', 'server.js'), 'utf8');
+    const iHandler = server.indexOf("require('./middlewares/apiErrors').apiErrors"); const iNotFound = server.indexOf("code: 'not_found', error: 'Ruta no encontrada.");
+    assert.ok(iHandler > iNotFound && iNotFound > 0, 'apiErrors se monta tras la ruta 404 de /api');
   });
 
   await t.test('el parámetro válido sigue funcionando igual: un id existente se atiende y uno inexistente da 404 (recomendaciones, planes de precio, invitaciones, guías)', async () => {

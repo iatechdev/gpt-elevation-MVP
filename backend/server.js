@@ -172,6 +172,8 @@ app.use('/api', (req, res) => {
   res.set('Cache-Control', 'no-store');
   res.status(404).json({ code: 'not_found', error: 'Ruta no encontrada. / Route not found.' });
 });
+// ES-280: errores de /api sin tratamiento propio (p. ej. un porcentaje mal formado en la URL): JSON fijo, sin traza ni texto interno.
+app.use('/api', require('./middlewares/apiErrors').apiErrors);
 
 // ── Frontend estático ─────────────────────────────────────────────────────────
 mountFrontend(app, path.join(__dirname, '../frontend/dist'));
