@@ -20,7 +20,9 @@ const parseExpected = (raw) => {
   if (raw === null) return { given: true, at: null };
   if (typeof raw !== 'string' || raw.length > 40 || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$/.test(raw)) return { invalid: true };
   const at = new Date(raw);
-  return Number.isNaN(at.getTime()) ? { invalid: true } : { given: true, at };
+  // E250-2: una fecha imposible (2026-02-30, 2026-04-31, hora 24) es un dato inválido (400), no una versión distinta (409): se exige que la fecha viaje de ida y vuelta.
+  if (Number.isNaN(at.getTime()) || at.toISOString().slice(0, 19) !== raw.slice(0, 19)) return { invalid: true };
+  return { given: true, at };
 };
 const versionOf = (row) => ({ value: row.value, updatedAt: row.updatedAt, updatedBy: row.updated_by });
 

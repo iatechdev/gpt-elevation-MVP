@@ -27,14 +27,18 @@ test('ES-279 PostgreSQL + HTTP: control de edición simultánea de textos públi
     assert.equal((await row()).value, 'Texto de B'); version = ok.body.updatedAt;
   });
 
-  await t.test('carrera: diez guardados simultáneos con la misma versión → exactamente uno gana, nueve reciben 409 y queda el texto del ganador', async () => {
-    const results = await Promise.all(Array.from({ length: 10 }, (_, i) => put(i % 2 ? A : B, { value: `Competidor ${i}`, expectedUpdatedAt: version })));
-    const winners = results.filter((r) => r.status === 200); const losers = results.filter((r) => r.status === 409);
-    assert.equal(winners.length, 1, results.map((r) => r.status).join(','));
-    assert.equal(losers.length, 9); assert.equal(results.filter((r) => r.status >= 500).length, 0);
-    const index = results.indexOf(winners[0]);
-    assert.equal((await row()).value, `Competidor ${index}`);
-    assert.equal((await q('SELECT count(*)::int n FROM "LandingContents" WHERE key=$1', ['hero_title']))[0].n, 1);
+  await t.test('carrera: 40 guardados simultáneos con la misma versión, en 6 rondas → en cada ronda exactamente uno gana y 39 reciben 409; queda el texto del ganador', async () => {
+    // E250-1 (QA): con 10 simultáneos la prueba no distinguía quitar el bloqueo FOR UPDATE (sin él ven hasta 5 ganadores); con 40 repetidos, sí.
+    for (let round = 0; round < 6; round += 1) {
+      const results = await Promise.all(Array.from({ length: 40 }, (_, i) => put(i % 2 ? A : B, { value: `Ronda ${round} competidor ${i}`, expectedUpdatedAt: version })));
+      const winners = results.filter((r) => r.status === 200); const losers = results.filter((r) => r.status === 409);
+      assert.equal(winners.length, 1, `ronda ${round}: ganadores ${winners.length} (${results.map((r) => r.status).join(',')})`);
+      assert.equal(losers.length, 39, `ronda ${round}`); assert.equal(results.filter((r) => r.status >= 500).length, 0);
+      const index = results.indexOf(winners[0]);
+      assert.equal((await row()).value, `Ronda ${round} competidor ${index}`);
+      assert.equal((await q('SELECT count(*)::int n FROM "LandingContents" WHERE key=$1', ['hero_title']))[0].n, 1);
+      version = winners[0].body.updatedAt; // la siguiente ronda parte de la versión que dejó el ganador
+    }
   });
 
   await t.test('primer guardado de un texto nuevo: de ocho simultáneos con expectedUpdatedAt=null solo uno crea, y no hay filas duplicadas ni 5xx', async () => {
@@ -50,7 +54,7 @@ test('ES-279 PostgreSQL + HTTP: control de edición simultánea de textos públi
     assert.equal(gone.status, 409); assert.equal(gone.body.current, null);
     assert.equal((await q('SELECT count(*)::int n FROM "LandingContents" WHERE key=$1', ['cta_final_title']))[0].n, 0);
     const before = JSON.stringify(await row());
-    for (const bad of ['basura', 12345, [], {}, true, '2026-13-45T99:99:99Z', '2026-01-01', 'x'.repeat(200), '2026-01-01T00:00:00+05:00']) {
+    for (const bad of ['basura', 12345, [], {}, true, '2026-13-45T99:99:99Z', '2026-02-30T00:00:00.000Z', '2026-04-31T10:00:00Z', '2026-01-01T24:00:00Z', '2026-02-29T00:00:00Z', '2026-01-01', 'x'.repeat(200), '2026-01-01T00:00:00+05:00']) {
       const out = await put(A, { value: 'Hostil', expectedUpdatedAt: bad });
       assert.equal(out.status, 400, JSON.stringify(bad).slice(0, 30)); assert.equal(out.body.field, 'expectedUpdatedAt');
     }
