@@ -36,11 +36,11 @@ test('ES-280 PostgreSQL + HTTP: IDs hostiles en todas las rutas con parámetro (
 
   app = new Sequelize(urlFor(dbName), { logging: false, dialectOptions: { ssl: false }, pool: { max: 5, min: 0, acquire: 8000 } });
   process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
-  process.env.DATA_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
+  process.env.DATA_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex'); process.env.PROMPT_ENCRYPTION_KEY = crypto.randomBytes(32).toString('hex');
   process.env.NODE_ENV = 'test';
   process.env.AI_BUDGET_TOKENS_PER_USER = '1000000000'; process.env.AI_BUDGET_PERIOD = 'month';
   const dbModule = require.resolve('../../database');
-  require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize: app } };
+  require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize: app, connectDB: async () => {} } };
   const mailer = { sent: true }; const mailerModule = require.resolve('../../utils/mailer'); const realMailer = require('../../utils/mailer');
   require.cache[mailerModule] = { id: mailerModule, filename: mailerModule, loaded: true, exports: { ...realMailer, sendInvitation: async () => ({ sent: mailer.sent }) } };
   const anthropicModule = require.resolve('../../utils/anthropic');
@@ -48,37 +48,11 @@ test('ES-280 PostgreSQL + HTTP: IDs hostiles en todas las rutas con parámetro (
   require.cache[anthropicModule] = { id: anthropicModule, filename: anthropicModule, loaded: true, exports: {
     MODEL: 'modelo-sintetico', messages: { create: async () => { provider.calls += 1; return { content: [{ type: 'text', text: 'Recomendación sintética.' }], usage: { input_tokens: 10, output_tokens: 5 } }; } },
   } };
-  require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
-  const { setConsent } = require('../../utils/consent');
-  const { verificarToken, verificarAdmin, verificarSuperAdmin, verificarTerapeuta } = require('../../middlewares/auth');
-  const express = require('express');
-  const api = express(); api.use(express.json());
-
-  const R = (n) => require('../../routes/' + n);
-  const adminPrompts = R('adminPrompts'); const { verificarEditorManifiesto } = require('../../middlewares/auth');
-  const MOUNTS = [
-    ['/api', null, R('auth')], ['/api', null, R('passwordReset')], ['/api/admin/contact-entries', verificarAdmin, R('contactEntries').adminRouter],
-    ['/api/admin/exercises', verificarAdmin, R('exercises').adminRouter], ['/api/exercises', verificarToken, R('exercises').readRouter],
-    ['/api/admin/invitations', verificarAdmin, R('invitations').adminRouter], ['/api/professional-applications', null, R('professionalApplications').publicRouter],
-    ['/api/pricing', null, R('pricing')], ['/api', verificarToken, R('chat')], ['/api', verificarToken, R('session')], ['/api/consents', verificarToken, R('consents')],
-    ['/api/career-context', verificarToken, R('careerContext')], ['/api/skill-map', verificarToken, R('skillMap')], ['/api/skill-analysis', verificarToken, R('skillAnalysis')],
-    ['/api/evidence', verificarToken, R('evidence')], ['/api/insights', verificarToken, R('insights')], ['/api/route-catalog', verificarToken, R('routeCatalog')],
-    ['/api/routes', verificarToken, R('routes')], ['/api/experiments', verificarToken, R('careerPlan').experiments], ['/api/career-plan', verificarToken, R('careerPlan').plans],
-    ['/api/diary', verificarToken, R('diary')], ['/api/mood', verificarToken, R('mood')], ['/api', verificarToken, R('ratings')], ['/api/recommendations', verificarToken, R('recommendations')],
-    ['/api/user/context', verificarToken, R('participantContext')], ['/api/user/resumes', verificarToken, R('resumes')], ['/api/user/resume-skills', verificarToken, R('resumeSkills')],
-    ['/api/user', verificarToken, R('progress')], ['/api/user/plan', verificarToken, R('plans')], ['/api/plan-requests', verificarToken, R('planRequests')],
-    ['/api/matching', verificarToken, R('matching')], ['/api/sessions', verificarToken, R('sessions')], ['/api/therapist/validation', verificarToken, R('validation')],
-    ['/api/therapist', verificarTerapeuta, R('therapistRoutes')], ['/api/admin/skill-catalog', verificarAdmin, R('skillCatalog')], ['/api/admin/route-catalog', verificarAdmin, R('routeCatalogAdmin')],
-    ['/api/admin/usuarios', verificarAdmin, R('adminUsers')], ['/api/admin/professional-applications', verificarAdmin, R('professionalApplications').adminRouter],
-    ['/api/admin/matching', verificarAdmin, R('matching')], ['/api/admin/pricing', verificarAdmin, R('pricing')], ['/api/admin/plan-requests', verificarAdmin, R('planRequests')],
-    ['/api/admin', verificarAdmin, adminPrompts], ['/api/superadmin', verificarSuperAdmin, adminPrompts], ['/api/board', verificarEditorManifiesto, R('board')], ['/api/junta', verificarSuperAdmin, R('validation')],
-    ['/api/contact-entries', null, R('contactEntries').publicRouter], ['/api/invitations', null, R('invitations').publicRouter], ['/api/landing-content', null, R('landingContent')],
-    ['/api/plans', null, R('plans')], ['/api/manifest', null, R('board')], ['/api', null, R('dataRights')],
-    ['/api/superadmin/audit', verificarSuperAdmin, R('adminAudit')], ['/api/superadmin/ai-usage', verificarSuperAdmin, R('aiUsage').admin], ['/api/ai/usage', verificarToken, R('aiUsage').owner],
-  ];
-  for (const [prefix, guard, router] of MOUNTS) guard ? api.use(prefix, guard, router) : api.use(prefix, router);
-  api.use('/api', require('../../middlewares/apiErrors').apiErrors); // el mismo último eslabón que server.js
+  // E236-1 (ES-281): se carga el server.js REAL; los montajes se registran al cargarlo. Una ruta o un router nuevo en server.js entra solo a las baterías de abajo.
+  const { loadRealApp, routesOf } = require('../support/realServer.cjs');
+  const { app: api, mounts: MOUNTS } = loadRealApp();
+  await new Promise((resolve) => setTimeout(resolve, 150)); // server.js asocia los modelos cuando termina connectDB()
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   db = new Client({ connectionString: urlFor(dbName), ssl: false }); await db.connect();
@@ -111,12 +85,7 @@ test('ES-280 PostgreSQL + HTTP: IDs hostiles en todas las rutas con parámetro (
   // ES-280 (ES-189 PR-1) · IDs hostiles en TODAS las rutas con parámetro, montadas como en server.js: ninguna responde 5xx, ningún cuerpo filtra detalle interno (PostgreSQL, trazas,
   // nombres de variables) y el registro de rutas con parámetro es CERRADO: una ruta nueva debe añadirse al fixture (y, con ella, pasa por esta batería).
   const fixturePath = path.join(__dirname, '..', 'fixtures', 'routes-with-params.json');
-  const walk = (router, prefix, out) => {
-    for (const layer of (router.stack || [])) {
-      if (layer.route) { for (const m of Object.keys(layer.route.methods)) out.push([m.toUpperCase(), prefix + layer.route.path]); }
-    }
-  };
-  const all = []; for (const [prefix, , router] of MOUNTS) walk(router, prefix, all);
+  const { routes: all, nested } = routesOf(MOUNTS, api);
   const seen = new Set(); const routes = all.filter(([m, p]) => { const k = m + ' ' + p; if (seen.has(k)) return false; seen.add(k); return /:[A-Za-z]+/.test(p); });
   const listing = routes.map(([m, p]) => m + ' ' + p).sort();
 
@@ -168,10 +137,55 @@ test('ES-280 PostgreSQL + HTTP: IDs hostiles en todas las rutas con parámetro (
     }
   });
 
-  await t.test('server.js monta el último eslabón de errores JSON de /api después de las rutas', async () => {
-    const server = fs.readFileSync(path.join(__dirname, '..', '..', 'server.js'), 'utf8');
-    const iHandler = server.indexOf("require('./middlewares/apiErrors').apiErrors"); const iNotFound = server.indexOf("code: 'not_found', error: 'Ruta no encontrada.");
-    assert.ok(iHandler > iNotFound && iNotFound > 0, 'apiErrors se monta tras la ruta 404 de /api');
+  await t.test('E236-1 · sin routers anidados ni montajes sin registrar: todo router que server.js monta se recorre entero (un router dentro de otro no tiene prefijo cierto)', async () => {
+    assert.deepEqual(nested, [], 'routers anidados: declara su prefijo en la batería');
+    assert.ok(MOUNTS.length >= 55, 'server.js real monta ' + MOUNTS.length + ' routers');
+    assert.ok(MOUNTS.some((m) => m.prefix === '/api/manifest') && MOUNTS.some((m) => m.prefix === '/api/board'), 'los dos montajes del manifiesto');
+  });
+
+  await t.test('E236-1 · apiErrors: la rama 500 y las 4xx responden cuerpo FIJO; ni el mensaje del error ni la traza salen al cliente ni al log', async () => {
+    const { apiErrors, FAILED, BAD_REQUEST } = require('../../middlewares/apiErrors');
+    const run = (error) => {
+      const out = { headers: {} }; const logged = []; const realError = console.error; console.error = (...a) => logged.push(a.map(String).join(' '));
+      const res = { headersSent: false, set(k, v) { out.headers[k] = v; return this; }, status(c) { out.status = c; return this; }, json(b) { out.body = b; return this; } };
+      try { apiErrors(error, {}, res, () => { out.next = true; }); } finally { console.error = realError; }
+      return { ...out, logged: logged.join('\n') };
+    };
+    const secret = Object.assign(new Error('SELECT secreto FROM tabla_interna'), { status: 500 });
+    const a = run(secret); assert.equal(a.status, 500); assert.deepEqual(a.body, FAILED); assert.ok(!/secreto|tabla_interna|SELECT/.test(JSON.stringify(a.body) + a.logged), 'ni cuerpo ni log llevan el mensaje');
+    const b = run(Object.assign(new Error('SELECT secreto'), { status: 400 })); assert.equal(b.status, 400); assert.deepEqual(b.body, BAD_REQUEST);
+    const c = run(Object.assign(new Error('secreto'), { status: 418 })); assert.equal(c.status, 418); assert.ok(!JSON.stringify(c.body).includes('secreto'));
+    const d = run(new URIError('secreto')); assert.equal(d.status, 400); assert.deepEqual(d.body, BAD_REQUEST);
+    assert.equal(a.headers['Cache-Control'], 'no-store');
+  });
+
+  await t.test('E236-1 · fallo REAL de la base al aprobar, rechazar y volver a una versión: 500 con cuerpo fijo, sin SQL ni texto del error (admin y superadmin)', async () => {
+    const sup = await mkUser('superadmin');
+    const { PromptVault, encryptPrompt } = require('../../promptVault');
+    const mk = (version, status) => PromptVault.create({ key: 'es281_falla', contentEncrypted: encryptPrompt('Texto sintético de prueba.'), version, status, isActive: false, proposed_by: 'sintetico@example.test',
+      reviewOutcome: 'passed', reviewReasons: '[]', reviewedAt: new Date() });
+    const pending = await mk(1, 'pending_review'); const archived = await mk(2, 'approved');
+    await q('CREATE FUNCTION es281_falla() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION \'SELECT secreto FROM tabla_interna\'; END $$ LANGUAGE plpgsql');
+    await q('CREATE TRIGGER es281_falla BEFORE UPDATE ON "PromptVaults" FOR EACH ROW EXECUTE FUNCTION es281_falla()');
+    const realError = console.error; console.error = () => {}; // el detalle va al log del servidor, no a esta salida
+    try {
+      for (const prefix of ['/api/admin', '/api/superadmin']) {
+        const cases = [['approve', pending.id, {}, 'No se pudo aprobar la versión. / The version could not be approved.'],
+          ['reject', pending.id, { note: 'nota sintética válida' }, 'No se pudo rechazar la versión. / The version could not be rejected.'],
+          ['rollback', archived.id, {}, 'No se pudo hacer el rollback. / The rollback could not be done.']];
+        for (const [action, id, body, message] of cases) {
+          const out = await http(sup, 'POST', prefix + '/prompt/' + id + '/' + action, body);
+          assert.equal(out.status, 500, prefix + ' ' + action + ' ' + JSON.stringify(out.body));
+          assert.deepEqual(out.body, { error: message }, prefix + ' ' + action + ' cuerpo fijo');
+          assert.ok(!/secreto|SELECT|tabla_interna|PromptVault|trigger|SQL/i.test(JSON.stringify(out.body)), 'sin detalle interno');
+        }
+      }
+    } finally {
+      console.error = realError;
+      await q('DROP TRIGGER es281_falla ON "PromptVaults"'); await q('DROP FUNCTION es281_falla()');
+    }
+    const after = await q('SELECT version, status FROM "PromptVaults" WHERE key=$1 ORDER BY version', ['es281_falla']);
+    assert.deepEqual(after, [{ version: 1, status: 'pending_review' }, { version: 2, status: 'approved' }], 'ningún intento fallido cambió la fila');
   });
 
   await t.test('el parámetro válido sigue funcionando igual: un id existente se atiende y uno inexistente da 404 (recomendaciones, planes de precio, invitaciones, guías)', async () => {
