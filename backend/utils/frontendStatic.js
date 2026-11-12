@@ -69,7 +69,7 @@ function brotliStatic(root) {
 function mountFrontend(app, distDir) {
   const root = path.resolve(distDir);
   app.use(brotliStatic(root)); // antes de `compression`: una respuesta ya codificada no se vuelve a comprimir
-  // ES-139: solo los estáticos se comprimen (gzip; el paquete compression no ofrece brotli). La API no pasa por aquí: las respuestas con
+  // ES-139: solo los estáticos se comprimen (`compression` 1.8 negocia gzip y brotli, este último a calidad 4: casi igual que gzip; por eso ES-201 sirve brotli precomprimido de calidad 11 antes de llegar aquí). La API no pasa por aquí: las respuestas con
   // datos de la persona no se comprimen (evita ataques tipo BREACH).
   app.use(compression({ threshold: 1024 }));
   app.use(express.static(distDir, { setHeaders: setCacheHeaders }));
