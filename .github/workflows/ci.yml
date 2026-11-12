@@ -190,6 +190,11 @@ jobs:
         run: npm run test:landing-concurrency:pg
         env:
           ES279_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-283 purga - cada referencia del profesional bloquea, fallo real por paso revierte todo (PostgreSQL real)
+        run: npm run test:purge-hardening:pg
+        env:
+          ES283_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          DATA_RIGHTS_ENABLED: "true"
       - name: ES-282 contraseñas, no enumeración, cabeceras/CORS, guías, requestId y sanitización del prompt (PostgreSQL real)
         run: npm run test:transversal:pg
         env:
