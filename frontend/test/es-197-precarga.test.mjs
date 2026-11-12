@@ -33,7 +33,7 @@ test('ES-197: la cola baja un bloque a la vez, una vez por ruta, y tolera fallos
   const slow = (name, fail = false) => async () => { active++; maxActive = Math.max(maxActive, active); await new Promise(r => setTimeout(r, 5)); active--; calls.push(name); if (fail) throw new Error('red') }
   const p = createPrefetcher({ loaders: { a: [slow('a1'), slow('a2', true)], b: [slow('b1')] }, connection: () => ({ effectiveType: '4g' }) })
   assert.equal(p.request('a'), true); assert.equal(p.request('a'), false); assert.equal(p.request('b'), true); assert.equal(p.request('zzz'), false)
-  await new Promise(r => setTimeout(r, 60))
+  for (let i = 0; i < 200 && calls.length < 3; i += 1) await new Promise(r => setTimeout(r, 10)) // espera a los tres bloques (hasta 2 s) en vez de un plazo fijo: con la máquina cargada 60 ms no alcanzaba
   assert.deepEqual(calls, ['a1', 'a2', 'b1']); assert.equal(maxActive, 1)
   assert.deepEqual(p.completed, ['a', 'b'])
 })

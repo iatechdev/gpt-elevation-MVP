@@ -93,7 +93,7 @@ const { pathToFileURL } = require('node:url');
         await header.click(); control.put = 'lose-reply'; await page.getByRole('button', { name: t.yes, exact: true }).click();
         await page.getByText(t.done, { exact: true }).first().waitFor();
         assert.equal(await dbState(), 'no'); assert.equal(await page.getByText(t.error).count(), 0);
-        assert.equal(await active(page), 'skill-map-main', 'E249-1/E249-2: tras «Listo» el foco queda en la región principal (no en body)');
+        assert.equal(await active(page), 'main', 'E249-1/E249-2: tras «Listo» el foco queda en la región principal (no en body)');
         check(`${lang}: «${t.all}» con la respuesta perdida → base sin permiso; la pantalla dice «${t.done.slice(0, 24)}…», no error`);
         assert.deepEqual(errors, []); await page.unrouteAll({ behavior: 'ignoreErrors' }); await context.close(); }
       // B) La petición no llegó: el permiso sigue vigente; la pantalla NO dice «Listo» y avisa que lo autorizado sigue cruzando.
@@ -117,7 +117,7 @@ const { pathToFileURL } = require('node:url');
         await axeCheck(page, `${lang}: estado «no pudimos confirmar»`);
         control.failReadsAfterPut = false; await page.getByRole('button', { name: t.check, exact: true }).click();
         await page.getByText(t.done, { exact: true }).first().waitFor();
-        assert.equal(await active(page), 'skill-map-main', 'tras «Comprobar» y «Listo» el foco queda en la región principal');
+        assert.equal(await active(page), 'main', 'tras «Comprobar» y «Listo» el foco queda en la región principal');
         check(`${lang}: «${t.check}» relee y la pantalla = base (permiso retirado); el foco no cae a body en ningún estado final (Listo / todavía no / sin confirmar)`);
         await page.unrouteAll({ behavior: 'ignoreErrors' }); await context.close(); }
     }
