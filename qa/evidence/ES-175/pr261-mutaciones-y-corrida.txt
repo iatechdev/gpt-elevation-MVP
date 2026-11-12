@@ -1,0 +1,20 @@
+M1 | script del PR: 12 PASS (de 12) hasta fallar | mi guion: FALLA P2 FALLA P5b RESUMEN 7/9 
+M2 | script del PR: 12 PASS (de 12) hasta fallar | mi guion: FALLA P1 RESUMEN 8/9 
+M3 | script del PR: 12 PASS (de 12) hasta fallar | mi guion: FALLA P1 RESUMEN 8/9 
+M4 | script del PR: 12 PASS (de 12) hasta fallar | mi guion: FALLA P1 RESUMEN 8/9 
+M5 | script del PR: 12 PASS (de 12) hasta fallar | mi guion: RESUMEN 9/9 
+FIN
+== guion limpio (cabeza exacta)
+{"id":"P1 pantalla: vacío → revisión → objeción en ES/EN × 390/1360 × claro/oscuro: un h1, franja y aviso visibles (cabecera y tarjeta), chips con palabra+símbolo, sin desborde con texto largo, una sola objeción, 0 errores de consola","ok":true,"detail":"8/8 combinaciones; 16 chips"}
+{"id":"P2 el texto de revisores y objeciones es TEXTO: <img onerror>, <script>, &, <b>, saltos de línea y 1.900 caracteres sin espacios; no se ejecuta, se ve literal, con lang","ok":true,"detail":"8 combinaciones"}
+{"id":"P8 privacidad: la vista previa NO envía nada al servidor (ninguna petición /api distinta de /api/session) y ningún cuerpo contiene el texto de las revisiones","ok":true,"detail":"peticiones /api: /api/session"}
+{"id":"P3 sesión reemplazada a mitad (token distinto en otra pestaña; la vista previa se reinicia y NO muestra el borrador a la sesión nueva) (es)","info":"explica el acceso: false; conserva el texto escrito: false; url /app/professional-reviews"}
+{"id":"P3 sesión reemplazada a mitad (token distinto en otra pestaña; la vista previa se reinicia y NO muestra el borrador a la sesión nueva) (en)","info":"explica el acceso: false; conserva el texto escrito: false; url /app/professional-reviews"}
+{"id":"P3 estados (ES/EN): error de carga con «Reintentar» que recupera; acceso retirado explicado; vacío; guardado fallido, ack perdido (reintento sin duplicar: 1 objeción) y conflicto CONSERVAN el texto escrito; doble clic = 1 objeción; franja y aviso siempre visibles; axe 0","ok":true,"detail":"todos los estados"}
+{"id":"P4 objeción: contador n / 2000, maxlength, vacío y 2.001 caracteres no avanzan, vista previa = texto exacto, «Editar» conserva, diálogo de salir (foco en seguir editando, Tab atrapado, Esc cierra, borrador intacto)","ok":true,"detail":"ES y EN"}
+{"id":"P5 teclado: el primer Tab es «Saltar al contenido» y lleva a #fac-main; anillo de foco visible y objetivos ≥ 24 px en claro y oscuro; sin animación con movimiento reducido","ok":true,"detail":"claro y oscuro"}
+{"id":"P5b axe WCAG A/AA/2.2 AA: lista, formulario, vista previa y objeción registrada × ES/EN × 390/1360 × claro/oscuro (32 auditorías)","ok":true,"detail":"0 violaciones"}
+{"id":"P6 acceso: la ruta `/app/professional-reviews` (zona «member») la ve cualquier rol válido (persona, profesional, admin, superadmin, junta), sin sesión → inicio de sesión, sesión inválida sin datos, flag apagada → «no habilitada» sin exponer la vista","ok":true,"detail":"user: /app/professional-reviews «MIS REVISIONES PROFESIONALES» ; therapist: /app/professional-reviews «MIS REVISIONES PROFESIONALES» ; admin: /app/professional-reviews «MIS REVISIONES PROFESIONALES» ; superadmin: /app/professional-reviews «MIS REVISIONES PROFESIONALES» ; board: /app/professional-revi
+{"id":"P7 la vista del PROFESIONAL (lista, detalle, historial, formulario y registro de revisión; ES/EN × 390/1360) es IDÉNTICA a la de main (DOM normalizado) y axe 0","ok":true,"detail":"20 comparaciones idénticas"}
+RESUMEN 9/9
+FIN2
