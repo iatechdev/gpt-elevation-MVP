@@ -3,23 +3,28 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-d
 import { createFixture, enabled, PreviewError, scenarioOf, type Command } from './fixture'
 import { FacilitationContext, useCopy } from './context'
 import { setBlocker } from './navigation'
+import { CartografiaRoot } from '../cartografia/theme'
+import { Banner } from '../cartografia/pieces'
+import { Button } from '../cartografia/controls'
+import { LangSwitch } from '../shell/Frame'
 import './facilitation.css'
+import './person-reviews.css'
 
 const token = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
-function Dialog({ action, close }: { action: () => void; close: () => void }) {
+function Dialog({ action, close, cg = false }: { action: () => void; close: () => void; cg?: boolean }) {
   const { t } = useCopy()
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => { const dialog = ref.current; dialog?.showModal(); return () => dialog?.close() }, [])
-  return <dialog ref={ref} aria-labelledby="leave-title" onCancel={e => { e.preventDefault(); close() }} onKeyDown={e => {
+  return <dialog ref={ref} className={cg ? 'cg-dialog' : undefined} aria-labelledby="leave-title" onCancel={e => { e.preventDefault(); close() }} onKeyDown={e => {
     if (e.key !== 'Tab') return
     const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')
     const first = buttons[0], last = buttons[buttons.length - 1]
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
   }}>
-    <h2 id="leave-title">{t('dirty')}</h2><div className="fac-actions">
-      <button className="elv-btn" onClick={close} autoFocus>{t('keep')}</button>
-      <button className="elv-btn" onClick={action}>{t('discard')}</button>
+    <h2 id="leave-title" className={cg ? 'cg-h2' : undefined}>{t('dirty')}</h2><div className={cg ? 'cg-dialog__actions' : 'fac-actions'}>
+      <button className={cg ? 'cg-btn' : 'elv-btn'} onClick={close} autoFocus>{t('keep')}</button>
+      <button className={cg ? 'cg-btn cg-btn--ghost' : 'elv-btn'} onClick={action}>{t('discard')}</button>
     </div>
   </dialog>
 }
@@ -106,9 +111,25 @@ function ActivePreview({ session }: { session: string }) {
     setSnapshot(service.current())
   }
   if (token() !== session) return null
+  const person = location.pathname.startsWith('/app/') // HU-P24: la persona ve su pantalla en Cartografía; el profesional (/facilitation) conserva la suya
   let content: ReactNode = <Outlet />
-  if (loading) content = <p role="status">{t('loading')}</p>
+  if (loading) content = <p role="status" className={person ? 'cg-muted' : undefined}>{t('loading')}</p>
+  else if (failure && person) content = <Banner kind="error" title={t(failure === 'revoked' ? 'noAccess' : 'loadError')}><p>{t('failedRead')}</p><div className="cg-row"><Button onClick={refresh}>{t('retry')}</Button></div></Banner>
   else if (failure) content = <div role="alert"><p>{t(failure === 'revoked' ? 'noAccess' : 'loadError')}</p><p>{t('failedRead')}</p><button className="elv-btn" onClick={refresh}>{t('retry')}</button></div>
+  const leaveDialog = leave && <Dialog cg={person} close={() => { setLeave(null); requestAnimationFrame(() => returnFocus.current?.focus()) }} action={() => { setBlocker(null); setDrafts({}); setLeave(null); leave.go() }} />
+  if (person) return <FacilitationContext.Provider value={{ snapshot, service, loading, failure, refresh, sync, write, dirty, setDirty }}>
+    <CartografiaRoot className="cgf">
+      <a className="cg-skip" href="#fac-main">{t('skip')}</a>
+      <header className="cg-header"><Link className="cg-btn cg-btn--ghost" to="/app/dashboard"><span aria-hidden="true">← </span>{t('backToDashboard')}</Link><div className="cg-header__end"><LangSwitch /></div></header>
+      <main id="fac-main" className="cg-page cgf-main" ref={main} tabIndex={-1}>
+        <h1 className="cg-h1">{t('own')}</h1>
+        <Banner title={t('preview')} />
+        <p className="cg-muted">{t('disclaimer')}</p>
+        {content}
+      </main>
+      {leaveDialog}
+    </CartografiaRoot>
+  </FacilitationContext.Provider>
   return <FacilitationContext.Provider value={{ snapshot, service, loading, failure, refresh, sync, write, dirty, setDirty }}>
     <section className="fac-scope">
       <a className="fac-skip elv-btn" href="#fac-main">{t('skip')}</a>

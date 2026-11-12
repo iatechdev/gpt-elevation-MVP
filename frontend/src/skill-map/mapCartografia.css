@@ -1,0 +1,80 @@
+/* ES-160 — el mapa de competencias usa el sistema «Cartografía» (tokens --cg-* del marco, claro y oscuro).
+   Las piezas de esta pantalla (lista, detalle, autoevaluación, radar, panel de IA) se escribieron con nombres --elv-*: aquí esos nombres se RESUELVEN con los tokens --cg-*,
+   así que la pantalla sigue el tema del marco sin duplicar colores. Los pares texto/fondo los mide frontend/test/es-160-mapa.test.mjs y axe en claro y oscuro. */
+.cg-map {
+  --elv-bg: var(--cg-ground); --elv-surface: var(--cg-panel); --elv-card: var(--cg-panel); --elv-muted-bg: var(--cg-ground);
+  --elv-text-1: var(--cg-ink); --elv-text-2: var(--cg-muted); --elv-text-3: var(--cg-muted);
+  --elv-line: var(--cg-line); --elv-line-control: var(--cg-muted);
+  --elv-action: var(--cg-mark); --elv-action-text: var(--cg-ground);
+  --elv-action-soft: color-mix(in srgb, var(--cg-mark) 14%, var(--cg-panel));
+  --elv-brand: var(--cg-contour); --elv-link: var(--cg-mark); --elv-focus: var(--cg-mark);
+  --elv-ai: var(--cg-good); --elv-ai-bg: color-mix(in srgb, var(--cg-good) 12%, var(--cg-panel));
+  --elv-success: var(--cg-good); --elv-success-bg: color-mix(in srgb, var(--cg-good) 12%, var(--cg-panel));
+  --elv-warning: var(--cg-ink); --elv-warning-bg: color-mix(in srgb, var(--cg-contour) 16%, var(--cg-panel));
+  --elv-error: var(--cg-err); --elv-error-bg: color-mix(in srgb, var(--cg-err) 12%, var(--cg-panel));
+  --elv-info: var(--cg-mark); --elv-info-bg: color-mix(in srgb, var(--cg-mark) 12%, var(--cg-panel));
+  --elv-heat-1: color-mix(in srgb, var(--cg-contour) 16%, var(--cg-panel)); --elv-heat-2: color-mix(in srgb, var(--cg-contour) 34%, var(--cg-panel));
+  --elv-heat-3: color-mix(in srgb, var(--cg-contour) 58%, var(--cg-panel)); --elv-heat-4: color-mix(in srgb, var(--cg-contour) 82%, var(--cg-panel));
+  --elv-heat-on-light: var(--cg-ink); --elv-heat-on-dark: var(--cg-ground);
+  --elv-tone-dir: color-mix(in srgb, var(--cg-contour) 9%, var(--cg-panel)); --elv-tone-con: color-mix(in srgb, var(--cg-mark) 8%, var(--cg-panel));
+  --elv-tone-com: color-mix(in srgb, var(--cg-good) 8%, var(--cg-panel)); --elv-tone-ing: color-mix(in srgb, var(--cg-mark) 5%, var(--cg-panel));
+  --elv-tone-inn: color-mix(in srgb, var(--cg-contour) 5%, var(--cg-panel));
+  --elv-font-body: var(--cg-font-sans); --elv-font-display: var(--cg-font-cond); --elv-touch: var(--cg-touch);
+  --elv-r-sm: 2px; --elv-r-md: 3px; --elv-r-lg: 4px; --elv-r-xl: 4px; --elv-shadow-card: none;
+  font-family: var(--cg-font-sans);
+}
+.cg-map h1 { font: 700 clamp(2.1rem, 5vw, 3.4rem)/1.05 var(--cg-font-cond); letter-spacing: 0.02em; text-transform: uppercase; }
+.cg-map h2, .cg-map h3, .cg-map h4 { font-family: var(--cg-font-cond); letter-spacing: 0.03em; }
+.cg-map .skill-map-eyebrow { font-family: var(--cg-font-cond); font-size: 0.85rem; letter-spacing: 0.16em; color: var(--cg-muted); }
+.cg-map .elv-btn { border-radius: 0; font-family: var(--cg-font-cond); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; min-height: var(--cg-touch); background: var(--cg-panel); color: var(--cg-ink); }
+.cg-map .elv-btn:hover { border-color: var(--cg-ink); }
+.cg-map .skill-map-primary { background: var(--cg-mark); color: var(--cg-ground); border-color: var(--cg-mark); }
+.cg-map .skill-map-danger { background: var(--cg-err); color: var(--cg-ground); border-color: var(--cg-err); }
+.cg-map .elv-card, .cg-map .skill-map-card { box-shadow: none; border-radius: 0; background: var(--cg-panel); border: 1px solid var(--cg-line); }
+.cg-map .elv-badge { border-radius: 0; font-family: var(--cg-font-cond); letter-spacing: 0.06em; }
+
+/* control segmentado de vistas (Relieve · Lista · Radar) */
+.cg-map .skill-map-views { display: inline-flex; border: 1.5px solid var(--cg-ink); }
+.cg-map .skill-map-views button { min-height: var(--cg-touch); min-width: var(--cg-touch); padding: 0 1rem; background: none; border: 0; color: var(--cg-ink); font: 700 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+.cg-map .skill-map-views button[aria-pressed='true'] { background: var(--cg-ink); color: var(--cg-ground); }
+.cg-map .skill-map-views button + button { border-left: 1.5px solid var(--cg-ink); }
+
+/* resumen */
+.skill-map-summary { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); margin-block: 0 1.2rem; }
+.skill-map-card-cg { background: var(--cg-panel); border: 1px solid var(--cg-line); padding: 1rem 1.2rem; min-width: 0; }
+.skill-map-card-cg h2 { margin: 0 0 0.5rem; font-size: 1.3rem; }
+.skill-map-card-cg ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.skill-map-card-cg li { display: flex; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; align-items: baseline; }
+.skill-map-card-cg p { margin: 0.3rem 0; overflow-wrap: anywhere; }
+.skill-map-summary-name { font: 600 1.05rem var(--cg-font-sans); overflow-wrap: anywhere; }
+.skill-map-ticks { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--cg-muted); white-space: nowrap; }
+.skill-map-ticks > span:first-child { display: inline-flex; gap: 3px; }
+.skill-map-ticks i { width: 14px; height: 8px; border: 1.5px solid var(--cg-contour); display: inline-block; }
+.skill-map-ticks i.is-on { background: var(--cg-contour); }
+
+/* hoja: relieve + lista a la izquierda, detalle a la derecha (una columna en móvil) */
+.skill-map-sheet { display: grid; gap: 1.4rem; grid-template-columns: minmax(0, 1fr); align-items: start; margin-bottom: 1.4rem; }
+@media (min-width: 1100px) { .skill-map-sheet { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } .skill-map-sheet-side { position: sticky; top: 1rem; } }
+.skill-map-sheet-main { display: grid; gap: 1.2rem; min-width: 0; }
+.skill-map-sheet-side .skill-map-detail-wrap { margin: 0; }
+.skill-map-sheet-side .skill-map-detail { max-width: none; }
+.skill-map-detail-wrap:focus { outline: none; }
+
+/* relieve con una capacidad por botón */
+.skill-map-relief { display: grid; gap: 0.7rem; }
+.skill-map-relief-box { position: relative; border: 1px solid var(--cg-line); background: var(--cg-panel); aspect-ratio: 16 / 10; min-height: 15rem; overflow: hidden; }
+.skill-map-relief-box .cg-relief { position: absolute; inset: 0; max-width: none; aspect-ratio: auto; border: 0; }
+.skill-map-place { position: absolute; transform: translate(-8px, -50%); display: inline-flex; align-items: center; gap: 0.35rem; min-height: var(--cg-touch); min-width: var(--cg-touch); padding: 0 0.3rem; background: none; border: 0; color: var(--cg-ink); cursor: pointer; font: 600 0.82rem/1.1 var(--cg-font-sans); text-align: left; width: max-content; max-width: 11rem; }
+.skill-map-place-mark { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--cg-mark); border: 2px solid var(--cg-panel); box-shadow: 0 0 0 1.5px var(--cg-ink); }
+.skill-map-place.is-flat .skill-map-place-mark { background: var(--cg-panel); border: 2px dashed var(--cg-muted); box-shadow: none; }
+.skill-map-place-name { background: color-mix(in srgb, var(--cg-panel) 88%, transparent); padding: 0.1rem 0.3rem; overflow-wrap: anywhere; }
+.skill-map-place.is-right { flex-direction: row-reverse; text-align: right; transform: translate(calc(-100% + 8px), -50%); }
+.skill-map-place[aria-pressed='true'] .skill-map-place-name { outline: 3px solid var(--cg-mark); outline-offset: 1px; }
+.skill-map-place:hover .skill-map-place-name { background: var(--cg-ground); }
+.skill-map-dot.dot-level { background: var(--cg-mark); }
+/* móvil: solo las marcas (el nombre y el nivel van en el aria-label, en la lista por territorios y en el detalle); así no se solapan */
+@media (max-width: 639px) { .skill-map-relief-box { aspect-ratio: 4 / 5; } .skill-map-place-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } .skill-map-place, .skill-map-place.is-right { transform: translate(-50%, -50%); padding: 0; justify-content: center; } }
+.cg-map .skill-map-legend { color: var(--cg-muted); }
+.cg-map .skill-map-territory-card { background: var(--tone, var(--cg-panel)); }
+.cg-map .skill-map-pick { border-radius: 0; }
+@media (prefers-reduced-motion: reduce) { .skill-map-place, .cg-map * { transition: none; animation: none; } }

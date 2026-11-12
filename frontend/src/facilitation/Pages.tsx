@@ -4,6 +4,8 @@ import { useCopy, useFacilitation } from './context'
 import { PreviewError, type Command, type Review, type Material, type Progress } from './fixture'
 import type { TextKey } from './copy'
 import { LIMITS, textProblem } from './validation'
+import { Chip, TextAreaField } from '../cartografia/controls'
+import { Card, Banner } from '../cartografia/pieces'
 
 function DateLabel({ value }: { value: string }) {
   const { lang } = useCopy()
@@ -77,7 +79,43 @@ export function NewReview() {
 }
 export function OwnReviews() {
   const { t } = useCopy()
-  return <section><h2>{t('own')}</h2><p>{t('participantDemo')}</p><ReviewHistory participantId="synthetic-A" own /></section>
+  return <section aria-label={t('own')}><p className="cg-muted">{t('participantDemo')}</p><OwnReviewList participantId="synthetic-A" /></section>
+}
+/** ES-172/175 (HU-P24): lo que ve la persona, con el sistema Cartografía. Solo lectura de lo propio; el texto de revisores y objeciones se muestra como TEXTO. */
+function OwnReviewList({ participantId }: { participantId: string }) {
+  const { snapshot, dirty } = useFacilitation()
+  const { t, lang } = useCopy()
+  const [active, setActive] = useState<string | null>(null)
+  const openers = useRef<Record<string, HTMLButtonElement | null>>({})
+  const reviews = snapshot.reviews.filter(r => r.participantId === participantId)
+  if (!reviews.length) return <Banner title={t('noReviews')} />
+  return <ul className="cgf-list" aria-label={t('history')}>
+    {reviews.map(r => {
+      const m = snapshot.participants.find(p => p.id === participantId)?.materials.find(m => m.id === r.shareId && m.active && m.version === r.materialVersion)
+      const events = snapshot.events.filter(e => e.reviewId === r.id)
+      const objection = events.find(e => e.type === 'objection')
+      const answered = Boolean(objection && snapshot.events.some(x => x.objectionId === objection.id))
+      return <li key={r.id}><Card as="article" className="cgf-review">
+        <h2 className="cg-h2">{t('sampleTitle')} · {t('version')} {r.materialVersion}</h2>
+        <p className="cg-small cg-muted">{t('author')}: {t('reviewer')} · <DateLabel value={r.at} /> · {t('contentLanguage')}: {r.locale.toUpperCase()}</p>
+        <p className="cgf-chips">
+          {objection && (answered ? <Chip tone="ok" symbol="✓">{t('responded')}</Chip> : <Chip tone="wait" symbol="○">{t('awaiting')}</Chip>)}
+          {!m && <Chip tone="wait" symbol="!">{t('materialChanged')}</Chip>}
+        </p>
+        {!m && <p className="cg-small cg-muted">{t('staleReview')}</p>}
+        <h3 className="cg-tag">{t('observation')}</h3><p lang={r.locale} className="fac-prose">{r.observation}</p>
+        <h3 className="cg-tag">{t('limits')}</h3><p lang={r.locale} className="fac-prose">{r.limits}</p>
+        <p className="cg-small cg-muted">{t('reviewedEvidence')}: {r.evidenceRefs.map(() => t('evidenceTitle')).join(', ')}</p>
+        {events.map(e => <section className="cgf-event" key={e.id} aria-label={t(e.type === 'objection' ? 'objectionRecorded' : 'response')}>
+          <h3 className="cg-tag">{t(e.type === 'objection' ? 'objectionRecorded' : 'response')} · {t(e.author === 'reviewer' ? 'reviewer' : 'person')} · <DateLabel value={e.at} /></h3>
+          <p className="cg-small cg-muted">{t('contentLanguage')}: {e.locale.toUpperCase()}</p><p lang={e.locale} className="fac-prose">{e.text}</p>
+        </section>)}
+        {!objection && active !== r.id && <div className="cg-row"><button type="button" className="cg-btn" ref={el => { openers.current[r.id] = el }} disabled={dirty} onClick={() => setActive(r.id)}>{t('object')}</button></div>}
+        {active === r.id && <RecordForm key={r.id} close={() => { setActive(null); requestAnimationFrame(() => openers.current[r.id]?.focus()) }} command={{ kind: 'objection', reviewId: r.id, reason: '', locale: lang }} />}
+        <p className="cg-small cg-muted">{t('disclaimer')}</p>
+      </Card></li>
+    })}
+  </ul>
 }
 function ReviewHistory({ participantId, own = false }: { participantId: string; own?: boolean }) {
   const { snapshot, dirty } = useFacilitation()
@@ -132,6 +170,8 @@ function RecordForm({ command, material, close }: { command: Command; material?:
   const dirty = !done && (preview || draft.kind === 'invitation' ||
     (draft.kind === 'review' ? Boolean(draft.observation || draft.limits || draft.evidenceRefs.length) : draft.kind === 'objection' ? Boolean(draft.reason) : Boolean(draft.response)))
   const otherDirty = anyDirty && !dirty
+  const primary = draft.kind === 'objection' ? 'cg-btn' : 'elv-btn elv-btn-primary'; const ghost = draft.kind === 'objection' ? 'cg-btn cg-btn--ghost' : 'elv-btn'
+  const cg = draft.kind === 'objection' // HU-P24: la objeción de la persona usa el sistema Cartografía; el formulario del profesional no cambia
   useEffect(() => { setDirty(formId, dirty); return () => setDirty(formId, false) }, [dirty, setDirty, formId])
   useEffect(() => { if (done || error) status.current?.focus() }, [done, error])
   useEffect(() => { if (focusField) { document.getElementById(`${formId}-${focusField}`)?.focus(); setFocusField(null) } }, [focusField, formId])
@@ -169,15 +209,18 @@ function RecordForm({ command, material, close }: { command: Command; material?:
     } catch (e) { setError(e instanceof PreviewError && e.code === 'conflict' ? 'conflict' : e instanceof PreviewError && e.code === 'revoked' ? 'noAccess' : 'saveError') }
     finally { setBusy(false) }
   }
-  const textField = (field: TextField, label: TextKey, max: number, value: string) => { const problem = fieldErrors[field]; const near = value.length >= max * 0.9; const base = `${formId}-${field}`; return <div className="fac-field">
+  const textField = (field: TextField, label: TextKey, max: number, value: string) => { const problem = fieldErrors[field]; const near = value.length >= max * 0.9; const base = `${formId}-${field}`
+    if (cg) return <><TextAreaField id={base} label={t(label)} required maxLength={max} value={value} disabled={busy || preview || otherDirty} hint={`${value.length} / ${max} ${t('characters')}`} error={problem ? t(problem) : undefined}
+      onChange={e => change({ ...draft, [field]: e.target.value } as Command)} /><span className="fac-sr" aria-live="polite">{near ? `${value.length} / ${max} ${t('characters')}` : ''}</span></>
+    return <div className="fac-field">
     <label htmlFor={base}>{t(label)}</label><textarea id={base} className="elv-textarea" required maxLength={max} value={value} disabled={busy || preview || otherDirty} aria-invalid={Boolean(problem)} aria-describedby={base + '-count' + (problem ? ' ' + base + '-error' : '')}
       onChange={e => change({ ...draft, [field]: e.target.value } as Command)} />
     <small id={base + '-count'}>{value.length} / {max} {t('characters')}</small>
     <span className="fac-sr" aria-live="polite">{near ? `${value.length} / ${max} ${t('characters')}` : ''}</span>
     {problem && <small id={base + '-error'} role="alert" className="fac-error">{t(problem)}</small>}
   </div> }
-  if (done) return <p ref={status} tabIndex={-1} role="status">{t('synthetic')} {t(draft.kind === 'review' ? 'recorded' : draft.kind === 'objection' ? 'objectionRecorded' : draft.kind === 'response' ? 'responseRecorded' : 'invitationRequested')}</p>
-  return <form className="fac-form" ref={form} noValidate onSubmit={e => {
+  if (done) return <p ref={status} tabIndex={-1} role="status" className={cg ? 'cg-banner' : undefined}>{t('synthetic')} {t(draft.kind === 'review' ? 'recorded' : draft.kind === 'objection' ? 'objectionRecorded' : draft.kind === 'response' ? 'responseRecorded' : 'invitationRequested')}</p>
+  return <form className={cg ? 'cgf-form' : 'fac-form'} ref={form} noValidate onSubmit={e => {
     e.preventDefault()
     const errors: Partial<Record<Field, TextKey>> = {}
     if (draft.kind === 'review') {
@@ -204,7 +247,7 @@ function RecordForm({ command, material, close }: { command: Command; material?:
       {draft.kind === 'objection' && textField('reason', 'reason', LIMITS.reason, draft.reason)}
       {draft.kind === 'response' && textField('response', 'response', LIMITS.response, draft.response)}
     </>}
-    {preview && <section className="fac-preview" aria-label={t('previewAction')}>
+    {preview && <section className={cg ? 'cg-hintbox' : 'fac-preview'} aria-label={t('previewAction')}>
       <h3>{t('previewAction')}</h3><p>{t('exact')}</p>
       {draft.kind === 'review' && <><p>{t('sampleTitle')} · {t('version')} {draft.materialVersion}</p>
         <p>{t('examined')}: {draft.evidenceRefs.map(() => t('evidenceTitle')).join(', ')}</p>
@@ -214,19 +257,19 @@ function RecordForm({ command, material, close }: { command: Command; material?:
       {draft.kind === 'response' && <p className="fac-prose">{draft.response}</p>}
       <p>{t('contentLanguage')}: {(draft.kind !== 'invitation' ? draft.locale : lang).toUpperCase()}</p>
     </section>}
-    <p id={formId} ref={status} tabIndex={-1} role={error ? 'alert' : 'status'}>{error ? t(error) : busy ? t('saving') : ''}</p>
+    <p id={formId} ref={status} tabIndex={-1} role={error ? 'alert' : 'status'} className={cg ? (error ? 'cg-error' : 'cg-muted') : undefined}>{error ? t(error) : busy ? t('saving') : ''}</p>
     {error === 'conflict' && draft.kind === 'review' && <div className="fac-conflict">
       {currentVersion === null
         ? <button className="elv-btn" type="button" onClick={viewCurrent}>{t('viewCurrent')}</button>
         : <><p>{t('currentIs')} {currentVersion}; {t('draftUses')} {draft.materialVersion}.</p><button className="elv-btn elv-btn-primary" type="button" onClick={adoptCurrentVersion}>{t('useCurrent')}</button></>}
     </div>}
-    <div className="fac-actions">
-      {!preview && <button className="elv-btn elv-btn-primary" type="submit" disabled={otherDirty}>{t('previewAction')}</button>}
-      {preview && <button className="elv-btn elv-btn-primary" type="button" disabled={busy || error === 'conflict' || error === 'noAccess'} onClick={confirm}>
+    <div className={cg ? 'cg-row' : 'fac-actions'}>
+      {!preview && <button className={primary} type="submit" disabled={otherDirty}>{t('previewAction')}</button>}
+      {preview && <button className={primary} type="button" disabled={busy || error === 'conflict' || error === 'noAccess'} onClick={confirm}>
         {t(error === 'saveError' ? 'retry' : draft.kind === 'objection' ? 'confirmObjection' : draft.kind === 'response' ? 'confirmResponse' : draft.kind === 'invitation' ? 'confirmInvite' : 'confirm')}
       </button>}
-      {preview && !pending && <button className="elv-btn" type="button" onClick={() => setPreview(false)}>{t('edit')}</button>}
-      <button className="elv-btn" type="button" disabled={busy} onClick={cancel}>{t('cancel')}</button>
+      {preview && !pending && <button className={ghost} type="button" onClick={() => setPreview(false)}>{t('edit')}</button>}
+      <button className={ghost} type="button" disabled={busy} onClick={cancel}>{t('cancel')}</button>
     </div>
   </form>
 }
