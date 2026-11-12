@@ -35,6 +35,11 @@ class EvidenceError extends Error {
 }
 const invalid = (es = 'Datos inválidos.', en = 'Invalid data.') => new EvidenceError(400, 'invalid_input', es, en);
 const notFound = () => new EvidenceError(404, 'evidence_not_found', 'Evidencia no encontrada.', 'Evidence not found.');
+// E253-3 (ES-233): una evidencia con origen del chat exige además el permiso de análisis del chat (insights_chat); el del puente solo autoriza compartir. Se comprueba al guardarla confirmada,
+// dentro de la misma transacción y ANTES de bloquear las filas de evidencia (mismo orden de bloqueo que la retirada del permiso: consentimiento primero).
+const SOURCE_PURPOSE = 'insights_chat';
+const sourceConsentError = () => new EvidenceError(403, 'source_consent_required',
+  'Autoriza el análisis del chat antes de usarlo como origen.', 'Authorize the analysis of the chat before using it as an origin.');
 const consentError = () => new EvidenceError(403, 'consent_required',
   'Necesitas autorizar el puente profesional.', 'You need to authorize the professional bridge.');
 
@@ -226,6 +231,7 @@ async function create(userId, body) {
   const authoring = authoringOf(userId, body);
   const needsConsent = body.status === 'confirmed' && Array.isArray(body.origins) && body.origins.length > 0;
   return guarded(userId, needsConsent, async (transaction) => {
+    if (needsConsent && !await consent.isGrantedIn(userId, SOURCE_PURPOSE, transaction)) throw sourceConsentError();
     const repeated = await EvidenceVersion.findOne({ where: { UserId: userId, requestId: body.requestId }, transaction });
     if (repeated) return { id: repeated.EvidenceId, version: repeated.version, created: false };
     const origins = await resolveOrigins(userId, body.origins, transaction);
@@ -245,6 +251,7 @@ async function update(userId, id, body) {
   const authoring = authoringOf(userId, body);
   const needsConsent = body.status === 'confirmed' && Array.isArray(body.origins) && body.origins.length > 0;
   return guarded(userId, needsConsent, async (transaction) => {
+    if (needsConsent && !await consent.isGrantedIn(userId, SOURCE_PURPOSE, transaction)) throw sourceConsentError();
     const ev = await Evidence.findOne({ where: { id, UserId: userId, deletedAt: null }, transaction, lock: Transaction.LOCK.UPDATE });
     if (!ev) throw notFound();
     const repeated = await EvidenceVersion.findOne({ where: { UserId: userId, requestId: body.requestId }, transaction });

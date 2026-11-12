@@ -55,6 +55,15 @@ async function hasConsent(userId, purpose, scope = DEFAULT_SCOPE) {
   return isEffective(row, purpose);
 }
 
+// ES-233: comprueba un permiso ADICIONAL dentro de una transacción ya abierta y con bloqueo compartido: una retirada concurrente espera a que la transacción termine,
+// y ninguna operación que empiece después ve el permiso vigente. No lanza: devuelve si el permiso está vigente.
+async function isGrantedIn(userId, purpose, transaction, scope = DEFAULT_SCOPE) {
+  if (!validOwner(userId) || !isPurpose(purpose)) return false;
+  if (await deletionPending(userId, transaction)) return false;
+  const row = await Consent.findOne({ where: keyOf(Number(userId), purpose, scope), transaction, lock: Transaction.LOCK.SHARE });
+  return isEffective(row, purpose);
+}
+
 // Ejecuta fn(transaction) con el consentimiento comprobado DENTRO de la transacción y con bloqueo compartido:
 // una revocación concurrente espera a que termine la operación y ninguna operación nueva ve un consentimiento revocado (ADR-003).
 async function withConsent(userId, purpose, fn, scope = DEFAULT_SCOPE) {
@@ -196,6 +205,6 @@ const requireConsent = (purpose, ownerOf, scope = DEFAULT_SCOPE) => async (req, 
 module.exports = {
   PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, isValidScope,
   ConsentRequiredError, isPurpose, isEffective,
-  hasConsent, withConsent, setConsent, listConsents, listHistory, requireConsent,
+  hasConsent, isGrantedIn, withConsent, setConsent, listConsents, listHistory, requireConsent,
   revokeForDeletion, revokeTherapistSharing, therapistScope,
 };

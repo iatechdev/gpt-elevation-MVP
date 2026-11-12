@@ -84,6 +84,9 @@ test('ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y
     for (let round = 0; round < 8; round++) {
       const userId = 100 + round;
       await consent.setConsent(userId, 'professional_bridge', 'granted');
+      await consent.setConsent(userId, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+      await consent.setConsent(userId, 'insights_diary', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+      await consent.setConsent(userId, 'insights_resume', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
       const entry = await Diary.create({ UserId: userId, entryDate: '2026-10-01', content: encriptarV2('diario sintético') });
       const fields = [{ key: 'values', text: 'Privado', origin: { type: 'diary_entry', id: entry.id } }];
       const p = await bridge.preview(userId, { fields });
@@ -101,6 +104,9 @@ test('ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y
   await t.test('una revocación durante una lectura del motor espera a que termine y después ya no hay contexto', async () => {
     const userId = 200;
     await consent.setConsent(userId, 'professional_bridge', 'granted');
+    await consent.setConsent(userId, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+    await consent.setConsent(userId, 'insights_diary', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+    await consent.setConsent(userId, 'insights_resume', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
     const entry = await Diary.create({ UserId: userId, entryDate: '2026-10-01', content: encriptarV2('diario') });
     const fields = [{ key: 'values', text: 'Privado B', origin: { type: 'diary_entry', id: entry.id } }];
     const p = await bridge.preview(userId, { fields });
