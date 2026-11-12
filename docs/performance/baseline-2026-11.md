@@ -1,6 +1,6 @@
 # Línea base de rendimiento del frontend — noviembre 2026 (ES-195 · PERF-01)
 
-Medición del frontend `frontend/` sobre `main` (7e1b0836). Solo mide: no cambia UI ni lógica. Todas las cifras de este documento salen de las dos órdenes de la sección «Cómo reproducirlo»; no hay cifras estimadas. Lo que no se pudo medir está en «Limitaciones».
+Medición del frontend `frontend/` sobre `main` (7e1b0836). `main` avanzó después (a 12-nov-2026 el mayor bloque medido por `build:check` es 420,6 kB bruto, frente a 411,35 kB aquí); las cifras de este documento NO se re-midieron sobre ese avance. Solo mide: no cambia UI ni lógica. Todas las cifras de este documento salen de las dos órdenes de la sección «Cómo reproducirlo»; no hay cifras estimadas. Lo que no se pudo medir está en «Limitaciones».
 
 ## 1. Peso del paquete (`npm run perf:report`)
 
