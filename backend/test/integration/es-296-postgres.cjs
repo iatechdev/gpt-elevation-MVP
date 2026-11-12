@@ -83,4 +83,40 @@ test('ES-296 PostgreSQL + HTTP: retirar insights_chat marca para revisión la ev
     }
     console.log('# carrera ES-296:', JSON.stringify(outcomes));
   });
+
+  // E253-5 (QA): quitar la comprobación del permiso al ACTUALIZAR una evidencia (PUT) no la detectaba ninguna prueba.
+  await t.test('E253-5: actualizar (PUT) una evidencia confirmándola con origen del chat exige insights_chat; sin él 403 y la evidencia no cambia', async () => {
+    const p = await setup(); const id = await direct(p, 'Evidencia directa a editar');
+    const turn = await turnOf(p); const origins = [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }];
+    await grant(p, 'insights_chat', 'revoked');
+    const before = JSON.stringify(await q('SELECT * FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version', [id]));
+    const denied = await http(p, 'PUT', `/api/evidence/${id}`, { payload: payload('Editada con origen del chat'), status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID(), origins });
+    assert.equal(denied.status, 403); assert.equal(denied.body.code, 'source_consent_required');
+    assert.equal(JSON.stringify(await q('SELECT * FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version', [id])), before, 'la evidencia no cambió');
+    await grant(p, 'insights_chat');
+    const ok = await http(p, 'PUT', `/api/evidence/${id}`, { payload: payload('Editada con origen del chat'), status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID(), origins });
+    assert.ok(ok.status < 300, JSON.stringify(ok.body));
+  });
+
+  // E253-6 (QA, comportamiento deliberado y documentado en los contratos 19 y 20): repetir una confirmación ya guardada DESPUÉS de retirar el permiso da 403, no el 200 con la versión existente.
+  await t.test('E253-6: repetir la misma confirmación (mismo requestId) tras retirar el permiso de la fuente responde 403 y no duplica ni entrega nada — evidencia y Puente', async () => {
+    const p = await setup(); const turn = await turnOf(p);
+    const evBody = { payload: payload('Con origen del chat'), status: 'confirmed', requestId: crypto.randomUUID(), origins: [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }] };
+    assert.equal((await http(p, 'POST', '/api/evidence', evBody)).status, 201);
+    await grant(p, 'insights_chat', 'revoked');
+    const replay = await http(p, 'POST', '/api/evidence', evBody);
+    assert.equal(replay.status, 403); assert.equal(replay.body.code, 'source_consent_required');
+    assert.equal(Number((await q('SELECT count(*) n FROM "EvidenceVersions" WHERE "UserId"=$1', [p.id]))[0].n), 1, 'no duplicó');
+    // Puente: confirmar con origen del diario, retirar insights_diary, repetir con el mismo requestId
+    const b = await setup(); await grant(b, 'insights_diary');
+    const entry = (await http(b, 'POST', '/api/diary', { date: '2026-10-01', content: 'Una entrada del diario' })).body.id;
+    const fields = [{ key: 'motivations', text: 'Me motiva coordinar equipos pequeños.', origin: { type: 'diary_entry', id: entry } }];
+    const pv = await http(b, 'POST', '/api/career-context/preview', { fields }); assert.equal(pv.status, 200);
+    const body = { fields, token: pv.body.token, requestId: crypto.randomBytes(12).toString('hex') };
+    assert.equal((await http(b, 'POST', '/api/career-context/confirm', body)).status, 201);
+    await grant(b, 'insights_diary', 'revoked');
+    const again = await http(b, 'POST', '/api/career-context/confirm', body);
+    assert.equal(again.status, 403); assert.equal(again.body.code, 'source_consent_revoked');
+    assert.equal(Number((await q('SELECT count(*) n FROM "CareerContextVersions" WHERE "UserId"=$1', [b.id]))[0].n), 1, 'no duplicó');
+  });
 });
