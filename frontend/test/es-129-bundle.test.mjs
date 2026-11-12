@@ -25,6 +25,8 @@ function fakeDist(entryBytes, chunkBytes) {
   const noise = n => Buffer.from(Array.from({ length: n }, (_, i) => (i * 2654435761) % 251))
   fs.writeFileSync(path.join(dir, 'assets', 'index-a.js'), noise(entryBytes))
   fs.writeFileSync(path.join(dir, 'assets', 'Big-b.js'), noise(chunkBytes))
+  fs.writeFileSync(path.join(dir, 'assets', 'vendor-react-v.js'), 'react.transitional.element') // ES-196: la comprobación exige los bloques de vendors y un solo React
+  fs.writeFileSync(path.join(dir, 'assets', 'vendor-router-r.js'), 'router')
   fs.writeFileSync(path.join(dir, 'index.html'), '<script type="module" crossorigin src="/assets/index-a.js"></script><link rel="modulepreload" crossorigin href="/assets/index-a.js">')
   return dir
 }
