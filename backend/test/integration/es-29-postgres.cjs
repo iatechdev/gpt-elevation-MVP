@@ -127,6 +127,7 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
   await t.test('coexistencia con los ganchos de consentimiento: revocar el puente deja stale solo lo que se apoya en evidencia del chat; lo demás del mapa sigue', async () => {
     const userId = 4;
     await consent.setConsent(userId, 'professional_bridge', 'granted');
+    await consent.setConsent(userId, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
     const turn = await ChatTurn.create({ UserId: userId, requestId: 'turn-skill-0001', status: 'completed', userContent: encriptarV2('Lideré la planificación sintética del equipo'), replyContent: encriptarV2('r') });
     const fromChat = await evidence.create(userId, { ...evBody(), origins: [{ type: 'chat_turn', id: turn.id, quote: 'lideré la planificación' }] });
     const direct = await evidence.create(userId, evBody());
