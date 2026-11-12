@@ -42,9 +42,9 @@ async function startRealApi(t, { envVar, prefix }) {
   const mailer = { sent: true }; const mailerModule = require.resolve('../../utils/mailer'); const realMailer = require('../../utils/mailer');
   require.cache[mailerModule] = { id: mailerModule, filename: mailerModule, loaded: true, exports: { ...realMailer, sendInvitation: async () => ({ sent: mailer.sent }) } };
   const anthropicModule = require.resolve('../../utils/anthropic');
-  const provider = { calls: 0 };
+  const provider = { calls: 0, requests: [] };
   require.cache[anthropicModule] = { id: anthropicModule, filename: anthropicModule, loaded: true, exports: {
-    MODEL: 'modelo-sintetico', messages: { create: async () => { provider.calls += 1; return { content: [{ type: 'text', text: 'Recomendación sintética.' }], usage: { input_tokens: 10, output_tokens: 5 } }; } },
+    MODEL: 'modelo-sintetico', messages: { create: async (args) => { provider.calls += 1; provider.requests.push(JSON.stringify(args)); return { content: [{ type: 'text', text: 'Recomendación sintética.' }], usage: { input_tokens: 10, output_tokens: 5 } }; } },
   } };
   const { issueToken } = require('../../utils/sessions');
   // E236-1 (ES-281): se carga el server.js REAL; los montajes se registran al cargarlo. Una ruta o un router nuevo en server.js entra solo a las baterías de abajo.

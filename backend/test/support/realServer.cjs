@@ -12,7 +12,8 @@ function loadRealApp() {
     const handlers = args.flat().filter((h) => typeof h === 'function');
     const routers = handlers.filter((h) => Array.isArray(h.stack));
     const guards = handlers.filter((h) => !Array.isArray(h.stack)).map((h) => h.name || 'anonimo');
-    for (const router of routers) mounts.push({ prefix, guards, router });
+    const guardFns = handlers.filter((h) => !Array.isArray(h.stack));
+    for (const router of routers) mounts.push({ prefix, guards, guardFns, router });
     return originalUse.apply(this, args);
   };
   let app;
