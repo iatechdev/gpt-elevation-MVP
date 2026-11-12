@@ -1,0 +1,238 @@
+[
+ {
+  "id": "C1 guía 401 REAL (390px es) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 1 (76x44); «Reintentar» 0; axe []; sin desborde true"
+ },
+ {
+  "id": "C1b «Entrar» lleva a /login con la sesión borrada (390px es) [head]",
+  "ok": true,
+  "detail": "url /login; token null"
+ },
+ {
+  "id": "C2 validación 401 REAL (390px es) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; archivo conservado 1; sesión viva true; «Entrar» 1 (74x44); axe []; sin desborde true"
+ },
+ {
+  "id": "C2b «Entrar» → /login (390px es) [head]",
+  "ok": true,
+  "detail": "url /login"
+ },
+ {
+  "id": "C1 guía 401 REAL (390px en) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 1 (81x44); «Reintentar» 0; axe []; sin desborde true"
+ },
+ {
+  "id": "C1b «Entrar» lleva a /login con la sesión borrada (390px en) [head]",
+  "ok": true,
+  "detail": "url /login; token null"
+ },
+ {
+  "id": "C2 validación 401 REAL (390px en) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; archivo conservado 1; sesión viva true; «Entrar» 1 (79x44); axe []; sin desborde true"
+ },
+ {
+  "id": "C2b «Entrar» → /login (390px en) [head]",
+  "ok": true,
+  "detail": "url /login"
+ },
+ {
+  "id": "C1 guía 401 REAL (1360px es) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 1 (76x44); «Reintentar» 0; axe []; sin desborde true"
+ },
+ {
+  "id": "C1b «Entrar» lleva a /login con la sesión borrada (1360px es) [head]",
+  "ok": true,
+  "detail": "url /login; token null"
+ },
+ {
+  "id": "C2 validación 401 REAL (1360px es) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; archivo conservado 1; sesión viva true; «Entrar» 1 (74x44); axe []; sin desborde true"
+ },
+ {
+  "id": "C2b «Entrar» → /login (1360px es) [head]",
+  "ok": true,
+  "detail": "url /login"
+ },
+ {
+  "id": "C1 guía 401 REAL (1360px en) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 1 (81x44); «Reintentar» 0; axe []; sin desborde true"
+ },
+ {
+  "id": "C1b «Entrar» lleva a /login con la sesión borrada (1360px en) [head]",
+  "ok": true,
+  "detail": "url /login; token null"
+ },
+ {
+  "id": "C2 validación 401 REAL (1360px en) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; archivo conservado 1; sesión viva true; «Entrar» 1 (79x44); axe []; sin desborde true"
+ },
+ {
+  "id": "C2b «Entrar» → /login (1360px en) [head]",
+  "ok": true,
+  "detail": "url /login"
+ },
+ {
+  "id": "C1 guía 401 REAL (320px es) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 1 (76x44); «Reintentar» 0; axe []; sin desborde true"
+ },
+ {
+  "id": "C1b «Entrar» lleva a /login con la sesión borrada (320px es) [head]",
+  "ok": true,
+  "detail": "url /login; token null"
+ },
+ {
+  "id": "C2 validación 401 REAL (320px es) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; archivo conservado 1; sesión viva true; «Entrar» 1 (74x44); axe []; sin desborde true"
+ },
+ {
+  "id": "C2b «Entrar» → /login (320px es) [head]",
+  "ok": true,
+  "detail": "url /login"
+ },
+ {
+  "id": "C1 guía 401 REAL (320px en) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 1 (81x44); «Reintentar» 0; axe []; sin desborde true"
+ },
+ {
+  "id": "C1b «Entrar» lleva a /login con la sesión borrada (320px en) [head]",
+  "ok": true,
+  "detail": "url /login; token null"
+ },
+ {
+  "id": "C2 validación 401 REAL (320px en) [head]",
+  "ok": true,
+  "detail": "estado real 401; aviso true; archivo conservado 1; sesión viva true; «Entrar» 1 (79x44); axe []; sin desborde true"
+ },
+ {
+  "id": "C2b «Entrar» → /login (320px en) [head]",
+  "ok": true,
+  "detail": "url /login"
+ },
+ {
+  "id": "C3 guía 403 REAL (390px es)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; botones de reintento/entrar 0; sesión viva true; texto conservado"
+ },
+ {
+  "id": "C3 validación 403 REAL (390px es)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; sesión viva true"
+ },
+ {
+  "id": "C3 guía 403 REAL (1360px es)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; botones de reintento/entrar 0; sesión viva true; texto conservado"
+ },
+ {
+  "id": "C3 validación 403 REAL (1360px es)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; sesión viva true"
+ },
+ {
+  "id": "C3 guía 403 REAL (390px en)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; botones de reintento/entrar 0; sesión viva true; texto conservado"
+ },
+ {
+  "id": "C3 validación 403 REAL (390px en)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; sesión viva true"
+ },
+ {
+  "id": "C3 guía 403 REAL (1360px en)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; botones de reintento/entrar 0; sesión viva true; texto conservado"
+ },
+ {
+  "id": "C3 validación 403 REAL (1360px en)",
+  "ok": true,
+  "detail": "estado real 403; mensaje propio true; sesión viva true"
+ },
+ {
+  "id": "C4 guía corta (es)",
+  "info": "excepción page.waitForResponse: Timeout 30000ms exceeded while waiting for event \"response\""
+ },
+ {
+  "id": "C4 guía 120 caracteres REAL (es)",
+  "info": "estado 200; texto: "
+ },
+ {
+  "id": "C4 validación formato inválido REAL (es)",
+  "info": "estado 400; mensaje: Solo se permiten PDF, JPG, PNG o WEBP."
+ },
+ {
+  "id": "C4 guía corta (en)",
+  "info": "excepción page.waitForResponse: Timeout 30000ms exceeded while waiting for event \"response\""
+ },
+ {
+  "id": "C4 guía 120 caracteres REAL (en)",
+  "info": "estado 200; texto: "
+ },
+ {
+  "id": "C4 validación formato inválido REAL (en)",
+  "info": "estado 400; mensaje: Only PDF, JPG, PNG or WEBP files are allowed."
+ },
+ {
+  "id": "C5 «Comprobar» con sesión revocada (es)",
+  "ok": true,
+  "detail": "estado real de la relectura 401; aviso true; «Entrar» 1; sesión viva true"
+ },
+ {
+  "id": "C6 pérdida de red sin 401 (es)",
+  "info": "texto conservado 80/80; tras «Comprobar» (sesión vigente): No pudimos confirmar si la propuesta se envió. Comprueba antes de volver a enviar: tu texto sigue aquí. Comprobar; sesión viva true"
+ },
+ {
+  "id": "C5 «Comprobar» con sesión revocada (en)",
+  "ok": true,
+  "detail": "estado real de la relectura 401; aviso true; «Entrar» 1; sesión viva true"
+ },
+ {
+  "id": "C6 pérdida de red sin 401 (en)",
+  "info": "texto conservado 80/80; tras «Comprobar» (sesión vigente): We couldn't confirm whether the proposal was sent. Check before sending again: your text is still here. Check; sesión viva true"
+ },
+ {
+  "id": "C7 un inicio de sesión más nuevo no se cierra al pulsar «Entrar»",
+  "ok": true,
+  "detail": "token nuevo intacto true; sigue en el panel true"
+ },
+ {
+  "id": "C7 lo que ve la persona",
+  "info": "tras pulsar «Entrar» con un token más nuevo el aviso sigue visible: true (el botón no da ninguna señal si no cierra la sesión)"
+ },
+ {
+  "id": "C9 teclado guía (es): foco tras el aviso, Tab llega a «Entrar», Enter lo activa",
+  "ok": true,
+  "detail": "foco tras aparecer el aviso: BODY Saltar al contenidoElevat; Tab hasta «Entrar»: 3 pulsaciones; foco visible: solid 3px / sombra false; Enter → /login true"
+ },
+ {
+  "id": "C9 teclado validación (es): Tab llega a «Entrar» y Espacio lo activa",
+  "ok": true,
+  "detail": "llegó true; /login true"
+ },
+ {
+  "id": "C9 teclado guía (en): foco tras el aviso, Tab llega a «Entrar», Enter lo activa",
+  "ok": true,
+  "detail": "foco tras aparecer el aviso: BODY Skip to contentElevation.; Tab hasta «Entrar»: 3 pulsaciones; foco visible: solid 3px / sombra false; Enter → /login true"
+ },
+ {
+  "id": "C9 teclado validación (en): Tab llega a «Entrar» y Espacio lo activa",
+  "ok": true,
+  "detail": "llegó true; /login true"
+ },
+ {
+  "id": "sin errores de consola ni de página",
+  "ok": true,
+  "detail": "ninguno"
+ }
+]

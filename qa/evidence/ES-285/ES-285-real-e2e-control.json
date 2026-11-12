@@ -1,0 +1,62 @@
+[
+ {
+  "id": "C1 guía 401 REAL (390px es) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 0 (-); «Reintentar» 0; axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C2 validación 401 REAL (390px es) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; archivo conservado 1; sesión viva true; «Entrar» 0 (-); axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C1 guía 401 REAL (390px en) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 0 (-); «Reintentar» 0; axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C2 validación 401 REAL (390px en) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; archivo conservado 1; sesión viva true; «Entrar» 0 (-); axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C1 guía 401 REAL (1360px es) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 0 (-); «Reintentar» 0; axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C2 validación 401 REAL (1360px es) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; archivo conservado 1; sesión viva true; «Entrar» 0 (-); axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C1 guía 401 REAL (1360px en) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 0 (-); «Reintentar» 0; axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C2 validación 401 REAL (1360px en) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; archivo conservado 1; sesión viva true; «Entrar» 0 (-); axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C1 guía 401 REAL (320px es) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 0 (-); «Reintentar» 0; axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C2 validación 401 REAL (320px es) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; archivo conservado 1; sesión viva true; «Entrar» 0 (-); axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C1 guía 401 REAL (320px en) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; texto conservado 80/80; sesión viva true; sigue en el panel true; «Entrar» 0 (-); «Reintentar» 0; axe [\"sin aviso\"]; sin desborde true"
+ },
+ {
+  "id": "C2 validación 401 REAL (320px en) [control]",
+  "ok": false,
+  "detail": "estado real 401; aviso false; archivo conservado 1; sesión viva true; «Entrar» 0 (-); axe [\"sin aviso\"]; sin desborde true"
+ }
+]
