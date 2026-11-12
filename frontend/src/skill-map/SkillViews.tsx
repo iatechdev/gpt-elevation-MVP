@@ -1,6 +1,5 @@
 import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { trackView, type Assessment, type LocalizedText, type Skill } from './model'
-import { CANVAS_W, CHIP_H, CHIP_W, edgePoint, layoutChips, territoryBoxes } from './layout'
 import { hasLevel, skillStatus, type SkillStatus } from './status'
 import { SelfAssessPanel } from './SelfAssessPanel'
 import { resolveTerritories, type Territory } from './territories'
@@ -10,54 +9,6 @@ type Lang = 'es' | 'en'
 const statusKey = (status: SkillStatus) => status === 'evidence' ? 'skill_map.status_evidence' : status === 'needs_review' ? 'skill_map.contradictory'
   : status === 'stale' ? 'skill_map.stale' : 'skill_map.no_evidence'
 const label = (value: LocalizedText, lang: Lang, t: T) => value[lang] ?? t('skill_map.translation_missing')
-/** Dos líneas como máximo para el nombre dentro del recuadro; el nombre completo queda en <title> y en el detalle. */
-function wrap(text: string, width = 22): string[] {
-  const lines: string[] = []; let line = ''
-  for (const word of text.split(/\s+/)) {
-    if (line && `${line} ${word}`.length > width) { lines.push(line); line = word } else line = line ? `${line} ${word}` : word
-  }
-  if (line) lines.push(line)
-  if (lines.length > 2) { const rest = lines.slice(1).join(' '); return [lines[0], rest.length > width ? `${rest.slice(0, width - 1)}…` : rest] }
-  return lines
-}
-
-/** Mapa visual (SVG): territorios como recuadros y capacidades unidas por líneas a cada uno de sus territorios. */
-export function TerritoryMap({ skills, territories, selected, onSelect, lang, t }: {
-  skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
-  onSelect: (key: string) => void; lang: Lang; t: T
-}) {
-  const { groups, links } = resolveTerritories(skills, territories)
-  const assigned = skills.filter(skill => links(skill).length > 0)
-  const { positions, height } = layoutChips(assigned.map(skill => ({ key: skill.skillKey, links: links(skill) })))
-  return <svg className="skill-map-svg" viewBox={`0 0 ${CANVAS_W} ${height}`} role="group" aria-label={t('skill_map.map_label')}>
-    {groups.map(({ territory }) => {
-      const box = territoryBoxes[territory.id]; if (!box) return null
-      return <g key={territory.id} className={`skill-map-territory tone-${territory.id}`}>
-        <rect x={box.x} y={box.y} width={box.w} height={box.h} rx={34} />
-        <text className="skill-map-territory-name" x={box.x + box.w / 2} y={box.y + box.h / 2 - 4} textAnchor="middle">{territory.labels[lang]}</text>
-      </g>
-    })}
-    {assigned.map(skill => links(skill).map(id => {
-      const box = territoryBoxes[id], at = positions[skill.skillKey]; if (!box || !at) return null
-      const end = edgePoint(box, at)
-      return <line key={`${skill.skillKey}-${id}`} className={`skill-map-link ${hasLevel(skillStatus(skill)) ? 'is-level' : 'is-none'}`} x1={at.x} y1={at.y} x2={end.x} y2={end.y} />
-    }))}
-    {assigned.map(skill => {
-      const at = positions[skill.skillKey]; if (!at) return null
-      const status = skillStatus(skill), name = label(skill.labels, lang, t), on = selected === skill.skillKey, lines = wrap(name)
-      return <g key={skill.skillKey} className={`skill-map-chip${on ? ' is-selected' : ''}`} role="button" tabIndex={0} aria-pressed={on}
-        aria-label={`${name}: ${t(statusKey(status))}`} onClick={() => onSelect(skill.skillKey)}
-        onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(skill.skillKey) } }}>
-        <title>{name}</title>
-        <rect x={at.x - CHIP_W / 2} y={at.y - CHIP_H / 2} width={CHIP_W} height={CHIP_H} rx={6} />
-        <circle className={hasLevel(status) ? 'dot-level' : 'dot-none'} cx={at.x - CHIP_W / 2 + 20} cy={at.y - 6} r={7} />
-        {lines.map((line, index) => <text key={index} className="skill-map-chip-name" x={at.x - CHIP_W / 2 + 38} y={at.y - 8 + index * 16}>{line}</text>)}
-        <text className="skill-map-chip-status" x={at.x - CHIP_W / 2 + 38} y={at.y + 24}>{t(statusKey(status))}</text>
-      </g>
-    })}
-  </svg>
-}
-
 /** Misma información como tarjetas por territorio: es la vista de móvil y tableta, y la alternativa accesible del mapa. */
 export function TerritoryList({ skills, territories, selected, onSelect, lang, t }: {
   skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
@@ -89,31 +40,6 @@ export function TerritoryList({ skills, territories, selected, onSelect, lang, t
       <ul>{unassigned.map(skill => row(skill))}</ul>
     </section>}
   </div>
-}
-
-/** H-86-02: en escritorio el lienzo solo dibuja capacidades con territorio; las demás se ven aquí, sin tener que cambiar a la lista. */
-export function UnassignedCard({ skills, territories, selected, onSelect, lang, t }: {
-  skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null
-  onSelect: (key: string) => void; lang: Lang; t: T
-}) {
-  const { unassigned } = resolveTerritories(skills, territories)
-  if (!unassigned.length) return null
-  return <section className="skill-map-territory-card tone-none skill-map-unassigned" aria-labelledby="terr-unassigned">
-    <h2 id="terr-unassigned">{t('skill_map.unassigned')}</h2>
-    <p className="skill-map-roles">{t('skill_map.unassigned_help')}</p>
-    <ul>{unassigned.map(skill => {
-      const status = skillStatus(skill)
-      return <li key={skill.skillKey}>
-        <button type="button" className="skill-map-pick" aria-pressed={selected === skill.skillKey} onClick={() => onSelect(skill.skillKey)}>
-          <span className={`skill-map-dot ${hasLevel(status) ? 'dot-level' : 'dot-none'}`} aria-hidden="true" />
-          <span className="skill-map-pick-text">
-            <span className="skill-map-pick-name">{label(skill.labels, lang, t)}</span>
-            <span className="skill-map-pick-status">{t(statusKey(status))}</span>
-          </span>
-        </button>
-      </li>
-    })}</ul>
-  </section>
 }
 
 function AssessmentPanel({ assessment, track, lang, t }: { assessment: Assessment | null; track: 'self' | 'review'; lang: Lang; t: T }) {

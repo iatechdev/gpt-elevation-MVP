@@ -26,9 +26,10 @@ export function PublicFrame({ children }: { children: ReactNode }) {
 }
 
 /** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de usuario. */
-export function PersonFrame({ children }: { children: ReactNode }) {
+export function PersonFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
   const { c } = useShellCopy()
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName="elv-theme">{children}</Frame>
+  // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con tema claro/oscuro del sistema.
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}>{children}</Frame>
 }
 
 /** Profesional: Panel y Personas en facilitación + menú (Revisiones profesionales, Salir); marca «Profesional». */

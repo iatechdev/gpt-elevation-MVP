@@ -61,7 +61,7 @@ test('ES-30 pantalla: cada cuña es un botón operable con teclado, con nombre y
   assert.equal(/dangerouslySetInnerHTML|innerHTML/.test(view), false)
   assert.equal(/#[0-9a-fA-F]{3,8}\b/.test(read('../src/skill-map/radar.css')), false, 'solo tokens')
   const page = read('../src/pages/SkillMapPage.tsx')
-  assert.match(page, /useState<'radar' \| 'territories'>\('radar'\)/); assert.match(page, /<RadarBoard/); assert.match(page, /<TerritoryMap/)
+  assert.match(page, /useState<'relief' \| 'list' \| 'radar'>\('relief'\)/); assert.match(page, /<RadarBoard/); assert.match(page, /<ReliefMap/) // ES-160: tres vistas; el radar sigue (decisión del PO, comentario 10961)
 })
 test('ES-30 textos del radar: ES y EN completos; «Conviene revisar» ya no promete una persona revisora', () => {
   assert.deepEqual(Object.keys(skillMapEs).sort(), Object.keys(skillMapEn).sort())

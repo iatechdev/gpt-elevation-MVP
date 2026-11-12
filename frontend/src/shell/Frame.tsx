@@ -5,6 +5,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { signOut } from '../access/signOut'
 import { CartografiaRoot } from '../cartografia/theme'
+import type { CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
 import { useShellCopy } from './useShellCopy'
 import './shell.css'
@@ -84,10 +85,12 @@ export type FrameProps = {
   brand?: ReactNode; /** Nombre accesible del enlace de la marca: debe contener el texto visible (WCAG 2.5.3). */ brandLabel?: string; brandTo?: string; nav?: ReactNode; account?: ReactNode; sidebar?: ReactNode; footer?: boolean; header?: boolean; children: ReactNode
   /** Clase extra para el área principal; los contenidos antiguos conservan su ámbito de tokens (elv-theme) hasta migrar. */
   mainClassName?: string
+  /** ES-160: tema del marco. Por defecto «light» (los contenidos antiguos son claros); una pantalla ya migrada a Cartografía pide «system» para seguir el modo claro/oscuro del sistema. */
+  theme?: CgTheme
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar, footer = true, header = true, mainClassName = '', children }: FrameProps) {
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', children }: FrameProps) {
   const { c } = useShellCopy(); const { pathname } = useLocation()
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // Al cambiar de ruta el foco pasa al <main> (no en la primera carga, para no robar el foco de quien llega por teclado).
@@ -96,7 +99,7 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar,
     main.current?.focus({ preventScroll: false })
   }, [pathname])
   return (
-    <CartografiaRoot theme="light" className="cg-frame">
+    <CartografiaRoot theme={theme} className="cg-frame">
       <a className="cg-skip" href="#main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{c.skip}</a>
       {header && (
         <header className="cg-header">
