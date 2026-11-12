@@ -3,7 +3,6 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useLanguage } from './i18n/useLanguage'
 import { LandingPage } from './pages/LandingPage.tsx'
-import { LoginPage } from './pages/LoginPage.tsx'
 import { ProtectedRoute } from './components/ProtectedRoute.tsx'
 import { AdminRoute } from './components/AdminRoute.tsx'
 import { TherapistRoute } from './components/TherapistRoute.tsx'
@@ -13,6 +12,7 @@ import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { SpaceSession } from './space/SpaceSession'
 // ES-129: cada pantalla fuera de la portada y el login se descarga al entrar en su ruta; así /login no arrastra admin, terapeuta, junta ni mapas.
 const ProfessionalApplicationPage = lazy(() => import('./professional/ProfessionalApplicationPage.tsx').then(m => ({ default: m.ProfessionalApplicationPage })))
+const LoginPage = lazy(() => import('./pages/LoginPage.tsx').then(m => ({ default: m.LoginPage }))) // ES-155: entrar usa el marco de Cartografía; ya no va en el arranque (se precarga en reposo desde la portada y al pasar el cursor por «Entrar»)
 const ForgotPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ResetPasswordPage })))
 const CheckinPage = lazy(() => import('./pages/CheckinPage.tsx').then(m => ({ default: m.CheckinPage })))

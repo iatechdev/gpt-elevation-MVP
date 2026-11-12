@@ -16,11 +16,12 @@ const readRole = (fallback: Role): Role => {
 }
 
 /** Público: marca, «Cómo funciona», «Privacidad», «Entrar» y «Crear cuenta». */
-export function PublicFrame({ children }: { children: ReactNode }) {
+export function PublicFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
   const { c } = useShellCopy()
   return (
     <Frame
-      nav={<nav className="cg-nav" aria-label={c.how}>{PUBLIC_NAV.map(item => <NavLink key={item.label} to={item.to}>{c[item.label]}</NavLink>)}<NavLink className="cg-btn" to="/login?mode=register">{c.signUp}</NavLink></nav>}
+      nav={<nav className="cg-nav cg-nav--grid" aria-label={c.how}>{PUBLIC_NAV.map(item => <NavLink key={item.label} to={item.to}>{c[item.label]}</NavLink>)}<NavLink className="cg-btn" to="/login?mode=register">{c.signUp}</NavLink></nav>}
+      theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
 }

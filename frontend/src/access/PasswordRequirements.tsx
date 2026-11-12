@@ -1,9 +1,4 @@
 import { PASSWORD_RULES, passwordProblems, type PasswordProblem } from './registrationPassword'
-import { colors, spacing } from '../styles/tokens'
-
-const hidden: React.CSSProperties = {
-  position: 'absolute', width: 1, height: 1, margin: -1, padding: 0, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0,
-}
 
 interface Props {
   id: string
@@ -18,30 +13,28 @@ interface Props {
 }
 
 // ES-128: requisitos de la contraseña visibles junto al campo antes de escribir. No depende solo del color: icono y texto oculto.
+// ES-155: con clases y tokens de Cartografía (accessCartografia.css), así sigue el tema claro/oscuro del sistema.
 export function PasswordRequirements({ id, password, showErrors, serverProblems = [], visibleSummary = false, text }: Props) {
   const problems = new Set<PasswordProblem>([...(password ? passwordProblems(password) : PASSWORD_RULES), ...(showErrors ? serverProblems : [])])
   const met = PASSWORD_RULES.filter(rule => !problems.has(rule)).length
   const bytesOver = problems.has('max_bytes')
   const summary = password ? text('landing.access.pw.summary').replace('{n}', String(met)).replace('{total}', String(PASSWORD_RULES.length)) : ''
   return (
-    <div id={id} style={{ fontSize: '0.8rem', color: colors.textMuted, textAlign: 'left', width: '100%', marginTop: `-${spacing.xs}` }}>
-      <p style={{ margin: `0 0 ${spacing.xs}`, color: colors.textMuted }}>{text('landing.access.pw.title')}</p>
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div id={id} className="ac-req">
+      <p>{text('landing.access.pw.title')}</p>
+      <ul>
         {PASSWORD_RULES.map(rule => {
           const ok = !problems.has(rule)
-          const color = ok ? colors.success : showErrors ? colors.danger : colors.textMuted
           return (
-            <li key={rule} style={{ display: 'flex', gap: spacing.xs, color, overflowWrap: 'anywhere' }}>
-              <span aria-hidden="true" style={{ width: '1em', flexShrink: 0 }}>{ok ? '✓' : '○'}</span>
-              <span>{text(`landing.access.pw.${rule}`)}<span style={hidden}> — {text(ok ? 'landing.access.pw.met' : 'landing.access.pw.pending')}</span></span>
+            <li key={rule} className={ok ? 'is-met' : showErrors ? 'is-bad' : undefined}>
+              <span aria-hidden="true" className="ac-req__icon">{ok ? '✓' : '○'}</span>
+              <span>{text(`landing.access.pw.${rule}`)}<span className="ac-sr"> — {text(ok ? 'landing.access.pw.met' : 'landing.access.pw.pending')}</span></span>
             </li>
           )
         })}
       </ul>
-      <p style={{ margin: `${spacing.xs} 0 0`, color: bytesOver ? colors.danger : colors.textMuted, overflowWrap: 'anywhere' }}>
-        {text('landing.access.pw.max_bytes')}
-      </p>
-      <p aria-live="polite" style={visibleSummary ? { margin: `${spacing.xs} 0 0`, color: colors.textMuted, overflowWrap: 'anywhere' } : { ...hidden, margin: -1 }}>{summary}</p>
+      <p className={bytesOver ? 'is-bad' : undefined}>{text('landing.access.pw.max_bytes')}</p>
+      <p aria-live="polite" className={visibleSummary ? undefined : 'ac-sr'}>{summary}</p>
     </div>
   )
 }
