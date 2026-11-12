@@ -128,4 +128,22 @@ test('ES-233 PostgreSQL + HTTP: el permiso de la fuente se exige al previsualiza
     const afterRevoke = await evidence(body(withTurn)); assert.equal(afterRevoke.status, 403); assert.equal(afterRevoke.body.code, 'source_consent_required');
     assert.equal((await http(person, 'POST', '/api/evidence/proposals', { turnIds: [turn] })).status, 403);
   });
+
+  // Revisión de otros caminos con orden de bloqueo posiblemente inverso (E253-1): la eliminación de cuenta (ES-23, revokeForDeletion) bloquea TODOS los consentimientos de la persona (sin orden fijo) y luego
+  // lo derivado; confirmar toma el del puente y luego los de las fuentes. Teóricamente podían cruzarse; en 25 rondas × 3 corridas NO se reprodujo ningún interbloqueo (observación, sin cambio de producción).
+  await t.test('carrera confirmar‖eliminar la cuenta con versión previa y varias fuentes, 25 rondas → ningún error 5xx ni interbloqueo en ninguno de los dos', async () => {
+    const { requestDeletion } = require('../../utils/dataRights');
+    for (let i = 0; i < 25; i += 1) {
+      const person = await mkUser('user'); const diary = await ORIGINS.diary_entry.make(person); const chat = await ORIGINS.chat_turn.make(person);
+      for (const purpose of ['professional_bridge', 'insights_diary', 'insights_chat']) await grant(person, purpose);
+      const first = [{ key: 'motivations', text: TEXT, origin: { type: 'diary_entry', id: diary } }];
+      const p1 = await preview(person, first); assert.equal((await confirm(person, first, p1.body.token)).status, 201);
+      const second = [{ key: 'values', text: 'Valoro aprender de otras personas.', origin: { type: 'chat_turn', id: chat } }, first[0]];
+      const p2 = await preview(person, second);
+      const [c, d] = await Promise.allSettled([confirm(person, second, p2.body.token), requestDeletion(person.id)]);
+      assert.equal(c.status, 'fulfilled', 'ronda ' + i + ': confirmar ' + (c.reason && c.reason.message));
+      assert.ok(c.value.status < 500, 'ronda ' + i + ': confirmar respondió ' + c.value.status + ' ' + JSON.stringify(c.value.body).slice(0, 80));
+      assert.equal(d.status, 'fulfilled', 'ronda ' + i + ': la eliminación falló: ' + (d.reason && d.reason.message));
+    }
+  });
 });
