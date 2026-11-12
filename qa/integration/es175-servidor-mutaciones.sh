@@ -3,8 +3,8 @@ export PATH="/c/Users/Usuario/tools/node22:$PATH"
 SUT=/c/Users/Usuario/Documents/qa-pr-253; B=$SUT/backend; V=/c/Users/Usuario/Documents/qa13/v262; U=postgres://elevation:elevation_local@127.0.0.1:54459/postgres
 cd $B; git checkout -q -- .
 for v in $(grep -rhoE "[A-Z0-9_]*TEST_DATABASE_URL" test/integration/*.cjs test/support/*.cjs | sort -u); do export $v=$U; done
-mine() { (cd /c/Users/Usuario/Documents/gpt-elevation-qa && QA_FAST=1 TAG=m QA_ROUNDS=4 QA_SUT=$SUT QA_OUT=$V QA175_DB=$U timeout 900 node qa/integration/es175-servidor-propios.cjs 2>&1 | grep -E 'RESUMEN|FATAL|"ok":false' | sed -E 's/.*"id":"(S[0-9a-z]+) .*"ok":false.*/FALLA \1/' | cut -c1-60 | tr '\n' ' '); }
-for m in N7 N10 N11; do
+mine() { (cd /c/Users/Usuario/Documents/gpt-elevation-qa && QA_FAST=1 TAG=m QA_ROUNDS=6 QA_SUT=$SUT QA_OUT=$V QA175_DB=$U timeout 900 node qa/integration/es175-servidor-propios.cjs 2>&1 | grep -E 'RESUMEN|FATAL|"ok":false' | sed -E 's/.*"id":"(S[0-9a-z]+) .*"ok":false.*/FALLA \1/' | cut -c1-60 | tr '\n' ' '); }
+for m in N5 N8 N15 N16 N19 N22 N24; do
   git checkout -q -- .
   if node /c/Users/Usuario/Documents/qa13/mut262.cjs $m > $V/m.$m.apply 2>&1; then
     a=$(timeout 600 node --test test/integration/es-175-postgres.cjs 2>&1 | tee $V/m.$m.175.log | grep -E '^# fail' | tr -d '\n#')
