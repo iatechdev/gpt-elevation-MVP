@@ -133,6 +133,22 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
   }
 }
 
+// ES-175 (E262-4): concede un permiso DENTRO de la transacción del llamador (la autorización a un revisor y su ReviewShare van juntos o no van). Mismo registro que setConsent
+// (fila + evento), sin ganchos porque solo se usa para `professional_review`. Puede lanzar SequelizeUniqueConstraintError si dos primeras decisiones coinciden: el llamador reintenta.
+async function grantIn(userId, purpose, scope, transaction) {
+  if (await deletionPending(userId, transaction)) throw new ConsentRequiredError(purpose);
+  const where = keyOf(userId, purpose, scope);
+  const version = REQUIRED_VERSION[purpose];
+  const current = await Consent.findOne({ where, transaction, lock: Transaction.LOCK.UPDATE });
+  if (current && current.status === 'granted' && current.version === version) return current;
+  const decidedAt = new Date();
+  let row = current;
+  if (current) await current.update({ status: 'granted', version, decidedAt }, { transaction });
+  else row = await Consent.create({ ...where, status: 'granted', version, decidedAt }, { transaction });
+  await ConsentEvent.create({ ...where, status: 'granted', version, decidedAt }, { transaction });
+  return row;
+}
+
 // ES-96: retira, dentro de la transacción del llamador, la autorización de compartir con UN terapeuta (desvincularse o ser reasignada). No crea nada si
 // la persona nunca autorizó. Los errores se propagan: la desvinculación y el retiro ocurren juntos o no ocurren.
 async function revokeTherapistSharing(userId, therapistId, transaction) {
@@ -210,6 +226,6 @@ const requireConsent = (purpose, ownerOf, scope = DEFAULT_SCOPE) => async (req, 
 module.exports = {
   PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, REVIEWER_SCOPE, reviewerScope, isValidScope,
   ConsentRequiredError, isPurpose, isEffective,
-  hasConsent, isGrantedIn, withConsent, setConsent, listConsents, listHistory, requireConsent,
+  hasConsent, isGrantedIn, withConsent, setConsent, grantIn, listConsents, listHistory, requireConsent,
   revokeForDeletion, revokeTherapistSharing, therapistScope,
 };

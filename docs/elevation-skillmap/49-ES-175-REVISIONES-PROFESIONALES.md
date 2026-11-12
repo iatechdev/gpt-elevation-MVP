@@ -27,3 +27,11 @@ Revisor (lado mínimo, sin pantallas): `GET /api/reviewer/shares`; `POST /api/re
 
 ## Pruebas
 `backend/test/integration/es-175-postgres.cjs` (PostgreSQL real + HTTP real, 0 IA): flujo completo, propietario A/B, una objeción/una respuesta con carrera (12 y 8 simultáneas), repetición idempotente, acceso retirado (antes, a mitad y por otra vía), entradas hostiles, inmutabilidad, evidencias con origen en el chat, exportación ES-23 y historial de consentimiento. Mutaciones detectadas: objetar sin permiso, objetar sin dueño, compartir chat/sin filtro, revisor ve sin permiso, crear revisión sin permiso, objeciones del revisor sin permiso, revisión sobre autorización no vigente, lista sin dueño.
+
+## Cambios tras la QA de #262 (E262-1 a E262-7)
+- **E262-1:** autorizar valida PRIMERO las evidencias (propias) y después al revisor; con evidencia inválida la respuesta es la misma para cualquier reviewerId, y cualquier revisor no utilizable (inexistente, no therapist, inactivo, uno mismo) da el mismo 404 `reviewer_not_found`. Límite honesto: quien tiene evidencia válida distingue un revisor utilizable por el éxito; lo frena el tope (E262-7).
+- **E262-2:** `materialChanged` también cuando la persona EDITÓ o BORRÓ una evidencia compartida, para la persona (lista de revisiones) y para el revisor (`GET /api/reviewer/shares`: `materialChanged` y `changed` por elemento). El revisor sigue viendo la versión FIJADA.
+- **E262-3:** una evidencia borrada no aparece en el material del revisor y `POST /api/reviewer/reviews` la rechaza con 400 `invalid_evidence`.
+- **E262-4:** el permiso (`consent.grantIn`) y la autorización se crean en UNA transacción.
+- **E262-5:** `listReviews` y `reviewerObjections` por lotes (una comprobación de permiso por persona).
+- **E262-7:** tope de 30 autorizaciones por persona y hora (429 `rate_limited`).

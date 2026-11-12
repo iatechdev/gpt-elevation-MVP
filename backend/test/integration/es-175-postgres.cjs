@@ -192,6 +192,62 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     assert.equal((await object(s2.person, s2.reviewId)).status, 403);
   });
 
+  await t.test('E262-1: un reviewerId no utilizable (persona, admin, inexistente, uno mismo) responde IGUAL con evidencia inválida o válida; no se enumeran profesionales', async () => {
+    const person = await mkUser('user'); const therapist = await mkUser('therapist'); const plain = await mkUser('user'); const admin = await mkUser('admin'); const ev = await evidence(person);
+    const bad = (reviewer) => http(person, 'POST', '/api/me/review-shares', { reviewerId: reviewer, evidenceIds: [987654], requestId: rid() });
+    const outs = await Promise.all([therapist.id, plain.id, admin.id, 99999999, person.id].map(bad));
+    assert.ok(outs.every((o) => o.status === 400 && o.body.code === 'invalid_evidence'), 'con evidencia inválida, la misma respuesta para cualquier id: ' + JSON.stringify(outs.map((o) => [o.status, o.body.code])));
+    const good = await Promise.all([plain.id, admin.id, 99999999, person.id].map((id) => http(person, 'POST', '/api/me/review-shares', { reviewerId: id, evidenceIds: [ev], requestId: rid() })));
+    assert.ok(good.every((o) => o.status === 404 && o.body.code === 'reviewer_not_found' && JSON.stringify(o.body) === JSON.stringify(good[0].body)), 'con evidencia válida, el mismo 404 para todo id no utilizable');
+  });
+
+  await t.test('E262-2/3: editar la evidencia compartida avisa «el material cambió» al revisor y a la persona; borrarla la quita del material del revisor y no se puede citar', async () => {
+    const s = await scene(); const ev2 = await evidence(s.person, 'Segunda');
+    const sh2 = await share(s.person, s.reviewer, [s.ev, ev2]); assert.equal(sh2.status, 201); const shareId = sh2.body.share.id;
+    let seen = (await http(s.reviewer, 'GET', '/api/reviewer/shares')).body.shares; assert.equal(seen.length, 1); assert.equal(seen[0].materialChanged, false); assert.ok(seen[0].material.every((m) => m.changed === false));
+    const rv = await review(s.reviewer, shareId, [s.ev, ev2]); assert.equal(rv.status, 201);
+    const edit = await http(s.person, 'PUT', `/api/evidence/${s.ev}`, { payload: evidencePayload('Editada'), status: 'confirmed', baseVersion: 1, requestId: rid() }); assert.ok(edit.status < 300, JSON.stringify(edit.body));
+    seen = (await http(s.reviewer, 'GET', '/api/reviewer/shares')).body.shares; assert.equal(seen[0].materialChanged, true, 'el revisor ve el aviso'); assert.equal(seen[0].material.find((m) => m.evidenceId === s.ev).changed, true);
+    assert.equal(seen[0].material.find((m) => m.evidenceId === s.ev).title, 'Muestra de prueba', 'sigue viendo la versión FIJADA');
+    const mine = (await http(s.person, 'GET', '/api/me/professional-reviews')).body.reviews; assert.equal(mine.find((r) => r.id === rv.body.review.id).materialChanged, true, 'la persona ve «el material cambió»');
+    assert.ok((await http(s.person, 'DELETE', `/api/evidence/${ev2}`)).status < 300);
+    seen = (await http(s.reviewer, 'GET', '/api/reviewer/shares')).body.shares; assert.ok(!seen[0].material.some((m) => m.evidenceId === ev2), 'ninguna entrada vacía de la evidencia borrada');
+    const cite = await review(s.reviewer, shareId, [ev2]); assert.equal(cite.status, 400); assert.equal(cite.body.code, 'invalid_evidence');
+  });
+
+  await t.test('E262-4: autorizar es atómico: si falla la creación de la autorización NO queda el permiso concedido', async () => {
+    const person = await mkUser('user'); const reviewer = await mkUser('therapist'); const ev = await evidence(person);
+    await q("CREATE OR REPLACE FUNCTION es175_fail() RETURNS trigger AS $f$ BEGIN RAISE EXCEPTION 'es175 fallo simulado'; END $f$ LANGUAGE plpgsql");
+    await q('CREATE TRIGGER es175_fail_trg BEFORE INSERT ON "ReviewShares" FOR EACH ROW EXECUTE FUNCTION es175_fail()');
+    try {
+      const out = await share(person, reviewer, [ev]); assert.equal(out.status, 500);
+      assert.equal(Number((await q('SELECT count(*) n FROM "Consents" WHERE "UserId"=$1 AND purpose=$2', [person.id, 'professional_review']))[0].n), 0, 'sin permiso huérfano');
+      assert.equal(Number((await q('SELECT count(*) n FROM "ConsentEvents" WHERE "UserId"=$1 AND purpose=$2', [person.id, 'professional_review']))[0].n), 0, 'ni evento');
+    } finally { await q('DROP TRIGGER es175_fail_trg ON "ReviewShares"'); }
+    assert.equal((await share(person, reviewer, [ev])).status, 201, 'sin el fallo, sí');
+  });
+
+  await t.test('huecos de QA (E262-6): shares solo propios; 6 autorizaciones simultáneas = 1 vigente y versiones únicas; el revisor ve solo la vigente; alias secuencial (no el id); supersedesId ajeno = 404; tope por hora (E262-7)', async () => {
+    const reviewer = await mkUser('therapist'); const people = []; for (let i = 0; i < 3; i++) { const p = await mkUser('user'); people.push({ p, ev: await evidence(p) }); }
+    for (const { p, ev } of people) assert.equal((await share(p, reviewer, [ev])).status, 201);
+    for (const { p } of people) { const mine = (await http(p, 'GET', '/api/me/review-shares')).body.shares; assert.equal(mine.length, 1); assert.equal(mine[0].reviewerId, reviewer.id); } // N4
+    assert.deepEqual((await http(await mkUser('user'), 'GET', '/api/me/review-shares')).body.shares, []);
+    const seen = (await http(reviewer, 'GET', '/api/reviewer/shares')).body.shares; assert.deepEqual(seen.map((x) => x.person).sort(), ['Persona 1', 'Persona 2', 'Persona 3']); // N11
+    assert.ok(people.every(({ p }) => !seen.some((x) => x.person === `Persona ${p.id}`)), 'el alias no es el id');
+    const { p, ev } = people[0]; const outs = await Promise.all(Array.from({ length: 6 }, () => share(p, reviewer, [ev]))); // N5 / N10
+    assert.ok(outs.every((o) => o.status === 201), JSON.stringify(outs.map((o) => o.status)));
+    const rows = await q('SELECT status, "materialVersion" FROM "ReviewShares" WHERE "UserId"=$1 AND "reviewerId"=$2', [p.id, reviewer.id]);
+    assert.equal(rows.filter((r) => r.status === 'granted').length, 1); assert.equal(new Set(rows.map((r) => r.materialVersion)).size, rows.length);
+    const now = (await http(reviewer, 'GET', '/api/reviewer/shares')).body.shares.filter((x) => x.person === 'Persona 1'); assert.equal(now.length, 1, 'solo la vigente'); assert.equal(now[0].materialVersion, Math.max(...rows.map((r) => r.materialVersion)));
+    const shA = (await http(people[1].p, 'GET', '/api/me/review-shares')).body.shares[0].id; const shB = (await http(people[2].p, 'GET', '/api/me/review-shares')).body.shares[0].id; // N13
+    const ra = await review(reviewer, shA, [people[1].ev]); assert.equal(ra.status, 201);
+    const cross = await review(reviewer, shB, [people[2].ev], { supersedesId: ra.body.review.id }); assert.equal(cross.status, 404, 'no se puede «corregir» la revisión de otra persona');
+    const lim = await mkUser('user'); const limEv = await evidence(lim); let last; // E262-7
+    for (let i = 0; i < 31; i++) last = await share(lim, reviewer, [limEv]);
+    assert.equal(last.status, 429); assert.equal(last.body.code, 'rate_limited');
+    assert.equal(Number((await q('SELECT count(*) n FROM "ReviewShares" WHERE "UserId"=$1', [lim.id]))[0].n), 30);
+  });
+
   await t.test('ES-23: las 4 tablas entran a personalData.CORE (se exporta descifrado, sin requestId) y la autorización queda en el historial de consentimientos', async () => {
     const s = await scene(); await object(s.person, s.reviewId, 'Para la exportación');
     const { personalData, CORE } = require('../../utils/personalData'); const User = require('../../User');

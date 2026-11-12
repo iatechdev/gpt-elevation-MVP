@@ -1,6 +1,7 @@
 import '../skill-map/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PersonFrame } from '../shell/frames'
 import { useLanguage } from '../i18n/useLanguage'
 import { readSkillMap, SkillMapError, type MapFailure } from '../skill-map/api'
 import { ConsentError, readBridgeStatus, revokeBridge, type BridgeStatus } from '../skill-map/consent'
@@ -9,24 +10,32 @@ import { MapGuide } from '../skill-map/MapAccess'
 import { AiAnalysisPanel } from '../skill-map/AiAnalysisPanel'
 import { SectionBoundary } from '../components/RouteErrorBoundary'
 import { RadarBoard } from '../skill-map/RadarView'
-import { SkillDetail, TerritoryList, TerritoryMap, UnassignedCard } from '../skill-map/SkillViews'
+import { SkillDetail, TerritoryList } from '../skill-map/SkillViews'
+import { ReliefMap } from '../skill-map/ReliefMap'
+import { MapSummary } from '../skill-map/MapSummary'
 import { noLevelAnywhere } from '../skill-map/status'
 import { resolveTerritories, territories } from '../skill-map/territories'
 import '../skill-map/skillMap.css'
 import '../skill-map/radar.css'
+import '../skill-map/mapCartografia.css' // ES-160: el mapa usa los tokens de Cartografía (claro/oscuro)
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const readToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
 type PageState = { status: 'loading' } | { status: 'ready'; map: SkillMap; token: string } | { status: 'error'; reason: MapFailure }
 type Revoke = 'idle' | 'confirm' | 'saving' | 'done' | 'error' | 'expired' | 'unsure' | 'not_seen' | 'checking'
 
+/** Ruta /app/skill-map: la pantalla ya migrada a Cartografía, dentro del marco de persona (ES-153). Las demás pantallas de /app/* siguen con su encabezado hasta su historia. */
 export function SkillMapPage() {
-  const { t, lang, setLang } = useLanguage()
+  return <PersonFrame migrated><SkillMapContent /></PersonFrame>
+}
+
+function SkillMapContent() {
+  const { t, lang } = useLanguage()
   const [state, setState] = useState<PageState>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
-  const [listView, setListView] = useState(false)
-  const [view, setView] = useState<'radar' | 'territories'>('radar')
+  // ES-160: tres vistas — Relieve (por defecto), Lista por territorios y Radar. El radar sigue disponible por decisión del PO (comentario 10961).
+  const [view, setView] = useState<'relief' | 'list' | 'radar'>('relief')
   const [ai, setAi] = useState<string[] | null>(null)
   const aiRef = useRef<HTMLDivElement>(null)
   const [bridge, setBridge] = useState<BridgeStatus | 'loading'>('loading')
@@ -71,7 +80,7 @@ export function SkillMapPage() {
     if (revoke === 'unsure') { checkButton.current?.focus(); return }
     if (revoke !== 'done' && revoke !== 'error' && revoke !== 'expired' && revoke !== 'not_seen') return
     const button = revokeButton.current
-    if (button && !button.disabled) button.focus(); else document.getElementById('skill-map-main')?.focus()
+    if (button && !button.disabled) button.focus(); else document.getElementById('main')?.focus()
   }, [revoke])
   const refresh = () => { setState({ status: 'loading' }); setSelected(null); setBridge('loading'); setRevoke('idle'); setAttempt(value => value + 1) }
   const pick = (key: string) => {
@@ -114,18 +123,9 @@ export function SkillMapPage() {
   const nothingToRevoke = bridge === 'revoked' || bridge === 'undecided'
   const message = revoke === 'done' ? t('skill_map.revoke_done') : revoke === 'error' ? t('skill_map.revoke_error') : revoke === 'expired' ? t('skill_map.expired')
     : revoke === 'checking' ? t('skill_map.revoke_checking') : revoke === 'unsure' ? t('skill_map.revoke_unsure') : revoke === 'not_seen' ? t('skill_map.revoke_not_seen') : nothingToRevoke ? t('skill_map.revoke_none') : ''
-  return <div className="skill-map-scope">
-    <a href="#skill-map-main" className="skill-map-skip elv-link">{t('skill_map.skip')}</a>
-    <header className="skill-map-header">
-      <span>{t('logo')}</span>
-      <div className="elv-join" role="group" aria-label={t('skill_map.language')}>
-        {(['es', 'en'] as const).map(language => <button key={language} type="button"
-          className="elv-btn elv-btn-ghost elv-join-item" aria-pressed={lang === language} onClick={() => setLang(language)}>
-          {language.toUpperCase()}
-        </button>)}
-      </div>
-    </header>
-    <main id="skill-map-main" tabIndex={-1} className="skill-map-main">
+  // El marco (PersonFrame, ES-153) pone el encabezado, «Saltar al contenido», el <main> y el pie; aquí solo va el contenido de la pantalla.
+  return <div className="skill-map-scope cg-map">
+    <div className="skill-map-main">
       <Link to="/app/dashboard" className="elv-link skill-map-back">{t('skill_map.back')}</Link>
       <div className="skill-map-title">
         <div>
@@ -135,24 +135,16 @@ export function SkillMapPage() {
         </div>
         <div className="skill-map-tools">
           <div className="skill-map-views" role="group" aria-label={t('skill_map.views')}>
+            <button type="button" aria-pressed={view === 'relief'} onClick={() => setView('relief')}>{t('skill_map.view_relief')}</button>
+            <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('skill_map.view_list_short')}</button>
             <button type="button" aria-pressed={view === 'radar'} onClick={() => setView('radar')}>{t('skill_map.view_radar')}</button>
-            <button type="button" aria-pressed={view === 'territories'} onClick={() => setView('territories')}>{t('skill_map.view_territories')}</button>
           </div>
-          {view === 'territories' && <>
-            <ul className="skill-map-legend" aria-label={t('skill_map.legend')}>
-              <li><span className="skill-map-dot dot-level" aria-hidden="true" />{t('skill_map.status_evidence')}</li>
-              <li><span className="skill-map-dot dot-none" aria-hidden="true" />{t('skill_map.no_evidence')}</li>
-            </ul>
-            {!noTerritories && <button type="button" className="elv-btn skill-map-view-toggle" aria-pressed={listView} onClick={() => setListView(value => !value)}>
-              {t(listView ? 'skill_map.view_map' : 'skill_map.view_list')}
-            </button>}
-          </>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
             disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving' || revoke === 'checking'}>{t('skill_map.revoke_all')}</button>
           <button type="button" className="elv-btn" onClick={refresh} disabled={state.status === 'loading'}>{t('skill_map.refresh')}</button>
         </div>
       </div>
-      <p className="skill-map-reading">{t(view === 'radar' ? 'skill_map.radar_reading' : 'skill_map.reading')}</p>
+      <p className="skill-map-reading">{t(view === 'radar' ? 'skill_map.radar_reading' : view === 'relief' ? 'skill_map.relief_reading' : 'skill_map.reading')}</p>
       <p role="status" aria-live="polite" className="skill-map-revoke-status">{message}</p>
       {revoke === 'unsure' && <button type="button" className="elv-btn" ref={checkButton} onClick={() => void verify()}>{t('skill_map.revoke_check')}</button>}
       {state.status === 'loading' && <p role="status" aria-live="polite">{t('skill_map.loading')}</p>}
@@ -165,17 +157,9 @@ export function SkillMapPage() {
         <p role="status" className="skill-map-catalog">{t('skill_map.catalog')}: {map.catalogVersion}</p>
         {map.skills.length === 0 ? <p role="status">{t('skill_map.empty')}</p> : <>
           {noLevelAnywhere(map.skills) && <MapGuide />}
-          {view === 'radar' ? <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} onAnalyze={() => openAi(map.skills.slice(0, 8).map(item => item.skillKey))} lang={lang} t={t} />
-            : <>
-              {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
-              <div className={`skill-map-board${listView || noTerritories ? ' is-list' : ''}`}>
-                <div className="skill-map-canvas">
-                  <TerritoryMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
-                </div>
-                <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
-              </div>
-              {!noTerritories && <UnassignedCard skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
-            </>}
+          {view !== 'radar' && <MapSummary skills={map.skills} lang={lang} t={t} onRegister={register} />}
+          {view === 'radar' ? <>
+            <RadarBoard skills={map.skills} selected={selected} onSelect={pick} onRegister={register} onAnalyze={() => openAi(map.skills.slice(0, 8).map(item => item.skillKey))} lang={lang} t={t} />
           {ai && state.status === 'ready' && <div ref={aiRef}><SectionBoundary><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
             onSaved={reloadMap} onClose={() => setAi(null)} /></SectionBoundary></div>}
           <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
@@ -183,10 +167,28 @@ export function SkillMapPage() {
               self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></SectionBoundary></>
               : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
           </div>
+          </> : <>
+            {noTerritories && <p role="status" className="skill-map-note skill-map-no-territories">{t('skill_map.no_territories')}</p>}
+            <div className="skill-map-sheet">
+              <div className="skill-map-sheet-main">
+                {view === 'relief' && !noTerritories && <ReliefMap skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />}
+                <TerritoryList skills={map.skills} territories={territories} selected={selected} onSelect={pick} lang={lang} t={t} />
+              </div>
+              <aside className="skill-map-sheet-side" aria-label={t('skill_map.detail')}>
+            <div ref={detailRef} tabIndex={-1} className="skill-map-detail-wrap" aria-live="polite">
+              {skill ? <>{saved && <p role="status" className="skill-map-notice">{saved}</p>}<SectionBoundary resetKey={skill.skillKey}><SkillDetail skill={skill} catalogVersion={map.catalogVersion} territories={territories} lang={lang} t={t} onAnalyze={key => openAi([key])}
+                self={{ backend, token: state.status === 'ready' ? state.token : '', onChanged: kind => { setSaved(t(kind === 'saved' ? 'skill_map.reg_saved' : 'skill_map.reg_retired')); setAttempt(value => value + 1) } }} /></SectionBoundary></>
+                : <p className="skill-map-note">{t('skill_map.select_hint')}</p>}
+            </div>
+              </aside>
+            </div>
+          {ai && state.status === 'ready' && <div ref={aiRef}><SectionBoundary><AiAnalysisPanel skills={map.skills} initialKeys={ai} lang={lang} t={t} backend={backend} token={state.token}
+            onSaved={reloadMap} onClose={() => setAi(null)} /></SectionBoundary></div>}
+          </>}
           <p className="skill-map-note">{t('skill_map.revoke_scope')}</p>
         </>}
       </>}
-    </main>
+    </div>
     <dialog ref={dialogRef} className="skill-map-dialog" aria-labelledby="skill-map-revoke-title" onCancel={event => { event.preventDefault(); if (revoke !== 'saving') close() }}>
       <h2 id="skill-map-revoke-title">{t('skill_map.revoke_title')}</h2>
       <p>{t('skill_map.revoke_body')}</p>

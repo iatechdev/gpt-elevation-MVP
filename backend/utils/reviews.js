@@ -7,7 +7,7 @@
 //   - el revisor es un usuario con rol `therapist` (confirmado por Infra el 12-nov-2026).
 // Propietario y permiso se verifican en el SERVIDOR en CADA acceso (withConsent: bloqueo compartido, una retirada concurrente espera). Un id ajeno responde el mismo 404 que uno inexistente.
 // NUNCA llega al revisor: crisis, diario, chat, correo, evidencias con origen en el chat ni las no marcadas por la persona.
-const { Transaction, UniqueConstraintError } = require('sequelize');
+const { Op, Transaction, UniqueConstraintError } = require('sequelize');
 const { sequelize } = require('../database');
 const User = require('../User');
 const Evidence = require('../Evidence');
@@ -24,6 +24,7 @@ const { encriptar, desencriptar } = require('./crypto');
 const PURPOSE = 'professional_review';
 const MAX_TEXT = 2000;
 const MAX_EVIDENCE = 20;
+const MAX_SHARES_PER_HOUR = 30;
 const LOCALES = ['es', 'en'];
 
 class ReviewError extends Error {
@@ -63,6 +64,12 @@ async function reviewerOf(id) {
 }
 
 const shareView = (row) => ({ id: row.id, reviewerId: row.reviewerId, materialVersion: row.materialVersion, evidenceCount: row.evidenceRefs.length, status: row.status, createdAt: row.createdAt, revokedAt: row.revokedAt });
+// E262-2/3: versión VIGENTE de cada evidencia compartida (una borrada no aparece). Lo fijado en la autorización no cambia; si la persona editó o borró, se avisa («el material cambió»).
+async function liveVersions(userId, ids, transaction) {
+  const rows = ids.length ? await Evidence.findAll({ where: { id: ids, UserId: userId, deletedAt: null }, attributes: ['id', 'currentVersion'], transaction }) : [];
+  return new Map(rows.map((row) => [row.id, row.currentVersion]));
+}
+const refsChanged = (refs, live) => refs.some((ref) => live.get(ref.evidenceId) !== ref.version);
 const decode = (row) => JSON.parse(desencriptar(row.payload));
 const sourceRevoked = (row) => (Array.isArray(row.origins) ? row.origins : []).some((o) => o && o.sourceRevokedAt);
 
@@ -87,7 +94,6 @@ async function authorize(userId, body) {
     || !Array.isArray(body.evidenceIds) || body.evidenceIds.length < 1 || body.evidenceIds.length > MAX_EVIDENCE || !body.evidenceIds.every(isId)) throw invalid();
   const evidenceIds = [...new Set(body.evidenceIds)].sort((a, b) => a - b);
   if (evidenceIds.length !== body.evidenceIds.length) throw invalid();
-  if (!await reviewerOf(body.reviewerId) || body.reviewerId === userId) throw new ReviewError(404, 'reviewer_not_found', 'No se encontró a esa persona revisora.', 'That reviewer was not found.');
   const replay = async () => {
     const found = await ReviewShare.findOne({ where: { UserId: userId, requestId: body.requestId } });
     if (!found) return null;
@@ -96,20 +102,29 @@ async function authorize(userId, body) {
   };
   const earlier = await replay();
   if (earlier) return shareView(earlier);
+  // E262-1: primero lo PROPIO de la persona (evidencias) y solo después el revisor: con una evidencia inválida la respuesta es la misma para cualquier reviewerId (no se enumeran profesionales);
+  // y cualquier revisor no utilizable (inexistente, sin rol therapist, inactivo, borrándose o uno mismo) da el mismo 404.
   const refs = await shareableRefs(userId, evidenceIds);
-  await consent.setConsent(userId, PURPOSE, 'granted', consent.reviewerScope(body.reviewerId));
-  try {
-    const share = await withReviewConsent(userId, body.reviewerId, 'consent_revoked', async (transaction) => {
-      await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('review-share:' || :u || ':' || :r))", { replacements: { u: String(userId), r: String(body.reviewerId) }, transaction });
-      // La autorización anterior a este revisor queda sustituida (sus revisiones se conservan y se ven con «el material cambió»).
-      await ReviewShare.update({ status: 'superseded' }, { where: { UserId: userId, reviewerId: body.reviewerId, status: 'granted' }, transaction });
-      const last = Number(await ReviewShare.max('materialVersion', { where: { UserId: userId, reviewerId: body.reviewerId }, transaction })) || 0;
-      return ReviewShare.create({ UserId: userId, reviewerId: body.reviewerId, materialVersion: last + 1, evidenceRefs: refs, status: 'granted', requestId: body.requestId }, { transaction });
-    });
-    return shareView(share);
-  } catch (error) {
-    if (error instanceof UniqueConstraintError) { const again = await replay(); if (again) return shareView(again); }
-    throw error;
+  if (!await reviewerOf(body.reviewerId) || body.reviewerId === userId) throw new ReviewError(404, 'reviewer_not_found', 'No se encontró a esa persona revisora.', 'That reviewer was not found.');
+  // E262-7: tope por persona (cada autorización sustituye a la anterior; no debe poder acumular filas sin límite).
+  if (await ReviewShare.count({ where: { UserId: userId, createdAt: { [Op.gt]: new Date(Date.now() - 3600 * 1000) } } }) >= MAX_SHARES_PER_HOUR) throw new ReviewError(429, 'rate_limited', 'Demasiadas autorizaciones seguidas. Inténtalo más tarde.', 'Too many authorizations in a row. Try again later.');
+  // E262-4: el permiso y la autorización se crean en UNA transacción: si falla la autorización no queda el permiso concedido.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const share = await sequelize.transaction(async (transaction) => {
+        await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('review-share:' || :u || ':' || :r))", { replacements: { u: String(userId), r: String(body.reviewerId) }, transaction });
+        await consent.grantIn(userId, PURPOSE, consent.reviewerScope(body.reviewerId), transaction);
+        // La autorización anterior a este revisor queda sustituida (sus revisiones se conservan y se ven con «el material cambió»).
+        await ReviewShare.update({ status: 'superseded' }, { where: { UserId: userId, reviewerId: body.reviewerId, status: 'granted' }, transaction });
+        const last = Number(await ReviewShare.max('materialVersion', { where: { UserId: userId, reviewerId: body.reviewerId }, transaction })) || 0;
+        return ReviewShare.create({ UserId: userId, reviewerId: body.reviewerId, materialVersion: last + 1, evidenceRefs: refs, status: 'granted', requestId: body.requestId }, { transaction });
+      });
+      return shareView(share);
+    } catch (error) {
+      if (error instanceof consent.ConsentRequiredError) throw new ReviewError(403, 'consent_revoked', 'No se puede autorizar ahora.', 'Authorization is not possible right now.');
+      if (error instanceof UniqueConstraintError) { const again = await replay(); if (again) return shareView(again); if (attempt === 1) continue; }
+      throw error;
+    }
   }
 }
 
@@ -147,19 +162,20 @@ async function listReviews(userId) {
     User.findAll({ where: { id: [...new Set(reviews.map((r) => r.reviewerId))] }, attributes: ['id', 'name'] }),
   ]);
   const responses = objections.length ? await ReviewResponse.findAll({ where: { objectionId: objections.map((o) => o.id), UserId: userId } }) : [];
+  const allRefs = reviews.flatMap((r) => r.evidenceRefs);
+  const [titles, live] = await Promise.all([evidenceTitles(userId, allRefs), liveVersions(userId, [...new Set(allRefs.map((r) => r.evidenceId))])]); // por lotes: sin una consulta por revisión
   const out = [];
   for (const review of reviews) {
     const objection = objections.find((o) => o.reviewId === review.id);
     const response = objection ? responses.find((r) => r.objectionId === objection.id) : null;
     const share = shares.find((s) => s.id === review.shareId);
-    const titles = await evidenceTitles(userId, review.evidenceRefs);
     out.push({
       id: review.id,
       author: { displayName: (reviewers.find((u) => u.id === review.reviewerId) || {}).name || null },
       createdAt: review.createdAt,
       locale: review.locale,
       materialVersion: review.materialVersion,
-      materialChanged: !share || share.status !== 'granted', // el material autorizado cambió, se sustituyó o se retiró: la revisión original se conserva
+      materialChanged: !share || share.status !== 'granted' || refsChanged(review.evidenceRefs, live), // se sustituyó, se retiró, o la persona editó/borró lo compartido: la revisión original se conserva
       evidence: review.evidenceRefs.map((ref) => ({ title: titles.get(`${ref.evidenceId}:${ref.version}`) || null, version: ref.version })),
       observation: desencriptar(review.observation),
       limits: desencriptar(review.limits),
@@ -219,11 +235,15 @@ async function reviewerShares(reviewerId) {
     try {
       // Permiso vigente de ESA persona hacia ESTE revisor, comprobado al leer el material.
       material = await withReviewConsent(share.UserId, reviewerId, 'consent_required', async (transaction) => {
-        const rows = await EvidenceVersion.findAll({ where: { UserId: share.UserId, EvidenceId: share.evidenceRefs.map((r) => r.evidenceId), status: 'confirmed' }, transaction });
-        return share.evidenceRefs.flatMap((ref) => { const row = rows.find((r) => r.EvidenceId === ref.evidenceId && r.version === ref.version); if (!row) return []; try { return [{ evidenceId: ref.evidenceId, version: ref.version, ...pickMaterial(decode(row)) }]; } catch { return []; } });
+        const ids = share.evidenceRefs.map((r) => r.evidenceId);
+        const rows = await EvidenceVersion.findAll({ where: { UserId: share.UserId, EvidenceId: ids, status: 'confirmed' }, transaction });
+        const live = await liveVersions(share.UserId, ids, transaction);
+        // Una evidencia BORRADA no aparece (ni vacía); una EDITADA se ve en la versión fijada con `changed` y el aviso `materialChanged`.
+        const items = share.evidenceRefs.flatMap((ref) => { if (!live.has(ref.evidenceId)) return []; const row = rows.find((r) => r.EvidenceId === ref.evidenceId && r.version === ref.version); if (!row) return []; try { return [{ evidenceId: ref.evidenceId, version: ref.version, changed: live.get(ref.evidenceId) !== ref.version, ...pickMaterial(decode(row)) }]; } catch { return []; } });
+        return { items, changed: refsChanged(share.evidenceRefs, live) };
       });
     } catch (error) { if (error instanceof ReviewError) continue; throw error; }
-    out.push({ shareId: share.id, person: `Persona ${ordinals.get(Number(share.UserId))}`, materialVersion: share.materialVersion, material });
+    out.push({ shareId: share.id, person: `Persona ${ordinals.get(Number(share.UserId))}`, materialVersion: share.materialVersion, materialChanged: material.changed, material: material.items });
   }
   return out;
 }
@@ -249,6 +269,8 @@ async function createReview(reviewerId, body) {
     const row = await withReviewConsent(share.UserId, reviewerId, 'consent_required', async (transaction) => {
       const fresh = await ReviewShare.findByPk(share.id, { transaction, lock: Transaction.LOCK.SHARE });
       if (!fresh || fresh.status !== 'granted') throw new ReviewError(409, 'share_not_current', 'La autorización ya no es la vigente.', 'The authorization is no longer the current one.');
+      const live = await liveVersions(share.UserId, ids, transaction);
+      if (ids.some((id) => !live.has(id))) throw new ReviewError(400, 'invalid_evidence', 'Esa evidencia ya no está disponible.', 'That evidence is no longer available.'); // E262-3: una borrada no se puede citar
       if (body.supersedesId !== undefined && !await ProfessionalReview.findOne({ where: { id: body.supersedesId, reviewerId, UserId: share.UserId }, transaction })) throw notFound();
       return ProfessionalReview.create({
         shareId: share.id, UserId: share.UserId, reviewerId, materialVersion: share.materialVersion, evidenceRefs: share.evidenceRefs.filter((r) => ids.includes(r.evidenceId)),
@@ -270,12 +292,13 @@ async function reviewerObjections(reviewerId) {
   const answered = objections.length ? new Set((await ReviewResponse.findAll({ where: { objectionId: objections.map((o) => o.id) }, attributes: ['objectionId'] })).map((r) => r.objectionId)) : new Set();
   const ordinals = await ordinalsFor(reviewerId, objections.map((o) => o.UserId));
   const out = [];
-  for (const objection of objections) {
-    const review = reviews.find((r) => r.id === objection.reviewId);
-    let reason;
-    try { reason = await withReviewConsent(objection.UserId, reviewerId, 'consent_required', async () => desencriptar(objection.reason)); } catch (error) { if (error instanceof ReviewError) continue; throw error; }
-    out.push({ objectionId: objection.id, reviewId: review.id, person: `Persona ${ordinals.get(Number(objection.UserId))}`, reason, locale: objection.locale, createdAt: objection.createdAt, status: answered.has(objection.id) ? 'answered' : 'pending' });
+  // Una comprobación de permiso por PERSONA (no por objeción): en la misma transacción se descifran todas sus objeciones.
+  for (const personId of [...new Set(objections.map((o) => o.UserId))]) {
+    let rows;
+    try { rows = await withReviewConsent(personId, reviewerId, 'consent_required', async () => objections.filter((o) => o.UserId === personId).map((o) => [o, desencriptar(o.reason)])); } catch (error) { if (error instanceof ReviewError) continue; throw error; }
+    for (const [objection, reason] of rows) out.push({ objectionId: objection.id, reviewId: objection.reviewId, person: `Persona ${ordinals.get(Number(objection.UserId))}`, reason, locale: objection.locale, createdAt: objection.createdAt, status: answered.has(objection.id) ? 'answered' : 'pending' });
   }
+  out.sort((a, b) => b.objectionId - a.objectionId);
   return out;
 }
 
