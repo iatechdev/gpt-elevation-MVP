@@ -12,6 +12,9 @@ import './catalogGuard'
 import './compass/navigationGuard'
 import './career/navigationGuard'
 import './exercises/navigationGuard'
+import { installRoutePrefetch } from './routePrefetch'
+
+installRoutePrefetch() // ES-197: precarga de rutas probables (cursor/foco y reposo); respeta saveData
 
 createRoot(document.getElementById('root')!, rootErrorOptions).render(
   <StrictMode>
