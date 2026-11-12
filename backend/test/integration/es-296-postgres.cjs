@@ -35,12 +35,10 @@ test('ES-296 PostgreSQL + HTTP: retirar insights_chat marca para revisión la ev
     assert.equal((await grant(p, 'insights_chat', 'revoked')).status, 200);
     assert.deepEqual(await engine(p), [plain], 'el motor ya no recibe la evidencia del chat');
     const list = await http(p, 'GET', '/api/evidence'); assert.equal(list.status, 200);
-    const mine = list.body.find((e) => e.id === chat.id); const text = JSON.stringify(list.body);
-    const version = mine.versions ? mine.versions[mine.versions.length - 1] : mine;
-    assert.equal(version.needsReview, true); assert.equal(version.reviewReason, 'source_revoked'); assert.equal(version.status, 'confirmed', 'la versión sigue confirmada en el historial: nada se reescribe');
-    assert.ok(!text.includes(String(chat.turn)) || !/"turnId"|"origin":\{"type":"chat_turn"/.test(text), 'sin id ni cita del chat');
-    assert.ok(!text.includes('sourceRevokedAt') && !text.includes('quote'), 'la marca privada no sale');
-    assert.deepEqual((await http(p, 'GET', `/api/evidence/${plain}`)).body.versions ? [] : [], []);
+    const mine = list.body.evidence.find((e) => e.id === chat.id); const other = list.body.evidence.find((e) => e.id === plain); const text = JSON.stringify(list.body);
+    assert.equal(mine.needsReview, true); assert.equal(mine.reviewReason, 'source_revoked'); assert.equal(mine.status, 'confirmed', 'la versión sigue confirmada en el historial: nada se reescribe');
+    assert.equal(other.needsReview, undefined, 'la directa no se marca');
+    assert.ok(!/chat_turn|quote|sourceRevokedAt|turnId/.test(text), 'sin id ni cita del chat ni la marca privada');
     assert.equal(Number((await q('SELECT count(*) n FROM "Evidence" WHERE "UserId"=$1 AND "deletedAt" IS NULL', [p.id]))[0].n), 2, 'no se borró nada');
     const ev = await events(p); assert.equal(ev.length, 1); assert.equal(ev[0].sourceId, chat.id); // sin PII: solo ids y motivo
   });
