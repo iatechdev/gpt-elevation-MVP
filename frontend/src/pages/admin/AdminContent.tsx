@@ -418,8 +418,8 @@ function PricingTab() {
                 <p style={sectionTitle}>{tr("Identificador")}</p>
                 <div style={{ marginBottom: 8 }}>
                   <label style={label}>{tr("Slug * (sin espacios, ej: basic, essential, plus, pro)")}</label>
-                  <input style={input} value={form.slug} placeholder={tr("ej: basic")}
-                    onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-') }))} />
+                  <input style={input} value={form.slug} placeholder={tr("ej: basic")} maxLength={20}
+                    onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 20) }))} />
                 </div>
                 <p style={sectionTitle}>{tr("Nombre del plan")}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -451,7 +451,7 @@ function PricingTab() {
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 8 }}>
                   <div>
                     <label style={label}>{tr("Precio")}</label>
-                    <input style={input} type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
+                    <input style={input} type="number" min="0" max="99999999.99" step="0.01" value={form.price} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
                   </div>
                   <div>
                     <label style={label}>{tr("Moneda")}</label>
