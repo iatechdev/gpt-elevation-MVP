@@ -1,0 +1,11 @@
+[
+ {
+  "id": "siembra",
+  "info": "Users.id=integer; tablas con clave hacia Users: 33; sembradas para cada persona: 10; no sembradas (requieren otras filas): SkillCandidates.UserId,RouteConstraintsVersions.UserId,RouteChoices.UserId,RouteReviewRequests.UserId,AiJobs.UserId,ProfessionalApplications.userId,PasswordResets.UserId,TherapistPersonOrdinals.personId,CareerExperimentVersions.UserId,CareerPlanVersions.UserId,CareerExperimentReviews.UserId,CareerReminders.UserId"
+ },
+ {
+  "id": "P0-main (control) en main la persona con emparejamiento y notas queda en awaiting_review y no se purga",
+  "ok": true,
+  "detail": "awaiting_review"
+ }
+]
