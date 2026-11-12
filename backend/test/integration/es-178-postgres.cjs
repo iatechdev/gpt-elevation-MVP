@@ -164,7 +164,7 @@ test('ES-178 PostgreSQL + HTTP: notas de seguimiento con control de edición con
       assert.deepEqual([bad.status, bad.body.code, bad.body.field], [400, 'duration_invalid', 'duration'], String(duration));
     }
     const noDate = await post(tA, { patientId: p1.id, scheduledAt: 'no-es-fecha', duration: 50 });
-    assert.deepEqual([noDate.status, noDate.body.code, noDate.body.field], [400, 'invalid_input', 'scheduledAt']);
+    assert.deepEqual([noDate.status, noDate.body.code, noDate.body.field], [400, 'scheduled_invalid', 'scheduledAt']); // ES-262: una fecha que no se puede leer tiene su propio código (el campo sigue siendo scheduledAt)
     const noPerson = await post(tA, { patientId: 'abc', scheduledAt: soon(600), duration: 50 });
     assert.deepEqual([noPerson.status, noPerson.body.code, noPerson.body.field], [400, 'invalid_input', 'patientId']);
     assert.doesNotMatch(JSON.stringify(noDate.body), /no-es-fecha/, 'no repite lo recibido');

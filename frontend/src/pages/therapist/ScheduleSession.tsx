@@ -63,6 +63,7 @@ export function ScheduleSession({ personId, personName, t, locale }: { personId:
       if (body.code === 'scheduled_in_past') fail([{ field: 'scheduledAt', key: 'fu_sch_past' }])
       else if (body.code === 'duration_invalid') fail([{ field: 'duration', key: 'fu_sch_duration' }])
       else if (body.code === 'session_conflict') fail([{ field: 'scheduledAt', key: 'fu_sch_conflict' }])
+      else if (body.code === 'scheduled_invalid') fail([{ field: 'scheduledAt', key: 'fu_sch_required' }]) // ES-262: fecha fuera del rango que se puede guardar
       else if (body.code === 'invalid_input' || body.code === 'required') fail([{ field: body.field === 'duration' ? 'duration' : 'scheduledAt', key: body.field === 'duration' ? 'fu_sch_duration' : 'fu_sch_required' }])
       else if (res.status === 403) setProblems([{ key: 'fu_sch_noaccess' }])
       else if (res.status >= 500) lost = true

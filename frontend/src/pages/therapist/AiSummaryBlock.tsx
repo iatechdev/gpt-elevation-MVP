@@ -16,6 +16,8 @@ export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<Problem | null>(null)
   const button = useRef<HTMLButtonElement>(null)
+  const section = useRef<HTMLElement>(null)
+  const [announce, setAnnounce] = useState('') // E227-2: si el foco ya no está aquí, el resultado se anuncia sin moverlo
   const focusAfter = useRef(false) // E227-1: el foco se mueve DESPUÉS del pintado (efecto), no con un temporizador previo a él
   const limited = problem !== null && !problem.retry && problem.key !== 'fu_err_access' // límite de IA o IA no disponible: «Generar» no sirve hasta que cambie
   // E227 (a): la fecha de reinicio del límite se dice con la zona EXPLÍCITA (el servidor reinicia a las 00:00 UTC; en hora local confundía: en Bogotá decía «30 nov» cuando reinicia el 1 dic).
@@ -25,13 +27,17 @@ export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T
   useEffect(() => {
     if (!focusAfter.current || busy) return
     focusAfter.current = false
-    ;(problem?.retry ? document.getElementById('fu-ai-retry') : button.current)?.focus()
-  }, [busy, problem])
+    // E227-2: el foco solo se devuelve si sigue en este bloque (o en <body>, donde cae al deshabilitar algo); si la persona ya trabaja en otro control, no se le quita.
+    const active = document.activeElement
+    const stillHere = active === null || active === document.body || (section.current?.contains(active) ?? false)
+    if (stillHere) (problem?.retry ? document.getElementById('fu-ai-retry') : button.current)?.focus()
+    else if (!problem && summary) setAnnounce(t('fu_ai_done'))
+  }, [busy, problem]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al terminar una generación
 
   async function generate() {
     if (busy || limited) return
     focusAfter.current = true
-    setBusy(true); setProblem(null)
+    setBusy(true); setProblem(null); setAnnounce('')
     try {
       const res = await fetch(`${API}/api/therapist/pacientes/${personId}/resumen-ia`, { headers: { Authorization: `Bearer ${getToken()}` } })
       const body = await res.json().catch(() => ({})) as Partial<Summary> & { code?: string; resetsAt?: string }
@@ -45,13 +51,14 @@ export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T
 
   const noData = summary !== null && summary.basedOn.sessions === 0
   return (
-    <section style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} aria-labelledby="fu-ai-title" aria-busy={busy}>
+    <section ref={section} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} aria-labelledby="fu-ai-title" aria-busy={busy}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', justifyContent: 'space-between' }}>
         <h2 id="fu-ai-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: 0 }}>{t('fu_ai')}</h2>
         <button ref={button} id="fu-ai-button" type="button" style={{ ...primary, opacity: busy || limited ? 0.7 : 1 }} aria-disabled={busy || limited} aria-describedby={limited ? 'fu-ai-problem' : undefined} onClick={() => void generate()}>
           {busy ? t('fu_ai_generating') : summary ? t('fu_ai_regenerate') : t('fu_ai_generate')}
         </button>
       </div>
+      <div role="status" className="sr-only">{announce}</div>
       {summary && (
         <div>
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.7, overflowWrap: 'anywhere' }}>{noData ? t('fu_ai_nodata') : summary.summary}</p>

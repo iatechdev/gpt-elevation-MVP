@@ -79,3 +79,12 @@ test('ES-178 (E227): el foco se mueve desde un efecto, el límite de IA usa aria
   assert.ok(!ai.includes(' disabled={busy}')); assert.ok(ai.includes('aria-disabled={busy || limited}')); assert.ok(ai.includes("timeZone: 'UTC'") && ai.includes("timeZoneName: 'short'"))
   assert.ok(sch.includes("p.field !== 'duration'") && sch.includes("p.field !== 'scheduledAt'"))
 })
+
+// E227-2: el foco solo vuelve al botón si sigue en el bloque; si no, el resultado se anuncia sin moverlo. ES-262: fecha fuera de rango = error del campo.
+test('ES-178 (E227-2): el foco no se roba y la fecha fuera de rango se dice en el campo', () => {
+  const ai = read('../src/pages/therapist/AiSummaryBlock.tsx'), sch = read('../src/pages/therapist/ScheduleSession.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.ok(ai.includes('const stillHere = active === null || active === document.body || (section.current?.contains(active) ?? false)'))
+  assert.ok(ai.includes('if (stillHere)') && ai.includes("setAnnounce(t('fu_ai_done'))") && ai.includes('role="status"'))
+  assert.equal((copy.match(/\bfu_ai_done:/g) ?? []).length, 2)
+  assert.ok(sch.includes("body.code === 'scheduled_invalid'"))
+})

@@ -14,12 +14,15 @@ router.use((req, res, next) => {
 const { encriptar, desencriptar } = require('../utils/crypto');
 const { sharingSet, blockedPatientIds, patientBlocked, requireSharing, hasSharing } = require('../utils/therapistAccess'); // ES-96 y ES-101
 const { callClaude } = require('../utils/aiClient'); // ES-102
-const { validateBody, id, date, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
+const { validateBody, id, numeric, nonempty, text, optional, score } = require('../middlewares/validateBody');
 const { Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const { validateIdParams, isRouteId } = require('../middlewares/params');
 const { findConflict, editProblem } = require('../utils/sessionSchedule');
 const { ordinalsFor } = require('../utils/personOrdinals'); // ES-177 / ES-241: «Persona n»
+const { parseBoundedDate } = require('../utils/safeDate'); // ES-262 (E227-1)
+
+const SCHEDULED_INVALID = { code: 'scheduled_invalid', field: 'scheduledAt', error: 'scheduledAt no válida. / Invalid scheduledAt.' };
 
 // ES-267: una sesión sigue «vigente» después de su hora de inicio durante su duración + este margen (valor propuesto al PO en ES-267; ajustable aquí).
 const SESSION_GRACE_MINUTES = 15;
@@ -56,7 +59,7 @@ const parseDuration = (value) => (value === undefined ? 50 : Number(value));
 // ── Todos los requires de modelos DENTRO de cada handler ─────────────────────
 
 // POST /api/sessions/therapist — crear nueva sesión
-router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, duration: optional(numeric) }), async (req, res) => {
+router.post('/therapist', validateBody({ patientId: id, scheduledAt: nonempty, duration: optional(numeric) }), async (req, res) => {
   const User           = require('../User');
   const TherapySession = require('../TherapySession');
   try {
@@ -70,7 +73,9 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     if (!isRouteId(String(patientId))) {
       return res.status(403).json({ error: 'This patient is not assigned to you.' }); // mismo mensaje que un paciente ajeno: no revela nada
     }
-    if (new Date(scheduledAt) <= new Date()) {
+    const startAt = parseBoundedDate(scheduledAt); // E227-1: una fecha fuera del rango que se puede guardar es 400 (antes 500)
+    if (!startAt) return res.status(400).json(SCHEDULED_INVALID);
+    if (startAt <= new Date()) {
       return res.status(400).json({ code: 'scheduled_in_past', field: 'scheduledAt', error: 'scheduledAt must be in the future.' });
     }
     const dur = parseDuration(duration);
@@ -85,7 +90,7 @@ router.post('/therapist', validateBody({ patientId: id, scheduledAt: date, durat
     }
     if (!(await requireSharing(req, res, patient.id))) return; // sin autorización de compartir, no se agenda (ES-96)
     // ES-98 (ES93-B5): sin choques de horario. La fila del terapeuta se bloquea para que dos altas simultáneas no se crucen.
-    const start = new Date(scheduledAt);
+    const start = startAt;
     const transaction = await sequelize.transaction();
     let session;
     try {
@@ -182,7 +187,7 @@ router.get('/therapist', async (req, res) => {
 // PUT /api/sessions/therapist/:id — reprogramar / cancelar una sesión agendada
 // ES-98 (ES93-M2): por aquí solo se puede reprogramar y pasar a «cancelled»; iniciar y terminar tienen sus rutas (sala, cierre y nota). Nada de
 // estados inventados ni de saltarse el flujo. Una sesión terminada o cancelada no se edita; una en curso solo se cierra por su ruta.
-router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duration: optional(numeric), status: optional(text), cancelReason: optional(text) }), async (req, res) => {
+router.put('/therapist/:id', validateBody({ scheduledAt: optional(nonempty), duration: optional(numeric), status: optional(text), cancelReason: optional(text) }), async (req, res) => {
   const User           = require('../User');
   const TherapySession = require('../TherapySession');
   try {
@@ -209,10 +214,12 @@ router.put('/therapist/:id', validateBody({ scheduledAt: optional(date), duratio
     }
     const updates = {};
     if (scheduledAt) {
-      if (new Date(scheduledAt) <= new Date()) {
+      const startAt = parseBoundedDate(scheduledAt);
+      if (!startAt) return res.status(400).json(SCHEDULED_INVALID);
+      if (startAt <= new Date()) {
         return res.status(400).json({ error: 'scheduledAt must be in the future.' });
       }
-      updates.scheduledAt = new Date(scheduledAt);
+      updates.scheduledAt = startAt;
     }
     if (duration !== undefined) {
       const dur = parseDuration(duration);

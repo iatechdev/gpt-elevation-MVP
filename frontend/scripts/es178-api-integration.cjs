@@ -239,7 +239,18 @@ const { pathToFileURL } = require('node:url');
         await page.getByRole('button', { name: t.aiRetry }).click(); await page.locator('section[aria-labelledby="fu-ai-title"]').getByText('Resumen sintético.').waitFor();
         await page.waitForFunction(() => document.activeElement?.id === 'fu-ai-button'); // y tras recuperar, al botón
         await context.close(); }
-      check(`${tag}: resumen con IA → etiqueta sin «y n notas», límite de IA sin reintento, error con reintento que recupera`);
+      { // E227-2: si la persona ya movió el foco a otro control mientras se genera, el foco NO se le quita; el resultado se anuncia en un role=status
+        const { context, page } = await open(lang, width, sharer.id, async (r) => { if (!r.request().url().includes('/resumen-ia')) return false; await new Promise((resolve) => setTimeout(resolve, 1500)); return false; });
+        await page.locator('#fu-ai-button').waitFor({ timeout: 10000 });
+        await page.locator('#fu-ai-button').click(); await page.waitForTimeout(300);
+        await page.getByRole('button', { name: t.schOpen }).focus();
+        await page.locator('section[aria-labelledby="fu-ai-title"]').getByText('Resumen sintético.').waitFor({ timeout: 10000 });
+        await page.waitForTimeout(300);
+        const focused = await page.evaluate(() => (document.activeElement?.textContent ?? '').trim());
+        assert.equal(focused, t.schOpen, 'el foco sigue en «Agendar sesión» (no vuelve al botón del resumen): ' + focused);
+        assert.ok((await page.locator('section[aria-labelledby="fu-ai-title"] [role="status"]').innerText()).trim().length > 0, 'el resultado se anuncia en un role=status');
+        await context.close(); }
+      check(`${tag}: resumen con IA → etiqueta sin «y n notas», límite de IA sin reintento, error con reintento que recupera, foco que no se roba (E227-2)`);
 
       // G) agendar: éxito, choque y fecha pasada por campo con foco, Esc devuelve el foco, respuesta perdida sin duplicar
       { const slot = (k) => { const d = new Date(Date.now() + (3 + k + (lang === 'en' ? 40 : 0) + (width === 1360 ? 20 : 0)) * 86400000); d.setHours(10, 0, 0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
