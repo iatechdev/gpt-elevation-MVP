@@ -44,6 +44,10 @@ const info = (id, detail) => { results.push({ id, info: detail }); console.log(J
   info('sin guarda (públicas)', open.map((r) => `${r.method} ${r.path}`).join(' ; '));
   info('rol solo en la ruta', onlyRouteLevel.map((r) => `${r.method} ${r.path}`).join(' ; '));
   const SKIP = /\/(logout|logout-all|deletion-requests)$/;
+  if (process.env.QA_DUMP) { // inventario independiente de guardas (montaje + router.use + ruta) para compararlo con una política escrita
+    const dump = {}; for (const r of routes) { const a = allow(r); dump[r.method + ' ' + r.path] = { denied: ['user', 'therapist', 'admin', 'superadmin'].filter((x) => a && !a.includes(x)), session: !!(r.mountGuards.length || r.routeGuards.length) }; }
+    fs.writeFileSync(path.join(OUT, 'ES-281-inventario-guardas.json'), JSON.stringify(dump, null, 1));
+  }
 
   // 2) roles: cada rol NO permitido recibe 403; la base no cambia
   const before = await fp(); const problems = []; let probes = 0; const unexpected2xx = [];

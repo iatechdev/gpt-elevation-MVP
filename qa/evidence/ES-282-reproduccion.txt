@@ -1,0 +1,11 @@
+es282.1 | exit=0 | # pass 7 # fail 0 # skipped 0  | 21s
+es282.2 | exit=0 | # pass 7 # fail 0 # skipped 0  | 17s
+es282.3 | exit=0 | # pass 7 # fail 0 # skipped 0  | 13s
+es281.1 | exit=0 | # pass 9 # fail 0 # skipped 0  | 118s
+es281.2 | exit=0 | # pass 9 # fail 0 # skipped 0  | 83s
+es281.3 | exit=0 | # pass 9 # fail 0 # skipped 0  | 87s
+es280 | exit=0 | # pass 8 # fail 0 # skipped 0  | 75s
+es31 | exit=0 | # pass 6 # fail 0 # skipped 0  | 3s
+static | exit=0 | # pass 4 # fail 0 # skipped 0  | 2s
+npmtest | exit=0 | # pass 655 # fail 0 # skipped 0  | 90s
+FIN
