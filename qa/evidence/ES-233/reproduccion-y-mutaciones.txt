@@ -1,0 +1,24 @@
+es233.1 | exit=0 | # pass 6 # fail 0 # skipped 0  | 11s
+es233.2 | exit=0 | # pass 6 # fail 0 # skipped 0  | 11s
+es233.3 | exit=0 | # pass 6 # fail 0 # skipped 0  | 16s
+es-229-postgres | exit=0 | # pass 8 # fail 0 # skipped 0  | 5s
+es-integration-consent-hooks | exit=0 | # pass 5 # fail 0 # skipped 0  | 5s
+es-23-postgres | exit=0 | # pass 14 # fail 0 # skipped 0  | 15s
+es-86-postgres | exit=0 | # pass 10 # fail 0 # skipped 0  | 11s
+es-88-postgres | exit=0 | # pass 11 # fail 0 # skipped 0  | 27s
+es-89-postgres | exit=0 | # pass 12 # fail 0 # skipped 0  | 15s
+es25 | exit=0 | # pass 14 # fail 0 # skipped 0  | 4s
+es121 | exit=0 | # pass 17 # fail 0 # skipped 0  | 6s
+npmtest | exit=0 | # pass 655 # fail 0 # skipped 0  | 166s
+--- mutaciones (es-233 del PR | mi guion con 10 rondas: 17/20 es la línea base; menos = detectada)
+M1 | es-233 del PR: fail 4 | mi guion: RESUMEN 13/20 | #1 diary_entry: sin insights_diary no hay v;#2 chat_turn: sin insights_chat no hay vist;
+M2 | es-233 del PR: fail 5 | mi guion: RESUMEN 10/20 | #1 diary_entry: sin insights_diary no hay v;#2 chat_turn: sin insights_chat no hay vist;
+M3 | es-233 del PR: fail 2 | mi guion: RESUMEN 14/20 | #5 carrera: confirmar y retirar el permiso ;
+M4 | es-233 del PR: fail 2 | mi guion: RESUMEN 14/20 | #5 carrera: confirmar y retirar el permiso ;
+M5 | es-233 del PR: fail 5 | mi guion: RESUMEN 10/20 | #1 diary_entry: sin insights_diary no hay v;#2 chat_turn: sin insights_chat no hay vist;
+M6 | es-233 del PR: fail 4 | mi guion: RESUMEN 10/20 | #1 diary_entry: sin insights_diary no hay v;#2 chat_turn: sin insights_chat no hay vist;
+M7 | es-233 del PR: fail 2 | mi guion: RESUMEN 14/20 | #3 resume_version: sin insights_resume no h;
+M8 | es-233 del PR: fail 0 | mi guion: RESUMEN 16/20 | 
+M9 | es-233 del PR: fail 0 | mi guion: RESUMEN 17/20 | 
+M10 | es-233 del PR: fail 4 | mi guion: RESUMEN 14/20 | #1 diary_entry: sin insights_diary no hay v;#2 chat_turn: sin insights_chat no hay vist;
+FIN
