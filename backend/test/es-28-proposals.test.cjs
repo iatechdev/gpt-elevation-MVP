@@ -42,7 +42,11 @@ function setup() {
 }
 
 const post = (request, actor, route, body) => request('POST', route, { ...actor, body });
-const grant = (request, actor, status = 'granted') => request('PUT', '/api/consents/professional_bridge', { ...actor, body: { status } });
+// ES-233 (E253-3): una evidencia con origen del chat exige además el permiso de análisis del chat; al AUTORIZAR el puente también se autoriza ese, al retirarlo solo se retira el puente.
+const grant = async (request, actor, status = 'granted') => {
+  if (status === 'granted') await request('PUT', '/api/consents/insights_chat', { ...actor, body: { status } });
+  return request('PUT', '/api/consents/professional_bridge', { ...actor, body: { status } });
+};
 const goodDraft = (over = {}) => ({
   title: 'Migración de facturación', situation: 'La empresa cambió de sistema de facturación.', responsibility: 'Lideré la migración y coordiné a cuatro personas.',
   actions: ['Coordiné a cuatro personas'], goal: 'Migrar 120 clientes', delivered: 'Migré 80 clientes', observedEffect: { known: false },
