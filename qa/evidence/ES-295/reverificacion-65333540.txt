@@ -1,0 +1,28 @@
+== propios
+RESUMEN 9/9
+== paralelismo sin latencia
+{"una_sola_ms_mediana":25.7,"treinta_a_la_vez_ms_mediana":558,"razon_mediana":21.7,"razones":[28.1,21.4,21.8,25,21.4,25.2,23.2,20.8,24.5,18.9,19.8,19.3]}
+== paralelismo 50ms
+{"una_sola_ms_mediana":79.4,"treinta_a_la_vez_ms_mediana":807,"razon_mediana":10.2,"razones":[13.5,11.3,11.5,9.9,10,12.3,8.8,9.7,8.5,10.3,9,10.4]}
+== es-29 x3
+# pass 12 # fail 0 
+# pass 12 # fail 0 
+# pass 12 # fail 0 
+== suites PG
+es-233: # pass 11 # fail 0 
+es-25: # pass 7 # fail 0 
+es-27: # pass 7 # fail 0 
+es-28: # pass 5 # fail 0 
+es-121: # pass 8 # fail 0 
+es-229: # pass 8 # fail 0 
+es-integration-consent-hooks: 
+== mutaciones
+M1 | es-29 del PR: fail 2 #5 ES-295: 30 autoevaluaciones simultáneas de la mis;| mi guion: FALLA C2 FALLA C2 FALLA C5 RESUMEN 6/9 
+M2 | es-29 del PR: fail 2 #8 E256-1: la clave de la cola es la PERSONA — la m;| mi guion: RESUMEN 9/9 
+M3 | es-29 del PR: fail 2 #8 E256-1: la clave de la cola es la PERSONA — la m;| mi guion: RESUMEN 9/9 
+M4 | es-29 del PR: fail 3 #6 E256-1: la cola por persona se vacía al terminar ;#7 E256-1: el respaldo sigue vivo — un choque del �;| mi guion: FALLA C4b RESUMEN 8/9 
+M5 | es-29 del PR: fail 2 #7 E256-1: el respaldo sigue vivo — un choque del �;| mi guion: FALLA C6 RESUMEN 8/9 
+M6 | es-29 del PR: fail 4 #6 E256-1: la cola por persona se vacía al terminar ;#7 E256-1: el respaldo sigue vivo — un choque del �;#9 el mismo requestId repetido a la vez crea una sola;| mi guion: FALLA C2 FALLA C2 FALLA C2 FALLA C4 FALLA C5 FALLA C7 FALLA C6 RESUMEN 2/9 
+== backend completo
+# pass 655 # fail 0 # skipped 0 
+FIN
