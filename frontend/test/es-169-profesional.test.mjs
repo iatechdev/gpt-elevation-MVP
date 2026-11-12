@@ -40,9 +40,12 @@ test('ES-169: sin textos por ternario de idioma y con las mismas claves en ES y 
 })
 
 test('ES-169: error con «Reintentar» en la carga de perfil y sesiones y en «Compartir» (ya no se oculta en silencio)', () => {
-  assert.match(page, /\{!loading && failed && \(\s*<div role="alert"/)
-  assert.match(page, /onClick=\{retry\}/)
-  assert.match(page, /const retry = \(\) => \{ setLoading\(true\); setFailed\(false\); setReloadKey\(k => k \+ 1\) \}/)
+  // ES-240: perfil y sesiones son dos peticiones; cada sección tiene su propio error con «Reintentar» que vuelve a pedir solo esa sección
+  assert.match(page, /\{profile\.status === 'error' && \(\s*<div role="alert"/)
+  assert.match(page, /onClick=\{retryProfile\}/)
+  assert.match(page, /onClick=\{retrySessions\}/)
+  assert.ok(page.includes("const retryProfile  = () => { setProfile({ status: 'loading', therapist: null }); setProfileKey(k => k + 1) }"))
+  assert.ok(page.includes("const retrySessions = () => { setSessions({ status: 'loading', upcoming: [], past: [] }); setSessionsKey(k => k + 1) }"))
   assert.match(card, /if \(alive\) setStatus\('loaderror'\)/)
   assert.match(card, /if \(status === 'loaderror'\) \{[\s\S]*role="alert"[\s\S]*mt_share_retry/)
   assert.ok(!/if \(alive\) setStatus\('hidden'\)\s*\n\s*\}\s*\n\s*\}\)\(\)/.test(card), 'un error de lectura ya no oculta la tarjeta')

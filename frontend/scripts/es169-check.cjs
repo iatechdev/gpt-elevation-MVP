@@ -10,9 +10,9 @@ const BASE = process.env.BASE || 'http://localhost:5299'
 let failures = 0
 const report = (ok, label, extra = '') => { if (!ok) failures++; console.log((ok ? 'OK    ' : 'FALLA ') + label + (extra ? ' ' + extra : '')) }
 const T = {
-  es: { title: 'Mi profesional', none: 'Aún no tienes un profesional asignado', find: 'Buscar mi profesional', loadError: 'No pudimos cargar la información de tu profesional ni de tus sesiones.', retry: 'Reintentar',
+  es: { title: 'Mi profesional', none: 'Aún no tienes un profesional asignado', find: 'Buscar mi profesional', loadError: 'No pudimos cargar la información de tu profesional.', sessionsError: 'No pudimos cargar tus sesiones.', retry: 'Reintentar',
     share: 'Compartir mis datos con mi profesional', shareError: 'No pudimos cargar tu permiso de compartir con tu profesional.', mood: 'Ánimo al terminar: Bien (4/5)', moodLow: 'Ánimo al terminar: Muy mal (1/5)', change: '¿Quieres cambiar de profesional?', old: /terapeut/i },
-  en: { title: 'My professional', none: 'You don’t have a professional assigned yet', find: 'Find my professional', loadError: 'We could not load your professional’s information or your sessions.', retry: 'Try again',
+  en: { title: 'My professional', none: 'You don’t have a professional assigned yet', find: 'Find my professional', loadError: 'We could not load your professional’s information.', sessionsError: 'We could not load your sessions.', retry: 'Try again',
     share: 'Share my data with my professional', shareError: 'We could not load your permission to share with your professional.', mood: 'Mood at the end: Good (4/5)', moodLow: 'Mood at the end: Very low (1/5)', change: 'Want to change professional?', old: /therapist/i },
 }
 const future = mins => new Date(Date.now() + mins * 60000).toISOString()
@@ -22,15 +22,17 @@ const withPro = () => ({
   pastSessions: [{ id: 5, scheduledAt: '2026-10-20T15:00:00.000Z', patientMoodAfter: 4, status: 'completed' }, { id: 6, scheduledAt: '2026-10-10T15:00:00.000Z', patientMoodAfter: 1, status: 'completed' }],
 })
 
-async function open(browser, { width, lang, scheme, data = withPro(), failMain = 0, failConsent = 0 }) {
+// ES-240: perfil y sesiones son dos peticiones; `failMain` falla el PERFIL y `failSessions` las SESIONES (n veces cada una)
+async function open(browser, { width, lang, scheme, data = withPro(), failMain = 0, failSessions = 0, failConsent = 0 }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' })
   const page = await ctx.newPage()
-  const state = { mainCalls: 0, consentCalls: 0, pageErrors: [] }
+  const state = { mainCalls: 0, sessionsCalls: 0, consentCalls: 0, pageErrors: [] }
   page.on('pageerror', e => state.pageErrors.push(e.message))
   await page.route('**/api/**', async route => {
     const req = route.request(); const p = new URL(req.url()).pathname
     if (p === '/api/session') return route.fulfill({ json: { role: 'user', onboardingCompleted: true } })
-    if (p === '/api/sessions/user/my-therapist' && req.method() === 'GET') { state.mainCalls++; return state.mainCalls <= failMain ? route.fulfill({ status: 500, json: {} }) : route.fulfill({ json: data }) }
+    if (p === '/api/sessions/user/my-therapist/profile' && req.method() === 'GET') { state.mainCalls++; return state.mainCalls <= failMain ? route.fulfill({ status: 500, json: {} }) : route.fulfill({ json: { therapist: data.therapist } }) }
+    if (p === '/api/sessions/user/my-therapist/sessions' && req.method() === 'GET') { state.sessionsCalls++; return state.sessionsCalls <= failSessions ? route.fulfill({ status: 500, json: {} }) : route.fulfill({ json: { upcomingSessions: data.upcomingSessions, pastSessions: data.pastSessions } }) }
     if (p === '/api/consents') { state.consentCalls++; return state.consentCalls <= failConsent ? route.fulfill({ status: 500, json: {} }) : route.fulfill({ json: { consents: [{ purpose: 'necessary', status: 'granted' }, { purpose: 'therapist_sharing', status: 'granted', applicable: !!data.therapist }] } }) }
     return route.fulfill({ json: {} })
   })
@@ -80,11 +82,29 @@ const EMOJI = /\p{Extended_Pictographic}/u
     {
       const { ctx, page, state } = await open(browser, { width, lang, scheme, failMain: 1 })
       await page.getByText(t.loadError, { exact: true }).waitFor()
-      report(await page.getByRole('alert').filter({ hasText: t.loadError }).count() === 1 && await page.getByText(t.share, { exact: true }).count() === 0, `error de carga con alerta y sin contenido a medias ${tag}`)
+      report(await page.getByRole('alert').filter({ hasText: t.loadError }).count() === 1 && await page.getByText(t.share, { exact: true }).count() === 0, `error del perfil con alerta y sin contenido a medias ${tag}`)
+      report(await page.getByText(t.mood, { exact: true }).isVisible() && state.sessionsCalls === 1, `ES-240: si falla el perfil, las sesiones siguen visibles (una sola petición) ${tag}`)
       await axeAndLayout(page, `Mi profesional (error de carga) ${tag}`)
       await page.getByRole('button', { name: t.retry, exact: true }).click()
       await page.getByText('Profesional Sintético', { exact: true }).waitFor()
-      report(state.mainCalls === 2 && await page.getByText(t.loadError).count() === 0, `«${t.retry}» vuelve a pedir los datos y muestra la pantalla ${tag}`)
+      report(state.mainCalls === 2 && state.sessionsCalls === 1 && await page.getByText(t.loadError).count() === 0, `«${t.retry}» vuelve a pedir SOLO el perfil y muestra la pantalla ${tag}`)
+      await ctx.close()
+    }
+    {
+      const { ctx, page, state } = await open(browser, { width, lang, scheme, failSessions: 1 }) // ES-240: falla solo la lectura de sesiones
+      await page.getByText(t.sessionsError, { exact: true }).waitFor()
+      report(await page.getByText('Profesional Sintético', { exact: true }).isVisible() && await page.getByText(t.share, { exact: true }).isVisible() && await page.getByText(t.loadError).count() === 0, `ES-240: si fallan las sesiones, el perfil y «Compartir» siguen visibles ${tag}`)
+      report(await page.getByRole('alert').filter({ hasText: t.sessionsError }).count() === 1 && await page.getByText(t.mood).count() === 0, `ES-240: error de sesiones con alerta propia y sin lista a medias ${tag}`)
+      await axeAndLayout(page, `Mi profesional (error de sesiones) ${tag}`)
+      await page.getByRole('button', { name: t.retry, exact: true }).click()
+      await page.getByText(t.mood, { exact: true }).waitFor()
+      report(state.sessionsCalls === 2 && state.mainCalls === 1 && await page.getByText(t.sessionsError).count() === 0, `ES-240: «${t.retry}» vuelve a pedir SOLO las sesiones ${tag}`)
+      await ctx.close()
+    }
+    {
+      const { ctx, page } = await open(browser, { width, lang, scheme, failMain: 1, failSessions: 1 }) // ES-240: fallan las dos secciones
+      await page.getByText(t.loadError, { exact: true }).waitFor(); await page.getByText(t.sessionsError, { exact: true }).waitFor()
+      report(await page.getByRole('alert').count() === 2 && await page.getByRole('button', { name: t.retry, exact: true }).count() === 2, `ES-240: con las dos secciones caídas hay dos alertas, cada una con su «${t.retry}» ${tag}`)
       await ctx.close()
     }
     {

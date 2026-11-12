@@ -42,42 +42,55 @@ interface PastSession {
   status:           string
 }
 
-interface MyTherapistData {
-  therapist:        Therapist | null
-  upcomingSessions: UpcomingSession[]
-  pastSessions:     PastSession[]
-}
+// ES-240: perfil y sesiones se leen en dos peticiones independientes (cada una con su estado: cargando / error con «Reintentar» / listo).
+type Status = 'loading' | 'ok' | 'error'
 
 export function MyTherapist() {
   const { lang, t } = useLanguage()
   const navigate = useNavigate()
 
-  const [data, setData]       = useState<MyTherapistData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [failed, setFailed]   = useState(false)
+  const [profile, setProfile]   = useState<{ status: Status; therapist: Therapist | null }>({ status: 'loading', therapist: null })
+  const [sessions, setSessions] = useState<{ status: Status; upcoming: UpcomingSession[]; past: PastSession[] }>({ status: 'loading', upcoming: [], past: [] })
   const [showMatching, setShowMatching] = useState(false)
-  const [reloadKey, setReloadKey] = useState(0) // ES-100: se incrementa al desvincularse (o al reintentar) para volver a pedir los datos
+  const [profileKey, setProfileKey]   = useState(0) // ES-100 / ES-240: se incrementa al desvincularse (o al reintentar) para volver a pedir esa sección
+  const [sessionsKey, setSessionsKey] = useState(0)
+
+  // Cada sección se pide por separado, en paralelo, y se cancela al salir de la pantalla. El servidor verifica el propietario en cada petición.
+  useEffect(() => {
+    const controller = new AbortController()
+    void (async () => {
+      try {
+        const res = await fetch(`${API}/api/sessions/user/my-therapist/profile`, { headers: { Authorization: `Bearer ${getToken()}` }, signal: controller.signal })
+        if (!res.ok) throw new Error()
+        const json = await res.json() as { therapist: Therapist | null }
+        if (!controller.signal.aborted) setProfile({ status: 'ok', therapist: json.therapist ?? null })
+      } catch {
+        if (!controller.signal.aborted) setProfile({ status: 'error', therapist: null })
+      }
+    })()
+    return () => controller.abort()
+  }, [profileKey])
 
   useEffect(() => {
-    let alive = true
-    const fetchData = async () => {
+    const controller = new AbortController()
+    void (async () => {
       try {
-        const res = await fetch(`${API}/api/sessions/user/my-therapist`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
+        const res = await fetch(`${API}/api/sessions/user/my-therapist/sessions`, { headers: { Authorization: `Bearer ${getToken()}` }, signal: controller.signal })
         if (!res.ok) throw new Error()
-        const json = await res.json()
-        if (alive) { setData(json); setFailed(false) }
+        const json = await res.json() as { upcomingSessions: UpcomingSession[]; pastSessions: PastSession[] }
+        if (!controller.signal.aborted) setSessions({ status: 'ok', upcoming: json.upcomingSessions ?? [], past: json.pastSessions ?? [] })
       } catch {
-        if (alive) setFailed(true)
-      } finally {
-        if (alive) setLoading(false)
+        if (!controller.signal.aborted) setSessions({ status: 'error', upcoming: [], past: [] })
       }
-    }
-    void fetchData()
-    return () => { alive = false }
-  }, [reloadKey])
-  const retry = () => { setLoading(true); setFailed(false); setReloadKey(k => k + 1) }
+    })()
+    return () => controller.abort()
+  }, [sessionsKey])
+
+  const retryProfile  = () => { setProfile({ status: 'loading', therapist: null }); setProfileKey(k => k + 1) }
+  const retrySessions = () => { setSessions({ status: 'loading', upcoming: [], past: [] }); setSessionsKey(k => k + 1) }
+  const reloadAll     = () => { retryProfile(); retrySessions() }
+  const therapist     = profile.therapist
+  const noProfessional = profile.status === 'ok' && !therapist
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const formatDateTime = (iso: string) =>
@@ -149,26 +162,7 @@ export function MyTherapist() {
           {t('mp_title')}
         </h1>
 
-        {loading && (
-          <p role="status" style={{ color: '#57534E', fontSize: '0.875rem' }}>
-            {t('mp_loading')}
-          </p>
-        )}
-
-        {/* Un solo error con reintento para perfil y sesiones: vienen de UNA petición del servidor (/user/my-therapist). «Compartir» tiene el suyo propio. */}
-        {!loading && failed && (
-          <div role="alert" style={{ ...cardStyle, borderColor: '#FCA5A5' }}>
-            <p style={{ color: '#B91C1C', fontSize: '0.875rem', margin: '0 0 0.75rem' }}>{t('mp_load_error')}</p>
-            <button
-              onClick={retry}
-              style={{ padding: '0.5rem 1.1rem', background: '#4A6741', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
-            >
-              {t('mp_retry')}
-            </button>
-          </div>
-        )}
-
-        {!loading && !failed && !data?.therapist && (
+        {noProfessional ? (
           /* Sin profesional asignado */
           <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem' }}>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
@@ -184,11 +178,29 @@ export function MyTherapist() {
               {t('mp_find')}
             </button>
           </div>
-        )}
-
-        {!loading && !failed && data?.therapist && (
+        ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
+            {/* ES-240: cada sección tiene su propio cargando / error con «Reintentar»; el fallo de una no oculta la otra. */}
+            {profile.status === 'loading' && (
+              <p role="status" style={{ color: '#57534E', fontSize: '0.875rem' }}>
+                {t('mp_loading')}
+              </p>
+            )}
+            {profile.status === 'error' && (
+              <div role="alert" style={{ ...cardStyle, borderColor: '#FCA5A5' }}>
+                <p style={{ color: '#B91C1C', fontSize: '0.875rem', margin: '0 0 0.75rem' }}>{t('mp_load_error')}</p>
+                <button
+                  onClick={retryProfile}
+                  style={{ padding: '0.5rem 1.1rem', background: '#4A6741', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                >
+                  {t('mp_retry')}
+                </button>
+              </div>
+            )}
+
+
+            {therapist && (<>
             {/* ── PERFIL DEL PROFESIONAL ── */}
             <section style={cardStyle} aria-labelledby="mp-profile">
               <h2 id="mp-profile" style={sectionLabel}>
@@ -201,46 +213,46 @@ export function MyTherapist() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '1.4rem', fontWeight: 600, color: '#4A6741',
                 }}>
-                  {data.therapist.name.charAt(0).toUpperCase()}
+                  {therapist.name.charAt(0).toUpperCase()}
                 </div>
 
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1C1917' }}>
-                    {data.therapist.name}
+                    {therapist.name}
                   </div>
                   <div style={{ fontSize: '0.82rem', color: '#57534E', marginTop: '0.15rem' }}>
-                    {data.therapist.email}
+                    {therapist.email}
                   </div>
 
-                  {data.therapist.profile && (
+                  {therapist.profile && (
                     <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      {data.therapist.profile.specialties && (
+                      {therapist.profile.specialties && (
                         <div style={{ fontSize: '0.82rem', color: '#1C1917' }}>
                           <span style={{ color: '#57534E' }}>{t('mp_specialties')}: </span>
-                          {data.therapist.profile.specialties}
+                          {therapist.profile.specialties}
                         </div>
                       )}
-                      {data.therapist.profile.languages && (
+                      {therapist.profile.languages && (
                         <div style={{ fontSize: '0.82rem', color: '#1C1917' }}>
                           <span style={{ color: '#57534E' }}>{t('mp_languages')}: </span>
-                          {data.therapist.profile.languages}
+                          {therapist.profile.languages}
                         </div>
                       )}
-                      {data.therapist.profile.approach && (
+                      {therapist.profile.approach && (
                         <div style={{ fontSize: '0.82rem', color: '#1C1917' }}>
                           <span style={{ color: '#57534E' }}>{t('mp_approach')}: </span>
-                          {data.therapist.profile.approach}
+                          {therapist.profile.approach}
                         </div>
                       )}
-                      {data.therapist.profile.bio && (
+                      {therapist.profile.bio && (
                         <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#44403C', lineHeight: 1.6, fontStyle: 'italic', fontFamily: 'Noto Serif, serif' }}>
-                          "{data.therapist.profile.bio}"
+                          "{therapist.profile.bio}"
                         </div>
                       )}
                     </div>
                   )}
 
-                  {!data.therapist.profile && (
+                  {!therapist.profile && (
                     <p style={{ fontSize: '0.82rem', color: '#6B6560', marginTop: '0.5rem', fontStyle: 'italic' }}>
                       {t('mp_profile_empty')}
                     </p>
@@ -249,25 +261,40 @@ export function MyTherapist() {
               </div>
             </section>
 
+
             {/* ── COMPARTIR CON MI PROFESIONAL (ES-100 / ES-96): tiene su propio estado de error ── */}
             <TherapistSharingCard
-              therapistName={data.therapist.name}
-              onUnlinked={() => setReloadKey(k => k + 1)}
+              therapistName={therapist.name}
+              onUnlinked={reloadAll}
             />
 
+</>)}
             {/* ── PRÓXIMAS SESIONES ── */}
             <section style={cardStyle} aria-labelledby="mp-upcoming">
               <h2 id="mp-upcoming" style={sectionLabel}>
                 {t('mp_upcoming')}
               </h2>
+              {sessions.status === 'loading' && <p role="status" style={{ color: '#57534E', fontSize: '0.875rem', margin: 0 }}>{t('mp_loading')}</p>}
+              {sessions.status === 'error' && (
+                <div role="alert">
+                  <p style={{ color: '#B91C1C', fontSize: '0.875rem', margin: '0 0 0.75rem' }}>{t('mp_sessions_error')}</p>
+                  <button
+                    onClick={retrySessions}
+                    style={{ padding: '0.5rem 1.1rem', background: '#4A6741', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {t('mp_retry')}
+                  </button>
+                </div>
+              )}
+              {sessions.status === 'ok' && (<>
 
-              {data.upcomingSessions.length === 0 ? (
+              {sessions.upcoming.length === 0 ? (
                 <p style={{ fontSize: '0.875rem', color: '#57534E', margin: 0 }}>
                   {t('mp_upcoming_empty')}
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {data.upcomingSessions.map(s => {
+                  {sessions.upcoming.map(s => {
                     const joinable = isJoinable(s.scheduledAt)
                     return (
                       <div key={s.id} style={{
@@ -305,16 +332,18 @@ export function MyTherapist() {
                   })}
                 </div>
               )}
+              </>)}
             </section>
 
+
             {/* ── SESIONES ANTERIORES ── */}
-            {data.pastSessions.length > 0 && (
+            {sessions.status === 'ok' && sessions.past.length > 0 && (
               <section style={cardStyle} aria-labelledby="mp-past">
                 <h2 id="mp-past" style={sectionLabel}>
                   {t('mp_past')}
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {data.pastSessions.map(s => (
+                  {sessions.past.map(s => (
                     <div key={s.id} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '0.65rem 0', borderBottom: '0.5px solid #F5F3EF',
@@ -338,6 +367,8 @@ export function MyTherapist() {
               </section>
             )}
 
+
+            {therapist && (<>
             {/* ── CAMBIAR DE PROFESIONAL ── */}
             <div style={{ textAlign: 'center', paddingTop: '0.5rem' }}>
               <button
@@ -355,6 +386,7 @@ export function MyTherapist() {
               )}
             </div>
 
+</>)}
           </div>
         )}
       </div>
