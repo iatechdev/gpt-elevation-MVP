@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { memo, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SpaceNav } from '../space/SpaceNav'
 import { ChatBar } from '../space/ChatBar'
@@ -42,6 +42,25 @@ const CHECKOUT_MOODS = [
   { emoji: '🙂', value: 3 },
   { emoji: '😊', value: 4 },
 ]
+
+// ES-199: una burbuja de la conversación. Memoizada: solo se repinta si cambia su texto, su rol o las etiquetas (no al teclear). `children` lleva el aviso de la última respuesta.
+const ChatBubble = memo(function ChatBubble({ role, text, you, logo, children }: { role: 'user' | 'bot'; text: string; you: string; logo: string; children?: ReactNode }) {
+  return role === 'user' ? (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+      {/* ES-162: quién habla va en una etiqueta, no solo en el color */}
+      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#5E5E5A', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{you}</span>
+      <div style={{ maxWidth: '85%', background: '#1A1A18', borderRadius: 4, padding: '0.9rem 1.1rem', color: '#FAFAF9', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+        {text}
+      </div>
+    </div>
+  ) : (
+    <div style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
+      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {logo}</span>
+      <p style={{ fontSize: '1rem', color: '#1A1A18', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
+      {children}
+    </div>
+  )
+})
 
 export function ChatPage() {
   const { t, lang, setLang } = useLanguage()
@@ -349,23 +368,12 @@ export function ChatPage() {
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
+          {/* ES-199: cada burbuja se pinta una sola vez; teclear en el cuadro de mensaje ya no vuelve a pintar todo el historial. Solo la última (que lleva el aviso de respuesta cortada) se repinta. */}
           {messages.map((msg, i) => (
             <div key={i}>
-              {msg.role === 'user' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  {/* ES-162: quién habla va en una etiqueta, no solo en el color */}
-                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#5E5E5A', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{copy[lang].you}</span>
-                  <div style={{ maxWidth: '85%', background: '#1A1A18', borderRadius: 4, padding: '0.9rem 1.1rem', color: '#FAFAF9', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                    {msg.text}
-                  </div>
-                </div>
-              ) : (
-                <div style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
-                  <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
-                  <p style={{ fontSize: '1rem', color: '#1A1A18', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{msg.text}</p>
-                  {i === messages.length - 1 && <TruncatedNotice chat={chat} />}
-                </div>
-              )}
+              <ChatBubble role={msg.role} text={msg.text} you={copy[lang].you} logo={t('logo')}>
+                {i === messages.length - 1 && msg.role !== 'user' && <TruncatedNotice chat={chat} />}
+              </ChatBubble>
             </div>
           ))}
           {sending && (
