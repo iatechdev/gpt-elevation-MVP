@@ -25,4 +25,10 @@ if (m === 'N15') edit("try { rows = await withReviewConsent(personId, reviewerId
 if (m === 'N16') edit("material = await withReviewConsent(share.UserId, reviewerId, 'consent_required', async (transaction) => {", `material = await ${bypass}(share.UserId, reviewerId, 'consent_required', async (transaction) => {`); // el revisor ve material sin permiso
 if (m === 'N17') edit("const row = await withReviewConsent(objection.UserId, reviewerId, 'consent_required', async (transaction) => {", `const row = await ${bypass}(objection.UserId, reviewerId, 'consent_required', async (transaction) => {`); // responder sin permiso
 if (m === 'N18') edit("const row = await withReviewConsent(share.UserId, reviewerId, 'consent_required', async (transaction) => {\n      const fresh", `const row = await ${bypass}(share.UserId, reviewerId, 'consent_required', async (transaction) => {\n      const fresh`); // crear revisión sin permiso
+const TAKE = "  takeAttempt(userId); // ANTES de validar evidencias o revisor: el tope es el mismo para cualquier reviewerId\n";
+const REVIEWER = "  if (!await reviewerOf(body.reviewerId) || body.reviewerId === userId) throw new ReviewError(404, 'reviewer_not_found', 'No se encontró a esa persona revisora.', 'That reviewer was not found.');\n";
+if (m === 'P1') { edit(TAKE, ''); edit(REVIEWER, REVIEWER + '  takeAttempt(userId);\n'); } // el tope se comprueba DESPUÉS de validar al revisor
+if (m === 'P2') { edit(TAKE, ''); edit("      return shareView(share);\n    } catch (error) {\n      if (error instanceof consent.ConsentRequiredError)", "      takeAttempt(userId);\n      return shareView(share);\n    } catch (error) {\n      if (error instanceof consent.ConsentRequiredError)"); } // cuenta solo los éxitos
+if (m === 'P3') edit("const cutoff = clock() - 3600 * 1000;", "const cutoff = 0;"); // la ventana nunca se libera
+if (m === 'P4') edit("const MAX_ATTEMPTS_PER_HOUR = 30;", "const MAX_ATTEMPTS_PER_HOUR = 1000;"); // tope inútil
 console.log('M apl ' + m);
