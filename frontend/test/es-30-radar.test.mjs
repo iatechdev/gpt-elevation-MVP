@@ -23,11 +23,12 @@ test('ES-30 radar: sin evidencia el nivel es null (hueco), nunca 0; nada se prom
   assert.deepEqual(items.map(i => i.level), [null, null, 3])
   assert.equal(radar.anyLevel(radar.radarItems([skill('a'), skill('b')])), false)
 })
-test('ES-30 radar: con dos pistas distintas muestra la más baja (no sobrestima ni promedia); una desactualizada no aporta nivel', () => {
-  assert.equal(radar.radarItems([skill('a', track(4), track(2))])[0].level, 2)
+test('ES-30 radar (regla única, ES-160): el nivel es la AUTOEVALUACIÓN; la revisión humana no se fusiona ni baja el nivel; una desactualizada no aporta nivel', () => {
+  assert.equal(radar.radarItems([skill('a', track(4), track(2))])[0].level, 4)
+  assert.equal(radar.radarItems([skill('a', null, track(3))])[0].level, null)
   const stale = radar.radarItems([skill('a', track(3, { stale: true, state: 'stale' }))])[0]
   assert.equal(stale.level, null); assert.equal(stale.stale, true)
-  assert.equal(radar.radarItems([skill('a', track(3, { stale: true, state: 'stale' }), track(2))])[0].level, 2)
+  assert.equal(radar.radarItems([skill('a', track(3, { stale: true, state: 'stale' }), track(2))])[0].level, null)
 })
 test('ES-30 radar: puntos fuertes = hasta 3 con nivel, ordenados por nivel, evidencias y orden del catálogo; no se rellena con vacíos', () => {
   const items = radar.radarItems([skill('a', track(2)), skill('b', track(4)), skill('c', track(null)), skill('d', track(4, { evidenceCount: 5 })), skill('e', track(3)), skill('f', track(4))])
