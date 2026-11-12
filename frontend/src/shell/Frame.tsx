@@ -81,13 +81,13 @@ export function SiteFooter() {
 }
 
 export type FrameProps = {
-  brand?: ReactNode; brandTo?: string; nav?: ReactNode; account?: ReactNode; sidebar?: ReactNode; footer?: boolean; header?: boolean; children: ReactNode
+  brand?: ReactNode; /** Nombre accesible del enlace de la marca: debe contener el texto visible (WCAG 2.5.3). */ brandLabel?: string; brandTo?: string; nav?: ReactNode; account?: ReactNode; sidebar?: ReactNode; footer?: boolean; header?: boolean; children: ReactNode
   /** Clase extra para el área principal; los contenidos antiguos conservan su ámbito de tokens (elv-theme) hasta migrar. */
   mainClassName?: string
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandTo = '/', nav, account, sidebar, footer = true, header = true, mainClassName = '', children }: FrameProps) {
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar, footer = true, header = true, mainClassName = '', children }: FrameProps) {
   const { c } = useShellCopy(); const { pathname } = useLocation()
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // Al cambiar de ruta el foco pasa al <main> (no en la primera carga, para no robar el foco de quien llega por teclado).
@@ -100,7 +100,7 @@ export function Frame({ brand, brandTo = '/', nav, account, sidebar, footer = tr
       <a className="cg-skip" href="#main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{c.skip}</a>
       {header && (
         <header className="cg-header">
-          <Link className="cg-brand" to={brandTo} aria-label={c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
+          <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
           {nav}
           <div className="cg-header__end"><LangSwitch />{account}</div>
         </header>

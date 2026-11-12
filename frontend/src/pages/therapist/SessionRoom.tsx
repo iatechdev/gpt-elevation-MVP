@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
+import { invalidateStoredSession } from '../../access/session'
 import { LiveNotes, type LiveNotesHandle } from './LiveNotes'
 import { CloseSession, type CloseResult } from './CloseSession'
 import { elapsedSeconds, formatElapsed, milestone } from './roomFormat'
@@ -36,7 +37,9 @@ export function SessionRoom() {
   const start = useCallback(async () => {
     setPhase('connecting')
     try {
-      const res = await fetch(`${API}/api/sessions/therapist/${id}/start`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}` } })
+      const token = getToken()
+      const res = await fetch(`${API}/api/sessions/therapist/${id}/start`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+      if (res.status === 401) { invalidateStoredSession(token); return } // ES-265: sesión vencida → /login (aquí aún no hay texto sin guardar)
       const body = await res.json().catch(() => ({})) as { meetingUrl?: string; startedAt?: string; code?: string }
       if (res.ok && body.meetingUrl) { setMeetingUrl(body.meetingUrl); setStartedAt(body.startedAt ?? null); setPhase('room'); return }
       if (body.code === 'session_not_startable') { setPhase('closed'); return }
@@ -50,7 +53,9 @@ export function SessionRoom() {
     let cancelled = false
     void (async () => {
       try {
-        const res = await fetch(`${API}/api/sessions/therapist`, { headers: { Authorization: `Bearer ${getToken()}` } })
+        const token = getToken()
+        const res = await fetch(`${API}/api/sessions/therapist`, { headers: { Authorization: `Bearer ${token}` } })
+        if (res.status === 401) { invalidateStoredSession(token); return } // ES-265
         if (!res.ok) throw new Error(String(res.status))
         const rows = await res.json() as RoomSession[]
         const found = rows.find(row => String(row.id) === id)

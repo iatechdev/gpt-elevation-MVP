@@ -36,7 +36,7 @@ export function ProfessionalFrame({ children }: { children: ReactNode }) {
   const { c, lang } = useShellCopy()
   return (
     <Frame
-      brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandTo="/therapist/dashboard"
+      brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandLabel={`${c.brandLabel}. ${PROFESSIONAL_LABEL[lang]}`} brandTo="/therapist/dashboard"
       nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} account={<UserMenu name={readName(PROFESSIONAL_LABEL[lang])} items={PROFESSIONAL_MENU} />} mainClassName="elv-theme"
     >{children}</Frame>
   )

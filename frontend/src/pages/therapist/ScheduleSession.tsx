@@ -1,6 +1,7 @@
 // ES-178 (F2): agendar una sesión desde la ficha. Diálogo nativo (Esc, foco atrapado), fecha y hora futuras, duración 30/45/50/60/90 y errores POR CAMPO (con `code` y `field` del servidor) con foco al primero.
 // El POST no es idempotente: si la respuesta se pierde se consulta las sesiones agendadas antes de decir nada («Comprobar»); nunca se reenvía a ciegas.
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -41,7 +42,9 @@ export function ScheduleSession({ personId, personName, t, locale }: { personId:
   async function reconcile(start: Date) {
     setBusy(true)
     try {
-      const res = await fetch(`${API}/api/sessions/therapist?status=scheduled`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      const token = getToken()
+      const res = await fetch(`${API}/api/sessions/therapist?status=scheduled`, { headers: { Authorization: `Bearer ${token}` } })
+      if (res.status === 401) { invalidateStoredSession(token); return } // ES-265
       if (!res.ok) throw new Error(String(res.status))
       const rows = await res.json() as { patientId: number; scheduledAt: string }[]
       if (rows.some(row => String(row.patientId) === personId && Math.abs(new Date(row.scheduledAt).getTime() - start.getTime()) < 60000)) { done(start); return }
@@ -57,9 +60,11 @@ export function ScheduleSession({ personId, personName, t, locale }: { personId:
     setBusy(true); setProblems([])
     let lost = false
     try {
-      const res = await fetch(`${API}/api/sessions/therapist`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ patientId: Number(personId), scheduledAt: start.toISOString(), duration }) })
+      const token = getToken()
+      const res = await fetch(`${API}/api/sessions/therapist`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ patientId: Number(personId), scheduledAt: start.toISOString(), duration }) })
       const body = await res.json().catch(() => ({})) as { code?: string; field?: string }
       if (res.ok) { done(start); return }
+      if (res.status === 401) { invalidateStoredSession(token); return } // ES-265
       if (body.code === 'scheduled_in_past') fail([{ field: 'scheduledAt', key: 'fu_sch_past' }])
       else if (body.code === 'duration_invalid') fail([{ field: 'duration', key: 'fu_sch_duration' }])
       else if (body.code === 'session_conflict') fail([{ field: 'scheduledAt', key: 'fu_sch_conflict' }])
