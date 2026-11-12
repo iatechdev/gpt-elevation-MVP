@@ -287,14 +287,16 @@ test('ES-88 PostgreSQL: revocación, borrado con worker activo y exportación de
 
   await t.test('registro cerrado: toda tabla con UserId está en el registro de exportación y borrado (ES-23) o en la lista de excepciones revisadas', async () => {
     const tables = (await q(`SELECT table_name FROM information_schema.columns WHERE table_schema='public' AND column_name IN ('UserId','userId','personId','patientId') GROUP BY 1 ORDER BY 1`)).map((r) => r.table_name);
-    const registered = new Set(CORE.map(([, name]) => require('../../' + name).getTableName()));
+    // ES-274: lo que se conserva (RETAINED) y lo que se borra aparte (PURGE_ALSO) también son decisiones revisadas.
+    const { RETAINED, PURGE_ALSO } = require('../../utils/personalData');
+    const registered = new Set([...CORE.map(([, name]) => name), ...RETAINED.map(([, name]) => name), ...PURGE_ALSO.map(([name]) => name)].map((name) => require('../../' + name).getTableName()));
     // Fuera del registro por decisión revisada: ledger de borrado y exportación y sesiones (se tratan aparte), y los datos clínicos/de terapeutas,
-    // que bloquean la exportación y la purga mediante requiresReview (ES-23) hasta que Mauricio defina su retención.
-    // ES-276: el guardián ahora también mira personId y patientId (antes solo UserId/userId). TherapySessions (patientId) es clínico y bloquea por requiresReview igual que ClinicalNotes.
+    // que (TherapistProfiles) siguen bloqueando la purga mediante blocksPurge (ES-23).
+    // ES-276: el guardián también mira personId y patientId. ES-274: ClinicalNotes, TherapySessions y MatchingRequests ya no son excepciones: se CONSERVAN (RETAINED, lo que escribió el profesional) o se purgan aparte (PURGE_ALSO).
     // ES-95: ProfessionalApplications son solicitudes PÚBLICAS de profesionales (no datos de una cuenta de la plataforma): su userId es opcional
     // (ON DELETE SET NULL) y su retención la regula scripts/purgeProfessionalApplications.js. Decisión a confirmar por Mauricio si se quiere exportar
     // o borrar también esas solicitudes con la cuenta.
-    const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'ClinicalNotes', 'MatchingRequests', 'TherapistProfiles', 'ProfessionalApplications', 'TherapySessions']);
+    const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'TherapistProfiles', 'ProfessionalApplications']);
     const missing = tables.filter((n) => !registered.has(n) && !exceptions.has(n));
     assert.ok(registered.has('AiJobs') && registered.has('SkillCandidates'), 'los dos modelos nuevos están registrados');
     const order = CORE.map(([, name]) => name);

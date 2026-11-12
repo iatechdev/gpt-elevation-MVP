@@ -127,9 +127,9 @@ test('ES-23: failed acceptance rolls back deactivation, consent changes and rece
   assert.equal((await remove(request)).status, 202);
 });
 
-test('ES-23: legacy human records fail closed; no misleading partial export or deletion', async t => {
+test('ES-23 (ES-274): records on the professional side (the account authored sessions/notes) still fail closed; no misleading partial export or deletion', async t => {
   const { state, add } = setup();
-  add('TherapySession', { id: 1, patientId: 101, therapistId: 202, therapistNote: 'THIRD PARTY PRIVATE' });
+  add('TherapySession', { id: 1, patientId: 202, therapistId: 101, therapistNote: 'THIRD PARTY PRIVATE' });
   const request = await startApp(t);
   assert.equal((await preview(request)).body.code, 'data_review_required');
   const result = await remove(request);
