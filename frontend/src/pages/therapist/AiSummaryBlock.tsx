@@ -2,6 +2,7 @@
 // aviso de lectura automática (no es un diagnóstico), y errores por código: `ai_budget_exhausted` y `ai_budget_not_configured` NO se reintentan (con la fecha de reinicio cuando existe); el resto, con «Reintentar».
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cardStyle } from './panelStyles'
+import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -39,7 +40,9 @@ export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T
     focusAfter.current = true
     setBusy(true); setProblem(null); setAnnounce('')
     try {
-      const res = await fetch(`${API}/api/therapist/pacientes/${personId}/resumen-ia`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      const token = getToken()
+      const res = await fetch(`${API}/api/therapist/pacientes/${personId}/resumen-ia`, { headers: { Authorization: `Bearer ${token}` } })
+      if (res.status === 401) { invalidateStoredSession(token); return } // ES-265
       const body = await res.json().catch(() => ({})) as Partial<Summary> & { code?: string; resetsAt?: string }
       if (res.ok && typeof body.summary === 'string' && body.generatedAt) { setSummary(body as Summary); return }
       if (body.code === 'ai_budget_exhausted') setProblem({ key: body.resetsAt ? 'fu_ai_budget' : 'fu_ai_budget_nodate', params: body.resetsAt ? { date: resetText(body.resetsAt) } : undefined, retry: false })

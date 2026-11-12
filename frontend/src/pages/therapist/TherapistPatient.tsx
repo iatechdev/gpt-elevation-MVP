@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { colors, spacing, typography } from '../../styles/tokens'
 import { useLanguage } from '../../i18n/useLanguage'
+import { invalidateStoredSession } from '../../access/session'
 import { AiSummaryBlock } from './AiSummaryBlock'
 import { ScheduleSession } from './ScheduleSession'
 import { FollowupNotes, type FollowupNote } from './FollowupNotes'
@@ -45,9 +46,11 @@ export function TherapistPatient() {
     setNotShared(false)
     setError('')
     try {
+      const token = getToken()
       const res = await fetch(`${API}/api/therapist/pacientes/${id}/historia`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
+        headers: { Authorization: `Bearer ${token}` },
       })
+      if (res.status === 401) { invalidateStoredSession(token); return } // ES-265: sesión vencida → /login
       if (res.status === 403) {
         const body = await res.json().catch(() => ({}))
         if (body.code === 'consent_required') { setNotShared(true); return }
@@ -70,7 +73,9 @@ export function TherapistPatient() {
   // Releer sin tocar la pantalla (tras guardar una nota o para comprobar una respuesta perdida): si falla, devuelve null y NO sustituye la ficha por un error.
   const refreshHistory = useCallback(async (): Promise<FollowupNote[] | null> => {
     try {
-      const res = await fetch(`${API}/api/therapist/pacientes/${id}/historia`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      const token = getToken()
+      const res = await fetch(`${API}/api/therapist/pacientes/${id}/historia`, { headers: { Authorization: `Bearer ${token}` } })
+      if (res.status === 401) { invalidateStoredSession(token); return null } // ES-265
       if (!res.ok) return null
       const data = await res.json()
       setPatient(data.patient); setMoodLogs(data.moodLogs); setRatings(data.ratings); setNotes(data.notes)

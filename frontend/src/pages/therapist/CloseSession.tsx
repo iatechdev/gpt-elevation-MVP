@@ -2,6 +2,7 @@
 // Un error conserva TODO (ánimo y texto). 409 `already_closed` = «Esta sesión ya terminó». Si la respuesta se pierde se consulta el estado antes de decir nada.
 import { useEffect, useRef, useState } from 'react'
 import { MAX_CLOSING, MIN_CLOSING, MOODS } from './roomFormat'
+import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -14,7 +15,8 @@ export function CloseSession({ sessionId, t, flushNotes, onClosed, onAlreadyClos
   const [mood, setMood] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
-  const [problem, setProblem] = useState<{ key: string; check?: boolean } | null>(null)
+  const [problem, setProblem] = useState<{ key: string; check?: boolean; enter?: boolean } | null>(null)
+  const usedToken = useRef('') // ES-265: token con que se envió el cierre
   const dialog = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLButtonElement>(null)
 
@@ -48,11 +50,13 @@ export function CloseSession({ sessionId, t, flushNotes, onClosed, onAlreadyClos
     let lost = false
     try {
       await flushNotes() // que la nota en vivo quede guardada antes de cerrar (si no se puede, el cierre sigue: ya está en pantalla)
-      const res = await fetch(`${API}/api/sessions/therapist/${sessionId}/end`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ therapistNote: note, patientMoodAfter: mood }) })
+      const token = getToken(); usedToken.current = token
+      const res = await fetch(`${API}/api/sessions/therapist/${sessionId}/end`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ therapistNote: note, patientMoodAfter: mood }) })
       const body = await res.json().catch(() => ({})) as { code?: string; recommendationSkipped?: 'budget' | 'unavailable' | 'provider' }
       if (res.ok) { closeDialog(); onClosed({ skipped: body.recommendationSkipped ?? null }); return }
       if (res.status === 409 && body.code === 'already_closed') { closeDialog(); onAlreadyClosed(); return }
-      if (body.code === 'too_long') setProblem({ key: 'sr_close_long' })
+      if (res.status === 401) setProblem({ key: 'session_expired_note', enter: true }) // ES-265: sesión vencida con el cierre escrito → aviso con «Entrar»
+      else if (body.code === 'too_long') setProblem({ key: 'sr_close_long' })
       else if (res.status === 403) setProblem({ key: 'sr_close_access' })
       else if (res.status >= 500) lost = true
       else setProblem({ key: 'sr_close_error' })
@@ -91,6 +95,7 @@ export function CloseSession({ sessionId, t, flushNotes, onClosed, onAlreadyClos
             <div id="sr-close-problem" role="alert" className="sr-problem">
               {problem && <>
                 <p>{t(problem.key)}</p>
+                {problem.enter && <button type="button" className="sr-btn-light" onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button>}
                 {problem.check && <button type="button" className="sr-btn-light" disabled={busy} onClick={() => void checkNow()}>{t('sr_check')}</button>}
               </>}
             </div>

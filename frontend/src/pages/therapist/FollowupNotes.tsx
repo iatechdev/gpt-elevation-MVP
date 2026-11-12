@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { cardStyle } from './panelStyles'
 import { localToday } from './followupFormat'
+import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -15,7 +16,7 @@ interface Reload { (): Promise<FollowupNote[] | null> } // firma de llamada: el 
 
 export interface FollowupNote { id: number; content: string; type: NoteType; sessionDate: string; createdAt: string; updatedAt: string }
 type Current = { content: string; type: NoteType; sessionDate: string; updatedAt: string }
-type Problem = { key: string; params?: Record<string, string | number>; check?: boolean }
+type Problem = { key: string; params?: Record<string, string | number>; check?: boolean; enter?: boolean }
 
 const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
 const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' }
@@ -35,6 +36,7 @@ export function FollowupNotes({ personId, notes, reload, t, locale }: { personId
   const [expected, setExpected] = useState<string | undefined>(undefined)
   const [notice, setNotice] = useState('')
   const dialog = useRef<HTMLDialogElement>(null)
+  const usedToken = useRef('') // ES-265: token con que se envió la nota
   const opener = useRef<HTMLElement | null>(null)
   // Lo escrito sobrevive a Esc/Cancelar y a reabrir (una nota nueva o cada nota que se edita tiene su borrador); solo se descarta al guardar con éxito.
   const drafts = useRef(new Map<string | number, { type: NoteType; date: string; text: string }>())
@@ -79,13 +81,15 @@ export function FollowupNotes({ personId, notes, reload, t, locale }: { personId
     let lost = false
     try {
       const isNew = note === 'new'
+      const token = getToken(); usedToken.current = token
       const res = await fetch(isNew ? `${API}/api/therapist/pacientes/${personId}/notas` : `${API}/api/therapist/notas/${note.id}`, {
-        method: isNew ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        method: isNew ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ content: text, type, sessionDate: date, ...(isNew || !expected ? {} : { expectedUpdatedAt: expected }) }),
       })
       const body = await res.json().catch(() => ({})) as { code?: string; current?: Current }
       if (res.ok) { await reload(); finished(t('fu_saved')); return }
       if (res.status === 409 && body.code === 'note_changed' && body.current) { setCurrent(body.current); setShowCurrent(false); setProblem({ key: 'fu_changed' }) }
+      else if (res.status === 401) setProblem({ key: 'session_expired_note', enter: true }) // ES-265: sesión vencida con la nota escrita → aviso con «Entrar»
       else if (res.status === 403) setProblem({ key: 'fu_err_access' })
       else if (res.status === 404) setProblem({ key: 'fu_err_gone' })
       else if (res.status >= 500) lost = true
@@ -146,6 +150,7 @@ export function FollowupNotes({ personId, notes, reload, t, locale }: { personId
             <div id="fu-problem" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
               {problem && <>
                 <p style={{ margin: 0 }}>{t(problem.key, problem.params)}</p>
+                {problem.enter && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => invalidateStoredSession(usedToken.current)}>{t('session_enter')}</button>}
                 {problem.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile(editing, new Set(notes.map(n => n.id)))}>{t('fu_check')}</button>}
               </>}
             </div>
