@@ -1,0 +1,13 @@
+const crypto=require('crypto');const SUT='C:/Users/Usuario/Documents/qa-pr-253/backend';const {startRealApi}=require(SUT+'/test/support/realApi.cjs');process.chdir(SUT);
+const hooks=[];const t={after:(f)=>hooks.push(f)};
+(async()=>{const {q,mkUser,http}=await startRealApi(t,{envVar:'QA175_DB',prefix:'qa175a'});const rid=()=>crypto.randomBytes(10).toString('hex');
+const pl={title:'t',situation:'s',responsibility:{text:'r'},actions:[{text:'a'}],delivered:{text:'d'},observedEffect:{known:false},autonomy:'autonomous'};
+const p=await mkUser('user');const rv=await mkUser('therapist');const ev=(await http(p,'POST','/api/evidence',{payload:pl,status:'confirmed',requestId:rid()})).body.id;
+await q(`CREATE OR REPLACE FUNCTION qa175_fail() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'qa175 fallo simulado'; END $$ LANGUAGE plpgsql`);await q('CREATE TRIGGER qa175_fail BEFORE INSERT ON "ReviewShares" FOR EACH ROW EXECUTE FUNCTION qa175_fail()');
+const r=await http(p,'POST','/api/me/review-shares',{reviewerId:rv.id,evidenceIds:[ev],requestId:rid()});
+const consent=await q(`SELECT purpose,scope,status FROM "Consents" WHERE "UserId"=$1 AND purpose='professional_review'`,[p.id]);const shares=await q('SELECT count(*) n FROM "ReviewShares" WHERE "UserId"=$1',[p.id]);
+console.log('autorizar con fallo al crear el share →',r.status,JSON.stringify(r.body).slice(0,80),'| consentimiento:',JSON.stringify(consent),'| shares:',shares[0].n);
+const ev2=await http(p,'GET','/api/consents');console.log('visible en /api/consents:',JSON.stringify(ev2.body).includes('professional_review'));
+await q('DROP TRIGGER qa175_fail ON "ReviewShares"');
+const seen=await http(rv,'GET','/api/reviewer/shares');console.log('el revisor ve:',JSON.stringify(seen.body));
+for(const h of hooks.reverse())await h();process.exit(0)})().catch(e=>{console.error('FATAL',e.stack);process.exit(1)});
