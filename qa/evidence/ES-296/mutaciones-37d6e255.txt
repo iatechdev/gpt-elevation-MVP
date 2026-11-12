@@ -1,0 +1,19 @@
+base | es-296: # pass 7 # fail 0 
+N1 | es-296 del PR: fail 5 #1 retirar insights_chat: la evidencia del ;#2 idempotente: retirar otra vez no duplica;| mi guion: FALLA F1 FALLA F1b FALLA F1c FALLA F1d FALLA F3a FALLA F3c {"id":"F5/F6 solo la VIGENTE confirmada con origen del chat  FALLA F4 FALLA F7a FALLA F7b FALLA F7e FALLA F8 FALLA F13 RESUMEN 7/20 
+N2 | es-296 del PR: fail 5 #1 retirar insights_chat: la evidencia del ;#2 idempotente: retirar otra vez no duplica;| mi guion: FALLA F1 FALLA F1b FALLA F1c FALLA F1d FALLA F3c FALLA F4 FALLA F13 RESUMEN 13/20 
+N3 | es-296 del PR: fail 2 #2 idempotente: retirar otra vez no duplica;| mi guion: FALLA F3c FALLA F13 RESUMEN 18/20 
+N4 | es-296 del PR: fail 2 #3 solo insights_chat marca; retirar insigh;| mi guion: FALLA F2 FALLA F3c RESUMEN 18/20 
+N5 | es-296 del PR: fail 0 | mi guion: FALLA F3c FALLA F13 RESUMEN 18/20 
+N6 | NO APLICADA: C:\Users\Usuario\Documents\qa13\mut257.cjs:4
+N7 | es-296 del PR: fail 3 #1 retirar insights_chat: la evidencia del ;#2 idempotente: retirar otra vez no duplica;| mi guion: FALLA F3c {"id":"F5/F6 solo la VIGENTE confirmada con origen del chat  FALLA F7e RESUMEN 17/20 
+N8 | es-296 del PR: fail 2 #1 retirar insights_chat: la evidencia del ;| mi guion: FALLA F3a RESUMEN 19/20 
+N9 | es-296 del PR: fail 7 #1 retirar insights_chat: la evidencia del ;#2 idempotente: retirar otra vez no duplica;| mi guion: FATAL TypeError: fetch failed 
+N10 | NO APLICADA: C:\Users\Usuario\Documents\qa13\mut257.cjs:4
+N11 | NO APLICADA: C:\Users\Usuario\Documents\qa13\mut257.cjs:4
+N12 | es-296 del PR: fail 5 #1 retirar insights_chat: la evidencia del ;#2 idempotente: retirar otra vez no duplica;| mi guion: FALLA F1 FALLA F1b FALLA F1c FALLA F1d FALLA F3a FALLA F4 FALLA F13 RESUMEN 13/20 
+FIN
+base | es-296: # pass 7 # fail 0 
+N6 | es-296 del PR: fail 0 | mi guion: {"id":"F5/F6 solo la VIGENTE confirmada con origen del chat  FALLA F13 RESUMEN 18/20 
+N10 | es-296 del PR: fail 0 | mi guion: FALLA F13 RESUMEN 19/20 
+N11 | es-296 del PR: fail 0 | mi guion: FALLA F13 RESUMEN 19/20 
+FIN

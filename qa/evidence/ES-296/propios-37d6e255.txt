@@ -1,0 +1,24 @@
+{"id":"F1 el motor (cualquier consumidor) recibe 2 antes y SOLO la directa después de retirar insights_chat [pr]","ok":true,"detail":"antes {\"skill-map\":[1,2],\"skill-proposal\":[1,2],\"career-plan\":[1,2],\"professional\":[1,2],\"qa\":[1,2]}; después {\"skill-map\":[2],\"skill-proposal\":[2],\"career-plan\":[2],\"professional\":[2],\"qa\":[2]}"}
+{"id":"F1b autoevaluar citando la evidencia marcada → 422 evidence_not_valid (la evaluación ya hecha antes pasó con 201) [pr]","ok":true,"detail":"antes 201; después 422 evidence_not_valid"}
+{"id":"F1c el mapa deja la evaluación previa en «stale» sin nivel y sin citar la evidencia marcada [pr]","ok":true,"detail":"stale true; nivel null"}
+{"id":"F1d propuesta con IA: el prompt NO contiene la evidencia marcada y SÍ la directa [pr]","ok":true,"detail":"llamadas 1; respuesta 502; marcada en el prompt false; directa true"}
+{"id":"F1e plan /api/career-plan [pr]","info":"estado 200; fuga false"}
+{"id":"F2 retirar insights_diary / insights_resume / research NO marca ni invalida nada [pr]","ok":true,"detail":"insights_diary:200, insights_resume:200, research:200; motor 1; marcas 0; eventos 0"}
+{"id":"F3a la persona: lista y detalle exponen needsReview + reviewReason='source_revoked' y NADA de origins/sourceRevokedAt/ids del chat [pr]","ok":true,"detail":"campos authoring,createdAt,fromChat,id,needsReview,payload,reviewReason,status,version; detalle 200"}
+{"id":"F3b profesional y administración: ningún endpoint revisado devuelve sourceRevokedAt / source_revoked / reviewReason / needsReview / origins ni texto del chat [pr]","ok":true,"detail":"sin fugas; prof:evidence-ajena=404 admin:evidence-ajena=404; todos: {\"prof:pacientes\":\"200\",\"prof:alerts\":\"200\",\"prof:historial\":\"403\",\"prof:historia\":\"403\",\"prof:resumen-ia\":\"403\",\"admin:usuarios\":\"200\",\"admin:stats\":\"200\",\"admin:alerts\":\"200\",\"prof:evidence-ajena\":\"404\",\"admin:evidence-ajena\":\"404\",\"prof:careerctx\":\"200\",\"prof:skill-map\":\"200\"}"}
+{"id":"F3c exportaciones personal/profesional (DATA_RIGHTS_ENABLED=true): se generan y no llevan sourceRevokedAt/origins [pr]","ok":true,"detail":"{\"personal\":\"201 (invalidación propia «source_revoked»: solo id y motivo, es de la persona)\",\"personal_incluyeEvidenciaMarcada\":2,\"professional\":\"503 professional_contract_pending\",\"professional_incluyeEvidenciaMarcada\":false}"}
+{"id":"F5/F6 solo la VIGENTE confirmada con origen del chat se marca (v2); no la v1, ni la directa, ni el borrador; retirar dos veces → 1 evento; nada se borra [pr]","ok":true,"detail":"marcadas [\"8v2\"]; eventos 1; versiones 4"}
+{"id":"F4 volver a otorgar NO limpia: el motor sigue sin la evidencia del chat (solo 9) [pr]","ok":true,"detail":"motor [9]"}
+{"id":"F4b reconfirmar crea una versión NUEVA que vuelve al motor [pr]","ok":true,"detail":"PUT 201; motor [8,9]"}
+{"id":"F4c editar la marcada SIN origen del chat (permiso retirado) [pr]","info":"PUT 201 undefined; motor [11] (si entra al motor es el texto escrito por la persona al confirmar; no hay origen del chat)"}
+{"id":"F7a 40 rondas retirar ‖ reconfirmar (PUT): 0 5xx, retirar siempre 200, invariante [pr]","ok":true,"detail":"{\"0:201\":2,\"1:200\":40,\"0:403\":38}; sin problemas"}
+{"id":"F7b 40 rondas retirar ‖ crear confirmada con origen del chat (POST), con evidencia previa: 0 5xx, retirar siempre 200, invariante [pr]","ok":true,"detail":"{\"0:403\":40,\"1:200\":40}; sin problemas"}
+{"id":"F7c 40 rondas retirar ‖ borrar la evidencia: 0 5xx, retirar siempre 200, invariante [pr]","ok":true,"detail":"{\"0:200\":40,\"1:200\":40}; sin problemas"}
+{"id":"F7d 40 rondas retirar el puente ‖ retirar insights_chat (dos ganchos): 0 5xx, retirar siempre 200, invariante [pr]","ok":true,"detail":"{\"0:200\":40,\"1:200\":40}; sin problemas"}
+{"id":"F7e 40 rondas 3 retiradas simultáneas (idempotencia: 1 evento): 0 5xx, retirar siempre 200, invariante [pr]","ok":true,"detail":"{\"0:200\":40,\"1:200\":40,\"2:200\":40}; sin problemas"}
+{"id":"F8 40 rondas retirar ‖ (crear + actualizar) evidencia con origen del chat: 0 5xx, retirar siempre 200, invariante [pr]","ok":true,"detail":"{\"0:403\":40,\"1:403\":40,\"2:200\":40}; sin problemas"}
+{"id":"F9 aislamiento: la retirada de A no toca a B; la evidencia de B no se lee con el token de A [pr]","ok":true,"detail":"B motor [293]; eventos de B 0; A lee la de B 404"}
+{"id":"F10 la evidencia directa (sin origen) no se marca ni lleva needsReview [pr]","ok":true,"detail":"[\"id\",\"version\",\"status\",\"authoring\",\"createdAt\",\"payload\"]"}
+{"id":"F13 retirar insights_chat con 200 evidencias del chat: 787 ms (umbral propuesto < 500); lectura del motor 21 → 11 ms [pr]","ok":false,"detail":"retirar 787 ms; motor 200→0"}
+RESUMEN 19/20
+FIN
