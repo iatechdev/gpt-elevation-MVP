@@ -125,7 +125,7 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
             <div id="panel-guide-error" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
               {error && <>
                 <p style={{ margin: 0 }}>{t(error.key)}</p>
-                {error.enter && <button ref={enterButton} type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => { if (!enterAgain(usedToken.current)) setError({ key: 'session_renewed', reasons: [] }) }}>{t('session_enter')}</button>}
+                {error.enter && <button ref={enterButton} type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => { if (!enterAgain(usedToken.current)) { setError({ key: 'session_renewed', reasons: [] }); window.setTimeout(() => document.getElementById('panel-guide-text')?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va al cuadro donde se vuelve a enviar */>{t('session_enter')}</button>}
                 {error.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile()}>{t('panel_gp_check')}</button>}
                 {error.reasons.length > 0 && <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>{error.reasons.map((reason, index) => <li key={`${reason.code}-${index}`}>{reason[lang] ?? reason.code}</li>)}</ul>}
               </>}

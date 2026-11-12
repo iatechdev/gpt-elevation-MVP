@@ -58,7 +58,7 @@ test('ES-285 seguimiento (E243-3): «Entrar» de la validación usa el mismo est
   assert.equal((copy.match(/session_renewed:/g) ?? []).length, 2)
 })
 
-test('ES-285 seguimiento (E243-2): enterAgain no cierra una sesión más nueva y sí invalida la vencida', async () => {
+test('ES-285 seguimiento (E243-2 / O247-A): enterAgain lleva a /login con token igual o ausente y solo avisa si hay un token DISTINTO', async () => {
   const store = new Map()
   globalThis.localStorage = { getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k) }
   const events = []
@@ -66,6 +66,13 @@ test('ES-285 seguimiento (E243-2): enterAgain no cierra una sesión más nueva y
   globalThis.Event = class { constructor(type) { this.type = type } }
   const { enterAgain } = await import('../src/pages/therapist/sessionEnter.ts')
   store.set('elevation_token', 'nuevo')
-  assert.equal(enterAgain('viejo'), false); assert.equal(store.get('elevation_token'), 'nuevo'); assert.deepEqual(events, [])
-  assert.equal(enterAgain('nuevo'), true); assert.equal(store.has('elevation_token'), false); assert.deepEqual(events, ['elevation-session-change'])
+  assert.equal(enterAgain('viejo'), false); assert.equal(store.get('elevation_token'), 'nuevo'); assert.deepEqual(events, []) // token distinto: no se cierra
+  assert.equal(enterAgain('nuevo'), true); assert.equal(store.has('elevation_token'), false); assert.deepEqual(events, ['elevation-session-change']) // igual: se invalida
+  store.set('elevation_role', 'therapist'); events.length = 0
+  assert.equal(enterAgain('viejo'), true); assert.equal(store.has('elevation_role'), false); assert.deepEqual(events, ['elevation-session-change']) // ausente: /login, sin aviso falso
+})
+
+test('ES-285 seguimiento (O247-B): tras el aviso de sesión más nueva el foco va a un elemento coherente', () => {
+  assert.ok(read(dir + 'GuideBlock.tsx').includes("document.getElementById('panel-guide-text')?.focus()"))
+  assert.ok(read(dir + 'ValidationBlock.tsx').includes('submit?.focus()'))
 })

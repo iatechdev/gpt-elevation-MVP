@@ -90,7 +90,7 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
           </label>
           <div><button type="submit" style={{ ...primary, opacity: busy ? 0.7 : 1 }} disabled={busy}>{busy ? t('panel_val_uploading') : t('panel_val_upload')}</button></div>
           <p role={message?.failed ? 'alert' : 'status'} style={{ margin: 0, fontSize: '0.85rem', color: message?.failed ? '#B91C1C' : '#2F4A29' }}>{message?.text ?? ''}</p>
-          {message?.enter && <div><button ref={enterButton} type="button" style={ghost} onClick={() => { if (!enterAgain(usedToken.current)) setMessage({ text: t('session_renewed'), failed: true }) }}>{t('session_enter')}</button></div>}
+          {message?.enter && <div><button ref={enterButton} type="button" style={ghost} onClick={event => { if (!enterAgain(usedToken.current)) { const submit = event.currentTarget.closest('form')?.querySelector<HTMLButtonElement>('button[type="submit"]'); setMessage({ text: t('session_renewed'), failed: true }); window.setTimeout(() => submit?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va a «Subir documento» */>{t('session_enter')}</button></div>}
         </form>
       )}
     </PanelBlock>

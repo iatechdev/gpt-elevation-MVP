@@ -67,6 +67,7 @@ const fs = require('node:fs');
       await page.evaluate(() => localStorage.setItem('elevation_token', 'nuevo'));
       await box.getByRole('button', { name: c.enter, exact: true }).click();
       await box.getByText(c.renewed).waitFor();
+      await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'panel-guide-text', null, { timeout: 3000 }).catch(() => { throw new Error(`el foco va al cuadro de la propuesta (${tag})`); }); // O247-B
       assert.equal(await tokenOf(page), 'nuevo', `la sesión nueva se conserva (${tag})`);
       assert.ok(!page.url().includes('/login'), `sigue en el panel (${tag})`);
       await context.close();
@@ -105,10 +106,45 @@ const fs = require('node:fs');
       await page.evaluate(() => localStorage.setItem('elevation_token', 'nuevo'));
       await page.locator('form:has(input[type="file"])').getByRole('button', { name: c.enter, exact: true }).click();
       await page.locator('form:has(input[type="file"]) p[role="alert"]').getByText(c.renewed).waitFor();
+      await page.waitForFunction(() => document.activeElement && document.activeElement.getAttribute('type') === 'submit', null, { timeout: 3000 }).catch(() => { throw new Error(`el foco va a «Subir documento» (${tag})`); }); // O247-B
       assert.equal(await tokenOf(page), 'nuevo');
       await context.close();
     }
-    check(`validación + sesión más nueva (${tag}): «Entrar» no la cierra y avisa`);
+    check(`validación + sesión más nueva (${tag}): «Entrar» no la cierra, avisa y el foco queda en un elemento coherente`);
+
+    for (const where of ['guía', 'validación']) { // O247-A: token AUSENTE (se cerró la sesión en OTRA pestaña real) → /login, sin el aviso falso «Ya iniciaste sesión»
+      const { context, page } = await open(width, lang, 401);
+      if (where === 'guía') {
+        await page.getByRole('button', { name: c.create }).click();
+        await page.locator('#panel-guide-text').fill('x'.repeat(80));
+        await page.locator('dialog[open] button[type="submit"]').click();
+        await page.locator('#panel-guide-error').getByText(c.guideWarn).waitFor();
+      } else {
+        await page.locator('input[type="file"]').setInputFiles(pdf);
+        await page.locator('form:has(input[type="file"]) button[type="submit"]').click();
+        await page.locator('form:has(input[type="file"]) p[role="alert"]').getByText(c.fileWarn).waitFor();
+      }
+      // (a) sin evento (como borrar el token en la misma pestaña): «Entrar» lleva a /login
+      await page.evaluate(() => localStorage.removeItem('elevation_token'));
+      assert.equal(await tokenOf(page), null, `token ausente (${tag})`);
+      await page.getByRole('button', { name: c.enter, exact: true }).click(); await page.waitForURL('**/login', { timeout: 8000 });
+      assert.equal(await page.getByText(c.renewed).count(), 0, `sin el aviso falso (${tag})`);
+      await context.close();
+    }
+    check(`token ausente (${tag}): «Entrar» en guía y validación lleva a /login, sin el aviso falso`);
+
+    { // (b) cierre de sesión en OTRA pestaña real: la compuerta de esta pestaña lo detecta (evento storage) y lleva a /login sin esperar a «Entrar»
+      const { context, page } = await open(width, lang, 401);
+      await page.getByRole('button', { name: c.create }).click();
+      await page.locator('#panel-guide-text').fill('x'.repeat(80));
+      await page.locator('dialog[open] button[type="submit"]').click();
+      await page.locator('#panel-guide-error').getByText(c.guideWarn).waitFor();
+      const other = await context.newPage(); await other.goto(base + '/login'); await other.evaluate(() => localStorage.removeItem('elevation_token')); await other.close();
+      await page.waitForURL('**/login', { timeout: 8000 });
+      assert.equal(await page.getByText(c.renewed).count(), 0, `sin el aviso falso (${tag})`);
+      await context.close();
+    }
+    check(`cierre de sesión en otra pestaña (${tag}): esta pestaña va a /login por sí sola, sin el aviso falso`);
 
     { // Validación: 403
       const { context, page } = await open(width, lang, 403);
