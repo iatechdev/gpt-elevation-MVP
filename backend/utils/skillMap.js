@@ -242,5 +242,5 @@ function validateAssessmentOutput(output, { skillKeys, evidence }) {
 module.exports = {
   SkillMapError, selfAssess, getMap, validateAssessmentOutput, confidenceFor, CONFIDENCE_RULE_VERSION,
   // Internos que reutiliza la confirmación de las propuestas de la IA (ES-28).
-  shared: { summarize, AUTONOMY_LEVEL, CONFIDENCE_REASONS, ownTransaction, requireCatalog, MAX_ATTEMPTS },
+  shared: { summarize, AUTONOMY_LEVEL, CONFIDENCE_REASONS, ownTransaction, requireCatalog, MAX_ATTEMPTS, queueSize: () => ownerQueues.size }, // queueSize: solo para pruebas (ES-295/E256-1: la cola debe vaciarse)
 };
