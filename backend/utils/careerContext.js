@@ -188,11 +188,13 @@ async function confirm(userId, { fields, token, requestId }) {
   const withBridge = needsBridge(clean);
 
   const work = async (transaction) => {
+    // E253-1 (interbloqueo, 40P01): la retirada de un permiso bloquea el CONSENTIMIENTO y luego las versiones (markSourceRevoked); esta confirmación debe bloquear en el MISMO orden: primero los
+    // permisos (el del puente ya está tomado por withConsent y el de cada fuente aquí, en orden alfabético) y solo después las versiones. Con el orden inverso, confirmar‖retirar se cruzaba y daba 500.
+    for (const purpose of sourcePurposes(clean).sort()) if (!await consent.isGrantedIn(userId, purpose, transaction)) throw sourceConsentError('source_consent_revoked');
     const rows = await CareerContextVersion.findAll({ where: { UserId: userId }, transaction, lock: Transaction.LOCK.UPDATE });
     const repeated = rows.find((r) => r.requestId === requestId);
     if (repeated) return { record: toRecord(repeated, JSON.parse(desencriptar(repeated.payload))), created: false };
     const origins = await resolveOrigins(userId, clean, transaction);
-    for (const purpose of sourcePurposes(clean)) if (!await consent.isGrantedIn(userId, purpose, transaction)) throw sourceConsentError('source_consent_revoked');
     for (const previous of rows.filter((r) => r.status === 'active')) {
       await previous.update({ status: 'superseded' }, { transaction });
       await DerivedInvalidation.create({ UserId: userId, sourceType: 'career_context_version', sourceId: previous.id, reason: 'superseded' }, { transaction });

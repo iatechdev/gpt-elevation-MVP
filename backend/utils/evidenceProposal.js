@@ -70,6 +70,10 @@ async function proposeEvidence(userId, rawBody) {
   if (!await consent.hasConsent(userId, 'professional_bridge')) {
     throw new ProposalError(403, 'consent_required', 'Necesitas autorizar el puente profesional.', 'You need to authorize the professional bridge.');
   }
+  // E253-3: leer turnos del chat con IA exige el permiso de análisis del chat (el mismo que ES-121); sin él no se llama a la IA ni se gasta presupuesto.
+  if (!await consent.hasConsent(userId, 'insights_chat')) {
+    throw new ProposalError(403, 'source_consent_required', 'Autoriza el análisis del chat antes de usarlo como origen.', 'Authorize the analysis of the chat before using it as an origin.');
+  }
   const usable = new Map();
   for (const id of turnIds) {
     const turn = await ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'userContent'] });
