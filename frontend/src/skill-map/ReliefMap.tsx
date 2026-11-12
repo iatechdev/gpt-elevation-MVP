@@ -63,7 +63,7 @@ export function ReliefMap({ skills, territories, selected, onSelect, lang, t }: 
       const next = { ...previous }; let changed = false
       for (const entry of entries) {
         const element = entry.target as HTMLElement, key = element.dataset.skill
-        if (!key) continue
+        if (!key || element.classList.contains('is-mark')) continue // solo cuentan los tamaños CON rótulo: medir la marca (28 px) haría oscilar el modo
         const size = { w: Math.ceil(element.offsetWidth), h: Math.ceil(element.offsetHeight) }
         if (!previous[key] || Math.abs(previous[key].w - size.w) >= 2 || Math.abs(previous[key].h - size.h) >= 2) { next[key] = size; changed = true }
       }
