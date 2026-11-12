@@ -1,0 +1,63 @@
+[
+ {
+  "id": "C0 sondeo del contrato [control]",
+  "info": "evidencia [{\"evidenceId\":1,\"version\":1}]; autoevaluación → 201 {\"assessment\":{\"skillKey\":\"comunicacion\",\"track\":\"self\",\"level\":2,\"state\":\"initial\",\"confidence\":\"low\",\"confidenceReason\":{\"es\":\"Se apoya en una sola evidencia."
+ },
+ {
+  "id": "C2 8 autoevaluaciones simultáneas de la MISMA persona y habilidad × 3 rondas: 0 rechazos (ningún 409), 1 vigente, todas guardadas [control]",
+  "ok": true,
+  "detail": "estados {\"201\":24}; guardadas 24/24; latencia: mediana 248 ms, p95 364 ms, máxima 374 ms; sin problemas"
+ },
+ {
+  "id": "C2 30 autoevaluaciones simultáneas de la MISMA persona y habilidad × 3 rondas: 0 rechazos (ningún 409), 1 vigente, todas guardadas [control]",
+  "ok": false,
+  "detail": "estados {\"201\":83,\"409\":7}; guardadas 83/90; latencia: mediana 795 ms, p95 985 ms, máxima 997 ms; ronda 0: 2 rechazadas (409 conflict) | ronda 1: 3 rechazadas (409 conflict) | ronda 2: 2 rechazadas (409 conflict)"
+ },
+ {
+  "id": "C2 100 autoevaluaciones simultáneas de la MISMA persona y habilidad × 3 rondas: 0 rechazos (ningún 409), 1 vigente, todas guardadas [control]",
+  "ok": false,
+  "detail": "estados {\"201\":278,\"409\":22}; guardadas 278/300; latencia: mediana 1671 ms, p95 2541 ms, máxima 2606 ms; ronda 0: 7 rechazadas (409 conflict) | ronda 1: 7 rechazadas (409 conflict) | ronda 2: 8 rechazadas (409 conflict)"
+ },
+ {
+  "id": "C3 30 personas distintas a la vez: el tiempo total es de ~17.8× una sola (serializar a todos daría ~30×), todas aceptadas [control]",
+  "ok": true,
+  "detail": "una sola: 26.9 ms; 30 a la vez: 479 ms; estados {\"201\":30}"
+ },
+ {
+  "id": "C4 en una cola de 40 con peticiones inválidas, un fallo REAL de la base y repetidas: todas responden como se espera, la cola sigue (una nueva se acepta), 1 vigente y sin texto de PostgreSQL [control]",
+  "ok": true,
+  "detail": "respuestas fuera de lo esperado: ninguna; la petición posterior: 201; vigentes 1; fuga de SQL 0"
+ },
+ {
+  "id": "C4b otros Map que crecen con las personas (cachés de otros módulos, también en main) [control]",
+  "info": "[{\"grew\":4953,\"size\":4953}]"
+ },
+ {
+  "id": "C4b tras 400 personas distintas, en reposo, NINGÚN Map de promesas (la cola por propietario) retiene entradas [control]",
+  "ok": true,
+  "detail": "4954 Map rastreados; ninguno de promesas con entradas"
+ },
+ {
+  "id": "C5 mientras una persona tiene 100 en cola, otras 20 personas son atendidas (p95 1148 ms) y la API responde; ninguna de las 100 se rechaza [control]",
+  "ok": false,
+  "detail": "otras personas: p95 1148 ms, máxima 1152 ms; salud 200; cola de 100 terminó en 1594 ms con estados {\"201\":92,\"409\":8}"
+ },
+ {
+  "id": "C7 validaciones y retirar nivel [control]",
+  "info": "nivel 0=400 nivel 5=400 nivel texto=400 nivel decimal=400 sin habilidad=400 habilidad vacía=400; retirar (level null) → 200 {\"cleared\":true}"
+ },
+ {
+  "id": "C7 en secuencia el último nivel (2) queda vigente; el mismo requestId × 8 deja 1 fila; ninguna validación da 5xx [control]",
+  "ok": true,
+  "detail": "vigente 2; filas del requestId repetido 1; nivel 0=400 nivel 5=400 nivel texto=400 nivel decimal=400 sin habilidad=400 habilidad vacía=400"
+ },
+ {
+  "id": "C9 autoevaluación aislada, 60 en serie [control]",
+  "info": "mediana 18.7 ms, p95 25.9 ms"
+ },
+ {
+  "id": "C9 p95 < 300 ms (propuesta) [control]",
+  "ok": true,
+  "detail": "25.9 ms"
+ }
+]
