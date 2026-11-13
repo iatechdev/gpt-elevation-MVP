@@ -4,7 +4,7 @@ import { registerCatalogGuard } from '../catalogGuard'
 import { useLanguage } from '../i18n/useLanguage'
 import { territories } from '../skill-map/territories'
 import { skillCatalogApi, SkillCatalogError, type Descriptor, type Detail, type SkillRow } from './api'
-import { emptyForm, fromSkill, isDirty, KEY_RE, LEVELS, missingLabel, toBody, validate, type FieldError, type Form } from './model'
+import { emptyForm, fromSkill, isDirty, KEY_RE, LEVELS, missingFieldAnchor, missingLabel, toBody, validate, type FieldError, type Form } from './model'
 import './skillCatalog.css'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -46,7 +46,7 @@ export function SkillCatalogManager() {
 
 type Notice = { key: string; error: boolean; params?: Record<string, string | number> }
 function ManagerSession({ session }: { session: string }) {
-  const { t, lang } = useLanguage(); const params = useParams(); const navigate = useNavigate()
+  const { t, lang } = useLanguage(); const params = useParams(); const navigate = useNavigate(); const location = useLocation()
   const token = (JSON.parse(session) as string[])[0]
   const api = useMemo(() => skillCatalogApi(API, token), [token])
   const alive = useRef(false)
@@ -59,7 +59,11 @@ function ManagerSession({ session }: { session: string }) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldError, true>>>({})
   const [busy, setBusy] = useState(true); const [ready, setReady] = useState(false); const [notice, setNotice] = useState<Notice | null>(null)
   const [showPublish, setShowPublish] = useState(false); const [confirmRemove, setConfirmRemove] = useState(false); const [attempt, setAttempt] = useState(0)
+  const [conflict, setConflict] = useState<SkillRow | null | undefined>(undefined)
+  const [inUse, setInUse] = useState<{ skillKey: string; people: number }[] | null>(null)
+  const [rowStamp, setRowStamp] = useState<string | undefined>(undefined)
   const locked = useRef(false); const initialized = useRef(false); const dialog = useRef<HTMLDialogElement>(null)
+  const conflictRef = useRef<HTMLDivElement>(null)
   const editable = ready && detail?.status === 'draft'
   const dirty = !!skillKey && (isDirty(form, baseline) || (creating && !!newKey))
   const say = (key: string, error = false, p?: Record<string, string | number>) => setNotice({ key, error, params: p })
@@ -86,7 +90,7 @@ function ManagerSession({ session }: { session: string }) {
         if (skillKey && !creating) {
           const row = value.skills.find(skill => skill.skillKey === skillKey)
           if (!row) { say('e_notfound', true); return }
-          if (!initialized.current) { const initial = fromSkill(row); setForm(initial); setBaseline(initial); initialized.current = true }
+          if (!initialized.current) { const initial = fromSkill(row); setForm(initial); setBaseline(initial); setRowStamp(row.updatedAt); initialized.current = true }
         }
       }
       setReady(true)
@@ -118,11 +122,12 @@ function ManagerSession({ session }: { session: string }) {
         catch (e) { if (e instanceof SkillCatalogError && e.code === 'draft_exists' && e.draftId && current()) navigate(`/admin/skill-catalog/${e.draftId}`); else throw e }
       } else if (action === 'save') {
         const key = creating ? newKey : skillKey
-        await api.save(id, key, toBody(form))
+        await api.save(id, key, toBody(form), creating ? undefined : rowStamp)
         if (!current()) return
+        setConflict(undefined)
         if (creating) { navigate(`/admin/skill-catalog/${id}`); return }
         const refreshed = await refresh(); const row = refreshed.skills.find(skill => skill.skillKey === key)
-        if (row) { const persisted = fromSkill(row); setForm(persisted); setBaseline(persisted) }
+        if (row) { const persisted = fromSkill(row); setForm(persisted); setBaseline(persisted); setRowStamp(row.updatedAt) }
         say('saved')
       } else if (action === 'remove') {
         await api.remove(id, skillKey); if (current()) navigate(`/admin/skill-catalog/${id}`)
@@ -133,6 +138,9 @@ function ManagerSession({ session }: { session: string }) {
       }
     } catch (e) {
       if (!current()) return
+      if (action === 'save' && e instanceof SkillCatalogError && e.code === 'skill_changed') { setConflict(e.current); say('conflict_changed', true); return }
+      if (action === 'publish' && e instanceof SkillCatalogError && e.code === 'skill_in_use') { setInUse(e.inUse); setShowPublish(true); try { await refresh() } catch { /* el aviso queda con los datos del error */ } return }
+      setInUse(null)
       if (action === 'publish' && e instanceof SkillCatalogError && e.code === 'incomplete_catalog') { try { await refresh() } catch { /* se muestra el aviso genérico */ } }
       say(action === 'publish' && e instanceof SkillCatalogError && e.code === 'incomplete_catalog' ? 'pub_help_blocked' : explain(e, true), true)
     } finally { locked.current = false; if (current()) setBusy(false) }
@@ -141,6 +149,19 @@ function ManagerSession({ session }: { session: string }) {
   const skillName = (row: SkillRow) => row.labels[lang] ?? row.labels.es ?? row.labels.en ?? row.skillKey
   const terrName = (tid: string) => territories.find(item => item.id === tid)?.labels[lang] ?? tid
   const incomplete = detail?.skills.filter(skill => skill.missing.length > 0) ?? []
+  const loadConflict = () => {
+    if (conflict === null) { setConflict(undefined); navigate(`/admin/skill-catalog/${id}`); return }
+    if (conflict) { const adopted = fromSkill(conflict); setForm(adopted); setBaseline(adopted); setRowStamp(conflict.updatedAt); setConflict(undefined); setFieldErrors({}); say('saved') }
+  }
+  const anchor = location.hash ? location.hash.slice(1) : ''
+  useEffect(() => {
+    if (!anchor || !ready) return
+    const el = document.getElementById(anchor)
+    if (el) { el.focus(); el.scrollIntoView({ block: 'center' }) }
+  }, [anchor, ready, skillKey])
+  useEffect(() => {
+    if (conflict !== undefined) conflictRef.current?.focus()
+  }, [conflict])
 
   // ── Versiones ────────────────────────────────────────────────
   if (!id) {
@@ -186,10 +207,15 @@ function ManagerSession({ session }: { session: string }) {
       })}
     </div>
     const moreFilled = LEVELS.slice(2).some(n => form.levels[n].es || form.levels[n].en)
+    const focusMoreLevel = /^skcat-l[34](?:es|en)$/.test(anchor)
     return <Shell go={go}>
       <button type="button" className="elv-btn" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}`)}>{t('skcat.skill_back')}</button>
       <h1>{creating ? t('skcat.new_title') : `${t('skcat.skill_title')} · ${row ? skillName(row) : skillKey}`}</h1>
       <Notice text={text} error={notice?.error} />
+      {conflict !== undefined && <div className="skcat-error" role="alert" tabIndex={-1} ref={conflictRef}>
+        {t(conflict === null ? 'skcat.conflict_removed' : 'skcat.conflict_changed')}
+        <button type="button" className="elv-btn" onClick={loadConflict}>{t(conflict === null ? 'skcat.skill_back' : 'skcat.conflict_load')}</button>
+      </div>}
       {busy && !ready && <p role="status">{t('skcat.loading')}</p>}
       {!ready && !busy && <button type="button" className="elv-btn" onClick={retry}>{t('skcat.retry')}</button>}
       {ready && detail && <>
@@ -218,8 +244,9 @@ function ManagerSession({ session }: { session: string }) {
             })}
           </div>
           <h2>{t('skcat.f_levels')}</h2>
+          <p className="skcat-help">{t('skcat.rubric_note')}</p>
           {(['1', '2'] as const).map(levelBlock)}
-          <details className="skcat-more" open={moreFilled || !!fieldErrors.level}><summary>{t('skcat.f_more_levels')}</summary>{(['3', '4'] as const).map(levelBlock)}</details>
+          <details className="skcat-more" open={moreFilled || !!fieldErrors.level || focusMoreLevel}><summary>{t('skcat.f_more_levels')}</summary>{(['3', '4'] as const).map(levelBlock)}</details>
           <div className="skcat-grid2">
             {([['source', 'f_source', 'source'], ['verifiedBy', 'f_verified_by', 'verified_by']] as const).map(([field, label, errKey]) => {
               const value = form[field]; const fid = `skcat-${field}`; const bad = fieldErrors[errKey]
@@ -293,8 +320,12 @@ function ManagerSession({ session }: { session: string }) {
       <h2 id="skcat-pub">{fmt(t('skcat.pub_title'), { n: detail.version })}</h2>
       <p>{t('skcat.pub_effect')}</p>
       {empty ? <p role="alert">{t('skcat.pub_empty')}</p> : incomplete.length > 0 ? <><h3>{t('skcat.pub_missing')}</h3>
-        <ul>{incomplete.map(skill => <li key={skill.skillKey}><strong>{skillName(skill)}</strong>: {skill.missing.map(path => { const m = missingLabel(path); return fmt(t(`skcat.${m.key}`), { level: m.level ?? '', lang: m.lang ?? '' }) }).join(', ')}</li>)}</ul>
+        <ul>{incomplete.map(skill => <li key={skill.skillKey}><strong>{skillName(skill)}</strong>: {skill.missing.map(path => { const m = missingLabel(path); const label = fmt(t(`skcat.${m.key}`), { level: m.level ?? '', lang: m.lang ?? '' }); return <a key={path} className="skcat-link" href={`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`} onClick={e => { e.preventDefault(); navigate(`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`) }}>{label}</a> }).reduce((acc: ReactNode[], el, i) => i === 0 ? [el] : [...acc, ', ', el], [])}</li>)}</ul>
         <p className="skcat-help" role="status">{t('skcat.pub_help_blocked')}</p></> : <p role="status">{t('skcat.missing_ok')}</p>}
+      {inUse && inUse.length > 0 && <div className="skcat-error" role="alert" tabIndex={-1} ref={el => el?.focus()}>
+        {t('skcat.pub_in_use')}
+        <ul>{inUse.map(entry => <li key={entry.skillKey}><code>{entry.skillKey}</code> — {fmt(t('skcat.in_use_people'), { n: entry.people })}</li>)}</ul>
+      </div>}
       <div className="skcat-actions-end">
         <button type="button" className="elv-btn" disabled={busy} onClick={() => setShowPublish(false)}>{t('skcat.pub_back')}</button>
         <button type="button" className="elv-btn skcat-primary" disabled={busy || empty || incomplete.length > 0} onClick={() => void run('publish')}>{fmt(t('skcat.pub_now'), { n: detail.version })}</button>

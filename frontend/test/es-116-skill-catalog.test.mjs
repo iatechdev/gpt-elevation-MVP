@@ -9,7 +9,7 @@ function moduleUrl(file) {
   return 'data:text/javascript;base64,' + Buffer.from(code).toString('base64')
 }
 const { skillCatalogApi, SkillCatalogError, skillRow } = await import(moduleUrl('../src/skill-catalog/api.ts'))
-const { emptyForm, fromSkill, toBody, validate, missingLabel, isDirty, KEY_RE } = await import(moduleUrl('../src/skill-catalog/model.ts'))
+const { emptyForm, fromSkill, toBody, validate, missingLabel, missingFieldAnchor, isDirty, KEY_RE } = await import(moduleUrl('../src/skill-catalog/model.ts'))
 const { skillCatalogEs, skillCatalogEn } = await import(moduleUrl('../src/skill-catalog/copy.ts'))
 const read = (f) => readFileSync(new URL(f, import.meta.url), 'utf8')
 
@@ -106,4 +106,49 @@ test('ES-116 (QA H-88-02) la clave «new» está reservada en el cliente y (H-88
   const page = read('../src/skill-catalog/SkillCatalogPages.tsx')
   assert.ok(page.includes('<fieldset className="skcat-lock" disabled={busy} aria-busy={busy}>'))
   assert.ok(read('../src/skill-catalog/skillCatalog.css').includes('.skcat-lock'))
+})
+
+test('ES-188 cliente: al guardar se envía la marca de versión cargada y el 409 skill_changed expone la versión vigente sin pisarla', async () => {
+  const body = toBody(fromSkill(skillRow(row())))
+  const calls = []
+  const fetcher = async (url, options) => {
+    calls.push([options.method, options.body ? JSON.parse(options.body) : undefined])
+    return json(200, { skillKey: 'comunicacion', ...JSON.parse(options.body ?? '{}'), missing: [], updatedAt: '2026-11-01T10:00:00Z' })
+  }
+  const api = skillCatalogApi('https://api.example.invalid/', 'sintetico', fetcher)
+  await api.save(3, 'comunicacion', body, '2026-10-29T09:00:00Z')
+  assert.deepEqual(calls[0][1], { ...body, expectedUpdatedAt: '2026-10-29T09:00:00Z' })
+  await api.save(3, 'comunicacion', body)
+  assert.deepEqual(calls[1][1], body) // sin marca (creación) no se envía expectedUpdatedAt
+  const conflict = skillCatalogApi('x', 't', async () => json(409, { code: 'skill_changed', error: 'x', current: { ...row(), updatedAt: '2026-11-02T00:00:00Z' } }))
+  await assert.rejects(conflict.save(3, 'comunicacion', body, '2026-10-29T09:00:00Z'), e => {
+    assert.equal(e.code, 'skill_changed'); assert.equal(e.current.skillKey, 'comunicacion'); assert.equal(e.current.updatedAt, '2026-11-02T00:00:00Z')
+    return true
+  })
+  const removed = skillCatalogApi('x', 't', async () => json(409, { code: 'skill_changed', error: 'x', current: null }))
+  await assert.rejects(removed.save(3, 'comunicacion', body, '2026-10-29T09:00:00Z'), e => e.code === 'skill_changed' && e.current === null)
+})
+test('ES-188 cliente: skill_in_use lista habilidad y personas sin identificarlas; respuestas malformadas fallan', async () => {
+  const api = skillCatalogApi('x', 't', async () => json(409, { code: 'skill_in_use', error: 'x', inUse: [{ skillKey: 'liderazgo', people: 3 }, { skillKey: 'mal', people: 0 }, { skillKey: 5 }] }))
+  await assert.rejects(api.publish(1), e => {
+    assert.equal(e.code, 'skill_in_use'); assert.deepEqual(e.inUse, [{ skillKey: 'liderazgo', people: 3 }])
+    assert.equal(JSON.stringify(e.inUse).includes('UserId'), false)
+    return true
+  })
+})
+test('ES-188 «falta»: cada ruta del servidor tiene un ancla al campo del editor', () => {
+  assert.equal(missingFieldAnchor('rubric.levels.2.en'), 'skcat-l2en')
+  assert.equal(missingFieldAnchor('labels.es'), 'skcat-label-es')
+  assert.equal(missingFieldAnchor('rubric.source'), 'skcat-source')
+  assert.equal(missingFieldAnchor('rubric.verifiedBy'), 'skcat-verifiedBy')
+  assert.equal(missingFieldAnchor('rubric.verifiedAt'), 'skcat-date')
+  assert.equal(missingFieldAnchor('otra.cosa'), 'skcat-key')
+  const page = read('../src/skill-catalog/SkillCatalogPages.tsx')
+  for (const id of ['skcat-l2en', 'skcat-label-es', 'skcat-source', 'skcat-verifiedBy', 'skcat-date', 'skcat-key']) assert.ok(page.includes(`id="${id}"`) || page.includes(`id={fid}`) || page.includes(id), id)
+  assert.ok(page.includes('missingFieldAnchor'), 'el panel de publicación enlaza al campo que falta')
+  assert.ok(page.includes('skcat.rubric_note'), 'aclaración de que la rúbrica no decide niveles')
+  assert.ok(page.includes('skcat.conflict_load'), 'botón cargar lo guardado ante skill_changed')
+  assert.ok(page.includes('skcat.pub_in_use'), 'aviso de habilidades en uso al publicar')
+  assert.ok(page.includes('ref={conflictRef}') && page.includes('}, [conflict])'), 'el foco del conflicto solo se aplica cuando cambia')
+  assert.ok(page.includes('open={moreFilled || !!fieldErrors.level || focusMoreLevel}'), 'los enlaces a niveles 3 y 4 abren la sección')
 })
