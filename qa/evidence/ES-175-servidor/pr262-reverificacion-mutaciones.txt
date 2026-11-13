@@ -1,0 +1,23 @@
+N1 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S15 RESUMEN 18/20 
+N2 | es-175 del PR: fail 2 #2 propietario: cada persona ve s;| mi guion: FALLA S3 FALLA S15 RESUMEN 18/20 
+N3 | es-175 del PR: fail 2 #7 evidencia con origen en el cha;| mi guion: FALLA S6 FALLA S15 RESUMEN 18/20 
+N4 | es-175 del PR: fail 2 #12 huecos de QA (E262-6): shares ;| mi guion: FALLA S3 FALLA S9 FALLA S15 RESUMEN 17/20 
+N5 | es-175 del PR: fail 0 | mi guion: FALLA S15 RESUMEN 19/20 
+N7 | es-175 del PR: fail 3 #2 propietario: cada persona ve s;#9 E262-1: un reviewerId no utili;| mi guion: FALLA S3 FALLA S15 RESUMEN 18/20 
+N8 | es-175 del PR: fail 2 #6 evidencias compartibles: solo ;| mi guion: FALLA S15 RESUMEN 19/20 
+N10 | es-175 del PR: fail 3 #10 E262-2/3: editar la evidencia ;#12 huecos de QA (E262-6): shares ;| mi guion: FALLA S2 FALLA S15 RESUMEN 18/20 
+N11 | es-175 del PR: fail 2 #12 huecos de QA (E262-6): shares ;| mi guion: FALLA S7 FALLA S15 RESUMEN 18/20 
+N12 | es-175 del PR: fail 2 #5 entradas: texto plano ≤2000 ;| mi guion: FALLA S8 FALLA S15 RESUMEN 18/20 
+N13 | es-175 del PR: fail 2 #12 huecos de QA (E262-6): shares ;| mi guion: FALLA S8 FALLA S15 RESUMEN 18/20 
+N14 | es-175 del PR: fail 2 #4 acceso retirado: el revisor de;| mi guion: FALLA S2 FALLA S4c FALLA S15 RESUMEN 17/20 
+N15 | NO APLICADA: const edit = (a, b) => { const s = read(); if (s.split(a).length !== 2) throw new Error('no único/no encontrado ' + m +
+N16 | es-175 del PR: fail 2 #8 el permiso se comprueba en CAD;| mi guion: FALLA S15 RESUMEN 19/20 
+N17 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S15 RESUMEN 18/20 
+N18 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S15 RESUMEN 18/20 
+N19 | es-175 del PR: fail 2 #10 E262-2/3: editar la evidencia ;| mi guion: FALLA S15 RESUMEN 19/20 
+N20 | es-175 del PR: fail 2 #10 E262-2/3: editar la evidencia ;| mi guion: FALLA S6c FALLA S15 RESUMEN 18/20 
+N21 | es-175 del PR: fail 2 #10 E262-2/3: editar la evidencia ;| mi guion: FALLA S6c FALLA S15 RESUMEN 18/20 
+N22 | es-175 del PR: fail 2 #12 huecos de QA (E262-6): shares ;| mi guion: FALLA S15 RESUMEN 19/20 
+N23 | es-175 del PR: fail 3 #11 E262-4: autorizar es atómico:;#12 huecos de QA (E262-6): shares ;| mi guion: FALLA S4g FALLA S4h FALLA S15 RESUMEN 17/20 
+N24 | es-175 del PR: fail 2 #10 E262-2/3: editar la evidencia ;| mi guion: FALLA S15 RESUMEN 19/20 
+FIN

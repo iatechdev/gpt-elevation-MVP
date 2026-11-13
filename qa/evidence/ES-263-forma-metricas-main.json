@@ -1,0 +1,40 @@
+{
+ "keys": [
+  "activeThisWeek",
+  "activeUsers",
+  "avgMood",
+  "avgRating",
+  "dailyAverage30",
+  "days30",
+  "max30",
+  "range",
+  "sessionsByDay",
+  "topTherapists",
+  "total30",
+  "totalSessions",
+  "totalTherapists",
+  "totalUsers"
+ ],
+ "types": {
+  "totalUsers": "number",
+  "activeUsers": "number",
+  "totalTherapists": "number",
+  "totalSessions": "number",
+  "avgMood": "number",
+  "avgRating": "number",
+  "activeThisWeek": "number",
+  "sessionsByDay": "array",
+  "range": "object",
+  "days30": "array",
+  "total30": "number",
+  "max30": "null",
+  "dailyAverage30": "number",
+  "topTherapists": "array"
+ },
+ "top": [
+  "avgRating",
+  "id",
+  "name",
+  "patientCount"
+ ]
+}

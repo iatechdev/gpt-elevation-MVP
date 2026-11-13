@@ -1,0 +1,62 @@
+[
+ {
+  "id": "P1-es-chat respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": false,
+  "detail": "antes=false base=granted pantalla=false alertas=1 errs=0"
+ },
+ {
+  "id": "P2-es-chat respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": false,
+  "detail": "antes=true base=revoked pantalla=true alertas=1 errs=0"
+ },
+ {
+  "id": "P1-es-diary respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": false,
+  "detail": "antes=false base=granted pantalla=false alertas=1 errs=0"
+ },
+ {
+  "id": "P2-es-diary respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": false,
+  "detail": "antes=true base=revoked pantalla=true alertas=1 errs=0"
+ },
+ {
+  "id": "P1-es-resume respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": false,
+  "detail": "antes=false base=granted pantalla=false alertas=1 errs=0"
+ },
+ {
+  "id": "P2-es-resume respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": false,
+  "detail": "antes=true base=revoked pantalla=true alertas=1 errs=0"
+ },
+ {
+  "id": "P1-en-chat respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": false,
+  "detail": "antes=false base=granted pantalla=false alertas=1 errs=0"
+ },
+ {
+  "id": "P2-en-chat respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": false,
+  "detail": "antes=true base=revoked pantalla=true alertas=1 errs=0"
+ },
+ {
+  "id": "P1-en-diary respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": false,
+  "detail": "antes=false base=granted pantalla=false alertas=1 errs=0"
+ },
+ {
+  "id": "P2-en-diary respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": false,
+  "detail": "antes=true base=revoked pantalla=true alertas=1 errs=0"
+ },
+ {
+  "id": "P1-en-resume respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": false,
+  "detail": "antes=false base=granted pantalla=false alertas=1 errs=0"
+ },
+ {
+  "id": "P2-en-resume respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": false,
+  "detail": "antes=true base=revoked pantalla=true alertas=1 errs=0"
+ }
+]

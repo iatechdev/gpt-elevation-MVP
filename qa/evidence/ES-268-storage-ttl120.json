@@ -1,0 +1,12 @@
+{
+  "pr": 221,
+  "mode": "ttl120",
+  "head": "1ce3154fab7397e5af6dde7f8aa0c27c9369b255",
+  "results": [
+    {
+      "id": "E221-1 (TTL=120): la vigencia informada sale del TTL EFECTIVO (120 s): `expiresIn` «2 minutos», `expiresInSeconds` 120, y coincide con lo pedido al almacenamiento (120 s)",
+      "ok": true,
+      "detail": "{\"expiresIn\":\"2 minutos\",\"expiresInSeconds\":120,\"pedido\":120}"
+    }
+  ]
+}

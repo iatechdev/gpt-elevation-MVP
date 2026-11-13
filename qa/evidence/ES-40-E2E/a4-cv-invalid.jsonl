@@ -1,0 +1,21 @@
+{"id":"A4-0 cuenta sintética y consumo de IA inicial leído","ok":true,"d":"used=0"}
+{"id":"A4 archivo vacío (0 bytes): rechazado con 4xx y código «empty»","ok":true,"d":"http=400 respuesta=empty"}
+{"id":"A4 ejecutable renombrado a .pdf (cabecera MZ): rechazado con 4xx y código «not_pdf»","ok":true,"d":"http=400 respuesta=not_pdf"}
+{"id":"A4 texto plano con extensión .pdf: rechazado con 4xx y código «not_pdf»","ok":true,"d":"http=400 respuesta=not_pdf"}
+{"id":"A4 HTML/script con extensión .pdf: rechazado con 4xx y código «not_pdf»","ok":true,"d":"http=400 respuesta=not_pdf"}
+{"id":"A4 firma %PDF- pero contenido corrupto: rechazado con 4xx y código «corrupt»","ok":true,"d":"http=422 respuesta=corrupt"}
+{"id":"A4 tamaño excesivo (5 MB + 1 byte, firma PDF): rechazado con 4xx y código «too_large»","ok":true,"d":"http=400 respuesta=too_large"}
+{"id":"A4 16 páginas (el límite es 15): rechazado con 4xx y código «too_many_pages»","ok":true,"d":"http=422 respuesta=too_many_pages"}
+{"id":"A4 PDF válido sin texto (como imagen escaneada): rechazado con 4xx y código «no_text»","ok":true,"d":"http=422 respuesta=no_text"}
+{"id":"A4 nombre de archivo malicioso (ruta y comillas) con PDF sin texto: rechazado con 4xx y código «cualquiera»","ok":true,"d":"http=422 respuesta=no_text"}
+{"id":"A4 nombre de archivo con RTL y emojis con archivo vacío: rechazado con 4xx y código «empty»","ok":true,"d":"http=400 respuesta=empty"}
+{"id":"A4 subir sin sesión y con token inválido: 401/403","ok":true,"d":"403/401"}
+{"id":"A4 campo de archivo equivocado: 4xx sin 5xx","ok":true,"d":"http=400"}
+{"id":"A4 petición sin cuerpo multipart: 4xx sin 5xx","ok":true,"d":"http=400"}
+{"id":"A4 la lista de hojas de vida de una cuenta nueva está vacía","ok":true,"d":"http=200"}
+{"id":"A4 GET /api/user/resumes/999999/file: 4xx (no 5xx, sin datos ajenos)","ok":true,"d":"http=404"}
+{"id":"A4 DELETE /api/user/resumes/999999: 4xx (no 5xx, sin datos ajenos)","ok":true,"d":"http=404"}
+{"id":"A4 GET /api/user/resumes/abc/file: 4xx (no 5xx, sin datos ajenos)","ok":true,"d":"http=404"}
+{"id":"A4 DELETE /api/user/resumes/1%27%20OR%201=1: 4xx (no 5xx, sin datos ajenos)","ok":true,"d":"http=404"}
+{"id":"A4 NINGÚN archivo no válido consumió IA (consumo igual antes y después)","ok":true,"d":"0 → 0"}
+{"id":"A4 método incorrecto (GET en analyze): 404/405, sin 5xx","ok":true,"d":"http=404"}

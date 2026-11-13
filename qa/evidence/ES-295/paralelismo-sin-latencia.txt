@@ -1,0 +1,4 @@
+pr: {"una_sola_ms_mediana":25.7,"treinta_a_la_vez_ms_mediana":546,"razon_mediana":21.3,"razones":[23.5,20.9,22.1,25.4,16.5,25.2,22.2,18.6,16.9,21.7,24.2,21.8]}
+control: {"una_sola_ms_mediana":28.9,"treinta_a_la_vez_ms_mediana":581,"razon_mediana":20.1,"razones":[25.9,20.7,18.5,21.5,18.3,22.1,23.6,25,18.8,20.4,27.2,17.8]}
+pr: {"una_sola_ms_mediana":28.5,"treinta_a_la_vez_ms_mediana":592,"razon_mediana":20.8,"razones":[24.1,21.3,21.1,22.4,23.8,20,14.2,17.6,23.7,23.2,23.9,15.3]}
+control: {"una_sola_ms_mediana":21.8,"treinta_a_la_vez_ms_mediana":462,"razon_mediana":21.2,"razones":[23,19,22.8,22.9,24.8,18.9,21,24.4,19.5,19,20.5,18.5]}

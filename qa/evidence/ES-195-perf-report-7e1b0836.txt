@@ -1,0 +1,128 @@
+ES-195 · informe de peso (2026-11-12T12:43:47.179Z, Node v22.23.4); kB = 1000 bytes
+
+Carga inicial (lo que referencia index.html)
+  JS :    423.19 kB bruto ·    128.42 kB gzip   (presupuesto vigente: 150 kB gzip)  [assets/index-eksbHrwi.js, assets/jsx-runtime-DJ0HuzlU.js, assets/api-CNWwbwBo.js, assets/pending-DTB18Oii.js]
+  CSS:    102.28 kB bruto ·     16.76 kB gzip   (presupuesto vigente: 20 kB gzip)  [assets/index-D02AKRYl.css]
+
+Bloques (97) — bruto / gzip, kB
+     411.35    123.45  js  index-eksbHrwi.js
+     135.39     48.28  js  es-DDpuwzXk.js
+     131.38     47.20  js  en-dW8Aqch7.js
+     102.28     16.76  css index-D02AKRYl.css
+      52.51     13.34  js  SkillMapPage-Bxd5XM03.js
+      38.54     10.53  js  Onboarding-DlbU3pEK.js
+      38.12     10.51  js  ChatPage-yHofGwB-.js
+      37.55     12.07  js  BridgePage-deQ7CYFK.js
+      33.62     10.39  js  CatalogPages-lFtTKutD.js
+      33.51      9.50  js  AdminUsers-DxOrxi_5.js
+      30.47      8.18  js  AdminContent-DF4fa_Z8.js
+      29.25      8.28  js  MapAccess-CRHUn5Oh.js
+      29.08      6.46  js  CareerPages-C0dPklcg.js
+      28.63      9.59  js  useAdminText-Dl4gU-ZF.js
+      22.87      5.86  js  EvidencePages-RSQYHxgJ.js
+      22.38      7.61  js  resume-DuvuJBRx.js
+      22.28      7.92  js  SpaceNav-DgVshSpB.js
+      22.09      6.29  js  SkillCatalogPages-RB-5khkq.js
+      21.99      8.18  js  DesignSystemPage-DCVYO7vk.js
+      21.75      8.46  js  CareerShell-Oa3-ExJ9.js
+      21.39      5.88  js  UserDashboard-Ddaa6_pv.js
+      21.11      5.98  js  TherapistPatient-DbxyEDdU.js
+      20.53      6.08  js  TherapistDashboard-8zyo2dAP.js
+      18.40      5.75  js  AdminPrompts-LdsaSB8-.js
+      18.23      5.17  js  MyTherapist-DJKi_zy1.js
+      16.98      3.56  css SkillMapPage-CmAlCDaA.css
+      16.66      3.90  css shell-Dc6OLqdz.css
+      16.42      4.74  js  UserProgress-Dq4dT03y.js
+      13.41      3.85  js  Pages-mCLzqG8S.js
+      12.81      4.36  js  JournalPage-DWWBU1UR.js
+      12.77      4.87  js  context-DjTAjRZQ.js
+      11.69      3.03  css DesignSystemPage-Ds2qnct4.css
+      11.60      4.63  js  register-DUBB15Ty.js
+      11.47      4.40  js  ProfessionalApplicationPage-Dg02XGFb.js
+      10.95      3.40  js  CompassPage-CMpao2KW.js
+      10.89      3.75  js  fixture-Cgxbp03L.js
+       9.88      3.96  js  PreviewShell-DEL9GjIi.js
+       8.49      3.26  js  jsx-runtime-DJ0HuzlU.js
+       8.42      2.16  css session-DPGt49nw.css
+       8.33      2.77  js  SessionRoom-CDggWlQ3.js
+       8.32      2.53  js  BoardManifest-MK90f-Yj.js
+       7.81      2.74  js  MatchingModal-DeTZey0w.js
+       7.75      2.68  js  adminOverview-95GjNZvq.js
+       7.54      1.65  css resume-DlRfIYw6.css
+       7.48      2.35  js  ResumesPage-B04Q3S9O.js
+       7.22      1.82  css BridgePage-CCyKyAvW.css
+       7.09      2.57  js  ExercisePage-CL0nIaN9.js
+       7.07      2.49  js  PasswordResetPages-DsjYOhpN.js
+       7.02      2.73  js  DataPage-C_e79xc2.js
+       6.38      2.66  js  register-_0HhvCk6.js
+       6.34      2.22  js  frames-C12YAq45.js
+       6.31      1.65  css CareerShell-CaJRdHfB.css
+       6.28      2.26  js  api-C90eguwH.js
+       6.13      2.12  js  ResumeSkillsPage-BkznlO8z.js
+       6.07      1.68  css SkillCatalogPages-GhiAlLka.css
+       5.57      2.04  js  FacilitationPreview-CelnSDAm.js
+       5.39      2.05  js  FeedbackPage-B-cpTj97.js
+       5.38      2.07  js  session-zhpc1jc7.js
+       5.37      1.62  css FacilitationPreview-BbUHk5OT.css
+       5.34      1.60  js  pieces-wKZGWA9l.js
+       5.06      1.87  js  register-dMgS_6CF.js
+       4.96      1.39  css CatalogPages-BvgocZVc.css
+       4.80      1.36  css exercises-GIaCVjwb.css
+       4.73      1.61  js  PlanPage-Dj-pQJwK.js
+       4.22      1.89  js  CheckinPage-BQkXhtKy.js
+       4.20      1.76  js  api-Si_LahnN.js
+       4.10      1.24  css JournalPage-CJCLFDtA.css
+       4.01      1.51  js  SessionRoom-BqUCytS-.js
+       3.82      1.40  js  AdminDashboard-Blm4_x6e.js
+       3.24      1.13  css PreviewShell-ma0CAtLk.css
+       3.21      1.19  css therapist-DeDUSPGR.css
+       3.19      1.01  css CompassPage-DuXKp2xj.css
+       2.99      1.05  css Onboarding-DaCADj7V.css
+       2.68      1.15  js  hooks-Dr8CTvvb.js
+       2.58      1.13  js  ManifestoPage-59UqBThZ.js
+       2.27      1.09  js  api-CNWwbwBo.js
+       2.27      0.97  js  PilotMetricsPage-DnlvvDKE.js
+       1.65      0.75  js  serverError-SEXiNx9h.js
+       1.42      0.58  css MapAccess-BeMyao91.css
+       1.40      0.72  js  AdminMetrics-pKYWptQ4.js
+       1.36      0.64  js  GateScreens-CJe_ZgIZ.js
+       1.19      0.49  css ProfessionalApplicationPage-DSHs0qkN.css
+       1.07      0.63  js  pending-DTB18Oii.js
+       0.93      0.53  js  territories-DmLe29w2.js
+       0.92      0.48  js  SpaceToolsPage-D4duur6t.js
+       0.72      0.44  js  SpaceShell-B0Gtu2-y.js
+       0.61      0.43  js  signOut-C8npQJyi.js
+       0.61      0.32  css UserDashboard-CgKYo3iJ.css
+       0.60      0.34  css AdminUsers-DoGG5o3T.css
+       0.59      0.37  js  focusTrap-DTwF88nf.js
+       0.55      0.34  js  PricingPage--fARsA8U.js
+       0.43      0.24  css ManifestoPage-DKerbSvU.css
+       0.31      0.24  js  TherapistLayout-sDhtGXtw.js
+       0.30      0.23  js  AdminLayout-DA7XeCXC.js
+       0.27      0.23  js  theme-C67ibomV.js
+       0.21      0.20  js  panelStyles-Ch4-0EGe.js
+       0.19      0.18  js  modalKeys-UxzSkwRK.js
+
+Bloque de entrada assets/index-eksbHrwi.js: 22 grupos; tamaño del CÓDIGO FUENTE (no del bundle) por grupo
+     545.40 kB fuente ·    4 módulos  react-dom
+     375.61 kB fuente ·    1 módulos  react-router
+      67.93 kB fuente ·   10 módulos  src/i18n
+      32.49 kB fuente ·   14 módulos  src/components/landing
+      15.05 kB fuente ·    3 módulos  src/
+      12.89 kB fuente ·    6 módulos  src/access
+      12.74 kB fuente ·    2 módulos  src/pages
+      11.12 kB fuente ·    4 módulos  src/shell
+      10.38 kB fuente ·    2 módulos  scheduler
+      10.27 kB fuente ·    6 módulos  src/components
+      10.05 kB fuente ·    2 módulos  src/pricing
+       9.93 kB fuente ·    1 módulos  src/skill-catalog
+       9.52 kB fuente ·    1 módulos  src/routeCatalog
+       4.17 kB fuente ·    7 módulos  src/space
+       3.58 kB fuente ·    1 módulos  src/context
+       3.23 kB fuente ·    2 módulos  src/exercises
+       3.19 kB fuente ·    1 módulos  src/styles
+       3.17 kB fuente ·    6 módulos  src/content
+       0.92 kB fuente ·    1 módulos  src/compass
+       0.84 kB fuente ·    1 módulos  src/pilot
+       0.78 kB fuente ·    1 módulos  src/facilitation
+       0.39 kB fuente ·    1 módulos  src/career

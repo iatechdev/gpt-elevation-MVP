@@ -1,0 +1,120 @@
+{
+  "base": "local desechable (127.0.0.1:54459)",
+  "commit": "3ff66f02",
+  "results": [
+    {
+      "id": "migraciones",
+      "info": "exit=0 en 2659 ms"
+    },
+    {
+      "id": "arranque inicial",
+      "info": "servidor listo en 2032 ms"
+    },
+    {
+      "id": "volumen",
+      "info": "MoodLogs: no se pudo sembrar (23505)"
+    },
+    {
+      "id": "siembra",
+      "info": "cuenta sintética con 8011 filas en 11 tablas (volumen 4000 filas en MoodLogs, SessionRatings, Messages); cuenta de control con 7 filas"
+    },
+    {
+      "id": "P1 pedir la eliminación por la API (DELETE de administración) → 202 `deletion_requested` y UNA `DeletionRequest` aceptada; la cuenta queda inactiva y sin acceso",
+      "ok": true,
+      "detail": "202 estado=accepted"
+    },
+    {
+      "id": "parada de productores",
+      "info": "servidor detenido en 5 ms; conexiones activas de otras sesiones: 0"
+    },
+    {
+      "id": "P2 el comando se niega sin la confirmación `--producers-stopped-and-drained`, con un identificador inválido, con un flag desconocido y con una solicitud inexistente (exit ≠ 0, mensaje genérico) y NO toca la cuenta",
+      "ok": true,
+      "detail": "1,1,1,1 Purge not completed. Review the protected request ledger."
+    },
+    {
+      "id": "banner-dotenv",
+      "info": "la salida estándar de la purga INCLUYE una línea de «dotenv» antes del JSON: \"[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', "
+    },
+    {
+      "id": "PURGA",
+      "info": "exit=0 en 1032 ms (incluye arrancar Node y conectar); salida: [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }\n{; stderr: "
+    },
+    {
+      "id": "P3 la purga termina con exit 0 y la salida solo contiene `status` y `deadlinesVerified:false` (sin identificadores ni datos)",
+      "ok": true,
+      "detail": "{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}"
+    },
+    {
+      "id": "P4 la fila de usuario queda ANONIMIZADA (lápida, no borrada): nombre «Cuenta eliminada / Deleted account», correo `<uuid>@deleted.invalid`, contraseña aleatoria nueva, inactiva, sin profesional, sin plan, sin motivación, intentos y bloqueo en cero",
+      "ok": true,
+      "detail": "{\"name\":\"Cuenta eliminada / Deleted account\",\"email\":\"@deleted.invalid\",\"active\":false,\"therapistId\":null,\"planId\":null}"
+    },
+    {
+      "id": "P5 la solicitud pasa a `awaiting_verification` con `activePurgedAt` y 1 intento, sin código de fallo",
+      "ok": true,
+      "detail": "awaiting_verification intentos=1"
+    },
+    {
+      "id": "P6 NINGUNA fila de la persona en las 31 tablas del registro de ES-23 (`personalData.CORE`) ni en ExportRequests (se conserva a propósito `DerivedInvalidations`: metadatos pendientes)",
+      "ok": true,
+      "detail": "ok · DerivedInvalidations conservada: 0 filas"
+    },
+    {
+      "id": "P7-detalle",
+      "info": "tablas con clave hacia Users con filas de la persona tras la purga: TherapistPersonOrdinals.personId:1 (antes 1) ; TherapistPersonOrdinals.therapistId:1 (antes 1) · tablas SIN clave con columna de usuario y filas: AuthRevocations.UserId:1 ; DeletionRequests.UserId:1 · conservadas a propósito: -"
+    },
+    {
+      "id": "P7 tras la purga, en TODAS las tablas con columna de usuario (con y sin FK) no queda ninguna fila de la persona salvo las que se conservan por diseño (lápida en Users, DeletionRequests, AuthRevocations, DerivedInvalidations)",
+      "ok": false,
+      "detail": "TherapistPersonOrdinals.personId:1 (antes 1) | TherapistPersonOrdinals.therapistId:1 (antes 1)"
+    },
+    {
+      "id": "P8 la cuenta de CONTROL (otra persona, mismos datos sembrados) queda INTACTA: mismas filas en todas las tablas, usuario sin anonimizar, sigue vinculada",
+      "ok": true,
+      "detail": "filas 7→7"
+    },
+    {
+      "id": "P9 el rastro de auditoría de la solicitud (solo ids y claves, sin datos personales) se conserva",
+      "ok": true,
+      "detail": "entradas=1"
+    },
+    {
+      "id": "P10 repetir la purga sin `--replay` NO vuelve a ejecutar (devuelve el mismo estado; intentos y fecha de purga sin cambios)",
+      "ok": true,
+      "detail": "[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild\n{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false} intentos=1 (927 ms)"
+    },
+    {
+      "id": "P11 `--replay` vuelve a purgar (borra lo que haya vuelto a aparecer: 5 filas sembradas a propósito → 0), intentos 2 y estado `awaiting_verification`",
+      "ok": true,
+      "detail": "[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }\n{\"status\":\"awaiting_verification\",\"deadlinesVerified\":false} filas tras replay=0 intentos=2 (1052 ms)"
+    },
+    {
+      "id": "P12 una solicitud sobre una cuenta que NO es persona (rol profesional) no se purga: queda en `awaiting_review` (`legacy_policy_pending`), sin tocar la cuenta",
+      "ok": true,
+      "detail": "[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }\n{\"status\":\"awaiting_review\",\"deadlinesVerified\":false} awaiting_review/legacy_policy_pending"
+    },
+    {
+      "id": "HALLAZGO-persona-con-vinculos",
+      "info": "persona con un emparejamiento (MatchingRequests) y una nota clínica sobre ella → DELETE 202; purga: exit=0 {\"status\":\"awaiting_review\",\"deadlinesVerified\":false}; estado awaiting_review/legacy_policy_pending; la cuenta NO se anonimiza (correo original intacto); filas antes→después {\"moods\":3,\"match\":1,\"notes\":1}→{\"moods\":3,\"match\":1,\"notes\":1}"
+    },
+    {
+      "id": "P12b una persona con un EMPAREJAMIENTO o con NOTAS CLÍNICAS sobre ella no se purga: `awaiting_review` (`legacy_policy_pending`), la cuenta sigue con sus datos y su correo originales (no hay purga parcial) — requiere decisión de retención de Mauricio",
+      "ok": true,
+      "detail": "{\"status\":\"awaiting_review\",\"deadlinesVerified\":false} awaiting_review/legacy_policy_pending"
+    },
+    {
+      "id": "reinicio",
+      "info": "servidor de nuevo listo en 2141 ms; parada total de servicio del ensayo (parar + purga + arrancar) ≈ 3178 ms con 8011 filas"
+    },
+    {
+      "id": "P13 tras reiniciar: /api/health responde; la persona purgada no puede entrar (ni con su correo anterior ni con el de la lápida) y la cuenta de control sigue funcionando",
+      "ok": true,
+      "detail": "salud 2141 ms · login anterior 401 · lápida 401 · control 200"
+    },
+    {
+      "id": "RESUMEN-TIEMPOS",
+      "info": "{\"filasAntes\":8011,\"tablasConDatos\":11,\"purgaMs\":1032,\"repetirSinReplayMs\":927,\"replayMs\":1052,\"pararMs\":5,\"arrancarMs\":2141,\"tablasEnLaBase\":61}"
+    }
+  ]
+}

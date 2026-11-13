@@ -1,0 +1,11 @@
+pr run=1 exit=0 dur=68s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=2 exit=0 dur=42s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=3 exit=0 dur=46s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=4 exit=0 dur=46s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=5 exit=0 dur=43s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=6 exit=0 dur=39s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=7 exit=0 dur=37s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=8 exit=0 dur=39s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=9 exit=0 dur=41s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+pr run=10 exit=0 dur=40s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+DONE

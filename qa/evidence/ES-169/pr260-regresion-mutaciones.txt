@@ -1,0 +1,20 @@
+368cceb9f3adf9a2f311564c98531b3fef69dfe3
+== regresión
+# tests 612 # pass 612 # fail 0 
+tsc=0
+eslint=0
+build=0
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+build:check=0
+Mayor bloque: index-CIBZnC8K.js, 205.6 kB (límite 500); 78 bloques en total
+Vendors: vendor-react-CCROGVpY.js, vendor-router-B8arN3D6.js; React en 1 bloque(s)
+Presupuesto de tamaño: OK
+== mutaciones
+M1 | prueba del PR: fail 1 | mi guion: FALLA T1 FATAL locator.click: Timeout 30000ms exc 
+M2 | prueba del PR: fail 1 | mi guion: FALLA T2 RESUMEN 5/6 
+M3 | prueba del PR: fail 1 | mi guion: FALLA T1 RESUMEN 5/6 
+== backend matching
+es-18-ab.test.cjs: # pass 5 # fail 0 
+es-242-matching.test.cjs: # pass 9 # fail 0 
+p1-5-matching.test.cjs: # pass 3 # fail 0 
+FIN

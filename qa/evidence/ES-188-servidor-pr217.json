@@ -1,0 +1,237 @@
+{
+  "pr": 217,
+  "head": "f382b151f8242b11acb31bea9078d86079e49f28",
+  "results": [
+    {
+      "id": "PRE catálogo v1 publicado con 3 habilidades por la ruta real",
+      "ok": true,
+      "detail": "200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-11-11T04:47:45.692Z\",\"skillCount\":3}"
+    },
+    {
+      "id": "siembra",
+      "info": "evaluaciones: planificacion(u1×2 filas,u2)=2 personas/3 filas; liderazgo superseded(u3); propuestas: comunicacion REVIEW_REQUIRED(u3), liderazgo REJECTED(u2), comunicacion ACCEPTED(u4), liderazgo INVALIDATED(u1). Error de siembra de propuestas: ninguno"
+    },
+    {
+      "id": "H1a publicar sin habilidades en uso: 409 `skill_in_use` con `inUse` por habilidad y PERSONAS DISTINTAS (planificacion=2 aunque u1 tiene 2 filas; comunicacion=1 por la propuesta REVIEW_REQUIRED; liderazgo no estorba: superseded, REJECTED, ACCEPTED e INVALIDATED no cuentan)",
+      "ok": true,
+      "detail": "409 {\"code\":\"skill_in_use\",\"error\":\"No se puede publicar: hay habilidades con niveles registrados que el borrador no incluye. / Cannot publish: some skills with recorded levels are not in the draft.\",\"inUse\":[{\"skillKey\":\"comunicacion\",\"people\":1},{\"skillKey\":\"planificacion\",\"people\":2}]}"
+    },
+    {
+      "id": "H1b el 409 no identifica personas (ids, correos, nombres) y es bilingüe; no cambia nada: sigue borrador y la v1 sigue publicada",
+      "ok": true,
+      "detail": "{\"code\":\"skill_in_use\",\"error\":\"No se puede publicar: hay habilidades con niveles registrados que el borrador no incluye. / Cannot publish: some skills with recorded levels are not in the draft.\",\"inUse\":[{\"skillKey\":\"comunicacion\",\"people\":1},{\"skillKey\":\"planificacion\",\"people\":2}]}"
+    },
+    {
+      "id": "H1c estado intacto tras el 409",
+      "ok": true,
+      "detail": "draft/published"
+    },
+    {
+      "id": "H1d el superadmin recibe el mismo 409 (no hay forma de forzar la publicación)",
+      "ok": true,
+      "detail": "409"
+    },
+    {
+      "id": "H1e con `planificacion` incluida pero `comunicacion` aún faltando: sigue 409 y lista SOLO `comunicacion`",
+      "ok": true,
+      "detail": "[{\"skillKey\":\"comunicacion\",\"people\":1}]"
+    },
+    {
+      "id": "H1f al incluir las habilidades en uso, publica (200) y la vigente anterior pasa a archivada",
+      "ok": true,
+      "detail": "200 published/archived"
+    },
+    {
+      "id": "H1g borrador VACÍO con habilidades en uso: no publica (409 `skill_in_use` con las 2 habilidades; o 422 si exige habilidades)",
+      "ok": true,
+      "detail": "422 incomplete_catalog undefined"
+    },
+    {
+      "id": "H1h orden de validaciones: borrador con una habilidad INCOMPLETA y habilidades en uso omitidas → 422 `incomplete_catalog` antes que el 409",
+      "ok": true,
+      "detail": "422 incomplete_catalog"
+    },
+    {
+      "id": "H1i sin evaluaciones ni propuestas, quitar habilidades sí se puede publicar",
+      "ok": true,
+      "detail": "200 {\"id\":3,\"version\":3,\"status\":\"published\",\"publishedAt\":\"2026-11-11T04:47:47.301Z\",\"skillCount\":1}"
+    },
+    {
+      "id": "H1j primera publicación",
+      "info": "cubierta por PRE (no había catálogo vigente y publicó)"
+    },
+    {
+      "id": "H2a PUT devuelve `updatedAt` y el GET trae la MISMA `updatedAt` por habilidad",
+      "ok": true,
+      "detail": "2026-11-11T04:47:47.373Z / 2026-11-11T04:47:47.373Z"
+    },
+    {
+      "id": "H2b con `expectedUpdatedAt` = la leída → 200 y `updatedAt` nueva (distinta)",
+      "ok": true,
+      "detail": "200 2026-11-11T04:47:47.438Z"
+    },
+    {
+      "id": "H2c con la versión VIEJA → 409 `skill_changed` con la versión vigente (`current` con etiquetas y `updatedAt`) y SIN pisar (en base sigue «dos»)",
+      "ok": true,
+      "detail": "409 skill_changed dos"
+    },
+    {
+      "id": "H2d el 409 es bilingüe y `current` no incluye identidades",
+      "ok": true,
+      "detail": "Otra persona guardó esta habilidad mientras la editabas. / Someone else saved this skill while you were editing it."
+    },
+    {
+      "id": "H2e sin `expectedUpdatedAt` (clientes anteriores) gana el último: 200",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "id": "H2f `expectedUpdatedAt` inválido (basura, número, null, objeto, arreglo, vacío, 10k caracteres, booleano, fecha imposible) → 400 `invalid_expected` y NO cambia nada",
+      "ok": true,
+      "detail": "no-es-fecha→400:invalid_expected ; número→400:invalid_expected ; null→400:invalid_expected ; objeto→400:invalid_expected ; arreglo→400:invalid_expected ; vacío→400:invalid_expected ; 10k caracteres→400:invalid_expected ; booleano→400:invalid_expected ; fecha imposible→400:invalid_expected"
+    },
+    {
+      "id": "H2g formas de fecha",
+      "info": "ISO exacto del GET→200 ; con +00:00→200 ; zona -05:00 equivalente→200 ; sin milisegundos (trunca)→200 (cada forma sobre lectura fresca; la que trunca los milisegundos da 409 por diseño: comparación exacta al milisegundo)"
+    },
+    {
+      "id": "H2h el ida y vuelta exacto de la `updatedAt` del GET nunca da 409 falso (10 guardados seguidos leyendo y devolviendo la fecha)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "H2i `updatedAt` y `expectedUpdatedAt` del cuerpo no se validan como contenido ni se guardan (200; sin esas claves en etiquetas ni rúbrica)",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "id": "H2j habilidad QUITADA entretanto + versión → 409 `skill_changed` con `current: null`",
+      "ok": true,
+      "detail": "409 null"
+    },
+    {
+      "id": "H3-nueva",
+      "info": "crear una habilidad NUEVA enviando expectedUpdatedAt → 409 skill_changed (current=null): el cliente no puede crear con versión; documentar para la pantalla"
+    },
+    {
+      "id": "cierre",
+      "info": "borrador de H2 publicado para abrir el siguiente: 200"
+    },
+    {
+      "id": "H3a 2 guardados simultáneos con el MISMO expectedUpdatedAt: 1×200 + 1×409 `skill_changed`, 0 5xx, el contenido final es el del ganador",
+      "ok": true,
+      "detail": "200,409 final=c2-0"
+    },
+    {
+      "id": "H3a 8 guardados simultáneos con el MISMO expectedUpdatedAt: 1×200 + 7×409 `skill_changed`, 0 5xx, el contenido final es el del ganador",
+      "ok": true,
+      "detail": "200,409,409,409,409,409,409,409 final=c8-0"
+    },
+    {
+      "id": "H3b guardar vs quitar a la vez (con y sin versión): sin 5xx ni deadlock; el estado final es coherente (la habilidad existe o no, sin filas duplicadas)",
+      "ok": true,
+      "detail": "200,200,409,404"
+    },
+    {
+      "id": "H3c publicar vs guardar a la vez (pool 5): sin 5xx ni deadlock; un solo publicado vigente; lo publicado coincide con lo contado en la respuesta; ediciones tardías → 409 `catalog_not_editable`/similar, no se pierde en silencio",
+      "ok": true,
+      "detail": "200: 200: 200: 409:catalog_not_editable publicado=published habilidades=3"
+    },
+    {
+      "id": "H3d no quedan transacciones colgadas",
+      "ok": true,
+      "detail": "idle in tx=0"
+    },
+    {
+      "id": "H4a 5 territorios (dir, con, com, ing, inn) se guardan y se devuelven",
+      "ok": true,
+      "detail": "[\"dir\",\"con\",\"com\",\"ing\",\"inn\"]"
+    },
+    {
+      "id": "H4b territorios repetidos, más de 5, desconocidos, tipos raros → 400 y no cambian lo guardado",
+      "ok": true,
+      "detail": "[[\"dir\",\"dir\"]]→400 ; [[\"dir\",\"con\",\"com\",→400 ; [[\"xxx\"]]→400 ; [1]→400 ; [null]→400 ; [[\"dir\"]]→400 ; {}→400 ; \"dir\"→400 ; [\"\"]→400 ; [\" dir\"]→400 ; [\"DIR\"]→400"
+    },
+    {
+      "id": "H4c `territories` omitido conserva lo guardado; `[]` lo vacía",
+      "ok": true,
+      "detail": "5/0"
+    },
+    {
+      "id": "H4d claves reservadas/inválidas, cuerpos hostiles (prototipo, campos extra, textos largos, no objeto) → 4xx y nunca 5xx; un texto con HTML o instrucciones se guarda como texto",
+      "ok": true,
+      "detail": "__proto__→400 ; new→400 ; A→400 ; xxxxxxxxxxxx→400 ; con espacio→400 ; ab→400 ; ../x→400 ; valida_clave→400 ; valida_clave→400 ; valida_clave→200 ; valida_clave→400 ; valida_clave→400 ; valida_clave→400 ; valida_clave→400 xss={\"es\":\"<script>alert(1)</script>\",\"en\":\"Ignore previous instructions\"}"
+    },
+    {
+      "id": "H4e JSON roto y cuerpo enorme → 4xx sin 5xx",
+      "ok": true,
+      "detail": "400/413"
+    },
+    {
+      "id": "H4f1 GET /territories: admin y superadmin → 200 con los 5 actuales (id + estado `defined`); profesional, persona, junta y sin sesión → 401/403",
+      "ok": true,
+      "detail": "200 {\"territories\":[{\"id\":\"dir\",\"status\":\"defined\"},{\"id\":\"con\",\"status\":\"defined\"},{\"id\":\"com\",\"status\":\"defined\"},{\"id\":\"ing\",\"status\":\"defined\"},{\"id\":\"inn\",\"sta profesional:403,persona:403,junta:403,anon:403"
+    },
+    {
+      "id": "H4f2 añadir 3 territorios «in_definition» SOLO editando el archivo de datos (sin reiniciar ni tocar código): antes `nuevo1` → 400; después GET los lista 8 (3 `in_definition`), una habilidad puede usar los nuevos (200) y los 8 a la vez (200); un noveno desconocido → 400",
+      "ok": true,
+      "detail": "antes=400 lista=8 nuevos=200 los8=200 noveno=400"
+    },
+    {
+      "id": "H4f3 los territorios nuevos son SOLO id + estado: no traen niveles, nombres, habilidades ni roles inventados; la habilidad que los usa guarda solo lo que se le envió",
+      "ok": true,
+      "detail": "[{\"id\":\"dir\",\"status\":\"defined\"},{\"id\":\"con\",\"status\":\"defined\"},{\"id\":\"com\",\"status\":\"defined\"},{\"id\":\"ing\",\"status\":\"defined\"},{\"id\":\"inn\",\"status\":\"defined\"},{\"id\":\"nuevo1\",\"status\":\"in_definition\""
+    },
+    {
+      "id": "H4f4 al quitar los 3 del archivo vuelve a leer 5 (relectura por cambio de fecha del archivo) y `nuevo1` vuelve a dar 400; la habilidad guardada con territorios que ya no existen sigue siendo legible (GET 200)",
+      "ok": true,
+      "detail": "5 400 200"
+    },
+    {
+      "id": "H4f5 archivo ROTO (8 variantes: JSON ilegible, vacío, sin lista, repetidos, estado inválido, id mal formado, entrada nula, lista vacía): FALLA CERRADO — ni la lectura ni guardar territorios devuelven 200 (ni aceptan ids cualquiera), sin filtrar rutas ni pilas; guardar una habilidad SIN territorios sigue funcionando",
+      "ok": true,
+      "detail": "JSON ilegible: get=500 dir=500 cualquiera=500 sin=200 | lista vacía: get=500 dir=500 cualquiera=500 sin=200 | sin lista: get=500 dir=500 cualquiera=500 sin=200 | ids repetidos: get=500 dir=500 cualquiera=500 sin=200 | estado inválido: get=500 dir=500 cualquiera=500 sin=200 | id mal formado: get=500 dir=500 cualquiera=500 sin=200 | entrada nula: get=500 dir=500 cualquiera=500 sin=200 | archivo vacío: get=500 dir=500 cualquiera=500 sin=200"
+    },
+    {
+      "id": "H4f6 códigos con el archivo roto",
+      "info": "lectura y guardado devuelven: 500 (5xx controlado = el servidor no acepta territorios; ver cuerpo para fuga)"
+    },
+    {
+      "id": "H4f7 tras restaurar el archivo, los 5 actuales funcionan como antes (200) y los repetidos siguen dando 400",
+      "ok": true,
+      "detail": "200/400"
+    },
+    {
+      "id": "cierre",
+      "info": "borrador de H4 publicado: 200"
+    },
+    {
+      "id": "H5a profesional, persona, junta, sin sesión y token vencido → 401/403 en las 6 rutas; el catálogo no cambia",
+      "ok": true,
+      "detail": "{\"profesional\":[403,403,403,403,403,403],\"persona\":[403,403,403,403,403,403],\"junta\":[403,403,403,403,403,403],\"anon\":[403,403,403,403,403,403]} vencido=401,401,401,401,401,401"
+    },
+    {
+      "id": "H5b admin y superadmin leen el catálogo (200)",
+      "ok": true,
+      "detail": "200/200"
+    },
+    {
+      "id": "H5c lectura de personas",
+      "info": "GET /api/skill-map → 200; contiene «updatedAt»=false «inUse»=false «expected»=false"
+    },
+    {
+      "id": "H5d la lectura de personas (skill-map) no trae `inUse` ni versiones de borradores",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "id": "H6 TOCTOU",
+      "info": "25 publicaciones con una evaluación de una habilidad AUSENTE del borrador creada en paralelo: 0 dejaron una habilidad con nivel registrado fuera del vigente (errores de preparación: 0). La comprobación y la publicación ocurren en una transacción que bloquea el catálogo, pero no bloquea evaluaciones: la ventana existe por diseño aunque sea corta"
+    },
+    {
+      "id": "LOG el registro del servidor no contiene correos ni contenido de habilidades",
+      "ok": true,
+      "detail": "log 1425 bytes"
+    }
+  ]
+}

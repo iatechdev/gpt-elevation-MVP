@@ -1,0 +1,77 @@
+[
+ {
+  "id": "H1a migraciones hasta la anterior (20261111010000-es177-person-ordinals.cjs) aplicadas",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "H1b aplicar la migración: éxito y SOLO añade Exercises y ExerciseAudits (no toca otras tablas)",
+  "ok": true,
+  "detail": "exit=0 añade=ExerciseAudits,Exercises quita="
+ },
+ {
+  "id": "H1c segunda ejecución sin cambios (idempotente)",
+  "ok": true,
+  "detail": "No migrations were executed, database schema was already up to date."
+ },
+ {
+  "id": "H1d columnas de Exercises: obligatorias NOT NULL (id,key,status,version,es,en,reviewStatus,fechas), opcionales NULL, es/en JSONB, defaults draft/1/pending",
+  "ok": true,
+  "detail": "id,key,status,version,minutesMin,minutesMax,es,en,reviewStatus,reviewedBy,reviewedAt,publishedBy,publishedAt,withdrawnBy,withdrawnAt,updatedBy,createdAt,updatedAt"
+ },
+ {
+  "id": "H1e ExerciseAudits: exerciseId, version, action, snapshot, createdAt NOT NULL; sin columnas de correo/contraseña/token",
+  "ok": true,
+  "detail": "id,exerciseId,version,action,actorId,actorName,snapshot,createdAt"
+ },
+ {
+  "id": "H1f índice ÚNICO sobre la clave y de apoyo por estado y por (ejercicio, fecha)",
+  "ok": true,
+  "detail": "Exercises_pkey,exercises__key,exercises__status,ExerciseAudits_pkey,exercise_audits__exercise_created_at"
+ },
+ {
+  "id": "H1g RLS habilitada en las DOS tablas en la misma migración, sin políticas y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "rls=[{\"relname\":\"Exercises\",\"relrowsecurity\":true},{\"relname\":\"ExerciseAudits\",\"relrowsecurity\":true}] políticas=0 roles=anon:Exercises:false,anon:ExerciseAudits:false,authenticated:Exercises:false,authenticated:ExerciseAudits:false"
+ },
+ {
+  "id": "H1h restricciones y defaults: clave repetida 23505, clave nula 23502, auditoría sin instantánea 23502; la fila nace draft/1/pending con es y en vacíos",
+  "ok": true,
+  "detail": "23505/23502/23502 {\"status\":\"draft\",\"version\":1,\"reviewStatus\":\"pending\",\"es\":{},\"en\":{}}"
+ },
+ {
+  "id": "H1i la migración NO siembra ningún ejercicio (0 filas propias)",
+  "ok": true,
+  "detail": "filas=0"
+ },
+ {
+  "id": "H1j down SIN bandera, y con bandera pero en producción, se rechazan (las tablas siguen)",
+  "ok": true,
+  "detail": "sinBandera=1 producción=1"
+ },
+ {
+  "id": "H1k down con bandera fuera de producción: borra solo las 2 tablas (el resto intacto)",
+  "ok": true,
+  "detail": "exit=0 tablas_restantes=58 (antes de migrar: 58)"
+ },
+ {
+  "id": "H1l rehacer (up) tras el down: las tablas vuelven",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "H1m db:drift sobre la base migrada: sin deriva",
+  "ok": true,
+  "detail": "exit=0 SIN DERIVA: las migraciones coinciden con sync, también tras deshacer y reaplicar."
+ },
+ {
+  "id": "H1n check:rls: todas las tablas con RLS y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "exit=0 RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "H1o drift-allowed.json: sin entradas nuevas para las tablas de ejercicios (la migración no necesita excepciones)",
+  "ok": true,
+  "detail": "ninguna"
+ }
+]

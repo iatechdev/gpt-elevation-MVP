@@ -1,0 +1,207 @@
+[
+ {
+  "id": "SET catálogos sintéticos publicados",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "SET A1 creada con experimento y ruta con capacidades",
+  "ok": true,
+  "detail": "capacidades=comunicacion,planificacion_organizacion no-relacionadas=6"
+ },
+ {
+  "id": "F1a evidencia confirmada nueva sin autoevaluación: la base sigue current y sin razones (en main pasaba a needs_review)",
+  "ok": true,
+  "detail": "{\"status\":\"current\",\"reasons\":[]}"
+ },
+ {
+  "id": "F1b autoevaluación de una habilidad que ninguna capacidad de la ruta usa (analisis_informacion): sigue current",
+  "ok": true,
+  "detail": "autoeval=201 base={\"status\":\"current\",\"reasons\":[]}"
+ },
+ {
+  "id": "F2 autoevaluación de una capacidad de la ruta (comunicacion): needs_review con route_evidence_changed",
+  "ok": true,
+  "detail": "autoeval=201 base={\"status\":\"needs_review\",\"reasons\":[\"route_evidence_changed\"]}"
+ },
+ {
+  "id": "F3 dos causas a la vez: razones route_evidence_changed y context_changed, sin duplicados",
+  "ok": true,
+  "detail": "[\"context_changed\",\"route_evidence_changed\"]"
+ },
+ {
+  "id": "F6 solo cambia el contexto: needs_review con context_changed (únicamente)",
+  "ok": true,
+  "detail": "{\"status\":\"needs_review\",\"reasons\":[\"context_changed\"]}"
+ },
+ {
+  "id": "F4a ciclo completo citando evidencia propia (v5)",
+  "ok": true,
+  "detail": "v=5"
+ },
+ {
+  "id": "F4b retirar la evidencia citada: needs_review con cited_evidence_changed",
+  "ok": true,
+  "detail": "del=200 base={\"status\":\"needs_review\",\"reasons\":[\"cited_evidence_changed\"]}"
+ },
+ {
+  "id": "F4c rebase: la evidencia retirada no se arrastra como válida (se cuenta sin su contenido)",
+  "ok": true,
+  "detail": "rebase=201 retiredEvidence=1:true"
+ },
+ {
+  "id": "F14 adoptar la entrega cuya evidencia fue retirada: se valida como lo escrito a mano o se rechaza (4xx), nunca 5xx ni evidencia retirada como vigente",
+  "ok": true,
+  "detail": "status=201 {\"version\":{\"id\":11,\"experimentId\":5,\"version\":7,\"lifecycle\":\"submitted\",\"payload\":{\"schemaVersion\":"
+ },
+ {
+  "id": "SET A: experimento decidido (v5) y plan 7/30/90 aceptado",
+  "ok": true,
+  "detail": "v=5 plan=201"
+ },
+ {
+  "id": "F17 el plan 7/30/90 aceptado pasa a needs_review al cambiar la base y no se reescribe",
+  "ok": true,
+  "detail": "{\"status\":\"needs_review\",\"reasons\":[\"context_changed\"]}"
+ },
+ {
+  "id": "F9 rebase: versión 6 en ready con carriedOver (entrega, reflexión y decisión) en previous_version_to_review",
+  "ok": true,
+  "detail": "status=201 ciclo=ready claves=id,experimentId,version,lifecycle,payload,createdAt"
+ },
+ {
+  "id": "F9b lo arrastrado NO es resultado vigente: sin entrega/reflexión/decisión vigentes en la v6",
+  "ok": true,
+  "detail": "vigentes=ninguna"
+ },
+ {
+  "id": "F9c no se puede proponer el plan 7/30/90 sobre lo arrastrado (4xx)",
+  "ok": true,
+  "detail": "status=409 transition_not_allowed"
+ },
+ {
+  "id": "F10 la versión 5 sigue intacta (inmutable) tras el rebase",
+  "ok": true,
+  "detail": "status=404 (si 404: la ruta de lectura de versión no existe; se comprueba por BD abajo)"
+ },
+ {
+  "id": "F10b BD: 6 versiones en orden, la 5 en decided y la 6 en ready; payload cifrado v2:",
+  "ok": true,
+  "detail": "1:ready 2:in_progress 3:submitted 4:self_reviewed 5:decided 6:ready"
+ },
+ {
+  "id": "F13a saltarse el orden (adoptar la reflexión antes de la entrega): rechazado 4xx",
+  "ok": true,
+  "detail": "status=409 transition_not_allowed"
+ },
+ {
+  "id": "F13b adoptar la decisión antes que lo anterior: rechazado 4xx",
+  "ok": true,
+  "detail": "status=409"
+ },
+ {
+  "id": "F12a adoptar la entrega → 201 y pasa a vigente (con la evidencia propia válida)",
+  "ok": true,
+  "detail": "status=201 {\"version\":{\"id\":18,\"experimentId\":6,\"version\":7,\"lifecycle\":\"submitted\",\"payload\":{\"schem"
+ },
+ {
+  "id": "F12b adoptar la reflexión → 201",
+  "ok": true,
+  "detail": "status=201"
+ },
+ {
+  "id": "F12c descartar la decisión → 201 y desaparece el borrador (sin carriedOver)",
+  "ok": true,
+  "detail": "status=201"
+ },
+ {
+  "id": "F12d adoptar lo ya descartado → 409 nothing_to_adopt",
+  "ok": true,
+  "detail": "status=409 nothing_to_adopt"
+ },
+ {
+  "id": "F11 el borrador arrastrado sobrevive a dos rebases seguidos (v7 aún con carriedOver)",
+  "ok": true,
+  "detail": "r1=201 r2=201"
+ },
+ {
+  "id": "F16 elección con basisChanged (ES-32): un experimento NUEVO sigue bloqueado (409); el ya creado se lee (200); avanzar sin rebase da 409 version_conflict (diseño actual: exige rebase) y el rebase explícito funciona (201)",
+  "ok": true,
+  "detail": "nuevo=409 conflict lectura=200 avanzar=409 version_conflict rebase=201"
+ },
+ {
+  "id": "F7 elección RECHAZADA: no se propone (409) como hoy",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "S1 B no lee, reinicia, adopta ni descarta lo de A (404/403/409; nunca 200/201) y no aparece contenido de A",
+  "ok": true,
+  "detail": "404,404,404,404"
+ },
+ {
+  "id": "S4a entradas maliciosas en adopt/discard: siempre 4xx, nunca 5xx",
+  "ok": true,
+  "detail": "parte inexistente=409 parte __proto__=409 parte como arreglo=409 campo extra=400 acción desconocida=400 sin parte=409"
+ },
+ {
+  "id": "S4b requestId inválido, expectedVersion desfasado y cuerpo enorme: 4xx sin 5xx",
+  "ok": true,
+  "detail": "rid=400 ver=409 grande=413"
+ },
+ {
+  "id": "S4c sin token: 401/403",
+  "ok": true,
+  "detail": "status=403"
+ },
+ {
+  "id": "S4d texto con HTML/script arrastrado y adoptado: se conserva como texto (la interfaz lo pinta escapado; ver pruebas de pantalla), sin 5xx",
+  "ok": true,
+  "detail": "rebase=201 adopt=201"
+ },
+ {
+  "id": "S2 carriedOver solo contiene claves de texto propio (status, submission, reflection, decision y sus campos); nada de chat, diario, crisis ni revisiones",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "S3 el payload guardado está cifrado (v2:) y no contiene el texto en claro",
+  "ok": true,
+  "detail": "v2:64f"
+ },
+ {
+  "id": "C1 mismo requestId ×3: una sola versión nueva (6 en total), sin 5xx",
+  "ok": true,
+  "detail": "estados=201,200,200 versiones=6"
+ },
+ {
+  "id": "C2 4 rebases rivales (pool 5): exactamente un 201 y el resto 409, sin 5xx",
+  "ok": true,
+  "detail": "201,409,409,409"
+ },
+ {
+  "id": "C3 adoptar la misma parte 4 veces a la vez: exactamente un 201, sin 5xx",
+  "ok": true,
+  "detail": "201,409,409,409"
+ },
+ {
+  "id": "S5a la exportación personal de A incluye sus experimentos y no el texto de B",
+  "ok": true,
+  "detail": "status=201"
+ },
+ {
+  "id": "S5b el borrado de cuenta de A deja 0 versiones de experimento y planes, y lo de B intacto",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "P1 GET del experimento con 200 evidencias: p95 ≤ 300 ms (umbral propuesto)",
+  "ok": true,
+  "detail": "p50=218 p95=247 ms"
+ },
+ {
+  "id": "P2 rebase: p95 ≤ 500 ms (umbral propuesto)",
+  "ok": true,
+  "detail": "p95=198 ms (n=8)"
+ }
+]

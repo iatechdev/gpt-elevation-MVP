@@ -1,0 +1,26 @@
+{"id":"ES109-G0 la pantalla «Tu punto de partida» carga con la tarjeta de la hoja de vida","ok":true,"detail":"Saltar al contenido ELEVATION ES EN Tu punto de partida  No necesitas contar experiencias íntimas.  Opcional · ahorra ti"}
+{"id":"ES109-G1 el aviso «Solo se aceptan archivos PDF · hasta 5 MB» aparece ANTES del botón «Elegir archivo PDF» (orden del DOM y a la vista)","ok":true,"detail":"aviso_antes=true"}
+{"id":"ES109-G1b el selector de archivos solo ofrece PDF","ok":true,"detail":"accept=application/pdf,.pdf"}
+{"id":"ES109-G1c un archivo que no es PDF y uno de 5 MB + 1 byte se rechazan EN EL NAVEGADOR con mensaje claro, sin enviar nada al servidor","ok":true,"detail":"peticiones=0 texto1=necesitas contar experiencias íntimas.  No pudimos continuar  Este archivo no es un PDF. S"}
+{"id":"ES109-G1d con un PDF válido elegido: la casilla de autorización está DESMARCADA, «Analizar» está desactivado y todavía no se envió nada","ok":true,"detail":"casilla=false analizar_desactivado=true peticiones=0"}
+{"id":"ES109-G1e marcada la autorización se habilita «Analizar»; se envía UNA petición con el archivo bajo un nombre neutro (`cv.pdf`, sin el nombre real del archivo de la persona)","ok":true,"detail":"nombres_enviados=[\"cv.pdf\"]"}
+{"id":"ES109-G1f la autorización quedó registrada en el servidor como `granted`","ok":true,"detail":"consentimiento=granted"}
+{"id":"ES109-G2a tras el análisis se muestran las sugerencias con la marca «Sugerido desde tu hoja de vida» y el aviso «Todavía no guardamos nada»; NO hay ningún PUT al contexto ni versión nueva","ok":true,"detail":"marca=true PUT=0 versiones=0"}
+{"id":"ES109-G2b «Quitar» de un gesto muestra «Quitado» con «Deshacer», y «Deshacer» devuelve la sugerencia","ok":false,"detail":"quitar=1 quitado=false deshacer=false"}
+{"id":"ES109-G2b-DBG","info":"{\"status\":[\"\",\"Listo. Encontramos sugerencias en 6 de 8 campos.\",\"\",\"Cambios sin guardar\"],\"botones\":[\"Quitar todas las sugerencias\",\"Quitar\",\"Quitar\",\"Quitar\",\"Quitar\"]}"}
+{"id":"ES109-G2c [INFO] «Cancelar análisis» disponible solo durante el análisis","info":"visible_tras_terminar=0"}
+{"id":"ES109-G2d solo al pulsar «Guardar» se envía el contexto (esquema v2) y se crea la versión; el PUT no lleva datos de contacto","ok":true,"detail":"PUT=1 estados=[200] versiones=0 v2=true"}
+{"id":"ES109-G2e sin errores de consola ni excepciones durante todo el flujo (salvo los 4xx esperados del rechazo local)","ok":true,"detail":"ok"}
+{"id":"ES109-G3 a 320, 375, 768 y 1440 px la pantalla no tiene scroll horizontal","ok":true,"detail":"320:sw320/cw320 375:sw375/cw375 768:sw768/cw768 1440:sw1440/cw1440"}
+{"id":"ES109-G3b [INFO] controles menores de 44 px por ancho (objetivo táctil)","info":"320: ninguno || 375: ninguno || 768: ninguno || 1440: ninguno"}
+{"id":"ES109-G3c [INFO] encabezados h1 por ancho","info":"320:1 375:1 768:1 1440:1"}
+{"id":"ES109-G3d contraste del texto de la tarjeta ≥ 4.5:1 (AA) en todos los elementos medidos","ok":true,"detail":"medidos=10 bajos=ninguno"}
+{"id":"ES109-G4 teclado: con Tab se llega a «Elegir archivo PDF» y «Prefiero llenarlo a mano» y los controles tienen foco visible","ok":true,"detail":"alcanza=true sinFoco=ninguno"}
+{"id":"ES109-G4b [INFO] orden de tabulación","info":"A:Saltar al contenido → BUTTON:ES → BUTTON:EN → BUTTON:Elegir archivo PDF → BUTTON:Prefiero llenarlo a mano → INPUT: → SELECT:Por confirmarEspañolEnglish → SELECT:Por confirmarAfganistánAlbaniaAlemaniaAn → SELECT:Por confirmarAfganistánAlbaniaAlemaniaAn → SELECT:Por confirmarAfrica/AbidjanAfrica/AccraA → BUTTON:Usar zona sugerida → SUMMARY:Contexto profesional — opcional → BUTTON:Volver → BUTTON:Guardar avance"}
+{"id":"ES109-G5 [SEG] la pantalla solo habla con su propio origen (sin terceros, salvo tipografías)","ok":true,"detail":"solo el origen propio"}
+{"id":"ES109-G6 EN: la tarjeta se muestra en inglés (aviso «PDF up to 5 MB» incluido) sin restos en español","ok":true,"detail":"restos=ninguno muestra=\"Skip to content ELEVATION ES EN Your starting point  You do not need to share intimate experiences. \""}
+{"id":"ES109-G7a «Mis hojas de vida» lista las versiones propias","ok":true,"detail":"filas=2 texto=\"Saltar al contenido ELEVATION ES EN Mis hojas de vida  Solo tú puedes verlas. Están cifradas y no llegan a nad\""}
+{"id":"ES109-G7b descargar una versión entrega un PDF","ok":true,"detail":"archivo=hoja-de-vida-v2.pdf"}
+{"id":"ES109-G7c borrar una versión la elimina de verdad en el servidor (2 → 1)","ok":true,"detail":"filas=1"}
+{"id":"ES109-G7d retirar la autorización desde la pantalla borra todas las hojas y deja el consentimiento `revoked`","ok":true,"detail":"botones=1 filas=0 consentimiento=revoked"}
+{"fin":true}

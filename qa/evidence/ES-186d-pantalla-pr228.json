@@ -1,0 +1,244 @@
+{
+  "pr": 228,
+  "head": "4a5554a04cfe52f3fb3413b312f82b13604c877e",
+  "results": [
+    {
+      "id": "U1a abrir «Gestionar» de una PERSONA: el diálogo es `role=\"dialog\"` `aria-modal=\"true\"` con nombre accesible y el botón de borrado dice «Solicitar eliminación…» (no «Eliminar…»)",
+      "ok": true,
+      "detail": "Saltar al contenido ELEVATION . ES EN SUPERADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS U"
+    },
+    {
+      "id": "U1-texto-antes",
+      "info": "Gestionar · Ána Ñandú 1794385147512 qa186d-pr-1794385147512@example.test Persona usuaria Activa Se desactivará la cuenta y la persona no podrá entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. ESCRIBE EL NOMBRE EXACTO: ÁNA ÑANDÚ 179"
+    },
+    {
+      "id": "U1b nombre exacto: con mayúsculas/minúsculas distintas, espacio final, sin tildes, incompleto, vacío o con la tilde descompuesta (NFD) el botón «Solicitar eliminación» queda DESHABILITADO y NO se hizo ninguna llamada DELETE; solo con el nombre exacto se habilita",
+      "ok": true,
+      "detail": "\"ana ñandú 17943→true ; \"ÁNA ÑANDÚ 17943→true ; \"Ána Ñandú 17943→true ; \"Ana Nandu 17943→true ; \"Ána Ñandú\"→true ; \"\"→true nfd=true exacto=true"
+    },
+    {
+      "id": "U1c el texto del diálogo NO promete borrado inmediato ni total y lleva la SALVEDAD DE RETENCIÓN (ES-274: «salvo los que deban conservarse según la política de retención, en definición»)",
+      "ok": true,
+      "detail": "Gestionar · Ána Ñandú 1794385147512 qa186d-pr-1794385147512@example.test Persona usuaria Activa Se desactivará la cuenta y la persona no podrá entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. ESCRIBE E"
+    },
+    {
+      "id": "U1d 202 → mensaje de éxito (región `role=\"status\"`) «Eliminación solicitada. La cuenta ya no puede entrar; sus datos se borran en el proceso de mantenimiento.»: SIN plazo, fecha, ni número de días/horas; UNA llamada DELETE; solicitud aceptada en la base",
+      "ok": true,
+      "detail": "Eliminación solicitada. La cuenta ya no puede entrar. Los datos se borran en el proceso de mantenimiento, salvo los que deban conservarse según la política de retención, que está en definición. · llamadas=1 · base=accepted"
+    },
+    {
+      "id": "U1-texto-éxito-retención",
+      "info": "¿el mensaje de éxito lleva la salvedad de retención? SÍ"
+    },
+    {
+      "id": "U1e al cerrar, la fila de la persona muestra la etiqueta «Eliminación solicitada» y al reabrir «Gestionar» no hay acciones (no «Desactivar…», no «Solicitar eliminación…», no rol/profesional editable) sino el aviso de que ya fue solicitada",
+      "ok": true,
+      "detail": "Ána Ñandú 1794385147512 qa186d-pr-1794385147512@example.test Persona usuaria Eliminación solicitada — — 11 de nov de 2026 Gestionar"
+    },
+    {
+      "id": "U1f tras RECARGAR la página la fila sigue marcada «Eliminación solicitada» (viene de `deletionRequested` del listado), igual que una persona solicitada antes de abrir la pantalla",
+      "ok": true,
+      "detail": "Ána Ñandú 1794385147512 qa186d-pr-1794385147512@example.test Persona usuaria Eliminación solicitada  | Beatriz Ya Solicitada 1794385147512 qa186d-pre-1794385147512@example.test Persona usuaria Eliminació"
+    },
+    {
+      "id": "U1g lista desactualizada (la eliminación ya se había pedido por otra vía): el servidor responde `repeated:true` y la pantalla dice «La eliminación ya estaba solicitada.» (no un éxito nuevo)",
+      "ok": true,
+      "detail": "La eliminación ya estaba solicitada."
+    },
+    {
+      "id": "U2-dialogo profesional libre",
+      "info": "Gestionar · Eva Profesional Libre 1794385147512 qa186d-tf-1794385147512@example.test Profesional Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
+    },
+    {
+      "id": "U2-dialogo junta libre",
+      "info": "Gestionar · Gael Junta Libre 1794385147512 qa186d-bf-1794385147512@example.test Junta ética Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
+    },
+    {
+      "id": "U2-dialogo admin libre",
+      "info": "Gestionar · Hilda Admin Libre 1794385147512 qa186d-af-1794385147512@example.test Administración Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar"
+    },
+    {
+      "id": "U2a profesional, junta y administración SIN dependencias: el botón es «Eliminar…» (no «Solicitar»), el diálogo advierte que «no se puede deshacer», con nombre exacto el servidor responde 200, aparece «Cuenta eliminada.» y la fila desaparece",
+      "ok": true,
+      "detail": "{\"profesional libre\":{\"nb\":1,\"nSol\":0,\"gone\":true,\"notice\":true,\"warn\":true,\"rowGone\":true},\"junta libre\":{\"nb\":1,\"nSol\":0,\"gone\":true,\"notice\":true,\"warn\":true,\"rowGone\":true},\"admin libre\":{\"nb\":1,\"nSol\":0,\"gone\":true,\"notice\":true,\"warn\":true,\"rowGone\":true}}"
+    },
+    {
+      "id": "U2-dialogo con dependencias",
+      "info": "Gestionar · Félix Profesional Con Personas 1794385147512 qa186d-td-1794385147512@example.test Profesional Activa Desactivar… ROL Persona usuaria Profesional Administración Superadministración Junta ética Guardar Enviar enlace de restablecimiento Eliminar… Cerrar · filas visibles: 21"
+    },
+    {
+      "id": "U2b profesional CON una persona vinculada: 409 `has_dependent_data` → «No se puede eliminar: la cuenta tiene datos o vínculos asociados. Puedes desactivarla; sus datos se conservan.» por `code` (sin el texto crudo del servidor), la cuenta sigue y el vínculo intacto",
+      "ok": true,
+      "detail": "No se puede eliminar: la cuenta tiene datos o vínculos asociados. Puedes desactivarla; sus datos se conservan. · cuenta=1"
+    },
+    {
+      "id": "U2c (E228-1) tras el 409 VERDADERO (profesional con persona vinculada, cuenta ACTIVA) aparece UN botón «Desactivar en su lugar» junto al aviso, con el foco en él, y «Eliminar…» sigue disponible",
+      "ok": true,
+      "detail": "botón=1 · foco en «Desactivar en su lugar» · «Eliminar…»=1"
+    },
+    {
+      "id": "U2c2 «Desactivar en su lugar» NO desactiva de inmediato: lleva a la confirmación existente de desactivar (cuenta aún activa, aparece el texto de confirmación y el botón «Desactivar»)",
+      "ok": true,
+      "detail": "Gestionar · Félix Profesional Con Personas 1794385147512 qa186d-td-1794385147512@example.test Profesional Activa No podrá entrar; sus datos se conservan. Cancelar Desactivar Cerrar"
+    },
+    {
+      "id": "U2d «Desactivar» (con confirmación) desactiva la cuenta (PUT activo=false) y se refleja «Inactiva» con el mensaje «La cuenta quedó desactivada. Sus datos se conservan.»",
+      "ok": true,
+      "detail": "Gestionar · Félix Profesional Con Personas 1794385147512 qa186d-td-1794385147512@example.test Profesional Inactiva La cuenta quedó desactivada. Sus datos se conservan. Activar ROL Persona usuaria Prof"
+    },
+    {
+      "id": "U2f cuenta INACTIVA con persona vinculada: el 409 muestra el aviso pero NO el botón «Desactivar en su lugar» (la cuenta ya está desactivada) y la cuenta sigue",
+      "ok": true,
+      "detail": "No se puede eliminar: la cuenta tiene datos o vínculos asociados. Puedes desactivarla; sus · botón=0"
+    },
+    {
+      "id": "U2g EN: tras el 409 aparece «Deactivate instead» (sin texto en español) con el aviso en inglés",
+      "ok": true,
+      "detail": "It cannot be deleted: the account has associated data or links. You can deactivate it; its data is kept. · Delete…=1 · botón EN=1"
+    },
+    {
+      "id": "U2h volver a abrir «Eliminar…» limpia el bloqueo: desaparece «Deactivate instead» y el aviso anterior",
+      "ok": true,
+      "detail": "botón=0 aviso=0"
+    },
+    {
+      "id": "U2e el rol `admin` NO ve «Enviar enlace de restablecimiento», «Solicitar eliminación…» ni «Eliminar…» (acciones de alto impacto solo del superadmin; el servidor las rechaza con 403 `superadmin_only`)",
+      "ok": true,
+      "detail": "{\"reset\":0,\"del\":0}"
+    },
+    {
+      "id": "U3a «Enviar invitación» con DOBLE CLIC: cada solicitud lleva un `requestId` UUID válido (8–64 caracteres seguros), todas las que salieron llevan el MISMO, y en la base hay UNA sola invitación",
+      "ok": true,
+      "detail": "solicitudes=1 ids=5d7a1446-8b9e-4752-ae67-91ed4a3947f3 filas=1"
+    },
+    {
+      "id": "U3b sin proveedor de correo (`emailSent:false`) la pantalla dice «Invitación registrada, pero no se envió ningún correo: el envío de correo no está configurado. La persona todavía no tiene su enlace.» y NUNCA «Invitación enviada»",
+      "ok": true,
+      "detail": "Invitación registrada, pero no se envió ningún correo: el envío de correo no está configurado. La persona todavía no tiene su enlace."
+    },
+    {
+      "id": "U3c tras un éxito el `requestId` se RENUEVA (la siguiente invitación usa otro) y al cambiar el correo también",
+      "ok": true,
+      "detail": "5d7a1446 → a01a0660 → a9320eec (1 solicitudes previas)"
+    },
+    {
+      "id": "U3d respuesta PERDIDA (la invitación se creó pero el navegador no la recibió): la pantalla dice «Error de conexión.», el REINTENTO usa el MISMO `requestId`, el servidor responde `replayed` y la pantalla dice «Invitación ya creada para ese correo. Si no llegó, anúlala y crea otra.» (sin afirmar que el correo salió); UNA invitación en la base",
+      "ok": true,
+      "detail": "perdida=«Error de conexión.» reintento=«Invitación ya creada para ese correo. Si no llegó, anúlala y crea otra.» ids iguales=true filas=1"
+    },
+    {
+      "id": "U3e replay que NO coincide (el servidor devuelve la invitación de OTRO correo): la pantalla NO muestra éxito, dice «Esta invitación ya no es válida. Revisa los datos y vuelve a intentarlo.» y no hay invitación para el correo escrito",
+      "ok": true,
+      "detail": "«Esta invitación ya no es válida. Revisa los datos y vuelve a intentarlo.» filas=0"
+    },
+    {
+      "id": "U3f replay de una invitación ya ANULADA (mismo correo y rol, estado `revoked`): tampoco se presenta como éxito («ya no es válida»)",
+      "ok": true,
+      "detail": "Esta invitación ya no es válida. Revisa los datos y vuelve a intentarlo."
+    },
+    {
+      "id": "U3g errores por CÓDIGO (respuesta simulada del servidor, con un texto crudo distinto): `invalid_email`, `email_taken`, `role_not_allowed`, `rate_limited` y `invalid_request_id` se traducen («Correo inválido.», «Ya existe una cuenta con ese correo.», …) y NUNCA se pinta el texto crudo; `invalid_email`/`email_taken` aparecen en el campo con `role=\"alert\"`",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "U3h correo vacío → «Escribe un correo.» en el campo (`aria-invalid`) y NO se llama al servidor",
+      "ok": true,
+      "detail": "Invitar persona CORREO Escribe un correo. ROL Persona usuaria Profesional Administración Superadministración Junta ética"
+    },
+    {
+      "id": "U3i con `emailSent:true` (respuesta simulada con caducidad) la pantalla dice «Invitación enviada a <correo>. El enlace caduca el <fecha y hora COMPLETAS con a. m./p. m.>.» SIN doble punto (E186-9) y sin recortar la hora (E186-1)",
+      "ok": true,
+      "detail": "«Invitación enviada a inv-s-1794385147512@example.test. El enlace caduca el 14/11/2026, 8:01 a. m.»"
+    },
+    {
+      "id": "U3-expiración",
+      "info": "caducidad devuelta por el servidor: 2026-11-14T08:20:04.680Z; la fecha local se formatea sin recortes (E186-1) y sin doble punto (E186-9): se comprueba en el recorrido «enviada» solo con proveedor de correo (no disponible aquí)"
+    },
+    {
+      "id": "U4a emparejamientos: «Confirmar emparejamiento» tiene efecto visible («Emparejamiento confirmado: … → …») y en la base la solicitud queda `confirmed`; el contador de la pestaña baja",
+      "ok": true,
+      "detail": "Emparejamiento confirmado: Match 2 1794385147512 → QA Prof 1794385147512 · Emparejamientos (2)"
+    },
+    {
+      "id": "U4b `request_closed`: dos ventanas ven la misma solicitud de plan; una la aprueba («Solicitud aprobada: …») y la otra intenta aprobarla → «Otra persona ya resolvió esta solicitud. La lista se actualizó.» (por código, sin texto crudo), la lista se RECARGA y la solicitud ya no aparece; la base muestra un solo efecto",
+      "ok": true,
+      "detail": "Otra persona ya resolvió esta solicitud. La lista se actualizó. listada=0"
+    },
+    {
+      "id": "U4c rechazar sin motivo → «Escribe el motivo.» y NO se llama al servidor",
+      "ok": true,
+      "detail": "Rechazar solicitud Plan 2 1794385147512 → Plan QA MOTIVO (OBLIGATORIO) Escribe el motivo. Cancelar Rechazar"
+    },
+    {
+      "id": "U4d rechazar con motivo → «Solicitud rechazada: …», se registra la nota y el estado `rejected` en la base",
+      "ok": true,
+      "detail": "Solicitud rechazada: Plan 2 1794385147512"
+    },
+    {
+      "id": "U4e una pestaña con error (el servidor devuelve 500 para emparejamientos) muestra «No se pudo cargar esta sección.» con «Reintentar» y la pestaña Personas sigue funcionando",
+      "ok": true,
+      "detail": "No se pudo cargar esta sección. Reintentar reintentar=1 personas=true"
+    },
+    {
+      "id": "U4f «Reintentar» recupera la pestaña cuando el servidor vuelve a responder",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "U4g en TODO el recorrido (eliminar, invitar, confirmar, aprobar, rechazar, errores) NO apareció ningún `alert()`/`confirm()`/`prompt()` nativo del navegador",
+      "ok": true,
+      "detail": "diálogos nativos=0"
+    },
+    {
+      "id": "U5a token inválido/vencido al cargar → 401 → vuelve al inicio de sesión (no «Error de conexión»)",
+      "ok": true,
+      "detail": "/login · Saltar al contenido ELEVATION ● ES EN Ingresar Un espacio solo para ti Correo el"
+    },
+    {
+      "id": "U5b un 401 en MEDIO de una acción lleva al inicio de sesión (sesión invalidada), no a un mensaje de error de conexión ni a un éxito falso",
+      "ok": true,
+      "detail": "/login · Saltar al contenido ELEVATION ● ES EN Ingresar Un espacio solo para ti Correo el"
+    },
+    {
+      "id": "U5c sin respuesta (red caída) → «Error de conexión.» con `role=\"alert\"` y NO se afirma que la cuenta quedó desactivada",
+      "ok": true,
+      "detail": "Error de conexión."
+    },
+    {
+      "id": "U5d errores del servidor por CÓDIGO (`superadmin_only`, `last_superadmin`) → mensajes traducidos, nunca el texto crudo",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "U6a teclado: al abrir con Enter el foco queda DENTRO del diálogo; con 28 pulsaciones de Tab/Shift+Tab nunca sale; Esc lo cierra y el foco vuelve al botón «Gestionar <nombre>» que lo abrió",
+      "ok": true,
+      "detail": "dentro=true trampa=true vuelve a «Gestionar Dora Inglés 1794385147512»"
+    },
+    {
+      "id": "U6b roles TRADUCIDOS (E186-8): ni la tabla, ni las etiquetas, ni el filtro muestran `user`/`therapist`/`admin`/`superadmin`/`board` crudos (Persona usuaria, Profesional, Administración, Superadministración, Junta ética)",
+      "ok": true,
+      "detail": "crudos en pantalla=0 en filtros=0"
+    },
+    {
+      "id": "U6c axe (WCAG 2 A/AA, 2.1, 2.2 AA) en ES: lista, emparejamientos, planes, «Gestionar», «Solicitar eliminación» e «Invitar» a 1360 px y lista y «Gestionar» a 390 px → 0 violaciones graves o críticas",
+      "ok": true,
+      "detail": "{}"
+    },
+    {
+      "id": "U6d a 390 px: sin desbordamiento horizontal de la página y objetivos táctiles de botones/campos ≥ 44 px de alto (tarjetas en lugar de tabla con las mismas acciones)",
+      "ok": true,
+      "detail": "desborde=0px; menores de 44 px: ninguno"
+    },
+    {
+      "id": "U6e inglés (EN): los títulos, filtros, botones, diálogos y etiquetas de estado están en inglés (sin restos en español) y axe 0 graves",
+      "ok": true,
+      "detail": "ok · Skip to content ELEVATION . ES EN SUPERADMINISTRATION Administration SIGN OUT DASHBOARD AI"
+    },
+    {
+      "id": "U7 (P-D2, se CONFIRMA sin bloquear) `admin` y `superadmin` ven la pantalla; profesional, junta y persona no la ven (redirigen o se les niega); las acciones de alto impacto siguen exclusivas del superadmin (U2e)",
+      "ok": true,
+      "detail": "{\"admin\":{\"path\":\"/admin/users\",\"shows\":true},\"superadmin\":{\"path\":\"/admin/users\",\"shows\":true},\"profesional\":{\"path\":\"/admin/users\",\"shows\":false},\"junta\":{\"path\":\"/admin/users\",\"shows\":false},\"persona\":{\"path\":\"/admin/users\",\"shows\":false}}"
+    }
+  ]
+}

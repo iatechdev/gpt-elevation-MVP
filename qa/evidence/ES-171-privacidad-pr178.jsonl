@@ -1,0 +1,23 @@
+{"id":"P0 A y B aprueban el mismo texto con el mismo requestId: cada una su versión (201/201)","ok":true,"detail":"A=201 B=201"}
+{"id":"P1a antes de retirar, el motor recibe el texto de A","ok":true,"detail":"{\"version\":1,\"approvedAt\":\"2026-11-10T00:33:22.494Z\",\"fields\":[{\"key\":\"motivations\",\"text\":\"TEXTO-DIRECTO-A-9aa8d32e\"}]}"}
+{"id":"P1b POST /revoke → 200 revoked:true","ok":true,"detail":"status=200 {\"revoked\":true}"}
+{"id":"P1c tras retirar, la lectura del motor para A es 404 no_context y NO devuelve texto ni campos","ok":true,"detail":"{\"error\":\"no_context\",\"status\":404}"}
+{"id":"P1d la fila queda revoked con revokedAt y GET no trae versión activa","ok":true,"detail":"[{\"version\":1,\"status\":\"revoked\",\"revokedAt\":\"2026-11-10T00:33:23.709Z\"}] active=null"}
+{"id":"P1e el texto está cifrado en la base (no en claro)","ok":true,"detail":""}
+{"id":"P2a B sigue entregándose al motor y su versión sigue activa","ok":true,"detail":"{\"version\":1,\"approvedAt\":\"2026-11-10T00:33:22.537Z\",\"fields\":[{\"key\":\"motivations\",\"text\":\"TEXTO-DI"}
+{"id":"P2b el reintento de revoke de A es idempotente (revoked:false) y no toca a B","ok":true,"detail":"{\"revoked\":false}"}
+{"id":"P3a 5 relecturas del motor tras retirar: ninguna devuelve texto","ok":true,"detail":""}
+{"id":"P3b","info":"reenvío del confirm anterior (mismo requestId y token) tras retirar: status=200 versiones=1 motor=no_context body={\"version\":1,\"status\":\"revoked\",\"approvedAt\":\"2026-11-10T00:33:22.494Z\",\"revokedAt\":\"2026-11-10T00:33:23.709Z\",\"fields\":[{\"key\":\"motivations\",\"text\":\"TEXTO-DIRE"}
+{"id":"P3b reenviar el confirm anterior tras retirar NO resucita el texto retirado en silencio (se rechaza o devuelve la misma versión ya retirada; si crea versión nueva se declara)","ok":true,"detail":"status=200 versiones=1 motor=no_context"}
+{"id":"P4a un contexto NUEVO crea versión nueva (no resucita la retirada)","ok":true,"detail":"status=201 v=2"}
+{"id":"P4b el historial conserva la retirada como revoked y el motor entrega solo el texto nuevo, nunca el retirado","ok":true,"detail":"[{\"version\":1,\"status\":\"revoked\"},{\"version\":2,\"status\":\"active\"}] {\"version\":2,\"approvedAt\":\"2026-11-10T00:33:35.998Z\",\"fields\":[{\"key\":\"motivations\",\"text\":\"TEXTO-DI"}
+{"id":"P4c","info":"el texto de la versión retirada SIGUE visible para su dueña en GET /api/career-context (no para el motor)"}
+{"id":"P3c retiro concurrente con 12 lecturas: retiro 200, lecturas = entrega o no_context (nunca otro error) y la lectura posterior es no_context","ok":true,"detail":"retiro=200 entregas=0 vacias=12 otras=0"}
+{"id":"P5a camino con consentimiento: antes se entrega; tras POST /revoke el motor no recibe nada y se emite DerivedInvalidation","ok":true,"detail":"confirm=201 entrega=true motor=no_context inv 3->4"}
+{"id":"P5b retirar el consentimiento professional_bridge también deja al motor sin contexto","ok":true,"detail":"confirm=201 motor=no_context"}
+{"id":"P6a BridgeTransfers conserva solo claves y hash: ningún texto aprobado de A","ok":true,"detail":"filas=3 columnas=id,UserId,version,keys,hash,consumer,createdAt"}
+{"id":"P6b admin y terapeuta no leen el contexto de A por ninguna de 4 rutas probadas","ok":true,"detail":""}
+{"id":"P7a revoke sin sesión → 401/403; con cuerpo no vacío (UserId ajeno) → 400; B intacta","ok":true,"detail":"sinSesion=403 conCuerpo=400"}
+{"id":"P7b terapeuta y admin llamando revoke solo afectan a lo propio (200 revoked:false, B intacta)","ok":true,"detail":"th=200 adm=200"}
+{"id":"P7c cuerpo malformado → 4xx, nunca 5xx","ok":true,"detail":"status=400"}
+{"id":"P7d B sigue intacta al final de todo","ok":true,"detail":""}

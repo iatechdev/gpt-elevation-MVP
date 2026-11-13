@@ -1,0 +1,7 @@
+{"id":"MERGE-01 /api/route-catalog sigue respondiendo (200) con #35 fusionado en el head (la ruta se monta antes del 404)","ok":true,"detail":"status=200"}
+{"id":"MERGE-02 /api/skill-map (ES-29, en el head) responde JSON y no 404/HTML (503 catalog_unavailable sin catálogo de habilidades)","ok":true,"detail":"status=503 {\"code\":\"catalog_unavailable\",\"error\":\"El catálogo de habili"}
+{"id":"MERGE-03 /api/evidence 200 JSON","ok":true,"detail":"status=200"}
+{"id":"MERGE-04 /api/career-context 200 JSON","ok":true,"detail":"status=200"}
+{"id":"MERGE-05 ruta inexistente → 404 JSON not_found","ok":true,"detail":"status=404"}
+{"id":"MERGE-06 ficha de rol inexistente → 404 (de la ruta, no de la SPA)","ok":true,"detail":"status=404 {\"code\":\"role_not_found\",\"error\":\"Ficha no encontrada. / Rol"}
+{"id":"MERGE-07 la SPA sigue sirviéndose","ok":true,"detail":"status=404"}

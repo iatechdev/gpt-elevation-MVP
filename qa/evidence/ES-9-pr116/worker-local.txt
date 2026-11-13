@@ -1,0 +1,18 @@
+## A: con JWT_SECRET definida (debe negarse, código 2)
+{"t":"2026-11-01T16:17:30.874Z","event":"worker_refused","reason":"entorno_invalido"}
+[worker] JWT_SECRET no debe estar definida en el worker.
+exit=2
+## B: sin variables (debe listar faltantes, código 2)
+{"t":"2026-11-01T16:17:31.236Z","event":"worker_refused","reason":"entorno_invalido"}
+[worker] Falta WORKER_DATABASE_URL.
+[worker] Falta ANTHROPIC_API_KEY.
+[worker] Falta PROFESSIONAL_ENCRYPTION_KEY.
+[worker] Falta AI_BUDGET_TOKENS_PER_USER.
+exit=2
+## C: entorno correcto sin JWT_SECRET (debe arrancar; se corta a los 8 s)
+{"t":"2026-11-01T16:17:33.077Z","event":"worker_started","owner":"DESKTOP-L9K23GJ-31116","pollMs":5000,"leaseSeconds":180,"maxAttempts":3}
+{"t":"2026-11-01T16:17:33.104Z","event":"claim_error","code":"ECONNRESET"}
+{"t":"2026-11-01T16:17:33.104Z","event":"poll_wait","waitMs":4781,"reason":"error"}
+{"t":"2026-11-01T16:17:37.895Z","event":"claim_error","code":"SequelizeConnectionError"}
+{"t":"2026-11-01T16:17:37.896Z","event":"poll_wait","waitMs":10460,"reason":"error"}
+exit=124

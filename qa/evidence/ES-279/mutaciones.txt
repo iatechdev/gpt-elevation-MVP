@@ -1,0 +1,10 @@
+M1 | es-279 del PR: fail 3 | mi guion: RESUMEN 10/13 | #1 dos sesiones: la segunda, con la versión viej;#2 carrera: diez guardados simultáneos con la mi;
+M2 | es-279 del PR: fail 0 | mi guion: RESUMEN 11/13 | 
+M3 | es-279 del PR: fail 3 | mi guion: RESUMEN 9/13 | #1 dos sesiones: la segunda, con la versión viej;#2 carrera: diez guardados simultáneos con la mi;
+M4 | es-279 del PR: fail 2 | mi guion: RESUMEN 11/13 | #3 primer guardado de un texto nuevo: de ocho sim;
+M5 | NO APLICADA: C:\Users\Usuario\Documents\qa13\mut250.cjs:2
+M6 | es-279 del PR: fail 2 | mi guion: RESUMEN 11/13 | es-281:  fail 3 | #6 versiones: solo superadministración las lee; ;
+M7 | es-279 del PR: fail 2 | mi guion: RESUMEN 10/13 | #6 versiones: solo superadministración las lee; ;
+M8 | es-279 del PR: fail 4 | mi guion: FATAL TypeError: Cannot read properties of undefined (readin | #1 dos sesiones: la segunda, con la versión viej;#2 carrera: diez guardados simultáneos con la mi;
+M10 | es-279 del PR: fail 2 | mi guion: RESUMEN 12/13 | #4 esperaba un registro que no existe → 409 sin;
+FIN

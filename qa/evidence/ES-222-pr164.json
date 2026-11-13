@@ -1,0 +1,67 @@
+[
+ {
+  "id": "L2 fuera de producción y sin Railway, LOGIN_RATE_LIMIT_MAX=1000 sí aplica (30 intentos desde una IP sin 429 y sin 5xx)",
+  "ok": true,
+  "detail": "arranca=true estados=401"
+ },
+ {
+  "id": "L1a con RAILWAY_ENVIRONMENT_ID definida, la variable se ignora: 429 al 11.º intento (10 pasan)",
+  "ok": true,
+  "detail": "arranca=true estados=401,401,401,401,401,401,401,401,401,401,429,429,429"
+ },
+ {
+  "id": "L1b con NODE_ENV=production, la variable se ignora: 429 al 11.º intento",
+  "ok": true,
+  "detail": "estados=401,401,401,401,401,401,401,401,401,401,429,429,429"
+ },
+ {
+  "id": "L1c con producción y Railway a la vez: 429 al 11.º intento",
+  "ok": true,
+  "detail": "estados=401,401,401,401,401,401,401,401,401,401,429,429"
+ },
+ {
+  "id": "L3a producción/Railway: cualquier valor raro de la variable → 10",
+  "ok": true,
+  "detail": "valores probados: 0 | -5 | abc | 1e9 |  | Infinity | 1.5 |  7  | 0x10 | NaN | 9007199254740993 | undefined"
+ },
+ {
+  "id": "L3b fuera de producción: valores inválidos (0, negativo, texto, vacío, Infinity, decimal) caen a 10; solo enteros positivos aplican",
+  "ok": true,
+  "detail": "{\"0\":10,\"-5\":10,\"abc\":10,\"1e9\":1000000000,\"\":10,\"Infinity\":10,\"1.5\":10,\" 7 \":7,\"0x10\":16,\"NaN\":10,\"9007199254740993\":9007199254740992,\"undefined\":10}"
+ },
+ {
+  "id": "L3c (informativo) NODE_ENV con otra capitalización o espacios («Production», «production »): ¿se respeta la variable?",
+  "ok": true,
+  "detail": "Production=1000 «production »=1000 (1000 = se respetó; el despliegue real sí fija RAILWAY_ENVIRONMENT_ID, que lo cubre)"
+ },
+ {
+  "id": "D1 inundar con 25.000 correos distintos NO libera un bloqueo vigente (antes de #164 sí lo liberaba)",
+  "ok": true,
+  "detail": "bloqueado antes=true después=true tamaño=10000"
+ },
+ {
+  "id": "D2a mapa lleno de bloqueos vigentes + 50 correos nuevos: la memoria sigue acotada (≤ 10.000) y sin errores",
+  "ok": true,
+  "detail": "lleno=10000 tras 50 nuevos=10000"
+ },
+ {
+  "id": "D2b (informativo) con TODAS las entradas bloqueadas, qué se descarta: el bloqueo más antiguo",
+  "ok": true,
+  "detail": "bloq0 bloqueado antes=true después=false · el más reciente se conserva=true (si el más antiguo se libera, un atacante con ≥ 30.000 intentos distribuidos puede liberar bloqueos viejos; coste alto, ver riesgo)"
+ },
+ {
+  "id": "D2c coste del desalojo con el mapa lleno de bloqueos: por correo nuevo < 5 ms (recorrido lineal del mapa)",
+  "ok": true,
+  "detail": "0.191 ms por correo nuevo"
+ },
+ {
+  "id": "D3 orden de desalojo: primero las entradas NO bloqueadas más antiguas; las 1.000 bloqueadas vigentes se conservan",
+  "ok": true,
+  "detail": "bloqueos conservados=true tamaño=10000"
+ },
+ {
+  "id": "D1b por HTTP: un correo inexistente bloqueado (401,401,423) sigue bloqueado tras 120 correos distintos",
+  "ok": true,
+  "detail": "secuencia=401,401,423 después=423"
+ }
+]

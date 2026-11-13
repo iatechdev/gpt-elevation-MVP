@@ -1,0 +1,16 @@
+{"id":"F2 dashboard-1440-es: la petición de generar lleva { lang: \"es\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"es\"}"}
+{"id":"F6 dashboard-1440-es: las recomendaciones se muestran en español, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 chat-1440-es: la petición de generar lleva { lang: \"es\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"es\"}"}
+{"id":"F6 chat-1440-es: las recomendaciones se muestran en español, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 dashboard-390-es: la petición de generar lleva { lang: \"es\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"es\"}"}
+{"id":"F6 dashboard-390-es: las recomendaciones se muestran en español, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 chat-390-es: la petición de generar lleva { lang: \"es\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"es\"}"}
+{"id":"F6 chat-390-es: las recomendaciones se muestran en español, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 dashboard-1440-en: la petición de generar lleva { lang: \"en\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"en\"}"}
+{"id":"F6 dashboard-1440-en: las recomendaciones se muestran en inglés, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 chat-1440-en: la petición de generar lleva { lang: \"en\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"en\"}"}
+{"id":"F6 chat-1440-en: las recomendaciones se muestran en inglés, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 dashboard-390-en: la petición de generar lleva { lang: \"en\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"en\"}"}
+{"id":"F6 dashboard-390-en: las recomendaciones se muestran en inglés, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}
+{"id":"F2 chat-390-en: la petición de generar lleva { lang: \"en\" }","ok":true,"detail":"peticiones=1 cuerpo={\"lang\":\"en\"}"}
+{"id":"F6 chat-390-en: las recomendaciones se muestran en inglés, sin mezcla de idiomas y sin desborde","ok":true,"detail":"{\"shown\":true,\"mixed\":false,\"sw\":false}"}

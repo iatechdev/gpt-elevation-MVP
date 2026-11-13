@@ -1,0 +1,2 @@
+# ES-25 · PR #27 · head 8dbfa9b (segunda revisión)
+`run2.jsonl`: 60 de 60 casos (`qa/integration/es25-real-db.mjs`). Concurrencia del mismo dueño (4 rondas por nivel): 5 simultáneas 0/20 con 5xx, 10 simultáneas 0/40, 20 simultáneas 0/80; 0 respuestas 409; versiones consecutivas y una sola activa en todas las rondas. `npm test` 174/174, `test:bridge:pg` 7/7, `npm audit --omit=dev --audit-level=high` salida 0.

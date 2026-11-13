@@ -1,0 +1,13 @@
+{"id":"A9 [es 390] contexto guardado por la interfaz (mercado, idioma, profesión)","ok":true,"d":"mercado==Por confirmar"}
+{"id":"A9 [es 390] API: catálogo 200 y rutas 200","ok":true,"d":"catálogo=200 rutas=200 estado=needs_constraints"}
+{"id":"A9 [es 390] catálogo: todos los roles y contextos tienen etiqueta en ES y EN","ok":true,"d":"roles=6 contextos=6"}
+{"id":"A9 [es 390] el contenido de prueba está marcado como SINTÉTICO (no se confunde con datos reales)","ok":true,"d":""}
+{"id":"A9 [es 390] catálogo: sin sueldos, tarifas ni porcentajes de reemplazo por IA inventados","ok":false,"d":"aparece «salary»"}
+{"id":"A9 [es 390] catálogo: sin promesas de empleo","ok":true,"d":""}
+{"id":"A9 [es 390] catalogo (/app/route-catalog): carga contenido sin errores","ok":true,"d":"caracteres=1632"}
+{"id":"A9 [es 390] rutas (/app/next-step): recorrido desactivado por bandera (VITE_ENABLE_CAREER_PREVIEW apagada; vista previa con datos de prueba): NO VERIFICABLE","ok":true,"d":"caracteres=110"}
+{"id":"A9 [es 390] experimentos (/app/next-step/experiments): recorrido desactivado por bandera (VITE_ENABLE_CAREER_PREVIEW apagada; vista previa con datos de prueba): NO VERIFICABLE","ok":true,"d":"caracteres=110"}
+{"id":"A9 [es 390] plan (/app/next-step/plan): recorrido desactivado por bandera (VITE_ENABLE_CAREER_PREVIEW apagada; vista previa con datos de prueba): NO VERIFICABLE","ok":true,"d":"caracteres=110"}
+{"id":"A9 [es 390] ficha de un rol abre y muestra datos o «desconocido» (sin inventar)","ok":true,"d":"/app/route-catalog/roles/formador_corporativo"}
+{"id":"A9 [es 390] rol inexistente: mensaje controlado o vuelve al catálogo (sin pantalla en blanco ni 5xx)","ok":true,"d":"/app/route-catalog/roles/no-existe-xyz"}
+{"id":"A9 [es 390] sin errores de página","ok":true,"d":""}

@@ -1,0 +1,52 @@
+[
+ {
+  "id": "U1 unlock sobre cuentas DESACTIVADAS: ninguna se reactiva (active=false) con admin ni con superadmin",
+  "ok": true,
+  "detail": "{\"persona\":{\"admin\":200,\"sup\":200,\"activa\":false,\"intentos\":0,\"bloqueo\":null},\"profesional\":{\"admin\":200,\"sup\":200,\"activa\":false,\"intentos\":0,\"bloqueo\":null},\"admin\":{\"admin\":403,\"sup\":200,\"activa\":false,\"intentos\":0,\"bloqueo\":null},\"superadmin\":{\"admin\":403,\"sup\":200,\"activa\":false,\"intentos\":0,\"bloqueo\":null}}"
+ },
+ {
+  "id": "U1b el superadmin sí limpia el bloqueo por intentos de cualquier cuenta; el admin de personas/profesionales también",
+  "ok": true,
+  "detail": "{\"persona\":\"0/sin bloqueo\",\"profesional\":\"0/sin bloqueo\",\"admin\":\"0/sin bloqueo\",\"superadmin\":\"0/sin bloqueo\"}"
+ },
+ {
+  "id": "U2 cuenta ACTIVA bloqueada por intentos: antes no entra (423), unlock por admin la libera, entra, y active no cambia",
+  "ok": true,
+  "detail": "bloqueada=423 unlock=200 login=200 activa=true intentos=0"
+ },
+ {
+  "id": "U3 jerarquía: admin→admin y admin→superadmin = 403 target_rank; superadmin→admin y superadmin→superadmin = 200",
+  "ok": true,
+  "detail": "admin→admin=403 admin→sup=403 sup→admin=200 sup→sup=200"
+ },
+ {
+  "id": "U4 reactivar es acción explícita: admin reactiva a una persona; a un admin solo lo reactiva el superadmin",
+  "ok": true,
+  "detail": "admin→persona=200 admin→admin=403 sup→admin=200"
+ },
+ {
+  "id": "U5 unlock: id inexistente 404; sin token 401/403; una persona sin permiso 403; sin 5xx",
+  "ok": false,
+  "detail": "inexistente=404 sinToken=403 persona=401"
+ },
+ {
+  "id": "I1 id inválido en TODAS las rutas /usuarios/:id (12 formas × 7 rutas, como superadmin): ninguna da 5xx",
+  "ok": true,
+  "detail": "84 peticiones, 0 respuestas 5xx; otros códigos: ninguno"
+ },
+ {
+  "id": "I1b el código y la forma de la respuesta: 400 con code invalid_id",
+  "ok": true,
+  "detail": "abc=400 invalid_id · -1=400"
+ },
+ {
+  "id": "R1 #156 sin regresión: admin no desactiva ni degrada a un superadmin ni toca a otro admin (403)",
+  "ok": true,
+  "detail": "desactivar=403 degradar=403 admin→admin=403"
+ },
+ {
+  "id": "R1b nunca quedan 0 superadmins activos con cambios simultáneos (6 rondas)",
+  "ok": true,
+  "detail": "200/409→1 | 200/409→1 | 200/409→1 | 200/409→1 | 200/409→1 | 200/409→1"
+ }
+]

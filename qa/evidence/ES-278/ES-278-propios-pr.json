@@ -1,0 +1,107 @@
+[
+ {
+  "id": "C1 batería de 109 entradas sobre POST: lo inválido → 4xx con cuerpo fijo y tabla intacta; el límite exacto válido → 201; 0 5xx [pr]",
+  "ok": true,
+  "detail": "5xx: 0; sin problemas"
+ },
+ {
+  "id": "C1 estados (pr)",
+  "info": "price 0=201 ; price -0=201 ; price \"0\"=201 ; price 0.001=400 ; price \"0.001\"=400 ; price 1e3=201 ; price \"1e3\"=400 ; price Infinity→null=400 ; price NaN→null=400 ; price \"12,5\"=400 ; price \" 12\"=201 ; price \"12 \"=201 ; price fullwidth=400 ; price 99999999.99=201 ; price 100000000=400 ; price 99999999.999=400 ; price -1=400 ; price \"+5\"=400 ; price \".5\"=400 ; price \"5.\"=400 ; price \"0x10\"=400 ; price true=400 ; price []=400 ; price {}=400 ; price [5]=400 ; price null=400 ; price 12345678.9=201 ; price 1e21=400 ; price 5e-7=400 ; price 0.1+0.2=400 ; price 19.99=201 ; price \"19.99\"=201 ; price 1.005=400 ; price \"00012\"=201 ; slug 1 car=201 ; slug 20=201 ; slug 21=400 ; slug vacío=400 ; slug MAYÚS=400 ; slug acentos=400 ; slug ../=400 ; slug emoji=400 ; slug espacio=400 ; slug NUL=400 ; slug guion bajo=400 ; slug espacio inicial=400 ; slug salto final=400 ; slug número=400 ; slug null=400 ; slug arreglo=400 ; slug objeto=400 ; slug solo guiones=201 ; name_es vacío=400 ; name_es espacios=400 ; name_es 255=201 ; name_es 256=400 ; name_es 10000=400 ; name_es null=400 ; name_en número=400 ; name_en arreglo=400 ; name_en unicode=201 ; name_es NUL=201 ; name_en emoji=201 ; description_es 2000=201 ; description_es 2001=400 ; description_es null=201 ; description_en número=400 ; description_es NUL=201 ; features 20=201 ; features 21=400 ; feature 200=201 ; feature 201=400 ; features no texto=400 ; features anidado=400 ; features cadena=400 ; features NUL=201 ; features null=400 ; features objeto=400 ; order 0=201 ; order 1000000=201 ; order 1000001=400 ; order -1=400 ; order 1.5=400 ; order \"5\"=201 ; order \"\"=400 ; order \"abc\"=400 ; order null=400 ; order 1e3=201 ; order true=400 ; currency USD=201 ; currency usd=201 ; currency US=400 ; currency 11 letras=400 ; currency U$D=400 ; currency ÑÑÑ=400 ; currency número=400 ; currency vacía=400 ; period month=201 ; period Month=400 ; period 20=201 ; period 21=400 ; period a1=400 ; period vacío=400 ; period número=400 ; isHighlighted \"true\"=400 ; isHighlighted 1=400 ; isHighlighted null=400 ; isHighlighted true=201 ; isActive \"no\"=400"
+ },
+ {
+  "id": "C1 lo que se guarda con un NUL (U+0000) en nombre, descripción y características (pr)",
+  "info": "[{\"name_es\":\"\\\"a\\\\\\\\0b\\\"\",\"len\":4,\"desc\":\"\\\"\\\"\",\"features\":\"[]\"},{\"name_es\":\"\\\"Plan QA\\\"\",\"len\":7,\"desc\":\"\\\"a\\\\\\\\0b\\\"\",\"features\":\"[]\"},{\"name_es\":\"\\\"Plan QA\\\"\",\"len\":7,\"desc\":\"\\\"\\\"\",\"features\":\"[\\\"a\\\\u0000b\\\"]\"}]"
+ },
+ {
+  "id": "C1b crear SIN precio → 400 con field=price y no se guarda ninguna fila [pr]",
+  "ok": true,
+  "detail": "estado 400 {\"code\":\"invalid_plan\",\"field\":\"price\",\"error\":\"El precio es obligatorio. / The price is required.\"}"
+ },
+ {
+  "id": "C1c precio 0 EXPLÍCITO → 201 y se guarda 0.00 [pr]",
+  "ok": true,
+  "detail": "estado 201"
+ },
+ {
+  "id": "C1d cuerpos no objeto, JSON roto y de 400 KB → 4xx, nunca 5xx [pr]",
+  "ok": true,
+  "detail": " enorme 413; roto 400"
+ },
+ {
+  "id": "C2 batería sobre PUT: lo inválido → 4xx y la tabla no cambia; lo válido → 200; 0 5xx [pr]",
+  "ok": true,
+  "detail": "5xx: 0; sin problemas"
+ },
+ {
+  "id": "C3a crear con slug repetido → 409 slug_taken con cuerpo fijo [pr]",
+  "ok": true,
+  "detail": "201/409 {\"code\":\"slug_taken\",\"field\":\"slug\",\"error\":\"Ya existe un plan con ese identificador. / A plan with that ident"
+ },
+ {
+  "id": "C3b editar con su propio slug → 200; con el de otro plan → 409 [pr]",
+  "ok": true,
+  "detail": "propio 200; ajeno 409"
+ },
+ {
+  "id": "C3c el slug de un plan desactivado sigue reservado → 409 [pr]",
+  "ok": true,
+  "detail": "desactivar 200; reutilizar 409"
+ },
+ {
+  "id": "C3d 20 altas SIMULTÁNEAS con el mismo slug → una 201, el resto 409, ningún 5xx, 1 fila [pr]",
+  "ok": true,
+  "detail": "estados {\"201\":1,\"409\":19}; filas 1"
+ },
+ {
+  "id": "C3e dos ediciones SIMULTÁNEAS al mismo slug → una 200 y una 409 [pr]",
+  "ok": true,
+  "detail": "estados 200,409"
+ },
+ {
+  "id": "C4 edición parcial válida → 200 (nombre, precio, vacío, campo desconocido, id y fechas, precio como cadena) [pr]",
+  "ok": true,
+  "detail": "{\"solo nombre\":200,\"solo precio\":200,\"vacío {}\":200,\"campo desconocido\":200,\"id y fechas del formulario\":200,\"precio como cadena del DECIMAL\":200}"
+ },
+ {
+  "id": "C4b la fila completa que entrega GET /all vuelve como PUT (lo que hace la pantalla al guardar sin tocar nada) → 200 [pr]",
+  "ok": true,
+  "detail": "42 planes; todos 200"
+ },
+ {
+  "id": "C4c EDITAR un plan heredado (creado antes de la validación) enviando el formulario completo con otro precio [pr]",
+  "info": "Plan_Heredado/Month: 400 slug ; (sin slug)/month: 400 slug ; otro-heredado/MONTHLY: 400 period (200 = editable; 400 = el administrador no puede cambiar ni el precio hasta corregir el campo marcado)"
+ },
+ {
+  "id": "C5 la semilla es idempotente y las lecturas públicas siguen respondiendo [pr]",
+  "ok": true,
+  "detail": "seed 200/200; planes base 4/4; GET /api/pricing 200; /api/plans 200"
+ },
+ {
+  "id": "C5 forma de las respuestas públicas (pr)",
+  "info": "/api/pricing: createdAt,currency,description_en,description_es,features_en,features_es,id,isActive,isHighlighted,name_en,name_es,order,period,price,slug,updatedAt | /api/plans: currency,description_en,description_es,features_en,features_es,id,isHighlighted,name_en,name_es,order,period,price,slug"
+ },
+ {
+  "id": "C6 sin sesión, persona y profesional no pueden crear, editar, desactivar ni sembrar planes (ni en /api/pricing ni en /api/admin/pricing) y la tabla no cambia [pr]",
+  "ok": true,
+  "detail": "24 solicitudes rechazadas"
+ },
+ {
+  "id": "C6b administración y superadministración sí pueden editar por las dos rutas [pr]",
+  "ok": true,
+  "detail": "200,200"
+ },
+ {
+  "id": "C6c ids hostiles en PUT y DELETE → nunca 5xx [pr]",
+  "ok": true,
+  "detail": "14 solicitudes"
+ },
+ {
+  "id": "C12 latencia (pr)",
+  "info": "crear: mediana 16.1 ms, p95 21.0 ms | editar: mediana 16.7 ms, p95 21.3 ms"
+ },
+ {
+  "id": "C12 p95 de crear y editar < 300 ms (propuesta) [pr]",
+  "ok": true,
+  "detail": "crear 21.0 ms; editar 21.3 ms"
+ }
+]

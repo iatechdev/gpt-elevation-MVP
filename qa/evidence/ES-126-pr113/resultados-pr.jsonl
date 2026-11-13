@@ -1,0 +1,47 @@
+{"id":"pr sin-es-320x568: sin scroll horizontal","ok":true,"detail":"scrollWidth=320 ancho=320 columnas=1"}
+{"id":"pr sin-es-360x740: sin scroll horizontal","ok":true,"detail":"scrollWidth=360 ancho=360 columnas=1"}
+{"id":"pr sin-es-375x667: sin scroll horizontal","ok":true,"detail":"scrollWidth=375 ancho=375 columnas=1"}
+{"id":"pr sin-es-390x844: sin scroll horizontal","ok":true,"detail":"scrollWidth=390 ancho=390 columnas=2,1"}
+{"id":"pr sin-es-568x320: sin scroll horizontal","ok":true,"detail":"scrollWidth=568 ancho=568 columnas=3,1"}
+{"id":"pr sin-es-639x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=639 ancho=639 columnas=3,1"}
+{"id":"pr sin-es-640x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=640 ancho=640 columnas=3,2"}
+{"id":"pr sin-es-768x1024: sin scroll horizontal","ok":true,"detail":"scrollWidth=768 ancho=768 columnas=4,2"}
+{"id":"pr sin-es-1024x768: sin scroll horizontal","ok":true,"detail":"scrollWidth=1024 ancho=1024 columnas=4,2"}
+{"id":"pr sin-es-1440x900: sin scroll horizontal","ok":true,"detail":"scrollWidth=1440 ancho=1440 columnas=4,2"}
+{"id":"pr sin-es-1920x1080: sin scroll horizontal","ok":true,"detail":"scrollWidth=1920 ancho=1920 columnas=4,2"}
+{"id":"pr sin-en-320x568: sin scroll horizontal","ok":true,"detail":"scrollWidth=320 ancho=320 columnas=1"}
+{"id":"pr sin-en-360x740: sin scroll horizontal","ok":true,"detail":"scrollWidth=360 ancho=360 columnas=1"}
+{"id":"pr sin-en-375x667: sin scroll horizontal","ok":true,"detail":"scrollWidth=375 ancho=375 columnas=1"}
+{"id":"pr sin-en-390x844: sin scroll horizontal","ok":true,"detail":"scrollWidth=390 ancho=390 columnas=2,1"}
+{"id":"pr sin-en-568x320: sin scroll horizontal","ok":true,"detail":"scrollWidth=568 ancho=568 columnas=3,1"}
+{"id":"pr sin-en-639x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=639 ancho=639 columnas=3,1"}
+{"id":"pr sin-en-640x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=640 ancho=640 columnas=3,2"}
+{"id":"pr sin-en-768x1024: sin scroll horizontal","ok":true,"detail":"scrollWidth=768 ancho=768 columnas=4,2"}
+{"id":"pr sin-en-1024x768: sin scroll horizontal","ok":true,"detail":"scrollWidth=1024 ancho=1024 columnas=4,2"}
+{"id":"pr sin-en-1440x900: sin scroll horizontal","ok":true,"detail":"scrollWidth=1440 ancho=1440 columnas=4,2"}
+{"id":"pr sin-en-1920x1080: sin scroll horizontal","ok":true,"detail":"scrollWidth=1920 ancho=1920 columnas=4,2"}
+{"id":"pr con-es-320x568: sin scroll horizontal","ok":true,"detail":"scrollWidth=320 ancho=320 columnas=1"}
+{"id":"pr con-es-360x740: sin scroll horizontal","ok":true,"detail":"scrollWidth=360 ancho=360 columnas=1"}
+{"id":"pr con-es-375x667: sin scroll horizontal","ok":true,"detail":"scrollWidth=375 ancho=375 columnas=1"}
+{"id":"pr con-es-390x844: sin scroll horizontal","ok":true,"detail":"scrollWidth=390 ancho=390 columnas=2,1"}
+{"id":"pr con-es-568x320: sin scroll horizontal","ok":true,"detail":"scrollWidth=568 ancho=568 columnas=3,1"}
+{"id":"pr con-es-639x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=639 ancho=639 columnas=3,1"}
+{"id":"pr con-es-640x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=640 ancho=640 columnas=3,2"}
+{"id":"pr con-es-768x1024: sin scroll horizontal","ok":true,"detail":"scrollWidth=768 ancho=768 columnas=4,2"}
+{"id":"pr con-es-1024x768: sin scroll horizontal","ok":true,"detail":"scrollWidth=1024 ancho=1024 columnas=4,2"}
+{"id":"pr con-es-1440x900: sin scroll horizontal","ok":true,"detail":"scrollWidth=1440 ancho=1440 columnas=4,2"}
+{"id":"pr con-es-1920x1080: sin scroll horizontal","ok":true,"detail":"scrollWidth=1920 ancho=1920 columnas=4,2"}
+{"id":"pr con-en-320x568: sin scroll horizontal","ok":true,"detail":"scrollWidth=320 ancho=320 columnas=1"}
+{"id":"pr con-en-360x740: sin scroll horizontal","ok":true,"detail":"scrollWidth=360 ancho=360 columnas=1"}
+{"id":"pr con-en-375x667: sin scroll horizontal","ok":true,"detail":"scrollWidth=375 ancho=375 columnas=1"}
+{"id":"pr con-en-390x844: sin scroll horizontal","ok":true,"detail":"scrollWidth=390 ancho=390 columnas=2,1"}
+{"id":"pr con-en-568x320: sin scroll horizontal","ok":true,"detail":"scrollWidth=568 ancho=568 columnas=3,1"}
+{"id":"pr con-en-639x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=639 ancho=639 columnas=3,1"}
+{"id":"pr con-en-640x800: sin scroll horizontal","ok":true,"detail":"scrollWidth=640 ancho=640 columnas=3,2"}
+{"id":"pr con-en-768x1024: sin scroll horizontal","ok":true,"detail":"scrollWidth=768 ancho=768 columnas=4,2"}
+{"id":"pr con-en-1024x768: sin scroll horizontal","ok":true,"detail":"scrollWidth=1024 ancho=1024 columnas=4,2"}
+{"id":"pr con-en-1440x900: sin scroll horizontal","ok":true,"detail":"scrollWidth=1440 ancho=1440 columnas=4,2"}
+{"id":"pr con-en-1920x1080: sin scroll horizontal","ok":true,"detail":"scrollWidth=1920 ancho=1920 columnas=4,2"}
+{"id":"pr 320 px con tamaño de texto al 200 %: sin scroll horizontal de la página","ok":true,"detail":"desborde=false"}
+{"id":"pr 320 px con error de API (500): mensaje visible y sin desborde","ok":true,"detail":"← Volver al chat ELEVATION 🤝 Buscar terapeuta Tu progreso Últimos 30 días No se pudo carg"}
+RESUMEN {"tag":"pr","total":46,"fallos":0,"desbordes":[]}

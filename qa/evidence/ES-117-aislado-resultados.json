@@ -1,0 +1,42 @@
+[
+ {
+  "id": "A1 base previa aplicada",
+  "ok": true,
+  "detail": "1030020000-es43-ai-usage-stop-reason: migrating =======\n== 20261030020000-es43-ai-usage-stop-reason: migrated (0.016s)\n\n"
+ },
+ {
+  "id": "A2 escenario: 8 migraciones antiguas sin registrar en SequelizeMeta (como staging)",
+  "ok": true,
+  "detail": "registradas=6 (de 14)"
+ },
+ {
+  "id": "A3 `db:migrate:status` a secas ve 9 pendientes (las 8 antiguas + ES-117): por eso NO se usa `db:migrate` a secas",
+  "ok": true,
+  "detail": "pendientes=9"
+ },
+ {
+  "id": "A4 línea base: check:rls FALLA y lista tablas sin RLS",
+  "ok": true,
+  "detail": "Tablas sin RLS (51)"
+ },
+ {
+  "id": "A5 aplicación aislada: sale 0 y ejecuta SOLO ES-117",
+  "ok": true,
+  "detail": "migrando=1 salida=0"
+ },
+ {
+  "id": "A6 SequelizeMeta: solo se añadió ES-117; las 8 antiguas siguen sin registrar",
+  "ok": true,
+  "detail": "registradas=7"
+ },
+ {
+  "id": "A7 después: check:rls «RLS ok»",
+  "ok": true,
+  "detail": "RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authentic"
+ },
+ {
+  "id": "A8 repetir el comando es inocuo (idempotente: nada pendiente)",
+  "ok": true,
+  "detail": "sin nuevas migraciones"
+ }
+]

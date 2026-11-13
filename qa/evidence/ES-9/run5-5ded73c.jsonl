@@ -1,0 +1,27 @@
+# ES-9 re-verificación · 2026-10-25T13:55:11Z
+{"status":"ok","commit":"5ded73c"}
+## health
+{"id":"ES9-01 /api/health","esperado":200,"obtenido":200,"ok":true,"extra":"472ms {\"status\":\"ok\",\"commit\":\"5ded73c\"}"}
+{"id":"ES9-01 /api/health","esperado":200,"obtenido":200,"ok":true,"extra":"298ms {\"status\":\"ok\",\"commit\":\"5ded73c\"}"}
+{"id":"ES9-01 /","esperado":200,"obtenido":200,"ok":true,"extra":"150ms root=true"}
+{"id":"ES9-01 /login","esperado":200,"obtenido":200,"ok":true,"extra":"154ms root=true"}
+## smoke
+{"id":"ES9-02 registro","esperado":201,"obtenido":201,"ok":true,"extra":"1245ms"}
+{"id":"ES9-02 login","esperado":"200 + token","obtenido":200,"ok":true,"extra":"446ms rol=user"}
+{"id":"ES9-02 historial sin token","esperado":"denegado","obtenido":403,"ok":true,"extra":"145ms"}
+{"id":"ES9-02 admin con usuario común","esperado":"denegado","obtenido":403,"ok":true,"extra":"145ms"}
+{"id":"ES9-02 POST pricing sin token","esperado":"denegado","obtenido":403,"ok":true,"extra":"149ms"}
+{"id":"ES9-02 chat (Claude real, 1 llamada)","esperado":200,"obtenido":200,"ok":true,"extra":"2098ms respuesta_texto=true"}
+{"id":"ES9-02 historial propio","esperado":200,"obtenido":200,"ok":true,"extra":"219ms n=2"}
+{"nota":"Usuario sintético creado en staging; no hay ruta pública de borrado. Pedir a Mauricio/Infra que lo elimine.","email":"smoke-qa-1792936513336@example.test"}
+## anon
+{"id":"ES9-03 mutaciones sin sesión","esperado":"todas 401/403","obtenido":"63/63","ok":true,"extra":"[]"}
+## headers
+{"id":"ES9-05 cabeceras de seguridad","esperado":"presentes","obtenido":"{\"x-content-type-options\":\"nosniff\",\"strict-transport-security\":\"max-age=31536000; includeSubDomains\",\"content-security-policy\":\"default-src 'self';base-uri 'self';font-src 'self' https://fonts.gstatic.com;form-action 'self';frame-ancestors 'none';img-src 'self' data: https://images.unsplash.com;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;upgrade-insecure-requests;connect-src 'self';frame-src 'self' https://*.daily.co\",\"x-frame-options\":\"DENY\",\"referrer-policy\":\"no-referrer\"}","ok":true,"extra":"x-powered-by=null"}
+{"id":"ES9-05 CORS origen ajeno","esperado":"no reflejado ni *","obtenido":"https://backend-staging-e3a6.up.railway.app","ok":true,"extra":""}
+{"id":"ES9-05 CORS preflight ajeno","esperado":"no permitido","obtenido":"https://backend-staging-e3a6.up.railway.app","ok":true,"extra":""}
+{"id":"ES9-05 bundle sin secretos/localhost","esperado":0,"obtenido":0,"ok":true,"extra":"1 bundle(s) revisados; []"}
+{"id":"ES9-05 error sin traza","esperado":"sin stack","obtenido":400,"ok":true,"extra":""}
+{"id":"ES9-05 login con objeto (NoSQL/tipos)","esperado":"4xx, no 500","obtenido":400,"ok":true,"extra":""}
+## pricing(DB)
+200

@@ -1,0 +1,7 @@
+M1-guia-sin-401 | prueba unitaria del PR: # fail 0 | es285-check del PR: exit=1 | mi E2E real núcleo: RESUMEN-CONTROL 2/3
+M2-validacion-sin-401 | prueba unitaria del PR: # fail 1 | es285-check del PR: exit=1 | mi E2E real núcleo: RESUMEN-CONTROL 2/3
+M3-guia-sin-boton-entrar | prueba unitaria del PR: # fail 0 | es285-check del PR: exit=1 | mi E2E real núcleo: RESUMEN-CONTROL 2/3
+M4-guia-token-distinto | prueba unitaria del PR: # fail 1 | es285-check del PR: exit=1 | mi E2E real núcleo: RESUMEN-CONTROL 3/4
+M5-guia-sin-403 | prueba unitaria del PR: # fail 1 | es285-check del PR: exit=1 | mi E2E real núcleo: RESUMEN-CONTROL 4/4
+M6-validacion-sin-403 | prueba unitaria del PR: # fail 1 | es285-check del PR: exit=1 | mi E2E real núcleo: RESUMEN-CONTROL 4/4
+FIN

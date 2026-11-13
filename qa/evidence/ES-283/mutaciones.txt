@@ -1,0 +1,27 @@
+a | es-283: fail 0 | es-274: fail 2 | 
+b | es-283: fail 5 | es-274: fail 3 | #11 fallo real en «borrado de lo de la persona (COR;#12 fallo real en «borrado del emparejamiento»: to;
+c | es-283: fail 0 | es-274: fail 5 | 
+d | es-283: fail 2 | es-274: fail 0 | #7 una sola referencia «MatchingRequest.chosenTher;
+e | es-283: fail 2 | es-274: fail 0 | #14 fallo real en «lápida del usuario»: todo se r;
+f | es-283: fail 0 | es-274: fail 2 | 
+g | es-283: fail 0 | es-274: fail 3 | 
+h | es-283: fail 0 | es-274: fail 2 | 
+r0 | es-283: fail 10 | es-274: fail 2 | #2 una sola referencia «ClinicalNote.therapistId»;#3 una sola referencia «TherapySession.therapistId;
+r1 | es-283: fail 2 | es-274: fail 2 | #2 una sola referencia «ClinicalNote.therapistId»;
+r2 | es-283: fail 2 | es-274: fail 0 | #3 una sola referencia «TherapySession.therapistId;
+r3 | es-283: fail 2 | es-274: fail 0 | #4 una sola referencia «SessionNote.therapistId» ;
+r4 | es-283: fail 2 | es-274: fail 0 | #5 una sola referencia «TherapistProfile.UserId» ;
+r5 | es-283: fail 2 | es-274: fail 0 | #6 una sola referencia «TherapistValidation.therap;
+r6 | es-283: fail 2 | es-274: fail 0 | #7 una sola referencia «MatchingRequest.chosenTher;
+r7 | es-283: fail 2 | es-274: fail 0 | #8 una sola referencia «EthicManifest.uploadedBy»;
+r8 | es-283: fail 2 | es-274: fail 0 | #9 una sola referencia «PlanRequest.resolvedBy» b;
+r9 | es-283: fail 2 | es-274: fail 0 | #10 una sola referencia «User.therapistId» basta p;
+s1 | es-283: fail 4 | es-274: fail 2 | #12 fallo real en «borrado del emparejamiento»: to;#13 fallo real en «campos de persona en las sesione;
+s2 | es-283: fail 3 | es-274: fail 2 | #13 fallo real en «campos de persona en las sesione;#14 fallo real en «lápida del usuario»: todo se r;
+s3 | es-283: fail 2 | es-274: fail 0 | #14 fallo real en «lápida del usuario»: todo se r;
+s4 | es-283: fail 0 | es-274: fail 0 | 
+s5 | es-283: fail 5 | es-274: fail 0 | #11 fallo real en «borrado de lo de la persona (COR;#12 fallo real en «borrado del emparejamiento»: to;
+s6 | es-283: fail 5 | es-274: fail 2 | #11 fallo real en «borrado de lo de la persona (COR;#12 fallo real en «borrado del emparejamiento»: to;
+s7 | es-283: fail 5 | es-274: fail 2 | #11 fallo real en «borrado de lo de la persona (COR;#12 fallo real en «borrado del emparejamiento»: to;
+p1 | es-283: fail 2 | es-274: fail 0 | #15 ProfessionalApplications: tras la purga de la pe;
+FIN

@@ -1,0 +1,87 @@
+[
+ {
+  "id": "M1a migraciones hasta la anterior (20261111020000-es194-exercises.cjs) aplicadas",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "M1b antes de migrar: sin tabla de auditoría ni columna requestId; hay una invitación previa sembrada",
+  "ok": true,
+  "detail": "auditoría=false col=0 invitaciones=1"
+ },
+ {
+  "id": "M1c aplicar: éxito y SOLO añade AdminAuditEntries (no quita ni crea otras tablas)",
+  "ok": true,
+  "detail": "exit=0 añade=AdminAuditEntries quita="
+ },
+ {
+  "id": "M1d la invitación previa se conserva intacta: requestId NULL, sin usar, mismo correo",
+  "ok": true,
+  "detail": "[{\"email\":\"viejo@example.test\",\"requestId\":null,\"usedAt\":null}]"
+ },
+ {
+  "id": "M1e segunda ejecución sin cambios (idempotente en sequelize-cli)",
+  "ok": true,
+  "detail": "No migrations were executed, database schema was already up to date."
+ },
+ {
+  "id": "M1f ejecutar `up` otra vez a mano (contrato up(sequelize) y up({sequelize})) no falla ni duplica (IF NOT EXISTS)",
+  "ok": true,
+  "detail": "ok"
+ },
+ {
+  "id": "M1g columnas de AdminAuditEntries: id serial, action NOT NULL(40), result NOT NULL default ok(12), createdAt NOT NULL, actorId/actorRole(16)/targetType(24)/targetId NULL; sin columna updatedAt",
+  "ok": true,
+  "detail": "id,actorId,actorRole,action,targetType,targetId,result,createdAt"
+ },
+ {
+  "id": "M1h Invitations.requestId: VARCHAR(64) NULL",
+  "ok": true,
+  "detail": "{\"data_type\":\"character varying\",\"is_nullable\":\"YES\",\"character_maximum_length\":64}"
+ },
+ {
+  "id": "M1i índices: 3 de apoyo en la auditoría y el único PARCIAL (invitedBy, requestId) WHERE requestId IS NOT NULL",
+  "ok": true,
+  "detail": "CREATE UNIQUE INDEX invitations__invited_by_request_id ON public.\"Invitations\" USING btree (\"invitedBy\", \"requestId\") WHERE (\"requestId\" IS NOT NULL)"
+ },
+ {
+  "id": "M1j RLS habilitada en AdminAuditEntries en la MISMA migración, sin políticas y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "rls=[{\"relname\":\"Invitations\",\"relrowsecurity\":true},{\"relname\":\"AdminAuditEntries\",\"relrowsecurity\":true}] políticas=0 roles=anon:false,authenticated:false"
+ },
+ {
+  "id": "M1k db:drift sobre la base migrada: sin deriva (el modelo AdminAuditEntry e Invitation.requestId coinciden con la migración)",
+  "ok": true,
+  "detail": "exit=0 SIN DERIVA: las migraciones coinciden con sync, también tras deshacer y reaplicar."
+ },
+ {
+  "id": "M1l check:rls: todas las tablas con RLS y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "exit=0 RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "M1m drift-allowed.json: sin entradas nuevas para la auditoría ni requestId",
+  "ok": true,
+  "detail": "ninguna"
+ },
+ {
+  "id": "M1n restricciones: acción nula 23502, acción de 41 caracteres 22001; el resultado por defecto es \"ok\"",
+  "ok": true,
+  "detail": "23502/22001/ok"
+ },
+ {
+  "id": "M1p down SIN bandera, y con bandera pero en producción, se rechazan (la tabla y la columna siguen)",
+  "ok": true,
+  "detail": "sinBandera=1 producción=1"
+ },
+ {
+  "id": "M1q down con bandera fuera de producción: borra la tabla, los índices y la columna; el resto (incluida la invitación previa) intacto",
+  "ok": true,
+  "detail": "exit=0 tablas=60/60 columna=0 índices=0 invitaciones=1"
+ },
+ {
+  "id": "M1r rehacer (up) tras el down: vuelven la tabla y la columna, la invitación previa sigue y el drift sigue en cero",
+  "ok": true,
+  "detail": "exit=0"
+ }
+]

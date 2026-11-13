@@ -1,0 +1,82 @@
+[
+ {
+  "id": "E1/E3 secuencia de 5 intentos fallidos (401, 401, 423, 423, 423): idéntica en estado, cuerpo y cabeceras para correo INEXISTENTE, cuenta ACTIVA e INACTIVA",
+  "ok": true,
+  "detail": "inexistente=401,401,423,423,423 activa=401,401,423,423,423 inactiva=401,401,423,423,423 cuerpo423={\"error\":\"Cuenta bloqueada. Inténtalo de nuevo en N minutos.\",\"locked\":true}"
+ },
+ {
+  "id": "E4 inactiva: con contraseña incorrecta 401 como cualquier otra; con la CORRECTA 403 «inactiva» (decisión de Infra); un correo inexistente con esa misma contraseña da 401",
+  "ok": true,
+  "detail": "incorrecta=401 correcta=403 inexistente=401"
+ },
+ {
+  "id": "E2a tiempo: inexistente vs existente-incorrecta vs inactiva-incorrecta (24 intentos cada una, un correo distinto por intento): medianas dentro de 15 % y 30 ms",
+  "ok": true,
+  "detail": "inexistente={\"p50\":318,\"min\":301,\"max\":440} existente={\"p50\":331,\"min\":298,\"max\":371} inactiva={\"p50\":331,\"min\":299,\"max\":391}"
+ },
+ {
+  "id": "E2b tiempo en estado BLOQUEADO: cuenta real bloqueada vs correo inexistente bloqueado (24 intentos): medianas dentro de 15 % y 30 ms",
+  "ok": true,
+  "detail": "real={\"p50\":3,\"min\":3,\"max\":4} inexistente={\"p50\":4,\"min\":3,\"max\":5}"
+ },
+ {
+  "id": "E5 normalización: mayúsculas/minúsculas y espacios comparten contador para un correo inexistente (3er intento → 423)",
+  "ok": true,
+  "detail": "401,401,423,423"
+ },
+ {
+  "id": "E5b (informativo) el inicio de sesión sigue distinguiendo mayúsculas en el correo (comportamiento previo): correo con otra capitalización + contraseña correcta",
+  "ok": true,
+  "detail": "otraCapitalización=401 exacto=423 (la cuenta real estaba bloqueada por E1: sí)"
+ },
+ {
+  "id": "E8a 20 intentos fallidos SIMULTÁNEOS: ningún 5xx, y tanto la cuenta real como el correo inexistente quedan bloqueados (423) después",
+  "ok": true,
+  "detail": "real: 401=2 423=18, BD intentos=20 bloqueada=true · inexistente: 401=2 423=18 · después real=423 inexistente=423"
+ },
+ {
+  "id": "E8b (límite de intentos simultáneos) el nº de intentos fallidos aceptados antes del bloqueo no supera el umbral de 3 por mucho: real vs inexistente",
+  "ok": true,
+  "detail": "cuenta real dejó pasar 2 intentos con 401; correo inexistente 2 (umbral 3)"
+ },
+ {
+  "id": "E10 entradas raras (vacío, null, número, objeto, arreglo, __proto__, 200 kB, nulos, JSON roto): 4xx controlado, nunca 5xx",
+  "ok": true,
+  "detail": "400,400,400,400,400,401,401,413,401,400,401,401 | json roto=400 vacío=400"
+ },
+ {
+  "id": "E10b tras la matriz rara el contador sigue sano: un correo normal nuevo da 401 (no 423 ni 5xx)",
+  "ok": true,
+  "detail": "normal=401 __proto__=401"
+ },
+ {
+  "id": "E12 el limitador por IP (10/min) sigue activo y su respuesta 429 no depende de si el correo existe",
+  "ok": true,
+  "detail": "estados=401,423,401,423,401,423,401,423,401,423,429,429 cuerpos iguales=true"
+ },
+ {
+  "id": "E9 regresión: login correcto 200 con token; registro con contraseña débil 400; recuperación de contraseña neutra (mismo estado y cuerpo exista o no)",
+  "ok": true,
+  "detail": "login=200 débil=400 reset=202/202 iguales=true"
+ },
+ {
+  "id": "E9b (informativo) registro con un correo ya existente",
+  "ok": true,
+  "detail": "estado=400 {\"error\":\"El correo ya está registrado.\"} (si distingue «ya registrado», es otro oráculo de enumeración fuera de este PR)"
+ },
+ {
+  "id": "E7a memoria acotada: 25.000 correos distintos no hacen crecer el mapa más allá del tope (10.000)",
+  "ok": true,
+  "detail": "tamaño=10000"
+ },
+ {
+  "id": "E7b (informativo) una inundación de correos inexistentes desaloja entradas bloqueadas más antiguas: el bloqueo de un correo inexistente puede levantarse inundando el mapa",
+  "ok": true,
+  "detail": "bloqueado antes=true después de 25.000 distintos=true (solo afecta a correos sin cuenta activa; las cuentas reales usan la base de datos)"
+ },
+ {
+  "id": "E11 ningún console.* de auth.js ni loginAttempts.js incluye correo ni contraseña (revisión de código)",
+  "ok": true,
+  "detail": "2 llamadas: 'Error en register.' | 'Error en login.'"
+ }
+]

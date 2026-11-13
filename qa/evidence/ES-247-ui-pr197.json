@@ -1,0 +1,307 @@
+[
+ {
+  "id": "P1-es-chat respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": true,
+  "detail": "antes=false base=granted pantalla=true alertas=0 errs=0"
+ },
+ {
+  "id": "P2-es-chat respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": true,
+  "detail": "antes=true base=revoked pantalla=false alertas=0 errs=0"
+ },
+ {
+  "id": "P1-es-diary respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": true,
+  "detail": "antes=false base=granted pantalla=true alertas=0 errs=0"
+ },
+ {
+  "id": "P2-es-diary respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": true,
+  "detail": "antes=true base=revoked pantalla=false alertas=0 errs=0"
+ },
+ {
+  "id": "P1-es-resume respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": true,
+  "detail": "antes=false base=granted pantalla=true alertas=0 errs=0"
+ },
+ {
+  "id": "P2-es-resume respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": true,
+  "detail": "antes=true base=revoked pantalla=false alertas=0 errs=0"
+ },
+ {
+  "id": "P1-en-chat respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": true,
+  "detail": "antes=false base=granted pantalla=true alertas=0 errs=0"
+ },
+ {
+  "id": "P2-en-chat respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": true,
+  "detail": "antes=true base=revoked pantalla=false alertas=0 errs=0"
+ },
+ {
+  "id": "P1-en-diary respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": true,
+  "detail": "antes=false base=granted pantalla=true alertas=0 errs=0"
+ },
+ {
+  "id": "P2-en-diary respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": true,
+  "detail": "antes=true base=revoked pantalla=false alertas=0 errs=0"
+ },
+ {
+  "id": "P1-en-resume respuesta perdida al ENCENDER: la base queda granted y la pantalla lo muestra (encendido) sin error",
+  "ok": true,
+  "detail": "antes=false base=granted pantalla=true alertas=0 errs=0"
+ },
+ {
+  "id": "P2-en-resume respuesta perdida al APAGAR: la base queda revoked y la pantalla lo muestra (apagado) sin error",
+  "ok": true,
+  "detail": "antes=true base=revoked pantalla=false alertas=0 errs=0"
+ },
+ {
+  "id": "P3-es-on la petición no llega: la base NO cambia (revoked), el interruptor sigue igual y el aviso dice la verdad",
+  "ok": true,
+  "detail": "base=revoked pantalla=false aviso=true"
+ },
+ {
+  "id": "P3-es-off la petición no llega: la base NO cambia (granted), el interruptor sigue igual y el aviso dice la verdad",
+  "ok": true,
+  "detail": "base=granted pantalla=true aviso=true"
+ },
+ {
+  "id": "P3-en-on la petición no llega: la base NO cambia (revoked), el interruptor sigue igual y el aviso dice la verdad",
+  "ok": true,
+  "detail": "base=revoked pantalla=false aviso=true"
+ },
+ {
+  "id": "P3-en-off la petición no llega: la base NO cambia (granted), el interruptor sigue igual y el aviso dice la verdad",
+  "ok": true,
+  "detail": "base=granted pantalla=true aviso=true"
+ },
+ {
+  "id": "P4a-es-chat-on sin poder releer: SIN interruptor de esa fuente, pill «Sin confirmar», «Comprobar» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es granted",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=granted"
+ },
+ {
+  "id": "P4b botones de la fuente sin confirmar",
+  "info": "[\"COMPROBAR\",\"ANALIZAR MI CHAT\"]"
+ },
+ {
+  "id": "P4c «Comprobar» con la lectura TODAVÍA caída: sigue «Sin confirmar» (no inventa un estado) y se puede repetir",
+  "ok": true,
+  "detail": "sigue=true"
+ },
+ {
+  "id": "P4d «Comprobar» con la lectura restablecida deja la pantalla = base (encendido), sin pill ni botón",
+  "ok": true,
+  "detail": "pantalla=true base=granted"
+ },
+ {
+  "id": "P4a-es-chat-off sin poder releer: SIN interruptor de esa fuente, pill «Sin confirmar», «Comprobar» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es revoked",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=revoked"
+ },
+ {
+  "id": "P4b botones de la fuente sin confirmar",
+  "info": "[\"COMPROBAR\",\"ANALIZAR MI CHAT\"]"
+ },
+ {
+  "id": "P4c «Comprobar» con la lectura TODAVÍA caída: sigue «Sin confirmar» (no inventa un estado) y se puede repetir",
+  "ok": true,
+  "detail": "sigue=true"
+ },
+ {
+  "id": "P4d «Comprobar» con la lectura restablecida deja la pantalla = base (apagado), sin pill ni botón",
+  "ok": true,
+  "detail": "pantalla=false base=revoked"
+ },
+ {
+  "id": "P4a-es-diary-on sin poder releer: SIN interruptor de esa fuente, pill «Sin confirmar», «Comprobar» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es granted",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=granted"
+ },
+ {
+  "id": "P4a-es-diary-off sin poder releer: SIN interruptor de esa fuente, pill «Sin confirmar», «Comprobar» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es revoked",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=revoked"
+ },
+ {
+  "id": "P4a-es-resume-on sin poder releer: SIN interruptor de esa fuente, pill «Sin confirmar», «Comprobar» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es granted",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=granted"
+ },
+ {
+  "id": "P4a-es-resume-off sin poder releer: SIN interruptor de esa fuente, pill «Sin confirmar», «Comprobar» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es revoked",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=revoked"
+ },
+ {
+  "id": "P4a-en-chat-on sin poder releer: SIN interruptor de esa fuente, pill «Unconfirmed», «Check» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es granted",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=granted"
+ },
+ {
+  "id": "P4a-en-chat-off sin poder releer: SIN interruptor de esa fuente, pill «Unconfirmed», «Check» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es revoked",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=revoked"
+ },
+ {
+  "id": "P4a-en-diary-on sin poder releer: SIN interruptor de esa fuente, pill «Unconfirmed», «Check» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es granted",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=granted"
+ },
+ {
+  "id": "P4a-en-diary-off sin poder releer: SIN interruptor de esa fuente, pill «Unconfirmed», «Check» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es revoked",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=revoked"
+ },
+ {
+  "id": "P4a-en-resume-on sin poder releer: SIN interruptor de esa fuente, pill «Unconfirmed», «Check» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es granted",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=granted"
+ },
+ {
+  "id": "P4a-en-resume-off sin poder releer: SIN interruptor de esa fuente, pill «Unconfirmed», «Check» y aviso específico; las otras 2 fuentes conservan su interruptor; la base realmente es revoked",
+  "ok": true,
+  "detail": "interruptor=0 pill=1 btn=1 aviso=true otros=1,1 base=revoked"
+ },
+ {
+  "id": "P5-500-applied-on PUT con 500 (el servidor SÍ lo aplicó): la pantalla relee y coincide con la base (granted); no queda «Sin confirmar» porque la lectura funciona",
+  "ok": true,
+  "detail": "base=granted pantalla=true"
+ },
+ {
+  "id": "P5-500-applied-off PUT con 500 (el servidor SÍ lo aplicó): la pantalla relee y coincide con la base (revoked); no queda «Sin confirmar» porque la lectura funciona",
+  "ok": true,
+  "detail": "base=revoked pantalla=false"
+ },
+ {
+  "id": "P5-500-not-applied-on PUT con 500 (NO lo aplicó): la pantalla relee y coincide con la base (revoked); no queda «Sin confirmar» porque la lectura funciona",
+  "ok": true,
+  "detail": "base=revoked pantalla=false"
+ },
+ {
+  "id": "P5-500-not-applied-off PUT con 500 (NO lo aplicó): la pantalla relee y coincide con la base (granted); no queda «Sin confirmar» porque la lectura funciona",
+  "ok": true,
+  "detail": "base=granted pantalla=true"
+ },
+ {
+  "id": "P5c PUT que tarda más de 15 s y se aplica DESPUÉS de que el cliente releyó: pantalla vs base (observación)",
+  "info": "base=revoked pantalla=true aviso=true"
+ },
+ {
+  "id": "P5c con un PUT lento la pantalla NUNCA afirma que se retiró (no hay mensaje de éxito) cuando al releer aún no estaba retirado",
+  "ok": true,
+  "detail": "aviso_no_retirado=true"
+ },
+ {
+  "id": "P5d 401 en el PUT",
+  "info": "url=/app/bridge login=true"
+ },
+ {
+  "id": "P5e un 401 NO se trata como «Sin confirmar»",
+  "ok": true,
+  "detail": "/app/bridge"
+ },
+ {
+  "id": "P6a con la fuente «Sin confirmar» su botón «Analizar» queda DESHABILITADO (y «Comprobar» activo); las demás fuentes confirmadas conservan el suyo habilitado",
+  "ok": true,
+  "detail": "antes=2 después=1 botones=[\"COMPROBAR\",\"ANALIZAR MI CHAT\"]"
+ },
+ {
+  "id": "P6b doble clic / Enter repetido al confirmar: UNA sola petición PUT y la base queda granted",
+  "ok": true,
+  "detail": "puts=1"
+ },
+ {
+  "id": "P6c doble clic en el interruptor de retiro: UNA sola petición PUT",
+  "ok": true,
+  "detail": "puts=1"
+ },
+ {
+  "id": "P6d sin token ni correo de la persona en consola ni en almacenamiento (salvo la sesión) durante los fallos",
+  "ok": true,
+  "detail": "consola=2"
+ },
+ {
+  "id": "F1a-es guardar con el interruptor: durante el guardado el foco NO está en BODY (SECTION,SECTION,SECTION) y al terminar vuelve al interruptor «chat»",
+  "ok": true,
+  "detail": "SECTION,SECTION,SECTION fin=chat"
+ },
+ {
+  "id": "F1b-es guardar desde el diálogo: el foco no cae a BODY durante el guardado (DIV:dialog,DIV:dialog,DIV:dialog) y termina en el interruptor «diary»",
+  "ok": true,
+  "detail": "DIV:dialog,DIV:dialog,DIV:dialog fin=diary"
+ },
+ {
+  "id": "F1c-es tras un resultado incierto el foco queda en «Comprobar» de esa fuente (no se pierde)",
+  "ok": true,
+  "detail": "chat"
+ },
+ {
+  "id": "F1d-es «Comprobar»: el foco no cae a BODY y termina en el interruptor de la fuente",
+  "ok": true,
+  "detail": "BUTTON,BUTTON fin=chat"
+ },
+ {
+  "id": "F1e-es regresión ES-236: foco dentro del diálogo, Tab atrapado, Esc lo cierra y devuelve el foco al interruptor",
+  "ok": true,
+  "detail": "dentro=true atrapado=true"
+ },
+ {
+  "id": "F1a-en guardar con el interruptor: durante el guardado el foco NO está en BODY (SECTION,SECTION,SECTION) y al terminar vuelve al interruptor «chat»",
+  "ok": true,
+  "detail": "SECTION,SECTION,SECTION fin=chat"
+ },
+ {
+  "id": "F1b-en guardar desde el diálogo: el foco no cae a BODY durante el guardado (DIV:dialog,DIV:dialog,DIV:dialog) y termina en el interruptor «diary»",
+  "ok": true,
+  "detail": "DIV:dialog,DIV:dialog,DIV:dialog fin=diary"
+ },
+ {
+  "id": "F1c-en tras un resultado incierto el foco queda en «Check» de esa fuente (no se pierde)",
+  "ok": true,
+  "detail": "chat"
+ },
+ {
+  "id": "F1d-en «Check»: el foco no cae a BODY y termina en el interruptor de la fuente",
+  "ok": true,
+  "detail": "BUTTON,BUTTON fin=chat"
+ },
+ {
+  "id": "F1e-en regresión ES-236: foco dentro del diálogo, Tab atrapado, Esc lo cierra y devuelve el foco al interruptor",
+  "ok": true,
+  "detail": "dentro=true atrapado=true"
+ },
+ {
+  "id": "A1-es-390 axe 0 en lista, diálogo y «sin confirmar»; sin desborde horizontal; objetivos ≥ 24 px; sin claves crudas",
+  "ok": true,
+  "detail": "[[\"lista\",[]],[\"diálogo\",[]],[\"sin confirmar\",[]]] desborde=false pequeños=0"
+ },
+ {
+  "id": "A1-es-1360 axe 0 en lista, diálogo y «sin confirmar»; sin desborde horizontal; objetivos ≥ 24 px; sin claves crudas",
+  "ok": true,
+  "detail": "[[\"lista\",[]],[\"diálogo\",[]],[\"sin confirmar\",[]]] desborde=false pequeños=0"
+ },
+ {
+  "id": "A1-en-390 axe 0 en lista, diálogo y «sin confirmar»; sin desborde horizontal; objetivos ≥ 24 px; sin claves crudas",
+  "ok": true,
+  "detail": "[[\"lista\",[]],[\"diálogo\",[]],[\"sin confirmar\",[]]] desborde=false pequeños=0"
+ },
+ {
+  "id": "A1-en-1360 axe 0 en lista, diálogo y «sin confirmar»; sin desborde horizontal; objetivos ≥ 24 px; sin claves crudas",
+  "ok": true,
+  "detail": "[[\"lista\",[]],[\"diálogo\",[]],[\"sin confirmar\",[]]] desborde=false pequeños=0"
+ },
+ {
+  "id": "A1-oscuro axe en «sin confirmar» (se mide y se declara)",
+  "info": "[]"
+ },
+ {
+  "id": "T1 las 5 cadenas nuevas existen en ES y EN, sin emojis ni términos clínicos/de diagnóstico",
+  "ok": true,
+  "detail": "claves=true valores=10"
+ }
+]

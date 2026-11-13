@@ -1,0 +1,8 @@
+carga: 16 procesos de CPU
+PR: 20 verdes, 0 con fallos (corridas:) de 20 con 16 procesos de carga
+main: 20 verdes, 0 con fallos (corridas:) de 20 con 16 procesos de carga
+--- sin carga (3 corridas, PR)
+sin carga 1: # pass 9 # fail 0 
+sin carga 2: # pass 9 # fail 0 
+sin carga 3: # pass 9 # fail 0 
+FIN

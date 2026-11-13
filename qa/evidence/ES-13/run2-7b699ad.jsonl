@@ -1,0 +1,59 @@
+{"id":"ES13-V01 cualquier modo distinto de «compass» → 400 sin 500","ok":true,"detail":"13 valores"}
+{"id":"ES13-V02 los modos inválidos no llaman al proveedor ni escriben mensajes","ok":true,"detail":"{\"calls\":0,\"last\":null}"}
+{"id":"ES13-V03 sin mode el chat normal responde 200","ok":true,"detail":"status=200"}
+{"id":"ES13-V04 sin mode el prompt no contiene las reglas de la Brújula","ok":true,"detail":""}
+{"id":"ES13-V05 mode «compass» → 200","ok":true,"detail":"status=200"}
+{"id":"ES13-V06 mode ausente explícito → 200","ok":true,"detail":"status=200"}
+{"id":"ES13-P01 sin texto en el Vault se usa el borrador en español y las reglas fijas","ok":true,"detail":""}
+{"id":"ES13-P02 con lang=en se usa el borrador en inglés","ok":true,"detail":""}
+{"id":"ES13-P03 un idioma no soportado cae al español sin error","ok":true,"detail":""}
+{"id":"ES13-P04 participante, terapeuta, junta y anónimo no editan el prompt de la Brújula","ok":true,"detail":"403/403/403/403"}
+{"id":"ES13-P05 sin edición permitida no se creó la clave","ok":true,"detail":""}
+{"id":"ES13-P06 el administrador guarda el prompt de la Brújula → 200","ok":true,"detail":"status=200"}
+{"id":"ES13-P07 el prompt queda cifrado en la base","ok":true,"detail":""}
+{"id":"ES13-P08 la junta publica un manifiesto sintético","ok":true,"detail":"status=201"}
+{"id":"ES13-P09 modo compass: el prompt del Vault se usa y el del terapeuta y el de Elevation NO aparecen","ok":true,"detail":"status=200 empieza=CANARIO-VAULT-bd43da"}
+{"id":"ES13-P10 orden exacto: base → manifiesto → reglas fijas → diario → límites","ok":true,"detail":"89<187<1286<1441"}
+{"id":"ES13-P11 las reglas fijas aparecen una sola vez y los límites están al final","ok":true,"detail":""}
+{"id":"ES13-P12 el diario va delimitado como dato no confiable con un delimitador aleatorio que su contenido no puede cerrar","ok":true,"detail":"delim=ok cierres=1"}
+{"id":"ES13-P13 la instrucción maliciosa del diario queda dentro del bloque delimitado, antes de los límites","ok":true,"detail":""}
+{"id":"ES13-P14 el chat normal sigue usando el prompt del terapeuta y no incluye las reglas de la Brújula (regresión)","ok":true,"detail":"CANARIO-TERAPEUTA-f1"}
+{"id":"ES13-P15 un prompt de 200 000 caracteres en el Vault no provoca 500","ok":true,"detail":"guardar=413 chat=200"}
+{"id":"ES13-P16 guardar el prompt vacío o de espacios → 400 (no puede dejar la Brújula sin prompt)","ok":true,"detail":"400/400"}
+{"id":"ES13-I01 el texto del usuario nunca entra al prompt del sistema; solo va como mensaje","ok":true,"detail":""}
+{"id":"ES13-I02 el prompt del sistema termina con los límites aunque el mensaje intente anularlos","ok":true,"detail":""}
+{"id":"ES13-R01 riesgo alto en modo compass (ES y EN) → respuesta de seguridad","ok":true,"detail":"6/6"}
+{"id":"ES13-R02 el riesgo alto en modo compass no llamó al proveedor","ok":true,"detail":"0"}
+{"id":"ES13-R03 pausa explícita en modo compass → respuesta de pausa","ok":true,"detail":"3/3"}
+{"id":"ES13-R04 ningún indicador de riesgo ni de modo se guarda en la base","ok":true,"detail":""}
+{"id":"ES13-R05 el modo compass trata igual que el chat normal las frases que el detector (ES-21) no marca","ok":true,"detail":"[{\"g\":\"me quiero hacer daño\",\"normal\":\"no\",\"compass\":\"no\"},{\"g\":\"I do not want to live anymore\",\"normal\":\"no\",\"compass\":\"no\"},{\"g\":\"me quiero lastimar\",\"normal\":\"no\",\"compass\":\"no\"}]"}
+{"info":"QA-13-01 hueco preexistente del detector de riesgo (ES-21), idéntico en ambos modos","frases":[{"g":"me quiero hacer daño","normal":"no","compass":"no"},{"g":"I do not want to live anymore","normal":"no","compass":"no"},{"g":"me quiero lastimar","normal":"no","compass":"no"}]}
+{"id":"ES13-B01 con el presupuesto agotado el modo compass responde 429 `ai_budget_exhausted` igual que el chat normal","ok":true,"detail":"200/429/429"}
+{"id":"ES13-B02 sin presupuesto configurado el modo compass → 503 `ai_budget_not_configured` sin llamar al proveedor","ok":true,"detail":"503 calls=0"}
+{"id":"ES13-C01 6 envíos simultáneos del mismo requestId → un solo turno, 2 mensajes y 1 llamada al proveedor, sin 5xx","ok":true,"detail":"estados=200,409,409,409,409,409 turnos=1 mensajes=2 llamadas=1"}
+{"id":"ES13-C02 repetir el requestId completado devuelve la misma respuesta sin llamar de nuevo","ok":true,"detail":""}
+{"id":"ES13-C03 reutilizar el requestId con otro mensaje → 409","ok":true,"detail":"status=409"}
+{"id":"ES13-C04 el turno de otra persona → 404; el propio → 200","ok":true,"detail":"404/200"}
+{"id":"ES13-C05 usar el requestId de otra persona crea un turno propio y nunca devuelve su respuesta","ok":true,"detail":"replayed=undefined"}
+{"id":"ES13-D01 entrada de diario ajena → 404 y sin llamar al proveedor","ok":true,"detail":"status=404"}
+{"id":"ES13-D02 mezcla de una propia y una ajena → 404 (no se usa ninguna)","ok":true,"detail":"status=404"}
+{"id":"ES13-D03 ids duplicados: la entrada entra una sola vez","ok":true,"detail":"ocurrencias=1"}
+{"id":"ES13-D04 lista vacía → 200 sin bloque de diario","ok":true,"detail":""}
+{"id":"ES13-D05 una entrada borrada ya no se puede usar → 404","ok":true,"detail":"200/404"}
+{"id":"ES13-D06 demasiados ids → 400","ok":true,"detail":"status=400"}
+{"id":"ES13-H01 el historial del dueño incluye los mensajes del modo compass (historial compartido aprobado) y no expone modo ni prompt","ok":true,"detail":"n=56"}
+{"id":"ES13-H02 sin cambios de esquema: ninguna columna de modo en la base","ok":true,"detail":"[{\"table_name\":\"AiUsages\",\"column_name\":\"model\"}]"}
+{"id":"ES13-H03 la respuesta del chat no devuelve el modo ni el prompt","ok":true,"detail":""}
+{"id":"ES13-H04 terapeuta no ve el chat de A: /api/messages solo devuelve lo propio","ok":true,"detail":"n=0"}
+{"id":"ES13-H04 administrador no ve el chat de A: /api/messages solo devuelve lo propio","ok":true,"detail":"n=0"}
+{"id":"ES13-H04 superadmin no ve el chat de A: /api/messages solo devuelve lo propio","ok":true,"detail":"n=0"}
+{"id":"ES13-H04 junta no ve el chat de A: /api/messages solo devuelve lo propio","ok":true,"detail":"n=0"}
+{"id":"ES13-H04 B no ve el chat de A: /api/messages solo devuelve lo propio","ok":true,"detail":"n=2"}
+{"id":"ES13-H05 rutas de terapeuta y administración no devuelven texto del chat ni del diario","ok":true,"detail":""}
+{"id":"ES13-H06 el chat se guarda cifrado en la base","ok":true,"detail":""}
+{"id":"ES13-H07 el chat de A no genera señales profesionales ni de crisis a terceros (sin filas nuevas en puente ni derivados)","ok":true,"detail":"revisión de tablas"}
+{"info":"tablas puente/crisis/riesgo","tablas":["BridgeTransfers"]}
+{"id":"ES13-E01 sin mensaje, cuerpo no objeto y mensaje enorme → 4xx controlado, sin 500","ok":true,"detail":"400/400/400"}
+{"id":"ES13-E02 sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES13-E03 fallo del proveedor en modo compass → 502 controlado reintentable, conversación intacta","ok":true,"detail":"status=502"}
+{"fin":true}

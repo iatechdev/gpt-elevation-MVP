@@ -1,0 +1,10 @@
+# PR #53 · semilla de demostración sintética (head 2c8fb15), merge local con main 76e82d6
+Entorno: Postgres local desechable, bases nuevas por caso, sin IA, nada ejecutado en staging.
+- Código propio idéntico al de 9e30838 (seedStagingDemo, demoSeed, demoSeedData, seedRouteCatalogSynthetic y sus pruebas); cambia la fusión con main y la documentación (cuenta temporal y bandera solo en el comando).
+- Backend `npm test` 294/294, `npm audit` (nivel alto) exit 0; Postgres: semilla 13/13, ES-29 8/8, ES-31 6/6.
+- Guard: sin bandera (también con NODE_ENV=production) → exit 1; bandera sin clave y clave corta → exit 1; no imprime la clave; en base ya sembrada la 2.ª corrida no cambia filas ni el hash de la clave; `bcrypt` ($2b$, 60); la clave no aparece en la salida ni en el registro del servidor.
+- No pisa datos: con un catálogo de habilidades real publicado → exit 1 y la base queda idéntica; con un borrador de rutas con contenido real → exit 1 y la base queda idéntica.
+- QA-53-01 (Medio): una corrida RECHAZADA por falta de bandera o de clave igual creó 11 tablas en una base vacía: `seedStagingDemo.js` hace `sync()` de los modelos antes de que `seedDemo()` compruebe la bandera. En staging las tablas ya existen, pero la documentación afirma «se niega sin escribir nada».
+- API (`qa/integration/es53-seed-api.mjs`, 13/13): la persona entra con la clave del operador; rol user; mapa de 8 habilidades con comunicación 3, planificación 2, análisis 3 y 5 en null (nunca 0), cada nivel con evidencia; etiquetas [SINTÉTICO]/[SYNTHETIC] en ES y EN; 3 evidencias; otra persona no ve nada y por ID da 404; catálogo de rutas sintético; la exportación personal incluye sus datos; el borrado de ES-23 deja 0 evidencias y 0 evaluaciones y conserva los catálogos; ES-18/19 20/20.
+- Navegador (Playwright): «Mi mapa»/«My map» en ES y EN con 8 etiquetas sintéticas, niveles 3, 3 y 2, 5 sin evidencia, sin cero y sin errores de página. La interfaz del catálogo de rutas (`/app/route-catalog`) no existe en main (es de #38); por eso solo se verificó por API.
+- QA-53-02 (Bajo): la sección del documento aún dice «ES-32 no está en main» y ya está fusionado.

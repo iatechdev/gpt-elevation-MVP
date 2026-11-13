@@ -1,0 +1,18 @@
+{"id":"COMB-H0 alta: puente 201, evidencia del chat 201 y evidencia directa 201","ok":true,"detail":"puente=201 evChat=201 evDirecta=201 {\"id\":2,\"version\":1,\"status\":\"confirmed\",\"created\":true}"}
+{"id":"COMB-H0b antes de revocar el motor lee el puente y las dos evidencias","ok":true,"detail":"puente={\"version\":1,\"approvedAt\":\"2026-10-28T11:00:51.065Z\",\"fields evidencias=2"}
+{"id":"COMB-H1a revocar: consentimiento revocado (200) y la versión del puente con camino A pasa a revoked","ok":true,"detail":"estados=revoked"}
+{"id":"COMB-H1b el motor deja de leer el puente","ok":true,"detail":"{\"error\":\"no_context\"}"}
+{"id":"COMB-H1c el motor deja de recibir la evidencia que sale del chat y conserva la directa","ok":true,"detail":"evidencias=1"}
+{"id":"COMB-H1d se emiten invalidaciones de AMBOS orígenes (puente y evidencia) en la misma revocación","ok":true,"detail":"tipos=career_context_version,evidence antes=0 después=2"}
+{"id":"COMB-H1e con el consentimiento revocado, un camino A nuevo no se confirma (4xx)","ok":true,"detail":"status=400"}
+{"id":"COMB-H1f con el consentimiento revocado, una evidencia nueva con origen del chat no se guarda (4xx)","ok":true,"detail":"status=403"}
+{"id":"COMB-H2 volver a conceder y confirmar crea una versión nueva (201) y el motor la lee","ok":true,"detail":"status=201"}
+{"id":"exportacion-personal","info":"status=201 claves=schemaVersion,type,locale,profile,messages,chatTurns,diary,moods,ratings,recommendations,consents,consentHistory,planRequests,aiUsage,aiBudget,careerContext,bridgeTransfers,evidence,evidenceVersions,participantContext,skillAssessments,invalidations"}
+{"id":"COMB-X01 la exportación personal incluye el puente y la evidencia profesional del dueño (ES-23 integrada con ES-25/27)","ok":true,"detail":"status=201 puente=true evidencia=true"}
+{"id":"COMB-E01 solicitud de eliminación aceptada (202)","ok":true,"detail":"status=202 {\"id\":\"b2765502-3ec9-4a5b-8ca8-f2371ff3914a\",\"status\":\"accepted\",\"requestedAt\":\"2026-10-28T11:00:54."}
+{"id":"COMB-E02 con la solicitud aceptada la sesión no abre el puente ni la evidencia (4xx)","ok":true,"detail":"preview=401 evidencia=401 lectura=401"}
+{"id":"COMB-E03 el motor no recibe el puente de una cuenta con solicitud de eliminación","ok":true,"detail":"{\"error\":\"consent_required\"}"}
+{"id":"purga","info":"exit=0 {\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}"}
+{"id":"COMB-E04 la purga de la cuenta deja 0 filas del puente profesional, su auditoría y la evidencia (ES-25/27 registradas en ES-23)","ok":true,"detail":"{\"CareerContextVersions\":0,\"BridgeTransfers\":0,\"Evidence\":0,\"EvidenceVersions\":0,\"Diary\":0}"}
+{"id":"rastro-tras-purga","info":"versiones del puente=0 evidencias=0 versiones de evidencia=0 diario=0 (el diario sí lo purga ES-23)"}
+{"fin":true}

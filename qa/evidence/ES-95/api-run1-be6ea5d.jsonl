@@ -1,0 +1,51 @@
+{"id":"ES95-F01 solicitud completa válida → 201 con el mensaje de éxito en español; queda `pending`, con consentimiento fechado y un archivo","ok":true,"detail":"status=201"}
+{"id":"ES95-F01b solo obligatorios con locale=en → 201 con el mensaje en inglés","ok":true,"detail":"We received your request. The Elevation "}
+{"id":"ES95-F01c locale desconocido → se trata como español sin error","ok":true,"detail":"status=201"}
+{"id":"ES95-F02 [SEG] 22 entradas inválidas (vacíos, longitudes, correo, URL peligrosa, consentimiento) → 400 con la lista de campos y sin repetir lo enviado","ok":false,"detail":"correo 255:201"}
+{"id":"ES95-F02b los máximos exactos de cada campo se aceptan","ok":true,"detail":"status=201"}
+{"id":"ES95-F02c cuerpo JSON, arreglo o texto plano (no multipart) → 400 controlado","ok":true,"detail":"400/400/400"}
+{"id":"ES95-A01 PDF de 5 MB − 1 y exacto 5 MB → 201; 5 MB + 1 → 400","ok":true,"detail":"201/201/400"}
+{"id":"ES95-A02 [SEG] archivo falso con MIME y extensión de PDF (texto, PNG, exe, zip, HTML) → 400: se valida la firma, no el MIME","ok":true,"detail":"400/400/400/400/400"}
+{"id":"ES95-A04 sin archivo, vacío, de 6 bytes, dos archivos, campo con otro nombre o archivo extra con otro campo → 400 (ninguno se guarda)","ok":true,"detail":"400/400/400/400/400/400"}
+{"id":"ES95-A02b [INFO] PDF con JavaScript embebido y polígloto con firma válida","info":"status=201 (se acepta: solo se verifica la firma %PDF-; sin antivirus; la descarga es adjunto)"}
+{"id":"ES95-A05 [SEG] nombres de archivo con rutas, HTML, 300 caracteres, Unicode, nulo y saltos: no provocan 5xx y el nombre no se guarda en ninguna tabla","ok":true,"detail":"201,201,201,201,400,201,201"}
+{"id":"ES95-A06 [SEG] más de 12 campos, un campo de 9 KB y un multipart mal formado → 4xx sin 5xx; campos desconocidos se ignoran sin efecto","ok":true,"detail":"campos de más=400 campo9KB=400 multipart roto=400 desconocidos=201"}
+{"id":"ES95-A07 [PRIV] la hoja de vida está cifrada en la base (v2): ni `%PDF`, ni el texto, ni su base64 aparecen; tamaño y sha256 coinciden","ok":true,"detail":"prefijo=v2: tamaño=3000"}
+{"id":"ES95-A07b la descarga devuelve exactamente los mismos bytes (hash idéntico)","ok":true,"detail":"status=200 bytes=3000"}
+{"id":"ES95-A09 [SEG] la descarga es adjunto con nombre fijo, `nosniff`, `no-store` y `application/pdf`; sin nombre original","ok":true,"detail":"attachment; filename=\"solicitud-16-hoja-de-vida.pdf\" | nosniff | no-store"}
+{"id":"ES95-A08 [PRIV] la lista nunca trae el contenido de la hoja de vida: solo su tamaño","ok":true,"detail":"filas=16"}
+{"id":"ES95-S01 [SEG] estado, rol, userId, reviewedBy, id, nota y fechas enviados por el cliente se ignoran: queda `pending`, sin usuario, sin revisor y con fechas del servidor","ok":false,"detail":"{}"}
+{"id":"ES95-S02 [SEG] enviar, aprobar y rechazar no crea ninguna cuenta, rol, contraseña ni perfil de terapeuta","ok":true,"detail":"usuarios=5"}
+{"id":"ES95-S03 [SEG] sin sesión, participante, terapeuta, junta, clave ajena y token vencido: lista, descarga, aprobar, rechazar y eliminar → 401/403","ok":true,"detail":"{\"anónimo\":[403,403,403,403,403],\"participante\":[403,403,403,403,403],\"terapeuta\":[403,403,403,403,403],\"junta\":[403,403,403,403,403],\"clave ajena\":[401,401,401,401,401],\"vencido\":[401,401,401,401,401]}"}
+{"id":"ES95-S03b la solicitud sigue intacta tras esos intentos","ok":true,"detail":""}
+{"id":"ES95-S03c administrador y superadmin sí acceden (lista y descarga)","ok":true,"detail":"200/200/200"}
+{"id":"ES95-S03d [INFO] participante con la reclamación role=admin en un token firmado con la clave del servidor","info":"status=200 (las rutas leen el rol del token firmado; solo el servidor firma tokens)"}
+{"id":"ES95-S03e un administrador con sesión cerrada (logout) ya no accede","ok":true,"detail":""}
+{"id":"ES95-F05b [SEG] ids inválidos (texto, 0, negativo, decimal, desbordado, SQL) en descarga, aprobar, rechazar y eliminar → 400 sin 5xx","ok":true,"detail":"400"}
+{"id":"ES95-F05 aprobar o rechazar: id inexistente → 404; rechazo sin nota, con espacios o de 1001 → 400; de 1000 → 200; revisar de nuevo → 409","ok":true,"detail":"404/400/400/400/200/409"}
+{"id":"ES95-F05c dos revisores a la vez: uno gana (200) y el otro recibe 409; el estado final coincide con el ganador y guarda un solo revisor","ok":true,"detail":"200/409 final=approved por QA95 adm"}
+{"id":"ES95-F04 filtro por estado: solo ese estado; estado inválido → 400","ok":true,"detail":"approved=2"}
+{"id":"ES95-S04 [PRIV] el mismo correo (igual, en mayúsculas y con espacios) con una solicitud pendiente devuelve la misma respuesta (estado, cuerpo y cabeceras) y no duplica","ok":true,"detail":"filas=1"}
+{"id":"ES95-S04b correo con solicitud aprobada → misma respuesta sin duplicar; con una rechazada → se admite una nueva","ok":true,"detail":"aprobada filas=1 rechazada filas=2"}
+{"id":"ES95-S04c [INFO] direcciones con +etiqueta se consideran distintas (una persona puede enviar varias solicitudes)","info":"filas=2"}
+{"id":"ES95-S04d 10 envíos simultáneos del mismo correo: una sola solicitud (sin índice único, la comprobación debe aguantar la carrera)","ok":false,"detail":"respuestas=201 filas=4"}
+{"id":"ES95-S04e [INFO] tiempo de respuesta: correo nuevo frente a repetido (posible señal)","info":"nuevo≈16 ms repetido≈8 ms"}
+{"id":"ES95-S07 [SEG] HTML y SQL en los campos se guardan como texto (la tabla sigue y se devuelve literal en la lista)","ok":true,"detail":"status=201"}
+{"id":"ES95-S10 [SEG] un fallo interno → 500 con mensaje genérico, sin trazas, rutas ni datos; y no deja una solicitud a medias (transacción)","ok":true,"detail":"{\"error\":\"No se pudo guardar la solicitud. / The request could not be saved.\",\"code\":\"internal_error\"}"}
+{"id":"ES95-S09 [PRIV] los registros del servidor no contienen nombres, correos, mensajes, nombres de archivo ni contenido de las solicitudes","ok":true,"detail":"líneas=8"}
+{"id":"ES95-S10b una petición de 30 MB → 4xx controlado (no se acumula en memoria ni da 5xx)","ok":true,"detail":"status=400"}
+{"id":"ES95-S12 [PRIV] la hoja de vida no se enlaza con usuarios, perfiles, validaciones ni el puente profesional (ninguna columna lo referencia)","ok":true,"detail":"columnas=0"}
+{"id":"ES95-D01 [PRIV] eliminar una solicitud → 200 y la hoja de vida desaparece en cascada; repetir → 404","ok":true,"detail":"200/404"}
+(node:17384) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"ES95-D02 [PRIV] retención: `--dry-run` cuenta sin borrar; la purga real elimina solo rechazadas de más de 180 días (181 y 365 sí; 179 no), nunca pendientes ni aprobadas, y sus hojas de vida","ok":true,"detail":"dry=[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com\n{\"count\":2,\"dryRun\":true} real=[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }\n{\"count\":2,\"dryRun\":false} quedan(179,181,365,pendiente,aprobada)=1,0,0,1,1"}
+{"id":"ES95-D02b la salida del script solo imprime cifras (sin identificadores ni datos personales)","ok":false,"detail":"[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com\n{\"count\":2,\"dryRun\":true} [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }\n{\"count\":2,\"dryRun\":false}"}
+{"id":"ES95-S05 [SEG] límite por IP: 5 envíos y el sexto → 429 con su mensaje, sin datos; los 5 primeros se atienden","ok":true,"detail":"estados=201,201,201,201,201,429,429"}
+{"id":"ES95-S06 [SEG] sin proxy de confianza (TRUST_PROXY_HOPS sin definir) falsear X-Forwarded-For NO evade el límite: sigue 429","ok":true,"detail":"status=429"}
+{"id":"ES95-S05b la trampa `website` rellena → 201 idéntico a un éxito, sin guardar nada","ok":true,"detail":"status=201 filas=0"}
+{"id":"ES95-S06b [INFO] con TRUST_PROXY_HOPS=1 el límite cuenta la IP de X-Forwarded-For: quien llegue sin proxy delante puede cambiarla y evadir el límite (el despliegue debe garantizar el proxy)","info":"8 envíos con IPs distintas: 201,201,201,201,201,201,201,201"}
+{"id":"ES95-R01 envío de 5 MB: < 3 s; descarga de 5 MB: < 1 s (umbrales propuestos)","ok":true,"detail":"envío=2307 ms descarga=478 ms"}
+{"id":"ES95-R02 20 envíos simultáneos de 5 MB desde 20 IPs: sin 5xx y p95 < 5 s (pool de 5 conexiones)","ok":false,"detail":"estados=201 máx=17303 ms"}
+{"id":"ES95-R03 lista con más de 200 solicitudes: tope de 200 filas y p95 < 300 ms (no carga contenido)","ok":true,"detail":"filas=200 p95=291 ms"}
+{"id":"ES95-S11 [INFO] espacio: cada 5 MB de PDF ocupa ≈ 4.7 MB en la base por la codificación base64 y el cifrado; el límite es por IP (5 / 15 min ≈ 35 MB por IP y ventana) y no hay tope global ni caducidad de pendientes","info":"tabla de archivos=334 MB con 71 archivos"}
+{"fin":true}

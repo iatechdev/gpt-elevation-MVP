@@ -1,0 +1,15 @@
+{
+ "rondas": 20,
+ "confirmar": {
+  "error": 12,
+  "ok": 8
+ },
+ "retirar": {
+  "ok": 12,
+  "error": 8
+ },
+ "errores": {
+  "Error · pg - · Autoriza el análisis de esa fuente antes de usarla como origen. / Auth": 1,
+  "SequelizeDatabaseError · pg 40P01 · deadlock detected": 19
+ }
+}

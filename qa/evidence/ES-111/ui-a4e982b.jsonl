@@ -1,0 +1,47 @@
+{"id":"ES111-setup","info":"entradas de diario sintéticas=1"}
+{"id":"ES111-S0 la pantalla carga: «El Puente», «Tu diario privado», «Tu perfil profesional», 3 tarjetas de ejemplo, aviso de demostración y «Nada ha cruzado aún»","ok":true,"detail":"tarjetas=3 carga_ms=4415"}
+{"id":"ES111-S0b rendimiento (propuesta): la pantalla queda lista en < 2 s con el servidor local (carga en frío y con caché)","ok":true,"detail":"frío=4415 ms, caché=689 ms"}
+{"id":"ES111-C1d los ejemplos están marcados «Ejemplo» en cada tarjeta y la pantalla no los presenta como del diario real","ok":true,"detail":""}
+{"id":"ES111-A4a [PRIV] la pantalla del puente no muestra el texto del diario real ni la frase de crisis (solo los ejemplos)","ok":true,"detail":""}
+{"id":"ES111-A3 [PRIV] el fragmento nace difuminado y `aria-hidden`; el ojo lo muestra y lo vuelve a ocultar; el botón tiene etiqueta y `aria-pressed`","ok":true,"detail":"nace=true/none|blur(5px) abierto=false cerrado=true"}
+{"id":"ES111-A3b mostrar el fragmento no escribe en localStorage/sessionStorage","ok":true,"detail":"[[\"elevation_role\",\"elevation_token\",\"elv_lang\"],[]]"}
+{"id":"ES111-A3c [OBS] al mostrar el fragmento de otra tarjeta, el primero (a) SIGUE visible: el plan esperaba que volviera a difuminarse al cambiar de insight","info":"primero tras abrir segundo aria-hidden=false (abierto=false)"}
+{"id":"ES111-A3d tras recargar el fragmento vuelve a estar difuminado","ok":true,"detail":"true"}
+{"id":"ES111-A1 [PRIV] «Autorizar cruce» solo PREGUNTA: aparece la confirmación en la tarjeta, el foco pasa a «Confirmar» y NO sale ninguna petición al servidor ni se crea versión","ok":true,"detail":"peticiones=0 versiones=0 foco=bridge-ok"}
+{"id":"ES111-A1b Escape cancela sin rastro (sin peticiones, sin versión, sin cambios en el almacenamiento local) y devuelve el foco al botón «Autorizar cruce»","ok":true,"detail":"foco=bridge-cta"}
+{"id":"ES111-A1c «Cancelar» tampoco deja rastro","ok":true,"detail":""}
+{"id":"ES111-A2 [PRIV] lo que viaja al confirmar es SOLO `{key,text,origin:{type:\"direct\"}}` (vista previa → confirmar con `requestId`), sin fragmento, sin texto del diario, sin crisis, sin nombre ni correo","ok":true,"detail":"GET /api/career-context > POST /api/career-context/preview > POST /api/career-context/confirm > GET /api/career-context"}
+{"id":"ES111-B1 [PRIV] se creó la versión 1 con exactamente el texto autorizado (no el fragmento ni el diario) y la pantalla lo lista en «Tu perfil profesional» con la fecha","ok":true,"detail":"versiones=1 {\"active\":{\"version\":1,\"status\":\"active\",\"approvedAt\":\"2026-10-29T17:37:02.401Z\",\"revokedAt\":null,\"fields\":[{\""}
+{"id":"ES111-B1b rendimiento (propuesta): confirmar un cruce (vista previa + confirmar + recarga) < 1,5 s","ok":true,"detail":"196 ms"}
+{"id":"ES111-A4 [PRIV] ni la base del puente ni las transferencias contienen el canario del diario ni la frase de crisis (el motor profesional no los recibe)","ok":true,"detail":"transferencias=0"}
+{"id":"ES111-B1c tras autorizar, la tarjeta sale de «Tu diario privado» (quedan 2) y aparece el aviso «Autorizado»","ok":true,"detail":""}
+{"id":"ES111-B1d autorizar un segundo insight crea la versión 2 con LOS DOS textos y deja la 1 como histórico (no sobrescribe)","ok":true,"detail":"1:superseded,2:active campos=energy_gives,values"}
+{"id":"ES111-B1e «Revocar» uno crea la versión 3 SIN ese texto; el insight vuelve a «Tu diario privado»","ok":true,"detail":"campos=1 tarjetas=2"}
+{"id":"ES111-B1f «Revocar todos» PREGUNTA antes (0 peticiones), y «Cancelar» no revoca nada","ok":true,"detail":"peticiones_antes=0"}
+{"id":"ES111-B1g confirmar «Revocar todos» deja la versión activa revocada, la lista vacía («Nada ha cruzado aún») y los 3 insights otra vez por decidir","ok":true,"detail":"activa=null estados=superseded,superseded,revoked"}
+{"id":"ES111-B1h [INFO] invalidación de lo derivado al revocar (`needsReview`)","info":"[\"active\",\"versions\"] [{\"version\":1,\"status\":\"superseded\"},{\"version\":2,\"status\":\"superseded\"},{\"version\":3,\"status\":\"revoked\"}]"}
+{"id":"ES111-B2 [SEG] la persona A no ve ni lista lo autorizado por B (pantalla ni API)","ok":true,"detail":""}
+{"id":"ES111-B3 doble clic en «Confirmar» crea UNA sola versión (sin duplicados)","ok":true,"detail":"versiones=1 campos=1"}
+{"id":"ES111-B3b dos pestañas: lo autorizado en una NO se pierde en silencio al autorizar desde la otra: la desactualizada no compone, se actualiza y avisa (lo autorizado se conserva)","ok":true,"detail":"aviso=true versión activa=1 textos=Liderazgo en situaciones de alta presión"}
+{"id":"ES111-B3c [PRIV] un texto REVOCADO en una pestaña no reaparece en el perfil profesional al confirmar otro insight desde una pestaña desactualizada","ok":true,"detail":"tras revocar X=Texto Y sintético → tras confirmar otro desde la pestaña vieja=Texto Y sintético"}
+{"id":"ES111-B3d [OBS] ventana residual declarada por Dev: si otra sesión revoca justo entre la relectura y la confirmación, lo revocado NO vuelve a cruzar","ok":false,"detail":"activa=Texto R1 sintético | Texto R2 sintético | Liderazgo en situaciones de alta presión"}
+{"id":"ES111-B4 tope de 3 por categoría: la tarjeta de «Lo que me da energía» queda desactivada con el aviso ANTES de pedir vista previa, y las otras siguen disponibles","ok":true,"detail":"desactivado=true aviso=true otras=false,false"}
+{"id":"ES111-B4b tope de 12 textos: «Autorizar cruce» desactivado en todas las tarjetas con el aviso de los 12","ok":true,"detail":"semilla=201 desactivados=true,true,true"}
+{"id":"ES111-B4c [SEG] el servidor rechaza el 13.º texto y el 4.º de una categoría con 4xx limpio (sin 5xx ni versión)","ok":true,"detail":"13º=400 4º=400"}
+{"id":"ES111-B4d [PRIV] un texto que el detector de riesgo marca no cruza (422 `field_not_shareable`) y no se guarda nada","ok":true,"detail":"status=422 code=field_not_shareable"}
+{"id":"ES111-B5 ante 422, 403, 409, 410, 500 y red caída la pantalla explica sin culpa con `role=alert`, conserva las tarjetas, permite reintentar y no crea versión","ok":true,"detail":"6 casos"}
+{"id":"ES111-B5b [OBS] respuesta de «confirmar» perdida tras guardar y reintento de la persona","info":"mensaje_error=true versiones_tras_fallo=1 versiones_tras_reintento=1 campos_activos=1"}
+{"id":"ES111-B5c el reintento tras una respuesta perdida no duplica versiones (idempotencia por `requestId`)","ok":true,"detail":"versiones=1"}
+{"id":"ES111-B2b sin sesión: se pide iniciar sesión (sin pantalla del puente ni peticiones con datos)","ok":true,"detail":"http://127.0.0.1:9911/login"}
+{"id":"ES111-C2 [SEG] los textos de El Puente y los ejemplos (ES/EN) no hablan de nivel, diagnóstico, empleabilidad, porcentajes ni halagos","ok":true,"detail":"sin coincidencias"}
+{"id":"ES111-C3 [INFO] línea visual medida","info":"{\"bg\":\"rgb(250, 250, 249)\",\"ink\":\"rgb(26, 26, 24)\",\"font\":\"Inter\",\"cardBg\":\"rgb(242, 239, 231)\",\"radius\":\"4px\",\"ctaBg\":\"rgba(0, 0, 0, 0)\"}"}
+{"id":"ES111-D1 a 320, 375, 768 y 1440 px no hay scroll horizontal y hay un solo h1","ok":true,"detail":"320:sw320/cw320/h1=1 375:sw375/cw375/h1=1 768:sw768/cw768/h1=1 1440:sw1440/cw1440/h1=1"}
+{"id":"ES111-D1b [INFO] controles menores de 44 px","info":"320: ninguno || 375: ninguno || 768: ninguno || 1440: ninguno"}
+{"id":"ES111-D1c contraste del texto ≥ 4.5:1 (AA) en los elementos medidos (con la confirmación abierta)","ok":true,"detail":"medidos=38 bajos=ninguno"}
+{"id":"ES111-D1d [SEG] la pantalla solo habla con su propio origen (sin terceros, salvo tipografías)","ok":true,"detail":"solo el origen propio"}
+{"id":"ES111-D2 teclado: el ojo (con etiqueta), «Autorizar cruce» y el resto se recorren con Tab con foco visible","ok":true,"detail":"sinFoco=BODY:Saltar al contenidoV [sin foco visible]"}
+{"id":"ES111-D2b [INFO] orden de tabulación","info":"A:Saltar al contenido → A:Volver al inicio → BUTTON:ES → BUTTON:EN → A:Conversación → A:Diario → SUMMARY:Más opciones de Mi e → BUTTON:Mostrar fragmento → BUTTON:Autorizar cruce → → BUTTON:Mostrar fragmento → BUTTON:Autorizar cruce → → BUTTON:Mostrar fragmento → BUTTON:Autorizar cruce → → BODY:Saltar al contenidoV [sin foco visible]"}
+{"id":"ES111-D2c todo el flujo de autorizar se puede hacer solo con teclado (Enter en «Autorizar», Enter en «Confirmar») y el foco no se pierde en <body>","ok":true,"detail":"versiones=1 foco=H2:Tu perfil profesiona"}
+{"id":"ES111-D3 EN: la pantalla (con una versión activa, tarjetas y ejemplos) se muestra en inglés sin restos en español","ok":true,"detail":"restos=ninguno"}
+{"id":"ES111-E1 sin errores de consola ni excepciones en el flujo principal","ok":true,"detail":"ok"}
+{"fin":true}

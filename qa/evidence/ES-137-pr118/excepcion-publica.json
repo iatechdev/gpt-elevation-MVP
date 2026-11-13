@@ -1,0 +1,58 @@
+{
+ "GET /api/landing-content": {
+  "anon": "200/—",
+  "persona": "200/—",
+  "terapeuta": "200/—",
+  "admin": "200/—",
+  "junta": "200/—",
+  "superadmin": "200/—"
+ },
+ "GET /api/manifest/active": {
+  "anon": "200/—",
+  "persona": "200/—",
+  "terapeuta": "200/—",
+  "admin": "200/—",
+  "junta": "200/—",
+  "superadmin": "200/—"
+ },
+ "GET /api/manifest/manifest": {
+  "anon": "403/—",
+  "persona": "403/—",
+  "terapeuta": "403/—",
+  "admin": "403/—",
+  "junta": "200/—",
+  "superadmin": "200/—"
+ },
+ "GET /api/plans": {
+  "anon": "200/no-store",
+  "persona": "200/no-store",
+  "terapeuta": "200/no-store",
+  "admin": "200/no-store",
+  "junta": "200/no-store",
+  "superadmin": "200/no-store"
+ },
+ "GET /api/plans/me": {
+  "anon": "403/—",
+  "persona": "200/no-store",
+  "terapeuta": "200/no-store",
+  "admin": "200/no-store",
+  "junta": "200/no-store",
+  "superadmin": "200/no-store"
+ },
+ "GET /api/pricing": {
+  "anon": "200/—",
+  "persona": "200/—",
+  "terapeuta": "200/—",
+  "admin": "200/—",
+  "junta": "200/—",
+  "superadmin": "200/—"
+ },
+ "GET /api/pricing/all": {
+  "anon": "403/—",
+  "persona": "403/—",
+  "terapeuta": "403/—",
+  "admin": "200/—",
+  "junta": "403/—",
+  "superadmin": "200/—"
+ }
+}

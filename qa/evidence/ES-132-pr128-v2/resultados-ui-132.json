@@ -1,0 +1,147 @@
+[
+ {
+  "id": "F8-enlace-solo-en-login-es",
+  "ok": true,
+  "detail": "login=1 registro=0 destino=/forgot-password"
+ },
+ {
+  "id": "F8-enlace-solo-en-login-en",
+  "ok": true,
+  "detail": "login=1 registro=0 destino=/forgot-password"
+ },
+ {
+  "id": "F8-pide-enlace-mensaje-neutro-es",
+  "ok": true,
+  "detail": "estado=\"✓ Si existe una cuenta con ese correo, te enviaremos un enlace. Caduca en 30 minutos.\""
+ },
+ {
+  "id": "S6-token-fuera-de-la-url-y-de-peticiones-es",
+  "ok": true,
+  "detail": "url tras cargar=/reset-password; peticiones con el token fuera de /confirm=0"
+ },
+ {
+  "id": "F9-politica-local-sin-gastar-enlace-es",
+  "ok": true,
+  "detail": "alerta=\"❌ Tu contraseña necesita: al menos 8 caracteres, un carácter especial.\"; llamadas a confirm=0"
+ },
+ {
+  "id": "F8-restablece-y-pantalla-final-es",
+  "ok": true,
+  "detail": "ES EN ELEVATION Contraseña actualizada ✓ Listo. Por seguridad cerramos tus otras sesiones. Inicia sesión con tu contraseña nueva. Iniciar sesión"
+ },
+ {
+  "id": "F8-login-con-clave-nueva-es",
+  "ok": true,
+  "detail": "destino=/app/onboarding"
+ },
+ {
+  "id": "F9-enlace-ya-usado-pide-uno-nuevo-es",
+  "ok": true,
+  "detail": "ES EN ELEVATION Enlace no válido ❌ Este enlace ya no sirve. Pide uno nuevo. Pedir un enlace nuevo Volver a iniciar sesión"
+ },
+ {
+  "id": "F8-pide-enlace-mensaje-neutro-en",
+  "ok": true,
+  "detail": "estado=\"✓ If an account exists for that email, we will send you a link. It expires in 30 minutes.\""
+ },
+ {
+  "id": "S6-token-fuera-de-la-url-y-de-peticiones-en",
+  "ok": true,
+  "detail": "url tras cargar=/reset-password; peticiones con el token fuera de /confirm=0"
+ },
+ {
+  "id": "F9-politica-local-sin-gastar-enlace-en",
+  "ok": true,
+  "detail": "alerta=\"❌ Your password needs: at least 8 characters, a special character.\"; llamadas a confirm=0"
+ },
+ {
+  "id": "F8-restablece-y-pantalla-final-en",
+  "ok": true,
+  "detail": "ES EN ELEVATION Password updated ✓ Done. For security we signed you out everywhere else. Sign in with your new password. Sign in"
+ },
+ {
+  "id": "F8-login-con-clave-nueva-en",
+  "ok": true,
+  "detail": "destino=/app/onboarding"
+ },
+ {
+  "id": "F9-enlace-ya-usado-pide-uno-nuevo-en",
+  "ok": true,
+  "detail": "ES EN ELEVATION Link not valid ❌ This link no longer works. Request a new one. Request a new link Back to sign in"
+ },
+ {
+  "id": "F9-sin-token-es",
+  "ok": true,
+  "detail": "ES EN ELEVATION Enlace no válido ❌ Este enlace ya no sirve. Pide uno nuevo. Pedir un enlace nuevo Volver a iniciar sesión"
+ },
+ {
+  "id": "F9-token-falso-es",
+  "ok": true,
+  "detail": "ES EN ELEVATION Enlace no válido ❌ Este enlace ya no sirve. Pide uno nuevo. Pedir un enlace nuevo Volver a iniciar sesión"
+ },
+ {
+  "id": "F9-sin-token-en",
+  "ok": true,
+  "detail": "ES EN ELEVATION Link not valid ❌ This link no longer works. Request a new one. Request a new link Back to sign in"
+ },
+ {
+  "id": "F9-token-falso-en",
+  "ok": true,
+  "detail": "ES EN ELEVATION Link not valid ❌ This link no longer works. Request a new one. Request a new link Back to sign in"
+ },
+ {
+  "id": "F9-429-mensaje-claro",
+  "ok": true,
+  "detail": "❌ Demasiados intentos. Inténtalo más tarde."
+ },
+ {
+  "id": "F9-error-de-red-mensaje-claro",
+  "ok": true,
+  "detail": "❌ No se pudo completar el acceso. Inténtalo de nuevo."
+ },
+ {
+  "id": "F11-doble-clic-una-sola-peticion-y-estado-enviando",
+  "ok": true,
+  "detail": "peticiones=1; botón mientras envía=\"Enviando…\" deshabilitado=true"
+ },
+ {
+  "id": "F10-forgot-es-320",
+  "ok": true,
+  "detail": "{\"hs\":false,\"h\":46,\"fits\":true,\"tab_llega_al_correo\":true,\"foco_visible\":true}"
+ },
+ {
+  "id": "F10-reset-es-320",
+  "ok": true,
+  "detail": "{\"hs\":false}"
+ },
+ {
+  "id": "F10-forgot-es-390",
+  "ok": true,
+  "detail": "{\"hs\":false,\"h\":46,\"fits\":true,\"tab_llega_al_correo\":true,\"foco_visible\":true}"
+ },
+ {
+  "id": "F10-forgot-es-1440",
+  "ok": true,
+  "detail": "{\"hs\":false,\"h\":46,\"fits\":true,\"tab_llega_al_correo\":true,\"foco_visible\":true}"
+ },
+ {
+  "id": "F10-forgot-en-320",
+  "ok": true,
+  "detail": "{\"hs\":false,\"h\":46,\"fits\":true,\"tab_llega_al_correo\":true,\"foco_visible\":true}"
+ },
+ {
+  "id": "F10-reset-en-320",
+  "ok": true,
+  "detail": "{\"hs\":false}"
+ },
+ {
+  "id": "F10-forgot-en-390",
+  "ok": true,
+  "detail": "{\"hs\":false,\"h\":46,\"fits\":true,\"tab_llega_al_correo\":true,\"foco_visible\":true}"
+ },
+ {
+  "id": "F10-forgot-en-1440",
+  "ok": true,
+  "detail": "{\"hs\":false,\"h\":46,\"fits\":true,\"tab_llega_al_correo\":true,\"foco_visible\":true}"
+ }
+]

@@ -1,0 +1,18 @@
+BUILD default PASS
+BUILD normal PASS
+BUILD lost-ack PASS
+BUILD save-error PASS
+BUILD conflict PASS
+BUILD unconfigured PASS
+BUILD load-error PASS
+BUILD metrics-error PASS
+PASS default build: no form or preview link, direct URL disabled
+PASS ES/EN, optional answers, RAM save/readback/withdraw, reload/session clear, keyboard/focus, exit guard, widths and zero writes
+PASS lost-ack: no false server persistence; draft retained or reconciled
+PASS save-error: no false server persistence; draft retained or reconciled
+PASS conflict: no false server persistence; draft retained or reconciled
+PASS unconfigured: no enabled real capture
+PASS load-error: no enabled real capture
+PASS admin fixture projection: targets separate, protected counts absent, responsive and CSS zoom
+PASS metrics failure is an error, not zero results
+ES-36 browser: 9 groups PASS. Compiled UI and fixture repository; backend API writes zero, no LLM. Client role guard is not real server authorization.

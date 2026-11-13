@@ -1,0 +1,36 @@
+[
+ {
+  "id": "E1a (bloqueante) 10 destinos no locales (evil.com, 127.0.0.1.evil.com, userinfo engañoso, localhost.evil.net, 10.x, 192.168.x, 0.0.0.0, supabase, IPv6 pública, host codificado) → error ANTES de crear ningún Client; la clave no aparece en el error",
+  "ok": true,
+  "detail": " fuga=false"
+ },
+ {
+  "id": "E1b URL inválida → error sin conectar; variable ausente o vacía → null (modo embebido)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "E1c info",
+  "info": "127.0.0.2 → rechaza (QA_EXT: solo se aceptan servidores en lo) ; LOCALHOST → rechaza (QA_EXT: solo se aceptan servidores en lo)"
+ },
+ {
+  "id": "E2a (bloqueante) 127.0.0.1 y localhost: crea una base aleatoria propia (qa261_test_<16 hex>), la suite trabaja en ella y stop() la borra; stop() doble es inocuo; la base original no recibe tablas",
+  "ok": true,
+  "detail": "ok"
+ },
+ {
+  "id": "E2b seis aperturas en paralelo → seis bases distintas, todas borradas al terminar",
+  "ok": true,
+  "detail": "/qa261_test_c725cb315650e9df,/qa261_test_d8825a21227a3d3d,/qa261_test_a80b0bc6023833e3,/qa261_test_8c6419d786098f73,/qa261_test_f037f96483d5c44e,/qa261_test_9dd230e5209c491f"
+ },
+ {
+  "id": "E2c sin bases residuales qa261_test_* tras todas las pruebas",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "E2d la base administrativa original no recibió tablas de prueba",
+  "ok": true,
+  "detail": "null"
+ }
+]

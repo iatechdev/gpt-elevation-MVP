@@ -1,0 +1,105 @@
+{
+  "pr": 214,
+  "mode": "pr",
+  "head": "a881c6c3e0b1a695c0ca37c0469de2beb30d4c1e",
+  "results": [
+    {
+      "id": "PRE catálogo de rutas sintético publicado por la ruta real",
+      "ok": true,
+      "detail": "200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-11-11T04:16:19.344Z\",\"itemCount\":27} errores="
+    },
+    {
+      "id": "PRE el catálogo sintético referencia ≥ 5 habilidades",
+      "ok": true,
+      "detail": "adaptabilidad,analisis_informacion,aprendizaje_autonomo,comunicacion,influencia_liderazgo,planificacion_organizacion,resolucion_problemas,trabajo_en_equipo"
+    },
+    {
+      "id": "L2a sin catálogo de habilidades publicado: 200 y `skillLabels` vacío en la lista y en la ficha (no 500) [en main: la clave no existe]",
+      "ok": true,
+      "detail": "200 {}"
+    },
+    {
+      "id": "PRE catálogos de habilidades: v1 archivada, v2 vigente y un borrador abierto con otros nombres",
+      "ok": true,
+      "detail": "200/200"
+    },
+    {
+      "id": "L1a lista completa: `skillLabels` trae SOLO las habilidades referenciadas que existen en el catálogo VIGENTE, con el nombre vigente {es,en}",
+      "ok": true,
+      "detail": "200 claves=7/7"
+    },
+    {
+      "id": "L2b la clave que solo existe en el catálogo ARCHIVADO se omite (no se inventa ni queda vacía); la no referenciada tampoco aparece; el borrador abierto NO se filtra",
+      "ok": true,
+      "detail": "analisis_informacion"
+    },
+    {
+      "id": "L1b ficha de cada uno de los 6 roles: `skillLabels` = exactamente las habilidades de ESE rol y sus recursos que existen en el vigente",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "L1c solo nombres: ni rúbrica, niveles, territorios, tipo ni quién verificó en `skillLabels` ni en ninguna parte de la respuesta",
+      "ok": true,
+      "detail": "respuesta 14987 bytes"
+    },
+    {
+      "id": "L2c etiqueta con `en` vacío o ausente → la habilidad se omite (no se inventa ni se devuelve a medias)",
+      "ok": true,
+      "detail": "false/false"
+    },
+    {
+      "id": "L2d al publicar un catálogo de habilidades nuevo, las etiquetas siguen al VIGENTE (nombre v3; el borrador nuevo hereda el resto)",
+      "ok": true,
+      "detail": "200 {\"adaptabilidad\":{\"es\":\"Nombre v3\",\"en\":\"Name v3\"},\"aprendizaje_autonomo\":{\"es\":\"Nombre aprendizaje_autonomo\",\"en\":\"Name"
+    },
+    {
+      "id": "L3a estados y permisos como en main: catálogo no publicado → 503 `catalog_unavailable` (lista y ficha); rol inexistente → 404 `role_not_found`; sin sesión 401/403; `Cache-Control: no-store`; otros roles con sesión leen igual",
+      "ok": true,
+      "detail": "503,catalog_unavailable,503,catalog_unavailable nf=404 anon=403/403 th=200 cc=no-store"
+    },
+    {
+      "id": "L3b la clave nueva es la única añadida: claves de primer nivel de la lista y de la ficha (contexts, sources, roles, offers, resources, version, publishedAt [+ role, sources, offers, resources en la ficha]) + `skillLabels` (comparación campo a campo con main: ver la evidencia de forma)",
+      "ok": true,
+      "detail": "version,publishedAt,contexts,sources,roles,offers,resources,skillLabels | version,role,sources,offers,resources,skillLabels"
+    },
+    {
+      "id": "L4a `roleKey` hostil (traversal, nulo, 300 caracteres, `__proto__`, mayúsculas, espacios, comilla, % inválido) → 404 (o 400), nunca 5xx ni skillLabels",
+      "ok": true,
+      "detail": "..%2F..%2Fet→404 ; %00→404 ; xxxxxxxxxxxx→404 ; __proto__→404 ; constructor→404 ; FORMADOR_COR→404 ; formador cor→404 ; a'--→404 ; %E0%A4%A→400 ; .→404"
+    },
+    {
+      "id": "L4b una habilidad con clave y nombre raros (comillas, HTML) en el vigente NO rompe la respuesta (200) y no se mezcla con las referenciadas",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "id": "L4c el registro del servidor no contiene nombres de habilidades, rúbricas ni correos; la respuesta no incluye ids de personas",
+      "ok": true,
+      "detail": "log 1370 bytes"
+    },
+    {
+      "id": "L5a consultas SELECT por lectura (registro de sentencias de Postgres)",
+      "info": "{\"SkillCatalogs\":1,\"SkillDefinitions\":1,\"RouteCatalogs\":1,\"RouteCatalogItems\":1,\"total\":14}"
+    },
+    {
+      "id": "L5b a lo sumo 2 consultas adicionales por lectura frente a main: 1 a SkillCatalogs + 1 a SkillDefinitions (sin N+1); main no consulta habilidades",
+      "ok": true,
+      "detail": "{\"SkillCatalogs\":1,\"SkillDefinitions\":1,\"RouteCatalogs\":1,\"RouteCatalogItems\":1,\"total\":14}"
+    },
+    {
+      "id": "L5c latencia /api/route-catalog (60 lecturas, ms)",
+      "info": "{\"mode\":\"pr\",\"mean\":30.2,\"p50\":29.8,\"p95\":33.8}"
+    },
+    {
+      "id": "L5d 20 lecturas simultáneas (pool 5): todas 200, sin 5xx y con respuestas IDÉNTICAS",
+      "ok": true,
+      "detail": "200200200200200200200200200200200200200200200200200200200200 distintas=1"
+    },
+    {
+      "id": "L5e sin transacciones colgadas",
+      "ok": true,
+      "detail": "idle in tx=0"
+    }
+  ]
+}

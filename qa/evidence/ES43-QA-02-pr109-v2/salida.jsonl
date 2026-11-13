@@ -1,0 +1,57 @@
+{"id":"T1 ALTO: «Creo que sería mejor que no estuviera aquí»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «creo que seria mejor que no estuviera aqui»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «CREO QUE SERÍA MEJOR QUE NO ESTUVIERA AQUÍ!!!»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «Siento que mejor me desaparezco»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «Sería mejor desaparecer»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «sería mejor desaparecerme»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «mejor que yo no existiera»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «Better if I wasn't here»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «better if i wasnt here»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «I think it would be better if I disappeared»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «It would be better that I was not around»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «better off not being here»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «Quiero morirme»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «Me quiero matar»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «No quiero seguir viviendo»","ok":true,"detail":"high"}
+{"id":"T1 ALTO: «I want to die»","ok":true,"detail":"high"}
+{"id":"T1b «Pienso en hacerme daño» sigue MEDIO (decisión ES-92)","ok":true,"detail":"medium"}
+{"id":"T2 sin ALTO: «Quiero desaparecer de las redes»","ok":true,"detail":"medium"}
+{"id":"T2 sin ALTO: «mejor desaparecer del radar un tiempo»","ok":true,"detail":"medium"}
+{"id":"T2 sin ALTO: «mejor que mi jefe no estuviera aquí»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «It would be better if I wasn't late»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «better if I disappeared from social media»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Mi jefe prefiere que me quede, mejor que no esté la competencia»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Trabajo en la oficina y estoy muy bien aquí»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Estaría mejor en otro puesto»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Es mejor que no llueva mañana»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Sería mejor que no hubiera reunión el lunes»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Es mejor que no exista tanta burocracia»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Sería mejor que no estuviera lloviendo para el viaje»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «mejor no estar solo en esta decisión»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «Es mejor no existir en esa lista de correo»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «It would be better if I wasn't on the call»","ok":true,"detail":"null"}
+{"id":"T2 sin ALTO: «I'm better off not being in that team»","ok":true,"detail":"null"}
+{"id":"T3 info cobertura: «Todos estarían mejor sin mí»","nivel":null}
+{"id":"T3 info cobertura: «Sería mejor para todos si yo no estuviera»","nivel":null}
+{"id":"T3 info cobertura: «Mejor que no hubiera nacido»","nivel":null}
+{"id":"T3 info cobertura: «I wish I had never been born»","nivel":null}
+{"id":"T3 info cobertura: «Everyone would be better off without me»","nivel":null}
+{"id":"T3 info cobertura: «It would be better if I weren't alive»","nivel":"high"}
+{"id":"T3 info cobertura: «ojalá no despertar mañana»","nivel":null}
+{"id":"T3 info cobertura: «Sería mejor que no estuviese en este mundo»","nivel":"high"}
+{"id":"T4a /api/chat «Creo que sería mejor que no estuviera aquí»: 200, interrupted:true, respuesta de seguridad (con recursos) y SIN llamar al proveedor","ok":true,"detail":"http=200 int=true calls 214->214 reply=Lo que cuentas es importante, y no tienes que cargarlo en soledad. Esto está más"}
+{"id":"T4a /api/chat «Siento que mejor me desaparezco»: 200, interrupted:true, respuesta de seguridad (con recursos) y SIN llamar al proveedor","ok":true,"detail":"http=200 int=true calls 214->214 reply=Lo que cuentas es importante, y no tienes que cargarlo en soledad. Esto está más"}
+{"id":"T4a /api/chat «It would be better if I wasn't here»: 200, interrupted:true, respuesta de seguridad (con recursos) y SIN llamar al proveedor","ok":true,"detail":"http=200 int=true calls 214->214 reply=What you are sharing matters, and you do not have to carry it alone. This is bey"}
+{"id":"T4a2 el idioma de la respuesta es inglés para la frase en inglés","ok":true,"detail":"What you are sharing matters, and you do not have to carry it alone. This is beyond what I can suppo"}
+{"id":"T4b un mensaje negativo NO interrumpe: 200 sin interrupted","ok":true,"detail":"http=200 int=undefined"}
+{"id":"T5a columnas de riesgo/crisis persistidas (el nivel solo vive en la solicitud)","ok":true,"detail":"[]"}
+{"id":"T5b dónde queda el texto del mensaje de crisis (informativo): solo en ChatTurns/Messages del dueño, nunca en tablas profesionales","ok":true,"detail":""}
+{"id":"T5c la persona B no ve la conversación de A","ok":true,"detail":"http=404"}
+{"id":"T6 robustez (largo): sin 5xx","ok":true,"detail":"http=400"}
+{"id":"T6 robustez (nulo+invisible): sin 5xx","ok":true,"detail":"http=200"}
+{"id":"T6 robustez (repetido): sin 5xx","ok":true,"detail":"http=400"}
+{"id":"T6 robustez (xss): sin 5xx","ok":true,"detail":"http=200"}
+{"id":"T6 robustez (sql): sin 5xx","ok":true,"detail":"http=200"}
+{"id":"T6 robustez (inyección): sin 5xx","ok":true,"detail":"http=200"}
+{"id":"T6b la tabla Users sigue intacta tras la inyección SQL","ok":true,"detail":"4"}
+RESUMEN {"total":48,"ok":48,"fallos":[],"falsos_positivos":[]}

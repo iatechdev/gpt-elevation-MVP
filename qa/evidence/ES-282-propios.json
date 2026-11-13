@@ -1,0 +1,143 @@
+[
+ {
+  "id": "C5 contraseñas débiles (16 mías) rechazadas con 400 en registro, invitación y restablecer; ningún enlace se gasta",
+  "ok": true,
+  "detail": "14 × 3 caminos"
+ },
+ {
+  "id": "C5b contraseñas que cumplen la política (comportamiento en los bordes)",
+  "info": "normal=201 ; unicode=201 ; largo72=201 ; largo200=400 ; conNUL=201 ; conEspaciosYTabs=201 (esperado: 201 las válidas; el límite de bcrypt es de 72 bytes)"
+ },
+ {
+  "id": "C5c ninguna contraseña de borde produce 5xx",
+  "ok": true,
+  "detail": "normal=201 ; unicode=201 ; largo72=201 ; largo200=400 ; conNUL=201 ; conEspaciosYTabs=201"
+ },
+ {
+  "id": "C6 tiempos (30 por lado, cuentas nuevas)",
+  "info": "login existente: mediana 401.8 ms, p95 531.1 ms | login inexistente: mediana 387.3 ms, p95 488.9 ms | restablecer existente: mediana 4.2 ms, p95 11.4 ms | restablecer inexistente: mediana 5.3 ms, p95 15.5 ms"
+ },
+ {
+  "id": "C6a login: existente e inexistente → mismo estado y mismas claves de cuerpo",
+  "ok": true,
+  "detail": "estados 401/401; formas de cuerpo 1"
+ },
+ {
+  "id": "C6b restablecer: existente e inexistente → mismo estado y mismo cuerpo exacto",
+  "ok": true,
+  "detail": "estados 202/202; cuerpos distintos 1"
+ },
+ {
+  "id": "C6c diferencia de tiempos (mediana)",
+  "info": "login 14.5 ms (propuesta: < 120 ms, la de Dev); restablecer 1.1 ms (la cuenta existente hace trabajo extra: 0.8×)"
+ },
+ {
+  "id": "C6d login: diferencia de mediana < 120 ms (propuesta)",
+  "ok": true,
+  "detail": "14.5 ms"
+ },
+ {
+  "id": "E282-1 registro con correo existente",
+  "info": "existente: 400 {\"error\":\"El correo ya está registrado.\"} | nuevo: 201"
+ },
+ {
+  "id": "C6e el bloqueo por intentos fallidos se comporta igual con cuenta existente e inexistente",
+  "ok": true,
+  "detail": "existente: 401,401,423,423,423,423 | inexistente: 401,401,423,423,423,423"
+ },
+ {
+  "id": "C7a health",
+  "info": "cache-control: (ninguno) (endpoint público sin datos)"
+ },
+ {
+  "id": "C7a cabeceras de seguridad en SPA, API, API autenticada y 404 de API",
+  "ok": true,
+  "detail": "CSP, frame-ancestors, nosniff, HSTS, referrer-policy, sin x-powered-by, no-store en la API"
+ },
+ {
+  "id": "C7b CORS: ningún origen ajeno (evil, null, subdominio engañoso, mayúsculas) recibe permiso ni comodín",
+  "ok": true,
+  "detail": "27 combinaciones"
+ },
+ {
+  "id": "C7c CORS: orígenes locales",
+  "info": "GET /api/health https://evil.example → http://localhost:5173 ; GET /api/diary https://evil.example → http://localhost:5173 ; OPTIONS /api/diary https://evil.example → http://localhost:5173 ; GET /api/health null → http://localhost:5173 ; GET /api/diary null → http://localhost:5173 ; OPTIONS /api/diary null → http://localhost:5173 ; GET /api/health https://elevation.example.evil.com → http://localhost:5173 ; GET /api/diary https://elevation.example.evil.com → http://localhost:5173 ; OPTIONS /api/diary https://elevation.example.evil.com → http://localhost:5173 ; GET /api/health http://localhost:3000 → http://localhost:5173 ; GET /api/diary http://localhost:3000 → http://localhost:5173 ; OPTIONS /api/diary http://localhost:3000 → http://localhost:5173 ; GET /api/health http://127.0.0.1:9999 → http://localhost:5173 ; GET /api/diary http://127.0.0.1:9999 → http://localhost:5173 ; OPTIONS /api/diary http://127.0.0.1:9999 → http://localhost:5173 ; GET /api/health https://evil.example:443 → http://localhost:5173 ; GET /api/diary https://evil.example:443 → http://localhost:5173 ; OPTIONS /api/diary https://evil.example:443 → http://localhost:5173 ; GET /api/health HTTPS://EVIL.EXAMPLE → http://localhost:5173 ; GET /api/diary HTTPS://EVIL.EXAMPLE → http://localhost:5173 ; OPTIONS /api/diary HTTPS://EVIL.EXAMPLE → http://localhost:5173 ; GET /api/health file:// → http://localhost:5173 ; GET /api/diary file:// → http://localhost:5173 ; OPTIONS /api/diary file:// → http://localhost:5173 ; GET /api/health https:// → http://localhost:5173 ; GET /api/diary https:// → http://localhost:5173 ; OPTIONS /api/diary https:// → http://localhost:5173"
+ },
+ {
+  "id": "C9 quién ve el texto de las guías (rutas GET con «prompt»: 10)",
+  "info": "anon: nada | persona: nada | profesional T1 (dueño): nada | profesional T2 (ajeno): nada | admin: CAN1@/api/admin/prompt/:key/versions,CAN2@/api/admin/prompt/:key/versions | superadmin: CAN1@/api/admin/prompt/:key/versions,CAN2@/api/admin/prompt/:key/versions,CAN1@/api/superadmin/prompt/:key/versions,CAN2@/api/superadmin/prompt/:key/versions | junta: nada"
+ },
+ {
+  "id": "C9a sin sesión, persona, profesional ajeno y junta no ven ningún texto de guía ni producen 5xx",
+  "ok": true,
+  "detail": "anon: nada | persona: nada | profesional T2 (ajeno): nada | junta: nada"
+ },
+ {
+  "id": "C9b el profesional ve solo la suya (CAN1) y nunca la general (CAN2)",
+  "ok": true,
+  "detail": "nada"
+ },
+ {
+  "id": "E282-3 administración y texto de guías",
+  "info": "administración ve: CAN1@/api/admin/prompt/:key/versions,CAN2@/api/admin/prompt/:key/versions | superadministración ve: CAN1@/api/admin/prompt/:key/versions,CAN2@/api/admin/prompt/:key/versions,CAN1@/api/superadmin/prompt/:key/versions,CAN2@/api/superadmin/prompt/:key/versions"
+ },
+ {
+  "id": "C9c aprobar/rechazar/volver con persona, profesionales, administración, junta y sin sesión → 401/403",
+  "ok": true,
+  "detail": "36 solicitudes"
+ },
+ {
+  "id": "C9d ninguna guía cambió de estado con esos rechazos",
+  "ok": true,
+  "detail": "estado intacto"
+ },
+ {
+  "id": "C9e propuestas con claves y contenidos hostiles (16 × 2 rutas) → 4xx, nunca 5xx (el 502 del doble de IA se excluye como estado)",
+  "ok": true,
+  "detail": "32 solicitudes"
+ },
+ {
+  "id": "C10 tablas con requestId y su índice único",
+  "info": "AiJobs: ai_jobs_owner_request ; AiUsages: SIN ÍNDICE ÚNICO CON requestId ; CareerContextVersions: career_context_versions__user_id_request_id ; CareerExperimentReviews: career_review_request ; CareerExperimentVersions: career_experiment_version_request ; CareerExperiments: career_experiment_request ; CareerPlanVersions: career_plan_request ; CareerReminders: career_reminder_request ; ChatTurns: chat_turns__user_id_request_id ; DiaryEntries: diary_entries__user_request_id ; EvidenceVersions: evidence_versions__user_id_request_id ; Invitations: invitations__invited_by_request_id ; RouteChoices: route_choices_owner_request ; RouteConstraintsVersions: route_constraints_owner_request ; RouteReviewRequests: route_reviews_owner_request ; SessionNotes: SIN ÍNDICE ÚNICO CON requestId ; SkillAssessments: skill_assessments__user_id_request_id"
+ },
+ {
+  "id": "C10a toda tabla con requestId tiene un índice ÚNICO que lo incluye (garantía en la base, no solo en el código)",
+  "ok": false,
+  "detail": "17 tablas; sin índice único: AiUsages,SessionNotes"
+ },
+ {
+  "id": "C10b nota de sesión repetida con el mismo requestId → 1 fila",
+  "ok": true,
+  "detail": "estados 201/200; filas 1"
+ },
+ {
+  "id": "C10c 8 diarios SIMULTÁNEOS con el mismo requestId → 1 fila y ningún 5xx",
+  "ok": true,
+  "detail": "filas 1; estados 200,200,200,201,200,200,200,200"
+ },
+ {
+  "id": "C10e 8 notas de sesión SIMULTÁNEAS con el mismo requestId → 1 fila (la tabla no tiene índice único con requestId)",
+  "ok": true,
+  "detail": "filas 1; estados 200,200,201,200,200,200,200,200"
+ },
+ {
+  "id": "C10d 6 chats SIMULTÁNEOS con el mismo requestId → 1 llamada al proveedor y 1 turno",
+  "ok": true,
+  "detail": "llamadas 1; estados 200,409,409,409,409,409; filas de consumo de IA con ese requestId: 1 (AiUsages tampoco tiene índice único con requestId)"
+ },
+ {
+  "id": "C11 cargas propias en el chat (12): el sistema no cambia, el mensaje va como «user», sin invisibles ni controles, ningún 5xx",
+  "ok": false,
+  "detail": "tags: quedan caracteres invisibles/de control U+E0041 U+E0042 U+E0043"
+ },
+ {
+  "id": "C11b una propuesta de guía con instrucciones no entra en el mensaje de sistema del revisor",
+  "ok": true,
+  "detail": "estado 422; solicitudes al revisor 0; en el sistema: false"
+ },
+ {
+  "id": "C12 ninguna respuesta GET (persona, administración, sin sesión) contiene datos «.invalid» de ejemplo",
+  "ok": true,
+  "detail": "78 rutas × 3 perfiles"
+ }
+]

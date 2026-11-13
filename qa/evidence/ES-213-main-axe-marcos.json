@@ -1,0 +1,170 @@
+[
+ {
+  "role": "user",
+  "lang": "es",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "user",
+  "lang": "es",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "user",
+  "lang": "en",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "user",
+  "lang": "en",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "admin",
+  "lang": "es",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "admin",
+  "lang": "es",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "admin",
+  "lang": "en",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "admin",
+  "lang": "en",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "superadmin",
+  "lang": "es",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [
+   "select-name(critical) ×2"
+  ],
+  "horizontalScroll": false
+ },
+ {
+  "role": "superadmin",
+  "lang": "es",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [
+   "select-name(critical) ×2"
+  ],
+  "horizontalScroll": false
+ },
+ {
+  "role": "superadmin",
+  "lang": "en",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [
+   "select-name(critical) ×2"
+  ],
+  "horizontalScroll": false
+ },
+ {
+  "role": "superadmin",
+  "lang": "en",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [
+   "select-name(critical) ×2"
+  ],
+  "horizontalScroll": false
+ },
+ {
+  "role": "therapist",
+  "lang": "es",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "therapist",
+  "lang": "es",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "therapist",
+  "lang": "en",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "therapist",
+  "lang": "en",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "board",
+  "lang": "es",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "board",
+  "lang": "es",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "board",
+  "lang": "en",
+  "width": 1360,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ },
+ {
+  "role": "board",
+  "lang": "en",
+  "width": 390,
+  "frameViolations": [],
+  "legacyViolations": [],
+  "horizontalScroll": false
+ }
+]

@@ -1,0 +1,107 @@
+[
+ {
+  "id": "C1 batería de 109 entradas sobre POST: lo inválido → 4xx con cuerpo fijo y tabla intacta; el límite exacto válido → 201; 0 5xx [control]",
+  "ok": false,
+  "detail": "5xx: 8; POST price 0.001: esperaba 4xx y dio 201 | POST price 0.001: la tabla cambió con una entrada inválida | POST price \"0.001\": esperaba 4xx y dio 201 | POST price \"0.001\": la tabla cambió con una entrada inválida | POST price \"1e3\": esperaba 4xx y dio 201 | POST price \"1e3\": la tabla cambió con una entrada inválida | POST price 100000000: 500 | POST price 99999999.999: 500 | POST price -1: esperaba 4xx y dio 201 | POST price -1: la tabla cambió con una entrada inválida"
+ },
+ {
+  "id": "C1 estados (control)",
+  "info": "price 0=201 ; price -0=201 ; price \"0\"=201 ; price 0.001=201 ; price \"0.001\"=201 ; price 1e3=201 ; price \"1e3\"=201 ; price Infinity→null=400 ; price NaN→null=400 ; price \"12,5\"=400 ; price \" 12\"=201 ; price \"12 \"=201 ; price fullwidth=400 ; price 99999999.99=201 ; price -1=201 ; price \"+5\"=201 ; price \".5\"=201 ; price \"5.\"=201 ; price \"0x10\"=201 ; price true=400 ; price []=400 ; price {}=400 ; price [5]=400 ; price null=400 ; price 12345678.9=201 ; price 5e-7=201 ; price 0.1+0.2=201 ; price 19.99=201 ; price \"19.99\"=201 ; price 1.005=201 ; price \"00012\"=201 ; slug 1 car=201 ; slug 20=201 ; slug vacío=400 ; slug MAYÚS=201 ; slug acentos=201 ; slug ../=201 ; slug emoji=201 ; slug espacio=201 ; slug NUL=201 ; slug guion bajo=201 ; slug espacio inicial=201 ; slug salto final=201 ; slug número=400 ; slug null=400 ; slug arreglo=400 ; slug objeto=400 ; slug solo guiones=201 ; name_es vacío=400 ; name_es espacios=400 ; name_es 255=201 ; name_es null=400 ; name_en número=400 ; name_en arreglo=400 ; name_en unicode=201 ; name_es NUL=201 ; name_en emoji=201 ; description_es 2000=201 ; description_es 2001=201 ; description_es null=201 ; description_en número=400 ; description_es NUL=201 ; features 20=201 ; features 21=201 ; feature 200=201 ; feature 201=201 ; features no texto=400 ; features anidado=400 ; features cadena=400 ; features NUL=201 ; features null=400 ; features objeto=400 ; order 0=201 ; order 1000000=201 ; order 1000001=201 ; order -1=201 ; order 1.5=400 ; order \"5\"=201 ; order \"\"=400 ; order \"abc\"=400 ; order null=400 ; order 1e3=201 ; order true=400 ; currency USD=201 ; currency usd=201 ; currency US=201 ; currency U$D=201 ; currency ÑÑÑ=201 ; currency número=400 ; currency vacía=400 ; period month=201 ; period Month=201 ; period 20=201 ; period a1=201 ; period vacío=400 ; period número=400 ; isHighlighted \"true\"=400 ; isHighlighted 1=400 ; isHighlighted null=400 ; isHighlighted true=201 ; isActive \"no\"=400"
+ },
+ {
+  "id": "C1 lo que se guarda con un NUL (U+0000) en nombre, descripción y características (control)",
+  "info": "[{\"name_es\":\"\\\"a\\\\\\\\0b\\\"\",\"len\":4,\"desc\":\"\\\"\\\"\",\"features\":\"[]\"},{\"name_es\":\"\\\"Plan QA\\\"\",\"len\":7,\"desc\":\"\\\"a\\\\\\\\0b\\\"\",\"features\":\"[]\"},{\"name_es\":\"\\\"Plan QA\\\"\",\"len\":7,\"desc\":\"\\\"\\\"\",\"features\":\"[\\\"a\\\\u0000b\\\"]\"}]"
+ },
+ {
+  "id": "C1b crear SIN precio → 400 con field=price y no se guarda ninguna fila [control]",
+  "ok": false,
+  "detail": "estado 201 {\"message\":\"Plan creado exitosamente.\",\"plan\":{\"id\":64,\"slug\":\"qa32e356\",\"name_es\":\"A\",\"name_en\":\"A\",\"description_es\":\"\""
+ },
+ {
+  "id": "C1c precio 0 EXPLÍCITO → 201 y se guarda 0.00 [control]",
+  "ok": true,
+  "detail": "estado 201"
+ },
+ {
+  "id": "C1d cuerpos no objeto, JSON roto y de 400 KB → 4xx, nunca 5xx [control]",
+  "ok": true,
+  "detail": " enorme 413; roto 400"
+ },
+ {
+  "id": "C2 batería sobre PUT: lo inválido → 4xx y la tabla no cambia; lo válido → 200; 0 5xx [control]",
+  "ok": false,
+  "detail": "5xx: 17; PUT price 0.001: esperaba 4xx y dio 200 | PUT price 0.001: la fila cambió con una entrada inválida | PUT price \"0.001\": esperaba 4xx y dio 200 | PUT price \"0.001\": la fila cambió con una entrada inválida | PUT price \"1e3\": esperaba 4xx y dio 200 | PUT price \"1e3\": la fila cambió con una entrada inválida | PUT price 100000000: 500 | PUT price 99999999.999: 500 | PUT price -1: esperaba 4xx y dio 200 | PUT price -1: la fila cambió con una entrada inválida"
+ },
+ {
+  "id": "C3a crear con slug repetido → 409 slug_taken con cuerpo fijo [control]",
+  "ok": false,
+  "detail": "201/500 {\"error\":\"No se pudo crear el plan.\"}"
+ },
+ {
+  "id": "C3b editar con su propio slug → 200; con el de otro plan → 409 [control]",
+  "ok": false,
+  "detail": "propio 200; ajeno 500"
+ },
+ {
+  "id": "C3c el slug de un plan desactivado sigue reservado → 409 [control]",
+  "ok": false,
+  "detail": "desactivar 200; reutilizar 500"
+ },
+ {
+  "id": "C3d 20 altas SIMULTÁNEAS con el mismo slug → una 201, el resto 409, ningún 5xx, 1 fila [control]",
+  "ok": false,
+  "detail": "estados {\"201\":1,\"500\":19}; filas 1"
+ },
+ {
+  "id": "C3e dos ediciones SIMULTÁNEAS al mismo slug → una 200 y una 409 [control]",
+  "ok": false,
+  "detail": "estados 200,500"
+ },
+ {
+  "id": "C4 edición parcial válida → 200 (nombre, precio, vacío, campo desconocido, id y fechas, precio como cadena) [control]",
+  "ok": true,
+  "detail": "{\"solo nombre\":200,\"solo precio\":200,\"vacío {}\":200,\"campo desconocido\":200,\"id y fechas del formulario\":200,\"precio como cadena del DECIMAL\":200}"
+ },
+ {
+  "id": "C4b la fila completa que entrega GET /all vuelve como PUT (lo que hace la pantalla al guardar sin tocar nada) → 200 [control]",
+  "ok": true,
+  "detail": "73 planes; todos 200"
+ },
+ {
+  "id": "C4c EDITAR un plan heredado (creado antes de la validación) enviando el formulario completo con otro precio [control]",
+  "info": "Plan_Heredado/Month: 200  ; (sin slug)/month: 400 slug ; otro-heredado/MONTHLY: 200  (200 = editable; 400 = el administrador no puede cambiar ni el precio hasta corregir el campo marcado)"
+ },
+ {
+  "id": "C5 la semilla es idempotente y las lecturas públicas siguen respondiendo [control]",
+  "ok": true,
+  "detail": "seed 200/200; planes base 4/4; GET /api/pricing 200; /api/plans 200"
+ },
+ {
+  "id": "C5 forma de las respuestas públicas (control)",
+  "info": "/api/pricing: createdAt,currency,description_en,description_es,features_en,features_es,id,isActive,isHighlighted,name_en,name_es,order,period,price,slug,updatedAt | /api/plans: currency,description_en,description_es,features_en,features_es,id,isHighlighted,name_en,name_es,order,period,price,slug"
+ },
+ {
+  "id": "C6 sin sesión, persona y profesional no pueden crear, editar, desactivar ni sembrar planes (ni en /api/pricing ni en /api/admin/pricing) y la tabla no cambia [control]",
+  "ok": true,
+  "detail": "24 solicitudes rechazadas"
+ },
+ {
+  "id": "C6b administración y superadministración sí pueden editar por las dos rutas [control]",
+  "ok": true,
+  "detail": "200,200"
+ },
+ {
+  "id": "C6c ids hostiles en PUT y DELETE → nunca 5xx [control]",
+  "ok": true,
+  "detail": "14 solicitudes"
+ },
+ {
+  "id": "C12 latencia (control)",
+  "info": "crear: mediana 15.2 ms, p95 22.4 ms | editar: mediana 15.5 ms, p95 22.5 ms"
+ },
+ {
+  "id": "C12 p95 de crear y editar < 300 ms (propuesta) [control]",
+  "ok": true,
+  "detail": "crear 22.4 ms; editar 22.5 ms"
+ }
+]

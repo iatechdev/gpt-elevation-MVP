@@ -1,0 +1,21 @@
+{"id":"P5 barrido de 53 pantallas con su sesión: ninguna en blanco, atascada en «Cargando», con error de página ni 404 de bloque","ok":true,"detail":""}
+{"id":"P5b mismo destino final (redirecciones) y contenido que en main en todas las rutas","ok":true,"detail":""}
+{"id":"P6 persona abre /admin/dashboard: redirige y no descarga el bloque de esa pantalla","ok":true,"detail":"url=/app/onboarding bloques=ninguno"}
+{"id":"P6 anon abre /admin/users: redirige y no descarga el bloque de esa pantalla","ok":true,"detail":"url=/login bloques=ninguno"}
+{"id":"P6 persona abre /therapist/dashboard: redirige y no descarga el bloque de esa pantalla","ok":true,"detail":"url=/ bloques=ninguno"}
+{"id":"P6 persona abre /board: redirige y no descarga el bloque de esa pantalla","ok":true,"detail":"url=/app/onboarding bloques=ninguno"}
+{"id":"P6 anon abre /app/chat: redirige y no descarga el bloque de esa pantalla","ok":true,"detail":"url=/login bloques=ninguno"}
+{"id":"P6 terapeuta abre /admin/dashboard: redirige y no descarga el bloque de esa pantalla","ok":true,"detail":"url=/therapist/dashboard bloques=ninguno"}
+{"id":"P7 recarga en /app/diary/new, atrás y adelante funcionan","ok":true,"detail":"contenido=386 atrás=/app/diary/new adelante=/pricing"}
+{"id":"P7b ruta inexistente: se comporta igual que en main","ok":true,"detail":"pr=\"Saltar al contenido elevation Cómo funciona Skill Map Planes ES EN Ingresar ACOM\" main=\"Saltar al contenido elevation Cómo funciona Skill Map Planes ES EN Ingresar ACOM\""}
+{"id":"P8 [es] con el bloque retrasado se ve el aviso «Cargando…» con role=status, en el idioma activo","ok":true,"detail":"{\"t\":\"Cargando...\",\"role\":\"status\"}"}
+{"id":"P8 [en] con el bloque retrasado se ve el aviso «Loading…» con role=status, en el idioma activo","ok":true,"detail":"{\"t\":\"Loading...\",\"role\":\"status\"}"}
+{"id":"info P9 fallo de bloque (el servidor responde index.html con 200 (como hace hoy el servidor real))","bloquesInterceptados":1,"textoVisible":"(pantalla en blanco)","erroresPagina":["TypeError: Failed to fetch dynamically imported module: http://127.0.0.1:9990/assets/UserP"]}
+{"id":"info P9 fallo de bloque (404)","bloquesInterceptados":1,"textoVisible":"(pantalla en blanco)","erroresPagina":["TypeError: Failed to fetch dynamically imported module: http://127.0.0.1:9990/assets/UserP"]}
+{"id":"info P9 fallo de bloque (corte de red)","bloquesInterceptados":1,"textoVisible":"(pantalla en blanco)","erroresPagina":["TypeError: Failed to fetch dynamically imported module: http://127.0.0.1:9990/assets/UserP"]}
+{"id":"P10 GET /assets/<bloque inexistente>.js devuelve 404 (no index.html con 200)","ok":false,"detail":"estado=200 tipo=text/html; charset=utf-8"}
+{"id":"P10b los bloques con hash en el nombre llevan Cache-Control inmutable de larga duración","ok":false,"detail":"cache-control=public, max-age=0 (cada bloque se revalida en cada visita)"}
+{"id":"P14 teclado: con Tab se llega a un elemento enfocable y al activar un enlace la pantalla nueva carga sin perder el documento (foco en body o enlace, informativo)","ok":true,"detail":"primer Tab=\"Saltar al contenido\" tras Enter: {\"tag\":\"SECTION\",\"url\":\"/\"}"}
+{"id":"P16 [es] pantallas públicas y de persona cargan con textos del idioma activo (sin español bajo EN)","ok":true,"detail":""}
+{"id":"P16 [en] pantallas públicas y de persona cargan con textos del idioma activo (sin español bajo EN)","ok":true,"detail":""}
+RESUMEN {"total":17,"fallos":2,"fallosIds":["P10 GET /assets/<bloque inexistente>.js devuelve 404 (no index.html con 200)","P10b los bloques con hash en el nombre llevan Cache-Control inmutable de larga duración"]}

@@ -1,0 +1,46 @@
+{
+ "label": "B",
+ "runs": {
+  "30": {
+   "scansEvidencesPorGET": 8,
+   "scansVersionsPorGET": 35,
+   "seqP50": 127,
+   "seqP95": 141,
+   "concP95": 692,
+   "status": 200
+  },
+  "100": {
+   "scansEvidencesPorGET": 8,
+   "scansVersionsPorGET": 37,
+   "seqP50": 103,
+   "seqP95": 141,
+   "concP95": 823,
+   "status": 200
+  },
+  "200": {
+   "scansEvidencesPorGET": 4,
+   "scansVersionsPorGET": 37,
+   "seqP50": 116,
+   "seqP95": 184,
+   "concP95": 896,
+   "status": 200
+  }
+ },
+ "s1": {
+  "experimentoAjeno": 404,
+  "evidenciaAjena": 404
+ },
+ "s2": {
+  "delete": 200,
+  "put": 400,
+  "evBefore": 30,
+  "evAfter": 29
+ },
+ "c1sha": "5f6151b7ee099b8c",
+ "c1bytes": 54629,
+ "escrituras": {
+  "evidenciasP95": 25,
+  "evidenciasMax": 30,
+  "n": 350
+ }
+}

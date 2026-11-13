@@ -1,0 +1,121 @@
+{
+  "pr": 223,
+  "mode": "pr",
+  "head": "a65e6e006421b19028809dc3df83e68fb9d886e8",
+  "results": [
+    {
+      "id": "R1-control",
+      "info": "[pr] lista del profesional para [4,NULL,4,NULL] → avgRating=4; solo NULL → null; fuera de escala + 4 → 4"
+    },
+    {
+      "id": "R1a panel del profesional (10 casos): nulas no cuentan como 0 ni entran en el divisor; sin válidas → null; 1 y 5 → 3; los fuera de escala (0, 6, −1, 99, 32767) no mueven el promedio; redondeo contra un oráculo entero",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "R1b el resto de campos por persona (lastMood, moodTrend, totalSessions, sessionsThisWeek, trend, sharing…) se guarda para compararlo CAMPO A CAMPO con main (evidencia); sin NaN ni Infinity en la respuesta; 200",
+      "ok": true,
+      "detail": "active,avgRating,createdAt,email,id,lastMood,moodTrend,name,ordinal,sessionsThisWeek,sharing,totalSessions,trend"
+    },
+    {
+      "id": "R2-control",
+      "info": "[pr] prompt para [4,NULL,4,NULL]: «Average session rating (1-5): 4.0»"
+    },
+    {
+      "id": "R2a el prompt que recibe el proveedor lleva la calificación media VÁLIDA (para [4,NULL,4,NULL] «4.0», antes «2.0») y el ánimo con la misma regla, en 7 casos (una sola llamada cada uno)",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "R2-control-sin-datos",
+      "info": "[pr] «solo NULL»: 0 llamada(s) al proveedor"
+    },
+    {
+      "id": "R2b sin calificaciones ni ánimo VÁLIDOS (todo NULL, sin datos, o solo fuera de escala): NO se llama al proveedor (0 llamadas en el mock), se responde 200 con «Aún no hay datos suficientes… / There is not enough data…» y `basedOn`, y NO se registra uso de IA",
+      "ok": true,
+      "detail": "ok · 0 llamadas, uso sin cambios"
+    },
+    {
+      "id": "R2c solo calificación válida → SÍ se llama y el ánimo aparece como `N/A`; solo ánimo válido → SÍ se llama y la calificación aparece como `N/A`",
+      "ok": false,
+      "detail": "undefined/undefined · N/A/3.0"
+    },
+    {
+      "id": "R2d la respuesta tiene la forma de siempre (`summary`, `generatedAt`, `basedOn`); el prompt es solo agregados: sin nombre, correo, notas ni identificadores, y sin diario ni indicadores de crisis",
+      "ok": true,
+      "detail": "summary,generatedAt,basedOn · 509 caracteres"
+    },
+    {
+      "id": "R3a con datos válidos se registra UNA vez el uso de IA del profesional; sin datos válidos no se registró nada (R2b)",
+      "ok": true,
+      "detail": "uso 10→11"
+    },
+    {
+      "id": "R3b respuesta vacía del proveedor → 502 `provider_unavailable` (sin cambio frente a main)",
+      "ok": true,
+      "detail": "502 provider_unavailable"
+    },
+    {
+      "id": "R3c presupuesto agotado → 429 `ai_budget_exhausted` (sin cambio frente a main)",
+      "ok": true,
+      "detail": "429:ai_budget_exhausted"
+    },
+    {
+      "id": "R4-control",
+      "info": "[pr] avgRating general antes=3.7 tras sembrar válidos=3.7 tras sembrar 30000/0/−3=3.7; profesional B=4 → 4"
+    },
+    {
+      "id": "R4a `avgRating` de administración: sembrar 30000, 0 y −3 en una persona NO cambia el promedio general ni el del profesional; el del profesional B con [4,4] + [0,30000] + [NULL,NULL] = 4",
+      "ok": true,
+      "detail": "general 3.7→3.7 · B 4→4"
+    },
+    {
+      "id": "R4b un profesional cuyas únicas calificaciones son nulas o fuera de escala tiene `avgRating` null (no 0 ni NaN) en administración (si aparece en el ranking)",
+      "ok": true,
+      "detail": "{\"id\":25,\"name\":\"QA263 c\",\"patientCount\":1,\"avgRating\":null}"
+    },
+    {
+      "id": "R4c solo admin y superadmin leen las métricas (profesional, persona, junta, sin sesión → 401/403); la forma de la respuesta se guarda para compararla con main",
+      "ok": true,
+      "detail": "profesional:403,persona:403,junta:403,anon:403"
+    },
+    {
+      "id": "R5a el profesional B NO obtiene el resumen de la persona de A (403/404), no la ve en su lista y no se llamó a la IA",
+      "ok": true,
+      "detail": "404 enLista=false llamadas=0"
+    },
+    {
+      "id": "R5b la persona que NO autorizó compartir: el resumen se niega (403/404) sin llamar a la IA y en la lista no trae `avgRating` ni nombre (null)",
+      "ok": true,
+      "detail": "403 llamadas=0 fila={\"avgRating\":null,\"name\":null,\"sharing\":false}"
+    },
+    {
+      "id": "R5c persona desvinculada → sin acceso (403/404) y sin llamada a la IA; ids hostiles en la ruta → 4xx, nunca 5xx ni llamada a la IA",
+      "ok": true,
+      "detail": "404 abc→404 ; 0→404 ; -1→404 ; 99999999999999999999→404 ; 1;drop→404 ; %00→404"
+    },
+    {
+      "id": "R5d persona con eliminación solicitada → el profesional ya no accede (403/404) y no se llama a la IA",
+      "ok": true,
+      "detail": "404 llamadas=0"
+    },
+    {
+      "id": "R5e el registro del servidor no contiene correos ni el texto del prompt",
+      "ok": true,
+      "detail": "log 355 bytes"
+    },
+    {
+      "id": "R6 grep",
+      "info": "sitios que calculan promedios en rutas y utilidades: backend/routes/adminMetrics.js:33:      query(`SELECT ROUND((AVG(\"rating\") FILTER (WHERE \"rating\" BETWEEN 1 AND 5))::numeric, 1) AS \"avgRating\" FROM \"SessionRatings\"`), || backend/routes/adminMetrics.js:39:      query(`SELECT t.\"id\", t.\"name\", count(DISTINCT p.\"id\")::int AS \"patientCount\", ROUND((AVG(r.\"rating\") FILTER (WHERE r.\"rating\" BETWEEN 1 AND 5))::numeric, 1) AS || backend/routes/ratings.js:31:    if (ratings.length === 0) return res.json({ avg: 0, total: 0 });\r || backend/routes/ratings.js:32:    const sum = ratings.reduce((acc, r) => acc + r.rating, 0);\r || backend/routes/ratings.js:33:    const avg = Math.round((sum / ratings.length) * 10) / 10;\r || backend/routes/ratings.js:34:    res.json({ avg, total: ratings.length });\r"
+    },
+    {
+      "id": "R6 hallazgo E223-1",
+      "info": "otros cálculos por filas fuera del PR: backend/routes/ratings.js:32: const sum = ratings.reduce((acc, r) => acc + r.rating, 0);  | backend/routes/ratings.js:33: const avg = Math.round((sum / ratings.length) * 10) / 10; . Medido: GET /api/rating/avg (solo admin) → {\"avg\":2782.7,\"total\":57} con 57 filas (válido por oráculo = 3.8; por filas incluyendo nulas/fuera de escala = 2782.7); sin filas devuelve avg 0 (no null)"
+    },
+    {
+      "id": "R6 el PR cubre los tres sitios acordados (panel, resumen con IA, administración) y no queda ningún otro cálculo por filas EN ESOS ARCHIVOS (`therapistRoutes.js`, `adminMetrics.js`)",
+      "ok": true,
+      "detail": "backend/routes/adminMetrics.js:33:      query(`SELECT ROUND((AVG(\"rating\") FILTE | backend/routes/adminMetrics.js:39:      query(`SELECT t.\"id\", t.\"name\", count(DI"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+[
+ {
+  "id": "E1 evidencia confirmada con origen del chat: solo puente → 403 source_consent_required; puente + insights_chat → 201; solo insights_chat → 403 consent_required; el permiso de diario/hoja de vida no sirve; borrador no exige; sin origen no exige nada [pr2]",
+  "ok": true,
+  "detail": "puente solo 403 source_consent_required; ambos 201; solo chat 403 consent_required; borrador 201; diario+hoja 403; directa 201"
+ },
+ {
+  "id": "E2 pasar un borrador con origen del chat a confirmada tras retirar insights_chat → 403 [pr2]",
+  "ok": true,
+  "detail": "borrador 201; confirmar 403 source_consent_required"
+ },
+ {
+  "id": "E3 40 rondas confirmar evidencia con origen del chat ‖ retirar insights_chat (con evidencia previa): confirmar 201/403, retirar siempre 200, ningún 5xx ni interbloqueo [pr2]",
+  "ok": true,
+  "detail": "confirmar {\"201\":2,\"403\":38}; retirar {\"200\":40}; sin problemas"
+ },
+ {
+  "id": "E3 40 rondas confirmar evidencia con origen del chat ‖ retirar insights_chat (sin evidencia previa): confirmar 201/403, retirar siempre 200, ningún 5xx ni interbloqueo [pr2]",
+  "ok": true,
+  "detail": "confirmar {\"403\":40}; retirar {\"200\":40}; sin problemas"
+ },
+ {
+  "id": "E3b 40 rondas confirmar evidencia ‖ retirar el PUENTE (con evidencia confirmada previa): sin 5xx ni interbloqueo [pr2]",
+  "ok": true,
+  "detail": "confirmar {\"201\":40}; retirar {\"200\":40}; sin problemas"
+ },
+ {
+  "id": "E4 propuesta con IA: sin insights_chat → 403 source_consent_required y SIN llamar a la IA; con él sí llama [pr2]",
+  "ok": true,
+  "detail": "sin permiso 403 source_consent_required; llamadas 0→0; con permiso 502 (llamadas →1)"
+ },
+ {
+  "id": "E5 BRECHA CONOCIDA (ES-296) [pr2]",
+  "info": "evidencia confirmada con origen del chat: 201; entregada al motor antes 1; DESPUÉS de retirar insights_chat 1 (si es 1, el texto derivado del chat sigue saliendo); después de retirar también el puente 0"
+ }
+]

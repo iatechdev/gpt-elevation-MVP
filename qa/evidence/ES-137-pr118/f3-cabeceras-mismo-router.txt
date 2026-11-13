@@ -1,0 +1,4 @@
+pricing/all (excepción) → 200 cache-control= null vary= Origin etag= true bytes= 2 campos= 
+admin/pricing/all (mismo router, montaje admin) → 200 cache-control= no-store vary= Origin, Authorization etag= true bytes= 2 campos= 
+manifest/manifest (excepción) → 200 cache-control= null vary= Origin etag= true bytes= 2 campos= 
+board/manifest (mismo router, montaje junta) → 200 cache-control= no-store vary= Origin, Authorization etag= true bytes= 2 campos= 

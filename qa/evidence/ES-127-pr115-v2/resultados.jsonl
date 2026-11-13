@@ -1,0 +1,39 @@
+{"id":"pr admin en 1440px /admin/dashboard: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 1440px /admin/users: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 1440px /admin/content: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 1440px /admin/metrics: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 390px /admin/dashboard: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 390px /admin/users: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 390px /admin/content: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin en 390px /admin/metrics: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 1440px /admin/dashboard: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 1440px /admin/users: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 1440px /admin/content: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 1440px /admin/metrics: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 390px /admin/dashboard: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 390px /admin/users: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 390px /admin/content: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr admin es 390px /admin/metrics: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 1440px /admin/dashboard: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 1440px /admin/users: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 1440px /admin/content: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 1440px /admin/metrics: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 390px /admin/dashboard: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 390px /admin/users: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 390px /admin/content: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en 390px /admin/metrics: sin textos de interfaz en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 1440px /admin/dashboard: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 1440px /admin/users: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 1440px /admin/content: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 1440px /admin/metrics: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 390px /admin/dashboard: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 390px /admin/users: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 390px /admin/content: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin es 390px /admin/metrics: carga en español, sin desborde, sin XSS ni errores","ok":true,"detail":""}
+{"id":"pr superadmin en: /admin/users con error 401 de la API: pantalla útil (no en blanco) y sin interfaz en español","ok":true,"detail":" texto=\"ELEVATION ADMIN ES EN QA127 sa SUPERADMIN ↗ Route catalog ◇ Skills catalog Dashboard Promp\""}
+{"id":"pr superadmin en: /admin/users con error 403 de la API: pantalla útil (no en blanco) y sin interfaz en español","ok":true,"detail":" texto=\"ELEVATION ADMIN ES EN QA127 sa SUPERADMIN ↗ Route catalog ◇ Skills catalog Dashboard Promp\""}
+{"id":"pr superadmin en: /admin/users con error 409 de la API: pantalla útil (no en blanco) y sin interfaz en español","ok":true,"detail":" texto=\"ELEVATION ADMIN ES EN QA127 sa SUPERADMIN ↗ Route catalog ◇ Skills catalog Dashboard Promp\""}
+{"id":"pr superadmin en: /admin/users con error 500 de la API: pantalla útil (no en blanco) y sin interfaz en español","ok":true,"detail":" texto=\"ELEVATION ADMIN ES EN QA127 sa SUPERADMIN ↗ Route catalog ◇ Skills catalog Dashboard Promp\""}
+{"id":"pr superadmin en: /admin/users con error red caída de la API: pantalla útil (no en blanco) y sin interfaz en español","ok":true,"detail":" texto=\"ELEVATION ADMIN ES EN QA127 sa SUPERADMIN ↗ Route catalog ◇ Skills catalog Dashboard Promp\""}
+{"id":"pr persona usuaria abre /admin/users: no ve datos administrativos","ok":true,"detail":"/app/onboarding"}
+RESUMEN {"tag":"pr","total":38,"fallos":0}

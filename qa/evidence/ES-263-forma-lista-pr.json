@@ -1,0 +1,244 @@
+{
+ "keys": [
+  "active",
+  "avgRating",
+  "createdAt",
+  "email",
+  "id",
+  "lastMood",
+  "moodTrend",
+  "name",
+  "ordinal",
+  "sessionsThisWeek",
+  "sharing",
+  "totalSessions",
+  "trend"
+ ],
+ "types": {
+  "id": "number",
+  "name": "string",
+  "ordinal": "number",
+  "email": "string",
+  "active": "boolean",
+  "createdAt": "string",
+  "sharing": "boolean",
+  "lastMood": "object",
+  "moodTrend": "string",
+  "avgRating": "number",
+  "totalSessions": "number",
+  "sessionsThisWeek": "number",
+  "trend": "null"
+ },
+ "valores": [
+  {
+   "n": "4,NULL,4,NULL",
+   "rest": {
+    "ordinal": 1,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 1,
+     "checkin_mood": 4,
+     "checkout_mood": 4,
+     "date": "2026-01-01",
+     "UserId": 7,
+     "createdAt": "2026-11-11T05:48:26.795Z",
+     "updatedAt": "2026-11-11T05:48:26.795Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "solo NULL",
+   "rest": {
+    "ordinal": 2,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 2,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 8,
+     "createdAt": "2026-11-11T05:48:27.061Z",
+     "updatedAt": "2026-11-11T05:48:27.061Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "sin filas",
+   "rest": {
+    "ordinal": 3,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 3,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 9,
+     "createdAt": "2026-11-11T05:48:27.389Z",
+     "updatedAt": "2026-11-11T05:48:27.389Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "1 y 5",
+   "rest": {
+    "ordinal": 4,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 4,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 10,
+     "createdAt": "2026-11-11T05:48:27.667Z",
+     "updatedAt": "2026-11-11T05:48:27.667Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "5,4,3",
+   "rest": {
+    "ordinal": 5,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 5,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 11,
+     "createdAt": "2026-11-11T05:48:27.983Z",
+     "updatedAt": "2026-11-11T05:48:27.983Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "3,3,4",
+   "rest": {
+    "ordinal": 6,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 6,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 12,
+     "createdAt": "2026-11-11T05:48:28.315Z",
+     "updatedAt": "2026-11-11T05:48:28.315Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "3,4,4,4",
+   "rest": {
+    "ordinal": 7,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 7,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 13,
+     "createdAt": "2026-11-11T05:48:28.577Z",
+     "updatedAt": "2026-11-11T05:48:28.577Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "fuera de escala + 4",
+   "rest": {
+    "ordinal": 8,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 8,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 14,
+     "createdAt": "2026-11-11T05:48:28.857Z",
+     "updatedAt": "2026-11-11T05:48:28.857Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "solo fuera de escala",
+   "rest": {
+    "ordinal": 9,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 9,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 15,
+     "createdAt": "2026-11-11T05:48:29.092Z",
+     "updatedAt": "2026-11-11T05:48:29.092Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  },
+  {
+   "n": "mezcla 2,NULL,5,NULL,NULL",
+   "rest": {
+    "ordinal": 10,
+    "active": true,
+    "sharing": true,
+    "lastMood": {
+     "id": 10,
+     "checkin_mood": 3,
+     "checkout_mood": 3,
+     "date": "2026-01-01",
+     "UserId": 16,
+     "createdAt": "2026-11-11T05:48:29.317Z",
+     "updatedAt": "2026-11-11T05:48:29.317Z"
+    },
+    "moodTrend": "up",
+    "totalSessions": 1,
+    "sessionsThisWeek": 0,
+    "trend": null
+   }
+  }
+ ]
+}

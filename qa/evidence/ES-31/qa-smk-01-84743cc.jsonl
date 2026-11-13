@@ -1,0 +1,21 @@
+{"id":"SMK01 GET /api/no-existe con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 POST /api/no-existe con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 PUT /api/no-existe con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 DELETE /api/no-existe con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 GET /api/admin/no-existe con sesión → 404 JSON not_found, no-store, sin HTML","ok":false,"detail":"status=403 ct=application/json; ch cc="}
+{"id":"SMK01 GET /api/career-context/x/y/z con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 GET /api/skill-map con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 PATCH /api/loquesea con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01 GET /api/%E0%A4%A con sesión → 404 JSON not_found, no-store, sin HTML","ok":true,"detail":"status=404 ct=application/json; ch cc=no-store"}
+{"id":"SMK01b admin: ruta inexistente → 404 JSON","ok":true,"detail":"status=404"}
+{"id":"SMK01c sin sesión se pide sesión (403) y no se revela si la ruta existe","ok":true,"detail":"status=403"}
+{"id":"SMK01d existente y no existente sin sesión responden igual","ok":true,"detail":"403/403"}
+{"id":"SMK01e /api/health sigue igual (200 {status:ok})","ok":true,"detail":""}
+{"id":"SMK01f SPA / sigue sirviendo HTML (200)","ok":true,"detail":"status=200"}
+{"id":"SMK01f SPA /login sigue sirviendo HTML (200)","ok":true,"detail":"status=200"}
+{"id":"SMK01f SPA /app/dashboard sigue sirviendo HTML (200)","ok":true,"detail":"status=200"}
+{"id":"SMK01f SPA /app/onboarding sigue sirviendo HTML (200)","ok":true,"detail":"status=200"}
+{"id":"SMK01g una ruta real sigue funcionando (consents 200)","ok":true,"detail":"status=200"}
+{"id":"SMK01h ruta enorme → 404 JSON o 414, nunca 5xx","ok":true,"detail":"status=404"}
+{"id":"SMK01i la respuesta 404 no refleja la entrada","ok":true,"detail":"status=404"}
+{"id":"SMK01j cabeceras de seguridad presentes en el 404","ok":true,"detail":""}

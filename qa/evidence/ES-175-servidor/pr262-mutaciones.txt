@@ -1,0 +1,17 @@
+N1 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S6 RESUMEN 17/18 
+N2 | es-175 del PR: fail 2 #2 propietario: cada persona ve s;| mi guion: FALLA S3 FALLA S6 RESUMEN 16/18 
+N3 | es-175 del PR: fail 2 #7 evidencia con origen en el cha;| mi guion: FALLA S6 RESUMEN 17/18 
+N4 | es-175 del PR: fail 0 | mi guion: FALLA S3 FALLA S6 FALLA S9 RESUMEN 15/18 
+N5 | es-175 del PR: fail 0 | mi guion: FALLA S6 FALLA S4g RESUMEN 16/18 
+N7 | es-175 del PR: fail 2 #2 propietario: cada persona ve s;| mi guion: FALLA S6 RESUMEN 17/18 
+N8 | es-175 del PR: fail 3 #5 entradas: texto plano ≤2000 ;#6 evidencias compartibles: solo ;| mi guion: FALLA S6 FALLA S9 RESUMEN 16/18 
+N10 | es-175 del PR: fail 0 | mi guion: FALLA S6 RESUMEN 17/18 
+N11 | es-175 del PR: fail 0 | mi guion: FALLA S6 RESUMEN 17/18 
+N12 | es-175 del PR: fail 2 #5 entradas: texto plano ≤2000 ;| mi guion: FALLA S6 FALLA S8 RESUMEN 16/18 
+N13 | es-175 del PR: fail 0 | mi guion: FALLA S6 FALLA S8 RESUMEN 16/18 
+N14 | es-175 del PR: fail 2 #4 acceso retirado: el revisor de;| mi guion: FALLA S2 FALLA S6 FALLA S4c RESUMEN 15/18 
+N15 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S6 RESUMEN 16/18 
+N16 | es-175 del PR: fail 2 #8 el permiso se comprueba en CAD;| mi guion: FALLA S6 RESUMEN 17/18 
+N17 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S6 RESUMEN 16/18 
+N18 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S6 RESUMEN 16/18 
+FIN

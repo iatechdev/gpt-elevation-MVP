@@ -1,0 +1,8 @@
+base | es-29:  fail 0 | mi guion: RESUMEN 9/9 
+M1 | es-29 del PR: fail 2 #5 ES-295: 30 autoevaluaciones simultáneas;| mi guion: FALLA C2 FALLA C2 FALLA C5 RESUMEN 6/9 
+M2 | es-29 del PR: fail 0 | mi guion: RESUMEN 9/9 
+M3 | es-29 del PR: fail 0 | mi guion: RESUMEN 9/9 
+M4 | es-29 del PR: fail 0 | mi guion: FALLA C4b RESUMEN 8/9 
+M5 | es-29 del PR: fail 0 | mi guion: FALLA C6 RESUMEN 8/9 
+M6 | es-29 del PR: fail 2 #6 el mismo requestId repetido a la vez cre;| mi guion: FALLA C2 FALLA C2 FALLA C2 FALLA C4 FALLA C5 FALLA C7 FALLA C6 RESUMEN 2/9 
+FIN

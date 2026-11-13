@@ -1,0 +1,997 @@
+{
+ "keys": [
+  "contexts",
+  "offers",
+  "publishedAt",
+  "resources",
+  "roles",
+  "sources",
+  "version"
+ ],
+ "roleKeys": [
+  "offers",
+  "resources",
+  "role",
+  "sources",
+  "version"
+ ],
+ "listWithoutLabels": {
+  "version": 1,
+  "contexts": [
+   {
+    "contextKey": "ctx_educacion_formacion",
+    "labels": {
+     "es": "[SINTÉTICO] Educación a formación corporativa",
+     "en": "[SYNTHETIC] Education to corporate training"
+    },
+    "note": {
+     "es": "[SINTÉTICO] Perfil genérico de prueba.",
+     "en": "[SYNTHETIC] Generic test profile."
+    },
+    "synthetic": true
+   },
+   {
+    "contextKey": "ctx_contabilidad_analisis",
+    "labels": {
+     "es": "[SINTÉTICO] Contabilidad a análisis financiero",
+     "en": "[SYNTHETIC] Accounting to financial analysis"
+    },
+    "synthetic": true
+   },
+   {
+    "contextKey": "ctx_salud_gestion",
+    "labels": {
+     "es": "[SINTÉTICO] Salud a gestión de proyectos de salud",
+     "en": "[SYNTHETIC] Healthcare to healthcare project management"
+    },
+    "synthetic": true
+   },
+   {
+    "contextKey": "ctx_ventas_exito_cliente",
+    "labels": {
+     "es": "[SINTÉTICO] Ventas a éxito del cliente",
+     "en": "[SYNTHETIC] Sales to customer success"
+    },
+    "synthetic": true
+   },
+   {
+    "contextKey": "ctx_administracion_operaciones",
+    "labels": {
+     "es": "[SINTÉTICO] Administración a operaciones",
+     "en": "[SYNTHETIC] Administration to operations"
+    },
+    "synthetic": true
+   },
+   {
+    "contextKey": "ctx_comunicacion_contenidos",
+    "labels": {
+     "es": "[SINTÉTICO] Comunicación a estrategia de contenidos",
+     "en": "[SYNTHETIC] Communications to content strategy"
+    },
+    "synthetic": true
+   }
+  ],
+  "sources": [
+   {
+    "sourceKey": "src_oficial_a",
+    "type": "official",
+    "title": "[SINTÉTICO] Descripción ocupacional oficial A",
+    "url": "https://example.org/fuente-sintetica",
+    "country": "CO",
+    "language": "es",
+    "consultedAt": "2026-11-08",
+    "accessible": true,
+    "synthetic": true,
+    "stale": false
+   },
+   {
+    "sourceKey": "src_oficial_b",
+    "type": "official",
+    "title": "[SINTÉTICO] Descripción ocupacional oficial B",
+    "url": "https://example.org/fuente-sintetica",
+    "country": "DK",
+    "language": "es",
+    "consultedAt": "2026-11-06",
+    "accessible": true,
+    "synthetic": true,
+    "stale": false
+   },
+   {
+    "sourceKey": "src_institucional_c",
+    "type": "institutional",
+    "title": "[SINTÉTICO] Guía institucional C",
+    "url": "https://example.org/fuente-sintetica",
+    "country": "CO",
+    "language": "es",
+    "consultedAt": "2026-11-01",
+    "accessible": true,
+    "synthetic": true,
+    "stale": false
+   },
+   {
+    "sourceKey": "src_informe_d",
+    "type": "market_report",
+    "title": "[SINTÉTICO] Informe de mercado D (de prueba)",
+    "url": "https://example.org/fuente-sintetica",
+    "country": "DK",
+    "language": "es",
+    "consultedAt": "2026-04-25",
+    "accessible": true,
+    "synthetic": true,
+    "stale": true
+   },
+   {
+    "sourceKey": "src_inaccesible_e",
+    "type": "other",
+    "title": "[SINTÉTICO] Documento E que ya no abre",
+    "url": "https://example.org/fuente-sintetica",
+    "country": null,
+    "language": "es",
+    "consultedAt": "2026-11-09",
+    "accessible": false,
+    "synthetic": true,
+    "stale": true
+   },
+   {
+    "sourceKey": "src_curso_f",
+    "type": "course_provider",
+    "title": "[SINTÉTICO] Proveedor de cursos F",
+    "url": "https://example.org/fuente-sintetica",
+    "country": null,
+    "language": "es",
+    "consultedAt": "2026-11-07",
+    "accessible": true,
+    "synthetic": true,
+    "stale": false
+   }
+  ],
+  "roles": [
+   {
+    "roleKey": "formador_corporativo",
+    "labels": {
+     "es": "[SINTÉTICO] Formador corporativo",
+     "en": "[SYNTHETIC] Corporate trainer"
+    },
+    "industry": {
+     "es": "[SINTÉTICO] Formación",
+     "en": "[SYNTHETIC] Training"
+    },
+    "market": "CO",
+    "languagesRequired": [
+     "es"
+    ],
+    "modality": [
+     "hybrid",
+     "remote"
+    ],
+    "tasks": [
+     {
+      "text": {
+       "es": "[SINTÉTICO] Diseñar sesiones de formación.",
+       "en": "[SYNTHETIC] Design training sessions."
+      },
+      "aiExposure": {
+       "status": "sourced",
+       "sourceKey": "src_oficial_a"
+      }
+     },
+     {
+      "text": {
+       "es": "[SINTÉTICO] Evaluar el aprendizaje.",
+       "en": "[SYNTHETIC] Assess learning."
+      },
+      "aiExposure": {
+       "status": "hypothesis",
+       "note": {
+        "es": "[SINTÉTICO] Hipótesis de trabajo, por validar con una fuente.",
+        "en": "[SYNTHETIC] Working hypothesis, to be validated with a source."
+       }
+      }
+     }
+    ],
+    "barriers": [
+     {
+      "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+      "en": "[SYNTHETIC] Test entry barrier."
+     }
+    ],
+    "capabilities": [
+     {
+      "skillKey": "comunicacion",
+      "importance": "essential"
+     },
+     {
+      "skillKey": "planificacion_organizacion",
+      "importance": "optional"
+     }
+    ],
+    "contexts": [
+     "ctx_educacion_formacion"
+    ],
+    "sourceKeys": [
+     "src_oficial_a",
+     "src_institucional_c"
+    ],
+    "regulated": {
+     "isRegulated": false
+    },
+    "synthetic": true,
+    "domainReview": {
+     "present": true,
+     "at": "2026-11-10"
+    },
+    "verificationTask": false
+   },
+   {
+    "roleKey": "analista_financiero",
+    "labels": {
+     "es": "[SINTÉTICO] Analista financiero",
+     "en": "[SYNTHETIC] Financial analyst"
+    },
+    "industry": {
+     "es": "[SINTÉTICO] Finanzas",
+     "en": "[SYNTHETIC] Finance"
+    },
+    "market": "CO",
+    "languagesRequired": [
+     "es"
+    ],
+    "modality": [
+     "hybrid",
+     "remote"
+    ],
+    "tasks": [
+     {
+      "text": {
+       "es": "[SINTÉTICO] Preparar reportes de desempeño.",
+       "en": "[SYNTHETIC] Prepare performance reports."
+      },
+      "aiExposure": {
+       "status": "sourced",
+       "sourceKey": "src_oficial_a"
+      }
+     },
+     {
+      "text": {
+       "es": "[SINTÉTICO] Conciliar cifras.",
+       "en": "[SYNTHETIC] Reconcile figures."
+      },
+      "aiExposure": {
+       "status": "unknown",
+       "note": {
+        "es": "[SINTÉTICO] Dato desconocido.",
+        "en": "[SYNTHETIC] Unknown."
+       }
+      }
+     }
+    ],
+    "barriers": [
+     {
+      "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+      "en": "[SYNTHETIC] Test entry barrier."
+     }
+    ],
+    "capabilities": [
+     {
+      "skillKey": "analisis_informacion",
+      "importance": "essential"
+     },
+     {
+      "skillKey": "resolucion_problemas",
+      "importance": "optional"
+     }
+    ],
+    "contexts": [
+     "ctx_contabilidad_analisis"
+    ],
+    "sourceKeys": [
+     "src_oficial_a",
+     "src_informe_d"
+    ],
+    "regulated": {
+     "isRegulated": false
+    },
+    "synthetic": true,
+    "domainReview": {
+     "present": true,
+     "at": "2026-11-10"
+    },
+    "verificationTask": false
+   },
+   {
+    "roleKey": "coordinador_proyectos_salud",
+    "labels": {
+     "es": "[SINTÉTICO] Coordinador de proyectos de salud",
+     "en": "[SYNTHETIC] Healthcare project coordinator"
+    },
+    "industry": {
+     "es": "[SINTÉTICO] Salud",
+     "en": "[SYNTHETIC] Healthcare"
+    },
+    "market": "DK",
+    "languagesRequired": [
+     "en",
+     "unknown"
+    ],
+    "modality": [
+     "hybrid",
+     "remote"
+    ],
+    "tasks": [
+     {
+      "text": {
+       "es": "[SINTÉTICO] Coordinar equipos de un proyecto.",
+       "en": "[SYNTHETIC] Coordinate project teams."
+      },
+      "aiExposure": {
+       "status": "sourced",
+       "sourceKey": "src_oficial_b"
+      }
+     }
+    ],
+    "barriers": [
+     {
+      "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+      "en": "[SYNTHETIC] Test entry barrier."
+     }
+    ],
+    "capabilities": [
+     {
+      "skillKey": "planificacion_organizacion",
+      "importance": "essential"
+     },
+     {
+      "skillKey": "trabajo_en_equipo",
+      "importance": "optional"
+     }
+    ],
+    "contexts": [
+     "ctx_salud_gestion"
+    ],
+    "sourceKeys": [
+     "src_oficial_b"
+    ],
+    "regulated": {
+     "isRegulated": true,
+     "note": {
+      "es": "[SINTÉTICO] La habilitación para ejercer queda pendiente de comprobar en la fuente oficial.",
+      "en": "[SYNTHETIC] The license to practice is pending verification at the official source."
+     },
+     "sourceKey": "src_oficial_b"
+    },
+    "synthetic": true,
+    "domainReview": {
+     "present": true,
+     "at": "2026-11-10"
+    },
+    "verificationTask": false
+   },
+   {
+    "roleKey": "exito_cliente",
+    "labels": {
+     "es": "[SINTÉTICO] Especialista en éxito del cliente",
+     "en": "[SYNTHETIC] Customer success specialist"
+    },
+    "industry": {
+     "es": "[SINTÉTICO] Servicios",
+     "en": "[SYNTHETIC] Services"
+    },
+    "market": "DK",
+    "languagesRequired": [
+     "en",
+     "unknown"
+    ],
+    "modality": [
+     "hybrid",
+     "remote"
+    ],
+    "tasks": [
+     {
+      "text": {
+       "es": "[SINTÉTICO] Acompañar la adopción del servicio.",
+       "en": "[SYNTHETIC] Support service adoption."
+      },
+      "aiExposure": {
+       "status": "hypothesis",
+       "note": {
+        "es": "[SINTÉTICO] Hipótesis de trabajo, por validar con una fuente.",
+        "en": "[SYNTHETIC] Working hypothesis, to be validated with a source."
+       }
+      }
+     }
+    ],
+    "barriers": [
+     {
+      "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+      "en": "[SYNTHETIC] Test entry barrier."
+     }
+    ],
+    "capabilities": [
+     {
+      "skillKey": "comunicacion",
+      "importance": "essential"
+     },
+     {
+      "skillKey": "influencia_liderazgo",
+      "importance": "optional"
+     }
+    ],
+    "contexts": [
+     "ctx_ventas_exito_cliente"
+    ],
+    "sourceKeys": [
+     "src_oficial_b",
+     "src_inaccesible_e"
+    ],
+    "regulated": {
+     "isRegulated": false
+    },
+    "synthetic": true,
+    "domainReview": {
+     "present": true,
+     "at": "2026-11-10"
+    },
+    "verificationTask": false
+   },
+   {
+    "roleKey": "analista_operaciones",
+    "labels": {
+     "es": "[SINTÉTICO] Analista de operaciones",
+     "en": "[SYNTHETIC] Operations analyst"
+    },
+    "industry": {
+     "es": "[SINTÉTICO] Operaciones",
+     "en": "[SYNTHETIC] Operations"
+    },
+    "market": "CO",
+    "languagesRequired": [
+     "es"
+    ],
+    "modality": [
+     "hybrid",
+     "remote"
+    ],
+    "tasks": [
+     {
+      "text": {
+       "es": "[SINTÉTICO] Mejorar procesos administrativos.",
+       "en": "[SYNTHETIC] Improve administrative processes."
+      },
+      "aiExposure": {
+       "status": "sourced",
+       "sourceKey": "src_institucional_c"
+      }
+     }
+    ],
+    "barriers": [
+     {
+      "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+      "en": "[SYNTHETIC] Test entry barrier."
+     }
+    ],
+    "capabilities": [
+     {
+      "skillKey": "resolucion_problemas",
+      "importance": "essential"
+     },
+     {
+      "skillKey": "adaptabilidad",
+      "importance": "optional"
+     }
+    ],
+    "contexts": [
+     "ctx_administracion_operaciones"
+    ],
+    "sourceKeys": [
+     "src_institucional_c"
+    ],
+    "regulated": {
+     "isRegulated": false
+    },
+    "synthetic": true,
+    "domainReview": {
+     "present": true,
+     "at": "2026-11-10"
+    },
+    "verificationTask": false
+   },
+   {
+    "roleKey": "estratega_contenidos",
+    "labels": {
+     "es": "[SINTÉTICO] Estratega de contenidos",
+     "en": "[SYNTHETIC] Content strategist"
+    },
+    "industry": {
+     "es": "[SINTÉTICO] Comunicación",
+     "en": "[SYNTHETIC] Communications"
+    },
+    "market": "DK",
+    "languagesRequired": [
+     "en",
+     "unknown"
+    ],
+    "modality": [
+     "hybrid",
+     "remote"
+    ],
+    "tasks": [
+     {
+      "text": {
+       "es": "[SINTÉTICO] Planificar un calendario editorial.",
+       "en": "[SYNTHETIC] Plan an editorial calendar."
+      },
+      "aiExposure": {
+       "status": "unknown",
+       "note": {
+        "es": "[SINTÉTICO] Dato desconocido.",
+        "en": "[SYNTHETIC] Unknown."
+       }
+      }
+     }
+    ],
+    "barriers": [
+     {
+      "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+      "en": "[SYNTHETIC] Test entry barrier."
+     }
+    ],
+    "capabilities": [
+     {
+      "skillKey": "comunicacion",
+      "importance": "essential"
+     },
+     {
+      "skillKey": "aprendizaje_autonomo",
+      "importance": "optional"
+     }
+    ],
+    "contexts": [
+     "ctx_comunicacion_contenidos"
+    ],
+    "sourceKeys": [
+     "src_oficial_b",
+     "src_informe_d"
+    ],
+    "regulated": {
+     "isRegulated": false
+    },
+    "synthetic": true,
+    "domainReview": {
+     "present": true,
+     "at": "2026-11-10"
+    },
+    "verificationTask": false
+   }
+  ],
+  "offers": [
+   {
+    "offerKey": "oferta_formador_vigente",
+    "title": "[SINTÉTICO] Oferta de prueba (formador_corporativo)",
+    "organization": "[SINTÉTICO] Organización A",
+    "roleKey": "formador_corporativo",
+    "url": "https://example.org/oferta-sintetica",
+    "market": "CO",
+    "language": "es",
+    "modality": "hybrid",
+    "checkedAt": "2026-11-09",
+    "salary": {
+     "published": false
+    },
+    "synthetic": true,
+    "verifiedAt": "2026-11-09",
+    "status": "current"
+   },
+   {
+    "offerKey": "oferta_analista_vigente",
+    "title": "[SINTÉTICO] Oferta de prueba (analista_financiero)",
+    "organization": "[SINTÉTICO] Organización B",
+    "roleKey": "analista_financiero",
+    "url": "https://example.org/oferta-sintetica",
+    "market": "CO",
+    "language": "es",
+    "modality": "hybrid",
+    "checkedAt": "2026-11-06",
+    "salary": {
+     "published": true,
+     "text": "[SINTÉTICO] rango de prueba, no real"
+    },
+    "synthetic": true,
+    "verifiedAt": "2026-11-06",
+    "status": "current"
+   },
+   {
+    "offerKey": "oferta_exito_vencida",
+    "title": "[SINTÉTICO] Oferta de prueba (exito_cliente)",
+    "organization": "[SINTÉTICO] Organización C",
+    "roleKey": "exito_cliente",
+    "url": "https://example.org/oferta-sintetica",
+    "market": "DK",
+    "language": "en",
+    "modality": "hybrid",
+    "checkedAt": "2026-10-02",
+    "salary": {
+     "published": false
+    },
+    "synthetic": true,
+    "verifiedAt": "2026-10-02",
+    "status": "expired"
+   }
+  ],
+  "resources": [
+   {
+    "resourceKey": "rec_comunicacion",
+    "kind": "course",
+    "title": "[SINTÉTICO] Curso breve de comunicación",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": true,
+     "amount": 0,
+     "currency": "COP"
+    },
+    "linkedSkillKey": "comunicacion",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "formador_corporativo",
+     "exito_cliente"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   },
+   {
+    "resourceKey": "rec_analisis",
+    "kind": "reading",
+    "title": "[SINTÉTICO] Lectura sobre análisis de información",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": false
+    },
+    "linkedSkillKey": "analisis_informacion",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "analista_financiero"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   },
+   {
+    "resourceKey": "rec_planificacion",
+    "kind": "course",
+    "title": "[SINTÉTICO] Curso de planificación",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": false
+    },
+    "linkedSkillKey": "planificacion_organizacion",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "coordinador_proyectos_salud",
+     "formador_corporativo"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   },
+   {
+    "resourceKey": "rec_problemas",
+    "kind": "reading",
+    "title": "[SINTÉTICO] Lectura sobre resolución de problemas",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": false
+    },
+    "linkedSkillKey": "resolucion_problemas",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "analista_operaciones"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   },
+   {
+    "resourceKey": "rec_aprendizaje",
+    "kind": "course",
+    "title": "[SINTÉTICO] Curso de aprendizaje autónomo",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": false
+    },
+    "linkedSkillKey": "aprendizaje_autonomo",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "estratega_contenidos"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   },
+   {
+    "resourceKey": "rec_influencia",
+    "kind": "reading",
+    "title": "[SINTÉTICO] Lectura sobre influencia",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": false
+    },
+    "linkedSkillKey": "influencia_liderazgo",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "exito_cliente"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   }
+  ]
+ },
+ "roleWithoutLabels": {
+  "version": 1,
+  "role": {
+   "roleKey": "formador_corporativo",
+   "labels": {
+    "es": "[SINTÉTICO] Formador corporativo",
+    "en": "[SYNTHETIC] Corporate trainer"
+   },
+   "industry": {
+    "es": "[SINTÉTICO] Formación",
+    "en": "[SYNTHETIC] Training"
+   },
+   "market": "CO",
+   "languagesRequired": [
+    "es"
+   ],
+   "modality": [
+    "hybrid",
+    "remote"
+   ],
+   "tasks": [
+    {
+     "text": {
+      "es": "[SINTÉTICO] Diseñar sesiones de formación.",
+      "en": "[SYNTHETIC] Design training sessions."
+     },
+     "aiExposure": {
+      "status": "sourced",
+      "sourceKey": "src_oficial_a"
+     }
+    },
+    {
+     "text": {
+      "es": "[SINTÉTICO] Evaluar el aprendizaje.",
+      "en": "[SYNTHETIC] Assess learning."
+     },
+     "aiExposure": {
+      "status": "hypothesis",
+      "note": {
+       "es": "[SINTÉTICO] Hipótesis de trabajo, por validar con una fuente.",
+       "en": "[SYNTHETIC] Working hypothesis, to be validated with a source."
+      }
+     }
+    }
+   ],
+   "barriers": [
+    {
+     "es": "[SINTÉTICO] Barrera de entrada de prueba.",
+     "en": "[SYNTHETIC] Test entry barrier."
+    }
+   ],
+   "capabilities": [
+    {
+     "skillKey": "comunicacion",
+     "importance": "essential"
+    },
+    {
+     "skillKey": "planificacion_organizacion",
+     "importance": "optional"
+    }
+   ],
+   "contexts": [
+    "ctx_educacion_formacion"
+   ],
+   "sourceKeys": [
+    "src_oficial_a",
+    "src_institucional_c"
+   ],
+   "regulated": {
+    "isRegulated": false
+   },
+   "synthetic": true,
+   "domainReview": {
+    "present": true,
+    "at": "2026-11-10"
+   },
+   "verificationTask": false
+  },
+  "sources": [
+   {
+    "sourceKey": "src_oficial_a",
+    "type": "official",
+    "title": "[SINTÉTICO] Descripción ocupacional oficial A",
+    "url": "https://example.org/fuente-sintetica",
+    "country": "CO",
+    "language": "es",
+    "consultedAt": "2026-11-08",
+    "accessible": true,
+    "synthetic": true,
+    "stale": false
+   },
+   {
+    "sourceKey": "src_institucional_c",
+    "type": "institutional",
+    "title": "[SINTÉTICO] Guía institucional C",
+    "url": "https://example.org/fuente-sintetica",
+    "country": "CO",
+    "language": "es",
+    "consultedAt": "2026-11-01",
+    "accessible": true,
+    "synthetic": true,
+    "stale": false
+   }
+  ],
+  "offers": [
+   {
+    "offerKey": "oferta_formador_vigente",
+    "title": "[SINTÉTICO] Oferta de prueba (formador_corporativo)",
+    "organization": "[SINTÉTICO] Organización A",
+    "roleKey": "formador_corporativo",
+    "url": "https://example.org/oferta-sintetica",
+    "market": "CO",
+    "language": "es",
+    "modality": "hybrid",
+    "checkedAt": "2026-11-09",
+    "salary": {
+     "published": false
+    },
+    "synthetic": true,
+    "verifiedAt": "2026-11-09",
+    "status": "current"
+   }
+  ],
+  "resources": [
+   {
+    "resourceKey": "rec_comunicacion",
+    "kind": "course",
+    "title": "[SINTÉTICO] Curso breve de comunicación",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": true,
+     "amount": 0,
+     "currency": "COP"
+    },
+    "linkedSkillKey": "comunicacion",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "formador_corporativo",
+     "exito_cliente"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   },
+   {
+    "resourceKey": "rec_planificacion",
+    "kind": "course",
+    "title": "[SINTÉTICO] Curso de planificación",
+    "url": "https://example.org/recurso-sintetico",
+    "provider": "[SINTÉTICO] Proveedor de prueba",
+    "purpose": {
+     "es": "[SINTÉTICO] Practicar una brecha concreta.",
+     "en": "[SYNTHETIC] Practice a specific gap."
+    },
+    "language": "es",
+    "level": "introductory",
+    "duration": {
+     "minutes": 90,
+     "text": "90 min"
+    },
+    "price": {
+     "published": false
+    },
+    "linkedSkillKey": "planificacion_organizacion",
+    "exercise": {
+     "es": "[SINTÉTICO] Ejercicio breve que muestre lo aprendido.",
+     "en": "[SYNTHETIC] Short exercise that shows what was learned."
+    },
+    "roleKeys": [
+     "coordinador_proyectos_salud",
+     "formador_corporativo"
+    ],
+    "sourceKey": "src_curso_f",
+    "synthetic": true
+   }
+  ]
+ }
+}

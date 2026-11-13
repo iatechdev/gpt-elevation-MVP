@@ -1,0 +1,17 @@
+{"id":"ES108-W1 los ci.yml rotos reales del historial (#70, #74, #71) fallan con archivo y línea","ok":true,"detail":"#70 roto: ci.yml:154: YAML inválido (bad indentation of a mapping entry). Si es  | #74 sin corregir: ci.yml:132: YAML inválido (bad indentation of a mapping entry). Si es  | #71 sin corregir: ci.yml:132: YAML inválido (bad indentation of a mapping entry). Si es "}
+{"id":"ES108-W1b un nombre de paso con «: » sin comillas falla con la línea y la sugerencia","ok":true,"detail":"propio.yml:10: YAML inválido (bad indentation of a mapping entry). Si es un nombre de paso con «: », ponlo entre comilla"}
+{"id":"ES108-W2 los workflows reales de main (merge) son válidos","ok":true,"detail":"ci.yml problemas=0"}
+{"id":"ES108-W2b el ci.yml corregido de #70 pasa","ok":true,"detail":"[0]"}
+{"id":"ES108-W3 pasos mal formados (sin run/uses, ambos, run numérico, nulo, texto, name no texto), job sin pasos, sin jobs, documento no mapa, vacío y steps no lista → problema claro","ok":false,"detail":"sinDetectar=run no texto otros=1,1,1,1,1"}
+{"id":"ES108-W4 `npm run X`: falla solo si X no existe (varias líneas, con &&); no hay falsos positivos con scripts reales ni con `npm test`/`npm ci`","ok":true,"detail":"6 casos (script real usado: test:context:postgres)"}
+{"id":"ES108-W4b [INFO] working-directory del paso con «./» o con «/» final (se compara tal cual contra las claves del mapa)","info":"frontend ./ build → 1 problemas; backend ./ script inexistente → 1; backend/ → 1"}
+{"id":"ES108-W5 bordes del YAML: anclas, bloque plegado, BOM, CRLF y workflow reutilizable válidos; clave duplicada y tabulaciones fallan; entradas no texto no lanzan excepción","ok":true,"detail":"{\"anchors\":0,\"folded\":0,\"dupKey\":1,\"tab\":1,\"bom\":0,\"crlf\":0,\"reusable\":0} excepción=null"}
+{"id":"ES108-W5b [INFO] directorio sin workflows / extensión .yaml","info":"checkAll siempre lee .github/workflows del repo; la expresión acepta .yml y .yaml: sí"}
+{"id":"ES108-W6 `npm test` completo pasa con el repo sano (tests/pass/fail)","ok":true,"detail":"392/392/0"}
+{"id":"ES108-W6b `npm test` FALLA si se rompe el ci.yml (restaurado después) y el mensaje trae archivo y línea","ok":true,"detail":"salida=1 ci.yml:42: YAML inválido (incomplete explicit mapping pair; a key nod"}
+{"id":"ES108-W6c `npm run check:workflows` (el script) sale 0 con «Workflows válidos»","ok":true,"detail":"Workflows válidos: 1 archivo(s)."}
+{"id":"ES108-W7 `js-yaml` 4.1.0 exacta, solo en devDependencies","ok":true,"detail":"{\"dev\":\"4.1.0\",\"prod\":null}"}
+{"id":"ES108-W7b el lockfile resuelve js-yaml a 4.1.0 marcado como dev","ok":true,"detail":"{\"v\":\"4.1.0\",\"dev\":true}"}
+{"id":"ES108-W7c la imagen instala el backend con --omit=dev (js-yaml no entra a producción)","ok":true,"detail":""}
+{"id":"ES108-S1 [SEG] el script no usa red, procesos hijos ni evaluación dinámica (lectura de archivos del repo)","ok":true,"detail":"revisión del código"}
+{"fin":true}

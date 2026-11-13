@@ -1,0 +1,16 @@
+base | es-293: # pass 6 # fail 0  | mi guion: RESUMEN 9/9 
+R1 | es-293 del PR: fail 0 | mi guion: FALLA M2 RESUMEN 8/9 
+R2 | es-293 del PR: fail 0 | mi guion: FALLA M2 RESUMEN 8/9 
+R3 | es-293 del PR: fail 2 | mi guion: FALLA M1 RESUMEN 8/9 
+R4 | es-293 del PR: fail 2 | mi guion: RESUMEN 9/9 
+R5 | es-293 del PR: fail 2 | mi guion: FALLA M6 RESUMEN 8/9 
+R6 | es-293 del PR: fail 2 | mi guion: FALLA M2 RESUMEN 8/9 
+R7 | es-293 del PR: fail 2 | mi guion: FALLA M3 FALLA M5 RESUMEN 7/9 
+R8 | es-293 del PR: fail 6 | mi guion: FALLA M3 FALLA M4 FALLA M6 RESUMEN 6/9 
+R9 | es-293 del PR: fail 6 | mi guion: FALLA M1 FALLA M2 FALLA M3 FALLA M4 FALLA M6 RESUMEN 4/9 
+R10 | es-293 del PR: fail 4 | mi guion: FALLA M1 FALLA M3 RESUMEN 7/9 
+R11 | es-293 del PR: fail 0 | mi guion: FALLA M2 RESUMEN 8/9 
+R12 | es-293 del PR: fail 6 | mi guion: FALLA M3 FALLA M4 FALLA M5 RESUMEN 6/9 
+R13 | es-293 del PR: fail 3 | mi guion: FATAL TypeError: Cannot read properties  
+R14 | es-293 del PR: fail 6 | mi guion: FALLA M1 FALLA M2 FALLA M3 FALLA M4 FALLA M5 FATAL TypeError: Cannot read properties  
+FIN

@@ -1,0 +1,54 @@
+{"id":"ES32-S01 GET /api/routes sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S01 GET /api/routes/constraints sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S01 PUT /api/routes/constraints sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S01 GET /api/routes/choices sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S01 POST /api/routes/choices sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S01 GET /api/routes/review-requests sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S01 POST /api/routes/review-requests sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES32-S02 admin no accede a ningún endpoint de rutas (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403"}
+{"id":"ES32-S02 superadmin no accede a ningún endpoint de rutas (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403"}
+{"id":"ES32-S02 terapeuta no accede a ningún endpoint de rutas (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403"}
+{"id":"ES32-S02 junta no accede a ningún endpoint de rutas (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403"}
+{"id":"ES32-C01 sin catálogo publicado → 503 catalog_unavailable (no 500)","ok":true,"detail":"status=503 code=catalog_unavailable"}
+{"id":"ES32-C02 catálogo sintético publicado (precondición)","ok":true,"detail":"status=200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-10-28T17:44:06.022Z\",\"itemCount\":27}"}
+{"id":"ES32-R01 sin restricciones → needs_constraints, 0 rutas, basisHash null, constraintsVersion 0","ok":true,"detail":"status=needs_constraints"}
+{"id":"ES32-R02 GET constraints vacío → constraints null","ok":true,"detail":"{\"constraints\":null}"}
+{"id":"ES32-R03 elegir sin restricciones ni propuesta → 4xx, no 500","ok":true,"detail":"status=409 code=conflict"}
+{"id":"ES32-V01 entrada inválida «clave desconocida» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «payload con propiedad extra» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «mercado en minúscula» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «4 mercados» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «0 mercados» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «idiomas duplicados» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «acceptRegulated inválido» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «preferida fuera de aceptadas» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «contexto de origen inexistente» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «contexto de interés inexistente» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «baseVersion negativa» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «baseVersion texto» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «requestId corto» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «requestId con símbolos» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «sin payload» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «payload arreglo» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «clave con SQL» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V01 entrada inválida «idioma de 3 letras» → 400","ok":true,"detail":"status=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"id":"ES32-V02 __proto__ en el payload → 400, sin contaminar el prototipo","ok":true,"detail":"status=400"}
+{"id":"ES32-V03 JSON roto → 4xx, no 500","ok":true,"detail":"status=400"}
+{"id":"ES32-V04 parámetro de consulta desconocido → 400","ok":true,"detail":"status=400"}
+{"id":"ES32-V05 choices?after=abc → 400","ok":true,"detail":"status=400"}
+{"id":"ES32-V05 choices?after=-1 → 400","ok":true,"detail":"status=400"}
+{"id":"ES32-V05 choices?after=1.5 → 400","ok":true,"detail":"status=400"}
+{"id":"ES32-V05 choices?after=99999999999999999999 → 400","ok":true,"detail":"status=400"}
+{"id":"ES32-V06 ninguna entrada inválida dejó filas","ok":true,"detail":""}
+{"id":"ES32-I01 primera versión → 201 version 1 current","ok":true,"detail":"status=201"}
+{"id":"ES32-I02 mismo requestId y mismo cuerpo → 200 created false, misma fila","ok":true,"detail":"status=200"}
+{"id":"ES32-I03 mismo requestId con otro cuerpo → 409","ok":true,"detail":"status=409"}
+{"id":"ES32-I04 baseVersion obsoleta → 409","ok":true,"detail":"status=409"}
+{"id":"ES32-I05 el payload se guarda cifrado (v2:) y sin texto plano de las claves","ok":true,"detail":"v2:a18c877be…"}
+{"id":"ES32-I06 6 escrituras concurrentes con la misma baseVersion → 1 creada, el resto 409, ningún 5xx","ok":false,"detail":"409,201,503,409,409,503"}
+{"id":"ES32-I07 exactamente una versión current por persona","ok":true,"detail":"current=1"}
+{"id":"ES32-I08 4 reintentos concurrentes con el MISMO requestId → una sola fila, sin 5xx","ok":true,"detail":"201,200,200,200"}
+{"id":"ES32-S03 B no ve las restricciones de A (constraints null)","ok":true,"detail":""}
+{"id":"ES32-R04 versión 4 con filtros CO/es (precondición)","ok":true,"detail":"status=201 {\"constraints\":{\"id\":4,\"version\":4,\"status\":\"current\",\"payload\":{\"targetMarkets\""}
+{"id":"ES32-R05 determinismo: dos lecturas sin cambios → mismo cuerpo y misma huella","ok":false,"detail":"hash=undefined"}
+{"id":"rutas","info":" status=undefined discarded=undefined"}

@@ -1,0 +1,11 @@
+base run=1 exit=0 dur=37s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=2 exit=1 dur=38s # tests 586 # pass 585 # fail 1 # skipped 0  desser=1
+base run=3 exit=0 dur=38s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=4 exit=0 dur=40s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=5 exit=0 dur=57s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=6 exit=0 dur=51s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=7 exit=0 dur=53s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=8 exit=0 dur=61s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=9 exit=0 dur=43s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+base run=10 exit=0 dur=45s # tests 586 # pass 586 # fail 0 # skipped 0  desser=0
+DONE

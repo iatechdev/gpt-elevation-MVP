@@ -1,0 +1,22 @@
+{"id":"ES107-V1 con el formulario lleno por pendientes el aviso aparece con el título, las cifras y `role=\"status\"`","ok":true,"detail":"⚠ El formulario público está cerrado Se alcanzó el tope de solicitudes: 5 de 5 pendientes (hojas de vida: 0 de 1024 MB). Quien intente enviar una solicitud ve «Por ahora no estamos recibiendo solicitu role=status"}
+{"id":"ES107-V1b sin errores de consola ni excepciones","ok":true,"detail":"ok"}
+{"id":"ES107-V1c con cupo (servidor sin tope alcanzado) NO aparece el aviso y la pantalla muestra la lista o «No hay solicitudes»","ok":true,"detail":"aviso=false"}
+{"id":"ES107-V1d [INFO] aviso cuando el tope es de peso y no hay pendientes","info":"⚠ El formulario público está cerrado Se alcanzó el tope de solicitudes: 0 de 200 pendientes (hojas de vida: 7 de 12 MB). Quien intente enviar una solicitud ve «Por ahora no estamos recibiendo solicitudes». Revisa, aprueba o rechaza las pendientes, o elimina la"}
+{"id":"ES107-V1e el aviso de peso muestra las cifras de hojas de vida («N de M MB»)","ok":true,"detail":"⚠ El formulario público está cerrado Se alcanzó el tope de solicitudes: 0 de 200 pendientes (hojas de vida: 7 de 12 MB). Quien intente enviar una solicitud ve «"}
+{"id":"ES107-V3 a 320, 375, 768 y 1440 px el aviso cabe en pantalla y la página no tiene scroll horizontal","ok":true,"detail":"320:sw320/cw320 aviso[111,135] 375:sw375/cw375 aviso[138,209] 768:sw768/cw768 aviso[272,736] 1440:sw1440/cw1440 aviso[272,1408]"}
+{"id":"ES107-V3b contraste del texto del aviso ≥ 4.5:1 (AA) y tamaño de letra ≥ 12 px","ok":true,"detail":"contraste=6.37 fuente=13px fg=rgb(146, 64, 14) bg=rgb(254, 243, 199)"}
+{"id":"ES107-V3c [INFO] tamaño de letra 13 px en el aviso: legible pero pequeño en móvil","info":"13px"}
+{"id":"ES107-V4 teclado: el aviso no añade controles ni trampas de foco; el orden de tabulación sigue por los filtros y las acciones","ok":true,"detail":"BUTTON:💰 Precios → BUTTON:🌐 Landing → BUTTON:Pendientes → BUTTON:Aprobadas → BUTTON:Rechazadas → BUTTON:Todas"}
+{"id":"ES107-V5 accesibilidad: el aviso se expone como región `status` con su título y texto en el árbol de accesibilidad (no verificado con lector de pantalla real)","ok":true,"detail":"- status: - strong: ⚠ El formulario público está cerrado - text: \"Se alcanzó el tope de solicitudes: 5 de 5 pendientes (hojas de vida: 0 de 1024 MB). Quien inte"}
+{"id":"ES107-V6 consulta de capacidad con 500: no aparece un aviso falso, la lista de solicitudes sigue disponible y no hay excepciones","ok":true,"detail":"aviso=false errores=0"}
+{"id":"ES107-V6 consulta de capacidad con 403: no aparece un aviso falso, la lista de solicitudes sigue disponible y no hay excepciones","ok":true,"detail":"aviso=false errores=0"}
+{"id":"ES107-V6 consulta de capacidad con contrato inválido: no aparece un aviso falso, la lista de solicitudes sigue disponible y no hay excepciones","ok":true,"detail":"aviso=false errores=0"}
+{"id":"ES107-V6 consulta de capacidad con full=false: no aparece un aviso falso, la lista de solicitudes sigue disponible y no hay excepciones","ok":true,"detail":"aviso=false errores=0"}
+{"id":"ES107-V6 consulta de capacidad con cuerpo vacío: no aparece un aviso falso, la lista de solicitudes sigue disponible y no hay excepciones","ok":true,"detail":"aviso=false errores=0"}
+{"id":"ES107-V6 consulta de capacidad con red caída: no aparece un aviso falso, la lista de solicitudes sigue disponible y no hay excepciones","ok":true,"detail":"aviso=false errores=0"}
+{"id":"ES107-V1f un user no llega a la pantalla ni ve el aviso","ok":true,"detail":"ruta=/app/onboarding"}
+{"id":"ES107-V1f un therapist no llega a la pantalla ni ve el aviso","ok":true,"detail":"ruta=/therapist/dashboard"}
+{"id":"ES107-V1g tras eliminar una solicitud el aviso se vuelve a calcular con las cifras nuevas del servidor (aparece o desaparece según `full`)","ok":true,"detail":"antes=true después=false full(servidor)=false pendientes=4/5"}
+{"id":"ES107-V2 [INFO] con el idioma en inglés el aviso sigue en español (el backoffice no tiene i18n; diseño aprobado por Mauricio en ES-107)","info":"⚠ El formulario público está cerrado Se alcanzó el tope de solicitudes: 0 de 200 pendientes (hojas d"}
+{"id":"ES107-V7 [INFO] modo oscuro del sistema: el aviso conserva sus colores fijos","info":"{\"fg\":\"rgb(146, 64, 14)\",\"bg\":\"rgb(254, 243, 199)\"}"}
+{"fin":true}

@@ -1,0 +1,191 @@
+{
+  "pr": 212,
+  "head": "4abe86bdbcb6a9d800e01637b890cb43a255a330",
+  "results": [
+    {
+      "id": "A1a las 11 acciones auditadas (user.update/assign_therapist/set_plan/unlock/reset_link/delete, invitation.create/revoke, matching.confirm, plan_request.approve/reject) dejan UNA entrada ok con objetivo y tipo correctos",
+      "ok": true,
+      "detail": "11/11"
+    },
+    {
+      "id": "A1b cada entrada guarda el actor y su rol reales (admin para invitaciones/emparejamiento/planes; superadmin para el resto)",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "A1c no-ops",
+      "info": "entradas antes/después de 404/400 sin cambios: 11 → 12 (denegaciones por 403 se cuentan aparte en A2)"
+    },
+    {
+      "id": "A1d con la auditoría FALLANDO (trigger que rechaza el INSERT): las 10 acciones responden 5xx y NO cambian nada (rol, vínculo, plan, bloqueo, usuario, estado de solicitudes, invitación)",
+      "ok": true,
+      "detail": "update:500 assign:500 plan:500 unlock:500 del:500 conf:500 apr:500 rej:500 inv:500 reset:500 | user,null,null,5,1,pending,null,pending,null,pending,inv=0"
+    },
+    {
+      "id": "A1e reset-link con la auditoría fallando: 5xx y NO se emite ningún enlace (ninguna fila de restablecimiento para la cuenta)",
+      "ok": true,
+      "detail": "500 filas=0"
+    },
+    {
+      "id": "A1f el fallo de auditoría no deja entradas a medias (el conteo no cambió) ni texto interno en las respuestas",
+      "ok": true,
+      "detail": "entradas 12→12"
+    },
+    {
+      "id": "A2a con la auditoría FALLANDO, las denegaciones (rango, borrar sin ser superadmin, reset-link, rol no permitido) siguen siendo 403 y no ejecutan nada",
+      "ok": true,
+      "detail": "403,403,403,403"
+    },
+    {
+      "id": "A1g si la ACCIÓN falla (trigger que rechaza el UPDATE del usuario): 5xx y NO queda entrada de auditoría",
+      "ok": true,
+      "detail": "500 500 entradas 12→12"
+    },
+    {
+      "id": "A2b cada 403 por rango, borrar sin ser superadmin, reset-link, desbloquear admin y rol no permitido deja una entrada `denied` (actor, acción, objetivo) y no cambia nada",
+      "ok": true,
+      "detail": " superadmin→superadmin 403"
+    },
+    {
+      "id": "A2c una denegación repetida deja UNA entrada por intento (sin duplicar ni agrupar)",
+      "ok": true,
+      "detail": "19→20"
+    },
+    {
+      "id": "A2d 400/401/403 de validación o de autenticación (rol inválido, persona sin permiso, sin sesión, correo inválido, requestId inválido) NO dejan entradas",
+      "ok": true,
+      "detail": "20→20"
+    },
+    {
+      "id": "A3a lectura: admin, profesional, persona y junta → 403; sin sesión, vencido o firmado con otra clave → 401/403; superadmin 200 con Cache-Control no-store",
+      "ok": true,
+      "detail": "admin:403,profesional:403,persona:403,junta:403 anon=403 exp=401 otra=401 su=200"
+    },
+    {
+      "id": "A3b paginación: por defecto 50, `limit` ≤ 100, orden por id descendente, `nextBefore` encadena páginas sin repetir",
+      "ok": true,
+      "detail": "total=20 def=20 p1=5 p2=5 nextBefore=30"
+    },
+    {
+      "id": "A3c filtros: action, result, targetId y actorId devuelven solo lo pedido",
+      "ok": true,
+      "detail": "3/8/3/7"
+    },
+    {
+      "id": "A3d entradas hostiles (cero, negativos, decimales, > int32, 10+ dígitos, repetidas, arreglos, inyección, cadenas largas) → 400 `invalid_filter`, nunca 500",
+      "ok": true,
+      "detail": "23/23 → 400"
+    },
+    {
+      "id": "A3d-corchetes",
+      "info": "claves con corchetes se tratan como parámetros desconocidos (se ignoran, igual que cualquier otro): actorId[]=1→200 entradas=20 ; actorId[a]=1→200 entradas=20"
+    },
+    {
+      "id": "A3e la respuesta contiene solo las columnas permitidas (id, actorId, actorRole, action, targetType, targetId, result, createdAt)",
+      "ok": true,
+      "detail": "action,actorId,actorRole,createdAt,id,result,targetId,targetType"
+    },
+    {
+      "id": "A4a la tabla completa y la lectura no contienen la nota, correos, hashes de token ni textos de contraseña (marca, correos sintéticos de TODAS las cuentas, hash de invitación, «aA1!»)",
+      "ok": true,
+      "detail": "columnas=action,actorId,actorRole,createdAt,id,result,targetId,targetType"
+    },
+    {
+      "id": "A4b el registro del servidor no contiene la nota, correos ni el hash tras las acciones auditadas",
+      "ok": true,
+      "detail": "log 1128 bytes"
+    },
+    {
+      "id": "A4c la tabla solo tiene ids y claves (columnas: id, actorId, actorRole, action, targetType, targetId, result, createdAt)",
+      "ok": true,
+      "detail": "action,actorId,actorRole,createdAt,id,result,targetId,targetType"
+    },
+    {
+      "id": "A4e vocabulario cerrado: en TODAS las filas actorRole ∈ roles, targetType ∈ {user, invitation, matching_request, plan_request}, action ∈ las 11 claves y result ∈ {ok, denied, failed} (ningún texto libre: nombres, correos, notas)",
+      "ok": true,
+      "detail": " filas=23"
+    },
+    {
+      "id": "A4d con el objetivo ya BORRADO (sin FK) la lectura sigue funcionando y conserva la entrada",
+      "ok": true,
+      "detail": "200 1"
+    },
+    {
+      "id": "I1a 1.ª → 201 con la invitación; reintento → 200 `replayed:true` con la MISMA invitación (mismo id), sin crear otra, sin anular la primera y sin segunda entrada de auditoría",
+      "ok": true,
+      "detail": "201 200 filas=1 auditoría=1"
+    },
+    {
+      "id": "I1b la respuesta del reintento no incluye token ni enlace (solo se guarda el hash)",
+      "ok": true,
+      "detail": "{\"id\":4,\"email\":\"idem-1794343174487@example.test\",\"role\":\"user\",\"invitedBy\":2,\"expiresAt\":\"2026-11-13T20:39:41.815Z\",\"usedAt\":null,\"createdAt\":\"2026-11-10T20:39:41.822Z\",\"status\":\"pending\",\"emailSent\""
+    },
+    {
+      "id": "I1c 8 solicitudes SIMULTÁNEAS con el mismo requestId (pool 5): 1×201 + 7×200 replayed, 0 5xx, una invitación (id único), una entrada de auditoría, la primera sigue viva (único camino que envía correo = el 201)",
+      "ok": true,
+      "detail": "201,200,200,200,200,200,200,200 filas=1 auditoría=1"
+    },
+    {
+      "id": "I1d tras las simultáneas no quedan transacciones colgadas",
+      "ok": true,
+      "detail": "idle in tx=0"
+    },
+    {
+      "id": "I1e el mismo requestId con OTRA persona que invita crea invitaciones distintas (201 y 201); la repetición de A no ve ni devuelve la de B",
+      "ok": true,
+      "detail": "201/201"
+    },
+    {
+      "id": "I1f sin requestId: comportamiento anterior (cada llamada crea una invitación y anula la anterior del mismo correo: 2 filas, la 1.ª usada)",
+      "ok": true,
+      "detail": "201/201 [true,false]"
+    },
+    {
+      "id": "I1g requestId inválido (7/65 caracteres, espacio, `;`, unicode, salto de línea, arreglo, número, objeto, vacío) → 400 (`invalid_request_id` o validación), nunca 5xx, y no crea invitación",
+      "ok": true,
+      "detail": "\"corto\"→400:invalid_request_id ; \"xxxxxxxxxxxxxxxxxxx→400:invalid_request_id ; \"con espacio 12345\"→400:invalid_request_id ; \"req';DROP--1234\"→400:invalid_request_id ; \"ñandú-12345\"→400:invalid_request_id ; \"12345678\\n\"→400:invalid_request_id ; [\"abcdefgh\",\"ijklmno→400: ; 12345678→400: ; {\"a\":1}→400: ; \"abcdefg\"→400:invalid_request_id ; \"\"→400:invalid_request_id"
+    },
+    {
+      "id": "I1h límites válidos: 8 y 64 caracteres (letras, números, `_`, `-`) → 201",
+      "ok": true,
+      "detail": "201/201"
+    },
+    {
+      "id": "I1i mismo requestId con OTRO correo y OTRO rol",
+      "info": "1.ª 201 obs1-1794343174487@example.test/user; 2.ª 200 replayed=true devuelve email=obs1-1794343174487@example.test role=user; invitación para el correo nuevo existe=false"
+    },
+    {
+      "id": "I1j mismo requestId tras REVOCAR la invitación",
+      "info": "200 replayed=true status=revoked (no se crea una nueva: el reintento con el mismo requestId no vuelve a invitar)"
+    },
+    {
+      "id": "I2a índice único parcial (invitedBy, requestId): la 2.ª inserción igual → 23505; varias con requestId NULL permitidas; otro inviter con el mismo requestId permitido",
+      "ok": true,
+      "detail": "código=23505"
+    },
+    {
+      "id": "I2b 8 requestId × 3 inviters × 2 reintentos en paralelo (48 solicitudes, pool 5): sin 5xx, exactamente una invitación por (inviter, requestId), sin bloqueos, tiempo acotado",
+      "ok": true,
+      "detail": "24×201 24×200 0×429 grupos=24 871ms"
+    },
+    {
+      "id": "I2c si la auditoría falla al invitar, la anulación de la invitación anterior del mismo correo se revierte con ella (la anterior sigue viva y no queda la nueva)",
+      "ok": true,
+      "detail": "500 filas=[false]"
+    },
+    {
+      "id": "S1a un admin solo lista y revoca sus invitaciones: revocar una ajena → 404 sin entrada; revocar una ya usada → 404 sin entrada",
+      "ok": true,
+      "detail": "ajena=404 usada=404 otras=false"
+    },
+    {
+      "id": "S1b confirmar 8 veces a la vez deja UNA entrada (1×200 + 7×409); aprobar vs rechazar simultáneo deja UNA entrada (un ganador)",
+      "ok": true,
+      "detail": "409200409409409409409409 auditoría=1 | 409409200409 auditoría=1"
+    },
+    {
+      "id": "log",
+      "info": "líneas del servidor: 61; muestra de mensajes únicos: [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' } | [dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com | 🚀 Elevation está en el aire en el puerto 8222 | 🗄️ PostgreSQL conectado con éxito. | ✅ Asociaciones configuradas. | ✅ Tablas sincronizadas en PostgreSQL."
+    }
+  ]
+}

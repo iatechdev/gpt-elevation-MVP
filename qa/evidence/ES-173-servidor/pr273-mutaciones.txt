@@ -1,0 +1,19 @@
+base | es-173: # pass 13 # fail 0  | mi guion: RESUMEN 10/10 
+T1 | es-173 del PR: fail 4 | mi guion: FALLA F2 RESUMEN 9/10 
+T2 | es-173 del PR: fail 0 | mi guion: RESUMEN 10/10 
+T3 | es-173 del PR: fail 3 | mi guion: {"id":"F3/F4 versión e idempo RESUMEN 9/10 
+T4 | es-173 del PR: fail 2 | mi guion: FALLA F1 RESUMEN 9/10 
+T5 | es-173 del PR: fail 2 | mi guion: FALLA F1 RESUMEN 9/10 
+T6 | es-173 del PR: fail 2 | mi guion: FALLA F5 RESUMEN 9/10 
+T7 | es-173 del PR: fail 2 | mi guion: FALLA F5 RESUMEN 9/10 
+T8 | es-173 del PR: fail 2 | mi guion: FALLA F7 RESUMEN 9/10 
+T9 | es-173 del PR: fail 2 | mi guion: FALLA F7 RESUMEN 9/10 
+T10 | es-173 del PR: fail 0 | mi guion: FALLA F7 RESUMEN 9/10 
+T11 | es-173 del PR: fail 2 | mi guion: FALLA F7 RESUMEN 9/10 
+T12 | es-173 del PR: fail 0 | mi guion: RESUMEN 10/10 
+T13 | es-173 del PR: fail 3 | mi guion: {"id":"F3/F4 versión e idempo RESUMEN 9/10 
+T14 | es-173 del PR: fail 2 | mi guion: {"id":"F3/F4 versión e idempo RESUMEN 9/10 
+T15 | es-173 del PR: fail 0 | mi guion: RESUMEN 10/10 
+T16 | es-173 del PR: fail 0 | mi guion: RESUMEN 10/10 
+T20 | es-173 del PR: fail 4 | mi guion: FALLA F2 FATAL TypeError: Cannot read p 
+FIN

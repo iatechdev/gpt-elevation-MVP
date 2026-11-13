@@ -1,0 +1,7 @@
+# ES-43 · PR #104 · head 87e807d6dfcb1c72508700e24b4521d2418f870c — evidencia [QA-Claude]
+Entorno: merge local con origin/main, Postgres 17 con migraciones reales, API real, proveedor SIMULADO que fija `stop_reason` (proxy `stopmock`), datos sintéticos. Claude real: no ejecutado (S6 queda para después del despliegue).
+- `es43-stopreason.mjs` (qa/integration): 14 comprobaciones correctas, 0 fallas: columna `varchar(24)` opcional; `end_turn`, `max_tokens`, `stop_sequence` se guardan enlazados por `requestId`; sin campo → `null`; valores hostiles (HTML, 500 caracteres, el texto de la persona, mayúsculas con espacios, inyección SQL) → `null` con respuesta 200; ninguna fila con caracteres fuera de `[a-z_]` ni con texto de la persona; `/api/ai/usage` no expone `stopReason`; 12 turnos simultáneos todos 200 y registrados; el presupuesto sigue contando.
+- Migración: sube, repetir no hace nada; `down` sin `ALLOW_DESTRUCTIVE_MIGRATION=true` se niega (guarda de ES-59) y con ella quita la columna sin perder filas (21 → 21), el código de main sigue leyendo `AiUsages` sin la columna, y volver a subir la restaura; `db:drift`: SIN DERIVA.
+- Backend `npm test` 503/503; `test:worker:pg` 17, `test:worker-process:pg` 13, `test:skill-analysis:pg` 12, `test:insights:pg` 8, `test:resume:pg` 8, `test:resume-skills:pg` 8.
+## Pendiente
+S6: tras el despliegue, repetir con Claude real los 2 prompts que se cortaron y leer `stopReason`/`outputTokens` por `requestId` (≈28.000 tokens). Esto confirma la CAUSA (ES43-QA-01); #104 solo mide, no corrige.

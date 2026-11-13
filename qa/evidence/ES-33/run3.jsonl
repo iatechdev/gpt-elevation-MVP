@@ -1,0 +1,85 @@
+✅ Asociaciones configuradas.
+{"id":"ES33-M01 migración dos veces sin error y con índices únicos/compuestos","ok":true,"detail":""}
+{"id":"ES33-P01 runtime SIN dobles: proponer experimento → 503 con código de contrato pendiente (ruta o contexto), sin 500 ni trazas","ok":true,"detail":"status=503 code=route_contract_pending"}
+{"id":"ES33-P02 runtime SIN dobles: crear experimento no persiste nada (4xx/503, 0 filas)","ok":true,"detail":"status=409 code=invalid_proposal"}
+{"id":"ES33-P03 runtime SIN dobles: proponer plan sobre un experimento inexistente → 404 (no 500)","ok":true,"detail":"status=404"}
+{"id":"ES33-S01 POST /experiments/proposals sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 POST /experiments sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 GET /experiments sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 GET /experiments/1 sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 GET /experiments/1/review-requests sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 POST /experiments/1/versions sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 POST /experiments/1/review-requests sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 POST /career-plan/proposals sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 POST /career-plan/versions sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 GET /career-plan sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 GET /career-plan/versions/1 sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 GET /career-plan/reminders sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S01 POST /career-plan/reminders sin token → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES33-S02 admin no accede a ningún endpoint (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403,403,403,403,403,403,403"}
+{"id":"ES33-S02 therapist no accede a ningún endpoint (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403,403,403,403,403,403,403"}
+{"id":"ES33-S02 board no accede a ningún endpoint (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403,403,403,403,403,403,403"}
+{"id":"ES33-S02 superadmin no accede a ningún endpoint (todos 403)","ok":true,"detail":"403,403,403,403,403,403,403,403,403,403,403,403,403"}
+{"id":"ES33-V00 parámetro de consulta desconocido → 400","ok":true,"detail":"status=400"}
+{"id":"ES33-V00b after=abc → 400","ok":true,"detail":"status=400"}
+{"id":"ES33-V00b after=-1 → 400","ok":true,"detail":"status=400"}
+{"id":"ES33-V00b after=1.5 → 400","ok":true,"detail":"status=400"}
+{"id":"ES33-V00c /experiments/abc → 400/404","ok":true,"detail":"status=400"}
+{"id":"ES33-V00c /experiments/0 → 400/404","ok":true,"detail":"status=400"}
+{"id":"ES33-V00c /experiments/-3 → 400/404","ok":true,"detail":"status=400"}
+{"id":"ES33-V00c /experiments/1e3 → 400/404","ok":true,"detail":"status=400"}
+{"id":"ES33-V01 propuesta inválida «minutos fuera de plantilla» → 4xx, no 5xx","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES33-V01 propuesta inválida «taskIndex negativo» → 4xx, no 5xx","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES33-V01 propuesta inválida «taskIndex fuera de rango» → 4xx, no 5xx","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES33-V01 propuesta inválida «clave extra» → 4xx, no 5xx","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES33-V01 propuesta inválida «choiceId texto» → 4xx, no 5xx","ok":true,"detail":"status=400 code=invalid_input"}
+{"id":"ES33-V01 propuesta inválida «choiceId ajeno» → 4xx, no 5xx","ok":true,"detail":"status=404 code=resource_not_found"}
+{"id":"ES33-V02 disponibilidad semanal menor que la tarea → 422 needs_scope_reduction","ok":true,"detail":"status=422 code=needs_scope_reduction"}
+{"id":"ES33-V03 JSON roto → 4xx","ok":true,"detail":"status=400"}
+{"id":"ES33-C01 la propuesta es bilingüe, sin persistencia y sin contenido privado","ok":true,"detail":""}
+{"id":"ES33-C02 la propuesta no contiene diagnóstico, prescripción, promesas de empleo ni porcentajes de reemplazo","ok":true,"detail":"—"}
+{"id":"ES33-C03 la rúbrica se declara «not_domain_validated» y el ejercicio no acredita competencia","ok":true,"detail":""}
+{"id":"ES33-C04 propuesta manipulada → 409; token de otra persona → 409; token alterado → 409","ok":true,"detail":""}
+{"id":"ES33-C05 crear → 201; repetir con el mismo requestId → 200 mismo experimento","ok":true,"detail":"201/200"}
+{"id":"ES33-C06 4 reintentos concurrentes con el mismo requestId → sin 5xx y una sola fila","ok":true,"detail":"200,200,200,200"}
+{"id":"ES33-C07 el contenido del experimento se guarda cifrado (v2:)","ok":true,"detail":"v2:03a3fb7"}
+{"id":"ES33-S03 B no lee ni modifica el experimento de A por ID (404)","ok":true,"detail":"404,404,404,404"}
+{"id":"ES33-S04 el listado de B solo contiene lo de B","ok":true,"detail":"n=1"}
+{"id":"ES33-L01 entregar antes de iniciar → 409 transition_not_allowed","ok":true,"detail":""}
+{"id":"ES33-L02 iniciar → 201 versión 2 in_progress","ok":true,"detail":"status=201"}
+{"id":"ES33-L03 versión esperada obsoleta → 409","ok":true,"detail":""}
+{"id":"ES33-L04 entregar citando evidencia AJENA → 4xx (no se acepta)","ok":true,"detail":""}
+{"id":"ES33-L05 entregar citando versión inexistente de evidencia propia → 4xx","ok":true,"detail":""}
+{"id":"ES33-L06 entrega vacía (sin muestra ni evidencia) / ayuda inválida / 9 referencias → 400","ok":true,"detail":""}
+{"id":"ES33-L07 entregar con evidencia propia confirmada → 201 versión 3","ok":true,"detail":"status=201 {\"version\":{\"id\":4,\"experimentId\":1,\"version\":3,\"lifecycle\":\"submitted\",\"payload"}
+{"id":"ES33-L08 decidir antes de reflexionar → 409","ok":true,"detail":""}
+{"id":"ES33-L09 reflexionar → 201","ok":true,"detail":"status=201"}
+{"id":"ES33-L10 acción desconocida / clave extra / texto con control → 400","ok":true,"detail":""}
+{"id":"ES33-L11 decidir → 201 lifecycle decided","ok":true,"detail":"status=201"}
+{"id":"ES33-L12 3 cambios concurrentes con la misma versión → exactamente 1 creado, el resto 409, sin 5xx","ok":true,"detail":"201,409,409"}
+{"id":"ES33-L13 el experimento expone la base vigente y la revisión humana como NO compartida (shared=false, contrato pendiente)","ok":true,"detail":"{\"status\":\"not_requested\",\"shared\":false,\"contract\":\"pending\",\"requests\":[],\"truncated\":false}"}
+{"id":"ES33-L14 si cambia la ruta/base, el experimento pasa a needs_review (basis_changed) sin reescribirse","ok":true,"detail":"{\"status\":\"needs_review\",\"reasons\":[\"basis_changed\"]}"}
+{"id":"ES33-L15 con base cambiada no se puede proponer plan ni cambiar sin rebase (409)","ok":true,"detail":""}
+{"id":"ES33-L16 rebase crea una versión nueva sobre la base vigente (201, vuelve a ready)","ok":true,"detail":"status=201"}
+{"id":"evidencia-nueva","info":"antes=current/submitted despues=needs_review [\"basis_changed\"] reflexionar=409"}
+{"id":"ES33-X01 comportamiento documentado (contrato §Huella): evidencia nueva confirmada cambia la base → needs_review/basis_changed y no se puede continuar sin rebase (409); la persona sigue viendo su historia","ok":true,"detail":"base=needs_review reflexionar=409"}
+{"id":"rebase","info":"status=201 lifecycle=ready entrega_conservada_en_actual=false versiones=4"}
+{"id":"ES33-X02 tras el rebase la entrega previa sigue consultable en el historial de versiones (no se pierde)","ok":true,"detail":"versiones=4"}
+{"id":"ES33-R01 pedir revisión sin elegir nada → 400; con evidencia no citada en la entrega → 400; con muestra inexistente → 400","ok":true,"detail":""}
+{"id":"ES33-R02 solicitar revisión → 201 pending_authorization y shared=false","ok":true,"detail":"status=201"}
+{"id":"ES33-R03 retirar la solicitud ajena (B) → 404; retirar la propia → 201 withdrawn","ok":true,"detail":""}
+{"id":"ES33-R04 listado de solicitudes: ninguna compartida","ok":true,"detail":"n=2"}
+{"id":"ES33-R05 ninguna fila indica envío a terceros (no hay lectura de profesional): terapeuta/admin/junta siguen en 403","ok":true,"detail":""}
+{"id":"ES33-PL01 proponer plan (3 acciones 7/30/90 con dependencias) firmado y sin persistir","ok":true,"detail":"status=200"}
+{"id":"ES33-PL02 fecha pasada → 400; dependencia posterior a su acción → 4xx; minutos del primer paso <20 → 400; acción desconocida → 400","ok":true,"detail":""}
+{"id":"ES33-PL03 más minutos que la disponibilidad semanal en una misma semana → 422 needs_scope_reduction","ok":true,"detail":""}
+{"id":"ES33-PL04 aceptar el plan → 201 accepted, versión 1","ok":true,"detail":"status=201 {\"plan\":{\"id\":1,\"experimentId\":5,\"version\":1,\"status\":\"accepted\",\"payload\":{\"schemaVersion\":1,\"templ"}
+{"id":"ES33-PL05 B no lee el plan de A por ID (404) ni lo ve en su listado","ok":true,"detail":""}
+{"id":"ES33-PL06 completar acción sin dependencias cumplidas → 4xx; completar la primera → 201","ok":true,"detail":""}
+{"id":"ES33-PL07 completar step_7 → 201 versión 2 y la versión anterior queda superseded","ok":true,"detail":"status=201"}
+{"id":"ES33-PL08 si cambia la base, el plan vigente pasa a needs_review (no se declara vigente)","ok":true,"detail":"[\"needs_review\",\"needs_review\"]"}
+{"id":"ES33-RM01 recordatorio sin consentimiento de notificaciones → 403 consent_required (no se crea)","ok":true,"detail":"status=403 code=consent_required"}
+{"id":"ES33-RM02 listar recordatorios sin consentimiento → 403; historial propio (history=true) → 200 vacío","ok":true,"detail":""}
+{"id":"carga","info":"pool=5 estados=503@30038 503@30040 503@30038 503@30039 503@30039 503@30028"}
+{"id":"ES33-F01 6 personas crean un experimento a la vez con pool=5: ningún 5xx y todas < 3000 ms (umbral propuesto)","ok":false,"detail":"5xx=6 max=30040ms"}
+{"fin":true}

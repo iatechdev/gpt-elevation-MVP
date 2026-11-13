@@ -1,0 +1,106 @@
+[
+ {
+  "id": "C2 cruce de permisos (3 tipos × 3 permisos): solo el permiso del mismo tipo permite la vista previa; los otros → 403 source_consent_required",
+  "ok": true,
+  "detail": "9 combinaciones"
+ },
+ {
+  "id": "C2b con el permiso de la fuente pero SIN el puente → 403 consent_required (el del puente sigue mandando)",
+  "ok": true,
+  "detail": "403 consent_required"
+ },
+ {
+  "id": "C3 diary_entry: retirar insights_diary entre vista previa y confirmación → 403 source_consent_revoked, 0 versiones; vista previa nueva 403; al reautorizar el mismo token sirve (201)",
+  "ok": true,
+  "detail": "confirmar 403 source_consent_revoked; versiones 0; vista nueva 403; reautorizado 201"
+ },
+ {
+  "id": "C3 chat_turn: retirar insights_chat entre vista previa y confirmación → 403 source_consent_revoked, 0 versiones; vista previa nueva 403; al reautorizar el mismo token sirve (201)",
+  "ok": true,
+  "detail": "confirmar 403 source_consent_revoked; versiones 0; vista nueva 403; reautorizado 201"
+ },
+ {
+  "id": "C3 resume_version: retirar insights_resume entre vista previa y confirmación → 403 source_consent_revoked, 0 versiones; vista previa nueva 403; al reautorizar el mismo token sirve (201)",
+  "ok": true,
+  "detail": "confirmar 403 source_consent_revoked; versiones 0; vista nueva 403; reautorizado 201"
+ },
+ {
+  "id": "C3b campos mixtos (directo + diario + chat) con SOLO el permiso del chat retirado → 403 source_consent_revoked y 0 versiones",
+  "ok": true,
+  "detail": "vista 200; confirmar 403 source_consent_revoked"
+ },
+ {
+  "id": "C3c el texto escrito directamente no depende de ningún permiso de análisis ni del puente → 201",
+  "ok": true,
+  "detail": "200/201"
+ },
+ {
+  "id": "C6a origen ajeno o inexistente → 404 origin_not_found, también con el permiso de la fuente retirado (sin oráculo de existencia por el 403)",
+  "ok": true,
+  "detail": "404/origin_not_found 404/origin_not_found 404/origin_not_found 404/origin_not_found"
+ },
+ {
+  "id": "C6b orígenes y cuerpos malformados → 4xx, nunca 5xx",
+  "ok": true,
+  "detail": "7 casos"
+ },
+ {
+  "id": "C6c persona con eliminación pendiente: la confirmación no crea versión",
+  "ok": true,
+  "detail": "estado 401 undefined"
+ },
+ {
+  "id": "C7 diary_entry: repetir la confirmación (mismo requestId) tras retirar el permiso → no duplica versión y el motor NO entrega el texto",
+  "ok": true,
+  "detail": "primera 201; repetición 403 source_consent_revoked; versiones 1; motor: no_context"
+ },
+ {
+  "id": "C7 chat_turn: repetir la confirmación (mismo requestId) tras retirar el permiso → no duplica versión y el motor NO entrega el texto",
+  "ok": true,
+  "detail": "primera 201; repetición 403 source_consent_revoked; versiones 1; motor: no_context"
+ },
+ {
+  "id": "C7 resume_version: repetir la confirmación (mismo requestId) tras retirar el permiso → no duplica versión y el motor NO entrega el texto",
+  "ok": true,
+  "detail": "primera 201; repetición 403 source_consent_revoked; versiones 1; motor: no_context"
+ },
+ {
+  "id": "C4 diary_entry (con versión activa previa): 40 rondas confirmar‖retirar → confirmar 201/403, retirar siempre 200, ningún 5xx, nunca texto entregado, versión nacida siempre marcada [fix]",
+  "ok": true,
+  "detail": "confirmar {\"201\":2,\"403\":38}; retirar {\"200\":40}; latencia de la ronda: mediana 25 ms, p95 38 ms; sin problemas"
+ },
+ {
+  "id": "C4 diary_entry (sin versión previa): 40 rondas confirmar‖retirar → confirmar 201/403, retirar siempre 200, ningún 5xx, nunca texto entregado, versión nacida siempre marcada [fix]",
+  "ok": true,
+  "detail": "confirmar {\"403\":40}; retirar {\"200\":40}; latencia de la ronda: mediana 19 ms, p95 23 ms; sin problemas"
+ },
+ {
+  "id": "C4 chat_turn (con versión activa previa): 40 rondas confirmar‖retirar → confirmar 201/403, retirar siempre 200, ningún 5xx, nunca texto entregado, versión nacida siempre marcada [fix]",
+  "ok": true,
+  "detail": "confirmar {\"403\":40}; retirar {\"200\":40}; latencia de la ronda: mediana 19 ms, p95 24 ms; sin problemas"
+ },
+ {
+  "id": "C4 chat_turn (sin versión previa): 40 rondas confirmar‖retirar → confirmar 201/403, retirar siempre 200, ningún 5xx, nunca texto entregado, versión nacida siempre marcada [fix]",
+  "ok": true,
+  "detail": "confirmar {\"403\":40}; retirar {\"200\":40}; latencia de la ronda: mediana 22 ms, p95 30 ms; sin problemas"
+ },
+ {
+  "id": "C4 resume_version (con versión activa previa): 40 rondas confirmar‖retirar → confirmar 201/403, retirar siempre 200, ningún 5xx, nunca texto entregado, versión nacida siempre marcada [fix]",
+  "ok": true,
+  "detail": "confirmar {\"403\":40}; retirar {\"200\":40}; latencia de la ronda: mediana 18 ms, p95 21 ms; sin problemas"
+ },
+ {
+  "id": "C4 resume_version (sin versión previa): 40 rondas confirmar‖retirar → confirmar 201/403, retirar siempre 200, ningún 5xx, nunca texto entregado, versión nacida siempre marcada [fix]",
+  "ok": true,
+  "detail": "confirmar {\"403\":40}; retirar {\"200\":40}; latencia de la ronda: mediana 18 ms, p95 24 ms; sin problemas"
+ },
+ {
+  "id": "C12 latencia (fix)",
+  "info": "vista previa: mediana 12.5 ms, p95 16.5 ms | confirmar: mediana 18.3 ms, p95 24.3 ms"
+ },
+ {
+  "id": "C12 p95 de vista previa y confirmar < 300 ms (propuesta) [fix]",
+  "ok": true,
+  "detail": "vista 16.5 ms; confirmar 24.3 ms"
+ }
+]

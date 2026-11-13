@@ -1,0 +1,65 @@
+{
+ "mode": "main",
+ "results": [
+  {
+   "id": "migraciones",
+   "info": "exit=0"
+  },
+  {
+   "id": "siembra",
+   "info": "listados 200/200/200; ordinales TH1=[[5,1],[6,2],[7,3],[8,4]] TH2=[[8,1],[9,2]] TH3=[[11,1]]; contadores {\"t1\":4,\"t2\":2,\"t3\":1}"
+  },
+  {
+   "id": "O0 siembra: P1, P2, P3 y PM tienen «Persona n» con TH1 (1–4); PM además con TH2; X con TH2; PA con TH3",
+   "ok": true,
+   "detail": "TH1=4 PM=2 TH2=2 TH3=1"
+  },
+  {
+   "id": "O5 la tabla solo guarda ids numéricos, el ordinal y fechas (sin texto libre ni datos personales)",
+   "ok": true,
+   "detail": "id:integer, therapistId:integer, personId:integer, ordinal:integer, createdAt:timestamp with time zone, updatedAt:timestamp with time zone"
+  },
+  {
+   "id": "O4-detalle",
+   "info": "[main] export P2 201 undefined · PM 201 undefined · X 201 undefined · PD 201 undefined"
+  },
+  {
+   "id": "O4 exportación de la persona: `therapistOrdinals` con SOLO `id`, `ordinal`, `createdAt` (nunca `therapistId` ni `personId`); P2 → 1 fila; PM (dos profesionales) → 2 filas; X → solo la suya; PD (sin ordinal) → arreglo vacío; ningún nombre ni correo de profesional",
+   "ok": false,
+   "detail": "undefined | undefined"
+  },
+  {
+   "id": "O1-detalle",
+   "info": "[main] DELETE 202/202; purga P2 exit=0 {\"status\":\"awaiting_verification\",\"deadlinesVerified\":false} ({\"status\":\"awaiting_verification\",\"failureCode\":null}); purga PM exit=0 ({\"status\":\"awaiting_verification\",\"failureCode\":null}); filas de ordinal que quedan: P2=1 PM=2"
+  },
+  {
+   "id": "O1 tras purgar a P2: 0 filas de `TherapistPersonOrdinals` con su `personId`; las de P1, P3 y PM-en-su-momento no se tocan por esta purga; recibo sin datos personales",
+   "ok": false,
+   "detail": "P2=1 · TH1 conserva [[5,1],[6,2],[7,3],[8,4]]"
+  },
+  {
+   "id": "O7 persona con ordinales de DOS profesionales (PM, cambió de profesional): al purgarla se borran las dos filas (TH1 y TH2) y las ajenas (X en TH2, P1/P3 en TH1) quedan idénticas",
+   "ok": false,
+   "detail": "PM=2 · TH2 conserva [[8,1],[9,2]]"
+  },
+  {
+   "id": "O3 aislamiento: las filas de otros profesionales (TH3 con PA) y los contadores no cambian por la purga",
+   "ok": true,
+   "detail": "TH3 [{\"personId\":11,\"ordinal\":1,\"therapistId\":4}]"
+  },
+  {
+   "id": "O2a el contador monótono NO se toca al purgar: `TherapistOrdinalCounters.lastOrdinal` igual antes y después (TH1 y TH2)",
+   "ok": true,
+   "detail": "antes {\"t1\":4,\"t2\":2,\"t3\":1} · después {\"t1\":4,\"t2\":2,\"t3\":1}"
+  },
+  {
+   "id": "O2b una persona NUEVA con TH1 recibe el número siguiente (5), nunca el 2 ni el 4 que quedaron libres; las demás conservan su número",
+   "ok": true,
+   "detail": "P4 → 5 · [[5,1],[6,2],[7,3],[8,4],[12,5]]"
+  },
+  {
+   "id": "O8-profesional",
+   "info": "[main] DELETE de la cuenta de profesional (sin personas vinculadas ya) → 200 {\"code\":\"deleted\",\"message\":\"Usuario QA Ord th3 eliminado permanentemente.\"}; quedan: filas de ordinal=0 contador=null fila Users=0 solicitud=undefined"
+  }
+ ]
+}

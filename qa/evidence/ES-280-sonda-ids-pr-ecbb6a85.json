@@ -1,0 +1,45 @@
+[
+ {
+  "id": "inventario",
+  "info": "rutas /api registradas: 246; con parámetro: 94 (Dev reporta 92 con parámetro)"
+ },
+ {
+  "id": "sonda-ids",
+  "info": "9400 solicitudes (94 rutas × 5 perfiles × 20 ids). 5xx: 76 en 1 rutas. Rutas: GET /api/route-catalog/roles/:roleKey → 503 (76; roles user,therapist,admin,superadmin; ids abc 0 -1 1.5)"
+ },
+ {
+  "id": "S1 (bloqueante) ningún id hostil produce 5xx en ninguna ruta con parámetro, con ningún perfil (persona, profesional, administración, superadministración, sin sesión)",
+  "ok": false,
+  "detail": "76 respuestas 5xx en 1 rutas: GET /api/route-catalog/roles/:roleKey → 503 (76; roles user,therapist,admin,superadmin; ids abc 0 -1 1.5)"
+ },
+ {
+  "id": "S2 (bloqueante) ninguna respuesta (ni 4xx ni 5xx) deja ver texto de PostgreSQL, Sequelize, rutas de archivo o trazas",
+  "ok": true,
+  "detail": "0: "
+ },
+ {
+  "id": "S3 eco",
+  "info": "4xx que repiten el id enviado (≥9 caracteres): 0 "
+ },
+ {
+  "id": "S4 cuerpo y consulta hostiles (14 cuerpos × 9 consultas, id válido «1», perfiles administración y superadministración) sobre las rutas con 5xx y las de escritura con parámetro: ningún 5xx ni fuga",
+  "ok": false,
+  "detail": "3082 solicitudes; 46 5xx: GET /api/route-catalog/roles/:roleKey [admin] body null → 503 | GET /api/route-catalog/roles/:roleKey [admin] body [] → 503 | GET /api/route-catalog/roles/:roleKey [admin] body \"x\" → 503 | GET /api/route-catalog/roles/:roleKey [admin] body 5 → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"id\":\"abc\"} → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"id\":2147483648} → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"id\":[1]} → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"name\":\"xxxxxxxxxxxxxxx → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {} → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"__proto__\":{\"admin\":tr → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"content\":{\"$ne\":null}} → 503 | GET /api/route-catalog/roles/:roleKey [admin] body {\"isActive\":\"yes\",\"price → 503"
+ },
+ {
+  "id": "S5 rutas sin parámetro",
+  "info": "152 rutas, 2946 solicitudes con cuerpo/consulta hostil: 0 respuestas 5xx. "
+ },
+ {
+  "id": "contrato",
+  "info": "1476 respuestas registradas"
+ },
+ {
+  "id": "catalogo-param",
+  "info": "GET /api/admin/contact-entries/:id/history ; PUT /api/admin/contact-entries/:id ; GET /api/admin/exercises/:id ; PUT /api/admin/exercises/:id ; POST /api/admin/exercises/:id/publish ; POST /api/admin/exercises/:id/withdraw ; POST /api/admin/exercises/:id/review ; GET /api/exercises/:key ; POST /api/admin/invitations/:id/revoke ; PUT /api/pricing/:id ; DELETE /api/pricing/:id ; PUT /api/manifest/manifest/:id/activate ; POST /api/exports/:id/download ; GET /api/chat/turns/:requestId ; PUT /api/consents/:purpose ; GET /api/skill-analysis/jobs/:id ; POST /api/skill-analysis/jobs/:id/cancel ; POST /api/skill-analysis/candidates/:id/review ; PUT /api/evidence/:id ; GET /api/evidence/:id ; DELETE /api/evidence/:id ; GET /api/route-catalog/roles/:roleKey ; GET /api/routes/choices/:id ; GET /api/experiments/:id ; GET /api/experiments/:id/review-requests ; POST /api/experiments/:id/versions ; POST /api/experiments/:id/review-requests ; GET /api/career-plan/versions/:id ; GET /api/diary/:id ; PUT /api/diary/:id ; DELETE /api/diary/:id ; PUT /api/recommendations/:id/seen ; GET /api/user/resumes/:id/file ; DELETE /api/user/resumes/:id ; PUT /api/plan-requests/admin/:id/approve ; PUT /api/plan-requests/admin/:id/reject ; POST /api/matching/:id/confirm ; PUT /api/sessions/therapist/:id ; POST /api/sessions/therapist/:id/notes ; GET /api/sessions/therapist/:id/notes ; POST /api/sessions/therapist/:id/start ; POST /api/sessions/therapist/:id/end ; GET /api/sessions/user/:id/join ; GET /api/therapist/validation/:id/download ; POST /api/therapist/validation/:id/approve ; POST /api/therapist/validation/:id/reject ; GET /api/therapist/pacientes/:id/historial ; GET /api/therapist/pacientes/:id/historia ; POST /api/therapist/pacientes/:id/notas ; PUT /api/therapist/notas/:noteId ; GET /api/therapist/pacientes/:id/resumen-ia ; GET /api/admin/skill-catalog/:id ; PUT /api/admin/skill-catalog/:id/skills/:skillKey ; DELETE /api/admin/skill-catalog/:id/skills/:skillKey ; POST /api/admin/skill-catalog/:id/publish ; GET /api/admin/route-catalog/:id ; PUT /api/admin/route-catalog/:id/:kind/:key ; DELETE /api/admin/route-catalog/:id/:kind/:key ; POST /api/admin/route-catalog/:id/publish ; PUT /api/admin/usuarios/:id ; DELETE /api/admin/usuarios/:id ; PUT /api/admin/usuarios/:id/asignar-terapeuta ; PUT /api/admin/usuarios/:id/plan ; GET /api/admin/usuarios/:id/stats ; PUT /api/admin/usuarios/:id/unlock ; PUT /api/admin/usuarios/:id/reset-password ; POST /api/admin/usuarios/:id/reset-link ; GET /api/admin/professional-applications/:id/cv ; PUT /api/admin/professional-applications/:id/approve ; PUT /api/admin/professional-applications/:id/reject ; DELETE /api/admin/professional-applications/:id ; POST /api/admin/matching/:id/confirm ; PUT /api/admin/pricing/:id ; DELETE /api/admin/pricing/:id ; PUT /api/admin/plan-requests/admin/:id/approve ; PUT /api/admin/plan-requests/admin/:id/reject ; GET /api/admin/prompt/:key ; GET /api/admin/prompt/:key/versions ; POST /api/admin/prompt/:id/approve ; POST /api/admin/prompt/:id/reject ; POST /api/admin/prompt/:id/rollback ; PUT /api/admin/prompt-rules/:id ; DELETE /api/admin/prompt-rules/:id ; GET /api/superadmin/prompt/:key ; GET /api/superadmin/prompt/:key/versions ; POST /api/superadmin/prompt/:id/approve ; POST /api/superadmin/prompt/:id/reject ; POST /api/superadmin/prompt/:id/rollback ; PUT /api/superadmin/prompt-rules/:id ; DELETE /api/superadmin/prompt-rules/:id ; PUT /api/board/manifest/:id/activate ; GET /api/junta/:id/download ; POST /api/junta/:id/approve ; POST /api/junta/:id/reject"
+ },
+ {
+  "id": "router.param",
+  "info": "routers con router.param declarado: id, id, id, id, id, id, id, id+noteId, id"
+ }
+]

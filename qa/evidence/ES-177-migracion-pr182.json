@@ -1,0 +1,82 @@
+[
+ {
+  "id": "M1c migraciones hasta la anterior a ES-177 (20261111000000-es179-session-note-live.cjs)",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "M1a aplicar la migración sobre una base con profesional y personas ya vinculadas: éxito y no toca ninguna fila de Users",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "M1b la tabla tiene therapistId/personId/ordinal/fechas NOT NULL y ninguna columna de texto personal",
+  "ok": true,
+  "detail": "[\"id:NO\",\"therapistId:NO\",\"personId:NO\",\"ordinal:NO\",\"createdAt:NO\",\"updatedAt:NO\"]"
+ },
+ {
+  "id": "M1c dos claves foráneas hacia Users con ON DELETE CASCADE",
+  "ok": true,
+  "detail": "[{\"conname\":\"TherapistPersonOrdinals_personId_fkey\",\"confdeltype\":\"c\",\"ref\":\"\\\"Users\\\"\"},{\"conname\":\"TherapistPersonOrdinals_therapistId_fkey\",\"confdeltype\":\"c\",\"ref\":\"\\\"Users\\\"\"}]"
+ },
+ {
+  "id": "M1d índices únicos (therapistId, personId) y (therapistId, ordinal)",
+  "ok": true,
+  "detail": "TherapistPersonOrdinals_pkey,therapist_person_ordinals__person,therapist_person_ordinals__ordinal"
+ },
+ {
+  "id": "M1e RLS HABILITADA en la misma migración, sin políticas y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "rls=true políticas=0 roles=anon:false,authenticated:false"
+ },
+ {
+  "id": "M2a segunda ejecución sin cambios (idempotente)",
+  "ok": true,
+  "detail": "No migrations were executed, database schema was already up to date."
+ },
+ {
+  "id": "M1f restricciones: misma persona dos veces → 23505; mismo ordinal dos veces → 23505; persona inexistente → 23503; sin ordinal → 23502",
+  "ok": true,
+  "detail": "23505/23505/23503/23502"
+ },
+ {
+  "id": "M1h tabla del contador monótono TherapistOrdinalCounters: lastOrdinal INTEGER NOT NULL DEFAULT 0, clave primaria por profesional, FK con ON DELETE CASCADE, RLS habilitada y sin políticas",
+  "ok": true,
+  "detail": "[\"therapistId:NO\",\"lastOrdinal:NO\",\"createdAt:NO\",\"updatedAt:NO\"] fk=[{\"confdeltype\":\"c\"}] rls=true políticas=0"
+ },
+ {
+  "id": "M1g cascada real: eliminar a la persona borra su fila; eliminar al profesional borra las suyas y su contador",
+  "ok": true,
+  "detail": "persona=0 profesional=0 contador=0"
+ },
+ {
+  "id": "M2b down SIN bandera, y con bandera pero en producción, se rechazan (la tabla sigue)",
+  "ok": true,
+  "detail": "sinBandera=1 producción=1 tabla=\"TherapistPersonOrdinals\""
+ },
+ {
+  "id": "M2c down con bandera fuera de producción: borra solo la tabla (Users intacto)",
+  "ok": true,
+  "detail": "exit=0 tabla=null usuarios=2"
+ },
+ {
+  "id": "M2d rehacer (up) tras el down: la tabla vuelve",
+  "ok": true,
+  "detail": "exit=0"
+ },
+ {
+  "id": "M3a db:drift sobre la base migrada: sin deriva",
+  "ok": true,
+  "detail": "exit=0 SIN DERIVA: las migraciones coinciden con sync, también tras deshacer y reaplicar."
+ },
+ {
+  "id": "M3b check:rls: todas las tablas con RLS y sin privilegios para anon/authenticated",
+  "ok": true,
+  "detail": "exit=0 RLS ok: todas las tablas de public con RLS y sin privilegios para anon/authenticated."
+ },
+ {
+  "id": "M3c drift-allowed.json: las únicas entradas nuevas son las dos claves foráneas de la tabla",
+  "ok": true,
+  "detail": "TherapistPersonOrdinals_therapistId_fkey, TherapistPersonOrdinals_personId_fkey"
+ }
+]

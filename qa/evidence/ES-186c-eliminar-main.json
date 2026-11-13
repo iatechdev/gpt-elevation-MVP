@@ -1,0 +1,18 @@
+{
+  "pr": 219,
+  "mode": "main",
+  "results": [
+    {
+      "id": "FK",
+      "info": "33 claves foráneas hacia Users: AiJobs.UserId(NO ACTION), CareerExperimentReviews.UserId(NO ACTION), CareerExperimentVersions.UserId(NO ACTION), CareerExperiments.UserId(NO ACTION), CareerPlanVersions.UserId(NO ACTION), CareerReminders.UserId(NO ACTION), ClinicalNotes.UserId(CASCADE), ClinicalNotes.therapistId(NO ACTION), EthicManifests.uploadedBy(CASCADE), MatchingRequests.UserId(CASCADE), MatchingRequests.chosenTherapistId(NO ACTION), Messages.UserId(SET NULL), MoodLogs.UserId(CASCADE), ParticipantContexts.UserId(CASCADE), ParticipantResumes.UserId(CASCADE), PasswordResets.UserId(CASCADE), PlanRequests.resolvedBy(SET NULL), PlanRequests.userId(CASCADE), ProfessionalApplications.userId(SET NULL), RouteChoices.UserId(NO ACTION), RouteConstraintsVersions.UserId(NO ACTION), RouteReviewReques"
+    },
+    {
+      "id": "D1-control",
+      "info": "[main] DELETE persona con vínculo y datos → 200 ; fila Users tras la llamada: BORRADA"
+    },
+    {
+      "id": "CONTROL-main",
+      "info": "persona con filas en 24 tablas → DELETE 500 No se pudo eliminar el usuario. (existe después: true) · repetir → 500 · persona sin datos → 200 y repetir → 404"
+    }
+  ]
+}

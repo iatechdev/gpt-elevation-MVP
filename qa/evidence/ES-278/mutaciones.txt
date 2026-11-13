@@ -1,0 +1,10 @@
+M1-precio-inventado | es-278 del PR: # fail 1 | p1-2-pricing: # fail 1 | mi batería: 
+M2-slug-rango | es-278 del PR: # fail 3 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 15/17
+M3-precio-decimales | es-278 del PR: # fail 2 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 15/17
+M4-sin-409 | es-278 del PR: # fail 2 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 12/17
+M5-nombre-255 | es-278 del PR: # fail 0 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 15/17
+M6-put-usa-cuerpo-crudo | es-278 del PR: # fail 2 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 17/17
+M7-put-sin-validar | es-278 del PR: # fail 2 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 16/17
+M8-orden-tope | es-278 del PR: # fail 0 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 15/17
+M9-moneda-longitud | es-278 del PR: # fail 0 | p1-2-pricing: # fail 0 | mi batería: RESUMEN 15/17
+FIN

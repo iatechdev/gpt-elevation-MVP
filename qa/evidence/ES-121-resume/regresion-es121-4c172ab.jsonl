@@ -1,0 +1,41 @@
+{"id":"ES121-setup","info":"catálogo publicado=200"}
+{"id":"ES121-setup2","info":"turnosA=3 turnosB=1 entradasA=2 entradasB=1"}
+{"id":"ES121-A1 [PRIV] sin consentimiento de la fuente → 403 `consent_required` con `purpose` (insights_chat / insights_diary), 0 llamadas a la IA, 0 filas de uso y nada leído","ok":true,"detail":"403/403 purposes=insights_chat,insights_diary llamadasIA=0"}
+{"id":"ES121-A3 [PRIV] las fuentes son independientes entre sí y de `professional_bridge`: solo chat no sirve para diario, pedir las dos exige las dos (403 de la que falta) y tener solo el puente no autoriza ninguna; 0 llamadas a la IA","ok":true,"detail":"403:insights_diary 403:insights_diary 403:insights_chat 403:insights_chat 403:insights_diary llamadasIA=0"}
+{"id":"ES121-B1 [PRIV] solo se leen las palabras de la propia persona: el prompt al proveedor contiene su mensaje del chat y su diario, y NO contiene la respuesta del asistente (canario), ni nada de otra persona (canario ajeno), ni el correo ni el nombre","ok":true,"detail":"status=200 insights=2 usedSources={\"chat\":2,\"diary\":1,\"resume\":0}"}
+{"id":"ES121-B2 [PRIV] el turno y la entrada con una frase de riesgo (crisis) no se usan: no llegan al proveedor, no aparecen en la respuesta y la respuesta no dice por qué (usedSources cuenta solo lo usable)","ok":true,"detail":"usedSources={\"chat\":2,\"diary\":1,\"resume\":0} (turnos=3 entradas=2)"}
+{"id":"ES121-B2b si TODO lo pedido es de riesgo → 422 `no_usable_source` sin llamar a la IA","ok":true,"detail":"status=422 code=no_usable_source llamadasIA=0"}
+{"id":"ES121-B3 [SEG] IDs ajenos o inexistentes (turno, entrada, mezcla propia+ajena) → 404 `origin_not_found`, sin leer ni devolver nada de otra persona y sin llamar a la IA","ok":true,"detail":"4 casos, llamadasIA=0"}
+{"id":"ES121-B3b una entrada de diario BORRADA no se puede usar como fuente (404)","ok":true,"detail":"status=404"}
+{"id":"ES121-B5 [SEG] 20 entradas inválidas (hoja de vida, vacío, duplicados, claves extra, ids fuera de rango/negativos/texto, locale raro, cuerpo nulo, __proto__, JSON roto) → 400 sin 5xx ni trazas","ok":false,"detail":"resume=403"}
+{"id":"ES121-B6 sin sesión → 401/403","ok":true,"detail":"status=403"}
+{"id":"ES121-C [SEG] 21 casos de salida del modelo (cita inventada, categoría, habilidad, números, porcentajes, términos clínicos y de empleabilidad, riesgo, longitud, topes de 3 y 12, no JSON, objeto, vacío, markdown, elementos raros, id ajeno): lo inválido se descarta o da 502, nunca 500","ok":true,"detail":"21 casos"}
+{"id":"ES121-C8 [SEG] inyección de prompt dentro del chat («ignora las instrucciones…», cierre falso `</UNTRUSTED>`): el texto va en un bloque con delimitador aleatorio declarado como dato; el insight que obedecería («HACKER ROOT») se descarta por no estar respaldado y solo queda el legítimo","ok":true,"detail":"insights=1 delimitador=UNTRUSTED_79D8701775D626B5"}
+{"id":"ES121-C8b [OBS] limitación: un insight cuyo TEXTO obedece una inyección pasa si cita una frase real del mismo mensaje (el filtro valida la cita, no que el texto la respalde); la persona lo ve y debe autorizarlo uno a uno","info":"status=200 insights=1 texto=HACKER ROOT ACCESO CONCEDIDO"}
+{"id":"ES121-C9 [SEG] el filtro de la salida frena promesas de empleo, contratación, salario y ofertas de trabajo (9 frases ES/EN, además de la palabra «empleabilidad»)","ok":true,"detail":"pasan el filtro 0/9: "}
+{"id":"ES121-C10 el filtro NO bloquea lo que la persona valora o necesita (7 frases legítimas con «sueldo», «empleo», «salario», «trabajo» en ES/EN: falsos positivos)","ok":true,"detail":"7 frases pasan"}
+{"id":"ES121-C11 [OBS] otras promesas no listadas que atraviesan el filtro por palabras (límite conocido de un filtro por palabras)","info":"1/11: Las empresas se pelearán por ti."}
+(node:34932) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"ES121-C7 [PRIV] proponer no guarda nada (chat, diario, puente, transferencias y consentimientos sin cambios) y devuelve `token` con vencimiento a ~10 min","ok":true,"detail":"antes=[4,3,0,0,2] después=[4,3,0,0,2] expira_en=597s"}
+{"id":"ES121-C7b [OBS] el `token` de la propuesta no lo consume ningún endpoint de este PR","info":"grep: `proposalToken.check(\"insight_proposal\"` no se usa; la ligadura a persona y contenido la da la vista previa de ES-25"}
+{"id":"ES121-D0 [PRIV] autorizar un insight con origen del chat sin `professional_bridge` → 403 `consent_required` (analizar ≠ compartir)","ok":true,"detail":"status=403 code=consent_required"}
+{"id":"ES121-D1 autorizar con `skillKey` válido y origen propio crea la versión 1 (201) y la habilidad queda como metadato privado","ok":true,"detail":"preview=200 confirm=201"}
+{"id":"ES121-D1b [SEG] `skillKey` inexistente o con formato inválido → 400; cambiar la habilidad después de la vista previa invalida el token (la habilidad está ligada al token)","ok":true,"detail":"inexistente=400 formato=400 habilidad_alterada=409"}
+{"id":"ES121-D2 [PRIV] `GET /api/career-context` devuelve al titular `origin` (tipo e id) y `skillKey` por texto, y NUNCA el contenido ni la cita del chat/diario; otra persona no ve nada de A","ok":true,"detail":"campos=2 origen0={\"type\":\"chat_turn\",\"id\":1} skill0=liderazgo"}
+{"id":"ES121-D2c [PRIV] ni el terapeuta asignado ni un administrador pueden leer el puente de A (la ruta es solo del titular)","ok":true,"detail":"terapeuta=200"}
+{"id":"ES121-D3 [PRIV] en la base, el texto de los insights y las citas NO están en claro (payload cifrado) ni en `BridgeTransfers`; el canario del chat y del diario no aparece","ok":true,"detail":"filas=1"}
+{"id":"ES121-D4 [PRIV] `inConversation` es true para la habilidad de un insight autorizado vigente sin nivel y false para las demás; el mapa no crea evaluaciones ni niveles","ok":true,"detail":"liderazgo={\"inConversation\":true} datos=false forma=catalogVersion,skills"}
+{"id":"ES121-D4b autorizar insights no crea evidencias ni evaluaciones","ok":true,"detail":"evidencias=0"}
+{"id":"ES121-D4c aislamiento: la habilidad en conversación de A no aparece para B","ok":true,"detail":"B.inConversation=false"}
+{"id":"ES121-D5 [OBS] tras borrar la entrada de origen del diario","info":"needsReview=true inConversation(liderazgo, origen=chat)=true"}
+{"id":"ES121-A5 [PRIV] revocar la fuente `insights_chat` detiene análisis nuevos (403) y NO borra lo ya autorizado (versión activa intacta)","ok":true,"detail":"propuesta=403 activa=2"}
+{"id":"ES121-A5b [PRIV] revocar `professional_bridge` revoca lo cruzado y `inConversation` vuelve a false","ok":true,"detail":"revoke=200 activa=null inConversation=false"}
+{"id":"ES121-A4 [SEG] revocar la fuente mientras llegan 12 propuestas simultáneas: sin 5xx y la siguiente ya es 403","ok":true,"detail":"códigos=200,200,200,200,200,200,200,200,200,200,200,200,200 siguiente=403"}
+{"id":"ES121-E3 sin presupuesto de IA configurado → 503 `ai_budget_not_configured` sin llamar al proveedor","ok":true,"detail":"status=503 code=ai_budget_not_configured"}
+{"id":"ES121-E4 [SEG] proveedor caído → 502 `provider_unavailable` reintentable, sin datos internos ni trazas","ok":true,"detail":"status=502 code=provider_unavailable"}
+{"id":"ES121-E4b proveedor lento (6 s con tiempo de espera de 3 s) → 502/504 controlado en < 5 s","ok":true,"detail":"status=502 3229 ms"}
+{"id":"ES121-E5 [SEG] con presupuesto bajo las propuestas se aceptan hasta el tope y luego → 429 `ai_budget_exhausted` (sin 5xx)","ok":true,"detail":"estados=429,429,429,429"}
+{"id":"ES121-E6 rendimiento (propuesta): una propuesta con proveedor simulado < 3 s","ok":true,"detail":"53 ms"}
+{"id":"ES121-B4 [PRIV] el registro del servidor y la tabla `AiUsages` no contienen el texto del chat, del diario, la cita, ni la frase de crisis (solo uso sin contenido)","ok":true,"detail":"fugas=ninguna log=346b"}
+{"fin":true}

@@ -1,0 +1,17 @@
+{"id":"S0 sin filas de ordinales antes de la primera lectura (la asignación ocurre al aparecer en la lista)","ok":true,"detail":""}
+{"id":"O1a 12 primeras lecturas simultáneas de /pacientes: todas 200, los mismos números en todas, 1..6 sin repetir ni saltar, 6 filas en la base, sin esperas largas ni bloquear a otras personas","ok":true,"detail":"estados=200 nums=[1,2,3,4,5,6] filas=6 total=458 ms; otra persona 200 en 203 ms"}
+{"id":"O1b llamadas repetidas devuelven los MISMOS números","ok":true,"detail":""}
+{"id":"O1c una persona nueva recibe el siguiente número (7) y las demás no cambian","ok":true,"detail":"n7=7"}
+{"id":"O1d el otro profesional numera de forma INDEPENDIENTE desde 1 (1..3)","ok":true,"detail":"[1,2,3]"}
+{"id":"P1 aislamiento: A no ve ni cuenta a las personas de B (ni por lista ni por id: 403/404) y B no ve a las de A; persona, admin y sin sesión no entran","ok":true,"detail":"A ve 7, B ve 3; porId=[404] roles=[403,403,403]"}
+{"id":"P2a /pacientes y /alerts: el nombre y el correo de quien NO comparte no aparecen en ningún punto del cuerpo; la fila trae `name: null` y `ordinal` entero, `sharing:false` y `email` vacío","ok":true,"detail":" fila={\"id\":10,\"name\":null,\"ordinal\":4,\"email\":\"\",\"active\":true,\"createdAt\":\"2026-11-10T03:01:50.253Z\",\"sharing\":false,\"lastMood\":null,\"moodTrend\":\"neutral\",\"avgRating\":null,\"totalSessions\":0,\"sessionsThisWeek\":0,\"trend\":null}"}
+{"id":"P2b quien SÍ comparte conserva nombre, correo y ordinal","ok":true,"detail":"fila={\"id\":7,\"name\":\"QA177 s1\",\"ordinal\":1,\"email\":\"qa177-s1-1794279708209@example.test\",\"active\":true,\"createdAt\":\"2026-11-10T03:01:49.577Z\",\"sharing\":true,\"lastMood\":null,\"moodTrend\":\"neutral\",\"avgRating"}
+{"id":"P2c /alerts no contiene `improvementPercent` ni porcentajes","ok":true,"detail":"{\"inactivePatients\":[{\"userId\":7,\"name\":\"QA177 s1\",\"daysSinceLastSession\":null},{\"userId\":8,\"name\":\"QA177 s2\",\"daysSinceLastSession\":null},{\"userId\":9,\"name\":\"Q"}
+{"id":"O2a ciclo de vida: desvincular conserva la fila y los demás números; revincular al mismo profesional = misma n; vincular a otro profesional = la n de ese profesional; conceder/retirar el permiso mantiene la n (el nombre aparece y desaparece)","ok":true,"detail":"s2=2 n5=5"}
+{"id":"O2b eliminar a la persona con la n MÁS ALTA no libera su número: la siguiente persona NO hereda la n de quien salió (decisión de Infra en 11391: el ordinal no se reutiliza nunca)","ok":true,"detail":"n eliminada=7 (fila borrada en cascada=false); la persona nueva recibió 8"}
+{"id":"O2c eliminar a una persona intermedia tampoco reutiliza su número","ok":true,"detail":"eliminada n=6; nueva=9"}
+{"id":"O2d eliminar al profesional borra sus filas de ordinales en cascada","ok":true,"detail":"antes=2 después=0"}
+{"id":"O2e no quedan filas de ordinales huérfanas (personas que ya no existen)","ok":true,"detail":"filas=7"}
+{"id":"P3","info":"sesión creada=201; rutas del profesional que AÚN envían nombre/correo de quien no comparte: /api/sessions/therapist → nombre (status 200) · /api/sessions/therapist/upcoming → nombre (status 200)"}
+{"id":"P3 [CLASIFICACIÓN] ninguna ruta del profesional envía el CORREO de quien no comparte (el nombre en sesiones queda fuera de este PR: ES-241)","ok":true,"detail":"/api/sessions/therapist → nombre (status 200) · /api/sessions/therapist/upcoming → nombre (status 200)"}
+{"id":"PERF","info":"GET /pacientes (7 personas): mediana 35 ms, p95 38 ms, máx 39 ms"}

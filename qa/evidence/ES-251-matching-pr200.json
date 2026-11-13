@@ -1,0 +1,98 @@
+[
+ {
+  "id": "C1-fuentes valores extraídos",
+  "info": "{\"MatchingModal\":{\"area\":[\"anxiety\",\"relationships\",\"self-knowledge\",\"habits\",\"other\"],\"style\":[\"reflective\",\"structured\",\"spiritual\",\"practical\"],\"language\":[\"es\",\"en\",\"both\"]},\"UserProgress\":{\"area\":[\"anxiety\",\"depression\",\"relationships\",\"personal growth\",\"stress\",\"other\"],\"style\":[\"reflective and exploratory\",\"structured with goals\",\"empathetic and listening\",\"any\"],\"language\":[\"Spanish\",\"English\",\"No preference\"]}}"
+ },
+ {
+  "id": "C1a se extrajeron los valores reales de las dos pantallas (5/4/3 y 6/4/3 opciones)",
+  "ok": true,
+  "detail": "5/4/3 · 6/4/3"
+ },
+ {
+  "id": "C1b TODAS las combinaciones reales (132) de las dos pantallas → 200 y los tres valores llegan al prompt",
+  "ok": true,
+  "detail": "132/132"
+ },
+ {
+  "id": "C1c cada valor de cada clave por separado (una sola respuesta) → 200",
+  "ok": true,
+  "detail": "todas 200"
+ },
+ {
+  "id": "C1d respuestas parciales con campos vacíos (la pantalla puede enviar \"\" si no se eligió)",
+  "info": "estados=400,400 (comportamiento heredado de ES-242)"
+ },
+ {
+  "id": "C2a 26 valores fuera del catálogo (aunque cumplan la forma) → 400 invalid_answers; el modelo NO es llamado (0 llamadas) y no se crea ninguna solicitud",
+  "ok": true,
+  "detail": " llamadas=0 filas 157→157"
+ },
+ {
+  "id": "C2b ningún valor de una clave se acepta en otra clave (cruce completo 3×2 listas)",
+  "ok": true,
+  "detail": " "
+ },
+ {
+  "id": "C2c valores comunes a más de una clave (declarar)",
+  "info": "[]"
+ },
+ {
+  "id": "C3a el hallazgo de ES-242 (etiqueta ≤ 60 letras con instrucción en texto llano) → 400 y NADA de esos textos llega al prompt registrado",
+  "ok": true,
+  "detail": "6/6"
+ },
+ {
+  "id": "C3b los 36 casos maliciosos/raros de ES-242 siguen en 400 sin 5xx; cuerpo ausente o roto 4xx; 0 llamadas al modelo y 0 filas",
+  "ok": true,
+  "detail": "36/36"
+ },
+ {
+  "id": "C4a Unicode raro (NFD, homoglifos, ancho cero, bidi, emoji, CJK, árabe), tab/CR, 100 000 caracteres y claves __proto__/constructor → 400, nunca 5xx ni 200",
+  "ok": true,
+  "detail": "11/11"
+ },
+ {
+  "id": "C4b claves desconocidas junto a las válidas (texto) se ignoran: 200 y NO llegan al prompt ni a la base",
+  "ok": true,
+  "detail": "200"
+ },
+ {
+  "id": "C4c con espacios, tab, CR o BOM en los extremos el valor se RECORTA y se guarda y envía al prompt SOLO el valor canónico del catálogo (nunca el crudo)",
+  "ok": true,
+  "detail": "[[\"espacio final\",200,\"anxiety\",false],[\"espacio inicial\",200,\"anxiety\",false],[\"tab\",200,\"anxiety\",false],[\"CR\",200,\"anxiety\",false],[\"BOM inicial\",200,\"anxiety\",false],[\"NFD (ASCII idéntico)\",200,\"anxiety\",false]]"
+ },
+ {
+  "id": "C5a el 400 trae code invalid_answers y texto ES / EN, sin eco del valor enviado, Cache-Control presente",
+  "ok": true,
+  "detail": "400 {\"code\":\"invalid_answers\",\"error\":\"Respuestas no válidas. / Invalid answers.\"} cc=no-store"
+ },
+ {
+  "id": "C6a flujo válido: 200 con sugerencias, el prompt lleva los tres valores, no lleva el ánimo ni x/10 (ES-242)",
+  "ok": true,
+  "detail": "200 sugerencias=2"
+ },
+ {
+  "id": "C6b choose",
+  "info": "200 {\"message\":\"Therapist chosen. Waiting for admin confirmation.\"}"
+ },
+ {
+  "id": "C6c otra persona (B) no puede elegir sobre la solicitud de A",
+  "ok": true,
+  "detail": "404"
+ },
+ {
+  "id": "C6d un 400 no crea solicitud ni descuenta presupuesto",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "C6e sin sesión → 401/403 (sin cambios)",
+  "ok": true,
+  "detail": "403"
+ },
+ {
+  "id": "C7 12 válidas + 12 inválidas simultáneas: sin 5xx, las inválidas 400 y el servidor sigue respondiendo",
+  "ok": true,
+  "detail": "válidas=200 inválidas=400 990ms"
+ }
+]

@@ -1,0 +1,138 @@
+[
+ {
+  "id": "siembra",
+  "info": "Users.id=integer; tablas con clave hacia Users: 33; sembradas para cada persona: 10; no sembradas (requieren otras filas): RouteConstraintsVersions.UserId,RouteChoices.UserId,RouteReviewRequests.UserId,AiJobs.UserId,SkillCandidates.UserId,CareerExperimentVersions.UserId,CareerPlanVersions.UserId,CareerExperimentReviews.UserId,CareerReminders.UserId,ProfessionalApplications.userId,PasswordResets.UserId,TherapistPersonOrdinals.personId"
+ },
+ {
+  "id": "P1a (bloqueante) purga de la persona rica → awaiting_verification, lápida sin nombre ni correo, recibo con `retained` (solo categorías)",
+  "ok": true,
+  "detail": "{\"rec\":{\"id\":\"a7b9fb47-19af-4d2f-af1c-bd029cde2f8c\",\"status\":\"awaiting_verification\",\"requestedAt\":\"2026-11-12T00:07:34.068Z\",\"activePurgedAt\":\"2026-11-12T00:07:34.262Z\",\"deadlinesVerified\":false,\"retained\":[\"clinicalNotes\",\"sessionNotes\",\"therapySessions\"]},\"tomb\":{\"name\":\"Cuenta eliminada / Deleted account\",\"email\":\"a7b9fb47-19af-4d2f-af1c-bd029cde2f8c@deleted.invalid\",\"active\":false,\"role\":\"user\"}}"
+ },
+ {
+  "id": "P1b (bloqueante) barrido por esquema: toda columna que mencione a la persona queda solo en lo declarado (lápida, solicitud, revocaciones, notas y sesiones del profesional); ninguna otra tabla",
+  "ok": true,
+  "detail": "restos={\"ProfessionalApplications.userId\":1,\"TherapistPersonOrdinals.therapistId\":1,\"DeletionRequests.UserId\":1,\"TherapySessions.patientId\":3,\"ClinicalNotes.UserId\":2,\"Users.id\":1} inesperados="
+ },
+ {
+  "id": "P1c (bloqueante) el correo canario de la persona no aparece en NINGUNA tabla; su nombre canario solo en ClinicalNotes/SessionNotes/TherapySessions (texto libre del profesional, conservado por decisión)",
+  "ok": true,
+  "detail": "correo={} nombre={\"SessionNotes\":3,\"ClinicalNotes\":2,\"TherapySessions\":3}"
+ },
+ {
+  "id": "P1d emparejamiento de la persona borrado; las 5 columnas de persona en sus 3 sesiones en NULL; todo lo demás de la fila igual",
+  "ok": true,
+  "detail": "[{\"patientMoodAfter\":null,\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null},{\"patientMoodAfter\":null,\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null},{\"patientMoodAfter\":null,\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null}]"
+ },
+ {
+  "id": "P1e (bloqueante) lo que escribió el profesional queda IDÉNTICO fila a fila (notas clínicas, notas en vivo, sesiones sin las 5 columnas)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "P2a (bloqueante) otra persona del mismo profesional (B), otra del otro profesional (C), el otro profesional (T2) y el propio T1 (sin lo de A) quedan idénticos",
+  "ok": true,
+  "detail": "{\"B\":true,\"C\":true,\"T2\":true,\"T1\":true}"
+ },
+ {
+  "id": "P2b B conserva sus 5 columnas de persona, su emparejamiento y sus notas; C también",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "P5-diff",
+  "info": "tablas que cambian con el --replay: DeletionRequests: attempts+activePurgedAt+updatedAt | TherapySessions: updatedAt;updatedAt;updatedAt | Users: password+updatedAt"
+ },
+ {
+  "id": "P5a repetir y --replay: mismo recibo (con retained), lo conservado idéntico (el --replay solo renueva la lápida —contraseña aleatoria y updatedAt— y el contador de la solicitud: ver P5-diff); UUID desconocido falla sin tocar nada",
+  "ok": true,
+  "detail": "awaiting_verification awaiting_verification rechaza retainedIgual=true dump=true pro=true"
+ },
+ {
+  "id": "P5b por el script de operador (ES-275): primera, repetida y --replay → exit 0 con JSON (JSON mínimo `status`+`deadlinesVerified`, sin contenido); UUID desconocido → error; lo conservado sigue y lo de la persona se fue",
+  "ok": true,
+  "detail": "0/0/0/1 {\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}\n"
+ },
+ {
+  "id": "P3 (bloqueante) cada referencia del lado del profesional/administración por separado (9) y los roles therapist/admin/superadmin/board → awaiting_review, nada borrado, sin `retained`",
+  "ok": true,
+  "detail": "13/13"
+ },
+ {
+  "id": "P4 (bloqueante) fallo a mitad (trigger que lanza error en sesiones, en emparejamiento y en la lápida): transacción revertida por completo; solicitud en `failed` con código genérico; ni la respuesta ni el log llevan SQL ni contenido; reintento tras quitar el fallo completa la purga",
+  "ok": true,
+  "detail": "3/3"
+ },
+ {
+  "id": "P6a (bloqueante) ninguna salida de servidor (202 y repetido en ES/EN, solicitud propia y repetida, recibos, script, avisos de exportación ES/EN) contiene anonimiz*/desvincul*/anonymi*/unlink/de-identif* ni plazos",
+  "ok": true,
+  "detail": " 202=202 self=202/200"
+ },
+ {
+  "id": "P6b el 202 dice que solo se conservan las notas y registros del profesional, que pueden identificar a la persona (ES y EN) y que la política de retención está en definición",
+  "ok": true,
+  "detail": "{\"code\":\"deletion_requested\",\"repeated\":false,\"message\":\"Eliminación solicitada. La cuenta ya no puede entrar. Los datos de la persona se borran en el proceso de mantenimiento. Solo se conservan las notas y registros que escribió su profesional, que pueden contener datos que la identifiquen. La polí"
+ },
+ {
+  "id": "P7a (bloqueante) export de B (con notas del profesional): 201, SIN texto de notas, sin id/nombre/correo del profesional ni URLs de sesión; `notices[0].code = professional_notes_not_included` en ES y EN; sin conteos",
+  "ok": true,
+  "detail": "fuga= estado=201/201"
+ },
+ {
+  "id": "P7b persona sin nada del profesional → export sin `notices`; sin sesión → 401/403",
+  "ok": true,
+  "detail": "201 403"
+ },
+ {
+  "id": "P7c el export de B solo se descarga por B (otra persona C con el mismo id → no entrega datos de B) y la descarga no trae notas ni al profesional",
+  "ok": true,
+  "detail": "B=200 C=404"
+ },
+ {
+  "id": "P7d la persona A purgada ya no puede exportar ni reabrir sesión (token anterior → 401/403)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "P8a (bloqueante) T1 tras la purga de A: ninguna respuesta (lista de pacientes, historial, historia, sesiones, notas, próximas) trae el nombre ni el correo de A; sin 5xx",
+  "ok": true,
+  "detail": "{\"lista\":200,\"hist\":404,\"hia\":404,\"notaNueva\":404,\"editNota\":404,\"listaSes\":200,\"putSes\":404,\"getNotes\":404,\"postNote\":404,\"upc\":200} nombres="
+ },
+ {
+  "id": "P8b ESCRITURA del profesional sobre lo de A tras la purga",
+  "info": "{\"crear nota clínica nueva sobre A\":404,\"editar una nota clínica conservada\":404,\"PUT sesión de A (cancelReason nuevo)\":404,\"leer notas en vivo de la sesión de A\":404,\"agregar nota en vivo a la sesión de A\":404,\"columnas de persona en la sesión tras los intentos\":{\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null,\"patientMoodAfter\":null}}"
+ },
+ {
+  "id": "P8c (bloqueante) el profesional NO puede reintroducir datos de persona en las columnas purgadas (cancelReason, enlaces, ánimo) ni crear notas nuevas sobre una persona purgada",
+  "ok": true,
+  "detail": "{\"reentry\":{\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null,\"patientMoodAfter\":null},\"nota\":404,\"put\":404}"
+ },
+ {
+  "id": "P9a dos `processDeletion` simultáneos de la MISMA solicitud: sin deadlock, estado final awaiting_verification, nada de la persona queda, lo conservado intacto",
+  "ok": true,
+  "detail": "fulfilled | fulfilled {\"status\":\"awaiting_verification\",\"attempts\":1}"
+ },
+ {
+  "id": "P9b purga ‖ nueva solicitud ‖ escritura del profesional sobre la sesión de la persona: sin 5xx ni deadlock; estado final coherente; en NULL las 5 columnas aunque el profesional escriba durante la purga",
+  "ok": true,
+  "detail": "fulfilled | fulfilled | fulfilled estado=awaiting_verification cinco=[{\"patientMoodAfter\":null,\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null},{\"patientMoodAfter\":null,\"cancelReason\":null,\"meetingUrl\":null,\"recordingUrl\":null,\"googleEventId\":null}]"
+ },
+ {
+  "id": "P9c 5 personas distintas purgadas en paralelo con pool 5 (umbral aprobado < 15 s): todas awaiting_verification, sin deadlock",
+  "ok": true,
+  "detail": "297 ms awaiting_verification,awaiting_verification,awaiting_verification,awaiting_verification,awaiting_verification"
+ },
+ {
+  "id": "P9d persona rica con 2 003 sesiones y 2 002 notas (umbral aprobado < 5 s): purga completa, 0 sesiones con columnas de persona",
+  "ok": true,
+  "detail": "129 ms, restantes=0"
+ },
+ {
+  "id": "Z0 sin transacciones colgadas al terminar",
+  "ok": true,
+  "detail": "0"
+ },
+ {
+  "id": "tiempos",
+  "info": "purga persona rica: 213 ms; ráfaga de 5: 297 ms; persona con 2 000+ filas: 129 ms"
+ }
+]

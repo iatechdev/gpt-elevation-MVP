@@ -1,0 +1,10 @@
+{"id":"B2-4b evidencia propia redactada para la rúbrica","ok":true,"detail":"http=201"}
+{"id":"B2-4b propuestas con IA","ok":true,"detail":"http=200 niveles=[{\"k\":\"analisis_informacion\",\"l\":3,\"c\":\"low\",\"refs\":1},{\"k\":\"comunicacion\",\"l\":3,\"c\":\"medium\",\"refs\":2},{\"k\":\"trabajo_en_equipo\",\"l\":null,\"c\":null,\"refs\":0}]"}
+{"id":"B2-4b con evidencia que cumple la rúbrica, la IA propone nivel (≥1 de 2) y cita la evidencia propia","ok":true,"detail":"con nivel=2 analisis_informacion=3, comunicacion=3"}
+{"id":"B2-4b sin evidencia de equipo, «Trabajo en equipo» queda sin nivel (no se inventa)","ok":true,"detail":"nivel=null"}
+{"id":"B2-4b sin déficits, puntajes, promesas ni lenguaje clínico","ok":true,"detail":""}
+{"id":"B2-4b subir el nivel por encima de lo propuesto está prohibido (422)","ok":true,"detail":"http=422 {\"code\":\"cannot_raise_level\",\"error\":\"No se puede subir un nivel por encima del propuesto. / A level cannot be raised ab"}
+{"id":"B2-4b la persona confirma las propuestas","ok":true,"detail":"http=201 {\"saved\":[{\"skillKey\":\"analisis_informacion\",\"track\":\"self\",\"level\":3,\"state\":\"initial\",\"confidence\":\"low\",\"confidenceReason\":{\"es\":\"Se apoya en una sola evidencia.\",\"en\":\"It rests on a single piece o"}
+{"id":"B2-4b el Skill Map refleja los niveles confirmados","ok":false,"detail":"con evaluación=0 de 2 confirmadas"}
+{"id":"info B2sm [en] gasto","tokens":1807}
+RESUMEN-B2SM {"lang":"en","total":8,"fallos":1,"tokens":1807}

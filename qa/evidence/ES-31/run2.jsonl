@@ -1,0 +1,114 @@
+{"id":"ES31-S01 lectura sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES31-S01b administración sin token → rechazado","ok":true,"detail":"status=403"}
+{"id":"ES31-S01c usuario no administra el catálogo (403)","ok":true,"detail":"GET=403 POST=403"}
+{"id":"ES31-S01c terapeuta no administra el catálogo (403)","ok":true,"detail":"GET=403 POST=403"}
+{"id":"ES31-S01c board no administra el catálogo (403)","ok":true,"detail":"GET=403 POST=403"}
+{"id":"sin-catalogo","info":"status=503 {\"code\":\"catalog_unavailable\",\"error\":\"El catálogo de rutas aún no está disponible. / The route catalog is not available"}
+{"id":"ES31-C00 sin catálogo publicado la lectura da 503 catalog_unavailable (no inventa contenido ni da 500)","ok":true,"detail":"status=503 code=catalog_unavailable"}
+{"id":"ES31-C04a admin crea borrador → 201","ok":true,"detail":"status=201"}
+{"id":"ES31-C04b la semilla sintética completa se carga por la API del backoffice","ok":true,"detail":"fallos=0"}
+{"id":"ES31-C04c tres borradores simultáneos: un solo borrador y ningún 5xx","ok":true,"detail":"estados=409,409,409"}
+{"id":"borrador","info":"{\"id\":1,\"version\":1,\"status\":\"draft\",\"publishedAt\":null,\"itemCount\":27,\"items\":{\"contexts\":[{\"itemKey\":\"ctx_educacion_formacion\",\"labels\":{\"es\":\"[SINTÉTICO] Educación a formación corporativa\",\"en\":\"[S"}
+{"id":"ES31-G01 servidor SIN ALLOW_SYNTHETIC_CATALOG se niega a publicar contenido sintético (422 synthetic_content_not_allowed)","ok":true,"detail":"status=422 code=synthetic_content_not_allowed"}
+{"id":"ES31-G01b nada quedó publicado tras la negativa","ok":true,"detail":""}
+{"id":"ES31-G02 el script de semilla se niega con NODE_ENV=production","ok":true,"detail":"exit=1 Se niega a correr en producción: el catálogo sintético es solo para pruebas."}
+{"id":"ES31-C07 publicar el catálogo sintético completo con la bandera local → 200","ok":true,"detail":"status=200 {\"id\":1,\"version\":1,\"status\":\"published\",\"publishedAt\":\"2026-10-27T16:59:20.868Z\",\"itemCount\":27}"}
+{"id":"ES31-P04 publicar tarda menos de 3000 ms (propuesto)","ok":true,"detail":"16 ms"}
+{"id":"ES31-C05 lo publicado es inmutable: editar → 4xx","ok":true,"detail":"status=409"}
+{"id":"ES31-C05b borrar un elemento publicado → 4xx","ok":true,"detail":"status=409"}
+{"id":"ES31-C05c publicar dos veces → 4xx (no 500)","ok":true,"detail":"status=409"}
+{"id":"ES31-L00 lectura del catálogo publicado por una persona autenticada → 200 y no-store","ok":true,"detail":"status=200 cc=no-store"}
+{"id":"lectura-claves","info":"version,publishedAt,contexts,sources,roles,offers,resources"}
+{"id":"ES31-P03 la lectura no trae nombres de revisores ni de quien consultó","ok":true,"detail":""}
+{"id":"ES31-G03 todo lo leído es sintético y está marcado","ok":true,"detail":"marcas=27"}
+{"id":"ES31-O04 no existe ningún campo de demanda, volumen, elegibilidad ni probabilidad en la respuesta","ok":true,"detail":""}
+{"id":"ES31-I02b sin porcentajes ni lenguaje de reemplazo en lo leído","ok":true,"detail":""}
+{"id":"frescura-fuentes","info":"[[\"src_oficial_a\",false],[\"src_oficial_b\",false],[\"src_institucional_c\",false],[\"src_informe_d\",true],[\"src_inaccesible_e\",true],[\"src_curso_f\",false]]"}
+{"id":"frescura-ofertas","info":"[[\"oferta_formador_vigente\",\"current\"],[\"oferta_analista_vigente\",\"current\"],[\"oferta_exito_vencida\",\"expired\"]]"}
+{"id":"ES31-P01 fuente inaccesible → stale de inmediato","ok":true,"detail":"{\"sourceKey\":\"src_inaccesible_e\",\"type\":\"other\",\"title\":\"[SINTÉTICO] Documento E que ya no abre\",\"url\":\"https://example.org/fuente-sintetica\",\"country\":null,\"language\":\"es\",\"consultedAt\":\"2026-10-25\","}
+{"id":"ES31-P02 fuente consultada hace más de 180 días → stale","ok":true,"detail":"{\"sourceKey\":\"src_informe_d\",\"type\":\"market_report\",\"title\":\"[SINTÉTICO] Informe de mercado D (de prueba)\",\"url\":\"https://example.org/fuente-sintetica\",\"country\":\"DK\",\"language\":\"es\",\"consultedAt\":\"20"}
+{"id":"ES31-P02b fuente reciente y accesible NO es stale","ok":true,"detail":"{\"sourceKey\":\"src_oficial_a\",\"type\":\"official\",\"title\":\"[SINTÉTICO] Descripción ocupacional oficial A\",\"url\":\"https://example.org/fuente-sintetica\",\"country\":\"CO\",\"language\":\"es\",\"consultedAt\":\"2026-1"}
+{"id":"ES31-O01 oferta con verificación de 40 días → status expired","ok":true,"detail":"{\"offerKey\":\"oferta_exito_vencida\",\"title\":\"[SINTÉTICO] Oferta de prueba (exito_cliente)\",\"organization\":\"[SINTÉTICO] Organización C\",\"roleKey\":\"exito_cliente\",\"url\":\"https://example.org/oferta-sintetica\",\"market\":\"DK\",\""}
+{"id":"ES31-O01b oferta verificada hace 2 días → status current","ok":true,"detail":"{\"offerKey\":\"oferta_formador_vigente\",\"title\":\"[SINTÉTICO] Oferta de prueba (formador_corporativo)\",\"organization\":\"[SINTÉTICO] Organización A\",\"roleKey\":\"formador_corporativo\",\"url\":\"https://example.org/oferta-sintetica"}
+{"id":"ES31-O03 el salario «no publicado» se declara como tal","ok":true,"detail":"{\"published\":false}"}
+{"id":"domainReview","info":"{\"present\":true,\"at\":\"2026-10-26\"}"}
+{"id":"ES31-O02 rol cuyas fuentes están todas vencidas o inaccesibles → verificationTask presente; rol con fuente al día → ausente","ok":false,"detail":"[false,false]"}
+{"id":"ES31-R00 ficha de rol → 200 con fuentes, ofertas y recursos y sin nombres de revisores","ok":true,"detail":"status=200 {\"version\":1,\"role\":{\"roleKey\":\"formador_corporativo\",\"labels\":{\"es\":\"[SINTÉTICO] Formador corporativo\",\"en\":\"[SYNTHETIC"}
+{"id":"ficha-exito_cliente","info":"{\"version\":1,\"role\":{\"roleKey\":\"exito_cliente\",\"labels\":{\"es\":\"[SINTÉTICO] Especialista en éxito del cliente\",\"en\":\"[SYNTHETIC] Customer success specialist\"},\"industry\":{\"es\":\"[SINTÉTICO] Servicios\",\"en\":\"[SYNTHETIC] Services\"},\"market\":\"DK\",\"languagesRequired\":[\"en\",\"unknown\"],\"modality\":[\"hybrid\",\"remote\"],\"tasks\":[{\"text\":{\"es\":\"[SINTÉTICO] Acompañar la adopción del servicio.\",\"en\":\"[SYNTHETIC]"}
+{"id":"ES31-S03 roleKey «no_existe» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «FORMADOR_CORPORATIVO» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «'; drop table \"Users» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «../../etc/passwd» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «xxxxxxxxxxxxxxxxxxxx» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «%00» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «%» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03 roleKey «..%2f..%2f» → 404/400 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S02 lectura nunca expone el borrador ni versiones anteriores","ok":true,"detail":"claves=version,publishedAt,contexts,sources,roles,offers,resources"}
+{"id":"getPublishedRouteCatalog","info":"{\"keys\":[\"version\",\"publishedAt\",\"contexts\",\"sources\",\"roles\",\"offers\",\"resources\"],\"hasReviewer\":false}"}
+{"id":"ES31-C04d nuevo borrador copia el vigente (201)","ok":true,"detail":"status=201"}
+{"id":"ES31-C01 un séptimo contexto → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-C02 fuente sin fecha de consulta → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-C02b fuente con fecha futura → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-C02c fuente con fecha inválida → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-C03 rol sin revisión de dominio identificada → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-C03b rol con revisión sin nombre → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.industry rol sin «industry» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.market rol sin «market» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.tasks rol sin «tasks» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.barriers rol sin «barriers» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.capabilities rol sin «capabilities» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.sourceKeys rol sin «sourceKeys» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.contexts rol sin «contexts» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.languagesRequired rol sin «languagesRequired» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R01.modality rol sin «modality» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R02 rol que cita una fuente inexistente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R02b rol que cita un contexto inexistente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R02c recurso que cita un rol inexistente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-R03 profesión regulada sin nota de habilitación → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-O03b oferta sin salario declarado → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-O05 oferta sin verificación humana → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-O06 oferta de un rol inexistente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.purpose recurso sin «purpose» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.exercise recurso sin «exercise» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.price recurso sin «price» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.level recurso sin «level» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.duration recurso sin «duration» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.language recurso sin «language» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L01.linkedSkillKey recurso sin «linkedSkillKey» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=publish status=422 code=incomplete_catalog"}
+{"id":"ES31-L02 precio «por confirmar» (published:false) es aceptado","ok":true,"detail":"en=publish status=200 code=undefined"}
+{"id":"ES31-I01 tarea con exposición a la IA sin fuente ni marca → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-I01b exposición «sourced» sin sourceKey → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=409 code=catalog_not_editable"}
+{"id":"ES31-I02 texto con porcentaje de reemplazo «70 %» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=409 code=catalog_not_editable"}
+{"id":"ES31-I02 texto con «sin futuro» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=409 code=catalog_not_editable"}
+{"id":"ES31-I02 texto con «no future» en inglés → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=422 code=forbidden_label"}
+{"id":"ES31-I02 texto con «será reemplazado» → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=409 code=catalog_not_editable"}
+{"id":"ES31-S04 URL http en una fuente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-S04 URL credenciales en una fuente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-S04 URL javascript: en una fuente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-S04 URL file: en una fuente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-S04 URL data: en una fuente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-S04 URL localhost http en una fuente → rechazado con 4xx/422 y no se publica","ok":true,"detail":"en=upsert status=400 code=invalid_input"}
+{"id":"ES31-S04b el servidor NUNCA consulta las URLs (guardar y publicar no generan ninguna visita)","ok":true,"detail":"visitas=0 (guardado=upsert/409)"}
+{"id":"ES31-S05 entrada hostil «clave extra» → sin 500 y rechazada","ok":true,"detail":"status=400"}
+{"id":"ES31-S05 entrada hostil «__proto__» → sin 500 y rechazada","ok":true,"detail":"status=400"}
+{"id":"ES31-S05 entrada hostil «tipo erróneo» → sin 500 y rechazada","ok":true,"detail":"status=400"}
+{"id":"ES31-S05 entrada hostil «texto de 100 kB» → sin 500 y rechazada","ok":true,"detail":"status=400"}
+{"id":"ES31-S05 entrada hostil «HTML» → sin 500 (el HTML se guarda como dato)","ok":true,"detail":"status=409"}
+{"id":"ES31-S05 entrada hostil «accessible no booleano» → sin 500 y rechazada","ok":true,"detail":"status=400"}
+{"id":"S06-cuerpo-primitivo","info":"status=400 ct=text/html; charset=utf-8"}
+{"id":"ES31-S03b id de catálogo «abc» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03b id de catálogo «0» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03b id de catálogo «-1» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03b id de catálogo «99999999999» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03b id de catálogo «1;drop» → 404 (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03c PUT otros/k → 4xx (nunca 500)","ok":true,"detail":"status=404"}
+{"id":"ES31-S03c PUT roles/Clave-Mala → 4xx (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES31-S03c PUT roles/kkkkkkkkkkkkkkkkkkkkkkkk → 4xx (nunca 500)","ok":true,"detail":"status=400"}
+{"id":"ES31-C06 más de 10 ofertas para un mismo rol → no se publica (4xx)","ok":true,"detail":"último PUT=409 publicar=409 code=catalog_not_editable"}
+{"id":"ES31-K01 8 ediciones simultáneas del mismo elemento: una sola fila, ningún 5xx","ok":false,"detail":"filas=0 estados=409 codes=catalog_not_editable"}
+{"id":"ES31-K02 dos publicaciones simultáneas: como máximo una gana, ningún 5xx, un solo vigente","ok":true,"detail":"estados=409,409 vigentes=1"}
+{"id":"ES31-P05 lectura del catálogo completo p95 < 1000 ms (propuesto)","ok":true,"detail":"p95=8ms tamaño=14368B"}
+{"id":"ES31-P06 30 lecturas simultáneas: 0 respuestas 5xx","ok":true,"detail":"estados=200"}
+{"id":"ES31-E01 errores bilingües (ES / EN)","ok":true,"detail":""}
+{"id":"ES31-E01b mensaje de error de validación en ES y EN","ok":true,"detail":"{\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"}"}
+{"fin":true}

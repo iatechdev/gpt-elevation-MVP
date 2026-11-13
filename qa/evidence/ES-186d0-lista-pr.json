@@ -1,0 +1,64 @@
+{
+  "pr": 224,
+  "mode": "pr",
+  "head": "b15ce3d15c1a63c1fc2877bbe4d0e895e9a8b29c",
+  "results": [
+    {
+      "id": "E1-control",
+      "info": "[pr] solicitudes en base=3; clave presente en el listado=true"
+    },
+    {
+      "id": "E1a `deletionRequested`: true SOLO para las cuentas con una DeletionRequest (pedida por administración, pedida por la propia persona, y una sembrada en un profesional); false para persona normal, persona inactiva sin solicitud, profesional, junta, admin y superadmin; nunca null ni ausente en ninguna fila",
+      "ok": true,
+      "detail": "10 filas, 3 con solicitud"
+    },
+    {
+      "id": "E1b repetir la solicitud no cambia el valor (sigue true) y no contagia a otras cuentas (A/B: pc, pd, TH siguen false)",
+      "ok": true,
+      "detail": "202"
+    },
+    {
+      "id": "E1c con los filtros existentes (`role`, `active`) cada fila conserva su valor correcto (persona con solicitud inactiva → true; persona inactiva sin solicitud → false; profesional con solicitud → true)",
+      "ok": true,
+      "detail": "5/3/2"
+    },
+    {
+      "id": "E1d lista vacía (filtro sin resultados) → 200 con `[]` y sin 5xx (no consulta `DeletionRequests` con una lista vacía)",
+      "ok": true,
+      "detail": "200:0 200:0"
+    },
+    {
+      "id": "E2a la respuesta solo añade el booleano: ni estado, ni identificador, ni fechas, ni intentos de la solicitud en ninguna fila (búsqueda de `DeletionRequest`, `attempts`, `activePurgedAt`, `requestedAt`, `UserId`, estado `accepted`); claves y valores del resto de cada usuario guardados para compararlos CAMPO A CAMPO con main",
+      "ok": true,
+      "detail": "active,createdAt,deletionRequested,email,id,isLocked,lockedUntil,loginAttempts,moodPromedio,name,plan,ratingPromedio,role,sesiones,therapistId"
+    },
+    {
+      "id": "E2b el registro del servidor no contiene correos ni identificadores de solicitud",
+      "ok": true,
+      "detail": "log 358 bytes"
+    },
+    {
+      "id": "E1e-sentencias QA224_S",
+      "info": "SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"UserId\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest\".\"UserId\" IN (10, 9,"
+    },
+    {
+      "id": "E1e-sentencias QA224_L",
+      "info": "SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"id\", \"UserId\", \"status\", \"attempts\", \"activePurgedAt\", \"failureCode\", \"createdAt\", \"updatedAt\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest || SELECT \"UserId\" FROM \"DeletionRequests\" AS \"DeletionRequest\" WHERE \"DeletionRequest\".\"UserId\" IN (50, 49"
+    },
+    {
+      "id": "E1e UNA sola consulta a `DeletionRequests` por listado, con 10 y con 50 cuentas (medido con el registro de sentencias de Postgres)",
+      "ok": true,
+      "detail": "consulta NUEVA (SELECT \"UserId\" … IN (…)) por listado: 1 y 1; consultas previas a DeletionRequests de la autenticación: 4 y 4 (iguales con 10 y 50 cuentas)"
+    },
+    {
+      "id": "E1f listado con 50 cuentas: 200, todas las filas con booleano, sin 5xx",
+      "ok": true,
+      "detail": "200 50 filas"
+    },
+    {
+      "id": "E3 solo admin y superadmin leen el listado (profesional, persona, junta, sin sesión, token vencido → 401/403) y ven el MISMO booleano",
+      "ok": true,
+      "detail": "profesional:403,persona:403,junta:403,sin sesión:403,vencido:401"
+    }
+  ]
+}

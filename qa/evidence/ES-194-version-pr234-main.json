@@ -1,0 +1,108 @@
+[
+ {
+  "id": "X1a (bloqueante) versión inválida/ausente en publish, withdraw y review(done|pending): 12 variantes × 4 = 48 → 400 expected_version_required, ninguna 5xx, ningún cambio de estado ni historial",
+  "ok": false,
+  "detail": "bad= 5xx=0 igual=false"
+ },
+ {
+  "id": "X1b confirm ausente/\"true\"/1/null/false/[] (con versión válida) → 400 confirmation_required en las 3 acciones; sin cambios",
+  "ok": false,
+  "detail": ""
+ },
+ {
+  "id": "X1c cuerpos hostiles (no JSON, truncado, null, [], número, vacío) y reviewStatus inválido → 4xx, nunca 5xx, sin cambios",
+  "ok": false,
+  "detail": " "
+ },
+ {
+  "id": "X1d orden de validación",
+  "info": "review sin nada con reviewStatus inválido → 400 invalid_input; PUT sin versión usa el código «version_required» y las acciones «expected_version_required» (dos códigos para lo mismo)"
+ },
+ {
+  "id": "X2-main-publish",
+  "info": "main con versión vieja: 200 (se espera 200: sin control de versión)"
+ },
+ {
+  "id": "X2-main-review",
+  "info": "main con versión vieja: 200 (se espera 200: sin control de versión)"
+ },
+ {
+  "id": "X2-main-withdraw",
+  "info": "main con versión vieja: 200 (se espera 200: sin control de versión)"
+ },
+ {
+  "id": "X2 (bloqueante) A leyó v1, B editó (v2): publish, review y withdraw con v1 → 409 exercise_changed con current v2; estado, revisión e historial intactos; con v2 funciona",
+  "ok": true,
+  "detail": "3/3"
+ },
+ {
+  "id": "X3a repetir publish con la misma versión: 1.º 200, 2.º 200 unchanged, un solo registro de historial «publish»",
+  "ok": true,
+  "detail": "200 200 create@1,publish@1"
+ },
+ {
+  "id": "X3b repetir review done: 200 y 200 unchanged, un solo registro «review»",
+  "ok": true,
+  "detail": "200 200 create@1,publish@1,review@1"
+ },
+ {
+  "id": "X3c repetir withdraw: 200 y 200 unchanged, un solo registro «withdraw»",
+  "ok": true,
+  "detail": "200 200 create@1,publish@1,review@1,withdraw@1"
+ },
+ {
+  "id": "X3d ciclo publicar → retirar → republicar con la misma versión: 200; la revisión done se conserva; el contenido no cambia",
+  "ok": true,
+  "detail": "200 published done v1"
+ },
+ {
+  "id": "X4a (bloqueante) 20 rondas publish(v1) ‖ edición(v1) de dos superadmins: sin 5xx; la edición siempre gana (v2); si publish tuvo éxito es con v1 en el historial y si no, 409 y sigue borrador (nunca se publica contenido que no vio)",
+  "ok": true,
+  "detail": "publish ok=0 409=0 edit ok=0 :: "
+ },
+ {
+  "id": "X4b (bloqueante) 20 rondas review done(v1) ‖ edición(v1): nunca queda «revisado» sobre una versión distinta de la revisada; si ambas pasan, la edición devuelve a pending",
+  "ok": true,
+  "detail": "20/20"
+ },
+ {
+  "id": "X4c 20 rondas withdraw ‖ publish de dos superadmins sobre un publicado: sin 5xx, estado final válido y a lo sumo un registro «withdraw»",
+  "ok": true,
+  "detail": "20/20"
+ },
+ {
+  "id": "X4d ráfaga de 20 publish simultáneos con la misma versión: todos 200, un único registro «publish», cero transacciones colgadas",
+  "ok": true,
+  "detail": "200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200 create@1,publish@1 colgadas=0"
+ },
+ {
+  "id": "X5a (bloqueante) admin, profesional, persona y junta → 403 en las 3 acciones (también con versión/cuerpo inválido: el rol se comprueba antes); sin sesión 401/403; token vencido o de otra clave 401; el 403 no revela versión ni ejercicio; nada cambió",
+  "ok": true,
+  "detail": " fuga="
+ },
+ {
+  "id": "X5b IDs malformados (abc, 1.5, enorme, 0, -1, 1e3, %00, inyección, hex, dígitos no latinos) en las 3 acciones → nunca 5xx; id inexistente → 404",
+  "ok": true,
+  "detail": " inex=404"
+ },
+ {
+  "id": "X6a el marcado HTML se rechaza al crear (400 markup_not_allowed) y no queda fila",
+  "ok": true,
+  "detail": "400 markup_not_allowed"
+ },
+ {
+  "id": "X6 lectura de la persona: borrador 404; publicado visible (HTML como texto, reviewStatus veraz) y en la lista; retirado 404 idéntico a inexistente y fuera de la lista",
+  "ok": true,
+  "detail": "404 200 404"
+ },
+ {
+  "id": "X9 rendimiento (umbral aprobado p95 < 300 ms, sin 5xx): publish, review, withdraw y GET; ráfaga de 20 sin 5xx",
+  "ok": true,
+  "detail": "{\"publish\":\"p95=22ms max=51ms n=200\",\"review\":\"p95=26ms max=76ms n=200\",\"withdraw\":\"p95=44ms max=67ms n=100\",\"get\":\"p95=24ms max=154ms n=200\"} ráfaga max=399ms"
+ },
+ {
+  "id": "Z0 sin transacciones colgadas al final",
+  "ok": true,
+  "detail": "0"
+ }
+]

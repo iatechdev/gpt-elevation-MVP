@@ -1,0 +1,77 @@
+{
+ "label": "B2",
+ "runs": {
+  "200": {
+   "scansEvidencesPorGET": 4,
+   "scansVersionsPorGET": 34,
+   "seqP50": 111,
+   "seqP95": 193,
+   "concP95": 802,
+   "status": 200
+  }
+ },
+ "s1": {
+  "experimentoAjeno": 404,
+  "evidenciaAjena": 404
+ },
+ "s2": {
+  "delete": 200,
+  "put": 400,
+  "evBefore": 200,
+  "evAfter": 199
+ },
+ "c1sha": "e63a3b6fabd39dc1",
+ "c1bytes": 219931,
+ "cadena": [
+  {
+   "n": "autoevaluacion",
+   "ms": 42,
+   "s": 201
+  },
+  {
+   "n": "autoevaluacion",
+   "ms": 31,
+   "s": 422
+  },
+  {
+   "n": "autoevaluacion",
+   "ms": 34,
+   "s": 201
+  },
+  {
+   "n": "experimento:start",
+   "ms": 61,
+   "s": 409
+  },
+  {
+   "n": "experimento:submit",
+   "ms": 48,
+   "s": 409
+  },
+  {
+   "n": "experimento:reflect",
+   "ms": 45,
+   "s": 409
+  },
+  {
+   "n": "lectura",
+   "ms": 46,
+   "s": 200
+  },
+  {
+   "n": "lectura",
+   "ms": 49,
+   "s": 200
+  },
+  {
+   "n": "lectura",
+   "ms": 47,
+   "s": 200
+  }
+ ],
+ "escrituras": {
+  "evidenciasP95": 27,
+  "evidenciasMax": 41,
+  "n": 220
+ }
+}

@@ -1,0 +1,54 @@
+[
+ {
+  "id": "C9 revocación concurrente: ninguna lectura que empieza tras la revocación recibe datos; sin 5xx",
+  "ok": true,
+  "detail": "lecturas 41; empiezan tras la revocación (20); fuera de 403: 0; 5xx: 0; revocación 248-880 ms; estados {\"200\":8,\"403\":33}"
+ },
+ {
+  "id": "C8 ningún canario de diario, crisis, chat ni evidencia (ni identidad de quien no autorizó o retiró) en ninguna lectura GET de profesional, profesional ajeno, administración, superadministración ni junta",
+  "ok": true,
+  "detail": "950 solicitudes sobre 106 rutas GET; hallazgos: ninguno"
+ },
+ {
+  "id": "C4b ninguna persona ve datos de otra en ningún GET (listados y rutas con id ajeno)",
+  "ok": true,
+  "detail": "486 solicitudes; ninguna fuga"
+ },
+ {
+  "id": "administración y datos de identidad",
+  "info": "admin: nombre true correo true ; superadmin: nombre true correo true (del rol; no es fuga si es solo identidad)"
+ },
+ {
+  "id": "C8b las exportaciones (personal y profesional) no contienen datos de otras personas, y la profesional no lleva diario, crisis ni chat",
+  "ok": true,
+  "detail": "con/personal: 201 propio diario true ; con/professional: 503 professional_contract_pending (no existe aún: no verificado) ; sin/personal: 201 propio diario true ; sin/professional: 503 professional_contract_pending (no existe aún: no verificado) ; rev/personal: 201 propio diario true ; rev/professional: 503 professional_contract_pending (no existe aún: no verificado)"
+ },
+ {
+  "id": "C8c el diario nunca viaja al proveedor de IA sin elegirlo la persona",
+  "ok": true,
+  "detail": "llamadas al proveedor: 1; diarios encontrados: 0"
+ },
+ {
+  "id": "C8d nombre y correo nunca viajan al proveedor de IA",
+  "ok": true,
+  "detail": "encontrados: 0"
+ },
+ {
+  "id": "E281-1 cuántos mensajes ordinarios posteriores llevan la frase de crisis al proveedor",
+  "info": "secuencia (1 = la lleva): 11111111110000 → 10 de 14 (HISTORY_LIMIT=20 mensajes)"
+ },
+ {
+  "id": "E281-1b la frase de crisis solo viaja en solicitudes de chat (ni resumen, ni recomendaciones, ni puente)",
+  "ok": true,
+  "detail": "solicitudes no-chat con la frase: 0"
+ },
+ {
+  "id": "E281-1 persistencia",
+  "info": "mensajes guardados de la persona: 32 (la frase queda cifrada en Messages; el borrado de datos la purga con la persona)"
+ },
+ {
+  "id": "C8e los logs del servidor no contienen canarios ni la frase de crisis",
+  "ok": true,
+  "detail": "líneas de log: 10; coincidencias: ninguna"
+ }
+]

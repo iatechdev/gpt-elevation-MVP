@@ -1,0 +1,15 @@
+✔ ES19-S01: sin token → 403/401; el titular es SIEMPRE el token (UserId/userId del cuerpo y de la query se ignoran) (272.953ms)
+{"purpose:constructor":404,"purpose:__proto__":404,"purpose:toString":404,"purpose:hasOwnProper":404,"purpose:desconocido":404,"purpose:RESEARCH":404,"purpose:research%00":404,"purpose:..%2f":404,"purpose:aaaaaaaaaaaa":404,"body:status nulo":400,"body:status objeto":400,"body:status arreglo":400,"bo
+✔ ES19-S02: propósito y cuerpo inválidos nunca dan 500 (50.0999ms)
+✔ ES19-S03: necessary no se revoca (409); revocar otros no bloquea necessary; idempotencia y versión (16.9129ms)
+{"rutas_que_consumen_consentimiento":[]}
+✔ ES19-S04: revocar corta el acceso futuro (hasConsent / requireConsent) y falla cerrado (10.7ms)
+✔ ES19-S05: ninguna ruta real consume el consentimiento todavía (hallazgo informativo) (3.5803ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 690.2124

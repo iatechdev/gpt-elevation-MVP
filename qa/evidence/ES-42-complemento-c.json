@@ -1,0 +1,27 @@
+[
+ {
+  "id": "D1 la exportación propia se genera (201) y se descarga (200)",
+  "ok": true,
+  "detail": "preview=201 descarga=200 bytes=1011"
+ },
+ {
+  "id": "D2 otra persona NO descarga la exportación de X (403/404) y sin sesión tampoco",
+  "ok": true,
+  "detail": "ajena=404 sinSesion=403"
+ },
+ {
+  "id": "D3 la exportación de X no contiene datos de Y",
+  "ok": true,
+  "detail": "sin canario de Y"
+ },
+ {
+  "id": "D4 IDs de exportación raros o inexistentes: 4xx y nunca 5xx",
+  "ok": true,
+  "detail": "404,404,404,404,404"
+ },
+ {
+  "id": "D5 solicitar el borrado de Y: se acepta de forma controlada, no afecta a X, y no hay 5xx",
+  "ok": true,
+  "detail": "borrado=400 {\"code\":\"invalid_input\",\"error\":\"Datos inválidos. / Invalid data.\"} · Y después=200 · X después=200"
+ }
+]

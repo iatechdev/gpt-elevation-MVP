@@ -1,0 +1,26 @@
+{"id":"DEP-01 salud 200 y commit desplegado = main","ok":true,"detail":"{\"status\":\"ok\",\"commit\":\"7c63e68\"}"}
+{"id":"DEP-02 cabeceras de seguridad siguen presentes","ok":true,"detail":""}
+{"id":"S18-01 el login desplegado emite jti e iatMs","ok":true,"detail":"jti=string"}
+{"id":"S18-02 token válido accede","ok":true,"detail":""}
+{"id":"S18-03 logout revoca solo ese token","ok":true,"detail":""}
+{"id":"S18-04 logout-all corta todo y un login inmediato vale","ok":true,"detail":""}
+{"id":"S18-05 token sin jti (legado) y firma ajena → 401","ok":true,"detail":""}
+{"id":"S18-06 rutas de terapeuta y de admin con usuario común → 403","ok":true,"detail":""}
+{"id":"AB-01 B no ve el ánimo de A","ok":true,"detail":""}
+{"id":"AB-02 diario: crear 201 con acentos/emoji; B no lee, edita ni borra (404) y su lista está vacía","ok":true,"detail":"crear=201 B=404,404,404"}
+{"id":"AB-03 A relee su entrada intacta (UTF-8 en Supabase)","ok":true,"detail":""}
+{"id":"AB-04 editar y borrar propios; lo borrado ya no se lee","ok":true,"detail":""}
+{"id":"C19-01 B no ve el consentimiento de A; el historial de B está vacío","ok":true,"detail":""}
+{"id":"C19-02 20 primeras decisiones simultáneas en Supabase: 200 todas, un solo evento y estado `granted`","ok":true,"detail":"códigos=200 eventos=1"}
+{"id":"C19-03 20 decisiones contradictorias simultáneas: sin 5xx y el estado final coincide con el último evento","ok":true,"detail":"códigos=200 eventos=14 final=revoked último=revoked"}
+{"id":"C19-04 `necessary` no se revoca (409)","ok":true,"detail":""}
+{"id":"E20-01 chat con Claude real: 200 y respuesta de texto","ok":true,"detail":"status=200 5016ms"}
+{"id":"E20-02 repetir el requestId: respuesta repetida sin segunda llamada (rápida) y sin duplicados","ok":true,"detail":"repetida=1001ms original=5016ms"}
+{"id":"E20-03 el turno consta `completed` y el historial tiene exactamente un par","ok":true,"detail":"mensajes=2"}
+{"id":"E20-04 otro usuario no ve el turno ni los mensajes (404 / lista vacía)","ok":true,"detail":""}
+{"id":"E20-05 usar como contexto la entrada de otra persona → 404 (sin llamar a Claude)","ok":true,"detail":"status=404 454ms"}
+{"id":"E20-06 entradas inválidas → 400/404, nunca 500","ok":true,"detail":"estados=400,400,400,404"}
+{"id":"SWP-01 todas las mutaciones sin sesión → 401/403","ok":true,"detail":"69 mutaciones sondeadas"}
+{"id":"LAT-01 latencias de muestra (ms)","info":"{\"health\":{\"p50\":153,\"p95\":201},\"GET /api/diary\":{\"p50\":927,\"p95\":1440},\"GET /api/consents\":{\"p50\":924,\"p95\":1141},\"GET /api/messages\":{\"p50\":460,\"p95\":571},\"login\":{\"p50\":394,\"p95\":499}}"}
+{"id":"LAT-02 login p95 ≤ 1500 ms y lecturas simples p95 ≤ 1500 ms (umbrales propuestos)","ok":true,"detail":"{\"health\":{\"p50\":153,\"p95\":201},\"GET /api/diary\":{\"p50\":927,\"p95\":1440},\"GET /api/consents\":{\"p50\":924,\"p95\":1141},\"GET /api/messages\":{\"p50\":460,\"p95\":571},\"login\":{\"p50\":394,\"p95\":499}}"}
+{"resumen":{"total":24,"fallos":0},"usuariosSinteticos":["qa-A-1793129632490@example.test","qa-B-1793129632490@example.test","qa-C-1793129632490@example.test"]}

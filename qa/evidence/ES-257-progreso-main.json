@@ -1,0 +1,101 @@
+{
+  "pr": 205,
+  "mode": "main",
+  "head": null,
+  "results": [
+    {
+      "id": "esquema",
+      "info": "NOT NULL sin default MoodLogs: date,UserId,createdAt,updatedAt · SessionRatings: date,UserId,createdAt,updatedAt"
+    },
+    {
+      "id": "P1 calificaciones (10 casos): nulas no cuentan como 0 ni en el divisor; solo nulas o sin filas → null; redondeo a 1 decimal",
+      "ok": false,
+      "detail": "[4,null] → 200 avgRating=2 (esperado 4) | [null] → 200 avgRating=0 (esperado null) | [null,null,null] → 200 avgRating=0 (esperado null) | [null,5,null,1] → 200 avgRating=1.5 (esperado 3)"
+    },
+    {
+      "id": "P1-redondeo",
+      "info": "3,75→3.8 (oráculo 3.8); 3,35→3.5 esperado por oráculo"
+    },
+    {
+      "id": "P2 ánimo (7 casos): promedio = suma de válidos / cantidad de válidos (no de registros); sin válidos → null; nunca fuera de 1–5",
+      "ok": true,
+      "detail": " 200 avgMood=4 (esperado 4) ;  200 avgMood=null (esperado null) ;  200 avgMood=3 (esperado 3) ;  200 avgMood=3.7 (esperado 3.7) ;  200 avgMood=3 (esperado 3) ;  200 avgMood=3.5 (esperado 3.5) ;  200 avgMood=null (esperado null)"
+    },
+    {
+      "id": "P3a fuera de escala (0, 6, −1, 99, 32767) mezclados con un 4: no entran al promedio (avgRating 4); sin NaN ni 5xx",
+      "ok": false,
+      "detail": "200 5479.2"
+    },
+    {
+      "id": "P3b ánimo fuera de escala (3,0)(6,−1)(99,3) → promedio solo de 3 y 3 = 3",
+      "ok": false,
+      "detail": "200 22"
+    },
+    {
+      "id": "P3c solo valores fuera de escala (calificación y ánimo) → null en ambos, 200, sin NaN",
+      "ok": false,
+      "detail": "200 {\"totalSessions\":2,\"avgMood\":34.7,\"avgRating\":26,\"streak\":0}"
+    },
+    {
+      "id": "P3d los extremos exactos 1 y 5 SÍ cuentan: rating (1,5) → 3 y ánimo (1,5) → 3",
+      "ok": true,
+      "detail": "{\"totalSessions\":1,\"avgMood\":3,\"avgRating\":3,\"streak\":0}"
+    },
+    {
+      "id": "P3-siembra",
+      "info": "columnas INTEGER/SMALLINT: se pudieron sembrar enteros fuera de escala; decimales y texto no caben en la columna (no probables). Errores de siembra: ninguno"
+    },
+    {
+      "id": "P4a cada persona ve SOLO su promedio (A 5/5, B 1/1) y las filas devueltas son solo suyas",
+      "ok": true,
+      "detail": "[23,23,23,23] [24,24,24]"
+    },
+    {
+      "id": "P4b sin sesión, firmado con otra clave y vencido → 401/403; pasar `userId` ajeno en la consulta no cambia el resultado",
+      "ok": true,
+      "detail": "403 401 401 qs=5"
+    },
+    {
+      "id": "P4c con 40 registros se usa la ventana de los 30 más recientes (observación del comportamiento existente: 30)",
+      "ok": true,
+      "detail": "ventana=3 total=3 got=3 filas=30"
+    },
+    {
+      "id": "P5a forma de la respuesta: claves de primer nivel (stats, moodLogs, ratings, recommendations), de stats (totalSessions, avgMood, avgRating, streak) y tipos; se guarda para compararla con main campo por campo",
+      "ok": true,
+      "detail": "{\"top\":[\"moodLogs\",\"ratings\",\"recommendations\",\"stats\"],\"stats\":[\"avgMood\",\"avgRating\",\"streak\",\"totalSessions\"],\"mood\":[\"UserId\",\"checkin_mood\",\"checkout_mood\",\"createdAt\",\"date\",\"id\",\"updatedAt\"],\"rating\":[\"UserId\",\"createdAt\",\"date\",\"id\",\"rating\",\"updatedAt\"],\"types\":{\"totalSessions\":\"number\",\"avgMood\":\"number\",\"avgRating\":\"number\",\"streak\":\"number\"}}"
+    },
+    {
+      "id": "P5b la pantalla (UserProgress.tsx) trata null como «—» (`!= null ? … : '—'`) para ánimo y calificación: sin «0,0» ni «NaN»; el contrato `number | null` no cambia",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "id": "P5c persona con filas pero sin valores válidos: la respuesta trae null (no 0) en ambos y totalSessions cuenta la fila",
+      "ok": false,
+      "detail": "{\"totalSessions\":1,\"avgMood\":null,\"avgRating\":0,\"streak\":0}"
+    },
+    {
+      "id": "P6a panel del profesional (/api/therapist/pacientes)",
+      "info": "persona con calificaciones [4,NULL,4,NULL] (promedio válido 4): avgRating=2 (status 200)"
+    },
+    {
+      "id": "P6b métricas de administración (SQL AVG ignora NULL, pero cuenta valores fuera de escala)",
+      "info": "status 200: avgMood=5.7 avgRating=332.8 topTherapists.0.avgRating=4"
+    },
+    {
+      "id": "P6c código",
+      "info": "therapistRoutes.js usa `ratings.reduce((acc,r)=>acc+r.rating,0)/ratings.length` en 2 sitios (lista de personas y resumen-IA): una calificación NULL cuenta como 0 en el divisor"
+    },
+    {
+      "id": "P7a 20 solicitudes simultáneas de dos personas: todas 200, sin 5xx, sin mezcla (A siempre 5, B siempre 1)",
+      "ok": true,
+      "detail": "200200200200200200200200200200200200200200200200200200200200"
+    },
+    {
+      "id": "P7b filas con valores extremos de la columna (32767, −32768, ±2147483647) no tumban la ruta: 200 con promedio coherente (rating 3, ánimo 3)",
+      "ok": false,
+      "detail": "200 {\"totalSessions\":2,\"avgMood\":0.7,\"avgRating\":0.5,\"streak\":0}"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+const crypto=require('crypto');const SUT='C:/Users/Usuario/Documents/qa-pr-221/backend';const {startRealApi}=require(SUT+'/test/support/realApi.cjs');process.chdir(SUT);
+const hooks=[];const t={after:(f)=>hooks.push(f)};
+(async()=>{const {q,mkUser,http}=await startRealApi(t,{envVar:'QA159_DB',prefix:'qa159s'});
+const th=await mkUser('therapist');const a=await mkUser('user');await q('UPDATE "Users" SET "therapistId"=$1 WHERE id=$2',[th.id,a.id]);
+await http(a,'POST','/api/mood/checkin',{mood:1});
+const before=await http(th,'GET','/api/therapist/pacientes');console.log('SIN compartir:',JSON.stringify(before.body).slice(0,260));
+const g=await http(a,'PUT','/api/consents/therapist_sharing',{status:'granted'});console.log('compartir con el profesional:',g.status);
+const after=await http(th,'GET','/api/therapist/pacientes');console.log('CON compartir:',JSON.stringify(after.body).slice(0,420));
+const hist=await http(th,'GET','/api/therapist/pacientes/'+a.id+'/historial');console.log('historial:',hist.status,JSON.stringify(hist.body).slice(0,200));
+const alerts=await http(th,'GET','/api/therapist/alerts');console.log('alerts:',alerts.status,JSON.stringify(alerts.body).slice(0,200));
+for(const h of hooks.reverse())await h();process.exit(0)})().catch(e=>{console.error('FATAL',e.stack);process.exit(1)});

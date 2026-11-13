@@ -1,0 +1,8 @@
+PASS con bandera: enlace del menú, banda con el texto aprobado y «Ahora no»
+PASS «Ahora no» vuelve al chat normal sin enviar nada
+PASS con texto sin enviar, salir pide confirmación y no envía
+PASS el mensaje viaja con mode=compass; tras enviar solo queda «Cerrar sin presión»
+PASS cerrar vuelve al chat normal: la siguiente solicitud ya no lleva mode
+PASS teclado: «Cerrar sin presión» y «Ahora no» son alcanzables en orden lógico
+PASS EN y móvil 375px: textos aprobados, sin scroll horizontal
+PASS sin bandera: ni enlace ni banda, y ?mode=compass no cambia la solicitud

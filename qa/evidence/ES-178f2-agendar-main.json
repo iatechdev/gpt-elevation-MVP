@@ -1,0 +1,114 @@
+{
+  "pr": 227,
+  "mode": "main",
+  "head": "afec07ae52e29a630669198262905c171ac89777",
+  "results": [
+    {
+      "id": "A1-control",
+      "info": "[main] fecha pasada → 400 {\"error\":\"scheduledAt must be in the future.\"}"
+    },
+    {
+      "id": "A1a fecha pasada o igual a ahora → 400 `{code:\"scheduled_in_past\", field:\"scheduledAt\"}` con el texto de siempre («scheduledAt must be in the future.»)",
+      "ok": true,
+      "detail": "400 {\"error\":\"scheduledAt must be in the future.\"} · ahora 400"
+    },
+    {
+      "id": "A1b duración fuera de 15–120 o no entera (13 valores: 14, 121, 0, −5, 50,5, 1e308, texto, NaN, Infinity, null, arreglo, objeto, booleano) → 400 con `field:\"duration\"` y código estable (`duration_invalid` si es número; `invalid_input` si no es numérica); el texto «duration must be between 15 and 120 minutes.» se conserva",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "A1c duraciones válidas: 15, 120 y «60» (texto numérico) → 201 con esa duración; sin duración → 201 con 50",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "A1d campos faltantes o mal formados (patientId ausente/texto/negativo/decimal; scheduledAt ausente/vacía/basura/número/unicode; cuerpo arreglo, nulo y texto; JSON roto) → 400 `invalid_input` con el `field` del PRIMER campo inválido; JSON roto → 400 sin 5xx",
+      "ok": true,
+      "detail": "ok"
+    },
+    {
+      "id": "A1e la respuesta de error NUNCA repite lo recibido (la marca sintética enviada en `scheduledAt`, `duration`, `patientId` o campos extra no aparece en ningún 400)",
+      "ok": true,
+      "detail": "400:undefined 400:undefined"
+    },
+    {
+      "id": "A1f entradas hostiles (fechas extremas, 10k caracteres, ids enormes o 2^53, `__proto__`) → ningún 5xx",
+      "ok": false,
+      "detail": "fecha máxima→500 ; fecha mínima→400 ; año 9999→201 ; 10k caracteres→400 ; patientId enorme→400 ; patientId 2^53→400 ; prototipo→201 · 5xx: fecha máxima→500"
+    },
+    {
+      "id": "A2a rol profesional (persona y administración → 403; sin sesión 401/403); persona AJENA, inexistente y con id de forma inválida → el MISMO 403 «This patient is not assigned to you.» (cuerpo idéntico, sin datos)",
+      "ok": true,
+      "detail": "rol=403 admin=403 ajena=403 inexistente=403 forma=403 cuerpos iguales=true"
+    },
+    {
+      "id": "A2b persona SIN consentimiento de compartir, con ELIMINACIÓN solicitada o INACTIVA → 403 y NO se crea ninguna sesión",
+      "ok": true,
+      "detail": "403/403/403 {\"code\":\"consent_required\",\"error\":\"La persona no ha autorizado compartir sus datos con su"
+    },
+    {
+      "id": "A2c (bloqueante) el código 400 de fecha/duración NO revela si el id de la persona existe ni de quién es: con fecha pasada o duración inválida, persona ajena, inexistente y propia dan EXACTAMENTE la misma respuesta",
+      "ok": true,
+      "detail": "fecha: 400/400/400 iguales=true · duración: 400/400/400 iguales=true"
+    },
+    {
+      "id": "A2d-adyacente",
+      "info": "sesión pegada al final de otra (T+60 min) → 201"
+    },
+    {
+      "id": "A2d choque de horario: misma hora, solapamiento parcial (T+30) y contenida (T+10) → 409 `session_conflict`; la primera 201",
+      "ok": true,
+      "detail": "201 409/409/409 adyacente 201"
+    },
+    {
+      "id": "A3a 8 altas simultáneas idénticas (pool 5) → 1×201 + 7×409 `session_conflict`, UNA fila, sin 5xx; reintentar después → 409",
+      "ok": true,
+      "detail": "201 409 409 409 409 409 409 409 filas=1"
+    },
+    {
+      "id": "A3b 8 altas simultáneas a horarios DISTINTOS (separados 3 h) → todas 201, sin choques ni deadlock y sin transacciones colgadas",
+      "ok": true,
+      "detail": "201 201 201 201 201 201 201 201 idle=0"
+    },
+    {
+      "id": "A4-instantánea",
+      "info": "16 rutas con entrada inválida; 16 dan 400: POST register→400 ; POST login→400 ; POST rating→400 ; POST mood/checkin→400 ; POST plan-requests→400 ; PUT admin/plan-requests/admin/1/reject→400 ; PUT admin/usuarios/1→400 ; PUT admin/usuarios/1/plan→400 ; POST matching/request→400 ; POST diary→400 ; POST therapist/pacientes/1/notas→400 ; PUT therapist/notas/1→400 ; POST sessions/therapist/1/notes→400 ; POST password-reset/request→400 ; PUT consents/insights→400 ; POST therapist/prompt/propose→400"
+    },
+    {
+      "id": "A4a (instantánea) 16 rutas con entrada inválida: ningún 5xx; las que responden 400 por la validación del esquema llevan `code:\"invalid_input\"` y el `field` de la clave inválida (`error` intacto); se guarda para compararla con main",
+      "ok": true,
+      "detail": "16 con 400, 0 con code+field"
+    },
+    {
+      "id": "A4b el `field` es solo el NOMBRE de la clave del esquema (nunca el valor recibido)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "A5a el prompt al proveedor SOLO lleva agregados: sin la nota de seguimiento (marca), sin nombre, correo, diario ni crisis; `basedOn.notes = 0`; forma de siempre (`summary`, `generatedAt`, `basedOn`)",
+      "ok": true,
+      "detail": "nota=201 estado=200 llamadas=1 notes=0"
+    },
+    {
+      "id": "A5b presupuesto agotado → 429 `ai_budget_exhausted` con `retryable:false`, SIN reintento (el proveedor recibe 0 llamadas)",
+      "ok": true,
+      "detail": "429:ai_budget_exhausted:retryable=false llamadas=0"
+    },
+    {
+      "id": "A5c sin datos válidos → 200 «Aún no hay datos…» y 0 llamadas al proveedor; respuesta vacía del proveedor → 502 `provider_unavailable`",
+      "ok": true,
+      "detail": "200/0 · 502:provider_unavailable"
+    },
+    {
+      "id": "A5d resumen de persona ajena, sin consentimiento o con eliminación solicitada → 403/404 y 0 llamadas a la IA",
+      "ok": true,
+      "detail": "404/403/404 llamadas=0"
+    },
+    {
+      "id": "A6 `Cache-Control: no-store` en las respuestas de sesiones (200, 400, 403, 409); el registro del servidor no contiene correos, la marca ni el cuerpo recibido",
+      "ok": true,
+      "detail": "cache=no-store | no-store | no-store | no-store | no-store log=5509"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+Reejecuciones de mutaciones de #262 (78005853) tras separar S6c y añadir comprobaciones a mi guion (S2: objetar tras retirar y shares vigentes tras reautorizar; S3: autorizar a un usuario sin rol revisor; S7: alias ≠ id real).
+Base: mi guion 18/19 (falla solo S6c = hallazgo E262-3).
+N1 | es-175 del PR: fail 3 #4 acceso retirado: el revisor de;#8 el permiso se comprueba en CAD;| mi guion: FALLA S2 FALLA S6c RESUMEN 17/19
+N3 | es-175 del PR: fail 2 #7 evidencia con origen en el cha;| mi guion: FALLA S6c FALLA S6 RESUMEN 17/19
+N7 | es-175 del PR: fail 2 #2 propietario: cada persona ve s;| mi guion: FALLA S3 FALLA S6c RESUMEN 17/19
+N10 | es-175 del PR: fail 0 | mi guion: FALLA S2 FALLA S6c RESUMEN 17/19
+N11 | es-175 del PR: fail 0 | mi guion: FALLA S6c FALLA S7 RESUMEN 17/19
+N16 | es-175 del PR: fail 2 #8 el permiso se comprueba en CAD;| mi guion: FALLA S6c RESUMEN 18/19  (no detectada por mi guion: equivalente en uso secuencial)

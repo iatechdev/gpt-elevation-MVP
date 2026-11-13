@@ -1,0 +1,1 @@
+{"id":"ES9-06 carga acotada","esperado":"6 VU, 300s, 0 5xx","obtenido":"3099 peticiones","ok":true,"extra":"5xx=0 red=0 p50=166ms p95=233ms max=523ms"}

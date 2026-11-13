@@ -1,0 +1,150 @@
+{
+  "pr": 219,
+  "mode": "pr",
+  "head": "7baaf3fa99daacf6c26ce8b4a19193cbfa23d721",
+  "results": [
+    {
+      "id": "FK",
+      "info": "33 claves foráneas hacia Users: AiJobs.UserId(NO ACTION), CareerExperimentReviews.UserId(NO ACTION), CareerExperimentVersions.UserId(NO ACTION), CareerExperiments.UserId(NO ACTION), CareerPlanVersions.UserId(NO ACTION), CareerReminders.UserId(NO ACTION), ClinicalNotes.UserId(CASCADE), ClinicalNotes.therapistId(NO ACTION), EthicManifests.uploadedBy(CASCADE), MatchingRequests.UserId(CASCADE), MatchingRequests.chosenTherapistId(NO ACTION), Messages.UserId(SET NULL), MoodLogs.UserId(CASCADE), ParticipantContexts.UserId(CASCADE), ParticipantResumes.UserId(CASCADE), PasswordResets.UserId(CASCADE), PlanRequests.resolvedBy(SET NULL), PlanRequests.userId(CASCADE), ProfessionalApplications.userId(SET NULL), RouteChoices.UserId(NO ACTION), RouteConstraintsVersions.UserId(NO ACTION), RouteReviewReques"
+    },
+    {
+      "id": "D1-control",
+      "info": "[pr] DELETE persona con vínculo y datos → 202 deletion_requested; fila Users tras la llamada: existe"
+    },
+    {
+      "id": "D1a DELETE a una persona → 202 `deletion_requested` `repeated:false`; NO hay DELETE físico (la fila de Users y sus datos siguen); UNA `DeletionRequest`; queda inactiva",
+      "ok": true,
+      "detail": "202 {\"code\":\"deletion_requested\",\"repeated\":false,\"message\":\"Eliminación solicitada: la persona ya no puede entrar. El borrado de sus datos se completa en el proces existe=true moods=1"
+    },
+    {
+      "id": "D1b la persona pierde el acceso AL INSTANTE: su token vigente → 401/403 (antes respondía 200), el inicio de sesión se bloquea (403/401), y desbloquear / reactivar no lo levantan (409)",
+      "ok": true,
+      "detail": "token=401 login=403 unlock=409 reactivar=409"
+    },
+    {
+      "id": "D1c el profesional queda desvinculado (`therapistId` NULL) y deja de ver a la persona (antes la veía: 200) ni en la lista",
+      "ok": true,
+      "detail": "vinculo=null historia=404 enLista=false"
+    },
+    {
+      "id": "D1d la respuesta no contiene correo, nombre ni ids de otras cuentas",
+      "ok": true,
+      "detail": "{\"code\":\"deletion_requested\",\"repeated\":false,\"message\":\"Eliminación solicitada: la persona ya no puede entrar. El borrado de sus datos se completa en el proceso de mantenimiento. / Deletion requested"
+    },
+    {
+      "id": "D2a repetir el DELETE → 202 `repeated:true`, sigue UNA `DeletionRequest` y la fila no se borra",
+      "ok": true,
+      "detail": "202 {\"code\":\"deletion_requested\",\"repeated\":true,\"message\":\"Eliminación solicitada: la persona ya no puede entrar. El borrad"
+    },
+    {
+      "id": "D2-control",
+      "info": "[pr] repetir el DELETE → 202 deletion_requested"
+    },
+    {
+      "id": "D2b 8 DELETE simultáneos (pool 5): todos 202 (1× `repeated:false` + 7× `repeated:true`), UNA solicitud, UNA entrada de auditoría, 0 5xx, sin transacciones colgadas",
+      "ok": true,
+      "detail": "202r 202r 202n 202r 202r 202r 202r 202r auditoría=1"
+    },
+    {
+      "id": "D2c la repetida (D2a) NO audita otra vez: UNA sola entrada `user.delete_request` para P1, con actor, rol, tipo y resultado `ok`",
+      "ok": true,
+      "detail": "[{\"a\":\"user.delete_request\",\"r\":\"ok\",\"t\":\"user\"}]"
+    },
+    {
+      "id": "D3-control",
+      "info": "[pr] persona con filas en 24 tablas (sin sembrar 9: AiJobs.UserId:23514, CareerExperimentReviews.UserId:23503, CareerExperimentVersions.UserId:23503, PlanRequests.resolvedBy:23503, PlanRequests.userId:23503, RouteChoices.UserId:23514) → DELETE 202 deletion_requested; fila Users existe"
+    },
+    {
+      "id": "D3 persona con datos en 24 tablas (carrera, rutas, evidencias, consentimientos, chat…): 202 sin 500, NINGUNA fila de esas tablas se pierde ni se duplica al solicitar, y la cuenta sigue en Users",
+      "ok": true,
+      "detail": "202 filas antes=24 después=24"
+    },
+    {
+      "id": "D4a profesional, junta y administración SIN dependencias: 200 `deleted`, la fila desaparece, no se crea solicitud ES-23, sus sesiones quedan revocadas (token → 401/403)",
+      "ok": true,
+      "detail": "{\"therapist\":[200,true,401],\"board\":[200,true,401],\"admin\":[200,true,401]}"
+    },
+    {
+      "id": "D4b cada eliminación física deja su entrada `user.delete`",
+      "ok": true,
+      "detail": "entradas=3"
+    },
+    {
+      "id": "D4-detalle",
+      "info": "AiJobs.UserId:sin-sembrar ; CareerExperimentReviews.UserId:sin-sembrar ; CareerExperimentVersions.UserId:sin-sembrar ; CareerExperiments.UserId:409/has_dependent_data ; CareerPlanVersions.UserId:sin-sembrar ; CareerReminders.UserId:sin-sembrar ; ClinicalNotes.UserId:200/deleted/borrado ; ClinicalNotes.therapistId:409/has_dependent_data ; EthicManifests.uploadedBy:200/deleted/borrado ; MatchingRequests.UserId:200/deleted/borrado ; MatchingRequests.chosenTherapistId:409/has_dependent_data ; Messages.UserId:409/has_dependent_data ; MoodLogs.UserId:409/has_dependent_data ; ParticipantContexts.UserId:409/has_dependent_data ; ParticipantResumes.UserId:409/has_dependent_data ; PasswordResets.UserId:200/deleted/borrado ; PlanRequests.resolvedBy:sin-sembrar ; PlanRequests.userId:sin-sembrar ; Profe"
+    },
+    {
+      "id": "D4c con una dependencia en CADA tabla que apunta a Users: nunca 500; 409 `has_dependent_data` (la cuenta y la fila dependiente siguen) o 200 solo cuando la fila se desvincula/borra sin dejar huérfanos",
+      "ok": true,
+      "detail": "33 tablas probadas"
+    },
+    {
+      "id": "D4d profesional con una persona vinculada → 409 `has_dependent_data`, el profesional y el vínculo siguen intactos (rollback completo)",
+      "ok": true,
+      "detail": "409 has_dependent_data"
+    },
+    {
+      "id": "D4e invitación ACEPTADA por la cuenta: la eliminación procede (200) y la invitación queda desvinculada (`acceptedUserId` NULL), sin huérfanos",
+      "ok": true,
+      "detail": "200 {\"acceptedUserId\":null}"
+    },
+    {
+      "id": "D4g AuthRevocations",
+      "info": "14 filas de AuthRevocations (solo UserId y fecha de revocación) quedan para las 14 cuentas borradas: es la marca que mantiene revocados sus tokens (ES-18; revokeUserSessions se llama después del borrado, igual que en main); no contiene datos personales"
+    },
+    {
+      "id": "D4f tras las eliminaciones físicas, ninguna tabla con columna `UserId`/`userId` conserva filas de una cuenta borrada (0 huérfanos; se excluye AuthRevocations, informada aparte en D4g)",
+      "ok": true,
+      "detail": "tablas revisadas=38 cuentas borradas=14 huérfanos=0 "
+    },
+    {
+      "id": "D5a solo superadmin: admin, profesional, persona, junta → 403; sin sesión 401/403; no te eliminas a ti mismo (403); no se elimina a un superadmin (403); admin sobre admin 403; inexistente 404; y nada de eso cambia cuentas",
+      "ok": true,
+      "detail": "403,403,403,403,403,403,403,403,404"
+    },
+    {
+      "id": "D5b las denegaciones de admin/profesional/persona/junta dejan entrada `denied` `user.delete`",
+      "ok": true,
+      "detail": "entradas denied=2"
+    },
+    {
+      "id": "D5c ids hostiles",
+      "info": "abc→400 ; 0→400 ; -1→400 ; 1234567890→404 ; 99999999999999999999→400 ; 1;drop→400 ; %00→400 ; 1.5→400 ;  1→400 ; ١٢٣→400"
+    },
+    {
+      "id": "D5d ids hostiles en DELETE → 4xx sin 5xx (si aparece alguno es el patrón ES-262 preexistente y se informa)",
+      "ok": true,
+      "detail": "todos 4xx"
+    },
+    {
+      "id": "A1a con la auditoría FALLANDO: 5xx y NO se crea la solicitud, la persona sigue activa y su token sigue valiendo (todo en la misma transacción)",
+      "ok": true,
+      "detail": "500 solicitudes=0 activa=true token=200"
+    },
+    {
+      "id": "A1b con la solicitud FALLANDO: 5xx y NO queda entrada de auditoría ni cambio en la cuenta",
+      "ok": true,
+      "detail": "500"
+    },
+    {
+      "id": "A1c la lectura de auditoría acepta la acción nueva (filtro `action=user.delete_request` → 200 con esas entradas) y no contiene correos, nombres ni notas",
+      "ok": true,
+      "detail": "200 entradas=3"
+    },
+    {
+      "id": "A1d vocabulario cerrado en TODAS las filas de auditoría (actorRole, targetType, action, result): ningún texto libre",
+      "ok": true,
+      "detail": "filas=19"
+    },
+    {
+      "id": "P1a el registro del servidor no contiene correos ni contenido de las cuentas eliminadas o solicitadas",
+      "ok": true,
+      "detail": "log 908 bytes"
+    },
+    {
+      "id": "P1b el 409 es bilingüe y no revela cuántos datos tiene la cuenta ni cuáles",
+      "ok": true,
+      "detail": "{\"code\":\"has_dependent_data\",\"error\":\"No se puede eliminar: la cuenta tiene datos o vínculos asociados. / It cannot be deleted: the account has associated data or links.\"}"
+    }
+  ]
+}

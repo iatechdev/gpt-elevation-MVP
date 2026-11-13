@@ -1,0 +1,19 @@
+{"id":"ES99-V1 PDF, JPEG, PNG y WEBP reales → 2xx y llegan al almacenamiento (4 subidas) y a la tabla (4 filas)","ok":true,"detail":"{\"pdf\":201,\"jpeg\":201,\"png\":201,\"webp\":201} subidas=4 filas=4"}
+{"id":"ES99-V2 tamaño: justo 10 MB → 2xx; 10 MB + 1 byte → 413 `file_too_large`; 5 bytes con firma → 2xx","ok":true,"detail":"201/413:file_too_large/201"}
+{"id":"ES99-R1 [SEG] 12 subidas inválidas (exe/texto/png/jpeg disfrazados, vacío, tipos no permitidos, SVG/HTML, campo equivocado, dos archivos, sin archivo) → 400 con el código del PR, JSON ES/EN, sin trazas, rutas ni HTML","ok":true,"detail":"12 casos"}
+{"id":"ES99-R2 [SEG] ninguno de los rechazos tocó el almacenamiento ni dejó filas","ok":true,"detail":"subidas 64→64 filas 6→6"}
+{"id":"ES99-R3 [SEG] formulario truncado, sin boundary y cuerpo JSON en vez de multipart → 4xx JSON controlado, sin trazas ni HTML","ok":true,"detail":"400:invalid_upload 400:invalid_upload 400:no_file"}
+{"id":"ES99-R3b demasiados campos de texto → 4xx controlado","ok":true,"detail":"400:invalid_upload"}
+{"id":"ES99-F1 [SEG] participante, administrador, superadmin y sin sesión enviando 11 MB → 403/401 (nunca 413: el servidor no lee el archivo) y no llega al almacenamiento","ok":true,"detail":"{\"participante\":\"403:36ms\",\"administrador\":\"403:47ms\",\"superadmin\":\"403:73ms\",\"sinSesión\":\"403:37ms\"} terapeuta11MB=413"}
+{"id":"ES99-A1 [SEG] almacenamiento caído → 503 `storage_unavailable` genérico sin rutas, credenciales ni bucket, y sin fila nueva","ok":true,"detail":"503:storage_unavailable {\"code\":\"storage_unavailable\",\"error\":\"No se pudo guardar el documento ahora. Inténtalo má"}
+{"id":"ES99-A1b tras recuperarse el almacenamiento, la subida vuelve a funcionar","ok":true,"detail":"status=201"}
+{"id":"ES99-P1 [SEG] el propietario sale de la sesión: campos `therapistId`, `UserId` o `documentPath` en el formulario se ignoran","ok":true,"detail":"{\"therapistId\":1196,\"documentPath\":\"therapist-docs/1196/1793278994109_otro.pdf\"}"}
+{"id":"ES99-P2 [PRIV] el estado del terapeuta B no incluye documentos del terapeuta A","ok":true,"detail":"[{\"id\":68,\"documentType\":\"titulo\",\"documentName\":\"otro.pdf\",\"status\":\"pending\",\""}
+{"id":"ES99-P3 [SEG] la descarga solo la hace el superadmin (200); terapeuta, participante y administrador 403; id mal formado y no existente → 404","ok":true,"detail":"{\"terapeuta\":403,\"participante\":403,\"administrador\":403,\"superadmin\":200} abc=404 inexistente=404"}
+{"id":"ES99-P4 [SEG] descarga con el almacenamiento caído → 503 genérico sin rutas ni credenciales","ok":true,"detail":"503 {\"code\":\"storage_unavailable\",\"error\":\"No se pudo generar el enlace de descarga ahora. / T"}
+{"id":"ES99-P5 [SEG] aprobar un documento solo lo hace el superadmin: terapeuta, participante y administrador → 403","ok":true,"detail":"{\"terapeuta\":403,\"participante\":403,\"administrador\":403}"}
+{"id":"ES99-N1 [SEG] 12 nombres hostiles (rutas, nulos, tabulaciones, bidi, solo puntos, 1000 caracteres, emoji, nombre reservado, HTML, SQL): sin 5xx; el nombre y la ruta guardados no traen separadores, control, bidi ni `..` y quedan acotados","ok":true,"detail":"12 nombres"}
+{"id":"ES99-C1 [PERF] 10 subidas válidas simultáneas de 1 MB: sin 5xx","ok":true,"detail":"estados=201 máx=229 ms"}
+{"id":"ES99-C2 [PERF] el rechazo temprano por rol con 11 MB tarda < 200 ms (p80 de 5)","ok":true,"detail":"p80=50 ms"}
+{"id":"ES99-L1 [PRIV] los registros del servidor no contienen contenido de los archivos, nombres de archivo ni rutas de credenciales","ok":true,"detail":"líneas=30"}
+{"fin":true}

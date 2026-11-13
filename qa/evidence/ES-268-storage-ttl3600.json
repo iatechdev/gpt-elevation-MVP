@@ -1,0 +1,12 @@
+{
+  "pr": 221,
+  "mode": "ttl3600",
+  "head": "1ce3154fab7397e5af6dde7f8aa0c27c9369b255",
+  "results": [
+    {
+      "id": "E221-1 (TTL=3600): la vigencia informada sale del TTL EFECTIVO (3600 s): `expiresIn` «1 hora», `expiresInSeconds` 3600, y coincide con lo pedido al almacenamiento (3600 s)",
+      "ok": true,
+      "detail": "{\"expiresIn\":\"1 hora\",\"expiresInSeconds\":3600,\"pedido\":3600}"
+    }
+  ]
+}

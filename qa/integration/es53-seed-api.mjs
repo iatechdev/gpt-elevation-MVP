@@ -1,0 +1,56 @@
+// [QA-Claude] PR #53 (semilla de demostración): comprobaciones por API sobre una base con la semilla cargada. Solo datos sintéticos.
+// Uso: QA_SUT=<clon con el head de #53> QA_API=http://127.0.0.1:8153 DATABASE_URL=<base con la semilla> QA_JWT_SECRET=<el del servidor> DEMO_USER_PASSWORD=<clave de la demostración> node qa/integration/es53-seed-api.mjs
+import { createRequire } from 'node:module';
+import { randomBytes } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+const sut = process.env.QA_SUT, api = process.env.QA_API, dbUrl = process.env.DATABASE_URL, JWT = process.env.QA_JWT_SECRET, DEMO_PW = process.env.DEMO_USER_PASSWORD;
+const req = createRequire(path.join(sut, 'backend', 'package.json'));
+const { Client } = req('pg'); const jwt = req('jsonwebtoken');
+const db = new Client({ connectionString: dbUrl, ssl: false }); await db.connect();
+const q = async (s, p = []) => (await db.query(s, p)).rows;
+const check = (id, ok, d = '') => console.log(JSON.stringify({ id, ok: !!ok, detail: d }));
+const call = async (m, u, { token, body } = {}) => {
+  const h = {}; if (token) h.Authorization = 'Bearer ' + token; if (body !== undefined) h['Content-Type'] = 'application/json';
+  const r = await fetch(api + u, { method: m, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
+  const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch { /* sin JSON */ } return { status: r.status, json: j, text: t };
+};
+const demo = (await q(`select id,name,role,active from "Users" where email='demo.participante@example.invalid'`))[0];
+const login = await call('POST', '/api/login', { body: { email: 'demo.participante@example.invalid', password: DEMO_PW } });
+check('SEED-A01 la persona de demostración entra con la clave del operador', login.status === 200 && !!login.json?.token, `status=${login.status}`);
+check('SEED-A02 rol user y activa', demo?.role === 'user' && demo?.active === true, JSON.stringify(demo));
+const mkUser = async (tag) => {
+  const email = `qa53-${tag}-${Date.now()}@example.test`, password = randomBytes(12).toString('base64url') + 'aA1!';
+  await call('POST', '/api/register', { body: { name: 'QA53 ' + tag, email, password } });
+  const u = (await q('select id,name,role from "Users" where email=$1', [email]))[0];
+  return { u, token: jwt.sign({ id: u.id, name: u.name, role: u.role, iatMs: Date.now() }, JWT, { expiresIn: '8h', jwtid: randomBytes(8).toString('hex') }) };
+};
+const t = login.json.token;
+const map = await call('GET', '/api/skill-map', { token: t });
+const skills = map.json?.skills ?? [];
+const level = (s) => s.self?.level ?? s.review?.level ?? null;
+const levels = Object.fromEntries(skills.map(s => [s.skillKey, level(s)]));
+check('SEED-M01 el mapa tiene 8 habilidades: comunicación 3, planificación 2, análisis 3 y 5 en null (nunca 0)', skills.length === 8 && levels.comunicacion === 3 && levels.planificacion_organizacion === 2 && levels.analisis_informacion === 3 && Object.values(levels).filter(v => v === null).length === 5 && !Object.values(levels).includes(0), JSON.stringify(levels));
+check('SEED-M02 cada nivel declara su evidencia', skills.filter(s => s.self).every(s => (s.self.evidenceCount ?? s.self.evidenceRefs?.length ?? 0) >= 1), JSON.stringify(skills.find(s => s.self)?.self ?? {}).slice(0, 160));
+check('SEED-M03 todas las etiquetas del catálogo llevan el rótulo sintético en ES y EN', skills.every(s => /\[SINTÉTICO\]/.test(s.labels?.es) && /\[SYNTHETIC\]/.test(s.labels?.en)), skills.map(s => s.labels?.es).slice(0, 2).join(' | '));
+const ev = await call('GET', '/api/evidence?limit=100', { token: t });
+const evList = ev.json?.evidence ?? ev.json?.items ?? (Array.isArray(ev.json) ? ev.json : []);
+check('SEED-E01 tres evidencias confirmadas, sin porcentajes', ev.status === 200 && evList.length === 3 && !/\d+\s?%/.test(ev.text), `status=${ev.status} n=${evList.length}`);
+check('SEED-E02 las evidencias llevan el rótulo sintético', /\[SINTÉTICO\]/.test(ev.text) || evList.every(e => /SINT/i.test(JSON.stringify(e))), ev.text.slice(0, 120));
+const B = await mkUser('b');
+const mb = await call('GET', '/api/skill-map', { token: B.token }); const evB = await call('GET', '/api/evidence?limit=100', { token: B.token });
+const evBList = evB.json?.evidence ?? evB.json?.items ?? (Array.isArray(evB.json) ? evB.json : []);
+check('SEED-I01 otra persona no ve evidencias ni evaluaciones de la demostración', (mb.json?.skills ?? []).every(s => !s.self && !s.review) && evBList.length === 0, `mapaB=${mb.status} evB=${evB.status}`);
+const one = await q(`select id from "Evidence" where "UserId"=$1 limit 1`, [demo.id]); const idor = await call('GET', '/api/evidence/' + one[0].id, { token: B.token });
+check('SEED-I02 B pide una evidencia de la demostración por ID → 404', idor.status === 404, `status=${idor.status}`);
+const rc = await call('GET', '/api/route-catalog', { token: t });
+check('SEED-R01 el catálogo de rutas responde y marca su contenido como sintético', rc.status === 200 && /"synthetic":\s*true/.test(rc.text), `status=${rc.status}`);
+const exp = await call('POST', '/api/exports/preview', { token: t, body: { type: 'personal', locale: 'es' } });
+check('SEED-X01 la exportación personal de la demostración incluye sus evidencias y autoevaluaciones', exp.status === 201 && (exp.json?.data?.evidence ?? []).length === 3 && (exp.json?.data?.skillAssessments ?? []).length >= 3, `status=${exp.status} ev=${exp.json?.data?.evidence?.length} sa=${exp.json?.data?.skillAssessments?.length}`);
+const del = await call('POST', '/api/account/deletion-requests', { token: t, body: { confirm: true } });
+const reqId = (await q('select id from "DeletionRequests" where "UserId"=$1', [demo.id]))[0]?.id;
+const purge = spawnSync(process.execPath, ['scripts/purgePersonalData.js', reqId, '--producers-stopped-and-drained'], { cwd: path.join(sut, 'backend'), env: { ...process.env, DATABASE_URL: dbUrl, DB_SSL: 'false', JWT_SECRET: JWT }, encoding: 'utf8' });
+const left = { evidencia: (await q('select count(*)::int n from "Evidence" where "UserId"=$1', [demo.id]))[0].n, evaluaciones: (await q('select count(*)::int n from "SkillAssessments" where "UserId"=$1', [demo.id]))[0].n };
+check('SEED-D01 la persona de demostración se borra con el flujo de ES-23: 0 evidencias y 0 evaluaciones', del.status === 202 && purge.status === 0 && left.evidencia === 0 && left.evaluaciones === 0, JSON.stringify(left) + ' exit=' + purge.status);
+check('SEED-D02 los catálogos sintéticos siguen publicados tras borrar a la persona', (await q(`select count(*)::int n from "SkillCatalogs" where status='published'`))[0].n === 1, '');
+await db.end();

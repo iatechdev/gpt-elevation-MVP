@@ -1,0 +1,19 @@
+{"perfil":"Fast 3G (1,6 Mbps, 150 ms)","ruta":"/login","base_ms":6841,"pr_ms":3253,"base_peor":6978,"pr_peor":3480,"base_fcp":6844,"pr_fcp":3260,"base_js":1,"pr_js":2,"base_kb":1198,"pr_kb":522,"pr_olas":1}
+{"perfil":"Fast 3G (1,6 Mbps, 150 ms)","ruta":"/","base_ms":7064,"pr_ms":3465,"base_peor":9028,"pr_peor":4809,"base_fcp":7108,"pr_fcp":3504,"base_js":1,"pr_js":2,"base_kb":1278,"pr_kb":601,"pr_olas":1}
+{"perfil":"Fast 3G (1,6 Mbps, 150 ms)","ruta":"/profesionales","base_ms":6761,"pr_ms":3555,"base_peor":6924,"pr_peor":3662,"base_fcp":6772,"pr_fcp":3204,"base_js":1,"pr_js":3,"base_kb":1198,"pr_kb":583,"pr_olas":2}
+{"perfil":"Fast 3G (1,6 Mbps, 150 ms)","ruta":"/pricing","base_ms":6795,"pr_ms":3630,"base_peor":7459,"pr_peor":3829,"base_fcp":6816,"pr_fcp":3248,"base_js":1,"pr_js":3,"base_kb":1214,"pr_kb":587,"pr_olas":2}
+{"perfil":"4G (9 Mbps, 100 ms)","ruta":"/login","base_ms":1675,"pr_ms":1037,"base_peor":1747,"pr_peor":1133,"base_fcp":1680,"pr_fcp":1044,"base_js":1,"pr_js":2,"base_kb":1299,"pr_kb":574,"pr_olas":1}
+{"perfil":"4G (9 Mbps, 100 ms)","ruta":"/","base_ms":1718,"pr_ms":1147,"base_peor":1919,"pr_peor":1319,"base_fcp":1748,"pr_fcp":1196,"base_js":1,"pr_js":2,"base_kb":1278,"pr_kb":601,"pr_olas":1}
+{"perfil":"4G (9 Mbps, 100 ms)","ruta":"/profesionales","base_ms":1601,"pr_ms":1255,"base_peor":2152,"pr_peor":1408,"base_fcp":1616,"pr_fcp":916,"base_js":1,"pr_js":3,"base_kb":1246,"pr_kb":583,"pr_olas":2}
+{"perfil":"4G (9 Mbps, 100 ms)","ruta":"/pricing","base_ms":1704,"pr_ms":1343,"base_peor":1900,"pr_peor":1547,"base_fcp":1728,"pr_fcp":988,"base_js":1,"pr_js":3,"base_kb":1263,"pr_kb":635,"pr_olas":2}
+{"perfil":"sin limitar","ruta":"/login","base_ms":608,"pr_ms":556,"base_peor":663,"pr_peor":815,"base_fcp":616,"pr_fcp":564,"base_js":1,"pr_js":2,"base_kb":1299,"pr_kb":622,"pr_olas":1}
+{"perfil":"sin limitar","ruta":"/","base_ms":733,"pr_ms":941,"base_peor":1650,"pr_peor":1148,"base_fcp":776,"pr_fcp":976,"base_js":1,"pr_js":2,"base_kb":1278,"pr_kb":601,"pr_olas":1}
+{"perfil":"sin limitar","ruta":"/profesionales","base_ms":985,"pr_ms":1042,"base_peor":1291,"pr_peor":1261,"base_fcp":996,"pr_fcp":668,"base_js":1,"pr_js":3,"base_kb":1246,"pr_kb":583,"pr_olas":2}
+{"perfil":"sin limitar","ruta":"/pricing","base_ms":574,"pr_ms":821,"base_peor":609,"pr_peor":1375,"base_fcp":596,"pr_fcp":464,"base_js":1,"pr_js":3,"base_kb":1263,"pr_kb":635,"pr_olas":2}
+{"perfil":"Fast 3G protegida (persona)","ruta":"/app/chat","base_ms":6818,"pr_ms":3739,"base_js":1,"pr_js":4,"base_kb":1201,"pr_kb":609,"pr_olas":2}
+{"perfil":"Fast 3G protegida (persona)","ruta":"/app/progress","base_ms":6997,"pr_ms":3772,"base_js":1,"pr_js":3,"base_kb":1268,"pr_kb":607,"pr_olas":2}
+{"perfil":"Fast 3G protegida (persona)","ruta":"/app/diary","base_ms":6772,"pr_ms":3598,"base_js":1,"pr_js":5,"base_kb":1199,"pr_kb":583,"pr_olas":2}
+{"perfil":"Fast 3G protegida (persona)","ruta":"/app/dashboard","base_ms":6853,"pr_ms":4265,"base_js":1,"pr_js":8,"base_kb":1204,"pr_kb":705,"pr_olas":2}
+{"perfil":"Fast 3G protegida (admin)","ruta":"/admin/dashboard","base_ms":6758,"pr_ms":3748,"base_js":1,"pr_js":4,"base_kb":1201,"pr_kb":610,"pr_olas":3}
+{"perfil":"Fast 3G protegida (terapeuta)","ruta":"/therapist/dashboard","base_ms":6805,"pr_ms":3957,"base_js":1,"pr_js":4,"base_kb":1203,"pr_kb":625,"pr_olas":3}
+{"perfil":"Fast 3G protegida (junta)","ruta":"/board","base_ms":6753,"pr_ms":3569,"base_js":1,"pr_js":4,"base_kb":1268,"pr_kb":603,"pr_olas":3}

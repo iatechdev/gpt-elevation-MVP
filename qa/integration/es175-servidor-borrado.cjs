@@ -1,0 +1,13 @@
+const crypto=require('crypto');const SUT='C:/Users/Usuario/Documents/qa-pr-253/backend';const {startRealApi}=require(SUT+'/test/support/realApi.cjs');process.chdir(SUT);
+const hooks=[];const t={after:(f)=>hooks.push(f)};
+(async()=>{const {q,mkUser,http}=await startRealApi(t,{envVar:'QA175_DB',prefix:'qa175d'});const rid=()=>crypto.randomBytes(10).toString('hex');
+const pl=(x)=>({title:x,situation:'SITUACION-SECRETA',responsibility:{text:'R'},actions:[{text:'A'}],delivered:{text:'D'},observedEffect:{known:false},autonomy:'autonomous'});
+const p=await mkUser('user');const rv=await mkUser('therapist');const ev=(await http(p,'POST','/api/evidence',{payload:pl('TITULO-BORRAR'),status:'confirmed',requestId:rid()})).body.id;
+const sh=await http(p,'POST','/api/me/review-shares',{reviewerId:rv.id,evidenceIds:[ev],requestId:rid()});
+await http(rv,'POST','/api/reviewer/reviews',{shareId:sh.body.share.id,evidenceIds:[ev],observation:'o',limits:'l',locale:'es',requestId:rid()});
+const d=await http(p,'DELETE','/api/evidence/'+ev);console.log('DELETE',d.status);
+const seen=await http(rv,'GET','/api/reviewer/shares');console.log('revisor ve:',JSON.stringify(seen.body));
+const mine=await http(p,'GET','/api/me/professional-reviews');console.log('persona ve:',JSON.stringify(mine.body.reviews.map(r=>({evidence:r.evidence,materialChanged:r.materialChanged}))));
+console.log('filas EvidenceVersions:',JSON.stringify(await q('SELECT "EvidenceId",version,status FROM "EvidenceVersions" WHERE "EvidenceId"=$1',[ev])));
+const rev2=await http(rv,'POST','/api/reviewer/reviews',{shareId:sh.body.share.id,evidenceIds:[ev],observation:'o2',limits:'l',locale:'es',requestId:rid()});console.log('el revisor puede seguir revisando la evidencia borrada:',rev2.status,JSON.stringify(rev2.body).slice(0,80));
+for(const h of hooks.reverse())await h();process.exit(0)})().catch(e=>{console.error('FATAL',e.stack);process.exit(1)});

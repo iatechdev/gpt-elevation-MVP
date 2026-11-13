@@ -1,0 +1,62 @@
+[
+ {
+  "id": "P1 solicitar el plan ACTUAL → 409 already_on_plan, mensaje ES/EN y NINGUNA fila nueva",
+  "ok": true,
+  "detail": "estado=409 código=already_on_plan filas 0→0"
+ },
+ {
+  "id": "P2 otro plan → 201 y una fila; una persona SIN plan puede pedir cualquiera (la segunda queda como pendiente → 409 de siempre)",
+  "ok": true,
+  "detail": "otro=201 filas=1 sinPlan=201 segunda=409 "
+ },
+ {
+  "id": "P3 el plan actual sale de la fila del dueño: cuerpos con currentPlanId/userId/status/plan extra → 400 (se rechazan), sin 5xx y sin filas",
+  "ok": true,
+  "detail": "estados=400,400,400,400 filas=0"
+ },
+ {
+  "id": "P4 cada persona se evalúa con SU plan: E (plan B) pide A → 201; D (plan A) pide B → 201 (pendiente propia); D pide A → 409 ya tienes / E pide B → 409 ya tienes o pendiente, sin cruces",
+  "ok": true,
+  "detail": "E→A=201 D→B=201 D→A=409/already_on_plan E→B=409/already_on_plan"
+ },
+ {
+  "id": "P4b la lista propia no trae solicitudes de otra persona",
+  "ok": true,
+  "detail": "estado=200"
+ },
+ {
+  "id": "P5 con una solicitud pendiente: otro plan → 409 (pendiente de siempre); el plan actual → 409 already_on_plan; ninguna fila nueva",
+  "ok": true,
+  "detail": "1ª=201 otro=409 (pendiente) actual=409 (already_on_plan) filas=1"
+ },
+ {
+  "id": "P6 tras aprobar el cambio (A→B): el plan nuevo es el «actual» (pedir B → 409 already_on_plan) y se puede volver a pedir el anterior (A → 201)",
+  "ok": true,
+  "detail": "aprobar=200 plan=2 pedirB=409/already_on_plan pedirA=201"
+ },
+ {
+  "id": "P7 10 envíos simultáneos del plan ACTUAL → 10×409 y 0 filas; 10 del MISMO plan distinto → una sola fila (1×201 y 9×409), sin 5xx",
+  "ok": true,
+  "detail": "actual: 409,409,409,409,409,409,409,409,409,409 filas=0 · distinto: 201×1 409×9 filas=1"
+ },
+ {
+  "id": "P8 carrera: la persona pide B mientras el administrador le cambia el plan a B (6 rondas): sin 5xx; si el plan ya es B → 409 sin fila; si no → 201",
+  "ok": true,
+  "detail": "[{\"post\":201,\"admin\":200,\"filas\":1,\"plan\":2},{\"post\":201,\"admin\":200,\"filas\":1,\"plan\":2},{\"post\":201,\"admin\":200,\"filas\":1,\"plan\":2},{\"post\":201,\"admin\":200,\"filas\":1,\"plan\":2},{\"post\":201,\"admin\":200,\"filas\":1,\"plan\":2},{\"post\":201,\"admin\":200,\"filas\":1,\"plan\":2}]"
+ },
+ {
+  "id": "P9 entradas raras (texto, negativo, 0, decimal, enorme, objeto, arreglo, nulo, vacío, plan inactivo, inexistente): 4xx, nunca 5xx; el plan actual como texto numérico → 409",
+  "ok": true,
+  "detail": "400,400,400,400,404,400,400,400,400,404,404,409"
+ },
+ {
+  "id": "P9b sin sesión → 401/403",
+  "ok": true,
+  "detail": "estado=403"
+ },
+ {
+  "id": "R1 regresión: el administrador lista y rechaza; /api/plans responde; una persona no accede a la lista de administración (403)",
+  "ok": true,
+  "detail": "listar=200 rechazar=200 planes=200 persona→admin=403"
+ }
+]

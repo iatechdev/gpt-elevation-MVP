@@ -1,0 +1,97 @@
+[
+ {
+  "id": "M1/M2 /app/dashboard es 1360px: enlace presente, visible, texto «Manifiesto ético», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Manifiesto ético\",\"vis\":true,\"left\":999,\"right\":1119.6875,\"vw\":1360,\"sw\":1360}"
+ },
+ {
+  "id": "M4 /app/dashboard es 1360px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":274,\"token\":true,\"lang\":\"es\",\"h1\":\"Manifiesto ético\"}"
+ },
+ {
+  "id": "M4b volver atrás regresa a Mi espacio con sesión",
+  "ok": true,
+  "detail": "/app/dashboard"
+ },
+ {
+  "id": "M1/M2 /app/dashboard es 390px: enlace presente, visible, texto «Manifiesto ético», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Manifiesto ético\",\"vis\":true,\"left\":159,\"right\":279.6875,\"vw\":390,\"sw\":390}"
+ },
+ {
+  "id": "M4 /app/dashboard es 390px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":274,\"token\":true,\"lang\":\"es\",\"h1\":\"Manifiesto ético\"}"
+ },
+ {
+  "id": "M1/M2 /app/dashboard en 1360px: enlace presente, visible, texto «Ethical manifest», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Ethical manifest\",\"vis\":true,\"left\":999,\"right\":1118.640625,\"vw\":1360,\"sw\":1360}"
+ },
+ {
+  "id": "M4 /app/dashboard en 1360px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":263,\"token\":true,\"lang\":\"en\",\"h1\":\"Ethical manifesto\"}"
+ },
+ {
+  "id": "M1/M2 /app/dashboard en 390px: enlace presente, visible, texto «Ethical manifest», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Ethical manifest\",\"vis\":true,\"left\":159,\"right\":278.640625,\"vw\":390,\"sw\":390}"
+ },
+ {
+  "id": "M4 /app/dashboard en 390px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":263,\"token\":true,\"lang\":\"en\",\"h1\":\"Ethical manifesto\"}"
+ },
+ {
+  "id": "M1/M2 /app/chat es 1360px: enlace presente, visible, texto «Manifiesto ético», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Manifiesto ético\",\"vis\":true,\"left\":829,\"right\":949.6875,\"vw\":1360,\"sw\":1360}"
+ },
+ {
+  "id": "M4 /app/chat es 1360px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":274,\"token\":true,\"lang\":\"es\",\"h1\":\"Manifiesto ético\"}"
+ },
+ {
+  "id": "M1/M2 /app/chat es 390px: enlace presente, visible, texto «Manifiesto ético», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Manifiesto ético\",\"vis\":true,\"left\":167,\"right\":287.6875,\"vw\":390,\"sw\":390}"
+ },
+ {
+  "id": "M4 /app/chat es 390px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":274,\"token\":true,\"lang\":\"es\",\"h1\":\"Manifiesto ético\"}"
+ },
+ {
+  "id": "M1/M2 /app/chat en 1360px: enlace presente, visible, texto «Ethical manifest», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Ethical manifest\",\"vis\":true,\"left\":829,\"right\":948.640625,\"vw\":1360,\"sw\":1360}"
+ },
+ {
+  "id": "M4 /app/chat en 1360px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":263,\"token\":true,\"lang\":\"en\",\"h1\":\"Ethical manifesto\"}"
+ },
+ {
+  "id": "M1/M2 /app/chat en 390px: enlace presente, visible, texto «Ethical manifest», sin desborde",
+  "ok": true,
+  "detail": "{\"txt\":\"Ethical manifest\",\"vis\":true,\"left\":167,\"right\":286.640625,\"vw\":390,\"sw\":390}"
+ },
+ {
+  "id": "M4 /app/chat en 390px: el clic abre /manifiesto, la página carga y la sesión se conserva",
+  "ok": true,
+  "detail": "{\"path\":\"/manifiesto\",\"txt\":263,\"token\":true,\"lang\":\"en\",\"h1\":\"Ethical manifesto\"}"
+ },
+ {
+  "id": "M3a axe: ninguna violación recae sobre el enlace nuevo",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "id": "M3b el enlace se alcanza con Tab y se activa con Enter",
+  "ok": true,
+  "detail": "☰ Menú > /app/bridge > /app/skill-map > /app/space/tools > /app/data > /manifiesto"
+ }
+]

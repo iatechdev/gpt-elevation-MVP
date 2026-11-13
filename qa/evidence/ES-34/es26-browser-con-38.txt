@@ -1,0 +1,14 @@
+PASS unchecked selection makes no write; exact server preview, edit invalidation, explicit confirmation and readback
+PASS ES/EN, 320/375/768/1440, 200% zoom, reduced motion, keyboard skip/focus and screenshots
+PASS continue without transferring sends no preview or write
+PASS failed initial read does not become empty state or enable writes
+PASS expired preview cannot confirm
+PASS 422 highlights selected field without leaking private reasons
+PASS lost confirmation ACK reads actual state and never guesses success or repeats POST
+PASS saved contexts are not prefilled; source-change warning, dialog Escape, lost withdrawal reads only, revoked history
+PASS session change removes private local drafts and previous owner state
+PASS 401 during editing clears private draft and previously loaded context
+PASS failed readback blocks new writes and preserves uncertainty
+PASS concurrent replacement cannot be reported as the confirmed active version
+PASS canceling browser Back preserves the local draft and route
+ES-26 browser: 13 checks passed. HTTP responses are contract mocks; browser and built React are real.

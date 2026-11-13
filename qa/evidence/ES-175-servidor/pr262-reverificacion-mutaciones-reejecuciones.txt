@@ -1,0 +1,9 @@
+Reejecuciones de mutaciones de #262 (1a5e2b31) con mi guion con S15a–d separados y N15 adaptada al código por lotes (QA_ROUNDS=6):
+N5  | es-175 del PR: fail 0 | mi guion: FALLA S15b RESUMEN 22/23   (equivalente: no detectada; con 40 rondas S4g/S4h tampoco falla)
+N8  | es-175 del PR: fail 2 #6 evidencias compartibles | mi guion: FALLA S15b (solo el residual) — enmascarada por la nueva comprobación de evidencia viva
+N15 | es-175 del PR: fail 3 | mi guion: FALLA S2 FALLA S15b
+N16 | es-175 del PR: fail 2 #8 | mi guion: FALLA S15b (solo el residual) — defensa redundante
+N19 | es-175 del PR: fail 2 #10 | mi guion: FALLA S15b FALLA S15c
+N22 | es-175 del PR: fail 2 #12 | mi guion: FALLA S15b (detalle: «el tope no se cumple: 41 shares en una hora»)
+N24 | es-175 del PR: fail 2 #10 | mi guion: FALLA S15b FALLA S15c
+S15b falla siempre en la línea base por el hallazgo abierto E262-1 (residual).

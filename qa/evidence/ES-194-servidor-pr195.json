@@ -1,0 +1,311 @@
+[
+ {
+  "id": "B1a nace draft + pending + v1, minutos [3,5]; la persona no lo ve (lista y clave: 404)",
+  "ok": true,
+  "detail": "201 draft"
+ },
+ {
+  "id": "A1a las 8 rutas de administración: admin, profesional, persona y junta → 403 en todas (code superadmin_only); sin sesión 401/403",
+  "ok": true,
+  "detail": "{\"admin\":[403,403,403,403,403,403,403,403],\"profesional\":[403,403,403,403,403,403,403,403],\"persona\":[403,403,403,403,403,403,403,403],\"junta\":[403,403,403,403,403,403,403,403]} anon=403,403,403,403,403,403,403,403"
+ },
+ {
+  "id": "A1b los 403 no cambiaron nada (sigue draft, v1, pending) y no dejaron historial extra",
+  "ok": true,
+  "detail": "{\"status\":\"draft\",\"version\":1,\"reviewStatus\":\"pending\"}"
+ },
+ {
+  "id": "A1c token vencido y firmado con otra clave → 401 en administración y en lectura",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "A1d un superadmin degradado por la ruta real pierde el acceso (401/403)",
+  "ok": true,
+  "detail": "PUT=200 luego=401"
+ },
+ {
+  "id": "A1e la lectura de la persona acepta cualquier rol con sesión (user, profesional, admin, junta, superadmin) y no entrega nada con sesión inválida",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B1b publicar SIN revisión hecha es posible; la persona lo ve con reviewStatus:\"pending\"",
+  "ok": true,
+  "detail": "200 200 pending"
+ },
+ {
+  "id": "B1c revisar \"done\": registra quién y cuándo, no cambia status, la persona ve done sin la identidad",
+  "ok": true,
+  "detail": "{\"key\":\"qa194_ej_64212_0\",\"minutes\":[3,5],\"es\":{\"help\":\"Ayuda a\",\"title\":\"Titulo a\",\"purpose\":\"Proposito a\",\"question\":\"Pregunta a\"},\"en\":{\"help\":\"Help a\",\"title\":\"Title a\",\"purpose\":\"Purpose a\",\"ques"
+ },
+ {
+  "id": "B1d guardar SIN cambios es idempotente: 200 unchanged, misma versión, la revisión sigue done, sin historial nuevo",
+  "ok": true,
+  "detail": "{\"s\":200,\"u\":true,\"v\":1}"
+ },
+ {
+  "id": "B1e cambiar CADA campo (4 textos × 2 idiomas + minutos) de un ejercicio revisado devuelve la revisión a pending y borra reviewedBy/At (9 casos)",
+  "ok": true,
+  "detail": "9/9"
+ },
+ {
+  "id": "B1f publicar, retirar y republicar NO tocan la revisión (sigue done) ni el contenido; retirar la oculta y republicar la vuelve a mostrar",
+  "ok": true,
+  "detail": "200 done"
+ },
+ {
+  "id": "B1g retirado: la persona deja de verlo por clave (404) y en la lista",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B1h deshacer la revisión (pending) limpia reviewedBy/At y no cambia el estado de publicación",
+  "ok": true,
+  "detail": "{\"reviewStatus\":\"pending\",\"reviewedBy\":null,\"reviewedAt\":null,\"status\":\"withdrawn\"}"
+ },
+ {
+  "id": "B1i retirar un borrador → 409 not_published; repetir un retiro ya hecho → 200 unchanged sin historial duplicado",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "B2a la lectura de la persona trae SOLO key, minutes, es, en, reviewStatus, version (sin id, reviewedBy, publishedBy, historial ni actor)",
+  "ok": true,
+  "detail": "key,minutes,es,en,reviewStatus,version"
+ },
+ {
+  "id": "B2b Cache-Control: no-cache en la lectura y no-store en administración",
+  "ok": true,
+  "detail": "no-cache"
+ },
+ {
+  "id": "B2c borrador, retirado e inexistente son INDISTINGUIBLES (mismo 404 y mismo cuerpo)",
+  "ok": true,
+  "detail": "{\"code\":\"not_found\",\"error\":\"Ejercicio no encontrado. / Exercise not found.\"}"
+ },
+ {
+  "id": "B2d claves raras en la lectura → 404, nunca 5xx",
+  "ok": true,
+  "detail": "404,404,404,404,404,404,404,404,404"
+ },
+ {
+  "id": "B3a editar un ejercicio YA PUBLICADO vaciando campos obligatorios debe rechazarse o volver a borrador (422/409); NO llegar vacío a la persona",
+  "ok": true,
+  "detail": "PUT=422 persona=200 titulo_es=\"Titulo a\" ayuda_en=\"Help a\" status=published"
+ },
+ {
+  "id": "B3b editar un ejercicio YA PUBLICADO con porcentaje/«tratamiento»/«garantiza» (reglas no clínicas) debe rechazarse; NO llegar a la persona",
+  "ok": true,
+  "detail": "PUT=422 persona=200 propósito=\"Proposito a\""
+ },
+ {
+  "id": "B3c la persona recibe al instante el contenido editado de un publicado, con reviewStatus",
+  "info": "reviewStatus=done version=1"
+ },
+ {
+  "id": "B3d tras los rechazos: la versión NO subió, sigue publicado, no hay historial de los intentos rechazados; una edición VÁLIDA de un publicado sí se guarda (200, v+1) y la persona la recibe",
+  "ok": true,
+  "detail": "p1=422(incomplete) p2=422(non_clinical_rule) versión=1 válida=200 update_hist=1"
+ },
+ {
+  "id": "B3e vaciar solo un campo del inglés en un publicado → 422 incomplete con la lista (en.title); la persona sigue viendo el contenido anterior",
+  "ok": true,
+  "detail": "422 [\"en.title\"]"
+ },
+ {
+  "id": "B3f editar un RETIRADO o un BORRADOR (no visibles) sigue permitido con texto en progreso (200); la validación se aplica al publicarlo/republicarlo",
+  "ok": true,
+  "detail": "200/200"
+ },
+ {
+  "id": "C1a la heurística bloquea al publicar 17 formulaciones clínicas/porcentajes/promesas (ES y EN) con 422 non_clinical_rule",
+  "ok": true,
+  "detail": "17/17"
+ },
+ {
+  "id": "C1b el catálogo actual (3 ejercicios importados) se publica sin falsos positivos de la heurística",
+  "ok": true,
+  "detail": "import=200 created=reflection,values,contribution publicar=200,200,200"
+ },
+ {
+  "id": "C1c publicar sin el inglés/campos → 422 incomplete con la lista (en.*, es.purpose…) y minutos",
+  "ok": true,
+  "detail": "[\"es.purpose\",\"es.question\",\"es.help\",\"en.title\",\"en.purpose\",\"en.question\",\"en.help\"]"
+ },
+ {
+  "id": "C1d sin minutos no se publica (422 con \"minutes\" en la lista)",
+  "ok": true,
+  "detail": "[\"minutes\"]"
+ },
+ {
+  "id": "C1e limitación de la heurística (no es defecto, declarada): qué evasión pasa a publicar (200) y cuál se bloquea (422)",
+  "info": "{\"mayúsculas\":422,\"sin acento\":422,\"cero ancho\":200,\"homoglifo\":200,\"espacios\":200,\"leet\":200}"
+ },
+ {
+  "id": "C1f 20 entradas inválidas (marcado, control, longitudes, campos extra, __proto__, tipos, minutos) → 400 en crear; ninguna 5xx ni 201",
+  "ok": true,
+  "detail": "20/20"
+ },
+ {
+  "id": "C1f2 «en: null» se trata como bloque vacío (201, borrador incompleto; no es defecto)",
+  "info": "201"
+ },
+ {
+  "id": "C1g Unicode, emoji, comillas y bidi se guardan TAL CUAL como texto (límites de minutos 1 y 60 válidos)",
+  "ok": true,
+  "detail": "201 Ñandú — «prueba» 🌱 ‮"
+ },
+ {
+  "id": "C1h los textos se recortan y no se guarda marcado",
+  "ok": true,
+  "detail": "con espacios"
+ },
+ {
+  "id": "C1i inyección SQL en un texto: se guarda como texto y la tabla sigue viva",
+  "ok": true,
+  "detail": "201"
+ },
+ {
+  "id": "C2a ids malformados en las 5 rutas con :id → nunca 5xx",
+  "ok": true,
+  "detail": "50/50 sin 5xx"
+ },
+ {
+  "id": "C2b id inexistente (8 dígitos) → 404 en las 5 rutas",
+  "ok": true,
+  "detail": "404,404,404,404,404"
+ },
+ {
+  "id": "C2c id de 10 dígitos que excede el entero de la base (9999999999) → 404, NO 500, en las 5 rutas",
+  "ok": true,
+  "detail": "GET=404 PUT=404 POST/publish=404 POST/withdraw=404 POST/review=404"
+ },
+ {
+  "id": "C2d cuerpos rotos, null, lista y vacíos → 4xx (nunca 5xx)",
+  "ok": true,
+  "detail": "400,400,400,400,400,400"
+ },
+ {
+  "id": "C2e claves inválidas (vacía, corta, mayúsculas, guiones, larga, tipos) → 400",
+  "ok": true,
+  "detail": "400,400,400,400,400,400,400,400,400,400,400,400"
+ },
+ {
+  "id": "C2f clave repetida → 409 key_exists; en mayúsculas → 400 (la clave es minúscula)",
+  "ok": true,
+  "detail": "409 400"
+ },
+ {
+  "id": "C2g guardar sin expectedVersion válida (ausente, texto, 0) → 400 version_required",
+  "ok": true,
+  "detail": "400/400/400"
+ },
+ {
+  "id": "C2h cuerpo de 2 MB",
+  "info": "413"
+ },
+ {
+  "id": "D1a publish, withdraw y review sin confirm:true estricto (ausente, \"true\", 1, null, 0, false, [], {}) → 400 confirmation_required (24 casos) y nada cambia",
+  "ok": true,
+  "detail": "400:confirmation_required"
+ },
+ {
+  "id": "D1b reviewStatus inválido (vacío, mayúsculas, otro valor, tipos, ausente) → 400",
+  "ok": true,
+  "detail": "400,400,400,400,400,400,400"
+ },
+ {
+  "id": "E1a dos guardados con la misma expectedVersion → uno 200 y otro 409 exercise_changed con la versión vigente",
+  "ok": true,
+  "detail": "200,409"
+ },
+ {
+  "id": "E1b 8 publicaciones simultáneas → todas 200, sin 5xx y UNA sola fila de historial \"publish\"",
+  "ok": true,
+  "detail": "200,200,200,200,200,200,200,200 historial=1"
+ },
+ {
+  "id": "E1c publicar y retirar simultáneos: sin 5xx y el estado final coincide con la última acción del historial",
+  "ok": true,
+  "detail": "200,200,200,200 final=withdrawn último=withdraw"
+ },
+ {
+  "id": "E1d revisar y editar simultáneos (6 rondas): el estado final es coherente con el historial",
+  "info": "ver=2"
+ },
+ {
+  "id": "E1e 4 creaciones simultáneas con la misma clave → un 201 y tres 409, sin 5xx y una sola fila",
+  "ok": true,
+  "detail": "201,409,409,409 filas=1"
+ },
+ {
+  "id": "E1f DOS import-catalog simultáneos (catálogo vacío): ninguna respuesta 5xx, sin duplicados y un solo historial \"create\" por ejercicio",
+  "ok": true,
+  "detail": "200,200 filas=[{\"key\":\"contribution\",\"n\":1},{\"key\":\"reflection\",\"n\":1},{\"key\":\"values\",\"n\":1}] historial=3 cuerpo= | "
+ },
+ {
+  "id": "E1g 30 solicitudes en paralelo (admin + lectura) sin 5xx y sin bloquear el pool (<8 s)",
+  "ok": true,
+  "detail": "784 ms"
+ },
+ {
+  "id": "E1h 30 revisiones simultáneas alternadas sobre la misma fila (bloqueo por fila) sin 5xx y el pool sigue respondiendo",
+  "ok": true,
+  "detail": "todas 200"
+ },
+ {
+  "id": "F1a importar crea los que faltan SOLO como borrador + pending (nada publicado)",
+  "ok": true,
+  "detail": "{\"created\":[\"reflection\",\"values\",\"contribution\"],\"skipped\":[],\"note\":\"Todo queda como borrador con revisión pendiente. / Everything is a draft with review pending.\"}"
+ },
+ {
+  "id": "F1b segunda importación idempotente (created:[], skipped:3) y NO pisa un ejercicio ya editado/publicado",
+  "ok": true,
+  "detail": "{\"created\":[],\"skipped\":[\"reflection\",\"values\",\"contribution\"],\"note\":\"Todo queda como borrador con revisión pendiente. / Everything is a draft with review pending.\"} Titulo editado"
+ },
+ {
+  "id": "F1c el catálogo fuente son 3 ejercicios y la lectura pública no muestra los borradores importados",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "G1a historial exacto: create, update, publish, review, unreview, withdraw, publish (las repeticiones idempotentes NO añaden filas)",
+  "ok": true,
+  "detail": "create,update,publish,review,unreview,withdraw,publish"
+ },
+ {
+  "id": "G1b cada fila lleva versión y quien actuó (nombre del superadmin)",
+  "ok": true,
+  "detail": "{\"action\":\"create\",\"version\":1,\"actorName\":\"QA194 su\"}"
+ },
+ {
+  "id": "G1c las instantáneas NO contienen correo, contraseña, token, JWT, ids de personas ni el correo del actor",
+  "ok": true,
+  "detail": "status,version,minutes,es,en,reviewStatus,reviewedBy,reviewedAt"
+ },
+ {
+  "id": "G1d el detalle devuelve el historial SIN la instantánea y limitado a id, acción, versión, actor y fecha",
+  "ok": true,
+  "detail": "id,action,version,actorName,createdAt"
+ },
+ {
+  "id": "G1e operaciones rechazadas (400/409/422) no dejan historial ni filas huérfanas",
+  "ok": true,
+  "detail": "huérfanos=0"
+ },
+ {
+  "id": "G1f el listado (admin) devuelve resumen sin instantáneas ni historial y con complete/title ES-EN",
+  "ok": true,
+  "detail": "id,key,status,version,title,minutes,reviewStatus,reviewedBy,reviewedAt,publishedBy,publishedAt,updatedAt,complete"
+ },
+ {
+  "id": "LOG líneas de error de ejercicios en el servidor",
+  "info": "0 ()"
+ },
+ {
+  "id": "LOG el log del servidor no contiene correos de las pruebas, tokens ni textos de los ejercicios",
+  "ok": true,
+  "detail": "bytes=367"
+ }
+]

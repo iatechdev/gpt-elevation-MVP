@@ -1,0 +1,28 @@
+{"id":"R1 [PRIV] con hoja de vida y `resume_ai_reading` pero SIN `insights_resume` no se lee la hoja (403) y no hay llamada al proveedor","ok":true,"detail":"subida=200 propuesta=403 llamadas=0"}
+{"id":"R1b autorizar OTRO propósito (`research`) tampoco habilita la hoja","ok":true,"detail":"403"}
+{"id":"R2 con `insights_resume` pero sin ninguna hoja guardada (sin `resume_ai_reading`) → sin llamada al proveedor ni 500","ok":true,"detail":"status=422 code=no_usable_source llamadas=0"}
+{"id":"R0 con ambos permisos la hoja produce 2 insights con origen `resume_version` y cita textual","ok":true,"detail":"status=200 insights=2 origen=resume_version"}
+{"id":"R4 [PRIV] el texto enviado al proveedor no contiene correo, teléfono, dirección ni enlace de la hoja","ok":true,"detail":"llamadas=1 filtrados=0"}
+{"id":"R6 [SEG] la contraseña de la hoja se enmascara antes de salir y el texto va dentro del bloque no confiable","ok":true,"detail":""}
+{"id":"R6b la respuesta no trae el correo/teléfono de la hoja","ok":true,"detail":""}
+{"id":"R3 [SEG] pedir la hoja de OTRA persona por `resumeId` → 404 y sin llamada al proveedor","ok":true,"detail":"status=404 llamadas=0"}
+{"id":"R3b ids inválidos de hoja de vida → 400/404, nunca 500","ok":true,"detail":""}
+{"id":"R3c `resumeId` sin la fuente `resume` → 400","ok":true,"detail":"400"}
+{"id":"R5 [PRIV] una hoja con indicador de crisis no se envía al proveedor (la hoja no sirve como fuente)","ok":true,"detail":"status=422 code=no_usable_source llamadas=0"}
+{"id":"R9 [SEG] cita inventada, habilidad fuera de catálogo, promesa de ingresos y cita con id ajeno se descartan; queda 1 insight válido","ok":true,"detail":"status=200 insights=1 descartados=4"}
+{"id":"R12 entradas inválidas: ningún 500","ok":true,"detail":""}
+{"id":"R10a autorizar insights con origen `resume_version` propio crea la versión 1 (201)","ok":true,"detail":"preview=200 confirm=201"}
+{"id":"R10b [PRIV] el titular ve `origin` {tipo, id} pero NO el contenido ni la cita de la hoja; otra persona no ve nada","ok":true,"detail":"origen={\"type\":\"resume_version\",\"id\":6}"}
+{"id":"R10c [PRIV] terapeuta no ve el contexto de la persona","ok":true,"detail":"200"}
+{"id":"R10c [PRIV] admin no ve el contexto de la persona","ok":true,"detail":"200"}
+{"id":"R7 [PRIV] revocar `insights_resume` detiene análisis nuevos (403); lo ya autorizado sigue activo (como chat y diario)","ok":true,"detail":"revocar=200 nueva=403 activa=2 needsReview=false"}
+{"id":"R8 [PRIV] borrar la hoja de origen marca lo derivado «para revisión» (needsReview) y no borra lo autorizado","ok":true,"detail":"borrar=200 needsReview=true campos=2"}
+{"id":"R8b [PRIV] retirar `resume_ai_reading` borra las hojas (ES-109), marca lo derivado «para revisión» y no se pueden pedir más propuestas desde la hoja","ok":true,"detail":"hojas=0 needsReview=true nueva=422"}
+{"id":"R11-nota","info":"el mock devuelve un solo texto global: con propuestas simultáneas de personas distintas parte de las salidas no cita su propia hoja y responde 502 invalid_model_output (limitación de mi simulación, no del producto)"}
+(node:27160) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"R11 [PERF] ráfagas simultáneas desde la hoja de vida (6 = tamaño del piloto, 20 = plan): ningún 5xx distinto de salida inválida del modelo","ok":true,"detail":"[{\"n\":6,\"spec\":771,\"total\":1956,\"poolish\":0},{\"n\":6,\"spec\":411,\"total\":900,\"poolish\":0},{\"n\":6,\"spec\":244,\"total\":1457,\"poolish\":0},{\"n\":20,\"spec\":950,\"total\":3210,\"poolish\":0},{\"n\":20,\"spec\":693,\"total\":1389,\"poolish\":0},{\"n\":20,\"spec\":391,\"total\":995,\"poolish\":0}]"}
+{"id":"R11a [PERF] con 6 simultáneas (piloto) la persona espectadora responde < 500 ms (umbral propuesto)","ok":false,"detail":"espectadora ms: 771,411,244"}
+{"id":"R11x [OBS] con 20 simultáneas la espectadora tarda (ms)","info":[950,693,391]}
+{"id":"R11b 6 clics de la misma persona: sin 5xx","ok":true,"detail":"200"}
+{"id":"R11c tras la carga el servicio sigue respondiendo (8 propuestas seguidas sin 5xx)","ok":true,"detail":""}

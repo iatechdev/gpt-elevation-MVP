@@ -1,0 +1,33 @@
+{"id":"ES101-B01 línea base: antes de bloquear, el terapeuta ve a P1 y opera con normalidad (lista, historial, historia, resumen, notas, sesiones)","ok":true,"detail":"{\"lista\":\"aparece\",\"alertas\":\"no aparece\",\"historial\":200,\"historia\":200,\"resumen\":200,\"notaCrear\":201,\"notaEditar\":200,\"agendar\":201,\"sesEditar\":200,\"sesNotasLeer\":200,\"sesNotasEscribir\":201,\"sesIniciar\":200,\"sesTerminar\":200,\"sesLista\":\"aparece\",\"sesProximas\":\"aparece\"}"}
+{"id":"ES101-A01 [PRIV] eliminación aceptada (202): el terapeuta recibe 404 en historial, historia, resumen, crear y editar nota y sesiones; agendar 403; la persona no aparece en lista, alertas ni sesiones","ok":true,"detail":"eliminación=202 {\"lista\":\"no aparece\",\"alertas\":\"no aparece\",\"historial\":404,\"historia\":404,\"resumen\":404,\"notaCrear\":404,\"notaEditar\":404,\"agendar\":403,\"sesEditar\":404,\"sesNotasLeer\":404,\"sesNotasEscribir\":404,\"sesIniciar\":404,\"sesTerminar\":404,\"sesLista\":\"no aparece\",\"sesProximas\":\"no aparece\"}"}
+{"id":"ES101-A02 [PRIV] el 404 es uniforme (igual al de una persona ajena) y no trae nombre, correo ni datos; los registros del servidor no los contienen","ok":true,"detail":"{\"error\":\"Patient not found or not assigned to you.\"}"}
+{"id":"ES101-A03 las demás personas de A (P3, P4) siguen accesibles mientras P2 está bloqueada","ok":true,"detail":"P3 historial=200 lista=aparece"}
+{"id":"ES101-I01 [PRIV] cuenta desactivada por el administrador (API): mismo bloqueo en todas las rutas","ok":true,"detail":"PUT=200 {\"lista\":\"no aparece\",\"alertas\":\"no aparece\",\"historial\":404,\"historia\":404,\"resumen\":404,\"notaCrear\":404,\"notaEditar\":404,\"agendar\":403,\"sesEditar\":404,\"sesNotasLeer\":404,\"sesNotasEscribir\":404,\"sesIniciar\":404,\"sesTerminar\":404,\"sesLista\":\"no aparece\",\"sesProximas\":\"no aparece\"}"}
+{"id":"ES101-I02 reactivar la cuenta restablece el acceso del terapeuta (lectura y escritura)","ok":true,"detail":"PUT=200 historial=200 notaCrear=201 lista=aparece"}
+{"id":"ES101-I03 [PRIV] cuenta inactiva por SQL: mismo bloqueo","ok":true,"detail":"{\"lista\":\"no aparece\",\"alertas\":\"no aparece\",\"historial\":404,\"historia\":404,\"resumen\":404,\"notaCrear\":404,\"notaEditar\":404,\"agendar\":403,\"sesEditar\":404,\"sesNotasLeer\":404,\"sesNotasEscribir\":404,\"sesIniciar\":404,\"sesTerminar\":404,\"sesLista\":\"no aparece\",\"sesProximas\":\"no aparece\"}"}
+{"id":"ES101-T01 [PRIV] el tombstone bloquea aunque la cuenta quede active=true","ok":true,"detail":"historial=404 historia=404 lista=no aparece"}
+{"id":"ES101-C01 si la solicitud de eliminación desaparece (cancelada por un operador), el acceso se restablece","ok":false,"detail":"historial=404"}
+{"id":"ES101-F01 [PRIV] con el registro de eliminaciones no disponible, ninguna ruta concede acceso ni devuelve datos de la persona (error controlado)","ok":true,"detail":"GET pacientes:503:sin datos | GET alerts:503:sin datos | GET pacientes/241/historial:503:sin datos | GET pacientes/241/historia:503:sin datos | GET pacientes/241/resumen-ia:503:sin datos | POST pacientes/241/notas:503:sin datos | PUT notas/13:503:sin datos | GET therapist:503:sin datos | GET therapist/upcoming:503:sin datos | POST therapist:503:sin datos"}
+{"id":"ES101-F02 al volver el registro, el acceso a una persona sin bloqueo se restablece sin reiniciar","ok":true,"detail":"status=200"}
+{"id":"ES101-V01 el terapeuta B y su persona P5 (sin bloqueo) operan con normalidad","ok":true,"detail":"historial=200"}
+{"id":"ES101-V02 [PRIV] A sigue sin acceso a la persona de B (aislamiento de ES-93)","ok":true,"detail":"{\"lista\":\"no aparece\",\"alertas\":\"no aparece\",\"historial\":404,\"historia\":404,\"resumen\":404,\"notaCrear\":404,\"notaEditar\":404,\"agendar\":403,\"sesEditar\":404,\"sesNotasLeer\":404,\"sesNotasEscribir\":404,\"sesIniciar\":404,\"sesTerminar\":404,\"sesLista\":\"no aparece\",\"sesProximas\":\"no aparece\"}"}
+node:internal/deps/undici/undici:15456
+      Error.captureStackTrace(err);
+            ^
+
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:15456:13
+    at async call (file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es101-real-db.mjs:9:208)
+    at async file:///C:/Users/Usuario/Documents/gpt-elevation-qa/qa/integration/es101-real-db.mjs:68:156 {
+  [cause]: HeadersTimeoutError: Headers Timeout Error
+      at FastTimer.onParserTimeout [as _onTimeout] (node:internal/deps/undici/undici:6515:32)
+      at Timeout.onTick [as _onTimeout] (node:internal/deps/undici/undici:2433:17)
+      at listOnTimeout (node:internal/timers:585:17)
+      at process.processTimers (node:internal/timers:521:7) {
+    code: 'UND_ERR_HEADERS_TIMEOUT',
+    [Symbol(undici.error.UND_ERR)]: true,
+    [Symbol(undici.error.UND_ERR_HEADERS_TIMEOUT)]: true
+  }
+}
+
+Node.js v22.23.4

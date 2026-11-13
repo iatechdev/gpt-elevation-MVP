@@ -1,0 +1,6 @@
+./DiaryEntry.js
+./routes/chat.js
+./routes/diary.js
+./utils/careerContext.js
+./utils/insightProposal.js
+./utils/personalData.js

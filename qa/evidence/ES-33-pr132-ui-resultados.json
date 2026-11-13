@@ -1,0 +1,302 @@
+[
+ {
+  "id": "U1 es-normal aviso «Tu experimento necesita revisión» con las razones (1) y «qué se conserva»; role=status",
+  "ok": true,
+  "detail": "razones visibles=1/1 status=1"
+ },
+ {
+  "id": "U2 es-normal tras el rebase: sección «De la versión anterior, por revisar» con tres borradores (usar/descartar), aviso de no vigente y la muestra visible como texto",
+  "ok": true,
+  "detail": "usar=3 descartar=3"
+ },
+ {
+  "id": "U5a es-normal el foco pasa al encabezado de la sección de borradores tras el rebase",
+  "ok": true,
+  "detail": "foco=\"De la versión anterior, por revisar\""
+ },
+ {
+  "id": "U3 es-normal orden entrega → reflexión → decisión: la primera se puede usar; la segunda y la tercera están bloqueadas con el motivo enlazado por aria-describedby",
+  "ok": true,
+  "detail": "[[false,\"\"],[true,\"Primero guarda o usa la entrega.\"],[true,\"Primero guarda o usa la reflexión.\"]]"
+ },
+ {
+  "id": "U8a es-normal XSS: el HTML del texto arrastrado se muestra como texto y no se ejecuta",
+  "ok": true,
+  "detail": "sin ejecución"
+ },
+ {
+  "id": "U8b es-normal teclado: el botón «Usar en esta versión» se alcanza con Tab y tiene indicador de foco visible",
+  "ok": true,
+  "detail": "alcanzado=true indicador=true"
+ },
+ {
+  "id": "U4a es-normal descartar pide confirmación en pantalla (sin diálogo del navegador) con «Sí, descartar» y «Conservar»",
+  "ok": true,
+  "detail": "diálogos=0"
+ },
+ {
+  "id": "U4b es-normal «Conservar» conserva el borrador (siguen 3)",
+  "ok": true,
+  "detail": "descartar=3"
+ },
+ {
+  "id": "U6 es-normal usar la entrega: pasa al cuerpo del experimento (versión «Entregado»), sin perder el texto; quedan 2 borradores",
+  "ok": true,
+  "detail": "borradores=2"
+ },
+ {
+  "id": "U3b es-normal tras usar la entrega se habilita la reflexión y sigue bloqueada la decisión",
+  "ok": true,
+  "detail": "[false,true]"
+ },
+ {
+  "id": "U4c es-normal reflexión usada y decisión descartada: desaparece la sección de borradores y el historial conserva las versiones",
+  "ok": true,
+  "detail": "sin borradores"
+ },
+ {
+  "id": "U10 es-normal sin errores de página en todo el recorrido",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1 es-evidence aviso «Tu experimento necesita revisión» con las razones (3) y «qué se conserva»; role=status",
+  "ok": true,
+  "detail": "razones visibles=3/3 status=1"
+ },
+ {
+  "id": "U2 es-evidence tras el rebase: sección «De la versión anterior, por revisar» con tres borradores (usar/descartar), aviso de no vigente y la muestra visible como texto",
+  "ok": true,
+  "detail": "usar=3 descartar=3"
+ },
+ {
+  "id": "U5a es-evidence el foco pasa al encabezado de la sección de borradores tras el rebase",
+  "ok": true,
+  "detail": "foco=\"De la versión anterior, por revisar\""
+ },
+ {
+  "id": "U3 es-evidence orden entrega → reflexión → decisión: la primera se puede usar; la segunda y la tercera están bloqueadas con el motivo enlazado por aria-describedby",
+  "ok": true,
+  "detail": "[[false,\"\"],[true,\"Primero guarda o usa la entrega.\"],[true,\"Primero guarda o usa la reflexión.\"]]"
+ },
+ {
+  "id": "U8a es-evidence XSS: el HTML del texto arrastrado se muestra como texto y no se ejecuta",
+  "ok": true,
+  "detail": "sin ejecución"
+ },
+ {
+  "id": "U8b es-evidence teclado: el botón «Usar en esta versión» se alcanza con Tab y tiene indicador de foco visible",
+  "ok": true,
+  "detail": "alcanzado=true indicador=true"
+ },
+ {
+  "id": "U4a es-evidence descartar pide confirmación en pantalla (sin diálogo del navegador) con «Sí, descartar» y «Conservar»",
+  "ok": true,
+  "detail": "diálogos=0"
+ },
+ {
+  "id": "U4b es-evidence «Conservar» conserva el borrador (siguen 3)",
+  "ok": true,
+  "detail": "descartar=3"
+ },
+ {
+  "id": "U6 es-evidence usar la entrega: pasa al cuerpo del experimento (versión «Entregado»), sin perder el texto; quedan 2 borradores",
+  "ok": true,
+  "detail": "borradores=2"
+ },
+ {
+  "id": "U3b es-evidence tras usar la entrega se habilita la reflexión y sigue bloqueada la decisión",
+  "ok": true,
+  "detail": "[false,true]"
+ },
+ {
+  "id": "U4c es-evidence reflexión usada y decisión descartada: desaparece la sección de borradores y el historial conserva las versiones",
+  "ok": true,
+  "detail": "sin borradores"
+ },
+ {
+  "id": "U10 es-evidence sin errores de página en todo el recorrido",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1 en-normal aviso «Your experiment needs review» con las razones (1) y «qué se conserva»; role=status",
+  "ok": true,
+  "detail": "razones visibles=1/1 status=1"
+ },
+ {
+  "id": "U2 en-normal tras el rebase: sección «From the previous version, to review» con tres borradores (usar/descartar), aviso de no vigente y la muestra visible como texto",
+  "ok": true,
+  "detail": "usar=3 descartar=3"
+ },
+ {
+  "id": "U5a en-normal el foco pasa al encabezado de la sección de borradores tras el rebase",
+  "ok": true,
+  "detail": "foco=\"From the previous version, to review\""
+ },
+ {
+  "id": "U3 en-normal orden entrega → reflexión → decisión: la primera se puede usar; la segunda y la tercera están bloqueadas con el motivo enlazado por aria-describedby",
+  "ok": true,
+  "detail": "[[false,\"\"],[true,\"First save or use the submission.\"],[true,\"First save or use the reflection.\"]]"
+ },
+ {
+  "id": "U8a en-normal XSS: el HTML del texto arrastrado se muestra como texto y no se ejecuta",
+  "ok": true,
+  "detail": "sin ejecución"
+ },
+ {
+  "id": "U8b en-normal teclado: el botón «Use in this version» se alcanza con Tab y tiene indicador de foco visible",
+  "ok": true,
+  "detail": "alcanzado=true indicador=true"
+ },
+ {
+  "id": "U4a en-normal descartar pide confirmación en pantalla (sin diálogo del navegador) con «Yes, discard» y «Keep it»",
+  "ok": true,
+  "detail": "diálogos=0"
+ },
+ {
+  "id": "U4b en-normal «Keep it» conserva el borrador (siguen 3)",
+  "ok": true,
+  "detail": "descartar=3"
+ },
+ {
+  "id": "U6 en-normal usar la entrega: pasa al cuerpo del experimento (versión «Submitted»), sin perder el texto; quedan 2 borradores",
+  "ok": true,
+  "detail": "borradores=2"
+ },
+ {
+  "id": "U3b en-normal tras usar la entrega se habilita la reflexión y sigue bloqueada la decisión",
+  "ok": true,
+  "detail": "[false,true]"
+ },
+ {
+  "id": "U4c en-normal reflexión usada y decisión descartada: desaparece la sección de borradores y el historial conserva las versiones",
+  "ok": true,
+  "detail": "sin borradores"
+ },
+ {
+  "id": "U10 en-normal sin errores de página en todo el recorrido",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U1 en-evidence aviso «Your experiment needs review» con las razones (3) y «qué se conserva»; role=status",
+  "ok": true,
+  "detail": "razones visibles=3/3 status=1"
+ },
+ {
+  "id": "U2 en-evidence tras el rebase: sección «From the previous version, to review» con tres borradores (usar/descartar), aviso de no vigente y la muestra visible como texto",
+  "ok": true,
+  "detail": "usar=3 descartar=3"
+ },
+ {
+  "id": "U5a en-evidence el foco pasa al encabezado de la sección de borradores tras el rebase",
+  "ok": true,
+  "detail": "foco=\"From the previous version, to review\""
+ },
+ {
+  "id": "U3 en-evidence orden entrega → reflexión → decisión: la primera se puede usar; la segunda y la tercera están bloqueadas con el motivo enlazado por aria-describedby",
+  "ok": true,
+  "detail": "[[false,\"\"],[true,\"First save or use the submission.\"],[true,\"First save or use the reflection.\"]]"
+ },
+ {
+  "id": "U8a en-evidence XSS: el HTML del texto arrastrado se muestra como texto y no se ejecuta",
+  "ok": true,
+  "detail": "sin ejecución"
+ },
+ {
+  "id": "U8b en-evidence teclado: el botón «Use in this version» se alcanza con Tab y tiene indicador de foco visible",
+  "ok": true,
+  "detail": "alcanzado=true indicador=true"
+ },
+ {
+  "id": "U4a en-evidence descartar pide confirmación en pantalla (sin diálogo del navegador) con «Yes, discard» y «Keep it»",
+  "ok": true,
+  "detail": "diálogos=0"
+ },
+ {
+  "id": "U4b en-evidence «Keep it» conserva el borrador (siguen 3)",
+  "ok": true,
+  "detail": "descartar=3"
+ },
+ {
+  "id": "U6 en-evidence usar la entrega: pasa al cuerpo del experimento (versión «Submitted»), sin perder el texto; quedan 2 borradores",
+  "ok": true,
+  "detail": "borradores=2"
+ },
+ {
+  "id": "U3b en-evidence tras usar la entrega se habilita la reflexión y sigue bloqueada la decisión",
+  "ok": true,
+  "detail": "[false,true]"
+ },
+ {
+  "id": "U4c en-evidence reflexión usada y decisión descartada: desaparece la sección de borradores y el historial conserva las versiones",
+  "ok": true,
+  "detail": "sin borradores"
+ },
+ {
+  "id": "U10 en-evidence sin errores de página en todo el recorrido",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "U7 es 320px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 es 375px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 es 768px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 es 1024px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 es 1440px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U9 es tema oscuro: texto de títulos, botones y párrafos con contraste ≥ 4,5:1",
+  "ok": true,
+  "detail": "31 elementos medidos"
+ },
+ {
+  "id": "U7 en 320px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 en 375px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 en 768px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 en 1024px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U7 en 1440px aviso y borradores sin desborde horizontal",
+  "ok": true,
+  "detail": "aviso=0 borradores=0"
+ },
+ {
+  "id": "U9 en tema oscuro: texto de títulos, botones y párrafos con contraste ≥ 4,5:1",
+  "ok": true,
+  "detail": "31 elementos medidos"
+ }
+]

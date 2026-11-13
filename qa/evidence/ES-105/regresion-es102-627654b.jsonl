@@ -1,0 +1,24 @@
+{"id":"ES102-S09 [PRIV] el resumen responde 200 y el prompt enviado al proveedor NO contiene notas, canarios, la instrucción maliciosa, el chat, el diario, ni el nombre o el correo de la persona","ok":true,"detail":"status=200 llamadas=1"}
+{"id":"ES102-S09b el cuerpo de la respuesta no trae notas ni datos de la persona y `basedOn.notes` vale 0","ok":true,"detail":"{\"sessions\":2,\"notes\":0}"}
+{"id":"ES102-S09c [INFO] prompt enviado (sin datos personales)","info":"You help a professional review a person's recent progress. The person is not identified in this request. Total check-ins: 2 Average mood (1-5): 3.8 Average session rating (1-5): 4.0 Please write a concise, neutral summary (3-5 sentences) of the emotional progress and current state reflected in this data. Focus on observable tren"}
+{"id":"ES102-S09d las notas siguen guardadas y visibles para su autor en la historia (solo se dejó de enviarlas a la IA)","ok":true,"detail":"notas=2"}
+{"id":"ES102-M01 promedio de ánimo correcto: sin registros N/A, 1 y 2 registros, solo entrada, solo salida, nulos, mezclados, extremos 1 y 5 (siempre dentro de 1–5)","ok":true,"detail":"9 casos"}
+{"id":"ES102-M02 con 30 registros el promedio es el de los valores registrados (el defecto anterior daba hasta el doble de la escala)","ok":true,"detail":"esperado=3.3 obtenido=3.3 registros=30"}
+{"id":"ES102-M03 el prompt solo lleva números (registros, promedios), sin texto libre ni la palabra «notes»","ok":true,"detail":"You help a professional review a person's recent progress. The person is not identified in this request. Total check-ins: 4 Average mood (1-5): 3.5 Average session rating (1-5): N/A Please write a con"}
+{"id":"ES102-B01 [SEG] con presupuesto bajo, los resúmenes se aceptan hasta el tope y después 429 `ai_budget_exhausted` no reintentable; 30 seguidos ya no se aceptan todos","ok":true,"detail":"secuencia=200,200,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429,429"}
+{"id":"ES102-B02 [SEG] cada llamada real queda registrada con `therapist_summary` (sin contenido) y las rechazadas no gastan ni registran","ok":true,"detail":"filas=2 aceptadas=2 columnas=id,UserId,kind,requestId,model,appVersion,periodKey,status,reservedTokens,inputTokens,outputTokens,costMicros,currency,priceVersion,latencyMs,errorCode,createdAt,updatedAt"}
+{"id":"ES102-B03 sin presupuesto configurado → 503 `ai_budget_not_configured` sin llamar al proveedor","ok":true,"detail":"status=503"}
+{"id":"ES102-B04 un 429 no llama al proveedor","ok":true,"detail":"calls=0"}
+{"id":"ES102-F01 proveedor caído → 502 reintentable, sin repetir el texto del proveedor ni datos internos","ok":true,"detail":"status=502 {\"error\":\"Could not generate summary.\",\"code\":\"provider_unavailable\",\"retryable\":true}"}
+{"id":"ES102-F02 proveedor lento (6 s) con tiempo límite de 3 s → 502 controlado en ≈ 3 s, no cuelga el panel","ok":true,"detail":"status=502 tiempo=3141 ms"}
+{"id":"ES102-F03 respuesta vacía del proveedor → no se presenta como resumen válido (502 o resumen explícito), sin 5xx genérico","ok":true,"detail":"status=502 {\"error\":\"Could not generate summary.\",\"code\":\"provider_unavailable\",\"retryable\":true}"}
+{"id":"ES102-F04 [INFO] uso registrado del terapeuta A tras los fallos del proveedor (caído, lento, vacío)","info":"filas=15"}
+{"id":"ES102-S01 [PRIV] otro terapeuta → 404, participante y administrador → 403, sin sesión → 403/401; ninguno llama al proveedor ni gasta presupuesto","ok":true,"detail":"404/403/403/403 llamadas=0"}
+{"id":"ES102-S01b [INFO] id no numérico en el resumen","info":"status=500 (ES93-B1 conocido)"}
+{"id":"ES102-S02 [PRIV] una persona con eliminación aceptada (ES-101) → 404 antes de gastar IA (0 llamadas)","ok":true,"detail":"status=404 llamadas=0"}
+{"id":"ES102-E01 cierre con presupuesto → 200 con recomendación (id) y el prompt no lleva la nota del terapeuta, nombre ni correo de la persona","ok":true,"detail":"status=200 recomendación=2 llamadas=1"}
+{"id":"ES102-E02 la recomendación queda registrada en el uso como `session_recommend`","ok":true,"detail":"filas=1"}
+{"id":"ES102-E03 [SEG] con presupuesto agotado, sin configurar, proveedor caído, lento o vacío el cierre se completa siempre (200, sesión `completed`) y la recomendación queda en null","ok":true,"detail":"{\"low\":\"200/completed/rec=null/13ms\",\"nobud\":\"200/completed/rec=null/14ms\",\"dead\":\"200/completed/rec=null/24ms\",\"slow\":\"200/completed/rec=null/3062ms\",\"empty\":\"200/completed/rec=null/40ms\"}"}
+{"id":"ES102-K01 [SEG] 20 resúmenes simultáneos: sin 5xx, el reparto 200/429 coincide con las filas de uso y no supera el tope observado en la secuencia","ok":true,"detail":"200=2 429=18 filas=2 tope(secuencia)=2"}
+{"id":"ES102-L01 [PRIV] los registros del servidor no contienen notas, canarios, nombres, correos ni el prompt","ok":true,"detail":"líneas=11"}
+{"fin":true}

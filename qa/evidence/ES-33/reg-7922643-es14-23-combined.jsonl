@@ -1,0 +1,16 @@
+{"id":"exportacion","info":"status=201 claves=schemaVersion,type,locale,profile,messages,chatTurns,diary,moods,ratings,recommendations,consents,consentHistory,planRequests,aiUsage,aiBudget,careerContext,bridgeTransfers,evidence,evidenceVersions,participantContext,skillAssessments,routeConstraints,routeChoices,routeReviewRequests,invalidations,careerReminders,careerPlans,careerReviews,careerExperimentVersions,careerExperiments"}
+{"id":"CTX-X01 la exportación personal incluye participantContext","ok":true,"detail":"status=201 n=1"}
+{"id":"CTX-X02 el contenido se entrega descifrado y como objeto (no como texto cifrado v2:) con lo que la persona escribió","ok":true,"detail":"{\"preferredLanguage\":\"es\",\"residenceCountry\":\"CO\",\"targetMarket\":\"DK\",\"timeZone\":\"America/Bogota\",\"profession\":\"Docente "}
+{"id":"CTX-X03 trae versión y completedAt, y no incluye el contexto de otra persona","ok":true,"detail":"version=2"}
+{"id":"CTX-X04 la descarga del dueño trae el contexto","ok":true,"detail":"status=200"}
+{"id":"CTX-X05 si el contexto cambia entre vista previa y descarga → 409 export_outdated (no se entrega lo viejo)","ok":true,"detail":"status=409 code=export_outdated"}
+{"id":"CTX-E01 con la solicitud de eliminación aceptada la sesión ya no lee ni edita el contexto (4xx)","ok":true,"detail":"solicitud=202 lectura=401"}
+{"id":"CTX-E02 la purga borra el contexto (había filas, quedan 0)","ok":true,"detail":"antes=1 después=0 exit=0 {\"status\":\"awaiting_verification\",\"deadlinesVerified\":false}"}
+{"id":"CTX-E03 los eventos de invalidación no contienen contenido","ok":true,"detail":"eventos=1"}
+{"id":"CTX-E04 el contexto de otra persona (B) sigue intacto tras purgar a E","ok":true,"detail":""}
+{"id":"CTX-E05 --replay tras restaurar vuelve a borrar el contexto restaurado","ok":true,"detail":"exit=0 filas=0"}
+{"id":"CTX-E06 repetir la purga es idempotente (exit 0)","ok":true,"detail":"exit=0"}
+{"id":"cuentas-purgadas","info":2}
+{"id":"CTX-J01 una persona con contexto, puente y evidencia: la exportación trae las tres piezas","ok":true,"detail":"status=201 claves=30 evidencia=201 puente=201"}
+{"id":"CTX-J02 la purga deja 0 filas de contexto, puente y evidencia","ok":true,"detail":"{\"contexto\":0,\"puente\":0,\"evidencia\":0,\"versiones\":0}"}
+{"fin":true}

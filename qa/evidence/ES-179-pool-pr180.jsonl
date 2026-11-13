@@ -1,0 +1,7 @@
+{"id":"E179-1","info":"n=2: 2×200, 0×5xx; total=1620 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 77 ms; otra persona GET contexto: 200 tras 109 ms"}
+{"id":"E179-1","info":"n=3: 3×200, 0×5xx; total=1558 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 29 ms; otra persona GET contexto: 200 tras 52 ms"}
+{"id":"E179-1","info":"n=4: 4×200, 0×5xx; total=1577 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 45 ms; otra persona GET contexto: 200 tras 71 ms"}
+{"id":"E179-1","info":"n=5: 5×200, 0×5xx; total=1541 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 18 ms; otra persona GET contexto: 200 tras 36 ms"}
+{"id":"E179-1","info":"n=5: 5×200, 0×5xx; total=1566 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 27 ms; otra persona GET contexto: 200 tras 50 ms"}
+{"id":"E179-1","info":"n=5: 5×200, 0×5xx; total=1572 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 30 ms; otra persona GET contexto: 200 tras 67 ms"}
+{"id":"E179-1","info":"n=6: 6×200, 0×5xx; total=1562 ms; OTRO profesional (T2) GET sesiones a +1,5 s: 200 tras 25 ms; otra persona GET contexto: 200 tras 45 ms"}

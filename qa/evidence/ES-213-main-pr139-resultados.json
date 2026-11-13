@@ -1,0 +1,207 @@
+[
+ {
+  "id": "SET 5 cuentas sintéticas (user, admin, superadmin, therapist, board) con onboarding completo",
+  "ok": true,
+  "detail": "user=1 admin=2 superadmin=3 therapist=4 board=5"
+ },
+ {
+  "id": "S0 /api/session de user devuelve exactamente su rol y onboardingCompleted, sin otros campos",
+  "ok": true,
+  "detail": "{\"role\":\"user\",\"onboardingCompleted\":true}"
+ },
+ {
+  "id": "S0 /api/session de admin devuelve exactamente su rol y onboardingCompleted, sin otros campos",
+  "ok": true,
+  "detail": "{\"role\":\"admin\",\"onboardingCompleted\":true}"
+ },
+ {
+  "id": "S0 /api/session de superadmin devuelve exactamente su rol y onboardingCompleted, sin otros campos",
+  "ok": true,
+  "detail": "{\"role\":\"superadmin\",\"onboardingCompleted\":true}"
+ },
+ {
+  "id": "S0 /api/session de therapist devuelve exactamente su rol y onboardingCompleted, sin otros campos",
+  "ok": true,
+  "detail": "{\"role\":\"therapist\",\"onboardingCompleted\":true}"
+ },
+ {
+  "id": "S0 /api/session de board devuelve exactamente su rol y onboardingCompleted, sin otros campos",
+  "ok": true,
+  "detail": "{\"role\":\"board\",\"onboardingCompleted\":true}"
+ },
+ {
+  "id": "S0b /api/session sin token 401/403 y con parámetros 400",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "M1 matriz 5 roles × 23 rutas = 115 combinaciones, servidor real: permitido ⇒ contenido en marco; no permitido ⇒ pantalla «sin acceso»",
+  "ok": false,
+  "detail": "user /board/manifest: esperado noAccess, vio frame (/manifiesto) | user /board: esperado noAccess, vio frame (/manifiesto) | admin /board/manifest: esperado noAccess, vio frame (/manifiesto) | admin /board: esperado noAccess, vio frame (/manifiesto) | therapist /board/manifest: esperado noAccess, vio frame (/manifiesto) | therapist /board: esperado noAccess, vio frame (/manifiesto)"
+ },
+ {
+  "id": "B1 API como barrera real: user/therapist/board no entran a endpoints de administración ni superadmin (403); admin no entra a superadmin ni a board; solo therapist al panel profesional",
+  "ok": false,
+  "detail": "admin board=200"
+ },
+ {
+  "id": "B2 (QA-153-01 resuelto) admin entra a /admin/users en la interfaz y el servidor le permite listar usuarios (coinciden); /admin/manifest lo ve el admin (decisión de Mauricio, ES-207)",
+  "ok": true,
+  "detail": "servidor admin GET /api/admin/usuarios=200 · interfaz admin /admin/users=frame · admin /admin/manifest=frame"
+ },
+ {
+  "id": "T1 persona (user) con elevation_role=superadmin manipulado en el navegador: /admin/dashboard muestra «sin acceso» y el rol guardado se realinea a lo que dijo el servidor",
+  "ok": true,
+  "detail": "vista=noAccess rolGuardado=user"
+ },
+ {
+  "id": "T2 admin con elevation_role=user (al revés): el servidor manda y entra a administración",
+  "ok": true,
+  "detail": "vista=frame"
+ },
+ {
+  "id": "T3 user con rol guardado board: /board/manifest «sin acceso»",
+  "ok": false,
+  "detail": "frame"
+ },
+ {
+  "id": "K1 token basura: lleva a /login y limpia token, rol y nombre guardados",
+  "ok": true,
+  "detail": "vista=login guardado=[null,null,null]"
+ },
+ {
+  "id": "K2 JWT firmado con OTRA clave afirmando rol superadmin: /login (no entra)",
+  "ok": true,
+  "detail": "login"
+ },
+ {
+  "id": "K3 JWT expirado: /login",
+  "ok": true,
+  "detail": "login"
+ },
+ {
+  "id": "K4 token válido entra; tras POST /api/logout (revocado) el mismo token lleva a /login",
+  "ok": true,
+  "detail": "login=200 antes=content logout=200 despues=login"
+ },
+ {
+  "id": "K5 cuenta desactivada con token aún vigente: /api/session 401 y la interfaz lleva a /login",
+  "ok": true,
+  "detail": "antes=content despues=login"
+ },
+ {
+  "id": "K6 sin token: cualquier ruta protegida lleva a /login y no se hace ninguna petición /api/session",
+  "ok": true,
+  "detail": "login/login"
+ },
+ {
+  "id": "R1 admin degradado a user en la BD: la siguiente navegación dentro de la SPA revalida (1 petición nueva) y muestra «sin acceso»",
+  "ok": true,
+  "detail": "antes=frame secuencia=frame>blank>noAccess peticiones=1→2"
+ },
+ {
+  "id": "R2 user promovido a admin: tras recargar entra (la interfaz sigue al servidor, no al token antiguo)",
+  "ok": true,
+  "detail": "antes=noAccess despues=frame"
+ },
+ {
+  "id": "F1 /api/session 503: pantalla «sin conexión» con reintento (no entra, no expulsa ni borra la sesión); al volver el servicio y reintentar, entra",
+  "ok": true,
+  "detail": "caido=unavailable tokenConservado=true trasReintento=frame"
+ },
+ {
+  "id": "F2 /api/session responde 200 «{\"role\":\"superadmin\",\"onboardingComplete»: nunca concede acceso a administración",
+  "ok": true,
+  "detail": "vista=unavailable"
+ },
+ {
+  "id": "F2 /api/session responde 200 «{\"role\":\"root\",\"onboardingCompleted\":tru»: nunca concede acceso a administración",
+  "ok": true,
+  "detail": "vista=unavailable"
+ },
+ {
+  "id": "F2 /api/session responde 200 «no-json»: nunca concede acceso a administración",
+  "ok": true,
+  "detail": "vista=unavailable"
+ },
+ {
+  "id": "F2 /api/session responde 200 «[]»: nunca concede acceso a administración",
+  "ok": true,
+  "detail": "vista=unavailable"
+ },
+ {
+  "id": "F2 /api/session responde 500 «{}»: nunca concede acceso a administración",
+  "ok": true,
+  "detail": "vista=unavailable"
+ },
+ {
+  "id": "F2 /api/session responde 404 «{}»: nunca concede acceso a administración",
+  "ok": true,
+  "detail": "vista=unavailable"
+ },
+ {
+  "id": "F3 /api/session colgada: tras el tiempo de espera (≈8 s) pasa a «sin conexión» (no queda «verificando» para siempre)",
+  "ok": true,
+  "detail": "vista=unavailable tras 9917 ms"
+ },
+ {
+  "id": "F4 fallo pasajero de /api/session al cambiar de ruta con sesión ya verificada: no expulsa a la persona (el servidor sigue decidiendo en cada API)",
+  "ok": true,
+  "detail": "frame→frame"
+ },
+ {
+  "id": "C1 respuesta lenta del token anterior (user) llega DESPUÉS de cambiar a la sesión admin: no pisa la decisión (admin sigue dentro de /admin)",
+  "ok": true,
+  "detail": "frame/frame"
+ },
+ {
+  "id": "C2 navegación rápida entre 6 rutas con distintos permisos: la vista final corresponde a la última ruta (/therapist/dashboard ⇒ sin acceso para board) y no se rompe",
+  "ok": true,
+  "detail": "final=noAccess peticiones=3"
+ },
+ {
+  "id": "C3 401 tardío de /api/session en una ruta: la sesión se invalida y lleva a /login",
+  "ok": false,
+  "detail": "frame"
+ },
+ {
+  "id": "P1 /api/session: 200 peticiones, 10 en paralelo (≈6 personas con margen)",
+  "ok": true,
+  "detail": "p50=268 ms · p95=886 ms · máx=1105 ms · 28 req/s"
+ },
+ {
+  "id": "P2 una petición /api/session por cambio de ruta protegida (3 cambios ⇒ 3 peticiones, sin ráfagas)",
+  "ok": true,
+  "detail": "peticiones nuevas=3 · en la carga inicial=1"
+ },
+ {
+  "id": "A1 axe (WCAG 2 A/AA) en el MARCO de los 5 roles × ES/EN × 1360/390 px = 20 vistas: sin violaciones",
+  "ok": true,
+  "detail": "ninguna"
+ },
+ {
+  "id": "A2 sin desplazamiento horizontal de la página en 390 px en ningún marco",
+  "ok": true,
+  "detail": "ninguno"
+ },
+ {
+  "id": "A3 teclado: la primera tabulación es «Saltar al contenido» (#main) y Enter deja el foco en <main>; un solo <main>",
+  "ok": true,
+  "detail": "primero={\"t\":\"Saltar al contenido\",\"h\":\"#main\"} foco={\"id\":\"main\",\"tag\":\"MAIN\"} main=1 h1=1"
+ },
+ {
+  "id": "A4 pantalla «sin acceso»: el foco va al encabezado, tiene role=alert y un enlace al inicio que sí corresponde al rol (user ⇒ /app/dashboard)",
+  "ok": true,
+  "detail": "foco={\"tag\":\"H1\",\"txt\":\"Tu rol no tiene acceso a esta pantalla.\"} enlace=/app/dashboard"
+ },
+ {
+  "id": "N1 las vistas «Persona/Público» del rediseño no están montadas en App.tsx (esta HU no las expone)",
+  "ok": true,
+  "detail": "sin referencias en App.tsx"
+ },
+ {
+  "id": "X1 el marco de la persona solo habla con el propio servidor (sin terceros) y no pide endpoints de admin/terapeuta/board",
+  "ok": true,
+  "detail": "hosts=127.0.0.1:8153 api=/api/session,/api/user/progress,/api/sessions/user/upcoming,/api/recommendations,/api/user/plan/me,/api/sessions/user/my-therapist"
+ }
+]

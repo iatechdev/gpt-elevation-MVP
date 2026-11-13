@@ -1,0 +1,17 @@
+base | es-233:  fail 0 | propios RESUMEN 20/20 / evidencia RESUMEN 6/6
+M1 | es-233 del PR: fail 5 #1 diary_entry: sin insights_diary no h;#2 chat_turn: sin insights_chat no hay ;| propios RESUMEN 16/20 / evidencia RESUMEN 6/6
+M2 | es-233 del PR: fail 8 #1 diary_entry: sin insights_diary no h;#2 chat_turn: sin insights_chat no hay ;| propios RESUMEN 10/20 / evidencia RESUMEN 6/6
+M3 | es-233 del PR: fail 4 #5 carrera con versión activa previa (;#6 carrera con versión activa previa (;| propios RESUMEN 14/20 / evidencia RESUMEN 6/6
+M4 | es-233 del PR: fail 4 #5 carrera con versión activa previa (;#6 carrera con versión activa previa (;| propios RESUMEN 14/20 / evidencia RESUMEN 6/6
+M5 | es-233 del PR: fail 9 #1 diary_entry: sin insights_diary no h;#2 chat_turn: sin insights_chat no hay ;| propios RESUMEN 10/20 / evidencia RESUMEN 4/6
+M6 | es-233 del PR: fail 5 #1 diary_entry: sin insights_diary no h;#2 chat_turn: sin insights_chat no hay ;| propios RESUMEN 11/20 / evidencia RESUMEN 6/6
+M7 | es-233 del PR: fail 3 #3 resume_version: sin insights_resume ;#7 carrera con versión activa previa (;| propios RESUMEN 16/20 / evidencia RESUMEN 6/6
+M8 | es-233 del PR: fail 2 #8 varias fuentes en una misma versión;| propios RESUMEN 20/20 / evidencia RESUMEN 6/6
+M8b | es-233 del PR: fail 2 #8 varias fuentes en una misma versión;| propios RESUMEN 20/20 / evidencia RESUMEN 6/6
+M10 | es-233 del PR: fail 5 #1 diary_entry: sin insights_diary no h;#2 chat_turn: sin insights_chat no hay ;| propios RESUMEN 17/20 / evidencia RESUMEN 6/6
+R1 | es-233 del PR: fail 4 #5 carrera con versión activa previa (;#6 carrera con versión activa previa (;| propios RESUMEN 17/20 / evidencia RESUMEN 6/6
+E1 | es-233 del PR: fail 2 #9 evidencia con origen del chat: exige;| propios RESUMEN 20/20 / evidencia RESUMEN 5/6
+E2 | es-233 del PR: fail 0 | propios RESUMEN 20/20 / evidencia RESUMEN 5/6
+E3 | es-233 del PR: fail 2 #9 evidencia con origen del chat: exige;| propios RESUMEN 20/20 / evidencia RESUMEN 5/6
+E4 | es-233 del PR: fail 0 | propios RESUMEN 20/20 / evidencia RESUMEN 6/6
+FIN

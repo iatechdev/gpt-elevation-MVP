@@ -1,0 +1,6 @@
+{"id":"B1 [es] turno 1: 200, respuesta completa (termina en puntuación), sin diagnóstico ni promesas, idioma correcto y sin voseo","ok":true,"detail":"http=200 4589ms caracteres=1124 tokens=12838 requestId=1e76b6d6-00e2-4234-806d-d4e53f74aeb0 "}
+{"id":"info B1 [es] turno 2 contexto","clinico":"","promesa":"Aquí tienes un plan de 12 semanas. Es una hipótesis de trabajo, no un camino garantizado: \"analista de datos\" abarca roles muy distintos, y una de las primeras tareas es comprobar cuál te interesa. ","idioma":""}
+{"id":"B1 [es] turno 2: 200, respuesta completa (termina en puntuación), sin diagnóstico ni promesas, idioma correcto y sin voseo","ok":false,"detail":"http=200 16128ms caracteres=3536 tokens=14907 requestId=a877074f-d1f1-420c-96e8-374edd1e2e9b  PROMESA «garantizado»"}
+{"id":"B1 [es] sin errores de página","ok":true,"detail":""}
+{"id":"info B1 [es] resumen de gasto","tokens":27745,"requestIds":["1e76b6d6-00e2-4234-806d-d4e53f74aeb0","a877074f-d1f1-420c-96e8-374edd1e2e9b"]}
+RESUMEN-B1 {"lang":"es","total":3,"fallos":1,"tokens":27745}

@@ -1,0 +1,5 @@
+{"id":"CH-G1 [PERF] 12 altas simultáneas de personas distintas: todas 201 y ningún 5xx; la espectadora responde < 500 ms","ok":true,"detail":"estados=201 total=207ms espectadora=161ms"}
+{"id":"CH-G1b [PERF] lecturas de jobs: p95 < 500 ms (umbral propuesto)","ok":true,"detail":"p50=9ms p95=11ms"}
+{"id":"CH-G2 [PERF] el worker drena 12 jobs con proveedor lento sin duplicar candidatas (1 por persona) ni dejar jobs atascados","ok":true,"detail":"duración=74s jobs=[{\"status\":\"REVIEW_REQUIRED\",\"n\":12}] personas con candidata=12"}
+{"id":"CH-G2b [SEG] el registro del worker no filtra el texto de las personas ni las claves","ok":true,"detail":"27 líneas"}
+{"id":"CH-A5b el contexto se sigue leyendo (descifra) tras la API y el worker","ok":true,"detail":"200"}

@@ -1,0 +1,21 @@
+✖ ES19-S01: sin token → 403/401; el titular es SIEMPRE el token (UserId/userId del cuerpo y de la query se ignoran) (237.0944ms)
+{"purpose:constructor":404,"purpose:__proto__":404,"purpose:toString":404,"purpose:hasOwnProper":404,"purpose:desconocido":404,"purpose:RESEARCH":404,"purpose:research%00":404,"purpose:..%2f":404,"purpose:aaaaaaaaaaaa":404,"body:status nulo":400,"body:status objeto":400,"body:status arreglo":400,"body:status inválido":400,"body:scope inválido":400,"body:scope objeto":400,"body:vacío":400,"body:status mayúsculas":400}
+✔ ES19-S02: propósito y cuerpo inválidos nunca dan 500 (113.3189ms)
+✔ ES19-S03: necessary no se revoca (409); revocar otros no bloquea necessary; idempotencia y versión (23.2719ms)
+{"rutas_que_consumen_consentimiento":[]}
+✔ ES19-S04: revocar corta el acceso futuro (hasConsent / requireConsent) y falla cerrado (13.2607ms)
+✔ ES19-S05: ninguna ruta real consume el consentimiento todavía (hallazgo informativo) (3.0134ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 768.7732
+
+✖ failing tests:
+
+test at qa\security\es19-consent.test.cjs:30:1
+✖ ES19-S01: sin token → 403/401; el titular es SIEMPRE el token (UserId/userId del cuerpo y de la query se ignoran) (237.0944ms)
+  [TypeError: Request with GET/HEAD method cannot have body.]

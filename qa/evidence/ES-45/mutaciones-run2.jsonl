@@ -1,0 +1,31 @@
+{"id":"M00 el paquete tal cual valida sin errores","ok":true,"detail":""}
+{"id":"M01 el consolidado inicial: preparación lista, aceptación bloqueada, invitación pendiente, pilotReady false, 236 no verificados","ok":true,"detail":"{\"a\":\"blocked\",\"n\":236}"}
+{"id":"M02 el manifiesto adversarial (todo passed, bloqueos satisfechos, hashes «verificados») se acepta como estructura","ok":true,"detail":"followup_not_due,followup_not_due,followup_not_due"}
+{"id":"M03 aun así solo llega a awaiting_human_review o blocked: nunca pilotReady ni invitación automática","ok":true,"detail":"blocked pilotReady=false"}
+{"id":"M10 registro válido de staging_browser: sin errores","ok":true,"detail":""}
+{"id":"M11 comando de la capa API usado como staging_browser → command_layer","ok":true,"detail":""}
+{"id":"M12 simulación declarada en capa de staging → promoted_doubles","ok":false,"detail":""}
+{"id":"M13 SHA incompleto (7 caracteres) → full_sha_required","ok":true,"detail":""}
+{"id":"M14 origen distinto del objetivo → result_origin","ok":true,"detail":""}
+{"id":"M15 origen con localhost o http → rechazado","ok":true,"detail":""}
+{"id":"M16 término antes del inicio → execution_provenance","ok":true,"detail":""}
+{"id":"M17 término en el futuro → execution_provenance","ok":true,"detail":""}
+{"id":"M18 passed sin evidencia → missing_evidence","ok":true,"detail":""}
+{"id":"M19 evidencia con ruta ../ o absoluta → evidence_reference","ok":true,"detail":""}
+{"id":"M20 evidencia con hash corto o tipo no permitido → evidence_reference","ok":true,"detail":""}
+{"id":"M21 passed con razón incorrecta → status_reason","ok":true,"detail":""}
+{"id":"M22 identidad inventada (caso o variante inexistente) → result_identity","ok":true,"detail":""}
+{"id":"M23 propiedad extra en un registro → forma cerrada","ok":true,"detail":""}
+{"id":"M24 registro duplicado → duplicate_result","ok":true,"detail":""}
+{"id":"M25 reclamo humano en una capa que no es humana → unexpected_human_claim","ok":true,"detail":""}
+{"id":"M26 human_review sin responsable o con rol inventado → human_reference","ok":true,"detail":""}
+{"id":"M27 seguimiento passed sin piloto iniciado → followup_not_due","ok":true,"detail":""}
+{"id":"M28 seguimiento de 7 días antes de cumplirse → followup_not_due","ok":true,"detail":""}
+{"id":"M29 objetivo con origen http, con credenciales, con ruta o con puerto → unverified_target_shape","ok":true,"detail":""}
+{"id":"M30 objetivo con SHA corto o de entorno no staging → rechazado","ok":true,"detail":""}
+{"id":"M31 bloqueo satisfecho sin referencia → blocker_reference; falta un bloqueo → missing_blocker","ok":true,"detail":""}
+{"id":"M40 un passed de staging_api con hash comprobado cuenta como «evidencia para revisión» (1 de 236)","ok":false,"detail":""}
+{"id":"M41 el mismo registro sin hash comprobado no cuenta","ok":true,"detail":""}
+{"id":"M42 el mismo registro con otro commit no cuenta","ok":true,"detail":""}
+{"id":"M43 un fallo (failed) en una familia crítica se informa en failures","ok":true,"detail":""}
+{"fin":true,"familias":28,"bloqueos":18}

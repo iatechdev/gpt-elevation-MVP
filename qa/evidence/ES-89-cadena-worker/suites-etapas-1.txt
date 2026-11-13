@@ -1,0 +1,114 @@
+##### ES-86 387becdc962a6c050682274d4fb27721ba4e18cc
+== npm test
+# tests 457
+# pass 457
+# fail 0
+== test:professional-key:pg
+# tests 10
+# pass 10
+# fail 0
+== test:data-rights:pg
+not ok 1 - ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, rollback and restore replay
+# tests 1
+# pass 0
+# fail 1
+== test:bridge:pg
+not ok 1 - ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y revocación del consentimiento
+# tests 1
+# pass 0
+# fail 1
+##### ES-87 466921f8c0aed8101f51a34895f26872a83c6c8b
+== npm test
+# tests 476
+# pass 474
+# fail 2
+== test:professional-key:pg
+# tests 10
+# pass 10
+# fail 0
+== test:worker:pg
+# tests 17
+# pass 17
+# fail 0
+== test:worker-process:pg
+# tests 14
+# pass 13
+# fail 0
+##### ES-88 b73306892d4c17265500af6f07ad482ad78b1309
+== npm test
+# tests 479
+# pass 479
+# fail 0
+== test:worker:pg
+# tests 17
+# pass 17
+# fail 0
+== test:worker-process:pg
+# tests 14
+# pass 13
+# fail 0
+== test:worker-rights:pg
+# tests 11
+# pass 11
+# fail 0
+== test:data-rights:pg
+not ok 1 - ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, rollback and restore replay
+# tests 1
+# pass 0
+# fail 1
+== test:bridge:pg
+not ok 1 - ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y revocación del consentimiento
+# tests 1
+# pass 0
+# fail 1
+== test:pro-applications:pg
+not ok 1 - ES-95: 10 envíos simultáneos del mismo correo crean una sola solicitud y el resto responde igual (PostgreSQL real)
+# tests 1
+# pass 0
+# fail 1
+##### ES-89 2dac13fc0f69b3b74f72024d9a9114c6568bf587
+== npm test
+# tests 479
+# pass 478
+# fail 1
+== test:professional-key:pg
+# tests 10
+# pass 10
+# fail 0
+== test:worker:pg
+# tests 17
+# pass 17
+# fail 0
+== test:worker-process:pg
+# tests 14
+# pass 13
+# fail 0
+== test:worker-rights:pg
+# tests 11
+# pass 11
+# fail 0
+== test:skill-analysis:pg
+# tests 12
+# pass 12
+# fail 0
+== test:data-rights:pg
+not ok 1 - ES-23 PostgreSQL: migration, ownership, concurrent publication/deletion, rollback and restore replay
+# tests 1
+# pass 0
+# fail 1
+== test:bridge:pg
+not ok 1 - ES-25 PostgreSQL: unicidad, cifrado real, concurrencia de confirmaciones y revocación del consentimiento
+# tests 1
+# pass 0
+# fail 1
+== test:proposals:pg
+not ok 1 - ES-28 PostgreSQL: propuestas con cifrado y presupuesto reales, confirmación atómica e idempotente bajo concurrencia
+# tests 1
+# pass 0
+# fail 1
+== test:skillmap:pg
+not ok 1 - ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de evaluaciones e invalidación por cambio de evidencia
+# tests 1
+# pass 0
+# fail 1
+FIN

@@ -1,0 +1,2 @@
+# ES-14 · PR #32 (18d118a)
+`run3-18d118a.jsonl`: 61 de 61. Frontend: `lint` 0 avisos, 18/18, `build` correcto; backend `npm test` 168/168, `test:context:postgres` 9/9. Navegador: el `fieldset` ahora solo envuelve las tres puertas (QA-14-03 cerrado); con sesión vencida el aviso dice «Los cambios sin guardar se perderán.» / «Unsaved changes will be lost.» (QA-14-04 cerrado). CSS sin cambios (54.317 bytes). `ParticipantContext` sigue sin estar en `CORE` de ES-23 (QA-14-01 abierto); conflicto con `main` en `backend/package.json` y `backend/server.js`.

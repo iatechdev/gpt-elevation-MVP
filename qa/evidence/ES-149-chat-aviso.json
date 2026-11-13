@@ -1,0 +1,87 @@
+[
+ {
+  "id": "A1 es 1360px: aviso presente al abrir el chat, visible, sin scroll, texto exacto",
+  "ok": true,
+  "detail": "{\"text\":\"ok\",\"role\":\"note\",\"label\":\"Límites del asistente\",\"vis\":true,\"inView\":true,\"top\":752.1875,\"bottom\":788,\"left\":324,\"right\":1036,\"vw\":1360,\"sw\":1360,\"overlap\":false,\"color\":\"rgb(94, 94, 90)\",\"fs\":\"12.8px\",\"lang\":\"es\"}"
+ },
+ {
+  "id": "A6 es 1360px: sin desborde horizontal ni solape con la caja de mensaje",
+  "ok": true,
+  "detail": "sw=1360 vw=1360 overlap=false"
+ },
+ {
+  "id": "A4a es 1360px: role=note y nombre accesible",
+  "ok": true,
+  "detail": "role=note label=Límites del asistente"
+ },
+ {
+  "id": "A4b axe (ES 1360): ninguna violación recae sobre el aviso (contraste AA incluido)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "id": "A4c el aviso no es un tope de teclado (no entra en la secuencia de Tab)",
+  "ok": true,
+  "detail": "A:space-skip space-scope > BUTTON: > BUTTON: > BUTTON: > BUTTON: > BUTTON:"
+ },
+ {
+  "id": "A1 es 390px: aviso presente al abrir el chat, visible, sin scroll, texto exacto",
+  "ok": true,
+  "detail": "{\"text\":\"ok\",\"role\":\"note\",\"label\":\"Límites del asistente\",\"vis\":true,\"inView\":true,\"top\":716.375,\"bottom\":788,\"left\":16,\"right\":374,\"vw\":390,\"sw\":390,\"overlap\":false,\"color\":\"rgb(94, 94, 90)\",\"fs\":\"12.8px\",\"lang\":\"es\"}"
+ },
+ {
+  "id": "A6 es 390px: sin desborde horizontal ni solape con la caja de mensaje",
+  "ok": true,
+  "detail": "sw=390 vw=390 overlap=false"
+ },
+ {
+  "id": "A4a es 390px: role=note y nombre accesible",
+  "ok": true,
+  "detail": "role=note label=Límites del asistente"
+ },
+ {
+  "id": "A1 en 1360px: aviso presente al abrir el chat, visible, sin scroll, texto exacto",
+  "ok": true,
+  "detail": "{\"text\":\"ok\",\"role\":\"note\",\"label\":\"Assistant limits\",\"vis\":true,\"inView\":true,\"top\":752.1875,\"bottom\":788,\"left\":324,\"right\":1036,\"vw\":1360,\"sw\":1360,\"overlap\":false,\"color\":\"rgb(94, 94, 90)\",\"fs\":\"12.8px\",\"lang\":\"en\"}"
+ },
+ {
+  "id": "A6 en 1360px: sin desborde horizontal ni solape con la caja de mensaje",
+  "ok": true,
+  "detail": "sw=1360 vw=1360 overlap=false"
+ },
+ {
+  "id": "A4a en 1360px: role=note y nombre accesible",
+  "ok": true,
+  "detail": "role=note label=Assistant limits"
+ },
+ {
+  "id": "A1 en 390px: aviso presente al abrir el chat, visible, sin scroll, texto exacto",
+  "ok": true,
+  "detail": "{\"text\":\"ok\",\"role\":\"note\",\"label\":\"Assistant limits\",\"vis\":true,\"inView\":true,\"top\":734.28125,\"bottom\":788,\"left\":16,\"right\":374,\"vw\":390,\"sw\":390,\"overlap\":false,\"color\":\"rgb(94, 94, 90)\",\"fs\":\"12.8px\",\"lang\":\"en\"}"
+ },
+ {
+  "id": "A6 en 390px: sin desborde horizontal ni solape con la caja de mensaje",
+  "ok": true,
+  "detail": "sw=390 vw=390 overlap=false"
+ },
+ {
+  "id": "A4a en 390px: role=note y nombre accesible",
+  "ok": true,
+  "detail": "role=note label=Assistant limits"
+ },
+ {
+  "id": "A5 con historial (varios envíos) el aviso sigue visible bajo la caja y el chat respondió",
+  "ok": true,
+  "detail": "envíos=6 scrollInterno=false inView=true"
+ },
+ {
+  "id": "A3 es: el texto no contiene dígitos ni promesas (empleo/curar/garantiz)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "A3 en: el texto no contiene dígitos ni promesas (empleo/curar/garantiz)",
+  "ok": true,
+  "detail": ""
+ }
+]

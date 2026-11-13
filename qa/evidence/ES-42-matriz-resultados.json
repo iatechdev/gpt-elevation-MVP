@@ -1,0 +1,107 @@
+[
+ {
+  "id": "SET A crea su diario, su evidencia y un turno de chat",
+  "ok": true,
+  "detail": "diario=201 evidencia=201"
+ },
+ {
+  "id": "O1a B no lee, edita ni borra lo de A (diario, evidencia, turno de chat, recomendación, hoja de vida): 404/403, nunca 200/201/204 y sin contenido de A",
+  "ok": true,
+  "detail": "GET diario ajeno=404 | PUT diario ajeno=404 | DELETE diario ajeno=404 | GET evidencia ajena=404 | PUT evidencia ajena=404 | DELETE evidencia ajena=404 | GET turno de chat ajeno=404 | PUT recomendación ajena vista=404 | GET archivo de hoja de vida ajena=404 | DELETE hoja de vida ajena=404"
+ },
+ {
+  "id": "O1b tras los intentos de B, lo de A sigue intacto (diario y evidencia)",
+  "ok": true,
+  "detail": "diario=200 evidencia=200"
+ },
+ {
+  "id": "O1c los listados de B no traen nada de A",
+  "ok": true,
+  "detail": "200,200,200"
+ },
+ {
+  "id": "O1d el consentimiento es por persona: B revocando el suyo no cambia el de A",
+  "ok": true,
+  "detail": "A=granted"
+ },
+ {
+  "id": "O9a IDs raros (0, negativo, enorme, texto, SQL, decimal, ruta) en diario y evidencia: 4xx, nunca 5xx",
+  "ok": true,
+  "detail": "21 sondas"
+ },
+ {
+  "id": "O9b cuerpo enorme → 4xx; HTML/SQL/nulos en el diario no producen 5xx (se guardan como texto)",
+  "ok": true,
+  "detail": "enorme=413 xss/sql=201 nulo=201"
+ },
+ {
+  "id": "O9c tras la matriz maliciosa la tabla Users sigue intacta (≥ 2 filas)",
+  "ok": true,
+  "detail": "usuarios=2"
+ },
+ {
+  "id": "O2a matriz de roles (5 roles × 6 grupos de rutas): cada rol solo entra donde corresponde; los demás 401/403; ninguno 5xx",
+  "ok": false,
+  "detail": "admin /api/board/manifest=200 (debía ser 401/403) | board /api/board/manifest=403 (debía poder)"
+ },
+ {
+  "id": "O2b sin token todas las rutas protegidas → 401/403",
+  "ok": true,
+  "detail": "403,403,403,403,403,403"
+ },
+ {
+  "id": "O2c token cerrado con logout, caducado y firmado con otro secreto (como superadmin): 401/403",
+  "ok": true,
+  "detail": "logout=200 tras logout=401 caducado=401 falsificado=401"
+ },
+ {
+  "id": "O2d una persona no puede ascender su propio rol (contexto con role, ni PUT de administración): el rol sigue siendo user",
+  "ok": true,
+  "detail": "contexto=400 admin=403 rol=user"
+ },
+ {
+  "id": "SET P asignado a T1, con diario privado, un mensaje de crisis y la autorización de compartir con su terapeuta",
+  "ok": true,
+  "detail": "asignar=200 chat-crisis=200 interrupted=true"
+ },
+ {
+  "id": "O5a el terapeuta T1 no ve el diario de P, ni el texto del mensaje de crisis, ni claves de riesgo/crisis en ninguna de sus pantallas de datos",
+  "ok": true,
+  "detail": "pacientes=200 alerts=200 historial=200 historia=200 · claves="
+ },
+ {
+  "id": "O5a2 con la autorización concedida el terapeuta accede (200) a historial e historia: la prueba de no-fuga es significativa",
+  "ok": true,
+  "detail": "200,200"
+ },
+ {
+  "id": "O2e un terapeuta NO asignado (T2) no lee al paciente de T1: 403/404 y sin contenido",
+  "ok": true,
+  "detail": "404,404"
+ },
+ {
+  "id": "O3a revocar la autorización: el terapeuta pierde el acceso de inmediato (403) y sin contenido",
+  "ok": true,
+  "detail": "revocar=200 historial/historia=403,403"
+ },
+ {
+  "id": "O4 conceder y revocar a la vez (4 clientes): sin 5xx, estado final coherente y el acceso del terapeuta coincide con ese estado",
+  "ok": true,
+  "detail": "estados=200,200,200,200 final=granted eventos=5 acceso=200"
+ },
+ {
+  "id": "O5b la lista de administración no expone el diario ni el texto de crisis",
+  "ok": true,
+  "detail": "http=200"
+ },
+ {
+  "id": "O5c el nivel de riesgo no se persiste como columna en Messages ni ChatTurns",
+  "ok": true,
+  "detail": "columnas="
+ },
+ {
+  "id": "P1 6 personas + 1 terapeuta a la vez sobre las rutas principales, 0 IA: ningún 5xx y p95 ≤ 1 s (umbral propuesto)",
+  "ok": true,
+  "detail": "solicitudes=39 p50=163 p95=439 ms total=1205 ms 5xx=0"
+ }
+]
