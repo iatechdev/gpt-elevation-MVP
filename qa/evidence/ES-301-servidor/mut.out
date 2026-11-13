@@ -1,0 +1,20 @@
+base | es-301 PR: # pass 9 # fail 0  | mi guion: RESUMEN m: 12/12  
+Y1 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T4 
+Y2 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T3 
+Y3 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 12/12  
+Y4 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 10/12 T2,T4 
+Y5 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T2 
+Y6 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T2 
+Y7 | es-301 del PR: fail 5 | mi guion: FATAL TypeError: Cannot read properties of null (reading 'toISOString') 
+Y8 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T4 
+Y9 | es-301 del PR: fail 0 | mi guion: RESUMEN m: 11/12 T6 
+Y10 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T7 
+Y11 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T7 
+Y12 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 10/12 T1,T2 
+Y13 | NO APLICADA: const edit = (file, a, b) => { const p = B + file; const s = fs.readFileSync(p, 'utf8'); if (s.split(a).length !== 2) throw new Error('no ú
+Y14 | es-301 del PR: fail 3 | mi guion: RESUMEN m: 10/12 T1,T2 
+Y15 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 10/12 T1,T2 
+Y16 | es-301 del PR: fail 4 | mi guion: FATAL Error: Active purge failed; request remains blocked and can be retried. 
+Y17 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T3 
+Y18 | es-301 del PR: fail 2 | mi guion: RESUMEN m: 11/12 T1 
+FIN

@@ -1,0 +1,130 @@
+[
+ {
+  "id": "T1b login con la cuenta nueva",
+  "info": "200 message,token,name,role,onboardingCompleted"
+ },
+ {
+  "id": "T1 marcador de hoy: registro sin aceptación = 201 y mensaje idéntico, columnas NULL, rol user; con aceptación → 400 (terms_not_available / not_accepted / version_invalid) y ninguna cuenta",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T2 __proto__ en el cuerpo",
+  "info": "201 Usuario creado exitosamente. ¡Bienvenido a Elevation!"
+ },
+ {
+  "id": "T2 __proto__ en el cuerpo",
+  "info": "400 terms_required"
+ },
+ {
+  "id": "T2 matriz de 400: 28 cuerpos hostiles con versión fijada solo en mi arnés (códigos estables, ES/EN, currentVersion solo donde corresponde, sin cuenta, sin eco técnico, __proto__ y cuerpos raros sin 5xx)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T3 el servidor manda: fecha y versión del servidor (acceptedAt ≈ ahora, con zona horaria); fecha, versión extra, role, id, active, planId, createdAt del cliente se ignoran",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T4 tiempos con aceptación inválida (mediana ms): correo existente vs nuevo",
+  "info": "3.3 vs 3.2"
+ },
+ {
+  "id": "T4 cuenta inactiva (con aceptación válida / sin aceptación)",
+  "info": "403 400"
+ },
+ {
+  "id": "T4 sin oráculo de cuentas: con aceptación inválida un correo existente y uno nuevo responden lo mismo (y en tiempo comparable); con aceptación válida un correo existente → «ya registrado» sin pisar la aceptación original; inactiva sin cambios",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T5 sin aceptación (marcador) ×40",
+  "info": "{\"201 Usuario creado exitosamente. ¡Bienvenido a Elevation!\":1,\"400 El correo ya está registrado.\":39}"
+ },
+ {
+  "id": "T5 carrera ×40 del mismo correo sin aceptación (marcador): 1 cuenta, 1 respuesta 201, resto «ya registrado» (400), 0 5xx; 12 correos distintos a la vez no se afectan",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T5 con aceptación válida ×40",
+  "info": "{\"201 Usuario creado exitosamente. ¡Bienvenido a Elevation!\":1,\"400 El correo ya está registrado.\":39}"
+ },
+ {
+  "id": "T5 carrera ×40 del mismo correo con aceptación válida: 1 cuenta, 1 respuesta 201, resto «ya registrado» (400), 0 5xx; 12 correos distintos a la vez no se afectan",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T6 correo existente en MAYÚSCULAS",
+  "info": "201 {\"message\":\"Usuario creado exitosamente. ¡Bienvenido a Elevation!\"}"
+ },
+ {
+  "id": "T6 índices únicos de Users",
+  "info": "CREATE UNIQUE INDEX \"Users_pkey\" ON public.\"Users\" USING btree (id) ; CREATE UNIQUE INDEX \"Users_email_key\" ON public.\"Users\" USING btree (email)"
+ },
+ {
+  "id": "T6 el manejo nuevo solo cubre el choque del índice único: un fallo inyectado de la base (trigger) sigue siendo 500 genérico, sin SQL ni correo ni mensaje de la base",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T7 login de A y B",
+  "info": "[true,true]"
+ },
+ {
+  "id": "T7 recibo y replay",
+  "info": "{\"id\":\"abb87fab-b351-4544-a6b8-541d86eaeda5\",\"status\":\"awaiting_verification\",\"requestedAt\":\"2026-11-13T23:07:34.428Z\",\"activePurgedAt\":\"2026-11-13T23:07:34.514Z\",\"deadlinesVerified\":false} || {\"id\":\"abb87fab-b351-4544-a6b8-541d86eaeda5\",\"status\":\"awaiting_verification\",\"requestedAt\":\"2026-11-13T23:07:34.428Z\",\"activePurgedAt\":\"2026-11-13T23:07:34.673"
+ },
+ {
+  "id": "T7 ES-23: la exportación de A trae su aceptación y la de B nada ajeno; la purga deja versión y fecha NULL; el canario no queda en ninguna de las tablas ni en el recibo; replay no lo reintroduce; B intacta",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T8 la respuesta del login de A trae su aceptación",
+  "info": "false"
+ },
+ {
+  "id": "T8 rutas sondeadas y aciertos del canario",
+  "info": "60 sondeos; aciertos: ninguno"
+ },
+ {
+  "id": "T8 exposición: B, terapeuta y consultas ajenas no ven la versión/fecha de aceptación de A (administración se reporta aparte)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T9 columnas",
+  "info": "[{\"column_name\":\"acceptedAt\",\"data_type\":\"timestamp with time zone\",\"is_nullable\":\"YES\",\"column_default\":null,\"character_maximum_length\":null},{\"column_name\":\"termsVersion\",\"data_type\":\"character varying\",\"is_nullable\":\"YES\",\"column_default\":null,\"character_maximum_length\":32}]"
+ },
+ {
+  "id": "T9 filas con aceptación (solo las registradas por mis casos)",
+  "info": "17"
+ },
+ {
+  "id": "T9 migración: aditiva e idempotente (up ×2 sin cambios), columnas nullable sin valor por defecto, down sin permiso explícito rechazado",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T10 compatibilidad: los errores de nombre/correo/contraseña no cambian ni de orden ni de cuerpo cuando también viene una aceptación inválida; login con la cuenta nueva funciona",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "id": "T11 rendimiento",
+  "info": "sin aceptación p95 200 ms (mediana 145); con aceptación p95 242 ms (mediana 134); 40 simultáneos 5607 ms"
+ },
+ {
+  "id": "T11 validate() en proceso (µs por llamada) y diferencia de medianas del registro (ruido de bcrypt)",
+  "info": "0.53 µs; Δ mediana -10.6 ms"
+ },
+ {
+  "id": "T11 rendimiento (umbrales propuestos aprobados): registro p95 < 800 ms; 40 simultáneos sin errores; la aceptación no suma tiempo apreciable",
+  "ok": true,
+  "detail": ""
+ }
+]
