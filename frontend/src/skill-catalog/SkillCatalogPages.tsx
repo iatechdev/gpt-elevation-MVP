@@ -63,6 +63,7 @@ function ManagerSession({ session }: { session: string }) {
   const [inUse, setInUse] = useState<{ skillKey: string; people: number }[] | null>(null)
   const [rowStamp, setRowStamp] = useState<string | undefined>(undefined)
   const locked = useRef(false); const initialized = useRef(false); const dialog = useRef<HTMLDialogElement>(null)
+  const conflictRef = useRef<HTMLDivElement>(null)
   const editable = ready && detail?.status === 'draft'
   const dirty = !!skillKey && (isDirty(form, baseline) || (creating && !!newKey))
   const say = (key: string, error = false, p?: Record<string, string | number>) => setNotice({ key, error, params: p })
@@ -158,6 +159,9 @@ function ManagerSession({ session }: { session: string }) {
     const el = document.getElementById(anchor)
     if (el) { el.focus(); el.scrollIntoView({ block: 'center' }) }
   }, [anchor, ready, skillKey])
+  useEffect(() => {
+    if (conflict !== undefined) conflictRef.current?.focus()
+  }, [conflict])
 
   // ── Versiones ────────────────────────────────────────────────
   if (!id) {
@@ -203,15 +207,14 @@ function ManagerSession({ session }: { session: string }) {
       })}
     </div>
     const moreFilled = LEVELS.slice(2).some(n => form.levels[n].es || form.levels[n].en)
+    const focusMoreLevel = /^skcat-l[34](?:es|en)$/.test(anchor)
     return <Shell go={go}>
       <button type="button" className="elv-btn" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}`)}>{t('skcat.skill_back')}</button>
       <h1>{creating ? t('skcat.new_title') : `${t('skcat.skill_title')} · ${row ? skillName(row) : skillKey}`}</h1>
       <Notice text={text} error={notice?.error} />
-      {conflict !== undefined && conflict !== null && <div className="skcat-error" role="alert" tabIndex={-1} ref={el => el?.focus()}>
-        {t('skcat.conflict_changed')} <button type="button" className="elv-btn" onClick={loadConflict}>{t('skcat.conflict_load')}</button>
-      </div>}
-      {conflict === null && <div className="skcat-error" role="alert" tabIndex={-1} ref={el => el?.focus()}>
-        {t('skcat.conflict_removed')} <button type="button" className="elv-btn" onClick={loadConflict}>{t('skcat.skill_back')}</button>
+      {conflict !== undefined && <div className="skcat-error" role="alert" tabIndex={-1} ref={conflictRef}>
+        {t(conflict === null ? 'skcat.conflict_removed' : 'skcat.conflict_changed')}
+        <button type="button" className="elv-btn" onClick={loadConflict}>{t(conflict === null ? 'skcat.skill_back' : 'skcat.conflict_load')}</button>
       </div>}
       {busy && !ready && <p role="status">{t('skcat.loading')}</p>}
       {!ready && !busy && <button type="button" className="elv-btn" onClick={retry}>{t('skcat.retry')}</button>}
@@ -243,7 +246,7 @@ function ManagerSession({ session }: { session: string }) {
           <h2>{t('skcat.f_levels')}</h2>
           <p className="skcat-help">{t('skcat.rubric_note')}</p>
           {(['1', '2'] as const).map(levelBlock)}
-          <details className="skcat-more" open={moreFilled || !!fieldErrors.level}><summary>{t('skcat.f_more_levels')}</summary>{(['3', '4'] as const).map(levelBlock)}</details>
+          <details className="skcat-more" open={moreFilled || !!fieldErrors.level || focusMoreLevel}><summary>{t('skcat.f_more_levels')}</summary>{(['3', '4'] as const).map(levelBlock)}</details>
           <div className="skcat-grid2">
             {([['source', 'f_source', 'source'], ['verifiedBy', 'f_verified_by', 'verified_by']] as const).map(([field, label, errKey]) => {
               const value = form[field]; const fid = `skcat-${field}`; const bad = fieldErrors[errKey]

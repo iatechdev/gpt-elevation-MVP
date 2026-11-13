@@ -149,4 +149,6 @@ test('ES-188 «falta»: cada ruta del servidor tiene un ancla al campo del edito
   assert.ok(page.includes('skcat.rubric_note'), 'aclaración de que la rúbrica no decide niveles')
   assert.ok(page.includes('skcat.conflict_load'), 'botón cargar lo guardado ante skill_changed')
   assert.ok(page.includes('skcat.pub_in_use'), 'aviso de habilidades en uso al publicar')
+  assert.ok(page.includes('ref={conflictRef}') && page.includes('}, [conflict])'), 'el foco del conflicto solo se aplica cuando cambia')
+  assert.ok(page.includes('open={moreFilled || !!fieldErrors.level || focusMoreLevel}'), 'los enlaces a niveles 3 y 4 abren la sección')
 })
