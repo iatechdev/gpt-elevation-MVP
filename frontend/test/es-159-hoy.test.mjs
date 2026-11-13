@@ -88,6 +88,8 @@ test('ES-159: el punto de partida va en el marco de persona con el tema de Carto
 test('ES-159 (E264-1): el texto de privacidad es verdadero: no afirma que solo la persona (ni «nadie más») lo ve; nombra al profesional autorizado, al equipo de la plataforma y a la IA', () => {
   const both = checkinEs['checkin.intro'] + checkinEn['checkin.intro']
   assert.ok(!/solo t[úu] ves|only you see|nadie más|no one else/i.test(both), 'sin promesas absolutas')
+  assert.ok(checkinEs['checkin.intro'].includes('Lo ves tú. Si autorizaste compartir con tu profesional, también lo ve. Tu promedio de ánimo puede verlo el equipo de la plataforma y se usa, con apoyo de IA, para generar tus recomendaciones.'), 'redacción aprobada por Mauricio (ES)')
+  assert.ok(checkinEn['checkin.intro'].includes('You can see this. If you allowed sharing with your professional, they can too. Your average mood can be seen by the platform team and is used, with AI support, to generate your recommendations.'), 'redacción aprobada por Mauricio (EN)')
   assert.match(checkinEs['checkin.intro'], /autorizaste compartir con tu profesional, también lo ve. Tu promedio de ánimo puede verlo el equipo de la plataforma y se usa, con apoyo de IA, para generar tus recomendaciones/)
   assert.match(checkinEn['checkin.intro'], /allowed sharing with your professional, they can too. Your average mood can be seen by the platform team and is used, with AI support, to generate your recommendations/)
 })
