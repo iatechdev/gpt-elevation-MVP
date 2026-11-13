@@ -20,7 +20,7 @@ const MUTATIONS = [
   ['M11 sin reintento ante la primera respuesta simultánea', U, 'if (error instanceof UniqueConstraintError && attempt === 1) continue;', ''],
   ['M12 agregados publican aunque respondan menos de 5', U, 'eligible >= MIN_PEOPLE && responded >= MIN_PEOPLE', 'eligible >= MIN_PEOPLE'],
   ['M13 fuera de personalData.CORE (exportar/purgar)', 'utils/personalData.js', "['pilotFeedbacks', 'PilotFeedback', 'UserId',", "['pilotFeedbacksX', 'Consent', 'UserIdX',"],
-  ['M14 ruta de la persona sin sesión', 'server.js', "verificarToken, require('./routes/pilotFeedback').person", "require('./routes/pilotFeedback').person"],
+  ['M14 agregados abiertos a cualquier rol', 'server.js', "verificarAdmin, require('./routes/pilotFeedback').admin", "verificarToken, require('./routes/pilotFeedback').admin"],
   ['M15 el permiso nuevo no es un propósito', 'utils/consent.js', '  pilot_feedback: { required: false },\n', ''],
   ['M16 permiso con versión de política ignorada', 'utils/consent.js', 'const isEffective = (row, purpose) => Boolean(row) && row.status === \'granted\' && row.version >= REQUIRED_VERSION[purpose];', 'const isEffective = (row, purpose) => Boolean(row) && row.status === \'granted\';'],
 ];
