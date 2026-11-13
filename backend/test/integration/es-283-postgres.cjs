@@ -1,6 +1,6 @@
 // ES-283 (E235-1) · Endurece las pruebas de la purga de ES-274 contra PostgreSQL REAL: (1) cada referencia del lado del profesional bloquea la purga POR SÍ SOLA (mata la mutación
 // «blocksPurge sin chosenTherapistId» y cualquier otra de una referencia); (2) un fallo REAL de la base (trigger) en cada paso de la purga revierte TODO (mata «el UPDATE de sesiones
-// fuera de la transacción»); (3) caracteriza lo que hoy pasa con ProfessionalApplications, para que cambiar esa decisión sea deliberado. No cambia comportamiento de producción.
+// fuera de la transacción»); (3) fijaba lo que pasaba con ProfessionalApplications; desde ES-293 (opción C, Mauricio 12-nov) la purga las MINIMIZA y la prueba completa vive en es-293.
 //   ES283_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54391/postgres node --test test/integration/es-283-postgres.cjs
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -94,17 +94,16 @@ test('ES-283 PostgreSQL: pruebas de la purga (referencias, fallo real por paso, 
     });
   }
 
-  // ── 3. ProfessionalApplications (pregunta abierta para Mauricio/Alejo): se CARACTERIZA lo que pasa hoy ───────────────────────────────────────────
-  await t.test('ProfessionalApplications: tras la purga de la persona su solicitud (nombre, correo, licencia, mensaje) SIGUE en la base con userId hacia la lápida — decisión pendiente', async () => {
+  // ── 3. ProfessionalApplications: decisión de Mauricio (ES-293, 12-nov-2026, opción C): la purga MINIMIZA la solicitud (solo estado y fechas). La prueba completa está en es-293. ──────────
+  await t.test('ProfessionalApplications (ES-293): tras la purga de la persona su solicitud YA NO conserva nombre, correo, licencia ni mensaje, ni su hoja de vida (opción C: solo estado y fechas)', async () => {
     const person = await mkUser('user'); await mood(person);
     const app = await seed('ProfessionalApplications', { name: 'Nombre Solicitante Sintético', email: 'solicitante-sintetico@example.test', country: 'Colombia', profession: 'Psicología',
       licenseNumber: 'LIC-SINTETICA-1', message: 'Mensaje libre de la solicitud', status: 'approved', consentAt: new Date(), userId: person.id });
     await seed('ProfessionalApplicationFiles', { ApplicationId: app.id });
     const out = await (await purge(person)).run();
     assert.equal(out.status, 'awaiting_verification', 'la purga de la persona procede: la solicitud no la bloquea');
-    const left = (await q('SELECT name,email,"licenseNumber",message,"userId" FROM "ProfessionalApplications" WHERE id=$1', [app.id]))[0];
-    // Si el equipo decide purgar (o minimizar) esta fila con la cuenta, ESTA aserción debe cambiar a propósito, junto con la excepción de es-88 y los textos de pantalla.
-    assert.deepEqual(left, { name: 'Nombre Solicitante Sintético', email: 'solicitante-sintetico@example.test', licenseNumber: 'LIC-SINTETICA-1', message: 'Mensaje libre de la solicitud', userId: person.id });
-    assert.equal((await q('SELECT count(*)::int n FROM "ProfessionalApplicationFiles" WHERE "ApplicationId"=$1', [app.id]))[0].n, 1, 'la hoja de vida de la solicitud también sigue');
+    const left = (await q('SELECT name,email,"licenseNumber",message,status,"userId" FROM "ProfessionalApplications" WHERE id=$1', [app.id]))[0];
+    assert.deepEqual(left, { name: 'Solicitud eliminada / Deleted application', email: `app-${app.id}@deleted.invalid`, licenseNumber: null, message: null, status: 'approved', userId: person.id });
+    assert.equal((await q('SELECT count(*)::int n FROM "ProfessionalApplicationFiles" WHERE "ApplicationId"=$1', [app.id]))[0].n, 0, 'la hoja de vida de la solicitud se borró');
   });
 });

@@ -122,6 +122,13 @@ async function retainedCategories(userId, transaction) {
   return found.sort((a, b) => RETAINED.findIndex(r => r[0] === a) - RETAINED.findIndex(r => r[0] === b));
 }
 
+// ES-293: categorías para el RECIBO de eliminación: lo que escribió el profesional (ES-274) y, aparte, la solicitud de profesional MINIMIZADA (solo estado y fechas). No alimenta el aviso de la exportación.
+async function receiptCategories(userId, transaction) {
+  const found = await retainedCategories(userId, transaction);
+  if (await require('./applicationMinimize').hasMinimized(userId, transaction)) found.push('professionalApplication');
+  return found;
+}
+
 async function personalData(user, locale, transaction) {
   const data = { schemaVersion: 1, type: 'personal', locale, profile: pick(user, PROFILE) };
   let bytes = Buffer.byteLength(JSON.stringify(data));
@@ -150,4 +157,4 @@ async function personalData(user, locale, transaction) {
   return data;
 }
 
-module.exports = { CORE, RETAINED, PURGE_ALSO, SESSION_PERSON_FIELDS, personalData, blocksPurge, retainedCategories };
+module.exports = { CORE, RETAINED, PURGE_ALSO, SESSION_PERSON_FIELDS, personalData, blocksPurge, retainedCategories, receiptCategories };
