@@ -61,7 +61,7 @@ const { pathToFileURL } = require('node:url');
 
     const { chromium } = process.env.PLAYWRIGHT_MODULE ? require(process.env.PLAYWRIGHT_MODULE) : await import('playwright');
     browser = await chromium.launch({ headless: true });
-    const frontend = process.env.ES255_PREVIEW_URL || 'http://127.0.0.1:4255'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname));
+    const frontend = process.env.ES255_PREVIEW_URL || 'http://127.0.0.1:4255'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname)); await require('./_buildSha.cjs')(frontend, assert);
     const axeSource = process.env.AXE_PATH ? fs.readFileSync(process.env.AXE_PATH, 'utf8') : '';
     async function axeCheck(page, label) {
       if (!axeSource) return;
@@ -166,7 +166,7 @@ const { pathToFileURL } = require('node:url');
     }
     console.log(`ES-255 servidor real: ${checks.length} comprobaciones superadas. Express + ruta del catálogo + PostgreSQL reales.`);
   } catch (error) {
-    console.error('ES-255 falló:', error); process.exitCode = 1;
+    console.error('ES-255 falló:', error); require('./_exitOnFailure.cjs').fail();
   } finally {
     if (browser) await browser.close(); if (server) await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
     if (sequelize) await sequelize.close(); if (started) await pg.stop(); try { fs.rmSync(directory, { recursive: true, force: true, maxRetries: 8, retryDelay: 300 }); } catch { /* Windows aún bloquea el directorio temporal */ }

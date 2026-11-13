@@ -233,7 +233,7 @@ const { pathToFileURL } = require('node:url');
     }
     console.log(`ES-179 PR B servidor real: ${checks.length} comprobaciones superadas. Express + rutas de sesiones + PostgreSQL migrado reales (Daily y proveedor de IA simulados).`);
   } catch (error) {
-    console.error('ES-179 falló:', error); process.exitCode = 1;
+    console.error('ES-179 falló:', error); require('./_exitOnFailure.cjs').fail();
   } finally {
     if (typeof realFetch !== 'undefined') global.fetch = realFetch;
     if (browser) await browser.close(); if (db) await db.end().catch(() => {}); if (server) await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });

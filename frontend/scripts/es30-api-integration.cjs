@@ -128,4 +128,4 @@ const ts = require('typescript');
     if (sequelize) await sequelize.close();
     if (started) await pg.stop();
   }
-})().catch(error => { console.error('ES-30 local integration failed:', error.name, error.message); process.exitCode = 1; });
+})().catch(error => { console.error('ES-30 local integration failed:', error.name, error.message); require('./_exitOnFailure.cjs').fail(); });

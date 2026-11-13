@@ -41,7 +41,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
     };
     const { chromium } = process.env.PLAYWRIGHT_MODULE ? require(process.env.PLAYWRIGHT_MODULE) : await import('playwright');
     browser = await chromium.launch({ headless: true });
-    const frontend = process.env.ES175C_URL || 'http://127.0.0.1:4257'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname));
+    const frontend = process.env.ES175C_URL || 'http://127.0.0.1:4257'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname)); await require('./_buildSha.cjs')(frontend, assert);
     const axeSource = process.env.AXE_PATH ? fs.readFileSync(process.env.AXE_PATH, 'utf8') : ''; const shots = process.env.SHOTS_DIR; if (shots) fs.mkdirSync(shots, { recursive: true });
     async function open(who, { lang = 'es', width = 1360, scheme = 'light', route = '/app/professional-reviews', intercept } = {}) {
       const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme }); const page = await context.newPage(); const errors = [];
@@ -149,7 +149,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       check('E268-6: «Descartar y salir» tras un enlace interno llega al destino (/app/dashboard), sin entrada muerta, sin guardar nada; «Seguir editando» conserva el texto'); }
     console.log(`ES-175 conexión: ${checks.length} comprobaciones superadas (Express + rutas reales de #262 + PostgreSQL real + Chromium).`);
   } catch (error) {
-    console.error('ES-175 conexión falló:', error); process.exitCode = 1;
+    console.error('ES-175 conexión falló:', error); require('./_exitOnFailure.cjs').fail();
   } finally {
     if (browser) await browser.close(); if (server) await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });
     if (sequelize) await sequelize.close(); if (started) await pg.stop(); try { fs.rmSync(directory, { recursive: true, force: true, maxRetries: 8, retryDelay: 300 }); } catch { /* Windows aún bloquea el directorio temporal */ }
