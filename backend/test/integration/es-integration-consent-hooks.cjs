@@ -33,7 +33,9 @@ test('Integración ES-23/25/27 en PostgreSQL: revocar el puente actúa en las tr
 
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'ExportRequest', 'DeletionRequest', 'RevokedToken', 'AuthRevocation',
-    'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion']) require('../../' + name);
+    'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion',
+    // E273-6: la purga (personalData.CORE) también borra la solicitud de profesional y sus archivos; sin estas tablas la prueba fallaba con «relation "ProfessionalApplications" does not exist».
+    'ProfessionalApplication', 'ProfessionalApplicationFile']) require('../../' + name);
   await sequelize.sync();
   const consent = require('../../utils/consent');
   const bridge = require('../../utils/careerContext');
