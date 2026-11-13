@@ -25,6 +25,7 @@ const { spawnSync } = require('node:child_process'); const { once } = require('n
       const page = await context.newPage(); const writes = []; const runtime = [];
       page.on('pageerror', e => runtime.push(e.message));
       await page.route('**/api/**', route => { if (route.request().method() !== 'GET') writes.push(route.request().method() + ' ' + new URL(route.request().url()).pathname); return route.fulfill({ json: [] }); });
+      await page.route('**/api/session', route => route.fulfill({ json: { role, onboardingCompleted: true } })); // ES-173: la sesión se verifica con /api/session (la simulación anterior devolvía [])
       const origin = `http://127.0.0.1:${server.address().port}`;
       return { page, context, origin, writes, runtime };
     }
