@@ -85,8 +85,9 @@ test('ES-159: el punto de partida va en el marco de persona con el tema de Carto
   assert.ok(!/#[0-9a-fA-F]{3,6}\b/.test(css), 'la hoja de Cartografía no trae colores fijos: todo sale de --cg-*')
 })
 
-test('ES-159 (E264-1): el texto de privacidad es verdadero con y sin autorización de compartir: no afirma que solo la persona lo ve', () => {
-  assert.ok(!/solo t[úu] ves|only you see/i.test(checkinEs['checkin.intro'] + checkinEn['checkin.intro']), 'sin la afirmación absoluta')
-  assert.match(checkinEs['checkin.intro'], /autorizaste compartir con tu profesional, también lo ve; si no, nadie más/)
-  assert.match(checkinEn['checkin.intro'], /allowed sharing with your professional, they can see it too; if not, no one else can/)
+test('ES-159 (E264-1): el texto de privacidad es verdadero: no afirma que solo la persona (ni «nadie más») lo ve; nombra al profesional autorizado, al equipo de la plataforma y a la IA', () => {
+  const both = checkinEs['checkin.intro'] + checkinEn['checkin.intro']
+  assert.ok(!/solo t[úu] ves|only you see|nadie más|no one else/i.test(both), 'sin promesas absolutas')
+  assert.match(checkinEs['checkin.intro'], /autorizaste compartir con tu profesional, también lo ve. Tu promedio de ánimo puede verlo el equipo de la plataforma y se usa, con apoyo de IA, para generar tus recomendaciones/)
+  assert.match(checkinEn['checkin.intro'], /allowed sharing with your professional, they can too. Your average mood can be seen by the platform team and is used, with AI support, to generate your recommendations/)
 })
