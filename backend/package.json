@@ -29,6 +29,7 @@
     "test:application-minimize:pg": "node --test test/integration/es-293-postgres.cjs",
     "test:professional-reviews:pg": "node --test test/integration/es-175-postgres.cjs",
     "test:pilot-feedback:pg": "node --test test/integration/es-173-postgres.cjs",
+    "test:register-terms:pg": "node --test test/integration/es-301-postgres.cjs",
     "test:purge-option-a:pg": "node --test test/integration/es-274-postgres.cjs",
     "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
     "test:session-room:pg": "node --test test/integration/es-179-postgres.cjs",

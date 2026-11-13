@@ -52,6 +52,15 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  // ES-301 — aceptación del aviso de privacidad y términos al registrarse (versión y fecha puestas por el servidor; NULL = sin aceptación registrada)
+  termsVersion: {
+    type: DataTypes.STRING(32),
+    allowNull: true
+  },
+  acceptedAt: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   // HU-077 — Pricing plans
   planId: {
     type: DataTypes.INTEGER,

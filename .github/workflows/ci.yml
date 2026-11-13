@@ -223,6 +223,10 @@ jobs:
         run: npm run test:pilot-feedback:pg
         env:
           ES173_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-301 registro con aceptación del aviso y términos - versión y fecha del servidor, 400 estables, carrera, ES-23 y migración (PostgreSQL real)
+        run: npm run test:register-terms:pg
+        env:
+          ES301_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: E273-6 revocar el puente actúa en las tres piezas y respeta la guarda de eliminación (PostgreSQL real; antes no corría en CI)
         run: npm run test:integration:pg
         env:
