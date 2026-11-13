@@ -219,6 +219,10 @@ jobs:
         run: npm run test:professional-reviews:pg
         env:
           ES175_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-173 mi opinión del piloto - permiso, versión, retiro real, agregados con umbral de 5, carreras y purga (PostgreSQL real)
+        run: npm run test:pilot-feedback:pg
+        env:
+          ES173_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-293 solicitud de profesional - la purga la minimiza (solo estado y fechas) (PostgreSQL real)
         run: npm run test:application-minimize:pg
         env:

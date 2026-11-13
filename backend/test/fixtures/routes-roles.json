@@ -56,6 +56,10 @@
     "denied": [],
     "session": true
   },
+  "DELETE /api/me/pilot-feedback": {
+    "denied": [],
+    "session": true
+  },
   "DELETE /api/me/review-shares/:id": {
     "denied": [],
     "session": true
@@ -134,6 +138,14 @@
     "session": true
   },
   "GET /api/admin/metrics/": {
+    "denied": [
+      "board",
+      "therapist",
+      "user"
+    ],
+    "session": true
+  },
+  "GET /api/admin/pilot-metrics/": {
     "denied": [
       "board",
       "therapist",
@@ -444,6 +456,10 @@
       "therapist",
       "user"
     ],
+    "session": true
+  },
+  "GET /api/me/pilot-feedback": {
+    "denied": [],
     "session": true
   },
   "GET /api/me/professional-reviews": {
@@ -1558,6 +1574,10 @@
       "therapist",
       "user"
     ],
+    "session": true
+  },
+  "PUT /api/me/pilot-feedback": {
+    "denied": [],
     "session": true
   },
   "PUT /api/plan-requests/admin/:id/approve": {
