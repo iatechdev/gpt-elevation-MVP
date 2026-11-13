@@ -1,7 +1,7 @@
 // ES-175 (HU-P24) · «Mis revisiones» de la persona, CONECTADA al servidor real (#262), con el sistema «Cartografía» (diseño aprobado: comentarios 11856, 11858 y 11956).
 // El servidor verifica propietario y permiso en cada acceso; esta pantalla solo muestra lo que responde, como TEXTO (React escapa), y conserva siempre lo que la persona escribió.
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Chip, TextAreaField } from '../cartografia/controls'
 import { Banner, Card } from '../cartografia/pieces'
 import { CartografiaRoot } from '../cartografia/theme'
@@ -34,7 +34,7 @@ function Dialog({ onKeep, onLeave }: { onKeep: () => void; onLeave: () => void }
 }
 
 function Active({ token }: { token: string }) {
-  const { t, lang } = useCopy()
+  const { t, lang } = useCopy(); const navigate = useNavigate()
   const api = useMemo(() => reviewsApi(API, token), [token])
   const [reviews, setReviews] = useState<ReviewView[] | null>(null)
   const [status, setStatus] = useState<'loading' | 'ok' | 'error' | 'session'>('loading')
@@ -50,6 +50,7 @@ function Active({ token }: { token: string }) {
   }, [api, attempt])
   useEffect(() => { if (flash) flashRef.current?.focus() }, [flash])
   const setDirty = useCallback((id: number, value: boolean) => setDrafts(previous => { if (Boolean(previous[id]) === value) return previous; const next = { ...previous }; if (value) next[id] = true; else delete next[id]; return next }), [])
+  const sentinel = useRef(false); const ignorePop = useRef(false)
   // Con texto escrito, salir de la página pide confirmación (recarga o enlace interno); nada se pierde en silencio.
   useEffect(() => {
     if (!dirty) return
@@ -59,13 +60,12 @@ function Active({ token }: { token: string }) {
       const anchor = (event.target as Element).closest?.('a[href]') as HTMLAnchorElement | null
       if (!anchor || anchor.origin !== window.location.origin || anchor.hash || anchor.target) return
       event.preventDefault(); event.stopImmediatePropagation()
-      setLeave(() => () => { window.location.assign(anchor.pathname + anchor.search) })
+      setLeave(() => () => { sentinel.current = false; navigate(anchor.pathname + anchor.search, { replace: true }) })
     }
     window.addEventListener('beforeunload', unload); document.addEventListener('click', click, true)
     return () => { window.removeEventListener('beforeunload', unload); document.removeEventListener('click', click, true) }
-  }, [dirty])
+  }, [dirty, navigate])
   // E268-4: «Atrás» del navegador. Con texto escrito se añade UNA entrada de historial como tope: al pulsar atrás se vuelve a poner y se pregunta; «Descartar y salir» retrocede de verdad (2 pasos).
-  const sentinel = useRef(false); const ignorePop = useRef(false)
   useEffect(() => {
     if (dirty && !sentinel.current) { window.history.pushState({ cgfGuard: true }, ''); sentinel.current = true }
     if (!dirty && sentinel.current) { sentinel.current = false; ignorePop.current = true; window.history.back() }

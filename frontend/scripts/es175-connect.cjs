@@ -136,6 +136,17 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       await page.goBack(); await page.getByRole('dialog').waitFor({ timeout: 8000 }); await page.getByRole('button', { name: 'Descartar y salir' }).click(); await page.waitForURL(/manifiesto/, { timeout: 8000 });
       assert.equal(await dbCount('SELECT count(*) n FROM "ReviewObjections" WHERE "UserId"=:u', { u: s.person.id }), 0, 'descartar no guarda nada'); await context.close();
       check('E268-4: con texto escrito la recarga y «Atrás» piden confirmación (diálogo accesible); «Seguir editando» conserva el texto; «Descartar y salir» retrocede y no guarda nada'); }
+    // 9) E268-6: «Descartar y salir» tras pulsar un ENLACE interno completa esa navegación (y no deja una entrada muerta en el historial)
+    { const s = await scene(); const { context, page } = await open(s.person, { route: '/manifiesto' }); await page.goto(frontend + '/app/professional-reviews'); await page.locator('.cgf-review').waitFor({ timeout: 8000 });
+      const before = await page.evaluate(() => history.length);
+      await page.getByRole('button', { name: 'Objetar revisión' }).click(); await page.locator('.cgf-form textarea').fill('Texto antes de pulsar un enlace');
+      await page.getByRole('link', { name: /Volver al inicio/ }).click(); await page.getByRole('dialog').waitFor({ timeout: 8000 }); assert.ok(page.url().includes('professional-reviews'), 'el diálogo aparece sin salir');
+      await page.getByRole('button', { name: 'Seguir editando' }).click(); assert.equal(await page.locator('.cgf-form textarea').inputValue(), 'Texto antes de pulsar un enlace');
+      await page.getByRole('link', { name: /Volver al inicio/ }).click(); await page.getByRole('dialog').waitFor({ timeout: 8000 });       await page.getByRole('button', { name: 'Descartar y salir' }).click();
+      await page.waitForURL(/\/app\/dashboard/, { timeout: 8000 }); assert.ok(page.url().includes('/app/dashboard'), 'llegó al destino del enlace');
+      assert.equal(await page.evaluate(() => history.length), before + 1, 'una sola entrada nueva: la de tope se reemplazó por el destino');
+      await page.goBack(); await page.waitForURL(/professional-reviews/, { timeout: 8000 }); assert.equal(await dbCount('SELECT count(*) n FROM "ReviewObjections" WHERE "UserId"=:u', { u: s.person.id }), 0, 'nada se guardó'); await context.close();
+      check('E268-6: «Descartar y salir» tras un enlace interno llega al destino (/app/dashboard), sin entrada muerta, sin guardar nada; «Seguir editando» conserva el texto'); }
     console.log(`ES-175 conexión: ${checks.length} comprobaciones superadas (Express + rutas reales de #262 + PostgreSQL real + Chromium).`);
   } catch (error) {
     console.error('ES-175 conexión falló:', error); process.exitCode = 1;
