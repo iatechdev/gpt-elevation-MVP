@@ -1,7 +1,9 @@
 export type Answer = 'yes' | 'no' | 'unsure' | null
 export type Category = 'ideas' | 'experience' | 'next_step' | 'other'
 export type Answers = { initialValue: Answer; valueArea: 'personal' | 'career' | 'both' | null; listened: Answer; respected: Answer; professionalClarity: Answer | 'not_explored'; helpedBy: Category[] }
-export type Feedback = { synthetic: true; version: number; questionnaireVersion: 1; window: 'day7' | 'day30'; permission: 'fixture_only' | 'not_configured'; answers: Answers | null; lastRequestId: string | null }
+// 'fixture_only' / 'not_configured': simulación. 'granted' / 'missing': modo real (permiso pilot_feedback vigente o no).
+export type Feedback = { synthetic: boolean; version: number; questionnaireVersion: 1; window: 'day7' | 'day30'; permission: 'fixture_only' | 'not_configured' | 'granted' | 'missing'; answers: Answers | null; lastRequestId: string | null }
+export function canSave(f: Feedback | null) { return f?.permission === 'fixture_only' || f?.permission === 'granted' }
 export type Intent = Readonly<{ requestId: string; baseVersion: number; questionnaireVersion: 1; answers: Answers }>
 export type Metric = { key: 'activation' | 'experiment' | 'listening' | 'utility'; status: 'not_configured' | 'not_available' | 'in_progress' | 'suppressed' | 'ready'; counts?: { eligible: number; responded: number; missing: number; positive: number } }
 export type Metrics = { synthetic: true; metrics: Metric[] }
@@ -13,6 +15,12 @@ export function validAnswers(v: unknown): v is Answers {
   const a = v as Record<string, unknown>
   if (Object.keys(a).sort().join() !== Object.keys(emptyAnswers()).sort().join()) return false
   return ['initialValue', 'listened', 'respected'].every(k => [null, 'yes', 'no', 'unsure'].includes(a[k] as string | null)) && [null, 'yes', 'no', 'unsure', 'not_explored'].includes(a.professionalClarity as string | null) && [null, 'personal', 'career', 'both'].includes(a.valueArea as string | null) && (a.initialValue === 'yes' || a.valueArea === null) && Array.isArray(a.helpedBy) && a.helpedBy.every(v => categories.includes(v)) && new Set(a.helpedBy).size === a.helpedBy.length && a.helpedBy.length <= 4
+}
+// Compara respuestas por CONTENIDO, no por orden de claves: PostgreSQL (JSONB) devuelve las claves en otro orden que el enviado.
+export function sameAnswers(a: Answers | null, b: Answers | null) {
+  if (!a || !b) return a === b
+  const keys = Object.keys(emptyAnswers()) as (keyof Answers)[]
+  return keys.every(k => JSON.stringify(a[k]) === JSON.stringify(b[k]))
 }
 export function hasAnswers(a: Answers) { return a.initialValue !== null || a.listened !== null || a.respected !== null || a.professionalClarity !== null || a.helpedBy.length > 0 }
 export function makeIntent(a: Answers, version: number, requestId = crypto.randomUUID()): Intent {

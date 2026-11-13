@@ -6,7 +6,15 @@
 @font-face { font-family: 'Barlow Condensed Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 700; size-adjust: 68%; }
 @font-face { font-family: 'Barlow Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 500; size-adjust: 96%; }
 @font-face { font-family: 'Barlow Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 600 700; size-adjust: 90%; }
-.prg { --cg-font-cond: 'Barlow Condensed', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow', 'Barlow Fallback', system-ui, sans-serif; }
+/* E275-1: la tipografía real llega DESPUÉS de pintar (con la CPU lenta, a los 4 s) y los párrafos de la cabecera cambian de renglón y arrastran el formulario ya pintado (CLS 0,167).
+   Aquí se declaran las mismas tipografías (mismos archivos, no se descarga ninguno más) con font-display: optional: si no llegan casi al instante se queda la de respaldo con las métricas
+   ajustadas durante TODA la vista (sin cambio de tipografía a mitad = sin desplazamiento); el navegador igualmente las descarga y en la siguiente visita salen ya de la caché. */
+@font-face { font-family: 'Barlow Opt'; font-style: normal; font-weight: 400; font-display: optional; src: url('@fontsource/barlow/files/barlow-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Opt'; font-style: normal; font-weight: 600; font-display: optional; src: url('@fontsource/barlow/files/barlow-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed Opt'; font-style: normal; font-weight: 500; font-display: optional; src: url('@fontsource/barlow-condensed/files/barlow-condensed-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed Opt'; font-style: normal; font-weight: 600; font-display: optional; src: url('@fontsource/barlow-condensed/files/barlow-condensed-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed Opt'; font-style: normal; font-weight: 700; font-display: optional; src: url('@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2') format('woff2'); }
+.cg.prg { --cg-font-cond: 'Barlow Condensed Opt', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow Opt', 'Barlow Fallback', system-ui, sans-serif; }
 /* E272-1: con barra de desplazamiento clásica, al llegar los datos aparecía la barra y el texto de la cabecera cambiaba de renglón; el hueco queda reservado. */
 :root:has(.prg) { scrollbar-gutter: stable; }
 .prg { min-height: 100dvh; padding: 0 var(--cg-s4); }
@@ -39,5 +47,7 @@
 .prg-question .cg-scale { display: flex; flex-wrap: wrap; gap: var(--cg-s2) var(--cg-s4); }
 .prg-checks { border: 0; padding: 0; margin: 0; display: grid; gap: var(--cg-s2); min-width: 0; }
 .prg-checks legend { padding: 0; margin-bottom: var(--cg-s2); }
+/* E275-1: el estado del permiso y su botón van en columna: la altura no depende de si el botón cabe en el renglón con la tipografía de respaldo o con la real. */
+.prg-permission { display: grid; gap: var(--cg-s2, 0.5rem); justify-items: start; }
 .prg-actions { display: flex; gap: var(--cg-s3); flex-wrap: wrap; align-items: center; }
 .prg-status { min-height: 1.6em; }
