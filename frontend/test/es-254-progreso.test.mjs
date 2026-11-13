@@ -6,9 +6,10 @@ import { readFileSync } from 'node:fs'
 import { progressEs, progressEn } from '../src/pages/progressCopy.ts'
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8').replace(/\r\n/g, '\n')
+// ES-173: la página se repartió en UserProgress.tsx (lectura y estados), progress/ProgressPanel.tsx (cifras e historial) y progress/ProgressMatching.tsx (emparejamiento).
 const page = read('../src/pages/UserProgress.tsx')
-// el modal «Buscar terapeuta» (ES-169 PR2) queda fuera de este ticket: se revisa solo lo que está antes de él
-const progressPart = page.slice(0, page.indexOf('HU-060 — MATCHING MODAL'))
+const panel = read('../src/progress/ProgressPanel.tsx')
+const progressPart = page + panel
 
 test('ES-254: la pantalla de progreso no usa emojis ni estrellas como indicador', () => {
   assert.doesNotMatch(progressPart, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|★|☆/u) // E254-1: ni el botón «Buscar terapeuta» del encabezado lleva emoji (el modal es de ES-169 PR2)
@@ -17,12 +18,13 @@ test('ES-254: la pantalla de progreso no usa emojis ni estrellas como indicador'
 })
 
 test('ES-254: cifras como «N de 5», tendencia en texto y aviso no clínico', () => {
-  assert.match(page, /fill\(t\('pr_of5'\), \{ n: avg\(stats\.avgMood\) \}\)/)
-  assert.match(page, /fill\(t\('pr_of5'\), \{ n: avg\(stats\.avgRating\) \}\)/)
-  assert.match(page, /t\(level\(log\.checkout_mood\) > level\(log\.checkin_mood\) \? 'pr_up' : level\(log\.checkout_mood\) < level\(log\.checkin_mood\) \? 'pr_down' : 'pr_same'\)/)
+  assert.match(panel, /fill\(t\('pr_of5'\), \{ n: avg\(stats\.avgMood\) \}\)/)
+  assert.match(panel, /fill\(t\('pr_of5'\), \{ n: avg\(stats\.avgRating\) \}\)/)
+  // la tendencia sale de trendOf (palabra pr_up / pr_same / pr_down); el símbolo solo la acompaña (ES-173: palabra + símbolo)
+  assert.match(panel, /trendOf\(log\.checkin_mood as number, log\.checkout_mood as number\)/); assert.match(panel, /\{ up: 'pr_up', same: 'pr_same', down: 'pr_down' \}/)
   assert.match(page, /<p role="note"[^>]*>\{t\('pr_note'\)\}<\/p>/)
   // error recuperable con «Reintentar»
-  assert.match(page, /\{failed && <div role="alert"/); assert.match(page, /setAttempt\(value => value \+ 1\)/)
+  assert.match(page, /kind="error" title=\{t\('pr_error'\)\}/); assert.match(page, /setAttempt\(value => value \+ 1\)/)
   // una calificación vacía no se muestra como «1 de 5»
   assert.match(page, /filter\(\(row: SessionRating\) => typeof row\.rating === 'number'\)/)
 })
