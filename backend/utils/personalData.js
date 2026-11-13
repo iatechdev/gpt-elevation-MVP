@@ -67,6 +67,8 @@ const CORE = [
   ['reviewObjections', 'ReviewObjection', 'UserId', ['id', 'reviewId', 'reason', 'locale', 'createdAt'], ['reason']],
   ['professionalReviews', 'ProfessionalReview', 'UserId', ['id', 'shareId', 'reviewerId', 'materialVersion', 'evidenceRefs', 'observation', 'limits', 'locale', 'supersedesId', 'createdAt'], ['observation', 'limits']],
   ['reviewShares', 'ReviewShare', 'UserId', ['id', 'reviewerId', 'materialVersion', 'evidenceRefs', 'status', 'revokedAt', 'createdAt']],
+  // ES-173: la opinión de la persona sobre el piloto (catálogo cerrado, sin texto libre). Se exporta lo que ella respondió y se purga con la cuenta; nadie más la ve (solo agregados con umbral ≥ 5). No se exporta `lastRequestId` (referencia técnica).
+  ['pilotFeedbacks', 'PilotFeedback', 'UserId', ['id', 'windowKey', 'questionnaireVersion', 'answers', 'version', 'status', 'createdAt', 'updatedAt']],
   ['invitations', 'Invitation', 'acceptedUserId', ['id', 'role', 'expiresAt', 'usedAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];

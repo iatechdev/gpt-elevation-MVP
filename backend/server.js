@@ -125,6 +125,7 @@ app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));  
 app.use('/api/skill-analysis',  verificarToken, require('./routes/skillAnalysis'));  // ES-89 — análisis de IA del contexto profesional (worker)
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
 app.use('/api/me',              verificarToken, require('./routes/professionalReviews')); // ES-175 — revisiones recibidas, objeción y autorización (la persona)
+app.use('/api/me',              verificarToken, require('./routes/pilotFeedback').person); // ES-173 — «Mi opinión» del piloto (la persona: leer, guardar, retirar)
 app.use('/api/reviewer',        verificarTerapeuta, require('./routes/reviewer'));        // ES-175 — lado mínimo del revisor (rol therapist)
 app.use('/api/insights',        verificarToken, require('./routes/insights'));       // ES-121 — insights de El Puente (propuestas de la IA)
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
@@ -154,6 +155,7 @@ app.use('/api/admin/skill-catalog', verificarAdmin, require('./routes/skillCatal
 app.use('/api/admin/route-catalog', verificarAdmin, require('./routes/routeCatalogAdmin')); // ES-31 — catálogo de rutas (backoffice)
 app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
 app.use('/api/admin/professional-applications', verificarAdmin, require('./routes/professionalApplications').adminRouter); // ES-95 — solicitudes (backoffice)
+app.use('/api/admin/pilot-metrics', verificarAdmin, require('./routes/pilotFeedback').admin); // ES-173 — agregados de la opinión (≥ 5 personas; nunca individuales)
 app.use('/api/admin/metrics',       verificarAdmin, require('./routes/adminMetrics'));
 app.use('/api/admin/matching',      verificarAdmin, require('./routes/matching'));
 app.use('/api/admin/pricing',       verificarAdmin, require('./routes/pricing'));
