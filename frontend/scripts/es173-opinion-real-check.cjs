@@ -23,10 +23,10 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.svg': 'image/svg+xml' })[path.extname(file)] || 'text/html'); res.end(fs.readFileSync(file));
     }); server.listen(0, '127.0.0.1'); await once(server, 'listening'); servers.push(server); return `http://127.0.0.1:${server.address().port}`;
   };
-  const build = (name, live, preview) => {
+  const build = (name, live, preview, backendUrl = '') => {
     const out = path.join(tmp, name);
     const result = spawnSync(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', out], { cwd: root, encoding: 'utf8',
-      env: { ...process.env, VITE_ENABLE_PILOT_FEEDBACK_LIVE: live ? 'true' : 'false', VITE_ENABLE_PILOT_FEEDBACK_PREVIEW: preview ? 'true' : 'false', VITE_PILOT_FEEDBACK_SCENARIO: '', VITE_BACKEND_URL: '' } });
+      env: { ...process.env, VITE_ENABLE_PILOT_FEEDBACK_LIVE: live ? 'true' : 'false', VITE_ENABLE_PILOT_FEEDBACK_PREVIEW: preview ? 'true' : 'false', VITE_PILOT_FEEDBACK_SCENARIO: '', VITE_BACKEND_URL: backendUrl } });
     if (result.status !== 0) throw new Error('build ' + name + ': ' + result.stderr); return out;
   };
   try {
@@ -37,7 +37,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
     for (const name of ['PricingPlan', 'User', 'Consent', 'ConsentEvent', 'PilotFeedback', 'RevokedToken', 'AuthRevocation', 'DeletionRequest']) fromBackend('./' + name);
     await sequelize.sync();
     const User = fromBackend('./User'); const q = async (sql, replacements = []) => (await sequelize.query(sql, { bind: replacements, type: 'SELECT' }));
-    const express = fromBackend('express'); const app = express(); app.use(express.json()); const { verificarToken } = fromBackend('./middlewares/auth');
+    const express = fromBackend('express'); const app = express(); app.use(fromBackend('cors')()); app.use(express.json()); const { verificarToken } = fromBackend('./middlewares/auth');
     app.use('/api/consents', verificarToken, fromBackend('./routes/consents')); app.use('/api/me', verificarToken, fromBackend('./routes/pilotFeedback').person);
     apiServer = app.listen(0, '127.0.0.1'); await once(apiServer, 'listening'); const apiUrl = `http://127.0.0.1:${apiServer.address().port}`;
     const sessions = fromBackend('./utils/sessions'); let counter = 0;
@@ -45,7 +45,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
     const rowOf = async user => (await q('SELECT * FROM "PilotFeedbacks" WHERE "UserId"=$1', [user.id]))[0];
     const consentOf = async user => (await q('SELECT status FROM "Consents" WHERE "UserId"=$1 AND purpose=\'pilot_feedback\'', [user.id]))[0];
 
-    const liveOrigin = await serve(build('live', true, false)); const offOrigin = await serve(build('off', false, true));
+    const liveOrigin = await serve(build('live', true, false, apiUrl)); const offOrigin = await serve(build('off', false, true));
     const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright'); browser = await chromium.launch({ headless: true });
     const axeSource = process.env.AXE_PATH ? fs.readFileSync(process.env.AXE_PATH, 'utf8') : ''; assert.ok(axeSource, 'Se necesita AXE_PATH (axe.min.js)');
     const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -55,19 +55,22 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       const small = await page.evaluate(() => [...document.querySelectorAll('main button, main a, header a, header button, dialog button')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && getComputedStyle(e).visibility !== 'hidden' && (r.height < 24 || r.width < 24); }).map(e => e.tagName + ':' + (e.textContent || '').slice(0, 20)));
       assert.deepEqual(small, [], label + ': objetivos ≥ 24 px');
     };
-    async function open(origin, who, { lang = 'es', width = 390, scheme = 'light', cpu = 1 } = {}) {
-      const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce', timezoneId: 'America/Bogota' }); const page = await context.newPage();
+    async function open(origin, who, { lang = 'es', width = 390, scheme = 'light', cpu = 1, fontDelay = 0 } = {}) {
+      const context = await browser.newContext({ viewport: { width, height: cpu > 1 ? 844 : 900 }, colorScheme: scheme, ...(cpu > 1 ? {} : { reducedMotion: 'reduce' }), timezoneId: 'America/Bogota' }); const page = await context.newPage();
       const runtime = []; const requests = []; page.on('pageerror', e => runtime.push(e.message));
       if (cpu > 1) await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: cpu });
       await context.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l);
-        window.__cls = 0; new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); }, [who.token, lang]);
+        window.__cls = 0; window.__shifts = []; new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) { window.__cls += e.value; window.__shifts.push(Math.round(e.startTime) + 'ms ' + e.value.toFixed(3) + ' ' + (e.sources || []).map(s => (s.node && s.node.nodeName + '.' + (s.node.className || '') + ' y' + Math.round(s.previousRect.y) + '>' + Math.round(s.currentRect.y) + ' h' + Math.round(s.previousRect.height) + '>' + Math.round(s.currentRect.height) + ' ' + String(s.node.textContent).slice(0, 25))).slice(0, 4).join(' | ')); } }).observe({ type: 'layout-shift', buffered: true }); }, [who.token, lang]);
+      // Las peticiones de opinión/permiso van DIRECTO al servidor real (sin pasar por el navegador: así el momento de llegada de los datos es el real, E275-1); el resto de /api se simula.
+      page.on('request', r => { const url = new URL(r.url()); if (/^\/api\/(me|consents)\//.test(url.pathname)) requests.push(r.method() + ' ' + url.pathname + url.search); });
+      await page.route('**/api/**', r => (/^\/api\/(me|consents)\//.test(new URL(r.request().url()).pathname) ? r.continue() : r.fulfill({ json: {} })));
+      if (fontDelay) await page.route(/.woff2$/, async r => { await new Promise(res => setTimeout(res, fontDelay)); return r.continue(); }); // tipografía tardía (E275-1)
       await page.route('**/api/session', r => r.fulfill({ json: { role: 'user', onboardingCompleted: true } }));
-      await page.route(/\/api\/(me|consents)\//, async r => { const url = new URL(r.request().url()); requests.push(r.request().method() + ' ' + url.pathname + url.search); return r.fulfill({ response: await r.fetch({ url: apiUrl + url.pathname + url.search }) }); });
-      await page.route('**/api/**', r => (/\/api\/(me|consents|session)/.test(r.request().url()) ? r.fallback() : r.fulfill({ json: {} })));
       await page.goto(origin + '/app/feedback'); return { context, page, runtime, requests };
     }
     const radio = (page, legend, label) => page.getByRole('group', { name: legend }).getByRole('radio', { name: label, exact: true });
 
+    if (!process.env.ONLY_CLS) {
     // 0) SIN bandera: simulación (franja) y CERO peticiones a /api/me/pilot-feedback ni a /api/consents
     { const who = await mkUser(); const { context, page, requests, runtime } = await open(offOrigin, who);
       await page.getByRole('heading', { level: 1 }).waitFor(); await page.getByText(copy.es.preview).waitFor(); await page.waitForTimeout(1200);
@@ -119,14 +122,25 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       await page.getByRole('button', { name: c.l_review }).click(); await page.getByText(c.l_empty).waitFor().catch(() => undefined); await context.close(); }
     check('403 sin permiso (nada guardado, se ofrece dar permiso) y 409 por versión (el borrador se conserva, «Revisar versión guardada»)');
 
+    }
     // 4) CLS ≤ 0,1 a 390 px con CPU ×4 (modo real: sin permiso y con respuesta guardada), ES y EN
     for (const lang of ['es', 'en']) for (const state of ['sin permiso', 'con respuesta']) {
-      const who = await mkUser(); if (state === 'con respuesta') { await sequelize.query('INSERT INTO "Consents"("UserId",purpose,scope,status,version,"createdAt","updatedAt") VALUES ($1,\'pilot_feedback\',\'default\',\'granted\',1,now(),now())', { bind: [who.user.id] }).catch(() => undefined);
+      const who = await mkUser(); if (state === 'con respuesta') { await sequelize.query('INSERT INTO "Consents"("UserId",purpose,scope,status,version,"decidedAt","createdAt","updatedAt") VALUES ($1,\'pilot_feedback\',\'default\',\'granted\',1,now(),now(),now())', { bind: [who.user.id] });
         await sequelize.query('INSERT INTO "PilotFeedbacks"("UserId","windowKey","questionnaireVersion",answers,version,status,"lastRequestId","createdAt","updatedAt") VALUES ($1,\'day7\',1,$2,1,\'active\',\'req-seed-0001\',now(),now())', { bind: [who.user.id, JSON.stringify({ initialValue: 'yes', valueArea: 'career', listened: 'yes', respected: 'yes', professionalClarity: 'yes', helpedBy: ['ideas'] })] }); }
-      const { context, page } = await open(liveOrigin, who, { lang, cpu: 4 }); await page.getByRole('heading', { level: 1 }).waitFor(); await page.waitForTimeout(3500);
-      const cls = await page.evaluate(() => window.__cls); assert.ok(cls <= 0.1, `CLS real ${lang} ${state}: ${cls.toFixed(3)} > 0,1`); console.log(`  CLS real ${lang} ${state}: ${cls.toFixed(3)}`); await context.close();
+      const { context, page } = await open(liveOrigin, who, { lang, cpu: 4 }); await page.getByRole('heading', { level: 1 }).waitFor(); await page.waitForTimeout(7000); // la tipografía con CPU ×4 llega hacia los 4–5 s (E275-1): hay que medir MÁS allá
+      const cls = await page.evaluate(() => window.__cls); console.log(`  CLS real ${lang} ${state}: ${cls.toFixed(3)}`, await page.evaluate(() => window.__shifts)); await context.close(); assert.ok(cls <= 0.05, `CLS real ${lang} ${state}: ${cls.toFixed(3)} > 0,05`);
     }
-    check('CLS ≤ 0,1 a 390 px con CPU ×4 en el modo real (ES/EN, sin permiso y con respuesta)');
+    check('CLS ≤ 0,05 a 390 px con CPU ×4 en el modo real (ES/EN, sin permiso y con respuesta)');
+    // E275-1: con la tipografía MUY tardía (4 s) la pantalla ya es útil desde el principio con la tipografía de respaldo y, al llegar la real, NO cambia de tipografía a mitad (font-display: optional) ni se desplaza
+    for (const lang of ['es', 'en']) {
+      const who = await mkUser(); await sequelize.query('INSERT INTO "Consents"("UserId",purpose,scope,status,version,"decidedAt","createdAt","updatedAt") VALUES ($1,\'pilot_feedback\',\'default\',\'granted\',1,now(),now(),now())', { bind: [who.user.id] });
+      await sequelize.query('INSERT INTO "PilotFeedbacks"("UserId","windowKey","questionnaireVersion",answers,version,status,"lastRequestId","createdAt","updatedAt") VALUES ($1,\'day7\',1,$2,1,\'active\',\'req-seed-0002\',now(),now())', { bind: [who.user.id, JSON.stringify({ initialValue: 'yes', valueArea: 'career', listened: 'yes', respected: 'yes', professionalClarity: 'yes', helpedBy: ['ideas'] })] });
+      const { context, page } = await open(liveOrigin, who, { lang, fontDelay: 4000 }); await page.getByRole('heading', { level: 1 }).waitFor(); await page.waitForTimeout(2000);
+      assert.ok(await page.getByRole('button', { name: copy[lang].l_save }).isVisible(), 'con la tipografía tardía el formulario ya se ve (no se esconde esperándola)'); assert.ok(/Opt/.test(await page.locator('main p.cg-muted').first().evaluate(e => getComputedStyle(e).fontFamily)), 'usa la familia con font-display: optional');
+      await page.waitForTimeout(5500);
+      const cls = await page.evaluate(() => window.__cls); assert.ok(cls <= 0.05, `CLS con tipografía tardía ${lang}: ${cls.toFixed(3)}`); console.log(`  CLS tipografía tardía ${lang}: ${cls.toFixed(3)}`, await page.evaluate(() => window.__shifts)); await context.close();
+    }
+    check('tipografía tardía (4 s): formulario visible desde el principio, sin cambio de tipografía a mitad y CLS ≤ 0,05 (ES/EN)');
     console.log(`\n${checks.length} comprobaciones: todas PASS`);
   } catch (error) { console.error('ES-173 modo real falló:', error); require('./_exitOnFailure.cjs').fail(); }
   finally { await browser?.close(); for (const s of servers) s.close(); apiServer?.close(); await sequelize?.close().catch(() => {}); if (started) await pg.stop().catch(() => {}); fs.rmSync(tmp, { recursive: true, force: true }); }

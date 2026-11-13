@@ -129,7 +129,7 @@ function FeedbackSession({ token, live }: { token: string; live: boolean }) {
     {notice === 'loadError' && <div className="prg-actions"><Button onClick={() => { void load(true) }}>{c.retry}</Button></div>}
     {live && !loading && saved && (saved.permission === 'missing'
       ? <Card as="div" className="prg-question"><h2 className="cg-h2">{c.grantTitle}</h2><p>{c.grantText}</p><div className="prg-actions"><Button disabled={busy} onClick={() => void changePermission(true)}>{c.grant}</Button></div></Card>
-      : <div className="prg-actions"><span className="cg-muted cg-small">{c.permissionActive}</span><Button variant="ghost" disabled={busy || !!intent} onClick={() => setDialog('permission')}>{c.revokePermission}</Button></div>)}
+      : <div className="prg-permission"><span className="cg-muted cg-small">{c.permissionActive}</span><Button variant="ghost" disabled={busy || !!intent} onClick={() => setDialog('permission')}>{c.revokePermission}</Button></div>)}
     {!loading && saved && <form className="prg-form" onSubmit={event => { event.preventDefault(); void send() }}>
       {group('initialValue')}{draft.initialValue === 'yes' && group('valueArea')}{group('listened')}{group('respected')}{group('professionalClarity')}
       <Card as="div" className="prg-question">

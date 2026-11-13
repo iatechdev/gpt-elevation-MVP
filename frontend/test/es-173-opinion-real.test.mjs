@@ -114,3 +114,11 @@ test('ES-173 (c): comparar respuestas es por CONTENIDO, no por orden de claves (
   assert.equal(sameAnswers({ ...reordered, listened: 'no' }, answers), false); assert.equal(sameAnswers({ ...reordered, helpedBy: [] }, answers), false)
   assert.equal(sameAnswers(null, null), true); assert.equal(sameAnswers(null, answers), false)
 })
+
+test('ES-173 (c, E275-1): la tipografía de «Tu opinión»/«Tu progreso» no cambia a mitad de la vista (font-display: optional, métricas de respaldo) y el estado del permiso no depende del renglón', () => {
+  const css = read('../src/progress/progress.css')
+  assert.equal((css.match(/font-display: optional; src/g) || []).length, 5, 'las cinco caras (Barlow 400/600, Barlow Condensed 500/600/700) con optional')
+  assert.match(css, /\.cg\.prg \{ --cg-font-cond: 'Barlow Condensed Opt'[^}]*--cg-font-sans: 'Barlow Opt', 'Barlow Fallback'/, 'la regla gana a la de .cg (misma especificidad no bastaba: la tipografía real seguía entrando tarde)')
+  assert.match(css, /\.prg-permission \{ display: grid;/)
+  const page = read('../src/pilot/FeedbackPage.tsx'); assert.match(page, /className="prg-permission"/); assert.doesNotMatch(page, /<div className="prg-actions"><span className="cg-muted cg-small">\{c\.permissionActive\}/)
+})
