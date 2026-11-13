@@ -65,3 +65,22 @@ test('ES-175 conexión: textos ES/EN completos para cada estado nuevo', () => {
   for (const key of ['validationBanner', 'reviewsEmpty', 'reviewerFallback', 'evidenceUnavailable', 'sessionExpired', 'login', 'objectionUncertain', 'checkAgain', 'consentRevoked', 'reviewGone', 'alreadyObjected', 'requestConflict', 'objectionSaved', 'reloadError', 'reloadList'])
     for (const lang of ['es', 'en']) assert.ok(copy[lang][`facilitation.${key}`]?.length > 2, `${lang}.${key}`)
 })
+
+test('ES-175 conexión (E268-1): la tarjeta muestra SOLO datos del servidor o textos fijos de la pantalla; ningún texto de la vista previa sintética (título de ejemplo, «Facilitador sintético», muestra, etc.)', () => {
+  const screen = read('../src/facilitation/PersonReviews.tsx')
+  const used = [...screen.matchAll(/\bt\('([A-Za-z]+)'\)/g)].map((m) => m[1])
+  for (const key of ['sampleTitle', 'sample', 'evidenceTitle', 'evidence', 'source', 'reviewer', 'participantDemo', 'synthetic', 'preview', 'pendingAuth', 'person'.replace('person', 'privacy')]) assert.ok(!used.includes(key), 'texto del fixture en la pantalla: ' + key)
+  assert.match(screen, /t\('reviewHeading'\)\} · \{t\('materialVersionLabel'\)\} \{review\.materialVersion\}/)
+  // y el texto del fixture no puede colarse por una clave nueva: ningún valor de las claves que usa la pantalla lleva el título de ejemplo
+  for (const lang of ['es', 'en']) for (const key of new Set(used)) assert.ok(!/Explicar una tarea|Explain a task|sint[eé]tic|synthetic/i.test(copy[lang]['facilitation.' + key] ?? ''), lang + '.' + key)
+})
+
+test('ES-175 conexión (E268-5): el texto de revisores y objeciones no se interpreta como HTML; el 403 y los errores conservan el texto; hay aviso al recargar y guarda del botón «Atrás»', () => {
+  const screen = read('../src/facilitation/PersonReviews.tsx')
+  assert.doesNotMatch(screen, /dangerouslySetInnerHTML|innerHTML|insertAdjacentHTML|document\.write/)
+  const confirm = screen.slice(screen.indexOf('async function confirm()'), screen.indexOf('function submit('))
+  assert.equal((confirm.match(/reset\(\)/g) ?? []).length, 3, 'reset() solo en éxito, already y gone')
+  const consent = confirm.slice(confirm.indexOf("result.kind === 'conflict'"))
+  assert.doesNotMatch(consent, /reset\(\)|setText\(''\)/, 'conflicto, consentimiento e incierto NO borran el texto')
+  assert.match(screen, /addEventListener\('beforeunload', unload\)/); assert.match(screen, /addEventListener\('popstate', pop\)/); assert.match(screen, /window\.history\.go\(-2\)/)
+})

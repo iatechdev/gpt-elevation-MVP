@@ -20,3 +20,8 @@
 .cgf .fac-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .cgf-main > section { display: grid; gap: var(--cg-s4); }
 .cgf-main > section > p { margin: 0; }
+
+/* E268-2/3 (WCAG 1.4.10): ningún texto largo sin espacios desborda a 390/320 px; los hijos de la rejilla pueden encogerse. */
+.cgf-main, .cgf-main * { overflow-wrap: anywhere; }
+.cgf-list > li, .cgf-review, .cgf-event, .cgf-form, .cgf-main > * { min-width: 0; }
+.cgf-review .cg-textarea { box-sizing: border-box; max-width: 100%; }

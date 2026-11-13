@@ -27,7 +27,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
     const express = fromBackend('express'); const app = express(); app.use(express.json());
     app.use('/api/me', fromBackend('./middlewares/auth').verificarToken, fromBackend('./routes/professionalReviews'));
     server = app.listen(0, '127.0.0.1'); await once(server, 'listening'); const apiUrl = `http://127.0.0.1:${server.address().port}`;
-    const mk = async (role, n) => { const u = await User.create({ name: `${role} sintético ${n}`, email: `${role}${n}@example.invalid`, password: 'x', role }); return { id: u.id, role, token: issueToken({ id: u.id, role }) }; };
+    const mk = async (role, n) => { const u = await User.create({ name: `${role === 'therapist' ? 'Revisor' : 'Persona'} ${n}`, email: `${role}${n}@example.invalid`, password: 'x', role }); return { id: u.id, role, token: issueToken({ id: u.id, role }) }; };
     const payload = (title) => ({ title, situation: 'Un proyecto', responsibility: { text: 'Yo coordinaba' }, actions: [{ text: 'Organicé tareas' }], delivered: { text: 'Un plan' }, observedEffect: { known: false }, autonomy: 'autonomous' });
     let counter = 0;
     // Una persona con una revisión registrada por un revisor (usuario therapist) sobre una evidencia suya.
@@ -111,6 +111,31 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       await second.page.getByText('No pudimos cargar tus revisiones').waitFor({ timeout: 8000 }); await second.page.getByRole('button', { name: 'Reintentar' }).click(); await second.page.locator('.cgf-review').waitFor({ timeout: 8000 }); await second.context.close(); check('401 → sesión vencida con enlace a entrar; 500 → error con reintento que recupera la lista'); }
     // 6) aislamiento: otra persona nunca ve estas revisiones
     { const a = await scene(); const b = await mk('user', 7777); const { context, page } = await open(b); await page.getByText('Todavía no tienes revisiones').waitFor({ timeout: 8000 }); assert.ok(!(await page.locator('body').innerText()).includes('Observación de prueba')); await context.close(); check('aislamiento: otra persona no ve las revisiones de A'); void a; }
+    // 7) E268-1: nada del fixture en la tarjeta (ni título de ejemplo ni «Facilitador sintético»); E268-2/3: palabras largas sin espacios no desbordan a 390 y 320 px
+    { const longTitle = 'T'.repeat(120); const longReason = 'O'.repeat(1950); const s = await scene({ title: longTitle, observation: 'W'.repeat(1900) });
+      for (const width of [390, 320]) {
+        const { context, page } = await open(s.person, { width }); await page.locator('.cgf-review').waitFor({ timeout: 8000 }); const body = await page.locator('.cgf-review').innerText();
+        assert.ok(!/Explicar una tarea|Explain a task|Facilitador sintético|Muestra profesional sintética|sintétic|synthetic/i.test(body), 'ningún texto de la vista previa sintética en la tarjeta: ' + body.slice(0, 120));
+        assert.match(body, /revisión · material versión 1/i); assert.ok(body.includes(longTitle), 'el título largo de la evidencia se muestra');
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `sin scroll horizontal a ${width} px (evidencia de 120 y observación de 1900 sin espacios)`);
+        await page.getByRole('button', { name: 'Objetar revisión' }).click(); await page.locator('.cgf-form textarea').fill(longReason); await page.getByRole('button', { name: 'Vista previa' }).click(); await page.locator('.cg-hintbox').waitFor();
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `sin scroll horizontal a ${width} px con la objeción de 1950 caracteres sin espacios`);
+        await page.getByRole('button', { name: 'Confirmar objeción' }).click(); await page.locator('.cgf-event').waitFor({ timeout: 8000 });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `sin scroll horizontal a ${width} px con la objeción registrada`);
+        await audit(page, `largo ${width}`); await context.close(); if (width === 390) { await sequelize.query('DELETE FROM "ReviewObjections" WHERE "UserId"=:u', { replacements: { u: s.person.id } }); }
+      }
+      check('E268-1/2/3: tarjeta sin texto del fixture («Revisión · material versión n»); evidencia de 120 y objeción de 1950 caracteres sin espacios no desbordan a 390 ni a 320 px'); }
+    // 8) E268-4: «Atrás» del navegador y recarga con texto escrito piden confirmación; sin texto, atrás funciona normal
+    { const s = await scene();
+      const { context, page } = await open(s.person, { route: '/manifiesto' }); await page.goto(frontend + '/app/professional-reviews'); await page.locator('.cgf-review').waitFor({ timeout: 8000 });
+      await page.goBack(); await page.waitForURL(/manifiesto/, { timeout: 8000 }); await page.goForward(); await page.locator('.cgf-review').waitFor({ timeout: 8000 }); check('sin texto escrito, «Atrás» y «Adelante» funcionan sin aviso');
+      await page.getByRole('button', { name: 'Objetar revisión' }).click(); await page.locator('.cgf-form textarea').fill('Texto que no debe perderse con Atrás');
+      assert.equal(await page.evaluate(() => { const e = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(e); return e.defaultPrevented; }), true, 'la recarga pide confirmación');
+      await page.goBack(); await page.getByRole('dialog').waitFor({ timeout: 8000 }); assert.ok(page.url().includes('professional-reviews'), 'sigue en la página'); assert.equal(await page.locator('.cgf-form textarea').inputValue(), 'Texto que no debe perderse con Atrás');
+      await audit(page, 'diálogo de salida'); await page.getByRole('button', { name: 'Seguir editando' }).click(); assert.equal(await page.locator('.cgf-form textarea').inputValue(), 'Texto que no debe perderse con Atrás', 'seguir editando conserva el texto');
+      await page.goBack(); await page.getByRole('dialog').waitFor({ timeout: 8000 }); await page.getByRole('button', { name: 'Descartar y salir' }).click(); await page.waitForURL(/manifiesto/, { timeout: 8000 });
+      assert.equal(await dbCount('SELECT count(*) n FROM "ReviewObjections" WHERE "UserId"=:u', { u: s.person.id }), 0, 'descartar no guarda nada'); await context.close();
+      check('E268-4: con texto escrito la recarga y «Atrás» piden confirmación (diálogo accesible); «Seguir editando» conserva el texto; «Descartar y salir» retrocede y no guarda nada'); }
     console.log(`ES-175 conexión: ${checks.length} comprobaciones superadas (Express + rutas reales de #262 + PostgreSQL real + Chromium).`);
   } catch (error) {
     console.error('ES-175 conexión falló:', error); process.exitCode = 1;

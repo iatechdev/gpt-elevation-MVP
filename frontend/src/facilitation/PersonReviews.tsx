@@ -1,6 +1,6 @@
 // ES-175 (HU-P24) · «Mis revisiones» de la persona, CONECTADA al servidor real (#262), con el sistema «Cartografía» (diseño aprobado: comentarios 11856, 11858 y 11956).
 // El servidor verifica propietario y permiso en cada acceso; esta pantalla solo muestra lo que responde, como TEXTO (React escapa), y conserva siempre lo que la persona escribió.
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { Chip, TextAreaField } from '../cartografia/controls'
 import { Banner, Card } from '../cartografia/pieces'
@@ -49,7 +49,7 @@ function Active({ token }: { token: string }) {
     return () => controller.abort()
   }, [api, attempt])
   useEffect(() => { if (flash) flashRef.current?.focus() }, [flash])
-  const setDirty = (id: number, value: boolean) => setDrafts(previous => { if (Boolean(previous[id]) === value) return previous; const next = { ...previous }; if (value) next[id] = true; else delete next[id]; return next })
+  const setDirty = useCallback((id: number, value: boolean) => setDrafts(previous => { if (Boolean(previous[id]) === value) return previous; const next = { ...previous }; if (value) next[id] = true; else delete next[id]; return next }), [])
   // Con texto escrito, salir de la página pide confirmación (recarga o enlace interno); nada se pierde en silencio.
   useEffect(() => {
     if (!dirty) return
@@ -64,6 +64,21 @@ function Active({ token }: { token: string }) {
     window.addEventListener('beforeunload', unload); document.addEventListener('click', click, true)
     return () => { window.removeEventListener('beforeunload', unload); document.removeEventListener('click', click, true) }
   }, [dirty])
+  // E268-4: «Atrás» del navegador. Con texto escrito se añade UNA entrada de historial como tope: al pulsar atrás se vuelve a poner y se pregunta; «Descartar y salir» retrocede de verdad (2 pasos).
+  const sentinel = useRef(false); const ignorePop = useRef(false)
+  useEffect(() => {
+    if (dirty && !sentinel.current) { window.history.pushState({ cgfGuard: true }, ''); sentinel.current = true }
+    if (!dirty && sentinel.current) { sentinel.current = false; ignorePop.current = true; window.history.back() }
+  }, [dirty])
+  useEffect(() => {
+    const pop = () => {
+      if (ignorePop.current) { ignorePop.current = false; return }
+      if (!sentinel.current) return
+      window.history.pushState({ cgfGuard: true }, '') // se queda en la página; el diálogo decide
+      setLeave(() => () => { sentinel.current = false; window.history.go(-2) })
+    }
+    window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop)
+  }, [])
   const refresh = (key: TextKey | '') => { setFlash(key); setAttempt(n => n + 1) }
 
   let content: ReactNode
@@ -97,7 +112,9 @@ function ReviewCard({ review, api, lang, blocked, setDirty, onRefresh, onSession
   const [failure, setFailure] = useState<Failure | null>(null); const [problem, setProblem] = useState<TextKey | ''>('')
   const pending = useRef<Pending | null>(null); const opener = useRef<HTMLButtonElement>(null); const status = useRef<HTMLParagraphElement>(null)
   const when = (value: string) => dateText(value, lang) ?? ''
-  useEffect(() => { setDirty(review.id, open && (text.length > 0 || preview)); return () => setDirty(review.id, false) }, [open, text, preview, review.id, setDirty])
+  const hasDraft = open && (text.length > 0 || preview)
+  useEffect(() => { setDirty(review.id, hasDraft) }, [hasDraft, review.id, setDirty])
+  useEffect(() => () => setDirty(review.id, false), [review.id, setDirty])
   useEffect(() => { if (failure) status.current?.focus() }, [failure])
   useEffect(() => { if (open) document.getElementById(field)?.focus() }, [open, field])
   const reset = () => { setOpen(false); setText(''); setPreview(false); setFailure(null); setProblem(''); pending.current = null; requestAnimationFrame(() => opener.current?.focus()) }
@@ -129,7 +146,7 @@ function ReviewCard({ review, api, lang, blocked, setDirty, onRefresh, onSession
 
   return (
     <Card as="article" className="cgf-review">
-      <h2 className="cg-h2">{t('sampleTitle')} · {t('version')} {review.materialVersion}</h2>
+      <h2 className="cg-h2">{t('reviewHeading')} · {t('materialVersionLabel')} {review.materialVersion}</h2>
       <p className="cg-small cg-muted">{t('author')}: {review.author ?? t('reviewerFallback')} · {when(review.createdAt)} · {t('contentLanguage')}: {review.locale.toUpperCase()}</p>
       <p className="cgf-chips">
         {review.status !== 'none' && (answered ? <Chip tone="ok" symbol="✓">{t('responded')}</Chip> : <Chip tone="wait" symbol="○">{t('awaiting')}</Chip>)}
