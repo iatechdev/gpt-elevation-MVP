@@ -149,7 +149,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
       check('E268-6: «Descartar y salir» tras un enlace interno llega al destino (/app/dashboard), sin entrada muerta, sin guardar nada; «Seguir editando» conserva el texto'); }
     console.log(`ES-175 conexión: ${checks.length} comprobaciones superadas (Express + rutas reales de #262 + PostgreSQL real + Chromium).`);
   } catch (error) {
-    console.error('ES-175 conexión falló:', error); process.exitCode = 1;
+    console.error('ES-175 conexión falló:', error); require('./_exitOnFailure.cjs').fail();
   } finally {
     if (browser) await browser.close(); if (server) await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });
     if (sequelize) await sequelize.close(); if (started) await pg.stop(); try { fs.rmSync(directory, { recursive: true, force: true, maxRetries: 8, retryDelay: 300 }); } catch { /* Windows aún bloquea el directorio temporal */ }
