@@ -47,7 +47,7 @@ const FacilitationPreview = lazy(() => import('./facilitation/FacilitationPrevie
 const Participants = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.Participants })))
 const ParticipantDetail = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.ParticipantDetail })))
 const NewReview = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.NewReview })))
-const OwnReviews = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.OwnReviews })))
+const PersonReviews = lazy(() => import('./facilitation/PersonReviews').then(m => ({ default: m.PersonReviews }))) // ES-175 — «Mis revisiones» conectada al servidor
 const CatalogBrowser = lazy(() => import('./routeCatalog/PersonCatalog.tsx').then(m => ({ default: m.CatalogBrowser })))
 const CatalogManager = lazy(() => import('./routeCatalog/CatalogPages').then(m => ({ default: m.CatalogManager })))
 const CompassPage = lazy(() => import('./compass/CompassPage').then(m => ({ default: m.CompassPage })))
@@ -93,8 +93,8 @@ export default function App() {
           <Route path="/facilitation" element={<Participants />} />
           <Route path="/facilitation/participants/:id" element={<ParticipantDetail />} />
           <Route path="/facilitation/participants/:id/reviews/new" element={<NewReview />} />
-          <Route path="/app/professional-reviews" element={<OwnReviews />} />
         </Route>
+        <Route path="/app/professional-reviews" element={<PersonReviews />} />
         <Route path="/app/feedback" element={<FeedbackPage />} />
         <Route path="/app/route-catalog" element={<CatalogBrowser />} />
         <Route path="/app/route-catalog/roles/:roleKey" element={<CatalogBrowser />} />
