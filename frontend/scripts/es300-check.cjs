@@ -42,8 +42,15 @@ const fs = require('node:fs');
     await page.goto(base + '/app/skill-map', { waitUntil: 'networkidle' });
     return { context, page };
   }
-  const axe = async (page) => { await page.evaluate(axeSource); return page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((v) => v.id + ':' + v.nodes.length)); };
+  // wcag2a/2aa/21aa/22aa + las reglas que axe marca como experimentales y que importan aquí: 2.5.3 (el nombre accesible contiene el texto visible) y 2.5.8 (tamaño del objetivo)
+  const axe = async (page) => { await page.evaluate(axeSource); return page.evaluate(async () => {
+    const tags = await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] });
+    const rules = await window.axe.run(document, { runOnly: { type: 'rule', values: ['label-content-name-mismatch', 'target-size'] } });
+    return [...tags.violations, ...rules.violations].map((v) => v.id + ':' + v.nodes.length).filter((v, i, all) => all.indexOf(v) === i);
+  }); };
   const overflow = (page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  // nombre accesible calculado por el navegador (árbol de accesibilidad), no el atributo aria-label
+  const axisName = async (locator) => ((await locator.ariaSnapshot()).match(/button "([^"]*)"/) || [])[1];
   const view = (page, name) => page.locator('.skill-map-views').getByRole('button', { name, exact: true }).click();
   // ¿algún par de botones visibles se solapa? (rectángulo real de cada botón; el nombre oculto de la marca no cuenta)
   const overlapping = (page, selector) => page.evaluate((sel) => {
@@ -70,8 +77,8 @@ const fs = require('node:fs');
     assert.deepEqual(await axe(page), [], `axe lista (${tag})`);
     await view(page, c.radar); await page.locator('.radar-poly').waitFor();
     assert.equal(await page.locator('.radar-axis').count(), 12, `radar: un eje por capacidad (${tag})`);
-    assert.equal(await page.locator('.radar-axis').first().getAttribute('aria-label'), `${lang === 'es' ? 'Capacidad sintética número 1' : 'Synthetic skill number 1'}: ${c.level(3)}`, `radar: MISMO nivel que el relieve y la lista (${tag})`);
-    assert.equal(await page.locator('.radar-axis[aria-label$="' + c.noLevel + '"]').count(), 4, `radar: «${c.noLevel}» en las 4 sin nivel (${tag})`);
+    assert.equal(await axisName(page.locator('.radar-axis').first()), `${lang === 'es' ? 'Capacidad sintética número 1' : 'Synthetic skill number 1'} ${c.level(3)}`, `radar: nombre accesible = texto visible (2.5.3), MISMO nivel que el relieve y la lista (${tag})`);
+    assert.equal(await page.locator('.radar-axis', { hasText: c.noLevel }).count(), 4, `radar: «${c.noLevel}» en las 4 sin nivel (${tag})`);
     assert.equal(await page.locator('.radar-poly svg circle').count(), 8, `radar: un punto por capacidad con nivel y ninguno sin nivel (${tag})`);
     assert.equal(await page.locator('.radar-poly svg .radar-fill').count(), 0, `radar: sin relleno mientras falte alguna (${tag})`);
     assert.equal(await overlapping(page, '.radar-axis'), 0, `radar: ningún eje se solapa (${tag})`);
@@ -100,7 +107,7 @@ const fs = require('node:fs');
   { const { context, page } = await open(1360, 'es', 'dark', mk(16));
     await view(page, 'Radar'); await page.locator('.radar-poly.is-marks').waitFor();
     assert.equal(await page.locator('.radar-axis').count(), 16, '16 ejes como marcas'); assert.equal(await overlapping(page, '.radar-axis'), 0, '16 marcas sin solape');
-    assert.equal(await page.locator('.radar-axis').first().evaluate((el) => Math.round(el.getBoundingClientRect().width)), 28, 'objetivo de 28 px');
+    assert.equal(await page.locator('.radar-axis').first().evaluate((el) => Math.round(el.getBoundingClientRect().width)), 24, 'objetivo de 24 px');
     assert.deepEqual(await axe(page), [], 'axe radar con 16 capacidades'); await context.close(); }
   { const { context, page } = await open(390, 'en', 'light', mk(30));
     await view(page, 'Radar'); await page.locator('.radar-poly.is-image').waitFor();
@@ -109,10 +116,26 @@ const fs = require('node:fs');
     await page.locator('.radar-table-skill').nth(7).click(); assert.ok((await page.locator('#skill-detail-title').innerText()).includes('number 8'), 'la tabla es la superficie interactiva'); await context.close(); }
   check('N dinámico: 5 ejes con relleno (todas con nivel), 16 solo marcas de 28 px sin solape, 30 imagen + tabla abierta que abre el detalle; axe 2.2 AA 0');
 
+  // 2b. Barrido (E266-2): cada N por ancho. Móvil y tableta (< 900 px) con más de 12 = imagen + tabla abierta; escritorio = botones mientras quepan; en TODOS, sin solapes, target-size y 2.5.3 en axe
+  for (const width of [320, 390, 700, 900, 1360]) for (const n of [12, 13, 16, 24, 25, 30]) {
+    const tag = `N=${n} a ${width} px`; const { context, page } = await open(width, 'es', 'light', mk(n));
+    await view(page, 'Radar'); await page.locator('.radar-poly').waitFor();
+    const mode = await page.locator('.radar-poly').evaluate((el) => ['is-named', 'is-marks', 'is-image'].find((c) => el.classList.contains(c)));
+    const buttons = await page.locator('.radar-axis').count();
+    if (mode === 'is-image') { assert.equal(buttons, 0, `${tag}: imagen sin ejes`); assert.notEqual(await page.locator('details.radar-table').getAttribute('open'), null, `${tag}: la tabla interactiva se abre sola`); assert.equal(await page.locator('details.radar-table tbody tr').count(), n); }
+    else { assert.equal(buttons, n, `${tag}: un botón por capacidad`); assert.equal(await overlapping(page, '.radar-axis'), 0, `${tag}: ejes sin solapes`); }
+    if (n > 12 && width < 900) assert.equal(mode, 'is-image', `${tag}: móvil/tableta con más de 12 = imagen + tabla`);
+    if (n > 12 && width === 1360 && n <= 24) assert.equal(mode, 'is-marks', `${tag}: escritorio = botones de solo marca`);
+    assert.deepEqual(await axe(page), [], `axe ${tag} (modo ${mode})`);
+    assert.ok((await overflow(page)) <= 0, `${tag}: sin desborde`);
+    await context.close();
+  }
+  check('barrido N × ancho (12, 13, 16, 24, 25, 30 a 320, 390, 700, 900, 1360 px): imagen + tabla abierta en móvil/tableta con más de 12, botones sin solapes en escritorio, axe 2.2 AA + 2.5.3 + target-size = 0');
+
   // 3. Estados: sin niveles (radar sin puntos, guía), relieve con 30 capacidades sin solapes
   { const { context, page } = await open(1360, 'es', 'light', mk(12, { empty: true }));
     await view(page, 'Radar'); await page.locator('.radar-poly').waitFor();
-    assert.equal(await page.locator('.radar-poly svg circle').count(), 0, 'sin niveles: ningún punto'); assert.equal(await page.locator('.radar-axis[aria-label$="Sin nivel"]').count(), 12);
+    assert.equal(await page.locator('.radar-poly svg circle').count(), 0, 'sin niveles: ningún punto'); assert.equal(await page.locator('.radar-axis', { hasText: 'Sin nivel' }).count(), 12);
     assert.ok(await page.getByText('12 capacidades aún no tienen nivel').count() >= 1, 'aviso de capacidades sin nivel'); assert.deepEqual(await axe(page), [], 'axe radar sin niveles'); await context.close(); }
   { const { context, page } = await open(1360, 'es', 'light', mk(30));
     await page.locator('.skill-map-place').first().waitFor(); assert.equal(await overlapping(page, '.skill-map-place'), 0, 'relieve con 30 capacidades sin solapes (rótulos o solo marcas)');

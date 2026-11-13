@@ -60,5 +60,12 @@ export function axisPlacement(index: number, total: number) {
     v: Math.abs(cos) > 0.3 ? 'middle' : sin < 0 ? 'above' : 'below',
   } as { left: number; top: number; h: 'right' | 'left' | 'center'; v: 'above' | 'below' | 'middle' }
 }
-/** Cómo se presenta el radar según cuántas capacidades hay. */
-export const radarMode = (total: number): 'named' | 'marks' | 'image' => (total <= NAMED_AXES_MAX ? 'named' : total <= BUTTON_AXES_MAX ? 'marks' : 'image')
+/** Móvil y tableta (< 900 px): con más de 12 capacidades el gráfico es una imagen y la tabla es la superficie interactiva (las marcas de 24 px no caben sin solaparse). */
+export const DESKTOP_MIN = 900
+/** Marca del radar: 24 px, el mínimo de WCAG 2.2 AA 2.5.8. Dos cuadrados de 24 px no se solapan si sus centros distan ≥ 24 en algún eje; con ejes a ±45° eso exige una cuerda ≥ 24·√2 ≈ 34 px. */
+export const MARK_PX = 24
+export const MARK_CHORD_PX = 34
+/** ¿Caben N marcas sobre el círculo de los ejes? La tarjeta del radar ocupa ~46 % del ancho de la ventana (tope 1240 px). */
+export const fitsAsMarks = (total: number, viewport: number) => 2 * ((Math.min(viewport, 1240) * 0.46 * POLY_LABEL_RADIUS) / POLY_W) * Math.sin(Math.PI / Math.max(total, 2)) >= MARK_CHORD_PX
+/** Cómo se presenta el radar: hasta 12 capacidades, ejes con nombre; en escritorio con más (hasta 24 y mientras quepan sin solapar), solo marcas; en lo demás, imagen + tabla interactiva. */
+export const radarMode = (total: number, viewport = 1200): 'named' | 'marks' | 'image' => (total <= NAMED_AXES_MAX ? 'named' : viewport >= DESKTOP_MIN && total <= BUTTON_AXES_MAX && fitsAsMarks(total, viewport) ? 'marks' : 'image')

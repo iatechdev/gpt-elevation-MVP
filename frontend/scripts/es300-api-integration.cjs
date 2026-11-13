@@ -72,6 +72,7 @@ const { pathToFileURL } = require('node:url');
       await page.route('**/api/**', async (route) => { const url = new URL(route.request().url()); const response = await route.fetch({ url: apiUrl + url.pathname + url.search }); await route.fulfill({ response }); });
       await page.goto(frontend + '/app/skill-map', { waitUntil: 'networkidle' });
       await page.locator('.skill-map-place').first().waitFor({ timeout: 15000 }).catch(async () => { throw new Error('el mapa no cargó: ' + (await page.locator('main').innerText()).split('\n').join(' | ').slice(0, 400) + ' | ' + errors.join(' ; ')); });
+      const axisName = async (locator) => ((await locator.ariaSnapshot()).match(/button "([^"]*)"/) || [])[1];
       const label = (n) => (lang === 'es' ? `Capacidad real ${n}` : `Real skill ${n}`);
       const levelWord = (level) => (level === undefined ? (lang === 'es' ? 'Sin evidencia vigente' : 'No current evidence') : (lang === 'es' ? `Nivel ${level} de 4` : `Level ${level} of 4`));
       const radarWord = (level) => (level === undefined ? (lang === 'es' ? 'Sin nivel' : 'No level') : levelWord(level));
@@ -92,7 +93,7 @@ const { pathToFileURL } = require('node:url');
       // radar
       await page.locator('.skill-map-views').getByRole('button', { name: 'Radar', exact: true }).click(); await page.locator('.radar-poly').waitFor();
       assert.equal(await page.locator('.radar-axis').count(), 12, `radar: 12 ejes = las 12 capacidades del catálogo publicado (${tag})`);
-      for (let i = 1; i <= 12; i++) { const key = `cap_${String(i).padStart(2, '0')}`; assert.equal(await page.locator('.radar-axis').nth(i - 1).getAttribute('aria-label'), `${label(i)}: ${radarWord(expected[key])}`, `radar ${key} (${tag})`); }
+      for (let i = 1; i <= 12; i++) { const key = `cap_${String(i).padStart(2, '0')}`; assert.equal(await axisName(page.locator('.radar-axis').nth(i - 1)), `${label(i)} ${radarWord(expected[key])}`, `radar ${key} (${tag})`); }
       assert.equal(await page.locator('.radar-poly svg circle').count(), Object.keys(expected).length, `radar: un punto por fila vigente de la base (${tag})`);
       assert.equal(await overlapping(page, '.radar-axis'), 0, `radar sin solapes (${tag})`);
       assert.deepEqual(await axe(page), [], `axe radar real (${tag})`);

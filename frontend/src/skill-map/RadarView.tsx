@@ -2,6 +2,7 @@
 // solo se unen los vecinos con nivel y el relleno aparece solo cuando todas tienen nivel; cada eje es un botón con nombre y «Nivel n de 4»/«Sin nivel»; tabla alternativa con el mismo contenido.
 import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import './radarPolygon.css'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { LocalizedText } from './model'
 import { improvement, radarItems, strongest, anyLevel, MAX_LEVEL, type RadarItem } from './radar'
@@ -22,10 +23,10 @@ function Swatch({ level }: { level: number | null }) {
   return <span className={`radar-swatch ${level === null ? 'is-none' : `h${level}`}`} aria-hidden="true">{level ?? ''}</span>
 }
 
-/** Polígono del radar. Hasta 12 capacidades cada eje lleva nombre y nivel visibles; hasta 24, solo la marca (el nombre va en el aria-label y en la tabla); con más, el gráfico es una imagen y la tabla es la superficie interactiva. */
-export function RadarPolygon({ items, selected, onSelect, lang, t }: { items: readonly RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T }) {
+/** Polígono del radar. El nombre accesible de cada eje sale de su contenido («nombre» + «Nivel n de 4»/«Sin nivel»): así contiene SIEMPRE el texto visible (WCAG 2.5.3) y, con solo la marca, el texto sigue en el árbol de accesibilidad (oculto a la vista, no al lector). Hasta 12 capacidades cada eje lleva nombre y nivel visibles; hasta 24, solo la marca (el nombre va en el aria-label y en la tabla); con más, el gráfico es una imagen y la tabla es la superficie interactiva. */
+export function RadarPolygon({ items, selected, onSelect, lang, t, viewport = 1200 }: { items: readonly RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T; viewport?: number }) {
   const total = items.length
-  const mode = radarMode(total)
+  const mode = radarMode(total, viewport)
   const shape = radarShape(items.map(item => item.level))
   const alt = `${t('skill_map.radar_poly_alt')} ${fmt(t('skill_map.radar_with'), { with: total - shape.missing, n: total })}`
   return <div className={`radar-poly is-${mode}`}>
@@ -40,7 +41,7 @@ export function RadarPolygon({ items, selected, onSelect, lang, t }: { items: re
     {mode !== 'image' && items.map((item, i) => {
       const place = axisPlacement(i, total), title = name(item.skill, lang, t), status = axisStatus(item.level, t)
       return <button key={item.skill.skillKey} type="button" className={`radar-axis h-${place.h} v-${place.v}`} style={{ left: `${place.left}%`, top: `${place.top}%` }}
-        aria-pressed={selected === item.skill.skillKey} aria-label={`${title}: ${status}`} onClick={() => onSelect(item.skill.skillKey)}>
+        aria-pressed={selected === item.skill.skillKey} onClick={() => onSelect(item.skill.skillKey)}>
         <span className="radar-axis-mark" aria-hidden="true" />
         <b>{title}</b><span>{status}</span>
       </button>
@@ -49,8 +50,8 @@ export function RadarPolygon({ items, selected, onSelect, lang, t }: { items: re
 }
 
 /** Tabla alternativa «Ver los niveles como tabla»: el mismo contenido que el gráfico; el nombre de cada fila abre el mismo detalle. Con más de 24 capacidades es la superficie principal y se abre sola. */
-export function RadarTable({ items, selected, onSelect, lang, t }: { items: readonly RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T }) {
-  return <details className="radar-table" open={radarMode(items.length) === 'image' || undefined}>
+export function RadarTable({ items, selected, onSelect, lang, t, viewport = 1200 }: { items: readonly RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T; viewport?: number }) {
+  return <details className="radar-table" open={radarMode(items.length, viewport) === 'image' || undefined}>
     <summary>{t('skill_map.radar_table')}</summary>
     <table>
       <thead><tr><th scope="col">{t('skill_map.radar_col_skill')}</th><th scope="col">{t('skill_map.radar_col_level')}</th></tr></thead>
@@ -64,6 +65,17 @@ export function RadarTable({ items, selected, onSelect, lang, t }: { items: read
   </details>
 }
 
+/** Ancho de la ventana (el radar decide por él cuántos ejes caben como botones). */
+function useViewportWidth() {
+  const [width, setWidth] = useState(() => (typeof window === 'undefined' ? 1200 : window.innerWidth))
+  useEffect(() => {
+    const update = () => setWidth(window.innerWidth)
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return width
+}
+
 /** Pantalla completa del radar: gráfico, tabla alternativa, puntos fuertes y un punto a mejorar (con criterio real del catálogo). */
 export function RadarBoard({ skills, selected, onSelect, onRegister, onAnalyze, lang, t }: {
   skills: readonly Skill[]; selected: string | null; onSelect: (key: string) => void; onRegister: (key: string) => void; onAnalyze?: () => void; lang: Lang; t: T
@@ -71,14 +83,15 @@ export function RadarBoard({ skills, selected, onSelect, onRegister, onAnalyze, 
   const items = radarItems(skills)
   const top = strongest(items), next = improvement(items), some = anyLevel(items)
   const missing = items.filter(item => item.level === null).length
+  const viewport = useViewportWidth()
   return <div className="radar-board">
     <section className="elv-card skill-map-card radar-card" aria-labelledby="radar-title">
       <h2 id="radar-title">{t('skill_map.radar_title')}</h2>
-      <RadarPolygon items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} />
+      <RadarPolygon items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} viewport={viewport} />
       <p className="skill-map-note">{t('skill_map.radar_poly_intro')}</p>
       {missing > 0 && <p className="skill-map-note" role="status">{fmt(t(missing === 1 ? 'skill_map.radar_gap_one' : 'skill_map.radar_gap'), { n: missing })}</p>}
-      {radarMode(items.length) === 'image' && <p className="skill-map-note">{fmt(t('skill_map.radar_many'), { n: items.length })}</p>}
-      <RadarTable items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} />
+      {radarMode(items.length, viewport) === 'image' && <p className="skill-map-note">{fmt(t('skill_map.radar_many'), { n: items.length })}</p>}
+      <RadarTable items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} viewport={viewport} />
       {onAnalyze && <button type="button" className="elv-btn radar-analyze" onClick={onAnalyze}>{t('skill_map.ai_open')}</button>}
     </section>
     <div className="radar-side">

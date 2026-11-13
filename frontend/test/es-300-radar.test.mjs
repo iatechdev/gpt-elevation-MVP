@@ -27,7 +27,7 @@ const html = element => renderToStaticMarkup(createElement(MemoryRouter, null, e
 const track = level => (level ? { level, state: 'initial', stale: false, catalogOutdated: false, confidence: 'medium', confidenceReason: { es: 'x' }, evidenceCount: 2, authoring: 'person', rationale: null, needsReview: false } : null)
 const skills = levels => levels.map((level, i) => ({ skillKey: `k${i}`, type: 'transversal', labels: { es: `Capacidad ${i + 1}`, en: `Skill ${i + 1}` }, territories: [['dir', 'con', 'com', 'ing', 'inn'][i % 5]],
   rubric: { levels: { 1: { es: 'a' }, 2: { es: 'b' }, 3: { es: 'c' }, 4: { es: 'd' } }, source: 's', verifiedAt: '2026-01-01' }, self: track(level), review: null, state: level ? 'initial' : 'no_evidence' }))
-const poly = (levels, selected = null) => html(createElement(RadarPolygon, { items: radarItems(skills(levels)), selected, onSelect() {}, lang: 'es', t }))
+const poly = (levels, selected = null, viewport) => html(createElement(RadarPolygon, { items: radarItems(skills(levels)), selected, onSelect() {}, lang: 'es', t, viewport }))
 
 test('ES-300: la forma del radar — sin nivel no hay punto; solo se unen vecinos con nivel; el relleno solo cuando todas tienen nivel', () => {
   const some = geo.radarShape([3, null, 2, 4, null, 1])
@@ -45,15 +45,20 @@ test('ES-300: la forma del radar — sin nivel no hay punto; solo se unen vecino
   assert.equal(geo.ringPath(7, 3).split('L').length, 7, 'un polígono de N lados por anillo (N = capacidades, no fijo en 8)')
 })
 
-test('ES-300: el modo del radar según cuántas capacidades hay (nombres hasta 12, marcas hasta 24, imagen + tabla con más)', () => {
-  assert.deepEqual([1, 8, 12].map(geo.radarMode), ['named', 'named', 'named']); assert.deepEqual([13, 16, 24].map(geo.radarMode), ['marks', 'marks', 'marks']); assert.deepEqual([25, 100].map(geo.radarMode), ['image', 'image'])
+test('ES-300: el modo del radar según cuántas capacidades y qué ventana (nombres hasta 12; con más, marcas solo en escritorio mientras quepan; si no, imagen + tabla)', () => {
+  assert.deepEqual([1, 8, 12].map(n => geo.radarMode(n, 390)), ['named', 'named', 'named']); assert.deepEqual([1, 8, 12].map(n => geo.radarMode(n, 1360)), ['named', 'named', 'named'])
+  assert.deepEqual([13, 16, 24].map(n => geo.radarMode(n, 1360)), ['marks', 'marks', 'marks']); assert.deepEqual([25, 100].map(n => geo.radarMode(n, 1360)), ['image', 'image'])
+  assert.deepEqual([13, 16, 24, 30].map(n => geo.radarMode(n, 390)), ['image', 'image', 'image', 'image'], 'en móvil, más de 12 = imagen + tabla (las marcas de 24 px no caben sin solaparse)')
+  assert.deepEqual([13, 16].map(n => geo.radarMode(n, 700)), ['image', 'image'], 'tableta (< 900 px) también')
+  // en escritorio solo hay marcas mientras quepan sin solaparse (cuerda entre vecinas >= 34 px)
+  for (const viewport of [900, 1024, 1360, 1920]) for (let n = 13; n <= 24; n++) if (geo.radarMode(n, viewport) === 'marks') assert.ok(2 * (Math.min(viewport, 1240) * 0.46 * 134 / 500) * Math.sin(Math.PI / n) >= 34, `${n} marcas a ${viewport} px: la cuerda entre vecinas debe ser ≥ 34 px (dos cuadrados de 24 px a ±45° no se solapan)`)
 })
 
 test('ES-300 (render): cada eje es un botón con nombre y «Nivel n de 4» o «Sin nivel», aria-pressed, puntos solo con nivel', () => {
   const out = poly([3, null, 2, 4], 'k2')
   assert.equal((out.match(/<button /g) ?? []).length, 4, 'un botón por capacidad')
-  assert.match(out, /aria-label="Capacidad 1: Nivel 3 de 4"/); assert.match(out, /aria-label="Capacidad 2: Sin nivel"/)
-  assert.equal((out.match(/aria-pressed="true"/g) ?? []).length, 1); assert.match(out, /aria-pressed="true"[^>]*aria-label="Capacidad 3: Nivel 2 de 4"|aria-label="Capacidad 3: Nivel 2 de 4"[^>]*aria-pressed="true"/)
+  assert.ok(out.includes('<b>Capacidad 1</b><span>Nivel 3 de 4</span>') && out.includes('<b>Capacidad 2</b><span>Sin nivel</span>'), 'nombre y nivel en el contenido'); assert.ok(!out.includes('aria-label="Capacidad'), 'el nombre accesible sale del contenido (2.5.3): los ejes no llevan aria-label')
+  assert.equal((out.match(/aria-pressed="true"/g) ?? []).length, 1); assert.ok(out.includes('aria-pressed="true"') && out.indexOf('<b>Capacidad 3</b>') > out.indexOf('aria-pressed="true"'))
   assert.equal((out.match(/<circle /g) ?? []).length, 3, 'tres puntos: la capacidad sin nivel no lleva punto')
   assert.ok(!out.includes('class="radar-fill"'), 'sin relleno porque falta una')
   assert.match(out, /role="img" aria-label="[^"]*3 de 4 capacidades tienen nivel/)
@@ -63,7 +68,8 @@ test('ES-300 (render): cada eje es un botón con nombre y «Nivel n de 4» o «S
 
 test('ES-300 (render): N dinámico — con 12 nombres, con 16 solo marcas, con 30 imagen sin botones y la tabla abierta', () => {
   const twelve = poly(Array(12).fill(2)); assert.match(twelve, /radar-poly is-named/); assert.equal((twelve.match(/<button /g) ?? []).length, 12)
-  const sixteen = poly(Array(16).fill(2)); assert.match(sixteen, /radar-poly is-marks/); assert.equal((sixteen.match(/<button /g) ?? []).length, 16); assert.match(sixteen, /aria-label="Capacidad 16: Nivel 2 de 4"/)
+  const sixteen = poly(Array(16).fill(2)); assert.match(sixteen, /radar-poly is-marks/); assert.equal((sixteen.match(/<button /g) ?? []).length, 16); assert.ok(sixteen.includes('<b>Capacidad 16</b><span>Nivel 2 de 4</span>'))
+  const mobile16 = poly(Array(16).fill(2), null, 390); assert.match(mobile16, /radar-poly is-image/); assert.equal((mobile16.match(/<button /g) ?? []).length, 0, 'en móvil con más de 12 el gráfico es imagen: sin marcas que se solapen')
   const thirty = poly(Array(30).fill(2)); assert.match(thirty, /radar-poly is-image/); assert.equal((thirty.match(/<button /g) ?? []).length, 0)
   const table = n => html(createElement(RadarTable, { items: radarItems(skills(Array(n).fill(null))), selected: null, onSelect() {}, lang: 'es', t }))
   assert.match(table(30), /<details class="radar-table" open="">/); assert.ok(!/<details class="radar-table" open/.test(table(12)))
@@ -110,4 +116,13 @@ test('ES-300: las hojas nuevas no traen colores fijos ni estilos en línea salvo
   assert.equal((read('../src/skill-map/RadarView.tsx').match(/style=\{\{/g) ?? []).length, 1)
   assert.ok(read('../src/skill-map/RadarView.tsx').includes("style={{ left: `${place.left}%`, top: `${place.top}%` }}"))
   for (const key of ['radar_poly_alt', 'radar_with', 'radar_poly_intro', 'radar_gap', 'radar_gap_one', 'radar_no_level', 'radar_table', 'radar_col_skill', 'radar_col_level', 'radar_many']) assert.ok(skillMapEs[`skill_map.${key}`], key)
+})
+
+test('ES-300: los anillos están a R/4, R/2, 3R/4 y R del centro (cambiar el radio o el nivel del anillo rompe la prueba)', () => {
+  const distance = (point) => Math.hypot(point.x - geo.POLY_CENTER.x, point.y - geo.POLY_CENTER.y)
+  for (const level of [1, 2, 3, 4]) for (let index = 0; index < 6; index++) assert.ok(Math.abs(distance(geo.polyPoint(index, 6, (geo.POLY_RADIUS * level) / geo.POLY_LEVELS)) - (geo.POLY_RADIUS * level) / 4) < 0.1)
+  assert.equal(geo.POLY_RADIUS, 120); assert.equal(geo.POLY_LEVELS, 4)
+  const first = geo.ringPath(4, 4).split('L')[0]; assert.equal(first, 'M250 80', 'el anillo exterior (nivel 4) pasa por R = 120 sobre el eje vertical')
+  assert.equal(geo.ringPath(4, 1).split('L')[0], 'M250 170', 'el anillo 1 está a R/4 = 30')
+  assert.deepEqual([geo.radarShape([4, 4, 4]).dots[0].y, geo.radarShape([1, 1, 1]).dots[0].y], [80, 170], 'un nivel 4 cae sobre el anillo exterior y un 1 sobre el primero')
 })

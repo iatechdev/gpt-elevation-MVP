@@ -58,7 +58,7 @@ test('ES-30 radar: geometría determinista, dentro del radio y con una cuña por
 test('ES-30 pantalla (ES-300): cada eje es un botón con nombre y nivel y la tabla es la alternativa; el radar es el polígono del prototipo, no cuñas de calor', () => {
   const view = read('../src/skill-map/RadarView.tsx')
   assert.ok(view.includes('<button key={item.skill.skillKey} type="button" className={`radar-axis '), 'cada eje es un botón'); assert.ok(view.includes('aria-pressed={selected === item.skill.skillKey}'))
-  assert.ok(view.includes('aria-label={`${title}: ${status}`}'), 'nombre y nivel'); assert.ok(view.includes('<details className="radar-table"') && view.includes('<th scope="col">') && view.includes('<th scope="row">'))
+  assert.ok(view.includes('<b>{title}</b><span>{status}</span>') && !view.includes('aria-label={`'), 'nombre y nivel en el contenido (2.5.3)'); assert.ok(view.includes('<details className="radar-table"') && view.includes('<th scope="col">') && view.includes('<th scope="row">'))
   assert.equal(/radar-wedge|radar-list|RadarChart|role="button"/.test(view), false, 'sin cuñas ni lista de texto')
   assert.equal(/dangerouslySetInnerHTML|innerHTML/.test(view), false)
   assert.equal(/#[0-9a-fA-F]{3,8}/.test(read('../src/skill-map/radar.css')), false, 'solo tokens'); assert.equal(/#[0-9a-fA-F]{3,8}/.test(read('../src/skill-map/radarPolygon.css')), false, 'solo tokens')
