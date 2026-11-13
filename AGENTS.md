@@ -10,27 +10,36 @@ personas en reconversión profesional (cinco ES, una EN).
 
 Fuentes de verdad
 - Repo de trabajo: https://github.com/iatechdev/gpt-elevation-MVP (rama de integración: main).
-- PRD v0.2 y HUs del sprint: repo AlejoRoldan/perfiladorV2, rama docs/elevation-skillmap-sprint-2,
-  carpeta docs/elevation-skillmap/ (02-PRD.md, 04-SPRINT-2-HUS.md, 00-LEEME.md).
+- Índice y PRD conciliado v0.3 (fuente vigente, fusionados a main en el PR #5 el 24-oct-2026): docs/elevation-skillmap/00-LEEME.md y
+  02-PRD.md en el repo de trabajo. Léelos desde ahí; empieza por 00-LEEME.md, que enlaza el resto (HUs, registro de validación del CTO,
+  arquitectura y ADR, QA, operación). El repo AlejoRoldan/perfiladorV2 queda solo como antecedente (PRD v0.2).
+- Qué define cada fuente: PRD = alcance y aceptación; ADR = decisión técnica y sus motivos; Jira = responsable, dependencias y estado;
+  PR = cambios, revisión y pruebas; registro de release = commit y entorno realmente desplegados. Ante una contradicción, registra la
+  discrepancia, detén solo el trabajo afectado y pregunta; ningún comentario sustituye una decisión aprobada por ser el más reciente.
 - Docs del producto anterior: docs/ del repo de trabajo (Manifiesto ético, política de datos, design system).
 - Tablero: Jira proyecto ES, https://iatech-team-xqxmjki1.atlassian.net/jira/software/projects/ES/boards/2
-  Épicas ES-1 a ES-7; tickets ES-8 a ES-57. Entrega: martes 27-oct-2026 12:00.
+  Épicas ES-1 a ES-7; tickets ES-8 a ES-57. Meta final: Elevation como aplicación central con el motor Skill Map integrado.
+  Entregas: corte 1 (línea base, correcciones P1 validadas, staging en Railway y puerta de QA) con objetivo condicionado el
+  martes 27-oct-2026 12:00 (America/Bogota); el incremento 1 funcional y el piloto integral no tienen fecha hasta el inventario y la reestimación.
 
 Roles humanos
-- PO: Alejo Roldan. Tech Lead y desarrollo: Mauricio Roldán.
+- PO: Alejo Roldan. Tech Lead y desarrollo: Mauricio Roldán. Alejo aprueba alcance y prioridades; Mauricio, arquitectura, operación y merge;
+  QA deja la aceptación. Lo que afecta a producto y arquitectura requiere a ambos.
 
 Flujo obligatorio (un ticket = una rama = un PR)
 1. Trabajas solo en el ticket que te asignen (clave ES-n). Si algo no está en el ticket, no lo inventes: pregunta.
-2. Rama: ES-n-slug-corto (ej. ES-9-despliegue-vercel). Commits pequeños que mencionen ES-n.
+2. Rama: ES-n-slug-corto (ej. ES-9-despliegue-railway). Commits pequeños que mencionen ES-n.
 3. Abres un PR contra main con: resumen, criterios de aceptación cubiertos (casillas), pruebas ejecutadas con su resultado real, riesgos y lo que NO pudiste verificar.
 4. Estados Jira: Por hacer → En DEV (rama creada) → En QA (PR abierto) → En despliegue (QA aprobó) → Listo (merge a main).
 5. Nunca fusionas tu propio PR. El merge a main lo hace Mauricio, y solo después del comentario "QA aprobado" en el PR.
-6. main está conectado al servidor que ven los clientes: nada llega a main sin PR aprobado por QA.
+6. main está conectado al servidor que ven los clientes (hoy, el proyecto de Vercel; lo reemplaza el despliegue de ES-9): nada llega a main sin PR aprobado por QA.
 7. Comentarios en Jira y GitHub: salen bajo la cuenta de Mauricio. Firma siempre el primer renglón con tu rol,
    por ejemplo "[QA-Claude]", "[Infra-Claude]", "[Dev-Claude]" o "[Dev-Codex]", para saber quién habló.
 8. Entorno de trabajo: trabajas en tu propia carpeta aislada (git worktree o clon), nunca en la de otra sesión, y siempre desde la rama
    base acordada. No commitees, descartes ni reescribas cambios sin commitear que no sean tuyos. Nunca versiones node_modules, .env*,
    supabase/.temp ni artefactos de build. Cuando abras una sesión, empieza por confirmar tu rol y presentar tu plan antes de actuar.
+9. Puerta de seguridad: ningún hallazgo Alto o Crítico abierto se despliega a un entorno (staging o producción) ni se fusiona a main.
+   Se corrige y se prueba antes (CI con Postgres real) y QA lo valida. Staging va primero; producción es un entorno independiente y viene después.
 
 Criterio profesional y derecho a objetar
 - Todos los roles actúan como profesionales SENIOR de su especialidad: con criterio propio, no como ejecutores de órdenes.
