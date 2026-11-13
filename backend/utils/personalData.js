@@ -71,7 +71,7 @@ const CORE = [
   ['pilotFeedbacks', 'PilotFeedback', 'UserId', ['id', 'windowKey', 'questionnaireVersion', 'answers', 'version', 'status', 'createdAt', 'updatedAt']],
   ['invitations', 'Invitation', 'acceptedUserId', ['id', 'role', 'expiresAt', 'usedAt', 'createdAt']],
 ];
-const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
+const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'termsVersion', 'acceptedAt', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);
 const pick = (row, fields) => Object.fromEntries(fields.map(field => [field, row[field] ?? null]));
 

@@ -14,6 +14,7 @@ const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
 const { isValidEmail, MAX_EMAIL } = require('../utils/emailGuard'); // ES-252/ES-259
 const { passwordProblems, policy } = require('../utils/registrationPassword');
+const terms = require('../utils/terms'); // ES-301
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -80,6 +81,14 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
       return res.status(400).json({ error: 'Nombre, correo y contraseña son requeridos.' });
     }
 
+    // ES-301: la aceptación del aviso/términos se valida ANTES de consultar la base (no revela si el correo existe) y la versión vigente es la del servidor.
+    let accepted;
+    try { accepted = terms.validate(req.body); }
+    catch (error) {
+      if (error instanceof terms.TermsError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.currentVersion ? { currentVersion: error.currentVersion } : {}) });
+      throw error;
+    }
+
     // Verificar si el email ya existe en la BD
     const existing = await User.findOne({ where: { email } });
 
@@ -98,10 +107,12 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
     // Usuario nuevo — crear normalmente
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({ name, email, password: hashedPassword, role: 'user' });
+    await User.create({ name, email, password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {
+    // ES-301: dos registros simultáneos del mismo correo: gana uno; el otro choca con el índice único y es el MISMO caso que «ya registrado» (antes un 500).
+    if (error && error.name === 'SequelizeUniqueConstraintError') return res.status(400).json({ error: 'El correo ya está registrado.' });
     console.error('Error en register.');
     res.status(500).json({ error: 'Error en el servidor al registrar.' });
   }

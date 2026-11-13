@@ -42,7 +42,7 @@ async function processDeletion(id, { quiescent = false, replay = false } = {}) {
       await user.update({
         name: 'Cuenta eliminada / Deleted account', email: `${request.id}@deleted.invalid`, password: randomBytes(48).toString('hex'),
         active: false, motivation: null, therapistId: null, planId: null,
-        onboardingCompleted: false, loginAttempts: 0, lockedUntil: null,
+        onboardingCompleted: false, loginAttempts: 0, lockedUntil: null, termsVersion: null, acceptedAt: null,
       }, { transaction });
       await request.update({ status: 'awaiting_verification', attempts, activePurgedAt: new Date(), failureCode: null }, { transaction });
       return receipt(request, await receiptCategories(user.id, transaction));
