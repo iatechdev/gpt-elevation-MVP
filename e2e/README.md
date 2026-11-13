@@ -51,3 +51,18 @@ Para correr contra la app local: `E2E_BASE_URL=http://localhost:8080 npm test`.
 - Usar solo cuentas **sintéticas** de staging. Las claves se piden a Mauricio por un canal privado.
 - No apuntar a producción. No hacer pruebas de carga desde aquí.
 - Para ejecutar en CI se necesita descargar navegadores (pesan): hoy se corre a mano; evaluar después.
+
+## Auditoría de UX/UI (ES-148)
+- `tests/auditoria.spec.ts`: recorre cada pantalla por perfil (público, persona, terapeuta, admin, superadmin), ES/EN, escritorio y móvil, con estados de error y cargando simulados. Solo lectura. Un acceso por rol; la sesión se guarda en `e2e/.auth/` (ignorada por Git). Enmascara correos antes de capturar. Salida: `docs/ux/capturas/`.
+- `tests/maquetas.spec.ts`: verifica (sin red) las maquetas de `docs/ux/maquetas/` con axe y teclado y genera sus imágenes.
+- `scripts/con-credenciales.mjs`: lanzador que lee el archivo local de cuentas sintéticas y las pasa solo como variables de entorno del proceso hijo (no imprime ni guarda valores):
+
+```bash
+node scripts/con-credenciales.mjs "<ruta al archivo local>" npx playwright test tests/auditoria.spec.ts --project=escritorio
+```
+Variables útiles: `E2E_ONLY=PUBLICO|USER|THERAPIST|ADMIN|SUPERADMIN`, `E2E_LANGS=es,en`, `E2E_TAG`, `E2E_CAPTURE_DIR`. Las capturas del repo se recomprimieron a JPEG (calidad 70).
+- `tests/diseno-final.spec.ts`: verifica el prototipo `docs/ux/diseno-final/` (sin red): sin textos faltantes, sin desborde, axe sin violaciones graves/críticas, ES/EN, escritorio/móvil, claro/oscuro; genera `docs/ux/diseno-final/img/`.
+- `scripts/generar-textos.mjs`: genera `docs/ux/TEXTOS-FINALES-ES-EN.md` desde `docs/ux/diseno-final/copy.js`.
+- `tests/auditoria-chat.spec.ts`: chat REAL con la IA (gasta presupuesto y escribe turnos en la persona sintética de staging). **Solo corre con `E2E_CHAT_MAX=N`** (aprobado por Mauricio: hasta 4 el 3-nov-2026). `scripts/leer-historial-chat.mjs` resume el historial guardado por API (solo lectura, sin IA).
+- `tests/auditoria-registro-planes.spec.ts`: formulario de registro (sin enviarlo) y `/pricing` sin sesión y con sesión de persona. Solo lectura.
+- `tests/auditoria-escritura.spec.ts`: ESCRITURA en staging con la persona sintética (aprobado por Mauricio el 3-nov-2026): evidencia sintética → confirmar → registrar y retirar un nivel; solicitud de plan. **Solo con `E2E_ESCRITURA=1|2|3`** (fases). No usa la IA.

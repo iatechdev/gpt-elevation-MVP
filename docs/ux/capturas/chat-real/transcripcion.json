@@ -1,0 +1,69 @@
+{
+ "nota": "Mensajes de prueba inocuos de una cuenta sintética de staging. Sin datos personales.",
+ "turnos": [
+  {
+   "rol": "user",
+   "caracteres": 84,
+   "parrafos": 1,
+   "preguntas": 0,
+   "markdownCrudo": false,
+   "texto": "Hola. Llevo unos meses pensando en cambiar de carrera, pero no sé por dónde empezar."
+  },
+  {
+   "rol": "bot",
+   "caracteres": 774,
+   "parrafos": 4,
+   "preguntas": 1,
+   "markdownCrudo": true,
+   "texto": "Gracias por contarlo. Entiendo que llevas unos meses con la idea de cambiar de carrera y que todavía no tienes claro el primer paso. Es un punto de partida común, y no hace falta tenerlo resuelto de entrada.\n\nHay varias formas de empezar, y tú eliges la que te resulte más útil:\n\n- Partir de experiencias concretas de tu trabajo actual o anterior, para identificar qué sabes hacer y qué te gustaría llevar contigo.\n- Explorar qué valoras o qué te mueve en el trabajo, sin hablar todavía de puestos.\n- Pasar directamente a un trabajo más práctico sobre competencias (por ejemplo, con SkillMap), sin conversaciones emocionales.\n\nPara empezar por algo concreto: ¿en qué trabajas o has trabajado, y qué parte de ese trabajo recuerdas haber hecho con más ganas o con más orgullo?"
+  },
+  {
+   "rol": "user",
+   "caracteres": 101,
+   "parrafos": 1,
+   "preguntas": 0,
+   "markdownCrudo": false,
+   "texto": "Coordiné equipos de logística durante varios años. Me gustaba organizar, pero me cansé de la presión."
+  },
+  {
+   "rol": "bot",
+   "caracteres": 754,
+   "parrafos": 3,
+   "preguntas": 1,
+   "markdownCrudo": false,
+   "texto": "Gracias por compartirlo. Entiendo que coordinaste equipos de logística durante varios años, que organizar era la parte que más disfrutabas y que la presión terminó cansándote.\n\nPor ahora son hechos que tú has relatado. Una posible lectura, que te dejo como hipótesis para que la corrijas: organizar y coordinar equipos parecen ser actividades que te resultaban valiosas, y la presión pesó más que ese gusto. Aún no sé qué tipo de presión era (plazos, volumen, conflictos, falta de recursos), así que prefiero no suponerlo. Tampoco sé qué hacías en concreto al organizar, y ese detalle sería la base para reconocer competencias.\n\n¿Podrías contarme una situación concreta en la que sentiste que organizabas bien, qué hiciste tú y qué cambió gracias a ello?"
+  },
+  {
+   "rol": "user",
+   "caracteres": 6,
+   "parrafos": 1,
+   "preguntas": 0,
+   "markdownCrudo": false,
+   "texto": "No sé."
+  },
+  {
+   "rol": "bot",
+   "caracteres": 466,
+   "parrafos": 3,
+   "preguntas": 1,
+   "markdownCrudo": false,
+   "texto": "Está bien, no hace falta responder esa pregunta. A veces pedir una situación concreta de golpe es mucho.\n\nSi te sirve, podemos ir por un camino más ligero. Por ejemplo, podrías contarme cómo era un día normal en tu trabajo de coordinación, sin elegir un momento destacado. O, si prefieres, dejamos la experiencia pasada y hablamos de qué te gustaría que fuera distinto en un trabajo futuro. También podemos pausar aquí.\n\n¿Cuál de esas opciones te resulta más cómoda?"
+  },
+  {
+   "rol": "user",
+   "caracteres": 66,
+   "parrafos": 1,
+   "preguntas": 1,
+   "markdownCrudo": false,
+   "texto": "I am not sure this is for me. What can and can’t you help me with?"
+  },
+  {
+   "rol": "bot",
+   "caracteres": 1188,
+   "parrafos": 6,
+   "preguntas": 0,
+   "markdownCrudo": true,
+   "texto": "That's a fair question, and it's fine to doubt whether this fits you.\n\nI'm Elevation, an AI assistant. I'm not a human, and nobody is reading this conversation live.\n\n**What I can help with:**\n- Reflecting on your work experience and what you value, at your pace and only on topics you choose.\n- Telling apart facts, interpretations and open questions about your career.\n- Helping you put into words what you did in past jobs, as a base for recognising skills. You decide what is accurate.\n- Exploring possible directions only if you ask me to, as hypotheses to check, never as a prediction.\n\n**What I can't do:**\n- Therapy, diagnosis or health advice.\n- Promise a job, income or any result, or rate your employability.\n- Certify skills or decide what career you should follow.\n- Share anything with SkillMap, the separate career module, or with anyone else on my own. Sharing would only happen through a platform control, and only if you choose it.\n\nYou can also skip the reflective part entirely and go straight to practical skills work, or pause or stop here. None of that has a penalty.\n\nIf it helps, tell me what you were hoping to get from this, and we can see whether it's a match."
+  }
+ ]
+}
