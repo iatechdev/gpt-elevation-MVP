@@ -31,7 +31,7 @@ test('ES-33 integrado con ES-14, ES-32 y los catálogos reales en PostgreSQL', {
   require('../../associations')();
   const { CORE } = require('../../utils/personalData');
   for (const [, model] of CORE) require('../../' + model);
-  for (const model of ['PricingPlan', 'ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'RouteCatalog', 'RouteCatalogItem',
+  for (const model of ['PricingPlan', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'RouteCatalog', 'RouteCatalogItem',
     'SkillCatalog', 'SkillDefinition']) require('../../' + model);
   await sequelize.sync();
 

@@ -43,9 +43,9 @@ test('ES-282: solo hay archivos .env de ejemplo versionados, sin valores; el de 
   for (const line of fs.readFileSync(path.join(root, 'frontend/.env.production'), 'utf8').split(/\r?\n/).filter((l) => l.trim() && !l.startsWith('#'))) assert.match(line, /^VITE_[A-Z_]+=/, 'solo variables VITE_ (públicas)');
 });
 
-test('ES-282: los correos de ejemplo «.invalid» viven solo en el registro cerrado (tombstone de eliminación y semilla de demostración) y no en el código del cliente', (t) => {
+test('ES-282: los correos de ejemplo «.invalid» viven solo en el registro cerrado (tombstone de eliminación, correo de solicitud minimizada y semilla de demostración) y no en el código del cliente', (t) => {
   if (skip(t)) return;
-  const allowed = new Set(['backend/utils/deletionProcessor.js', 'backend/utils/demoSeedData.js']);
+  const allowed = new Set(['backend/utils/deletionProcessor.js', 'backend/utils/applicationMinimize.js', 'backend/utils/demoSeedData.js']);
   const found = [];
   for (const file of files) {
     if (!/\.(js|cjs|mjs|ts|tsx)$/.test(file) || /^(backend\/test\/|backend\/evaluation\/|e2e\/|frontend\/test\/|platform\/|TelegramBot\/|Elevation2\/|Flujo2\/|healtech\/)/.test(file) || /\.test\.|\.spec\./.test(file)) continue;

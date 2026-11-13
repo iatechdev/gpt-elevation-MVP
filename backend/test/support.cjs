@@ -64,6 +64,7 @@ models.AiJob.update = async () => [0]; // ES-88: los ganchos de revocación y bo
 models.SkillCandidate.update = async () => [0];
 models.AiJob.findAll = async () => [];
 models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
+models.ProfessionalApplication.findAll = async () => []; models.ProfessionalApplication.findOne = async () => null; // ES-293: la purga minimiza la solicitud de profesional; por defecto no hay ninguna
 models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };

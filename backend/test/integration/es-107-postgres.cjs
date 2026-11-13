@@ -78,6 +78,7 @@ test('ES-107: migración de filas existentes, tamaño en disco, descarga idénti
     assert.equal(Number((await one(`SELECT count(*) AS n FROM "ProfessionalApplicationFiles"`)).n), 2);
   });
 
+  await require('../../migrations/20261113010000-es293-application-minimized.cjs').up(sequelize); // ES-293: el modelo ahora incluye minimizedAt (migración aditiva posterior a es95/es107)
   const Application = require('../../ProfessionalApplication'); const File = require('../../ProfessionalApplicationFile');
   const express = require('express'); const app = express(); app.use(express.json());
   app.use('/api/professional-applications', require('../../routes/professionalApplications').publicRouter);

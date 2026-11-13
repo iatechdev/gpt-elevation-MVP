@@ -6,7 +6,7 @@ const ExportRequest = require('../ExportRequest');
 const DeletionRequest = require('../DeletionRequest');
 const JWT_SECRET = require('../config/jwt');
 const { deletionPending } = require('./deletionGuard');
-const { personalData, blocksPurge, retainedCategories } = require('./personalData');
+const { personalData, blocksPurge, receiptCategories } = require('./personalData');
 const { revokeForDeletion } = require('./consent');
 const DataRightsError = require('./dataRightsError');
 const problem = (status, code, es, en) => new DataRightsError(status, code, es, en);
@@ -121,7 +121,7 @@ async function requestDeletion(userId, { transaction: outer } = {}) {
     // Same lock order as export and purge. Serializes repeated requests per owner.
     const user = await User.findByPk(userId, { transaction, lock: Transaction.LOCK.UPDATE });
     const existing = await DeletionRequest.findOne({ where: { UserId: userId }, transaction });
-    if (existing) return { ...receipt(existing, await retainedCategories(userId, transaction)), repeated: true };
+    if (existing) return { ...receipt(existing, await receiptCategories(userId, transaction)), repeated: true };
     if (!user) throw blocked();
     const row = await DeletionRequest.create({
       id: randomUUID(), UserId: userId, status: 'accepted', attempts: 0,
@@ -132,7 +132,7 @@ async function requestDeletion(userId, { transaction: outer } = {}) {
     await require('./aiJobs').invalidateForUser(userId, 'deletion_requested', transaction); // ES-88: el worker deja de producir para esta persona
     await user.update({ active: false }, { transaction });
     await ExportRequest.destroy({ where: { UserId: userId }, transaction });
-    return { ...receipt(row, await retainedCategories(userId, transaction)), repeated: false };
+    return { ...receipt(row, await receiptCategories(userId, transaction)), repeated: false };
   });
 }
 
