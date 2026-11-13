@@ -26,7 +26,7 @@ test('ES-32 PostgreSQL + HTTP: motor, propiedad, versiones y ciclo de vida', { t
   const { CORE } = require('../../utils/personalData');
   const routeModels = ['RouteConstraintsVersion', 'RouteChoice', 'RouteReviewRequest'];
   for (const [, model] of CORE) if (!routeModels.includes(model)) require('../../' + model);
-  for (const model of ['ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'RouteCatalog', 'RouteCatalogItem', 'SkillCatalog', 'SkillDefinition']) require('../../' + model);
+  for (const model of ['ProfessionalApplication', 'ProfessionalApplicationFile', 'ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest', 'RouteCatalog', 'RouteCatalogItem', 'SkillCatalog', 'SkillDefinition']) require('../../' + model);
   await sequelize.sync();
   const migration = require('../../migrations/20261028-es32-routes.cjs');
   await migration.up(sequelize); await migration.up(sequelize);
