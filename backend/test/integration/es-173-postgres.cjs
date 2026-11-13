@@ -138,6 +138,28 @@ test('ES-173 PostgreSQL + HTTP: «Mi opinión» (permiso, versión, retiro, agre
     await q('UPDATE "Users" SET role=\'user\' WHERE id=$1', [people[1].id]);
   });
 
+  await t.test('agregados: UNA sola consulta (misma instantánea) y con permisos que cambian a la vez nunca sale responded > eligible ni missing < 0 (P2 de Codex)', async () => {
+    const admin = await mkUser('admin');
+    await q('DELETE FROM "PilotFeedbacks"'); await q('UPDATE "Consents" SET status=\'revoked\' WHERE purpose=\'pilot_feedback\'');
+    const people = []; for (let i = 0; i < 6; i++) { const p = await person(); people.push(p); assert.equal((await put(p)).status, 201); assert.equal((await put(p, {}, { window: 'day30' })).status, 201); }
+    const original = app.query.bind(app); let aggregateQueries = 0;
+    app.query = (sql, ...rest) => { if (typeof sql === 'string' && sql.includes('count(*)')) aggregateQueries++; return original(sql, ...rest); };
+    try {
+      assert.equal((await http(admin, 'GET', '/api/admin/pilot-metrics')).status, 200); assert.equal(aggregateQueries, 1, 'elegibles, respondidas y positivas salen de UNA consulta (varias consultas no comparten instantánea)');
+    } finally { app.query = original; }
+    const flapper = people[5]; let stop = false;
+    const toggler = (async () => { while (!stop) { await q('UPDATE "Consents" SET status=\'revoked\' WHERE purpose=\'pilot_feedback\' AND "UserId"=$1', [flapper.id]); await q('UPDATE "Consents" SET status=\'granted\' WHERE purpose=\'pilot_feedback\' AND "UserId"=$1', [flapper.id]); } })();
+    try {
+      for (let round = 0; round < 8; round++) {
+        const outs = await Promise.all(Array.from({ length: 10 }, () => http(admin, 'GET', '/api/admin/pilot-metrics')));
+        for (const out of outs) {
+          assert.equal(out.status, 200, JSON.stringify(out.body));
+          for (const metric of out.body.metrics.filter((m) => m.status === 'ready')) assert.ok(metric.counts.missing >= 0 && metric.counts.responded <= metric.counts.eligible && metric.counts.positive <= metric.counts.responded, JSON.stringify(metric));
+        }
+      }
+    } finally { stop = true; await toggler; }
+  });
+
   await t.test('carreras ×40: respuestas simultáneas nunca dan 5xx, no duplican y dejan una sola versión ganadora', async () => {
     const a = await person();
     const same = rid(); const body = { requestId: same, baseVersion: 0, questionnaireVersion: 1, window: 'day7', answers: answers() };

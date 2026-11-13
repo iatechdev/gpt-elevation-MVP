@@ -127,24 +127,24 @@ async function withdraw(userId, windowValue, baseVersion) {
 //   utility (día 30):   respondieron `professionalClarity` distinta de «not_explored»; positivas = «yes».
 // activation y experiment no salen de esta opinión: `not_available`.
 const METRICS = Object.freeze({
-  listening: { window: 'day7', responded: `f."answers"->>'listened' IS NOT NULL AND f."answers"->>'respected' IS NOT NULL`, positive: `f."answers"->>'listened' = 'yes' AND f."answers"->>'respected' = 'yes'` },
-  utility: { window: 'day30', responded: `f."answers"->>'professionalClarity' IN ('yes','no','unsure')`, positive: `f."answers"->>'professionalClarity' = 'yes'` },
+  listening: { window: 'day7', alias: 'f7', responded: (f) => `${f}."answers"->>'listened' IS NOT NULL AND ${f}."answers"->>'respected' IS NOT NULL`, positive: (f) => `${f}."answers"->>'listened' = 'yes' AND ${f}."answers"->>'respected' = 'yes'` },
+  utility: { window: 'day30', alias: 'f30', responded: (f) => `${f}."answers"->>'professionalClarity' IN ('yes','no','unsure')`, positive: (f) => `${f}."answers"->>'professionalClarity' = 'yes'` },
 });
-const ELIGIBLE = `FROM "Consents" c JOIN "Users" u ON u.id = c."UserId"
-  WHERE c.purpose = :purpose AND c.scope = 'default' AND c.status = 'granted' AND c.version >= :required
-    AND u.role = 'user' AND u.active = true AND NOT EXISTS (SELECT 1 FROM "DeletionRequests" d WHERE d."UserId" = u.id)`;
 
+// UNA sola consulta (una sola instantánea): elegibles, respondidas y positivas salen del MISMO conjunto de personas, así que responded ≤ eligible siempre,
+// aunque alguien conceda o revoque el permiso mientras se calcula (con consultas separadas podía salir eligible 5, responded 6, missing -1).
 async function aggregateMetrics() {
-  const bind = { purpose: PURPOSE, required: consent.REQUIRED_VERSION[PURPOSE] };
-  const eligible = Number((await sequelize.query(`SELECT count(*)::int AS n ${ELIGIBLE}`, { type: 'SELECT', replacements: bind }))[0].n);
+  const selects = Object.entries(METRICS).map(([key, def]) => `count(*) FILTER (WHERE ${def.responded(def.alias)})::int AS "${key}_responded", count(*) FILTER (WHERE ${def.positive(def.alias)})::int AS "${key}_positive"`).join(', ');
+  const joins = Object.values(METRICS).map((def) => `LEFT JOIN "PilotFeedbacks" ${def.alias} ON ${def.alias}."UserId" = c."UserId" AND ${def.alias}."windowKey" = '${def.window}' AND ${def.alias}.status = 'active'`).join(' ');
+  const [row] = await sequelize.query(`SELECT count(*)::int AS eligible, ${selects}
+    FROM "Consents" c JOIN "Users" u ON u.id = c."UserId" ${joins}
+    WHERE c.purpose = :purpose AND c.scope = 'default' AND c.status = 'granted' AND c.version >= :required
+      AND u.role = 'user' AND u.active = true AND NOT EXISTS (SELECT 1 FROM "DeletionRequests" d WHERE d."UserId" = u.id)`,
+  { type: 'SELECT', replacements: { purpose: PURPOSE, required: consent.REQUIRED_VERSION[PURPOSE] } });
+  const eligible = Number(row.eligible);
   const metrics = [{ key: 'activation', status: 'not_available' }, { key: 'experiment', status: 'not_available' }];
   for (const [key, def] of Object.entries(METRICS)) {
-    const [row] = await sequelize.query(`SELECT count(*) FILTER (WHERE ${def.responded})::int AS responded, count(*) FILTER (WHERE ${def.positive})::int AS positive
-      FROM "Consents" c JOIN "Users" u ON u.id = c."UserId" JOIN "PilotFeedbacks" f ON f."UserId" = c."UserId" AND f."windowKey" = :window AND f.status = 'active'
-      WHERE c.purpose = :purpose AND c.scope = 'default' AND c.status = 'granted' AND c.version >= :required
-        AND u.role = 'user' AND u.active = true AND NOT EXISTS (SELECT 1 FROM "DeletionRequests" d WHERE d."UserId" = u.id)`,
-    { type: 'SELECT', replacements: { ...bind, window: def.window } });
-    const responded = Number(row.responded); const positive = Number(row.positive);
+    const responded = Number(row[`${key}_responded`]); const positive = Number(row[`${key}_positive`]);
     metrics.push(eligible >= MIN_PEOPLE && responded >= MIN_PEOPLE
       ? { key, status: 'ready', window: def.window, counts: { eligible, responded, missing: eligible - responded, positive } }
       : { key, status: 'suppressed', window: def.window });

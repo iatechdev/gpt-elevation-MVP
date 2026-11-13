@@ -19,6 +19,7 @@ const MUTATIONS = [
   ['M10 retirar ignora la versión', U, 'baseVersion !== (row ? row.version : 0)', 'false'],
   ['M11 sin reintento ante la primera respuesta simultánea', U, 'if (error instanceof UniqueConstraintError && attempt === 1) continue;', ''],
   ['M12 agregados publican aunque respondan menos de 5', U, 'eligible >= MIN_PEOPLE && responded >= MIN_PEOPLE', 'eligible >= MIN_PEOPLE'],
+  ['M17 elegibles en consulta aparte (sin instantánea compartida)', U, 'const eligible = Number(row.eligible);', 'const eligible = Number((await sequelize.query(\'SELECT count(*)::int AS n FROM "Consents"\', { type: \'SELECT\' }))[0].n);'],
   ['M13 fuera de personalData.CORE (exportar/purgar)', 'utils/personalData.js', "['pilotFeedbacks', 'PilotFeedback', 'UserId',", "['pilotFeedbacksX', 'Consent', 'UserIdX',"],
   ['M14 agregados abiertos a cualquier rol', 'server.js', "verificarAdmin, require('./routes/pilotFeedback').admin", "verificarToken, require('./routes/pilotFeedback').admin"],
   ['M15 el permiso nuevo no es un propósito', 'utils/consent.js', '  pilot_feedback: { required: false },\n', ''],
