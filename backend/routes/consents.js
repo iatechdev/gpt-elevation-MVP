@@ -41,6 +41,9 @@ router.put('/:purpose', validateBody({
   if (!isPurpose(purpose)) {
     return res.status(404).json({ error: 'Propósito desconocido. / Unknown purpose.' });
   }
+  if (purpose === 'professional_review') { // ES-175: se autoriza y se retira por revisor desde /api/me/review-shares (el alcance y las evidencias nunca vienen de aquí)
+    return res.status(400).json({ code: 'use_review_shares', error: 'Usa /api/me/review-shares para autorizar o retirar a una persona revisora. / Use /api/me/review-shares to authorize or withdraw a reviewer.' });
+  }
   const { status } = req.body;
   if (PURPOSES[purpose].required && status === 'revoked') {
     return res.status(409).json({

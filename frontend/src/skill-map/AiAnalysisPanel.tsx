@@ -6,6 +6,7 @@ import type { Evidence } from '../evidence/model'
 import { AiProposalError, buildConfirmBody, choicesFor, confirmProposals, defaultChoice, finalLevel, MAX_SKILLS, newRequestId, requestProposals, type AiFailure, type Choice, type Proposed } from './aiProposalApi'
 import type { LocalizedText, Skill } from './model'
 import { radarItems } from './radar'
+import { LevelTicks } from './MapSummary'
 
 type T = (key: string) => string
 type Lang = 'es' | 'en'
@@ -92,7 +93,7 @@ export function AiAnalysisPanel({ skills, initialKeys, lang, t, backend, token, 
     {retryable.has(failure) && step === 'pick' && <button type="button" className="elv-btn" disabled={busy} onClick={() => void analyze()}>{t('skill_map.ai_retry')}</button>}
     {retryable.has(failure) && step === 'review' && <button type="button" className="elv-btn" disabled={busy} onClick={() => void save()}>{t('skill_map.ai_retry')}</button>}
     {fresh.has(failure) && step === 'review' && <button type="button" className="elv-btn" onClick={again}>{t('skill_map.ai_new_proposal')}</button>}</div> : null
-  const stepper = (n: number) => <ol className="ai-steps" aria-label={t('skill_map.ai_steps')}>{(['ai_st1', 'ai_st2', 'ai_st3'] as const).map((key, i) => <li key={key} aria-current={i + 1 === n ? 'step' : undefined}>{i + 1} · {t(`skill_map.${key}`)}</li>)}</ol>
+  const stepper = (n: number) => <ol className="ai-steps" aria-label={t('skill_map.ai_steps')}>{(['ai_st1', 'ai_st2', 'ai_st3'] as const).map((key, i) => <li key={key} className={i + 1 < n ? 'is-done' : undefined} aria-current={i + 1 === n ? 'step' : undefined}>{t(`skill_map.${key}`)}{i + 1 < n && <span className="ai-sr"> ({t('skill_map.ai_step_done')})</span>}</li>)}</ol>
   const doneItems = items.filter(item => savedKeys.includes(item.skill.skillKey))
 
   return <section className="elv-card skill-map-card ai-panel" aria-labelledby="ai-title">
@@ -128,7 +129,7 @@ export function AiAnalysisPanel({ skills, initialKeys, lang, t, backend, token, 
           return <article key={proposal.skillKey} className="ai-prop" aria-labelledby={`ai-h-${proposal.skillKey}`}>
             <div className="ai-prop-head"><h3 id={`ai-h-${proposal.skillKey}`}>{name(skill)}</h3><span className="ai-tag">{t('skill_map.ai_tag')}</span></div>
             {proposal.level === null ? <div className="ai-warn"><strong>{t('skill_map.ai_null_title')}</strong><br />{t(current ? 'skill_map.ai_null_text_current' : 'skill_map.ai_null_text')}</div> : <>
-              <p className="ai-lv"><span className={`radar-swatch h${proposal.level}`} aria-hidden="true">{proposal.level}</span>{t('skill_map.ai_proposed')}: {t('skill_map.level')} {proposal.level}</p>
+              <p className="ai-lv"><strong>{t('skill_map.ai_proposed')}:</strong> <LevelTicks level={proposal.level} t={t} /></p>
               <p><strong>{t('skill_map.ai_criterion')}: </strong>«{localized(skill.rubric.levels[String(proposal.level)]) || t('skill_map.translation_missing')}»</p>
               <p><strong>{t('skill_map.ai_why')}: </strong><span className="skill-map-free-text">{proposal.rationale}</span></p>
               <div className="ai-evid"><strong>{t('skill_map.ai_evid')}: </strong>{proposal.evidenceRefs.map(ref => titleOf(ref.evidenceId)).join(' · ')}
