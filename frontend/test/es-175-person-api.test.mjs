@@ -84,3 +84,10 @@ test('ES-175 conexión (E268-5): el texto de revisores y objeciones no se interp
   assert.doesNotMatch(consent, /reset\(\)|setText\(''\)/, 'conflicto, consentimiento e incierto NO borran el texto')
   assert.match(screen, /addEventListener\('beforeunload', unload\)/); assert.match(screen, /addEventListener\('popstate', pop\)/); assert.match(screen, /window\.history\.go\(-2\)/)
 })
+
+test('ES-175 conexión (cobertura): el autor de la revisión y de la respuesta salen del servidor, con «Persona revisora» solo si es null; nunca un literal', () => {
+  const screen = read('../src/facilitation/PersonReviews.tsx')
+  assert.ok(screen.includes("{review.author ?? t('reviewerFallback')}"), 'autor de la revisión')
+  assert.ok(screen.includes("{review.response.author ?? t('reviewerFallback')}"), 'autor de la respuesta')
+  assert.doesNotMatch(screen, /Revisor fijo|Facilitador|Reviewer[^F]/)
+})

@@ -41,7 +41,7 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
     };
     const { chromium } = process.env.PLAYWRIGHT_MODULE ? require(process.env.PLAYWRIGHT_MODULE) : await import('playwright');
     browser = await chromium.launch({ headless: true });
-    const frontend = process.env.ES175C_URL || 'http://127.0.0.1:4257'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname));
+    const frontend = process.env.ES175C_URL || 'http://127.0.0.1:4257'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname)); await require('./_buildSha.cjs')(frontend, assert);
     const axeSource = process.env.AXE_PATH ? fs.readFileSync(process.env.AXE_PATH, 'utf8') : ''; const shots = process.env.SHOTS_DIR; if (shots) fs.mkdirSync(shots, { recursive: true });
     async function open(who, { lang = 'es', width = 1360, scheme = 'light', route = '/app/professional-reviews', intercept } = {}) {
       const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme }); const page = await context.newPage(); const errors = [];

@@ -61,7 +61,7 @@ const { pathToFileURL } = require('node:url');
 
     const { chromium } = process.env.PLAYWRIGHT_MODULE ? require(process.env.PLAYWRIGHT_MODULE) : await import('playwright');
     browser = await chromium.launch({ headless: true });
-    const frontend = process.env.ES255_PREVIEW_URL || 'http://127.0.0.1:4255'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname));
+    const frontend = process.env.ES255_PREVIEW_URL || 'http://127.0.0.1:4255'; assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname)); await require('./_buildSha.cjs')(frontend, assert);
     const axeSource = process.env.AXE_PATH ? fs.readFileSync(process.env.AXE_PATH, 'utf8') : '';
     async function axeCheck(page, label) {
       if (!axeSource) return;
