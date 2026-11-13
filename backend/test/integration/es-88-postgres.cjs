@@ -294,7 +294,7 @@ test('ES-88 PostgreSQL: revocación, borrado con worker activo y exportación de
     // que (TherapistProfiles) siguen bloqueando la purga mediante blocksPurge (ES-23).
     // ES-276: el guardián también mira personId y patientId. ES-274: ClinicalNotes, TherapySessions y MatchingRequests ya no son excepciones: se CONSERVAN (RETAINED, lo que escribió el profesional) o se purgan aparte (PURGE_ALSO).
     // ES-95: ProfessionalApplications son solicitudes PÚBLICAS de profesionales (no datos de una cuenta de la plataforma): su userId es opcional
-    // (ON DELETE SET NULL) y su retención la regula scripts/purgeProfessionalApplications.js. Decisión a confirmar por Mauricio si se quiere exportar
+    // (ON DELETE SET NULL) y su retención la regula scripts/purgeProfessionalApplications.js. ES-293 (opción C, Mauricio 12-nov-2026): al purgar a la persona su solicitud se MINIMIZA (solo estado y fechas; ver es-293). Antes: decisión a confirmar por Mauricio si se quiere exportar
     // o borrar también esas solicitudes con la cuenta.
     const exceptions = new Set(['DeletionRequests', 'ExportRequests', 'AuthRevocations', 'RevokedTokens', 'TherapistProfiles', 'ProfessionalApplications']);
     const missing = tables.filter((n) => !registered.has(n) && !exceptions.has(n));
