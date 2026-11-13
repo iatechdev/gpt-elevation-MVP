@@ -318,10 +318,10 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
     // La IA y los logs
     assert.deepEqual(providerCallsAroundCrisis, [0, 0, 0], 'la frase de crisis no se envía al proveedor de IA (ES-21)');
     for (const p of Object.values(people)) assert.ok(!forbiddenInAi.includes(p.canary.diary), 'a la IA no llega el diario de ' + p.canary.diary);
-    // E281-1 (decisión pendiente, ver el PR): el turno de crisis NO llama a la IA, pero la frase queda en el HISTORIAL del chat y viaja al proveedor en el SIGUIENTE mensaje ordinario de la misma persona.
-    // Se fija ese único camino: cualquier otra solicitud a la IA que lleve la frase (resumen, recomendaciones, puente, análisis) hace fallar la prueba.
+    // E281-1 → ES-298 (decisión de Mauricio, 12-nov): el turno de crisis (la frase y la respuesta de apoyo) se OMITE del historial que sale hacia el proveedor: ninguna solicitud a la IA lleva la frase,
+    // ni en el siguiente mensaje de chat ni en resumen, recomendaciones, puente o análisis.
     const withCrisis = provider.requests.map((x) => JSON.parse(x)).filter((j) => Object.values(people).some((p) => JSON.stringify(j).includes(p.canary.crisis)));
-    assert.equal(withCrisis.length, 3, 'solo el siguiente mensaje de chat de cada persona lleva la frase en su historial');
+    assert.equal(withCrisis.length, 0, 'ninguna solicitud al proveedor lleva la frase de crisis (ES-298)');
     for (const j of withCrisis) { assert.ok(String(j.system).startsWith('You are Elevation'), 'es una solicitud de chat'); assert.equal(j.messages[j.messages.length - 1].role, 'user'); assert.deepEqual(Object.keys(j).sort(), ['max_tokens', 'messages', 'model', 'output_config', 'system'], 'ninguna marca de riesgo viaja como parámetro'); }
     for (const p of Object.values(people)) assert.ok(!forbiddenInAi.includes(p.canary.email), 'a la IA no llega el correo');
     const logText = logs.lines.join('\n');

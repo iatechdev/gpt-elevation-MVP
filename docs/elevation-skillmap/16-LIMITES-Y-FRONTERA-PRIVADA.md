@@ -58,3 +58,6 @@ Intención o plan de quitarse la vida · deseo de no vivir · autolesión · des
 ## 8. Qué no cubre este ticket
 
 Validación por el especialista y verificación de recursos por país; evaluación con casos reales (ES-44/ES-46); un detector más allá de palabras y patrones; moderación de las respuestas del modelo; delimitación de las notas del terapeuta; envío de `country`/`lang` desde la interfaz.
+
+## ES-298 · La frase de crisis ya no viaja al proveedor en los mensajes siguientes (E281-1)
+Decisión de Mauricio (12-nov-2026, opción A): al armar el historial que se envía al proveedor, `routes/chat.js` vuelve a evaluar cada mensaje de la persona con `detectRisk` (texto completo, antes de acotarlo) y OMITE el turno interrumpido: la frase de nivel alto y la respuesta de apoyo que la siguió. El indicador NO se persiste ni se registra; el historial que ve y conserva la persona NO cambia; el contrato de la API no cambia. El malestar (nivel medio) sigue siendo un turno ordinario y viaja. Límite: lo que el detector no reconoce (ver arriba) sigue viajando; cero casos detectados no es garantía. Pruebas: `test/es-298-crisis-history.test.cjs` y la matriz `es-281` (ninguna solicitud al proveedor lleva la frase).
