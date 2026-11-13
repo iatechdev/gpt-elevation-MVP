@@ -131,7 +131,7 @@ test('ES-242 profesionales: nombre, especialidades, enfoque e idiomas de un prof
 });
 
 // ES-251: las pantallas no pueden ofrecer un valor que el servidor rechaza (lectura de los fuentes, sin navegador).
-test('ES-251 las opciones de MatchingModal y UserProgress están TODAS en el catálogo del servidor', async (t) => {
+test('ES-251 las opciones de MatchingModal y ProgressMatching están TODAS en el catálogo del servidor', async (t) => {
   const { prompts } = setup();
   const request = await startApp(t);
   const fs = require('node:fs'); const path = require('node:path');
@@ -140,10 +140,11 @@ test('ES-251 las opciones de MatchingModal y UserProgress están TODAS en el cat
   const block = (name) => modal.slice(modal.indexOf(`const ${name} = [`), modal.indexOf(']', modal.indexOf(`const ${name} = [`)));
   const keys = (src) => [...src.matchAll(/key: '([^']+)'/g)].map((m) => m[1]);
   const fromModal = { area: keys(block('TOPICS')), style: keys(block('APPROACHES')), language: keys(block('LANGUAGES')) };
-  const progress = read('pages/UserProgress.tsx');
-  const sel = (field) => { const i = progress.indexOf(`matchingAnswers.${field}} onChange`); return [...progress.slice(i, progress.indexOf('</select>', i)).matchAll(/<option value="([^"]+)">/g)].map((m) => m[1]); };
-  const fromProgress = { area: sel('area'), style: sel('style'), language: sel('language') };
-  for (const [source, lists] of [['MatchingModal', fromModal], ['UserProgress', fromProgress]]) for (const [key, values] of Object.entries(lists)) {
+  // ES-173: el emparejamiento de /app/progress vive en progress/ProgressMatching.tsx (listas AREAS, STYLES y LANGUAGES de pares [valor enviado, clave de texto])
+  const progress = read('progress/ProgressMatching.tsx');
+  const sel = (name) => { const i = progress.indexOf(`const ${name}: [string, string][] = [`); return [...progress.slice(i, progress.indexOf('\n', i)).matchAll(/\['([^']+)', 'pr_/g)].map((m) => m[1]); };
+  const fromProgress = { area: sel('AREAS'), style: sel('STYLES'), language: sel('LANGUAGES') };
+  for (const [source, lists] of [['MatchingModal', fromModal], ['ProgressMatching', fromProgress]]) for (const [key, values] of Object.entries(lists)) {
     assert.ok(values.length >= 3, `${source}.${key}: se leyeron opciones`);
     for (const value of values) assert.equal((await post(request, { [key]: value })).status, 200, `${source} ${key}=${value}`);
   }

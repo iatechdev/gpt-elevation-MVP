@@ -71,15 +71,16 @@ const { pathToFileURL } = require('node:url');
     const T = {
       es: { note: 'Estas cifras son un registro tuyo. No son una medición de salud ni un diagnóstico.', enter: 'Al entrar: 3 de 5 (medio)', up: 'Subió', same: 'Igual', down: 'Bajó', rating: '4 de 5', mood: 'Ánimo promedio', ratingStat: 'Calificación promedio', emptyMood: 'Aún no hay registros.', emptyRatings: 'Aún no hay calificaciones.', error: 'No se pudo cargar tu progreso.', retry: 'Reintentar', locale: 'es-CO' },
       en: { note: 'These figures are your own record. They are not a health measurement or a diagnosis.', enter: 'On arrival: 3 of 5 (medium)', up: 'Went up', same: 'Stayed the same', down: 'Went down', rating: '4 of 5', mood: 'Average mood', ratingStat: 'Average rating', emptyMood: 'No records yet.', emptyRatings: 'No ratings yet.', error: 'Could not load your progress.', retry: 'Retry', locale: 'en-US' } };
-    const pictographic = /\p{Extended_Pictographic}|★|☆|[↑↓]/u;
+    const pictographic = /\p{Extended_Pictographic}|★|☆/u; // ES-173: el diseño aprobado (11859) añade ↑ = ↓ JUNTO a la palabra de tendencia (nunca solos); siguen prohibidos emojis y estrellas
     for (const lang of ['es', 'en']) for (const width of [390, 1360]) {
       const t = T[lang]; const tag = `${lang} ${width}px`;
       // A) con datos: contenido real, sin emojis/estrellas, tendencia en texto, promedios = base
       { const { context, page, errors } = await open(withData, lang, width);
         await page.locator('h1').waitFor(); await page.getByText(t.enter, { exact: false }).first().waitFor();
-        const main = await page.locator('main').innerText(); const html = await page.locator('main').innerHTML();
+        const main = await page.locator('main').textContent(); // ES-173: textContent (las rotulaciones van en mayúsculas visuales por text-transform)
+        const html = await page.locator('main').innerHTML();
         assert.doesNotMatch(await page.locator('body').innerText(), pictographic); /* E254-1: también el encabezado (botón «Buscar terapeuta») */ assert.ok(!/#22C55E|#EF4444|rgb\(34, 197, 94\)|rgb\(239, 68, 68\)/i.test(html), 'sin colores verde/rojo de tendencia');
-        for (const word of [t.up, t.same, t.down]) assert.ok(main.includes(word), `tendencia «${word}»`);
+        for (const word of [t.up, t.same, t.down]) assert.ok(main.toLowerCase().includes(word.toLowerCase()), `tendencia «${word}»`); // ES-173: la chip de tendencia va en mayúsculas visuales (text-transform), por eso se compara sin distinguir mayúsculas
         assert.ok(main.includes(t.note)); assert.ok(main.includes(t.rating));
         const fmt = value => value.toLocaleString(t.locale, { maximumFractionDigits: 1 });
         assert.ok(main.includes(`${fmt(db.avgMood)} ${lang === 'es' ? 'de' : 'of'} 5`), 'promedio de ánimo = base'); assert.ok(main.includes(`${fmt(db.avgRating)} ${lang === 'es' ? 'de' : 'of'} 5`), 'promedio de calificación = base');

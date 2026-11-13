@@ -1,0 +1,43 @@
+/* ES-173 (HU-P22): «Tu progreso» y «Tu opinión» con Cartografía. Solo tokens --cg-*, sin estilos en línea. */
+@import '../shell/shell.css';
+
+/* E272-1 (CLS): mientras Barlow se descarga, el navegador usa una fuente de reserva más ancha y los títulos/párrafos cambiaban de renglón al llegar la real (saltos de hasta 0,32).
+   Estas reservas usan Arial/Liberation Sans con el ANCHO ajustado al de Barlow (medido: Barlow Condensed 700 = 68 % de Arial; Barlow 400 = 96 %; Barlow 600 = 90 %), así que el texto ocupa los mismos renglones antes y después. */
+@font-face { font-family: 'Barlow Condensed Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 700; size-adjust: 68%; }
+@font-face { font-family: 'Barlow Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 500; size-adjust: 96%; }
+@font-face { font-family: 'Barlow Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 600 700; size-adjust: 90%; }
+.prg { --cg-font-cond: 'Barlow Condensed', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow', 'Barlow Fallback', system-ui, sans-serif; }
+/* E272-1: con barra de desplazamiento clásica, al llegar los datos aparecía la barra y el texto de la cabecera cambiaba de renglón; el hueco queda reservado. */
+:root:has(.prg) { scrollbar-gutter: stable; }
+.prg { min-height: 100dvh; padding: 0 var(--cg-s4); }
+.prg-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 60rem; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
+.prg-main:focus-visible, .prg-main h1:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
+.prg-main > p, .prg-main p { margin: 0; }
+.prg-head { display: flex; gap: var(--cg-s4); justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.prg-head > div { display: grid; gap: var(--cg-s2); min-width: 0; flex: 1 1 18rem; }
+.prg-head h1 { margin: 0; }
+.prg-card { display: grid; gap: var(--cg-s3); align-content: start; min-width: 0; }
+.prg-card h2 { margin: 0; }
+.prg-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cg-s4); }
+.prg-mood { display: flex; flex-wrap: wrap; gap: var(--cg-s2) var(--cg-s4); align-items: center; }
+.prg-word { font: 600 1rem var(--cg-font-sans); text-transform: none; color: var(--cg-muted); }
+.prg-prose { white-space: pre-wrap; }
+.prg-form { display: grid; gap: var(--cg-s3); }
+.prg-form .cg-select { width: 100%; }
+.prg-link { display: inline-flex; align-items: center; text-decoration: none; border-bottom-width: 1.5px; }
+.prg a.cg-btn { color: var(--cg-ground); text-decoration: none; }
+.prg a.cg-btn--ghost { color: var(--cg-ink); }
+.prg a.cg-btn--ghost:hover { color: var(--cg-mark); }
+.prg .cg-dialog { margin: auto; }
+.prg .cg-dialog .cg-items { max-height: 50dvh; overflow: auto; }
+/* WCAG 1.4.10: ningún texto largo sin espacios desborda a 390/320 px; los hijos de la rejilla pueden encogerse. */
+.prg-main, .prg-main *, .prg .cg-dialog, .prg .cg-dialog * { overflow-wrap: anywhere; }
+.prg-main > *, .prg-cols > *, .prg-card > * { min-width: 0; }
+
+/* «Tu opinión»: preguntas en tarjetas */
+.prg-question { display: grid; gap: var(--cg-s2); }
+.prg-question .cg-scale { display: flex; flex-wrap: wrap; gap: var(--cg-s2) var(--cg-s4); }
+.prg-checks { border: 0; padding: 0; margin: 0; display: grid; gap: var(--cg-s2); min-width: 0; }
+.prg-checks legend { padding: 0; margin-bottom: var(--cg-s2); }
+.prg-actions { display: flex; gap: var(--cg-s3); flex-wrap: wrap; align-items: center; }
+.prg-status { min-height: 1.6em; }
