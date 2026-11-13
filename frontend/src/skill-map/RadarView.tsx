@@ -1,7 +1,12 @@
+// ES-300: el radar a la forma del prototipo (decisión del PO, ES-160 comentario 10961). Un eje por capacidad del catálogo, anillos 1–4 (el exterior es el 4), sin nivel = sin punto,
+// solo se unen los vecinos con nivel y el relleno aparece solo cuando todas tienen nivel; cada eje es un botón con nombre y «Nivel n de 4»/«Sin nivel»; tabla alternativa con el mismo contenido.
 import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
+import './radarPolygon.css'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { LocalizedText } from './model'
-import { anyLevel, CENTER, improvement, MAX_LABELS, MAX_LEVEL, RADIUS, radarItems, strongest, VIEW_H, VIEW_W, wedge, wrapName, type RadarItem } from './radar'
+import { improvement, radarItems, strongest, anyLevel, MAX_LEVEL, type RadarItem } from './radar'
+import { axisEnd, axisPlacement, POLY_CENTER, POLY_H, POLY_LEVELS, POLY_RADIUS, POLY_W, radarMode, radarShape, ringPath, segmentsPath } from './radarGeometry'
 import type { Skill } from './model'
 
 type T = (key: string) => string
@@ -11,61 +16,82 @@ const name = (skill: Skill, lang: Lang, t: T) => skill.labels[lang] ?? t('skill_
 const criterion = (value: LocalizedText | undefined, lang: Lang, t: T) => value?.[lang] ?? t('skill_map.translation_missing')
 const evidenceText = (count: number, t: T) => fmt(t(count === 1 ? 'skill_map.radar_evid_one' : 'skill_map.radar_evid'), { n: count })
 const levelText = (level: number | null, t: T) => level === null ? t('skill_map.radar_none') : fmt(t('skill_map.radar_level_of'), { n: level, max: MAX_LEVEL })
+/** «Nivel n de 4» o «Sin nivel»: lo que dice cada eje del gráfico y cada fila de la tabla. */
+const axisStatus = (level: number | null, t: T) => level === null ? t('skill_map.radar_no_level') : fmt(t('skill_map.radar_level_of'), { n: level, max: MAX_LEVEL })
 
 function Swatch({ level }: { level: number | null }) {
   return <span className={`radar-swatch ${level === null ? 'is-none' : `h${level}`}`} aria-hidden="true">{level ?? ''}</span>
 }
 
-/** Radar con mapa de calor. Cada cuña es un botón (Tab/Enter/Espacio) que abre el detalle; la lista de texto es su alternativa accesible. */
-export function RadarChart({ items, selected, onSelect, lang, t }: { items: RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T }) {
-  const labels = items.length <= MAX_LABELS
-  const withLevel = items.filter(item => item.level !== null).map(item => `${name(item.skill, lang, t)} ${item.level}`).join(', ') || '—'
-  const without = items.filter(item => item.level === null).map(item => name(item.skill, lang, t)).join(', ') || '—'
-  return <svg className="radar-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} role="group" aria-label={fmt(t('skill_map.radar_alt'), { n: items.length, with: withLevel, without })}>
-    {[1, 2, 3, 4].map(n => <g key={n}>
-      <circle className="radar-ring" cx={CENTER.x} cy={CENTER.y} r={RADIUS * n / MAX_LEVEL} />
-      <text className="radar-ring-label" x={CENTER.x + 4} y={CENTER.y - RADIUS * n / MAX_LEVEL - 3} aria-hidden="true">{n}</text>
-    </g>)}
-    {items.map((item, i) => { const g = wedge(i, items.length, item.level); return <line key={item.skill.skillKey} className="radar-spoke" x1={CENTER.x} y1={CENTER.y} x2={g.spoke.x} y2={g.spoke.y} /> })}
-    {items.map((item, i) => {
-      const g = wedge(i, items.length, item.level), title = name(item.skill, lang, t), active = selected === item.skill.skillKey
-      const lines = wrapName(title)
-      const say = `${title}: ${levelText(item.level, t)}${item.needsReview ? ` · ${t('skill_map.contradictory')}` : ''}`
-      return <g key={item.skill.skillKey}>
-        <g role="button" tabIndex={0} aria-label={say} aria-pressed={active} className={`radar-wedge${active ? ' is-selected' : ''}`}
-          onClick={() => onSelect(item.skill.skillKey)}
-          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(item.skill.skillKey) } }}>
-          <title>{say}</title>
-          <path className={item.level === null ? 'radar-none' : `radar-fill h${item.level}`} d={g.path} />
-          {item.level !== null && <text className={`radar-num${item.level === MAX_LEVEL ? ' on-dark' : ''}`} x={g.number.x} y={g.number.y + 5} textAnchor="middle" aria-hidden="true">{item.level}</text>}
-        </g>
-        {labels && <g aria-hidden="true">
-          {lines.map((line, k) => <text key={k} className="radar-label" x={g.label.x} y={g.label.y + g.label.dy + (k - (lines.length - 1) / 2) * 14} textAnchor={g.label.anchor}>{line}</text>)}
-          <text className="radar-label-sub" x={g.label.x} y={g.label.y + g.label.dy + ((lines.length + 1) / 2) * 14 - 2} textAnchor={g.label.anchor}>{item.level === null ? t('skill_map.radar_none') : `${t('skill_map.level')} ${item.level}`}</text>
-        </g>}
-      </g>
+/** Polígono del radar. El nombre accesible de cada eje sale de su contenido («nombre» + «Nivel n de 4»/«Sin nivel»): así contiene SIEMPRE el texto visible (WCAG 2.5.3) y, con solo la marca, el texto sigue en el árbol de accesibilidad (oculto a la vista, no al lector). Hasta 12 capacidades cada eje lleva nombre y nivel visibles; hasta 24, solo la marca (el nombre va en el aria-label y en la tabla); con más, el gráfico es una imagen y la tabla es la superficie interactiva. */
+export function RadarPolygon({ items, selected, onSelect, lang, t, viewport = 1200 }: { items: readonly RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T; viewport?: number }) {
+  const total = items.length
+  const mode = radarMode(total, viewport)
+  const shape = radarShape(items.map(item => item.level))
+  const alt = `${t('skill_map.radar_poly_alt')} ${fmt(t('skill_map.radar_with'), { with: total - shape.missing, n: total })}`
+  return <div className={`radar-poly is-${mode}`}>
+    <svg viewBox={`0 0 ${POLY_W} ${POLY_H}`} role="img" aria-label={alt}>
+      {[1, 2, 3, 4].map(level => <path key={level} d={ringPath(total, level)} className={`radar-ring${level === POLY_LEVELS ? ' is-outer' : ''}`} />)}
+      {items.map((item, i) => { const end = axisEnd(i, total); return <line key={item.skill.skillKey} x1={POLY_CENTER.x} y1={POLY_CENTER.y} x2={end.x} y2={end.y} className="radar-axis-line" /> })}
+      {[1, 2, 3, 4].map(level => <text key={level} x={POLY_CENTER.x + 4} y={POLY_CENTER.y - (POLY_RADIUS * level) / POLY_LEVELS - 3} className="radar-ring-num" aria-hidden="true">{level}</text>)}
+      {shape.fill && <path d={shape.fill} className="radar-fill" />}
+      {shape.segments.length > 0 && <path d={segmentsPath(shape)} className="radar-line" />}
+      {shape.dots.map(dot => <circle key={dot.index} cx={dot.x} cy={dot.y} r={5} className="radar-dot" />)}
+    </svg>
+    {mode !== 'image' && items.map((item, i) => {
+      const place = axisPlacement(i, total), title = name(item.skill, lang, t), status = axisStatus(item.level, t)
+      return <button key={item.skill.skillKey} type="button" className={`radar-axis h-${place.h} v-${place.v}`} style={{ left: `${place.left}%`, top: `${place.top}%` }}
+        aria-pressed={selected === item.skill.skillKey} onClick={() => onSelect(item.skill.skillKey)}>
+        <span className="radar-axis-mark" aria-hidden="true" />
+        <b>{title}</b><span>{status}</span>
+      </button>
     })}
-  </svg>
+  </div>
 }
 
-export function RadarLegend({ t }: { t: T }) {
-  return <ul className="radar-legend" aria-label={t('skill_map.legend')}>
-    {[1, 2, 3, 4].map(n => <li key={n}><Swatch level={n} />{t('skill_map.level')} {n}</li>)}
-    <li><Swatch level={null} />{t('skill_map.radar_none')}</li>
-  </ul>
+/** Tabla alternativa «Ver los niveles como tabla»: el mismo contenido que el gráfico; el nombre de cada fila abre el mismo detalle. Con más de 24 capacidades es la superficie principal y se abre sola. */
+export function RadarTable({ items, selected, onSelect, lang, t, viewport = 1200 }: { items: readonly RadarItem[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T; viewport?: number }) {
+  return <details className="radar-table" open={radarMode(items.length, viewport) === 'image' || undefined}>
+    <summary>{t('skill_map.radar_table')}</summary>
+    <table>
+      <thead><tr><th scope="col">{t('skill_map.radar_col_skill')}</th><th scope="col">{t('skill_map.radar_col_level')}</th></tr></thead>
+      <tbody>
+        {items.map(item => <tr key={item.skill.skillKey}>
+          <th scope="row"><button type="button" className="radar-table-skill" aria-pressed={selected === item.skill.skillKey} onClick={() => onSelect(item.skill.skillKey)}>{name(item.skill, lang, t)}</button></th>
+          <td>{axisStatus(item.level, t)}{item.needsReview && ` · ${t('skill_map.contradictory')}`}{item.stale && ` · ${t('skill_map.stale')}`}</td>
+        </tr>)}
+      </tbody>
+    </table>
+  </details>
 }
 
-/** Pantalla completa del radar: gráfico, puntos fuertes, un punto a mejorar (con criterio real del catálogo) y lista de texto. */
+/** Ancho de la ventana (el radar decide por él cuántos ejes caben como botones). */
+function useViewportWidth() {
+  const [width, setWidth] = useState(() => (typeof window === 'undefined' ? 1200 : window.innerWidth))
+  useEffect(() => {
+    const update = () => setWidth(window.innerWidth)
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return width
+}
+
+/** Pantalla completa del radar: gráfico, tabla alternativa, puntos fuertes y un punto a mejorar (con criterio real del catálogo). */
 export function RadarBoard({ skills, selected, onSelect, onRegister, onAnalyze, lang, t }: {
   skills: readonly Skill[]; selected: string | null; onSelect: (key: string) => void; onRegister: (key: string) => void; onAnalyze?: () => void; lang: Lang; t: T
 }) {
   const items = radarItems(skills)
   const top = strongest(items), next = improvement(items), some = anyLevel(items)
+  const missing = items.filter(item => item.level === null).length
+  const viewport = useViewportWidth()
   return <div className="radar-board">
     <section className="elv-card skill-map-card radar-card" aria-labelledby="radar-title">
       <h2 id="radar-title">{t('skill_map.radar_title')}</h2>
-      <RadarChart items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} />
-      <RadarLegend t={t} />
+      <RadarPolygon items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} viewport={viewport} />
+      <p className="skill-map-note">{t('skill_map.radar_poly_intro')}</p>
+      {missing > 0 && <p className="skill-map-note" role="status">{fmt(t(missing === 1 ? 'skill_map.radar_gap_one' : 'skill_map.radar_gap'), { n: missing })}</p>}
+      {radarMode(items.length, viewport) === 'image' && <p className="skill-map-note">{fmt(t('skill_map.radar_many'), { n: items.length })}</p>}
+      <RadarTable items={items} selected={selected} onSelect={onSelect} lang={lang} t={t} viewport={viewport} />
       {onAnalyze && <button type="button" className="elv-btn radar-analyze" onClick={onAnalyze}>{t('skill_map.ai_open')}</button>}
     </section>
     <div className="radar-side">
@@ -94,20 +120,5 @@ export function RadarBoard({ skills, selected, onSelect, onRegister, onAnalyze, 
         </section>
       </>}
     </div>
-    <section className="elv-card skill-map-card radar-card radar-list-card" aria-labelledby="radar-list-title">
-      <h2 id="radar-list-title">{t('skill_map.radar_list_title')}</h2>
-      <ul className="radar-list">
-        {items.map(item => <li key={item.skill.skillKey}>
-          <button type="button" className={`radar-row${selected === item.skill.skillKey ? ' is-selected' : ''}`} aria-pressed={selected === item.skill.skillKey} onClick={() => onSelect(item.skill.skillKey)}>
-            <strong>{name(item.skill, lang, t)}</strong>
-            <span className={`radar-steps${item.level === null ? ' is-none' : ''}`} aria-hidden="true">
-              {[1, 2, 3, 4].map(n => <i key={n} className={item.level !== null && n <= item.level ? `h${item.level}` : ''} />)}
-            </span>
-            <span className="radar-row-text">{levelText(item.level, t)}{item.level !== null && ` · ${evidenceText(item.evidence, t)}`}{item.needsReview && ` · ${t('skill_map.contradictory')}`}{item.stale && ` · ${t('skill_map.stale')}`}</span>
-          </button>
-        </li>)}
-      </ul>
-      <p className="skill-map-note">{t('skill_map.radar_note')}</p>
-    </section>
   </div>
 }
