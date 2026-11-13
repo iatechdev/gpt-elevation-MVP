@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { Chip } from '../cartografia/controls'
 import { Card, Figures, ItemList } from '../cartografia/pieces'
 import { useLanguage } from '../i18n/useLanguage'
-import { fill, level, TREND_SYMBOL, trendOf, type Trend } from './format.ts'
+import { fill, formatDay, level, TREND_SYMBOL, trendOf, type Trend } from './format.ts'
 import '../pages/progressCopy.ts'
 
 export interface MoodLog { id: number; date: string; checkin_mood: number | null; checkout_mood: number | null }
@@ -20,7 +20,7 @@ export function ProgressPanel({ stats, moodLogs, ratings, recommendations }: { s
   const { t, lang } = useLanguage()
   const locale = lang === 'es' ? 'es-CO' : 'en-US'
   const avg = (value: number | string) => Number(value).toLocaleString(locale, { maximumFractionDigits: 1 })
-  const dateOf = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+  const dateOf = (iso: string) => formatDay(iso, locale)
   const moodText = (value: number) => `${fill(t('pr_of5'), { n: level(value) })} (${t(`pr_mood_${level(value)}`)})`
   const category = (value: string) => t(KNOWN_CATEGORIES.includes(value) ? `pr_rec_cat_${value}` : 'pr_rec_cat_other')
 

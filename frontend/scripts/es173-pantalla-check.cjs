@@ -40,7 +40,7 @@ const { fail } = require('./_exitOnFailure.cjs');
       assert.deepEqual(small, [], label + ': objetivos ≥ 24 px');
     };
     const LONG = 'X'.repeat(140);
-    const day = n => new Date(Date.now() - n * 86400000).toISOString();
+    const day = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10); // fechas de SOLO día, como las del servidor (E272-2)
     const DATA = {
       stats: { totalSessions: 9, avgMood: 3.6, avgRating: 4, streak: 5 },
       moodLogs: [{ id: 1, date: day(0), checkin_mood: 2, checkout_mood: 4 }, { id: 2, date: day(1), checkin_mood: 3, checkout_mood: 3 }, { id: 3, date: day(2), checkin_mood: 4, checkout_mood: 2 }, { id: 4, date: day(3), checkin_mood: 3, checkout_mood: null }],
@@ -49,7 +49,7 @@ const { fail } = require('./_exitOnFailure.cjs');
     };
     const EMPTY = { stats: { totalSessions: 0, avgMood: null, avgRating: null, streak: 0 }, moodLogs: [], ratings: [], recommendations: [] };
     async function open(origin, route, { lang, width, scheme, progress = DATA, failFirst = false, delay = 0, matching } = {}) {
-      const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' }); const page = await context.newPage();
+      const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce', timezoneId: 'America/Bogota' }); const page = await context.newPage();
       const runtime = []; const writes = []; page.on('pageerror', e => runtime.push(e.message));
       await context.addInitScript(([l]) => { localStorage.setItem('elevation_token', 'es173-synthetic-session'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); }, [lang]);
       let calls = 0;
@@ -70,6 +70,7 @@ const { fail } = require('./_exitOnFailure.cjs');
       const main = await page.locator('main').innerText(); const html = await page.locator('main').innerHTML();
       for (const word of [t.up, t.same, t.down, t.fresh]) assert.ok(main.toLowerCase().includes(word.toLowerCase()), tag + ': ' + word);
       assert.ok(main.includes('↑') && main.includes('↓') && main.includes('='), tag + ': símbolos de tendencia junto a la palabra');
+      const shown = new Date(DATA.moodLogs[0].date + 'T12:00:00Z').toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }); assert.ok(main.includes(shown), tag + ': la fecha de solo día sale el MISMO día en Colombia (' + shown + ')');
       assert.ok(main.includes('<b>texto</b> con etiquetas'), tag + ': el contenido del servidor se muestra como texto'); assert.equal(await page.locator('main b').count(), 0);
       assert.doesNotMatch(main, /\p{Extended_Pictographic}|★|☆/u, tag + ': sin emojis ni estrellas'); assert.equal(await page.locator('[style]').count(), 0, tag + ': sin estilos en línea');
       assert.ok(html.includes('role="note"') || (await page.locator('[role=note]').count()) > 0, tag + ': aviso no clínico');

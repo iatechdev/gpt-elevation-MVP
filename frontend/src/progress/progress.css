@@ -1,5 +1,14 @@
 /* ES-173 (HU-P22): «Tu progreso» y «Tu opinión» con Cartografía. Solo tokens --cg-*, sin estilos en línea. */
 @import '../shell/shell.css';
+
+/* E272-1 (CLS): mientras Barlow se descarga, el navegador usa una fuente de reserva más ancha y los títulos/párrafos cambiaban de renglón al llegar la real (saltos de hasta 0,32).
+   Estas reservas usan Arial/Liberation Sans con el ANCHO ajustado al de Barlow (medido: Barlow Condensed 700 = 68 % de Arial; Barlow 400 = 96 %; Barlow 600 = 90 %), así que el texto ocupa los mismos renglones antes y después. */
+@font-face { font-family: 'Barlow Condensed Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 700; size-adjust: 68%; }
+@font-face { font-family: 'Barlow Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 500; size-adjust: 96%; }
+@font-face { font-family: 'Barlow Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 600 700; size-adjust: 90%; }
+.prg { --cg-font-cond: 'Barlow Condensed', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow', 'Barlow Fallback', system-ui, sans-serif; }
+/* E272-1: con barra de desplazamiento clásica, al llegar los datos aparecía la barra y el texto de la cabecera cambiaba de renglón; el hueco queda reservado. */
+:root:has(.prg) { scrollbar-gutter: stable; }
 .prg { min-height: 100dvh; padding: 0 var(--cg-s4); }
 .prg-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 60rem; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
 .prg-main:focus-visible, .prg-main h1:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }

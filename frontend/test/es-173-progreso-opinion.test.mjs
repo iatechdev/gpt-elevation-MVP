@@ -3,7 +3,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { fill, level, trendOf, TREND_SYMBOL } from '../src/progress/format.ts'
+import { spawnSync } from 'node:child_process'
+import { fill, formatDay, level, trendOf, TREND_SYMBOL } from '../src/progress/format.ts'
 import { progressEs, progressEn } from '../src/pages/progressCopy.ts'
 import { copy } from '../src/pilot/copy.ts'
 
@@ -62,4 +63,20 @@ test('ES-173: el emparejamiento conserva el contrato con el servidor (rutas y cu
   assert.match(source.matching, /\/api\/matching\/request/); assert.match(source.matching, /JSON\.stringify\(\{ answers \}\)/)
   assert.match(source.matching, /\/api\/matching\/choose/); assert.match(source.matching, /JSON\.stringify\(\{ requestId, therapistId \}\)/)
   for (const value of ['depression', 'relationships', 'personal growth', 'stress', 'other', 'reflective and exploratory', 'structured with goals', 'empathetic and listening', 'any', 'Spanish', 'English', 'No preference']) assert.ok(source.matching.includes(`'${value}'`), value)
+})
+
+test('ES-173 (E272-2): una fecha de solo día no sale un día antes en Colombia (America/Bogota) ni en otras zonas', () => {
+  const script = "import { formatDay } from './src/progress/format.ts'; console.log(JSON.stringify([formatDay('2026-11-12', 'es-CO'), formatDay('2026-11-12', 'en-US'), formatDay('2026-01-01', 'es-CO')]))"
+  const expected = [['12 nov 2026', 'Nov 12, 2026', '1 ene 2026']]
+  for (const TZ of ['America/Bogota', 'Pacific/Honolulu', 'UTC', 'Asia/Tokyo']) {
+    const run = spawnSync(process.execPath, ['--input-type=module', '-e', script], { cwd: new URL('..', import.meta.url), env: { ...process.env, TZ }, encoding: 'utf8' })
+    assert.equal(run.status, 0, run.stderr)
+    const [es, en, january] = JSON.parse(run.stdout)
+    assert.match(es, /^12 (de )?nov/i, TZ + ': ' + es); assert.match(en, /Nov 12, 2026/, TZ + ': ' + en); assert.match(january, /^0?1 (de )?ene/i, TZ + ': 1 de enero ' + january)
+  }
+  assert.ok(expected.length === 1)
+  // con hora se respeta la zona de la persona: 2026-11-12T03:00:00Z son las 22:00 del 11 en Bogotá
+  const run = spawnSync(process.execPath, ['--input-type=module', '-e', "import { formatDay } from './src/progress/format.ts'; console.log(formatDay('2026-11-12T03:00:00Z', 'en-US'))"], { cwd: new URL('..', import.meta.url), env: { ...process.env, TZ: 'America/Bogota' }, encoding: 'utf8' })
+  assert.match(run.stdout, /Nov 11, 2026/)
+  assert.match(formatDay('2026-11-12', 'en-US'), /Nov 1[12], 2026/)
 })

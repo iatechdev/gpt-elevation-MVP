@@ -16,3 +16,9 @@ export const trendOf = (checkin: number, checkout: number): Trend => {
 
 /** Símbolo que acompaña a la palabra (nunca la sustituye). */
 export const TREND_SYMBOL: Record<Trend, string> = { up: '↑', same: '=', down: '↓' }
+
+/** Fecha corta de un día. Las fechas de solo día («AAAA-MM-DD», sin hora) se interpretan como UTC: formatearlas en la zona local las mostraba un día antes en Colombia (E272-2). Con hora, rige la zona de la persona. */
+export function formatDay(value: string, locale: string): string {
+  const dayOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
+  return new Date(value).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric', ...(dayOnly ? { timeZone: 'UTC' } : {}) })
+}

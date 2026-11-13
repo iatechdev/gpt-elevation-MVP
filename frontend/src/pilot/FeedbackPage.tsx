@@ -118,7 +118,7 @@ function FeedbackSession({ token }: { token: string }) {
     </form>}
     {intent && <div className="prg-actions"><Button variant="ghost" disabled={busy} onClick={() => void check()}>{c.check}</Button>{retryable && <Button variant="ghost" disabled={busy} onClick={() => void send(intent)}>{c.retrySave}</Button>}</div>}
     {notice === 'conflict' && <div className="prg-actions"><Button variant="ghost" onClick={() => { void load() }}>{c.review}</Button></div>}
-    <div className="prg-actions"><Link className="cg-btn cg-btn--ghost" to="/app/dashboard">{c.leave}</Link>{saved?.answers && <Button variant="ghost" disabled={busy || !!intent} onClick={() => setDialog(true)}>{c.withdraw}</Button>}</div>
+    {!loading && <div className="prg-actions"><Link className="cg-btn cg-btn--ghost" to="/app/dashboard">{c.leave}</Link>{saved?.answers && <Button variant="ghost" disabled={busy || !!intent} onClick={() => setDialog(true)}>{c.withdraw}</Button>}</div>}
     <Dialog open={dialog} onClose={() => setDialog(false)} title={c.withdraw} actions={<><Button variant="ghost" onClick={() => setDialog(false)}>{c.cancelled}</Button><Button variant="danger" onClick={() => void withdraw()}>{c.confirm}</Button></>}>
       <p>{c.withdrawText}</p>
     </Dialog>
