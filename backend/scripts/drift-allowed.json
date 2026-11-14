@@ -24,6 +24,7 @@
     "skill_candidates_confirmed_check": "ES-89: CHECK (nivel confirmado entre 1 y el propuesto) que el modelo no declara"
   },
   "indices": {
-    "career_plan_owner_id": "ES-33: índice único (UserId, id) que respalda la clave foránea compuesta de CareerReminders; el modelo no lo declara"
+    "career_plan_owner_id": "ES-33: índice único (UserId, id) que respalda la clave foránea compuesta de CareerReminders; el modelo no lo declara",
+    "users_email_lower_unique": "ES-306: índice único sobre lower(email) creado por la migración solo si no hay cuentas duplicadas; el modelo declara únicamente el único exacto"
   }
 }

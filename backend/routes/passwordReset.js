@@ -16,6 +16,7 @@ const { revokeUserSessions } = require('../utils/sessions');
 const { passwordProblems, policy } = require('../utils/registrationPassword');
 const { sendPasswordReset } = require('../utils/mailer');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
+const { findUserByEmail } = require('../utils/emailNormalize'); // ES-306
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ const track = promise => { pending.add(promise); promise.finally(() => pending.d
 
 // Se ejecuta DESPUÉS de responder: el tiempo de respuesta no depende de si el correo existe.
 async function issueLink(email, locale) {
-  const user = await User.findOne({ where: { email } });
+  const user = await findUserByEmail(User, email); // ES-306: sin importar mayúsculas
   if (user) await issueLinkForUser(user, locale);
 }
 

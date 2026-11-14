@@ -4,7 +4,7 @@ const { models, startApp } = require('./support.cjs');
 
 test('QA-57-01: connection identity and login limit remain enforced', async t => {
   let reads = 0;
-  models.User.findOne = async () => { reads++; return null; };
+  models.User.findOne = async ({ where } = {}) => { if (where && typeof where.email === 'string') reads++; return null; }; // ES-306: solo cuenta la consulta por correo exacto (el respaldo por lower(email) no la repite)
   // express-rate-limit warns about forwarded headers when proxy trust is disabled.
   // Do not print request details; the behavior is checked through HTTP below.
   t.mock.method(console, 'error', () => {});
