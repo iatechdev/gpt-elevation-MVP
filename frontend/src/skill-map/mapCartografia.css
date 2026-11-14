@@ -73,8 +73,13 @@
 .skill-map-place:hover .skill-map-place-name { background: var(--cg-ground); }
 .skill-map-dot.dot-level { background: var(--cg-mark); }
 /* móvil: solo las marcas (el nombre y el nivel van en el aria-label, en la lista por territorios y en el detalle); así no se solapan */
-@media (max-width: 639px) { .skill-map-relief-box { aspect-ratio: 4 / 5; } .skill-map-place-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } .skill-map-place, .skill-map-place.is-right { transform: translate(-50%, -50%); padding: 0; justify-content: center; } }
+@media (max-width: 639px) { .skill-map-relief-box { aspect-ratio: 4 / 5; } }
+/* solo la marca (móvil o cuando los rótulos no caben, ES-300): el nombre y el nivel van en el aria-label, la lista y el detalle; objetivo de 28 px centrado en su punto */
+.skill-map-place.is-mark, .skill-map-place.is-mark.is-right { transform: translate(-50%, -50%); padding: 0; justify-content: center; min-width: 28px; min-height: 28px; width: 28px; height: 28px; }
+.skill-map-place.is-mark .skill-map-place-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .cg-map .skill-map-legend { color: var(--cg-muted); }
 .cg-map .skill-map-territory-card { background: var(--tone, var(--cg-panel)); }
 .cg-map .skill-map-pick { border-radius: 0; }
 @media (prefers-reduced-motion: reduce) { .skill-map-place, .cg-map * { transition: none; animation: none; } }
+
+.cg-map .skill-map-pick-level { font: 700 0.9rem var(--cg-font-cond); letter-spacing: 0.06em; text-transform: uppercase; color: var(--cg-ink); }
