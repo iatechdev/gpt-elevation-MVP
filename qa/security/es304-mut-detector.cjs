@@ -23,4 +23,18 @@ for (const t of ['Quiero morir', 'su\u200bicidio', 'ya no quiero vivir más', 'I
 for (const t of ['Quiero cambiar de carrera', 'Tengo 3 años de experiencia', 'a b c d e f', 'jajajaja', 'plan A B C D', '4 3 1 0 5 7', 'Holaaaa quiero cambiar de carreraaa']) want('benigna:' + t.slice(0, 14), t, null);
 // llamadas repetidas: el estado interno (bandera /g) no debe cambiar el resultado
 for (let i = 0; i < 6; i++) want('repetida ' + i, 'quiero\u3164morir', 'high');
-console.log(`FALLAN ${fails.length}${fails.length ? ': ' + [...new Set(fails)].slice(0, 8).join(' | ') : ''}`);
+// espacios dobles y signos (tidy), mayúsculas en texto llano
+want('espacios dobles tras signos', 'quiero,  morir', 'high'); want('espacios dobles', 'no  quiero  vivir', 'high'); want('mayúsculas llanas separadas', 'S U I C I D I O', 'high'); want('mayúsculas llanas', 'QUIERO MORIR', 'high');
+// memoria por mensaje (solo si la cabeza la trae)
+const S = require(path.join(SUT, 'utils', 'safety.js'))._steps;
+if (S && S.clearMemo) {
+  S.clearMemo(); const pre = 'x'.repeat(70); want('memoria: clave larga distinta (benigno)', pre + ' hola', null); want('memoria: mismo prefijo de 64 con crisis', pre + ' quiero morir', 'high');
+  S.clearMemo(); want('memoria: crisis primero', pre + ' quiero morir', 'high'); want('memoria: mismo prefijo benigno después', pre + ' hola', null);
+  S.clearMemo(); const r = det('quiero morir'); r.level = 'basura'; want('memoria: el resultado devuelto es copia', 'quiero morir', 'high'); const r2 = det('quiero morir'); r2.level = 'basura'; want('memoria: copia también desde la memoria', 'quiero morir', 'high');
+  S.clearMemo(); for (let i = 0; i < 1500; i++) det('mensaje ' + i + ' ' + 'y'.repeat(i % 2 ? 5 : 80)); if (S.memoSize() > 1000) fails.push('memoria: sin tope (' + S.memoSize() + ')');
+  S.clearMemo(); want('memoria: benigno', 'Hola, quiero cambiar de carrera', null); want('memoria: crisis tras benigno (no hay clave única)', 'quiero morir', 'high'); want('memoria: otra frase', 'ya no aguanto más', 'medium');
+}
+// GRUPO APARTE (hallazgo E304-8): compatibilidad de Latin-1 (º ª ¹ y marcas de espaciado) que la cabeza anterior sí detectaba
+const latin = []; const wantL = (name, text) => { let got; try { got = det(text).level; } catch (e) { got = 'EXC'; } if (got !== 'high') latin.push(name); };
+wantL('º por o', 'quierº mº' + 'rir'); wantL('ª por a', 'voy ª mªtªrme'); wantL('¹ por i', 'su¹c¹d¹o'); wantL('¨ intercalado', [...'quiero morir'].join('¨')); wantL('¯ intercalado', [...'suicidio'].join('¯')); wantL('´ intercalado', [...'suicidio'].join('´')); wantL('¸ intercalado', [...'suicidio'].join('¸'));
+console.log(`FALLAN ${fails.length}${fails.length ? ': ' + [...new Set(fails)].slice(0, 8).join(' | ') : ''} || LATIN1 ${latin.length}${latin.length ? ': ' + latin.join(', ') : ''}`);

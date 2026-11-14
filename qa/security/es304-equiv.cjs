@@ -1,0 +1,40 @@
+// [QA-Claude] ES-304 · PR #279 · EQUIVALENCIA del detectRisk optimizado contra la cabeza anterior (b58eae7e) y contra main. Sin DB ni red.
+//   QA_SUT=<repo> QA_OUT=<carpeta> node qa/security/es304-equiv.cjs
+const fs = require('fs'); const path = require('path'); const { spawnSync } = require('child_process');
+const REPO = process.env.QA_SUT || 'C:/Users/Usuario/Documents/qa-pr-253'; const SUT = path.join(REPO, 'backend'); const OUT = process.env.QA_OUT || '.';
+const CORPUS = path.join(__dirname, '..', 'evidence', 'ES-298', 'ES-298-corpus-no-detectado-pr.json');
+const loadRef = (ref, name) => { const src = spawnSync('git', ['-C', REPO, 'show', `${ref}:backend/utils/safety.js`], { encoding: 'utf8', maxBuffer: 1 << 24 }).stdout; const m = { exports: {} }; new Function('module', 'exports', 'require', src)(m, m.exports, (p) => (p.startsWith('.') ? require(path.resolve(path.join(SUT, 'utils'), p)) : require(p))); return m.exports.detectRisk; };
+const NEW = require(path.join(SUT, 'utils', 'safety.js')); const det = NEW.detectRisk; const PREV = loadRef('b58eae7e', 'prev'); const MAIN = loadRef('origin/main', 'main');
+const cp = (...c) => String.fromCodePoint(...c); const key = (r) => (r.level || 'null') + '/' + (r.lang || '-'); const show = (s) => JSON.stringify(s.length > 60 ? s.slice(0, 60) + '…' : s).replace(/[^\x20-\x7e]/g, (c) => '\\u{' + c.codePointAt(0).toString(16) + '}');
+let seed = 20261114; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 2 ** 32; }; const pick = (a) => a[Math.floor(rnd() * a.length)];
+const texts = [];
+const corpus = JSON.parse(fs.readFileSync(CORPUS, 'utf8')).noDetectados; for (const x of corpus) texts.push(x.text);
+const seeds = ['quiero morir', 'voy a matarme', 'suicidio', 'no quiero vivir', 'quitarme la vida', 'mejor me desaparezco', 'no vale la pena vivir', 'hacerme daño', 'ya no aguanto más', 'no puedo más', 'kill myself', 'i want to die', 'better off dead', 'suicide', 'end my life', 'hurt myself', "can't go on", 'self-harm', 'cortarme las venas'];
+// F2c-like variations
+for (const s of seeds) texts.push(s, s.toUpperCase(), s + '.', '  ' + s + '  ', s.replace(/ /g, '   '), '¡' + s + '!', 'hola, ' + s + ', gracias', s.replace(/ /g, '\n'), s.replace(/ /g, ','), s.replace(/ /g, '-'), s.replace(/ /g, '. '));
+// cada carácter Latin-1 (U+00A0–U+00FF) sustituyendo vocales / intercalado / como separador
+for (let c = 0xA0; c <= 0xFF; c++) { const ch = cp(c); for (const s of ['quiero morir', 'suicidio', 'kill myself']) { texts.push(s.replace(/o/g, ch), s.replace(/i/g, ch), s.replace(/a/g, ch), [...s].join(ch), s.replace(/ /g, ch)); } }
+// ASCII y signos como separadores/intercalados, y cada carácter BMP "interesante" intercalado
+for (let c = 0x20; c < 0x7F; c++) for (const s of ['quiero morir', 'suicidio']) { texts.push([...s].join(cp(c)), s.replace(/ /g, cp(c)), s.replace(/ /g, cp(c) + cp(c))); }
+for (const c of [0x300, 0x489, 0x34F, 0x3164, 0x2800, 0x115F, 0x1160, 0xFFA0, 0x180E, 0x61C, 0x200B, 0x200D, 0xFE0F, 0xE000, 0xF0000, 0xE0041, 0xFF21, 0x1D400, 0x430, 0x3BF, 0x131, 0x2028, 0x85, 0x1, 0x0]) for (const s of seeds.slice(0, 8)) texts.push([...s].join(cp(c)), s.replace(/ /g, cp(c)), cp(c) + s + cp(c));
+// documentos y textos de la interfaz (naturales)
+const walk = (d, o = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { if (['node_modules', '.git', 'dist', '.claude'].includes(e.name)) continue; const p = path.join(d, e.name); if (e.isDirectory()) walk(p, o); else o.push(p); } return o; };
+const nat = new Set(); for (const f of walk(path.join(REPO, 'docs')).filter((x) => x.endsWith('.md'))) for (const s of fs.readFileSync(f, 'utf8').split(/(?<=[.!?])\s+|\n+/)) { const t = s.trim(); if (t.length >= 15 && t.length <= 600) nat.add(t); }
+for (const f of walk(path.join(REPO, 'frontend', 'src')).filter((x) => /(i18n|locale|translations?|copy)/i.test(x) && /\.(json|ts|tsx|js)$/.test(x))) for (const m of fs.readFileSync(f, 'utf8').matchAll(/(['"`])((?:\\.|(?!\1).){15,400})\1/g)) nat.add(m[2]);
+texts.push(...nat);
+// fuzz: alfabeto mezclado con semillas insertadas y ruido
+const alpha = ['a', 'e', 'i', 'o', 'u', 'r', 'm', 's', 'k', 'l', 'q', 'v', 'd', 'n', 't', ' ', ' ', ' ', '.', ',', '-', '_', '*', '\n', '\t', '1', '3', '4', '0', '5', '7', '@', '$', 'о', 'е', 'і', 'ο', 'ｑ', 'ｕ', 'ñ', 'é', 'º', 'ª', 'ı', '\u200b', '\u3164', '\u0301', cp(0xE0041), cp(0xE0071), 'ㅤ', '⠀'];
+for (let i = 0; i < 40000; i++) { const n = 5 + Math.floor(rnd() * 60); let s = ''; for (let j = 0; j < n; j++) s += pick(alpha); if (rnd() < 0.5) { const sd = pick(seeds); const form = pick([sd, [...sd].join(pick([' ', '.', '\u200b', '-', cp(0xE0041), '\u3164'])), sd.replace(/o/g, pick(['0', 'о', 'ο', 'º'])), sd.replace(/[aeio]/g, (c) => ({ a: '4', e: '3', i: '1', o: '0' }[c])), sd.replace(/(.)/g, '$1$1')]); const at = Math.floor(rnd() * s.length); s = s.slice(0, at) + form + s.slice(at); } texts.push(s); }
+let diffPrev = []; let diffMainDown = []; let hit = 0; let total = 0; for (const t of texts) { total++; const a = det(t); const b = PREV(t); const c = MAIN(t); if (a.level) hit++; if (key(a) !== key(b)) diffPrev.push({ t, a: key(a), b: key(b) }); if (c.level === 'high' && !(a.level === 'high' && a.lang === c.lang)) diffMainDown.push({ t, a: key(a), c: key(c) }); else if (c.level === 'medium' && !a.level) diffMainDown.push({ t, a: key(a), c: key(c) }); }
+const res = []; const out = (id, ok, d) => { res.push({ id, ok, detail: d }); console.log(JSON.stringify({ id, ok, detail: d })); };
+out('E1 textos comparados', true, `${total} textos (${hit} con algún nivel en la cabeza nueva): corpus, variaciones, Latin-1 completo, ASCII como separador, invisibles, documentos, 40.000 de fuzz`);
+out('E2 equivalencia con la cabeza anterior b58eae7e (mismo nivel e idioma)', diffPrev.length === 0, `${diffPrev.length} diferencias` + diffPrev.slice(0, 12).map((d) => `\n  ${show(d.t)}: nueva ${d.a} · anterior ${d.b}`).join(''));
+out('E3 lo que main detectaba (alto con su idioma, o algún medio) se sigue detectando', diffMainDown.length === 0, `${diffMainDown.length} bajadas` + diffMainDown.slice(0, 8).map((d) => `\n  ${show(d.t)}: nueva ${d.a} · main ${d.c}`).join(''));
+// memoria: resultados independientes, sin retener el texto largo, acotada, nunca se ve el texto en la clave de los largos
+NEW._steps.clearMemo(); const r1 = det('quiero morir'); r1.level = 'null'; const r2 = det('quiero morir'); out('E4 el resultado devuelto es una copia (mutarlo no envenena la memoria)', r2.level === 'high', JSON.stringify(r2));
+NEW._steps.clearMemo(); for (let i = 0; i < 1500; i++) det('mensaje número ' + i + ' ' + 'x'.repeat(i % 3 ? 10 : 100)); out('E5 la memoria queda acotada (tope 1.000)', NEW._steps.memoSize() <= 1000, 'tamaño ' + NEW._steps.memoSize());
+const shortKeepsText = (() => { const m = require('module'); return null; })(); out('E6 aviso de higiene (no es aprobación): los textos de hasta 64 caracteres se guardan TAL CUAL como clave de la memoria (ver el código: `raw.length > 64 ? sha256 : raw`)', true, 'revisión de código en safety.js; los largos usan sha256');
+const t1 = process.hrtime.bigint(); NEW._steps.clearMemo(); for (let i = 0; i < 20; i++) { NEW._steps.clearMemo(); det('Estoy cansado de mi trabajo y quiero cambiar de carrera ' + i); } out('E7 clearMemo funciona (cada evaluación fría)', NEW._steps.memoSize() === 1, 'tamaño tras 20 evaluaciones con clearMemo: ' + NEW._steps.memoSize());
+// producción: _steps no existe y el detector funciona
+const prod = spawnSync(process.execPath, ['-e', `process.env.NODE_ENV='production';const s=require(${JSON.stringify(path.join(SUT, 'utils', 'safety.js'))});console.log(typeof s._steps, s.detectRisk('quiero morir').level, s.detectRisk('qu13r0 m0rir').level)`], { encoding: 'utf8' }); out('E8 NODE_ENV=production: `_steps` no existe y detectRisk funciona', /^undefined high high/.test(prod.stdout.trim()), prod.stdout.trim() + prod.stderr.slice(0, 200));
+fs.writeFileSync(path.join(OUT, 'es304-equiv.json'), JSON.stringify({ res, diffPrev: diffPrev.slice(0, 200), diffMainDown: diffMainDown.slice(0, 200) }, null, 1));

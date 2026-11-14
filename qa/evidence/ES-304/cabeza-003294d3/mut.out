@@ -1,0 +1,50 @@
+base | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z1 | PR es-304: fail 2 | mi batería: FALLAN 25: corpus:relleno invisible FUER | corpus:relleno U+2800 (braill | relleno U+3164 | relleno U+2800 | relleno U+115f | relleno U+1160 | relleno U+ffa0 || LATIN1 7:
+Z2 | PR es-304: fail 5 | mi batería: FALLAN 13: corpus:etiquetas Unicode (U+E | relleno U+e0041 | relleno U+fe0f | relleno U+e000 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´
+Z3 | PR es-304: fail 5 | mi batería: FALLAN 23: corpus:ancho completo (fullwi | corpus:letras matemáticas en  | combo:"ｑｕ1ｅｒо mоr1r" | combo:"ｉ ｗａｎｔ ｔｏ ｄｉｅ" | medio ancho compl
+Z4 | PR es-304: fail 5 | mi batería: FALLAN 33: corpus:homoglifos cirílicos ( | combo:"ｑｕ1ｅｒо mоr1r" | combo:"QUІЕRО MОRІR" | homoglifo cirílica о | homoglifo cirílica і | homoglifo cirí
+Z18 | PR es-304: fail 2 | mi batería: FALLAN 11: corpus:relleno U+2800 (braill | relleno U+2800 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z19 | PR es-304: fail 0 | mi batería: FALLAN 1: relleno U+115f || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z20 | PR es-304: fail 2 | mi batería: FALLAN 13: corpus:relleno invisible FUER | relleno U+3164 | relleno U+1160 | relleno U+ffa0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ 
+Z25 | PR es-304: fail 3 | mi batería: FALLAN 10: corpus:frase codificada en ca | etiquetas con espacio | etiquetas en inglés || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ inte
+Z26 | PR es-304: fail 3 | mi batería: FALLAN 12: corpus:frase codificada en ca | etiquetas con espacio | etiquetas en inglés || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ inte
+Z27 | PR es-304: fail 0 | mi batería: FALLAN 1: combo:"Q.U.I.E.R.O. M.O. || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z28 | PR es-304: fail 4 | mi batería: FALLAN 10: corpus:letras separadas por e | corpus:letras separadas por p || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ int
+Z29 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z30 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z31 | PR es-304: fail 4 | mi batería: FALLAN 8: corpus:homoglifos cirílicos ( | combo:"ｑｕ1ｅｒо mоr1r" | combo:"QUІЕRО MОRІR" | homoglifo cirílica о | mayúscula cirílica (se baja antes de pl
+Z32 | PR es-304: fail 2 | mi batería: FALLAN 11: corpus:homoglifos cirílicos ( | combo:"QUІЕRО MОRІR" | homoglifo cirílica і | mayúscula cirílica (se baja antes de plegar) || LATIN1 7: º por o, ª 
+Z33 | PR es-304: fail 1 | mi batería: FALLAN 1: homoglifo griega ο || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z34 | PR es-304: fail 2 | mi batería: FALLAN 11: corpus:homoglifos cirílicos ( | combo:"QUІЕRО MОRІR" | homoglifo cirílica е | mayúscula cirílica (se baja antes de plegar) || LATIN1 7: º por o, ª 
+Z35 | PR es-304: fail 2 | mi batería: FALLAN 1: combo:"quieeeroo mooorir || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z36 | PR es-304: fail 5 | mi batería: FALLAN 11: corpus:comas/guiones entre pa | combo:"Q.U.I.E.R.O. M.O. | combo:"quiero,morir" | combo:"no-quiero-vivir" | espacios dobles tras signos || LATIN1 4: º por o, 
+Z37 | PR es-304: fail 4 | mi batería: FALLAN 11: corpus:etiquetas Unicode (U+E | relleno U+e0041 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z38 | PR es-304: fail 0 | mi batería: FALLAN 1: relleno U+fe0f || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z39 | PR es-304: fail 0 | mi batería: FALLAN 1: relleno U+e000 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z40 | PR es-304: fail 0 | mi batería: FALLAN 3: combo:"QUІЕRО MОRІR" | mayúscula cirílica (se baja antes de plegar) | mayúscula griega || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ int
+Z41 | PR es-304: fail 4 | mi batería: FALLAN 6: medio normalizado | medio ancho completo | legado medio:quiero hacer | legado medio:ya no aguant | legado medio:I can't go o | memoria: otra frase || LATIN1 7: 
+Z42 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z43 | PR es-304: fail 3 | mi batería: FALLAN 3: corpus:letras alargadas | combo:"kkiillll mmyyssee || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+Z14 | PR es-304: fail 24 | mi batería: FALLAN 190: corpus:etiquetas Unicode (U+E | corpus:frase codificada en ca | corpus:homoglifos cirílicos ( | corpus:ancho completo (fullwi | corpus:letras separadas por e
+N1 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N2 | PR es-304: fail 12 | mi batería: FALLAN 117: corpus:etiquetas Unicode (U+E | corpus:frase codificada en ca | corpus:homoglifos cirílicos ( | corpus:ancho completo (fullwi | corpus:relleno invisible FUER
+N3 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 0
+N4 | PR es-304: fail 2 | mi batería: FALLAN 2: combo:"Q.U.I.E.R.O. M.O. | combo:"s u 1 c 1 d 1 0" || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N5 | PR es-304: fail 5 | mi batería: FALLAN 10: corpus:letras separadas por e | corpus:letras separadas por p || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ int
+N6 | PR es-304: fail 3 | mi batería: FALLAN 4: corpus:leet (4, 3, 1, 0) | combo:"K1LL MYS3LF" | alto gana al medio (EN) || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercala
+N7 | PR es-304: fail 4 | mi batería: FALLAN 3: corpus:letras alargadas | combo:"kkiillll mmyyssee || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N8 | PR es-304: fail 3 | mi batería: FALLAN 1: combo:"quieeeroo mooorir || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N9 | PR es-304: fail 6 | mi batería: FALLAN 11: corpus:comas/guiones entre pa | combo:"Q.U.I.E.R.O. M.O. | combo:"quiero,morir" | combo:"no-quiero-vivir" | espacios dobles tras signos || LATIN1 7: º por o, 
+N10 | PR es-304: fail 2 | mi batería: FALLAN 12: combo:"quieroㅤmorir" | relleno como espacio U+3164 | relleno como espacio U+2800 | relleno como espacio U+115f | relleno como espacio U+1160 | relleno como e
+N11 | PR es-304: fail 3 | mi batería: FALLAN 12: corpus:frase codificada en ca | etiquetas con espacio | etiquetas en inglés || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ inte
+N12 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N13 | PR es-304: fail 4 | mi batería: FALLAN 67: corpus:etiquetas Unicode (U+E | corpus:frase codificada en ca | corpus:homoglifos cirílicos ( | corpus:ancho completo (fullwi | corpus:letras separadas por e 
+N14 | PR es-304: fail 0 | mi batería: FALLAN 2: memoria: mismo prefijo de 64 con crisis | memoria: mismo prefijo benigno después || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ 
+N15 | PR es-304: fail 1 | mi batería: FALLAN 1: memoria: copia también desde la memoria || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N16 | PR es-304: fail 1 | mi batería: FALLAN 1: memoria: sin tope (1500) || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N17 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N18 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N19 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 7: º por o, ª por a, ¹ por i, ¨ intercalado, ¯ intercalado, ´ intercalado, ¸ intercalado
+N20 | PR es-304: fail 3 | mi batería: FALLAN 16: medio normalizado | medio ancho completo | legado medio:quiero hacer | legado medio:ya no aguant | legado medio:I can't go o | benigna:Quiero cambiar | benigna
+N21 | PR es-304: fail 0 | mi batería: FALLAN 0 || LATIN1 0
+FIN
