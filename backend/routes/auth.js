@@ -15,6 +15,7 @@ const { validateBody, nonempty } = require('../middlewares/validateBody');
 const { isValidEmail, MAX_EMAIL } = require('../utils/emailGuard'); // ES-252/ES-259
 const { passwordProblems, policy } = require('../utils/registrationPassword');
 const terms = require('../utils/terms'); // ES-301
+const { normalizeEmail, findUserByEmail } = require('../utils/emailNormalize'); // ES-306
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -90,7 +91,8 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
     }
 
     // Verificar si el email ya existe en la BD
-    const existing = await User.findOne({ where: { email } });
+    // ES-306: el correo se compara sin importar mayúsculas ni espacios a los lados; «Ana@x.co» con «ana@x.co» ya registrado = duplicado.
+    const existing = await findUserByEmail(User, email);
 
     if (existing) {
       if (existing.active === false) {
@@ -107,7 +109,7 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
     // Usuario nuevo — crear normalmente
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({ name, email, password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
+    await User.create({ name, email: normalizeEmail(email), password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {
@@ -122,7 +124,7 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
 router.post('/login', loginLimiter, validateBody({ email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const user = await findUserByEmail(User, email); // ES-306: sin importar mayúsculas
 
     // ES-220: tres casos con la MISMA respuesta hacia fuera, para que el login no sea un oráculo de qué correos tienen cuenta:
     //  - correo inexistente  → se compara contra un hash señuelo (mismo costo de bcrypt) y se cuentan intentos en memoria con el umbral de una cuenta real;

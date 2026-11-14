@@ -50,7 +50,7 @@ test('ES-301: los errores informan la versión vigente solo cuando ayuda y los m
 test('ES-301: el registro valida la aceptación ANTES de consultar la base y el servidor no confía en el cliente para la versión ni la fecha (estructura)', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'routes', 'auth.js'), 'utf8').replace(/\r\n/g, '\n')
   const register = source.slice(source.indexOf("router.post('/register'"), source.indexOf("router.post('/login'"))
-  assert.ok(register.indexOf('terms.validate(req.body)') > 0 && register.indexOf('terms.validate(req.body)') < register.indexOf('User.findOne'), 'se valida antes de consultar si el correo existe')
+  assert.ok(register.indexOf('terms.validate(req.body)') > 0 && register.indexOf('terms.validate(req.body)') < register.indexOf('findUserByEmail(User, email)'), 'se valida antes de consultar si el correo existe')
   assert.match(register, /termsVersion: accepted\.termsVersion, acceptedAt: accepted\.acceptedAt/)
   assert.doesNotMatch(register, /req\.body\.(acceptedAt|termsVersion)/, 'la ruta nunca guarda directamente lo que mande el cliente')
   assert.match(register, /role: 'user'/)
