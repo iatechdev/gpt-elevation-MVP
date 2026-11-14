@@ -53,7 +53,8 @@ const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 // Formas a evaluar, de forma PEREZOSA (generador): la actual primero (lo que ya se detectaba se sigue detectando igual) y después las normalizadas; no se calcula una forma
 // hasta que hace falta (salida en la primera alta) y se saltan las repetidas. Texto «llano» (letras, cifras y signos comunes): los pasos de Unicode son no-ops y no se calculan.
 // Costo: UNA sola pasada de `flat` (NFD + acentos) por texto; las formas derivadas se calculan sobre el texto YA plegado y solo se ordenan los espacios (`tidy`).
-const PLAIN = /^[\x20-\x7e\n\r\t\u00a1-\u00ff]*$/;
+// E304-8: «llano» = ASCII visible + letras latinas acentuadas + ¡ ¿ « ». NO incluye ª º ¹ ² ³ ¨ ¯ ´ ¸ ni otros símbolos de Latin-1 que NFKC convierte o que se intercalan entre letras («quierº mºrir», «su¹c¹d¹o»).
+const PLAIN = /^[\x20-\x7e\n\r\t\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u00a1\u00bf\u00ab\u00bb]*$/;
 const tidy = (text) => text.replace(/\s+/g, ' ');
 function* riskForms(text) {
   const raw = String(text); const seen = new Set();
@@ -130,7 +131,7 @@ const { createHash } = require('crypto');
 const MEMO_MAX = 1000; const memo = new Map();
 function detectRisk(text) {
   const raw = String(text);
-  const key = raw.length > 64 ? createHash('sha256').update(raw).digest('hex') : raw; // textos cortos: la clave es corta; largos: huella (no se retiene el texto)
+  const key = createHash('sha256').update(raw).digest('hex'); // SIEMPRE la huella completa (también en textos cortos): nunca se retiene el texto ni se recorta la clave
   const cached = memo.get(key); if (cached) return { level: cached.level, lang: cached.lang };
   const result = evaluate(raw);
   if (memo.size >= MEMO_MAX) memo.delete(memo.keys().next().value); // FIFO acotada
@@ -202,4 +203,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };

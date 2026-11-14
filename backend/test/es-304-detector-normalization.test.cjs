@@ -132,7 +132,7 @@ test('ES-304 equivalencia: 6.000 textos generados (frases de crisis y benignas, 
   const benign = ['quiero cambiar de carrera', 'tengo 3 años de experiencia en ventas', 'el sprint 7 termina el viernes', 'my phone is dead', 'I want to live in Madrid', 'este proyecto está muerto', 'mi número es 4 3 1 0 5', 'a b c d e f g', 'quiero morir de risa', 'llevo 5 años en la misma empresa'];
   const wrappers = [(t) => t, (t) => 'Hola, ' + t + '. Gracias', (t) => t + ' ' + 'texto de relleno normal, con comas y números 123. '.repeat(20), (t) => 'Primero cuento algo. ' + t];
   const ops = [(t) => t, (t) => t.replace(/o/g, 'о'), (t) => t.split('').join('\u{E0041}'), (t) => t.replace(/[aeios]/g, (c) => ({ a: 4, e: 3, i: 1, o: 0, s: 5 })[c]), (t) => t.replace(/(.)/g, (c) => (rnd() < 0.3 ? c + c : c)), (t) => t.replace(/ /g, '\u3164'), (t) => t.split('').join(' '), (t) => t.split('').join('.'),
-    (t) => t.split(' ').map((w) => w.split('').join(' ')).join('   '), (t) => t.replace(/ /g, ','), (t) => t.normalize('NFKC').replace(/[a-z]/g, (c) => String.fromCodePoint(c.charCodeAt(0) + 0xFEE0)), (t) => t.toUpperCase(), (t) => t.replace(/e/g, 'ee'), (t) => t.replace(/ /g, '   '), (t) => t.replace(/ /g, '-')];
+    (t) => t.split(' ').map((w) => w.split('').join(' ')).join('   '), (t) => t.replace(/ /g, ','), (t) => t.normalize('NFKC').replace(/[a-z]/g, (c) => String.fromCodePoint(c.charCodeAt(0) + 0xFEE0)), (t) => t.toUpperCase(), (t) => t.replace(/e/g, 'ee'), (t) => t.replace(/ /g, '   '), (t) => t.replace(/ /g, '-'), (t) => t.replace(/o/g, 'º').replace(/a/g, 'ª'), (t) => t.replace(/[ie]/g, (c) => ({ i: '¹', e: '²' })[c]), (t) => t.split('').join('¨'), (t) => t.split('').join('´'), (t) => t.split('').join('¯'), (t) => t.split('').join('¸'), (t) => t.replace(/ /g, '\u00a0')];
   let crisis = 0, different = [];
   for (let i = 0; i < 6000; i++) {
     const body = rnd() < 0.6 ? pick(seeds) : pick(benign); let text = pick(ops)(body); if (rnd() < 0.3) text = pick(ops)(text); text = pick(wrappers)(text);
@@ -140,4 +140,21 @@ test('ES-304 equivalencia: 6.000 textos generados (frases de crisis y benignas, 
     if (got.level !== want.level || got.lang !== want.lang) different.push({ text: text.slice(0, 80), got, want });
   }
   assert.deepEqual(different.slice(0, 5), [], 'diferencias con la referencia: ' + different.length); assert.ok(crisis > 1500, 'el generador produce suficientes casos de crisis: ' + crisis);
+});
+
+test('ES-304 E304-8: el camino «llano» NO se salta NFKC en Latin-1: ª º ¹ ² ³ y los signos ¨ ¯ ´ ¸ intercalados se detectan igual que en la referencia', () => {
+  for (const text of ['quierº mºrir', 'voy ª mªtªrme', 'su¹c¹d¹o', 's¨u¨i¨c¨i¨d¨i¨o', 's¯u¯i¯c¯i¯d¯i¯o', 's´u´i´c´i´d´i´o', 's¸u¸i¸c¸i¸d¸i¸o']) {
+    assert.equal(detectRisk(text).level, 'high', text); assert.deepEqual(detectRisk(text), referenceEvaluate(text), text);
+  }
+  assert.equal(detectRisk('Quiero cambiar de carrera, ¿por dónde empiezo? «Gracias» ¡Hola! Año 2024 niño señora').level, null, 'el texto en español normal sigue siendo llano y benigno');
+  // barrido: todo carácter de Latin-1 (U+00A0–U+00FF) intercalado entre las letras da la MISMA decisión que la referencia
+  for (let cp = 0xa0; cp <= 0xff; cp++) { const text = 'suicidio'.split('').join(String.fromCodePoint(cp)); assert.deepEqual(detectRisk(text), referenceEvaluate(text), 'U+' + cp.toString(16)); }
+});
+
+test('ES-304 E304-9/E304-10: la memoria usa SIEMPRE la huella sha256 completa como clave (nunca el texto ni una clave recortada): textos que comparten los primeros 64 caracteres se evalúan por separado', () => {
+  _steps.clearMemo(); const prefix = 'x'.repeat(70);
+  const benign = detectRisk(prefix + ' hoy quiero comer algo rico'); const crisis = detectRisk(prefix + ' hoy quiero morir');
+  assert.equal(benign.level, null); assert.equal(crisis.level, 'high', 'misma cabecera de 64 caracteres, distinto final: no comparten entrada de memoria');
+  assert.equal(detectRisk(prefix + ' hoy quiero comer algo rico').level, null); assert.equal(_steps.memoSize(), 2);
+  for (const short of ['quiero morir', 'hola', 'a']) { _steps.clearMemo(); detectRisk(short); assert.ok(_steps.memoKeys().every((key) => /^[0-9a-f]{64}$/.test(key)), 'solo huellas de 64 hex, nunca el texto: ' + short); }
 });
