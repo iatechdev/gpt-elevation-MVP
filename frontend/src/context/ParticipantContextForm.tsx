@@ -7,6 +7,8 @@ import { useLanguage } from '../i18n/useLanguage'
 import { ContextError, contextRequest, emptyContext, type ContextSnapshot, type ParticipantContext } from './participantContext'
 import countries from '../../../shared/participantCountries.json'
 import './participantContext.css'
+import './onboardingCartografia.css' // ES-159: tema de Cartografía (claro/oscuro) para esta pantalla
+import { PersonFrame } from '../shell/frames'
 import { registerContextNavigationGuard } from './contextNavigationGuard'
 import './resume/resume.css'
 import { ResumeStarter } from './resume/ResumeStarter'
@@ -20,7 +22,7 @@ const EXTRAS_KEYS: ExtrasKey[] = ['experience', 'education', 'declaredSkills', '
 
 type Entry = '' | 'personal' | 'professional' | 'soon'
 type Phase = 'loading' | 'ready' | 'saving' | 'confirmed' | 'loadError' | 'expired'
-export function Onboarding() {
+function OnboardingContent() {
   const { t, lang, setLang } = useLanguage()
   const navigate = useNavigate()
   const [phase, setPhase] = useState<Phase>('loading')
@@ -148,12 +150,9 @@ export function Onboarding() {
       {fieldError(key)}
     </div>
   )
-  return <div className="participant-context-scope">
-    <a className="context-skip elv-link" href="#context-main">{t('context_skip')}</a>
-    <header className="context-header"><span>{t('logo')}</span><div className="elv-join" aria-label={t('context_preferredLanguage')}>
-      {(['es', 'en'] as const).map(language => <button type="button" key={language} className={`elv-btn elv-join-item ${lang === language ? 'elv-btn-primary' : 'elv-btn-ghost'}`} aria-pressed={lang === language} onClick={() => setLang(language)}>{language.toUpperCase()}</button>)}
-    </div></header>
-    <main id="context-main" tabIndex={-1}>
+  // ES-159: el marco de persona pone el encabezado, «saltar al contenido», el idioma y el main; aquí solo va el contenido (con el tema de Cartografía).
+  return <div className="participant-context-scope cg-onboarding">
+    <div>
       <h1>{t('context_title')}</h1><p>{t('context_intro')}</p>
       {phase === 'loading' ? <p role="status">{t('context_loading')}</p>
         : phase === 'loadError' ? <div role="alert"><p>{t('context_load_error')}</p><button className="elv-btn" onClick={reload}>{t('context_retry')}</button></div>
@@ -214,6 +213,11 @@ export function Onboarding() {
                 </div>
               </div>
             </form></>}
-    </main>
+    </div>
   </div>
+}
+
+/** ES-159: «Tu punto de partida» dentro del marco de persona (Cartografía). La lógica de arriba no cambió. */
+export function Onboarding() {
+  return <PersonFrame migrated><OnboardingContent /></PersonFrame>
 }
