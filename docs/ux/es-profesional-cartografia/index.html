@@ -114,7 +114,7 @@
 .cg-figure{background:var(--cg-panel);padding:.8rem 1rem;border-right:1px solid var(--cg-line);border-bottom:1px solid var(--cg-line);margin:0}
 .cg-figure dt{font:600 .8rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
 .cg-figure dd{margin:0;font:700 1.9rem var(--cg-font-cond)}
-@media (max-width:900px){.cg-header--pro .cg-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.cg-header--pro .cg-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.cg-header--pro .cg-brand{font-size:1.4rem;white-space:nowrap}.cg-header--pro .cg-brand__role{font-size:.7rem;padding-left:.4rem;margin-left:.4rem}.cg-usermenu__button span:first-child{display:inline-block;max-width:6.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}}
 /* ===== sólo de la lámina ===== */
 .proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
 .proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
@@ -142,7 +142,7 @@ const prefs=()=>`<div class="cg-prefs" role="group" aria-label="${s().prefs}"><s
 function frame(inner,{active=0}={}){const k=s();return `<div class="cg cg-frame" ${theme==='system'?'':`data-theme="${theme}"`}><a class="cg-skip" href="#main">${k.skip}</a>
  <header class="cg-header cg-header--person cg-header--pro"><a class="cg-brand" href="#h" aria-label="Elevation. ${k.role}">Elevation<i>.</i> <span class="cg-brand__role">${k.role}</span></a>
  <nav class="cg-nav" aria-label="${k.main}">${k.nav.map((n,i)=>`<a href="#n${i}" ${active===i?'aria-current="page"':''}>${n}</a>`).join('')}</nav>
- <div class="cg-header__end">${langSw()}<button type="button" class="cg-usermenu__button" aria-expanded="false" aria-label="${k.menu}: ${k.role}"><span>${k.role}</span><span aria-hidden="true"> ▾</span></button></div></header>
+ <div class="cg-header__end">${langSw()}<button type="button" class="cg-usermenu__button" aria-expanded="false" aria-label="${k.menu}: Marta"><span>Marta</span><span aria-hidden="true"> ▾</span></button></div></header>
  <div class="cg-body"><main id="main" tabindex="-1" class="cg-main">${inner}</main></div>${prefs()}</div>`}
 const head=(title,lead,tag)=>`<header class="pg-head">${tag?`<p class="cg-tag">${tag}</p>`:''}<h1 class="pg-title">${title}</h1>${lead?`<p class="pg-lead">${lead}</p>`:''}</header>`;
 const card=(title,body,id,extra='')=>`<section class="cg-card pg-card ${extra}" ${id?`aria-labelledby="${id}"`:''}><h2 ${id?`id="${id}"`:''}>${title}</h2>${body}</section>`;
