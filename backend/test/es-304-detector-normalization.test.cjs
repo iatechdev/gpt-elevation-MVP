@@ -113,3 +113,31 @@ test('ES-304 costo del PEOR caso real (21 mensajes de 4.000 caracteres): con la 
   const cold = []; for (let r = 0; r < 5; r++) { _steps.clearMemo(); cold.push(timeOf()); } const warm = Math.min(timeOf(), timeOf());
   assert.ok(warm < Math.min(...cold) / 5, 'con memoria (' + warm.toFixed(1) + ' ms) debe costar menos de la quinta parte del frío (' + cold.map((n) => n.toFixed(0)) + ' ms)');
 });
+
+// ── Equivalencia: la versión optimizada decide IGUAL que la referencia (todas las formas, un `flat` por forma, regla por regla) en miles de textos generados ──────────────────────────────────────
+const referenceEvaluate = (text) => {
+  const raw = String(text); const { flat, unmask, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, decodeTags, matchForm, FILLER_TEST } = _steps;
+  const base = unmask(raw); const spelled = joinSpelled(base); const words = spellWords(base);
+  const forms = [flat(raw), flat(base), flat(spelled), flat(words), flat(unleet(spelled)), flat(halve(spelled)), flat(halve(words)), flat(squeeze(unleet(spelled))), flat(spaceOut(base)), flat(spaceOut(spelled))];
+  if (FILLER_TEST.test(raw.normalize('NFKC'))) { const spaced = unmask(raw, ' '); forms.push(flat(spaced), flat(joinSpelled(spaced)), flat(spaceOut(spaced))); }
+  const decoded = decodeTags(raw); if (decoded) forms.push(flat(unmask(decoded)));
+  let best = { level: null, lang: null };
+  for (const form of forms) { const hit = matchForm(form); if (hit.level === 'high') return hit; if (hit.level === 'medium' && best.level !== 'medium') best = hit; }
+  return best;
+};
+
+test('ES-304 equivalencia: 6.000 textos generados (frases de crisis y benignas, con y sin ofuscación, ruido y relleno) → la versión optimizada decide IGUAL que la referencia', () => {
+  let seed = 304; const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; const pick = (list) => list[Math.floor(rnd() * list.length)];
+  const seeds = ['quiero morir', 'no quiero seguir viviendo', 'quitarme la vida', 'suicidio', 'voy a matarme', 'quiero hacerme daño', 'ya no aguanto más', 'I want to kill myself', 'thinking about ending my life', "I don't want to live anymore", 'better off dead', 'I want to hurt myself', "I can't go on"];
+  const benign = ['quiero cambiar de carrera', 'tengo 3 años de experiencia en ventas', 'el sprint 7 termina el viernes', 'my phone is dead', 'I want to live in Madrid', 'este proyecto está muerto', 'mi número es 4 3 1 0 5', 'a b c d e f g', 'quiero morir de risa', 'llevo 5 años en la misma empresa'];
+  const wrappers = [(t) => t, (t) => 'Hola, ' + t + '. Gracias', (t) => t + ' ' + 'texto de relleno normal, con comas y números 123. '.repeat(20), (t) => 'Primero cuento algo. ' + t];
+  const ops = [(t) => t, (t) => t.replace(/o/g, 'о'), (t) => t.split('').join('\u{E0041}'), (t) => t.replace(/[aeios]/g, (c) => ({ a: 4, e: 3, i: 1, o: 0, s: 5 })[c]), (t) => t.replace(/(.)/g, (c) => (rnd() < 0.3 ? c + c : c)), (t) => t.replace(/ /g, '\u3164'), (t) => t.split('').join(' '), (t) => t.split('').join('.'),
+    (t) => t.split(' ').map((w) => w.split('').join(' ')).join('   '), (t) => t.replace(/ /g, ','), (t) => t.normalize('NFKC').replace(/[a-z]/g, (c) => String.fromCodePoint(c.charCodeAt(0) + 0xFEE0)), (t) => t.toUpperCase(), (t) => t.replace(/e/g, 'ee'), (t) => t.replace(/ /g, '   '), (t) => t.replace(/ /g, '-')];
+  let crisis = 0, different = [];
+  for (let i = 0; i < 6000; i++) {
+    const body = rnd() < 0.6 ? pick(seeds) : pick(benign); let text = pick(ops)(body); if (rnd() < 0.3) text = pick(ops)(text); text = pick(wrappers)(text);
+    _steps.clearMemo(); const got = detectRisk(text); const want = referenceEvaluate(text); if (want.level) crisis++;
+    if (got.level !== want.level || got.lang !== want.lang) different.push({ text: text.slice(0, 80), got, want });
+  }
+  assert.deepEqual(different.slice(0, 5), [], 'diferencias con la referencia: ' + different.length); assert.ok(crisis > 1500, 'el generador produce suficientes casos de crisis: ' + crisis);
+});

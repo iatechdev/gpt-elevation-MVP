@@ -52,19 +52,23 @@ const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 
 // Formas a evaluar, de forma PEREZOSA (generador): la actual primero (lo que ya se detectaba se sigue detectando igual) y después las normalizadas; no se calcula una forma
 // hasta que hace falta (salida en la primera alta) y se saltan las repetidas. Texto «llano» (letras, cifras y signos comunes): los pasos de Unicode son no-ops y no se calculan.
+// Costo: UNA sola pasada de `flat` (NFD + acentos) por texto; las formas derivadas se calculan sobre el texto YA plegado y solo se ordenan los espacios (`tidy`).
 const PLAIN = /^[\x20-\x7e\n\r\t\u00a1-\u00ff]*$/;
+const tidy = (text) => text.replace(/\s+/g, ' ');
 function* riskForms(text) {
   const raw = String(text); const seen = new Set();
   const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
   const first = flat(raw); if (fresh(first)) yield first;
   const plain = PLAIN.test(raw);
-  const base = plain ? raw.toLowerCase() : unmask(raw);
-  if (!plain) { const f = flat(base); if (fresh(f)) yield f; }
-  const spelled = joinSpelled(base); const words = spellWords(base);
-  for (const thunk of [() => flat(spelled), () => flat(words), () => flat(unleet(spelled)), () => flat(halve(spelled)), () => flat(halve(words)), () => flat(squeeze(unleet(spelled))), () => flat(spaceOut(base)), () => flat(spaceOut(spelled))]) { const f = thunk(); if (fresh(f)) yield f; }
+  const open = plain ? raw.toLowerCase() : unmask(raw); // sin plegar: «letras separadas» y «palabras separadas» dependen de los espacios múltiples
+  const base = plain ? first : flat(open); // plegado una vez; las derivadas parten de aquí
+  if (!plain && fresh(base)) yield base;
+  const joined = joinSpelled(open); const spelled = joined === open ? base : flat(joined);
+  const split = spellWords(open); const words = split === open ? base : flat(split);
+  for (const thunk of [() => spelled, () => words, () => tidy(unleet(spelled)), () => tidy(halve(spelled)), () => tidy(halve(words)), () => tidy(squeeze(unleet(spelled))), () => tidy(spaceOut(base)), () => tidy(spaceOut(spelled))]) { const f = thunk(); if (fresh(f)) yield f; }
   if (!plain && FILLER_TEST.test(raw.normalize('NFKC'))) {
-    const spaced = unmask(raw, ' ');
-    for (const thunk of [() => flat(spaced), () => flat(joinSpelled(spaced)), () => flat(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
+    const spacedOpen = unmask(raw, ' '); const spaced = flat(spacedOpen); const spacedJoined = joinSpelled(spacedOpen);
+    for (const thunk of [() => spaced, () => (spacedJoined === spacedOpen ? spaced : flat(spacedJoined)), () => tidy(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
 }
@@ -111,8 +115,11 @@ const MEDIUM = [
 ];
 
 // -> { level: 'high' | 'medium' | null, lang: 'es' | 'en' | null } (el idioma del patrón que coincidió; no es el país)
+const united = (rules) => new RegExp(rules.map((rule) => '(?:' + rule.re.source + ')').join('|'));
+const UNITED = { high: united(HIGH), medium: united(MEDIUM) }; // equivalente a probar cada regla: alguna coincide ⇔ la unión coincide
 function matchForm(normalized) {
   for (const [level, rules] of [['high', HIGH], ['medium', MEDIUM]]) {
+    if (!UNITED[level].test(normalized)) continue;
     const hit = rules.find((rule) => rule.re.test(normalized));
     if (hit) return { level, lang: hit.lang };
   }
@@ -195,4 +202,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
