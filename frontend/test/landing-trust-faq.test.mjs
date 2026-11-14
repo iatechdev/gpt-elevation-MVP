@@ -73,10 +73,9 @@ test('ES-69: pending rights/policy, no price or free promise, native keyboard bu
   assert.doesNotMatch(html, /\bGratis\b|\bFree\b|USD|\$|tel:|https?:|href="\/app|href="\/api/)
   assert.ok(html.includes('Consulta disponibilidad') && html.includes('Check availability'))
   assert.ok(html.includes('Pendiente de revisión') && html.includes('Pending review'))
-  const page = read('../src/pages/LandingPage.tsx')
-  assert.ok(page.indexOf('<LandingJourney') < page.indexOf('<LandingTrust'))
+  const page = read('../src/components/landing/LandingTail.tsx') // ES-155 C: las secciones conservadas viven en LandingTail
   assert.ok(page.indexOf('<LandingTrust') < page.indexOf('<LandingFeatures'))
   assert.ok(page.indexOf('<LandingJoin') < page.indexOf('<LandingFaq'))
-  assert.equal((page.match(/trustFaqEnabled\(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ\)/g) ?? []).length, 2)
+  assert.equal((page.match(/trustFaqEnabled\(import\.meta\.env\.VITE_ENABLE_LANDING_TRUST_FAQ\)/g) ?? []).length, 1, 'una sola lectura de la bandera (const trust) para confianza y preguntas')
   assert.match(read('../src/components/landing/LandingPrimitives.tsx'), /type=\{type\}/)
 })

@@ -1,0 +1,15 @@
+/* ES-155 (tramo C): las secciones conservadas de la portada anterior (planes, confianza, preguntas, proyecto, acceso, cierre) toman sus colores de Cartografía.
+   El tema propio de la landing (daisyUI) se resuelve aquí con los tokens --cg-* del marco: sigue el claro/oscuro del sistema sin duplicar paletas. Solo actúa con .cg-tail. */
+.landing-scope.cg-tail[data-theme] {
+  --color-base-100: var(--cg-panel); --color-base-200: var(--cg-ground); --color-base-300: var(--cg-line); --color-base-content: var(--cg-ink);
+  --color-primary: var(--cg-mark); --color-primary-content: var(--cg-ground);
+  --color-secondary: var(--cg-contour); --color-secondary-content: var(--cg-ground);
+  --color-accent: var(--cg-contour); --color-accent-content: var(--cg-ground);
+  --color-neutral: var(--cg-muted); --color-neutral-content: var(--cg-ground);
+  --color-info: var(--cg-mark); --color-info-content: var(--cg-ground);
+  --color-success: var(--cg-good); --color-success-content: var(--cg-ground);
+  --color-warning: var(--cg-contour); --color-warning-content: var(--cg-ground);
+  --color-error: var(--cg-err); --color-error-content: var(--cg-ground);
+  background: transparent; color: var(--cg-ink); margin-top: 2rem; border-radius: 0; min-height: 0;
+  font-family: var(--cg-font-sans); /* la tipografía del sistema (ya cargada por el hero): la portada no descarga además Inter (48 kB) */
+}

@@ -1,0 +1,23 @@
+/* ES-155 (tramo C): portada Cartografía (tokens --cg-*, claro y oscuro del sistema). Sin colores fijos. */
+.pt-hero { position: relative; border: 2px solid var(--cg-ink); background: var(--cg-ground); overflow: hidden; margin-top: 1.2rem; min-height: 26rem; display: grid; align-content: space-between; gap: 2rem; padding: clamp(1.2rem, 4vw, 2.4rem); }
+.pt-hero__relief { position: absolute; inset: 0; }
+.pt-hero__relief .cg-relief { position: absolute; inset: 0; max-width: none; aspect-ratio: auto; border: 0; }
+.pt-hero__in, .pt-legend, .pt-here { position: relative; z-index: 1; }
+.pt-hero__in { max-width: 38rem; display: grid; gap: 1rem; justify-items: start; background: color-mix(in srgb, var(--cg-ground) 80%, transparent); padding: 0.6rem 0.8rem 0.8rem 0; }
+.pt-hero h1 { margin: 0; font: 700 clamp(2.4rem, 7vw, 4.4rem)/1 var(--cg-font-cond); letter-spacing: 0.01em; text-transform: uppercase; color: var(--cg-ink); }
+.pt-hero h1 em { font-style: normal; color: var(--cg-mark); }
+.pt-lead { margin: 0; font-size: 1.15rem; color: var(--cg-ink); }
+.pt-here { position: absolute; right: 1.2rem; top: 1.2rem; display: inline-flex; align-items: center; gap: 0.4rem; font: 700 0.85rem var(--cg-font-cond); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cg-ink); background: var(--cg-panel); border: 1.5px solid var(--cg-ink); padding: 0.2rem 0.6rem; }
+.pt-here i { width: 10px; height: 10px; border-radius: 50%; background: var(--cg-mark); display: inline-block; }
+.pt-legend { background: color-mix(in srgb, var(--cg-panel) 88%, transparent); border: 1px solid var(--cg-line); padding: 0.7rem 0.9rem; display: grid; gap: 0.4rem; }
+.pt-legend ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; }
+.pt-legend li { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; }
+.pt-sym { display: inline-block; width: 16px; height: 16px; flex: none; border-radius: 50%; border: 2px solid var(--cg-contour); }
+.pt-sym--s { background: var(--cg-mark); border-color: var(--cg-panel); box-shadow: 0 0 0 1.5px var(--cg-ink); }
+.pt-sym--p { background: color-mix(in srgb, var(--cg-contour) 30%, var(--cg-panel)); }
+.pt-sym--n { border: 2px dashed var(--cg-muted); }
+.pt-sym--l { height: 0; width: 20px; border: 0; border-top: 4px solid var(--cg-contour); border-radius: 0; align-self: center; }
+@media (max-width: 639px) { .pt-hero { min-height: 0; padding-top: 3.4rem; } .pt-here { right: auto; left: 1rem; } }
+.pt-try-skel { min-height: 60rem; margin-top: 1.4rem; }
+@media (min-width: 900px) { .pt-try-skel { min-height: 40rem; } }
+.pt-hero a.cg-btn { color: var(--cg-ground); }

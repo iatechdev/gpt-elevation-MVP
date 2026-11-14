@@ -6,7 +6,7 @@ import { doorTarget, splitLastWord } from '../src/content/landingDoors.ts'
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const component = read('../src/components/landing/HeroDoors.tsx')
 const page = read('../src/pages/LandingPage.tsx')
-const css = read('../src/components/landing/landing.css')
+const css = read('../src/components/landing/landing.css') + read('../src/components/landing/landingScope.css') // ES-155 C: las reglas de las secciones viven en landingScope.css
 const catalog = JSON.parse(read('../../shared/landing-content.json'))
 test('ES-63: ambas puertas conservan /login con o sin sesión, para cualquier rol', () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'window')
@@ -59,13 +59,12 @@ test('ES-63: el componente solo usa claves landing.* existentes, sin HTML inyect
   assert.match(component, /const doors = \[1, 2\]/)
 })
 
-test('ES-63: LandingPage monta HeroDoors y ya no usa el héroe anterior ni la imagen externa', () => {
-  assert.match(page, /<HeroDoors text=\{landing\.text\} \/>/)
+test('ES-63 (ES-155 C): la portada nueva ya no monta HeroDoors (lo reemplaza el hero Cartografía) ni usa el héroe anterior ni la imagen externa', () => {
+  assert.ok(!page.includes('<HeroDoors') && page.includes('<Hero text={text} />'))
   assert.doesNotMatch(page, /unsplash|hero_title|hero_badge|cta_secondary/)
 })
 
 test('QA-LAND-01: el héroe y las puertas van en el marco centrado de 1080 px de la maqueta', () => {
-  assert.match(page, /<div className="landing-frame">\s*<HeroDoors text=\{landing\.text\} \/>[\s\S]*?<\/div>/);
   assert.match(css, /\.landing-frame \{[^}]*max-width: 1080px[^}]*margin-inline: auto[^}]*border-inline: 1px solid/);
   assert.match(css, /\.landing-frame \{[^}]*--landing-gutter: clamp\(1rem, 2\.6vw, 1\.75rem\)/);
 })

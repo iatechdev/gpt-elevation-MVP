@@ -11,7 +11,7 @@ const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const header = read('../src/components/landing/LandingHeader.tsx')
 const provider = read('../src/i18n/LanguageProvider.tsx')
 const page = read('../src/pages/LandingPage.tsx')
-const css = read('../src/components/landing/landing.css')
+const css = read('../src/components/landing/landing.css') + read('../src/components/landing/landingScope.css') // ES-155 C: las reglas de las secciones viven en landingScope.css
 const catalog = JSON.parse(read('../../shared/landing-content.json'))
 const keys = new Set(catalog.map(entry => entry.key))
 const compiled = ts.transpileModule(header, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
@@ -69,11 +69,9 @@ test('ES-62: el enlace de salto es el primer elemento enfocable y apunta al cont
   const skip = header.indexOf('href="#contenido"')
   assert.ok(skip > 0)
   for (const later of ['<Link', '<button']) assert.ok(skip < header.indexOf(later), later)
-  assert.match(page, /<LandingHeader text=\{landing\.text\} lang=\{lang\} setLang=\{setLang\} showProfessionals=\{showProfessionals\} \/>/)
-  assert.match(page, /<main id="contenido" tabIndex=\{-1\}>/)
-  assert.ok(page.indexOf('<LandingHeader') < page.indexOf('<main id="contenido"'))
-  assert.ok(page.indexOf('</main>') < page.indexOf('<LandingFooter'))
-  assert.doesNotMatch(page, /ELEVATION<\/span>\s*<nav/)
+  // ES-155 C: la cabecera, el enlace de salto y el <main> los pone el marco público (PublicFrame); LandingHeader se conserva como componente
+  assert.ok(!page.includes('<LandingHeader') && !page.includes('<main id="contenido"'))
+  assert.ok(page.includes('<PublicFrame migrated>'))
 })
 
 test('ES-62: estilos de salto, idioma activo en tinta invertida, 44 px y foco ocre', () => {
