@@ -15,7 +15,7 @@ const fs = require('node:fs');
   const browser = await chromium.launch({ headless: true });
   const errors = []; let count = 0; const info = [];
   const check = (label) => { count++; console.log('PASS ' + label); };
-  const ROUTES = ['/app/dashboard', '/app/chat', '/app/diary', '/app/plan', '/app/data', '/app/space/tools', '/app/bridge', '/app/evidence', '/app/skill-map', '/app/progress', '/app/feedback', '/app/compass', '/app/exercises',
+  const ROUTES = ['/app/dashboard', '/app/checkin', '/app/chat', '/app/diary', '/app/plan', '/app/data', '/app/space/tools', '/app/bridge', '/app/evidence', '/app/skill-map', '/app/progress', '/app/feedback', '/app/compass', '/app/exercises',
     '/app/route-catalog', '/app/next-step', '/app/professional-reviews', '/app/context/resumes', '/app/my-therapist'];
   const T = { es: { limits: 'Límites del asistente', foot: 'No es terapia ni diagnóstico', exercises: 'Ejercicios opcionales', tools: 'Mis herramientas', loading: 'Cargando la pantalla', skip: 'Saltar al contenido' }, en: { limits: 'Assistant limits', foot: 'It is not therapy or diagnosis', exercises: 'Optional exercises', tools: 'My tools', loading: 'Loading the screen', skip: 'Skip to content' } };
 

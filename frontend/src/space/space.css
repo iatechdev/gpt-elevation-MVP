@@ -137,6 +137,8 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .chat-composer .chat-enter { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; min-height: 24px; }
 
 /* ES-153 (paso 1): chat dentro del marco de persona. La cabecera propia ya no es fija y el chat ocupa el alto que deja el encabezado del marco (sin pie en el chat). */
-.cg-main .chat-shell { height: calc(100dvh - 7rem); min-height: 26rem; }
+.cg-main .chat-shell { height: calc(100dvh - 10.2rem); min-height: 26rem; }
 .cg-main .chat-main { padding-top: 12px; }
-@media (max-width: 900px) { .cg-main .chat-shell { height: calc(100dvh - 11rem); } }
+@media (max-width: 900px) { .cg-main .chat-shell { height: calc(100dvh - 14.5rem); } }
+@media (max-width: 600px) { .cg-main .chat-shell { height: calc(100dvh - 21rem); } } /* el encabezado de persona en móvil ocupa ~264 px hasta el paso 3 (PreferencesBar) */
+.cg-main .space-dashboard-header > div { min-width: 0; box-sizing: border-box; } /* la cabecera propia del inicio ya no se fija: se ajusta al ancho del marco */

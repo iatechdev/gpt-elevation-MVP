@@ -5,6 +5,7 @@ import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
 import { ChatContext, ChatInput, TruncatedNotice } from '../space/ChatControls'
 import { ChatLimitsNotice } from '../space/ChatLimitsNotice'
+import '../space/space.css' // ES-153: antes lo traía el menú de Mi espacio
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
 import { clearPending } from '../space/pending'

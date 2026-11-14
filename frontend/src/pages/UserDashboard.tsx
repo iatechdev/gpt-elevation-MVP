@@ -9,6 +9,7 @@ import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { copy } from '../space/copy'
+import '../space/space.css' // ES-153: antes lo traía el menú de Mi espacio (estilos de la cabecera y del cuerpo del inicio)
 import { SessionControl } from '../access/SessionControl'
 import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
