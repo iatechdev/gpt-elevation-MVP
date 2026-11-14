@@ -9,7 +9,7 @@
 body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .space-page { min-height: 100vh; background: var(--color-base-100); padding: 16px; }
-.space-page > header, .space-page > main, .space-page > .space-nav { max-width: 860px; margin: 0 auto 24px; }
+.space-page > header, .space-page > main, .space-page > .space-body, .space-page > .space-nav { max-width: 860px; margin: 0 auto 24px; }
 .space-page > header, .space-actions, .space-nav nav { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .space-page > header { justify-content: space-between; }
 .space-scope h1, .space-scope h2 { font-family: Inter, sans-serif; font-weight: 600; line-height: 1.3; margin: 16px 0; }
@@ -129,9 +129,14 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .space-plan h3 { margin: 0; font-size: 1.1rem; } .space-plan ul { margin: 0; padding-left: 1.25rem; } .space-plan p { margin: 0; }
 .space-plan .elv-btn { margin-top: auto; align-self: flex-start; }
 .space-plan-price { font-weight: 600; }
-@media(min-width: 900px) { .space-plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .space-page:has(.space-plan-grid) > main { max-width: 1040px; } }
+@media(min-width: 900px) { .space-plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .space-page:has(.space-plan-grid) > .space-body { max-width: 1040px; } }
 
 /* ES-162: aviso de demora con «Dejar de esperar» y casilla «Enter envía». */
 .chat-composer .chat-slow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .chat-composer .chat-slow p { margin: 0; flex: 1 1 16rem; }
 .chat-composer .chat-enter { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; min-height: 24px; }
+
+/* ES-153 (paso 1): chat dentro del marco de persona. La cabecera propia ya no es fija y el chat ocupa el alto que deja el encabezado del marco (sin pie en el chat). */
+.cg-main .chat-shell { height: calc(100dvh - 7rem); min-height: 26rem; }
+.cg-main .chat-main { padding-top: 12px; }
+@media (max-width: 900px) { .cg-main .chat-shell { height: calc(100dvh - 11rem); } }

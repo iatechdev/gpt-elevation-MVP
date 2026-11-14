@@ -10,9 +10,9 @@ export function EvidenceShell({ title, children, onLeave }: { title: string; chi
     <header><span>{t('logo')}</span><div className="elv-join" role="group" aria-label={t('evidence.language')}>
       {(['es', 'en'] as const).map(value => <button type="button" className="elv-btn elv-btn-ghost elv-join-item" key={value} aria-pressed={lang === value} onClick={() => setLang(value)}>{value.toUpperCase()}</button>)}
     </div></header>
-    <main id="evidence-main" tabIndex={-1}>
+    <div id="evidence-main" tabIndex={-1}>
       <nav><Link className="elv-link" to="/app/dashboard" onClick={onLeave}>{t('evidence.back')}</Link><Link className="elv-link" to="/app/evidence" onClick={onLeave}>{t('evidence.list')}</Link></nav>
       <h1>{title}</h1>{children}
-    </main>
+    </div>
   </div>
 }

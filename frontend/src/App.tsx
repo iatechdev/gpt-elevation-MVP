@@ -8,6 +8,7 @@ import { AdminRoute } from './components/AdminRoute.tsx'
 import { TherapistRoute } from './components/TherapistRoute.tsx'
 
 import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
+import { PersonLayout } from './shell/PersonLayout'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { SpaceSession } from './space/SpaceSession'
 // ES-129: cada pantalla fuera de la portada y el login se descarga al entrar en su ruta; así /login no arrastra admin, terapeuta, junta ni mapas.
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="/facilitation/participants/:id" element={<ParticipantDetail />} />
           <Route path="/facilitation/participants/:id/reviews/new" element={<NewReview />} />
         </Route>
+        <Route element={<PersonLayout />}>{/* ES-153: marco de persona para todo /app/* menos la sala de sesión */}
         <Route path="/app/professional-reviews" element={<PersonReviews />} />
         <Route path="/app/feedback" element={<FeedbackPage />} />
         <Route path="/app/route-catalog" element={<CatalogBrowser />} />
@@ -126,7 +128,8 @@ export default function App() {
         <Route path="/app/evidence/:id/edit" element={<EvidenceEditPage />} />
         <Route path="/app/skill-map"    element={<SkillMapPage />} />
         <Route path="/app/my-therapist" element={<MyTherapist />} />
-        {/* HU-067 — sala de videollamada para el paciente */}
+        </Route>
+        {/* HU-067 — sala de videollamada para el paciente: fuera del layout, pantalla completa */}
         <Route path="/app/session/:id"  element={<UserSessionRoom />} />
       </Route>
 

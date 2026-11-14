@@ -73,3 +73,11 @@
   .cg-nav--grid a { min-width: 0; overflow-wrap: anywhere; }
   .cg-nav--grid a.cg-btn { justify-content: center; }
 }
+
+/* ES-153 (paso 1): pantallas de persona dentro del marco. El contenido heredado no fuerza el alto de la ventana (el marco ya pone encabezado y pie) y la carga entre pantallas deja el marco fijo. */
+.cg-main .space-page { min-height: 0; }
+.cg-screen-loading { display: grid; gap: 0.7rem; padding: 1.2rem 0; max-width: 40rem; color: var(--cg-muted, inherit); }
+.cg-screen-loading i { display: block; height: 0.9rem; border-radius: 4px; background: var(--cg-line, currentColor); opacity: 0.55; }
+.cg-screen-loading i:nth-of-type(2) { width: 82%; } .cg-screen-loading i:nth-of-type(3) { width: 60%; }
+@media (prefers-reduced-motion: no-preference) { .cg-screen-loading i { animation: cg-screen-pulse 1.4s ease-in-out infinite; } }
+@keyframes cg-screen-pulse { 50% { opacity: 0.25; } }

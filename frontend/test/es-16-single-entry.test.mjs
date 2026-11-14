@@ -9,7 +9,8 @@ const read = (path) => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
 test('ES-16: el chat no monta ExerciseTools (la identificación de IA del chat es la nota de Mi espacio)', () => {
   const chat = read('../src/pages/ChatPage.tsx')
   assert.doesNotMatch(chat, /ExerciseTools/)
-  assert.match(chat, /<SpaceNav \/>/)
+  assert.doesNotMatch(chat, /SpaceNav/) // ES-153 (paso 1): la navegación la pone el marco de persona; los ejercicios se alcanzan desde «Mis herramientas»
+  assert.match(read('../src/space/SpaceToolsPage.tsx'), /path: '\/app\/exercises'[^}]*to: '\/app\/exercises\?from=dashboard'/)
 })
 
 test('ES-16: ExerciseTools solo identifica a la IA; no trae enlace propio a los ejercicios', () => {

@@ -8,7 +8,6 @@ import '../evidence/register.ts' // ES-232: catálogo de textos de esta pantalla
 import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SpaceNav } from '../space/SpaceNav'
 import { copy } from '../space/copy'
 import { SessionControl } from '../access/SessionControl'
 import { signOut } from '../access/signOut'
@@ -294,7 +293,7 @@ export function UserDashboard() {
 
       {/* ── HEADER ── */}
       <header className="space-dashboard-header" style={{
-        position: 'fixed', top: 0, width: '100%', zIndex: 50,
+        position: 'relative', zIndex: 1, /* ES-153: dentro del marco de persona la cabecera propia ya no se fija sobre el encabezado del marco */
         background: 'rgba(249,249,247,0.92)', backdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(231,229,228,0.5)',
         minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -323,7 +322,6 @@ export function UserDashboard() {
           </div>
         </div>
       </header>
-      <div className="space-dashboard-nav" style={{ maxWidth: 1100, marginLeft: "auto", marginRight: "auto", padding: "0 24px" }}><SpaceNav /><div id="space-main" tabIndex={-1} /></div>
 
       {/* ── BODY ── */}
       <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>

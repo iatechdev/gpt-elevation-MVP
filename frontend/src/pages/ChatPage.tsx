@@ -1,6 +1,5 @@
 import { memo, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { SpaceNav } from '../space/SpaceNav'
 import { ChatBar } from '../space/ChatBar'
 import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
@@ -309,7 +308,7 @@ export function ChatPage() {
       <h1 className="sr-only">{lang === 'es' ? 'Conversación' : 'Conversation'}</h1>
 
       {/* Header */}
-      <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <header style={{ position: 'relative', zIndex: 1, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 680, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ width: 24 }} />
           <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.3em', color: '#1A1A18', textTransform: 'uppercase', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{t('logo')}</span>
@@ -360,9 +359,9 @@ export function ChatPage() {
 
       {/* Mensajes */}
       {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
-      <main className="chat-main">
+      <div className="chat-main">
         <div className="chat-top">
-          <SpaceNav /><ChatBar sent={messages.length} /><div id="space-main" tabIndex={-1} />
+          <ChatBar sent={messages.length} />
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
@@ -440,7 +439,7 @@ export function ChatPage() {
           <ChatInput chat={chat} />
           <ChatLimitsNotice />
         </div>
-      </main>
+      </div>
 
       {/* HU-021 + HU-022 — Modal check-out + estrellas */}
       {showCheckout && (
