@@ -90,8 +90,26 @@ test('ES-304 en el chat: cada variante activa el apoyo en vivo (interrumpe, sin 
     await post(request, { message: 'Hola, quiero hablar de mi carrera' }); const before = calls.length;
     const crisis = await post(request, { message: phrase }); assert.equal(crisis.body.interrupted, true, JSON.stringify(phrase)); assert.equal(calls.length, before, 'sin llamada al proveedor en el turno de crisis');
     for (let i = 0; i < 2; i++) await post(request, { message: `Seguimos con la carrera ${i}` });
-    assert.ok(!calls.slice(before).map((c) => JSON.stringify(c)).join('\n').includes(JSON.stringify(phrase).slice(1, -1).slice(0, 6)) || true);
     const sent = JSON.stringify(calls.slice(before)); for (const forbidden of [phrase, phrase.normalize('NFKC')]) assert.ok(!sent.includes(JSON.stringify(forbidden).slice(1, -1)) && !sent.includes(forbidden), 'la frase no viaja: ' + JSON.stringify(phrase));
     assert.ok(state.messages.some((m) => m.role === 'user' && desencriptar(m.content) === phrase), 'el texto guardado es el ORIGINAL, sin normalizar');
   }
+});
+
+// ── Optimización (memoria por mensaje + formas perezosas): mismos resultados, sin retener texto, acotada ─────────────────────────────────────────────────────────────────────────────────────
+test('ES-304 optimización: la memoria por mensaje da el MISMO resultado, no retiene el texto y está acotada; las formas perezosas no cambian ningún resultado del corpus', () => {
+  _steps.clearMemo();
+  const rows = corpus.filter((x) => RECOVERED.includes(x.category)); const first = rows.map((x) => detectRisk(x.text)); const second = rows.map((x) => detectRisk(x.text));
+  assert.deepEqual(second, first, 'el segundo resultado (de memoria) es idéntico al primero'); assert.ok(first.every((r) => r.level === 'high'));
+  for (let i = 0; i < 1500; i++) detectRisk('mensaje de relleno número ' + i + ' '.repeat(70)); assert.ok(_steps.memoSize() <= 1000, 'acotada: ' + _steps.memoSize());
+  assert.deepEqual(detectRisk('Quiero morir'), { level: 'high', lang: 'es' }, 'después de llenar la memoria sigue detectando');
+  const a = detectRisk('quiero hacerme daño'); const fromMemo = detectRisk('quiero hacerme daño'); assert.deepEqual(fromMemo, a); fromMemo.level = 'high'; a.level = 'high'; assert.equal(detectRisk('quiero hacerme daño').level, 'medium', 'el resultado devuelto (nuevo o de memoria) es una copia: modificarlo no contamina la memoria');
+  _steps.clearMemo(); for (const text of BENIGN_QA) assert.equal(detectRisk(text).level, _steps.legacy(text).level, text);
+});
+
+test('ES-304 costo del PEOR caso real (21 mensajes de 4.000 caracteres): con la memoria del turno anterior la reevaluación cuesta una fracción del costo en frío (relativo: el reloj de pared varía con la carga de la máquina)', () => {
+  const natural = 'Estoy cansado de mi trabajo y quiero cambiar de carrera, ¿por dónde empiezo? Tengo 3 años de experiencia. ';
+  const msgs = Array.from({ length: 21 }, (_, i) => (natural + i + ' ').repeat(40).slice(0, 4000));
+  const timeOf = () => { const s = process.hrtime.bigint(); for (const m of msgs) detectRisk(m); return Number(process.hrtime.bigint() - s) / 1e6; };
+  const cold = []; for (let r = 0; r < 5; r++) { _steps.clearMemo(); cold.push(timeOf()); } const warm = Math.min(timeOf(), timeOf());
+  assert.ok(warm < Math.min(...cold) / 5, 'con memoria (' + warm.toFixed(1) + ' ms) debe costar menos de la quinta parte del frío (' + cold.map((n) => n.toFixed(0)) + ' ms)');
 });

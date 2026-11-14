@@ -23,6 +23,9 @@ const FILLERS = /[\u3164\u2800\u115F\u1160\uFFA0\u180E\u061C\u034F]/g;
 const FILLER_TEST = new RegExp(FILLERS.source); // sin la bandera g: `.test` con /g recuerda la posición
 const FORMAT_AND_MARKS = /[\p{Cf}\p{Mn}\p{Me}\uE000-\uF8FF]/gu; // \p{Cf} incluye los caracteres de etiqueta U+E0000–E007F y el ancho cero
 // Homoglifos latino/cirílico/griego de uso común (sobre minúsculas): «quiero mоrir» con «о» cirílica.
+// LÍMITE (E304-3, documentado a propósito): esta tabla cubre 25 homoglifos cirílicos y griegos de uso común (+ «ɡ») y NFKC cubre ancho completo, letras matemáticas y «ſ». NO cubre el resto de
+// homoglifos Unicode (QA probó 26 de 67 puntos de código candidatos): «ı» (i sin punto), «ɑ», versalitas latinas (ᴍ, ɴ…), «κ» griega, armenio, cherokee, lisu… Una frase escrita con ellos NO se
+// detecta. Ampliar con una tabla de confusables (UTS #39) y medir contra falsos positivos queda como seguimiento.
 const HOMOGLYPHS = {
   '\u0430': 'a', '\u0435': 'e', '\u043e': 'o', '\u0441': 'c', '\u0440': 'p', '\u0445': 'x', '\u0456': 'i', '\u0455': 's', '\u0458': 'j', '\u04bb': 'h', '\u0261': 'g',
   '\u03bf': 'o', '\u03b1': 'a', '\u03b5': 'e', '\u03b9': 'i', '\u03c1': 'p', '\u03c5': 'u', '\u03bd': 'v', '\u03c4': 't', '\u043a': 'k', '\u043c': 'm', '\u043d': 'h', '\u0442': 't', '\u0443': 'y', '\u0432': 'b',
@@ -47,14 +50,23 @@ const squeeze = (text) => text.replace(/(.)\1{2,}/g, '$1').replace(/(.)\1/g, '$1
 const halve = (text) => text.replace(/(.)\1/g, '$1'); // letras DUPLICADAS («kkiillll» → «kill»): se prueba aparte porque «llll» no es «l»
 const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 
-// Formas a evaluar: la actual primero (lo que ya se detectaba se sigue detectando igual) y después las normalizadas.
-function riskForms(text) {
-  const raw = String(text);
-  const base = unmask(raw); const spelled = joinSpelled(base); const words = spellWords(base);
-  const forms = [flat(raw), flat(base), flat(spelled), flat(words), flat(unleet(spelled)), flat(halve(spelled)), flat(halve(words)), flat(squeeze(unleet(spelled))), flat(spaceOut(base)), flat(spaceOut(spelled))];
-  if (FILLER_TEST.test(raw.normalize('NFKC'))) { const spaced = unmask(raw, ' '); forms.push(flat(spaced), flat(joinSpelled(spaced)), flat(spaceOut(spaced))); }
-  const decoded = decodeTags(raw); if (decoded) forms.push(flat(unmask(decoded)));
-  return [...new Set(forms)];
+// Formas a evaluar, de forma PEREZOSA (generador): la actual primero (lo que ya se detectaba se sigue detectando igual) y después las normalizadas; no se calcula una forma
+// hasta que hace falta (salida en la primera alta) y se saltan las repetidas. Texto «llano» (letras, cifras y signos comunes): los pasos de Unicode son no-ops y no se calculan.
+const PLAIN = /^[\x20-\x7e\n\r\t\u00a1-\u00ff]*$/;
+function* riskForms(text) {
+  const raw = String(text); const seen = new Set();
+  const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
+  const first = flat(raw); if (fresh(first)) yield first;
+  const plain = PLAIN.test(raw);
+  const base = plain ? raw.toLowerCase() : unmask(raw);
+  if (!plain) { const f = flat(base); if (fresh(f)) yield f; }
+  const spelled = joinSpelled(base); const words = spellWords(base);
+  for (const thunk of [() => flat(spelled), () => flat(words), () => flat(unleet(spelled)), () => flat(halve(spelled)), () => flat(halve(words)), () => flat(squeeze(unleet(spelled))), () => flat(spaceOut(base)), () => flat(spaceOut(spelled))]) { const f = thunk(); if (fresh(f)) yield f; }
+  if (!plain && FILLER_TEST.test(raw.normalize('NFKC'))) {
+    const spaced = unmask(raw, ' ');
+    for (const thunk of [() => flat(spaced), () => flat(joinSpelled(spaced)), () => flat(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
+  }
+  const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
 }
 
 // Patrones sobre texto sin acentos, en minúsculas.
@@ -107,7 +119,18 @@ function matchForm(normalized) {
   return { level: null, lang: null };
 }
 // ES-304: el nivel más alto que salga de CUALQUIER forma normalizada (alto antes que medio; la primera forma es la de siempre).
+const { createHash } = require('crypto');
+const MEMO_MAX = 1000; const memo = new Map();
 function detectRisk(text) {
+  const raw = String(text);
+  const key = raw.length > 64 ? createHash('sha256').update(raw).digest('hex') : raw; // textos cortos: la clave es corta; largos: huella (no se retiene el texto)
+  const cached = memo.get(key); if (cached) return { level: cached.level, lang: cached.lang };
+  const result = evaluate(raw);
+  if (memo.size >= MEMO_MAX) memo.delete(memo.keys().next().value); // FIFO acotada
+  memo.set(key, { level: result.level, lang: result.lang });
+  return result;
+}
+function evaluate(text) {
   let best = { level: null, lang: null };
   for (const form of riskForms(text)) {
     const hit = matchForm(form);
@@ -172,4 +195,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { _steps: { legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
