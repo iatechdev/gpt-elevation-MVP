@@ -1,0 +1,43 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+✅ Asociaciones configuradas.
+ℹ️ DB_SYNC_DISABLED=true: no se llama a sync(); el esquema lo gestionan las migraciones.
+{"id":"T0 la migración real deja el índice lower(email)","info":"true"}
+{"id":"R6 unicode y espacios raros (estado, código, cuentas creadas)","info":"tab final: 400 invalid_email +0 | salto final: 400 invalid_email +0 | tab inicial: 400 invalid_email +0 | espacio no separable: 400 invalid_email +0 | espacio ancho U+3000: 400 invalid_email +0 | Kelvin K: 400 El correo ya está registrado +0 | fullwidth: 201  +1 | İ: 201  +1 | ß→SS: 400 El correo ya está registrado +0"}
+{"id":"C1 registro: guarda normalizado; mayúsculas, mixto y espacios del correo existente = misma respuesta que el duplicado exacto y 0 cuentas nuevas; unicode/espacios raros sin 5xx ni duplicado por casing","ok":true,"detail":""}
+{"id":"C2 mediana ms (existente en MAYÚSCULAS vs nuevo)","info":"3.1 vs 3.0"}
+{"id":"C2 sin oráculo nuevo: con aceptación inválida un correo existente (en mayúsculas) y uno nuevo responden igual y en tiempo comparable; con aceptación válida → «ya registrado»","ok":true,"detail":""}
+{"id":"L5 inactiva (correo en mayúsculas con clave buena / exacto / clave mala)","info":"403 403 401"}
+{"id":"L6 cuenta real: estados con casings alternos vs un solo casing","info":"401,401,423,423,423,423 vs 401,401,423,423,423,423"}
+{"id":"L6 inexistente: estados con casings alternos vs un solo casing","info":"401,401,423,423,423,423 vs 401,401,423,423,423,423"}
+{"id":"L7 duplicados antiguos [Dup/clave1, dup/clave2, DUP/clave1, DUP/clave2]","info":"200,200,200,401"}
+{"id":"C3 login: otro casing y espacios entran a la misma cuenta; contraseña errónea = inexistente; cuenta antigua con mayúsculas entra; inactiva sin cambios; bloqueo cuenta igual con casings alternos (real e inexistente); duplicados antiguos deterministas","ok":true,"detail":""}
+{"id":"C4 tiempo de respuesta mediana ms (existe vs no existe)","info":"7.5 vs 9.0"}
+{"id":"C4 recuperación: otro casing/espacios encuentra la cuenta; respuesta y tiempo iguales exista o no el correo; cuenta antigua con mayúsculas recibe enlace; solo a la cuenta correcta","ok":true,"detail":""}
+Invitación creada sin correo: sin proveedor configurado (ES-12) o fallo de envío.
+{"id":"C5 invitación PREEXISTENTE con correo en mayúsculas (plantada en BD; la ruta de creación ya minusculiza)","info":"201 cuenta guardada como: MAYÚSCULAS (no normaliza al aceptar)"}
+{"id":"C5 invitaciones: invitar a correo existente en otro casing = 409; guarda normalizado; aceptar tras un registro en otro casing no duplica; tras aceptar el correo cuenta como registrado","ok":true,"detail":""}
+{"id":"C6 SIN índice lower (entornos con duplicados): ×40 con 4 casings → cuentas","info":"1, 5xx 0, 201: 1"}
+{"id":"C6 distribución","info":"{\"201 Usuario creado exitosamente. ¡Bienvenido a Elevation!\":1,\"400 El correo ya está registrado.\":39}"}
+{"id":"C6 carrera ×40 del mismo correo en 4 casings con el índice: 1 cuenta, 1×201, resto «ya registrado», 0 5xx; 12 correos distintos no se afectan (la variante SIN índice se reporta aparte)","ok":true,"detail":""}
+{"id":"M1 índice","info":"CREATE UNIQUE INDEX users_email_lower_unique ON public.\"Users\" USING btree (lower(btrim((email)::text)))"}
+{"id":"M2 aviso","info":"ES-306: hay 1 grupo(s) de cuentas con el mismo correo ignorando mayúsculas; NO se crea el índice único users_email_lower_unique. Ids por grupo: [92,93,94]. Resolverlos (fusión: decisión de Mauricio/Alejo) y volver a correr la migración."}
+{"id":"M2 informe (salida con credenciales enmascaradas)","info":"Hay duplicados. NO se borró ni fusionó nada; decide qué cuenta conservar (ids abajo) antes de migrar.\n- 3 cuentas con el mismo correo: ids=92,93,94\n"}
+{"id":"M2b el informe agrupa por lower(btrim(email)) pero el índice es sobre lower(email) a secas","info":"conservador: puede rechazar crear el índice por duplicados que el índice no vería"}
+{"id":"M6c índice final","info":"CREATE UNIQUE INDEX users_email_lower_unique ON public.\"Users\" USING btree (lower(btrim((email)::text)))"}
+{"id":"M7 base con el índice VIEJO (lower(email)) tras correr la migración nueva","info":"CREATE UNIQUE INDEX users_email_lower_unique ON public.\"Users\" USING btree (lower((email)::text)) (CONSERVA el índice viejo; solo bases que aplicaron 7b5395af)"}
+{"id":"C7 migración: con duplicados reporta ids sin correos y NO crea el índice, 0 escrituras (trigger), filas idénticas (hash), informe de solo lectura; resuelto, crea el índice; up ×2 idempotente; down sin permiso rechazado; el índice frena el casing distinto","ok":true,"detail":""}
+{"id":"S4 filas antes/después de duplicado + recuperación","info":"mismo hash: true (la recuperación no toca Users)"}
+{"id":"C8 seguridad: 17 correos hostiles × registro/login/recuperación sin 5xx ni fugas; comodines % y _ no entran por LIKE; el helper no crea ni modifica Users","ok":true,"detail":""}
+{"id":"C9 exportación","info":"201 trae el correo normalizado: true"}
+{"id":"C9 registrar de nuevo el correo purgado (en mayúsculas)","info":"201 Usuario creado exitosamente. ¡Bienvenido a Elevation!"}
+{"id":"C9 ES-23: el correo normalizado se exporta solo a su dueño; la purga no deja el correo (en ningún casing) en ninguna tabla ni en el recibo","ok":true,"detail":""}
+{"id":"C12 cuentas antiguas con espacios laterales","info":"espacios y minúsculas: login 200,200,200,200 | espacios y MAYÚSCULAS: login 200,200,200,200 | solo espacio final: login 200,200,200,200 | solo espacio inicial: login 200,200,200,200"}
+{"id":"C12 cuenta ANTIGUA con espacios laterales en la base (4 formas): entra con el correo limpio, en mayúsculas y con espacios; la recuperación la encuentra; registrar su correo es «ya registrado» sin crear cuenta","ok":true,"detail":""}
+Error en register.
+{"id":"C13 un fallo real de la base en el registro sigue siendo 500 genérico, sin SQL ni correo (el manejo del único no es demasiado ancho)","ok":true,"detail":""}
+{"id":"F3 búsqueda por lower(email) con 10000 filas","info":"usa índice lower: true; 0.06 ms"}
+{"id":"F3b consulta exacta que no encuentra (1.ª de findUserByEmail) ms","info":"0.03"}
+{"id":"F2b login fallido: inexistente (2 consultas + señuelo) vs existente en otro casing (2 consultas), mediana ms","info":"395.9 vs 413.0 (incluye 200 ms de pausa)"}
+{"id":"C11 rendimiento","info":"registro p95 249 ms; login exacto p95 201 (mediana 188), otro casing p95 244 (mediana 176); 40 simultáneos 8799 ms"}
+{"id":"C11 rendimiento (umbrales propuestos aprobados): registro p95 < 800 ms; login p95 < 600 ms; búsqueda por lower(email) con 10.000 filas < 5 ms con el índice; 40 simultáneos sin errores","ok":true,"detail":""}
+RESUMEN pr: 12/12 

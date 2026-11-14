@@ -1,0 +1,26 @@
+base | es-306 PR: # pass 12 # fail 0  | mi guion: RESUMEN m: 10/11 C11 
+Z1 | es-306 del PR: fail 3 | mi guion: FATAL error: could not create unique index "users_email_lower_unique" 
+Z2 | es-306 del PR: fail 6 | mi guion: FATAL error: index "users_email_lower_unique" does not exist 
+Z3 | es-306 del PR: fail 4 | mi guion: RESUMEN m: 7/11 C3,C9,C12,C11 
+Z4 | es-306 del PR: fail 4 | mi guion: RESUMEN m: 9/11 C4,C12 
+Z5 | es-306 del PR: fail 6 | mi guion: RESUMEN m: 6/11 C3,C4,C9,C12,C11 
+Z6 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 11/11  
+Z7 | es-306 del PR: fail 8 | mi guion: FATAL error: could not create unique index "users_email_lower_unique" 
+Z8 | es-306 del PR: fail 2 | mi guion: FATAL Error 
+Z9 | es-306 del PR: fail 2 | mi guion: FATAL Error 
+Z10 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 10/11 C7 
+Z11 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 10/11 C7 
+Z12 | es-306 del PR: fail 2 | mi guion: FATAL TypeError: Cannot read properties of undefined (reading 'indexdef') 
+Z13 | es-306 del PR: fail 7 | mi guion: RESUMEN m: 4/11 C1,C3,C4,C6,C8,C9,C11 
+Z14 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 9/11 C8,C12 
+Z15 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 10/11 C3 
+Z16 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 11/11  
+Z17 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 10/11 C3 
+Z18 | es-306 del PR: fail 2 | mi guion: FATAL Error 
+Z19 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 10/11 C7 
+Z20 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 11/11  
+Z21 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 10/11 C12 
+Z22 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 11/11  
+Z23 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 11/11  
+Z24 | es-306 del PR: fail 3 | mi guion: FATAL error: could not create unique index "users_email_lower_unique" 
+FIN

@@ -1,0 +1,9 @@
+RESUMEN pr: 12/12 
+  (permitida, drift-allowed.json) solo en migraciones: TherapistPersonOrdinals_personId_fkey
+  (permitida, drift-allowed.json) solo en migraciones: TherapistPersonOrdinals_therapistId_fkey
+SIN DERIVA: las migraciones coinciden con sync, también tras deshacer y reaplicar.
+base | es-306 PR: # pass 12 # fail 0  | mi guion: RESUMEN m: 12/12  
+Z16 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 11/12 C13 
+Z22 | es-306 del PR: fail 2 | mi guion: RESUMEN m: 11/12 C5 
+Z23 | es-306 del PR: fail 0 | mi guion: RESUMEN m: 12/12  
+FIN
