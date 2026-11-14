@@ -1,0 +1,5 @@
+npm test: # tests 695 # pass 694 # fail 0 # skipped 1 
+suites *:pg del CI: 68, no verdes: 0
+db:drift:  Falta DATABASE_URL. 
+audit:  To address all issues (including breaking changes), run:   npm audit fix --force 
+FIN

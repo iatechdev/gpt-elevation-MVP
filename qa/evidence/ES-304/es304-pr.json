@@ -1,0 +1,140 @@
+[
+ {
+  "id": "F1 tabla por categoría (n, PR alto, main alto, PR cualquiera)",
+  "info": "etiquetas Unicode (U+E0041) intercaladas entre letras | 10 | 10 | 0 | 10\nfrase codificada en caracteres de etiqueta | 10 | 10 | 0 | 10\nhomoglifos cirílicos (o, a, e, c, p, x, i) | 10 | 10 | 0 | 10\nancho completo (fullwidth) | 10 | 10 | 0 | 10\nletras separadas por espacios | 10 | 10 | 0 | 10\nletras separadas por puntos | 10 | 10 | 0 | 10\nleet (4, 3, 1, 0) | 10 | 10 | 0 | 10\nletras alargadas | 10 | 10 | 0 | 10\nsin espacios | 8 | 0 | 0 | 0\nrelleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0) | 10 | 10 | 0 | 10\nrelleno U+2800 (braille en blanco) | 10 | 10 | 0 | 10\nU+180E / U+061C | 10 | 10 | 0 | 10\nletras matemáticas en negrita (U+1D400…) | 10 | 10 | 0 | 10\ncomas/guiones entre palabras | 7 | 7 | 0 | 7\nfaltas de ortografía simples (control) | 4 | 0 | 0 | 0\nSEMÁNTICO · indirecto ES | 8 | 0 | 0 | 0\nSEMÁNTICO · indirecto EN | 5 | 0 | 0 | 1\nSEMÁNTICO · otro idioma | 6 | 0 | 0 | 0\nSEMÁNTICO · emoji | 2 | 0 | 0 | 1\nSEMÁNTICO · jerga | 3 | 0 | 0 | 0"
+ },
+ {
+  "id": "F1a categorías prometidas: TODAS las variantes en nivel alto",
+  "ok": true,
+  "detail": "127/127 en 13 categorías"
+ },
+ {
+  "id": "F1b NO prometidas (medido, no exigido)",
+  "info": "sin espacios: 0/8; faltas de ortografía simples (control): 0/4; SEMÁNTICO · indirecto ES: 0/8; SEMÁNTICO · indirecto EN: 1/5; SEMÁNTICO · otro idioma: 0/6; SEMÁNTICO · emoji: 1/2; SEMÁNTICO · jerga: 0/3"
+ },
+ {
+  "id": "F3 corpus natural (docs + textos de la interfaz)",
+  "info": "21262 frases"
+ },
+ {
+  "id": "F2/F3 transiciones main→PR sobre texto natural",
+  "info": "null→null: 21252; medium→medium: 5; high→high: 5"
+ },
+ {
+  "id": "F2a lo que main ya detectaba conserva nivel (natural)",
+  "ok": true,
+  "detail": "21262 frases revisadas"
+ },
+ {
+  "id": "F3a falsos positivos NUEVOS en texto natural = 0",
+  "ok": true,
+  "detail": "0 de 21262 (0.00 %)"
+ },
+ {
+  "id": "F3 generadas",
+  "info": "850 frases cortas + 400 párrafos de 3–8 frases naturales"
+ },
+ {
+  "id": "F3b falsos positivos NUEVOS en frases generadas ≤ 0,5 % (propuesto)",
+  "ok": true,
+  "detail": "cortas: 0/850; párrafos: 0/400"
+ },
+ {
+  "id": "F2b compatibilidad en frases generadas",
+  "ok": true,
+  "detail": "sin bajadas"
+ },
+ {
+  "id": "F3c sondas de frontera de oración (main→PR)",
+  "info": "high→high  No quiero vivir en otra ciudad\nnull→high  No quiero, vivir en una ciudad tan cara\nnull→medium  Ya no. Puedo hacerlo mañana\nnull→medium  Si ya no, puedo ayudarte\nnull→high  Hoy no vale la pena. Vivir lejos del trabajo me cuesta\nhigh→high  Quiero morir de ganas de viajar\nhigh→high  Pienso en matarme de risa\nhigh→high  Voy a matarme estudiando\nnull→null  I do not want to. Live in Miami is expensive\nnull→high  I want to. Die hard is my favorite movie\nhigh→high  Quisiera. Suicida es una banda\nmedium→medium  Ya no puedo con tanto correo.\nmedium→medium  no aguanto mas el tráfico\nhigh→high  ganas de morir de risa"
+ },
+ {
+  "id": "F3c frases benignas que SOLO el PR marca por unir oraciones",
+  "ok": false,
+  "detail": "high: No quiero, vivir en una ciudad tan cara | medium: Ya no. Puedo hacerlo mañana | medium: Si ya no, puedo ayudarte | high: Hoy no vale la pena. Vivir lejos del trabajo me cuesta | high: I want to. Die hard is my favorite movie"
+ },
+ {
+  "id": "F2c lo que main detecta en alto (variaciones de 14 frases) conserva nivel e idioma",
+  "ok": true,
+  "detail": "126 casos, 0 cambios "
+ },
+ {
+  "id": "F4a homoglifos medidos (un solo tipo de letra sustituido en 14 frases)",
+  "info": "26/67 puntos de código recuperados por completo. NO recuperados: e U+04BD (1/13), e U+212E (1/13), e U+1D07 (1/13), i U+0131 (0/11), i U+0269 (0/11), i U+04CF (0/11), m U+1D0D (0/6), o U+0585 (2/9), o U+1D0F (2/9), o U+3007 (2/9), q U+051B (0/3), r U+0433 (0/7), r U+0280 (0/7), r U+1D26 (0/7), u U+057D (0/5), u U+1D1C (0/5), a U+0251 (0/8), a U+237A (0/8), a U+1D00 (0/8), t U+1D1B (0/5), v U+1D20 (1/5), y U+028F (1/3), y U+03B3 (1/3), c U+03F2 (0/3), c U+1D04 (0/3), d U+0501 (0/9), d U+1D05 (0/9), s U+A731 (0/5), s U+0282 (0/5), n U+0578 (0/5), n U+0274 (0/5), n U+1D0E (0/5), l U+04CF (0/5), l U+01C0 (0/5), k U+03BA (0/1), k U+1D0B (0/1), f U+0493 (0/3), w U+051D (0/3), w U+0461 (0/3), w U+1D21 (0/3), h U+0570 (0/1)"
+ },
+ {
+  "id": "F4b invisibles intercalados entre cada letra (3 frases)",
+  "info": "19/28 recuperados. NO recuperados: U+F0000 uso privado plano 15 (3/3 fallan); U+10FFFD uso privado plano 16 (3/3 fallan); U+0378 sin asignar (3/3 fallan); U+FFFE no-carácter (3/3 fallan); U+0001 control (3/3 fallan); U+0085 NEL (3/3 fallan); U+2028 separador de línea (3/3 fallan); U+0000 NUL (3/3 fallan); U+007F DEL (3/3 fallan)"
+ },
+ {
+  "id": "F4c separadores entre letras",
+  "info": "9/27 separadores recuperados. NO recuperados: tabulación (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); salto de línea (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); punto medio U+00B7 (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); barra / (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); barra vertical | (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); apóstrofo (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); más + (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); igual = (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); tilde ~ (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); viñeta U+2022 (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); dos puntos (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); punto y coma (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); numeral # (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); raya U+2014 (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); guion U+2010 (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); dos espacios (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); espacio+punto (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO); barra invertida (palabra NO; frase con doble separador NO, con 2 espacios NO, con salto de línea NO)"
+ },
+ {
+  "id": "F4d combinaciones",
+  "info": "high  \"S​U​I​C​I​D​I​O\"\nhigh  \"ｑｕ1ｅｒо mоr1r\"\nhigh  \"Q.U.I.E.R.O. M.O.R.I.R\"\nhigh  \"s u 1 c 1 d 1 0\"\nhigh  \"quieroㅤmorir\"\nhigh  \"QUІЕRО MОRІR\"\nhigh  \"K1LL MYS3LF\"\nhigh  \"k i l l   m y s e l f\"\nhigh  \"k​i​l​l m​y​s​e​l​f\"\nhigh  \"ｉ ｗａｎｔ ｔｏ ｄｉｅ\"\nhigh  \"I w4nt t0 d13\"\nhigh  \"quieeeroo mooorir\"\nhigh  \"q́úíéŕó ḿóŕíŕ\""
+ },
+ {
+  "id": "F6a entradas hostiles: 0 excepciones y resultado válido",
+  "ok": true,
+  "detail": "32 entradas; sin fallos"
+ },
+ {
+  "id": "F6b ninguna entrada hostil supera 250 ms (umbral propuesto, hasta 100.000 caracteres)",
+  "ok": false,
+  "detail": "a a a 100k 281 ms; etiquetas 100k 801 ms; run letras+dígitos 422 ms; espacios dobles 483 ms; puntos 272 ms; multiplicidad de formas 1176 ms"
+ },
+ {
+  "id": "F6c tiempos (ms) de las entradas de 100.000 caracteres",
+  "info": "{\"cadena larga 100k\":76.8,\"a a a 100k\":158.7,\"a.a.a 100k\":424.3,\"a- a- 100k\":309.4,\"etiquetas 100k\":257.7,\"relleno 100k\":89.7,\"combinantes 100k\":92.2,\"leet 100k\":318.3,\"mezcla de separadores\":102.2,\"run + final raro\":338.8,\"run letras+dígitos\":1258.2,\"espacios dobles\":532.7,\"frase+ruido\":287,\"ruido+frase\":350.3,\"duplicadas\":65.4,\"puntos\":451.1,\"mathematical 100k\":73.8,\"cirílico 100k\":140.1,\"multiplicidad de formas\":1569.3}"
+ },
+ {
+  "id": "F6d crecimiento del tiempo con el tamaño (lineal ⇒ cada duplicación ×2; cuadrático ⇒ ×4)",
+  "info": "a␠a␠: 10k=21.076 | 20k=24.049 | 40k=67.21 | 80k=129.918 | 160k=419.707 ms; cada duplicación ×1.1, ×2.8, ×1.9, ×3.2\na.a.: 10k=10.174 | 20k=24.67 | 40k=41.808 | 80k=79.213 | 160k=166.202 ms; cada duplicación ×2.4, ×1.7, ×1.9, ×2.1\na␠a␠b: 10k=21.197 | 20k=36.329 | 40k=94.12 | 80k=237.597 | 160k=1188.756 ms; cada duplicación ×1.7, ×2.6, ×2.5, ×5.0\nletra+dígito: 10k=32.326 | 20k=79.359 | 40k=97.625 | 80k=471.858 | 160k=814.544 ms; cada duplicación ×2.5, ×1.2, ×4.8, ×1.7\nsep mixto: 10k=9.455 | 20k=17.323 | 40k=61.864 | 80k=87.814 | 160k=171.69 ms; cada duplicación ×1.8, ×3.6, ×1.4, ×2.0\ndoble espacio: 10k=16.677 | 20k=29.043 | 40k=95.404 | 80k=227.153 | 160k=635.716 ms; cada duplicación ×1.7, ×3.3, ×2.4, ×2.8\nlookbehind: 10k=14.496 | 20k=26.416 | 40k=56.968 | 80k=266.385 | 160k=603.681 ms; cada duplicación ×1.8, ×2.2, ×4.7, ×2.3\npalabras: 10k=9.199 | 20k=15.738 | 40k=48.55 | 80k=112.294 | 160k=349.837 ms; cada duplicación ×1.7, ×3.1, ×2.3, ×3.1\nduplicadas: 10k=6.593 | 20k=5.398 | 40k=13.05 | 80k=34.846 | 160k=62.408 ms; cada duplicación ×0.8, ×2.4, ×2.7, ×1.8"
+ },
+ {
+  "id": "F7a tiempo por llamada (ms) texto natural",
+  "info": "100 car.: PR p50 0.219 p95 0.488 máx 1.653 | main p50 0.02 p95 0.026\n2000 car.: PR p50 3.27 p95 4.529 máx 12.371 | main p50 0.332 p95 0.457\n4000 car.: PR p50 5.857 p95 7.421 máx 9.684 | main p50 0.593 p95 0.69\n20000 car.: PR p50 26.549 p95 33.419 máx 33.419 | main p50 2.601 p95 2.865"
+ },
+ {
+  "id": "F7b p95 < 5 ms a 2.000 caracteres (umbral aprobado)",
+  "ok": true,
+  "detail": "{\"p50\":3.27,\"p95\":4.529,\"max\":12.371}"
+ },
+ {
+  "id": "F7c peor caso adversarial al tamaño MÁXIMO real del chat (4.000 car.)",
+  "info": "espaciado 4000: p50 4.76 p95 9.323 máx 9.323\na.a. 4000: p50 2.659 p95 3.439 máx 3.439\nmixto 4000: p50 2.917 p95 5.454 máx 5.454\ninvisibles 4000: p50 2.02 p95 2.579 máx 2.579\netiquetas 4000: p50 3.071 p95 3.699 máx 3.699\nleet 4000: p50 2.944 p95 4.805 máx 4.805"
+ },
+ {
+  "id": "F7d peor caso adversarial a 20.000 caracteres < 250 ms (umbral aprobado)",
+  "ok": true,
+  "detail": "máx 55.799 ms"
+ },
+ {
+  "id": "F7e 50 mensajes de 2.000 car. (ES-298 reevalúa el historial) < 100 ms",
+  "ok": false,
+  "detail": "{\"p50\":129.878,\"p95\":171.237,\"max\":171.237}"
+ },
+ {
+  "id": "F7f historial REAL del chat (21 mensajes de 4.000 car.)",
+  "info": "{\"p50\":124.788,\"p95\":164.682,\"max\":164.682} ms"
+ },
+ {
+  "id": "F7g historial adversarial (21 × 4.000 car. con separadores mezclados)",
+  "info": "{\"p50\":64.378,\"p95\":119.534,\"max\":119.534} ms"
+ },
+ {
+  "id": "F11 exportaciones de safety.js",
+  "info": "_steps, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry | _steps: legacy, unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms"
+ },
+ {
+  "id": "F11b la copia del corpus en el PR no contiene correos ni teléfonos",
+  "ok": true,
+  "detail": "22519 bytes"
+ },
+ {
+  "id": "F11c la copia del corpus en el PR es idéntica a la mía (163)",
+  "ok": true,
+  "detail": ""
+ }
+]

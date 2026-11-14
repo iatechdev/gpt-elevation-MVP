@@ -1,0 +1,50 @@
+base | PR es-304: fail 0 | mi batería: FALLAN 0
+Z1 | PR es-304: fail 1 | mi batería: FALLAN 25: corpus:relleno invisible FUER | corpus:relleno U+2800 (braill | relleno U+3164 | relleno U+2800 | relleno U+115f | relleno U+1160 | relleno
+Z2 | PR es-304: fail 4 | mi batería: FALLAN 13: corpus:etiquetas Unicode (U+E | relleno U+e0041 | relleno U+fe0f | relleno U+e000
+Z3 | PR es-304: fail 4 | mi batería: FALLAN 23: corpus:ancho completo (fullwi | corpus:letras matemáticas en  | combo:"ｑｕ1ｅｒо mоr1r" | combo:"ｉ ｗａｎｔ ｔｏ ｄｉｅ"
+Z4 | PR es-304: fail 4 | mi batería: FALLAN 33: corpus:homoglifos cirílicos ( | combo:"ｑｕ1ｅｒо mоr1r" | combo:"QUІЕRО MОRІR" | homoglifo cirílica о | homoglifo cirílica 
+Z5 | PR es-304: fail 2 | mi batería: FALLAN 12: corpus:frase codificada en ca | etiquetas con espacio | etiquetas en inglés
+Z6 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z7 | PR es-304: fail 1 | mi batería: FALLAN 2: corpus:letras separadas por e | corpus:letras separadas por p
+Z8 | PR es-304: fail 1 | mi batería: FALLAN 4: corpus:leet (4, 3, 1, 0) | combo:"K1LL MYS3LF" | alto gana al medio (EN)
+Z9 | PR es-304: fail 2 | mi batería: FALLAN 3: corpus:letras alargadas | combo:"kkiillll mmyyssee
+Z10 | PR es-304: fail 2 | mi batería: FALLAN 1: combo:"quieeeroo mooorir
+Z11 | PR es-304: fail 4 | mi batería: FALLAN 10: corpus:comas/guiones entre pa | combo:"Q.U.I.E.R.O. M.O. | combo:"quiero,morir" | combo:"no-quiero-vivir"
+Z12 | PR es-304: fail 1 | mi batería: FALLAN 12: combo:"quieroㅤmorir" | relleno como espacio U+3164 | relleno como espacio U+2800 | relleno como espacio U+115f | relleno como espacio U+1
+Z13 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z14 | PR es-304: fail 22 | mi batería: FALLAN 188: corpus:etiquetas Unicode (U+E | corpus:frase codificada en ca | corpus:homoglifos cirílicos ( | corpus:ancho completo (fullwi | corpus:le
+Z15 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z16 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z17 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z18 | PR es-304: fail 1 | mi batería: FALLAN 11: corpus:relleno U+2800 (braill | relleno U+2800
+Z19 | PR es-304: fail 0 | mi batería: FALLAN 1: relleno U+115f
+Z20 | PR es-304: fail 1 | mi batería: FALLAN 13: corpus:relleno invisible FUER | relleno U+3164 | relleno U+1160 | relleno U+ffa0
+Z21 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z22 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z23 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z24 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z25 | PR es-304: fail 2 | mi batería: FALLAN 10: corpus:frase codificada en ca | etiquetas con espacio | etiquetas en inglés
+Z26 | PR es-304: fail 2 | mi batería: FALLAN 12: corpus:frase codificada en ca | etiquetas con espacio | etiquetas en inglés
+Z27 | PR es-304: fail 0 | mi batería: FALLAN 1: combo:"Q.U.I.E.R.O. M.O.
+Z28 | PR es-304: fail 3 | mi batería: FALLAN 10: corpus:letras separadas por e | corpus:letras separadas por p
+Z29 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z30 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z31 | PR es-304: fail 3 | mi batería: FALLAN 8: corpus:homoglifos cirílicos ( | combo:"ｑｕ1ｅｒо mоr1r" | combo:"QUІЕRО MОRІR" | homoglifo cirílica о | mayúscula cirílica 
+Z32 | PR es-304: fail 1 | mi batería: FALLAN 11: corpus:homoglifos cirílicos ( | combo:"QUІЕRО MОRІR" | homoglifo cirílica і | mayúscula cirílica (se baja antes de plegar)
+Z33 | PR es-304: fail 1 | mi batería: FALLAN 1: homoglifo griega ο
+Z34 | PR es-304: fail 1 | mi batería: FALLAN 11: corpus:homoglifos cirílicos ( | combo:"QUІЕRО MОRІR" | homoglifo cirílica е | mayúscula cirílica (se baja antes de plegar)
+Z35 | PR es-304: fail 2 | mi batería: FALLAN 1: combo:"quieeeroo mooorir
+Z36 | PR es-304: fail 4 | mi batería: FALLAN 10: corpus:comas/guiones entre pa | combo:"Q.U.I.E.R.O. M.O. | combo:"quiero,morir" | combo:"no-quiero-vivir"
+Z37 | PR es-304: fail 3 | mi batería: FALLAN 11: corpus:etiquetas Unicode (U+E | relleno U+e0041
+Z38 | PR es-304: fail 0 | mi batería: FALLAN 1: relleno U+fe0f
+Z39 | PR es-304: fail 0 | mi batería: FALLAN 1: relleno U+e000
+Z40 | PR es-304: fail 0 | mi batería: FALLAN 3: combo:"QUІЕRО MОRІR" | mayúscula cirílica (se baja antes de plegar) | mayúscula griega
+Z41 | PR es-304: fail 2 | mi batería: FALLAN 5: medio normalizado | medio ancho completo | legado medio:quiero hacer | legado medio:ya no aguant | legado medio:I can't go o
+Z42 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z43 | PR es-304: fail 2 | mi batería: FALLAN 3: corpus:letras alargadas | combo:"kkiillll mmyyssee
+Z44 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z45 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z46 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z47 | PR es-304: fail 0 | mi batería: FALLAN 0
+Z48 | PR es-304: fail 2 | mi batería: FALLAN 5: corpus:letras separadas por p
+FIN
