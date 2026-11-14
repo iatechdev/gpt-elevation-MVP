@@ -6,6 +6,9 @@
 //  - Sobre-activa a propósito: no entiende negaciones ni modismos («quiero morir de risa», «no quiero morir»).
 //  - No detecta lo que no reconoce: ironía, metáforas, otros idiomas, faltas de ortografía, mensajes muy indirectos.
 //  - Solo analiza el mensaje actual, no el historial. Lista de palabras en BORRADOR: requiere revisión del especialista.
+//  - ES-304: ANTES de evaluar se normaliza el texto para no evadir el detector con trucos triviales de escritura (caracteres de etiqueta, ancho completo, homoglifos, rellenos invisibles,
+//    letras separadas, leet, letras alargadas). Es SOLO para evaluar: el texto que se guarda y se muestra no cambia. NO cubre lo semántico (indirectas, otros idiomas, emojis, jerga),
+//    ni «sin espacios», ni faltas de ortografía: eso es del especialista (ES-44/46). Cero casos detectados sigue sin ser garantía.
 //  - El nivel NUNCA se guarda, no se registra en logs y no sale de esta respuesta: no hay alertas ni transferencia a terceros.
 
 const registryDefault = require('../config/supportResources.json');
@@ -13,6 +16,46 @@ const registryDefault = require('../config/supportResources.json');
 const INVISIBLE = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g;
 const flat = (text) => String(text).normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(INVISIBLE, '').replace(/[\u2018\u2019\u02BC]/g, "'").toLowerCase().replace(/\s+/g, ' ');
+
+// ── ES-304 · Normalización para EVALUAR (no cambia lo que se guarda ni se muestra) ─────────────────────────────────────────────────────────────────────────────────────────
+// Rellenos que se ven en blanco y no son espacios (Hangul, braille, mongol, árabe, joiner gráfico) y marcas/formato Unicode que se intercalan entre letras.
+const FILLERS = /[\u3164\u2800\u115F\u1160\uFFA0\u180E\u061C\u034F]/g;
+const FILLER_TEST = new RegExp(FILLERS.source); // sin la bandera g: `.test` con /g recuerda la posición
+const FORMAT_AND_MARKS = /[\p{Cf}\p{Mn}\p{Me}\uE000-\uF8FF]/gu; // \p{Cf} incluye los caracteres de etiqueta U+E0000–E007F y el ancho cero
+// Homoglifos latino/cirílico/griego de uso común (sobre minúsculas): «quiero mоrir» con «о» cirílica.
+const HOMOGLYPHS = {
+  '\u0430': 'a', '\u0435': 'e', '\u043e': 'o', '\u0441': 'c', '\u0440': 'p', '\u0445': 'x', '\u0456': 'i', '\u0455': 's', '\u0458': 'j', '\u04bb': 'h', '\u0261': 'g',
+  '\u03bf': 'o', '\u03b1': 'a', '\u03b5': 'e', '\u03b9': 'i', '\u03c1': 'p', '\u03c5': 'u', '\u03bd': 'v', '\u03c4': 't', '\u043a': 'k', '\u043c': 'm', '\u043d': 'h', '\u0442': 't', '\u0443': 'y', '\u0432': 'b',
+};
+const LEET = { 4: 'a', 3: 'e', 1: 'i', 0: 'o', 5: 's', 7: 't', '@': 'a', $: 's' };
+const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
+
+// Paso 1: NFKC (ancho completo, letras matemáticas), minúsculas, rellenos y marcas fuera, homoglifos a latín.
+// `filler`: los rellenos que se ven en blanco se quitan (intercalados entre letras) o se toman por ESPACIO (separan palabras): se prueban las dos lecturas.
+const unmask = (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(/[^\u0000-\u007F\u00A0-\u024F]/g, (c) => HOMOGLYPHS[c] || c);
+// Paso 2: una frase escrita SOLO con caracteres de etiqueta (U+E0020–E007E) se decodifica a ASCII.
+const decodeTags = (text) => Array.from(String(text).matchAll(TAG_BLOCK), (m) => String.fromCharCode(m[0].codePointAt(0) - 0xE0000)).join('');
+// Paso 3: «s u i c i d i o» / «s.u.i.c.i.d.i.o» → «suicidio» (cuatro o más letras sueltas separadas).
+const joinSpelled = (text) => text.replace(/(?<![a-z0-9@$])(?:[a-z\u00e0-\u00ff0-9@$][ ._\-*,]){3,}[a-z\u00e0-\u00ff0-9@$](?![a-z0-9@$])/gi, (m) => m.replace(/[ ._\-*,]/g, ''));
+// Paso 3b: letras sueltas con las PALABRAS separadas por dos o más espacios o por «. .»: «n o   q u i e r o» → «no quiero».
+const SPELLED_RUN = /(?<![a-z0-9@$])(?:[a-z\u00e0-\u00ff0-9@$'][ ._\-*,]){3,}[a-z\u00e0-\u00ff0-9@$'](?![a-z0-9@$])/i;
+const SPELLED_WORD = /^(?:[a-z\u00e0-\u00ff0-9@$'](?:[ ._\-*,]|$))+$/i;
+const spellWords = (text) => (!SPELLED_RUN.test(text) ? text : text.split(/\s{2,}|[._\-*,] [._\-*,]/).map((word) => (word.trim().length > 1 && SPELLED_WORD.test(word.trim()) ? word.replace(/[ ._\-*,]/g, '') : word)).join(' '));
+// Paso 4: leet («qu13r0 m0r1r») y Paso 5: letras alargadas («quieroooo», «suiciiidio»); Paso 6: signos entre palabras («quiero,morir», «quiero-morir»).
+const unleet = (text) => text.replace(/[43105@$7]/g, (c) => LEET[c] || c);
+const squeeze = (text) => text.replace(/(.)\1{2,}/g, '$1').replace(/(.)\1/g, '$1');
+const halve = (text) => text.replace(/(.)\1/g, '$1'); // letras DUPLICADAS («kkiillll» → «kill»): se prueba aparte porque «llll» no es «l»
+const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
+
+// Formas a evaluar: la actual primero (lo que ya se detectaba se sigue detectando igual) y después las normalizadas.
+function riskForms(text) {
+  const raw = String(text);
+  const base = unmask(raw); const spelled = joinSpelled(base); const words = spellWords(base);
+  const forms = [flat(raw), flat(base), flat(spelled), flat(words), flat(unleet(spelled)), flat(halve(spelled)), flat(halve(words)), flat(squeeze(unleet(spelled))), flat(spaceOut(base)), flat(spaceOut(spelled))];
+  if (FILLER_TEST.test(raw.normalize('NFKC'))) { const spaced = unmask(raw, ' '); forms.push(flat(spaced), flat(joinSpelled(spaced)), flat(spaceOut(spaced))); }
+  const decoded = decodeTags(raw); if (decoded) forms.push(flat(unmask(decoded)));
+  return [...new Set(forms)];
+}
 
 // Patrones sobre texto sin acentos, en minúsculas.
 const HIGH = [
@@ -56,13 +99,22 @@ const MEDIUM = [
 ];
 
 // -> { level: 'high' | 'medium' | null, lang: 'es' | 'en' | null } (el idioma del patrón que coincidió; no es el país)
-function detectRisk(text) {
-  const normalized = flat(text);
+function matchForm(normalized) {
   for (const [level, rules] of [['high', HIGH], ['medium', MEDIUM]]) {
     const hit = rules.find((rule) => rule.re.test(normalized));
     if (hit) return { level, lang: hit.lang };
   }
   return { level: null, lang: null };
+}
+// ES-304: el nivel más alto que salga de CUALQUIER forma normalizada (alto antes que medio; la primera forma es la de siempre).
+function detectRisk(text) {
+  let best = { level: null, lang: null };
+  for (const form of riskForms(text)) {
+    const hit = matchForm(form);
+    if (hit.level === 'high') return hit;
+    if (hit.level === 'medium' && best.level !== 'medium') best = hit;
+  }
+  return best;
 }
 
 const normalizeCountry = (value) => (typeof value === 'string' && /^[A-Za-z]{2}$/.test(value) ? value.toUpperCase() : null);
@@ -120,4 +172,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: { legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };

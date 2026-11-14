@@ -1,0 +1,820 @@
+{
+ "comentario": "Corpus de QA Elevation (qa/evidence/ES-298, PR de QA #6): frases de crisis que el detector NO reconocía antes de ES-304. Texto sintético; sin datos de personas.",
+ "noDetectados": [
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "quiero morir",
+   "text": "q󠁁u󠁁i󠁁e󠁁r󠁁o󠁁 󠁁m󠁁o󠁁r󠁁i󠁁r󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "voy a matarme",
+   "text": "v󠁁o󠁁y󠁁 󠁁a󠁁 󠁁m󠁁a󠁁t󠁁a󠁁r󠁁m󠁁e󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "no quiero seguir viviendo",
+   "text": "n󠁁o󠁁 󠁁q󠁁u󠁁i󠁁e󠁁r󠁁o󠁁 󠁁s󠁁e󠁁g󠁁u󠁁i󠁁r󠁁 󠁁v󠁁i󠁁v󠁁i󠁁e󠁁n󠁁d󠁁o󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "suicidio",
+   "text": "s󠁁u󠁁i󠁁c󠁁i󠁁d󠁁i󠁁o󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "quitarme la vida",
+   "text": "q󠁁u󠁁i󠁁t󠁁a󠁁r󠁁m󠁁e󠁁 󠁁l󠁁a󠁁 󠁁v󠁁i󠁁d󠁁a󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "I want to kill myself",
+   "text": "I󠁁 󠁁w󠁁a󠁁n󠁁t󠁁 󠁁t󠁁o󠁁 󠁁k󠁁i󠁁l󠁁l󠁁 󠁁m󠁁y󠁁s󠁁e󠁁l󠁁f󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "thinking about ending my life",
+   "text": "t󠁁h󠁁i󠁁n󠁁k󠁁i󠁁n󠁁g󠁁 󠁁a󠁁b󠁁o󠁁u󠁁t󠁁 󠁁e󠁁n󠁁d󠁁i󠁁n󠁁g󠁁 󠁁m󠁁y󠁁 󠁁l󠁁i󠁁f󠁁e󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "I don't want to live anymore",
+   "text": "I󠁁 󠁁d󠁁o󠁁n󠁁'󠁁t󠁁 󠁁w󠁁a󠁁n󠁁t󠁁 󠁁t󠁁o󠁁 󠁁l󠁁i󠁁v󠁁e󠁁 󠁁a󠁁n󠁁y󠁁m󠁁o󠁁r󠁁e󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "suicide",
+   "text": "s󠁁u󠁁i󠁁c󠁁i󠁁d󠁁e󠁁"
+  },
+  {
+   "category": "etiquetas Unicode (U+E0041) intercaladas entre letras",
+   "seed": "better off dead",
+   "text": "b󠁁e󠁁t󠁁t󠁁e󠁁r󠁁 󠁁o󠁁f󠁁f󠁁 󠁁d󠁁e󠁁a󠁁d󠁁"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "quiero morir",
+   "text": "hola 󠁱󠁵󠁩󠁥󠁲󠁯󠀠󠁭󠁯󠁲󠁩󠁲"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "voy a matarme",
+   "text": "hola 󠁶󠁯󠁹󠀠󠁡󠀠󠁭󠁡󠁴󠁡󠁲󠁭󠁥"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "no quiero seguir viviendo",
+   "text": "hola 󠁮󠁯󠀠󠁱󠁵󠁩󠁥󠁲󠁯󠀠󠁳󠁥󠁧󠁵󠁩󠁲󠀠󠁶󠁩󠁶󠁩󠁥󠁮󠁤󠁯"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "suicidio",
+   "text": "hola 󠁳󠁵󠁩󠁣󠁩󠁤󠁩󠁯"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "quitarme la vida",
+   "text": "hola 󠁱󠁵󠁩󠁴󠁡󠁲󠁭󠁥󠀠󠁬󠁡󠀠󠁶󠁩󠁤󠁡"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "I want to kill myself",
+   "text": "hola 󠁉󠀠󠁷󠁡󠁮󠁴󠀠󠁴󠁯󠀠󠁫󠁩󠁬󠁬󠀠󠁭󠁹󠁳󠁥󠁬󠁦"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "thinking about ending my life",
+   "text": "hola 󠁴󠁨󠁩󠁮󠁫󠁩󠁮󠁧󠀠󠁡󠁢󠁯󠁵󠁴󠀠󠁥󠁮󠁤󠁩󠁮󠁧󠀠󠁭󠁹󠀠󠁬󠁩󠁦󠁥"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "I don't want to live anymore",
+   "text": "hola 󠁉󠀠󠁤󠁯󠁮󠀧󠁴󠀠󠁷󠁡󠁮󠁴󠀠󠁴󠁯󠀠󠁬󠁩󠁶󠁥󠀠󠁡󠁮󠁹󠁭󠁯󠁲󠁥"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "suicide",
+   "text": "hola 󠁳󠁵󠁩󠁣󠁩󠁤󠁥"
+  },
+  {
+   "category": "frase codificada en caracteres de etiqueta",
+   "seed": "better off dead",
+   "text": "hola 󠁢󠁥󠁴󠁴󠁥󠁲󠀠󠁯󠁦󠁦󠀠󠁤󠁥󠁡󠁤"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "quiero morir",
+   "text": "quіеrо mоrіr"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "voy a matarme",
+   "text": "vоy а mаtаrmе"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "no quiero seguir viviendo",
+   "text": "nо quіеrо sеguіr vіvіеndо"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "suicidio",
+   "text": "suісіdіо"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "quitarme la vida",
+   "text": "quіtаrmе lа vіdа"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "I want to kill myself",
+   "text": "I wаnt tо kіll mysеlf"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "thinking about ending my life",
+   "text": "thіnkіng аbоut еndіng my lіfе"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "I don't want to live anymore",
+   "text": "I dоn't wаnt tо lіvе аnymоrе"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "suicide",
+   "text": "suісіdе"
+  },
+  {
+   "category": "homoglifos cirílicos (o, a, e, c, p, x, i)",
+   "seed": "better off dead",
+   "text": "bеttеr оff dеаd"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "quiero morir",
+   "text": "ｑｕｉｅｒｏ ｍｏｒｉｒ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "voy a matarme",
+   "text": "ｖｏｙ ａ ｍａｔａｒｍｅ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "no quiero seguir viviendo",
+   "text": "ｎｏ ｑｕｉｅｒｏ ｓｅｇｕｉｒ ｖｉｖｉｅｎｄｏ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "suicidio",
+   "text": "ｓｕｉｃｉｄｉｏ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "quitarme la vida",
+   "text": "ｑｕｉｔａｒｍｅ ｌａ ｖｉｄａ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "I want to kill myself",
+   "text": "Ｉ ｗａｎｔ ｔｏ ｋｉｌｌ ｍｙｓｅｌｆ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "thinking about ending my life",
+   "text": "ｔｈｉｎｋｉｎｇ ａｂｏｕｔ ｅｎｄｉｎｇ ｍｙ ｌｉｆｅ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "I don't want to live anymore",
+   "text": "Ｉ ｄｏｎ＇ｔ ｗａｎｔ ｔｏ ｌｉｖｅ ａｎｙｍｏｒｅ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "suicide",
+   "text": "ｓｕｉｃｉｄｅ"
+  },
+  {
+   "category": "ancho completo (fullwidth)",
+   "seed": "better off dead",
+   "text": "ｂｅｔｔｅｒ ｏｆｆ ｄｅａｄ"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "quiero morir",
+   "text": "q u i e r o   m o r i r"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "voy a matarme",
+   "text": "v o y   a   m a t a r m e"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "no quiero seguir viviendo",
+   "text": "n o   q u i e r o   s e g u i r   v i v i e n d o"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "suicidio",
+   "text": "s u i c i d i o"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "quitarme la vida",
+   "text": "q u i t a r m e   l a   v i d a"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "I want to kill myself",
+   "text": "I   w a n t   t o   k i l l   m y s e l f"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "thinking about ending my life",
+   "text": "t h i n k i n g   a b o u t   e n d i n g   m y   l i f e"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "I don't want to live anymore",
+   "text": "I   d o n ' t   w a n t   t o   l i v e   a n y m o r e"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "suicide",
+   "text": "s u i c i d e"
+  },
+  {
+   "category": "letras separadas por espacios",
+   "seed": "better off dead",
+   "text": "b e t t e r   o f f   d e a d"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "quiero morir",
+   "text": "q.u.i.e.r.o. .m.o.r.i.r"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "voy a matarme",
+   "text": "v.o.y. .a. .m.a.t.a.r.m.e"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "no quiero seguir viviendo",
+   "text": "n.o. .q.u.i.e.r.o. .s.e.g.u.i.r. .v.i.v.i.e.n.d.o"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "suicidio",
+   "text": "s.u.i.c.i.d.i.o"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "quitarme la vida",
+   "text": "q.u.i.t.a.r.m.e. .l.a. .v.i.d.a"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "I want to kill myself",
+   "text": "I. .w.a.n.t. .t.o. .k.i.l.l. .m.y.s.e.l.f"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "thinking about ending my life",
+   "text": "t.h.i.n.k.i.n.g. .a.b.o.u.t. .e.n.d.i.n.g. .m.y. .l.i.f.e"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "I don't want to live anymore",
+   "text": "I. .d.o.n.'.t. .w.a.n.t. .t.o. .l.i.v.e. .a.n.y.m.o.r.e"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "suicide",
+   "text": "s.u.i.c.i.d.e"
+  },
+  {
+   "category": "letras separadas por puntos",
+   "seed": "better off dead",
+   "text": "b.e.t.t.e.r. .o.f.f. .d.e.a.d"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "quiero morir",
+   "text": "qu13r0 m0r1r"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "voy a matarme",
+   "text": "v0y 4 m4t4rm3"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "no quiero seguir viviendo",
+   "text": "n0 qu13r0 s3gu1r v1v13nd0"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "suicidio",
+   "text": "su1c1d10"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "quitarme la vida",
+   "text": "qu1t4rm3 l4 v1d4"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "I want to kill myself",
+   "text": "I w4nt t0 k1ll mys3lf"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "thinking about ending my life",
+   "text": "th1nk1ng 4b0ut 3nd1ng my l1f3"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "I don't want to live anymore",
+   "text": "I d0n't w4nt t0 l1v3 4nym0r3"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "suicide",
+   "text": "su1c1d3"
+  },
+  {
+   "category": "leet (4, 3, 1, 0)",
+   "seed": "better off dead",
+   "text": "b3tt3r 0ff d34d"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "quiero morir",
+   "text": "qquuiieerroo  mmoorriirr"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "voy a matarme",
+   "text": "vvooyy  aa  mmaattaarrmmee"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "no quiero seguir viviendo",
+   "text": "nnoo  qquuiieerroo  sseegguuiirr  vviivviieennddoo"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "suicidio",
+   "text": "ssuuiicciiddiioo"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "quitarme la vida",
+   "text": "qquuiittaarrmmee  llaa  vviiddaa"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "I want to kill myself",
+   "text": "II  wwaanntt  ttoo  kkiillll  mmyysseellff"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "thinking about ending my life",
+   "text": "tthhiinnkkiinngg  aabboouutt  eennddiinngg  mmyy  lliiffee"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "I don't want to live anymore",
+   "text": "II  ddoonn''tt  wwaanntt  ttoo  lliivvee  aannyymmoorree"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "suicide",
+   "text": "ssuuiicciiddee"
+  },
+  {
+   "category": "letras alargadas",
+   "seed": "better off dead",
+   "text": "bbeetttteerr  ooffff  ddeeaadd"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "quiero morir",
+   "text": "quieromorir"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "voy a matarme",
+   "text": "voyamatarme"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "no quiero seguir viviendo",
+   "text": "noquieroseguirviviendo"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "quitarme la vida",
+   "text": "quitarmelavida"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "I want to kill myself",
+   "text": "Iwanttokillmyself"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "thinking about ending my life",
+   "text": "thinkingaboutendingmylife"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "I don't want to live anymore",
+   "text": "Idon'twanttoliveanymore"
+  },
+  {
+   "category": "sin espacios",
+   "seed": "better off dead",
+   "text": "betteroffdead"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "quiero morir",
+   "text": "qㅤuㅤiㅤeㅤrㅤoㅤ ㅤmㅤoㅤrㅤiㅤr"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "voy a matarme",
+   "text": "vㅤoㅤyㅤ ㅤaㅤ ㅤmㅤaㅤtㅤaㅤrㅤmㅤe"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "no quiero seguir viviendo",
+   "text": "nㅤoㅤ ㅤqㅤuㅤiㅤeㅤrㅤoㅤ ㅤsㅤeㅤgㅤuㅤiㅤrㅤ ㅤvㅤiㅤvㅤiㅤeㅤnㅤdㅤo"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "suicidio",
+   "text": "sㅤuㅤiㅤcㅤiㅤdㅤiㅤo"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "quitarme la vida",
+   "text": "qㅤuㅤiㅤtㅤaㅤrㅤmㅤeㅤ ㅤlㅤaㅤ ㅤvㅤiㅤdㅤa"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "I want to kill myself",
+   "text": "Iㅤ ㅤwㅤaㅤnㅤtㅤ ㅤtㅤoㅤ ㅤkㅤiㅤlㅤlㅤ ㅤmㅤyㅤsㅤeㅤlㅤf"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "thinking about ending my life",
+   "text": "tㅤhㅤiㅤnㅤkㅤiㅤnㅤgㅤ ㅤaㅤbㅤoㅤuㅤtㅤ ㅤeㅤnㅤdㅤiㅤnㅤgㅤ ㅤmㅤyㅤ ㅤlㅤiㅤfㅤe"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "I don't want to live anymore",
+   "text": "Iㅤ ㅤdㅤoㅤnㅤ'ㅤtㅤ ㅤwㅤaㅤnㅤtㅤ ㅤtㅤoㅤ ㅤlㅤiㅤvㅤeㅤ ㅤaㅤnㅤyㅤmㅤoㅤrㅤe"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "suicide",
+   "text": "sㅤuㅤiㅤcㅤiㅤdㅤe"
+  },
+  {
+   "category": "relleno invisible FUERA de la lista (U+3164, U+2800, U+115F, U+180E, U+FFA0)",
+   "seed": "better off dead",
+   "text": "bㅤeㅤtㅤtㅤeㅤrㅤ ㅤoㅤfㅤfㅤ ㅤdㅤeㅤaㅤd"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "quiero morir",
+   "text": "q⠀u⠀i⠀e⠀r⠀o⠀ ⠀m⠀o⠀r⠀i⠀r"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "voy a matarme",
+   "text": "v⠀o⠀y⠀ ⠀a⠀ ⠀m⠀a⠀t⠀a⠀r⠀m⠀e"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "no quiero seguir viviendo",
+   "text": "n⠀o⠀ ⠀q⠀u⠀i⠀e⠀r⠀o⠀ ⠀s⠀e⠀g⠀u⠀i⠀r⠀ ⠀v⠀i⠀v⠀i⠀e⠀n⠀d⠀o"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "suicidio",
+   "text": "s⠀u⠀i⠀c⠀i⠀d⠀i⠀o"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "quitarme la vida",
+   "text": "q⠀u⠀i⠀t⠀a⠀r⠀m⠀e⠀ ⠀l⠀a⠀ ⠀v⠀i⠀d⠀a"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "I want to kill myself",
+   "text": "I⠀ ⠀w⠀a⠀n⠀t⠀ ⠀t⠀o⠀ ⠀k⠀i⠀l⠀l⠀ ⠀m⠀y⠀s⠀e⠀l⠀f"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "thinking about ending my life",
+   "text": "t⠀h⠀i⠀n⠀k⠀i⠀n⠀g⠀ ⠀a⠀b⠀o⠀u⠀t⠀ ⠀e⠀n⠀d⠀i⠀n⠀g⠀ ⠀m⠀y⠀ ⠀l⠀i⠀f⠀e"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "I don't want to live anymore",
+   "text": "I⠀ ⠀d⠀o⠀n⠀'⠀t⠀ ⠀w⠀a⠀n⠀t⠀ ⠀t⠀o⠀ ⠀l⠀i⠀v⠀e⠀ ⠀a⠀n⠀y⠀m⠀o⠀r⠀e"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "suicide",
+   "text": "s⠀u⠀i⠀c⠀i⠀d⠀e"
+  },
+  {
+   "category": "relleno U+2800 (braille en blanco)",
+   "seed": "better off dead",
+   "text": "b⠀e⠀t⠀t⠀e⠀r⠀ ⠀o⠀f⠀f⠀ ⠀d⠀e⠀a⠀d"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "quiero morir",
+   "text": "q؜u؜i؜e؜r؜o؜ ؜m؜o؜r؜i؜r"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "voy a matarme",
+   "text": "v؜o؜y؜ ؜a؜ ؜m؜a؜t؜a؜r؜m؜e"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "no quiero seguir viviendo",
+   "text": "n؜o؜ ؜q؜u؜i؜e؜r؜o؜ ؜s؜e؜g؜u؜i؜r؜ ؜v؜i؜v؜i؜e؜n؜d؜o"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "suicidio",
+   "text": "s؜u؜i؜c؜i؜d؜i؜o"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "quitarme la vida",
+   "text": "q؜u؜i؜t؜a؜r؜m؜e؜ ؜l؜a؜ ؜v؜i؜d؜a"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "I want to kill myself",
+   "text": "I؜ ؜w؜a؜n؜t؜ ؜t؜o؜ ؜k؜i؜l؜l؜ ؜m؜y؜s؜e؜l؜f"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "thinking about ending my life",
+   "text": "t؜h؜i؜n؜k؜i؜n؜g؜ ؜a؜b؜o؜u؜t؜ ؜e؜n؜d؜i؜n؜g؜ ؜m؜y؜ ؜l؜i؜f؜e"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "I don't want to live anymore",
+   "text": "I؜ ؜d؜o؜n؜'؜t؜ ؜w؜a؜n؜t؜ ؜t؜o؜ ؜l؜i؜v؜e؜ ؜a؜n؜y؜m؜o؜r؜e"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "suicide",
+   "text": "s؜u؜i؜c؜i؜d؜e"
+  },
+  {
+   "category": "U+180E / U+061C",
+   "seed": "better off dead",
+   "text": "b؜e؜t؜t؜e؜r؜ ؜o؜f؜f؜ ؜d؜e؜a؜d"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "quiero morir",
+   "text": "𝐪𝐮𝐢𝐞𝐫𝐨 𝐦𝐨𝐫𝐢𝐫"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "voy a matarme",
+   "text": "𝐯𝐨𝐲 𝐚 𝐦𝐚𝐭𝐚𝐫𝐦𝐞"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "no quiero seguir viviendo",
+   "text": "𝐧𝐨 𝐪𝐮𝐢𝐞𝐫𝐨 𝐬𝐞𝐠𝐮𝐢𝐫 𝐯𝐢𝐯𝐢𝐞𝐧𝐝𝐨"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "suicidio",
+   "text": "𝐬𝐮𝐢𝐜𝐢𝐝𝐢𝐨"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "quitarme la vida",
+   "text": "𝐪𝐮𝐢𝐭𝐚𝐫𝐦𝐞 𝐥𝐚 𝐯𝐢𝐝𝐚"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "I want to kill myself",
+   "text": "I 𝐰𝐚𝐧𝐭 𝐭𝐨 𝐤𝐢𝐥𝐥 𝐦𝐲𝐬𝐞𝐥𝐟"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "thinking about ending my life",
+   "text": "𝐭𝐡𝐢𝐧𝐤𝐢𝐧𝐠 𝐚𝐛𝐨𝐮𝐭 𝐞𝐧𝐝𝐢𝐧𝐠 𝐦𝐲 𝐥𝐢𝐟𝐞"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "I don't want to live anymore",
+   "text": "I 𝐝𝐨𝐧'𝐭 𝐰𝐚𝐧𝐭 𝐭𝐨 𝐥𝐢𝐯𝐞 𝐚𝐧𝐲𝐦𝐨𝐫𝐞"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "suicide",
+   "text": "𝐬𝐮𝐢𝐜𝐢𝐝𝐞"
+  },
+  {
+   "category": "letras matemáticas en negrita (U+1D400…)",
+   "seed": "better off dead",
+   "text": "𝐛𝐞𝐭𝐭𝐞𝐫 𝐨𝐟𝐟 𝐝𝐞𝐚𝐝"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "quiero morir",
+   "text": "quiero, morir"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "no quiero seguir viviendo",
+   "text": "no, quiero, seguir, viviendo"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "quitarme la vida",
+   "text": "quitarme, la, vida"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "I want to kill myself",
+   "text": "I, want, to, kill, myself"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "thinking about ending my life",
+   "text": "thinking, about, ending, my, life"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "I don't want to live anymore",
+   "text": "I, don't, want, to, live, anymore"
+  },
+  {
+   "category": "comas/guiones entre palabras",
+   "seed": "better off dead",
+   "text": "better, off, dead"
+  },
+  {
+   "category": "faltas de ortografía simples (control)",
+   "seed": "quiero morir",
+   "text": "kiero morir"
+  },
+  {
+   "category": "faltas de ortografía simples (control)",
+   "seed": "no quiero seguir viviendo",
+   "text": "no kiero seguir bibiendo"
+  },
+  {
+   "category": "faltas de ortografía simples (control)",
+   "seed": "quitarme la vida",
+   "text": "kitarme la bida"
+  },
+  {
+   "category": "faltas de ortografía simples (control)",
+   "seed": "I don't want to live anymore",
+   "text": "I don't want to libe anymore"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "ya no quiero estar aquí",
+   "text": "ya no quiero estar aquí"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "sería más fácil si no despertara mañana",
+   "text": "sería más fácil si no despertara mañana"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "quiero dormir y no despertar",
+   "text": "quiero dormir y no despertar"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "ojalá me atropelle un carro",
+   "text": "ojalá me atropelle un carro"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "me quiero ir de este mundo",
+   "text": "me quiero ir de este mundo"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "todos estarían mejor sin mí",
+   "text": "todos estarían mejor sin mí"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "me quiero tirar por la ventana",
+   "text": "me quiero tirar por la ventana"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto ES",
+   "seed": "ya me despedí de todos",
+   "text": "ya me despedí de todos"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto EN",
+   "seed": "I don't want to wake up tomorrow",
+   "text": "I don't want to wake up tomorrow"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto EN",
+   "seed": "everyone would be better without me",
+   "text": "everyone would be better without me"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto EN",
+   "seed": "I want it all to stop for good",
+   "text": "I want it all to stop for good"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto EN",
+   "seed": "I can't do this anymore and I'm done",
+   "text": "I can't do this anymore and I'm done"
+  },
+  {
+   "category": "SEMÁNTICO · indirecto EN",
+   "seed": "I want to disappear forever",
+   "text": "I want to disappear forever"
+  },
+  {
+   "category": "SEMÁNTICO · otro idioma",
+   "seed": "je veux mourir",
+   "text": "je veux mourir"
+  },
+  {
+   "category": "SEMÁNTICO · otro idioma",
+   "seed": "quero me matar",
+   "text": "quero me matar"
+  },
+  {
+   "category": "SEMÁNTICO · otro idioma",
+   "seed": "quero morrer",
+   "text": "quero morrer"
+  },
+  {
+   "category": "SEMÁNTICO · otro idioma",
+   "seed": "ich will sterben",
+   "text": "ich will sterben"
+  },
+  {
+   "category": "SEMÁNTICO · otro idioma",
+   "seed": "voglio morire",
+   "text": "voglio morire"
+  },
+  {
+   "category": "SEMÁNTICO · otro idioma",
+   "seed": "ik wil dood",
+   "text": "ik wil dood"
+  },
+  {
+   "category": "SEMÁNTICO · emoji",
+   "seed": "quiero 💀",
+   "text": "quiero 💀"
+  },
+  {
+   "category": "SEMÁNTICO · emoji",
+   "seed": "ya no puedo más 🔫",
+   "text": "ya no puedo más 🔫"
+  },
+  {
+   "category": "SEMÁNTICO · jerga",
+   "seed": "me voy a desconectar del mundo para siempre",
+   "text": "me voy a desconectar del mundo para siempre"
+  },
+  {
+   "category": "SEMÁNTICO · jerga",
+   "seed": "voy a hacer una locura con las pastillas",
+   "text": "voy a hacer una locura con las pastillas"
+  },
+  {
+   "category": "SEMÁNTICO · jerga",
+   "seed": "se acabó, esta noche termino con todo",
+   "text": "se acabó, esta noche termino con todo"
+  }
+ ]
+}
