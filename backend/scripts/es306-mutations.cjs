@@ -5,7 +5,7 @@ const fs = require('node:fs'); const path = require('node:path'); const { spawnS
 const backend = path.resolve(__dirname, '..');
 const URL_ = process.env.ES306_TEST_DATABASE_URL; if (!URL_ || !['127.0.0.1', 'localhost'].includes(new URL(URL_).hostname)) { console.error('Se requiere ES306_TEST_DATABASE_URL en loopback.'); process.exit(2); }
 const H = 'utils/emailNormalize.js'; const A = 'routes/auth.js'; const P = 'routes/passwordReset.js'; const M = 'migrations/20261114010000-es306-email-lower-unique.cjs';
-const INDEX_OFF = [M, 'CREATE UNIQUE INDEX IF NOT EXISTS "${INDEX}" ON "Users" (lower("email"))', 'SELECT 1'];
+const INDEX_OFF = [M, 'CREATE UNIQUE INDEX IF NOT EXISTS "${INDEX}" ON "Users" (lower(btrim("email")))', 'SELECT 1'];
 // [nombre, [[archivo, texto original, texto mutado], …]]. Cada original debe existir (si no, la mutación está obsoleta y el script falla).
 const MUTATIONS = [
   ['M1 registro compara el texto exacto (el defecto original); el índice de red solo no lo tapa', [[A, 'const existing = await findUserByEmail(User, email);', 'const existing = await User.findOne({ where: { email } });']]],
@@ -13,7 +13,7 @@ const MUTATIONS = [
   ['M2 el registro guarda el correo sin normalizar', [[A, 'email: normalizeEmail(email), password', 'email, password']]],
   ['M3 el login busca el texto exacto', [[A, 'const user = await findUserByEmail(User, email);', 'const user = await User.findOne({ where: { email } });']]],
   ['M4 la recuperación busca el texto exacto', [[P, 'const user = await findUserByEmail(User, email);', 'const user = await User.findOne({ where: { email } });']]],
-  ['M5 la búsqueda no cubre cuentas antiguas con mayúsculas (sin lower)', [[H, "return User.findOne({ ...options, where: sqlWhere(fn('lower', col('email')), normalized), order: [['id', 'ASC']] });", 'return null;']]],
+  ['M5 la búsqueda no cubre cuentas antiguas con mayúsculas (sin lower)', [[H, "return User.findOne({ ...options, where: sqlWhere(fn('lower', fn('btrim', col('email'))), normalized), order: [['id', 'ASC']] });", 'return null;']]],
   ['M6 la búsqueda no recorta espacios', [[H, 'where: { email: rawEmail.trim() }', 'where: { email: rawEmail }'], [H, "return typeof value === 'string' ? value.trim().toLowerCase() : value;", "return typeof value === 'string' ? value.toLowerCase() : value;"]]],
   ['M7 la búsqueda no baja a minúsculas', [[H, "return typeof value === 'string' ? value.trim().toLowerCase() : value;", "return typeof value === 'string' ? value.trim() : value;"]]],
   ['M8 la migración crea el índice aunque haya duplicados', [[M, 'if (groups.length) {', 'if (false) {']]],
@@ -21,6 +21,9 @@ const MUTATIONS = [
   ['M10 la migración no crea el índice nunca', [INDEX_OFF]],
   ['M11 el aviso de duplicados imprime ids sin agrupar y filtra correos', [[M, "`[${g.ids.join(',')}]`", '`${g.ids.join(\',\')} (correo ${g.ids.length})`'], [M, 'array_agg("id" ORDER BY "id") AS "ids"', 'array_agg("id" ORDER BY "id") AS "ids", min("email") AS "mail"'], [M, 'return rows.map((row) => ({ accounts: row.accounts, ids: row.ids }));', 'return rows.map((row) => ({ accounts: row.accounts, ids: row.ids, mail: row.mail }));'], [M, 'Ids por grupo:', 'Correo ${groups[0].mail} Ids por grupo:']]],
   ['M12 el down no exige permiso explícito', [[M, "require('../scripts/guard-down.cjs')('20261114010000-es306-email-lower-unique');", '']]],
+  ['M14 la búsqueda de respaldo no recorta el valor guardado (solo lower)', [[H, "fn('lower', fn('btrim', col('email')))", "fn('lower', col('email'))"]]],
+  ['M15 el índice único no cubre btrim', [[M, 'ON "Users" (lower(btrim("email")))', 'ON "Users" (lower("email"))']]],
+  ['M16 las invitaciones no recortan el valor guardado', [['routes/invitations.js', "if (await User.findOne({ where: sqlWhere(fn('lower', fn('btrim', col('email'))), email) }))", "if (await User.findOne({ where: sqlWhere(fn('lower', col('email')), email) }))"]]],
   ['M13 los duplicados no cuentan el correo con espacios', [[M, 'GROUP BY lower(btrim("email"))', 'GROUP BY lower("email")']]],
 ];
 const only = process.argv[2]; const selected = MUTATIONS.filter(([name]) => !only || name.includes(only));

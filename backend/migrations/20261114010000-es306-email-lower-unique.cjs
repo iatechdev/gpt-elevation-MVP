@@ -20,7 +20,7 @@ async function createIndexIfClean(sequelize, log = console) {
         `Ids por grupo: ${groups.map((g) => `[${g.ids.join(',')}]`).join(' ')}. Resolverlos (fusión: decisión de Mauricio/Alejo) y volver a correr la migración.`);
       return { created: false, groups };
     }
-    await sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS "${INDEX}" ON "Users" (lower("email"))`, { transaction });
+    await sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS "${INDEX}" ON "Users" (lower(btrim("email")))`, { transaction });
     return { created: true, groups: [] };
   };
   return sequelize.transaction(run);

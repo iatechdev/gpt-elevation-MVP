@@ -78,6 +78,20 @@ test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, l
     assert.equal((await q('SELECT email FROM "Users" WHERE id=$1', [old.id]))[0].email, 'Antigua.Cuenta@Example.invalid', 'no se reescribe ninguna cuenta existente');
   });
 
+  await t.test('cuenta ANTIGUA guardada con ESPACIOS laterales (el registro anterior los permitía): login, recuperación, registro duplicado e invitación la encuentran; el índice también cubre btrim', async () => {
+    const old = await mkUser('user'); await q('UPDATE "Users" SET email=$2, password=$3 WHERE id=$1', [old.id, '  Espacios.Antigua@Example.invalid  ', HASH]);
+    const before = await people();
+    for (const variant of ['espacios.antigua@example.invalid', 'ESPACIOS.ANTIGUA@example.invalid', '  espacios.antigua@example.invalid ']) assert.equal((await register(variant)).status, 400, `registro ${variant}`);
+    assert.equal(await people(), before, 'no se duplicó');
+    for (const variant of ['espacios.antigua@example.invalid', 'ESPACIOS.ANTIGUA@EXAMPLE.INVALID', ' Espacios.Antigua@Example.invalid ']) assert.equal((await login(variant)).status, 200, `login ${variant}`);
+    const resets = async () => Number((await q('SELECT count(*) n FROM "PasswordResets" WHERE "UserId"=$1', [old.id]))[0].n);
+    await http(null, 'POST', '/api/password-reset/request', { email: 'Espacios.Antigua@example.invalid' });
+    assert.equal(await waitFor(async () => (await resets()) === 1), true, 'la recuperación la encuentra');
+    const admin = await mkUser('superadmin'); assert.equal((await http(admin, 'POST', '/api/admin/invitations', { email: 'espacios.antigua@example.invalid', role: 'user' })).status, 409, 'invitar a ese correo = ya existe');
+    await assert.rejects(() => q(`INSERT INTO "Users" (name, email, password, role, active, "createdAt", "updatedAt") VALUES ('x','espacios.antigua@example.invalid','x','user',true,now(),now())`), /duplicate key/, 'el índice (lower+btrim) frena el duplicado por debajo de la aplicación');
+    assert.equal((await q('SELECT email FROM "Users" WHERE id=$1', [old.id]))[0].email, '  Espacios.Antigua@Example.invalid  ', 'no se reescribe la cuenta existente');
+  });
+
   await t.test('invitaciones: invitar a un correo existente en otro casing = 409; la invitación guarda el correo normalizado; aceptar no duplica una cuenta creada entretanto', async () => {
     const admin = await mkUser('superadmin');
     const taken = await http(admin, 'POST', '/api/admin/invitations', { email: 'ANA.PEREZ@EXAMPLE.INVALID', role: 'user' }); assert.equal(taken.status, 409, JSON.stringify(taken.body)); assert.equal(taken.body.code, 'email_taken');
