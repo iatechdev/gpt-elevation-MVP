@@ -1,0 +1,22 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+✅ Asociaciones configuradas.
+ℹ️ DB_SYNC_DISABLED=true: no se llama a sync(); el esquema lo gestionan las migraciones.
+{"id":"F5 variantes","info":"44 (39 de mi corpus en 13 categorías prometidas + 5 propias)"}
+{"id":"F5 tabla de mensajes","info":"Messages"}
+QA-CONTROL-CAPTURA
+{"id":"F5a cada variante activa el apoyo en vivo (200, interrupted:true)","ok":true,"detail":"44 variantes; todas interrumpen"}
+{"id":"F5b en el turno de crisis NO se llama al proveedor","ok":true,"detail":"44 turnos sin llamada"}
+{"id":"F5c la frase evadida (en ninguna de sus formas) NO viaja al proveedor en los mensajes siguientes (ES-298)","ok":true,"detail":"ninguna solicitud posterior la contiene"}
+{"id":"F5d la respuesta de apoyo tampoco viaja","ok":true,"detail":"ok"}
+{"id":"F5e lo ordinario sí viaja y el flujo normal sigue","ok":true,"detail":"ok"}
+{"id":"F5f el texto GUARDADO es el original (solo la limpieza que ya existía: NFC, invisibles y controles), no la forma normalizada del detector","ok":true,"detail":"ok"}
+{"id":"F5g el historial visible (GET /api/messages) conserva la frase original","ok":true,"detail":"ok"}
+{"id":"F5h columnas con nombre de riesgo/crisis/nivel en toda la base","info":"SkillCandidates.level, SkillCandidates.confirmedLevel, SkillAssessments.level"}
+{"id":"F5i ninguna fila de la base contiene el indicador de crisis (columnas de mensajes sin banderas: comparadas con una frase ordinaria)","ok":true,"detail":"tablas revisadas: todas"}
+{"id":"F5j columnas de mensajes","info":"UserId,content,createdAt,id,role,truncated,updatedAt"}
+{"id":"F5k los registros (stdout/stderr) durante las 70+ solicitudes no contienen la frase ni el nivel (con control positivo de captura)","ok":true,"detail":"bytes de registro: 19; sin frases"}
+{"id":"F5l nivel medio normalizado: no interrumpe, llama al proveedor y viaja (ES-298)","ok":true,"detail":"m1 200 interrumpe:false; llamadas 3"}
+{"id":"F5m texto benigno con letras alargadas y risas NO interrumpe","ok":true,"detail":"{\"reply\":\"Recomendación sintética.\",\"requestId\":\"034b9432-15f0-4b29-b0b6-dde1becd0ab7\"}"}
+{"id":"F5n el detector directo y la ruta coinciden sobre la forma que la ruta evalúa (normalizeText previo)","ok":true,"detail":"ok"}
+{"id":"F5o controles C0/DEL/NEL intercalados: la ruta los limpia antes de evaluar y activa el apoyo","ok":true,"detail":"\"q\\u0001u\\u0001i\\u0001e\\u0001r→200/true | \"quiero morir\"→200/true | \"suicidio\"→200/true"}
+RESUMEN E2E nueva2: 13 ok, 0 no ok: 

@@ -1,0 +1,257 @@
+{
+ "res": [
+  {
+   "id": "E1 textos comparados",
+   "ok": true,
+   "detail": "66443 textos (6932 con algún nivel en la cabeza nueva): corpus, variaciones, Latin-1 completo, ASCII como separador, invisibles, documentos, 40.000 de fuzz"
+  },
+  {
+   "id": "E2 equivalencia con la referencia b58eae7e (mismo nivel e idioma)",
+   "ok": false,
+   "detail": "42 diferencias\n  \"\\u{db40}\\u{dc71}\\u{131}o\\u{ff51}*-\\u{db40}\\u{dc71}od\\u{456}\\u{3164}\\u{ff55}.\\u{ff55}r\\u{200b}q\\u{3164}\\u{e9}\\u{2800}\\u{435} \\u{131}_iv\\u{ff51}\\u{ff51}\\n3\\u{456}\\nq*i\\u{3164}r\\u{435}\\u{3164}e\\u{301}\\u{ff51}l,hacerme da\\u{f1}\\u{ba}l\\u{301}\\u{2026}\": nueva null/- · anterior medium/es\n  \"\\u{200b}end my life\\u{e9}\\to1\\u{3164}u\\u{200b}\\u{2800}a 7i4 m,\\n\": nueva high/en · anterior null/-\n  \"17\\u{456}a.5re@ \\u{3164} \\nv@@\\u{43e}a,k\\u{131}\\u{f1}yyaa  nnoo  aagguuaannttoo  mm\\u{e1}\\u{e1}ss\\u{301}  3\\u{2026}\": nueva medium/es · anterior null/-\n  \"1\\t em\\u{301}cortarme las venas7\\u{456}\": nueva null/- · anterior medium/es\n  \"\\u{200b}ntnm4\\u{131}\\u{301} 5.ai3\\u{2800}\\u{db40}\\u{dc71},,kq\\u{db40}\\u{dc71}\\nn\\u{ba} quier\\u{ba} vivirr\\u{301}_\\u{456},5\": nueva null/- · anterior high/es\n  \"\\u{f1}no vale la pena vivir$\\u{e9}\\u{2800} r*odvv3\\t$3\\u{ba}s\\u{f1}\\u{3bf}t\\u{3bf}_a\\u{f1}t\": nueva high/es · anterior null/-\n  \"avnn\\u{43e}uv0y 4 m4t4rm3\\u{e9}\\t \\u{456}\\n\\u{ba}i\\u{43e}s\\nam so\": nueva high/es · anterior null/-\n  \"\\u{3164}a\\u{2800}3d\\u{e9}\\t n\\u{3bf} pued\\u{3bf} m\\u{e1}sm\\u{301}\\u{3164}3\\u{2800}\\u{aa}\\u{ba}\\u{e9}\\u{db40}\\u{dc41}\\u{435}\\u{f1}\\u{3164}nr\\u{200b}\\u{e9}\\u{301}ei\\u{2800} \\u{456}i 5 5\\u{3164}\\u{456}-\\u{f1}v0o,s\\u{131}..\\u{2026}\": nueva null/- · anterior medium/es\n  \"3k\\u{301}suicidio_\\u{43e} e7\\u{2800} \\u{435}u\\t_5\\u{435}q\\u{f1}m  0e-\\u{aa} vm\\t\\nm\\u{db40}\\u{dc41},\\u{43e}\\u{ff55}4\\u{200b}i .\\u{435}\\u{ff51}t\\u{ff55}\\u{db40}\\u{dc71}\\u{43e}_\\u{ba}sk\\u{2026}\": nueva null/- · anterior high/es\n  \"-t_n\\u{3bf} pued\\u{3bf} m\\u{e1}s\\u{301}_\\u{3bf}\": nueva medium/es · anterior null/-\n  \".evta\\u{ba}v\\n1$\\u{f1}n\\u{43e} quier\\u{43e} vivir\\t\\u{3bf}\\u{456}\\u{db40}\\u{dc41}o,e5,1n,a1a\\u{db40}\\u{dc41}\\t-v @\\u{ff51}-i\\u{301}\": nueva high/es · anterior null/-\n  \" \\u{e9}end my life 5,n\\u{3164}1\\u{301}\\u{ff51} e\\u{e9}04\\u{db40}\\u{dc41}\\u{f1}0*@\\u{ba}\": nueva high/en · anterior null/-"
+  },
+  {
+   "id": "E3 lo que main detectaba (alto con su idioma, o algún medio) se sigue detectando",
+   "ok": true,
+   "detail": "0 bajadas"
+  },
+  {
+   "id": "E4 el resultado devuelto es una copia (mutarlo no envenena la memoria)",
+   "ok": true,
+   "detail": "{\"level\":\"high\",\"lang\":\"es\"}"
+  },
+  {
+   "id": "E5 la memoria queda acotada (tope 1.000)",
+   "ok": true,
+   "detail": "tamaño 1000"
+  },
+  {
+   "id": "E6 la clave de la memoria es SIEMPRE una huella sha256 (ningún texto retenido)",
+   "ok": true,
+   "detail": "64,64,64"
+  },
+  {
+   "id": "E7 clearMemo funciona (cada evaluación fría)",
+   "ok": true,
+   "detail": "tamaño tras 20 evaluaciones con clearMemo: 1"
+  },
+  {
+   "id": "E8 NODE_ENV=production: `_steps` no existe y detectRisk funciona",
+   "ok": true,
+   "detail": "undefined high high"
+  }
+ ],
+ "diffPrev": [
+  {
+   "t": "󠁱ıoｑ*-󠁱odіㅤｕ.ｕr​qㅤé⠀е ı_ivｑｑ\n3і\nq*iㅤrеㅤéｑl,hacerme dañºĺｕ⠀rñḱ@r",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "​end my lifeé\to1ㅤu​⠀a 7i4 m,\n",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "17іa.5re@ ㅤ \nv@@оa,kıñyyaa  nnoo  aagguuaannttoo  mmáásś  3 ",
+   "a": "medium/es",
+   "b": "null/-"
+  },
+  {
+   "t": "1\t eḿcortarme las venas7і",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "​ntnm4ı́ 5.ai3⠀󠁱,,kq󠁱\nnº quierº vivirŕ_і,5",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "ñno vale la pena vivir$é⠀ r*odvv3\t$3ºsñοtο_añt",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "avnnоuv0y 4 m4t4rm3é\t і\nºiоs\nam so",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "ㅤa⠀3dé\t nο puedο másḿㅤ3⠀ªºé󠁁еñㅤnr​é́ei⠀ іi 5 5ㅤі-ñv0o,sı..t$uñ*󠁁ㅤㅤªkéі",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "3ḱsuicidio_о e7⠀ еu\t_5еqñm  0e-ª vm\t\nm󠁁,оｕ4​i .еｑtｕ󠁱о_ºsk\n0оｕu@éé1ª",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "-t_nο puedο máś_ο",
+   "a": "medium/es",
+   "b": "null/-"
+  },
+  {
+   "t": ".evtaºv\n1$ñnо quierо vivir\tοі󠁁o,e5,1n,a1a󠁁\t-v @ｑ-í",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": " éend my life 5,nㅤ1́ｑ eé04󠁁ñ0*@º",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "md_d1,​ªο-mοe$uḱkill myself n\n@-4​a​srmu év,",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "󠁁qquuiittaarrmmee  llaa  vviiddaá.$.@ｕ$7ºο",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "\ns,\ń​.e,-eｑ,m⠀-́@$1ññḱnο puedο más_ㅤrtｑ reqi-",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "rsr@$$d,end my lifeé*k",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "stli$tㅤі_3​.s ́ıqk75t󠁁i1@​оv3u\t e_01о⠀o@\nºªv⠀śno puedo más,ªοºvㅤο⠀ª1",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "󠁁󠁁οé_ªve-*ºo\n0du 0 е3e.ºru,.ve \nrｑu⠀ㅤ ㅤud​orñi é3nd my l1f33",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "tt*.󠁁ñdv1󠁱ο ｑое@1r7\né́end my life$_ㅤ\n_5oｑㅤ_",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": " rqоª@ｑ ªv0y 4 m4t4rm3é.o7i_⠀.1 о1\tºtіvuqdı οmdªm",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "t03o 󠁁kіı⠀4ºiuㅤm󠁱 _ r$󠁱7raºal3,_cㅤaㅤnㅤ'ㅤtㅤ ㅤgㅤoㅤ ㅤoㅤnḿ*еe,",
+   "a": "null/-",
+   "b": "medium/en"
+  },
+  {
+   "t": "ㅤ$1o*a⠀ 󠁁 _kñui7_@quiero morirḿéqn -",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": " @l7 ñіrv.d$d.mｕm​kr⠀οoº@@dº,ñm.can't go onñ nο еіª󠁱1ο",
+   "a": "medium/en",
+   "b": "null/-"
+  },
+  {
+   "t": "і ́ul4ㅤnіq__ıé*-ο@etdｑ*ªıㅤоｕ$$q󠁁u󠁁i󠁁e󠁁r󠁁o󠁁 󠁁m󠁁o󠁁r󠁁i󠁁rḱd⠀ｑerｕｕ.éºl ｑasu.ㅤㅤı7\t*󠁱ur",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "5ο 1\nr.0śkill myself󠁱",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "i ĺhurt myself.aéı́é 1οе$ª ㅤ\nі​0l*ｑqоlｑ_1lºªñ7*,10⠀,q\t",
+   "a": "null/-",
+   "b": "medium/en"
+  },
+  {
+   "t": "é ｑ\t ñnnoo  ppuueeddoo  mmááss⠀*º. 󠁁 eі⠀m53󠁁ń$_kñ3ıtkk  -mㅤ_​n\no5dkvra",
+   "a": "medium/es",
+   "b": "null/-"
+  },
+  {
+   "t": "\n⠀kkmｑ 󠁱і󠁁ｕ󠁁ñ$e.ns​$a​ｑ.c4n't g0 0nñ ｑ0ㅤtο\t*ı iㅤd*",
+   "a": "medium/en",
+   "b": "null/-"
+  },
+  {
+   "t": "⠀ㅤqㅤuㅤiㅤeㅤrㅤoㅤ ㅤmㅤoㅤrㅤiㅤrĺ_ñ́οο",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "v󠁁o󠁁y󠁁 󠁁a󠁁 󠁁m󠁁a󠁁t󠁁a󠁁r󠁁m󠁁eée*oㅤªㅤt5o",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "aii1ㅤé,\n*n󠁁-о󠁱4,éend my life,ı 15l⠀ñok󠁱q7º ⠀́vn⠀\t1​é⠀º",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "ı@\n-ｑ,οª\nt ㅤñ,q_śno quiero vivir\tｑ_@\nоºο",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "ㅤ nl3󠁁é́ ​_ªо01nｑ*-1оtkol10r3οlı\tm⠀0ο5in󠁁  i want to dieé󠁁e",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "*i*s5́e5uvoy a matarmeé́ıu ́еv5",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "r*-a󠁱​o.​оyyaa  nnoo  aagguuaannttoo  mmáásś",
+   "a": "medium/es",
+   "b": "null/-"
+  },
+  {
+   "t": "󠁱7i⠀ ｑ​$ii  wwaanntt  ttoo  ddiieé@$3m1m  tt-​ºi󠁱$ o-і0q́7étі,q.ｕt",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "vº$і*ñ   mv󠁁o󠁁y󠁁 󠁁a󠁁 󠁁m󠁁a󠁁t󠁁a󠁁r󠁁m󠁁é3\tｕñ*́ª-i",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "і3réıºorka󠁱󠁁е  5*оd5\tlsı4$,r5nm⠀no quiero vivirḱ.k* .0vıº70е ο$",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "nㅤ7l1-e0-lvvooyy  aa  mmaattaarrmmeeé,º7⠀ㅤ",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "arㅤ⠀. $a ㅤ,3ｕvvooyy  aa  mmaattaarrmmee​é a .ñnvｕ 󠁁qrdluq\n* .ㅤ$⠀dｑㅤ7o-󠁱1⠀0t--_⠀i$qе\nq",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "\tlqñе​s_ 󠁁d ñık5ŕsuicidiо*󠁱kqadra4$7󠁱󠁱іqóo \t\név.ㅤlı@t, 󠁱​i,οºe1οªªñ. ",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "oºeqㅤk@ㅤ$ㅤο\td1śquiero morirㅤs*οdkіé i@dºоlviｑ3ık⠀nο⠀nm5о.і​q​\nñ",
+   "a": "null/-",
+   "b": "high/es"
+  }
+ ],
+ "diffMainDown": []
+}

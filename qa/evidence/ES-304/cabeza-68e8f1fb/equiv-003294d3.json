@@ -1,0 +1,267 @@
+{
+ "res": [
+  {
+   "id": "E1 textos comparados",
+   "ok": true,
+   "detail": "66443 textos (6932 con algún nivel en la cabeza nueva): corpus, variaciones, Latin-1 completo, ASCII como separador, invisibles, documentos, 40.000 de fuzz"
+  },
+  {
+   "id": "E2 equivalencia con la referencia 003294d3 (mismo nivel e idioma)",
+   "ok": false,
+   "detail": "44 diferencias\n  \"q\\u{a8}u\\u{a8}i\\u{a8}e\\u{a8}r\\u{a8}o\\u{a8} \\u{a8}m\\u{a8}o\\u{a8}r\\u{a8}i\\u{a8}r\": nueva high/es · anterior null/-\n  \"s\\u{a8}u\\u{a8}i\\u{a8}c\\u{a8}i\\u{a8}d\\u{a8}i\\u{a8}o\": nueva high/es · anterior null/-\n  \"k\\u{a8}i\\u{a8}l\\u{a8}l\\u{a8} \\u{a8}m\\u{a8}y\\u{a8}s\\u{a8}e\\u{a8}l\\u{a8}f\": nueva high/en · anterior null/-\n  \"quiero\\u{aa}morir\": nueva null/- · anterior high/es\n  \"kill\\u{aa}myself\": nueva null/- · anterior high/en\n  \"q\\u{af}u\\u{af}i\\u{af}e\\u{af}r\\u{af}o\\u{af} \\u{af}m\\u{af}o\\u{af}r\\u{af}i\\u{af}r\": nueva high/es · anterior null/-\n  \"s\\u{af}u\\u{af}i\\u{af}c\\u{af}i\\u{af}d\\u{af}i\\u{af}o\": nueva high/es · anterior null/-\n  \"k\\u{af}i\\u{af}l\\u{af}l\\u{af} \\u{af}m\\u{af}y\\u{af}s\\u{af}e\\u{af}l\\u{af}f\": nueva high/en · anterior null/-\n  \"quiero\\u{b2}morir\": nueva null/- · anterior high/es\n  \"kill\\u{b2}myself\": nueva null/- · anterior high/en\n  \"quiero\\u{b3}morir\": nueva null/- · anterior high/es\n  \"kill\\u{b3}myself\": nueva null/- · anterior high/en"
+  },
+  {
+   "id": "E3 lo que main detectaba (alto con su idioma, o algún medio) se sigue detectando",
+   "ok": true,
+   "detail": "0 bajadas"
+  },
+  {
+   "id": "E4 el resultado devuelto es una copia (mutarlo no envenena la memoria)",
+   "ok": true,
+   "detail": "{\"level\":\"high\",\"lang\":\"es\"}"
+  },
+  {
+   "id": "E5 la memoria queda acotada (tope 1.000)",
+   "ok": true,
+   "detail": "tamaño 1000"
+  },
+  {
+   "id": "E6 la clave de la memoria es SIEMPRE una huella sha256 (ningún texto retenido)",
+   "ok": true,
+   "detail": "64,64,64"
+  },
+  {
+   "id": "E7 clearMemo funciona (cada evaluación fría)",
+   "ok": true,
+   "detail": "tamaño tras 20 evaluaciones con clearMemo: 1"
+  },
+  {
+   "id": "E8 NODE_ENV=production: `_steps` no existe y detectRisk funciona",
+   "ok": true,
+   "detail": "undefined high high"
+  }
+ ],
+ "diffPrev": [
+  {
+   "t": "q¨u¨i¨e¨r¨o¨ ¨m¨o¨r¨i¨r",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "s¨u¨i¨c¨i¨d¨i¨o",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "k¨i¨l¨l¨ ¨m¨y¨s¨e¨l¨f",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "quieroªmorir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "killªmyself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "q¯u¯i¯e¯r¯o¯ ¯m¯o¯r¯i¯r",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "s¯u¯i¯c¯i¯d¯i¯o",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "k¯i¯l¯l¯ ¯m¯y¯s¯e¯l¯f",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "quiero²morir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "kill²myself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "quiero³morir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "kill³myself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "q´u´i´e´r´o´ ´m´o´r´i´r",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "s´u´i´c´i´d´i´o",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "k´i´l´l´ ´m´y´s´e´l´f",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "q¸u¸i¸e¸r¸o¸ ¸m¸o¸r¸i¸r",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "s¸u¸i¸c¸i¸d¸i¸o",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "k¸i¸l¸l¸ ¸m¸y¸s¸e¸l¸f",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "qu¹ero mor¹r",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "quiero¹morir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "su¹c¹d¹o",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "k¹ll myself",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "kill¹myself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "quierº mºrir",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "quieroºmorir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "killºmyself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "quiero¼morir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "kill¼myself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "quiero½morir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "kill½myself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "quiero¾morir",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "kill¾myself",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "e1qi want tº die  ",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "i want tº die aºd0q\to",
+   "a": "high/en",
+   "b": "null/-"
+  },
+  {
+   "t": "1-ºn0 pued0 más$ , ",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "ñ$mejºr me desaparezcº.4_",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "nº vale la pena vivir-l7*\n",
+   "a": "high/es",
+   "b": "null/-"
+  },
+  {
+   "t": "v dº kkiillll  mmyysseellffª",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "ccaann''tt  ggoo  oonnºd-5éo",
+   "a": "null/-",
+   "b": "medium/en"
+  },
+  {
+   "t": "1,i-ªssuuiicciiddee\t",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": "@vvooyy  aa  mmaattaarrmmeeeº1dª",
+   "a": "null/-",
+   "b": "high/es"
+  },
+  {
+   "t": " 0-aii  wwaanntt  ttoo  ddiieeº",
+   "a": "null/-",
+   "b": "high/en"
+  },
+  {
+   "t": "rqªccoorrttaarrmmee  llaass  vveennaasst4",
+   "a": "null/-",
+   "b": "medium/es"
+  },
+  {
+   "t": "édñ_$tªn0 vale la pena vivirª,ek",
+   "a": "null/-",
+   "b": "high/es"
+  }
+ ],
+ "diffMainDown": []
+}
