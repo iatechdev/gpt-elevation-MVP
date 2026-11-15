@@ -2,7 +2,7 @@
 // Uso: ES153_URL=http://127.0.0.1:4153 [RUNS=7] PLAYWRIGHT_MODULE=... node scripts/es153-perf-check.cjs   (compara con otra URL ejecutándolo dos veces)
 (async () => {
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const base = process.env.ES153_URL; const runs = Number(process.env.RUNS ?? 7);
-  const routes = ['/app/evidence', '/app/exercises', '/app/space/tools', '/app/progress', '/app/skill-map', '/app/chat', '/app/diary', '/app/dashboard'];
+  const routes = process.env.ROUTES ? process.env.ROUTES.split(',').map(r => '/' + r) : ['/app/evidence', '/app/exercises', '/app/space/tools', '/app/progress', '/app/skill-map', '/app/chat', '/app/diary', '/app/dashboard'];
   const EX = { key: 'respira_tres', minutes: [3, 5], reviewStatus: 'reviewed', version: 1, es: { title: 'Respirar tres veces', purpose: 'Parar.', question: '¿Qué notas?', help: 'Escribe.' }, en: { title: 'Breathe', purpose: 'Pause.', question: 'What?', help: 'Write.' } };
   const med = (a) => a.slice().sort((x, y) => x - y)[Math.floor(a.length / 2)]; const browser = await chromium.launch(); const out = {};
   for (const route of routes) { const cls = [], useful = [];

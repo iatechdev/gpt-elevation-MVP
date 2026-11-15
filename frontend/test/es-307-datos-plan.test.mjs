@@ -8,7 +8,7 @@ const read = path => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
 
 test('ES-307: /app/data y /app/plan están registradas como migradas (tema claro/oscuro del sistema, sin elv-theme)', () => {
   for (const path of ['/app/data', '/app/plan']) { assert.ok(MIGRATED_PERSON_PATHS.includes(path), path); assert.ok(isMigratedPersonPath(path)) }
-  assert.equal(isMigratedPersonPath('/app/bridge'), false) // el resto de Persona A migra en sus propios PR
+  assert.equal(isMigratedPersonPath('/app/compass'), false) // el resto de Persona A migra en sus propios PR
 })
 
 test('ES-307: las dos pantallas usan Cartografía y ya no usan SpaceShell, SpaceDialog, clases elv-* ni space-*, ni estilos en línea ni colores fijos', () => {

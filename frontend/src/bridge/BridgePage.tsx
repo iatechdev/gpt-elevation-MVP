@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
-import { SpaceShell } from '../space/SpaceShell'
+import { Button, Chip, Dialog, LinkButton } from '../cartografia'
+import { PersonScreen } from '../space/PersonScreen'
 import { useSpaceToken } from '../space/hooks'
 import { compassApi, CompassError } from '../compass/api'
 import type { CareerContext, Field } from '../compass/model'
@@ -11,7 +12,6 @@ import { bridgeCopy } from './copy'
 import { loadInsights } from './insights'
 import { SourcesPanel } from './SourcesPanel'
 import { SectionBoundary } from '../components/RouteErrorBoundary'
-import { modalKeyDown } from '../a11y/modalKeys.ts'
 import { readPermissions, setPermission } from './insightsApi'
 import { emptyProposals, sourceIds, withSource } from './sources'
 import { formatDate, pending, sameFields, sortInsights, whyNot, withInsight, withoutField } from './logic'
@@ -36,7 +36,6 @@ export function BridgePage() {
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<Notice>(null); const [askAll, setAskAll] = useState(false)
   // ES-168: «Retirar todo» retira lo cruzado Y los permisos de lectura de las tres fuentes. SourcesPanel avisa de los permisos y se recarga con reloadKey.
   const [perms, setPerms] = useState<Record<SourceId, boolean> | null>(null); const [reloadKey, setReloadKey] = useState(0)
-  const cancelAll = useRef<HTMLButtonElement | null>(null); const allDialog = useRef<HTMLDivElement | null>(null)
   const confirmButton = useRef<HTMLButtonElement | null>(null); const proHeading = useRef<HTMLHeadingElement | null>(null)
   const [focusTarget, setFocusTarget] = useState<Focus>(null)
   // El mismo intento (mismas claves y textos) conserva su requestId hasta que sale bien: si se pierde la respuesta, reintentar no crea una versión idéntica de más.
@@ -88,9 +87,8 @@ export function BridgePage() {
   const authorize = (insight: Insight) => commit(current => withInsight(current, insight), c.crossed, { kind: 'pro' })
   const remove = (field: Field) => commit(current => withoutField(current, field), c.removed, { kind: 'pro' })
   const anyPerm = !!perms && sourceIds.some(source => perms[source])
-  useEffect(() => { if (askAll) cancelAll.current?.focus() }, [askAll])
-  const closeAll = () => { setAskAll(false); requestAnimationFrame(() => (document.querySelector('[data-withdraw-all]') as HTMLElement | null)?.focus()) }
-  const trapAll = (event: React.KeyboardEvent<HTMLDivElement>) => modalKeyDown(event, allDialog.current, () => { if (!busy) closeAll() }) // ES-236: Esc y Tab atrapado en el helper común
+  // ES-307 (PR 4): el diálogo es el Dialog de Cartografía (foco en «Cancelar», Tab atrapado, Esc por onClose); al cerrar el foco vuelve al botón que lo abrió.
+  const closeAll = () => setAskAll(false)
   // Retira lo cruzado (si lo hay) y después los permisos activos, uno por uno. Un corte a medias no se declara éxito: se relee todo y se dice la verdad.
   const withdrawAll = async () => {
     setBusy(true); setNotice(null)
@@ -113,70 +111,62 @@ export function BridgePage() {
   const cancel = () => { const id = confirming; setConfirming(null); if (id) setFocusTarget({ kind: 'authorize', id }) }
   const togglePeek = (id: string) => setPeek(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next })
 
-  if (expired) return <SpaceShell><div role="alert" className="bridge-note">{c.session} <Link className="elv-link" to="/login">{c.login}</Link></div></SpaceShell>
+  if (expired) return <PersonScreen title={c.title}><p role="alert" className="cg-banner cg-banner--error"><span className="cg-banner__title">{c.session} <Link to="/login">{c.login}</Link></span></p></PersonScreen>
   const version = ctx?.active
-  return <SpaceShell>
-    <section className="bridge" aria-labelledby="bridge-title">
-      <header className="bridge-head">
-        <p className="bridge-zone">◈ {c.zone}</p>
-        <h1 id="bridge-title">{c.title}</h1>
-        <p>{c.intro}</p><p className="bridge-small">{c.onlyText}</p>
-        {insights.some(insight => insight.example) && <p className="bridge-tag" role="note">{c.exampleNote} {c.exampleWarn}</p>}
-      </header>
-      <p className="bridge-live" role="status" aria-live="polite">{busy ? c.saving : notice?.kind === 'ok' ? notice.text : ''}</p>
-      {notice?.kind === 'error' && <p className="bridge-note bridge-error" role="alert">{notice.text}</p>}
-      {!ctx && !loadError && <p role="status" aria-busy="true" className="bridge-note">{c.loading}</p>}
-      {loadError && <p className="bridge-note bridge-error" role="alert"><button type="button" className="elv-link" onClick={() => void load()}>{c.loadError}</button></p>}
-      {ctx && <div className="bridge-cols">
-        <section className="bridge-col" aria-labelledby="bridge-private">
-          <h2 id="bridge-private">🔒 {c.private}</h2>
+  // ES-307 (PR 4): Cartografía. Mismas condiciones, acciones y textos; solo cambian las piezas (PersonScreen, cg-card, Chip, Button, Dialog) y el estilo.
+  return <PersonScreen title={c.title} lead={c.intro} wide>
+    <div className="br">
+      <p className="cg-tag br-zone">◈ {c.zone}</p>
+      <p className="cg-hint br-only">{c.onlyText}</p>
+      {insights.some(insight => insight.example) && <p className="cg-banner br-example" role="note"><span className="cg-banner__title">{c.exampleNote} {c.exampleWarn}</span></p>}
+      <p className="br-live" role="status" aria-live="polite">{busy ? c.saving : notice?.kind === 'ok' ? notice.text : ''}</p>
+      {notice?.kind === 'error' && <p className="cg-banner cg-banner--error" role="alert"><span className="cg-banner__title">{notice.text}</span></p>}
+      {!ctx && !loadError && <p role="status" aria-busy="true" className="cg-hint">{c.loading}</p>}
+      {loadError && <p className="cg-banner cg-banner--error" role="alert"><LinkButton onClick={() => void load()}>{c.loadError}</LinkButton></p>}
+      {ctx && <div className="br-cols">
+        <section className="br-col" aria-labelledby="bridge-private">
+          <h2 id="bridge-private" className="br-h">🔒 {c.private}</h2>
           <SectionBoundary><SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} onPerms={setPerms} reloadKey={reloadKey} /></SectionBoundary>
-          {!todo.length && <div className="bridge-empty" role="status"><p>{insights.length ? c.nothing : c.empty}</p>{!insights.length && <p className="bridge-small">{c.emptyNote} <Link className="elv-link" to="/app/compass">{c.toCompass}</Link></p>}</div>}
+          {!todo.length && <div className="br-empty" role="status"><p>{insights.length ? c.nothing : c.empty}</p>{!insights.length && <p className="cg-hint">{c.emptyNote} <Link to="/app/compass">{c.toCompass}</Link></p>}</div>}
           {todo.map(insight => {
             const open = peek.has(insight.id); const asking = confirming === insight.id; const blocked = whyNot(active, insight)
-            return <article key={insight.id} className={`bridge-card${asking ? ' bridge-card-asking' : ''}`} onKeyDown={event => { if (asking && event.key === 'Escape') { event.stopPropagation(); cancel() } }}>
-              <div className="bridge-row">
-                <span className="bridge-small">{formatDate(insight.date, lang)}{insight.example && <span className="bridge-pill bridge-pill-dash"> {c.example}</span>}{insight.source && <span className="bridge-pill bridge-pill-dash"> {c[`src_from_${insight.source}` as keyof typeof c]}</span>}</span>
-                <span><span className={`bridge-pill${insight.status === 'unassessed' ? ' bridge-pill-dash' : ''}`}>{insight.status === 'hypothesis' ? c.hypothesis : c.unassessed}</span>
-                  <button type="button" className="bridge-eye" aria-pressed={open} aria-label={open ? c.hide : c.show} onClick={() => togglePeek(insight.id)}>{open ? '◉' : '◎'}</button></span>
+            return <article key={insight.id} className={`cg-card br-card${asking ? ' br-card--asking' : ''}`} onKeyDown={event => { if (asking && event.key === 'Escape') { event.stopPropagation(); cancel() } }}>
+              <div className="br-row">
+                <span className="cg-hint">{formatDate(insight.date, lang)}{insight.example && <> <Chip>{c.example}</Chip></>}{insight.source && <> <Chip>{c[`src_from_${insight.source}` as keyof typeof c]}</Chip></>}</span>
+                <span className="br-row"><Chip tone={insight.status === 'unassessed' ? 'neutral' : 'wait'}>{insight.status === 'hypothesis' ? c.hypothesis : c.unassessed}</Chip>
+                  <button type="button" className="br-eye" aria-pressed={open} aria-label={open ? c.hide : c.show} onClick={() => togglePeek(insight.id)}>{open ? '◉' : '◎'}</button></span>
               </div>
-              <div className={`bridge-frag${open ? '' : ' bridge-blur'}`} data-label={c.show}><span aria-hidden={!open}>{insight.fragment}</span></div>
-              <div className="bridge-insight"><b>{c.insight}</b>{insight.text}<small>{c[insight.key]}</small></div>
+              <div className={`br-frag${open ? '' : ' br-blur'}`} data-label={c.show}><span aria-hidden={!open}>{insight.fragment}</span></div>
+              <div className="br-insight"><b>{c.insight}</b>{insight.text}<small>{c[insight.key]}</small></div>
               {asking
-                ? <div className="bridge-ask" role="group" aria-label={c.confirmQ}><p>{c.confirmQ}</p>
-                  <div><button type="button" ref={confirmButton} className="bridge-ok" disabled={busy} onClick={() => void authorize(insight)}>{busy ? c.saving : c.confirm}</button><button type="button" className="bridge-no" disabled={busy} onClick={cancel}>{c.cancel}</button></div></div>
-                : <><button type="button" className="bridge-cta" disabled={busy || blocked !== null} data-authorize={insight.id} onClick={() => ask(insight.id)}>{c.authorize}</button>
-                  {blocked && <p className="bridge-small" role="note">{blocked === 'limit_total' ? c.limitTotal : c.limitKey}</p>}</>}
+                ? <div className="br-ask" role="group" aria-label={c.confirmQ}><p>{c.confirmQ}</p>
+                  <div><button type="button" ref={confirmButton} className="cg-btn" disabled={busy} onClick={() => void authorize(insight)}>{busy ? c.saving : c.confirm}</button><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={cancel}>{c.cancel}</button></div></div>
+                : <><button type="button" className="cg-btn cg-btn--ghost br-cta" disabled={busy || blocked !== null} data-authorize={insight.id} onClick={() => ask(insight.id)}>{c.authorize}</button>
+                  {blocked && <p className="cg-hint" role="note">{blocked === 'limit_total' ? c.limitTotal : c.limitKey}</p>}</>}
             </article>
           })}
         </section>
-        <div className="bridge-arrow" aria-hidden="true">↓</div>
-        <section className="bridge-col" aria-labelledby="bridge-pro">
-          <h2 id="bridge-pro" ref={proHeading} tabIndex={-1}>{c.professional}</h2>
-          {version?.needsReview && <div className="bridge-review" role="note"><strong>{c.review}</strong><p>{version.reviewReason === 'source_revoked' ? c.reviewSourceRevoked : c.reviewText}</p></div>}
-          {!active.length && <div className="bridge-empty" role="status"><p>{c.nothing}</p></div>}
+        <div className="br-arrow" aria-hidden="true">↓</div>
+        <section className="br-col" aria-labelledby="bridge-pro">
+          <h2 id="bridge-pro" className="br-h" ref={proHeading} tabIndex={-1}>{c.professional}</h2>
+          {version?.needsReview && <div className="cg-banner br-review" role="note"><strong className="cg-banner__title">{c.review}</strong><p>{version.reviewReason === 'source_revoked' ? c.reviewSourceRevoked : c.reviewText}</p></div>}
+          {!active.length && <div className="br-empty" role="status"><p>{c.nothing}</p></div>}
           {version && active.length > 0 && <>
-            <p className="bridge-small">{c.version.replace('{v}', String(version.version)).replace('{date}', formatDate(version.approvedAt.slice(0, 10), lang))}</p>
-            <ul className="bridge-list">{active.map(field => <li key={`${field.key}|${field.text}`} className="bridge-done">
-              <div className="bridge-row"><span className="bridge-pill bridge-pill-ok">✓ {c.hypothesis}</span>{exampleTexts.has(field.text) && insights.some(insight => insight.example) && <span className="bridge-pill bridge-pill-dash">{c.example}</span>}<small className="bridge-small">{c[field.key]}</small></div>
+            <p className="cg-hint">{c.version.replace('{v}', String(version.version)).replace('{date}', formatDate(version.approvedAt.slice(0, 10), lang))}</p>
+            <ul className="br-list">{active.map(field => <li key={`${field.key}|${field.text}`} className="cg-card br-done">
+              <div className="br-row"><Chip tone="ok" symbol="✓">{c.hypothesis}</Chip>{exampleTexts.has(field.text) && insights.some(insight => insight.example) && <Chip>{c.example}</Chip>}<small className="cg-hint">{c[field.key]}</small></div>
               <p>{field.text}</p>
-              <button type="button" className="bridge-link" disabled={busy} onClick={() => void remove(field)}>{c.revoke}<span className="bridge-sr"> — {field.text}</span></button>
+              <LinkButton disabled={busy} onClick={() => void remove(field)}>{c.revoke}<span className="br-sr"> — {field.text}</span></LinkButton>
             </li>)}</ul></>}
         </section>
       </div>}
-      {ctx && (active.length > 0 || anyPerm) && <footer className="bridge-foot">
-        <button type="button" className="bridge-link" disabled={busy} data-withdraw-all onClick={() => setAskAll(true)}>{c.revokeAll}</button>
+      {ctx && (active.length > 0 || anyPerm) && <footer className="br-foot">
+        <LinkButton disabled={busy} data-withdraw-all onClick={() => setAskAll(true)}>{c.revokeAll}</LinkButton>
       </footer>}
-      {askAll && <div className="bridge-modal-bg">
-        <div ref={allDialog} className="bridge-modal" role="dialog" aria-modal="true" aria-labelledby="bridge-all-title" onKeyDown={trapAll}>
-          <h3 id="bridge-all-title">{c.revokeAllQ}</h3>
-          <ul>{active.length > 0 && <li>{c.withdrawAllCrossed}</li>}{anyPerm && <li>{c.withdrawAllPerms}</li>}<li>{c.withdrawAllKeep}</li></ul>
-          <div className="bridge-modal-btns">
-            <button type="button" ref={cancelAll} className="bridge-no" disabled={busy} onClick={closeAll}>{c.cancel}</button>
-            <button type="button" className="bridge-ok" disabled={busy} onClick={() => void withdrawAll()}>{busy ? c.saving : c.revokeAll}</button>
-          </div>
-        </div>
-      </div>}
-    </section>
-  </SpaceShell>
+      <Dialog open={askAll} onClose={() => { if (!busy) closeAll() }} title={c.revokeAllQ}
+        actions={<><Button variant="ghost" disabled={busy} onClick={closeAll}>{c.cancel}</Button><Button disabled={busy} onClick={() => void withdrawAll()}>{busy ? c.saving : c.revokeAll}</Button></>}>
+        <ul className="br-dlg">{active.length > 0 && <li>{c.withdrawAllCrossed}</li>}{anyPerm && <li>{c.withdrawAllPerms}</li>}<li>{c.withdrawAllKeep}</li></ul>
+      </Dialog>
+    </div>
+  </PersonScreen>
 }
