@@ -1,6 +1,8 @@
 // ES-177 (B2): guía para la IA del profesional. Versión activa, propuesta en revisión («mientras tanto sigue activa la versión anterior»), rechazada con nota; diálogo nativo (foco atrapado, Esc),
 // recordatorio no clínico, contador «n / mínimo 50», el texto se conserva si falla y los errores salen por código en ES/EN (nunca el texto en inglés del servidor).
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+// ES-309 (PR 1): en Cartografía (Banner, Button, Dialog, TextAreaField, tokens --cg-*); sin estilos en línea. El diálogo nativo pasa al Dialog compartido (mismo foco, Tab, Esc y retorno del foco). Ni la lógica ni los textos cambian.
+import { useEffect, useRef, useState } from 'react'
+import { Banner, Button, Dialog, TextAreaField } from '../../cartografia'
 import { PanelBlock } from './PanelSections'
 import type { SectionState } from './useSection'
 import { enterAgain } from './sessionEnter'
@@ -19,8 +21,6 @@ export interface PromptData {
 type T = (key: string, params?: Record<string, string | number>) => string
 type Reason = { code?: string; es?: string; en?: string }
 
-const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
-const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' }
 const ERROR_BY_CODE: Record<string, string> = { pending_exists: 'therapist_prompt_pending_exists', prompt_rules_unavailable: 'panel_gp_rules', rate_limited: 'panel_gp_rate' }
 
 export function GuideBlock({ state, t, locale, lang }: { state: SectionState<PromptData>; t: T; locale: string; lang: 'es' | 'en' }) {
@@ -35,19 +35,15 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const [sent, setSent] = useState(false)
   const [touched, setTouched] = useState(false) // E218-2: lo escrito se conserva al cerrar (Esc, Cancelar) y reabrir; solo se descarta al enviar con éxito
   const before = useRef<{ pending: number | null; rejected: number | null }>({ pending: null, rejected: null })
-  const dialog = useRef<HTMLDialogElement>(null)
-  const opener = useRef<HTMLButtonElement>(null)
   const date = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
-  useEffect(() => { if (open && dialog.current && !dialog.current.open) dialog.current.showModal() }, [open])
   // E243-1: al aparecer el aviso de sesión vencida el botón «Enviar» queda desactivado y el foco caía a body: pasa a «Entrar» (sin quitárselo a quien ya se movió a otro control).
   useEffect(() => {
     if (!error?.enter) return
     const active = document.activeElement
-    if (active === null || active === document.body || dialog.current?.contains(active)) enterButton.current?.focus()
+    if (active === null || active === document.body || document.querySelector('dialog.cg-dialog[open]')?.contains(active)) enterButton.current?.focus()
   }, [error])
-  const close = () => { dialog.current?.close() }
-  const onClosed = () => { setOpen(false); setError(null); opener.current?.focus() }
+  const close = () => { setOpen(false); setError(null) } // el Dialog devuelve el foco al botón que lo abrió
   const start = () => { if (!touched) setText(data?.content ?? ''); setError(null); setSent(false); setOpen(true) }
   const done = () => { setSent(true); setTouched(false); setText(''); close(); state.reload({ silent: true }) }
 
@@ -91,52 +87,51 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const rejected = data?.rejected && !pending && (!data.active || data.rejected.version > data.active.version) ? data.rejected : null
   return (
     <PanelBlock id="panel-guide" title={t('panel_guide')} state={state} t={t}>
-      <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500, color: '#1C1917' }}>
+      <p className="tp-strong">
         {data?.active ? t('panel_guide_active', { v: data.active.version, date: date(data.active.approved_at) }) : t('panel_guide_none')}
       </p>
       {pending && (
-        <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#78350F' }}>
+        <p className="tp-facts">
           <strong>{t('panel_guide_pending', { v: pending.version })}</strong>{data?.active && <> {t('panel_guide_prev')}</>}
         </p>
       )}
       {rejected && (
-        <div style={{ margin: '0.5rem 0 0', padding: '0.75rem 1rem', borderRadius: '0.65rem', background: '#FEF2F2', border: '0.5px solid #FCA5A5', color: '#7F1D1D', fontSize: '0.85rem' }}>
-          <strong>{t('panel_guide_rejected', { v: rejected.version })}</strong>
-          {rejected.rejection_note && <div style={{ marginTop: 4, overflowWrap: 'anywhere' }}>{t('panel_val_note')}: {rejected.rejection_note}</div>}
-          <div style={{ marginTop: 4 }}>{t('panel_guide_retry')}</div>
+        <div className="cg-banner cg-banner--error">
+          <strong className="cg-banner__title">{t('panel_guide_rejected', { v: rejected.version })}</strong>
+          {rejected.rejection_note && <p className="tp-facts">{t('panel_val_note')}: {rejected.rejection_note}</p>}
+          <p className="tp-facts">{t('panel_guide_retry')}</p>
         </div>
       )}
-      {sent && <p role="status" style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#2F4A29' }}>{t('panel_guide_sent')}</p>}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
-        {data?.active && data.content && <button type="button" style={ghost} aria-expanded={showActive} onClick={() => setShowActive(v => !v)}>{showActive ? t('panel_guide_hide') : t('panel_guide_view')}</button>}
-        {!pending && <button ref={opener} type="button" style={primary} onClick={start}>{data?.hasPrompt ? t('panel_guide_propose') : t('panel_guide_create')}</button>}
+      {sent && <p role="status" className="tp-live tp-live--ok">{t('panel_guide_sent')}</p>}
+      <div className="cg-row">
+        {data?.active && data.content && <Button variant="ghost" aria-expanded={showActive} onClick={() => setShowActive(v => !v)}>{showActive ? t('panel_guide_hide') : t('panel_guide_view')}</Button>}
+        {!pending && <Button onClick={start}>{data?.hasPrompt ? t('panel_guide_propose') : t('panel_guide_create')}</Button>}
       </div>
-      {showActive && data?.content && <p style={{ margin: '0.75rem 0 0', padding: '1rem', background: '#F5F3EF', borderRadius: '0.65rem', fontSize: '0.875rem', color: '#1C1917', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{data.content}</p>}
+      {showActive && data?.content && <p className="tp-quote">{data.content}</p>}
 
-      {open && (
-        <dialog ref={dialog} aria-labelledby="panel-guide-dialog-title" onClose={onClosed} style={{ width: 'min(560px, calc(100vw - 2rem))', border: 'none', borderRadius: '1rem', padding: '1.5rem', fontFamily: 'Inter, sans-serif', color: '#1C1917' }}>
-          <form onSubmit={event => { event.preventDefault(); void send() }}>
-            <h2 id="panel-guide-dialog-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', margin: '0 0 0.75rem' }}>{data?.hasPrompt ? t('panel_guide_propose') : t('panel_guide_create')}</h2>
-            <p className="th-notice" style={{ margin: '0 0 0.75rem' }}>{t('panel_guide_reminder')}</p>
-            <label htmlFor="panel-guide-text" style={{ display: 'block', fontSize: '0.82rem', color: '#44403C', marginBottom: 4 }}>{t('panel_guide_field')}</label>
-            <textarea id="panel-guide-text" value={text} rows={8} aria-describedby="panel-guide-counter panel-guide-error" onChange={event => { setText(event.target.value); setTouched(true) }}
-              style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', resize: 'vertical', lineHeight: 1.6 }} />
-            <p id="panel-guide-counter" style={{ margin: '0.35rem 0 0.75rem', fontSize: '0.78rem', color: '#44403C' }}>{t('panel_guide_counter', { n: text.trim().length, min: MIN_GUIDE_CHARS })}</p>
-            <div id="panel-guide-error" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
-              {error && <>
-                <p style={{ margin: 0 }}>{t(error.key)}</p>
-                {error.enter && <button ref={enterButton} type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => { if (!enterAgain(usedToken.current)) { setError({ key: 'session_renewed', reasons: [] }); window.setTimeout(() => document.getElementById('panel-guide-text')?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va al cuadro donde se vuelve a enviar */>{t('session_enter')}</button>}
-                {error.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile()}>{t('panel_gp_check')}</button>}
-                {error.reasons.length > 0 && <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>{error.reasons.map((reason, index) => <li key={`${reason.code}-${index}`}>{reason[lang] ?? reason.code}</li>)}</ul>}
-              </>}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem', flexWrap: 'wrap' }}>
-              <button type="button" style={ghost} onClick={close} disabled={busy}>{t('panel_guide_cancel')}</button>
-              <button type="submit" style={{ ...primary, opacity: busy ? 0.7 : 1 }} disabled={busy}>{busy ? t('panel_guide_sending') : t('panel_guide_send')}</button>
-            </div>
-          </form>
-        </dialog>
-      )}
+      <Dialog
+        open={open}
+        onClose={close}
+        title={data?.hasPrompt ? t('panel_guide_propose') : t('panel_guide_create')}
+        actions={<>
+          <Button variant="ghost" onClick={close} disabled={busy}>{t('panel_guide_cancel')}</Button>
+          <Button type="submit" form="panel-guide-form" disabled={busy}>{busy ? t('panel_guide_sending') : t('panel_guide_send')}</Button>
+        </>}
+      >
+        <form id="panel-guide-form" className="tp-dlg-form" onSubmit={event => { event.preventDefault(); void send() }}>
+          <Banner title={t('panel_guide_reminder')} />
+          <TextAreaField id="panel-guide-text" label={t('panel_guide_field')} value={text} rows={8} aria-describedby="panel-guide-counter panel-guide-error" onChange={event => { setText(event.target.value); setTouched(true) }} />
+          <p id="panel-guide-counter" className="tp-counter">{t('panel_guide_counter', { n: text.trim().length, min: MIN_GUIDE_CHARS })}</p>
+          <div id="panel-guide-error" role="alert" className="tp-dlg-error">
+            {error && <>
+              <p>{t(error.key)}</p>
+              {error.enter && <button ref={enterButton} type="button" className="cg-btn cg-btn--ghost" onClick={() => { if (!enterAgain(usedToken.current)) { setError({ key: 'session_renewed', reasons: [] }); window.setTimeout(() => document.getElementById('panel-guide-text')?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va al cuadro donde se vuelve a enviar */>{t('session_enter')}</button>}
+              {error.check && <Button variant="ghost" disabled={busy} onClick={() => void reconcile()}>{t('panel_gp_check')}</Button>}
+              {error.reasons.length > 0 && <ul className="tp-reasons">{error.reasons.map((reason, index) => <li key={`${reason.code}-${index}`}>{reason[lang] ?? reason.code}</li>)}</ul>}
+            </>}
+          </div>
+        </form>
+      </Dialog>
     </PanelBlock>
   )
 }

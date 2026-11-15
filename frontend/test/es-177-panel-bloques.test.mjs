@@ -75,8 +75,9 @@ test('ES-177 B1 (E210-1): un registro de hoy dice «hoy» en Bogotá a las 20:00
 
 test('ES-177 B1 (E210-2/3): botones de 44 px, nombres largos que se parten y reintentos con nombre accesible propio', () => {
   const sections = read('../src/pages/therapist/PanelSections.tsx')
-  assert.match(sections, /primaryBtn: CSSProperties = \{ minHeight: 44, minWidth: 44/)
-  assert.ok((sections.match(/overflowWrap: 'anywhere'/g) ?? []).length >= 5)
+  // ES-309: los botones son `cg-btn` (min-height var(--cg-touch) = 46 px ≥ 44) y el ajuste de texto largo vive en panel.css
+  assert.match(read('../src/cartografia/cartografia.css'), /\.cg-btn \{[^}]*min-height: var\(--cg-touch\)/); assert.match(sections, /<Button/)
+  assert.ok((read('../src/pages/therapist/panel.css').match(/overflow-wrap: anywhere/g) ?? []).length >= 5)
   assert.match(sections, /aria-label=\{`\$\{t\('panel_retry'\)\}: \$\{sectionName\}`\}/)
 })
 
@@ -85,7 +86,8 @@ test('ES-177 B2: validación y guía sin emojis ni display:none, errores por có
   assert.doesNotMatch(val + guide, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|[★☆]/u)
   assert.doesNotMatch(val + guide, /display: 'none'/)
   assert.match(val, /UPLOAD_ERRORS/); assert.match(guide, /ERROR_BY_CODE/)
-  assert.match(guide, /showModal\(\)/); assert.match(guide, /prompt_rejected/)
+  // ES-309: el diálogo nativo con showModal() pasó al Dialog compartido de Cartografía (que lo abre con showModal())
+  assert.match(guide, /<Dialog\b/); assert.match(read('../src/cartografia/interactive.tsx'), /showModal\(\)/); assert.match(guide, /prompt_rejected/)
   const keys = [...(val + guide).matchAll(/t\('((?:panel_[a-z_]+))'/g)].map(m => m[1])
   for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
   for (const code of ['unsupported_file_type', 'file_too_large', 'file_content_mismatch', 'empty_file', 'no_file', 'invalid_upload', 'storage_unavailable']) assert.equal((copy.match(new RegExp(`panel_up_${code}:`, 'g')) ?? []).length, 2, code)

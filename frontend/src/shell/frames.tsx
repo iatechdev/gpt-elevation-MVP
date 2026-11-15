@@ -40,13 +40,13 @@ export function PersonFrame({ children, migrated = false }: { children: ReactNod
   return inLayout ? <>{children}</> : <PersonChrome migrated={migrated}>{children}</PersonChrome>
 }
 
-/** Profesional: Panel y Personas en facilitación + menú (Revisiones profesionales, Salir); marca «Profesional». */
-export function ProfessionalFrame({ children }: { children: ReactNode }) {
+/** Profesional: Panel y Personas en facilitación + menú (Revisiones profesionales, Salir); marca «Profesional». `migrated` (ES-309): la pantalla ya usa Cartografía → tema claro/oscuro del sistema y sin elv-theme. */
+export function ProfessionalFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
   const { c, lang } = useShellCopy()
   return (
     <Frame
       brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandLabel={`${c.brandLabel}. ${PROFESSIONAL_LABEL[lang]}`} brandTo="/therapist/dashboard"
-      nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} account={<UserMenu name={readName(PROFESSIONAL_LABEL[lang])} items={PROFESSIONAL_MENU} />} mainClassName="elv-theme"
+      nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} account={<UserMenu name={readName(PROFESSIONAL_LABEL[lang])} items={PROFESSIONAL_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
 }

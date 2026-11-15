@@ -1,5 +1,7 @@
 // ES-177 (B2): validación académica del profesional. Estado en palabras (sin emojis), aviso de datos personales, etiquetas visibles (sin `display:none`) y errores de la subida por código en ES/EN.
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+// ES-309 (PR 1): en Cartografía (Banner, Chip, SelectField, Button, tokens --cg-*); sin estilos en línea. Ni la lógica ni los textos cambian.
+import { useEffect, useRef, useState } from 'react'
+import { Banner, Button, Chip, SelectField, type ChipTone } from '../../cartografia'
 import { PanelBlock } from './PanelSections'
 import type { SectionState } from './useSection'
 import { enterAgain } from './sessionEnter'
@@ -20,10 +22,8 @@ type T = (key: string, params?: Record<string, string | number>) => string
 
 const UPLOAD_ERRORS = ['unsupported_file_type', 'file_too_large', 'file_content_mismatch', 'empty_file', 'no_file', 'invalid_upload', 'storage_unavailable']
 const STATUS_KEY = { approved: 'panel_val_approved', pending: 'panel_val_pending', rejected: 'panel_val_rejected' } as const
-const field: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.82rem', color: '#44403C' }
-const control: CSSProperties = { minHeight: 44, padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', background: '#fff' }
-const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
-const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' } // E243-3: mismo estilo de «Entrar» que en la guía
+// El estado va en un chip con su palabra («Aprobada» / «En revisión» / «Rechazada»): nunca solo color y sin emojis.
+const STATUS_TONE: Record<ValidationDoc['status'], ChipTone> = { approved: 'ok', pending: 'wait', rejected: 'bad' }
 
 export function ValidationBlock({ state, t, locale }: { state: SectionState<ValidationDoc[]>; t: T; locale: string }) {
   const docs = state.data ?? []
@@ -65,32 +65,31 @@ export function ValidationBlock({ state, t, locale }: { state: SectionState<Vali
 
   return (
     <PanelBlock id="panel-validation" title={t('panel_validation')} state={state} t={t}>
-      <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500, color: '#1C1917' }}>{summary}</p>
+      <p className="tp-strong">{summary}</p>
       {docs.length > 0 && (
-        <ul style={{ listStyle: 'none', margin: '0.75rem 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <ul className="cg-items tp-docs">
           {docs.map(d => (
-            <li key={d.id} style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', background: '#F5F3EF', border: '0.5px solid #D6D3D1' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1C1917', overflowWrap: 'anywhere' }}>{d.documentName} — <strong>{t(STATUS_KEY[d.status])}</strong></div>
-              <div style={{ fontSize: '0.78rem', color: '#44403C', marginTop: 2 }}>{t(`panel_doc_${d.documentType}`)} · {new Date(d.submittedAt).toLocaleDateString(locale)}</div>
-              {d.reviewNote && <div style={{ fontSize: '0.78rem', color: '#44403C', marginTop: 4, overflowWrap: 'anywhere' }}>{t('panel_val_note')}: {d.reviewNote}</div>}
+            <li key={d.id} className="cg-item">
+              <p className="tp-name">{d.documentName} — <Chip tone={STATUS_TONE[d.status]}>{t(STATUS_KEY[d.status])}</Chip></p>
+              <p className="tp-facts">{t(`panel_doc_${d.documentType}`)} · {new Date(d.submittedAt).toLocaleDateString(locale)}</p>
+              {d.reviewNote && <p className="tp-facts">{t('panel_val_note')}: {d.reviewNote}</p>}
             </li>
           ))}
         </ul>
       )}
       {!approved && (
-        <form style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 420 }} onSubmit={event => { event.preventDefault(); void upload() }}>
-          <p className="th-notice" style={{ margin: 0 }}>{t('panel_val_privacy')}</p>
-          <label style={field}>{t('panel_val_type')}
-            <select style={control} value={docType} onChange={event => setDocType(event.target.value as ValidationDoc['documentType'])}>
-              {(['titulo', 'certificado', 'colegiado', 'otro'] as const).map(type => <option key={type} value={type}>{t(`panel_doc_${type}`)}</option>)}
-            </select>
-          </label>
-          <label style={field}>{t('panel_val_file')}
-            <input ref={input} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" style={control} onChange={event => { setFile(event.target.files?.[0] ?? null); setMessage(null) }} />
-          </label>
-          <div><button type="submit" style={{ ...primary, opacity: busy ? 0.7 : 1 }} disabled={busy}>{busy ? t('panel_val_uploading') : t('panel_val_upload')}</button></div>
-          <p role={message?.failed ? 'alert' : 'status'} style={{ margin: 0, fontSize: '0.85rem', color: message?.failed ? '#B91C1C' : '#2F4A29' }}>{message?.text ?? ''}</p>
-          {message?.enter && <div><button ref={enterButton} type="button" style={ghost} onClick={event => { if (!enterAgain(usedToken.current)) { const submit = event.currentTarget.closest('form')?.querySelector<HTMLButtonElement>('button[type="submit"]'); setMessage({ text: t('session_renewed'), failed: true }); window.setTimeout(() => submit?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va a «Subir documento» */>{t('session_enter')}</button></div>}
+        <form className="tp-form" onSubmit={event => { event.preventDefault(); void upload() }}>
+          <Banner title={t('panel_val_privacy')} />
+          <SelectField label={t('panel_val_type')} value={docType} onChange={event => setDocType(event.target.value as ValidationDoc['documentType'])}>
+            {(['titulo', 'certificado', 'colegiado', 'otro'] as const).map(type => <option key={type} value={type}>{t(`panel_doc_${type}`)}</option>)}
+          </SelectField>
+          <div className="cg-field">
+            <label className="cg-label" htmlFor="panel-val-file">{t('panel_val_file')}</label>
+            <input id="panel-val-file" ref={input} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="cg-input" onChange={event => { setFile(event.target.files?.[0] ?? null); setMessage(null) }} />
+          </div>
+          <div className="cg-row"><Button type="submit" disabled={busy}>{busy ? t('panel_val_uploading') : t('panel_val_upload')}</Button></div>
+          <p role={message?.failed ? 'alert' : 'status'} className={message ? `tp-live ${message.failed ? 'tp-live--bad' : 'tp-live--ok'}` : 'tp-live'}>{message?.text ?? ''}</p>
+          {message?.enter && <div><button ref={enterButton} type="button" className="cg-btn cg-btn--ghost" onClick={event => { if (!enterAgain(usedToken.current)) { const submit = event.currentTarget.closest('form')?.querySelector<HTMLButtonElement>('button[type="submit"]'); setMessage({ text: t('session_renewed'), failed: true }); window.setTimeout(() => submit?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va a «Subir documento» */>{t('session_enter')}</button></div>}
         </form>
       )}
     </PanelBlock>
