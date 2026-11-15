@@ -80,7 +80,7 @@ test('ES-71: approved privacy copy excludes notes from AI and makes pending avai
     assert.match(landingText('landing.pros.cta_note', lang), /no crea una cuenta|does not create an account/)
     assert.match(landingText('landing.pros.bridge.body', lang), /aún no está disponible|not yet available/)
   }
-  const page = read('../src/pages/LandingPage.tsx')
+  const page = read('../src/components/landing/LandingTail.tsx') // ES-155 C: las secciones conservadas viven en LandingTail
   assert.ok(page.indexOf('<LandingFeatures') < page.indexOf('<LandingProfessionals'))
   assert.ok(page.indexOf('<LandingProfessionals') < page.indexOf('<LandingSkillMap'))
   assert.match(page, /showProfessionals && <LandingProfessionals/)

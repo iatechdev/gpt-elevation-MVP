@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const css = readFileSync(new URL('../src/components/landing/landing.css', import.meta.url), 'utf8')
+const css = readFileSync(new URL('../src/components/landing/landing.css', import.meta.url), 'utf8') + readFileSync(new URL('../src/components/landing/landingScope.css', import.meta.url), 'utf8')
 const themes = [...css.matchAll(/@plugin 'daisyui\/theme' \{([^}]+)\}/g)].map(([, block]) => ({
   name: block.match(/name: '([^']+)'/)[1],
   colors: Object.fromEntries([...block.matchAll(/--color-([\w-]+): (#[\da-f]{6});/gi)].map(([, name, hex]) => [name, hex])),

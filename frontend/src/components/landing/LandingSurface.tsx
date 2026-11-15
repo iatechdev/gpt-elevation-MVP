@@ -1,3 +1,4 @@
+import './landingScope.css'
 import { useSyncExternalStore, type HTMLAttributes } from 'react'
 
 const darkQuery = '(prefers-color-scheme: dark)'

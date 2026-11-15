@@ -27,9 +27,9 @@ export function LandingPlans({ text, fullPage = false }: { text: Text; fullPage?
     <div className="landing-plans-inner">
       <p className="landing-plans-label"><span aria-hidden="true">{text('landing.pricing.number')}</span>{text('landing.nav.plans')}</p>
       {fullPage ? <h1 id="landing-pricing-title">{title}</h1> : <h2 id="landing-pricing-title">{title}</h2>}
-      {catalog.state === 'loading' && <div role="status" aria-live="polite"><p>{text('landing.pricing.loading')}</p><div className="landing-plan-skeleton" aria-hidden="true" /></div>}
-      {catalog.state === 'error' && <div role="alert"><p>{text('landing.pricing.load_error')}</p><LandingButton onClick={catalog.refresh}>{text('landing.pricing.retry')}</LandingButton></div>}
-      {catalog.state === 'ready' && catalog.plans.length === 0 && <p role="status">{text('landing.pricing.empty')}</p>}
+      {catalog.state === 'loading' && <div className="landing-plans-state" role="status" aria-live="polite"><p>{text('landing.pricing.loading')}</p><div className="landing-plan-skeleton" aria-hidden="true" /></div>}
+      {catalog.state === 'error' && <div className="landing-plans-state" role="alert"><p>{text('landing.pricing.load_error')}</p><LandingButton onClick={catalog.refresh}>{text('landing.pricing.retry')}</LandingButton></div>}
+      {catalog.state === 'ready' && catalog.plans.length === 0 && <div className="landing-plans-state"><p role="status">{text('landing.pricing.empty')}</p></div>}
       {catalog.state === 'ready' && catalog.plans.length > 0 && <>
         {catalog.plans.some(plan => plan.priceCents === 0) && <p>{text('landing.pricing.subtitle')}</p>}
         {selected && <p role="status">{text(catalog.plans.some(plan => plan.id === selected) ? 'landing.pricing.review' : 'landing.pricing.retired')}</p>}

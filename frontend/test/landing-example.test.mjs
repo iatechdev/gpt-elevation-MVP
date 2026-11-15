@@ -6,7 +6,7 @@ import { exampleAccessibleTitle, exampleApproved } from '../src/content/landingE
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const component = read('../src/components/landing/ExampleStrip.tsx')
 const page = read('../src/pages/LandingPage.tsx')
-const css = read('../src/components/landing/landing.css')
+const css = read('../src/components/landing/landing.css') + read('../src/components/landing/landingScope.css') // ES-155 C: las reglas de las secciones viven en landingScope.css
 const catalog = JSON.parse(read('../../shared/landing-content.json'))
 const byKey = Object.fromEntries(catalog.map(entry => [entry.key, entry]))
 
@@ -38,11 +38,9 @@ test('ES-64: el componente solo usa landing.example.* y no inyecta HTML ni datos
   assert.doesNotMatch(component, /dangerouslySetInnerHTML|fetch\(|localStorage/)
 })
 
-test('ES-64: LandingPage monta la franja bajo el héroe sin tocar el resto', () => {
-  assert.match(page, /<ExampleStrip text=\{landing\.text\} \/>/)
-  // Dentro del marco centrado de 1080 px de la maqueta (QA-LAND-01)
-  assert.match(page, /<div className="landing-frame">[\s\S]*<HeroDoors[^>]*\/>[\s\S]*<ExampleStrip text=\{landing\.text\} \/>\s*<\/div>/)
-  assert.ok(page.indexOf('<ExampleStrip') < page.indexOf('<LandingJourney'))
+test('ES-64 (ES-155 C): la portada nueva ya no monta la franja de ejemplo (la reemplaza «Pruébalo con una escena»); el componente y sus claves se conservan', () => {
+  assert.ok(!page.includes('<ExampleStrip'), 'la franja la reemplaza TryScene')
+  assert.ok(page.includes('<PortadaBody text={text} />'), 'el cuerpo de la portada (escena de ejemplo, pasos, foto) va en su bloque')
 })
 
 test('QA-64-01: la etiqueta se parte en pantallas estrechas en lugar de ensanchar la columna', () => {

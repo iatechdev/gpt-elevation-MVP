@@ -410,5 +410,170 @@
   {"key":"landing.access.reset.go_login","es":"Iniciar sesión","en":"Sign in"},
   {"key":"landing.access.reset.invalid_title","es":"Enlace no válido","en":"Link not valid"},
   {"key":"landing.access.reset.invalid","es":"Este enlace ya no sirve. Pide uno nuevo.","en":"This link no longer works. Request a new one."},
-  {"key":"landing.access.reset.request_new","es":"Pedir un enlace nuevo","en":"Request a new link"}
+  {"key":"landing.access.reset.request_new","es":"Pedir un enlace nuevo","en":"Request a new link"},
+  {
+    "key": "landing.portada.hero_pre",
+    "es": "Tu experiencia tiene",
+    "en": "Your experience has"
+  },
+  {
+    "key": "landing.portada.hero_em",
+    "es": "relieve.",
+    "en": "relief."
+  },
+  {
+    "key": "landing.portada.lead",
+    "es": "Cuéntanos una escena de tu trabajo. Cada capacidad que confirmes con evidencia levanta tu mapa. Lo que no tiene respaldo se queda plano.",
+    "en": "Tell us about one scene from your work. Each capability you confirm with evidence raises your map. What has no backing stays flat."
+  },
+  {
+    "key": "landing.portada.here",
+    "es": "Tú estás aquí",
+    "en": "You are here"
+  },
+  {
+    "key": "landing.portada.legend",
+    "es": "Leyenda",
+    "en": "Legend"
+  },
+  {
+    "key": "landing.portada.leg1",
+    "es": "Nivel registrado por ti, con evidencia",
+    "en": "Level you recorded, with evidence"
+  },
+  {
+    "key": "landing.portada.leg2",
+    "es": "Pista sugerida, esperando tu respuesta",
+    "en": "Suggested hint, waiting for your answer"
+  },
+  {
+    "key": "landing.portada.leg3",
+    "es": "Sin evaluar",
+    "en": "Not assessed"
+  },
+  {
+    "key": "landing.portada.leg4",
+    "es": "Cada línea gruesa es un nivel",
+    "en": "Each thick line is one level"
+  },
+  {
+    "key": "landing.portada.try_title",
+    "es": "Pruébalo con una escena de ejemplo",
+    "en": "Try it with a sample scene"
+  },
+  {
+    "key": "landing.portada.try_example",
+    "es": "Ejemplo, no es tuyo",
+    "en": "Sample, not yours"
+  },
+  {
+    "key": "landing.portada.try_label",
+    "es": "Tu escena",
+    "en": "Your scene"
+  },
+  {
+    "key": "landing.portada.try_value",
+    "es": "El pedido se atrasó, avisé a todos y reorganicé la entrega.",
+    "en": "The order was late, I told everyone and rearranged the delivery."
+  },
+  {
+    "key": "landing.portada.try_mark",
+    "es": "Marcar en el mapa",
+    "en": "Mark it on the map"
+  },
+  {
+    "key": "landing.portada.try_own",
+    "es": "Escribir la mía",
+    "en": "Write my own"
+  },
+  {
+    "key": "landing.portada.try_empty",
+    "es": "Escribe una escena para marcarla.",
+    "en": "Write a scene to mark it."
+  },
+  {
+    "key": "landing.portada.try_note",
+    "es": "La pista es un ejemplo fijo: no analiza lo que escribas aquí. Nada se envía ni se guarda.",
+    "en": "The hint is a fixed sample: it does not analyse what you write here. Nothing is sent or saved."
+  },
+  {
+    "key": "landing.portada.hint_title",
+    "es": "Posible pista",
+    "en": "Possible hint"
+  },
+  {
+    "key": "landing.portada.hint_body",
+    "es": "Se apoya en «reorganicé la entrega». Es una sugerencia, no una evaluación.",
+    "en": "It rests on “rearranged the delivery”. It is a suggestion, not an assessment."
+  },
+  {
+    "key": "landing.portada.hint_yes",
+    "es": "Sí, un poco",
+    "en": "Yes, a little"
+  },
+  {
+    "key": "landing.portada.hint_no",
+    "es": "No todavía",
+    "en": "Not yet"
+  },
+  {
+    "key": "landing.portada.hint_ok",
+    "es": "Anotada. Para que suba en el mapa, registras tu nivel con evidencia. Así se vería un nivel 1:",
+    "en": "Noted. To raise it on the map, you record your level with evidence. This is how level 1 would look:"
+  },
+  {
+    "key": "landing.portada.hint_no_ok",
+    "es": "Entendido: no se anota nada.",
+    "en": "Understood: nothing is noted."
+  },
+  {
+    "key": "landing.portada.see_rise",
+    "es": "Ver cómo sube",
+    "en": "See it rise"
+  },
+  {
+    "key": "landing.portada.rise_alt",
+    "es": "Ejemplo del relieve: un punto en nivel 1 empieza a levantarse.",
+    "en": "Sample relief: a point at level 1 begins to rise."
+  },
+  {
+    "key": "landing.portada.steps_title",
+    "es": "Cómo funciona",
+    "en": "How it works"
+  },
+  {
+    "key": "landing.portada.st1",
+    "es": "1 · Cuentas",
+    "en": "1 · You tell"
+  },
+  {
+    "key": "landing.portada.st1b",
+    "es": "Una escena real, en tus palabras.",
+    "en": "One real scene, in your own words."
+  },
+  {
+    "key": "landing.portada.st2",
+    "es": "2 · Revisas",
+    "en": "2 · You review"
+  },
+  {
+    "key": "landing.portada.st2b",
+    "es": "Te mostramos qué frase respalda cada pista. Tú aceptas o descartas.",
+    "en": "We show which phrase backs each hint. You accept or discard."
+  },
+  {
+    "key": "landing.portada.st3",
+    "es": "3 · Registras",
+    "en": "3 · You record"
+  },
+  {
+    "key": "landing.portada.st3b",
+    "es": "Tu nivel es el que tú registras con evidencia. Nadie lo certifica.",
+    "en": "Your level is the one you record with evidence. No one certifies it."
+  },
+  {
+    "key": "landing.portada.photo",
+    "es": "Espacio reservado para fotografía real · persona en su lugar de trabajo, Bogotá · por encargar, no se genera con IA",
+    "en": "Space reserved for a real photograph · a person at their workplace, Bogotá · to be commissioned, not generated with AI"
+  }
 ]

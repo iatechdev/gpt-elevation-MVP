@@ -1,62 +1,28 @@
+import { lazy, Suspense } from 'react'
 import { useLanguage } from '../i18n/useLanguage'
-import { LandingSurface } from '../components/landing/LandingSurface'
-import { LandingFooter } from '../components/landing/LandingClosing'
-import { HeroDoors } from '../components/landing/HeroDoors'
-import { LandingJourney } from '../components/landing/LandingJourney'
-import { LandingHeader } from '../components/landing/LandingHeader'
-import { ExampleStrip } from '../components/landing/ExampleStrip'
-import { LandingFeatures, LandingSkillMap } from '../components/landing/LandingOffering'
-import { LandingProject } from '../components/landing/LandingProject'
-import { LandingTrust, LandingFaq } from '../components/landing/LandingTrustFaq'
-import { trustFaqEnabled } from '../content/landingTrustFaq'
-import { LandingProfessionals } from '../components/landing/LandingProfessionals'
-import { professionalsEnabled } from '../content/landingProfessionals'
-import { useSpaceRoutes } from '../space/routesContext'
-import { LandingJoin } from '../components/landing/LandingJoin'
-import { LandingPlans } from '../components/landing/LandingPlans'
+import { PublicFrame } from '../shell/frames'
+import { Hero } from '../components/portada/Portada'
 import { useLandingContent } from '../content/useLandingContent'
+
+// Lo conservado de ES-61…74 (planes, confianza, preguntas, proyecto, acceso y cierre) va en su propio bloque: se pide a la vez que la portada, sin bloquear el primer pintado ni pesar en el arranque.
+// «Pruébalo con una escena», los pasos y el hueco de fotografía van en su bloque; mientras llega, un marco con la misma altura evita que el contenido de abajo salte.
+const PortadaBody = lazy(() => import('../components/portada/PortadaBody'))
+const LandingTail = lazy(() => import('../components/landing/LandingTail'))
+
+/** ES-155 (tramo C): la portada pasa a Cartografía dentro del marco público (cabecera, idioma, un solo main, pie). Reemplaza el héroe, el ejemplo y el recorrido de ES-61…74;
+ *  los planes, la confianza y las preguntas, el proyecto, el acceso y el cierre SE CONSERVAN debajo (mismo contenido del CMS `landing.*`, con los colores del sistema). */
 export function LandingPage() {
-  const { lang, setLang, t } = useLanguage()
+  const { lang, t } = useLanguage()
   const landing = useLandingContent(lang)
-  const routes = useSpaceRoutes()
-  const showProfessionals = professionalsEnabled(import.meta.env.VITE_ENABLE_LANDING_PROFESSIONALS)
-
+  const text = landing.text
   return (
-    <LandingSurface>
-      <div style={{ position: 'relative', zIndex: 1 }}>
-
-        {/* Cabecera, idioma y salto al contenido (ES-62) */}
-        <LandingHeader text={landing.text} lang={lang} setLang={setLang} showProfessionals={showProfessionals} />
-
-        <main id="contenido" tabIndex={-1}>
-          {/* Hero + puertas (ES-63) */}
-          <div className="landing-frame">
-            <HeroDoors text={landing.text} />
-            {/* Franja de ejemplo ilustrativo (ES-64): oculta hasta aprobar el texto */}
-            <ExampleStrip text={landing.text} />
-          </div>
-
-        {/* ES-68 · Problema, módulos y recorrido */}
-        <LandingJourney text={landing.text} />
-        {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingTrust text={landing.text} />}
-
-        {/* ES-70 · S7 y S9; ES-71 · S8 solo en el build de revisión. */}
-        <LandingFeatures text={landing.text} />
-        {showProfessionals && <LandingProfessionals text={landing.text} applicationAvailable={routes.has('/profesionales')} />}
-        <LandingSkillMap text={landing.text} />
-        {/* ES-133: planes antes del estado del proyecto; S11 (ES-72) cierra antes del acceso */}
-        <LandingPlans text={landing.text} />
-        <LandingProject text={landing.text} />
-        {/* ES-74 · S13: acceso y alta, sin registrar elección de puerta */}
-        <LandingJoin text={landing.text} />
-        {trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ) && <LandingFaq text={landing.text} />}
-
-
-        </main>
-
-        <LandingFooter text={landing.text} manifestLabel={t('manifest_public_title')} />
-
-      </div>
-    </LandingSurface>
+    <PublicFrame migrated>
+      <Hero text={text} />
+      {/* Un solo límite para los dos bloques: aparecen a la vez. Si el de abajo llegara antes, el salto al ancla (/#planes) caería sobre un hueco de 60 rem que luego se encoge al llegar el de arriba (E282-1). */}
+      <Suspense fallback={<div className="pt-try-skel" aria-hidden="true" />}>
+        <PortadaBody text={text} />
+        <LandingTail text={text} manifestLabel={t('manifest_public_title')} />
+      </Suspense>
+    </PublicFrame>
   )
 }

@@ -1,0 +1,22 @@
+/* ES-155 (tramo C): «Pruébalo con una escena» (tokens --cg-*). */
+.pt-try { display: grid; gap: 1.4rem; margin-top: 1.4rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .pt-try { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.pt-scene { width: 100%; box-sizing: border-box; min-height: 7rem; padding: 0.7rem 0.8rem; background: var(--cg-panel); color: var(--cg-ink); border: 1.5px solid var(--cg-muted); border-radius: 0; font: 1.05rem/1.5 var(--cg-font-sans); resize: vertical; }
+.pt-scene[aria-invalid='true'] { border-color: var(--cg-err); border-width: 2px; }
+.pt-scene:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.pt-note { margin: 0.4rem 0 0; font-size: 0.95rem; color: var(--cg-muted); }
+.pt-error { margin: 0.4rem 0 0; font-weight: 600; color: var(--cg-err); }
+.pt-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.8rem; align-items: center; }
+.pt-hint { min-height: 6rem; display: grid; gap: 0.6rem; align-content: start; }
+.pt-hint p { margin: 0; }
+.pt-rise { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--cg-line); }
+.pt-rise .cg-relief { position: absolute; inset: 0; max-width: none; aspect-ratio: auto; border: 0; }
+.pt-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.pt-steps { margin-top: 2rem; scroll-margin-top: 1rem; }
+.pt-h2 { margin: 0 0 0.8rem; font: 700 clamp(1.5rem, 4vw, 2rem)/1.1 var(--cg-font-cond); letter-spacing: 0.03em; text-transform: uppercase; }
+.pt-steps ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .pt-steps ol { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pt-steps li { border-top: 3px solid var(--cg-ink); padding-top: 0.6rem; }
+.pt-steps li p { margin: 0.4rem 0 0; }
+.pt-photo { margin: 2rem 0; border: 2px dashed var(--cg-muted); background: var(--cg-panel); color: var(--cg-muted); padding: 2.4rem 1rem; text-align: center; font: 600 0.95rem var(--cg-font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.pt-try a.cg-btn--ghost { color: var(--cg-ink); }
