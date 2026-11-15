@@ -113,6 +113,7 @@ const view = (row, file) => ({
   locale: row.locale, status: row.status, reviewedBy: row.reviewedBy ?? null, reviewNote: row.reviewNote ?? null,
   reviewedAt: row.reviewedAt ?? null, userId: row.userId ?? null, createdAt: row.createdAt,
   cv: file ? { size: file.size } : null,
+  minimized: row.minimizedAt != null, // ES-184: la purga (ES-293) dejó solo estado y fechas; la pantalla lo dice sin adivinar por el correo
 });
 
 // Aviso del backoffice: ¿el formulario está cerrado por el tope? (ES-107). Solo admin; nunca en la ruta pública.

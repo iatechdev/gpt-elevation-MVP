@@ -6,6 +6,8 @@ import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
 import { landingFieldLabel } from './landingLabels'
 import { modalKeyDown } from '../../a11y/modalKeys'
+import { Banner, Button, Dialog, ItemList, Tabs, TextAreaField } from '../../cartografia'
+import './adminContent.css'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
@@ -87,81 +89,90 @@ const sectionTitle: React.CSSProperties = {
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
+// ES-184: marco y pestañas en Cartografía. «Planes» y «Textos públicos» se montan tal cual (sin rediseño visual) hasta que tengan ticket propio.
+// El número entre paréntesis es de pendientes y solo aparece si el servidor respondió (nunca se inventa).
+function usePendingCounts() {
+  const [counts, setCounts] = useState<{ validations: number | null; applications: number | null }>({ validations: null, applications: null })
+  const refresh = useCallback(() => {
+    const token = localStorage.getItem('elevation_token') ?? ''
+    const count = async (path: string) => {
+      try {
+        const r = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+        const data = r.ok ? await r.json() : null
+        return Array.isArray(data) ? data.length : null
+      } catch { return null }
+    }
+    void Promise.all([count('/api/junta/pending'), count('/api/admin/professional-applications?status=pending')])
+      .then(([validations, applications]) => setCounts({ validations, applications }))
+  }, [])
+  useEffect(() => { refresh() }, [refresh])
+  return { ...counts, refresh }
+}
+
 export function AdminContent() {
   const tr = useAdminText()
-
-  const [tab, setTab] = useState<'pricing' | 'landing' | 'validations' | 'applications'>('validations')
-
-  const tabs = [
-    { key: 'validations', label: '🎓 Validaciones' },
-    { key: 'applications', label: '📨 Solicitudes' }, // ES-95
-    { key: 'pricing',     label: 'Planes' },
-    { key: 'landing',     label: 'Textos públicos' },
-  ] as const
+  const counts = usePendingCounts()
+  const named = (label: string, count: number | null) => count === null ? tr(label) : `${tr(label)} (${count})`
 
   return (
     <div>
-      <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.8rem', color: '#1C1917', marginBottom: '0.25rem' }}>{tr("Contenido")}{' '}</h1>
-      <p style={{ fontSize: '0.875rem', color: '#6B645F', marginBottom: '1.5rem' }}>{tr("Gestión de validaciones, precios y páginas públicas")}{' '}</p>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1.5rem', borderBottom: '0.5px solid #E7E5E4' }}>
-        {tabs.map(t => (
-          <button key={t.key} aria-pressed={tab === t.key} onClick={() => setTab(t.key)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 500, padding: '0.5rem 1rem',
-              color: tab === t.key ? '#5C6B4E' : '#6B645F',
-              borderBottom: tab === t.key ? '2px solid #5C6B4E' : '2px solid transparent',
-              fontFamily: 'Inter, sans-serif', marginBottom: -1,
-            }}>
-            {tr(t.label)}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'validations' && <ValidationsTab />}
-      {tab === 'applications' && <ProfessionalApplicationsPanel s={{ card, label, input, btnPrimary, btnSecondary }} />}
-      {tab === 'pricing'     && <PricingTab />}
-      {tab === 'landing'     && <LandingTab />}
+      <header className="ac-head">
+        <h1 className="ac-title">{tr("Contenido")}</h1>
+        <p className="ac-lead">{tr("Gestión de validaciones, precios y páginas públicas")}</p>
+      </header>
+      <Tabs label={tr('Secciones')} tabs={[
+        { id: 'validations', label: named('Validaciones', counts.validations), panel: <ValidationsTab onChanged={counts.refresh} /> },
+        { id: 'applications', label: named('Solicitudes', counts.applications), panel: <ProfessionalApplicationsPanel onChanged={counts.refresh} /> }, // ES-95
+        { id: 'pricing', label: tr('Planes'), panel: <PricingTab /> },
+        { id: 'landing', label: tr('Textos públicos'), panel: <LandingTab /> },
+      ]} />
     </div>
   )
 }
 
 // ── Tab Validaciones ──────────────────────────────────────────────────────────
-function ValidationsTab() {
+function ValidationsTab({ onChanged }: { onChanged?: () => void }) {
   const tr = useAdminText()
+  const { lang } = useLanguage()
 
   const token = localStorage.getItem('elevation_token') ?? ''
   const [docs, setDocs]           = useState<ValidationDoc[]>([])
   const [loading, setLoading]     = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [actionDoc, setActionDoc] = useState<ValidationDoc | null>(null)
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null)
   const [note, setNote]           = useState('')
+  const [noteError, setNoteError] = useState('')
   const [saving, setSaving]       = useState(false)
   const [msg, setMsg]             = useState('')
+  const [dialogMsg, setDialogMsg] = useState('')
   const [loadingUrl, setLoadingUrl] = useState<number | null>(null)
 
   const load = useCallback(() => {
-    setLoading(true)
+    setLoading(true); setLoadError('')
     fetch(`${API}/api/junta/pending`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(data => { setDocs(Array.isArray(data) ? data : []); setLoading(false) })
-      .catch(() => setLoading(false))
+      .then(async r => {
+        if (!r.ok) { setDocs([]); setLoadError(r.status === 403 ? 'Solo superadministración puede revisar los documentos de validación.' : 'No se pudieron cargar los documentos.'); return }
+        const data = await r.json()
+        setDocs(Array.isArray(data) ? data : [])
+      })
+      .catch(() => { setDocs([]); setLoadError('No se pudieron cargar los documentos.') })
+      .finally(() => setLoading(false))
   }, [token])
 
   useEffect(() => { load() }, [load])
 
+  // El documento se abre con un enlace firmado y temporal que el servidor entrega solo a quien tiene sesión de superadministración: no hay una URL pública.
   const getDownloadUrl = async (doc: ValidationDoc) => {
-    setLoadingUrl(doc.id)
+    setLoadingUrl(doc.id); setMsg('')
     try {
       const r = await fetch(`${API}/api/junta/${doc.id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await r.json()
-      if (r.ok) window.open(data.url, '_blank')
+      if (r.ok) window.open(data.url, '_blank', 'noopener,noreferrer')
       else setMsg('Error obteniendo el enlace.')
     } catch {
       setMsg('Error de conexión.')
@@ -171,121 +182,72 @@ function ValidationsTab() {
   }
 
   const openAction = (doc: ValidationDoc, type: 'approve' | 'reject') => {
-    setActionDoc(doc); setActionType(type); setNote(''); setMsg('')
+    setActionDoc(doc); setActionType(type); setNote(''); setNoteError(''); setDialogMsg(''); setMsg('')
   }
+  const closeAction = () => { setActionDoc(null); setActionType(null); setNote(''); setNoteError(''); setDialogMsg('') }
 
   const submitAction = async () => {
     if (!actionDoc || !actionType) return
-    if (actionType === 'reject' && !note.trim()) return setMsg('La nota de rechazo es requerida.')
-    setSaving(true); setMsg('')
+    if (actionType === 'reject' && !note.trim()) { setNoteError('Escribe el motivo del rechazo.'); return }
+    setSaving(true); setNoteError(''); setDialogMsg('')
     try {
       const r = await fetch(`${API}/api/junta/${actionDoc.id}/${actionType}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ note }),
       })
-      const data = await r.json()
-      if (!r.ok) return setMsg(data.error ?? 'Error.')
-      setMsg(actionType === 'approve' ? '✓ Terapeuta aprobado y activado.' : '✓ Documento rechazado.')
-      setActionDoc(null); setActionType(null)
-      load()
-    } catch { setMsg('Error de conexión.') }
+      const data = await r.json().catch(() => ({}))
+      if (!r.ok) { setDialogMsg(data.error ?? 'Error.'); return } // el diálogo sigue abierto y conserva la nota
+      setMsg(actionType === 'approve' ? 'Profesional aprobado y activado.' : 'Documento rechazado.')
+      closeAction()
+      load(); onChanged?.()
+    } catch { setDialogMsg('Error de conexión.') }
     finally { setSaving(false) }
   }
 
-  if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando documentos pendientes...")}</p>
-
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <p style={{ fontSize: 13, color: '#6B645F', margin: 0 }}>
-          {docs.length}{' '}{tr("documento(s) pendiente(s) de revisión")}{' '}</p>
-        <button style={btnSecondary} onClick={load}>{tr("↻ Actualizar")}</button>
+    <section className="cg-card ac-panel" aria-labelledby="validations-title">
+      <h2 id="validations-title">{tr('Validaciones')}</h2>
+      <div className="ac-bar">
+        <p className="cg-hint" role="status">{loading ? tr("Cargando documentos pendientes...") : loadError ? '' : <>{docs.length}{' '}{tr("documento(s) pendiente(s) de revisión")}</>}</p>
+        <Button variant="ghost" disabled={loading} onClick={() => { load(); onChanged?.() }}>{tr("Actualizar")}</Button>
       </div>
 
-      {msg && (
-        <div style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem',
-          background: msg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2',
-          color: msg.startsWith('✓') ? '#4A6741' : '#B91C1C', fontSize: 13 }}>
-          {tr(msg)}
-        </div>
-      )}
+      <p className="ac-status cg-hint" role="status">{msg ? tr(msg) : ''}</p>
+      {loadError && <Banner kind="error" title={tr(loadError)}><Button variant="ghost" onClick={load}>{tr('Reintentar')}</Button></Banner>}
+      {!loading && !loadError && docs.length === 0 && <p className="cg-hint">{tr("No hay documentos pendientes de revisión.")}</p>}
 
-      {docs.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', padding: '3rem', color: '#6B645F', fontSize: 13 }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>{tr("No hay documentos pendientes de revisión.")}{' '}</div>
-      )}
-
-      {docs.map(doc => (
-        <div key={doc.id} style={card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#EAF0E6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', color: '#5C6B4E', fontWeight: 600, flexShrink: 0 }}>
-                  {doc.therapist.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{doc.therapist.name}</div>
-                  <div style={{ fontSize: 11, color: '#6B645F' }}>{doc.therapist.email}</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, background: '#F5F5F3', color: '#4A4A4A', padding: '2px 10px', borderRadius: 8 }}>
-                  📄 {doc.documentName}
-                </span>
-                <span style={{ fontSize: 11, background: '#EAF0E6', color: '#5C6B4E', padding: '2px 8px', borderRadius: 8 }}>
-                  {doc.documentType}
-                </span>
-                <span style={{ fontSize: 11, color: '#6F6963' }}>
-                  {new Date(doc.submittedAt).toLocaleDateString(tr('es-CO'), { day: '2-digit', month: 'short', year: 'numeric' })}
-                </span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
-              <button onClick={() => getDownloadUrl(doc)} disabled={loadingUrl === doc.id}
-                style={{ ...btnSecondary, fontSize: 12, padding: '0.45rem 0.85rem' }}>
-                {loadingUrl === doc.id ? tr('Cargando...') : tr('👁 Ver documento')}
-              </button>
-              <button onClick={() => openAction(doc, 'approve')}
-                style={{ ...btnPrimary, fontSize: 12, padding: '0.45rem 0.85rem' }}>{tr("✓ Aprobar")}{' '}</button>
-              <button onClick={() => openAction(doc, 'reject')}
-                style={{ ...btnDanger, fontSize: 12, padding: '0.45rem 0.85rem' }}>{tr("✗ Rechazar")}{' '}</button>
-            </div>
+      <ItemList label={tr('Validaciones')} items={docs.map(doc => ({
+        id: String(doc.id),
+        top: <div className="ac-row"><strong>{doc.therapist.name}</strong><span className="cg-hint">{doc.therapist.email} · {tr('Fecha')}: {new Date(doc.submittedAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>,
+        body: <>
+          <p className="cg-hint ac-meta">{tr('Tipo de documento')}: {doc.documentType} · {tr('Archivo')}: {doc.documentName}</p>
+          <div className="ac-actions">
+            <Button variant="ghost" disabled={loadingUrl === doc.id} onClick={() => void getDownloadUrl(doc)}>{loadingUrl === doc.id ? tr('Cargando...') : tr('Ver documento')}</Button>
+            <Button onClick={() => openAction(doc, 'approve')}>{tr("Aprobar")}</Button>
+            <Button variant="ghost" onClick={() => openAction(doc, 'reject')}>{tr("Rechazar")}</Button>
           </div>
-        </div>
-      ))}
+        </>,
+      }))} />
 
-      {/* Modal aprobar / rechazar */}
-      {actionDoc && actionType && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 480 }}>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>
-              {actionType === 'approve' ? tr('✓ Aprobar terapeuta') : tr('✗ Rechazar documento')}
-            </h3>
-            <p style={{ fontSize: 13, color: '#6B645F', margin: '0 0 1.25rem' }}>
-              {actionType === 'approve'
-                ? tr(`¿Apruebas la validación de ${actionDoc.therapist.name}? Esto lo activará en la plataforma.`)
-                : tr(`Explica por qué rechazas el documento de ${actionDoc.therapist.name}.`)}
-            </p>
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={label}>{actionType === 'approve' ? tr('Nota (opcional)') : tr('Motivo de rechazo *')}</label>
-              <textarea value={note} onChange={e => setNote(e.target.value)}
-                placeholder={actionType === 'approve' ? tr('Ej: Documentos verificados.') : tr('Ej: El título no está apostillado...')}
-                rows={3}
-                style={{ ...input, resize: 'vertical', lineHeight: 1.5 }} />
-            </div>
-            {msg && <p style={{ fontSize: 12, color: '#B91C1C', margin: '0 0 1rem' }}>{tr(msg)}</p>}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button style={btnSecondary} onClick={() => { setActionDoc(null); setActionType(null); setMsg('') }}>{tr("Cancelar")}{' '}</button>
-              <button onClick={submitAction} disabled={saving}
-                style={actionType === 'approve' ? btnPrimary : btnDanger}>
-                {saving ? tr('Procesando...') : actionType === 'approve' ? tr('✓ Confirmar aprobación') : tr('✗ Confirmar rechazo')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Dialog
+        open={!!(actionDoc && actionType)} onClose={() => { if (!saving) closeAction() }}
+        title={actionType === 'reject' ? tr('Rechazar') : tr('Aprobar')}
+        actions={<>
+          <Button variant="ghost" disabled={saving} onClick={closeAction}>{tr("Cancelar")}</Button>
+          <Button variant={actionType === 'reject' ? 'danger' : 'primary'} disabled={saving} onClick={() => void submitAction()}>
+            {saving ? tr('Procesando...') : actionType === 'approve' ? tr('Confirmar aprobación') : tr('Confirmar rechazo')}
+          </Button>
+        </>}
+      >
+        {actionDoc && <p><strong>{actionDoc.therapist.name}</strong></p>}
+        <p className="cg-hint">{actionType === 'approve' ? tr('Queda activa en la plataforma y puede recibir personas.') : tr('El motivo lo verá la persona.')}</p>
+        <TextAreaField id="validation-note" label={actionType === 'approve' ? tr('Nota (opcional)') : tr('Motivo de rechazo *')} value={note}
+          placeholder={actionType === 'approve' ? tr('Ej: Documentos verificados.') : tr('Ej: El título no está apostillado...')}
+          error={noteError ? tr(noteError) : undefined} onChange={e => { setNote(e.target.value); setNoteError('') }} />
+        {dialogMsg && <Banner kind="error" title={tr(dialogMsg)} />}
+      </Dialog>
+    </section>
   )
 }
 

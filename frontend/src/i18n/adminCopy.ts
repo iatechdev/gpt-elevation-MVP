@@ -91,14 +91,14 @@ export const adminEnglish: Record<string, string> = {
   'Mientras un texto siga pendiente, la landing muestra el texto provisional; no se publica ningún dato sin verificar.':
     'While a text is still pending, the landing page shows the placeholder text; no unverified data is published.',
   'Solicitudes de profesionales': 'Professional applications',
-  'Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de terapeuta». Abre las hojas de vida solo en un visor aislado; no se analizan contra virus.':
-    'They arrive from the public form. Approving does not create the account: afterwards use “Create therapist account”. Open résumés only in an isolated viewer; they are not scanned for viruses.',
+  'Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de profesional». Abre las hojas de vida solo en un visor aislado; no se analizan contra virus.':
+    'They arrive from the public form. Approving does not create the account: afterwards use “Create professional account”. Open résumés only in an isolated viewer; they are not scanned for viruses.',
   'Filtrar por estado': 'Filter by status', 'Pendientes': 'Pending', 'Aprobadas': 'Approved', 'Rechazadas': 'Rejected', 'Todas': 'All',
   'Aprobada': 'Approved', 'Rechazada': 'Rejected', 'Cargando solicitudes...': 'Loading applications...', 'Reintentar': 'Retry',
   'No hay solicitudes en este estado.': 'No applications in this status.', 'No se pudieron cargar las solicitudes.': 'Could not load the applications.',
   'Recibida': 'Received', 'idioma': 'language', 'Colegiatura/registro:': 'License/registration:', 'Perfil profesional': 'Professional profile',
   'Revisada por': 'Reviewed by', 'el': 'on', 'Nota:': 'Note:', 'Descargar hoja de vida': 'Download résumé', 'Aprobar': 'Approve', 'Rechazar': 'Reject',
-  'Crear cuenta de terapeuta': 'Create therapist account', 'Eliminar': 'Delete', 'Motivo del rechazo (obligatorio)': 'Reason for rejection (required)',
+  'Crear cuenta de profesional': 'Create professional account', 'Eliminar': 'Delete', 'Motivo del rechazo (obligatorio)': 'Reason for rejection (required)',
   'Confirmar aprobación': 'Confirm approval', 'Escribe el motivo del rechazo.': 'Enter the reason for the rejection.',
   'Otra persona ya revisó esta solicitud.': 'Someone else has already reviewed this application.', 'No se pudo registrar la revisión.': 'Could not record the review.',
   'Solicitud aprobada.': 'Application approved.', 'Solicitud rechazada.': 'Application rejected.', 'Solicitud eliminada.': 'Application deleted.',
@@ -106,6 +106,12 @@ export const adminEnglish: Record<string, string> = {
   'El formulario público está cerrado': 'The public form is closed',
   'Quien intente enviar una solicitud ve «Por ahora no estamos recibiendo solicitudes». ': 'Anyone trying to submit an application sees “We are not receiving applications right now”. ',
   'Revisa, aprueba o rechaza las pendientes, o elimina las que ya no necesites, para volver a recibir.': 'Review, approve or reject the pending ones, or delete those you no longer need, to start receiving again.',
+  // ES-184: Contenido · Validaciones y Solicitudes (diseño 12076; inglés a revisar por una persona)
+  'Validaciones': 'Validations', 'Solicitudes': 'Applications', 'Tipo de documento': 'Document type', 'Archivo': 'File', 'Ver documento': 'View document',
+  'Queda activa en la plataforma y puede recibir personas.': 'It becomes active on the platform and can receive people.', 'El motivo lo verá la persona.': 'The person will see the reason.',
+  'Eliminar solicitud': 'Delete application', 'Se eliminan la solicitud y su hoja de vida; no se puede deshacer. Libera cupo.': 'The application and its résumé are deleted; this cannot be undone. It frees up capacity.',
+  'Datos depurados': 'Data removed', 'Profesional aprobado y activado.': 'Professional approved and activated.', 'Documento rechazado.': 'Document rejected.',
+  'Solo superadministración puede revisar los documentos de validación.': 'Only superadministration can review validation documents.', 'No se pudieron cargar los documentos.': 'Could not load the documents.',
   // ES-181: /admin/prompts (Guías de la IA)
   'Activa': 'Active',
   'En revisión': 'In review',

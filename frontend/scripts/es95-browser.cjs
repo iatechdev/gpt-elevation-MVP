@@ -126,11 +126,11 @@ const assert = require('node:assert/strict');
       check('rechazar exige el motivo y lo envía');
       await page.getByRole('button', { name: 'Aprobadas' }).click(); const beto = page.getByRole('article', { name: 'Solicitud de Beto Prueba' }); await beto.waitFor();
       assert.equal(await beto.getByRole('link', { name: 'Perfil profesional' }).count(), 0, 'un enlace que no es http(s) no se muestra como enlace');
-      await beto.getByRole('link', { name: 'Crear cuenta de terapeuta' }).click(); await page.waitForURL(/\/admin\/users/);
+      await beto.getByRole('link', { name: 'Crear cuenta de profesional' }).click(); await page.waitForURL(/\/admin\/users/);
       await page.getByRole('heading', { name: /Crear|Nuevo usuario/i }).first().waitFor({ timeout: 5000 }).catch(() => {});
       const values = await page.evaluate(() => [...document.querySelectorAll('input')].map(i => i.value)); assert.ok(values.includes('Beto Prueba') && values.includes('beto@example.test'), 'nombre y correo precargados: ' + values.join('|'));
       assert.ok(!page.url().includes('newTherapist'), 'la URL se limpia (sin datos personales)'); assert.equal(await page.locator('input[type=password]').first().inputValue(), '');
-      check('«Crear cuenta de terapeuta» abre Crear usuario con nombre y correo, sin contraseña y limpia la URL'); assert.deepEqual(errors, []); await page.close();
+      check('«Crear cuenta de profesional» abre Crear usuario con nombre y correo, sin contraseña y limpia la URL'); assert.deepEqual(errors, []); await page.close();
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exit(1); });
