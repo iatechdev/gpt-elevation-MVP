@@ -111,7 +111,7 @@ function ExerciseSession({ token }: { token: string }) {
           : <div className="pg-grid">{list.map(item => <article className="cg-card pg-card" key={item.key}><h2>{item[lang].title}</h2>{review(item)}<p>{item[lang].purpose}</p>{time(item)}<Button disabled={opening} onClick={() => void open(item.key)}>{tr('choose')}</Button></article>)}</div>}
         {!entry && <div className="pg-actions"><Button variant="ghost" onClick={() => leave('origin')}>{tr('skip')}</Button></div>}
       </>
-  return <PersonScreen title={tr('title')} lead={phase === 'ready' ? tr('intro') : undefined} wide>
+  return <PersonScreen title={tr('title')} lead={tr('intro')} wide>
     <div className="pg-actions"><Button variant="ghost" disabled={copying} onClick={() => leave('origin')}>{tr('back')}</Button></div>
     <div id="exercise-main" tabIndex={-1}>{body}</div>
     <Dialog open={!!target} onClose={() => { if (!copying) setTarget(null) }} title={tr('leave')}
