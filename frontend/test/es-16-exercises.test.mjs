@@ -16,7 +16,7 @@ test('ES-170: la pantalla de ejercicios no usa la bandera ni el JSON empaquetado
   assert.equal(fs.existsSync(new URL('../src/exercises/publication.ts', import.meta.url)), false)
   assert.doesNotMatch(page, /companion-exercises|exercisesEnabled|VITE_ENABLE_COMPANION_EXERCISES/)
   assert.match(page, /\/api\/exercises\$\{path\}/)
-  assert.doesNotMatch(fs.readFileSync(new URL('../src/space/SpaceNav.tsx', import.meta.url), 'utf8'), /VITE_ENABLE_COMPANION_EXERCISES/)
+  assert.doesNotMatch(fs.readFileSync(new URL('../src/space/SpaceToolsPage.tsx', import.meta.url), 'utf8'), /VITE_ENABLE_COMPANION_EXERCISES/)
 })
 test('ES-16: the three stable exercises have ES/EN purpose, one question and editorial time', () => {
   assert.deepEqual(catalog.exercises.map(e => e.key), ['reflection', 'values', 'contribution'])

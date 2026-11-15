@@ -1,7 +1,7 @@
 // ES-153 (paso 1): PersonLayout sobre /app/*. Reglas estructurales; el comportamiento (marco fijo entre pantallas, foco, tema, axe, 390/320 px) lo mide scripts/es153-layout-check.cjs.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { MIGRATED_PERSON_PATHS, isMigratedPersonPath, personFooterHidden } from '../src/shell/personLayoutState.ts'
 import { shellCopy } from '../src/shell/copy.ts'
 
@@ -67,4 +67,12 @@ test('ES-153 E280-2/3/4: el pie no se pinta con el esqueleto, el marco y la pant
   const space = read('../src/space/space.css')
   const short = space.slice(space.indexOf('(max-width: 600px) and (max-height: 760px)'))
   assert.match(short, /.chat-shell { height: auto;/); assert.match(short, /.chat-input-bar { position: sticky; bottom: 0;[^}]*max-height: none; overflow: visible;/)
+})
+
+test('ES-153 P2: SpaceNav y SpaceSkip están retirados (sin archivo, sin importaciones, sin CSS propio); el salto y la navegación los pone el marco de persona', () => {
+  assert.equal(existsSync(new URL('../src/space/SpaceNav.tsx', import.meta.url)), false)
+  assert.equal(existsSync(new URL('../src/space/SpaceSkip.tsx', import.meta.url)), false)
+  const css = read('../src/space/space.css')
+  assert.ok(!/space-nav|space-tabs|space-menu/.test(css), 'sin reglas de la barra antigua')
+  assert.ok(css.includes('.space-skip'), 'el enlace de salto de la solicitud profesional conserva su estilo')
 })
