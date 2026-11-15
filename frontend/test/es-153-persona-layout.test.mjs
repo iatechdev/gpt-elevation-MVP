@@ -50,3 +50,11 @@ test('ES-153 P1: «Ejercicios opcionales» y la Brújula del chat siguen alcanza
   assert.match(tools, /VITE_ENABLE_COMPASS_CHAT === 'true'[^\]]*to: '\/app\/chat\?mode=compass'/)
   assert.match(read('../src/pages/ChatPage.tsx'), /<ChatLimitsNotice \/>/)
 })
+
+test('ES-153 regresión de contraste (QA-2): la regla de enlaces del marco no pisa a.elv-btn* (primary, secondary, danger…)', () => {
+  const css = read('../src/cartografia/cartografia.css')
+  // Ningún selector `.cg a {color}` sin excluir los enlaces-botón heredados: (0,1,1) le gana a `.elv-btn-primary` (0,1,0) y deja azul sobre fondo oscuro (2,14:1).
+  const linkRules = css.split('\n').filter(line => /^\.cg a[\s:{[]/.test(line) && /\bcolor\s*:/.test(line))
+  assert.ok(linkRules.length >= 1, 'existe la regla de color de enlaces del marco')
+  for (const line of linkRules) assert.match(line, /^\.cg a:not\(\[class\*='elv-btn'\]\)/, `la regla excluye a.elv-btn*: ${line}`)
+})
