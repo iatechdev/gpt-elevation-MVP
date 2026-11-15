@@ -5,7 +5,7 @@
 // Uso: npx vite build && npx vite preview --host 127.0.0.1 --port 4153 --strictPort   y luego
 //   ES153_URL=http://127.0.0.1:4153 PLAYWRIGHT_MODULE=<ruta a playwright> AXE_PATH=<axe.min.js> [ES153_OUT=<carpeta de capturas>] node scripts/es153-layout-check.cjs
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
+const fs = require('node:fs'); const path = require('node:path');
 
 (async () => {
   const { chromium } = process.env.PLAYWRIGHT_MODULE ? require(process.env.PLAYWRIGHT_MODULE) : await import('playwright');
@@ -65,11 +65,15 @@ const fs = require('node:fs');
   { const { context, page } = await open(1360, 'es', 'light', '/app/session/1');
     assert.equal(await page.locator('.cg-frame > header.cg-header').count(), 0, 'la sala no lleva el marco de persona'); await context.close(); check('/app/session/:id sin marco de persona'); }
 
+  const migrated = [...fs.readFileSync(path.join(__dirname, '../src/shell/personLayoutState.ts'), 'utf8').matchAll(/'(\/app\/[^']+)'/g)].map(match => match[1])
+  const legacyStart = ['/app/dashboard', '/app/chat', '/app/progress', '/app/evidence'].find(route => !migrated.some(item => route === item || route.startsWith(item + '/')))
+  assert.ok(legacyStart, 'ya no queda una pantalla heredada de la lista LEGACY_START: añade otra o retira esta comprobación')
   // 3. El marco no se desmonta al cambiar de pantalla; foco en el main; ruta activa; tema solo en pantallas migradas
   for (const lang of ['es', 'en']) {
-    const { context, page } = await open(1360, lang, 'dark', '/app/diary');
+    // ES-318: la pantalla «heredada» de partida es la primera de LEGACY_START que aún no está en MIGRATED_PERSON_PATHS (antes era /app/diary, que ES-307 migró). Así la comprobación no caduca con cada migración.
+    const { context, page } = await open(1360, lang, 'dark', legacyStart);
     await page.evaluate(() => { document.querySelector('.cg-frame > header.cg-header').setAttribute('data-keep', 'si'); });
-    assert.equal(await page.locator('.cg-frame').getAttribute('data-theme'), 'light', `pantalla heredada: tema claro fijo (${lang})`);
+    assert.equal(await page.locator('.cg-frame').getAttribute('data-theme'), 'light', `pantalla heredada ${legacyStart}: tema claro fijo (${lang})`);
     await page.locator('.cg-frame > header.cg-header nav a[href="/app/skill-map"]').click(); await page.waitForURL('**/app/skill-map');
     await page.locator('h1').first().waitFor();
     assert.equal(await page.locator('.cg-frame > header.cg-header[data-keep="si"]').count(), 1, `el encabezado es el mismo nodo tras cambiar de pantalla (${lang})`);
