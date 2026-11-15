@@ -46,7 +46,9 @@ test('ES-174: Mis datos conserva lo escrito si falla, trata la solicitud repetid
   assert.match(page, /useEffect\(\(\) => \(\) => \{ if \(deletedToken\.current\) invalidateStoredSession\(deletedToken\.current\) \}, \[\]\)/)
   assert.doesNotMatch(page, /invalidateStoredSession\(token\)/)
   assert.doesNotMatch(page, /localStorage\.setItem|sessionStorage|console\./)
-  const dialog = read('../src/space/SpaceDialog.tsx')
+  // ES-307: el diálogo de «Mis datos» es el `Dialog` de Cartografía (mismo comportamiento: showModal, título enlazado, Tab atrapado, Escape → onClose).
+  assert.match(page, /<Dialog open=\{open\} onClose=\{closeDialog\}/)
+  const dialog = read('../src/cartografia/interactive.tsx')
   assert.match(dialog, /showModal\(\)/); assert.match(dialog, /aria-labelledby=\{titleId\}/); assert.match(dialog, /event\.key !== 'Tab'/)
 })
 

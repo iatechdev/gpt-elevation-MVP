@@ -6,8 +6,8 @@ import { dataCopy, sectionLabels } from './dataCopy'
 import { confirmMatches, dataErrorKey, downloadExport, prepareExport, requestDeletion } from './dataRights'
 import type { DataErrorKey, ExportPreview } from './dataRights'
 import { useSpaceToken } from './hooks'
-import { SpaceDialog } from './SpaceDialog'
-import { SpaceShell } from './SpaceShell'
+import { Button, Dialog, TextField } from '../cartografia'
+import { Notice, PersonScreen } from './PersonScreen'
 // ES-135 / ES-174 — «Mis datos»: descargar los datos personales (ES-23) y pedir la eliminación de la cuenta con un diálogo y una palabra de confirmación.
 const MAX_TIMER = 2 ** 31 - 1
 export function DataPage() {
@@ -69,38 +69,38 @@ export function DataPage() {
   }
   const closeDialog = () => { if (busy === 'delete') return; setOpen(false); setWord(''); setStatus(null); setFailed(null) }
   const time = (iso: string) => new Date(iso).toLocaleTimeString(lang === 'en' ? 'en' : 'es', { hour: '2-digit', minute: '2-digit' })
-  if (done) return <SpaceShell><h1>{c.title}</h1><p role="status">{c.deleteDone}</p><Link className="elv-btn elv-btn-primary" to="/">{c.backHome}</Link></SpaceShell>
+  if (done) return <PersonScreen title={c.title}><Notice text={c.deleteDone} /><div className="pg-actions"><Link className="cg-btn" to="/">{c.backHome}</Link></div></PersonScreen>
   const message = status ? (status.k === 'downloaded' ? c.downloaded : c[status.k]) : ''
   const isError = !!status && status.k !== 'downloaded'
   const labels: Record<string, string> = sectionLabels[lang]
   const list = preview ? preview.sections.map(s => { const name = labels[s.name] ?? s.name; return s.count === null ? name : `${name} (${s.count})` }).join(' · ') : ''
-  const statusNode = (id?: string) => <p id={id} role={isError ? 'alert' : 'status'} aria-live="polite" className={isError ? 'space-error' : 'space-note'}>
-    {message}{status?.k === 'session' && <> <Link className="elv-link" to="/login">{c.login}</Link></>}
-  </p>
-  return <SpaceShell>
-    <h1>{c.title}</h1><p>{c.intro}</p>
+  const statusNode = (id?: string) => <Notice id={id} error={isError} text={message}>
+    {status?.k === 'session' && <> <Link className="cg-linkbtn" to="/login">{c.login}</Link></>}
+  </Notice>
+  return <PersonScreen title={c.title} lead={c.intro}>
     {!open && statusNode()}
-    <section className="elv-card space-card" aria-labelledby="data-export"><h2 id="data-export">{c.exportTitle}</h2><p>{c.exportBody}</p>
-      {expired && !preview && <p className="space-note" role="status">{c.expiredNote}</p>}
-      {!preview && <button className="elv-btn elv-btn-primary" disabled={!!busy || !token || off} onClick={() => void prepare()}>
-        {busy === 'prepare' ? c.preparing : failed === 'prepare' ? c.retry : expired ? c.prepareAgain : c.prepare}</button>}
-      {preview && <><p>{list ? c.sections.replace('{list}', list) : c.noSections}</p><p className="space-note">{c.validUntil.replace('{time}', time(preview.expiresAt))}</p>
-        <button className="elv-btn elv-btn-primary" disabled={!!busy} onClick={() => void download()}>{busy === 'download' ? c.downloading : failed === 'download' ? c.retry : c.download}</button></>}
+    <section className="cg-card pg-card" aria-labelledby="data-export"><h2 id="data-export">{c.exportTitle}</h2><p>{c.exportBody}</p>
+      {expired && !preview && <p className="cg-hint" role="status">{c.expiredNote}</p>}
+      {!preview && <div className="pg-actions"><Button disabled={!!busy || !token || off} onClick={() => void prepare()}>
+        {busy === 'prepare' ? c.preparing : failed === 'prepare' ? c.retry : expired ? c.prepareAgain : c.prepare}</Button></div>}
+      {preview && <><p>{list ? c.sections.replace('{list}', list) : c.noSections}</p><p className="cg-hint">{c.validUntil.replace('{time}', time(preview.expiresAt))}</p>
+        <div className="pg-actions"><Button disabled={!!busy} onClick={() => void download()}>{busy === 'download' ? c.downloading : failed === 'download' ? c.retry : c.download}</Button></div></>}
     </section>
-    <section className="elv-card space-card" aria-labelledby="data-delete"><h2 id="data-delete">{c.deleteTitle}</h2><p>{c.deleteBody}</p>
-      <button className="elv-btn space-danger" disabled={!!busy || !token || off} onClick={() => setOpen(true)}>{c.deleteStart}</button>
+    <section className="cg-card pg-card" aria-labelledby="data-delete"><h2 id="data-delete">{c.deleteTitle}</h2><p>{c.deleteBody}</p>
+      <div className="pg-actions"><Button variant="danger" disabled={!!busy || !token || off} onClick={() => setOpen(true)}>{c.deleteStart}</Button></div>
     </section>
-    <SpaceDialog open={open} onClose={closeDialog} title={c.dialogTitle}>
-      <ul id="data-consequences">{c.consequences.map(line => <li key={line}>{line}</li>)}</ul>
-      <label htmlFor="data-confirm">{c.typeLabel.replace('{word}', c.confirmWord)}</label>
-      <input id="data-confirm" className="elv-input" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} aria-describedby="data-consequences data-dialog-status"
-        value={word} disabled={busy === 'delete'} onChange={event => setWord(event.target.value)}
-        onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); if (matches) void remove() } }} />
-      {open && statusNode('data-dialog-status')}
-      <div className="space-actions">
-        <button className="elv-btn" disabled={busy === 'delete'} onClick={closeDialog}>{c.deleteCancel}</button>
-        <button className="elv-btn space-danger" disabled={!matches || busy === 'delete'} onClick={() => void remove()}>{busy === 'delete' ? c.deleting : failed === 'delete' ? c.retry : c.deleteConfirm}</button>
+    <Dialog open={open} onClose={closeDialog} title={c.dialogTitle}
+      actions={<>
+        <Button variant="ghost" disabled={busy === 'delete'} onClick={closeDialog}>{c.deleteCancel}</Button>
+        <Button variant="danger" disabled={!matches || busy === 'delete'} onClick={() => void remove()}>{busy === 'delete' ? c.deleting : failed === 'delete' ? c.retry : c.deleteConfirm}</Button>
+      </>}>
+      <div className="pg-dialog">
+        <ul id="data-consequences">{c.consequences.map(line => <li key={line}>{line}</li>)}</ul>
+        <TextField id="data-confirm" label={c.typeLabel.replace('{word}', c.confirmWord)} type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} aria-describedby="data-consequences data-dialog-status"
+          value={word} disabled={busy === 'delete'} onChange={event => setWord(event.target.value)}
+          onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); if (matches) void remove() } }} />
+        {open && statusNode('data-dialog-status')}
       </div>
-    </SpaceDialog>
-  </SpaceShell>
+    </Dialog>
+  </PersonScreen>
 }

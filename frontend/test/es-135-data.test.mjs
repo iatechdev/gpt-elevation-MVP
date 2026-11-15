@@ -83,7 +83,7 @@ test('ES-135: los textos existen en ES y EN con las mismas claves, sin plazos pr
 test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está accesible desde la ruta y el menú', () => {
   const page = read('../src/space/DataPage.tsx')
   assert.match(page, /disabled=\{!matches \|\| busy === 'delete'\}/); assert.doesNotMatch(page, /window\.confirm/) // ES-174: la casilla pasó a palabra de confirmación
-  assert.match(page, /invalidateStoredSession\(deletedToken\.current\)/); assert.match(read('../src/space/SpaceDialog.tsx'), /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/) // Escape llega como «cancel» del <dialog>
+  assert.match(page, /invalidateStoredSession\(deletedToken\.current\)/); assert.match(read('../src/cartografia/interactive.tsx'), /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/) // Escape llega como «cancel» del <dialog>
   assert.match(read('../src/App.tsx'), /path="\/app\/data" element=\{<DataPage \/>\}/)
   assert.match(read('../src/space/SpaceNav.tsx'), /to="\/app\/data"/)
 })
@@ -92,7 +92,8 @@ test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está acces
 test('ES-135: el foco vuelve al botón de inicio después del render, no antes', () => {
   const page = read('../src/space/DataPage.tsx')
   // ES-174: el botón de inicio ya no se desmonta al abrir el diálogo; <dialog>.showModal() devuelve el foco al disparador al cerrar (verificado en navegador real).
-  assert.match(page, /<button className="elv-btn space-danger" disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => setOpen\(true\)\}>/)
+  // ES-307: mismo botón (mismas condiciones y acción), ahora `Button variant="danger"` de Cartografía.
+  assert.match(page, /<Button variant="danger" disabled=\{!!busy \|\| !token \|\| off\} onClick=\{\(\) => setOpen\(true\)\}>/)
   assert.doesNotMatch(page, /startRef|refocus/)
 })
 
