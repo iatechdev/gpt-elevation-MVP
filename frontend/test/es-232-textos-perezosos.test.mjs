@@ -71,7 +71,7 @@ test('ES-232: cada módulo que escribe claves de un catálogo perezoso importa s
 
 test('ES-232: el enlace «Saltar al contenido» del arranque no arrastra los textos del chat y del diario', () => {
   const session = files.find(f => f.path === 'space/SpaceSession.tsx').text
-  assert.match(session, /from '\.\/SpaceSkip'/); assert.doesNotMatch(session, /SpaceNav|\.\/copy/)
+  assert.doesNotMatch(session, /SpaceNav|SpaceSkip|\.\/copy/) // ES-153: «Saltar al contenido» lo pone el marco de persona
   const skip = files.find(f => f.path === 'space/SpaceSkip.tsx').text
   assert.doesNotMatch(skip, /from '\.\/copy'/); assert.match(skip, /import '\.\/space\.css'/) // mismos estilos que antes
 })

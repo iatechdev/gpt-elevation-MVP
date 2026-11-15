@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
-import { useLanguage } from '../i18n/useLanguage'
-import { copy } from './copy'
-import { SpaceNav, SpaceSkip } from './SpaceNav'
+import './space.css'
+// ES-153 (paso 1): el encabezado, el idioma, la navegación y «Saltar al contenido» ya los pone el marco de persona (PersonLayout). Esto es solo el contenido de la pantalla.
 export function SpaceShell({ children, className = '' }: { children: ReactNode; className?: string }) {
-  const { lang, setLang } = useLanguage(); const c = copy[lang]
-  return <div className={`space-scope space-page ${className}`}><SpaceSkip /><header><Link className="elv-link" to="/app/dashboard">{c.home}</Link><div>{(['es', 'en'] as const).map(l => <button className="elv-btn" key={l} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header><SpaceNav /><main id="space-main" tabIndex={-1}>{children}</main></div>
+  return <div className={`space-scope space-page ${className}`}><div className="space-body">{children}</div></div>
 }

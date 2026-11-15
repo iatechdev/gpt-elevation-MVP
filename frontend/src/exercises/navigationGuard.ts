@@ -1,3 +1,4 @@
+import { registerLeaveGuard } from '../shell/leaveGuard'
 // Eagerly imported before BrowserRouter mounts: prevent its listener from
 // unmounting the editor when a person cancels a same-document history traversal.
 let active: { index: number; cancel: () => boolean } | null = null
@@ -9,8 +10,9 @@ window.addEventListener('popstate', event => {
   event.stopImmediatePropagation(); restoring = active.index; window.history.go(active.index - index)
 })
 export function registerExerciseGuard(cancel: () => boolean) {
+  const leave = registerLeaveGuard(() => cancel()) // ES-153: los enlaces del marco de persona consultan la misma guardia
   const index: unknown = window.history.state?.idx
   const guard = typeof index === 'number' ? { index, cancel } : null
   active = guard
-  return () => { if (active === guard) active = null }
+  return () => { leave(); if (active === guard) active = null }
 }

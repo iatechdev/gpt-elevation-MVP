@@ -14,7 +14,7 @@ import { array, object, safeUrl, string, type Data } from './schema'
 import './person.css'
 
 function Screen({ children }: { children: ReactNode }) {
-  const { tr } = useWords(); const main = useRef<HTMLElement>(null)
+  const { tr } = useWords(); const main = useRef<HTMLDivElement>(null)
   return (
     <CartografiaRoot className="cgp">
       <a className="cg-skip" href="#catalog-main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{tr('skip')}</a>
@@ -22,7 +22,7 @@ function Screen({ children }: { children: ReactNode }) {
         <Link className="cg-btn cg-btn--ghost" to="/app/dashboard"><span aria-hidden="true">← </span>{tr('back')}</Link>
         <div className="cg-header__end"><LangSwitch /></div>
       </header>
-      <main id="catalog-main" tabIndex={-1} ref={main} className="cg-page cgp-main">{children}</main>
+      <div id="catalog-main" tabIndex={-1} ref={main} className="cg-page cgp-main">{children}</div>
     </CartografiaRoot>
   )
 }

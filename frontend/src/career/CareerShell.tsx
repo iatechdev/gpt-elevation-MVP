@@ -7,6 +7,7 @@ import type { CopyKey } from './copy'
 import { createFixture, FixtureError } from './fixture'
 import type { Command } from './fixture'
 import { registerCareerGuard } from './navigationGuard'
+import { registerLeaveGuard } from '../shell/leaveGuard'
 import './career.css'
 
 const enabled = import.meta.env.VITE_ENABLE_CAREER_PREVIEW === 'true'
@@ -70,8 +71,13 @@ function CareerSession({ session }: { session: string }) {
       opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     }
     const detach = registerCareerGuard(pop)
+    // ES-153: los enlaces del marco de persona abren este mismo diálogo (antes solo lo abrían los enlaces de la propia pantalla)
+    const leave = registerLeaveGuard(to => {
+      if (!dirtyRef.current && !inFlight.current && !uncertainRef.current) return false
+      opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setPending(to); return true
+    })
     window.addEventListener('beforeunload', before)
-    return () => { window.removeEventListener('beforeunload', before); detach() }
+    return () => { window.removeEventListener('beforeunload', before); detach(); leave() }
   }, [])
   useEffect(() => { if (pending !== null) keepRef.current?.focus() }, [pending])
   const navigate = useCallback((to: string) => {
@@ -101,7 +107,7 @@ function CareerSession({ session }: { session: string }) {
   return <section className={`career-scope${dark ? ' elv-dark' : ''}`}>
     <a className="career-skip" href="#career-main">{t('skip')}</a>
     <header className="career-header"><div>{nav('/app/dashboard', 'back')}<span aria-hidden="true"> ELEVATION</span></div><div className="career-languages">{(['es', 'en'] as const).map(l => <button key={l} type="button" aria-label={l === 'es' ? 'Español' : 'English'} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header>
-    <main id="career-main" tabIndex={-1}><h1>{t('title')}</h1>
+    <div id="career-main" tabIndex={-1}><h1>{t('title')}</h1>
       {session && token() === session && enabled && <nav aria-label={t('title')}>{nav('/app/next-step', 'routes')}{nav('/app/next-step/experiments', 'experiments')}{nav('/app/next-step/plan', 'plan')}</nav>}
       {!session || token() !== session ? <p role="alert">{t('session')}</p> : !enabled ? <p role="status">{t('disabled')}</p> : <>
         <p className="elv-alert career-banner" role="note">{t('preview')}</p>
@@ -113,7 +119,7 @@ function CareerSession({ session }: { session: string }) {
         </div>
         {!state.loaded ? <p role="status">{error ? t('empty') : t('loading')}</p> : <CareerContext.Provider value={{ state, client, lang, t, busy, uncertain, dirty: dirty || dirtyCount > 0, setDirty: setDirtyValue, otherDirty, send, navigate }}><div aria-busy={busy}><Outlet /></div></CareerContext.Provider>}
       </>}
-    </main>
+    </div>
     {pending !== null && <div className="career-dialog-backdrop" onKeyDown={e => {
       if (e.key === 'Escape') { e.preventDefault(); stay() }
       if (e.key === 'Tab') { const controls = e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'); const first = controls[0], last = controls[controls.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() } }

@@ -1,6 +1,6 @@
 // ES-153: piezas comunes de los marcos de página: «saltar al contenido», un solo <main> que recibe el foco al cambiar de ruta,
 // selector de idioma, menú de usuario (teclado, Escape y retorno del foco) y pie con el aviso «no es terapia ni diagnóstico».
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { signOut } from '../access/signOut'
@@ -8,6 +8,7 @@ import { CartografiaRoot } from '../cartografia/theme'
 import type { CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
 import { useShellCopy } from './useShellCopy'
+import { leaveBlocked } from './leaveGuard'
 import './shell.css'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -46,7 +47,7 @@ export function UserMenu({ name, items, withSignOut = true }: { name: string; it
   }, [open])
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Escape' && open) { event.stopPropagation(); close(true) } }
   const leave = async () => {
-    if (leaving) return
+    if (leaving || leaveBlocked('/', 'action')) return
     setLeaving(true)
     await signOut(BACKEND)
     navigate('/', { replace: true })
@@ -68,7 +69,7 @@ export function UserMenu({ name, items, withSignOut = true }: { name: string; it
 export function SignOutButton() {
   const { c } = useShellCopy(); const navigate = useNavigate(); const [leaving, setLeaving] = useState(false)
   const leave = async () => {
-    if (leaving) return
+    if (leaving || leaveBlocked('/', 'action')) return
     setLeaving(true)
     await signOut(BACKEND)
     navigate('/', { replace: true })
@@ -79,6 +80,14 @@ export function SignOutButton() {
 export function SiteFooter() {
   const { c } = useShellCopy()
   return <footer className="cg-footer"><span>{c.foot1}</span><span>{c.foot2}</span></footer>
+}
+
+/** ES-153: un clic en un enlace del encabezado (marca, navegación, menú de usuario) pregunta antes si hay un borrador sin guardar; si bloquea, la persona se queda con su texto. */
+function guardLeave(event: ReactMouseEvent<HTMLElement>) {
+  const link = event.target instanceof Element ? event.target.closest('a[href]') : null
+  const href = link?.getAttribute('href') ?? ''
+  if (!link || href.startsWith('#') || event.defaultPrevented) return
+  if (leaveBlocked(href)) { event.preventDefault(); event.stopPropagation() }
 }
 
 export type FrameProps = {
@@ -102,7 +111,7 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar,
     <CartografiaRoot theme={theme} className="cg-frame">
       <a className="cg-skip" href="#main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{c.skip}</a>
       {header && (
-        <header className="cg-header">
+        <header className="cg-header" onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
           {nav}
           <div className="cg-header__end"><LangSwitch />{account}</div>
