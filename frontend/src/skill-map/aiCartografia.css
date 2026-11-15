@@ -1,0 +1,28 @@
+/* ES-161 — el panel de análisis con IA y el diálogo de revocación con el sistema «Cartografía» (tokens --cg-*, claro y oscuro del sistema).
+   Se añaden como reglas de .cg-map para no tocar radar.css (el radar se rehace en ES-300); no hay colores fijos. */
+/* indicador de pasos: número + palabra; el paso actual y los hechos se distinguen por texto/forma, no solo por color */
+.cg-map .ai-steps { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; list-style: none; margin: 0 0 1rem; padding: 0; font: 600 0.9rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cg-muted); counter-reset: ai-step; }
+.cg-map .ai-steps li { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0; border: 0; border-radius: 0; background: none; counter-increment: ai-step; }
+.cg-map .ai-steps li::before { content: counter(ai-step); display: inline-grid; place-items: center; min-width: 1.6rem; height: 1.6rem; border: 1.5px solid var(--cg-muted); font-weight: 700; }
+.cg-map .ai-steps li.is-done::before { content: '✓'; border-color: var(--cg-good); color: var(--cg-good); }
+.cg-map .ai-steps li[aria-current='step'] { color: var(--cg-ink); background: none; }
+.cg-map .ai-steps li[aria-current='step']::before { background: var(--cg-ink); color: var(--cg-ground); border-color: var(--cg-ink); }
+/* tarjetas de propuesta */
+.cg-map .ai-prop { border: 1.5px solid var(--cg-ink); border-radius: 0; background: var(--cg-panel); padding: 1rem 1.1rem; }
+.cg-map .ai-prop h3 { font: 700 1.15rem var(--cg-font-cond); letter-spacing: 0.04em; text-transform: uppercase; }
+.cg-map .ai-tag { display: inline-flex; align-items: center; border: 1.5px solid var(--cg-good); border-radius: 0; background: color-mix(in srgb, var(--cg-good) 12%, var(--cg-panel)); color: var(--cg-ink); font: 700 0.8rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; padding: 0.1rem 0.6rem; }
+.cg-map .ai-lv { gap: 0.6rem; }
+.cg-map .ai-evid blockquote { border-left: 3px solid var(--cg-contour); color: var(--cg-muted); }
+/* avisos: borde, símbolo y palabra (nunca solo color) */
+.cg-map .ai-warn, .cg-map .ai-error, .cg-map .ai-ok { border: 1.5px solid var(--cg-ink); border-left-width: 5px; border-radius: 0; color: var(--cg-ink); }
+.cg-map .ai-warn { background: color-mix(in srgb, var(--cg-contour) 14%, var(--cg-panel)); border-color: var(--cg-contour); }
+.cg-map .ai-error { background: color-mix(in srgb, var(--cg-err) 10%, var(--cg-panel)); border-color: var(--cg-err); }
+.cg-map .ai-ok { background: color-mix(in srgb, var(--cg-good) 12%, var(--cg-panel)); border-color: var(--cg-good); }
+.cg-map .ai-error p::before { content: '⚠ '; color: var(--cg-err); font-weight: 700; }
+.cg-map .ai-spin { border-color: var(--cg-line); border-top-color: var(--cg-mark); }
+/* diálogo de revocación (sigue siendo el <dialog> nativo: showModal, Esc, foco que entra y vuelve) */
+.cg-map .skill-map-dialog { border: 1.5px solid var(--cg-ink); border-radius: 0; background: var(--cg-panel); color: var(--cg-ink); padding: 1.4rem; max-width: min(30rem, calc(100% - 2rem)); }
+.cg-map .skill-map-dialog::backdrop { background: color-mix(in srgb, var(--cg-ink) 55%, transparent); }
+.cg-map .skill-map-dialog h2 { margin: 0 0 0.6rem; font: 700 1.4rem var(--cg-font-cond); letter-spacing: 0.03em; text-transform: uppercase; }
+.cg-map .skill-map-dialog-actions { gap: 0.8rem; }
+.cg-map .ai-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

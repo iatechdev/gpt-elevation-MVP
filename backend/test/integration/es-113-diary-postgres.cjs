@@ -11,6 +11,7 @@ const net = require('node:net');
 
 test('ES-113 diary: real PostgreSQL ownership, encrypted CRUD, validation and session revocation', { timeout: 120000 }, async t => {
   const { default: EmbeddedPostgres } = await import('embedded-postgres');
+  const external = await require('../support/externalPostgres.cjs').openExternalPostgres('ES113_TEST_DATABASE_URL', 'es113'); // ES-261: en CI se usa el servicio PostgreSQL
   const { Sequelize } = require('sequelize');
   const root = path.resolve(__dirname, '../../.pgdata');
   const directory = path.join(root, `es113-${randomBytes(8).toString('hex')}`);
@@ -28,7 +29,7 @@ test('ES-113 diary: real PostgreSQL ownership, encrypted CRUD, validation and se
   const password = randomBytes(24).toString('hex');
   // Windows descendants may release file handles after the parent's exit event.
   // Stop first; remove only our verified directory with bounded EBUSY retries.
-  const pg = new EmbeddedPostgres({ databaseDir: directory, user: 'es113_test', password, port, persistent: true,
+  const pg = external ? external.shim : new EmbeddedPostgres({ databaseDir: directory, user: 'es113_test', password, port, persistent: true,
     initdbFlags: ['--encoding=UTF8', '--locale=C'], postgresFlags: ['-h', '127.0.0.1'], onLog() {}, onError() {} });
   let started = false;
   let sequelize;
@@ -47,7 +48,7 @@ test('ES-113 diary: real PostgreSQL ownership, encrypted CRUD, validation and se
   await pg.initialise();
   await pg.start();
   started = true;
-  sequelize = new Sequelize(`postgres://es113_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
+  sequelize = new Sequelize(external ? external.url : `postgres://es113_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
   process.env.JWT_SECRET = randomBytes(32).toString('hex');
   process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
   // Only the database connection is injected. All models and auth/crypto code are real.

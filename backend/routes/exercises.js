@@ -2,7 +2,9 @@
 // ES-194 · Ejercicios de acompañamiento creados, revisados y publicados desde la aplicación.
 //   adminRouter (/api/admin/exercises): SOLO superadministración (403 al resto, verificado en cada ruta). Estado de publicación (draft | published | withdrawn) y
 //     revisión del especialista (pending | done) son INDEPENDIENTES: publicar sin revisión hecha es posible y lo que ve la persona es veraz (`reviewStatus`).
-//     Si cambia el contenido de un ejercicio revisado, la revisión vuelve a `pending`. publish, withdraw y review exigen `confirm: true`.
+//     Si cambia el contenido de un ejercicio revisado, la revisión vuelve a `pending`.
+//     publish, withdraw y review exigen `confirm: true` y `expectedVersion` del contenido visto: 400 si falta/es inválida, 409 `exercise_changed` si cambió.
+//     La versión sigue cambios de contenido, no cambios de estado; repetir la misma acción y versión es idempotente.
 //   readRouter (/api/exercises, con sesión): SOLO ejercicios PUBLICADOS; borradores y retirados no salen ni por clave (404 idéntico a inexistente).
 // Todo se escribe con la fila bloqueada dentro de una transacción; las comprobaciones de rol van antes (no se pide otra conexión con el bloqueo tomado).
 const express = require('express');
@@ -59,6 +61,12 @@ async function locked(req, res, work) {
 }
 const needConfirm = (req, res) => (req.body && req.body.confirm === true ? true
   : (res.status(400).json({ code: 'confirmation_required', error: 'Falta la confirmación. / Confirmation is required.' }), false));
+const changed = (row) => ({ rollback: true, status: 409, body: { code: 'exercise_changed', error: 'Otra persona guardó este ejercicio. / Another person saved this exercise.', current: present(row) } });
+function lockedVersion(req, res, work) {
+  const expected = req.body && req.body.expectedVersion;
+  if (!Number.isSafeInteger(expected) || expected < 1) return res.status(400).json({ code: 'expected_version_required', error: 'Falta una versión válida. / A valid version is required.' });
+  return locked(req, res, (row, transaction) => row.version !== expected ? changed(row) : work(row, transaction));
+}
 
 adminRouter.get('/', async (req, res) => {
   try {
@@ -132,7 +140,7 @@ adminRouter.put('/:id', async (req, res) => {
   try { content = normalizeContent(req.body); } catch (error) { if (error instanceof ExerciseInputError) return badInput(res, error); throw error; }
   if (!Number.isInteger(expected) || expected < 1) return res.status(400).json({ code: 'version_required', error: 'Falta la versión esperada. / The expected version is required.' });
   return locked(req, res, async (row, transaction) => {
-    if (row.version !== expected) return { rollback: true, status: 409, body: { code: 'exercise_changed', error: 'Otra persona guardó este ejercicio. / Another person saved this exercise.', current: present(row) } };
+    if (row.version !== expected) return changed(row);
     const next = { es: content.es, en: content.en, minutesMin: content.minutesMin, minutesMax: content.minutesMax };
     if (!contentChanged(row, next)) return { rollback: true, status: 200, body: { ...present(row), unchanged: true } }; // idempotente: sin cambios no hay versión nueva
     // E194-1: un ejercicio PUBLICADO llega a la persona al guardar; se revalidan completitud y reglas no clínicas igual que al publicar y NO se guarda (ni se pasa a borrador en silencio).
@@ -153,7 +161,7 @@ adminRouter.put('/:id', async (req, res) => {
 
 adminRouter.post('/:id/publish', (req, res) => {
   if (!needConfirm(req, res)) return undefined;
-  return locked(req, res, async (row, transaction) => {
+  return lockedVersion(req, res, async (row, transaction) => {
     if (row.status === 'published') return { rollback: true, status: 200, body: { ...present(row), unchanged: true } };
     const missing = missingKeys(row);
     if (missing.length) return { rollback: true, status: 422, body: { code: 'incomplete', missing, error: 'Faltan datos para publicar. / Required data is missing to publish.' } };
@@ -168,7 +176,7 @@ adminRouter.post('/:id/publish', (req, res) => {
 
 adminRouter.post('/:id/withdraw', (req, res) => {
   if (!needConfirm(req, res)) return undefined;
-  return locked(req, res, async (row, transaction) => {
+  return lockedVersion(req, res, async (row, transaction) => {
     if (row.status === 'withdrawn') return { rollback: true, status: 200, body: { ...present(row), unchanged: true } };
     if (row.status !== 'published') return { rollback: true, status: 409, body: { code: 'not_published', error: 'Solo se retira un ejercicio publicado. / Only a published exercise can be withdrawn.' } };
     const actor = actorOf(req.user).actorName;
@@ -183,7 +191,7 @@ adminRouter.post('/:id/review', (req, res) => {
   const target = req.body && req.body.reviewStatus;
   if (!['done', 'pending'].includes(target)) return badInput(res, new ExerciseInputError('reviewStatus', 'invalid'));
   if (!needConfirm(req, res)) return undefined;
-  return locked(req, res, async (row, transaction) => {
+  return lockedVersion(req, res, async (row, transaction) => {
     if (row.reviewStatus === target) return { rollback: true, status: 200, body: { ...present(row), unchanged: true } };
     const actor = actorOf(req.user).actorName;
     await row.update(target === 'done'

@@ -31,12 +31,15 @@ router.get('/roles/:roleKey', async (req, res) => {
     if (!published) return unavailable(res);
     const role = published.roles.find((r) => r.roleKey === req.params.roleKey);
     if (!role) return res.status(404).json({ code: 'role_not_found', error: 'Ficha no encontrada. / Role profile not found.' });
+    const resources = published.resources.filter((r) => (r.roleKeys || []).includes(role.roleKey));
+    const wanted = new Set([...(role.capabilities || []).map((c) => c.skillKey), ...resources.map((r) => r.linkedSkillKey)]);
     res.json({
       version: published.version,
       role,
       sources: published.sources.filter((s) => (role.sourceKeys || []).includes(s.sourceKey)),
       offers: published.offers.filter((o) => o.roleKey === role.roleKey),
-      resources: published.resources.filter((r) => (r.roleKeys || []).includes(role.roleKey)),
+      resources,
+      skillLabels: Object.fromEntries(Object.entries(published.skillLabels || {}).filter(([k]) => wanted.has(k))), // ES-260: solo nombres
     });
   } catch (error) {
     console.error('Error leyendo la ficha de rol:', error && error.name);

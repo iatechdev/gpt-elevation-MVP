@@ -83,7 +83,7 @@ test('ES-30 «Revocar todos»: solo PUT /api/consents/professional_bridge con {s
   assert.equal(url, 'https://api.example.invalid/api/consents/professional_bridge')
   assert.equal(options.method, 'PUT'); assert.equal(options.body, '{"status":"revoked"}'); assert.equal(options.cache, 'no-store')
   assert.equal(options.headers.Authorization, 'Bearer sintetico')
-  for (const [status, reason] of [[401, 'expired'], [409, 'error'], [500, 'error']]) {
+  for (const [status, reason] of [[401, 'expired'], [409, 'error'], [500, 'unsure']]) {
     await assert.rejects(revokeBridge({ baseUrl: 'x', token: 't', fetcher: async () => new Response('{}', { status }) }), e => e instanceof ConsentError && e.reason === reason)
   }
   await assert.rejects(revokeBridge({ baseUrl: 'x', token: '', fetcher: async () => { throw new Error('no debe llamar') } }), e => e.reason === 'expired')
@@ -107,7 +107,7 @@ test('ES-30 (QA H-86-03) tras «Revocar todos» el mapa se vuelve a leer sin pas
   assert.ok(page.includes("setBridge('revoked'); setRevoke('done'); void reloadMap()"))
   assert.ok(page.includes('const reloadMap = async'))
   const css = readFileSync(new URL('../src/skill-map/skillMap.css', import.meta.url), 'utf8')
-  assert.match(css, /\.skill-map-territory-roles \{[^}]*fill: var\(--elv-text-1\)/)
+  // ES-160: el mapa SVG con roles ya no existe; los tintes de territorio salen de los tokens de Cartografía (mapCartografia.css)
   assert.match(css, /\.skill-map-roles \{[^}]*color: var\(--elv-text-1\)/)
 })
 
@@ -116,10 +116,9 @@ test('ES-30 diseño aprobado (QA H-86-02, H-86-04, H-93-02): sin roles, «Sin te
   const page = readFileSync(new URL('../src/pages/SkillMapPage.tsx', import.meta.url), 'utf8')
   const css = readFileSync(new URL('../src/skill-map/skillMap.css', import.meta.url), 'utf8')
   assert.equal(views.includes('{territory.roles}'), false, 'H-86-04: los roles de ejemplo ya no se muestran')
-  assert.ok(views.includes('export function UnassignedCard') && page.includes('<UnassignedCard'))
+  assert.ok(!views.includes('UnassignedCard') && views.includes('terr-none'), 'ES-160: «Sin territorio asignado» vive dentro de la lista por territorios; el relieve las pone en una fila al pie')
   assert.match(page, /const noTerritories = !!map && map\.skills\.length > 0 && resolveTerritories/)
-  assert.match(page, /listView \|\| noTerritories \? ' is-list'/)
-  assert.match(css, /\.skill-map-board:not\(\.is-list\) \+ \.skill-map-unassigned \{ display: block; \}/)
+  assert.ok(page.includes("{view === 'relief' && !noTerritories && <ReliefMap"), 'sin ninguna capacidad con territorio no se dibuja un relieve vacío')
   assert.ok(views.includes("view.needsReview ? 'next_review'") && views.includes('review-why'))
   assert.equal(views.includes('review_unavailable'), false, 'H-93-02: no se promete una revisión que no existe')
 })

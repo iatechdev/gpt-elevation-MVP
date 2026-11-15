@@ -205,6 +205,7 @@ test('ES-29 revocar el puente invalida la evaluación que dependía de evidencia
   const request = await startApp(t);
   await publishCatalog(request);
   const turn = add('ChatTurn', { UserId: 101, requestId: 'turn-1', status: 'completed', userContent: 'Dirigí el proyecto de migración con mi equipo', replyContent: 'r' });
+  await request('PUT', '/api/consents/insights_chat', { ...U, body: { status: 'granted' } }); // ES-233: la evidencia con origen del chat exige su permiso de análisis
   await request('PUT', '/api/consents/professional_bridge', { ...U, body: { status: 'granted' } });
   const fromChat = await evidence.create(101, { ...evBody(), origins: [{ type: 'chat_turn', id: turn.id }] });
   await self(request, U, { skillKey: 'comunicacion', level: 3, evidenceRefs: [{ evidenceId: fromChat.id, version: 1 }] });

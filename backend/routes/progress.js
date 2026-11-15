@@ -10,6 +10,7 @@ const MoodLog               = require('../MoodLog');
 const SessionRating         = require('../SessionRating');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const { desencriptar }      = require('../utils/crypto');
+const { averageMood, averageRating, round1 } = require('../utils/moodStats');
 const { validateBody, text, optional } = require('../middlewares/validateBody');
 
 // GET /api/user/progress
@@ -32,11 +33,9 @@ router.get('/progress', async (req, res) => {
       limit: 5,
     });
 
-    const allMoods  = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-    const avgMood   = allMoods.length > 0
-      ? Math.round((allMoods.reduce((a, b) => a + b, 0) / allMoods.length) * 10) / 10 : null;
-    const avgRating = ratings.length > 0
-      ? Math.round((ratings.reduce((a, r) => a + r.rating, 0) / ratings.length) * 10) / 10 : null;
+    // ES-257: los promedios salen de los valores VÁLIDOS (1-5); una calificación o un ánimo nulos no cuentan como 0. Sin ninguno válido -> null.
+    const avgMood   = round1(averageMood(moodLogs));
+    const avgRating = round1(averageRating(ratings));
 
     let streak = 0;
     const logDates = [...new Set(moodLogs.map(m => m.date))].sort().reverse();

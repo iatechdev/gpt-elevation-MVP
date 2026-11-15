@@ -6,20 +6,18 @@ export const MAX_LEVEL = 4
 /** Con más capacidades que esto los nombres no caben alrededor del radar: se omiten y la lista de texto los lleva. */
 export const MAX_LABELS = 12
 
-/** Nivel que dibuja el radar. Nunca promedia pistas: con dos niveles vigentes distintos (autoevaluación y revisión) muestra el MÁS BAJO,
- *  para no sobrestimar; el detalle sigue mostrando cada pista por separado. Una pista desactualizada no aporta nivel. */
+/** Nivel que dibuja el radar: UNA sola regla en todas las vistas (decisión de Infra, 12-nov): el nivel de la persona es su AUTOEVALUACIÓN vigente.
+ *  La revisión humana nunca se fusiona, ni se promedia, ni se toma el mínimo: se muestra siempre por separado en el detalle.
+ *  Una autoevaluación desactualizada no aporta nivel. */
 export function radarItems(skills: readonly Skill[]): RadarItem[] {
   return skills.map((skill, index) => {
-    const views = [trackView(skill.self), trackView(skill.review)]
-    const tracks = [skill.self, skill.review]
-    const levels = views.map(view => view.level).filter((level): level is number => level !== null)
-    const level = levels.length ? Math.min(...levels) : null
-    const at = views.findIndex(view => view.level === level)
+    const self = trackView(skill.self)
+    const level = self.level
     return {
       skill, index, level,
-      evidence: level === null ? 0 : tracks[at]?.evidenceCount ?? 0,
-      stale: level === null && views.some(view => view.stale),
-      needsReview: views.some(view => view.needsReview),
+      evidence: level === null ? 0 : skill.self?.evidenceCount ?? 0,
+      stale: level === null && self.stale,
+      needsReview: [self, trackView(skill.review)].some(view => view.needsReview),
     }
   })
 }

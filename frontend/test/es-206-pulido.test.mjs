@@ -23,13 +23,16 @@ test('ES-206 punto 3: panel del terapeuta con concordancia y sin «prompt» en e
   assert.match(es, /therapist_assigned: 'personas asignadas'/); assert.match(es, /therapist_assigned_one: 'persona asignada'/)
   assert.match(en, /therapist_assigned: 'people assigned'/); assert.match(en, /therapist_assigned_one: 'person assigned'/)
   assert.match(es, /therapist_create_prompt: 'Crear guía'/)
-  assert.match(dash, /patients\.length === 1 \? t\('therapist_assigned_one'\) : t\('therapist_assigned'\)/)
+  // ES-177 (B1): el recuento ya no es una frase con concordancia sino una cifra rotulada «Personas»: no hay frase que concordar.
+  const copy = read('../src/i18n/therapistCopy.ts')
+  assert.match(dash, /<SummaryBlock /); assert.match(copy, /panel_people: 'Personas'/); assert.match(copy, /panel_people: 'People'/)
 })
 
-test('ES-206 punto 4: «plan requests», «matching pending» y los roles del filtro salen por el traductor de administración', () => {
-  const users = read('../src/pages/admin/AdminUsers.tsx'), copy = read('../src/i18n/adminCopy.ts')
+test('ES-206 punto 4: los nombres de pestañas y de roles de /admin/users salen por el traductor de administración', () => {
+  // ES-186 parte D: la pantalla se partió; los nombres viven en adminUsersLogic.ts (TAB_LABEL, ROLE_LABEL) y se pasan por tr().
+  const users = read('../src/pages/admin/AdminUsers.tsx') + read('../src/pages/admin/adminUsersLogic.ts'), copy = read('../src/i18n/adminCopy.ts')
   assert.equal(/plan request\{/.test(users) || /matching pending</.test(users), false)
-  for (const key of ['solicitud de plan', 'solicitudes de plan', 'asignación pendiente', 'asignaciones pendientes', 'Persona usuaria', 'Junta ética']) {
+  for (const key of ['Solicitudes de plan', 'Emparejamientos', 'Persona usuaria', 'Junta ética']) {
     assert.ok(copy.includes(`'${key}'`), key); assert.ok(users.includes(`"${key}"`) || users.includes(`'${key}'`), `AdminUsers usa ${key}`)
   }
   assert.equal(/Sprint \d/.test(read('../src/pages/admin/AdminDashboard.tsx')), false, 'el pie «Sprint 9» ya no existe')

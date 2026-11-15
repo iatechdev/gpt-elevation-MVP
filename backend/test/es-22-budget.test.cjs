@@ -465,7 +465,7 @@ test('ES-22 presupuesto en recomendaciones y matching: 429 al agotar, 503 sin co
   models.User.findAll = async () => [record({ id: 303, name: 'Synthetic therapist' })];
   models.MatchingRequest.create = async values => record({ id: 7, ...values });
   const request = await startApp(t);
-  const matching = () => request('POST', '/api/matching/request', { ...as(), body: { answers: { area: 'sintético' } } });
+  const matching = () => request('POST', '/api/matching/request', { ...as(), body: { answers: { area: 'other' } } });
   const reco = () => request('POST', '/api/recommendations/generate', as());
 
   anthropic.messages.create = async () => ({ content: [{ type: 'text', text: JSON.stringify([{ therapistId: 303, score: 7, reason: 'Sintético' }]) }], usage: { input_tokens: 10, output_tokens: 10 } });

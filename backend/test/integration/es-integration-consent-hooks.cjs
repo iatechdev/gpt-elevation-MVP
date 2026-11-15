@@ -33,7 +33,9 @@ test('Integración ES-23/25/27 en PostgreSQL: revocar el puente actúa en las tr
 
   require('../../associations')();
   for (const name of ['Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'ExportRequest', 'DeletionRequest', 'RevokedToken', 'AuthRevocation',
-    'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion']) require('../../' + name);
+    'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion',
+    // E273-6: la purga (personalData.CORE) también borra la solicitud de profesional y sus archivos; sin estas tablas la prueba fallaba con «relation "ProfessionalApplications" does not exist».
+    'ProfessionalApplication', 'ProfessionalApplicationFile']) require('../../' + name);
   await sequelize.sync();
   const consent = require('../../utils/consent');
   const bridge = require('../../utils/careerContext');
@@ -56,7 +58,7 @@ test('Integración ES-23/25/27 en PostgreSQL: revocar el puente actúa en las tr
   });
   async function setupPerson() {
     const user = await addUser();
-    await consent.setConsent(user.id, 'professional_bridge', 'granted');
+    await consent.setConsent(user.id, 'professional_bridge', 'granted'); await consent.setConsent(user.id, 'insights_chat', 'granted'); // ES-233: citar el chat exige su permiso de análisis
     const turn = await ChatTurn.create({ UserId: user.id, requestId: `turn-${seq++}-0001`, status: 'completed', userContent: encriptarV2('Dirigí el proyecto sintético con mi equipo durante tres meses.'), replyContent: encriptarV2('r') });
     const fields = [{ key: 'values', text: 'Valoro aprender', origin: { type: 'chat_turn', id: turn.id } }];
     const p = await bridge.preview(user.id, { fields });
@@ -110,7 +112,7 @@ test('Integración ES-23/25/27 en PostgreSQL: revocar el puente actúa en las tr
   await t.test('carrera: confirmar puente y evidencia con origen del chat mientras se revoca el consentimiento no deja nada privado vigente (10 rondas)', async () => {
     for (let round = 0; round < 10; round++) {
       const user = await addUser();
-      await consent.setConsent(user.id, 'professional_bridge', 'granted');
+      await consent.setConsent(user.id, 'professional_bridge', 'granted'); await consent.setConsent(user.id, 'insights_chat', 'granted'); // ES-233: citar el chat exige su permiso de análisis
       const turn = await ChatTurn.create({ UserId: user.id, requestId: `race-${round}-0001`, status: 'completed', userContent: encriptarV2('Coordiné el equipo sintético durante seis meses.'), replyContent: encriptarV2('r') });
       const fields = [{ key: 'values', text: 'Valoro coordinar', origin: { type: 'chat_turn', id: turn.id } }];
       const p = await bridge.preview(user.id, { fields });

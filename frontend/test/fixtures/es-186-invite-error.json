@@ -1,0 +1,7 @@
+{
+  "status": 409,
+  "body": {
+    "code": "email_taken",
+    "error": "Ya existe una cuenta con ese correo. / An account with that email already exists."
+  }
+}

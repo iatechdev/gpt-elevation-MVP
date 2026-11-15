@@ -22,16 +22,22 @@ const PURPOSES = Object.freeze({
   insights_chat: { required: false },
   insights_diary: { required: false },
   insights_resume: { required: false },
+  // ES-175 (HU-P24): autorizar a UN revisor a ver material que la persona marcó y a que su revisión pueda ser objetada. Ligado al revisor por el alcance `reviewer-<id>`; separado de facilitator_sharing.
+  professional_review: { required: false },
+  // ES-173 (HU-P22): guardar MI opinión sobre el piloto (catálogo cerrado, sin texto libre). Separado de `research`: opinar no autoriza otros usos. Retirar la respuesta la BORRA; revocar el permiso no la borra pero impide enviar y sacarla en agregados.
+  pilot_feedback: { required: false },
 });
 const SCOPES = Object.freeze(['default']); // ES-25 amplía el alcance por campos del puente
 const THERAPIST_SCOPE = /^therapist-[1-9][0-9]{0,9}$/; // ES-96: el alcance de therapist_sharing es el terapeuta al que se autoriza
 const therapistScope = (therapistId) => `therapist-${Number(therapistId)}`;
-const isValidScope = (purpose, scope) => (purpose === 'therapist_sharing' ? THERAPIST_SCOPE.test(String(scope)) : SCOPES.includes(scope));
+const REVIEWER_SCOPE = /^reviewer-[1-9][0-9]{0,9}$/; // ES-175: el alcance de professional_review es el revisor al que se autoriza
+const reviewerScope = (reviewerId) => `reviewer-${Number(reviewerId)}`;
+const isValidScope = (purpose, scope) => (purpose === 'therapist_sharing' ? THERAPIST_SCOPE.test(String(scope)) : purpose === 'professional_review' ? REVIEWER_SCOPE.test(String(scope)) : SCOPES.includes(scope));
 const DEFAULT_SCOPE = 'default';
 const STATUSES = Object.freeze(['granted', 'revoked']);
 // Versión de política exigida por propósito: un «granted» con versión anterior deja de valer (hay que volver a consentir).
 const REQUIRED_VERSION = Object.freeze({
-  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, therapist_sharing: 1, resume_ai_reading: 1, insights_chat: 1, insights_diary: 1, insights_resume: 1,
+  necessary: 1, professional_bridge: 1, facilitator_sharing: 1, research: 1, notifications: 1, therapist_sharing: 1, resume_ai_reading: 1, insights_chat: 1, insights_diary: 1, insights_resume: 1, professional_review: 1, pilot_feedback: 1,
 });
 
 class ConsentRequiredError extends Error {
@@ -52,6 +58,15 @@ async function hasConsent(userId, purpose, scope = DEFAULT_SCOPE) {
   if (!validOwner(userId) || !isPurpose(purpose)) return false;
   if (await deletionPending(userId)) return false;
   const row = await Consent.findOne({ where: keyOf(Number(userId), purpose, scope) });
+  return isEffective(row, purpose);
+}
+
+// ES-233: comprueba un permiso ADICIONAL dentro de una transacción ya abierta y con bloqueo compartido: una retirada concurrente espera a que la transacción termine,
+// y ninguna operación que empiece después ve el permiso vigente. No lanza: devuelve si el permiso está vigente.
+async function isGrantedIn(userId, purpose, transaction, scope = DEFAULT_SCOPE) {
+  if (!validOwner(userId) || !isPurpose(purpose)) return false;
+  if (await deletionPending(userId, transaction)) return false;
+  const row = await Consent.findOne({ where: keyOf(Number(userId), purpose, scope), transaction, lock: Transaction.LOCK.SHARE });
   return isEffective(row, purpose);
 }
 
@@ -104,6 +119,8 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       if (purpose === 'resume_ai_reading' && status === 'revoked') await require('./resumes').revokeForConsent(userId, transaction);
       // ES-229: retirar la lectura con IA de una fuente (chat, diario u hoja de vida) marca «para revisión» lo derivado de ella, en la misma transacción.
       if (status === 'revoked' && String(purpose).startsWith('insights_')) await require('./careerContext').markSourceRevoked(userId, purpose, transaction);
+      // ES-296: lo mismo para la EVIDENCIA (ES-27) confirmada con origen del chat: retirar insights_chat la marca «para revisión» y deja de viajar al motor hasta que la persona la reconfirme.
+      if (status === 'revoked' && String(purpose).startsWith('insights_')) await require('./evidence').markSourceRevoked(userId, purpose, transaction);
       // ES-88: revocar el puente invalida, en la misma transacción, los jobs de análisis de IA y las candidatas de la persona (worker de ES-84).
       if (purpose === 'professional_bridge' && status === 'revoked') await require('./aiJobs').invalidateForUser(userId, 'consent_revoked', transaction);
       await transaction.commit();
@@ -116,6 +133,22 @@ async function setConsent(userId, purpose, status, scope = DEFAULT_SCOPE) {
       throw error;
     }
   }
+}
+
+// ES-175 (E262-4): concede un permiso DENTRO de la transacción del llamador (la autorización a un revisor y su ReviewShare van juntos o no van). Mismo registro que setConsent
+// (fila + evento), sin ganchos porque solo se usa para `professional_review`. Puede lanzar SequelizeUniqueConstraintError si dos primeras decisiones coinciden: el llamador reintenta.
+async function grantIn(userId, purpose, scope, transaction) {
+  if (await deletionPending(userId, transaction)) throw new ConsentRequiredError(purpose);
+  const where = keyOf(userId, purpose, scope);
+  const version = REQUIRED_VERSION[purpose];
+  const current = await Consent.findOne({ where, transaction, lock: Transaction.LOCK.UPDATE });
+  if (current && current.status === 'granted' && current.version === version) return current;
+  const decidedAt = new Date();
+  let row = current;
+  if (current) await current.update({ status: 'granted', version, decidedAt }, { transaction });
+  else row = await Consent.create({ ...where, status: 'granted', version, decidedAt }, { transaction });
+  await ConsentEvent.create({ ...where, status: 'granted', version, decidedAt }, { transaction });
+  return row;
 }
 
 // ES-96: retira, dentro de la transacción del llamador, la autorización de compartir con UN terapeuta (desvincularse o ser reasignada). No crea nada si
@@ -150,7 +183,8 @@ async function listConsents(userId, { therapistId = null } = {}) {
   const byPurpose = new Map(rows.map((row) => [row.purpose, row]));
   // ES-96: therapist_sharing se lee con el alcance del terapeuta actual; sin terapeuta no hay a quién autorizar (applicable: false).
   const therapistRow = therapistId ? await Consent.findOne({ where: keyOf(userId, 'therapist_sharing', therapistScope(therapistId)) }) : null;
-  return Object.keys(PURPOSES).map((purpose) => {
+  // ES-175: `professional_review` es por revisor (alcance reviewer-<id>) y se gestiona desde /api/me/review-shares; no es un interruptor global de esta lista.
+  return Object.keys(PURPOSES).filter((purpose) => purpose !== 'professional_review').map((purpose) => {
     const sharing = purpose === 'therapist_sharing';
     const row = sharing ? therapistRow : byPurpose.get(purpose);
     let status = 'undecided';
@@ -192,8 +226,8 @@ const requireConsent = (purpose, ownerOf, scope = DEFAULT_SCOPE) => async (req, 
 };
 
 module.exports = {
-  PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, isValidScope,
+  PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, REVIEWER_SCOPE, reviewerScope, isValidScope,
   ConsentRequiredError, isPurpose, isEffective,
-  hasConsent, withConsent, setConsent, listConsents, listHistory, requireConsent,
+  hasConsent, isGrantedIn, withConsent, setConsent, grantIn, listConsents, listHistory, requireConsent,
   revokeForDeletion, revokeTherapistSharing, therapistScope,
 };

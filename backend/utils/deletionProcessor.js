@@ -3,7 +3,9 @@ const { Transaction } = require('sequelize');
 const User = require('../User');
 const DeletionRequest = require('../DeletionRequest');
 const ExportRequest = require('../ExportRequest');
-const { CORE, requiresReview } = require('./personalData');
+const TherapySession = require('../TherapySession');
+const { CORE, PURGE_ALSO, SESSION_PERSON_FIELDS, blocksPurge, receiptCategories } = require('./personalData');
+const { minimizeForPerson } = require('./applicationMinimize');
 const { inTransaction, receipt } = require('./dataRights');
 
 // Maintenance entrypoint, not an automatic worker: callers must stop ALL producers
@@ -17,9 +19,9 @@ async function processDeletion(id, { quiescent = false, replay = false } = {}) {
       if (!initial) throw new Error('Deletion request not found.');
       const user = await User.findByPk(initial.UserId, { transaction, lock: Transaction.LOCK.UPDATE });
       const request = await DeletionRequest.findOne({ where: { id }, transaction, lock: Transaction.LOCK.UPDATE });
-      if (request.activePurgedAt && !replay) return receipt(request);
+      if (request.activePurgedAt && !replay) return receipt(request, await receiptCategories(request.UserId, transaction));
       const attempts = request.attempts + 1;
-      if (!user || user.role !== 'user' || await requiresReview(request.UserId, transaction)) {
+      if (!user || user.role !== 'user' || await blocksPurge(request.UserId, transaction)) {
         await request.update({ status: 'awaiting_review', attempts, activePurgedAt: null, failureCode: 'legacy_policy_pending' }, { transaction });
         return receipt(request);
       }
@@ -28,6 +30,11 @@ async function processDeletion(id, { quiescent = false, replay = false } = {}) {
         if (name === 'DerivedInvalidation') continue;
         await require('../' + name).destroy({ where: { [owner]: user.id }, transaction });
       }
+      // ES-274: también lo de la persona que no está en CORE (el cuestionario de emparejamiento) y los campos de la persona en las sesiones; las notas y la agenda del profesional se conservan.
+      for (const [name, owner] of PURGE_ALSO) await require('../' + name).destroy({ where: { [owner]: user.id }, transaction });
+      await TherapySession.update(Object.fromEntries(SESSION_PERSON_FIELDS.map(field => [field, null])), { where: { patientId: user.id }, transaction });
+      // ES-293 (E249-1, opción C): la solicitud de profesional de la persona (por cuenta o por su correo ORIGINAL, antes de la lápida) conserva solo estado y fechas; se borra su hoja de vida.
+      await minimizeForPerson(user.id, user.email, transaction);
       await ExportRequest.destroy({ where: { UserId: user.id }, transaction });
       // Keep session revocations: erasing them could make a previously revoked JWT
       // eligible for the narrowly scoped receipt-retry route before its expiry.
@@ -35,10 +42,10 @@ async function processDeletion(id, { quiescent = false, replay = false } = {}) {
       await user.update({
         name: 'Cuenta eliminada / Deleted account', email: `${request.id}@deleted.invalid`, password: randomBytes(48).toString('hex'),
         active: false, motivation: null, therapistId: null, planId: null,
-        onboardingCompleted: false, loginAttempts: 0, lockedUntil: null,
+        onboardingCompleted: false, loginAttempts: 0, lockedUntil: null, termsVersion: null, acceptedAt: null,
       }, { transaction });
       await request.update({ status: 'awaiting_verification', attempts, activePurgedAt: new Date(), failureCode: null }, { transaction });
-      return receipt(request);
+      return receipt(request, await receiptCategories(user.id, transaction));
     });
   } catch {
     // The purge rolled back in full. Commit a generic failure separately; never store raw SQL or contents.

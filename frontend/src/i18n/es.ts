@@ -333,6 +333,11 @@ const es: Record<string, string> = {
   loading: 'Cargando...',
   route_error: 'Hay una versión nueva de la aplicación. Recarga la página para continuar.',
   route_error_reload: 'Recargar',
+  route_error_retry: 'Reintentar',
+  route_error_offline: 'Sin conexión. Cuando vuelvas a estar en línea, recarga para seguir.',
+  route_error_resource: 'No se pudo cargar una parte de la pantalla. Recarga para intentarlo de nuevo.',
+  route_error_section: 'Algo salió mal en esta sección. El resto de la pantalla sigue disponible.',
+  route_error_screen: 'Algo salió mal en esta pantalla. Inténtalo de nuevo.',
   error_connection: 'Error de conexión.',
   no_data: '—',
 

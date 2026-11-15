@@ -9,7 +9,7 @@ const today = (now = new Date()) => now.toISOString().slice(0, 10);
 // El contacto es TEXTO de contacto: dígitos, +, espacios y separadores usuales, con al menos 3 dígitos. Nunca HTML.
 const CONTACT = /^[0-9+()\-*#.\s]{3,32}$/;
 const COUNTRY = /^[A-Z]{2}$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const { isBoundedDay } = require('./safeDate'); // E229-1
 const noMarkup = (value) => !/[<>]/.test(value);
 const filled = (value) => typeof value === 'string' && value.trim().length > 0;
 
@@ -50,7 +50,7 @@ function validateFields(body, { partial = false } = {}) {
   }
   if (body.verifiedAt !== undefined) {
     if (body.verifiedAt === null || body.verifiedAt === '') values.verifiedAt = null;
-    else if (typeof body.verifiedAt !== 'string' || !DATE.test(body.verifiedAt) || !Number.isFinite(Date.parse(`${body.verifiedAt}T00:00:00Z`)) || body.verifiedAt > today(new Date(Date.now() + DAY))) return bad('verifiedAt');
+    else if (!isBoundedDay(body.verifiedAt) || body.verifiedAt > today(new Date(Date.now() + DAY))) return bad('verifiedAt');
     else values.verifiedAt = body.verifiedAt;
   }
   if (body.active !== undefined) { if (typeof body.active !== 'boolean') return bad('active'); values.active = body.active; }

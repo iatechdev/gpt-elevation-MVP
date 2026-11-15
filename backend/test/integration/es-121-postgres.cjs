@@ -122,6 +122,8 @@ test('ES-121 PostgreSQL: insights desde chat y diario cifrados, consentimiento p
 
   await t.test('autorizar: la habilidad y el origen quedan en la versión (cifrada), el motor lee solo clave y texto y «En conversación» sigue a la versión activa', async () => {
     await consent.setConsent(1, 'professional_bridge', 'granted');
+    await consent.setConsent(1, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+    await consent.setConsent(1, 'insights_diary', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
     const fields = [{ key: 'energy_gives', text: 'Parece que coordinar equipos pequeños te da energía.', origin: { type: 'chat_turn', id: turn.id }, skillKey: 'comunicacion' }];
     const p = await bridge.preview(1, { fields });
     const swapped = [{ ...fields[0], skillKey: 'planificacion' }];
@@ -195,6 +197,9 @@ test('ES-121 PostgreSQL: insights desde chat y diario cifrados, consentimiento p
 
   await t.test('hoja de vida: autorizar un insight con su origen; borrar la hoja de vida (o retirar su lectura con IA) lo marca para revisión sin perder lo autorizado', async () => {
     await consent.setConsent(1, 'professional_bridge', 'granted');
+    await consent.setConsent(1, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+    await consent.setConsent(1, 'insights_diary', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
+    await consent.setConsent(1, 'insights_resume', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
     const latest = await ParticipantResume.findOne({ where: { UserId: 1 }, order: [['version', 'DESC']] });
     const fields = [{ key: 'desired_conditions', text: 'Parece que buscas un trabajo con autonomía.', origin: { type: 'resume_version', id: latest.id } }];
     await assert.rejects(bridge.preview(1, { fields: [{ ...fields[0], origin: { type: 'resume_version', id: 987654 } }] }), (e) => e.status === 404);

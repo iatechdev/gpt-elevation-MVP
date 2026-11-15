@@ -75,10 +75,6 @@ export function NewReview() {
     <ReviewHistory participantId={person.id} />
   </section>
 }
-export function OwnReviews() {
-  const { t } = useCopy()
-  return <section><h2>{t('own')}</h2><p>{t('participantDemo')}</p><ReviewHistory participantId="synthetic-A" own /></section>
-}
 function ReviewHistory({ participantId, own = false }: { participantId: string; own?: boolean }) {
   const { snapshot, dirty } = useFacilitation()
   const { t, lang } = useCopy()

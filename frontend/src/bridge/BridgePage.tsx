@@ -10,6 +10,7 @@ import type { CareerContext, Field } from '../compass/model'
 import { bridgeCopy } from './copy'
 import { loadInsights } from './insights'
 import { SourcesPanel } from './SourcesPanel'
+import { SectionBoundary } from '../components/RouteErrorBoundary'
 import { modalKeyDown } from '../a11y/modalKeys.ts'
 import { readPermissions, setPermission } from './insightsApi'
 import { emptyProposals, sourceIds, withSource } from './sources'
@@ -129,7 +130,7 @@ export function BridgePage() {
       {ctx && <div className="bridge-cols">
         <section className="bridge-col" aria-labelledby="bridge-private">
           <h2 id="bridge-private">🔒 {c.private}</h2>
-          <SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} onPerms={setPerms} reloadKey={reloadKey} />
+          <SectionBoundary><SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} onPerms={setPerms} reloadKey={reloadKey} /></SectionBoundary>
           {!todo.length && <div className="bridge-empty" role="status"><p>{insights.length ? c.nothing : c.empty}</p>{!insights.length && <p className="bridge-small">{c.emptyNote} <Link className="elv-link" to="/app/compass">{c.toCompass}</Link></p>}</div>}
           {todo.map(insight => {
             const open = peek.has(insight.id); const asking = confirming === insight.id; const blocked = whyNot(active, insight)

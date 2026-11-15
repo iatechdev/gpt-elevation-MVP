@@ -22,6 +22,8 @@ const RECOMMENDATIONS_MAX_TOKENS = 1200;
 const RECOMMENDATIONS_OUTPUT_CONFIG = { effort: 'low' };
 
 const router                 = express.Router();
+const { validateIdParams } = require('../middlewares/params');
+validateIdParams(router, 'id'); // ES-280
 const MoodLog                = require('../MoodLog');
 const WellnessRecommendation = require('../WellnessRecommendation');
 const anthropic              = require('../utils/anthropic');

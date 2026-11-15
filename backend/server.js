@@ -124,6 +124,9 @@ app.use('/api/career-context',  verificarToken, require('./routes/careerContext'
 app.use('/api/skill-map',       verificarToken, require('./routes/skillMap'));       // ES-29 — Skill Map
 app.use('/api/skill-analysis',  verificarToken, require('./routes/skillAnalysis'));  // ES-89 — análisis de IA del contexto profesional (worker)
 app.use('/api/evidence',        verificarToken, require('./routes/evidence'));       // ES-27 — evidencia profesional
+app.use('/api/me',              verificarToken, require('./routes/professionalReviews')); // ES-175 — revisiones recibidas, objeción y autorización (la persona)
+app.use('/api/me',              verificarToken, require('./routes/pilotFeedback').person); // ES-173 — «Mi opinión» del piloto (la persona: leer, guardar, retirar)
+app.use('/api/reviewer',        verificarTerapeuta, require('./routes/reviewer'));        // ES-175 — lado mínimo del revisor (rol therapist)
 app.use('/api/insights',        verificarToken, require('./routes/insights'));       // ES-121 — insights de El Puente (propuestas de la IA)
 app.use('/api/route-catalog',    verificarToken, require('./routes/routeCatalog'));   // ES-31 — catálogo de rutas (lectura)
 app.use('/api/routes',          verificarToken, require('./routes/routes'));         // ES-32 — rutas de la propia persona
@@ -132,6 +135,7 @@ app.use('/api/career-plan',      verificarToken, require('./routes/careerPlan').
 app.use('/api/diary',           verificarToken, require('./routes/diary'));          // ES-20 — diario privado
 app.use('/api/ai/usage',         verificarToken, require('./routes/aiUsage').owner);   // ES-22 — presupuesto de IA de la persona
 app.use('/api/superadmin/ai-usage', verificarSuperAdmin, require('./routes/aiUsage').admin); // ES-22 — resumen agregado
+app.use('/api/superadmin/audit', verificarSuperAdmin, require('./routes/adminAudit')); // ES-186 B — auditoría de acciones de administración (solo lectura)
 app.use('/api/mood',            verificarToken, require('./routes/mood'));
 app.use('/api',                 verificarToken, require('./routes/ratings'));
 app.use('/api/recommendations', verificarToken, require('./routes/recommendations'));
@@ -151,6 +155,7 @@ app.use('/api/admin/skill-catalog', verificarAdmin, require('./routes/skillCatal
 app.use('/api/admin/route-catalog', verificarAdmin, require('./routes/routeCatalogAdmin')); // ES-31 — catálogo de rutas (backoffice)
 app.use('/api/admin/usuarios',      verificarAdmin, require('./routes/adminUsers'));
 app.use('/api/admin/professional-applications', verificarAdmin, require('./routes/professionalApplications').adminRouter); // ES-95 — solicitudes (backoffice)
+app.use('/api/admin/pilot-metrics', verificarAdmin, require('./routes/pilotFeedback').admin); // ES-173 — agregados de la opinión (≥ 5 personas; nunca individuales)
 app.use('/api/admin/metrics',       verificarAdmin, require('./routes/adminMetrics'));
 app.use('/api/admin/matching',      verificarAdmin, require('./routes/matching'));
 app.use('/api/admin/pricing',       verificarAdmin, require('./routes/pricing'));
@@ -171,6 +176,8 @@ app.use('/api', (req, res) => {
   res.set('Cache-Control', 'no-store');
   res.status(404).json({ code: 'not_found', error: 'Ruta no encontrada. / Route not found.' });
 });
+// ES-280: errores de /api sin tratamiento propio (p. ej. un porcentaje mal formado en la URL): JSON fijo, sin traza ni texto interno.
+app.use('/api', require('./middlewares/apiErrors').apiErrors);
 
 // ── Frontend estático ─────────────────────────────────────────────────────────
 mountFrontend(app, path.join(__dirname, '../frontend/dist'));

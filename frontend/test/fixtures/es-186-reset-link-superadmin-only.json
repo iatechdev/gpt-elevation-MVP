@@ -1,0 +1,7 @@
+{
+  "status": 403,
+  "body": {
+    "code": "superadmin_only",
+    "error": "Solo el superadmin puede enviar enlaces de restablecimiento."
+  }
+}

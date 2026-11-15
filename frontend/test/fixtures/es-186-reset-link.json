@@ -1,0 +1,6 @@
+{
+  "status": 202,
+  "body": {
+    "message": "Si la cuenta puede recibirlo, se envió un enlace de restablecimiento a su correo. / If the account can receive it, a reset link was sent to its email."
+  }
+}

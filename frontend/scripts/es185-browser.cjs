@@ -1,0 +1,146 @@
+const assert = require('node:assert/strict');
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+
+(async () => {
+  const port = 43185;
+  process.env.VITE_BACKEND_URL = `http://127.0.0.1:${port}`;
+  const { createServer } = await import('vite');
+  let failPlans = true;
+  let failContent = true;
+  let failDeactivate = true;
+  let failPlanSave = false;
+  let denyContent = true;
+  const writes = [];
+  const plan = { id: 1, slug: 'fixture', name_es: 'Plan ficticio', name_en: 'Fixture plan', description_es: '', description_en: '', price: 10, currency: 'USD', period: 'month', features_es: [], features_en: [], isHighlighted: false, isActive: true, order: 0 };
+  const server = await createServer({ server: { host: '127.0.0.1', port, strictPort: true }, plugins: [{
+    name: 'es185-fixtures',
+    configureServer(vite) {
+      vite.middlewares.use(async (req, res, next) => {
+        const url = new URL(req.url, 'http://localhost');
+        if (!url.pathname.startsWith('/api/')) return next();
+        const json = (status, data) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(data)); };
+        if (url.pathname === '/api/session') return json(200, { role: 'superadmin', onboardingCompleted: true });
+        if (url.pathname === '/api/junta/pending') return json(200, []);
+        if (url.pathname === '/api/admin/pricing/all') return failPlans ? json(503, {}) : json(200, [plan]);
+        if (url.pathname === '/api/landing-content/admin') return failContent ? json(503, {}) : json(200, { hero_title: 'Fixture title' });
+        if (req.method !== 'GET') {
+          let body = ''; for await (const chunk of req) body += chunk;
+          writes.push({ path: url.pathname, method: req.method, body: body && JSON.parse(body) });
+          if (req.method === 'DELETE' && failDeactivate) return json(500, {});
+          if (url.pathname === '/api/admin/pricing' && failPlanSave) {
+            await new Promise(resolve => setTimeout(resolve, 350));
+            return json(500, {});
+          }
+          if (url.pathname === '/api/landing-content' && denyContent) return json(403, {});
+          return json(200, {});
+        }
+        return json(200, {});
+      });
+    },
+  }] });
+  let browser;
+  try {
+    await server.listen();
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+    await page.addInitScript(() => { localStorage.setItem('elevation_token', 'synthetic'); if (!localStorage.getItem('elv_lang')) localStorage.setItem('elv_lang', 'es'); });
+    await page.goto(`http://127.0.0.1:${port}/admin/content`);
+    await page.getByRole('button', { name: 'Planes', exact: true }).click();
+    await page.getByText('No se pudieron cargar los planes.', { exact: true }).waitFor();
+    assert.equal(await page.getByText('No hay planes. Crea el primero.').count(), 0);
+    failPlans = false; await page.getByRole('button', { name: 'Reintentar' }).click();
+    await page.getByText('Plan ficticio').waitFor();
+    await page.getByRole('button', { name: '+ Nuevo plan' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').fill('test');
+    await dialog.getByLabel('Español *').fill('Prueba');
+    await dialog.getByLabel('Inglés *').fill('Test');
+    await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').fill('fixture');
+    await dialog.getByRole('button', { name: 'Crear plan' }).click();
+    await dialog.getByText('Este identificador ya existe.').waitFor();
+    assert.equal(await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').evaluate(element => element === document.activeElement), true);
+    await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').fill('test');
+    await dialog.getByRole('button', { name: 'Crear plan' }).click();
+    await dialog.getByText('Introduce un precio válido.').waitFor();
+    assert.equal(await dialog.getByLabel('Precio', { exact: true }).evaluate(element => element === document.activeElement), true);
+    assert.equal(writes.length, 0);
+    await dialog.getByLabel('Precio', { exact: true }).fill('15');
+    await dialog.getByLabel('Características en español, una por línea').fill('Primera\nSegunda');
+    await dialog.getByLabel('Características en inglés, una por línea').fill('First\nSecond');
+    failPlanSave = true;
+    await dialog.getByRole('button', { name: 'Crear plan' }).click();
+    await dialog.getByText('Guardando...').waitFor();
+    await page.keyboard.press('Tab');
+    assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)), true);
+    await dialog.getByText('Error guardando.').waitFor();
+    assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)), true);
+    await page.keyboard.press('Tab');
+    assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)), true);
+    assert.equal(await dialog.getByLabel('Características en español, una por línea').inputValue(), 'Primera\nSegunda');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.getByRole('button', { name: '+ Nuevo plan' }).evaluate(element => element === document.activeElement), true);
+    failPlanSave = false;
+    await page.getByRole('button', { name: '+ Nuevo plan' }).click();
+    await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').fill('test');
+    await dialog.getByLabel('Español *').fill('Prueba');
+    await dialog.getByLabel('Inglés *').fill('Test');
+    await dialog.getByLabel('Precio', { exact: true }).fill('15');
+    await dialog.getByLabel('Características en español, una por línea').fill('Primera\nSegunda');
+    await dialog.getByLabel('Características en inglés, una por línea').fill('First\nSecond');
+    await dialog.getByRole('button', { name: 'Crear plan' }).click();
+    await page.getByText('Plan creado.').waitFor();
+    assert.equal(writes.at(-1).body.price, '15');
+    assert.deepEqual(writes.at(-1).body.features_es, ['Primera', 'Segunda']);
+    assert.deepEqual(writes.at(-1).body.features_en, ['First', 'Second']);
+    assert.equal(await page.getByRole('button', { name: '+ Nuevo plan' }).evaluate(element => element === document.activeElement), true);
+    await page.getByRole('button', { name: 'Editar' }).click();
+    assert.equal(await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').evaluate(element => element === document.activeElement), true);
+    assert.equal(await dialog.getByLabel('Slug * (sin espacios, ej: basic, essential, plus, pro)').evaluate(element => element.readOnly), true);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.getByRole('button', { name: 'Editar' }).evaluate(element => element === document.activeElement), true);
+    await page.getByRole('button', { name: 'Desactivar' }).click();
+    await dialog.getByText('El plan deja de verse en precios; las solicitudes realizadas se conservan. Puedes reactivarlo editándolo.').waitFor();
+    await dialog.getByRole('button', { name: 'Desactivar' }).click();
+    await dialog.getByText('No se pudo desactivar el plan.').waitFor();
+    assert.equal(await dialog.evaluate(element => element.contains(document.activeElement)), true);
+    failDeactivate = false;
+    await dialog.getByRole('button', { name: 'Desactivar' }).click();
+    await page.getByText('Plan desactivado.').waitFor();
+    await page.getByRole('button', { name: 'Textos públicos', exact: true }).click();
+    await page.getByText('No se pudo cargar el contenido.', { exact: true }).waitFor();
+    failContent = false; await page.getByRole('button', { name: 'Reintentar' }).click();
+    const hero = page.getByLabel('Título Hero', { exact: true });
+    await hero.fill('Texto ficticio');
+    await hero.locator('..').getByRole('button', { name: 'Guardar' }).click();
+    await page.getByText('Solo superadmin puede guardar textos.', { exact: true }).waitFor();
+    assert.equal(await hero.locator('..').getByRole('button', { name: 'Guardar' }).evaluate(element => element === document.activeElement), true);
+    assert.equal(await hero.inputValue(), 'Texto ficticio');
+    denyContent = false;
+    await hero.locator('..').getByRole('button', { name: 'Guardar' }).click();
+    await page.getByText('✓ Guardado', { exact: true }).waitFor();
+    await hero.fill('Nuevo borrador');
+    assert.equal(await page.getByText('✓ Guardado', { exact: true }).count(), 0);
+    assert.equal(writes.at(-1).body.value, 'Texto ficticio');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.evaluate(() => localStorage.setItem('elv_lang', 'en'));
+    await page.reload();
+    await page.getByRole('button', { name: 'Plans', exact: true }).click();
+    await page.getByRole('button', { name: '+ New plan', exact: true }).waitFor();
+    await page.getByText('Fixture plan').waitFor();
+    await page.getByText('Monthly', { exact: false }).waitFor();
+    await page.getByRole('button', { name: 'Deactivate', exact: true }).click();
+    await dialog.getByText('The plan will no longer appear in pricing; existing requests are kept. You can reactivate it by editing it.').waitFor();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Public texts', exact: true }).click();
+    await page.getByLabel('Hero title', { exact: true }).waitFor();
+    await page.getByLabel('Navigation · Skip to content', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.setViewportSize({ width: 1360, height: 900 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByRole('button', { name: 'Plans', exact: true }).click();
+    await page.getByRole('button', { name: '+ New plan', exact: true }).click();
+    await dialog.getByLabel('Features in Spanish, one per line').waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    console.log('ES-185 browser: load failures, retry, price validation, deactivation failure/success, text save and stale status passed.');
+  } finally { if (browser) await browser.close(); await server.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

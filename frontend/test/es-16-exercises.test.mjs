@@ -9,12 +9,14 @@ async function load(file, replacements = []) {
   return import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'))
 }
 const catalog = JSON.parse(fs.readFileSync(new URL('../../shared/companion-exercises.json', import.meta.url), 'utf8'))
-const { publicationEnabled, exercisesEnabled } = await load('publication.ts', [['import.meta.env.VITE_ENABLE_COMPANION_EXERCISES', 'undefined']])
 const { exerciseEs, exerciseEn } = await load('copy.ts')
-test('ES-16: publication is disabled by default and requires literal true, never truthy coercion', () => {
-  assert.equal(exercisesEnabled, false)
-  for (const value of [undefined, null, false, true, 1, '1', 'TRUE', 'false', ' true ']) assert.equal(publicationEnabled(value), false)
-  assert.equal(publicationEnabled('true'), true)
+// ES-170 (decisión 7 del PO): la bandera de compilación se retiró; la pantalla pide los ejercicios PUBLICADOS al servidor (ES-194) y ya no lee el archivo empaquetado.
+test('ES-170: la pantalla de ejercicios no usa la bandera ni el JSON empaquetado; lee GET /api/exercises', () => {
+  const page = source('ExercisePage.tsx')
+  assert.equal(fs.existsSync(new URL('../src/exercises/publication.ts', import.meta.url)), false)
+  assert.doesNotMatch(page, /companion-exercises|exercisesEnabled|VITE_ENABLE_COMPANION_EXERCISES/)
+  assert.match(page, /\/api\/exercises\$\{path\}/)
+  assert.doesNotMatch(fs.readFileSync(new URL('../src/space/SpaceNav.tsx', import.meta.url), 'utf8'), /VITE_ENABLE_COMPANION_EXERCISES/)
 })
 test('ES-16: the three stable exercises have ES/EN purpose, one question and editorial time', () => {
   assert.deepEqual(catalog.exercises.map(e => e.key), ['reflection', 'values', 'contribution'])

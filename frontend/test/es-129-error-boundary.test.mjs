@@ -37,10 +37,10 @@ test('ES-129 textos: aviso y botón en ES y EN, con tuteo', () => {
 test('ES-129 estructura: role=alert, foco en el botón, sin recarga automática, se limpia al cambiar de ruta y envuelve el Suspense', () => {
   const b = read('../src/components/RouteErrorBoundary.tsx'); const app = read('../src/App.tsx')
   assert.match(b, /role="alert"/); assert.match(b, /button\.current\?\.focus\(\)/)
-  assert.match(b, /onClick=\{\(\) => window\.location\.reload\(\)\}/)
+  assert.match(b, /else window\.location\.reload\(\)/) // ES-250: «Recargar» sigue recargando solo al pulsar (el botón de código es «Reintentar»)
   assert.equal((b.match(/location\.reload/g) ?? []).length, 1) // solo al pulsar: sin bucles de recarga
   assert.ok(!b.includes('addEventListener')); assert.match(b, /prev\.resetKey !== this\.props\.resetKey/)
-  assert.match(b, /if \(this\.state\.error\) throw this\.state\.error/) // otros errores no se disfrazan de «versión nueva»
+  assert.doesNotMatch(b, /throw this\.state\.error/) // ES-250: un error de código ya no se relanza (dejaba el cuerpo en blanco); no se disfraza de «versión nueva» (ver es-250)
   assert.match(app, /<RouteErrorBoundary resetKey=\{pathname\}><Suspense fallback=\{<RouteFallback \/>\}><Routes>/)
   assert.match(app, /<\/Routes><\/Suspense><\/RouteErrorBoundary>/)
   assert.match(app, /const DataPage = lazy\(/); assert.match(app, /path="\/app\/data" element=\{<DataPage \/>\}/) // ruta de #122 conservada

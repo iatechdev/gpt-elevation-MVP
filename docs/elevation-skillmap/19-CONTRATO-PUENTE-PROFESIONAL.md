@@ -19,6 +19,8 @@ La persona **escribe o aprueba, campo por campo, un texto profesional**; el sist
 
 Una versión que mezcla ambos requiere el consentimiento (basta un campo del camino A). La IA no propone ni reescribe campos en esta HU.
 
+**ES-233 · permiso de la fuente.** Citar una fuente propia como origen exige además el permiso de análisis de esa fuente (`insights_diary`, `insights_chat` o `insights_resume`): el del puente solo autoriza compartir. Se comprueba en la vista previa (403 `source_consent_required`) y de nuevo en la confirmación, dentro de la misma transacción y con bloqueo compartido (403 `source_consent_revoked`); una retirada entre las dos pestañas no deja pasar el texto. El texto escrito directamente no depende de ninguno de estos permisos.
+
 ## 4. Flujo (vista previa → confirmación)
 
 1. `POST /api/career-context/preview` `{ fields: [{key, text, origin?}], locale }` → `200 { token, expiresAt, representation }`. La `representation` es **exactamente** lo que verá el motor (clave + texto). No guarda nada. El `token` está firmado, ligado a la persona y a esos campos, y vence en 10 minutos.
@@ -92,3 +94,5 @@ Interfaz; propuestas de la IA para los campos; el motor de rutas y el Skill Map 
 ## 15. Respuesta a QA-25-01 (confirmaciones simultáneas)
 
 10 confirmaciones simultáneas del mismo dueño daban `500 bridge_failed` en algunos casos (colisión del `INSERT` agotando los 6 reintentos). Ahora **las confirmaciones de una misma persona se atienden de una en una dentro del proceso** (igual que en ES-23); los reintentos acotados quedan como respaldo para otra instancia, y si aun así se agotan la respuesta es **`409 conflict` reintentable**, nunca un 500. Pruebas: 40 confirmaciones simultáneas por HTTP con mocks (todas `201`, versiones consecutivas, una sola activa) y 25 rondas de 10 simultáneas en Postgres real; sin la serialización esa prueba falla (reproduce lo que vio QA). *Limitación: la serialización es por proceso (piloto de una sola instancia).*
+
+**ES-233 · repetir una confirmación tras retirar el permiso (E253-6).** Repetir la confirmación de una versión ya creada (mismo `requestId`) **después de retirar el permiso de su fuente** responde **403 `source_consent_revoked`** y no devuelve la versión existente (no duplica ni entrega texto). La regla equivalente para la evidencia (ES-27) está en el contrato 20, §15.

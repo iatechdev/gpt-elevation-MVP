@@ -16,8 +16,8 @@ let lang = 'es'
 let role = 'admin'
 let status = 'anonymous'
 const dictionary = {
-  es: { logo: 'ELEVATION', btn_login: 'Entrar a mi espacio', login_subtitle: 'Un espacio solo para ti', link_login: 'Ya tengo cuenta', admin_nav_dashboard: 'Dashboard' },
-  en: { logo: 'ELEVATION', btn_login: 'Enter my space', login_subtitle: 'A space just for you', link_login: 'I have an account', admin_nav_dashboard: 'Dashboard' },
+  es: { 'access.sign_in': 'Entrar', logo: 'ELEVATION', btn_login: 'Entrar a mi espacio', login_subtitle: 'Un espacio solo para ti', link_login: 'Ya tengo cuenta', admin_nav_dashboard: 'Dashboard' },
+  en: { 'access.sign_in': 'Sign in', logo: 'ELEVATION', btn_login: 'Enter my space', login_subtitle: 'A space just for you', link_login: 'I have an account', admin_nav_dashboard: 'Dashboard' },
 }
 // Real React/router rendering; only storage, language/content loading and session reads are doubles.
 const cache = new Map()
@@ -56,13 +56,13 @@ test('ES-38: login/register have visible associated labels and password autocomp
   status = 'anonymous'
   for (lang of ['es', 'en']) {
     const signIn = render(LoginPage, '/login?plan=7')
-    assert.match(signIn, new RegExp(`<h1 id="access-title">${lang === 'es' ? 'Ingresar' : 'Sign in'}</h1>`))
+    assert.match(signIn, new RegExp(`<h1 id="[^"]+">${lang === 'es' ? 'Entrar' : 'Sign in'}</h1>`)) // ES-155: el título del marco público es «Entrar»
     assert.match(signIn, /for="access-email"/)
     assert.match(signIn, /for="access-password"/)
     assert.doesNotMatch(signIn, /id="access-name"/)
     assert.match(signIn, /autocomplete="current-password"/i)
     // The secondary action is outside the form and cannot become a submit button.
-    assert.match(signIn, /<\/form><div class="access-secondary"><p>/)
+    assert.match(signIn, /<\/form><div class="ac-secondary"><p>/)
     const register = render(LoginPage, '/login?mode=register&plan=7')
     assert.match(register, /for="access-name"/)
     assert.match(register, /autocomplete="new-password"/i)

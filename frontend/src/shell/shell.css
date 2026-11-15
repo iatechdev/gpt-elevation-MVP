@@ -66,3 +66,10 @@
   .cg-usermenu__list { right: auto; left: 0; }
   .cg-header__end { margin-left: 0; width: 100%; justify-content: space-between; }
 }
+/* ES-155 (E263-2): la navegación pública en móvil es una rejilla de dos columnas con celdas de alto fijo: el número de filas no depende del ancho del texto,
+   así que cuando carga la tipografía (swap) el encabezado no se reacomoda ni empuja el contenido (CLS). */
+@media (max-width: 900px) {
+  .cg-nav--grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.2rem 1rem; width: 100%; }
+  .cg-nav--grid a { min-width: 0; overflow-wrap: anywhere; }
+  .cg-nav--grid a.cg-btn { justify-content: center; }
+}

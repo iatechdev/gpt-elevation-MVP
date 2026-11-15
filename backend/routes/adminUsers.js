@@ -12,6 +12,10 @@ const PricingPlan = require('../PricingPlan');
 const { validateBody, nonempty, optional, nullable, id, boolean } = require('../middlewares/validateBody');
 const { revokeUserSessions } = require('../utils/sessions');
 const { deletionPending } = require('../utils/deletionGuard');
+const { requestDeletion } = require('../utils/dataRights');
+const DeletionRequest = require('../DeletionRequest');
+const { CORE } = require('../utils/personalData');
+const { recordAdminAction, recordDenied } = require('../utils/adminAudit'); // ES-186 B
 
 const refuseDeletionPending = async (id, res) => {
   if (!await deletionPending(Number(id))) return false;
@@ -65,6 +69,9 @@ router.get('/', async (req, res) => {
       order: [['createdAt', 'DESC']],
     });
 
+    // ES-186 D0: ¿la cuenta tiene una solicitud de eliminación? Solo un booleano (sin estado ni identificador de la solicitud). Una consulta para toda la lista.
+    const pendientes = usuarios.length ? new Set((await DeletionRequest.findAll({ where: { UserId: usuarios.map((u) => u.id) }, attributes: ['UserId'] })).map((r) => r.UserId)) : new Set();
+
     const usuariosConStats = await Promise.all(
       usuarios.map(async (u) => {
         const sesiones = await MoodLog.count({ where: { UserId: u.id } });
@@ -90,6 +97,7 @@ router.get('/', async (req, res) => {
           isLocked: !!isLocked,
           lockedUntil: u.lockedUntil,
           loginAttempts: u.loginAttempts,
+          deletionRequested: pendientes.has(u.id),
         };
       })
     );
@@ -132,7 +140,7 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
     // ES-215: todo ocurre en una transacción con las filas de superadministración bloqueadas (en orden fijo), así dos cambios
     // simultáneos no pueden dejar la plataforma sin superadmin activo ni saltarse la regla de rango con un rol leído a destiempo.
     const tx = await sequelize.transaction();
-    let usuario; let refused = null;
+    let usuario; let refused = null; let deniedAudit = null;
     try {
       const supers = await User.findAll({ where: { role: 'superadmin' }, attributes: ['id', 'active'], order: [['id', 'ASC']], lock: Transaction.LOCK.UPDATE, transaction: tx });
       usuario = await User.findByPk(id, { transaction: tx, lock: Transaction.LOCK.UPDATE });
@@ -140,18 +148,20 @@ router.put('/:id', validateBody({ role: optional(nonempty), active: optional(boo
       else if (adminRole !== 'superadmin' && rankOf(usuario.role) >= rankOf(adminRole) && (role !== undefined || active !== undefined)) {
         // Una cuenta admin no cambia el rol ni el estado de otra admin ni de una superadmin; solo superadmin lo hace.
         refused = [403, { code: 'target_rank', error: 'No tienes permisos para cambiar el rol o el estado de una cuenta de administración. / You cannot change the role or status of an administration account.' }];
+        deniedAudit = { action: 'user.update', targetId: usuario.id };
       } else if (usuario.role === 'superadmin' && ((role !== undefined && role !== 'superadmin') || active === false)
         && !(Array.isArray(supers) ? supers : []).some((s) => s.id !== usuario.id && s.active)) {
         refused = [409, { code: 'last_superadmin', error: 'La plataforma debe conservar al menos una cuenta superadmin activa. / The platform must keep at least one active superadmin account.' }];
       } else {
         await usuario.update(updates, { transaction: tx });
+        await recordAdminAction({ actor: req.user, action: 'user.update', targetType: 'user', targetId: usuario.id }, { transaction: tx });
       }
       if (refused) await tx.rollback(); else await tx.commit();
     } catch (error) {
       await tx.rollback().catch(() => {});
       throw error;
     }
-    if (refused) return res.status(refused[0]).json(refused[1]);
+    if (refused) { if (deniedAudit) await recordDenied(req.user, deniedAudit.action, 'user', deniedAudit.targetId); return res.status(refused[0]).json(refused[1]); }
     // ES-18: un cambio de rol o estado corta las sesiones anteriores de esa cuenta
     if (role !== undefined || active !== undefined) await revokeUserSessions(usuario.id);
 
@@ -179,14 +189,14 @@ router.delete('/:id', async (req, res) => {
     const adminId   = req.user.id;
 
     if (adminRole !== 'superadmin') {
+      await recordDenied(req.user, 'user.delete', 'user', Number(id));
       return res.status(403).json({ error: 'Solo el superadmin puede eliminar usuarios permanentemente.' });
     }
-    if (await refuseDeletionPending(id, res)) return;
     if (parseInt(id) === adminId) {
       return res.status(403).json({ error: 'No puedes eliminar tu propio usuario.' });
     }
 
-    const usuario = await User.findByPk(id);
+    const usuario = await User.findByPk(Number(id));
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado.' });
     }
@@ -194,12 +204,55 @@ router.delete('/:id', async (req, res) => {
       return res.status(403).json({ error: 'No se puede eliminar a un superadmin.' });
     }
 
+    // ES-186 C (decisión de Infra, objeción de la medición): una PERSONA usuaria no se borra con DELETE físico (dejaba diario, chat, consentimientos y evidencias
+    // huérfanos y fallaba con 500 si tenía carrera o rutas). Se solicita su eliminación por el circuito de derechos de datos (ES-23): idempotente, la cuenta deja de
+    // poder entrar al instante y el borrado de sus datos lo completa el proceso de mantenimiento (sin plazo prometido).
+    if (usuario.role === 'user') {
+      const tx = await sequelize.transaction();
+      let receipt;
+      try {
+        receipt = await requestDeletion(usuario.id, { transaction: tx });
+        if (!receipt.repeated) await recordAdminAction({ actor: req.user, action: 'user.delete_request', targetType: 'user', targetId: usuario.id }, { transaction: tx });
+        await tx.commit();
+      } catch (error) {
+        await tx.rollback().catch(() => {});
+        throw error;
+      }
+      await revokeUserSessions(usuario.id); // ES-18
+      return res.status(202).json({
+        code: 'deletion_requested', repeated: Boolean(receipt.repeated),
+        message: 'Eliminación solicitada. La cuenta ya no puede entrar. Los datos de la persona se borran en el proceso de mantenimiento. Solo se conservan las notas y registros que escribió su profesional, que pueden contener datos que la identifiquen. La política de retención está en definición. / Deletion requested. The account can no longer sign in. The person’s data is erased in the maintenance process. Only the notes and records written by their professional are kept, and they may contain data that identifies the person. The retention policy is being defined.',
+      });
+    }
+
+    // Profesionales, junta y administración: DELETE físico solo si no tienen datos ni vínculos que lo impidan (si no, 409 has_dependent_data; nunca 500).
+    if (await refuseDeletionPending(id, res)) return;
     const nombreUsuario = usuario.name;
-    await usuario.destroy();
+    const tx = await sequelize.transaction();
+    let blocked = false;
+    try {
+      for (const [, name, owner] of CORE) {
+        if (name === 'Invitation' || name === 'PasswordReset') continue; // la invitación aceptada se desvincula; los enlaces de restablecimiento se borran en cascada
+        if (await require('../' + name).count({ where: { [owner]: usuario.id }, transaction: tx })) { blocked = true; break; }
+      }
+      if (!blocked) {
+        await require('../Invitation').update({ acceptedUserId: null }, { where: { acceptedUserId: usuario.id }, transaction: tx });
+        await usuario.destroy({ transaction: tx });
+        await recordAdminAction({ actor: req.user, action: 'user.delete', targetType: 'user', targetId: usuario.id }, { transaction: tx });
+      }
+      if (blocked) await tx.rollback(); else await tx.commit();
+    } catch (error) {
+      await tx.rollback().catch(() => {});
+      if (error && error.name === 'SequelizeForeignKeyConstraintError') blocked = true; // notas, validaciones, personas vinculadas…: la base lo impide
+      else throw error;
+    }
+    if (blocked) {
+      return res.status(409).json({ code: 'has_dependent_data', error: 'No se puede eliminar: la cuenta tiene datos o vínculos asociados. / It cannot be deleted: the account has associated data or links.' });
+    }
     await revokeUserSessions(usuario.id); // ES-18
 
     console.log('Borrado administrativo ejecutado.');
-    res.json({ message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
+    res.json({ code: 'deleted', message: `Usuario ${nombreUsuario} eliminado permanentemente.` });
   } catch (error) {
     console.error('Error eliminando usuario.');
     res.status(500).json({ error: 'No se pudo eliminar el usuario.' });
@@ -235,6 +288,7 @@ router.put('/:id/asignar-terapeuta', validateBody({ therapistId: nullable(id) })
       // vuelve al original, tampoco revive la anterior). Un error no se traga: el cambio y el retiro ocurren juntos o ninguno.
       if (previous !== null && previous !== next) await require('../utils/consent').revokeTherapistSharing(usuario.id, previous, transaction);
       await usuario.update({ therapistId: next }, { transaction });
+      await recordAdminAction({ actor: req.user, action: 'user.assign_therapist', targetType: 'user', targetId: usuario.id }, { transaction });
       await transaction.commit();
     } catch (error) {
       await transaction.rollback().catch(() => {});
@@ -266,7 +320,15 @@ router.put('/:id/plan', validateBody({ planId: optional(nullable(id)) }), async 
       if (!plan) return res.status(404).json({ error: 'Plan no encontrado o inactivo.' });
     }
 
-    await usuario.update({ planId: planId || null });
+    const planTx = await sequelize.transaction();
+    try {
+      await usuario.update({ planId: planId || null }, { transaction: planTx });
+      await recordAdminAction({ actor: req.user, action: 'user.set_plan', targetType: 'user', targetId: usuario.id }, { transaction: planTx });
+      await planTx.commit();
+    } catch (error) {
+      await planTx.rollback().catch(() => {});
+      throw error;
+    }
 
     const updatedUser = await User.findByPk(id, {
       include: [{ model: PricingPlan, as: 'plan', attributes: ['id', 'slug', 'name_es', 'name_en', 'price'] }],
@@ -386,15 +448,21 @@ router.put('/:id/unlock', async (req, res) => {
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
     // ES-217: la misma jerarquía de rangos que al cambiar rol o estado (ES-215): admin no actúa sobre admin ni superadmin.
     if (req.user.role !== 'superadmin' && rankOf(usuario.role) >= rankOf(req.user.role)) {
+      await recordDenied(req.user, 'user.unlock', 'user', usuario.id);
       return res.status(403).json({ code: 'target_rank', error: 'No tienes permisos para desbloquear una cuenta de administración. / You cannot unlock an administration account.' });
     }
 
     // ES-217: «desbloquear» SOLO levanta el bloqueo por intentos fallidos. Nunca toca `active`: una cuenta desactivada por
     // administración sigue desactivada (reactivarla es una decisión explícita aparte, PUT /:id con { active: true } según el rango).
-    await usuario.update({
-      loginAttempts: 0,
-      lockedUntil:   null,
-    });
+    const unlockTx = await sequelize.transaction();
+    try {
+      await usuario.update({ loginAttempts: 0, lockedUntil: null }, { transaction: unlockTx });
+      await recordAdminAction({ actor: req.user, action: 'user.unlock', targetType: 'user', targetId: usuario.id }, { transaction: unlockTx });
+      await unlockTx.commit();
+    } catch (error) {
+      await unlockTx.rollback().catch(() => {});
+      throw error;
+    }
 
     console.log('Desbloqueo administrativo ejecutado.');
     res.json({ message: `Cuenta de ${usuario.name} desbloqueada correctamente.` });
@@ -419,13 +487,15 @@ router.put('/:id/reset-password', (req, res) => res.status(410).json({
 // El enlace (un solo uso, vence) va al correo de la cuenta; la respuesta no lo incluye. Solo superadmin, como el reset anterior.
 router.post('/:id/reset-link', async (req, res) => {
   try {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Solo el superadmin puede enviar enlaces de restablecimiento.' });
+    if (req.user.role !== 'superadmin') { await recordDenied(req.user, 'user.reset_link', 'user', Number(req.params.id)); return res.status(403).json({ code: 'superadmin_only', error: 'Solo el superadmin puede enviar enlaces de restablecimiento.' }); }
     if (await refuseDeletionPending(req.params.id, res)) return;
     const usuario = await User.findByPk(req.params.id);
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
     // No se puede restablecer la contraseña de otro superadmin
-    if (usuario.role === 'superadmin' && usuario.id !== req.user.id) return res.status(403).json({ error: 'No se puede restablecer la contraseña de otro superadmin.' });
+    if (usuario.role === 'superadmin' && usuario.id !== req.user.id) { await recordDenied(req.user, 'user.reset_link', 'user', usuario.id); return res.status(403).json({ code: 'superadmin_target', error: 'No se puede restablecer la contraseña de otro superadmin.' }); }
     const locale = req.body && req.body.locale === 'en' ? 'en' : 'es';
+    // ES-186 B: se audita ANTES de enviar; si la auditoría falla, no sale ningún enlace (500).
+    await recordAdminAction({ actor: req.user, action: 'user.reset_link', targetType: 'user', targetId: usuario.id });
     const passwordReset = require('./passwordReset');
     passwordReset.track(passwordReset.issueLinkForUser(usuario, locale).catch(() => console.error('Error al preparar el enlace de restablecimiento.')));
     res.status(202).json({ message: 'Si la cuenta puede recibirlo, se envió un enlace de restablecimiento a su correo. / If the account can receive it, a reset link was sent to its email.' });

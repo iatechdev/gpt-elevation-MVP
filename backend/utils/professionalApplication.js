@@ -6,7 +6,7 @@ const MAX_CV_BYTES = 5 * 1024 * 1024;
 const REJECTED_RETENTION_DAYS = 180; // cifra propuesta (no es un dato legal verificado); la fija el PO
 const STATUSES = ['pending', 'approved', 'rejected'];
 const LOCALES = ['es', 'en'];
-const EMAIL = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/;
+const { isValidEmail } = require('./emailGuard');
 
 // Campo → [obligatorio, máximo de caracteres]
 const FIELDS = {
@@ -39,7 +39,7 @@ function validateApplication(body, file) {
     if (text.length > max) { fields.push(key); continue; }
     values[key] = text;
   }
-  if (values.email && !EMAIL.test(values.email)) fields.push('email');
+  if (values.email && !isValidEmail(values.email)) fields.push('email'); // ES-252/ES-259: misma validación que invitaciones (coma, doble @, longitud)
   if (values.email) values.email = values.email.toLowerCase();
   if (values.profileUrl && !validProfileUrl(values.profileUrl)) fields.push('profileUrl');
   if (input.consent !== 'true' && input.consent !== true) fields.push('consent');

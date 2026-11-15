@@ -26,7 +26,7 @@ const { ordinalsFor } = require('../utils/personOrdinals'); // ES-177
 const { encriptar, desencriptar } = require('../utils/crypto');
 const anthropic = require('../utils/anthropic');
 const { textOf } = require('../utils/claudeText');
-const { averageMood, formatAverage } = require('../utils/moodStats'); // ES-105
+const { averageMood, averageRating, round1, formatAverage } = require('../utils/moodStats'); // ES-105, ES-263
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient'); // ES-102
 
 const {
@@ -120,9 +120,8 @@ router.get('/pacientes', async (req, res) => {
           ? allMoods[0] >= allMoods[1] ? 'up' : 'down'
           : 'neutral';
 
-        const avgRating = ratings.length > 0
-          ? Math.round((ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length) * 10) / 10
-          : null;
+        // ES-263: solo calificaciones VÁLIDAS (1-5); una nula no cuenta como 0 ni entra en el divisor (misma regla que /api/user/progress).
+        const avgRating = round1(averageRating(ratings));
 
         const sessionsThisWeek = moodLogs.filter(m => {
           const daysDiff = (Date.now() - new Date(m.date).getTime()) / (1000 * 60 * 60 * 24);
@@ -519,13 +518,12 @@ router.get('/pacientes/:id/resumen-ia', async (req, res) => {
     // ES-102/ES-105: el promedio se calcula sobre los valores registrados (utils/moodStats), no sobre el número de registros.
     const avgMood = formatAverage(averageMood(moodLogs), 'N/A');
 
-    if (avgMood === 'N/A' && ratings.length === 0) {
+    // ES-263: la calificación nula no es un dato; sin ánimo ni calificaciones válidas no hay resumen.
+    const avgRating = formatAverage(averageRating(ratings), 'N/A');
+
+    if (avgMood === 'N/A' && avgRating === 'N/A') {
       return res.json({ summary: 'Aún no hay datos suficientes para un resumen. / There is not enough data for a summary yet.', generatedAt: new Date().toISOString(), basedOn: { sessions: moodLogs.length, notes: 0 } });
     }
-
-    const avgRating = ratings.length > 0
-      ? (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1)
-      : 'N/A';
 
     // ES-102 (ES93-A2): solo datos estructurados (ánimo y valoraciones). Las notas del terapeuta NO se envían al proveedor de IA
     // (decisión de ES-79, 26-oct), ni el nombre ni el correo de la persona.

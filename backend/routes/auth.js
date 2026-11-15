@@ -12,7 +12,10 @@ const { loginRateMax } = require('../utils/loginRateLimit');
 const User      = require('../User');
 const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
+const { isValidEmail, MAX_EMAIL } = require('../utils/emailGuard'); // ES-252/ES-259
 const { passwordProblems, policy } = require('../utils/registrationPassword');
+const terms = require('../utils/terms'); // ES-301
+const { normalizeEmail, findUserByEmail } = require('../utils/emailNormalize'); // ES-306
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -66,6 +69,9 @@ const loginLimiter = rateLimit({
 router.post('/register', validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    // ES-252/ES-259: forma y longitud (≤ 254) del correo y sin caracteres de control/formato; antes de consultar la base (no enumera cuentas).
+    // Los espacios a los lados siguen tolerándose (contrato de QA-57-03); el largo total, con ellos, también cabe en 254 para no desbordar la columna.
+    if (email.length > MAX_EMAIL || !isValidEmail(email.replace(/^ +| +$/g, ''))) return res.status(400).json({ code: 'invalid_email', error: 'Correo inválido. / Invalid email.' });
 
     const missing = passwordProblems(password);
     if (missing.length) {
@@ -76,8 +82,17 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
       return res.status(400).json({ error: 'Nombre, correo y contraseña son requeridos.' });
     }
 
+    // ES-301: la aceptación del aviso/términos se valida ANTES de consultar la base (no revela si el correo existe) y la versión vigente es la del servidor.
+    let accepted;
+    try { accepted = terms.validate(req.body); }
+    catch (error) {
+      if (error instanceof terms.TermsError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.currentVersion ? { currentVersion: error.currentVersion } : {}) });
+      throw error;
+    }
+
     // Verificar si el email ya existe en la BD
-    const existing = await User.findOne({ where: { email } });
+    // ES-306: el correo se compara sin importar mayúsculas ni espacios a los lados; «Ana@x.co» con «ana@x.co» ya registrado = duplicado.
+    const existing = await findUserByEmail(User, email);
 
     if (existing) {
       if (existing.active === false) {
@@ -94,10 +109,12 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
     // Usuario nuevo — crear normalmente
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({ name, email, password: hashedPassword, role: 'user' });
+    await User.create({ name, email: normalizeEmail(email), password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {
+    // ES-301: dos registros simultáneos del mismo correo: gana uno; el otro choca con el índice único y es el MISMO caso que «ya registrado» (antes un 500).
+    if (error && error.name === 'SequelizeUniqueConstraintError') return res.status(400).json({ error: 'El correo ya está registrado.' });
     console.error('Error en register.');
     res.status(500).json({ error: 'Error en el servidor al registrar.' });
   }
@@ -107,7 +124,7 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
 router.post('/login', loginLimiter, validateBody({ email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const user = await findUserByEmail(User, email); // ES-306: sin importar mayúsculas
 
     // ES-220: tres casos con la MISMA respuesta hacia fuera, para que el login no sea un oráculo de qué correos tienen cuenta:
     //  - correo inexistente  → se compara contra un hash señuelo (mismo costo de bcrypt) y se cuentan intentos en memoria con el umbral de una cuenta real;

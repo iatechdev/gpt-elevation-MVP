@@ -88,7 +88,7 @@ test('ES-162: «Copiar» usa el portapapeles dentro del clic y, si falla, selecc
 
 test('ES-162: etiqueta «Tú» en los turnos de la persona y casilla «Enter envía» desactivada por defecto con IME respetado', () => {
   const page = read('../src/pages/ChatPage.tsx')
-  assert.ok(page.indexOf('{copy[lang].you}') > 0 && page.indexOf('{copy[lang].you}') < page.indexOf('{msg.text}'), 'la etiqueta va antes del texto de la persona')
+  assert.ok(page.includes('you={copy[lang].you}') && page.indexOf('>{you}</span>') > 0 && page.indexOf('>{you}</span>') < page.indexOf('{text}'), 'la etiqueta va antes del texto de la persona') // ES-199: la burbuja es el componente ChatBubble
   const controls = read('../src/space/ChatControls.tsx')
   assert.match(controls, /useState\(readEnterSends\)/)
   assert.match(controls, /enterShouldSend\(\{ key: event\.key, shiftKey: event\.shiftKey, ctrlKey: event\.ctrlKey, altKey: event\.altKey, metaKey: event\.metaKey, isComposing: event\.nativeEvent\.isComposing, keyCode: event\.nativeEvent\.keyCode \}, enterSends\)/)

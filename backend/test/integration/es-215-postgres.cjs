@@ -38,6 +38,7 @@ test('ES-215 PostgreSQL: rango del objetivo al cambiar rol o estado de una cuent
   const RevokedToken = require('../../RevokedToken');
   await require('../../PricingPlan').sync();
   await Promise.all([User, DeletionRequest, AuthRevocation, RevokedToken].map((model) => model.sync()));
+  await require('../../AdminAuditEntry').sync(); // ES-186 B: las rutas de administración auditan
   const { issueToken } = require('../../utils/sessions');
   const { verificarAdmin } = require('../../middlewares/auth');
   const app = express(); app.use(express.json());

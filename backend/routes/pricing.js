@@ -1,6 +1,8 @@
 // backend/routes/pricing.js
 const express     = require('express');
 const router      = express.Router();
+const { validateIdParams } = require('../middlewares/params');
+validateIdParams(router, 'id'); // ES-280: un id no entero o fuera de rango es 404 uniforme, no un 500
 const PricingPlan = require('../PricingPlan');
 const { verificarAdmin } = require('../middlewares/auth');
 const { validateBody, nonempty, text, numeric, boolean, textArray, optional, nullable } = require('../middlewares/validateBody');
@@ -13,6 +15,9 @@ const fields = {
 };
 const optionalFields = Object.fromEntries(Object.entries(fields).map(([key, check]) => [key, optional(check)]));
 const reviewedCopy = require('../content/reviewedPricingCopy');
+const { validatePlan } = require('../utils/pricingValidation'); // ES-278
+const SLUG_TAKEN = { code: 'slug_taken', field: 'slug', error: 'Ya existe un plan con ese identificador. / A plan with that identifier already exists.' };
+const uniqueConflict = (error) => error && error.name === 'SequelizeUniqueConstraintError';
 
 // GET /api/pricing — público
 router.get('/', async (req, res) => {
@@ -129,34 +134,28 @@ router.post('/seed', async (req, res) => {
 // POST /api/admin/pricing — crear plan
 router.post('/', validateBody({ ...optionalFields, slug: nonempty, name_es: nonempty, name_en: nonempty }), async (req, res) => {
   try {
-    const {
-      slug,
-      name_es, name_en, description_es, description_en,
-      price, currency, period,
-      features_es, features_en,
-      isHighlighted, order,
-    } = req.body;
-
-    if (!name_es || !name_en || !slug)
-      return res.status(400).json({ error: 'slug, name_es y name_en son requeridos.' });
-
+    // ES-278: el servidor valida TODO (identificador, rangos, precio obligatorio) antes de tocar la base.
+    const checked = validatePlan(req.body, { creating: true });
+    if (!checked.ok) return res.status(checked.status).json(checked.body);
+    const v = checked.values;
     const plan = await PricingPlan.create({
-      slug,
-      name_es, name_en,
-      description_es: description_es ?? '',
-      description_en: description_en ?? '',
-      price:          price          ?? 0,
-      currency:       currency       ?? 'USD',
-      period:         period         ?? 'month',
-      features_es:    features_es    ?? [],
-      features_en:    features_en    ?? [],
-      isHighlighted:  isHighlighted  ?? false,
-      isActive:       true,
-      order:          order          ?? 0,
+      slug: v.slug,
+      name_es: v.name_es, name_en: v.name_en,
+      description_es: v.description_es ?? '',
+      description_en: v.description_en ?? '',
+      price:          v.price,
+      currency:       v.currency      ?? 'USD',
+      period:         v.period        ?? 'month',
+      features_es:    v.features_es   ?? [],
+      features_en:    v.features_en   ?? [],
+      isHighlighted:  v.isHighlighted ?? false,
+      isActive:       v.isActive      ?? true,
+      order:          v.order         ?? 0,
     });
 
     res.status(201).json({ message: 'Plan creado exitosamente.', plan });
   } catch (error) {
+    if (uniqueConflict(error)) return res.status(409).json(SLUG_TAKEN);
     console.error('❌ Error creando plan:', error);
     res.status(500).json({ error: 'No se pudo crear el plan.' });
   }
@@ -165,21 +164,24 @@ router.post('/', validateBody({ ...optionalFields, slug: nonempty, name_es: none
 // PUT /api/admin/pricing/:id — editar plan
 router.put('/:id', validateBody(optionalFields), async (req, res) => {
   try {
+    const checked = validatePlan(req.body, { creating: false });
+    if (!checked.ok) return res.status(checked.status).json(checked.body);
     const plan = await PricingPlan.findByPk(req.params.id);
     if (!plan) return res.status(404).json({ error: 'Plan no encontrado.' });
 
     const allowed = [
-      'slug','name_es','name_en','description_es','description_en',
+      'name_es','name_en','description_es','description_en',
       'price','currency','period',
       'features_es','features_en',
       'isHighlighted','isActive','order',
     ];
     const updates = {};
-    allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
+    allowed.forEach(k => { if (checked.values[k] !== undefined) updates[k] = checked.values[k]; });
 
     await plan.update(updates);
     res.json({ message: 'Plan actualizado correctamente.', plan });
   } catch (error) {
+    if (uniqueConflict(error)) return res.status(409).json(SLUG_TAKEN);
     console.error('❌ Error actualizando plan:', error);
     res.status(500).json({ error: 'No se pudo actualizar el plan.' });
   }
