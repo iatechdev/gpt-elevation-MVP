@@ -81,3 +81,5 @@
 .cg-screen-loading i:nth-of-type(2) { width: 82%; } .cg-screen-loading i:nth-of-type(3) { width: 60%; }
 @media (prefers-reduced-motion: no-preference) { .cg-screen-loading i { animation: cg-screen-pulse 1.4s ease-in-out infinite; } }
 @keyframes cg-screen-pulse { 50% { opacity: 0.25; } }
+/* ES-153 (E280-2): el pie no se pinta mientras la pantalla carga; así no «salta» al llegar el contenido (CLS). Sigue ocupando su sitio, solo invisible. */
+.cg-frame:has(.cg-screen-loading) .cg-footer { visibility: hidden; }

@@ -58,3 +58,14 @@ test('ES-153 regresión de contraste (QA-2): la regla de enlaces del marco no pi
   assert.ok(linkRules.length >= 1, 'existe la regla de color de enlaces del marco')
   for (const line of linkRules) assert.match(line, /^\.cg a:not\(\[class\*='elv-btn'\]\)/, `la regla excluye a.elv-btn*: ${line}`)
 })
+
+test('ES-153 E280-2/3/4: el pie no se pinta con el esqueleto, el marco y la pantalla se precargan en paralelo con la sesión y el aviso del chat bajo queda fijo y visible', () => {
+  assert.match(read('../src/shell/shell.css'), /\.cg-frame:has\(\.cg-screen-loading\) \.cg-footer \{ visibility: hidden; \}/)
+  assert.match(app, /const PersonLayout = lazy\(loadPersonLayout\)/)
+  assert.doesNotMatch(app, /import \{ PersonLayout \} from/)
+  assert.match(app, /void loadPersonLayout\(\); void PERSON_PRELOAD\[window\.location\.pathname\]\?\.\(\)/)
+  for (const path of ['/app/evidence', '/app/exercises', '/app/diary', '/app/space/tools', '/app/chat', '/app/progress', '/app/dashboard', '/app/skill-map']) assert.ok(app.includes(`'${path}': () => import(`), `precarga de ${path}`)
+  const space = read('../src/space/space.css')
+  const short = space.slice(space.indexOf('(max-width: 600px) and (max-height: 760px)'))
+  assert.match(short, /.chat-shell { height: auto;/); assert.match(short, /.chat-input-bar { position: sticky; bottom: 0;[^}]*max-height: none; overflow: visible;/)
+})

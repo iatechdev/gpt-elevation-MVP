@@ -8,7 +8,6 @@ import { AdminRoute } from './components/AdminRoute.tsx'
 import { TherapistRoute } from './components/TherapistRoute.tsx'
 
 import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
-import { PersonLayout } from './shell/PersonLayout'
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { SpaceSession } from './space/SpaceSession'
 // ES-129: cada pantalla fuera de la portada y el login se descarga al entrar en su ruta; así /login no arrastra admin, terapeuta, junta ni mapas.
@@ -61,6 +60,15 @@ const PlanScreen = lazy(() => import('./career/CareerPages').then(m => ({ defaul
 const ExercisePage = lazy(() => import('./exercises/ExercisePage').then(m => ({ default: m.ExercisePage })))
 const FeedbackPage = lazy(() => import('./pilot/FeedbackPage').then(m => ({ default: m.FeedbackPage })))
 const PilotMetricsPage = lazy(() => import('./pilot/PilotMetricsPage').then(m => ({ default: m.PilotMetricsPage })))
+// ES-153 (E280-3): layout and screen chunks download in parallel with the session check (was a chain). Repeated import() reuses the chunk.
+const loadPersonLayout = () => import('./shell/PersonLayout').then(m => ({ default: m.PersonLayout }))
+const PersonLayout = lazy(loadPersonLayout)
+const PERSON_PRELOAD: Partial<Record<string, () => unknown>> = {
+  '/app/evidence': () => import('./pages/EvidencePages.tsx'), '/app/exercises': () => import('./exercises/ExercisePage'), '/app/diary': () => import('./space/JournalPage'),
+  '/app/space/tools': () => import('./space/SpaceToolsPage'), '/app/chat': () => import('./pages/ChatPage.tsx'), '/app/progress': () => import('./pages/UserProgress.tsx'),
+  '/app/dashboard': () => import('./pages/UserDashboard.tsx'), '/app/skill-map': () => import('./pages/SkillMapPage.tsx'),
+}
+if (typeof window !== 'undefined' && window.location.pathname.startsWith('/app/')) { void loadPersonLayout(); void PERSON_PRELOAD[window.location.pathname]?.() }
 const JournalPage = lazy(() => import('./space/JournalPage').then(m => ({ default: m.JournalPage })))
 const BridgePage = lazy(() => import('./bridge/BridgePage').then(m => ({ default: m.BridgePage })))
 const DataPage = lazy(() => import('./space/DataPage').then(m => ({ default: m.DataPage })))
