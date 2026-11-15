@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -24,7 +24,7 @@ function load(file) {
   new Function('require', 'exports', code)(id => {
     if (!id.startsWith('.')) return require(id)
     const base = resolve(dirname(file), id)
-    const path = [base, base + '.ts', base + '.tsx'].find(existsSync)
+    const path = [base, base + '.ts', base + '.tsx', base + '/index.ts'].find(candidate => existsSync(candidate) && statSync(candidate).isFile())
     return load(path ?? base)
   }, exports)
   return exports

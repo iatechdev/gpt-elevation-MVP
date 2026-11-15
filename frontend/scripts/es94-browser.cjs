@@ -34,8 +34,8 @@ const assert = require('node:assert/strict');
     { // Administrador: sin panel de pendientes
       const page = await browser.newPage({ viewport: { width: 1100, height: 900 } });
       await page.addInitScript(() => { localStorage.setItem('elevation_token', 's'); localStorage.setItem('elevation_role', 'superadmin'); localStorage.setItem('elv_lang', 'es'); });
-      await page.route('**/api/**', r => r.fulfill({ json: r.request().url().includes('landing-content') ? { hero_title: 'x' } : [] }));
-      await page.goto(base + '/admin/content'); await page.getByRole('button', { name: '🌐 Landing' }).click(); await page.getByText('Título Hero', { exact: true }).waitFor();
+      await page.route('**/api/**', r => r.fulfill({ json: new URL(r.request().url()).pathname === '/api/session' ? { role: 'superadmin', onboardingCompleted: true } : r.request().url().includes('landing-content') ? { hero_title: 'x' } : [] })); // /api/session: la sesión se verifica ahí (ES-173)
+      await page.goto(base + '/admin/content'); await page.getByRole('tab', { name: 'Textos públicos', exact: true }).click(); await page.getByText('Título Hero', { exact: true }).waitFor(); // ES-184: la pestaña es role=tab
       assert.equal(await page.getByRole('region', { name: 'Pendientes de contenido' }).count(), 0);
       check('administrador: sin panel de pendientes y la pestaña Landing sigue funcionando'); await page.close();
     }

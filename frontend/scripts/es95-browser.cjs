@@ -104,17 +104,19 @@ const assert = require('node:assert/strict');
       ];
       await page.route('**/api/**', async route => {
         const req = route.request(); const url = new URL(req.url()); calls.push(req.method() + ' ' + url.pathname + url.search);
+        if (url.pathname === '/api/session') return route.fulfill({ json: { role: 'admin', onboardingCompleted: true } }); // la sesión se verifica con /api/session (ES-173)
         if (url.pathname === '/api/admin/professional-applications' && req.method() === 'GET') { const s = url.searchParams.get('status'); return route.fulfill({ json: items.filter(i => !s || i.status === s) }); }
         if (url.pathname.endsWith('/cv')) return route.fulfill({ status: 200, contentType: 'application/pdf', body: PDF });
         if (/\/(approve|reject)$/.test(url.pathname) && req.method() === 'PUT') { const b = JSON.parse(req.postData() || '{}'); calls.push('BODY ' + JSON.stringify(b)); items[0].status = url.pathname.endsWith('approve') ? 'approved' : 'rejected'; return route.fulfill({ json: { id: 7 } }); }
         if (req.method() === 'DELETE') return route.fulfill({ json: { deleted: true } });
         return route.fulfill({ json: [] });
       });
-      await page.goto(base + '/admin/content'); await page.getByRole('button', { name: '📨 Solicitudes' }).click();
+      await page.goto(base + '/admin/content'); await page.getByRole('tab', { name: /^Solicitudes/ }).click(); // ES-184: las pestañas de Contenido son role=tab y las solicitudes son elementos de lista (misma aserción: lista, escape y nombre)
+      const item = name => page.locator('li.cg-item', { hasText: name });
       const region = page.getByRole('region', { name: 'Solicitudes de profesionales' }); await region.waitFor();
-      await page.getByRole('article', { name: 'Solicitud de Ana <b>Prueba</b>' }).waitFor();
-      assert.equal(await page.locator('article b, article script').count(), 0, 'el texto de la persona se escapa (sin HTML)');
-      assert.equal(await page.getByRole('article', { name: 'Solicitud de Beto Prueba' }).count(), 0, 'por defecto solo pendientes');
+      await item('Ana <b>Prueba</b>').waitFor();
+      assert.equal(await page.locator('li.cg-item b, li.cg-item script').count(), 0, 'el texto de la persona se escapa (sin HTML)');
+      assert.equal(await item('Beto Prueba').count(), 0, 'por defecto solo pendientes');
       check('pestaña Solicitudes: lista pendientes y el texto de la persona se muestra escapado');
       const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /Descargar hoja de vida/ }).click()]);
       assert.equal(download.suggestedFilename(), 'solicitud-7-hoja-de-vida.pdf'); assert.ok(calls.some(c => c === 'GET /api/admin/professional-applications/7/cv'));
@@ -124,13 +126,14 @@ const assert = require('node:assert/strict');
       await page.getByLabel('Motivo del rechazo (obligatorio)').fill('Falta la colegiatura.'); await page.getByRole('button', { name: 'Confirmar rechazo' }).click();
       await page.getByText('Solicitud rechazada.').waitFor(); assert.ok(calls.includes('PUT /api/admin/professional-applications/7/reject') && calls.includes('BODY {"note":"Falta la colegiatura."}'));
       check('rechazar exige el motivo y lo envía');
-      await page.getByRole('button', { name: 'Aprobadas' }).click(); const beto = page.getByRole('article', { name: 'Solicitud de Beto Prueba' }); await beto.waitFor();
+      await page.getByRole('button', { name: 'Aprobadas' }).click(); const beto = item('Beto Prueba'); await beto.waitFor();
       assert.equal(await beto.getByRole('link', { name: 'Perfil profesional' }).count(), 0, 'un enlace que no es http(s) no se muestra como enlace');
-      await beto.getByRole('link', { name: 'Crear cuenta de terapeuta' }).click(); await page.waitForURL(/\/admin\/users/);
+      await beto.getByRole('link', { name: 'Crear cuenta de profesional' }).click(); await page.waitForURL(/\/admin\/users/);
       await page.getByRole('heading', { name: /Crear|Nuevo usuario/i }).first().waitFor({ timeout: 5000 }).catch(() => {});
-      const values = await page.evaluate(() => [...document.querySelectorAll('input')].map(i => i.value)); assert.ok(values.includes('Beto Prueba') && values.includes('beto@example.test'), 'nombre y correo precargados: ' + values.join('|'));
-      assert.ok(!page.url().includes('newTherapist'), 'la URL se limpia (sin datos personales)'); assert.equal(await page.locator('input[type=password]').first().inputValue(), '');
-      check('«Crear cuenta de terapeuta» abre Crear usuario con nombre y correo, sin contraseña y limpia la URL'); assert.deepEqual(errors, []); await page.close();
+      const values = await page.evaluate(() => [...document.querySelectorAll('input')].map(i => i.value)); // ES-186: la invitación precarga el correo y muestra el nombre solo como texto («Invitación para …»); el nombre ya no es un campo.
+      assert.ok(values.includes('beto@example.test'), 'correo precargado: ' + values.join('|')); await page.getByText('Beto Prueba').first().waitFor({ timeout: 5000 });
+      assert.ok(!page.url().includes('newTherapist'), 'la URL se limpia (sin datos personales)'); assert.equal(await page.locator('input[type=password]').count(), 0, 'sin campo de contraseña (invita por correo)');
+      check('«Crear cuenta de profesional» abre Crear usuario con nombre y correo, sin contraseña y limpia la URL'); assert.deepEqual(errors, []); await page.close();
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exit(1); });
