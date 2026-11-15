@@ -429,7 +429,7 @@ function PricingTab() {
       </div>
 
       {plans.map(p => (
-        <div key={p.id} style={{ ...card, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', opacity: p.isActive ? 1 : 0.5 }}>
+        <div key={p.id} style={{ ...card, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', ...(p.isActive ? {} : { background: '#F1EFEC', border: '1px dashed #78716C' }) }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{lang === 'en' ? p.name_en : p.name_es}</span>
@@ -439,10 +439,10 @@ function PricingTab() {
             <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
               <strong>{['USD', 'COP', 'EUR'].includes(p.currency) && Number.isFinite(Number(p.price)) ? new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: p.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(p.price)) : `${p.price} ${p.currency}`}</strong>{' · '}{tr(({ month: 'Mensual', year: 'Anual', forever: 'Para siempre' } as Record<string, string>)[p.period] ?? 'Período desconocido')}
             </p>
-            <p style={{ margin: '0 0 4px', fontSize: 12 }}>{tr('Identificador')}: {p.slug}</p>
+            <p style={{ margin: '0 0 4px', fontSize: 12, color: '#57534E' }}>{tr('Identificador')}: {p.slug}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
               {((lang === 'en' ? p.features_en : p.features_es) ?? []).map((f, i) => (
-                <span key={i} style={{ fontSize: 11, background: '#F5F5F3', color: '#4A4A4A', padding: '2px 8px', borderRadius: 8 }}>{f}</span>
+                <span key={i} style={{ fontSize: 11, background: p.isActive ? '#F5F5F3' : '#fff', color: '#4A4A4A', padding: '2px 8px', borderRadius: 8 }}>{f}</span>
               ))}
             </div>
           </div>
