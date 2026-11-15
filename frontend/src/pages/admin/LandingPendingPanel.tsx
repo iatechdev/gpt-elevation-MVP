@@ -22,7 +22,7 @@ const chip = (pending: boolean): React.CSSProperties => ({
 export function LandingPendingPanel({ lang, content, setValue, save, saving, msgs, s }: Props) {
   const tr = useAdminText()
   const { pending, ready } = countPending(content, lang)
-  if (PENDING_ITEMS.length === 0) return null // ES-94: nada pendiente, no hay panel
+  if (pending === 0) return null
   return (
     <section aria-labelledby="landing-pending-title" style={{ marginBottom: '1.5rem' }}>
       <h2 id="landing-pending-title" style={{ fontSize: 16, margin: '0 0 4px' }}>{tr('Pendientes de contenido')}</h2>
@@ -40,8 +40,8 @@ export function LandingPendingPanel({ lang, content, setValue, save, saving, msg
             </div>
             <p id={`${id}-missing`} style={{ fontSize: 12, color: '#6B645F', margin: '0 0 8px' }}>{tr('Falta:')} {item.missing}</p>
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-              <input id={id} aria-describedby={`${id}-missing`} style={{ ...s.input, flex: 1 }} value={content[item.key] ?? ''} onChange={e => setValue(item.key, e.target.value)} />
-              <button style={s.btnPrimary} onClick={() => save(item.key)} disabled={saving === item.key}>{saving === item.key ? '...' : tr('Guardar')}</button>
+              <input id={id} aria-describedby={`${id}-missing`} disabled={saving === item.key} style={{ ...s.input, flex: 1 }} value={content[item.key] ?? ''} onChange={e => setValue(item.key, e.target.value)} />
+              <button style={s.btnPrimary} onClick={() => save(item.key)} aria-disabled={saving !== null}>{saving === item.key ? '...' : tr('Guardar')}</button>
             </div>
             {msgs[item.key] && (
               <p role="status" style={{ fontSize: 11, color: msgs[item.key].startsWith('✓') ? '#5C6B4E' : '#DC2626', margin: '4px 0 0' }}>{tr(msgs[item.key])}</p>
