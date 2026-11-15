@@ -1,0 +1,22 @@
+base | PR es-306 PG: fail 0 | mi guion: RESUMEN 13 ok, 1 no ok: A12 la detección no da por «correcto» un índice que NO impone unicidad (no único, parcial o inválido)
+Z1 | PR es-306 PG: fail 4 | mi guion: FATAL Error
+  severity: 'FATAL',
+Z2 | PR es-306 PG: fail 1 | mi guion: 
+Z3 | PR es-306 PG: fail 3 | mi guion: FATAL Error
+  severity: 'FATAL',
+Z4 | PR es-306 PG: fail 3 | mi guion: RESUMEN 11 ok, 3 no ok: A3 índice VIEJO lower(email) sin duplicados → lo REEMPLAZA por lower(btrim(email)); después frena casing y espacios, A8 sin ventana de duplica
+Z5 | PR es-306 PG: fail 3 | mi guion: RESUMEN 13 ok, 1 no ok: A5 índice CORRECTO (estado de staging) → no-op: mismo OID e indexdef, filas intactas (ctid/xmin), sin aviso
+Z6 | PR es-306 PG: fail 4 | mi guion: RESUMEN 5 ok, 9 no ok: A3 índice VIEJO lower(email) sin duplicados → lo REEMPLAZA por lower(btrim(email)); después frena casing y espacios, A4 índice VIEJO con dupli
+Z7 | PR es-306 PG: fail 0 | mi guion: RESUMEN 13 ok, 1 no ok: A12 la detección no da por «correcto» un índice que NO impone unicidad (no único, parcial o inválido)
+Z8 | PR es-306 PG: fail 2 | mi guion: RESUMEN 12 ok, 2 no ok: A10 down: sin permiso rechazado (índice intacto); con permiso no repone el índice débil (el índice sigue con btrim); en producción no corre, 
+Z9 | PR es-306 PG: fail 3 | mi guion: RESUMEN 10 ok, 4 no ok: A1 índice AUSENTE y sin duplicados → lo crea como lower(btrim(email)), único, A2 AUSENTE con duplicados (casing y espacios) → NO crea el ín
+Z10 | PR es-306 PG: fail 3 | mi guion: FATAL Error
+  severity: 'FATAL',
+Z11 | PR es-306 PG: fail 4 | mi guion: RESUMEN 8 ok, 6 no ok: A3 índice VIEJO lower(email) sin duplicados → lo REEMPLAZA por lower(btrim(email)); después frena casing y espacios, A7 atomicidad: fallo en el
+Z12 | PR es-306 PG: fail 3 | mi guion: RESUMEN 8 ok, 6 no ok: A3 índice VIEJO lower(email) sin duplicados → lo REEMPLAZA por lower(btrim(email)); después frena casing y espacios, A6 idempotencia: up ×3 en
+Z13 | PR es-306 PG: fail 4 | mi guion: FATAL Error
+  severity: 'FATAL',
+Z14 | PR es-306 PG: fail 0 | mi guion: RESUMEN 13 ok, 1 no ok: A12 la detección no da por «correcto» un índice que NO impone unicidad (no único, parcial o inválido)
+FIN
+
+[exited with code 0]

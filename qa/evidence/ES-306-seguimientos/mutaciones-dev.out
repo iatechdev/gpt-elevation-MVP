@@ -1,0 +1,29 @@
+DETECTADA  M1 registro compara el texto exacto (el defecto original); el índice de red solo no lo tapa  → not ok 15 - migración con duplicados REALES: reporta (ids, s
+DETECTADA  M1b registro compara el texto exacto y sin índice de red  → not ok 1 - la migración real dejó el índice único sobre lowe
+DETECTADA  M2 el registro guarda el correo sin normalizar  → not ok 2 - registro: el correo se guarda normalizado y cualq
+DETECTADA  M3 el login busca el texto exacto  → not ok 4 - login: el mismo correo con otro casing o espacios
+DETECTADA  M4 la recuperación busca el texto exacto  → not ok 5 - recuperación de contraseña: el correo en otro cas
+DETECTADA  M5 la búsqueda no cubre cuentas antiguas con mayúsculas (sin lower)  → not ok 4 - login: el mismo correo con otro casing o espacios
+DETECTADA  M6 la búsqueda no recorta espacios  → not ok 3 - registro nuevo con mayúsculas o espacios: se crea
+DETECTADA  M7 la búsqueda no baja a minúsculas  → not ok 2 - registro: el correo se guarda normalizado y cualq
+DETECTADA  M8 la migración crea el índice aunque haya duplicados  → not ok 14 - E306-4 (estados y atomicidad): índice ausente, c
+DETECTADA  M9 la migración no es idempotente  → not ok 15 - migración con duplicados REALES: reporta (ids, s
+DETECTADA  M10 la migración no crea el índice nunca  → not ok 1 - la migración real dejó el índice único sobre lowe
+DETECTADA  M11 el aviso de duplicados imprime ids sin agrupar y filtra correos  → not ok 14 - E306-4 (estados y atomicidad): índice ausente, c
+DETECTADA  M12 el down no exige permiso explícito  → not ok 15 - migración con duplicados REALES: reporta (ids, s
+DETECTADA  M14 la búsqueda de respaldo no recorta el valor guardado (solo lower)  → not ok 7 - cuenta ANTIGUA guardada con ESPACIOS laterales (e
+DETECTADA  M15 el índice único no cubre btrim (ni en la migración original ni en la reparación, que si no lo corregiría)  → not ok 7 - cuenta ANTIGUA guardada con ESPACIOS laterales (e
+DETECTADA  M16 las invitaciones no recortan el valor guardado  → not ok 7 - cuenta ANTIGUA guardada con ESPACIOS laterales (e
+DETECTADA  M13 los duplicados no cuentan el correo con espacios  → not ok 13 - E306-4: la migración de reparación reemplaza el 
+DETECTADA  M26 E306-4 el down de la reparación no exige permiso explícito  → not ok 14 - E306-4 (estados y atomicidad): índice ausente, c
+DETECTADA  M25 E306-4 el reemplazo no es transaccional (si falla el CREATE queda sin índice único)  → not ok 14 - E306-4 (estados y atomicidad): índice ausente, c
+DETECTADA  M17 E306-1 el catch del registro trata cualquier fallo como «ya registrado»  → not ok 11 - E306-1: un fallo REAL de la base al registrar (n
+DETECTADA  M18 E306-2 la búsqueda con duplicados antiguos elige la cuenta más NUEVA  → not ok 15 - migración con duplicados REALES: reporta (ids, s
+DETECTADA  M19 E306-3 el bloqueo de correos inexistentes distingue mayúsculas  → not ok 12 - E306-3: el bloqueo de login de un correo SIN cue
+DETECTADA  M20 E306-4 la reparación nunca reemplaza el índice viejo  → not ok 13 - E306-4: la migración de reparación reemplaza el 
+DETECTADA  M21 E306-4 la reparación reemplaza el índice aunque haya duplicados  → not ok 13 - E306-4: la migración de reparación reemplaza el 
+DETECTADA  M22 E306-4 la reparación vuelve a recrear un índice que ya es correcto (no idempotente)  → not ok 13 - E306-4: la migración de reparación reemplaza el 
+DETECTADA  M23 E306-4 la reparación deja el índice nuevo sin btrim  → not ok 13 - E306-4: la migración de reparación reemplaza el 
+DETECTADA  M24 E306-4 el aviso de la reparación imprime ids sin agrupar y filtra correos  → not ok 13 - E306-4: la migración de reparación reemplaza el 
+
+27/27 mutaciones detectadas
