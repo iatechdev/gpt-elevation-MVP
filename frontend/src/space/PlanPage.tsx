@@ -7,7 +7,8 @@ import { request, SpaceError } from './api'
 import { parseCurrent, type Current } from './currentPlan'
 import { useSpaceToken } from './hooks'
 import { planCopy } from './planCopy'
-import { SpaceShell } from './SpaceShell'
+import { Button } from '../cartografia'
+import { Notice, PersonScreen } from './PersonScreen'
 // ES-174 — «Mi plan»: plan actual, solicitud pendiente y cambio de plan. Reutiliza los lectores y el escritor de la landing (pricing/): propietario verificado por el servidor,
 // una solicitud a la vez, sin pago en línea y sin cancelar solicitudes (el servidor no lo permite).
 const base = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -34,38 +35,37 @@ export function PlanPage() {
   const pendingPlan = requests.pending ? byId.get(requests.pending.planId) : undefined
   const notice = requests.state === 'submitted' ? c.submitted : requests.state === 'pending' ? c.alreadyPending : requests.state === 'unknown' ? c.unknown : requests.state === 'unavailable' ? c.unavailable : ''
   const blocked = !requests.ready || !!requests.pending || requests.state === 'sending'
-  return <SpaceShell>
-    <h1>{c.title}</h1><p>{c.intro}</p>
-    <section className="elv-card space-card" aria-labelledby="plan-current"><h2 id="plan-current">{c.currentTitle}</h2>
+  return <PersonScreen title={c.title} lead={c.intro} wide>
+    <section className="cg-card pg-card" aria-labelledby="plan-current"><h2 id="plan-current">{c.currentTitle}</h2>
       {current.state === 'loading' && <p role="status" aria-live="polite">{c.loading}</p>}
-      {current.state === 'error' && <><p role="alert" className="space-error">{c.loadError}</p><button className="elv-btn" onClick={current.refresh}>{c.retry}</button></>}
+      {current.state === 'error' && <><Notice error text={c.loadError} /><div className="pg-actions"><Button variant="ghost" onClick={current.refresh}>{c.retry}</Button></div></>}
       {current.state === 'ready' && !current.plan && <p>{c.noPlan}</p>}
       {current.state === 'ready' && current.plan && <><p><strong>{name(current.plan)}</strong>{shown && <> · {displayPrice(shown, lang, c.free)}{period(shown)}</>}</p>
         {shown && shown[`features_${lang}`].length > 0 && <ul>{shown[`features_${lang}`].map((feature, index) => <li key={index}>{feature}</li>)}</ul>}</>}
     </section>
-    {(requests.pending || requests.failed) && <section className="elv-card space-card" aria-labelledby="plan-pending"><h2 id="plan-pending">{c.pendingTitle}</h2>
+    {(requests.pending || requests.failed) && <section className="cg-card pg-card" aria-labelledby="plan-pending"><h2 id="plan-pending">{c.pendingTitle}</h2>
       {requests.pending
         ? <p>{pendingPlan ? c.pendingBody.replace('{plan}', name(pendingPlan)) : c.pendingUnknown}</p>
-        : <><p role="alert" className="space-error">{c.loadError}</p><button className="elv-btn" onClick={requests.refresh}>{c.retry}</button></>}
+        : <><Notice error text={c.loadError} /><div className="pg-actions"><Button variant="ghost" onClick={requests.refresh}>{c.retry}</Button></div></>}
     </section>}
-    <section className="elv-card space-card" aria-labelledby="plan-change"><h2 id="plan-change">{c.changeTitle}</h2>
-      <p className="space-note">{c.approval}</p>
-      <p role={requests.state === 'unknown' || requests.state === 'unavailable' ? 'alert' : 'status'} aria-live="polite" className={requests.state === 'unknown' || requests.state === 'unavailable' ? 'space-error' : 'space-note'}>{notice}</p>
+    <section className="cg-card pg-card" aria-labelledby="plan-change"><h2 id="plan-change">{c.changeTitle}</h2>
+      <p className="cg-hint">{c.approval}</p>
+      <Notice error={requests.state === 'unknown' || requests.state === 'unavailable'} text={notice} />
       {catalog.state === 'loading' && <p role="status" aria-live="polite">{c.plansLoading}</p>}
-      {catalog.state === 'error' && <><p role="alert" className="space-error">{c.plansError}</p><button className="elv-btn" onClick={catalog.refresh}>{c.retry}</button></>}
+      {catalog.state === 'error' && <><Notice error text={c.plansError} /><div className="pg-actions"><Button variant="ghost" onClick={catalog.refresh}>{c.retry}</Button></div></>}
       {catalog.state === 'ready' && catalog.plans.length === 0 && <p>{c.noPlans}</p>}
-      {catalog.state === 'ready' && catalog.plans.length > 0 && <div className="space-plan-grid">{catalog.plans.map(plan => {
+      {catalog.state === 'ready' && catalog.plans.length > 0 && <div className="pg-grid">{catalog.plans.map(plan => {
         const isCurrent = current.plan?.id === plan.id; const off = isCurrent || blocked; const why = isCurrent ? c.isCurrent : requests.pending ? c.waitPending : ''
-        return <article key={plan.id} className="space-plan" aria-labelledby={`plan-${plan.id}`}>
+        return <article key={plan.id} className="cg-card pg-plan" aria-labelledby={`plan-${plan.id}`}>
           <h3 id={`plan-${plan.id}`}>{name(plan)}</h3>
           {plan[`description_${lang}`] && <p>{plan[`description_${lang}`]}</p>}
-          <p className="space-plan-price">{displayPrice(plan, lang, c.free)}{period(plan)}</p>
+          <p className="pg-price">{displayPrice(plan, lang, c.free)}{period(plan)}</p>
           {plan[`features_${lang}`].length > 0 && <ul>{plan[`features_${lang}`].map((feature, index) => <li key={index}>{feature}</li>)}</ul>}
-          <button className="elv-btn elv-btn-primary" disabled={off} aria-describedby={why ? `plan-why-${plan.id}` : undefined} onClick={() => void send(plan.id)}
-            aria-label={`${c.request} · ${name(plan)}`}>{requests.state === 'sending' ? c.sending : c.request}</button>
-          {why && <p id={`plan-why-${plan.id}`} className="space-note">{why}</p>}
+          <Button disabled={off} aria-describedby={why ? `plan-why-${plan.id}` : undefined} onClick={() => void send(plan.id)}
+            aria-label={`${c.request} · ${name(plan)}`}>{requests.state === 'sending' ? c.sending : c.request}</Button>
+          {why && <p id={`plan-why-${plan.id}`} className="cg-hint">{why}</p>}
         </article>
       })}</div>}
     </section>
-  </SpaceShell>
+  </PersonScreen>
 }
