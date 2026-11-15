@@ -10,7 +10,7 @@ export const PersonLayoutContext = createContext(false)
  * Una pantalla que no está en la lista conserva el lienzo claro heredado. Una ruta con parámetros se escribe como prefijo («/app/evidence/new»).
  * La prueba es-153-persona-layout.test.mjs verifica que cada ruta de la lista existe en App.tsx.
  */
-export const MIGRATED_PERSON_PATHS: readonly string[] = ['/app/skill-map', '/app/checkin', '/app/onboarding', '/app/data', '/app/plan']
+export const MIGRATED_PERSON_PATHS: readonly string[] = ['/app/skill-map', '/app/checkin', '/app/onboarding', '/app/data', '/app/plan', '/app/space/tools', '/app/exercises']
 
 export const isMigratedPersonPath = (pathname: string) => MIGRATED_PERSON_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`))
 
