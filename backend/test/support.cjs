@@ -22,7 +22,7 @@ for (const name of [
   'User', 'ParticipantContext', 'ParticipantResume', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'Exercise', 'ExerciseAudit', 'AdminAuditEntry', 'TherapistPersonOrdinal', 'TherapistOrdinalCounter', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation',
+  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation', 'ReviewShare', 'ProfessionalReview', 'PilotFeedback', 'ReviewObjection', 'ReviewResponse',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -32,6 +32,9 @@ for (const name of [
 models.RevokedToken.findByPk = async () => null;
 // ES-186 B: auditoría de administración; por defecto se acepta y se descarta (las pruebas de auditoría la sobrescriben).
 models.AdminAuditEntry.create = async (values) => values;
+// ES-186 C: el DELETE de cuentas que no son personas cuenta filas en los almacenes de personalData.CORE y desvincula la invitación aceptada; por defecto no hay nada.
+for (const m of Object.values(models)) if (typeof m === "object" && !m.count) m.count = async () => 0;
+models.Invitation.update = models.Invitation.update || (async () => [0]);
 // ES-177: ordinal «Persona n» estable por profesional (doble en memoria: el número depende del orden de aparición).
 { const ordinals = []; models.TherapistPersonOrdinal.findAll = async ({ where }) => ordinals.filter(o => o.therapistId === where.therapistId && [].concat(where.personId).includes(o.personId));
   models.TherapistPersonOrdinal.max = async (field, { where }) => Math.max(0, ...ordinals.filter(o => o.therapistId === where.therapistId).map(o => o.ordinal));
@@ -61,6 +64,7 @@ models.AiJob.update = async () => [0]; // ES-88: los ganchos de revocación y bo
 models.SkillCandidate.update = async () => [0];
 models.AiJob.findAll = async () => [];
 models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
+models.ProfessionalApplication.findAll = async () => []; models.ProfessionalApplication.findOne = async () => null; // ES-293: la purga minimiza la solicitud de profesional; por defecto no hay ninguna
 models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };
@@ -69,7 +73,8 @@ const database = {
   connectDB: async () => {},
   sequelize: { sync: async () => {}, transaction: async () => transaction, getDialect: () => 'mock' },
 };
-const storage = { uploadFile: unexpected, getSignedUrl: unexpected };
+// ES-268: el TTL efectivo es el REAL de utils/storage (sin efectos al cargarlo); subir y firmar siguen siendo dobles que fallan si nadie los reemplaza.
+const storage = { uploadFile: unexpected, getSignedUrl: unexpected, signedUrlTtlSeconds: require("../utils/storage").signedUrlTtlSeconds };
 const anthropic = { messages: { create: unexpected } };
 const promptVault = {
   PromptVault: {}, getActivePrompt: unexpected,

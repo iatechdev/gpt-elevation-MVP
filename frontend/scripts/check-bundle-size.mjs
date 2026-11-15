@@ -22,11 +22,16 @@ export function checkBundle(distDir, limits = LIMITS) {
   const chunks = fs.readdirSync(path.join(distDir, 'assets')).filter(f => f.endsWith('.js'))
     .map(f => ({ file: f, rawKb: kb(fs.statSync(path.join(distDir, 'assets', f)).size) }))
   const biggest = chunks.reduce((a, b) => (b.rawKb > a.rawKb ? b : a))
+  // ES-196: React vive en UN solo bloque (sin duplicados entre vendors y entrada) y los vendors estables tienen bloque propio.
+  const reactCopies = chunks.filter(c => fs.readFileSync(path.join(distDir, 'assets', c.file), 'utf8').includes('react.transitional.element')).map(c => c.file)
+  const vendorChunks = chunks.filter(c => c.file.startsWith('vendor-')).map(c => c.file)
   const problems = []
+  if (reactCopies.length > 1) problems.push(`React duplicado en ${reactCopies.length} bloques: ${reactCopies.join(', ')}`)
+  if (!vendorChunks.some(f => f.startsWith('vendor-react-')) || !vendorChunks.some(f => f.startsWith('vendor-router-'))) problems.push('faltan los bloques de vendors (vendor-react, vendor-router): revisa codeSplitting en vite.config.ts')
   if (gzipKb > limits.initialJsGzipKb) problems.push(`carga inicial de JS: ${gzipKb.toFixed(1)} kB gzip > ${limits.initialJsGzipKb} kB`)
   if (cssGzipKb > limits.initialCssGzipKb) problems.push(`CSS inicial: ${cssGzipKb.toFixed(1)} kB gzip > ${limits.initialCssGzipKb} kB`)
   if (biggest.rawKb > limits.chunkRawKb) problems.push(`bloque ${biggest.file}: ${biggest.rawKb.toFixed(1)} kB > ${limits.chunkRawKb} kB`)
-  return { initial, gzipKb, initialCss, cssGzipKb, biggest, chunkCount: chunks.length, problems }
+  return { initial, gzipKb, initialCss, cssGzipKb, biggest, chunkCount: chunks.length, reactCopies, vendorChunks, problems }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -34,6 +39,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(`Carga inicial: ${result.initial.length} archivos JS, ${result.gzipKb.toFixed(1)} kB gzip (límite ${LIMITS.initialJsGzipKb})`)
   console.log(`CSS inicial: ${result.initialCss.length} archivos, ${result.cssGzipKb.toFixed(1)} kB gzip (límite ${LIMITS.initialCssGzipKb})`)
   console.log(`Mayor bloque: ${result.biggest.file}, ${result.biggest.rawKb.toFixed(1)} kB (límite ${LIMITS.chunkRawKb}); ${result.chunkCount} bloques en total`)
+  console.log(`Vendors: ${result.vendorChunks.join(', ')}; React en ${result.reactCopies.length} bloque(s)`)
   if (result.problems.length) {
     for (const p of result.problems) console.error('PRESUPUESTO EXCEDIDO — ' + p)
     process.exit(1)

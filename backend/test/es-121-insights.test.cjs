@@ -234,7 +234,7 @@ test('ES-121 autorizar un insight: usa el flujo de ES-25, la habilidad es metada
   const { state, turn, entry } = setup();
   const request = await startApp(t);
   await publishCatalog(request);
-  await put(request, U, 'professional_bridge');
+  await put(request, U, 'professional_bridge'); await grantBoth(request, U); // ES-233: citar una fuente exige su permiso de análisis
   const fields = [{ key: 'energy_gives', text: 'Parece que coordinar equipos pequeños te da energía.', origin: { type: 'chat_turn', id: turn.id }, skillKey: 'comunicacion' },
     { key: 'energy_drains', text: 'Podría ser que las reuniones largas te agoten.', origin: { type: 'diary_entry', id: entry.id } }];
   const preview = (body) => request('POST', '/api/career-context/preview', { ...U, body });
@@ -268,7 +268,7 @@ test('ES-121 «En conversación»: habilidad con insight autorizado vigente y si
   const { state, add, turn } = setup();
   const request = await startApp(t);
   await publishCatalog(request);
-  await put(request, U, 'professional_bridge');
+  await put(request, U, 'professional_bridge'); await grantBoth(request, U); // ES-233
   const inConversation = async (actor = U) => Object.fromEntries((await request('GET', '/api/skill-map', actor)).body.skills.map((s) => [s.skillKey, s.inConversation]));
   assert.deepEqual(await inConversation(), { comunicacion: false, planificacion: false });
   const fields = [{ key: 'energy_gives', text: 'Parece que coordinar equipos pequeños te da energía.', origin: { type: 'chat_turn', id: turn.id }, skillKey: 'comunicacion' }];

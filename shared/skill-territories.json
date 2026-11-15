@@ -1,0 +1,25 @@
+{
+  "_nota": "Territorios laborales del mapa (ES-188/E217-1). Es DATO, no código: para añadir uno (p. ej. los 3 nuevos de ES-270) se agrega aquí con status «in_definition» (aún sin definir: sin niveles ni roles inventados) y pasa a «defined» cuando se defina. Los nombres ES/EN siguen en frontend/src/skill-map/territories.ts hasta ES-270.",
+  "territories": [
+    {
+      "id": "dir",
+      "status": "defined"
+    },
+    {
+      "id": "con",
+      "status": "defined"
+    },
+    {
+      "id": "com",
+      "status": "defined"
+    },
+    {
+      "id": "ing",
+      "status": "defined"
+    },
+    {
+      "id": "inn",
+      "status": "defined"
+    }
+  ]
+}

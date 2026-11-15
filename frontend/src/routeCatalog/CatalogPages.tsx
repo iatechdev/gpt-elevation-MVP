@@ -1,85 +1,21 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useLanguage } from '../i18n/useLanguage'
 import { registerCatalogGuard } from '../catalogGuard'
-import { catalogApi, CatalogError, type Descriptor, type Detail, type Published } from './api'
-import { array, canonical, fieldLabel, kinds, object, payload, safeUrl, schemas, string, validKey, type Data, type Kind } from './schema'
+import { CatalogError, type Descriptor, type Detail } from './api'
+import { canonical, fieldLabel, kinds, object, payload, schemas, string, validKey, type Data, type Kind } from './schema'
 import { CatalogFields } from './CatalogFields'
 import './catalog.css'
 
-const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
-const readSession = () => { try { return JSON.stringify([localStorage.getItem('elevation_token') ?? '', localStorage.getItem('elevation_role') ?? '']) } catch { return '["",""]' } }
-function useSession() {
-  const [session, setSession] = useState(readSession)
-  useEffect(() => { const update = () => setSession(readSession()); window.addEventListener('storage', update); window.addEventListener('focus', update); return () => { window.removeEventListener('storage', update); window.removeEventListener('focus', update) } }, [])
-  return session
-}
-function useWords() { const language = useLanguage(); return { ...language, tr: (key: string) => language.t(`catalog.${key}`) } }
-// ES-255: mercado (país ISO) e idioma salen con su nombre en el idioma de la pantalla; si el navegador no lo conoce, «Por confirmar» (nunca el código crudo).
-function useNames() {
-  const { lang, tr } = useWords()
-  return useMemo(() => {
-    const make = (type: 'region' | 'language') => { try { return new Intl.DisplayNames([lang], { type }) } catch { return null } }
-    const regions = make('region'); const languages = make('language')
-    const named = (names: Intl.DisplayNames | null, code: unknown) => { const value = string(code); if (!value || value === 'unknown') return tr('unknown'); try { const out = names?.of(value); return out && out.toLowerCase() !== value.toLowerCase() ? out : tr('unknown') } catch { return tr('unknown') } }
-    return { country: (code: unknown) => named(regions, code), language: (code: unknown) => named(languages, code) }
-  }, [lang, tr])
-}
-function useClient(session: string) {
-  const token = (JSON.parse(session) as string[])[0]
-  const api = useMemo(() => catalogApi(API, token), [token])
-  const live = useRef(false)
-  useEffect(() => { live.current = true; return () => { live.current = false } }, [])
-  return { api, current: () => live.current && session === readSession() }
-}
+import { readSession, useClient, useSession, useWords } from './shared'
 function Shell({ admin = false, go, children }: { admin?: boolean; go?: (path: string) => void; children: ReactNode }) {
   const { lang, setLang, tr } = useWords(); const navigate = useNavigate()
   return <div className="route-catalog-scope"><a className="catalog-skip" href="#catalog-main">{tr('skip')}</a><header><button className="elv-btn" onClick={() => (go ?? navigate)(admin ? '/admin/dashboard' : '/app/dashboard')}>{tr(admin ? 'admin_back' : 'back')}</button><div role="group" aria-label={tr('language')}>{(['es', 'en'] as const).map(l => <button className="elv-btn" key={l} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header><main id="catalog-main" tabIndex={-1}>{children}</main></div>
 }
-function Outbound({ url, children }: { url: unknown; children: ReactNode }) { const { tr } = useWords(); const safe = safeUrl(url); return safe ? <a className="elv-link" href={safe} target="_blank" rel="noopener noreferrer">{children} · {new URL(safe).hostname} <small>({tr('new_tab')})</small></a> : <span>{children}</span> }
 function Notice({ text, error = false, focus = true }: { text: string; error?: boolean; focus?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => { if (text && focus) ref.current?.focus() }, [text, focus])
   return <div ref={ref} tabIndex={-1} role={error ? 'alert' : 'status'} className={error ? 'catalog-error' : 'catalog-notice'}>{text}</div>
 }
-export function CatalogBrowser() {
-  const session = useSession(); const location = useLocation(); const token = (JSON.parse(session) as string[])[0]
-  return token ? <BrowserSession key={session + location.pathname + location.search} session={session} /> : <Navigate to="/login" replace />
-}
-function BrowserSession({ session }: { session: string }) {
-  const { api, current } = useClient(session); const { tr, lang } = useWords(); const names = useNames(); const { roleKey } = useParams()
-  const [catalog, setCatalog] = useState<Published | null>(null); const [status, setStatus] = useState('loading'); const [attempt, setAttempt] = useState(0)
-  const [market, setMarket] = useState(''); const [context, setContext] = useState(''); const [language, setLanguage] = useState('')
-  useEffect(() => {
-    let cancelled = false
-    void api.published().then(value => { if (!cancelled && readSession() === session) { setCatalog(value); setStatus('') } }).catch(error => { if (!cancelled && readSession() === session) setStatus(error instanceof CatalogError && error.status === 401 ? 'session' : error instanceof CatalogError && error.code === 'catalog_unavailable' ? 'empty' : 'error') })
-    return () => { cancelled = true }
-  }, [api, session, attempt])
-  const label = (item: Data) => string(object(item.labels)[lang]) || tr('unknown')
-  const role = catalog?.roles.find(row => row.roleKey === roleKey)
-  const filtered = catalog?.roles.filter(row => (!market || row.market === market) && (!context || array(row.contexts).includes(context)) && (!language || array(row.languagesRequired).includes(language))) ?? []
-  return <Shell><h1>{tr('title')}</h1><p>{tr('intro')}</p>{status && <><Notice text={tr(status)} focus={status !== 'loading'} error={status === 'error' || status === 'session'} />{status === 'session' ? <Link to="/login">{tr('login')}</Link> : status !== 'loading' && <button className="elv-btn" onClick={() => { if (current()) { setStatus('loading'); setAttempt(n => n + 1) } }}>{tr('retry')}</button>}</>}
-    {catalog && !status && <><p>{tr('version')} {catalog.version} · {tr('publishedAt')} {new Date(catalog.publishedAt).toLocaleDateString(lang)}</p>{kinds.some(kind => catalog[kind].some(item => item.synthetic === true)) && <p className="catalog-warning">{tr('synthetic')}</p>}
-      {roleKey ? <><Link className="elv-link" to="/app/route-catalog">{tr('catalog_back')}</Link>{role ? <RoleDetail role={role} catalog={catalog} /> : <Notice text={tr('not_found')} />}</> : <><div className="catalog-filters">{[{ name: 'market', value: market, set: setMarket, options: [...new Set(catalog.roles.map(r => string(r.market)))] }, { name: 'language_filter', value: language, set: setLanguage, options: [...new Set(catalog.roles.flatMap(r => array(r.languagesRequired).map(string)))].filter(option => option !== 'unknown') }, { name: 'context', value: context, set: setContext, options: catalog.contexts.map(c => string(c.contextKey)) }].map(filter => <div key={filter.name}><label htmlFor={`filter-${filter.name}`}>{tr(filter.name)}</label><select id={`filter-${filter.name}`} className="elv-select" value={filter.value} onChange={event => filter.set(event.target.value)}><option value="">{tr('all')}</option>{filter.options.filter(Boolean).map(option => <option key={option} value={option}>{filter.name === 'context' ? label(catalog.contexts.find(c => c.contextKey === option) ?? {}) : filter.name === 'market' ? names.country(option) : names.language(option)}</option>)}</select></div>)}</div><div className="catalog-grid">{filtered.map(row => <article className="elv-card catalog-card" key={string(row.roleKey)}><h2>{label(row)}</h2><p>{string(object(row.industry)[lang]) || tr('unknown')} · {names.country(row.market)} · {array(row.languagesRequired).map(value => names.language(value)).join(', ')}</p><p>{tr(row.verificationTask ? 'verificationTask' : 'sources_current')}</p>{row.synthetic === true && <p>{tr('synthetic')}</p>}<Link className="elv-btn" to={`/app/route-catalog/roles/${encodeURIComponent(string(row.roleKey))}`}>{tr('profile')}</Link></article>)}</div>{!filtered.length && <p>{tr('no_results')}</p>}</>}
-    </>}
-  </Shell>
-}
-function RoleDetail({ role, catalog }: { role: Data; catalog: Published }) {
-  const { tr, lang } = useWords(); const names = useNames(); const localized = (v: unknown) => string(object(v)[lang]) || tr('unknown')
-  const sourceTitle = (key: unknown) => string(catalog.sources.find(source => source.sourceKey === key)?.title) || tr('source_unknown')
-  const resources = catalog.resources.filter(resource => array(resource.roleKeys).includes(role.roleKey))
-  const sourceKeys = new Set([...array(role.sourceKeys), ...array(role.tasks).map(task => object(object(task).aiExposure).sourceKey), object(role.regulated).sourceKey, ...resources.map(resource => resource.sourceKey)])
-  return <article className="catalog-detail"><h2>{localized(role.labels)}</h2><p>{localized(role.industry)} · {names.country(role.market)}</p><p>{array(role.languagesRequired).map(value => names.language(value)).join(', ')} · {array(role.modality).map(value => tr(string(value))).join(', ')}</p>
-    {object(role.domainReview).present === true && <p>{tr('review')} {string(object(role.domainReview).at)}</p>}{role.verificationTask === true && <p className="catalog-warning">{tr('verificationTask')}</p>}
-    <section className="catalog-card"><h3>{tr('tasks')}</h3>{array(role.tasks).map((value, index) => { const task = object(value); const exposure = object(task.aiExposure); return <div key={index}><p>{localized(task.text)}</p><p>{tr(string(exposure.status) || 'unknown')}{exposure.note ? ` · ${localized(exposure.note)}` : ''}{exposure.sourceKey ? ` · ${sourceTitle(exposure.sourceKey)}` : ''}</p></div> })}</section>
-    <section className="catalog-card"><h3>{tr('barriers')}</h3>{array(role.barriers).length ? <ul>{array(role.barriers).map((v, index) => <li key={index}>{localized(v)}</li>)}</ul> : <p>{tr('none')}</p>}<h3>{tr('capabilities')}</h3><p>{tr('requirement')}</p><ul>{array(role.capabilities).map((v, index) => <li key={index}>{tr('skill_unknown')} · {tr(string(object(v).importance))}</li>)}</ul></section>
-    {object(role.regulated).isRegulated === true && <section className="catalog-card catalog-warning"><p>{tr('licensing')}</p><p>{localized(object(role.regulated).note)}</p></section>}
-    <section className="catalog-card"><h3>{tr('sources')}</h3>{catalog.sources.filter(s => sourceKeys.has(s.sourceKey)).map(source => <article key={string(source.sourceKey)}><Outbound url={source.url}>{string(source.title)}</Outbound><p>{string(source.consultedAt)} · {names.language(source.language)}</p>{source.stale === true && <p className="catalog-warning">{tr('stale')}</p>}</article>)}</section>
-    <section className="catalog-card"><h3>{tr('offers')}</h3>{!catalog.offers.some(offer => offer.roleKey === role.roleKey) && <p>{tr('none')}</p>}{catalog.offers.filter(offer => offer.roleKey === role.roleKey).map(offer => <article key={string(offer.offerKey)}><h4><Outbound url={offer.url}>{string(offer.title)}</Outbound></h4><p>{string(offer.organization)} · {names.country(offer.market)} · {names.language(offer.language)} · {tr(string(offer.modality))}</p><p>{offer.status === 'current' ? `${tr('checked')} ${string(offer.verifiedAt)}` : tr(offer.status === 'expired' ? 'expired' : 'unverified')}</p><p>{object(offer.salary).published === true ? string(object(offer.salary).text) : tr('unpublished_salary')}</p>{typeof offer.extract === 'string' && <p>{string(offer.extract)}</p>}</article>)}</section>
-    <section className="catalog-card"><h3>{tr('resources')}</h3><p>{tr('course_limit')}</p>{!resources.length && <p>{tr('none')}</p>}{resources.map(resource => <article key={string(resource.resourceKey)}><h4><Outbound url={resource.url}>{string(resource.title)}</Outbound></h4><p>{string(resource.provider)} · {names.language(resource.language)} · {tr(string(resource.level))}</p><p>{tr('purpose')}: {localized(resource.purpose)}</p><p>{tr('duration')}: {typeof object(resource.duration).minutes === 'number' ? `${object(resource.duration).minutes} ${tr('minutes')}` : string(object(resource.duration).text)}</p><p>{tr('price')}: {object(resource.price).published === true ? `${object(resource.price).amount} ${string(object(resource.price).currency)}` : tr('unknown_price')}</p><p>{tr('skill')}: {tr('skill_unknown')}</p><p>{tr('exercise')}: {localized(resource.exercise)}</p></article>)}</section>
-  </article>
-}
-
 export function CatalogManager() {
   const session = useSession(); const location = useLocation(); const [token, role] = JSON.parse(session) as string[]
   const params = useParams(); const { tr } = useWords()
@@ -94,12 +30,13 @@ function ManagerSession({ session }: { session: string }) {
   const [versions, setVersions] = useState<Descriptor[]>([]); const [version, setVersion] = useState<Detail | null>(null)
   const [data, setData] = useState<Data>({}); const [key, setKey] = useState(newItem ? '' : itemKey); const [baseline, setBaseline] = useState('{}'); const [synthetic, setSynthetic] = useState(false)
   const [busy, setBusy] = useState(true); const [ready, setReady] = useState(false); const [notice, setNotice] = useState(''); const [error, setError] = useState(false); const [attempt, setAttempt] = useState(0)
+  const stamp = useRef<string | undefined>(undefined); const [clash, setClash] = useState<{ current: Data | null } | null>(null); const [showTheirs, setShowTheirs] = useState(false)
   const [confirmation, setConfirmation] = useState<'remove' | 'publish' | null>(null); const dialog = useRef<HTMLDialogElement>(null); const locked = useRef(false); const initialized = useRef(false)
   const dirty = kind !== null && (canonical(data) !== baseline || (newItem && !!key))
   const editable = ready && version?.status === 'draft'
   const go = (path: string) => { if (!busy && (!dirty || window.confirm(tr('leave')))) navigate(path) }
   const message = (value: string, failed = false) => { setNotice(value); setError(failed); if (value === 'session' || value === 'forbidden') { setVersion(null); setVersions([]); setReady(false); setData({}) } }
-  const explain = (e: unknown) => e instanceof CatalogError ? e.status === 401 ? 'session' : e.status === 403 ? 'forbidden' : ['forbidden_label', 'synthetic_content_not_allowed', 'catalog_limit'].includes(e.code) ? e.code : e.status === 409 ? 'conflict' : e.code === 'incomplete_catalog' ? 'missing' : e.status === 400 ? 'invalid' : 'save_error' : 'save_error'
+  const explain = (e: unknown) => e instanceof CatalogError ? e.status === 401 ? 'session' : e.status === 403 ? 'forbidden' : ['forbidden_label', 'synthetic_content_not_allowed', 'catalog_limit', 'draft_exists'].includes(e.code) ? e.code : e.status === 409 ? 'conflict' : e.code === 'incomplete_catalog' ? 'missing' : e.status === 400 ? 'invalid' : 'save_error' : 'save_error'
   useEffect(() => {
     let cancelled = false
     void (id ? api.get(id) : api.list()).then(value => {
@@ -111,7 +48,7 @@ function ManagerSession({ session }: { session: string }) {
           const found = newItem ? undefined : value.items[kind].find(item => item.itemKey === itemKey)
           if (!newItem && !found) { setNotice('not_found'); setError(true); return }
           const initial = found ? payload(kind, found, found.synthetic === true) : {}
-          if (!initialized.current) { setData(initial); setSynthetic(found?.synthetic === true); setBaseline(canonical(initial)); initialized.current = true }
+          if (!initialized.current) { stamp.current = string(found?.updatedAt) || undefined; setData(initial); setSynthetic(found?.synthetic === true); setBaseline(canonical(initial)); initialized.current = true }
         }
       }
       setReady(true)
@@ -129,12 +66,12 @@ function ManagerSession({ session }: { session: string }) {
   async function run(action: 'create' | 'save' | 'remove' | 'publish') {
     if (locked.current || !ready || !current() || (action !== 'create' && !editable)) return
     if (action === 'save' && (!kind || !validKey(key))) { message('invalid', true); return }
-    if (action === 'save' && newItem && version?.items[kind!].some(item => item.itemKey === key)) { message('conflict', true); return }
+    if (action === 'save' && newItem && !stamp.current && version?.items[kind!].some(item => item.itemKey === key)) { message('conflict', true); return }
     locked.current = true; setBusy(true); setReady(false); dialog.current?.close(); setConfirmation(null); message('')
     let acknowledged: unknown; let failure: unknown
     try {
       if (action === 'create') acknowledged = await api.create()
-      if (action === 'save') acknowledged = await api.save(id, kind!, key, payload(kind!, data, synthetic))
+      if (action === 'save') acknowledged = await api.save(id, kind!, key, payload(kind!, data, synthetic), newItem ? (stamp.current ?? null) : stamp.current)
       if (action === 'remove') { await api.remove(id, kind!, key); acknowledged = true }
       if (action === 'publish') acknowledged = await api.publish(id)
     } catch (e) { failure = e }
@@ -150,7 +87,11 @@ function ManagerSession({ session }: { session: string }) {
         const refreshed = await api.get(id); if (!current()) return; setVersion(refreshed); setReady(true)
         if (action === 'save') {
           const persisted = refreshed.items[kind!].find(item => item.itemKey === key)
-          if (acknowledged && persisted && canonical(payload(kind!, persisted, persisted.synthetic === true)) === canonical(payload(kind!, object(acknowledged), synthetic))) { setData(payload(kind!, persisted, persisted.synthetic === true)); setBaseline(canonical(payload(kind!, persisted, persisted.synthetic === true))); message('saved'); if (newItem) navigate(`/admin/route-catalog/${id}/${kind}/${key}`) }
+          // E213-1: respuesta perdida (red o 5xx). El servidor pudo guardar: si lo releído coincide con lo enviado, se adopta su versión y se dice «Guardado»; si no, el siguiente guardado daría un 409 falso contra el propio cambio.
+          const lost = !acknowledged && !(failure instanceof CatalogError && failure.status < 500)
+          const expected = acknowledged ? payload(kind!, object(acknowledged), synthetic) : payload(kind!, data, synthetic)
+          if ((acknowledged || lost) && persisted && canonical(payload(kind!, persisted, persisted.synthetic === true)) === canonical(expected)) { setData(payload(kind!, persisted, persisted.synthetic === true)); setBaseline(canonical(payload(kind!, persisted, persisted.synthetic === true))); stamp.current = string(persisted.updatedAt) || undefined; setClash(null); setShowTheirs(false); message('saved'); if (newItem) navigate(`/admin/route-catalog/${id}/${kind}/${key}`) }
+          else if (failure instanceof CatalogError && (failure.code === 'item_changed' || failure.code === 'item_exists')) { setClash({ current: failure.current ?? null }); setShowTheirs(false); message(failure.code === 'item_exists' ? 'item_exists' : failure.current ? 'item_changed' : 'item_removed', true) }
           else message(failure instanceof CatalogError && failure.status < 500 ? explain(failure) : 'uncertain', true)
         } else if (action === 'remove') {
           if (acknowledged && !refreshed.items[kind!].some(item => item.itemKey === key)) navigate(`/admin/route-catalog/${id}`)
@@ -165,11 +106,14 @@ function ManagerSession({ session }: { session: string }) {
     } catch (e) { if (current()) message(e instanceof CatalogError && [401, 403].includes(e.status) ? explain(e) : 'uncertain', true) }
     finally { locked.current = false; if (current()) setBusy(false) }
   }
+  const keepMine = () => { stamp.current = string(clash?.current?.updatedAt) || undefined; setClash(null); setShowTheirs(false); message('keep_ready'); window.setTimeout(() => document.getElementById('catalog-save')?.focus(), 0) }
+  const differences = clash?.current && kind ? (() => { const theirs = payload(kind, clash.current, clash.current.synthetic === true); const mine = payload(kind, data, synthetic); return schemas[kind].filter(field => canonical(theirs[field.key]) !== canonical(mine[field.key])).map(field => ({ label: field[lang], value: typeof theirs[field.key] === 'string' ? string(theirs[field.key]) : JSON.stringify(theirs[field.key] ?? '') })) })() : []
+  const openDraft = versions.find(row => row.status === 'draft')
   const retry = () => { if (!busy) { setReady(false); setNotice(''); setBusy(true); setAttempt(n => n + 1) } }
-  return <Shell admin go={go}><h1>{tr('title')}</h1><Notice text={notice ? tr(notice) : ''} error={error} />{busy && <p role="status">{tr('loading')}</p>}{!ready && !busy && <button className="elv-btn" onClick={retry}>{tr('retry')}</button>}{notice === 'session' && <Link to="/login">{tr('login')}</Link>}
-    {ready && !id && <><button className="elv-btn catalog-primary" disabled={busy} onClick={() => void run('create')}>{tr('create')}</button>{!versions.length && <p>{tr('none')}</p>}{versions.map(row => <article className="catalog-card" key={row.id}><h2>{tr('version')} {row.version} · {tr(row.status)}</h2><p>{row.itemCount} · {row.publishedAt && new Date(row.publishedAt).toLocaleDateString(lang)}</p><button className="elv-btn" onClick={() => go(`/admin/route-catalog/${row.id}`)}>{tr('open')}</button></article>)}</>}
+  return <Shell admin go={go}><h1>{tr('title')}</h1><Notice text={notice ? tr(notice) : ''} error={error} />{clash && kind && <section className="catalog-card catalog-conflict" aria-label={tr('item_changed')}><div className="catalog-actions">{clash.current && <button type="button" className="elv-btn" aria-expanded={showTheirs} onClick={() => setShowTheirs(open => !open)}>{tr(showTheirs ? 'hide_theirs' : 'see_theirs')}</button>}<button type="button" className="elv-btn catalog-primary" onClick={keepMine}>{tr('keep_mine')}</button></div>{clash.current && showTheirs && (differences.length ? <ul>{differences.map(row => <li key={row.label}><strong>{row.label}</strong>: {row.value || tr('none')}</li>)}</ul> : <p>{tr('no_differences')}</p>)}</section>}{busy && <p role="status">{tr('loading')}</p>}{!ready && !busy && <button className="elv-btn" onClick={retry}>{tr('retry')}</button>}{notice === 'session' && <Link to="/login">{tr('login')}</Link>}
+    {ready && !id && <><button className="elv-btn catalog-primary" disabled={busy || !!openDraft} aria-describedby={openDraft ? 'catalog-draft-reason' : undefined} onClick={() => void run('create')}>{tr('create')}</button>{openDraft && <p id="catalog-draft-reason">{tr('draft_exists')} ({tr('version')} {openDraft.version}) <button className="elv-btn" onClick={() => go(`/admin/route-catalog/${openDraft.id}`)}>{tr('open_draft')}</button></p>}{!versions.length && <p>{tr('none')}</p>}{versions.map(row => <article className="catalog-card" key={row.id}><h2>{tr('version')} {row.version} · {tr(row.status)}</h2><p>{row.itemCount} · {row.publishedAt && new Date(row.publishedAt).toLocaleDateString(lang)}</p><button className="elv-btn" onClick={() => go(`/admin/route-catalog/${row.id}`)}>{tr('open')}</button></article>)}</>}
     {ready && version && <><button className="elv-btn" disabled={busy} onClick={() => go(kind ? `/admin/route-catalog/${id}` : '/admin/route-catalog')}>{tr('draft_back')}</button><h2>{tr('version')} {version.version} · {tr(version.status)}</h2>{version.status !== 'draft' && <p>{tr('readonly')}</p>}
-      {kind ? <><h3>{tr(kind)}</h3>{(version.missing[`${kind}/${key}`] ?? []).length > 0 && <section className="catalog-warning"><h4>{tr('missing')}</h4><ul>{version.missing[`${kind}/${key}`].map(field => <li key={field}><a href={`#item-${field.split('.')[0]}`}>{fieldLabel(kind, field, lang)}</a></li>)}</ul></section>}<p>{tr('verify_help')}</p><p>{tr('limitations')}</p>{synthetic && <p className="catalog-warning">{tr('synthetic')}</p>}<p role="status">{dirty ? tr('unsaved') : ''}</p><form onSubmit={event => { event.preventDefault(); void run('save') }}><fieldset disabled={!editable || busy}><label className="catalog-control" htmlFor="item-key">{tr('key')}<input className="elv-input" id="item-key" value={key} required pattern="[a-z][a-z0-9_]{2,47}" maxLength={48} disabled={!newItem} onChange={event => setKey(event.target.value)} /></label><CatalogFields specs={schemas[kind]} value={data} items={version.items} onChange={setData} /><div className="catalog-actions"><button className="elv-btn catalog-primary" type="submit">{tr('save')}</button>{!newItem && <button className="elv-btn" type="button" onClick={() => setConfirmation('remove')}>{tr('remove')}</button>}</div></fieldset></form><button className="elv-btn" disabled={busy} onClick={() => go(`/admin/route-catalog/${id}`)}>{tr('cancel')}</button></> : <>{Object.keys(version.missing).length > 0 && <section className="catalog-warning"><h3>{tr('missing')}</h3><ul>{Object.entries(version.missing).map(([path, values]) => <li key={path}><a href={`#${path.split('/')[0]}`}>{tr(path.split('/')[0])} · {path.split('/')[1]}: {values.map(v => fieldLabel(kinds.includes(path.split('/')[0] as Kind) ? path.split('/')[0] as Kind : 'roles', v, lang)).join(', ')}</a></li>)}</ul></section>}{kinds.map(section => <section className="catalog-card" id={section} key={section}><h3>{tr(section)} ({version.items[section].length})</h3>{editable && <button className="elv-btn" disabled={busy} onClick={() => go(`/admin/route-catalog/${id}/${section}/new?create=1`)}>{tr('add')} · {tr(section)}</button>}{version.items[section].map(item => <article key={item.itemKey}><p>{string(object(item.labels)[lang]) || string(item.title) || item.itemKey}{item.synthetic === true && ` · ${tr('synthetic')}`}</p><button className="elv-btn" disabled={busy} onClick={() => go(`/admin/route-catalog/${id}/${section}/${item.itemKey}`)}>{tr(editable ? 'edit' : 'read')} · {item.itemKey}</button></article>)}</section>)}{editable && <button className="elv-btn catalog-primary" disabled={busy || Object.keys(version.missing).length > 0} onClick={() => setConfirmation('publish')}>{tr('publish_review')}</button>}</>}
+      {kind ? <><h3>{tr(kind)}</h3>{(version.missing[`${kind}/${key}`] ?? []).length > 0 && <section className="catalog-warning"><h4>{tr('missing')}</h4><ul>{version.missing[`${kind}/${key}`].map(field => <li key={field}><a href={`#item-${field.split('.')[0]}`}>{fieldLabel(kind, field, lang)}</a></li>)}</ul></section>}<p>{tr('verify_help')}</p><p>{tr('limitations')}</p>{synthetic && <p className="catalog-warning">{tr('synthetic')}</p>}<p role="status">{dirty ? tr('unsaved') : ''}</p><form onSubmit={event => { event.preventDefault(); void run('save') }}><fieldset disabled={!editable || busy}><label className="catalog-control" htmlFor="item-key">{tr('key')}<input className="elv-input" id="item-key" value={key} required pattern="[a-z][a-z0-9_]{2,47}" maxLength={48} disabled={!newItem} onChange={event => setKey(event.target.value)} /></label><CatalogFields specs={schemas[kind]} value={data} items={version.items} onChange={setData} /><div className="catalog-actions"><button id="catalog-save" className="elv-btn catalog-primary" type="submit">{tr('save')}</button>{!newItem && <button className="elv-btn" type="button" onClick={() => setConfirmation('remove')}>{tr('remove')}</button>}</div></fieldset></form><button className="elv-btn" disabled={busy} onClick={() => go(`/admin/route-catalog/${id}`)}>{tr('cancel')}</button></> : <>{Object.keys(version.missing).length > 0 && <section className="catalog-warning"><h3>{tr('missing')}</h3><ul>{Object.entries(version.missing).map(([path, values]) => <li key={path}><a href={`#${path.split('/')[0]}`}>{tr(path.split('/')[0])} · {path.split('/')[1]}: {values.map(v => fieldLabel(kinds.includes(path.split('/')[0] as Kind) ? path.split('/')[0] as Kind : 'roles', v, lang)).join(', ')}</a></li>)}</ul></section>}{kinds.map(section => <section className="catalog-card" id={section} key={section}><h3>{tr(section)} ({version.items[section].length})</h3>{editable && <button className="elv-btn" disabled={busy} onClick={() => go(`/admin/route-catalog/${id}/${section}/new?create=1`)}>{tr('add')} · {tr(section)}</button>}{version.items[section].map(item => { const gaps = (version.missing[`${section}/${item.itemKey}`] ?? []).length; return <article key={item.itemKey}><p>{string(object(item.labels)[lang]) || string(item.title) || item.itemKey}{item.synthetic === true && ` · ${tr('synthetic')}`} <span className="catalog-chip">{gaps ? `${tr('missing_chip')} (${gaps})` : tr('complete')}</span></p><button className="elv-btn" disabled={busy} onClick={() => go(`/admin/route-catalog/${id}/${section}/${item.itemKey}`)}>{tr(editable ? 'edit' : 'read')} · {item.itemKey}</button></article> })}</section>)}{editable && <button className="elv-btn catalog-primary" disabled={busy || Object.keys(version.missing).length > 0} onClick={() => setConfirmation('publish')}>{tr('publish_review')}</button>}</>}
     </>}
     <dialog ref={dialog} onClose={() => setConfirmation(null)} aria-labelledby="catalog-confirm"><h2 id="catalog-confirm">{tr(confirmation === 'remove' ? 'remove' : 'publish_review')}</h2><p>{tr(confirmation === 'remove' ? 'remove_warning' : 'publish_warning')}</p>{version && <p>{tr('version')} {version.version} · {version.itemCount}</p>}<div className="catalog-actions"><button className="elv-btn" autoFocus onClick={() => dialog.current?.close()}>{tr('cancel')}</button><button className="elv-btn catalog-primary" disabled={busy} onClick={() => void run(confirmation === 'remove' ? 'remove' : 'publish')}>{tr(confirmation === 'remove' ? 'remove' : 'publish')}</button></div></dialog>
   </Shell>

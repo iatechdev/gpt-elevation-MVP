@@ -469,8 +469,8 @@ function PricingTab() {
                 <p style={sectionTitle}>{tr("Identificador")}</p>
                 <div style={{ marginBottom: 8 }}>
                   <label htmlFor="plan-slug" style={label}>{tr("Slug * (sin espacios, ej: basic, essential, plus, pro)")}</label>
-                  <input id="plan-slug" style={input} value={form.slug} readOnly={!!editing} aria-invalid={!!errors['plan-slug']} aria-describedby={errors['plan-slug'] ? 'plan-slug-error' : undefined} placeholder={tr("ej: basic")}
-                    onChange={e => { setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-') })); setErrors(current => ({ ...current, 'plan-slug': '' })) }} />
+                  <input id="plan-slug" style={input} value={form.slug} readOnly={!!editing} aria-invalid={!!errors['plan-slug']} aria-describedby={errors['plan-slug'] ? 'plan-slug-error' : undefined} placeholder={tr("ej: basic")} maxLength={20}
+                    onChange={e => { setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 20) })); setErrors(current => ({ ...current, 'plan-slug': '' })) }} />
                   {errors['plan-slug'] && <p id="plan-slug-error" role="alert">{tr(errors['plan-slug'])}</p>}
                 </div>
                 <p style={sectionTitle}>{tr("Nombre del plan")}</p>
@@ -505,7 +505,7 @@ function PricingTab() {
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 8 }}>
                   <div>
                     <label htmlFor="plan-price" style={label}>{tr("Precio")}</label>
-                    <input id="plan-price" style={input} type="number" min="0" step="0.01" value={form.price} aria-invalid={!!errors['plan-price']} aria-describedby={errors['plan-price'] ? 'plan-price-error' : undefined} onChange={e => { setForm(f => ({ ...f, price: e.target.value })); setErrors(current => ({ ...current, 'plan-price': '' })) }} />
+                    <input id="plan-price" style={input} type="number" min="0" max="99999999.99" step="0.01" value={form.price} aria-invalid={!!errors['plan-price']} aria-describedby={errors['plan-price'] ? 'plan-price-error' : undefined} onChange={e => { setForm(f => ({ ...f, price: e.target.value })); setErrors(current => ({ ...current, 'plan-price': '' })) }} />
                     {errors['plan-price'] && <p id="plan-price-error" role="alert">{tr(errors['plan-price'])}</p>}
                   </div>
                   <div>

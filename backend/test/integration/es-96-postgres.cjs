@@ -173,7 +173,7 @@ test('ES-96 PostgreSQL + HTTP: el terapeuta ve solo lo autorizado y pierde el ac
     await q(`INSERT INTO "TherapySessions" ("therapistId","patientId","scheduledAt","duration","status","createdAt","updatedAt") VALUES ($1,$2,now()+interval '2 day',50,'scheduled',now(),now()),($1,$3,now()+interval '3 day',50,'scheduled',now(),now())`, [tA.id, p1.id, p2.id]);
     const sessions = await http(tA, 'GET', '/api/sessions/therapist');
     const byPatient = Object.fromEntries(sessions.body.map((s) => [s.patientId, s]));
-    assert.deepEqual([byPatient[p1.id].patientEmail === p1.email, byPatient[p2.id].patientEmail, byPatient[p2.id].patientName], [true, '', 'Persona Dos']);
+    assert.deepEqual([byPatient[p1.id].patientEmail === p1.email, byPatient[p2.id].patientEmail, byPatient[p2.id].patientName], [true, '', null]); // ES-241: quien no autorizó compartir sale sin nombre (solo «Persona n»), también en el listado de sesiones
   });
 
   await t.test('retirar la autorización corta el acceso en la siguiente petición y una revocación en curso no deja pasar lecturas viejas', async () => {

@@ -1,797 +1,94 @@
+// ES-186 parte D (HU-P35) · Administración de personas usuarias, emparejamientos y solicitudes de plan: /admin/users en tres pestañas con fallo independiente.
+// Sin diálogos del navegador; los errores se traducen por el `code` del servidor; las acciones privilegiadas se ocultan o se rechazan según el rol y las respuestas 403 (las guardas del
+// servidor no se tocan). Detalle de cada diálogo en AdminUsersManage / AdminUsersInvite / AdminUsersQueues.
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAdminText } from '../../i18n/useAdminText'
-import { useLanguage } from '../../i18n/useLanguage'
-import { inviteOutcome, resetLinkOutcome, formatExpiry } from './inviteOutcome'
-// HU-045 + HU-063 + HU-077 + HU-078 — User management + matching + plans + unlock + reset password
+import { colors, spacing, typography } from '../../styles/tokens'
+import { asArray, pickPeople, useAdminList } from './adminUsersApi.ts'
+import { TAB_LABEL, type Person } from './adminUsersLogic.ts'
+import { btn, notice } from './adminUsersStyles.ts'
+import { AdminUsersInvite } from './AdminUsersInvite'
+import { AdminUsersManage } from './AdminUsersManage'
+import { PeoplePanel } from './AdminUsersPeople'
+import { MatchingPanel, PlanRequestsPanel, type MatchingItem, type PlanItem } from './AdminUsersQueues'
+import './adminUsers.css'
 
-import { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+type Tab = 'people' | 'matching' | 'plans'
+const TABS: Tab[] = ['people', 'matching', 'plans']
 
-type Role = 'user' | 'therapist' | 'admin' | 'superadmin' | 'board';
-
-interface Usuario {
-  id: number;
-  name: string;
-  email: string;
-  role: Role;
-  active: boolean;
-  therapistId: number | null;
-  createdAt: string;
-  sesiones: number;
-  ratingPromedio: number | null;
-  moodPromedio: number | null;
-  plan: { id: number; slug: string; name_es: string; name_en: string } | null;
-  // HU-078
-  isLocked: boolean;
-  lockedUntil: string | null;
-  loginAttempts: number;
+function readPrefill(state: unknown): { email: string; name: string } | null {
+  const data = (state as { newTherapist?: { name?: unknown; email?: unknown } } | null)?.newTherapist
+  return data ? { email: String(data.email ?? '').slice(0, 254), name: String(data.name ?? '').slice(0, 120) } : null
 }
-
-interface Terapeuta {
-  id: number;
-  name: string;
-  email: string;
-}
-
-interface MatchingRequest {
-  id: number;
-  user: { id: number; name: string; email: string };
-  chosenTherapist: { id: number; name: string };
-  answers: { area?: string; style?: string; language?: string };
-  createdAt: string;
-}
-
-interface PlanRequest {
-  id: number;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-  requester: { id: number; name: string; email: string };
-  plan: { id: number; slug: string; name_es: string; name_en: string; price: number; currency: string };
-}
-
-const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '');
-const getToken = () => localStorage.getItem('elevation_token') ?? '';
-
-const getRoleBadgeStyle = (role: Role): React.CSSProperties => {
-  const base: React.CSSProperties = {
-    display: 'inline-block', padding: '0.2rem 0.65rem', borderRadius: '999px',
-    fontSize: '0.72rem', fontWeight: 600, fontFamily: 'Inter, sans-serif', letterSpacing: '0.03em',
-  };
-  const colors: Record<Role, React.CSSProperties> = {
-    user:       { background: '#EAF0E6', color: '#4A6741' },
-    therapist:  { background: '#E0F2FE', color: '#0369A1' },
-    admin:      { background: '#FEF3C7', color: '#92400E' },
-    superadmin: { background: '#FCE7F3', color: '#9D174D' },
-    board:      { background: '#F0FDF4', color: '#166534' },
-  };
-  return { ...base, ...colors[role] };
-};
-
-const formatDate = (iso: string, locale = 'es-CO') =>
-  new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 
 export function AdminUsers() {
   const tr = useAdminText()
-  const { lang } = useLanguage()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const actorRole = (() => { try { return localStorage.getItem('elevation_role') ?? 'admin' } catch { return 'admin' } })()
 
-  const [usuarios,            setUsuarios]            = useState<Usuario[]>([]);
-  const [terapeutas,          setTerapeutas]          = useState<Terapeuta[]>([]);
-  const [cargando,            setCargando]            = useState(true);
-  const [error,               setError]               = useState('');
-  const [filtroRol,           setFiltroRol]           = useState('');
-  const [filtroEstado,        setFiltroEstado]        = useState('');
-  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
-  const [mostrarModal,        setMostrarModal]        = useState(false);
-  const [nuevoUsuario,        setNuevoUsuario]        = useState({ email: '', role: 'user' as Role });
-  const [invitadoPara,         setInvitadoPara]        = useState(''); // nombre de la solicitud aprobada (solo se muestra; la invitación no lo envía)
-  // ES-95: «Crear cuenta de terapeuta» desde una solicitud aprobada abre este modal con nombre y correo precargados (la contraseña la define quien crea la cuenta).
-  // Los datos viajan en el estado de navegación, no en la URL (sin datos personales en el historial ni en los registros del servidor).
-  const location = useLocation();
-  const navigate = useNavigate();
-  useEffect(() => {
-    const prefill = (location.state as { newTherapist?: { name?: unknown; email?: unknown } } | null)?.newTherapist;
-    if (!prefill) return;
-    setNuevoUsuario({ email: String(prefill.email ?? '').slice(0, 254), role: 'therapist' });
-    setInvitadoPara(String(prefill.name ?? '').slice(0, 120));
-    setMostrarModal(true);
-    navigate(location.pathname, { replace: true, state: null });
-  }, [location, navigate]);
-  const [creando,             setCreando]             = useState(false);
-  const [errorModal,          setErrorModal]          = useState('');
-  const [exitoModal,          setExitoModal]          = useState('');
+  const people = useAdminList<Person>('/api/admin/usuarios', pickPeople)
+  const matching = useAdminList<MatchingItem>('/api/admin/matching/pending', asArray)
+  const plans = useAdminList<PlanItem>('/api/admin/plan-requests/admin?status=pending', asArray)
 
-  // Eliminación
-  const [confirmDelete, setConfirmDelete] = useState<Usuario | null>(null);
-  const [eliminando,    setEliminando]    = useState(false);
-  const [deleteInput,   setDeleteInput]   = useState('');
-  const [deleteError,   setDeleteError]   = useState('');
+  const [tab, setTab] = useState<Tab>('people')
+  const [roleFilter, setRoleFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [managingId, setManagingId] = useState<number | null>(null)
+  const [prefill, setPrefill] = useState<{ email: string; name: string } | null>(() => readPrefill(location.state))
+  const [inviting, setInviting] = useState(() => readPrefill(location.state) !== null)
+  const [notification, setNotification] = useState('')
+  const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({ people: null, matching: null, plans: null })
 
-  // Matching
-  const [matchingRequests, setMatchingRequests] = useState<MatchingRequest[]>([]);
-  const [showMatching,     setShowMatching]     = useState(false);
-  const [confirmingId,     setConfirmingId]     = useState<number | null>(null);
+  // ES-95: «Crear cuenta de terapeuta» desde una solicitud aprobada abre la invitación con el correo (y el nombre, solo para mostrar). Viaja en el estado de navegación,
+  // nunca en la URL; se lee al montar y el estado se consume para que no quede en el historial.
+  useEffect(() => { if (readPrefill(location.state)) navigate(location.pathname, { replace: true, state: null }) }, [location, navigate])
 
-  // Plan requests
-  const [planRequests,    setPlanRequests]    = useState<PlanRequest[]>([]);
-  const [showPlanRequests,setShowPlanRequests]= useState(false);
-  const [planActionId,    setPlanActionId]    = useState<number | null>(null);
-  const [planRejectNote,  setPlanRejectNote]  = useState('');
-  const [showRejectModal, setShowRejectModal] = useState<PlanRequest | null>(null);
-  const [planMsg,         setPlanMsg]         = useState('');
+  const managing = managingId === null ? null : people.items.find((p) => p.id === managingId) ?? null
+  const therapists = people.items.filter((p) => p.role === 'therapist' && p.active && !p.deletionRequested).map((p) => ({ id: p.id, name: p.name }))
+  const count = (state: 'loading' | 'ok' | 'error', n: number) => (state === 'ok' ? ` (${n})` : '')
 
-  // HU-078 — Desbloqueo y reset password
-  const [unlocking,        setUnlocking]        = useState(false);
-  const [unlockMsg,        setUnlockMsg]        = useState('');
-  const [showResetModal,   setShowResetModal]   = useState(false);
-  const [resetting,        setResetting]        = useState(false);
-  const [resetMsg,         setResetMsg]         = useState('');
-  const [resetError,       setResetError]       = useState('');
-
-  const role         = localStorage.getItem('elevation_role') ?? 'admin';
-  const esSuperAdmin = role === 'superadmin';
-
-  const fetchUsuarios = useCallback(async () => {
-    setCargando(true); setError('');
-    try {
-      const params = new URLSearchParams();
-      if (filtroRol)    params.append('role',   filtroRol);
-      if (filtroEstado) params.append('active', filtroEstado);
-      const res = await fetch(`${API}/api/admin/usuarios?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setUsuarios(data);
-      setTerapeutas(data.filter((u: Usuario) => u.role === 'therapist' && u.active));
-    } catch { setError('No se pudo cargar la lista de usuarios.'); }
-    finally   { setCargando(false); }
-  }, [filtroRol, filtroEstado]);
-
-  const fetchMatching = async () => {
-    try {
-      const res = await fetch(`${API}/api/admin/matching/pending`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) return;
-      setMatchingRequests(await res.json());
-    } catch { /* silent */ }
-  };
-
-  const fetchPlanRequests = async () => {
-    try {
-      const res = await fetch(`${API}/api/admin/plan-requests/admin?status=pending`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      setPlanRequests(Array.isArray(data) ? data : []);
-    } catch { /* silent */ }
-  };
-
-  useEffect(() => {
-    fetchUsuarios();
-    fetchMatching();
-    fetchPlanRequests();
-  }, [fetchUsuarios]);
-
-  const confirmMatching = async (requestId: number) => {
-    setConfirmingId(requestId);
-    try {
-      const res = await fetch(`${API}/api/admin/matching/${requestId}/confirm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      });
-      if (!res.ok) { const d = await res.json(); alert(d.error || 'Error'); return; }
-      await fetchMatching();
-      await fetchUsuarios();
-    } catch { alert(tr('Error de conexión.')); }
-    finally { setConfirmingId(null); }
-  };
-
-  const approvePlanRequest = async (req: PlanRequest) => {
-    setPlanActionId(req.id); setPlanMsg('');
-    try {
-      const res = await fetch(`${API}/api/admin/plan-requests/admin/${req.id}/approve`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ adminNote: '' }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setPlanMsg(data.error ?? 'Error al aprobar.'); return; }
-      setPlanMsg(`✓ Plan ${req.plan.name_es} activado para ${req.requester.name}.`);
-      await fetchPlanRequests(); await fetchUsuarios();
-    } catch { setPlanMsg('Error de conexión.'); }
-    finally { setPlanActionId(null); }
-  };
-
-  const rejectPlanRequest = async (req: PlanRequest) => {
-    if (!planRejectNote.trim()) return;
-    setPlanActionId(req.id);
-    try {
-      const res = await fetch(`${API}/api/admin/plan-requests/admin/${req.id}/reject`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ adminNote: planRejectNote }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setPlanMsg(data.error ?? 'Error al rechazar.'); return; }
-      setPlanMsg(`Solicitud de ${req.requester.name} rechazada.`);
-      setShowRejectModal(null); setPlanRejectNote('');
-      await fetchPlanRequests();
-    } catch { setPlanMsg('Error de conexión.'); }
-    finally { setPlanActionId(null); }
-  };
-
-  const toggleActivo = async (usuario: Usuario) => {
-    const res = await fetch(`${API}/api/admin/usuarios/${usuario.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ active: !usuario.active }),
-    });
-    if (!res.ok) { const d = await res.json(); alert(d.error || 'Error'); return; }
-    await fetchUsuarios();
-    setUsuarioSeleccionado(prev => prev ? { ...prev, active: !prev.active } : null);
-  };
-
-  const cambiarRol = async (usuario: Usuario, nuevoRol: Role) => {
-    const res = await fetch(`${API}/api/admin/usuarios/${usuario.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ role: nuevoRol }),
-    });
-    if (!res.ok) { const d = await res.json(); alert(d.error || 'Error'); return; }
-    await fetchUsuarios();
-    setUsuarioSeleccionado(prev => prev ? { ...prev, role: nuevoRol } : null);
-  };
-
-  const asignarTerapeuta = async (usuarioId: number, therapistId: number | null) => {
-    try {
-      const res = await fetch(`${API}/api/admin/usuarios/${usuarioId}/asignar-terapeuta`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ therapistId }),
-      });
-      if (!res.ok) { const d = await res.json(); alert(d.error || tr('Error al asignar terapeuta')); return; }
-      await fetchUsuarios();
-      setUsuarioSeleccionado(prev => prev?.id === usuarioId ? { ...prev, therapistId } : prev);
-    } catch { alert(tr('Error de conexión.')); }
-  };
-
-  // ES-186 (parche): ya no se escribe la contraseña de nadie. Se invita por enlace (POST /api/admin/invitations): la persona elige su contraseña.
-  // El servidor NO devuelve el enlace; solo dice si se envió el correo (`emailSent`). Lo que se muestra es exactamente eso.
-  const crearUsuario = async () => {
-    setErrorModal(''); setExitoModal('');
-    if (!nuevoUsuario.email.trim()) { setErrorModal('Escribe un correo.'); return; }
-    setCreando(true);
-    try {
-      const res = await fetch(`${API}/api/admin/invitations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ email: nuevoUsuario.email.trim(), role: nuevoUsuario.role, locale: lang }),
-      });
-      const data = await res.json().catch(() => ({}));
-      const outcome = inviteOutcome(res.status, data);
-      if (outcome.kind === 'error') { setErrorModal(outcome.message); return; }
-      if (outcome.kind === 'recorded') setExitoModal(outcome.message);
-      else {
-        const until = outcome.expiresAt ? formatExpiry(outcome.expiresAt, lang) : '';
-        setExitoModal(`${tr('Invitación enviada a')} ${outcome.email}.${until ? ` ${tr('El enlace caduca el')} ${until}.` : ''}`);
-      }
-      setNuevoUsuario({ email: '', role: 'user' }); setInvitadoPara('');
-    } catch { setErrorModal('Error de conexión.'); }
-    finally { setCreando(false); }
-  };
-
-  const eliminarUsuario = async () => {
-    if (!confirmDelete) return;
-    if (deleteInput !== confirmDelete.name) {
-      setDeleteError('El nombre no coincide. Escríbelo exactamente como aparece.');
-      return;
-    }
-    setEliminando(true); setDeleteError('');
-    try {
-      const res = await fetch(`${API}/api/admin/usuarios/${confirmDelete.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await res.json();
-      if (!res.ok) { setDeleteError(data.error || 'Error al eliminar.'); return; }
-      setConfirmDelete(null); setDeleteInput('');
-      setUsuarioSeleccionado(null);
-      await fetchUsuarios();
-    } catch { setDeleteError('Error de conexión.'); }
-    finally { setEliminando(false); }
-  };
-
-  // HU-078 — Desbloquear cuenta
-  const desbloquearUsuario = async () => {
-    if (!usuarioSeleccionado) return;
-    setUnlocking(true); setUnlockMsg('');
-    try {
-      const res = await fetch(`${API}/api/admin/usuarios/${usuarioSeleccionado.id}/unlock`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const data = await res.json();
-      if (!res.ok) { setUnlockMsg(data.error || 'Error al desbloquear.'); return; }
-      setUnlockMsg(`✓ ${data.message}`);
-      await fetchUsuarios();
-      setUsuarioSeleccionado(prev => prev ? { ...prev, isLocked: false, loginAttempts: 0, lockedUntil: null, active: true } : null);
-      setTimeout(() => setUnlockMsg(''), 3000);
-    } catch { setUnlockMsg('Error de conexión.'); }
-    finally { setUnlocking(false); }
-  };
-
-  // ES-186 (parche): administración ya no define la contraseña de otra cuenta; envía un enlace de restablecimiento (POST /:id/reset-link, 202).
-  // El servidor no confirma que la cuenta exista ni devuelve el enlace: el texto no promete un correo que quizá no salga.
-  const resetPassword = async () => {
-    if (!usuarioSeleccionado) return;
-    setResetError(''); setResetMsg('');
-    setResetting(true);
-    try {
-      const res = await fetch(`${API}/api/admin/usuarios/${usuarioSeleccionado.id}/reset-link`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ locale: lang }),
-      });
-      const outcome = resetLinkOutcome(res.status, await res.json().catch(() => null));
-      if (outcome.ok) setResetMsg(outcome.message); else setResetError(outcome.message);
-    } catch { setResetError('Error de conexión.'); }
-    finally { setResetting(false); }
-  };
-
-  const sel = {
-    padding: '0.45rem 0.85rem', borderRadius: '0.65rem', border: '0.5px solid #E7E5E4',
-    background: '#fff', fontSize: '0.875rem', color: '#1C1917',
-    fontFamily: 'Inter, sans-serif', cursor: 'pointer',
-  } as React.CSSProperties;
+  function onTabKey(e: React.KeyboardEvent) {
+    const i = TABS.indexOf(tab)
+    const next = e.key === 'ArrowRight' ? TABS[(i + 1) % TABS.length] : e.key === 'ArrowLeft' ? TABS[(i + TABS.length - 1) % TABS.length] : e.key === 'Home' ? TABS[0] : e.key === 'End' ? TABS[TABS.length - 1] : null
+    if (next) { e.preventDefault(); setTab(next); tabRefs.current[next]?.focus() }
+  }
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
-
-      {/* HEADER */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+    <div style={{ fontFamily: typography.fontBody }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xl, flexWrap: 'wrap', gap: spacing.lg }}>
         <div>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>{tr("Usuarios")}</h1>
-          <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0.25rem 0 0' }}>
-            {usuarios.length}{' '}{tr(usuarios.length === 1 ? 'usuario registrado' : 'usuarios registrados')}
-          </p>
+          <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>{tr('Usuarios')}</h1>
+          <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>{tr('Cuentas, emparejamientos y solicitudes de plan.')}</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {planRequests.length > 0 && (
-            <button onClick={() => setShowPlanRequests(!showPlanRequests)} style={{
-              display: 'flex', alignItems: 'center', gap: '0.4rem',
-              padding: '0.6rem 1.2rem', background: '#EEF2FF',
-              color: '#4F46E5', border: '0.5px solid #A5B4FC',
-              borderRadius: '0.85rem', fontSize: '0.875rem',
-              fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-            }}>
-              💳 {planRequests.length} {tr(planRequests.length === 1 ? 'solicitud de plan' : 'solicitudes de plan')}
-            </button>
-          )}
-          {matchingRequests.length > 0 && (
-            <button onClick={() => setShowMatching(!showMatching)} style={{
-              display: 'flex', alignItems: 'center', gap: '0.4rem',
-              padding: '0.6rem 1.2rem', background: '#FEF3C7',
-              color: '#92400E', border: '0.5px solid #FCD34D',
-              borderRadius: '0.85rem', fontSize: '0.875rem',
-              fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-            }}>
-              🤝 {matchingRequests.length} {tr(matchingRequests.length === 1 ? 'asignación pendiente' : 'asignaciones pendientes')}
-            </button>
-          )}
-          <button onClick={() => setMostrarModal(true)} style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.2rem',
-            background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.85rem',
-            fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-          }}>{tr("+ Invitar persona")}</button>
-        </div>
+        <button type="button" style={btn.primary} onClick={() => { setPrefill(null); setInviting(true) }}>{tr('Invitar persona')}</button>
       </div>
 
-      {/* PLAN REQUESTS PANEL */}
-      {showPlanRequests && (
-        <div style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #A5B4FC', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>{tr("💳 Solicitudes de plan pendientes")}{' '}</h2>
-          {planMsg && (
-            <div style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: '0.875rem', background: planMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: planMsg.startsWith('✓') ? '#4A6741' : '#B91C1C' }}>
-              {tr(planMsg)}
-            </div>
-          )}
-          {planRequests.length === 0
-            ? <p style={{ color: '#6B645F', fontSize: '0.875rem', margin: 0 }}>{tr("No hay solicitudes pendientes.")}</p>
-            : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {planRequests.map(req => (
-                  <div key={req.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', background: '#F5F7FF', borderRadius: '0.75rem', border: '0.5px solid #A5B4FC', flexWrap: 'wrap', gap: '0.75rem' }}>
-                    <div>
-                      <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>
-                        {req.requester.name}
-                        <span style={{ fontWeight: 400, color: '#6B645F' }}> → </span>
-                        <span style={{ color: '#4F46E5', fontWeight: 600 }}>{req.plan.name_es}</span>
-                        <span style={{ fontSize: '0.78rem', color: '#6B645F', marginLeft: 6 }}>${req.plan.price} {req.plan.currency}{tr("/mes")}</span>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#6B645F', marginTop: '0.2rem' }}>{req.requester.email} · {formatDate(req.createdAt, tr('es-CO'))}</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button onClick={() => void approvePlanRequest(req)} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: planActionId === req.id ? '#A8B5A2' : '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                        {planActionId === req.id ? tr('Procesando...') : tr('✓ Aprobar')}
-                      </button>
-                      <button onClick={() => { setShowRejectModal(req); setPlanRejectNote(''); setPlanMsg(''); }} disabled={planActionId === req.id} style={{ padding: '0.45rem 1rem', background: 'transparent', color: '#B91C1C', border: '0.5px solid #DC2626', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>{tr("✕ Rechazar")}{' '}</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          }
-        </div>
-      )}
+      <div aria-live="polite">{notification && <div role="status" style={notice('ok')}>{tr(notification)}</div>}</div>
 
-      {/* MATCHING REQUESTS PANEL */}
-      {showMatching && matchingRequests.length > 0 && (
-        <div style={{ background: '#fff', borderRadius: '1rem', border: '0.5px solid #FCD34D', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: '0 0 1rem' }}>
-            🤝 Pending matching requests
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {matchingRequests.map(req => (
-              <div key={req.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', background: '#FFFBEB', borderRadius: '0.75rem', border: '0.5px solid #FCD34D', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: '0.9rem', color: '#1C1917' }}>{req.user?.name} → {req.chosenTherapist?.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6B645F', marginTop: '0.2rem' }}>Area: {req.answers?.area ?? '—'} · Style: {req.answers?.style ?? '—'} · {formatDate(req.createdAt, tr('es-CO'))}</div>
-                </div>
-                <button onClick={() => confirmMatching(req.id)} disabled={confirmingId === req.id} style={{ padding: '0.45rem 1rem', background: confirmingId === req.id ? '#A8B5A2' : '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.82rem', fontWeight: 500, cursor: confirmingId === req.id ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                  {confirmingId === req.id ? 'Confirming...' : 'Confirm assignment'}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* FILTROS */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-        <select style={sel} value={filtroRol} onChange={e => setFiltroRol(e.target.value)}>
-          <option value="">{tr("Todos los roles")}</option>
-          <option value="user">{tr("Persona usuaria")}</option>
-          <option value="therapist">{tr("Terapeuta")}</option>
-          <option value="admin">Admin</option>
-          {esSuperAdmin && <option value="superadmin">Superadmin</option>}
-          {esSuperAdmin && <option value="board">{tr("Junta ética")}</option>}
-        </select>
-        <select style={sel} value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
-          <option value="">{tr("Todos los estados")}</option>
-          <option value="true">{tr("Activos")}</option>
-          <option value="false">{tr("Inactivos")}</option>
-        </select>
+      <div className="au-tabs" role="tablist" aria-label={tr('Secciones')} onKeyDown={onTabKey}>
+        {TABS.map((t) => (
+          <button key={t} ref={(el) => { tabRefs.current[t] = el }} type="button" role="tab" id={`au-tab-${t}`} className="au-tab" aria-selected={tab === t} aria-controls={`au-panel-${t}`}
+            tabIndex={tab === t ? 0 : -1} onClick={() => setTab(t)}>
+            {tr(TAB_LABEL[t])}{t === 'matching' ? count(matching.state, matching.items.length) : t === 'plans' ? count(plans.state, plans.items.length) : ''}
+          </button>
+        ))}
       </div>
 
-      {cargando && <p style={{ color: '#6B645F', fontSize: '0.875rem' }}>{tr("Cargando usuarios...")}</p>}
-      {error    && <p style={{ color: '#B91C1C', fontSize: '0.875rem' }}>{tr(error)}</p>}
+      <div role="tabpanel" id="au-panel-people" aria-labelledby="au-tab-people" hidden={tab !== 'people'}>
+        {tab === 'people' && <PeoplePanel list={people} roleFilter={roleFilter} statusFilter={statusFilter} setRoleFilter={setRoleFilter} setStatusFilter={setStatusFilter} actorRole={actorRole}
+          onManage={(id) => { setNotification(''); setManagingId(id) }} />}
+      </div>
+      <div role="tabpanel" id="au-panel-matching" aria-labelledby="au-tab-matching" hidden={tab !== 'matching'}>
+        {tab === 'matching' && <MatchingPanel list={matching} onResolved={() => { matching.reload(); people.reload() }} />}
+      </div>
+      <div role="tabpanel" id="au-panel-plans" aria-labelledby="au-tab-plans" hidden={tab !== 'plans'}>
+        {tab === 'plans' && <PlanRequestsPanel list={plans} onResolved={() => { plans.reload(); people.reload() }} />}
+      </div>
 
-      {!cargando && !error && (
-        <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-
-          {/* TABLA */}
-          <div style={{ flex: 1, overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', border: '0.5px solid #E7E5E4' }}>
-              <thead>
-                <tr>
-                  {[tr('Usuario'), tr('Rol'), 'Plan', tr('Sesiones'), tr('Mood prom.'), tr('Rating prom.'), tr('Estado'), tr('Acción')].map(h => (
-                    <th key={tr(h)} style={{ padding: '0.85rem 1rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: '#6B645F', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '0.5px solid #E7E5E4', background: '#F5F3EF' }}>{tr(h)}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios.length === 0
-                  ? <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#6B645F', fontSize: '0.875rem' }}>{tr("No hay usuarios con los filtros seleccionados.")}</td></tr>
-                  : usuarios.map(u => (
-                    <tr key={u.id} style={{ background: usuarioSeleccionado?.id === u.id ? '#EAF0E6' : 'transparent', transition: 'background 0.15s' }}>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        <div style={{ fontWeight: 500 }}>{u.name}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#6B645F' }}>{u.email}</div>
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        <span style={getRoleBadgeStyle(u.role)}>{u.role}</span>
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        {u.plan
-                          ? <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: 9999, background: '#EEF2FF', color: '#4F46E5' }}>{u.plan.name_es}</span>
-                          : <span style={{ fontSize: '0.72rem', color: '#6F6963' }}>—</span>
-                        }
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.sesiones ?? '—'}</td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.moodPromedio != null ? u.moodPromedio : '—'}</td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', color: '#1C1917', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>{u.ratingPromedio != null ? `${u.ratingPromedio} ★` : '—'}</td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.875rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                          <div>
-                            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: u.active ? '#22C55E' : '#EF4444', marginRight: '0.4rem' }} />
-                            {u.active ? tr('Activo') : tr('Inactivo')}
-                          </div>
-                          {/* HU-078 — Badge bloqueado */}
-                          {u.isLocked && (
-                            <span style={{ fontSize: '0.68rem', fontWeight: 600, color: '#92400E', background: '#FEF3C7', padding: '1px 6px', borderRadius: 999 }}>{tr("🔒 Bloqueado")}{' '}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid #F5F3EF', verticalAlign: 'middle' }}>
-                        <button onClick={() => {
-                          setUsuarioSeleccionado(usuarioSeleccionado?.id === u.id ? null : u);
-                          setUnlockMsg('');
-                        }}
-                          style={{ background: 'none', border: '0.5px solid #E7E5E4', borderRadius: '0.5rem', padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.875rem', color: '#6B645F' }}>
-                          {usuarioSeleccionado?.id === u.id ? '✕' : '···'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                }
-              </tbody>
-            </table>
-          </div>
-
-          {/* PANEL LATERAL */}
-          {usuarioSeleccionado && (
-            <div style={{ width: 280, flexShrink: 0, background: '#fff', borderRadius: '1rem', border: '0.5px solid #E7E5E4', boxShadow: '0 2px 12px rgba(26,28,27,0.06)', padding: '1.25rem' }}>
-
-              {/* Info */}
-              <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '0.5px solid #F5F3EF' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1C1917', marginBottom: '0.2rem' }}>{usuarioSeleccionado.name}</div>
-                <div style={{ fontSize: '0.78rem', color: '#6B645F' }}>{usuarioSeleccionado.email}</div>
-                <div style={{ fontSize: '0.75rem', color: '#A8B5A2', marginTop: '0.35rem' }}>{tr("Desde")}{' '}{formatDate(usuarioSeleccionado.createdAt, tr('es-CO'))}</div>
-                {/* HU-078 — Estado de bloqueo */}
-                {usuarioSeleccionado.isLocked && (
-                  <div style={{ marginTop: '0.5rem', padding: '0.4rem 0.65rem', background: '#FEF3C7', borderRadius: '0.5rem', fontSize: '0.75rem', color: '#92400E', fontWeight: 500 }}>{tr("🔒 Bloqueado por intentos fallidos")}{' '}{usuarioSeleccionado.lockedUntil && (
-                      <div style={{ fontSize: '0.7rem', fontWeight: 400, marginTop: '0.15rem' }}>{tr("Hasta:")}{' '}{new Date(usuarioSeleccionado.lockedUntil).toLocaleString(tr('es-CO'))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Stats */}
-              <div style={{ marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '0.5px solid #F5F3EF' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.65rem' }}>{tr("Estadísticas")}</div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  {[
-                    { label: tr('Sesiones'), value: usuarioSeleccionado.sesiones ?? '—' },
-                    { label: 'Mood',     value: usuarioSeleccionado.moodPromedio ?? '—' },
-                    { label: 'Rating',   value: usuarioSeleccionado.ratingPromedio ? `${usuarioSeleccionado.ratingPromedio}★` : '—' },
-                  ].map(s => (
-                    <div key={s.label} style={{ flex: 1, textAlign: 'center', background: '#F5F3EF', borderRadius: '0.65rem', padding: '0.5rem 0.25rem' }}>
-                      <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1C1917' }}>{s.value}</div>
-                      <div style={{ fontSize: '0.68rem', color: '#6B645F' }}>{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Rol */}
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>{tr("Rol")}</div>
-                <select style={{ ...sel, width: '100%' }} value={usuarioSeleccionado.role} onChange={e => cambiarRol(usuarioSeleccionado, e.target.value as Role)}>
-                  <option value="user">user</option>
-                  <option value="therapist">therapist</option>
-                  {esSuperAdmin && <option value="admin">admin</option>}
-                  {esSuperAdmin && <option value="superadmin">superadmin</option>}
-                  {esSuperAdmin && <option value="board">board</option>}
-                </select>
-              </div>
-
-              {/* Terapeuta asignado */}
-              {usuarioSeleccionado.role === 'user' && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>{tr("Terapeuta asignado")}</div>
-                  <select style={{ ...sel, width: '100%' }} value={usuarioSeleccionado.therapistId ?? ''}
-                    onChange={e => asignarTerapeuta(usuarioSeleccionado.id, e.target.value ? Number(e.target.value) : null)}>
-                    <option value="">{tr("Sin asignar")}</option>
-                    {terapeutas.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                  </select>
-                </div>
-              )}
-
-              {/* Feedback desbloqueo */}
-              {unlockMsg && (
-                <div style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.78rem', marginBottom: '0.75rem', background: unlockMsg.startsWith('✓') ? '#EAF0E6' : '#FEE2E2', color: unlockMsg.startsWith('✓') ? '#4A6741' : '#B91C1C' }}>
-                  {tr(unlockMsg)}
-                </div>
-              )}
-
-              {/* HU-078 — Desbloquear cuenta */}
-              {(usuarioSeleccionado.isLocked || !usuarioSeleccionado.active) && (
-                <button
-                  onClick={desbloquearUsuario}
-                  disabled={unlocking}
-                  style={{
-                    width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
-                    border: 'none', marginBottom: '0.5rem',
-                    background: unlocking ? '#A8B5A2' : '#EAF0E6',
-                    color: unlocking ? '#fff' : '#4A6741',
-                    fontWeight: 500, fontSize: '0.875rem',
-                    cursor: unlocking ? 'not-allowed' : 'pointer',
-                    fontFamily: 'Inter, sans-serif',
-                  }}
-                >
-                  {unlocking ? tr('Desbloqueando...') : tr('🔓 Desbloquear cuenta')}
-                </button>
-              )}
-
-              {/* Activar / Desactivar */}
-              <button onClick={() => toggleActivo(usuarioSeleccionado)} style={{
-                width: '100%', padding: '0.6rem', borderRadius: '0.85rem', border: 'none',
-                background: usuarioSeleccionado.active ? '#FEE2E2' : '#EAF0E6',
-                color: usuarioSeleccionado.active ? '#B91C1C' : '#4A6741',
-                fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', marginBottom: '0.5rem',
-              }}>
-                {usuarioSeleccionado.active ? tr('Desactivar usuario') : tr('Activar usuario')}
-              </button>
-
-              {/* HU-078 — Reset contraseña (solo superadmin) */}
-              {esSuperAdmin && (
-                <button
-                  onClick={() => { setShowResetModal(true); setResetError(''); setResetMsg(''); }}
-                  style={{
-                    width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
-                    border: '0.5px solid #A8B5A2', background: 'transparent',
-                    color: '#5C6B4E', fontWeight: 500, fontSize: '0.875rem',
-                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                    marginBottom: '0.5rem',
-                  }}
-                >{tr("Enviar enlace de restablecimiento")}</button>
-              )}
-
-              {/* Eliminar — solo superadmin */}
-              {esSuperAdmin && (
-                <button
-                  onClick={() => { setConfirmDelete(usuarioSeleccionado); setDeleteInput(''); setDeleteError(''); }}
-                  style={{
-                    width: '100%', padding: '0.6rem', borderRadius: '0.85rem',
-                    border: '0.5px solid #DC2626', background: 'transparent',
-                    color: '#B91C1C', fontWeight: 500, fontSize: '0.875rem',
-                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                  }}
-                >{tr("Eliminar permanentemente")}{' '}</button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* MODAL RESET CONTRASEÑA */}
-      {showResetModal && usuarioSeleccionado && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 400, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("Enviar enlace de restablecimiento")}</h3>
-              <button onClick={() => setShowResetModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: '#6B645F' }}>✕</button>
-            </div>
-
-            <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0 0 1.25rem', lineHeight: 1.5 }}>{tr("Se enviará a")}{' '}<strong style={{ color: '#1C1917' }}>{usuarioSeleccionado.name}</strong>{' '}{tr("un enlace de un solo uso para que elija una contraseña nueva. Tú no ves ni defines su contraseña.")}</p>
-
-            {resetError && <p role="alert" style={{ fontSize: '0.8rem', color: '#B91C1C', margin: '0 0 1rem' }}>{tr(resetError)}</p>}
-            {resetMsg && (
-              <div role="status" style={{ padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem', background: '#EAF0E6', color: '#4A6741' }}>
-                {tr(resetMsg)}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button onClick={() => setShowResetModal(false)} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#6B645F', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
-              <button
-                onClick={resetPassword}
-                disabled={resetting || Boolean(resetMsg)}
-                style={{
-                  flex: 1, padding: '0.65rem',
-                  background: resetting || resetMsg ? '#E7E5E4' : '#5C6B4E',
-                  color: resetting || resetMsg ? '#6F6963' : '#fff',
-                  border: 'none', borderRadius: '0.75rem',
-                  cursor: resetting || resetMsg ? 'not-allowed' : 'pointer',
-                  fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif',
-                }}
-              >
-                {resetting ? tr('Enviando...') : tr('Enviar enlace')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL CONFIRMACIÓN ELIMINACIÓN */}
-      {confirmDelete && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(26,28,27,0.15)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🗑️</div>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>{tr("Eliminar usuario")}{' '}</h3>
-            </div>
-            <p style={{ fontSize: '0.875rem', color: '#6B645F', marginBottom: '0.5rem', lineHeight: 1.6 }}>{tr("Esta acción es")}{' '}<strong style={{ color: '#B91C1C' }}>{tr("permanente e irreversible")}</strong>.
-            </p>
-            <div style={{ background: '#FEF2F2', border: '0.5px solid #FECACA', borderRadius: '0.65rem', padding: '0.75rem 1rem', marginBottom: '1.25rem' }}>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1C1917' }}>{confirmDelete.name}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6B645F' }}>{confirmDelete.email}</div>
-            </div>
-            <p style={{ fontSize: '0.82rem', color: '#6B645F', marginBottom: '0.5rem' }}>{tr("Para confirmar, escribe exactamente el nombre del usuario:")}{' '}</p>
-            <input
-              type="text"
-              value={deleteInput}
-              onChange={e => { setDeleteInput(e.target.value); setDeleteError(''); }}
-              placeholder={confirmDelete.name}
-              style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: `0.5px solid ${deleteError ? '#DC2626' : '#E7E5E4'}`, fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none', marginBottom: '0.5rem' }}
-            />
-            {deleteError && <p style={{ fontSize: '0.78rem', color: '#B91C1C', margin: '0 0 1rem' }}>{tr(deleteError)}</p>}
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-              <button onClick={() => { setConfirmDelete(null); setDeleteInput(''); setDeleteError(''); }} style={{ flex: 1, padding: '0.65rem', background: 'transparent', color: '#6B645F', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
-              <button
-                onClick={eliminarUsuario}
-                disabled={eliminando || deleteInput !== confirmDelete.name}
-                style={{ flex: 1, padding: '0.65rem', background: eliminando || deleteInput !== confirmDelete.name ? '#F5F3EF' : '#DC2626', color: eliminando || deleteInput !== confirmDelete.name ? '#6F6963' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: eliminando || deleteInput !== confirmDelete.name ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}
-              >
-                {eliminando ? tr('Eliminando...') : tr('Eliminar definitivamente')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL RECHAZO PLAN */}
-      {showRejectModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: '0 0 0.5rem' }}>{tr("✕ Rechazar solicitud")}</h3>
-            <p style={{ fontSize: '0.875rem', color: '#6B645F', margin: '0 0 1.25rem' }}>{tr("Explica por qué rechazas la solicitud de")}{' '}<strong>{showRejectModal.requester.name}</strong>{' '}{tr("para el plan")}{' '}<strong>{showRejectModal.plan.name_es}</strong>.
-            </p>
-            <textarea value={planRejectNote} onChange={e => setPlanRejectNote(e.target.value)}
-              placeholder={tr("Ej: El plan seleccionado no está disponible actualmente...")} rows={3}
-              style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #D6D2C4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
-            />
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
-              <button onClick={() => { setShowRejectModal(null); setPlanRejectNote(''); }} style={{ padding: '0.6rem 1.25rem', background: 'transparent', color: '#6B645F', border: '0.5px solid #E7E5E4', borderRadius: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif' }}>{tr("Cancelar")}{' '}{' '}{' '}</button>
-              <button onClick={() => void rejectPlanRequest(showRejectModal)}
-                disabled={!planRejectNote.trim() || planActionId === showRejectModal.id}
-                style={{ padding: '0.6rem 1.25rem', background: !planRejectNote.trim() ? '#E7E5E4' : '#DC2626', color: !planRejectNote.trim() ? '#6F6963' : '#fff', border: 'none', borderRadius: '0.75rem', cursor: planRejectNote.trim() ? 'pointer' : 'not-allowed', fontSize: '0.875rem', fontWeight: 500, fontFamily: 'Inter, sans-serif' }}>
-                {planActionId === showRejectModal.id ? tr('Procesando...') : tr('Confirmar rechazo')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL CREACIÓN USUARIO */}
-      {mostrarModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: 0 }}>{tr("Invitar persona")}</h2>
-              <button onClick={() => { setMostrarModal(false); setErrorModal(''); setExitoModal(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#6B645F' }}>✕</button>
-            </div>
-            {errorModal && <div role="alert" style={{ background: '#FEE2E2', color: '#B91C1C', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(errorModal)}</div>}
-            {exitoModal && <div role="status" style={{ background: '#EAF0E6', color: '#4A6741', padding: '0.65rem 1rem', borderRadius: '0.65rem', fontSize: '0.875rem', marginBottom: '1rem' }}>{tr(exitoModal)}</div>}
-            <p style={{ fontSize: '0.85rem', color: '#6B645F', margin: '0 0 1rem', lineHeight: 1.5 }}>{tr("Se creará un enlace de un solo uso para que la persona elija su contraseña. Nadie más ve ni define su contraseña.")}</p>
-            {invitadoPara && <p style={{ fontSize: '0.85rem', color: '#1C1917', margin: '0 0 1rem' }}>{tr("Invitación para")}{' '}<strong>{invitadoPara}</strong></p>}
-            <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="invite-email" style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr('Email')}</label>
-              <input id="invite-email" type="email" placeholder={'ana@example.com'} autoComplete="off"
-                value={nuevoUsuario.email}
-                onChange={e => { setNuevoUsuario(prev => ({ ...prev, email: e.target.value })); setErrorModal(''); }}
-                style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: '0.65rem', border: '0.5px solid #E7E5E4', fontSize: '0.875rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', boxSizing: 'border-box', outline: 'none' }}
-              />
-            </div>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="invite-role" style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>{tr("Rol")}</label>
-              <select id="invite-role" style={{ ...sel, width: '100%' }} value={nuevoUsuario.role} onChange={e => setNuevoUsuario(prev => ({ ...prev, role: e.target.value as Role }))}>
-                <option value="user">user</option>
-                <option value="therapist">therapist</option>
-                {esSuperAdmin && <option value="admin">admin</option>}
-                {esSuperAdmin && <option value="superadmin">superadmin</option>}
-                {esSuperAdmin && <option value="board">board</option>}
-              </select>
-            </div>
-            <button onClick={crearUsuario} disabled={creando} style={{ width: '100%', padding: '0.75rem', background: creando ? '#A8B5A2' : '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.85rem', fontSize: '0.9rem', fontWeight: 500, cursor: creando ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
-              {creando ? tr('Enviando...') : tr('Enviar invitación')}
-            </button>
-          </div>
-        </div>
-      )}
+      {managing && <AdminUsersManage person={managing} therapists={therapists} actorRole={actorRole} onChanged={people.reload} onClose={() => setManagingId(null)} onNotice={setNotification} />}
+      {inviting && <AdminUsersInvite actorRole={actorRole} prefill={prefill} onClose={() => { setInviting(false); setPrefill(null) }} onInvited={people.reload} />}
     </div>
-  );
+  )
 }

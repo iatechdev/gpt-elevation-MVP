@@ -12,6 +12,19 @@ const { Sequelize } = require('sequelize');
 
 const backend = path.resolve(__dirname, '..', '..');
 
+// ES-186 D · Contrato con la pantalla: la respuesta REAL del servidor se guarda como fixture del frontend (ES186_WRITE_FIXTURE=1) y cada corrida comprueba que su forma no cambió.
+const fixtureFs = require('node:fs');
+const FIXTURES = path.join(__dirname, '..', '..', '..', 'frontend', 'test', 'fixtures');
+const shapeOf = (v) => (v === null ? null : Array.isArray(v) ? [v.length ? shapeOf(v[0]) : null] : (v && typeof v === 'object') ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, shapeOf(v[k])])) : typeof v);
+const sameShape = (a, b) => (a === null || b === null) ? true : (Array.isArray(a) ? Array.isArray(b) && sameShape(a[0] ?? null, b[0] ?? null) : (a && typeof a === 'object') ? (b && typeof b === 'object' && !Array.isArray(b) && JSON.stringify(Object.keys(a)) === JSON.stringify(Object.keys(b)) && Object.keys(a).every((k) => sameShape(a[k], b[k]))) : typeof a === typeof b);
+function contractFixture(name, status, body) {
+  const file = path.join(FIXTURES, name);
+  if (process.env.ES186_WRITE_FIXTURE) { fixtureFs.mkdirSync(FIXTURES, { recursive: true }); fixtureFs.writeFileSync(file, JSON.stringify({ status, body }, null, 2) + String.fromCharCode(10)); return; }
+  const saved = JSON.parse(fixtureFs.readFileSync(file, 'utf8'));
+  assert.equal(saved.status, status, name);
+  assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES186_WRITE_FIXTURE=1 y revisa la pantalla`);
+}
+
 test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la misma transacción, lectura solo superadmin e invitar idempotente por requestId', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES186B_TEST_DATABASE_URL, 'Se requiere ES186B_TEST_DATABASE_URL (clúster desechable en loopback)');
   const target = new URL(process.env.ES186B_TEST_DATABASE_URL);
@@ -58,7 +71,7 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
   api.use('/api/admin/plan-requests', verificarAdmin, require('../../routes/planRequests'));
   api.use('/api/admin/usuarios', verificarAdmin, require('../../routes/adminUsers'));
   api.use('/api/admin/invitations', verificarAdmin, require('../../routes/invitations').adminRouter);
-  api.use('/api/superadmin/audit', verificarSuperAdmin, require('../../routes/adminAudit'));
+  api.use('/api/superadmin/audit', require('../../routes/adminAudit')); // SIN guarda propia del montaje: la guarda de superadmin debe venir del router (ES-264)
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   db = new Client({ connectionString: urlFor(dbName), ssl: false }); await db.connect();
@@ -119,7 +132,7 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
     assert.equal(inv.status, 201);
     assert.equal((await lastAudit()).action, 'invitation.create'); assert.equal((await lastAudit()).targetId, inv.body.id);
     await expectOne('anular invitación', 'invitation.revoke', 'invitation', inv.body.id, () => http(sup, 'POST', `/api/admin/invitations/${inv.body.id}/revoke`, {}));
-    await expectOne('eliminar usuario', 'user.delete', 'user', doomed.id, () => http(sup, 'DELETE', `/api/admin/usuarios/${doomed.id}`));
+    await expectOne('eliminar persona (ES-186 C: solicita la eliminación por ES-23)', 'user.delete_request', 'user', doomed.id, () => http(sup, 'DELETE', `/api/admin/usuarios/${doomed.id}`));
     const text = JSON.stringify(await audit());
     for (const leak of ['@example.test', 'tokenHash', 'password', 'canario']) assert.equal(text.includes(leak), false, 'la auditoría no guarda ' + leak);
     // revocar algo que ya no se puede anular (404) no deja entrada
@@ -207,5 +220,65 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
     assert.equal(mine.status, 201); assert.notEqual(mine.body.id, outs[0].body.id);
     for (const bad of ['corto', 'con espacio 12345', 'x'.repeat(65), "req';DROP--1234"]) assert.equal((await http(sup, 'POST', '/api/admin/invitations', { email: `bad-${dbName}@example.test`, role: 'user', requestId: bad })).status, 400, bad);
     assert.equal((await q(`SELECT count(*)::int AS n FROM pg_indexes WHERE indexname='invitations__invited_by_request_id'`))[0].n, 1);
+  });
+
+  await t.test('contrato con la pantalla: respuestas reales de invitar con requestId (201, 200 replayed y replay de una invitación anulada)', async () => {
+    const email = `fixture-${dbName}@example.test`; const requestId = 'req-fixture-0001';
+    process.env.APP_BASE_URL = 'http://localhost:5173'; // con el correo configurado el servidor confirma el envío (emailSent: true)
+    const first = await http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId });
+    delete process.env.APP_BASE_URL;
+    assert.equal(first.status, 201); assert.equal(first.body.emailSent, true);
+    contractFixture('es-186-invite-created.json', first.status, first.body);
+    const again = await http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId });
+    assert.equal(again.status, 200); assert.equal(again.body.replayed, true);
+    contractFixture('es-186-invite-replayed.json', again.status, again.body);
+    assert.equal((await http(sup, 'POST', `/api/admin/invitations/${first.body.id}/revoke`, {})).status, 200);
+    const revoked = await http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId });
+    assert.equal(revoked.status, 200); assert.equal(revoked.body.replayed, true); assert.equal(revoked.body.status, 'revoked');
+    contractFixture('es-186-invite-revoked-replay.json', revoked.status, revoked.body);
+    // E212-2: el mismo requestId con OTRO correo devuelve la primera invitación (la pantalla debe detectarlo)
+    const other = await http(sup, 'POST', '/api/admin/invitations', { email: `otro-${dbName}@example.test`, role: 'user', requestId: 'req-fixture-0002' });
+    const mismatch = await http(sup, 'POST', '/api/admin/invitations', { email: `distinto-${dbName}@example.test`, role: 'user', requestId: 'req-fixture-0002' });
+    assert.equal(other.status, 201); assert.equal(mismatch.status, 200); assert.equal(mismatch.body.email, other.body.email);
+    contractFixture('es-186-invite-replayed-other-email.json', mismatch.status, mismatch.body);
+  });
+
+  await t.test('ES-264 · la auditoría NO admite texto libre: columnas cerradas (sin text/json) y acción, objetivo y resultado de listas cerradas', async () => {
+    const cols = await q(`SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_schema='public' AND table_name='AdminAuditEntries' ORDER BY column_name`);
+    assert.deepEqual(cols.map((c) => `${c.column_name}:${c.data_type}${c.character_maximum_length ? '(' + c.character_maximum_length + ')' : ''}`), [
+      'action:character varying(40)', 'actorId:integer', 'actorRole:character varying(16)', 'createdAt:timestamp with time zone', 'id:integer',
+      'result:character varying(12)', 'targetId:integer', 'targetType:character varying(24)']);
+    const { recordAdminAction } = require('../../utils/adminAudit');
+    const before = (await audit()).length;
+    const actor = { id: sup.id, role: 'superadmin' };
+    for (const bad of [{ action: 'user.update\nnombre@example.test' }, { action: 'texto libre con correo a@b.co' }, { action: 'user.update', targetType: 'correo a@b.co' }, { action: 'user.update', targetType: 'user', result: 'ok; DROP' }]) {
+      await assert.rejects(recordAdminAction({ actor, targetType: 'user', targetId: 1, ...bad }), /desconocid/);
+    }
+    assert.equal((await audit()).length, before, 'ninguna entrada con texto libre se guardó');
+    const stored = await q(`SELECT DISTINCT action, "targetType", result FROM "AdminAuditEntries"`);
+    const { ACTIONS, TARGET_TYPES } = require('../../utils/adminAudit');
+    assert.ok(stored.every((r) => ACTIONS.has(r.action) && (r.targetType === null || TARGET_TYPES.has(r.targetType)) && ['ok', 'denied', 'failed'].includes(r.result)), 'todo lo guardado sale de las listas cerradas');
+  });
+
+  await t.test('ES-264 · la lectura exige superadmin POR EL ROUTER (montado sin guarda externa) y server.js también la monta con verificarSuperAdmin', async () => {
+    assert.equal((await http(adm, 'GET', '/api/superadmin/audit')).status, 403);
+    assert.equal((await http({ token: 'x' }, 'GET', '/api/superadmin/audit')).status, 401);
+    assert.equal((await http(sup, 'GET', '/api/superadmin/audit')).status, 200);
+    const serverSource = require('node:fs').readFileSync(path.join(backend, 'server.js'), 'utf8');
+    assert.match(serverSource, /app\.use\('\/api\/superadmin\/audit', verificarSuperAdmin, require\('\.\/routes\/adminAudit'\)\)/);
+  });
+
+  await t.test('ES-264 · el candado advisory SERIALIZA invitar con el mismo requestId: con el candado tomado por otra conexión la petición espera y, al soltarlo, termina una sola vez', async () => {
+    const requestId = 'req-candado-0001'; const email = `candado-${dbName}@example.test`;
+    await db.query('SELECT pg_advisory_lock(hashtext($1))', [`invitation:${sup.id}:${requestId}`]);
+    let settled = false; let released = false;
+    const pending = http(sup, 'POST', '/api/admin/invitations', { email, role: 'user', requestId }).then((r) => { settled = true; return r; });
+    await new Promise((r) => setTimeout(r, 700));
+    assert.equal(settled, false, 'sin candado la petición habría terminado antes de que se soltara');
+    assert.equal((await q('SELECT count(*)::int n FROM "Invitations" WHERE "requestId"=$1', [requestId]))[0].n, 0, 'nada se creó mientras el candado estaba tomado');
+    await db.query('SELECT pg_advisory_unlock(hashtext($1))', [`invitation:${sup.id}:${requestId}`]); released = true;
+    const out = await pending;
+    assert.equal(released, true); assert.equal(out.status, 201);
+    assert.equal((await q('SELECT count(*)::int n FROM "Invitations" WHERE "requestId"=$1', [requestId]))[0].n, 1);
   });
 });

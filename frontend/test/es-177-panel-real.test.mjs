@@ -44,13 +44,13 @@ test('ES-177: ni /pacientes ni /alerts traen porcentajes, crisis, diario ni chat
 test('ES-177: el 409 de propuesta trae código y la pantalla lo muestra en ES/EN (no el texto en inglés del servidor)', () => {
   const { status, body } = fixture('es-177-propose-409.json')
   assert.equal(status, 409); assert.equal(body.code, 'pending_exists')
-  const screen = read('../src/pages/therapist/TherapistDashboard.tsx')
-  assert.match(screen, /data\.code === 'pending_exists' \? t\('therapist_prompt_pending_exists'\)/)
+  const screen = read('../src/pages/therapist/GuideBlock.tsx')
+  assert.match(screen, /pending_exists: 'therapist_prompt_pending_exists'/); assert.match(screen, /ERROR_BY_CODE\[String\(body\.code\)\]/)
   for (const lang of ['es', 'en']) assert.match(read(`../src/i18n/${lang}.ts`), /therapist_prompt_pending_exists:/)
 })
 
 test('ES-177: la pantalla ya no pinta ni tipa el porcentaje y usa la palabra de ambos idiomas', () => {
-  const screen = read('../src/pages/therapist/TherapistDashboard.tsx')
+  const screen = read('../src/pages/therapist/TherapistDashboard.tsx') + read('../src/pages/therapist/PanelSections.tsx')
   assert.doesNotMatch(screen, /improvementPercent/); assert.doesNotMatch(screen, /\+\{[^}]*\}%/)
   assert.match(screen, /t\('therapist_progress_improved'\)/)
   assert.match(read('../src/i18n/es.ts'), /therapist_progress_improved: 'El ánimo mejoró en los registros recientes'/)

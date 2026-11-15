@@ -30,13 +30,13 @@ router.get('/', async (req, res) => {
                     ROUND(SUM(COALESCE("checkin_mood", 0) + COALESCE("checkout_mood", 0))::numeric
                           / NULLIF(count("checkin_mood") + count("checkout_mood"), 0), 1) AS "avgMood"
              FROM "MoodLogs"`),
-      query(`SELECT ROUND(AVG("rating")::numeric, 1) AS "avgRating" FROM "SessionRatings"`),
+      query(`SELECT ROUND((AVG("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5))::numeric, 1) AS "avgRating" FROM "SessionRatings"`),
       query(`SELECT count(DISTINCT "UserId")::int AS "activeThisWeek" FROM "MoodLogs" WHERE "date" >= ${today} - 7`, { tz: TZ }),
       query(`SELECT to_char(d, 'YYYY-MM-DD') AS "date", COALESCE(c.n, 0)::int AS "count"
              FROM generate_series(${today} - 29, ${today}, interval '1 day') AS d
              LEFT JOIN (SELECT "date", count(*) AS n FROM "MoodLogs" WHERE "date" >= ${today} - 29 GROUP BY "date") c ON c."date" = d::date
              ORDER BY d`, { tz: TZ }),
-      query(`SELECT t."id", t."name", count(DISTINCT p."id")::int AS "patientCount", ROUND(AVG(r."rating")::numeric, 1) AS "avgRating"
+      query(`SELECT t."id", t."name", count(DISTINCT p."id")::int AS "patientCount", ROUND((AVG(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5))::numeric, 1) AS "avgRating"
              FROM "Users" t
              LEFT JOIN "Users" p ON p."therapistId" = t."id" AND p."role" = 'user'
              LEFT JOIN "SessionRatings" r ON r."UserId" = p."id"

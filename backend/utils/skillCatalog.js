@@ -3,10 +3,12 @@
 // El sistema NO trae contenido propio: sin un catálogo publicado por el cliente no se evalúa nada. Un catálogo publicado es inmutable.
 
 const { createHash } = require('crypto');
-const { Transaction } = require('sequelize');
+const { Op, Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const SkillCatalog = require('../SkillCatalog');
 const SkillDefinition = require('../SkillDefinition');
+const SkillAssessment = require('../SkillAssessment');
+const SkillCandidate = require('../SkillCandidate');
 const { normalizeText } = require('./promptSafety');
 
 const KEY_RE = /^[a-z][a-z0-9_]{2,47}$/;
@@ -17,7 +19,8 @@ const TYPES = ['transversal', 'domain'];
 const LEVELS = ['1', '2', '3', '4'];
 const LANGS = ['es', 'en'];
 // ES-116: los cinco territorios laborales del mapa (ids estables; los nombres viven en el frontend, ES/EN).
-const TERRITORIES = ['dir', 'con', 'com', 'ing', 'inn'];
+// E217-1: salen de shared/skill-territories.json (utils/skillTerritories.js), no de una lista fija: añadir un territorio no toca código.
+const { territoryIds } = require('./skillTerritories');
 
 class SkillError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -47,7 +50,8 @@ function normalizeDefinition(body) {
   const out = {};
   if (body.territories !== undefined) {
     const t = body.territories;
-    if (!Array.isArray(t) || t.length > TERRITORIES.length || t.some((id) => typeof id !== 'string' || !TERRITORIES.includes(id)) || new Set(t).size !== t.length) {
+    const known = territoryIds();
+    if (!Array.isArray(t) || t.length > known.length || t.some((id) => typeof id !== 'string' || !known.includes(id)) || new Set(t).size !== t.length) {
       throw invalid('Territorios inválidos: usa ids conocidos, sin repetir.', 'Invalid territories: use known ids, without repeats.');
     }
     out.territories = [...t];
@@ -123,7 +127,7 @@ async function get(id) {
   const catalog = await SkillCatalog.findOne({ where: { id } });
   if (!catalog) throw notFound();
   const defs = await SkillDefinition.findAll({ where: { catalogId: catalog.id }, order: [['skillKey', 'ASC']] });
-  return { ...describe(catalog, defs.length), skills: defs.map((d) => ({ skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], missing: missingFor(d) })) };
+  return { ...describe(catalog, defs.length), skills: defs.map((d) => ({ skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], updatedAt: d.updatedAt, missing: missingFor(d) })) };
 }
 
 // Crea el borrador copiando el catálogo vigente (o vacío si no hay). Solo puede haber un borrador abierto.
@@ -152,18 +156,25 @@ async function editableDraft(id, transaction) {
   return catalog;
 }
 
-async function upsertSkill(id, skillKey, body) {
+// ES-188 (H2): si el cliente manda `expectedUpdatedAt` (la `updatedAt` de la habilidad que cargó) y la habilidad cambió o se quitó desde entonces, 409 `skill_changed`
+// con la versión vigente y SIN pisar. Sin `expectedUpdatedAt` (clientes anteriores) gana el último. Con la fila del catálogo bloqueada (editableDraft).
+async function upsertSkill(id, skillKey, body, expectedUpdatedAt) {
   if (!isValidKey(skillKey)) throw invalid('Clave de habilidad inválida.', 'Invalid skill key.');
   const def = normalizeDefinition(body);
   return ownTransaction(async (transaction) => {
     const catalog = await editableDraft(id, transaction);
     const existing = await SkillDefinition.findOne({ where: { catalogId: catalog.id, skillKey }, transaction });
+    if (expectedUpdatedAt !== undefined && (!existing || existing.updatedAt.getTime() !== expectedUpdatedAt.getTime())) {
+      throw new SkillError(409, 'skill_changed', 'Otra persona guardó esta habilidad mientras la editabas.', 'Someone else saved this skill while you were editing it.',
+        { current: existing ? { skillKey, type: existing.type, labels: existing.labels, rubric: existing.rubric, territories: existing.territories ?? [], updatedAt: existing.updatedAt, missing: missingFor(existing) } : null });
+    }
     // `territories` omitido conserva lo guardado; [] lo vacía explícitamente.
     const fields = { type: def.type, labels: def.labels, rubric: def.rubric, ...(def.territories !== undefined ? { territories: def.territories } : {}) };
+    let saved = existing;
     if (existing) await existing.update(fields, { transaction });
-    else await SkillDefinition.create({ catalogId: catalog.id, skillKey, ...fields }, { transaction });
+    else saved = await SkillDefinition.create({ catalogId: catalog.id, skillKey, ...fields }, { transaction });
     const territories = def.territories ?? existing?.territories ?? [];
-    return { skillKey, ...def, territories, missing: missingFor(def) };
+    return { skillKey, ...def, territories, updatedAt: saved.updatedAt, missing: missingFor(def) };
   });
 }
 
@@ -177,6 +188,22 @@ async function removeSkill(id, skillKey) {
   });
 }
 
+// ES-188 (H1): habilidades que aún tienen niveles registrados de personas (evaluaciones vigentes) o propuestas por confirmar y que el borrador NO incluye.
+// Se devuelven por habilidad y número de personas distintas, sin identificarlas.
+async function skillsInUseMissingFrom(keys, transaction) {
+  const where = keys.length ? { skillKey: { [Op.notIn]: keys } } : {};
+  const [assessments, candidates] = await Promise.all([
+    SkillAssessment.findAll({ attributes: ['skillKey', 'UserId'], where: { ...where, status: 'current' }, group: ['skillKey', 'UserId'], raw: true, transaction }),
+    SkillCandidate.findAll({ attributes: ['skillKey', 'UserId'], where: { ...where, status: 'REVIEW_REQUIRED' }, group: ['skillKey', 'UserId'], raw: true, transaction }),
+  ]);
+  const people = new Map();
+  for (const row of [...assessments, ...candidates]) {
+    if (!people.has(row.skillKey)) people.set(row.skillKey, new Set());
+    people.get(row.skillKey).add(row.UserId);
+  }
+  return [...people].map(([skillKey, users]) => ({ skillKey, people: users.size })).sort((a, b) => a.skillKey.localeCompare(b.skillKey));
+}
+
 // Publicar exige que TODAS las habilidades estén completas (etiquetas ES/EN, 4 niveles en ambos idiomas, fuente, verificador y fecha).
 async function publish(id, adminId) {
   return ownTransaction(async (transaction) => {
@@ -187,6 +214,10 @@ async function publish(id, adminId) {
     for (const d of defs) { const m = missingFor(d); if (m.length) missing[d.skillKey] = m; }
     if (Object.keys(missing).length) {
       throw new SkillError(422, 'incomplete_catalog', 'Faltan datos obligatorios para publicar.', 'Required data is missing to publish.', { missing });
+    }
+    const inUse = await skillsInUseMissingFrom(defs.map((d) => d.skillKey), transaction);
+    if (inUse.length) {
+      throw new SkillError(409, 'skill_in_use', 'No se puede publicar: hay habilidades con niveles registrados que el borrador no incluye.', 'Cannot publish: some skills with recorded levels are not in the draft.', { inUse });
     }
     for (const previous of await SkillCatalog.findAll({ where: { status: 'published' }, transaction })) await previous.update({ status: 'archived' }, { transaction });
     await catalog.update({ status: 'published', publishedAt: new Date(), publishedBy: adminId }, { transaction });
@@ -203,4 +234,4 @@ async function getPublished(transaction) {
   return { version: catalog.version, skills: new Map(defs.map((d) => [d.skillKey, { skillKey: d.skillKey, type: d.type, labels: d.labels, rubric: d.rubric, territories: d.territories ?? [], rubricHash: rubricHash(d) }])) };
 }
 
-module.exports = { TERRITORIES, RESERVED_KEYS, isValidKey, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };
+module.exports = { get TERRITORIES() { return territoryIds(); }, RESERVED_KEYS, isValidKey, SkillError, list, get, createDraft, upsertSkill, removeSkill, publish, getPublished, normalizeDefinition, missingFor, rubricHash, KEY_RE };

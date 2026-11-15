@@ -55,33 +55,80 @@ const CORE = [
   // ES-132: enlaces de recuperación de contraseña. Se exportan solo cuándo se pidieron, vencieron o se usaron; NUNCA `tokenHash` (es una credencial de un solo uso,
   // aunque esté hasheada). Se purgan con la cuenta: un enlace pendiente no debe sobrevivir al borrado.
   ['passwordResets', 'PasswordReset', 'UserId', ['id', 'expiresAt', 'usedAt', 'createdAt']],
+  // ES-276: el «Persona n» que un profesional asignó a esta persona (TherapistPersonOrdinal.personId). Se exporta id, número y fecha, NUNCA `therapistId`;
+  // se purga con la persona. El contador monótono (TherapistOrdinalCounters, por profesional, sin personId) NO se toca: el número no se reutiliza.
+  ['therapistOrdinals', 'TherapistPersonOrdinal', 'personId', ['id', 'ordinal', 'createdAt']],
   // ES-192: la invitación con la que la persona creó su cuenta (acceptedUserId). Se exporta solo cuándo se pidió, venció o se usó y con qué rol; NUNCA
   // `tokenHash` (credencial de un solo uso) ni el correo de otra persona (`invitedBy` es quien invitó). Se purga con la cuenta. Las invitaciones sin
   // aceptar no son de nadie y se limpian solas (30 días tras vencer).
+  // ES-175: autorizaciones a un revisor (solo referencias), revisiones que recibió (observation y limits cifrados v2: se entregan descifrados), su objeción (reason cifrado) y la respuesta (text cifrado).
+  // No se exportan `requestId` ni `reviewerId` de la respuesta (referencia técnica); sí el id del revisor en la autorización y la revisión, que son suyos. Se purgan con la cuenta (hijos antes que padres).
+  ['reviewResponses', 'ReviewResponse', 'UserId', ['id', 'objectionId', 'text', 'locale', 'createdAt'], ['text']],
+  ['reviewObjections', 'ReviewObjection', 'UserId', ['id', 'reviewId', 'reason', 'locale', 'createdAt'], ['reason']],
+  ['professionalReviews', 'ProfessionalReview', 'UserId', ['id', 'shareId', 'reviewerId', 'materialVersion', 'evidenceRefs', 'observation', 'limits', 'locale', 'supersedesId', 'createdAt'], ['observation', 'limits']],
+  ['reviewShares', 'ReviewShare', 'UserId', ['id', 'reviewerId', 'materialVersion', 'evidenceRefs', 'status', 'revokedAt', 'createdAt']],
+  // ES-173: la opinión de la persona sobre el piloto (catálogo cerrado, sin texto libre). Se exporta lo que ella respondió y se purga con la cuenta; nadie más la ve (solo agregados con umbral ≥ 5). No se exporta `lastRequestId` (referencia técnica).
+  ['pilotFeedbacks', 'PilotFeedback', 'UserId', ['id', 'windowKey', 'questionnaireVersion', 'answers', 'version', 'status', 'createdAt', 'updatedAt']],
   ['invitations', 'Invitation', 'acceptedUserId', ['id', 'role', 'expiresAt', 'usedAt', 'createdAt']],
 ];
-const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'createdAt', 'updatedAt'];
+const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'termsVersion', 'acceptedAt', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);
 const pick = (row, fields) => Object.fromEntries(fields.map(field => [field, row[field] ?? null]));
 
-// These records mix people, files or professional obligations. Never silently omit them
-// from a purportedly complete export, or erase them without Mauricio's retention contract.
-async function requiresReview(userId, transaction) {
+// ES-274 (opción A, decisión de Mauricio del 11-nov-2026): al atender una solicitud de eliminación se purgan los datos DE LA PERSONA y se conserva únicamente lo que
+// ESCRIBIÓ EL PROFESIONAL. Lo conservado queda en la base con la fila de usuario de la persona ya reemplazada por la lápida (sin nombre ni correo), pero el texto libre de
+// las notas puede contener datos que la identifiquen y no se puede depurar: NUNCA se afirma que quede «anonimizado» o «desvinculado» (ni en textos ni en el recibo).
+// Plazo y base legal de conservación: en definición.
+//   RETAINED: [categoría del recibo, modelo, columna de la persona, por qué se conserva]. No se exporta ni se borra en la purga de la persona.
+const RETAINED = [
+  ['clinicalNotes', 'ClinicalNote', 'UserId', 'notas que escribió el profesional sobre la persona'],
+  ['sessionNotes', 'SessionNote', null, 'notas en vivo del profesional (se ligan a la sesión, no a la persona)'],
+  ['therapySessions', 'TherapySession', 'patientId', 'agenda del profesional y su nota de la sesión (se limpian los campos de la persona: ver SESSION_PERSON_FIELDS)'],
+];
+// Campos de la fila de sesión que son de la persona o ambiguos (enlaces, motivos, ánimo posterior): se ponen en NULL al purgar.
+const SESSION_PERSON_FIELDS = ['patientMoodAfter', 'cancelReason', 'meetingUrl', 'recordingUrl', 'googleEventId'];
+// Datos de la persona fuera de CORE (no se exportan: contienen datos de terceros como las sugerencias de profesionales) que la purga borra igualmente.
+const PURGE_ALSO = [['MatchingRequest', 'UserId']];
+
+// Referencias DEL LADO DEL PROFESIONAL o de administración: describen a quien escribe o administra, no a una persona. Siguen mandando a revisión (nunca se borran por la
+// solicitud de eliminación de una persona). Lo que la persona tiene con sus profesionales (notas sobre ella, sesiones como paciente, emparejamientos) ya NO bloquea.
+async function blocksPurge(userId, transaction) {
   const refs = [
-    ['ClinicalNote', { [Op.or]: [{ UserId: userId }, { therapistId: userId }] }],
-    ['TherapySession', { [Op.or]: [{ patientId: userId }, { therapistId: userId }] }],
+    ['ClinicalNote', { therapistId: userId }],
+    ['TherapySession', { therapistId: userId }],
     ['SessionNote', { therapistId: userId }],
     ['TherapistProfile', { UserId: userId }],
     ['TherapistValidation', { therapistId: userId }],
-    ['MatchingRequest', { [Op.or]: [{ UserId: userId }, { chosenTherapistId: userId }] }],
+    ['MatchingRequest', { chosenTherapistId: userId }],
     ['EthicManifest', { uploadedBy: userId }],
     ['PlanRequest', { resolvedBy: userId }],
     ['User', { therapistId: userId }],
+    ['ProfessionalReview', { reviewerId: userId }], // ES-175: lo que el profesional escribió sobre otras personas manda a revisión, no se borra
+    ['ReviewShare', { reviewerId: userId }],
   ];
   for (const [name, where] of refs) {
     if (await model(name).findOne({ where, attributes: ['id'], transaction })) return true;
   }
   return false;
+}
+
+// Categorías (sin contenido) de lo que se conserva de esta persona; vacío si no hay nada. Para el recibo y el aviso de la exportación.
+async function retainedCategories(userId, transaction) {
+  const found = [];
+  if (await model('ClinicalNote').findOne({ where: { UserId: userId }, attributes: ['id'], transaction })) found.push('clinicalNotes');
+  const sessions = await model('TherapySession').findAll({ where: { patientId: userId }, attributes: ['id'], transaction });
+  if (sessions.length) {
+    found.push('therapySessions');
+    if (await model('SessionNote').findOne({ where: { sessionId: sessions.map(s => s.id) }, attributes: ['id'], transaction })) found.push('sessionNotes');
+  }
+  return found.sort((a, b) => RETAINED.findIndex(r => r[0] === a) - RETAINED.findIndex(r => r[0] === b));
+}
+
+// ES-293: categorías para el RECIBO de eliminación: lo que escribió el profesional (ES-274) y, aparte, la solicitud de profesional MINIMIZADA (solo estado y fechas). No alimenta el aviso de la exportación.
+async function receiptCategories(userId, transaction) {
+  const found = await retainedCategories(userId, transaction);
+  if (await require('./applicationMinimize').hasMinimized(userId, transaction)) found.push('professionalApplication');
+  return found;
 }
 
 async function personalData(user, locale, transaction) {
@@ -103,7 +150,13 @@ async function personalData(user, locale, transaction) {
       return output;
     }).filter(keep);
   }
+  // ES-274: lo que escribió el profesional sobre la persona es SU registro profesional: no se incluye aquí y se dice (sin contenido ni conteos).
+  if ((await retainedCategories(user.id, transaction)).length) {
+    data.notices = [{ code: 'professional_notes_not_included', message: locale === 'en'
+      ? 'Notes and records written by your professional about you are their professional record and are not included in this export.'
+      : 'Las notas y registros que tu profesional escribió sobre ti son su registro profesional y no se incluyen en esta exportación.' }];
+  }
   return data;
 }
 
-module.exports = { CORE, personalData, requiresReview };
+module.exports = { CORE, RETAINED, PURGE_ALSO, SESSION_PERSON_FIELDS, personalData, blocksPurge, retainedCategories, receiptCategories };

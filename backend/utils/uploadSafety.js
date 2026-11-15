@@ -24,4 +24,8 @@ function safeDocumentName(original) {
 // Segmento seguro para la ruta en el almacenamiento.
 const storageName = (original) => safeDocumentName(original).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
 
-module.exports = { ALLOWED_TYPES, contentMatches, safeDocumentName, storageName };
+// ES-268: la clave del objeto NO lleva el nombre original del archivo (puede traer el nombre de la persona); solo una extensión derivada del TIPO ya validado por contenido.
+const EXTENSIONS = Object.freeze({ 'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' });
+const extensionFor = (mimetype) => EXTENSIONS[mimetype] ?? '';
+
+module.exports = { ALLOWED_TYPES, contentMatches, safeDocumentName, storageName, extensionFor };

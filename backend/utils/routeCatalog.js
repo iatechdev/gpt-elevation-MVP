@@ -4,10 +4,12 @@
 // demanda ni elegibilidad: guarda lo que el cliente curó, exige fuente y fecha, y marca como «por confirmar», «no publicado» o
 // «desactualizado» lo que no esté verificado. «Vigente», «accesible» y «verificada» son afirmaciones de una persona con nombre y fecha.
 
-const { Transaction } = require('sequelize');
+const { Op, Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const RouteCatalog = require('../RouteCatalog');
 const RouteCatalogItem = require('../RouteCatalogItem');
+const SkillCatalog = require('../SkillCatalog');
+const SkillDefinition = require('../SkillDefinition');
 const defaultPolicy = require('../config/routeCatalogPolicy.json');
 const { normalizeText, redactSecrets } = require('./promptSafety');
 
@@ -319,6 +321,7 @@ async function editableDraft(id, transaction) {
 
 // ES-187: control de edición concurrente por elemento. Si el cliente manda `expectedUpdatedAt` (la `updatedAt` del elemento que cargó) y el elemento
 // cambió o desapareció desde entonces, 409 `item_changed` con la versión vigente y SIN pisar. Sin `expectedUpdatedAt` (clientes anteriores) gana el último.
+// ES-266: `expectedUpdatedAt === null` significa «es un elemento NUEVO»: si la clave ya existe, 409 `item_exists` con la versión vigente y SIN pisar (dos administradores que crean la misma clave).
 // La comprobación y el cambio ocurren con la fila del catálogo bloqueada (editableDraft).
 async function upsertItem(id, kind, key, body, expectedUpdatedAt) {
   if (!KINDS.includes(kind)) throw notFound();
@@ -328,7 +331,11 @@ async function upsertItem(id, kind, key, body, expectedUpdatedAt) {
     const catalog = await editableDraft(id, transaction);
     const existing = await RouteCatalogItem.findOne({ where: { catalogId: catalog.id, kind, itemKey: key }, transaction });
     let saved = existing;
-    if (expectedUpdatedAt !== undefined && (!existing || existing.updatedAt.getTime() !== expectedUpdatedAt.getTime())) {
+    if (expectedUpdatedAt === null) {
+      if (existing) {
+        throw new CatalogError(409, 'item_exists', 'Otra persona creó un elemento con esa clave mientras escribías.', 'Someone else created an item with that key while you were typing.', { current: { kind, itemKey: key, ...existing.data, updatedAt: existing.updatedAt, missing: missingFor(kind, existing.data) } });
+      }
+    } else if (expectedUpdatedAt !== undefined && (!existing || existing.updatedAt.getTime() !== expectedUpdatedAt.getTime())) {
       throw new CatalogError(409, 'item_changed', 'Otra persona guardó este elemento mientras lo editabas.', 'Someone else saved this item while you were editing it.', { current: existing ? { kind, itemKey: key, ...existing.data, updatedAt: existing.updatedAt, missing: missingFor(kind, existing.data) } : null });
     }
     if (existing) await existing.update({ data }, { transaction });
@@ -379,6 +386,21 @@ async function publish(id, adminId, { policy = defaultPolicy, allowSynthetic = p
 // ---------- lectura para participantes y para ES-32: solo lo publicado, con la frescura ya calculada ----------
 const daysBetween = (isoDate, now) => Math.floor((Date.parse(todayIso(now)) - Date.parse(isoDate)) / 86400000);
 
+// ES-260 · Nombres {es, en} de las habilidades que el catálogo de rutas referencia (capacidades de roles y recurso vinculado), tomados del catálogo de
+// habilidades VIGENTE. Solo nombres: sin niveles, rúbrica ni datos de personas. Una clave que no existe en el vigente se omite (no se inventa).
+async function skillLabelsFor(keys) {
+  const out = {};
+  if (!keys.length) return out;
+  const current = await SkillCatalog.findOne({ where: { status: 'published' } });
+  if (!current) return out;
+  const defs = await SkillDefinition.findAll({ where: { catalogId: current.id, skillKey: { [Op.in]: keys } }, attributes: ['skillKey', 'labels'] });
+  for (const d of defs) {
+    const { es, en } = d.labels || {};
+    if (typeof es === 'string' && es && typeof en === 'string' && en) out[d.skillKey] = { es, en };
+  }
+  return out;
+}
+
 async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPolicy } = {}) {
   const catalog = await RouteCatalog.findOne({ where: { status: 'published' } });
   if (!catalog) return null;
@@ -403,7 +425,8 @@ async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPoli
   });
   const resources = [...byKind.resources].map(([resourceKey, r]) => ({ resourceKey, ...r }));
   const contexts = [...byKind.contexts].map(([contextKey, c]) => ({ contextKey, ...c }));
-  return { version: catalog.version, publishedAt: catalog.publishedAt, contexts, sources, roles, offers, resources };
+  const skillKeys = [...new Set([...roles.flatMap((r) => (r.capabilities || []).map((c) => c.skillKey)), ...resources.map((r) => r.linkedSkillKey)].filter(Boolean))];
+  return { version: catalog.version, publishedAt: catalog.publishedAt, contexts, sources, roles, offers, resources, skillLabels: await skillLabelsFor(skillKeys) };
 }
 
 module.exports = {

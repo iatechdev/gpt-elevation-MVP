@@ -4,9 +4,12 @@
 const express = require('express');
 const { Op } = require('sequelize');
 const AdminAuditEntry = require('../AdminAuditEntry');
+const { verificarSuperAdmin } = require('../middlewares/auth');
 const { ACTIONS } = require('../utils/adminAudit');
 
 const router = express.Router();
+// ES-264: el router lleva su PROPIA guarda de superadmin (además de la de server.js): quien lo monte sin guarda no expone la auditoría, y una prueba que lo monte solo lo comprueba.
+router.use(verificarSuperAdmin);
 const INT = /^[1-9][0-9]{0,9}$/;
 const MAX_INT32 = 2147483647;
 const bad = (res, field) => res.status(400).json({ code: 'invalid_filter', field, error: 'Filtro inválido. / Invalid filter.' });

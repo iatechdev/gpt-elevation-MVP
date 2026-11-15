@@ -89,7 +89,7 @@ test('ES-187 PostgreSQL: edición concurrente del mismo elemento = una gana y el
   await t.test('sin expectedUpdatedAt gana el último (clientes anteriores); formato raro = 400; elemento quitado con versión = 409 con current null', async () => {
     const legacy = await call('PUT', url('ctx_version'), edited('heredado'));
     assert.equal(legacy.status, 200);
-    for (const bad of ['no-es-fecha', 12345, null, {}]) {
+    for (const bad of ['no-es-fecha', 12345, {}, [], true]) {
       const res = await call('PUT', url('ctx_version'), { ...edited('x'), expectedUpdatedAt: bad });
       assert.equal(res.status, 400, JSON.stringify(bad));
       assert.equal(res.body.code, 'invalid_expected');
@@ -101,6 +101,25 @@ test('ES-187 PostgreSQL: edición concurrente del mismo elemento = una gana y el
     assert.equal(gone.body.code, 'item_changed');
     assert.equal(gone.body.current, null);
     assert.equal(await RouteCatalogItem.count({ where: { catalogId: draft.id, kind: 'contexts', itemKey: 'ctx_version' } }), 0);
+  });
+
+  await t.test('ES-266: crear la misma clave a la vez (expectedUpdatedAt null) = una 200 y el resto 409 item_exists con la versión vigente, sin 5xx y sin pisar', async () => {
+    const results = await Promise.all(Array.from({ length: 12 }, (_, n) => call('PUT', url('ctx_nueva_misma'), { ...edited(`creador ${n}`), expectedUpdatedAt: null })));
+    assert.deepEqual(results.map((r) => r.status).sort(), [200, ...Array(11).fill(409)], JSON.stringify(results.map((r) => [r.status, r.body && r.body.code])));
+    assert.ok(results.filter((r) => r.status === 409).every((r) => r.body.code === 'item_exists' && r.body.current && r.body.current.labels));
+    const winner = results.find((r) => r.status === 200);
+    const row = await RouteCatalogItem.findOne({ where: { catalogId: draft.id, kind: 'contexts', itemKey: 'ctx_nueva_misma' } });
+    assert.equal(row.data.labels.es, winner.body.labels.es, 'el contenido es el del único ganador');
+    assert.equal(await RouteCatalogItem.count({ where: { catalogId: draft.id, kind: 'contexts', itemKey: 'ctx_nueva_misma' } }), 1);
+    // los 409 traen la versión vigente: sirve para decidir «Conservar la mía» con su updatedAt
+    const clash = results.find((r) => r.status === 409);
+    assert.equal(clash.body.current.updatedAt, winner.body.updatedAt);
+    const decided = await call('PUT', url('ctx_nueva_misma'), { ...edited('decidido'), expectedUpdatedAt: clash.body.current.updatedAt });
+    assert.equal(decided.status, 200, 'con la versión vigente la persona puede conservar la suya');
+    // sin expectedUpdatedAt gana el último (clientes anteriores); null sobre una clave libre crea
+    assert.equal((await call('PUT', url('ctx_nueva_misma'), edited('heredado'))).status, 200);
+    assert.equal((await call('PUT', url('ctx_otra_libre'), { ...edited('libre'), expectedUpdatedAt: null })).status, 200);
+    assert.equal((await call('PUT', url('ctx_otra_libre'), { ...edited('libre'), expectedUpdatedAt: null })).status, 409, 'la segunda creación de la misma clave choca');
   });
 
   await t.test('la versión no se cuela en el contenido guardado y un borrador ajeno o una versión publicada siguen sin editarse', async () => {

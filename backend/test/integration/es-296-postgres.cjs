@@ -1,0 +1,122 @@
+// ES-296 · Retirar insights_chat marca «para revisión» las evidencias confirmadas con origen del chat (equivalente de ES-229 para la evidencia de ES-27): no viajan al motor profesional hasta que la
+// persona las reconfirme; nada se borra; idempotente; sin PII en la invalidación. HTTP REAL contra el server.js real y PostgreSQL REAL.
+//   ES296_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54391/postgres node --test test/integration/es-296-postgres.cjs
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
+const { startRealApi } = require('../support/realApi.cjs');
+
+test('ES-296 PostgreSQL + HTTP: retirar insights_chat marca para revisión la evidencia con origen del chat', { timeout: 300000 }, async (t) => {
+  const { q, mkUser, http } = await startRealApi(t, { envVar: 'ES296_TEST_DATABASE_URL', prefix: 'es296' });
+  const { getConfirmedEvidence } = require('../../utils/evidence');
+  const grant = (who, purpose, status = 'granted') => http(who, 'PUT', `/api/consents/${purpose}`, { status });
+  const payload = (title) => ({ title, situation: 'Un proyecto', responsibility: { text: 'Yo coordinaba' }, actions: [{ text: 'Organicé tareas' }], delivered: { text: 'Un plan' }, observedEffect: { known: false }, autonomy: 'autonomous' });
+  const turnOf = async (person, text = 'Coordiné a cuatro personas en un proyecto pequeño') => {
+    const rid = crypto.randomUUID();
+    assert.equal((await http(person, 'POST', '/api/chat', { message: text, requestId: rid })).status, 200);
+    return (await q('SELECT id FROM "ChatTurns" WHERE "UserId"=$1 AND "requestId"=$2', [person.id, rid]))[0].id;
+  };
+  const withChat = async (person, title = 'Evidencia del chat') => {
+    const turn = await turnOf(person);
+    const out = await http(person, 'POST', '/api/evidence', { payload: payload(title), status: 'confirmed', requestId: crypto.randomUUID(), origins: [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }] });
+    assert.equal(out.status, 201, JSON.stringify(out.body)); return { id: out.body.id, turn };
+  };
+  const direct = async (person, title = 'Evidencia directa') => {
+    const out = await http(person, 'POST', '/api/evidence', { payload: payload(title), status: 'confirmed', requestId: crypto.randomUUID() });
+    assert.equal(out.status, 201, JSON.stringify(out.body)); return out.body.id;
+  };
+  const setup = async () => { const p = await mkUser('user'); await grant(p, 'professional_bridge'); await grant(p, 'insights_chat'); return p; };
+  const engine = async (p) => (await getConfirmedEvidence(p.id, 'test')).map((e) => e.evidenceId).sort((x, y) => x - y);
+  const events = (p) => q(`SELECT "sourceId", reason FROM "DerivedInvalidations" WHERE "UserId"=$1 AND reason='source_revoked' ORDER BY id`, [p.id]);
+
+  await t.test('retirar insights_chat: la evidencia del chat queda «para revisión» y deja de llegar al motor; la directa sigue; nada se borra; la persona lo ve sin ids ni citas', async () => {
+    const p = await setup(); const chat = await withChat(p); const plain = await direct(p);
+    assert.deepEqual(await engine(p), [chat.id, plain].sort((x, y) => x - y), 'antes: el motor recibe ambas');
+    assert.equal((await grant(p, 'insights_chat', 'revoked')).status, 200);
+    assert.deepEqual(await engine(p), [plain], 'el motor ya no recibe la evidencia del chat');
+    const list = await http(p, 'GET', '/api/evidence'); assert.equal(list.status, 200);
+    const mine = list.body.evidence.find((e) => e.id === chat.id); const other = list.body.evidence.find((e) => e.id === plain); const text = JSON.stringify(list.body);
+    assert.equal(mine.needsReview, true); assert.equal(mine.reviewReason, 'source_revoked'); assert.equal(mine.status, 'confirmed', 'la versión sigue confirmada en el historial: nada se reescribe');
+    assert.equal(other.needsReview, undefined, 'la directa no se marca');
+    assert.ok(!/chat_turn|quote|sourceRevokedAt|turnId/.test(text), 'sin id ni cita del chat ni la marca privada');
+    assert.equal(Number((await q('SELECT count(*) n FROM "Evidence" WHERE "UserId"=$1 AND "deletedAt" IS NULL', [p.id]))[0].n), 2, 'no se borró nada');
+    const ev = await events(p); assert.equal(ev.length, 1); assert.equal(ev[0].sourceId, chat.id); // sin PII: solo ids y motivo
+  });
+
+  await t.test('idempotente: retirar otra vez no duplica marca ni evento; volver a otorgar NO limpia la marca; reconfirmar crea una versión nueva y vuelve al motor (exige el permiso)', async () => {
+    const p = await setup(); const chat = await withChat(p);
+    await grant(p, 'insights_chat', 'revoked'); await grant(p, 'insights_chat', 'revoked');
+    assert.equal((await events(p)).length, 1, 'un solo evento aunque se retire dos veces');
+    await grant(p, 'insights_chat'); // vuelve a otorgar
+    assert.deepEqual(await engine(p), [], 'volver a otorgar no devuelve la evidencia al motor');
+    await grant(p, 'insights_chat', 'revoked'); assert.equal((await events(p)).length, 1, 'ni retirando de nuevo tras re-otorgar');
+    await grant(p, 'insights_chat');
+    const turn = await turnOf(p, 'Coordiné a cuatro personas otra vez');
+    const edit = await http(p, 'PUT', `/api/evidence/${chat.id}`, { payload: payload('Evidencia del chat (reconfirmada)'), status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID(), origins: [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }] });
+    assert.ok(edit.status < 300, JSON.stringify(edit.body));
+    assert.deepEqual(await engine(p), [chat.id], 'la versión NUEVA vuelve al motor');
+    const rows = await q('SELECT version, origins FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version', [chat.id]);
+    assert.equal(rows.length, 2); assert.ok(rows[0].origins.some((o) => o.sourceRevokedAt), 'la versión anterior conserva su marca como historia'); assert.ok(rows[1].origins.every((o) => !o.sourceRevokedAt));
+  });
+
+  await t.test('solo insights_chat marca; retirar insights_diary, insights_resume, research o el puente-no-relacionado no marca la evidencia del chat; otra persona no se toca (A/B)', async () => {
+    const a = await setup(); const b = await setup(); const ca = await withChat(a); const cb = await withChat(b);
+    for (const purpose of ['insights_diary', 'insights_resume', 'research']) { await grant(a, purpose); assert.equal((await grant(a, purpose, 'revoked')).status, 200); }
+    assert.deepEqual(await engine(a), [ca.id], 'otros permisos no marcan');
+    await grant(a, 'insights_chat', 'revoked');
+    assert.deepEqual(await engine(a), []); assert.deepEqual(await engine(b), [cb.id], 'B no cambia');
+    assert.equal((await events(b)).length, 0);
+  });
+
+  await t.test('carrera: retirar insights_chat ‖ reconfirmar la evidencia, 40 rondas → 0 errores 5xx, la retirada siempre 200 y nunca queda una versión vigente con origen del chat sin marca si el permiso está retirado', async () => {
+    const outcomes = { saved: 0, refused: 0 };
+    for (let i = 0; i < 40; i += 1) {
+      const p = await setup(); const chat = await withChat(p); const turn = await turnOf(p, 'Coordiné a cuatro personas de nuevo');
+      const edit = http(p, 'PUT', `/api/evidence/${chat.id}`, { payload: payload('Reconfirmada'), status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID(), origins: [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }] });
+      const [e, r] = await Promise.all([edit, grant(p, 'insights_chat', 'revoked')]);
+      assert.equal(r.status, 200, `ronda ${i}: la retirada falló ${JSON.stringify(r.body)}`);
+      assert.ok(e.status < 500, `ronda ${i}: reconfirmar respondió ${e.status} ${JSON.stringify(e.body).slice(0, 80)}`);
+      const current = (await q(`SELECT v.origins, v.status FROM "EvidenceVersions" v JOIN "Evidence" e ON e.id=v."EvidenceId" AND e."currentVersion"=v.version WHERE e."UserId"=$1`, [p.id]))[0];
+      if (current.status === 'confirmed') assert.ok(current.origins.every((o) => o.type !== 'chat_turn' || o.sourceRevokedAt), `ronda ${i}: versión vigente con origen del chat y permiso retirado, sin marca`);
+      assert.ok(!(await engine(p)).includes(chat.id), `ronda ${i}: el motor entregó evidencia del chat con el permiso retirado`);
+      if (e.status < 300) outcomes.saved += 1; else outcomes.refused += 1;
+    }
+    console.log('# carrera ES-296:', JSON.stringify(outcomes));
+  });
+
+  // E253-5 (QA): quitar la comprobación del permiso al ACTUALIZAR una evidencia (PUT) no la detectaba ninguna prueba.
+  await t.test('E253-5: actualizar (PUT) una evidencia confirmándola con origen del chat exige insights_chat; sin él 403 y la evidencia no cambia', async () => {
+    const p = await setup(); const id = await direct(p, 'Evidencia directa a editar');
+    const turn = await turnOf(p); const origins = [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }];
+    await grant(p, 'insights_chat', 'revoked');
+    const before = JSON.stringify(await q('SELECT * FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version', [id]));
+    const denied = await http(p, 'PUT', `/api/evidence/${id}`, { payload: payload('Editada con origen del chat'), status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID(), origins });
+    assert.equal(denied.status, 403); assert.equal(denied.body.code, 'source_consent_required');
+    assert.equal(JSON.stringify(await q('SELECT * FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version', [id])), before, 'la evidencia no cambió');
+    await grant(p, 'insights_chat');
+    const ok = await http(p, 'PUT', `/api/evidence/${id}`, { payload: payload('Editada con origen del chat'), status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID(), origins });
+    assert.ok(ok.status < 300, JSON.stringify(ok.body));
+  });
+
+  // E253-6 (QA, comportamiento deliberado y documentado en los contratos 19 y 20): repetir una confirmación ya guardada DESPUÉS de retirar el permiso da 403, no el 200 con la versión existente.
+  await t.test('E253-6: repetir la misma confirmación (mismo requestId) tras retirar el permiso de la fuente responde 403 y no duplica ni entrega nada — evidencia y Puente', async () => {
+    const p = await setup(); const turn = await turnOf(p);
+    const evBody = { payload: payload('Con origen del chat'), status: 'confirmed', requestId: crypto.randomUUID(), origins: [{ type: 'chat_turn', id: turn, quote: 'Coordiné a cuatro personas' }] };
+    assert.equal((await http(p, 'POST', '/api/evidence', evBody)).status, 201);
+    await grant(p, 'insights_chat', 'revoked');
+    const replay = await http(p, 'POST', '/api/evidence', evBody);
+    assert.equal(replay.status, 403); assert.equal(replay.body.code, 'source_consent_required');
+    assert.equal(Number((await q('SELECT count(*) n FROM "EvidenceVersions" WHERE "UserId"=$1', [p.id]))[0].n), 1, 'no duplicó');
+    // Puente: confirmar con origen del diario, retirar insights_diary, repetir con el mismo requestId
+    const b = await setup(); await grant(b, 'insights_diary');
+    const entry = (await http(b, 'POST', '/api/diary', { date: '2026-10-01', content: 'Una entrada del diario' })).body.id;
+    const fields = [{ key: 'motivations', text: 'Me motiva coordinar equipos pequeños.', origin: { type: 'diary_entry', id: entry } }];
+    const pv = await http(b, 'POST', '/api/career-context/preview', { fields }); assert.equal(pv.status, 200);
+    const body = { fields, token: pv.body.token, requestId: crypto.randomBytes(12).toString('hex') };
+    assert.equal((await http(b, 'POST', '/api/career-context/confirm', body)).status, 201);
+    await grant(b, 'insights_diary', 'revoked');
+    const again = await http(b, 'POST', '/api/career-context/confirm', body);
+    assert.equal(again.status, 403); assert.equal(again.body.code, 'source_consent_revoked');
+    assert.equal(Number((await q('SELECT count(*) n FROM "CareerContextVersions" WHERE "UserId"=$1', [b.id]))[0].n), 1, 'no duplicó');
+  });
+});

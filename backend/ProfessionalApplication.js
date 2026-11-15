@@ -16,6 +16,7 @@ module.exports = sequelize.define('ProfessionalApplication', {
   reviewNote: { type: DataTypes.TEXT, allowNull: true },
   reviewedAt: { type: DataTypes.DATE, allowNull: true },
   consentAt: { type: DataTypes.DATE, allowNull: false },
+  minimizedAt: { type: DataTypes.DATE, allowNull: true }, // ES-293: la solicitud fue minimizada al purgar a la persona (solo quedan estado y fechas)
   userId: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'Users', key: 'id' }, onDelete: 'SET NULL' },
 }, {
   indexes: [

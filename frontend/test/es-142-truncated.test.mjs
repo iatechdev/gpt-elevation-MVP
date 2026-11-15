@@ -46,7 +46,7 @@ test('ES-142: el aviso solo aparece en el último mensaje, si es del asistente y
   assert.match(controls, /chat\.expired \|\| !chat\.loaded/)
   assert.match(controls, /disabled=\{chat\.busy \|\| !!chat\.intent \|\| off\}/)
   assert.match(controls, /role="status"/)
-  assert.match(read('../src/pages/ChatPage.tsx'), /i === messages\.length - 1 && <TruncatedNotice chat=\{chat\} \/>/)
+  assert.match(read('../src/pages/ChatPage.tsx'), /i === messages\.length - 1 && msg\.role !== 'user' && <TruncatedNotice chat=\{chat\} \/>/)
 })
 
 test('ES-142: «Continuar» no toca el borrador ni el diario y reutiliza el flujo de envío', () => {

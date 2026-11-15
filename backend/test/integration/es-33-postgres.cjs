@@ -21,7 +21,7 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
   require('../../associations')(); const { CORE } = require('../../utils/personalData');
   const names = ['CareerExperiment', 'CareerExperimentVersion', 'CareerPlanVersion', 'CareerExperimentReview', 'CareerReminder'];
   for (const [, model] of CORE) if (!names.includes(model)) require('../../' + model);
-  for (const model of ['ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest']) require('../../' + model);
+  for (const model of ['ProfessionalApplication', 'ProfessionalApplicationFile', 'ConsentEvent', 'TherapistValidation', 'AuthRevocation', 'RevokedToken', 'ExportRequest', 'DeletionRequest']) require('../../' + model);
   await sequelize.sync();
   const migration = require('../../migrations/20261028-es33-career-plan.cjs'); await migration.up(sequelize); await migration.up(sequelize);
   for (const model of names) require('../../' + model); await sequelize.sync();
