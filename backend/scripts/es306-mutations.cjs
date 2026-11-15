@@ -26,6 +26,7 @@ const MUTATIONS = [
   ['M15 el índice único no cubre btrim (ni en la migración original ni en la reparación, que si no lo corregiría)', [[M, 'ON "Users" (lower(btrim("email")))', 'ON "Users" (lower("email"))'], [R, 'ON "Users" (lower(btrim("email")))', 'ON "Users" (lower("email"))']]],
   ['M16 las invitaciones no recortan el valor guardado', [['routes/invitations.js', "if (await User.findOne({ where: sqlWhere(fn('lower', fn('btrim', col('email'))), email) }))", "if (await User.findOne({ where: sqlWhere(fn('lower', col('email')), email) }))"]]],
   ['M13 los duplicados no cuentan el correo con espacios', [[M, 'GROUP BY lower(btrim("email"))', 'GROUP BY lower("email")']]],
+  ['M26 E306-4 el down de la reparación no exige permiso explícito', [[R, "require('../scripts/guard-down.cjs')('20261115010000-es306-email-index-repair');", '']]],
   ["M25 E306-4 el reemplazo no es transaccional (si falla el CREATE queda sin índice único)", [[R, "return sequelize.transaction(async (transaction) => {", "return (async (transaction) => {"], [R, "return { action: 'replaced', groups: [] };\n  });", "return { action: 'replaced', groups: [] };\n  })();"]]],
   ['M17 E306-1 el catch del registro trata cualquier fallo como «ya registrado»', [[A, "if (error && error.name === 'SequelizeUniqueConstraintError')", 'if (error)']]],
   ['M18 E306-2 la búsqueda con duplicados antiguos elige la cuenta más NUEVA', [[H, "order: [['id', 'ASC']]", "order: [['id', 'DESC']]"]]],

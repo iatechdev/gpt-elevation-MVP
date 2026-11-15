@@ -194,6 +194,10 @@ test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, l
       assert.deepEqual(await info(), old, 'se revirtió: sigue el índice viejo (mismo oid), no quedó sin índice único');
       await assert.rejects(() => q(`INSERT INTO "Users" (name, email, password, role, active, "createdAt", "updatedAt") VALUES ('x','ANA.PEREZ@example.invalid','x','user',true,now(),now())`), /duplicate key/, 'la unicidad sigue protegida tras el fallo');
       assert.equal((await repair.repairIndex(app)).action, 'replaced'); assert.match((await info()).def, /btrim/);
+      // down: exige permiso explícito (ES-59) y, con él, no toca nada.
+      const after = await info(); await assert.rejects(() => repair.down(), /ALLOW_DESTRUCTIVE_MIGRATION/);
+      process.env.ALLOW_DESTRUCTIVE_MIGRATION = 'true'; try { await repair.down(); } finally { delete process.env.ALLOW_DESTRUCTIVE_MIGRATION; }
+      assert.deepEqual(await info(), after, 'el down no cambia el índice');
     } finally { console.warn = realWarn; }
     assert.equal(await hasIndex(), true);
   });

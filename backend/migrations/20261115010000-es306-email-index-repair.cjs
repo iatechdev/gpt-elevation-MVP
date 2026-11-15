@@ -25,7 +25,7 @@ async function repairIndex(sequelize, log = console) {
 
 async function up(arg) { await repairIndex(arg.sequelize || arg); }
 
-// Nada que deshacer: el índice correcto (lower(btrim)) lo crea la migración 20261114010000 y su down; reponer el índice débil no tiene sentido.
-async function down() {}
+// Sin nada que deshacer (reponer el índice débil no tiene sentido), pero como toda migración exige permiso explícito para el down (ES-59); con permiso no hace nada.
+async function down() { require('../scripts/guard-down.cjs')('20261115010000-es306-email-index-repair'); }
 
 module.exports = { up, down, repairIndex };
