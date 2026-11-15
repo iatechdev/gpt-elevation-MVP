@@ -20,9 +20,13 @@
 .cg-who { color: var(--cg-muted); font-size: 1rem; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cg-signout { min-height: var(--cg-touch); }
 
-.cg-lang { display: inline-flex; border: 1.5px solid var(--cg-ink); }
-.cg-lang__btn { min-width: var(--cg-touch); min-height: var(--cg-touch); background: none; border: 0; border-radius: 0; color: var(--cg-ink); font: 700 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; cursor: pointer; }
-.cg-lang__btn[aria-pressed='true'] { background: var(--cg-ink); color: var(--cg-ground); }
+.cg-lang, .cg-seg { display: inline-flex; border: 1.5px solid var(--cg-ink); }
+.cg-lang__btn, .cg-seg__btn { min-width: var(--cg-touch); min-height: var(--cg-touch); background: none; border: 0; border-radius: 0; color: var(--cg-ink); font: 700 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; cursor: pointer; }
+.cg-lang__btn[aria-pressed='true'], .cg-seg__btn[aria-pressed='true'] { background: var(--cg-ink); color: var(--cg-ground); }
+/* ES-153 (paso 3): idioma + tema. aria-disabled (pantalla heredada): se ve atenuado y no responde, pero sigue en el orden de Tab para que se lea la razón. */
+.cg-seg__btn { padding: 0 0.7rem; }
+.cg-seg__btn[aria-disabled='true'] { opacity: 0.55; cursor: not-allowed; }
+.cg-prefs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.8rem; }
 
 /* menú de usuario */
 .cg-usermenu { position: relative; }
@@ -83,3 +87,19 @@
 @keyframes cg-screen-pulse { 50% { opacity: 0.25; } }
 /* ES-153 (E280-2): el pie no se pinta mientras la pantalla carga; así no «salta» al llegar el contenido (CLS). Sigue ocupando su sitio, solo invisible. */
 .cg-frame:has(.cg-screen-loading) .cg-footer { visibility: hidden; }
+
+/* ES-153 (paso 3): el encabezado de persona en móvil. Fila 1: marca y menú de usuario; fila 2: idioma y tema; luego la navegación en una rejilla de 3 columnas de alto fijo
+   (el número de filas no depende del texto: sin CLS al cargar la tipografía). El menú queda arriba a la derecha en lo visual aunque en el DOM va al final (Tab: marca, navegación, idioma, tema, menú). */
+@media (max-width: 900px) {
+  .cg-header:has(.cg-nav--grid3) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 0.6rem; padding: 0.5rem 0; }
+  .cg-header:has(.cg-nav--grid3) .cg-brand { grid-column: 1; grid-row: 1; }
+  .cg-header:has(.cg-nav--grid3) .cg-header__end { display: contents; }
+  .cg-header:has(.cg-nav--grid3) .cg-usermenu { grid-column: 2; grid-row: 1; justify-self: end; }
+  .cg-header:has(.cg-nav--grid3) .cg-prefs { grid-column: 1 / -1; grid-row: 2; }
+  .cg-nav--grid3 { grid-column: 1 / -1; grid-row: 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.2rem 0.5rem; width: 100%; }
+  .cg-nav--grid3 a:not(.cg-btn) { min-width: 0; justify-content: center; text-align: center; line-height: 1.15; min-height: 2.75rem; overflow-wrap: anywhere; }
+}
+@media (max-width: 360px) {
+  .cg-nav--grid3 { font-size: 0.82rem; letter-spacing: 0.04em; }
+  .cg-seg__btn { padding: 0 0.45rem; font-size: 0.85rem; letter-spacing: 0.04em; }
+}

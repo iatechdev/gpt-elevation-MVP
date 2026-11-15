@@ -140,7 +140,7 @@ body:has(.space-scope.space-page, .space-scope .bridge) { background: #FAFAF9; }
 .cg-main .chat-shell { height: calc(100dvh - 10.2rem); min-height: 26rem; }
 .cg-main .chat-main { padding-top: 12px; }
 @media (max-width: 900px) { .cg-main .chat-shell { height: calc(100dvh - 14.5rem); } }
-@media (max-width: 600px) { .cg-main .chat-shell { height: calc(100dvh - 21rem); min-height: 0; } } /* el encabezado de persona en móvil ocupa ~264 px hasta el paso 3 (PreferencesBar) */
+@media (max-width: 600px) { .cg-main .chat-shell { height: calc(100dvh - 18.1rem); min-height: 0; } } /* el encabezado de persona en móvil ocupa 202 px desde el paso 3 (PreferencesBar + rejilla de 3 columnas; antes 248) */
 .cg-main .space-dashboard-header > div { min-width: 0; box-sizing: border-box; } /* la cabecera propia del inicio ya no se fija: se ajusta al ancho del marco */
 /* ES-153 (E280-4): en pantallas bajas el contenido del chat no cabe junto al encabezado móvil (~264 px): la página puede desplazarse, pero la caja de mensaje con «Límites del asistente» queda fija abajo y SIEMPRE a la vista. */
 @media (max-width: 600px) and (max-height: 760px) {
