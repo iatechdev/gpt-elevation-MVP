@@ -74,3 +74,14 @@ test('ES-155 C: la pieza de ejemplo no hace red ni guarda nada; la portada no us
   for (const part of ['LandingPlans', 'LandingTrust', 'LandingFaq', 'LandingProject', 'LandingJoin', 'LandingFooter']) assert.ok(tail.includes(`<${part}`), `se conserva ${part}`)
   assert.ok(read('../src/components/portada/useAfterFirstPaint.ts').includes('requestIdleCallback'), 'el canvas espera al reposo')
 })
+
+test('ES-155 C E282-1: el cuerpo y lo conservado comparten un solo límite de Suspense; el estado del catálogo de planes no se encoge; el salto al ancla espera al catálogo', () => {
+  const page = read('../src/pages/LandingPage.tsx')
+  assert.match(page, /<Suspense fallback=\{<div className="pt-try-skel" aria-hidden="true" \/>\}>\s*<PortadaBody text=\{text\} \/>\s*<LandingTail /)
+  assert.ok(!/<Suspense fallback=\{null\}>/.test(page), 'sin un segundo límite que deje llegar el bloque de abajo antes')
+  assert.match(read('../src/pricing/pricing.css'), /\.landing-plans-state \{ min-height: calc\(14rem \+ 27px\); \}/)
+  const plans = read('../src/components/landing/LandingPlans.tsx')
+  assert.equal(plans.match(/className="landing-plans-state"/g)?.length, 3, 'cargando, error y vacío reservan lo mismo')
+  const hook = read('../src/components/portada/useScrollToHash.ts')
+  assert.ok(hook.includes('.landing-plan-skeleton') && hook.includes('MutationObserver') && hook.includes('SETTLE_LIMIT_MS'))
+})

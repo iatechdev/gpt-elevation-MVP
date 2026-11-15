@@ -18,8 +18,11 @@ export function LandingPage() {
   return (
     <PublicFrame migrated>
       <Hero text={text} />
-      <Suspense fallback={<div className="pt-try-skel" aria-hidden="true" />}><PortadaBody text={text} /></Suspense>
-      <Suspense fallback={null}><LandingTail text={text} manifestLabel={t('manifest_public_title')} /></Suspense>
+      {/* Un solo límite para los dos bloques: aparecen a la vez. Si el de abajo llegara antes, el salto al ancla (/#planes) caería sobre un hueco de 60 rem que luego se encoge al llegar el de arriba (E282-1). */}
+      <Suspense fallback={<div className="pt-try-skel" aria-hidden="true" />}>
+        <PortadaBody text={text} />
+        <LandingTail text={text} manifestLabel={t('manifest_public_title')} />
+      </Suspense>
     </PublicFrame>
   )
 }
