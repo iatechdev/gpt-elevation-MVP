@@ -429,6 +429,14 @@
     "denied": [],
     "session": false
   },
+  "GET /api/landing-content/admin": {
+    "denied": [
+      "board",
+      "therapist",
+      "user"
+    ],
+    "session": true
+  },
   "GET /api/landing-content/versions": {
     "denied": [
       "admin",
