@@ -1,4 +1,4 @@
-// ES-163: /app/diary, /app/diary/new y /app/diary/:id en navegador real (Chromium), API simulada con la MISMA idempotencia del servidor (requestId por persona), datos sintéticos.
+// ES-163 + ES-307 (PR 3, Cartografía): /app/diary, /app/diary/new y /app/diary/:id en navegador real (Chromium), API simulada con la MISMA idempotencia del servidor (requestId por persona), datos sintéticos.
 // Matriz ES/EN × 390/1360 px × claro/oscuro del sistema: axe WCAG 2.x A/AA (lista, nueva, detalle y diálogo de borrar), un h1, sin desborde, objetivos >= 24 px.
 // Interacciones (ES 1360 claro; EN 390 oscuro): doble clic en Guardar = un solo envío; ACK perdido (el servidor guardó pero la respuesta no llegó) → «Reintentar guardar» con el MISMO requestId
 // = una sola entrada; el diálogo de borrar dice las palabras del criterio y conserva la nota de límites; ningún borrador ni requestId en almacenamiento.
@@ -132,6 +132,60 @@ const storageKeys = page => page.evaluate(() => JSON.stringify([Object.keys(loca
       report(state.entries.find(e => e.id === 1).deleted === true, `confirmar borra la entrada ${tag}`)
       await ctx.close()
     }
+  }
+  // ES-307 (PR 3): 320 px, diálogos (foco, Tab atrapado, Esc, foco devuelto), Spectral en el texto de la persona, ⚠ del aviso, «Entradas» y CLS a 390 px con CPU×4.
+  for (const lang of ['es', 'en']) for (const scheme of ['light', 'dark']) {
+    const t = T[lang]; const tag = `${lang} 320px ${scheme}`
+    for (const [path, name] of [['/app/diary', 'lista'], ['/app/diary/new', 'nueva'], ['/app/diary/1', 'detalle']]) {
+      const { ctx, page } = await open(browser, { width: 320, lang, scheme, path }); await page.locator('h1').first().waitFor(); await axeAndLayout(page, `diario ${name} ${tag}`); await ctx.close()
+    }
+  }
+  for (const lang of ['es', 'en']) for (const scheme of ['light', 'dark']) {
+    const t = T[lang]; const tag = `${lang} 1360px ${scheme}`
+    const entries = lang === 'es' ? 'Entradas' : 'Entries'
+    { // detalle: diálogo de borrar
+      const { ctx, page } = await open(browser, { width: 1360, lang, scheme, path: '/app/diary/1' }); await page.locator('h1').first().waitFor()
+      report((await page.locator('aside h2').innerText()).trim().toLowerCase() === entries.toLowerCase(), `encabezado de la lista «${entries}» ${tag}`)
+      report(await page.locator('.pg-sheet').evaluate(el => { const l = el.getBoundingClientRect(); const r = document.querySelector('.pg-recent').getBoundingClientRect(); return l.left > r.left }), `dos columnas desde 900 px: lista a la izquierda, hoja a la derecha ${tag}`)
+      report((await page.locator('.pg-reading').evaluate(el => getComputedStyle(el).fontFamily)).includes('Spectral'), `texto de la persona en Spectral (lectura) ${tag}`)
+      const del = page.getByRole('button', { name: t.del, exact: true }); await del.focus(); await del.click(); await page.locator('dialog[open]').waitFor()
+      const first = await page.evaluate(() => document.activeElement?.textContent?.trim())
+      report(!!(await page.evaluate(() => document.activeElement?.closest('dialog'))) && first?.length > 0, `diálogo borrar: el foco entra (${first}) ${tag}`)
+      const trapped = []; for (let i = 0; i < 4; i++) { await page.keyboard.press('Tab'); trapped.push(await page.evaluate(() => !!document.activeElement?.closest('dialog'))) }
+      await page.keyboard.press('Shift+Tab'); trapped.push(await page.evaluate(() => !!document.activeElement?.closest('dialog')))
+      report(trapped.every(Boolean), `diálogo borrar: Tab y Shift+Tab atrapados ${tag}`)
+      await page.keyboard.press('Escape')
+      report(await page.locator('dialog[open]').count() === 0 && (await page.evaluate(() => document.activeElement?.textContent?.trim().toLowerCase())) === t.del.toLowerCase(), `diálogo borrar: Esc cierra y el foco vuelve a «${t.del}» ${tag}`)
+      await ctx.close()
+    }
+    { // nueva con texto: cancelar → diálogo de salir; Esc conserva; descartar vuelve a la lista
+      const { ctx, page } = await open(browser, { width: 1360, lang, scheme, path: '/app/diary/new' }); await page.locator('h1').first().waitFor()
+      const note = 'BORRADOR_SINTETICO_307C'; await page.locator('#entry-content').fill(note)
+      report((await page.locator('#entry-content').evaluate(el => getComputedStyle(el).fontFamily)).includes('Spectral'), `texto que se escribe en Spectral ${tag}`)
+      const cancel = page.getByRole('button', { name: lang === 'es' ? 'Cancelar' : 'Cancel', exact: true }); await cancel.click(); await page.locator('dialog[open]').waitFor()
+      await page.keyboard.press('Escape')
+      report(await page.locator('dialog[open]').count() === 0 && await page.locator('#entry-content').inputValue() === note, `diálogo salir: Esc conserva el borrador ${tag}`)
+      report(!(await storageKeys(page)).includes(note) && !(await page.evaluate(() => location.href)).includes(note), `borrador fuera del almacenamiento y de la URL ${tag}`)
+      await cancel.click(); await page.locator('dialog[open]').getByRole('button').last().click(); await page.waitForURL('**/app/diary')
+      report(true, `diálogo salir: descartar vuelve a la lista ${tag}`)
+      await ctx.close()
+    }
+    { // fecha vacía → error con role=alert y foco; guardado incierto con ⚠
+      const { ctx, page } = await open(browser, { width: 1360, lang, scheme, path: '/app/diary/new' }); await page.locator('h1').first().waitFor()
+      await page.locator('#entry-content').fill('algo'); await page.locator('#entry-date').fill('')
+      await page.getByRole('button', { name: t.save, exact: true }).click()
+      report(await page.locator('#entry-date-error[role=alert]').count() === 1 && await page.evaluate(() => document.activeElement?.id) === 'entry-date', `error de fecha: role=alert y foco en el campo ${tag}`)
+      await ctx.close()
+    }
+  }
+  for (const route of ['/app/diary', '/app/diary/1']) { // CLS a 390 px con CPU×4
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } }); const page = await ctx.newPage()
+    await page.route('**/api/**', async r => { const p = new URL(r.request().url()).pathname; await new Promise(s => setTimeout(s, 80)); return r.fulfill({ json: p === '/api/session' ? { role: 'user', onboardingCompleted: true } : p === '/api/diary' ? { entries: seed() } : p === '/api/diary/1' ? seed()[0] : {} }) })
+    await page.addInitScript(() => { localStorage.setItem('elv_lang', 'es'); localStorage.setItem('elevation_token', 'aaa.bbb.ccc-abcdefghijklmnopqrstuvwxyz0123456789'); localStorage.setItem('elevation_role', 'user')
+      window.__cls = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value }).observe({ type: 'layout-shift', buffered: true }) })
+    const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+    await page.goto(BASE + route, { waitUntil: 'networkidle' }); await page.waitForTimeout(1500)
+    const cls = await page.evaluate(() => window.__cls); report(cls <= 0.1, `CLS ${route} 390 px CPU×4`, cls.toFixed(3)); await ctx.close()
   }
   await browser.close()
   console.log(failures ? `\n${failures} FALLAS` : '\nTODO OK')

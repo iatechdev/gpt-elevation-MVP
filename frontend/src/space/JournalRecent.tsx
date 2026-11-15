@@ -7,9 +7,9 @@ import { journalCopy, journalDate } from './journalCopy'
 
 export function JournalRecentList({ entries, lang, selected }: { entries: Entry[]; lang: 'es' | 'en'; selected: number | null }) {
   const c = copy[lang]
-  return <><p className="space-note">{c.limit}</p>{!entries.length && <p>{c.empty}</p>}{entries.map(row => <article className={`journal-recent-entry ${row.id === selected ? 'journal-selected' : ''}`} key={row.id}>
+  return <><p className="cg-hint">{c.limit}</p>{!entries.length && <p>{c.empty}</p>}{entries.map(row => <article className={`pg-entry ${row.id === selected ? 'pg-entry--selected' : ''}`} key={row.id}>
     <h3><time dateTime={row.date}>{journalDate(row.date, lang)}</time></h3><p className="space-private-text">{row.content.slice(0, 160)}{row.content.length > 160 ? '…' : ''}</p>
-    <Link className="elv-link" aria-current={row.id === selected ? 'page' : undefined} to={`/app/diary/${row.id}`}>{c.open}<span className="sr-only"> {journalDate(row.date, lang)}</span></Link>
+    <Link aria-current={row.id === selected ? 'page' : undefined} to={`/app/diary/${row.id}`}>{c.open}<span className="sr-only"> {journalDate(row.date, lang)}</span></Link>
   </article>)}</>
 }
 
@@ -28,7 +28,7 @@ export function JournalRecent({ token, lang, selected, onSessionExpired }: { tok
     return () => { alive = false }
   }, [token, attempt])
   const c = copy[lang]
-  return <aside className="journal-recent" aria-labelledby="journal-recent-title"><h2 id="journal-recent-title">{journalCopy[lang].recent}</h2><Link className="elv-btn" to="/app/diary/new">{c.new}</Link>
-    {state.loading ? <p role="status">{c.loading}</p> : state.failed ? <><p role="status">{c.loadError}</p><button className="elv-btn" onClick={() => { setState({ entries: [], loading: true, failed: false }); setAttempt(value => value + 1) }}>{c.retry}</button></> : <JournalRecentList entries={state.entries} lang={lang} selected={selected} />}
+  return <aside className="pg-recent" aria-labelledby="journal-recent-title"><h2 id="journal-recent-title">{journalCopy[lang].listTitle}</h2><Link className="cg-btn" to="/app/diary/new">{c.new}</Link>
+    {state.loading ? <p role="status">{c.loading}</p> : state.failed ? <><p role="status">{c.loadError}</p><button type="button" className="cg-btn cg-btn--ghost" onClick={() => { setState({ entries: [], loading: true, failed: false }); setAttempt(value => value + 1) }}>{c.retry}</button></> : <JournalRecentList entries={state.entries} lang={lang} selected={selected} />}
   </aside>
 }
