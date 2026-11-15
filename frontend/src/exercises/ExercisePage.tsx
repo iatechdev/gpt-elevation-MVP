@@ -34,7 +34,7 @@ function ExerciseSession({ token }: { token: string }) {
   const [active, setActive] = useState<Exercise | null>(null); const [gone, setGone] = useState(false); const [opening, setOpening] = useState(false)
   const [notes, setNotes] = useState(''); const [status, setStatus] = useState('')
   const [copying, setCopying] = useState(false); const [target, setTarget] = useState<'selector' | 'origin' | null>(null)
-  const question = useRef<HTMLHeadingElement>(null); const retryButton = useRef<HTMLButtonElement>(null)
+  const question = useRef<HTMLHeadingElement>(null)
   const live = useRef(false); const lock = useRef(false)
   const entry = active; const dirty = notes.length > 0
   useEffect(() => { live.current = true; return () => { live.current = false } }, [])
@@ -51,7 +51,7 @@ function ExerciseSession({ token }: { token: string }) {
     return () => { cancelled = true }
   }, [token, attempt])
   // Foco después de renderizar: «Reintentar» cuando aparece el error; el título del ejercicio al abrirlo; el aviso «ya no está disponible».
-  useEffect(() => { if (phase === 'error') retryButton.current?.focus() }, [phase])
+  useEffect(() => { if (phase === 'error') document.getElementById('exercise-retry')?.focus() }, [phase])
   useEffect(() => { if (entry) question.current?.focus() }, [entry])
   useEffect(() => { if (gone) document.getElementById('exercise-main')?.focus() }, [gone])
   useEffect(() => {
@@ -98,7 +98,7 @@ function ExerciseSession({ token }: { token: string }) {
   if (phase === 'session') return <Navigate to="/login" replace />
   // ES-307: Cartografía (PersonScreen, cg-card, Button, TextAreaField, Notice y Dialog). El marco de persona ya pone idioma y «Saltar al contenido»; aquí queda «Volver».
   const body = phase === 'loading' ? <Notice text={tr('loading')} />
-    : phase === 'error' ? <div role="alert" className="cg-banner cg-banner--error"><p className="cg-banner__title">{tr('load_error')}</p><Button ref={retryButton} variant="ghost" onClick={() => setAttempt(value => value + 1)}>{tr('retry')}</Button></div>
+    : phase === 'error' ? <div role="alert" className="cg-banner cg-banner--error"><p className="cg-banner__title">{tr('load_error')}</p><Button id="exercise-retry" variant="ghost" onClick={() => setAttempt(value => value + 1)}>{tr('retry')}</Button></div>
       : <>
         {gone && <Notice error text={tr('gone')} />}
         <Notice error={status === 'copy_error'} text={status ? tr(status) : ''} />
