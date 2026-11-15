@@ -29,7 +29,7 @@ const { pathToFileURL } = require('node:url');
     sequelize = new Sequelize(`postgres://es247_test:${password}@127.0.0.1:${port}/postgres`, { logging: false, dialectOptions: { ssl: false } });
     process.env.JWT_SECRET = randomBytes(32).toString('hex'); process.env.DATA_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     const id = fromBackend.resolve('./database'); require.cache[id] = { id, filename: id, loaded: true, exports: { sequelize } };
-    for (const name of ['PricingPlan', 'User', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'RevokedToken', 'AuthRevocation', 'DeletionRequest', 'AiJob', 'SkillCandidate', 'ParticipantResume']) fromBackend('./' + name);
+    for (const name of ['PricingPlan', 'User', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'CareerContextVersion', 'BridgeTransfer', 'RevokedToken', 'AuthRevocation', 'DeletionRequest', 'AiJob', 'SkillCandidate', 'ParticipantResume', 'Evidence', 'EvidenceVersion']) fromBackend('./' + name);
     await sequelize.sync();
     const User = fromBackend('./User'); const consent = fromBackend('./utils/consent');
     const person = await User.create({ name: 'Persona Sintética', email: 'persona@example.invalid', password: 'x', role: 'user' });
@@ -123,7 +123,7 @@ const { pathToFileURL } = require('node:url');
       // D) Autorizar «diario» con la respuesta perdida: el servidor lo registró; la pantalla confirma tras releer.
       { await seed(false, false);
         const { context, page, control } = await open(lang);
-        await sw(page, 'diary').click(); control.put = 'lose-reply'; await page.locator('.bridge-modal .bridge-ok').click();
+        await sw(page, 'diary').click(); control.put = 'lose-reply'; await page.locator('dialog.cg-dialog[open] .cg-btn:not(.cg-btn--ghost)').click();
         await page.getByText(t.granted, { exact: true }).first().waitFor();
         assert.deepEqual(await dbState(), { chat: 'no', diary: 'granted' }); assert.equal(await sw(page, 'diary').getAttribute('aria-checked'), 'true');
         check(`${lang}: autorizar con la respuesta perdida → base con permiso; la pantalla lo confirma tras releer`);
