@@ -6,7 +6,7 @@
   --color-warning: var(--elv-warning); --color-error: var(--elv-error);
   background: var(--elv-bg); color: var(--elv-text-1);
 }
-.journal-page > header, .journal-page > main, .journal-page > .space-nav { max-width: 1192px; }
+.journal-page > header, .journal-page > main, .journal-page > .space-body, .journal-page > .space-nav { max-width: 1192px; }
 .journal-page .space-nav { background: transparent; }
 .journal-page .elv-btn { border-color: var(--elv-line-control); border-radius: var(--elv-r-sm); }
 .journal-page .elv-btn-primary { color: var(--elv-action-text); background: var(--elv-action); }

@@ -82,7 +82,7 @@ export function ResumesPage() {
       <header className="context-header"><span>{t('logo')}</span><div className="elv-join" aria-label={t('context_preferredLanguage')}>
         {(['es', 'en'] as const).map(language => <button type="button" key={language} className={`elv-btn elv-join-item ${lang === language ? 'elv-btn-primary' : 'elv-btn-ghost'}`} aria-pressed={lang === language} onClick={() => setLang(language)}>{language.toUpperCase()}</button>)}
       </div></header>
-      <main id="rs-main" tabIndex={-1}>
+      <div id="rs-main" tabIndex={-1}>
         <h1>{t('resume_hist_title')}</h1>
         <p className="rs-help"><LockIcon /> {t('resume_hist_private')}</p>
         <div className="rs-live" role="status" aria-live="polite">{message}</div>
@@ -124,7 +124,7 @@ export function ResumesPage() {
               <button type="button" className="elv-btn" disabled={busy} onClick={close}>{t('resume_cancel_btn')}</button></div></div>}
         </>}
         <p><Link className="elv-link" to={CONTEXT_PATH}>{t('resume_back_context')}</Link></p>
-      </main>
+      </div>
     </div>
   )
 }

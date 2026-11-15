@@ -1,11 +1,12 @@
 // ES-153: los marcos por rol. Cada uno muestra solo las rutas de su rol; la ruta activa lleva aria-current="page" (lo pone NavLink).
-import { type ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Frame, NavLinks, SignOutButton, UserMenu } from './Frame'
 import { useShellCopy } from './useShellCopy'
 import { PROFESSIONAL_LABEL } from './copy'
 import { ADMIN_BOARD_GROUP, ADMIN_NAV, BOARD_NAV, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PROFESSIONAL_NAV, PUBLIC_NAV, visibleFor } from './nav'
 import type { Role } from './access'
+import { PersonLayoutContext } from './personLayoutState'
 
 const readName = (fallback: string) => { try { return localStorage.getItem('elevation_name') || fallback } catch { return fallback } }
 const readRole = (fallback: Role): Role => {
@@ -27,10 +28,16 @@ export function PublicFrame({ children, migrated = false }: { children: ReactNod
 }
 
 /** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de usuario. */
-export function PersonFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
+export function PersonChrome({ children, migrated = false, footer = true }: { children: ReactNode; migrated?: boolean; footer?: boolean }) {
   const { c } = useShellCopy()
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con tema claro/oscuro del sistema.
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}>{children}</Frame>
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'} footer={footer}>{children}</Frame>
+}
+
+/** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */
+export function PersonFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
+  const inLayout = useContext(PersonLayoutContext)
+  return inLayout ? <>{children}</> : <PersonChrome migrated={migrated}>{children}</PersonChrome>
 }
 
 /** Profesional: Panel y Personas en facilitación + menú (Revisiones profesionales, Salir); marca «Profesional». */

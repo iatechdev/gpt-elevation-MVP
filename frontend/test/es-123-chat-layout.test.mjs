@@ -24,7 +24,7 @@ test('ES-123 diseño: «Mi progreso» y «Cerrar sesión» salen en la cabecera 
   assert.match(page, /title=\{copy\[lang\]\.progress\}\s*aria-label=\{copy\[lang\]\.progress\}/)
   assert.match(page, /title=\{copy\[lang\]\.signOut\} aria-label=\{copy\[lang\]\.signOut\}/)
   assert.equal((page.match(/navigate\('\/app\/progress'\)/g) || []).length, 1)
-  assert.ok(page.indexOf("navigate('/app/progress')") < page.indexOf('<main className="chat-main">')) // dentro de la cabecera, antes de la conversación
+  assert.ok(page.indexOf("navigate('/app/progress')") < page.indexOf('<div className="chat-main">')) // dentro de la cabecera, antes de la conversación
 })
 
 test('ES-123 selector del diario: botón plegable con aria-expanded/aria-controls, Esc lo cierra y devuelve el foco; el texto de consentimiento se conserva dentro del panel', () => {

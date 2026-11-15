@@ -97,7 +97,7 @@ function ExerciseSession({ token }: { token: string }) {
   if (phase === 'session') return <Navigate to="/login" replace />
   return <div className="exercise-scope"><a className="exercise-skip" href="#exercise-main">{tr('skip_content')}</a>
     <header><button className="elv-btn" disabled={copying} onClick={() => leave('origin')}>{tr('back')}</button><div role="group" aria-label={tr('language')}>{(['es', 'en'] as const).map(l => <button key={l} className="elv-btn" aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header>
-    <main id="exercise-main" tabIndex={-1}><h1 ref={title} tabIndex={-1}>{tr('title')}</h1>
+    <div id="exercise-main" tabIndex={-1}><h1 ref={title} tabIndex={-1}>{tr('title')}</h1>
       {phase === 'loading' ? <p role="status" aria-busy="true">{tr('loading')}</p>
         : phase === 'error' ? <div role="alert"><p>{tr('load_error')}</p><button ref={retryButton} type="button" className="elv-btn" onClick={() => setAttempt(value => value + 1)}>{tr('retry')}</button></div>
         : <>
@@ -113,6 +113,6 @@ function ExerciseSession({ token }: { token: string }) {
           {!entry && <button className="elv-btn" onClick={() => leave('origin')}>{tr('skip')}</button>}
         </>}
       <dialog ref={dialog} onClose={() => setTarget(null)} aria-labelledby="exercise-leave-title"><h2 id="exercise-leave-title">{tr('leave')}</h2><p>{tr('clipboard')}</p><p role="status">{status && tr(status)}</p><div className="exercise-actions"><button className="elv-btn" autoFocus onClick={() => dialog.current?.close()} disabled={copying}>{tr('return')}</button><button className="elv-btn" disabled={copying} onClick={() => void copyNotes()}>{tr('copy')}</button><button className="elv-btn exercise-primary" disabled={copying} onClick={() => { if (target) finish(target) }}>{tr('discard')}</button></div></dialog>
-    </main>
+    </div>
   </div>
 }
