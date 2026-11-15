@@ -1,0 +1,41 @@
+{
+ "mode": "pr",
+ "keysLive": [
+  "country",
+  "createdAt",
+  "cv",
+  "email",
+  "id",
+  "licenseNumber",
+  "locale",
+  "message",
+  "minimized",
+  "name",
+  "profession",
+  "profileUrl",
+  "reviewNote",
+  "reviewedAt",
+  "reviewedBy",
+  "status",
+  "userId"
+ ],
+ "keysMini": [
+  "country",
+  "createdAt",
+  "cv",
+  "email",
+  "id",
+  "licenseNumber",
+  "locale",
+  "message",
+  "minimized",
+  "name",
+  "profession",
+  "profileUrl",
+  "reviewNote",
+  "reviewedAt",
+  "reviewedBy",
+  "status",
+  "userId"
+ ]
+}

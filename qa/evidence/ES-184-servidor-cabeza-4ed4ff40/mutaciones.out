@@ -1,0 +1,23 @@
+== base
+  es-293 PG: # pass 6 # fail 0 
+== M1 condición invertida (== null)
+M aplicada
+  es-293 PG: # pass 4 # fail 2 
+  mi script: RESUMEN 10/11 ok; fallos: S1
+== M2 devuelve la fecha en vez del booleano
+M aplicada
+  es-293 PG: # pass 4 # fail 2 
+  mi script: RESUMEN 8/11 ok; fallos: S1, S1b, S1d
+== M3 quita el campo
+M aplicada
+  es-293 PG: # pass 4 # fail 2 
+  mi script: RESUMEN 6/11 ok; fallos: S1, S1b, S2, S1c, S1d
+== M4 siempre true
+M aplicada
+  es-293 PG: # pass 4 # fail 2 
+  mi script: RESUMEN 10/11 ok; fallos: S1
+== M5 decide por el correo @deleted.invalid
+M aplicada
+  es-293 PG: # pass 6 # fail 0 
+  mi script: RESUMEN 10/11 ok; fallos: S1
+fin

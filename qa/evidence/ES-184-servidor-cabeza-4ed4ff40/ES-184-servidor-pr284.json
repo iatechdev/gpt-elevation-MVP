@@ -1,0 +1,73 @@
+{
+ "mode": "pr",
+ "head": "4ed4ff40359dda9c68e46c1c970d1169599aa2a0",
+ "results": [
+  {
+   "id": "S1a lista vacía → 200 y arreglo vacío",
+   "ok": true,
+   "detail": "200 []"
+  },
+  {
+   "id": "estado en base tras la purga real",
+   "info": "{\"purgeOk\":true,\"minimizedAt\":true,\"name\":\"Solicitud eliminada / Deleted application\",\"email\":\"app-4@deleted.invalid\",\"status\":\"approved\"}"
+  },
+  {
+   "id": "S1-detalle",
+   "info": "[pr] filas 6; pendiente false, aprobada false, rechazada false, purgada true, minimizedAt por SQL false, correo @deleted.invalid sin marca true"
+  },
+  {
+   "id": "S1 (bloqueante) `minimized`: pendiente, aprobada y rechazada vivas → false; persona PURGADA (purga real de ES-293) → true; `minimizedAt` fijado por SQL → true; un correo `@deleted.invalid` SIN marca → false (se decide por la marca, no por el correo)",
+   "ok": false,
+   "detail": "[[6,true],[5,false],[4,true],[3,false],[2,false],[1,false]]"
+  },
+  {
+   "id": "S1b el campo es un booleano estricto en TODAS las filas (nunca null, undefined ni fecha)",
+   "ok": true,
+   "detail": "[\"boolean\",\"boolean\",\"boolean\",\"boolean\",\"boolean\",\"boolean\"]"
+  },
+  {
+   "id": "S2-claves",
+   "info": "[pr] viva: country,createdAt,cv,email,id,licenseNumber,locale,message,minimized,name,profession,profileUrl,reviewNote,reviewedAt,reviewedBy,status,userId · depurada: country,createdAt,cv,email,id,licenseNumber,locale,message,minimized,name,profession,profileUrl,reviewNote,reviewedAt,reviewedBy,status,userId"
+  },
+  {
+   "id": "S2 (bloqueante) la vista añade EXACTAMENTE una clave (`minimized`) respecto a main, la misma en filas vivas y depuradas, y no expone `minimizedAt` ni ninguna fecha nueva",
+   "ok": true,
+   "detail": "PR country,createdAt,cv,email,id,licenseNumber,locale,message,minimized,name,profession,profileUrl,reviewNote,reviewedAt,reviewedBy,status,userId · main country,createdAt,cv,email,id,licenseNumber,locale,message,name,profession,profileUrl,reviewNote,reviewedAt,reviewedBy,status,userId"
+  },
+  {
+   "id": "S2b (bloqueante) la fila depurada no conserva nombre, correo, país, profesión, licencia, perfil, mensaje, revisor ni nota (centinelas) y su `/cv` no responde 200 ni 2xx",
+   "ok": true,
+   "detail": "fugas: ninguna · fila {\"id\":4,\"name\":\"Solicitud eliminada / Deleted application\",\"email\":\"app-4@deleted.invalid\",\"country\":\"-\",\"profession\":\"-\",\"licenseNumber\":null,\"profileUrl\":null,\"message\":null,\"locale\":\"es\",\"status\":\"approved\",\"reviewedB"
+  },
+  {
+   "id": "S2c la forma de la lista es la misma para `admin` y `superadmin`",
+   "ok": true,
+   "detail": "200"
+  },
+  {
+   "id": "S3 (bloqueante) el GET administrativo solo responde a `admin`/`superadmin`; persona, profesional, junta, sin sesión, token vencido o de otra clave y cabeceras raras → 401/403 sin el campo en el cuerpo",
+   "ok": true,
+   "detail": "roles ok · cabeceras ok"
+  },
+  {
+   "id": "S3b aprobar, rechazar y el alta pública NO traen `minimized` y se comportan como antes",
+   "ok": true,
+   "detail": "aprobar 200 {\"id\":1,\"status\":\"approved\"} · rechazar 200 · pública 201"
+  },
+  {
+   "id": "S3c aprobar de nuevo una solicitud ya revisada → 409 `already_reviewed` (sin cambios)",
+   "ok": true,
+   "detail": "409 {\"error\":\"La solicitud ya fue revisada.\",\"code\":\"already_reviewed\"}"
+  },
+  {
+   "id": "S1c con 200+ filas la lista sigue en 200, limitada a 200, con `minimized` booleano en todas",
+   "ok": true,
+   "detail": "200 filas 200 (siembra+lectura 1556 ms)"
+  },
+  {
+   "id": "S1d el filtro por estado y el estado inválido (400) siguen igual",
+   "ok": true,
+   "detail": "200/400"
+  }
+ ]
+}
