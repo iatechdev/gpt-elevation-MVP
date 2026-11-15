@@ -1,6 +1,6 @@
 export const journalCopy = {
   es: {
-    title: 'Mi diario', private: 'Privado · Solo para ti', recent: 'Entradas recientes', select: 'Selecciona una entrada reciente o crea una nueva.',
+    title: 'Mi diario', private: 'Privado · Solo para ti', recent: 'Entradas recientes', listTitle: 'Entradas', select: 'Selecciona una entrada reciente o crea una nueva.',
     entry: 'Entrada privada', bridge: 'Al Puente →', bridgeNote: 'El Puente estará disponible cuando su flujo de autorización esté integrado.',
     manual: 'Guardado manual', draftWarning: 'El texto sin guardar permanece solo en esta pestaña. Guárdalo antes de cerrar.', save: 'Guardar entrada',
     unconfirmed: 'Guardado sin confirmar', count: 'caracteres',
@@ -8,7 +8,7 @@ export const journalCopy = {
     retrySave: 'Reintentar guardar', retryHint: 'Se guardará una sola vez aunque el intento anterior haya llegado.',
   },
   en: {
-    title: 'My diary', private: 'Private · Only for you', recent: 'Recent entries', select: 'Select a recent entry or create a new one.',
+    title: 'My diary', private: 'Private · Only for you', recent: 'Recent entries', listTitle: 'Entries', select: 'Select a recent entry or create a new one.',
     entry: 'Private entry', bridge: 'To the Bridge →', bridgeNote: 'The Bridge will be available once its authorization flow is integrated.',
     manual: 'Manual saving', draftWarning: 'Unsaved text stays only in this tab. Save it before closing.', save: 'Save entry',
     unconfirmed: 'Save not confirmed', count: 'characters',

@@ -1,57 +1,31 @@
-/* ES-113: diary layout only. Colors come from the ES-37 dependency. */
-.space-scope.journal-page, .journal-page .space-scope {
-  --color-base-100: var(--elv-bg); --color-base-200: var(--elv-surface);
-  --color-base-300: var(--elv-line-control); --color-base-content: var(--elv-text-1);
-  --color-primary: var(--elv-action); --color-primary-content: var(--elv-action-text);
-  --color-warning: var(--elv-warning); --color-error: var(--elv-error);
-  background: var(--elv-bg); color: var(--elv-text-1);
+/* ES-307 (PR 3): el diario en Cartografía. Solo tokens --cg-*. Lista y hoja en dos columnas desde 900 px; debajo, una columna (la hoja primero, como en el DOM). El texto de la persona va en Spectral (--cg-font-name). */
+.pg-work { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.pg-sheet { min-width: 0; padding: 1.4rem; }
+.pg-recent { min-width: 0; }
+.pg-recent h2 { font: 700 1.15rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.6rem; }
+.pg-eyebrow { font: 700 0.85rem / 1.1 var(--cg-font-cond); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cg-muted); margin: 0; }
+.pg-sheet-top { min-height: 2.4rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.7rem; border-bottom: 1px solid var(--cg-line); padding-bottom: 0.9rem; margin-bottom: 1rem; }
+.pg-status { font-size: 0.9rem; margin: 0; }
+.pg-status:empty { display: none; }
+.pg-status--warn { color: var(--cg-err); font-weight: 600; }
+.pg-status--warn::before { content: '\26A0\00a0'; }
+.pg-date { margin: 0 0 1rem; max-width: 16rem; }
+.pg-date .cg-input { min-height: var(--cg-touch); text-decoration: underline; text-underline-offset: 0.2em; }
+.pg-paper .cg-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.pg-paper .cg-textarea, .pg-reading { font-family: var(--cg-font-name); font-style: italic; font-size: 1.15rem; line-height: 2rem; }
+.pg-paper .cg-textarea { min-height: 18rem; width: 100%; max-width: 100%; resize: vertical; }
+.pg-reading { min-height: 8rem; margin: 0.6rem 0; }
+.pg-paper-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; color: var(--cg-muted); font-size: 0.85rem; margin: 0.6rem 0; }
+.pg-entry { padding: 0.8rem 0.9rem; border-left: 3px solid var(--cg-line); margin-top: 0.9rem; }
+.pg-entry--selected { border-left-color: var(--cg-mark); background: var(--cg-panel); }
+.pg-entry h3 { font: 700 0.95rem var(--cg-font-sans); margin: 0; }
+.pg-entry p { margin: 0.4rem 0; font-family: var(--cg-font-name); font-style: italic; overflow-wrap: anywhere; }
+.pg-recent > .cg-btn { margin-bottom: 0.4rem; }
+@media (min-width: 900px) {
+  .pg-work { grid-template-columns: 17rem minmax(0, 1fr); gap: 2rem; }
+  .pg-sheet { grid-column: 2; grid-row: 1; }
+  .pg-recent { grid-column: 1; grid-row: 1; }
 }
-.journal-page > header, .journal-page > main, .journal-page > .space-body, .journal-page > .space-nav { max-width: 1192px; }
-.journal-page .space-nav { background: transparent; }
-.journal-page .elv-btn { border-color: var(--elv-line-control); border-radius: var(--elv-r-sm); }
-.journal-page .elv-btn-primary { color: var(--elv-action-text); background: var(--elv-action); }
-.journal-page .elv-link { color: var(--elv-link); }
-.journal-page :is(a, button, input, textarea):focus-visible { outline: 3px solid var(--elv-focus); outline-offset: 3px; }
-.journal-heading { display: flex; justify-content: space-between; align-items: center; gap: var(--elv-s-4); margin-top: var(--elv-s-8); }
-/* QA-113-01: con texto ampliado o en pantallas de 320 px el botón del puente baja de línea en vez de desbordar. */
-.journal-heading { flex-wrap: wrap; }
-.journal-heading > div { min-width: 0; flex: 1 1 14rem; }
-.journal-heading > button { max-width: 100%; white-space: normal; text-align: left; }
-.journal-heading h1 { font-size: clamp(2.25rem, 4vw, 2.75rem); margin: 8px 0; }
-.journal-private, .journal-bridge-note { font-size: .8125rem; color: var(--elv-text-2); }
-.journal-private { margin: 0; }
-.journal-bridge-note { text-align: right; margin: 12px 0 32px; }
-.journal-page .journal-eyebrow { font-family: var(--elv-font-body); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--elv-text-2); margin: 0; }
-.journal-workspace { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--elv-s-12); align-items: start; }
-.journal-sheet { grid-column: 2; grid-row: 1; display: block; padding: var(--elv-s-8); min-width: 0; background: var(--elv-surface); border: 1px solid var(--elv-line); border-radius: var(--elv-r-sm); box-shadow: none; }
-.journal-sheet-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--elv-line); padding-bottom: 18px; margin-bottom: 18px; }
-.journal-sheet-top > p { font-size: .8125rem; margin: 0; }
-.journal-date { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin: 18px 0; }
-.journal-page .journal-date label { margin: 0; }
-.journal-page .journal-date input { width: auto; min-height: 44px; }
-.journal-page .journal-paper { font-family: Georgia, serif; font-style: italic; font-size: 1.1875rem; line-height: 2.25rem; color: var(--elv-text-1); background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(2.25rem - 1px), var(--elv-line) calc(2.25rem - 1px), var(--elv-line) 2.25rem); background-attachment: local; border: 0; border-radius: 0; box-shadow: none; padding: 0 4px; }
-.journal-page textarea.journal-paper { min-height: 288px; width: 100%; max-width: 100%; resize: vertical; }
-.journal-page textarea.journal-paper:disabled { opacity: 1; }
-.journal-reading { min-height: 220px; }
-.journal-paper-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--elv-text-3); font-size: .75rem; margin-top: 12px; }
-.journal-privacy { color: var(--elv-text-2); font-size: .8125rem; margin: 24px 0 6px; }
-.journal-draft-warning { color: var(--elv-text-3); font-size: .75rem; margin: 0 0 24px; }
-.journal-recent { grid-column: 1; grid-row: 1; min-width: 0; }
-.journal-recent h2 { font-family: var(--elv-font-body); font-size: 1rem; }
-.journal-recent .space-note { font-size: .75rem; color: var(--elv-text-3); }
-.journal-recent-entry { padding: 14px 18px; border-left: 2px solid var(--elv-line-control); margin-top: 16px; }
-.journal-recent-entry.journal-selected { border-color: var(--elv-action); background: var(--elv-action-soft); }
-.journal-recent-entry h3 { font-size: .8125rem; font-weight: 500; margin: 0; }
-.journal-recent-entry p { font-size: .8125rem; color: var(--elv-text-2); margin: 8px 0; }
-.journal-page .space-note { color: var(--elv-text-2); }
-@media (max-width: 700px) {
-  .journal-workspace { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  .journal-sheet { grid-column: 1; grid-row: 1; padding: 20px 18px; }
-  .journal-recent { grid-column: 1; grid-row: 2; }
-  .journal-heading { align-items: flex-start; }
-  .journal-heading > button { font-size: .75rem; padding: 8px 12px; }
-  .journal-bridge-note { text-align: left; }
-}
-@media (forced-colors: active) {
-  .journal-page .journal-paper { background: Canvas; color: CanvasText; border: 1px solid CanvasText; }
-}
+@media (forced-colors: active) { .pg-paper .cg-textarea { border: 1px solid CanvasText; } }
+/* Enlaces sueltos (abrir una entrada, volver al diario, elegir en el chat) con objetivo táctil completo, sin salir de la línea de lectura. */
+.pg-work a:not(.cg-btn) { display: inline-flex; align-items: center; min-height: var(--cg-touch); text-decoration: underline; text-underline-offset: 0.2em; }

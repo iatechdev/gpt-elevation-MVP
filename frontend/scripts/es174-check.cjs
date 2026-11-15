@@ -1,4 +1,4 @@
-// ES-174: «Mis datos» y «Mi plan» en navegador. ES/EN × 390/1360 px: axe (WCAG 2.x A/AA), un h1, sin scroll horizontal, objetivos >= 24 px, diálogo de eliminación
+// ES-174 + ES-307 (Cartografía): «Mis datos» y «Mi plan» en navegador. ES/EN × 390/1360/320 px × claro/oscuro del sistema, CLS a 390 px con CPU×4: axe (WCAG 2.x A/AA), un h1, sin scroll horizontal, objetivos >= 24 px, diálogo de eliminación
 // (foco, Tab atrapado, Esc, palabra de confirmación, error que conserva lo escrito, reintento, éxito), estado caducado y Mi plan (con/sin plan, solicitud, envío).
 // No corre en CI; evidencia del PR. API simulada. Uso: `npx vite build && npx vite preview --port 5299 --strictPort` y luego
 //   PLAYWRIGHT_MODULE=<playwright> AXE_PATH=<axe.min.js> BASE=http://localhost:5299 node scripts/es174-check.cjs
@@ -58,10 +58,10 @@ const btn = (page, name) => page.getByRole('button', { name, exact: true })
 
 ;(async () => {
   const browser = await chromium.launch()
-  for (const lang of ['es', 'en']) for (const width of [390, 1360]) {
-    const t = T[lang]; const tag = `${lang} ${width}px`
+  for (const scheme of ['light', 'dark']) for (const lang of ['es', 'en']) for (const width of [390, 1360, 320]) {
+    const t = T[lang]; const tag = `${lang} ${width}px ${scheme}`
     { // Mis datos: estados vacío → listo, descarga, y diálogo con axe abierto
-      const { ctx, page } = await open(browser, { width, lang })
+      const { ctx, page } = await open(browser, { width, lang, scheme })
       await page.goto(BASE + '/app/data', { waitUntil: 'networkidle' })
       await axeAndLayout(page, `datos vacío ${tag}`)
       await btn(page, t.prepare).click(); await page.waitForSelector('text=/Disponible hasta|Available until/')
@@ -77,21 +77,21 @@ const btn = (page, name) => page.getByRole('button', { name, exact: true })
       report(await confirmBtn.isDisabled(), `diálogo ${tag}: «${t.confirm}» inactivo sin palabra`)
       await page.keyboard.type(t.word.slice(0, -1)); report(await confirmBtn.isDisabled(), `diálogo ${tag}: palabra incompleta no habilita`)
       await page.keyboard.type(t.word.slice(-1).toLowerCase()); report(await confirmBtn.isEnabled(), `diálogo ${tag}: palabra completa (en minúscula) habilita`)
-      await page.evaluate(() => { document.querySelector('dialog .space-actions')?.scrollIntoView() })
+      await page.evaluate(() => { document.querySelector('dialog .cg-dialog__actions')?.scrollIntoView() })
       await axeAndLayout(page, `diálogo ${tag}`)
       // Tab da la vuelta: input → Cancelar → Eliminar → input
       const order = []; for (let i = 0; i < 4; i++) { await page.keyboard.press('Tab'); order.push(await page.evaluate(() => document.activeElement.closest('dialog') ? (document.activeElement.innerText || document.activeElement.id).trim() : 'FUERA')) }
       report(!order.includes('FUERA'), `diálogo ${tag}: Tab no sale del diálogo`, order.join(' > '))
       await page.keyboard.press('Escape')
       await page.waitForFunction(() => !document.querySelector('dialog[open]'))
-      const back = await page.evaluate(() => document.activeElement.innerText.trim())
-      report(back === t.start, `diálogo ${tag}: Esc cierra y el foco vuelve a «${t.start}»`, back)
+      const back = await page.evaluate(() => document.activeElement.textContent.trim().toLowerCase())
+      report(back === t.start.toLowerCase(), `diálogo ${tag}: Esc cierra y el foco vuelve a «${t.start}»`, back)
       await btn(page, t.start).click(); await page.waitForSelector('dialog[open]')
       report(await page.locator('#data-confirm').inputValue() === '', `diálogo ${tag}: al reabrir la palabra empieza vacía`)
       await ctx.close()
     }
     { // Eliminación con un fallo del servidor: el diálogo sigue abierto, lo escrito se conserva y el reintento termina
-      const { ctx, page, state } = await open(browser, { width, lang, api: { failDeletions: 1 } })
+      const { ctx, page, state } = await open(browser, { width, lang, scheme, api: { failDeletions: 1 } })
       await page.goto(BASE + '/app/data', { waitUntil: 'networkidle' })
       await btn(page, t.start).click(); await page.waitForSelector('dialog[open]')
       await page.locator('#data-confirm').fill(t.word)
@@ -100,19 +100,19 @@ const btn = (page, name) => page.getByRole('button', { name, exact: true })
       const kept = await page.locator('#data-confirm').inputValue()
       report(kept === t.word && await page.locator('dialog[open]').count() === 1, `eliminar con error ${tag}: diálogo abierto y palabra conservada`, kept)
       await axeAndLayout(page, `diálogo con error ${tag}`)
-      await btn(page, t.retry).click(); await page.waitForSelector('main a.elv-btn-primary')
+      await btn(page, t.retry).click(); await page.waitForSelector('main a.cg-btn')
       const text = await page.locator('main').innerText()
       await page.waitForTimeout(800) // la compuerta de acceso no debe llevar a /login mientras se lee el resultado
       const stay = new URL(page.url()).pathname === '/app/data' && t.done.test(await page.locator('main').innerText())
       report(t.done.test(text) && stay && state.deletions === 2, `eliminar reintento ${tag}: la confirmación se queda en pantalla (no salta a /login), ${state.deletions} llamadas`, page.url())
       await axeAndLayout(page, `eliminada ${tag}`)
-      await page.locator('main a.elv-btn-primary').click(); await page.waitForTimeout(600)
+      await page.locator('main a.cg-btn').click(); await page.waitForTimeout(600)
       const token = await page.evaluate(() => localStorage.getItem('elevation_token'))
       report(token === null && new URL(page.url()).pathname === '/', `volver al inicio ${tag}: sesión local cerrada y llega a la portada`, page.url() + ' token=' + token)
       await ctx.close()
     }
     { // Vista previa que caduca
-      const { ctx, page } = await open(browser, { width, lang, api: { expiresIn: 1500 } })
+      const { ctx, page } = await open(browser, { width, lang, scheme, api: { expiresIn: 1500 } })
       await page.goto(BASE + '/app/data', { waitUntil: 'networkidle' })
       await btn(page, t.prepare).click(); await page.waitForSelector('text=/Disponible hasta|Available until/')
       await page.waitForSelector('text=' + (lang === 'es' ? 'El archivo venció' : 'The file expired'), { timeout: 5000 })
@@ -121,23 +121,23 @@ const btn = (page, name) => page.getByRole('button', { name, exact: true })
       await ctx.close()
     }
     { // Mi plan: sin plan / con plan y solicitud / envío
-      const { ctx, page, state } = await open(browser, { width, lang })
+      const { ctx, page, state } = await open(browser, { width, lang, scheme })
       await page.goto(BASE + '/app/plan', { waitUntil: 'networkidle' })
-      await page.waitForSelector('.space-plan')
-      const cols = await page.evaluate(() => new Set([...document.querySelectorAll('.space-plan')].map(el => Math.round(el.getBoundingClientRect().top))).size)
-      report(await page.locator('.space-plan').count() === 3 && (width === 390 ? cols === 3 : cols === 1), `plan sin plan ${tag}: 3 tarjetas, ${width === 390 ? '1 columna' : '3 columnas'}`, 'filas=' + cols)
+      await page.waitForSelector('.pg-plan')
+      const cols = await page.evaluate(() => new Set([...document.querySelectorAll('.pg-plan')].map(el => Math.round(el.getBoundingClientRect().top))).size)
+      report(await page.locator('.pg-plan').count() === 3 && (width >= 1000 ? cols === 1 : cols === 3), `plan sin plan ${tag}: 3 tarjetas, ${width >= 1000 ? '3 columnas' : '1 columna'}`, 'filas=' + cols)
       report(/Aún no tienes un plan|don't have a plan/.test(await page.locator('main').innerText()), `plan sin plan ${tag}: estado vacío`)
       await axeAndLayout(page, `plan sin plan ${tag}`)
       await page.getByRole('button', { name: new RegExp(t.planBtn + ' · Plus') }).click()
       await page.waitForSelector('text=' + (lang === 'es' ? 'Registramos tu solicitud' : 'We registered your request'))
-      const after = await page.evaluate(() => ({ pend: !!document.querySelector('#plan-pending'), enabled: [...document.querySelectorAll('.space-plan button')].filter(b => !b.disabled).length }))
+      const after = await page.evaluate(() => ({ pend: !!document.querySelector('#plan-pending'), enabled: [...document.querySelectorAll('.pg-plan button')].filter(b => !b.disabled).length }))
       report(state.requests === 1 && after.pend && after.enabled === 0, `plan envío ${tag}: 1 solicitud, sección pendiente y botones inactivos`, JSON.stringify(after))
       await axeAndLayout(page, `plan con solicitud ${tag}`)
       await ctx.close()
     }
     { // Mi plan con plan actual
-      const { ctx, page } = await open(browser, { width, lang, api: { currentPlan: { id: 1, name_es: 'Base', name_en: 'Basic' }, pending: null } })
-      await page.goto(BASE + '/app/plan', { waitUntil: 'networkidle' }); await page.waitForSelector('.space-plan')
+      const { ctx, page } = await open(browser, { width, lang, scheme, api: { currentPlan: { id: 1, name_es: 'Base', name_en: 'Basic' }, pending: null } })
+      await page.goto(BASE + '/app/plan', { waitUntil: 'networkidle' }); await page.waitForSelector('.pg-plan')
       const current = await page.getByRole('button', { name: new RegExp(t.planBtn + ' · ' + (lang === 'es' ? 'Base' : 'Basic')) }).isDisabled()
       const text = await page.locator('main').innerText()
       report(current && /Gratis|Free/.test(text) && /Es tu plan actual|This is your current plan/.test(text), `plan actual ${tag}: su botón inactivo con motivo y precio gratis`)
@@ -145,13 +145,16 @@ const btn = (page, name) => page.getByRole('button', { name, exact: true })
       await ctx.close()
     }
   }
-  { // Modo oscuro: este ámbito es claro por diseño; se mide y se declara (no se amplía el alcance)
-    const { ctx, page } = await open(browser, { width: 1360, lang: 'es', scheme: 'dark' })
-    await page.goto(BASE + '/app/data', { waitUntil: 'networkidle' })
-    const bg = await page.evaluate(() => ({ page: getComputedStyle(document.querySelector('.space-page')).backgroundColor, body: getComputedStyle(document.body).backgroundColor, color: getComputedStyle(document.querySelector('.space-page')).color }))
-    console.log('INFO  modo oscuro del sistema: fondo del espacio ' + bg.page + ', body ' + bg.body + ', texto ' + bg.color + ' (el ámbito .space-scope no define reglas de modo oscuro: se mantiene claro y legible)')
-    await axeAndLayout(page, 'datos con prefers-color-scheme: dark')
-    await ctx.close()
+  { // CLS a 390 px con CPU×4 (criterio de ES-307: ≤ 0,1) en Mis datos y Mi plan
+    for (const route of ['/app/data', '/app/plan']) {
+      const { ctx, page } = await open(browser, { width: 390, lang: 'es', scheme: 'light' })
+      const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+      await page.addInitScript(() => { window.__cls = 0; new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value }).observe({ type: 'layout-shift', buffered: true }) })
+      await page.goto(BASE + route, { waitUntil: 'networkidle' }); await page.waitForTimeout(1200)
+      const value = await page.evaluate(() => window.__cls)
+      report(value <= 0.1, `CLS ${route} 390 px CPU×4`, 'cls=' + value.toFixed(4))
+      await ctx.close()
+    }
   }
   await browser.close()
   process.exit(failures ? 1 : 0)

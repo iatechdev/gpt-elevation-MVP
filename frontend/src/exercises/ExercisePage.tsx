@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { Button, Dialog, TextAreaField } from '../cartografia'
+import { Notice, PersonScreen } from '../space/PersonScreen'
 import { registerExerciseGuard } from './navigationGuard'
 import { parseExercise, parseExercises, type Exercise } from './model'
 import './exercises.css'
@@ -26,13 +28,13 @@ export function ExercisePage() {
   return token ? <ExerciseSession key={token} token={token} /> : <Navigate to="/login" replace />
 }
 function ExerciseSession({ token }: { token: string }) {
-  const { lang, setLang, t } = useLanguage(); const tr = (key: string) => t(`exercise.${key}`)
+  const { lang, t } = useLanguage(); const tr = (key: string) => t(`exercise.${key}`)
   const navigate = useNavigate(); const [params] = useSearchParams(); const origin = params.get('from') === 'chat' ? '/app/chat' : '/app/dashboard'
   const [list, setList] = useState<Exercise[]>([]); const [phase, setPhase] = useState<Phase>('loading'); const [attempt, setAttempt] = useState(0)
   const [active, setActive] = useState<Exercise | null>(null); const [gone, setGone] = useState(false); const [opening, setOpening] = useState(false)
   const [notes, setNotes] = useState(''); const [status, setStatus] = useState('')
   const [copying, setCopying] = useState(false); const [target, setTarget] = useState<'selector' | 'origin' | null>(null)
-  const dialog = useRef<HTMLDialogElement>(null); const question = useRef<HTMLHeadingElement>(null); const retryButton = useRef<HTMLButtonElement>(null); const title = useRef<HTMLHeadingElement>(null)
+  const question = useRef<HTMLHeadingElement>(null)
   const live = useRef(false); const lock = useRef(false)
   const entry = active; const dirty = notes.length > 0
   useEffect(() => { live.current = true; return () => { live.current = false } }, [])
@@ -49,9 +51,9 @@ function ExerciseSession({ token }: { token: string }) {
     return () => { cancelled = true }
   }, [token, attempt])
   // Foco después de renderizar: «Reintentar» cuando aparece el error; el título del ejercicio al abrirlo; el aviso «ya no está disponible».
-  useEffect(() => { if (phase === 'error') retryButton.current?.focus() }, [phase])
+  useEffect(() => { if (phase === 'error') document.getElementById('exercise-retry')?.focus() }, [phase])
   useEffect(() => { if (entry) question.current?.focus() }, [entry])
-  useEffect(() => { if (gone) title.current?.focus() }, [gone])
+  useEffect(() => { if (gone) document.getElementById('exercise-main')?.focus() }, [gone])
   useEffect(() => {
     if (!dirty && !copying) return
     const unload = (event: BeforeUnloadEvent) => { event.preventDefault() }
@@ -59,7 +61,6 @@ function ExerciseSession({ token }: { token: string }) {
     const unregister = registerExerciseGuard(() => copying || !window.confirm(t('exercise.leave')))
     return () => { window.removeEventListener('beforeunload', unload); unregister() }
   }, [dirty, copying, t])
-  useEffect(() => { if (target) dialog.current?.showModal() }, [target])
   // Abrir un ejercicio vuelve a pedirlo por clave: si entre tanto se retiró (404), se dice y se refresca la lista.
   const open = useCallback(async (key: string) => {
     if (opening) return
@@ -75,7 +76,7 @@ function ExerciseSession({ token }: { token: string }) {
     } catch { if (live.current) setPhase('error') } finally { if (live.current) setOpening(false) }
   }, [opening, token])
   function finish(where: 'selector' | 'origin') {
-    dialog.current?.close(); setTarget(null); setNotes(''); setActive(null); setStatus('closed')
+    setTarget(null); setNotes(''); setActive(null); setStatus('closed')
     if (where === 'origin') navigate(origin)
   }
   function leave(where: 'selector' | 'origin') {
@@ -95,24 +96,27 @@ function ExerciseSession({ token }: { token: string }) {
   const time = (item: Exercise) => item.minutes === null ? null : <p>{fill(tr('time_range'), { a: item.minutes[0], b: item.minutes[1] })}</p>
   const review = (item: Exercise) => item.reviewStatus !== 'done' && <p className="exercise-warning">{tr('review')}</p>
   if (phase === 'session') return <Navigate to="/login" replace />
-  return <div className="exercise-scope"><a className="exercise-skip" href="#exercise-main">{tr('skip_content')}</a>
-    <header><button className="elv-btn" disabled={copying} onClick={() => leave('origin')}>{tr('back')}</button><div role="group" aria-label={tr('language')}>{(['es', 'en'] as const).map(l => <button key={l} className="elv-btn" aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header>
-    <div id="exercise-main" tabIndex={-1}><h1 ref={title} tabIndex={-1}>{tr('title')}</h1>
-      {phase === 'loading' ? <p role="status" aria-busy="true">{tr('loading')}</p>
-        : phase === 'error' ? <div role="alert"><p>{tr('load_error')}</p><button ref={retryButton} type="button" className="elv-btn" onClick={() => setAttempt(value => value + 1)}>{tr('retry')}</button></div>
-        : <>
-          {gone && <p role="alert">{tr('gone')}</p>}
-          <p>{tr('intro')}</p><p role={status === 'copy_error' ? 'alert' : 'status'} aria-live="polite">{status && tr(status)}</p>
-          {entry ? <section className="elv-card exercise-card"><h2>{entry[lang].title}</h2>{review(entry)}<p>{entry[lang].purpose}</p>{time(entry)}
-            <h3 ref={question} tabIndex={-1}>{entry[lang].question}</h3><p>{entry[lang].help}</p>
-            <label className="exercise-control" htmlFor="exercise-notes">{tr('notes')}</label><textarea className="elv-textarea" id="exercise-notes" rows={10} value={notes} disabled={copying} aria-describedby="exercise-private" onChange={event => { setNotes(event.target.value); setStatus('') }} />
-            <p id="exercise-private">{tr('private')}</p><p>{tr('clipboard')}</p>
-            <div className="exercise-actions"><button className="elv-btn" disabled={!dirty || copying} onClick={() => void copyNotes()}>{tr('copy')}</button><button className="elv-btn exercise-primary" disabled={copying} onClick={() => leave('selector')}>{tr('close')}</button></div>
-          </section> : list.length === 0 ? <p role="status">{tr('empty')}</p>
-            : <div className="exercise-grid">{list.map(item => <article className="elv-card exercise-card" key={item.key}><h2>{item[lang].title}</h2>{review(item)}<p>{item[lang].purpose}</p>{time(item)}<button className="elv-btn" disabled={opening} onClick={() => void open(item.key)}>{tr('choose')}</button></article>)}</div>}
-          {!entry && <button className="elv-btn" onClick={() => leave('origin')}>{tr('skip')}</button>}
-        </>}
-      <dialog ref={dialog} onClose={() => setTarget(null)} aria-labelledby="exercise-leave-title"><h2 id="exercise-leave-title">{tr('leave')}</h2><p>{tr('clipboard')}</p><p role="status">{status && tr(status)}</p><div className="exercise-actions"><button className="elv-btn" autoFocus onClick={() => dialog.current?.close()} disabled={copying}>{tr('return')}</button><button className="elv-btn" disabled={copying} onClick={() => void copyNotes()}>{tr('copy')}</button><button className="elv-btn exercise-primary" disabled={copying} onClick={() => { if (target) finish(target) }}>{tr('discard')}</button></div></dialog>
-    </div>
-  </div>
+  // ES-307: Cartografía (PersonScreen, cg-card, Button, TextAreaField, Notice y Dialog). El marco de persona ya pone idioma y «Saltar al contenido»; aquí queda «Volver».
+  const body = phase === 'loading' ? <Notice text={tr('loading')} />
+    : phase === 'error' ? <div role="alert" className="cg-banner cg-banner--error"><p className="cg-banner__title">{tr('load_error')}</p><Button id="exercise-retry" variant="ghost" onClick={() => setAttempt(value => value + 1)}>{tr('retry')}</Button></div>
+      : <>
+        {gone && <Notice error text={tr('gone')} />}
+        <Notice error={status === 'copy_error'} text={status ? tr(status) : ''} />
+        {entry ? <section className="cg-card pg-card"><h2>{entry[lang].title}</h2>{review(entry)}<p>{entry[lang].purpose}</p>{time(entry)}
+          <h3 ref={question} tabIndex={-1}>{entry[lang].question}</h3><p>{entry[lang].help}</p>
+          <TextAreaField label={tr('notes')} id="exercise-notes" rows={10} value={notes} disabled={copying} aria-describedby="exercise-private" onChange={event => { setNotes(event.target.value); setStatus('') }} />
+          <p id="exercise-private">{tr('private')}</p><p>{tr('clipboard')}</p>
+          <div className="pg-actions"><Button variant="ghost" disabled={!dirty || copying} onClick={() => void copyNotes()}>{tr('copy')}</Button><Button disabled={copying} onClick={() => leave('selector')}>{tr('close')}</Button></div>
+        </section> : list.length === 0 ? <Notice text={tr('empty')} />
+          : <div className="pg-grid">{list.map(item => <article className="cg-card pg-card" key={item.key}><h2>{item[lang].title}</h2>{review(item)}<p>{item[lang].purpose}</p>{time(item)}<Button disabled={opening} onClick={() => void open(item.key)}>{tr('choose')}</Button></article>)}</div>}
+        {!entry && <div className="pg-actions"><Button variant="ghost" onClick={() => leave('origin')}>{tr('skip')}</Button></div>}
+      </>
+  return <PersonScreen title={tr('title')} lead={tr('intro')} wide>
+    <div className="pg-actions"><Button variant="ghost" disabled={copying} onClick={() => leave('origin')}>{tr('back')}</Button></div>
+    <div id="exercise-main" tabIndex={-1}>{body}</div>
+    <Dialog open={!!target} onClose={() => { if (!copying) setTarget(null) }} title={tr('leave')}
+      actions={<><Button variant="ghost" disabled={copying} onClick={() => setTarget(null)}>{tr('return')}</Button><Button variant="ghost" disabled={copying} onClick={() => void copyNotes()}>{tr('copy')}</Button><Button variant="danger" disabled={copying} onClick={() => { if (target) finish(target) }}>{tr('discard')}</Button></>}>
+      <p>{tr('clipboard')}</p><p role="status">{status && tr(status)}</p>
+    </Dialog>
+  </PersonScreen>
 }

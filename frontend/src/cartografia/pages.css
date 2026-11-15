@@ -1,0 +1,21 @@
+/* ES-307: piezas de página de «Mi espacio» (Persona A) en Cartografía. Solo tokens --cg-*; sin colores fijos. Las crea el PR 1 (Mis datos y Mi plan) y las reutilizan los demás. */
+.pg-head { margin: 0 0 1.2rem; max-width: 46rem; }
+.pg-head .cg-tag { margin: 0 0 0.3rem; }
+.pg-title { font: 700 clamp(1.9rem, 4.6vw, 2.8rem) / 1 var(--cg-font-cond); text-transform: uppercase; margin: 0 0 0.5rem; }
+.pg-lead { margin: 0; }
+.pg-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; max-width: 46rem; }
+.pg-wide { max-width: 72rem; }
+.pg-card h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: 0.03em; margin: 0 0 0.5rem; }
+.pg-card h3 { font: 700 1.15rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: 0.04em; margin: 0.2rem 0; }
+.pg-card p { margin: 0.4rem 0; }
+.pg-card ul { margin: 0.4rem 0; padding-left: 1.2rem; }
+.pg-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-top: 0.9rem; }
+.pg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: 1rem; margin-top: 1rem; }
+.pg-grid > article { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+.pg-grid > article .cg-btn { margin-top: auto; align-self: flex-start; }
+.pg-price { font: 700 1.5rem var(--cg-font-cond); margin: 0; }
+.pg-live:empty { display: none; }
+.pg-dialog ul { margin: 0.4rem 0 1rem; padding-left: 1.2rem; }
+.pg-dialog .cg-input { font-family: var(--cg-font-mono, monospace); letter-spacing: 0.08em; }
+/* Reserva el alto de la pantalla: mientras llegan los datos el pie del marco queda debajo del pliegue y no salta al cargar (CLS ≤ 0,1 a 390 px con CPU×4). */
+.pg { min-height: 100dvh; }
