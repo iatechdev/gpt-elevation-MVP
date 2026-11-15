@@ -53,9 +53,9 @@ test('ES-153 P1: «Ejercicios opcionales» y la Brújula del chat siguen alcanza
 
 test('ES-153 regresión de contraste (QA-2): el color de enlace del marco tiene especificidad cero, así ninguna clase de enlace-botón de una pantalla pierde contra él', () => {
   const css = read('../src/cartografia/cartografia.css')
-  // `.cg a` (0,1,1) le ganaba a .elv-btn-primary y empataba con a.map-access-cta; `:where(.cg) a` es (0,0,1).
+  // `.cg a` sin capa (0,1,1) ganaba a .elv-btn-primary (capa daisyUI: una regla sin capa siempre gana) y empataba con a.map-access-cta; en `@layer base` con :where (0,0,1) pierde contra ambos.
   assert.doesNotMatch(css, /^\.cg a[\s:{[][^\n]*color\s*:/m)
-  assert.match(css, /^:where\(\.cg\) a \{ color: var\(--cg-mark\);/m)
+  assert.match(css, /^@layer base { :where\(\.cg\) a \{ color: var\(--cg-mark\);/m)
 })
 
 test('ES-153 E280-2/3/4: el pie no se pinta con el esqueleto, el marco y la pantalla se precargan en paralelo con la sesión y el aviso del chat bajo queda fijo y visible', () => {
