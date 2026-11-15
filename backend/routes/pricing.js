@@ -149,7 +149,7 @@ router.post('/', validateBody({ ...optionalFields, slug: nonempty, name_es: none
       features_es:    v.features_es   ?? [],
       features_en:    v.features_en   ?? [],
       isHighlighted:  v.isHighlighted ?? false,
-      isActive:       true,
+      isActive:       v.isActive      ?? true,
       order:          v.order         ?? 0,
     });
 
@@ -170,7 +170,7 @@ router.put('/:id', validateBody(optionalFields), async (req, res) => {
     if (!plan) return res.status(404).json({ error: 'Plan no encontrado.' });
 
     const allowed = [
-      'slug','name_es','name_en','description_es','description_en',
+      'name_es','name_en','description_es','description_en',
       'price','currency','period',
       'features_es','features_en',
       'isHighlighted','isActive','order',

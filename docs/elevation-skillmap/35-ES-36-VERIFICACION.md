@@ -1,5 +1,7 @@
 # ES-36 — Interfaz contra fixtures y recomendación de contrato
 
+> Actualización ES-183: la página administrativa muestra cuatro resultados «Sin datos» y metas propuestas separadas, sin consultar ni simular resultados. La actualización está deshabilitada hasta integrar una fuente autorizada. El formulario de feedback conserva su bandera de simulación. El contrato de permisos, consentimiento y supresión para datos reales sigue pendiente de revisión; esta interfaz no completa la integración. Las pruebas y descripción inferiores corresponden al tramo histórico ES-36.
+
 [Dev-Codex]
 
 28-oct-2026. Base main 6dc61e9; rama propia `ES-36-utilidad-piloto`. Diseño/plan en Jira 10246. Aprobación recibida: «Aprobar diseño e interfaz contra fixtures»; para los contratos se solicitó «El contrato que me recomiendes».

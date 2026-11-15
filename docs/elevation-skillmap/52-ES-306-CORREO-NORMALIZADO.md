@@ -27,3 +27,9 @@ Aditiva e idempotente. **Reporta** los grupos de cuentas duplicadas por `lower(b
 
 ## Pruebas
 `test/es-306-email.test.cjs` (lógica pura), `test/integration/es-306-postgres.cjs` (HTTP real + PostgreSQL real), `scripts/es306-mutations.cjs` (14 mutaciones). CI: `npm run test:email-case:pg`.
+
+## Seguimientos de QA (PR «ES-306 seguimientos»)
+- **E306-4 · bases que ya aplicaron la primera versión de la migración** (índice `users_email_lower_unique` sobre `lower(email)` sin `btrim`): migración `20261115010000-es306-email-index-repair.cjs`. Lee la definición real del índice (`pg_indexes`): si no existe, lo crea solo sin duplicados; si ya incluye `btrim`, no hace nada; si es el viejo, lo reemplaza por `lower(btrim(email))` **solo si no hay duplicados** por esa expresión (con duplicados lo deja y avisa con ids, sin correos). Solo cambia un índice, en una transacción; no borra, fusiona ni reescribe cuentas. Su `down` no hace nada (no se repone un índice más débil). En una base nueva la migración original ya crea el índice correcto y esta no hace nada.
+- **E306-1** (el catch del registro no convierte un fallo real en «ya registrado»), **E306-2** (con duplicados antiguos por casing, el casing ambiguo entra a la cuenta más antigua) y **E306-3** (el bloqueo de login de correos sin cuenta cuenta una sola clave en cualquier casing): pruebas nuevas en `test/integration/es-306-postgres.cjs` y mutaciones M17–M24 en `scripts/es306-mutations.cjs`.
+- **E306-5** (`btrim` solo recorta el espacio ASCII; `trim()` de JavaScript también tabulador, salto y espacios Unicode): sin cambio de comportamiento. El registro actual ya rechaza esos caracteres como `invalid_email`; una cuenta antigua guardada con ellos solo se detectaría con el informe `npm run check:email-duplicates` antes de migrar un entorno real.
+- **E306-6** (fusión de duplicados antiguos): sigue siendo decisión de Mauricio/Alejo.

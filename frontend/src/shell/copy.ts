@@ -24,6 +24,7 @@ const es = {
   goHome: 'Ir a mi inicio', // nuevo
   checking: 'Verificando tu acceso…', // nuevo
   unavailable: 'No pudimos verificar tu sesión.', unavailableBody: 'Tu sesión sigue abierta. Revisa tu conexión e inténtalo de nuevo.', retry: 'Reintentar', // nuevo
+  loadingScreen: 'Cargando la pantalla…', // nuevo (ES-153, paso 1)
 }
 
 const en: typeof es = {
@@ -41,6 +42,7 @@ const en: typeof es = {
   goHome: 'Go to my home',
   checking: 'Checking your access…',
   unavailable: 'We could not verify your session.', unavailableBody: 'Your session is still open. Check your connection and try again.', retry: 'Try again',
+  loadingScreen: 'Loading the screen…',
 }
 
 export const shellCopy = { es, en }

@@ -7,6 +7,7 @@ import { Banner, ItemList } from '../cartografia/pieces'
 import { Dialog } from '../cartografia/interactive'
 import { useLanguage } from '../i18n/useLanguage'
 import '../pages/progressCopy.ts'
+import { AREA_OPTIONS, STYLE_OPTIONS, LANGUAGE_OPTIONS } from './answerLabels.ts'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -16,10 +17,10 @@ type Step = 'questionnaire' | 'results' | 'done'
 type Answers = { area: string; style: string; language: string }
 const EMPTY: Answers = { area: '', style: '', language: '' }
 
-// [valor enviado al servidor, clave del texto visible]. La clave interna 'anxiety' NO cambia: solo su etiqueta («Estrés y carga»).
-const AREAS: [string, string][] = [['anxiety', 'pr_a_anxiety'], ['depression', 'pr_a_depression'], ['relationships', 'pr_a_relationships'], ['personal growth', 'pr_a_growth'], ['stress', 'pr_a_stress'], ['other', 'pr_a_other']]
-const STYLES: [string, string][] = [['reflective and exploratory', 'pr_s_reflective'], ['structured with goals', 'pr_s_structured'], ['empathetic and listening', 'pr_s_empathetic'], ['any', 'pr_s_any']]
-const LANGUAGES: [string, string][] = [['Spanish', 'pr_l_es'], ['English', 'pr_l_en'], ['No preference', 'pr_l_none']]
+// Opciones del cuestionario ([valor enviado, clave del texto]): viven en el mapa compartido ES-314 (answerLabels.ts). La clave interna 'anxiety' NO cambia: solo su etiqueta («Estrés y carga»).
+const AREAS = AREA_OPTIONS
+const STYLES = STYLE_OPTIONS
+const LANGUAGES = LANGUAGE_OPTIONS
 
 export function ProgressMatching({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLanguage()

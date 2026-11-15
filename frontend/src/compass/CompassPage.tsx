@@ -164,7 +164,7 @@ function CompassSession({ token }: { token: string }) {
     <header><button className="elv-btn" disabled={!!busy} onClick={leave}>{tr('back')}</button>
       <div role="group" aria-label={tr('language')}>{(['es', 'en'] as const).map(language => <button className="elv-btn" key={language} aria-pressed={lang === language} onClick={() => setLang(language)}>{language.toUpperCase()}</button>)}</div>
     </header>
-    <main id="compass-main" tabIndex={-1}>
+    <div id="compass-main" tabIndex={-1}>
       <h1>{tr('title')}</h1><p>{tr('intro')}</p><p>{tr('privacy')} {tr('caution')}</p>
       <div ref={noticeRef} tabIndex={-1} role={failed ? 'alert' : 'status'} aria-live="polite" className={failed ? 'compass-error' : 'compass-notice'}>{notice && tr(notice)}</div>
       {busy && <p role="status">{tr(busy)}</p>}
@@ -203,6 +203,6 @@ function CompassSession({ token }: { token: string }) {
         {context.active && <p>{tr('unchanged')}</p>}<button className="elv-btn" disabled={!!busy} onClick={leave}>{tr(context.active ? 'no_changes' : 'skip_transfer')}</button>
       </>}
       <dialog ref={dialog} aria-labelledby="withdraw-title"><h2 id="withdraw-title">{tr('withdraw_confirm')}</h2><p>{tr('withdraw_help')}</p><div className="compass-actions"><button className="elv-btn" autoFocus onClick={() => dialog.current?.close()}>{tr('cancel')}</button><button className="elv-btn compass-primary" onClick={() => void withdraw()}>{tr('withdraw_confirm')}</button></div></dialog>
-    </main>
+    </div>
   </div>
 }

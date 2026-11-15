@@ -31,9 +31,9 @@ function Shell({ children }: { children?: ReactNode }) {
     <CartografiaRoot className="prg">
       <a className="cg-skip" href="#pilot-main">{c.skip}</a>
       <header className="cg-header"><Link className="cg-btn cg-btn--ghost" to="/app/dashboard"><span aria-hidden="true">← </span>{c.back}</Link><div className="cg-header__end"><LangSwitch /></div></header>
-      <main id="pilot-main" className="cg-page prg-main" tabIndex={-1}>
+      <div id="pilot-main" className="cg-page prg-main" tabIndex={-1}>
         {enabled ? (live ? children : <><Banner title={c.preview}><p>{c.local}</p></Banner>{children}</>) : <p role="status">{c.disabled}</p>}
-      </main>
+      </div>
     </CartografiaRoot>
   )
 }

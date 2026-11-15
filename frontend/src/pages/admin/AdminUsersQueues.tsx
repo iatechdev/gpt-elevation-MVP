@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useAdminText } from '../../i18n/useAdminText'
 import { useLanguage } from '../../i18n/useLanguage'
 import { colors, radius, spacing } from '../../styles/tokens'
+import '../progressCopy.ts'
+import { answerLabel } from '../../progress/answerLabels.ts'
 import { AdminDialog } from './AdminDialog'
 import { adminRequest } from './adminUsersApi.ts'
 import { MSG, resolveResult } from './adminUsersLogic.ts'
@@ -31,7 +33,7 @@ function Frame<T>({ list, empty, children }: { list: ListState<T>; empty: string
 
 export function MatchingPanel({ list, onResolved }: { list: ListState<MatchingItem>; onResolved: () => void }) {
   const tr = useAdminText()
-  const { lang } = useLanguage()
+  const { lang, t } = useLanguage()
   const [busyId, setBusyId] = useState<number | null>(null)
   const [msg, setMsg] = useState<Msg>(null)
   async function confirmMatch(item: MatchingItem) {
@@ -52,7 +54,7 @@ export function MatchingPanel({ list, onResolved }: { list: ListState<MatchingIt
               <div>
                 <div style={{ fontWeight: 500, color: colors.text, overflowWrap: 'anywhere' }}>{item.user?.name} → {item.chosenTherapist?.name}</div>
                 <div style={{ fontSize: '0.78rem', color: colors.textMuted, marginTop: spacing.xs }}>
-                  {tr('Área')}: {item.answers?.area ?? '—'} · {tr('Estilo')}: {item.answers?.style ?? '—'} · {tr('Idioma')}: {item.answers?.language ?? '—'} · {new Date(item.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  {tr('Área')}: {answerLabel('area', item.answers?.area, t)} · {tr('Estilo')}: {answerLabel('style', item.answers?.style, t)} · {tr('Idioma')}: {answerLabel('language', item.answers?.language, t)} · {new Date(item.createdAt).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </div>
               </div>
               <button type="button" style={{ ...btn.primary, ...(busyId === item.id ? btn.disabled : {}) }} onClick={() => void confirmMatch(item)} disabled={busyId !== null} aria-busy={busyId === item.id}>

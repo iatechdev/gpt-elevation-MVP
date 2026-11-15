@@ -65,7 +65,7 @@ export function UserProgress() {
         <div className="cg-header__end"><LangSwitch /></div>
       </header>
 
-      <main id="progress-main" className="cg-page prg-main" tabIndex={-1}>
+      <div id="progress-main" className="cg-page prg-main" tabIndex={-1}>
         <div className="prg-head">
           <div>
             <h1 ref={titleRef} tabIndex={-1} className="cg-h1">{t('pr_title')}</h1>
@@ -85,7 +85,7 @@ export function UserProgress() {
         )}
 
         {!loading && !failed && <ProgressPanel stats={stats} moodLogs={moodLogs} ratings={ratings} recommendations={recommendations} />}
-      </main>
+      </div>
 
       <ProgressMatching open={matching} onClose={() => setMatching(false)} />
     </CartografiaRoot>

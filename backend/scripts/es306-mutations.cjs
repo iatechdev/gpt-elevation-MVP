@@ -5,6 +5,7 @@ const fs = require('node:fs'); const path = require('node:path'); const { spawnS
 const backend = path.resolve(__dirname, '..');
 const URL_ = process.env.ES306_TEST_DATABASE_URL; if (!URL_ || !['127.0.0.1', 'localhost'].includes(new URL(URL_).hostname)) { console.error('Se requiere ES306_TEST_DATABASE_URL en loopback.'); process.exit(2); }
 const H = 'utils/emailNormalize.js'; const A = 'routes/auth.js'; const P = 'routes/passwordReset.js'; const M = 'migrations/20261114010000-es306-email-lower-unique.cjs';
+const R = 'migrations/20261115010000-es306-email-index-repair.cjs'; const L = 'utils/loginAttempts.js';
 const INDEX_OFF = [M, 'CREATE UNIQUE INDEX IF NOT EXISTS "${INDEX}" ON "Users" (lower(btrim("email")))', 'SELECT 1'];
 // [nombre, [[archivo, texto original, texto mutado], …]]. Cada original debe existir (si no, la mutación está obsoleta y el script falla).
 const MUTATIONS = [
@@ -22,9 +23,19 @@ const MUTATIONS = [
   ['M11 el aviso de duplicados imprime ids sin agrupar y filtra correos', [[M, "`[${g.ids.join(',')}]`", '`${g.ids.join(\',\')} (correo ${g.ids.length})`'], [M, 'array_agg("id" ORDER BY "id") AS "ids"', 'array_agg("id" ORDER BY "id") AS "ids", min("email") AS "mail"'], [M, 'return rows.map((row) => ({ accounts: row.accounts, ids: row.ids }));', 'return rows.map((row) => ({ accounts: row.accounts, ids: row.ids, mail: row.mail }));'], [M, 'Ids por grupo:', 'Correo ${groups[0].mail} Ids por grupo:']]],
   ['M12 el down no exige permiso explícito', [[M, "require('../scripts/guard-down.cjs')('20261114010000-es306-email-lower-unique');", '']]],
   ['M14 la búsqueda de respaldo no recorta el valor guardado (solo lower)', [[H, "fn('lower', fn('btrim', col('email')))", "fn('lower', col('email'))"]]],
-  ['M15 el índice único no cubre btrim', [[M, 'ON "Users" (lower(btrim("email")))', 'ON "Users" (lower("email"))']]],
+  ['M15 el índice único no cubre btrim (ni en la migración original ni en la reparación, que si no lo corregiría)', [[M, 'ON "Users" (lower(btrim("email")))', 'ON "Users" (lower("email"))'], [R, 'ON "Users" (lower(btrim("email")))', 'ON "Users" (lower("email"))']]],
   ['M16 las invitaciones no recortan el valor guardado', [['routes/invitations.js', "if (await User.findOne({ where: sqlWhere(fn('lower', fn('btrim', col('email'))), email) }))", "if (await User.findOne({ where: sqlWhere(fn('lower', col('email')), email) }))"]]],
   ['M13 los duplicados no cuentan el correo con espacios', [[M, 'GROUP BY lower(btrim("email"))', 'GROUP BY lower("email")']]],
+  ['M26 E306-4 el down de la reparación no exige permiso explícito', [[R, "require('../scripts/guard-down.cjs')('20261115010000-es306-email-index-repair');", '']]],
+  ["M25 E306-4 el reemplazo no es transaccional (si falla el CREATE queda sin índice único)", [[R, "return sequelize.transaction(async (transaction) => {", "return (async (transaction) => {"], [R, "return { action: 'replaced', groups: [] };\n  });", "return { action: 'replaced', groups: [] };\n  })();"]]],
+  ['M17 E306-1 el catch del registro trata cualquier fallo como «ya registrado»', [[A, "if (error && error.name === 'SequelizeUniqueConstraintError')", 'if (error)']]],
+  ['M18 E306-2 la búsqueda con duplicados antiguos elige la cuenta más NUEVA', [[H, "order: [['id', 'ASC']]", "order: [['id', 'DESC']]"]]],
+  ['M19 E306-3 el bloqueo de correos inexistentes distingue mayúsculas', [[L, ".update(String(email ?? '').trim().toLowerCase())", ".update(String(email ?? '').trim())"]]],
+  ['M20 E306-4 la reparación nunca reemplaza el índice viejo', [[R, 'if (groups.length) {', 'if (true) {']]],
+  ['M21 E306-4 la reparación reemplaza el índice aunque haya duplicados', [[R, 'if (groups.length) {', 'if (false) {']]],
+  ['M22 E306-4 la reparación vuelve a recrear un índice que ya es correcto (no idempotente)', [[R, 'if (/btrim/i.test(rows[0].indexdef))', 'if (false)']]],
+  ['M23 E306-4 la reparación deja el índice nuevo sin btrim', [[R, 'CREATE UNIQUE INDEX "${INDEX}" ON "Users" (lower(btrim("email")))', 'CREATE UNIQUE INDEX "${INDEX}" ON "Users" (lower("email"))']]],
+  ['M24 E306-4 el aviso de la reparación imprime ids sin agrupar y filtra correos', [[R, "Ids por grupo: ${groups.map((g) => `[${g.ids.join(',')}]`).join(' ')}", "Ids por grupo: ${groups.map((g) => g.ids.join(',')).join(' ')} correo ${groups[0].accounts}@"]]],
 ];
 const only = process.argv[2]; const selected = MUTATIONS.filter(([name]) => !only || name.includes(only));
 const originals = new Map(); const restore = () => { for (const [file, text] of originals) fs.writeFileSync(path.join(backend, file), text); originals.clear(); };

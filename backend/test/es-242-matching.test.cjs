@@ -140,10 +140,13 @@ test('ES-251 las opciones de MatchingModal y ProgressMatching están TODAS en el
   const block = (name) => modal.slice(modal.indexOf(`const ${name} = [`), modal.indexOf(']', modal.indexOf(`const ${name} = [`)));
   const keys = (src) => [...src.matchAll(/key: '([^']+)'/g)].map((m) => m[1]);
   const fromModal = { area: keys(block('TOPICS')), style: keys(block('APPROACHES')), language: keys(block('LANGUAGES')) };
-  // ES-173: el emparejamiento de /app/progress vive en progress/ProgressMatching.tsx (listas AREAS, STYLES y LANGUAGES de pares [valor enviado, clave de texto])
+  // ES-173/ES-314: el emparejamiento de /app/progress usa las listas AREA_OPTIONS, STYLE_OPTIONS y LANGUAGE_OPTIONS de progress/answerLabels.ts (pares [valor enviado, clave de texto]);
+  // ProgressMatching.tsx las toma de ahí (se comprueba que sigue siendo así, para que la guardia lea lo que la pantalla realmente ofrece).
   const progress = read('progress/ProgressMatching.tsx');
-  const sel = (name) => { const i = progress.indexOf(`const ${name}: [string, string][] = [`); return [...progress.slice(i, progress.indexOf('\n', i)).matchAll(/\['([^']+)', 'pr_/g)].map((m) => m[1]); };
-  const fromProgress = { area: sel('AREAS'), style: sel('STYLES'), language: sel('LANGUAGES') };
+  assert.match(progress, /const AREAS = AREA_OPTIONS/); assert.match(progress, /const STYLES = STYLE_OPTIONS/); assert.match(progress, /const LANGUAGES = LANGUAGE_OPTIONS/);
+  const labels = read('progress/answerLabels.ts');
+  const sel = (name) => { const i = labels.indexOf(`const ${name}: [string, string][] = [`); return [...labels.slice(i, labels.indexOf('\n', i)).matchAll(/\['([^']+)', 'pr_/g)].map((m) => m[1]); };
+  const fromProgress = { area: sel('AREA_OPTIONS'), style: sel('STYLE_OPTIONS'), language: sel('LANGUAGE_OPTIONS') };
   for (const [source, lists] of [['MatchingModal', fromModal], ['ProgressMatching', fromProgress]]) for (const [key, values] of Object.entries(lists)) {
     assert.ok(values.length >= 3, `${source}.${key}: se leyeron opciones`);
     for (const value of values) assert.equal((await post(request, { [key]: value })).status, 200, `${source} ${key}=${value}`);
