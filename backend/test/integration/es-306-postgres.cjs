@@ -117,6 +117,87 @@ test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, l
     await assert.rejects(() => q(`INSERT INTO "Users" (name, email, password, role, active, "createdAt", "updatedAt") VALUES ('x','ANA.PEREZ@example.invalid','x','user',true,now(),now())`), /users_email_lower_unique|duplicate key/);
   });
 
+  await t.test('E306-1: un fallo REAL de la base al registrar (no un duplicado) sigue siendo 500 genérico, sin SQL ni correo, y NO se disfraza de «ya registrado»', async () => {
+    await q(`CREATE OR REPLACE FUNCTION es306_fail() RETURNS trigger AS 'BEGIN RAISE EXCEPTION ''es306 fallo inyectado''; RETURN NEW; END' LANGUAGE plpgsql`);
+    await q(`CREATE TRIGGER es306_fail_insert BEFORE INSERT ON "Users" FOR EACH ROW EXECUTE FUNCTION es306_fail()`);
+    try {
+      const before = await people();
+      const out = await register('Fallo.Inyectado@Example.invalid');
+      assert.equal(out.status, 500, JSON.stringify(out.body));
+      assert.deepEqual(out.body, { error: 'Error en el servidor al registrar.' }, 'mensaje genérico estable');
+      assert.ok(!/es306|INSERT|Users|fallo\.inyectado|example\.invalid/i.test(JSON.stringify(out.body)), 'sin SQL ni correo en la respuesta');
+      assert.equal(await people(), before);
+    } finally { await q('DROP TRIGGER IF EXISTS es306_fail_insert ON "Users"'); await q('DROP FUNCTION IF EXISTS es306_fail()'); }
+    assert.equal((await register('Fallo.Inyectado@Example.invalid')).status, 201, 'sin el fallo, el mismo correo se registra');
+  });
+
+  await t.test('E306-3: el bloqueo de login de un correo SIN cuenta cuenta igual en cualquier casing o espacios (una sola clave)', async () => {
+    const outs = [];
+    for (const variant of ['Fantasma.Sin.Cuenta@Example.invalid', 'FANTASMA.SIN.CUENTA@example.invalid', ' fantasma.sin.cuenta@EXAMPLE.invalid ']) outs.push((await login(variant, 'Otra-Clave-9999!')).status);
+    assert.deepEqual(outs, [401, 401, 423], 'tres fallos con casings distintos bloquean como un solo correo');
+    assert.equal((await login('fantasma.sin.cuenta@example.invalid', 'Otra-Clave-9999!')).status, 423, 'el bloqueo vale también para el casing normalizado');
+  });
+
+  await t.test('E306-4: la migración de reparación reemplaza el índice VIEJO (lower sin btrim) por lower(btrim) sin tocar ninguna cuenta; con duplicados lo deja y avisa; idempotente', async () => {
+    const repair = require('../../migrations/20261115010000-es306-email-index-repair.cjs');
+    const def = async () => (await q(`SELECT indexdef FROM pg_indexes WHERE indexname = 'users_email_lower_unique'`))[0]?.indexdef;
+    const snapshot = async () => JSON.stringify(await q('SELECT id, email, active, role FROM "Users" ORDER BY id'));
+    const warnings = []; const realWarn = console.warn; console.warn = (...args) => { warnings.push(args.join(' ')); };
+    try {
+      assert.equal((await repair.repairIndex(app)).action, 'already-correct', 'con el índice correcto no hace nada');
+      const correct = await def(); assert.match(correct, /btrim/);
+      // Base que aplicó la primera versión: índice viejo lower(email).
+      await q('DROP INDEX "users_email_lower_unique"'); await q('CREATE UNIQUE INDEX "users_email_lower_unique" ON "Users" (lower("email"))');
+      assert.doesNotMatch(await def(), /btrim/, 'precondición: índice viejo');
+      const a = await mkUser('user'); const b = await mkUser('user');
+      await q('UPDATE "Users" SET email=$2 WHERE id=$1', [a.id, 'repara.espacios@example.invalid']); await q('UPDATE "Users" SET email=$2 WHERE id=$1', [b.id, ' repara.espacios@example.invalid ']);
+      const before = await snapshot();
+      await repair.up(app);
+      assert.doesNotMatch(await def(), /btrim/, 'con duplicados por espacios NO se reemplaza');
+      assert.equal(await snapshot(), before, 'no se tocó ninguna cuenta');
+      assert.ok(warnings.length === 1 && /ES-306/.test(warnings[0]) && !/@/.test(warnings[0]) && warnings[0].includes(`[${a.id},${b.id}]`), `avisa con ids y sin correos: ${warnings.join('|')}`);
+      await q('DELETE FROM "Users" WHERE id=$1', [b.id]);
+      assert.equal((await repair.repairIndex(app)).action, 'replaced'); assert.equal(await def(), correct, 'queda exactamente el índice correcto');
+      assert.equal((await repair.repairIndex(app)).action, 'already-correct', 'idempotente');
+      await assert.rejects(() => q(`INSERT INTO "Users" (name, email, password, role, active, "createdAt", "updatedAt") VALUES ('x',' REPARA.ESPACIOS@example.invalid','x','user',true,now(),now())`), /duplicate key/, 'ahora el índice frena el duplicado con espacios');
+      await q('DELETE FROM "Users" WHERE id=$1', [a.id]);
+    } finally { console.warn = realWarn; }
+    assert.equal(await hasIndex(), true);
+  });
+
+  await t.test('E306-4 (estados y atomicidad): índice ausente, correcto (no-op: no toca el índice) e índice viejo con un fallo a mitad del reemplazo (se revierte: nunca queda sin índice único)', async () => {
+    const repair = require('../../migrations/20261115010000-es306-email-index-repair.cjs');
+    const info = async () => (await q(`SELECT i.indexrelid::int AS oid, pg_get_indexdef(i.indexrelid) AS def FROM pg_index i JOIN pg_class c ON c.oid = i.indexrelid WHERE c.relname = 'users_email_lower_unique'`))[0];
+    const warnings = []; const realWarn = console.warn; console.warn = (...args) => { warnings.push(args.join(' ')); };
+    try {
+      // Correcto: no-op real (mismo objeto de índice, no se recreó).
+      const correct = await info(); assert.match(correct.def, /btrim/);
+      assert.equal((await repair.repairIndex(app)).action, 'already-correct'); await repair.up(app);
+      assert.deepEqual(await info(), correct, 'con el índice correcto la migración no lo toca (mismo oid y definición)');
+      // Ausente y sin duplicados: lo crea.
+      await q('DROP INDEX "users_email_lower_unique"'); assert.equal(await hasIndex(), false);
+      assert.equal((await repair.repairIndex(app)).created, true); assert.match((await info()).def, /btrim/);
+      // Ausente CON duplicados: no lo crea, no cambia filas, avisa sin correos.
+      await q('DROP INDEX "users_email_lower_unique"');
+      const a = await mkUser('user'); const b = await mkUser('user');
+      await q('UPDATE "Users" SET email=$2 WHERE id=$1', [a.id, 'ausente.dup@example.invalid']); await q('UPDATE "Users" SET email=$2 WHERE id=$1', [b.id, 'AUSENTE.DUP@example.invalid']);
+      const rows = JSON.stringify(await q('SELECT id, email FROM "Users" ORDER BY id'));
+      assert.equal((await repair.repairIndex(app)).created, false); assert.equal(await hasIndex(), false, 'con duplicados no se crea');
+      assert.equal(JSON.stringify(await q('SELECT id, email FROM "Users" ORDER BY id')), rows, 'filas intactas');
+      assert.ok(warnings.length >= 1 && warnings.every((w) => !/@/.test(w)), 'el aviso no imprime correos');
+      await q('DELETE FROM "Users" WHERE id IN ($1,$2)', [a.id, b.id]);
+      // Atomicidad: índice viejo y el CREATE del nuevo falla → se revierte el DROP; la tabla nunca queda sin índice único.
+      await q('CREATE UNIQUE INDEX "users_email_lower_unique" ON "Users" (lower("email"))');
+      const old = await info(); assert.doesNotMatch(old.def, /btrim/);
+      const failing = new Proxy(app, { get(target, prop) { const v = target[prop]; if (prop !== 'query') return typeof v === 'function' ? v.bind(target) : v; return (sql, ...rest) => (/CREATE UNIQUE INDEX/.test(String(sql)) ? Promise.reject(new Error('fallo inyectado en el CREATE')) : target.query(sql, ...rest)); } });
+      await assert.rejects(() => repair.repairIndex(failing), /fallo inyectado/);
+      assert.deepEqual(await info(), old, 'se revirtió: sigue el índice viejo (mismo oid), no quedó sin índice único');
+      await assert.rejects(() => q(`INSERT INTO "Users" (name, email, password, role, active, "createdAt", "updatedAt") VALUES ('x','ANA.PEREZ@example.invalid','x','user',true,now(),now())`), /duplicate key/, 'la unicidad sigue protegida tras el fallo');
+      assert.equal((await repair.repairIndex(app)).action, 'replaced'); assert.match((await info()).def, /btrim/);
+    } finally { console.warn = realWarn; }
+    assert.equal(await hasIndex(), true);
+  });
+
   await t.test('migración con duplicados REALES: reporta (ids, sin correos), no crea el índice, no borra ni fusiona nada; resuelto, lo crea; idempotente; down con permiso', async () => {
     const mig = migration; const warnings = []; const realWarn = console.warn; console.warn = (...args) => { warnings.push(args.join(' ')); };
     try {
@@ -126,6 +207,14 @@ test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, l
       const mixed = await mkUser('user'); await q('UPDATE "Users" SET email=$2 WHERE id=$1', [mixed.id, 'Mixta.Antigua@Example.invalid']); const guardedMixed = await people();
       assert.equal((await register('mixta.antigua@example.invalid')).status, 400, 'una cuenta antigua con mayúsculas tampoco se duplica sin el índice (el único exacto no la ve)'); assert.equal(await people(), guardedMixed);
       await q('DELETE FROM "Users" WHERE id=$1', [mixed.id]);
+      // E306-2: dos cuentas ANTIGUAS duplicadas por casing (sin índice): el texto exacto entra a su propia cuenta y el casing distinto va a la MÁS ANTIGUA.
+      const first = await mkUser('user'); const second = await mkUser('user');
+      await q('UPDATE "Users" SET email=$2, password=$3 WHERE id=$1', [first.id, 'orden.antigua@example.invalid', await bcrypt.hash('Clave-Primera-2026!', 4)]);
+      await q('UPDATE "Users" SET email=$2, password=$3 WHERE id=$1', [second.id, 'ORDEN.ANTIGUA@example.invalid', await bcrypt.hash('Clave-Segunda-2026!', 4)]);
+      assert.equal((await login('Orden.Antigua@Example.invalid', 'Clave-Primera-2026!')).status, 200, 'un casing que no es de ninguna va a la cuenta más antigua');
+      assert.equal((await login('ORDEN.ANTIGUA@example.invalid', 'Clave-Segunda-2026!')).status, 200, 'el texto exacto entra a su propia cuenta');
+      assert.equal((await login('Orden.Antigua@Example.invalid', 'Clave-Segunda-2026!')).status, 401, 'el casing ambiguo NO entra a la más nueva');
+      await q('DELETE FROM "Users" WHERE id IN ($1,$2)', [first.id, second.id]);
       const a = await mkUser('user'); const b = await mkUser('user'); const c = await mkUser('user'); const lone = await mkUser('user');
       await q('UPDATE "Users" SET email=$2 WHERE id=$1', [a.id, 'dup.uno@example.invalid']); await q('UPDATE "Users" SET email=$2 WHERE id=$1', [b.id, 'DUP.UNO@Example.invalid']); await q('UPDATE "Users" SET email=$2 WHERE id=$1', [c.id, ' dup.uno@example.invalid ']);
       await q('UPDATE "Users" SET email=$2 WHERE id=$1', [lone.id, 'sola@example.invalid']);
