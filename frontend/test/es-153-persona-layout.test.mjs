@@ -51,12 +51,11 @@ test('ES-153 P1: «Ejercicios opcionales» y la Brújula del chat siguen alcanza
   assert.match(read('../src/pages/ChatPage.tsx'), /<ChatLimitsNotice \/>/)
 })
 
-test('ES-153 regresión de contraste (QA-2): la regla de enlaces del marco no pisa a.elv-btn* (primary, secondary, danger…)', () => {
+test('ES-153 regresión de contraste (QA-2): el color de enlace del marco tiene especificidad cero, así ninguna clase de enlace-botón de una pantalla pierde contra él', () => {
   const css = read('../src/cartografia/cartografia.css')
-  // Ningún selector `.cg a {color}` sin excluir los enlaces-botón heredados: (0,1,1) le gana a `.elv-btn-primary` (0,1,0) y deja azul sobre fondo oscuro (2,14:1).
-  const linkRules = css.split('\n').filter(line => /^\.cg a[\s:{[]/.test(line) && /\bcolor\s*:/.test(line))
-  assert.ok(linkRules.length >= 1, 'existe la regla de color de enlaces del marco')
-  for (const line of linkRules) assert.match(line, /^\.cg a:not\(\[class\*='elv-btn'\]\)/, `la regla excluye a.elv-btn*: ${line}`)
+  // `.cg a` (0,1,1) le ganaba a .elv-btn-primary y empataba con a.map-access-cta; `:where(.cg) a` es (0,0,1).
+  assert.doesNotMatch(css, /^\.cg a[\s:{[][^\n]*color\s*:/m)
+  assert.match(css, /^:where\(\.cg\) a \{ color: var\(--cg-mark\);/m)
 })
 
 test('ES-153 E280-2/3/4: el pie no se pinta con el esqueleto, el marco y la pantalla se precargan en paralelo con la sesión y el aviso del chat bajo queda fijo y visible', () => {
