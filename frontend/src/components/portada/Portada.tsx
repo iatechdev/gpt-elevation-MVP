@@ -1,7 +1,6 @@
 // ES-155 (tramo C): portada «Cartografía». Hero con relieve decorativo, leyenda de símbolos, pieza «pruébalo con una escena», tres pasos y un hueco para fotografía real.
 // Todos los textos salen de `landing.portada.*` (CMS editable, con respaldo ES/EN en shared/landing-content.json). Sin promesas de empleo ni de resultados; el ejemplo va rotulado.
 import { useAfterFirstPaint } from './useAfterFirstPaint'
-import { Link } from 'react-router-dom'
 import { ReliefCanvas, type ReliefPoint } from '../../cartografia'
 import './portada.css'
 
@@ -18,11 +17,10 @@ export function Hero({ text }: { text: Text }) {
   return (
     <section className="pt-hero" aria-labelledby="pt-hero-title">
       <div className="pt-hero__relief" aria-hidden="true"><ReliefCanvas points={HERO_POINTS} decor loading={!ready} label="" /></div>
-      <div className="pt-here" aria-hidden="true"><i />{p('here')}</div>
+      <div className="pt-here" aria-hidden="true"><i /><span>{p('here')}</span></div>
       <div className="pt-hero__in">
         <h1 id="pt-hero-title">{p('hero_pre')} <em>{p('hero_em')}</em></h1>
         <p className="pt-lead">{p('lead')}</p>
-        <Link className="cg-btn" to="/login?mode=register">{p('cta_up')}</Link>
       </div>
       <div className="pt-legend">
         <span className="cg-tag">{p('legend')}</span>

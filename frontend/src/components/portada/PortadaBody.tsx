@@ -32,9 +32,9 @@ export function TryScene({ text }: { text: Text }) {
           <Link className="cg-btn cg-btn--ghost" to="/login?mode=register">{p('try_own')}</Link>
         </div>
       </div>
-      <Card as="div">
-        <div aria-live="polite" className="pt-hint">
-          {phase === 'idle' ? null : (
+      {/* D1 (revisión de UX): la región viva existe siempre; la tarjeta solo aparece cuando hay pista (antes: una caja vacía con borde) */}
+      <div aria-live="polite" className="pt-hint-live">
+        {phase !== 'idle' && <Card as="div"><div className="pt-hint">
             <>
               <p className="cg-tag">{p('hint_title')}</p>
               {phase === 'hint' && <>
@@ -51,9 +51,8 @@ export function TryScene({ text }: { text: Text }) {
                 <div className="pt-rise"><ReliefCanvas points={RISE_POINTS} loading={!ready} label={p('rise_alt')} /></div>
               </>}
             </>
-          )}
-        </div>
-      </Card>
+        </div></Card>}
+      </div>
     </section>
   )
 }

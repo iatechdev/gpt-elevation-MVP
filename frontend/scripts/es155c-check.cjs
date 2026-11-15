@@ -51,10 +51,17 @@ const fs = require('node:fs');
     assert.equal(await page.locator('.pt-hero__relief').getAttribute('aria-hidden'), 'true', `relieve decorativo aria-hidden (${tag})`);
     assert.equal(await page.locator('.pt-legend li').count(), 4, `leyenda de cuatro símbolos (${tag})`);
     assert.ok(await page.getByRole('link', { name: c.up, exact: true }).count() >= 1, `Crear cuenta (${tag})`);
+    // D1/D2/D3 (revisión de UX): sin tarjeta vacía antes de actuar; un solo botón primario (relleno) en hero + escena; «Tú estás aquí» sobre el pico del relieve
+    assert.equal(await page.locator('.pt-hint').count(), 0, `sin tarjeta de pista vacía antes de marcar (${tag})`);
+    assert.equal(await page.locator('.pt-hero a.cg-btn').count(), 0, `el hero no añade un segundo botón primario (${tag})`);
+    assert.equal(await page.locator('main .cg-btn:not(.cg-btn--ghost)').count(), 1, `un solo botón primario relleno en hero + escena (${tag})`);
+    { const box = await page.locator('.pt-hero__relief').boundingBox(); const dot = await page.locator('.pt-here i').boundingBox(); const cx = (dot.x + dot.width / 2 - box.x) / box.width; const cy = (dot.y + dot.height / 2 - box.y) / box.height;
+      assert.ok(Math.abs(cx - (width < 640 ? 0.88 : 0.68)) < 0.02 && Math.abs(cy - (width < 640 ? 0.12 : 0.36)) < 0.03, `«Tú estás aquí» sobre el pico del relieve (x ${cx.toFixed(2)}, y ${cy.toFixed(2)}) (${tag})`); }
+    if (process.env.ES155C_SHOTS && scheme === 'light') await page.screenshot({ path: `${process.env.ES155C_SHOTS}/portada-${lang}-${width}.png`, fullPage: false });
     // escena de ejemplo
     await page.locator('.pt-scene').waitFor(); assert.ok((await page.locator('.pt-try .cg-chip').first().textContent()).includes(c.example), `rótulo «${c.example}» (${tag})`);
     assert.ok((await page.locator('.pt-note').textContent()).includes(c.note), `aviso de que la pista es fija (${tag})`);
-    assert.equal(await page.locator('.pt-hint').getAttribute('aria-live'), 'polite', `la pista se anuncia (${tag})`);
+    assert.equal(await page.locator('.pt-hint-live').getAttribute('aria-live'), 'polite', `la pista se anuncia (${tag})`);
     const before = requests.length; // la portada ya pidió el contenido y los planes; la pieza no pide NADA más
     await page.getByRole('button', { name: c.mark }).click(); await page.getByText(c.hint).waitFor();
     await page.getByRole('button', { name: c.yes }).click(); await page.getByText(c.noted).waitFor();
