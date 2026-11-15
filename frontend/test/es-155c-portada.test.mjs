@@ -84,4 +84,5 @@ test('ES-155 C E282-1: el cuerpo y lo conservado comparten un solo límite de Su
   assert.equal(plans.match(/className="landing-plans-state"/g)?.length, 3, 'cargando, error y vacío reservan lo mismo')
   const hook = read('../src/components/portada/useScrollToHash.ts')
   assert.ok(hook.includes('.landing-plan-skeleton') && hook.includes('MutationObserver') && hook.includes('SETTLE_LIMIT_MS'))
+  assert.ok((hook.match(/requestAnimationFrame/g) ?? []).length === 2, 'el salto va dos cuadros después de que el catálogo crezca: en el mismo cuadro, lo que queda a la vista cuenta como desplazado')
 })
