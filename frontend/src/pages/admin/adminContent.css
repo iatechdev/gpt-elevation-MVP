@@ -1,0 +1,15 @@
+/* ES-184: Contenido (Validaciones y Solicitudes) en Cartografía. Solo tokens --cg-*; las pestañas Planes y Textos públicos conservan su aspecto actual hasta que tengan ticket propio. */
+.ac-head { margin: 0 0 1.2rem; max-width: 46rem; }
+.ac-title { font: 700 clamp(1.9rem, 4.6vw, 2.8rem) / 1 var(--cg-font-cond); text-transform: uppercase; margin: 0 0 .5rem; }
+.ac-lead { margin: 0; }
+.ac-panel { margin-top: 1rem; }
+.ac-panel h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: .03em; margin: 0 0 .5rem; }
+.ac-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .8rem; margin: 0 0 .8rem; }
+.ac-bar p { margin: 0; }
+.ac-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .8rem; }
+.ac-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin-top: .9rem; }
+.ac-meta { margin: .3rem 0 0; overflow-wrap: anywhere; }
+.ac-message { margin: .4rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ac-filters { display: flex; flex-wrap: wrap; gap: .6rem; }
+.ac-status { margin: 0 0 .8rem; }
+.ac-linkbutton { display: inline-flex; align-items: center; text-decoration: none; }
