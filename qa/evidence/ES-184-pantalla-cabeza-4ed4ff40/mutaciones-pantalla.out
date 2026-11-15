@@ -1,0 +1,39 @@
+== base
+  unit es-184/es-95: # pass 11 # fail 0 
+== M1 «Datos depurados» por el correo @deleted.invalid en vez de la marca
+M aplicada
+  unit es-184/es-95: # pass 10 # fail 1 
+  mi guion:
+RESUMEN [pr]: 53/57 OK, 4 FALLA
+FALLA [pr] D4 es (BLOQUEANTE): hay UNA fila «Datos depurados», solo con estado y fecha: sin nombre, correo, país, mensaje ni acciones (descargar, crear cuenta, elimina
+FALLA [pr] D4 es (BLOQUEANTE): la solicitud con correo @deleted.invalid SIN marca NO dice «Datos depurados» (se decide por la marca de la purga) 
+FALLA [pr] D4 en (BLOQUEANTE): hay UNA fila «Data removed», solo con estado y fecha: sin nombre, correo, país, mensaje ni acciones (descargar, crear cuenta, eliminar) 
+== M2 eliminar vuelve a window.confirm
+M aplicada
+  unit es-184/es-95: # pass 10 # fail 1 
+  mi guion:
+RESUMEN [pr]: 51/53 OK, 2 FALLA
+FALLA [pr] D3 confirmar eliminar: la solicitud desaparece de la base y de la lista, «Solicitud eliminada.» y se vuelve a consultar el aviso de cupo (/capacity) base 1 �
+FALLA [pr] D3: EXCEPCIÓN locator.click: Timeout 30000ms exceeded.
+== M3 reponer un emoji en el botón de la hoja de vida
+M aplicada
+  unit es-184/es-95: # pass 10 # fail 1 
+  mi guion:
+RESUMEN [pr]: 56/57 OK, 1 FALLA
+FALLA [pr] D3 sin emojis en botones ni pestañas (👁 ✓ ✗ 🎓 📨 ✅ ↻) ES | EN | SALIR | VALIDACIONES (2) | SOLICITUDES (2) | PLANES | TEXTOS PÚBLICOS | PENDI
+== M4 contador inventado (0) cuando el servidor falla
+M aplicada
+  unit es-184/es-95: # pass 10 # fail 1 
+  mi guion:
+RESUMEN [pr]: 54/57 OK, 3 FALLA
+FALLA [pr] D1 admin/es: sin contador de Validaciones (el servidor responde 403 a admin: no se inventa) ["Validaciones (0)","Solicitudes (2)","Planes","Textos públicos"]
+FALLA [pr] D1 admin/en: sin contador de Validaciones (el servidor responde 403 a admin: no se inventa) ["Validations (0)","Applications (2)","Plans","Public texts"]
+FALLA [pr] D1 contadores con 500 simulado del servidor: NO se muestra ningún número inventado ["Validaciones (0)","Solicitudes (0)","Planes","Textos públicos"]
+== M5 rechazar sin motivo permitido en Validaciones
+M aplicada
+  unit es-184/es-95: # pass 10 # fail 1 
+  mi guion:
+RESUMEN [pr]: 55/57 OK, 2 FALLA
+FALLA [pr] D2 rechazar sin motivo: «Escribe el motivo del rechazo.», aria-invalid y 0 peticiones POST 
+FALLA [pr] D2 rechazar con motivo (doble clic): 1 sola petición, el estado cambia en la base y se avisa «Documento rechazado.» POST 2
+fin

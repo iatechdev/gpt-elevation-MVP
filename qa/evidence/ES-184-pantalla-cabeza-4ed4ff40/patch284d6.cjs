@@ -1,0 +1,10 @@
+// [QA-Claude] Copia de es216b-contenido.cjs (QA-Claude-2) para D6 de #284: puertos 8190/5273, pestañas con role=tab, y los dos topes que ES-278 puso (slug <= 20 y característica <= 200)
+const fs = require('fs')
+let s = fs.readFileSync('C:/Users/Usuario/Documents/qa13/es216b-contenido.cjs', 'utf8')
+s = s.replace(/8090/g, '8190').replace(/5173/g, '5273')
+const rep = (a, b) => { if (s.split(a).length !== 2) throw new Error('no unico: ' + a.slice(0, 70)); s = s.replace(a, () => b) }
+rep("getByRole('button', { name: new RegExp('^' + tab + '$', 'i') })", "getByRole('tab', { name: new RegExp('^' + tab + '$', 'i') })")
+rep("await p.locator('#plan-name-en').fill('N'); await p.locator('#plan-price').fill('12'); await dlg.getByRole('button', { name: l.create, exact: true }).click(); await sleep(400); const eLong", "await p.locator('#plan-name-en').fill('N'); await p.locator('#plan-price').fill(''); await dlg.getByRole('button', { name: l.create, exact: true }).click(); await sleep(400); await p.locator('#plan-price').fill('12'); const eLong")
+rep("'L'.repeat(300)); await p.getByRole('button', { name: 'Actualizar', exact: true }).click(); await sleep(1500); const row", "'L'.repeat(150)); await p.getByRole('button', { name: 'Actualizar', exact: true }).click(); await sleep(1500); const row")
+fs.writeFileSync('C:/Users/Usuario/Documents/qa13/es216b-8190.cjs', s)
+console.log('ok')
