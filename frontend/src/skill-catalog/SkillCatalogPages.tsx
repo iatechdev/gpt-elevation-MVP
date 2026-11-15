@@ -63,7 +63,7 @@ function ManagerSession({ session }: { session: string }) {
   const [inUse, setInUse] = useState<{ skillKey: string; people: number }[] | null>(null)
   const [rowStamp, setRowStamp] = useState<string | undefined>(undefined)
   const locked = useRef(false); const initialized = useRef(false); const dialog = useRef<HTMLDialogElement>(null)
-  const conflictRef = useRef<HTMLDivElement>(null)
+  const conflictRef = useRef<HTMLDivElement>(null); const inUseRef = useRef<HTMLDivElement>(null)
   const editable = ready && detail?.status === 'draft'
   const dirty = !!skillKey && (isDirty(form, baseline) || (creating && !!newKey))
   const say = (key: string, error = false, p?: Record<string, string | number>) => setNotice({ key, error, params: p })
@@ -162,6 +162,9 @@ function ManagerSession({ session }: { session: string }) {
   useEffect(() => {
     if (conflict !== undefined) conflictRef.current?.focus()
   }, [conflict])
+  useEffect(() => {
+    if (inUse && inUse.length > 0) inUseRef.current?.focus()
+  }, [inUse])
 
   // ── Versiones ────────────────────────────────────────────────
   if (!id) {
@@ -322,7 +325,7 @@ function ManagerSession({ session }: { session: string }) {
       {empty ? <p role="alert">{t('skcat.pub_empty')}</p> : incomplete.length > 0 ? <><h3>{t('skcat.pub_missing')}</h3>
         <ul>{incomplete.map(skill => <li key={skill.skillKey}><strong>{skillName(skill)}</strong>: {skill.missing.map(path => { const m = missingLabel(path); const label = fmt(t(`skcat.${m.key}`), { level: m.level ?? '', lang: m.lang ?? '' }); return <a key={path} className="skcat-link" href={`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`} onClick={e => { e.preventDefault(); navigate(`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`) }}>{label}</a> }).reduce((acc: ReactNode[], el, i) => i === 0 ? [el] : [...acc, ', ', el], [])}</li>)}</ul>
         <p className="skcat-help" role="status">{t('skcat.pub_help_blocked')}</p></> : <p role="status">{t('skcat.missing_ok')}</p>}
-      {inUse && inUse.length > 0 && <div className="skcat-error" role="alert" tabIndex={-1} ref={el => el?.focus()}>
+      {inUse && inUse.length > 0 && <div className="skcat-error" role="alert" tabIndex={-1} ref={inUseRef}>
         {t('skcat.pub_in_use')}
         <ul>{inUse.map(entry => <li key={entry.skillKey}><code>{entry.skillKey}</code> — {fmt(t('skcat.in_use_people'), { n: entry.people })}</li>)}</ul>
       </div>}
