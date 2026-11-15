@@ -1,72 +1,57 @@
-/* ES-111 — El Puente. Valores del tema de la landing, tomados de las variables de .space-scope (space.css); aquí no hay colores propios salvo los tintes de apoyo. */
-.space-scope .bridge { display: grid; gap: 16px; }
-.bridge-head { display: grid; gap: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--color-base-300); }
-.bridge-head h1 { margin: 0; font-size: 2rem; }
-.bridge-head p { margin: 0; }
-.bridge-zone { font-family: var(--space-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-secondary); }
-.bridge-small { font-size: .85rem; color: var(--color-neutral); }
-.bridge-tag { width: fit-content; padding: 2px 8px; border: 1px dashed var(--color-secondary); border-radius: .25rem; font-family: var(--space-mono); font-size: .72rem; color: var(--color-secondary); }
-.bridge-live { min-height: 1.2em; margin: 0; font-size: .9rem; color: var(--color-success); }
-.bridge-note { margin: 0; padding: 10px 12px; border: 1px solid var(--color-base-300); border-radius: .25rem; background: var(--color-base-200); }
-.bridge-error { border-color: var(--color-error); color: var(--color-error); }
-.bridge-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
-.bridge-col { display: grid; gap: 14px; align-content: start; min-width: 0; }
-.bridge-col h2 { margin: 0; font-family: var(--space-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
-.bridge-arrow { display: grid; place-items: center; color: var(--color-neutral); font-size: 1.4rem; }
-@media (min-width: 768px) { .bridge-cols { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); } .bridge-arrow { border-inline: 1px solid var(--color-base-300); } }
-.bridge-card, .bridge-done { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--color-base-300); border-radius: .25rem; background: var(--color-base-200); min-width: 0; }
-.bridge-card-asking { border-color: var(--color-secondary); background: var(--space-callout); }
-.bridge-done { background: color-mix(in srgb, var(--color-success) 10%, white); border-color: var(--color-success); list-style: none; }
-.bridge-done p { margin: 0; font-weight: 500; }
-.bridge-list { display: grid; gap: 10px; margin: 0; padding: 0; }
-.bridge-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-.bridge-pill { display: inline-block; padding: 2px 8px; border-radius: .25rem; font-family: var(--space-mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; background: var(--color-base-300); }
-.bridge-pill-dash { background: transparent; border: 1px dashed var(--color-neutral); color: var(--color-neutral); }
-.bridge-pill-ok { background: transparent; border: 1px solid var(--color-success); color: var(--color-success); }
-.bridge-eye { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--color-neutral); font-size: 1.1rem; cursor: pointer; }
-.bridge-frag { position: relative; font-family: 'Noto Serif', Georgia, serif; font-style: italic; overflow-wrap: anywhere; }
-.bridge-blur span { filter: blur(5px); user-select: none; display: block; }
-.bridge-blur::after { content: attr(data-label); position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--space-mono); font-style: normal; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral); pointer-events: none; }
-.bridge-insight { display: grid; gap: 2px; padding: 8px 12px; background: var(--color-base-100); border-left: 3px solid var(--color-accent); overflow-wrap: anywhere; }
-.bridge-insight b { font-family: var(--space-mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-secondary); font-weight: 600; }
-.bridge-insight small { color: var(--color-neutral); }
-.bridge-cta, .bridge-ok, .bridge-no { min-height: 44px; padding: 10px 16px; border-radius: .25rem; font-family: var(--space-mono); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
-.bridge-cta { width: 100%; background: transparent; color: var(--color-secondary); border: 1px solid var(--color-secondary); font-weight: 600; }
-.bridge-ok { background: var(--color-accent); color: var(--color-accent-content); border: 0; font-weight: 600; }
-.bridge-no { background: transparent; color: inherit; border: 1px solid var(--color-neutral); }
-.bridge-cta:disabled, .bridge-ok:disabled, .bridge-no:disabled, .bridge-link:disabled { opacity: .55; cursor: not-allowed; }
-.bridge-ask { display: grid; gap: 8px; } .bridge-ask p { margin: 0; } .bridge-ask div { display: flex; flex-wrap: wrap; gap: 8px; }
-.bridge-link { justify-self: start; min-height: 44px; padding: 6px 0; background: none; border: 0; color: var(--color-secondary); text-decoration: underline; cursor: pointer; font: inherit; }
-.bridge-empty { padding: 26px 14px; border: 1px dashed var(--color-neutral); border-radius: .25rem; text-align: center; color: var(--color-neutral); }
-.bridge-empty p { margin: 0 0 6px; }
-.bridge-review { padding: 10px 12px; border: 1px solid var(--color-secondary); border-radius: .25rem; background: var(--space-callout); color: #5A4710; }
-.bridge-review p { margin: 4px 0 0; }
-.bridge-foot { padding-top: 8px; border-top: 1px solid var(--color-base-300); }
-.bridge-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
-/* ES-121 — Análisis con IA de tus fuentes (panel, interruptor y diálogo). Mismas variables de .space-scope que el resto de El Puente. */
-.bridge-sources { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--color-base-300); border-radius: .25rem; background: var(--color-base-200); min-width: 0; }
-.bridge-sources:focus { outline: none; } /* ES-247: recibe el foco por código mientras se guarda (no es un control) */
-.bridge-sources h2 { margin: 0; }
-.bridge-sources h3 { margin: 0; font-size: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.bridge-sources p { margin: 0; }
-.bridge-src-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
-.bridge-src { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: start; padding: 12px 0; border-top: 1px solid var(--color-base-300); }
-.bridge-src-text { display: grid; gap: 2px; min-width: 0; }
-.bridge-src-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.bridge-src-run { width: auto; }
-.bridge-select { min-height: 44px; padding: 4px 8px; border: 1px solid var(--color-neutral); border-radius: .25rem; background: var(--color-base-100); color: inherit; font: inherit; }
-.bridge-inline { display: inline; min-height: 0; padding: 0; }
-.bridge-switch { position: relative; flex: none; width: 56px; min-height: 44px; border: 0; background: none; padding: 0; cursor: pointer; }
-.bridge-switch::before { content: ''; position: absolute; inset: 7px 0; border: 1px solid var(--color-base-content); border-radius: 999px; background: var(--color-base-100); }
-.bridge-switch[aria-checked="true"]::before { background: var(--color-base-content); }
-.bridge-switch-knob { position: absolute; top: 11px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: var(--color-base-content); transition: left .15s; }
-.bridge-switch[aria-checked="true"] .bridge-switch-knob { left: 30px; background: var(--color-base-100); }
-.bridge-switch:disabled { opacity: .55; cursor: not-allowed; }
-.bridge-switch:focus-visible, .bridge-select:focus-visible, .bridge-src-run:focus-visible, .bridge-ok:focus-visible, .bridge-no:focus-visible { outline: 3px solid var(--color-secondary); outline-offset: 2px; }
-.bridge-modal-bg { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgb(26 26 24 / .45); }
-.bridge-modal { width: min(100%, 460px); max-height: 100%; overflow: auto; display: grid; gap: 10px; padding: 20px; border-radius: .5rem; background: var(--color-base-100); color: var(--color-base-content); }
-.bridge-modal h3 { margin: 0; font-size: 1.1rem; } .bridge-modal ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
-.bridge-modal-btns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-@media (max-width: 639px) { .bridge-src { grid-template-columns: minmax(0, 1fr); } .bridge-src .bridge-switch { justify-self: start; } .bridge-src-run { width: 100%; } }
-@media (prefers-reduced-motion: reduce) { .bridge-switch-knob { transition: none; } }
+/* ES-307 (PR 4): El Puente en Cartografía. Solo tokens --cg-*; sin colores fijos. Dos zonas (diario privado → perfil profesional): en columna debajo de 768 px y en tres columnas (flecha en medio) desde ahí. */
+.br { display: grid; gap: 1rem; min-width: 0; }
+.br-zone { margin: 0; }
+.br-only, .br-sources > p { margin: 0; }
+.br-example { margin: 0; border-style: dashed; }
+.br-live { min-height: 1.2em; margin: 0; font-size: 0.9rem; color: var(--cg-good); }
+.br-h { font: 700 0.95rem / 1.1 var(--cg-font-cond); letter-spacing: 0.1em; text-transform: uppercase; margin: 0; }
+.br-h3 { font: 700 1.05rem / 1.2 var(--cg-font-cond); letter-spacing: 0.04em; text-transform: uppercase; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.br-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.br-col { display: grid; gap: 0.9rem; align-content: start; min-width: 0; }
+.br-arrow { display: grid; place-items: center; color: var(--cg-muted); font-size: 1.4rem; }
+@media (min-width: 768px) { .br-cols { grid-template-columns: minmax(0, 1fr) 3rem minmax(0, 1fr); } .br-arrow { border-inline: 1px solid var(--cg-line); } }
+.br-card, .br-done, .br-sources { display: grid; gap: 0.7rem; min-width: 0; margin: 0; }
+.br-card--asking { border-color: var(--cg-mark); }
+.br-done { list-style: none; border-color: var(--cg-good); }
+.br-done p { margin: 0; font-weight: 600; }
+.br-list { display: grid; gap: 0.7rem; margin: 0; padding: 0; }
+.br-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.br-eye { min-width: var(--cg-touch); min-height: var(--cg-touch); border: 0; background: none; color: var(--cg-muted); font-size: 1.1rem; cursor: pointer; }
+.br-eye:hover { color: var(--cg-mark); }
+.br-frag { position: relative; font-family: var(--cg-font-name); font-style: italic; overflow-wrap: anywhere; }
+.br-blur span { filter: blur(5px); user-select: none; display: block; }
+.br-blur::after { content: attr(data-label); position: absolute; inset: 0; display: grid; place-items: center; font: 600 0.78rem var(--cg-font-cond); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cg-ink); background: color-mix(in srgb, var(--cg-panel) 55%, transparent); pointer-events: none; }
+.br-insight { display: grid; gap: 0.2rem; padding: 0.6rem 0.8rem; background: var(--cg-ground); border-left: 3px solid var(--cg-mark); overflow-wrap: anywhere; }
+.br-insight b { font: 600 0.78rem var(--cg-font-cond); letter-spacing: 0.12em; text-transform: uppercase; color: var(--cg-muted); }
+.br-insight small { color: var(--cg-muted); }
+.br-cta { width: 100%; }
+.br-ask { display: grid; gap: 0.5rem; } .br-ask p { margin: 0; } .br-ask div { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.br-empty { padding: 1.6rem 0.9rem; border: 1px dashed var(--cg-line); text-align: center; color: var(--cg-muted); }
+.br-empty p { margin: 0 0 0.4rem; }
+.br-review p { margin: 0.3rem 0 0; }
+.br-foot { padding-top: 0.5rem; border-top: 1px solid var(--cg-line); }
+.br-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Enlaces y acciones sueltas con objetivo táctil completo y subrayado (no solo color). */
+.br a, .br .cg-linkbtn { display: inline-flex; align-items: center; min-height: var(--cg-touch); text-decoration: underline; text-underline-offset: 0.2em; }
+.br-inline { display: inline-flex; }
+/* Fuentes que puede leer la IA: un interruptor por fuente. */
+.br-sources:focus { outline: none; } /* recibe el foco por código mientras se guarda (no es un control) */
+.br-src-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.br-src { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem 1rem; align-items: start; padding: 0.8rem 0; border-top: 1px solid var(--cg-line); }
+.br-src-text { display: grid; gap: 0.15rem; min-width: 0; }
+.br-src-text p { margin: 0; }
+.br-src-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.br-select { width: auto; min-height: var(--cg-touch); }
+.br-switch { position: relative; flex: none; width: 56px; min-height: var(--cg-touch); border: 0; background: none; padding: 0; cursor: pointer; }
+.br-switch::before { content: ''; position: absolute; inset: 7px 0; border: 1.5px solid var(--cg-ink); border-radius: 999px; background: var(--cg-ground); }
+.br-switch[aria-checked="true"]::before { background: var(--cg-ink); }
+.br-switch-knob { position: absolute; top: 11px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: var(--cg-ink); transition: left 0.15s; }
+.br-switch[aria-checked="true"] .br-switch-knob { left: 30px; background: var(--cg-ground); }
+.br-switch:disabled { opacity: 0.55; cursor: not-allowed; }
+.br-switch:focus-visible, .br-eye:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.br-dlg { margin: 0.4rem 0 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; }
+@media (max-width: 639px) { .br-src { grid-template-columns: minmax(0, 1fr); } .br-src .br-switch { justify-self: start; } .br-src-run { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .br-switch-knob { transition: none; } }
+@media (forced-colors: active) { .br-switch::before { border-color: CanvasText; } .br-switch-knob { background: CanvasText; } .br-switch[aria-checked="true"]::before { background: Highlight; } }
+/* La frase de apoyo ocupa 3 líneas con la tipografía de respaldo y 2 con la definitiva: se reserva el alto de 3 para que al cargar la fuente no se mueva toda la pantalla (CLS ≤ 0,1 a 390 px con CPU×4). */
+@media (max-width: 480px) { .pg-head:has(+ .pg-stack .br) .pg-lead { min-height: 3lh; } }

@@ -3,5 +3,5 @@ type Props = { checked: boolean; busy: boolean; label: string; describedBy: stri
 
 export function PermissionSwitch({ checked, busy, label, describedBy, dataSource, onToggle }: Props) {
   return <button type="button" role="switch" aria-checked={checked} aria-label={label} aria-describedby={describedBy} aria-busy={busy || undefined} disabled={busy}
-    className="bridge-switch" data-source={dataSource} onClick={onToggle}><span className="bridge-switch-knob" aria-hidden="true" /></button>
+    className="br-switch" data-source={dataSource} onClick={onToggle}><span className="br-switch-knob" aria-hidden="true" /></button>
 }

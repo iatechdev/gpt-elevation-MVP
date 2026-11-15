@@ -69,7 +69,7 @@ export function Dialog({ open, onClose, title, children, actions }: { open: bool
     }
   }, [open])
   return (
-    <dialog ref={ref} className="cg-dialog" aria-modal="true" aria-labelledby={titleId} onKeyDown={trap} onCancel={event => { event.preventDefault(); onClose() }}>
+    <dialog ref={ref} className="cg-dialog" tabIndex={-1} aria-modal="true" aria-labelledby={titleId} onKeyDown={trap} onCancel={event => { event.preventDefault(); onClose() }}>
       {open && (
         <>
           <h2 className="cg-h2" id={titleId}>{title}</h2>

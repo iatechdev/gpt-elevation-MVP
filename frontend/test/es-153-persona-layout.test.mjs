@@ -33,7 +33,7 @@ test('ES-153 P1: el mecanismo «ya migró» es una lista de rutas que existen en
   assert.ok(MIGRATED_PERSON_PATHS.length >= 1)
   for (const path of MIGRATED_PERSON_PATHS) assert.ok(appPaths.includes(path), `${path} no es una ruta de App.tsx`)
   assert.equal(isMigratedPersonPath('/app/skill-map'), true); assert.equal(isMigratedPersonPath('/app/skill-map/x'), true)
-  assert.equal(isMigratedPersonPath('/app/skill-mapa'), false); assert.equal(isMigratedPersonPath('/app/bridge'), false)
+  assert.equal(isMigratedPersonPath('/app/skill-mapa'), false); assert.equal(isMigratedPersonPath('/app/compass'), false)
 })
 
 test('ES-153 P1: SpaceShell ya no dibuja encabezado, idioma, SpaceNav ni main; chat y dashboard no montan SpaceNav; un solo <main> en las pantallas de persona', () => {

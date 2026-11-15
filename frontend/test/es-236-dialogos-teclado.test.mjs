@@ -30,15 +30,14 @@ test('ES-236: Tab en el último control vuelve al primero; Shift+Tab en el prime
   { const { items, container } = fakeDom(null); const event = keyEvent('Tab'); modalKeyDown(event, container, () => {}); assert.equal(globalThis.document.activeElement, items[0]); assert.equal(event.calls.prevented, 1) }
 })
 
-test('ES-236: los diálogos del Puente (Diario/fuentes y «Retirar todo») usan el helper común, con Esc que respeta el bloqueo', () => {
+test('ES-236: los diálogos del Puente (fuentes y «Retirar todo») son el Dialog de Cartografía (<dialog> nativo: Esc y Tab atrapado), con Esc que respeta el bloqueo', () => {
+  // ES-307 (PR 4): antes usaban modalKeyDown sobre un contenedor; ahora el Dialog nativo trae el teclado. Se conserva: Esc cierra por el mismo camino que «Cancelar» y, en «Retirar todo», no cierra mientras se guarda.
   const panel = read('../src/bridge/SourcesPanel.tsx'); const page = read('../src/bridge/BridgePage.tsx')
-  assert.match(panel, /import \{ modalKeyDown \} from '\.\.\/a11y\/modalKeys\.ts'/)
-  assert.match(panel, /const trap = \(event: ReactKeyboardEvent<HTMLDivElement>\) => \{ if \(asking\) modalKeyDown\(event, dialog\.current, \(\) => close\(asking\)\) \}/)
-  assert.match(page, /import \{ modalKeyDown \} from '\.\.\/a11y\/modalKeys\.ts'/)
-  assert.match(page, /const trapAll = \(event: React\.KeyboardEvent<HTMLDivElement>\) => modalKeyDown\(event, allDialog\.current, \(\) => \{ if \(!busy\) closeAll\(\) \}\)/)
-  assert.ok(!/event\.key !== 'Tab'/.test(panel + page), 'ya no queda código propio de Tab')
+  assert.match(panel, /<Dialog open=\{!!asking\} onClose=\{\(\) => \{ if \(asking\) close\(asking\) \}\}/)
+  assert.match(page, /<Dialog open=\{askAll\} onClose=\{\(\) => \{ if \(!busy\) closeAll\(\) \}\}/)
+  assert.match(page, /const closeAll = \(\) => setAskAll\(false\)/)
+  assert.ok(!/event\.key !== 'Tab'|role="dialog"/.test(panel + page), 'ya no queda código propio de Tab ni un role="dialog" a mano')
 })
-
 test('ES-236: los tres diálogos usan el helper común y Esc respeta el bloqueo mientras se borra', () => {
   const evidence = read('../src/pages/EvidencePages.tsx'); const resumes = read('../src/context/resume/ResumesPage.tsx')
   assert.match(evidence, /import \{ modalKeyDown \} from '\.\.\/a11y\/modalKeys\.ts'/)

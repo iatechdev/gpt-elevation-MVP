@@ -125,10 +125,10 @@ test('ES-121 textos: ES y EN completos para cada fuente, sin promesas ni niveles
 test('ES-121 estructura accesible: interruptor con role=switch, diálogo modal con Esc y foco atrapado, regiones vivas y el panel integrado en El Puente', () => {
   const sw = read('../src/bridge/PermissionSwitch.tsx'); const panel = read('../src/bridge/SourcesPanel.tsx'); const page = read('../src/bridge/BridgePage.tsx'); const css = read('../src/bridge/bridge.css')
   assert.match(sw, /role="switch"/); assert.match(sw, /aria-checked=\{checked\}/); assert.match(sw, /aria-label=\{label\}/); assert.match(sw, /aria-describedby=\{describedBy\}/)
-  assert.match(panel, /role="dialog"/); assert.match(panel, /aria-modal="true"/); assert.match(panel, /modalKeyDown\(event, dialog\.current, \(\) => close\(asking\)\)/); /* ES-236: Esc y Tab atrapado en el helper común */ assert.match(panel, /data-source=/)
+  /* ES-307 (PR 4): el diálogo modal (aria-modal, Esc, Tab atrapado, foco en «Cancelar») es el Dialog de Cartografía; Esc sigue cerrando por el mismo `close(asking)` */ assert.match(panel, /<Dialog open=\{!!asking\} onClose=\{\(\) => \{ if \(asking\) close\(asking\) \}\}/); assert.match(panel, /data-source=/)
   assert.match(panel, /aria-live="polite"/); assert.match(panel, /role=\{notice\.kind === 'error' \? 'alert' : 'status'\}/)
   assert.match(panel, /if \(!granted\) onResult\(source, \[\]\)/) // retirar un permiso quita lo propuesto con él
   assert.match(page, /<SourcesPanel /); assert.match(page, /\.\.\.Object\.values\(proposals\)\.flat\(\)/)
-  assert.match(css, /prefers-reduced-motion/); assert.match(css, /min-height: 44px/); assert.match(css, /max-width: 639px/)
+  assert.match(css, /prefers-reduced-motion/); assert.match(css, /min-height: var\(--cg-touch\)/); assert.match(css, /max-width: 639px/)
   assert.doesNotMatch(panel + sw, /localStorage|sessionStorage|console\.(log|info|debug)/) // las propuestas y los permisos no se guardan en el navegador
 })
