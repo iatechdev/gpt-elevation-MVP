@@ -9,7 +9,7 @@ import { progressEs, progressEn } from '../src/pages/progressCopy.ts'
 import { copy } from '../src/pilot/copy.ts'
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8').replace(/\r\n/g, '\n')
-const files = { page: '../src/pages/UserProgress.tsx', panel: '../src/progress/ProgressPanel.tsx', matching: '../src/progress/ProgressMatching.tsx', feedback: '../src/pilot/FeedbackPage.tsx' }
+const files = { page: '../src/pages/UserProgress.tsx', panel: '../src/progress/ProgressPanel.tsx', matching: '../src/progress/ProgressMatching.tsx', labels: '../src/progress/answerLabels.ts', feedback: '../src/pilot/FeedbackPage.tsx' }
 const source = Object.fromEntries(Object.entries(files).map(([name, path]) => [name, read(path)]))
 const pictographic = /\p{Extended_Pictographic}|★|☆/u
 
@@ -39,7 +39,7 @@ test('ES-173: ninguna pantalla nueva usa estilos en línea ni emojis', () => {
 })
 
 test('ES-173: «Ansiedad» pasó a «Estrés y carga» / «Stress and workload» y la clave interna sigue siendo anxiety', () => {
-  assert.match(source.matching, /\['anxiety', 'pr_a_anxiety'\]/)
+  assert.match(source.labels, /\['anxiety', 'pr_a_anxiety'\]/) // ES-314: las opciones viven en el mapa compartido
   assert.equal(progressEs.pr_a_anxiety, 'Estrés y carga'); assert.equal(progressEn.pr_a_anxiety, 'Stress and workload')
   for (const text of [...Object.values(progressEs), ...Object.values(progressEn)]) assert.doesNotMatch(text, /Ansiedad|Anxiety/)
 })
@@ -62,7 +62,7 @@ test('ES-173: «Opinión» sigue siendo una simulación (franja y fixtures) hast
 test('ES-173: el emparejamiento conserva el contrato con el servidor (rutas y cuerpo)', () => {
   assert.match(source.matching, /\/api\/matching\/request/); assert.match(source.matching, /JSON\.stringify\(\{ answers \}\)/)
   assert.match(source.matching, /\/api\/matching\/choose/); assert.match(source.matching, /JSON\.stringify\(\{ requestId, therapistId \}\)/)
-  for (const value of ['depression', 'relationships', 'personal growth', 'stress', 'other', 'reflective and exploratory', 'structured with goals', 'empathetic and listening', 'any', 'Spanish', 'English', 'No preference']) assert.ok(source.matching.includes(`'${value}'`), value)
+  for (const value of ['depression', 'relationships', 'personal growth', 'stress', 'other', 'reflective and exploratory', 'structured with goals', 'empathetic and listening', 'any', 'Spanish', 'English', 'No preference']) assert.ok(source.labels.includes(`'${value}'`), value) // ES-314: el mapa compartido
 })
 
 test('ES-173 (E272-2): una fecha de solo día no sale un día antes en Colombia (America/Bogota) ni en otras zonas', () => {
