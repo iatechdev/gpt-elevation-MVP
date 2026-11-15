@@ -39,7 +39,7 @@ test('ES-160: la pantalla y sus piezas nuevas no usan estilos en línea ni texto
   }
   const relief = read('../src/skill-map/ReliefMap.tsx')
   assert.equal((relief.match(/style=\{\{/g) ?? []).length, 1, 'solo la posición de cada botón (left/top) va en línea: es un dato, no un estilo')
-  assert.ok(relief.includes('style={{ left: `${x * 100}%`, top: `${y * 100}%` }}'))
+  assert.ok(relief.includes('style={{ left: `${(at.x / box.w) * 100}%`, top: `${(at.y / box.h) * 100}%` }}')) // ES-300: la posición ya sale de separate() (sin solapes)
   const copy = read('../src/skill-map/copy.ts')
   for (const key of ['view_relief', 'view_list_short', 'relief_reading', 'relief_alt']) assert.equal((copy.match(new RegExp(`'skill_map\.${key}'`, 'g')) ?? []).length, 2, key)
 })

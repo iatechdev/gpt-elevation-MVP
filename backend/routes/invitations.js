@@ -70,7 +70,7 @@ adminRouter.post('/', validateBody({ email: nonempty, role: nonempty, locale: op
     const locale = req.body.locale === 'en' ? 'en' : 'es';
 
     // A quien administra se le dice la verdad (ya puede listar usuarios); la persona invitada nunca sabe si el correo existía.
-    if (await User.findOne({ where: sqlWhere(fn('lower', col('email')), email) })) {
+    if (await User.findOne({ where: sqlWhere(fn('lower', fn('btrim', col('email'))), email) })) {
       return res.status(409).json({ code: 'email_taken', error: 'Ya existe una cuenta con ese correo. / An account with that email already exists.' });
     }
     const recent = await Invitation.count({ where: { invitedBy: req.user.id, createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } } });
@@ -169,7 +169,7 @@ publicRouter.post('/accept', limiter('INVITATION_ACCEPT_LIMIT', 10), validateBod
     // Vencido, usado, correo ya registrado o invitador sin permiso: el mismo mensaje (no revela si el correo existía).
     const inviter = await User.findByPk(row.invitedBy);
     if (!inviter || inviter.active === false || !(INVITER_ROLES[inviter.role] || []).includes(row.role)) return res.status(400).json(INVALID_LINK);
-    if (await User.findOne({ where: sqlWhere(fn('lower', col('email')), row.email) })) return res.status(400).json(INVALID_LINK);
+    if (await User.findOne({ where: sqlWhere(fn('lower', fn('btrim', col('email'))), row.email) })) return res.status(400).json(INVALID_LINK);
 
     let created;
     try { created = await User.create({ name, email: row.email, password: await bcrypt.hash(password, 10), role: row.role, active: true }); }

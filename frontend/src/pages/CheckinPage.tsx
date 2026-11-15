@@ -1,103 +1,95 @@
-import { useState } from 'react'
+import '../checkin/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { PersonFrame } from '../shell/frames'
+import { Banner, Button, Card, LinkButton } from '../cartografia'
 import { useLanguage } from '../i18n/useLanguage'
-import { BreathingBackground } from '../components/BreathingBackground.tsx'
+import { invalidateStoredSession, readStoredToken } from '../access/session'
+import { contextRequest } from '../context/participantContext'
+import { MoodScale } from '../checkin/MoodScale'
+import { SupportNotice } from '../checkin/SupportNotice'
+import { countryFor } from '../checkin/contactEntries'
+import { needsSupport, saveMood, type MoodValue } from '../checkin/moodLogic'
+import '../checkin/checkin.css'
 
-const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
+type Phase = 'idle' | 'saving' | 'error' | 'saved'
+const markDone = () => { try { localStorage.setItem('elevation_checkin_date', new Date().toDateString()) } catch { /* almacenamiento no disponible */ } }
 
-const MOODS = [
-  { emoji: '😞', label_key: 'emo_1', value: 0 },
-  { emoji: '😔', label_key: 'emo_2', value: 1 },
-  { emoji: '😐', label_key: 'emo_3', value: 2 },
-  { emoji: '🙂', label_key: 'emo_4', value: 3 },
-  { emoji: '😊', label_key: 'emo_5', value: 4 },
-]
-
-type Mood = { emoji: string; label_key: string; value: number } | null
-
-export function CheckinPage() {
+/** ES-159 · Hoy: el registro del día (escala de cinco palabras). Solo la persona lo ve; guardar es opcional y un error no la deja sin conversación. */
+function CheckinContent() {
   const { t } = useLanguage()
   const navigate = useNavigate()
-  const [mood, setMood] = useState<Mood>(null)
-  const [loading, setLoading] = useState(false)
+  const [value, setValue] = useState<MoodValue | null>(null)
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [need, setNeed] = useState(false)
+  const [country, setCountry] = useState<string | null>(null)
+  const sending = useRef(false)
+  const askedCountry = useRef(false)
+  const scaleRef = useRef<HTMLDivElement>(null)
+  const savedRef = useRef<HTMLDivElement>(null)
+  const errorRef = useRef<HTMLDivElement>(null)
+  const support = needsSupport(value)
 
-  const handleCheckin = async () => {
-    if (!mood) return
-    setLoading(true)
+  // El país de los servicios de ayuda es el de residencia del punto de partida (si existe); si no, el predeterminado. Solo se pide al mostrar el aviso.
+  useEffect(() => {
+    if (!support || askedCountry.current) return
+    askedCountry.current = true
+    contextRequest().then(snapshot => countryFor(snapshot.context?.residenceCountry)).catch(() => countryFor(null)).then(setCountry)
+  }, [support])
+  useEffect(() => { if (phase === 'saved') savedRef.current?.focus(); if (phase === 'error') errorRef.current?.focus() }, [phase])
 
-    localStorage.setItem('elevation_checkin_date', new Date().toDateString())
-    localStorage.setItem('elevation_checkin_mood', String(mood.value))
-
-    // HU-021 — persistir en BD
-    try {
-      await fetch(`${BACKEND}/api/mood/checkin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('elevation_token')}`,
-        },
-        body: JSON.stringify({ mood: mood.value }),
-      })
-    } catch { /* continúa aunque falle el API */ }
-
-    setLoading(false)
-    navigate('/app/chat')
+  const goChat = () => { markDone(); navigate('/app/chat') }
+  const save = async () => {
+    if (sending.current || phase === 'saving') return
+    if (!value) { setNeed(true); scaleRef.current?.querySelector<HTMLInputElement>('input')?.focus(); return }
+    sending.current = true; setPhase('saving'); setNeed(false)
+    const token = readStoredToken()
+    const result = await saveMood(value, token)
+    sending.current = false
+    if (result === 'expired') { invalidateStoredSession(token); return }
+    if (result === 'error') { setPhase('error'); return }
+    markDone()
+    if (needsSupport(value)) setPhase('saved') // con «Cargado»/«Bajo» se queda el aviso a la vista antes de seguir
+    else navigate('/app/chat')
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '4rem 1.5rem', background: '#f9f9f7', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}>
-      <BreathingBackground />
-      <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', minHeight: 'calc(100vh - 8rem)', gap: '2rem' }}>
-
-        <div style={{ textAlign: 'center', width: '100%' }}>
-          <span style={{ display: 'block', fontSize: 10, letterSpacing: '0.2em', color: '#6F6963', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
-            {t('checkin_label')}
-          </span>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '2.2rem', color: '#1C1917', marginBottom: '0.5rem' }}>
-            {t('checkin_title')}
-          </h1>
-          <p style={{ color: '#6B645F', fontSize: '1rem', margin: 0 }}>
-            {t('checkin_subtitle')}
-          </p>
-        </div>
-
-        <div style={{ overflowX: 'auto', padding: '2rem 0', width: '100%' }}>
-          <div style={{ display: 'flex', gap: '1rem', width: 'max-content', margin: '0 auto', padding: '0 1rem' }}>
-            {MOODS.map(m => (
-              <button key={m.value} onClick={() => setMood(m)}
-                style={{
-                  width: 120, height: 160,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
-                  borderRadius: '1rem', cursor: 'pointer', transition: 'all 0.3s',
-                  border: mood?.value === m.value ? '2px solid #0d9488' : '1px solid #E7E5E4',
-                  background: mood?.value === m.value ? '#F0FDFA' : 'white',
-                  fontFamily: 'Inter, sans-serif',
-                }}>
-                <span style={{ fontSize: '2rem' }}>{m.emoji}</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 500, color: mood?.value === m.value ? '#0d9488' : '#6B645F' }}>
-                  {t(m.label_key)}
-                </span>
-              </button>
-            ))}
+    <section className="ck" aria-labelledby="ck-title">
+      <p className="ck-eyebrow">{t('checkin.eyebrow')}</p>
+      <h1 id="ck-title">{t('checkin.title')}</h1>
+      <p className="ck-intro">{t('checkin.intro')}</p>
+      <Card as="div">
+        <form noValidate onSubmit={event => { event.preventDefault(); void save() }}>
+          <div ref={scaleRef}>
+            <MoodScale value={value} disabled={phase === 'saving' || phase === 'saved'} error={need} onChange={next => { setValue(next); setNeed(false); if (phase === 'error') setPhase('idle') }} />
           </div>
-        </div>
-
-        <div style={{ width: '100%', maxWidth: 380 }}>
-          <button onClick={handleCheckin} disabled={!mood || loading}
-            style={{
-              width: '100%', padding: '1rem',
-              color: mood && !loading ? 'white' : '#6F6963',
-              fontWeight: 500, borderRadius: '1.25rem', border: 'none',
-              fontSize: '1rem', cursor: mood && !loading ? 'pointer' : 'not-allowed',
-              transition: 'all 0.3s',
-              background: mood && !loading ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4',
-              fontFamily: 'Inter, sans-serif',
-            }}>
-            {loading ? '...' : t('btn_continue')}
-          </button>
-        </div>
-
-      </div>
-    </div>
+          {support && <div className="ck-support"><SupportNotice country={country} /></div>}
+          {phase === 'saved' ? (
+            <div ref={savedRef} tabIndex={-1} role="status" className="ck-saved">
+              <p>{t('checkin.saved')}</p>
+              <Button onClick={goChat}>{t('checkin.continue')}</Button>
+            </div>
+          ) : phase === 'error' ? (
+            <div ref={errorRef} tabIndex={-1} className="ck-error-box">
+              <Banner kind="error" title={t('checkin.error_title')}><p>{t('checkin.error_body')}</p></Banner>
+              <div className="ck-actions">
+                <Button type="submit">{t('checkin.retry')}</Button>
+                <LinkButton onClick={goChat}>{t('checkin.go_without_saving')}</LinkButton>
+              </div>
+            </div>
+          ) : (
+            <div className="ck-actions">
+              <Button type="submit" disabled={phase === 'saving'}>{phase === 'saving' ? t('checkin.saving') : t('checkin.save')}</Button>
+              <LinkButton onClick={goChat}>{t('checkin.skip')}</LinkButton>
+            </div>
+          )}
+        </form>
+      </Card>
+      <p className="ck-note">{t('checkin.note')}</p>
+    </section>
   )
+}
+
+export function CheckinPage() {
+  return <PersonFrame migrated><CheckinContent /></PersonFrame>
 }
