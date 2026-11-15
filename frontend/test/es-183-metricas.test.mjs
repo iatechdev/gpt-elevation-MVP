@@ -4,7 +4,8 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { copy } from '../src/pilot/copy.ts'
 
-const page = fs.readFileSync(new URL('../src/pilot/PilotMetricsPage.tsx', import.meta.url), 'utf8')
+// Solo el código: las líneas de comentario (que citan la ruta futura del servidor) no cuentan.
+const page = fs.readFileSync(new URL('../src/pilot/PilotMetricsPage.tsx', import.meta.url), 'utf8').split(/\r?\n/).filter(line => !line.trim().startsWith('//')).join('\n')
 
 test('ES-183: las metas dicen «en definición» y no llevan cifras; el umbral de «datos protegidos» se nombra', () => {
   assert.doesNotMatch(page, /5\/6|4\/6|day7|day30/)
