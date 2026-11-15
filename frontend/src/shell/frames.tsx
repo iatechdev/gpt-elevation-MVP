@@ -54,7 +54,7 @@ export function ProfessionalFrame({ children, migrated = false }: { children: Re
 }
 
 /** Administración: barra lateral (en móvil, una fila que se ajusta) y grupo «Junta» solo para superadministración. */
-export function AdminFrame({ children, pilotPreview = false }: { children: ReactNode; pilotPreview?: boolean }) {
+export function AdminFrame({ children, pilotPreview = false, migrated = false }: { children: ReactNode; pilotPreview?: boolean; migrated?: boolean }) {
   const { c } = useShellCopy(); const role = readRole('admin')
   const group = visibleFor(ADMIN_BOARD_GROUP, role)
   return (
@@ -70,7 +70,8 @@ export function AdminFrame({ children, pilotPreview = false }: { children: React
           </>}
         </div>
       )}
-      mainClassName={`elv-theme${pilotPreview ? ' pilot-admin-layout' : ''}`}
+      // `migrated` (ES-310): la pantalla ya usa Cartografía: sin el ámbito de tokens antiguos y con tema claro/oscuro del sistema. `pilotPreview` se conserva tal cual (ES-183).
+      mainClassName={`${migrated ? '' : 'elv-theme'}${pilotPreview ? ' pilot-admin-layout' : ''}`.trim()} theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
 }
