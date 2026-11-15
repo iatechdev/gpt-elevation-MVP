@@ -4,7 +4,7 @@ export type Descriptor = { id: number; version: number; status: CatalogStatus; p
 export type SkillRow = {
   skillKey: string; type: 'transversal' | 'domain'; labels: Pair
   rubric: { levels: Record<string, Pair>; source?: string; verifiedBy?: string; verifiedAt?: string }
-  territories: string[]; missing: string[]
+  territories: string[]; missing: string[]; updatedAt?: string
 }
 export type Detail = Descriptor & { skills: SkillRow[] }
 /** Cuerpo del PUT de una habilidad (el servidor valida y rechaza lo desconocido). */
@@ -12,14 +12,21 @@ export type SkillBody = { type: 'transversal' | 'domain'; labels: Pair; rubric: 
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const text = (v: unknown) => (typeof v === 'string' ? v : '')
+export type InUseEntry = { skillKey: string; people: number }
 export class SkillCatalogError extends Error {
   readonly status: number; readonly code: string; readonly missing: Record<string, string[]>; readonly draftId?: number
+  readonly current?: SkillRow | null; readonly inUse: InUseEntry[]
   constructor(status: number, value: unknown) {
     super('Skill catalog request failed')
     const body = isObject(value) ? value : {}
     this.status = status; this.code = text(body.code)
     this.missing = isObject(body.missing) ? Object.fromEntries(Object.entries(body.missing).map(([k, v]) => [k, Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []])) : {}
     this.draftId = Number.isSafeInteger(body.draftId) ? Number(body.draftId) : undefined
+    if (body.current === null) this.current = null
+    else if (isObject(body.current)) this.current = skillRow(body.current)
+    this.inUse = Array.isArray(body.inUse)
+      ? body.inUse.flatMap((entry): InUseEntry[] => (isObject(entry) && typeof entry.skillKey === 'string' && Number.isSafeInteger(entry.people) && Number(entry.people) > 0) ? [{ skillKey: entry.skillKey, people: Number(entry.people) }] : [])
+      : []
   }
 }
 function descriptor(value: unknown): Descriptor {
@@ -38,6 +45,7 @@ export function skillRow(value: unknown): SkillRow {
     rubric: { levels: Object.fromEntries(['1', '2', '3', '4'].map(n => [n, pair(levels[n])])), ...(typeof rubric.source === 'string' ? { source: rubric.source } : {}), ...(typeof rubric.verifiedBy === 'string' ? { verifiedBy: rubric.verifiedBy } : {}), ...(typeof rubric.verifiedAt === 'string' ? { verifiedAt: rubric.verifiedAt } : {}) },
     territories: Array.isArray(value.territories) ? value.territories.filter((x): x is string => typeof x === 'string') : [],
     missing: Array.isArray(value.missing) ? value.missing.filter((x): x is string => typeof x === 'string') : [],
+    ...(typeof value.updatedAt === 'string' && Number.isFinite(Date.parse(value.updatedAt)) ? { updatedAt: value.updatedAt } : {}),
   }
 }
 export function detail(value: unknown): Detail {
@@ -64,7 +72,7 @@ export function skillCatalogApi(base: string, token: string, fetcher: typeof fet
     list: async () => { const data = await request(''); if (!isObject(data) || !Array.isArray(data.catalogs)) throw new Error('Invalid catalog list'); return data.catalogs.map(descriptor) },
     get: async (id: number) => detail(await request(`/${id}`)),
     create: async () => descriptor(await request('', 'POST', {})),
-    save: async (id: number, skillKey: string, body: SkillBody) => skillRow(await request(`/${id}/skills/${key(skillKey)}`, 'PUT', body)),
+    save: async (id: number, skillKey: string, body: SkillBody, expectedUpdatedAt?: string) => skillRow(await request(`/${id}/skills/${key(skillKey)}`, 'PUT', expectedUpdatedAt ? { ...body, expectedUpdatedAt } : body)),
     remove: async (id: number, skillKey: string) => { const v = await request(`/${id}/skills/${key(skillKey)}`, 'DELETE'); if (!isObject(v) || v.removed !== true) throw new Error('Invalid removal acknowledgment') },
     publish: async (id: number) => descriptor(await request(`/${id}/publish`, 'POST', {})),
   }
