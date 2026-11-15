@@ -21,7 +21,7 @@ test('ES-138 formulario: sin burbuja nativa, error propio por campo con aria y f
   for (const field of ['date', 'content']) {
     assert.match(page, new RegExp(`aria-invalid=\{!!errors\.${field}\}`))
     assert.match(page, new RegExp(String.raw`aria-describedby=\{errors\.${field} \? 'entry-${field}-error'`))
-    assert.match(page, new RegExp(`id="entry-${field}-error" className="space-error" role="alert"`))
+    assert.match(page, new RegExp(`id="entry-${field}-error" className="cg-error" role="alert"`))
   }
   assert.match(page, /getElementById\(found\.date \? 'entry-date' : 'entry-content'\)\?\.focus\(\)/)
 })
