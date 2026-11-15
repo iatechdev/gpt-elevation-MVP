@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { PanelBlock } from './PanelSections'
 import type { SectionState } from './useSection'
+import { enterAgain } from './sessionEnter'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -28,7 +29,9 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<{ key: string; reasons: Reason[]; check?: boolean } | null>(null)
+  const [error, setError] = useState<{ key: string; reasons: Reason[]; check?: boolean; enter?: boolean } | null>(null)
+  const enterButton = useRef<HTMLButtonElement>(null)
+  const usedToken = useRef('') // ES-285: token con que se envió, para no cerrar un inicio de sesión más nuevo
   const [sent, setSent] = useState(false)
   const [touched, setTouched] = useState(false) // E218-2: lo escrito se conserva al cerrar (Esc, Cancelar) y reabrir; solo se descarta al enviar con éxito
   const before = useRef<{ pending: number | null; rejected: number | null }>({ pending: null, rejected: null })
@@ -37,6 +40,12 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
   const date = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
   useEffect(() => { if (open && dialog.current && !dialog.current.open) dialog.current.showModal() }, [open])
+  // E243-1: al aparecer el aviso de sesión vencida el botón «Enviar» queda desactivado y el foco caía a body: pasa a «Entrar» (sin quitárselo a quien ya se movió a otro control).
+  useEffect(() => {
+    if (!error?.enter) return
+    const active = document.activeElement
+    if (active === null || active === document.body || dialog.current?.contains(active)) enterButton.current?.focus()
+  }, [error])
   const close = () => { dialog.current?.close() }
   const onClosed = () => { setOpen(false); setError(null); opener.current?.focus() }
   const start = () => { if (!touched) setText(data?.content ?? ''); setError(null); setSent(false); setOpen(true) }
@@ -48,6 +57,7 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
     setBusy(true)
     try {
       const res = await fetch(`${API}/api/therapist/prompt`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      if (res.status === 401) { setError({ key: 'session_expired_guide', reasons: [], enter: true }); return }
       if (!res.ok) throw new Error(String(res.status))
       const fresh = await res.json() as PromptData
       if (fresh.pending && fresh.pending.id !== before.current.pending) { done(); return }
@@ -63,10 +73,13 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
     before.current = { pending: data?.pending?.id ?? null, rejected: data?.rejected?.id ?? null }
     let lost = false
     try {
-      const res = await fetch(`${API}/api/therapist/prompt/propose`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ content: text }) })
+      const token = getToken(); usedToken.current = token
+      const res = await fetch(`${API}/api/therapist/prompt/propose`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ content: text }) })
       const body = await res.json().catch(() => ({})) as { code?: string; reasons?: Reason[] }
       if (res.ok) { done(); return }
-      if (res.status >= 500 && !ERROR_BY_CODE[String(body.code)]) lost = true // 503 «reglas no disponibles» es una respuesta conocida, no una pérdida
+      if (res.status === 401) setError({ key: 'session_expired_guide', reasons: [], enter: true }) // ES-285: sesión vencida con la propuesta escrita → aviso con «Entrar»
+      else if (res.status === 403) setError({ key: 'panel_action_forbidden', reasons: [] })
+      else if (res.status >= 500 && !ERROR_BY_CODE[String(body.code)]) lost = true // 503 «reglas no disponibles» es una respuesta conocida, no una pérdida
       else if (body.code === 'prompt_rejected' || body.code === 'prompt_review_failed') setError({ key: 'panel_gp_prompt_rejected', reasons: Array.isArray(body.reasons) ? body.reasons : [] })
       else setError({ key: ERROR_BY_CODE[String(body.code)] ?? (res.status === 400 ? 'panel_gp_short' : 'panel_gp_error'), reasons: [] })
     } catch { lost = true } finally { setBusy(false) }
@@ -112,6 +125,7 @@ export function GuideBlock({ state, t, locale, lang }: { state: SectionState<Pro
             <div id="panel-guide-error" role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
               {error && <>
                 <p style={{ margin: 0 }}>{t(error.key)}</p>
+                {error.enter && <button ref={enterButton} type="button" style={{ ...ghost, marginTop: '0.5rem' }} onClick={() => { if (!enterAgain(usedToken.current)) { setError({ key: 'session_renewed', reasons: [] }); window.setTimeout(() => document.getElementById('panel-guide-text')?.focus(), 0) } }} /* O247-B: el botón desaparece; el foco va al cuadro donde se vuelve a enviar */>{t('session_enter')}</button>}
                 {error.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile()}>{t('panel_gp_check')}</button>}
                 {error.reasons.length > 0 && <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>{error.reasons.map((reason, index) => <li key={`${reason.code}-${index}`}>{reason[lang] ?? reason.code}</li>)}</ul>}
               </>}

@@ -69,6 +69,7 @@ test('ES-186 parte A PostgreSQL + HTTP: emparejamiento retira la autorización a
   const api = express(); api.use(express.json());
   api.use('/api/admin/matching', verificarAdmin, require('../../routes/matching'));
   api.use('/api/admin/plan-requests', verificarAdmin, require('../../routes/planRequests'));
+  api.use('/api/plan-requests', verificarToken, require('../../routes/planRequests')); // como en server.js: aquí la guarda de rol es la de CADA ruta (ES-262)
   api.use('/api/admin/usuarios', verificarAdmin, require('../../routes/adminUsers'));
   server = api.listen(0, '127.0.0.1'); await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -176,6 +177,28 @@ test('ES-186 parte A PostgreSQL + HTTP: emparejamiento retira la autorización a
     const toOther = await http(sup, 'POST', `/api/admin/usuarios/${other.id}/reset-link`, {});
     assert.deepEqual([toOther.status, toOther.body.code], [403, 'superadmin_target']);
     assert.equal((await http(sup, 'POST', `/api/admin/usuarios/${victim.id}/reset-link`, {})).status, 202);
+  });
+
+  await t.test('ES-262 (E203-1): aprobar/rechazar con un id mal formado, enorme o no numérico responde 404 uniforme, nunca 5xx; con un id válido la lógica no cambia', async () => {
+    const bad = ['abc', '1.5', '-1', '0', '00', '01', '1e3', '99999999999', '2147483648', 'NaN', 'null', '%20', '1%3BDROP', '%D9%A3', '1%00', 'x'.repeat(200)];
+    for (const id of bad) {
+      for (const [verb, body] of [['approve', {}], ['reject', { adminNote: 'Nota sintética' }]]) {
+        const out = await http(sup, 'PUT', `/api/admin/plan-requests/admin/${id}/${verb}`, body);
+        assert.equal(out.status, 404, `${verb} ${id.slice(0, 20)} → ${out.status}`);
+        assert.equal(out.body.code, 'not_found');
+      }
+    }
+    // la guarda de rol va ANTES: un usuario sin permiso recibe 403 también con un id malo, y nadie recibe 5xx
+    const person = await mkUser('user');
+    assert.equal((await http(person, 'PUT', '/api/plan-requests/admin/abc/approve', {})).status, 403, 'montaje solo con sesión: la guarda de rol de la ruta va antes que la de id');
+    assert.equal((await http(person, 'PUT', '/api/plan-requests/admin/abc/reject', { adminNote: 'x' })).status, 403);
+    assert.equal((await http(person, 'PUT', '/api/plan-requests/admin/1/approve', {})).status, 403);
+    // un id válido sigue funcionando igual
+    const plan = (await q(`INSERT INTO "PricingPlans" (slug,"name_es","name_en","description_es","description_en",price,currency,period,"isActive","createdAt","updatedAt") VALUES ('plan-e262','Plan','Plan','','',10,'USD','month',true,now(),now()) RETURNING id`))[0].id;
+    const request = (await q(`INSERT INTO "PlanRequests" ("userId","planId",status,"createdAt","updatedAt") VALUES ($1,$2,'pending',now(),now()) RETURNING id`, [person.id, plan]))[0].id;
+    assert.equal((await http(sup, 'PUT', `/api/admin/plan-requests/admin/${request}/approve`, {})).status, 200);
+    assert.equal((await http(sup, 'PUT', `/api/admin/plan-requests/admin/${request}/approve`, {})).status, 409);
+    assert.equal((await http(sup, 'PUT', '/api/admin/plan-requests/admin/99999999/approve', {})).status, 404);
   });
 
   await t.test('contrato con la pantalla: 409 request_closed de emparejamiento y de solicitud de plan', async () => {

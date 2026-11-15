@@ -19,7 +19,7 @@ interface Props {
 }
 
 const TOPICS = [
-  { key: 'anxiety',        es: 'Ansiedad',        en: 'Anxiety' },
+  { key: 'anxiety',        es: 'Estrés y carga',    en: 'Stress and workload' },
   { key: 'relationships',  es: 'Relaciones',       en: 'Relationships' },
   { key: 'self-knowledge', es: 'Autoconocimiento', en: 'Self-knowledge' },
   { key: 'habits',         es: 'Hábitos',          en: 'Habits' },

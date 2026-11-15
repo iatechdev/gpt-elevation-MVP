@@ -84,7 +84,7 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
     return { status: res.status, body: parsed, cache: res.headers.get('cache-control') };
   };
 
-  const sup = await mkUser('superadmin'); const adm = await mkUser('admin'); const pro = await mkUser('therapist'); const person = await mkUser('user');
+  const sup = await mkUser('superadmin'); const sup2 = await mkUser('superadmin'); const adm = await mkUser('admin'); const pro = await mkUser('therapist'); const person = await mkUser('user');
   const catalog = require('../../../shared/companion-exercises.json');
   const COUNT = (sql, params) => q(sql, params).then((r) => r[0].n);
   const A = '/api/admin/exercises';
@@ -95,8 +95,14 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
     minutes: [3, 5],
   });
   const create = (key, extra = {}) => http(sup, 'POST', A, { ...content(), key, ...extra });
-  const publish = (id, who = sup) => http(who, 'POST', `${A}/${id}/publish`, { confirm: true });
-  const review = (id, reviewStatus, who = sup) => http(who, 'POST', `${A}/${id}/review`, { reviewStatus, confirm: true });
+  const version = async (id) => {
+    const result = await http(sup, 'GET', `${A}/${id}`);
+    assert.equal(result.status, 200);
+    return result.body.version;
+  };
+  const publish = async (id, who = sup) => http(who, 'POST', `${A}/${id}/publish`, { confirm: true, expectedVersion: await version(id) });
+  const review = async (id, reviewStatus, who = sup) => http(who, 'POST', `${A}/${id}/review`, { reviewStatus, confirm: true, expectedVersion: await version(id) });
+  const withdraw = async (id, who = sup) => http(who, 'POST', `${A}/${id}/withdraw`, { confirm: true, expectedVersion: await version(id) });
   const visible = async (who = person) => (await http(who, 'GET', '/api/exercises')).body;
 
   await t.test('migración aditiva e idempotente: tablas con RLS, índices, sin ejercicios sembrados', async () => {
@@ -171,7 +177,7 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
     assert.deepEqual([done.status, done.body.reviewStatus, done.body.reviewedBy, Boolean(done.body.reviewedAt), done.body.status], [200, 'done', sup.name, true, 'published']);
     assert.equal((await visible()).find((e) => e.key === 'situacion_c').reviewStatus, 'done');
     // retirar y volver a publicar NO toca la revisión
-    assert.equal((await http(sup, 'POST', `${A}/${id}/withdraw`, { confirm: true })).body.status, 'withdrawn');
+    assert.equal((await withdraw(id)).body.status, 'withdrawn');
     assert.equal((await publish(id)).body.reviewStatus, 'done', 'cambiar solo el estado no borra la revisión');
     // guardar SIN cambiar el contenido: nada cambia
     const same = await http(sup, 'PUT', `${A}/${id}`, { ...content(), expectedVersion: 1 });
@@ -202,10 +208,10 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
 
   await t.test('retirar: la persona deja de verlo (lista y clave); solo se retira un publicado; el historial dice quién y cuándo', async () => {
     const made = await create('situacion_e'); const id = made.body.id;
-    assert.equal((await http(sup, 'POST', `${A}/${id}/withdraw`, { confirm: true })).body.code, 'not_published');
+    assert.equal((await withdraw(id)).body.code, 'not_published');
     await publish(id); await review(id, 'done');
     assert.equal((await http(person, 'GET', '/api/exercises/situacion_e')).status, 200);
-    const out = await http(sup, 'POST', `${A}/${id}/withdraw`, { confirm: true });
+    const out = await withdraw(id);
     assert.deepEqual([out.status, out.body.status, out.body.withdrawnBy], [200, 'withdrawn', sup.name]);
     assert.equal((await visible()).some((e) => e.key === 'situacion_e'), false);
     const ghost = await http(person, 'GET', '/api/exercises/no_existe_nunca');
@@ -214,6 +220,94 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
     assert.deepEqual(detail.body.history.map((h) => h.action), ['withdraw', 'review', 'publish', 'create']);
     assert.ok(detail.body.history.every((h) => h.actorName === sup.name && h.createdAt));
     assert.equal((await q('SELECT count(*)::int AS n FROM "ExerciseAudits" WHERE snapshot ILIKE $1', ['%@%']))[0].n, 0, 'el historial no guarda correos ni datos de personas');
+  });
+
+  await t.test('confirmaciones exigen la versión vista y rechazan cambios de contenido sin efectos ni historial', async () => {
+    for (const [action, initial, extra] of [
+      ['publish', 'draft', {}], ['withdraw', 'published', {}],
+      ['review', 'draft', { reviewStatus: 'done' }], ['review', 'draft', { reviewStatus: 'pending' }],
+    ]) {
+      const id = (await create(`version_${action}_${extra.reviewStatus || initial}`)).body.id;
+      if (initial === 'published') assert.equal((await publish(id)).status, 200);
+      if (extra.reviewStatus === 'pending') assert.equal((await review(id, 'done')).status, 200);
+      for (const invalid of [undefined, null, 0, -1, 1.5, '1', {}, Number.MAX_SAFE_INTEGER + 1]) {
+        const out = await http(sup, 'POST', `${A}/${id}/${action}`, { confirm: true, ...extra, expectedVersion: invalid });
+        assert.deepEqual([out.status, out.body.code], [400, 'expected_version_required']);
+      }
+      const edited = await http(sup2, 'PUT', `${A}/${id}`, { ...content(' (v2)'), expectedVersion: 1 });
+      assert.equal(edited.status, 200);
+      const before = (await http(sup, 'GET', `${A}/${id}`)).body;
+      const out = await http(sup, 'POST', `${A}/${id}/${action}`, { confirm: true, ...extra, expectedVersion: 1 });
+      assert.deepEqual([out.status, out.body.code, out.body.current.version, out.body.current.status, out.body.current.reviewStatus],
+        [409, 'exercise_changed', 2, before.status, before.reviewStatus]);
+      assert.deepEqual((await http(sup, 'GET', `${A}/${id}`)).body, before);
+    }
+  });
+
+  await t.test('repetir una acción con la misma versión es idempotente y no duplica el historial', async () => {
+    const id = (await create('acciones_idempotentes')).body.id;
+    for (const [action, extra, auditAction] of [
+      ['publish', {}, 'publish'], ['review', { reviewStatus: 'done' }, 'review'],
+      ['review', { reviewStatus: 'pending' }, 'unreview'], ['withdraw', {}, 'withdraw'],
+    ]) {
+      const body = { confirm: true, expectedVersion: 1, ...extra };
+      assert.equal((await http(sup, 'POST', `${A}/${id}/${action}`, body)).status, 200);
+      const repeated = await http(sup, 'POST', `${A}/${id}/${action}`, body);
+      assert.deepEqual([repeated.status, repeated.body.unchanged], [200, true]);
+      assert.equal(await COUNT('SELECT count(*)::int AS n FROM "ExerciseAudits" WHERE "exerciseId"=$1 AND action=$2', [id, auditAction]), 1);
+    }
+  });
+
+  await t.test('la comparación ocurre después de adquirir el bloqueo, no antes', async () => {
+    for (const [action, extra] of [['review', { reviewStatus: 'done' }], ['publish', {}], ['withdraw', {}]]) {
+      const id = (await create(`bloqueo_${action}`)).body.id;
+      if (action === 'withdraw') assert.equal((await publish(id)).status, 200);
+      const holder = new Client({ connectionString: urlFor(dbName), ssl: false });
+      await holder.connect();
+      try {
+        await holder.query('BEGIN');
+        await holder.query('SELECT id FROM "Exercises" WHERE id=$1 FOR UPDATE', [id]);
+        const pending = http(sup, 'POST', `${A}/${id}/${action}`, { confirm: true, expectedVersion: 1, ...extra });
+        let waiting = false;
+        for (let i = 0; i < 100 && !waiting; i++) {
+          await sleep(20);
+          const rows = await q("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query ILIKE '%Exercises%'");
+          waiting = rows[0].n > 0;
+        }
+        assert.equal(waiting, true, 'la solicitud debe estar esperando el bloqueo');
+        await holder.query('UPDATE "Exercises" SET version=2 WHERE id=$1', [id]);
+        await holder.query('COMMIT');
+        const result = await pending;
+        assert.deepEqual([result.status, result.body.code, result.body.current.version], [409, 'exercise_changed', 2]);
+      } finally {
+        await holder.query('ROLLBACK').catch(() => {});
+        await holder.end();
+      }
+    }
+  });
+
+  await t.test('publicar/retirar y revisar/editar simultáneos conservan un estado coherente', async () => {
+    const id = (await create('carrera_acciones')).body.id;
+    await publish(id);
+    const [pub, out] = await Promise.all([
+      http(sup, 'POST', `${A}/${id}/publish`, { confirm: true, expectedVersion: 1 }),
+      http(sup2, 'POST', `${A}/${id}/withdraw`, { confirm: true, expectedVersion: 1 }),
+    ]);
+    assert.deepEqual([pub.status, out.status], [200, 200]);
+    const state = (await http(sup, 'GET', `${A}/${id}`)).body;
+    const transitions = state.history.filter((entry) => ['publish', 'withdraw'].includes(entry.action));
+    assert.equal(state.status, transitions[0].action === 'publish' ? 'published' : 'withdrawn');
+    for (let i = 0; i < 12; i++) {
+      const made = await create(`carrera_revision_${i}`); const exerciseId = made.body.id;
+      const [checked, edit] = await Promise.all([
+        http(sup, 'POST', `${A}/${exerciseId}/review`, { confirm: true, reviewStatus: 'done', expectedVersion: 1 }),
+        http(sup2, 'PUT', `${A}/${exerciseId}`, { ...content(` (${i})`), expectedVersion: 1 }),
+      ]);
+      assert.equal(edit.status, 200);
+      assert.ok([200, 409].includes(checked.status));
+      const current = (await http(sup, 'GET', `${A}/${exerciseId}`)).body;
+      assert.deepEqual([current.version, current.reviewStatus], [2, 'pending']);
+    }
   });
 
   await t.test('importar el catálogo: todo BORRADOR con revisión pendiente, idempotente, no sobrescribe y los textos del catálogo pasan la heurística', async () => {

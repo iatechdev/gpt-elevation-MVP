@@ -22,7 +22,7 @@ for (const name of [
   'User', 'ParticipantContext', 'ParticipantResume', 'message', 'MoodLog', 'SessionRating', 'ClinicalNote',
   'WellnessRecommendation', 'Exercise', 'ExerciseAudit', 'AdminAuditEntry', 'TherapistPersonOrdinal', 'TherapistOrdinalCounter', 'TherapistProfile', 'MatchingRequest',
   'TherapySession', 'SessionNote', 'EthicManifest', 'PricingPlan',
-  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation',
+  'PlanRequest', 'TherapistValidation', 'ProfessionalApplication', 'ProfessionalApplicationFile', 'LandingContent', 'RevokedToken', 'AuthRevocation', 'PasswordReset', 'Consent', 'ConsentEvent', 'ChatTurn', 'DiaryEntry', 'DerivedInvalidation', 'AiBudgetCounter', 'AiUsage', 'ExportRequest', 'DeletionRequest', 'CareerContextVersion', 'BridgeTransfer', 'Evidence', 'EvidenceVersion', 'SkillCatalog', 'SkillDefinition', 'SkillAssessment', 'RouteCatalog', 'RouteCatalogItem', 'AiJob', 'SkillCandidate', 'ContactEntry', 'ContactEntryAudit', 'PromptRule', 'Invitation', 'ReviewShare', 'ProfessionalReview', 'PilotFeedback', 'ReviewObjection', 'ReviewResponse',
 ]) {
   models[name] = {};
   replaceModule(name + '.js', models[name]);
@@ -64,6 +64,7 @@ models.AiJob.update = async () => [0]; // ES-88: los ganchos de revocación y bo
 models.SkillCandidate.update = async () => [0];
 models.AiJob.findAll = async () => [];
 models.CareerContextVersion.findAll = async () => []; // ES-25: el gancho de revocación de consent.js consulta las versiones activas
+models.ProfessionalApplication.findAll = async () => []; models.ProfessionalApplication.findOne = async () => null; // ES-293: la purga minimiza la solicitud de profesional; por defecto no hay ninguna
 models.EvidenceVersion.findAll = async () => []; // ES-27: el gancho de revocación de consent.js consulta las evidencias confirmadas
 
 const unexpected = async () => { throw new Error('Unexpected mocked provider call'); };

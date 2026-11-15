@@ -68,6 +68,7 @@ test('ES-28 PostgreSQL: propuestas con cifrado y presupuesto reales, confirmaci�
 
   await t.test('propuesta A: lee el turno cifrado de verdad, registra uso y presupuesto reales y no guarda evidencia', async () => {
     await consent.setConsent(1, 'professional_bridge', 'granted');
+    await consent.setConsent(1, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
     const text = 'Dirigí la migración del archivo histórico durante tres meses con un equipo pequeño.';
     const turn = await ChatTurn.create({ UserId: 1, requestId: 'pg-turn-0001', status: 'completed', userContent: encriptarV2(text), replyContent: encriptarV2('RESPUESTA-ASISTENTE') });
     const [raw] = await sequelize.query(`SELECT "userContent" FROM "ChatTurns" WHERE id = :id`, { replacements: { id: turn.id }, type: 'SELECT' });

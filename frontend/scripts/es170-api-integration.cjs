@@ -144,7 +144,7 @@ const { pathToFileURL } = require('node:url');
     }
     console.log(`ES-170 servidor real: ${checks.length} comprobaciones superadas. Express + ruta de lectura de ejercicios + PostgreSQL reales.`);
   } catch (error) {
-    console.error('ES-170 falló:', error); process.exitCode = 1;
+    console.error('ES-170 falló:', error); require('./_exitOnFailure.cjs').fail();
   } finally {
     if (browser) await browser.close(); if (server) await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
     if (sequelize) await sequelize.close(); if (started) await pg.stop(); try { fs.rmSync(directory, { recursive: true, force: true, maxRetries: 8, retryDelay: 300 }); } catch { /* Windows aún bloquea el directorio temporal */ }

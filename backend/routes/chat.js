@@ -236,9 +236,16 @@ ${manifest}
       order: [['createdAt', 'DESC'], ['id', 'DESC']],
       limit: HISTORY_LIMIT,
     });
-    const historial = recientes.reverse().map(m => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: redactSecrets(capText(normalizeText(desencriptar(m.content)))),
+    // ES-298 (E281-1): el turno INTERRUMPIDO por crisis (la frase y la respuesta de apoyo que la siguió) no se envía al proveedor en los mensajes siguientes. Se vuelve a evaluar el
+    // texto completo (antes de acotarlo) con el mismo detector; el indicador NUNCA se guarda. Lo que ve la persona en su historial no cambia: solo se omite de lo que sale hacia el proveedor.
+    const secuencia = recientes.reverse().map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: normalizeText(desencriptar(m.content)) }));
+    const interrumpidos = new Set();
+    secuencia.forEach((m, i) => {
+      if (m.role === 'user' && detectRisk(m.text).level === 'high') { interrumpidos.add(i); if (secuencia[i + 1]?.role === 'assistant') interrumpidos.add(i + 1); }
+    });
+    const historial = secuencia.filter((_, i) => !interrumpidos.has(i)).map(m => ({
+      role: m.role,
+      content: redactSecrets(capText(m.text)),
     })).filter(m => m.content);
     while (historial.length > 0 && historial[0].role === 'assistant') historial.shift();
     historial.push({ role: 'user', content: redactSecrets(mensajeUsuario) });

@@ -9,6 +9,7 @@ const User         = require('../User');
 const { Transaction } = require('sequelize');
 const { sequelize } = require('../database');
 const { verificarAdmin } = require('../middlewares/auth');
+const { isRouteId } = require('../middlewares/params');
 const { recordAdminAction } = require('../utils/adminAudit'); // ES-186 B
 const { validateBody, id, text, nonempty, optional, nullable } = require('../middlewares/validateBody');
 
@@ -142,7 +143,10 @@ router.get('/admin', verificarAdmin, async (req, res) => {
 // PUT /api/admin/plan-requests/:id/approve
 // Admin — aprueba solicitud y asigna el plan
 // ==========================================
-router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optional(nullable(text)) }), async (req, res) => {
+// ES-262 (E203-1): un id que no es un entero positivo de la columna es el mismo 404 uniforme que uno inexistente (antes: 500 de la base). Va DESPUÉS de la guarda de rol.
+const routeIdGuard = (req, res, next) => (isRouteId(req.params.id) ? next() : res.status(404).json({ code: 'not_found', error: 'No se encontró. / Not found.' }));
+
+router.put('/admin/:id/approve', verificarAdmin, routeIdGuard, validateBody({ adminNote: optional(nullable(text)) }), async (req, res) => {
   // ES-186 (parte A): una transacción con la solicitud BLOQUEADA; la segunda aprobación/rechazo simultáneo espera y recibe 409 request_closed (antes: doble efecto sobre el plan).
   const transaction = await sequelize.transaction();
   const reply = async (status, body) => { await transaction.rollback().catch(() => {}); return res.status(status).json(body); };
@@ -187,7 +191,7 @@ router.put('/admin/:id/approve', verificarAdmin, validateBody({ adminNote: optio
 // PUT /api/admin/plan-requests/:id/reject
 // Admin — rechaza solicitud
 // ==========================================
-router.put('/admin/:id/reject', verificarAdmin, validateBody({ adminNote: nonempty }), async (req, res) => {
+router.put('/admin/:id/reject', verificarAdmin, routeIdGuard, validateBody({ adminNote: nonempty }), async (req, res) => {
   const transaction = await sequelize.transaction();
   const reply = async (status, body) => { await transaction.rollback().catch(() => {}); return res.status(status).json(body); };
   try {

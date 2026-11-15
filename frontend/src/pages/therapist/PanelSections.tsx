@@ -37,8 +37,8 @@ export function PanelBlock<S>({ id, title, label, state, t, style, children }: {
       {state.status === 'loading' && <p role="status" style={{ ...mutedStyle, marginTop: '0.75rem' }}>{t('therapist_loading')}</p>}
       {state.status === 'error' && (
         <div role="alert" style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.875rem', color: '#B91C1C' }}>{t('panel_section_error')}</span>
-          <button ref={retry} type="button" style={ghostBtn} aria-label={`${t('panel_retry')}: ${sectionName}`} onClick={() => { retried.current = true; state.reload() }}>{t('panel_retry')}</button>
+          <span style={{ fontSize: '0.875rem', color: '#B91C1C' }}>{t(state.denied ? 'panel_section_forbidden' : 'panel_section_error')}</span>
+          {!state.denied && <button ref={retry} type="button" style={ghostBtn} aria-label={`${t('panel_retry')}: ${sectionName}`} onClick={() => { retried.current = true; state.reload() }}>{t('panel_retry')}</button>}
         </div>
       )}
       {state.status === 'ready' && <div style={{ marginTop: '0.75rem' }}>{children}</div>}

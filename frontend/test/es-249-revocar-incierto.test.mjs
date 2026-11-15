@@ -31,7 +31,7 @@ test('ES-249 pantalla: lo incierto se relee; solo «revoked» completa el flujo 
 // E249-1: el foco se coloca tras renderizar (efecto sobre `revoke`), no con un setTimeout que corría con el botón aún deshabilitado
 test('ES-249 foco: se coloca en un efecto tras renderizar; «Comprobar» si queda sin confirmar; sin setTimeout para el resultado', () => {
   assert.match(page, /if \(revoke === 'unsure'\) \{ checkButton\.current\?\.focus\(\); return \}/)
-  assert.match(page, /if \(button && !button\.disabled\) button\.focus\(\); else document\.getElementById\('skill-map-main'\)\?\.focus\(\)/)
+  assert.match(page, /if \(button && !button\.disabled\) button\.focus\(\); else document\.getElementById\('main'\)\?\.focus\(\)/) // ES-160: el <main> lo pone el marco de persona
   const verifyAndConfirm = page.slice(page.indexOf('const verify = async'), page.indexOf('// Never paint a response'))
   assert.doesNotMatch(verifyAndConfirm, /setTimeout/)
 })

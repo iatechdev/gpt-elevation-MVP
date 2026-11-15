@@ -44,6 +44,13 @@ function install() {
       rows.push(raw);
       return wrap(raw);
     };
+    // ES-274: la purga pone en NULL campos de persona de TherapySession (UPDATE masivo).
+    model.update = async (values, options = {}) => {
+      maybeFail(name, 'update');
+      const targets = table(name, options).filter(row => matches(row, options.where));
+      for (const row of targets) Object.assign(row, values);
+      return [targets.length];
+    };
     model.destroy = async (options = {}) => {
       maybeFail(name, 'destroy');
       const rows = table(name, options);

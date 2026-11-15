@@ -45,6 +45,17 @@ test('ES-178: bloques sin emojis ni estrellas, la edición manda la versión de 
   for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
 })
 
+test('ES-178 F2: resumen con IA y agendar — códigos del servidor, sin «y n notas», sin reenvío a ciegas y textos en ES y EN', () => {
+  const ai = read('../src/pages/therapist/AiSummaryBlock.tsx'), sch = read('../src/pages/therapist/ScheduleSession.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.doesNotMatch(ai + sch, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|[★☆]/u)
+  for (const code of ['ai_budget_exhausted', 'ai_budget_not_configured']) assert.match(ai, new RegExp(code))
+  assert.match(ai, /retry: false/); assert.doesNotMatch(copy, /y \{n\} notas|and \{n\} notes/)
+  for (const code of ['scheduled_in_past', 'duration_invalid', 'session_conflict', 'invalid_input']) assert.match(sch, new RegExp(code))
+  assert.match(sch, /status=scheduled/); assert.match(sch, /showModal\(\)/); assert.match(sch, /DURATIONS = \[30, 45, 50, 60, 90\]/)
+  const keys = [...(ai + sch).matchAll(/t\('((?:fu_)[a-z_]+)'/g)].map(m => m[1]).concat(['fu_sch_required', 'fu_sch_past', 'fu_sch_duration', 'fu_sch_conflict', 'fu_sch_noaccess', 'fu_sch_error', 'fu_sch_unsure', 'fu_ai_budget', 'fu_ai_budget_nodate'])
+  for (const key of new Set(keys)) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length >= 2, true, `${key} en ES y EN`)
+})
+
 // E226-1: la fecha propuesta de una nota nueva es HOY en calendario local, no el día UTC.
 test('ES-178 (E226-1): localToday da el día de calendario local en Bogotá y en Auckland', () => {
   assert.equal(mod.localToday(Date.parse('2026-11-11T01:00:00Z'), 'America/Bogota'), '2026-11-10', '20:00 del 10 en Bogotá (antes proponía el 11)')
@@ -59,4 +70,21 @@ test('ES-178 (E226-2): las cifras llevan el tope de 60 junto al número cuando s
   const history = read('../src/pages/therapist/FollowupHistory.tsx'), copy = read('../src/i18n/therapistCopy.ts')
   assert.match(history, /fu_fig_entries_cap/); assert.match(history, /fu_fig_mood_cap/); assert.match(history, /fu_fig_rating_cap/)
   for (const key of ['fu_fig_entries_cap', 'fu_fig_mood_cap', 'fu_fig_rating_cap']) assert.equal((copy.match(new RegExp(`\\b${key}:`, 'g')) ?? []).length, 2, key)
+})
+
+// E227: foco tras el pintado (efecto, no setTimeout), «Generar» con aria-disabled tras el límite, reinicio con zona explícita y error de duración que se limpia.
+test('ES-178 (E227): el foco se mueve desde un efecto, el límite de IA usa aria-disabled y la fecha de reinicio dice UTC', () => {
+  const ai = read('../src/pages/therapist/AiSummaryBlock.tsx'), sch = read('../src/pages/therapist/ScheduleSession.tsx')
+  assert.ok(!ai.includes('setTimeout(') || !/setTimeout\([^)]*focus/.test(ai)); assert.ok(ai.includes('if (!focusAfter.current || busy) return'))
+  assert.ok(!ai.includes(' disabled={busy}')); assert.ok(ai.includes('aria-disabled={busy || limited}')); assert.ok(ai.includes("timeZone: 'UTC'") && ai.includes("timeZoneName: 'short'"))
+  assert.ok(sch.includes("p.field !== 'duration'") && sch.includes("p.field !== 'scheduledAt'"))
+})
+
+// E227-2: el foco solo vuelve al botón si sigue en el bloque; si no, el resultado se anuncia sin moverlo. ES-262: fecha fuera de rango = error del campo.
+test('ES-178 (E227-2): el foco no se roba y la fecha fuera de rango se dice en el campo', () => {
+  const ai = read('../src/pages/therapist/AiSummaryBlock.tsx'), sch = read('../src/pages/therapist/ScheduleSession.tsx'), copy = read('../src/i18n/therapistCopy.ts')
+  assert.ok(ai.includes('const stillHere = active === null || active === document.body || (section.current?.contains(active) ?? false)'))
+  assert.ok(ai.includes('if (stillHere)') && ai.includes("setAnnounce(t('fu_ai_done'))") && ai.includes('role="status"'))
+  assert.equal((copy.match(/\bfu_ai_done:/g) ?? []).length, 2)
+  assert.ok(sch.includes("body.code === 'scheduled_invalid'"))
 })

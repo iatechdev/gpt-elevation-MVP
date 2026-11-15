@@ -16,19 +16,21 @@ const readRole = (fallback: Role): Role => {
 }
 
 /** Público: marca, «Cómo funciona», «Privacidad», «Entrar» y «Crear cuenta». */
-export function PublicFrame({ children }: { children: ReactNode }) {
+export function PublicFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
   const { c } = useShellCopy()
   return (
     <Frame
-      nav={<nav className="cg-nav" aria-label={c.how}>{PUBLIC_NAV.map(item => <NavLink key={item.label} to={item.to}>{c[item.label]}</NavLink>)}<NavLink className="cg-btn" to="/login?mode=register">{c.signUp}</NavLink></nav>}
+      nav={<nav className="cg-nav cg-nav--grid" aria-label={c.how}>{PUBLIC_NAV.map(item => <NavLink key={item.label} to={item.to}>{c[item.label]}</NavLink>)}<NavLink className="cg-btn" to="/login?mode=register">{c.signUp}</NavLink></nav>}
+      theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
 }
 
 /** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de usuario. */
-export function PersonFrame({ children }: { children: ReactNode }) {
+export function PersonFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
   const { c } = useShellCopy()
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName="elv-theme">{children}</Frame>
+  // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con tema claro/oscuro del sistema.
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}>{children}</Frame>
 }
 
 /** Profesional: Panel y Personas en facilitación + menú (Revisiones profesionales, Salir); marca «Profesional». */
@@ -36,7 +38,7 @@ export function ProfessionalFrame({ children }: { children: ReactNode }) {
   const { c, lang } = useShellCopy()
   return (
     <Frame
-      brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandTo="/therapist/dashboard"
+      brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandLabel={`${c.brandLabel}. ${PROFESSIONAL_LABEL[lang]}`} brandTo="/therapist/dashboard"
       nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} account={<UserMenu name={readName(PROFESSIONAL_LABEL[lang])} items={PROFESSIONAL_MENU} />} mainClassName="elv-theme"
     >{children}</Frame>
   )

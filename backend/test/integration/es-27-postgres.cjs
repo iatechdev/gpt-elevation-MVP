@@ -90,6 +90,7 @@ test('ES-27 PostgreSQL: cifrado real, unicidad, ediciones concurrentes y revocac
     for (let round = 0; round < 8; round++) {
       const userId = 100 + round;
       await consent.setConsent(userId, 'professional_bridge', 'granted');
+      await consent.setConsent(userId, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
       const turn = await ChatTurn.create({ UserId: userId, requestId: `turn-${round}-0001`, status: 'completed', userContent: encriptarV2('Lideré el equipo de ventas sintético'), replyContent: encriptarV2('r') });
       const origins = [{ type: 'chat_turn', id: turn.id, quote: 'lideré el equipo' }];
       const outcomes = await Promise.allSettled([
@@ -105,6 +106,7 @@ test('ES-27 PostgreSQL: cifrado real, unicidad, ediciones concurrentes y revocac
   await t.test('una revocación durante una lectura del motor espera a que termine y después no se entrega evidencia del chat', async () => {
     const userId = 200;
     await consent.setConsent(userId, 'professional_bridge', 'granted');
+    await consent.setConsent(userId, 'insights_chat', 'granted'); // ES-233: citar la fuente exige su permiso de análisis
     const turn = await ChatTurn.create({ UserId: userId, requestId: 'turn-read-0001', status: 'completed', userContent: encriptarV2('Coordiné el proyecto sintético'), replyContent: encriptarV2('r') });
     await evidence.create(userId, body({}, 'confirmed', { origins: [{ type: 'chat_turn', id: turn.id }] }));
     assert.equal((await evidence.getConfirmedEvidence(userId, 'pg-engine')).length, 1);

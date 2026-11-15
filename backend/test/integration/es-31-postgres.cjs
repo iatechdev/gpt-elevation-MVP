@@ -30,9 +30,10 @@ test('ES-31 PostgreSQL: índices únicos parciales con nombre, borradores y publ
 
   const RouteCatalog = require('../../RouteCatalog');
   const RouteCatalogItem = require('../../RouteCatalogItem');
-  await sequelize.sync(); // si dos índices parciales compartieran nombre, esto fallaría (como pasó en ES-29)
+  // ES-282 (E239-2): se cargan TODOS los modelos que toca publicar (incluidos los del catálogo de habilidades) ANTES de sync(); si no, publicar fallaba con «relation SkillCatalogs does not exist».
   const catalog = require('../../utils/routeCatalog');
   const { build } = require('../../seeds/routeCatalogSynthetic.cjs');
+  await sequelize.sync(); // si dos índices parciales compartieran nombre, esto fallaría (como pasó en ES-29)
 
   await t.test('existen los índices únicos parciales de un catálogo vigente y un borrador', async () => {
     const rows = await sequelize.query(`SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'RouteCatalogs' AND indexdef ILIKE '%UNIQUE%'`, { type: 'SELECT' });

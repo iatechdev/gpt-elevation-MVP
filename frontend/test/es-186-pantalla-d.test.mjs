@@ -82,16 +82,17 @@ test('eliminar (parte C): 202 solicitud (y repetida), 200 eliminada, 409 has_dep
   assert.equal(logic.deleteResult(0, null).message, 'Error de conexión.')
 })
 
-test('eliminar: ningún texto promete que el borrado se completa sin más ni da plazo; todos mencionan la política de retención en definición (ES y EN)', () => {
+test('eliminar (ES-274): los textos dicen que se conserva lo que escribió el profesional y que puede identificar; nunca prometen anonimato ni plazo; mencionan la política de retención en definición (ES y EN)', () => {
   for (const key of ['deletionRequested', 'deleteDialog', 'deletionLocked']) {
     const es = logic.MSG[key]; const en = adminText(es, 'en')
-    assert.match(es, /salvo los que deban conservarse según la política de retención, que está en definición\./, key)
-    assert.match(en, /except what must be kept under the retention policy, which is being defined\./, key + ' (EN)')
-    for (const text of [es, en]) assert.doesNotMatch(text, /\b\d+\s*(días|dias|horas|semanas|days|hours|weeks)\b|inmediat|se completa en el proceso/i, key)
+    assert.match(es, /Solo se conservan las notas y registros que escribió su profesional, que pueden contener datos que la identifiquen\. La política de retención está en definición\./, key)
+    assert.match(en, /Only the notes and records written by their professional are kept, and they may contain data that identifies the person\. The retention policy is being defined\./, key + ' (EN)')
+    for (const text of [es, en]) assert.doesNotMatch(text, /\b\d+\s*(días|dias|horas|semanas|days|hours|weeks)\b|inmediat|se completa en el proceso|anonim|desvincul|unlink/i, key)
   }
   for (const name of ['es-186-delete-requested.json', 'es-186-delete-repeated.json']) {
     const message = fixture(name).body.message
-    assert.match(message, /política de retención.*retention policy/s, name)
+    assert.match(message, /Solo se conservan las notas y registros que escribió su profesional.*Only the notes and records written by their professional are kept/s, name)
+    assert.doesNotMatch(message, /anonim|desvincul|unlink/i, name)
   }
 })
 

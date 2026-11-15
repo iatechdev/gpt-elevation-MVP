@@ -72,7 +72,7 @@ const fullMap = () => ({ catalogVersion: 7, skills: [
     check('ES/EN changes labels/criteria only; original source/rationale and numeric levels preserved');
     await page.keyboard.press('Tab'); await page.getByRole('link', { name: 'Skip to content' }).focus();
     assert.ok(await page.getByRole('link', { name: 'Skip to content' }).evaluate(element => getComputedStyle(element).outlineStyle !== 'none'));
-    await page.keyboard.press('Enter'); assert.equal(await page.evaluate(() => document.activeElement.id), 'skill-map-main');
+    await page.keyboard.press('Enter'); assert.equal(await page.evaluate(() => document.activeElement.id), 'main');
     for (const width of [320, 375, 768, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'overflow at ' + width);

@@ -28,6 +28,10 @@ const PREVIEW_TTL_MS = 10 * 60 * 1000;
 const PURPOSE = 'professional_bridge';
 const MAX_ATTEMPTS = 6;
 const ORIGIN_TYPES = ['direct', 'diary_entry', 'chat_turn', 'resume_version'];
+// ES-233: citar una fuente propia como origen EXIGE el permiso de análisis de esa fuente (insights_*), el más estricto; el permiso del puente solo autoriza compartir.
+// Se comprueba al previsualizar y, de nuevo, al confirmar DENTRO de la misma transacción (una retirada entre las dos pestañas ya no deja pasar el texto).
+const SOURCE_PURPOSE = Object.freeze({ diary_entry: 'insights_diary', chat_turn: 'insights_chat', resume_version: 'insights_resume' });
+const sourcePurposes = (fields) => [...new Set(fields.map((f) => SOURCE_PURPOSE[f.origin.type]).filter(Boolean))];
 
 class BridgeError extends Error {
   constructor(status, code, es, en, extra = {}) {
@@ -38,6 +42,8 @@ class BridgeError extends Error {
   }
 }
 const invalid = (es = 'Datos inválidos.', en = 'Invalid data.') => new BridgeError(400, 'invalid_input', es, en);
+const sourceConsentError = (code) => new BridgeError(403, code,
+  'Autoriza el análisis de esa fuente antes de usarla como origen.', 'Authorize the analysis of that source before using it as an origin.');
 const consentError = () => new BridgeError(403, 'consent_required',
   'Necesitas autorizar el puente profesional.', 'You need to authorize the professional bridge.');
 
@@ -137,6 +143,7 @@ async function preview(userId, { fields }) {
   await assertSkillKeys(clean);
   await resolveOrigins(userId, clean);
   if (needsBridge(clean) && !await consent.hasConsent(userId, PURPOSE)) throw consentError();
+  for (const purpose of sourcePurposes(clean)) if (!await consent.hasConsent(userId, purpose)) throw sourceConsentError('source_consent_required');
   const expiresAtMs = Date.now() + PREVIEW_TTL_MS;
   return {
     token: `${expiresAtMs}.${sign(userId, expiresAtMs, clean)}`,
@@ -181,6 +188,9 @@ async function confirm(userId, { fields, token, requestId }) {
   const withBridge = needsBridge(clean);
 
   const work = async (transaction) => {
+    // E253-1 (interbloqueo, 40P01): la retirada de un permiso bloquea el CONSENTIMIENTO y luego las versiones (markSourceRevoked); esta confirmación debe bloquear en el MISMO orden: primero los
+    // permisos (el del puente ya está tomado por withConsent y el de cada fuente aquí, en orden alfabético) y solo después las versiones. Con el orden inverso, confirmar‖retirar se cruzaba y daba 500.
+    for (const purpose of sourcePurposes(clean).sort()) if (!await consent.isGrantedIn(userId, purpose, transaction)) throw sourceConsentError('source_consent_revoked');
     const rows = await CareerContextVersion.findAll({ where: { UserId: userId }, transaction, lock: Transaction.LOCK.UPDATE });
     const repeated = rows.find((r) => r.requestId === requestId);
     if (repeated) return { record: toRecord(repeated, JSON.parse(desencriptar(repeated.payload))), created: false };

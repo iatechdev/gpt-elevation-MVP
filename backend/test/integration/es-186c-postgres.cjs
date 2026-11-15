@@ -160,7 +160,7 @@ test('ES-186 parte C PostgreSQL + HTTP: «Eliminar» solicita la eliminación po
     const before = (await audit()).length;
     const res = await http(sup, 'DELETE', `/api/admin/usuarios/${person.id}`);
     assert.equal(res.status, 202, JSON.stringify(res.body)); assert.equal(res.body.code, 'deletion_requested'); assert.equal(res.body.repeated, false);
-    assert.match(res.body.message, /mantenimiento.*retención.*maintenance.*retention/s, 'dice que hay datos que se conservan según la política de retención'); assert.doesNotMatch(res.body.message, /se completa en el proceso de mantenimiento/); assert.ok(!/\b\d+\s*(días|dias|days|horas|hours)\b/i.test(res.body.message), 'sin plazo prometido');
+    assert.match(res.body.message, /mantenimiento.*Solo se conservan las notas y registros que escribió su profesional.*retención.*maintenance.*Only the notes and records written by their professional.*retention/s, 'dice que hay datos que se conservan según la política de retención'); assert.doesNotMatch(res.body.message, /se completa en el proceso de mantenimiento/); assert.ok(!/\b\d+\s*(días|dias|days|horas|hours)\b/i.test(res.body.message), 'sin plazo prometido');
     const row = (await q('SELECT active FROM "Users" WHERE id=$1', [person.id]))[0];
     assert.equal(row.active, false, 'la fila sigue (sin DELETE físico) pero la cuenta ya no entra');
     assert.equal((await q('SELECT count(*)::int n FROM "DeletionRequests" WHERE "UserId"=$1', [person.id]))[0].n, 1);

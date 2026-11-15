@@ -15,7 +15,7 @@ test('P1-2: pricing has only one public read; mutations and inactive plans requi
 
   for (const [method, suffix, body, success] of [
     ['GET', '/all', undefined, 200],
-    ['POST', '', { slug: 'synthetic', name_es: 'Prueba', name_en: 'Test' }, 201],
+    ['POST', '', { slug: 'synthetic', name_es: 'Prueba', name_en: 'Test', price: 0 }, 201],
     ['POST', '/seed', {}, 200],
     ['PUT', '/7', { price: 0 }, 200],
     ['DELETE', '/7', undefined, 200],
