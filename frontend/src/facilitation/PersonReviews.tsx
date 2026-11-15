@@ -2,6 +2,7 @@
 // El servidor verifica propietario y permiso en cada acceso; esta pantalla solo muestra lo que responde, como TEXTO (React escapa), y conserva siempre lo que la persona escribió.
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { registerLeaveGuard } from '../shell/leaveGuard'
 import { Chip, TextAreaField } from '../cartografia/controls'
 import { Banner, Card } from '../cartografia/pieces'
 import { CartografiaRoot } from '../cartografia/theme'
@@ -65,6 +66,11 @@ function Active({ token }: { token: string }) {
     window.addEventListener('beforeunload', unload); document.addEventListener('click', click, true)
     return () => { window.removeEventListener('beforeunload', unload); document.removeEventListener('click', click, true) }
   }, [dirty, navigate])
+  // ES-153: «Salir» del marco de persona (un botón, no un enlace) también pregunta; los enlaces ya los intercepta el efecto de arriba. Tras «Descartar» la persona vuelve a pulsar «Salir».
+  useEffect(() => {
+    if (!dirty) return
+    return registerLeaveGuard(() => { setLeave(() => () => {}); return true }, { ownLinks: true })
+  }, [dirty])
   // E268-4: «Atrás» del navegador. Con texto escrito se añade UNA entrada de historial como tope: al pulsar atrás se vuelve a poner y se pregunta; «Descartar y salir» retrocede de verdad (2 pasos).
   useEffect(() => {
     if (dirty && !sentinel.current) { window.history.pushState({ cgfGuard: true }, ''); sentinel.current = true }

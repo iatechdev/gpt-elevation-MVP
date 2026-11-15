@@ -7,6 +7,7 @@ import type { CopyKey } from './copy'
 import { createFixture, FixtureError } from './fixture'
 import type { Command } from './fixture'
 import { registerCareerGuard } from './navigationGuard'
+import { registerLeaveGuard } from '../shell/leaveGuard'
 import './career.css'
 
 const enabled = import.meta.env.VITE_ENABLE_CAREER_PREVIEW === 'true'
@@ -70,8 +71,13 @@ function CareerSession({ session }: { session: string }) {
       opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     }
     const detach = registerCareerGuard(pop)
+    // ES-153: los enlaces del marco de persona abren este mismo diálogo (antes solo lo abrían los enlaces de la propia pantalla)
+    const leave = registerLeaveGuard(to => {
+      if (!dirtyRef.current && !inFlight.current && !uncertainRef.current) return false
+      opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setPending(to); return true
+    })
     window.addEventListener('beforeunload', before)
-    return () => { window.removeEventListener('beforeunload', before); detach() }
+    return () => { window.removeEventListener('beforeunload', before); detach(); leave() }
   }, [])
   useEffect(() => { if (pending !== null) keepRef.current?.focus() }, [pending])
   const navigate = useCallback((to: string) => {

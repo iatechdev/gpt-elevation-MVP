@@ -1,3 +1,4 @@
+import { registerLeaveGuard } from '../shell/leaveGuard'
 // Loaded before BrowserRouter mounts. A popstate listener added by a page effect
 // runs after the router's listener and cannot reliably preserve a mounted draft.
 // Only this form registers a guard; all other routes retain existing navigation.
@@ -16,8 +17,9 @@ window.addEventListener('popstate', event => {
   window.history.go(active.index - index)
 })
 export function registerContextNavigationGuard(cancel: () => boolean) {
+  const leave = registerLeaveGuard(() => cancel()) // ES-153: los enlaces del marco de persona consultan la misma guardia
   const index: unknown = window.history.state?.idx
   const guard = typeof index === 'number' ? { index, cancel } : null
   active = guard
-  return () => { if (active === guard) active = null }
+  return () => { leave(); if (active === guard) active = null }
 }

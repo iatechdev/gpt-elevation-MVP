@@ -1,3 +1,4 @@
+import { registerLeaveGuard } from '../shell/leaveGuard'
 import { useEffect, useSyncExternalStore } from 'react'
 import { useLocation } from 'react-router-dom'
 import { registerPilotGuard } from './navigationGuard'
@@ -8,10 +9,10 @@ export function usePilotGuard(active: boolean, message: string) {
   useEffect(() => {
     if (!active) return
     const cancel = () => !window.confirm(message)
-    const remove = registerPilotGuard(cancel)
+    const remove = registerPilotGuard(cancel); const leave = registerLeaveGuard(cancel, { ownLinks: true }) // ES-153: «Salir» del marco de persona
     const click = (event: MouseEvent) => { const link = event.target instanceof Element ? event.target.closest('a[href]') : null; if (link && !link.getAttribute('href')?.startsWith('#') && !event.defaultPrevented && cancel()) { event.preventDefault(); event.stopImmediatePropagation() } }
     const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
     document.addEventListener('click', click, true); window.addEventListener('beforeunload', unload)
-    return () => { remove(); document.removeEventListener('click', click, true); window.removeEventListener('beforeunload', unload) }
+    return () => { remove(); leave(); document.removeEventListener('click', click, true); window.removeEventListener('beforeunload', unload) }
   }, [active, message, location.key])
 }
