@@ -1,0 +1,19 @@
+== base
+  unit es-183: # pass 2 # fail 0 
+== M1 reponer cifra de meta (5/6 · 7 días) en Targets
+M aplicada
+  unit es-183: # pass 1 # fail 1 
+  mi guion (def): RESUMEN [def]: 48/52 OK, 4 FALLA
+== M2 NoData pide /api/admin/pilot-metrics
+M aplicada
+  unit es-183: # pass 1 # fail 1 
+  mi guion (def): RESUMEN [def]: 48/52 OK, 4 FALLA
+== M3 quitar el umbral «menos de 5 personas» del texto protegido (ES)
+M aplicada
+  unit es-183: # pass 1 # fail 1 
+  mi guion (pnorm): RESUMEN [pnorm]: 54/56 OK, 2 FALLA
+== M4 bandera encendida por defecto
+M aplicada
+  unit es-183: # pass 2 # fail 0 
+  mi guion (def): RESUMEN [def]: 40/52 OK, 12 FALLA
+fin

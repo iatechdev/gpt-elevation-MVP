@@ -1,0 +1,325 @@
+{
+ "variant": "pnorm",
+ "states": [
+  "No disponible",
+  "Datos protegidos",
+  "En curso",
+  "Not available",
+  "Protected data",
+  "In progress"
+ ],
+ "results": [
+  {
+   "n": "pnorm admin/es: metas «Meta en definición» ×4 y ninguna cifra de meta (ni 5/6, 4/6, 7 días, 30 días, 7 days, 30 days, %)",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁLOGO DE HABILIDADES PILOTO JUNTA MANIFIESTO ÉTICO Saltar al conten"
+  },
+  {
+   "n": "pnorm admin/es: texto fijo «Las metas no son resultados obtenidos ni evidencia de eficacia clínica»",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm admin/es: 0 peticiones a métricas/piloto/feedback (red completa: [\"GET /api/session\"])",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm admin/es: franja de vista preliminar visible (datos ficticios)",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁLOGO D"
+  },
+  {
+   "n": "pnorm admin/es: estados en palabra presentes",
+   "info": "[\"No disponible\",\"Datos protegidos\",\"En curso\"]"
+  },
+  {
+   "n": "pnorm admin/es: si hay «Datos protegidos», el texto nombra el umbral («menos de 5 personas») y no se muestra ningún conteo",
+   "ok": false,
+   "x": "dl=0"
+  },
+  {
+   "n": "pnorm admin/es: botón «Actualizar simulación» presente y habilitado",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm admin/es: secuencia de [role=status] tras «Actualizar simulación»",
+   "info": "[\"Cargando…\",\"\"]"
+  },
+  {
+   "n": "pnorm admin/es: tras «Actualizar simulación» la pantalla vuelve a su estado (resultados) sin romperse y con 0 peticiones al servidor",
+   "ok": true,
+   "x": " Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARI"
+  },
+  {
+   "n": "pnorm admin/es: sin errores de página ni de consola",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm admin/en: metas «Target being defined» ×4 y ninguna cifra de meta (ni 5/6, 4/6, 7 días, 30 días, 7 days, 30 days, %)",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD ETHICAL MANIFEST Skip to content Back to administration ES EN Re"
+  },
+  {
+   "n": "pnorm admin/en: texto fijo «Targets are not achieved results or evidence of clinical effectiveness»",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm admin/en: 0 peticiones a métricas/piloto/feedback (red completa: [\"GET /api/session\"])",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm admin/en: franja de vista preliminar visible (datos ficticios)",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD ETHI"
+  },
+  {
+   "n": "pnorm admin/en: estados en palabra presentes",
+   "info": "[\"No disponible\",\"Datos protegidos\",\"En curso\",\"Not available\",\"Protected data\",\"In progress\"]"
+  },
+  {
+   "n": "pnorm admin/en: si hay «Protected data», el texto nombra el umbral («menos de 5 personas») y no se muestra ningún conteo",
+   "ok": true,
+   "x": "dl=0"
+  },
+  {
+   "n": "pnorm admin/en: botón «Refresh simulation» presente y habilitado",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm admin/en: secuencia de [role=status] tras «Refresh simulation»",
+   "info": "[\"Loading…\",\"\"]"
+  },
+  {
+   "n": "pnorm admin/en: tras «Refresh simulation» la pantalla vuelve a su estado (resultados) sin romperse y con 0 peticiones al servidor",
+   "ok": true,
+   "x": " Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE"
+  },
+  {
+   "n": "pnorm admin/en: sin errores de página ni de consola",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm superadmin/es: metas «Meta en definición» ×4 y ninguna cifra de meta (ni 5/6, 4/6, 7 días, 30 días, 7 days, 30 days, %)",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN SUPERADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁLOGO DE HABILIDADES PILOTO JUNTA MANIFIESTO ÉTICO Saltar al c"
+  },
+  {
+   "n": "pnorm superadmin/es: texto fijo «Las metas no son resultados obtenidos ni evidencia de eficacia clínica»",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm superadmin/es: 0 peticiones a métricas/piloto/feedback (red completa: [\"GET /api/session\"])",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm superadmin/es: franja de vista preliminar visible (datos ficticios)",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN SUPERADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁL"
+  },
+  {
+   "n": "pnorm superadmin/es: estados en palabra presentes",
+   "info": "[\"No disponible\",\"Datos protegidos\",\"En curso\",\"Not available\",\"Protected data\",\"In progress\"]"
+  },
+  {
+   "n": "pnorm superadmin/es: si hay «Datos protegidos», el texto nombra el umbral («menos de 5 personas») y no se muestra ningún conteo",
+   "ok": false,
+   "x": "dl=0"
+  },
+  {
+   "n": "pnorm superadmin/es: botón «Actualizar simulación» presente y habilitado",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm superadmin/es: secuencia de [role=status] tras «Actualizar simulación»",
+   "info": "[\"Cargando…\",\"\"]"
+  },
+  {
+   "n": "pnorm superadmin/es: tras «Actualizar simulación» la pantalla vuelve a su estado (resultados) sin romperse y con 0 peticiones al servidor",
+   "ok": true,
+   "x": " Saltar al contenido ELEVATION . ES EN SUPERADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS U"
+  },
+  {
+   "n": "pnorm superadmin/es: sin errores de página ni de consola",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm superadmin/en: metas «Target being defined» ×4 y ninguna cifra de meta (ni 5/6, 4/6, 7 días, 30 días, 7 days, 30 days, %)",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN SUPERADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD ETHICAL MANIFEST Skip to content Back to administration ES "
+  },
+  {
+   "n": "pnorm superadmin/en: texto fijo «Targets are not achieved results or evidence of clinical effectiveness»",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm superadmin/en: 0 peticiones a métricas/piloto/feedback (red completa: [\"GET /api/session\"])",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm superadmin/en: franja de vista preliminar visible (datos ficticios)",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN SUPERADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD"
+  },
+  {
+   "n": "pnorm superadmin/en: estados en palabra presentes",
+   "info": "[\"No disponible\",\"Datos protegidos\",\"En curso\",\"Not available\",\"Protected data\",\"In progress\"]"
+  },
+  {
+   "n": "pnorm superadmin/en: si hay «Protected data», el texto nombra el umbral («menos de 5 personas») y no se muestra ningún conteo",
+   "ok": true,
+   "x": "dl=0"
+  },
+  {
+   "n": "pnorm superadmin/en: botón «Refresh simulation» presente y habilitado",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm superadmin/en: secuencia de [role=status] tras «Refresh simulation»",
+   "info": "[\"Loading…\",\"\"]"
+  },
+  {
+   "n": "pnorm superadmin/en: tras «Refresh simulation» la pantalla vuelve a su estado (resultados) sin romperse y con 0 peticiones al servidor",
+   "ok": true,
+   "x": " Skip to content ELEVATION . ES EN SUPERADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS "
+  },
+  {
+   "n": "pnorm superadmin/en: sin errores de página ni de consola",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "pnorm es/1360: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "pnorm es/1360: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm es/1360: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Saltar al contenido\",\"vis\":true,\"dis\":false},{\"name\":\"Elevation\",\"vis\":true,\"dis\":false},{\"name\":\"ES\",\"vis\":true,\"dis\":false},{\"name\":\"EN\",\"vis\":true,\"dis\":false},{\"name\":\"Salir\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "pnorm es/1360: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm en/390: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "pnorm en/390: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm en/390: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Sign out\",\"vis\":true,\"dis\":false},{\"name\":\"Dashboard\",\"vis\":true,\"dis\":false},{\"name\":\"AI guides\",\"vis\":true,\"dis\":false},{\"name\":\"Content\",\"vis\":true,\"dis\":false},{\"name\":\"Users\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "pnorm en/390: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm es/390: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "pnorm es/390: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm es/390: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Saltar al contenido\",\"vis\":true,\"dis\":false},{\"name\":\"Elevation\",\"vis\":true,\"dis\":false},{\"name\":\"ES\",\"vis\":true,\"dis\":false},{\"name\":\"EN\",\"vis\":true,\"dis\":false},{\"name\":\"Salir\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "pnorm es/390: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm en/1360: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "pnorm en/1360: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm en/1360: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Sign out\",\"vis\":true,\"dis\":false},{\"name\":\"Dashboard\",\"vis\":true,\"dis\":false},{\"name\":\"AI guides\",\"vis\":true,\"dis\":false},{\"name\":\"Content\",\"vis\":true,\"dis\":false},{\"name\":\"Users\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "pnorm en/1360: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm es/320: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "pnorm es/320: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm es/320: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Saltar al contenido\",\"vis\":true,\"dis\":false},{\"name\":\"Elevation\",\"vis\":true,\"dis\":false},{\"name\":\"ES\",\"vis\":true,\"dis\":false},{\"name\":\"EN\",\"vis\":true,\"dis\":false},{\"name\":\"Salir\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "pnorm es/320: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm en/320: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "pnorm en/320: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "pnorm en/320: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Sign out\",\"vis\":true,\"dis\":false},{\"name\":\"Dashboard\",\"vis\":true,\"dis\":false},{\"name\":\"AI guides\",\"vis\":true,\"dis\":false},{\"name\":\"Content\",\"vis\":true,\"dis\":false},{\"name\":\"Users\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "pnorm en/320: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  }
+ ]
+}

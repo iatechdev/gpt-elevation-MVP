@@ -1,0 +1,222 @@
+{
+ "variant": "perr",
+ "states": [],
+ "results": [
+  {
+   "n": "perr admin/es: metas «Meta en definición» ×4 y ninguna cifra de meta (ni 5/6, 4/6, 7 días, 30 días, 7 days, 30 days, %)",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁLOGO DE HABILIDADES PILOTO JUNTA MANIFIESTO ÉTICO Saltar al conten"
+  },
+  {
+   "n": "perr admin/es: texto fijo «Las metas no son resultados obtenidos ni evidencia de eficacia clínica»",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "perr admin/es: 0 peticiones a métricas/piloto/feedback (red completa: [\"GET /api/session\"])",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr admin/es: franja de vista preliminar visible (datos ficticios)",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁLOGO D"
+  },
+  {
+   "n": "perr admin/es: estados en palabra presentes",
+   "info": "[]"
+  },
+  {
+   "n": "perr admin/es: botón «Actualizar simulación» presente y habilitado",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "perr admin/es: error de carga «No pudimos cargar la simulación.» visible con role=status",
+   "ok": true,
+   "x": "Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARIAS MÉTRICAS CATÁLOGO DE RUTAS CATÁLOGO DE HABILIDADES PILOTO JUNTA MANIFIESTO ÉT"
+  },
+  {
+   "n": "perr admin/es: secuencia de [role=status] tras «Actualizar simulación»",
+   "info": "[\"Cargando…\",\"No pudimos cargar la simulación.\"]"
+  },
+  {
+   "n": "perr admin/es: tras «Actualizar simulación» la pantalla vuelve a su estado (error otra vez) sin romperse y con 0 peticiones al servidor",
+   "ok": true,
+   "x": " Saltar al contenido ELEVATION . ES EN ADMINISTRACIÓN Administración SALIR PANEL GUÍAS DE LA IA CONTENIDO PERSONAS USUARI"
+  },
+  {
+   "n": "perr admin/es: sin errores de página ni de consola",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "perr admin/en: metas «Target being defined» ×4 y ninguna cifra de meta (ni 5/6, 4/6, 7 días, 30 días, 7 days, 30 days, %)",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD ETHICAL MANIFEST Skip to content Back to administration ES EN Re"
+  },
+  {
+   "n": "perr admin/en: texto fijo «Targets are not achieved results or evidence of clinical effectiveness»",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "perr admin/en: 0 peticiones a métricas/piloto/feedback (red completa: [\"GET /api/session\"])",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr admin/en: franja de vista preliminar visible (datos ficticios)",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD ETHI"
+  },
+  {
+   "n": "perr admin/en: estados en palabra presentes",
+   "info": "[]"
+  },
+  {
+   "n": "perr admin/en: botón «Refresh simulation» presente y habilitado",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "perr admin/en: error de carga «We could not load the simulation.» visible con role=status",
+   "ok": true,
+   "x": "Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE CATALOG SKILLS CATALOG PILOT BOARD ETHICAL MANIFEST Skip to content Back to adm"
+  },
+  {
+   "n": "perr admin/en: secuencia de [role=status] tras «Refresh simulation»",
+   "info": "[\"Loading…\",\"We could not load the simulation.\"]"
+  },
+  {
+   "n": "perr admin/en: tras «Refresh simulation» la pantalla vuelve a su estado (error otra vez) sin romperse y con 0 peticiones al servidor",
+   "ok": true,
+   "x": " Skip to content ELEVATION . ES EN ADMINISTRATION Administration SIGN OUT DASHBOARD AI GUIDES CONTENT USERS METRICS ROUTE"
+  },
+  {
+   "n": "perr admin/en: sin errores de página ni de consola",
+   "ok": true,
+   "x": ""
+  },
+  {
+   "n": "perr es/1360: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "perr es/1360: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr es/1360: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Saltar al contenido\",\"vis\":true,\"dis\":false},{\"name\":\"Elevation\",\"vis\":true,\"dis\":false},{\"name\":\"ES\",\"vis\":true,\"dis\":false},{\"name\":\"EN\",\"vis\":true,\"dis\":false},{\"name\":\"Salir\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "perr es/1360: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr en/390: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "perr en/390: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr en/390: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Sign out\",\"vis\":true,\"dis\":false},{\"name\":\"Dashboard\",\"vis\":true,\"dis\":false},{\"name\":\"AI guides\",\"vis\":true,\"dis\":false},{\"name\":\"Content\",\"vis\":true,\"dis\":false},{\"name\":\"Users\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "perr en/390: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr es/390: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "perr es/390: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr es/390: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Saltar al contenido\",\"vis\":true,\"dis\":false},{\"name\":\"Elevation\",\"vis\":true,\"dis\":false},{\"name\":\"ES\",\"vis\":true,\"dis\":false},{\"name\":\"EN\",\"vis\":true,\"dis\":false},{\"name\":\"Salir\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "perr es/390: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr en/1360: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "perr en/1360: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr en/1360: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Sign out\",\"vis\":true,\"dis\":false},{\"name\":\"Dashboard\",\"vis\":true,\"dis\":false},{\"name\":\"AI guides\",\"vis\":true,\"dis\":false},{\"name\":\"Content\",\"vis\":true,\"dis\":false},{\"name\":\"Users\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "perr en/1360: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr es/320: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "perr es/320: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr es/320: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Saltar al contenido\",\"vis\":true,\"dis\":false},{\"name\":\"Elevation\",\"vis\":true,\"dis\":false},{\"name\":\"ES\",\"vis\":true,\"dis\":false},{\"name\":\"EN\",\"vis\":true,\"dis\":false},{\"name\":\"Salir\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "perr es/320: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr en/320: sin desborde horizontal",
+   "ok": true,
+   "x": "0"
+  },
+  {
+   "n": "perr en/320: axe WCAG A/AA/2.2 AA = 0",
+   "ok": true,
+   "x": "[]"
+  },
+  {
+   "n": "perr en/320: teclado con foco visible y sin foco en controles deshabilitados",
+   "ok": true,
+   "x": "[{\"name\":\"Sign out\",\"vis\":true,\"dis\":false},{\"name\":\"Dashboard\",\"vis\":true,\"dis\":false},{\"name\":\"AI guides\",\"vis\":true,\"dis\":false},{\"name\":\"Content\",\"vis\":true,\"dis\":false},{\"name\":\"Users\",\"vis\":true,\"dis\":false}]"
+  },
+  {
+   "n": "perr en/320: controles de la pantalla >= 44 px de alto",
+   "ok": true,
+   "x": "[]"
+  }
+ ]
+}
