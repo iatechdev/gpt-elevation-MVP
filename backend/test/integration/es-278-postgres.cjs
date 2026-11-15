@@ -53,15 +53,17 @@ test('ES-278 PostgreSQL + HTTP: planes de precio, validación del servidor', { t
     assert.equal(rows['con-guion-1'].currency, 'EUR');
   });
 
-  await t.test('slug repetido: 409 con cuerpo fijo (antes 500), en crear y en editar; ninguna fila cambia', async () => {
+  await t.test('slug repetido: 409 con cuerpo fijo (antes 500) al crear; al editar el identificador no cambia; ninguna fila cambia', async () => {
     const dup = await post({ ...base, slug: 'cero' });
     assert.equal(dup.status, 409);
     assert.deepEqual(dup.body, { code: 'slug_taken', field: 'slug', error: 'Ya existe un plan con ese identificador. / A plan with that identifier already exists.' });
     const rows = await plans();
     const one = rows.find((p) => p.slug === 'maximo');
     const before = JSON.stringify(await plans());
+    // ES-185 (E216-3): el identificador es inmutable al editar; el servidor lo ignora (no hay choque posible en editar) y ninguna fila cambia.
     const clash = await http(admin, 'PUT', `/api/admin/pricing/${one.id}`, { slug: 'cero' });
-    assert.equal(clash.status, 409);
+    assert.equal(clash.status, 200);
+    assert.equal(clash.body.plan.slug, 'maximo');
     assert.equal(JSON.stringify(await plans()), before);
   });
 
