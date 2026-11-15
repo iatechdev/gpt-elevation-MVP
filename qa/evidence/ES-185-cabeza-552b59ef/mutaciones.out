@@ -1,0 +1,36 @@
+== base
+  es-185: # pass 3 # fail 0 
+  es-278 PG: # pass 6 # fail 0 
+  es-281 PG: # pass 9 # fail 0 
+  mi script: RESUMEN 16/16 ok; fallos: 
+== M1 GET /admin sin verificarAdmin
+M aplicada
+  es-185: # pass 2 # fail 1 
+  es-278 PG: # pass 6 # fail 0 
+  es-281 PG: # pass 6 # fail 3 
+  mi script: RESUMEN 15/16 ok; fallos: C1
+== M2 el catch del administrativo devuelve 200 vacio
+M aplicada
+  es-185: # pass 2 # fail 1 
+  es-278 PG: # pass 6 # fail 0 
+  es-281 PG: # pass 9 # fail 0 
+  mi script: RESUMEN 15/16 ok; fallos: C4
+== M4 el PUT de planes vuelve a aceptar slug
+M aplicada
+  es-185: # pass 2 # fail 1 
+  es-278 PG: # pass 4 # fail 2 
+  es-281 PG: # pass 9 # fail 0 
+  mi script: RESUMEN 11/16 ok; fallos: P1, P1b, S1, S2, S3
+== M5 el POST de planes ignora isActive
+M aplicada
+  es-185: # pass 2 # fail 1 
+  es-278 PG: # pass 6 # fail 0 
+  es-281 PG: # pass 9 # fail 0 
+  mi script: RESUMEN 15/16 ok; fallos: P2
+== M6 sin politica de roles del GET /admin
+M aplicada
+  es-185: # pass 3 # fail 0 
+  es-278 PG: # pass 6 # fail 0 
+  es-281 PG: # pass 7 # fail 2 
+  mi script: RESUMEN 16/16 ok; fallos: 
+fin
