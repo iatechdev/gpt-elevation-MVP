@@ -57,7 +57,7 @@ test('ES-95: el formulario no guarda nada en el navegador ni en la URL, no enví
 
 test('ES-95 backoffice: la pestaña lista, aprueba, rechaza con motivo, descarga con sesión y precarga «Invitar persona» sin contraseña', () => {
   const panel = read('../src/pages/admin/ProfessionalApplicationsPanel.tsx'); const users = read('../src/pages/admin/AdminUsers.tsx'); const invite = read('../src/pages/admin/AdminUsersInvite.tsx')
-  assert.match(read('../src/pages/admin/AdminContent.tsx'), /<ProfessionalApplicationsPanel s=\{\{ card, label, input, btnPrimary, btnSecondary \}\} \/>/)
+  assert.match(read('../src/pages/admin/AdminContent.tsx'), /<ProfessionalApplicationsPanel onChanged=\{counts\.refresh\} \/>/)
   assert.match(panel, /Aprobar no crea la cuenta/); assert.match(panel, /Escribe el motivo del rechazo/); assert.match(panel, /target="_blank" rel="noopener noreferrer"/)
   assert.match(panel, /Authorization: `Bearer \$\{token\}`/); assert.match(panel, /createObjectURL/); assert.doesNotMatch(panel, /window\.open|href=\{`\$\{API\}/) // sin URL pública de la hoja de vida
   assert.match(panel, /item\.status === 'approved' && <Link/); assert.match(panel, /to="\/admin\/users" state=\{\{ newTherapist: \{ name: item\.name, email: item\.email \} \}\}/); assert.doesNotMatch(panel, /\?newTherapist|[?&]name=|[?&]email=/) // sin datos personales en la URL

@@ -77,7 +77,8 @@ test('ES-293 PostgreSQL: la purga de la persona minimiza su solicitud de profesi
     const admin = await mkUser('admin'); const before = await http(admin, 'GET', '/api/admin/professional-applications'); const shape = Object.keys(before.body.find((x) => x.id === app.id)).sort();
     await (await purge(person)).run();
     const listed = await http(admin, 'GET', '/api/admin/professional-applications'); assert.equal(listed.status, 200);
-    const mine = listed.body.find((x) => x.id === app.id); noCanary(mine); assert.equal(mine.name, 'Solicitud eliminada / Deleted application'); assert.deepEqual(Object.keys(mine).sort(), shape, 'mismas claves');
+    const mine = listed.body.find((x) => x.id === app.id); noCanary(mine); assert.equal(mine.name, 'Solicitud eliminada / Deleted application'); assert.deepEqual(Object.keys(mine).sort(), shape, 'mismas claves'); // ES-184: la lista dice si la fila quedó minimizada (para mostrar «Datos depurados» sin adivinar por el correo)
+    assert.equal(before.body.find((x) => x.id === app.id).minimized, false); assert.equal(mine.minimized, true);
     assert.notEqual((await http(admin, 'GET', `/api/admin/professional-applications/${app.id}/cv`)).status, 200, 'la hoja de vida ya no existe');
   });
 });
