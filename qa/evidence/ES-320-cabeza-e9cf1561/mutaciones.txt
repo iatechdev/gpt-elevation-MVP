@@ -1,0 +1,35 @@
+== base
+  unit: # pass 11 # fail 0 
+== m1 reponer cabecera interna con selector de idioma
+M aplicada
+  unit es-112/es-123: # pass 11 # fail 0 
+  mi guion (sin las fallas base de palabra/A5):
+RESUMEN {"modo":"pr","total":177,"fallas":14}
+FALLA [pr] C2 sin cabecera interna (header) en el chat 
+FALLA [pr] C2 UN solo selector de idioma «ES» 2
+== m2 quitar aria-pressed de Recomendaciones
+M aplicada
+  unit es-112/es-123: # pass 10 # fail 1 
+  mi guion (sin las fallas base de palabra/A5):
+RESUMEN {"modo":"pr","total":177,"fallas":18}
+FALLA [pr] C3 es Recomendaciones aria-pressed=false al inicio 
+FALLA [pr] C3 es Recomendaciones aria-pressed=true tras clic 
+== m3 mostrar Administración sin chequear el rol
+M aplicada
+  unit es-112/es-123: # pass 11 # fail 0 
+  mi guion (sin las fallas base de palabra/A5):
+RESUMEN {"modo":"pr","total":177,"fallas":14}
+FALLA [pr] C3 es acciones con etiqueta visible y sin «Administración» para el rol usuario Mi progreso | ✨ Recomendaciones para ti | Pan
+FALLA [pr] C3 en acciones con etiqueta visible y sin «Administración» para el rol usuario My progress | ✨ Recommendations for you | Adm
+== m4 bajar el ancho a 760
+M aplicada
+  unit es-112/es-123: # pass 10 # fail 1 
+  mi guion (sin las fallas base de palabra/A5):
+RESUMEN {"modo":"pr","total":177,"fallas":13}
+FALLA [pr] C1 .chat-main ≈ 1208–1240 px (máx 1240 menos relleno) en 1360 760
+== m5 quitar la regla móvil de 2 columnas
+M aplicada
+  unit es-112/es-123: # pass 10 # fail 1 
+  mi guion (sin las fallas base de palabra/A5):
+RESUMEN {"modo":"pr","total":177,"fallas":4}
+fin
