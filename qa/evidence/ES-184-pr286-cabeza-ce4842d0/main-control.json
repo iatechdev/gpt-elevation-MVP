@@ -1,0 +1,352 @@
+[
+ {
+  "n": "A1 es/320 aprobar: texto nuevo exacto",
+  "ok": false,
+  "x": "APROBAR Queda activa en la plataforma y puede recibir personas. NOTA (OPCIONAL) CANCELAR CONFIRMAR APROBACIÓN"
+ },
+ {
+  "n": "A1 es/320 aprobar: sin el texto viejo",
+  "ok": false,
+  "x": ""
+ },
+ {
+  "n": "A5 es/320 vocabulario",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/320 axe=0 con el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/320 sin desborde horizontal",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A6 es/320 texto del aviso no truncado",
+  "ok": true,
+  "x": "{\"sh\":42,\"ch\":42,\"sw\":239,\"cw\":239}"
+ },
+ {
+  "n": "A6 es/320 Esc cierra el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/320 foco vuelve al botón Aprobar",
+  "ok": true,
+  "x": "Aprobar"
+ },
+ {
+  "n": "A2 es/320 rechazar conserva su texto",
+  "ok": true,
+  "x": "RECHAZAR El motivo lo verá la persona. MOTIVO DEL RECHAZO (OBLIGATORIO) CANCELAR CONFIRMAR RECHAZO"
+ },
+ {
+  "n": "es/320 sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A1 es/390 aprobar: texto nuevo exacto",
+  "ok": false,
+  "x": "APROBAR Queda activa en la plataforma y puede recibir personas. NOTA (OPCIONAL) CANCELAR CONFIRMAR APROBACIÓN"
+ },
+ {
+  "n": "A1 es/390 aprobar: sin el texto viejo",
+  "ok": false,
+  "x": ""
+ },
+ {
+  "n": "A5 es/390 vocabulario",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/390 axe=0 con el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/390 sin desborde horizontal",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A6 es/390 texto del aviso no truncado",
+  "ok": true,
+  "x": "{\"sh\":42,\"ch\":42,\"sw\":309,\"cw\":309}"
+ },
+ {
+  "n": "A6 es/390 Esc cierra el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/390 foco vuelve al botón Aprobar",
+  "ok": true,
+  "x": "Aprobar"
+ },
+ {
+  "n": "A2 es/390 rechazar conserva su texto",
+  "ok": true,
+  "x": "RECHAZAR El motivo lo verá la persona. MOTIVO DEL RECHAZO (OBLIGATORIO) CANCELAR CONFIRMAR RECHAZO"
+ },
+ {
+  "n": "es/390 sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A1 es/1360 aprobar: texto nuevo exacto",
+  "ok": false,
+  "x": "APROBAR Queda activa en la plataforma y puede recibir personas. NOTA (OPCIONAL) CANCELAR CONFIRMAR APROBACIÓN"
+ },
+ {
+  "n": "A1 es/1360 aprobar: sin el texto viejo",
+  "ok": false,
+  "x": ""
+ },
+ {
+  "n": "A5 es/1360 vocabulario",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/1360 axe=0 con el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/1360 sin desborde horizontal",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A6 es/1360 texto del aviso no truncado",
+  "ok": true,
+  "x": "{\"sh\":21,\"ch\":21,\"sw\":431,\"cw\":431}"
+ },
+ {
+  "n": "A6 es/1360 Esc cierra el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 es/1360 foco vuelve al botón Aprobar",
+  "ok": true,
+  "x": "Aprobar"
+ },
+ {
+  "n": "A2 es/1360 rechazar conserva su texto",
+  "ok": true,
+  "x": "RECHAZAR El motivo lo verá la persona. MOTIVO DEL RECHAZO (OBLIGATORIO) CANCELAR CONFIRMAR RECHAZO"
+ },
+ {
+  "n": "es/1360 sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A1 en/320 aprobar: texto nuevo exacto",
+  "ok": false,
+  "x": "APPROVE It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A1 en/320 aprobar: sin el texto viejo",
+  "ok": false,
+  "x": ""
+ },
+ {
+  "n": "A5 en/320 vocabulario",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A5 en/320 EN sin español",
+  "ok": true,
+  "x": "APPROVE It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A6 en/320 axe=0 con el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 en/320 sin desborde horizontal",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A6 en/320 texto del aviso no truncado",
+  "ok": true,
+  "x": "{\"sh\":42,\"ch\":42,\"sw\":239,\"cw\":239}"
+ },
+ {
+  "n": "A6 en/320 Esc cierra el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 en/320 foco vuelve al botón Aprobar",
+  "ok": true,
+  "x": "Approve"
+ },
+ {
+  "n": "A2 en/320 rechazar conserva su texto",
+  "ok": true,
+  "x": "REJECT The person will see the reason. REASON FOR REJECTION (REQUIRED) CANCEL CONFIRM REJECTION"
+ },
+ {
+  "n": "en/320 sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A1 en/390 aprobar: texto nuevo exacto",
+  "ok": false,
+  "x": "APPROVE It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A1 en/390 aprobar: sin el texto viejo",
+  "ok": false,
+  "x": ""
+ },
+ {
+  "n": "A5 en/390 vocabulario",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A5 en/390 EN sin español",
+  "ok": true,
+  "x": "APPROVE It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A6 en/390 axe=0 con el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 en/390 sin desborde horizontal",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A6 en/390 texto del aviso no truncado",
+  "ok": true,
+  "x": "{\"sh\":42,\"ch\":42,\"sw\":309,\"cw\":309}"
+ },
+ {
+  "n": "A6 en/390 Esc cierra el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 en/390 foco vuelve al botón Aprobar",
+  "ok": true,
+  "x": "Approve"
+ },
+ {
+  "n": "A2 en/390 rechazar conserva su texto",
+  "ok": true,
+  "x": "REJECT The person will see the reason. REASON FOR REJECTION (REQUIRED) CANCEL CONFIRM REJECTION"
+ },
+ {
+  "n": "en/390 sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A1 en/1360 aprobar: texto nuevo exacto",
+  "ok": false,
+  "x": "APPROVE It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A1 en/1360 aprobar: sin el texto viejo",
+  "ok": false,
+  "x": ""
+ },
+ {
+  "n": "A5 en/1360 vocabulario",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A5 en/1360 EN sin español",
+  "ok": true,
+  "x": "APPROVE It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A6 en/1360 axe=0 con el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 en/1360 sin desborde horizontal",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A6 en/1360 texto del aviso no truncado",
+  "ok": true,
+  "x": "{\"sh\":21,\"ch\":21,\"sw\":431,\"cw\":431}"
+ },
+ {
+  "n": "A6 en/1360 Esc cierra el diálogo",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A6 en/1360 foco vuelve al botón Aprobar",
+  "ok": true,
+  "x": "Approve"
+ },
+ {
+  "n": "A2 en/1360 rechazar conserva su texto",
+  "ok": true,
+  "x": "REJECT The person will see the reason. REASON FOR REJECTION (REQUIRED) CANCEL CONFIRM REJECTION"
+ },
+ {
+  "n": "en/1360 sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 la solicitud queda aprobada con la nota",
+  "ok": true,
+  "x": "{\"status\":\"approved\",\"reviewNote\":\"revisada\"}"
+ },
+ {
+  "n": "A3 NO se crea ninguna cuenta (el texto no miente)",
+  "ok": true,
+  "x": "antes=5 despues=5 conCorreo=0"
+ },
+ {
+  "n": "A3 «Crear cuenta de profesional» sigue disponible",
+  "ok": true,
+  "x": "SOLICITUDES DE PROFESIONALES Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de profesional». Abre las hojas de vida solo en un visor aislado; no se analizan c"
+ },
+ {
+  "n": "A3 lleva a /admin/users sin datos en la URL",
+  "ok": true,
+  "x": "http://localhost:5273/admin/users"
+ },
+ {
+  "n": "A4 es Validaciones conserva «Queda activa en la plataforma …»",
+  "ok": true,
+  "x": "APROBAR QA184 doc1 Queda activa en la plataforma y puede recibir personas. NOTA (OPCIONAL) CANCELAR CONFIRMAR APROBACIÓN"
+ },
+ {
+  "n": "A4 en Validaciones conserva «It becomes active on the platf…»",
+  "ok": true,
+  "x": "APPROVE QA184 doc1 It becomes active on the platform and can receive people. NOTE (OPTIONAL) CANCEL CONFIRM APPROVAL"
+ },
+ {
+  "n": "A4 aprobar-abrir no cambió la validación sin confirmar",
+  "ok": true,
+  "x": "pending"
+ }
+]
