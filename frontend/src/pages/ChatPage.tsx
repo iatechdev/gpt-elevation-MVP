@@ -63,7 +63,7 @@ const ChatBubble = memo(function ChatBubble({ role, text, you, logo, children }:
 })
 
 export function ChatPage() {
-  const { t, lang, setLang } = useLanguage()
+  const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const role = localStorage.getItem('elevation_role') ?? 'user'
   const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -305,68 +305,25 @@ export function ChatPage() {
   }
 
   return (
-    <div className="chat-shell" style={{ background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
+    <div className="chat-shell">
       <h1 className="sr-only">{lang === 'es' ? 'Conversación' : 'Conversation'}</h1>
-
-      {/* Header */}
-      <header style={{ position: 'relative', zIndex: 1, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: 680, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ width: 24 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.3em', color: '#1A1A18', textTransform: 'uppercase', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{t('logo')}</span>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            {(['es', 'en'] as const).map(l => (
-              <button key={l} onClick={() => setLang(l)}
-                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, minHeight: 32, border: '1px solid #5E5E5A', background: lang === l ? '#1A1A18' : 'transparent', color: lang === l ? '#FAFAF9' : '#5E5E5A', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-            {['admin', 'superadmin'].includes(role) && (
-              <button onClick={openAdmin} title={t('admin_title')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                </svg>
-              </button>
-            )}
-            {/* HU-052 — Progress link (ES-123: en la cabecera y con etiqueta; antes era un ícono suelto dentro de la conversación) */}
-            <button
-              onClick={() => chat.canLeave() && navigate('/app/progress')}
-              title={copy[lang].progress}
-              aria-label={copy[lang].progress}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </button>
-            {/* HU-051 — Recommendations toggle */}
-            <button
-              onClick={() => setShowRecs(!showRecs)}
-              title={t('rec_title')}
-              aria-label={t('rec_title')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: showRecs ? '#5C6B4E' : '#6F6963', display: 'flex', padding: 4 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </button>
-            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
 
       {/* Mensajes */}
       {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
       <div className="chat-main">
         <div className="chat-top">
-          <ChatBar sent={messages.length} />
+          <ChatBar sent={messages.length} actions={
+            <div className="chat-actions">
+              <button type="button" className="elv-btn" onClick={() => chat.canLeave() && navigate('/app/progress')}>{copy[lang].progress}</button>
+              <button type="button" className="elv-btn" aria-pressed={showRecs} onClick={() => setShowRecs(value => !value)}>{t('rec_title')}</button>
+              {['admin', 'superadmin'].includes(role) && <button type="button" className="elv-btn" onClick={openAdmin}>{t('admin_title')}</button>}
+              <button type="button" className="elv-btn" onClick={() => setShowCheckout(true)}>{copy[lang].signOut}</button>
+            </div>
+          } />
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+        <div className="chat-transcript">
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {/* ES-199: cada burbuja se pinta una sola vez; teclear en el cuadro de mensaje ya no vuelve a pintar todo el historial. Solo la última (que lleva el aviso de respuesta cortada) se repinta. */}
           {messages.map((msg, i) => (

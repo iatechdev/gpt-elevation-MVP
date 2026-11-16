@@ -44,7 +44,7 @@ test('ES-112 estructura: pestañas como enlaces, menú con las rutas que ya exis
   assert.match(bar, /role="progressbar"/); assert.match(bar, /aria-valuenow=/); assert.match(bar, /aria-pressed=\{paused\}/); assert.match(bar, /role="status"/)
   assert.doesNotMatch(bar, /msgs|localStorage/)
   assert.match(controls, /blocked\.paused \|\| blocked\.exhausted/); assert.match(controls, /\|\| off/)
-  assert.match(page, /<ChatBar sent=\{messages\.length\} \/>/)
+  assert.match(page, /<ChatBar sent=\{messages\.length\} actions=\{/)
   assert.doesNotMatch(read('../src/space/usageStore.ts'), /localStorage/)
 })
 

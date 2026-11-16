@@ -19,12 +19,20 @@ test('ES-123 diseño: la conversación tiene scroll propio y la caja de mensaje 
   assert.doesNotMatch(css, /\.chat-input-bar \{[^}]*position: fixed/)
 })
 
-test('ES-123 diseño: «Mi progreso» y «Cerrar sesión» salen en la cabecera con etiqueta accesible; ya no hay un ícono suelto dentro de la conversación', () => {
-  const page = read('../src/pages/ChatPage.tsx')
-  assert.match(page, /title=\{copy\[lang\]\.progress\}\s*aria-label=\{copy\[lang\]\.progress\}/)
-  assert.match(page, /title=\{copy\[lang\]\.signOut\} aria-label=\{copy\[lang\]\.signOut\}/)
+test('ES-320: conserva las acciones de conversación con etiquetas visibles en el espacio amplio; la marca e idioma siguen en el marco global', () => {
+  const page = read('../src/pages/ChatPage.tsx'); const bar = read('../src/space/ChatBar.tsx'); const css = read('../src/space/space.css')
+  const actions = page.slice(page.indexOf('<ChatBar'), page.indexOf('{compass &&'))
+  assert.match(actions, /copy\[lang\]\.progress/); assert.match(actions, /t\('rec_title'\)/)
+  assert.match(actions, /t\('admin_title'\)/); assert.match(actions, /copy\[lang\]\.signOut/)
+  assert.match(actions, /aria-pressed=\{showRecs\}/); assert.match(bar, /actions\}/)
+  assert.ok(bar.indexOf('{ready && ready.configured && <div className="space-usage">') < bar.indexOf('{actions &&'))
   assert.equal((page.match(/navigate\('\/app\/progress'\)/g) || []).length, 1)
-  assert.ok(page.indexOf("navigate('/app/progress')") < page.indexOf('<div className="chat-main">')) // dentro de la cabecera, antes de la conversación
+  const workspace = page.slice(page.indexOf('{/* Mensajes */}'), page.indexOf('{/* HU-021 + HU-022 — Modal check-out'))
+  assert.doesNotMatch(workspace, /<header|setLang/)
+  assert.match(page, /<ChatBar sent=\{messages\.length\} actions=\{/)
+  assert.match(css, /\.chat-main \{[^}]*max-width: 1240px/)
+  assert.match(css, /\.chat-transcript \{ width: min\(100%, 900px\)/)
+  assert.match(css, /@media \(max-width: 639px\)[\s\S]*?\.chat-actions \.elv-btn \{ flex: 1 1 calc\(50% - 8px\)/)
 })
 
 test('ES-123 selector del diario: botón plegable con aria-expanded/aria-controls, Esc lo cierra y devuelve el foco; el texto de consentimiento se conserva dentro del panel', () => {
