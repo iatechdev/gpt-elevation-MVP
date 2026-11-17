@@ -65,8 +65,10 @@ test('ES-153 E280-2/3/4: el pie no se pinta con el esqueleto, el marco y la pant
   assert.match(app, /void loadPersonLayout\(\); void PERSON_PRELOAD\[window\.location\.pathname\]\?\.\(\)/)
   for (const path of ['/app/evidence', '/app/exercises', '/app/diary', '/app/space/tools', '/app/chat', '/app/progress', '/app/dashboard', '/app/skill-map']) assert.ok(app.includes(`'${path}': () => import(`), `precarga de ${path}`)
   const space = read('../src/space/space.css')
-  const short = space.slice(space.indexOf('(max-width: 600px) and (max-height: 760px)'))
-  assert.match(short, /.chat-shell { height: auto;/); assert.match(short, /.chat-input-bar { position: sticky; bottom: 0;[^}]*max-height: none; overflow: visible;/)
+  // ES-333 (PR 1): el mismo compromiso (la caja con «Límites del asistente» queda pegada abajo y a la vista, y la página solo se desplaza si el marco no cabe) ya no depende de una media query ni de una altura fija: el marco es una columna de 100dvh que se desplaza, el hilo reparte el alto restante y la caja es sticky. La altura real la mide scripts/es333-chat-alturas.cjs.
+  assert.ok(space.includes('.cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: auto; }'))
+  assert.ok(space.includes('.cg-main .chat-input-bar { position: sticky; bottom: 0; z-index: 2; max-height: none; overflow: visible; }'))
+  assert.doesNotMatch(space, /max-height: 760px/)
 })
 
 test('ES-153 P2: SpaceNav y SpaceSkip están retirados (sin archivo, sin importaciones, sin CSS propio); el salto y la navegación los pone el marco de persona', () => {

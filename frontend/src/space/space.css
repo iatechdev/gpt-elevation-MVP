@@ -103,15 +103,43 @@
 .chat-composer .chat-slow p { margin: 0; flex: 1 1 16rem; }
 .chat-composer .chat-enter { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; min-height: 24px; }
 
-/* ES-153 (paso 1): chat dentro del marco de persona. La cabecera propia ya no es fija y el chat ocupa el alto que deja el encabezado del marco (sin pie en el chat). */
-.cg-main .chat-shell { height: calc(100dvh - 10.2rem); min-height: 26rem; }
+/* ES-333 (PR 1): el chat toma el alto que de verdad deja el marco, sin constantes. El marco de la persona es una columna de 100dvh; el <main> reparte el alto restante y el hilo es lo único que se desplaza.
+   Si encabezado + compositor + el alto mínimo del hilo no caben (pantallas muy bajas), el marco se desplaza y el compositor queda pegado abajo con «Límites del asistente» a la vista (ES-153). */
+.cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: auto; }
+.cg-frame:has(.chat-shell) > .cg-main { flex: 1 1 0; min-height: min-content; display: flex; flex-direction: column; }
+.cg-main .chat-shell { flex: 1 1 auto; height: auto; min-height: min-content; }
 .cg-main .chat-main { padding-top: 12px; }
-@media (max-width: 900px) { .cg-main .chat-shell { height: calc(100dvh - 14.5rem); } }
-@media (max-width: 600px) { .cg-main .chat-shell { height: calc(100dvh - 18.1rem); min-height: 0; } } /* el encabezado de persona en móvil ocupa 202 px desde el paso 3 (PreferencesBar + rejilla de 3 columnas; antes 248) */
+.cg-main .chat-scroll { min-height: 8rem; }
+.cg-main .chat-input-bar { position: sticky; bottom: 0; z-index: 2; max-height: none; overflow: visible; }
 .cg-main .space-dashboard-header > div { min-width: 0; box-sizing: border-box; } /* la cabecera propia del inicio ya no se fija: se ajusta al ancho del marco */
-/* ES-153 (E280-4): en pantallas bajas el contenido del chat no cabe junto al encabezado móvil (~264 px): la página puede desplazarse, pero la caja de mensaje con «Límites del asistente» queda fija abajo y SIEMPRE a la vista. */
-@media (max-width: 600px) and (max-height: 760px) {
-  .cg-main .chat-shell { height: auto; min-height: 0; overflow: visible; }
-  .cg-main .chat-scroll { flex: 0 0 auto; min-height: 8rem; }
-  .cg-main .chat-input-bar { position: sticky; bottom: 0; z-index: 2; max-height: none; overflow: visible; background: #FAFAF9; }
-}
+/* ES-333 (PR 1): estructura del chat con tokens (sin estilos en línea ni colores fijos en cabecera, hilo y recomendaciones). El check-out y el panel de administración se tratan en los PR 2 y 3. */
+.chat-shell { --chat-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; background: var(--elv-bg); color: var(--elv-text-1); font-family: var(--elv-font-body, Inter, sans-serif); }
+.chat-header { position: relative; z-index: 1; background: var(--elv-bg); border-bottom: 1px solid var(--elv-line); height: 60px; display: flex; align-items: center; justify-content: center; }
+.chat-header-in { max-width: 680px; width: 100%; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; }
+.chat-header-gap { width: 24px; }
+.chat-brand { font-size: 12px; font-weight: 600; letter-spacing: .3em; color: var(--elv-text-1); text-transform: uppercase; font-family: var(--chat-mono); }
+.chat-header-end { display: flex; gap: .75rem; align-items: center; }
+.chat-lang { font-size: 10px; padding: 2px 8px; border-radius: 4px; min-height: 32px; border: 1px solid var(--elv-text-2); background: transparent; color: var(--elv-text-2); cursor: pointer; font-family: inherit; }
+.chat-lang--on { background: var(--elv-text-1); color: var(--elv-bg); }
+.chat-iconbtn { background: none; border: none; cursor: pointer; color: var(--elv-text-2); display: flex; padding: 4px; min-width: 32px; min-height: 32px; align-items: center; justify-content: center; }
+.chat-iconbtn--on { color: var(--elv-success); }
+.chat-transcript { display: flex; flex-direction: column; gap: 2.5rem; }
+.chat-msg { max-width: 88%; }
+.chat-msg--you { display: flex; flex-direction: column; align-items: flex-end; max-width: none; }
+.chat-msg--bot { background: var(--elv-surface); border-radius: 4px; padding: .9rem 1.1rem; }
+.chat-msg-who { display: block; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .4rem; font-family: var(--chat-mono); color: var(--elv-text-2); }
+.chat-msg--bot .chat-msg-who { color: var(--elv-link); }
+.chat-msg-body { max-width: 85%; background: var(--elv-text-1); color: var(--elv-bg); border-radius: 4px; padding: .9rem 1.1rem; font-size: 1rem; line-height: 1.7; white-space: pre-wrap; }
+.chat-msg-text { font-size: 1rem; color: var(--elv-text-1); line-height: 1.75; white-space: pre-wrap; margin: 0; }
+.chat-msg-wait { font-size: .95rem; color: var(--elv-text-2); margin: 0; }
+.chat-recs { border-left: 2px solid var(--elv-success); padding-left: 1.25rem; }
+.chat-recs-title { display: block; font-size: 10px; font-weight: 600; letter-spacing: .2em; color: var(--elv-success); text-transform: uppercase; margin-bottom: .4rem; }
+.chat-recs-sub { font-size: .78rem; color: var(--elv-text-2); margin: 0 0 1rem; }
+.chat-recs-loading { font-family: 'Noto Serif', serif; font-style: italic; font-size: .95rem; color: var(--elv-text-2); }
+.chat-recs-error { font-size: .875rem; color: var(--elv-error); }
+.chat-recs-list { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1rem; }
+.chat-rec { background: var(--elv-card); border-radius: .85rem; border: 1px solid var(--elv-line); padding: .85rem 1rem; }
+.chat-rec-cat { font-size: .72rem; font-weight: 600; color: var(--elv-success); margin-bottom: .35rem; }
+.chat-rec-text { font-family: 'Noto Serif', serif; font-style: italic; font-size: .9rem; color: var(--elv-text-1); line-height: 1.65; margin: 0; }
+.chat-recs-btn { font-size: .78rem; color: var(--elv-success); background: none; border: 1px solid var(--elv-success); border-radius: .65rem; padding: .4rem .85rem; cursor: pointer; font-family: inherit; min-height: 32px; }
+.chat-recs-btn:disabled { cursor: not-allowed; }

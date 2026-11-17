@@ -46,17 +46,17 @@ const CHECKOUT_MOODS = [
 // ES-199: una burbuja de la conversación. Memoizada: solo se repinta si cambia su texto, su rol o las etiquetas (no al teclear). `children` lleva el aviso de la última respuesta.
 const ChatBubble = memo(function ChatBubble({ role, text, you, logo, children }: { role: 'user' | 'bot'; text: string; you: string; logo: string; children?: ReactNode }) {
   return role === 'user' ? (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+    <div className="chat-msg chat-msg--you">
       {/* ES-162: quién habla va en una etiqueta, no solo en el color */}
-      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#5E5E5A', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{you}</span>
-      <div style={{ maxWidth: '85%', background: '#1A1A18', borderRadius: 4, padding: '0.9rem 1.1rem', color: '#FAFAF9', fontSize: '1rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+      <span className="chat-msg-who">{you}</span>
+      <div className="chat-msg-body">
         {text}
       </div>
     </div>
   ) : (
-    <div style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
-      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.4rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {logo}</span>
-      <p style={{ fontSize: '1rem', color: '#1A1A18', lineHeight: 1.75, whiteSpace: 'pre-wrap', margin: 0 }}>{text}</p>
+    <div className="chat-msg chat-msg--bot">
+      <span className="chat-msg-who">✦ {logo}</span>
+      <p className="chat-msg-text">{text}</p>
       {children}
     </div>
   )
@@ -305,23 +305,22 @@ export function ChatPage() {
   }
 
   return (
-    <div className="chat-shell" style={{ background: '#FAFAF9', fontFamily: 'Inter, sans-serif' }}>
+    <div className="chat-shell">
       <h1 className="sr-only">{lang === 'es' ? 'Conversación' : 'Conversation'}</h1>
 
       {/* Header */}
-      <header style={{ position: 'relative', zIndex: 1, background: 'rgba(250,250,249,0.92)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #E4E2DC', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: 680, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ width: 24 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.3em', color: '#1A1A18', textTransform: 'uppercase', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>{t('logo')}</span>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      <header className="chat-header">
+        <div className="chat-header-in">
+          <div className="chat-header-gap" />
+          <span className="chat-brand">{t('logo')}</span>
+          <div className="chat-header-end">
             {(['es', 'en'] as const).map(l => (
-              <button key={l} onClick={() => setLang(l)}
-                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, minHeight: 32, border: '1px solid #5E5E5A', background: lang === l ? '#1A1A18' : 'transparent', color: lang === l ? '#FAFAF9' : '#5E5E5A', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+              <button key={l} onClick={() => setLang(l)} className={`chat-lang${lang === l ? ' chat-lang--on' : ''}`}>
                 {l.toUpperCase()}
               </button>
             ))}
             {['admin', 'superadmin'].includes(role) && (
-              <button onClick={openAdmin} title={t('admin_title')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4 }}>
+              <button onClick={openAdmin} title={t('admin_title')} className="chat-iconbtn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
                 </svg>
@@ -332,7 +331,7 @@ export function ChatPage() {
               onClick={() => chat.canLeave() && navigate('/app/progress')}
               title={copy[lang].progress}
               aria-label={copy[lang].progress}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
+              className="chat-iconbtn"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -343,13 +342,13 @@ export function ChatPage() {
               onClick={() => setShowRecs(!showRecs)}
               title={t('rec_title')}
               aria-label={t('rec_title')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: showRecs ? '#5C6B4E' : '#6F6963', display: 'flex', padding: 4 }}
+              className={`chat-iconbtn${showRecs ? ' chat-iconbtn--on' : ''}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </button>
-            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6F6963', display: 'flex', padding: 4, minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} className="chat-iconbtn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
               </svg>
@@ -366,7 +365,7 @@ export function ChatPage() {
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+        <div className="chat-transcript">
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {/* ES-199: cada burbuja se pinta una sola vez; teclear en el cuadro de mensaje ya no vuelve a pintar todo el historial. Solo la última (que lleva el aviso de respuesta cortada) se repinta. */}
           {messages.map((msg, i) => (
@@ -377,41 +376,37 @@ export function ChatPage() {
             </div>
           ))}
           {sending && (
-            <div role="status" style={{ background: '#F2EFE7', borderRadius: 4, padding: '0.9rem 1.1rem', maxWidth: '88%' }}>
-              <span style={{ display: 'block', fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: '#7D6218', textTransform: 'uppercase', marginBottom: '0.5rem', fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace" }}>✦ {t('logo')}</span>
-              <p style={{ fontSize: '0.95rem', color: '#5E5E5A', margin: 0 }}>{t('chat_thinking')}</p>
+            <div role="status" className="chat-msg chat-msg--bot">
+              <span className="chat-msg-who">✦ {t('logo')}</span>
+              <p className="chat-msg-wait">{t('chat_thinking')}</p>
             </div>
           )}
           <ChatContext chat={chat} />
           {/* HU-051 — Wellness Recommendations */}
           {showRecs && (
-            <div style={{ borderLeft: '2px solid #5C6B4E', paddingLeft: '1.25rem' }}>
-              <span style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', color: '#5C6B4E', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+            <div className="chat-recs">
+              <span className="chat-recs-title">
                 {t('rec_title')}
               </span>
-              <p style={{ fontSize: '0.78rem', color: '#6B645F', margin: '0 0 1rem', fontFamily: 'Inter, sans-serif' }}>
+              <p className="chat-recs-sub">
                 {t('rec_subtitle')}
               </p>
               {loadingRecs && (
-                <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#6F6963' }}>
+                <p className="chat-recs-loading">
                   {t('rec_loading')}
                 </p>
               )}
               {recsError && (
-                <p style={{ fontSize: '0.875rem', color: '#DC2626' }}>{recsError}</p>
+                <p className="chat-recs-error">{recsError}</p>
               )}
               {!loadingRecs && recommendations.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div className="chat-recs-list">
                   {recommendations.slice(0, 3).map(rec => (
-                    <div key={rec.id} style={{
-                      background: '#fff', borderRadius: '0.85rem',
-                      border: '0.5px solid #E7E5E4', padding: '0.85rem 1rem',
-                      boxShadow: '0 2px 8px rgba(26,28,27,0.04)',
-                    }}>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.35rem', fontFamily: 'Inter, sans-serif' }}>
+                    <div key={rec.id} className="chat-rec">
+                      <div className="chat-rec-cat">
                         {t(`rec_category_${rec.category}`)}
                       </div>
-                      <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.65, margin: 0 }}>
+                      <p className="chat-rec-text">
                         {rec.content}
                       </p>
                     </div>
@@ -421,12 +416,7 @@ export function ChatPage() {
               <button
                 onClick={() => { void handleGenerateRecs() }}
                 disabled={loadingRecs}
-                style={{
-                  fontSize: '0.78rem', color: '#5C6B4E', background: 'none',
-                  border: '0.5px solid #5C6B4E', borderRadius: '0.65rem',
-                  padding: '0.4rem 0.85rem', cursor: loadingRecs ? 'not-allowed' : 'pointer',
-                  fontFamily: 'Inter, sans-serif',
-                }}
+                className="chat-recs-btn"
               >
                 {loadingRecs ? t('rec_loading') : recommendations.length > 0 ? t('rec_regenerate') : t('rec_generate')}
               </button>

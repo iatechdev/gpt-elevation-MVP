@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
     const ctx = await browser.newContext({ viewport: { width: w, height: h } }); const page = await ctx.newPage();
     await page.addInitScript(([l]) => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); }, [lang]);
     await page.route('**/api/**', (r) => { const p = new URL(r.request().url()).pathname; return r.fulfill({ json: p === '/api/session' ? { role: 'user', onboardingCompleted: true } : [] }); });
-    await page.goto(base + '/app/chat', { waitUntil: 'networkidle' }); const note = page.locator('.chat-limits'); await note.waitFor();
+    await page.goto(base + '/app/chat', { waitUntil: 'networkidle' }); const note = page.locator('.chat-limits'); await note.waitFor(); await page.waitForTimeout(1200); // ES-333: el hilo se desplaza solo al final (scrollIntoView suave) y el marco con él: se mide cuando se asienta
     const m = await page.evaluate(() => { const r = document.querySelector('.chat-limits').getBoundingClientRect(); return { scroll: document.documentElement.scrollHeight - innerHeight, top: r.top, bottom: r.bottom, h: innerHeight }; });
     if (h >= 760 || w > 600) assert.ok(m.scroll <= 0, `sin scroll de página (${lang} ${w}×${h}): sobran ${m.scroll}px`); assert.ok(m.top >= 0 && m.bottom <= m.h, `«Límites» dentro de la pantalla (${lang} ${w}×${h}): ${m.top}–${m.bottom} de ${m.h}`);
     await ctx.close(); n++;
