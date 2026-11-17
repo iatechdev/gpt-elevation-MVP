@@ -4,6 +4,8 @@ const { randomBytes } = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { models, record, startApp } = require('./support.cjs');
+// ES-301: el registro exige la aceptación del aviso de privacidad y términos (versión vigente de utils/terms.js)
+const ACCEPT = { acceptedTerms: true, termsVersion: require('../utils/terms').TERMS.version };
 
 test('QA-57-03: registration preserves its authorized role contract', async t => {
   const password = `Aa1!${randomBytes(24).toString('hex')}`; // ES-128: cumple la política de registro
@@ -15,7 +17,7 @@ test('QA-57-03: registration preserves its authorized role contract', async t =>
   const request = await startApp(t);
   for (const email of ['listed@example.invalid', 'LISTED@example.invalid', ' listed@example.invalid ']) {
     const response = await request('POST', '/api/register', {
-      body: { name: 'Synthetic', email, password, role: 'superadmin', active: true },
+      body: { ...ACCEPT, name: 'Synthetic', email, password, role: 'superadmin', active: true },
     });
     assert.equal(response.status, 201);
     assert.equal(created.at(-1).role, 'user');

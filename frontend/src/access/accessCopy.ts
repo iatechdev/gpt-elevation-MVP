@@ -1,5 +1,5 @@
 // ES-155 (tramo B): textos nuevos de entrar, crear cuenta y recuperar acceso en ES y EN. Los textos que ya existían siguen en `landing.access.*` (CMS, con respaldo).
-// Sin promesas de empleo ni de resultados; la nota de privacidad NO dice «consentimiento» (la casilla de consentimiento llega con ES-301, junto con el registro en el servidor).
+// Sin promesas de empleo ni de resultados; la nota de privacidad NO dice «consentimiento» (la casilla de ES-301 dice «acepto», no «consentimiento»).
 export const accessEs = {
   'access.tagline': 'Tu acompañamiento no clínico y tu mapa de capacidades.',
   'access.err_name': 'Escribe tu nombre.',
@@ -12,6 +12,11 @@ export const accessEs = {
   'access.show': 'Mostrar', 'access.hide': 'Ocultar',
   'access.no_account': '¿Aún no tienes cuenta?', 'access.have_account': '¿Ya tienes cuenta?',
   'access.sign_in': 'Entrar', 'access.sign_up': 'Crear cuenta',
+  // ES-301: casilla del aviso de privacidad y términos (sin la palabra «consentimiento» hasta que el texto tenga revisión legal)
+  'access.terms_a': 'He leído y acepto el ', 'access.terms_privacy': 'aviso de privacidad', 'access.terms_and': ' y los ', 'access.terms_terms': 'términos de uso', 'access.terms_end': '.',
+  'access.terms_new_tab': 'se abre en una pestaña nueva',
+  'access.err_terms': 'Para crear tu cuenta necesitas aceptar el aviso de privacidad y los términos.',
+  'access.terms_changed': 'El aviso cambió. Recarga la página y vuelve a aceptar.',
 }
 export const accessEn: Record<keyof typeof accessEs, string> = {
   'access.tagline': 'Your non-clinical support and your skills map.',
@@ -25,4 +30,8 @@ export const accessEn: Record<keyof typeof accessEs, string> = {
   'access.show': 'Show', 'access.hide': 'Hide',
   'access.no_account': 'Do not have an account yet?', 'access.have_account': 'Already have an account?',
   'access.sign_in': 'Sign in', 'access.sign_up': 'Create account',
+  'access.terms_a': 'I have read and accept the ', 'access.terms_privacy': 'privacy notice', 'access.terms_and': ' and the ', 'access.terms_terms': 'terms of use', 'access.terms_end': '.',
+  'access.terms_new_tab': 'opens in a new tab',
+  'access.err_terms': 'To create your account you need to accept the privacy notice and the terms.',
+  'access.terms_changed': 'The notice changed. Reload the page and accept again.',
 }

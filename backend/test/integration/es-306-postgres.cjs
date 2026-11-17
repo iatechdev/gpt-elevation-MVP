@@ -16,7 +16,7 @@ test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, l
   const migration = require('../../migrations/20261114010000-es306-email-lower-unique.cjs');
   const PASSWORD = 'Sintetica-Clave-2026!';
   const HASH = await bcrypt.hash(PASSWORD, 4);
-  const register = (email, patch = {}) => http(null, 'POST', '/api/register', { name: 'Persona Sintética', email, password: PASSWORD, ...patch });
+  const register = (email, patch = {}) => http(null, 'POST', '/api/register', { name: 'Persona Sintética', email, password: PASSWORD, acceptedTerms: true, termsVersion: '2026-11-v1', ...patch });
   const login = (email, password = PASSWORD) => http(null, 'POST', '/api/login', { email, password });
   const byLower = async (email) => q('SELECT id, email FROM "Users" WHERE lower(btrim(email)) = $1 ORDER BY id', [email.trim().toLowerCase()]);
   const hasIndex = async () => (await q(`SELECT 1 FROM pg_indexes WHERE indexname = 'users_email_lower_unique'`)).length === 1;

@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const { hasUnsafeChars } = require('../utils/emailGuard');
 const { validateApplication } = require('../utils/professionalApplication');
 const { models, record, startApp } = require('./support.cjs');
+// ES-301: el registro exige la aceptación del aviso de privacidad y términos (versión vigente de utils/terms.js)
+const ACCEPT = { acceptedTerms: true, termsVersion: require('../utils/terms').TERMS.version };
 
 const UNSAFE = {
   'RLO U+202E': 'ana\u202Eexample@x.com', 'LRO U+202D': 'ana\u202D@example.com', 'LRE/RLE/PDF': 'a\u202Ab\u202B@example.com', 'aislamiento U+2066-2069': 'ana\u2066@example.com',
@@ -41,10 +43,10 @@ test('ES-252 registro: correo con caracteres de control/formato → 400 invalid_
   const request = await startApp(t);
   const password = 'Aa1!' + 'x'.repeat(20);
   for (const [name, email] of Object.entries(UNSAFE)) {
-    const res = await request('POST', '/api/register', { body: { name: 'Synthetic', email, password } });
+    const res = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email, password } });
     assert.equal(res.status, 400, name); assert.equal(res.body.code, 'invalid_email', name);
   }
   assert.equal(reads, 0); assert.equal(writes.length, 0);
-  const ok = await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'josé@ejemplo.co', password } });
+  const ok = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'josé@ejemplo.co', password } });
   assert.equal(ok.status, 201); assert.equal(writes.length, 1);
 });

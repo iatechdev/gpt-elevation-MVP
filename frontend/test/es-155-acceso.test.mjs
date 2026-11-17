@@ -10,11 +10,13 @@ const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const empty = { name: '', email: '', password: '' }
 
 test('ES-155: cada campo con problema se nombra y el foco va al primero en el orden en que se ven (nombre, correo, contraseña)', () => {
-  assert.deepEqual(fieldErrors(empty, 'register'), { name: 'name', email: 'email', password: 'password' })
+  // ES-301: en el registro la casilla de aceptación es el último campo; el orden de los tres primeros no cambia
+  assert.deepEqual(fieldErrors(empty, 'register'), { name: 'name', email: 'email', password: 'password', terms: 'terms' })
   assert.equal(firstInvalid(fieldErrors(empty, 'register')), 'name')
   assert.equal(firstInvalid(fieldErrors({ ...empty, name: 'Ana' }, 'register')), 'email')
   assert.equal(firstInvalid(fieldErrors({ name: 'Ana', email: 'a@b.co', password: '' }, 'register')), 'password')
-  assert.equal(firstInvalid(fieldErrors({ name: 'Ana', email: 'a@b.co', password: 'x' }, 'register')), null)
+  assert.equal(firstInvalid(fieldErrors({ name: 'Ana', email: 'a@b.co', password: 'x', terms: true }, 'register')), null)
+  assert.equal(firstInvalid(fieldErrors({ name: 'Ana', email: 'a@b.co', password: 'x' }, 'register')), 'terms', 'sin marcar la casilla el foco va a ella (ES-301)')
   assert.equal(firstInvalid(fieldErrors(empty, 'login')), 'email', 'entrar no pide nombre')
   assert.deepEqual(fieldErrors({ ...empty, email: 'a@b.co' }, 'login'), { password: 'password' })
   assert.deepEqual(fieldErrors(empty, 'forgot'), { email: 'email' }, 'recuperar solo pide el correo')
@@ -31,7 +33,8 @@ test('ES-155: sin estilos en línea, sin emojis, sin ternarios de idioma y sin l
     assert.ok(!src.includes('style={{') && !src.includes('React.CSSProperties'), `${file} sin estilos en línea`)
     assert.ok(!/\p{Extended_Pictographic}/u.test(src), `${file} sin emojis`)
     assert.ok(!/lang === 'es' \?/.test(src), `${file} sin textos decididos por idioma`)
-    assert.ok(!/type="checkbox"/.test(src), `${file} sin casilla hasta ES-301`)
+    // ES-301: la única casilla es la de aceptación del registro (TermsCheck en AccessCard)
+    assert.equal((src.match(/type="checkbox"/g) ?? []).length, file.endsWith('AccessCard.tsx') ? 1 : 0, `${file} casillas`)
   }
   for (const text of [...Object.values(accessEs), ...Object.values(accessEn)]) assert.ok(!/consentimiento|consent\b|consent[^a-z]/i.test(text), text)
   assert.deepEqual(Object.keys(accessEs).sort(), Object.keys(accessEn).sort())
@@ -39,7 +42,7 @@ test('ES-155: sin estilos en línea, sin emojis, sin ternarios de idioma y sin l
 
 test('ES-155: el contrato con el servidor no cambia (rutas, cuerpos y requisitos de contraseña de ES-128) y el rechazo lleva el foco al aviso', () => {
   const page = read('../src/pages/LoginPage.tsx')
-  assert.ok(page.includes('{ name, email, password }') && page.includes('{ email, password }') && page.includes('`${BACKEND}/api/${endpoint}`'))
+  assert.ok(page.includes('{ name, email, password, acceptedTerms: true, termsVersion: TERMS_VERSION }') && page.includes('{ email, password }') && page.includes('`${BACKEND}/api/${endpoint}`'))
   assert.ok(page.includes('passwordProblems(password)') && page.includes('<PasswordRequirements id="pw-req"'))
   assert.ok(page.includes('authFailureKey(res.status, data, isRegistering)'), 'el mismo aviso para cada fallo: no revela si la cuenta existe')
   assert.ok(page.includes('messageRef.current?.focus()') && page.includes('firstInvalid(found)'))

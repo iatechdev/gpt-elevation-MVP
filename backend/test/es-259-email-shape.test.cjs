@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const { isValidEmail } = require('../utils/emailGuard');
 const { validateApplication } = require('../utils/professionalApplication');
 const { models, record, startApp } = require('./support.cjs');
+// ES-301: el registro exige la aceptación del aviso de privacidad y términos (versión vigente de utils/terms.js)
+const ACCEPT = { acceptedTerms: true, termsVersion: require('../utils/terms').TERMS.version };
 
 const long = (n) => 'a'.repeat(n - '@example.com'.length) + '@example.com';
 const max254 = 'a'.repeat(64) + '@' + 'b'.repeat(185) + '.com'; // 254: parte local ≤ 64 y dominio ≤ 190+punto+TLD
@@ -42,12 +44,12 @@ test('ES-259 registro: nunca 5xx por el correo; forma/longitud inválida → 400
   const request = await startApp(t);
   const password = 'Aa1!' + 'x'.repeat(20);
   for (const [name, email] of Object.entries(INVALID)) {
-    const res = await request('POST', '/api/register', { body: { name: 'Synthetic', email, password } });
+    const res = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email, password } });
     assert.equal(res.status, 400, name); assert.equal(res.body.code, 'invalid_email', name);
   }
   assert.equal(reads, 0); assert.equal(writes.length, 0);
   for (const email of ['josé@ejemplo.co', 'usuario@bücher.example', max254]) {
-    const ok = await request('POST', '/api/register', { body: { name: 'Synthetic', email, password } });
+    const ok = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email, password } });
     assert.equal(ok.status, 201, email.slice(0, 30));
   }
   assert.equal(writes.length, 3);
