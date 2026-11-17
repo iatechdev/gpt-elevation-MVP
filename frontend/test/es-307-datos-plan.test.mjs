@@ -11,7 +11,7 @@ test('ES-307: /app/data y /app/plan están registradas como migradas (tema claro
   assert.equal(isMigratedPersonPath('/app/compass'), false) // el resto de Persona A migra en sus propios PR
 })
 
-test('ES-307: las dos pantallas usan Cartografía y ya no usan SpaceShell, SpaceDialog, clases elv-* ni space-*, ni estilos en línea ni colores fijos', () => {
+test('ES-307: las dos pantallas usan Cartografía y ya no usan SpaceShell, SpaceDialog (retirados en ES-319), clases elv-* ni space-*, ni estilos en línea ni colores fijos', () => {
   for (const file of ['DataPage', 'PlanPage', 'PersonScreen']) {
     const source = read(`../src/space/${file}.tsx`)
     assert.doesNotMatch(source, /SpaceShell|SpaceDialog|className="[^"]*\b(elv-|space-)|style=\{\{|#[0-9a-fA-F]{3,6}\b/, file)

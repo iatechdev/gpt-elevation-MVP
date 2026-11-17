@@ -35,7 +35,7 @@ test('ES-236: los diálogos del Puente (fuentes y «Retirar todo») son el Dialo
   const panel = read('../src/bridge/SourcesPanel.tsx'); const page = read('../src/bridge/BridgePage.tsx')
   assert.match(panel, /<Dialog open=\{!!asking\} onClose=\{\(\) => \{ if \(asking\) close\(asking\) \}\}/)
   assert.match(page, /<Dialog open=\{askAll\} onClose=\{\(\) => \{ if \(!busy\) closeAll\(\) \}\}/)
-  assert.match(page, /const closeAll = \(\) => setAskAll\(false\)/)
+  assert.match(page, /const closeAll = \(\) => \{ if \(!busy\) setAskAll\(false\) \}/) // ES-319: el guardia pasa al propio closeAll (los botones del diálogo usan aria-disabled, no disabled)
   assert.ok(!/event\.key !== 'Tab'|role="dialog"/.test(panel + page), 'ya no queda código propio de Tab ni un role="dialog" a mano')
 })
 test('ES-236: los tres diálogos usan el helper común y Esc respeta el bloqueo mientras se borra', () => {
