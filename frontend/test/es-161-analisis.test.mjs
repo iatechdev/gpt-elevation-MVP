@@ -29,7 +29,7 @@ test('ES-161: la hoja de Cartografía del panel y del diálogo no trae colores f
 test('ES-161: el diálogo de revocación sigue siendo el <dialog> nativo (foco, Esc) y el panel se abre también desde las vistas Relieve y Lista, devolviendo el foco al cerrar', () => {
   const page = read('../src/pages/SkillMapPage.tsx')
   assert.ok(page.includes('<dialog ref={dialogRef} className="skill-map-dialog"') && page.includes('dialog.showModal()') && page.includes('onCancel='))
-  assert.ok(page.includes("{state.status === 'ready' && view !== 'radar' && <button") && page.includes('openAi(state.map.skills.slice(0, MAX_SKILLS)'))
+  assert.ok(page.includes("{view !== 'radar' && <button type=\"button\" className=\"elv-btn skill-map-primary\" disabled={state.status !== 'ready'}") && page.includes('openAi(state.map.skills.slice(0, MAX_SKILLS)'))
   assert.ok(page.includes('aiOpener.current') && page.includes('target?.isConnected') && page.includes('onClose={closeAi}'))
 })
 

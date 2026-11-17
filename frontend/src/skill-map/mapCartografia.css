@@ -23,7 +23,9 @@
   --elv-r-sm: 2px; --elv-r-md: 3px; --elv-r-lg: 4px; --elv-r-xl: 4px; --elv-shadow-card: none;
   font-family: var(--cg-font-sans);
 }
-.cg-map h1 { font: 700 clamp(2.1rem, 5vw, 3.4rem)/1.05 var(--cg-font-cond); letter-spacing: 0.02em; text-transform: uppercase; }
+/* ES-317: mientras Barlow Condensed se descarga el título usaba Arial Narrow/sans a ancho normal (2 renglones a 390 px) y al llegar la real pasaba a 1 y arrastraba toda la pantalla (CLS 0,14). La reserva usa Arial con el ancho ajustado al de Barlow Condensed (68 %, medido en E272-1, progress.css): mismos renglones antes y después. */
+@font-face { font-family: 'Barlow Condensed Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 700; size-adjust: 68%; }
+.cg-map h1 { font: 700 clamp(2.1rem, 5vw, 3.4rem)/1.05 'Barlow Condensed', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; letter-spacing: 0.02em; text-transform: uppercase; }
 .cg-map h2, .cg-map h3, .cg-map h4 { font-family: var(--cg-font-cond); letter-spacing: 0.03em; }
 .cg-map .skill-map-eyebrow { font-family: var(--cg-font-cond); font-size: 0.85rem; letter-spacing: 0.16em; color: var(--cg-muted); }
 .cg-map .elv-btn { border-radius: 0; font-family: var(--cg-font-cond); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; min-height: var(--cg-touch); background: var(--cg-panel); color: var(--cg-ink); }
