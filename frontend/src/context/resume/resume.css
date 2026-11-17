@@ -33,7 +33,6 @@
 .participant-context-scope .rs-error h2 { font-size: 1.2rem; }
 .participant-context-scope .rs-error .rs-help { color: #7f1d1d; }
 .participant-context-scope .rs-err { color: #b91c1c; font-size: .875rem; margin: 0; }
-.participant-context-scope .rs-ok { color: #3a5233; margin: 8px 0; }
 .participant-context-scope .rs-warn { background: #fef3c7; border: 1px solid #f2d98a; color: #92400e; border-radius: 1rem; padding: 14px 16px; margin-block: 16px; display: flex; gap: 10px; align-items: flex-start; }
 .participant-context-scope .rs-warn p { margin: 0; }
 .participant-context-scope .rs-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; }
@@ -56,20 +55,9 @@
 .participant-context-scope .rs-addrow .rs-field { flex: 1 1 220px; }
 .participant-context-scope .rs-pending { border: 1px dashed #4a6741; border-radius: .65rem; padding: 12px; background: #fff; display: grid; gap: 8px; }
 .participant-context-scope .rs-undo { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; background: #f3f2ee; border-radius: .65rem; padding: 6px 12px; }
-.participant-context-scope .rs-versions { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.participant-context-scope .rs-ver { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; border: 1px solid #d6d2c4; border-radius: .65rem; padding: 12px; background: #fff; }
-.participant-context-scope .rs-acts { display: flex; flex-wrap: wrap; gap: 4px; }
-.participant-context-scope .rs-danger { color: #b91c1c; }
-.participant-context-scope .rs-danger-card { background: #fee2e2; border-color: #f4b4b4; color: #7f1d1d; }
 .participant-context-scope .rs-sticky { position: sticky; bottom: 0; background: rgba(249, 249, 247, .96); border-top: 1px solid #d6d2c4; padding: 12px 0; margin-top: 8px; z-index: 2; }
-.participant-context-scope .rs-page main { max-width: 640px; }
 @media (max-width: 639px) {
   .participant-context-scope .rs-card { padding: 16px; }
-  .participant-context-scope .rs-ver { grid-template-columns: 1fr; }
   .participant-context-scope .rs-actions .elv-btn { width: 100%; }
 }
 .participant-context-scope .rs-extras-title { font: 500 1.1rem 'Playfair Display', serif; margin: 28px 0 0; }
-/* ES-165: los enlaces de texto de esta pantalla miden al menos 24 px de alto (WCAG 2.2 AA, tamaño del objetivo). */
-.rs-page main a.elv-link { display: inline-flex; align-items: center; min-height: 24px; padding-block: 2px; }
-.rs-page .elv-join-item { min-width: 32px; justify-content: center; }
-.rs-page .context-skip { display: inline-flex; align-items: center; min-height: 24px; }

@@ -43,7 +43,8 @@ test('ES-236: los tres diálogos usan el helper común y Esc respeta el bloqueo 
   assert.match(evidence, /import \{ modalKeyDown \} from '\.\.\/a11y\/modalKeys\.ts'/)
   assert.match(evidence, /role="alertdialog" onKeyDown=\{event => modalKeyDown\(event, dialog\.current, cancel\)\}/)
   assert.match(evidence, /const cancel = \(\) => \{ if \(busy\) return;/)
-  assert.match(resumes, /import \{ modalKeyDown \} from '\.\.\/\.\.\/a11y\/modalKeys\.ts'/)
-  assert.equal((resumes.match(/modalKeyDown\(event, dialog\.current, \(\) => \{ if \(!busy\) close\(\) \}\)/g) || []).length, 2) // borrar versión y retirar autorización
-  assert.match(resumes, /const close = \(\) => \{ setConfirm\(null\); window\.setTimeout\(\(\) => opener\.current\?\.focus\(\), 0\) \}/) // el foco vuelve a quien abrió
+  // ES-308: «Mis hojas de vida» pasa al <Dialog> de Cartografía (un solo diálogo para borrar versión y retirar autorización): Esc sigue respetando el bloqueo y el foco vuelve a quien abrió.
+  assert.match(resumes, /onClose=\{\(\) => \{ if \(!busy\) close\(\) \}\}/) // Esc (onCancel del Dialog) no cierra mientras se borra
+  assert.equal((resumes.match(/<Dialog /g) || []).length, 1); assert.ok(!/modalKeyDown|role="alertdialog"/.test(resumes))
+  const dialogSource = read('../src/cartografia/interactive.tsx'); assert.match(dialogSource, /target\.focus\(\)/); assert.match(dialogSource, /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/)
 })
