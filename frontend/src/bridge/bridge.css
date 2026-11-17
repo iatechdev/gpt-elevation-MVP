@@ -55,3 +55,8 @@
 @media (forced-colors: active) { .br-switch::before { border-color: CanvasText; } .br-switch-knob { background: CanvasText; } .br-switch[aria-checked="true"]::before { background: Highlight; } }
 /* La frase de apoyo ocupa 3 líneas con la tipografía de respaldo y 2 con la definitiva: se reserva el alto de 3 para que al cargar la fuente no se mueva toda la pantalla (CLS ≤ 0,1 a 390 px con CPU×4). */
 @media (max-width: 480px) { .pg-head:has(+ .pg-stack .br) .pg-lead { min-height: 3lh; } }
+/* ES-331 (M-T14-1): mientras cargan los permisos se reserva el alto de la lista de fuentes (medido: 1360 px ≈ 436; 768 px ≈ 556–633; 390 px ≈ 627–706; 320 px ≈ 690–774); al llegar la lista no empuja lo que hay debajo. */
+.br-src-ph { min-height: 39rem; }
+@media (min-width: 640px) { .br-src-ph { min-height: 27.5rem; } }
+@media (min-width: 768px) { .br-src-ph { min-height: 34.5rem; } }
+@media (min-width: 1100px) { .br-src-ph { min-height: 27.25rem; } }
