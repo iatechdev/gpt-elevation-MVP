@@ -21,8 +21,8 @@ test('ES-13: textos aprobados en ES y EN', () => {
   assert.match(copy.en.proCompassIntro, /It is not therapy or a diagnosis, and it does not promise job outcomes\. You can stop whenever you like\.$/)
 })
 
-test('ES-13: el enlace del menú y el modo del chat dependen de VITE_ENABLE_COMPASS_CHAT === "true" (apagada por defecto)', () => {
-  assert.match(read('../src/space/SpaceNav.tsx'), /VITE_ENABLE_COMPASS_CHAT === 'true' && <NavLink[^>]*to="\/app\/chat\?mode=compass"/)
+test('ES-13: el enlace de «Mis herramientas» y el modo del chat dependen de VITE_ENABLE_COMPASS_CHAT === "true" (apagada por defecto)', () => {
+  assert.match(read('../src/space/SpaceToolsPage.tsx'), /VITE_ENABLE_COMPASS_CHAT === 'true'[^\]]*to: '\/app\/chat\?mode=compass'/)
   const chat = read('../src/pages/ChatPage.tsx')
   assert.match(chat, /const compass = import\.meta\.env\.VITE_ENABLE_COMPASS_CHAT === 'true' && params\.get\('mode'\) === 'compass'/)
   assert.match(chat, /usePersonalChat\(lang, true, compass \? 'compass' : undefined\)/)

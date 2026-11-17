@@ -21,10 +21,10 @@ test('ES-16: ExerciseTools solo identifica a la IA; no trae enlace propio a los 
   assert.match(read('../src/pages/UserDashboard.tsx'), /<ExerciseTools \/>/) // el dashboard sigue identificando a la IA
 })
 
-test('ES-15/16: el enlace del menú de Mi espacio es el único y lleva el origen para que «volver» regrese al chat', () => {
-  const nav = read('../src/space/SpaceNav.tsx')
-  assert.equal((nav.match(/<(?:Link|NavLink|a)\b[^>]*(?:to|href)=(?:\{`|\{'|")\/app\/exercises/g) || []).length, 1) // un solo enlace (el routes.has('/app/exercises') solo comprueba que la ruta exista)
-  assert.match(nav, /from=\$\{pathname === '\/app\/chat' \? 'chat' : 'dashboard'\}/)
-  assert.doesNotMatch(nav, /VITE_ENABLE_COMPANION_EXERCISES/) // ES-170: sin bandera de compilación; el enlace depende de que la ruta exista (el estado vacío lo explica la propia pantalla)
+test('ES-15/16: «Mis herramientas» tiene el único enlace a los ejercicios y lleva el origen para que «volver» regrese al panel', () => {
+  const tools = read('../src/space/SpaceToolsPage.tsx')
+  assert.equal((tools.match(/to: '\/app\/exercises/g) || []).length, 1) // un solo enlace (el routes.has('/app/exercises') solo comprueba que la ruta exista)
+  assert.match(tools, /to: '\/app\/exercises\?from=dashboard'/)
+  assert.doesNotMatch(tools, /VITE_ENABLE_COMPANION_EXERCISES/) // ES-170: sin bandera de compilación; el enlace depende de que la ruta exista (el estado vacío lo explica la propia pantalla)
   assert.match(read('../src/exercises/ExercisePage.tsx'), /params\.get\('from'\) === 'chat' \? '\/app\/chat' : '\/app\/dashboard'/)
 })

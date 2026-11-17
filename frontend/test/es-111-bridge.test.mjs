@@ -64,7 +64,7 @@ test('ES-111 insights: sin el interruptor la lista está vacía; con él hay eje
 })
 
 test('ES-111 estructura: confirmación en la tarjeta, ojo accesible, nada cruza sin confirmar, Escape cancela, revocar uno y todos, y no se guarda nada en el navegador', () => {
-  const page = read('../src/bridge/BridgePage.tsx'); const css = read('../src/bridge/bridge.css'); const nav = read('../src/space/SpaceNav.tsx'); const app = read('../src/App.tsx')
+  const page = read('../src/bridge/BridgePage.tsx'); const css = read('../src/bridge/bridge.css'); const nav = read('../src/shell/nav.ts'); const app = read('../src/App.tsx')
   assert.match(page, /aria-pressed=\{open\}/); assert.match(page, /aria-label=\{open \? c\.hide : c\.show\}/); assert.match(page, /aria-hidden=\{!open\}/) // el fragmento arranca difuminado y oculto
   assert.match(page, /useState<ReadonlySet<string>>\(new Set\(\)\)/) // ningún fragmento visible por defecto
   assert.match(page, /event\.key === 'Escape'/); assert.match(page, /confirmButton\.current\?\.focus\(\)/); assert.match(page, /data-authorize=/); assert.match(page, /setFocusTarget\(\{ kind: 'authorize', id \}\)/) // el foco vuelve a un elemento que sigue en pantalla (ES111-QA-03)
@@ -75,5 +75,5 @@ test('ES-111 estructura: confirmación en la tarjeta, ojo accesible, nada cruza 
   assert.match(page, /role="status" aria-live="polite"/); assert.match(page, /role="alert"/)
   assert.doesNotMatch(page, /localStorage|sessionStorage|indexedDB|document\.cookie/); assert.doesNotMatch(page, /insight\.fragment[^}]*(api|fetch|preview|confirm)/)
   assert.match(css, /br-blur/); assert.match(css, /dashed/); assert.doesNotMatch(css, /#0d9488|#B5503C|#4a6741/i)
-  assert.match(nav, /to="\/app\/bridge"/); assert.match(app, /path="\/app\/bridge"/); assert.match(app, /path="\/app\/compass"/) // la Brújula convive
+  assert.match(nav, /to: '\/app\/bridge'/); assert.match(app, /path="\/app\/bridge"/); assert.match(app, /path="\/app\/compass"/) // la Brújula convive
 })

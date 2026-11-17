@@ -4,7 +4,7 @@ import { copy } from './copy'
 import { PersonScreen } from './PersonScreen'
 import { useSpaceRoutes } from './routesContext'
 // Menú de «Mi espacio» hacia las pantallas profesionales que estén registradas. La ruta /app/next-step es del recorrido de ES-34, no de esta página.
-// ES-153 (paso 1): al salir el menú «☰» de SpaceNav, esta pantalla es la entrada a los ejercicios opcionales y (con su bandera) a la Brújula en el chat.
+// ES-153 (paso 1): al retirarse el menú «☰» de SpaceNav (paso 2), esta pantalla es la entrada a los ejercicios opcionales y (con su bandera) a la Brújula en el chat.
 type Option = { path: string; title: string; line: string; to?: string }
 export function SpaceToolsPage() {
   const { lang } = useLanguage(); const c = copy[lang]; const routes = useSpaceRoutes()
