@@ -128,7 +128,11 @@ function FeedbackSession({ token, live }: { token: string; live: boolean }) {
     {failure ? <Banner kind="error" title={status} /> : <p role="status" aria-live="polite" className="prg-status">{status}</p>}
     {notice === 'loadError' && <div className="prg-actions"><Button onClick={() => { void load(true) }}>{c.retry}</Button></div>}
     {live && !loading && saved && (saved.permission === 'missing'
-      ? <Card as="div" className="prg-question"><h2 className="cg-h2">{c.grantTitle}</h2><p>{c.grantText}</p><div className="prg-actions"><Button disabled={busy} onClick={() => void changePermission(true)}>{c.grant}</Button></div></Card>
+      ? <Card as="div" className="prg-question"><h2 className="cg-h2">{c.grantTitle}</h2><p>{c.grantText}</p>
+        <h3 className="prg-grant-h">{c.grantIfTitle}</h3><ul className="prg-grant-list">{[c.grantIf1, c.grantIf2, c.grantIf3, c.grantIf4, c.grantIf5].map(item => <li key={item}>{item}</li>)}</ul>
+        <h3 className="prg-grant-h">{c.grantAfterTitle}</h3><ul className="prg-grant-list">{[c.grantAfter1, c.grantAfter2, c.grantAfter3].map(item => <li key={item}>{item}</li>)}</ul>
+        <p>{c.grantNote}</p><p className="cg-muted cg-small">{c.grantDraft}</p>
+        <div className="prg-actions"><Button disabled={busy} onClick={() => void changePermission(true)}>{c.grant}</Button></div></Card>
       : <div className="prg-permission"><span className="cg-muted cg-small">{c.permissionActive}</span><Button variant="ghost" disabled={busy || !!intent} onClick={() => setDialog('permission')}>{c.revokePermission}</Button></div>)}
     {!loading && saved && <form className="prg-form" onSubmit={event => { event.preventDefault(); void send() }}>
       {group('initialValue')}{draft.initialValue === 'yes' && group('valueArea')}{group('listened')}{group('respected')}{group('professionalClarity')}
