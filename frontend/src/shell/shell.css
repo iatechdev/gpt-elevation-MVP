@@ -89,6 +89,8 @@
 @keyframes cg-screen-pulse { 50% { opacity: 0.25; } }
 /* ES-153 (E280-2): el pie no se pinta mientras la pantalla carga; así no «salta» al llegar el contenido (CLS). Sigue ocupando su sitio, solo invisible. */
 .cg-frame:has(.cg-screen-loading) .cg-footer { visibility: hidden; }
+/* ES-317: lo mismo mientras el mapa carga (la pantalla ya está en el marco, pero su contenido aún no): el pie, visible bajo el aviso de carga, salía de la ventana al llegar el mapa y contaba como salto (CLS). */
+.cg-frame:has(.skill-map-scope[data-loading]) .cg-footer { visibility: hidden; }
 
 /* ES-153 (paso 3): el encabezado de persona en móvil. Fila 1: marca y menú de usuario; fila 2: idioma y tema; luego la navegación en una rejilla de 3 columnas de alto fijo
    (el número de filas no depende del texto: sin CLS al cargar la tipografía). El menú queda arriba a la derecha en lo visual aunque en el DOM va al final (Tab: marca, navegación, idioma, tema, menú). */

@@ -129,7 +129,7 @@ function SkillMapContent() {
   const message = revoke === 'done' ? t('skill_map.revoke_done') : revoke === 'error' ? t('skill_map.revoke_error') : revoke === 'expired' ? t('skill_map.expired')
     : revoke === 'checking' ? t('skill_map.revoke_checking') : revoke === 'unsure' ? t('skill_map.revoke_unsure') : revoke === 'not_seen' ? t('skill_map.revoke_not_seen') : nothingToRevoke ? t('skill_map.revoke_none') : ''
   // El marco (PersonFrame, ES-153) pone el encabezado, «Saltar al contenido», el <main> y el pie; aquí solo va el contenido de la pantalla.
-  return <div className="skill-map-scope cg-map">
+  return <div className="skill-map-scope cg-map" data-loading={state.status === 'loading' ? '' : undefined}>
     <div className="skill-map-main">
       <Link to="/app/dashboard" className="elv-link skill-map-back">{t('skill_map.back')}</Link>
       <div className="skill-map-title">
@@ -144,7 +144,8 @@ function SkillMapContent() {
             <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('skill_map.view_list_short')}</button>
             <button type="button" aria-pressed={view === 'radar'} onClick={() => setView('radar')}>{t('skill_map.view_radar')}</button>
           </div>
-          {state.status === 'ready' && view !== 'radar' && <button type="button" className="elv-btn skill-map-primary" onClick={() => openAi(state.map.skills.slice(0, MAX_SKILLS).map(item => item.skillKey))}>{t('skill_map.ai_open')}</button>}
+          {/* ES-317: el botón ocupa su sitio desde la carga (deshabilitado, como «Actualizar mapa»); si aparecía al llegar el mapa, la fila de herramientas cambiaba de líneas y empujaba el contenido (CLS). */}
+          {view !== 'radar' && <button type="button" className="elv-btn skill-map-primary" disabled={state.status !== 'ready'} onClick={() => { if (state.status === 'ready') openAi(state.map.skills.slice(0, MAX_SKILLS).map(item => item.skillKey)) }}>{t('skill_map.ai_open')}</button>}
           <button type="button" className="elv-btn" ref={revokeButton} onClick={() => setRevoke('confirm')}
             disabled={bridge === 'loading' || nothingToRevoke || revoke === 'saving' || revoke === 'checking'}>{t('skill_map.revoke_all')}</button>
           <button type="button" className="elv-btn" onClick={refresh} disabled={state.status === 'loading'}>{t('skill_map.refresh')}</button>
