@@ -8,6 +8,10 @@ import { AdminRoute } from './components/AdminRoute.tsx'
 import { TherapistRoute } from './components/TherapistRoute.tsx'
 
 import { RouteErrorBoundary } from './components/RouteErrorBoundary.tsx'
+import { startEarlySession } from './shell/useVerifiedSession'
+import { loadCatalog } from './i18n/catalog'
+import { resolveInitialLang } from './i18n/resolveLang'
+const readSavedLang = () => { try { return localStorage.getItem('elv_lang') } catch { return null } }
 import { RegisteredRoutes } from './space/RegisteredRoutes'
 import { SpaceSession } from './space/SpaceSession'
 // ES-129: cada pantalla fuera de la portada y el login se descarga al entrar en su ruta; así /login no arrastra admin, terapeuta, junta ni mapas.
@@ -68,7 +72,8 @@ const PERSON_PRELOAD: Partial<Record<string, () => unknown>> = {
   '/app/space/tools': () => import('./space/SpaceToolsPage'), '/app/chat': () => import('./pages/ChatPage.tsx'), '/app/progress': () => import('./pages/UserProgress.tsx'),
   '/app/dashboard': () => import('./pages/UserDashboard.tsx'), '/app/skill-map': () => import('./pages/SkillMapPage.tsx'),
 }
-if (typeof window !== 'undefined' && window.location.pathname.startsWith('/app/')) { void loadPersonLayout(); void PERSON_PRELOAD[window.location.pathname]?.() }
+// ES-316: also the gate screens and the session request start at once (they were sequential: chunk -> React commit -> /api/session).
+if (typeof window !== 'undefined' && window.location.pathname.startsWith('/app/')) { void loadPersonLayout(); void PERSON_PRELOAD[window.location.pathname]?.(); void import('./shell/GateScreens'); startEarlySession(); void loadCatalog(resolveInitialLang(readSavedLang(), navigator.language)) }
 const JournalPage = lazy(() => import('./space/JournalPage').then(m => ({ default: m.JournalPage })))
 const BridgePage = lazy(() => import('./bridge/BridgePage').then(m => ({ default: m.BridgePage })))
 const DataPage = lazy(() => import('./space/DataPage').then(m => ({ default: m.DataPage })))

@@ -154,7 +154,7 @@ export function ProfessionalApplicationsPanel({ onChanged }: { onChanged?: () =>
           <Button variant={open?.action === 'reject' ? 'danger' : 'primary'} disabled={busy !== null} onClick={() => reviewing && open && void review(reviewing, open.action)}>{open?.action === 'reject' ? tr('Confirmar rechazo') : tr('Confirmar aprobación')}</Button>
         </>}
       >
-        <p className="cg-hint">{open?.action === 'reject' ? tr('El motivo lo verá la persona.') : tr('Queda activa en la plataforma y puede recibir personas.')}</p>
+        <p className="cg-hint">{open?.action === 'reject' ? tr('El motivo lo verá la persona.') : tr('Aprobar esta solicitud no crea ni activa una cuenta. Después, usa «Crear cuenta de profesional».')}</p>
         <TextAreaField id="application-note" label={open?.action === 'reject' ? tr('Motivo del rechazo (obligatorio)') : tr('Nota (opcional)')} maxLength={1000} value={note}
           error={noteError ? tr(noteError) : undefined} onChange={event => { setNote(event.target.value); setNoteError('') }} />
         {dialogMsg && <Banner kind="error" title={tr(dialogMsg)} />}

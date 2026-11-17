@@ -85,7 +85,7 @@ test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está acces
   assert.match(page, /disabled=\{!matches \|\| busy === 'delete'\}/); assert.doesNotMatch(page, /window\.confirm/) // ES-174: la casilla pasó a palabra de confirmación
   assert.match(page, /invalidateStoredSession\(deletedToken\.current\)/); assert.match(read('../src/cartografia/interactive.tsx'), /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/) // Escape llega como «cancel» del <dialog>
   assert.match(read('../src/App.tsx'), /path="\/app\/data" element=\{<DataPage \/>\}/)
-  assert.match(read('../src/space/SpaceNav.tsx'), /to="\/app\/data"/)
+  assert.match(read('../src/shell/nav.ts'), /to: '\/app\/data'/)
 })
 
 // QA-135-01: al cerrar el paso 2 el botón de inicio se vuelve a montar; el foco se devuelve DESPUÉS del render (verificado también en navegador real, 390 y 1440 px, ES y EN).

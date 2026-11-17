@@ -20,6 +20,8 @@ test('ES-184: el marco, las pestañas, Validaciones y Solicitudes usan Cartograf
   assert.match(own, /<Tabs label=\{tr\('Secciones'\)\} tabs=\{\[/); assert.match(own, /id: 'validations'[\s\S]*id: 'applications'[\s\S]*id: 'pricing'[\s\S]*id: 'landing'/)
   assert.match(own, /<PricingTab \/>/); assert.match(own, /<LandingTab \/>/) // se montan tal cual
   assert.match(panel, /<Dialog/); assert.match(panel, /Crear cuenta de profesional/)
+  assert.match(panel, /tr\('Aprobar esta solicitud no crea ni activa una cuenta\. Después, usa «Crear cuenta de profesional»\.'/)
+  assert.doesNotMatch(panel, /Queda activa en la plataforma y puede recibir personas/)
 })
 
 test('ES-184: el documento y la hoja de vida solo se abren con sesión y sin datos en la URL', () => {
@@ -44,9 +46,11 @@ test('ES-184: una solicitud depurada (ES-293) solo muestra estado y fecha, sin c
 test('ES-184: el contador de pestañas sale del servidor y no se inventa; los textos nuevos existen en ES y EN', () => {
   assert.match(own, /return Array\.isArray\(data\) \? data\.length : null/); assert.match(own, /count === null \? tr\(label\)/)
   for (const key of ['Validaciones', 'Solicitudes', 'Planes', 'Textos públicos', 'Secciones', 'Datos depurados', 'Eliminar solicitud', 'Crear cuenta de profesional', 'Profesional aprobado y activado.', 'Queda activa en la plataforma y puede recibir personas.',
+    'Aprobar esta solicitud no crea ni activa una cuenta. Después, usa «Crear cuenta de profesional».',
     'El motivo lo verá la persona.', 'Se eliminan la solicitud y su hoja de vida; no se puede deshacer. Libera cupo.', 'Solo superadministración puede revisar los documentos de validación.', 'No se pudieron cargar los documentos.', 'Tipo de documento', 'Archivo', 'Ver documento']) {
     const en = adminText(key, 'en'); assert.notEqual(en, key, `falta el inglés de «${key}»`); assert.doesNotMatch(en, /[áíóúñ¿¡«»]/i, key)
   }
   assert.equal(adminText('Datos depurados', 'en'), 'Data removed')
+  assert.equal(adminText('Aprobar esta solicitud no crea ni activa una cuenta. Después, usa «Crear cuenta de profesional».', 'en'), 'Approving this application does not create or activate an account. Use “Create professional account” afterward.')
   assert.doesNotMatch(adminText('Llegan desde el formulario público. Aprobar no crea la cuenta: después usa «Crear cuenta de profesional». Abre las hojas de vida solo en un visor aislado; no se analizan contra virus.', 'en'), /therapist/i)
 })

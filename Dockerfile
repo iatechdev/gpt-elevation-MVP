@@ -7,6 +7,9 @@ ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 # Banderas de frontend que se leen al construir (Vite). Vacías = apagadas. Solo se definen en Railway donde se decida (ES-13).
 ARG VITE_ENABLE_COMPASS_CHAT
 ENV VITE_ENABLE_COMPASS_CHAT=$VITE_ENABLE_COMPASS_CHAT
+# ES-173: «Tu opinión» real (servidor). Vacía = apagada. Solo se enciende en Railway staging por decisión de Mauricio.
+ARG VITE_ENABLE_PILOT_FEEDBACK_LIVE
+ENV VITE_ENABLE_PILOT_FEEDBACK_LIVE=$VITE_ENABLE_PILOT_FEEDBACK_LIVE
 
 COPY . .
 
