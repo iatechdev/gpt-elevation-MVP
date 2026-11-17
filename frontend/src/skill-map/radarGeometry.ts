@@ -67,5 +67,9 @@ export const MARK_PX = 24
 export const MARK_CHORD_PX = 34
 /** ¿Caben N marcas sobre el círculo de los ejes? La tarjeta del radar ocupa ~46 % del ancho de la ventana (tope 1240 px). */
 export const fitsAsMarks = (total: number, viewport: number) => 2 * ((Math.min(viewport, 1240) * 0.46 * POLY_LABEL_RADIUS) / POLY_W) * Math.sin(Math.PI / Math.max(total, 2)) >= MARK_CHORD_PX
-/** Cómo se presenta el radar: hasta 12 capacidades, ejes con nombre; en escritorio con más (hasta 24 y mientras quepan sin solapar), solo marcas; en lo demás, imagen + tabla interactiva. */
-export const radarMode = (total: number, viewport = 1200): 'named' | 'marks' | 'image' => (total <= NAMED_AXES_MAX ? 'named' : viewport >= DESKTOP_MIN && total <= BUTTON_AXES_MAX && fitsAsMarks(total, viewport) ? 'marks' : 'image')
+/** ES-322 (E266-5): ancho de ventana desde el que los ejes con nombre caben sin pisarse ni partir palabras (la tarjeta del radar mide ~46 % del ancho). Medido con scripts/es322-radar-sweep.cjs (640–1360 px de 8 en 8, ES y EN, 12 capacidades de nombre largo y N = 5 y 8): el último ancho con fallo antes del cambio fue 1 088 px. Es la constante a mover si cambian el tipo de letra o el ancho de la tarjeta. */
+export const NAMED_MIN_VIEWPORT = 1130
+/** ¿Caben los ejes con nombre? Si no, el radar muestra solo las marcas (el nombre y el nivel siguen en el aria-label y en la tabla). */
+export const fitsNamed = (viewport: number) => viewport >= NAMED_MIN_VIEWPORT
+/** Cómo se presenta el radar: hasta 12 capacidades, ejes con nombre mientras caben (si no, solo marcas); en escritorio con más (hasta 24 y mientras quepan sin solapar), solo marcas; en lo demás, imagen + tabla interactiva. */
+export const radarMode = (total: number, viewport = 1200): 'named' | 'marks' | 'image' => (total <= NAMED_AXES_MAX ? (fitsNamed(viewport) ? 'named' : 'marks') : viewport >= DESKTOP_MIN && total <= BUTTON_AXES_MAX && fitsAsMarks(total, viewport) ? 'marks' : 'image')
