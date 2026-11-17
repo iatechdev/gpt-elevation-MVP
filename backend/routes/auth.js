@@ -59,7 +59,7 @@ const lockedBody = (until) => {
 };
 
 // ES-221: el registro también tiene límite por IP (contra el barrido de correos). El conteo incluye los 400 de «ya registrado»: son justo la sonda.
-// ES-221 (E305-1): a lo sumo 2 hashes de registro a la vez (cola acotada de 100): 30 registros simultáneos ya no dejan sin respuesta al resto del servidor.
+// ES-221 (E305-1): a lo sumo 2 hashes de registro a la vez (cola acotada de 20; la 23.ª simultánea recibe 503 server_busy): 30 registros simultáneos ya no dejan sin respuesta al resto del servidor.
 const hashGate = createHashGate();
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,

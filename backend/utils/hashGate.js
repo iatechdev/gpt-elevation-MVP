@@ -4,7 +4,7 @@
 // El hash sigue calculándose SIEMPRE y ANTES de consultar el correo (el tiempo de «ya registrado» y de «nuevo» sigue siendo el mismo, ES-221); el rechazo por cola llena
 // ocurre antes de saber nada del correo, así que tampoco revela si existe. Alcance: un proceso (una réplica), igual que los demás contadores en memoria.
 const DEFAULT_MAX = 2;
-const DEFAULT_QUEUE = 100;
+const DEFAULT_QUEUE = 20; // E305-6: fallar rápido (503) en vez de hacer esperar ~25 s a la persona en una tormenta
 
 class ServerBusyError extends Error {
   constructor() { super('Servidor ocupado. Inténtalo de nuevo en un momento. / Server busy. Please try again in a moment.'); this.code = 'server_busy'; this.status = 503; }
