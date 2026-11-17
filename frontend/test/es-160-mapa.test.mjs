@@ -51,7 +51,7 @@ test('ES-160: tres vistas (Relieve por defecto, Lista, Radar) dentro de PersonFr
   for (const view of ['relief', 'list', 'radar']) assert.ok(page.includes(`setView('${view}')`), view)
   assert.ok(page.includes('<RadarBoard') && !/<main[ >]/.test(page.replace(/\/\/[^\n]*/g, '')), 'el <main> lo pone el marco')
   const frames = read('../src/shell/frames.tsx')
-  assert.ok(frames.includes("mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}"), 'solo la pantalla migrada cambia de tema; el resto de /app/* queda igual')
+  assert.ok(frames.includes("mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'}"), 'solo la pantalla migrada cambia de tema (el elegido; «Auto» = el del sistema); el resto de /app/* queda igual')
 })
 
 test('ES-160: los pares clave del mapa cumplen WCAG AA en claro y oscuro (tokens de Cartografía)', () => {

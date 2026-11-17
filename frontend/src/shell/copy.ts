@@ -5,6 +5,8 @@ export const PROFESSIONAL_LABEL = { es: 'Profesional', en: 'Professional' } as c
 
 const es = {
   skip: 'Saltar al contenido', language: 'Idioma', brandLabel: 'Elevation', main: 'Principal', userMenu: 'Menú de usuario', admin: 'Administración',
+  // ES-153 (paso 3): preferencias del marco de persona (idioma + tema)
+  preferences: 'Preferencias', theme: 'Tema', themeSystem: 'Auto', themeLight: 'Claro', themeDark: 'Oscuro', themeLegacy: 'Esta pantalla aún solo tiene tema claro.',
   // público
   how: 'Cómo funciona', privacy: 'Privacidad', signIn: 'Entrar', signUp: 'Crear cuenta',
   // persona
@@ -29,6 +31,7 @@ const es = {
 
 const en: typeof es = {
   skip: 'Skip to content', language: 'Language', brandLabel: 'Elevation', main: 'Main', userMenu: 'User menu', admin: 'Administration',
+  preferences: 'Preferences', theme: 'Theme', themeSystem: 'Auto', themeLight: 'Light', themeDark: 'Dark', themeLegacy: 'This screen only has the light theme for now.',
   how: 'How it works', privacy: 'Privacy', signIn: 'Sign in', signUp: 'Create account',
   map: 'Map', chat: 'Conversation', evidence: 'Evidence', diary: 'Diary', next: 'Next step',
   today: 'Today', bridge: 'The Bridge', myProfessional: 'My professional', tools: 'My tools', progress: 'My progress', plan: 'My plan',

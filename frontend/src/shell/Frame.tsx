@@ -5,7 +5,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { signOut } from '../access/signOut'
 import { CartografiaRoot } from '../cartografia/theme'
-import type { CgTheme } from '../cartografia/themeState'
+import { useCgTheme, type CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
 import { useShellCopy } from './useShellCopy'
 import { leaveBlocked } from './leaveGuard'
@@ -22,6 +22,29 @@ export function LangSwitch() {
       ))}
     </div>
   )
+}
+
+/** ES-153 (paso 3): tema Auto / Claro / Oscuro. Mismo patrón que el idioma (botones con aria-pressed). En una pantalla heredada (solo tema claro) los botones quedan
+ *  con aria-disabled —no disabled— para que sigan en el orden de Tab y el lector de pantalla lea la razón (aria-describedby); el clic no hace nada. */
+export function ThemeSwitch({ legacy = false }: { legacy?: boolean }) {
+  const { c } = useShellCopy(); const [theme, setTheme] = useCgTheme(); const note = useId()
+  const options: { id: CgTheme; label: string }[] = [{ id: 'system', label: c.themeSystem }, { id: 'light', label: c.themeLight }, { id: 'dark', label: c.themeDark }]
+  return (
+    <>
+      <div className="cg-seg" role="group" aria-label={c.theme} aria-describedby={legacy ? note : undefined}>
+        {options.map(option => (
+          <button key={option.id} type="button" className="cg-seg__btn" aria-pressed={theme === option.id} aria-disabled={legacy || undefined} onClick={() => { if (!legacy) setTheme(option.id) }}>{option.label}</button>
+        ))}
+      </div>
+      {legacy && <span id={note} className="cg-sr">{c.themeLegacy}</span>}
+    </>
+  )
+}
+
+/** ES-153 (paso 3): idioma y tema juntos en el marco de persona. */
+export function PreferencesBar({ legacy = false }: { legacy?: boolean }) {
+  const { c } = useShellCopy()
+  return <div className="cg-prefs" role="group" aria-label={c.preferences}><LangSwitch /><ThemeSwitch legacy={legacy} /></div>
 }
 
 export function NavLinks({ items, label, className }: { items: NavItem[]; label: string; className?: string }) {
@@ -91,7 +114,7 @@ function guardLeave(event: ReactMouseEvent<HTMLElement>) {
 }
 
 export type FrameProps = {
-  brand?: ReactNode; /** Nombre accesible del enlace de la marca: debe contener el texto visible (WCAG 2.5.3). */ brandLabel?: string; brandTo?: string; nav?: ReactNode; account?: ReactNode; sidebar?: ReactNode; footer?: boolean; header?: boolean; children: ReactNode
+  brand?: ReactNode; /** Nombre accesible del enlace de la marca: debe contener el texto visible (WCAG 2.5.3). */ brandLabel?: string; brandTo?: string; nav?: ReactNode; account?: ReactNode; /** Idioma por defecto; el marco de persona pone idioma + tema (PreferencesBar). */ preferences?: ReactNode; sidebar?: ReactNode; footer?: boolean; header?: boolean; children: ReactNode
   /** Clase extra para el área principal; los contenidos antiguos conservan su ámbito de tokens (elv-theme) hasta migrar. */
   mainClassName?: string
   /** ES-160: tema del marco. Por defecto «light» (los contenidos antiguos son claros); una pantalla ya migrada a Cartografía pide «system» para seguir el modo claro/oscuro del sistema. */
@@ -99,7 +122,7 @@ export type FrameProps = {
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', children }: FrameProps) {
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', children }: FrameProps) {
   const { c } = useShellCopy(); const { pathname } = useLocation()
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // Al cambiar de ruta el foco pasa al <main> (no en la primera carga, para no robar el foco de quien llega por teclado).
@@ -114,7 +137,7 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, sidebar,
         <header className="cg-header" onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
           {nav}
-          <div className="cg-header__end"><LangSwitch />{account}</div>
+          <div className="cg-header__end">{preferences ?? <LangSwitch />}{account}</div>
         </header>
       )}
       <div className={sidebar ? 'cg-body cg-body--side' : 'cg-body'}>

@@ -1,7 +1,8 @@
 // ES-153: los marcos por rol. Cada uno muestra solo las rutas de su rol; la ruta activa lleva aria-current="page" (lo pone NavLink).
 import { useContext, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Frame, NavLinks, SignOutButton, UserMenu } from './Frame'
+import { Frame, NavLinks, PreferencesBar, SignOutButton, UserMenu } from './Frame'
+import { useCgTheme } from '../cartografia/themeState'
 import { useShellCopy } from './useShellCopy'
 import { PROFESSIONAL_LABEL } from './copy'
 import { ADMIN_BOARD_GROUP, ADMIN_NAV, BOARD_NAV, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PROFESSIONAL_NAV, PUBLIC_NAV, visibleFor } from './nav'
@@ -29,9 +30,10 @@ export function PublicFrame({ children, migrated = false }: { children: ReactNod
 
 /** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de usuario. */
 export function PersonChrome({ children, migrated = false, footer = true }: { children: ReactNode; migrated?: boolean; footer?: boolean }) {
-  const { c } = useShellCopy()
-  // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con tema claro/oscuro del sistema.
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'} footer={footer}>{children}</Frame>
+  const { c } = useShellCopy(); const [theme] = useCgTheme()
+  // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
+  // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={<PreferencesBar legacy={!migrated} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer}>{children}</Frame>
 }
 
 /** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */
