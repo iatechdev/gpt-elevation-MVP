@@ -8,7 +8,8 @@ const router    = express.Router();
 const bcrypt    = require('bcryptjs');
 const { issueToken } = require('../utils/sessions');
 const rateLimit = require('express-rate-limit');
-const { loginRateMax } = require('../utils/loginRateLimit');
+const { loginRateMax, registerRateMax } = require('../utils/loginRateLimit');
+const { createHashGate, ServerBusyError } = require('../utils/hashGate');
 const User      = require('../User');
 const { deletionPending } = require('../utils/deletionGuard');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
@@ -57,6 +58,17 @@ const lockedBody = (until) => {
   return { error: `Cuenta bloqueada. Inténtalo de nuevo en ${minutes} minuto${minutes > 1 ? 's' : ''}.`, locked: true };
 };
 
+// ES-221: el registro también tiene límite por IP (contra el barrido de correos). El conteo incluye los 400 de «ya registrado»: son justo la sonda.
+// ES-221 (E305-1): a lo sumo 2 hashes de registro a la vez (cola acotada de 20; la 23.ª simultánea recibe 503 server_busy): 30 registros simultáneos ya no dejan sin respuesta al resto del servidor.
+const hashGate = createHashGate();
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: registerRateMax(), // por IP y hora: 30 (REGISTER_RATE_LIMIT_MAX solo se respeta fuera de producción, ver utils/loginRateLimit.js). El piloto (6 personas tras una misma red) queda muy por debajo.
+  message: { error: 'Demasiados intentos. Inténtalo de nuevo más tarde. / Too many attempts. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: loginRateMax(), // por IP y minuto: 10 (LOGIN_RATE_LIMIT_MAX solo se respeta fuera de producción, ver utils/loginRateLimit.js)
@@ -66,7 +78,7 @@ const loginLimiter = rateLimit({
 });
 
 // POST /api/register
-router.post('/register', validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {
+router.post('/register', registerLimiter, validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { name, email, password } = req.body;
     // ES-252/ES-259: forma y longitud (≤ 254) del correo y sin caracteres de control/formato; antes de consultar la base (no enumera cuentas).
@@ -90,29 +102,22 @@ router.post('/register', validateBody({ name: nonempty, email: nonempty, passwor
       throw error;
     }
 
+    // ES-221: el hash se calcula SIEMPRE, antes de consultar el correo: «ya registrado» y «nuevo» cuestan lo mismo (antes el duplicado se saltaba bcrypt y respondía más rápido).
+    const hashedPassword = await hashGate.run(() => bcrypt.hash(password, 10));
+
     // Verificar si el email ya existe en la BD
     // ES-306: el correo se compara sin importar mayúsculas ni espacios a los lados; «Ana@x.co» con «ana@x.co» ya registrado = duplicado.
     const existing = await findUserByEmail(User, email);
 
-    if (existing) {
-      if (existing.active === false) {
-        // Registration is not proof of ownership of an existing account.
-        return res.status(403).json({
-          error: 'Cuenta inactiva. Contacta con soporte. / Inactive account. Contact support.',
-        });
-      }
-
-      // Usuario activo — no se puede registrar con ese email
-      return res.status(400).json({ error: 'El correo ya está registrado.' });
-    }
-
-    // Usuario nuevo — crear normalmente
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // ES-221: una cuenta inactiva responde IGUAL que una activa (400, mismo cuerpo): el registro público no revela que existió una cuenta desactivada ni es prueba de propiedad.
+    // «ya registrado» sigue siendo distinguible de «nuevo» (compromiso de UX hasta que haya correo de verificación, ES-12; decisión del 12-nov, opción A).
+    if (existing) return res.status(400).json({ error: 'El correo ya está registrado.' });
 
     await User.create({ name, email: normalizeEmail(email), password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {
+    if (error instanceof ServerBusyError) return res.status(503).json({ code: error.code, error: error.message });
     // ES-301: dos registros simultáneos del mismo correo: gana uno; el otro choca con el índice único y es el MISMO caso que «ya registrado» (antes un 500).
     if (error && error.name === 'SequelizeUniqueConstraintError') return res.status(400).json({ error: 'El correo ya está registrado.' });
     console.error('Error en register.');

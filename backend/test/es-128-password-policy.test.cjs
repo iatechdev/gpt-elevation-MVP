@@ -83,7 +83,7 @@ test('ES-128: registro débil no consulta ni escribe cuentas; registro válido c
   const account = record({ id: 202, active: false, password: writes[0].password });
   account.update = async () => { throw new Error('Must not reactivate'); };
   models.User.findOne = async () => account;
-  assert.equal((await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'policy@example.invalid', password } })).status, 403);
+  assert.equal((await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'policy@example.invalid', password } })).status, 400) // ES-221: «inactiva» responde igual que «ya registrado» (antes 403); sigue sin reactivarse ni crearse nada;
   assert.equal(writes.length, 1); assert.equal(account.active, false);
 });
 

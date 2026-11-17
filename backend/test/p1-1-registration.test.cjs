@@ -19,7 +19,7 @@ test('P1-1: public registration cannot reactivate or replace an inactive account
   const denied = await request('POST', '/api/register', {
     body: { ...ACCEPT, name: 'Synthetic', email: 'inactive@example.invalid', password },
   });
-  assert.equal(denied.status, 403);
+  assert.equal(denied.status, 400); assert.equal(denied.body.error, 'El correo ya está registrado.'); // ES-221: antes 403 «inactiva»; ahora igual que «ya registrado»
   assert.equal(account.update.mock.callCount(), 0);
   assert.equal(models.User.create.mock.callCount(), 0);
   assert.equal(account.password, originalHash);

@@ -6,6 +6,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+process.env.REGISTER_RATE_LIMIT_MAX = '100000'; // ES-221: ráfagas de registros desde una sola IP (el límite real es 30 por hora y no se respeta en producción)
 const { startRealApi } = require('../support/realApi.cjs');
 
 test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión del servidor y fecha del servidor', { timeout: 900000 }, async (t) => {
@@ -78,14 +79,14 @@ test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión
     assert.equal((await register({})).status, 201, 'sin versión fijada no se puede exigir');
   });
 
-  await t.test('correo ya registrado: no se pisa su aceptación ni se crea otra cuenta; cuenta inactiva sigue en 403', async () => {
+  await t.test('correo ya registrado: no se pisa su aceptación ni se crea otra cuenta; cuenta inactiva responde igual (400, ES-221)', async () => {
     setTerms({ version: '2026-11-v1', required: true });
     const mail = email(); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, mail)).status, 201); const first = await row(mail);
     setTerms({ version: '2026-12-v2', required: true });
     const again = await register({ acceptedTerms: true, termsVersion: '2026-12-v2' }, mail); assert.equal(again.status, 400); assert.match(again.body.error, /ya está registrado/);
     const after = await row(mail); assert.deepEqual({ v: after.termsVersion, a: new Date(after.acceptedAt).getTime() }, { v: '2026-11-v1', a: new Date(first.acceptedAt).getTime() }, 'la aceptación original no cambia');
     await q('UPDATE "Users" SET active=false WHERE email=$1', [mail]);
-    assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-12-v2' }, mail)).status, 403);
+    assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-12-v2' }, mail)).status, 400); // ES-221: antes 403 «inactiva»; ahora igual que «ya registrado»
   });
 
   await t.test('carreras ×16: el mismo correo con aceptación válida deja UNA cuenta y ningún 5xx inesperado', async () => {

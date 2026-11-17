@@ -9,6 +9,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const bcrypt = require('bcryptjs');
 process.env.LOGIN_RATE_LIMIT_MAX = '100000'; process.env.PASSWORD_RESET_IP_LIMIT = '100000';
+process.env.REGISTER_RATE_LIMIT_MAX = '100000'; // ES-221: ráfagas de registros desde una sola IP (el límite real es 30 por hora y no se respeta en producción)
 const { startRealApi } = require('../support/realApi.cjs');
 
 test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, login, recuperación e invitaciones; migración que reporta y crea el índice solo sin duplicados', { timeout: 900000 }, async (t) => {
