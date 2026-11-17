@@ -3,7 +3,7 @@
 //   GET    /api/me/pilot-feedback?window=day7|day30                       — mi respuesta vigente (o vacía), su versión y si el permiso está vigente
 //   PUT    /api/me/pilot-feedback  { requestId, baseVersion, questionnaireVersion, window, answers } — crea o reemplaza (403 sin permiso, 409 por versión)
 //   DELETE /api/me/pilot-feedback?window=…[&baseVersion=n]                — retira: BORRA lo respondido
-//   GET    /api/admin/pilot-metrics                                       — agregados (≥ 5 personas); NUNCA respuestas individuales
+//   GET    /api/admin/pilot-metrics                                       — agregados (≥ 5 personas) en bandas de 5, sin «missing» (ES-325); NUNCA respuestas individuales
 // El titular siempre es req.user.id (nunca un id del cuerpo ni de la ruta). verificarToken / verificarAdmin se aplican en server.js.
 const express = require('express');
 const feedback = require('../utils/pilotFeedback');

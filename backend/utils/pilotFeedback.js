@@ -126,6 +126,14 @@ async function withdraw(userId, windowValue, baseVersion) {
 //   listening (día 7):  respondieron `listened` y `respected`; positivas = ambas «yes».
 //   utility (día 30):   respondieron `professionalClarity` distinta de «not_explored»; positivas = «yes».
 // activation y experiment no salen de esta opinión: `not_available`.
+// ES-325 (E273-1): con umbral 5, un conteo EXACTO permite reidentificar por diferencias (antes/después de que una persona responda, retire o revoque). Mitigación:
+//   (1) NO se publica `missing` (ni nada de lo que permita restar `eligible - responded`);
+//   (2) los conteos salen en BANDAS de 5 ({ min, max }; 7 → 5–9), no exactos;
+//   (3) si `positive` es 0 o es TODAS las respondidas, la métrica se suprime (respuestas iguales revelan a cada persona);
+//   (4) retrasar la publicación queda como decisión pendiente (exige instantánea guardada y choca con «quien revoca sale del agregado al instante»).
+// Límite conocido: quien cruza justo el borde de una banda sí mueve la banda; la banda no oculta ese caso, solo lo hace raro y costoso.
+const BAND = 5;
+const band = (n) => ({ min: Math.floor(n / BAND) * BAND, max: Math.floor(n / BAND) * BAND + BAND - 1 });
 const METRICS = Object.freeze({
   listening: { window: 'day7', alias: 'f7', responded: (f) => `${f}."answers"->>'listened' IS NOT NULL AND ${f}."answers"->>'respected' IS NOT NULL`, positive: (f) => `${f}."answers"->>'listened' = 'yes' AND ${f}."answers"->>'respected' = 'yes'` },
   utility: { window: 'day30', alias: 'f30', responded: (f) => `${f}."answers"->>'professionalClarity' IN ('yes','no','unsure')`, positive: (f) => `${f}."answers"->>'professionalClarity' = 'yes'` },
@@ -145,8 +153,8 @@ async function aggregateMetrics() {
   const metrics = [{ key: 'activation', status: 'not_available' }, { key: 'experiment', status: 'not_available' }];
   for (const [key, def] of Object.entries(METRICS)) {
     const responded = Number(row[`${key}_responded`]); const positive = Number(row[`${key}_positive`]);
-    metrics.push(eligible >= MIN_PEOPLE && responded >= MIN_PEOPLE
-      ? { key, status: 'ready', window: def.window, counts: { eligible, responded, missing: eligible - responded, positive } }
+    metrics.push(eligible >= MIN_PEOPLE && responded >= MIN_PEOPLE && positive > 0 && positive < responded
+      ? { key, status: 'ready', window: def.window, counts: { eligible: band(eligible), responded: band(responded), positive: band(positive) } }
       : { key, status: 'suppressed', window: def.window });
   }
   return { minPeople: MIN_PEOPLE, metrics: metrics.sort((a, b) => ['activation', 'experiment', 'listening', 'utility'].indexOf(a.key) - ['activation', 'experiment', 'listening', 'utility'].indexOf(b.key)) };
