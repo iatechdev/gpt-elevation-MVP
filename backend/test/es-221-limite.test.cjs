@@ -17,6 +17,6 @@ test('ES-221: /register usa el límite por IP y calcula el hash antes de consult
   const src = require('node:fs').readFileSync(require.resolve('../routes/auth.js'), 'utf8');
   const register = src.slice(src.indexOf("router.post('/register'"), src.indexOf("router.post('/login'"));
   assert.match(register, /registerLimiter, validateBody/);
-  assert.ok(register.indexOf('terms.validate') < register.indexOf('bcrypt.hash') && register.indexOf('bcrypt.hash') < register.indexOf('findUserByEmail'), 'aceptación → hash → consulta del correo');
+  assert.ok(register.indexOf('terms.validate') < register.indexOf('bcrypt.hash') && register.indexOf('bcrypt.hash') < register.indexOf('findUserByEmail'), 'aceptación → hash (en el semáforo) → consulta del correo');
   assert.doesNotMatch(register, /403|Cuenta inactiva/);
 });
