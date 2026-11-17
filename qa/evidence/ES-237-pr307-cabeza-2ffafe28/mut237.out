@@ -1,0 +1,49 @@
+== base
+  prueba del PR: # pass 4 # fail 0 
+?? dist8190/
+?? dist_mut/
+== m1 sin cabecera Authorization
+M aplicada
+  prueba del PR: # pass 3 # fail 1 
+  mi guion (c4):
+RESUMEN {"total":21,"fallas":6}
+FALLA C4 200 con cuerpo vacío: el cliente NO devuelve datos falsos tipados null
+FALLA C4 200 con no JSON: el cliente NO devuelve datos falsos tipados null
+== m2 userId en el cuerpo
+M aplicada
+  prueba del PR: # pass 3 # fail 1 
+  mi guion (c3):
+RESUMEN {"total":1,"fallas":1}
+FALLA C3: EXCEPCIÓN Error: invalid_input
+== m3 vocabulario «postpone»
+M aplicada
+  prueba del PR: # pass 3 # fail 1 
+  mi guion (c4):
+RESUMEN {"total":21,"fallas":3}
+FALLA C4 200 con cuerpo vacío: el cliente NO devuelve datos falsos tipados null
+FALLA C4 200 con no JSON: el cliente NO devuelve datos falsos tipados null
+== m4 isUncertain invertido
+M aplicada
+  prueba del PR: # pass 4 # fail 0 
+  mi guion (c4):
+RESUMEN {"total":21,"fallas":4}
+FALLA C4 200 con cuerpo vacío: el cliente NO devuelve datos falsos tipados null
+FALLA C4 200 con no JSON: el cliente NO devuelve datos falsos tipados null
+== m5 sin cache no-store
+M aplicada
+  prueba del PR: # pass 3 # fail 1 
+  mi guion (c4):
+RESUMEN {"total":21,"fallas":3}
+FALLA C4 200 con cuerpo vacío: el cliente NO devuelve datos falsos tipados null
+FALLA C4 200 con no JSON: el cliente NO devuelve datos falsos tipados null
+== m6 sin rechazo por falta de token
+M aplicada
+  prueba del PR: # pass 3 # fail 1 
+  mi guion (c4):
+RESUMEN {"total":21,"fallas":4}
+FALLA C4 200 con cuerpo vacío: el cliente NO devuelve datos falsos tipados null
+FALLA C4 200 con no JSON: el cliente NO devuelve datos falsos tipados null
+?? dist8190/
+?? dist_mut/
+?? dist_old/
+fin
