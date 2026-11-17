@@ -138,7 +138,7 @@ function ManagerSession({ session }: { session: string }) {
       }
     } catch (e) {
       if (!current()) return
-      if (action === 'save' && e instanceof SkillCatalogError && e.code === 'skill_changed') { setConflict(e.current); say('conflict_changed', true); return }
+      if (action === 'save' && e instanceof SkillCatalogError && e.code === 'skill_changed') { setConflict(e.current); return }
       if (action === 'publish' && e instanceof SkillCatalogError && e.code === 'skill_in_use') { setInUse(e.inUse); setShowPublish(true); try { await refresh() } catch { /* el aviso queda con los datos del error */ } return }
       setInUse(null)
       if (action === 'publish' && e instanceof SkillCatalogError && e.code === 'incomplete_catalog') { try { await refresh() } catch { /* se muestra el aviso genérico */ } }
