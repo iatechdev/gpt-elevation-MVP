@@ -89,7 +89,7 @@
 .cg-error { color: var(--cg-err); font-size: 0.9rem; margin: 0; }
 .cg-error::before { content: '\26A0\00a0'; }   /* símbolo: el error no depende solo del color */
 .cg-check { display: flex; gap: 0.7rem; align-items: flex-start; margin-top: 1rem; min-height: var(--cg-touch); cursor: pointer; }
-.cg-check input { width: 1.4rem; height: 1.4rem; margin: 0.15rem 0 0; accent-color: var(--cg-ink); flex: none; cursor: pointer; }
+.cg-check input { width: 1.5rem; height: 1.5rem; min-width: 24px; min-height: 24px; margin: 0.15rem 0 0; accent-color: var(--cg-ink); flex: none; cursor: pointer; }
 .cg-scale { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0 0; }
 .cg-scale label {
   position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: var(--cg-touch); min-height: var(--cg-touch);

@@ -72,13 +72,13 @@ export function CheckField({ label, className, ...rest }: { label: ReactNode; cl
 export type ScaleOption = { value: string; label: string }
 
 /** Escala de opciones (p. ej. niveles 1–5) como grupo de radios: se usa con flechas, el valor elegido se ve por relleno y por foco. */
-export function ScaleField({ legend, name, options, value, onChange, hint, error, disabled, className }: {
-  legend: string; name: string; options: ScaleOption[]; value?: string; onChange?: (value: string) => void
+export function ScaleField({ legend, name, options, value, onChange, hint, error, disabled, className, id: given, tabIndex }: {
+  id?: string; tabIndex?: number; legend: string; name: string; options: ScaleOption[]; value?: string; onChange?: (value: string) => void
   hint?: string; error?: string; disabled?: boolean; className?: string
 }) {
-  const id = useId()
+  const auto = useId(); const id = given ?? auto
   return (
-    <fieldset className={cx('cg-field', className)} aria-describedby={describedBy(id, hint, error)} disabled={disabled}>
+    <fieldset id={given} tabIndex={tabIndex} className={cx('cg-field', className)} aria-describedby={describedBy(id, hint, error)} disabled={disabled}>
       <legend className="cg-label">{legend}</legend>
       <div className="cg-scale">
         {options.map(option => (

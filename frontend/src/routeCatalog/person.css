@@ -1,8 +1,8 @@
 /* ES-172 (HU-P21): catálogo de rutas, vista de la persona. Solo tokens --cg-*; sin colores propios. */
 @import '../shell/shell.css';
 
-.cgp { min-height: 100dvh; padding: 0 var(--cg-s4); }
-.cgp-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 1240px; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
+.cgp { min-width: 0; } /* ES-329: el marco y la altura de pantalla los pone PersonLayout/PersonScreen */
+.cgp-main { display: grid; gap: var(--cg-s4); align-content: start; }
 .cgp-main:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
 .cgp-lead { max-width: 46rem; margin: 0; }
 .cgp-meta { margin: 0; }

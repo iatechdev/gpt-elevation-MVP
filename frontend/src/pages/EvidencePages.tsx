@@ -7,7 +7,8 @@ import { OriginBlock } from '../evidence/ResumeOrigin'
 import { formatDate, resumeSkillsApi, selectable } from '../evidence/resumeSkills'
 import { blankDraft, draftFromPayload, draftPayload, type Draft, type Payload, type Evidence, type Detail } from '../evidence/model'
 import { EvidenceShell } from '../evidence/Shell'
-import { modalKeyDown } from '../a11y/modalKeys.ts'
+import { Banner, Button, Card, CheckField, Chip, Dialog, ScaleField } from '../cartografia'
+import { Notice } from '../space/PersonScreen'
 import { EvidenceContent } from '../evidence/EvidenceContent'
 import { EvidenceFormFields } from '../evidence/FormFields'
 import { registerEvidenceGuard } from '../evidence/navigationGuard'
@@ -19,16 +20,17 @@ function ReadError({ status, retry }: { status: number; retry?: () => void }) {
   const { t } = useLanguage()
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => { ref.current?.focus() }, [status])
-  return <div role="alert" tabIndex={-1} ref={ref} className="evidence-error-box">
-    <p>{t(`evidence.${status === 401 ? 'expired' : status === 403 ? 'forbidden' : status === 404 ? 'not_found' : 'load_error'}`)}</p>
-    {status === 401 ? <Link className="elv-link" to="/login">{t('evidence.signin')}</Link> : retry && <button className="elv-btn" onClick={retry}>{t('evidence.retry')}</button>}
+  return <div tabIndex={-1} ref={ref} className="pg-focus">
+    <Banner kind="error" title={t(`evidence.${status === 401 ? 'expired' : status === 403 ? 'forbidden' : status === 404 ? 'not_found' : 'load_error'}`)}>
+      <div className="pg-actions">{status === 401 ? <Link className="cg-btn" to="/login">{t('evidence.signin')}</Link> : retry && <Button variant="ghost" onClick={retry}>{t('evidence.retry')}</Button>}</div>
+    </Banner>
   </div>
 }
 function Metadata({ row }: { row: Evidence }) {
   const { t, lang } = useLanguage()
-  return <div className="evidence-metadata"><span className="elv-badge elv-badge-outline">{t(`evidence.${row.status}`)}</span>
-    <p>{t('evidence.version')}: {row.version}</p><time dateTime={row.createdAt}>{formatDate(row.createdAt, lang)}</time>
-    <p>{t('evidence.authoring')}: {t(`evidence.${row.authoring}`)}</p>
+  return <div className="pg-meta-list"><div className="pg-chips">{row.status === 'confirmed' ? <Chip tone="ok" symbol="✓">{t(`evidence.${row.status}`)}</Chip> : <Chip symbol="○">{t(`evidence.${row.status}`)}</Chip>}</div>
+    <p className="cg-hint">{t('evidence.version')}: {row.version} · <time dateTime={row.createdAt}>{formatDate(row.createdAt, lang)}</time></p>
+    <p className="cg-hint">{t('evidence.authoring')}: {t(`evidence.${row.authoring}`)}</p>
   </div>
 }
 export function EvidenceListPage() {
@@ -42,9 +44,8 @@ export function EvidenceListPage() {
   const [notice, setNotice] = useState('')
   const [deleteError, setDeleteError] = useState(false)
   const [filter, setFilter] = useState<'all' | 'draft' | 'confirmed'>('all')
-  const [focusAll, setFocusAll] = useState(false); const allRadio = useRef<HTMLInputElement>(null)
+  const [focusAll, setFocusAll] = useState(false); const filterBox = useRef<HTMLDivElement>(null)
   const added = Number((location.state as { added?: unknown } | null)?.added) || 0
-  const opener = useRef<HTMLElement | null>(null); const dialog = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const controller = new AbortController()
     void api.list(controller.signal).then(rows => { if (!controller.signal.aborted && token === readEvidenceToken()) setState({ rows, token }) })
@@ -56,48 +57,51 @@ export function EvidenceListPage() {
     void resumeSkillsApi(backend, token).list(controller.signal).then(list => { if (!controller.signal.aborted) setToReview(list.filter(selectable).length) }).catch(() => { if (!controller.signal.aborted) setToReview(0) })
     return () => controller.abort()
   }, [token, attempt])
-  useEffect(() => { if (confirmId !== null) dialog.current?.focus() }, [confirmId])
-  useEffect(() => { if (focusAll) { allRadio.current?.focus(); setFocusAll(false) } }, [focusAll, filter]) // ES-235: «Ver todas» desaparece al usarse; el foco pasa al radio «Todas»
+  useEffect(() => { if (focusAll) { filterBox.current?.querySelector<HTMLInputElement>('input[value="all"]')?.focus(); setFocusAll(false) } }, [focusAll, filter]) // ES-235: «Ver todas» desaparece al usarse; el foco pasa al radio «Todas»
   const retry = () => { setState({}); setAttempt(v => v + 1) }
   const same = state.token === token && token === readEvidenceToken()
-  const ask = (id: number, event: MouseEvent<HTMLElement>) => { opener.current = event.currentTarget; setConfirmId(id); setDeleteError(false); setNotice('') }
-  const cancel = () => { if (busy) return; setConfirmId(null); window.setTimeout(() => opener.current?.focus(), 0) }
+  const ask = (id: number) => { setConfirmId(id); setDeleteError(false); setNotice('') }
+  const cancel = () => { if (busy) return; setConfirmId(null) } // ES-308: el <Dialog> de Cartografía devuelve el foco a quien abrió la confirmación (y atrapa Tab, cierra con Esc)
   async function remove(id: number) {
     setBusy(true); setDeleteError(false)
     try { await api.remove(id); setConfirmId(null); setNotice(t('evidence.deleted_live')); setAttempt(v => v + 1) } catch { setDeleteError(true) } finally { setBusy(false) }
   }
   const shown = state.rows ? state.rows.filter(row => filter === 'all' || row.status === filter) : []
-  return <EvidenceShell title={t('evidence.title')}>
-    <p>{t('evidence.intro')}</p><Link className="elv-btn" to="/app/evidence/new">{t('evidence.new')}</Link>
-    {added > 0 && <div className="evidence-ok" role="status"><strong>{t('evidence.rs_added_ok').replace('{n}', String(added))}</strong><p>{t('evidence.rs_added_help')}</p></div>}
-    {notice && <p className="evidence-ok" role="status">{notice}</p>}
-    {toReview > 0 && <section className="evidence-banner" aria-labelledby="rs-banner"><div><h2 id="rs-banner">{t('evidence.rs_banner_title')}</h2><p>{t('evidence.rs_banner_body')}</p></div>
-      <Link className="elv-btn elv-btn-primary" to="/app/evidence/resume-skills">{t('evidence.rs_banner_cta')}</Link></section>}
+  const asking = state.rows?.find(row => row.id === confirmId)
+  return <EvidenceShell title={t('evidence.title')} lead={t('evidence.intro')}>
+    <div className="pg-actions"><Link className="cg-btn" to="/app/evidence/new">{t('evidence.new')}</Link></div>
+    {added > 0 && <Notice text={t('evidence.rs_added_ok').replace('{n}', String(added))}><small className="cg-hint pg-block">{t('evidence.rs_added_help')}</small></Notice>}
+    <Notice text={notice} />
+    {toReview > 0 && <Banner title={t('evidence.rs_banner_title')}><p>{t('evidence.rs_banner_body')}</p>
+      <div className="pg-actions"><Link className="cg-btn" to="/app/evidence/resume-skills">{t('evidence.rs_banner_cta')}</Link></div></Banner>}
     {!token || token !== readEvidenceToken() ? <ReadError status={401} /> : same && state.error ? <ReadError status={state.error} retry={retry} />
       : same && state.rows ? state.rows.length ? <>
-      <fieldset className="evidence-filter"><legend>{t('evidence.filter_status')}</legend>
-        {(['all', 'draft', 'confirmed'] as const).map(value => <label key={value}><input ref={value === 'all' ? allRadio : undefined} type="radio" name="evidence-status" checked={filter === value} onChange={() => setFilter(value)} /> {t(value === 'all' ? 'evidence.filter_all' : 'evidence.' + value)}</label>)}
-      </fieldset>
-      <p role="status" aria-live="polite" className="evidence-count">{shown.length === 1 ? t('evidence.filter_count_one') : t('evidence.filter_count').replace('{n}', String(shown.length))}</p>
-      {shown.length ? <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {shown.map(row => <article className={'elv-card evidence-card' + (row.origin?.needsReview ? ' evidence-card-review' : '')} key={row.id}><div className="elv-card-body">
-          <h2 className="elv-card-title">{row.payload.title}</h2><Metadata row={row} /><OriginBlock row={row} />
+      <div ref={filterBox}><ScaleField legend={t('evidence.filter_status')} name="evidence-status" value={filter} onChange={value => setFilter(value as typeof filter)}
+        options={(['all', 'draft', 'confirmed'] as const).map(value => ({ value, label: t(value === 'all' ? 'evidence.filter_all' : 'evidence.' + value) }))} /></div>
+      <p role="status" aria-live="polite" className="pg-count">{shown.length === 1 ? t('evidence.filter_count_one') : t('evidence.filter_count').replace('{n}', String(shown.length))}</p>
+      {shown.length ? <div className="pg-grid">
+        {shown.map(row => <Card as="article" className={'pg-card' + (row.origin?.needsReview ? ' pg-card-review' : '')} key={row.id}>
+          <h2>{row.payload.title}</h2><Metadata row={row} /><OriginBlock row={row} />
           <p><strong>{t('evidence.goal')}: </strong>{row.payload.goal || t('evidence.not_indicated')}</p>
           <p><strong>{t('evidence.delivered')}: </strong>{row.payload.delivered?.text || t('evidence.not_indicated')}</p>
           <p><strong>{t('evidence.observedEffect')}: </strong>{row.payload.observedEffect ? row.payload.observedEffect.known ? row.payload.observedEffect.claim.text : t('evidence.unknown') : t('evidence.not_indicated')}</p>
-          {row.origin && row.payload.artifactRefs?.[0]?.kind === 'text' && <blockquote className="evidence-quote">{row.payload.artifactRefs[0].excerpt}</blockquote>}
-          <div className="evidence-actions">
-            <Link className="elv-link" to={'/app/evidence/' + row.id}>{t('evidence.detail')}</Link>
-            {!row.fromChat && <Link className="elv-btn" aria-label={t('evidence.action_edit') + ': ' + row.payload.title} to={'/app/evidence/' + row.id + '/edit'}>{t('evidence.action_edit')}</Link>}
-            <button type="button" className="elv-btn elv-btn-ghost evidence-danger" disabled={busy} aria-label={t('evidence.action_delete') + ': ' + row.payload.title} onClick={event => ask(row.id, event)}>{t('evidence.action_delete')}</button>
+          {row.origin && row.payload.artifactRefs?.[0]?.kind === 'text' && <blockquote className="pg-quote">{row.payload.artifactRefs[0].excerpt}</blockquote>}
+          <div className="pg-actions">
+            <Link className="cg-linkbtn" to={'/app/evidence/' + row.id}>{t('evidence.detail')}</Link>
+            {!row.fromChat && <Link className="cg-btn" aria-label={t('evidence.action_edit') + ': ' + row.payload.title} to={'/app/evidence/' + row.id + '/edit'}>{t('evidence.action_edit')}</Link>}
+            <Button variant="ghost" disabled={busy} aria-label={t('evidence.action_delete') + ': ' + row.payload.title} onClick={() => ask(row.id)}>{t('evidence.action_delete')}</Button>
           </div>
-          {confirmId === row.id && <div ref={dialog} tabIndex={-1} role="alertdialog" onKeyDown={event => modalKeyDown(event, dialog.current, cancel)} aria-labelledby={'del-title-' + row.id} aria-describedby={'del-body-' + row.id} className="evidence-confirm">
-            <h3 id={'del-title-' + row.id}>{t('evidence.delete_title')}</h3><p id={'del-body-' + row.id}>{t('evidence.delete_body')}</p>
-            {deleteError && <p role="alert" className="evidence-error">{t('evidence.delete_error')}</p>}
-            <div className="evidence-actions"><button type="button" className="elv-btn evidence-danger" disabled={busy} onClick={() => void remove(row.id)}>{t('evidence.delete_yes')}</button>
-              <button type="button" className="elv-btn" disabled={busy} onClick={cancel}>{t('evidence.delete_cancel')}</button></div></div>}
-        </div></article>)}
-      </div> : <p>{t('evidence.filter_none')} <button type="button" className="elv-link" onClick={() => { setFilter('all'); setFocusAll(true) }}>{t('evidence.filter_show_all')}</button></p>}</> : <p role="status">{t('evidence.empty')}</p> : <p role="status">{t('evidence.loading')}</p>}
+        </Card>)}
+      </div> : <p>{t('evidence.filter_none')} <button type="button" className="cg-linkbtn" onClick={() => { setFilter('all'); setFocusAll(true) }}>{t('evidence.filter_show_all')}</button></p>}</> : <p role="status">{t('evidence.empty')}</p> : <p className="cg-hint" role="status">{t('evidence.loading')}</p>}
+    {/* Fuera de la lista: el diálogo sigue montado mientras se recarga tras borrar. */}
+    <Dialog open={confirmId !== null} onClose={cancel} title={t('evidence.delete_title')}
+      actions={<>
+        <Button variant="ghost" disabled={busy} onClick={cancel}>{t('evidence.delete_cancel')}</Button>
+        <Button variant="danger" disabled={busy} onClick={() => { if (confirmId !== null) void remove(confirmId) }}>{t('evidence.delete_yes')}</Button>
+      </>}>
+      <div className="pg-dialog">{asking && <p><strong>{asking.payload.title}</strong></p>}<p>{t('evidence.delete_body')}</p>
+        {deleteError && <p role="alert" className="cg-error">{t('evidence.delete_error')}</p>}</div>
+    </Dialog>
   </EvidenceShell>
 }
 export function EvidenceDetailPage() {
@@ -117,17 +121,17 @@ export function EvidenceDetailPage() {
   return <EvidenceShell title={t('evidence.detail')}>
     {!token || token !== readEvidenceToken() ? <ReadError status={401} /> : same && state.error ? <ReadError status={state.error} retry={() => { setState({}); setAttempt(v => v + 1) }} />
       : data ? <>
-        {data.versions[0].fromChat ? <p className="evidence-warning">{t('evidence.edit_chat_only')}</p>
-          : <div className="evidence-actions"><Link className="elv-btn" to={'/app/evidence/' + data.id + '/edit'}>{t('evidence.action_edit')}</Link></div>}
-        <article className="elv-card evidence-card"><div className="elv-card-body"><h2>{t('evidence.current')}</h2>
+        {data.versions[0].fromChat ? <Banner title={t('evidence.edit_chat_only')} />
+          : <div className="pg-actions"><Link className="cg-btn" to={'/app/evidence/' + data.id + '/edit'}>{t('evidence.action_edit')}</Link></div>}
+        <Card as="article" className="pg-card"><h2>{t('evidence.current')}</h2>
           <Metadata row={data.versions[0]} /><OriginBlock row={data.versions[0]} /><EvidenceContent payload={data.versions[0].payload} />
-        </div></article>
-        {data.versions.length > 1 && <details><summary>{t('evidence.history')}</summary>
-          {data.versions.slice(1).map(row => <section className="evidence-history" key={row.version}><h2>{t('evidence.previous')}: {row.version}</h2>
+        </Card>
+        {data.versions.length > 1 && <details className="pg-details"><summary>{t('evidence.history')}</summary>
+          {data.versions.slice(1).map(row => <section className="pg-history" key={row.version}><h2>{t('evidence.previous')}: {row.version}</h2>
             <p>{t(`evidence.${row.status}`)} · <time dateTime={row.createdAt}>{formatDate(row.createdAt, lang)}</time></p><EvidenceContent payload={row.payload} />
           </section>)}
         </details>}
-      </> : <p role="status">{t('evidence.loading')}</p>}
+      </> : <p className="cg-hint" role="status">{t('evidence.loading')}</p>}
   </EvidenceShell>
 }
 type Pending = { body: CreateBody | UpdateBody; ack?: { id: number; version: number } }
@@ -191,34 +195,34 @@ function EvidenceEditor({ token, edit }: { token: string; edit?: EditTarget }) {
   const bodyFor = (payload: Payload, status: 'draft' | 'confirmed'): CreateBody | UpdateBody => edit ? { payload, status, requestId: crypto.randomUUID(), baseVersion: edit.baseVersion } : { payload, status, requestId: crypto.randomUUID() }
   const saveDraft = () => { const payload = prepare('draft'); if (payload) void write({ body: bodyFor(payload, 'draft') }) }
   const review = () => { const payload = prepare('confirmed'); if (payload) { setPreview(payload); setReviewed(false); setMessage(''); setPhase('review') } }
-  return <EvidenceShell title={l(edit ? 'edit_title' : 'new')} onLeave={onLeave}>
-    {!token || token !== readEvidenceToken() || authError ? <ReadError status={authError || 401} /> : <div className="evidence-editor">
-      <p>{l('privacy')}</p>{edit && <p className="evidence-help">{l('edit_new_version')}</p>}
-      {message && <div role="alert" className="evidence-error-box" ref={ref} tabIndex={-1}><p>{l(message)}</p>
-        {errors.length > 0 && <ul>{errors.map(key => <li key={key}>{key === 'draft_minimum' ? l(key) : <a href={`#${key}`} className="elv-link">{l(key === 'title' ? 'field_title' : key)}</a>}</li>)}</ul>}
-      </div>}
+  return <EvidenceShell title={l(edit ? 'edit_title' : 'new')} lead={l('privacy')} onLeave={onLeave}>
+    {!token || token !== readEvidenceToken() || authError ? <ReadError status={authError || 401} /> : <div className="pg-editor">
+      {edit && <p className="cg-hint">{l('edit_new_version')}</p>}
+      {message && <div ref={ref} tabIndex={-1} className="pg-focus"><Banner kind="error" title={l(message)}>
+        {errors.length > 0 && <ul>{errors.map(key => <li key={key}>{key === 'draft_minimum' ? l(key) : <a href={`#${key}`} className="cg-linkbtn">{l(key === 'title' ? 'field_title' : key)}</a>}</li>)}</ul>}
+      </Banner></div>}
       {phase === 'editing' && <form noValidate onSubmit={event => { event.preventDefault(); review() }}>
-        <fieldset className="elv-fieldset evidence-form"><EvidenceFormFields draft={draft} change={change} errors={errors} />
-          <p role="status">{dirty ? l('unsaved') : l('privacy')}</p><div className="evidence-actions">
-            <button type="button" className="elv-btn" onClick={saveDraft}>{l('save')}</button><button type="submit" className="elv-btn elv-btn-primary">{l('review')}</button>
+        <Card className="pg-card pg-form"><EvidenceFormFields draft={draft} change={change} errors={errors} />
+          <p role="status" className="cg-hint">{dirty ? l('unsaved') : l('privacy')}</p><div className="pg-actions">
+            <Button variant="ghost" onClick={saveDraft}>{l('save')}</Button><Button type="submit">{l('review')}</Button>
           </div>
-        </fieldset>
+        </Card>
       </form>}
-      {phase === 'review' && preview && <>
-        <h2 ref={heading} tabIndex={-1}>{l('review')}</h2><p>{l('review_effect')}</p><p className="evidence-warning">{l('warning')}</p><EvidenceContent payload={preview} />
-        <label className="evidence-choice"><input type="checkbox" className="elv-checkbox" checked={reviewed} onChange={event => setReviewed(event.target.checked)} />{l('reviewed')}</label>
-        <div className="evidence-actions"><button className="elv-btn" onClick={() => setPhase('editing')}>{l('edit')}</button>
-          <button className="elv-btn elv-btn-primary" disabled={!reviewed} onClick={() => { if (reviewed) void write({ body: bodyFor(preview, 'confirmed') }) }}>{l('confirm')}</button>
+      {phase === 'review' && preview && <Card className="pg-card">
+        <h2 ref={heading} tabIndex={-1}>{l('review')}</h2><p>{l('review_effect')}</p><Banner title={l('warning')} /><EvidenceContent payload={preview} />
+        <CheckField label={l('reviewed')} checked={reviewed} onChange={event => setReviewed(event.target.checked)} />
+        <div className="pg-actions"><Button variant="ghost" onClick={() => setPhase('editing')}>{l('edit')}</Button>
+          <Button disabled={!reviewed} onClick={() => { if (reviewed) void write({ body: bodyFor(preview, 'confirmed') }) }}>{l('confirm')}</Button>
         </div>
-      </>}
-      {(phase === 'saving' || phase === 'uncertain') && pending && <>
+      </Card>}
+      {(phase === 'saving' || phase === 'uncertain') && pending && <Card className="pg-card">
         {phase === 'saving' && <p role="status">{l('saving')}</p>}<EvidenceContent payload={pending.body.payload} />
-        {phase === 'uncertain' && <button type="button" className="elv-btn" onClick={() => void write(pending)}>{l('retry')}</button>}
-      </>}
-      {phase === 'saved' && saved && <>
+        {phase === 'uncertain' && <div className="pg-actions"><Button onClick={() => void write(pending)}>{l('retry')}</Button></div>}
+      </Card>}
+      {phase === 'saved' && saved && <Card className="pg-card">
         <div role="status"><h2 ref={heading} tabIndex={-1}>{l(saved.current && saved.row.status === 'confirmed' ? 'confirmed_saved' : saved.current && saved.row.status === 'draft' ? 'draft_saved' : 'saved_version')}</h2></div>
-        <Metadata row={saved.row} /><EvidenceContent payload={saved.row.payload} /><Link className="elv-link" to={`/app/evidence/${saved.row.id}`}>{l('detail')}</Link>
-      </>}
+        <Metadata row={saved.row} /><EvidenceContent payload={saved.row.payload} /><p><Link className="cg-linkbtn" to={`/app/evidence/${saved.row.id}`}>{l('detail')}</Link></p>
+      </Card>}
     </div>}
   </EvidenceShell>
 }
@@ -241,7 +245,7 @@ export function EvidenceEditPage() {
   const target = useMemo(() => (detail && current ? { id: detail.id, baseVersion: detail.currentVersion, draft: draftFromPayload(current.payload) } : undefined), [detail, current])
   if (!token || token !== readEvidenceToken()) return <EvidenceShell title={t('evidence.edit_title')}><ReadError status={401} /></EvidenceShell>
   if (state.id === id && state.error) return <EvidenceShell title={t('evidence.edit_title')}><ReadError status={state.error} retry={() => { setState({}); setAttempt(v => v + 1) }} /></EvidenceShell>
-  if (!target || !current) return <EvidenceShell title={t('evidence.edit_title')}><p role="status">{t('evidence.loading')}</p></EvidenceShell>
-  if (current.fromChat) return <EvidenceShell title={t('evidence.edit_title')}><p className="evidence-warning">{t('evidence.edit_chat_only')}</p><Link className="elv-link" to={'/app/evidence/' + id}>{t('evidence.detail')}</Link></EvidenceShell>
+  if (!target || !current) return <EvidenceShell title={t('evidence.edit_title')}><p className="cg-hint" role="status">{t('evidence.loading')}</p></EvidenceShell>
+  if (current.fromChat) return <EvidenceShell title={t('evidence.edit_title')}><Banner title={t('evidence.edit_chat_only')} /><p><Link className="cg-linkbtn" to={'/app/evidence/' + id}>{t('evidence.detail')}</Link></p></EvidenceShell>
   return <EvidenceEditor key={id + '-' + target.baseVersion} token={token} edit={target} />
 }
