@@ -8,4 +8,13 @@ function loginRateMax(env = process.env) {
   return Number.isInteger(value) && value > 0 ? value : DEFAULT_MAX;
 }
 
-module.exports = { DEFAULT_MAX, loginRateMax };
+// ES-221: límite por IP y HORA del registro. Mismo criterio: REGISTER_RATE_LIMIT_MAX solo existe para las pruebas y nunca se respeta en producción ni en staging.
+const REGISTER_DEFAULT_MAX = 30;
+
+function registerRateMax(env = process.env) {
+  if (env.NODE_ENV === 'production' || env.RAILWAY_ENVIRONMENT_ID) return REGISTER_DEFAULT_MAX;
+  const value = Number(env.REGISTER_RATE_LIMIT_MAX);
+  return Number.isInteger(value) && value > 0 ? value : REGISTER_DEFAULT_MAX;
+}
+
+module.exports = { DEFAULT_MAX, loginRateMax, REGISTER_DEFAULT_MAX, registerRateMax };
