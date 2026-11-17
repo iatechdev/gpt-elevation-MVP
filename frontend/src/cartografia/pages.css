@@ -35,3 +35,36 @@
 .pg-sticky p { margin: 0; }
 @media (max-width: 639px) { .pg-sticky .cg-btn { width: 100%; } }
 .pg-card ul.cg-items { padding-left: 0; }
+/* ES-308 (PR 2): Evidencias (lista, detalle, editor). Solo tokens --cg-*; reemplaza a evidence.css. */
+.pg-nav { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin: 0 0 0.4rem; }
+.pg-focus:focus { outline: none; }
+.pg-focus:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.pg-count { margin: 0; color: var(--cg-muted); }
+.pg-block { display: block; margin-top: 0.2rem; }
+.pg-meta-list { display: grid; gap: 0.2rem; }
+.pg-meta-list p { margin: 0; }
+.pg-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.pg-origin { display: grid; gap: 0.5rem; margin: 0.4rem 0; }
+.pg-origin .cg-banner { margin: 0; }
+.pg-origin .cg-banner p { margin: 0.3rem 0; }
+.pg-card-review { border-color: var(--cg-mark); }
+.pg-quote { margin: 0.4rem 0; padding: 0.5rem 0.8rem; border-left: 3px solid var(--cg-ink); background: var(--cg-ground); color: var(--cg-muted); overflow-wrap: anywhere; }
+.pg-card { min-width: 0; overflow-wrap: anywhere; }
+.pg-editor { max-width: 46rem; display: grid; gap: 1rem; min-width: 0; }
+.pg-form .cg-field { margin-top: 1.1rem; }
+.pg-form .cg-field > legend { margin-bottom: 0.3rem; }
+.pg-array { display: grid; gap: 0.2rem; border: 1px solid var(--cg-line); padding: 0.8rem; margin-top: 0.6rem; min-width: 0; }
+.pg-array .cg-field { margin-top: 0.4rem; }
+.pg-array .pg-actions { margin-top: 0.4rem; }
+.pg-content { display: grid; gap: 0.9rem; margin: 0.8rem 0; overflow-wrap: anywhere; min-width: 0; }
+.pg-content p, .pg-content li { white-space: pre-wrap; margin: 0.2rem 0; }
+.pg-content ul { padding-left: 1.2rem; margin: 0.2rem 0; }
+.pg-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr)); gap: 0.8rem; }
+.pg-grid3 > div { border: 1px solid var(--cg-line); padding: 0.8rem; min-width: 0; }
+.pg-details summary { cursor: pointer; min-height: var(--cg-touch); display: flex; align-items: center; font-weight: 600; }
+.pg-history { border: 1px solid var(--cg-line); padding: 0.8rem; margin-block: 0.8rem; }
+.pg-history h2 { font: 700 1.15rem / 1.1 var(--cg-font-cond); text-transform: uppercase; margin: 0 0 0.4rem; }
+.pg-banner-list { margin: 0; }
+.cg-banner ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+/* Enlace de texto (<a class="cg-linkbtn">): el subrayado va pegado al texto, no al fondo de una caja de 46 px; el objetivo sigue midiendo más de 24 px. */
+a.cg-linkbtn { display: inline-block; min-height: 0; padding-block: 0.35rem; }
