@@ -1,0 +1,12 @@
+// QA-Claude-2 — PR #314 (ES-333 PR 1/3) mutaciones sobre el clon: node qa/mut314.cjs <clon>/frontend. Corre es-153-persona-layout, es-153-preferencias, es-112, es-123 y es-149.
+const fs = require('fs'), path = require('path'), { execSync } = require('child_process'); const FE = process.argv[2]; const P = f => path.join(FE, f)
+const run = () => { try { execSync('node --test test/es-153-persona-layout.test.mjs test/es-153-preferencias.test.mjs test/es-112*.test.mjs test/es-123*.test.mjs test/es-149*.test.mjs 2>&1', { cwd: FE, stdio: 'pipe', timeout: 180000, shell: true }); return false } catch (e) { return true } }
+const files = ['src/space/space.css', 'src/pages/ChatPage.tsx']; const orig = Object.fromEntries(files.map(f => [f, fs.readFileSync(P(f), 'utf8')])); const restore = () => files.forEach(f => fs.writeFileSync(P(f), orig[f]))
+const M = (name, file, a, b) => { restore(); const s = fs.readFileSync(P(file), 'utf8'); if (!s.includes(a)) { console.log(`M ${name}: SIN ANCLA`); return } fs.writeFileSync(P(file), s.replace(a, () => b)); console.log(`M ${name}: ${run() ? 'DETECTADO por las pruebas' : 'SOBREVIVE a las pruebas'}`); restore() }
+M('M1 el marco del chat pierde height: 100dvh', 'src/space/space.css', '.cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: auto; }', '.cg-frame:has(.chat-shell) { overflow-y: auto; }')
+M('M2 la caja de mensaje deja de ser sticky', 'src/space/space.css', '.cg-main .chat-input-bar { position: sticky; bottom: 0; z-index: 2;', '.cg-main .chat-input-bar { z-index: 2;')
+M('M3 vuelve la constante calc(100dvh − 18,1rem)', 'src/space/space.css', '.cg-main .chat-shell { flex: 1 1 auto; height: auto; min-height: min-content; }', '.cg-main .chat-shell { flex: 1 1 auto; height: calc(100dvh - 18.1rem); min-height: min-content; }')
+M('M4 la caja vuelve a tener tope de 50dvh y scroll propio', 'src/space/space.css', 'position: sticky; bottom: 0; z-index: 2; max-height: none; overflow: visible;', 'position: sticky; bottom: 0; z-index: 2; max-height: 50dvh; overflow-y: auto;')
+M('M5 el hilo pierde min-height: 0 (se sale del marco)', 'src/space/space.css', '.chat-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto;', '.chat-scroll { flex: 1 1 auto; overflow-y: auto;')
+M('M6 el marco deja de poder desplazarse (overflow)', 'src/space/space.css', '.cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: auto; }', '.cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: hidden; }')
+restore(); console.log('clon restaurado')
