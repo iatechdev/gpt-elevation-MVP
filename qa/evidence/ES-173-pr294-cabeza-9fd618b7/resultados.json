@@ -1,0 +1,361 @@
+[
+ {
+  "n": "A2 sin variable (vacía) es: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": " Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes omitir preguntas o salir. Esto no cambia tu acceso ni tus opciones. Con tu permis"
+ },
+ {
+  "n": "A2 sin variable (vacía) es: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 sin variable (vacía) es: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 sin variable (vacía) es: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 sin variable (vacía) en: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": "ent ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions or leave. This does not change your access or options. With your permission in pla"
+ },
+ {
+  "n": "A2 sin variable (vacía) en: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 sin variable (vacía) en: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 sin variable (vacía) en: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =false es: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": " Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes omitir preguntas o salir. Esto no cambia tu acceso ni tus opciones. Con tu permis"
+ },
+ {
+  "n": "A2 =false es: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =false es: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =false es: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =false en: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": "ent ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions or leave. This does not change your access or options. With your permission in pla"
+ },
+ {
+  "n": "A2 =false en: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =false en: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =false en: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =TRUE es: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": " Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes omitir preguntas o salir. Esto no cambia tu acceso ni tus opciones. Con tu permis"
+ },
+ {
+  "n": "A2 =TRUE es: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =TRUE es: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =TRUE es: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =TRUE en: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": "ent ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions or leave. This does not change your access or options. With your permission in pla"
+ },
+ {
+  "n": "A2 =TRUE en: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =TRUE en: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =TRUE en: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =1 es: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": " Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes omitir preguntas o salir. Esto no cambia tu acceso ni tus opciones. Con tu permis"
+ },
+ {
+  "n": "A2 =1 es: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =1 es: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =1 es: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =1 en: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": "ent ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions or leave. This does not change your access or options. With your permission in pla"
+ },
+ {
+  "n": "A2 =1 en: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =1 en: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =1 en: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =yes es: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": " Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes omitir preguntas o salir. Esto no cambia tu acceso ni tus opciones. Con tu permis"
+ },
+ {
+  "n": "A2 =yes es: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =yes es: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =yes es: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =yes en: aviso «no está habilitada», sin franja ni formulario",
+  "ok": false,
+  "x": "ent ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions or leave. This does not change your access or options. With your permission in pla"
+ },
+ {
+  "n": "A2 =yes en: 0 llamadas a /api/me/pilot-feedback y /api/consents",
+  "ok": false,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A2 =yes en: sin bloque de permiso real",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 =yes en: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A2 compat. con la vista de revisión (PREVIEW=true, sin LIVE) es: franja «datos ficticios» y 0 llamadas",
+  "ok": true,
+  "x": "  Saltar al contenido ← VOLVER A MI ESPACIO ES EN Vista de revisión · datos ficticios Simulación solo"
+ },
+ {
+  "n": "A2 compat. con la vista de revisión (PREVIEW=true, sin LIVE) en: franja «datos ficticios» y 0 llamadas",
+  "ok": true,
+  "x": " ent ← BACK TO MY SPACE ES EN Review preview · fictional data Memory-only simulation. Do not enter pe"
+ },
+ {
+  "n": "A2 la base no tiene filas de opinión tras las pruebas apagadas",
+  "ok": true,
+  "x": "0"
+ },
+ {
+  "n": "A3 es: sin la franja de datos ficticios",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 es: bloque de permiso real y estado vacío",
+  "ok": true,
+  "x": " Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes omitir preguntas o salir. Esto no cambia tu acceso ni tus opciones. Con tu permis"
+ },
+ {
+  "n": "A3 es: llamó al servidor (GET /api/me/pilot-feedback)",
+  "ok": true,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A3 es: axe = 0 sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 es: guardar deshabilitado sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 es: dar permiso queda registrado en la base",
+  "ok": true,
+  "x": "{\"status\":\"granted\"}"
+ },
+ {
+  "n": "A3 es: guardar crea la fila del propietario en la base",
+  "ok": true,
+  "x": "{\"UserId\":3,\"version\":1,\"answers\":{\"helpedBy\":[],\"listened\":\"yes\",\"respected\":\"yes\",\"valueArea\":null,\"initialValue\":\"yes\",\"professionalClarity\":null}}"
+ },
+ {
+  "n": "A3 es: tras recargar la respuesta persiste",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 es: retirar el permiso NO borra lo respondido",
+  "ok": true,
+  "x": "{\"cs2\":{\"status\":\"revoked\"},\"row\":{\"version\":1}}"
+ },
+ {
+  "n": "A3 es: «Retirar mi respuesta» borra lo respondido (sin respuestas en la base)",
+  "ok": true,
+  "x": "{\"id\":1,\"UserId\":3,\"windowKey\":\"day7\",\"questionnaireVersion\":1,\"answers\":{},\"version\":2,\"status\":\"withdrawn\",\"lastRequestId\":null,\"createdAt\":\"2026-11-17T00:30:19.335Z\",\"updatedAt\":\"2026-11-17T00:30:26.568Z\"}"
+ },
+ {
+  "n": "A3 es: axe = 0 al final",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 es: sin desborde horizontal",
+  "ok": true,
+  "x": "-15"
+ },
+ {
+  "n": "A3 es: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 en: sin la franja de datos ficticios",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 en: bloque de permiso real y estado vacío",
+  "ok": true,
+  "x": "ent ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions or leave. This does not change your access or options. With your permission in pla"
+ },
+ {
+  "n": "A3 en: llamó al servidor (GET /api/me/pilot-feedback)",
+  "ok": true,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "A3 en: axe = 0 sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 en: guardar deshabilitado sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 en: dar permiso queda registrado en la base",
+  "ok": true,
+  "x": "{\"status\":\"granted\"}"
+ },
+ {
+  "n": "A3 en: guardar crea la fila del propietario en la base",
+  "ok": true,
+  "x": "{\"UserId\":4,\"version\":1,\"answers\":{\"helpedBy\":[],\"listened\":\"yes\",\"respected\":\"yes\",\"valueArea\":null,\"initialValue\":\"yes\",\"professionalClarity\":null}}"
+ },
+ {
+  "n": "A3 en: tras recargar la respuesta persiste",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 en: retirar el permiso NO borra lo respondido",
+  "ok": true,
+  "x": "{\"cs2\":{\"status\":\"revoked\"},\"row\":{\"version\":1}}"
+ },
+ {
+  "n": "A3 en: «Retirar mi respuesta» borra lo respondido (sin respuestas en la base)",
+  "ok": true,
+  "x": "{\"id\":2,\"UserId\":4,\"windowKey\":\"day7\",\"questionnaireVersion\":1,\"answers\":{},\"version\":2,\"status\":\"withdrawn\",\"lastRequestId\":null,\"createdAt\":\"2026-11-17T00:30:34.938Z\",\"updatedAt\":\"2026-11-17T00:30:42.419Z\"}"
+ },
+ {
+  "n": "A3 en: axe = 0 al final",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A3 en: sin desborde horizontal",
+  "ok": true,
+  "x": "-15"
+ },
+ {
+  "n": "A3 en: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "A4 archivos del bundle que contienen la ruta del repositorio real (off / on)",
+  "info": "1 / 1"
+ },
+ {
+  "n": "A4 con la bandera encendida el chat de brújula (VITE_ENABLE_COMPASS_CHAT) sigue apagado",
+  "ok": true,
+  "x": "ver build"
+ },
+ {
+  "n": "A3 aislamiento: persona V ve su propia respuesta vacía, no la de U",
+  "ok": true,
+  "x": "[200,201,200,{\"feedback\":{\"window\":\"day7\",\"status\":\"none\",\"version\":0,\"questionnaireVersion\":1,\"answers\":null,\"lastRequestId\":null,\"permission\":{\"purpose\":\"pilot_feedback\",\"granted\":false}}}]"
+ }
+]
