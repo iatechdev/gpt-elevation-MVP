@@ -146,7 +146,7 @@ fieldset.cg-field legend{padding:0}
 <body>
 <div class="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · Persona C (ES-329)</b>
  <label>Pantalla <select id="scene">
-  <option value="home">Inicio · sin registro de hoy, sin profesional</option><option value="home-done">Inicio · registro hecho, sesión agendada</option><option value="home-live">Inicio · sesión en curso</option><option value="home-rec">Inicio · recomendación abierta</option><option value="home-out">Inicio · al salir (diálogo)</option><option value="home-loading">Inicio · cargando</option>
+  <option value="home">Inicio · sin registro de hoy, sin profesional</option><option value="home-done">Inicio · registro hecho, sesión agendada</option><option value="home-plan">Inicio · con plan de pago</option><option value="home-live">Inicio · sesión en curso</option><option value="home-rec">Inicio · recomendación abierta</option><option value="home-out">Inicio · al salir (diálogo)</option><option value="home-loading">Inicio · cargando</option>
   <option value="pro">Mi profesional · con profesional</option><option value="pro-none">Mi profesional · sin profesional</option><option value="pro-error">Mi profesional · error de carga</option>
   <option value="next">Siguiente paso · rutas</option><option value="next-exp">Siguiente paso · experimento</option><option value="next-basis">Siguiente paso · fundamento cambió</option><option value="next-plan">Siguiente paso · plan vacío</option>
  </select></label>
@@ -179,7 +179,7 @@ const S={es:{skip:'Saltar al contenido',lang:'Idioma',main:'Principal',menu:'Men
  prog:'Tu progreso',weekN:'sesiones esta semana',trend:'Tendencia emocional',days:['lun','mar','mié','jue','vie','sáb','dom'],
  upc:'Próxima sesión',live:'Sesión en curso',withP:'Con',join:'Entrar a la videollamada',soon:'La sesión está por comenzar',linkLater:'El enlace estará disponible cuando el profesional inicie la sesión',noSess:'Tu profesional aún no ha agendado una sesión.',findPro:'Buscar mi profesional',
  chatSel:'Selecciona cómo llegas hoy para comenzar tu conversación.',chatHint:'Tu conversación con la IA ocupa toda la pantalla para que puedas leerla con calma.',chatLink:'Ir a mi conversación',
- plan:'Mi plan',planName:'Básico',seePlans:'Ver planes →',
+ plan:'Mi plan',planName:'Básico',seePlans:'Ver planes →',free:'Gratis',month:'mes',aiDay:'Mensajes IA / día',sessMonth:'Sesiones / mes',
  rec:'Recomendaciones para ti',recGen:'Generar nuevas',recEmpty:'Aún no tienes recomendaciones. ¡Genera las primeras!',recCats:['Hábito','Reflexión','Recurso'],explore:'Explorar →',ctx:'Mi contexto',evid:'Mis evidencias',compass:'Brújula profesional',catalog:'Catálogo de rutas',
  outTitle:'¿Cómo te vas?',howConv:'¿Cómo fue la conversación?',signOut:'Cerrar sesión',skipBtn:'Saltar',loading:'Cargando…',
  // Mi profesional (myProfessionalCopy.ts)
@@ -198,7 +198,7 @@ en:{skip:'Skip to content',lang:'Language',main:'Main',menu:'User menu',
  prog:'Your progress',weekN:'sessions this week',trend:'Emotional trend',days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
  upc:'Upcoming session',live:'Session live',withP:'With',join:'Join videocall',soon:'Session starting soon',linkLater:'Link will be available when your professional starts the session',noSess:'Your professional has not scheduled a session yet.',findPro:'Find my professional',
  chatSel:'Select how you’re arriving today to start your conversation.',chatHint:'Your conversation with the AI takes the whole screen so you can read it comfortably.',chatLink:'Go to my conversation',
- plan:'My plan',planName:'Basic',seePlans:'View plans →',
+ plan:'My plan',planName:'Basic',seePlans:'View plans →',free:'Free',month:'month',aiDay:'AI messages / day',sessMonth:'Sessions / month',
  rec:'Recommendations for you',recGen:'Generate new',recEmpty:'No recommendations yet. Generate your first ones!',recCats:['Habit','Reflection','Resource'],explore:'Explore →',ctx:'My context',evid:'My evidence',compass:'Career compass',catalog:'Route catalog',
  outTitle:'How are you leaving?',howConv:'How was the conversation?',signOut:'Sign out',skipBtn:'Skip',loading:'Loading…',
  mpTitle:'My professional',mpErr:'We could not load your professional’s information or your sessions.',mpRetry:'Try again',mpNoneT:'You don’t have a professional assigned yet',mpNoneD:'Find the right person based on your preferences.',mpFind:'Find my professional',
@@ -216,7 +216,7 @@ const sel=(l,opts,id)=>`<div class="cg-field"><label class="cg-label" for="${id}
 function sc(){const k=c();let h='',a=null,here=false;
  // ===== INICIO =====
  if(scene.startsWith('home')){
-  const done=scene==='home-done'||scene==='home-live'||scene==='home-rec';const hasPro=done;const liveS=scene==='home-live';
+  const done=scene==='home-done'||scene==='home-live'||scene==='home-rec'||scene==='home-plan';const hasPro=done;const liveS=scene==='home-live';
   if(scene==='home-loading'){h=head(k.dTitle,'')+`<p role="status" class="cg-hint">${k.loading}</p>`}
   else{
   const emo=card(k.emo,done?`<p>${k.checked}</p><p class="cg-hint">${k.of5(4)} · ${k.moods[3]}</p>`:`<p>${k.arrive}</p>${scale(k,null,k.arrive)}`,'em');
@@ -224,7 +224,7 @@ function sc(){const k=c();let h='',a=null,here=false;
   const pr=card(k.prog,`<dl class="pc-dl"><dt>${k.weekN}</dt><dd style="font:700 1.8rem var(--cg-font-cond)">${done?3:0}</dd></dl>${trend}`,'pg');
   const up=card(liveS?k.live:k.upc,hasPro?`<p><strong>${k.withP} Ana ${k.ex}</strong></p><p class="cg-hint">${lang==='es'?'martes, 24 nov., 10:00':'Tuesday, 24 Nov, 10:00'} — 45 min</p>`+(liveS?`<div class="pg-actions">${btn(k.join)}</div>`:`<p class="cg-hint">${k.linkLater}</p>`):`<p>${k.noSess}</p><div class="pg-actions">${btn(k.findPro)}</div>`,'up');
   const chat=card(k.chatLink,done?`<p>${k.chatHint}</p><div class="pg-actions"><a class="cg-btn" href="#chat">${k.chatLink}</a></div>`:`<p>${k.chatSel}</p>`,'ch');
-  const planL=`<section class="cg-card pg-card" aria-labelledby="pl"><div class="pc-line"><h2 id="pl" style="margin:0">${k.plan}</h2>${chip(k.planName)}</div><div class="pg-actions"><a class="cg-linkbtn pc-link" href="#plan">${k.seePlans}</a></div></section>`;
+  const paid=scene==='home-plan';const planL=`<section class="cg-card pg-card" aria-labelledby="pl"><div class="pc-line"><h2 id="pl" style="margin:0">${k.plan}</h2>${chip(paid?'Plus '+k.ex:k.planName)}</div><p style="font:700 1.5rem var(--cg-font-cond);margin:.4rem 0">${paid?'$19 USD / '+k.month+' '+k.ex:k.free}</p><dl class="pc-dl"><div class="pc-line"><dt>${k.aiDay}</dt><dd>${paid?'100':'10'} ${k.ex}</dd></div><div class="pc-line"><dt>${k.sessMonth}</dt><dd>${paid?'∞':'0'} ${k.ex}</dd></div></dl>${paid?`<ul class="pg-feats" style="list-style:none;padding:0;margin:0 0 .4rem"><li>✓ ${ph()} ${k.ex}</li><li>✓ ${ph()} ${k.ex}</li></ul>`:`<div class="pg-actions"><a class="cg-linkbtn pc-link" href="#plan">${k.seePlans}</a></div>`}</section>`;
   const recs=card(k.rec,`<div class="pg-actions" style="margin:0 0 .6rem">${btn(k.recGen,'cg-btn--ghost')}</div>`+(done?`<ul class="cg-items">${k.recCats.map((cat,i)=>`<li class="cg-item"><div class="pc-line"><span class="cg-tag">${cat}</span></div><p>${ph()} ${k.ex}</p><div class="pg-actions"><button type="button" class="cg-linkbtn">${k.explore}</button></div></li>`).join('')}</ul>`:`<p class="cg-muted">${k.recEmpty}</p>`),'rc');
   const entry=`<div class="pc-grid"><section class="cg-card pg-card" aria-labelledby="mp"><h2 id="mp">${k.mapTitle}</h2><p>${k.mapText}</p><div class="pg-actions"><a class="cg-btn" href="#map">${k.mapCta}</a></div></section><section class="cg-card pg-card" aria-labelledby="ns"><h2 id="ns">${k.nextTitle}</h2><p>${k.nextPreview}</p><div class="pg-actions"><a class="cg-btn cg-btn--ghost" href="#next">${k.nextTitle} →</a></div></section></div>`;
   const links=`<nav aria-label="${k.dTitle}" style="display:flex;flex-wrap:wrap;gap:.2rem 1.4rem">${[k.ctx,k.evid,k.compass,k.catalog].map(t=>`<a class="pc-link" href="#x">${t}</a>`).join('')}</nav>`;
