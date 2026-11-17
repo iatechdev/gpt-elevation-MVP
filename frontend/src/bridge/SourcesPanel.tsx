@@ -142,7 +142,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
     {notice && notice.kind !== 'ok' && <p className={notice.kind === 'error' ? 'cg-banner cg-banner--error' : 'cg-banner'} role={notice.kind === 'error' ? 'alert' : 'status'}><span className="cg-banner__title">{notice.text}
       {notice.retry && notice.source && <> <LinkButton className="br-inline" disabled={busy} onClick={() => void run(notice.source as SourceId)}>{c.retry}</LinkButton></>}
       {notice.upload && <> <Link to="/app/context">{c.src_upload_resume}</Link></>}</span></p>}
-    {!perms && !loadError && <p role="status" aria-busy="true" className="cg-hint">{c.src_loading}</p>}
+    {!perms && !loadError && <div className="br-src-ph"><p role="status" aria-busy="true" className="cg-hint">{c.src_loading}</p></div>} {/* ES-331: reserva el alto de la lista de fuentes mientras carga, para que al llegar no empuje lo de abajo (CLS) */}
     {loadError && <p className="cg-banner cg-banner--error" role="alert"><LinkButton onClick={() => void load()}>{c.src_perm_load_error}</LinkButton></p>}
     {perms && <ul className="br-src-list">{sourceIds.map(source => {
       const doubt = unsure?.source === source; const on = perms[source] && !doubt; const rowBusy = saving === source
