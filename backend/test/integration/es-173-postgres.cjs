@@ -123,25 +123,52 @@ test('ES-173 PostgreSQL + HTTP: «Mi opinión» (permiso, versión, retiro, agre
     assert.deepEqual([m.activation.status, m.experiment.status], ['not_available', 'not_available']);
     const fifth = await person(); assert.equal((await put(fifth, { listened: 'yes', respected: 'no', professionalClarity: 'yes' })).status, 201); await put(fifth, { professionalClarity: 'yes' }, { window: 'day30' });
     m = await metricsOf();
-    assert.deepEqual(m.listening, { key: 'listening', status: 'ready', window: 'day7', counts: { eligible: 5, responded: 5, missing: 0, positive: 4 } }, '5 personas: se publica');
-    assert.deepEqual(m.utility.counts, { eligible: 5, responded: 5, missing: 0, positive: 4 });
+    assert.deepEqual(m.listening, { key: 'listening', status: 'ready', window: 'day7', counts: { eligible: { min: 5, max: 9 }, responded: { min: 5, max: 9 }, positive: { min: 0, max: 4 } } }, '5 personas: se publica, en BANDAS de 5 (ES-325) y sin «missing»');
+    assert.deepEqual(m.utility.counts, { eligible: { min: 5, max: 9 }, responded: { min: 5, max: 9 }, positive: { min: 0, max: 4 } }); assert.ok(!('missing' in m.utility.counts) && !('missing' in m.listening.counts));
     // 5 elegibles pero solo 4 respondieron la pregunta → suprimida (no se puede reidentificar a quien respondió)
-    const sixth = await person(); m = await metricsOf(); assert.equal(m.listening.counts.eligible, 6); assert.equal(m.listening.counts.missing, 1);
-    await put(sixth, { listened: null, respected: null, professionalClarity: 'not_explored', initialValue: 'yes' }); m = await metricsOf(); assert.equal(m.listening.counts.responded, 5, 'una pregunta sin responder no cuenta'); assert.equal(m.utility.counts.responded, 5, '«no he explorado» no cuenta como respuesta');
+    const sixth = await person(); m = await metricsOf(); assert.deepEqual(m.listening.counts.eligible, { min: 5, max: 9 }, 'la sexta persona (sin responder) no mueve la banda: no se puede restar eligible - responded'); assert.ok(!('missing' in m.listening.counts));
+    await put(sixth, { listened: null, respected: null, professionalClarity: 'not_explored', initialValue: 'yes' }); m = await metricsOf(); assert.deepEqual(m.listening.counts.responded, { min: 5, max: 9 }, 'una pregunta sin responder no cuenta (el conteo exacto se verifica en la prueba de bandas)'); assert.deepEqual(m.utility.counts.responded, { min: 5, max: 9 }, '«no he explorado» no cuenta como respuesta');
     await revoke(fifth); m = await metricsOf(); assert.equal(m.listening.status, 'suppressed', 'quien revoca sale del agregado al instante (quedan 4 que respondieron)'); assert.ok(!('counts' in m.listening));
     await grant(fifth); m = await metricsOf(); assert.equal(m.listening.status, 'ready');
     assert.equal((await del(people[0])).status, 200); m = await metricsOf(); assert.equal(m.listening.status, 'suppressed', 'quien retira su respuesta sale del agregado');
     for (const role of ['user', 'therapist', 'board']) { const who = await mkUser(role); assert.equal((await http(who, 'GET', '/api/admin/pilot-metrics')).status, 403, role); }
     assert.ok([401, 403].includes((await http(null, 'GET', '/api/admin/pilot-metrics')).status));
     const text = JSON.stringify((await http(admin, 'GET', '/api/admin/pilot-metrics')).body); assert.ok(!/"(UserId|userId|answers|email|name|id)"/.test(text), 'ni identidad ni respuestas');
-    await q('UPDATE "Users" SET role=\'admin\' WHERE id=$1', [people[1].id]); m = await metricsOf(); assert.ok(m.listening.status === 'suppressed' || m.listening.counts.eligible <= 5, 'solo cuentan personas (rol user)');
+    await q('UPDATE "Users" SET role=\'admin\' WHERE id=$1', [people[1].id]); m = await metricsOf(); assert.ok(m.listening.status === 'suppressed' || m.listening.counts.eligible.max <= 9, 'solo cuentan personas (rol user)');
     await q('UPDATE "Users" SET role=\'user\' WHERE id=$1', [people[1].id]);
   });
 
-  await t.test('agregados: UNA sola consulta (misma instantánea) y con permisos que cambian a la vez nunca sale responded > eligible ni missing < 0 (P2 de Codex)', async () => {
+  await t.test('ES-325 (E273-1): bandas de 5, sin «missing», sin publicar cuando todas las respuestas son iguales o ninguna es positiva; responder, retirar o revocar no delata a una persona salvo en el borde de una banda', async () => {
     const admin = await mkUser('admin');
     await q('DELETE FROM "PilotFeedbacks"'); await q('UPDATE "Consents" SET status=\'revoked\' WHERE purpose=\'pilot_feedback\'');
-    const people = []; for (let i = 0; i < 6; i++) { const p = await person(); people.push(p); assert.equal((await put(p)).status, 201); assert.equal((await put(p, {}, { window: 'day30' })).status, 201); }
+    const metricsOf = async () => { const out = await http(admin, 'GET', '/api/admin/pilot-metrics'); assert.equal(out.status, 200, JSON.stringify(out.body)); return Object.fromEntries(out.body.metrics.map((m) => [m.key, m])); };
+    const mixed = (i) => (i % 2 === 0 ? { listened: 'yes', respected: 'yes', professionalClarity: 'yes' } : { listened: 'no', respected: 'no', professionalClarity: 'no' });
+    // (3) 5 personas con respuestas IGUALES: todas positivas → suprimida; todas negativas → suprimida (revelaría a cada una)
+    const people = []; for (let i = 0; i < 5; i++) { const p = await person(); people.push(p); assert.equal((await put(p, mixed(0))).status, 201); assert.equal((await put(p, { professionalClarity: 'yes' }, { window: 'day30' })).status, 201); }
+    let m = await metricsOf(); assert.deepEqual(m.listening, { key: 'listening', status: 'suppressed', window: 'day7' }, 'positive = responded → suprimida y sin conteos'); assert.equal(m.utility.status, 'suppressed'); assert.ok(!('counts' in m.listening));
+    for (const p of people) { assert.ok([200, 201].includes((await put(p, mixed(1), { baseVersion: 1 })).status)); assert.ok([200, 201].includes((await put(p, { professionalClarity: 'no' }, { window: 'day30', baseVersion: 1 })).status)); }
+    m = await metricsOf(); assert.equal(m.listening.status, 'suppressed', 'positive = 0 → suprimida'); assert.equal(m.utility.status, 'suppressed');
+    // Una persona cambia a positiva: ahora hay mezcla → se publica, en banda: 5 elegibles, 5 respondidas, 1 positiva = {0..4}
+    assert.ok([200, 201].includes((await put(people[0], mixed(0), { baseVersion: 2 })).status)); m = await metricsOf();
+    assert.deepEqual(m.listening.counts, { eligible: { min: 5, max: 9 }, responded: { min: 5, max: 9 }, positive: { min: 0, max: 4 } }); assert.ok(!JSON.stringify(m.listening).includes('missing'));
+    // Diferencias: dentro de una banda, responder, retirar o revocar de una persona NO cambia nada visible (las 5 personas siguen siendo la misma banda)
+    const before = JSON.stringify(await metricsOf());
+    assert.ok([200, 201].includes((await put(people[1], mixed(0), { baseVersion: 2 })).status)); assert.equal(JSON.stringify(await metricsOf()), before, 'cambiar una respuesta dentro de la banda no se nota');
+    const sixth = await person(); assert.equal((await put(sixth, mixed(0))).status, 201); assert.equal(JSON.stringify(await metricsOf()), before, 'sumar a una sexta persona que responde (5 → 6) no cambia la banda');
+    assert.equal((await del(sixth)).status, 200); assert.equal(JSON.stringify(await metricsOf()), before, 'retirar su respuesta (6 → 5) no cambia nada');
+    await revoke(sixth); assert.equal(JSON.stringify(await metricsOf()), before, 'revocar el permiso tampoco');
+    // Conteo exacto: la sexta cuenta de verdad: con 4 más (10 respondidas) la banda de responded sube a {10..14} y la de eligible también; la de positive según su valor
+    const more = []; for (let i = 0; i < 4; i++) { const p = await person(); more.push(p); assert.equal((await put(p, mixed(1))).status, 201); }
+    m = await metricsOf(); assert.deepEqual(m.listening.counts.responded, { min: 5, max: 9 }, '5 + 4 = 9 respondidas: sigue en la banda 5–9 (la sexta que retiró no cuenta)');
+    const tenth = await person(); assert.equal((await put(tenth, mixed(1))).status, 201); m = await metricsOf(); assert.deepEqual(m.listening.counts.responded, { min: 10, max: 14 }, 'la décima respondida cruza el borde: es el caso que la banda no oculta (declarado en el PR)');
+    // < 5 sigue suprimido y sin 500; respuestas individuales nunca salen
+    for (const p of [...people.slice(1), ...more, tenth]) await revoke(p); m = await metricsOf(); assert.equal(m.listening.status, 'suppressed'); assert.ok(!/"(UserId|userId|answers|email|name|id)"/.test(JSON.stringify(m)));
+  });
+
+  await t.test('agregados: UNA sola consulta (misma instantánea) y con permisos que cambian a la vez nunca sale responded > eligible (bandas; sin «missing»: ES-325) (P2 de Codex)', async () => {
+    const admin = await mkUser('admin');
+    await q('DELETE FROM "PilotFeedbacks"'); await q('UPDATE "Consents" SET status=\'revoked\' WHERE purpose=\'pilot_feedback\'');
+    const people = []; for (let i = 0; i < 6; i++) { const p = await person(); people.push(p); assert.equal((await put(p, i < 3 ? {} : { listened: 'no', professionalClarity: 'no' })).status, 201); assert.equal((await put(p, i < 3 ? {} : { professionalClarity: 'no' }, { window: 'day30' })).status, 201); } // respuestas mixtas: con todas iguales la métrica se suprime (ES-325) y la comprobación sería vacía
     const original = app.query.bind(app); let aggregateQueries = 0;
     app.query = (sql, ...rest) => { if (typeof sql === 'string' && sql.includes('count(*)')) aggregateQueries++; return original(sql, ...rest); };
     try {
@@ -154,7 +181,7 @@ test('ES-173 PostgreSQL + HTTP: «Mi opinión» (permiso, versión, retiro, agre
         const outs = await Promise.all(Array.from({ length: 10 }, () => http(admin, 'GET', '/api/admin/pilot-metrics')));
         for (const out of outs) {
           assert.equal(out.status, 200, JSON.stringify(out.body));
-          for (const metric of out.body.metrics.filter((m) => m.status === 'ready')) assert.ok(metric.counts.missing >= 0 && metric.counts.responded <= metric.counts.eligible && metric.counts.positive <= metric.counts.responded, JSON.stringify(metric));
+          for (const metric of out.body.metrics.filter((m) => m.status === 'ready')) assert.ok(!('missing' in metric.counts) && metric.counts.responded.max <= metric.counts.eligible.max && metric.counts.positive.max <= metric.counts.responded.max && metric.counts.positive.min <= metric.counts.responded.min, JSON.stringify(metric));
         }
       }
     } finally { stop = true; await toggler; }
