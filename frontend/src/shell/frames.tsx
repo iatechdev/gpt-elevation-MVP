@@ -33,7 +33,7 @@ export function PersonChrome({ children, migrated = false, footer = true }: { ch
   const { c } = useShellCopy(); const [theme] = useCgTheme()
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
   // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={<PreferencesBar legacy={!migrated} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer}>{children}</Frame>
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={<PreferencesBar legacy={!migrated} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer} mobileOrder>{children}</Frame>
 }
 
 /** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */

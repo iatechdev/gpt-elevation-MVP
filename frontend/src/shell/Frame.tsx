@@ -8,6 +8,7 @@ import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
 import { useShellCopy } from './useShellCopy'
+import { useNarrowHeader } from './narrowHeader'
 import { leaveBlocked } from './leaveGuard'
 import './shell.css'
 
@@ -119,11 +120,13 @@ export type FrameProps = {
   mainClassName?: string
   /** ES-160: tema del marco. Por defecto «light» (los contenidos antiguos son claros); una pantalla ya migrada a Cartografía pide «system» para seguir el modo claro/oscuro del sistema. */
   theme?: CgTheme
+  /** ES-321: en la disposición móvil (≤ 900 px) el DOM sigue el orden visual (marca → menú → preferencias → navegación) para que Tab no suba; en escritorio, el de siempre. */
+  mobileOrder?: boolean
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', children }: FrameProps) {
-  const { c } = useShellCopy(); const { pathname } = useLocation()
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, children }: FrameProps) {
+  const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // Al cambiar de ruta el foco pasa al <main> (no en la primera carga, para no robar el foco de quien llega por teclado).
   useEffect(() => {
@@ -136,8 +139,8 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
       {header && (
         <header className="cg-header" onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
-          {nav}
-          <div className="cg-header__end">{preferences ?? <LangSwitch />}{account}</div>
+          {narrow ? <div className="cg-header__end">{account}{preferences ?? <LangSwitch />}</div> : <>{nav}<div className="cg-header__end">{preferences ?? <LangSwitch />}{account}</div></>}
+          {narrow && nav}
         </header>
       )}
       <div className={sidebar ? 'cg-body cg-body--side' : 'cg-body'}>
