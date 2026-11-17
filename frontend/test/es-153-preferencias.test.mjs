@@ -51,5 +51,5 @@ test('ES-153 P3: CSS — rejilla de 3 columnas de alto fijo en móvil, 0,82 rem 
   assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(added) && !added.includes('--cg-new'), 'solo tokens existentes')
   // ES-333 (PR 1): el chat ya no resta una constante al alto del viewport («calc(100dvh - 18.1rem)»): usa el alto que deja el marco (columna de 100dvh); el encabezado móvil de esta prueba puede crecer o encogerse sin romper el chat.
   const space = read('../src/space/space.css'); assert.ok(!space.includes('calc(100dvh -') && !space.includes('18.1rem'))
-  assert.ok(space.includes('.cg-frame:has(.chat-shell) > .cg-main { flex: 1 1 0; min-height: min-content; display: flex; flex-direction: column; }') && space.includes('.cg-main .chat-shell { flex: 1 1 auto; height: auto; min-height: min-content; }'))
+  assert.ok(space.includes('.cg-frame:has(.chat-shell) .cg-main { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; padding: 0; }') && space.includes('.cg-main .chat-shell { flex: 1 1 0; height: auto; min-height: 0; overflow: visible; }'))
 })

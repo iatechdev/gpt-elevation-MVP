@@ -66,8 +66,9 @@ test('ES-153 E280-2/3/4: el pie no se pinta con el esqueleto, el marco y la pant
   for (const path of ['/app/evidence', '/app/exercises', '/app/diary', '/app/space/tools', '/app/chat', '/app/progress', '/app/dashboard', '/app/skill-map']) assert.ok(app.includes(`'${path}': () => import(`), `precarga de ${path}`)
   const space = read('../src/space/space.css')
   // ES-333 (PR 1): el mismo compromiso (la caja con «Límites del asistente» queda pegada abajo y a la vista, y la página solo se desplaza si el marco no cabe) ya no depende de una media query ni de una altura fija: el marco es una columna de 100dvh que se desplaza, el hilo reparte el alto restante y la caja es sticky. La altura real la mide scripts/es333-chat-alturas.cjs.
+  // ES-333 (PR 2): el marco es la columna de 100dvh y el <div> del Suspense, <main>, el contenedor y el hilo reparten el alto restante; barra y caja (flex: none, sin scroll propio) quedan siempre a la vista y el marco solo se desplaza si ni así cabe.
   assert.ok(space.includes('.cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: auto; }'))
-  assert.ok(space.includes('.cg-main .chat-input-bar { position: sticky; bottom: 0; z-index: 2; max-height: none; overflow: visible; }'))
+  assert.ok(space.includes('.cg-main .chat-shell { flex: 1 1 0; height: auto; min-height: 0; overflow: visible; }') && space.includes('.cg-main .chat-input-bar { max-height: none; overflow: visible; }'))
   assert.doesNotMatch(space, /max-height: 760px/)
 })
 

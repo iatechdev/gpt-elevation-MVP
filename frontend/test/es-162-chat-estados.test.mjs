@@ -90,8 +90,9 @@ test('ES-162: etiqueta «Tú» en los turnos de la persona y casilla «Enter env
   const page = read('../src/pages/ChatPage.tsx')
   assert.ok(page.includes('you={copy[lang].you}') && page.indexOf('>{you}</span>') > 0 && page.indexOf('>{you}</span>') < page.indexOf('{text}'), 'la etiqueta va antes del texto de la persona') // ES-199: la burbuja es el componente ChatBubble
   const controls = read('../src/space/ChatControls.tsx')
-  assert.match(controls, /useState\(readEnterSends\)/)
+  assert.match(page, /useState\(readEnterSends\)/) // ES-333 (PR 2): la preferencia vive en la página (desactivada por defecto, se recuerda en este navegador) y se cambia desde el menú
   assert.match(controls, /enterShouldSend\(\{ key: event\.key, shiftKey: event\.shiftKey, ctrlKey: event\.ctrlKey, altKey: event\.altKey, metaKey: event\.metaKey, isComposing: event\.nativeEvent\.isComposing, keyCode: event\.nativeEvent\.keyCode \}, enterSends\)/)
-  assert.match(controls, /event\.preventDefault\(\); if \(canSend\) void chat\.send\(\)/) // con Enter no se envía un mensaje vacío ni con el envío bloqueado
-  assert.match(controls, /<input className="elv-checkbox" type="checkbox" checked=\{enterSends\}/)
+  assert.match(controls, /event\.preventDefault\(\); if \(canSend\) \{ hadFocus\.current = true; void chat\.send\(\) \}/) // con Enter no se envía un mensaje vacío ni con el envío bloqueado (E314-3: además el foco vuelve a la caja al terminar el envío)
+  assert.match(read('../src/space/ChatMenu.tsx'), /<input className="elv-checkbox" type="checkbox" checked=\{enterSends\} onChange=\{event => onEnterSends\(event\.target\.checked\)\}/)
+  assert.match(page, /onEnterSends=\{value => \{ setEnterSends\(value\); writeEnterSends\(value\) \}\}/)
 })

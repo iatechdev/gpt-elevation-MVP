@@ -1,9 +1,12 @@
 import { memo, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ChatBar } from '../space/ChatBar'
+import { ChatBar, ThreadNotices } from '../space/ChatBar'
+import { ChatMenu } from '../space/ChatMenu'
+import { Button, Dialog, ScaleField } from '../cartografia'
+import { readEnterSends, writeEnterSends } from '../space/chatKeys'
 import { CompassBanner } from '../space/CompassBanner'
 import { usePersonalChat } from '../space/usePersonalChat'
-import { ChatContext, ChatInput, TruncatedNotice } from '../space/ChatControls'
+import { ChatContext, ChatInput, ChatStatus, TruncatedNotice } from '../space/ChatControls'
 import { ChatLimitsNotice } from '../space/ChatLimitsNotice'
 import '../space/space.css' // ES-153: antes lo traía el menú de Mi espacio
 import { useLanguage } from '../i18n/useLanguage'
@@ -35,16 +38,10 @@ const LANDING_KEYS = [
   { key: 'cta_final_subtitle', label: 'Subtítulo CTA final' },
 ]
 
-const CHECKOUT_MOODS = [
-  { emoji: '😞', value: 0 },
-  { emoji: '😔', value: 1 },
-  { emoji: '😐', value: 2 },
-  { emoji: '🙂', value: 3 },
-  { emoji: '😊', value: 4 },
-]
+const CHECKOUT_MOODS = [{ value: 0 }, { value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }]
 
 // ES-199: una burbuja de la conversación. Memoizada: solo se repinta si cambia su texto, su rol o las etiquetas (no al teclear). `children` lleva el aviso de la última respuesta.
-const ChatBubble = memo(function ChatBubble({ role, text, you, logo, children }: { role: 'user' | 'bot'; text: string; you: string; logo: string; children?: ReactNode }) {
+const ChatBubble = memo(function ChatBubble({ role, text, you, logo, ai, children }: { role: 'user' | 'bot'; text: string; you: string; logo: string; ai: string; children?: ReactNode }) {
   return role === 'user' ? (
     <div className="chat-msg chat-msg--you">
       {/* ES-162: quién habla va en una etiqueta, no solo en el color */}
@@ -55,7 +52,7 @@ const ChatBubble = memo(function ChatBubble({ role, text, you, logo, children }:
     </div>
   ) : (
     <div className="chat-msg chat-msg--bot">
-      <span className="chat-msg-who">✦ {logo}</span>
+      <span className="chat-msg-who">✦ {logo} · {ai}</span>
       <p className="chat-msg-text">{text}</p>
       {children}
     </div>
@@ -63,7 +60,7 @@ const ChatBubble = memo(function ChatBubble({ role, text, you, logo, children }:
 })
 
 export function ChatPage() {
-  const { t, lang, setLang } = useLanguage()
+  const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const role = localStorage.getItem('elevation_role') ?? 'user'
   const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -99,6 +96,8 @@ export function ChatPage() {
   const [landingMsg,     setLandingMsg]     = useState<{ key: string; msg: string; ok: boolean } | null>(null)
 
   // HU-021 — Check-out de ánimo
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [enterSends, setEnterSends] = useState(readEnterSends) // «Enter envía»: preferencia de este navegador (desactivada por defecto); se cambia desde el menú
   const [showCheckout,   setShowCheckout]   = useState(false)
   const [checkoutMood,   setCheckoutMood]   = useState<number | null>(null)
   const [checkoutSaving, setCheckoutSaving] = useState(false)
@@ -111,7 +110,6 @@ export function ChatPage() {
 
   // HU-022 — Calificación con estrellas
   const [starRating,     setStarRating]     = useState<number | null>(null)
-  const [starHover,      setStarHover]      = useState<number | null>(null)
 
   const loadActivePrompt = useCallback(async () => {
     try {
@@ -308,60 +306,11 @@ export function ChatPage() {
     <div className="chat-shell">
       <h1 className="sr-only">{lang === 'es' ? 'Conversación' : 'Conversation'}</h1>
 
-      {/* Header */}
-      <header className="chat-header">
-        <div className="chat-header-in">
-          <div className="chat-header-gap" />
-          <span className="chat-brand">{t('logo')}</span>
-          <div className="chat-header-end">
-            {(['es', 'en'] as const).map(l => (
-              <button key={l} onClick={() => setLang(l)} className={`chat-lang${lang === l ? ' chat-lang--on' : ''}`}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-            {['admin', 'superadmin'].includes(role) && (
-              <button onClick={openAdmin} title={t('admin_title')} className="chat-iconbtn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                </svg>
-              </button>
-            )}
-            {/* HU-052 — Progress link (ES-123: en la cabecera y con etiqueta; antes era un ícono suelto dentro de la conversación) */}
-            <button
-              onClick={() => chat.canLeave() && navigate('/app/progress')}
-              title={copy[lang].progress}
-              aria-label={copy[lang].progress}
-              className="chat-iconbtn"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </button>
-            {/* HU-051 — Recommendations toggle */}
-            <button
-              onClick={() => setShowRecs(!showRecs)}
-              title={t('rec_title')}
-              aria-label={t('rec_title')}
-              className={`chat-iconbtn${showRecs ? ' chat-iconbtn--on' : ''}`}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </button>
-            <button onClick={() => setShowCheckout(true)} title={copy[lang].signOut} aria-label={copy[lang].signOut} className="chat-iconbtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Mensajes */}
       {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
       <div className="chat-main">
         <div className="chat-top">
-          <ChatBar sent={messages.length} />
+          <ChatBar sent={messages.length} menu={<button type="button" className="chat-menu-btn space-ghost" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>{copy[lang].menu}</button>} />
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
@@ -370,138 +319,60 @@ export function ChatPage() {
           {/* ES-199: cada burbuja se pinta una sola vez; teclear en el cuadro de mensaje ya no vuelve a pintar todo el historial. Solo la última (que lleva el aviso de respuesta cortada) se repinta. */}
           {messages.map((msg, i) => (
             <div key={i}>
-              <ChatBubble role={msg.role} text={msg.text} you={copy[lang].you} logo={t('logo')}>
+              <ChatBubble role={msg.role} text={msg.text} you={copy[lang].you} logo={t('logo')} ai={copy[lang].ai}>
                 {i === messages.length - 1 && msg.role !== 'user' && <TruncatedNotice chat={chat} />}
               </ChatBubble>
             </div>
           ))}
           {sending && (
             <div role="status" className="chat-msg chat-msg--bot">
-              <span className="chat-msg-who">✦ {t('logo')}</span>
+              <span className="chat-msg-who">✦ {t('logo')} · {copy[lang].ai}</span>
               <p className="chat-msg-wait">{t('chat_thinking')}</p>
             </div>
           )}
           <ChatContext chat={chat} />
-          {/* HU-051 — Wellness Recommendations */}
-          {showRecs && (
-            <div className="chat-recs">
-              <span className="chat-recs-title">
-                {t('rec_title')}
-              </span>
-              <p className="chat-recs-sub">
-                {t('rec_subtitle')}
-              </p>
-              {loadingRecs && (
-                <p className="chat-recs-loading">
-                  {t('rec_loading')}
-                </p>
-              )}
-              {recsError && (
-                <p className="chat-recs-error">{recsError}</p>
-              )}
-              {!loadingRecs && recommendations.length > 0 && (
-                <div className="chat-recs-list">
-                  {recommendations.slice(0, 3).map(rec => (
-                    <div key={rec.id} className="chat-rec">
-                      <div className="chat-rec-cat">
-                        {t(`rec_category_${rec.category}`)}
-                      </div>
-                      <p className="chat-rec-text">
-                        {rec.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button
-                onClick={() => { void handleGenerateRecs() }}
-                disabled={loadingRecs}
-                className="chat-recs-btn"
-              >
-                {loadingRecs ? t('rec_loading') : recommendations.length > 0 ? t('rec_regenerate') : t('rec_generate')}
-              </button>
-            </div>
-          )}
+          <ThreadNotices />
+          <ChatStatus chat={chat} />
 
           <div ref={chatEndRef} />
         </div>
         </div>
         <div className="chat-input-bar">
-          <ChatInput chat={chat} />
+          <ChatInput chat={chat} enterSends={enterSends} />
           <ChatLimitsNotice />
         </div>
       </div>
 
-      {/* HU-021 + HU-022 — Modal check-out + estrellas */}
-      {showCheckout && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
-          <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#6F6963', margin: 0, textTransform: 'uppercase' }}>{t('checkout_label')}</p>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
-              {t('checkout_title')}
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: '#6B645F', margin: 0, textAlign: 'center' }}>
-              {t('checkout_hint')}
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {CHECKOUT_MOODS.map(m => (
-                <button key={m.value} onClick={() => setCheckoutMood(m.value)}
-                  style={{
-                    width: 52, height: 52, borderRadius: '50%', fontSize: '1.5rem',
-                    border: checkoutMood === m.value ? '2px solid #0d9488' : '1px solid #E7E5E4',
-                    background: checkoutMood === m.value ? '#F0FDFA' : 'white',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.2s',
-                  }}>
-                  {m.emoji}
-                </button>
-              ))}
-            </div>
-            {checkoutMood !== null && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
-                <p style={{ fontSize: '0.8rem', color: '#6B645F', margin: 0 }}>
-                  {t('checkout_rating')}
-                </p>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <button key={star}
-                      onClick={() => setStarRating(star)}
-                      onMouseEnter={() => setStarHover(star)}
-                      onMouseLeave={() => setStarHover(null)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: 28, lineHeight: 1, transition: 'transform 0.1s', transform: starHover === star ? 'scale(1.2)' : 'scale(1)' }}>
-                      <span style={{ color: star <= (starHover ?? starRating ?? 0) ? '#5C6B4E' : '#D6D2C4' }}>★</span>
-                    </button>
-                  ))}
-                </div>
-                {starRating && (
-                  <p style={{ fontSize: '0.75rem', color: '#6F6963', margin: 0 }}>
-                    {['', t('star_1'), t('star_2'), t('star_3'), t('star_4'), t('star_5')][starRating]}
-                  </p>
-                )}
+      <ChatMenu open={menuOpen} onClose={() => setMenuOpen(false)} onProgress={() => { if (chat.canLeave()) navigate('/app/progress') }} onRecs={() => setShowRecs(true)}
+        onAdmin={['admin', 'superadmin'].includes(role) ? openAdmin : undefined} onCheckout={() => setShowCheckout(true)} enterSends={enterSends} onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} />
+
+      {/* HU-051 — Recomendaciones: hoja inferior (antes un bloque dentro del hilo que partía «Recomendaciones» a mitad de palabra, E293-2) */}
+      <Dialog sheet open={showRecs} onClose={() => setShowRecs(false)} title={t('rec_title')}
+        actions={<><Button variant="ghost" disabled={loadingRecs} onClick={() => { void handleGenerateRecs() }}>{loadingRecs ? t('rec_loading') : recommendations.length > 0 ? t('rec_regenerate') : t('rec_generate')}</Button><Button variant="ghost" onClick={() => setShowRecs(false)}>{copy[lang].close}</Button></>}>
+        <p className="chat-recs-sub">{t('rec_subtitle')}</p>
+        {loadingRecs && <p className="chat-recs-loading" role="status">{t('rec_loading')}</p>}
+        {recsError && <p className="chat-recs-error" role="alert">{recsError}</p>}
+        {!loadingRecs && recommendations.length > 0 && (
+          <div className="chat-recs-list">
+            {recommendations.slice(0, 3).map(rec => (
+              <div key={rec.id} className="chat-rec">
+                <div className="chat-rec-cat">{t(`rec_category_${rec.category}`)}</div>
+                <p className="chat-rec-text">{rec.content}</p>
               </div>
-            )}
-            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
-              <button
-                onClick={() => { if (checkoutMood !== null) void handleCheckout(checkoutMood) }}
-                disabled={checkoutMood === null || checkoutSaving}
-                style={{
-                  flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none',
-                  background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4',
-                  color: checkoutMood !== null ? 'white' : '#6F6963',
-                  fontSize: '0.875rem', fontWeight: 500,
-                  cursor: checkoutMood !== null ? 'pointer' : 'not-allowed',
-                  fontFamily: 'Inter, sans-serif',
-                }}>
-                {checkoutSaving ? '...' : t('checkout_signout')}
-              </button>
-              <button onClick={handleLogout}
-                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#6B645F', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
-                {t('checkout_skip')}
-              </button>
-            </div>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </Dialog>
+
+      {/* HU-021 + HU-022 — Check-out + calificación: hoja inferior, sin emojis (el ánimo y la calificación se leen en palabras) */}
+      <Dialog sheet open={showCheckout} onClose={() => { if (!checkoutSaving) setShowCheckout(false) }} title={t('checkout_title')}
+        actions={<><Button disabled={checkoutMood === null || checkoutSaving} onClick={() => { if (checkoutMood !== null) void handleCheckout(checkoutMood) }}>{checkoutSaving ? '...' : t('checkout_signout')}</Button><Button variant="ghost" disabled={checkoutSaving} onClick={handleLogout}>{t('checkout_skip')}</Button></>}>
+        <p className="chat-recs-sub">{t('checkout_label')} · {t('checkout_hint')}</p>
+        <ScaleField legend={t('checkout_hint')} name="checkout-mood" value={checkoutMood === null ? '' : String(checkoutMood)} onChange={value => setCheckoutMood(Number(value))}
+          options={CHECKOUT_MOODS.map(m => ({ value: String(m.value), label: t(`emo_${m.value + 1}`) }))} />
+        {checkoutMood !== null && <ScaleField legend={t('checkout_rating')} name="checkout-rating" value={starRating === null ? '' : String(starRating)} onChange={value => setStarRating(Number(value))}
+          options={[1, 2, 3, 4, 5].map(star => ({ value: String(star), label: t(`star_${star}`) }))} />}
+      </Dialog>
 
       {/* Panel Admin */}
       {adminOpen && (
