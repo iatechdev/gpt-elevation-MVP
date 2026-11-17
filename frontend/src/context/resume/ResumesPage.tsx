@@ -50,10 +50,14 @@ export function ResumesPage() {
   }
   async function confirmDelete(item: ResumeMeta) {
     setBusy(true)
-    const ok = await deleteResume(item.id)
-    setBusy(false)
-    if (!ok) { setAlert(t('resume_delete_error')); return }
-    setConfirm(null); setMessage(t('resume_deleted_live')); await load()
+    const result = await deleteResume(item.id)
+    if (result === 'rejected') { setBusy(false); setAlert(t('resume_delete_error')); return } // respuesta definitiva: no se borró
+    if (result === 'deleted') { setBusy(false); setConfirm(null); setMessage(t('resume_deleted_live')); await load(); return }
+    // E304-1 / ES-327: respuesta perdida o dudosa. Se relee la lista y se dice lo que realmente hay (como al retirar la autorización).
+    setPhase('loading'); const fresh = await listResumes(); setBusy(false); setConfirm(null)
+    if (!fresh) { apply(null, consent); return } // no se pudo releer: pantalla de error con «Reintentar»; no se afirma nada
+    apply(fresh, consent)
+    if (fresh.resumes.some(row => row.id === item.id)) setAlert(t('resume_delete_error')); else setMessage(t('resume_deleted_live'))
   }
   // ES-248: retirar la autorización BORRA las hojas de vida (ES-109). Si la respuesta se pierde, el servidor pudo haberlo hecho: se relee el estado real antes de decir algo.
   async function verifyWithdraw() {
