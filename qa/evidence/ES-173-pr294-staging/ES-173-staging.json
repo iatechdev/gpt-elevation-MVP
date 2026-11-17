@@ -1,0 +1,149 @@
+[
+ {
+  "n": "staging /api/health (commit)",
+  "info": "{\"status\":\"ok\",\"commit\":\"af80cbe\"}"
+ },
+ {
+  "n": "B2 preparación: 2 cuentas sintéticas creadas (201) e inicio de sesión (200)",
+  "ok": true,
+  "x": "registro 201/201  login 200/200"
+ },
+ {
+  "n": "B2 es/390px: sin franja de datos ficticios y con el bloque de permiso real",
+  "ok": true,
+  "x": "a claro. MAPA CONVERSACIÓN EVIDENCIAS DIARIO SIGUIENTE PASO Saltar al contenido ← VOLVER A MI ESPACIO ES EN TU OPINIÓN ES OPCIONAL Puedes om"
+ },
+ {
+  "n": "B2 es/390px: llamó al servidor (GET /api/me/pilot-feedback)",
+  "ok": true,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "B2 es/390px: axe = 0 sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 es/390px: guardar deshabilitado sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 es/390px: dar permiso queda registrado en el servidor (consentimiento pilot_feedback)",
+  "ok": true,
+  "x": "{\"consents\":[{\"purpose\":\"necessary\",\"required\":true,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null},{\"purpose\":\"professional_bridge\",\"required\":false,\"scope"
+ },
+ {
+  "n": "B2 es/390px: guardar crea la respuesta del propietario (versión ≥ 1)",
+  "ok": true,
+  "x": "{\"window\":\"day7\",\"status\":\"active\",\"version\":1,\"questionnaireVersion\":1,\"answers\":{\"helpedBy\":[],\"listened\":\"yes\",\"respected\":\"yes\",\"valueArea\":null,\"initialVal"
+ },
+ {
+  "n": "B2 es/390px: tras recargar la respuesta persiste",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 es/390px: retirar el permiso NO borra lo respondido",
+  "ok": true,
+  "x": "{\"consents\":[{\"purpose\":\"necessary\",\"required\":true,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersi | answers={\"helpedBy\":[],\"listened\":\"yes\",\"respected\":\"yes\",\"valueArea"
+ },
+ {
+  "n": "B2 es/390px: «Retirar mi respuesta» vacía lo respondido (answers vacío, estado withdrawn)",
+  "ok": true,
+  "x": "{\"window\":\"day7\",\"status\":\"withdrawn\",\"version\":2,\"questionnaireVersion\":1,\"answers\":null,\"lastRequestId\":null,\"permission\":{\"purpose\":\"pilot_feedback\",\"granted\":true}}"
+ },
+ {
+  "n": "B2 es/390px: axe = 0 al final",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 es/390px: sin desborde horizontal",
+  "ok": true,
+  "x": "-15"
+ },
+ {
+  "n": "B2 es/390px: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 en/1280px: sin franja de datos ficticios y con el bloque de permiso real",
+  "ok": true,
+  "x": "een only has the light theme for now. Elevation ▾ Skip to content ← BACK TO MY SPACE ES EN YOUR FEEDBACK IS OPTIONAL You can skip questions "
+ },
+ {
+  "n": "B2 en/1280px: llamó al servidor (GET /api/me/pilot-feedback)",
+  "ok": true,
+  "x": "GET /api/me/pilot-feedback"
+ },
+ {
+  "n": "B2 en/1280px: axe = 0 sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 en/1280px: guardar deshabilitado sin permiso",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 en/1280px: dar permiso queda registrado en el servidor (consentimiento pilot_feedback)",
+  "ok": true,
+  "x": "{\"consents\":[{\"purpose\":\"necessary\",\"required\":true,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersion\":1,\"decidedAt\":null},{\"purpose\":\"professional_bridge\",\"required\":false,\"scope"
+ },
+ {
+  "n": "B2 en/1280px: guardar crea la respuesta del propietario (versión ≥ 1)",
+  "ok": true,
+  "x": "{\"window\":\"day7\",\"status\":\"active\",\"version\":1,\"questionnaireVersion\":1,\"answers\":{\"helpedBy\":[],\"listened\":\"yes\",\"respected\":\"yes\",\"valueArea\":null,\"initialVal"
+ },
+ {
+  "n": "B2 en/1280px: tras recargar la respuesta persiste",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 en/1280px: retirar el permiso NO borra lo respondido",
+  "ok": true,
+  "x": "{\"consents\":[{\"purpose\":\"necessary\",\"required\":true,\"scope\":\"default\",\"status\":\"undecided\",\"version\":null,\"requiredVersi | answers={\"helpedBy\":[],\"listened\":\"yes\",\"respected\":\"yes\",\"valueArea"
+ },
+ {
+  "n": "B2 en/1280px: «Retirar mi respuesta» vacía lo respondido (answers vacío, estado withdrawn)",
+  "ok": true,
+  "x": "{\"window\":\"day7\",\"status\":\"withdrawn\",\"version\":2,\"questionnaireVersion\":1,\"answers\":null,\"lastRequestId\":null,\"permission\":{\"purpose\":\"pilot_feedback\",\"granted\":true}}"
+ },
+ {
+  "n": "B2 en/1280px: axe = 0 al final",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B2 en/1280px: sin desborde horizontal",
+  "ok": true,
+  "x": "-15"
+ },
+ {
+  "n": "B2 en/1280px: sin errores de consola",
+  "ok": true,
+  "x": ""
+ },
+ {
+  "n": "B3 A guarda una respuesta por API",
+  "info": "200/201"
+ },
+ {
+  "n": "B3 aislamiento: la respuesta de A no aparece en B (lecturas por separado, ids distintos)",
+  "ok": true,
+  "x": "A v3 B v2"
+ },
+ {
+  "n": "B3 B no puede pedir la respuesta de A con un userId en la URL (se ignora o se rechaza)",
+  "ok": true,
+  "x": "200"
+ },
+ {
+  "n": "B4 estado final (cuentas que QUEDAN, sin purgar)",
+  "info": "es294b-a-mwkubz4h@example.invalid: respuesta=withdrawn answers=vacío; permiso pilot_feedback no concedido || es294b-b-mwkubz4h@example.invalid: respuesta=withdrawn answers=vacío; permiso pilot_feedback no concedido"
+ }
+]
