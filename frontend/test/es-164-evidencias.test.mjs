@@ -8,11 +8,13 @@ import { evidenceEs, evidenceEn } from '../src/evidence/copy.ts'
 const page = readFileSync(new URL('../src/pages/EvidencePages.tsx', import.meta.url), 'utf8')
 
 test('ES-164: filtro por estado con radios nativos, fieldset/legend y conteo en región aria-live; filtra en el cliente', () => {
-  assert.match(page, /<fieldset className="evidence-filter"><legend>\{t\('evidence\.filter_status'\)\}<\/legend>/)
-  assert.match(page, /\(\['all', 'draft', 'confirmed'\] as const\)\.map\(value => <label key=\{value\}><input (ref=\{[^}]*\} )?type="radio" name="evidence-status"/)
-  assert.match(page, /<p role="status" aria-live="polite" className="evidence-count">/)
+  // ES-308 (PR 2): el grupo de radios nativos con fieldset/legend es el <ScaleField> de Cartografía (segmentos; aprobado en 12029/12030): misma leyenda, mismo name, mismos tres valores.
+  assert.match(page, /<ScaleField legend=\{t\('evidence\.filter_status'\)\} name="evidence-status" value=\{filter\}/)
+  assert.match(page, /\(\['all', 'draft', 'confirmed'\] as const\)\.map\(value => \(\{ value, label: t\(value === 'all'/)
+  assert.match(readFileSync(new URL('../src/cartografia/controls.tsx', import.meta.url), 'utf8'), /<legend className="cg-label">\{legend\}<\/legend>[\s\S]*<input type="radio" name=\{name\}/)
+  assert.match(page, /<p role="status" aria-live="polite" className="pg-count">/)
   assert.match(page, /state\.rows\.filter\(row => filter === 'all' \|\| row\.status === filter\)/)
-  assert.match(page, /\{t\('evidence\.filter_none'\)\} <button type="button" className="elv-link" onClick=\{\(\) => \{ setFilter\('all'\)(; setFocusAll\(true\))? \}\}>/)
+  assert.match(page, /\{t\('evidence\.filter_none'\)\} <button type="button" className="cg-linkbtn" onClick=\{\(\) => \{ setFilter\('all'\)(; setFocusAll\(true\))? \}\}>/)
   // el filtro no cambia las llamadas al servidor
   assert.ok(!/api\.list\([^)]*filter/.test(page))
 })
@@ -33,12 +35,14 @@ test('ES-164: textos ES/EN del filtro, borrar, revisar e incierto, sin promesas 
 })
 
 test('ES-164: la línea «queda como respaldo de tu nivel» va sobre el aviso de la revisión', () => {
-  assert.match(page, /<p>\{l\('review_effect'\)\}<\/p><p className="evidence-warning">\{l\('warning'\)\}<\/p>/)
+  assert.match(page, /<p>\{l\('review_effect'\)\}<\/p><Banner title=\{l\('warning'\)\} \/>/) // ES-308 (PR 2): el aviso es un <Banner> de Cartografía; mismo orden (efecto primero, advertencia después)
 })
 
 test('ES-164: el mensaje de resultado incierto del editor se anuncia UNA vez (role=alert); role=status solo para «Guardando…»', () => {
   assert.match(page, /\{phase === 'saving' && <p role="status">\{l\('saving'\)\}<\/p>\}/)
   assert.ok(!/l\(pending\.ack \? 'uncertain' : 'uncertain_write'\)/.test(page), 'el texto de incierto no se repite en un status')
   const editor = page.slice(page.indexOf('function EvidenceEditor'))
-  assert.equal((editor.match(/role="alert" className="evidence-error-box"/g) || []).length, 1)
+  assert.equal((editor.match(/<Banner kind="error" title=\{l\(message\)\}>/g) || []).length, 1) // ES-308 (PR 2): <Banner kind="error"> es el role="alert" (pieces.tsx); sigue habiendo UNO solo en el editor
+  assert.match(readFileSync(new URL('../src/cartografia/pieces.tsx', import.meta.url), 'utf8'), /role=\{kind === 'error' \? 'alert' : 'note'\}/)
+  assert.doesNotMatch(editor, /role="alert"/)
 })

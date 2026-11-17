@@ -2,17 +2,13 @@ import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va
 import type { ReactNode, MouseEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
-import './evidence.css'
-export function EvidenceShell({ title, children, onLeave }: { title: string; children: ReactNode; onLeave?: (event: MouseEvent<HTMLAnchorElement>) => void }) {
-  const { t, lang, setLang } = useLanguage()
-  return <div className="evidence-scope">
-    <a href="#evidence-main" className="evidence-skip elv-link">{t('evidence.skip')}</a>
-    <header><span>{t('logo')}</span><div className="elv-join" role="group" aria-label={t('evidence.language')}>
-      {(['es', 'en'] as const).map(value => <button type="button" className="elv-btn elv-btn-ghost elv-join-item" key={value} aria-pressed={lang === value} onClick={() => setLang(value)}>{value.toUpperCase()}</button>)}
-    </div></header>
-    <div id="evidence-main" tabIndex={-1}>
-      <nav><Link className="elv-link" to="/app/dashboard" onClick={onLeave}>{t('evidence.back')}</Link><Link className="elv-link" to="/app/evidence" onClick={onLeave}>{t('evidence.list')}</Link></nav>
-      <h1>{title}</h1>{children}
-    </div>
-  </div>
+import { PersonScreen } from '../space/PersonScreen'
+// ES-308 (PR 2): las pantallas de evidencias van dentro del marco de persona (PersonLayout, ES-153): el encabezado, el selector de idioma, el tema y «Saltar al contenido» los pone el marco.
+// Aquí queda la cabecera de pantalla en Cartografía y los dos enlaces de vuelta (con la guarda de «cambios sin guardar» del editor).
+export function EvidenceShell({ title, lead, children, onLeave }: { title: string; lead?: string; children: ReactNode; onLeave?: (event: MouseEvent<HTMLAnchorElement>) => void }) {
+  const { t } = useLanguage()
+  return <PersonScreen title={title} lead={lead}>
+    <nav className="pg-nav"><Link className="cg-linkbtn" to="/app/dashboard" onClick={onLeave}>{t('evidence.back')}</Link><Link className="cg-linkbtn" to="/app/evidence" onClick={onLeave}>{t('evidence.list')}</Link></nav>
+    {children}
+  </PersonScreen>
 }

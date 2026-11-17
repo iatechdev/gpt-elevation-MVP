@@ -77,20 +77,21 @@ test('ES-110 evidencia: acepta origen de la hoja de vida y «viene del chat», r
 })
 
 test('ES-110 estructura: bandeja con nada marcado por defecto, sin nivel, diálogo accesible y reintento con el mismo requestId; lista con borrar confirmado y editar solo si no viene del chat', () => {
-  const page = read('../src/evidence/ResumeSkillsPage.tsx'); const origin = read('../src/evidence/ResumeOrigin.tsx'); const list = read('../src/pages/EvidencePages.tsx'); const css = read('../src/evidence/evidence.css')
+  const page = read('../src/evidence/ResumeSkillsPage.tsx'); const origin = read('../src/evidence/ResumeOrigin.tsx'); const list = read('../src/pages/EvidencePages.tsx')
   assert.match(page, /useState<Set<string>>\(new Set\(\)\)/) // por defecto ninguna marcada
   assert.doesNotMatch(page + origin, /level\b(?!_none)|nivel (alto|medio|bajo)/i) // ningún nivel numérico ni de dominio
   // ES-308: el diálogo es el <Dialog> de Cartografía (modal nativo): aria-modal y título enlazado, Esc (onCancel) cierra salvo mientras guarda, Tab y Shift+Tab atrapados y el foco vuelve a quien lo abrió.
   assert.match(page, /<Dialog open=\{dialog\} onClose=\{closeDialog\}/); assert.match(page, /const closeDialog = \(\) => \{ if \(saving\) return; setDialog\(false\) \}/)
   const dialogSource = read('../src/cartografia/interactive.tsx')
   assert.match(dialogSource, /aria-modal="true" aria-labelledby=\{titleId\}/); assert.match(dialogSource, /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/); assert.match(dialogSource, /event\.shiftKey/); assert.match(dialogSource, /target\.focus\(\)/)
-  assert.match(page, /<CheckField className="pg-pick"/); assert.match(read('../src/cartografia/cartografia.css'), /\.cg-check input \{ width: 1\.4rem; height: 1\.4rem/) // casilla grande; el objetivo (≥ 24 px, WCAG 2.5.8) lo mide es308-hojas-check.cjs con axe target-size
+  assert.match(page, /<CheckField className="pg-pick"/); assert.match(read('../src/cartografia/cartografia.css'), /\.cg-check input \{ width: 1\.5rem; height: 1\.5rem; min-width: 24px; min-height: 24px/) // casilla grande y NUNCA menor de 24 px (WCAG 2.5.8; E304-2: antes 1.4rem = 22,4 px); además la mide es308-hojas-check.cjs con axe target-size
   assert.match(page, /requestId\.current = newId\(\)/) // la selección nueva es una solicitud nueva; reintentar la misma no duplica
   assert.match(page, /api\.promote\(chosen\.map\(skill => skill\.name\), requestId\.current\)/); assert.match(page, /disabled=\{!selectable\(skill\)\}/)
   assert.match(page, /aria-live="polite"/); assert.match(page, /role="status" aria-busy="true"/)
   assert.doesNotMatch(page + origin, /localStorage|sessionStorage|document\.cookie|indexedDB/) // la sesión la lee el módulo común; estas pantallas no guardan nada en el navegador
-  assert.match(origin, /evidence-badge-dashed/); assert.match(origin, /evidence-badge-solid/); assert.match(css, /dashed/) // «declarada» y «respaldada» difieren por forma
+  assert.match(origin, /<Chip symbol="○">/); assert.match(origin, /<Chip tone="ok" symbol="✓">/) // ES-308 (PR 2): «declarada» (○) y «respaldada» (✓) siguen diferenciándose por símbolo y palabra, no solo por color (antes: borde punteado frente a relleno)
   assert.match(origin, /declared = row\.status === 'draft'/) // sigue «declarada» hasta que la persona la respalda y confirma
-  assert.match(list, /role="alertdialog"/); assert.match(list, /!row\.fromChat && <Link/); assert.match(list, /api\.remove\(id\)/); assert.match(list, /opener\.current\?\.focus\(\)/)
+  // ES-308 (PR 2): la confirmación de borrar es el <Dialog> de Cartografía (modal nativo) y el foco vuelve a quien la abrió (target.focus() ya se comprueba arriba)
+  assert.match(list, /<Dialog open=\{confirmId !== null\} onClose=\{cancel\}/); assert.doesNotMatch(list, /alertdialog|modalKeyDown/); assert.match(list, /!row\.fromChat && <Link/); assert.match(list, /api\.remove\(id\)/)
   assert.match(list, /edit_chat_only/); assert.doesNotMatch(list, /edit_pending/) // el aviso de «edición pendiente» ya no aplica
 })
