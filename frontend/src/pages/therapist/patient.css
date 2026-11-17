@@ -1,0 +1,53 @@
+/* ES-309 (PR 2): ficha de la persona (/therapist/patient/:id) en Cartografía. Solo tokens --cg-*; sin colores fijos ni estilos en línea.
+   Reutiliza las piezas comunes (cg-card, cg-btn, cg-chip, cg-banner, cg-figures, cg-items, cg-field, cg-dialog) y los ayudantes de panel.css (.tp-*). */
+.pf { display: grid; gap: 1rem; align-content: start; min-height: 100dvh; }
+.pf > * { min-width: 0; }
+.pf-head { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: flex-start; justify-content: space-between; }
+.pf-head > :first-child { flex: 1 1 16rem; min-width: 0; }
+.pf-head .pg-title { overflow-wrap: anywhere; }
+.pf-head .tp-facts { margin: 0; }
+.pf-back { margin: 0 0 0.9rem; }
+.pf-notice { flex-basis: 100%; margin: 0; }
+.pf-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
+.pf-pair > * { min-width: 0; }
+@media (min-width: 1000px) { .pf-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+.pf-block { margin: 0; min-width: 0; }
+.pf-block > h2, .pf-bar > h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: 0.03em; margin: 0; }
+.pf-block > h2 { margin-bottom: 0.6rem; }
+.pf-bar { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: flex-end; justify-content: space-between; margin-bottom: 0.6rem; }
+.pf-bar .cg-field { margin: 0; min-width: 11rem; }
+.pf-bar__tools { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
+.pf-block .cg-figures { margin: 0.2rem 0 0; }
+.pf-block > p { margin: 0.4rem 0 0; }
+
+/* Notas, historial emocional y valoraciones: filas de ItemList. */
+.pf-row { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; }
+.pf-row > :first-child { flex: 1 1 12rem; min-width: 0; }
+.pf-day { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.pf-day .cg-chip { margin-inline-end: 0.5rem; vertical-align: 0.1em; }
+.pf-text { margin: 0.4rem 0 0; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf-line { margin: 0; overflow-wrap: anywhere; }
+.pf-small { margin: 0; color: var(--cg-muted); font-size: 0.9rem; }
+
+/* Resumen con IA. */
+.pf-summary { margin: 0 0 0.5rem; line-height: 1.7; overflow-wrap: anywhere; }
+.pf-aihead { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+.pf-aihead > h2 { margin: 0; }
+.pf-alert { color: var(--cg-err); }
+.pf-alert p { margin: 0.5rem 0 0; }
+.pf-alert p::before { content: '\26A0\00a0'; }
+.pf-alert .cg-btn { margin-top: 0.5rem; }
+
+/* Editor de notas y agendar: errores de campo y contador. */
+.pf-err { margin: 0.25rem 0 0; min-height: 0; }
+.pf-err:empty { margin: 0; }
+.pf-err:empty::before { content: none; }
+.pf-over { color: var(--cg-err); }
+.pf-over::before { content: '\26A0\00a0'; }
+.pf-two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 0.75rem; }
+@media (min-width: 480px) { .pf-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.pf-two .cg-field { margin-top: 0.5rem; }
+
+@media (prefers-reduced-motion: reduce) { .pf * { transition: none !important; animation: none !important; } }
+.pf-conflict { margin-top: 0.75rem; }

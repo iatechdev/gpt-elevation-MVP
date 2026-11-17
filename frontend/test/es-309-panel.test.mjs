@@ -10,12 +10,12 @@ const dir = '../src/pages/therapist/'
 const files = ['TherapistDashboard.tsx', 'PanelSections.tsx', 'ValidationBlock.tsx', 'GuideBlock.tsx'].map((name) => [name, read(dir + name)])
 const css = read(dir + 'panel.css')
 
-test('ES-309: el panel está en la lista de rutas migradas del área Profesional y la ficha todavía no; cada ruta de la lista existe en App.tsx', () => {
+test('ES-309: el panel y la ficha están en la lista de rutas migradas del área Profesional; cada ruta de la lista existe en App.tsx', () => {
   assert.equal(isMigratedProfessionalPath('/therapist/dashboard'), true)
-  assert.equal(isMigratedProfessionalPath('/therapist/patient/12'), false, 'la ficha migra en el PR 2')
+  assert.equal(isMigratedProfessionalPath('/therapist/patient/12'), true, 'la ficha migró en el PR 2')
   assert.equal(isMigratedProfessionalPath('/therapist/session/3'), false, 'la sala de sesión (ES-179) queda fuera')
   const app = read('../src/App.tsx')
-  for (const path of MIGRATED_PROFESSIONAL_PATHS) assert.ok(app.includes(`path="${path}"`), `${path} en App.tsx`)
+  for (const path of MIGRATED_PROFESSIONAL_PATHS) assert.ok(app.includes(`path="${path}"`) || app.includes(`path="${path}/`), `${path} en App.tsx`)
 })
 
 test('ES-309: el marco Profesional pide tema del sistema y quita elv-theme solo para las pantallas migradas', () => {
@@ -69,4 +69,17 @@ test('ES-309: la validación usa chips con la palabra del estado y la etiqueta d
 
 test('ES-309: no hay almacenamiento del navegador nuevo en el panel', () => {
   for (const [name, source] of files) assert.doesNotMatch(source.replace(/localStorage\.getItem\('elevation_token'\)/g, ''), /localStorage|sessionStorage|indexedDB|document\.cookie/, name)
+})
+
+// ES-309 (PR 2): la ficha (/therapist/patient/:id) en Cartografía, sin estilos en línea ni colores fijos ni piezas del tema anterior.
+const fichaFiles = ['TherapistPatient.tsx', 'FollowupNotes.tsx', 'FollowupHistory.tsx', 'AiSummaryBlock.tsx', 'ScheduleSession.tsx'].map((name) => [name, read(dir + name)])
+const fichaCss = read(dir + 'patient.css')
+test('ES-309 (PR 2): los cinco archivos de la ficha no llevan estilos en línea, colores fijos ni clases del tema anterior; sus diálogos usan el Dialog compartido', () => {
+  for (const [name, source] of fichaFiles) {
+    assert.doesNotMatch(source, /style=\{|CSSProperties|#[0-9a-fA-F]{3,8}\b|rgb\(|elv-|th-notice|th-pair|panelStyles|<dialog|showModal/, name)
+    assert.match(source, /cartografia|cg-card|cg-btn/, name + ' usa Cartografía')
+  }
+  for (const name of ['FollowupNotes.tsx', 'ScheduleSession.tsx']) assert.match(fichaFiles.find(([n]) => n === name)[1], /<Dialog\b[\s\S]*?open=\{/, name + ' abre con el Dialog compartido')
+  assert.match(read('../src/cartografia/interactive.tsx'), /dialog\.showModal\(\)/)
+  assert.doesNotMatch(fichaCss.replace(/\/\*[\s\S]*?\*\//g, ''), /#[0-9a-fA-F]{3,8}\b|rgb\(/)
 })

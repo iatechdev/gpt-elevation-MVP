@@ -1,7 +1,8 @@
 // ES-178 (F2): resumen con IA de la ficha. «Generado con IA · fecha · a partir de n registros de ánimo y valoraciones. No incluye tus notas.» (nunca «y n notas»: desde ES-79/102 las notas no se envían al proveedor),
+// ES-309 (PR 2): en Cartografía (cg-card, Button, tokens --cg-*); sin estilos en línea. Ni la lógica ni los textos cambian.
 // aviso de lectura automática (no es un diagnóstico), y errores por código: `ai_budget_exhausted` y `ai_budget_not_configured` NO se reintentan (con la fecha de reinicio cuando existe); el resto, con «Reintentar».
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { cardStyle } from './panelStyles'
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '../../cartografia'
 import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -10,13 +11,11 @@ type T = (key: string, params?: Record<string, string | number>) => string
 interface Summary { summary: string; generatedAt: string; basedOn: { sessions: number } }
 type Problem = { key: string; params?: Record<string, string | number>; retry: boolean }
 
-const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#0F766E', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
 
 export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T; locale: string }) {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<Problem | null>(null)
-  const button = useRef<HTMLButtonElement>(null)
   const section = useRef<HTMLElement>(null)
   const [announce, setAnnounce] = useState('') // E227-2: si el foco ya no está aquí, el resultado se anuncia sin moverlo
   const focusAfter = useRef(false) // E227-1: el foco se mueve DESPUÉS del pintado (efecto), no con un temporizador previo a él
@@ -31,7 +30,7 @@ export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T
     // E227-2: el foco solo se devuelve si sigue en este bloque (o en <body>, donde cae al deshabilitar algo); si la persona ya trabaja en otro control, no se le quita.
     const active = document.activeElement
     const stillHere = active === null || active === document.body || (section.current?.contains(active) ?? false)
-    if (stillHere) (problem?.retry ? document.getElementById('fu-ai-retry') : button.current)?.focus()
+    if (stillHere) document.getElementById(problem?.retry ? 'fu-ai-retry' : 'fu-ai-button')?.focus()
     else if (!problem && summary) setAnnounce(t('fu_ai_done'))
   }, [busy, problem]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al terminar una generación
 
@@ -54,25 +53,25 @@ export function AiSummaryBlock({ personId, t, locale }: { personId: string; t: T
 
   const noData = summary !== null && summary.basedOn.sessions === 0
   return (
-    <section ref={section} style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '0.75rem' }} aria-labelledby="fu-ai-title" aria-busy={busy}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 id="fu-ai-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.1rem', color: '#1C1917', margin: 0 }}>{t('fu_ai')}</h2>
-        <button ref={button} id="fu-ai-button" type="button" style={{ ...primary, opacity: busy || limited ? 0.7 : 1 }} aria-disabled={busy || limited} aria-describedby={limited ? 'fu-ai-problem' : undefined} onClick={() => void generate()}>
+    <section ref={section} className="cg-card pf-block" aria-labelledby="fu-ai-title" aria-busy={busy}>
+      <div className="pf-aihead">
+        <h2 id="fu-ai-title">{t('fu_ai')}</h2>
+        <Button id="fu-ai-button" aria-disabled={busy || limited} aria-describedby={limited ? 'fu-ai-problem' : undefined} onClick={() => void generate()}>
           {busy ? t('fu_ai_generating') : summary ? t('fu_ai_regenerate') : t('fu_ai_generate')}
-        </button>
+        </Button>
       </div>
-      <div role="status" className="sr-only">{announce}</div>
+      <div role="status" className="cg-sr">{announce}</div>
       {summary && (
         <div>
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#1C1917', lineHeight: 1.7, overflowWrap: 'anywhere' }}>{noData ? t('fu_ai_nodata') : summary.summary}</p>
-          <p style={{ margin: 0, fontSize: '0.78rem', color: '#44403C' }}>{noData ? '' : t('fu_ai_label', { date: day(summary.generatedAt), n: summary.basedOn.sessions })}</p>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: '#44403C' }}>{t('fu_ai_hint')}</p>
+          <p className="pf-summary">{noData ? t('fu_ai_nodata') : summary.summary}</p>
+          <p className="pf-small">{noData ? '' : t('fu_ai_label', { date: day(summary.generatedAt), n: summary.basedOn.sessions })}</p>
+          <p className="pf-small">{t('fu_ai_hint')}</p>
         </div>
       )}
-      <div role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
+      <div role="alert" className="pf-alert">
         {problem && <>
-          <p id="fu-ai-problem" style={{ margin: 0 }}>{t(problem.key, problem.params)}</p>
-          {problem.retry && <button id="fu-ai-retry" type="button" style={{ ...primary, background: 'transparent', border: '0.5px solid #0F766E', color: '#0F766E', marginTop: '0.5rem' }} aria-disabled={busy} onClick={() => void generate()}>{t('fu_ai_retry')}</button>}
+          <p id="fu-ai-problem">{t(problem.key, problem.params)}</p>
+          {problem.retry && <Button id="fu-ai-retry" variant="ghost" aria-disabled={busy} onClick={() => void generate()}>{t('fu_ai_retry')}</Button>}
         </>}
       </div>
     </section>
