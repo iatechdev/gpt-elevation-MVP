@@ -1,0 +1,56 @@
+== base
+  unit: # pass 9 # fail 0 
+== m1 sin registerLimiter
+M aplicada
+  unit: # pass 8 # fail 1 
+  PG es-221: # pass 4 # fail 2 
+  mi guion (limit):
+RESUMEN {"total":8,"fallas":5}
+FALLA [pr] R5 el 429 llega en la petición 31 (400 y 201 cuentan) primer 429 en -1
+FALLA [pr] R5 429 con cuerpo ES y EN, sin 500 201 {"message":"Usuario creado exitosamente. ¡Bienvenido a Elevation!"}
+== m2 limitador después de validateBody
+M aplicada
+  unit: # pass 8 # fail 1 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (limit):
+RESUMEN {"total":8,"fallas":1}
+FALLA [pr] R5 cuerpo JSON sin campos con el límite agotado → 429 (el limitador va antes de validateBody; sin 500) 400
+== m4 403 de inactiva de vuelta
+M aplicada
+  unit: # pass 6 # fail 3 
+  PG es-221: # pass 4 # fail 2 
+  mi guion (func):
+RESUMEN {"total":13,"fallas":4}
+FALLA [pr] R1 inactiva responde IGUAL que activa (status 403, cuerpo y cabeceras) 403 {"error":"El correo ya está registrado."} | true
+FALLA [pr] R1 MAYÚSCULAS: igual que activa 403 {"error":"El correo ya está registrado."}
+== m5 env respetado en producción
+M aplicada
+  unit: # pass 8 # fail 1 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (limit):
+RESUMEN {"total":8,"fallas":4}
+FALLA [pr] R5 el 429 llega en la petición 31 (400 y 201 cuentan) primer 429 en -1
+FALLA [pr] R5 429 con cuerpo ES y EN, sin 500 201 {"message":"Usuario creado exitosamente. ¡Bienvenido a Elevation!"}
+== m6 aceptación solo si el correo NO existe (orden)
+M aplicada
+  unit: # pass 8 # fail 1 
+  PG es-221: # pass 4 # fail 2 
+  mi guion (func):
+RESUMEN {"total":13,"fallas":1}
+FALLA [pr] R3 sin aceptación: mismo cuerpo `terms_required` para existente, inactiva y nueva 400 undefined,400 undefined,400 terms_required
+== m7 max sin validar (acepta negativos)
+M aplicada
+  unit: # pass 8 # fail 1 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (limit):
+RESUMEN {"total":8,"fallas":0}
+== m3 hash después de la consulta
+M aplicada
+M aplicada
+  unit: # pass 8 # fail 1 
+  PG es-221: # pass 4 # fail 2 
+  mi guion (timing):
+RESUMEN {"total":2,"fallas":2}
+FALLA [pr] R4 razón mediana dup activo / nuevo en [0,8; 1,25] (umbral aprobado) 0.03
+FALLA [pr] R4 razón mediana dup inactivo / nuevo en [0,8; 1,25] 0.03
+fin
