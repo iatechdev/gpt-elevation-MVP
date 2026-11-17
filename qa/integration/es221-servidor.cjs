@@ -108,7 +108,31 @@ const mkInactive = async () => { const r = await reg(); await q('update "Users" 
     const lsamp = (async () => { while (!stop) { const r = await raw('POST', '/api/login', { email: act, password: PW }); logins.push(r.ms); await sleep(1500) } })()
     const t0 = Date.now(); const burst = await Promise.all(Array.from({ length: 30 }, () => reg({}, E.BURST === 'new' ? mail() : act))); const dur = Date.now() - t0; stop = true; await sampler; await lsamp
     info('R8 ráfaga de', E.BURST === 'new' ? '30 correos NUEVOS' : '30 duplicados'); info('R8 línea base /health (ms) p50/p95', `${med(base).toFixed(1)}/${pct(base, .95).toFixed(1)}`); info('R8 durante ráfaga de 30 duplicados (ms) p50/p95/máx, muestras', `${med(during).toFixed(1)}/${pct(during, .95).toFixed(1)}/${Math.max(...during).toFixed(1)}, n=${during.length}; ráfaga completa en ${dur} ms; login(ms) ${logins.map(x => x.toFixed(0)).join(',')}`)
-    ck('R8 p95 de /api/health durante la ráfaga < 1000 ms (umbral aprobado)', pct(during, .95) < 1000, pct(during, .95).toFixed(1)); ck('R8 la ráfaga no produce 500', !burst.some(r => r.s >= 500), [...new Set(burst.map(r => r.s))].join(','))
+    ck('R8 p95 de /api/health durante la ráfaga < 1000 ms (umbral aprobado)', pct(during, .95) < 1000, pct(during, .95).toFixed(1)); ck('R8 la ráfaga no produce 500 (el 503 server_busy de la cola llena es esperado)', !burst.some(r => r.s >= 500 && r.s !== 503), [...new Set(burst.map(r => r.s))].join(','))
+  })
+  if (CASES.includes('busy')) await sec('R14', async () => {
+    const p95 = a => pct(a, .95)
+    const regX = (ip, email) => raw('POST', '/api/register', { name: 'Persona Sintetica', email, password: PW, acceptedTerms: true, termsVersion: V }, { extra: { 'x-forwarded-for': `10.1.1.1, ${ip}` } }).then(r => ({ ...r, email }))
+    const dup = mail('dup'); await regX('203.0.113.200', dup); const ips = Array.from({ length: 6 }, (_, k) => `203.0.113.${10 + k}`); const n0 = await users()
+    const jobs = []; for (let k = 0; k < 25; k++) for (const ip of ips) jobs.push(regX(ip, k % 5 === 0 ? dup : mail('b')))
+    const hz = []; let stop = false; const samp = (async () => { while (!stop) { const t = process.hrtime.bigint(); await fetch(API + '/api/health'); hz.push(Number(process.hrtime.bigint() - t) / 1e6); await sleep(30) } })()
+    const t0 = Date.now(); const rs = await Promise.all(jobs); const dur = Date.now() - t0; stop = true; await samp
+    const by = {}; rs.forEach(r => { by[r.s] = (by[r.s] || 0) + 1 }); info('R14 150 simultáneos desde 6 IPs: estados', JSON.stringify(by) + ` en ${dur} ms; health p95 ${p95(hz).toFixed(0)} ms (n=${hz.length})`)
+    info('R14 latencia por respuesta (ms): admitidas p50/p95/máx; rechazadas 503 p50/máx', ((x, y) => `${med(x).toFixed(0)}/${pct(x, .95).toFixed(0)}/${Math.max(...x).toFixed(0)}; ${med(y).toFixed(0)}/${Math.max(...y).toFixed(0)}`)(rs.filter(r => r.s !== 503).map(r => r.ms), rs.filter(r => r.s === 503).map(r => r.ms)))
+    const busy = rs.filter(r => r.s === 503); const created = rs.filter(r => r.s === 201).length
+    ck('R14 hay rechazos 503 (la cola se llenó) y NINGÚN 500', busy.length > 0 && !rs.some(r => r.s >= 500 && r.s !== 503), JSON.stringify(by))
+    ck('R14 el 503 tiene cuerpo estable `server_busy` ES/EN', busy.every(r => r.j?.code === 'server_busy' && /Servidor ocupado/.test(r.t) && /Server busy/.test(r.t)), busy[0]?.t?.slice(0, 140))
+    ck('R14 el 503 es idéntico para un correo existente y uno nuevo (sin oráculo)', new Set(busy.map(r => r.t)).size === 1, [...new Set(busy.map(r => r.t))].length)
+    ck('R14 cuentas creadas = respuestas 201 (los 503 no crean nada)', (await users()) - n0 === created, `${(await users()) - n0} vs ${created}`)
+    ck('R14 mientras la cola estuvo llena, /api/health sigue por debajo de 1 s (p95)', p95(hz) < 1000, p95(hz).toFixed(0))
+    ck('R14 sin 429 durante la tormenta (25 por IP < 30): los 503 cuentan contra el cupo de IP como cualquier petición', !rs.some(r => r.s === 429), JSON.stringify(by))
+    // recuperación
+    const t1 = Date.now(); let ok = null; for (let k = 0; k < 40 && !ok; k++) { const r = await regX('203.0.113.99', mail('rec')); if (r.s === 201) ok = Date.now() - t1; else await sleep(500) }; ck('R14 un registro legítimo posterior entra (201) sin quedar atascado', ok !== null, ok === null ? 'nunca' : `${ok} ms tras la tormenta`)
+    const lat = []; for (let k = 0; k < 5; k++) lat.push((await regX('203.0.113.98', mail('lat'))).ms); ck('R14 la cola se vació: un registro normal vuelve a tardar < 1,5 s', med(lat) < 1500, `mediana ${med(lat).toFixed(0)} ms`)
+    { const six = await Promise.all(Array.from({ length: 6 }, () => regX('203.0.113.77', mail('p6')))); ck('R14 piloto: 6 personas tras la MISMA IP registrándose a la vez → 6 × 201 (la cola de 20 las absorbe)', six.every(r => r.s === 201), six.map(r => r.s).join(',')) }
+    { const th = await Promise.all(Array.from({ length: 30 }, () => regX('203.0.113.78', mail('t30')))); const by2 = {}; th.forEach(r => { by2[r.s] = (by2[r.s] || 0) + 1 }); info('R14 ráfaga de 30 desde UNA IP (tope del límite): estados', JSON.stringify(by2)); ck('R14 ráfaga de 30 de una IP: sin 500 y los rechazados son 503 server_busy ES/EN', !th.some(r => r.s >= 500 && r.s !== 503) && th.filter(r => r.s === 503).every(r => r.j?.code === 'server_busy'), JSON.stringify(by2)) }
+    // el 503 cuenta contra el límite por IP: la IP 203.0.113.10 mandó 25; 5 más y luego 429
+    const more = []; for (let k = 0; k < 6; k++) more.push((await regX(ips[0], mail('m'))).s); ck('R14 la IP que mandó 25 recibe 429 en la petición 31 (tope 30 intacto)', more.slice(0, 5).every(s => s !== 429) && more[5] === 429, more.join(','))
   })
   if (CASES.includes('hostile')) await sec('R11', async () => {
     const n0 = await users(); const act = (await reg()).email; const n1 = await users(); const bad = []

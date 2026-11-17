@@ -1,0 +1,48 @@
+== base
+  unit: # pass 8 # fail 0 
+== g1 el cupo no se libera
+M aplicada
+  unit: # pass 3 # fail 0 
+  PG es-221: # pass 0 # fail 1 
+  mi guion (timing):
+script rc=124
+== g2 cola sin tope
+M aplicada
+  unit: # pass 5 # fail 0 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (busy):
+script rc=1
+RESUMEN {"total":1,"fallas":1}
+FALLA [pr] R14: EXCEPCIÓN TypeError: Cannot read properties of undefined (reading 'toFixed')
+== g3 concurrencia 1000 (sin acotar)
+M aplicada
+  unit: # pass 3 # fail 5 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (perf):
+script rc=1
+RESUMEN {"total":2,"fallas":1}
+FALLA [pr] R8 p95 de /api/health durante la ráfaga < 1000 ms (umbral aprobado) 3053.2
+== g4 el rechazo por cola llena responde 500
+M aplicada
+  unit: # pass 7 # fail 1 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (busy):
+script rc=1
+RESUMEN {"total":1,"fallas":1}
+FALLA [pr] R14: EXCEPCIÓN TypeError: Cannot read properties of undefined (reading 'toFixed')
+== g5 el hash sale del semáforo
+M aplicada
+  unit: # pass 7 # fail 1 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (perf):
+script rc=1
+RESUMEN {"total":2,"fallas":1}
+FALLA [pr] R8 p95 de /api/health durante la ráfaga < 1000 ms (umbral aprobado) 3055.0
+== g6 cola por defecto 100 (E305-6 deshecho)
+M aplicada
+  unit: # pass 6 # fail 2 
+  PG es-221: # pass 6 # fail 0 
+  mi guion (busy):
+script rc=0
+RESUMEN {"total":11,"fallas":0}
+fin
