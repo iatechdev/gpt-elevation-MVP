@@ -46,7 +46,7 @@ test('ES-300: la forma del radar — sin nivel no hay punto; solo se unen vecino
 })
 
 test('ES-300: el modo del radar según cuántas capacidades y qué ventana (nombres hasta 12; con más, marcas solo en escritorio mientras quepan; si no, imagen + tabla)', () => {
-  assert.deepEqual([1, 8, 12].map(n => geo.radarMode(n, 390)), ['named', 'named', 'named']); assert.deepEqual([1, 8, 12].map(n => geo.radarMode(n, 1360)), ['named', 'named', 'named'])
+  assert.deepEqual([1, 8, 12].map(n => geo.radarMode(n, 390)), ['marks', 'marks', 'marks'], 'ES-322: con 12 o menos, solo marcas mientras los nombres no caben'); assert.deepEqual([1, 8, 12].map(n => geo.radarMode(n, 1360)), ['named', 'named', 'named'])
   assert.deepEqual([13, 16, 24].map(n => geo.radarMode(n, 1360)), ['marks', 'marks', 'marks']); assert.deepEqual([25, 100].map(n => geo.radarMode(n, 1360)), ['image', 'image'])
   assert.deepEqual([13, 16, 24, 30].map(n => geo.radarMode(n, 390)), ['image', 'image', 'image', 'image'], 'en móvil, más de 12 = imagen + tabla (las marcas de 24 px no caben sin solaparse)')
   assert.deepEqual([13, 16].map(n => geo.radarMode(n, 700)), ['image', 'image'], 'tableta (< 900 px) también')
@@ -125,4 +125,34 @@ test('ES-300: los anillos están a R/4, R/2, 3R/4 y R del centro (cambiar el rad
   const first = geo.ringPath(4, 4).split('L')[0]; assert.equal(first, 'M250 80', 'el anillo exterior (nivel 4) pasa por R = 120 sobre el eje vertical')
   assert.equal(geo.ringPath(4, 1).split('L')[0], 'M250 170', 'el anillo 1 está a R/4 = 30')
   assert.deepEqual([geo.radarShape([4, 4, 4]).dots[0].y, geo.radarShape([1, 1, 1]).dots[0].y], [80, 170], 'un nivel 4 cae sobre el anillo exterior y un 1 sobre el primero')
+})
+
+// ES-322 (E266-5): los ejes con nombre solo cuando caben; nunca se parte una palabra. El barrido de 640 a 1 360 px lo mide scripts/es322-radar-sweep.cjs; aquí, las reglas que lo sostienen.
+test('ES-322: fitsNamed / NAMED_MIN_VIEWPORT — nombres desde el umbral, marcas por debajo (con 12 o menos), y 13–24 / más de 24 no cambian', () => {
+  assert.ok(geo.NAMED_MIN_VIEWPORT >= 1096, 'el umbral no baja del primer ancho medido sin fallos (1 096 px; el último con fallo fue 1 088 px)')
+  for (const n of [1, 5, 8, 12]) {
+    assert.equal(geo.radarMode(n, geo.NAMED_MIN_VIEWPORT), 'named'); assert.equal(geo.radarMode(n, geo.NAMED_MIN_VIEWPORT - 1), 'marks'); assert.equal(geo.radarMode(n, 640), 'marks'); assert.equal(geo.radarMode(n, 1024), 'marks')
+  }
+  assert.equal(geo.fitsNamed(geo.NAMED_MIN_VIEWPORT), true); assert.equal(geo.fitsNamed(geo.NAMED_MIN_VIEWPORT - 1), false)
+  assert.deepEqual([13, 24].map(n => geo.radarMode(n, 1360)), ['marks', 'marks']); assert.deepEqual([25, 40].map(n => geo.radarMode(n, 1360)), ['image', 'image'])
+})
+
+test('ES-322: con marcas (ventana estrecha y 12 capacidades) el nombre y el nivel siguen en el nombre accesible; con nombres, igual que antes (2.5.3)', () => {
+  const levels = [4, 3, 2, 1, 4, 3, 2, 1, 4, 3, 2, 1]
+  const narrow = poly(levels, null, 1024), wide = poly(levels, null, 1360)
+  assert.ok(narrow.includes('radar-poly is-marks') && !narrow.includes('is-named'), 'a 1 024 px: marcas')
+  assert.ok(wide.includes('radar-poly is-named'), 'a 1 360 px: nombres')
+  for (const html of [narrow, wide]) { assert.equal((html.match(/class="radar-axis /g) ?? []).length, 12, 'un botón por capacidad'); assert.ok(html.includes('<b>Capacidad 1</b><span>Nivel 4 de 4</span>'), 'el texto del eje (su nombre accesible) sigue en el DOM') }
+})
+
+test('ES-322: CSS — las palabras no se parten (break-word + hyphens manual, no anywhere), caja de 26 %, y sin el bloque móvil de is-named (ya no hay is-named por debajo del umbral)', () => {
+  const css = read('../src/skill-map/radarPolygon.css'), axisB = css.split(/\r?\n/).find(line => line.startsWith('.cg-map .radar-axis b '))
+  assert.ok(axisB.includes('overflow-wrap: break-word') && axisB.includes('hyphens: manual') && !axisB.includes('anywhere'))
+  assert.ok(/\.cg-map \.radar-axis \{[^}]*max-width: 26%/.test(css) && !css.includes('is-named .radar-axis {'))
+})
+
+test('ES-322: el barrido muerde — mide solapes, desbordes y palabras partidas en 640–1 360 px (8 en 8), ES y EN, con N = 12, 8 y 5', () => {
+  const sweep = read('../scripts/es322-radar-sweep.cjs')
+  for (const part of ['FROM ?? 640', 'TO ?? 1360', 'STEP ?? 8', "['es', 'en']", '[12, 8, 5]', 'overlaps', 'overflow', 'split']) assert.ok(sweep.includes(part), part)
+  assert.ok(sweep.includes("includes('-')") && sweep.includes('process.exit(1)'), 'una palabra con guion puede partirse; cualquier otro fallo termina con error')
 })
