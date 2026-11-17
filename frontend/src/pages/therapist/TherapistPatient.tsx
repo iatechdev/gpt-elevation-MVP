@@ -1,9 +1,13 @@
 // HU-046 + HU-050 + HU-067 + HU-082 — Patient history + clinical notes + AI summary + schedule + i18n
 // HU-076 — Design system tokens
+// ES-309 (PR 2): en Cartografía (cg-card, Figures, Banner, tokens --cg-*); sin estilos en línea. Ni los textos, ni la lógica, ni el servidor cambian.
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { colors, spacing, typography } from '../../styles/tokens'
+import '../../cartografia/pages.css'
+import './panel.css'
+import './patient.css'
+import { Banner, LinkButton } from '../../cartografia'
 import { useLanguage } from '../../i18n/useLanguage'
 import { invalidateStoredSession } from '../../access/session'
 import { AiSummaryBlock } from './AiSummaryBlock'
@@ -86,86 +90,41 @@ export function TherapistPatient() {
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
 
-  if (loading) return (
-    <p role="status" style={{ color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody }}>
-      {t('therapist_loading_history')}
-    </p>
-  )
+  // El estado de carga ocupa el mismo alto mínimo que la ficha (.pf): el pie no salta al llegar los datos (CLS <= 0,1 a 390 px con CPU×4).
+  if (loading) return <div className="pf" aria-busy="true"><p role="status" className="tp-muted">{t('therapist_loading_history')}</p></div>
   if (notShared) return (
-    <div style={{ fontFamily: typography.fontBody }}>
-      <div className="th-notice" role="note">
-        <span aria-hidden="true">ℹ️</span>
-        <span>{t('therapist_not_shared')}</span>
-      </div>
-      <button
-        onClick={() => navigate('/therapist/dashboard')}
-        style={{
-          marginTop: spacing.lg, background: 'none', border: 'none', cursor: 'pointer',
-          color: colors.textMuted, fontSize: 13, fontFamily: typography.fontBody, padding: 0,
-        }}
-      >
-        ← {t('room_t_back')}
-      </button>
+    <div className="pf">
+      <Banner title={t('therapist_not_shared')} />
+      <p className="pf-back"><LinkButton onClick={() => navigate('/therapist/dashboard')}>← {t('room_t_back')}</LinkButton></p>
     </div>
   )
-  if (error) return (
-    <p style={{ color: colors.danger, fontSize: 13, fontFamily: typography.fontBody }}>
-      {error}
-    </p>
-  )
+  if (error) return <div className="pf"><Banner kind="error" title={error} /></div>
   if (!patient) return null
 
   return (
-    <div style={{ fontFamily: typography.fontBody }}>
+    <div className="pf">
 
-      {/* BACK + HEADER */}
-      <div style={{ marginBottom: spacing.xxl }}>
-        <button
-          onClick={() => navigate('/therapist/dashboard')}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: colors.textMuted, fontSize: 13,
-            fontFamily: typography.fontBody, marginBottom: spacing.lg,
-            display: 'flex', alignItems: 'center', gap: spacing.xs, padding: 0,
-          }}
-        >
-          {t('therapist_back')}
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: spacing.lg }}>
-          <div>
-            <h1 style={{
-              fontFamily: typography.fontDisplay, fontWeight: 300,
-              fontSize: '1.8rem', color: colors.text, margin: 0,
-            }}>
-              {patient.name}
-            </h1>
-            <p style={{ fontSize: 13, color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>
-              {patient.email} · {t('therapist_member_since')} {formatDate(patient.createdAt)}
-            </p>
-          </div>
-
-          <ScheduleSession personId={String(id)} personName={patient.name} t={t} locale={locale} />
+      {/* VOLVER + CABECERA */}
+      <div className="pf-head">
+        <div>
+          <p className="pf-back"><LinkButton onClick={() => navigate('/therapist/dashboard')}>{t('therapist_back')}</LinkButton></p>
+          <h1 className="pg-title">{patient.name}</h1>
+          <p className="tp-facts">{patient.email} · {t('therapist_member_since')} {formatDate(patient.createdAt)}</p>
         </div>
+        <ScheduleSession personId={String(id)} personName={patient.name} t={t} locale={locale} />
       </div>
 
       {/* CIFRAS (ES-178 F1) */}
-      <div style={{ marginBottom: spacing.xxl }}>
-        <FiguresBlock moodLogs={moodLogs} ratings={ratings} notesCount={notes.length} t={t} locale={locale} />
-      </div>
+      <FiguresBlock moodLogs={moodLogs} ratings={ratings} notesCount={notes.length} t={t} locale={locale} />
 
       {/* RESUMEN CON IA (ES-178 F2) */}
-      <div style={{ marginBottom: spacing.lg }}>
-        <AiSummaryBlock personId={String(id)} t={t} locale={locale} />
-      </div>
+      <AiSummaryBlock personId={String(id)} t={t} locale={locale} />
 
       {/* NOTAS DE SEGUIMIENTO (ES-178 F1) */}
-      <div style={{ marginBottom: spacing.lg }}>
-        <FollowupNotes personId={String(id)} notes={notes} reload={refreshHistory} t={t} locale={locale} />
-      </div>
+      <FollowupNotes personId={String(id)} notes={notes} reload={refreshHistory} t={t} locale={locale} />
 
       {/* HISTORIAL EMOCIONAL Y VALORACIONES (ES-178 F1) */}
-      <div className="th-pair">
+      <div className="pf-pair">
         <MoodHistoryBlock moodLogs={moodLogs} t={t} locale={locale} />
         <RatingsBlock ratings={ratings} t={t} locale={locale} />
       </div>

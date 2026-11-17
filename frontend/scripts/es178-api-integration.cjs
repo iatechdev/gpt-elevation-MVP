@@ -112,7 +112,7 @@ const { pathToFileURL } = require('node:url');
       { const { context, page, errors } = await open(lang, width, sharer.id);
         await page.getByRole('heading', { level: 2, name: t.notes }).waitFor({ timeout: 10000 });
         const main = await page.locator('main, body').first().innerText();
-        assert.ok(main.includes('Ana Comparte'), 'nombre real de quien comparte en el encabezado');
+        assert.ok(main.toLowerCase().includes('ana comparte'), 'nombre real de quien comparte en el encabezado') /* ES-309: el título va en mayúsculas por CSS (innerText lo refleja): se compara sin distinguir mayúsculas */;
         assert.ok(lang === 'es' ? main.includes(`${fmt(expectedMood)} de 5`) && main.includes(`${fmt(expectedRating)} de 5`) : main.includes(`${fmt(expectedMood)} of 5`) && main.includes(`${fmt(expectedRating)} of 5`), `cifras de la base: ánimo ${expectedMood}, valoración ${expectedRating} (${tag})`);
         assert.ok(expectedRating === 4.3, 'la calificación nula no cuenta como 0: (4+4+5)/3 = 4,3');
                 const f1 = await page.locator('section[aria-label], section[aria-labelledby^="fu-"]').evaluateAll((els) => els.map((e) => e.innerText).join(' | ')); // bloques de F1; el resumen con IA y agendar (F2) conservan su interfaz
@@ -128,8 +128,8 @@ const { pathToFileURL } = require('node:url');
       // A2) E226-2: con el tope de 60 alcanzado, las cifras lo dicen junto al número (sin inventar un total) — la base tiene 62 registros
       { const { context, page } = await open(lang, width, sharer.id);
         await page.getByRole('heading', { level: 2, name: t.notes }).waitFor({ timeout: 10000 });
-        const figures = await page.locator('section[aria-label]').first().innerText();
-        assert.ok(lang === 'es' ? figures.includes('Registros de ánimo (últimos 60)') && figures.includes('Ánimo promedio de los últimos 60 registros') : figures.includes('Mood entries (last 60)') && figures.includes('Average mood of the last 60 entries'), 'etiquetas con el tope: ' + figures);
+        const figures = (await page.locator('section[aria-label]').first().innerText()).toLowerCase(); // ES-309: los rótulos de las cifras van en mayúsculas por CSS: se comparan sin distinguirlas
+        assert.ok(lang === 'es' ? figures.includes('registros de ánimo (últimos 60)') && figures.includes('ánimo promedio de los últimos 60 registros') : figures.includes('mood entries (last 60)') && figures.includes('average mood of the last 60 entries'), 'etiquetas con el tope: ' + figures);
         assert.ok(figures.includes('60') && !figures.includes('62'), 'muestra 60, no inventa un total');
         assert.equal((await q('SELECT count(*)::int AS n FROM "MoodLogs" WHERE "UserId"=$1', [sharer.id]))[0].n, 62);
         await context.close(); }

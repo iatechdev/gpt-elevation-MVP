@@ -1,6 +1,8 @@
 // ES-178 (F2): agendar una sesión desde la ficha. Diálogo nativo (Esc, foco atrapado), fecha y hora futuras, duración 30/45/50/60/90 y errores POR CAMPO (con `code` y `field` del servidor) con foco al primero.
+// ES-309 (PR 2): en Cartografía (Button, Dialog, TextField, SelectField); sin estilos en línea. El diálogo nativo pasa al Dialog compartido (mismo foco, Tab, Esc y retorno del foco). Ni la lógica ni los textos cambian.
 // El POST no es idempotente: si la respuesta se pierde se consulta las sesiones agendadas antes de decir nada («Comprobar»); nunca se reenvía a ciegas.
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useState } from 'react'
+import { Button, Dialog, SelectField, TextField } from '../../cartografia'
 import { invalidateStoredSession } from '../../access/session'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -10,9 +12,6 @@ type T = (key: string, params?: Record<string, string | number>) => string
 type Field = 'scheduledAt' | 'duration'
 type Problem = { field?: Field; key: string; check?: boolean }
 
-const primary: CSSProperties = { minHeight: 44, minWidth: 44, padding: '0.5rem 1.1rem', background: '#4A6741', border: 'none', borderRadius: '0.85rem', color: '#fff', fontSize: '0.85rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }
-const ghost: CSSProperties = { ...primary, background: 'transparent', border: '0.5px solid #4A6741', color: '#4A6741' }
-const control: CSSProperties = { minHeight: 44, padding: '0.5rem 0.75rem', borderRadius: '0.65rem', border: '0.5px solid #78716C', fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', color: '#1C1917', background: '#fff', width: '100%', boxSizing: 'border-box' }
 const localInput = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16) // valor de <input type="datetime-local"> en hora local
 const earliest = () => localInput(new Date(Date.now() + 5 * 60000))
 
@@ -23,17 +22,11 @@ export function ScheduleSession({ personId, personName, t, locale }: { personId:
   const [busy, setBusy] = useState(false)
   const [problems, setProblems] = useState<Problem[]>([])
   const [notice, setNotice] = useState('')
-  const dialog = useRef<HTMLDialogElement>(null)
-  const opener = useRef<HTMLButtonElement>(null)
-  const whenRef = useRef<HTMLInputElement>(null)
-  const durationRef = useRef<HTMLSelectElement>(null)
   const textOf = (date: Date) => date.toLocaleString(locale, { weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 
-  useEffect(() => { if (open && dialog.current && !dialog.current.open) dialog.current.showModal() }, [open])
-  const closeDialog = () => dialog.current?.close()
-  const onClosed = () => { setOpen(false); setProblems([]); opener.current?.focus() }
+  const closeDialog = () => { setOpen(false); setProblems([]) } // el Dialog devuelve el foco al botón que lo abrió
   const begin = () => { setWhen(earliest()); setDuration(50); setProblems([]); setNotice(''); setOpen(true) }
-  const focusFirst = (list: Problem[]) => window.setTimeout(() => { const first = list.find(p => p.field)?.field; (first === 'duration' ? durationRef.current : whenRef.current)?.focus() }, 0)
+  const focusFirst = (list: Problem[]) => window.setTimeout(() => { const first = list.find(p => p.field)?.field; document.getElementById(first === 'duration' ? 'fu-sch-duration' : 'fu-sch-when')?.focus() }, 0)
   const fail = (list: Problem[]) => { setProblems(list); focusFirst(list) }
   const done = (date: Date) => { setNotice(t('fu_sch_done', { when: textOf(date) })); closeDialog() }
   const errorOf = (field: Field) => problems.find(p => p.field === field)
@@ -80,31 +73,30 @@ export function ScheduleSession({ personId, personName, t, locale }: { personId:
   const whenError = errorOf('scheduledAt'); const durationError = errorOf('duration'); const general = problems.filter(p => !p.field)
   return (
     <>
-      <button ref={opener} type="button" style={primary} onClick={begin}>{t('fu_sch_open')}</button>
-      {notice && <p role="status" style={{ flexBasis: '100%', margin: 0, fontSize: '0.85rem', color: '#2F4A29' }}>{notice}</p>}
-      {open && (
-        <dialog ref={dialog} aria-labelledby="fu-sch-title" onClose={onClosed} style={{ width: 'min(480px, calc(100vw - 2rem))', border: 'none', borderRadius: '1rem', padding: '1.5rem', fontFamily: 'Inter, sans-serif', color: '#1C1917' }}>
-          <form noValidate onSubmit={event => { event.preventDefault(); void submit() }}>
-            <h2 id="fu-sch-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', margin: '0 0 0.25rem' }}>{t('fu_sch_title')}</h2>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#44403C', overflowWrap: 'anywhere' }}>{t('fu_sch_with', { name: personName })}</p>
-            <label htmlFor="fu-sch-when" style={{ display: 'block', fontSize: '0.82rem', color: '#44403C', marginBottom: 4 }}>{t('fu_sch_when')}</label>
-            <input ref={whenRef} id="fu-sch-when" type="datetime-local" style={control} value={when} min={earliest()} aria-invalid={whenError ? true : undefined} aria-describedby={whenError ? 'fu-sch-when-error' : undefined} onChange={event => { setWhen(event.target.value); setProblems(list => list.filter(p => p.field !== 'scheduledAt')) }} />
-            <p id="fu-sch-when-error" role="alert" style={{ margin: '0.25rem 0 0.75rem', color: '#B91C1C', fontSize: '0.82rem' }}>{whenError ? t(whenError.key) : ''}</p>
-            <label htmlFor="fu-sch-duration" style={{ display: 'block', fontSize: '0.82rem', color: '#44403C', marginBottom: 4 }}>{t('fu_sch_duration_label')}</label>
-            <select ref={durationRef} id="fu-sch-duration" style={control} value={duration} aria-invalid={durationError ? true : undefined} aria-describedby={durationError ? 'fu-sch-duration-error' : undefined} onChange={event => { setDuration(Number(event.target.value)); setProblems(list => list.filter(p => p.field !== 'duration')) }}>
-              {DURATIONS.map(minutes => <option key={minutes} value={minutes}>{t('fu_sch_minutes', { n: minutes })}</option>)}
-            </select>
-            <p id="fu-sch-duration-error" role="alert" style={{ margin: '0.25rem 0 0.75rem', color: '#B91C1C', fontSize: '0.82rem' }}>{durationError ? t(durationError.key) : ''}</p>
-            <div role="alert" style={{ color: '#B91C1C', fontSize: '0.85rem' }}>
-              {general.map(problem => <div key={problem.key}><p style={{ margin: 0 }}>{t(problem.key)}</p>{problem.check && <button type="button" style={{ ...ghost, marginTop: '0.5rem' }} disabled={busy} onClick={() => void reconcile(new Date(when))}>{t('fu_check')}</button>}</div>)}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem', flexWrap: 'wrap' }}>
-              <button type="button" style={ghost} onClick={closeDialog} disabled={busy}>{t('fu_cancel')}</button>
-              <button type="submit" style={{ ...primary, opacity: busy ? 0.7 : 1 }} disabled={busy}>{busy ? t('fu_sch_sending') : t('fu_sch_confirm')}</button>
-            </div>
-          </form>
-        </dialog>
-      )}
+      <Button onClick={begin}>{t('fu_sch_open')}</Button>
+      {notice && <p role="status" className="pf-notice tp-live tp-live--ok">{notice}</p>}
+      <Dialog
+        open={open}
+        onClose={closeDialog}
+        title={t('fu_sch_title')}
+        actions={<>
+          <Button variant="ghost" onClick={closeDialog} disabled={busy}>{t('fu_cancel')}</Button>
+          <Button type="submit" form="fu-sch-form" disabled={busy}>{busy ? t('fu_sch_sending') : t('fu_sch_confirm')}</Button>
+        </>}
+      >
+        <form id="fu-sch-form" className="tp-dlg-form" noValidate onSubmit={event => { event.preventDefault(); void submit() }}>
+          <p className="pf-small">{t('fu_sch_with', { name: personName })}</p>
+          <TextField id="fu-sch-when" type="datetime-local" label={t('fu_sch_when')} value={when} min={earliest()} aria-invalid={whenError ? true : undefined} aria-describedby={whenError ? 'fu-sch-when-error' : undefined} onChange={event => { setWhen(event.target.value); setProblems(list => list.filter(p => p.field !== 'scheduledAt')) }} />
+          <p id="fu-sch-when-error" role="alert" className="cg-error pf-err">{whenError ? t(whenError.key) : ''}</p>
+          <SelectField id="fu-sch-duration" label={t('fu_sch_duration_label')} value={duration} aria-invalid={durationError ? true : undefined} aria-describedby={durationError ? 'fu-sch-duration-error' : undefined} onChange={event => { setDuration(Number(event.target.value)); setProblems(list => list.filter(p => p.field !== 'duration')) }}>
+            {DURATIONS.map(minutes => <option key={minutes} value={minutes}>{t('fu_sch_minutes', { n: minutes })}</option>)}
+          </SelectField>
+          <p id="fu-sch-duration-error" role="alert" className="cg-error pf-err">{durationError ? t(durationError.key) : ''}</p>
+          <div role="alert" className="tp-dlg-error">
+            {general.map(problem => <div key={problem.key}><p>{t(problem.key)}</p>{problem.check && <Button variant="ghost" disabled={busy} onClick={() => void reconcile(new Date(when))}>{t('fu_check')}</Button>}</div>)}
+          </div>
+        </form>
+      </Dialog>
     </>
   )
 }
