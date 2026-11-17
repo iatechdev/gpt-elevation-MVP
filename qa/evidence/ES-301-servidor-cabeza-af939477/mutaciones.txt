@@ -1,0 +1,50 @@
+== base
+  unit terms: # pass 7 # fail 0 
+== m1 required:false (registro sin aceptación pasa)
+M aplicada
+  unit terms: # pass 6 # fail 1 
+  PG es-301: # pass 8 # fail 2 
+  mi guion:
+RESUMEN {"modo":"pr","total":28,"fallas":8}
+FALLA [pr] S1 servidor = {2026-11-v1, required:true} {"version":"2026-11-v1","required":false}
+FALLA [pr] S2 sin aceptación → 400 terms_required con currentVersion 201 {"message":"Usuario creado exitosamente. ¡Bienvenido a Elevation!"}
+== m2 no comparar la versión (acepta cualquiera con forma válida)
+M aplicada
+  unit terms: # pass 5 # fail 2 
+  PG es-301: # pass 8 # fail 2 
+  mi guion:
+RESUMEN {"modo":"pr","total":28,"fallas":3}
+FALLA [pr] S4 entradas hostiles: 400 con código estable, sin cuenta ni 500 termsVersion mayúsculas: 201 {"message":"Usuario creado exitosamente. ¡B
+FALLA [pr] S5 versión vieja → 400 terms_version_mismatch con currentVersion 201 {"message":"Usuario creado exitosamente. ¡Bienvenido a Elevation!"
+== m3 fecha tomada del cliente
+M aplicada
+  unit terms: # pass 6 # fail 1 
+  PG es-301: # pass 8 # fail 2 
+  mi guion:
+RESUMEN {"modo":"pr","total":28,"fallas":4}
+FALLA [pr] S3 acceptedAt del cliente (pasada) se ignora 201 Fri Dec 31 1999 19:00:00 GMT-0500 (hora estándar de Colombia)
+FALLA [pr] S3 acceptedAt del cliente (futura) se ignora 201 Wed Dec 31 2098 19:00:00 GMT-0500 (hora estándar de Colombia)
+== m4 validar la aceptación solo si el correo NO existe (orden/enumeración)
+M aplicada
+  unit terms: # pass 6 # fail 1 
+  PG es-301: # pass 8 # fail 2 
+  mi guion:
+RESUMEN {"modo":"pr","total":28,"fallas":3}
+FALLA [pr] S6 correo existente SIN aceptación → terms_required (no revela existencia) 400 {"error":"El correo ya está registrado."}
+FALLA [pr] S6 cuenta inactiva: sin aceptación → terms_required; con aceptación → el 403 de hoy 403/403
+== m6 acceptedTerms truthy
+M aplicada
+  unit terms: # pass 6 # fail 1 
+  PG es-301: # pass 8 # fail 2 
+  mi guion:
+RESUMEN {"modo":"pr","total":28,"fallas":2}
+FALLA [pr] S4 entradas hostiles: 400 con código estable, sin cuenta ni 500 acceptedTerms="true": 201 {"message":"Usuario creado exitosamente. ¡Bienv
+FALLA [pr] S11 ningún código de producción, seed ni script de despliegue llama a /api/register sin aceptación (salvo scripts de prueba listados) f
+== m7 forma de versión sin restricción
+M aplicada
+  unit terms: # pass 6 # fail 1 
+  PG es-301: # pass 8 # fail 2 
+  mi guion:
+RESUMEN {"modo":"pr","total":28,"fallas":1}
+FALLA [pr] S11 ningún código de producción, seed ni script de despliegue llama a /api/register sin aceptación (salvo scripts de prueba listados) f
+fin
