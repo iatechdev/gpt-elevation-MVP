@@ -1,0 +1,34 @@
+ok                                       npm_exit=0 -> gate_exit=0 | Auditoría de dependencias: sin altas ni críticas fuera de las excepc
+ok                                       npm_exit=1 -> gate_exit=0 | Auditoría de dependencias: sin altas ni críticas fuera de las excepc
+otro_alto                                npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+otro_alto                                npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+otro_critico                             npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+otro_critico                             npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+mismo_paquete_otro_ghsa                  npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+mismo_paquete_otro_ghsa                  npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+por_cadena                               npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+por_cadena                               npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+origen_desconocido                       npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+origen_desconocido                       npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+moderada                                 npm_exit=0 -> gate_exit=0 | Auditoría de dependencias: sin altas ni críticas fuera de las excepc
+moderada                                 npm_exit=1 -> gate_exit=0 | Auditoría de dependencias: sin altas ni críticas fuera de las excepc
+limpio                                   npm_exit=0 -> gate_exit=0 | Auditoría de dependencias: sin altas ni críticas fuera de las excepc
+limpio                                   npm_exit=1 -> gate_exit=0 | Auditoría de dependencias: sin altas ni críticas fuera de las excepc
+mezcla_permitida_y_otra_misma_cadena     npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+mezcla_permitida_y_otra_misma_cadena     npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+texto                                    npm_exit=0 -> gate_exit=2 | npm ERR! code ENOTFOUND
+texto                                    npm_exit=1 -> gate_exit=2 | npm ERR! code ENOTFOUND
+vacio                                    npm_exit=0 -> gate_exit=2 | No se pudo leer la salida de npm audit (¿sin red o sin lockfile?):
+vacio                                    npm_exit=1 -> gate_exit=2 | No se pudo leer la salida de npm audit (¿sin red o sin lockfile?):
+objeto_vacio                             npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+objeto_vacio                             npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+arreglo                                  npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+arreglo                                  npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+error                                    npm_exit=0 -> gate_exit=2 | npm audit falló: {"code":"ENOLOCK","summary":"sin lockfile"}
+error                                    npm_exit=1 -> gate_exit=2 | npm audit falló: {"code":"ENOLOCK","summary":"sin lockfile"}
+null                                     npm_exit=0 -> gate_exit=1 | Node.js v22.23.4
+null                                     npm_exit=1 -> gate_exit=1 | Node.js v22.23.4
+vuln_null                                npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+vuln_null                                npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+alta_sin_via                             npm_exit=0 -> gate_exit=1 | Auditoría de dependencias: FALLA.
+alta_sin_via                             npm_exit=1 -> gate_exit=1 | Auditoría de dependencias: FALLA.

@@ -1,0 +1,43 @@
+== m1 sin comparación de fecha
+M aplicada
+  prueba del PR: # pass 5 # fail 1 
+  mi guion (npm falso): 0 casos cambian de exit
+== m2 excepción por paquete
+M aplicada
+  prueba del PR: # pass 5 # fail 1 
+  mi guion (npm falso): 4 casos cambian de exit
+> mismo_paquete_otro_ghsa                  npm_exit=0 -> gate_exit=0
+> mismo_paquete_otro_ghsa                  npm_exit=1 -> gate_exit=0
+> mezcla_permitida_y_otra_misma_cadena     npm_exit=0 -> gate_exit=0
+== m3 informe sin formato pasa
+M aplicada
+  prueba del PR: # pass 5 # fail 1 
+  mi guion (npm falso): 6 casos cambian de exit
+> objeto_vacio                             npm_exit=0 -> gate_exit=0
+> objeto_vacio                             npm_exit=1 -> gate_exit=0
+> arreglo                                  npm_exit=0 -> gate_exit=0
+== m4 solo 'high' (sin critical)
+M aplicada
+  prueba del PR: # pass 5 # fail 1 
+  mi guion (npm falso): 4 casos cambian de exit
+> otro_critico                             npm_exit=0 -> gate_exit=0
+> otro_critico                             npm_exit=1 -> gate_exit=0
+> por_cadena                               npm_exit=0 -> gate_exit=0
+== m5 exit 0 siempre
+M aplicada
+  prueba del PR: # pass 6 # fail 0 
+  mi guion (npm falso): 20 casos cambian de exit
+> otro_alto                                npm_exit=0 -> gate_exit=0
+> otro_alto                                npm_exit=1 -> gate_exit=0
+> otro_critico                             npm_exit=0 -> gate_exit=0
+== m6 JSON ilegible no sale con 2
+M aplicada
+  prueba del PR: # pass 6 # fail 0 
+  mi guion (npm falso): 4 casos cambian de exit
+> texto                                    npm_exit=0 -> gate_exit=1
+> texto                                    npm_exit=1 -> gate_exit=1
+> vacio                                    npm_exit=0 -> gate_exit=1
+?? frontend/dist215_def/
+?? frontend/dist215_main/
+?? frontend/dist215_mut/
+fin

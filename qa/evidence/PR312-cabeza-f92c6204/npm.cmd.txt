@@ -1,0 +1,3 @@
+@echo off
+node "%~dp0..\fake.cjs"
+exit /b %FAKE_EXIT%

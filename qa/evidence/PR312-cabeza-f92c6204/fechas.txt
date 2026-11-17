@@ -1,0 +1,23 @@
+== NOW=
+EXCEPCIÓN VIGENTE  GHSA-fc5q-39xc-vjpf (picomatch: picomatch vulnerable to ReDoS through single-branch repeated extglobs): permitido hasta 2026-12-01
+Auditoría de dependencias: sin altas ni críticas fuera de las excepciones vigentes.
+exit=0
+== NOW=2026-12-01T00:00:00Z
+EXCEPCIÓN VIGENTE  GHSA-fc5q-39xc-vjpf (picomatch: picomatch vulnerable to ReDoS through single-branch repeated extglobs): permitido hasta 2026-12-01
+Auditoría de dependencias: sin altas ni críticas fuera de las excepciones vigentes.
+exit=0
+== NOW=2026-12-01T23:59:59Z
+EXCEPCIÓN VIGENTE  GHSA-fc5q-39xc-vjpf (picomatch: picomatch vulnerable to ReDoS through single-branch repeated extglobs): permitido hasta 2026-12-01
+Auditoría de dependencias: sin altas ni críticas fuera de las excepciones vigentes.
+exit=0
+== NOW=2026-12-02T00:00:00Z
+EXCEPCIÓN CADUCADA GHSA-fc5q-39xc-vjpf (picomatch: picomatch vulnerable to ReDoS through single-branch repeated extglobs): la excepción caducó el 2026-12-01
+Auditoría de dependencias: FALLA.
+exit=1
+== NOW=2027-01-15T00:00:00Z
+EXCEPCIÓN CADUCADA GHSA-fc5q-39xc-vjpf (picomatch: picomatch vulnerable to ReDoS through single-branch repeated extglobs): la excepción caducó el 2026-12-01
+Auditoría de dependencias: FALLA.
+exit=1
+== NOW=garbage
+AUDIT_GATE_NOW no es una fecha válida
+exit=2
