@@ -1,15 +1,16 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 import '../cartografia'
 import '../cartografia/pages.css'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from './copy'
 
 // ES-307: cabecera de pantalla de «Mi espacio» en Cartografía (etiqueta + título + frase de apoyo) para las pantallas ya migradas.
+// ES-329: titleRef (opcional) deja el foco en el título al recuperarse de un error (E254-3).
 // El marco, el idioma, el tema y «Saltar al contenido» los pone PersonLayout (ES-153); esto es solo el contenido.
-export function PersonScreen({ title, lead, wide = false, children }: { title: string; lead?: string; wide?: boolean; children: ReactNode }) {
+export function PersonScreen({ title, lead, wide = false, titleRef, children }: { title: string; lead?: string; wide?: boolean; titleRef?: Ref<HTMLHeadingElement>; children: ReactNode }) {
   const { lang } = useLanguage()
   return <div className="pg">
-    <header className="pg-head"><p className="cg-tag">{copy[lang].space}</p><h1 className="pg-title">{title}</h1>{lead && <p className="pg-lead">{lead}</p>}</header>
+    <header className="pg-head"><p className="cg-tag">{copy[lang].space}</p><h1 className="pg-title" ref={titleRef} tabIndex={titleRef ? -1 : undefined}>{title}</h1>{lead && <p className="pg-lead">{lead}</p>}</header>
     <div className={`pg-stack${wide ? ' pg-wide' : ''}`}>{children}</div>
   </div>
 }

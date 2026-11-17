@@ -1,30 +1,20 @@
 // ES-172 (HU-P21): catálogo de rutas, vista de la persona (/app/route-catalog y /app/route-catalog/roles/:roleKey) con el sistema «Cartografía».
 // Mismo contenido y misma API que antes (GET /api/route-catalog/published, propietario/rol verificados en el servidor); cambian la piel, la jerarquía y la rejilla.
 // La lógica pura (filtros, fechas, estados con palabra + símbolo, nombres de habilidad) vive en person.ts y tiene pruebas propias.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode, type Ref } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { Button, Chip, SelectField } from '../cartografia/controls'
 import { Banner, Card } from '../cartografia/pieces'
-import { CartografiaRoot } from '../cartografia/theme'
-import { LangSwitch } from '../shell/Frame'
+import { PersonScreen } from '../space/PersonScreen'
 import { CatalogError, type Published } from './api'
 import { API, readSession, useClient, useNames, useSession, useWords } from './shared'
 import { dateText, exposureStatus, filterRoles, offerStatus, roleNotice, skillLabels, sourceNotice, type Filters, type StatusView } from './person'
 import { array, object, safeUrl, string, type Data } from './schema'
 import './person.css'
 
-function Screen({ children }: { children: ReactNode }) {
-  const { tr } = useWords(); const main = useRef<HTMLDivElement>(null)
-  return (
-    <CartografiaRoot className="cgp">
-      <a className="cg-skip" href="#catalog-main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{tr('skip')}</a>
-      <header className="cg-header">
-        <Link className="cg-btn cg-btn--ghost" to="/app/dashboard"><span aria-hidden="true">← </span>{tr('back')}</Link>
-        <div className="cg-header__end"><LangSwitch /></div>
-      </header>
-      <div id="catalog-main" tabIndex={-1} ref={main} className="cg-page cgp-main">{children}</div>
-    </CartografiaRoot>
-  )
+// ES-329: el marco (cabecera, idioma, menú, «Saltar al contenido») lo pone PersonLayout; PersonScreen da el título y la frase de apoyo.
+function Screen({ title, lead, titleRef, children }: { title: string; lead?: string; titleRef?: Ref<HTMLHeadingElement>; children: ReactNode }) {
+  return <PersonScreen title={title} lead={lead} titleRef={titleRef} wide><div className="cgp cgp-main">{children}</div></PersonScreen>
 }
 
 /** Aviso con foco: al aparecer, el lector de pantalla lo anuncia y el teclado queda sobre él (error, vacío, sesión vencida). */
@@ -64,9 +54,11 @@ function BrowserSession({ session }: { session: string }) {
   const retry = () => { if (readSession() === session) { setStatus('loading'); setAttempt(n => n + 1) } }
   const role = catalog?.roles.find(row => row.roleKey === roleKey)
   const when = catalog ? dateText(catalog.publishedAt, lang) : null
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  useEffect(() => { if (role) titleRef.current?.focus() }, [role?.roleKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  const heading = role ? string(object(role.labels)[lang]) || tr('unknown') : tr('title')
   return (
-    <Screen>
-      {!roleKey && <><h1 className="cg-h1">{tr('title')}</h1><p className="cg-muted cgp-lead">{tr('intro')}</p></>}
+    <Screen title={heading} lead={roleKey ? undefined : tr('intro')} titleRef={role ? titleRef : undefined}>
       {status === 'loading' && <><div className="cg-relief cg-relief--loading cgp-loading" aria-hidden="true" /><p role="status" className="cg-muted">{tr('loading')}</p></>}
       {status === 'session' && <Notice kind="error" title={tr('session')}><div className="cg-row"><Link className="cg-btn" to="/login">{tr('login')}</Link></div></Notice>}
       {status === 'error' && <Notice kind="error" title={tr('error')}><div className="cg-row"><Button onClick={retry}>{tr('retry')}</Button></div></Notice>}
@@ -76,7 +68,7 @@ function BrowserSession({ session }: { session: string }) {
           <p className="cg-tag cgp-meta">{tr('version')} {catalog.version} · {when ? `${tr('publishedAt')} ${when}` : tr('publishedAt_unknown')}</p>
           {(['contexts', 'sources', 'roles', 'offers', 'resources'] as const).some(kind => catalog[kind].some(item => item.synthetic === true)) && <Banner title={tr('synthetic')} />}
           {roleKey
-            ? role ? <RoleDetail role={role} catalog={catalog} session={session} /> : <><h1 className="cg-h1">{tr('title')}</h1><Notice kind="note" title={tr('not_found')} /><p><Link className="cg-btn cg-btn--ghost" to="/app/route-catalog">{tr('catalog_back')}</Link></p></>
+            ? role ? <RoleDetail role={role} catalog={catalog} session={session} /> : <><Notice kind="note" title={tr('not_found')} /><p><Link className="cg-btn cg-btn--ghost" to="/app/route-catalog">{tr('catalog_back')}</Link></p></>
             : <RoleList catalog={catalog} filters={filters} setFilters={setFilters} />}
         </>
       )}
@@ -144,8 +136,6 @@ function useSkillNames(session: string) {
 
 function RoleDetail({ role, catalog, session }: { role: Data; catalog: Published; session: string }) {
   const { tr, lang } = useWords(); const names = useNames(); const skills = useSkillNames(session)
-  const title = useRef<HTMLHeadingElement>(null)
-  useEffect(() => { title.current?.focus() }, [role.roleKey])
   const localized = (v: unknown) => string(object(v)[lang]) || tr('unknown')
   // E259-2: sin fecha válida la frase entera dice «por confirmar» (nunca «Consultada el Por confirmar»).
   const dated = (key: 'review' | 'consulted' | 'checked', value: unknown) => { const text = dateText(value, lang); return text ? `${tr(key)} ${text}` : tr(`${key}_unknown`) }
@@ -157,9 +147,8 @@ function RoleDetail({ role, catalog, session }: { role: Data; catalog: Published
   const sources = catalog.sources.filter(source => sourceKeys.has(source.sourceKey))
   const review = object(role.domainReview)
   return (
-    <article className="cgp-detail" aria-labelledby="role-title">
+    <article className="cgp-detail" aria-label={localized(role.labels)}>
       <p><Link className="cg-btn cg-btn--ghost" to="/app/route-catalog"><span aria-hidden="true">← </span>{tr('catalog_back')}</Link></p>
-      <h1 className="cg-h1" id="role-title" tabIndex={-1} ref={title}>{localized(role.labels)}</h1>
       <p className="cg-muted">{localized(role.industry)} · {names.country(role.market)}</p>
       <p className="cg-muted">{array(role.languagesRequired).map(value => names.language(value)).join(', ')} · {array(role.modality).map(value => tr(string(value))).join(', ')}</p>
       <p>
