@@ -89,8 +89,13 @@ export async function listResumes(signal?: AbortSignal): Promise<{ resumes: Resu
     return { resumes: (body.resumes as unknown[]).map(asMeta).filter((item): item is ResumeMeta => Boolean(item)), maxVersions: Number(body.maxVersions) || MAX_VERSIONS }
   } catch { return null }
 }
-export async function deleteResume(id: number): Promise<boolean> {
-  try { return (await fetch(`${backend}/api/user/resumes/${id}`, { method: 'DELETE', headers: auth() })).ok } catch { return false }
+// E304-1 / ES-327: 'uncertain' = no sabemos si el servidor borró (corte, tiempo agotado, 5xx o 404 tras un reintento): la pantalla relee la lista antes de declarar nada. 'rejected' = respuesta definitiva de rechazo.
+export type DeleteResult = 'deleted' | 'rejected' | 'uncertain'
+export async function deleteResume(id: number): Promise<DeleteResult> {
+  try {
+    const response = await fetch(`${backend}/api/user/resumes/${id}`, { method: 'DELETE', headers: auth(), signal: AbortSignal.timeout(15000) })
+    return response.ok ? 'deleted' : response.status >= 500 || response.status === 404 ? 'uncertain' : 'rejected'
+  } catch { return 'uncertain' }
 }
 // La descarga lleva la sesión: no hay una URL pública de la hoja de vida.
 export async function fetchResumeBlob(id: number): Promise<Blob | null> {
