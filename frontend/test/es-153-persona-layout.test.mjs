@@ -1,7 +1,7 @@
 // ES-153 (paso 1): PersonLayout sobre /app/*. Reglas estructurales; el comportamiento (marco fijo entre pantallas, foco, tema, axe, 390/320 px) lo mide scripts/es153-layout-check.cjs.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { MIGRATED_PERSON_PATHS, isMigratedPersonPath, personFooterHidden } from '../src/shell/personLayoutState.ts'
 import { shellCopy } from '../src/shell/copy.ts'
 
@@ -36,9 +36,9 @@ test('ES-153 P1: el mecanismo «ya migró» es una lista de rutas que existen en
   assert.equal(isMigratedPersonPath('/app/skill-mapa'), false); assert.equal(isMigratedPersonPath('/app/compass'), false)
 })
 
-test('ES-153 P1: SpaceShell ya no dibuja encabezado, idioma, SpaceNav ni main; chat y dashboard no montan SpaceNav; un solo <main> en las pantallas de persona', () => {
-  const shell = read('../src/space/SpaceShell.tsx')
-  assert.doesNotMatch(shell, /<header|<main|SpaceNav|SpaceSkip|setLang/); assert.match(shell, /space-body/)
+test('ES-153 P1: SpaceShell, SpaceDialog y SpaceNav ya no existen (nadie dibuja encabezado, idioma ni main propios); chat y dashboard no montan SpaceNav; un solo <main> en las pantallas de persona', () => {
+  // ES-319: SpaceShell y SpaceDialog se retiraron (sin importadores); lo que afirmaba esta prueba (nada dibuja encabezado, idioma, SpaceNav ni main) se conserva.
+  for (const gone of ['SpaceShell', 'SpaceDialog', 'SpaceNav']) assert.equal(existsSync(new URL(`../src/space/${gone}.tsx`, import.meta.url)), false, gone)
   for (const file of ['../src/pages/ChatPage.tsx', '../src/pages/UserDashboard.tsx']) assert.doesNotMatch(read(file), /SpaceNav|id="space-main"/)
   for (const file of ['../src/career/CareerShell.tsx', '../src/compass/CompassPage.tsx', '../src/context/resume/ResumesPage.tsx', '../src/evidence/Shell.tsx', '../src/exercises/ExercisePage.tsx',
     '../src/pages/UserProgress.tsx', '../src/pilot/FeedbackPage.tsx', '../src/routeCatalog/PersonCatalog.tsx', '../src/facilitation/PersonReviews.tsx', '../src/pages/ChatPage.tsx']) assert.doesNotMatch(read(file), /<main\b/, file)
@@ -75,4 +75,14 @@ test('ES-153 P2: SpaceNav y SpaceSkip están retirados (sin archivo, sin importa
   const css = read('../src/space/space.css')
   assert.ok(!/space-nav|space-tabs|space-menu/.test(css), 'sin reglas de la barra antigua')
   assert.ok(css.includes('.space-skip'), 'el enlace de salto de la solicitud profesional conserva su estilo')
+})
+
+// ES-319: ningún archivo de src importa lo retirado; space.css ya no lleva reglas de diálogo nativo, rejillas ni planes sin uso; E289-1: los botones del diálogo de «Retirar todo» no se deshabilitan con el foco dentro.
+test('ES-319: sin importadores de lo retirado; space.css podado; «Retirar todo» usa aria-disabled en el diálogo', () => {
+  const walk = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(new URL(`${e.name}/`, dir)) : [new URL(e.name, dir)])
+  for (const file of walk(new URL('../src/', import.meta.url)).filter(u => /\.(tsx?|css)$/.test(u.pathname))) assert.doesNotMatch(readFileSync(file, 'utf8'), /from ['"][^'"]*\/Space(Shell|Dialog|Nav)['"]/, file.pathname)
+  const css = read('../src/space/space.css')
+  assert.doesNotMatch(css, /\.space-(grid|plan|dialog|dashboard-nav|error|danger|warning|body)\b|\.space-scope dialog|\.bridge\b/)
+  const bridge = read('../src/bridge/BridgePage.tsx')
+  assert.match(bridge, /aria-disabled=\{busy\} onClick=\{closeAll\}/); assert.match(bridge, /aria-disabled=\{busy\} onClick=\{\(\) => void withdrawAll\(\)\}/); assert.match(bridge, /if \(busy\) return\n/)
 })

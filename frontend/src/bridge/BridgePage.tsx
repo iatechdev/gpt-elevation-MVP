@@ -88,9 +88,10 @@ export function BridgePage() {
   const remove = (field: Field) => commit(current => withoutField(current, field), c.removed, { kind: 'pro' })
   const anyPerm = !!perms && sourceIds.some(source => perms[source])
   // ES-307 (PR 4): el diálogo es el Dialog de Cartografía (foco en «Cancelar», Tab atrapado, Esc por onClose); al cerrar el foco vuelve al botón que lo abrió.
-  const closeAll = () => setAskAll(false)
+  const closeAll = () => { if (!busy) setAskAll(false) } // E289-1: mientras trabaja, los botones del diálogo usan aria-disabled (no disabled): un botón que se deshabilita con el foco lo manda a body
   // Retira lo cruzado (si lo hay) y después los permisos activos, uno por uno. Un corte a medias no se declara éxito: se relee todo y se dice la verdad.
   const withdrawAll = async () => {
+    if (busy) return
     setBusy(true); setNotice(null)
     try {
       if (active.length) await api.revoke()
@@ -164,7 +165,7 @@ export function BridgePage() {
         <LinkButton disabled={busy} data-withdraw-all onClick={() => setAskAll(true)}>{c.revokeAll}</LinkButton>
       </footer>}
       <Dialog open={askAll} onClose={() => { if (!busy) closeAll() }} title={c.revokeAllQ}
-        actions={<><Button variant="ghost" disabled={busy} onClick={closeAll}>{c.cancel}</Button><Button disabled={busy} onClick={() => void withdrawAll()}>{busy ? c.saving : c.revokeAll}</Button></>}>
+        actions={<><Button variant="ghost" aria-disabled={busy} onClick={closeAll}>{c.cancel}</Button><Button aria-disabled={busy} onClick={() => void withdrawAll()}>{busy ? c.saving : c.revokeAll}</Button></>}>
         <ul className="br-dlg">{active.length > 0 && <li>{c.withdrawAllCrossed}</li>}{anyPerm && <li>{c.withdrawAllPerms}</li>}<li>{c.withdrawAllKeep}</li></ul>
       </Dialog>
     </div>

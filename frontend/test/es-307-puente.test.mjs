@@ -20,7 +20,7 @@ test('ES-307: los dos diálogos son el Dialog de Cartografía con los mismos tex
   assert.match(panel, /<li>\{c\.dlg_resume\}<\/li>/)
   assert.match(panel, /\{saving \? c\.saving : c\.dlg_yes\}/)
   // «Cancelar» es el primer botón de ambos diálogos: allí cae el foco al abrir
-  assert.match(page, /actions=\{<><Button variant="ghost" disabled=\{busy\} onClick=\{closeAll\}>\{c\.cancel\}<\/Button><Button disabled=\{busy\} onClick=\{\(\) => void withdrawAll\(\)\}>/)
+  assert.match(page, /actions=\{<><Button variant="ghost" aria-disabled=\{busy\} onClick=\{closeAll\}>\{c\.cancel\}<\/Button><Button aria-disabled=\{busy\} onClick=\{\(\) => void withdrawAll\(\)\}>/)
   assert.match(panel, /actions=\{<><Button variant="ghost" disabled=\{saving !== null\} onClick=\{\(\) => \{ if \(asking\) close\(asking\) \}\}>\{c\.cancel\}<\/Button>/)
 })
 
