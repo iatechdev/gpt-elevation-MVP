@@ -40,8 +40,8 @@ test('ES-236: los diálogos del Puente (fuentes y «Retirar todo») son el Dialo
 })
 test('ES-236: los tres diálogos usan el helper común y Esc respeta el bloqueo mientras se borra', () => {
   const evidence = read('../src/pages/EvidencePages.tsx'); const resumes = read('../src/context/resume/ResumesPage.tsx')
-  assert.match(evidence, /import \{ modalKeyDown \} from '\.\.\/a11y\/modalKeys\.ts'/)
-  assert.match(evidence, /role="alertdialog" onKeyDown=\{event => modalKeyDown\(event, dialog\.current, cancel\)\}/)
+  // ES-308 (PR 2): «Mis evidencias» también pasa al <Dialog> de Cartografía: Esc sigue respetando el bloqueo (`cancel` sale si `busy`) y el foco vuelve a quien abrió.
+  assert.match(evidence, /<Dialog open=\{confirmId !== null\} onClose=\{cancel\}/); assert.ok(!/modalKeyDown|role="alertdialog"/.test(evidence))
   assert.match(evidence, /const cancel = \(\) => \{ if \(busy\) return;/)
   // ES-308: «Mis hojas de vida» pasa al <Dialog> de Cartografía (un solo diálogo para borrar versión y retirar autorización): Esc sigue respetando el bloqueo y el foco vuelve a quien abrió.
   assert.match(resumes, /onClose=\{\(\) => \{ if \(!busy\) close\(\) \}\}/) // Esc (onCancel del Dialog) no cierra mientras se borra
