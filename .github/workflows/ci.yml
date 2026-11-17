@@ -38,8 +38,9 @@ jobs:
       - run: npm run lint
         continue-on-error: true
       - run: npm test
+      # Bloquea alta o crítica, salvo la lista explícita y con fecha de caducidad de scripts/audit-gate.cjs (docs/AUDITORIA-DEPENDENCIAS.md).
       - name: Auditar dependencias (bloquea en alta o crítica)
-        run: npm audit --omit=dev --audit-level=high
+        run: node scripts/audit-gate.cjs
       # `npm run build` ejecuta tsc -b (tipos) y vite build
       - run: npm run build
         env:
