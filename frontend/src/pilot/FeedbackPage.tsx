@@ -7,8 +7,7 @@ import { Link } from 'react-router-dom'
 import { Button, CheckField, ScaleField } from '../cartografia/controls'
 import { Banner, Card } from '../cartografia/pieces'
 import { Dialog } from '../cartografia/interactive'
-import { CartografiaRoot } from '../cartografia/theme'
-import { LangSwitch } from '../shell/Frame'
+import { PersonScreen } from '../space/PersonScreen'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from './copy'
 import { canSave, emptyAnswers, hasAnswers, makeIntent, previewEnabled, sameAnswers } from './model'
@@ -28,13 +27,11 @@ const SKIP = 'skip'
 function Shell({ children }: { children?: ReactNode }) {
   const { lang } = useLanguage(); const c = copy[lang]; const live = isLive(); const enabled = live || previewEnabled(import.meta.env.VITE_ENABLE_PILOT_FEEDBACK_PREVIEW)
   return (
-    <CartografiaRoot className="prg">
-      <a className="cg-skip" href="#pilot-main">{c.skip}</a>
-      <header className="cg-header"><Link className="cg-btn cg-btn--ghost" to="/app/dashboard"><span aria-hidden="true">← </span>{c.back}</Link><div className="cg-header__end"><LangSwitch /></div></header>
-      <div id="pilot-main" className="cg-page prg-main" tabIndex={-1}>
+    <PersonScreen title={c.title} lead={c.optional}>
+      <div className="prg prg-main">
         {enabled ? (live ? children : <><Banner title={c.preview}><p>{c.local}</p></Banner>{children}</>) : <p role="status">{c.disabled}</p>}
       </div>
-    </CartografiaRoot>
+    </PersonScreen>
   )
 }
 
@@ -121,8 +118,6 @@ function FeedbackSession({ token, live }: { token: string; live: boolean }) {
   const status = loading ? c.loading : busy ? tx('saving') : notice ? tx(notice) : dirty ? c.dirty : saved?.answers ? tx('saved') : tx('empty')
   const failure = notice === 'noConsent' || notice === 'loadError' || notice === 'saveError' || notice === 'unknown' || notice === 'conflict'
   return <>
-    <h1 className="cg-h1">{c.title}</h1>
-    <p className="cg-muted">{c.optional}</p>
     <p className="cg-muted">{tx('permission')}</p>
     <p className="cg-muted cg-small">{tx('window')}</p>
     {failure ? <Banner kind="error" title={status} /> : <p role="status" aria-live="polite" className="prg-status">{status}</p>}

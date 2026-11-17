@@ -5,8 +5,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { registerLeaveGuard } from '../shell/leaveGuard'
 import { Chip, TextAreaField } from '../cartografia/controls'
 import { Banner, Card } from '../cartografia/pieces'
-import { CartografiaRoot } from '../cartografia/theme'
-import { LangSwitch } from '../shell/Frame'
+import { PersonScreen } from '../space/PersonScreen'
 import { dateText } from '../routeCatalog/person'
 import { API, useSession } from '../routeCatalog/shared'
 import { useCopy } from './context'
@@ -42,7 +41,7 @@ function Active({ token }: { token: string }) {
   const [attempt, setAttempt] = useState(0); const [flash, setFlash] = useState<TextKey | ''>('')
   const [drafts, setDrafts] = useState<Record<number, true>>({}); const dirty = Object.keys(drafts).length > 0
   const [leave, setLeave] = useState<(() => void) | null>(null)
-  const flashRef = useRef<HTMLParagraphElement>(null); const main = useRef<HTMLDivElement>(null)
+  const flashRef = useRef<HTMLParagraphElement>(null)
   useEffect(() => {
     const controller = new AbortController()
     void api.list(controller.signal).then(rows => { if (!controller.signal.aborted) { setReviews(rows); setStatus('ok') } })
@@ -95,18 +94,14 @@ function Active({ token }: { token: string }) {
   else content = <ul className="cgf-list" aria-label={t('history')}>{reviews.map(review => <li key={review.id}><ReviewCard review={review} api={api} lang={lang} blocked={dirty && !drafts[review.id]} setDirty={setDirty} onRefresh={refresh} onSession={() => setStatus('session')} /></li>)}</ul>
 
   return (
-    <CartografiaRoot className="cgf">
-      <a className="cg-skip" href="#fac-main">{t('skip')}</a>
-      <header className="cg-header"><Link className="cg-btn cg-btn--ghost" to="/app/dashboard"><span aria-hidden="true">← </span>{t('backToDashboard')}</Link><div className="cg-header__end"><LangSwitch /></div></header>
-      <div id="fac-main" className="cg-page cgf-main" ref={main} tabIndex={-1}>
-        <h1 className="cg-h1">{t('own')}</h1>
+    <PersonScreen title={t('own')} lead={t('disclaimer')}>
+      <div className="cgf cgf-main">
         {!PERSON_REVIEWS_SIGNED && <Banner title={t('validationBanner')} />}
-        <p className="cg-muted">{t('disclaimer')}</p>
         {flash && <p ref={flashRef} tabIndex={-1} role="status" className="cg-banner">{t(flash)}</p>}
         {content}
+        {leave && <Dialog onKeep={() => setLeave(null)} onLeave={() => { const go = leave; setDrafts({}); setLeave(null); go() }} />}
       </div>
-      {leave && <Dialog onKeep={() => setLeave(null)} onLeave={() => { const go = leave; setDrafts({}); setLeave(null); go() }} />}
-    </CartografiaRoot>
+    </PersonScreen>
   )
 }
 

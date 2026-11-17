@@ -3,11 +3,9 @@
 // emparejamiento (progress/ProgressMatching) viven en sus propios componentes; esta página solo lee GET /api/user/progress y reparte los estados (cargando, error con reintento, éxito).
 
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
 import { Button } from '../cartografia/controls'
 import { Banner } from '../cartografia/pieces'
-import { CartografiaRoot } from '../cartografia/theme'
-import { LangSwitch } from '../shell/Frame'
+import { PersonScreen } from '../space/PersonScreen'
 import { useLanguage } from '../i18n/useLanguage'
 import { ProgressMatching } from '../progress/ProgressMatching'
 import { ProgressPanel, type MoodLog, type Recommendation, type SessionRating, type Stats } from '../progress/ProgressPanel'
@@ -58,18 +56,10 @@ export function UserProgress() {
   }, [attempt])
 
   return (
-    <CartografiaRoot className="prg">
-      <a className="cg-skip" href="#progress-main">{t('pr_skip')}</a>
-      <header className="cg-header">
-        <Link className="cg-btn cg-btn--ghost" to="/app/chat"><span aria-hidden="true">← </span>{t('pr_back')}</Link>
-        <div className="cg-header__end"><LangSwitch /></div>
-      </header>
-
-      <div id="progress-main" className="cg-page prg-main" tabIndex={-1}>
+    <PersonScreen title={t('pr_title')} lead={t('pr_period')} titleRef={titleRef}>
+      <div className="prg prg-main">
         <div className="prg-head">
           <div>
-            <h1 ref={titleRef} tabIndex={-1} className="cg-h1">{t('pr_title')}</h1>
-            <p className="cg-muted">{t('pr_period')}</p>
             <p role="note" className="cg-muted cg-small">{t('pr_note')}</p>
           </div>
           {/* HU-060 — encontrar profesional (emparejamiento) */}
@@ -85,9 +75,9 @@ export function UserProgress() {
         )}
 
         {!loading && !failed && <ProgressPanel stats={stats} moodLogs={moodLogs} ratings={ratings} recommendations={recommendations} />}
-      </div>
 
-      <ProgressMatching open={matching} onClose={() => setMatching(false)} />
-    </CartografiaRoot>
+        <ProgressMatching open={matching} onClose={() => setMatching(false)} />
+      </div>
+    </PersonScreen>
   )
 }
