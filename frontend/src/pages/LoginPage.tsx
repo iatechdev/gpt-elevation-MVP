@@ -5,6 +5,7 @@ import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
+import { forgetReturn, peekReturn, returnPathFor } from '../access/returnTo'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
 import { PasswordRequirements } from '../access/PasswordRequirements'
@@ -118,7 +119,10 @@ export function LoginPage() {
     if (preferredLanguage && preferredLanguage !== lang) setLang(preferredLanguage)
   }, [preferredLanguage, lang, setLang])
 
-  if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? sessionDestination(entry.result.session)} replace />
+  // ES-330: tras entrar se vuelve a la ruta protegida pedida (si el rol real puede entrar); si no, al inicio del rol. La intención de plan sigue primero.
+  const verifiedAt = entry.result.status === 'verified'
+  useEffect(() => { if (verifiedAt) forgetReturn() }, [verifiedAt])
+  if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session)} replace />
 
   // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
   const policyError = authMessage?.key === 'landing.access.password_policy'

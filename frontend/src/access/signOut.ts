@@ -1,5 +1,6 @@
 import { clearPending } from '../space/pending.ts'
 import { readStoredToken } from './session.ts'
+import { signedOut } from './returnTo.ts'
 
 // ES-136: cierre de sesión único. Pide al servidor revocar el token (POST /api/logout, ES-18) y, pase lo que pase, borra la sesión local y el
 // mensaje pendiente del chat. Si el servidor no responde, el token sigue válido hasta vencer: salir no se bloquea por eso.
@@ -18,6 +19,7 @@ export async function signOut(backend: string, fetcher: typeof fetch = fetch): P
     } catch { /* sin red o sin respuesta: se cierra igual en este navegador */ } finally { clearTimeout(timer) }
   }
   clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
+  signedOut() // ES-330: cerrar sesión a propósito no deja una ruta «para volver»
   try { for (const key of SESSION_KEYS) localStorage.removeItem(key) } catch { /* almacenamiento no disponible */ }
   window.dispatchEvent(new Event('elevation-session-change'))
   return { revoked }
