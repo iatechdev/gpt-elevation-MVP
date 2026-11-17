@@ -29,7 +29,10 @@ test('ES-165: todas las claves de la pantalla existen en ES y EN', () => {
 })
 
 test('ES-165: objetivos táctiles de la pantalla (enlaces, selector de idioma y enlace de salto) de al menos 24 px', () => {
-  assert.match(css, /\.rs-page main a\.elv-link \{[^}]*min-height: 24px/)
-  assert.match(css, /\.rs-page \.elv-join-item \{[^}]*min-width: 32px/)
-  assert.match(css, /\.rs-page \.context-skip \{[^}]*min-height: 24px/)
+  // ES-308: la pantalla ya no lleva encabezado, selector de idioma ni enlace de salto propios (los pone el marco de persona, ES-153) y sus enlaces y botones son piezas de Cartografía:
+  // se retiraron las reglas `.rs-page …`; el tamaño del objetivo lo mide scripts/es308-hojas-check.cjs con axe (target-size 2.5.8) en la pantalla real.
+  assert.doesNotMatch(css, /\.rs-page/)
+  const page = readFileSync(new URL('../src/context/resume/ResumesPage.tsx', import.meta.url), 'utf8')
+  assert.match(page, /<PersonScreen /); assert.match(page, /className="cg-linkbtn"/); assert.doesNotMatch(page, /elv-join|context-skip|rs-page/)
+  assert.match(readFileSync(new URL('../src/cartografia/cartografia.css', import.meta.url), 'utf8'), /\.cg-linkbtn \{[^}]*min-height/)
 })

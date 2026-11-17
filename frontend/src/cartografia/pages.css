@@ -19,3 +19,19 @@
 .pg-dialog .cg-input { font-family: var(--cg-font-mono, monospace); letter-spacing: 0.08em; }
 /* Reserva el alto de la pantalla: mientras llegan los datos el pie del marco queda debajo del pliegue y no salta al cargar (CLS ≤ 0,1 a 390 px con CPU×4). */
 .pg { min-height: 100dvh; }
+/* ES-308 (PR 1): Hojas de vida y Habilidades de la hoja de vida. Solo tokens --cg-*. */
+.pg-itemtop { display: flex; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; align-items: baseline; }
+.pg-itemtop .cg-chip { white-space: nowrap; }
+.pg-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; align-items: center; justify-content: space-between; }
+.pg-meta h2 { margin: 0; }
+.pg-pick { margin-top: 0; min-width: 0; }
+.pg-pick > span { min-width: 0; display: grid; gap: 0.35rem; }
+.pg-pick__info { display: grid; gap: 0.25rem; }
+.pg-pick__info q { color: var(--cg-muted); quotes: "«" "»"; overflow-wrap: anywhere; }
+.pg-pick__chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.pg-pick:has(input:disabled) { cursor: default; opacity: 0.7; }
+.pg-pick:has(input:disabled) input { cursor: default; }
+.pg-sticky { position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; justify-content: space-between; padding: 0.8rem 0; background: var(--cg-ground); border-top: 1.5px solid var(--cg-ink); }
+.pg-sticky p { margin: 0; }
+@media (max-width: 639px) { .pg-sticky .cg-btn { width: 100%; } }
+.pg-card ul.cg-items { padding-left: 0; }

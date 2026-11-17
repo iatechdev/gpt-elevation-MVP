@@ -35,7 +35,7 @@ test('ES-248 «Retirar mi autorización»: solo un rechazo definitivo dice «err
   assert.match(withdraw, /if \(real === 'unknown'\) \{ setUnsure\(true\); setAlert\(t\('resume_withdraw_unsure'\)\); return \}/)
   assert.match(withdraw, /if \(real === 'not_granted'\) \{[^}]*setMessage\(t\('resume_withdrawn_live'\)\); await load\(\)/)
   assert.match(withdraw, /setAlert\(t\('resume_withdraw_not_seen'\)\); await load\(\)/)
-  assert.match(page, /\{unsure && <button type="button" className="elv-btn" disabled=\{busy\} onClick=\{\(\) => void verifyWithdraw\(\)\}>\{t\('resume_check'\)\}<\/button>\}/)
+  assert.match(page, /\{unsure && <div className="pg-actions"><Button variant="ghost" disabled=\{busy\} onClick=\{\(\) => void verifyWithdraw\(\)\}>\{t\('resume_check'\)\}<\/Button><\/div>\}/)
 })
 
 test('ES-248 «autorizar al analizar»: si se pierde la respuesta se relee el permiso antes de decir «falta autorización», y la autorización sigue siendo explícita en cada análisis', () => {

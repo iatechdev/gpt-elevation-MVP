@@ -159,7 +159,9 @@ test('ES-109 estructura: la tarjeta cumple lo aprobado (aviso PDF antes del bot�
   assert.doesNotMatch(starter + extras + page, /localStorage|sessionStorage|document\.cookie|indexedDB/)
   assert.match(starter, /onDrop=/); assert.match(starter, /type="file" accept="application\/pdf,\.pdf"/)
   assert.match(extras, /aria-label=\{fill\(t\('resume_skill_remove'\)/); assert.match(extras, /resume_undo/); assert.match(extras, /role="status"/)
-  assert.match(page, /role="alertdialog"/); assert.match(page, /opener\.current\?\.focus\(\)/) // el foco vuelve a quien abrió la confirmación
+  // ES-308: las confirmaciones usan el <Dialog> de Cartografía (modal nativo): el foco entra, Tab queda atrapado, Esc cierra y el foco vuelve a quien abrió la confirmación.
+  assert.match(page, /<Dialog open=\{dialogOpen\} onClose=\{\(\) => \{ if \(!busy\) close\(\) \}\}/)
+  const dialogSource = read('../src/cartografia/interactive.tsx'); assert.match(dialogSource, /showModal\(\)/); assert.match(dialogSource, /target\.focus\(\)/); assert.match(dialogSource, /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/)
   const form = read('../src/context/ParticipantContextForm.tsx')
   assert.match(form, /schemaVersion: 2/); assert.match(form, /schema_outdated/); assert.match(form, /cleanExtras\(draft\)/)
   assert.match(form, /registerContextNavigationGuard/) // salir con lo sugerido sin guardar pide confirmación
