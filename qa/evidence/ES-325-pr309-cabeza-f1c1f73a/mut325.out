@@ -1,0 +1,42 @@
+== base
+  PG es-173 (prueba del PR): # pass 14 # fail 0 
+== m1 sin supresión con positive = 0
+M aplicada
+  PG es-173 (prueba del PR): # pass 12 # fail 2 
+  mi guion (contract,bands,utility):
+RESUMEN {"total":12,"fallas":1}
+FALLA [pr] S4 utility: 5 «no» (positive = 0) → suprimida {"key":"utility","status":"ready","window":"day30","counts":{"eligible":{"min":5,"max":9},"responded":{"min":
+== m2 sin supresión con positive = responded
+M aplicada
+  PG es-173 (prueba del PR): # pass 12 # fail 2 
+  mi guion (contract,bands,utility):
+RESUMEN {"total":12,"fallas":1}
+FALLA [pr] S4 utility: 5 respuestas todas «yes» (positive = responded) → suprimida {"key":"utility","status":"ready","window":"day30","counts":{"eligible":{"min":5,"m
+== m3 BAND = 1 (conteo exacto)
+M aplicada
+  PG es-173 (prueba del PR): # pass 11 # fail 3 
+  mi guion (contract,bands,utility):
+RESUMEN {"total":12,"fallas":3}
+FALLA [pr] S2 bandas correctas: elegibles 5–9, respondidas 5–9, positivas 0–4 {"eligible":{"min":7,"max":7},"responded":{"min":6,"max":6},"positive":{"min":3,"max":
+FALLA [pr] S3 bandas con 5, 6, 9, 10, 11 y 14 personas reales = modelo (floor(n/5)*5 … +4) 5: {"key":"listening","status":"ready","window":"day7","counts":{"eligible":{
+== m4 vuelve «missing»
+M aplicada
+  PG es-173 (prueba del PR): # pass 10 # fail 4 
+  mi guion (contract,bands,utility):
+RESUMEN {"total":12,"fallas":4}
+FALLA [pr] S2 ready: counts con SOLO eligible/responded/positive, cada uno { min, max } {"eligible":{"min":5,"max":9},"responded":{"min":5,"max":9},"positive":{"min":0,"m
+FALLA [pr] S2 sin `missing` en ninguna parte de la respuesta {"minPeople":5,"metrics":[{"key":"activation","status":"not_available"},{"key":"experiment","status":"not_ava
+== m5 redondeo en vez de suelo
+M aplicada
+  PG es-173 (prueba del PR): # pass 11 # fail 3 
+  mi guion (contract,bands,utility):
+RESUMEN {"total":12,"fallas":3}
+FALLA [pr] S2 bandas correctas: elegibles 5–9, respondidas 5–9, positivas 0–4 {"eligible":{"min":5,"max":9},"responded":{"min":5,"max":9},"positive":{"min":5,"max":
+FALLA [pr] S3 bandas con 5, 6, 9, 10, 11 y 14 personas reales = modelo (floor(n/5)*5 … +4) 9: {"key":"listening","status":"ready","window":"day7","counts":{"eligible":{
+== m6 umbral de personas 5 → 3
+M aplicada
+  PG es-173 (prueba del PR): # pass 11 # fail 3 
+  mi guion (contract,bands,utility):
+RESUMEN {"total":12,"fallas":1}
+FALLA [pr] S2 con 4 personas: suprimida y SIN counts {"key":"listening","status":"ready","window":"day7","counts":{"eligible":{"min":0,"max":4},"responded":{"min":0,"max"
+fin

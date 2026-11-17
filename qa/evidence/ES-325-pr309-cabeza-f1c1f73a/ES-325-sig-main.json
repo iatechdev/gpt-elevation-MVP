@@ -1,0 +1,15 @@
+[
+ "GET sin permiso: 200 feedback",
+ "PUT sin permiso: 403 code,error,purpose",
+ "consent grant: 200 changed,decidedAt,purpose,scope,status,version",
+ "PUT con permiso: 201 feedback,replay",
+ "GET con respuesta: 200 feedback",
+ "consent revoke: 200 changed,decidedAt,purpose,scope,status,version",
+ "GET tras revocar (no borra): 200 feedback",
+ "answers tras revocar: presentes",
+ "DELETE: 200 feedback",
+ "GET tras retirar: 200 feedback",
+ "status tras retirar: withdrawn answers null",
+ "GET ventana inválida: 400 code,error",
+ "PUT sin requestId: 400 code,error"
+]
