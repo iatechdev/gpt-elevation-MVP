@@ -68,6 +68,8 @@
   .cg-sidenav a { border-bottom: 3px solid transparent; padding: 0.3rem 0; }
   .cg-sidenav a[aria-current='page'] { box-shadow: none; padding-left: 0; border-bottom-color: var(--cg-mark); }
   .cg-usermenu__list { right: auto; left: 0; }
+  /* ES-323: en la rejilla del encabezado de persona (ES-153) el menú queda arriba a la derecha: el panel se ancla a su borde derecho y crece hacia la izquierda; con left: 0 salía de la pantalla. */
+  .cg-header:has(.cg-nav--grid3) .cg-usermenu__list { right: 0; left: auto; }
   .cg-header__end { margin-left: 0; width: 100%; justify-content: space-between; }
 }
 /* ES-155 (E263-2): la navegación pública en móvil es una rejilla de dos columnas con celdas de alto fijo: el número de filas no depende del ancho del texto,
@@ -98,6 +100,15 @@
   .cg-header:has(.cg-nav--grid3) .cg-prefs { grid-column: 1 / -1; grid-row: 2; }
   .cg-nav--grid3 { grid-column: 1 / -1; grid-row: 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.2rem 0.5rem; width: 100%; }
   .cg-nav--grid3 a:not(.cg-btn) { min-width: 0; justify-content: center; text-align: center; line-height: 1.15; min-height: 2.75rem; overflow-wrap: anywhere; }
+}
+/* ES-323 (E300-1): con el menú de usuario abierto, en ≤ 900 px el panel entra en el flujo (ancho completo, fila 2) y empuja idioma/tema y navegación una fila más abajo: no tapa ningún control.
+   El menú pasa a `display: contents` solo mientras está abierto para que botón y panel sean celdas de la rejilla del encabezado. Sin :has() queda el panel flotante anclado a la derecha (regla de arriba). */
+@media (max-width: 900px) {
+  .cg-header:has(.cg-nav--grid3):has(.cg-usermenu__list:not([hidden])) .cg-usermenu { display: contents; }
+  .cg-header:has(.cg-nav--grid3):has(.cg-usermenu__list:not([hidden])) .cg-usermenu__button { grid-column: 2; grid-row: 1; justify-self: end; }
+  .cg-header:has(.cg-nav--grid3):has(.cg-usermenu__list:not([hidden])) .cg-usermenu__list { position: static; grid-column: 1 / -1; grid-row: 2; min-width: 0; max-width: none; }
+  .cg-header:has(.cg-nav--grid3):has(.cg-usermenu__list:not([hidden])) .cg-prefs { grid-row: 3; }
+  .cg-header:has(.cg-nav--grid3):has(.cg-usermenu__list:not([hidden])) .cg-nav--grid3 { grid-row: 4; }
 }
 @media (max-width: 360px) {
   .cg-nav--grid3 { font-size: 0.82rem; letter-spacing: 0.04em; }
