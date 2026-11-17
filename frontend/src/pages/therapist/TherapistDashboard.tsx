@@ -1,6 +1,7 @@
 // HU-046 + HU-049 + HU-062 + HU-065 + HU-067 + HU-082 + ES-177 — Panel profesional + i18n
 // ES-177: cada bloque (Resumen, Próximas sesiones, Personas, Avisos, Validación académica y Guía para la IA) carga su endpoint y falla por separado, con su «Reintentar».
 
+import '../../cartografia/pages.css'
 import { useLanguage } from '../../i18n/useLanguage'
 import { useSection } from './useSection'
 import { AlertsBlock, PeopleBlock, SummaryBlock, UpcomingBlock, type AlertsData, type UpcomingSession } from './PanelSections'
@@ -19,25 +20,24 @@ export function TherapistDashboard() {
   const guide = useSection<PromptData>('/api/therapist/prompt')
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <header>
-        <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>
-          {t('panel_title')}
-        </h1>
+    <div className="pg tp">
+      <header className="pg-head tp-head">
+        <h1 className="pg-title">{t('panel_title')}</h1>
       </header>
 
       <SummaryBlock state={people} t={t} locale={locale} />
-      <UpcomingBlock state={upcoming} t={t} locale={locale} />
 
-      <div className="th-two-col">
-        <PeopleBlock state={people} upcoming={upcoming.data ?? []} t={t} locale={locale} />
-        <div className="th-sticky">
+      <div className="tp-two">
+        <div className="tp-col">
+          <UpcomingBlock state={upcoming} t={t} locale={locale} />
+          <PeopleBlock state={people} upcoming={upcoming.data ?? []} t={t} locale={locale} />
+        </div>
+        <div className="tp-col">
           <AlertsBlock state={alerts} t={t} />
+          <ValidationBlock state={validation} t={t} locale={locale} />
+          <GuideBlock state={guide} t={t} locale={locale} lang={lang} />
         </div>
       </div>
-
-      <ValidationBlock state={validation} t={t} locale={locale} />
-      <GuideBlock state={guide} t={t} locale={locale} lang={lang} />
     </div>
   )
 }

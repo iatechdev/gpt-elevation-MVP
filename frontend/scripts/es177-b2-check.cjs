@@ -68,11 +68,13 @@ const fs = require('node:fs');
     // 1) Validación: estados en palabras, sin emojis, entrada de archivo visible con etiqueta, sin desborde, axe
     let { context, page } = await open(width, lang, { doc: 'mixed', guide: 'pending' });
     let body = await page.locator('section[aria-labelledby="panel-validation-title"]').innerText();
-    assert.ok(body.includes(t.rejected) && body.includes(t.pending), `estados en palabras (${tag})`);
+    // ES-309: el estado va en un chip en mayúsculas (text-transform) y innerText lo devuelve así: se compara sin distinguir mayúsculas
+    assert.ok(body.toLowerCase().includes(t.rejected.toLowerCase()) && body.toLowerCase().includes(t.pending.toLowerCase()), `estados en palabras (${tag})`);
     assert.ok(body.includes(lang === 'es' ? 'Ilegible, súbelo de nuevo' : 'Ilegible'), 'nota de la revisión visible');
     assert.ok(!emoji.test(await page.locator('main, body').first().innerText()), `sin emojis en el panel completo (${tag})`);
     const fileBox = await page.locator('input[type=file]').boundingBox(); assert.ok(fileBox && fileBox.width > 20 && fileBox.height > 20, 'el campo de archivo es visible (sin display:none)');
-    assert.equal(await page.locator('label', { has: page.locator('input[type=file]') }).count(), 1, 'tiene etiqueta visible');
+    // ES-309: la etiqueta ya no envuelve el campo: se asocia con for/id (el nombre accesible es el mismo) y sigue visible
+    assert.equal(await page.locator('label[for="panel-val-file"]:visible').count(), 1, 'tiene etiqueta visible');
     assert.equal(await overflow(page), 0, `sin desborde (${tag})`);
     assert.deepEqual(await axe(page), [], `axe (${tag})`);
     const tooSmall = await page.evaluate(() => [...document.querySelectorAll('section[aria-labelledby="panel-validation-title"] :is(button, select, input), section[aria-labelledby="panel-guide-title"] :is(button, select, input)')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.height < 43.5 || (el.tagName !== 'INPUT' && r.width < 43.5)); }).map((el) => (el.innerText || el.tagName).trim().slice(0, 30) + ' ' + Math.round(el.getBoundingClientRect().width) + 'x' + Math.round(el.getBoundingClientRect().height)));

@@ -53,7 +53,9 @@ test('ES-285 seguimiento (E243-1): el foco pasa a «Entrar» cuando aparece el a
 
 test('ES-285 seguimiento (E243-3): «Entrar» de la validación usa el mismo estilo que el de la guía y el texto ya no dice «elegirlo»', () => {
   const validation = read(dir + 'ValidationBlock.tsx'), copy = read('../src/i18n/therapistCopy.ts')
-  assert.match(validation, /style=\{ghost\}[\s\S]*?\{t\('session_enter'\)\}/)
+  // ES-309: el estilo «ghost» en línea pasó a la clase de Cartografía; la intención (el mismo estilo en ambos «Entrar») se conserva
+  const guide = read(dir + 'GuideBlock.tsx')
+  assert.match(validation, /className="cg-btn cg-btn--ghost"[\s\S]*?\{t\('session_enter'\)\}/); assert.match(guide, /className="cg-btn cg-btn--ghost"[\s\S]*?\{t\('session_enter'\)\}/)
   assert.doesNotMatch(copy, /vuelve a elegirlo|choose it again/)
   assert.equal((copy.match(/session_renewed:/g) ?? []).length, 2)
 })
