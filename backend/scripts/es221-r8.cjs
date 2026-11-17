@@ -33,7 +33,7 @@ const freePort = () => new Promise((resolve, reject) => { const s = net.createSe
     const base = `http://127.0.0.1:${port}`;
     for (let n = 0; n < 60; n++) { try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* arrancando */ } await new Promise(r => setTimeout(r, 500)); }
     const post = (mail) => fetch(base + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Persona Sintética', email: mail, password: 'Sintetica-Clave-2026!', acceptedTerms: true, termsVersion: '2026-11-v1' }) });
-    const seed = `r8-semilla-${crypto.randomBytes(3).toString('hex')}@example.invalid`;
+    const seed = `r8-semilla-${crypto.randomBytes(3).toString('hex')}@example.test`;
     if (duplicates) await post(seed);
     const results = [];
     for (let run = 1; run <= runs; run++) {
@@ -44,7 +44,7 @@ const freePort = () => new Promise((resolve, reject) => { const s = net.createSe
       const health = []; let stop = false;
       const poller = (async () => { while (!stop) { const s = performance.now(); try { await fetch(base + '/api/health'); health.push(performance.now() - s); } catch { health.push(Infinity); } await new Promise(r => setTimeout(r, 50)); } })();
       const started = performance.now();
-      const statuses = await Promise.all(Array.from({ length: burst }, (_, i) => post(duplicates ? seed : `r8-${run}-${i}-${crypto.randomBytes(3).toString('hex')}@example.invalid`).then(r => r.status)));
+      const statuses = await Promise.all(Array.from({ length: burst }, (_, i) => post(duplicates ? seed : `r8-${run}-${i}-${crypto.randomBytes(3).toString('hex')}@example.test`).then(r => r.status)));
       const total = performance.now() - started; stop = true; await poller;
       const count = statuses.reduce((acc, code) => ({ ...acc, [code]: (acc[code] || 0) + 1 }), {});
       results.push({ p95: percentile(health, 0.95), max: Math.max(...health), samples: health.length });
