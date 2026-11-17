@@ -22,7 +22,7 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
     const sup = await mkUser('superadmin');
     const person = await mkUser('user');
     for (const [index, password] of WEAK.entries()) {
-      const reg = await http(null, 'POST', '/api/register', { name: 'Prueba', email: `debil-${index}@example.test`, password });
+      const reg = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v1', name: 'Prueba', email: `debil-${index}@example.test`, password });
       assert.equal(reg.status, 400, 'registro ' + password.slice(0, 12)); assert.equal(reg.body.code, 'password_policy');
       const token = crypto.randomBytes(16).toString('hex');
       await seed('Invitations', { email: `inv-${index}@example.test`, role: 'user', invitedBy: sup.id, tokenHash: sha256(token), expiresAt: new Date(Date.now() + 3600000), usedAt: null, locale: 'es', requestId: null });
@@ -36,7 +36,7 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
       assert.equal((await q('SELECT "usedAt" FROM "PasswordResets" WHERE "tokenHash"=$1', [sha256(resetToken)]))[0].usedAt, null, 'el enlace de restablecer no se gasta');
     }
     // Control positivo: una contraseña que cumple SÍ pasa en los tres caminos
-    assert.equal((await http(null, 'POST', '/api/register', { name: 'Prueba', email: 'fuerte@example.test', password: STRONG })).status, 201);
+    assert.equal((await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v1', name: 'Prueba', email: 'fuerte@example.test', password: STRONG })).status, 201);
     const token = crypto.randomBytes(16).toString('hex');
     await seed('Invitations', { email: 'inv-fuerte@example.test', role: 'user', invitedBy: sup.id, tokenHash: sha256(token), expiresAt: new Date(Date.now() + 3600000), usedAt: null, locale: 'es', requestId: null });
     assert.equal((await http(null, 'POST', '/api/invitations/accept', { token, name: 'Persona', password: STRONG })).status, 201);
@@ -60,8 +60,8 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
     const resetExisting = await timed(() => http(null, 'POST', '/api/password-reset/request', { email }), 4);
     const resetMissing = await timed((i) => http(null, 'POST', '/api/password-reset/request', { email: `no-existe-r${i}@example.test` }), 4);
     assert.equal(resetExisting.last.status, resetMissing.last.status); assert.deepEqual(resetExisting.last.body, resetMissing.last.body);
-    const regExisting = await http(null, 'POST', '/api/register', { name: 'Otra', email, password: STRONG });
-    const regNew = await http(null, 'POST', '/api/register', { name: 'Otra', email: 'registro-nuevo@example.test', password: STRONG });
+    const regExisting = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v1', name: 'Otra', email, password: STRONG });
+    const regNew = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v1', name: 'Otra', email: 'registro-nuevo@example.test', password: STRONG });
     console.log(`# TIEMPOS no enumeración (mediana ms): login existente=${loginExisting.ms.toFixed(1)} inexistente=${loginMissing.ms.toFixed(1)} · restablecer existente=${resetExisting.ms.toFixed(1)} inexistente=${resetMissing.ms.toFixed(1)} · registro existente=${regExisting.status} nuevo=${regNew.status}`);
     assert.ok(Math.abs(loginExisting.ms - loginMissing.ms) < 120, `login: diferencia de tiempo ${Math.abs(loginExisting.ms - loginMissing.ms).toFixed(1)} ms`);
     assert.ok(Math.abs(resetExisting.ms - resetMissing.ms) < 120, `restablecer: diferencia de tiempo ${Math.abs(resetExisting.ms - resetMissing.ms).toFixed(1)} ms`);

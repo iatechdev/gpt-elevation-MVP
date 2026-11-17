@@ -21,8 +21,15 @@ test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión
   const row = async (mail) => (await q('SELECT id, "termsVersion", "acceptedAt", role FROM "Users" WHERE email=$1', [mail]))[0];
   const users = async () => Number((await q('SELECT count(*) n FROM "Users"'))[0].n);
 
-  await t.test('hoy (sin texto aprobado: versión null): el registro sin aceptación funciona igual y queda NULL; enviar una aceptación se rechaza sin crear cuenta', async () => {
-    assert.equal(terms.current().version, null, 'marcador: la versión la fija Alejo');
+  await t.test('constante REAL del servidor (versión inicial 2026-11-v1, sin revisión legal): exige la aceptación y la guarda con la versión y la fecha del servidor', async () => {
+    assert.deepEqual({ ...terms.current() }, { version: '2026-11-v1', required: true });
+    const none = email(); const rejected = await register({}, none); assert.equal(rejected.status, 400); assert.equal(rejected.body.code, 'terms_required'); assert.equal(rejected.body.currentVersion, '2026-11-v1'); assert.equal(await row(none), undefined);
+    const mail = email(); const ok = await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, mail); assert.equal(ok.status, 201, JSON.stringify(ok.body));
+    const saved = await row(mail); assert.equal(saved.termsVersion, '2026-11-v1'); assert.ok(saved.acceptedAt instanceof Date && Math.abs(Date.now() - saved.acceptedAt.getTime()) < 60000, 'fecha del servidor'); assert.equal(saved.role, 'user');
+  });
+
+  await t.test('marcador (versión null): el registro sin aceptación funciona igual y queda NULL; enviar una aceptación se rechaza sin crear cuenta', async () => {
+    setTerms({ version: null, required: false });
     const mail = email(); const ok = await register({}, mail); assert.equal(ok.status, 201, JSON.stringify(ok.body));
     assert.deepEqual({ v: (await row(mail)).termsVersion, a: (await row(mail)).acceptedAt }, { v: null, a: null }, 'sin aceptación registrada');
     const before = await users(); const mail2 = email();

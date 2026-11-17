@@ -1,0 +1,16 @@
+/* ES-301: páginas legales. Solo tokens --cg-*; una columna de lectura, sin scroll interno. */
+.lg { max-width: 68ch; margin: 0 auto; padding: 1.5rem 0 2.5rem; min-width: 0; }
+.lg-title { margin: 0 0 0.5rem; overflow-wrap: anywhere; font: 700 clamp(1.9rem, 5vw, 2.6rem)/1.05 var(--cg-font-cond); letter-spacing: 0.02em; text-transform: uppercase; color: var(--cg-ink); }
+.lg-title:focus { outline: none; }
+.lg-updated { margin: 0.4rem 0 0; }
+.lg-section { margin-top: 1.6rem; }
+.lg-section h2 { margin: 0 0 0.5rem; font: 700 1.25rem/1.2 var(--cg-font-cond); letter-spacing: 0.04em; text-transform: uppercase; color: var(--cg-ink); }
+.lg-section p, .lg-section li { line-height: 1.7; overflow-wrap: anywhere; }
+.lg-section p { margin: 0 0 0.9rem; }
+.lg-section ul, .lg-section ol { margin: 0 0 0.9rem; padding-inline-start: 1.3rem; display: grid; gap: 0.4rem; }
+/* marcador por completar: texto entre corchetes + subrayado + fondo; no depende solo del color */
+.lg-todo { background: var(--cg-panel); color: var(--cg-ink); padding: 0 0.2em; border-bottom: 2px dashed var(--cg-mark); font-weight: 600; }
+.lg-also { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--cg-line); }
+.lg-also a { display: inline-flex; align-items: center; min-height: var(--cg-touch); color: var(--cg-mark); font-weight: 600; text-decoration: underline; }
+.lg-also a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+@media (forced-colors: active) { .lg-todo { border-bottom-color: CanvasText; } }

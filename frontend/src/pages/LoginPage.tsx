@@ -8,13 +8,15 @@ import { authFailureKey, isSessionInfo, registrationRequested, sessionDestinatio
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
 import { PasswordRequirements } from '../access/PasswordRequirements'
-import { AccessCard, AccessField } from '../access/AccessCard'
+import { AccessCard, AccessField, TermsCheck } from '../access/AccessCard'
 import { fieldErrors, firstInvalid, type FieldErrors } from '../access/fieldErrors'
+import { TERMS_VERSION } from '../legal/version.ts'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 /** ES-155 (tramo B): entrar y crear cuenta con Cartografía en el marco público. La lógica de sesión, el bloqueo por intentos y los requisitos de la contraseña no cambiaron:
- *  se añaden el error POR CAMPO con foco al primero, el foco al aviso tras cada rechazo, el aviso de que no hay pago en línea y la nota de privacidad (sin casilla: llega con ES-301). */
+ *  se añaden el error POR CAMPO con foco al primero, el foco al aviso tras cada rechazo, el aviso de que no hay pago en línea y la nota de privacidad.
+ *  ES-301: casilla obligatoria del aviso de privacidad y términos (acceptedTerms + termsVersion; el servidor compara la versión y pone la fecha). */
 export function LoginPage() {
   const { t, lang, setLang } = useLanguage()
   const [params, setParams] = useSearchParams()
@@ -26,25 +28,30 @@ export function LoginPage() {
   const [name,          setName]          = useState('')
   const [email,         setEmail]         = useState('')
   const [password,      setPassword]      = useState('')
+  const [terms,         setTerms]         = useState(false)
   const [showPassword,  setShowPassword]  = useState(false)
   const [authMessage,   setAuthMessage]   = useState<{ key: string; success: boolean; missing?: PasswordProblem[] } | null>(null)
   const [errors,        setErrors]        = useState<FieldErrors>({})
   const [isLocked,      setIsLocked]      = useState(false)
   const [submitting,    setSubmitting]    = useState(false)
   const [rejections,    setRejections]    = useState(0)
+  const [termsRejected, setTermsRejected] = useState(0)
   const nameInput = useRef<HTMLInputElement>(null)
   const emailInput = useRef<HTMLInputElement>(null)
   const passwordInput = useRef<HTMLInputElement>(null)
+  const termsInput = useRef<HTMLInputElement>(null)
   const messageRef = useRef<HTMLParagraphElement>(null)
-  const inputs = { name: nameInput, email: emailInput, password: passwordInput }
+  const inputs = { name: nameInput, email: emailInput, password: passwordInput, terms: termsInput }
   // Tras cada rechazo del servidor el foco va al aviso (el contador dispara el efecto una vez por rechazo).
   useEffect(() => { if (rejections > 0) messageRef.current?.focus() }, [rejections])
+  // ES-301: la casilla está deshabilitada mientras se envía; el foco va a ella cuando el servidor rechaza la aceptación y el formulario ya se habilitó.
+  useEffect(() => { if (termsRejected > 0) termsInput.current?.focus() }, [termsRejected])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     if (submitting || isLocked) return
     setAuthMessage(null)
-    const found = fieldErrors({ name, email, password }, isRegistering ? 'register' : 'login')
+    const found = fieldErrors({ name, email, password, terms }, isRegistering ? 'register' : 'login')
     setErrors(found)
     const first = firstInvalid(found)
     if (first) { inputs[first].current?.focus(); return }
@@ -59,7 +66,7 @@ export function LoginPage() {
     setSubmitting(true)
     const endpoint = isRegistering ? 'register' : 'login'
     const body = isRegistering
-      ? { name, email, password }
+      ? { name, email, password, acceptedTerms: true, termsVersion: TERMS_VERSION }
       : { email, password }
 
     try {
@@ -74,8 +81,9 @@ export function LoginPage() {
       }
 
       if (!res.ok) {
+        if (isRegistering && (data.code === 'terms_required' || data.code === 'terms_not_accepted')) { setErrors({ terms: 'terms' }); setTermsRejected(n => n + 1); return }
         setIsLocked(data.locked === true)
-        const key = authFailureKey(res.status, data, isRegistering)
+        const key = isRegistering && data.code === 'terms_version_mismatch' ? 'access.terms_changed' : authFailureKey(res.status, data, isRegistering)
         setAuthMessage({ key, success: false, missing: key === 'landing.access.password_policy' ? knownProblems(data.missing) : undefined })
         if (key === 'landing.access.password_policy') passwordInput.current?.focus()
         else setRejections(n => n + 1)
@@ -88,6 +96,7 @@ export function LoginPage() {
         setParams(accessParams(false, selectedPlan), { replace: true })
         setPassword('')
         setName('')
+        setTerms(false)
         setRejections(n => n + 1) // también se enfoca el aviso de «cuenta creada»: es lo siguiente que hay que leer
       } else {
         const token = data.token
@@ -114,11 +123,11 @@ export function LoginPage() {
   // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
   const policyError = authMessage?.key === 'landing.access.password_policy'
   const missingList = authMessage?.missing?.map(id => text(`landing.access.pw.missing.${id}`)).join(', ')
-  const messageText = policyError && missingList ? text('landing.access.pw.missing').replace('{list}', missingList) : authMessage ? text(authMessage.key) : ''
+  const messageText = policyError && missingList ? text('landing.access.pw.missing').replace('{list}', missingList) : authMessage ? (authMessage.key.startsWith('access.') ? t(authMessage.key) : text(authMessage.key)) : ''
   const clear = (field: keyof FieldErrors) => setErrors(previous => (previous[field] ? { ...previous, [field]: undefined } : previous))
   const switchMode = () => {
     setParams(accessParams(!isRegistering, selectedPlan), { replace: true })
-    setAuthMessage(null); setErrors({}); setPassword(''); setShowPassword(false)
+    setAuthMessage(null); setErrors({}); setPassword(''); setShowPassword(false); setTerms(false)
   }
 
   return (
@@ -145,6 +154,8 @@ export function LoginPage() {
           {isRegistering && (
             <PasswordRequirements id="pw-req" password={password} showErrors={policyError} serverProblems={authMessage?.missing} text={text} />
           )}
+          {isRegistering && <TermsCheck checked={terms} error={errors.terms ? t('access.err_terms') : undefined} inputRef={termsInput} disabled={submitting}
+            onChange={checked => { setTerms(checked); if (checked) clear('terms') }} />}
           {authMessage && <p ref={messageRef} tabIndex={-1} role={authMessage.success ? 'status' : 'alert'}
             className={`ac-notice ac-notice--${authMessage.success ? 'success' : 'error'}`}>
             {messageText}
@@ -153,7 +164,7 @@ export function LoginPage() {
           <button type="submit" className="ac-submit" disabled={isLocked || submitting}>
             {isLocked ? text('landing.access.locked') : submitting ? text('landing.access.submitting') : isRegistering ? text('landing.access.register') : t('btn_login')}
           </button>
-          {isRegistering && <p className="ac-note">{t('access.privacy_note')} <Link to="/#privacidad">{t('access.privacy_link')}</Link>.</p>}
+          {isRegistering && <p className="ac-note">{t('access.privacy_note')} <Link to="/privacidad">{t('access.privacy_link')}</Link>.</p>}
         </form>
         <div className="ac-secondary">
           {!isRegistering && <p><Link to="/forgot-password">{text('landing.access.reset.forgot_link')}</Link></p>}

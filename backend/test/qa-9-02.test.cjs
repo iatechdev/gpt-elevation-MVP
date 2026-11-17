@@ -4,6 +4,8 @@ const { randomBytes } = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { models, record, startApp, grantTherapistSharing } = require('./support.cjs');
+// ES-301: el registro exige la aceptación del aviso de privacidad y términos (versión vigente de utils/terms.js)
+const ACCEPT = { acceptedTerms: true, termsVersion: require('../utils/terms').TERMS.version };
 
 test('QA-9-02: public input and legitimate authentication', async t => {
   let queries = 0;
@@ -23,7 +25,7 @@ test('QA-9-02: public input and legitimate authentication', async t => {
   for (const value of [undefined, null, {}, [], 123, false, '', ' ']) {
     for (const field of ['name', 'email', 'password']) {
       assert.equal((await request('POST', '/api/register', {
-        body: { name: 'Synthetic', ...valid, [field]: value },
+        body: { ...ACCEPT, name: 'Synthetic', ...valid, [field]: value },
       })).status, 400);
       assert.equal(queries, 0);
       assert.equal(writes, 0);
@@ -31,7 +33,7 @@ test('QA-9-02: public input and legitimate authentication', async t => {
   }
   assert.equal((await request('POST', '/api/login', { body: valid })).status, 401);
   assert.equal((await request('POST', '/api/register', {
-    body: { name: 'Synthetic', ...valid },
+    body: { ...ACCEPT, name: 'Synthetic', ...valid },
   })).status, 201);
   const user = record({ id: 101, name: 'Synthetic', role: 'user', active: true,
     password: await bcrypt.hash(password, 4), loginAttempts: 0 });

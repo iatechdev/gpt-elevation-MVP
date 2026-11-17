@@ -4,6 +4,8 @@ const { randomBytes } = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const { validRegistrationPassword, passwordProblems, policy } = require('../utils/registrationPassword');
 const { models, record, startApp } = require('./support.cjs');
+// ES-301: el registro exige la aceptación del aviso de privacidad y términos (versión vigente de utils/terms.js)
+const ACCEPT = { acceptedTerms: true, termsVersion: require('../utils/terms').TERMS.version };
 
 test('ES-128: mínimo 8 caracteres con mayúscula, minúscula, número y carácter especial; ids de requisitos estables', () => {
   const cases = [
@@ -68,29 +70,29 @@ test('ES-128: registro débil no consulta ni escribe cuentas; registro válido c
     ['Aa1!' + '😀'.repeat(18), ['max_bytes']],
   ];
   for (const [password, missing] of rejected) {
-    const response = await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'policy@example.invalid', password } });
+    const response = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'policy@example.invalid', password } });
     assert.equal(response.status, 400, password); assert.equal(response.body.code, 'password_policy');
     assert.deepEqual(response.body.missing, missing);
     assert.equal(response.body.error, `${policy.message.es} / ${policy.message.en}`);
     assert.equal(reads, 0); assert.equal(writes.length, 0);
   }
   const password = `Aa1!${randomBytes(24).toString('hex')}`;
-  const registered = await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'policy@example.invalid', password, role: 'superadmin' } });
+  const registered = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'policy@example.invalid', password, role: 'superadmin' } });
   assert.equal(registered.status, 201); assert.equal(writes.length, 1); assert.equal(writes[0].role, 'user');
   assert.notEqual(writes[0].password, password); assert.equal(await bcrypt.compare(password, writes[0].password), true);
   const account = record({ id: 202, active: false, password: writes[0].password });
   account.update = async () => { throw new Error('Must not reactivate'); };
   models.User.findOne = async () => account;
-  assert.equal((await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'policy@example.invalid', password } })).status, 403);
+  assert.equal((await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'policy@example.invalid', password } })).status, 403);
   assert.equal(writes.length, 1); assert.equal(account.active, false);
 });
 
 test('ES-128: correo ya registrado con contraseña débil devuelve password_policy (no revela si la cuenta existe) y con contraseña válida conserva el error de duplicado', async t => {
   models.User.findOne = async () => record({ id: 7, active: true });
   const request = await startApp(t);
-  const weak = await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'dup@example.invalid', password: 'weak' } });
+  const weak = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'dup@example.invalid', password: 'weak' } });
   assert.equal(weak.status, 400); assert.equal(weak.body.code, 'password_policy');
-  const dup = await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'dup@example.invalid', password: 'Valid-pass-9' } });
+  const dup = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'dup@example.invalid', password: 'Valid-pass-9' } });
   assert.equal(dup.status, 400); assert.equal(dup.body.error, 'El correo ya está registrado.');
 });
 
@@ -99,7 +101,7 @@ test('ES-128: entradas extremas responden 400 controlado, nunca 5xx', async t =>
   models.User.create = async () => { throw new Error('Must not write'); };
   const request = await startApp(t);
   for (const password of ['', ' '.repeat(20), 'x'.repeat(10000), '😀'.repeat(500), '\u0000'.repeat(10), null, 123, [], {}, true]) {
-    const response = await request('POST', '/api/register', { body: { name: 'Synthetic', email: 'edge@example.invalid', password } });
+    const response = await request('POST', '/api/register', { body: { ...ACCEPT, name: 'Synthetic', email: 'edge@example.invalid', password } });
     assert.ok(response.status >= 400 && response.status < 500, `${JSON.stringify(password).slice(0, 20)} -> ${response.status}`);
   }
 });

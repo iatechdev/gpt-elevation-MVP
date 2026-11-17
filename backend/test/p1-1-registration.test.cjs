@@ -4,6 +4,8 @@ const { randomBytes } = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { models, record, startApp } = require('./support.cjs');
+// ES-301: el registro exige la aceptación del aviso de privacidad y términos (versión vigente de utils/terms.js)
+const ACCEPT = { acceptedTerms: true, termsVersion: require('../utils/terms').TERMS.version };
 
 test('P1-1: public registration cannot reactivate or replace an inactive account', async t => {
   const password = `Aa1!${randomBytes(24).toString('hex')}`; // ES-128: cumple la política de registro
@@ -15,7 +17,7 @@ test('P1-1: public registration cannot reactivate or replace an inactive account
   const request = await startApp(t);
 
   const denied = await request('POST', '/api/register', {
-    body: { name: 'Synthetic', email: 'inactive@example.invalid', password },
+    body: { ...ACCEPT, name: 'Synthetic', email: 'inactive@example.invalid', password },
   });
   assert.equal(denied.status, 403);
   assert.equal(account.update.mock.callCount(), 0);
@@ -32,7 +34,7 @@ test('P1-1: public registration cannot reactivate or replace an inactive account
   let created;
   models.User.create = async values => { created = values; return record(values); };
   const registered = await request('POST', '/api/register', {
-    body: { name: 'Synthetic', email: 'new@example.invalid', password },
+    body: { ...ACCEPT, name: 'Synthetic', email: 'new@example.invalid', password },
   });
   assert.equal(registered.status, 201);
   assert.equal(created.role, 'user');
@@ -42,7 +44,7 @@ test('P1-1: public registration cannot reactivate or replace an inactive account
   const active = record({ ...created, id: 303, active: true, loginAttempts: 0 });
   models.User.findOne = async () => active;
   assert.equal((await request('POST', '/api/register', {
-    body: { name: 'Synthetic', email: 'new@example.invalid', password },
+    body: { ...ACCEPT, name: 'Synthetic', email: 'new@example.invalid', password },
   })).status, 400);
   const loggedIn = await request('POST', '/api/login', {
     body: { email: 'new@example.invalid', password },

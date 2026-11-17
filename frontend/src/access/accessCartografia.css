@@ -37,3 +37,11 @@
 .ac-req li.is-bad, .ac-req p.is-bad { color: var(--cg-err); font-weight: 600; }
 .ac-req__icon { width: 1em; flex: none; }
 .ac-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* ES-301: casilla del aviso de privacidad y términos. Casilla nativa de 24 px; los enlaces del texto se subrayan; error por campo. */
+.ac-check__row { display: flex; gap: 0.7rem; align-items: flex-start; }
+.ac-check input[type='checkbox'] { flex: none; inline-size: 1.5rem; block-size: 1.5rem; margin: 0.1rem 0 0; accent-color: var(--cg-mark); }
+.ac-check input[type='checkbox']:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.ac-check input[aria-invalid='true'] { outline: 2px solid var(--cg-err); outline-offset: 1px; }
+.ac-field.ac-check label { font: 400 1rem/1.5 var(--cg-font-sans); letter-spacing: 0; text-transform: none; overflow-wrap: anywhere; }
+.ac-check label a { color: var(--cg-mark); font-weight: 600; text-decoration: underline; display: inline-block; padding-block: 0.15rem; }
+.ac-check label a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }

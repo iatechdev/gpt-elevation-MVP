@@ -46,6 +46,8 @@ const EvidenceCreatePage = lazy(() => import('./pages/EvidencePages.tsx').then(m
 const EvidenceEditPage = lazy(() => import('./pages/EvidencePages.tsx').then(m => ({ default: m.EvidenceEditPage })))
 const SkillMapPage = lazy(() => import('./pages/SkillMapPage.tsx').then(m => ({ default: m.SkillMapPage })))
 const ManifestoPage = lazy(() => import('./pages/ManifestoPage.tsx').then(m => ({ default: m.ManifestoPage }))) // ES-207 — manifiesto ético público
+const PrivacyPage = lazy(() => import('./legal/LegalPage.tsx').then(m => ({ default: () => <m.LegalPage doc="privacy" /> }))) // ES-301 — aviso de privacidad público
+const TermsPage = lazy(() => import('./legal/LegalPage.tsx').then(m => ({ default: () => <m.LegalPage doc="terms" /> }))) // ES-301 — términos de uso públicos
 const BoardManifest = lazy(() => import('./pages/board/BoardManifest.tsx').then(m => ({ default: m.BoardManifest })))
 const FacilitationPreview = lazy(() => import('./facilitation/FacilitationPreview').then(m => ({ default: m.FacilitationPreview })))
 const Participants = lazy(() => import('./facilitation/Pages').then(m => ({ default: m.Participants })))
@@ -99,6 +101,8 @@ export default function App() {
       <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/manifiesto" element={<ManifestoPage />} /> {/* ES-207 — lectura pública del manifiesto ético */}
+      <Route path="/privacidad" element={<PrivacyPage />} /> {/* ES-301 — aviso de privacidad (borrador sin revisión legal) */}
+      <Route path="/terminos" element={<TermsPage />} /> {/* ES-301 — términos de uso (borrador sin revisión legal) */}
       <Route path="/design-system" element={<DesignSystemPage />} /> {/* ES-152 — sin datos ni navegación; solo documenta el sistema */}
 
       {/* Regular user */}

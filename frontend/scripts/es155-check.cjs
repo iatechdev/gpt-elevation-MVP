@@ -100,21 +100,22 @@ const fs = require('node:fs');
       const body = await page.locator('main').innerText();
       assert.ok(body.includes(c.noPay), `aviso de que no hay pago en línea (${tag})`);
       assert.ok(await page.getByRole('link', { name: c.privacy, exact: true }).count() >= 1, `nota de privacidad con enlace (${tag})`);
-      assert.ok(!/consentimiento|consent|acepto|i agree/i.test(body) && (await page.locator('input[type="checkbox"]').count()) === 0, `sin casilla ni la palabra «consentimiento» hasta ES-301 (${tag})`);
+      // ES-301: hay UNA casilla (aceptación del aviso y términos) y sigue sin aparecer la palabra «consentimiento»
+      assert.ok(!/consentimiento|consent/i.test(body) && (await page.locator('input[type="checkbox"]').count()) === 1, `una casilla de aceptación y sin la palabra «consentimiento» (${tag})`);
       await page.locator('form button[type="submit"]').click();
       await page.getByText(c.errName).waitFor(); assert.equal(await active(page), 'access-name', `foco al primer error: nombre (${tag})`);
       assert.deepEqual(await axe(page), [], `axe crear cuenta con errores (${tag})`);
       await page.getByLabel(c.name, { exact: true }).fill('Persona Sintética'); await page.getByLabel(c.email, { exact: true }).fill('persona@example.invalid');
-      await page.getByLabel(c.password, { exact: true }).fill('corta');
+      await page.getByLabel(c.password, { exact: true }).fill('corta'); await page.locator('#access-terms').check();
       await page.locator('form button[type="submit"]').click(); await page.getByText(new RegExp(c.needs)).first().waitFor();
       assert.equal(await active(page), 'access-password', `contraseña débil: foco al campo (${tag})`); assert.equal(seen.register.length, 0, `no se envía una contraseña débil (${tag})`);
       assert.equal(await page.locator('#access-password').getAttribute('aria-invalid'), 'true', `aria-invalid por requisitos (${tag})`);
       await page.getByLabel(c.password, { exact: true }).fill('Clave-Sintetica-2026!');
       await page.locator('form button[type="submit"]').click(); await page.getByText(c.registered).waitFor();
-      assert.equal(seen.register.length, 1); assert.deepEqual(Object.keys(seen.register[0]).sort(), ['email', 'name', 'password'], `el contrato con el servidor no cambia (${tag})`);
+      assert.equal(seen.register.length, 1); assert.deepEqual(Object.keys(seen.register[0]).sort(), ['acceptedTerms', 'email', 'name', 'password', 'termsVersion'], `el contrato con el servidor no cambia (${tag})`);
       assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('role')), 'status', `foco al aviso de cuenta creada (${tag})`);
       await context.close(); }
-    check(`crear cuenta (${tag}): axe 0, errores por campo en orden, requisitos, aviso de pago, nota de privacidad sin consentimiento ni casilla, contrato intacto`);
+    check(`crear cuenta (${tag}): axe 0, errores por campo en orden, requisitos, aviso de pago, nota de privacidad sin consentimiento, una casilla de aceptación, contrato con acceptedTerms+termsVersion`);
 
     // 4. Recuperar: correo inválido, misma respuesta 202, red caída y 429 conservan el correo y devuelven el foco
     { const { context, page, seen } = await open('/forgot-password', width, lang, { scheme });
