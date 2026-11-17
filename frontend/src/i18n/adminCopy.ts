@@ -108,6 +108,7 @@ export const adminEnglish: Record<string, string> = {
   'Revisa, aprueba o rechaza las pendientes, o elimina las que ya no necesites, para volver a recibir.': 'Review, approve or reject the pending ones, or delete those you no longer need, to start receiving again.',
   // ES-184: Contenido · Validaciones y Solicitudes (diseño 12076; inglés a revisar por una persona)
   'Validaciones': 'Validations', 'Solicitudes': 'Applications', 'Tipo de documento': 'Document type', 'Archivo': 'File', 'Ver documento': 'View document',
+  'Aprobar esta solicitud no crea ni activa una cuenta. Después, usa «Crear cuenta de profesional».': 'Approving this application does not create or activate an account. Use “Create professional account” afterward.',
   'Queda activa en la plataforma y puede recibir personas.': 'It becomes active on the platform and can receive people.', 'El motivo lo verá la persona.': 'The person will see the reason.',
   'Eliminar solicitud': 'Delete application', 'Se eliminan la solicitud y su hoja de vida; no se puede deshacer. Libera cupo.': 'The application and its résumé are deleted; this cannot be undone. It frees up capacity.',
   'Datos depurados': 'Data removed', 'Profesional aprobado y activado.': 'Professional approved and activated.', 'Documento rechazado.': 'Document rejected.',

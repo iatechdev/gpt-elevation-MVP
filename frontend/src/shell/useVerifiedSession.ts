@@ -2,9 +2,21 @@
 // navegador solo sirve para pintar sin esperar; quien manda es la respuesta del servidor, y el servidor además vuelve a decidir en cada API.
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import { useLocation } from 'react-router-dom'
-import { invalidateStoredSession, readStoredToken, readVerifiedSession, type SessionInfo } from '../access/session'
+import { invalidateStoredSession, readStoredToken, readVerifiedSession, type SessionInfo, type SessionResult } from '../access/session'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
+
+// ES-316: el primer GET /api/session sale al cargar el módulo, no cuando React confirma el árbol (que espera a los bloques perezosos del marco: ~350 ms de tiempo muerto a CPU ×4).
+// Se consume UNA vez, solo con el mismo token y la misma base, y no más de 10 s después; si no coincide se pide como siempre. El servidor sigue decidiendo en cada API.
+let early: { token: string; baseUrl: string; promise: Promise<SessionResult>; at: number } | null = null
+export function startEarlySession(baseUrl: string = BACKEND) {
+  const token = readStoredToken()
+  if (token) early = { token, baseUrl, promise: readVerifiedSession({ baseUrl, token }), at: Date.now() }
+}
+function takeEarlySession(baseUrl: string, token: string) {
+  const taken = early; early = null
+  return taken && taken.token === token && taken.baseUrl === baseUrl && Date.now() - taken.at < 10000 ? taken.promise : null
+}
 
 export type VerifiedState =
   | { status: 'anonymous' }
@@ -28,7 +40,7 @@ export function useVerifiedSession(baseUrl: string = BACKEND): { state: Verified
   useEffect(() => {
     if (!token) return
     const controller = new AbortController()
-    void readVerifiedSession({ baseUrl, token, signal: controller.signal }).then(answer => {
+    void (takeEarlySession(baseUrl, token) ?? readVerifiedSession({ baseUrl, token, signal: controller.signal })).then(answer => {
       if (controller.signal.aborted || readStoredToken() !== token) return
       if (answer.status === 'verified') {
         // Los componentes antiguos leen el rol del navegador: se alinea con lo que dijo el servidor.

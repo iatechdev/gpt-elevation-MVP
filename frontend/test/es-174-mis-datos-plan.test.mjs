@@ -85,5 +85,4 @@ test('ES-174: /app/plan es de cualquier sesión válida, está en la ruta y el m
   assert.ok(PERSON_MENU.some((item) => item.to === '/app/plan' && item.label === 'plan'))
   assert.equal(PERSON_MENU.some((item) => item.to === '/pricing'), false)
   assert.match(read('../src/App.tsx'), /path="\/app\/plan" element=\{<PlanPage \/>\}/); assert.match(read('../src/App.tsx'), /const PlanPage = lazy\(/)
-  assert.match(read('../src/space/SpaceNav.tsx'), /to="\/app\/plan"/)
 })
