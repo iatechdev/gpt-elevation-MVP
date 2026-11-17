@@ -17,8 +17,8 @@
 .cg.prg { --cg-font-cond: 'Barlow Condensed Opt', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow Opt', 'Barlow Fallback', system-ui, sans-serif; }
 /* E272-1: con barra de desplazamiento clásica, al llegar los datos aparecía la barra y el texto de la cabecera cambiaba de renglón; el hueco queda reservado. */
 :root:has(.prg) { scrollbar-gutter: stable; }
-.prg { min-height: 100dvh; padding: 0 var(--cg-s4); }
-.prg-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 60rem; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
+.prg { min-width: 0; } /* ES-329: el marco y la altura de pantalla los pone PersonLayout/PersonScreen */
+.prg-main { display: grid; gap: var(--cg-s4); align-content: start; }
 .prg-main:focus-visible, .prg-main h1:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
 .prg-main > p, .prg-main p { margin: 0; }
 .prg-head { display: flex; gap: var(--cg-s4); justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }

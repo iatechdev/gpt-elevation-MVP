@@ -1,7 +1,7 @@
 /* ES-175 (HU-P24): «Mis revisiones» de la persona con Cartografía. Solo tokens --cg-*. */
 @import '../shell/shell.css';
-.cgf { min-height: 100dvh; padding: 0 var(--cg-s4); }
-.cgf-main { padding: var(--cg-s6) 0 var(--cg-s8); max-width: 60rem; margin: 0 auto; display: grid; gap: var(--cg-s4); align-content: start; }
+.cgf { min-width: 0; } /* ES-329: el marco y la altura de pantalla los pone PersonLayout/PersonScreen */
+.cgf-main { display: grid; gap: var(--cg-s4); align-content: start; }
 .cgf-main > p { margin: 0; }
 .cgf-main:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
 .cgf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cg-s4); }
