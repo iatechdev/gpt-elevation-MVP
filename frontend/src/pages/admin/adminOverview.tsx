@@ -16,17 +16,19 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
   )
 }
 
-export function SummaryCards({ metrics }: { metrics: Metrics }) {
+// metrics null = reserva de alto mientras cargan (valores «—», se oculta con visibility en el contenedor): evita el salto de diseño al llegar los datos.
+const HOLD = '—'
+export function SummaryCards({ metrics }: { metrics: Metrics | null }) {
   const tr = useAdminText()
   const f = useFormat()
   const items = [
-    { id: 'total', label: tr('Personas usuarias'), value: f.number(metrics.totalUsers) },
-    { id: 'active', label: tr('Personas activas'), value: f.number(metrics.activeUsers) },
-    { id: 'pros', label: tr('Profesionales'), value: f.number(metrics.totalTherapists) },
-    { id: 'mood-logs', label: tr('Registros de ánimo'), value: f.number(metrics.totalSessions) },
-    { id: 'week', label: tr('Activas esta semana'), value: f.number(metrics.activeThisWeek) },
-    { id: 'mood', label: tr('Ánimo promedio'), value: f.outOfFive(metrics.avgMood, tr('de')) ?? tr('Sin datos') },
-    { id: 'rating', label: tr('Valoración promedio'), value: f.outOfFive(metrics.avgRating, tr('de')) ?? tr('Sin datos') },
+    { id: 'total', label: tr('Personas usuarias'), value: metrics ? f.number(metrics.totalUsers) : HOLD },
+    { id: 'active', label: tr('Personas activas'), value: metrics ? f.number(metrics.activeUsers) : HOLD },
+    { id: 'pros', label: tr('Profesionales'), value: metrics ? f.number(metrics.totalTherapists) : HOLD },
+    { id: 'mood-logs', label: tr('Registros de ánimo'), value: metrics ? f.number(metrics.totalSessions) : HOLD },
+    { id: 'week', label: tr('Activas esta semana'), value: metrics ? f.number(metrics.activeThisWeek) : HOLD },
+    { id: 'mood', label: tr('Ánimo promedio'), value: metrics ? (f.outOfFive(metrics.avgMood, tr('de')) ?? tr('Sin datos')) : HOLD },
+    { id: 'rating', label: tr('Valoración promedio'), value: metrics ? (f.outOfFive(metrics.avgRating, tr('de')) ?? tr('Sin datos')) : HOLD },
   ]
   return <Figures items={items} />
 }
@@ -93,10 +95,11 @@ export function ActivityChart({ metrics, showSummary = false }: { metrics: Metri
   )
 }
 
-export function TopProfessionals({ metrics }: { metrics: Metrics }) {
+export function TopProfessionals({ metrics }: { metrics: Metrics | null }) {
   const tr = useAdminText()
   const f = useFormat()
-  if (metrics.topTherapists.length === 0) return <p className="ao-status">{tr('Aún no hay profesionales con personas')}</p>
+  const rows = metrics ? metrics.topTherapists : [{ id: 1, name: HOLD, patientCount: 0, avgRating: null }, { id: 2, name: HOLD, patientCount: 0, avgRating: null }]
+  if (metrics && rows.length === 0) return <p className="ao-status">{tr('Aún no hay profesionales con personas')}</p>
   return (
     <div className="ao-people" tabIndex={0} role="region" aria-label={tr('Profesionales con más personas')}>
       <table className="cg-table">
@@ -105,11 +108,11 @@ export function TopProfessionals({ metrics }: { metrics: Metrics }) {
           <th scope="col">{tr('Personas')}</th>
           <th scope="col">{tr('Valoración')}</th>
         </tr></thead>
-        <tbody>{metrics.topTherapists.map((p) => (
+        <tbody>{rows.map((p) => (
           <tr key={p.id}>
             <th scope="row">{p.name}</th>
-            <td>{f.number(p.patientCount)}</td>
-            <td>{f.outOfFive(p.avgRating, tr('de')) ?? tr('Sin datos')}</td>
+            <td>{metrics ? f.number(p.patientCount) : HOLD}</td>
+            <td>{metrics ? (f.outOfFive(p.avgRating, tr('de')) ?? tr('Sin datos')) : HOLD}</td>
           </tr>
         ))}</tbody>
       </table>

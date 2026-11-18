@@ -22,3 +22,8 @@
 .ao-tablewrap th[scope='row'], .ao-people th[scope='row'] { font: inherit; text-transform: none; letter-spacing: normal; color: inherit; border-bottom: 1px solid var(--cg-line); }
 .ao-summary { margin-top: 1rem; }
 .ao-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* ES-310 CLS: reserva de alto mientras cargan (copia oculta con las mismas piezas; el aviso de carga se superpone). */
+.ao-hold { position: relative; }
+.ao-ghost { visibility: hidden; }
+.ao-over { position: absolute; top: 0; left: 0; }
+.ao-chart-hold { min-height: 12rem; }

@@ -27,14 +27,29 @@ export function AdminDashboard() {
         <p className="pg-lead">{tr('Resumen de la plataforma')}</p>
       </header>
 
-      {metrics.state === 'loading' && <p role="status" aria-busy="true" className="ao-status">{tr('Cargando métricas...')}</p>}
+      {/* Mientras cargan se reserva el alto de las cifras (ES-310, CLS): la copia oculta usa las mismas piezas que el resultado. */}
+      {metrics.state === 'loading' && (
+        <div className="ao-hold">
+          <div className="ao-ghost" aria-hidden="true"><SummaryCards metrics={null} /></div>
+          <p role="status" aria-busy="true" className="ao-status ao-over">{tr('Cargando métricas...')}</p>
+        </div>
+      )}
       {metrics.state === 'error' && <LoadError message={tr('No se pudieron cargar las métricas.')} onRetry={metrics.retry} />}
       {metrics.state === 'ok' && metrics.data && <SummaryCards metrics={metrics.data} />}
 
       <div className="ao-two">
         <Card as="section" className="pg-card">
           <CardTitle id="admin-alerts-title">{tr('Avisos')}</CardTitle>
-          {alerts.state === 'loading' && <p role="status" aria-busy="true" className="ao-status">{tr('Cargando...')}</p>}
+          {alerts.state === 'loading' && (
+            <div className="ao-hold">
+              <ul className="cg-items ao-ghost" aria-hidden="true">
+                {[tr('Guías de profesionales por revisar'), tr('Perfil incompleto'), tr('Manifiesto vigente')].map((title, i) => (
+                  <AlertRow key={title} title={title} status="ok" detail="—" actionLabel={i < 2 ? tr('Ver') : undefined} onAction={() => undefined} onRetry={alerts.retry} />
+                ))}
+              </ul>
+              <p role="status" aria-busy="true" className="ao-status ao-over">{tr('Cargando...')}</p>
+            </div>
+          )}
           {alerts.state === 'error' && <LoadError message={tr('No pudimos cargar los avisos.')} onRetry={alerts.retry} />}
           {alerts.state === 'ok' && sections && (
             <ul className="cg-items" aria-labelledby="admin-alerts-title">
@@ -51,7 +66,7 @@ export function AdminDashboard() {
                 status={incomplete?.status === 'ok' ? 'ok' : 'error'}
                 detail={incomplete?.status === 'ok' ? (incomplete.count === 0 ? tr('Sin avisos') : `${f.number(incomplete.count)} ${tr('profesionales')}`) : ''}
                 actionLabel={incomplete?.status === 'ok' && incomplete.count > 0 ? tr('Ver') : undefined}
-                onAction={() => navigate('/admin/usuarios?role=therapist')}
+                onAction={() => navigate('/admin/users?role=therapist')}
                 onRetry={alerts.retry}
               />
               <AlertRow
@@ -75,13 +90,15 @@ export function AdminDashboard() {
 
         <Card as="section" className="pg-card">
           <CardTitle id="admin-top-title">{tr('Profesionales con más personas')}</CardTitle>
-          {metrics.state === 'ok' && metrics.data ? <TopProfessionals metrics={metrics.data} /> : <p className="ao-status">{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
+          {metrics.state === 'ok' && metrics.data ? <TopProfessionals metrics={metrics.data} /> : metrics.state === 'loading' ? (
+            <div className="ao-hold"><div className="ao-ghost" aria-hidden="true"><TopProfessionals metrics={null} /></div><p className="ao-status ao-over">{tr('Cargando...')}</p></div>
+          ) : <p className="ao-status">{tr('Sin datos')}</p>}
         </Card>
       </div>
 
       <Card as="section" className="pg-card">
         <CardTitle>{tr('Actividad, últimos 30 días')}</CardTitle>
-        {metrics.state === 'ok' && metrics.data ? <ActivityChart metrics={metrics.data} /> : <p className="ao-status">{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
+        {metrics.state === 'ok' && metrics.data ? <ActivityChart metrics={metrics.data} /> : <p className={`ao-status${metrics.state === 'loading' ? ' ao-chart-hold' : ''}`}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
       </Card>
     </div>
   )
