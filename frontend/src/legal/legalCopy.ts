@@ -31,15 +31,15 @@ const privacyEs: LegalContent = {
     { bullets: [
       '**Chat:** hasta tus últimos 20 mensajes de la conversación y las entradas de diario que tú elijas para esa conversación. No enviamos tu nombre ni tu correo.',
       '**Si un mensaje tuyo muestra un indicio grave de crisis,** ese turno no se envía al modelo: te respondemos con un mensaje de seguridad fijo.',
-      '**Recomendaciones de bienestar:** un resumen de tu ánimo de los últimos 7 días (cuántos registros, promedio y tendencia), sin texto tuyo.',
-      '**Análisis de habilidades:** el texto de las evidencias que confirmaste, cuando pides el análisis.',
+      '**Recomendaciones de bienestar:** un resumen de tus últimos 7 registros de ánimo (cuántos hay, promedio y tendencia), sin texto tuyo.',
+      '**Análisis de habilidades:** las evidencias que confirmaste (entre otros datos: título, situación, responsabilidad, acciones, objetivo, resultado, aprendizaje y la autonomía que declaraste) y la rúbrica del catálogo, cuando pides el análisis de tu mapa. No se envían tu diario, tu ánimo ni tus conversaciones.',
       '**Lectura de tus fuentes (solo si lo autorizas, fuente por fuente):** hasta 20 mensajes de tu chat, hasta 10 entradas de tu diario o el texto de tu hoja de vida sin datos de contacto, para proponerte ideas.',
       '**Emparejamiento con un profesional:** las respuestas cortas que elegiste, sin tu ánimo.',
-      '**Si compartes con tu profesional:** al cerrar una sesión, una etiqueta de tu ánimo; y para tu profesional, solo cifras agregadas sin tu nombre ni tus textos.'] },
+      '**Si compartes con tu profesional:** al cerrar una sesión, una etiqueta de tu ánimo; y, cuando tu profesional pide un resumen, solo cifras agregadas (cuántos registros, promedio de ánimo y promedio de valoraciones), sin tu nombre ni tus textos.'] },
     { heading: 'Proveedores', paragraphs: ['Antes de enviar, enmascaramos claves y tokens que hayas pegado. El proveedor procesa ese texto para generar la respuesta. Además usamos proveedores de alojamiento, base de datos y almacenamiento de archivos. [[VERIFICAR con Infra: nombres, país de cada uno, si hay transferencia internacional y, por contrato, que no usan tus datos para entrenar modelos.]]'] },
     { heading: 'Cuánto tiempo los guardamos', paragraphs: ['[[POR COMPLETAR: plazos de conservación]]. Si borras tu cuenta, [[POR COMPLETAR: qué se borra y en cuánto tiempo]].'] },
     { heading: 'Tus derechos', paragraphs: ['Puedes pedir ver, corregir, descargar o borrar tus datos, y retirar permisos de compartir. Escribe a [[POR COMPLETAR: correo]]. [[POR REVISAR LEGAL: marco aplicable (p. ej. Ley 1581 de 2012 de Colombia) y plazos de respuesta.]]'] },
-    { heading: 'Cambios', paragraphs: ['Si cambiamos este aviso de fondo, te lo diremos y te pediremos aceptar la nueva versión.'] },
+    { heading: 'Cambios', paragraphs: ['Este aviso tiene una versión y una fecha. Al crear tu cuenta se registra la versión que aceptaste y la fecha de aceptación. Si cambiamos el aviso de fondo, publicaremos la nueva versión aquí; las cuentas ya creadas conservan registrada la versión que aceptaron.'] },
   ],
 }
 
@@ -66,15 +66,15 @@ const privacyEn: LegalContent = {
     { bullets: [
       '**Chat:** up to your last 20 messages of the conversation and the journal entries you choose for that conversation. We do not send your name or email.',
       '**If a message of yours shows a serious sign of crisis,** that turn is not sent to the model: we reply with a fixed safety message.',
-      '**Wellbeing suggestions:** a summary of your mood over the last 7 days (how many entries, average and trend), with no text of yours.',
-      '**Skills analysis:** the text of the evidence you confirmed, when you ask for the analysis.',
+      '**Wellbeing suggestions:** a summary of your last 7 mood entries (how many there are, average and trend), with no text of yours.',
+      '**Skills analysis:** the evidence you confirmed (among other data: title, situation, responsibility, actions, goal, result, learning and the autonomy you declared) and the catalog rubric, when you ask for the analysis of your map. Your journal, mood and conversations are not sent.',
       '**Reading your sources (only if you allow it, source by source):** up to 20 messages from your chat, up to 10 entries from your journal or the text of your résumé without contact details, to suggest ideas to you.',
       '**Matching with a professional:** the short answers you chose, without your mood.',
-      '**If you share with your professional:** at the end of a session, a label of your mood; and for your professional, only aggregate figures without your name or your texts.'] },
+      '**If you share with your professional:** at the end of a session, a label of your mood; and, when your professional asks for a summary, only aggregate figures (how many entries, average mood and average rating), without your name or your texts.'] },
     { heading: 'Providers', paragraphs: ['Before sending, we mask keys and tokens you may have pasted. The provider processes that text to generate the reply. We also use providers for hosting, the database and file storage. [[VERIFY with Infra: names, country of each, any international transfer and, by contract, that they do not use your data to train models.]]'] },
     { heading: 'How long we keep it', paragraphs: ['[[TO BE COMPLETED: retention periods]]. If you delete your account, [[TO BE COMPLETED: what is deleted and how fast]].'] },
     { heading: 'Your rights', paragraphs: ['You can ask to see, correct, download or delete your data, and withdraw sharing permissions. Write to [[TO BE COMPLETED: email]]. [[FOR LEGAL REVIEW: applicable framework (e.g. Colombia’s Law 1581 of 2012) and response times.]]'] },
-    { heading: 'Changes', paragraphs: ['If we make a substantive change to this notice, we will tell you and ask you to accept the new version.'] },
+    { heading: 'Changes', paragraphs: ['This notice has a version and a date. When you create your account, the version you accepted and the date of acceptance are recorded. If we make a substantive change to the notice, we will publish the new version here; existing accounts keep the version they accepted on record.'] },
   ],
 }
 

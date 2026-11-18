@@ -14,8 +14,8 @@ test('ES-337: la versión sube a 2026-11-v2 en cliente y servidor', () => {
 
 test('ES-337: el aviso ES/EN enumera cada flujo que envía datos al modelo, con sus límites, y ya no afirma que la IA no ve el diario ni las conversaciones', () => {
   const es = flat(LEGAL.es.privacy), en = flat(LEGAL.en.privacy)
-  for (const pattern of [/últimos 20 mensajes/, /entradas de diario que tú elijas/, /No enviamos tu nombre ni tu correo/, /indicio grave de crisis[\s\S]*no se envía al modelo/, /últimos 7 días/, /Análisis de habilidades/, /hasta 10 entradas de tu diario/, /sin datos de contacto/, /Emparejamiento/, /cifras agregadas/, /Anthropic/]) assert.match(es, pattern, String(pattern))
-  for (const pattern of [/last 20 messages/, /journal entries you choose/, /do not send your name or email/, /serious sign of crisis[\s\S]*not sent to the model/, /last 7 days/, /Skills analysis/, /up to 10 entries from your journal/, /without contact details/, /Matching/, /aggregate figures/, /Anthropic/]) assert.match(en, pattern, String(pattern))
+  for (const pattern of [/últimos 20 mensajes/, /entradas de diario que tú elijas/, /No enviamos tu nombre ni tu correo/, /indicio grave de crisis[\s\S]*no se envía al modelo/, /últimos 7 registros de ánimo/, /Análisis de habilidades:\*\* las evidencias que confirmaste \(entre otros datos/, /hasta 10 entradas de tu diario/, /sin datos de contacto/, /Emparejamiento/, /cifras agregadas/, /Anthropic/]) assert.match(es, pattern, String(pattern))
+  for (const pattern of [/last 20 messages/, /journal entries you choose/, /do not send your name or email/, /serious sign of crisis[\s\S]*not sent to the model/, /last 7 mood entries/, /Skills analysis:\*\* the evidence you confirmed \(among other data/, /up to 10 entries from your journal/, /without contact details/, /Matching/, /aggregate figures/, /Anthropic/]) assert.match(en, pattern, String(pattern))
   assert.doesNotMatch(es, /solo ve tus evidencias confirmadas|no tu diario, tu ánimo ni tus conversaciones/); assert.doesNotMatch(en, /only sees your confirmed evidence|not your journal, mood or conversations/)
   assert.match(es, /Nada de lo que la IA lee llega a un profesional sin tu permiso/); assert.match(en, /Nothing the AI reads reaches a professional without your permission/)
 })
@@ -29,4 +29,10 @@ test('ES-337: lo pendiente NO se completó por suposición (proveedores, país, 
   assert.match(flat(LEGAL.es.privacy), /\[\[VERIFICAR con Infra: nombres, país de cada uno, si hay transferencia internacional y, por contrato, que no usan tus datos para entrenar modelos\.\]\]/)
   assert.match(flat(LEGAL.en.privacy), /\[\[VERIFY with Infra: names, country of each, any international transfer and, by contract, that they do not use your data to train models\.\]\]/)
   assert.match(LEGAL.es.privacy.draft, /sin revisión legal/); assert.match(LEGAL.en.privacy.draft, /without legal review/)
+})
+
+test('ES-337: «Cambios» no promete una re-aceptación que no existe (ES-339/ES-340 la proponen): describe versión, fecha y registro de lo aceptado', () => {
+  const es = flat(LEGAL.es.privacy), en = flat(LEGAL.en.privacy)
+  assert.doesNotMatch(es, /pediremos aceptar/); assert.doesNotMatch(en, /ask you to accept/)
+  assert.match(es, /tiene una versión y una fecha[\s\S]*conservan registrada la versión que aceptaron/); assert.match(en, /has a version and a date[\s\S]*keep the version they accepted on record/)
 })

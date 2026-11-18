@@ -12,10 +12,11 @@ const ROLES = ['user', 'therapist', 'admin', 'superadmin', 'board']
 const app = read('../src/App.tsx')
 
 // URL protegida → roles que deben ver la pantalla (el resto ve «sin acceso»; la API además responde 403 por su cuenta).
+// ES-334: superadmin entra a toda la plataforma (persona, profesional, administración, junta); admin NO entra a las pantallas de persona (ni al chat) ni a las de profesional.
 const MATRIX = {
-  '/app/chat': ['user'], '/app/skill-map': ['user'], '/app/evidence/12': ['user'], '/app/next-step/plan': ['user'], '/app/session/3': ['user'],
+  '/app/chat': ['user', 'superadmin'], '/app/skill-map': ['user', 'superadmin'], '/app/evidence/12': ['user', 'superadmin'], '/app/next-step/plan': ['user', 'superadmin'], '/app/session/3': ['user', 'superadmin'],
   '/app/data': ROLES, '/app/professional-reviews': ROLES, '/facilitation/participants/4': ROLES,
-  '/therapist/dashboard': ['therapist'], '/therapist/patient/9': ['therapist'], '/therapist/session/9': ['therapist'],
+  '/therapist/dashboard': ['therapist', 'superadmin'], '/therapist/patient/9': ['therapist', 'superadmin'], '/therapist/session/9': ['therapist', 'superadmin'],
   '/admin/dashboard': ['admin', 'superadmin'], '/admin/prompts': ['admin', 'superadmin'], '/admin/content': ['admin', 'superadmin'],
   '/admin/metrics': ['admin', 'superadmin'], '/admin/route-catalog/5': ['admin', 'superadmin'], '/admin/skill-catalog': ['admin', 'superadmin'],
   '/admin/pilot-metrics': ['admin', 'superadmin'],

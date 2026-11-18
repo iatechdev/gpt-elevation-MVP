@@ -20,7 +20,10 @@ function mountFrontend(app, distDir) {
   // datos de la persona no se comprimen (evita ataques tipo BREACH).
   app.use(compression({ threshold: 1024 }));
   // ES-337: la política estática antigua (producto anterior, GPT de OpenAI) se retiró; su URL sigue viva y lleva con redirección permanente (308) al aviso vigente.
-  app.get(['/privacy', '/privacy/', '/privacy/index.html'], (req, res) => { res.set('Cache-Control', 'public, max-age=3600'); res.redirect(308, '/privacidad'); });
+  // Dos rutas (sin arreglos: el enumerador de la política de roles de es-281 no las entiende); `/privacy` también atiende `/privacy/` (enrutado no estricto).
+  const legacyPrivacy = (req, res) => { res.set('Cache-Control', 'public, max-age=3600'); res.redirect(308, '/privacidad'); };
+  app.get('/privacy', legacyPrivacy);
+  app.get('/privacy/index.html', legacyPrivacy);
   app.use(express.static(distDir, { setHeaders: setCacheHeaders }));
   // ES-140: un archivo de /assets que no existe (p. ej. un bloque con hash de un despliegue anterior) responde 404, no el index.html con 200:
   // el navegador no debe tomar HTML por JavaScript.

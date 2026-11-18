@@ -21,6 +21,7 @@
     "test:hostile-ids:pg": "node --test test/integration/es-280-postgres.cjs",
     "test:owner-matrix:pg": "node --test test/integration/es-281-postgres.cjs",
     "test:invitation-terms:pg": "node --test test/integration/es-326-postgres.cjs",
+    "test:superadmin-access:pg": "node --test test/integration/es-334-postgres.cjs",
     "test:bridge-source-consent:pg": "node --test test/integration/es-233-postgres.cjs",
     "test:landing-concurrency:pg": "node --test test/integration/es-279-postgres.cjs",
     "test:purge-hardening:pg": "node --test test/integration/es-283-postgres.cjs",
