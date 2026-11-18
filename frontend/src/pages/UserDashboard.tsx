@@ -73,6 +73,7 @@ export function UserDashboard() {
   const [checkedIn,      setCheckedIn]      = useState(false)
   const [todayMood,      setTodayMood]      = useState<number | null>(null)
   const [checkingIn,     setCheckingIn]     = useState(false)
+  const [pendingMood,    setPendingMood]    = useState<number | null>(null) // E322-1: opción elegida, aún sin registrar
 
   // ── Progress state ───────────────────────────────────────────────────────
   const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
@@ -289,8 +290,14 @@ export function UserDashboard() {
                   {todayMood !== null && <p className="cg-hint">{t('pr_of5', { n: todayMood })} · {t(`pr_mood_${todayMood}`)}</p>}
                 </>
               ) : (
-                <ScaleField legend={t('dash_arrive')} name="dash-mood" disabled={checkingIn} options={MOODS.map(moodOption)}
-                  value="" onChange={value => { if (!checkingIn) void handleCheckin(Number(value)) }} />
+                <>
+                  {/* E322-1: elegir con las flechas NO registra; se registra con el botón (teclado: Tab hasta él y Enter). */}
+                  <ScaleField legend={t('dash_arrive')} name="dash-mood" disabled={checkingIn} options={MOODS.map(moodOption)}
+                    value={pendingMood === null ? '' : String(pendingMood)} onChange={value => setPendingMood(Number(value))} />
+                  <div className="pg-actions">
+                    <Button disabled={checkingIn || pendingMood === null} onClick={() => { if (pendingMood !== null && !checkingIn) void handleCheckin(pendingMood) }}>{t('dash_register')}</Button>
+                  </div>
+                </>
               )}
             </section>
 

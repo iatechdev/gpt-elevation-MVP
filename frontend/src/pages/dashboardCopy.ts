@@ -4,7 +4,7 @@ import { registerCopy } from '../i18n/lazyCopy.ts'
 
 export const dashboardEs: Record<string, string> = {
   dash_title: 'Mi panel',
-  dash_mood_title: 'Estado emocional', dash_arrive: '¿Cómo llegas hoy?', dash_checked: '✓ Ya registraste tu estado de hoy',
+  dash_mood_title: 'Estado emocional', dash_arrive: '¿Cómo llegas hoy?', dash_register: 'Registrar mi estado', dash_checked: '✓ Ya registraste tu estado de hoy',
   dash_progress: 'Tu progreso', dash_sessions_week: 'sesiones esta semana', dash_trend: 'Tendencia emocional',
   dash_upcoming: 'Próxima sesión', dash_live: 'Sesión en curso', dash_with: 'Con', dash_join: 'Entrar a la videollamada', dash_soon: 'La sesión está por comenzar',
   dash_link_later: 'El enlace estará disponible cuando el profesional inicie la sesión', dash_no_session: 'Tu profesional aún no ha agendado una sesión.', dash_find_pro: 'Buscar mi profesional',
@@ -14,7 +14,7 @@ export const dashboardEs: Record<string, string> = {
 }
 export const dashboardEn: Record<string, string> = {
   dash_title: 'My dashboard',
-  dash_mood_title: 'Emotional state', dash_arrive: 'How are you arriving today?', dash_checked: '✓ Check-in done for today',
+  dash_mood_title: 'Emotional state', dash_arrive: 'How are you arriving today?', dash_register: 'Log my state', dash_checked: '✓ Check-in done for today',
   dash_progress: 'Your progress', dash_sessions_week: 'sessions this week', dash_trend: 'Emotional trend',
   dash_upcoming: 'Upcoming session', dash_live: 'Session live', dash_with: 'With', dash_join: 'Join videocall', dash_soon: 'Session starting soon',
   dash_link_later: 'Link will be available when your professional starts the session', dash_no_session: 'Your professional has not scheduled a session yet.', dash_find_pro: 'Find my professional',
