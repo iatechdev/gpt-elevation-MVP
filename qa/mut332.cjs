@@ -12,5 +12,6 @@ M('d el botón deshabilitado pierde aria-describedby', PG, 'aria-describedby={ke
 M('e «Sí, descartar» deja de ser de peligro', PG, '<Button danger disabled={blocked} onClick={() => void act(\'discard\', part)}>', '<Button disabled={blocked} onClick={() => void act(\'discard\', part)}>')
 M('f /app/next-step sale de MIGRATED_PERSON_PATHS', 'frontend/src/shell/personLayoutState.ts', ", '/app/next-step']", ']')
 M('g se quita el rótulo de vista previa con datos sintéticos', SH, "<Banner title={t('preview')} />", '')
-M('h la subnavegación pierde su alto táctil', 'frontend/src/cartografia/pages.css', 'min-height: var(--cg-touch)', 'min-height: 20px')
+M('h la subnavegación pierde su alto táctil (regla .pc-subnav a)', 'frontend/src/cartografia/pages.css', '.pc-subnav a { display: inline-flex; align-items: center; min-height: var(--cg-touch);', '.pc-subnav a { display: inline-flex; align-items: center; min-height: 20px;')
+M('i se quita la llamada a registerLeaveGuard (no solo el import)', SH, 'const leave = registerLeaveGuard(to => {', 'const leave = ((cb: (to: string | number) => boolean) => () => {})(to => {')
 restore(); console.log('clon restaurado')
