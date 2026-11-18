@@ -19,6 +19,8 @@ function mountFrontend(app, distDir) {
   // ES-139: solo los estáticos se comprimen (gzip; el paquete compression no ofrece brotli). La API no pasa por aquí: las respuestas con
   // datos de la persona no se comprimen (evita ataques tipo BREACH).
   app.use(compression({ threshold: 1024 }));
+  // ES-337: la política estática antigua (producto anterior, GPT de OpenAI) se retiró; su URL sigue viva y lleva con redirección permanente (308) al aviso vigente.
+  app.get(['/privacy', '/privacy/', '/privacy/index.html'], (req, res) => { res.set('Cache-Control', 'public, max-age=3600'); res.redirect(308, '/privacidad'); });
   app.use(express.static(distDir, { setHeaders: setCacheHeaders }));
   // ES-140: un archivo de /assets que no existe (p. ej. un bloque con hash de un despliegue anterior) responde 404, no el index.html con 200:
   // el navegador no debe tomar HTML por JavaScript.

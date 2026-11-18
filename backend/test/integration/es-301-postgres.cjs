@@ -22,11 +22,11 @@ test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión
   const row = async (mail) => (await q('SELECT id, "termsVersion", "acceptedAt", role FROM "Users" WHERE email=$1', [mail]))[0];
   const users = async () => Number((await q('SELECT count(*) n FROM "Users"'))[0].n);
 
-  await t.test('constante REAL del servidor (versión inicial 2026-11-v1, sin revisión legal): exige la aceptación y la guarda con la versión y la fecha del servidor', async () => {
-    assert.deepEqual({ ...terms.current() }, { version: '2026-11-v1', required: true });
-    const none = email(); const rejected = await register({}, none); assert.equal(rejected.status, 400); assert.equal(rejected.body.code, 'terms_required'); assert.equal(rejected.body.currentVersion, '2026-11-v1'); assert.equal(await row(none), undefined);
-    const mail = email(); const ok = await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, mail); assert.equal(ok.status, 201, JSON.stringify(ok.body));
-    const saved = await row(mail); assert.equal(saved.termsVersion, '2026-11-v1'); assert.ok(saved.acceptedAt instanceof Date && Math.abs(Date.now() - saved.acceptedAt.getTime()) < 60000, 'fecha del servidor'); assert.equal(saved.role, 'user');
+  await t.test('constante REAL del servidor (versión inicial 2026-11-v2, sin revisión legal): exige la aceptación y la guarda con la versión y la fecha del servidor', async () => {
+    assert.deepEqual({ ...terms.current() }, { version: '2026-11-v2', required: true });
+    const none = email(); const rejected = await register({}, none); assert.equal(rejected.status, 400); assert.equal(rejected.body.code, 'terms_required'); assert.equal(rejected.body.currentVersion, '2026-11-v2'); assert.equal(await row(none), undefined);
+    const mail = email(); const ok = await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, mail); assert.equal(ok.status, 201, JSON.stringify(ok.body));
+    const saved = await row(mail); assert.equal(saved.termsVersion, '2026-11-v2'); assert.ok(saved.acceptedAt instanceof Date && Math.abs(Date.now() - saved.acceptedAt.getTime()) < 60000, 'fecha del servidor'); assert.equal(saved.role, 'user');
   });
 
   await t.test('marcador (versión null): el registro sin aceptación funciona igual y queda NULL; enviar una aceptación se rechaza sin crear cuenta', async () => {
@@ -39,21 +39,21 @@ test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión
   });
 
   await t.test('con versión vigente y registro obligatorio: faltan o no coinciden → 400 de código estable, sin crear cuenta ni consultar si el correo existe', async () => {
-    setTerms({ version: '2026-11-v1', required: true });
+    setTerms({ version: '2026-11-v2', required: true });
     const before = await users();
     const cases = [
-      ['sin aceptación', {}, 'terms_required'], ['acceptedTerms false', { acceptedTerms: false, termsVersion: '2026-11-v1' }, 'terms_not_accepted'],
-      ['acceptedTerms "true" (texto)', { acceptedTerms: 'true', termsVersion: '2026-11-v1' }, 'terms_not_accepted'], ['acceptedTerms 1', { acceptedTerms: 1, termsVersion: '2026-11-v1' }, 'terms_not_accepted'],
-      ['acceptedTerms null', { acceptedTerms: null, termsVersion: '2026-11-v1' }, 'terms_not_accepted'], ['solo termsVersion', { termsVersion: '2026-11-v1' }, 'terms_not_accepted'],
+      ['sin aceptación', {}, 'terms_required'], ['acceptedTerms false', { acceptedTerms: false, termsVersion: '2026-11-v2' }, 'terms_not_accepted'],
+      ['acceptedTerms "true" (texto)', { acceptedTerms: 'true', termsVersion: '2026-11-v2' }, 'terms_not_accepted'], ['acceptedTerms 1', { acceptedTerms: 1, termsVersion: '2026-11-v2' }, 'terms_not_accepted'],
+      ['acceptedTerms null', { acceptedTerms: null, termsVersion: '2026-11-v2' }, 'terms_not_accepted'], ['solo termsVersion', { termsVersion: '2026-11-v2' }, 'terms_not_accepted'],
       ['sin versión', { acceptedTerms: true }, 'terms_version_invalid'], ['versión numérica', { acceptedTerms: true, termsVersion: 1 }, 'terms_version_invalid'],
-      ['versión lista', { acceptedTerms: true, termsVersion: ['2026-11-v1'] }, 'terms_version_invalid'], ['versión vacía', { acceptedTerms: true, termsVersion: '' }, 'terms_version_invalid'],
+      ['versión lista', { acceptedTerms: true, termsVersion: ['2026-11-v2'] }, 'terms_version_invalid'], ['versión vacía', { acceptedTerms: true, termsVersion: '' }, 'terms_version_invalid'],
       ['versión con marcado', { acceptedTerms: true, termsVersion: '<script>' }, 'terms_version_invalid'], ['versión larguísima', { acceptedTerms: true, termsVersion: 'v'.repeat(500) }, 'terms_version_invalid'],
       ['versión que no es la vigente', { acceptedTerms: true, termsVersion: '2026-10-v0' }, 'terms_version_mismatch'],
     ];
     for (const [label, patch, code] of cases) {
       const mail = email(); const out = await register(patch, mail);
       assert.equal(out.status, 400, `${label}: ${JSON.stringify(out.body)}`); assert.equal(out.body.code, code, label); assert.equal(await row(mail), undefined, `${label}: no se creó la cuenta`);
-      if (code === 'terms_required' || code === 'terms_version_mismatch') assert.equal(out.body.currentVersion, '2026-11-v1', `${label}: informa la versión vigente`);
+      if (code === 'terms_required' || code === 'terms_version_mismatch') assert.equal(out.body.currentVersion, '2026-11-v2', `${label}: informa la versión vigente`);
       assert.ok(typeof out.body.error === 'string' && out.body.error.includes(' / '), `${label}: mensaje bilingüe`);
     }
     assert.equal(await users(), before, 'ninguna cuenta nueva');
@@ -63,51 +63,51 @@ test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión
   });
 
   await t.test('aceptación válida: 201; la versión y la FECHA las pone el servidor (lo que el cliente mande como fecha o versión extra se ignora)', async () => {
-    setTerms({ version: '2026-11-v1', required: true });
+    setTerms({ version: '2026-11-v2', required: true });
     const mail = email(); const before = Date.now();
-    const out = await register({ acceptedTerms: true, termsVersion: '2026-11-v1', acceptedAt: '2000-01-01T00:00:00Z', acceptedVersion: 'otra', id: 1, role: 'admin' }, mail); assert.equal(out.status, 201, JSON.stringify(out.body));
-    const saved = await row(mail); assert.equal(saved.termsVersion, '2026-11-v1'); assert.equal(saved.role, 'user', 'el rol no viene del cliente');
+    const out = await register({ acceptedTerms: true, termsVersion: '2026-11-v2', acceptedAt: '2000-01-01T00:00:00Z', acceptedVersion: 'otra', id: 1, role: 'admin' }, mail); assert.equal(out.status, 201, JSON.stringify(out.body));
+    const saved = await row(mail); assert.equal(saved.termsVersion, '2026-11-v2'); assert.equal(saved.role, 'user', 'el rol no viene del cliente');
     const at = new Date(saved.acceptedAt).getTime(); assert.ok(at >= before - 1000 && at <= Date.now() + 1000, 'acceptedAt es la hora del servidor, no la que mandó el cliente');
-    assert.ok(!JSON.stringify(out.body).includes('2026-11-v1') || true);
+    assert.ok(!JSON.stringify(out.body).includes('2026-11-v2') || true);
   });
 
   await t.test('versión fijada pero registro aún opcional: sin aceptación funciona (NULL); con aceptación se guarda', async () => {
-    setTerms({ version: '2026-11-v1', required: false });
+    setTerms({ version: '2026-11-v2', required: false });
     const none = email(); assert.equal((await register({}, none)).status, 201); assert.equal((await row(none)).termsVersion, null);
-    const yes = email(); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, yes)).status, 201); assert.equal((await row(yes)).termsVersion, '2026-11-v1');
+    const yes = email(); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, yes)).status, 201); assert.equal((await row(yes)).termsVersion, '2026-11-v2');
     setTerms({ version: null, required: true }); // `required` sin versión no cierra el registro (constante a medias)
     assert.equal((await register({})).status, 201, 'sin versión fijada no se puede exigir');
   });
 
   await t.test('correo ya registrado: no se pisa su aceptación ni se crea otra cuenta; cuenta inactiva responde igual (400, ES-221)', async () => {
-    setTerms({ version: '2026-11-v1', required: true });
-    const mail = email(); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, mail)).status, 201); const first = await row(mail);
+    setTerms({ version: '2026-11-v2', required: true });
+    const mail = email(); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, mail)).status, 201); const first = await row(mail);
     setTerms({ version: '2026-12-v2', required: true });
     const again = await register({ acceptedTerms: true, termsVersion: '2026-12-v2' }, mail); assert.equal(again.status, 400); assert.match(again.body.error, /ya está registrado/);
-    const after = await row(mail); assert.deepEqual({ v: after.termsVersion, a: new Date(after.acceptedAt).getTime() }, { v: '2026-11-v1', a: new Date(first.acceptedAt).getTime() }, 'la aceptación original no cambia');
+    const after = await row(mail); assert.deepEqual({ v: after.termsVersion, a: new Date(after.acceptedAt).getTime() }, { v: '2026-11-v2', a: new Date(first.acceptedAt).getTime() }, 'la aceptación original no cambia');
     await q('UPDATE "Users" SET active=false WHERE email=$1', [mail]);
     assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-12-v2' }, mail)).status, 400); // ES-221: antes 403 «inactiva»; ahora igual que «ya registrado»
   });
 
   await t.test('carreras ×16: el mismo correo con aceptación válida deja UNA cuenta y ningún 5xx inesperado', async () => {
-    setTerms({ version: '2026-11-v1', required: true });
-    const mail = email(); const outs = await Promise.all(Array.from({ length: 16 }, () => register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, mail)));
+    setTerms({ version: '2026-11-v2', required: true });
+    const mail = email(); const outs = await Promise.all(Array.from({ length: 16 }, () => register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, mail)));
     assert.equal(Number((await q('SELECT count(*) n FROM "Users" WHERE email=$1', [mail]))[0].n), 1, 'una sola cuenta');
     assert.equal(outs.filter((o) => o.status === 201).length, 1, 'una sola creación');
     assert.deepEqual([...new Set(outs.map((o) => o.status))].filter((s) => s >= 500), [], '0 respuestas 5xx');
   });
 
   await t.test('ES-23: la aceptación se exporta con la cuenta y la purga la deja en NULL (sin tocar a otras personas)', async () => {
-    setTerms({ version: '2026-11-v1', required: true });
+    setTerms({ version: '2026-11-v2', required: true });
     const { personalData } = require('../../utils/personalData'); const User = require('../../User'); const { requestDeletion } = require('../../utils/dataRights'); const { processDeletion } = require('../../utils/deletionProcessor');
     const mineMail = email(); const otherMail = email();
-    assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, mineMail)).status, 201); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v1' }, otherMail)).status, 201);
+    assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, mineMail)).status, 201); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, otherMail)).status, 201);
     const mine = await row(mineMail); const other = await row(otherMail);
-    const data = await personalData(await User.findByPk(mine.id), 'es'); assert.equal(data.profile.termsVersion, '2026-11-v1'); assert.ok(data.profile.acceptedAt, 'la fecha de aceptación se exporta'); assert.ok(!('password' in data.profile));
+    const data = await personalData(await User.findByPk(mine.id), 'es'); assert.equal(data.profile.termsVersion, '2026-11-v2'); assert.ok(data.profile.acceptedAt, 'la fecha de aceptación se exporta'); assert.ok(!('password' in data.profile));
     await requestDeletion(mine.id); const request = (await q('SELECT id FROM "DeletionRequests" WHERE "UserId"=$1', [mine.id]))[0].id; await processDeletion(request, { quiescent: true });
     const purged = await row(mineMail); assert.equal(purged, undefined, 'el correo original ya no está (lápida)');
     const tomb = (await q('SELECT "termsVersion", "acceptedAt" FROM "Users" WHERE id=$1', [mine.id]))[0]; assert.deepEqual(tomb, { termsVersion: null, acceptedAt: null }, 'la lápida no conserva la aceptación');
-    assert.equal((await row(otherMail)).termsVersion, '2026-11-v1', 'la de otra persona intacta');
+    assert.equal((await row(otherMail)).termsVersion, '2026-11-v2', 'la de otra persona intacta');
   });
 
   await t.test('migración: aditiva e idempotente (up dos veces), cuentas existentes en NULL, up→down→up', async () => {

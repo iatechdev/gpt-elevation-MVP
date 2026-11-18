@@ -7,12 +7,12 @@ const terms = require('../utils/terms');
 
 const withConfig = (config, fn) => { const real = terms.current; terms.current = () => config; try { return fn(); } finally { terms.current = real; } };
 const code = (body, config) => withConfig(config, () => { try { terms.validate(body); return null; } catch (error) { assert.ok(error instanceof terms.TermsError); assert.equal(error.status, 400); return error.code; } });
-const V = { version: '2026-11-v1', required: true };
+const V = { version: '2026-11-v2', required: true };
 
 test('ES-301: la constante vigente es la versión inicial con aceptación obligatoria (texto sin revisión legal) y no se puede cambiar en caliente', () => {
   // ES-301 (frontend): antes era el marcador {version:null, required:false}; ahora se fija junto con la casilla del frontend (frontend/src/legal/version.ts debe coincidir).
-  assert.deepEqual({ ...terms.TERMS }, { version: '2026-11-v1', required: true }, 'versión inicial aprobada para staging');
-  assert.ok(Object.isFrozen(terms.TERMS)); assert.throws(() => terms.validate({}), { code: 'terms_required' }, 'con la constante real el registro sin aceptación se rechaza'); assert.equal(terms.validate({ acceptedTerms: true, termsVersion: '2026-11-v1' }).termsVersion, '2026-11-v1')
+  assert.deepEqual({ ...terms.TERMS }, { version: '2026-11-v2', required: true }, 'versión inicial aprobada para staging');
+  assert.ok(Object.isFrozen(terms.TERMS)); assert.throws(() => terms.validate({}), { code: 'terms_required' }, 'con la constante real el registro sin aceptación se rechaza'); assert.equal(terms.validate({ acceptedTerms: true, termsVersion: '2026-11-v2' }).termsVersion, '2026-11-v2')
 })
 
 test('ES-301: hoy (sin versión publicada) enviar una aceptación se rechaza: no se guarda «aceptó X» de un texto que no existe', () => {

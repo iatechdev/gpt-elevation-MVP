@@ -2,13 +2,13 @@
 // ES-301 · Aceptación del aviso de privacidad y términos en el registro (versión y fecha, desde el SERVIDOR).
 //
 // La versión vigente sale de ESTA constante, nunca del cliente: el cliente solo declara qué versión vio y el servidor la compara con la vigente.
-// ES-301 (frontend): versión inicial fijada (2026-11-v1, texto de UX/UI-Claude, SIN revisión legal) y registro con aceptación obligatoria. DEBE ser igual a frontend/src/legal/version.ts (lo comprueba es-301-legal.test.mjs).
+// ES-301 (frontend): versión inicial fijada (2026-11-v2, texto de UX/UI-Claude, SIN revisión legal) y registro con aceptación obligatoria. DEBE ser igual a frontend/src/legal/version.ts (lo comprueba es-301-legal.test.mjs).
 // Antes (PR del servidor) era un marcador {version:null, required:false}; los casos sin versión siguen cubiertos sustituyendo `current` en las pruebas.
 //   - Mientras `version` sea null el registro NO exige aceptación (el frontend de hoy no tiene casilla) y rechaza con 400 `terms_not_available` a quien envíe una
 //     aceptación: guardar «aceptó la versión X» de un texto que no existe sería una promesa vacía.
 //   - Con `version` fijada y `required: true` (se cambian JUNTOS, en el mismo PR que la casilla del frontend) el registro la exige.
 // `required` solo tiene efecto con `version` fijada; así no se puede cerrar el registro por error con una constante a medias.
-const TERMS = Object.freeze({ version: '2026-11-v1', required: true });
+const TERMS = Object.freeze({ version: '2026-11-v2', required: true });
 
 class TermsError extends Error {
   constructor(code, es, en, extra = {}) { super(`${es} / ${en}`); this.status = 400; this.code = code; Object.assign(this, extra); }
