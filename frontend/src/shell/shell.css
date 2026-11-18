@@ -2,6 +2,15 @@
    Los colores salen de los tokens --cg-* (ES-152); el tema queda en claro hasta que las pantallas de contenido migren. */
 @import '../cartografia/cartografia.css';
 
+/* ES-310 (PR 1, CLS del marco): mientras Barlow se descarga se pintaba Arial Narrow (más ancha) y los enlaces de la barra lateral (en móvil, una fila que se ajusta) ocupaban 4 renglones; al llegar
+   la real caían a 3 y todo el contenido subía 48 px (CLS 0,167 a 390 px con CPU×4). Las reservas usan Arial/Liberation Sans con el ancho ajustado al de Barlow (mismas medidas que progress.css,
+   E272-1) y se anteponen a la pila de tipografías SOLO dentro del marco (y solo para los caracteres que Barlow cubre: unicode-range igual al de sus archivos, así «→» y similares siguen cayendo en system-ui como antes, E331-1): antes y después de la descarga el texto ocupa los mismos renglones. */
+@font-face { font-family: 'Barlow Condensed Frame'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 500; size-adjust: 68%; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Barlow Condensed Frame'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 600; size-adjust: 66%; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Barlow Condensed Frame'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 700; size-adjust: 68%; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Barlow Frame'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 400 500; size-adjust: 96%; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Barlow Frame'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); font-weight: 600 700; size-adjust: 90%; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+.cg.cg-frame { --cg-font-cond: 'Barlow Condensed', 'Barlow Condensed Frame', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow', 'Barlow Frame', system-ui, sans-serif; }
 .cg-frame { min-height: 100dvh; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .cg-skip { position: absolute; left: 1rem; top: -10rem; z-index: 100; background: var(--cg-panel); color: var(--cg-mark); border: 2px solid var(--cg-ink); padding: 0.7rem 1rem; font-weight: 600; }
 .cg-skip:focus { top: 1rem; }
