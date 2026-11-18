@@ -49,8 +49,8 @@ test('ES-95: el formulario no guarda nada en el navegador ni en la URL, no enví
   const page = read('../src/professional/ProfessionalApplicationPage.tsx'); const api = read('../src/professional/api.ts')
   assert.doesNotMatch(page + api, /localStorage|sessionStorage|indexedDB|history\.(push|replace)State|navigate\(/)
   assert.match(api, /data\.append\('cv', file, 'cv\.pdf'\)/) // el nombre original no viaja
-  assert.match(page, /<section[^>]*aria-labelledby="pro-title"/); assert.match(page, /role="alert"/); assert.match(page, /htmlFor=\{id\}/)
-  assert.match(page, /pro-trap" aria-hidden="true"/); assert.match(page, /tabIndex=\{-1\} autoComplete="off" name="bot_trap"/)
+  assert.match(page, /<section[^>]*aria-labelledby="pro-title"/); assert.match(page, /role="alert"/); /* ES-328: la etiqueta de cada campo la enlaza TextField/TextAreaField (htmlFor + id); la del archivo va en la página */ assert.match(read('../src/cartografia/controls.tsx'), /<label className="cg-label" htmlFor=\{id\}>/); assert.match(page, /<TextField /); assert.match(page, /htmlFor="pro-cv"/)
+  assert.match(page, /pa-trap" aria-hidden="true"/); assert.match(read('../src/professional/applicationCartografia.css'), /.pa-trap { position: absolute; left: -10000px/); assert.match(page, /tabIndex=\{-1\} autoComplete="off" name="bot_trap"/)
   assert.match(page, /type="file" accept="application\/pdf,\.pdf"/); assert.match(page, /aria-describedby=\{`pro-cv-help/)
   assert.match(read('../src/App.tsx'), /path="\/profesionales" element=\{<ProfessionalApplicationPage \/>\}/) // ruta pública, fuera de las rutas con sesión
 })
