@@ -56,9 +56,11 @@ function BrowserSession({ session }: { session: string }) {
   const when = catalog ? dateText(catalog.publishedAt, lang) : null
   const titleRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => { if (role) titleRef.current?.focus() }, [role?.roleKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  // E311-1: tras «Reintentar» en la LISTA, el aviso (que tenía el foco) se desmonta al cargar: el foco pasa al título para no quedar en el cuerpo.
+  useEffect(() => { if (attempt > 0 && !status && catalog && !roleKey) titleRef.current?.focus() }, [attempt, status, catalog, roleKey])
   const heading = role ? string(object(role.labels)[lang]) || tr('unknown') : tr('title')
   return (
-    <Screen title={heading} lead={roleKey ? undefined : tr('intro')} titleRef={role ? titleRef : undefined}>
+    <Screen title={heading} lead={roleKey ? undefined : tr('intro')} titleRef={titleRef}>
       {status === 'loading' && <><div className="cg-relief cg-relief--loading cgp-loading" aria-hidden="true" /><p role="status" className="cg-muted">{tr('loading')}</p></>}
       {status === 'session' && <Notice kind="error" title={tr('session')}><div className="cg-row"><Link className="cg-btn" to="/login">{tr('login')}</Link></div></Notice>}
       {status === 'error' && <Notice kind="error" title={tr('error')}><div className="cg-row"><Button onClick={retry}>{tr('retry')}</Button></div></Notice>}
