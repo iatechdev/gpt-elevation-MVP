@@ -26,7 +26,7 @@ test('ES-244: verify declara éxito solo si lo leído coincide con lo pedido; si
   assert.match(verify, /setStatus\(real\)/)
   assert.match(verify, /if \(\(real === 'granted'\) === \(target === 'granted'\)\) \{ setUnsure\(null\); setMessage\(\{ kind: 'ok'/)
   assert.match(verify, /mt_share_not_seen_on' : 'mt_share_not_seen_off'/)
-  assert.match(card, /\{unknown && unsure \? \(\s*<button type="button" onClick=\{\(\) => void verify\(unsure\)\}/) // en lugar del interruptor
+  assert.match(card, /\{unknown && unsure \? \(\s*<Button onClick=\{\(\) => void verify\(unsure\)\}/) // en lugar del interruptor
   assert.match(card, /unsure === 'granted' \? 'mt_share_unsure_on' : 'mt_share_unsure_off'/)
   // el cambio se pide con el estado deseado (PUT idempotente en el servidor): repetirlo no duplica
   assert.match(card, /JSON\.stringify\(\{ status: next \}\)/)
