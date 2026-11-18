@@ -19,11 +19,12 @@ Conservamos tus datos solo mientras sean necesarios para prestarte el servicio y
 | Registros del servidor (logs) | No contienen enlaces, tokens ni destinatarios de correo. Retención del proveedor: [POR COMPLETAR PC-15]. |
 
 ## 3. Cuando pides eliminar tu cuenta
-1. **Se bloquean de inmediato** las sesiones y la cesión de datos; la cuenta queda inactiva.
+1. **Se bloquean al registrarse tu solicitud** las sesiones y la cesión de datos; la cuenta queda inactiva.
 2. Se registra tu solicitud y recibes un **recibo**.
-3. **Se purgan tus datos de contenido**: conversaciones y turnos, diario, ánimo, valoraciones, recomendaciones, evidencias y sus versiones, contexto y versiones del puente profesional, contexto declarado, hojas de vida y habilidades derivadas, solicitudes de plan, cuestionario de emparejamiento, consumo de IA y permisos con su historial, y las exportaciones generadas.
-4. Tu **usuario queda como una «lápida»**: se sustituyen nombre y correo, se sustituye la contraseña, se limpian motivación y asignaciones y se borra la versión y fecha de aceptación de los términos [REVISAR LEGAL RL-05: ver pregunta E301-2 en `../PREGUNTAS-ABOGADO.md`]. Se conserva el identificador interno y una marca de que la cuenta fue eliminada, para impedir su reactivación y mantener la integridad de otros registros.
-5. De tu **solicitud como profesional** (si la hiciste) solo conservamos su estado y fechas; eliminamos nombre, correo, licencia, mensaje, perfil y hoja de vida.
+3. **La purga de tus datos NO es automática ni inmediata:** hoy es un comando de mantenimiento que ejecuta **manualmente el equipo** (con las integraciones detenidas) después de recibir la solicitud. Plazo para ejecutarla: [POR COMPLETAR PC-13: plazo de ejecución; no se promete inmediatez ni un número de días].
+4. **Al ejecutarse la purga se eliminan tus datos de contenido**: conversaciones y turnos, diario, ánimo, valoraciones, recomendaciones, evidencias y sus versiones, contexto y versiones del puente profesional, contexto declarado, hojas de vida y habilidades derivadas, solicitudes de plan, cuestionario de emparejamiento, consumo de IA y permisos con su historial, y las exportaciones generadas.
+5. Tu **usuario queda como una «lápida»**: se sustituyen nombre y correo, se sustituye la contraseña, se limpian motivación y asignaciones y se borra la versión y fecha de aceptación de los términos [REVISAR LEGAL RL-05: ver pregunta E301-2 en `../PREGUNTAS-ABOGADO.md`]. Se conserva el identificador interno y una marca de que la cuenta fue eliminada, para impedir su reactivación y mantener la integridad de otros registros.
+6. De tu **solicitud como profesional** (si la hiciste) solo conservamos su estado y fechas; eliminamos nombre, correo, licencia, mensaje, perfil y hoja de vida.
 
 **Pasa a la revisión previa y no se purga automáticamente** si la cuenta tiene registros del lado profesional o de administración (notas, sesiones o perfiles que la cuenta escribió como profesional, asignaciones a otros usuarios…).
 

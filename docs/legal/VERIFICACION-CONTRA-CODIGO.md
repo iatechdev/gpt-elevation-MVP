@@ -30,6 +30,8 @@
 | Sin cookies propias; formularios públicos sin almacenamiento en el navegador | búsqueda de `document.cookie`/`cookie` en `frontend/src` y `backend` (solo comentarios que dicen «ni cookies») |
 | Purga al eliminar una persona: qué se borra, qué se conserva (notas del profesional), lápida sin nombre ni correo, aceptación de términos a NULL | `backend/utils/personalData.js` (`CORE`, `RETAINED`, `SESSION_PERSON_FIELDS`); `backend/utils/deletionProcessor.js:45` (`termsVersion: null, acceptedAt: null`); contrato 18 (matriz de datos, ES-274, ES-293) |
 | El texto libre de las notas conservadas no se puede depurar; no se afirma anonimización | contrato 18 (decisión ES-274) |
+| La purga es un comando de mantenimiento manual del equipo, no automática ni inmediata; al registrar la solicitud sí se bloquean sesiones y cesión de datos | contrato 18 («Migración, mantenimiento y restauración», pasos 3–5); `backend/scripts/purgePersonalData.js` |
+| Flujos que envían datos al modelo (chat, recomendaciones, análisis de habilidades, lectura de fuentes, emparejamiento, cierre de sesión, resumen del profesional con cifras agregadas) | `backend/routes/chat.js:31,224-259`, `recommendations.js:39-72`, `backend/worker/analyze.js:53-90`, `backend/utils/insightProposal.js:76-85`, `matching.js:90-111`, `sessions.js:672-690`, `therapistRoutes.js:515-545` |
 | Exportación y eliminación detrás de `DATA_RIGHTS_ENABLED`; sin plazos verificados (`deadlinesVerified: false`) | `backend/routes/dataRights.js:27`; contrato 18 |
 | Hoy no hay pago en línea | `frontend/src/access/accessCopy.ts:9` (`access.no_payment`) |
 | Almacenamiento de archivos en Supabase Storage (bucket privado) | `backend/utils/storage.js` |

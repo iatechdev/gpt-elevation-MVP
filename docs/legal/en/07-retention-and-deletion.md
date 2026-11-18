@@ -19,11 +19,12 @@ We keep your data only while it is needed to provide the service and meet legal 
 | Server logs | Do not contain links, tokens or email recipients. Provider retention: [TO BE COMPLETED PC-15]. |
 
 ## 3. When you ask to delete your account
-1. **Sessions and data transfer are blocked immediately**; the account becomes inactive.
+1. **When your request is registered**, sessions and data transfer are blocked; the account becomes inactive.
 2. Your request is recorded and you receive a **receipt**.
-3. **Your content data is purged**: conversations and turns, journal, mood, ratings, recommendations, evidence and its versions, professional-bridge context and versions, declared context, résumés and derived skills, plan requests, matching questionnaire, AI usage and permissions with their history, and generated exports.
-4. Your **user remains as a “tombstone”**: name and email are replaced, the password is replaced, motivation and assignments are cleared, and the version and date of your acceptance of the terms are erased [LEGAL REVIEW RL-05: see question E301-2 in `../PREGUNTAS-ABOGADO.md`]. The internal identifier and a mark that the account was deleted are kept, to prevent reactivation and keep other records consistent.
-5. From your **application as a professional** (if you made one) we only keep its status and dates; we delete name, email, licence, message, profile and résumé.
+3. **The purge of your data is NOT automatic or immediate:** today it is a maintenance command that **the team runs manually** (with integrations stopped) after receiving the request. Time to run it: [TO BE COMPLETED PC-13: execution deadline; no immediacy or number of days is promised].
+4. **When the purge runs, your content data is deleted**: conversations and turns, journal, mood, ratings, recommendations, evidence and its versions, professional-bridge context and versions, declared context, résumés and derived skills, plan requests, matching questionnaire, AI usage and permissions with their history, and generated exports.
+5. Your **user remains as a “tombstone”**: name and email are replaced, the password is replaced, motivation and assignments are cleared, and the version and date of your acceptance of the terms are erased [LEGAL REVIEW RL-05: see question E301-2 in `../PREGUNTAS-ABOGADO.md`]. The internal identifier and a mark that the account was deleted are kept, to prevent reactivation and keep other records consistent.
+6. From your **application as a professional** (if you made one) we only keep its status and dates; we delete name, email, licence, message, profile and résumé.
 
 **It goes to prior review and is not purged automatically** if the account has records on the professional or administration side (notes, sessions or profiles the account wrote as a professional, assignments to other users…).
 

@@ -76,10 +76,14 @@ No hay transferencia a empresas empleadoras ni a terceros comerciales.
 
 Las respuestas del asistente las genera un modelo de lenguaje de **Anthropic** (modelo Claude), al que el servidor envía lo estrictamente necesario:
 
-- **Chat:** tus mensajes más recientes (hasta los últimos 20 de la conversación) y las entradas de diario **que tú elijas** para esa conversación. No se envían tu nombre ni tu correo. Antes de enviarlos se enmascaran posibles claves, tokens y cadenas de conexión que hayas pegado y se limpia el texto de caracteres de control.
-- **Si hay un indicio grave de crisis** en tu mensaje, ese turno **no se envía** al modelo: se te responde con un mensaje de seguridad fijo, y ese turno tampoco se reenvía en mensajes posteriores.
-- **Análisis de fuentes** (chat, diario, hoja de vida): solo con tu permiso por fuente, y la hoja de vida se usa sin tus datos de contacto.
-- Las respuestas del modelo pueden contener errores; revísalas antes de usarlas para decidir algo importante.
+- **Chat:** hasta tus últimos 20 mensajes de la conversación y las entradas de diario que tú elijas para esa conversación. No enviamos tu nombre ni tu correo.
+- **Si un mensaje tuyo muestra un indicio grave de crisis,** ese turno no se envía al modelo: te respondemos con un mensaje de seguridad fijo (tampoco se reenvía en mensajes posteriores).
+- **Recomendaciones de bienestar:** un resumen de tu ánimo de los últimos 7 días (cuántos registros, promedio y tendencia), sin texto tuyo.
+- **Análisis de habilidades:** el texto de las evidencias que confirmaste, cuando pides el análisis.
+- **Lectura de tus fuentes (solo si lo autorizas, fuente por fuente):** hasta 20 mensajes de tu chat, hasta 10 entradas de tu diario o el texto de tu hoja de vida sin datos de contacto, para proponerte ideas.
+- **Emparejamiento con un profesional:** las respuestas cortas que elegiste, sin tu ánimo.
+- **Si compartes con tu profesional:** al cerrar una sesión, una etiqueta de tu ánimo; y, cuando tu profesional pide un resumen, solo cifras agregadas (cuántos registros, promedio de ánimo y promedio de valoraciones), sin tu nombre ni tus textos.
+- Antes de enviar, enmascaramos claves, tokens y cadenas de conexión que hayas pegado. Las respuestas del modelo pueden contener errores; revísalas antes de usarlas para decidir algo importante.
 
 Además de Anthropic, usamos proveedores que tratan datos por nuestra cuenta (encargados):
 
