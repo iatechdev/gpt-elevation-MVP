@@ -27,7 +27,9 @@ test('ES-149 límites: dice no clínico, que no sustituye atención de emergenci
 
 test('ES-149 diseño: el aviso va dentro de la barra de mensaje, debajo de la caja, siempre montado y como nota accesible', () => {
   const page = read('../src/pages/ChatPage.tsx'); const notice = read('../src/space/ChatLimitsNotice.tsx')
-  assert.match(page, /<div className="chat-input-bar">\s*<ChatInput chat=\{chat\} \/>\s*<ChatLimitsNotice \/>\s*<\/div>/)
+  assert.match(page, /<div className="chat-input-bar">\s*<ChatInput chat=\{chat\} enterSends=\{enterSends\} \/>\s*<ChatLimitsNotice \/>\s*<\/div>/)
+  // ES-333 (PR 2): con alto visible < 400 px (teclado muy corto) el aviso se oculta SOLO mientras se escribe y reaparece al cerrar el teclado; fuera de eso es permanente.
+  const css = read('../src/space/space.css'); assert.match(css, /@media \(max-height: 399px\) \{ \.chat-input-bar:has\(textarea:focus\) \.chat-composer-top, \.chat-input-bar:has\(textarea:focus\) \.chat-limits \{ display: none; \} \}/)
   assert.match(notice, /role="note" aria-label=\{c\.limitsLabel\}/); assert.match(notice, /\{c\.limits\}/)
   assert.doesNotMatch(notice, /useState|useEffect|fetch|tabIndex|onClick/)
 })
