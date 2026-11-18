@@ -32,3 +32,10 @@ test('ES-310 marco: el marco antepone reservas de tipografía con el ancho de Ba
   assert.match(css, /\.cg\.cg-frame \{[^}]*--cg-font-cond: 'Barlow Condensed', 'Barlow Condensed Frame', 'Arial Narrow'[^}]*--cg-font-sans: 'Barlow', 'Barlow Frame'/)
   assert.doesNotMatch(css, /font-family: 'Barlow (Condensed )?Fallback'/, 'nombre reservado por progress.css y mapCartografia.css')
 })
+
+// E331-1: las reservas solo cubren lo que Barlow cubre; «→» (Barlow no lo tiene) sigue cayendo en system-ui como en main, y el marco de persona no cambia.
+test('ES-310 marco: cada reserva de tipografía lleva el unicode-range latino de Barlow y no incluye la flecha «→» (U+2192)', () => {
+  const faces = read('../src/shell/shell.css').match(/@font-face \{ font-family: 'Barlow (?:Condensed )?Frame';[^}]*\}/g)
+  assert.equal(faces.length, 5)
+  for (const face of faces) { assert.match(face, /unicode-range: U\+0000-00FF,[^;]*U\+2000-206F[^;]*;/); assert.doesNotMatch(face, /U\+2190|U\+2192|U\+2190-21FF/) }
+})
