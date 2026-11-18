@@ -6,7 +6,7 @@
 
 import './myProfessionalCopy.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import './progressCopy.ts' // ES-254: textos del emparejamiento (los mismos de /app/progress)
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { PersonScreen } from '../space/PersonScreen'
@@ -61,6 +61,8 @@ export function MyTherapist() {
   const [loading, setLoading] = useState(true)
   const [failed, setFailed]   = useState(false)
   const [showMatching, setShowMatching] = useState(false)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const refocusTitle = useRef(false) // D4: tras desvincular la tarjeta desaparece al recargar; el foco pasa al título de la pantalla recargada
   const [reloadKey, setReloadKey] = useState(0) // ES-100: se incrementa al desvincularse (o al reintentar) para volver a pedir los datos
 
   useEffect(() => {
@@ -77,6 +79,7 @@ export function MyTherapist() {
         if (alive) setFailed(true)
       } finally {
         if (alive) setLoading(false)
+        if (alive && refocusTitle.current) { refocusTitle.current = false; requestAnimationFrame(() => titleRef.current?.focus()) }
       }
     }
     void fetchData()
@@ -109,7 +112,7 @@ export function MyTherapist() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <PersonScreen title={t('mp_title')}>
+    <PersonScreen title={t('mp_title')} titleRef={titleRef}>
       {loading && <p role="status" className="cg-muted">{t('mp_loading')}</p>}
 
       {/* Un solo error con reintento para perfil y sesiones: vienen de UNA petición del servidor (/user/my-therapist). «Compartir» tiene el suyo propio. */}
@@ -149,7 +152,7 @@ export function MyTherapist() {
           {/* ── COMPARTIR CON MI PROFESIONAL (ES-100 / ES-96): tiene su propio estado de error ── */}
           <TherapistSharingCard
             therapistName={therapist.name}
-            onUnlinked={() => setReloadKey(k => k + 1)}
+            onUnlinked={() => { refocusTitle.current = true; setReloadKey(k => k + 1) }}
           />
 
           {/* ── PRÓXIMAS SESIONES ── */}
