@@ -68,3 +68,15 @@ test('E310-1 (b): reintentar un guardado incierto de Evidencias reenvía el MISM
   assert.match(write, /ack \?\?= edit \? await api\.update\(edit\.id, attempt\.body as UpdateBody\) : await api\.create\(attempt\.body\)/)
   assert.match(write, /setPending\(\{ body: attempt\.body, \.\.\.\(ack \? \{ ack \} : \{\}\) \}\)/)
 })
+
+// ---- E340-1 (QA, PR #340): el aviso de reemplazo de la Brújula no tenía prueba unitaria ----
+test('E340-1: el aviso «esta autorización reemplaza la versión activa completa» solo aparece con un contexto activo y es un Banner de Cartografía con el texto del catálogo', async () => {
+  const { compassEs, compassEn } = await import('../src/compass/copy.ts')
+  // solo si hay versión activa (sin ella no hay nada que reemplazar), dentro de la tarjeta «Nuevo contexto directo», justo tras el límite
+  assert.match(page, /<h2 id="new-heading">\{tr\('new'\)\}<\/h2><p>\{tr\('limit'\)\}<\/p>\{context\.active && <Banner title=\{tr\('replaces'\)\} \/>\}/)
+  assert.equal((page.match(/tr\('replaces'\)/g) || []).length, 1) // un solo lugar: no se duplica ni se muestra sin condición
+  assert.match(page, /import \{[^}]*\bBanner\b[^}]*\} from '\.\.\/cartografia'/)
+  // el texto (ES y EN) dice que la nueva versión sustituye a la activa completa y que lo no seleccionado queda fuera: no promete conservar nada
+  assert.equal(compassEs['compass.replaces'], 'Esta autorización reemplaza la versión activa completa. Los campos no seleccionados no estarán en la nueva versión.')
+  assert.equal(compassEn['compass.replaces'], 'This authorization replaces the entire active version. Unselected fields will not be in the new version.')
+})
