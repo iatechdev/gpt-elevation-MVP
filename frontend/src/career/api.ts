@@ -1,4 +1,4 @@
-// ES-237 (paso 1): cliente tipado de `/api/experiments` y `/api/career-plan` (ES-32/33). Solo transporte, tipos y errores: NINGUNA pantalla lo usa todavía (los pasos 2–4 lo conectan).
+// ES-237 (pasos 1–2a): cliente tipado de `/api/experiments`, `/api/career-plan` (ES-32/33) y `/api/routes` + `/api/route-catalog` (ES-31/32). Solo transporte, tipos y errores: NINGUNA pantalla lo usa todavía (los pasos 2b–4 lo conectan).
 // El titular sale del token, nunca del cuerpo. El servidor es un modelo de VERSIONES inmutables: cada gesto de la persona (iniciar, entregar, reflexionar, decidir; aceptar/pausar/completar el plan)
 // es una versión nueva con `expectedVersion` y un `requestId` estable por intento (reintentar el MISMO intento no crea una versión de más). Vocabulario del servidor (decisión del 17-nov-2026):
 // continuar / ajustar / pausar / descartar; no hay «deshacer aceptación» ni «aplazar».
@@ -52,7 +52,7 @@ export type ReminderChange =
   | { action: 'accept'; planVersionId: number; actionKey: string; localDateTime: string; timeZone: string; accepted: true }
   | { action: 'cancel' | 'acknowledge'; reminderId: number }
 
-async function call({ baseUrl, token, signal, fetcher = fetch, timeoutMs = 20000 }: Opts, path: string, method: 'GET' | 'POST', body?: unknown): Promise<unknown> {
+async function call({ baseUrl, token, signal, fetcher = fetch, timeoutMs = 20000 }: Opts, path: string, method: 'GET' | 'POST' | 'PUT', body?: unknown): Promise<unknown> {
   if (!token) throw new CareerApiError('expired', 401, '')
   const timeout = AbortSignal.timeout(timeoutMs)
   let response: Response
@@ -66,8 +66,11 @@ async function call({ baseUrl, token, signal, fetcher = fetch, timeoutMs = 20000
     if (signal?.aborted) throw error // la pantalla canceló: no es un fallo
     throw new CareerApiError('network', 0, '')
   }
-  const value: unknown = await response.json().catch(() => null)
+  // ES-237 E307-1: un 2xx cuyo cuerpo está vacío, se corta, no es JSON (p. ej. HTML de un proxy) o no es un objeto NO es un éxito: no se sabe si el servidor guardó → resultado incierto.
+  let value: unknown = null, readable = true
+  try { const text = await response.text(); value = text ? JSON.parse(text) : null } catch { readable = false }
   if (!response.ok) throw new CareerApiError(kindOf(response.status), response.status, value && typeof value === 'object' && 'code' in value && typeof value.code === 'string' ? value.code : '')
+  if (!readable || value === null || typeof value !== 'object' || Array.isArray(value)) throw new CareerApiError('unavailable', response.status, '')
   return value
 }
 const after = (cursor?: number) => cursor ? `?after=${cursor}` : ''
@@ -93,3 +96,27 @@ export const getPlan = async (o: Opts, id: number) => call(o, `/api/career-plan/
 export const listReminders = (o: Opts, { history = false, cursor }: { history?: boolean; cursor?: number } = {}) =>
   call(o, `/api/career-plan/reminders${history ? '?history=true' : cursor ? `?after=${cursor}` : ''}`, 'GET') as Promise<{ reminders: unknown[]; nextAfter: number | null }>
 export const saveReminder = (o: Opts, input: { requestId: string } & ReminderChange) => call(o, '/api/career-plan/reminders', 'POST', input) as Promise<{ reminder: Record<string, unknown>; created: boolean }>
+
+// Rutas (ES-32) y catálogo (ES-31) --------------------------------------------------------------------------------------------------------
+// Router `/api/routes`: restricciones con versión (`baseVersion`), rutas calculadas por el servidor, elecciones y pedido de revisión. Un experimento se crea desde una elección ACEPTADA (`choiceId`).
+// `basisHash` es la base con que se calcularon las rutas: la elección debe enviarla tal cual y el servidor responde 409 `conflict` si cambió.
+export type Modality = 'onsite' | 'hybrid' | 'remote'
+export type RouteSlot = 'continuity' | 'adjacency' | 'exploration'
+export type ConstraintsPayload = { targetMarkets: string[]; languages: string[]; modalities: Modality[]; acceptRegulated: 'yes' | 'no' | 'unknown'; originContextKey: string | null; interestContextKeys: string[]; preferredModalities: Modality[] }
+export type ConstraintsRecord = { id: number; version: number; status: string; payload: ConstraintsPayload; createdAt: string }
+/** Ruta propuesta por el motor: solo se tipan los campos que la pantalla usa; el resto llega tal cual (`[key: string]: unknown`). */
+export type RouteProposal = { roleKey: string; slot: RouteSlot; labels: { es?: string; en?: string }; market: string; regulated: { isRegulated: boolean; status: string }; sources: { sourceKey: string; stale?: boolean; synthetic?: true }[]; [key: string]: unknown }
+export type RoutesView = { status: 'ok' | 'partial' | 'no_pertinent_catalog'; routes: RouteProposal[]; constraintsVersion: number; basisHash: string | null; humanReview: { offered: boolean }; [key: string]: unknown }
+export type ChoiceRecord = { id: number; roleKey: string; slot: RouteSlot; decision: 'accepted' | 'rejected'; catalogVersion: number | string; constraintsVersion: number; status: string; basisChanged: boolean; createdAt: string }
+export type RouteReview = { id: number; status: string; note: string | null; createdAt: string }
+
+export const getRouteCatalog = (o: Opts) => call(o, '/api/route-catalog', 'GET') as Promise<{ version: number | string; contexts: { contextKey: string; [key: string]: unknown }[]; roles: { roleKey: string; [key: string]: unknown }[]; [key: string]: unknown }>
+export const getRoleProfile = (o: Opts, roleKey: string) => call(o, `/api/route-catalog/roles/${encodeURIComponent(roleKey)}`, 'GET') as Promise<{ version: number | string; role: Record<string, unknown>; [key: string]: unknown }>
+export const getRoutes = (o: Opts) => call(o, '/api/routes', 'GET') as Promise<RoutesView>
+export const getConstraints = (o: Opts) => call(o, '/api/routes/constraints', 'GET') as Promise<{ constraints: ConstraintsRecord | null }>
+export const putConstraints = (o: Opts, input: { requestId: string; baseVersion: number; payload: ConstraintsPayload }) => call(o, '/api/routes/constraints', 'PUT', input) as Promise<{ constraints: ConstraintsRecord; created: boolean }>
+export const listChoices = (o: Opts, cursor?: number) => call(o, `/api/routes/choices${after(cursor)}`, 'GET') as Promise<{ choices: ChoiceRecord[]; nextAfter: number | null }>
+export const getChoice = async (o: Opts, id: number) => call(o, `/api/routes/choices/${safeId(id)}`, 'GET') as Promise<{ choice: ChoiceRecord }>
+export const chooseRoute = (o: Opts, input: { requestId: string; roleKey: string; slot: RouteSlot; decision: 'accepted' | 'rejected'; basisHash: string }) => call(o, '/api/routes/choices', 'POST', input) as Promise<{ choice: ChoiceRecord; created: boolean }>
+export const getRouteReview = (o: Opts) => call(o, '/api/routes/review-requests', 'GET') as Promise<{ reviewRequest: RouteReview | null }>
+export const requestRouteReview = (o: Opts, input: { requestId: string; note?: string | null }) => call(o, '/api/routes/review-requests', 'POST', input) as Promise<{ reviewRequest: RouteReview; created: boolean }>
