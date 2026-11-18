@@ -109,7 +109,7 @@ test('ES-134: todos los cierres de sesión de la aplicación limpian el mensaje 
   assert.ok(read('../src/shell/Frame.tsx').includes('await signOut(BACKEND)'))
   for (const file of ['../src/layouts/AdminLayout.tsx', '../src/layouts/BoardLayout.tsx', '../src/layouts/TherapistLayout.tsx', '../src/shell/Frame.tsx', '../src/shell/frames.tsx', '../src/pages/UserDashboard.tsx'])
     assert.ok(!read(file).includes("localStorage.removeItem('elevation_token')"), file)
-  assert.ok(read('../src/pages/UserDashboard.tsx').includes('SessionControl'))
+  assert.ok(read('../src/pages/UserDashboard.tsx').includes('registerLeaveGuard')) // ES-329: «Salir» lo pone el marco; el panel registra su despedida (check-out) como guardia de salida
   for (const file of ['../src/pages/ChatPage.tsx']) {
     const source = read(file)
     const removals = source.match(/localStorage\.removeItem\('elevation_token'\)/g) ?? []

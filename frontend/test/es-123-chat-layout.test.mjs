@@ -59,8 +59,8 @@ test('ES-123 adenda 1: etiqueta «Mensaje» sin cifra, contador desde 3.600 con 
 test('ES-123 adenda 2 (opción 2): el dashboard ya no embebe el chat y ofrece el acceso a /app/chat, con los enlaces separados', () => {
   const dash = read('../src/pages/UserDashboard.tsx')
   assert.doesNotMatch(dash, /usePersonalChat|ChatInput|ChatContext|calc\(100vh - 100px\)|position: 'sticky', top: 76/)
-  assert.match(dash, /href="\/app\/chat"[^>]*>\{copy\[lang\]\.chatLink\}/)
-  assert.match(dash, /flexWrap: 'wrap', gap: '0\.25rem 1\.5rem' \}\}>\s*<a href="\/app\/route-catalog"/)
+  assert.match(dash, /to="\/app\/chat">\{copy\[lang\]\.chatLink\}/) // ES-329: el acceso es un <Link> del marco (antes <a href>)
+  assert.match(dash, /<nav className="pc-links"[\s\S]*<Link className="pc-link" to="\/app\/compass">[\s\S]*<Link className="pc-link" to="\/app\/route-catalog">/) // ES-329: los enlaces secundarios van en una fila (nav), separados
   for (const key of ['chatLink', 'chatLinkHint']) { assert.ok(copy.es[key] && copy.en[key], key); assert.notEqual(copy.es[key], copy.en[key], key) }
 })
 

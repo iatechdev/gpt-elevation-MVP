@@ -9,7 +9,8 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const read = file => fs.readFileSync(path.join(here, file), 'utf8')
 
 test('ES-206 punto 1: /app/dashboard y /app/chat tienen un h1 (visualmente oculto)', () => {
-  assert.match(read('../src/pages/UserDashboard.tsx'), /<h1 className="sr-only">\{lang === 'es' \? 'Mi panel' : 'My dashboard'\}<\/h1>/)
+  assert.match(read('../src/pages/UserDashboard.tsx'), /<PersonScreen title=\{t\('dash_title'\)\}/) // ES-329: el h1 «Mi panel» es visible y lo dibuja PersonScreen
+  const copyFile = read('../src/pages/dashboardCopy.ts'); assert.match(copyFile, /dash_title: 'Mi panel'/); assert.match(copyFile, /dash_title: 'My dashboard'/)
   assert.match(read('../src/pages/ChatPage.tsx'), /<h1 className="sr-only">\{lang === 'es' \? 'Conversación' : 'Conversation'\}<\/h1>/)
 })
 

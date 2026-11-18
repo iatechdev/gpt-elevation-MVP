@@ -36,10 +36,10 @@ test('ES-30 acceso: inicio con la tarjeta del mapa antes que lo demás y sin el 
   const space = read('../src/space/copy.ts')
   assert.match(space, /map: 'Mapa de competencias'/); assert.match(space, /map: 'Skills map'/)
 })
-test('ES-30 acceso: la tarjeta no pide datos al servidor ni muestra datos de la persona; la ilustración es decorativa', () => {
+test('ES-30 acceso: la tarjeta no pide datos al servidor ni muestra datos de la persona (ES-329: sin ilustración, tarjeta Cartografía)', () => {
   const card = read('../src/skill-map/MapAccess.tsx')
   assert.equal(/fetch|readSkillMap|localStorage|useEffect|useState/.test(card), false)
-  assert.match(card, /<svg[^>]*aria-hidden="true"/)
+  assert.match(card, /className="cg-card pg-card"/); assert.doesNotMatch(card.slice(0, card.indexOf('export function MapGuide')), /<svg/)
   assert.match(card, /to="\/app\/skill-map"/); assert.match(card, /to="\/app\/evidence"/)
   assert.equal(/#[0-9a-fA-F]{3,8}\b/.test(read('../src/skill-map/mapAccess.css')), false)
 })
