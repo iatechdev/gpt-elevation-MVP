@@ -39,7 +39,7 @@ test('ES-259 PostgreSQL: el registro valida forma y longitud del correo; sin 5xx
   const base = `http://127.0.0.1:${server.address().port}`;
   const password = 'Aa1!' + 'x'.repeat(20);
   const register = async (email) => {
-    const res = await fetch(`${base}/api/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Synthetic', email, password, acceptedTerms: true, termsVersion: '2026-11-v1' }) });
+    const res = await fetch(`${base}/api/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Synthetic', email, password, acceptedTerms: true, termsVersion: '2026-11-v2' }) });
     return { status: res.status, body: await res.json().catch(() => ({})) };
   };
   const long = (n) => 'a'.repeat(n - '@example.com'.length) + '@example.com';

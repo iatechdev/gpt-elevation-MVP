@@ -32,13 +32,14 @@ const server = createServer(async (req, res) => {
     else finish()
     return
   }
+  if (url.pathname === '/privacy') { res.writeHead(308, { Location: '/privacidad' }).end(); return } // ES-337: la política estática antigua se retiró; redirige al aviso vigente
   try {
     const path = resolve(root, '.' + decodeURIComponent(url.pathname))
     if (!path.startsWith(root + sep) && path !== root) { res.writeHead(403).end(); return }
-    const file = url.pathname === '/privacy' ? resolve(root, 'privacy/index.html') : extname(path) ? path : resolve(root, 'index.html')
+    const file = extname(path) ? path : resolve(root, 'index.html')
     res.setHeader('Content-Type', mime[extname(file)] || 'application/octet-stream')
     let content = await readFile(file)
-    if (url.searchParams.get('dark') === 'true' && file.endsWith('index.html') && url.pathname !== '/privacy') content = Buffer.from(content.toString().replace('</head>', '<script>const mm=window.matchMedia.bind(window);window.matchMedia=q=>q==="(prefers-color-scheme: dark)"?{matches:true,addEventListener(){},removeEventListener(){}}:mm(q)</script></head>'))
+    if (url.searchParams.get('dark') === 'true' && file.endsWith('index.html')) content = Buffer.from(content.toString().replace('</head>', '<script>const mm=window.matchMedia.bind(window);window.matchMedia=q=>q==="(prefers-color-scheme: dark)"?{matches:true,addEventListener(){},removeEventListener(){}}:mm(q)</script></head>'))
     res.end(content)
   } catch { res.writeHead(404).end('Not found') }
 })

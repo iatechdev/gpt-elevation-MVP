@@ -32,7 +32,7 @@ const freePort = () => new Promise((resolve, reject) => { const s = net.createSe
     child = spawn(process.execPath, ['server.js'], { cwd: backend, env: { ...env, PORT: String(port) }, stdio: 'ignore' });
     const base = `http://127.0.0.1:${port}`;
     for (let n = 0; n < 60; n++) { try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* arrancando */ } await new Promise(r => setTimeout(r, 500)); }
-    const post = (mail) => fetch(base + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Persona Sintética', email: mail, password: 'Sintetica-Clave-2026!', acceptedTerms: true, termsVersion: '2026-11-v1' }) });
+    const post = (mail) => fetch(base + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Persona Sintética', email: mail, password: 'Sintetica-Clave-2026!', acceptedTerms: true, termsVersion: '2026-11-v2' }) });
     const seed = `r8-semilla-${crypto.randomBytes(3).toString('hex')}@example.test`;
     if (duplicates) await post(seed);
     const results = [];

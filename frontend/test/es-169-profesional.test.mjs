@@ -40,11 +40,11 @@ test('ES-169: sin textos por ternario de idioma y con las mismas claves en ES y 
 })
 
 test('ES-169: error con «Reintentar» en la carga de perfil y sesiones y en «Compartir» (ya no se oculta en silencio)', () => {
-  assert.match(page, /\{!loading && failed && \(\s*<div role="alert"/)
+  assert.match(page, /\{!loading && failed && \(\s*<Banner kind="error"/) // ES-329: el aviso de error de Cartografía (role="alert") con «Reintentar»
   assert.match(page, /onClick=\{retry\}/)
   assert.match(page, /const retry = \(\) => \{ setLoading\(true\); setFailed\(false\); setReloadKey\(k => k \+ 1\) \}/)
   assert.match(card, /if \(alive\) setStatus\('loaderror'\)/)
-  assert.match(card, /if \(status === 'loaderror'\) \{[\s\S]*role="alert"[\s\S]*mt_share_retry/)
+  assert.match(card, /if \(status === 'loaderror'\) \{[\s\S]*<Banner kind="error"[\s\S]*mt_share_retry/) // ES-329: Banner de error (role="alert")
   assert.ok(!/if \(alive\) setStatus\('hidden'\)\s*\n\s*\}\s*\n\s*\}\)\(\)/.test(card), 'un error de lectura ya no oculta la tarjeta')
   assert.ok(therapistEs.mt_share_load_error && therapistEn.mt_share_load_error)
 })

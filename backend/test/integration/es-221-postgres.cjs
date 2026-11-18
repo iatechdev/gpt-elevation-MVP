@@ -48,7 +48,7 @@ test('ES-221 PostgreSQL + HTTP: /api/register no distingue inactiva de activa, i
   });
 
   await t.test('orden de ES-301: la aceptación se valida ANTES de consultar el correo (mismo cuerpo para correo existente, inactivo y nuevo)', async () => {
-    terms.current = () => Object.freeze({ version: '2026-11-v1', required: true });
+    terms.current = () => Object.freeze({ version: '2026-11-v2', required: true });
     const known = await mkUser('user'); const inactive = await mkUser('user'); await q('UPDATE "Users" SET active=false WHERE id=$1', [inactive.id]);
     const before = await count();
     const out = [];

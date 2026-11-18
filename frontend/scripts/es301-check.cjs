@@ -69,7 +69,7 @@ const fs = require('node:fs');
       const [popup] = await Promise.all([context.waitForEvent('page'), links.first().click()]); await popup.close();
       assert.equal(await box.isChecked(), true, `abrir el enlace no cambia la casilla (${tag})`);
       await page.locator('form button[type="submit"]').click(); await page.getByText(c.registered).waitFor();
-      assert.equal(seen.register.length, 1); assert.deepEqual(seen.register[0], { name: 'Persona Sintética', email: 'persona@example.invalid', password: 'Clave-Sintetica-2026!', acceptedTerms: true, termsVersion: '2026-11-v1' }, `cuerpo del registro (${tag})`);
+      assert.equal(seen.register.length, 1); assert.deepEqual(seen.register[0], { name: 'Persona Sintética', email: 'persona@example.invalid', password: 'Clave-Sintetica-2026!', acceptedTerms: true, termsVersion: '2026-11-v2' }, `cuerpo del registro (${tag})`);
       // tras crear la cuenta la pantalla pasa a «Entrar» (sin casilla); al volver a «Crear cuenta» la casilla está vacía
       assert.equal(await page.locator('#access-terms').count(), 0, `tras crear la cuenta se pasa a entrar (${tag})`);
       await page.locator('.ac-secondary button').click(); await page.locator('#access-terms').waitFor();

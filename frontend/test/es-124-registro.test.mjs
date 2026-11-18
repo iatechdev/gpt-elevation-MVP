@@ -30,7 +30,7 @@ test('ES-124: ningún texto en español del frontend ni de los mensajes del serv
 })
 
 test('ES-124: el panel del dashboard usa tuteo', () => {
-  const dash = readFileSync(join(SRC, 'pages/UserDashboard.tsx'), 'utf8')
+  const dash = readFileSync(join(SRC, 'pages/dashboardCopy.ts'), 'utf8') // ES-329: los textos del panel pasaron al catálogo (dashboardCopy.ts)
   assert.match(dash, /¿Cómo llegas hoy\?/)
   assert.match(dash, /Selecciona cómo llegas hoy/)
   assert.match(dash, /Aún no tienes recomendaciones\. ¡Genera las primeras!/)
