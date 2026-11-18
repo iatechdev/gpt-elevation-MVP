@@ -156,12 +156,9 @@ export default function App() {
         <Route index element={<PilotMetricsPage />} />
       </Route>
       {/* Admin backoffice */}
-      <Route path="/admin/route-catalog" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin/skill-catalog" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
       <Route path="/admin/skill-catalog/:id" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
       <Route path="/admin/skill-catalog/:id/skills/:skillKey" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
-      <Route path="/admin/route-catalog/:id" element={<AdminRoute><CatalogManager /></AdminRoute>} />
-      <Route path="/admin/route-catalog/:id/:kind/:itemKey" element={<AdminRoute><CatalogManager /></AdminRoute>} />
       <Route path="/admin" element={
         <AdminRoute>
           <AdminLayout />
@@ -174,6 +171,10 @@ export default function App() {
         <Route path="users"     element={<AdminUsers />} />
         <Route path="metrics"   element={<AdminMetrics />} />
         <Route path="manifest"  element={<BoardManifest />} />
+        {/* ES-310 (PR 4): el catálogo de rutas va dentro del marco de Administración */}
+        <Route path="route-catalog" element={<CatalogManager />} />
+        <Route path="route-catalog/:id" element={<CatalogManager />} />
+        <Route path="route-catalog/:id/:kind/:itemKey" element={<CatalogManager />} />
       </Route>
 
       {/* Therapist */}
