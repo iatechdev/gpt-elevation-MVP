@@ -14,7 +14,7 @@ export function compassApi(baseUrl: string, token: string, fetcher: typeof fetch
     })
     const value: unknown = await res.json().catch(() => null)
     if (!res.ok) {
-      const code = value && typeof value === 'object' && 'code' in value && typeof value.code === 'string' && ['field_not_shareable', 'consent_required', 'preview_mismatch', 'preview_expired', 'conflict', 'origin_not_found'].includes(value.code) ? value.code : ''
+      const code = value && typeof value === 'object' && 'code' in value && typeof value.code === 'string' && ['field_not_shareable', 'consent_required', 'preview_mismatch', 'preview_expired', 'conflict', 'origin_not_found', 'source_consent_required', 'source_consent_revoked'].includes(value.code) ? value.code : ''
       const index = value && typeof value === 'object' && 'fieldIndex' in value && typeof value.fieldIndex === 'number' && Number.isSafeInteger(value.fieldIndex) && value.fieldIndex >= 0 ? value.fieldIndex : undefined
       throw new CompassError(res.status, code, index)
     }
