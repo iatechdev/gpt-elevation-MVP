@@ -9,8 +9,9 @@ const here = dirname(fileURLToPath(import.meta.url))
 const page = readFileSync(resolve(here, '../src/pages/ChatPage.tsx'), 'utf8')
 
 test('ES-199: ChatBubble es un componente memoizado y recibe solo valores primitivos (rol, texto, etiquetas)', () => {
-  assert.match(page, /const ChatBubble = memo\(function ChatBubble\(\{ role, text, you, logo, children \}: \{ role: 'user' \| 'bot'; text: string; you: string; logo: string; children\?: ReactNode \}\)/)
-  assert.match(page, /<ChatBubble role=\{msg\.role\} text=\{msg\.text\} you=\{copy\[lang\]\.you\} logo=\{t\('logo'\)\}>/)
+  // ES-333 (PR 2): se añade `ai` (copy.ai, «Asistente de IA»: etiqueta de cada respuesta de la IA); sigue siendo un texto primitivo, así que la burbuja solo se repinta si cambia su texto, su rol o sus etiquetas.
+  assert.match(page, /const ChatBubble = memo\(function ChatBubble\(\{ role, text, you, logo, ai, children \}: \{ role: 'user' \| 'bot'; text: string; you: string; logo: string; ai: string; children\?: ReactNode \}\)/)
+  assert.match(page, /<ChatBubble role=\{msg\.role\} text=\{msg\.text\} you=\{copy\[lang\]\.you\} logo=\{t\('logo'\)\} ai=\{copy\[lang\]\.ai\}>/)
 })
 
 test('ES-199: el aviso de respuesta cortada solo va como hijo de la última burbuja del asistente (las demás no cambian de props)', () => {

@@ -13,29 +13,34 @@ test('ES-123 diseño: la conversación tiene scroll propio y la caja de mensaje 
   const page = read('../src/pages/ChatPage.tsx'); const css = read('../src/space/space.css')
   assert.doesNotMatch(page, /paddingBottom: 300/); assert.doesNotMatch(page, /position: 'fixed', bottom: 0/)
   assert.match(page, /className="chat-scroll" role="region" aria-label=\{copy\[lang\]\.conversation\} tabIndex=\{0\}/)
-  assert.match(page, /<div className="chat-input-bar">\s*<ChatInput chat=\{chat\} \/>/)
-  assert.match(css, /\.chat-shell \{ height: 100dvh;/); assert.match(css, /\.chat-scroll \{ flex: 1 1 auto; min-height: 0; overflow-y: auto;/)
-  assert.match(css, /\.chat-input-bar \{[^}]*max-height: 70dvh/)
+  assert.match(page, /<div className="chat-input-bar">\s*<ChatInput chat=\{chat\} enterSends=\{enterSends\} \/>/)
+  // ES-333 (PR 2): el contenedor del chat mide el alto de la ventana en columna (100dvh, sin constantes), el hilo es el único que se desplaza y la caja no se encoge ni se fija.
+  assert.match(css, /\.chat-shell \{ height: 100dvh;/); assert.match(css, /\.cg-main \.chat-scroll \{ flex: 1 1 0; min-height: 0; overflow-y: auto;/)
+  assert.match(css, /\.chat-input-bar \{[^}]*max-height: 70dvh/); assert.match(css, /\.chat-top, \.chat-input-bar \{ flex: none; max-height: none; overflow: visible; \}/)
   assert.doesNotMatch(css, /\.chat-input-bar \{[^}]*position: fixed/)
 })
 
-test('ES-123 diseño: «Mi progreso» y «Cerrar sesión» salen en la cabecera con etiqueta accesible; ya no hay un ícono suelto dentro de la conversación', () => {
-  const page = read('../src/pages/ChatPage.tsx')
-  assert.match(page, /title=\{copy\[lang\]\.progress\}\s*aria-label=\{copy\[lang\]\.progress\}/)
-  assert.match(page, /title=\{copy\[lang\]\.signOut\} aria-label=\{copy\[lang\]\.signOut\}/)
+test('ES-123 diseño: «Mi progreso» y «Cerrar sesión» salen en el menú con texto visible; ya no hay un ícono suelto dentro de la conversación', () => {
+  // ES-333 (PR 2): las acciones pasan de íconos en la cabecera propia a botones con TEXTO en el menú (hoja inferior); se conserva la etiqueta accesible (ahora el propio texto) y un solo camino a «Mi progreso».
+  const page = read('../src/pages/ChatPage.tsx'); const menu = read('../src/space/ChatMenu.tsx')
+  assert.match(menu, /<button type="button" onClick=\{pick\(onProgress\)\}>\{c\.progress\}<\/button>/)
+  assert.match(menu, /<button type="button" onClick=\{pick\(onCheckout\)\}>\{c\.signOut\}<\/button>/)
   assert.equal((page.match(/navigate\('\/app\/progress'\)/g) || []).length, 1)
-  assert.ok(page.indexOf("navigate('/app/progress')") < page.indexOf('<div className="chat-main">')) // dentro de la cabecera, antes de la conversación
+  assert.match(page, /onProgress=\{\(\) => \{ if \(chat\.canLeave\(\)\) navigate\('\/app\/progress'\) \}\}/) // sigue pidiendo confirmación si hay un envío sin confirmar
+  assert.ok(!page.includes('<header'), 'la cabecera propia (marca, idioma, íconos) ya no existe: el marco y el menú la reemplazan')
 })
 
-test('ES-123 selector del diario: botón plegable con aria-expanded/aria-controls, Esc lo cierra y devuelve el foco; el texto de consentimiento se conserva dentro del panel', () => {
+test('ES-123 selector del diario: botón que abre la hoja (aria-expanded), Esc la cierra y devuelve el foco; el texto de consentimiento se conserva dentro de la hoja', () => {
+  // ES-333 (PR 2): el panel plegable pasa a ser una hoja inferior (Dialog nativo: Esc por onCancel/onClose, Tab atrapado y foco devuelto al botón «Diario»; lo prueba es-236). Se conservan los textos y el bloqueo.
   const controls = read('../src/space/ChatControls.tsx')
-  assert.match(controls, /aria-expanded=\{chat\.picker\} aria-controls="chat-diary-panel"/)
-  assert.match(controls, /id="chat-diary-panel"/); assert.match(controls, /event\.key === 'Escape'/); assert.match(controls, /toggle\.current\?\.focus\(\)/)
-  const panel = controls.slice(controls.indexOf('id="chat-diary-panel"'), controls.indexOf('role="status" aria-live="polite"'))
+  assert.match(controls, /aria-haspopup="dialog" aria-expanded=\{chat\.picker\}/)
+  assert.match(controls, /<Dialog sheet open=\{chat\.picker\} onClose=\{closePicker\}/); assert.match(controls, /const closePicker = \(\) => chat\.setPicker\(false\)/)
+  const panel = controls.slice(controls.indexOf('<Dialog sheet open={chat.picker}'), controls.indexOf('role="status" aria-live="polite" className="space-note chat-counter"'))
   for (const key of ['c.contextLimit', 'c.contextPrivacy', 'c.deselect', 'c.limit', 'c.choose', 'c.none', 'c.howTitle', 'c.close']) assert.ok(panel.includes(key), key)
-  const outside = controls.slice(0, controls.indexOf('id="chat-diary-panel"'))
+  const outside = controls.slice(0, controls.indexOf('<Dialog sheet open={chat.picker}'))
   for (const key of ['c.contextLimit', 'c.contextPrivacy', 'c.deselect']) assert.ok(!outside.includes(key), `${key} no debe estar siempre visible`)
-  assert.match(controls, /<span className="space-note">\{c\.ai\}<\/span>/) // la identificación de la IA sigue visible
+  // ES-333 (PR 2): «Asistente de IA» (copy.ai) deja el compositor y pasa a la etiqueta de CADA respuesta de la IA («✦ ELEVATION · Asistente de IA»): la identificación sigue visible junto a cada texto de la IA.
+  const page = read('../src/pages/ChatPage.tsx'); assert.match(page, /<span className="chat-msg-who">✦ \{logo\} · \{ai\}<\/span>/); assert.match(page, /<span className="chat-msg-who">✦ \{t\('logo'\)\} · \{copy\[lang\]\.ai\}<\/span>/)
   assert.match(controls, /blocked\.paused \|\| blocked\.exhausted/); assert.match(controls, /\|\| off/) // escritura bloqueada al pausar o agotar (ES-112)
 })
 
@@ -48,7 +53,7 @@ test('ES-123 adenda 1: etiqueta «Mensaje» sin cifra, contador desde 3.600 con 
   const controls = read('../src/space/ChatControls.tsx')
   assert.match(controls, /const COUNTER_FROM = 3600/); assert.match(controls, /maxLength=\{MAX_MESSAGE\}/)
   assert.match(controls, /role="status" aria-live="polite" className="space-note chat-counter"/)
-  assert.doesNotMatch(controls.slice(0, controls.indexOf('id="chat-diary-panel"')), /c\.contextLimit/) // el 2.000 sigue solo dentro del panel plegable
+  assert.doesNotMatch(controls.slice(0, controls.indexOf('<Dialog sheet open={chat.picker}')), /c\.contextLimit/) // el 2.000 sigue solo dentro de la hoja del diario
 })
 
 test('ES-123 adenda 2 (opción 2): el dashboard ya no embebe el chat y ofrece el acceso a /app/chat, con los enlaces separados', () => {

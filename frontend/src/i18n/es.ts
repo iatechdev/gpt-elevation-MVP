@@ -342,7 +342,7 @@ const es: Record<string, string> = {
   no_data: '—',
 
   // ── Recomendaciones ───────────────────────────────────────────────────────
-  rec_title: '✨ Recomendaciones para ti',
+  rec_title: 'Recomendaciones para ti',
   rec_subtitle: 'Basadas en tu estado emocional reciente',
   rec_generate: 'Generar recomendaciones',
   rec_regenerate: 'Generar nuevas',
@@ -399,11 +399,11 @@ const es: Record<string, string> = {
   checkout_rating: '¿Cómo fue la conversación?',
   checkout_signout: 'Cerrar sesión',
   checkout_skip: 'Saltar',
-  star_1: '😞 Muy mala',
-  star_2: '😐 Regular',
-  star_3: '🙂 Buena',
-  star_4: '😊 Muy buena',
-  star_5: '✨ Excelente',
+  star_1: 'Muy mala',
+  star_2: 'Regular',
+  star_3: 'Buena',
+  star_4: 'Muy buena',
+  star_5: 'Excelente',
 }
 
 export { es }
