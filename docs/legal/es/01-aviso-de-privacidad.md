@@ -79,7 +79,7 @@ Las respuestas del asistente las genera un modelo de lenguaje de **Anthropic** (
 - **Chat:** hasta tus últimos 20 mensajes de la conversación y las entradas de diario que tú elijas para esa conversación. No enviamos tu nombre ni tu correo.
 - **Si un mensaje tuyo muestra un indicio grave de crisis,** ese turno no se envía al modelo: te respondemos con un mensaje de seguridad fijo (tampoco se reenvía en mensajes posteriores).
 - **Recomendaciones de bienestar:** un resumen de tu ánimo de los últimos 7 días (cuántos registros, promedio y tendencia), sin texto tuyo.
-- **Análisis de habilidades:** el texto de las evidencias que confirmaste, cuando pides el análisis.
+- **Análisis de habilidades:** los campos de tu contexto profesional que aprobaste (motivaciones, valores, intereses, energía, condiciones deseadas y restricciones), cuando pides el análisis.
 - **Lectura de tus fuentes (solo si lo autorizas, fuente por fuente):** hasta 20 mensajes de tu chat, hasta 10 entradas de tu diario o el texto de tu hoja de vida sin datos de contacto, para proponerte ideas.
 - **Emparejamiento con un profesional:** las respuestas cortas que elegiste, sin tu ánimo.
 - **Si compartes con tu profesional:** al cerrar una sesión, una etiqueta de tu ánimo; y, cuando tu profesional pide un resumen, solo cifras agregadas (cuántos registros, promedio de ánimo y promedio de valoraciones), sin tu nombre ni tus textos.
