@@ -1,6 +1,6 @@
 # Cookies and browser storage policy
 
-> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v1` · ES-335 · 18 Nov 2026.
+> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v2` · ES-335 · 18 Nov 2026.
 > Checked against the frontend code (see `../VERIFICACION-CONTRA-CODIGO.md`). Markers: `[TO BE COMPLETED PC-nn]`, `[VERIFY VF-nn]`, `[LEGAL REVIEW RL-nn]`; list in `../POR-COMPLETAR.md`.
 
 ## Summary

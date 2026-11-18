@@ -55,7 +55,7 @@ test('ES-335: no se inventaron datos de la empresa (NIT, correos, teléfonos, di
 })
 
 test('ES-335: los documentos de privacidad y términos citan la versión vigente de la aceptación', () => {
-  assert.equal(TERMS_VERSION, '2026-11-v1')
+  assert.equal(TERMS_VERSION, '2026-11-v2')
   for (const file of ['es/01-aviso-de-privacidad.md', 'es/02-terminos-de-uso.md', 'en/01-privacy-notice.md', 'en/02-terms-of-use.md']) assert.ok(read(`docs/legal/${file}`).includes(TERMS_VERSION), file)
 })
 

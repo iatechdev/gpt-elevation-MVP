@@ -1,6 +1,6 @@
 # Terms and conditions of use
 
-> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v1` · ES-335 · 18 Nov 2026.
+> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v2` · ES-335 · 18 Nov 2026.
 > Started from the current terms (`frontend/src/legal/legalCopy.ts`) and checked against what the system does (`../VERIFICACION-CONTRA-CODIGO.md`). This is not legal advice.
 > Markers: `[TO BE COMPLETED PC-nn]`, `[VERIFY VF-nn]`, `[LEGAL REVIEW RL-nn]`; list in `../POR-COMPLETAR.md`.
 

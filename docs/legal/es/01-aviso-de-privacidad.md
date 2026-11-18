@@ -1,6 +1,6 @@
 # Aviso de privacidad y política de tratamiento de datos
 
-> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v1` · ES-335 · 18-nov-2026.
+> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v2` · ES-335 · 18-nov-2026.
 > Redactado a partir de lo que el sistema hace hoy (verificado contra el código; ver `../VERIFICACION-CONTRA-CODIGO.md`). No es asesoría legal y no debe publicarse a personas reales sin revisión del abogado y sin completar los marcadores.
 > Marcadores: `[POR COMPLETAR PC-nn]` = dato que solo la empresa puede dar; `[VERIFICAR VF-nn]` = hecho que no se pudo comprobar. Lista completa en `../POR-COMPLETAR.md`.
 

@@ -1,6 +1,6 @@
 # Privacy notice and personal data processing policy
 
-> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v1` · ES-335 · 18 Nov 2026.
+> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v2` · ES-335 · 18 Nov 2026.
 > Written from what the system does today (verified against the code; see `../VERIFICACION-CONTRA-CODIGO.md`). This is not legal advice and must not be published to real people without the lawyer's review and without completing the markers.
 > Markers: `[TO BE COMPLETED PC-nn]` = information only the company can provide; `[VERIFY VF-nn]` = a fact that could not be confirmed. Full list in `../POR-COMPLETAR.md`.
 

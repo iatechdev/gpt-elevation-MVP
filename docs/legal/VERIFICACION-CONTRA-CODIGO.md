@@ -11,7 +11,7 @@
 | El enlace de restablecer contraseña es de un solo uso y caduca a los 30 minutos por defecto | `backend/routes/passwordReset.js:23` (`PASSWORD_RESET_TTL_MINUTES`, por defecto 30) |
 | Los enlaces firmados de archivos duran 15 minutos por defecto; almacenamiento privado | `backend/utils/storage.js` (`DEFAULT_TTL_SECONDS = 900`, bucket privado de Supabase Storage) |
 | Bloqueo temporal tras intentos fallidos; administración ve nombre, correo, rol, estado, plan, intentos y bloqueo | `backend/routes/adminUsers.js:67` (atributos); campos `loginAttempts`, `lockedUntil` |
-| La aceptación guarda versión y fecha desde el servidor (`2026-11-v1`) | `backend/utils/terms.js`; `frontend/src/legal/version.ts` |
+| La aceptación guarda versión y fecha desde el servidor (`2026-11-v2`) | `backend/utils/terms.js`; `frontend/src/legal/version.ts` |
 | El chat envía al modelo los últimos 20 mensajes y las entradas de diario que la persona elige; no envía nombre ni correo | `backend/routes/chat.js:31` (`HISTORY_LIMIT = 20`), `:223-228` (entradas elegidas), `:200-262` (composición del prompt) |
 | Se enmascaran claves, tokens y cadenas de conexión antes de enviar | `backend/utils/promptSafety.js:24-34` (`SECRET_PATTERNS`, `redactSecrets`) |
 | Un turno con indicio grave de crisis no se envía al modelo ni se reenvía después | `backend/routes/chat.js` (ES-298); `docs/elevation-skillmap/16-LIMITES-Y-FRONTERA-PRIVADA.md` §2 y §5 |
