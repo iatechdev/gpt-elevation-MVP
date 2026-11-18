@@ -19,3 +19,14 @@ export function placeSkills(skills: readonly Skill[], territories: readonly Terr
   unassigned.forEach((skill, i) => out.push({ skill, x: (i + 1) / (unassigned.length + 1), y: 0.94, level: reliefLevel(skill) }))
   return out
 }
+
+// ES-199 (PERF-05): colocar las capacidades (búsqueda en espiral) es lo más caro de pintar el relieve y el resultado solo depende del mapa cargado: se calcula una vez por mapa
+// (no cada vez que la persona vuelve del radar o de la lista al relieve). Clave por identidad del arreglo (WeakMap: se libera con el mapa); nada se guarda fuera de memoria.
+const placedCache = new WeakMap<readonly Skill[], WeakMap<readonly Territory[], Placed[]>>()
+export function placeSkillsCached(skills: readonly Skill[], territories: readonly Territory[]): Placed[] {
+  let byTerritories = placedCache.get(skills)
+  if (!byTerritories) { byTerritories = new WeakMap(); placedCache.set(skills, byTerritories) }
+  let placed = byTerritories.get(territories)
+  if (!placed) { placed = placeSkills(skills, territories); byTerritories.set(territories, placed) }
+  return placed
+}
