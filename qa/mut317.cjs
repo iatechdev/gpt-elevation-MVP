@@ -13,4 +13,6 @@ M('M7 aceptar una ruta fuera de la lista (/login, /api)', 'src/access/returnTo.t
 M('M8 quitar el límite de 300 caracteres', 'src/access/returnTo.ts', 'raw.length > MAX_LENGTH', 'false')
 M('M9 aceptar la barra invertida', 'src/access/returnTo.ts', '/[\\\x00-\x1f\x7f#]/.test(raw)', '/[\x00-\x1f\x7f#]/.test(raw)')
 M('M10 la compuerta no recuerda la ruta (RoleGate)', 'src/shell/RoleGate.tsx', "if (decision === 'login') rememberReturn(pathname, search)", "if (false) rememberReturn(pathname, search)")
+M('M11 llegar a una pantalla permitida ya no consume lo recordado (RoleGate)', 'src/shell/RoleGate.tsx', "if (decision === 'allow') forgetReturn()", 'void 0')
+M('M12 LoginPage vuelve a consumir lo recordado al verificar (E330-1)', 'src/pages/LoginPage.tsx', "// El destino se recalcula sin consumir", "useEffect(() => { if (entry.result.status === 'verified') forgetReturn() }, [entry.result.status]) // El destino se recalcula sin consumir")
 restore(); console.log('clon restaurado')
