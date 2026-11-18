@@ -5,8 +5,7 @@ import { LandingPendingPanel } from './LandingPendingPanel'
 import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
 import { landingFieldLabel } from './landingLabels'
-import { modalKeyDown } from '../../a11y/modalKeys'
-import { Banner, Button, Dialog, ItemList, Tabs, TextAreaField } from '../../cartografia'
+import { Banner, Button, CheckField, Chip, Dialog, ItemList, SelectField, Tabs, TextAreaField, TextField } from '../../cartografia'
 import './adminContent.css'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
@@ -50,42 +49,6 @@ const emptyPlan: PricingPlan = {
   price: '', currency: 'USD', period: 'month',
   features_es: [], features_en: [],
   isHighlighted: false, isActive: true, order: 0,
-}
-
-// ── Estilos compartidos ───────────────────────────────────────────────────────
-const card: React.CSSProperties = {
-  background: '#fff', border: '0.5px solid #E7E5E4',
-  borderRadius: '1rem', padding: '1.5rem', marginBottom: '1rem',
-}
-const label: React.CSSProperties = {
-  fontSize: 12, fontWeight: 500, color: '#6B645F',
-  letterSpacing: '0.05em', display: 'block', marginBottom: 4,
-}
-const input: React.CSSProperties = {
-  width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.65rem',
-  border: '0.5px solid #D6D2C4', fontSize: 13, color: '#1C1917',
-  fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box',
-}
-const btnPrimary: React.CSSProperties = {
-  background: '#5C6B4E', color: '#fff', border: 'none',
-  borderRadius: '0.75rem', padding: '0.6rem 1.25rem',
-  fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-}
-const btnSecondary: React.CSSProperties = {
-  background: 'transparent', color: '#5C6B4E', border: '0.5px solid #A8B5A2',
-  borderRadius: '0.75rem', padding: '0.6rem 1.25rem',
-  fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-}
-const btnDanger: React.CSSProperties = {
-  background: 'transparent', color: '#B91C1C', border: '0.5px solid #DC2626',
-  borderRadius: '0.75rem', padding: '0.5rem 1rem',
-  fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-}
-const sectionTitle: React.CSSProperties = {
-  fontSize: 11, fontWeight: 600, color: '#5C6B4E',
-  letterSpacing: '0.08em', textTransform: 'uppercase',
-  margin: '0 0 0.75rem', paddingBottom: '0.4rem',
-  borderBottom: '0.5px solid #EAF0E6',
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -252,6 +215,7 @@ function ValidationsTab({ onChanged }: { onChanged?: () => void }) {
 }
 
 // ── Tab Precios ───────────────────────────────────────────────────────────────
+// ES-315: Cartografía (ItemList/Chip/Banner/Button/TextField/SelectField/CheckField/Dialog), sin estilos en línea. El formulario va en un diálogo ancho nativo.
 function PricingTab() {
   const tr = useAdminText()
   const { lang } = useLanguage()
@@ -269,16 +233,13 @@ function PricingTab() {
   const [saving, setSaving]       = useState(false)
   const [msg, setMsg]             = useState('')
   const [loadError, setLoadError] = useState(false)
-  const dialogRef = useRef<HTMLDivElement>(null)
-  const confirmRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLElement | null>(null)
-  const restoreFocus = useRef(false)
+  const formRef = useRef<HTMLDivElement>(null)
   const busyRef = useRef(false)
 
   const load = useCallback((initial = false) => {
     if (initial) setLoading(true)
     setLoadError(false)
-    fetch(`${API}/api/admin/pricing/all`, {
+    return fetch(`${API}/api/admin/pricing/all`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => { if (!r.ok) throw new Error('load'); return r.json() })
@@ -287,29 +248,18 @@ function PricingTab() {
       .finally(() => setLoading(false))
   }, [token])
 
-  useEffect(() => { load(true) }, [load])
-  useEffect(() => { if (showForm) dialogRef.current?.querySelector<HTMLInputElement>('input')?.focus() }, [showForm])
-  useEffect(() => { if (deactivating) confirmRef.current?.querySelector<HTMLButtonElement>('button')?.focus() }, [deactivating])
-  useEffect(() => {
-    if (!saving && !showForm && !deactivating && restoreFocus.current) {
-      triggerRef.current?.focus()
-      restoreFocus.current = false
-    }
-  }, [saving, showForm, deactivating])
+  useEffect(() => { void load(true) }, [load])
+  useEffect(() => { if (showForm) formRef.current?.querySelector<HTMLInputElement>('input')?.focus() }, [showForm])
 
-  const closeForm = () => {
-    restoreFocus.current = true
-    setShowForm(false)
-  }
+  // El foco vuelve al botón que abrió el diálogo (lo resuelve Dialog). La excepción es «Desactivar»: el botón desaparece al recargar, así que el foco pasa a «Editar» del mismo plan.
+  const closeForm = () => setShowForm(false)
 
   const openNew = () => {
-    triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setForm(emptyPlan); setFeatInputEs(''); setFeatInputEn(''); setErrors({})
     setEditing(null); setShowForm(true); setMsg('')
   }
 
   const openEdit = (p: PricingPlan) => {
-    triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setForm({ ...p }); setFeatInputEs((p.features_es ?? []).join('\n')); setFeatInputEn((p.features_en ?? []).join('\n')); setErrors({})
     setEditing(p); setShowForm(true); setMsg('')
   }
@@ -332,7 +282,6 @@ function PricingTab() {
       return
     }
     busyRef.current = true
-    dialogRef.current?.focus()
     setSaving(true); setMsg('')
     try {
       const url    = editing?.id ? `${API}/api/admin/pricing/${editing.id}` : `${API}/api/admin/pricing`
@@ -348,194 +297,139 @@ function PricingTab() {
       })
       if (!r.ok) return setMsg('Error guardando.')
       setMsg(editing ? 'Plan actualizado.' : 'Plan creado.')
-      closeForm(); load()
+      closeForm(); void load()
     } catch { setMsg('Error de conexión.') }
     finally { busyRef.current = false; setSaving(false) }
   }
 
-  const closeConfirm = () => {
-    restoreFocus.current = true
-    setDeactivating(null)
-  }
+  const closeConfirm = () => setDeactivating(null)
 
   const deactivate = async () => {
     if (!deactivating?.id || busyRef.current) return
+    const planId = deactivating.id
     busyRef.current = true
-    confirmRef.current?.focus()
     setSaving(true); setMsg('')
     try {
-      const response = await fetch(`${API}/api/admin/pricing/${deactivating.id}`, {
+      const response = await fetch(`${API}/api/admin/pricing/${planId}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
       })
       if (!response.ok) throw new Error('deactivate')
       setMsg('Plan desactivado.')
-      if (triggerRef.current?.previousElementSibling instanceof HTMLElement) {
-        triggerRef.current = triggerRef.current.previousElementSibling
-      }
       closeConfirm()
-      load()
+      void load().then(() => document.getElementById(`plan-edit-${planId}`)?.focus())
     } catch { setMsg('No se pudo desactivar el plan.') }
     finally { busyRef.current = false; setSaving(false) }
   }
 
-  if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando planes...")}</p>
-  if (loadError) return <div role="alert"><p>{tr('No se pudieron cargar los planes.')}</p><button style={btnSecondary} onClick={() => load(true)}>{tr('Reintentar')}</button></div>
+  if (loading) return <p className="cg-hint" role="status">{tr("Cargando planes...")}</p>
+  if (loadError) return <Banner kind="error" title={tr('No se pudieron cargar los planes.')}><Button variant="ghost" onClick={() => void load(true)}>{tr('Reintentar')}</Button></Banner>
 
   return (
-    <div>
-      {!showForm && !deactivating && msg && <p role="status">{tr(msg)}</p>}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <p style={{ fontSize: 13, color: '#6B645F', margin: 0 }}>
-          {plans.filter(p => p.isActive).length}{' '}{tr("plan(es) activo(s)")}{' '}</p>
-        <button style={btnPrimary} onClick={openNew}>{tr("+ Nuevo plan")}</button>
+    <div className="cg-card ac-panel">
+      <p className="ac-status cg-hint" role="status">{!showForm && !deactivating && msg ? tr(msg) : ''}</p>
+      <div className="ac-bar">
+        <p className="cg-hint">{plans.filter(p => p.isActive).length}{' '}{tr("plan(es) activo(s)")}{' '}</p>
+        <Button onClick={openNew}>{tr("+ Nuevo plan")}</Button>
       </div>
 
-      {plans.map(p => (
-        <div key={p.id} style={{ ...card, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', ...(p.isActive ? {} : { background: '#F1EFEC', border: '1px dashed #78716C' }) }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, fontSize: 14, color: '#1C1917' }}>{lang === 'en' ? p.name_en : p.name_es}</span>
-              {p.isHighlighted && <span style={{ fontSize: 10, background: '#EAF0E6', color: '#5C6B4E', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>{tr("DESTACADO")}</span>}
-              {!p.isActive && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#B91C1C', padding: '2px 8px', borderRadius: 10 }}>{tr("INACTIVO")}</span>}
+      {plans.length === 0 && <p className="cg-hint">{tr("No hay planes. Crea el primero.")}</p>}
+      <ul className="cg-items" aria-label={tr('Planes')}>
+        {plans.map(p => (
+          <li key={p.id} className={`cg-item ac-plan${p.isActive ? '' : ' ac-plan--off'}`}>
+            <div className="ac-planhead">
+              <strong>{lang === 'en' ? p.name_en : p.name_es}</strong>
+              {p.isHighlighted && <Chip tone="ok" symbol="✓">{tr("DESTACADO")}</Chip>}
+              {!p.isActive && <Chip tone="bad">{tr("INACTIVO")}</Chip>}
             </div>
-            <p style={{ margin: '0 0 4px', fontSize: 13, color: '#4A4A4A' }}>
+            <p className="ac-meta">
               <strong>{['USD', 'COP', 'EUR'].includes(p.currency) && Number.isFinite(Number(p.price)) ? new Intl.NumberFormat(lang === 'en' ? 'en-US' : 'es-CO', { style: 'currency', currency: p.currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(p.price)) : `${p.price} ${p.currency}`}</strong>{' · '}{tr(({ month: 'Mensual', year: 'Anual', forever: 'Para siempre' } as Record<string, string>)[p.period] ?? 'Período desconocido')}
             </p>
-            <p style={{ margin: '0 0 4px', fontSize: 12, color: '#57534E' }}>{tr('Identificador')}: {p.slug}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-              {((lang === 'en' ? p.features_en : p.features_es) ?? []).map((f, i) => (
-                <span key={i} style={{ fontSize: 11, background: p.isActive ? '#F5F5F3' : '#fff', color: '#4A4A4A', padding: '2px 8px', borderRadius: 8 }}>{f}</span>
-              ))}
+            <p className="cg-hint ac-meta">{tr('Identificador')}: {p.slug}</p>
+            <ul className="ac-feats">
+              {((lang === 'en' ? p.features_en : p.features_es) ?? []).map((f, i) => <li key={i}>{f}</li>)}
+            </ul>
+            <div className="ac-actions">
+              <Button variant="ghost" id={`plan-edit-${p.id}`} onClick={() => openEdit(p)}>{tr("Editar")}</Button>
+              {p.isActive && <Button variant="ghost" className="ac-off" disabled={saving} onClick={() => { setMsg(''); setDeactivating(p) }}>{tr("Desactivar")}</Button>}
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <button style={btnSecondary} onClick={() => openEdit(p)}>{tr("Editar")}</button>
-            {p.isActive && <button style={btnDanger} disabled={saving} onClick={() => { triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setMsg(''); setDeactivating(p) }}>{tr("Desactivar")}</button>}
-          </div>
-        </div>
-      ))}
+          </li>
+        ))}
+      </ul>
 
-      {plans.length === 0 && (
-        <div style={{ ...card, textAlign: 'center', color: '#6B645F', fontSize: 13 }}>{tr("No hay planes. Crea el primero.")}</div>
-      )}
-
-      {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="plan-form-title" onKeyDown={e => { if (saving && e.key === 'Tab') e.preventDefault(); else modalKeyDown(e, dialogRef.current, () => { if (!saving) closeForm() }) }} style={{ background: '#fff', borderRadius: '1.25rem', padding: '2rem', width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 id="plan-form-title" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: '0 0 1.5rem' }}>
-              {editing ? tr('Editar plan') : tr('Nuevo plan')}
-            </h3>
-            <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div>
-                <p style={sectionTitle}>{tr("Identificador")}</p>
-                <div style={{ marginBottom: 8 }}>
-                  <label htmlFor="plan-slug" style={label}>{tr("Slug * (sin espacios, ej: basic, essential, plus, pro)")}</label>
-                  <input id="plan-slug" style={input} value={form.slug} readOnly={!!editing} aria-invalid={!!errors['plan-slug']} aria-describedby={errors['plan-slug'] ? 'plan-slug-error' : undefined} placeholder={tr("ej: basic")} maxLength={20}
-                    onChange={e => { setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 20) })); setErrors(current => ({ ...current, 'plan-slug': '' })) }} />
-                  {errors['plan-slug'] && <p id="plan-slug-error" role="alert">{tr(errors['plan-slug'])}</p>}
-                </div>
-                <p style={sectionTitle}>{tr("Nombre del plan")}</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <div>
-                    <label htmlFor="plan-name-es" style={label}>{tr("Español *")}</label>
-                    <input id="plan-name-es" style={input} value={form.name_es} aria-invalid={!!errors['plan-name-es']} aria-describedby={errors['plan-name-es'] ? 'plan-name-es-error' : undefined} placeholder={tr("ej: Gratis")} onChange={e => { setForm(f => ({ ...f, name_es: e.target.value })); setErrors(current => ({ ...current, 'plan-name-es': '' })) }} />
-                    {errors['plan-name-es'] && <p id="plan-name-es-error" role="alert">{tr(errors['plan-name-es'])}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="plan-name-en" style={label}>{tr("Inglés *")}</label>
-                    <input id="plan-name-en" style={input} value={form.name_en} aria-invalid={!!errors['plan-name-en']} aria-describedby={errors['plan-name-en'] ? 'plan-name-en-error' : undefined} placeholder={tr("ej: Free")} onChange={e => { setForm(f => ({ ...f, name_en: e.target.value })); setErrors(current => ({ ...current, 'plan-name-en': '' })) }} />
-                    {errors['plan-name-en'] && <p id="plan-name-en-error" role="alert">{tr(errors['plan-name-en'])}</p>}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p style={sectionTitle}>{tr("Descripción")}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div>
-                    <label htmlFor="plan-description-es" style={label}>{tr("Español")}</label>
-                    <input id="plan-description-es" style={input} value={form.description_es} placeholder={tr("Descripción en español...")} onChange={e => setForm(f => ({ ...f, description_es: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label htmlFor="plan-description-en" style={label}>{tr("Inglés")}</label>
-                    <input id="plan-description-en" style={input} value={form.description_en} placeholder="Description in English..." onChange={e => setForm(f => ({ ...f, description_en: e.target.value }))} />
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p style={sectionTitle}>{tr("Precio")}</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr', gap: 8 }}>
-                  <div>
-                    <label htmlFor="plan-price" style={label}>{tr("Precio")}</label>
-                    <input id="plan-price" style={input} type="number" min="0" max="99999999.99" step="0.01" value={form.price} aria-invalid={!!errors['plan-price']} aria-describedby={errors['plan-price'] ? 'plan-price-error' : undefined} onChange={e => { setForm(f => ({ ...f, price: e.target.value })); setErrors(current => ({ ...current, 'plan-price': '' })) }} />
-                    {errors['plan-price'] && <p id="plan-price-error" role="alert">{tr(errors['plan-price'])}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="plan-currency" style={label}>{tr("Moneda")}</label>
-                    <select id="plan-currency" style={{ ...input }} value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
-                      <option value="USD">USD</option>
-                      <option value="COP">COP</option>
-                      <option value="EUR">EUR</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="plan-period" style={label}>{tr("Período")}</label>
-                    <select id="plan-period" style={{ ...input }} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
-                      <option value="month">{tr("Mensual")}</option>
-                      <option value="year">{tr("Anual")}</option>
-                      <option value="forever">{tr("Para siempre")}</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label htmlFor="plan-features-es" style={sectionTitle}>{tr('Características en español, una por línea')}</label>
-                <textarea id="plan-features-es" style={input} rows={4} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="plan-features-en" style={sectionTitle}>{tr('Características en inglés, una por línea')}</label>
-                <textarea id="plan-features-en" style={input} rows={4} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} />
-              </div>
-              <div>
-                <p style={sectionTitle}>{tr("Opciones")}</p>
-                <div style={{ display: 'flex', gap: '1.5rem' }}>
-                  <div>
-                    <label htmlFor="plan-order" style={label}>{tr("Orden")}</label>
-                    <input id="plan-order" style={{ ...input, width: 80 }} type="number" min="0" value={form.order} onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
-                  </div>
-                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end', paddingBottom: '0.6rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#1C1917', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm(f => ({ ...f, isHighlighted: e.target.checked }))} />{tr("Destacado")}{' '}</label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#1C1917', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />{tr("Activo")}{' '}</label>
-                  </div>
-                </div>
-              </div>
-              {msg && <p role="alert" style={{ fontSize: 12, color: '#B91C1C', margin: 0 }}>{tr(msg)}</p>}
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', paddingTop: '0.5rem' }}>
-                <button style={btnSecondary} disabled={saving} onClick={closeForm}>{tr("Cancelar")}{' '}</button>
-                <button style={btnPrimary} onClick={save} disabled={saving}>
-                  {saving ? tr('Guardando...') : editing ? tr('Actualizar') : tr('Crear plan')}
-                </button>
-              </div>
-            </div>
+      <Dialog
+        wide open={showForm} onClose={() => { if (!saving) closeForm() }}
+        title={editing ? tr('Editar plan') : tr('Nuevo plan')}
+        actions={<>
+          <Button variant="ghost" disabled={saving} onClick={closeForm}>{tr("Cancelar")}{' '}</Button>
+          <Button onClick={() => void save()} disabled={saving}>{saving ? tr('Guardando...') : editing ? tr('Actualizar') : tr('Crear plan')}</Button>
+        </>}
+      >
+        <div ref={formRef}>
+          <fieldset disabled={saving} className="ac-form">
+            <fieldset className="ac-sec">
+              <legend>{tr("Identificador")}</legend>
+              <TextField id="plan-slug" label={tr("Slug * (sin espacios, ej: basic, essential, plus, pro)")} value={form.slug} readOnly={!!editing} placeholder={tr("ej: basic")} maxLength={20}
+                error={errors['plan-slug'] ? tr(errors['plan-slug']) : undefined}
+                onChange={e => { setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 20) })); setErrors(current => ({ ...current, 'plan-slug': '' })) }} />
             </fieldset>
-          </div>
-        </div>
-      )}
-      {deactivating && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div ref={confirmRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="plan-deactivate-title" aria-describedby="plan-deactivate-description" onKeyDown={e => modalKeyDown(e, confirmRef.current, () => { if (!saving) closeConfirm() })} style={{ ...card, width: '100%', maxWidth: 480 }}>
-            <h3 id="plan-deactivate-title">{tr('¿Desactivar este plan?')}</h3>
-            <p id="plan-deactivate-description">{tr('El plan deja de verse en precios; las solicitudes realizadas se conservan. Puedes reactivarlo editándolo.')}</p>
-            {msg && <p role="alert">{tr(msg)}</p>}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button style={btnSecondary} disabled={saving} onClick={closeConfirm}>{tr('Cancelar')}</button>
-              <button style={btnDanger} disabled={saving} onClick={deactivate}>{saving ? tr('Procesando...') : tr('Desactivar')}</button>
+            <fieldset className="ac-sec">
+              <legend>{tr("Nombre del plan")}</legend>
+              <div className="ac-grid2">
+                <TextField id="plan-name-es" label={tr("Español *")} value={form.name_es} placeholder={tr("ej: Gratis")} error={errors['plan-name-es'] ? tr(errors['plan-name-es']) : undefined}
+                  onChange={e => { setForm(f => ({ ...f, name_es: e.target.value })); setErrors(current => ({ ...current, 'plan-name-es': '' })) }} />
+                <TextField id="plan-name-en" label={tr("Inglés *")} value={form.name_en} placeholder={tr("ej: Free")} error={errors['plan-name-en'] ? tr(errors['plan-name-en']) : undefined}
+                  onChange={e => { setForm(f => ({ ...f, name_en: e.target.value })); setErrors(current => ({ ...current, 'plan-name-en': '' })) }} />
+              </div>
+            </fieldset>
+            <fieldset className="ac-sec">
+              <legend>{tr("Descripción")}</legend>
+              <TextField id="plan-description-es" label={tr("Español")} value={form.description_es} placeholder={tr("Descripción en español...")} onChange={e => setForm(f => ({ ...f, description_es: e.target.value }))} />
+              <TextField id="plan-description-en" label={tr("Inglés")} value={form.description_en} placeholder="Description in English..." onChange={e => setForm(f => ({ ...f, description_en: e.target.value }))} />
+            </fieldset>
+            <fieldset className="ac-sec">
+              <legend>{tr("Precio")}</legend>
+              <div className="ac-grid3">
+                <TextField id="plan-price" label={tr("Precio")} type="number" min="0" max="99999999.99" step="0.01" value={form.price} error={errors['plan-price'] ? tr(errors['plan-price']) : undefined}
+                  onChange={e => { setForm(f => ({ ...f, price: e.target.value })); setErrors(current => ({ ...current, 'plan-price': '' })) }} />
+                <SelectField id="plan-currency" label={tr("Moneda")} value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
+                  <option value="USD">USD</option>
+                  <option value="COP">COP</option>
+                  <option value="EUR">EUR</option>
+                </SelectField>
+                <SelectField id="plan-period" label={tr("Período")} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
+                  <option value="month">{tr("Mensual")}</option>
+                  <option value="year">{tr("Anual")}</option>
+                  <option value="forever">{tr("Para siempre")}</option>
+                </SelectField>
+              </div>
+            </fieldset>
+            <div className="ac-grid2">
+              <TextAreaField id="plan-features-es" label={tr('Características en español, una por línea')} rows={4} value={featInputEs} onChange={e => setFeatInputEs(e.target.value)} />
+              <TextAreaField id="plan-features-en" label={tr('Características en inglés, una por línea')} rows={4} value={featInputEn} onChange={e => setFeatInputEn(e.target.value)} />
             </div>
-          </div>
+            <fieldset className="ac-sec">
+              <legend>{tr("Opciones")}</legend>
+              <div className="ac-opts">
+                <TextField id="plan-order" className="ac-order" label={tr("Orden")} type="number" min="0" value={form.order} onChange={e => setForm(f => ({ ...f, order: parseInt(e.target.value) || 0 }))} />
+                <CheckField label={tr("Destacado")} checked={form.isHighlighted} onChange={e => setForm(f => ({ ...f, isHighlighted: e.target.checked }))} />
+                <CheckField label={tr("Activo")} checked={form.isActive} onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))} />
+              </div>
+            </fieldset>
+            {msg && <Banner kind="error" title={tr(msg)} />}
+          </fieldset>
         </div>
-      )}
+      </Dialog>
+
+      <Dialog
+        open={!!deactivating} onClose={() => { if (!saving) closeConfirm() }} title={tr('¿Desactivar este plan?')}
+        actions={<>
+          <Button variant="ghost" disabled={saving} onClick={closeConfirm}>{tr('Cancelar')}</Button>
+          <Button variant="danger" disabled={saving} onClick={() => void deactivate()}>{saving ? tr('Procesando...') : tr('Desactivar')}</Button>
+        </>}
+      >
+        <p>{tr('El plan deja de verse en precios; las solicitudes realizadas se conservan. Puedes reactivarlo editándolo.')}</p>
+        {msg && <Banner kind="error" title={tr(msg)} />}
+      </Dialog>
     </div>
   )
 }
@@ -596,37 +490,27 @@ function LandingTab() {
     } finally { savingRef.current = false; setSaving(null) }
   }
 
-  if (loading) return <p style={{ color: '#6B645F', fontSize: 13 }}>{tr("Cargando contenido...")}</p>
-  if (loadError) return <div role="alert"><p>{tr('No se pudo cargar el contenido.')}</p><button style={btnSecondary} onClick={() => setAttempt(n => n + 1)}>{tr('Reintentar')}</button></div>
+  if (loading) return <p className="cg-hint" role="status">{tr("Cargando contenido...")}</p>
+  if (loadError) return <Banner kind="error" title={tr('No se pudo cargar el contenido.')}><Button variant="ghost" onClick={() => setAttempt(n => n + 1)}>{tr('Reintentar')}</Button></Banner>
 
   return (
-    <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: '1.25rem' }}>
+    <div className="cg-card ac-panel">
+      <div className="cg-lang ac-lang" role="group" aria-label={tr('Idioma')}>
         {(['es', 'en'] as const).map(l => (
-          <button key={l} disabled={saving !== null} aria-pressed={lang === l} onClick={() => setLang(l)}
-            style={{ ...btnSecondary, background: lang === l ? '#5C6B4E' : 'transparent', color: lang === l ? '#fff' : '#5C6B4E' }}>
-            {l.toUpperCase()}
-          </button>
+          <button key={l} type="button" className="cg-lang__btn" disabled={saving !== null} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>
         ))}
       </div>
-      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={saveField} saving={saving} msgs={msgs} s={{ card, label, input, btnPrimary }} />
-      <h2>{tr('Otros textos')}</h2>
-      {fields.map(f => (
-        <div key={f.key} style={card}>
-          <label htmlFor={`landing-${f.key}`} style={label}>{tr(f.label)}</label>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <input id={`landing-${f.key}`} disabled={saving === f.key} style={{ ...input, flex: 1 }} value={content[f.key] ?? ''} onChange={e => { setContent(c => ({ ...c, [f.key]: e.target.value })); setMsgs(m => ({ ...m, [f.key]: '' })) }} />
-            <button style={btnPrimary} onClick={() => saveField(f.key)} aria-disabled={saving !== null}>
-              {saving === f.key ? '...' : tr('Guardar')}
-            </button>
-          </div>
-          {msgs[f.key] && (
-            <p role="status" style={{ fontSize: 11, color: msgs[f.key].startsWith('✓') ? '#5C6B4E' : '#B91C1C', margin: '4px 0 0' }}>
-              {tr(msgs[f.key])}
-            </p>
-          )}
-        </div>
-      ))}
+      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={saveField} saving={saving} msgs={msgs} />
+      <h2 className="ac-h2">{tr('Otros textos')}</h2>
+      <ul className="cg-items" aria-label={tr('Otros textos')}>
+        {fields.map(f => (
+          <li key={f.key} className="cg-item ac-frow">
+            <TextField id={`landing-${f.key}`} label={tr(f.label)} disabled={saving === f.key} value={content[f.key] ?? ''} onChange={e => { setContent(c => ({ ...c, [f.key]: e.target.value })); setMsgs(m => ({ ...m, [f.key]: '' })) }} />
+            <div className="ac-fact"><Button onClick={() => void saveField(f.key)} aria-disabled={saving !== null}>{saving === f.key ? '...' : tr('Guardar')}</Button></div>
+            {msgs[f.key] && <p role="status" className={msgs[f.key].startsWith('✓') ? 'cg-hint' : 'cg-error'}>{tr(msgs[f.key])}</p>}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
