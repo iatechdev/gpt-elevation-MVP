@@ -12,7 +12,7 @@ const flat = (content) => [content.title, content.draft, content.updated ?? '', 
 test('ES-301: la versión del cliente es la misma que fija el servidor (y el servidor exige la aceptación)', () => {
   const server = read('../../backend/utils/terms.js')
   assert.match(server, new RegExp(`const TERMS = Object\\.freeze\\(\\{ version: '${TERMS_VERSION}', required: true \\}\\)`))
-  assert.equal(TERMS_VERSION, '2026-11-v1')
+  assert.equal(TERMS_VERSION, '2026-11-v2')
 })
 
 test('ES-301: los dos documentos existen en ES y EN, dicen «sin revisión legal» y su versión, y conservan los marcadores sin rellenar', () => {

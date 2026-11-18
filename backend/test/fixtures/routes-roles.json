@@ -791,6 +791,14 @@
     "denied": [],
     "session": true
   },
+  "GET /privacy": {
+    "denied": [],
+    "session": false
+  },
+  "GET /privacy/index.html": {
+    "denied": [],
+    "session": false
+  },
   "GET /{*path}": {
     "denied": [],
     "session": false
