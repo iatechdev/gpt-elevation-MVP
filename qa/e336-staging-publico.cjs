@@ -1,0 +1,14 @@
+// QA-Claude-2 — ES-333: capturas de solo lectura de las pantallas PÚBLICAS de staging (sin iniciar sesión, sin escribir nada): inicio, entrar y manifiesto, en 4 viewports, claro/oscuro, ES/EN. Lectura pasiva.
+const fs = require('fs'); const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const BASE = 'https://backend-staging-e3a6.up.railway.app'; const OUT = process.env.OUT; fs.mkdirSync(OUT, { recursive: true }); const sleep = ms => new Promise(r => setTimeout(r, ms))
+const axeSrc = fs.readFileSync(process.env.AXE, 'utf8'); const rows = []
+;(async () => {
+  const br = await chromium.launch()
+  for (const [route, nm] of [['/', 'inicio'], ['/login', 'entrar'], ['/manifiesto', 'manifiesto']]) for (const [w, h, vp] of [[1360, 900, 'pc1360'], [1024, 768, 'pc1024'], [390, 844, 'm390'], [320, 568, 'm320']]) for (const scheme of ['light', 'dark']) for (const lang of ['es', 'en']) {
+    const c = await br.newContext({ viewport: { width: w, height: h }, colorScheme: scheme, bypassCSP: true }); await c.addInitScript(([l, t]) => { try { localStorage.setItem('elv_lang', l); localStorage.setItem('elv_theme', t) } catch {} }, [lang, scheme]); const p = await c.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message.slice(0, 80)))
+    let status = 0; try { const r = await p.goto(BASE + route, { waitUntil: 'networkidle', timeout: 45000 }); status = r ? r.status() : 0 } catch (e) { rows.push({ route: nm, vp, scheme, lang, error: e.message.slice(0, 80) }); await c.close(); continue } await sleep(900)
+    await p.addScriptTag({ content: axeSrc }).catch(() => {}); const ax = await p.evaluate(() => (window.axe ? window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length)) : ['axe-no-cargó'])).catch(() => ['axe-error'])
+    const m = await p.evaluate(() => ({ ox: document.documentElement.scrollWidth - innerWidth, h1: document.querySelectorAll('h1').length, docH: document.documentElement.scrollHeight, fontsLoaded: document.fonts ? [...document.fonts].filter(f => f.status === 'loaded').length : -1, fontsTotal: document.fonts ? [...document.fonts].length : -1 }))
+    rows.push({ route: nm, vp, scheme, lang, status, axe: ax, ...m, errs: errs.length }); if (lang === 'es' && (vp === 'm390' || vp === 'pc1360' || (vp === 'm320' && scheme === 'light'))) await p.screenshot({ path: `${OUT}/staging-${nm}-${vp}-${scheme}.png`, fullPage: false })
+    await c.close() }
+  fs.writeFileSync(`${OUT}/staging-publico.json`, JSON.stringify(rows, null, 1)); const bad = rows.filter(r => r.error || r.status !== 200 || (r.axe && r.axe.length) || r.ox > 0 || r.errs); console.log('combinaciones', rows.length, 'con algún problema', bad.length); for (const b of bad.slice(0, 20)) console.log(JSON.stringify(b)); await br.close()
+})()
