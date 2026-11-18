@@ -1,6 +1,6 @@
 // ES-112 / ES-333 (PR 2): barra compacta de la conversación: «Menú», «Conversación» + «Privada · Solo visible para ti» y «Pausar» (siempre visibles), con el uso de IA como barra fina de 6 px.
 // El texto del uso («Uso de IA… · n % usado · Se renueva el…») vive en el menú (UsageText) y, en escritorio, junto a la barra. Todo el texto sale de copy.ts (ES/EN).
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from './copy'
 import { useSpaceToken } from './hooks'
@@ -51,8 +51,13 @@ export function ThreadNotices() {
   const { lang } = useLanguage(); const c = copy[lang]; const paused = usePaused(); const s = useUsageState()
   const ready = s.status === 'ready' ? s.usage : null
   const date = ready && ready.configured ? renewalDate(ready.resetsAt, lang) : ''
+  const pausedNote = useRef<HTMLParagraphElement>(null), exhaustedNote = useRef<HTMLParagraphElement>(null)
+  const exhausted = !!ready && ready.configured && isExhausted(ready)
+  // ES-342 (A1): el aviso vive al final del hilo; al aparecer se trae a la vista (si no, queda bajo el borde del hilo, junto al compositor, y se lee a medias).
+  useEffect(() => { if (paused) pausedNote.current?.scrollIntoView({ block: 'nearest' }) }, [paused])
+  useEffect(() => { if (exhausted) exhaustedNote.current?.scrollIntoView({ block: 'nearest' }) }, [exhausted])
   return <>
-    {paused && <p className="space-scope space-callout" role="status">{c.paused}</p>}
-    {ready && ready.configured && isExhausted(ready) && <p className="space-scope space-callout" role="status">{c.exhausted.replace('{date}', date)}</p>}
+    {paused && <p ref={pausedNote} className="space-scope space-callout" role="status">{c.paused}</p>}
+    {exhausted && <p ref={exhaustedNote} className="space-scope space-callout" role="status">{c.exhausted.replace('{date}', date)}</p>}
   </>
 }
