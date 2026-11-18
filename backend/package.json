@@ -62,6 +62,7 @@
     "test:invitations:pg": "node --test test/integration/es-192-postgres.cjs",
     "test:admin-metrics:pg": "node --test test/integration/es-180-postgres.cjs",
     "test:prompt-unique:pg": "node --test test/integration/es-219-postgres.cjs",
+    "test:prompt-race:pg": "node --test test/integration/es-344-postgres.cjs",
     "check:prompt-duplicates": "node scripts/checkPromptDuplicates.cjs",
     "test:experiment-read:pg": "node --test test/integration/es-216-postgres.cjs",
     "test:admin-rank:pg": "node --test test/integration/es-215-postgres.cjs",
