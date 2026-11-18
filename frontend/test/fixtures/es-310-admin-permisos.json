@@ -1,0 +1,12 @@
+{
+  "descripcion": "ES-310 (PR 5): lo que el SERVIDOR permite y rechaza a una cuenta admin (no superadmin) en /admin/users. Lo comprueba backend/test/integration/es-310-admin-403-postgres.cjs contra PostgreSQL real y lo usa frontend/test/es-310-admin-permisos.test.mjs para exigir que la interfaz derive lo visible de los mismos ayudantes (assignableRoles, invitableRoles, isSuper).",
+  "admin": {
+    "rolesQueSePuedenAsignar": ["user", "therapist"],
+    "rolesQueElServidorRechaza": ["admin", "superadmin", "board"],
+    "rolesQueSePuedenInvitar": ["user", "therapist"],
+    "accionesSoloSuperadmin": ["reset-link", "eliminar"]
+  },
+  "superadmin": {
+    "rolesQueSePuedenAsignar": ["user", "therapist", "admin", "superadmin", "board"]
+  }
+}

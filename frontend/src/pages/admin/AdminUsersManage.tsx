@@ -1,13 +1,14 @@
 // ES-186 parte D · Diálogo «Gestionar» de una cuenta: estado (desbloquear, activar/desactivar con confirmación), rol, profesional asignado, enlace de restablecimiento
 // y eliminar. Cada respuesta se traduce por el `code` del servidor; sin diálogos del navegador; el resultado se anuncia en una región role="status"/"alert".
+// ES-310 (PR 5): Cartografía (Dialog, Chip, Button, SelectField, TextField). Lo visible sale de isSuper / assignableRoles (adminUsersLogic): para admin NO se pintan «Enviar enlace de
+// restablecimiento» ni «Solicitar eliminación…»; el servidor sigue decidiendo (403).
 import { useState } from 'react'
+import { Button, Chip, Dialog, SelectField, TextField } from '../../cartografia'
 import { useAdminText } from '../../i18n/useAdminText'
 import { useLanguage } from '../../i18n/useLanguage'
-import { colors, spacing } from '../../styles/tokens'
-import { AdminDialog } from './AdminDialog'
 import { adminRequest, type Call } from './adminUsersApi.ts'
-import { assignableRoles, deleteResult, errorMessage, MSG, resetLinkResult, ROLE_LABEL, STATUS_LABEL, statusOf, type Person, type Role } from './adminUsersLogic.ts'
-import { btn, field, label, notice, roleBadge, section, statusBadge } from './adminUsersStyles.ts'
+import { assignableRoles, deleteResult, errorMessage, isSuper, MSG, resetLinkResult, ROLE_LABEL, STATUS_LABEL, STATUS_TONE, statusOf, type Person, type Role } from './adminUsersLogic.ts'
+import './adminUsers.css'
 
 type Mode = 'main' | 'deactivate' | 'delete'
 type Msg = { kind: 'ok' | 'error'; text: string } | null
@@ -18,7 +19,6 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
 }) {
   const tr = useAdminText()
   const { lang } = useLanguage()
-  const isSuper = actorRole === 'superadmin'
   const [mode, setMode] = useState<Mode>('main')
   const [busy, setBusy] = useState<string | null>(null)
   const [msg, setMsg] = useState<Msg>(null)
@@ -68,90 +68,80 @@ export function AdminUsersManage({ person, therapists, actorRole, onChanged, onC
   }
 
   const dis = (key?: string) => ({ disabled: busy !== null, 'aria-busy': key ? busy === key : undefined })
+  const roleChoices = assignableRoles(actorRole).concat(assignableRoles(actorRole).includes(person.role) ? [] : [person.role])
+  const therapistSame = therapistDraft === (person.therapistId ? String(person.therapistId) : '')
   return (
-    <AdminDialog title={`${tr('Gestionar')} · ${person.name}`} onClose={onClose} busy={busy !== null}>
-      <div style={{ ...section }}>
-        <div style={{ fontSize: '0.8rem', color: colors.textMuted, overflowWrap: 'anywhere' }}>{person.email}</div>
-        <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap', marginTop: spacing.sm }}>
-          <span style={roleBadge(person.role)}>{tr(ROLE_LABEL[person.role])}</span>
-          <span style={statusBadge(status)}>{tr(STATUS_LABEL[status])}</span>
+    <Dialog open title={`${tr('Gestionar')} · ${person.name}`} onClose={() => { if (busy === null) onClose() }} actions={<Button variant="ghost" onClick={onClose} disabled={busy !== null}>{tr('Cerrar')}</Button>}>
+      <div className="au-section au-dlg">
+        <p className="cg-hint au-name">{person.email}</p>
+        <div className="pg-chips">
+          <Chip>{tr(ROLE_LABEL[person.role])}</Chip>
+          <Chip tone={STATUS_TONE[status].tone} symbol={STATUS_TONE[status].symbol}>{tr(STATUS_LABEL[status])}</Chip>
         </div>
-        {status === 'locked' && person.lockedUntil && <p style={{ fontSize: '0.8rem', color: colors.warning, margin: `${spacing.sm} 0 0` }}>{tr('Bloqueada hasta')} {new Date(person.lockedUntil).toLocaleString(tr('es-CO'))}</p>}
+        {status === 'locked' && person.lockedUntil && <p className="cg-hint">{tr('Bloqueada hasta')} {new Date(person.lockedUntil).toLocaleString(tr('es-CO'))}</p>}
       </div>
 
-      <div aria-live="polite">{msg && <div role={msg.kind === 'error' ? 'alert' : 'status'} style={notice(msg.kind)}>{tr(msg.text)}</div>}</div>
+      <div aria-live="polite" className="pg-live">{msg && <div role={msg.kind === 'error' ? 'alert' : 'status'} className={msg.kind === 'error' ? 'cg-banner cg-banner--error' : 'cg-banner'}><span className="cg-banner__title">{tr(msg.text)}</span></div>}</div>
       {blocked && mode === 'main' && person.active && !locked && (
-        <div style={{ marginBottom: spacing.md }}>
-          <button type="button" style={btn.danger} autoFocus onClick={() => { setBlocked(false); setMsg(null); setMode('deactivate') }} disabled={busy !== null}>{tr('Desactivar en su lugar')}</button>
+        <div className="pg-actions">
+          <Button variant="danger" autoFocus onClick={() => { setBlocked(false); setMsg(null); setMode('deactivate') }} disabled={busy !== null}>{tr('Desactivar en su lugar')}</Button>
         </div>
       )}
 
       {locked ? (
-        <p style={{ fontSize: '0.875rem', color: colors.textMuted }}>{tr(MSG.deletionLocked)}</p>
+        <p className="cg-hint">{tr(MSG.deletionLocked)}</p>
       ) : mode === 'deactivate' ? (
-        <div style={section}>
-          <p style={{ fontSize: '0.875rem', color: colors.text }}>{tr('No podrá entrar; sus datos se conservan.')}</p>
-          <div style={{ display: 'flex', gap: spacing.sm }}>
-            <button type="button" style={btn.ghost} onClick={() => setMode('main')} disabled={busy !== null} autoFocus>{tr('Cancelar')}</button>
-            <button type="button" style={btn.danger} onClick={() => void setActive(false)} {...dis('active')}>{busy === 'active' ? tr('Procesando...') : tr('Desactivar')}</button>
+        <div className="au-section">
+          <p>{tr('No podrá entrar; sus datos se conservan.')}</p>
+          <div className="pg-actions">
+            <Button variant="ghost" onClick={() => setMode('main')} disabled={busy !== null} autoFocus>{tr('Cancelar')}</Button>
+            <Button variant="danger" onClick={() => void setActive(false)} {...dis('active')}>{busy === 'active' ? tr('Procesando...') : tr('Desactivar')}</Button>
           </div>
         </div>
       ) : mode === 'delete' ? (
-        <div style={section}>
-          <p style={{ fontSize: '0.875rem', color: colors.text, lineHeight: 1.5 }}>
-            {requestsDeletion ? tr(MSG.deleteDialog) : tr('Esta acción no se puede deshacer.')}
-          </p>
-          <label style={label} htmlFor="au-delete-name">{tr('Escribe el nombre exacto:')} <strong>{person.name}</strong></label>
-          <input id="au-delete-name" style={field} autoFocus value={deleteInput} onChange={(e) => { setDeleteInput(e.target.value); setMsg(null) }} autoComplete="off" />
-          <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.md }}>
-            <button type="button" style={btn.ghost} onClick={() => { setMode('main'); setDeleteInput(''); setMsg(null) }} disabled={busy !== null}>{tr('Cancelar')}</button>
-            <button type="button" style={{ ...btn.danger, ...(deleteInput !== person.name || busy ? btn.disabled : {}) }} onClick={() => void remove()} disabled={deleteInput !== person.name || busy !== null} aria-busy={busy === 'delete'}>
+        <div className="au-section">
+          <p>{requestsDeletion ? tr(MSG.deleteDialog) : tr('Esta acción no se puede deshacer.')}</p>
+          <TextField id="au-delete-name" label={`${tr('Escribe el nombre exacto:')} ${person.name}`} autoFocus value={deleteInput} onChange={(e) => { setDeleteInput(e.target.value); setMsg(null) }} autoComplete="off" />
+          <div className="pg-actions">
+            <Button variant="ghost" onClick={() => { setMode('main'); setDeleteInput(''); setMsg(null) }} disabled={busy !== null}>{tr('Cancelar')}</Button>
+            <Button variant="danger" onClick={() => void remove()} disabled={deleteInput !== person.name || busy !== null} aria-busy={busy === 'delete'}>
               {busy === 'delete' ? tr('Procesando...') : requestsDeletion ? tr('Solicitar eliminación') : tr('Eliminar')}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
         <>
-          <div style={section}>
-            <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-              {person.isLocked && <button type="button" style={btn.soft} onClick={() => void unlock()} {...dis('unlock')}>{busy === 'unlock' ? tr('Desbloqueando...') : tr('Desbloquear')}</button>}
+          <div className="au-section">
+            <div className="pg-actions">
+              {person.isLocked && <Button variant="ghost" onClick={() => void unlock()} {...dis('unlock')}>{busy === 'unlock' ? tr('Desbloqueando...') : tr('Desbloquear')}</Button>}
               {person.active
-                ? <button type="button" style={btn.danger} onClick={() => setMode('deactivate')} disabled={busy !== null}>{tr('Desactivar…')}</button>
-                : <button type="button" style={btn.soft} onClick={() => void setActive(true)} {...dis('active')}>{busy === 'active' ? tr('Procesando...') : tr('Activar')}</button>}
+                ? <Button variant="ghost" onClick={() => setMode('deactivate')} disabled={busy !== null}>{tr('Desactivar…')}</Button>
+                : <Button variant="ghost" onClick={() => void setActive(true)} {...dis('active')}>{busy === 'active' ? tr('Procesando...') : tr('Activar')}</Button>}
             </div>
           </div>
-          <div style={section}>
-            <label style={label} htmlFor="au-role">{tr('Rol')}</label>
-            <div style={{ display: 'flex', gap: spacing.sm }}>
-              <select id="au-role" style={field} value={roleDraft} onChange={(e) => setRoleDraft(e.target.value as Role)} disabled={busy !== null}>
-                {assignableRoles(actorRole).concat(assignableRoles(actorRole).includes(person.role) ? [] : [person.role]).map((r) => <option key={r} value={r}>{tr(ROLE_LABEL[r])}</option>)}
-              </select>
-              <button type="button" style={{ ...btn.ghost, ...(roleDraft === person.role ? btn.disabled : {}) }} onClick={() => void saveRole()} disabled={roleDraft === person.role || busy !== null} aria-busy={busy === 'role'}>{tr('Guardar')}</button>
-            </div>
+          <div className="au-section au-inline">
+            <SelectField id="au-role" label={tr('Rol')} value={roleDraft} onChange={(e) => setRoleDraft(e.target.value as Role)} disabled={busy !== null}>
+              {roleChoices.map((r) => <option key={r} value={r}>{tr(ROLE_LABEL[r])}</option>)}
+            </SelectField>
+            <Button variant="ghost" onClick={() => void saveRole()} disabled={roleDraft === person.role || busy !== null} aria-busy={busy === 'role'}>{tr('Guardar')}</Button>
           </div>
           {person.role === 'user' && (
-            <div style={section}>
-              <label style={label} htmlFor="au-therapist">{tr('Profesional asignado')}</label>
-              <div style={{ display: 'flex', gap: spacing.sm }}>
-                <select id="au-therapist" style={field} value={therapistDraft} onChange={(e) => setTherapistDraft(e.target.value)} disabled={busy !== null}>
-                  <option value="">{tr('Sin asignar')}</option>
-                  {therapists.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-                <button type="button" style={{ ...btn.ghost, ...(therapistDraft === (person.therapistId ? String(person.therapistId) : '') ? btn.disabled : {}) }} onClick={() => void assign()} disabled={therapistDraft === (person.therapistId ? String(person.therapistId) : '') || busy !== null} aria-busy={busy === 'assign'}>{tr('Asignar')}</button>
-              </div>
+            <div className="au-section au-inline">
+              <SelectField id="au-therapist" label={tr('Profesional asignado')} value={therapistDraft} onChange={(e) => setTherapistDraft(e.target.value)} disabled={busy !== null}>
+                <option value="">{tr('Sin asignar')}</option>
+                {therapists.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </SelectField>
+              <Button variant="ghost" onClick={() => void assign()} disabled={therapistSame || busy !== null} aria-busy={busy === 'assign'}>{tr('Asignar')}</Button>
             </div>
           )}
-          {isSuper && (
-            <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
-              <button type="button" style={btn.ghost} onClick={() => void sendReset()} {...dis('reset')}>{busy === 'reset' ? tr('Enviando...') : tr('Enviar enlace de restablecimiento')}</button>
-              <button type="button" style={btn.danger} onClick={() => { setMode('delete'); setMsg(null); setBlocked(false) }} disabled={busy !== null}>{requestsDeletion ? tr('Solicitar eliminación…') : tr('Eliminar…')}</button>
+          {isSuper(actorRole) && (
+            <div className="pg-actions">
+              <Button variant="ghost" onClick={() => void sendReset()} {...dis('reset')}>{busy === 'reset' ? tr('Enviando...') : tr('Enviar enlace de restablecimiento')}</Button>
+              <Button variant="danger" onClick={() => { setMode('delete'); setMsg(null); setBlocked(false) }} disabled={busy !== null}>{requestsDeletion ? tr('Solicitar eliminación…') : tr('Eliminar…')}</Button>
             </div>
           )}
         </>
       )}
-      <div style={{ marginTop: spacing.lg, textAlign: 'right' }}>
-        <button type="button" style={btn.ghost} onClick={onClose} disabled={busy !== null}>{tr('Cerrar')}</button>
-      </div>
-    </AdminDialog>
+    </Dialog>
   )
 }

@@ -121,14 +121,22 @@ export type Status = 'active' | 'inactive' | 'locked' | 'deletion'
 export const statusOf = (p: Pick<Person, 'active' | 'isLocked' | 'deletionRequested'>): Status =>
   (p.deletionRequested ? 'deletion' : !p.active ? 'inactive' : p.isLocked ? 'locked' : 'active')
 export const STATUS_LABEL: Record<Status, string> = { active: 'Activa', inactive: 'Inactiva', locked: 'Bloqueada', deletion: 'Eliminación solicitada' }
+// El estado va con palabra (y ✓ en «Activa»): nunca solo con color. Los tonos son los del Chip de Cartografía.
+export const STATUS_TONE: Record<Status, { tone: 'neutral' | 'wait' | 'ok' | 'bad'; symbol?: string }> = { active: { tone: 'ok', symbol: '✓' }, inactive: { tone: 'neutral' }, locked: { tone: 'bad' }, deletion: { tone: 'wait' } }
 
 export function filterPeople(people: Person[], role: string, status: string): Person[] {
   return people.filter((p) => (!role || p.role === role) && (!status || statusOf(p) === status))
 }
 
+// ES-310: las acciones y listas de roles de la pantalla salen SOLO de estos ayudantes (ninguna lista de roles escrita en los componentes); el servidor es quien decide (403).
+// Una prueba exige que coincidan con lo que el servidor permite a una cuenta admin (frontend/test/fixtures/es-310-admin-permisos.json).
+export const isSuper = (actor: string): boolean => actor === 'superadmin'
+
 // Roles que quien administra puede asignar (el servidor es quien decide; esto solo evita ofrecer lo que sabemos que rechaza).
-export const assignableRoles = (actor: string): Role[] => (actor === 'superadmin' ? ROLES : ['user', 'therapist'])
+export const assignableRoles = (actor: string): Role[] => (isSuper(actor) ? ROLES : ['user', 'therapist'])
 export const invitableRoles = assignableRoles
+// Roles que ofrece el FILTRO de la lista (ver, no actuar): admin no ve las cuentas de superadministración ni de la junta ética en el filtro.
+export const filterableRoles = (actor: string): Role[] => (isSuper(actor) ? ROLES : ['user', 'therapist', 'admin'])
 
 // ---------------------------------------------------------------- textos de la pantalla (claves en español; el inglés vive en adminCopy.ts y una prueba exige que todas lo tengan)
 export const TAB_LABEL = { people: 'Personas', matching: 'Emparejamientos', plans: 'Solicitudes de plan' } as const

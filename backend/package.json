@@ -16,6 +16,7 @@
     "test:admin-people:pg": "node --test test/integration/es-186a-postgres.cjs",
     "test:admin-audit:pg": "node --test test/integration/es-186b-postgres.cjs",
     "test:admin-delete:pg": "node --test test/integration/es-186c-postgres.cjs",
+    "test:admin-403:pg": "node --test test/integration/es-310-admin-403-postgres.cjs",
     "test:purge-command:pg": "node --test test/integration/es-275-postgres.cjs",
     "test:purge-ordinals:pg": "node --test test/integration/es-276-postgres.cjs",
     "test:hostile-ids:pg": "node --test test/integration/es-280-postgres.cjs",
