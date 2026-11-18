@@ -140,20 +140,32 @@ test('ES-344 PostgreSQL: aprobar+rechazar simultáneos tienen un solo ganador y 
     assert.equal(await getActivePrompt('guia_huerfana'), null);
   });
 
+  await t.test('ES-345: GET /prompts y GET /prompt/:key no muestran como activa una fila no activa (sin respaldo por isActive)', async () => {
+    const insert = (key, version, status, isActive) => sequelize.query(`INSERT INTO "PromptVaults" ("key","contentEncrypted","version","status","isActive","createdAt","updatedAt") VALUES (:key,:c,:version,:status,:isActive,now(),now())`, { replacements: { key, c: encryptPrompt(BASE), version, status, isActive } });
+    await insert('guia_vista', 2, 'rejected', true); await insert('guia_vista_nula', 2, null, true);
+    for (const key of ['guia_vista', 'guia_vista_nula']) assert.equal((await call(sup1, 'GET', `/api/superadmin/prompt/${key}`)).status, 404, `${key}: sin versión activa no hay prompt`);
+    const list = (await call(sup1, 'GET', '/api/superadmin/prompts')).body;
+    for (const key of ['guia_vista', 'guia_vista_nula']) assert.equal(list.find((e) => e.key === key).activeVersion, null, `${key}: ninguna versión figura activa`);
+    await insert('guia_vista_ok', 1, 'active', true); await insert('guia_vista_ok', 2, 'rejected', true);
+    assert.equal((await call(sup1, 'GET', '/api/superadmin/prompt/guia_vista_ok')).body.version, 1, 'solo la versión status=active');
+    assert.equal((await call(sup1, 'GET', '/api/superadmin/prompts')).body.find((e) => e.key === 'guia_vista_ok').activeVersion, 1);
+    assert.equal((await call(adm, 'GET', '/api/admin/prompt/guia_vista_ok')).status, 200, 'admin sigue leyendo; los roles no cambian');
+  });
+
   await t.test('la migración limpia filas inconsistentes sin borrar nada, no toca la activa y es idempotente', async () => {
     const insert = (key, version, status, isActive) => sequelize.query(`INSERT INTO "PromptVaults" ("key","contentEncrypted","version","status","isActive","createdAt","updatedAt") VALUES (:key,:c,:version,:status,:isActive,now(),now())`,
       { replacements: { key, c: encryptPrompt(BASE), version, status, isActive } });
-    await insert('guia_mig', 1, 'active', true); await insert('guia_mig', 2, 'rejected', true); await insert('guia_mig', 3, 'approved', true); await insert('guia_mig', 4, 'pending_review', true); await insert('guia_mig', 5, 'archived', false);
+    await insert('guia_mig', 1, 'active', true); await insert('guia_mig', 2, 'rejected', true); await insert('guia_mig', 3, 'approved', true); await insert('guia_mig', 4, 'pending_review', true); await insert('guia_mig', 5, 'archived', false); await insert('guia_mig', 6, null, true); // ES-345 (B2): status NULL con isActive=true
     const count = async () => (await sequelize.query('SELECT count(*)::int AS n FROM "PromptVaults"', { type: 'SELECT' }))[0].n;
     const before = await count();
     const found = (await migration.findInconsistent(sequelize)).filter((r) => r.key === 'guia_mig');
-    assert.deepEqual(found.map((r) => r.version), [2, 3, 4]);
+    assert.deepEqual(found.map((r) => r.version), [2, 3, 4, 6]);
     assert.ok(!JSON.stringify(found).includes('contentEncrypted'), 'el informe no lleva el texto');
     const changed = await migration.up(sequelize);
-    assert.ok(changed >= 3, `cambió ${changed}`);
+    assert.ok(changed >= 4, `cambió ${changed}`);
     assert.equal(await count(), before, 'no se borró ninguna fila');
     const after = await rowsOf('guia_mig');
-    assert.deepEqual(after.map((r) => [r.version, r.status, r.isActive]), [[1, 'active', true], [2, 'rejected', false], [3, 'approved', false], [4, 'pending_review', false], [5, 'archived', false]]);
+    assert.deepEqual(after.map((r) => [r.version, r.status, r.isActive]), [[1, 'active', true], [2, 'rejected', false], [3, 'approved', false], [4, 'pending_review', false], [5, 'archived', false], [6, null, false]]); // status NULL: solo cambia isActive; el status no se toca
     assert.equal(await migration.up(sequelize), 0, 'idempotente');
     assert.equal((await migration.findInconsistent(sequelize)).length, 0);
     assert.equal(await getActivePrompt('guia_mig'), BASE);

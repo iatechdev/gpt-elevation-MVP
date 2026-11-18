@@ -39,7 +39,8 @@ router.get('/prompts', async (req, res) => {
       const entry = byKey.get(row.key) || { key: row.key, activeVersion: null, activeBy: null, activeAt: null, approvedBy: null, pendingCount: 0, versionCount: 0, lastChangeAt: null };
       entry.versionCount += 1;
       if (row.status === 'pending_review') entry.pendingCount += 1;
-      if (row.status === 'active' || (row.isActive && entry.activeVersion === null)) {
+      // ES-345: la versión activa es solo la de status='active' (sin respaldo por isActive: una fila no activa nunca figura como activa).
+      if (row.status === 'active') {
         entry.activeVersion = row.version; entry.activeBy = row.updatedBy || row.proposed_by || null; entry.activeAt = row.approved_at || row.updatedAt; entry.approvedBy = row.approved_by || null;
       }
       if (!entry.lastChangeAt || new Date(row.updatedAt) > new Date(entry.lastChangeAt)) entry.lastChangeAt = row.updatedAt;
@@ -56,17 +57,11 @@ router.get('/prompts', async (req, res) => {
 const knownKeyShape = (req, res, next) => (KEY.test(req.params.key) ? next() : res.status(404).json({ error: 'Prompt no encontrado.' }));
 router.get('/prompt/:key', knownKeyShape, async (req, res) => {
   try {
-    let prompt = await PromptVault.findOne({
+    // ES-345: solo status='active' (sin respaldo por isActive).
+    const prompt = await PromptVault.findOne({
       where: { key: req.params.key, status: 'active' },
       attributes: ['id', 'key', 'version', 'status', 'approved_by', 'approved_at', 'updatedAt'],
     });
-    if (!prompt) {
-      prompt = await PromptVault.findOne({
-        where: { key: req.params.key, isActive: true },
-        attributes: ['id', 'key', 'version', 'status', 'approved_by', 'approved_at', 'updatedAt'],
-        order: [['version', 'DESC']],
-      });
-    }
     if (!prompt) return res.status(404).json({ error: 'Prompt no encontrado.' });
     const contenido = await getActivePrompt(req.params.key);
     res.json({ ...prompt.toJSON(), content: contenido });
