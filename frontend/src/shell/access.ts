@@ -6,8 +6,8 @@ export type Role = SessionInfo['role']
 export type Zone = 'person' | 'professional' | 'admin' | 'board' | 'member'
 
 export const ZONE_ROLES: Record<Zone, readonly Role[]> = {
-  person: ['user'],
-  professional: ['therapist'],
+  person: ['user', 'superadmin'], // ES-334: superadministración entra a toda la plataforma (incl. /app/chat); administración NO entra a las pantallas de persona (conserva «Administración»)
+  professional: ['therapist', 'superadmin'], // ES-334: la compuerta del cliente no es seguridad: el servidor sigue negando las APIs del lado profesional a quien no es profesional
   admin: ['admin', 'superadmin'],
   board: ['board', 'superadmin'], // ES-207: la junta ya no edita el manifiesto; su sesión aterriza en la página pública /manifiesto
   member: ['user', 'admin', 'superadmin', 'therapist', 'board'], // cualquier sesión válida (Mis datos, revisiones profesionales)
