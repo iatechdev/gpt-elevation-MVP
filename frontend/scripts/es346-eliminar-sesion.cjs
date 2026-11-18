@@ -6,14 +6,14 @@ const assert = require('node:assert/strict'); const fs = require('node:fs')
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const base = process.env.ES346_URL; const browser = await chromium.launch(); const axeSource = fs.readFileSync(process.env.AXE_PATH, 'utf8'); let n = 0
   const WORD = { es: 'ELIMINAR', en: 'DELETE' }, START = { es: /Quiero eliminar mi cuenta/, en: /I want to delete my account/ }, CONFIRM = { es: 'Eliminar mi cuenta', en: 'Delete my account' }, DONE = { es: /Recibimos tu solicitud/, en: /We received your request/ }
   // 'hostile': tras aceptarse la eliminación, TODA otra llamada (sesión, uso de IA…) responde 401 como un servidor real con el token revocado; el aviso debe seguir visible.
-  for (const lang of ['es', 'en']) for (const mode of ['ok', 'fails', 'hostile', 'hang']) {
+  for (const lang of ['es', 'en']) for (const mode of ['ok', 'fails', 'hostile', 'hang', 'unmount']) {
     const fails = mode === 'fails'; let accepted = false
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await ctx.newPage(); const tag = `${lang}${fails ? ' (el servidor falla)' : mode === 'hostile' ? ' (401 en todo lo demás)' : mode === 'hang' ? ' (el cierre de sesión no responde)' : ''}`
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await ctx.newPage(); const tag = `${lang}${fails ? ' (el servidor falla)' : mode === 'hostile' ? ' (401 en todo lo demás)' : mode === 'hang' ? ' (el cierre de sesión no responde)' : mode === 'unmount' ? ' (se desmonta con la solicitud en vuelo)' : ''}`
     await page.addInitScript(l => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('elevation_token', 'tok-sintetico'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elevation_name', 'Persona Sintética'); localStorage.setItem('elevation_checkin_date', '2026-11-18'); sessionStorage.setItem('elevation_return_to', JSON.stringify({ path: '/app/dashboard', at: Date.now() })); sessionStorage.setItem('seeded', '1') } localStorage.setItem('elv_lang', l) }, lang)
-    let logout = 0
-    await page.route('**/api/**', route => { const p = new URL(route.request().url()).pathname
+    let logout = 0; let release = () => {}; const held = new Promise(resolve => { release = resolve })
+    await page.route('**/api/**', async route => { const p = new URL(route.request().url()).pathname
       if (p === '/api/logout') { logout++; if (mode === 'hang') return; return route.fulfill({ status: 401, json: { error: 'x' } }) } // 'hang': el servidor no responde al cierre de sesión
-      if (p === '/api/account/deletion-requests') { if (!fails) accepted = true; return fails ? route.fulfill({ status: 500, json: { error: 'x' } }) : route.fulfill({ status: 202, json: { id: 'rec-1' } }) }
+      if (p === '/api/account/deletion-requests') { if (mode === 'unmount') await held; if (!fails) accepted = true; return fails ? route.fulfill({ status: 500, json: { error: 'x' } }) : route.fulfill({ status: 202, json: { id: 'rec-1' } }) }
       if (mode === 'hostile' && accepted) return route.fulfill({ status: 401, json: { error: 'Sesión inválida' } })
       return route.fulfill({ json: p === '/api/session' ? { role: 'user', onboardingCompleted: true } : p === '/api/ai/usage' ? { configured: false } : [] }) })
     await page.goto(base + '/app/data', { waitUntil: 'networkidle' })
@@ -21,6 +21,17 @@ const assert = require('node:assert/strict'); const fs = require('node:fs')
     if (fails) {
       await page.waitForTimeout(800); const keep = await page.evaluate(() => localStorage.getItem('elevation_token'))
       assert.equal(keep, 'tok-sintetico', `un fallo del servidor NO cierra la sesión (${tag})`); assert.equal(logout, 0, `sin cierre de sesión si falla (${tag})`); console.log(`PASS ${tag}: la sesión se conserva`); await ctx.close(); n++; continue
+    }
+    if (mode === 'unmount') {
+      // La pantalla se desmonta (navegación interna) con la solicitud en vuelo: la marca NO debe quedar colgada, aunque la solicitud se acepte después.
+      await page.waitForTimeout(400); await page.evaluate(() => { history.pushState({}, '', '/app/dashboard'); window.dispatchEvent(new PopStateEvent('popstate')) })
+      await page.waitForFunction(() => location.pathname === '/app/dashboard' && !document.querySelector('#data-delete')); release(); await page.waitForTimeout(1500)
+      const left = await page.evaluate(() => Object.keys(localStorage).filter(k => /^elevation_/.test(k)))
+      assert.deepEqual(left, [], `la sesión se cierra aunque la pantalla ya no esté (${tag}): ${JSON.stringify(left)}`)
+      await page.evaluate(() => { history.pushState({}, '', '/app/data'); window.dispatchEvent(new PopStateEvent('popstate')) }); await page.waitForTimeout(1200)
+      assert.equal(new URL(page.url()).pathname, '/login', `la marca no quedó colgada: /app/data sin sesión lleva a /login (${tag})`)
+      assert.equal(await page.getByText(DONE[lang]).count(), 0, `no se muestra el aviso fuera de la pantalla (${tag})`)
+      console.log(`PASS ${tag}: sin marca colgada, sesión cerrada, /app/data → /login`); await ctx.close(); n++; continue
     }
     const t0 = Date.now()
     await page.getByText(DONE[lang]).waitFor({ timeout: 9000 })

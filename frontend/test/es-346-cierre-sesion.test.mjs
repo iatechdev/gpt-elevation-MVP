@@ -21,10 +21,10 @@ test('ES-346: la marca no se guarda en el navegador', () => {
 })
 test('ES-346: DataPage cierra la sesión (signOut) tras la solicitud y antes de mostrar el aviso', () => {
   const page = read('../src/space/DataPage.tsx')
-  const remove = page.slice(page.indexOf('const remove = async'), page.indexOf('const closeDialog'))
-  assert.ok(remove.indexOf('await requestDeletion(token)') < remove.indexOf('startFarewell(pathname)'))
-  assert.ok(remove.indexOf('startFarewell(pathname)') < remove.indexOf('await signOut(BACKEND)'))
-  assert.ok(remove.indexOf('await signOut(BACKEND)') < remove.indexOf('setDone(true)'))
+  // Orden fijado con UNA expresión (no con posiciones): solicitud → marca solo si la pantalla sigue montada → signOut → aviso.
+  assert.match(page, /await requestDeletion\(token\)[\s\S]*?if \(alive\.current\) startFarewell\(pathname\)\s*await signOut\(BACKEND\)\s*if \(alive\.current\) \{ setOpen\(false\); setDone\(true\)/)
+  assert.equal((page.match(/startFarewell\(/g) ?? []).length, 1) // un único punto de arranque de la marca
+  assert.match(page, /return \(\) => \{ alive\.current = false; endFarewell\(\) \}/) // y se borra al desmontar
   assert.doesNotMatch(page, /invalidateStoredSession/)
 })
 test('ES-346: la decisión de la compuerta solo cambia «login» por «allow» con la marca de la ruta (gateDecision real)', () => {

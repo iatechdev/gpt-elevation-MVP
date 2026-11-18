@@ -64,7 +64,8 @@ export function DataPage() {
       await requestDeletion(token) // idempotente en el servidor: una solicitud repetida también responde con recibo
       // ES-346: la sesión local se cierra YA (mismo cierre que «Cerrar sesión»: token, nombre, rol, ruta de retorno, mensaje pendiente), antes del aviso. La marca deja a la compuerta
       // mostrar este aviso en vez de mandar a /login; se borra al salir de la pantalla.
-      startFarewell(pathname)
+      // Si la pantalla se desmontó mientras la solicitud estaba en vuelo, NO se arranca la marca (quedaría colgada): la sesión se cierra igual, sin aviso que mostrar.
+      if (alive.current) startFarewell(pathname)
       await signOut(BACKEND)
       if (alive.current) { setOpen(false); setDone(true); setPreview(null) }
     } catch (error) { fail(error, 'delete') } // el diálogo sigue abierto y lo escrito se conserva
