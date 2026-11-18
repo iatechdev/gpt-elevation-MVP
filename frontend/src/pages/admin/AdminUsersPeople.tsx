@@ -1,15 +1,17 @@
 // ES-186 parte D · Pestaña «Personas»: filtros de rol y estado, aviso de cantidad, vacío con «Limpiar filtros», tabla en escritorio y tarjetas en móvil (≥ 44 px de objetivo).
 // ES-310 (PR 5): Cartografía. Los roles del filtro salen de filterableRoles (adminUsersLogic), no de una lista escrita aquí; la región de la tabla con desplazamiento es focalizable y con nombre.
+import { memo } from 'react'
 import { Button, Chip, LinkButton, SelectField } from '../../cartografia'
 import { useAdminText } from '../../i18n/useAdminText'
 import { useLanguage } from '../../i18n/useLanguage'
-import { filterableRoles, filterPeople, MSG, ROLE_LABEL, STATUS_LABEL, STATUS_TONE, statusOf, type Person, type Status } from './adminUsersLogic.ts'
+import { filterableRoles, filterPeople, formatAltaDate, MSG, ROLE_LABEL, STATUS_LABEL, STATUS_TONE, statusOf, type Person, type Status } from './adminUsersLogic.ts'
 import type { ListState } from './AdminUsersQueues'
 import './adminUsers.css'
 
 const STATUSES: Status[] = ['active', 'inactive', 'locked', 'deletion']
 
-export function PeoplePanel({ list, roleFilter, statusFilter, setRoleFilter, setStatusFilter, onManage, actorRole }: {
+// ES-199 (PERF-05): memoizado (con onManage y la lista estables en AdminUsers) para que abrir «Gestionar» no vuelva a pintar toda la lista.
+export const PeoplePanel = memo(function PeoplePanel({ list, roleFilter, statusFilter, setRoleFilter, setStatusFilter, onManage, actorRole }: {
   list: ListState<Person>; roleFilter: string; statusFilter: string; setRoleFilter: (v: string) => void; setStatusFilter: (v: string) => void
   onManage: (id: number, opener: HTMLElement) => void; actorRole: string
 }) {
@@ -19,7 +21,7 @@ export function PeoplePanel({ list, roleFilter, statusFilter, setRoleFilter, set
   const byId = new Map(list.items.map((p) => [p.id, p]))
   const shown = filterPeople(list.items, roleFilter, statusFilter)
   const filtered = Boolean(roleFilter || statusFilter)
-  const date = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
+  const date = (iso: string) => formatAltaDate(iso, locale)
   const planName = (p: Person) => (p.plan ? (lang === 'en' ? p.plan.name_en : p.plan.name_es) || p.plan.name_es : '—')
   const therapistName = (p: Person) => (p.therapistId ? byId.get(p.therapistId)?.name ?? '—' : '—')
   const roles = filterableRoles(actorRole)
@@ -98,4 +100,4 @@ export function PeoplePanel({ list, roleFilter, statusFilter, setRoleFilter, set
       )}
     </div>
   )
-}
+})
