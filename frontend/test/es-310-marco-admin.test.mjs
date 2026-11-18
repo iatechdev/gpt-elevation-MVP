@@ -24,3 +24,11 @@ test('ES-310 marco: AdminFrame con `migrated` pide tema del sistema y quita elv-
   assert.match(frames, /migrated \? '' : 'elv-theme'/); assert.match(frames, /theme=\{migrated \? 'system' : 'light'\}/); assert.match(frames, /pilot-admin-layout/)
   assert.match(layout, /isMigratedAdminPath\(pathname\)/); assert.match(layout, /pilotPreview=\{pilotPreview\}/)
 })
+
+// CLS del marco: la causa medida era el cambio de tipografía de la barra lateral (Arial Narrow → Barlow Condensed: de 4 a 3 renglones = 48 px a 390 px).
+test('ES-310 marco: el marco antepone reservas de tipografía con el ancho de Barlow (sin chocar con los nombres de progress.css)', () => {
+  const css = read('../src/shell/shell.css')
+  assert.match(css, /font-family: 'Barlow Condensed Frame'[^}]*size-adjust: 6\d%/); assert.match(css, /font-family: 'Barlow Frame'[^}]*size-adjust: 9\d%/)
+  assert.match(css, /\.cg\.cg-frame \{[^}]*--cg-font-cond: 'Barlow Condensed', 'Barlow Condensed Frame', 'Arial Narrow'[^}]*--cg-font-sans: 'Barlow', 'Barlow Frame'/)
+  assert.doesNotMatch(css, /font-family: 'Barlow (Condensed )?Fallback'/, 'nombre reservado por progress.css y mapCartografia.css')
+})
