@@ -187,6 +187,10 @@ jobs:
         run: npm run test:owner-matrix:pg
         env:
           ES281_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-326 aceptar una invitación exige y guarda la aceptación del aviso y los términos (PostgreSQL real)
+        run: npm run test:invitation-terms:pg
+        env:
+          ES326_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-334 superadmin usa su chat/diario y no lee los ajenos; las guardas de rol del servidor no se abrieron (PostgreSQL real)
         run: npm run test:superadmin-access:pg
         env:

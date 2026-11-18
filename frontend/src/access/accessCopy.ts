@@ -17,6 +17,11 @@ export const accessEs = {
   'access.terms_new_tab': 'se abre en una pestaña nueva',
   'access.err_terms': 'Para crear tu cuenta necesitas aceptar el aviso de privacidad y los términos.',
   'access.terms_changed': 'El aviso cambió. Recarga la página y vuelve a aceptar.',
+  // ES-326: aceptar una invitación.
+  'access.invite_title': 'Crea tu cuenta', 'access.invite_intro': 'Te invitaron a Elevation. Elige cómo te llamas y una contraseña.',
+  'access.invite_submit': 'Crear cuenta', 'access.invite_busy': 'Creando tu cuenta…',
+  'access.invite_done_title': 'Cuenta creada', 'access.invite_done': 'Tu cuenta está lista. Inicia sesión para entrar.',
+  'access.invite_invalid_title': 'Este enlace no sirve', 'access.invite_invalid': 'El enlace de invitación venció, ya se usó o no es válido. Pídele a quien te invitó que te envíe uno nuevo.',
 }
 export const accessEn: Record<keyof typeof accessEs, string> = {
   'access.tagline': 'Your non-clinical support and your skills map.',
@@ -34,4 +39,9 @@ export const accessEn: Record<keyof typeof accessEs, string> = {
   'access.terms_new_tab': 'opens in a new tab',
   'access.err_terms': 'To create your account you need to accept the privacy notice and the terms.',
   'access.terms_changed': 'The notice changed. Reload the page and accept again.',
+  // ES-326: accepting an invitation.
+  'access.invite_title': 'Create your account', 'access.invite_intro': 'You were invited to Elevation. Choose your name and a password.',
+  'access.invite_submit': 'Create account', 'access.invite_busy': 'Creating your account…',
+  'access.invite_done_title': 'Account created', 'access.invite_done': 'Your account is ready. Sign in to get in.',
+  'access.invite_invalid_title': 'This link does not work', 'access.invite_invalid': 'The invitation link has expired, was already used or is not valid. Ask the person who invited you to send a new one.',
 }

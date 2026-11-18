@@ -18,6 +18,7 @@ import { SpaceSession } from './space/SpaceSession'
 const ProfessionalApplicationPage = lazy(() => import('./professional/ProfessionalApplicationPage.tsx').then(m => ({ default: m.ProfessionalApplicationPage })))
 const LoginPage = lazy(() => import('./pages/LoginPage.tsx').then(m => ({ default: m.LoginPage }))) // ES-155: entrar usa el marco de Cartografía; ya no va en el arranque (se precarga en reposo desde la portada y al pasar el cursor por «Entrar»)
 const ForgotPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ForgotPasswordPage })))
+const AcceptInvitationPage = lazy(() => import('./access/AcceptInvitationPage.tsx').then(m => ({ default: m.AcceptInvitationPage }))) // ES-326
 const ResetPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ResetPasswordPage })))
 const CheckinPage = lazy(() => import('./pages/CheckinPage.tsx').then(m => ({ default: m.CheckinPage })))
 const ChatPage = lazy(() => import('./pages/ChatPage.tsx').then(m => ({ default: m.ChatPage })))
@@ -98,6 +99,7 @@ export default function App() {
       <Route path="/login"   element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} /> {/* ES-132 */}
       <Route path="/reset-password"  element={<ResetPasswordPage />} />
+      <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
       <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/manifiesto" element={<ManifestoPage />} /> {/* ES-207 — lectura pública del manifiesto ético */}

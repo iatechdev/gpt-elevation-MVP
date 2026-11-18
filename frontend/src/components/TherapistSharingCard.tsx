@@ -137,6 +137,7 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
     )
   }
   const on = status === 'granted'
+  const alertive = !saving && !checking && ((unknown && !!unsure) || message?.kind === 'error')
   const live = saving ? t('mt_share_saving') : checking ? t('mt_share_checking') : unknown && unsure ? t(unsure === 'granted' ? 'mt_share_unsure_on' : 'mt_share_unsure_off') : message?.text ?? ''
 
   return (
@@ -149,28 +150,32 @@ export function TherapistSharingCard({ therapistName, onUnlinked }: Props) {
         {unknown && unsure ? (
           <Button onClick={() => void verify(unsure)} disabled={checking}>{checking ? t('mt_share_checking') : t('mt_share_check')}</Button>
         ) : (
-        <button
-          type="button"
-          role="switch"
-          aria-checked={on}
-          aria-labelledby="mt-share-label"
-          aria-describedby="mt-share-desc"
-          disabled={saving || checking}
-          onClick={toggle}
-          className="pc-switch"
-        >
-          <span className="pc-switch-knob" aria-hidden="true" />
-          <span className="sr-only">{on ? t('mt_share_on') : t('mt_share_off')}</span>
-        </button>
+        <div className="pc-switchbox">
+          {/* D1: el estado se dice con palabra además de la posición; el lector de pantalla ya lo oye por aria-checked */}
+          <span className="pc-switch-word" aria-hidden="true">{on ? t('mt_share_on') : t('mt_share_off')}</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={on}
+            aria-labelledby="mt-share-label"
+            aria-describedby="mt-share-desc"
+            disabled={saving || checking}
+            onClick={toggle}
+            className="pc-switch"
+          >
+            <span className="pc-switch-knob" aria-hidden="true" />
+          </button>
+        </div>
         )}
       </div>
 
-      <div role="status" aria-live="polite" className={live && message?.kind === 'error' && !saving && !checking && !(unknown && unsure) ? 'cg-error pc-live' : 'cg-hint pc-live'}>{live}</div>
+      {/* D2: la región en vivo no cambia (siempre en el DOM, role=status); el error y la incertidumbre se dibujan como aviso con símbolo de advertencia (nunca solo color) */}
+      <div role="status" aria-live="polite" className={alertive ? 'cg-banner cg-banner--error pc-live' : 'cg-hint pc-live'}>{alertive ? <span className="cg-banner__title">{live}</span> : live}</div>
       {unsure && !unknown && !checking && (
         <div className="pg-actions"><Button variant="ghost" onClick={() => void verify(unsure)}>{t('mt_share_check')}</Button></div>
       )}
 
-      <div className="pg-actions"><Button variant="danger" onClick={() => setConfirming(true)}>{t('mt_unlink_btn')}</Button></div>
+      <div className="pc-divider pg-actions"><Button variant="danger" onClick={() => setConfirming(true)}>{t('mt_unlink_btn')}</Button></div>
 
       <Dialog open={confirming} onClose={() => { if (!unlinking) closeDialog() }} title={t('mt_unlink_title').replace('{name}', therapistName)}
         actions={<>

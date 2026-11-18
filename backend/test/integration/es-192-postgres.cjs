@@ -87,7 +87,7 @@ test('ES-192 PostgreSQL: invitación por enlace y contraseña con las reglas del
   };
   const tokenOf = (message) => new URL(message.text.match(/https:\/\/\S+/)[0]).hash.replace('#token=', '');
   const invite = async (who, email, role = 'user', extra = {}) => { sent.length = 0; const r = await call(who, 'POST', '/api/admin/invitations', { email, role, ...extra }); return { r, token: sent[0] ? tokenOf(sent[0]) : null, message: sent[0] }; };
-  const accept = (token, password = 'Clave-nueva-2!', name = 'Persona Invitada') => call(null, 'POST', '/api/invitations/accept', { token, name, password });
+  const accept = (token, password = 'Clave-nueva-2!', name = 'Persona Invitada') => call(null, 'POST', '/api/invitations/accept', { token, name, password, acceptedTerms: true, termsVersion: '2026-11-v2' });
   const STRONG = 'Mapa-Rumbo-47!';
 
   await t.test('administración invita: el enlace va por correo en el fragmento, sin contraseña ni datos; la respuesta y la base no guardan el token', async () => {
