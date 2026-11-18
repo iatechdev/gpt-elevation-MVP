@@ -1,0 +1,5 @@
+// [QA-Claude-3] Compara dos JSON de capturas (sección H de e331-marco.cjs): lista de combinaciones con hash/texto/fondo distintos. Uso: node qa/cmp331.cjs <A.json> <B.json> [prefijo-de-clave]
+const fs = require('fs'); const [a, b, pref] = process.argv.slice(2); const A = JSON.parse(fs.readFileSync(a, 'utf8')), B = JSON.parse(fs.readFileSync(b, 'utf8'))
+const keys = Object.keys(A).filter(k => !pref || k.startsWith(pref)); let same = 0, diff = []
+for (const k of keys) { const x = A[k], y = B[k]; if (!y) { diff.push([k, 'falta en B']); continue }; const why = []; if (x.hash !== y.hash) why.push('captura'); if (x.text !== y.text) why.push('texto'); if (x.bg !== y.bg) why.push('fondo ' + x.bg + ' → ' + y.bg); if (x.color !== y.color) why.push('color'); if (x.elv !== y.elv) why.push('elv-'); why.length ? diff.push([k, why.join(', ')]) : same++ }
+console.log(`combinaciones: ${keys.length} · idénticas: ${same} · distintas: ${diff.length}`); diff.slice(0, 40).forEach(d => console.log('  DIF', d[0], '→', d[1]))
