@@ -50,6 +50,7 @@ Tres tipos de marcador:
 | VF-16 | Cuánto tiempo vive una exportación generada antes de caducar | Mauricio | 07 |
 | VF-17 | Que el registro de solicitudes de borrado independiente del respaldo esté aprovisionado | Infra | 07 |
 | VF-18 | Estado de `DATA_RIGHTS_ENABLED` (exportación y eliminación) al lanzamiento | Mauricio / Infra | 07 |
+| VF-19 | Si la propuesta de capacidades desde el contexto profesional (`backend/worker/analyze.js`, API `/api/skill-analysis`, sin pantalla hoy) se activará para personas usuarias; si no, retirar esa viñeta | Mauricio | 01 |
 
 ## RL — puntos para el abogado
 
