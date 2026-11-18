@@ -100,17 +100,10 @@ const decryptPrompt = (encryptedText) => {
 // ============================================
 // 📖 OBTENER PROMPT ACTIVO POR CLAVE
 // ============================================
+// ES-344: solo cuenta la versión status='active' (la única aprobada por una persona; el índice único parcial garantiza una por clave).
+// Antes había un respaldo por isActive=true que, tras la carrera aprobar+rechazar, servía el texto RECHAZADO al chat.
 const getActivePrompt = async (promptKey) => {
-  let record = await PromptVault.findOne({
-    where: { key: promptKey, status: 'active' }
-  });
-  // Fallback: buscar por isActive=true si no hay status='active'
-  if (!record) {
-    record = await PromptVault.findOne({
-      where: { key: promptKey, isActive: true },
-      order: [['version', 'DESC']]
-    });
-  }
+  const record = await PromptVault.findOne({ where: { key: promptKey, status: 'active' } });
   if (!record) return null;
   return decryptPrompt(record.contentEncrypted);
 };
@@ -219,19 +212,19 @@ const approvePrompt = async (versionId, superAdminEmail) => withKeyLock(versionI
 // ============================================
 // ❌ RECHAZAR UNA VERSIÓN (rol: superadmin)
 // ============================================
-const rejectPrompt = async (versionId, superAdminEmail, note = '') => {
-  const proposed = await PromptVault.findByPk(versionId);
-  if (!proposed) throw new PromptReviewError('not_found');
+// ES-344: rechazar corre bajo el MISMO bloqueo por clave que aprobar y volver a una versión: relee la fila con el bloqueo y comprueba
+// pending_review dentro, así aprobar y rechazar a la vez la misma versión tienen un solo ganador (la otra recibe not_pending).
+// isActive=false va explícito: nunca debe quedar una versión rechazada marcada como activa.
+const rejectPrompt = async (versionId, superAdminEmail, note = '') => withKeyLockTx(versionId, async (proposed, transaction) => {
   if (proposed.status !== 'pending_review') throw new PromptReviewError('not_pending');
-
   await proposed.update({
     status: 'rejected',
     isActive: false,
     rejected_by: superAdminEmail,
     rejection_note: note,
     rejected_at: new Date()
-  });
-};
+  }, { transaction });
+});
 
 // ============================================
 // 🔁 ROLLBACK A VERSIÓN ANTERIOR (rol: superadmin)
