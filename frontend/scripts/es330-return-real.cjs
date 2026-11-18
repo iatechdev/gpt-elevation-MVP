@@ -68,6 +68,9 @@ const { once } = require('node:events'); const { randomBytes } = require('node:c
         await page.goto(origin + '/app/diary?from=correo'); await settle(page, '/login'); assert.equal(new URL(page.url()).search, '', '/login no lleva la ruta en la URL (nada que manipular)');
         await login(page, person); await settle(page, '/app/diary'); assert.equal(new URL(page.url()).search, '?from=correo'); assert.deepEqual(external, []); await context.close(); }
       check(`${lang}: persona pide /app/diary?from=correo sin sesión → /login → vuelve a la misma ruta y búsqueda`);
+      // 1b) idioma de la interfaz distinto del preferido guardado (la persona prefiere ES): el re-render por el cambio de idioma no debe perder la ruta
+      { const { context, page } = await open(lang); await page.goto(origin + '/app/data'); await settle(page, '/login'); await login(page, person); await settle(page, '/app/data'); await context.close(); }
+      check(`${lang}: idioma de interfaz distinto del preferido → igualmente vuelve a /app/data`);
       // 2) la ruta sobrevive a «olvidé mi contraseña» y volver (y a alternar registro, que es el mismo /login)
       { const { context, page } = await open(lang);
         await page.goto(origin + '/app/skill-map'); await settle(page, '/login');

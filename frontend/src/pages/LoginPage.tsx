@@ -122,7 +122,9 @@ export function LoginPage() {
   // ES-330: tras entrar se vuelve a la ruta protegida pedida (si el rol real puede entrar); si no, al inicio del rol. La intención de plan sigue primero.
   const verifiedAt = entry.result.status === 'verified'
   useEffect(() => { if (verifiedAt) forgetReturn() }, [verifiedAt])
-  if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session)} replace />
+  // El destino se calcula UNA vez: tras forgetReturn() un re-render (p. ej. al sincronizar el idioma preferido) ya no vería la ruta recordada.
+  const destination = useRef<string | null>(null)
+  if (entry.result.status === 'verified') { destination.current ??= planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session); return <Navigate to={destination.current} replace /> }
 
   // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
   const policyError = authMessage?.key === 'landing.access.password_policy'
