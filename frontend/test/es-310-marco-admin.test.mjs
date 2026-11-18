@@ -8,9 +8,10 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8').repl
 const code = ts.transpileModule(read('../src/shell/adminLayoutState.ts'), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
 const { MIGRATED_ADMIN_PATHS, isMigratedAdminPath } = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'))
 
-test('ES-310 marco: la lista de rutas migradas empieza vacía (este PR no cambia el aspecto de ninguna pantalla)', () => {
-  assert.deepEqual([...MIGRATED_ADMIN_PATHS], [])
-  for (const path of ['/admin/dashboard', '/admin/metrics', '/admin/prompts', '/admin/route-catalog', '/admin/users', '/admin/skill-catalog']) assert.equal(isMigratedAdminPath(path), false, path)
+test('ES-310 marco: la lista de rutas migradas contiene solo las pantallas ya migradas a Cartografía', () => {
+  assert.deepEqual([...MIGRATED_ADMIN_PATHS], ['/admin/route-catalog'])
+  assert.equal(isMigratedAdminPath('/admin/route-catalog'), true)
+  for (const path of ['/admin/dashboard', '/admin/metrics', '/admin/prompts', '/admin/users', '/admin/skill-catalog']) assert.equal(isMigratedAdminPath(path), false, path)
 })
 
 test('ES-310 marco: una ruta migrada coincide con ella y sus subrutas, no con prefijos parecidos; la barra final no importa', () => {
