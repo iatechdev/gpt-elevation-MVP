@@ -13,7 +13,8 @@ const path = require('node:path');
   async function setup(options = {}) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.addInitScript(() => { localStorage.setItem('elevation_token', 'synthetic-session'); localStorage.setItem('elv_lang', 'es'); });
+    await page.addInitScript(() => { localStorage.setItem('elevation_token', 'synthetic-session'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', 'es'); });
+    await page.route('**/api/session', route => route.fulfill({ json: { role: 'user', onboardingCompleted: true } })); // ES-308 (PR 3): la pantalla va dentro del marco de persona, que pide la sesión
     const calls = []; let state = options.state || { active: null, versions: [] }; let mutated = false;
     await page.route('**/api/career-context**', async route => {
       const request = route.request(); const endpoint = new URL(request.url()).pathname; const method = request.method();
@@ -73,8 +74,8 @@ const path = require('node:path');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       await page.evaluate(() => { document.documentElement.style.zoom = ''; });
       await page.reload(); await page.getByRole('heading', { name: 'Nuevo contexto directo', exact: true }).waitFor(); await page.keyboard.press('Tab');
-      assert.equal(await page.evaluate(() => document.activeElement.className), 'compass-skip');
-      await page.keyboard.press('Enter'); assert.equal(await page.evaluate(() => document.activeElement.id), 'compass-main');
+      assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Saltar al contenido'); // ES-308 (PR 3): lo pone el marco de persona, no la pantalla
+      await page.keyboard.press('Enter'); assert.ok(await page.evaluate(() => document.activeElement.closest('main') !== null || document.activeElement.tagName === 'MAIN'));
       check('ES/EN, 320/375/768/1440, 200% zoom, reduced motion, keyboard skip/focus and screenshots'); await page.close();
     }
     {
@@ -123,10 +124,11 @@ const path = require('node:path');
     }
     for (const options of [{ readbackError: true }, { concurrent: true }]) {
       const { page, calls } = await setup(options); await fill(page); await preview(page); await page.getByLabel('He revisado estos campos y autorizo su uso profesional.', { exact: true }).check(); await page.getByRole('button', { name: 'Confirmar autorización', exact: true }).click();
-      await page.getByText('No pudimos verificar esta confirmación. Revisa el contexto vigente antes de crear otra versión.', { exact: true }).waitFor();
+      // ES-171 (script desactualizado, corregido en ES-308 PR 3): con acuse y lectura fallida el aviso es «uncertain»; con reemplazo concurrente es el aviso genérico y se recarga la versión vigente.
+      await page.getByText(options.readbackError ? 'No pudimos verificar esta confirmación. Revisa el contexto vigente antes de crear otra versión.' : 'No pudimos completar la operación. Tus cambios siguen en esta pantalla.', { exact: true }).waitFor();
       assert.equal(await page.getByText('Autorización confirmada', { exact: true }).count(), 0); assert.equal(calls.filter(x => x.endpoint.endsWith('/confirm')).length, 1);
       if (options.readbackError) assert.equal(await page.getByRole('button', { name: 'Ver exactamente qué autorizo', exact: true }).count(), 0);
-      else assert.ok(await page.getByRole('region', { name: 'Contexto actual', exact: true }).getByText('Versión 2 · Activa', { exact: true }).isVisible());
+      else { const region = page.getByRole('region', { name: 'Contexto actual', exact: true }); assert.ok(await region.getByText('Versión 2', { exact: true }).isVisible()); assert.ok(await region.getByText('Activa').isVisible()); }
       check(options.readbackError ? 'failed readback blocks new writes and preserves uncertainty' : 'concurrent replacement cannot be reported as the confirmed active version'); await page.close();
     }
     {

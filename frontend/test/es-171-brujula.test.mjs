@@ -19,8 +19,8 @@ test('ES-171: Reintentar reenvía la MISMA revisión (requestId y token) y el re
   assert.equal((page.match(/crypto\.randomUUID\(\)/g) || []).length, 2) // blank() y la vista previa; confirm/check/retry no crean ids
   assert.match(page, /requestId: crypto\.randomUUID\(\), baseVersion: context\?\.active\?\.version \?\? 0/)
   // con el token vencido no hay «Reintentar»: solo «Renovar vista previa»
-  assert.match(page, /\{expired \? <button className="elv-btn" onClick=\{\(\) => void preview\(\)\}>\{tr\('renew'\)\}<\/button> : confirmActions\}/)
-  assert.match(page, /const confirmActions = unsure \? <><button className="elv-btn" disabled=\{!!busy\} onClick=\{\(\) => void check\(\)\}>\{tr\('check'\)\}<\/button>/)
+  assert.match(page, /\{expired \? <Button variant="ghost" onClick=\{\(\) => void preview\(\)\}>\{tr\('renew'\)\}<\/Button> : confirmActions\}/) // ES-308 (PR 3): mismo patrón con el Button de Cartografía
+  assert.match(page, /const confirmActions = unsure \? <><Button variant="ghost" disabled=\{!!busy\} onClick=\{\(\) => void check\(\)\}>\{tr\('check'\)\}<\/Button>/) // ES-308 (PR 3): mismo patrón con el Button de Cartografía
   // «Comprobar» relee y solo reconoce una versión NUEVA con exactamente los campos de la vista previa (no una anterior idéntica)
   assert.match(page, /value\.active\.version > mine\.baseVersion && pairs\(value\.active\.fields\) === pairs\(mine\.preview\.representation\)/)
 })
