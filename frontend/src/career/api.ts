@@ -1,4 +1,4 @@
-// ES-237 (pasos 1–2a): cliente tipado de `/api/experiments`, `/api/career-plan` (ES-32/33) y `/api/routes` + `/api/route-catalog` (ES-31/32). Solo transporte, tipos y errores: NINGUNA pantalla lo usa todavía (los pasos 2b–4 lo conectan).
+// ES-237 (pasos 1–2a): cliente tipado de `/api/experiments`, `/api/career-plan` (ES-32/33) y `/api/routes` + `/api/route-catalog` (ES-31/32). Solo transporte, tipos y errores; lo usa `serverClient.ts` (paso 2b: rutas y experimentos); el plan y los recordatorios se conectan en el paso 3.
 // El titular sale del token, nunca del cuerpo. El servidor es un modelo de VERSIONES inmutables: cada gesto de la persona (iniciar, entregar, reflexionar, decidir; aceptar/pausar/completar el plan)
 // es una versión nueva con `expectedVersion` y un `requestId` estable por intento (reintentar el MISMO intento no crea una versión de más). Vocabulario del servidor (decisión del 17-nov-2026):
 // continuar / ajustar / pausar / descartar; no hay «deshacer aceptación» ni «aplazar».
@@ -68,7 +68,10 @@ async function call({ baseUrl, token, signal, fetcher = fetch, timeoutMs = 20000
   }
   // ES-237 E307-1: un 2xx cuyo cuerpo está vacío, se corta, no es JSON (p. ej. HTML de un proxy) o no es un objeto NO es un éxito: no se sabe si el servidor guardó → resultado incierto.
   let value: unknown = null, readable = true
-  try { const text = await response.text(); value = text ? JSON.parse(text) : null } catch { readable = false }
+  try { const text = await response.text(); value = text ? JSON.parse(text) : null } catch (error) {
+    if (signal?.aborted) throw error // E336-1: la pantalla canceló a mitad del cuerpo: es una cancelación (AbortError), no un servidor caído
+    readable = false
+  }
   if (!response.ok) throw new CareerApiError(kindOf(response.status), response.status, value && typeof value === 'object' && 'code' in value && typeof value.code === 'string' ? value.code : '')
   if (!readable || value === null || typeof value !== 'object' || Array.isArray(value)) throw new CareerApiError('unavailable', response.status, '')
   return value
@@ -105,12 +108,19 @@ export type RouteSlot = 'continuity' | 'adjacency' | 'exploration'
 export type ConstraintsPayload = { targetMarkets: string[]; languages: string[]; modalities: Modality[]; acceptRegulated: 'yes' | 'no' | 'unknown'; originContextKey: string | null; interestContextKeys: string[]; preferredModalities: Modality[] }
 export type ConstraintsRecord = { id: number; version: number; status: string; payload: ConstraintsPayload; createdAt: string }
 /** Ruta propuesta por el motor: solo se tipan los campos que la pantalla usa; el resto llega tal cual (`[key: string]: unknown`). */
-export type RouteProposal = { roleKey: string; slot: RouteSlot; labels: { es?: string; en?: string }; market: string; regulated: { isRegulated: boolean; status: string }; sources: { sourceKey: string; stale?: boolean; synthetic?: true }[]; [key: string]: unknown }
-export type RoutesView = { status: 'ok' | 'partial' | 'no_pertinent_catalog'; routes: RouteProposal[]; constraintsVersion: number; basisHash: string | null; humanReview: { offered: boolean }; [key: string]: unknown }
+export type I18n = { es?: string; en?: string }
+export type RouteProposal = { roleKey: string; slot: RouteSlot; labels: I18n; market: string; regulated: { isRegulated: boolean; status: string }; synthetic?: true
+  tasks?: { text?: I18n; aiExposure?: { status: string } }[]
+  sources: { sourceKey: string; title?: string; url?: string; stale?: boolean; synthetic?: true }[]
+  dimensions?: { preferenceFit?: { status: string }; demonstratedTransfer?: { status: string }; viability?: { status: string } }
+  [key: string]: unknown }
+/** `needs_constraints` es el PRIMER estado de toda persona (E336-2): GET /api/routes lo devuelve mientras no haya restricciones guardadas (routes vacío y basisHash null). */
+export type RoutesStatus = 'needs_constraints' | 'ok' | 'partial' | 'no_pertinent_catalog'
+export type RoutesView = { status: RoutesStatus; routes: RouteProposal[]; constraintsVersion: number; basisHash: string | null; humanReview: { offered: boolean }; [key: string]: unknown }
 export type ChoiceRecord = { id: number; roleKey: string; slot: RouteSlot; decision: 'accepted' | 'rejected'; catalogVersion: number | string; constraintsVersion: number; status: string; basisChanged: boolean; createdAt: string }
 export type RouteReview = { id: number; status: string; note: string | null; createdAt: string }
 
-export const getRouteCatalog = (o: Opts) => call(o, '/api/route-catalog', 'GET') as Promise<{ version: number | string; contexts: { contextKey: string; [key: string]: unknown }[]; roles: { roleKey: string; [key: string]: unknown }[]; [key: string]: unknown }>
+export const getRouteCatalog = (o: Opts) => call(o, '/api/route-catalog', 'GET') as Promise<{ version: number | string; contexts: { contextKey: string; labels?: I18n; synthetic?: true; [key: string]: unknown }[]; roles: { roleKey: string; labels?: I18n; synthetic?: true; [key: string]: unknown }[]; [key: string]: unknown }>
 export const getRoleProfile = (o: Opts, roleKey: string) => call(o, `/api/route-catalog/roles/${encodeURIComponent(roleKey)}`, 'GET') as Promise<{ version: number | string; role: Record<string, unknown>; [key: string]: unknown }>
 export const getRoutes = (o: Opts) => call(o, '/api/routes', 'GET') as Promise<RoutesView>
 export const getConstraints = (o: Opts) => call(o, '/api/routes/constraints', 'GET') as Promise<{ constraints: ConstraintsRecord | null }>
