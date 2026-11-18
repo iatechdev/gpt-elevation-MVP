@@ -1,6 +1,6 @@
 # Consentimientos para compartir y para lectura por IA (puente profesional y afines)
 
-> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v1` · ES-335 · 18-nov-2026.
+> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v2` · ES-335 · 18-nov-2026.
 > Reúne los textos de consentimiento por propósito del sistema (contrato 14, contrato 19 y los textos de la interfaz vigentes). Cada permiso es **independiente**, **revocable** y queda registrado con propósito, alcance, versión y fecha. No hay un consentimiento global ni una casilla que los dé todos juntos.
 > Marcadores: `[POR COMPLETAR PC-nn]` y `[VERIFICAR VF-nn]`; lista en `../POR-COMPLETAR.md`.
 

@@ -1,6 +1,6 @@
 # Política de conservación y supresión de datos
 
-> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v1` · ES-335 · 18-nov-2026.
+> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v2` · ES-335 · 18-nov-2026.
 > Alineada con la purga implementada (contrato 18, ES-274, ES-293; `backend/utils/personalData.js`, `backend/utils/deletionProcessor.js`, `backend/scripts/purgePersonalData.js`). **Los plazos no están decididos**: el sistema no promete un cierre en siete o treinta días y `deadlinesVerified` sigue en `false`. Marcadores: `[POR COMPLETAR PC-nn]` y `[VERIFICAR VF-nn]`; lista en `../POR-COMPLETAR.md`.
 
 ## 1. Principio

@@ -1,6 +1,6 @@
 # Consents for sharing and for AI reading (professional bridge and related)
 
-> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v1` · ES-335 · 18 Nov 2026.
+> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v2` · ES-335 · 18 Nov 2026.
 > Gathers the system’s per-purpose consent texts (contract 14, contract 19 and the current interface texts). Each permission is **independent**, **revocable** and recorded with purpose, scope, version and date. There is no global consent and no single box that gives them all.
 > Markers: `[TO BE COMPLETED PC-nn]` and `[VERIFY VF-nn]`; list in `../POR-COMPLETAR.md`.
 

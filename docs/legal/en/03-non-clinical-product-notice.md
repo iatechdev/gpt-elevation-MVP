@@ -1,6 +1,6 @@
 # Non-clinical product notice (limits of the support)
 
-> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v1` · ES-335 · 18 Nov 2026.
+> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v2` · ES-335 · 18 Nov 2026.
 > Text aligned with the limits the system really applies (`backend/utils/promptSafety.js`, `backend/utils/safety.js`, contract 16). The safety texts and the detector’s word list are still **drafts not validated by a specialist** (ES-17 / ES-24); this notice does not replace that validation.
 > Markers: `[TO BE COMPLETED PC-nn]` and `[VERIFY VF-nn]`; list in `../POR-COMPLETAR.md`.
 
