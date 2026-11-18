@@ -18,7 +18,7 @@ let mod
 
 before(async () => {
   mkdirSync(out, { recursive: true })
-  await build({ input: resolve(root, 'src/pages/admin/adminOverview.tsx'), platform: 'node', external: [/^react/], output: { format: 'esm', file: resolve(out, 'bundle.mjs') }, logLevel: 'warn', transform: { define: { 'import.meta.env': '({"VITE_BACKEND_URL":"","DEV":false})' } } })
+  await build({ input: resolve(root, 'src/pages/admin/adminOverview.tsx'), platform: 'node', external: [/^react/], moduleTypes: { '.css': 'empty' }, output: { format: 'esm', file: resolve(out, 'bundle.mjs') }, logLevel: 'warn', transform: { define: { 'import.meta.env': '({"VITE_BACKEND_URL":"","DEV":false})' } } })
   mod = await import(pathToFileURL(resolve(out, 'bundle.mjs')).href)
 })
 after(() => rmSync(out, { recursive: true, force: true }))
@@ -29,8 +29,12 @@ test('ES-180: con la respuesta real, el máximo sale del objeto { date, count } 
   const html = renderToStaticMarkup(createElement(mod.ActivityChart, { metrics: m, showSummary: true }))
   assert.doesNotMatch(html, /\[object Object\]|NaN|undefined/)
   assert.match(html, new RegExp(`máximo ${m.max30.count.toLocaleString('es-CO')} el `))
-  assert.match(html, /height:100%/, 'el día de mayor valor llega al 100 %')
-  assert.equal((html.match(/height:1px/g) ?? []).length, m.days30.filter((d) => d.count === 0).length, 'cada día en cero es una línea de 1 px')
+  assert.match(html, /<rect[^>]*height="90"/, 'el día de mayor valor llega al 100 % de la gráfica')
+  const rects = [...html.matchAll(/<rect([^>]*)>/g)].map((r) => r[1])
+  assert.equal(rects.length, 30, 'siempre 30 columnas')
+  const zeros = rects.filter((r) => /class="ao-zero"/.test(r))
+  assert.equal(zeros.length, m.days30.filter((d) => d.count === 0).length, 'cada día en cero es una línea mínima')
+  for (const r of zeros) assert.match(r, /height="0.6"/, 'la línea de cero mide ~1 px, no es una barra')
   assert.ok(html.includes(m.max30.count.toLocaleString('es-CO')), 'la cifra «máximo en un día» se muestra')
 })
 

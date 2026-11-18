@@ -1,7 +1,6 @@
 // ES-180 (HU-P29) — Tipos y ganchos de /admin/dashboard y /admin/metrics (separados de los componentes para el refresco rápido).
 import { useCallback, useEffect, useState } from 'react'
 import { useLanguage } from '../../i18n/useLanguage'
-import { colors, radius, spacing, typography } from '../../styles/tokens'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') || ''
@@ -59,9 +58,3 @@ export function useFormat() {
     new Date(`${iso.slice(0, 10)}T00:00:00Z`).toLocaleDateString(locale, { day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' })
   return { number, outOfFive, day, locale }
 }
-
-export const linkButton: React.CSSProperties = {
-  fontSize: '0.8rem', fontWeight: 600, color: colors.primary, background: 'none', border: `0.5px solid ${colors.primary}`,
-  borderRadius: radius.sm, padding: `2px ${spacing.md}`, minHeight: 44, cursor: 'pointer', fontFamily: typography.fontBody,
-}
-

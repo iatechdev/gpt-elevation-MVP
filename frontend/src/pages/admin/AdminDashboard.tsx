@@ -1,8 +1,9 @@
 import { useAdminText } from '../../i18n/useAdminText'
 // frontend/src/pages/admin/AdminDashboard.tsx
-// HU-047 + HU-063 + ES-180 (HU-P29) — Resumen de la plataforma: cifras con palabra, avisos con estado propio, actividad de 30 días.
+// HU-047 + HU-063 + ES-180 (HU-P29) + ES-310 — Resumen de la plataforma: cifras con palabra, avisos con estado propio, actividad de 30 días. Cartografía.
 import { useNavigate } from 'react-router-dom'
-import { colors, spacing, typography, cardStyle, labelStyle } from '../../styles/tokens'
+import '../../cartografia/pages.css'
+import { Card } from '../../cartografia'
 import { ActivityChart, AlertRow, CardTitle, LoadError, SummaryCards, TopProfessionals } from './adminOverview'
 import type { AdminAlerts, Metrics } from './adminOverviewData'
 import { useAdminResource, useFormat } from './adminOverviewData'
@@ -20,23 +21,38 @@ export function AdminDashboard() {
   const manifest = sections?.manifest
 
   return (
-    <div style={{ fontFamily: typography.fontBody }}>
-      <div style={{ marginBottom: spacing.xxl }}>
-        <h1 style={{ fontFamily: typography.fontDisplay, fontWeight: 300, fontSize: '1.8rem', color: colors.text, margin: 0 }}>{tr('Panel')}</h1>
-        <p style={{ fontSize: '0.875rem', color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>{tr('Resumen de la plataforma')}</p>
-      </div>
+    <div className="pg ao pg-wide">
+      <header className="pg-head">
+        <h1 className="pg-title">{tr('Panel')}</h1>
+        <p className="pg-lead">{tr('Resumen de la plataforma')}</p>
+      </header>
 
-      {metrics.state === 'loading' && <p role="status" aria-busy="true" style={{ color: colors.textMuted, fontSize: '0.875rem' }}>{tr('Cargando métricas...')}</p>}
+      {/* Mientras cargan se reserva el alto de las cifras (ES-310, CLS): la copia oculta usa las mismas piezas que el resultado. */}
+      {metrics.state === 'loading' && (
+        <div className="ao-hold">
+          <div className="ao-ghost" aria-hidden="true"><SummaryCards metrics={null} /></div>
+          <p role="status" aria-busy="true" className="ao-status ao-over">{tr('Cargando métricas...')}</p>
+        </div>
+      )}
       {metrics.state === 'error' && <LoadError message={tr('No se pudieron cargar las métricas.')} onRetry={metrics.retry} />}
       {metrics.state === 'ok' && metrics.data && <SummaryCards metrics={metrics.data} />}
 
-      <div className="admin-overview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: spacing.xl, alignItems: 'start' }}>
-        <section aria-labelledby="admin-alerts-title" style={cardStyle}>
-          <div id="admin-alerts-title" style={{ ...labelStyle, marginBottom: spacing.lg }}>{tr('Avisos')}</div>
-          {alerts.state === 'loading' && <p role="status" aria-busy="true" style={{ fontSize: '0.82rem', color: colors.textMuted, margin: 0 }}>{tr('Cargando...')}</p>}
+      <div className="ao-two">
+        <Card as="section" className="pg-card">
+          <CardTitle id="admin-alerts-title">{tr('Avisos')}</CardTitle>
+          {alerts.state === 'loading' && (
+            <div className="ao-hold">
+              <ul className="cg-items ao-ghost" aria-hidden="true">
+                {[tr('Guías de profesionales por revisar'), tr('Perfil incompleto'), tr('Manifiesto vigente')].map((title, i) => (
+                  <AlertRow key={title} title={title} status="ok" detail="—" actionLabel={i < 2 ? tr('Ver') : undefined} onAction={() => undefined} onRetry={alerts.retry} />
+                ))}
+              </ul>
+              <p role="status" aria-busy="true" className="ao-status ao-over">{tr('Cargando...')}</p>
+            </div>
+          )}
           {alerts.state === 'error' && <LoadError message={tr('No pudimos cargar los avisos.')} onRetry={alerts.retry} />}
           {alerts.state === 'ok' && sections && (
-            <ul style={{ display: 'flex', flexDirection: 'column', gap: spacing.md, margin: 0, padding: 0 }}>
+            <ul className="cg-items" aria-labelledby="admin-alerts-title">
               <AlertRow
                 title={tr('Guías de profesionales por revisar')}
                 status={guides?.status === 'ok' ? 'ok' : 'error'}
@@ -50,7 +66,7 @@ export function AdminDashboard() {
                 status={incomplete?.status === 'ok' ? 'ok' : 'error'}
                 detail={incomplete?.status === 'ok' ? (incomplete.count === 0 ? tr('Sin avisos') : `${f.number(incomplete.count)} ${tr('profesionales')}`) : ''}
                 actionLabel={incomplete?.status === 'ok' && incomplete.count > 0 ? tr('Ver') : undefined}
-                onAction={() => navigate('/admin/usuarios?role=therapist')}
+                onAction={() => navigate('/admin/users?role=therapist')}
                 onRetry={alerts.retry}
               />
               <AlertRow
@@ -62,26 +78,28 @@ export function AdminDashboard() {
             </ul>
           )}
           {guides?.status === 'ok' && guides.items.length > 0 && (
-            <ul style={{ margin: `${spacing.lg} 0 0`, padding: 0, display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+            <ul className="cg-items">
               {guides.items.map((p) => (
-                <li key={p.id} style={{ listStyle: 'none', fontSize: '0.78rem', color: colors.textMuted }}>
+                <li key={p.id} className="cg-item cg-hint">
                   {p.therapistName ?? tr('Sin datos')} · v{p.version} · {f.day(p.createdAt, true)}
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </Card>
 
-        <section aria-labelledby="admin-top-title" style={cardStyle}>
-          <h2 id="admin-top-title" style={{ fontFamily: typography.fontDisplay, fontWeight: 400, fontSize: '1.1rem', color: colors.text, margin: `0 0 ${spacing.lg}` }}>{tr('Profesionales con más personas')}</h2>
-          {metrics.state === 'ok' && metrics.data ? <TopProfessionals metrics={metrics.data} /> : <p style={{ margin: 0, fontSize: '0.875rem', color: colors.textMuted }}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
-        </section>
+        <Card as="section" className="pg-card">
+          <CardTitle id="admin-top-title">{tr('Profesionales con más personas')}</CardTitle>
+          {metrics.state === 'ok' && metrics.data ? <TopProfessionals metrics={metrics.data} /> : metrics.state === 'loading' ? (
+            <div className="ao-hold"><div className="ao-ghost" aria-hidden="true"><TopProfessionals metrics={null} /></div><p className="ao-status ao-over">{tr('Cargando...')}</p></div>
+          ) : <p className="ao-status">{tr('Sin datos')}</p>}
+        </Card>
       </div>
 
-      <section style={{ ...cardStyle, marginTop: spacing.xl }}>
+      <Card as="section" className="pg-card">
         <CardTitle>{tr('Actividad, últimos 30 días')}</CardTitle>
-        {metrics.state === 'ok' && metrics.data ? <ActivityChart metrics={metrics.data} /> : <p style={{ margin: 0, fontSize: '0.875rem', color: colors.textMuted }}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
-      </section>
+        {metrics.state === 'ok' && metrics.data ? <ActivityChart metrics={metrics.data} /> : <p className={`ao-status${metrics.state === 'loading' ? ' ao-chart-hold' : ''}`}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
+      </Card>
     </div>
   )
 }
