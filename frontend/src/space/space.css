@@ -197,4 +197,6 @@
 .chat-msg--bot .chat-msg-who { color: var(--cg-contour); }
 .chat-shell .elv-textarea { background: var(--cg-ground); color: var(--cg-ink); border: 1.5px solid var(--cg-muted); }
 .chat-shell .elv-checkbox, .cg-dialog[data-sheet] .elv-checkbox { appearance: auto; flex: none; width: 1.4rem; height: 1.4rem; min-width: 24px; min-height: 24px; accent-color: var(--cg-ink); }
+/* E316-1: los avisos del hilo (pausa, límite agotado) usan el color de texto del sistema; el #5A4710 fijo del ámbito antiguo no se lee sobre el panel oscuro (1,86:1). */
+.chat-shell .space-callout { color: var(--cg-ink); }
 .chat-menu .chat-enter { display: flex; gap: 10px; align-items: center; min-height: 46px; }

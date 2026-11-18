@@ -44,6 +44,17 @@ const assert = require('node:assert/strict'); const fs = require('node:fs')
     const found = await axe(page); assert.deepEqual(found, [], `axe 0 (${tag})`)
     console.log(`PASS ${tag}: hilo ${Math.round(m.visible)} px (${Math.round(m.visible / m.vh * 100)} %) · barra ${m.topH} · compositor ${m.barH} (herramientas ${m.toolsH}, límites ${m.limH})`); await ctx.close(); n++
   }
+  // E316-1: avisos del hilo (pausa y límite agotado) legibles en claro/oscuro × ES/EN (axe 0, incluye contraste).
+  for (const scheme of ['light', 'dark']) for (const lang of ['es', 'en']) for (const state of ['paused', 'exhausted']) {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await ctx.newPage()
+    await page.addInitScript(([l, sc]) => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); localStorage.setItem('elv_theme', sc) }, [lang, scheme])
+    await page.route('**/api/**', route => { const p = new URL(route.request().url()).pathname
+      return route.fulfill({ json: p === '/api/session' ? { role: 'user', onboardingCompleted: true } : p === '/api/ai/usage' ? { configured: true, limit: 100, used: state === 'exhausted' ? 100 : 37, resetsAt: '2026-12-01T00:00:00Z' } : p === '/api/messages' ? threads.short : [] }) })
+    await page.goto(base + '/app/chat', { waitUntil: 'networkidle' }); await page.getByText('Gracias por contarme').first().waitFor(); await page.waitForTimeout(600)
+    if (state === 'paused') await page.locator('.space-chatbar-head button').last().click()
+    await page.locator('.space-callout').first().waitFor(); const tag = `aviso ${state} ${scheme} ${lang}`
+    assert.deepEqual(await axe(page), [], `axe 0 con el aviso (${tag})`); console.log(`PASS ${tag}`); await ctx.close(); n++
+  }
   // Hojas inferiores: menú, recomendaciones y check-out (axe 0, foco al abrir y al cerrar con Esc, Tab atrapado) en claro/oscuro × ES/EN a 390×844.
   for (const scheme of ['light', 'dark']) for (const lang of ['es', 'en']) {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await ctx.newPage()

@@ -89,3 +89,17 @@ test('ES-319: sin importadores de lo retirado; space.css podado; «Retirar todo�
   const bridge = read('../src/bridge/BridgePage.tsx')
   assert.match(bridge, /aria-disabled=\{busy\} onClick=\{closeAll\}/); assert.match(bridge, /aria-disabled=\{busy\} onClick=\{\(\) => void withdrawAll\(\)\}/); assert.match(bridge, /if \(busy\) return\n/)
 })
+
+// ES-333 (E316-1 / E316-2): contraste de los avisos del hilo y mutantes que las pruebas unitarias no detectaban.
+test('ES-333: /app/chat está en MIGRATED_PERSON_PATHS y sin pie (E316-2)', () => {
+  assert.ok(MIGRATED_PERSON_PATHS.includes('/app/chat'))
+  assert.equal(isMigratedPersonPath('/app/chat'), true)
+  assert.equal(personFooterHidden('/app/chat'), true)
+})
+
+test('ES-333: «Administración» del chat solo para admin y superadmin (E316-2) y los avisos del hilo usan el color del sistema (E316-1)', () => {
+  const chat = read('../src/pages/ChatPage.tsx')
+  assert.match(chat, /onAdmin=\{\['admin', 'superadmin'\]\.includes\(role\) \? openAdmin : undefined\}/)
+  const css = read('../src/space/space.css')
+  assert.match(css, /\.chat-shell \.space-callout \{ color: var\(--cg-ink\); \}/)
+})
