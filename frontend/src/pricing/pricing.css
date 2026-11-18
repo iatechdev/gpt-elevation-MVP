@@ -1,24 +1,31 @@
-/* ES-73 · Public, editable plan catalogue and owner-only request states. */
-.landing-scope .landing-plans { padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--color-base-300); overflow-wrap: anywhere; scroll-margin-top: 7rem; }
-.landing-scope .landing-plans-inner { width: 100%; max-width: 1280px; margin-inline: auto; }
-.landing-scope .landing-plans-label { display: flex; gap: 1rem; color: var(--landing-muted); font: 0.75rem/1.6 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; text-transform: uppercase; }
-.landing-scope .landing-plans :is(h1,h2) { margin: 1.5rem 0 2rem; font-size: clamp(2.25rem,4.45vw,4rem); font-weight: 800; line-height: 1.03; letter-spacing: -0.04em; text-transform: uppercase; }
-.landing-scope .landing-plan-grid { margin-block: 2rem; align-items: stretch; }
-.landing-scope .landing-plan { min-width: 0; border-radius: 0; }
-.landing-scope .landing-plan-featured { border: 2px solid var(--color-secondary); }
-.landing-scope .landing-plan-selected { outline: 2px solid var(--color-secondary); outline-offset: 4px; }
-.landing-scope .landing-plan .elv-card-body { padding: 1.5rem; gap: 1rem; }
-.landing-scope .landing-plan :is(h2,h3) { margin: 0; font-size: 1.375rem; font-weight: 800; line-height: 1.2; letter-spacing: normal; text-transform: none; }
-.landing-scope .landing-plan p { margin: 0; color: var(--landing-muted); }
-.landing-scope .landing-plan .landing-plan-price { font-size: 2rem; line-height: 1.2; color: var(--color-base-content); font-weight: 700; }
-.landing-scope .landing-plan ul { padding-left: 1.25rem; margin: 0 0 1rem; }
-.landing-scope .landing-plan li + li { margin-top: 0.5rem; }
-.landing-scope .landing-plan-cta { margin-top: auto; width: 100%; padding-inline: 1rem; }
+/* ES-328 (PR 1): planes en Cartografía. Solo tokens --cg-*; sin colores fijos. Sustituye al estilo de ES-73 (landing-*). La sección sirve a /pricing y a la portada (#planes). */
+.pp-plans { min-width: 0; overflow-wrap: anywhere; scroll-margin-top: 7rem; padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--cg-line); }
+.pp-plans--page { padding: 1.5rem 0 1rem; border-top: 0; }
+.pp-plans-inner { width: 100%; max-width: 1280px; margin-inline: auto; }
+.pp-plans-label { margin: 0; font: 600 .78rem var(--cg-font-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--cg-muted); }
+.pp-plans :is(h1, h2).pp-title { margin: .5rem 0 1rem; font: 700 clamp(2rem, 4.4vw, 3.4rem)/1.03 var(--cg-font-cond); letter-spacing: .01em; text-transform: uppercase; color: var(--cg-ink); }
+.pp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0; align-items: stretch; }
+.pp-grid > * { min-width: 0; }
+@media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .pp-grid { grid-template-columns: minmax(0, 1fr); } }
+.pp-plan { display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem; }
+.pp-plan :is(h2, h3) { margin: 0; font: 700 1.35rem var(--cg-font-cond); text-transform: uppercase; color: var(--cg-ink); }
+.pp-plan p { margin: 0; overflow-wrap: anywhere; }
+.pp-plan--hl { border-top: 6px solid var(--cg-mark); }
+.pp-plan--sel { outline: 4px solid var(--cg-mark); outline-offset: 2px; }
+.pp-plan .cg-chip { align-self: flex-start; }
+.pp-plan .pp-cta { margin-top: auto; width: 100%; text-align: center; white-space: normal; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.pp-price { font: 700 2rem var(--cg-font-cond); }
+.pp-period { color: var(--cg-muted); font-size: .9rem; }
+.pp-feats { margin: .2rem 0 1rem; padding-left: 1.1rem; }
+.pp-feats li { margin: .2rem 0; }
 /* Cargando, vacío y error ocupan lo mismo (aviso + hueco de las tarjetas): al llegar el catálogo la sección no se encoge y no empuja lo de abajo (E282-1, CLS al llegar por /#planes). */
-.landing-scope .landing-plans-state { min-height: calc(14rem + 27px); }
-.landing-scope .landing-plan-skeleton { min-height: 14rem; background: var(--color-base-200); border: 1px solid var(--color-base-300); }
-.landing-scope .landing-pricing-note { color: var(--landing-muted); }
-.landing-scope .landing-plans-space { display: inline-flex; align-items: center; min-height: 44px; margin-top: 1rem; }
-.landing-scope .landing-pricing-footer { padding: 2rem 1.5rem; border-top: 1px solid var(--color-base-300); }
-.landing-scope .landing-pricing-footer p { max-width: 1280px; margin: auto; color: var(--landing-muted); }
-@media (min-width: 48rem) { .landing-scope .landing-plans { padding: 4rem clamp(1.5rem,5.56vw,5rem) 5rem; } }
+.pp-state { min-height: calc(14rem + 27px); }
+/* Marcador de las tarjetas mientras llega el catálogo: la misma rejilla y una altura parecida a la de una tarjeta, así el aviso y el pie de abajo no saltan al llegar (CLS ≤ 0,1 a 390 px). */
+.pp-skel { min-height: 22rem; border: 1.5px dashed var(--cg-line); background: var(--cg-panel); }
+.pp-state .cg-banner { margin: 0 0 1rem; }
+.pp-status > p, .pp-status > div { margin: .4rem 0; }
+.pp-note { color: var(--cg-muted); }
+.pp-space { display: inline-flex; align-items: center; min-height: var(--cg-touch); margin-top: 1rem; }
+.pp-notice { margin: 1.4rem 0 0; padding-top: .8rem; border-top: 1px solid var(--cg-line); color: var(--cg-muted); font-size: .9rem; max-width: 46rem; }
+@media (min-width: 48rem) { .pp-plans:not(.pp-plans--page) { padding: 4rem clamp(1.5rem, 5.56vw, 5rem) 5rem; } }
