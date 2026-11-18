@@ -30,3 +30,9 @@ test('ES-337: lo pendiente NO se completó por suposición (proveedores, país, 
   assert.match(flat(LEGAL.en.privacy), /\[\[VERIFY with Infra: names, country of each, any international transfer and, by contract, that they do not use your data to train models\.\]\]/)
   assert.match(LEGAL.es.privacy.draft, /sin revisión legal/); assert.match(LEGAL.en.privacy.draft, /without legal review/)
 })
+
+test('ES-337: «Cambios» no promete una re-aceptación que no existe (ES-339/ES-340 la proponen): describe versión, fecha y registro de lo aceptado', () => {
+  const es = flat(LEGAL.es.privacy), en = flat(LEGAL.en.privacy)
+  assert.doesNotMatch(es, /pediremos aceptar/); assert.doesNotMatch(en, /ask you to accept/)
+  assert.match(es, /tiene una versión y una fecha[\s\S]*conservan registrada la versión que aceptaron/); assert.match(en, /has a version and a date[\s\S]*keep the version they accepted on record/)
+})

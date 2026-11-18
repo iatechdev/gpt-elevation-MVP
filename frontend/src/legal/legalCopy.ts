@@ -39,7 +39,7 @@ const privacyEs: LegalContent = {
     { heading: 'Proveedores', paragraphs: ['Antes de enviar, enmascaramos claves y tokens que hayas pegado. El proveedor procesa ese texto para generar la respuesta. Además usamos proveedores de alojamiento, base de datos y almacenamiento de archivos. [[VERIFICAR con Infra: nombres, país de cada uno, si hay transferencia internacional y, por contrato, que no usan tus datos para entrenar modelos.]]'] },
     { heading: 'Cuánto tiempo los guardamos', paragraphs: ['[[POR COMPLETAR: plazos de conservación]]. Si borras tu cuenta, [[POR COMPLETAR: qué se borra y en cuánto tiempo]].'] },
     { heading: 'Tus derechos', paragraphs: ['Puedes pedir ver, corregir, descargar o borrar tus datos, y retirar permisos de compartir. Escribe a [[POR COMPLETAR: correo]]. [[POR REVISAR LEGAL: marco aplicable (p. ej. Ley 1581 de 2012 de Colombia) y plazos de respuesta.]]'] },
-    { heading: 'Cambios', paragraphs: ['Si cambiamos este aviso de fondo, te lo diremos y te pediremos aceptar la nueva versión.'] },
+    { heading: 'Cambios', paragraphs: ['Este aviso tiene una versión y una fecha. Al crear tu cuenta se registra la versión que aceptaste y la fecha de aceptación. Si cambiamos el aviso de fondo, publicaremos la nueva versión aquí; las cuentas ya creadas conservan registrada la versión que aceptaron.'] },
   ],
 }
 
@@ -74,7 +74,7 @@ const privacyEn: LegalContent = {
     { heading: 'Providers', paragraphs: ['Before sending, we mask keys and tokens you may have pasted. The provider processes that text to generate the reply. We also use providers for hosting, the database and file storage. [[VERIFY with Infra: names, country of each, any international transfer and, by contract, that they do not use your data to train models.]]'] },
     { heading: 'How long we keep it', paragraphs: ['[[TO BE COMPLETED: retention periods]]. If you delete your account, [[TO BE COMPLETED: what is deleted and how fast]].'] },
     { heading: 'Your rights', paragraphs: ['You can ask to see, correct, download or delete your data, and withdraw sharing permissions. Write to [[TO BE COMPLETED: email]]. [[FOR LEGAL REVIEW: applicable framework (e.g. Colombia’s Law 1581 of 2012) and response times.]]'] },
-    { heading: 'Changes', paragraphs: ['If we make a substantive change to this notice, we will tell you and ask you to accept the new version.'] },
+    { heading: 'Changes', paragraphs: ['This notice has a version and a date. When you create your account, the version you accepted and the date of acceptance are recorded. If we make a substantive change to the notice, we will publish the new version here; existing accounts keep the version they accepted on record.'] },
   ],
 }
 
