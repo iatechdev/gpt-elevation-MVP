@@ -83,7 +83,7 @@ test('ES-135: los textos existen en ES y EN con las mismas claves, sin plazos pr
 test('ES-135: la pantalla confirma en dos pasos, cierra la sesión y está accesible desde la ruta y el menú', () => {
   const page = read('../src/space/DataPage.tsx')
   assert.match(page, /disabled=\{!matches \|\| busy === 'delete'\}/); assert.doesNotMatch(page, /window\.confirm/) // ES-174: la casilla pasó a palabra de confirmación
-  assert.match(page, /invalidateStoredSession\(deletedToken\.current\)/); assert.match(read('../src/cartografia/interactive.tsx'), /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/) // Escape llega como «cancel» del <dialog>
+  assert.match(page, /await signOut\(BACKEND\)/); assert.match(read('../src/cartografia/interactive.tsx'), /onCancel=\{event => \{ event\.preventDefault\(\); onClose\(\) \}\}/) // Escape llega como «cancel» del <dialog>
   assert.match(read('../src/App.tsx'), /path="\/app\/data" element=\{<DataPage \/>\}/)
   assert.match(read('../src/shell/nav.ts'), /to: '\/app\/data'/)
 })

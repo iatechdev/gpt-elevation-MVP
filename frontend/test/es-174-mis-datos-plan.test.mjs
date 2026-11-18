@@ -42,8 +42,9 @@ test('ES-174: Mis datos conserva lo escrito si falla, trata la solicitud repetid
   assert.match(page, /failed === 'delete' \? c\.retry/)
   assert.match(page, /const closeDialog = \(\) => \{ if \(busy === 'delete'\) return/) // no se cierra mientras envía
   assert.match(page, /setExpired\(true\)/); assert.match(page, /c\.expiredNote/); assert.match(page, /c\.prepareAgain/)
-  // La sesión local se cierra al salir de la confirmación (desmontaje), no al instante: si no, la compuerta lleva a /login y la persona no ve el resultado.
-  assert.match(page, /useEffect\(\(\) => \(\) => \{ if \(deletedToken\.current\) invalidateStoredSession\(deletedToken\.current\) \}, \[\]\)/)
+  // ES-346: la sesión local se cierra YA (signOut, antes del aviso) y la marca de despedida deja a la compuerta mostrar el aviso; se borra al desmontar.
+  assert.match(page, /startFarewell\(pathname\)\s*await signOut\(BACKEND\)/)
+  assert.match(page, /endFarewell\(\)/)
   assert.doesNotMatch(page, /invalidateStoredSession\(token\)/)
   assert.doesNotMatch(page, /localStorage\.setItem|sessionStorage|console\./)
   // ES-307: el diálogo de «Mis datos» es el `Dialog` de Cartografía (mismo comportamiento: showModal, título enlazado, Tab atrapado, Escape → onClose).
