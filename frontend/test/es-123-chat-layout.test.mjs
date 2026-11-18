@@ -71,7 +71,7 @@ test('ES-123 textos: el selector, «Mi progreso» y el check-out existen en ES y
   for (const key of ['star_1', 'star_2', 'star_3', 'star_4', 'star_5']) assert.notEqual(es[key], en[key], key) // antes las estrellas salían siempre en español
   assert.equal(es.checkout_hint, 'Tómate un momento antes de cerrar.')
   const page = read('../src/pages/ChatPage.tsx')
-  const person = page.slice(page.indexOf('{/* Mensajes */}'), page.indexOf('{/* Panel Admin */}')) // todo lo que ve la persona; el panel de administración queda fuera de este ticket
+  const person = page.slice(page.indexOf('{/* Mensajes */}')) // todo lo que ve la persona (ES-333 PR 3: ya no hay panel de administración en el chat)
   assert.doesNotMatch(person, /lang === 'es' \?/); assert.doesNotMatch(person, /Muy mala|Tomá|querés|CHECK-OUT<\/p>/)
   assert.deepEqual(Object.keys(es).sort(), Object.keys(en).sort())
   for (const key of Object.keys(copy.es)) assert.ok(key in copy.en, `copy.en.${key}`)
