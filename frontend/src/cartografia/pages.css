@@ -107,3 +107,10 @@ a.cg-linkbtn { display: inline-block; min-height: 0; padding-block: 0.35rem; }
 .pc-trend th { font: 600 0.8rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cg-muted); }
 .pc-links { display: flex; flex-wrap: wrap; gap: 0.2rem 1.4rem; }
 .pc-link { color: var(--cg-ink); text-underline-offset: 4px; display: inline-flex; align-items: center; min-height: var(--cg-touch); }
+/* ES-329 (Compartir, D1/D3): palabra de estado junto al interruptor y divisor antes de «Dejar de compartir y desvincularme». */
+.pc-top { flex-wrap: wrap; }
+.pc-top > div:first-child { flex: 1 1 14rem; }
+.pc-switchbox { display: flex; align-items: center; gap: 0.6rem; flex: none; }
+.pc-switch-word { font: 600 0.95rem var(--cg-font-cond); letter-spacing: 0.06em; text-transform: uppercase; min-width: 7.5ch; text-align: right; color: var(--cg-ink); }
+.pc-divider { border-top: 1px solid var(--cg-line); margin-top: 1rem; padding-top: 0.9rem; }
+.pc-live.cg-banner { margin: 0.8rem 0 0; }

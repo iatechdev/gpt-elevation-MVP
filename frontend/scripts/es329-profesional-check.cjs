@@ -13,18 +13,20 @@ const WITH = { therapist: THERAPIST,
   upcomingSessions: [{ id: 1, scheduledAt: new Date(now + 86400000 * 3).toISOString(), duration: 45, meetingUrl: 'https://example.com/m', status: 'scheduled' }, { id: 2, scheduledAt: new Date(now + 300000).toISOString(), duration: 45, meetingUrl: 'https://example.com/n', status: 'scheduled' }],
   pastSessions: [{ id: 3, scheduledAt: new Date(now - 86400000 * 7).toISOString(), patientMoodAfter: 4, status: 'completed' }, { id: 4, scheduledAt: new Date(now - 86400000 * 14).toISOString(), patientMoodAfter: null, status: 'completed' }] }
 const NONE = { therapist: null, upcomingSessions: [], pastSessions: [] }
-const STAGES = ['sin', 'con', 'error', 'desvincular']
+const STAGES = ['sin', 'con', 'error', 'desvincular', 'incierto']
 const EMOJI = /[\u{1F300}-\u{1FAFF}★☆♡]/u
 let failures = 0, total = 0
 async function setup(browser, { lang, width, scheme, stage }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' }); const page = await ctx.newPage(); const calls = []
-  let granted = true
+  let granted = true, broken = false
   await page.route('**/api/**', route => { const r = route.request(), p = new URL(r.url()).pathname; if (r.method() !== 'GET') calls.push(r.method() + ' ' + p + ' ' + (r.postData() || ''))
     if (p === '/api/session') return route.fulfill({ json: { role: 'user', onboardingCompleted: true } })
     if (p === '/api/sessions/user/my-therapist') {
       if (r.method() === 'DELETE') return route.fulfill({ json: { ok: true } })
       return stage === 'error' ? route.fulfill({ status: 500, json: { error: 'x' } }) : route.fulfill({ json: stage === 'sin' ? NONE : WITH }) }
+    if (p === '/api/consents' && broken) return route.fulfill({ status: 500, json: { error: 'x' } })
     if (p === '/api/consents') return route.fulfill({ json: { consents: [{ purpose: 'therapist_sharing', applicable: true, status: granted ? 'granted' : 'revoked' }] } })
+    if (p === '/api/consents/therapist_sharing' && stage === 'incierto') { broken = true; return route.fulfill({ status: 500, json: { error: 'x' } }) }
     if (p === '/api/consents/therapist_sharing') { granted = JSON.parse(r.postData() || '{}').status === 'granted'; return route.fulfill({ json: { ok: true, changed: true } }) }
     return route.fulfill({ json: {} }) })
   await page.addInitScript(l => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l) }, lang)
@@ -36,13 +38,14 @@ async function setup(browser, { lang, width, scheme, stage }) {
     const { ctx, page } = await setup(browser, { lang, width, scheme, stage }); total++
     await page.goto(BASE + '/app/my-therapist', { waitUntil: 'networkidle' }); await page.waitForTimeout(250)
     if (stage === 'desvincular') await page.getByRole('button', { name: /Dejar de compartir|Stop sharing/ }).click()
+    if (stage === 'incierto') { await page.getByRole('switch').click(); await page.waitForTimeout(500) }
     await page.waitForTimeout(200)
     await page.addScriptTag({ content: axeSource })
     const axe = await page.evaluate(() => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length)))
     const m = await page.evaluate(() => ({ h1: [...document.querySelectorAll('h1')].map(h => h.textContent), skips: [...document.querySelectorAll('a')].filter(a => /^#/.test(a.getAttribute('href') || '') && /Saltar|Skip/.test(a.textContent)).length,
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, text: document.body.innerText, inlineColor: [...document.querySelectorAll('main [style]')].filter(e => /color|background/.test(e.getAttribute('style') || '')).length,
-      dialogOpen: !!document.querySelector('dialog[open]'), oldHeader: document.querySelectorAll('.th-a11y').length }))
-    const ok = axe.length === 0 && m.h1.length === 1 && /Mi profesional|My professional/.test(m.h1[0]) && m.skips === 1 && m.overflow <= 0 && !EMOJI.test(m.text) && m.inlineColor === 0 && m.oldHeader === 0 && m.dialogOpen === (stage === 'desvincular')
+      dialogOpen: !!document.querySelector('dialog[open]'), banner: [...document.querySelectorAll('[role=status].cg-banner--error')].map(b => b.textContent), wordShown: /Activado|Desactivado|^On$|^Off$/m.test(document.querySelector('.pc-switch-word')?.textContent || ''), switchCount: document.querySelectorAll('[role=switch]').length, oldHeader: document.querySelectorAll('.th-a11y').length }))
+    const ok = axe.length === 0 && m.h1.length === 1 && /Mi profesional|My professional/.test(m.h1[0]) && m.skips === 1 && m.overflow <= 0 && !EMOJI.test(m.text) && m.inlineColor === 0 && m.oldHeader === 0 && m.dialogOpen === (stage === 'desvincular') && (stage !== 'incierto' || (m.banner.length === 1 && m.switchCount === 0)) && (['sin', 'error', 'incierto'].includes(stage) || m.wordShown)
     if (!ok) failures++
     if (!ok || (lang === 'es' && width === 390 && scheme === 'light')) console.log((ok ? 'OK    ' : 'FALLA ') + `${stage} ${lang} ${width}px ${scheme}: axe=[${axe}] h1=${JSON.stringify(m.h1)} saltar=${m.skips} desborde=${m.overflow} emoji=${EMOJI.test(m.text)} colorEnLínea=${m.inlineColor} diálogo=${m.dialogOpen}`)
     await ctx.close()
@@ -54,6 +57,9 @@ async function setup(browser, { lang, width, scheme, stage }) {
     const sw = page.getByRole('switch'); const before = await sw.getAttribute('aria-checked'); await sw.click(); await page.waitForTimeout(400)
     const after = await sw.getAttribute('aria-checked')
     await page.getByRole('button', { name: /Dejar de compartir/ }).click(); await page.locator('dialog[open]').getByRole('button', { name: /Sí, desvincularme/ }).click(); await page.waitForTimeout(400)
+    const focusH1 = await page.evaluate(() => document.activeElement?.tagName === 'H1')
+    console.log(`Foco tras desvincular en el h1: ${focusH1}`)
+    if (!focusH1) failures++
     console.log(`Flujo permiso: aria-checked ${before} → ${after}; llamadas: ${calls.join(' | ')}`)
     const flowOk = before === 'true' && after === 'false' && calls.some(c => /PUT \/api\/consents\/therapist_sharing .*"revoked"/.test(c)) && calls.some(c => /DELETE \/api\/sessions\/user\/my-therapist/.test(c))
     if (!flowOk) failures++
