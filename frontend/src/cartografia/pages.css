@@ -107,6 +107,33 @@ a.cg-linkbtn { display: inline-block; min-height: 0; padding-block: 0.35rem; }
 .pc-trend th { font: 600 0.8rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cg-muted); }
 .pc-links { display: flex; flex-wrap: wrap; gap: 0.2rem 1.4rem; }
 .pc-link { color: var(--cg-ink); text-underline-offset: 4px; display: inline-flex; align-items: center; min-height: var(--cg-touch); }
+/* ES-329 (Siguiente paso): piezas mínimas de la maqueta aprobada (12327). Solo tokens --cg-*; ningún color ni estilo en línea. */
+.pc-main:focus { outline: none; }
+.pc-subnav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1rem; border-bottom: 1px solid var(--cg-line); }
+.pc-subnav a { display: inline-flex; align-items: center; min-height: var(--cg-touch); padding: 0 1rem; color: var(--cg-ink); text-decoration: none; border-bottom: 4px solid transparent; font: 600 1rem var(--cg-font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.pc-subnav a:hover { color: var(--cg-mark); }
+.pc-subnav a[aria-current="page"] { border-bottom-color: var(--cg-mark); }
+.pc-subnav a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.pc-h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: 0.03em; margin: 1.2rem 0 0.5rem; }
+.pc-fields { border: 0; padding: 0; margin: 0.6rem 0; min-width: 0; display: grid; gap: 0.8rem; }
+.pc-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.pc-routes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0.6rem 0 1rem; }
+.pc-panel { border: 1px solid var(--cg-line); padding: 0.9rem 1rem; margin: 0.8rem 0; min-width: 0; }
+.pc-notice { margin: 1rem 0; }
+.pc-carried { margin: 1rem 0; }
+.pc-draft { border: 1px solid var(--cg-line); border-left: 4px solid var(--cg-mark); padding: 0.9rem 1rem; margin: 0.8rem 0; min-width: 0; }
+.pc-draft h4 { margin: 0 0 0.4rem; font: 700 1.05rem var(--cg-font-cond); text-transform: uppercase; letter-spacing: 0.04em; }
+.pc-original { white-space: pre-wrap; overflow-wrap: anywhere; }
+.pc-warn { color: var(--cg-err); }
+.pc-details { margin: 0.8rem 0; border-top: 1px solid var(--cg-line); }
+.pc-details summary { min-height: var(--cg-touch); display: flex; align-items: center; cursor: pointer; }
+.pc-col { display: grid; gap: 1rem; min-width: 0; align-content: start; }
+@media (max-width: 900px) { .pc-routes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .pc-routes, .pc-pair { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 420px) { .pc-draft .pg-actions .cg-btn, .pc-notice .pg-actions .cg-btn { width: 100%; } }
+.pc-defs { margin: 0.6rem 0; display: grid; gap: 0.2rem; }
+.pc-defs dt { font: 600 0.78rem var(--cg-font-cond); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cg-muted); }
+.pc-defs dd { margin: 0 0 0.5rem; overflow-wrap: anywhere; }
 /* ES-329 (Compartir, D1/D3): palabra de estado junto al interruptor y divisor antes de «Dejar de compartir y desvincularme». */
 .pc-top { flex-wrap: wrap; }
 .pc-top > div:first-child { flex: 1 1 14rem; }
