@@ -171,6 +171,10 @@ jobs:
         run: npm run test:admin-delete:pg
         env:
           ES186C_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-310 administración - lo que la interfaz oculta a una cuenta admin también da 403 en el servidor (PostgreSQL real)
+        run: npm run test:admin-403:pg
+        env:
+          ES310_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-275 comando de purga - DATABASE_URL explícita, sin .env y salida limpia (PostgreSQL real)
         run: npm run test:purge-command:pg
         env:

@@ -57,6 +57,6 @@ test('ES-186 parche: la fecha de caducidad se muestra completa en ES y EN', () =
 test('ES-186 parche: el diálogo de invitar anuncia errores y éxito y nombra el selector de rol', () => {
   const tsx = readFileSync(resolve(src, 'pages/admin/AdminUsersInvite.tsx'), 'utf8')
   assert.match(tsx, /role=\{msg\.kind === 'error' \? 'alert' : 'status'\}/)
-  assert.match(tsx, /<label[^>]*htmlFor="invite-role"/); assert.match(tsx, /<select id="invite-role"/)
+  assert.match(tsx, /<SelectField id="invite-role" label=\{tr\('Rol'\)\}/) // ES-310: el SelectField de Cartografía pinta la etiqueta visible enlazada por for/id
   assert.doesNotMatch(tsx, /\.replace\(\/\.\$\/, ''\)/, 'no se recorta el último carácter de la fecha')
 })

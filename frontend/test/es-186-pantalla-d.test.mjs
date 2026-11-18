@@ -153,8 +153,8 @@ test('ES/EN: todo texto de la lógica (mensajes por código, estados, pestañas 
 
 test('E186-5/E186-7 y sin alert(): diálogos accesibles, 401 lleva al inicio de sesión y toda la red pasa por una sola puerta', () => {
   const dir = resolve(here, '../src/pages/admin')
-  const mine = readdirSync(dir).filter((f) => /^(AdminUsers.*|AdminDialog)\.tsx$|^adminUsers.*\.ts$/.test(f))
-  assert.ok(mine.length >= 8, mine.join())
+  const mine = readdirSync(dir).filter((f) => /^AdminUsers.*\.tsx$|^adminUsers.*\.ts$/.test(f))
+  assert.ok(mine.length >= 7, mine.join()) // ES-310: AdminDialog.tsx y adminUsersStyles.ts se retiraron (Cartografía); quedan 5 .tsx y 2 .ts
   for (const file of mine) {
     const text = source(file)
     assert.doesNotMatch(text, /\b(alert|confirm|prompt)\(/, `${file}: sin diálogos del navegador`)
@@ -162,22 +162,27 @@ test('E186-5/E186-7 y sin alert(): diálogos accesibles, 401 lleva al inicio de 
     assert.doesNotMatch(text, /type="password"|localStorage\.setItem|console\.log/, file)
     if (file.endsWith('.tsx')) assert.doesNotMatch(text, /\bfetch\(/, `${file}: la red pasa por adminRequest`)
   }
-  const dialog = source('AdminDialog.tsx')
-  assert.match(dialog, /role="dialog"/); assert.match(dialog, /aria-modal="true"/); assert.match(dialog, /aria-labelledby/); assert.match(dialog, /modalKeyDown\(/)
-  assert.match(dialog, /opener\.current\.focus\(\)/, 'el foco vuelve al botón que abrió el diálogo')
+  // ES-310: los diálogos son el Dialog de Cartografía (<dialog> modal): nombre accesible, foco atrapado, Esc (onCancel) y foco devuelto; cada pantalla lo usa y devuelve el foco al botón que lo abrió.
+  const dialog = readFileSync(resolve(here, '../src/cartografia/interactive.tsx'), 'utf8')
+  assert.match(dialog, /showModal\(\)/); assert.match(dialog, /aria-modal="true"/); assert.match(dialog, /aria-labelledby=\{titleId\}/); assert.match(dialog, /event\.key !== 'Tab'/); assert.match(dialog, /onCancel=/)
+  assert.match(dialog, /target\.focus\(\)/, 'el foco vuelve al botón que abrió el diálogo')
+  for (const file of ['AdminUsersManage.tsx', 'AdminUsersInvite.tsx', 'AdminUsersQueues.tsx']) assert.match(source(file), /<Dialog open/, file)
+  assert.match(source('AdminUsers.tsx'), /target\?\.focus\(\)/, 'el foco vuelve al botón que abrió Gestionar / Invitar'); assert.match(source('AdminUsersQueues.tsx'), /target\.focus\(\)/, 'y al que abrió Rechazar')
   const api = source('adminUsersApi.ts')
   assert.match(api, /res\.status === 401\) invalidateStoredSession\(token\)/)
   assert.match(api, /status: 0, data: null/, 'sin red: estado 0, no una excepción')
   // cada pestaña tiene su rol ARIA y su propio error con «Reintentar»
   const shell = source('AdminUsers.tsx')
-  for (const aria of ['role="tablist"', 'role="tab"', 'role="tabpanel"', 'aria-selected', 'aria-controls']) assert.ok(shell.includes(aria), aria)
+  // ES-310: las pestañas son el Tabs de Cartografía (WAI-ARIA: tablist/tab/tabpanel, aria-selected, aria-controls, flechas/Inicio/Fin) con el nombre «Secciones».
+  assert.ok(shell.includes("<Tabs label={tr('Secciones')}")); const tabs = readFileSync(resolve(here, '../src/cartografia/interactive.tsx'), 'utf8')
+  for (const aria of ['role="tablist"', 'role="tab"', 'role="tabpanel"', 'aria-selected', 'aria-controls', "'ArrowRight'", "'Home'", "'End'"]) assert.ok(tabs.includes(aria), aria)
   assert.match(source('AdminUsersQueues.tsx'), /role="alert"[\s\S]*Reintentar/); assert.match(source('AdminUsersPeople.tsx'), /role="alert"[\s\S]*Reintentar/)
 })
 
 test('seguridad y privacidad de la pantalla: el nombre exacto sigue siendo obligatorio para eliminar y las acciones privilegiadas solo se ofrecen a superadmin', () => {
   const manage = source('AdminUsersManage.tsx')
   assert.match(manage, /deleteInput !== person\.name/); assert.match(manage, /disabled=\{deleteInput !== person\.name/)
-  assert.match(manage, /isSuper &&/, 'enlace de restablecimiento y eliminar solo para superadmin')
+  assert.match(manage, /isSuper\(actorRole\) &&/, 'enlace de restablecimiento y eliminar solo para superadmin (ayudante isSuper)')
   assert.match(manage, /requestsDeletion \? tr\('Solicitar eliminación…'\) : tr\('Eliminar…'\)/)
   assert.doesNotMatch(manage, /\.destroy|permanentemente/i, 'ya no se promete un borrado inmediato')
   const invite = source('AdminUsersInvite.tsx')
