@@ -1,6 +1,6 @@
 # Data retention and deletion policy
 
-> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v1` · ES-335 · 18 Nov 2026.
+> **DRAFT WITHOUT LEGAL REVIEW** · working version `2026-11-v2` · ES-335 · 18 Nov 2026.
 > Aligned with the implemented purge (contract 18, ES-274, ES-293; `backend/utils/personalData.js`, `backend/utils/deletionProcessor.js`, `backend/scripts/purgePersonalData.js`). **Periods are not decided**: the system does not promise a seven- or thirty-day closure and `deadlinesVerified` is still `false`. Markers: `[TO BE COMPLETED PC-nn]`, `[VERIFY VF-nn]`, `[LEGAL REVIEW RL-nn]`; list in `../POR-COMPLETAR.md`.
 
 ## 1. Principle
