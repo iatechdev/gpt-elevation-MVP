@@ -5,13 +5,16 @@ const assert = require('node:assert/strict'); const fs = require('node:fs')
 ;(async () => {
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const base = process.env.ES346_URL; const browser = await chromium.launch(); const axeSource = fs.readFileSync(process.env.AXE_PATH, 'utf8'); let n = 0
   const WORD = { es: 'ELIMINAR', en: 'DELETE' }, START = { es: /Quiero eliminar mi cuenta/, en: /I want to delete my account/ }, CONFIRM = { es: 'Eliminar mi cuenta', en: 'Delete my account' }, DONE = { es: /Recibimos tu solicitud/, en: /We received your request/ }
-  for (const lang of ['es', 'en']) for (const fails of [false, true]) {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await ctx.newPage(); const tag = `${lang}${fails ? ' (el servidor falla)' : ''}`
+  // 'hostile': tras aceptarse la eliminación, TODA otra llamada (sesión, uso de IA…) responde 401 como un servidor real con el token revocado; el aviso debe seguir visible.
+  for (const lang of ['es', 'en']) for (const mode of ['ok', 'fails', 'hostile']) {
+    const fails = mode === 'fails'; let accepted = false
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); const page = await ctx.newPage(); const tag = `${lang}${fails ? ' (el servidor falla)' : mode === 'hostile' ? ' (401 en todo lo demás)' : ''}`
     await page.addInitScript(l => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('elevation_token', 'tok-sintetico'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elevation_name', 'Persona Sintética'); localStorage.setItem('elevation_checkin_date', '2026-11-18'); sessionStorage.setItem('elevation_return_to', JSON.stringify({ path: '/app/dashboard', at: Date.now() })); sessionStorage.setItem('seeded', '1') } localStorage.setItem('elv_lang', l) }, lang)
     let logout = 0
     await page.route('**/api/**', route => { const p = new URL(route.request().url()).pathname
       if (p === '/api/logout') { logout++; return route.fulfill({ status: 401, json: { error: 'x' } }) }
-      if (p === '/api/account/deletion-requests') return fails ? route.fulfill({ status: 500, json: { error: 'x' } }) : route.fulfill({ status: 202, json: { id: 'rec-1' } })
+      if (p === '/api/account/deletion-requests') { if (!fails) accepted = true; return fails ? route.fulfill({ status: 500, json: { error: 'x' } }) : route.fulfill({ status: 202, json: { id: 'rec-1' } }) }
+      if (mode === 'hostile' && accepted) return route.fulfill({ status: 401, json: { error: 'Sesión inválida' } })
       return route.fulfill({ json: p === '/api/session' ? { role: 'user', onboardingCompleted: true } : p === '/api/ai/usage' ? { configured: false } : [] }) })
     await page.goto(base + '/app/data', { waitUntil: 'networkidle' })
     await page.getByRole('button', { name: START[lang] }).click(); await page.getByRole('textbox').fill(WORD[lang]); await page.getByRole('button', { name: CONFIRM[lang], exact: true }).click()
@@ -20,6 +23,7 @@ const assert = require('node:assert/strict'); const fs = require('node:fs')
       assert.equal(keep, 'tok-sintetico', `un fallo del servidor NO cierra la sesión (${tag})`); assert.equal(logout, 0, `sin cierre de sesión si falla (${tag})`); console.log(`PASS ${tag}: la sesión se conserva`); await ctx.close(); n++; continue
     }
     await page.getByText(DONE[lang]).waitFor({ timeout: 8000 })
+    if (mode === 'hostile') await page.waitForTimeout(2500) // da tiempo a que cualquier 401 pendiente (sesión, uso de IA, verificación) llegue y se maneje
     const stored = await page.evaluate(() => ({ local: Object.fromEntries(Object.entries(localStorage).filter(([k]) => /^elevation_/.test(k))), session: Object.fromEntries(Object.entries(sessionStorage).filter(([k]) => /^elevation_/.test(k))) }))
     assert.deepEqual(stored.local, {}, `localStorage sin token, nombre, rol ni check-in (${tag}): ${JSON.stringify(stored.local)}`)
     assert.deepEqual(stored.session, {}, `sessionStorage sin ruta de retorno (${tag}): ${JSON.stringify(stored.session)}`)
