@@ -208,7 +208,7 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
       for (const [target, body] of jobs) {
         const outs = await Promise.all(actors.map(async (actor) => {
           try {
-            const res = await fetch(`${base}${target}`, { method: r.method, headers: { Authorization: 'Bearer ' + actor.token, 'Content-Type': 'application/json' }, ...(body === undefined || r.method === 'GET' ? {} : { body: typeof body === 'string' && body === 'texto' ? 'texto' : JSON.stringify(body) }) });
+            const res = await fetch(`${base}${target}`, { method: r.method, redirect: 'manual', headers: { Authorization: 'Bearer ' + actor.token, 'Content-Type': 'application/json' }, ...(body === undefined || r.method === 'GET' ? {} : { body: typeof body === 'string' && body === 'texto' ? 'texto' : JSON.stringify(body) }) });
             const text = await res.text(); let parsed = null; try { parsed = text ? JSON.parse(text) : null; } catch { /* no JSON */ }
             return { actor, status: res.status, parsed, text };
           } catch (error) { return { actor, status: -1, parsed: null, text: String(error) }; }
