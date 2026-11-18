@@ -99,7 +99,23 @@ test('ES-333: /app/chat está en MIGRATED_PERSON_PATHS y sin pie (E316-2)', () =
 
 test('ES-333: «Administración» del chat solo para admin y superadmin (E316-2) y los avisos del hilo usan el color del sistema (E316-1)', () => {
   const chat = read('../src/pages/ChatPage.tsx')
-  assert.match(chat, /onAdmin=\{\['admin', 'superadmin'\]\.includes\(role\) \? openAdmin : undefined\}/)
+  assert.match(chat, /onAdmin=\{\['admin', 'superadmin'\]\.includes\(role\) \? \(\) => \{ if \(chat\.canLeave\(\)\) navigate\('\/admin\/dashboard'\) \} : undefined\}/) // ES-333 PR 3: enlaza al panel de administración, no lo abre
   const css = read('../src/space/space.css')
   assert.match(css, /\.chat-shell \.space-callout \{ color: var\(--cg-ink\); \}/)
+})
+
+// ES-333 (PR 3): el panel de administración incrustado salió del chat; guías y textos de la landing se editan en /admin/prompts y /admin/content.
+test('ES-333 PR 3: ChatPage ya no trae el panel de administración, su estado ni estilos en línea', () => {
+  const chat = read('../src/pages/ChatPage.tsx')
+  assert.doesNotMatch(chat, /adminOpen|openAdmin|promptText|proposePrompt|approveVersion|rejectVersion|rollbackVersion|loadActivePrompt|loadVersions|loadLandingContent|saveLandingField|LANDING_KEYS|landingEdits|landing-content|\/api\/admin\/prompt|\/api\/superadmin/)
+  assert.doesNotMatch(chat, /style=\{\{/)
+  assert.doesNotMatch(chat, /confirm\(/)
+})
+
+test('ES-333 PR 3: las pantallas que reemplazan al panel existen y las claves cta_final siguen en i18n y en los defaults del servidor (no se borran)', () => {
+  assert.match(read('../src/App.tsx'), /path="dashboard" element=\{<AdminDashboard \/>\}/)
+  assert.match(read('../src/pages/admin/AdminPrompts.tsx'), /\/api\/superadmin\/prompt\/\$\{version\.id\}\/approve/)
+  assert.match(read('../src/pages/admin/AdminContent.tsx'), /\/api\/landing-content/)
+  assert.match(read('../src/i18n/es.ts'), /cta_final_title/); assert.match(read('../src/i18n/en.ts'), /cta_final_subtitle/)
+  assert.match(read('../../backend/routes/landingContent.js'), /cta_final_title/)
 })
