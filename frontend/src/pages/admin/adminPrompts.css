@@ -1,0 +1,19 @@
+/* ES-310 (PR 3) — Guías de la IA con Cartografía: solo tokens --cg-*, sin colores ni estilos en línea. */
+.ap { min-width: 0; }
+.ap-work { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.4rem; align-items: start; }
+@media (min-width: 901px) { .ap-work { grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); } }
+.ap-detail { display: grid; gap: 1rem; min-width: 0; }
+.ap .cg-card { min-width: 0; overflow-wrap: anywhere; }
+.ap-status { margin: 0; color: var(--cg-muted); }
+.ap-pick { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 0.8rem; min-height: var(--cg-touch); padding: 0.5rem 0.8rem; text-align: left; font: inherit; color: var(--cg-ink); background: var(--cg-panel); border: 1px solid var(--cg-line); border-radius: 0; cursor: pointer; }
+.ap-pick:hover { border-color: var(--cg-ink); }
+.ap-pick--on { border-color: var(--cg-ink); border-left: 4px solid var(--cg-mark); }
+.ap-pick:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.ap-pick__info { display: grid; gap: 0.2rem; min-width: 0; }
+.ap-pick .cg-chip { white-space: nowrap; }
+.ap-meta p { margin: 0.1rem 0; }
+.ap-meta ul { margin: 0.2rem 0; padding-left: 1.2rem; }
+.ap-text { white-space: pre-wrap; overflow-wrap: anywhere; padding: 0.7rem 0.9rem; border-left: 4px solid var(--cg-line); background: var(--cg-ground); }
+.ap-dialog { display: grid; gap: 0.9rem; }
+.ap-dialog p { margin: 0; }
+.ap-dialog ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
