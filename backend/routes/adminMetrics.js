@@ -7,15 +7,18 @@
 // registros) para la pantalla actual; `days30` trae SIEMPRE los 30 días, con 0 en los días sin registros. Los 30 días se cuentan en America/Bogotá.
 // Contrato: `max30` es `{ date: 'AAAA-MM-DD', count }` (el primer día con más registros) o `null` si no hay ninguno; NUNCA un número. La pantalla
 // (adminOverviewData.ts) y el fixture frontend/test/fixtures/es-180-metrics-*.json lo reflejan; la prueba PG falla si la forma cambia.
+// ES-343 (privacidad, QA-18-02): ningún promedio se calcula con menos de MIN_AVERAGE_SAMPLE (5) entradas: avgMood, avgRating y el avgRating de cada
+// profesional devuelven null (la pantalla muestra «Sin datos»); con menos entradas el valor sería el de una persona. Los conteos no son promedios y no cambian.
 // Nota de datos: «sesiones» (`totalSessions`) cuenta REGISTROS DE ÁNIMO (MoodLog), no sesiones con profesional.
 
 const express = require('express');
 const router  = express.Router();
 const { sequelize } = require('../database');
+const { MIN_AVERAGE_SAMPLE } = require('../utils/minAverageSample');
 
 const TZ = 'America/Bogota';
 const num = (value) => (value === null || value === undefined ? null : Number(value));
-const query = (sql, replacements) => sequelize.query(sql, { type: 'SELECT', replacements });
+const query = (sql, replacements) => sequelize.query(sql, { type: 'SELECT', replacements: { min: MIN_AVERAGE_SAMPLE, ...replacements } });
 
 router.get('/', async (req, res) => {
   try {
@@ -27,16 +30,18 @@ router.get('/', async (req, res) => {
                     count(*) FILTER (WHERE role = 'therapist' AND active)::int AS "totalTherapists"
              FROM "Users"`),
       query(`SELECT count(*)::int AS "total",
-                    ROUND(SUM(COALESCE("checkin_mood", 0) + COALESCE("checkout_mood", 0))::numeric
-                          / NULLIF(count("checkin_mood") + count("checkout_mood"), 0), 1) AS "avgMood"
+                    CASE WHEN count("checkin_mood") + count("checkout_mood") >= :min
+                          THEN ROUND(SUM(COALESCE("checkin_mood", 0) + COALESCE("checkout_mood", 0))::numeric / (count("checkin_mood") + count("checkout_mood")), 1) END AS "avgMood"
              FROM "MoodLogs"`),
-      query(`SELECT ROUND((AVG("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5))::numeric, 1) AS "avgRating" FROM "SessionRatings"`),
+      query(`SELECT CASE WHEN count("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5) >= :min
+                          THEN ROUND((AVG("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5))::numeric, 1) END AS "avgRating" FROM "SessionRatings"`),
       query(`SELECT count(DISTINCT "UserId")::int AS "activeThisWeek" FROM "MoodLogs" WHERE "date" >= ${today} - 7`, { tz: TZ }),
       query(`SELECT to_char(d, 'YYYY-MM-DD') AS "date", COALESCE(c.n, 0)::int AS "count"
              FROM generate_series(${today} - 29, ${today}, interval '1 day') AS d
              LEFT JOIN (SELECT "date", count(*) AS n FROM "MoodLogs" WHERE "date" >= ${today} - 29 GROUP BY "date") c ON c."date" = d::date
              ORDER BY d`, { tz: TZ }),
-      query(`SELECT t."id", t."name", count(DISTINCT p."id")::int AS "patientCount", ROUND((AVG(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5))::numeric, 1) AS "avgRating"
+      query(`SELECT t."id", t."name", count(DISTINCT p."id")::int AS "patientCount", CASE WHEN count(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5) >= :min
+                  THEN ROUND((AVG(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5))::numeric, 1) END AS "avgRating"
              FROM "Users" t
              LEFT JOIN "Users" p ON p."therapistId" = t."id" AND p."role" = 'user'
              LEFT JOIN "SessionRatings" r ON r."UserId" = p."id"
