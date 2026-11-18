@@ -10,5 +10,5 @@ export function PreviewShell({ children, admin = false, preview = true }: { chil
 }
 export function FeedbackPreviewLink() {
   const { lang } = useLanguage()
-  return previewEnabled(import.meta.env.VITE_ENABLE_PILOT_FEEDBACK_PREVIEW) ? <div className="pilot-scope pilot-entry" style={{ gridColumn: '1 / -1' }}><Link className="elv-link" to="/app/feedback">{copy[lang].opinion}</Link></div> : null
+  return previewEnabled(import.meta.env.VITE_ENABLE_PILOT_FEEDBACK_PREVIEW) ? <Link className="pc-link" to="/app/feedback">{copy[lang].opinion}</Link> : null
 }

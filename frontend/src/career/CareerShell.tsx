@@ -18,7 +18,7 @@ const token = () => { try { return localStorage.getItem('elevation_token') ?? ''
 export function CareerEntry() {
   const { lang } = useLanguage()
   if (!enabled) return null
-  return <div className="career-entry"><Link to="/app/next-step">{tr(lang, 'title')} →</Link><span>{tr(lang, 'preview')}</span></div>
+  return <section className="cg-card pg-card" aria-labelledby="career-entry-title"><h2 id="career-entry-title">{tr(lang, 'title')}</h2><p>{tr(lang, 'preview')}</p><div className="pg-actions"><Link className="cg-btn cg-btn--ghost" to="/app/next-step">{tr(lang, 'title')} →</Link></div></section>
 }
 export function CareerShell() {
   const [session, setSession] = useState(token)
