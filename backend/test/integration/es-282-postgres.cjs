@@ -39,7 +39,7 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
     assert.equal((await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v2', name: 'Prueba', email: 'fuerte@example.test', password: STRONG })).status, 201);
     const token = crypto.randomBytes(16).toString('hex');
     await seed('Invitations', { email: 'inv-fuerte@example.test', role: 'user', invitedBy: sup.id, tokenHash: sha256(token), expiresAt: new Date(Date.now() + 3600000), usedAt: null, locale: 'es', requestId: null });
-    assert.equal((await http(null, 'POST', '/api/invitations/accept', { token, name: 'Persona', password: STRONG })).status, 201);
+    assert.equal((await http(null, 'POST', '/api/invitations/accept', { token, name: 'Persona', password: STRONG, acceptedTerms: true, termsVersion: '2026-11-v2' })).status, 201);
     const resetToken = crypto.randomBytes(16).toString('hex');
     await seed('PasswordResets', { UserId: person.id, tokenHash: sha256(resetToken), expiresAt: new Date(Date.now() + 3600000), usedAt: null });
     assert.ok([200, 204].includes((await http(null, 'POST', '/api/password-reset/confirm', { token: resetToken, password: STRONG })).status));
