@@ -8,12 +8,13 @@ import { createFixture, FixtureError } from './fixture'
 import type { Command } from './fixture'
 import { registerCareerGuard } from './navigationGuard'
 import { registerLeaveGuard } from '../shell/leaveGuard'
+import { PersonScreen } from '../space/PersonScreen'
+import { Button } from '../cartografia/controls'
+import { Banner } from '../cartografia/pieces'
+import { Dialog } from '../cartografia/interactive'
 import './career.css'
 
 const enabled = import.meta.env.VITE_ENABLE_CAREER_PREVIEW === 'true'
-const darkQuery = '(prefers-color-scheme: dark)'
-const subscribeDark = (notify: () => void) => { if (typeof window.matchMedia !== 'function') return () => {}; const query = window.matchMedia(darkQuery); query.addEventListener('change', notify); return () => query.removeEventListener('change', notify) }
-const prefersDark = () => typeof window.matchMedia === 'function' && window.matchMedia(darkQuery).matches
 const token = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
 export function CareerEntry() {
   const { lang } = useLanguage()
@@ -31,15 +32,14 @@ export function CareerShell() {
   return <CareerSession key={session} session={session} />
 }
 function CareerSession({ session }: { session: string }) {
-  const dark = useSyncExternalStore(subscribeDark, prefersDark, () => false)
-  const { lang, setLang } = useLanguage(), routerNavigate = useNavigate(), location = useLocation()
+  const { lang } = useLanguage(), routerNavigate = useNavigate(), location = useLocation()
   const [client] = useState(() => createFixture(import.meta.env.VITE_CAREER_FIXTURE_SCENARIO ?? 'normal'))
   const state = useSyncExternalStore(client.subscribe, client.snapshot)
   const [busy, setBusy] = useState(false), [dirty, setDirty] = useState(false), [uncertain, setUncertain] = useState(false)
   const [message, setMessage] = useState<CopyKey | null>(null), [error, setError] = useState<CopyKey | null>(null)
   const [pending, setPending] = useState<string | number | null>(null)
   const dirtyRef = useRef(false), restoring = useRef(false), pendingBack = useRef(0), index = useRef<number>(window.history.state?.idx ?? 0)
-  const opener = useRef<HTMLElement | null>(null), keepRef = useRef<HTMLButtonElement>(null), mounted = useRef(true)
+  const mounted = useRef(true)
   const previousPath = useRef(location.pathname)
   const inFlight = useRef(false), notice = useRef<HTMLDivElement>(null)
   const dirtyKeys = useRef(new Set<string>()), lastForm = useRef('global'), lastError = useRef<CopyKey | null>(null)
@@ -68,20 +68,18 @@ function CareerSession({ session }: { session: string }) {
       const delta = nextIndex - index.current
       if (!delta) return
       e.stopImmediatePropagation(); pendingBack.current = delta; restoring.current = true; window.history.go(-delta)
-      opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     }
     const detach = registerCareerGuard(pop)
     // ES-153: los enlaces del marco de persona abren este mismo diálogo (antes solo lo abrían los enlaces de la propia pantalla)
     const leave = registerLeaveGuard(to => {
       if (!dirtyRef.current && !inFlight.current && !uncertainRef.current) return false
-      opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setPending(to); return true
+      setPending(to); return true
     })
     window.addEventListener('beforeunload', before)
     return () => { window.removeEventListener('beforeunload', before); detach(); leave() }
   }, [])
-  useEffect(() => { if (pending !== null) keepRef.current?.focus() }, [pending])
   const navigate = useCallback((to: string) => {
-    if (dirtyRef.current || inFlight.current || uncertain) { opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setPending(to) }
+    if (dirtyRef.current || inFlight.current || uncertain) { setPending(to) }
     else routerNavigate(to)
   }, [routerNavigate, uncertain])
   const send = useCallback(async (command: Command, key = 'global') => {
@@ -101,28 +99,23 @@ function CareerSession({ session }: { session: string }) {
       return { ok: false }
     } finally { inFlight.current = false; if (active()) setBusy(false) }
   }, [active, client, otherDirty, setDirtyValue, uncertain])
-  const stay = () => { setPending(null); opener.current?.focus() }
+  const stay = () => setPending(null) // el Dialog devuelve el foco a quien lo abrió
   const leave = () => { const target = pending; dirtyKeys.current.clear(); setDirtyValue(false); setPending(null); if (typeof target === 'number') window.history.go(target); else if (target !== null) routerNavigate(target) }
   const nav = (to: string, key: CopyKey) => <Link to={to} aria-current={location.pathname === to ? 'page' : undefined} onClick={e => { if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate(to) } }}>{t(key)}</Link>
-  return <section className={`career-scope${dark ? ' elv-dark' : ''}`}>
-    <a className="career-skip" href="#career-main">{t('skip')}</a>
-    <header className="career-header"><div>{nav('/app/dashboard', 'back')}<span aria-hidden="true"> ELEVATION</span></div><div className="career-languages">{(['es', 'en'] as const).map(l => <button key={l} type="button" aria-label={l === 'es' ? 'Español' : 'English'} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}</div></header>
-    <div id="career-main" tabIndex={-1}><h1>{t('title')}</h1>
-      {session && token() === session && enabled && <nav aria-label={t('title')}>{nav('/app/next-step', 'routes')}{nav('/app/next-step/experiments', 'experiments')}{nav('/app/next-step/plan', 'plan')}</nav>}
+  return <PersonScreen title={t('title')} wide>
+    <div id="career-main" tabIndex={-1} className="pc-main">
+      {session && token() === session && enabled && <nav className="pc-subnav" aria-label={t('title')}>{nav('/app/next-step', 'routes')}{nav('/app/next-step/experiments', 'experiments')}{nav('/app/next-step/plan', 'plan')}</nav>}
       {!session || token() !== session ? <p role="alert">{t('session')}</p> : !enabled ? <p role="status">{t('disabled')}</p> : <>
-        <p className="elv-alert career-banner" role="note">{t('preview')}</p>
+        <Banner title={t('preview')} />
         {dirty && <p>{t('unsaved')}</p>}
-        {dirtyCount > 1 && <p className="career-warning" role="status">{t('otherDraft')}</p>}
-        <div ref={notice} tabIndex={-1} aria-live="polite" className={error ? 'career-error' : ''}>
+        {dirtyCount > 1 && <p className="pc-warn" role="status">{t('otherDraft')}</p>}
+        <div ref={notice} tabIndex={-1} aria-live="polite" className={error ? 'cg-error' : ''}>
           {(busy || error || message) && <p>{busy ? t(state.loaded ? 'saving' : 'loading') : error ? t(error) : message ? t(message) : null}</p>}
-          {error && error !== 'validate' && <button type="button" className="elv-btn elv-btn-outline" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
+          {error && error !== 'validate' && <button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
         </div>
         {!state.loaded ? <p role="status">{error ? t('empty') : t('loading')}</p> : <CareerContext.Provider value={{ state, client, lang, t, busy, uncertain, dirty: dirty || dirtyCount > 0, setDirty: setDirtyValue, otherDirty, send, navigate }}><div aria-busy={busy}><Outlet /></div></CareerContext.Provider>}
       </>}
     </div>
-    {pending !== null && <div className="career-dialog-backdrop" onKeyDown={e => {
-      if (e.key === 'Escape') { e.preventDefault(); stay() }
-      if (e.key === 'Tab') { const controls = e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'); const first = controls[0], last = controls[controls.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() } }
-    }}><div role="dialog" aria-modal="true" aria-labelledby="career-leave-title" className="career-dialog"><h2 id="career-leave-title">{t('leaveTitle')}</h2><button ref={keepRef} type="button" className="elv-btn" onClick={stay}>{t('keep')}</button><button type="button" className="elv-btn elv-btn-outline" disabled={busy} onClick={leave}>{t('leave')}</button></div></div>}
-  </section>
+    <Dialog open={pending !== null} onClose={stay} title={t('leaveTitle')} actions={<><Button onClick={stay}>{t('keep')}</Button><Button variant="ghost" disabled={busy} onClick={leave}>{t('leave')}</Button></>} />
+  </PersonScreen>
 }

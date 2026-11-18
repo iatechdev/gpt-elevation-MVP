@@ -16,7 +16,7 @@ test('ES-206 punto 1: /app/dashboard y /app/chat tienen un h1 (visualmente ocult
 
 test('ES-206 punto 2: «Mis datos» y «Volver al inicio» miden al menos 24 px de alto', () => {
   assert.match(read('../src/access/sessionControl.css'), /\.session-control-data \{[^}]*min-height: 44px/)
-  assert.match(read('../src/career/career.css'), /\.career-header a \{[^}]*min-height:44px/)
+  assert.match(read('../src/cartografia/pages.css'), /\.pc-subnav a \{[^}]*min-height: var\(--cg-touch\)/) // ES-329: el «Volver al inicio» propio de Siguiente paso se retiró (lo da el marco); la subnavegación mide 46 px
 })
 
 test('ES-206 punto 3: panel del terapeuta con concordancia y sin «prompt» en el botón en español', () => {
