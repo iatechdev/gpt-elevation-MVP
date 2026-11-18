@@ -192,3 +192,20 @@
 /* E316-1: los avisos del hilo (pausa, límite agotado) usan el color de texto del sistema; el #5A4710 fijo del ámbito antiguo no se lee sobre el panel oscuro (1,86:1). */
 .chat-shell .space-callout { color: var(--cg-ink); }
 .chat-menu .chat-enter { display: flex; gap: 10px; align-items: center; min-height: 46px; }
+
+/* ES-342 (PARTE A, defectos del chat; sin cambios de flujo ni de textos). */
+/* A2: palabras o URLs largas se parten dentro del globo en vez de salirse y recortarse. */
+.chat-msg-body, .chat-msg-text, .chat-msg-wait { overflow-wrap: anywhere; min-width: 0; }
+.chat-msg { min-width: 0; }
+/* A1: el aviso de pausa o de límite no queda pegado al borde del hilo (margen de respiro al traerlo a la vista). */
+.chat-transcript .space-callout { scroll-margin-block-end: 12px; }
+/* A3: «Enviar» sin texto: deshabilitado con tokens del sistema (panel, texto atenuado, borde), sin el terracota de acción ni aspecto de error. */
+.chat-shell .chat-composer .elv-btn-primary:disabled { opacity: 1; background: var(--cg-panel); color: var(--cg-muted); border-color: var(--cg-muted); }
+/* A4: en pantallas medianas y bajas (p. ej. 1024×768) «Diario» comparte fila con la caja y «Enviar»: el hilo recupera ~50 px. */
+@media (min-width: 901px) and (max-height: 800px) {
+  .chat-composer { grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; }
+  .chat-composer .chat-counter { grid-column: 1 / -1; grid-row: 1; }
+  .chat-composer .chat-composer-top { grid-column: 1; grid-row: 2; align-self: end; }
+  .chat-composer .chat-composer-row { grid-column: 2; grid-row: 2; }
+  .chat-composer-top .elv-btn { flex: 0 0 auto; }
+}
