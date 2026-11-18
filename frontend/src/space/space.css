@@ -19,13 +19,6 @@
 .space-scope .elv-link { color: var(--color-secondary); display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; }
 .space-skip { position: fixed; top: 0; left: 0; transform: translateY(-200%); z-index: 100; background: var(--space-surface); padding: 12px; } .space-skip:focus { transform: none; }
 .space-card { border: 1px solid var(--color-base-300); border-radius: .25rem; padding: 24px; background: var(--space-surface); margin-bottom: 16px; }
-.space-dashboard-body { grid-template-columns: minmax(0, 1fr); }
-.space-dashboard-body > div { min-width: 0; }
-@media(max-width: 767px) {
-  .space-dashboard-header > div { gap: 8px; padding: 8px 16px !important; }
-  .space-dashboard-header > div > div { flex: 1; min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 8px !important; }
-  .space-dashboard-header button { min-height: 44px; min-width: 44px; }
-}
 .space-scope label { display: block; margin: 12px 0; }
 .space-scope .elv-input, .space-scope .elv-textarea { display: block; width: 100%; max-width: 100%; background: white; color: var(--color-base-content); border: 1px solid var(--color-base-300); padding: 12px; font: inherit; border-radius: .65rem; }
 .space-scope .elv-textarea { min-height: 180px; resize: vertical; }
@@ -35,7 +28,7 @@
 .space-context label { display: flex; gap: 12px; align-items: center; min-height: 44px; }
 .space-context input { flex-shrink: 0; }
 .space-pending { border: 2px dashed var(--color-base-300); padding: 12px; }
-@media(min-width: 768px) { .space-page { padding: 24px; } .space-dashboard-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); } }
+@media(min-width: 768px) { .space-page { padding: 24px; } }
 @media(prefers-reduced-motion: reduce) { .space-scope *, .space-scope *::before, .space-scope *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 .space-compass-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .space-compass-head h2 { margin: 0; font-size: 1.125rem; }
@@ -150,7 +143,6 @@
 @media (min-width: 901px) { .chat-menu-frame { display: none; } }
 /* En ≤ 900 px el encabezado del marco no se dibuja en el chat: su navegación, idioma y tema están en el menú. */
 @media (max-width: 900px) { .cg-frame:has(.chat-shell) > .cg-header { display: none; } }
-.cg-main .space-dashboard-header > div { min-width: 0; box-sizing: border-box; } /* la cabecera propia del inicio ya no se fija: se ajusta al ancho del marco */
 /* ES-333 (PR 1): estructura del chat con tokens (sin estilos en línea ni colores fijos en cabecera, hilo y recomendaciones). El check-out y el panel de administración se tratan en los PR 2 y 3. */
 .chat-shell { --chat-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, monospace; background: var(--elv-bg); color: var(--elv-text-1); font-family: var(--elv-font-body, Inter, sans-serif); }
 .chat-header { position: relative; z-index: 1; background: var(--elv-bg); border-bottom: 1px solid var(--elv-line); height: 60px; display: flex; align-items: center; justify-content: center; }

@@ -2,19 +2,26 @@
 // HU-061 — User Dashboard unificado con check-in integrado
 // HU-077 — Widget Mi Plan
 // HU-067 — Botón videollamada activo
+// ES-329 (Inicio): pantalla en «Cartografía» dentro del marco de persona (ES-153). Sin cabecera propia, sin emojis ni estrellas (escala «N de 5» con palabra),
+// tendencia en tabla, «Mi plan» con el mismo contenido de antes y textos en el catálogo (dashboardCopy.ts). Los datos, endpoints y flujos NO cambian.
 
 import '../compass/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import '../evidence/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
+import './progressCopy.ts' // ES-254: «N de 5», palabras del ánimo y categorías de las recomendaciones (mismos textos que /app/progress)
+import './dashboardCopy.ts' // ES-329: textos de esta pantalla
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { copy } from '../space/copy'
-import '../space/space.css' // ES-153: antes lo traía el menú de Mi espacio (estilos de la cabecera y del cuerpo del inicio)
-import { SessionControl } from '../access/SessionControl'
+import { PersonScreen } from '../space/PersonScreen'
+import { Button, Chip, LinkButton, ScaleField } from '../cartografia/controls'
+import { Dialog } from '../cartografia/interactive'
+import { ItemList } from '../cartografia/pieces'
 import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
+import { registerLeaveGuard } from '../shell/leaveGuard'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
-import { MatchingModal } from '../components/MatchingModal'
+import { ProgressMatching } from '../progress/ProgressMatching'
 import { CareerEntry } from '../career/CareerShell'
 import { MapAccessCard } from '../skill-map/MapAccess'
 import { ExerciseTools } from '../exercises/ExerciseTools'
@@ -43,24 +50,8 @@ type PlanLimits = {
   canMatchTherapist: boolean
 }
 
-const MOOD_EMOJI: Record<number, string> = {
-  1: '😞', 2: '😔', 3: '😐', 4: '🙂', 5: '😊',
-}
-
-const CHECKOUT_MOODS = [
-  { emoji: '😞', value: 1 },
-  { emoji: '😔', value: 2 },
-  { emoji: '😐', value: 3 },
-  { emoji: '🙂', value: 4 },
-  { emoji: '😊', value: 5 },
-]
-
-const PLAN_COLORS: Record<string, { bg: string; border: string; badge: string; text: string }> = {
-  basic:     { bg: '#F5F3EF', border: '#E7E5E4', badge: '#6B645F', text: '#6B645F' },
-  essential: { bg: '#EAF0E6', border: '#A8B5A2', badge: '#5C6B4E', text: '#5C6B4E' },
-  plus:      { bg: '#EEF2FF', border: '#A5B4FC', badge: '#4F46E5', text: '#4F46E5' },
-  pro:       { bg: '#FFF7ED', border: '#FCD34D', badge: '#D97706', text: '#D97706' },
-}
+const MOODS = [1, 2, 3, 4, 5]
+const REC_CATEGORIES = ['mindfulness', 'habit', 'reflection', 'resource']
 
 async function apiFetch(path: string, options?: RequestInit) {
   return fetch(`${API}${path}`, {
@@ -74,15 +65,15 @@ async function apiFetch(path: string, options?: RequestInit) {
 }
 
 export function UserDashboard() {
-  const { t, lang, setLang } = useLanguage()
-  const navigate              = useNavigate()
+  const { t, lang } = useLanguage()
+  const navigate    = useNavigate()
+  const locale      = lang === 'es' ? 'es-CO' : 'en-US'
 
   // ── Check-in state ───────────────────────────────────────────────────────
   const [checkedIn,      setCheckedIn]      = useState(false)
   const [todayMood,      setTodayMood]      = useState<number | null>(null)
   const [checkingIn,     setCheckingIn]     = useState(false)
-
-  // ── Chat state ───────────────────────────────────────────────────────────
+  const [pendingMood,    setPendingMood]    = useState<number | null>(null) // E322-1: opción elegida, aún sin registrar
 
   // ── Progress state ───────────────────────────────────────────────────────
   const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
@@ -97,28 +88,30 @@ export function UserDashboard() {
   const [expandedRec,      setExpandedRec]      = useState<Recommendation | null>(null)
   const [loadingRecs,      setLoadingRecs]       = useState(false)
 
-  // ── Matching modal ───────────────────────────────────────────────────────
+  // ── Matching dialog (mismo flujo y mismo contrato con el servidor que /app/progress) ──
   const [showMatching, setShowMatching] = useState(false)
-  const handleMatchingSuccess = () => {
+  const handleMatchingClose = () => {
     setShowMatching(false)
     const { signal } = new AbortController() // lectura iniciada por la persona (no se cancela al salir: la respuesta solo actualiza esta pantalla)
     void loadUpcomingSession(signal) // antes la segunda lectura (profesional) iba encadenada a esta: se refrescan las dos
     void loadTherapist(signal)
   }
 
-  // ── Checkout modal ───────────────────────────────────────────────────────
+  // ── Checkout dialog ──────────────────────────────────────────────────────
   const [showCheckout,   setShowCheckout]   = useState(false)
   const [checkoutMood,   setCheckoutMood]   = useState<number | null>(null)
   const [starRating,     setStarRating]     = useState<number | null>(null)
-  const [starHover,      setStarHover]      = useState<number | null>(null)
   const [checkoutSaving, setCheckoutSaving] = useState(false)
 
   // ── Plan state ───────────────────────────────────────────────────────────
   const [userPlan,   setUserPlan]   = useState<UserPlan>(null)
   const [planLimits, setPlanLimits] = useState<PlanLimits | null>(null)
 
-
   // ── Init ─────────────────────────────────────────────────────────────────
+
+  // ES-329: «Salir» ahora lo pone el marco de persona; antes de cerrar la sesión el marco consulta esta guardia, que abre la despedida (check-out) y bloquea el cierre directo.
+  // `ownLinks`: los enlaces del marco navegan sin preguntar; solo «Salir» (una acción) pasa por la despedida.
+  useEffect(() => registerLeaveGuard(() => { setShowCheckout(true); return true }, { ownLinks: true }), [])
 
   useEffect(() => {
     const token = getToken()
@@ -246,35 +239,22 @@ export function UserDashboard() {
       const log = moodLogs.find(m => m.date === dateStr)
       const moods = [log?.checkin_mood, log?.checkout_mood].filter(Boolean) as number[]
       const avg   = moods.length > 0 ? moods.reduce((a, b) => a + b, 0) / moods.length : null
-      return { dateStr, avg }
+      return { dateStr, day: d.toLocaleDateString(locale, { weekday: 'short' }), avg }
     })
   }
-
-  const trendColor = (avg: number | null) => {
-    if (avg === null)  return '#E7E5E4'
-    if (avg >= 3.5)    return '#5C6B4E'
-    if (avg >= 2.5)    return '#F59E0B'
-    return '#EF4444'
-  }
+  const formatAvg = (avg: number) => t('pr_of5', { n: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(avg) })
+  const moodOption = (n: number) => ({ value: String(n), label: `${n} · ${t(`pr_mood_${n}`)}` })
 
   const formatSession = (iso: string) =>
-    new Date(iso).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', {
+    new Date(iso).toLocaleDateString(locale, {
       weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
     })
 
-  const cardStyle: React.CSSProperties = {
-    background: '#fff', borderRadius: '1rem',
-    border: '0.5px solid #E7E5E4',
-    boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
-    padding: '1.25rem',
-  }
-
   // ── Plan helpers ─────────────────────────────────────────────────────────
   const planSlug   = userPlan?.slug ?? 'basic'
-  const planColors = PLAN_COLORS[planSlug] ?? PLAN_COLORS.basic
   const planName   = userPlan
     ? (lang === 'es' ? userPlan.name_es : userPlan.name_en)
-    : (lang === 'es' ? 'Básico' : 'Basic')
+    : t('dash_plan_basic')
   const planFeatures = userPlan
     ? (lang === 'es' ? userPlan.features_es : userPlan.features_en)
     : []
@@ -288,416 +268,177 @@ export function UserDashboard() {
     return diff <= 15 * 60 * 1000 && diff >= 0
   })()
 
+  const recCategory = (category: string) => t(`pr_rec_cat_${REC_CATEGORIES.includes(category) ? category : 'other'}`)
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f9f9f7', fontFamily: 'Inter, sans-serif' }}>
-      <h1 className="sr-only">{lang === 'es' ? 'Mi panel' : 'My dashboard'}</h1>
-
-      {/* ── HEADER ── */}
-      <header className="space-dashboard-header" style={{
-        position: 'relative', zIndex: 1, /* ES-153: dentro del marco de persona la cabecera propia ya no se fija sobre el encabezado del marco */
-        background: 'rgba(249,249,247,0.92)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(231,229,228,0.5)',
-        minHeight: 60, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <div style={{ maxWidth: 1100, width: '100%', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 10, letterSpacing: '0.3em', color: '#6F6963', textTransform: 'uppercase' }}>
-            {t('logo')}
-          </span>
-
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            {(['es', 'en'] as const).map(l => (
-              <button key={l} onClick={() => setLang(l)}
-                style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '0.5px solid #D6D2C4', background: lang === l ? '#5C6B4E' : 'transparent', color: lang === l ? '#FAF8F4' : '#6F6963', cursor: 'pointer' }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-            <button onClick={() => navigate('/app/progress')}
-              style={{ fontSize: '0.78rem', color: '#6B645F', background: 'none', border: 'none', cursor: 'pointer' }}>
-              {lang === 'es' ? 'Mi progreso' : 'My progress'}
-            </button>
-            <button onClick={() => navigate('/app/my-therapist')}
-              style={{ fontSize: '0.78rem', color: '#6B645F', background: 'none', border: 'none', cursor: 'pointer' }}>
-              {lang === 'es' ? 'Mi terapeuta' : 'My therapist'}
-            </button>
-            <SessionControl onRequestSignOut={() => setShowCheckout(true)} />
-          </div>
+    <PersonScreen title={t('dash_title')} wide>
+      <div className="pc-stack">
+        <div className="pc-grid">
+          <MapAccessCard />
+          <CareerEntry />
         </div>
-      </header>
 
-      {/* ── BODY ── */}
-      <div className="space-dashboard-body" style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 1.5rem 2rem', display: 'grid', gap: '1.25rem', alignItems: 'start' }}>
-        <MapAccessCard />
-        <CareerEntry />
-
-        <FeedbackPreviewLink />
-        {/* ── COLUMNA IZQUIERDA ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-          <button className="context-dashboard-link elv-btn elv-btn-ghost" onClick={() => navigate('/app/onboarding')}
-            style={{ fontSize: '0.875rem', color: '#4A6741', background: 'white', border: '1px solid #D6D2C4', borderRadius: '0.65rem', cursor: 'pointer', minHeight: 44, padding: '0.5rem 1rem' }}>
-            {t('context_link')}
-          </button>
-          <button className="evidence-dashboard-link elv-btn elv-btn-ghost" onClick={() => navigate('/app/evidence')}
-            style={{ fontSize: '0.875rem', color: '#4A6741', background: 'white', border: '1px solid #D6D2C4', borderRadius: '0.65rem', cursor: 'pointer', minHeight: 44, padding: '0.5rem 1rem' }}>
-            {t('evidence.title')}
-          </button>
-
-          {/* Widget 1 — Estado emocional */}
-          <div style={cardStyle}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              ♡ {lang === 'es' ? 'Estado emocional' : 'Emotional state'}
-            </div>
-            {checkedIn ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <div style={{ fontSize: '2rem' }}>{MOOD_EMOJI[todayMood ?? 3]}</div>
-                <div style={{ fontSize: '0.78rem', color: '#5C6B4E' }}>
-                  {lang === 'es' ? '✓ Ya registraste tu estado de hoy' : '✓ Check-in done for today'}
-                </div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: 0 }}>
-                  {lang === 'es' ? '¿Cómo llegas hoy?' : 'How are you arriving today?'}
-                </p>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {CHECKOUT_MOODS.map(m => (
-                    <button key={m.value} onClick={() => { if (!checkingIn) void handleCheckin(m.value) }}
-                      disabled={checkingIn}
-                      style={{
-                        width: 44, height: 44, borderRadius: '50%', fontSize: '1.3rem',
-                        border: '1px solid #E7E5E4', background: 'white',
-                        cursor: checkingIn ? 'not-allowed' : 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'all 0.15s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#5C6B4E'; e.currentTarget.style.background = '#EAF0E6' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E7E5E4'; e.currentTarget.style.background = 'white' }}
-                    >
-                      {m.emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Widget 2 — Tu progreso */}
-          <div style={cardStyle}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              ↗ {lang === 'es' ? 'Tu progreso' : 'Your progress'}
-            </div>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <div style={{ fontSize: '1.4rem', fontWeight: 600, color: '#1C1917' }}>{sessionsWeek}</div>
-              <div style={{ fontSize: '0.75rem', color: '#6B645F' }}>
-                {lang === 'es' ? 'sesiones esta semana' : 'sessions this week'}
-              </div>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: '#6B645F', marginBottom: '0.4rem' }}>
-              {lang === 'es' ? 'Tendencia emocional' : 'Emotional trend'}
-            </div>
-            <div style={{ display: 'flex', gap: '4px' }}>
-              {getMoodTrend().map(({ dateStr, avg }) => (
-                <div key={dateStr} title={dateStr}
-                  style={{ flex: 1, height: 28, borderRadius: 4, background: trendColor(avg) }} />
-              ))}
-            </div>
-          </div>
-
-          {/* Widget 3 — Próxima sesión — HU-067 activado */}
-          <div style={{
-            ...cardStyle,
-            ...(sessionIsLive ? { border: '1px solid #5C6B4E', background: '#EAF0E6' } : {}),
-            ...(sessionIsImminent ? { border: '1px solid #A8B5A2' } : {}),
-          }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
-              {sessionIsLive
-                ? '🔴 ' + (lang === 'es' ? 'Sesión en curso' : 'Session live')
-                : '📅 ' + (lang === 'es' ? 'Próxima sesión' : 'Upcoming session')}
-            </div>
-
-            {upcomingSession ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#1C1917' }}>
-                  {lang === 'es' ? 'Con' : 'With'} {upcomingSession.therapistName}
-                </div>
-                <div style={{ fontSize: '0.78rem', color: '#6B645F' }}>
-                  {formatSession(upcomingSession.scheduledAt)} — {upcomingSession.duration} min
-                </div>
-
-                {/* HU-067 — botón videollamada activo */}
-                {sessionIsLive ? (
-                  // Sesión activa — botón verde para entrar
-                  <button
-                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
-                    style={{
-                      marginTop: '0.5rem', padding: '0.6rem 0.85rem',
-                      background: '#5C6B4E', color: '#fff',
-                      border: 'none', borderRadius: '0.65rem',
-                      fontSize: '0.82rem', fontWeight: 600,
-                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                    }}
-                  >
-                    🎥 {lang === 'es' ? 'Entrar a la videollamada' : 'Join videocall'}
-                  </button>
-                ) : sessionIsImminent ? (
-                  // Sesión en menos de 15 min — botón de espera pulsante
-                  <button
-                    onClick={() => navigate(`/app/session/${upcomingSession.id}`)}
-                    style={{
-                      marginTop: '0.5rem', padding: '0.6rem 0.85rem',
-                      background: '#A8B5A2', color: '#fff',
-                      border: 'none', borderRadius: '0.65rem',
-                      fontSize: '0.82rem', fontWeight: 500,
-                      cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                    }}
-                  >
-                    ⏳ {lang === 'es' ? 'La sesión está por comenzar' : 'Session starting soon'}
-                  </button>
-                ) : (
-                  // Sesión futura — botón informativo deshabilitado
-                  <div style={{
-                    marginTop: '0.5rem', padding: '0.5rem 0.85rem',
-                    background: '#F5F3EF', borderRadius: '0.65rem',
-                    fontSize: '0.78rem', color: '#6B645F',
-                    display: 'flex', alignItems: 'center', gap: '0.4rem',
-                  }}>
-                    🕐 {lang === 'es'
-                      ? 'El enlace estará disponible cuando el terapeuta inicie la sesión'
-                      : 'Link will be available when your therapist starts the session'}
-                  </div>
-                )}
-              </div>
-            ) : therapistId ? (
-              <p style={{ fontSize: '0.82rem', color: '#6B645F', margin: 0 }}>
-                {lang === 'es' ? 'Tu terapeuta aún no ha agendado una sesión.' : 'Your therapist has not scheduled a session yet.'}
-              </p>
-            ) : (
-              <button onClick={() => setShowMatching(true)}
-                style={{ padding: '0.5rem 0.85rem', background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', fontSize: '0.78rem', cursor: 'pointer' }}>
-                🤝 {lang === 'es' ? 'Buscar mi terapeuta' : 'Find my therapist'}
-              </button>
-            )}
-          </div>
-
-          {/* Widget 4 — Mi Plan (HU-077) */}
-          <div style={{
-            ...cardStyle,
-            background: planColors.bg,
-            border: `0.5px solid ${planColors.border}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                ◇ {lang === 'es' ? 'Mi plan' : 'My plan'}
-              </div>
-              <span style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-                padding: '2px 10px', borderRadius: 9999,
-                background: planColors.badge, color: '#fff',
-                textTransform: 'uppercase',
-              }}>
-                {planName}
-              </span>
-            </div>
-
-            <div style={{ marginBottom: '0.75rem' }}>
-              {userPlan && userPlan.price > 0 ? (
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                  <span style={{ fontSize: '1.5rem', fontWeight: 600, color: '#1C1917' }}>
-                    ${userPlan.price}
-                  </span>
-                  <span style={{ fontSize: '0.72rem', color: '#6B645F' }}>
-                    {userPlan.currency} / {lang === 'es' ? 'mes' : 'month'}
-                  </span>
-                </div>
+        <div className="pc-grid">
+          {/* ── COLUMNA IZQUIERDA ── */}
+          <div className="pc-stack">
+            {/* Estado emocional */}
+            <section className="cg-card pg-card" aria-labelledby="dash-mood">
+              <h2 id="dash-mood">{t('dash_mood_title')}</h2>
+              {checkedIn ? (
+                <>
+                  <p>{t('dash_checked')}</p>
+                  {todayMood !== null && <p className="cg-hint">{t('pr_of5', { n: todayMood })} · {t(`pr_mood_${todayMood}`)}</p>}
+                </>
               ) : (
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#6B645F' }}>
-                  {lang === 'es' ? 'Gratis' : 'Free'}
-                </div>
-              )}
-            </div>
-
-            {planLimits && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#6B645F' }}>
-                  <span>{lang === 'es' ? 'Mensajes IA / día' : 'AI messages / day'}</span>
-                  <span style={{ fontWeight: 600, color: planColors.text }}>
-                    {formatLimit(planLimits.chatMessagesDay)}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#6B645F' }}>
-                  <span>{lang === 'es' ? 'Sesiones / mes' : 'Sessions / month'}</span>
-                  <span style={{ fontWeight: 600, color: planColors.text }}>
-                    {formatLimit(planLimits.sessionsMonth)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {planFeatures.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '0.75rem' }}>
-                {planFeatures.slice(0, 3).map((f, i) => (
-                  <div key={i} style={{ fontSize: '0.72rem', color: '#6B645F', display: 'flex', gap: '0.35rem' }}>
-                    <span style={{ color: planColors.text }}>✓</span>
-                    <span>{f}</span>
+                <>
+                  {/* E322-1: elegir con las flechas NO registra; se registra con el botón (teclado: Tab hasta él y Enter). */}
+                  <ScaleField legend={t('dash_arrive')} name="dash-mood" disabled={checkingIn} options={MOODS.map(moodOption)}
+                    value={pendingMood === null ? '' : String(pendingMood)} onChange={value => setPendingMood(Number(value))} />
+                  <div className="pg-actions">
+                    <Button disabled={checkingIn || pendingMood === null} onClick={() => { if (pendingMood !== null && !checkingIn) void handleCheckin(pendingMood) }}>{t('dash_register')}</Button>
                   </div>
-                ))}
-              </div>
-            )}
+                </>
+              )}
+            </section>
 
-            {(planSlug === 'basic' || planSlug === 'essential') && (
-              <button
-                onClick={() => navigate('/pricing')}
-                style={{
-                  width: '100%', padding: '0.5rem', borderRadius: '0.65rem',
-                  border: `0.5px solid ${planColors.border}`,
-                  background: 'transparent', color: planColors.text,
-                  fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer',
-                  marginTop: '0.25rem',
-                }}
-              >
-                {lang === 'es' ? 'Ver planes →' : 'View plans →'}
-              </button>
-            )}
+            {/* Tu progreso */}
+            <section className="cg-card pg-card" aria-labelledby="dash-progress">
+              <h2 id="dash-progress">{t('dash_progress')}</h2>
+              <dl className="pc-dl">
+                <dt>{t('dash_sessions_week')}</dt>
+                <dd className="pc-big">{sessionsWeek}</dd>
+              </dl>
+              <div className="pc-region" role="region" tabIndex={0} aria-label={t('dash_trend')}>
+                <table className="pc-trend">
+                  <caption className="cg-hint">{t('dash_trend')}</caption>
+                  <thead><tr>{getMoodTrend().map(({ dateStr, day }) => <th key={dateStr} scope="col">{day}</th>)}</tr></thead>
+                  <tbody><tr>{getMoodTrend().map(({ dateStr, avg }) => <td key={dateStr}>{avg === null ? '—' : formatAvg(avg)}</td>)}</tr></tbody>
+                </table>
+              </div>
+            </section>
           </div>
 
+          {/* ── COLUMNA DERECHA ── */}
+          <div className="pc-stack">
+            {/* Próxima sesión — HU-067 */}
+            <section className="cg-card pg-card" aria-labelledby="dash-session">
+              <h2 id="dash-session">{sessionIsLive ? t('dash_live') : t('dash_upcoming')}</h2>
+              {upcomingSession ? (
+                <>
+                  <p><strong>{t('dash_with')} {upcomingSession.therapistName}</strong></p>
+                  <p className="cg-hint">{formatSession(upcomingSession.scheduledAt)} — {upcomingSession.duration} min</p>
+                  {/* HU-067 — el botón de videollamada solo se pinta cuando la sesión está en curso o por comenzar, como antes */}
+                  {sessionIsLive ? (
+                    <div className="pg-actions"><Button onClick={() => navigate(`/app/session/${upcomingSession.id}`)}>{t('dash_join')}</Button></div>
+                  ) : sessionIsImminent ? (
+                    <div className="pg-actions"><Button onClick={() => navigate(`/app/session/${upcomingSession.id}`)}>{t('dash_soon')}</Button></div>
+                  ) : (
+                    <p className="cg-hint">{t('dash_link_later')}</p>
+                  )}
+                </>
+              ) : therapistId ? (
+                <p>{t('dash_no_session')}</p>
+              ) : (
+                <div className="pg-actions"><Button onClick={() => setShowMatching(true)}>{t('dash_find_pro')}</Button></div>
+              )}
+            </section>
+
+            {/* Acceso a la conversación (ES-123: la conversación vive en /app/chat, a pantalla completa) */}
+            <section className="cg-card pg-card" aria-labelledby="dash-chat">
+              <h2 id="dash-chat">{copy[lang].chatLink}</h2>
+              <ExerciseTools />
+              {!checkedIn ? (
+                <p>{t('dash_chat_select')}</p>
+              ) : (
+                <>
+                  <p>{copy[lang].chatLinkHint}</p>
+                  <div className="pg-actions"><Link className="cg-btn" to="/app/chat">{copy[lang].chatLink}</Link></div>
+                </>
+              )}
+            </section>
+
+            {/* Mi plan (HU-077): el mismo contenido de antes, sin color fijo ni emoji (adenda 12328). El plan completo sigue en /app/plan. */}
+            <section className="cg-card pg-card" aria-labelledby="dash-plan">
+              <div className="pc-line">
+                <h2 id="dash-plan" className="pc-flush">{t('dash_plan')}</h2>
+                <Chip>{planName}</Chip>
+              </div>
+              {userPlan && userPlan.price > 0 ? (
+                <p className="pc-price">${userPlan.price} {userPlan.currency} / {t('dash_month')}</p>
+              ) : (
+                <p className="pc-price">{t('dash_free')}</p>
+              )}
+              {planLimits && (
+                <dl className="pc-dl">
+                  <div className="pc-line"><dt>{t('dash_ai_day')}</dt><dd>{formatLimit(planLimits.chatMessagesDay)}</dd></div>
+                  <div className="pc-line"><dt>{t('dash_sessions_month')}</dt><dd>{formatLimit(planLimits.sessionsMonth)}</dd></div>
+                </dl>
+              )}
+              {planFeatures.length > 0 && (
+                <ul className="pc-feats">
+                  {planFeatures.slice(0, 3).map((f, i) => <li key={i}>✓ {f}</li>)}
+                </ul>
+              )}
+              {(planSlug === 'basic' || planSlug === 'essential') && (
+                <div className="pg-actions"><Link className="pc-link" to="/app/plan">{t('dash_see_plans')}</Link></div>
+              )}
+            </section>
+          </div>
         </div>
 
-        {/* ── COLUMNA DERECHA — ACCESO AL CHAT (ES-123: la conversación vive en /app/chat, a pantalla completa) ── */}
-        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column' }}>
-          <ExerciseTools />
-
-          {!checkedIn ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '2rem' }}>
-              <div style={{ fontSize: '2.5rem' }}>💬</div>
-              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#6F6963', textAlign: 'center', margin: 0 }}>
-                {lang === 'es'
-                  ? 'Selecciona cómo llegas hoy para comenzar tu conversación.'
-                  : 'Select how you\'re arriving today to start your conversation.'}
-              </p>
-            </div>
+        {/* ── RECOMENDACIONES ── */}
+        <section className="cg-card pg-card" aria-labelledby="dash-recs">
+          <div className="pc-line">
+            <h2 id="dash-recs" className="pc-flush">{t('dash_recs')}</h2>
+            <Button variant="ghost" onClick={() => void handleGenerateRecs()} disabled={loadingRecs} aria-busy={loadingRecs}>{t('dash_recs_generate')}</Button>
+          </div>
+          {recommendations.length === 0 ? (
+            <p className="cg-muted">{t('dash_recs_empty')}</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '2rem 1rem' }}>
-              <div style={{ fontSize: '2.5rem' }} aria-hidden="true">💬</div>
-              <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#57534E', textAlign: 'center', margin: 0 }}>{copy[lang].chatLinkHint}</p>
-              <div className="space-scope"><a className="elv-btn elv-btn-primary" href="/app/chat" style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>{copy[lang].chatLink}</a></div>
-            </div>
+            <ItemList items={recommendations.map(rec => ({
+              id: String(rec.id),
+              top: <span className="cg-tag">{recCategory(rec.category)}</span>,
+              body: <>
+                <p>{rec.content.length > 100 ? rec.content.slice(0, 100) + '...' : rec.content}</p>
+                <div className="pg-actions"><LinkButton onClick={() => setExpandedRec(rec)}>{t('dash_explore')}</LinkButton></div>
+              </>,
+            }))} />
           )}
-        </div>
+        </section>
+
+        {/* ── ENLACES ── */}
+        <nav className="pc-links" aria-label={t('dash_title')}>
+          <Link className="pc-link context-dashboard-link" to="/app/onboarding">{t('context_link')}</Link>
+          <Link className="pc-link evidence-dashboard-link" to="/app/evidence">{t('evidence.title')}</Link>
+          <Link className="pc-link" to="/app/compass">{t('compass.title')}</Link>
+          <Link className="pc-link" to="/app/route-catalog">{t('catalog.title')}</Link>
+          <FeedbackPreviewLink />
+        </nav>
       </div>
 
-      {/* ── SECCIÓN RECOMENDACIONES ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem 1.5rem' }}>
-        <a href="/app/route-catalog" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('catalog.title')}</a>
-        <a href="/app/compass" style={{ color: '#4A6741', display: 'inline-flex', alignItems: 'center', minHeight: 44, textDecoration: 'underline' }}>{t('compass.title')}</a>
-      </div>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem 3rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.2rem', color: '#1C1917', margin: 0 }}>
-            ✨ {lang === 'es' ? 'Recomendaciones para ti' : 'Recommendations for you'}
-          </h2>
-          <button onClick={() => void handleGenerateRecs()} disabled={loadingRecs}
-            style={{ fontSize: '0.78rem', color: '#5C6B4E', background: 'none', border: '0.5px solid #5C6B4E', borderRadius: '0.65rem', padding: '0.35rem 0.75rem', cursor: loadingRecs ? 'not-allowed' : 'pointer' }}>
-            {loadingRecs ? '...' : lang === 'es' ? 'Generar nuevas' : 'Generate new'}
-          </button>
-        </div>
+      {/* ── DIÁLOGO RECOMENDACIÓN ── */}
+      <Dialog open={expandedRec !== null} onClose={() => setExpandedRec(null)} title={expandedRec ? recCategory(expandedRec.category) : ''}
+        actions={<Button variant="ghost" onClick={() => setExpandedRec(null)}>{t('dash_close')}</Button>}>
+        <p>{expandedRec?.content}</p>
+      </Dialog>
 
-        {recommendations.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#6F6963', fontSize: '0.875rem' }}>
-            {lang === 'es' ? 'Aún no tienes recomendaciones. ¡Genera las primeras!' : 'No recommendations yet. Generate your first ones!'}
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            {recommendations.map(rec => (
-              <div key={rec.id} style={{ ...cardStyle, cursor: 'pointer' }}
-                onClick={() => setExpandedRec(rec)}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.35rem' }}>
-                  {t(`rec_category_${rec.category}`)}
-                </div>
-                <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '0.88rem', color: '#1C1917', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
-                  {rec.content.length > 100 ? rec.content.slice(0, 100) + '...' : rec.content}
-                </p>
-                <span style={{ fontSize: '0.75rem', color: '#5C6B4E' }}>
-                  {lang === 'es' ? 'Explorar →' : 'Explore →'}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* ── DESPEDIDA (check-out): ánimo y calificación en palabras, sin emojis ni estrellas ── */}
+      <Dialog open={showCheckout} onClose={() => { if (!checkoutSaving) setShowCheckout(false) }} title={t('checkout_title')}
+        actions={<>
+          <Button variant="ghost" disabled={checkoutSaving} onClick={() => { void signOut(API).then(() => navigate('/', { replace: true })) }}>{t('checkout_skip')}</Button>
+          <Button disabled={checkoutMood === null || checkoutSaving} aria-busy={checkoutSaving} onClick={() => { if (checkoutMood !== null) void handleCheckout(checkoutMood) }}>{t('checkout_signout')}</Button>
+        </>}>
+        <p className="cg-hint">{t('checkout_label')}</p>
+        <ScaleField legend={t('checkout_hint')} name="checkout-mood" options={MOODS.map(moodOption)}
+          value={checkoutMood === null ? '' : String(checkoutMood)} onChange={value => setCheckoutMood(Number(value))} />
+        {checkoutMood !== null && (
+          <ScaleField legend={t('checkout_rating')} name="checkout-rating" options={MOODS.map(n => ({ value: String(n), label: t('pr_of5', { n }) }))}
+            value={starRating === null ? '' : String(starRating)} onChange={value => setStarRating(Number(value))} />
         )}
-      </div>
+      </Dialog>
 
-      {/* ── MODAL RECOMENDACIÓN ── */}
-      {expandedRec && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
-          onClick={() => setExpandedRec(null)}>
-          <div style={{ background: '#fff', borderRadius: '1rem', padding: '2rem', maxWidth: 480, width: '90%', boxShadow: '0 8px 32px rgba(26,28,27,0.12)' }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#5C6B4E', marginBottom: '0.5rem' }}>
-              {t(`rec_category_${expandedRec.category}`)}
-            </div>
-            <p style={{ fontFamily: 'Noto Serif, serif', fontStyle: 'italic', fontSize: '1rem', color: '#1C1917', lineHeight: 1.75, margin: '0 0 1.5rem' }}>
-              {expandedRec.content}
-            </p>
-            <button onClick={() => setExpandedRec(null)}
-              style={{ padding: '0.5rem 1.25rem', background: '#5C6B4E', color: '#fff', border: 'none', borderRadius: '0.65rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-              {lang === 'es' ? 'Cerrar' : 'Close'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── MODAL CHECKOUT ── */}
-      {showCheckout && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26,28,27,0.15)', backdropFilter: 'blur(4px)' }}>
-          <div style={{ background: '#FAF8F4', borderRadius: '1.25rem', padding: '2.5rem 2rem', maxWidth: 400, width: '90%', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', border: '0.5px solid #E7E5E4' }}>
-            <p style={{ fontSize: 10, letterSpacing: '0.15em', color: '#6F6963', margin: 0, textTransform: 'uppercase' }}>CHECK-OUT</p>
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', fontWeight: 400, color: '#1C1917', margin: 0, textAlign: 'center' }}>
-              {lang === 'es' ? '¿Cómo te vas?' : 'How are you leaving?'}
-            </h3>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {CHECKOUT_MOODS.map(m => (
-                <button key={m.value} onClick={() => setCheckoutMood(m.value)}
-                  style={{ width: 52, height: 52, borderRadius: '50%', fontSize: '1.5rem', border: checkoutMood === m.value ? '2px solid #0d9488' : '1px solid #E7E5E4', background: checkoutMood === m.value ? '#F0FDFA' : 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {m.emoji}
-                </button>
-              ))}
-            </div>
-            {checkoutMood !== null && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                <p style={{ fontSize: '0.8rem', color: '#6B645F', margin: 0 }}>
-                  {lang === 'es' ? '¿Cómo fue la conversación?' : 'How was the conversation?'}
-                </p>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <button key={star} onClick={() => setStarRating(star)}
-                      onMouseEnter={() => setStarHover(star)} onMouseLeave={() => setStarHover(null)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, color: star <= (starHover ?? starRating ?? 0) ? '#5C6B4E' : '#D6D2C4' }}>★</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
-              <button onClick={() => { if (checkoutMood !== null) void handleCheckout(checkoutMood) }}
-                disabled={checkoutMood === null || checkoutSaving}
-                style={{ flex: 1, padding: '0.85rem', borderRadius: '0.85rem', border: 'none', background: checkoutMood !== null ? 'linear-gradient(135deg,#00685f,#008378)' : '#E7E5E4', color: checkoutMood !== null ? 'white' : '#6F6963', fontSize: '0.875rem', fontWeight: 500, cursor: checkoutMood !== null ? 'pointer' : 'not-allowed' }}>
-                {checkoutSaving ? '...' : lang === 'es' ? 'Cerrar sesión' : 'Sign out'}
-              </button>
-              <button onClick={() => { void signOut(API).then(() => navigate('/', { replace: true })) }}
-                style={{ padding: '0.85rem 1rem', borderRadius: '0.85rem', border: '0.5px solid #D6D2C4', background: 'transparent', color: '#6B645F', fontSize: '0.875rem', cursor: 'pointer' }}>
-                {lang === 'es' ? 'Saltar' : 'Skip'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── MODAL MATCHING ── */}
-      {showMatching && (
-        <MatchingModal
-          onClose={() => setShowMatching(false)}
-          onSuccess={handleMatchingSuccess}
-        />
-      )}
-    </div>
+      {/* ── EMPAREJAMIENTO ── */}
+      <ProgressMatching open={showMatching} onClose={handleMatchingClose} />
+    </PersonScreen>
   )
 }

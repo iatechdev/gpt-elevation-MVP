@@ -84,3 +84,26 @@ a.cg-linkbtn { display: inline-block; min-height: 0; padding-block: 0.35rem; }
 .pc-reserve { min-height: 17rem; }
 @media (max-width: 360px) { .pc-reserve { min-height: 22rem; } }
 @media (min-width: 901px) { .pc-reserve { min-height: 11.6rem; } }
+/* ES-329 (Inicio y Mi profesional): piezas nuevas mínimas de la maqueta aprobada (12327/12328). Solo tokens --cg-*; ningún color ni estilo en línea. */
+.pc-stack { display: grid; gap: 1rem; min-width: 0; align-content: start; }
+.pc-stack > * { min-width: 0; }
+.pc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.pc-grid > * { min-width: 0; }
+@media (max-width: 900px) { .pc-grid { grid-template-columns: minmax(0, 1fr); } }
+.pc-line { display: flex; justify-content: space-between; gap: 0.4rem 0.8rem; flex-wrap: wrap; align-items: baseline; }
+.pc-flush { margin: 0 !important; }
+.pc-big { font: 700 1.8rem var(--cg-font-cond); }
+.pc-price { font: 700 1.5rem var(--cg-font-cond); margin: 0.4rem 0; }
+.pc-dl { margin: 0.4rem 0; }
+.pc-dl dt { font: 600 0.8rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cg-muted); }
+.pc-dl dd { margin: 0 0 0.6rem; overflow-wrap: anywhere; }
+.pc-dl .pc-line dd { margin: 0; }
+.pc-feats { list-style: none; padding: 0; margin: 0 0 0.4rem; }
+.pc-region { overflow-x: auto; max-width: 100%; }
+.pc-region:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.pc-trend { border-collapse: collapse; width: 100%; min-width: 30rem; }
+.pc-trend caption { text-align: left; caption-side: top; margin: 0 0 0.3rem; }
+.pc-trend th, .pc-trend td { border: 1px solid var(--cg-line); padding: 0.4rem 0.6rem; text-align: left; font-size: 0.9rem; }
+.pc-trend th { font: 600 0.8rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--cg-muted); }
+.pc-links { display: flex; flex-wrap: wrap; gap: 0.2rem 1.4rem; }
+.pc-link { color: var(--cg-ink); text-underline-offset: 4px; display: inline-flex; align-items: center; min-height: var(--cg-touch); }

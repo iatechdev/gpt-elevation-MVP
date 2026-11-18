@@ -1,6 +1,6 @@
 /* ES-307: la pantalla de ejercicios ya usa Cartografía (cartografia/pages.css). Aquí solo queda lo que no es de esa pantalla:
    la identificación de la IA del panel (ExerciseTools) y el aviso «contenido en revisión», con tokens --cg-*. */
 .exercise-warning { border-left: 3px solid var(--cg-mark); padding-left: 0.6rem; }
-.exercise-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; color: #1c1917; font-size: .875rem; }
-.exercise-tools a { display: inline-flex; align-items: center; min-height: 44px; color: #4a6741; text-decoration: underline; }
-.exercise-tools a:focus-visible { outline: 3px solid #4a6741; outline-offset: 3px; }
+.exercise-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; color: var(--cg-ink); font-size: .875rem; }
+.exercise-tools a { display: inline-flex; align-items: center; min-height: 44px; color: var(--cg-mark); text-decoration: underline; }
+.exercise-tools a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 3px; }
