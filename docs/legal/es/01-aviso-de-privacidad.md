@@ -78,8 +78,8 @@ Las respuestas del asistente las genera un modelo de lenguaje de **Anthropic** (
 
 - **Chat:** hasta tus últimos 20 mensajes de la conversación y las entradas de diario que tú elijas para esa conversación. No enviamos tu nombre ni tu correo.
 - **Si un mensaje tuyo muestra un indicio grave de crisis,** ese turno no se envía al modelo: te respondemos con un mensaje de seguridad fijo (tampoco se reenvía en mensajes posteriores).
-- **Recomendaciones de bienestar:** un resumen de tu ánimo de los últimos 7 días (cuántos registros, promedio y tendencia), sin texto tuyo.
-- **Análisis de habilidades:** las evidencias que confirmaste (título, situación, acciones, resultado y aprendizaje que tú escribiste) y la rúbrica del catálogo, cuando pides el análisis de tu mapa. No se envían tu diario, tu ánimo ni tus conversaciones.
+- **Recomendaciones de bienestar:** un resumen de tus últimos 7 registros de ánimo (cuántos hay, promedio y tendencia), sin texto tuyo.
+- **Análisis de habilidades:** las evidencias que confirmaste (entre otros datos: título, situación, responsabilidad, acciones, objetivo, resultado, aprendizaje y la autonomía que declaraste) y la rúbrica del catálogo, cuando pides el análisis de tu mapa. No se envían tu diario, tu ánimo ni tus conversaciones.
 - **Propuesta de capacidades desde tu contexto profesional** (función de servidor, hoy sin pantalla propia): los campos del contexto profesional que aprobaste en El Puente (motivaciones, valores, intereses, energía, condiciones deseadas y restricciones). [VERIFICAR VF-19: confirmar con Mauricio si esta función se activará para personas usuarias y cuándo; si no, retirar esta viñeta.]
 - **Lectura de tus fuentes (solo si lo autorizas, fuente por fuente):** hasta 20 mensajes de tu chat, hasta 10 entradas de tu diario o el texto de tu hoja de vida sin datos de contacto, para proponerte ideas.
 - **Emparejamiento con un profesional:** las respuestas cortas que elegiste, sin tu ánimo.

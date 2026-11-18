@@ -96,8 +96,8 @@ test('ES-335: no se tocó el producto: legalCopy.ts sigue siendo el texto vigent
 
 test('ES-335 (L-1/L-2): §7 del aviso enumera los mismos flujos hacia el modelo que el texto aprobado de ES-337, y la supresión se describe como manual', () => {
   const es = read('docs/legal/es/01-aviso-de-privacidad.md'), en = read('docs/legal/en/01-privacy-notice.md')
-  for (const pattern of [/últimos 20 mensajes/, /Recomendaciones de bienestar/, /últimos 7 días/, /Análisis de habilidades/, /Lectura de tus fuentes/, /Emparejamiento con un profesional/, /etiqueta de tu ánimo/, /promedio de ánimo y promedio de valoraciones/]) assert.match(es, pattern, String(pattern))
-  for (const pattern of [/last 20 messages/, /Wellbeing suggestions/, /last 7 days/, /Skills analysis/, /Reading your sources/, /Matching with a professional/, /label of your mood/, /average mood and average rating/]) assert.match(en, pattern, String(pattern))
+  for (const pattern of [/últimos 20 mensajes/, /Recomendaciones de bienestar/, /últimos 7 registros de ánimo/, /Análisis de habilidades/, /Lectura de tus fuentes/, /Emparejamiento con un profesional/, /etiqueta de tu ánimo/, /promedio de ánimo y promedio de valoraciones/]) assert.match(es, pattern, String(pattern))
+  for (const pattern of [/last 20 messages/, /Wellbeing suggestions/, /last 7 mood entries/, /Skills analysis/, /Reading your sources/, /Matching with a professional/, /label of your mood/, /average mood and average rating/]) assert.match(en, pattern, String(pattern))
   assert.match(read('docs/legal/es/07-conservacion-y-supresion.md'), /NO es automática ni inmediata[\s\S]*manualmente el equipo/); assert.match(read('docs/legal/en/07-retention-and-deletion.md'), /NOT automatic or immediate[\s\S]*the team runs manually/)
   assert.doesNotMatch(read('docs/legal/es/07-conservacion-y-supresion.md'), /bloquean de inmediato/); assert.doesNotMatch(read('docs/legal/en/07-retention-and-deletion.md'), /blocked immediately/)
 })
