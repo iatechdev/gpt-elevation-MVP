@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { gateDecision, type Zone } from './access'
 import { useVerifiedSession } from './useVerifiedSession'
-import { rememberReturn } from '../access/returnTo'
+import { forgetReturn, rememberReturn } from '../access/returnTo'
 
 const GateStatus = lazy(() => import('./GateScreens').then(m => ({ default: m.GateStatus })))
 const NoAccess = lazy(() => import('./GateScreens').then(m => ({ default: m.NoAccess })))
@@ -16,6 +16,8 @@ export function RoleGate({ zone, children }: { zone?: Zone; children?: ReactNode
   const decision = gateDecision(state.status === 'verified' ? { status: 'verified', role: state.session.role } : state, pathname, zone)
   // ES-330: a /login se va recordando la ruta pedida (solo ruta relativa interna validada); LoginPage la usa tras entrar.
   useEffect(() => { if (decision === 'login') rememberReturn(pathname, search) }, [decision, pathname, search])
+  // Llegar a una pantalla permitida consume lo recordado (la ruta ya se usó o no corresponde): no queda nada para otra sesión.
+  useEffect(() => { if (decision === 'allow') forgetReturn() }, [decision])
   if (decision === 'login') return <Navigate to="/login" replace />
   if (decision === 'checking') return <Suspense fallback={null}><GateStatus kind="checking" /></Suspense>
   if (decision === 'unavailable') return <Suspense fallback={null}><GateStatus kind="unavailable" onRetry={retry} /></Suspense>

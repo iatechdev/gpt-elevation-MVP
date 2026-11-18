@@ -5,7 +5,7 @@ import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
-import { forgetReturn, peekReturn, returnPathFor } from '../access/returnTo'
+import { peekReturn, returnPathFor } from '../access/returnTo'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
 import { PasswordRequirements } from '../access/PasswordRequirements'
@@ -120,11 +120,8 @@ export function LoginPage() {
   }, [preferredLanguage, lang, setLang])
 
   // ES-330: tras entrar se vuelve a la ruta protegida pedida (si el rol real puede entrar); si no, al inicio del rol. La intención de plan sigue primero.
-  const verifiedAt = entry.result.status === 'verified'
-  useEffect(() => { if (verifiedAt) forgetReturn() }, [verifiedAt])
-  // El destino se calcula UNA vez: tras forgetReturn() un re-render (p. ej. al sincronizar el idioma preferido) ya no vería la ruta recordada.
-  const destination = useRef<string | null>(null)
-  if (entry.result.status === 'verified') { destination.current ??= planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session); return <Navigate to={destination.current} replace /> }
+  // El destino se recalcula sin consumir lo recordado: se olvida al LLEGAR (RoleGate), así un re-render o un remonte (p. ej. al sincronizar el idioma preferido) no pierde la ruta.
+  if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session)} replace />
 
   // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
   const policyError = authMessage?.key === 'landing.access.password_policy'

@@ -64,6 +64,14 @@ test('ES-330: cableado — la compuerta recuerda, LoginPage valida con el rol re
   const gate = read('../src/shell/RoleGate.tsx'), login = read('../src/pages/LoginPage.tsx'), out = read('../src/access/signOut.ts')
   assert.match(gate, /rememberReturn\(pathname, search\)/); assert.match(gate, /decision === 'login'/)
   assert.match(login, /planDestination\(params\.toString\(\)\) \?\? returnPathFor\(peekReturn\(\), entry\.result\.session\) \?\? sessionDestination\(entry\.result\.session\)/)
-  assert.match(login, /forgetReturn\(\)/); assert.match(out, /signedOut\(\)/)
+  assert.ok(!/forgetReturn/.test(login), 'LoginPage NO consume lo recordado (E330-1)'); assert.match(out, /signedOut\(\)/)
   assert.ok(!/location\.(href|assign|replace)|window\.open/.test(read('../src/access/returnTo.ts')), 'el módulo no navega por su cuenta: la salida es siempre <Navigate> interno')
+})
+
+test('ES-330 (E330-3): RoleGate recuerda SOLO al mandar a /login, consume al llegar a una pantalla permitida, y recuerda con pathname+search', () => {
+  const gate = read('../src/shell/RoleGate.tsx')
+  assert.match(gate, /if \(decision === 'login'\) rememberReturn\(pathname, search\) \}, \[decision, pathname, search\]/)
+  assert.match(gate, /if \(decision === 'allow'\) forgetReturn\(\) \}, \[decision\]/)
+  assert.equal((gate.match(/rememberReturn\(/g) ?? []).length, 1, 'un solo punto que recuerda')
+  assert.ok(!/decision === '(noAccess|checking|unavailable)'\) rememberReturn/.test(gate), 'no recuerda en otros estados')
 })
