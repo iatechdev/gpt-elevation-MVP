@@ -48,7 +48,7 @@ El software, los textos y el diseño de Elevation son de [POR COMPLETAR PC-01: r
 El servicio se presta «tal cual»: puede tener interrupciones o errores. Dentro de lo que permite la ley, no respondemos por decisiones que tomes basándote en las respuestas del asistente. [REVISAR LEGAL RL-02: redacción exacta de las limitaciones de responsabilidad según la ley aplicable.]
 
 ## 13. Cambios y cierre
-Podemos cambiar estos términos o el servicio avisándote; si el cambio es de fondo, te pediremos aceptar la nueva versión. Puedes cerrar tu cuenta cuando quieras (ver documento 07 sobre qué ocurre con tus datos).
+Podemos cambiar estos términos o el servicio. Los términos tienen una versión y una fecha, y la versión que aceptaste queda registrada. Cómo se notifican los cambios: [POR COMPLETAR PC-17: medio y plazo de notificación de cambios]. Puedes cerrar tu cuenta cuando quieras (ver documento 07 sobre qué ocurre con tus datos).
 
 ## 14. Ley aplicable y contacto
 [POR COMPLETAR PC-08: ley aplicable, jurisdicción y resolución de controversias; revisión legal]. Contacto: [POR COMPLETAR PC-04].

@@ -128,4 +128,4 @@ El servicio está pensado para personas adultas en reconversión profesional. Ed
 
 ## 12. Cambios a este aviso
 
-Si cambiamos este aviso de fondo, te lo diremos y te pediremos aceptar la nueva versión. Registramos la versión que aceptaste y la fecha.
+Este aviso tiene una versión y una fecha. Al crear tu cuenta registramos la versión que aceptaste y la fecha de aceptación. Si cambiamos el aviso de fondo, publicaremos la nueva versión; las cuentas ya creadas conservan registrada la versión que aceptaron. Cómo se notifican los cambios a quienes ya tienen cuenta: [POR COMPLETAR PC-17: medio y plazo de notificación de cambios; decisión pendiente, ver ES-339 y la pregunta Q21 para el abogado].

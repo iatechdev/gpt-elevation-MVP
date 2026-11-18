@@ -128,4 +128,4 @@ The service is designed for adults changing careers. Minimum age to create an ac
 
 ## 12. Changes to this notice
 
-If we make a substantive change to this notice, we will tell you and ask you to accept the new version. We record the version you accepted and the date.
+This notice has a version and a date. When you create your account we record the version you accepted and the date of acceptance. If we make a substantive change to the notice, we will publish the new version; existing accounts keep the version they accepted on record. How changes are notified to people who already have an account: [TO BE COMPLETED PC-17: channel and notice period for changes; decision pending, see ES-339 and question Q21 for the lawyer].

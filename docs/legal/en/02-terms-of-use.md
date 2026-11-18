@@ -48,7 +48,7 @@ The software, texts and design of Elevation belong to [TO BE COMPLETED PC-01: le
 The service is provided “as is”: it may have interruptions or errors. To the extent the law allows, we are not liable for decisions you make based on the assistant’s replies. [LEGAL REVIEW RL-02: exact wording of the liability limits under the applicable law.]
 
 ## 13. Changes and closing
-We may change these terms or the service by telling you; if the change is substantive, we will ask you to accept the new version. You can close your account at any time (see document 07 for what happens to your data).
+We may change these terms or the service. The terms have a version and a date, and the version you accepted is recorded. How changes are notified: [TO BE COMPLETED PC-17: channel and notice period for changes]. You can close your account at any time (see document 07 for what happens to your data).
 
 ## 14. Governing law and contact
 [TO BE COMPLETED PC-08: governing law, jurisdiction and dispute resolution; legal review]. Contact: [TO BE COMPLETED PC-04].

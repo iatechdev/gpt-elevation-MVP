@@ -27,6 +27,7 @@ Tres tipos de marcador:
 | PC-14 | Retención de los registros que escribió un profesional sobre una persona (QA-23-02) | Mauricio / abogado | 01, 07 |
 | PC-15 | Retención operativa de registro de uso de IA, tokens revocados, bloqueos de seguridad y logs | Infra / Mauricio | 07 |
 | PC-16 | Condiciones comerciales futuras (precios, facturación, reembolsos); hoy no hay pago en línea | Alejo | 02 |
+| PC-17 | Cómo se notifican los cambios del aviso y de los términos a quien ya tiene cuenta (medio y plazo). Hoy no existe re-aceptación obligatoria: propuesta en ES-339/ES-340 | Alejo / abogado | 01, 02 |
 
 ## VF — hechos por verificar
 

@@ -101,3 +101,11 @@ test('ES-335 (L-1/L-2): §7 del aviso enumera los mismos flujos hacia el modelo 
   assert.match(read('docs/legal/es/07-conservacion-y-supresion.md'), /NO es automática ni inmediata[\s\S]*manualmente el equipo/); assert.match(read('docs/legal/en/07-retention-and-deletion.md'), /NOT automatic or immediate[\s\S]*the team runs manually/)
   assert.doesNotMatch(read('docs/legal/es/07-conservacion-y-supresion.md'), /bloquean de inmediato/); assert.doesNotMatch(read('docs/legal/en/07-retention-and-deletion.md'), /blocked immediately/)
 })
+
+test('ES-335: los documentos no prometen una re-aceptación inexistente; «cambios» describe versión, fecha y registro, con la notificación como marcador PC-17', () => {
+  for (const file of ['es/01-aviso-de-privacidad.md', 'es/02-terminos-de-uso.md', 'en/01-privacy-notice.md', 'en/02-terms-of-use.md']) {
+    const text = read(`docs/legal/${file}`)
+    assert.doesNotMatch(text, /pediremos aceptar|ask you to accept/, file); assert.match(text, /PC-17/, file)
+  }
+  assert.match(read('docs/legal/PREGUNTAS-ABOGADO.md'), /Q21 · Cambios de versión y notificación/)
+})
