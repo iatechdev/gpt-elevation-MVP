@@ -1,6 +1,6 @@
 # Términos y condiciones de uso
 
-> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v1` · ES-335 · 18-nov-2026.
+> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v2` · ES-335 · 18-nov-2026.
 > Partió de los términos vigentes (`frontend/src/legal/legalCopy.ts`) y se contrastó con lo que el sistema hace (`../VERIFICACION-CONTRA-CODIGO.md`). No es asesoría legal.
 > Marcadores: `[POR COMPLETAR PC-nn]` y `[VERIFICAR VF-nn]`; lista en `../POR-COMPLETAR.md`.
 

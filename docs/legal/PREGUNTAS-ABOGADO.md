@@ -8,7 +8,7 @@
 
 **Q2 · Datos sensibles.** El producto pide no escribir datos de salud, pero el diario, el ánimo y las conversaciones pueden contenerlos aunque no se pidan. ¿Hay que tratar todo el contenido de diario y conversaciones como dato sensible, con autorización expresa y reforzada? ¿Basta con la casilla de aceptación del aviso al registrarse, o debe haber una autorización específica? — *Is diary/mood/chat content sensitive data needing explicit specific consent?* (Doc 01)
 
-**Q3 · Forma de la aceptación.** Hoy el registro tiene **una** casilla obligatoria para el aviso de privacidad y los términos juntos, y el servidor guarda la versión (`2026-11-v1`) y la fecha. ¿Debe separarse la autorización de tratamiento de datos de la aceptación de los términos? ¿Qué debe poder probarse y por cuánto tiempo? — *One checkbox for both documents: separate them?* (Docs 01, 02)
+**Q3 · Forma de la aceptación.** Hoy el registro tiene **una** casilla obligatoria para el aviso de privacidad y los términos juntos, y el servidor guarda la versión (`2026-11-v2`) y la fecha. ¿Debe separarse la autorización de tratamiento de datos de la aceptación de los términos? ¿Qué debe poder probarse y por cuánto tiempo? — *One checkbox for both documents: separate them?* (Docs 01, 02)
 
 **Q21 · Cambios de versión y notificación.** El sistema guarda versión y fecha de lo aceptado, pero hoy no pide re-aceptar cuando cambia la versión (las cuentas existentes conservan la que aceptaron y siguen usando la app). ¿Un cambio de fondo exige re-aceptación expresa o basta publicar y notificar? ¿Con qué medio y plazo? — *Do version changes require express re-acceptance, or is publishing and notifying enough; channel and notice period?* (Docs 01, 02; PC-17; historia propuesta ES-339/ES-340)
 

@@ -1,6 +1,6 @@
 # Política de cookies y almacenamiento del navegador
 
-> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v1` · ES-335 · 18-nov-2026.
+> **BORRADOR SIN REVISIÓN LEGAL** · versión de trabajo `2026-11-v2` · ES-335 · 18-nov-2026.
 > Contrastado con el código del frontend (ver `../VERIFICACION-CONTRA-CODIGO.md`). Marcadores: `[POR COMPLETAR PC-nn]` y `[VERIFICAR VF-nn]`; lista en `../POR-COMPLETAR.md`.
 
 ## Resumen
