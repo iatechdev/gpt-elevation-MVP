@@ -20,6 +20,7 @@ const Invitation = require('../Invitation');
 const { sequelize } = require('../database');
 const { recordAdminAction, recordDenied } = require('../utils/adminAudit'); // ES-186 B
 const { passwordProblems, policy } = require('../utils/registrationPassword');
+const terms = require('../utils/terms'); // ES-326
 const { sendInvitation } = require('../utils/mailer');
 const { validateBody, nonempty, optional, text } = require('../middlewares/validateBody');
 
@@ -158,6 +159,14 @@ publicRouter.post('/accept', limiter('INVITATION_ACCEPT_LIMIT', 10), validateBod
     if (missing.length) return res.status(400).json({ code: 'password_policy', missing, error: `${policy.message.es} / ${policy.message.en}` });
     if (!name || name.length > 100) return res.status(400).json({ code: 'invalid_name', error: 'Nombre inválido. / Invalid name.' });
     if (token.length > 128) return res.status(400).json(INVALID_LINK);
+    // ES-326 (E301-4): quien acepta una invitación también acepta el aviso de privacidad y los términos. Misma validación y mismos 400 estables que el registro (el SERVIDOR pone versión y fecha);
+    // va ANTES de consumir el enlace: un rechazo no lo gasta, y sin aceptación no se crea ni se activa la cuenta.
+    let accepted;
+    try { accepted = terms.validate(req.body); }
+    catch (error) {
+      if (error instanceof terms.TermsError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.currentVersion ? { currentVersion: error.currentVersion } : {}) });
+      throw error;
+    }
 
     const row = await Invitation.findOne({ where: { tokenHash: hashToken(token) } });
     if (!row) return res.status(400).json(INVALID_LINK);
@@ -172,7 +181,7 @@ publicRouter.post('/accept', limiter('INVITATION_ACCEPT_LIMIT', 10), validateBod
     if (await User.findOne({ where: sqlWhere(fn('lower', fn('btrim', col('email'))), row.email) })) return res.status(400).json(INVALID_LINK);
 
     let created;
-    try { created = await User.create({ name, email: row.email, password: await bcrypt.hash(password, 10), role: row.role, active: true }); }
+    try { created = await User.create({ name, email: row.email, password: await bcrypt.hash(password, 10), role: row.role, active: true, ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) }); }
     catch (error) {
       if (error && error.name === 'SequelizeUniqueConstraintError') return res.status(400).json(INVALID_LINK); // otra cuenta con ese correo se creó a la vez
       throw error;

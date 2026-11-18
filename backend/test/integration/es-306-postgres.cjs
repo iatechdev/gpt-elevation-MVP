@@ -99,7 +99,7 @@ test('ES-306 PostgreSQL + HTTP: correo sin distinguir mayúsculas en registro, l
     const fresh = await http(admin, 'POST', '/api/admin/invitations', { email: ' Persona.Nueva@Example.INVALID ', role: 'user' }); assert.equal(fresh.status, 201, JSON.stringify(fresh.body));
     assert.equal((await q('SELECT email FROM "Invitations" WHERE id=$1', [fresh.body.id]))[0].email, 'persona.nueva@example.invalid');
     const plant = async (email) => { const token = crypto.randomBytes(32).toString('base64url'); await q(`INSERT INTO "Invitations" (email, role, "invitedBy", "tokenHash", locale, "expiresAt", "createdAt", "updatedAt") VALUES ($1,'user',$2,$3,'es',now()+interval '1 day',now(),now())`, [email, admin.id, crypto.createHash('sha256').update(token).digest('hex')]); return token; };
-    const accept = (token) => http(null, 'POST', '/api/invitations/accept', { token, name: 'Persona Invitada', password: 'Clave-nueva-2026!' });
+    const accept = (token) => http(null, 'POST', '/api/invitations/accept', { token, name: 'Persona Invitada', password: 'Clave-nueva-2026!', acceptedTerms: true, termsVersion: '2026-11-v2' });
     const raced = await plant('carrera@example.invalid'); assert.equal((await register('CARRERA@Example.invalid')).status, 201); const before = await people();
     const out = await accept(raced); assert.equal(out.status, 400); assert.equal(out.body.code, 'invitation_invalid'); assert.equal(await people(), before, 'no se creó una segunda cuenta');
     const ok = await plant('invitada@example.invalid'); assert.equal((await accept(ok)).status, 201); assert.equal((await register('INVITADA@example.invalid')).status, 400, 'tras aceptar, el correo cuenta como registrado en cualquier casing');
