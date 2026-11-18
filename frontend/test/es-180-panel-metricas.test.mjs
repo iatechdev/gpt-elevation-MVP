@@ -18,7 +18,8 @@ test('ES-180: la gráfica usa los 30 días del servidor y el cero es una línea 
   const chart = read('adminOverview.tsx')
   assert.match(chart, /days30/)
   assert.doesNotMatch(chart, /sessionsByDay/)
-  assert.match(chart, /d\.count === 0 \? 1/)
+  assert.match(chart, /const zero = d\.count === 0/)
+  assert.match(chart, /zero \? 0\.6/, 'el cero es una línea mínima (~1 px), nunca una barra')
   assert.match(chart, /role="img"/)
   assert.match(chart, /aria-pressed/)
 })
@@ -33,7 +34,8 @@ test('ES-180: cada aviso tiene su estado y la carga no se traga el error', () =>
   for (const key of ['guides', 'professionalsIncomplete', 'manifest']) assert.match(dash, new RegExp(`sections\\?\\.${key}|sections.${key}`))
   assert.doesNotMatch(dash, /\.catch\(\(\) => set\w+\(false\)\)/)
   assert.match(read('adminOverviewData.ts'), /setState\('error'\)/)
-  assert.match(read('adminOverview.tsx'), /role="alert"/)
+  assert.match(read('adminOverview.tsx'), /<Banner kind="error"/, 'el error por aviso usa Banner (role="alert" en cartografia/pieces.tsx)')
+  assert.match(read('../../cartografia/pieces.tsx'), /role=\{kind === 'error' \? 'alert' : 'note'\}/)
 })
 
 test('ES-180: no hay versión ni fecha del manifiesto escritas a mano', () => {

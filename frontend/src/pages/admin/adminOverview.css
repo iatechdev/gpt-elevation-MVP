@@ -1,0 +1,24 @@
+/* ES-310 (PR 2) — Panel y Métricas con Cartografía: solo tokens --cg-*, sin colores ni estilos en línea. */
+.ao { display: grid; gap: 1rem; min-width: 0; }
+.ao-two { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
+@media (min-width: 1000px) { .ao-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.ao .cg-card { min-width: 0; overflow-wrap: anywhere; }
+.ao .cg-figures { margin: 0; }
+.ao-status { margin: 0; color: var(--cg-muted); }
+.ao-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 0.8rem; }
+.ao-row .cg-banner { flex: 1 1 100%; }
+.ao-detail { margin: 0.2rem 0 0; color: var(--cg-muted); }
+.ao-chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 0.8rem; margin: 0 0 0.6rem; }
+.ao-chart-head p { margin: 0; color: var(--cg-muted); }
+.ao-chart { display: block; width: 100%; height: 9rem; border-bottom: 2px solid var(--cg-ink); }
+.ao-chart rect { fill: var(--cg-mark); }
+.ao-chart .ao-zero { fill: var(--cg-line); }
+.ao-tablewrap { overflow: auto; max-height: 22rem; }
+.ao-people { overflow-x: auto; }
+.ao-tablewrap:focus-visible, .ao-people:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.ao-tablewrap th, .ao-tablewrap td, .ao-people th, .ao-people td { overflow-wrap: anywhere; }
+.ao-tablewrap thead th { position: sticky; top: 0; background: var(--cg-panel); }
+.ao-th-num, .ao-td-num { text-align: right !important; }
+.ao-tablewrap th[scope='row'], .ao-people th[scope='row'] { font: inherit; text-transform: none; letter-spacing: normal; color: inherit; border-bottom: 1px solid var(--cg-line); }
+.ao-summary { margin-top: 1rem; }
+.ao-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
