@@ -1,11 +1,15 @@
 // frontend/src/pages/admin/AdminPrompts.tsx
-// ES-181 (HU-P30) — Guías de la IA: lista por guía, versiones, propuesta, aprobación y publicación.
+// ES-181 (HU-P30) + ES-310 — Guías de la IA: lista por guía, versiones, propuesta, aprobación y publicación. Cartografía (tokens --cg-*), sin estilos en línea.
 // admin: ve las guías y sus versiones y PROPONE. superadmin: además publica, crea, aprueba, rechaza y vuelve a una versión.
 // Toda validación del contenido vive en el servidor (ES-191); aquí el contador solo informa.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import '../../cartografia/pages.css'
+import { Banner, Button, Card, Chip, Dialog, LinkButton, TextAreaField, TextField } from '../../cartografia'
+import type { ChipTone } from '../../cartografia'
 import { useAdminText } from '../../i18n/useAdminText'
 import { useLanguage } from '../../i18n/useLanguage'
+import './adminPrompts.css'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const getToken = () => localStorage.getItem('elevation_token') ?? ''
@@ -45,28 +49,15 @@ interface GuideVersion {
 }
 
 type DialogKind = 'propose' | 'publish' | 'create' | 'approve' | 'reject' | 'rollback'
-interface DialogState { kind: DialogKind; version?: GuideVersion; trigger: HTMLElement | null }
+interface DialogState { kind: DialogKind; version?: GuideVersion }
 
-// ── Estilos compartidos ───────────────────────────────────────────────────────
-const cardStyle: React.CSSProperties = {
-  background: '#fff', border: '0.5px solid #E7E5E4', borderRadius: '1rem', padding: '1.25rem',
-  boxShadow: '0 2px 12px rgba(26,28,27,0.06)',
-}
-const btnBase: React.CSSProperties = {
-  borderRadius: '0.65rem', padding: '0.5rem 1rem', fontSize: 13, cursor: 'pointer', fontFamily: 'Inter, sans-serif', minHeight: 44,
-}
-const btnPrimary: React.CSSProperties = { ...btnBase, background: '#5C6B4E', color: '#fff', border: 'none', fontWeight: 500 }
-const btnSecondary: React.CSSProperties = { ...btnBase, background: 'transparent', color: '#4A5A3F', border: '0.5px solid #A8B5A2' }
-const btnDanger: React.CSSProperties = { ...btnBase, background: 'transparent', color: '#B91C1C', border: '0.5px solid #DC2626' }
-const labelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: '#6B645F', textTransform: 'uppercase', letterSpacing: '0.05em' }
-
-// Estado en palabra (nunca solo color ni símbolo).
-const STATUS_WORD: Record<string, { bg: string; color: string; label: string }> = {
-  active:         { bg: '#EAF0E6', color: '#2F4A27', label: 'Activa' },
-  approved:       { bg: '#F5F3EF', color: '#57514C', label: 'Archivada' },
-  archived:       { bg: '#F5F3EF', color: '#57514C', label: 'Archivada' },
-  pending_review: { bg: '#FEF3C7', color: '#78350F', label: 'En revisión' },
-  rejected:       { bg: '#FEE2E2', color: '#991B1B', label: 'Rechazada' },
+// Estado en palabra y símbolo (nunca solo color).
+const STATUS_WORD: Record<string, { tone: ChipTone; symbol?: string; label: string }> = {
+  active:         { tone: 'ok', symbol: '✓', label: 'Activa' },
+  approved:       { tone: 'neutral', label: 'Archivada' },
+  archived:       { tone: 'neutral', label: 'Archivada' },
+  pending_review: { tone: 'wait', label: 'En revisión' },
+  rejected:       { tone: 'bad', label: 'Rechazada' },
 }
 
 const formatDate = (iso: string | null | undefined, locale: string) =>
@@ -85,7 +76,7 @@ const authFetch = (path: string, init: RequestInit = {}) => fetch(`${API}${path}
 })
 
 function useNarrow() {
-  const query = '(max-width: 760px)'
+  const query = '(max-width: 900px)' // el mismo corte que `.ap-work` (adminPrompts.css)
   const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(query).matches)
   useEffect(() => {
     if (!window.matchMedia) return
@@ -95,40 +86,6 @@ function useNarrow() {
     return () => { media.removeEventListener('change', onChange); window.removeEventListener('resize', onChange) }
   }, [])
   return narrow
-}
-
-// ── Diálogo accesible compartido ──────────────────────────────────────────────
-function GuideDialog({ title, onClose, busy, children, trigger }: {
-  title: string; onClose: () => void; busy: boolean; children: React.ReactNode; trigger: HTMLElement | null
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const closeRef = useRef(onClose)
-  const busyRef = useRef(busy)
-  useEffect(() => { closeRef.current = onClose; busyRef.current = busy })
-  useEffect(() => {
-    const root = ref.current
-    const focusables = () => Array.from(root?.querySelectorAll<HTMLElement>('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])') ?? []).filter(el => !(el as HTMLButtonElement).disabled)
-    ;(focusables()[0] ?? root)?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !busyRef.current) { e.stopPropagation(); closeRef.current(); return }
-      if (e.key !== 'Tab') return
-      const items = focusables(); if (items.length === 0) return
-      const first = items[0], last = items[items.length - 1]
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('keydown', onKey); trigger?.focus?.() }
-  }, [trigger])
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,25,23,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}
-        style={{ background: '#fff', borderRadius: '1rem', padding: '1.5rem', width: '100%', maxWidth: 600, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(26,28,27,0.12)', fontFamily: 'Inter, sans-serif' }}>
-        <h2 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 400, fontSize: '1.3rem', color: '#1C1917', margin: '0 0 1rem' }}>{title}</h2>
-        {children}
-      </div>
-    </div>
-  )
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -183,11 +140,12 @@ export function AdminPrompts() {
 
   const toggleText = (id: number) => setOpenText(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next })
 
-  const openDialog = (kind: DialogKind, trigger: HTMLElement | null, version?: GuideVersion) => {
+  // El foco vuelve al botón que abrió el diálogo (lo hace el Dialog de Cartografía al cerrar).
+  const openDialog = (kind: DialogKind, version?: GuideVersion) => {
     setDialogError(''); setDialogReasons([]); setNote(''); setNewKey(''); setSuccess('')
     // El texto parte de la versión activa (propuesta y publicación); crear parte vacío.
     setDraft(kind === 'propose' || kind === 'publish' ? (activeVersion?.content ?? '') : '')
-    setDialog({ kind, version, trigger })
+    setDialog({ kind, version })
   }
   const closeDialog = () => { if (!busy) setDialog(null) }
 
@@ -262,227 +220,208 @@ export function AdminPrompts() {
   // ── Piezas de la pantalla ───────────────────────────────────────────────────
   const StatusWord = ({ status }: { status: string }) => {
     const s = STATUS_WORD[status] ?? STATUS_WORD.archived
-    return <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 999, background: s.bg, color: s.color, whiteSpace: 'nowrap' }}>{tr(s.label)}</span>
+    return <Chip tone={s.tone} symbol={s.symbol}>{tr(s.label)}</Chip>
   }
 
   const list = (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem' }} aria-busy={listState === 'loading'}>
-      {listState === 'loading' && <p style={{ color: '#57514C', fontSize: 13 }} role="status">{tr('Cargando guías...')}</p>}
-      {listState === 'error' && (
-        <div style={cardStyle} role="alert">
-          <p style={{ margin: '0 0 0.75rem', fontSize: 13, color: '#991B1B' }}>{tr('No pudimos cargar las guías.')}</p>
-          <button type="button" style={btnSecondary} onClick={loadGuides}>{tr('Reintentar')}</button>
-        </div>
-      )}
-      {listState === 'ok' && guides.length === 0 && (
-        <div style={{ ...cardStyle, textAlign: 'center', padding: '2.5rem', color: '#57514C', fontSize: 13 }}>
-          {esSuperAdmin ? tr('Aún no hay guías. Crea la primera.') : tr('Aún no hay guías.')}
-        </div>
-      )}
-      {listState === 'ok' && guides.map(g => {
-        const isSelected = selectedKey === g.key
-        return (
-          <button type="button" key={g.key} onClick={() => setSelectedKey(g.key)} aria-current={isSelected ? 'true' : undefined}
-            style={{ ...cardStyle, textAlign: 'left', cursor: 'pointer', width: '100%', minHeight: 44, font: 'inherit',
-              border: isSelected ? '1px solid #5C6B4E' : '0.5px solid #E7E5E4', background: isSelected ? '#EAF0E6' : '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-            <span style={{ minWidth: 0 }}>
-              <span style={{ display: 'block', fontWeight: 500, fontSize: 14, color: '#1C1917', overflowWrap: 'anywhere' }}>{g.key}</span>
-              <span style={{ display: 'block', fontSize: 12, color: '#57514C', marginTop: 2 }}>
-                {g.activeVersion !== null ? `${tr('Versión activa')} v${g.activeVersion}` : tr('Sin versión activa')}
-                {g.activeBy ? ` · ${tr('Actualizó')} ${g.activeBy}` : ''}{g.activeAt ? ` · ${formatDate(g.activeAt, dateLocale)}` : ''}
-              </span>
-            </span>
-            {g.pendingCount > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 999, background: '#FEF3C7', color: '#78350F', whiteSpace: 'nowrap' }}>
-                {g.pendingCount} {tr('en revisión')}
-              </span>
-            )}
-          </button>
-        )
-      })}
-    </div>
+    <Card as="section" className="pg-card ap-list">
+      <h2 id="ap-list-title">{tr('Guías de la IA')}</h2>
+      <div aria-busy={listState === 'loading'}>
+        {listState === 'loading' && <p className="ap-status" role="status">{tr('Cargando guías...')}</p>}
+        {listState === 'error' && (
+          <Banner kind="error" title={tr('No pudimos cargar las guías.')}>
+            <div className="pg-actions"><Button variant="ghost" onClick={loadGuides}>{tr('Reintentar')}</Button></div>
+          </Banner>
+        )}
+        {listState === 'ok' && guides.length === 0 && (
+          <p className="ap-status">{esSuperAdmin ? tr('Aún no hay guías. Crea la primera.') : tr('Aún no hay guías.')}</p>
+        )}
+        {listState === 'ok' && guides.length > 0 && (
+          <ul className="cg-items" aria-labelledby="ap-list-title">
+            {guides.map(g => {
+              const isSelected = selectedKey === g.key
+              return (
+                <li key={g.key} className="cg-item">
+                  <button type="button" className={`ap-pick${isSelected ? ' ap-pick--on' : ''}`} onClick={() => setSelectedKey(g.key)} aria-current={isSelected ? 'true' : undefined}>
+                    <span className="ap-pick__info">
+                      <strong>{g.key}</strong>
+                      <span className="cg-hint">
+                        {g.activeVersion !== null ? `${tr('Versión activa')} v${g.activeVersion}` : tr('Sin versión activa')}
+                        {g.activeBy ? ` · ${tr('Actualizó')} ${g.activeBy}` : ''}{g.activeAt ? ` · ${formatDate(g.activeAt, dateLocale)}` : ''}
+                      </span>
+                    </span>
+                    {g.pendingCount > 0 && <Chip tone="wait">{g.pendingCount} {tr('en revisión')}</Chip>}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
+    </Card>
   )
 
   const detail = selected && (
-    <div style={{ width: narrow ? '100%' : 380, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-      {narrow && <button type="button" style={btnSecondary} onClick={() => setSelectedKey(null)}>{tr('← Volver a la lista')}</button>}
-      <div style={cardStyle}>
-        <div style={{ ...labelStyle, marginBottom: '0.5rem', overflowWrap: 'anywhere' }}>{selected.key}</div>
-        <div style={{ fontSize: 13, color: '#57514C', marginBottom: '1rem', lineHeight: 1.6 }}>
+    <div className="ap-detail">
+      {narrow && <div className="pg-actions"><Button variant="ghost" onClick={() => setSelectedKey(null)}>{tr('← Volver a la lista')}</Button></div>}
+      <Card as="section" className="pg-card" >
+        <h2>{selected.key}</h2>
+        <p>
           {selected.activeVersion !== null ? (
             <>
-              {tr('Versión activa')} <strong style={{ color: '#1C1917' }}>v{selected.activeVersion}</strong>
-              {selected.approvedBy ? <> · {tr('Aprobó')} <strong style={{ color: '#1C1917' }}>{selected.approvedBy}</strong></> : null}
+              {tr('Versión activa')} <strong>v{selected.activeVersion}</strong>
+              {selected.approvedBy ? <> · {tr('Aprobó')} <strong>{selected.approvedBy}</strong></> : null}
               {selected.activeAt ? <> · {formatDate(selected.activeAt, dateLocale)}</> : null}
             </>
           ) : tr('Sin versión activa')}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        </p>
+        <div className="pg-actions">
           {activeVersion && (
-            <button type="button" style={btnSecondary} aria-expanded={openText.has(activeVersion.id)} onClick={() => toggleText(activeVersion.id)}>
+            <LinkButton aria-expanded={openText.has(activeVersion.id)} onClick={() => toggleText(activeVersion.id)}>
               {openText.has(activeVersion.id) ? tr('Ocultar texto activo') : tr('Ver texto activo')}
-            </button>
+            </LinkButton>
           )}
-          {activeVersion && openText.has(activeVersion.id) && (
-            <div style={{ background: '#F5F3EF', borderRadius: '0.65rem', padding: '0.75rem', fontSize: 12, color: '#1C1917', lineHeight: 1.6, whiteSpace: 'pre-wrap', maxHeight: 220, overflowY: 'auto', overflowWrap: 'anywhere' }}>
-              {activeVersion.contentError ? tr('No se pudo leer el texto de esta versión.') : activeVersion.content}
-            </div>
-          )}
-          <button type="button" style={esSuperAdmin ? btnSecondary : btnPrimary} onClick={e => openDialog('propose', e.currentTarget)} disabled={versionsState !== 'ok'}>
+          <Button variant={esSuperAdmin ? 'ghost' : 'primary'} onClick={() => openDialog('propose')} disabled={versionsState !== 'ok'}>
             {tr('Proponer versión')}
-          </button>
+          </Button>
           {esSuperAdmin && (
-            <button type="button" style={btnPrimary} onClick={e => openDialog('publish', e.currentTarget)} disabled={versionsState !== 'ok'}>
+            <Button onClick={() => openDialog('publish')} disabled={versionsState !== 'ok'}>
               {tr('Publicar versión')}
-            </button>
+            </Button>
           )}
         </div>
-      </div>
+        {activeVersion && openText.has(activeVersion.id) && (
+          <div className="ap-text">{activeVersion.contentError ? tr('No se pudo leer el texto de esta versión.') : activeVersion.content}</div>
+        )}
+      </Card>
 
-      <div style={cardStyle} aria-busy={versionsState === 'loading'}>
-        <div style={{ ...labelStyle, marginBottom: '0.75rem' }}>{tr('Historial de versiones')}</div>
-        {versionsState === 'loading' && <p style={{ fontSize: 12, color: '#57514C', margin: 0 }} role="status">{tr('Cargando...')}</p>}
-        {versionsState === 'error' && (
-          <div role="alert">
-            <p style={{ fontSize: 13, color: '#991B1B', margin: '0 0 0.75rem' }}>{tr('No pudimos cargar el historial.')}</p>
-            <button type="button" style={btnSecondary} onClick={() => selectedKey && loadVersions(selectedKey)}>{tr('Reintentar')}</button>
-          </div>
-        )}
-        {versionsState === 'ok' && versions.length === 0 && <p style={{ fontSize: 12, color: '#57514C', margin: 0 }}>{tr('Sin versiones anteriores.')}</p>}
-        {versionsState === 'ok' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            {versions.map(v => {
-              const isPending = v.status === 'pending_review'
-              const canRollback = esSuperAdmin && (v.status === 'approved' || v.status === 'archived')
-              return (
-                <div key={v.id} style={{ padding: '0.65rem 0.75rem', borderRadius: '0.65rem', background: isPending ? '#FFFBEB' : '#F5F3EF', border: isPending ? '0.5px solid #FCD34D' : '0.5px solid #E7E5E4' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1C1917' }}>v{v.version}</span>
-                    <StatusWord status={v.status} />
-                  </div>
-                  <div style={{ fontSize: 12, color: '#57514C' }}>
-                    {v.proposed_by && <div>{tr('Propuso')} {v.proposed_by}</div>}
-                    {v.approved_by && <div>{tr('Aprobó')} {v.approved_by}</div>}
-                    {v.rejected_by && <div>{tr('Rechazó')} {v.rejected_by}</div>}
-                    {v.rejection_note && <div style={{ fontStyle: 'italic', marginTop: 2, overflowWrap: 'anywhere' }}>{tr('Motivo:')} {v.rejection_note}</div>}
-                    {(v.reviewReasons ?? []).length > 0 && (
-                      <ul style={{ margin: '4px 0 0', paddingLeft: '1.1rem' }}>
-                        {(v.reviewReasons ?? []).map((r, i) => <li key={i}>{(lang === 'en' ? r.en : r.es) ?? r.code}</li>)}
-                      </ul>
-                    )}
-                    <div style={{ marginTop: 2 }}>{formatDate(v.createdAt ?? v.updatedAt, dateLocale)}</div>
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}>
-                    <button type="button" style={{ ...btnSecondary, fontSize: 12, padding: '0.3rem 0.65rem' }} aria-expanded={openText.has(v.id)} onClick={() => toggleText(v.id)}>
-                      {openText.has(v.id) ? tr('Ocultar texto') : tr('Ver texto')}
-                    </button>
-                    {esSuperAdmin && isPending && (
-                      <>
-                        <button type="button" style={{ ...btnPrimary, fontSize: 12, padding: '0.3rem 0.65rem' }} onClick={e => openDialog('approve', e.currentTarget, v)}>{tr('Aprobar')}</button>
-                        <button type="button" style={{ ...btnDanger, fontSize: 12, padding: '0.3rem 0.65rem' }} onClick={e => openDialog('reject', e.currentTarget, v)}>{tr('Rechazar')}</button>
-                      </>
-                    )}
-                    {canRollback && (
-                      <button type="button" style={{ ...btnSecondary, fontSize: 12, padding: '0.3rem 0.65rem' }} onClick={e => openDialog('rollback', e.currentTarget, v)}>{tr('Volver a esta versión')}</button>
-                    )}
-                  </div>
-                  {openText.has(v.id) && (
-                    <div style={{ background: '#fff', borderRadius: '0.5rem', padding: '0.6rem', marginTop: '0.5rem', fontSize: 12, color: '#1C1917', lineHeight: 1.6, whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto', overflowWrap: 'anywhere' }}>
-                      {v.contentError ? tr('No se pudo leer el texto de esta versión.') : v.content}
+      <Card as="section" className="pg-card">
+        <div aria-busy={versionsState === 'loading'}>
+          <h2>{tr('Historial de versiones')}</h2>
+          {versionsState === 'loading' && <p className="ap-status" role="status">{tr('Cargando...')}</p>}
+          {versionsState === 'error' && (
+            <Banner kind="error" title={tr('No pudimos cargar el historial.')}>
+              <div className="pg-actions"><Button variant="ghost" onClick={() => selectedKey && loadVersions(selectedKey)}>{tr('Reintentar')}</Button></div>
+            </Banner>
+          )}
+          {versionsState === 'ok' && versions.length === 0 && <p className="ap-status">{tr('Sin versiones anteriores.')}</p>}
+          {versionsState === 'ok' && versions.length > 0 && (
+            <ul className="cg-items">
+              {versions.map(v => {
+                const isPending = v.status === 'pending_review'
+                const canRollback = esSuperAdmin && (v.status === 'approved' || v.status === 'archived')
+                return (
+                  <li key={v.id} className="cg-item">
+                    <div className="cg-item__top">
+                      <strong>v{v.version}</strong>
+                      <StatusWord status={v.status} />
                     </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                    <div className="ap-meta">
+                      {v.proposed_by && <p>{tr('Propuso')} {v.proposed_by}</p>}
+                      {v.approved_by && <p>{tr('Aprobó')} {v.approved_by}</p>}
+                      {v.rejected_by && <p>{tr('Rechazó')} {v.rejected_by}</p>}
+                      {v.rejection_note && <p>{tr('Motivo:')} {v.rejection_note}</p>}
+                      {(v.reviewReasons ?? []).length > 0 && (
+                        <ul>
+                          {(v.reviewReasons ?? []).map((r, i) => <li key={i}>{(lang === 'en' ? r.en : r.es) ?? r.code}</li>)}
+                        </ul>
+                      )}
+                      <p className="cg-hint">{formatDate(v.createdAt ?? v.updatedAt, dateLocale)}</p>
+                    </div>
+                    <div className="pg-actions">
+                      <LinkButton aria-expanded={openText.has(v.id)} onClick={() => toggleText(v.id)}>
+                        {openText.has(v.id) ? tr('Ocultar texto') : tr('Ver texto')}
+                      </LinkButton>
+                      {esSuperAdmin && isPending && (
+                        <>
+                          <Button variant="ghost" onClick={() => openDialog('approve', v)}>{tr('Aprobar')}</Button>
+                          <Button variant="danger" onClick={() => openDialog('reject', v)}>{tr('Rechazar')}</Button>
+                        </>
+                      )}
+                      {canRollback && (
+                        <Button variant="ghost" onClick={() => openDialog('rollback', v)}>{tr('Volver a esta versión')}</Button>
+                      )}
+                    </div>
+                    {openText.has(v.id) && (
+                      <div className="ap-text">{v.contentError ? tr('No se pudo leer el texto de esta versión.') : v.content}</div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      </Card>
     </div>
   )
 
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontWeight: 300, fontSize: '1.8rem', color: '#1C1917', margin: 0 }}>{tr('Guías de la IA')}</h1>
-          <p style={{ fontSize: '0.875rem', color: '#57514C', margin: '0.25rem 0 0' }}>
-            {tr('Define cómo conversa la IA. Nada llega a las personas sin aprobación humana.')}
-          </p>
-        </div>
-        {esSuperAdmin && <button type="button" style={btnPrimary} onClick={e => openDialog('create', e.currentTarget)}>{tr('+ Nueva guía')}</button>}
-      </div>
+    <div className="pg pg-wide ap">
+      <header className="pg-head">
+        <h1 className="pg-title">{tr('Guías de la IA')}</h1>
+        <p className="pg-lead">{tr('Define cómo conversa la IA. Nada llega a las personas sin aprobación humana.')}</p>
+        {esSuperAdmin && <div className="pg-actions"><Button onClick={() => openDialog('create')}>{tr('+ Nueva guía')}</Button></div>}
+      </header>
 
-      <div ref={successRef} tabIndex={-1} aria-live="polite" role="status" style={{ outline: 'none' }}>
-        {success && <div style={{ padding: '0.75rem 1rem', borderRadius: '0.65rem', marginBottom: '1rem', fontSize: 13, background: '#EAF0E6', color: '#2F4A27' }}>{success}</div>}
+      <div ref={successRef} tabIndex={-1} aria-live="polite" role="status" className="pg-live pg-focus">
+        {success && <Banner title={success} />}
       </div>
 
       {listState === 'ok' && !esSuperAdmin && guides.length > 0 && (
-        <p style={{ fontSize: 12, color: '#57514C', margin: '0 0 1rem' }}>
-          {tr('Al proponer una versión, queda en revisión. La versión actual sigue activa hasta que otra persona con permiso la apruebe.')}
-        </p>
+        <p className="cg-hint">{tr('Al proponer una versión, queda en revisión. La versión actual sigue activa hasta que otra persona con permiso la apruebe.')}</p>
       )}
 
-      <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', flexDirection: narrow ? 'column' : 'row' }}>
+      <div className="ap-work">
         {(!narrow || !selected) && list}
         {selected && detail}
       </div>
 
-      {dialog && (
-        <GuideDialog title={dialogTitle(dialog.kind)} onClose={closeDialog} busy={busy} trigger={dialog.trigger}>
-          <p style={{ fontSize: 13, color: '#1C1917', margin: '0 0 1rem', lineHeight: 1.6 }}>{consequence(dialog.kind, dialog.version)}</p>
-
-          {dialog.kind === 'create' && (
-            <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="guide-key" style={{ ...labelStyle, display: 'block', marginBottom: 4 }}>{tr('Identificador de la guía')}</label>
-              <input id="guide-key" value={newKey} onChange={e => setNewKey(e.target.value)} autoComplete="off" spellCheck={false}
-                aria-describedby="guide-key-help" aria-invalid={newKey !== '' && !keyOk}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '0.6rem', border: '0.5px solid #A8B5A2', borderRadius: '0.5rem', fontSize: 14, minHeight: 44 }} />
-              <div id="guide-key-help" style={{ fontSize: 12, color: '#57514C', marginTop: 4 }}>{tr('Minúsculas, números y guion bajo; empieza por una letra. Ejemplo: guia_acompanamiento')}</div>
-            </div>
-          )}
-
-          {needsText && (
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ background: '#FFFBEB', border: '0.5px solid #FCD34D', borderRadius: '0.5rem', padding: '0.6rem 0.75rem', fontSize: 12, color: '#78350F', marginBottom: '0.75rem' }}>
-                {tr('Sin diagnóstico, sin tratamiento y sin promesas de empleo.')}
-              </div>
-              <label htmlFor="guide-text" style={{ ...labelStyle, display: 'block', marginBottom: 4 }}>{tr('Texto de la guía')}</label>
-              <textarea id="guide-text" value={draft} onChange={e => setDraft(e.target.value)} rows={10} maxLength={MAX_CHARS} aria-describedby="guide-count"
-                style={{ width: '100%', boxSizing: 'border-box', padding: '0.6rem', border: '0.5px solid #A8B5A2', borderRadius: '0.5rem', fontSize: 13, lineHeight: 1.5, fontFamily: 'Inter, sans-serif', resize: 'vertical' }} />
-              <div id="guide-count" style={{ fontSize: 12, color: tooShort ? '#78350F' : '#57514C', marginTop: 4 }}>
-                {draft.trim().length.toLocaleString(dateLocale)} / {MIN_CHARS} {tr('mínimo')} · {tr('máx.')} {MAX_CHARS.toLocaleString(dateLocale)}
-              </div>
-            </div>
-          )}
-
-          {dialog.kind === 'reject' && (
-            <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="guide-note" style={{ ...labelStyle, display: 'block', marginBottom: 4 }}>{tr('Motivo del rechazo')}</label>
-              <textarea id="guide-note" value={note} onChange={e => setNote(e.target.value)} rows={3} maxLength={1000}
-                style={{ width: '100%', boxSizing: 'border-box', padding: '0.6rem', border: '0.5px solid #A8B5A2', borderRadius: '0.5rem', fontSize: 13, fontFamily: 'Inter, sans-serif', resize: 'vertical' }} />
-            </div>
-          )}
-
-          {dialogError && (
-            <div role="alert" style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: '0.5rem', padding: '0.6rem 0.75rem', fontSize: 13, marginBottom: '1rem' }}>
-              {dialogError}
-              {dialogReasons.length > 0 && (
-                <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1.1rem' }}>
-                  {dialogReasons.map((r, i) => <li key={i}>{(lang === 'en' ? r.en : r.es) ?? r.code}</li>)}
-                </ul>
-              )}
-            </div>
-          )}
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button type="button" style={btnSecondary} onClick={closeDialog} disabled={busy}>{tr('Cancelar')}</button>
-            <button type="button" style={{ ...(dialog.kind === 'reject' ? btnDanger : btnPrimary), opacity: canSubmit ? 1 : 0.6 }} onClick={submit} disabled={!canSubmit}>
+      <Dialog
+        open={dialog !== null}
+        onClose={closeDialog}
+        title={dialog ? dialogTitle(dialog.kind) : ''}
+        actions={dialog && (
+          <>
+            <Button variant="ghost" onClick={closeDialog} disabled={busy}>{tr('Cancelar')}</Button>
+            <Button variant={dialog.kind === 'reject' ? 'danger' : 'primary'} onClick={submit} disabled={!canSubmit}>
               {busy ? tr('Enviando…') : submitLabel(dialog.kind)}
-            </button>
+            </Button>
+          </>
+        )}
+      >
+        {dialog && (
+          <div className="ap-dialog">
+            <p>{consequence(dialog.kind, dialog.version)}</p>
+
+            {dialog.kind === 'create' && (
+              <TextField id="guide-key" label={tr('Identificador de la guía')} hint={tr('Minúsculas, números y guion bajo; empieza por una letra. Ejemplo: guia_acompanamiento')}
+                value={newKey} onChange={e => setNewKey(e.target.value)} autoComplete="off" spellCheck={false} aria-invalid={newKey !== '' && !keyOk} />
+            )}
+
+            {needsText && (
+              <>
+                <Banner title={tr('Sin diagnóstico, sin tratamiento y sin promesas de empleo.')} />
+                <TextAreaField id="guide-text" label={tr('Texto de la guía')} value={draft} onChange={e => setDraft(e.target.value)} rows={10} maxLength={MAX_CHARS}
+                  hint={`${draft.trim().length.toLocaleString(dateLocale)} / ${MIN_CHARS} ${tr('mínimo')} · ${tr('máx.')} ${MAX_CHARS.toLocaleString(dateLocale)}`} />
+              </>
+            )}
+
+            {dialog.kind === 'reject' && (
+              <TextAreaField id="guide-note" label={tr('Motivo del rechazo')} value={note} onChange={e => setNote(e.target.value)} rows={3} maxLength={1000} />
+            )}
+
+            {dialogError && (
+              <Banner kind="error" title={dialogError}>
+                {dialogReasons.length > 0 && (
+                  <ul>
+                    {dialogReasons.map((r, i) => <li key={i}>{(lang === 'en' ? r.en : r.es) ?? r.code}</li>)}
+                  </ul>
+                )}
+              </Banner>
+            )}
           </div>
-        </GuideDialog>
-      )}
+        )}
+      </Dialog>
     </div>
   )
 }

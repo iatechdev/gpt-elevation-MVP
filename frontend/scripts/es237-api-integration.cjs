@@ -1,4 +1,4 @@
-// ES-237 (paso 1): el cliente `src/career/api.ts` contra el servidor REAL (routers de ES-33) y PostgreSQL REAL. Sin pantallas, sin IA, sin simulaciones de la base ni del servidor; datos sintéticos.
+// ES-237 (pasos 1–2a): el cliente `src/career/api.ts` contra el servidor REAL (routers de ES-33) y PostgreSQL REAL. Sin pantallas, sin IA, sin simulaciones de la base ni del servidor; datos sintéticos.
 // Las dependencias de ES-14/ES-32 (contexto, rutas, elección) son las reales (seedDemo). Cubre: titular por token, requestId repetido, versión caducada, transición inválida, IDs ajenos = 404,
 // entradas hostiles = 400 sin 500, y el plan (proponer → aceptar → pausar). Recordatorios: no cubiertos aquí (exigen el consentimiento de notificaciones; ver «no verificado» del PR).
 // Uso (desde frontend/, con NODE_PATH=<backend>/node_modules si el worktree no resuelve `pg`):
@@ -57,6 +57,7 @@ const { once } = require('node:events')
 
     const express = fromBackend('express'); const app = express(); app.use(express.json()); const { verificarToken } = fromBackend('./middlewares/auth')
     app.use('/api/experiments', verificarToken, fromBackend('./routes/careerPlan').experiments); app.use('/api/career-plan', verificarToken, fromBackend('./routes/careerPlan').plans)
+    app.use('/api/routes', verificarToken, fromBackend('./routes/routes')); app.use('/api/route-catalog', verificarToken, fromBackend('./routes/routeCatalog'))
     server = app.listen(0, '127.0.0.1'); await once(server, 'listening')
     const baseUrl = `http://127.0.0.1:${server.address().port}`
     const as = (user) => ({ baseUrl, token: issueToken(user) })
@@ -129,6 +130,43 @@ const { once } = require('node:events')
     assert.deepEqual((await api.listReminders(B, { history: true })).reminders, []); check('otra persona no ve recordatorios de A (lista vacía)')
     // Con el consentimiento de notificaciones de la persona de la demostración retirado, el servidor responde 403 consent_required: el cliente lo expone como `forbidden` con ese código (la pantalla decidirá el texto en el paso 3).
     await fails(api.listReminders(A), 'forbidden', 403, 'consent_required'); check('recordatorios sin consentimiento de notificaciones → forbidden consent_required')
+
+    // --- E307-1: un 2xx que no es un objeto JSON NO es un éxito (resultado incierto) -----------------------------------------------------
+    const bodies = { empty: ['200 vacío', 200, ''], html: ['200 con HTML de un proxy', 200, '<html><body>Bad gateway page</body></html>'], array: ['200 con un arreglo', 200, '[]'], nul: ['200 con null', 200, 'null'], text: ['200 con una cadena JSON', 200, '"ok"'], nocontent: ['204', 204, ''] }
+    const odd = require('node:http').createServer((req, res) => { const hit = bodies[req.url.split('/')[1]]; if (!hit) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); return } res.writeHead(hit[1], { 'Content-Type': 'text/html' }); res.end(hit[2]) })
+    odd.listen(0, '127.0.0.1'); await once(odd, 'listening')
+    try {
+      for (const [name, [label, status]] of Object.entries(bodies)) {
+        const error = await fails(api.getRoutes({ baseUrl: `http://127.0.0.1:${odd.address().port}/${name}`, token: A.token }), 'unavailable', status, '')
+        assert.equal(api.isUncertain(error), true, label)
+      }
+      check('2xx vacío, HTML, arreglo, null, cadena o 204 → unavailable e incierto (no «éxito con null»)')
+      assert.deepEqual(await api.getRoutes({ baseUrl: `http://127.0.0.1:${odd.address().port}/ok`, token: A.token }), { ok: true }); check('un 200 con un objeto JSON sigue siendo éxito')
+    } finally { await new Promise(resolve => { odd.closeAllConnections(); odd.close(resolve) }) }
+
+    // --- Rutas (ES-32) y catálogo (ES-31) ------------------------------------------------------------------------------------------------
+    const catalogView = await api.getRouteCatalog(A); assert.ok(catalogView.contexts.length > 0 && catalogView.roles.length > 0); check('el catálogo publicado trae contextos y roles (los contextos del formulario salen de aquí)')
+    const role = await api.getRoleProfile(A, catalogView.roles[0].roleKey); assert.equal(role.role.roleKey, catalogView.roles[0].roleKey); await fails(api.getRoleProfile(A, 'no_existe'), 'not_found', 404, 'role_not_found'); check('ficha de un rol; un rol inexistente = 404')
+    const mine = await api.getConstraints(A); assert.equal(mine.constraints.version, 1); assert.deepEqual(mine.constraints.payload.targetMarkets, ['CO']); assert.equal((await api.getConstraints(B)).constraints, null); check('restricciones: A ve las suyas (v1); B no ve nada')
+    const view1 = await api.getRoutes(A); assert.match(view1.basisHash, /^[a-f0-9]{64}$/); assert.ok(view1.routes.length > 0 && view1.routes.every(r => ['continuity', 'adjacency', 'exploration'].includes(r.slot))); assert.equal(view1.constraintsVersion, 1)
+    const viewB = await api.getRoutes(B); assert.deepEqual(viewB.routes, []); assert.equal(viewB.basisHash, null); check('rutas de A con basisHash y ranuras; B sin restricciones = lista vacía y sin base')
+    const cid = api.newRequestId(), payload2 = { ...constraints, modalities: ['remote'] }
+    await fails(api.putConstraints(A, { requestId: cid, baseVersion: 0, payload: payload2 }), 'conflict', 409, 'conflict'); check('guardar restricciones con baseVersion caducada (0 con la 1 vigente) → conflict')
+    await fails(api.putConstraints(A, { requestId: api.newRequestId(), baseVersion: 1, payload: { ...constraints, originContextKey: 'ctx_inventado' } }), 'invalid', 400); await fails(api.putConstraints(A, { requestId: api.newRequestId(), baseVersion: 1, payload: { ...constraints, userId: 1 } }), 'invalid', 400); check('contexto fuera del catálogo o campo de más (userId) → invalid, sin 500')
+    const saved = await api.putConstraints(A, { requestId: cid, baseVersion: 1, payload: payload2 }); assert.equal(saved.created, true); assert.equal(saved.constraints.version, 2)
+    const savedAgain = await api.putConstraints(A, { requestId: cid, baseVersion: 1, payload: payload2 }); assert.equal(savedAgain.created, false); assert.equal(savedAgain.constraints.id, saved.constraints.id)
+    assert.equal((await api.getConstraints(A)).constraints.version, 2); check('guardar con el mismo requestId no duplica (created:false; la versión vigente es la 2)')
+    const view2 = await api.getRoutes(A); assert.equal(view2.constraintsVersion, 2); assert.notEqual(view2.basisHash, view1.basisHash); check('al cambiar las restricciones cambia la base de las rutas')
+    const pick2 = view2.routes[0]
+    await fails(api.chooseRoute(A, { requestId: api.newRequestId(), roleKey: pick2.roleKey, slot: pick2.slot, decision: 'accepted', basisHash: view1.basisHash }), 'conflict', 409, 'conflict'); check('elegir con la base anterior (basisHash caducado) → conflict: la persona revisa las rutas')
+    await fails(api.chooseRoute(A, { requestId: api.newRequestId(), roleKey: 'rol_que_no_se_propuso', slot: pick2.slot, decision: 'accepted', basisHash: view2.basisHash }), 'rejected', 422, 'route_not_proposed'); check('elegir una ruta que no se propuso → 422 route_not_proposed')
+    const chooseId = api.newRequestId(), chosen = await api.chooseRoute(A, { requestId: chooseId, roleKey: pick2.roleKey, slot: pick2.slot, decision: 'rejected', basisHash: view2.basisHash }); assert.equal(chosen.created, true); assert.equal(chosen.choice.decision, 'rejected')
+    const chosenAgain = await api.chooseRoute(A, { requestId: chooseId, roleKey: pick2.roleKey, slot: pick2.slot, decision: 'rejected', basisHash: view2.basisHash }); assert.equal(chosenAgain.created, false); assert.equal(chosenAgain.choice.id, chosen.choice.id); check('rechazar una ruta; repetir el mismo requestId no duplica')
+    assert.ok((await api.listChoices(A)).choices.some(c => c.id === chosen.choice.id)); assert.equal((await api.getChoice(A, chosen.choice.id)).choice.id, chosen.choice.id); check('la lista y el detalle de elecciones traen la del titular')
+    await fails(api.getChoice(B, chosen.choice.id), 'not_found', 404, 'route_record_not_found'); assert.deepEqual((await api.listChoices(B)).choices, []); await fails(api.getChoice(A, 0), 'invalid', 400); check('otra persona: la elección de A es inexistente (404) y su lista está vacía; id 0 se rechaza en el cliente')
+    const rr = api.newRequestId(), review = await api.requestRouteReview(A, { requestId: rr, note: 'Nota sintética' }); assert.equal(review.created, true)
+    assert.equal((await api.requestRouteReview(A, { requestId: rr, note: 'Nota sintética' })).created, false); await fails(api.requestRouteReview(A, { requestId: api.newRequestId(), note: 'otra' }), 'conflict', 409, 'review_already_open')
+    assert.equal((await api.getRouteReview(A)).reviewRequest.id, review.reviewRequest.id); assert.equal((await api.getRouteReview(B)).reviewRequest, null); check('pedir revisión: idempotente por requestId, una abierta a la vez (409 review_already_open) y B no ve la de A')
     console.log(`
 ${checks.length} comprobaciones OK`)
   } finally {

@@ -2,6 +2,8 @@ import './register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { Banner, Button, Card, CheckField, Chip, Dialog, LinkButton, SelectField, TextAreaField } from '../cartografia'
+import { PersonScreen } from '../space/PersonScreen'
 import { compassApi, CompassError } from './api'
 import { fieldKeys, selectedFields, type CareerContext, type ContextVersion, type DirectField, type DraftField, type Preview } from './model'
 import { registerCompassGuard } from './navigationGuard'
@@ -20,15 +22,15 @@ export function CompassPage() {
 }
 
 function CompassSession({ token }: { token: string }) {
-  const { t, lang, setLang } = useLanguage()
+  const { t, lang } = useLanguage()
   const tr = (key: string) => t(`compass.${key}`)
   const navigate = useNavigate()
   const api = useMemo(() => compassApi(API, token), [token])
   const alive = useRef(false)
   const sequence = useRef(0)
   const locked = useRef(false)
-  const dialog = useRef<HTMLDialogElement>(null)
   const noticeRef = useRef<HTMLDivElement>(null)
+  const [withdrawOpen, setWithdrawOpen] = useState(false) // ES-308: el <Dialog> de Cartografía devuelve el foco a quien lo abrió, atrapa Tab y cierra con Esc
   const [context, setContext] = useState<CareerContext | null>(null)
   const [ready, setReady] = useState(false)
   const [rows, setRows] = useState<DraftField[]>([blank()])
@@ -144,7 +146,7 @@ function CompassSession({ token }: { token: string }) {
   }
   async function withdraw() {
     if (locked.current || !current() || !ready) return
-    dialog.current?.close(); locked.current = true; setBusy('withdrawing'); setReady(false); edit()
+    setWithdrawOpen(false); locked.current = true; setBusy('withdrawing'); setReady(false); edit()
     let acknowledged = false
     try { await api.revoke(); acknowledged = true } catch { /* A lost response must never trigger another POST automatically. */ }
     if (!current()) { locked.current = false; return }
@@ -156,53 +158,51 @@ function CompassSession({ token }: { token: string }) {
     finally { locked.current = false; if (current()) setBusy('') }
   }
   function fields(version: ContextVersion) {
-    return <dl>{version.fields.map((field, index) => <div key={index}><dt>{tr(field.key)}</dt><dd>{field.text}</dd></div>)}</dl>
+    return <dl className="compass-fields">{version.fields.map((field, index) => <div key={index}><dt>{tr(field.key)}</dt><dd>{field.text}</dd></div>)}</dl>
   }
-  const confirmActions = unsure ? <><button className="elv-btn" disabled={!!busy} onClick={() => void check()}>{tr('check')}</button><button className="elv-btn compass-primary" disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('retry')}</button></> : <button className="elv-btn compass-primary" disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('confirm')}</button>
-  return <div className="compass-scope">
-    <a className="compass-skip" href="#compass-main">{tr('skip')}</a>
-    <header><button className="elv-btn" disabled={!!busy} onClick={leave}>{tr('back')}</button>
-      <div role="group" aria-label={tr('language')}>{(['es', 'en'] as const).map(language => <button className="elv-btn" key={language} aria-pressed={lang === language} onClick={() => setLang(language)}>{language.toUpperCase()}</button>)}</div>
-    </header>
-    <div id="compass-main" tabIndex={-1}>
-      <h1>{tr('title')}</h1><p>{tr('intro')}</p><p>{tr('privacy')} {tr('caution')}</p>
-      <div ref={noticeRef} tabIndex={-1} role={failed ? 'alert' : 'status'} aria-live="polite" className={failed ? 'compass-error' : 'compass-notice'}>{notice && tr(notice)}</div>
-      {busy && <p role="status">{tr(busy)}</p>}
-      {!ready && !busy && <button className="elv-btn" onClick={() => void retryRead()}>{tr('retry')}</button>}
-      {notice === 'session' && <a className="elv-link" href="/login">{t('nav_login')}</a>}
-      {ready && context && <>
-        <section className="elv-card compass-card" aria-labelledby="current-heading"><h2 id="current-heading">{tr('current')}</h2>
-          {context.active ? <><p>{tr('version')} {context.active.version} · {tr('active')}</p>{fields(context.active)}
-            {context.active.needsReview && <p className="compass-warning">{tr('needs_review')}. {tr('source_changed')}</p>}
-            <button className="elv-btn" disabled={!!busy} onClick={() => dialog.current?.showModal()}>{tr('withdraw')}</button></> : <p>{tr('empty')}</p>}
-          <p>{tr('derivatives')}</p>
-        </section>
-        <details className="elv-card compass-card"><summary>{tr('history')} ({context.versions.length})</summary>
-          {context.versions.map(version => <article key={version.version}><h3>{tr('version')} {version.version} · {tr(version.status)}</h3><time dateTime={version.approvedAt}>{new Date(version.approvedAt).toLocaleString(lang)}</time>{fields(version)}</article>)}
-        </details>
-        <section className="elv-card compass-card" aria-labelledby="new-heading"><h2 id="new-heading">{tr('new')}</h2><p>{tr('limit')}</p>{context.active && <p className="compass-warning">{tr('replaces')}</p>}
-          {!review ? <form onSubmit={event => { event.preventDefault(); void preview() }}>
-            <fieldset disabled={!!busy}>
-              {rows.map((row, index) => <fieldset className="elv-fieldset compass-field" key={row.id}><legend>{index + 1} · {tr('unconfirmed')}</legend>
-                <label htmlFor={`category-${row.id}`}>{tr('category')}</label><select className="elv-select" id={`category-${row.id}`} value={row.key} aria-invalid={invalid.includes(row.id)} onChange={event => update(row.id, { key: event.target.value as DraftField['key'] })}><option value="">{tr('category')}</option>{fieldKeys.map(key => <option key={key} value={key}>{tr(key)}</option>)}</select>
-                <label htmlFor={`text-${row.id}`}>{tr('text')}</label><textarea className="elv-textarea" id={`text-${row.id}`} value={row.text} maxLength={500} rows={4} aria-invalid={invalid.includes(row.id)} aria-describedby={`count-${row.id}`} onChange={event => update(row.id, { text: event.target.value })} /><span id={`count-${row.id}`}>{row.text.length}/500</span>
-                <label className="compass-check"><input className="elv-checkbox" type="checkbox" checked={row.selected} onChange={event => update(row.id, { selected: event.target.checked })} />{tr('select')}</label>
-                {invalid.includes(row.id) && <p className="compass-error">{tr('invalid')}</p>}
-                <button className="elv-btn" type="button" onClick={() => { edit(); setRows(old => old.filter(item => item.id !== row.id)) }}>{tr('reject')}</button>
-              </fieldset>)}
-              <div className="compass-actions"><button className="elv-btn" type="button" disabled={rows.length >= 12} onClick={() => { edit(); setRows(old => [...old, blank()]) }}>{tr('add')}</button><button className="elv-btn compass-primary" type="submit">{tr('preview')}</button></div>
-            </fieldset>
-          </form> : <section aria-labelledby="preview-heading"><h3 id="preview-heading">{tr('preview')}</h3>
-            <dl>{review.preview.representation.map((field, index) => <div key={index}><dt>{tr(field.key)}</dt><dd>{field.text}</dd></div>)}</dl>
-            <p>{tr('expires')}: <time dateTime={review.preview.expiresAt}>{new Date(review.preview.expiresAt).toLocaleTimeString(lang)}</time></p>
-            {expired && <p role="alert">{tr('expired')}</p>}
-            <label className="compass-check"><input className="elv-checkbox" type="checkbox" checked={authorized} disabled={!!busy || expired} onChange={event => setAuthorized(event.target.checked)} />{tr('authorize')}</label>
-            <div className="compass-actions"><button className="elv-btn" disabled={!!busy} onClick={edit}>{tr('edit')}</button>{expired ? <button className="elv-btn" onClick={() => void preview()}>{tr('renew')}</button> : confirmActions}</div>
-          </section>}
-        </section>
-        {context.active && <p>{tr('unchanged')}</p>}<button className="elv-btn" disabled={!!busy} onClick={leave}>{tr(context.active ? 'no_changes' : 'skip_transfer')}</button>
-      </>}
-      <dialog ref={dialog} aria-labelledby="withdraw-title"><h2 id="withdraw-title">{tr('withdraw_confirm')}</h2><p>{tr('withdraw_help')}</p><div className="compass-actions"><button className="elv-btn" autoFocus onClick={() => dialog.current?.close()}>{tr('cancel')}</button><button className="elv-btn compass-primary" onClick={() => void withdraw()}>{tr('withdraw_confirm')}</button></div></dialog>
-    </div>
-  </div>
+  const confirmActions = unsure ? <><Button variant="ghost" disabled={!!busy} onClick={() => void check()}>{tr('check')}</Button><Button disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('retry')}</Button></> : <Button disabled={!authorized || !!busy} onClick={() => void confirm()}>{tr('confirm')}</Button>
+  // ES-308 (PR 3): la Brújula va dentro del marco de persona (PersonLayout, ES-153): el encabezado, el idioma, el tema y «Saltar al contenido» los pone el marco. Aquí queda la cabecera de pantalla y el contenido, con las piezas de Cartografía. Ningún texto cambia.
+  return <PersonScreen title={tr('title')} lead={`${tr('intro')} ${tr('privacy')}`}>
+    <nav className="pg-nav"><LinkButton disabled={!!busy} onClick={leave}>{tr('back')}</LinkButton></nav>
+    <p className="cg-hint">{tr('caution')}</p>
+    <div ref={noticeRef} tabIndex={-1} role={failed ? 'alert' : 'status'} aria-live="polite" className={`pg-focus ${notice ? `cg-banner${failed ? ' cg-banner--error' : ''}` : 'pg-live'}`}>{notice && <span className="cg-banner__title">{tr(notice)}</span>}</div>
+    {busy && <p className="cg-hint" role="status">{tr(busy)}</p>}
+    {!ready && !busy && <div className="pg-actions"><Button variant="ghost" onClick={() => void retryRead()}>{tr('retry')}</Button></div>}
+    {notice === 'session' && <p><a className="cg-linkbtn" href="/login">{t('nav_login')}</a></p>}
+    {ready && context && <>
+      <section className="cg-card pg-card" aria-labelledby="current-heading"><h2 id="current-heading">{tr('current')}</h2>
+        {context.active ? <><p className="pg-itemtop"><span>{tr('version')} {context.active.version}</span><Chip tone="ok" symbol="✓">{tr('active')}</Chip></p>{fields(context.active)}
+          {context.active.needsReview && <Banner title={`${tr('needs_review')}. ${tr('source_changed')}`} />}
+          <div className="pg-actions"><Button variant="ghost" disabled={!!busy} onClick={() => setWithdrawOpen(true)}>{tr('withdraw')}</Button></div></> : <p>{tr('empty')}</p>}
+        <p className="cg-hint">{tr('derivatives')}</p>
+      </section>
+      <Card as="details" className="pg-card pg-details"><summary>{tr('history')} ({context.versions.length})</summary>
+        {context.versions.map(version => <article className="pg-history" key={version.version}><h3>{tr('version')} {version.version} · {tr(version.status)}</h3><time className="cg-hint" dateTime={version.approvedAt}>{new Date(version.approvedAt).toLocaleString(lang)}</time>{fields(version)}</article>)}
+      </Card>
+      <section className="cg-card pg-card" aria-labelledby="new-heading"><h2 id="new-heading">{tr('new')}</h2><p>{tr('limit')}</p>{context.active && <Banner title={tr('replaces')} />}
+        {!review ? <form className="pg-form" onSubmit={event => { event.preventDefault(); void preview() }}>
+          <fieldset className="compass-bare" disabled={!!busy}>
+            {rows.map((row, index) => <fieldset className="pg-array" key={row.id}><legend className="cg-label">{index + 1} · {tr('unconfirmed')}</legend>
+              <SelectField id={`category-${row.id}`} label={tr('category')} value={row.key} aria-invalid={invalid.includes(row.id) || undefined} onChange={event => update(row.id, { key: event.target.value as DraftField['key'] })}><option value="">{tr('category')}</option>{fieldKeys.map(key => <option key={key} value={key}>{tr(key)}</option>)}</SelectField>
+              <TextAreaField id={`text-${row.id}`} label={tr('text')} value={row.text} maxLength={500} rows={4} aria-invalid={invalid.includes(row.id) || undefined} hint={`${row.text.length}/500`} error={invalid.includes(row.id) ? tr('invalid') : undefined} onChange={event => update(row.id, { text: event.target.value })} />
+              <CheckField label={tr('select')} checked={row.selected} onChange={event => update(row.id, { selected: event.target.checked })} />
+              <div className="pg-actions"><Button variant="ghost" onClick={() => { edit(); setRows(old => old.filter(item => item.id !== row.id)) }}>{tr('reject')}</Button></div>
+            </fieldset>)}
+            <div className="pg-actions"><Button variant="ghost" disabled={rows.length >= 12} onClick={() => { edit(); setRows(old => [...old, blank()]) }}>{tr('add')}</Button><Button type="submit">{tr('preview')}</Button></div>
+          </fieldset>
+        </form> : <section className="cg-card pg-card pg-card-review" aria-labelledby="preview-heading"><h3 id="preview-heading">{tr('preview')}</h3>
+          <dl className="compass-fields">{review.preview.representation.map((field, index) => <div key={index}><dt>{tr(field.key)}</dt><dd>{field.text}</dd></div>)}</dl>
+          <p>{tr('expires')}: <time dateTime={review.preview.expiresAt}>{new Date(review.preview.expiresAt).toLocaleTimeString(lang)}</time></p>
+          {expired && <p className="cg-error" role="alert">{tr('expired')}</p>}
+          <CheckField label={tr('authorize')} checked={authorized} disabled={!!busy || expired} onChange={event => setAuthorized(event.target.checked)} />
+          <div className="pg-actions"><Button variant="ghost" disabled={!!busy} onClick={edit}>{tr('edit')}</Button>{expired ? <Button variant="ghost" onClick={() => void preview()}>{tr('renew')}</Button> : confirmActions}</div>
+        </section>}
+      </section>
+      {context.active && <p className="cg-hint">{tr('unchanged')}</p>}<div className="pg-actions"><Button variant="ghost" disabled={!!busy} onClick={leave}>{tr(context.active ? 'no_changes' : 'skip_transfer')}</Button></div>
+    </>}
+    <Dialog open={withdrawOpen} onClose={() => { if (!busy) setWithdrawOpen(false) }} title={tr('withdraw_confirm')}
+      actions={<><Button variant="ghost" onClick={() => setWithdrawOpen(false)}>{tr('cancel')}</Button><Button variant="danger" onClick={() => void withdraw()}>{tr('withdraw_confirm')}</Button></>}>
+      <div className="pg-dialog"><p>{tr('withdraw_help')}</p></div>
+    </Dialog>
+  </PersonScreen>
 }
