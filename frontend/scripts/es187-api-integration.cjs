@@ -89,7 +89,7 @@ const { pathToFileURL } = require('node:url');
         const reason = await page.locator('#catalog-draft-reason').innerText();
         assert.ok(reason.includes(t.reason) && reason.includes(String((await catalog.get(draftId)).version)), 'razón con la versión del borrador: ' + reason);
         assert.equal(await button.getAttribute('aria-describedby'), 'catalog-draft-reason');
-        assert.equal(await page.locator('.catalog-card').count(), 2, 'dos versiones (vigente y borrador)');
+        assert.equal(await page.locator('main .cg-items .cg-item').count(), 2, 'dos versiones (vigente y borrador)');
         await axeCheck(page, `${tag}: lista con borrador`);
         await page.getByRole('button', { name: t.openDraft }).click(); await page.waitForURL(new RegExp(`/admin/route-catalog/${draftId}$`));
         assert.deepEqual(errors, []); await context.close();
@@ -102,7 +102,7 @@ const { pathToFileURL } = require('node:url');
         await page.locator('#contexts').waitFor();
         for (const [kind, rows] of Object.entries(detail.items)) for (const row of rows) {
           const gaps = (detail.missing[`${kind}/${row.itemKey}`] ?? []).length;
-          const card = page.locator(`#${kind} article`, { has: page.locator(`button:has-text("${row.itemKey}")`) }); const chip = await card.locator('.catalog-chip').innerText();
+          const card = page.locator(`#${kind} li.cg-item`, { has: page.locator(`button:has-text("${row.itemKey}")`) }); const chip = (await card.locator('.cg-chip').innerText()).replace(/^✓\s*/, '');
           assert.equal(chip, gaps ? `${t.missing} (${gaps})` : t.complete, `chip de ${kind}/${row.itemKey}`);
         }
         assert.ok(Object.keys(detail.missing).some(k => k === 'contexts/ctx_incompleto'), 'el servidor ve faltantes en ctx_incompleto');
