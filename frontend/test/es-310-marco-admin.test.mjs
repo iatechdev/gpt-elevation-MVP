@@ -9,9 +9,9 @@ const code = ts.transpileModule(read('../src/shell/adminLayoutState.ts'), { comp
 const { MIGRATED_ADMIN_PATHS, isMigratedAdminPath } = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'))
 
 test('ES-310 marco: la lista de rutas migradas contiene solo las pantallas ya migradas a Cartografía', () => {
-  assert.deepEqual([...MIGRATED_ADMIN_PATHS], ['/admin/route-catalog', '/admin/users', '/admin/dashboard', '/admin/metrics'])
-  for (const path of ['/admin/route-catalog', '/admin/users', '/admin/dashboard', '/admin/metrics']) assert.equal(isMigratedAdminPath(path), true, path)
-  for (const path of ['/admin/prompts', '/admin/skill-catalog']) assert.equal(isMigratedAdminPath(path), false, path)
+  assert.deepEqual([...MIGRATED_ADMIN_PATHS], ['/admin/route-catalog', '/admin/users', '/admin/dashboard', '/admin/metrics', '/admin/prompts'])
+  for (const path of ['/admin/route-catalog', '/admin/users', '/admin/dashboard', '/admin/metrics', '/admin/prompts']) assert.equal(isMigratedAdminPath(path), true, path)
+  for (const path of ['/admin/skill-catalog']) assert.equal(isMigratedAdminPath(path), false, path)
 })
 
 test('ES-310 marco: una ruta migrada coincide con ella y sus subrutas, no con prefijos parecidos; la barra final no importa', () => {
