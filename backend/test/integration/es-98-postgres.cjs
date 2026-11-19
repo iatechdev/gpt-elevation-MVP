@@ -291,7 +291,7 @@ test('ES-98 PostgreSQL + HTTP: ids, tipos de nota, estados y choques de sesión,
     for (const who of [adminUser, superadmin]) {
       const r = await http(who, 'GET', '/api/rating/avg');
       assert.equal(r.status, 200);
-      assert.ok(Number.isFinite(r.body.avg) && r.body.total >= 2);
+      assert.ok(r.body.total >= 2); assert.equal(r.body.avg, null, 'ES-273: con menos de 5 valoraciones válidas el promedio es null (no se revela el de una persona); el cálculo con 0/1/4/5/6 está en es-273-postgres');
     }
     // El participante sigue pudiendo valorar.
     assert.equal((await http(user, 'POST', '/api/rating', { rating: 5 })).status, 200);
