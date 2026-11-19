@@ -45,3 +45,6 @@ export function gateDecision(
   const zones: Zone[] = strict && strict !== needed ? [needed, strict] : [needed]
   return zones.every(zone => canEnter(state.role, zone)) ? 'allow' : 'noAccess'
 }
+
+/** ES-346: tras pedir la eliminación de la cuenta la sesión local ya se cerró; en la ruta marcada («Mis datos») «login» pasa a «allow» para mostrar el aviso. Nada más cambia. */
+export const withFarewell = (decision: GateDecision, farewell: boolean): GateDecision => (decision === 'login' && farewell ? 'allow' : decision)

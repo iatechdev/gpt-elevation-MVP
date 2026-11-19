@@ -75,7 +75,8 @@ const assert = require('node:assert/strict');
       await page.getByRole('heading', { name: 'Application for professionals' }).waitFor(); await page.getByLabel(T.en.cv, { exact: false }).waitFor();
       await page.getByText('Elevation is not an emergency service and does not replace clinical care.').waitFor();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'sin scroll horizontal a 375 px');
-      await page.keyboard.press('Tab'); const order = []; for (let i = 0; i < 16; i++) { order.push(await page.evaluate(() => document.activeElement && (document.activeElement.id || document.activeElement.textContent.trim()))); await page.keyboard.press('Tab'); }
+      // ES-328: el marco público añade ~9 paradas antes del formulario (saltar, marca, 4 enlaces, ES, EN): se recorren 28.
+      await page.keyboard.press('Tab'); const order = []; for (let i = 0; i < 28; i++) { order.push(await page.evaluate(() => document.activeElement && (document.activeElement.id || document.activeElement.textContent.trim()))); await page.keyboard.press('Tab'); }
       assert.ok(order.indexOf('pro-name') !== -1 && order.indexOf('pro-name') < order.indexOf('pro-cv') && order.indexOf('pro-cv') < order.indexOf('pro-consent'), 'orden de foco: ' + order.join('|'));
       assert.ok(!(await page.evaluate(() => [...document.querySelectorAll('input')].some(i => i === document.activeElement && i.name === 'bot_trap'))), 'el campo trampa no recibe foco'); assert.equal(await page.title(), 'Application for professionals · Elevation');
       check('EN, móvil 375 px sin scroll horizontal, orden de foco lógico y el campo trampa no recibe foco'); assert.deepEqual(errors, []); await page.close();
@@ -86,8 +87,8 @@ const assert = require('node:assert/strict');
         await page.setInputFiles('#pro-cv', { name: 'un-nombre-de-archivo-muy-largo-para-probar-el-desborde-de-la-interfaz-movil.pdf', mimeType: 'application/pdf', buffer: PDF });
         await page.getByRole('button', { name: 'Enviar solicitud' }).click(); await page.getByRole('alert').filter({ hasText: 'Revisa los campos marcados.' }).waitFor();
         const report = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: window.innerWidth,
-          over: [...document.querySelectorAll('.pro-page *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > window.innerWidth + 1 && !e.closest('.pro-trap'); }).map(e => e.tagName + '#' + (e.id || e.className)).slice(0, 5),
-          small: [...document.querySelectorAll('.pro-page .elv-input, .pro-page input[type=file]')].filter(e => e.getBoundingClientRect().height < 43 && !e.closest('.pro-trap')).map(e => e.id).slice(0, 5) }));
+          over: [...document.querySelectorAll('.pa *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > window.innerWidth + 1 && !e.closest('.pa-trap'); }).map(e => e.tagName + '#' + (e.id || e.className)).slice(0, 5),
+          small: [...document.querySelectorAll('.pa .cg-input, .pa .cg-textarea')].filter(e => e.getBoundingClientRect().height < 43 && !e.closest('.pa-trap')).map(e => e.id).slice(0, 5) }));
         assert.ok(report.scroll <= report.inner + 1, `scroll horizontal a ${width} px: ${report.scroll}`);
         assert.deepEqual(report.over, [], `elementos fuera de pantalla a ${width} px`); assert.deepEqual(report.small, [], `campos menores de 44 px a ${width} px`);
         assert.deepEqual(errors, []); await page.close();

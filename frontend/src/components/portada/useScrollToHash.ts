@@ -11,7 +11,7 @@ export function useScrollToHash() {
     const id = decodeURIComponent(window.location.hash.slice(1))
     if (!id) return
     let done = false; let frame = 0; let frame2 = 0
-    const settled = () => !document.querySelector('.landing-plan-skeleton')
+    const settled = () => !document.querySelector('.pp-skel')
     const scroll = () => { document.getElementById(id)?.scrollIntoView({ block: 'start' }) }
     const go = () => {
       if (done) return
