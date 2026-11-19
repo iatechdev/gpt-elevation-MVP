@@ -22,20 +22,21 @@ const flat = (text) => String(text).normalize('NFD').replace(/[̀-ͯ]/g, '')
 const FILLERS = /[\u3164\u2800\u115F\u1160\uFFA0\u180E\u061C\u034F]/g;
 const FILLER_TEST = new RegExp(FILLERS.source); // sin la bandera g: `.test` con /g recuerda la posición
 const FORMAT_AND_MARKS = /[\p{Cf}\p{Mn}\p{Me}\uE000-\uF8FF]/gu; // \p{Cf} incluye los caracteres de etiqueta U+E0000–E007F y el ancho cero
-// Homoglifos latino/cirílico/griego de uso común (sobre minúsculas): «quiero mоrir» con «о» cirílica.
-// LÍMITE (E304-3, documentado a propósito): esta tabla cubre 25 homoglifos cirílicos y griegos de uso común (+ «ɡ») y NFKC cubre ancho completo, letras matemáticas y «ſ». NO cubre el resto de
-// homoglifos Unicode (QA probó 26 de 67 puntos de código candidatos): «ı» (i sin punto), «ɑ», versalitas latinas (ᴍ, ɴ…), «κ» griega, armenio, cherokee, lisu… Una frase escrita con ellos NO se
-// detecta. Ampliar con una tabla de confusables (UTS #39) y medir contra falsos positivos queda como seguimiento.
-const HOMOGLYPHS = {
-  '\u0430': 'a', '\u0435': 'e', '\u043e': 'o', '\u0441': 'c', '\u0440': 'p', '\u0445': 'x', '\u0456': 'i', '\u0455': 's', '\u0458': 'j', '\u04bb': 'h', '\u0261': 'g',
-  '\u03bf': 'o', '\u03b1': 'a', '\u03b5': 'e', '\u03b9': 'i', '\u03c1': 'p', '\u03c5': 'u', '\u03bd': 'v', '\u03c4': 't', '\u043a': 'k', '\u043c': 'm', '\u043d': 'h', '\u0442': 't', '\u0443': 'y', '\u0432': 'b',
-};
+// Homoglifos latino/cirílico/griego (sobre minúsculas): «quiero mоrir» con «о» cirílica. Dos tablas que se SUMAN: la manual de ES-304 (utils/homoglyphs-manual.js, manda sobre la otra) y la generada de ES-312
+// (utils/confusables-table.js, desde UTS #39 con reglas acotadas: scripts/gen-confusables.cjs; la fuente está versionada en data/unicode/ y el servidor NUNCA descarga nada).
+// LÍMITE (E304-3/ES-312, documentado a propósito): la tabla cubre letras latinas extendidas/IPA/versalitas, griegas, cirílicas, armenias, cherokee y lisu que UTS #39 equipara a UNA letra a-z; NFKC cubre
+// ancho completo, letras matemáticas y «ſ». NO cubre CJK, símbolos, emojis, cifras de otras escrituras, mapeos de varias letras, otros alfabetos completos ni lo semántico. Una frase escrita con un
+// carácter fuera de la tabla NO se detecta: es una ayuda, no una protección completa.
+const HOMOGLYPHS = { ...require('./confusables-table.js'), ...require('./homoglyphs-manual.js') };
+// Claves de la tabla que caen dentro de U+00A0–U+024F (p. ej. «ı» U+0131, «ĸ» U+0138): el resto de ese rango son letras latinas acentuadas que NO se tocan (ñ, á, ü se pliegan con NFD).
+const INSIDE_LATIN = Object.keys(HOMOGLYPHS).map((c) => c.codePointAt(0)).filter((cp) => cp >= 0xA0 && cp <= 0x24F).map((cp) => '\\u' + cp.toString(16).padStart(4, '0')).join('');
+const HOMOGLYPH_SCAN = new RegExp('[^\\u0000-\\u007F\\u00A0-\\u024F]' + (INSIDE_LATIN ? '|[' + INSIDE_LATIN + ']' : ''), 'g');
 const LEET = { 4: 'a', 3: 'e', 1: 'i', 0: 'o', 5: 's', 7: 't', '@': 'a', $: 's' };
 const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 
 // Paso 1: NFKC (ancho completo, letras matemáticas), minúsculas, rellenos y marcas fuera, homoglifos a latín.
 // `filler`: los rellenos que se ven en blanco se quitan (intercalados entre letras) o se toman por ESPACIO (separan palabras): se prueban las dos lecturas.
-const unmask = (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(/[^\u0000-\u007F\u00A0-\u024F]/g, (c) => HOMOGLYPHS[c] || c);
+const unmask = (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(HOMOGLYPH_SCAN, (c) => HOMOGLYPHS[c] || c);
 // Paso 2: una frase escrita SOLO con caracteres de etiqueta (U+E0020–E007E) se decodifica a ASCII.
 const decodeTags = (text) => Array.from(String(text).matchAll(TAG_BLOCK), (m) => String.fromCharCode(m[0].codePointAt(0) - 0xE0000)).join('');
 // Paso 3: «s u i c i d i o» / «s.u.i.c.i.d.i.o» → «suicidio» (cuatro o más letras sueltas separadas).
