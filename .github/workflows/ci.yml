@@ -448,6 +448,9 @@ jobs:
   # Playwright y axe-core se instalan en un directorio temporal con versiones fijas (no tocan package-lock.json).
   a11y-guard:
     runs-on: ubuntu-latest
+    # Mínimo privilegio: el job solo lee el repositorio (la caché usa su propio token de ejecución).
+    permissions:
+      contents: read
     timeout-minutes: 15
     defaults:
       run:
