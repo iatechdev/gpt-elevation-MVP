@@ -111,6 +111,19 @@
 .pg-pick{display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch);cursor:pointer}.pg-pick input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--cg-ink);flex:none}
 fieldset.cg-field legend{padding:0}
 /* ===== sólo de la lámina ===== */
+/* NUEVO (ES-342 parte C): cabecera compacta del marco de persona */
+.fm{position:relative;min-height:calc(100dvh - var(--proto,0px));display:flex;flex-direction:column;background:var(--cg-ground);color:var(--cg-ink)}
+.fm-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5rem;min-height:56px;padding:.2rem .8rem;border-bottom:1px solid var(--cg-line)}
+.cg a.fm-brand{font:700 1.4rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;color:var(--cg-ink);text-decoration:none;display:inline-flex;align-items:center;min-height:var(--cg-touch)}.fm-brand i{font-style:normal;color:var(--cg-mark)}
+.fm .cx-menu{grid-area:auto;padding:0 .8rem;display:inline-flex;align-items:center;gap:.4rem}.fm .cx-menu__w{display:inline;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase}
+.fm-nav,.fm-end{display:none}
+.fm-body{padding:1rem .8rem 2rem;width:100%;max-width:1240px;margin:0 auto}
+.fm-body h1{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .8rem}
+.fm-body .cg-card{padding:1rem 1.1rem;margin:0 0 1rem}
+.fm .cx-scrim{position:absolute}
+.fm-who{margin:0;color:var(--cg-muted);font-size:.9rem}
+.fm-name{font:600 1rem var(--cg-font-cond);letter-spacing:.04em}
+@media (min-width:901px){.fm-top{grid-template-columns:auto minmax(0,1fr) auto;gap:1.4rem;padding:.5rem max(1.5rem,calc((100% - 1240px)/2 + 1.5rem))}.fm .cx-menu{display:none}.fm-nav{display:flex;gap:1.2rem;flex-wrap:wrap}.fm-nav a{color:var(--cg-ink);text-decoration:none;font:600 .95rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;min-height:var(--cg-touch);display:inline-flex;align-items:center;border-bottom:3px solid transparent}.fm-nav a[aria-current='page']{border-color:var(--cg-ink)}.fm-end{display:flex;align-items:center;gap:.8rem}.fm-body{padding:1.5rem 1.5rem 2rem}}
 .proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
 .proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
 /* NUEVO (ES-333) */
@@ -170,7 +183,7 @@ body.bare .proto{display:none}
 </head>
 <body>
 <div class="proto" id="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · Chat (ES-333)</b>
- <label>Pantalla <select id="scene"><option value="chat">Chat · conversación</option><option value="chat-empty">Chat · sin mensajes</option><option value="chat-menu">Chat · menú reagrupado (ES-342 B1)</option><option value="chat-menu-more">Chat · menú con «Menú de usuario» abierto</option><option value="chat-menu-admin">Chat · menú de administración</option><option value="chat-paused">Chat · en pausa</option><option value="chat-limit">Chat · límite de uso</option><option value="chat-error">Chat · envío sin confirmar</option><option value="chat-slow">Chat · respuesta lenta</option><option value="chat-trunc">Chat · respuesta cortada</option><option value="chat-diary">Chat · selector del diario</option><option value="chat-counter">Chat · contador de caracteres</option><option value="chat-recs">Chat · recomendaciones</option><option value="chat-recs-loading">Chat · recomendaciones cargando</option><option value="chat-out">Chat · cerrar sesión (check-out)</option><option value="chat-expired">Chat · sesión vencida</option><option value="chat-loaderr">Chat · error de carga</option><option value="chat-usage-loading">Chat · uso cargando</option><option value="chat-usage-error">Chat · uso con error</option><option value="chat-usage-none">Chat · uso sin límite definido</option></select></label>
+ <label>Pantalla <select id="scene"><option value="chat">Chat · conversación</option><option value="frame-page">Marco de persona · cabecera compacta (Mapa)</option><option value="frame-menu">Marco de persona · menú abierto</option><option value="frame-menu-more">Marco de persona · «Menú de usuario» abierto</option><option value="chat-empty">Chat · sin mensajes</option><option value="chat-menu">Chat · menú reagrupado (ES-342 B1)</option><option value="chat-menu-more">Chat · menú con «Menú de usuario» abierto</option><option value="chat-menu-admin">Chat · menú de administración</option><option value="chat-paused">Chat · en pausa</option><option value="chat-limit">Chat · límite de uso</option><option value="chat-error">Chat · envío sin confirmar</option><option value="chat-slow">Chat · respuesta lenta</option><option value="chat-trunc">Chat · respuesta cortada</option><option value="chat-diary">Chat · selector del diario</option><option value="chat-counter">Chat · contador de caracteres</option><option value="chat-recs">Chat · recomendaciones</option><option value="chat-recs-loading">Chat · recomendaciones cargando</option><option value="chat-out">Chat · cerrar sesión (check-out)</option><option value="chat-expired">Chat · sesión vencida</option><option value="chat-loaderr">Chat · error de carga</option><option value="chat-usage-loading">Chat · uso cargando</option><option value="chat-usage-error">Chat · uso con error</option><option value="chat-usage-none">Chat · uso sin límite definido</option></select></label>
  <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
  <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
  <span>Esta barra no existe en la plataforma. Los datos de la lámina son de ejemplo. Para medir: #bare=1.</span></div>
@@ -213,7 +226,21 @@ const themeSw=()=>`<div class="cg-seg" role="group" aria-label="${c().theme}">${
 const btn=(t,cl='')=>`<button type="button" class="cg-btn ${cl}">${t}</button>`;
 const chk=(on,l,ex='')=>`<label class="cx-chk"><input type="checkbox" ${on?'checked':''}><span>${l}</span></label>${ex}`;
 function sheet(title,inner,acts){return `<div class="cg-scrim cx-scrim"><div class="cg-dialog cx-sheet" role="dialog" aria-modal="true" aria-labelledby="sh"><div class="cx-sheet__head"><h2 id="sh">${title}</h2><button type="button" class="cg-btn cg-btn--ghost">${c().close}</button></div>${inner}${acts?`<div class="cg-dialog__actions">${acts}</div>`:''}</div></div>`}
-function sc(){const k=c();const s=scene;
+
+function frameScene(s,k){
+ const more=s==='frame-menu-more',open=s!=='frame-page';
+ const th='<div class="cg-seg" role="group" aria-label="'+k.theme+'">'+[['system',k.tauto],['light',k.tlight],['dark',k.tdark]].map(([v,l])=>'<button type="button" aria-pressed="'+(theme===v)+'" data-theme-set="'+v+'">'+l+'</button>').join('')+'</div>';
+ const nav='<nav class="fm-nav" aria-label="'+k.main+'">'+k.nav.map((n,i)=>'<a href="#n'+i+'" '+(i===0?'aria-current="page"':'')+'>'+n+'</a>').join('')+'</nav>';
+ const top='<header class="fm-top"><a class="fm-brand" href="#h" aria-label="Elevation">Elevation<i>.</i></a>'+nav+'<div class="fm-end">'+langSw()+'<span class="fm-name">Marta '+k.ex+'</span></div><button type="button" class="cx-menu" aria-haspopup="dialog" aria-expanded="'+open+'">☰<span class="cx-menu__w"> '+k.menuBtn+'</span></button></header>';
+ const body='<main id="main" class="fm-body"><h1>'+k.nav[0]+'</h1><section class="cg-card"><p>'+ph()+' '+k.ex+'</p><p class="cx-note">'+ph()+' '+k.ex+'</p></section><section class="cg-card"><p>'+ph()+' '+k.ex+'</p></section></main>';
+ let ov='';
+ if(open)ov='<div class="cg-scrim cx-scrim"><div class="cg-dialog cx-sheet cx-sheet--menu" role="dialog" aria-modal="true" aria-labelledby="sh"><div class="cx-sheet__head cx-sticky"><div><h2 id="sh">'+k.menuBtn+'</h2><p class="fm-who">Marta '+k.ex+'</p></div><button type="button" class="cg-btn cg-btn--ghost">'+k.close+'</button></div><div class="cx-sheet__body">'
+  +'<h3 class="cx-gh" id="g2">'+k.main+'</h3><nav class="cx-list cx-grid2" aria-labelledby="g2">'+k.nav.map((n,i)=>'<a href="#n'+i+'" '+(i===0?'aria-current="page"':'')+'>'+n+'</a>').join('')+'</nav>'
+  +'<button type="button" class="cx-disc" aria-expanded="'+more+'" aria-controls="um"><span>'+k.umenu+'</span><span aria-hidden="true">'+(more?'▴':'▾')+'</span></button>'+(more?'<nav id="um" class="cx-list cx-grid2" aria-label="'+k.umenu+'">'+k.uitems.map(n=>'<a href="#u">'+n+'</a>').join('')+'</nav>':'')
+  +'<h3 class="cx-gh" id="g3">'+k.prefs+'</h3><div class="cx-prefs2"><div><span>'+k.lang+'</span>'+langSw()+'</div><div><span>'+k.theme+'</span>'+th+'</div></div>'
+  +'</div><div class="cg-dialog__actions cx-sticky">'+btn(k.signOut,'cg-btn--danger')+'</div></div></div>';
+ return '<div class="cg fm" '+(theme==='system'?'':'data-theme="'+theme+'"')+'><a class="cg-skip" href="#main">'+k.skip+'</a>'+top+body+ov+'</div>'}
+function sc(){const k=c();const s=scene;if(s.startsWith("frame-"))return frameScene(s,k);
  const paused=s==='chat-paused',exh=s==='chat-limit',expired=s==='chat-expired',empty=s==='chat-empty',pend=s==='chat-error'||s==='chat-slow',trunc=s==='chat-trunc',thinking=s==='chat-slow'||s==='chat-thinking';
  const usageHtml=s==='chat-usage-loading'?`<p class="cx-note" role="status">${k.usageLoading}</p>`:s==='chat-usage-error'?`<p class="cx-note" role="status"><button type="button" class="cg-linkbtn">${k.usageError}</button></p>`:s==='chat-usage-none'?`<p class="cx-note" role="status">${k.usageNone}</p>`:`<div class="cx-meter" role="progressbar" aria-label="${k.usage}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${exh?100:42}"><i style="width:${exh?100:42}%"></i></div>`;
  const bubbles=empty?`<p class="cx-welcome">${k.welcome}</p>`:`<article class="cx-msg cx-msg--bot"><span class="cx-who">${k.bot}</span><p>${k.welcome}</p></article><article class="cx-msg cx-msg--you"><span class="cx-who">${k.you}</span><p>${ph()} ${k.ex}</p></article><article class="cx-msg cx-msg--bot"><span class="cx-who">${k.bot}</span><p>${ph()} ${k.ex}. ${ph()} ${k.ex}.</p>${trunc?`<div class="cx-trunc"><p role="status">${k.trunc}<small>${k.truncHint}</small></p>${btn(k.cont)}</div>`:''}</article>`;
