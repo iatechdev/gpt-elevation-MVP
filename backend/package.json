@@ -35,6 +35,7 @@
     "test:register-terms:pg": "node --test test/integration/es-301-postgres.cjs",
     "test:register-oracle:pg": "node --test test/integration/es-221-postgres.cjs",
     "test:email-case:pg": "node --test test/integration/es-306-postgres.cjs",
+    "test:register-name:pg": "node --test test/integration/es-324-postgres.cjs",
     "check:email-duplicates": "node scripts/es306-email-duplicates.cjs",
     "test:purge-option-a:pg": "node --test test/integration/es-274-postgres.cjs",
     "test:therapist-panel:pg": "node --test test/integration/es-177-postgres.cjs",
