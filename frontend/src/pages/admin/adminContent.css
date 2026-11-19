@@ -13,3 +13,29 @@
 .ac-filters { display: flex; flex-wrap: wrap; gap: .6rem; }
 .ac-status { margin: 0 0 .8rem; }
 .ac-linkbutton { display: inline-flex; align-items: center; text-decoration: none; }
+/* ES-315 · Planes */
+.ac-plan { gap: .35rem; }
+.ac-plan--off { border-left: 4px dashed var(--cg-muted); padding-left: .8rem; }
+.ac-planhead { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.ac-plan .ac-meta { margin: 0; }
+.ac-feats { list-style: none; margin: .2rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; }
+.ac-feats li { border: 1px solid var(--cg-line); padding: .15rem .6rem; font-size: .9rem; color: var(--cg-ink); overflow-wrap: anywhere; }
+.ac-off { border-color: var(--cg-err); color: var(--cg-err); }
+.ac-form { border: 0; margin: 0; padding: 0; min-width: 0; }
+.ac-sec { border: 0; border-top: 1px solid var(--cg-line); margin: 0 0 .8rem; padding: .6rem 0 0; min-width: 0; }
+.ac-sec legend { font: 600 .8rem var(--cg-font-cond); letter-spacing: .08em; text-transform: uppercase; color: var(--cg-muted); padding: 0 .4rem 0 0; }
+.ac-grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .8rem; }
+.ac-grid3 { display: grid; grid-template-columns: 2fr 1fr 2fr; gap: .8rem; }
+@media (max-width: 560px) { .ac-grid2, .ac-grid3 { grid-template-columns: minmax(0, 1fr); } }
+.ac-opts { display: flex; flex-wrap: wrap; gap: 1.4rem; align-items: flex-end; }
+.ac-opts .cg-check { margin-top: 0; }
+.ac-order { max-width: 7rem; }
+/* ES-315 · Textos públicos: fila campo + Guardar (a 560 px o menos apila y el botón ocupa el ancho) */
+.ac-lang { margin: 0 0 1rem; }
+.ac-h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: .03em; margin: 1.2rem 0 .5rem; }
+.ac-pending { margin: 0 0 1.2rem; }
+.ac-pendhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .6rem; }
+.ac-frow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: .8rem; }
+.ac-frow > p, .ac-frow > .ac-pendhead { grid-column: 1 / -1; margin: 0; }
+.ac-frow .cg-field { margin: 0; }
+@media (max-width: 560px) { .ac-frow { grid-template-columns: minmax(0, 1fr); } .ac-fact .cg-btn { width: 100%; } }
