@@ -128,7 +128,7 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
   const ROLES = ['user', 'therapist', 'admin', 'superadmin', 'board'];
   const ALLOWED = new Map([
     [auth.verificarToken, ROLES], [auth.verificarTokenParaBorrado, ROLES],
-    [auth.verificarAdmin, ['admin', 'superadmin']], [auth.verificarSuperAdmin, ['superadmin']], [auth.verificarEditorManifiesto, ['admin', 'superadmin']],
+    [auth.verificarAdmin, ['admin', 'superadmin']], [auth.verificarSuperAdmin, ['superadmin']], [auth.verificarEditorManifiesto, ['admin', 'superadmin']], [auth.verificarPublicadorManifiesto, ['superadmin']], // ES-182: publicar/reactivar el manifiesto es solo de superadmin
     [auth.verificarTerapeuta, ['therapist']], [auth.verificarBoard, ['board', 'superadmin']],
   ]);
   const adminUser = await mkUser('admin'); const superUser = await mkUser('superadmin'); const boardUser = await mkUser('board');
