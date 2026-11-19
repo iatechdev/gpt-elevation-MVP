@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
 
+# ES-358: mínimo privilegio para todos los jobs. Ninguno escribe en el repositorio (solo checkout, build, pruebas y caché); el ajuste por defecto
+# del repositorio da escritura al token, así que se declara aquí. Un job que algún día necesite más lo declara en su propio bloque `permissions:`.
+permissions:
+  contents: read
+
 jobs:
   evaluation:
     runs-on: ubuntu-latest
