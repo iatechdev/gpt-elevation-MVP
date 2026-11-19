@@ -9,6 +9,7 @@ const { randomBytes } = require('node:crypto');
 const { once } = require('node:events');
 const express = require('express');
 const { Sequelize } = require('sequelize');
+const { MIN_AVERAGE_SAMPLE, MIN_DISTINCT_PEOPLE } = require('../../utils/minAverageSample'); // ES-348: los umbrales salen de la misma constante que usa el servidor
 
 // Contrato con la pantalla: la respuesta REAL de /api/admin/metrics se guarda como fixture del frontend (ES180_WRITE_FIXTURE=1) y cada corrida
 // comprueba que la forma (claves y tipos) sigue igual. Así la prueba del componente usa datos con la forma verdadera y no una forma supuesta.
@@ -148,7 +149,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     const dbRatings = await SessionRating.findAll({ raw: true });
     for (const e of expected) {
       const ownRows = dbRatings.filter((r) => e.mine.includes(r.UserId) && r.rating !== null); const own = ownRows.map((r) => r.rating);
-      e.avgRating = own.length >= 5 && new Set(ownRows.map((r) => r.UserId)).size >= 3 ? round1(own.reduce((a, b) => a + b, 0) / own.length) : null;
+      e.avgRating = own.length >= MIN_AVERAGE_SAMPLE && new Set(ownRows.map((r) => r.UserId)).size >= MIN_DISTINCT_PEOPLE ? round1(own.reduce((a, b) => a + b, 0) / own.length) : null;
     }
     expected.sort((a, b) => b.patientCount - a.patientCount || a.name.localeCompare(b.name) || a.id - b.id);
     assert.deepEqual(m.topTherapists.map((x) => [x.id, x.patientCount, x.avgRating]), expected.slice(0, 5).map((e) => [e.id, e.patientCount, e.avgRating]));
@@ -247,7 +248,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
       const values = SCALE.slice(0, n);
       await setRatings(values);
       const m = (await call(adm, '/api/admin/metrics')).body;
-      const expected = n >= 5 ? round1(values.reduce((a, b) => a + b, 0) / n) : null;
+      const expected = n >= MIN_AVERAGE_SAMPLE ? round1(values.reduce((a, b) => a + b, 0) / n) : null;
       assert.equal(m.avgRating, expected, `general con ${n} valoraciones`);
       assert.equal(proRow(m).avgRating, expected, `profesional con ${n} valoraciones`);
       if (n < 5) assert.doesNotMatch(JSON.stringify(m), /"avgRating":\d/, 'ningún promedio de valoración (general ni por profesional) en la respuesta');
@@ -285,7 +286,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
   // ES-348: el mínimo cuenta también PERSONAS distintas (MIN_DISTINCT_PEOPLE = 3): 1 persona × 5 valoraciones = null; 3 personas × 5 = promedio; 2 personas × 10 = null.
   await t.test('ES-348: 5 valoraciones o ánimos de una o dos personas no se promedian; con 3 personas distintas sí (general, por profesional y ánimo)', async () => {
     const owners = await User.findAll({ where: { role: 'user', therapistId: pro.id }, attributes: ['id'], order: [['id', 'ASC']] });
-    assert.ok(owners.length >= 3);
+    assert.ok(owners.length >= MIN_DISTINCT_PEOPLE);
     const proRow = (m) => m.topTherapists.find((x) => x.id === pro.id);
     const setRatings = async (rows) => { // rows: [personIndex, rating]
       await sequelize.query('DELETE FROM "SessionRatings"');
