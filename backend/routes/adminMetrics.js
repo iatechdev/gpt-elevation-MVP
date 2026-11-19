@@ -9,16 +9,18 @@
 // (adminOverviewData.ts) y el fixture frontend/test/fixtures/es-180-metrics-*.json lo reflejan; la prueba PG falla si la forma cambia.
 // ES-343 (privacidad, QA-18-02): ningún promedio se calcula con menos de MIN_AVERAGE_SAMPLE (5) entradas: avgMood, avgRating y el avgRating de cada
 // profesional devuelven null (la pantalla muestra «Sin datos»); con menos entradas el valor sería el de una persona. Los conteos no son promedios y no cambian.
+// ES-348: el mínimo cuenta ENTRADAS y también PERSONAS distintas (MIN_DISTINCT_PEOPLE): cinco valoraciones de una sola persona seguirían siendo su valor individual.
+// avgMood solo promedia valores 1–5 (como avgRating). Un promedio por profesional exige las personas distintas entre SUS personas con valoración.
 // Nota de datos: «sesiones» (`totalSessions`) cuenta REGISTROS DE ÁNIMO (MoodLog), no sesiones con profesional.
 
 const express = require('express');
 const router  = express.Router();
 const { sequelize } = require('../database');
-const { MIN_AVERAGE_SAMPLE } = require('../utils/minAverageSample');
+const { MIN_AVERAGE_SAMPLE, MIN_DISTINCT_PEOPLE } = require('../utils/minAverageSample');
 
 const TZ = 'America/Bogota';
 const num = (value) => (value === null || value === undefined ? null : Number(value));
-const query = (sql, replacements) => sequelize.query(sql, { type: 'SELECT', replacements: { min: MIN_AVERAGE_SAMPLE, ...replacements } });
+const query = (sql, replacements) => sequelize.query(sql, { type: 'SELECT', replacements: { min: MIN_AVERAGE_SAMPLE, people: MIN_DISTINCT_PEOPLE, ...replacements } });
 
 router.get('/', async (req, res) => {
   try {
@@ -29,18 +31,18 @@ router.get('/', async (req, res) => {
                     count(*) FILTER (WHERE role = 'user' AND active)::int AS "activeUsers",
                     count(*) FILTER (WHERE role = 'therapist' AND active)::int AS "totalTherapists"
              FROM "Users"`),
-      query(`SELECT count(*)::int AS "total",
-                    CASE WHEN count("checkin_mood") + count("checkout_mood") >= :min
-                          THEN ROUND(SUM(COALESCE("checkin_mood", 0) + COALESCE("checkout_mood", 0))::numeric / (count("checkin_mood") + count("checkout_mood")), 1) END AS "avgMood"
-             FROM "MoodLogs"`),
-      query(`SELECT CASE WHEN count("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5) >= :min
+      query(`SELECT (SELECT count(*)::int FROM "MoodLogs") AS "total",
+                    CASE WHEN count(m.v) >= :min AND count(DISTINCT l."UserId") >= :people THEN ROUND(AVG(m.v)::numeric, 1) END AS "avgMood"
+             FROM "MoodLogs" l CROSS JOIN LATERAL (VALUES (l."checkin_mood"), (l."checkout_mood")) AS m(v)
+             WHERE m.v BETWEEN 1 AND 5`),
+      query(`SELECT CASE WHEN count("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5) >= :min AND count(DISTINCT "UserId") FILTER (WHERE "rating" BETWEEN 1 AND 5) >= :people
                           THEN ROUND((AVG("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5))::numeric, 1) END AS "avgRating" FROM "SessionRatings"`),
       query(`SELECT count(DISTINCT "UserId")::int AS "activeThisWeek" FROM "MoodLogs" WHERE "date" >= ${today} - 7`, { tz: TZ }),
       query(`SELECT to_char(d, 'YYYY-MM-DD') AS "date", COALESCE(c.n, 0)::int AS "count"
              FROM generate_series(${today} - 29, ${today}, interval '1 day') AS d
              LEFT JOIN (SELECT "date", count(*) AS n FROM "MoodLogs" WHERE "date" >= ${today} - 29 GROUP BY "date") c ON c."date" = d::date
              ORDER BY d`, { tz: TZ }),
-      query(`SELECT t."id", t."name", count(DISTINCT p."id")::int AS "patientCount", CASE WHEN count(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5) >= :min
+      query(`SELECT t."id", t."name", count(DISTINCT p."id")::int AS "patientCount", CASE WHEN count(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5) >= :min AND count(DISTINCT r."UserId") FILTER (WHERE r."rating" BETWEEN 1 AND 5) >= :people
                   THEN ROUND((AVG(r."rating") FILTER (WHERE r."rating" BETWEEN 1 AND 5))::numeric, 1) END AS "avgRating"
              FROM "Users" t
              LEFT JOIN "Users" p ON p."therapistId" = t."id" AND p."role" = 'user'
