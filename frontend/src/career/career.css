@@ -1,3 +1,4 @@
 /* ES-329 (Siguiente paso): la pantalla vive en el marco de persona con piezas de Cartografía (estilos .pc-* en cartografia/pages.css).
    Aquí solo queda el texto solo para lectores de los motivos de bloqueo (aria-describedby, QA-34). */
 .career-sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+.pc-link { display: inline-flex; align-items: center; min-height: 1.5rem; }

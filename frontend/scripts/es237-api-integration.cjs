@@ -264,8 +264,40 @@ const { once } = require('node:events')
     await screenFails(dl.send({ type: 'rebase', id: exp.id }, rid()), 'conflict'); await fails(api.getExperiment(sc_as(d), exp.id), 'not_found', 404); check('2b: otra persona no ve experimentos, elecciones ni revisión de C; un id ajeno = 404 y la pantalla lo trata como conflict')
 
     // plan y recordatorios: no conectados todavía (paso 3)
-    for (const command of [{ type: 'pause', planId: 1, expected: 1 }, { type: 'notifications', enabled: true }, { type: 'ack', id: 1 }]) await screenFails(cl.send(command, rid()), 'pending')
-    check('2b: plan, recordatorios y notificaciones responden «pending» (no se simula nada)')
+    for (const command of [{ type: 'notifications', enabled: true }, { type: 'ack', id: 1 }, { type: 'cancel', id: 1 }]) await screenFails(cl.send(command, rid()), 'pending')
+    check('2b: recordatorios y notificaciones responden «pending» (no se simula nada)')
+
+    // --- Paso 3: el PLAN con el servidor REAL (recordatorios y notificaciones siguen «pending») ---------------------------------------------
+    const e5 = await person('client-e'), ce = make(e5), cePeer = make(await person('client-f')), ceApi = sc_as(e5)
+    await ce.load(); await ce.send({ type: 'constraints', value: formValue }, rid())
+    const freePlanRoute = ce.snapshot().routes.find(r => !r.regulated && r.tasks.length); assert.ok(freePlanRoute)
+    await ce.send({ type: 'choice', route: freePlanRoute, decision: 'chosen' }, rid()); const planExp = await ce.send({ type: 'experiment', routeId: freePlanRoute.id, minutes: 20 }, rid())
+    for (const [phase, value] of [['in_progress', {}], ['submitted', { sample: 'Muestra del plan', assistance: 'none' }], ['self_reviewed', { observation: 'O', interpretation: 'I' }], ['decided', { decision: 'continue', reason: 'Seguir' }]]) { const cur = ce.snapshot().experiments.find(x => x.id === planExp); await ce.send({ type: 'change', id: planExp, expected: cur.version, phase, value }, rid()) }
+    const ymd = days => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10)
+    const act = (key, days, minutes = 20, extra = {}) => ({ key, date: ymd(days), minutes, resource: false, cost: '', completed: '', ...extra })
+    await ce.send({ type: 'propose', experimentId: planExp }, rid()); const pv = ce.snapshot().planProposal
+    assert.equal(pv.experimentId, planExp); assert.equal(pv.weeklyMinutes, 90); assert.equal(pv.timeZone, 'America/Bogota'); assert.ok(Array.isArray(pv.resources)); check('3: proponer plan trae la disponibilidad, la zona y los recursos REALES del servidor (no los fijos del simulador)')
+    await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(7, 3, 500)], budget: '', currency: 'USD' }, rid()), 'invalidPlan')
+    await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(7, -5)], budget: '', currency: 'USD' }, rid()), 'invalidPlan')
+    await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(30, 3)], budget: '', currency: 'USD' }, rid()), 'invalidPlan'); check('3: minutos fuera de rango, fecha pasada o dependencia faltante → invalidPlan (400/422 del servidor, sin 500)')
+    await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(7, 3, 20, { cost: '5' })], budget: '1', currency: 'USD' }, rid()), 'invalidPlan'); check('3: costo declarado que supera el presupuesto → invalidPlan (budget_exceeded)')
+    let cutPlan = true
+    const planFlaky = make(e5, async (input, init) => { const response = await fetch(input, init); if (cutPlan && String(input).endsWith('/api/career-plan/versions') && init?.method === 'POST') { cutPlan = false; await response.text(); throw new TypeError('corte de red sintético') } return response })
+    await planFlaky.load()
+    const full = [act(7, 3, 20), act(30, 11, 30), act(90, 20, 45)]
+    await screenFails(planFlaky.send({ type: 'plan', experimentId: planExp, actions: full, budget: '', currency: 'USD' }, rid()), 'lostAck')
+    assert.equal((await api.listPlans(ceApi)).plans.length, 1); check('3: corte tras aceptar el plan → lostAck (incierto); en el servidor ya hay 1 plan')
+    await planFlaky.send({ type: 'plan', experimentId: planExp, actions: full, budget: '', currency: 'USD' }, rid())
+    assert.equal((await api.listPlans(ceApi)).plans.length, 1); const planned = planFlaky.snapshot().plans[0]
+    assert.equal(planned.status, 'accepted'); assert.deepEqual(planned.actions.map(a => a.key), [7, 30, 90]); assert.equal(planned.availability.weeklyMinutes, 90); assert.equal(planned.basis, planFlaky.snapshot().basis); check('3: reenviar el MISMO gesto reutiliza requestId y propuesta: sigue habiendo 1 plan, aceptado y con base vigente')
+    await planFlaky.send({ type: 'complete', planId: planned.id, expected: planned.version, key: 7, text: 'Hecho (sintético)' }, rid())
+    const afterComplete = planFlaky.snapshot().plans.filter(p => p.status === 'accepted').at(-1); assert.equal(afterComplete.version, 2); assert.equal(afterComplete.actions.find(a => a.key === 7).completed, 'Hecho (sintético)'); assert.equal(planFlaky.snapshot().plans.find(p => p.id === planned.id).status, 'superseded')
+    await screenFails(planFlaky.send({ type: 'complete', planId: afterComplete.id, expected: afterComplete.version, key: 90, text: 'salto' }, rid()), 'invalidPlan'); check('3: completar una acción crea la versión 2 (la 1 queda «superseded»); completar la de 90 días sin la de 30 → invalidPlan')
+    await screenFails(planFlaky.send({ type: 'complete', planId: planned.id, expected: planned.version, key: 30, text: 'versión vieja' }, rid()), 'conflict'); check('3: completar sobre una versión ya reemplazada → conflict')
+    await planFlaky.send({ type: 'pause', planId: afterComplete.id, expected: afterComplete.version }, rid()); assert.equal(planFlaky.snapshot().plans.at(-1).status, 'paused')
+    const pausedPlan = planFlaky.snapshot().plans.at(-1); await screenFails(planFlaky.send({ type: 'complete', planId: pausedPlan.id, expected: pausedPlan.version, key: 30, text: 'tras pausar' }, rid()), 'conflict'); check('3: pausar crea la versión 3 «paused»; un plan pausado no se completa (conflict); sin «reanudar» ni «deshacer»')
+    await cePeer.load(); assert.deepEqual(cePeer.snapshot().plans, []); await fails(api.getPlan(sc_as(await User.findOne({ where: { email: 'client-f@example.invalid' } })), pausedPlan.id), 'not_found', 404); check('3: otra persona no ve el plan (lista vacía) y un id ajeno = 404')
+    await screenFails(ce.send({ type: 'notifications', enabled: true }, rid()), 'pending'); await screenFails(ce.send({ type: 'reminder', planId: pausedPlan.id, key: 30, localTime: '2030-01-01T10:00', accepted: true }, rid()), 'pending'); check('3: notificaciones y recordatorios siguen «pending» (sin endpoint de consentimiento ni correo; nada simulado)')
 
     // fallos de transporte y de sesión
     const down = make(c, async (input) => { throw new TypeError('sin red') }); await screenFails(down.load(), 'saveError'); check('2b: sin red al leer → no hay un resultado confirmado (saveError)')

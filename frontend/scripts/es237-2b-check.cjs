@@ -10,9 +10,9 @@ const axeSource = fs.readFileSync(process.env.AXE_PATH, 'utf8'); const BASE = pr
 const EMOJI = /[\u{1F300}-\u{1FAFF}★☆♡]/u
 let failures = 0, total = 0
 const T = {
-  es: { save: /Guardar restricciones/, choose: /Elegir esta ruta/, accept: /Revisar y aceptar experimento/, start: /^Iniciar$/, saveSub: /Guardar entrega/, rebase: /Revisar fundamento y empezar otra versión/, co: 'Colombia', esl: 'Español', eng: 'Inglés', remote: 'Remota', hybrid: 'Híbrida', help: 'Ayuda utilizada', none: 'Ninguna', sample: 'Muestra escrita', exp: 'Experimentos', plan: 'Plan', routes: 'Rutas', origin: 'Contexto de origen (opcional)', interests: /Contextos de interés/,
+  es: { save: /Guardar restricciones/, choose: /Elegir esta ruta/, accept: /Revisar y aceptar experimento/, start: /^Iniciar$/, saveSub: /Guardar entrega/, saveRefl: /Guardar mi reflexión/, saveDec: /Guardar decisión/, obs: 'Observación', interp: 'Interpretación', decision: 'Decisión', reason: 'Razón de tu decisión', cont: 'Continuar', proposePlan: /Proponer plan/, reviewSel: /Revisar selección/, confirmPlan: /Confirmar plan/, selAction: 'Aceptar acción', dateL: 'Fecha elegida', availab: 'Disponibilidad semanal confirmada', planAccepted: 'Plan aceptado', pickExp: 'Experimento', rebase: /Revisar fundamento y empezar otra versión/, co: 'Colombia', esl: 'Español', eng: 'Inglés', remote: 'Remota', hybrid: 'Híbrida', help: 'Ayuda utilizada', none: 'Ninguna', sample: 'Muestra escrita', exp: 'Experimentos', plan: 'Plan', routes: 'Rutas', origin: 'Contexto de origen (opcional)', interests: /Contextos de interés/,
     needsConstraints: 'Guarda un mercado objetivo', pending: 'El contrato del servicio está pendiente', catalog: 'El catálogo de rutas aún no está disponible', retry: /Reintentar lectura/, expired: 'Tu sesión venció', signIn: 'Entrar', conflict: 'La versión o el fundamento cambió', recover: /Recuperar el estado guardado/, basis: 'Tu experimento necesita revisión', carried: 'De la versión anterior, por revisar', previewText: 'se guardan en tu cuenta', synthetic: 'SINTÉTICO', saved: 'Guardado' },
-  en: { save: /Save constraints/, choose: /Choose this route/, accept: /Review and accept experiment/, start: /^Start$/, saveSub: /Save submission/, rebase: /Review the basis and start a new version/, co: 'Colombia', esl: 'Spanish', eng: 'English', remote: 'Remote', hybrid: 'Hybrid', help: 'Assistance used', none: 'None', sample: 'Written sample', exp: 'Experiments', plan: 'Plan', routes: 'Routes', origin: 'Starting context (optional)', interests: /Contexts of interest/,
+  en: { save: /Save constraints/, choose: /Choose this route/, accept: /Review and accept experiment/, start: /^Start$/, saveSub: /Save submission/, saveRefl: /Save my reflection/, saveDec: /Save decision/, obs: 'Observation', interp: 'Interpretation', decision: 'Decision', reason: 'Reason for your decision', cont: 'Continue', proposePlan: /Propose plan/, reviewSel: /Review selection/, confirmPlan: /Confirm plan/, selAction: 'Accept action', dateL: 'Chosen date', availab: 'Confirmed weekly availability', planAccepted: 'Accepted plan', pickExp: 'Experiment', rebase: /Review the basis and start a new version/, co: 'Colombia', esl: 'Spanish', eng: 'English', remote: 'Remote', hybrid: 'Hybrid', help: 'Assistance used', none: 'None', sample: 'Written sample', exp: 'Experiments', plan: 'Plan', routes: 'Routes', origin: 'Starting context (optional)', interests: /Contexts of interest/,
     needsConstraints: 'Save a target market', pending: 'The service contract is pending', catalog: 'The route catalog is not available yet', retry: /Retry loading/, expired: 'Your session expired', signIn: 'Sign in', conflict: 'The version or basis changed', recover: /Retrieve the saved state/, basis: 'Your experiment needs review', carried: 'From the previous version, to review', previewText: 'saved to your account', synthetic: 'SYNTHETIC', saved: 'Saved' } }
 const newPersona = async () => (await fetch(`${API}/__test/persona`, { method: 'POST' })).json()
 const catalog = async token => (await fetch(`${API}/api/route-catalog`, { headers: { Authorization: `Bearer ${token}` } })).json()
@@ -46,8 +46,17 @@ async function scene(browser, { lang, width, scheme, name }) {
   }
   if (name === 'catalogo' || name === 'rutas-vacio' || name === 'sesion-vencida') await go('/app/next-step')
   if (name === 'rutas') { await go('/app/next-step'); await saveConstraints(page, x, lang) }
-  if (name === 'plan') { await go('/app/next-step'); await link(x.plan) }
+  if (name === 'plan-vacio') { await go('/app/next-step'); await link(x.plan) }
   if (name === 'experimento') await toExperiment()
+  if (name === 'plan') {
+    await toExperiment()
+    await page.getByLabel(x.obs).fill('Observé algo'); await page.getByLabel(x.interp).fill('Interpreté algo'); await page.getByRole('button', { name: x.saveRefl }).click(); await page.waitForTimeout(800)
+    await page.getByLabel(x.decision, { exact: true }).selectOption({ label: x.cont }); await page.getByLabel(x.reason).fill('Seguir con esto'); await page.getByRole('button', { name: x.saveDec }).click(); await page.waitForTimeout(800)
+    await link(x.plan); await page.getByLabel(x.pickExp, { exact: true }).selectOption({ index: 1 }); await page.getByRole('button', { name: x.proposePlan }).click(); await page.waitForTimeout(900)
+    extra.availability = await page.getByText(x.availab).count()
+    await page.getByLabel(x.selAction).first().check(); await page.getByLabel(x.dateL).first().fill(new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10))
+    await page.getByRole('button', { name: x.reviewSel }).click(); await page.waitForTimeout(400); await page.getByRole('button', { name: x.confirmPlan }).click(); await page.waitForTimeout(1000)
+  }
   if (name === 'cambio-de-base') {
     await toExperiment(); await link(x.routes)
     await page.getByLabel(x.eng, { exact: true }).first().check(); await page.getByRole('button', { name: x.save }).click(); await page.waitForTimeout(800)
@@ -76,7 +85,8 @@ const checksFor = async (name, page, x, extra, lang, person) => {
     want('«Guardado» tras guardar', has(x.saved)); want('sin ejemplo del simulador (example.org/synthetic)', !(await page.locator('a[href*="example.org/synthetic"]').count()))
   }
   if (name === 'catalogo') { want('503 catalog_unavailable = texto aprobado', has(x.catalog)); want('botón Reintentar lectura', await page.getByRole('button', { name: x.retry }).count() > 0) }
-  if (name === 'plan') want('plan = «contrato pendiente», sin simulador', has(x.pending) && !(await page.getByRole('button', { name: /Proponer plan|Propose plan/ }).count()))
+  if (name === 'plan-vacio') want('sin experimentos: plan vacío; los recordatorios «pendientes»', has(x.pending))
+  if (name === 'plan') { want('disponibilidad y zona del servidor', extra.availability > 0); want('plan aceptado visible', has(x.planAccepted)); want('recordatorios «pendientes» (sin formulario de recordatorio)', has(x.pending) && !(await page.getByLabel(/Hora local elegida|Chosen local time/).count())) }
   if (name === 'experimento') { want('experimento «Entregado» con su muestra', has('Texto de ejemplo')); want('sin casilla de evidencia sintética', !has('Referencia sintética')) }
   if (name === 'cambio-de-base') { want('aviso «necesita revisión» con motivos', extra.notice > 0); want('borradores «de la versión anterior»', has(x.carried)); want('texto de la muestra anterior conservado', has('Texto de ejemplo')) }
   if (name === 'sesion-vencida') {
@@ -92,8 +102,8 @@ const checksFor = async (name, page, x, extra, lang, person) => {
 }
 ;(async () => {
   const browser = await chromium.launch()
-  const SCENES = PHASE === 'nocatalog' ? ['catalogo'] : ['rutas-vacio', 'rutas', 'experimento', 'cambio-de-base', 'plan', 'sesion-vencida', 'conflicto']
-  for (const name of process.env.ONLY_CLS === '1' ? [] : SCENES) for (const lang of ['es', 'en']) for (const width of [390, 1360, 320]) for (const scheme of ['light', 'dark']) {
+  const SCENES = PHASE === 'nocatalog' ? ['catalogo'] : ['rutas-vacio', 'rutas', 'experimento', 'cambio-de-base', 'plan-vacio', 'plan', 'sesion-vencida', 'conflicto']
+  for (const name of process.env.ONLY_CLS === '1' ? [] : (process.env.ONLY ? process.env.ONLY.split(',') : SCENES)) for (const lang of ['es', 'en']) for (const width of [390, 1360, 320]) for (const scheme of ['light', 'dark']) {
     total++
     let s
     try { s = await scene(browser, { lang, width, scheme, name }) } catch (e) { failures++; console.log(`FALLA ${name} ${lang} ${width}px ${scheme}: escena no alcanzada: ${String(e.message).split('\n')[0]}`); continue }

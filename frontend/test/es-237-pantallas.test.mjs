@@ -96,7 +96,8 @@ test('pantallas: el chip «sintética», la ficha real, el plan y la evidencia d
   assert.match(pages, /source\.url\.startsWith\('https:\/\/'\)/, 'solo se enlazan fuentes https')
   assert.match(pages, /example\.org\/synthetic-source/, 'el ejemplo del simulador sigue ahí (modo simulador)')
   assert.match(pages, /c\.state\.source !== 'api' && <CheckField/, 'sin referencias de evidencia inventadas en modo servidor')
-  assert.match(pages, /if \(c\.state\.source === 'api'\) return <section className="pc-col"><h2 className="pc-h2">\{c\.t\('plan'\)\}<\/h2><p role="status">\{c\.t\('pending'\)\}<\/p><\/section>/)
+  // Paso 3: el plan va contra el servidor; solo los recordatorios y las notificaciones siguen «pendientes» (sin endpoint de consentimiento ni correo) y el simulador del recordatorio no se muestra en modo servidor.
+  assert.match(pages, /\{real && <p role="status">\{c\.t\('pending'\)\}<\/p>\}/); assert.match(pages, /\{!real && <><CheckField disabled=\{blocked\} checked=\{c\.state\.notifications\}/); assert.match(pages, /type: 'propose', experimentId: selected\.id/)
   assert.match(pages, /c\.state\.catalogUnavailable \? \(<div role="alert">/)
 })
 
@@ -108,9 +109,16 @@ test('marco: VITE_CAREER_SOURCE=api elige el cliente de servidor (el simulador e
   assert.match(shell, /code === 'lostAck' \|\| code === 'conflict' \|\| code === 'routesChanged'/, 'tras «tus restricciones cambiaron» hay que releer antes de seguir')
 })
 
-test('cliente de servidor: el plan y los recordatorios responden «pending» (paso 3), sin simular, y un gesto incierto conserva su requestId', () => {
+test('cliente de servidor: los recordatorios y las notificaciones responden «pending» (el plan sí va al servidor, paso 3), sin simular, y un gesto incierto conserva su requestId', () => {
   const client = read('../src/career/serverClient.ts')
-  assert.match(client, /default: throw new FixtureError\('pending'\)/)
-  assert.match(client, /const prior = frozen\.get\(key\)/); assert.match(client, /proposed \?\?= await proposeExperiment/)
+  assert.match(client, /default: throw new FixtureError\('pending'\)/); assert.match(client, /case 'plan': \{/); assert.match(client, /case 'complete': case 'pause': \{/)
+  assert.match(client, /frozen\.get\(key\) \?\? plan\(input, requestId\)/); assert.match(client, /proposed \?\?= await proposePlan/); assert.match(client, /proposed \?\?= await proposeExperiment/)
   assert.doesNotMatch(client, /localStorage|sessionStorage|console\.|document\.cookie|userId/)
+})
+
+test('paso 3: con datos reales la disponibilidad solo se muestra si el servidor la trae confirmada; sin dato no hay cifra ni zona inventadas', () => {
+  const pages = read('../src/career/CareerPages.tsx')
+  assert.match(pages, /if \(c\.state\.source === 'api'\) return av && av\.weeklyMinutes > 0 && av\.timeZone \?/)
+  assert.match(pages, /availabilityLine\(c, plan\.availability\) && <p>/)
+  assert.match(pages, /America\/Bogota`/, 'la línea fija del simulador sigue solo en modo simulador')
 })

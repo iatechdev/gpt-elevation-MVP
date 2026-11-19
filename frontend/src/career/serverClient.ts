@@ -3,21 +3,23 @@
 // `baseVersion`/`basisHash`/`expectedVersion`. Después de CADA escritura confirmada relee todo (el servidor es la fuente de la verdad; nada se actualiza a mano).
 // Resultado incierto (5xx, corte, 2xx ilegible): `lostAck`. El MISMO intento (mismo gesto, mismos datos) reutiliza su `requestId` y su base hasta que sale bien o el servidor responde con claridad:
 // así reenviar tras un corte no crea nada de más. El plan, los recordatorios y las notificaciones se conectan en el paso 3: aquí responden «pendiente» y no simulan nada.
-import { CareerApiError, changeExperiment, chooseRoute, createExperiment, getConstraints, getExperiment, getRouteCatalog, getRouteReview, getRoutes, isUncertain, listChoices, listExperiments, proposeExperiment, putConstraints, requestReview, requestRouteReview } from './api.ts'
-import type { ChoiceRecord, ExperimentChange, ExperimentProposal, ExperimentView, Modality, Opts } from './api.ts'
-import { adapt, emptyState } from './adapter.ts'
+import { CareerApiError, changeExperiment, chooseRoute, createExperiment, getConstraints, getExperiment, getRouteCatalog, getRouteReview, getRoutes, isUncertain, listChoices, listExperiments, listPlans, proposeExperiment, proposePlan, putConstraints, requestReview, requestRouteReview, savePlan } from './api.ts'
+import type { ChoiceRecord, ExperimentChange, ExperimentProposal, ExperimentView, Modality, Opts, PlanProposal } from './api.ts'
+import { adapt, emptyState, proposalViewOf } from './adapter.ts'
 import type { Raw } from './adapter.ts'
 import { FixtureError } from './fixture.ts'
-import type { Command, State } from './fixture.ts'
+import type { Command, PlanProposalView, State } from './fixture.ts'
 
 export type CareerClient = { subscribe: (fn: () => void) => () => void; snapshot: () => State; load: () => Promise<void>; send: (input: Command, requestId: string) => Promise<number | undefined> }
 type Operation = () => Promise<number | undefined>
 
 /** Traduce un fallo del cliente HTTP a un código de pantalla. Lo que no es un CareerApiError (p. ej. una cancelación) se deja pasar. */
-export function toScreenError(error: unknown, kind: 'read' | 'write' | 'choose' = 'write'): unknown {
+export function toScreenError(error: unknown, kind: 'read' | 'write' | 'choose' | 'plan' = 'write'): unknown {
   if (!(error instanceof CareerApiError)) return error
   if (error.kind === 'expired') return new FixtureError('expired')
   if (isUncertain(error)) return new FixtureError(kind === 'read' ? 'saveError' : 'lostAck')
+  // Plan: los errores de negocio con código (needs_cost_confirmation, needs_scope_reduction, budget_exceeded, invalid_dependencies, resource_time_unknown, needs_availability) y las entradas inválidas dicen «revisa fechas, dependencias, esfuerzo y costos».
+  if (kind === 'plan' && (error.kind === 'invalid' || (error.kind === 'rejected' && error.status === 422))) return new FixtureError('invalidPlan')
   if (kind === 'choose' && (error.kind === 'conflict' || error.code === 'route_not_proposed')) return new FixtureError('routesChanged')
   if (error.kind === 'conflict' || error.kind === 'not_found') return new FixtureError('conflict')
   if (error.kind === 'invalid' || (error.kind === 'rejected' && error.status === 422)) return new FixtureError(error.code === 'route_not_proposed' ? 'routesChanged' : 'validate')
@@ -27,8 +29,8 @@ export function toScreenError(error: unknown, kind: 'read' | 'write' | 'choose' 
 const MODALITIES: Modality[] = ['onsite', 'hybrid', 'remote']
 export function createServerClient({ baseUrl, token, fetcher }: { baseUrl: string; token: () => string; fetcher?: typeof fetch }): CareerClient {
   let state = emptyState(), basisHash: string | null = null
-  let submissionVersions = new Map<number, number>()
-  const listeners = new Set<() => void>(), frozen = new Map<string, Operation>()
+  let submissionVersions = new Map<number, number>(), planProposalView: PlanProposalView | undefined
+  const listeners = new Set<() => void>(), frozen = new Map<string, { run: Operation; kind: 'write' | 'choose' | 'plan' }>()
   const opts = (): Opts => ({ baseUrl, token: token(), ...(fetcher ? { fetcher } : {}) })
 
   async function read(): Promise<Raw> {
@@ -42,12 +44,12 @@ export function createServerClient({ baseUrl, token, fetcher }: { baseUrl: strin
       for (let i = 0; i < 10; i++) { const page = await fetchPage(cursor); out.push(page); if (page.nextAfter === null) break; cursor = page.nextAfter }
       return out
     }
-    const [catalog, constraints, routes, choicePages, experimentPages, review] = await Promise.all([optional(getRouteCatalog(o)), getConstraints(o), optional(getRoutes(o)), pages(cursor => listChoices(o, cursor)), pages(cursor => listExperiments(o, cursor)), getRouteReview(o)])
+    const [catalog, constraints, routes, choicePages, experimentPages, review, planPages] = await Promise.all([optional(getRouteCatalog(o)), getConstraints(o), optional(getRoutes(o)), pages(cursor => listChoices(o, cursor)), pages(cursor => listExperiments(o, cursor)), getRouteReview(o), pages(cursor => listPlans(o, cursor))])
     const experiments: ExperimentView[] = await Promise.all(experimentPages.flatMap(page => page.experiments).map(item => getExperiment(o, item.id)))
     const choices: ChoiceRecord[] = choicePages.flatMap(page => page.choices)
     basisHash = routes?.basisHash ?? null
     submissionVersions = new Map(experiments.flatMap(view => view.current.payload.submission ? [[view.experiment.id, view.current.payload.submission.version] as const] : []))
-    return { catalog, constraints: constraints.constraints, routes, choices, experiments, routeReviewOpen: review.reviewRequest?.status === 'open', catalogUnavailable }
+    return { catalog, constraints: constraints.constraints, routes, choices, experiments, routeReviewOpen: review.reviewRequest?.status === 'open', catalogUnavailable, plans: planPages.flatMap(page => page.plans), ...(planProposalView ? { planProposal: planProposalView } : {}) }
   }
   const publish = (next: State) => { state = next; listeners.forEach(fn => fn()) }
   const refresh = async () => { try { publish(adapt(await read())) } catch (error) { throw toScreenError(error, 'read') } }
@@ -55,7 +57,7 @@ export function createServerClient({ baseUrl, token, fetcher }: { baseUrl: strin
   const change = (id: number, expectedVersion: number, requestId: string, body: ExperimentChange): Operation => async () => { await changeExperiment(opts(), id, { requestId, expectedVersion, change: body }); return undefined }
 
   // Congela el gesto: el estado y la base se leen UNA vez; reintentar el mismo gesto reenvía exactamente lo mismo.
-  function plan(input: Command, requestId: string): { run: Operation; kind: 'write' | 'choose' } {
+  function plan(input: Command, requestId: string): { run: Operation; kind: 'write' | 'choose' | 'plan' } {
     switch (input.type) {
       case 'constraints': {
         const v = input.value, baseVersion = state.basis
@@ -108,7 +110,28 @@ export function createServerClient({ baseUrl, token, fetcher }: { baseUrl: strin
         if (!input.selected || !e.sample || !submissionVersion) throw new FixtureError('validate')
         return { kind: 'write', run: async () => { await requestReview(opts(), e.id, { requestId, expectedVersion, action: 'request', submissionVersion, evidenceRefs: [], includeSample: true }); return undefined } }
       }
-      default: throw new FixtureError('pending') // plan, recordatorios y notificaciones: paso 3
+      case 'propose': {
+        // Solo lectura de la propuesta (disponibilidad, zona y recursos reales) para mostrarla antes de elegir; el plan se acepta con una propuesta NUEVA que incluye el presupuesto.
+        const e = experimentOf(input.experimentId)
+        return { kind: 'plan', run: async () => { planProposalView = proposalViewOf((await proposePlan(opts(), { experimentId: e.id, expectedVersion: e.version })).proposal); return undefined } }
+      }
+      case 'plan': {
+        const e = experimentOf(input.experimentId), amount = input.budget === '' ? null : Number(input.budget)
+        if (amount !== null && !Number.isFinite(amount)) throw new FixtureError('invalidPlan')
+        const budget = amount === null ? null : { amount, currency: input.currency }
+        const selections = input.actions.map(a => ({ actionKey: `step_${a.key}`, chosenDate: a.date, estimatedMinutes: a.minutes, resourceRefs: a.resources ?? [], ...(a.cost !== '' ? { declaredCost: { amount: Number(a.cost), currency: input.currency } } : {}) }))
+        // La propuesta se congela con el intento (el mismo requestId con otra propuesta/token sería «otro contenido»).
+        const latest = Math.max(0, ...state.plans.filter(p => p.experimentId === e.id).map(p => p.version)) // el servidor exige la última versión del plan de ese experimento (0 si no hay)
+        let proposed: PlanProposal | undefined
+        return { kind: 'plan', run: async () => { proposed ??= await proposePlan(opts(), { experimentId: e.id, expectedVersion: e.version, budget }); return (await savePlan(opts(), { requestId, expectedVersion: latest, action: 'accept', proposal: proposed.proposal, token: proposed.token, selections })).plan.id } }
+      }
+      case 'complete': case 'pause': {
+        const plan = state.plans.find(p => p.id === input.planId); if (!plan) throw new FixtureError('conflict')
+        const body = input.type === 'pause' ? { action: 'pause' as const, planId: plan.id } : { action: 'complete' as const, planId: plan.id, actionKey: `step_${input.key}`, completionEvidence: input.text }
+        if (input.type === 'complete' && !input.text.trim()) throw new FixtureError('validate')
+        return { kind: 'plan', run: async () => { await savePlan(opts(), { requestId, expectedVersion: input.expected, ...body }); return undefined } }
+      }
+      default: throw new FixtureError('pending') // recordatorios y notificaciones: sin endpoint de consentimiento ni correo (decisión de Infra, ES-237 12704)
     }
   }
   return {
@@ -117,9 +140,8 @@ export function createServerClient({ baseUrl, token, fetcher }: { baseUrl: strin
     load: refresh,
     async send(input, requestId) {
       const key = JSON.stringify(input)
-      const prior = frozen.get(key) // un gesto cuyo resultado quedó incierto conserva su requestId, su base y sus datos
-      const { run, kind } = prior ? { run: prior, kind: input.type === 'choice' ? 'choose' as const : 'write' as const } : plan(input, requestId)
-      frozen.set(key, run)
+      const { run, kind } = frozen.get(key) ?? plan(input, requestId) // un gesto cuyo resultado quedó incierto conserva su requestId, su base y sus datos
+      frozen.set(key, { run, kind })
       let result: number | undefined
       try { result = await run() } catch (error) { const mapped = toScreenError(error, kind); if (!(mapped instanceof FixtureError && mapped.code === 'lostAck')) frozen.delete(key); throw mapped }
       frozen.delete(key)

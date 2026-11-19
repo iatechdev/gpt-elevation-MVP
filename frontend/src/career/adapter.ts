@@ -1,10 +1,10 @@
 // ES-237 (paso 2b): del modelo del SERVIDOR (versiones inmutables, basisHash, elecciones) al modelo de PANTALLA (`State` del simulador). Funciones puras: sin red, sin almacenamiento, sin reloj.
 // Regla de honestidad: no se inventa nada. Lo que el servidor no trae queda vacío o desconocido; «sintético» solo si el servidor lo marca (`synthetic: true`).
-import type { ChoiceRecord, ConstraintsRecord, ExperimentView, I18n, RouteProposal, RoutesView } from './api.ts'
-import type { Assistance, CatalogContext, Carried, Constraints, Decision, Experiment, Preference, Reason, Route, Slot, State } from './fixture.ts'
+import type { ChoiceRecord, ConstraintsRecord, ExperimentView, I18n, PlanRecord, PlanResource, RouteProposal, RoutesView } from './api.ts'
+import type { Action, Assistance, CatalogContext, Carried, Constraints, Decision, Experiment, Plan, PlanProposalView, PlanResourceView, Preference, Reason, Route, Slot, State } from './fixture.ts'
 
 export type CatalogView = { contexts: { contextKey: string; labels?: I18n; synthetic?: true }[]; roles: { roleKey: string; labels?: I18n; synthetic?: true }[] }
-export type Raw = { catalog: CatalogView | null; constraints: ConstraintsRecord | null; routes: RoutesView | null; choices: ChoiceRecord[]; experiments: ExperimentView[]; routeReviewOpen: boolean; catalogUnavailable: boolean }
+export type Raw = { catalog: CatalogView | null; constraints: ConstraintsRecord | null; routes: RoutesView | null; choices: ChoiceRecord[]; experiments: ExperimentView[]; routeReviewOpen: boolean; catalogUnavailable: boolean; plans?: PlanRecord[]; planProposal?: PlanProposalView }
 
 const text = (value: I18n | undefined, fallback: string) => ({ es: value?.es ?? value?.en ?? fallback, en: value?.en ?? value?.es ?? fallback })
 const REASONS: Record<string, Reason> = { route_choice_changed: 'route_choice_changed', rules_changed: 'rules_changed', context_changed: 'context_changed', route_evidence_changed: 'route_evidence_changed', cited_evidence_changed: 'cited_evidence_changed' }
@@ -59,12 +59,26 @@ export function experimentOf(view: ExperimentView, basis: number, route: Route):
     versions: view.versions.map(v => ({ version: v.version, phase: v.payload.lifecycle, basis: mark(v.version === view.current.version), sample: v.payload.submission?.sample ?? '', observation: v.payload.reflection?.observation ?? '', interpretation: v.payload.reflection?.interpretation ?? '', reason: v.payload.decision?.reason ?? '' })) }
 }
 
+const resourceOf = (resource: PlanResource): PlanResourceView => ({ key: resource.resourceKey, title: resource.title ?? resource.resourceKey, url: typeof resource.url === 'string' ? resource.url : '',
+  minutes: Number.isInteger(resource.duration?.minutes) ? resource.duration!.minutes! : null, price: resource.price?.published && typeof resource.price.amount === 'number' ? `${resource.price.amount} ${resource.price.currency ?? ''}`.trim() : '' })
+export const proposalViewOf = (proposal: { experimentId?: number; experimentVersion?: number; availability?: { weeklyMinutes: number; timeZone: string }; resources?: PlanResource[] }): PlanProposalView =>
+  ({ experimentId: proposal.experimentId ?? 0, experimentVersion: proposal.experimentVersion ?? 0, weeklyMinutes: proposal.availability?.weeklyMinutes ?? 0, timeZone: proposal.availability?.timeZone ?? '', resources: (proposal.resources ?? []).map(resourceOf) })
+/** Un plan del servidor (cada fila es una versión inmutable). `basis` de pantalla: la base actual si el servidor dice «current»; -1 si «needs_review» (incluye experiment_changed). */
+export function planOf(record: PlanRecord, basis: number, versions: { version: number; status: Plan['status'] }[]): Plan {
+  const p = record.payload
+  const actions: Action[] = p.actions.map(a => ({ key: a.horizonDays, date: a.chosenDate ?? '', minutes: a.estimatedMinutes, resource: false, resources: [...a.resourceRefs],
+    cost: a.cost?.status === 'declared' && typeof a.cost.amount === 'number' ? String(a.cost.amount) : '', completed: a.completionEvidence?.actual?.text ?? '' }))
+  return { availability: { weeklyMinutes: p.availability.weeklyMinutes, timeZone: p.availability.timeZone }, id: record.id, experimentId: record.experimentId, experimentVersion: p.experimentVersion, basis: record.basis.status === 'current' ? basis : -1, version: record.version, status: record.status, actions,
+    budget: p.budget ? String(p.budget.amount) : '', currency: p.budget?.currency === 'COP' ? 'COP' : 'USD', versions }
+}
+
 /** Todo lo leído del servidor → el estado que dibujan las pantallas. */
 export function adapt(raw: Raw): State {
   const basis = raw.constraints?.version ?? 0, routes = (raw.routes?.routes ?? []).map(routeOf)
   const routeFor = (roleKey: string, slot: Slot) => routes.find(r => r.roleKey === roleKey && r.slot === slot) ?? stub(roleKey, slot, raw.catalog)
   const byChoice = new Map(raw.choices.map(choice => [choice.id, choice]))
-  return { ...emptyState(), loaded: true, constraints: constraintsOf(raw.constraints), basis, contexts: contextsOf(raw.catalog), catalogUnavailable: raw.catalogUnavailable, routes, routesStatus: raw.routes?.status ?? 'needs_constraints', requested: raw.routeReviewOpen,
+  return { ...emptyState(), loaded: true, constraints: constraintsOf(raw.constraints), basis, contexts: contextsOf(raw.catalog), catalogUnavailable: raw.catalogUnavailable, routes, routesStatus: raw.routes?.status ?? 'needs_constraints', requested: raw.routeReviewOpen, ...(raw.planProposal ? { planProposal: raw.planProposal } : {}),
+    plans: (raw.plans ?? []).map(record => planOf(record, basis, (raw.plans ?? []).filter(other => other.experimentId === record.experimentId && other.version <= record.version).map(other => ({ version: other.version, status: other.status })))),
     choices: raw.choices.map(choice => ({ id: choice.id, route: routeFor(choice.roleKey, choice.slot), decision: choice.decision === 'accepted' ? 'chosen' as const : 'rejected' as const, basis: choice.basisChanged ? -1 : basis, version: choice.constraintsVersion })),
     experiments: raw.experiments.map(view => { const choice = byChoice.get(view.experiment.choiceId); return experimentOf(view, basis, choice ? routeFor(choice.roleKey, choice.slot) : stub(view.current.payload.roleKey, 'continuity', raw.catalog)) }) }
 }
