@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
-import { invalidateStoredSession } from '../access/session'
+import { signOut } from '../access/signOut'
+import { endFarewell, startFarewell } from '../access/farewell'
 import { dataCopy, sectionLabels } from './dataCopy'
 import { confirmMatches, dataErrorKey, downloadExport, prepareExport, requestDeletion } from './dataRights'
 import type { DataErrorKey, ExportPreview } from './dataRights'
@@ -10,8 +11,9 @@ import { Button, Dialog, TextField } from '../cartografia'
 import { Notice, PersonScreen } from './PersonScreen'
 // ES-135 / ES-174 — «Mis datos»: descargar los datos personales (ES-23) y pedir la eliminación de la cuenta con un diálogo y una palabra de confirmación.
 const MAX_TIMER = 2 ** 31 - 1
+const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 export function DataPage() {
-  const { lang } = useLanguage(); const c = dataCopy[lang]; const token = useSpaceToken()
+  const { pathname } = useLocation(); const { lang } = useLanguage(); const c = dataCopy[lang]; const token = useSpaceToken()
   const [preview, setPreview] = useState<ExportPreview | null>(null)
   const [busy, setBusy] = useState<'prepare' | 'download' | 'delete' | null>(null)
   const [status, setStatus] = useState<{ k: DataErrorKey | 'downloaded' } | null>(null)
@@ -19,10 +21,8 @@ export function DataPage() {
   const [expired, setExpired] = useState(false)
   const [open, setOpen] = useState(false); const [word, setWord] = useState(''); const [done, setDone] = useState(false)
   const [off, setOff] = useState(false)
-  const alive = useRef(true); const deletedToken = useRef('')
-  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  // La sesión local se cierra al salir de la confirmación, no antes: si se invalidara al instante, la compuerta de acceso llevaría a /login y la persona nunca vería el resultado.
-  useEffect(() => () => { if (deletedToken.current) invalidateStoredSession(deletedToken.current) }, [])
+  const alive = useRef(true)
+  useEffect(() => { alive.current = true; return () => { alive.current = false; endFarewell() } }, [])
   // Estado «caducado»: al vencer la vista previa se retira el botón de descarga y se ofrece prepararla de nuevo.
   useEffect(() => {
     if (!preview) return
@@ -62,7 +62,11 @@ export function DataPage() {
     setBusy('delete'); setStatus(null); setFailed(null)
     try {
       await requestDeletion(token) // idempotente en el servidor: una solicitud repetida también responde con recibo
-      deletedToken.current = token
+      // ES-346: la sesión local se cierra YA (mismo cierre que «Cerrar sesión»: token, nombre, rol, ruta de retorno, mensaje pendiente), antes del aviso. La marca deja a la compuerta
+      // mostrar este aviso en vez de mandar a /login; se borra al salir de la pantalla.
+      // Si la pantalla se desmontó mientras la solicitud estaba en vuelo, NO se arranca la marca (quedaría colgada): la sesión se cierra igual, sin aviso que mostrar.
+      if (alive.current) startFarewell(pathname)
+      await signOut(BACKEND)
       if (alive.current) { setOpen(false); setDone(true); setPreview(null) }
     } catch (error) { fail(error, 'delete') } // el diálogo sigue abierto y lo escrito se conserva
     finally { if (alive.current) setBusy(null) }
