@@ -166,3 +166,11 @@ export const MSG = {
 
 // E186-9: la hora local ya puede terminar en punto («8:01 a. m.»): no se añade otro.
 export const endSentence = (text: string) => (text.endsWith('.') ? text : `${text}.`)
+
+// ES-199 (PERF-05): fecha de alta «dd mmm aaaa» con el formateador creado una vez por idioma (toLocaleDateString creaba uno por fila: 421 ms con 200 cuentas y CPU ×4). Mismo resultado.
+const dateFormatters = new Map<string, Intl.DateTimeFormat>()
+export function formatAltaDate(iso: string, locale: string): string {
+  let format = dateFormatters.get(locale)
+  if (!format) { format = new Intl.DateTimeFormat(locale, { day: '2-digit', month: 'short', year: 'numeric' }); dateFormatters.set(locale, format) }
+  return format.format(new Date(iso))
+}

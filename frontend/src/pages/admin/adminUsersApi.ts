@@ -1,5 +1,5 @@
 // ES-186 parte D · Red de /admin/users: una sola puerta para llamar al servidor (token, 401 → inicio de sesión) y una carga con estado propio y «Reintentar».
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { invalidateStoredSession, readStoredToken } from '../../access/session.ts'
 import type { Data, Person } from './adminUsersLogic.ts'
 
@@ -44,7 +44,7 @@ export function useAdminList<T>(path: string, pick: (data: Data) => T[] | null) 
   }, [path, nonce])
   const reload = useCallback(() => setNonce((n) => n + 1), [])
   const retry = useCallback(() => { setState('loading'); setNonce((n) => n + 1) }, [])
-  return { items, state, reload, retry }
+  return useMemo(() => ({ items, state, reload, retry }), [items, state, reload, retry]) // ES-199: identidad estable mientras no cambie nada (los paneles memoizados no se repintan por un estado ajeno)
 }
 
 // El servidor devuelve un arreglo; si llegara otra forma, la sección falla (no se muestra una lista vacía engañosa).
