@@ -34,6 +34,6 @@ test('ES-185 E216-9: las tarjetas de planes inactivos no usan opacity y sus colo
   const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] }
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)]; return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05) }
   for (const [theme, block] of [['claro', light], ['oscuro', dark]]) {
-    for (const [fg, bg] of [['ink', 'panel'], ['muted', 'panel'], ['err', 'panel'], ['ink', 'ground'], ['muted', 'ground']]) assert.ok(ratio(read(block, fg), read(block, bg)) >= 4.5, `${theme}: ${fg} sobre ${bg}`)
+    for (const [fg, bg] of [['ink', 'panel'], ['muted', 'panel'], ['err', 'panel'], ['good', 'panel'], ['mark', 'panel'], ['ink', 'ground'], ['muted', 'ground']]) assert.ok(ratio(read(block, fg), read(block, bg)) >= 4.5, `${theme}: ${fg} sobre ${bg}`)
   }
 })
