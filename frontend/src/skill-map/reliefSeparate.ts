@@ -7,8 +7,6 @@ const PASSES = 160
 const ANCHOR = 8
 
 const horizontal = (slot: Slot) => slot.centered ? { l: slot.x - slot.w / 2, r: slot.x + slot.w / 2 } : slot.side === 'right' ? { l: slot.x + ANCHOR - slot.w, r: slot.x + ANCHOR } : { l: slot.x - ANCHOR, r: slot.x - ANCHOR + slot.w }
-const box = (slot: Slot) => { const { l, r } = horizontal(slot); return { l, r, t: slot.y - slot.h / 2, b: slot.y + slot.h / 2 } }
-const overlap = (a: ReturnType<typeof box>, b: ReturnType<typeof box>) => ({ x: Math.min(a.r, b.r) - Math.max(a.l, b.l), y: Math.min(a.b, b.b) - Math.max(a.t, b.t) })
 
 /** Posiciones (px) sin solapes y dentro de la caja. `crowded` = tras las pasadas todavía queda algún solape (no cabe): quien llama reduce el rótulo. */
 export function separate(slots: readonly Slot[], bounds: Bounds): { positions: { x: number; y: number }[]; crowded: boolean } {
@@ -21,25 +19,34 @@ export function separate(slots: readonly Slot[], bounds: Bounds): { positions: {
     slot.y = Math.min(Math.max(slot.y, half), Math.max(bounds.height - half, half))
   }
   work.forEach(keepInside)
+  // ES-199 (PERF-05): las cajas se guardan en arreglos y solo se recalculan cuando un par se mueve; antes cada comparación creaba dos objetos (160 pasadas × n² pares: 26 ms con 30 capacidades, 426 ms con 150).
+  // Misma aritmética y mismo orden de pares ⇒ las mismas posiciones que antes (lo fija es-199-relieve.test.mjs contra la versión anterior).
+  const count = work.length
+  const left = new Float64Array(count), right = new Float64Array(count), top = new Float64Array(count), bottom = new Float64Array(count)
+  const refresh = (k: number) => { const slot = work[k]; const { l, r } = horizontal(slot); left[k] = l; right[k] = r; top[k] = slot.y - slot.h / 2; bottom[k] = slot.y + slot.h / 2 }
+  for (let k = 0; k < count; k += 1) refresh(k)
   for (let pass = 0; pass < PASSES; pass += 1) {
     let moved = false
-    for (let i = 0; i < work.length; i += 1) {
-      for (let j = i + 1; j < work.length; j += 1) {
-        const o = overlap(box(work[i]), box(work[j]))
-        if (o.x <= 0 || o.y <= 0) continue
+    for (let i = 0; i < count; i += 1) {
+      for (let j = i + 1; j < count; j += 1) {
+        const ox = Math.min(right[i], right[j]) - Math.max(left[i], left[j])
+        if (ox <= 0) continue
+        const oy = Math.min(bottom[i], bottom[j]) - Math.max(top[i], top[j])
+        if (oy <= 0) continue
         moved = true
-        if (o.y <= o.x) { const push = o.y / 2 + 0.5, dir = work[i].y <= work[j].y ? -1 : 1; work[i].y += dir * push; work[j].y -= dir * push }
-        else { const push = o.x / 2 + 0.5, dir = work[i].x <= work[j].x ? -1 : 1; work[i].x += dir * push; work[j].x -= dir * push }
-        keepInside(work[i]); keepInside(work[j])
+        if (oy <= ox) { const push = oy / 2 + 0.5, dir = work[i].y <= work[j].y ? -1 : 1; work[i].y += dir * push; work[j].y -= dir * push }
+        else { const push = ox / 2 + 0.5, dir = work[i].x <= work[j].x ? -1 : 1; work[i].x += dir * push; work[j].x -= dir * push }
+        keepInside(work[i]); keepInside(work[j]); refresh(i); refresh(j)
       }
     }
     if (!moved) break
   }
   let crowded = false
-  for (let i = 0; i < work.length && !crowded; i += 1) {
-    for (let j = i + 1; j < work.length; j += 1) {
-      const o = overlap(box(work[i]), box(work[j]))
-      if (o.x > 0.5 && o.y > 0.5) { crowded = true; break }
+  for (let i = 0; i < count && !crowded; i += 1) {
+    for (let j = i + 1; j < count; j += 1) {
+      const ox = Math.min(right[i], right[j]) - Math.max(left[i], left[j])
+      const oy = Math.min(bottom[i], bottom[j]) - Math.max(top[i], top[j])
+      if (ox > 0.5 && oy > 0.5) { crowded = true; break }
     }
   }
   return { positions: work.map(slot => ({ x: slot.x, y: slot.y })), crowded }
