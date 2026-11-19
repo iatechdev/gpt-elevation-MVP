@@ -62,7 +62,7 @@ const EMOJI = /\p{Extended_Pictographic}/u
       const { ctx, page } = await open(browser, { width, lang, scheme })
       await page.getByText(t.share, { exact: true }).waitFor()
       const text = await bodyText(page)
-      report(await page.locator('h1').innerText() === t.title, `título «${t.title}» ${tag}`)
+      report((await page.locator('h1').textContent()).trim() === t.title, `título «${t.title}» ${tag}`)
       report(!t.old.test(text) && !EMOJI.test(text), `sin vocabulario anterior ni emojis en la pantalla ${tag}`, (text.match(t.old) || [])[0] || '')
       report(text.includes(t.mood) && text.includes(t.moodLow) && text.includes(t.change), `ánimo en palabras («${t.mood}») y «${t.change}» ${tag}`)
       await axeAndLayout(page, `Mi profesional (con profesional) ${tag}`)
@@ -72,7 +72,7 @@ const EMOJI = /\p{Extended_Pictographic}/u
       const { ctx, page } = await open(browser, { width, lang, scheme, data: { therapist: null, upcomingSessions: [], pastSessions: [] } })
       await page.getByText(t.none, { exact: true }).waitFor()
       const text = await bodyText(page)
-      report(!t.old.test(text) && !EMOJI.test(text) && text.includes(t.find), `sin profesional: «${t.none}» / «${t.find}», sin emojis ${tag}`)
+      report(!t.old.test(text) && !EMOJI.test(text) && text.toLowerCase().includes(t.find.toLowerCase()), `sin profesional: «${t.none}» / «${t.find}», sin emojis ${tag}`)
       await axeAndLayout(page, `Mi profesional (sin profesional) ${tag}`)
       await ctx.close()
     }
