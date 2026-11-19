@@ -40,7 +40,7 @@ Objetivo: 400 capacidades ≤ 2 s al volver del radar y carga ≤ 4 s. **No se a
 
 ## 5. Guardas contra el regreso de la complejidad
 
-`frontend/test/es-199-relieve.test.mjs`: equivalencia con la versión anterior de `separate()` y de `layoutChips()` (aleatorio y reproducible, hasta 400 capacidades), `layoutChips(400)` < 300 ms sin limitar la CPU (hoy ~15 ms; la anterior 600–1 100 ms), colocación una vez por mapa y sin recálculo por medidas en móvil.
+`frontend/test/es-199-relieve.test.mjs`: equivalencia con la versión anterior de `separate()` y de `layoutChips()` (aleatorio y reproducible, hasta 400 capacidades), `layoutChips(400)` prueba menos de 100 000 puntos de la espiral (hoy ~17 000; la anterior ~1 260 000; sin reloj, no depende de la carga de la máquina), colocación una vez por mapa y sin recálculo por medidas en móvil.
 
 ## 6. Limitaciones
 

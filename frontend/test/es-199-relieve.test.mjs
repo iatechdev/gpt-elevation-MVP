@@ -152,15 +152,16 @@ test('ES-199: ReliefMap calcula la colocación una vez por mapa (placeSkillsCach
   assert.match(map, /useMemo\(\(\) => placeSkillsCached\(skills, territories\), \[skills, territories\]\)/)
 })
 
-// Guarda de complejidad: si layoutChips vuelve a recorrer toda la espiral y todas las cajas por cada capacidad, 400 capacidades pasan de ~15 ms a más de un segundo.
-// Margen amplio a propósito (la implementación actual tarda ~10–25 ms sin limitar la CPU; la anterior, 600–1100 ms): no es una prueba de velocidad fina, solo detecta el regreso de la complejidad.
-test('ES-199: layoutChips con 400 capacidades tarda menos de 300 ms (guarda contra el regreso de la búsqueda completa por capacidad)', () => {
+// Guarda de complejidad SIN reloj (no depende de la carga de la máquina): se cuentan los puntos de la espiral que layoutChips prueba (cada uno llama a Math.cos una vez).
+// Con 400 capacidades la implementación actual prueba ~17 000 puntos; la anterior (la copia de referencia de arriba), ~1 260 000. El tope deja un margen amplio y falla si reaparece la búsqueda completa por capacidad.
+test('ES-199: layoutChips con 400 capacidades prueba menos de 100 000 puntos de la espiral (la versión anterior, más de un millón)', () => {
   const ids = Object.keys(territoryBoxes)
   const chips = Array.from({ length: 400 }, (_, i) => ({ key: `k${i}`, links: [ids[i % ids.length]] }))
-  layout.layoutChips(chips) // calienta
-  const start = performance.now()
-  layout.layoutChips(chips)
-  assert.ok(performance.now() - start < 300, `tardó ${(performance.now() - start).toFixed(0)} ms`)
+  const real = Math.cos
+  let points = 0
+  Math.cos = value => { points += 1; return real(value) }
+  try { layout.layoutChips(chips) } finally { Math.cos = real }
+  assert.ok(points < 100_000, `probó ${points} puntos`)
 })
 
 test('ES-199: con solo marcas, las medidas de los rótulos no vuelven a calcular la disposición del relieve', () => {
