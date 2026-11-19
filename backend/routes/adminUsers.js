@@ -76,6 +76,10 @@ router.post('/', (req, res) => res.status(410).json({
 router.get('/', async (req, res) => {
   try {
     const { role, active, therapistId } = req.query;
+    // ES-355 (E367-2): therapistId debe ser un entero positivo que quepa en int32 (misma regla que :id); si no, 400 estable, nunca un 500 de la base.
+    if (therapistId !== undefined && !(typeof therapistId === 'string' && /^[1-9][0-9]{0,9}$/.test(therapistId) && Number(therapistId) <= MAX_INT32)) {
+      return res.status(400).json({ code: 'invalid_id', error: 'Identificador inválido. / Invalid identifier.' });
+    }
     const where = {};
     if (role) where.role = role;
     if (active !== undefined) where.active = active === 'true';
