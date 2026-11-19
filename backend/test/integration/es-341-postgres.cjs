@@ -154,6 +154,12 @@ test('ES-341 PostgreSQL + HTTP: lista de usuarios con agregados por lote, idént
   assert.equal(byId.get(hand.ratingNulo.id).ratingPromedio, 4);
   assert.equal(byId.get(hand.solo2Filas.id).moodPromedio, null);
   assert.equal(byId.get(hand.vacia.id).sesiones, 0);
+  // ES-355 (E367-1): `deletionRequested` es true SOLO para la cuenta con solicitud de eliminación y false (booleano) para las demás; si la lista lo pierde, esto falla.
+  await q("INSERT INTO \"DeletionRequests\" (\"id\",\"UserId\",\"status\",\"attempts\",\"createdAt\",\"updatedAt\") VALUES (gen_random_uuid(), $1, 'accepted', 0, now(), now())", [hand.cincoRatings.id]);
+  const withRequest = (await http(adm, '/api/admin/usuarios')).body;
+  assert.ok(withRequest.every((u) => typeof u.deletionRequested === 'boolean'), 'deletionRequested debe ser booleano en todas las cuentas');
+  assert.deepEqual(withRequest.filter((u) => u.deletionRequested).map((u) => u.id), [hand.cincoRatings.id]);
+
   // Forma del contrato: mismos campos y mismo orden de cuentas (createdAt descendente).
   assert.deepEqual(Object.keys(big.body[0]).sort(), ['active', 'createdAt', 'deletionRequested', 'email', 'id', 'isLocked', 'lockedUntil', 'loginAttempts', 'moodPromedio', 'name', 'plan', 'ratingPromedio', 'role', 'sesiones', 'therapistId']);
   const stamps = big.body.map((u) => Date.parse(u.createdAt));
@@ -161,6 +167,20 @@ test('ES-341 PostgreSQL + HTTP: lista de usuarios con agregados por lote, idént
   // Filtros existentes intactos.
   const onlyTherapists = await http(adm, '/api/admin/usuarios?role=therapist');
   assert.ok(onlyTherapists.body.length > 0 && onlyTherapists.body.every((u) => u.role === 'therapist'));
+
+  // ES-355 (E367-2): therapistId válido filtra; hostil o mal formado = 400 estable (invalid_id, texto ES/EN), nunca 500.
+  const pro = bulk.find((u) => u.role === 'therapist');
+  await q('UPDATE "Users" SET "therapistId"=$2 WHERE id=$1', [hand.vacia.id, pro.id]);
+  const mine = await http(adm, `/api/admin/usuarios?therapistId=${pro.id}`);
+  assert.equal(mine.status, 200);
+  assert.deepEqual(mine.body.map((u) => u.id), [hand.vacia.id]);
+  for (const bad of ["'%20OR%201=1", "1%20OR%201=1", 'abc', '0', '-1', '1.5', '99999999999', '2147483648', '', '1&therapistId=2', '%00']) {
+    const r = await http(adm, `/api/admin/usuarios?therapistId=${bad}`);
+    assert.equal(r.status, 400, `therapistId=${bad}`);
+    assert.equal(r.body.code, 'invalid_id');
+    assert.equal(r.body.error, "Identificador inválido. / Invalid identifier.");
+  }
+  assert.equal((await http(adm, '/api/admin/usuarios?therapistId=2147483647')).status, 200); // el máximo int32 es válido (lista vacía)
 
   // Guardas de rol: sin sesión 403 (verificarAdmin, como antes), personas y profesionales 403; nunca la lista.
   assert.equal((await http(null, '/api/admin/usuarios')).status, 403);

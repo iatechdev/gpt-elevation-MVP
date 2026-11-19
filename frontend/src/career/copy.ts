@@ -86,7 +86,19 @@ export const copy = {
   firstSubmission: ['Primero guarda o usa la entrega.', 'First save or use the submission.'], firstReflection: ['Primero guarda o usa la reflexión.', 'First save or use the reflection.'],
   retiredEvidence: ['Evidencia que citaste y ya no está vigente (se muestra sin contenido):', 'Evidence you cited that is no longer current (shown without content):'], evidenceCited: ['Incluye la evidencia citada', 'Includes the cited evidence'],
   validate: ['Revisa los campos obligatorios y la selección.', 'Review required fields and selections.'], empty: ['Sin datos confirmados.', 'No confirmed data.'],
+  // ES-237 paso 2b (textos de error aprobados tal cual en ES-237, comentario 12494) y sesión vencida (mismos textos que Facilitación).
+  catalogUnavailable: ['El catálogo de rutas aún no está disponible', 'The route catalog is not available yet'], routesChanged: ['Tus restricciones cambiaron; revisa las rutas', 'Your constraints changed; review the routes'],
+  sessionExpired: ['Tu sesión venció. Inicia sesión de nuevo para continuar.', 'Your session expired. Sign in again to continue.'], signIn: ['Entrar', 'Sign in'],
 } as const
 export type CopyKey = keyof typeof copy
 export type Locale = 'es' | 'en'
-export const tr = (lang: Locale, key: CopyKey) => copy[key][lang === 'es' ? 0 : 1]
+// Modo servidor (ES-237 2b): estos textos dicen «simulación»/«sintético» en el simulador y dejarían de ser ciertos con datos reales; el simulador conserva los suyos.
+const serverCopy: Partial<Record<CopyKey, readonly [string, string]>> = {
+  preview: ['Vista preliminar. Tus restricciones, elecciones y experimentos se guardan en tu cuenta; el plan y los recordatorios todavía no.', 'Preview. Your constraints, choices and experiments are saved to your account; the plan and reminders are not yet.'],
+  saved: ['Guardado', 'Saved'], recover: ['Recuperar el estado guardado', 'Retrieve the saved state'], noHistory: ['No hay decisiones guardadas.', 'No decisions have been saved.'],
+  contextHelp: ['Las opciones salen del catálogo de rutas publicado.', 'The options come from the published route catalog.'],
+  // Ficha de la ruta con datos reales: tareas y fuentes del catálogo, no el ejemplo del simulador.
+  tasks: ['Tareas de la ficha', 'Tasks in the profile'], source: ['Fuentes consultadas', 'Sources consulted'], openSource: ['Abrir fuente en otra pestaña', 'Open source in another tab'],
+  supported: ['Sustentada por tu evidencia registrada', 'Supported by your recorded evidence'],
+}
+export const tr = (lang: Locale, key: CopyKey, server = false) => (server ? serverCopy[key] ?? copy[key] : copy[key])[lang === 'es' ? 0 : 1]

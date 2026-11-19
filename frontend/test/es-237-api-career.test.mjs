@@ -25,8 +25,10 @@ test('ES-237 paso 1: vocabulario del servidor (continuar/ajustar/pausar/descarta
   assert.doesNotMatch(api, /postpone|snooze|undo|unaccept|abandon|defer/i)
 })
 
-test('ES-237 paso 1: sin pantallas conectadas todavía (nadie importa api.ts; la bandera de la vista previa sigue igual)', () => {
-  for (const file of readdirSync(new URL('../src/career/', import.meta.url)).filter(name => /\.(ts|tsx)$/.test(name) && name !== 'api.ts')) assert.doesNotMatch(read(`../src/career/${file}`), /from '\.\/api'/, file)
+test('ES-237 paso 2b: solo serverClient.ts y adapter.ts (este, solo tipos) importan api.ts; las pantallas, el marco y el simulador no; la bandera de la vista previa sigue igual', () => {
+  const importers = readdirSync(new URL('../src/career/', import.meta.url)).filter(name => /\.(ts|tsx)$/.test(name) && name !== 'api.ts' && /from '\.\/api(\.ts)?'/.test(read(`../src/career/${name}`)))
+  assert.deepEqual(importers.sort(), ['adapter.ts', 'serverClient.ts'])
+  assert.match(read('../src/career/adapter.ts'), /^import type \{[^}]*\} from '\.\/api\.ts'$/m, 'el adaptador solo importa TIPOS de api.ts (sin red)')
   assert.match(read('../src/career/CareerShell.tsx'), /VITE_ENABLE_CAREER_PREVIEW === 'true'/)
 })
 
