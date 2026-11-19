@@ -140,7 +140,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     assert.equal(m.max30.date, m.days30.find((d) => d.count === m.max30.count).date, 'max30.date es el primer día con ese máximo');
     contractFixture('es-180-metrics-full.json', m);
     assert.equal(m.dailyAverage30, round1(m.total30 / 30));
-    // profesionales con más personas (hasta 5), orden por personas y nombre; valoración null si no hay datos
+    // profesionales con más personas (hasta 5), orden por personas y nombre; valoración null si hay menos de 5 valoraciones (ES-343)
     const expected = therapists.map((th) => {
       const mine = dbUsers.filter((u) => u.therapistId === th.id && u.role === 'user').map((u) => u.id);
       return { id: th.id, name: th.name, patientCount: mine.length, mine };
@@ -148,7 +148,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     const dbRatings = await SessionRating.findAll({ raw: true });
     for (const e of expected) {
       const own = dbRatings.filter((r) => e.mine.includes(r.UserId) && r.rating !== null).map((r) => r.rating);
-      e.avgRating = own.length ? round1(own.reduce((a, b) => a + b, 0) / own.length) : null;
+      e.avgRating = own.length >= 5 ? round1(own.reduce((a, b) => a + b, 0) / own.length) : null;
     }
     expected.sort((a, b) => b.patientCount - a.patientCount || a.name.localeCompare(b.name) || a.id - b.id);
     assert.deepEqual(m.topTherapists.map((x) => [x.id, x.patientCount, x.avgRating]), expected.slice(0, 5).map((e) => [e.id, e.patientCount, e.avgRating]));
@@ -230,5 +230,55 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     const after = (await call(adm, '/api/admin/metrics')).body;
     assert.equal(after.avgRating, before.avgRating, 'tres valores fuera de escala (30000, 30000 y 0) no cambian el promedio general');
     assert.deepEqual(after.topTherapists.map((x) => [x.id, x.avgRating]), before.topTherapists.map((x) => [x.id, x.avgRating]), 'ni el de ningún profesional');
+  });
+
+  // ES-343 (QA-18-02): ningún promedio de /api/admin/metrics se calcula con menos de 5 entradas (avgRating, avgMood y el avgRating de cada profesional).
+  // Esta prueba va al final porque vacía las tablas de ánimo y valoraciones para controlar el número de entradas.
+  await t.test('ES-343: con 0, 1, 4, 5 y 6 entradas el promedio es null por debajo de 5 y se calcula desde 5 (general y por profesional)', async () => {
+    const owners = await User.findAll({ where: { role: 'user', therapistId: pro.id }, attributes: ['id'], order: [['id', 'ASC']] });
+    assert.ok(owners.length >= 6, 'el profesional de prueba tiene personas con las que repartir valoraciones');
+    const setRatings = async (values) => {
+      await sequelize.query('DELETE FROM "SessionRatings"');
+      for (const [i, value] of values.entries()) await sequelize.query('INSERT INTO "SessionRatings" ("UserId","rating","date","createdAt","updatedAt") VALUES ($1,$2,CURRENT_DATE,now(),now())', { bind: [owners[i % owners.length].id, value] });
+    };
+    const proRow = (m) => m.topTherapists.find((x) => x.id === pro.id);
+    const SCALE = [2, 5, 4, 1, 3, 5]; // el primer valor (2) es el que NO debe aparecer cuando hay una sola valoración
+    for (const n of [0, 1, 4, 5, 6]) {
+      const values = SCALE.slice(0, n);
+      await setRatings(values);
+      const m = (await call(adm, '/api/admin/metrics')).body;
+      const expected = n >= 5 ? round1(values.reduce((a, b) => a + b, 0) / n) : null;
+      assert.equal(m.avgRating, expected, `general con ${n} valoraciones`);
+      assert.equal(proRow(m).avgRating, expected, `profesional con ${n} valoraciones`);
+      if (n >= 1 && n < 5) assert.doesNotMatch(JSON.stringify({ a: m.avgRating, t: m.topTherapists.map((x) => x.avgRating) }), /[1-5].d|:[1-5][,}]]/, 'ningún valor individual en la respuesta');
+    }
+    // Las valoraciones fuera de 1-5 no cuentan para el mínimo: 3 válidas + 2 fuera de escala = 3 entradas válidas → null.
+    await setRatings([4, 5, 3, 30000, 0]);
+    let m = (await call(adm, '/api/admin/metrics')).body;
+    assert.equal(m.avgRating, null); assert.equal(proRow(m).avgRating, null);
+    await setRatings([null, null, null, null, null, 4]); // las nulas tampoco cuentan
+    m = (await call(adm, '/api/admin/metrics')).body;
+    assert.equal(m.avgRating, null); assert.equal(proRow(m).avgRating, null);
+    // El conteo de personas del profesional no es un promedio y no cambia.
+    assert.equal(proRow(m).patientCount, owners.length);
+
+    // Ánimo: el mínimo cuenta valores (entrada y salida), no registros: 2 registros con entrada y salida = 4 valores → null; 3 = 6 valores → promedio.
+    const setMood = async (rows) => {
+      await sequelize.query('DELETE FROM "MoodLogs"');
+      await MoodLog.bulkCreate(rows.map(([checkin, checkout], i) => ({ UserId: people[i].id, date: dayOffset(0), checkin_mood: checkin, checkout_mood: checkout })));
+    };
+    for (const [rows, expected] of [[[], null], [[[2, null]], null], [[[1, null], [2, null], [3, null], [4, null]], null], [[[1, null], [2, null], [3, null], [4, null], [5, null]], 3],
+      [[[1, null], [2, null], [3, null], [4, null], [5, null], [5, null]], 3.3], [[[1, 5], [2, 4]], null], [[[1, 5], [2, 4], [3, 3]], 3]]) {
+      await setMood(rows);
+      const mm = (await call(adm, '/api/admin/metrics')).body;
+      assert.equal(mm.avgMood, expected, JSON.stringify(rows));
+      assert.equal(mm.totalSessions, rows.length, 'el conteo de registros no cambia');
+    }
+
+    // Acceso sin cambios: sin sesión rechazado (401 o 403); persona sin rol de administración 403.
+    assert.ok([401, 403].includes((await call(null, '/api/admin/metrics')).status), 'sin sesión: rechazado (igual que antes de ES-343)');
+    assert.equal((await call(plain, '/api/admin/metrics')).status, 403);
+    assert.equal((await call(pro, '/api/admin/metrics')).status, 403);
+    assert.equal((await call(sup, '/api/admin/metrics')).status, 200);
   });
 });

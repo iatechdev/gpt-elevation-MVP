@@ -23,11 +23,8 @@ const refuseDeletionPending = async (id, res) => {
   return true;
 };
 
-// Un promedio de muy pocas entradas revela el valor individual: por debajo de este número de entradas se devuelve null (QA-18-02).
-const MIN_AVERAGE_SAMPLE = 5;
-const averageOf = (values) => (values.length >= MIN_AVERAGE_SAMPLE
-  ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
-  : null);
+// QA-18-02: el mínimo de entradas para un promedio vive en utils/minAverageSample.js (compartido con /api/admin/metrics, ES-343).
+const { averageOf } = require('../utils/minAverageSample');
 
 // ==========================================
 // POST /api/admin/usuarios — Crear usuario
