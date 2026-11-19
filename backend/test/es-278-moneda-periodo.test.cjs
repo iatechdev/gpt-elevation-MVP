@@ -35,3 +35,11 @@ test('ES-278 H1: al editar, una edición parcial sin moneda ni período no los e
   assert.equal(validatePlan({ currency: 'XXX' }, { creating: false }).ok, false);
   assert.equal(validatePlan({ period: 'decada' }, { creating: false }).ok, false);
 });
+
+test('ES-278 H1: los mensajes de error de moneda y período son bilingües y dicen los valores válidos (texto de API fijado)', () => {
+  const currency = validatePlan({ ...base, currency: 'XXX' }, { creating: true }).body;
+  assert.equal(currency.code, 'invalid_plan');
+  assert.equal(currency.error, 'La moneda debe ser USD, COP o EUR. / The currency must be USD, COP or EUR.');
+  const period = validatePlan({ ...base, period: 'decada' }, { creating: true }).body;
+  assert.equal(period.error, 'El período debe ser month, year o forever. / The period must be month, year or forever.');
+});
