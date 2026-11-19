@@ -168,7 +168,10 @@ export function MyTherapist() {
             </>
           )}
 
-          {/* ── PRÓXIMAS SESIONES (ES-240: su propio cargando / error con «Reintentar»; no depende del perfil) ── */}
+          {/* ── PRÓXIMAS SESIONES (ES-240: su propio cargando / error con «Reintentar»; no depende del perfil) ──
+              E358-1 (CLS): la tarjeta de sesiones no se dibuja mientras el perfil SIGUE cargando; si se dibujara antes, la tarjeta del perfil (y la de compartir) aparecerían encima y la empujarían
+              (CLS 0,11–0,41). Con el perfil ya resuelto (listo o con error) las sesiones se muestran aunque ellas aún carguen o fallen: el fallo de una sigue sin ocultar la otra. */}
+          {profileState.status !== 'loading' && <>
           <section className="cg-card pg-card" aria-labelledby="mp-upcoming">
             <h2 id="mp-upcoming">{t('mp_upcoming')}</h2>
             {sessions.status === 'loading' && <p role="status" className="cg-muted">{t('mp_loading')}</p>}
@@ -208,9 +211,12 @@ export function MyTherapist() {
             </section>
           )}
 
-          {/* ── CAMBIAR DE PROFESIONAL (mismo emparejamiento y contrato con el servidor que /app/progress) ── */}
-          <p><LinkButton onClick={() => setShowMatching(true)}>{t('mp_change')}</LinkButton></p>
-          <ProgressMatching open={showMatching} onClose={() => { setShowMatching(false); reloadAll() }} />
+          {/* ── CAMBIAR DE PROFESIONAL (mismo emparejamiento y contrato con el servidor que /app/progress). Aparece cuando las sesiones ya no cargan: antes, subiría y bajaría al llegar la lista (CLS). ── */}
+          {sessions.status !== 'loading' && <>
+            <p><LinkButton onClick={() => setShowMatching(true)}>{t('mp_change')}</LinkButton></p>
+            <ProgressMatching open={showMatching} onClose={() => { setShowMatching(false); reloadAll() }} />
+          </>}
+          </>}
         </>
       )}
     </PersonScreen>

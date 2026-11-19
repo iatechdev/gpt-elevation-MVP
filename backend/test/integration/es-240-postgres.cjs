@@ -67,8 +67,8 @@ test('ES-240 PostgreSQL + HTTP: perfil y sesiones de «Mi profesional» por sepa
     await q('UPDATE "Users" SET role=$2, active=true, "therapistId"=$3 WHERE id=$1', [id, role, therapistId]);
     return { id, role, token: issueToken({ id, role }), name: name || `Sintético ${seq}` };
   }
-  const http = async (who, route) => {
-    const res = await fetch(`${base}${route}`, { headers: who ? { Authorization: `Bearer ${who.token}` } : {} });
+  const http = async (who, route, extraHeaders = {}) => {
+    const res = await fetch(`${base}${route}`, { headers: { ...(who ? { Authorization: `Bearer ${who.token}` } : {}), ...extraHeaders } });
     const text = await res.text(); let body = null; try { body = text ? JSON.parse(text) : null; } catch { /* no JSON */ }
     return { status: res.status, body, text };
   };
@@ -125,6 +125,34 @@ test('ES-240 PostgreSQL + HTTP: perfil y sesiones de «Mi profesional» por sepa
     const full = (await http(p1, '/api/sessions/user/my-therapist')).body;
     const part = { ...(await http(p1, '/api/sessions/user/my-therapist/profile')).body, ...(await http(p1, '/api/sessions/user/my-therapist/sessions')).body };
     assert.deepEqual(part, full, 'las dos secciones juntas son la lectura completa (compatibilidad)');
+  });
+
+  // E358-2 (QA-Claude-3): la persona y el vínculo salen SOLO del token y de la base. Un id impuesto por el cliente (consulta, cabecera o ruta) no cambia nada.
+  await t.test('ids impuestos por el cliente: consulta, cabecera y ruta se ignoran; no se puede leer lo de otra persona ni imponer un profesional', async () => {
+    const forged = '?UserId=' + p2.id + '&userId=' + p2.id + '&patientId=' + p2.id + '&therapistId=' + tB.id + '&id=' + p2.id + '&user=' + p2.id;
+    const headers = { 'x-user-id': String(p2.id), 'x-patient-id': String(p2.id), 'x-therapist-id': String(tB.id) };
+    for (const section of ['profile', 'sessions']) {
+      const route = '/api/sessions/user/my-therapist/' + section;
+      const clean = await http(p1, route);
+      const withQuery = await http(p1, route + forged);
+      const withHeaders = await http(p1, route, headers);
+      const both = await http(p1, route + forged, headers);
+      for (const [label, r] of [['consulta', withQuery], ['cabecera', withHeaders], ['consulta y cabecera', both]]) {
+        assert.equal(r.status, 200, section + ' ' + label); assert.deepEqual(r.body, clean.body, section + ': ' + label + ' no cambia lo que lee p1');
+        assert.ok(!r.text.includes('Profesional B') && !r.text.includes('sala.example.test/2'), section + ': ' + label + ' no filtra lo de p2 ni de tB');
+      }
+    }
+    // una persona SIN profesional no puede imponer uno: sigue sin ver nada
+    for (const section of ['profile', 'sessions']) {
+      const r = await http(lonely, '/api/sessions/user/my-therapist/' + section + '?therapistId=' + tA.id + '&userId=' + p1.id + '&patientId=' + p1.id, { 'x-user-id': String(p1.id), 'x-therapist-id': String(tA.id) });
+      assert.equal(r.status, 200);
+      assert.deepEqual(r.body, section === 'profile' ? { therapist: null } : { upcomingSessions: [], pastSessions: [] });
+      assert.ok(!r.text.includes('Profesional A') && !r.text.includes('sala.example.test'));
+    }
+    // un id en la ruta no existe: 404 (no hay lectura «por id» de estas secciones)
+    for (const route of ['/api/sessions/user/my-therapist/profile/' + p2.id, '/api/sessions/user/my-therapist/sessions/' + p2.id, '/api/sessions/user/my-therapist/' + p2.id]) {
+      const r = await http(p1, route); assert.ok([404].includes(r.status), route + ' ' + r.status); assert.ok(!r.text.includes('Persona Dos') && !r.text.includes('sala.example.test/2'));
+    }
   });
 
   await t.test('control de acceso: otros roles y sin sesión no leen nada; un token inválido es 401', async () => {

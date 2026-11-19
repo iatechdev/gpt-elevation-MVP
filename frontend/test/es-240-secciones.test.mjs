@@ -34,3 +34,12 @@ test('ES-240: textos de error por sección en ES y EN, sin vocabulario anterior'
   assert.equal(myProfessionalEn.mp_sessions_error, 'We could not load your sessions.')
   assert.deepEqual(Object.keys(myProfessionalEs).sort(), Object.keys(myProfessionalEn).sort())
 })
+
+// E358-1 (QA-Claude-3, puerta CLS): perfil y sesiones llegan por separado; si la tarjeta de sesiones se dibujara mientras el perfil carga, las tarjetas del perfil y de «Compartir» la empujarían al llegar
+// (CLS 0,11 con el perfil primero, 0,41 con las sesiones primero; `main` 0,0025). scripts/es240-cls.cjs lo mide en navegador (ahora 0,0005 en los dos órdenes).
+test('E358-1: las sesiones y el enlace de cambio no se dibujan mientras el perfil carga, pero sí con el perfil listo o con error (el fallo de una no oculta la otra)', () => {
+  assert.match(page, /\{profileState\.status !== 'loading' && <>\s*<section className="cg-card pg-card" aria-labelledby="mp-upcoming">/)
+  assert.match(page, /\{sessions\.status !== 'loading' && <>\s*<p><LinkButton onClick=\{\(\) => setShowMatching\(true\)\}>/)
+  // el estado «error» del perfil NO es «loading»: las sesiones se muestran aunque el perfil falle
+  assert.ok(!/profileState\.status === 'ok' && <>\s*<section className="cg-card pg-card" aria-labelledby="mp-upcoming"/.test(page))
+})
