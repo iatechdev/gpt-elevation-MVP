@@ -1,0 +1,11 @@
+/* ES-310 (ES-349): métricas del piloto de Administración en Cartografía. Solo tokens --cg-*; sin colores fijos ni estilos en línea. */
+.pm { min-width: 0; }
+.pm-h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: .03em; margin: 1.6rem 0 .6rem; }
+.pm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: 1rem; margin: .8rem 0; }
+.pm-grid > * { min-width: 0; overflow-wrap: anywhere; }
+.pm-grid h3 { font: 700 1.15rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 .4rem; }
+.pm-grid p { margin: .3rem 0; }
+.pm-pending { border-style: dashed; }
+.pm-dl { margin: .5rem 0 0; display: grid; gap: .15rem; }
+.pm-dl > div { display: flex; justify-content: space-between; gap: .8rem; border-top: 1px solid var(--cg-line); padding: .3rem 0; }
+.pm-dl dt, .pm-dl dd { margin: 0; }
