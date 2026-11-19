@@ -12,7 +12,7 @@ test('ES-70: new copy uses the existing public read and protected CMS write (moc
   assert.ok(entries.length > 30);
   const body = { key: 'landing.features.conversation.status', lang: 'es', value: 'Synthetic editorial change' };
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
-    assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, 403);
+    assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, (role === undefined ? 401 : 403));
   }
   assert.equal((await request('PUT', '/api/landing-content', {
     body, headers: { Authorization: 'Bearer invalid' },

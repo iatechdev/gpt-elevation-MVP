@@ -28,5 +28,5 @@ test('P1-8: Vercel entry is retained, exports the real app and protects administ
   assert.equal(typeof app.listen, 'function');
   const config = require('../../vercel.json');
   assert.ok(config.rewrites.some(rule => rule.source === '/api/(.*)' && rule.destination === '/api/index.js'));
-  assert.equal((await request('POST', '/api/pricing', { body: {} })).status, 403);
+  assert.equal((await request('POST', '/api/pricing', { body: {} })).status, 401);
 });

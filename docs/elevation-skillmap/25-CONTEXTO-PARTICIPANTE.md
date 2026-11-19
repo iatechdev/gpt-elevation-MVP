@@ -84,7 +84,7 @@ version=0/context=null. savedAt y completedAt vienen del servidor; guardar un
 borrador no confirma la entrada. Borrar idioma anula la confirmación anterior.
 Un error no devuelve el contenido recibido. Cache-Control: no-store.
 
-Errores: 400 contrato inválido; 401 sesión inválida/revocada; 403 sin sesión,
+Errores: 400 contrato inválido; 401 sesión inválida/revocada o sin sesión (ES-332; antes 403 sin sesión),
 cuenta inactiva, no participante o rol cambiado; 404 ruta con ID; 409 conflicto
 de versión; 503 persistencia/cifrado no disponible. Un parser JSON inválido o
 excesivo en este recurso devuelve error genérico 400/413 sin registrar el cuerpo.

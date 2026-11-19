@@ -41,7 +41,7 @@ test('P1-9: configured production key works; foreign or missing tokens are denie
     role: 'admin', body: { key: 'synthetic', content: 'Synthetic prompt' },
   })).status, 200);
   assert.equal(proposed, true);
-  assert.equal((await request('POST', '/api/admin/prompt/propose', { body: {} })).status, 403);
+  assert.equal((await request('POST', '/api/admin/prompt/propose', { body: {} })).status, 401);
   const foreign = jwt.sign({ id: 101, role: 'superadmin' }, randomBytes(32).toString('hex'));
   assert.equal((await request('POST', '/api/admin/prompt/propose', {
     body: {}, headers: { Authorization: 'Bearer ' + foreign },

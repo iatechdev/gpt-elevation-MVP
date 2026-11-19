@@ -352,8 +352,8 @@ test('ES-28 aislamiento: sin sesión no hay propuestas y cada persona solo usa s
   const { provider, turn } = setup();
   const request = await startApp(t);
   provider.out = goodDraft();
-  assert.equal((await request('POST', '/api/evidence/proposals', { body: { turnIds: [turn.id] } })).status, 403);
-  assert.equal((await request('POST', '/api/skill-map/proposals', { body: {} })).status, 403);
+  assert.equal((await request('POST', '/api/evidence/proposals', { body: { turnIds: [turn.id] } })).status, 401);
+  assert.equal((await request('POST', '/api/skill-map/proposals', { body: {} })).status, 401);
   await grant(request, V);
   const foreign = await post(request, V, '/api/evidence/proposals', { turnIds: [turn.id] }); // el turno es de la persona 101
   assert.deepEqual([foreign.status, foreign.body.code], [404, 'origin_not_found']);

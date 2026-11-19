@@ -62,7 +62,7 @@ test('ES-31 el catálogo sintético completo se publica solo con la autorizació
 test('ES-31 lectura para participantes: solo lo publicado, con frescura calculada, sin nombres de revisores y sin demanda', async (t) => {
   install();
   const request = await startApp(t);
-  assert.equal((await request('GET', '/api/route-catalog')).status, 403); // sin sesión
+  assert.equal((await request('GET', '/api/route-catalog')).status, 401); // sin sesión
   assert.equal((await request('GET', '/api/route-catalog', U)).status, 503); // nada publicado
   const draft = await loadSynthetic(request);
   assert.equal((await request('GET', '/api/route-catalog', U)).status, 503); // un borrador no se ve
@@ -101,7 +101,7 @@ test('ES-31 solo la administración escribe el catálogo; las personas, terapeut
     assert.equal((await request('GET', BASE, actor)).status, 403);
     assert.equal((await request('POST', BASE, actor)).status, 403);
   }
-  assert.equal((await request('GET', BASE)).status, 403);
+  assert.equal((await request('GET', BASE)).status, 401);
   assert.equal((await request('POST', BASE, ADMIN)).status, 201);
 });
 

@@ -46,13 +46,13 @@ const { pathToFileURL } = require('node:url');
     const create = await req('POST', '/api/diary', tokens[0], { date: '2026-10-01', content: 'Synthetic private α 🧭\nEnglish' });
     assert.equal(create.status, 201); const id = create.body.id;
     assert.match((await Diary.findByPk(id)).content, /^v2:/); assert.equal((await req('GET', `/api/diary/${id}`)).body.content, create.body.content);
-    assert.equal((await req('GET', '/api/diary', '')).status, 403);
+    assert.equal((await req('GET', '/api/diary', '')).status, 401);
     for (const token of tokens.slice(1)) {
       for (const [method, body] of [['GET'], ['PUT', { content: 'foreign edit' }], ['DELETE']]) assert.equal((await req(method, `/api/diary/${id}`, token, body)).status, 404);
       assert.deepEqual((await req('GET', '/api/diary', token)).body.entries, []);
       assert.equal((await req('POST', '/api/chat', token, { message: 'Hello', requestId: `es15-foreign-${tokens.indexOf(token)}`, contextEntryIds: [id] })).status, 404);
     }
-    assert.equal(calls.length, 0); check('real JWT owner A/B/admin/therapist/board: foreign read/edit/delete/chat references 404; anonymous 403; encrypted Unicode roundtrip');
+    assert.equal(calls.length, 0); check('real JWT owner A/B/admin/therapist/board: foreign read/edit/delete/chat references 404; anonymous 401; encrypted Unicode roundtrip');
     const updated = await req('PUT', `/api/diary/${id}`, tokens[0], { content: 'Synthetic selected marker ' + 'a'.repeat(2100) + ' OMITTED_TAIL' }); assert.equal(updated.status, 200);
     assert.equal(await Invalidation.count({ where: { sourceId: id, reason: 'edited' } }), 1);
     const unselected = await req('POST', '/api/diary', tokens[0], { date: '2026-10-02', content: 'UNSELECTED_DIARY_MARKER' });

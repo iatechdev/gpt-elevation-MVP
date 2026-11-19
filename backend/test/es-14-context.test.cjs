@@ -47,7 +47,7 @@ test('ES-14 A/B: owner from JWT, body/query/path foreign IDs rejected, no admin 
   for (const method of ['GET', 'PUT']) assert.equal((await request(method, '/api/user/context/202', { role: 'user', body: method === 'PUT' ? body() : undefined })).status, 404);
   for (const key of ['id', 'UserId', 'userId', 'ownerId', 'role']) assert.equal((await request('PUT', '/api/user/context', { role: 'user', body: { ...body(), [key]: 202 } })).status, 400);
   for (const role of ['admin', 'superadmin', 'therapist', 'board']) for (const method of ['GET', 'PUT']) assert.equal((await request(method, '/api/user/context', { role, body: method === 'PUT' ? body() : undefined })).status, 403);
-  assert.equal((await request('GET', '/api/user/context')).status, 403);
+  assert.equal((await request('GET', '/api/user/context')).status, 401);
   assert.equal((await request('GET', '/api/user/context', { role: 'user', id: 202 })).body.context.profession, 'Synthetic teacher');
 });
 test('ES-14: inactive, missing and changed-role principals denied on reads and writes', async t => {

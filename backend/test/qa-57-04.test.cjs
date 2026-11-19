@@ -15,7 +15,7 @@ test('QA-57-04: role matrix, authorized persistence and invalid inputs', async t
   const request = await startApp(t);
   const body = { key: 'hero_title', lang: 'es', value: 'Texto sintético' };
   for (const role of [undefined, 'user', 'therapist', 'admin', 'board']) {
-    assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, 403);
+    assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, (role === undefined ? 401 : 403));
     assert.equal(saved.length, 0);
     assert.equal(reads, 0);
   }

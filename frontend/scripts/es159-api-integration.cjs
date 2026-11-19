@@ -78,10 +78,10 @@ const { pathToFileURL } = require('node:url');
     // 5. Un profesional no recibe el ánimo de las personas; sin sesión no hay acceso
     const historyPro = await (await call('GET', `/api/mood/history?userId=${alice.id}`, tokens.p)).json();
     assert.deepEqual(historyPro, [], 'el profesional solo ve lo suyo (nada)');
-    assert.equal((await call('GET', '/api/mood/history')).status, 403); assert.equal((await call('GET', '/api/mood/history', 'basura')).status, 401);
-    assert.equal((await call('POST', '/api/mood/checkin', undefined, { mood: 3 })).status, 403);
+    assert.equal((await call('GET', '/api/mood/history')).status, 401); assert.equal((await call('GET', '/api/mood/history', 'basura')).status, 401);
+    assert.equal((await call('POST', '/api/mood/checkin', undefined, { mood: 3 })).status, 401);
     assert.equal((await call('POST', '/api/mood/checkin', 'basura', { mood: 3 })).status, 401);
-    check('un profesional vinculado no recibe el ánimo (solo lo suyo); sin sesión 403; token inválido 401');
+    check('un profesional vinculado no recibe el ánimo (solo lo suyo); sin sesión 401; token inválido 401');
 
     // 6. Servicios de ayuda: solo activos y verificados; sin entradas = lista vacía; país inválido = 400
     const today = new Date().toISOString().slice(0, 10); const old = '2020-01-01';

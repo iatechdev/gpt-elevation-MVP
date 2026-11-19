@@ -53,7 +53,7 @@ const { pathToFileURL } = require('node:url');
     const encrypted = await Turn.findOne({ where: { UserId: 101, requestId: body.requestId } }); assert.match(encrypted.replyContent, /^v2:/); assert.equal(desencriptar(encrypted.replyContent), first.body.reply);
     check('real HTTP/JWT/PostgreSQL confirms and replays one encrypted pause pair with zero provider calls');
     for (const token of [tokenB, tokenAdmin]) assert.equal((await request('/api/chat/turns/' + body.requestId, token)).status, 404);
-    assert.deepEqual((await request('/api/messages', tokenB)).body, []); assert.equal((await request('/api/messages', '')).status, 403);
+    assert.deepEqual((await request('/api/messages', tokenB)).body, []); assert.equal((await request('/api/messages', '')).status, 401);
     const foreign = await Diary.create({ UserId: 202, entryDate: new Date().toISOString().slice(0, 10), content: encriptarV2('Synthetic B private entry') });
     assert.equal((await request('/api/chat', tokenA, { message: 'silencio', contextEntryIds: [foreign.id] })).status, 404);
     check('foreign B/admin request IDs and foreign diary IDs remain inaccessible; no token is rejected');

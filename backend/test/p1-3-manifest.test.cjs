@@ -24,7 +24,7 @@ test('P1-3 (ES-207): only the active manifest is public, history and mutations r
     for (const prefix of ['/api/manifest', '/api/board']) {
       for (const role of [undefined, 'user', 'therapist', 'board']) {
         const before = calls;
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls, before, 'No database work or transaction on denial');
       }
       assert.equal((await request(method, prefix + suffix, {

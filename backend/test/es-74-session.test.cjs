@@ -59,7 +59,7 @@ test('ES-74: real JWT middleware rejects absent/invalid/expired/legacy/revoked/c
   let reads = 0;
   models.User.findByPk = async () => { reads++; return { role: 'user', active: true, onboardingCompleted: true }; };
   const token = options => jwt.sign({ id: 101, role: 'user', jti: randomBytes(8).toString('hex'), ...options }, process.env.JWT_SECRET);
-  assert.equal((await request('GET', '/api/session')).status, 403);
+  assert.equal((await request('GET', '/api/session')).status, 401);
   for (const bearer of ['invalid', token({ exp: Math.floor(Date.now() / 1000) - 2 }), token({ jti: undefined })]) {
     assert.equal((await request('GET', '/api/session', { headers: { Authorization: 'Bearer ' + bearer } })).status, 401);
   }

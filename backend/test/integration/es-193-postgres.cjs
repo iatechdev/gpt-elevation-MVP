@@ -78,10 +78,10 @@ test('ES-193 PostgreSQL: datos de contacto editables, con procedencia vigente y 
   await t.test('solo superadministración escribe (403 a administración y al resto); administración lee con el estado de verificación', async () => {
     for (const [who, label] of [[adm, 'admin'], [usr, 'user'], [thr, 'therapist'], [brd, 'board'], [null, 'sin sesión']]) {
       for (const [method, path, body] of [['POST', '/api/admin/contact-entries', NEW], ['PUT', '/api/admin/contact-entries/1', { version: 1, name: 'x' }], ['PUT', '/api/admin/contact-entries/order', { ids: [1] }]]) {
-        assert.equal((await call(who, method, path, body)).status, 403, `${label} ${method} ${path}`);
+        assert.equal((await call(who, method, path, body)).status, (who ? 403 : 401), `${label} ${method} ${path}`);
       }
     }
-    for (const [who, label] of [[usr, 'user'], [thr, 'therapist'], [brd, 'board'], [null, 'sin sesión']]) assert.equal((await call(who, 'GET', '/api/admin/contact-entries')).status, 403, label);
+    for (const [who, label] of [[usr, 'user'], [thr, 'therapist'], [brd, 'board'], [null, 'sin sesión']]) assert.equal((await call(who, 'GET', '/api/admin/contact-entries')).status, (who ? 403 : 401), label);
     assert.equal(await ContactEntry.count(), 0);
     const made = await call(sup, 'POST', '/api/admin/contact-entries', NEW);
     assert.equal(made.status, 201); assert.equal(made.body.country, 'ZZ'); assert.equal(made.body.active, false); assert.equal(made.body.verification, 'unverified'); assert.equal(made.body.version, 1);

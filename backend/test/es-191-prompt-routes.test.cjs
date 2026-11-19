@@ -29,7 +29,7 @@ test('ES-191: el texto de cada versión solo llega a administración y superadmi
   for (const prefix of ['/api/admin', '/api/superadmin']) {
     for (const role of [undefined, 'user', 'therapist', 'board']) {
       const response = await request('GET', `${prefix}/prompt/k1/versions`, { role });
-      assert.equal(response.status, 403);
+      assert.equal(response.status, (role === undefined ? 401 : 403));
       assert.doesNotMatch(JSON.stringify(response.body), /Acompaña/);
     }
   }
@@ -106,7 +106,7 @@ test('ES-191: un profesional solo propone sobre SU clave (usuarios A y B); la cl
   for (const path of [`/api/admin/prompt/therapist_prompt_${B}/versions`, `/api/superadmin/prompt/therapist_prompt_${B}/versions`, '/api/admin/prompt-rules', '/api/admin/prompts']) {
     assert.equal((await request('GET', path, { role: 'therapist', id: A })).status, 403, path);
   }
-  for (const role of ['user', 'board', undefined]) assert.equal((await request('POST', '/api/therapist/prompt/propose', { role, id: A, body: { content: synthetic } })).status, 403);
+  for (const role of ['user', 'board', undefined]) assert.equal((await request('POST', '/api/therapist/prompt/propose', { role, id: A, body: { content: synthetic } })).status, (role === undefined ? 401 : 403));
   // propuesta rechazada → 422 con motivos; reglas caídas → 503; contenido corto → 400 (sin 500)
   hooks.propose = async () => ({ id: 2, version: 3, status: 'rejected', outcome: 'rejected', reasons: [{ code: 'treatment', phrase: 'receta*' }] });
   let response = await request('POST', '/api/therapist/prompt/propose', { role: 'therapist', id: A, body: { content: synthetic } });
@@ -125,7 +125,7 @@ test('ES-191: las reglas son datos — solo superadministración las lista y edi
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
     for (const [method, path, body] of [['GET', '/api/superadmin/prompt-rules'], ['POST', '/api/superadmin/prompt-rules', { category: 'override', locale: 'es', phrase: 'frase nueva' }], ['PUT', '/api/superadmin/prompt-rules/1', { active: false }], ['DELETE', '/api/superadmin/prompt-rules/1'], ['GET', '/api/admin/prompt-rules']]) {
       const response = await request(method, path, { role, body });
-      assert.equal(response.status, 403, `${role} ${method} ${path}`);
+      assert.equal(response.status, (role === undefined ? 401 : 403), `${role} ${method} ${path}`);
     }
   }
   assert.equal(rows[0].active, true);

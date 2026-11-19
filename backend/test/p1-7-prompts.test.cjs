@@ -14,7 +14,7 @@ test('P1-7: admin cannot approve, reject or roll back prompts through either ali
       const body = { note: 'Synthetic review' };
       for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
         const before = calls.length;
-        assert.equal((await request('POST', `${prefix}/prompt/7/${action}`, { role, body })).status, 403);
+        assert.equal((await request('POST', `${prefix}/prompt/7/${action}`, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls.length, before);
       }
       assert.equal((await request('POST', `${prefix}/prompt/7/${action}`, {
