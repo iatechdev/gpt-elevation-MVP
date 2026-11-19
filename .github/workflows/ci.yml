@@ -268,6 +268,10 @@ jobs:
         run: npm run test:session-lists:pg
         env:
           ES241_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-240 Mi profesional por secciones - perfil y sesiones separados, solo del propietario y del vínculo vigente (PostgreSQL real)
+        run: npm run test:my-professional:pg
+        env:
+          ES240_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-262 entradas hostiles de fecha y de id en sesiones, notas y solicitudes de plan (PostgreSQL real)
         run: npm run test:hostile-dates:pg
         env:

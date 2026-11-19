@@ -40,9 +40,12 @@ test('ES-169: sin textos por ternario de idioma y con las mismas claves en ES y 
 })
 
 test('ES-169: error con «Reintentar» en la carga de perfil y sesiones y en «Compartir» (ya no se oculta en silencio)', () => {
-  assert.match(page, /\{!loading && failed && \(\s*<Banner kind="error"/) // ES-329: el aviso de error de Cartografía (role="alert") con «Reintentar»
-  assert.match(page, /onClick=\{retry\}/)
-  assert.match(page, /const retry = \(\) => \{ setLoading\(true\); setFailed\(false\); setReloadKey\(k => k \+ 1\) \}/)
+  // ES-240: la carga tiene un error con «Reintentar» POR SECCIÓN (perfil y sesiones), con el aviso de error de Cartografía (role="alert")
+  assert.match(page, /\{profileState\.status === 'error' && \(\s*<Banner kind="error"/)
+  assert.match(page, /\{sessions\.status === 'error' && \(\s*<Banner kind="error"/)
+  assert.match(page, /onClick=\{retryProfile\}/); assert.match(page, /onClick=\{retrySessions\}/)
+  assert.match(page, /const retryProfile  = \(\) => \{ setProfileState\(\{ status: 'loading', therapist: null \}\); setProfileKey\(k => k \+ 1\) \}/)
+  assert.match(page, /const retrySessions = \(\) => \{ setSessions\(\{ status: 'loading', upcoming: \[\], past: \[\] \}\); setSessionsKey\(k => k \+ 1\) \}/)
   assert.match(card, /if \(alive\) setStatus\('loaderror'\)/)
   assert.match(card, /if \(status === 'loaderror'\) \{[\s\S]*<Banner kind="error"[\s\S]*mt_share_retry/) // ES-329: Banner de error (role="alert")
   assert.ok(!/if \(alive\) setStatus\('hidden'\)\s*\n\s*\}\s*\n\s*\}\)\(\)/.test(card), 'un error de lectura ya no oculta la tarjeta')

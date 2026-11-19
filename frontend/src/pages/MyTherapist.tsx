@@ -47,45 +47,60 @@ interface PastSession {
   status:           string
 }
 
-interface MyTherapistData {
-  therapist:        Therapist | null
-  upcomingSessions: UpcomingSession[]
-  pastSessions:     PastSession[]
-}
+// ES-240: perfil y sesiones se leen en dos peticiones independientes (cada una con su estado: cargando / error con «Reintentar» / listo); el fallo de una no oculta la otra.
+type Status = 'loading' | 'ok' | 'error'
 
 export function MyTherapist() {
   const { lang, t } = useLanguage()
   const navigate = useNavigate()
 
-  const [data, setData]       = useState<MyTherapistData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [failed, setFailed]   = useState(false)
+  const [profileState, setProfileState] = useState<{ status: Status; therapist: Therapist | null }>({ status: 'loading', therapist: null })
+  const [sessions, setSessions] = useState<{ status: Status; upcoming: UpcomingSession[]; past: PastSession[] }>({ status: 'loading', upcoming: [], past: [] })
   const [showMatching, setShowMatching] = useState(false)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const refocusTitle = useRef(false) // D4: tras desvincular la tarjeta desaparece al recargar; el foco pasa al título de la pantalla recargada
-  const [reloadKey, setReloadKey] = useState(0) // ES-100: se incrementa al desvincularse (o al reintentar) para volver a pedir los datos
+  const [profileKey, setProfileKey]   = useState(0) // ES-100 / ES-240: se incrementa al desvincularse (o al reintentar) para volver a pedir esa sección
+  const [sessionsKey, setSessionsKey] = useState(0)
+
+  // Cada sección se pide por separado, en paralelo, y se cancela al salir de la pantalla. El servidor verifica el propietario en cada petición.
+  useEffect(() => {
+    const controller = new AbortController()
+    void (async () => {
+      try {
+        const res = await fetch(`${API}/api/sessions/user/my-therapist/profile`, { headers: { Authorization: `Bearer ${getToken()}` }, signal: controller.signal })
+        if (!res.ok) throw new Error()
+        const json = await res.json() as { therapist: Therapist | null }
+        if (!controller.signal.aborted) setProfileState({ status: 'ok', therapist: json.therapist ?? null })
+      } catch {
+        if (!controller.signal.aborted) setProfileState({ status: 'error', therapist: null })
+      } finally {
+        if (!controller.signal.aborted && refocusTitle.current) { refocusTitle.current = false; requestAnimationFrame(() => titleRef.current?.focus()) }
+      }
+    })()
+    return () => controller.abort()
+  }, [profileKey])
 
   useEffect(() => {
-    let alive = true
-    const fetchData = async () => {
+    const controller = new AbortController()
+    void (async () => {
       try {
-        const res = await fetch(`${API}/api/sessions/user/my-therapist`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        })
+        const res = await fetch(`${API}/api/sessions/user/my-therapist/sessions`, { headers: { Authorization: `Bearer ${getToken()}` }, signal: controller.signal })
         if (!res.ok) throw new Error()
-        const json = await res.json()
-        if (alive) { setData(json); setFailed(false) }
+        const json = await res.json() as { upcomingSessions: UpcomingSession[]; pastSessions: PastSession[] }
+        if (!controller.signal.aborted) setSessions({ status: 'ok', upcoming: json.upcomingSessions ?? [], past: json.pastSessions ?? [] })
       } catch {
-        if (alive) setFailed(true)
-      } finally {
-        if (alive) setLoading(false)
-        if (alive && refocusTitle.current) { refocusTitle.current = false; requestAnimationFrame(() => titleRef.current?.focus()) }
+        if (!controller.signal.aborted) setSessions({ status: 'error', upcoming: [], past: [] })
       }
-    }
-    void fetchData()
-    return () => { alive = false }
-  }, [reloadKey])
-  const retry = () => { setLoading(true); setFailed(false); setReloadKey(k => k + 1) }
+    })()
+    return () => controller.abort()
+  }, [sessionsKey])
+
+  const retryProfile  = () => { setProfileState({ status: 'loading', therapist: null }); setProfileKey(k => k + 1) }
+  const retrySessions = () => { setSessions({ status: 'loading', upcoming: [], past: [] }); setSessionsKey(k => k + 1) }
+  const reloadAll     = () => { retryProfile(); retrySessions() }
+  const therapist     = profileState.therapist
+  const profile       = therapist?.profile
+  const noProfessional = profileState.status === 'ok' && !therapist
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const formatDateTime = (iso: string) =>
@@ -107,22 +122,10 @@ export function MyTherapist() {
   // Ánimo al terminar en palabras (las mismas que ya usa el producto), sin emojis.
   const moodText = (value: number) => t('mp_mood').replace('{word}', t(`room_t_mood_${value}`)).replace('{n}', String(value))
 
-  const therapist = data?.therapist
-  const profile = therapist?.profile
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <PersonScreen title={t('mp_title')} titleRef={titleRef}>
-      {loading && <p role="status" className="cg-muted">{t('mp_loading')}</p>}
-
-      {/* Un solo error con reintento para perfil y sesiones: vienen de UNA petición del servidor (/user/my-therapist). «Compartir» tiene el suyo propio. */}
-      {!loading && failed && (
-        <Banner kind="error" title={t('mp_load_error')}>
-          <div className="pg-actions"><Button onClick={retry}>{t('mp_retry')}</Button></div>
-        </Banner>
-      )}
-
-      {!loading && !failed && !therapist && (
+      {noProfessional && (
         /* Sin profesional asignado */
         <section className="cg-card pg-card" aria-labelledby="mp-none">
           <h2 id="mp-none">{t('mp_none_title')}</h2>
@@ -131,37 +134,56 @@ export function MyTherapist() {
         </section>
       )}
 
-      {!loading && !failed && data && therapist && (
+      {!noProfessional && (
         <>
-          {/* ── PERFIL DEL PROFESIONAL ── */}
-          <section className="cg-card pg-card" aria-labelledby="mp-profile">
-            <h2 id="mp-profile">{therapist.name}</h2>
-            <p className="cg-hint">{therapist.email}</p>
-            {profile ? (
-              <dl className="pc-dl">
-                {profile.bio && <><dt>{t('mp_profile')}</dt><dd>“{profile.bio}”</dd></>}
-                {profile.specialties && <><dt>{t('mp_specialties')}</dt><dd>{profile.specialties}</dd></>}
-                {profile.languages && <><dt>{t('mp_languages')}</dt><dd>{profile.languages}</dd></>}
-                {profile.approach && <><dt>{t('mp_approach')}</dt><dd>{profile.approach}</dd></>}
-              </dl>
-            ) : (
-              <p className="cg-muted">{t('mp_profile_empty')}</p>
-            )}
-          </section>
+          {/* ── PERFIL DEL PROFESIONAL (ES-240: su propio cargando / error con «Reintentar») ── */}
+          {profileState.status === 'loading' && <p role="status" className="cg-muted">{t('mp_loading')}</p>}
+          {profileState.status === 'error' && (
+            <Banner kind="error" title={t('mp_load_error')}>
+              <div className="pg-actions"><Button onClick={retryProfile}>{t('mp_retry')}</Button></div>
+            </Banner>
+          )}
+          {therapist && (
+            <>
+              <section className="cg-card pg-card" aria-labelledby="mp-profile">
+                <h2 id="mp-profile">{therapist.name}</h2>
+                <p className="cg-hint">{therapist.email}</p>
+                {profile ? (
+                  <dl className="pc-dl">
+                    {profile.bio && <><dt>{t('mp_profile')}</dt><dd>“{profile.bio}”</dd></>}
+                    {profile.specialties && <><dt>{t('mp_specialties')}</dt><dd>{profile.specialties}</dd></>}
+                    {profile.languages && <><dt>{t('mp_languages')}</dt><dd>{profile.languages}</dd></>}
+                    {profile.approach && <><dt>{t('mp_approach')}</dt><dd>{profile.approach}</dd></>}
+                  </dl>
+                ) : (
+                  <p className="cg-muted">{t('mp_profile_empty')}</p>
+                )}
+              </section>
 
-          {/* ── COMPARTIR CON MI PROFESIONAL (ES-100 / ES-96): tiene su propio estado de error ── */}
-          <TherapistSharingCard
-            therapistName={therapist.name}
-            onUnlinked={() => { refocusTitle.current = true; setReloadKey(k => k + 1) }}
-          />
+              {/* ── COMPARTIR CON MI PROFESIONAL (ES-100 / ES-96): tiene su propio estado de error ── */}
+              <TherapistSharingCard
+                therapistName={therapist.name}
+                onUnlinked={() => { refocusTitle.current = true; reloadAll() }}
+              />
+            </>
+          )}
 
-          {/* ── PRÓXIMAS SESIONES ── */}
+          {/* ── PRÓXIMAS SESIONES (ES-240: su propio cargando / error con «Reintentar»; no depende del perfil) ──
+              E358-1 (CLS): la tarjeta de sesiones no se dibuja mientras el perfil SIGUE cargando; si se dibujara antes, la tarjeta del perfil (y la de compartir) aparecerían encima y la empujarían
+              (CLS 0,11–0,41). Con el perfil ya resuelto (listo o con error) las sesiones se muestran aunque ellas aún carguen o fallen: el fallo de una sigue sin ocultar la otra. */}
+          {profileState.status !== 'loading' && <>
           <section className="cg-card pg-card" aria-labelledby="mp-upcoming">
             <h2 id="mp-upcoming">{t('mp_upcoming')}</h2>
-            {data.upcomingSessions.length === 0 ? (
+            {sessions.status === 'loading' && <p role="status" className="cg-muted">{t('mp_loading')}</p>}
+            {sessions.status === 'error' && (
+              <Banner kind="error" title={t('mp_sessions_error')}>
+                <div className="pg-actions"><Button onClick={retrySessions}>{t('mp_retry')}</Button></div>
+              </Banner>
+            )}
+            {sessions.status === 'ok' && (sessions.upcoming.length === 0 ? (
               <p>{t('mp_upcoming_empty')}</p>
             ) : (
-              <ItemList items={data.upcomingSessions.map(s => {
+              <ItemList items={sessions.upcoming.map(s => {
                 const joinable = isJoinable(s.scheduledAt)
                 return {
                   id: String(s.id),
@@ -174,14 +196,14 @@ export function MyTherapist() {
                   ),
                 }
               })} />
-            )}
+            ))}
           </section>
 
           {/* ── SESIONES ANTERIORES ── */}
-          {data.pastSessions.length > 0 && (
+          {sessions.status === 'ok' && sessions.past.length > 0 && (
             <section className="cg-card pg-card" aria-labelledby="mp-past">
               <h2 id="mp-past">{t('mp_past')}</h2>
-              <ItemList items={data.pastSessions.map(s => ({
+              <ItemList items={sessions.past.map(s => ({
                 id: String(s.id),
                 top: <div className="pc-line"><strong>{formatDateShort(s.scheduledAt)}</strong><Chip tone="ok" symbol="✓">{t('mp_completed')}</Chip></div>,
                 body: s.patientMoodAfter != null && s.patientMoodAfter >= 1 && s.patientMoodAfter <= 5 ? <p className="cg-hint">{moodText(s.patientMoodAfter)}</p> : undefined,
@@ -189,9 +211,12 @@ export function MyTherapist() {
             </section>
           )}
 
-          {/* ── CAMBIAR DE PROFESIONAL (mismo emparejamiento y contrato con el servidor que /app/progress) ── */}
-          <p><LinkButton onClick={() => setShowMatching(true)}>{t('mp_change')}</LinkButton></p>
-          <ProgressMatching open={showMatching} onClose={() => { setShowMatching(false); setReloadKey(k => k + 1) }} />
+          {/* ── CAMBIAR DE PROFESIONAL (mismo emparejamiento y contrato con el servidor que /app/progress). Aparece cuando las sesiones ya no cargan: antes, subiría y bajaría al llegar la lista (CLS). ── */}
+          {sessions.status !== 'loading' && <>
+            <p><LinkButton onClick={() => setShowMatching(true)}>{t('mp_change')}</LinkButton></p>
+            <ProgressMatching open={showMatching} onClose={() => { setShowMatching(false); reloadAll() }} />
+          </>}
+          </>}
         </>
       )}
     </PersonScreen>
