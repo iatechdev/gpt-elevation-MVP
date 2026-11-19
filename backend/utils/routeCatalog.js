@@ -426,7 +426,11 @@ async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPoli
   const resources = [...byKind.resources].map(([resourceKey, r]) => ({ resourceKey, ...r }));
   const contexts = [...byKind.contexts].map(([contextKey, c]) => ({ contextKey, ...c }));
   const skillKeys = [...new Set([...roles.flatMap((r) => (r.capabilities || []).map((c) => c.skillKey)), ...resources.map((r) => r.linkedSkillKey)].filter(Boolean))];
-  return { version: catalog.version, publishedAt: catalog.publishedAt, contexts, sources, roles, offers, resources, skillLabels: await skillLabelsFor(skillKeys) };
+  // ES-271: las etiquetas de habilidades son un dato aditivo y decorativo: si su lectura falla (tabla ausente, consulta caída) el catálogo se sirve igual con skillLabels:{}.
+  // Solo se registra el nombre del error (sin contenido ni datos personales); la pantalla ya muestra la clave legible sin etiquetas.
+  let skillLabels = {};
+  try { skillLabels = await skillLabelsFor(skillKeys); } catch (error) { console.error('Etiquetas de habilidades no disponibles; el catálogo se sirve sin ellas:', error && error.name); }
+  return { version: catalog.version, publishedAt: catalog.publishedAt, contexts, sources, roles, offers, resources, skillLabels };
 }
 
 module.exports = {

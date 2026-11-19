@@ -1,15 +1,14 @@
 import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
-import { LandingSurface } from '../components/landing/LandingSurface'
-import { LandingHeader } from '../components/landing/LandingHeader'
+import { PublicFrame } from '../shell/frames'
 import { LandingPlans } from '../components/landing/LandingPlans'
 
+/** ES-328: /pricing en el marco público de Cartografía (marca, idioma, tema, pie), como la portada. El selector de idioma es el del marco (arregla B-T0-1). */
 export function PricingPage() {
-  const { lang, setLang } = useLanguage()
+  const { lang } = useLanguage()
   const { text } = useLandingContent(lang)
-  return <LandingSurface>
-    <LandingHeader text={text} lang={lang} setLang={setLang} homeSections />
-    <main id="contenido" tabIndex={-1}><LandingPlans text={text} fullPage /></main>
-    <footer className="landing-pricing-footer"><p>{text('landing.pricing.notice')}</p></footer>
-  </LandingSurface>
+  return <PublicFrame migrated>
+    <LandingPlans text={text} fullPage />
+    <p className="pp-notice">{text('landing.pricing.notice')}</p>
+  </PublicFrame>
 }

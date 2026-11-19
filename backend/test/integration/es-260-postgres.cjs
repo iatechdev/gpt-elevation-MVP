@@ -105,4 +105,26 @@ test('ES-260 PostgreSQL: skillLabels del catálogo de rutas desde el catálogo d
     assert.deepEqual(Object.keys(whole.skillLabels).sort(), [kept, ...rest].sort());
     assert.equal(await RouteCatalog.count({ where: { status: 'published' } }), 1);
   });
+  // ES-271: skillLabels es decorativo; si su lectura falla (tabla ausente), el catálogo se sirve igual con skillLabels:{} y las demás partes idénticas.
+  for (const table of ['SkillDefinitions', 'SkillCatalogs']) await t.test(`ES-271: con la tabla ${table} ausente, GET /api/route-catalog y /roles/:roleKey responden 200 con skillLabels:{} y el resto igual; se registra solo el nombre del error`, async () => {
+    const base = `http://127.0.0.1:${server.address().port}/api/route-catalog`;
+    const roleKey = 'formador_corporativo';
+    const healthy = await (await fetch(base)).json(); const healthyRole = await (await fetch(`${base}/roles/${roleKey}`)).json();
+    assert.ok(Object.keys(healthy.skillLabels).length > 0, 'con la consulta sana hay etiquetas (payload de hoy)');
+    await sequelize.query(`ALTER TABLE "${table}" RENAME TO "${table}_ausente"`);
+    const logged = []; const original = console.error; console.error = (...args) => { logged.push(args.map(String).join(' ')); };
+    try {
+      const whole = await fetch(base); const role = await fetch(`${base}/roles/${roleKey}`);
+      assert.equal(whole.status, 200); assert.equal(role.status, 200);
+      const [wholeBody, roleBody] = [await whole.json(), await role.json()];
+      assert.deepEqual(wholeBody.skillLabels, {}); assert.deepEqual(roleBody.skillLabels, {});
+      const { skillLabels: a, ...restWhole } = wholeBody; const { skillLabels: b, ...restHealthy } = healthy; void a; void b;
+      assert.deepEqual(restWhole, restHealthy, 'el resto del catálogo no cambia');
+      const { skillLabels: c, ...restRole } = roleBody; const { skillLabels: d, ...restHealthyRole } = healthyRole; void c; void d;
+      assert.deepEqual(restRole, restHealthyRole);
+    } finally { console.error = original; await sequelize.query(`ALTER TABLE "${table}_ausente" RENAME TO "${table}"`); }
+    assert.ok(logged.length >= 2 && logged.every((line) => /Etiquetas de habilidades no disponibles/.test(line) && !/relation|SELECT|Skill(Definitions|Catalogs)/.test(line)), `se registra solo el nombre del error: ${logged.join(' | ')}`);
+    assert.deepEqual((await (await fetch(base)).json()).skillLabels, healthy.skillLabels, 'restaurada la tabla, vuelve el payload de siempre');
+  });
+
 });

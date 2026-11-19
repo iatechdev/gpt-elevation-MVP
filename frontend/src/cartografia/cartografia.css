@@ -151,6 +151,7 @@
 
 /* diálogo modal (<dialog> nativo con showModal: foco atrapado, Escape, aria-modal) */
 .cg-dialog { background: var(--cg-panel); color: var(--cg-ink); border: 2px solid var(--cg-ink); padding: 1.3rem 1.4rem; max-width: min(30rem, calc(100vw - 2rem)); width: 100%; font: inherit; }
+.cg-dialog[data-wide] { max-width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow-y: auto; } /* ES-315: formularios largos (variante ancha) */
 .cg-dialog::backdrop { background: rgb(14 22 19 / 0.6); }
 .cg-dialog__actions { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: flex-end; margin-top: 1.2rem; }
 

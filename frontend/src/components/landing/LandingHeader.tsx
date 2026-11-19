@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import type { Lang } from '../../i18n/context'
 
 // ES-67 (H-67-05): nombre de cada idioma en su propio idioma; no se traduce, así que no va al catálogo.
+// ES-290 (WCAG 2.5.3): el nombre accesible empieza por el texto visible del botón («ES — Español»), tomado del catálogo.
 const LANGUAGE_NAMES = { es: 'Español', en: 'English' } as const
 
 // ES-68/70 activate only the sections that now exist; other phase 2 anchors stay hidden.
@@ -44,7 +45,7 @@ export function LandingHeader({ text, lang, setLang, homeSections = false, showP
             <div className="elv-join" role="group" aria-label={text('landing.header.language')}>
               {(['es', 'en'] as const).map(code => (
                 <button key={code} type="button" lang={code} aria-pressed={lang === code}
-                  aria-label={LANGUAGE_NAMES[code]}
+                  aria-label={`${text(`landing.header.${code}`)} — ${LANGUAGE_NAMES[code]}`}
                   className="elv-btn elv-join-item landing-lang" onClick={() => setLang(code)}>
                   {text(`landing.header.${code}`)}
                 </button>
