@@ -1,19 +1,21 @@
 // ES-95: formulario público de solicitud para profesionales de psicología. Sin sesión, sin cuenta y sin guardar nada en el navegador.
+// ES-328 (PR 2): en el marco público de Cartografía (cabecera, idioma, tema y pie los pone el marco) con las piezas del sistema; mismos textos, validación y envío.
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
+import { Button, CheckField, TextAreaField, TextField } from '../cartografia'
+import { PublicFrame } from '../shell/frames'
 import { copy } from './copy'
 import { buildForm, submitApplication } from './api'
 import { EMPTY, LIMITS, fileProblem, validate } from './validation'
 import type { FieldKey, Values } from './validation'
-import '../space/space.css'
-import './professional.css'
+import './applicationCartografia.css'
 
 type Phase = 'idle' | 'sending' | 'success' | 'network' | 'rate' | 'server' | 'closed'
 
 export function ProfessionalApplicationPage() {
-  const { lang, setLang } = useLanguage()
+  const { lang } = useLanguage()
   const c = copy[lang]
   const [values, setValues] = useState<Values>(EMPTY)
   const [file, setFile] = useState<File | null>(null)
@@ -55,74 +57,66 @@ export function ProfessionalApplicationPage() {
     setPhase(result.status === 'rate_limited' ? 'rate' : result.status === 'closed' ? 'closed' : result.status === 'server' ? 'server' : 'network')
   }
 
-  const text = (key: keyof Values, label: string, opts: { required?: boolean; help?: string; type?: string; multiline?: boolean } = {}) => {
-    const id = `pro-${key}`; const bad = has(key)
+  // Campo de texto con etiqueta visible «· obligatorio/opcional», ayuda y error por campo (aria-invalid y aria-describedby los pone TextField/TextAreaField).
+  const field = (key: keyof Values, label: string, opts: { required?: boolean; help?: string; type?: string; multiline?: boolean } = {}) => {
     const common = {
-      id, name: key, value: values[key], maxLength: LIMITS[key], 'aria-invalid': bad || undefined,
-      'aria-describedby': [opts.help ? `${id}-help` : '', bad ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined,
-      onChange: (e: { target: { value: string } }) => set(key)(e.target.value), disabled: phase === 'sending',
+      id: `pro-${key}`, name: key, label: `${label} · ${opts.required ? c.required : c.optional}`, value: values[key], maxLength: LIMITS[key],
+      hint: opts.help, error: has(key) ? messageFor(key) : undefined, disabled: phase === 'sending',
+      onChange: (e: { target: { value: string } }) => set(key)(e.target.value),
     }
-    return <div className="pro-field">
-      <label htmlFor={id}>{label} · {opts.required ? c.required : c.optional}</label>
-      {opts.multiline ? <textarea className="elv-textarea" rows={4} {...common} /> : <input className="elv-input" type={opts.type ?? 'text'} autoComplete="off" {...common} />}
-      {opts.help && <small id={`${id}-help`}>{opts.help}</small>}
-      {bad && <span id={`${id}-error`} className="pro-error">{messageFor(key)}</span>}
-    </div>
+    return opts.multiline ? <TextAreaField rows={4} {...common} /> : <TextField type={opts.type ?? 'text'} autoComplete="off" {...common} />
   }
 
   const banner = phase === 'network' ? c.networkError : phase === 'rate' ? c.rateLimited : phase === 'closed' ? c.closed : phase === 'server' ? c.serverError : errors.length ? c.invalidSummary : ''
 
-  return <div className="space-scope space-page pro-page">
-    <a className="space-skip space-scope" href="#pro-main">{c.skip}</a>
-    <header>
-      <Link className="elv-link" to="/">{c.home}</Link>
-      <div role="group" aria-label={c.language} className="pro-lang">
-        {(['es', 'en'] as const).map(l => <button key={l} type="button" className="elv-btn" aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>)}
-      </div>
-    </header>
-    <main id="pro-main" tabIndex={-1}>
+  return <PublicFrame migrated>
+    <div className="pa">
       {phase === 'success'
-        ? <section className="space-card" aria-labelledby="pro-title">
-          <h1 id="pro-title" ref={title} tabIndex={-1}>{c.successTitle}</h1>
-          <p role="status">{c.successBody}</p>
-          <Link className="elv-btn" to="/">{c.home}</Link>
+        ? <section className="pa-success" aria-labelledby="pro-title">
+          <div className="cg-card">
+            <h1 id="pro-title" ref={title} tabIndex={-1}>{c.successTitle}</h1>
+            <p role="status">{c.successBody}</p>
+            <Link className="cg-btn" to="/">{c.home}</Link>
+          </div>
         </section>
-        : <section className="space-card" aria-labelledby="pro-title">
-          <h1 id="pro-title">{c.title}</h1>
-          <p>{c.intro}</p>
-          <form onSubmit={onSubmit} noValidate aria-describedby={banner ? 'pro-banner' : undefined}>
-            {banner && <p id="pro-banner" role="alert" className="pro-error">{banner}</p>}
-            <div className="pro-grid">
-              {text('name', c.name, { required: true })}
-              {text('email', c.email, { required: true, type: 'email' })}
-              {text('country', c.country, { required: true })}
-              {text('profession', c.profession, { required: true })}
-            </div>
-            {text('licenseNumber', c.license, { help: c.licenseHelp })}
-            {text('profileUrl', c.profile, { help: c.profileHelp, type: 'url' })}
-            {text('message', c.message, { help: c.messageHelp, multiline: true })}
-            <div className="pro-field">
-              <label htmlFor="pro-cv">{c.cv} · {c.required}</label>
-              <input id="pro-cv" ref={fileInput} type="file" accept="application/pdf,.pdf" disabled={phase === 'sending'} aria-invalid={has('cv') || undefined}
-                aria-describedby={`pro-cv-help${has('cv') ? ' pro-cv-error' : ''}`}
-                onChange={e => { reopen(); setFile(e.target.files?.[0] ?? null); setErrors(current => current.filter(k => k !== 'cv')) }} />
-              <small id="pro-cv-help">{c.cvHelp}</small>
-              {file && <p className="pro-file" role="status">{c.cvChosen}: {file.name} ({Math.max(1, Math.round(file.size / 1024))} KB){' '}
-                <button type="button" className="elv-btn" onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}>{c.cvRemove}</button></p>}
-              {has('cv') && <span id="pro-cv-error" className="pro-error">{cvMessage}</span>}
-            </div>
-            <div className="pro-field pro-consent">
-              <label><input id="pro-consent" type="checkbox" className="elv-checkbox" checked={consent} disabled={phase === 'sending'} aria-invalid={has('consent') || undefined}
-                aria-describedby={has('consent') ? 'pro-consent-error' : undefined} onChange={e => { reopen(); setConsent(e.target.checked) }} /> {c.consent}</label>
-              {has('consent') && <span id="pro-consent-error" className="pro-error">{c.consentRequired}</span>}
-            </div>
-            <div className="pro-trap" aria-hidden="true"><label>Leave empty<input tabIndex={-1} autoComplete="off" name="bot_trap" value={trap} onChange={e => setTrap(e.target.value)} /></label></div>
-            <div className="space-actions">
-              <button type="submit" className="elv-btn elv-btn-primary" disabled={phase === 'sending' || phase === 'closed'}>{phase === 'sending' ? c.sending : c.submit}</button>
-            </div>
-            <p className="space-note">{c.notice}</p>
-          </form>
+        : <section aria-labelledby="pro-title">
+          <div className="cg-card">
+            <h1 id="pro-title">{c.title}</h1>
+            <p>{c.intro}</p>
+            <form onSubmit={onSubmit} noValidate aria-describedby={banner ? 'pro-banner' : undefined}>
+              {banner && <div id="pro-banner" role="alert" className="cg-banner cg-banner--error"><span className="cg-banner__title">{banner}</span></div>}
+              <div className="pa-pair">
+                {field('name', c.name, { required: true })}
+                {field('email', c.email, { required: true, type: 'email' })}
+                {field('country', c.country, { required: true })}
+                {field('profession', c.profession, { required: true })}
+              </div>
+              {field('licenseNumber', c.license, { help: c.licenseHelp })}
+              {field('profileUrl', c.profile, { help: c.profileHelp, type: 'url' })}
+              {field('message', c.message, { help: c.messageHelp, multiline: true })}
+              <div className="cg-field">
+                <label className="cg-label" htmlFor="pro-cv">{c.cv} · {c.required}</label>
+                <input id="pro-cv" ref={fileInput} className="cg-input" type="file" accept="application/pdf,.pdf" disabled={phase === 'sending'} aria-invalid={has('cv') || undefined}
+                  aria-describedby={`pro-cv-help${has('cv') ? ' pro-cv-error' : ''}`}
+                  onChange={e => { reopen(); setFile(e.target.files?.[0] ?? null); setErrors(current => current.filter(k => k !== 'cv')) }} />
+                <p className="cg-hint" id="pro-cv-help">{c.cvHelp}</p>
+                {file && <p className="pa-file" role="status">{c.cvChosen}: {file.name} ({Math.max(1, Math.round(file.size / 1024))} KB){' '}
+                  <Button variant="ghost" onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}>{c.cvRemove}</Button></p>}
+                {has('cv') && <p id="pro-cv-error" className="cg-error">{cvMessage}</p>}
+              </div>
+              <div className="cg-field">
+                <CheckField id="pro-consent" checked={consent} disabled={phase === 'sending'} aria-invalid={has('consent') || undefined}
+                  aria-describedby={has('consent') ? 'pro-consent-error' : undefined} onChange={e => { reopen(); setConsent(e.target.checked) }} label={c.consent} />
+                {has('consent') && <p id="pro-consent-error" className="cg-error">{c.consentRequired}</p>}
+              </div>
+              <div className="pa-trap" aria-hidden="true"><label>Leave empty<input tabIndex={-1} autoComplete="off" name="bot_trap" value={trap} onChange={e => setTrap(e.target.value)} /></label></div>
+              <div className="pa-actions">
+                <Button type="submit" disabled={phase === 'sending' || phase === 'closed'} aria-busy={phase === 'sending' || undefined}>{phase === 'sending' ? c.sending : c.submit}</Button>
+              </div>
+              <p className="pa-notice">{c.notice}</p>
+            </form>
+          </div>
         </section>}
-    </main>
-  </div>
+    </div>
+  </PublicFrame>
 }

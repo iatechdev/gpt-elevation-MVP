@@ -1,0 +1,18 @@
+/* ES-328 (PR 2): /profesionales en Cartografía. Solo tokens --cg-*; sin colores fijos. Sustituye a professional.css (ES-95). */
+.pa { max-width: 46rem; margin-inline: auto; padding: 1.5rem 0 2.5rem; min-width: 0; }
+.pa .cg-card { padding: 1.25rem 1.1rem; }
+.pa h1 { margin: 0 0 .5rem; font: 700 clamp(1.9rem, 5vw, 2.6rem)/1.05 var(--cg-font-cond); letter-spacing: .02em; text-transform: uppercase; color: var(--cg-ink); overflow-wrap: anywhere; }
+.pa h1:focus { outline: none; }
+.pa p { overflow-wrap: anywhere; }
+.pa-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 1rem; }
+@media (min-width: 640px) { .pa-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pa .cg-input, .pa .cg-textarea { width: 100%; max-width: 100%; box-sizing: border-box; }
+.pa input[type='file'].cg-input { display: block; min-height: var(--cg-touch); padding: .5rem; }
+.pa-file { margin: .3rem 0 0; font-size: .9rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.pa .cg-banner { margin: 0 0 .5rem; }
+.pa-actions { margin-top: 1.25rem; }
+.pa-actions .cg-btn { width: 100%; }
+.pa-notice { margin: 1rem 0 0; color: var(--cg-muted); font-size: .9rem; }
+.pa-success a.cg-btn { display: inline-flex; align-items: center; justify-content: center; margin-top: .5rem; text-decoration: none; }
+/* Campo trampa contra bots: fuera de la vista y del orden de tabulación, no visible. */
+.pa-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
