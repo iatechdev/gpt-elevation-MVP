@@ -11,7 +11,8 @@
 // Cada miembro de la clase entra en la tabla SOLO si:
 //   1. es un único carácter y una LETRA (\p{L}) de una de estas escrituras: latina (fuera de ASCII y Latin-1), griega, cirílica, armenia, cherokee o lisu — nada de símbolos, CJK, emojis ni cifras de otras escrituras;
 //   2. no es ASCII ni de Latin-1 ni lleva acento (los acentos ya se pliegan con NFD): ñ, á, ü… NUNCA se reasignan;
-//   3. ya está en minúsculas y es estable bajo NFKC + minúsculas (si no, NFKC/minúsculas ya lo cubren o la clave nunca se usaría);
+//   3. si NO es estable bajo NFKC + minúsculas, se mira en qué queda: (a) en una letra a-z o en un carácter que la tabla ya manda a esa letra → ya cubierto, no entra; (b) en un carácter que se manda a OTRA letra → conflicto, no entra
+//      (se cuenta); (c) en un carácter que ninguna tabla mapea (p. ej. «Μ» griega → «μ», «ϲ» → «ς», cherokee mayúscula) → entra en la tabla PREVIA (confusables-pre.js), que se aplica ANTES de NFKC y de las minúsculas;
 //   4. no está ya en la tabla MANUAL (que se conserva tal cual y manda).
 // Quedan fuera los mapeos de varias letras («rn» → m) y todo lo que no cumpla lo anterior; el generador cuenta cada motivo.
 // Uso: node scripts/gen-confusables.cjs [--check]   (--check no escribe: falla si el archivo generado difiere de lo que saldría de la fuente)
@@ -20,6 +21,7 @@ const MANUAL = require('../utils/homoglyphs-manual.js');
 
 const SOURCE = path.join(__dirname, '..', 'data', 'unicode', 'confusables.txt');
 const OUT = path.join(__dirname, '..', 'utils', 'confusables-table.js');
+const OUT_PRE = path.join(__dirname, '..', 'utils', 'confusables-pre.js');
 const SCRIPTS = /^[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{Script=Armenian}\p{Script=Cherokee}\p{Script=Lisu}]$/u;
 
 // Versalitas latinas (nombre Unicode «LATIN LETTER SMALL CAPITAL X»): UTS #39 solo lista algunas (ᴍ, ʙ, ʜ, ɪ…), no ɴ ni ᴇ. Se completan aquí, a mano y SOLO estas 24, porque cada una es la letra
@@ -40,7 +42,8 @@ function parse(text) {
 function build(text) {
   const header = text.split('\n').slice(0, 12).join('\n');
   const version = (header.match(/# Version: ([\d.]+)/) || [])[1] || 'desconocida'; const date = (header.match(/# Date: ([^\n]+)/) || [])[1] || 'desconocida';
-  const excluded = { multiChar: 0, classNoLetter: 0, classAmbiguous: 0, notLetterOrScript: 0, asciiOrLatin1: 0, accented: 0, unstable: 0, manual: 0 };
+  const excluded = { multiChar: 0, classNoLetter: 0, classAmbiguous: 0, notLetterOrScript: 0, asciiOrLatin1: 0, accented: 0, coveredByNfkc: 0, ambiguousIl: 0, unstableMulti: 0, manual: 0 };
+  const deferred = []; // inestables bajo NFKC+minúsculas: se resuelven cuando la tabla ya está completa
   const classes = new Map(); // destino (cadena) → miembros (caracteres)
   for (const { from, to } of parse(text)) {
     if (from.length !== 1 || to.length !== 1) { excluded.multiChar++; continue; }
@@ -63,8 +66,8 @@ function build(text) {
       if (cp <= 0xFF) { excluded.asciiOrLatin1++; continue; }
       if (!/^\p{L}$/u.test(source) || !SCRIPTS.test(source)) { excluded.notLetterOrScript++; continue; }
       if (source.normalize('NFD') !== source) { excluded.accented++; continue; }
-      if (source.normalize('NFKC').toLowerCase() !== source) { excluded.unstable++; continue; }
       if (MANUAL[source]) { excluded.manual++; continue; }
+      if (source.normalize('NFKC').toLowerCase() !== source) { deferred.push([source, letter]); continue; }
       if (table[source] !== undefined && table[source] !== letter) throw new Error('destino ambiguo para U+' + cp.toString(16));
       table[source] = letter;
     }
@@ -74,7 +77,18 @@ function build(text) {
     if (table[source] !== undefined && table[source] !== letter) throw new Error('versalita en conflicto con UTS #39: U+' + source.codePointAt(0).toString(16));
     table[source] = letter;
   }
-  return { table, version, date, excluded, ambiguous };
+  const pre = {};
+  for (const [source, letter] of deferred) {
+    const n = source.normalize('NFKC').toLowerCase();
+    if ([...n].length !== 1) { excluded.unstableMulti++; continue; }
+    if (/^[a-z]$/.test(n)) { excluded.coveredByNfkc++; continue; }
+    const mapped = MANUAL[n] !== undefined ? MANUAL[n] : table[n];
+    if (mapped === letter) { excluded.coveredByNfkc++; continue; }
+    // «Ι» (iota mayúscula), «І», «Ɩ», «Ɪ»: UTS #39 los une con «l» (la I mayúscula se parece a la ele), pero su minúscula ya se lee «i» y así se escribe casi toda palabra de crisis: se queda en «i», no se pasa a «l».
+    if (mapped === 'i' && letter === 'l') { excluded.ambiguousIl++; continue; }
+    pre[source] = letter; // otro conflicto («Ν» → n pero «ν» → v; «Υ» → y pero «υ» → u; «Ϲ» → c pero «σ» → o): la mayúscula se parece a OTRA letra que su minúscula; manda lo que se ve, ANTES de las minúsculas
+  }
+  return { table, pre, version, date, excluded, ambiguous };
 }
 
 function render(result, sha) {
@@ -90,14 +104,27 @@ ${body}
 `;
 }
 
+function renderPre(result, sha) {
+  const keys = Object.keys(result.pre).sort((a, b) => a.codePointAt(0) - b.codePointAt(0));
+  const body = keys.map((k) => `  '\\u{${k.codePointAt(0).toString(16)}}': '${result.pre[k]}',`).join('\n');
+  return `// GENERADO por backend/scripts/gen-confusables.cjs — NO editar a mano (la prueba es-312 regenera la tabla y la compara byte a byte).
+// Fuente: backend/data/unicode/confusables.txt (UTS #39, versión ${result.version}, fecha ${result.date}), sha256 ${sha}.
+// ${keys.length} entradas PREVIAS: letras que NFKC o las minúsculas cambian a un carácter que ninguna tabla mapea («Μ» griega → «μ», «ϲ» → «ς», cherokee mayúscula…). Se aplican ANTES de NFKC y de las minúsculas
+// (y otra vez tras NFKC, antes de las minúsculas) para que «ΜATARME» o «SUIϹIDIO» se lean como la letra latina que representan. Misma regla de acotación que confusables-table.js.
+module.exports = Object.freeze({
+${body}
+});
+`;
+}
+
 if (require.main === module) {
   const buffer = fs.readFileSync(SOURCE); const sha = crypto.createHash('sha256').update(buffer).digest('hex');
-  const result = build(buffer.toString('utf8')); const out = render(result, sha);
+  const result = build(buffer.toString('utf8')); const out = render(result, sha); const outPre = renderPre(result, sha);
   if (process.argv.includes('--check')) {
-    if (fs.readFileSync(OUT, 'utf8') !== out) { console.error('confusables-table.js NO coincide con lo que genera la fuente: regenera con `node scripts/gen-confusables.cjs`'); process.exit(1); }
+    if (fs.readFileSync(OUT, 'utf8') !== out || fs.readFileSync(OUT_PRE, 'utf8') !== outPre) { console.error('confusables-table.js NO coincide con lo que genera la fuente: regenera con `node scripts/gen-confusables.cjs`'); process.exit(1); }
     console.log('confusables-table.js coincide con la fuente (' + Object.keys(result.table).length + ' entradas)');
   } else {
-    fs.writeFileSync(OUT, out); console.log(`escrito ${path.relative(process.cwd(), OUT)}: ${Object.keys(result.table).length} entradas (UTS #39 ${result.version}); excluidos:`, JSON.stringify(result.excluded), 'clases ambiguas:', JSON.stringify(result.ambiguous));
+    fs.writeFileSync(OUT, out); fs.writeFileSync(OUT_PRE, outPre); console.log(`escrito ${path.relative(process.cwd(), OUT)} (${Object.keys(result.table).length} entradas) y ${path.relative(process.cwd(), OUT_PRE)} (${Object.keys(result.pre).length} previas)`); console.log(`(UTS #39 ${result.version} (UTS #39 ${result.version}); excluidos:`, JSON.stringify(result.excluded), 'clases ambiguas:', JSON.stringify(result.ambiguous));
   }
 }
-module.exports = { SMALL_CAPITALS, build, render, parse, SOURCE, OUT, SCRIPTS };
+module.exports = { SMALL_CAPITALS, build, render, renderPre, OUT_PRE, parse, SOURCE, OUT, SCRIPTS };

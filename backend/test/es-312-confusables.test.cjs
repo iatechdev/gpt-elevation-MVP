@@ -8,6 +8,7 @@ const crypto = require('node:crypto');
 const { detectRisk, _steps } = require('../utils/safety');
 const table = require('../utils/confusables-table.js');
 const manual = require('../utils/homoglyphs-manual.js');
+const pre = require('../utils/confusables-pre.js');
 const generator = require('../scripts/gen-confusables.cjs');
 
 const root = path.join(__dirname, '..');
@@ -40,6 +41,7 @@ test('ES-312 tabla generada = script: regenerar desde data/unicode/confusables.t
   const buffer = fs.readFileSync(generator.SOURCE); const sha = crypto.createHash('sha256').update(buffer).digest('hex');
   const result = generator.build(buffer.toString('utf8')); const regenerated = generator.render(result, sha);
   assert.equal(fs.readFileSync(generator.OUT, 'utf8'), regenerated, 'confusables-table.js se editó a mano o la fuente cambió: regenera con `node scripts/gen-confusables.cjs`');
+  assert.equal(fs.readFileSync(generator.OUT_PRE, 'utf8'), generator.renderPre(result, sha), 'confusables-pre.js se editó a mano o la fuente cambió: regenera con `node scripts/gen-confusables.cjs`');
   assert.match(regenerated, new RegExp('versión ' + result.version.replace(/\./g, '\\.'))); assert.ok(sha.length === 64 && regenerated.includes(sha));
   assert.match(result.version, /^\d+\.\d+/); assert.deepEqual(result.ambiguous, [], 'ninguna clase con letras distintas');
   assert.equal(Object.keys(result.table).length, keys.length);
@@ -47,7 +49,7 @@ test('ES-312 tabla generada = script: regenerar desde data/unicode/confusables.t
 });
 
 test('ES-312 sin red en ejecución: ni el detector ni la tabla ni el generador descargan nada; ningún script de instalación lo ejecuta', () => {
-  for (const file of ['utils/safety.js', 'utils/confusables-table.js', 'utils/homoglyphs-manual.js', 'scripts/gen-confusables.cjs']) {
+  for (const file of ['utils/safety.js', 'utils/confusables-pre.js', 'utils/confusables-table.js', 'utils/homoglyphs-manual.js', 'scripts/gen-confusables.cjs']) {
     const code = read(file).split('\n').filter((line) => !/^\s*\/\//.test(line)).join('\n'); // los comentarios pueden nombrar la URL de la fuente
     assert.doesNotMatch(code, /require\(['"](node:)?(https?|net|tls|dns)['"]\)|\bfetch\(|XMLHttpRequest|axios|got\(/, file + ' usa la red');
   }
@@ -216,4 +218,53 @@ test('ES-312 regresión (QA): textos SIN ninguna letra de la tabla nueva dan exa
   const newKeys = new RegExp('[' + keys.join('') + ']', 'u'); let withNew = 0;
   for (const text of sample) { const before = legacyLevel(text); const after = detectRisk(text); assert.deepEqual(after, before, text); if (newKeys.test(text)) withNew++; }
   assert.equal(withNew, 0, 'la muestra no contiene letras de la tabla nueva (sería otra prueba)');
+});
+
+// ── E312-2 · Mayúsculas y letras que NFKC / las minúsculas cambian a un carácter que ninguna tabla mapea (tabla PREVIA) ─────────────────────────────────────────────────────────────────────────────
+const preKeys = Object.keys(pre);
+
+test('ES-312 tabla previa acotada: cada clave es UNA letra de escritura permitida cuyo NFKC+minúsculas NO es una letra a-z ni algo que ya se lea igual; destino a-z; sin ASCII/Latin-1/acentuadas/manual', () => {
+  assert.ok(preKeys.length >= 30, 'entradas previas: ' + preKeys.length); const bad = [];
+  for (const key of preKeys) {
+    const cp = key.codePointAt(0); const n = key.normalize('NFKC').toLowerCase(); const why = [];
+    if ([...key].length !== 1 || !/^\p{L}$/u.test(key)) why.push('no es una letra');
+    if (!/^[a-z]$/.test(pre[key])) why.push('destino fuera de a-z');
+    if (cp <= 0xFF || key.normalize('NFD') !== key) why.push('ASCII, Latin-1 o acentuada');
+    if (Object.prototype.hasOwnProperty.call(manual, key) || Object.prototype.hasOwnProperty.call(table, key)) why.push('ya está en otra tabla');
+    if (n === key) why.push('es estable: iría en la tabla normal');
+    if (/^[a-z]$/.test(n)) why.push('NFKC+minúsculas ya la dejan en una letra a-z');
+    if (!/^[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{Script=Armenian}\p{Script=Cherokee}\p{Script=Lisu}]$/u.test(key)) why.push('escritura no permitida');
+    if (why.length) bad.push('U+' + cp.toString(16) + ' ' + why.join(', '));
+  }
+  assert.deepEqual(bad, []); assert.equal(Object.isFrozen(pre), true);
+  for (const c of ['\u0399', '\u0406', '\u0196', '\ua7ae']) assert.equal(Object.prototype.hasOwnProperty.call(pre, c), false, 'I mayúscula ambigua (i/l) se queda en i: U+' + c.codePointAt(0).toString(16));
+});
+
+test('ES-312 QA E312-2: las 32 letras que el generador antes excluía como «inestables» ya se recuperan («voy a ΜATARME», «SUIϹIDIO», Η Β Ζ Χ griegas mayúsculas, ϲ/Ϲ, cherokee mayúscula)', () => {
+  for (const phrase of ['voy a \u039cATARME', 'SUI\u03f9IDIO', 'SUI\u03f2IDIO', 'QUIERO \u039cORIR', '\u0392ETTER OFF DEAD', 'I WANT TO KILL MYSELF'.replace('K', '\u039a'), 'NO QUIERO VIVIR'.replace('N', '\u039d'), '\u03a5O QUIERO MORIR', 'I WANT TO DIE'.replace('D', '\u13a0'), 'BETTER OFF DEAD'.replace('D', '\u13a0'), 'QUIERO MORIR'.replace('A', '\u13aa').replace('R', '\u13a1')]) {
+    assert.equal(detectRisk(phrase).level, 'high', phrase);
+  }
+  for (const key of preKeys) assert.equal(_steps.unmask(key), pre[key], 'unmask U+' + key.codePointAt(0).toString(16));
+  assert.ok(preKeys.length >= 32);
+});
+
+test('ES-312 tabla previa: cobertura de punta a punta por clave (en la frase de crisis y en mayúsculas) y matriz «ninguna bajada frente a main» también con estas letras', () => {
+  let endToEnd = 0;
+  for (const key of preKeys) {
+    const letter = pre[key]; const phrase = CRISIS.find((c) => c.includes(letter)); if (!phrase) continue; const at = phrase.indexOf(letter);
+    const text = phrase.slice(0, at) + key + phrase.slice(at + 1); const upper = phrase.toUpperCase().replace(letter.toUpperCase(), key);
+    assert.equal(detectRisk(text).level, 'high', 'U+' + key.codePointAt(0).toString(16) + ' en «' + text + '»'); assert.equal(detectRisk(upper).level, 'high', 'en mayúsculas «' + upper + '»'); endToEnd++;
+  }
+  assert.ok(endToEnd >= 20, 'claves probadas de punta a punta: ' + endToEnd);
+  const dropped = []; let checked = 0;
+  for (const phrase of CRISIS) for (const key of preKeys) for (const text of [phrase.replace(/ /g, key), phrase.replace(/ /g, ' ' + key + ' '), key + ' ' + phrase, phrase + ' ' + key]) { checked++; if (RANK[detectRisk(text).level] < RANK[legacyLevel(text).level]) dropped.push(text); }
+  assert.ok(checked >= 1500, 'combinaciones: ' + checked); assert.deepEqual(dropped.slice(0, 5), [], 'bajadas: ' + dropped.length);
+});
+
+test('ES-312 falsos positivos con la tabla previa: texto natural griego/cherokee en mayúsculas y las frases benignas con cada letra previa añadida o sustituyendo su letra no cambian de nivel', () => {
+  const natural = ['ΜΑΡΙΑ ΠΑΠΑΔΟΠΟΥΛΟΥ', 'ΒΑΣΙΛΗΣ ΖΗΣΗΣ ΧΡΗΣΤΟΣ', 'ΗΜΕΡΑ ΜΑΙΟΥ', 'ΧΡΟΝΙΑ ΠΟΛΛΑ', 'ΖΩΗ ΚΑΙ ΥΓΕΙΑ', 'ΝΕΑ ΥΟΡΚΗ', 'ΜΟΥΣΙΚΗ ΒΙΒΛΙΟΘΗΚΗ', 'ᏣᎳᎩ ᎠᏂᏴᏫᏯ', 'ᎠᏎᎸ ᎢᏳᎾᏛᏁᏗ', 'ΒΗΤΑ ΖΗΤΑ ΧΙ ΜΥ ΗΤΑ'];
+  const changed = [];
+  for (const text of natural) for (const carrier of ['', 'Hola, quiero hablar de mi carrera. ', 'My plan: ']) if (detectRisk(carrier + text).level !== detectRisk(carrier).level) changed.push(carrier + text);
+  for (const phrase of BENIGN) { const baseline = detectRisk(phrase).level; for (const key of preKeys) for (const variant of [phrase + ' ' + key, key + ' ' + phrase, ...(phrase.toLowerCase().includes(pre[key]) ? [phrase.slice(0, phrase.toLowerCase().indexOf(pre[key])) + key + phrase.slice(phrase.toLowerCase().indexOf(pre[key]) + 1)] : [])]) if (detectRisk(variant).level !== baseline) changed.push(variant); }
+  assert.deepEqual(changed.slice(0, 5), [], 'cambios de nivel: ' + changed.length);
 });

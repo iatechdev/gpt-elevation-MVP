@@ -39,6 +39,11 @@ const MANUAL_SCAN = scanOf(MANUAL_HOMOGLYPHS);
 const FULL_SCAN = scanOf(HOMOGLYPHS);
 // ¿El texto trae alguna letra de la tabla NUEVA? Solo entonces se evalúa además la forma con la tabla completa.
 const NEW_KEYS = new RegExp(scanOf(TABLE_HOMOGLYPHS).source, 'u');
+// Tabla PREVIA (ES-312): mayúsculas y letras que NFKC o las minúsculas cambian a un carácter que ninguna tabla mapea («Μ» → «μ», «ϲ» → «ς», cherokee…): se leen como la letra latina que representan ANTES de NFKC y de las minúsculas.
+const PRE_HOMOGLYPHS = require('./confusables-pre.js');
+const PRE_SCAN = scanOf(PRE_HOMOGLYPHS); const PRE_TEST = new RegExp(PRE_SCAN.source, 'u');
+const preMap = (text) => text.replace(PRE_SCAN, (c) => PRE_HOMOGLYPHS[c] || c);
+const normalizeFull = (text) => preMap(preMap(String(text)).normalize('NFKC')); // antes de NFKC (para «ϲ») y tras NFKC (para «𝚳» y similares), siempre antes de las minúsculas
 const LEET = { 4: 'a', 3: 'e', 1: 'i', 0: 'o', 5: 's', 7: 't', '@': 'a', $: 's' };
 const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 
@@ -46,7 +51,7 @@ const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 // `filler`: los rellenos que se ven en blanco se quitan (intercalados entre letras) o se toman por ESPACIO (separan palabras): se prueban las dos lecturas.
 const makeUnmask = (table, scan) => (text, filler = '', lowered) => (lowered === undefined ? String(text).normalize('NFKC').toLowerCase() : lowered).replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(scan, (c) => table[c] || c);
 const unmaskManual = makeUnmask(MANUAL_HOMOGLYPHS, MANUAL_SCAN); // exactamente lo que hacía main
-const unmask = makeUnmask(HOMOGLYPHS, FULL_SCAN); // con la tabla completa
+const unmask = ((full) => (text, filler = '', lowered) => full(text, filler, lowered === undefined ? normalizeFull(text).toLowerCase() : lowered))(makeUnmask(HOMOGLYPHS, FULL_SCAN)); // con la tabla completa y la previa
 // Paso 2: una frase escrita SOLO con caracteres de etiqueta (U+E0020–E007E) se decodifica a ASCII.
 const decodeTags = (text) => Array.from(String(text).matchAll(TAG_BLOCK), (m) => String.fromCharCode(m[0].codePointAt(0) - 0xE0000)).join('');
 // Paso 3: «s u i c i d i o» / «s.u.i.c.i.d.i.o» → «suicidio» (cuatro o más letras sueltas separadas).
@@ -89,7 +94,8 @@ function* riskForms(text) {
   const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
   const plain = PLAIN.test(raw); const nfkc = plain ? raw : raw.normalize('NFKC'); const lowered = plain ? raw.toLowerCase() : nfkc.toLowerCase(); // UNA normalización por texto para las dos pasadas
   yield* riskFormsWith(raw, unmaskManual, fresh, nfkc, lowered);
-  if (!plain && NEW_KEYS.test(lowered)) yield* riskFormsWith(raw, unmask, fresh, nfkc, lowered);
+  const hasPre = !plain && (PRE_TEST.test(raw) || PRE_TEST.test(nfkc));
+  if (!plain && (hasPre || NEW_KEYS.test(lowered))) { const nfkcFull = hasPre ? normalizeFull(raw) : nfkc; yield* riskFormsWith(raw, unmask, fresh, nfkcFull, hasPre ? nfkcFull.toLowerCase() : lowered); }
 }
 
 // Patrones sobre texto sin acentos, en minúsculas.
