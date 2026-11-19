@@ -45,6 +45,10 @@ test('ES-349 seguimiento: sin texto crudo del servidor, se relee antes de afirma
   assert.match(page, /<Chip tone="ok" symbol="●">\{t\('board_active_badge'\)\}<\/Chip>\}\s*<strong>\{v\.version\}/, 'el chip ACTIVO va solo con v.isActive')
 })
 
+test('ES-182 (decisión 12079): solo superadmin ve publicar y reactivar; administración solo lee (el servidor sigue siendo la autoridad)', () => {
+  for (const piece of ["const canPublish = (localStorage.getItem('elevation_role') ?? '') === 'superadmin'", '{canPublish && <Button variant="ghost" aria-expanded={showForm}', '{canPublish && showForm && (', '{canPublish && !v.isActive && (', '<Link to="/manifiesto" className="bm-public">']) assert.ok(page.includes(piece), piece) // el enlace público lo ven todos
+})
+
 test('ES-349: los textos del Manifiesto existen en ES y EN, sin emojis', () => {
   const pairs = source => Object.fromEntries([...source.matchAll(/^\s*((?:board_|manifest_view_public)[a-z_]*): '((?:[^'\\]|\\.)*)'/gm)].map(m => [m[1], m[2]]))
   const es = pairs(read('../src/i18n/es.ts')); const en = pairs(read('../src/i18n/en.ts'))

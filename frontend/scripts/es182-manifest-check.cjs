@@ -16,19 +16,19 @@ const versions = () => [
   { id: 1, version: 'v1', isActive: false, note: 'Primera versión (ejemplo)', content: 'Texto de ejemplo de la primera versión.', createdAt: '2026-08-14T15:00:00Z', uploader: { id: 1, name: 'Marta Sintética', email: 'marta@example.invalid' } },
 ]
 
-async function open(browser, { width, lang, scheme, cpu = 1, mode = 'ok', delay = 0, activate = 'ok' }) {
+async function open(browser, { width, lang, scheme, cpu = 1, mode = 'ok', delay = 0, activate = 'ok', role = 'superadmin' }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' })
   const page = await ctx.newPage(); const errors = []; const calls = []
   page.on('pageerror', e => errors.push(e.message))
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()) })
-  await page.addInitScript(l => {
-    localStorage.setItem('elevation_token', 'synthetic-browser-token'); localStorage.setItem('elevation_role', 'superadmin'); localStorage.setItem('elv_lang', l)
+  await page.addInitScript(([l, r]) => {
+    localStorage.setItem('elevation_token', 'synthetic-browser-token'); localStorage.setItem('elevation_role', r); localStorage.setItem('elv_lang', l)
     window.__cls = 0; new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value }).observe({ type: 'layout-shift', buffered: true })
-  }, lang)
+  }, [lang, role])
   let list = versions()
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url()); const p = url.pathname; const method = route.request().method()
-    if (p === '/api/session') return route.fulfill({ json: { role: 'superadmin', onboardingCompleted: true } })
+    if (p === '/api/session') return route.fulfill({ json: { role, onboardingCompleted: true } })
     if (p === '/api/board/manifest') {
       if (delay) await new Promise(done => setTimeout(done, delay))
       if (method === 'GET') return mode === 'error' ? route.fulfill({ status: 500, json: { error: 'Falla sintética' } }) : route.fulfill({ json: mode === 'empty' ? [] : list })
@@ -127,6 +127,15 @@ const smallTargets = page => page.evaluate(() => [...document.querySelectorAll('
     const dateText = await page.locator('.bm-active .cg-hint').first().innerText()
     report(lang === 'en' ? /Oct|October/.test(dateText) && !/oct\b/.test(dateText) : /oct/i.test(dateText), `fecha de la versión activa con el idioma activo: «${dateText.slice(0, 20)}» (${lang})`)
     report(await page.locator('.bm-ver .cg-chip').count() === 1 && await page.locator('.bm-ver:first-child .cg-chip').count() === 1, `chip ACTIVO solo en la versión vigente (${lang})`)
+    await ctx.close()
+  }
+  // ES-182 (decisión 12079): administración solo LEE: ni «Nueva versión» ni «Reactivar»; sí la lista, el contenido y el enlace público.
+  for (const lang of ['es', 'en']) for (const scheme of ['light', 'dark']) {
+    const { ctx, page } = await open(browser, { width: 390, lang, scheme, role: 'admin' })
+    await page.locator('.bm-ver').first().waitFor()
+    report(await page.locator('.bm-bar .cg-btn').count() === 0 && await page.locator('.bm-roll').count() === 0 && await page.locator('#bm-form').count() === 0, `admin: sin «Nueva versión», sin «Reactivar» y sin formulario (${lang} ${scheme})`)
+    report(await page.locator('.bm-active').count() === 1 && await page.locator('.bm-versions .bm-ver').count() === 3 && await page.locator('a.bm-public').count() === 1, `admin: ve la versión activa, el historial y el enlace público (${lang} ${scheme})`)
+    const v = await axe(page); report(v.length === 0, `axe en 0, administración solo lectura (${lang} ${scheme})`, v.join(','))
     await ctx.close()
   }
   for (const scheme of ['light', 'dark']) {
