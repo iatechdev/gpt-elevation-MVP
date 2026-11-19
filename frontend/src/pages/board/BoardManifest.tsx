@@ -38,6 +38,8 @@ export function BoardManifest() {
   const statusRef = useRef<HTMLDivElement>(null)
 
   const token = localStorage.getItem('elevation_token')
+  // ES-182 (decisión 12079): administración y superadmin LEEN el historial; publicar y reactivar es solo de superadmin. El servidor es la autoridad (403): aquí solo se dejan de pintar los controles.
+  const canPublish = (localStorage.getItem('elevation_role') ?? '') === 'superadmin'
 
   const [initialLoadError] = useState(() => t('board_error_load'))
 
@@ -169,14 +171,14 @@ export function BoardManifest() {
       )}
 
       <div className="pg-actions bm-bar">
-        <Button variant="ghost" aria-expanded={showForm} aria-controls="bm-form" onClick={() => setShowForm(f => !f)}>
+        {canPublish && <Button variant="ghost" aria-expanded={showForm} aria-controls="bm-form" onClick={() => setShowForm(f => !f)}>
           {showForm ? t('board_cancel') : t('board_new_version')}
-        </Button>
+        </Button>}
         {/* ES-207 — enlace a la página pública */}
         <Link to="/manifiesto" className="bm-public">{t('manifest_view_public')}</Link>
       </div>
 
-      {showForm && (
+      {canPublish && showForm && (
         <Card as="section" className="pg-card">
           <div id="bm-form">
             <h2 className="bm-h2">{t('board_form_title')}</h2>
@@ -217,7 +219,7 @@ export function BoardManifest() {
                       <span aria-hidden="true">{expandedId === v.id ? '▴' : '▾'}</span>
                     </span>
                   </button>
-                  {!v.isActive && (
+                  {canPublish && !v.isActive && (
                     <div className="pg-actions bm-roll">
                       <Button variant="ghost" disabled={activating !== null} onClick={() => setConfirming(v)}>
                         {activating === v.id ? '...' : t('board_rollback')}
