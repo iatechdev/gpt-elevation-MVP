@@ -39,3 +39,11 @@
 .ac-frow > p, .ac-frow > .ac-pendhead { grid-column: 1 / -1; margin: 0; }
 .ac-frow .cg-field { margin: 0; }
 @media (max-width: 560px) { .ac-frow { grid-template-columns: minmax(0, 1fr); } .ac-fact .cg-btn { width: 100%; } }
+
+/* ES-279: aviso de conflicto de edición simultánea dentro de la fila del texto */
+.ac-conflict { grid-column: 1 / -1; margin-top: .6rem; }
+.ac-conflict__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+.ac-theirs { margin-top: .6rem; padding: .6rem .8rem; border-inline-start: 3px solid var(--cg-line, currentColor); }
+.ac-theirs p { margin: 0 0 .3rem; }
+.ac-theirs__text { white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .ac-conflict__actions .cg-btn { width: 100%; } }

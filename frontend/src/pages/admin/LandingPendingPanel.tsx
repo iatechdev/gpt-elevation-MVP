@@ -4,6 +4,8 @@ import { useAdminText } from '../../i18n/useAdminText'
 import { Button, Chip, TextField } from '../../cartografia'
 import { PENDING_ITEMS, countPending, isPending } from './landingPending'
 import type { Lang } from './landingPending'
+import { LandingConflict } from './LandingConflict'
+import { conflictId, type LandingVersion } from './landingVersions.ts'
 
 type Props = {
   lang: Lang
@@ -12,9 +14,12 @@ type Props = {
   save: (key: string) => void
   saving: string | null
   msgs: Record<string, string>
+  conflicts: Record<string, { current: LandingVersion | null }> // ES-279: conflicto de edición simultánea por texto
+  onKeepMine: (key: string) => void
+  onUseTheirs: (key: string) => void
 }
 
-export function LandingPendingPanel({ lang, content, setValue, save, saving, msgs }: Props) {
+export function LandingPendingPanel({ lang, content, setValue, save, saving, msgs, conflicts, onKeepMine, onUseTheirs }: Props) {
   const tr = useAdminText()
   const { pending, ready } = countPending(content, lang)
   if (pending === 0) return null
@@ -34,8 +39,9 @@ export function LandingPendingPanel({ lang, content, setValue, save, saving, msg
                 <span className="cg-hint" id={`${id}-missing`}>{tr('Falta:')} {item.missing}</span>
                 {isOpen ? <Chip tone="wait">{tr('Pendiente')}</Chip> : <Chip tone="ok" symbol="✓">{tr('Listo')}</Chip>}
               </div>
-              <TextField id={id} label={item.label} aria-describedby={`${id}-missing`} disabled={saving === item.key} value={content[item.key] ?? ''} onChange={e => setValue(item.key, e.target.value)} />
+              <TextField id={id} label={item.label} aria-invalid={conflicts[item.key] ? true : undefined} aria-describedby={conflicts[item.key] ? `${id}-missing ${conflictId(item.key)}` : `${id}-missing`} disabled={saving === item.key} value={content[item.key] ?? ''} onChange={e => setValue(item.key, e.target.value)} />
               <div className="ac-fact"><Button onClick={() => save(item.key)} aria-disabled={saving !== null}>{saving === item.key ? '...' : tr('Guardar')}</Button></div>
+              {conflicts[item.key] && <LandingConflict key={conflicts[item.key].current?.updatedAt ?? 'none'} fieldKey={item.key} current={conflicts[item.key].current} mine={content[item.key] ?? ''} busy={saving !== null} onKeepMine={() => onKeepMine(item.key)} onUseTheirs={() => onUseTheirs(item.key)} />}
               {msgs[item.key] && <p role="status" className={msgs[item.key].startsWith('✓') ? 'cg-hint' : 'cg-error'}>{tr(msgs[item.key])}</p>}
             </li>
           )
