@@ -399,7 +399,6 @@ function PricingTab() {
                 <SelectField id="plan-period" label={tr("Período")} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
                   <option value="month">{tr("Mensual")}</option>
                   <option value="year">{tr("Anual")}</option>
-                  <option value="forever">{tr("Para siempre")}</option>
                 </SelectField>
               </div>
             </fieldset>

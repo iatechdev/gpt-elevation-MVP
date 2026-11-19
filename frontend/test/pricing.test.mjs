@@ -11,8 +11,45 @@ test('ES-73: DECIMAL zero is free, invalid/missing amounts never become zero; ca
   assert.equal(displayPrice(plan, 'es', 'Gratis'), 'Gratis')
   assert.equal(displayPrice({ ...plan, priceCents: 1234 }, 'en', 'Free'), '12.34 USD')
   assert.deepEqual(parsePlans([]), [])
-  for (const values of [[row(), row()], [row({ name_en: '' })], [row({ currency: 'XYZ' })], [row({ period: 'forever' })], [row({ features_es: 'invented' })], [row({ price: null })], {}, null]) assert.throws(() => parsePlans(values))
+  // E366-1: la validación sigue siendo estricta por FILA, pero una fila inválida ya no lanza: se omite (ver abajo). Lo que NO es una lista sigue lanzando.
+  for (const values of [{}, null]) assert.throws(() => parsePlans(values))
+  for (const values of [[row(), row()], [row({ name_en: '' })], [row({ currency: 'XYZ' })], [row({ period: 'forever' })], [row({ features_es: 'invented' })], [row({ price: null })]]) assert.ok(parsePlans(values, () => {}).length < values.length, 'la fila inválida (o repetida) se omite')
   assert.deepEqual(parsePlans([row({ id: 2, order: 2 }), row({ id: 1 })]).map(p => p.id), [1, 2])
+})
+
+// E366-1 (ALTO, QA-Claude-2 sobre #366): un plan inválido o con un período que la pantalla no sabe dibujar (legado, p. ej. `forever`) ya no tumba /pricing para todas las personas: se OMITE
+// (y se registra el id y el motivo, nunca el contenido) y los demás se muestran. Solo sigue siendo error de toda la respuesta lo que no es una lista o trae más de 1000 filas.
+test('E366-1: un plan con período desconocido o legado se omite y los demás se muestran (antes: «No se pudieron cargar los planes» para todo el mundo)', () => {
+  const skipped = []
+  const plans = parsePlans([row({ id: 1, order: 2 }), row({ id: 2, period: 'forever' }), row({ id: 3, order: 1, period: 'year' }), row({ id: 4, period: 'week' }), row({ id: 5, period: 'decada' })], skip => skipped.push(skip))
+  assert.deepEqual(plans.map(p => p.id), [3, 1], 'los válidos, ordenados')
+  assert.deepEqual(skipped.map(s => s.id), [2, 4, 5])
+  assert.ok(skipped.every(s => s.reason === 'período no admitido'), JSON.stringify(skipped))
+})
+
+test('E366-1: cualquier fila inválida se omite por separado (nombre, moneda, precio, forma, id repetido, no objeto) y las buenas siguen', () => {
+  const skipped = []
+  const bad = [row({ id: 10, name_en: '' }), row({ id: 11, currency: 'XYZ' }), row({ id: 12, features_es: 'inventado' }), row({ id: 13, price: null }), row({ id: 14, isHighlighted: 'sí' }), row({ id: 15, order: 1.5 }),
+    row({ id: 7 }), null, 'texto', 42, [], { id: -1 }, { id: 'x' }, row({ id: 17, slug: '' })]
+  const plans = parsePlans([row({ id: 7 }), ...bad], skip => skipped.push(skip))
+  assert.deepEqual(plans.map(p => p.id), [7], 'solo la primera fila con id 7; la repetida y todas las inválidas se omiten')
+  assert.equal(skipped.length, bad.length)
+  assert.ok(skipped.some(s => s.reason === 'id repetido') && skipped.some(s => s.reason === 'moneda no admitida') && skipped.some(s => s.reason === 'precio inválido') && skipped.some(s => s.reason === 'nombre inválido') && skipped.some(s => s.reason === 'no es un objeto'))
+  assert.deepEqual(parsePlans([row({ period: 'forever' })], () => {}), [], 'si TODAS son inválidas queda una lista vacía (la pantalla muestra «sin planes», no el error)')
+})
+
+test('E366-1: lo que sigue siendo error de toda la respuesta: no es una lista o trae más de 1000 filas; y el registro por defecto dice el id y el motivo, nunca el contenido', () => {
+  for (const value of [{}, null, undefined, 'x', 5, { plans: [] }, Array.from({ length: 1001 }, (_, i) => row({ id: i + 1 }))]) assert.throws(() => parsePlans(value), `no es una lista válida: ${typeof value}`)
+  const logged = []; const original = console.warn; console.warn = (...args) => logged.push(args.join(' '))
+  try { parsePlans([row({ id: 99, period: 'forever', name_es: 'NOMBRE-SECRETO-DEL-PLAN' })]) } finally { console.warn = original }
+  assert.equal(logged.length, 1); assert.match(logged[0], /id 99/); assert.match(logged[0], /período no admitido/)
+  assert.ok(!logged[0].includes('NOMBRE-SECRETO-DEL-PLAN'), 'el registro no repite el contenido del plan')
+})
+
+test('E366-1: readPlans con la respuesta REAL del servidor (un plan con «forever» entre planes buenos) devuelve los buenos sin lanzar', async () => {
+  const realFetch = globalThis.fetch; const original = console.warn; console.warn = () => {}
+  globalThis.fetch = async () => new Response(JSON.stringify([row({ id: 1 }), row({ id: 2, period: 'forever' }), row({ id: 3, order: 3, period: 'year' })]), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  try { assert.deepEqual((await readPlans('')).map(p => p.id), [1, 3]) } finally { globalThis.fetch = realFetch; console.warn = original }
 })
 
 test('ES-73: exact public plan intent survives registration/login; arbitrary URLs, duplicates and owners do not', () => {
