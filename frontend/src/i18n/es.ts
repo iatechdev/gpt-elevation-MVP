@@ -379,8 +379,8 @@ const es: Record<string, string> = {
   board_error_min: 'El manifiesto debe tener al menos 50 caracteres.',
   board_error_upload: 'No se pudo publicar el manifiesto.',
   board_error_activate: 'No se pudo reactivar la versión.',
-  board_success_upload: '✅ Manifiesto publicado y activado:',
-  board_success_activate: '✅ Versión reactivada:',
+  board_success_upload: 'Manifiesto publicado y activado:',
+  board_success_activate: 'Versión reactivada:',
 
   // ── ES-207: página pública del manifiesto ──
   manifest_public_title: 'Manifiesto ético',

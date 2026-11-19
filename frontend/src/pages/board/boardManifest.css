@@ -1,0 +1,24 @@
+/* ES-310 (ES-349): Manifiesto ético de Administración en Cartografía. Solo tokens --cg-*; sin colores ni estilos en línea. */
+.bm { min-width: 0; max-width: 56rem; }
+.bm-h2 { font: 700 1.35rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: .03em; margin: 0 0 .6rem; }
+.bm-active { border-left: 6px solid var(--cg-good); }
+.bm-row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin: .2rem 0; }
+.bm-note { font-style: italic; margin: .3rem 0; }
+.bm-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; margin: .6rem 0 0; }
+.bm-active .bm-body { max-height: 12rem; overflow: auto; }
+.bm-body:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.bm-body--open { margin: .2rem 0 .8rem; }
+.bm-bar { margin: 1rem 0; }
+.bm-public { display: inline-flex; align-items: center; min-height: var(--cg-touch); color: var(--cg-ink); text-decoration: underline; text-underline-offset: 3px; }
+.bm-public:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.bm-ok { margin: 0 0 1rem; }
+.bm-ok:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.bm-list { padding: .2rem 1.1rem; }
+.bm-versions { list-style: none; margin: 0; padding: 0; }
+.bm-ver { border-top: 1px solid var(--cg-line); min-width: 0; }
+.bm-ver:first-child { border-top: 0; }
+.bm-ver__head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .6rem 1rem; width: 100%; min-height: var(--cg-touch); padding: .5rem 0; background: none; border: 0; border-radius: 0; color: var(--cg-ink); font: inherit; text-align: left; cursor: pointer; }
+.bm-ver__head:hover { color: var(--cg-mark); }
+.bm-ver__head:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.bm-ver__name, .bm-ver__tail { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; min-width: 0; overflow-wrap: anywhere; }
+.bm-roll { margin: 0 0 .6rem; }
