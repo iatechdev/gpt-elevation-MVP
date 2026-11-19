@@ -379,8 +379,8 @@ const en: Record<string, string> = {
   board_error_min: 'Manifest must be at least 50 characters long.',
   board_error_upload: 'Could not publish manifest.',
   board_error_activate: 'Could not reactivate version.',
-  board_success_upload: '✅ Manifest published and activated:',
-  board_success_activate: '✅ Version reactivated:',
+  board_success_upload: 'Manifest published and activated:',
+  board_success_activate: 'Version reactivated:',
 
   // ── ES-207: public manifesto page ──
   manifest_public_title: 'Ethical manifesto',
