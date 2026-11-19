@@ -361,4 +361,49 @@ test('ES-194 PostgreSQL + HTTP: ejercicios con publicación y revisión del espe
       assert.equal(await COUNT("SELECT count(*)::int AS n FROM \"ExerciseAudits\" WHERE action='create' AND \"exerciseId\" IN (SELECT id FROM \"Exercises\" WHERE key = ANY($1))", [catalog.exercises.map((e) => e.key)]), catalog.exercises.length);
     }
   });
+
+  // ES-194 (runbook de operador, docs/DESPLIEGUE-RAILWAY.md): el recorrido que hace una persona operadora SIN pantalla de administración, paso a paso y con las mismas llamadas:
+  // importar el catálogo → listar → publicar cada ejercicio con su versión → la persona los ve (con la revisión del especialista honestamente «pending») → registrar la revisión → repetir sin duplicar.
+  await t.test('ES-194 runbook: importar → publicar los del catálogo → la persona los ve «pending» → revisión «done»; repetir no duplica; admin no puede', async () => {
+    const keys = catalog.exercises.map((e) => e.key);
+    await q('DELETE FROM "ExerciseAudits" WHERE "exerciseId" IN (SELECT id FROM "Exercises" WHERE key = ANY($1))', [keys]);
+    await q('DELETE FROM "Exercises" WHERE key = ANY($1)', [keys]);
+    assert.equal((await visible()).filter((e) => keys.includes(e.key)).length, 0, 'punto de partida: la persona no ve ninguno');
+    // Paso 1 · importar (siempre como borrador)
+    const imported = await http(sup, 'POST', `${A}/import-catalog`, {});
+    assert.equal(imported.status, 200); assert.deepEqual(imported.body.created.sort(), [...keys].sort());
+    assert.equal((await visible()).filter((e) => keys.includes(e.key)).length, 0, 'importar no publica');
+    // Paso 2 · listar: id y version de cada uno (la versión que se «vio» es la que se confirma)
+    const list = await http(sup, 'GET', A);
+    assert.equal(list.status, 200);
+    const mine = list.body.filter((e) => keys.includes(e.key));
+    assert.equal(mine.length, keys.length); assert.ok(mine.every((e) => e.status === 'draft' && e.complete === true && e.reviewStatus === 'pending'));
+    // Paso 3 · publicar cada uno con confirm:true y expectedVersion
+    for (const e of mine) {
+      const published = await http(sup, 'POST', `${A}/${e.id}/publish`, { confirm: true, expectedVersion: e.version });
+      assert.equal(published.status, 200, `${e.key}: ${JSON.stringify(published.body)}`); assert.equal(published.body.status, 'published');
+    }
+    // Paso 4 · la persona los ve; la revisión del especialista se dice como es: pendiente
+    const seen = (await visible()).filter((e) => keys.includes(e.key));
+    assert.equal(seen.length, keys.length); assert.ok(seen.every((e) => e.reviewStatus === 'pending'), 'publicar sin revisión hecha: la persona ve «pending», no «done»');
+    // Paso 5 · solo cuando el especialista REALMENTE revisó: registrar la revisión (no cambia la publicación)
+    for (const e of mine) {
+      const reviewed = await http(sup, 'POST', `${A}/${e.id}/review`, { reviewStatus: 'done', confirm: true, expectedVersion: e.version });
+      assert.equal(reviewed.status, 200); assert.equal(reviewed.body.reviewStatus, 'done'); assert.equal(reviewed.body.status, 'published');
+    }
+    assert.ok((await visible()).filter((e) => keys.includes(e.key)).every((e) => e.reviewStatus === 'done'));
+    // Repetir TODO el runbook: sin duplicados, sin cambios, mismas respuestas
+    const again = await http(sup, 'POST', `${A}/import-catalog`, {});
+    assert.deepEqual([again.body.created.length, again.body.skipped.length], [0, keys.length]);
+    for (const e of mine) {
+      const repeated = await http(sup, 'POST', `${A}/${e.id}/publish`, { confirm: true, expectedVersion: e.version });
+      assert.equal(repeated.status, 200); assert.equal(repeated.body.unchanged, true);
+    }
+    assert.equal(await COUNT('SELECT count(*)::int AS n FROM "Exercises" WHERE key = ANY($1)', [keys]), keys.length);
+    // El runbook es solo de superadmin: admin recibe 403 en cada paso y la base no cambia
+    for (const [method, route, body] of [['POST', `${A}/import-catalog`, {}], ['GET', A], ['POST', `${A}/${mine[0].id}/publish`, { confirm: true, expectedVersion: mine[0].version }], ['POST', `${A}/${mine[0].id}/review`, { reviewStatus: 'pending', confirm: true, expectedVersion: mine[0].version }]]) {
+      assert.equal((await http(adm, method, route, body)).status, 403, `admin ${method} ${route}`);
+    }
+    assert.equal((await visible()).filter((e) => keys.includes(e.key)).every((e) => e.reviewStatus === 'done'), true);
+  });
 });
