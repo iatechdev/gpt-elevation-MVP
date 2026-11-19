@@ -1,0 +1,9 @@
+// [QA-Claude] ES-312 · PR #360 · método fijado por Infra: 3 corridas SIN carga añadida, MEDIANA de los tres p95 por forma de texto; se informa también el peor p95 y el p95 de main de la misma sesión.
+//   QA_SUT=<repo> QA_OUT=<carpeta> node qa/security/es304-historial-mediana.cjs [11|21] [--caliente]
+const { spawnSync } = require('child_process'); const path = require('path');
+const N = process.argv[2] && /^\d+$/.test(process.argv[2]) ? process.argv[2] : '21'; const META = N === '11' ? 100 : 200; const WARM = process.argv.includes('--caliente');
+const med = (l) => [...l].sort((a, b) => a - b)[Math.floor(l.length / 2)];
+const runs = []; for (let i = 0; i < 3; i++) { const r = spawnSync(process.execPath, [path.join(__dirname, 'es312-historial-peor-caso.cjs')], { encoding: 'utf8', env: { ...process.env, QA_N: N, QA_WARM: WARM ? '1' : '0' } }); const o = {}; for (const line of r.stdout.split('\n')) { const m = line.match(/^(.+?): PR p50 ([\d.]+) p95 ([\d.]+) máx ([\d.]+) ms \| main p50 ([\d.]+) p95 ([\d.]+)/); if (m) o[m[1]] = { p95: +m[3], main: +m[6] }; } runs.push(o); }
+const forms = Object.keys(runs[0]); let verdict = true; let worstAll = 0; const lines = [];
+for (const f of forms) { const p = runs.map((r) => r[f].p95); const mm = runs.map((r) => r[f].main); const mdn = med(p); const worst = Math.max(...p); worstAll = Math.max(worstAll, worst); if (mdn > META) verdict = false; lines.push(`${f.padEnd(24)} p95 de 3 corridas: ${p.join(' / ')} → MEDIANA ${mdn} ms ${mdn <= META ? '✔' : '✘'} | peor ${worst} ms ${worst > 2 * META ? '(> 2× meta)' : ''} | main (mediana de p95) ${med(mm)} ms`); }
+console.log(`${N} × 4.000 car., ${WARM ? 'CALIENTE (con memoria)' : 'FRÍO (memoria vaciada en cada evaluación)'}, meta < ${META} ms\n` + lines.join('\n') + `\nVEREDICTO: ${verdict ? 'CUMPLE (todas las medianas bajo la meta)' : 'NO CUMPLE'}; peor p95 de todas: ${worstAll} ms${worstAll > 2 * META ? ' → hallazgo Medio por peor p95 > 2× meta' : ''}`);
