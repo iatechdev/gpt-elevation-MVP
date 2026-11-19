@@ -1,0 +1,26 @@
+// QA-Claude-2 — PR #356 (ES-290): selector ES/EN de LandingHeader. Uso: PLAYWRIGHT_MODULE=... AXE=<axe.min.js> BASE=<url del build> [LABEL=pr|antes] [OUT=<carpeta>] node qa/e356-selector.cjs
+// Comprueba: nombre accesible que EMPIEZA por el texto visible (palabra completa) y conserva el idioma en su propio idioma; clic y teclado; aria-pressed; geometría; axe 2.2 AA; ES/EN × 1360/390/320 × claro/oscuro.
+const fs = require('fs'), path = require('path'); const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const axeSrc = fs.readFileSync(process.env.AXE, 'utf8'); const BASE = process.env.BASE, LABEL = process.env.LABEL || 'pr'; const OUT = process.env.OUT || path.join(__dirname, 'e356-out'); fs.mkdirSync(OUT, { recursive: true })
+let total = 0, fails = 0; const ck = (n, ok, d = '') => { total++; if (!ok) fails++; console.log((ok ? 'OK   ' : 'FALLA ') + `[${LABEL}] ` + n + (d ? '  ' + String(d).slice(0, 180) : '')) }; const info = (...a) => console.log('INFO', `[${LABEL}]`, ...a); const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const NAMES = { es: 'Español', en: 'English' }; const geo = {}
+;(async () => { const br = await chromium.launch()
+  for (const [w, h] of [[1360, 800], [390, 844], [320, 568]]) for (const lang of ['es', 'en']) for (const scheme of ['light', 'dark']) {
+    const ctx = await br.newContext({ viewport: { width: w, height: h }, colorScheme: scheme }); const p = await ctx.newPage(); await p.addInitScript(([l, th]) => { localStorage.setItem('elv_lang', l); localStorage.setItem('elv_theme', th) }, [lang, scheme])
+    await p.goto(BASE + '/pricing', { waitUntil: 'networkidle' }); await sleep(600); const L = `/pricing ${lang} ${w}px ${scheme}`
+    const btns = await p.evaluate(() => [...document.querySelectorAll('button.landing-lang')].map((e) => { const r = e.getBoundingClientRect(); return { text: e.innerText.trim(), label: e.getAttribute('aria-label'), pressed: e.getAttribute('aria-pressed'), lang: e.getAttribute('lang'), x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), shown: r.width > 0 && r.height > 0 } }))
+    geo[`${w}-${lang}-${scheme}`] = btns.map((b) => [b.x, b.y, b.w, b.h]); info(`${L}: botones`, JSON.stringify(btns.map((b) => `${b.text}|${b.label}|${b.pressed}|${b.shown}`)))
+    ck(`${L}: hay 2 botones de idioma`, btns.length === 2, String(btns.length))
+    for (const b of btns) { const code = b.lang; const re = new RegExp('^' + b.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\s|[—–-]|$)', 'i'); ck(`${L}: «${b.label}» empieza por el texto visible «${b.text}» como palabra completa`, !!b.label && re.test(b.label) && b.label.trim().length > b.text.length, b.label)
+      ck(`${L}: «${b.label}» conserva el idioma en su propio idioma («${NAMES[code]}»)`, !!b.label && b.label.includes(NAMES[code]), b.label) }
+    ck(`${L}: aria-pressed marca el idioma activo (${lang})`, btns.find((b) => b.lang === lang)?.pressed === 'true' && btns.find((b) => b.lang !== lang)?.pressed === 'false')
+    if (btns.some((b) => b.shown)) { // clic y teclado
+      const other = lang === 'es' ? 'en' : 'es'; await p.locator(`button.landing-lang[lang=${other}]`).click(); await sleep(500); ck(`${L}: clic en «${other.toUpperCase()}» cambia el idioma (html lang)`, (await p.evaluate(() => document.documentElement.lang)) === other, await p.evaluate(() => document.documentElement.lang))
+      ck(`${L}: tras el clic aria-pressed pasa al otro botón`, (await p.evaluate((o) => document.querySelector(`button.landing-lang[lang=${o}]`).getAttribute('aria-pressed'), other)) === 'true')
+      await p.locator(`button.landing-lang[lang=${lang}]`).focus(); await p.keyboard.press('Enter'); await sleep(500); ck(`${L}: Enter en el botón enfocado vuelve a «${lang}»`, (await p.evaluate(() => document.documentElement.lang)) === lang)
+      await p.locator(`button.landing-lang[lang=${other}]`).focus(); await p.keyboard.press('Space'); await sleep(500); ck(`${L}: Espacio cambia a «${other}»`, (await p.evaluate(() => document.documentElement.lang)) === other)
+      const foc = await p.evaluate(() => document.activeElement && document.activeElement.className.includes('landing-lang')); ck(`${L}: el foco sigue en el selector tras cambiar`, !!foc) }
+    else info(`${L}: el selector no se muestra a este ancho (menú compacto)`)
+    if (w === 1360) { await p.goto(BASE + '/pricing', { waitUntil: 'networkidle' }); await sleep(500); await p.addScriptTag({ content: axeSrc }); const ax = await p.evaluate(async () => (await window.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] }, rules: { 'label-content-name-mismatch': { enabled: true } } })).violations.map((v) => v.id + ':' + v.nodes.length)); ck(`${L}: axe 2.2 AA + label-content-name-mismatch = 0`, ax.length === 0, ax.join(' ')) }
+    if (w === 1360 && lang === 'es' && scheme === 'light') await p.screenshot({ path: path.join(OUT, `cab-${LABEL}.png`), clip: { x: 0, y: 0, width: 1360, height: 120 } })
+    await ctx.close() }
+  fs.writeFileSync(path.join(OUT, `geo-${LABEL}.json`), JSON.stringify(geo)); await br.close(); console.log(`RESUMEN [${LABEL}]: ${total - fails}/${total} OK, ${fails} FALLAS`); process.exit(fails ? 1 : 0) })().catch((e) => { console.log('EXCEPCION', e.stack || e.message); process.exit(2) })
