@@ -378,7 +378,8 @@ const en: Record<string, string> = {
   board_error_load: 'Could not load history.',
   board_error_min: 'Manifest must be at least 50 characters long.',
   board_error_upload: 'Could not publish manifest.',
-  board_error_activate: 'Could not reactivate version.',
+  board_error_activate: 'The version could not be reactivated.',
+  board_error_unconfirmed: 'We couldn\'t confirm whether the version was reactivated. Check its status and try again.',
   board_success_upload: 'Manifest published and activated:',
   board_success_activate: 'Version reactivated:',
 

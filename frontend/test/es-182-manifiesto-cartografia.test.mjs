@@ -36,6 +36,15 @@ test('ES-349: la lógica no cambió: llamadas a la API, mínimo de 50 caracteres
   assert.match(page, /<Link to="\/manifiesto" className="bm-public">/)
 })
 
+test('ES-349 seguimiento: sin texto crudo del servidor, se relee antes de afirmar si se pierde la respuesta, fechas con el idioma activo y una sola reactivación a la vez', () => {
+  assert.doesNotMatch(page, /new Error\(data\.error\)|err\.message|err instanceof Error/, 'ningún texto crudo del servidor ni de la red llega a la pantalla')
+  assert.match(page, /setError\(t\('board_error_activate'\)\)/); assert.match(page, /setError\(t\('board_error_unconfirmed'\)\)/)
+  assert.match(page, /const fresh = await readVersions\(\)[\s\S]*fresh\?\.some\(v => v\.id === id && v\.isActive\)/, 'releer y comparar antes de afirmar')
+  assert.match(page, /toLocaleDateString\(lang === 'en' \? 'en-US' : 'es-CO'/)
+  assert.match(page, /disabled=\{activating !== null\} onClick=\{\(\) => setConfirming\(v\)\}/, 'mientras una versión se reactiva, ninguna otra puede')
+  assert.match(page, /<Chip tone="ok" symbol="●">\{t\('board_active_badge'\)\}<\/Chip>\}\s*<strong>\{v\.version\}/, 'el chip ACTIVO va solo con v.isActive')
+})
+
 test('ES-349: los textos del Manifiesto existen en ES y EN, sin emojis', () => {
   const pairs = source => Object.fromEntries([...source.matchAll(/^\s*((?:board_|manifest_view_public)[a-z_]*): '((?:[^'\\]|\\.)*)'/gm)].map(m => [m[1], m[2]]))
   const es = pairs(read('../src/i18n/es.ts')); const en = pairs(read('../src/i18n/en.ts'))
