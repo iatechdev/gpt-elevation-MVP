@@ -24,7 +24,29 @@ const refuseDeletionPending = async (id, res) => {
 };
 
 // QA-18-02: el mínimo de entradas para un promedio vive en utils/minAverageSample.js (compartido con /api/admin/metrics, ES-343).
-const { averageOf } = require('../utils/minAverageSample');
+const { averageOf, averageFromTotals } = require('../utils/minAverageSample');
+
+// ES-341: agregados por lote de MoodLog y SessionRating (una consulta de cada una para TODA la lista). Equivale, cuenta por cuenta, a lo que hacía el código anterior:
+//  - sesiones = filas de MoodLog; moods = valores de check-in y check-out que NO son NULL ni 0 (el `filter(Boolean)` de antes), en conjunto;
+//  - calificaciones = TODAS las filas de SessionRating: una calificación NULL cuenta en la muestra y suma 0 (comportamiento histórico, conservado a propósito; ES-341).
+const EMPTY_STATS = { sesiones: 0, moodSum: 0, moodCount: 0, ratingSum: 0, ratingCount: 0 };
+async function statsByUser(ids) {
+  const stats = new Map();
+  if (!ids.length) return stats;
+  const [moods, ratings] = await Promise.all([
+    sequelize.query(
+      `SELECT "UserId", count(*) AS sesiones,
+         count(NULLIF("checkin_mood", 0)) + count(NULLIF("checkout_mood", 0)) AS mood_count,
+         COALESCE(sum(NULLIF("checkin_mood", 0)), 0) + COALESCE(sum(NULLIF("checkout_mood", 0)), 0) AS mood_sum
+       FROM "MoodLogs" WHERE "UserId" IN (:ids) GROUP BY "UserId"`, { replacements: { ids }, type: 'SELECT' }),
+    sequelize.query(
+      `SELECT "UserId", count(*) AS rating_count, COALESCE(sum(COALESCE("rating", 0)), 0) AS rating_sum
+       FROM "SessionRatings" WHERE "UserId" IN (:ids) GROUP BY "UserId"`, { replacements: { ids }, type: 'SELECT' }),
+  ]);
+  for (const r of moods) stats.set(r.UserId, { ...EMPTY_STATS, sesiones: Number(r.sesiones), moodCount: Number(r.mood_count), moodSum: Number(r.mood_sum) });
+  for (const r of ratings) stats.set(r.UserId, { ...(stats.get(r.UserId) || EMPTY_STATS), ratingCount: Number(r.rating_count), ratingSum: Number(r.rating_sum) });
+  return stats;
+}
 
 // ==========================================
 // POST /api/admin/usuarios — Crear usuario
@@ -69,19 +91,16 @@ router.get('/', async (req, res) => {
     // ES-186 D0: ¿la cuenta tiene una solicitud de eliminación? Solo un booleano (sin estado ni identificador de la solicitud). Una consulta para toda la lista.
     const pendientes = usuarios.length ? new Set((await DeletionRequest.findAll({ where: { UserId: usuarios.map((u) => u.id) }, attributes: ['UserId'] })).map((r) => r.UserId)) : new Set();
 
-    const usuariosConStats = await Promise.all(
-      usuarios.map(async (u) => {
-        const sesiones = await MoodLog.count({ where: { UserId: u.id } });
-        const ratings = await SessionRating.findAll({ where: { UserId: u.id }, attributes: ['rating'] });
-        const moodLogs = await MoodLog.findAll({
-          where: { UserId: u.id },
-          attributes: ['checkin_mood', 'checkout_mood'],
-        });
+    // ES-341 (E323-1): antes eran 3 consultas por cuenta (3N+3). Ahora son 2 agregados por lote con GROUP BY sobre los ids de la lista: el número de
+    // consultas es fijo, sean 10 o 1000 cuentas. Los promedios usan la MISMA regla averageOf (mínimo de entradas y redondeo) con suma y conteo exactos.
+    const ids = usuarios.map((u) => u.id);
+    const stats = await statsByUser(ids);
 
-        const ratingPromedio = averageOf(ratings.map(r => r.rating));
-
-        const todosLosMoods = moodLogs.flatMap(m => [m.checkin_mood, m.checkout_mood]).filter(Boolean);
-        const moodPromedio = averageOf(todosLosMoods);
+    const usuariosConStats = usuarios.map((u) => {
+        const s = stats.get(u.id) || EMPTY_STATS;
+        const sesiones = s.sesiones;
+        const ratingPromedio = averageFromTotals(s.ratingSum, s.ratingCount);
+        const moodPromedio = averageFromTotals(s.moodSum, s.moodCount);
 
         // Determinar si está bloqueado por intentos fallidos
         const isLocked = u.lockedUntil && new Date() < new Date(u.lockedUntil);
@@ -96,8 +115,7 @@ router.get('/', async (req, res) => {
           loginAttempts: u.loginAttempts,
           deletionRequested: pendientes.has(u.id),
         };
-      })
-    );
+    });
 
     res.json(usuariosConStats);
   } catch (error) {

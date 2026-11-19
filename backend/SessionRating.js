@@ -16,6 +16,9 @@ const SessionRating = sequelize.define('SessionRating', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+}, {
+  // ES-341: GET /api/admin/usuarios agrega por UserId; migración 20261119010000-es341-session-ratings-userid-index.
+  indexes: [{ fields: ['UserId'] }],
 });
 
 module.exports = SessionRating;
