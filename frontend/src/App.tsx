@@ -156,9 +156,6 @@ export default function App() {
         <Route index element={<PilotMetricsPage />} />
       </Route>
       {/* Admin backoffice */}
-      <Route path="/admin/skill-catalog" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
-      <Route path="/admin/skill-catalog/:id" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
-      <Route path="/admin/skill-catalog/:id/skills/:skillKey" element={<AdminRoute><SkillCatalogManager /></AdminRoute>} />
       <Route path="/admin" element={
         <AdminRoute>
           <AdminLayout />
@@ -175,6 +172,10 @@ export default function App() {
         <Route path="route-catalog" element={<CatalogManager />} />
         <Route path="route-catalog/:id" element={<CatalogManager />} />
         <Route path="route-catalog/:id/:kind/:itemKey" element={<CatalogManager />} />
+        {/* ES-349 (parte 1): el catálogo de habilidades va dentro del marco de Administración */}
+        <Route path="skill-catalog" element={<SkillCatalogManager />} />
+        <Route path="skill-catalog/:id" element={<SkillCatalogManager />} />
+        <Route path="skill-catalog/:id/skills/:skillKey" element={<SkillCatalogManager />} />
       </Route>
 
       {/* Therapist */}
