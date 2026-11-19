@@ -119,7 +119,7 @@ router.post('/register', registerLimiter, validateBody({ name: nonempty, email: 
     // «ya registrado» sigue siendo distinguible de «nuevo» (compromiso de UX hasta que haya correo de verificación, ES-12; decisión del 12-nov, opción A).
     if (existing) return res.status(400).json({ error: 'El correo ya está registrado.' });
 
-    await User.create({ name, email: normalizeEmail(email), password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
+    await User.create({ name: name.trim(), email: normalizeEmail(email), password: hashedPassword, role: 'user', ...(accepted ? { termsVersion: accepted.termsVersion, acceptedAt: accepted.acceptedAt } : {}) });
     res.status(201).json({ message: 'Usuario creado exitosamente. ¡Bienvenido a Elevation!' });
 
   } catch (error) {

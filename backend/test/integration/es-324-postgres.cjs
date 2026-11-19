@@ -31,6 +31,16 @@ test('ES-324 PostgreSQL + HTTP: nombre largo / con caracteres de control / de ti
     assert.equal((await register({ name: ' ' + 'N'.repeat(99) + ' ' })).status, 201, 'los espacios a los lados no cuentan');
   });
 
+  await t.test('se guarda el MISMO valor que se validó (recortado): relleno de 500 espacios ASCII o NBSP a los lados NO desborda la columna (antes 500 o truncado en silencio); el interior largo sigue siendo 400', async () => {
+    const before = await people();
+    for (const [label, name, expected] of [['espacios ASCII al final', 'Ana' + ' '.repeat(500), 'Ana'], ['NBSP al final', 'Ana' + ' '.repeat(500), 'Ana'], ['espacios a ambos lados', ' '.repeat(300) + 'Luis' + ' '.repeat(300), 'Luis'], ['tabulador y NBSP mezclados', '   Eva' + '  '.repeat(400), 'Eva'], ['espacios ideográficos', '　'.repeat(400) + 'Mei' + '　'.repeat(400), 'Mei']]) {
+      const email = mail(); const out = await register({ name, email }); assert.equal(out.status, 201, label + ': ' + JSON.stringify(out.body));
+      const rows = await q('SELECT name FROM "Users" WHERE email = $1', [email]); assert.deepEqual(rows.map((r) => r.name), [expected], label + ': el nombre guardado es el recortado, no el original');
+    }
+    for (const name of ['A' + ' '.repeat(500) + 'B', 'A' + ' '.repeat(120) + 'B', ' '.repeat(400)]) { const out = await register({ name }); assert.equal(out.status, 400, JSON.stringify(name.length)); assert.equal(out.body.code, name.trim() ? 'invalid_name' : 'invalid_input'); }
+    assert.equal(await people(), before + 5, 'solo las 5 cuentas válidas; las 3 rechazadas no dejan fila');
+  });
+
   await t.test('entradas inválidas del nombre: NUL, controles, saltos de línea, tipos erróneos y vacío → 400 estable (nunca 500), sin cuenta creada', async () => {
     const before = await people();
     for (const name of ['Ana\u0000Pérez', 'Ana\u0007', 'Ana\nPérez', 'Ana\u0085Pérez', ' ', '', null, 123, true, {}, [], ['Ana'], { toString: 'x' }]) {
