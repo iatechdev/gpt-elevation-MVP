@@ -47,5 +47,14 @@ const failRoute = (which, times = 1) => async pg => { let n = 0; await pg.route(
     const n = +(process.env.RUNS || 2); let seq = 0
     for (const [nm, who] of [['con profesional', 'A'], ['sin profesional', 'C']]) { const r = await L.clsRuns(async () => { const s = await mk('user', 'R-358-' + (seq++)); if (who === 'A') { const t = (await dbq('SELECT "therapistId" FROM "Users" WHERE id=$1', [A.id]))[0].therapistId; await dbq('UPDATE "Users" SET "therapistId"=$1 WHERE id=$2', [t, s.id]) } return s }, URLX, n); console.log(`R358 ${L.LABEL} ${nm} cls=${JSON.stringify(r.cls)} util=${JSON.stringify(r.util)} src=${JSON.stringify(r.src)}`) }
   }
+  if (want('O')) { // CLS con retrasos por petición en los dos órdenes de llegada (PR: /profile y /sessions; main: la lectura completa con el retraso mayor)
+    const out = []
+    for (const [nm, dp, ds] of [['perfil primero', 300, 1500], ['sesiones primero', 1500, 300], ['ambas lentas', 1500, 1500], ['ambas rápidas', 0, 0]]) for (let i = 0; i < 3; i++) {
+      const c = await L.getBR().newContext({ viewport: { width: 390, height: 900 } }); await c.addInitScript(([tk, rl]) => { localStorage.setItem('elevation_token', tk); localStorage.setItem('elevation_role', rl); localStorage.setItem('elv_lang', 'es'); window.__cls = 0; try { new PerformanceObserver(x => { for (const e of x.getEntries()) if (!e.hadRecentInput) window.__cls += e.value }).observe({ type: 'layout-shift', buffered: true }) } catch {} }, [A.token, 'user'])
+      const pg = await c.newPage(); await pg.route(u => new URL(u).pathname.includes('/api/sessions/user/my-therapist'), async rt => { const p = new URL(rt.request().url()).pathname; await sleep(/profile$/.test(p) ? dp : /sessions$/.test(p) ? ds : Math.max(dp, ds)); await rt.continue() })
+      const cdp = await c.newCDPSession(pg); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 }); await pg.goto(L.WEB + URLX, { waitUntil: 'domcontentloaded' }); await pg.waitForSelector('main h1', { timeout: 40000 }).catch(() => {}); await sleep(4500); out.push([nm, +(await pg.evaluate(() => window.__cls)).toFixed(4)]); await c.close()
+    }
+    for (const nm of ['perfil primero', 'sesiones primero', 'ambas lentas', 'ambas rápidas']) console.log(`O358 ${L.LABEL} ${nm} cls=${JSON.stringify(out.filter(o => o[0] === nm).map(o => o[1]))}`)
+  }
   await L.done(); srv?.close?.(); process.exit(0)
 })().catch(e => { console.error('FALLO', e); process.exit(1) })
