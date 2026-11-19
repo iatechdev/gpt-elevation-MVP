@@ -147,8 +147,8 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     });
     const dbRatings = await SessionRating.findAll({ raw: true });
     for (const e of expected) {
-      const own = dbRatings.filter((r) => e.mine.includes(r.UserId) && r.rating !== null).map((r) => r.rating);
-      e.avgRating = own.length >= 5 ? round1(own.reduce((a, b) => a + b, 0) / own.length) : null;
+      const ownRows = dbRatings.filter((r) => e.mine.includes(r.UserId) && r.rating !== null); const own = ownRows.map((r) => r.rating);
+      e.avgRating = own.length >= 5 && new Set(ownRows.map((r) => r.UserId)).size >= 3 ? round1(own.reduce((a, b) => a + b, 0) / own.length) : null;
     }
     expected.sort((a, b) => b.patientCount - a.patientCount || a.name.localeCompare(b.name) || a.id - b.id);
     assert.deepEqual(m.topTherapists.map((x) => [x.id, x.patientCount, x.avgRating]), expected.slice(0, 5).map((e) => [e.id, e.patientCount, e.avgRating]));
@@ -250,7 +250,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
       const expected = n >= 5 ? round1(values.reduce((a, b) => a + b, 0) / n) : null;
       assert.equal(m.avgRating, expected, `general con ${n} valoraciones`);
       assert.equal(proRow(m).avgRating, expected, `profesional con ${n} valoraciones`);
-      if (n >= 1 && n < 5) assert.doesNotMatch(JSON.stringify({ a: m.avgRating, t: m.topTherapists.map((x) => x.avgRating) }), /[1-5].d|:[1-5][,}]]/, 'ningún valor individual en la respuesta');
+      if (n < 5) assert.doesNotMatch(JSON.stringify(m), /"avgRating":\d/, 'ningún promedio de valoración (general ni por profesional) en la respuesta');
     }
     // Las valoraciones fuera de 1-5 no cuentan para el mínimo: 3 válidas + 2 fuera de escala = 3 entradas válidas → null.
     await setRatings([4, 5, 3, 30000, 0]);
@@ -280,5 +280,49 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     assert.equal((await call(plain, '/api/admin/metrics')).status, 403);
     assert.equal((await call(pro, '/api/admin/metrics')).status, 403);
     assert.equal((await call(sup, '/api/admin/metrics')).status, 200);
+  });
+
+  // ES-348: el mínimo cuenta también PERSONAS distintas (MIN_DISTINCT_PEOPLE = 3): 1 persona × 5 valoraciones = null; 3 personas × 5 = promedio; 2 personas × 10 = null.
+  await t.test('ES-348: 5 valoraciones o ánimos de una o dos personas no se promedian; con 3 personas distintas sí (general, por profesional y ánimo)', async () => {
+    const owners = await User.findAll({ where: { role: 'user', therapistId: pro.id }, attributes: ['id'], order: [['id', 'ASC']] });
+    assert.ok(owners.length >= 3);
+    const proRow = (m) => m.topTherapists.find((x) => x.id === pro.id);
+    const setRatings = async (rows) => { // rows: [personIndex, rating]
+      await sequelize.query('DELETE FROM "SessionRatings"');
+      for (const [who, value] of rows) await sequelize.query('INSERT INTO "SessionRatings" ("UserId","rating","date","createdAt","updatedAt") VALUES ($1,$2,CURRENT_DATE,now(),now())', { bind: [owners[who].id, value] });
+    };
+    const cases = [
+      ['1 persona × 5', [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5]], null],
+      ['2 personas × 10', [[0, 5], [1, 5], [0, 4], [1, 4], [0, 3], [1, 3], [0, 2], [1, 2], [0, 1], [1, 1]], null],
+      ['2 personas × 5 + 1 valoración fuera de escala de una tercera (no cuenta como persona)', [[0, 5], [0, 4], [0, 3], [1, 2], [1, 1], [2, 0]], null],
+      ['3 personas × 5 (2+2+1)', [[0, 5], [0, 4], [1, 3], [1, 2], [2, 1]], 3],
+      ['3 personas × 6 (varias por persona)', [[0, 5], [0, 5], [1, 4], [1, 4], [2, 1], [2, 1]], 3.3],
+      ['3 personas pero solo 4 valoraciones', [[0, 5], [1, 4], [2, 3], [0, 2]], null],
+    ];
+    for (const [label, rows, expected] of cases) {
+      await setRatings(rows);
+      const m = (await call(adm, '/api/admin/metrics')).body;
+      assert.equal(m.avgRating, expected, 'general: ' + label);
+      assert.equal(proRow(m).avgRating, expected, 'profesional: ' + label);
+      if (expected === null) assert.doesNotMatch(JSON.stringify(m), /"avgRating":\d/, label);
+    }
+    // Ánimo: ≥ 5 valores 1–5 Y ≥ 3 personas. Los valores fuera de 1–5 no cuentan (ni valores ni personas).
+    const setMood = async (rows) => { // rows: [personIndex, dayOffset, checkin, checkout]
+      await sequelize.query('DELETE FROM "MoodLogs"');
+      for (const [who, day, checkin, checkout] of rows) await sequelize.query('INSERT INTO "MoodLogs" ("UserId","date","checkin_mood","checkout_mood","createdAt","updatedAt") VALUES ($1,$2,$3,$4,now(),now())', { bind: [people[who].id, dayOffset(day), checkin, checkout] });
+    };
+    const mood = [
+      ['1 persona × 6 valores (3 registros)', [[0, 0, 1, 2], [0, 1, 3, 4], [0, 2, 5, 5]], null],
+      ['2 personas × 10 valores', [[0, 0, 1, 2], [0, 1, 3, 4], [0, 2, 5, 5], [1, 0, 5, 4], [1, 1, 3, 2]], null],
+      ['3 personas × 6 valores', [[0, 0, 1, 2], [1, 0, 3, 4], [2, 0, 5, 5]], 3.3],
+      ['3 personas pero 4 valores válidos (hay valores fuera de 1–5)', [[0, 0, 1, 99], [1, 0, 3, 4], [2, 0, 5, null]], null],
+      ['solo valores fuera de 1–5 de la tercera persona: 2 personas válidas', [[0, 0, 1, 2], [1, 0, 3, 4], [1, 1, 5, 5], [2, 0, 99, 99]], null],
+    ];
+    for (const [label, rows, expected] of mood) {
+      await setMood(rows);
+      const m = (await call(adm, '/api/admin/metrics')).body;
+      assert.equal(m.avgMood, expected, label);
+      assert.equal(m.totalSessions, rows.length, 'el conteo de registros no cambia: ' + label);
+    }
   });
 });
