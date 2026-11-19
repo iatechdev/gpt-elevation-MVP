@@ -4,4 +4,9 @@ const MIN_AVERAGE_SAMPLE = 5;
 const averageOf = (values) => (values.length >= MIN_AVERAGE_SAMPLE
   ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10
   : null);
-module.exports = { MIN_AVERAGE_SAMPLE, averageOf };
+// ES-348: contar entradas no basta: cinco valoraciones de UNA persona siguen siendo el valor de esa persona. Un promedio AGREGADO (varias personas)
+// exige además este número de personas distintas. Una sola constante: cambiar el umbral es cambiar una línea.
+const MIN_DISTINCT_PEOPLE = 3;
+// ES-341: misma regla que averageOf a partir de la suma y el conteo (agregados de SQL); el mismo resultado exacto para los mismos valores.
+const averageFromTotals = (sum, count) => (count >= MIN_AVERAGE_SAMPLE ? Math.round((sum / count) * 10) / 10 : null);
+module.exports = { MIN_AVERAGE_SAMPLE, MIN_DISTINCT_PEOPLE, averageOf, averageFromTotals };

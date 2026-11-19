@@ -22,20 +22,36 @@ const flat = (text) => String(text).normalize('NFD').replace(/[̀-ͯ]/g, '')
 const FILLERS = /[\u3164\u2800\u115F\u1160\uFFA0\u180E\u061C\u034F]/g;
 const FILLER_TEST = new RegExp(FILLERS.source); // sin la bandera g: `.test` con /g recuerda la posición
 const FORMAT_AND_MARKS = /[\p{Cf}\p{Mn}\p{Me}\uE000-\uF8FF]/gu; // \p{Cf} incluye los caracteres de etiqueta U+E0000–E007F y el ancho cero
-// Homoglifos latino/cirílico/griego de uso común (sobre minúsculas): «quiero mоrir» con «о» cirílica.
-// LÍMITE (E304-3, documentado a propósito): esta tabla cubre 25 homoglifos cirílicos y griegos de uso común (+ «ɡ») y NFKC cubre ancho completo, letras matemáticas y «ſ». NO cubre el resto de
-// homoglifos Unicode (QA probó 26 de 67 puntos de código candidatos): «ı» (i sin punto), «ɑ», versalitas latinas (ᴍ, ɴ…), «κ» griega, armenio, cherokee, lisu… Una frase escrita con ellos NO se
-// detecta. Ampliar con una tabla de confusables (UTS #39) y medir contra falsos positivos queda como seguimiento.
-const HOMOGLYPHS = {
-  '\u0430': 'a', '\u0435': 'e', '\u043e': 'o', '\u0441': 'c', '\u0440': 'p', '\u0445': 'x', '\u0456': 'i', '\u0455': 's', '\u0458': 'j', '\u04bb': 'h', '\u0261': 'g',
-  '\u03bf': 'o', '\u03b1': 'a', '\u03b5': 'e', '\u03b9': 'i', '\u03c1': 'p', '\u03c5': 'u', '\u03bd': 'v', '\u03c4': 't', '\u043a': 'k', '\u043c': 'm', '\u043d': 'h', '\u0442': 't', '\u0443': 'y', '\u0432': 'b',
-};
+// Homoglifos latino/cirílico/griego (sobre minúsculas): «quiero mоrir» con «о» cirílica. Dos tablas que se SUMAN: la manual de ES-304 (utils/homoglyphs-manual.js, manda sobre la otra) y la generada de ES-312
+// (utils/confusables-table.js, desde UTS #39 con reglas acotadas: scripts/gen-confusables.cjs; la fuente está versionada en data/unicode/ y el servidor NUNCA descarga nada).
+// LÍMITE (E304-3/ES-312, documentado a propósito): la tabla cubre letras latinas extendidas/IPA/versalitas, griegas, cirílicas, armenias, cherokee y lisu que UTS #39 equipara a UNA letra a-z; NFKC cubre
+// ancho completo, letras matemáticas y «ſ». NO cubre CJK, símbolos, emojis, cifras de otras escrituras, mapeos de varias letras, otros alfabetos completos ni lo semántico. Una frase escrita con un
+// carácter fuera de la tabla NO se detecta: es una ayuda, no una protección completa.
+const MANUAL_HOMOGLYPHS = require('./homoglyphs-manual.js');
+const TABLE_HOMOGLYPHS = require('./confusables-table.js');
+const HOMOGLYPHS = { ...TABLE_HOMOGLYPHS, ...MANUAL_HOMOGLYPHS };
+// Escaneos: solo las letras que SÍ están en la tabla (antes se miraba todo carácter no ASCII y se buscaba en la tabla; el resultado es el mismo —lo que no está en la tabla queda igual— pero un texto cirílico o
+// griego de 4.000 caracteres ya no dispara 4.000 llamadas). El de SIEMPRE (ES-304) usa solo la tabla manual: es la «forma anterior»; nada que se detectaba antes deja de detectarse (la tabla nueva solo AÑADE formas).
+// Las claves de la tabla que caen dentro de U+00A0–U+024F («ı» U+0131, «ĸ» U+0138) entran; el resto de ese rango son letras latinas acentuadas que NO se tocan.
+const cpEscape = (cp) => '\\u{' + cp.toString(16) + '}';
+const scanOf = (table) => new RegExp('[' + Object.keys(table).map((c) => cpEscape(c.codePointAt(0))).join('') + ']', 'gu');
+const MANUAL_SCAN = scanOf(MANUAL_HOMOGLYPHS);
+const FULL_SCAN = scanOf(HOMOGLYPHS);
+// ¿El texto trae alguna letra de la tabla NUEVA? Solo entonces se evalúa además la forma con la tabla completa.
+const NEW_KEYS = new RegExp(scanOf(TABLE_HOMOGLYPHS).source, 'u');
+// Tabla PREVIA (ES-312): mayúsculas y letras que NFKC o las minúsculas cambian a un carácter que ninguna tabla mapea («Μ» → «μ», «ϲ» → «ς», cherokee…): se leen como la letra latina que representan ANTES de NFKC y de las minúsculas.
+const PRE_HOMOGLYPHS = require('./confusables-pre.js');
+const PRE_SCAN = scanOf(PRE_HOMOGLYPHS); const PRE_TEST = new RegExp(PRE_SCAN.source, 'u');
+const preMap = (text) => text.replace(PRE_SCAN, (c) => PRE_HOMOGLYPHS[c] || c);
+const normalizeFull = (text) => preMap(preMap(String(text)).normalize('NFKC')); // antes de NFKC (para «ϲ») y tras NFKC (para «𝚳» y similares), siempre antes de las minúsculas
 const LEET = { 4: 'a', 3: 'e', 1: 'i', 0: 'o', 5: 's', 7: 't', '@': 'a', $: 's' };
 const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 
 // Paso 1: NFKC (ancho completo, letras matemáticas), minúsculas, rellenos y marcas fuera, homoglifos a latín.
 // `filler`: los rellenos que se ven en blanco se quitan (intercalados entre letras) o se toman por ESPACIO (separan palabras): se prueban las dos lecturas.
-const unmask = (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(/[^\u0000-\u007F\u00A0-\u024F]/g, (c) => HOMOGLYPHS[c] || c);
+const makeUnmask = (table, scan) => (text, filler = '', lowered) => (lowered === undefined ? String(text).normalize('NFKC').toLowerCase() : lowered).replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(scan, (c) => table[c] || c);
+const unmaskManual = makeUnmask(MANUAL_HOMOGLYPHS, MANUAL_SCAN); // exactamente lo que hacía main
+const unmask = ((full) => (text, filler = '', lowered) => full(text, filler, lowered === undefined ? normalizeFull(text).toLowerCase() : lowered))(makeUnmask(HOMOGLYPHS, FULL_SCAN)); // con la tabla completa y la previa
 // Paso 2: una frase escrita SOLO con caracteres de etiqueta (U+E0020–E007E) se decodifica a ASCII.
 const decodeTags = (text) => Array.from(String(text).matchAll(TAG_BLOCK), (m) => String.fromCharCode(m[0].codePointAt(0) - 0xE0000)).join('');
 // Paso 3: «s u i c i d i o» / «s.u.i.c.i.d.i.o» → «suicidio» (cuatro o más letras sueltas separadas).
@@ -56,22 +72,30 @@ const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 // E304-8: «llano» = ASCII visible + letras latinas acentuadas + ¡ ¿ « ». NO incluye ª º ¹ ² ³ ¨ ¯ ´ ¸ ni otros símbolos de Latin-1 que NFKC convierte o que se intercalan entre letras («quierº mºrir», «su¹c¹d¹o»).
 const PLAIN = /^[\x20-\x7e\n\r\t\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u00a1\u00bf\u00ab\u00bb]*$/;
 const tidy = (text) => text.replace(/\s+/g, ' ');
-function* riskForms(text) {
-  const raw = String(text); const seen = new Set();
-  const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
+function* riskFormsWith(raw, unmask, fresh, nfkc = raw.normalize('NFKC'), lowered = nfkc.toLowerCase()) {
   const first = flat(raw); if (fresh(first)) yield first;
   const plain = PLAIN.test(raw);
-  const open = plain ? raw.toLowerCase() : unmask(raw); // sin plegar: «letras separadas» y «palabras separadas» dependen de los espacios múltiples
+  const open = plain ? raw.toLowerCase() : unmask(raw, '', lowered); // sin plegar: «letras separadas» y «palabras separadas» dependen de los espacios múltiples
   const base = plain ? first : flat(open); // plegado una vez; las derivadas parten de aquí
   if (!plain && fresh(base)) yield base;
   const joined = joinSpelled(open); const spelled = joined === open ? base : flat(joined);
   const split = spellWords(open); const words = split === open ? base : flat(split);
   for (const thunk of [() => spelled, () => words, () => tidy(unleet(spelled)), () => tidy(halve(spelled)), () => tidy(halve(words)), () => tidy(squeeze(unleet(spelled))), () => tidy(spaceOut(base)), () => tidy(spaceOut(spelled))]) { const f = thunk(); if (fresh(f)) yield f; }
-  if (!plain && FILLER_TEST.test(raw.normalize('NFKC'))) {
-    const spacedOpen = unmask(raw, ' '); const spaced = flat(spacedOpen); const spacedJoined = joinSpelled(spacedOpen);
+  if (!plain && FILLER_TEST.test(nfkc)) {
+    const spacedOpen = unmask(raw, ' ', lowered); const spaced = flat(spacedOpen); const spacedJoined = joinSpelled(spacedOpen);
     for (const thunk of [() => spaced, () => (spacedJoined === spacedOpen ? spaced : flat(spacedJoined)), () => tidy(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
+}
+// ES-312: la seguridad solo puede GANAR cobertura. Una letra de la tabla nueva usada como relleno entre palabras («quiero ı morir») deja de ser separador si se mapea a una letra; por eso primero se evalúan las
+// formas de SIEMPRE (tabla manual) y solo después, si el texto trae alguna letra de la tabla nueva, las formas con la tabla completa. Lo que se detectaba antes se sigue detectando con el mismo nivel e idioma.
+function* riskForms(text) {
+  const raw = String(text); const seen = new Set();
+  const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
+  const plain = PLAIN.test(raw); const nfkc = plain ? raw : raw.normalize('NFKC'); const lowered = plain ? raw.toLowerCase() : nfkc.toLowerCase(); // UNA normalización por texto para las dos pasadas
+  yield* riskFormsWith(raw, unmaskManual, fresh, nfkc, lowered);
+  const hasPre = !plain && (PRE_TEST.test(raw) || PRE_TEST.test(nfkc));
+  if (!plain && (hasPre || NEW_KEYS.test(lowered))) { const nfkcFull = hasPre ? normalizeFull(raw) : nfkc; yield* riskFormsWith(raw, unmask, fresh, nfkcFull, hasPre ? nfkcFull.toLowerCase() : lowered); }
 }
 
 // Patrones sobre texto sin acentos, en minúsculas.
@@ -203,4 +227,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms, riskFormsWith, unmaskManual }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };

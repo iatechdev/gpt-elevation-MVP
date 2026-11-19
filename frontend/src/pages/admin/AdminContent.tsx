@@ -10,7 +10,7 @@ import './adminContent.css'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { memo, useEffect, useMemo, useState, useCallback, useRef } from 'react'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -399,7 +399,6 @@ function PricingTab() {
                 <SelectField id="plan-period" label={tr("Período")} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
                   <option value="month">{tr("Mensual")}</option>
                   <option value="year">{tr("Anual")}</option>
-                  <option value="forever">{tr("Para siempre")}</option>
                 </SelectField>
               </div>
             </fieldset>
@@ -434,6 +433,22 @@ function PricingTab() {
   )
 }
 
+// ES-199 (PERF-05): cada fila guarda su propio texto y está memoizada. Antes cada pulsación hacía setContent en LandingTab y repintaba las 340 filas (~70 ms de JS por tecla con CPU ×4, sin contar los estilos).
+// Con `memo` y propiedades primitivas o estables, escribir en un campo solo repinta ese campo.
+const LandingRow = memo(function LandingRow({ fieldKey, label, initial, saving, busy, message, onSave, onEdited }: {
+  fieldKey: string; label: string; initial: string; saving: boolean; busy: boolean; message: string; onSave: (key: string, value: string) => void; onEdited: (key: string) => void
+}) {
+  const tr = useAdminText()
+  const [value, setValue] = useState(initial)
+  return (
+    <li className="cg-item ac-frow">
+      <TextField id={`landing-${fieldKey}`} label={tr(label)} disabled={saving} value={value} onChange={e => { setValue(e.target.value); if (message) onEdited(fieldKey) }} />
+      <div className="ac-fact"><Button onClick={() => onSave(fieldKey, value)} aria-disabled={busy}>{saving ? '...' : tr('Guardar')}</Button></div>
+      {message && <p role="status" className={message.startsWith('✓') ? 'cg-hint' : 'cg-error'}>{tr(message)}</p>}
+    </li>
+  )
+})
+
 // ── Tab Landing ───────────────────────────────────────────────────────────────
 function LandingTab() {
   const tr = useAdminText()
@@ -449,12 +464,12 @@ function LandingTab() {
   const [attempt, setAttempt] = useState(0)
   const savingRef = useRef(false)
 
-  const fields = [
+  const fields = useMemo(() => [
     { key: 'hero_title',         label: 'Título Hero' },
     { key: 'hero_subtitle',      label: 'Subtítulo Hero' },
     { key: 'cta_primary',        label: 'CTA Principal' },
     ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: landingFieldLabel(key, interfaceLang) })), // ES-90: los pendientes se editan en su panel
-  ]
+  ], [interfaceLang])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -474,7 +489,7 @@ function LandingTab() {
     return () => controller.abort()
   }, [lang, token, attempt])
 
-  const saveField = async (key: string) => {
+  const saveField = useCallback(async (key: string, value: string | undefined) => {
     if (savingRef.current) return
     savingRef.current = true
     setSaving(key); setMsgs(m => ({ ...m, [key]: '' }))
@@ -482,13 +497,14 @@ function LandingTab() {
       const r = await fetch(`${API}/api/landing-content`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ key, lang, value: content[key] }),
+        body: JSON.stringify({ key, lang, value }),
       })
       setMsgs(m => ({ ...m, [key]: r.ok ? '✓ Guardado' : r.status === 403 ? 'Solo superadmin puede guardar textos.' : 'Error guardando.' }))
     } catch {
       setMsgs(m => ({ ...m, [key]: 'Error de conexión.' }))
     } finally { savingRef.current = false; setSaving(null) }
-  }
+  }, [lang, token])
+  const clearMessage = useCallback((key: string) => setMsgs(m => ({ ...m, [key]: '' })), [])
 
   if (loading) return <p className="cg-hint" role="status">{tr("Cargando contenido...")}</p>
   if (loadError) return <Banner kind="error" title={tr('No se pudo cargar el contenido.')}><Button variant="ghost" onClick={() => setAttempt(n => n + 1)}>{tr('Reintentar')}</Button></Banner>
@@ -500,16 +516,10 @@ function LandingTab() {
           <button key={l} type="button" className="cg-lang__btn" disabled={saving !== null} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>
         ))}
       </div>
-      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={saveField} saving={saving} msgs={msgs} />
+      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={key => void saveField(key, content[key])} saving={saving} msgs={msgs} />
       <h2 className="ac-h2">{tr('Otros textos')}</h2>
       <ul className="cg-items" aria-label={tr('Otros textos')}>
-        {fields.map(f => (
-          <li key={f.key} className="cg-item ac-frow">
-            <TextField id={`landing-${f.key}`} label={tr(f.label)} disabled={saving === f.key} value={content[f.key] ?? ''} onChange={e => { setContent(c => ({ ...c, [f.key]: e.target.value })); setMsgs(m => ({ ...m, [f.key]: '' })) }} />
-            <div className="ac-fact"><Button onClick={() => void saveField(f.key)} aria-disabled={saving !== null}>{saving === f.key ? '...' : tr('Guardar')}</Button></div>
-            {msgs[f.key] && <p role="status" className={msgs[f.key].startsWith('✓') ? 'cg-hint' : 'cg-error'}>{tr(msgs[f.key])}</p>}
-          </li>
-        ))}
+        {fields.map(f => <LandingRow key={f.key} fieldKey={f.key} label={f.label} initial={content[f.key] ?? ''} saving={saving === f.key} busy={saving !== null} message={msgs[f.key] ?? ''} onSave={saveField} onEdited={clearMessage} />)}
       </ul>
     </div>
   )

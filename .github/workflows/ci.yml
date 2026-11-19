@@ -175,6 +175,10 @@ jobs:
         run: npm run test:admin-403:pg
         env:
           ES310_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-341 lista de usuarios de administración - mismo resultado que antes y consultas fijas, sin N+1 (PostgreSQL real)
+        run: npm run test:admin-users-n1:pg
+        env:
+          ES341_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-275 comando de purga - DATABASE_URL explícita, sin .env y salida limpia (PostgreSQL real)
         run: npm run test:purge-command:pg
         env:
@@ -244,6 +248,10 @@ jobs:
         run: npm run test:email-case:pg
         env:
           ES306_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-324 nombre del registro - tope de longitud y sin caracteres de control, 400 estable y nunca 500 (PostgreSQL real)
+        run: npm run test:register-name:pg
+        env:
+          ES324_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: E273-6 revocar el puente actúa en las tres piezas y respeta la guarda de eliminación (PostgreSQL real; antes no corría en CI)
         run: npm run test:integration:pg
         env:
@@ -268,6 +276,10 @@ jobs:
         run: npm run test:session-lists:pg
         env:
           ES241_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-240 Mi profesional por secciones - perfil y sesiones separados, solo del propietario y del vínculo vigente (PostgreSQL real)
+        run: npm run test:my-professional:pg
+        env:
+          ES240_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-262 entradas hostiles de fecha y de id en sesiones, notas y solicitudes de plan (PostgreSQL real)
         run: npm run test:hostile-dates:pg
         env:

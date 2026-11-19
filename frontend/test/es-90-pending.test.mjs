@@ -32,7 +32,7 @@ test('ES-90: la lógica Pendiente/Listo sigue funcionando para cuando se agregue
 
 test('ES-94: la pestaña Landing monta el panel antes de la lista general, pero el panel no se dibuja sin pendientes y la lista general ya incluye todos los campos', () => {
   const admin = read('../src/pages/admin/AdminContent.tsx')
-  assert.match(admin, /<LandingPendingPanel [\s\S]*?save=\{saveField\}/)
+  assert.match(admin, /<LandingPendingPanel [\s\S]*?save=\{key => void saveField\(key, content\[key\]\)\}/) // ES-199: saveField ahora recibe el valor (las filas guardan su propio texto)
   assert.match(admin, /landingFields\.filter\(\(\{ key \}\) => !PENDING_KEYS\.has\(key\)\)/)
   assert.ok(admin.indexOf('<LandingPendingPanel') < admin.indexOf('{fields.map(f =>'))
   const panel = read('../src/pages/admin/LandingPendingPanel.tsx')

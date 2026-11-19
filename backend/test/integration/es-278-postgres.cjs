@@ -22,7 +22,8 @@ test('ES-278 PostgreSQL + HTTP: planes de precio, validación del servidor', { t
       ['nombre de 10 000 caracteres', { name_es: 'x'.repeat(10000) }], ['nombre vacío', { name_en: '   ' }], ['nombre no texto', { name_es: 7 }],
       ['descripción enorme', { description_es: 'x'.repeat(5000) }], ['características no lista', { features_es: 'a' }], ['demasiadas características', { features_en: Array(21).fill('a') }], ['característica larga', { features_es: ['x'.repeat(201)] }],
       ['orden decimal', { order: 1.5 }], ['orden fuera de rango', { order: 2147483648 }], ['orden texto', { order: 'x' }], ['orden negativo', { order: -1 }],
-      ['moneda corta', { currency: 'US' }], ['moneda con número', { currency: 'USD1' }], ['período con mayúscula', { period: 'Month' }], ['destacado texto', { isHighlighted: 'si' }],
+      ['moneda corta', { currency: 'US' }], ['moneda con número', { currency: 'USD1' }], ['período con mayúscula', { period: 'Month' }],
+      ['moneda inexistente (H1)', { currency: 'XXX' }], ['moneda real pero no ofrecida (H1)', { currency: 'JPY' }], ['período inexistente (H1)', { period: 'decada' }], ['período retirado (E366-1)', { period: 'forever' }], ['período real pero no ofrecido (H1)', { period: 'week' }], ['destacado texto', { isHighlighted: 'si' }],
     ];
     const before = (await plans()).length;
     for (const [name, patch] of INVALID) {
@@ -41,7 +42,8 @@ test('ES-278 PostgreSQL + HTTP: planes de precio, validación del servidor', { t
 
   await t.test('crear: entradas válidas en los bordes (precio 0 explícito, decimal en texto, máximo, slug de 20)', async () => {
     const cases = [{ slug: 'cero', price: 0 }, { slug: 'doce-con-medio', price: '12.50' }, { slug: 'maximo', price: 99999999.99 }, { slug: 'a'.repeat(20), price: 1 },
-      { slug: 'con-guion-1', price: 3, currency: 'eur', period: 'year', order: 5, features_es: ['a'], features_en: ['b'] }];
+      { slug: 'con-guion-1', price: 3, currency: 'eur', period: 'year', order: 5, features_es: ['a'], features_en: ['b'] },
+      { slug: 'cop-anual', price: 0, currency: 'COP', period: 'year' }]; // H1: las tres monedas y los dos períodos que ofrece la pantalla (E366-1: sin `forever`)
     for (const c of cases) {
       const out = await post({ ...base, ...c });
       assert.equal(out.status, 201, JSON.stringify(c) + ' ' + JSON.stringify(out.body).slice(0, 100));

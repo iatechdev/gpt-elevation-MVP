@@ -4,7 +4,7 @@ import { registerCopy } from '../i18n/lazyCopy.ts'
 
 export const myProfessionalEs: Record<string, string> = {
   mp_title: 'Mi profesional', mp_back: 'Volver', mp_loading: 'Cargando…',
-  mp_load_error: 'No pudimos cargar la información de tu profesional ni de tus sesiones.', mp_retry: 'Reintentar',
+  mp_load_error: 'No pudimos cargar la información de tu profesional.', mp_sessions_error: 'No pudimos cargar tus sesiones.', mp_retry: 'Reintentar',
   mp_none_title: 'Aún no tienes un profesional asignado', mp_none_desc: 'Encuentra a la persona indicada según tus preferencias.', mp_find: 'Buscar mi profesional',
   mp_profile: 'Perfil', mp_specialties: 'Especialidades', mp_languages: 'Idiomas', mp_approach: 'Enfoque', mp_profile_empty: 'Perfil no completado aún.',
   mp_upcoming: 'Próximas sesiones', mp_upcoming_empty: 'Tu profesional aún no ha agendado una sesión.', mp_join: 'Entrar a videollamada', mp_join_wait: 'Disponible 15 minutos antes',
@@ -12,7 +12,7 @@ export const myProfessionalEs: Record<string, string> = {
 }
 export const myProfessionalEn: Record<string, string> = {
   mp_title: 'My professional', mp_back: 'Back', mp_loading: 'Loading…',
-  mp_load_error: 'We could not load your professional’s information or your sessions.', mp_retry: 'Try again',
+  mp_load_error: 'We could not load your professional’s information.', mp_sessions_error: 'We could not load your sessions.', mp_retry: 'Try again',
   mp_none_title: 'You don’t have a professional assigned yet', mp_none_desc: 'Find the right person based on your preferences.', mp_find: 'Find my professional',
   mp_profile: 'Profile', mp_specialties: 'Specialties', mp_languages: 'Languages', mp_approach: 'Approach', mp_profile_empty: 'Profile not completed yet.',
   mp_upcoming: 'Upcoming sessions', mp_upcoming_empty: 'Your professional has not scheduled a session yet.', mp_join: 'Join videocall', mp_join_wait: 'Available 15 minutes before',
