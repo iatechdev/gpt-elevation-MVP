@@ -1,0 +1,11 @@
+Evaluación de UN mensaje de 4.000 car., frío, PR y main alternados, 600 pares por forma (el historial de 11/21 es 11/21 veces esto)
+natural                  PR mín 1.62 p10 1.69 p50 3.07 p95 5.61 | main mín 1.60 p10 1.67 p50 3.02 p95 6.65 | razón p10 1.01× p50 1.02× p95 0.84×
+separadores mezclados    PR mín 1.17 p10 1.25 p50 1.43 p95 2.63 | main mín 1.13 p10 1.21 p50 1.39 p95 2.68 | razón p10 1.03× p50 1.03× p95 0.98×
+leet y números           PR mín 1.83 p10 1.93 p50 2.41 p95 3.98 | main mín 1.85 p10 1.90 p50 2.42 p95 3.88 | razón p10 1.01× p50 1.00× p95 1.02×
+rellenos y etiquetas     PR mín 1.44 p10 1.54 p50 2.79 p95 6.04 | main mín 1.49 p10 1.60 p50 2.88 p95 5.88 | razón p10 0.96× p50 0.97× p95 1.03×
+letras separadas         PR mín 2.02 p10 2.11 p50 3.99 p95 7.60 | main mín 2.00 p10 2.10 p50 3.91 p95 7.52 | razón p10 1.01× p50 1.02× p95 1.01×
+cirílico natural         PR mín 7.24 p10 10.05 p50 11.71 p95 22.62 | main mín 3.75 p10 5.19 p50 5.86 p95 11.48 | razón p10 1.94× p50 2.00× p95 1.97×
+griego natural           PR mín 9.48 p10 10.29 p50 11.30 p95 30.62 | main mín 4.86 p10 5.47 p50 5.99 p95 24.05 | razón p10 1.88× p50 1.89× p95 1.27×
+confusables densos       PR mín 7.92 p10 8.27 p50 9.42 p95 34.41 | main mín 3.74 p10 4.23 p50 4.63 p95 21.47 | razón p10 1.96× p50 2.03× p95 1.60×
+alargadas                PR mín 2.17 p10 2.44 p50 2.64 p95 16.73 | main mín 2.14 p10 2.39 p50 2.59 p95 12.40 | razón p10 1.02× p50 1.02× p95 1.35×
+PEOR razón p10 1.96× (regla de Dev ≤ 1,25×)

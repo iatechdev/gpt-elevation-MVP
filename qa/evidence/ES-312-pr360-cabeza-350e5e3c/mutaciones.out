@@ -1,0 +1,26 @@
+BASE prueba del PR (pasan/fallan): 19/0 | mi guion fallas: H1c CADA carácter de la tabla  | H4a ningún texto natural del r
+m1 tabla generada vacía: prueba del PR 15/4 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl)
+m2 quitar el paso de homoglifos: prueba del PR 14/5 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl | H5 textos SIN ningún carácte | H5/H6 ninguna bajada frente )
+m3 no emitir la segunda pasada (tabla completa): prueba del PR 13/6 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl | H4a ningún texto natural del)
+m4 mapeo erróneo de un carácter (ı → o): prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H3 el generador --check: la  | H3 regeneración independient | H1c CADA carácter de la tabl)
+m5 intercambiar dos destinos (ı↔ĸ): prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H3 el generador --check: la  | H3 regeneración independient | H1c CADA carácter de la tabl)
+m6 añadir una clave ASCII (a → b): prueba del PR 11/8 → DETECTADA | mi guion: DETECTADA (H2 la tabla cumple todas las | H3 el generador --check: la  | H3 regeneración independient)
+m7 destino en mayúscula (ı → I): prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H2 la tabla cumple todas las | H3 el generador --check: la  | H3 regeneración independient)
+m8 destino de varias letras (ı → ii): prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H2 la tabla cumple todas las | H3 el generador --check: la  | H3 regeneración independient)
+m9 quitar el armenio: prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H3 el generador --check: la  | H3 regeneración independient | H1c CADA carácter de la tabl)
+m10 quitar cherokee: prueba del PR 17/2 → DETECTADA | mi guion: DETECTADA (H3 el generador --check: la  | H3 regeneración independient | H1c CADA carácter de la tabl)
+m11 incluir CJK (一 → a): prueba del PR 17/2 → DETECTADA | mi guion: DETECTADA (H2 la tabla cumple todas las | H3 el generador --check: la  | H3 regeneración independient)
+m12 quitar la minúscula previa: prueba del PR 17/2 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl)
+m13 alterar la primera forma (no se emite): prueba del PR 13/6 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl | H5 textos SIN ningún carácte | H5/H6 ninguna bajada frente )
+m14 clave de Latin-1 (ñ → n): prueba del PR 15/4 → DETECTADA | mi guion: DETECTADA (H2 la tabla cumple todas las | H2 ninguna clave toca los ca | H3 el generador --check: la )
+m15 no escanear las claves nuevas (pasada completa con el escaneo manual): prueba del PR 15/4 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl)
+m16 la tabla generada manda sobre la manual (equivalente: sin claves comunes): prueba del PR 19/0 → no detecta | mi guion: no detecta
+m17 la pasada de siempre usa la tabla completa (vuelve la regresión E312-1): prueba del PR 18/1 → DETECTADA | mi guion: DETECTADA (H5/H6 ninguna bajada frente )
+m18 la segunda pasada nunca se evalúa: prueba del PR 13/6 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl | H4a ningún texto natural del)
+m19 la segunda pasada solo con letras de la tabla manual: prueba del PR 15/4 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl)
+m20 tabla PREVIA vacía: prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl | H4a ningún texto natural del)
+m21 la PREVIA solo antes de NFKC (no otra vez después): prueba del PR 19/0 → no detecta | mi guion: no detecta
+m22 nunca se activa la pasada por letras PREVIAS: prueba del PR 16/3 → DETECTADA | mi guion: DETECTADA (H1c CADA carácter de la tabl | H4a ningún texto natural del)
+m23 destino erróneo en la PREVIA (Μ → n): prueba del PR 17/2 → DETECTADA | mi guion: DETECTADA (H3 el generador --check: la )
+m24 clave ASCII en la PREVIA (A → b): prueba del PR 14/5 → DETECTADA | mi guion: DETECTADA (H2 la tabla PREVIA cumple la | H3 el generador --check: la  | H1c CADA carácter de la tabl)
+SOBREVIVEN: 2 de 24

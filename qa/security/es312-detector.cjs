@@ -15,7 +15,9 @@ const TABLE = require(path.join(SUT, 'utils', 'confusables-table.js')); const MA
 const cp = (...c) => String.fromCodePoint(...c); const hex = (c) => 'U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
 const rank = (r) => ({ high: 2, medium: 1 }[r.level] || 0); const key = (r) => (r.level || 'null') + '/' + (r.lang || '-');
 const safe = (fn, t) => { try { return fn(t); } catch (e) { return { level: 'EXC:' + String(e.message).slice(0, 40), lang: null }; } };
-const keys = Object.keys(TABLE);
+const PREP = path.join(SUT, 'utils', 'confusables-pre.js'); const PRE = fs.existsSync(PREP) ? require(PREP) : {};
+const preKeys = Object.keys(PRE); const keys = [...Object.keys(TABLE), ...preKeys]; // en los barridos, tabla y PREVIA
+const allMap = { ...TABLE, ...PRE };
 const SEEDS = ['quiero morir', 'voy a matarme', 'suicidio', 'no quiero vivir', 'quitarme la vida', 'mejor me desaparezco', 'no vale la pena vivir', 'cortarme las venas', 'kill myself', 'i want to die', 'better off dead', 'suicide', 'end my life', 'hurt myself', 'i want to disappear', 'jump off a bridge', 'no reason to live', 'overdose', 'quiero ahorcarme', 'hacerme daño'];
 const SEEDS_HIGH = SEEDS.filter((s) => det(s).level === 'high' && OLD(s).level === 'high');
 
@@ -40,6 +42,9 @@ if (CASES.has('h2')) {
   }
   check('H2 la tabla cumple todas las reglas (destino a-z, sin ASCII/Latin-1/acentuadas/cifras, una letra, escritura permitida, estable bajo NFKC, sin solapar la manual)', bad.length === 0, `${keys.length} entradas; ${bad.length} violaciones ${bad.slice(0, 8).join(' | ')}`);
   info('H2 por escritura', JSON.stringify(byScript)); info('H2 claves en U+0100–U+024F (Latín extendido: el rango que se escanea además por clave)', inLatinExt.join(' '));
+  const badPre = []; for (const [k, v] of Object.entries(PRE)) { const c = k.codePointAt(0); if ([...k].length !== 1) badPre.push(hex(k) + ' varios'); if (!/^[a-z]$/.test(v)) badPre.push(hex(k) + ' destino ' + v); if (c <= 0xFF) badPre.push(hex(k) + ' ASCII/Latin-1'); if (!/^\p{L}$/u.test(k) || !SCRIPTS.test(k)) badPre.push(hex(k) + ' no letra/escritura'); if (TABLE[k] !== undefined || MANUAL[k] !== undefined) badPre.push(hex(k) + ' solapa otra tabla'); if (k.normalize('NFD') !== k) badPre.push(hex(k) + ' acento'); }
+  check('H2 la tabla PREVIA cumple las mismas reglas (destino a-z, una letra, sin ASCII/Latin-1, escritura permitida, sin solapar)', badPre.length === 0 && preKeys.length > 0, preKeys.length + ' entradas; ' + badPre.slice(0, 6).join(' | '));
+  info('H2 claves de la tabla PREVIA', preKeys.map((k) => k + '→' + PRE[k]).join(' '));
   const esLetters = 'ñáéíóúüÑÁÉÍÓÚÜ¿¡'; check('H2 ninguna clave toca los caracteres del español', ![...esLetters].some((c) => TABLE[c] !== undefined || TABLE[c.toLowerCase()] !== undefined), '');
   info('H2 destinos usados', [...new Set(Object.values(TABLE))].sort().join(''));
   // mapeos con riesgo visual: letras griegas/cirílicas minúsculas de uso real en nombres (falsos positivos solo si la letra reasignada forma una frase de crisis)
@@ -90,7 +95,7 @@ if (CASES.has('h1')) {
   // cada carácter de la tabla en frases de crisis ES/EN
   const rows = []; let noPhrase = []; const failing = [];
   for (const k of keys) {
-    const L = TABLE[k]; const seeds = SEEDS_HIGH.filter((s) => s.includes(L)); if (!seeds.length) { noPhrase.push(`${k}(${hex(k)}→${L})`); continue; }
+    const L = allMap[k]; const seeds = SEEDS_HIGH.filter((s) => s.includes(L)); if (!seeds.length) { noPhrase.push(`${k}(${hex(k)}→${L})`); continue; }
     const bad = [];
     for (const s of seeds) {
       const all = s.split(L).join(k); const first = s.replace(L, k); const up = all.toUpperCase(); const zw = [...all].join('\u200b'); const fw = [...s].map((ch) => (ch === L ? k : /[a-z]/.test(ch) ? String.fromCodePoint(ch.charCodeAt(0) - 0x61 + 0xFF41) : ch)).join(''); const fill = [...all].join('\u3164'); const sp = all.replace(/ /g, '   ');
@@ -114,7 +119,7 @@ if (CASES.has('h4')) {
   const BENIGN = ['Quiero cambiar de carrera y aprender análisis de datos', 'Tengo 5 años de experiencia en ventas y atención al cliente', 'Mi salario actual es de 3.500.000 COP al mes', 'Trabajo con SQL, Python y Excel todos los días', 'La entrevista es el martes a las 10:30 en la oficina', 'Me gustaría un rol de gerente de proyectos en una empresa tecnológica', 'Estudié administración de empresas en la Universidad Nacional', 'Necesito mejorar mi hoja de vida y mi perfil de LinkedIn', 'Quiero un plan de 90 días para pasar a producto', 'Mi jefa me pidió liderar el equipo de soporte', 'I want to move from sales into product management', 'I have 8 years of experience in logistics and operations', 'My target salary is 85k USD per year', 'Can you help me prepare for an interview next week?', 'I work with SQL, Tableau and a bit of Python', 'The deadline for the project is on Friday', 'Estoy leyendo sobre inteligencia artificial y automatización', 'Prefiero trabajar de forma remota con horarios flexibles', 'Mi ciudad es Medellín y me gustaría quedarme allí', 'Quiero aprender inglés para aplicar a empresas internacionales', 'Hice un curso de marketing digital y de diseño UX', 'Me interesa el sector salud y la consultoría', 'Llevo dos meses buscando trabajo y mandando solicitudes', 'Gracias por la ayuda, fue muy útil la conversación de hoy', 'What skills should I list for a data analyst role?', 'I would like to negotiate my offer and benefits', 'Mi equipo usa Scrum con sprints de dos semanas', 'Tengo una reunión con recursos humanos mañana', 'Necesito una carta de presentación para una vacante en Bogotá', 'Quiero montar mi propio negocio de café', 'Me gusta cocinar, viajar y leer novelas', 'El proyecto terminó bien y nos felicitaron', 'I am nervous about my first day at the new job', 'Estoy un poco cansado pero motivado con el cambio', 'My manager asked me to lead the migration to the cloud', 'Quiero saber qué certificaciones valen la pena para PMO', 'Mi experiencia incluye KPIs, OKRs y tableros de control', 'Sueño con trabajar en una startup de tecnología', 'Estoy evaluando dos ofertas de trabajo en este momento', 'How long does it usually take to switch careers?', 'Mi hija nació hace un mes y busco un horario estable', 'Hablo español, inglés y un poco de portugués', 'Voy a viajar la próxima semana por trabajo', 'Necesito tiempo para pensar qué quiero hacer', 'I need a plan for the next three months', 'Uso Notion, Slack y Jira en mi trabajo', 'Quiero practicar mi presentación para la entrevista', 'Tengo experiencia en contabilidad y finanzas', 'ID 4521 y número de caso 889', 'Mi correo es persona@example.invalid'];
   check('H4 base: las frases benignas no se detectan en main ni en la cabeza', BENIGN.every((b) => det(b).level === null && OLD(b).level === null), `${BENIGN.length} frases; no nulas: ${BENIGN.filter((b) => det(b).level !== null || OLD(b).level !== null).join(' | ')}`);
   let n = 0; const fp = [];
-  for (const k of keys) { const L = TABLE[k];
+  for (const k of keys) { const L = allMap[k];
     for (const b of BENIGN) {
       const variants = [k + ' ' + b, b + ' ' + k, b.replace(/ /g, ' ' + k + ' '), b.replace(L, k), b.split(L).join(k), b.replace(/\b(\w)/, k + '$1'), b.split(' ').map((w) => w[0] + k + w.slice(1)).join(' '), b.toUpperCase().split(L.toUpperCase()).join(k)];
       for (const v of variants) { n++; const r = det(v); const o = OLD(v); if (r.level !== o.level || r.lang !== o.lang) fp.push(`${hex(k)}→${L}: ${JSON.stringify(v.slice(0, 70))} PR ${key(r)} main ${key(o)}`); }
@@ -149,10 +154,10 @@ if (CASES.has('h5')) {
   for (const f of walk(path.join(REPO, 'frontend', 'src')).filter((x) => /(i18n|locale|translations?|copy)/i.test(x) && /\.(json|ts|tsx|js)$/.test(x))) for (const m of fs.readFileSync(f, 'utf8').matchAll(/(['"`])((?:\\.|(?!\1).){15,400})\1/g)) nat.add(m[2]);
   const natArr = [...nat]; texts.push(...natArr);
   // cada carácter de la tabla en cada frase de crisis (todas las apariciones, la primera, intercalado)
-  for (const k of keys) for (const s of seeds) { const L = TABLE[k]; if (s.includes(L)) texts.push(s.split(L).join(k), s.replace(L, k)); texts.push([...s].join(k), k + s, s + k); }
+  for (const k of keys) for (const s of seeds) { const L = allMap[k]; if (s.includes(L)) texts.push(s.split(L).join(k), s.replace(L, k)); texts.push([...s].join(k), k + s, s + k); }
   const alpha = ['a', 'e', 'i', 'o', 'u', 'r', 'm', 's', 'k', 'l', 'q', 'v', 'd', 'n', 't', ' ', ' ', ' ', '.', ',', '-', '_', '*', '\n', '\t', '1', '3', '4', '0', '5', '7', '@', '$', 'о', 'е', 'і', 'ο', 'ｑ', 'ｕ', 'ñ', 'é', 'º', 'ª', 'ı', '\u200b', '\u3164', '\u0301', cp(0xE0041), cp(0xE0071), 'ㅤ', '⠀', ...keys.filter((_, i) => i % 3 === 0)];
   for (let i = 0; i < 40000; i++) { const n = 5 + Math.floor(rnd() * 60); let s = ''; for (let j = 0; j < n; j++) s += pick(alpha); if (rnd() < 0.5) { const sd = pick(seeds); const form = pick([sd, [...sd].join(pick([' ', '.', '\u200b', '-', cp(0xE0041), '\u3164'])), sd.replace(/o/g, pick(['0', 'о', 'ο', 'º', 'ᴏ', 'օ'])), sd.replace(/[aeio]/g, (c) => ({ a: '4', e: '3', i: '1', o: '0' }[c])), sd.replace(/(.)/g, '$1$1')]); const at = Math.floor(rnd() * s.length); s = s.slice(0, at) + form + s.slice(at); } texts.push(s); }
-  const isKey = (t) => { for (const c of t.normalize('NFKC').toLowerCase()) if (TABLE[c] !== undefined && MANUAL[c] === undefined) return true; return false; };
+  const isKey = (t) => { for (const c of t) if (PRE[c] !== undefined) return true; for (const c of t.normalize('NFKC').toLowerCase()) if (TABLE[c] !== undefined && MANUAL[c] === undefined) return true; return false; };
   let total = 0, withKey = 0, same = 0; const bad = []; const ups = []; const natDiff = []; const downs = [];
   for (const t of texts) { total++; const a = det(t); const o = OLD(t); const hk = isKey(t);
     if (hk) withKey++;

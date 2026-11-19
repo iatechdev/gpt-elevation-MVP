@@ -1,0 +1,11 @@
+11 × 4.000 car., FRÍO (memoria vaciada en cada evaluación), meta < 100 ms
+natural                  p95 de 3 corridas: 43.6 / 46 / 113.3 → MEDIANA 46 ms ✔ | peor 113.3 ms  | main (mediana de p95) 54.7 ms
+separadores mezclados    p95 de 3 corridas: 92.7 / 71.1 / 200.6 → MEDIANA 92.7 ms ✔ | peor 200.6 ms (> 2× meta) | main (mediana de p95) 42.1 ms
+leet y números           p95 de 3 corridas: 53 / 43.8 / 114.3 → MEDIANA 53 ms ✔ | peor 114.3 ms  | main (mediana de p95) 62.2 ms
+rellenos y etiquetas     p95 de 3 corridas: 56.9 / 25.2 / 87 → MEDIANA 56.9 ms ✔ | peor 87 ms  | main (mediana de p95) 44.8 ms
+letras separadas         p95 de 3 corridas: 92.5 / 43.7 / 162.2 → MEDIANA 92.5 ms ✔ | peor 162.2 ms  | main (mediana de p95) 87.5 ms
+cirílico natural         p95 de 3 corridas: 205.6 / 127.3 / 297 → MEDIANA 205.6 ms ✘ | peor 297 ms (> 2× meta) | main (mediana de p95) 146.8 ms
+griego natural           p95 de 3 corridas: 219.7 / 174.1 / 257.1 → MEDIANA 219.7 ms ✘ | peor 257.1 ms (> 2× meta) | main (mediana de p95) 82.9 ms
+confusables densos       p95 de 3 corridas: 130.5 / 143.3 / 125.8 → MEDIANA 130.5 ms ✘ | peor 143.3 ms  | main (mediana de p95) 88 ms
+alargadas                p95 de 3 corridas: 32.4 / 72.1 / 34.2 → MEDIANA 34.2 ms ✔ | peor 72.1 ms  | main (mediana de p95) 59.3 ms
+VEREDICTO: NO CUMPLE; peor p95 de todas: 297 ms → hallazgo Medio por peor p95 > 2× meta
