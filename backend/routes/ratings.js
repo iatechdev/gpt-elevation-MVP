@@ -7,7 +7,7 @@ const express       = require('express');
 const router        = express.Router();
 const SessionRating = require('../SessionRating');
 const { sequelize } = require('../database');
-const { MIN_AVERAGE_SAMPLE } = require('../utils/minAverageSample');
+const { MIN_AVERAGE_SAMPLE, MIN_DISTINCT_PEOPLE } = require('../utils/minAverageSample');
 const { validateBody, score } = require('../middlewares/validateBody');
 const { verificarAdmin } = require('../middlewares/auth');
 
@@ -28,14 +28,16 @@ router.post('/rating', validateBody({ rating: score }), async (req, res) => {
 
 // GET /api/rating/avg — solo admin (ES-98, ES93-B3: antes lo decía el comentario pero lo podía llamar cualquier participante)
 // ES-273: el promedio se calcula en SQL solo con valoraciones VÁLIDAS (1-5, no nulas); `total` es el número de valoraciones válidas. Con menos de
-// MIN_AVERAGE_SAMPLE válidas (QA-18-02, igual que /api/admin/metrics) o sin ninguna, `avg` es null: nunca 0 ni el valor de una sola persona.
+// MIN_AVERAGE_SAMPLE válidas O de menos de MIN_DISTINCT_PEOPLE personas distintas (QA-18-02 / ES-348, la misma regla que /api/admin/metrics) o sin ninguna, `avg` es null:
+// nunca 0 ni el valor de una sola persona (cinco valoraciones de UNA persona siguen siendo su valor individual).
 router.get('/rating/avg', verificarAdmin, async (req, res) => {
   try {
     const [row] = await sequelize.query(
       `SELECT count("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5)::int AS "total",
+              count(DISTINCT "UserId") FILTER (WHERE "rating" BETWEEN 1 AND 5)::int AS "people",
               ROUND((AVG("rating") FILTER (WHERE "rating" BETWEEN 1 AND 5))::numeric, 1) AS "avg"
        FROM "SessionRatings"`, { type: 'SELECT' });
-    res.json({ avg: row.total >= MIN_AVERAGE_SAMPLE && row.avg !== null ? Number(row.avg) : null, total: row.total });
+    res.json({ avg: row.total >= MIN_AVERAGE_SAMPLE && row.people >= MIN_DISTINCT_PEOPLE && row.avg !== null ? Number(row.avg) : null, total: row.total });
   } catch (error) {
     console.error('❌ Error obteniendo promedio:', error);
     res.status(500).json({ error: 'No se pudo obtener el promedio.' });

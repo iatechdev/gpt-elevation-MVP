@@ -79,6 +79,22 @@ test('ES-273 PostgreSQL: /api/rating/avg con valoraciones válidas, mínimo de 5
     assert.deepEqual((await call(adm)).body, { avg: 3, total: 5 }, '1, 5, 3, 3, 3 → 3; 30000 y 0 no cuentan');
   });
 
+  await t.test('ES-348: además de 5 valoraciones se exigen 3 personas DISTINTAS: 5 de una persona o de dos → avg null (total = válidas); de tres personas → promedio', async () => {
+    const put = async (rows) => {
+      await sequelize.query('DELETE FROM "SessionRatings"');
+      for (const [userId, value] of rows) await sequelize.query('INSERT INTO "SessionRatings" ("UserId","rating","date","createdAt","updatedAt") VALUES ($1,$2,CURRENT_DATE,now(),now())', { bind: [userId, value] });
+    };
+    const U = plain.id;
+    await put([[U, 5], [U, 5], [U, 4], [U, 4], [U, 3], [U, 3]]); // 6 valoraciones, 1 persona
+    assert.deepEqual((await call(adm)).body, { avg: null, total: 6 });
+    await put([[U, 5], [U, 5], [U, 4], [U + 1, 4], [U + 1, 3], [U + 1, 3]]); // 6 valoraciones, 2 personas
+    assert.deepEqual((await call(adm)).body, { avg: null, total: 6 });
+    await put([[U, 5], [U, 5], [U + 1, 4], [U + 1, 4], [U + 2, 3]]); // 5 valoraciones, 3 personas: justo en el mínimo
+    assert.deepEqual((await call(adm)).body, { avg: 4.2, total: 5 });
+    await put([[U, 5], [U, 5], [U + 1, 4], [U + 1, 4], [U + 2, 30000], [U + 2, 0]]); // la tercera persona solo trae valores fuera de escala: no cuenta como persona válida
+    assert.deepEqual((await call(adm)).body, { avg: null, total: 4 });
+  });
+
   await t.test('roles sin cambios: sin sesión 401/403, persona y profesional 403 sin cifras; admin y superadmin 200', async () => {
     await set([1, 2, 3, 4, 5]);
     assert.ok([401, 403].includes((await call(null)).status));
