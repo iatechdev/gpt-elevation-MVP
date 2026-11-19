@@ -30,20 +30,21 @@ const FORMAT_AND_MARKS = /[\p{Cf}\p{Mn}\p{Me}\uE000-\uF8FF]/gu; // \p{Cf} incluy
 const MANUAL_HOMOGLYPHS = require('./homoglyphs-manual.js');
 const TABLE_HOMOGLYPHS = require('./confusables-table.js');
 const HOMOGLYPHS = { ...TABLE_HOMOGLYPHS, ...MANUAL_HOMOGLYPHS };
-// Escaneo de SIEMPRE (ES-304): solo la tabla manual. Es la «forma anterior»: nada que se detectaba antes deja de detectarse (la tabla nueva solo puede AÑADIR formas, nunca quitar una).
-const MANUAL_SCAN = /[^\u0000-\u007F\u00A0-\u024F]/g;
-// Escaneo con la tabla completa: además de lo de arriba, las claves de la tabla que caen dentro de U+00A0–U+024F («ı» U+0131, «ĸ» U+0138); el resto de ese rango son letras latinas acentuadas que NO se tocan.
+// Escaneos: solo las letras que SÍ están en la tabla (antes se miraba todo carácter no ASCII y se buscaba en la tabla; el resultado es el mismo —lo que no está en la tabla queda igual— pero un texto cirílico o
+// griego de 4.000 caracteres ya no dispara 4.000 llamadas). El de SIEMPRE (ES-304) usa solo la tabla manual: es la «forma anterior»; nada que se detectaba antes deja de detectarse (la tabla nueva solo AÑADE formas).
+// Las claves de la tabla que caen dentro de U+00A0–U+024F («ı» U+0131, «ĸ» U+0138) entran; el resto de ese rango son letras latinas acentuadas que NO se tocan.
 const cpEscape = (cp) => '\\u{' + cp.toString(16) + '}';
-const INSIDE_LATIN = Object.keys(HOMOGLYPHS).map((c) => c.codePointAt(0)).filter((cp) => cp >= 0xA0 && cp <= 0x24F).map(cpEscape).join('');
-const FULL_SCAN = new RegExp('[^\\u{0}-\\u{7F}\\u{A0}-\\u{24F}]' + (INSIDE_LATIN ? '|[' + INSIDE_LATIN + ']' : ''), 'gu');
+const scanOf = (table) => new RegExp('[' + Object.keys(table).map((c) => cpEscape(c.codePointAt(0))).join('') + ']', 'gu');
+const MANUAL_SCAN = scanOf(MANUAL_HOMOGLYPHS);
+const FULL_SCAN = scanOf(HOMOGLYPHS);
 // ¿El texto trae alguna letra de la tabla NUEVA? Solo entonces se evalúa además la forma con la tabla completa.
-const NEW_KEYS = new RegExp('[' + Object.keys(TABLE_HOMOGLYPHS).map((c) => cpEscape(c.codePointAt(0))).join('') + ']', 'u');
+const NEW_KEYS = new RegExp(scanOf(TABLE_HOMOGLYPHS).source, 'u');
 const LEET = { 4: 'a', 3: 'e', 1: 'i', 0: 'o', 5: 's', 7: 't', '@': 'a', $: 's' };
 const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 
 // Paso 1: NFKC (ancho completo, letras matemáticas), minúsculas, rellenos y marcas fuera, homoglifos a latín.
 // `filler`: los rellenos que se ven en blanco se quitan (intercalados entre letras) o se toman por ESPACIO (separan palabras): se prueban las dos lecturas.
-const makeUnmask = (table, scan) => (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(scan, (c) => table[c] || c);
+const makeUnmask = (table, scan) => (text, filler = '', lowered) => (lowered === undefined ? String(text).normalize('NFKC').toLowerCase() : lowered).replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(scan, (c) => table[c] || c);
 const unmaskManual = makeUnmask(MANUAL_HOMOGLYPHS, MANUAL_SCAN); // exactamente lo que hacía main
 const unmask = makeUnmask(HOMOGLYPHS, FULL_SCAN); // con la tabla completa
 // Paso 2: una frase escrita SOLO con caracteres de etiqueta (U+E0020–E007E) se decodifica a ASCII.
@@ -66,17 +67,17 @@ const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 // E304-8: «llano» = ASCII visible + letras latinas acentuadas + ¡ ¿ « ». NO incluye ª º ¹ ² ³ ¨ ¯ ´ ¸ ni otros símbolos de Latin-1 que NFKC convierte o que se intercalan entre letras («quierº mºrir», «su¹c¹d¹o»).
 const PLAIN = /^[\x20-\x7e\n\r\t\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u00a1\u00bf\u00ab\u00bb]*$/;
 const tidy = (text) => text.replace(/\s+/g, ' ');
-function* riskFormsWith(raw, unmask, fresh) {
+function* riskFormsWith(raw, unmask, fresh, nfkc = raw.normalize('NFKC'), lowered = nfkc.toLowerCase()) {
   const first = flat(raw); if (fresh(first)) yield first;
   const plain = PLAIN.test(raw);
-  const open = plain ? raw.toLowerCase() : unmask(raw); // sin plegar: «letras separadas» y «palabras separadas» dependen de los espacios múltiples
+  const open = plain ? raw.toLowerCase() : unmask(raw, '', lowered); // sin plegar: «letras separadas» y «palabras separadas» dependen de los espacios múltiples
   const base = plain ? first : flat(open); // plegado una vez; las derivadas parten de aquí
   if (!plain && fresh(base)) yield base;
   const joined = joinSpelled(open); const spelled = joined === open ? base : flat(joined);
   const split = spellWords(open); const words = split === open ? base : flat(split);
   for (const thunk of [() => spelled, () => words, () => tidy(unleet(spelled)), () => tidy(halve(spelled)), () => tidy(halve(words)), () => tidy(squeeze(unleet(spelled))), () => tidy(spaceOut(base)), () => tidy(spaceOut(spelled))]) { const f = thunk(); if (fresh(f)) yield f; }
-  if (!plain && FILLER_TEST.test(raw.normalize('NFKC'))) {
-    const spacedOpen = unmask(raw, ' '); const spaced = flat(spacedOpen); const spacedJoined = joinSpelled(spacedOpen);
+  if (!plain && FILLER_TEST.test(nfkc)) {
+    const spacedOpen = unmask(raw, ' ', lowered); const spaced = flat(spacedOpen); const spacedJoined = joinSpelled(spacedOpen);
     for (const thunk of [() => spaced, () => (spacedJoined === spacedOpen ? spaced : flat(spacedJoined)), () => tidy(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
@@ -86,8 +87,9 @@ function* riskFormsWith(raw, unmask, fresh) {
 function* riskForms(text) {
   const raw = String(text); const seen = new Set();
   const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
-  yield* riskFormsWith(raw, unmaskManual, fresh);
-  if (!PLAIN.test(raw) && NEW_KEYS.test(raw.normalize('NFKC').toLowerCase())) yield* riskFormsWith(raw, unmask, fresh);
+  const plain = PLAIN.test(raw); const nfkc = plain ? raw : raw.normalize('NFKC'); const lowered = plain ? raw.toLowerCase() : nfkc.toLowerCase(); // UNA normalización por texto para las dos pasadas
+  yield* riskFormsWith(raw, unmaskManual, fresh, nfkc, lowered);
+  if (!plain && NEW_KEYS.test(lowered)) yield* riskFormsWith(raw, unmask, fresh, nfkc, lowered);
 }
 
 // Patrones sobre texto sin acentos, en minúsculas.
