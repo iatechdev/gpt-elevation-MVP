@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
 import { useSessionEntry } from '../../access/useSessionEntry'
@@ -7,6 +8,13 @@ import { planIntent } from '../../pricing/plans'
 import { usePlanRequests, usePlans } from '../../pricing/usePlans'
 import { PlanCards } from './PlanCards'
 import '../../pricing/pricing.css'
+
+// ES-328 (P342-1): el marcador de carga reserva el MISMO número de tarjetas que tuvo el catálogo la última vez que se vio en esta pestaña (solo un número, en sessionStorage;
+// sin dato previo, 4: los planes del piloto). Así el pie no sube ni baja al llegar el catálogo. Sin almacenamiento disponible, 4.
+const COUNT_KEY = 'elv_plans_count'
+const lastCount = (): number | null => {
+  try { const raw = sessionStorage.getItem(COUNT_KEY); const n = Number(raw); return raw !== null && Number.isInteger(n) && n >= 0 && n <= 8 ? n : null } catch { return null }
+}
 
 const base = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 type Text = (key: string) => string
@@ -24,12 +32,15 @@ export function LandingPlans({ text, fullPage = false }: { text: Text; fullPage?
   const disabled = ['checking', 'unavailable'].includes(entry.result.status) || (verified && (!requests.ready || !!requests.pending || requests.state === 'sending'))
   const send = async (id: number) => { if (await requests.send(id)) catalog.refresh() }
   const title = text('landing.pricing.title')
+  const [expected] = useState(lastCount)
+  useEffect(() => { if (catalog.state === 'ready') { try { sessionStorage.setItem(COUNT_KEY, String(Math.min(catalog.plans.length, 8))) } catch { /* sin almacenamiento */ } } }, [catalog.state, catalog.plans.length])
+  const slots = expected === null ? 4 : Math.min(Math.max(expected, 1), 4)
   const Title = fullPage ? 'h1' : 'h2'
   return <section id="planes" tabIndex={-1} className={`pp-plans ${fullPage ? 'pp-plans--page' : ''}`.trim()} aria-labelledby="landing-pricing-title">
     <div className="pp-plans-inner">
       <p className="pp-plans-label">{text('landing.nav.plans')}</p>
       <Title id="landing-pricing-title" className="pp-title">{title}</Title>
-      {catalog.state === 'loading' && <div className="pp-state" role="status" aria-live="polite" aria-busy="true"><p>{text('landing.pricing.loading')}</p><div className="pp-grid" aria-hidden="true">{[0, 1, 2, 3].map(slot => <div key={slot} className="pp-skel" />)}</div></div>}
+      {catalog.state === 'loading' && <div className="pp-state" role="status" aria-live="polite" aria-busy="true"><p>{text('landing.pricing.loading')}</p><div className={`pp-grid ${expected === 0 ? 'pp-grid--empty' : ''}`.trim()} aria-hidden="true">{Array.from({ length: expected === 0 ? 1 : slots }, (_, slot) => <div key={slot} className="pp-skel" />)}</div></div>}
       {catalog.state === 'error' && <div className="pp-state" role="alert"><div className="cg-banner cg-banner--error"><span className="cg-banner__title">{text('landing.pricing.load_error')}</span></div><Button variant="ghost" onClick={catalog.refresh}>{text('landing.pricing.retry')}</Button></div>}
       {catalog.state === 'ready' && catalog.plans.length === 0 && <div className="pp-state"><p role="status">{text('landing.pricing.empty')}</p></div>}
       {catalog.state === 'ready' && catalog.plans.length > 0 && <>

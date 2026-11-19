@@ -1,5 +1,5 @@
 /* ES-328 (PR 1): planes en Cartografía. Solo tokens --cg-*; sin colores fijos. Sustituye al estilo de ES-73 (landing-*). La sección sirve a /pricing y a la portada (#planes). */
-.pp-plans { min-width: 0; overflow-wrap: anywhere; scroll-margin-top: 7rem; padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--cg-line); }
+.pp-plans { min-width: 0; overflow-wrap: anywhere; scroll-margin-top: 1rem; padding: 2.5rem 1.5rem 4rem; border-top: 1px solid var(--cg-line); }
 .pp-plans--page { padding: 1.5rem 0 1rem; border-top: 0; }
 .pp-plans-inner { width: 100%; max-width: 1280px; margin-inline: auto; }
 .pp-plans-label { margin: 0; font: 600 .78rem var(--cg-font-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--cg-muted); }
@@ -22,6 +22,8 @@
 /* Cargando, vacío y error ocupan lo mismo (aviso + hueco de las tarjetas): al llegar el catálogo la sección no se encoge y no empuja lo de abajo (E282-1, CLS al llegar por /#planes). */
 .pp-state { min-height: calc(14rem + 27px); }
 /* Marcador de las tarjetas mientras llega el catálogo: la misma rejilla y una altura parecida a la de una tarjeta, así el aviso y el pie de abajo no saltan al llegar (CLS ≤ 0,1 a 390 px). */
+.pp-grid--empty { grid-template-columns: minmax(0, 1fr); }
+.pp-grid--empty .pp-skel { min-height: 14rem; } /* el catálogo estuvo vacío la última vez: el marcador ocupa lo que el aviso de «sin planes» */
 .pp-skel { min-height: 22rem; border: 1.5px dashed var(--cg-line); background: var(--cg-panel); }
 .pp-state .cg-banner { margin: 0 0 1rem; }
 .pp-status > p, .pp-status > div { margin: .4rem 0; }
