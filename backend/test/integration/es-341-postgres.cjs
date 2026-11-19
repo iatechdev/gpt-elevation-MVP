@@ -182,8 +182,8 @@ test('ES-341 PostgreSQL + HTTP: lista de usuarios con agregados por lote, idént
   }
   assert.equal((await http(adm, '/api/admin/usuarios?therapistId=2147483647')).status, 200); // el máximo int32 es válido (lista vacía)
 
-  // Guardas de rol: sin sesión 403 (verificarAdmin, como antes), personas y profesionales 403; nunca la lista.
-  assert.equal((await http(null, '/api/admin/usuarios')).status, 403);
+  // Guardas de rol: sin sesión 401 (ES-332; antes 403), personas y profesionales 403; nunca la lista.
+  assert.equal((await http(null, '/api/admin/usuarios')).status, 401);
   for (const who of [hand.vacia, bulk.find((u) => u.role === 'therapist')]) {
     const r = await http(who, '/api/admin/usuarios');
     assert.equal(r.status, 403); assert.ok(!Array.isArray(r.body));

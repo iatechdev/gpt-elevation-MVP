@@ -92,7 +92,7 @@ test('ES-18: expirado, alterado, otra firma, sin jti y sin cabecera se rechazan'
   assert.equal((await call(request, 'GET', '/api/messages', jwt.sign({ id: 101, role: 'user', jti: 'x' }, randomBytes(32).toString('hex')))).status, 401);
   // Token anterior a ES-18 (sin jti)
   assert.equal((await call(request, 'GET', '/api/messages', jwt.sign({ id: 101, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' }))).status, 401);
-  assert.equal((await call(request, 'GET', '/api/messages')).status, 403);
+  assert.equal((await call(request, 'GET', '/api/messages')).status, 401);
   const forgedAlg = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url')
     + '.' + Buffer.from(JSON.stringify({ id: 1, role: 'superadmin', jti: 'x' })).toString('base64url') + '.';
   assert.equal((await call(request, 'GET', '/api/admin/usuarios', forgedAlg)).status, 401);

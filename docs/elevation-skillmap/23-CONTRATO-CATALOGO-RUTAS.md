@@ -47,7 +47,7 @@ Dos tablas nuevas: `RouteCatalogs` (versión, estado, publicación) y `RouteCata
 
 ## 6. Pruebas previstas
 
-Roles (solo admin escribe; participante lee solo lo publicado; sin sesión 403) · cada regla del §3, una por una · referencias cruzadas rotas · contexto fuera del máximo de 6 · rol sin fuente fechada, sin revisión de dominio o con mercado ausente · oferta sin salario declarado, con verificación vencida o sin ella, con más de 10 por rol · recurso sin precio declarado / sin ejercicio · tarea con porcentaje de reemplazo o «sin futuro» · profesión regulada sin nota de habilitación · URL `http`, con credenciales o `javascript:` · fuente antigua / inaccesible → `stale` · publicación inmutable y concurrencia en **Postgres real** (dos borradores, dos publicaciones a la vez) · que el módulo no importe nada de red · mutaciones de los controles críticos · errores ES/EN.
+Roles (solo admin escribe; participante lee solo lo publicado; sin sesión 401 (ES-332)) · cada regla del §3, una por una · referencias cruzadas rotas · contexto fuera del máximo de 6 · rol sin fuente fechada, sin revisión de dominio o con mercado ausente · oferta sin salario declarado, con verificación vencida o sin ella, con más de 10 por rol · recurso sin precio declarado / sin ejercicio · tarea con porcentaje de reemplazo o «sin futuro» · profesión regulada sin nota de habilitación · URL `http`, con credenciales o `javascript:` · fuente antigua / inaccesible → `stale` · publicación inmutable y concurrencia en **Postgres real** (dos borradores, dos publicaciones a la vez) · que el módulo no importe nada de red · mutaciones de los controles críticos · errores ES/EN.
 
 ## 7. Lo que no cubre
 

@@ -13,7 +13,7 @@ test('QA-9-01', async t => {
   }));
   for (const [method, path, status] of [
     ['GET', '/api/health', 200],
-    ['POST', '/api/pricing', 403],
+    ['POST', '/api/pricing', 401],
   ]) {
     const response = await fetch(`http://127.0.0.1:${server.address().port}${path}`, {
       method, ...(method === 'POST' ? {

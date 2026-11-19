@@ -31,7 +31,7 @@ test('P1-6: review uses the existing superadmin role; therapists keep their own 
     for (const prefix of ['/api/therapist/validation', '/api/junta']) {
       for (const role of [undefined, 'user', 'therapist', 'admin', 'board']) {
         const before = calls;
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls, before, 'Denied requests cannot read DB or sign a download');
       }
       assert.equal((await request(method, prefix + suffix, {

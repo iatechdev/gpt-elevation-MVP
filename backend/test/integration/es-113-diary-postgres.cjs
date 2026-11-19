@@ -101,7 +101,7 @@ test('ES-113 diary: real PostgreSQL ownership, encrypted CRUD, validation and se
     }
     assert.equal(desencriptar((await Diary.findByPk(id)).content), content);
     assert.equal(await Invalidation.count(), 0);
-    assert.equal((await request('GET', '/api/diary', '')).status, 403);
+    assert.equal((await request('GET', '/api/diary', '')).status, 401);
     assert.equal((await request('GET', '/api/diary', 'invalid-synthetic-token')).status, 401);
   });
   await t.test('owner injection is ignored and invalid content/date/IDs do not write', async () => {

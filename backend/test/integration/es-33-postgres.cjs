@@ -90,12 +90,12 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
     assert.equal((await http('/experiments', { method: 'POST', body: { requestId: randomUUID(), proposal: response.data.proposal, token: response.data.token } })).status, 409);
     assert.equal(await Experiment.count(), before);
   });
-  await t.test('propiedad en cada recurso y rol actual: A/B 404, roles 403, sin sesión 403 y token revocado 401', async () => {
+  await t.test('propiedad en cada recurso y rol actual: A/B 404, roles 403, sin sesión 401 y token revocado 401', async () => {
     assert.equal((await http(`/experiments/${experimentId}`, { actor: 'other' })).status, 404);
     assert.equal((await http('/experiments?UserId=' + b.id)).status, 400);
     for (const actor of ['admin', 'therapist', 'board', 'superadmin']) for (const [path, method, body] of [[`/experiments/${experimentId}`, 'GET'], ['/career-plan', 'GET'], ['/experiments/proposals', 'POST', { choiceId: a.id, taskIndex: 0, minutes: 20 }], ['/career-plan/reminders', 'POST', { requestId: randomUUID(), action: 'accept' }]])
       assert.equal((await http(path, { actor, method, body })).status, 403);
-    assert.equal((await http('/experiments', { actor: null })).status, 403);
+    assert.equal((await http('/experiments', { actor: null })).status, 401);
     await a.update({ role: 'admin' }); assert.equal((await http('/experiments')).status, 403); await a.update({ role: 'user' });
     const token = issueToken(a); await revokeToken(require('jsonwebtoken').decode(token)); assert.equal((await http('/experiments', { token })).status, 401);
     assert.equal((await http('/experiments/proposals', { method: 'POST', body: { choiceId: a.id, taskIndex: 0, minutes: 20, UserId: b.id } })).status, 400);

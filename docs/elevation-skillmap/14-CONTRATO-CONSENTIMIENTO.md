@@ -32,7 +32,7 @@ El titular siempre es el usuario del token; un identificador en el cuerpo o en l
 | `PUT /api/consents/:purpose` | Cuerpo `{ status: 'granted' \| 'revoked', scope?: 'default' }`. Devuelve `{ purpose, scope, status, version, decidedAt, changed }`. Idempotente: repetir el mismo estado no crea evento (`changed: false`) |
 | `GET /api/consents/history` | `{ history: [{ purpose, scope, status, version, decidedAt }] }`, más reciente primero (máx. 100) |
 
-Errores: 400 entrada inválida; 404 propósito desconocido; 409 `necessary_not_revocable`; 403 sin sesión; 503 si no se puede comprobar la sesión; 500 sin detalles internos.
+Errores: 400 entrada inválida; 404 propósito desconocido; 409 `necessary_not_revocable`; 401 sin sesión (ES-332; antes 403); 503 si no se puede comprobar la sesión; 500 sin detalles internos.
 
 ## 4. Verificación al acceder (para quien consuma datos de otra persona)
 

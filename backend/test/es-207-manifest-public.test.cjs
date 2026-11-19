@@ -43,9 +43,9 @@ test('ES-207: la lectura pública no cambia por rol y el historial/edición rech
     assert.equal(res.status, 200, String(role));
     assert.equal(res.body.version, 'v3');
     for (const prefix of ['/api/manifest', '/api/board']) {
-      assert.equal((await request('GET', prefix + '/manifest', { role })).status, 403, `${prefix} historial ${role}`);
-      assert.equal((await request('POST', prefix + '/manifest', { role, body: { content: 'x'.repeat(60) } })).status, 403, `${prefix} subir ${role}`);
-      assert.equal((await request('PUT', prefix + '/manifest/41/activate', { role, body: {} })).status, 403, `${prefix} activar ${role}`);
+      assert.equal((await request('GET', prefix + '/manifest', { role })).status, (role === undefined ? 401 : 403), `${prefix} historial ${role}`);
+      assert.equal((await request('POST', prefix + '/manifest', { role, body: { content: 'x'.repeat(60) } })).status, (role === undefined ? 401 : 403), `${prefix} subir ${role}`);
+      assert.equal((await request('PUT', prefix + '/manifest/41/activate', { role, body: {} })).status, (role === undefined ? 401 : 403), `${prefix} activar ${role}`);
     }
   }
 });

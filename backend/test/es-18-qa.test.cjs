@@ -39,7 +39,7 @@ test('QA-18-01: solo el rol terapeuta entra a /api/therapist/*; la validación d
       assert.match(response.body.error, /Solo terapeutas/);
     }
   }
-  assert.equal((await request('GET', '/api/therapist/pacientes')).status, 403); // sin sesión
+  assert.equal((await request('GET', '/api/therapist/pacientes')).status, 401); // sin sesión
   const allowed = await request('GET', '/api/therapist/pacientes', as(301, 'therapist'));
   assert.notEqual(allowed.status, 403);
   // Montaje anterior a las rutas de terapeuta: el superadmin sigue revisando documentos y el usuario no.
