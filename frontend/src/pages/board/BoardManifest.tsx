@@ -20,7 +20,7 @@ interface ManifestVersion {
 }
 
 export function BoardManifest() {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
 
   const [versions, setVersions]     = useState<ManifestVersion[]>([])
   const [loading, setLoading]       = useState(true)
@@ -49,10 +49,12 @@ export function BoardManifest() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) throw new Error('load')
       setVersions(data)
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : loadError)
+      return true
+    } catch {
+      setError(loadError) // ES-349 seguimiento (E365-2): mensaje propio, nunca el texto crudo del servidor ni «Failed to fetch»
+      return false
     } finally {
       setLoading(false)
     }
@@ -82,17 +84,26 @@ export function BoardManifest() {
         body: JSON.stringify({ content: newContent.trim(), note: newNote.trim() || undefined }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) throw new Error('upload')
       setSuccess(`${t('board_success_upload')} ${data.version}`)
       setNewContent('')
       setNewNote('')
       setShowForm(false)
       await fetchVersions(t('board_error_load'))
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : t('board_error_upload'))
+    } catch {
+      setError(t('board_error_upload'))
     } finally {
       setSubmitting(false)
     }
+  }
+
+  // Lectura simple del historial (sin tocar el estado de carga ni los avisos); null si falla.
+  const readVersions = async (): Promise<ManifestVersion[] | null> => {
+    try {
+      const res = await fetch(`${API}/api/board/manifest`, { headers: { Authorization: `Bearer ${token}` } })
+      const data = await res.json()
+      return res.ok && Array.isArray(data) ? data : null
+    } catch { return null }
   }
 
   const handleActivate = async (id: number, version: string) => {
@@ -100,17 +111,27 @@ export function BoardManifest() {
     setActivating(id)
     setError(null)
     setSuccess(null)
+    let res: Response | null = null
     try {
-      const res = await fetch(`${API}/api/board/manifest/${id}/activate`, {
+      res = await fetch(`${API}/api/board/manifest/${id}/activate`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setSuccess(`${t('board_success_activate')} ${version}`)
-      await fetchVersions(t('board_error_load'))
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : t('board_error_activate'))
+    } catch {
+      res = null // sin respuesta: el servidor pudo haber aplicado el cambio
+    }
+    try {
+      if (res === null) {
+        // E365-1: no se afirma nada sin confirmarlo; se vuelve a leer y se compara con el servidor.
+        const fresh = await readVersions()
+        if (fresh?.some(v => v.id === id && v.isActive)) { setVersions(fresh); setSuccess(`${t('board_success_activate')} ${version}`) }
+        else { if (fresh) setVersions(fresh); setError(t('board_error_unconfirmed')) }
+      } else if (!res.ok) {
+        setError(t('board_error_activate')) // E365-2: sin texto técnico del servidor
+      } else {
+        setSuccess(`${t('board_success_activate')} ${version}`)
+        await fetchVersions(t('board_error_load'))
+      }
     } finally {
       setActivating(null)
     }
@@ -119,7 +140,7 @@ export function BoardManifest() {
   const active = versions.find(v => v.isActive)
 
   const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(iso).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
 
   return (
     <div className="pg bm">
@@ -198,7 +219,7 @@ export function BoardManifest() {
                   </button>
                   {!v.isActive && (
                     <div className="pg-actions bm-roll">
-                      <Button variant="ghost" disabled={activating === v.id} onClick={() => setConfirming(v)}>
+                      <Button variant="ghost" disabled={activating !== null} onClick={() => setConfirming(v)}>
                         {activating === v.id ? '...' : t('board_rollback')}
                       </Button>
                     </div>

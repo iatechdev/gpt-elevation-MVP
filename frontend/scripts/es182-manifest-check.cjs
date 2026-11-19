@@ -16,7 +16,7 @@ const versions = () => [
   { id: 1, version: 'v1', isActive: false, note: 'Primera versión (ejemplo)', content: 'Texto de ejemplo de la primera versión.', createdAt: '2026-08-14T15:00:00Z', uploader: { id: 1, name: 'Marta Sintética', email: 'marta@example.invalid' } },
 ]
 
-async function open(browser, { width, lang, scheme, cpu = 1, mode = 'ok', delay = 0 }) {
+async function open(browser, { width, lang, scheme, cpu = 1, mode = 'ok', delay = 0, activate = 'ok' }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' })
   const page = await ctx.newPage(); const errors = []; const calls = []
   page.on('pageerror', e => errors.push(e.message))
@@ -35,7 +35,14 @@ async function open(browser, { width, lang, scheme, cpu = 1, mode = 'ok', delay 
       calls.push('POST'); list = [{ ...list[0], isActive: false }, ...list.slice(1)]; list.unshift({ id: 4, version: 'v4', isActive: true, note: null, content: 'Nuevo texto sintético '.repeat(5), createdAt: '2026-11-18T15:00:00Z', uploader: list[0].uploader })
       return route.fulfill({ status: 201, json: { version: 'v4' } })
     }
-    if (/^\/api\/board\/manifest\/\d+\/activate$/.test(p)) { calls.push('PUT'); const id = Number(p.split('/')[4]); list = list.map(v => ({ ...v, isActive: v.id === id })); return route.fulfill({ json: { ok: true } }) }
+    if (/^\/api\/board\/manifest\/\d+\/activate$/.test(p)) {
+      calls.push('PUT'); const id = Number(p.split('/')[4])
+      if (activate === 'raw') return route.fulfill({ status: 500, json: { error: 'SequelizeDatabaseError: relation "EthicManifests" is locked' } })
+      if (activate === 'lost-not-applied') return route.abort()
+      list = list.map(v => ({ ...v, isActive: v.id === id }))
+      if (activate === 'lost-applied') return route.abort()
+      return route.fulfill({ json: { ok: true } })
+    }
     return route.fulfill({ json: [] })
   })
   if (cpu > 1) { const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpu }) }
@@ -95,6 +102,31 @@ const smallTargets = page => page.evaluate(() => [...document.querySelectorAll('
     await page.waitForTimeout(500)
     const v = await axe(page); report(v.length === 0, `axe en 0, ${label} (${scheme})`, v.join(','))
     report(label === 'vacío' ? await page.getByText('No hay versiones del manifiesto todavía.').count() === 1 : await page.locator('.cg-banner--error').count() === 1, `${label}: aviso visible (${scheme})`)
+    await ctx.close()
+  }
+  // ES-349 seguimiento (E365-1..4): respuesta de «Reactivar» perdida (con y sin cambio en el servidor), error crudo del servidor, fechas con el idioma activo y chip ACTIVO solo en la versión vigente.
+  for (const lang of ['es', 'en']) {
+    const UNCONF = lang === 'es' ? /No pudimos confirmar si la versión se reactivó/ : /couldn't confirm whether the version was reactivated/
+    const GENERIC = lang === 'es' ? 'No se pudo reactivar la versión.' : 'The version could not be reactivated.'
+    for (const [activate, label] of [['lost-not-applied', 'respuesta perdida sin cambio'], ['lost-applied', 'respuesta perdida con cambio'], ['raw', 'error crudo del servidor']]) {
+      const { ctx, page } = await open(browser, { width: 390, lang, scheme: 'light', activate })
+      await page.locator('.bm-ver').first().waitFor()
+      await page.locator('.bm-roll .cg-btn').first().click(); await page.locator('dialog[open]').waitFor()
+      await page.locator('dialog[open] .cg-btn').last().click(); await page.waitForFunction(() => !document.querySelector('dialog[open]'))
+      await page.waitForTimeout(600)
+      const alertText = (await page.locator('.cg-banner--error').count()) ? await page.locator('.cg-banner--error').innerText() : ''
+      const okText = (await page.locator('.bm-ok').count()) ? await page.locator('.bm-ok').innerText() : ''
+      const activeNow = await page.locator('.bm-ver:has(.cg-chip)').locator('strong').first().innerText()
+      if (activate === 'lost-not-applied') report(UNCONF.test(alertText) && !/Failed to fetch/.test(alertText) && activeNow === 'v3', `${label}: dice que no pudo confirmar, sin «Failed to fetch», y deja v3 como vigente (${lang})`)
+      if (activate === 'lost-applied') report(/v2/.test(okText) && alertText === '' && activeNow === 'v2', `${label}: se relee, ve el cambio y confirma v2 (${lang})`)
+      if (activate === 'raw') report(alertText.trim() === GENERIC && !/Sequelize/.test(alertText), `${label}: mensaje propio, sin texto técnico (${lang})`)
+      await ctx.close()
+    }
+    const { ctx, page } = await open(browser, { width: 390, lang, scheme: 'light' })
+    await page.locator('.bm-ver').first().waitFor()
+    const dateText = await page.locator('.bm-active .cg-hint').first().innerText()
+    report(lang === 'en' ? /Oct|October/.test(dateText) && !/oct\b/.test(dateText) : /oct/i.test(dateText), `fecha de la versión activa con el idioma activo: «${dateText.slice(0, 20)}» (${lang})`)
+    report(await page.locator('.bm-ver .cg-chip').count() === 1 && await page.locator('.bm-ver:first-child .cg-chip').count() === 1, `chip ACTIVO solo en la versión vigente (${lang})`)
     await ctx.close()
   }
   for (const scheme of ['light', 'dark']) {

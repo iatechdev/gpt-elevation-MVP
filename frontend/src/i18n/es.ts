@@ -379,6 +379,7 @@ const es: Record<string, string> = {
   board_error_min: 'El manifiesto debe tener al menos 50 caracteres.',
   board_error_upload: 'No se pudo publicar el manifiesto.',
   board_error_activate: 'No se pudo reactivar la versión.',
+  board_error_unconfirmed: 'No pudimos confirmar si la versión se reactivó. Revisa el estado y vuelve a intentarlo.',
   board_success_upload: 'Manifiesto publicado y activado:',
   board_success_activate: 'Versión reactivada:',
 
