@@ -27,16 +27,25 @@ const FORMAT_AND_MARKS = /[\p{Cf}\p{Mn}\p{Me}\uE000-\uF8FF]/gu; // \p{Cf} incluy
 // LÍMITE (E304-3/ES-312, documentado a propósito): la tabla cubre letras latinas extendidas/IPA/versalitas, griegas, cirílicas, armenias, cherokee y lisu que UTS #39 equipara a UNA letra a-z; NFKC cubre
 // ancho completo, letras matemáticas y «ſ». NO cubre CJK, símbolos, emojis, cifras de otras escrituras, mapeos de varias letras, otros alfabetos completos ni lo semántico. Una frase escrita con un
 // carácter fuera de la tabla NO se detecta: es una ayuda, no una protección completa.
-const HOMOGLYPHS = { ...require('./confusables-table.js'), ...require('./homoglyphs-manual.js') };
-// Claves de la tabla que caen dentro de U+00A0–U+024F (p. ej. «ı» U+0131, «ĸ» U+0138): el resto de ese rango son letras latinas acentuadas que NO se tocan (ñ, á, ü se pliegan con NFD).
-const INSIDE_LATIN = Object.keys(HOMOGLYPHS).map((c) => c.codePointAt(0)).filter((cp) => cp >= 0xA0 && cp <= 0x24F).map((cp) => '\\u' + cp.toString(16).padStart(4, '0')).join('');
-const HOMOGLYPH_SCAN = new RegExp('[^\\u0000-\\u007F\\u00A0-\\u024F]' + (INSIDE_LATIN ? '|[' + INSIDE_LATIN + ']' : ''), 'g');
+const MANUAL_HOMOGLYPHS = require('./homoglyphs-manual.js');
+const TABLE_HOMOGLYPHS = require('./confusables-table.js');
+const HOMOGLYPHS = { ...TABLE_HOMOGLYPHS, ...MANUAL_HOMOGLYPHS };
+// Escaneo de SIEMPRE (ES-304): solo la tabla manual. Es la «forma anterior»: nada que se detectaba antes deja de detectarse (la tabla nueva solo puede AÑADIR formas, nunca quitar una).
+const MANUAL_SCAN = /[^\u0000-\u007F\u00A0-\u024F]/g;
+// Escaneo con la tabla completa: además de lo de arriba, las claves de la tabla que caen dentro de U+00A0–U+024F («ı» U+0131, «ĸ» U+0138); el resto de ese rango son letras latinas acentuadas que NO se tocan.
+const cpEscape = (cp) => '\\u{' + cp.toString(16) + '}';
+const INSIDE_LATIN = Object.keys(HOMOGLYPHS).map((c) => c.codePointAt(0)).filter((cp) => cp >= 0xA0 && cp <= 0x24F).map(cpEscape).join('');
+const FULL_SCAN = new RegExp('[^\\u{0}-\\u{7F}\\u{A0}-\\u{24F}]' + (INSIDE_LATIN ? '|[' + INSIDE_LATIN + ']' : ''), 'gu');
+// ¿El texto trae alguna letra de la tabla NUEVA? Solo entonces se evalúa además la forma con la tabla completa.
+const NEW_KEYS = new RegExp('[' + Object.keys(TABLE_HOMOGLYPHS).map((c) => cpEscape(c.codePointAt(0))).join('') + ']', 'u');
 const LEET = { 4: 'a', 3: 'e', 1: 'i', 0: 'o', 5: 's', 7: 't', '@': 'a', $: 's' };
 const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 
 // Paso 1: NFKC (ancho completo, letras matemáticas), minúsculas, rellenos y marcas fuera, homoglifos a latín.
 // `filler`: los rellenos que se ven en blanco se quitan (intercalados entre letras) o se toman por ESPACIO (separan palabras): se prueban las dos lecturas.
-const unmask = (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(HOMOGLYPH_SCAN, (c) => HOMOGLYPHS[c] || c);
+const makeUnmask = (table, scan) => (text, filler = '') => String(text).normalize('NFKC').toLowerCase().replace(FILLERS, filler).replace(FORMAT_AND_MARKS, '').replace(scan, (c) => table[c] || c);
+const unmaskManual = makeUnmask(MANUAL_HOMOGLYPHS, MANUAL_SCAN); // exactamente lo que hacía main
+const unmask = makeUnmask(HOMOGLYPHS, FULL_SCAN); // con la tabla completa
 // Paso 2: una frase escrita SOLO con caracteres de etiqueta (U+E0020–E007E) se decodifica a ASCII.
 const decodeTags = (text) => Array.from(String(text).matchAll(TAG_BLOCK), (m) => String.fromCharCode(m[0].codePointAt(0) - 0xE0000)).join('');
 // Paso 3: «s u i c i d i o» / «s.u.i.c.i.d.i.o» → «suicidio» (cuatro o más letras sueltas separadas).
@@ -57,9 +66,7 @@ const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 // E304-8: «llano» = ASCII visible + letras latinas acentuadas + ¡ ¿ « ». NO incluye ª º ¹ ² ³ ¨ ¯ ´ ¸ ni otros símbolos de Latin-1 que NFKC convierte o que se intercalan entre letras («quierº mºrir», «su¹c¹d¹o»).
 const PLAIN = /^[\x20-\x7e\n\r\t\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u00a1\u00bf\u00ab\u00bb]*$/;
 const tidy = (text) => text.replace(/\s+/g, ' ');
-function* riskForms(text) {
-  const raw = String(text); const seen = new Set();
-  const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
+function* riskFormsWith(raw, unmask, fresh) {
   const first = flat(raw); if (fresh(first)) yield first;
   const plain = PLAIN.test(raw);
   const open = plain ? raw.toLowerCase() : unmask(raw); // sin plegar: «letras separadas» y «palabras separadas» dependen de los espacios múltiples
@@ -73,6 +80,14 @@ function* riskForms(text) {
     for (const thunk of [() => spaced, () => (spacedJoined === spacedOpen ? spaced : flat(spacedJoined)), () => tidy(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
+}
+// ES-312: la seguridad solo puede GANAR cobertura. Una letra de la tabla nueva usada como relleno entre palabras («quiero ı morir») deja de ser separador si se mapea a una letra; por eso primero se evalúan las
+// formas de SIEMPRE (tabla manual) y solo después, si el texto trae alguna letra de la tabla nueva, las formas con la tabla completa. Lo que se detectaba antes se sigue detectando con el mismo nivel e idioma.
+function* riskForms(text) {
+  const raw = String(text); const seen = new Set();
+  const fresh = (form) => { if (seen.has(form)) return false; seen.add(form); return true; };
+  yield* riskFormsWith(raw, unmaskManual, fresh);
+  if (!PLAIN.test(raw) && NEW_KEYS.test(raw.normalize('NFKC').toLowerCase())) yield* riskFormsWith(raw, unmask, fresh);
 }
 
 // Patrones sobre texto sin acentos, en minúsculas.
@@ -204,4 +219,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms, riskFormsWith, unmaskManual }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };

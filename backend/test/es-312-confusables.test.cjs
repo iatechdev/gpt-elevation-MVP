@@ -182,3 +182,38 @@ test('ES-312 tabla manual: sigue mandando (cada clave manual da su letra) y las 
   for (const [key, letter] of Object.entries(manual)) assert.equal(_steps.unmask(key), letter, 'U+' + key.codePointAt(0).toString(16));
   assert.equal(Object.keys(manual).length, 25); assert.deepEqual(keys.filter((k) => Object.prototype.hasOwnProperty.call(manual, k)), []);
 });
+
+// ── Regresión de QA (E312-1): la detección de seguridad solo puede GANAR cobertura ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+// Referencia = lo que hacía main: las formas con SOLO la tabla manual (_steps.riskFormsWith + unmaskManual). Una letra de la tabla nueva usada como relleno ENTRE palabras («quiero ı morir») ya no es
+// separador si se mapea a una letra; por eso la tabla nueva solo AÑADE formas.
+const RANK = { null: 0, medium: 1, high: 2 };
+function legacyLevel(text) {
+  const raw = String(text); const seen = new Set(); const fresh = (f) => { if (seen.has(f)) return false; seen.add(f); return true; }; let best = { level: null, lang: null };
+  for (const form of _steps.riskFormsWith(raw, _steps.unmaskManual, fresh)) { const hit = _steps.matchForm(form); if (hit.level === 'high') return hit; if (hit.level === 'medium' && best.level !== 'medium') best = hit; }
+  return best;
+}
+
+test('ES-312 regresión (QA): «quiero ı morir» y «quieroгmorir» siguen en nivel ALTO (la letra de la tabla como relleno entre palabras no resta cobertura)', () => {
+  for (const text of ['quiero ı morir', 'quieroгmorir', 'quiero ɑ morir', 'quiero ꓲ morir', 'quiero\u0131morir', 'no quiero ɴ vivir', 'I want ᴍ to die', 'quiero ո morir', 'quiero κ matarme']) {
+    assert.equal(legacyLevel(text).level, 'high', 'la referencia (main) ya detectaba: ' + text); assert.equal(detectRisk(text).level, 'high', text);
+  }
+});
+
+test('ES-312 regresión (QA): matriz «ninguna bajada frente a main» — cada carácter de la tabla como separador, relleno, prefijo y sufijo en 14 frases de crisis (nivel e idioma no bajan; la tabla solo añade)', () => {
+  let checked = 0; const dropped = [];
+  for (const phrase of CRISIS) for (const key of keys) {
+    for (const text of [phrase.replace(/ /g, key), phrase.replace(/ /g, ' ' + key + ' '), key + ' ' + phrase, phrase + ' ' + key, phrase.replace(/ /g, key + key).toUpperCase()]) {
+      checked++; const before = legacyLevel(text); const after = detectRisk(text);
+      if (RANK[after.level] < RANK[before.level]) dropped.push({ text, before: before.level, after: after.level });
+      if (before.level === 'high') assert.equal(after.level, 'high', 'bajó: ' + JSON.stringify(text));
+    }
+  }
+  assert.ok(checked >= 9000, 'combinaciones: ' + checked); assert.deepEqual(dropped.slice(0, 5), [], 'bajadas: ' + dropped.length);
+});
+
+test('ES-312 regresión (QA): textos SIN ninguna letra de la tabla nueva dan exactamente lo mismo que main (nivel e idioma); solo los textos con letras nuevas pueden subir', () => {
+  const sample = [...CRISIS, ...BENIGN, 'quiero mоrir', 'qu13r0 m0r1r', 'q u i e r o   m o r i r', 'quieroooo morirrr', 'ｑｕｉｅｒｏ ｍｏｒｉｒ', 'q\u{E0041}u\u{E0041}i\u{E0041}e\u{E0041}r\u{E0041}o m\u{E0041}o\u{E0041}r\u{E0041}i\u{E0041}r', 'quiero\u3164morir', 'Ñandú niños canción', 'ÁÉÍÓÚ día'];
+  const newKeys = new RegExp('[' + keys.join('') + ']', 'u'); let withNew = 0;
+  for (const text of sample) { const before = legacyLevel(text); const after = detectRisk(text); assert.deepEqual(after, before, text); if (newKeys.test(text)) withNew++; }
+  assert.equal(withNew, 0, 'la muestra no contiene letras de la tabla nueva (sería otra prueba)');
+});
