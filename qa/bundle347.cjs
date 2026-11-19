@@ -1,0 +1,5 @@
+const path = require('path'), { pathToFileURL } = require('url'), { createRequire } = require('module')
+const FE = path.resolve(process.argv[2]), OUT = path.resolve(process.argv[3]); const req = createRequire(path.join(FE, 'package.json'))
+;(async () => { const { build } = await import(pathToFileURL(req.resolve('rolldown')).href)
+  for (const f of ['layout', 'reliefSeparate', 'reliefPlace']) await build({ input: path.join(FE, `src/skill-map/${f}.ts`), platform: 'node', output: { format: 'esm', file: path.join(OUT, f + '.mjs') }, logLevel: 'warn' })
+  console.log('bundles en', OUT) })()
