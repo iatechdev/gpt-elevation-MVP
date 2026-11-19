@@ -468,7 +468,18 @@ jobs:
           mkdir -p "$RUNNER_TEMP/guard" && cd "$RUNNER_TEMP/guard"
           npm init -y >/dev/null
           npm install --no-audit --no-fund playwright@1.64.1 axe-core@4.10.2
-          npx playwright install --with-deps chromium
+      # Caché de Chromium con clave por versión de Playwright; las dependencias del sistema se instalan siempre.
+      - uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-1.64.1-${{ runner.os }}
+      - name: Instalar Chromium y dependencias del sistema
+        env:
+          CACHE_HIT: ${{ steps.pw-cache.outputs.cache-hit }}
+        run: |
+          cd "$RUNNER_TEMP/guard"
+          if [ "$CACHE_HIT" = 'true' ]; then npx playwright install-deps chromium; else npx playwright install --with-deps chromium; fi
       - name: Auditoría ES-290/ES-291 (STRICT=1 DATA=1; falla con cualquier hallazgo)
         env:
           STRICT: '1'
