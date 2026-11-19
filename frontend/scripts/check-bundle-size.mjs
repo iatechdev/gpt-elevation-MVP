@@ -26,6 +26,9 @@ export function checkBundle(distDir, limits = LIMITS) {
   const reactCopies = chunks.filter(c => fs.readFileSync(path.join(distDir, 'assets', c.file), 'utf8').includes('react.transitional.element')).map(c => c.file)
   const vendorChunks = chunks.filter(c => c.file.startsWith('vendor-')).map(c => c.file)
   const problems = []
+  // ES-199 (PERF-05): `:root:has(input.theme-controller[value=…]:checked)` (lo genera daisyUI por cada tema) hace que CADA cambio del atributo `value` de cualquier campo recalcule el estilo de toda la página; vite.config.ts lo quita.
+  const heavy = fs.readdirSync(path.join(distDir, 'assets')).filter(f => f.endsWith('.css') && /:root:has\(input\.theme-controller/.test(fs.readFileSync(path.join(distDir, 'assets', f), 'utf8')))
+  if (heavy.length) problems.push(`selector :root:has(input.theme-controller…) en ${heavy.join(', ')}: recalcula el estilo de toda la página con cada tecla (ver vite.config.ts)`)
   if (reactCopies.length > 1) problems.push(`React duplicado en ${reactCopies.length} bloques: ${reactCopies.join(', ')}`)
   if (!vendorChunks.some(f => f.startsWith('vendor-react-')) || !vendorChunks.some(f => f.startsWith('vendor-router-'))) problems.push('faltan los bloques de vendors (vendor-react, vendor-router): revisa codeSplitting en vite.config.ts')
   if (gzipKb > limits.initialJsGzipKb) problems.push(`carga inicial de JS: ${gzipKb.toFixed(1)} kB gzip > ${limits.initialJsGzipKb} kB`)
