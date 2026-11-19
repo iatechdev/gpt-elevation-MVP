@@ -26,21 +26,44 @@ export function priceCents(value: unknown): number {
   return Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
 }
 const text = (value: unknown, blank = false): value is string => typeof value === 'string' && value.length <= 5000 && (blank || !!value.trim())
-export function parsePlans(value: unknown): Plan[] {
+// E366-1: UN plan inválido ya no tumba la lista completa (antes: «No se pudieron cargar los planes» para TODA persona). Cada fila se valida por separado: la inválida se OMITE y se registra
+// (solo el id y el motivo, nunca el contenido) y las demás se muestran. Lo que sí sigue siendo error de toda la respuesta: que no sea una lista o que traiga más de 1000 filas.
+export type PlanSkip = { id: unknown; reason: string }
+const logSkip = (skip: PlanSkip) => { console.warn(`Plan omitido (id ${String(typeof skip.id === 'number' ? skip.id : '?')}): ${skip.reason}`) }
+function parsePlan(raw: unknown, ids: Set<number>): Plan {
+  if (!object(raw)) throw new PlansError()
+  if (!positiveId(raw.id)) throw new PlansError()
+  if (ids.has(raw.id)) throw new PlansError()
+  if (!text(raw.name_es) || !text(raw.name_en)) throw new PlansError()
+  if ((raw.description_es != null && !text(raw.description_es, true)) || (raw.description_en != null && !text(raw.description_en, true))) throw new PlansError()
+  if (![raw.features_es, raw.features_en].every(list => Array.isArray(list) && list.length <= 100 && list.every(item => text(item)))) throw new PlansError()
+  if (typeof raw.currency !== 'string' || !Intl.supportedValuesOf('currency').includes(raw.currency)) throw new PlansError()
+  if (!['month', 'year'].includes(String(raw.period)) || typeof raw.isHighlighted !== 'boolean') throw new PlansError()
+  if (!Number.isSafeInteger(raw.order) || (raw.slug !== null && !text(raw.slug))) throw new PlansError()
+  const priceValue = priceCents(raw.price)
+  ids.add(raw.id)
+  return { ...raw, description_es: raw.description_es ?? '', description_en: raw.description_en ?? '', priceCents: priceValue } as unknown as Plan
+}
+export function parsePlans(value: unknown, onSkip: (skip: PlanSkip) => void = logSkip): Plan[] {
   if (!Array.isArray(value) || value.length > 1000) throw new PlansError()
   const ids = new Set<number>()
-  const result = value.map(raw => {
-    if (!object(raw) || !positiveId(raw.id) || ids.has(raw.id)
-      || !text(raw.name_es) || !text(raw.name_en)
-      || (raw.description_es != null && !text(raw.description_es, true)) || (raw.description_en != null && !text(raw.description_en, true))
-      || ![raw.features_es, raw.features_en].every(list => Array.isArray(list) && list.length <= 100 && list.every(item => text(item)))
-      || typeof raw.currency !== 'string' || !Intl.supportedValuesOf('currency').includes(raw.currency)
-      || !['month', 'year'].includes(String(raw.period)) || typeof raw.isHighlighted !== 'boolean'
-      || !Number.isSafeInteger(raw.order) || (raw.slug !== null && !text(raw.slug))) throw new PlansError()
-    ids.add(raw.id)
-    return { ...raw, description_es: raw.description_es ?? '', description_en: raw.description_en ?? '', priceCents: priceCents(raw.price) } as unknown as Plan
-  })
+  const result: Plan[] = []
+  for (const raw of value) {
+    try { result.push(parsePlan(raw, ids)) }
+    catch { onSkip({ id: object(raw) ? raw.id : undefined, reason: planProblem(raw, ids) }) }
+  }
   return result.sort((a, b) => a.order - b.order || a.id - b.id)
+}
+// Motivo corto y sin contenido (para el registro): qué campo no pasó.
+function planProblem(raw: unknown, ids: Set<number>): string {
+  if (!object(raw)) return 'no es un objeto'
+  if (!positiveId(raw.id)) return 'id inválido'
+  if (ids.has(raw.id)) return 'id repetido'
+  if (!['month', 'year'].includes(String(raw.period))) return 'período no admitido'
+  if (typeof raw.currency !== 'string' || !Intl.supportedValuesOf('currency').includes(raw.currency)) return 'moneda no admitida'
+  if (!text(raw.name_es) || !text(raw.name_en)) return 'nombre inválido'
+  try { priceCents(raw.price) } catch { return 'precio inválido' }
+  return 'forma inválida'
 }
 async function json(url: string, options: RequestInit = {}) {
   const timeout = new AbortController()

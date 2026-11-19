@@ -6,7 +6,9 @@ const CODE = /^[A-Za-z]{3,10}$/;      // moneda: columna STRING(10)
 const PERIOD = /^[a-z]{1,20}$/;      // período: columna STRING(20)
 // ES-278 (H1, QA-Claude-4 sobre #348): solo las monedas y períodos que la pantalla de planes ofrece y que el formato de precio sabe dibujar; antes se aceptaba cualquier código (XXX, «decada») con 201.
 const CURRENCIES = Object.freeze(['USD', 'COP', 'EUR']);
-const PERIODS = Object.freeze(['month', 'year', 'forever']);
+// E366-1: `forever` se QUITA. La pantalla pública de planes (frontend/src/pricing/plans.ts) solo sabe dibujar month y year y no existe la clave landing.pricing.period.forever: un plan activo con `forever` dejaba /pricing sin planes para TODA persona.
+// Si más adelante se quiere «Para siempre», se soporta de punta a punta (servidor, desplegable, pantalla pública y texto ES/EN aprobado) en un mismo cambio.
+const PERIODS = Object.freeze(['month', 'year']);
 const MAX_PRICE = 99999999.99;       // DECIMAL(10,2)
 const MAX_NAME = 255;                // columna STRING
 const MAX_DESCRIPTION = 2000;
@@ -22,7 +24,7 @@ const MESSAGES = Object.freeze({
   price: 'El precio debe ser un número entre 0 y 99 999 999,99 con a lo sumo dos decimales. / The price must be a number from 0 to 99,999,999.99 with at most two decimals.',
   price_required: 'El precio es obligatorio. / The price is required.',
   currency: 'La moneda debe ser USD, COP o EUR. / The currency must be USD, COP or EUR.',
-  period: 'El período debe ser month, year o forever. / The period must be month, year or forever.',
+  period: 'El período debe ser month o year. / The period must be month or year.',
   features: 'Las características son una lista de hasta 20 textos de hasta 200 caracteres. / Features are a list of up to 20 texts of up to 200 characters.',
   order: 'El orden debe ser un entero entre 0 y 1 000 000. / The order must be an integer from 0 to 1,000,000.',
 });
