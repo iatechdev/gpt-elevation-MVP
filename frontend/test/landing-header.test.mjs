@@ -83,10 +83,14 @@ test('ES-62: estilos de salto, idioma activo en tinta invertida, 44 px y foco oc
   assert.match(css, /\.landing-scope :is\(button, a\):focus-visible \{ outline: 3px solid var\(--color-secondary\)/)
 })
 
-test('ES-67 H-67-05: los botones de idioma tienen nombre accesible en su propio idioma', () => {
-  const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LandingHeader, { text: key => key, lang: 'es', setLang: () => {} })))
-  assert.match(html, /<button[^>]*aria-label="Español"[^>]*>/)
-  assert.match(html, /<button[^>]*aria-label="English"[^>]*>/)
+test('ES-67 H-67-05 / ES-290: los botones de idioma tienen nombre accesible en su propio idioma y que contiene el texto visible (WCAG 2.5.3)', () => {
+  const visible = { 'landing.header.es': 'ES', 'landing.header.en': 'EN' }
+  const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LandingHeader, { text: key => visible[key] ?? key, lang: 'es', setLang: () => {} })))
+  assert.match(html, /<button[^>]*aria-label="ES — Español"[^>]*>ES<\/button>/)
+  assert.match(html, /<button[^>]*aria-label="EN — English"[^>]*>EN<\/button>/)
+  const pairs = [...html.matchAll(/<button[^>]*aria-label="([^"]*)"[^>]*landing-lang[^>]*>([^<]*)<\/button>/g)]
+  assert.equal(pairs.length, 2)
+  for (const [, label, content] of pairs) assert.ok(label.includes(content), `${label} contiene ${content}`)
 })
 
 test('ES-67 H-67-04: «Saltar al contenido» tiene objetivo táctil de al menos 44 px', () => {
