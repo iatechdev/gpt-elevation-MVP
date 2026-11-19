@@ -325,4 +325,27 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
       assert.equal(m.totalSessions, rows.length, 'el conteo de registros no cambia: ' + label);
     }
   });
+
+  // ES-348 (Bajo de QA): averageOf de la ficha de la persona (/api/admin/usuarios y /:id/stats, QA-18-02) también queda cubierto con PostgreSQL real: promedio PROPIO de una persona,
+  // null con menos de 5 entradas suyas (aquí no aplica «personas distintas»: es el promedio de una sola persona, que solo ve el administrador).
+  await t.test('ES-348: la ficha de la persona (lista y estadísticas) da null con 4 entradas propias y promedio con 5 (averageOf compartido)', async () => {
+    const PricingPlan = require('../../PricingPlan'); if (!User.associations.plan) User.belongsTo(PricingPlan, { foreignKey: 'planId', as: 'plan' }); // la lista de personas incluye el plan
+    const [few, enough] = [people[10], people[11]];
+    await sequelize.query('DELETE FROM "SessionRatings"'); await sequelize.query('DELETE FROM "MoodLogs"');
+    for (const [who, values] of [[few, [5, 4, 3, 2]], [enough, [5, 4, 3, 2, 1]]]) {
+      for (const [i, value] of values.entries()) {
+        await sequelize.query('INSERT INTO "SessionRatings" ("UserId","rating","date","createdAt","updatedAt") VALUES ($1,$2,CURRENT_DATE,now(),now())', { bind: [who.id, value] });
+        await sequelize.query('INSERT INTO "MoodLogs" ("UserId","date","checkin_mood","checkout_mood","createdAt","updatedAt") VALUES ($1,$2,$3,NULL,now(),now())', { bind: [who.id, dayOffset(i), value] });
+      }
+    }
+    const list = (await call(adm, '/api/admin/usuarios')).body;
+    const byId = Object.fromEntries(list.map((u) => [u.id, u]));
+    assert.equal(byId[few.id].ratingPromedio, null); assert.equal(byId[few.id].moodPromedio, null);
+    assert.equal(byId[enough.id].ratingPromedio, 3); assert.equal(byId[enough.id].moodPromedio, 3);
+    for (const [who, expected] of [[few, null], [enough, 3]]) {
+      const stats = (await call(adm, '/api/admin/usuarios/' + who.id + '/stats')).body.stats;
+      assert.equal(stats.ratingPromedio, expected); assert.equal(stats.moodPromedio, expected);
+    }
+    assert.doesNotMatch(JSON.stringify(byId[few.id]), /"(rating|mood)Promedio":\d/, 'con 4 entradas no aparece ningún valor individual');
+  });
 });
