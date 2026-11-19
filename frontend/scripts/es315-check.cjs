@@ -28,7 +28,7 @@ async function open(browser, { width, lang, scheme, cpu = 1, forbid = false }) {
     window.__cls = 0; new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value }).observe({ type: 'layout-shift', buffered: true })
   }, lang)
   let plans = plans0()
-  await page.route('**/api/**', route => {
+  await page.route('**/api/**', async route => {
     const url = new URL(route.request().url()); const p = url.pathname; const method = route.request().method()
     if (p === '/api/session') return route.fulfill({ json: { role: 'superadmin', onboardingCompleted: true } })
     if (p === '/api/junta/pending') return route.fulfill({ json: [] })
@@ -37,6 +37,7 @@ async function open(browser, { width, lang, scheme, cpu = 1, forbid = false }) {
     if (/^\/api\/admin\/pricing\/\d+$/.test(p) && method === 'DELETE') { const id = Number(p.split('/').pop()); plans = plans.map(x => x.id === id ? { ...x, isActive: false } : x); return route.fulfill({ json: { ok: true } }) }
     if (p.startsWith('/api/admin/pricing')) return route.fulfill({ json: { ok: true } })
     if (p === '/api/landing-content/admin') return route.fulfill({ json: Object.fromEntries(fields.map(f => [f.key, 'Texto sintético de ' + f.key])) })
+    if (p === '/api/landing-content' && method === 'PUT') { await new Promise(done => setTimeout(done, 400)) } // el guardado tarda: así se ve el estado «guardando»
     if (p === '/api/landing-content' && method === 'PUT') return route.fulfill({ status: forbid ? 403 : 200, json: { ok: !forbid } })
     return route.fulfill({ json: [] })
   })
@@ -87,6 +88,7 @@ const tab = (page, i) => page.getByRole('tab').nth(i)
     // editar: identificador de solo lectura
     await page.locator('#plan-edit-2').click(); await page.locator('dialog[open] #plan-slug').waitFor()
     report(await page.locator('dialog[open] #plan-slug').getAttribute('readonly') !== null, `identificador de solo lectura al editar (${tag})`)
+    report(await page.evaluate(() => document.activeElement && document.activeElement.id === 'plan-name-es'), `al editar el foco inicial va al primer campo editable (${tag})`)
     await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'))
     // desactivar: confirmación, axe, foco a Editar
     await page.locator('.ac-off').first().click(); await page.locator('dialog[open]').waitFor()
@@ -104,7 +106,9 @@ const tab = (page, i) => page.getByRole('tab').nth(i)
     small = await smallTargets(page); report(small.length === 0, `objetivos >= 24 px en Textos (${tag})`, small.join(','))
     report(await page.locator('.ac-lang [aria-pressed=true]').count() === 1, `selector de idioma con aria-pressed (${tag})`)
     const cols = await page.evaluate(() => getComputedStyle(document.querySelector('.ac-frow')).gridTemplateColumns.split(' ').length); report(cols === (width <= 560 ? 1 : 2), `fila campo + Guardar: ${cols} columna(s) (${tag})`)
-    await page.locator('.ac-frow .cg-btn').first().click(); await page.locator('.ac-frow p[role=status]').first().waitFor()
+    await page.locator('.ac-frow .cg-btn').first().click()
+    report(await page.locator('.ac-frow .cg-btn').first().getAttribute('aria-disabled') === 'true' && (await page.locator('.ac-frow .cg-btn').first().innerText()).trim() === '...', `«Guardar» con aria-disabled y «...» mientras guarda (${tag})`)
+    await page.locator('.ac-frow p[role=status]').first().waitFor()
     report(/✓/.test(await page.locator('.ac-frow p[role=status]').first().innerText()), `guardado confirmado con símbolo y palabra (${tag})`)
     report(errors.length === 0, `sin errores de consola (${tag})`, errors.slice(0, 2).join(' | '))
     await ctx.close()

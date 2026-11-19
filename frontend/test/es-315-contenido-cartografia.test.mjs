@@ -37,6 +37,13 @@ test('ES-315: la lógica no cambió: validaciones, llamadas a la API, guardado p
   assert.match(content, /savingRef\.current/, 'un solo guardado de texto a la vez')
 })
 
+test('ES-315: al abrir el formulario el foco va al primer campo editable (no al identificador de solo lectura) y «Guardar» queda con aria-disabled mientras guarda', () => {
+  assert.match(content, /querySelector<HTMLInputElement>\('input:not\(\[readonly\]\):not\(\[disabled\]\)'\)\?\.focus\(\)/)
+  assert.match(content, /<Button onClick=\{\(\) => void saveField\(f\.key\)\} aria-disabled=\{saving !== null\}>\{saving === f\.key \? '\.\.\.' : tr\('Guardar'\)\}<\/Button>/, 'Textos: «Guardar» con aria-disabled y «...» mientras guarda')
+  assert.match(pending, /<Button onClick=\{\(\) => save\(item\.key\)\} aria-disabled=\{saving !== null\}>\{saving === item\.key \? '\.\.\.' : tr\('Guardar'\)\}<\/Button>/, 'Pendientes: igual')
+  assert.match(content, /if \(savingRef\.current\) return/, 'aria-disabled no bloquea por sí solo: el manejador ignora un segundo guardado')
+})
+
 test('ES-315: tras desactivar, el foco pasa a «Editar» del mismo plan (el botón Desactivar desaparece al recargar)', () => {
   assert.match(content, /id=\{`plan-edit-\$\{p\.id\}`\}/); assert.match(content, /document\.getElementById\(`plan-edit-\$\{planId\}`\)\?\.focus\(\)/)
 })

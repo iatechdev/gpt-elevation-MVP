@@ -249,9 +249,9 @@ function PricingTab() {
   }, [token])
 
   useEffect(() => { void load(true) }, [load])
-  useEffect(() => { if (showForm) formRef.current?.querySelector<HTMLInputElement>('input')?.focus() }, [showForm])
+  useEffect(() => { if (showForm) formRef.current?.querySelector<HTMLInputElement>('input:not([readonly]):not([disabled])')?.focus() }, [showForm])
 
-  // El foco vuelve al botón que abrió el diálogo (lo resuelve Dialog). La excepción es «Desactivar»: el botón desaparece al recargar, así que el foco pasa a «Editar» del mismo plan.
+  // Al abrir, el foco va al primer campo EDITABLE (al editar, el identificador es de solo lectura). El foco vuelve al botón que abrió el diálogo (lo resuelve Dialog). La excepción es «Desactivar»: el botón desaparece al recargar, así que el foco pasa a «Editar» del mismo plan.
   const closeForm = () => setShowForm(false)
 
   const openNew = () => {
