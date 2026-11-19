@@ -21,3 +21,16 @@ test('ES-183: por defecto no hay ninguna petición (sin fetch ni repositorio); l
   assert.match(noData, /disabled aria-describedby="metrics-refresh-note"/)
   assert.match(page, /previewEnabled\(import\.meta\.env\.VITE_ENABLE_PILOT_FEEDBACK_PREVIEW\)/); assert.match(page, /createFixtureRepository/)
 })
+
+// ES-310 (ES-349): la pantalla va dentro del marco de Administración, con piezas de Cartografía, sin estilos en línea ni clases antiguas; la lógica de carga no cambia.
+test('ES-349: métricas del piloto en Cartografía: sin PreviewShell, sin estilos en línea ni colores propios, estados con chip y error con Banner', () => {
+  const raw = fs.readFileSync(new URL('../src/pilot/PilotMetricsPage.tsx', import.meta.url), 'utf8')
+  const css = fs.readFileSync(new URL('../src/pilot/pilotMetrics.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  assert.doesNotMatch(page, /PreviewShell|style=\{\{|elv-|pilot-card|pilot-grid|#[0-9a-fA-F]{3,8}\b|rgba?\(/)
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b|rgba?\(|--elv-|--color-/)
+  assert.match(raw, /import \{ Banner, Button, Card, Chip \} from '\.\.\/cartografia'/)
+  assert.match(raw, /<Banner kind="note" title=\{c\.preview\}>/); assert.match(raw, /<Banner kind="error" title=\{c\.loadError\}>/)
+  assert.match(raw, /STATUS_TONE: Record<string, \{ tone: ChipTone; symbol\?: string \}> = \{ ready: \{ tone: 'ok', symbol: '✓' \}, suppressed: \{ tone: 'wait' \} \}/)
+  assert.equal((page.match(/<h1 className="pg-title">/g) || []).length, 2, 'un h1 por modo, nunca dos a la vez')
+  assert.match(fs.readFileSync(new URL('../src/shell/adminLayoutState.ts', import.meta.url), 'utf8'), /'\/admin\/pilot-metrics'/)
+})
