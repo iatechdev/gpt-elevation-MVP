@@ -23,6 +23,6 @@ export const dashboardEn: Record<string, string> = {
   dash_chat_select: 'Select how you’re arriving today to start your conversation.',
   dash_plan: 'My plan', dash_plan_basic: 'Basic', dash_free: 'Free', dash_month: 'month', dash_ai_day: 'AI messages / day', dash_sessions_month: 'Sessions / month', dash_see_plans: 'View plans →',
   dash_recs: 'Recommendations for you', dash_recs_generate: 'Generate new', dash_recs_empty: 'No recommendations yet. Generate your first ones!', dash_explore: 'Explore →', dash_close: 'Close',
-  dash_err_session: 'Could not load your upcoming session.', dash_err_plan: 'Could not load your plan.', dash_err_recs: 'Could not load your recommendations.',
+  dash_err_session: 'We could not load your next session.', dash_err_plan: 'We could not load your plan.', dash_err_recs: 'We could not load your recommendations.',
 }
 registerCopy(dashboardEs, dashboardEn)

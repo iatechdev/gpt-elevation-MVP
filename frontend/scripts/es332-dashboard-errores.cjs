@@ -14,8 +14,8 @@ const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.to
 const PATHS = { progress: '/api/user/progress', upcoming: '/api/sessions/user/upcoming', therapist: '/api/sessions/user/my-therapist', recommendations: '/api/recommendations', plan: '/api/user/plan/me' }
 // Tarjeta (id del título) que alimenta cada lectura.
 const CARD = { progress: 'dash-progress', upcoming: 'dash-session', therapist: 'dash-session', recommendations: 'dash-recs', plan: 'dash-plan' }
-const ALERT_TEXT = { 'dash-progress': /No se pudo cargar tu progreso|Could not load your progress/, 'dash-session': /No se pudo cargar tu próxima sesión|Could not load your upcoming session/,
-  'dash-plan': /No se pudo cargar tu plan|Could not load your plan/, 'dash-recs': /No se pudieron cargar tus recomendaciones|Could not load your recommendations/ }
+const ALERT_TEXT = { 'dash-progress': /No se pudo cargar tu progreso|Could not load your progress/, 'dash-session': /No se pudo cargar tu próxima sesión|We could not load your next session/,
+  'dash-plan': /No se pudo cargar tu plan|We could not load your plan/, 'dash-recs': /No se pudieron cargar tus recomendaciones|We could not load your recommendations/ }
 const logs = [0, 1, 2, 4, 5].map((n, i) => ({ id: i + 1, date: day(n), checkin_mood: 2 + (i % 3), checkout_mood: 3 + (i % 2) }))
 const BODY = {
   progress: { stats: null, moodLogs: logs, ratings: [], recommendations: [] },
