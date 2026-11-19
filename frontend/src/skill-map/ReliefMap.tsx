@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ReliefCanvas } from '../cartografia'
 import type { ReliefPoint } from '../cartografia'
 import type { Skill } from './model'
-import { placeSkills } from './reliefPlace'
+import { placeSkillsCached } from './reliefPlace'
 import { separate, type Slot } from './reliefSeparate'
 import type { Territory } from './territories'
 
@@ -19,6 +19,7 @@ const MARK = 28
 const ROW = 44
 const NARROW = 640
 const DEFER_MS = 200
+const NO_SIZES: Record<string, { w: number; h: number }> = {}
 
 /** Caja estimada antes de medirla (mismas proporciones que el CSS: 16:10 en ancho, 4:5 en móvil): así la primera pintura ya casi coincide con la medida. */
 const guessBox = () => {
@@ -29,7 +30,7 @@ const guessBox = () => {
 export function ReliefMap({ skills, territories, selected, onSelect, lang, t }: {
   skills: readonly Skill[]; territories: readonly Territory[]; selected: string | null; onSelect: (key: string) => void; lang: Lang; t: T
 }) {
-  const placed = useMemo(() => placeSkills(skills, territories), [skills, territories])
+  const placed = useMemo(() => placeSkillsCached(skills, territories), [skills, territories])
   const points: ReliefPoint[] = useMemo(() => placed.map(item => ({ x: item.x, y: item.y, level: item.level ?? 0 })), [placed])
   const withLevel = placed.filter(item => item.level !== null).length
   const boxRef = useRef<HTMLDivElement>(null)
@@ -75,15 +76,17 @@ export function ReliefMap({ skills, territories, selected, onSelect, lang, t }: 
   }, [])
 
   const names = useMemo(() => placed.map(item => item.skill.labels[lang] ?? t('skill_map.translation_missing')), [placed, lang, t])
+  // ES-199: con solo marcas (móvil, o rótulos que no caben) las medidas de los rótulos no cuentan: no se vuelve a calcular la disposición cuando llegan.
+  const measured = box.w >= NARROW ? sizes : NO_SIZES
   const layout = useMemo(() => {
     const slots = (labels: boolean): Slot[] => placed.map((item, i) => labels
-      ? { x: item.x * box.w, y: item.y * box.h, w: sizes[item.skill.skillKey]?.w ?? 40 + names[i].length * 8, h: Math.max(ROW, sizes[item.skill.skillKey]?.h ?? ROW), side: item.x > 0.55 ? 'right' : 'left' }
+      ? { x: item.x * box.w, y: item.y * box.h, w: measured[item.skill.skillKey]?.w ?? 40 + names[i].length * 8, h: Math.max(ROW, measured[item.skill.skillKey]?.h ?? ROW), side: item.x > 0.55 ? 'right' : 'left' }
       : { x: item.x * box.w, y: item.y * box.h, w: MARK, h: MARK, side: 'left', centered: true })
     let labels = box.w >= NARROW
     let out = separate(slots(labels), { width: box.w, height: box.h })
     if (labels && out.crowded) { labels = false; out = separate(slots(false), { width: box.w, height: box.h }) } // no caben los rótulos: solo la marca (el nombre sigue en aria-label y en la lista)
     return { labels, positions: out.positions }
-  }, [placed, names, box, sizes])
+  }, [placed, names, box, measured])
 
   return <div className="skill-map-relief">
     <div className="skill-map-relief-box" ref={boxRef}>
