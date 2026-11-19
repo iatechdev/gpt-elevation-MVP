@@ -2,7 +2,7 @@
 // Sin diálogos del navegador; los errores se traducen por el `code` del servidor; las acciones privilegiadas se ocultan o se rechazan según el rol y las respuestas 403 (las guardas del
 // servidor no se tocan). Detalle de cada diálogo en AdminUsersManage / AdminUsersInvite / AdminUsersQueues.
 // ES-310 (PR 5): apariencia con Cartografía (tokens --cg-*, sin estilos en línea); flujo, estados y textos sin cambios.
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../cartografia/pages.css'
 import { Button, Tabs } from '../../cartografia'
@@ -46,6 +46,7 @@ export function AdminUsers() {
   // nunca en la URL; se lee al montar y el estado se consume para que no quede en el historial.
   useEffect(() => { if (readPrefill(location.state)) navigate(location.pathname, { replace: true, state: null }) }, [location, navigate])
 
+  const manage = useCallback((id: number, from: HTMLElement) => { opener.current = from; setNotification(''); setManagingId(id) }, [])
   const managing = managingId === null ? null : people.items.find((p) => p.id === managingId) ?? null
   const therapists = people.items.filter((p) => p.role === 'therapist' && p.active && !p.deletionRequested).map((p) => ({ id: p.id, name: p.name }))
   const count = (state: 'loading' | 'ok' | 'error', n: number) => (state === 'ok' ? ` (${n})` : '')
@@ -74,7 +75,7 @@ export function AdminUsers() {
         label: `${tr(TAB_LABEL[t])}${t === 'matching' ? count(matching.state, matching.items.length) : t === 'plans' ? count(plans.state, plans.items.length) : ''}`,
         panel: t === 'people'
           ? <PeoplePanel list={people} roleFilter={roleFilter} statusFilter={statusFilter} setRoleFilter={setRoleFilter} setStatusFilter={setStatusFilter} actorRole={actorRole}
-            onManage={(id, from) => { opener.current = from; setNotification(''); setManagingId(id) }} />
+            onManage={manage} />
           : t === 'matching'
             ? <MatchingPanel list={matching} onResolved={() => { matching.reload(); people.reload() }} />
             : <PlanRequestsPanel list={plans} onResolved={() => { plans.reload(); people.reload() }} />,
