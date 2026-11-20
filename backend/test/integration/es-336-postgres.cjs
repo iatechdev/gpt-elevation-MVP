@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const { startRealApi } = require('../support/realApi.cjs');
 
 test('ES-336 PostgreSQL + HTTP: documentos legales publicados, invariantes e inmutabilidad', { timeout: 300000 }, async (t) => {
-  const { q, http, base, app, mkUser } = await startRealApi(t, { envVar: 'ES336_TEST_DATABASE_URL', prefix: 'es336' });
+  const { q, http, base, app, mkUser, dbName } = await startRealApi(t, { envVar: 'ES336_TEST_DATABASE_URL', prefix: 'es336' });
   const migration = require('../../migrations/20261120010000-es336-legal-documents.cjs');
   const { seedLegal } = require('../../scripts/seedLegal.cjs');
   const { TERMS } = require('../../utils/terms');
@@ -117,6 +117,30 @@ test('ES-336 PostgreSQL + HTTP: documentos legales publicados, invariantes e inm
     const results = await Promise.allSettled(['2026-12-v3', '2026-12-v4'].map((v) => q(`INSERT INTO "LegalReleases" ("version","status","changeKind") VALUES ($1,'published','minor')`, [v])));
     assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
     assert.equal(Number((await q(`SELECT count(*) n FROM "LegalReleases" WHERE "status"='published'`))[0].n), 1);
+  });
+
+  await t.test('carrera real (QA-336-01): un INSERT en curso no se cuela en una publicación que se publica a la vez (2 conexiones, 12 corridas, 0 fallos); TRUNCATE queda bloqueado', async () => {
+    const { Client } = require('pg');
+    const url = new URL(process.env.ES336_TEST_DATABASE_URL); url.pathname = '/' + dbName;
+    const open = async () => { const c = new Client({ connectionString: url.toString() }); await c.connect(); return c; };
+    const [A, B] = [await open(), await open()];
+    const row = JSON.stringify(content);
+    try {
+      for (let i = 0; i < 12; i++) {
+        await q(`UPDATE "LegalReleases" SET "status"='archived' WHERE "status"='published'`);
+        const id = await newRelease('2027-01-race' + i);
+        await B.query('BEGIN'); await B.query(`UPDATE "LegalReleases" SET "status"='published', "publishedAt"=now() WHERE "id"=$1`, [id]); // B publica, aún sin confirmar
+        await A.query('BEGIN');
+        const insert = A.query(`INSERT INTO "LegalDocumentVersions" ("releaseId","docKey","lang","content","contentHash") VALUES ($1,'privacy','es',$2::jsonb,$3)`, [id, row, 'a'.repeat(64)]).then(() => 'inserted', (e) => e.message);
+        await new Promise((r) => setTimeout(r, 120)); // con FOR SHARE, A espera el candado de B; sin él, A leería «borrador» y seguiría
+        await B.query('COMMIT');
+        const outcome = await insert; await A.query('ROLLBACK').catch(() => {});
+        assert.match(String(outcome), /legal_immutable/, `corrida ${i}: el documento debió rechazarse porque la publicación ya estaba publicada`);
+        assert.equal(Number((await q('SELECT count(*) n FROM "LegalDocumentVersions" WHERE "releaseId"=$1', [id]))[0].n), 0);
+      }
+    } finally { await A.end(); await B.end(); }
+    await rejects('TRUNCATE "LegalDocumentVersions"', [], /legal_immutable/);
+    await rejects('TRUNCATE "LegalReleases" CASCADE', [], /legal_immutable/);
   });
 
   await t.test('la semilla se niega (sin escribir) si su versión no es la que exige el registro o si el contenido es inválido', async () => {

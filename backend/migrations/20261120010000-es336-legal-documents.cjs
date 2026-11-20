@@ -37,11 +37,13 @@ async function up(arg) {
     // RLS activada como en el resto de tablas (ES-117): sin políticas, solo el rol dueño (la API) accede; los roles de la API pública de Supabase no ven filas.
     await run('ALTER TABLE "LegalReleases" ENABLE ROW LEVEL SECURITY');
     await run('ALTER TABLE "LegalDocumentVersions" ENABLE ROW LEVEL SECURITY');
+    // FOR SHARE (QA-336-01): el disparador toma un candado compartido sobre la publicación mientras decide. Sin él, un INSERT que leyó "borrador" podía confirmarse DESPUÉS de que otra sesión publicara
+    // y confirmara, dejando el documento dentro de una publicación ya publicada. Con él, publicar espera al INSERT en curso, o el INSERT espera a la publicación y entonces ve "published" y falla.
     // Inmutabilidad. Un documento solo se puede cambiar o borrar mientras su publicación es un borrador.
     await run(`CREATE OR REPLACE FUNCTION legal_documents_guard() RETURNS trigger AS $$
       DECLARE parent_status TEXT;
       BEGIN
-        SELECT "status" INTO parent_status FROM "LegalReleases" WHERE "id" = COALESCE(OLD."releaseId", NEW."releaseId");
+        SELECT "status" INTO parent_status FROM "LegalReleases" WHERE "id" = COALESCE(OLD."releaseId", NEW."releaseId") FOR SHARE;
         IF TG_OP = 'DELETE' THEN
           IF parent_status IS NOT NULL AND parent_status <> 'draft' THEN RAISE EXCEPTION 'legal_immutable: un documento publicado o archivado no se borra'; END IF;
           RETURN OLD;
@@ -72,6 +74,12 @@ async function up(arg) {
       END; $$ LANGUAGE plpgsql`);
     await run('DROP TRIGGER IF EXISTS "legal_releases_guard" ON "LegalReleases"');
     await run('CREATE TRIGGER "legal_releases_guard" BEFORE UPDATE OR DELETE ON "LegalReleases" FOR EACH ROW EXECUTE FUNCTION legal_releases_guard()');
+    // TRUNCATE no pasa por los disparadores de fila: se cubre con uno de sentencia (lo publicado o archivado es el historial legal; el borrado de un borrador se hace fila a fila).
+    await run(`CREATE OR REPLACE FUNCTION legal_truncate_guard() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'legal_immutable: las tablas legales no se vacían'; END; $$ LANGUAGE plpgsql`);
+    for (const table of ['LegalReleases', 'LegalDocumentVersions']) {
+      await run(`DROP TRIGGER IF EXISTS "legal_truncate_guard" ON "${table}"`);
+      await run(`CREATE TRIGGER "legal_truncate_guard" BEFORE TRUNCATE ON "${table}" FOR EACH STATEMENT EXECUTE FUNCTION legal_truncate_guard()`);
+    }
   });
 }
 
@@ -82,6 +90,7 @@ async function down(queryInterface) {
   await sequelize.query('DROP TABLE IF EXISTS "LegalReleases"');
   await sequelize.query('DROP FUNCTION IF EXISTS legal_documents_guard()');
   await sequelize.query('DROP FUNCTION IF EXISTS legal_releases_guard()');
+  await sequelize.query('DROP FUNCTION IF EXISTS legal_truncate_guard()');
 }
 
 module.exports = { up, down };
