@@ -150,7 +150,7 @@ test('ES-25 aislamiento: orígenes ajenos, otros roles y consulta solo del dueñ
     assert.equal((await request('GET', '/api/career-context', { role, id: 303 })).body.versions.length, 0);
   }
   assert.equal((await request('GET', '/api/career-context', { role: 'user', id: 101 })).body.versions.length, 1);
-  assert.equal((await request('GET', '/api/career-context')).status, 403); // sin sesión
+  assert.equal((await request('GET', '/api/career-context')).status, 401); // sin sesión
   await assert.rejects(bridge.getApprovedContext(202, 'test-engine'), (e) => e.code === 'no_context'); // B no tiene contexto
 });
 

@@ -1,5 +1,5 @@
 // backend/routes/board.js
-// Manifiesto ético: lectura pública (GET /active) y edición de administración/superadmin (ES-207).
+// Manifiesto ético: lectura pública (GET /active); historial para administración y superadmin (ES-207); publicar y reactivar SOLO superadmin (ES-182, decisión 12079).
 // La autorización por ruta protege también el montaje público /api/manifest.
 
 const express       = require('express');
@@ -11,7 +11,7 @@ const { sequelize } = require('../database');
 const EthicManifest = require('../EthicManifest');
 const User          = require('../User');
 const { encriptar, desencriptar } = require('../utils/crypto');
-const { verificarEditorManifiesto } = require('../middlewares/auth');
+const { verificarEditorManifiesto, verificarPublicadorManifiesto } = require('../middlewares/auth');
 const { validateBody, nonempty, text, optional } = require('../middlewares/validateBody');
 
 // ES-218: subir y activar versiones se serializan con UN bloqueo consultivo de transacción (pg_advisory_xact_lock) tomado antes de tocar filas.
@@ -28,7 +28,7 @@ async function lockManifests(t) {
 // ── POST /api/board/manifest ──────────────────────────────────────────────────
 // Upload a new version of the ethics manifest
 // Body: { content: string, note?: string }
-router.post('/manifest', verificarEditorManifiesto, validateBody({ content: nonempty, note: optional(text) }), async (req, res) => {
+router.post('/manifest', verificarPublicadorManifiesto, validateBody({ content: nonempty, note: optional(text) }), async (req, res) => {
   const { content, note } = req.body;
   const uploadedBy = req.user.id;
 
@@ -115,7 +115,7 @@ router.get('/manifest', verificarEditorManifiesto, async (req, res) => {
 
 // ── PUT /api/board/manifest/:id/activate ─────────────────────────────────────
 // Reactivate a previous version (rollback)
-router.put('/manifest/:id/activate', verificarEditorManifiesto, async (req, res) => {
+router.put('/manifest/:id/activate', verificarPublicadorManifiesto, async (req, res) => {
   const { id } = req.params;
 
   const t = await sequelize.transaction();

@@ -11,6 +11,8 @@ export const dashboardEs: Record<string, string> = {
   dash_chat_select: 'Selecciona cómo llegas hoy para comenzar tu conversación.',
   dash_plan: 'Mi plan', dash_plan_basic: 'Básico', dash_free: 'Gratis', dash_month: 'mes', dash_ai_day: 'Mensajes IA / día', dash_sessions_month: 'Sesiones / mes', dash_see_plans: 'Ver planes →',
   dash_recs: 'Recomendaciones para ti', dash_recs_generate: 'Generar nuevas', dash_recs_empty: 'Aún no tienes recomendaciones. ¡Genera las primeras!', dash_explore: 'Explorar →', dash_close: 'Cerrar',
+  // ES-332: aviso de error por tarjeta (la lectura falló; nunca se pinta un «0» como dato). «Reintentar» y «Cargando…» reutilizan pr_retry y loading.
+  dash_err_session: 'No se pudo cargar tu próxima sesión.', dash_err_plan: 'No se pudo cargar tu plan.', dash_err_recs: 'No se pudieron cargar tus recomendaciones.',
 }
 export const dashboardEn: Record<string, string> = {
   dash_title: 'My dashboard',
@@ -21,5 +23,6 @@ export const dashboardEn: Record<string, string> = {
   dash_chat_select: 'Select how you’re arriving today to start your conversation.',
   dash_plan: 'My plan', dash_plan_basic: 'Basic', dash_free: 'Free', dash_month: 'month', dash_ai_day: 'AI messages / day', dash_sessions_month: 'Sessions / month', dash_see_plans: 'View plans →',
   dash_recs: 'Recommendations for you', dash_recs_generate: 'Generate new', dash_recs_empty: 'No recommendations yet. Generate your first ones!', dash_explore: 'Explore →', dash_close: 'Close',
+  dash_err_session: 'We could not load your next session.', dash_err_plan: 'We could not load your plan.', dash_err_recs: 'We could not load your recommendations.',
 }
 registerCopy(dashboardEs, dashboardEn)

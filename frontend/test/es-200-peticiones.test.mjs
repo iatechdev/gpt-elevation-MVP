@@ -27,7 +27,7 @@ test('ES-200: la clave de una petición ordena la query; el resumen cuenta dupli
 test('ES-200: el panel de la persona lanza las cinco lecturas a la vez, con una señal de cancelación, y las cancela al desmontar', () => {
   for (const loader of ['loadProgress', 'loadUpcomingSession', 'loadTherapist', 'loadRecommendations', 'loadUserPlan']) {
     assert.ok(dashboard.includes(`void ${loader}(signal)`), loader)
-    assert.ok(dashboard.includes(`const ${loader} = async (signal: AbortSignal)`), loader)
+    assert.ok(dashboard.includes(`const ${loader} = useCallback(async (signal: AbortSignal)`), loader) // ES-332: cada cargador es estable (useCallback) para que el efecto declare sus dependencias
   }
   assert.match(dashboard, /const controller = new AbortController\(\)/)
   assert.match(dashboard, /return \(\) => controller\.abort\(\)/)

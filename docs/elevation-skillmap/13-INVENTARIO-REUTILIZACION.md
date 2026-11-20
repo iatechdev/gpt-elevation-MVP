@@ -168,7 +168,7 @@ No hay entorno con datos sembrados disponible para este ticket, así que **no se
 3. Con A: `POST /api/chat` con un mensaje; `GET /api/messages` devuelve solo los de A.
 4. Con B: `GET /api/messages` no incluye nada de A. Cambiar identificadores en `PUT /api/recommendations/:id/seen` y comprobar 404.
 5. Con A sin rol de terapeuta: `GET /api/therapist/pacientes` devuelve lista vacía (INV-09).
-6. Sin token: `GET /api/messages` → 403; con token alterado → 401.
+6. Sin token: `GET /api/messages` → 401 (ES-332; antes 403); con token alterado → 401.
 7. Con un usuario inactivo: login rechazado.
 8. Registrar los resultados con entorno, commit y fecha.
 

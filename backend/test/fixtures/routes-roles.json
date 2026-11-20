@@ -446,6 +446,14 @@
     ],
     "session": true
   },
+  "GET /api/legal/:docKey": {
+    "denied": [],
+    "session": false
+  },
+  "GET /api/legal/current": {
+    "denied": [],
+    "session": false
+  },
   "GET /api/manifest/active": {
     "denied": [],
     "session": false
@@ -1047,6 +1055,7 @@
   },
   "POST /api/board/manifest": {
     "denied": [
+      "admin",
       "board",
       "therapist",
       "user"
@@ -1166,6 +1175,7 @@
   },
   "POST /api/manifest/manifest": {
     "denied": [
+      "admin",
       "board",
       "therapist",
       "user"
@@ -1565,6 +1575,7 @@
   },
   "PUT /api/board/manifest/:id/activate": {
     "denied": [
+      "admin",
       "board",
       "therapist",
       "user"
@@ -1594,6 +1605,7 @@
   },
   "PUT /api/manifest/manifest/:id/activate": {
     "denied": [
+      "admin",
       "board",
       "therapist",
       "user"

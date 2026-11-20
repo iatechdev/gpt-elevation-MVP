@@ -89,7 +89,7 @@ connectDB().then(() => {
 
 // ES-137: ninguna respuesta de la API con datos de la persona se guarda en caché de navegador ni de proxy compartido.
 // Quedan fuera solo estas lecturas públicas, por ruta exacta (QA-137-01: GET /pricing/all y /manifest/manifest exigen sesión y sí llevan no-store); las rutas pueden fijar su propio valor.
-const PUBLIC_CACHEABLE = /^\/(landing-content|plans|pricing|manifest\/active)\/?$/;
+const PUBLIC_CACHEABLE = /^\/(landing-content|plans|pricing|manifest\/active|legal\/(?:current|[a-z_]+))\/?$/; // ES-336: documentos legales publicados (lectura pública)
 app.use('/api', (req, res, next) => {
   if (req.method === 'GET' && PUBLIC_CACHEABLE.test(req.path)) return next();
   res.set('Cache-Control', 'no-store');
@@ -107,6 +107,7 @@ app.use('/api/exercises', verificarToken, require('./routes/exercises').readRout
 app.use('/api/invitations',      require('./routes/invitations').publicRouter); // ES-192 — la persona invitada elige su contraseña (sin sesión)
 app.use('/api/admin/invitations', verificarAdmin, require('./routes/invitations').adminRouter); // ES-192 — invitar por enlace (administración)
 app.use('/api/landing-content', require('./routes/landingContent'));
+app.use('/api/legal',           require('./routes/legal'));                  // ES-336 (F1) — documentos legales publicados (lectura pública; sin editor aún)
 app.use('/api/professional-applications', require('./routes/professionalApplications').publicRouter); // ES-95 — solicitud pública de profesionales
 app.use('/api/pricing',         require('./routes/pricing'));
 app.use('/api/plans',           require('./routes/plans'));           // HU-077 — lista pública de planes

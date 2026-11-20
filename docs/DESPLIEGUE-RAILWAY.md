@@ -213,6 +213,23 @@ No se toca la base de staging ni se migra nada por este motivo.
 - Datos: sin migraciones no hay reversión de esquema automática. No verificado: restauración de Supabase (depende del plan de respaldos).
 - En un despliegue normal, `/api/health` informa el commit (`RAILWAY_GIT_COMMIT_SHA`); tras un rollback no, ver arriba.
 
+## Publicar los ejercicios de acompañamiento (operación, sin pantalla de administración)
+La persona solo ve ejercicios **publicados** (`GET /api/exercises`). El catálogo inicial (`shared/companion-exercises.json`, 3 ejercicios ES/EN) se importa como **borrador**; hay que publicarlo antes del piloto. Lo hace **solo superadmin** (admin recibe 403). No hay pantalla (queda para después del piloto, ES-194); se usa la API. El recorrido completo está probado con PostgreSQL real en `backend/test/integration/es-194-postgres.cjs` («ES-194 runbook»).
+
+Preparación: `BASE` = URL del backend del entorno (staging o producción) y `TOKEN` = token de una sesión de **superadmin** (iniciar sesión en la aplicación y copiar el token de la sesión; **no lo guardes en Git, en un PR, en el chat ni en logs**). En producción, confirmar antes con Mauricio.
+
+1. **Importar** (siempre como borrador, con revisión pendiente; repetirlo no duplica ni pisa lo editado):
+   `curl -sS -X POST "$BASE/api/admin/exercises/import-catalog" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{}'` → `{"created":[…],"skipped":[…]}`.
+2. **Listar** y anotar `id` y `version` de cada ejercicio (debe decir `status: draft` y `complete: true`):
+   `curl -sS "$BASE/api/admin/exercises" -H "Authorization: Bearer $TOKEN"`.
+3. **Publicar cada uno**, con la versión que se vio (si otra persona lo cambió, responde 409 `exercise_changed` y no publica; si el texto incumple la regla no clínica o falta ES/EN, responde 422):
+   `curl -sS -X POST "$BASE/api/admin/exercises/<id>/publish" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"confirm":true,"expectedVersion":<version>}'`.
+4. **Comprobar como persona** (con la sesión de una persona sintética): `GET /api/exercises` devuelve los publicados; hasta que el especialista revise, cada uno trae `reviewStatus: "pending"` y la pantalla lo dice («en revisión»): es lo correcto, no hay que ocultarlo.
+5. **Registrar la revisión del especialista SOLO cuando de verdad ocurrió** (no la marques por trámite; no cambia la publicación):
+   `curl -sS -X POST "$BASE/api/admin/exercises/<id>/review" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"reviewStatus":"done","confirm":true,"expectedVersion":<version>}'`.
+6. **Retirar** uno (la persona deja de verlo al instante; el historial dice quién y cuándo): `POST /api/admin/exercises/<id>/withdraw` con `{"confirm":true,"expectedVersion":<version>}`.
+Repetir cualquier paso con la misma versión es idempotente. Dejar constancia en ES-194 de quién lo ejecutó, en qué entorno y la fecha.
+
 ## Pruebas de humo (después de cada despliegue)
 1. `GET /api/health` → `{"status":"ok"}`.
 2. `GET /` y una ruta del SPA (`/login`) → 200.

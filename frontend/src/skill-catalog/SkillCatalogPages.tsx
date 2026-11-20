@@ -1,5 +1,10 @@
+// ES-116 + ES-349 (parte 1): catálogo de habilidades con Cartografía (tokens --cg-*), dentro del marco de Administración (AdminLayout: barra lateral, «Saltar al contenido», un solo main, selector ES/EN).
+// La lógica (versiones, borrador, guardado con marca de versión de la fila, conflicto, publicación y habilidades en uso) no cambia; solo la apariencia. Sin textos nuevos: todo sale de skcat.* (ES/EN).
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
+import '../cartografia/pages.css'
+import { Banner, Button, Card, Chip, CheckField, DataTable, Dialog, SelectField, TextAreaField, TextField } from '../cartografia'
+import type { ChipTone } from '../cartografia'
 import { registerCatalogGuard } from '../catalogGuard'
 import { useLanguage } from '../i18n/useLanguage'
 import { territories } from '../skill-map/territories'
@@ -10,6 +15,7 @@ import './skillCatalog.css'
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 const readSession = () => { try { return JSON.stringify([localStorage.getItem('elevation_token') ?? '', localStorage.getItem('elevation_role') ?? '']) } catch { return '["",""]' } }
 const fmt = (text: string, params: Record<string, string | number>) => text.replace(/\{(\w+)\}/g, (_, key: string) => String(params[key] ?? ''))
+const STATUS_TONE: Record<string, { tone: ChipTone; symbol?: string }> = { draft: { tone: 'wait' }, published: { tone: 'ok', symbol: '✓' }, archived: { tone: 'neutral' } }
 function useSession() {
   const [session, setSession] = useState(readSession)
   useEffect(() => {
@@ -19,28 +25,24 @@ function useSession() {
   }, [])
   return session
 }
-function Shell({ go, children }: { go?: (path: string) => void; children: ReactNode }) {
-  const { t, lang, setLang } = useLanguage(); const navigate = useNavigate()
-  return <div className="skcat-scope elv-theme">
-    <a className="skcat-skip" href="#skcat-main">{t('skcat.skip')}</a>
-    <header className="skcat-header">
-      <button type="button" className="elv-btn" onClick={() => (go ?? navigate)('/admin/dashboard')}>{t('skcat.back')}</button>
-      <div className="skcat-lang" role="group" aria-label="Idioma / Language">
-        {(['es', 'en'] as const).map(code => <button key={code} type="button" className="elv-btn" aria-pressed={lang === code} onClick={() => setLang(code)}>{code.toUpperCase()}</button>)}
-      </div>
-    </header>
-    <main id="skcat-main" tabIndex={-1} className="skcat-main">{children}</main>
-  </div>
+// El marco de Administración ya trae la cabecera, el selector de idioma y el «Saltar al contenido»: aquí solo el título de la pantalla.
+function Page({ title, chip, children }: { title: ReactNode; chip?: ReactNode; children: ReactNode }) {
+  return <div className="pg sk"><header className="pg-head"><h1 className="pg-title">{title}</h1>{chip}</header>{children}</div>
 }
+function StatusChip({ status, label }: { status: string; label: string }) {
+  const style = STATUS_TONE[status] ?? { tone: 'neutral' as ChipTone }
+  return <Chip tone={style.tone} symbol={style.symbol}>{label}</Chip>
+}
+// Aviso con foco: estado (role=status) o error (role=alert).
 function Notice({ text, error = false }: { text: string; error?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => { if (text) ref.current?.focus() }, [text])
-  return text ? <div ref={ref} tabIndex={-1} role={error ? 'alert' : 'status'} className={error ? 'skcat-error' : 'skcat-notice'}>{text}</div> : null
+  return <div ref={ref} tabIndex={-1} role={error ? 'alert' : 'status'} className="pg-focus pg-live">{text && <Banner kind={error ? 'error' : 'note'} title={text} />}</div>
 }
 export function SkillCatalogManager() {
   const session = useSession(); const location = useLocation(); const params = useParams(); const { t } = useLanguage()
   const [token, role] = JSON.parse(session) as string[]
-  if ((params.id && !/^[1-9][0-9]{0,8}$/.test(params.id)) || (params.skillKey && params.skillKey !== 'new' && !KEY_RE.test(params.skillKey))) return <Shell><Notice error text={t('skcat.e_notfound')} /></Shell>
+  if ((params.id && !/^[1-9][0-9]{0,8}$/.test(params.id)) || (params.skillKey && params.skillKey !== 'new' && !KEY_RE.test(params.skillKey))) return <Page title={t('skcat.title')}><Notice error text={t('skcat.e_notfound')} /></Page>
   return token && ['admin', 'superadmin'].includes(role) ? <ManagerSession key={session + location.pathname + location.search} session={session} /> : <Navigate to="/login" replace />
 }
 
@@ -62,7 +64,7 @@ function ManagerSession({ session }: { session: string }) {
   const [conflict, setConflict] = useState<SkillRow | null | undefined>(undefined)
   const [inUse, setInUse] = useState<{ skillKey: string; people: number }[] | null>(null)
   const [rowStamp, setRowStamp] = useState<string | undefined>(undefined)
-  const locked = useRef(false); const initialized = useRef(false); const dialog = useRef<HTMLDialogElement>(null)
+  const locked = useRef(false); const initialized = useRef(false)
   const conflictRef = useRef<HTMLDivElement>(null); const inUseRef = useRef<HTMLDivElement>(null)
   const editable = ready && detail?.status === 'draft'
   const dirty = !!skillKey && (isDirty(form, baseline) || (creating && !!newKey))
@@ -103,9 +105,19 @@ function ManagerSession({ session }: { session: string }) {
     const unload = (event: BeforeUnloadEvent) => { event.preventDefault() }
     window.addEventListener('beforeunload', unload)
     const unregister = registerCatalogGuard(() => busy || !window.confirm(t('skcat.leave')))
-    return () => { window.removeEventListener('beforeunload', unload); unregister() }
+    // Dentro del marco de Administración hay barra lateral y marca: un clic en un enlace de otra ruta con cambios sin guardar pide confirmar, como el botón «Volver» y el historial.
+    const links = (event: MouseEvent) => {
+      const link = event.target instanceof Element ? event.target.closest('a[href]') : null
+      if (!dirty || !link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      // Un enlace que abre otra pestaña o descarga no saca a la persona de esta pantalla: no pide confirmar.
+      if ((link.getAttribute('target') && link.getAttribute('target') !== '_self') || link.hasAttribute('download')) return
+      const target = new URL((link as HTMLAnchorElement).href, window.location.href)
+      if (target.origin !== window.location.origin || (target.pathname === window.location.pathname && target.search === window.location.search) || (target.hash && target.pathname === window.location.pathname)) return
+      if (!window.confirm(t('skcat.leave'))) { event.preventDefault(); event.stopPropagation() }
+    }
+    document.addEventListener('click', links, true)
+    return () => { window.removeEventListener('beforeunload', unload); document.removeEventListener('click', links, true); unregister() }
   }, [dirty, busy, t])
-  useEffect(() => { if (confirmRemove) dialog.current?.showModal(); else if (dialog.current?.open) dialog.current.close() }, [confirmRemove])
 
   async function refresh() { const value = await api.get(id); if (current()) setDetail(value); return value }
   async function run(action: 'create' | 'save' | 'remove' | 'publish') {
@@ -165,29 +177,27 @@ function ManagerSession({ session }: { session: string }) {
   useEffect(() => {
     if (inUse && inUse.length > 0) inUseRef.current?.focus()
   }, [inUse])
+  const loadingOrRetry = <>{busy && <p role="status">{t('skcat.loading')}</p>}{!ready && !busy && <div className="pg-actions"><Button variant="ghost" onClick={retry}>{t('skcat.retry')}</Button></div>}</>
 
   // ── Versiones ────────────────────────────────────────────────
   if (!id) {
     const draft = versions.find(v => v.status === 'draft')
-    return <Shell go={go}>
-      <h1>{t('skcat.title')}</h1><p className="skcat-lead">{t('skcat.lead')}</p>
+    return <Page title={t('skcat.title')}>
+      <p className="pg-lead">{t('skcat.lead')}</p>
       <Notice text={text} error={notice?.error} />
-      {busy && <p role="status">{t('skcat.loading')}</p>}
-      {!ready && !busy && <button type="button" className="elv-btn" onClick={retry}>{t('skcat.retry')}</button>}
+      {loadingOrRetry}
       {ready && <>
-        {versions.length === 0 ? <p>{t('skcat.none')}</p> : <div className="skcat-card"><table className="skcat-table"><thead><tr>
-          <th>{t('skcat.version')}</th><th>{t('skcat.col_status')}</th><th>{t('skcat.published_on')}</th><th>{t('skcat.skills_count')}</th><th><span className="skcat-sr">{t('skcat.view')}</span></th></tr></thead><tbody>
-          {versions.map(row => <tr key={row.id}>
-            <td data-label={t('skcat.version')}>{row.version}</td>
-            <td data-label={t('skcat.col_status')}><span className={`skcat-badge is-${row.status}`}>{t(`skcat.status_${row.status}`)}</span></td>
-            <td data-label={t('skcat.published_on')}>{row.publishedAt ? row.publishedAt.slice(0, 10) : '—'}</td>
-            <td data-label={t('skcat.skills_count')}>{row.skillCount}</td>
-            <td><button type="button" className={`elv-btn${row.status === 'draft' ? ' skcat-primary' : ''}`} disabled={busy} onClick={() => go(`/admin/skill-catalog/${row.id}`)}>{row.status === 'draft' ? t('skcat.open_draft') : t('skcat.view')}</button></td>
-          </tr>)}</tbody></table></div>}
-        <button type="button" className={`elv-btn${versions.length ? '' : ' skcat-primary'}`} disabled={busy || !!draft} onClick={() => void run('create')}>{t(versions.length ? 'skcat.create' : 'skcat.create_first')}</button>
-        {draft && <p className="skcat-help">{t('skcat.create_help_open')}</p>}
+        {versions.length === 0 ? <p>{t('skcat.none')}</p> : <Card as="section" className="pg-card"><DataTable caption={t('skcat.title')} rowKey={row => String(row.id)} rows={versions} columns={[
+          { key: 'version', header: t('skcat.version'), render: row => row.version },
+          { key: 'status', header: t('skcat.col_status'), render: row => <StatusChip status={row.status} label={t(`skcat.status_${row.status}`)} /> },
+          { key: 'published', header: t('skcat.published_on'), render: row => row.publishedAt ? row.publishedAt.slice(0, 10) : '—' },
+          { key: 'count', header: t('skcat.skills_count'), render: row => row.skillCount },
+          { key: 'open', header: t('skcat.view'), hidden: true, render: row => <Button variant={row.status === 'draft' ? 'primary' : 'ghost'} disabled={busy} onClick={() => go(`/admin/skill-catalog/${row.id}`)}>{row.status === 'draft' ? t('skcat.open_draft') : t('skcat.view')}</Button> },
+        ]} /></Card>}
+        <div className="pg-actions"><Button variant={versions.length ? 'ghost' : 'primary'} disabled={busy || !!draft} aria-describedby={draft ? 'skcat-create-reason' : undefined} onClick={() => void run('create')}>{t(versions.length ? 'skcat.create' : 'skcat.create_first')}</Button></div>
+        {draft && <p className="cg-hint" id="skcat-create-reason">{t('skcat.create_help_open')}</p>}
       </>}
-    </Shell>
+    </Page>
   }
 
   // ── Habilidad ────────────────────────────────────────────────
@@ -197,142 +207,101 @@ function ManagerSession({ session }: { session: string }) {
     const set = (patch: Partial<Form>) => { setForm(prev => ({ ...prev, ...patch })); setNotice(null) }
     const setLevel = (n: typeof LEVELS[number], lang2: 'es' | 'en', value: string) => set({ levels: { ...form.levels, [n]: { ...form.levels[n], [lang2]: value } } })
     const missing = (value: string) => !creating && editable && !value.trim()
-    const req = (value: string, id2: string) => missing(value) ? <p className="skcat-help is-missing" id={id2}>{t('skcat.required_publish')}</p> : null
+    // «Obligatorio para publicar» se dice con palabras (no solo con color) y cuelga del campo.
+    const req = (value: string) => missing(value) ? t('skcat.required_publish') : undefined // se muestra como indicación (hint), no como error: el campo incompleto no es inválido
     const readOnly = !editable
-    const levelBlock = (n: typeof LEVELS[number]) => <div className="skcat-grid2" key={n}>
+    const levelBlock = (n: typeof LEVELS[number]) => <div className="pc-pair" key={n}>
       {(['es', 'en'] as const).map(code => {
         const value = form.levels[n][code]; const fid = `skcat-l${n}${code}`
-        return <div key={code} className={missing(value) || fieldErrors.level ? 'skcat-field is-missing' : 'skcat-field'}>
-          <label htmlFor={fid}>{fmt(t('skcat.f_level'), { n })} · {code.toUpperCase()}</label>
-          <textarea id={fid} value={value} disabled={readOnly} aria-describedby={`${fid}-h`} onChange={e => setLevel(n, code, e.target.value)} />
-          {fieldErrors.level ? <p className="skcat-help is-missing" id={`${fid}-h`} role="alert">{t('skcat.err_level')}</p> : req(value, `${fid}-h`)}
-        </div>
+        return <TextAreaField key={code} id={fid} label={`${fmt(t('skcat.f_level'), { n })} · ${code.toUpperCase()}`} value={value} disabled={readOnly} error={fieldErrors.level ? t('skcat.err_level') : undefined} hint={fieldErrors.level ? undefined : req(value)} className={req(value) && !fieldErrors.level ? 'sk-missing' : undefined} onChange={e => setLevel(n, code, e.target.value)} />
       })}
     </div>
     const moreFilled = LEVELS.slice(2).some(n => form.levels[n].es || form.levels[n].en)
     const focusMoreLevel = /^skcat-l[34](?:es|en)$/.test(anchor)
-    return <Shell go={go}>
-      <button type="button" className="elv-btn" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}`)}>{t('skcat.skill_back')}</button>
-      <h1>{creating ? t('skcat.new_title') : `${t('skcat.skill_title')} · ${row ? skillName(row) : skillKey}`}</h1>
+    const title = creating ? t('skcat.new_title') : `${t('skcat.skill_title')} · ${row ? skillName(row) : skillKey}`
+    return <Page title={title}>
+      <div className="pg-actions"><Button variant="ghost" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}`)}>{t('skcat.skill_back')}</Button></div>
       <Notice text={text} error={notice?.error} />
-      {conflict !== undefined && <div className="skcat-error" role="alert" tabIndex={-1} ref={conflictRef}>
-        {t(conflict === null ? 'skcat.conflict_removed' : 'skcat.conflict_changed')}
-        <button type="button" className="elv-btn" onClick={loadConflict}>{t(conflict === null ? 'skcat.skill_back' : 'skcat.conflict_load')}</button>
-      </div>}
-      {busy && !ready && <p role="status">{t('skcat.loading')}</p>}
-      {!ready && !busy && <button type="button" className="elv-btn" onClick={retry}>{t('skcat.retry')}</button>}
+      {conflict !== undefined && <div className="pg-focus" role="alert" tabIndex={-1} ref={conflictRef}><Banner kind="error" title={t(conflict === null ? 'skcat.conflict_removed' : 'skcat.conflict_changed')}>
+        <div className="pg-actions"><Button variant="ghost" onClick={loadConflict}>{t(conflict === null ? 'skcat.skill_back' : 'skcat.conflict_load')}</Button></div></Banner></div>}
+      {loadingOrRetry}
       {ready && detail && <>
-        {readOnly && <p className="skcat-help">{t('skcat.readonly_help')}</p>}
-        <form className="skcat-card" onSubmit={e => { e.preventDefault(); void run('save') }} noValidate>
-          <fieldset className="skcat-lock" disabled={busy} aria-busy={busy}>
-          <div className="skcat-grid2">
-            <div className={fieldErrors.key ? 'skcat-field is-missing' : 'skcat-field'}>
-              <label htmlFor="skcat-key">{t('skcat.f_key')}</label>
-              <input id="skcat-key" type="text" value={key} disabled={!creating || readOnly} autoComplete="off" spellCheck={false} aria-describedby="skcat-key-h" onChange={e => { setNewKey(e.target.value.toLowerCase()); setNotice(null) }} />
-              <p className={`skcat-help${fieldErrors.key ? ' is-missing' : ''}`} id="skcat-key-h" role={fieldErrors.key ? 'alert' : undefined}>{fieldErrors.key ? t('skcat.err_key') : t('skcat.f_key_help')}</p>
-            </div>
-            <div className="skcat-field">
-              <label htmlFor="skcat-type">{t('skcat.f_type')}</label>
-              <select id="skcat-type" value={form.type} disabled={readOnly} onChange={e => set({ type: e.target.value === 'domain' ? 'domain' : 'transversal' })}>
-                <option value="transversal">{t('skcat.transversal')}</option><option value="domain">{t('skcat.domain')}</option>
-              </select>
-            </div>
+        {readOnly && <p className="cg-hint">{t('skcat.readonly_help')}</p>}
+        <Card as="section" className="pg-card"><form onSubmit={e => { e.preventDefault(); void run('save') }} noValidate>
+          <fieldset className="sk-lock" disabled={busy} aria-busy={busy}>
+          <div className="pc-pair">
+            <TextField id="skcat-key" label={t('skcat.f_key')} type="text" value={key} disabled={!creating || readOnly} autoComplete="off" spellCheck={false} hint={fieldErrors.key ? undefined : t('skcat.f_key_help')} error={fieldErrors.key ? t('skcat.err_key') : undefined} onChange={e => { setNewKey(e.target.value.toLowerCase()); setNotice(null) }} />
+            <SelectField id="skcat-type" label={t('skcat.f_type')} value={form.type} disabled={readOnly} onChange={e => set({ type: e.target.value === 'domain' ? 'domain' : 'transversal' })}>
+              <option value="transversal">{t('skcat.transversal')}</option><option value="domain">{t('skcat.domain')}</option>
+            </SelectField>
             {([['es', 'labelEs'], ['en', 'labelEn']] as const).map(([code, field]) => {
-              const value = form[field]; const fid = `skcat-label-${code}`; const bad = code === 'es' ? fieldErrors.label_es : fieldErrors.label_en
-              return <div key={code} className={missing(value) || bad ? 'skcat-field is-missing' : 'skcat-field'}>
-                <label htmlFor={fid}>{t(`skcat.f_label_${code}`)}</label>
-                <input id={fid} type="text" value={value} disabled={readOnly} aria-describedby={`${fid}-h`} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
-                {bad ? <p className="skcat-help is-missing" id={`${fid}-h`} role="alert">{t('skcat.err_label')}</p> : req(value, `${fid}-h`)}
-              </div>
+              const value = form[field]; const bad = code === 'es' ? fieldErrors.label_es : fieldErrors.label_en
+              return <TextField key={code} id={`skcat-label-${code}`} label={t(`skcat.f_label_${code}`)} type="text" value={value} disabled={readOnly} error={bad ? t('skcat.err_label') : undefined} hint={bad ? undefined : req(value)} className={req(value) && !bad ? 'sk-missing' : undefined} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
             })}
           </div>
-          <h2>{t('skcat.f_levels')}</h2>
-          <p className="skcat-help">{t('skcat.rubric_note')}</p>
+          <h2 className="sk-h2">{t('skcat.f_levels')}</h2>
+          <p className="cg-hint">{t('skcat.rubric_note')}</p>
           {(['1', '2'] as const).map(levelBlock)}
-          <details className="skcat-more" open={moreFilled || !!fieldErrors.level || focusMoreLevel}><summary>{t('skcat.f_more_levels')}</summary>{(['3', '4'] as const).map(levelBlock)}</details>
-          <div className="skcat-grid2">
+          <details className="pc-details" open={moreFilled || !!fieldErrors.level || focusMoreLevel}><summary>{t('skcat.f_more_levels')}</summary>{(['3', '4'] as const).map(levelBlock)}</details>
+          <div className="pc-pair">
             {([['source', 'f_source', 'source'], ['verifiedBy', 'f_verified_by', 'verified_by']] as const).map(([field, label, errKey]) => {
-              const value = form[field]; const fid = `skcat-${field}`; const bad = fieldErrors[errKey]
-              return <div key={field} className={missing(value) || bad ? 'skcat-field is-missing' : 'skcat-field'}>
-                <label htmlFor={fid}>{t(`skcat.${label}`)}</label>
-                <input id={fid} type="text" value={value} disabled={readOnly} aria-describedby={`${fid}-h`} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
-                {bad ? <p className="skcat-help is-missing" id={`${fid}-h`} role="alert">{t('skcat.err_text')}</p> : req(value, `${fid}-h`)}
-              </div>
+              const value = form[field]; const bad = fieldErrors[errKey]
+              return <TextField key={field} id={`skcat-${field}`} label={t(`skcat.${label}`)} type="text" value={value} disabled={readOnly} error={bad ? t('skcat.err_text') : undefined} hint={bad ? undefined : req(value)} className={req(value) && !bad ? 'sk-missing' : undefined} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
             })}
-            <div className={missing(form.verifiedAt) || fieldErrors.verified_at ? 'skcat-field is-missing' : 'skcat-field'}>
-              <label htmlFor="skcat-date">{t('skcat.f_verified_at')}</label>
-              <input id="skcat-date" type="date" value={form.verifiedAt} disabled={readOnly} aria-describedby="skcat-date-h" onChange={e => set({ verifiedAt: e.target.value })} />
-              {fieldErrors.verified_at ? <p className="skcat-help is-missing" id="skcat-date-h" role="alert">{t('skcat.err_date')}</p> : req(form.verifiedAt, 'skcat-date-h')}
-            </div>
+            <TextField id="skcat-date" label={t('skcat.f_verified_at')} type="date" value={form.verifiedAt} disabled={readOnly} error={fieldErrors.verified_at ? t('skcat.err_date') : undefined} hint={fieldErrors.verified_at ? undefined : req(form.verifiedAt)} className={req(form.verifiedAt) && !fieldErrors.verified_at ? 'sk-missing' : undefined} onChange={e => set({ verifiedAt: e.target.value })} />
           </div>
-          <fieldset className="skcat-territories" disabled={readOnly}>
-            <legend>{t('skcat.f_territories')}</legend>
-            <p className="skcat-help">{t('skcat.f_territories_help')}</p>
-            {territories.map(item => <label className="skcat-check" key={item.id}>
-              <input type="checkbox" checked={form.territories.includes(item.id)} onChange={e => set({ territories: e.target.checked ? [...form.territories, item.id] : form.territories.filter(x => x !== item.id) })} />
-              {item.labels[lang]}
-            </label>)}
+          <fieldset className="cg-field" disabled={readOnly}>
+            <legend className="cg-label">{t('skcat.f_territories')}</legend>
+            <p className="cg-hint">{t('skcat.f_territories_help')}</p>
+            {territories.map(item => <CheckField key={item.id} checked={form.territories.includes(item.id)} onChange={e => set({ territories: e.target.checked ? [...form.territories, item.id] : form.territories.filter(x => x !== item.id) })} label={item.labels[lang]} />)}
           </fieldset>
-          {editable && <div className="skcat-actions">
-            {!creating ? <button type="button" className="elv-btn skcat-danger" disabled={busy} onClick={() => setConfirmRemove(true)}>{t('skcat.remove')}</button> : <span />}
-            <div className="skcat-actions-end">
-              <button type="button" className="elv-btn" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}`)}>{t('skcat.cancel')}</button>
-              <button type="submit" className="elv-btn skcat-primary" disabled={busy || (!dirty && !creating)}>{busy ? t('skcat.saving') : t('skcat.save')}</button>
-            </div>
+          {editable && <div className="pg-actions sk-actions">
+            {!creating && <Button variant="danger" disabled={busy} onClick={() => setConfirmRemove(true)}>{t('skcat.remove')}</Button>}
+            <Button variant="ghost" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}`)}>{t('skcat.cancel')}</Button>
+            <Button type="submit" disabled={busy || (!dirty && !creating)}>{busy ? t('skcat.saving') : t('skcat.save')}</Button>
           </div>}
           </fieldset>
-        </form>
+        </form></Card>
       </>}
-      <dialog ref={dialog} className="skcat-dialog" aria-labelledby="skcat-rm-title" onClose={() => setConfirmRemove(false)}>
-        <h2 id="skcat-rm-title">{fmt(t('skcat.rm_title'), { name: row ? skillName(row) : skillKey })}</h2><p>{t('skcat.rm_body')}</p>
-        <div className="skcat-actions-end"><button type="button" className="elv-btn" autoFocus onClick={() => setConfirmRemove(false)}>{t('skcat.cancel')}</button>
-          <button type="button" className="elv-btn skcat-danger" disabled={busy} onClick={() => void run('remove')}>{t('skcat.rm_yes')}</button></div>
-      </dialog>
-    </Shell>
+      <Dialog open={confirmRemove} onClose={() => setConfirmRemove(false)} title={fmt(t('skcat.rm_title'), { name: row ? skillName(row) : skillKey })}
+        actions={<><Button variant="ghost" onClick={() => setConfirmRemove(false)}>{t('skcat.cancel')}</Button><Button variant="danger" disabled={busy} onClick={() => void run('remove')}>{t('skcat.rm_yes')}</Button></>}><p>{t('skcat.rm_body')}</p></Dialog>
+    </Page>
   }
 
   // ── Versión: borrador editable o consulta ────────────────────
   const empty = detail?.skills.length === 0
-  return <Shell go={go}>
-    <button type="button" className="elv-btn" disabled={busy} onClick={() => go('/admin/skill-catalog')}>{t('skcat.versions_back')}</button>
-    {detail && <h1>{t('skcat.version')} {detail.version} <span className={`skcat-badge is-${detail.status}`}>{t(`skcat.status_${detail.status}`)}</span></h1>}
+  return <Page title={detail ? `${t('skcat.version')} ${detail.version}` : t('skcat.title')} chip={detail ? <StatusChip status={detail.status} label={t(`skcat.status_${detail.status}`)} /> : undefined}>
+    <div className="pg-actions"><Button variant="ghost" disabled={busy} onClick={() => go('/admin/skill-catalog')}>{t('skcat.versions_back')}</Button></div>
     <Notice text={text} error={notice?.error} />
-    {busy && <p role="status">{t('skcat.loading')}</p>}
-    {!ready && !busy && <button type="button" className="elv-btn" onClick={retry}>{t('skcat.retry')}</button>}
+    {loadingOrRetry}
     {ready && detail && !showPublish && <>
-      <div className="skcat-actions">
-        <p className="skcat-lead">{t(editable ? 'skcat.draft_help' : 'skcat.readonly_help')}</p>
-        {editable && <div className="skcat-actions-end">
-          <button type="button" className="elv-btn" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}/skills/new`)}>{t('skcat.add')}</button>
-          <button type="button" className="elv-btn skcat-primary" disabled={busy} onClick={() => { setNotice(null); setShowPublish(true) }}>{t('skcat.publish_btn')}</button>
-        </div>}
-      </div>
-      {editable && !empty && <p className="skcat-help" role="status">{incomplete.length ? fmt(t('skcat.missing_summary'), { n: incomplete.length }) : t('skcat.missing_ok')}</p>}
-      {empty ? <p>{t('skcat.empty_skills')}</p> : <div className="skcat-card"><table className="skcat-table"><thead><tr>
-        <th>{t('skcat.col_skill')}</th><th>{t('skcat.col_key')}</th><th>{t('skcat.col_type')}</th><th>{t('skcat.col_territories')}</th><th>{t('skcat.col_status')}</th><th><span className="skcat-sr">{t('skcat.edit')}</span></th></tr></thead><tbody>
-        {detail.skills.map(skill => <tr key={skill.skillKey}>
-          <td data-label={t('skcat.col_skill')}><strong>{skillName(skill)}</strong></td>
-          <td data-label={t('skcat.col_key')}><code>{skill.skillKey}</code></td>
-          <td data-label={t('skcat.col_type')}>{t(`skcat.${skill.type}`)}</td>
-          <td data-label={t('skcat.col_territories')}>{skill.territories.length ? skill.territories.map(tid => <span className="skcat-chip" key={tid}>{terrName(tid)}</span>) : <span className="skcat-help">{t('skcat.no_territory')}</span>}</td>
-          <td data-label={t('skcat.col_status')}>{skill.missing.length ? <span className="skcat-badge is-missing">{fmt(t('skcat.status_missing'), { n: skill.missing.length })}</span> : <span className="skcat-badge is-complete">{t('skcat.status_complete')}</span>}</td>
-          <td><button type="button" className="elv-btn" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}/skills/${skill.skillKey}`)}>{editable ? t('skcat.edit') : t('skcat.view')}</button></td>
-        </tr>)}</tbody></table></div>}
+      <p className="pg-lead">{t(editable ? 'skcat.draft_help' : 'skcat.readonly_help')}</p>
+      {editable && <div className="pg-actions">
+        <Button variant="ghost" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}/skills/new`)}>{t('skcat.add')}</Button>
+        <Button disabled={busy} onClick={() => { setNotice(null); setShowPublish(true) }}>{t('skcat.publish_btn')}</Button>
+      </div>}
+      {editable && !empty && <p className="cg-hint" role="status">{incomplete.length ? fmt(t('skcat.missing_summary'), { n: incomplete.length }) : t('skcat.missing_ok')}</p>}
+      {empty ? <p>{t('skcat.empty_skills')}</p> : <Card as="section" className="pg-card"><DataTable caption={`${t('skcat.version')} ${detail.version}`} rowKey={skill => skill.skillKey} rows={detail.skills} columns={[
+        { key: 'skill', header: t('skcat.col_skill'), render: skill => <strong>{skillName(skill)}</strong> },
+        { key: 'key', header: t('skcat.col_key'), render: skill => <code>{skill.skillKey}</code> },
+        { key: 'type', header: t('skcat.col_type'), render: skill => t(`skcat.${skill.type}`) },
+        { key: 'territories', header: t('skcat.col_territories'), render: skill => (skill.territories.length ? <span className="sk-chips">{skill.territories.map(tid => <Chip key={tid}>{terrName(tid)}</Chip>)}</span> : <span className="cg-hint">{t('skcat.no_territory')}</span>) },
+        { key: 'status', header: t('skcat.col_status'), render: skill => (skill.missing.length ? <Chip tone="bad" symbol="!">{fmt(t('skcat.status_missing'), { n: skill.missing.length })}</Chip> : <Chip tone="ok" symbol="✓">{t('skcat.status_complete')}</Chip>) },
+        { key: 'edit', header: t('skcat.edit'), hidden: true, render: skill => <Button variant="ghost" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}/skills/${skill.skillKey}`)}>{editable ? t('skcat.edit') : t('skcat.view')}</Button> },
+      ]} /></Card>}
     </>}
-    {ready && detail && showPublish && <section className="skcat-card" aria-labelledby="skcat-pub">
-      <h2 id="skcat-pub">{fmt(t('skcat.pub_title'), { n: detail.version })}</h2>
+    {ready && detail && showPublish && <Card as="section" className="pg-card">
+      <h2>{fmt(t('skcat.pub_title'), { n: detail.version })}</h2>
       <p>{t('skcat.pub_effect')}</p>
       {empty ? <p role="alert">{t('skcat.pub_empty')}</p> : incomplete.length > 0 ? <><h3>{t('skcat.pub_missing')}</h3>
-        <ul>{incomplete.map(skill => <li key={skill.skillKey}><strong>{skillName(skill)}</strong>: {skill.missing.map(path => { const m = missingLabel(path); const label = fmt(t(`skcat.${m.key}`), { level: m.level ?? '', lang: m.lang ?? '' }); return <a key={path} className="skcat-link" href={`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`} onClick={e => { e.preventDefault(); navigate(`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`) }}>{label}</a> }).reduce((acc: ReactNode[], el, i) => i === 0 ? [el] : [...acc, ', ', el], [])}</li>)}</ul>
-        <p className="skcat-help" role="status">{t('skcat.pub_help_blocked')}</p></> : <p role="status">{t('skcat.missing_ok')}</p>}
-      {inUse && inUse.length > 0 && <div className="skcat-error" role="alert" tabIndex={-1} ref={inUseRef}>
-        {t('skcat.pub_in_use')}
-        <ul>{inUse.map(entry => <li key={entry.skillKey}><code>{entry.skillKey}</code> — {fmt(t('skcat.in_use_people'), { n: entry.people })}</li>)}</ul>
-      </div>}
-      <div className="skcat-actions-end">
-        <button type="button" className="elv-btn" disabled={busy} onClick={() => setShowPublish(false)}>{t('skcat.pub_back')}</button>
-        <button type="button" className="elv-btn skcat-primary" disabled={busy || empty || incomplete.length > 0} onClick={() => void run('publish')}>{fmt(t('skcat.pub_now'), { n: detail.version })}</button>
+        <ul>{incomplete.map(skill => <li key={skill.skillKey}><strong>{skillName(skill)}</strong>: {skill.missing.map(path => { const m = missingLabel(path); const label = fmt(t(`skcat.${m.key}`), { level: m.level ?? '', lang: m.lang ?? '' }); return <a key={path} className="cg-linkbtn" href={`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`} onClick={e => { e.preventDefault(); navigate(`/admin/skill-catalog/${id}/skills/${skill.skillKey}#${missingFieldAnchor(path)}`) }}>{label}</a> }).reduce((acc: ReactNode[], el, i) => i === 0 ? [el] : [...acc, ', ', el], [])}</li>)}</ul>
+        <p className="cg-hint" role="status">{t('skcat.pub_help_blocked')}</p></> : <p role="status">{t('skcat.missing_ok')}</p>}
+      {inUse && inUse.length > 0 && <div className="pg-focus" role="alert" tabIndex={-1} ref={inUseRef}><Banner kind="error" title={t('skcat.pub_in_use')}>
+        <ul>{inUse.map(entry => <li key={entry.skillKey}><code>{entry.skillKey}</code> — {fmt(t('skcat.in_use_people'), { n: entry.people })}</li>)}</ul></Banner></div>}
+      <div className="pg-actions">
+        <Button variant="ghost" disabled={busy} onClick={() => setShowPublish(false)}>{t('skcat.pub_back')}</Button>
+        <Button disabled={busy || empty || incomplete.length > 0} onClick={() => void run('publish')}>{fmt(t('skcat.pub_now'), { n: detail.version })}</Button>
       </div>
-    </section>}
-  </Shell>
+    </Card>}
+  </Page>
 }

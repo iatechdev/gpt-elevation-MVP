@@ -1,7 +1,11 @@
 // frontend/src/pages/board/BoardManifest.tsx
-import { useState, useEffect, useCallback } from 'react'
+// ES-182 / ES-207 — Manifiesto ético en Administración. ES-310 (ES-349): Cartografía dentro del marco de Administración; «Reactivar» pide confirmación con el Dialog compartido.
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../i18n/useLanguage'
+import { Button, Card, Chip, Dialog, TextAreaField, TextField } from '../../cartografia'
+import '../../cartografia/pages.css'
+import './boardManifest.css'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -16,21 +20,26 @@ interface ManifestVersion {
 }
 
 export function BoardManifest() {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
 
   const [versions, setVersions]     = useState<ManifestVersion[]>([])
   const [loading, setLoading]       = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [activating, setActivating] = useState<number | null>(null)
   const [error, setError]           = useState<string | null>(null)
+  const [fieldError, setFieldError] = useState<string | null>(null)
   const [success, setSuccess]       = useState<string | null>(null)
 
   const [newContent, setNewContent] = useState('')
   const [newNote, setNewNote]       = useState('')
   const [showForm, setShowForm]     = useState(false)
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [confirming, setConfirming] = useState<ManifestVersion | null>(null)
+  const statusRef = useRef<HTMLDivElement>(null)
 
   const token = localStorage.getItem('elevation_token')
+  // ES-182 (decisión 12079): administración y superadmin LEEN el historial; publicar y reactivar es solo de superadmin. El servidor es la autoridad (403): aquí solo se dejan de pintar los controles.
+  const canPublish = (localStorage.getItem('elevation_role') ?? '') === 'superadmin'
 
   const [initialLoadError] = useState(() => t('board_error_load'))
 
@@ -42,24 +51,30 @@ export function BoardManifest() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) throw new Error('load')
       setVersions(data)
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : loadError)
+      return true
+    } catch {
+      setError(loadError) // ES-349 seguimiento (E365-2): mensaje propio, nunca el texto crudo del servidor ni «Failed to fetch»
+      return false
     } finally {
       setLoading(false)
     }
   }, [token])
 
   useEffect(() => { void fetchVersions(initialLoadError) }, [fetchVersions, initialLoadError])
+  // Tras publicar o reactivar, el foco pasa al aviso de resultado (el botón que abrió el diálogo desaparece al recargar la lista).
+  useEffect(() => { if (success) statusRef.current?.focus() }, [success])
 
   const handleSubmit = async () => {
     if (newContent.trim().length < 50) {
-      setError(t('board_error_min'))
+      setFieldError(t('board_error_min'))
+      document.getElementById('bm-content')?.focus()
       return
     }
     setSubmitting(true)
     setError(null)
+    setFieldError(null)
     setSuccess(null)
     try {
       const res = await fetch(`${API}/api/board/manifest`, {
@@ -71,35 +86,54 @@ export function BoardManifest() {
         body: JSON.stringify({ content: newContent.trim(), note: newNote.trim() || undefined }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) throw new Error('upload')
       setSuccess(`${t('board_success_upload')} ${data.version}`)
       setNewContent('')
       setNewNote('')
       setShowForm(false)
       await fetchVersions(t('board_error_load'))
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : t('board_error_upload'))
+    } catch {
+      setError(t('board_error_upload'))
     } finally {
       setSubmitting(false)
     }
   }
 
+  // Lectura simple del historial (sin tocar el estado de carga ni los avisos); null si falla.
+  const readVersions = async (): Promise<ManifestVersion[] | null> => {
+    try {
+      const res = await fetch(`${API}/api/board/manifest`, { headers: { Authorization: `Bearer ${token}` } })
+      const data = await res.json()
+      return res.ok && Array.isArray(data) ? data : null
+    } catch { return null }
+  }
+
   const handleActivate = async (id: number, version: string) => {
-    if (!confirm(`${t('board_confirm_activate')} ${version}?`)) return
+    setConfirming(null)
     setActivating(id)
     setError(null)
     setSuccess(null)
+    let res: Response | null = null
     try {
-      const res = await fetch(`${API}/api/board/manifest/${id}/activate`, {
+      res = await fetch(`${API}/api/board/manifest/${id}/activate`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setSuccess(`${t('board_success_activate')} ${version}`)
-      await fetchVersions(t('board_error_load'))
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : t('board_error_activate'))
+    } catch {
+      res = null // sin respuesta: el servidor pudo haber aplicado el cambio
+    }
+    try {
+      if (res === null) {
+        // E365-1: no se afirma nada sin confirmarlo; se vuelve a leer y se compara con el servidor.
+        const fresh = await readVersions()
+        if (fresh?.some(v => v.id === id && v.isActive)) { setVersions(fresh); setSuccess(`${t('board_success_activate')} ${version}`) }
+        else { if (fresh) setVersions(fresh); setError(t('board_error_unconfirmed')) }
+      } else if (!res.ok) {
+        setError(t('board_error_activate')) // E365-2: sin texto técnico del servidor
+      } else {
+        setSuccess(`${t('board_success_activate')} ${version}`)
+        await fetchVersions(t('board_error_load'))
+      }
     } finally {
       setActivating(null)
     }
@@ -108,256 +142,105 @@ export function BoardManifest() {
   const active = versions.find(v => v.isActive)
 
   const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+    new Date(iso).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto' }}>
+    <div className="pg bm">
+      <header className="pg-head">
+        <h1 className="pg-title">{t('board_manifest_title')}</h1>
+        <p className="pg-lead">{t('board_manifest_subtitle')}</p>
+      </header>
 
-      {/* Título */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{
-          fontFamily: 'Playfair Display, serif', fontWeight: 400,
-          fontSize: '1.6rem', color: '#1C1917', margin: 0,
-        }}>
-          {t('board_manifest_title')}
-        </h1>
-        <p style={{ fontSize: 13, color: '#6F6963', margin: '0.4rem 0 0' }}>
-          {t('board_manifest_subtitle')}
-        </p>
-      </div>
-
-      {/* Feedback */}
       {error && (
-        <div style={{
-          background: '#FEF2F2', border: '0.5px solid #FECACA',
-          borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem',
-          fontSize: 13, color: '#B91C1C',
-        }}>
-          {error}
-        </div>
+        <div className="cg-banner cg-banner--error" role="alert"><span className="cg-banner__title">{error}</span></div>
       )}
-      {success && (
-        <div style={{
-          background: '#EAF0E6', border: '0.5px solid #A8B5A2',
-          borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem',
-          fontSize: 13, color: '#4B5E3F',
-        }}>
-          {success}
-        </div>
-      )}
+      <div ref={statusRef} tabIndex={-1} role="status" className={success ? 'cg-banner bm-ok' : undefined}>
+        {success && <span className="cg-banner__title">{success}</span>}
+      </div>
 
-      {/* Banner versión activa */}
       {active && (
-        <div style={{
-          background: '#FAFAF8', border: '0.5px solid #A8B5A2',
-          borderRadius: 12, padding: '1.25rem 1.5rem', marginBottom: '1.5rem',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: '#5C6B4E', display: 'inline-block',
-              }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#4B5E3F', letterSpacing: '0.05em' }}>
-                {t('board_active_version')} — {active.version}
-              </span>
-            </div>
-            <span style={{ fontSize: 11, color: '#6F6963' }}>
-              {fmtDate(active.createdAt)} · {active.uploader?.name}
-            </span>
-          </div>
-          {active.note && (
-            <p style={{ fontSize: 12, color: '#6B645F', fontStyle: 'italic', margin: '0 0 0.75rem' }}>
-              {active.note}
-            </p>
-          )}
-          <p style={{
-            fontSize: 13, color: '#57534E', lineHeight: 1.7,
-            whiteSpace: 'pre-wrap', margin: 0,
-            maxHeight: 160, overflowY: 'auto',
-          }}>
-            {active.content}
+        <Card as="section" className="pg-card bm-active">
+          <h2 className="bm-h2">{t('board_active_version')} — {active.version}</h2>
+          <p className="bm-row">
+            <Chip tone="ok" symbol="●">{t('board_active_badge')}</Chip>
+            <span className="cg-hint">{fmtDate(active.createdAt)} · {active.uploader?.name}</span>
           </p>
-        </div>
+          {active.note && <p className="cg-hint bm-note">{active.note}</p>}
+          <div className="bm-body" tabIndex={0} role="region" aria-label={`${t('board_active_version')} ${active.version}`}>{active.content}</div>
+        </Card>
       )}
 
-      {/* Botón nueva versión */}
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => setShowForm(f => !f)}
-          style={{
-            padding: '0.55rem 1.25rem', fontSize: 13, fontWeight: 500,
-            borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
-            background: showForm ? '#F5F3EF' : '#4B5E3F',
-            color: showForm ? '#6B645F' : '#fff',
-            border: showForm ? '0.5px solid #D6D2C4' : 'none',
-          }}
-        >
+      <div className="pg-actions bm-bar">
+        {canPublish && <Button variant="ghost" aria-expanded={showForm} aria-controls="bm-form" onClick={() => setShowForm(f => !f)}>
           {showForm ? t('board_cancel') : t('board_new_version')}
-        </button>
+        </Button>}
         {/* ES-207 — enlace a la página pública */}
-        <Link to="/manifiesto" style={{ fontSize: 13, color: '#4B5E3F', textDecoration: 'underline', minHeight: 24, display: 'inline-flex', alignItems: 'center' }}>{t('manifest_view_public')}</Link>
+        <Link to="/manifiesto" className="bm-public">{t('manifest_view_public')}</Link>
       </div>
 
-      {/* Formulario nueva versión */}
-      {showForm && (
-        <div style={{
-          background: '#FAFAF8', border: '0.5px solid #E7E5E4',
-          borderRadius: 12, padding: '1.5rem', marginBottom: '1.5rem',
-        }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#1C1917', margin: '0 0 1rem' }}>
-            {t('board_form_title')}
-          </h3>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: 12, color: '#6B645F', display: 'block', marginBottom: 6 }}>
-              {t('board_form_note')}
-            </label>
-            <input
-              type="text"
-              value={newNote}
-              onChange={e => setNewNote(e.target.value)}
-              placeholder={t('board_form_note_placeholder')}
-              style={{
-                width: '100%', padding: '0.55rem 0.75rem', fontSize: 13,
-                border: '0.5px solid #D6D2C4', borderRadius: 8,
-                background: '#fff', color: '#1C1917', boxSizing: 'border-box',
-                outline: 'none',
-              }}
-            />
+      {canPublish && showForm && (
+        <Card as="section" className="pg-card">
+          <div id="bm-form">
+            <h2 className="bm-h2">{t('board_form_title')}</h2>
+            <TextField id="bm-note" label={t('board_form_note')} value={newNote} onChange={e => setNewNote(e.target.value)}
+              placeholder={t('board_form_note_placeholder')} disabled={submitting} />
+            <TextAreaField id="bm-content" label={`${t('board_form_content')} *`} value={newContent} rows={10}
+              onChange={e => { setNewContent(e.target.value); setFieldError(null) }} placeholder={t('board_form_content_placeholder')} disabled={submitting}
+              hint={fieldError ? undefined : `${newContent.length} ${t('board_form_chars')}`} error={fieldError ?? undefined} />
+            <div className="pg-actions">
+              <Button onClick={() => void handleSubmit()} disabled={submitting} aria-busy={submitting || undefined}>
+                {submitting ? t('board_publishing') : t('board_publish')}
+              </Button>
+            </div>
           </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: 12, color: '#6B645F', display: 'block', marginBottom: 6 }}>
-              {t('board_form_content')} <span style={{ color: '#B91C1C' }}>*</span>
-            </label>
-            <textarea
-              value={newContent}
-              onChange={e => setNewContent(e.target.value)}
-              placeholder={t('board_form_content_placeholder')}
-              rows={10}
-              style={{
-                width: '100%', padding: '0.75rem', fontSize: 13, lineHeight: 1.7,
-                border: '0.5px solid #D6D2C4', borderRadius: 8,
-                background: '#fff', color: '#1C1917', resize: 'vertical',
-                boxSizing: 'border-box', outline: 'none', fontFamily: 'Inter, sans-serif',
-              }}
-            />
-            <span style={{ fontSize: 11, color: '#6F6963' }}>
-              {newContent.length} {t('board_form_chars')}
-            </span>
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            style={{
-              padding: '0.55rem 1.5rem', fontSize: 13, fontWeight: 600,
-              borderRadius: 8, border: 'none', cursor: submitting ? 'not-allowed' : 'pointer',
-              background: submitting ? '#A8B5A2' : '#4B5E3F', color: '#fff',
-              transition: 'all 0.15s',
-            }}
-          >
-            {submitting ? t('board_publishing') : t('board_publish')}
-          </button>
-        </div>
+        </Card>
       )}
 
-      {/* Historial de versiones */}
-      <div>
-        <h3 style={{ fontSize: 13, fontWeight: 600, color: '#6B645F', letterSpacing: '0.08em', margin: '0 0 1rem', textTransform: 'uppercase' }}>
-          {t('board_history_title')}
-        </h3>
+      <section aria-labelledby="bm-history-title">
+        <h2 className="bm-h2" id="bm-history-title">{t('board_history_title')}</h2>
 
-        {loading && (
-          <p style={{ fontSize: 13, color: '#6F6963' }}>{t('board_loading')}</p>
-        )}
+        {loading && <p className="cg-hint" role="status">{t('board_loading')}</p>}
+        {!loading && versions.length === 0 && !error && <p>{t('board_empty')}</p>}
 
-        {!loading && versions.length === 0 && (
-          <p style={{ fontSize: 13, color: '#6F6963' }}>{t('board_empty')}</p>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {versions.map(v => (
-            <div key={v.id} style={{
-              background: '#FAFAF8',
-              border: `0.5px solid ${v.isActive ? '#A8B5A2' : '#E7E5E4'}`,
-              borderRadius: 10, overflow: 'hidden',
-            }}>
-              {/* Fila resumen */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '0.85rem 1.25rem', cursor: 'pointer',
-              }}
-                onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  {v.isActive && (
-                    <span style={{
-                      width: 7, height: 7, borderRadius: '50%',
-                      background: '#5C6B4E', display: 'inline-block', flexShrink: 0,
-                    }} />
-                  )}
-                  <span style={{ fontSize: 13, fontWeight: v.isActive ? 600 : 400, color: '#1C1917' }}>
-                    {v.version}
-                  </span>
-                  {v.isActive && (
-                    <span style={{
-                      fontSize: 10, padding: '2px 8px', borderRadius: 9999,
-                      background: '#EAF0E6', color: '#4B5E3F',
-                      border: '0.5px solid #A8B5A2', letterSpacing: '0.06em',
-                    }}>
-                      {t('board_active_badge')}
+        {versions.length > 0 && (
+          <Card className="bm-list">
+            <ul className="bm-versions">
+              {versions.map(v => (
+                <li key={v.id} className="bm-ver">
+                  <button type="button" className="bm-ver__head" aria-expanded={expandedId === v.id} aria-controls={`bm-v-${v.id}`}
+                    onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}>
+                    <span className="bm-ver__name">
+                      {v.isActive && <Chip tone="ok" symbol="●">{t('board_active_badge')}</Chip>}
+                      <strong>{v.version}</strong>
+                      {v.note && <span className="cg-hint">{v.note}</span>}
                     </span>
-                  )}
-                  {v.note && (
-                    <span style={{ fontSize: 12, color: '#6F6963', fontStyle: 'italic' }}>
-                      {v.note}
+                    <span className="bm-ver__tail">
+                      <span className="cg-hint">{fmtDate(v.createdAt)} · {v.uploader?.name}</span>
+                      <span aria-hidden="true">{expandedId === v.id ? '▴' : '▾'}</span>
                     </span>
+                  </button>
+                  {canPublish && !v.isActive && (
+                    <div className="pg-actions bm-roll">
+                      <Button variant="ghost" disabled={activating !== null} onClick={() => setConfirming(v)}>
+                        {activating === v.id ? '...' : t('board_rollback')}
+                      </Button>
+                    </div>
                   )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ fontSize: 11, color: '#6F6963' }}>
-                    {fmtDate(v.createdAt)} · {v.uploader?.name}
-                  </span>
-                  {!v.isActive && (
-                    <button
-                      onClick={e => { e.stopPropagation(); handleActivate(v.id, v.version) }}
-                      disabled={activating === v.id}
-                      style={{
-                        fontSize: 11, padding: '3px 10px', borderRadius: 6,
-                        border: '0.5px solid #D6D2C4', background: '#fff',
-                        color: '#6B645F', cursor: activating === v.id ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      {activating === v.id ? '...' : t('board_rollback')}
-                    </button>
-                  )}
-                  <span aria-hidden="true" style={{ fontSize: 11, color: '#D6D2C4' }}>
-                    {expandedId === v.id ? '▲' : '▼'}
-                  </span>
-                </div>
-              </div>
+                  {expandedId === v.id && <p className="bm-body bm-body--open" id={`bm-v-${v.id}`}>{v.content}</p>}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+      </section>
 
-              {/* Contenido expandido */}
-              {expandedId === v.id && (
-                <div style={{
-                  padding: '0 1.25rem 1rem',
-                  borderTop: '0.5px solid #E7E5E4',
-                }}>
-                  <p style={{
-                    fontSize: 13, color: '#57534E', lineHeight: 1.8,
-                    whiteSpace: 'pre-wrap', margin: '1rem 0 0',
-                  }}>
-                    {v.content}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <Dialog
+        open={confirming !== null} onClose={() => setConfirming(null)} title={confirming ? `${t('board_confirm_activate')} ${confirming.version}?` : ''}
+        actions={<>
+          <Button variant="ghost" onClick={() => setConfirming(null)}>{t('board_cancel')}</Button>
+          <Button onClick={() => { if (confirming) void handleActivate(confirming.id, confirming.version) }}>{t('board_rollback')}</Button>
+        </>}
+      />
     </div>
   )
 }

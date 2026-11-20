@@ -12,6 +12,10 @@ export const accessEs = {
   'access.show': 'Mostrar', 'access.hide': 'Ocultar',
   'access.no_account': '¿Aún no tienes cuenta?', 'access.have_account': '¿Ya tienes cuenta?',
   'access.sign_in': 'Entrar', 'access.sign_up': 'Crear cuenta',
+  // ES-359 (PR6): con una sesión abierta, «Crear cuenta» no muestra el formulario sino este aviso. Textos aprobados en ES-359 (sin nombre guardado, se usa la forma corta).
+  'access.session_open': 'Ya tienes una sesión abierta como {name}.', 'access.session_open_noname': 'Ya tienes una sesión abierta.',
+  'access.session_continue': 'Seguir con mi sesión', 'access.session_signout_new': 'Cerrar sesión para crear una cuenta nueva',
+  'access.session_form_hidden': 'El formulario de registro queda oculto mientras haya una sesión abierta.',
   // ES-301: casilla del aviso de privacidad y términos (sin la palabra «consentimiento» hasta que el texto tenga revisión legal)
   'access.terms_a': 'He leído y acepto el ', 'access.terms_privacy': 'aviso de privacidad', 'access.terms_and': ' y los ', 'access.terms_terms': 'términos de uso', 'access.terms_end': '.',
   'access.terms_new_tab': 'se abre en una pestaña nueva',
@@ -35,6 +39,9 @@ export const accessEn: Record<keyof typeof accessEs, string> = {
   'access.show': 'Show', 'access.hide': 'Hide',
   'access.no_account': 'Do not have an account yet?', 'access.have_account': 'Already have an account?',
   'access.sign_in': 'Sign in', 'access.sign_up': 'Create account',
+  'access.session_open': 'You already have a session open as {name}.', 'access.session_open_noname': 'You already have a session open.',
+  'access.session_continue': 'Continue with my session', 'access.session_signout_new': 'Sign out to create a new account',
+  'access.session_form_hidden': 'The sign-up form stays hidden while a session is open.',
   'access.terms_a': 'I have read and accept the ', 'access.terms_privacy': 'privacy notice', 'access.terms_and': ' and the ', 'access.terms_terms': 'terms of use', 'access.terms_end': '.',
   'access.terms_new_tab': 'opens in a new tab',
   'access.err_terms': 'To create your account you need to accept the privacy notice and the terms.',

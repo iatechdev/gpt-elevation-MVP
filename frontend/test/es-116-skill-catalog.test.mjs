@@ -93,7 +93,10 @@ test('ES-116 textos: ES y EN con las mismas claves y sin vacíos; el CSS no defi
 })
 test('ES-116 rutas y menú: tres rutas protegidas para administración y enlace en el menú', () => {
   const app = read('../src/App.tsx')
-  for (const path of ['/admin/skill-catalog', '/admin/skill-catalog/:id', '/admin/skill-catalog/:id/skills/:skillKey']) assert.match(app, new RegExp(`path="${path.replace(/[/:]/g, m => '\\' + m)}" element=\\{<AdminRoute><SkillCatalogManager />`))
+  // ES-349: las tres rutas van dentro del marco de Administración (/admin → AdminRoute + AdminLayout): misma protección, ahora con barra lateral
+  assert.match(app, /<Route path="\/admin" element=\{\s*<AdminRoute>\s*<AdminLayout \/>/)
+  for (const path of ['skill-catalog', 'skill-catalog/:id', 'skill-catalog/:id/skills/:skillKey']) assert.match(app, new RegExp(`<Route path="${path.replace(/[/:]/g, m => '\\' + m)}" element=\\{<SkillCatalogManager />`))
+  assert.doesNotMatch(app, /path="\/admin\/skill-catalog/)
   const side = read('../src/shell/nav.ts') // ES-153: el menú de administración vive en shell/nav.ts
   assert.match(side, /to: '\/admin\/skill-catalog', label: 'adSkills'/)
   assert.match(read('../src/i18n/es.ts'), /\.\.\.skillCatalogEs/); assert.match(read('../src/i18n/en.ts'), /\.\.\.skillCatalogEn/)
@@ -104,8 +107,8 @@ test('ES-116 (QA H-88-02) la clave «new» está reservada en el cliente y (H-88
   assert.equal(validate(f, 'new', true).key, true)
   assert.equal(validate(f, 'new_skill', true).key, undefined)
   const page = read('../src/skill-catalog/SkillCatalogPages.tsx')
-  assert.ok(page.includes('<fieldset className="skcat-lock" disabled={busy} aria-busy={busy}>'))
-  assert.ok(read('../src/skill-catalog/skillCatalog.css').includes('.skcat-lock'))
+  assert.ok(page.includes('<fieldset className="sk-lock" disabled={busy} aria-busy={busy}>'))
+  assert.ok(read('../src/skill-catalog/skillCatalog.css').includes('.sk-lock'))
 })
 
 test('ES-188 cliente: al guardar se envía la marca de versión cargada y el 409 skill_changed expone la versión vigente sin pisarla', async () => {
@@ -152,4 +155,15 @@ test('ES-188 «falta»: cada ruta del servidor tiene un ancla al campo del edito
   assert.ok(page.includes('ref={conflictRef}') && page.includes('}, [conflict])'), 'el foco del conflicto solo se aplica cuando cambia')
   assert.ok(page.includes('open={moreFilled || !!fieldErrors.level || focusMoreLevel}'), 'los enlaces a niveles 3 y 4 abren la sección')
   assert.ok(page.includes('ref={inUseRef}') && page.includes('}, [inUse])') && !/ref={el => el?.focus()}/.test(page), 'ningún aviso roba el foco con un ref en línea: se enfoca solo cuando aparece')
+})
+
+test('ES-349 seguimientos de #361: la guarda de enlaces ignora target distinto de _self y download; la columna de acciones es solo para lectores; caption por tabla; incompleto no es inválido', () => {
+  const page = read('../src/skill-catalog/SkillCatalogPages.tsx'), pieces = read('../src/cartografia/pieces.tsx')
+  assert.match(page, /link\.getAttribute\('target'\) && link\.getAttribute\('target'\) !== '_self'\) \|\| link\.hasAttribute\('download'\)\) return/)
+  assert.match(pieces, /hidden\?: boolean/); assert.match(pieces, /column\.hidden \? <span className="cg-sr">\{column\.header\}<\/span> : column\.header/)
+  assert.equal((page.match(/hidden: true/g) ?? []).length, 2, 'las dos columnas de acciones (Ver / Editar)')
+  assert.match(page, /caption=\{`\$\{t\('skcat\.version'\)\} \$\{detail\.version\}`\}/)
+  // «Obligatorio para publicar» sale como indicación (hint), no como error: el campo incompleto no lleva aria-invalid
+  assert.doesNotMatch(page, /error=\{[^}]*req\(/)
+  assert.match(page, /hint=\{[^}]*req\(/)
 })

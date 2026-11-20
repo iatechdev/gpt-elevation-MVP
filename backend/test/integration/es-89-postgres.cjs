@@ -123,7 +123,7 @@ test('ES-89 PostgreSQL + HTTP: crear, consultar, cancelar y revisar el análisis
 
   await t.test('autenticación: sin token ninguna ruta responde', async () => {
     for (const [method, route, body] of [['POST', '/jobs', { requestId: rid() }], ['GET', '/jobs'], ['GET', '/jobs/1'], ['POST', '/jobs/1/cancel', {}], ['GET', '/candidates'], ['POST', '/candidates/1/review', { action: 'reject' }]]) {
-      const r = await http(null, method, route, body); // el middleware del repositorio responde 403 sin token
+      const r = await http(null, method, route, body); // el middleware del repositorio responde 401 sin token (ES-332)
       assert.ok([401, 403].includes(r.status), `${method} ${route} -> ${r.status}`);
       noInternals(r.text);
     }

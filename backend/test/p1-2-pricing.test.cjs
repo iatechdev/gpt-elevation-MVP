@@ -23,7 +23,7 @@ test('P1-2: pricing has only one public read; mutations and inactive plans requi
     for (const prefix of ['/api/pricing', '/api/admin/pricing']) {
       for (const role of [undefined, 'user', 'therapist', 'board']) {
         const before = calls.length;
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls.length, before, 'No model call on forbidden requests');
       }
       assert.equal((await request(method, prefix + suffix, {

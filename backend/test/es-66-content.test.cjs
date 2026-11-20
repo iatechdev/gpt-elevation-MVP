@@ -17,7 +17,7 @@ test('ES-66: public content defaults, persisted edits and real role checks', asy
   }
   const body = { key: 'landing.hero.title', lang: 'en', value: 'Synthetic editable title' };
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
-    assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, 403);
+    assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, (role === undefined ? 401 : 403));
   }
   assert.equal((await request('PUT', '/api/landing-content', {
     body, headers: { Authorization: 'Bearer invalid' },

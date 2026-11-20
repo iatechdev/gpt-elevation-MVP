@@ -53,6 +53,6 @@ test('ES-78: terapeuta no asignado o paciente ajeno reciben 404 y una cuenta sin
   assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia', { role: 'therapist', id: 202 })).status, 404);
   assert.equal((await request('GET', '/api/therapist/pacientes/8/resumen-ia', { role: 'therapist', id: 101 })).status, 404);
   assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia', { role: 'user', id: 7 })).status, 403); // ES-18: el rol se verifica antes que la propiedad
-  assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia')).status, 403);
+  assert.equal((await request('GET', '/api/therapist/pacientes/7/resumen-ia')).status, 401);
   assert.equal(calls, 0);
 });

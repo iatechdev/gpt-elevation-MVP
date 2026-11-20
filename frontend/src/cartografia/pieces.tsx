@@ -52,7 +52,8 @@ export function Requirements({ items, metLabel, unmetLabel }: { items: Requireme
   )
 }
 
-export type Column<Row> = { key: string; header: string; render: (row: Row) => ReactNode }
+/** `hidden`: la cabecera solo la leen los lectores de pantalla (p. ej. la columna de acciones «Ver»/«Editar»). */
+export type Column<Row> = { key: string; header: string; render: (row: Row) => ReactNode; hidden?: boolean }
 
 /** Tabla accesible; en pantallas angostas (≤ 640 px) se presenta como tarjetas con los mismos datos (la versión oculta sale del árbol de accesibilidad). */
 export function DataTable<Row>({ caption, columns, rows, rowKey }: { caption: string; columns: Column<Row>[]; rows: Row[]; rowKey: (row: Row) => string }) {
@@ -61,7 +62,7 @@ export function DataTable<Row>({ caption, columns, rows, rowKey }: { caption: st
       <div className="cg-tablewrap">
         <table className="cg-table">
           <caption>{caption}</caption>
-          <thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead>
+          <thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.hidden ? <span className="cg-sr">{column.header}</span> : column.header}</th>)}</tr></thead>
           <tbody>
             {rows.map(row => <tr key={rowKey(row)}>{columns.map(column => <td key={column.key}>{column.render(row)}</td>)}</tr>)}
           </tbody>

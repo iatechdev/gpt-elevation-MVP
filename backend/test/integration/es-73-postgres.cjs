@@ -52,7 +52,7 @@ test('ES-73 PostgreSQL: public edits, protected aliases, A/B, concurrent submiss
   assert.equal((await call('/plans')).body[0].price, '17.25');
   assert.equal((await call('/plans')).body[0].createdAt, undefined);
   for (const prefix of ['/plans', '/user/plan']) {
-    assert.equal((await call(prefix + '/me')).status, 403);
+    assert.equal((await call(prefix + '/me')).status, 401);
     assert.equal((await call(prefix + '/me?id=' + b.id, at)).status, 400);
     assert.equal((await call(prefix + '/me', at)).body.plan, null);
   }

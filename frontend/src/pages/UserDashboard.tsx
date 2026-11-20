@@ -10,13 +10,14 @@ import '../evidence/register.ts' // ES-232: catálogo de textos de esta pantalla
 import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import './progressCopy.ts' // ES-254: «N de 5», palabras del ánimo y categorías de las recomendaciones (mismos textos que /app/progress)
 import './dashboardCopy.ts' // ES-329: textos de esta pantalla
-import { useState, useEffect } from 'react'
+import { CARD_HEADING, INITIAL_READS, cardStateOf, failedReads, type Card, type Read, type ReadState } from './dashboardReads.ts' // ES-332: estado de cada lectura (lógica pura, con pruebas)
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { copy } from '../space/copy'
 import { PersonScreen } from '../space/PersonScreen'
 import { Button, Chip, LinkButton, ScaleField } from '../cartografia/controls'
 import { Dialog } from '../cartografia/interactive'
-import { ItemList } from '../cartografia/pieces'
+import { Banner, ItemList } from '../cartografia/pieces'
 import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
 import { registerLeaveGuard } from '../shell/leaveGuard'
@@ -75,6 +76,13 @@ export function UserDashboard() {
   const [checkingIn,     setCheckingIn]     = useState(false)
   const [pendingMood,    setPendingMood]    = useState<number | null>(null) // E322-1: opción elegida, aún sin registrar
 
+  // ── Estado de cada lectura (ES-332) ──────────────────────────────────────
+  const [readState, setReadState] = useState<Record<Read, ReadState>>(INITIAL_READS)
+  const [retrying, setRetrying] = useState<Card | null>(null)
+  const controllerRef = useRef<AbortController | null>(null)
+  const focusCard = useRef<Card | null>(null) // tras un «Reintentar» que tiene éxito, el foco vuelve al título de la tarjeta (el botón desaparece)
+  const setRead = useCallback((read: Read, state: ReadState) => setReadState(prev => (prev[read] === state ? prev : { ...prev, [read]: state })), [])
+
   // ── Progress state ───────────────────────────────────────────────────────
   const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
   const [sessionsWeek,  setSessionsWeek]  = useState(0)
@@ -113,29 +121,12 @@ export function UserDashboard() {
   // `ownLinks`: los enlaces del marco navegan sin preguntar; solo «Salir» (una acción) pasa por la despedida.
   useEffect(() => registerLeaveGuard(() => { setShowCheckout(true); return true }, { ownLinks: true }), [])
 
-  useEffect(() => {
-    const token = getToken()
-    if (!token) { navigate('/login'); return }
-
-    const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
-    setCheckedIn(alreadyCheckedIn)
-
-    // ES-200: las cinco lecturas son independientes y salen a la vez; al salir de la pantalla se cancelan y no actualizan estado.
-    const controller = new AbortController()
-    const { signal } = controller
-    void loadProgress(signal)
-    void loadUpcomingSession(signal)
-    void loadTherapist(signal)
-    void loadRecommendations(signal)
-    void loadUserPlan(signal)
-    return () => controller.abort()
-  }, [navigate])
-
   // ── Data loaders ──────────────────────────────────────────────────────────
-  const loadProgress = async (signal: AbortSignal) => {
+  const loadProgress = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/user/progress', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setRead('progress', 'error'); return }
       const data = await res.json()
       if (signal.aborted) return
       setMoodLogs(data.moodLogs ?? [])
@@ -147,47 +138,107 @@ export function UserDashboard() {
         new Date(m.date) >= monday
       ).length
       setSessionsWeek(thisWeek)
-    } catch { /* silent */ }
-  }
+      setRead('progress', 'ok')
+    } catch { if (!signal.aborted) setRead('progress', 'error') }
+  }, [setRead])
 
-  const loadUpcomingSession = async (signal: AbortSignal) => {
+  const loadUpcomingSession = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/sessions/user/upcoming', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setRead('upcoming', 'error'); return }
       const data = await res.json()
-      if (!signal.aborted) setUpcomingSession(data.session ?? null)
-    } catch { /* silent */ }
-  }
+      if (signal.aborted) return
+      setUpcomingSession(data.session ?? null)
+      setRead('upcoming', 'ok')
+    } catch { if (!signal.aborted) setRead('upcoming', 'error') }
+  }, [setRead])
 
   // ES-200: antes esta lectura esperaba a que terminara la de la próxima sesión (cascada evitable: no depende de ella).
-  const loadTherapist = async (signal: AbortSignal) => {
+  const loadTherapist = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/sessions/user/my-therapist', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setRead('therapist', 'error'); return }
       const data = await res.json()
-      if (!signal.aborted) setTherapistId(data.therapist?.id ?? null)
-    } catch { /* silent */ }
-  }
+      if (signal.aborted) return
+      setTherapistId(data.therapist?.id ?? null)
+      setRead('therapist', 'ok')
+    } catch { if (!signal.aborted) setRead('therapist', 'error') }
+  }, [setRead])
 
-  const loadRecommendations = async (signal: AbortSignal) => {
+  const loadRecommendations = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/recommendations', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setRead('recommendations', 'error'); return }
       const data = await res.json()
-      if (!signal.aborted) setRecommendations(data.slice(0, 4))
-    } catch { /* silent */ }
-  }
+      if (signal.aborted) return
+      setRecommendations(data.slice(0, 4))
+      setRead('recommendations', 'ok')
+    } catch { if (!signal.aborted) setRead('recommendations', 'error') }
+  }, [setRead])
 
-  const loadUserPlan = async (signal: AbortSignal) => {
+  const loadUserPlan = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/user/plan/me', { signal })
-      if (!res.ok || signal.aborted) return
+      if (signal.aborted) return
+      if (!res.ok) { setRead('plan', 'error'); return }
       const data = await res.json()
       if (signal.aborted) return
       setUserPlan(data.plan ?? null)
       setPlanLimits(data.limits ?? null)
-    } catch { /* silent */ }
+      setRead('plan', 'ok')
+    } catch { if (!signal.aborted) setRead('plan', 'error') }
+  }, [setRead])
+
+  // ES-332: estado de cada tarjeta y reintento solo de lo fallido (lógica pura en dashboardReads.ts).
+  const cardState = (card: Card) => cardStateOf(readState, upcomingSession !== null, card)
+  const retryCard = (card: Card) => {
+    const signal = controllerRef.current?.signal
+    const failed = failedReads(readState, card)
+    if (retrying !== null || !signal || failed.length === 0) return
+    setRetrying(card)
+    focusCard.current = card
+    failed.forEach(r => setRead(r, 'loading'))
+    const loaders: Record<Read, typeof loadProgress> = { progress: loadProgress, upcoming: loadUpcomingSession, therapist: loadTherapist, recommendations: loadRecommendations, plan: loadUserPlan }
+    for (const r of failed) void loaders[r](signal)
   }
+  // Aviso de error de una tarjeta (role=alert): el texto de la tarjeta y «Reintentar» (aria-busy mientras repite, sin perder el foco).
+  const cardError = (card: Card, message: string) => (
+    <Banner kind="error" title={message}>
+      <div className="pg-actions"><Button aria-busy={retrying === card} onClick={() => retryCard(card)}>{t('pr_retry')}</Button></div>
+    </Banner>
+  )
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token) { navigate('/login'); return }
+
+    const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
+    setCheckedIn(alreadyCheckedIn)
+
+    // ES-200: las cinco lecturas son independientes y salen a la vez; al salir de la pantalla se cancelan y no actualizan estado.
+    const controller = new AbortController()
+    controllerRef.current = controller
+    const { signal } = controller
+    void loadProgress(signal)
+    void loadUpcomingSession(signal)
+    void loadTherapist(signal)
+    void loadRecommendations(signal)
+    void loadUserPlan(signal)
+    return () => controller.abort()
+  }, [navigate, loadProgress, loadUpcomingSession, loadTherapist, loadRecommendations, loadUserPlan])
+
+  // ES-332: tras «Reintentar», cuando la tarjeta deja de estar cargando se libera el reintento y, si se recuperó, el foco pasa a su título (el botón ya no existe).
+  useEffect(() => {
+    const card = focusCard.current
+    const state = card ? cardStateOf(readState, upcomingSession !== null, card) : 'loading'
+    if (!card || state === 'loading') return
+    focusCard.current = null
+    setRetrying(null)
+    if (state === 'ok') document.getElementById(CARD_HEADING[card])?.focus()
+  }, [readState, upcomingSession])
 
   // ── Check-in handler ──────────────────────────────────────────────────────
   const handleCheckin = async (mood: number) => {
@@ -268,6 +319,11 @@ export function UserDashboard() {
     return diff <= 15 * 60 * 1000 && diff >= 0
   })()
 
+  const progressState = cardState('progress')
+  const sessionState = cardState('session')
+  const planState = cardState('plan')
+  const recsState = cardState('recs')
+
   const recCategory = (category: string) => t(`pr_rec_cat_${REC_CATEGORIES.includes(category) ? category : 'other'}`)
 
   return (
@@ -302,28 +358,34 @@ export function UserDashboard() {
             </section>
 
             {/* Tu progreso */}
-            <section className="cg-card pg-card" aria-labelledby="dash-progress">
-              <h2 id="dash-progress">{t('dash_progress')}</h2>
-              <dl className="pc-dl">
-                <dt>{t('dash_sessions_week')}</dt>
-                <dd className="pc-big">{sessionsWeek}</dd>
-              </dl>
-              <div className="pc-region" role="region" tabIndex={0} aria-label={t('dash_trend')}>
-                <table className="pc-trend">
-                  <caption className="cg-hint">{t('dash_trend')}</caption>
-                  <thead><tr>{getMoodTrend().map(({ dateStr, day }) => <th key={dateStr} scope="col">{day}</th>)}</tr></thead>
-                  <tbody><tr>{getMoodTrend().map(({ dateStr, avg }) => <td key={dateStr}>{avg === null ? '—' : formatAvg(avg)}</td>)}</tr></tbody>
-                </table>
-              </div>
+            <section className={`cg-card pg-card${progressState === 'ok' ? '' : ' pc-hold-progress'}`} aria-labelledby="dash-progress">
+              <h2 id="dash-progress" tabIndex={-1}>{t('dash_progress')}</h2>
+              {progressState === 'loading' ? <p className="cg-hint" role="status">{t('loading')}</p>
+                : progressState === 'error' ? cardError('progress', t('pr_error'))
+                : <>
+                  <dl className="pc-dl">
+                    <dt>{t('dash_sessions_week')}</dt>
+                    <dd className="pc-big">{sessionsWeek}</dd>
+                  </dl>
+                  <div className="pc-region" role="region" tabIndex={0} aria-label={t('dash_trend')}>
+                    <table className="pc-trend">
+                      <caption className="cg-hint">{t('dash_trend')}</caption>
+                      <thead><tr>{getMoodTrend().map(({ dateStr, day }) => <th key={dateStr} scope="col">{day}</th>)}</tr></thead>
+                      <tbody><tr>{getMoodTrend().map(({ dateStr, avg }) => <td key={dateStr}>{avg === null ? '—' : formatAvg(avg)}</td>)}</tr></tbody>
+                    </table>
+                  </div>
+                </>}
             </section>
           </div>
 
           {/* ── COLUMNA DERECHA ── */}
           <div className="pc-stack">
             {/* Próxima sesión — HU-067 */}
-            <section className="cg-card pg-card" aria-labelledby="dash-session">
-              <h2 id="dash-session">{sessionIsLive ? t('dash_live') : t('dash_upcoming')}</h2>
-              {upcomingSession ? (
+            <section className={`cg-card pg-card${sessionState === 'ok' ? '' : ' pc-hold-session'}`} aria-labelledby="dash-session">
+              <h2 id="dash-session" tabIndex={-1}>{sessionIsLive ? t('dash_live') : t('dash_upcoming')}</h2>
+              {sessionState === 'loading' ? <p className="cg-hint" role="status">{t('loading')}</p>
+                : sessionState === 'error' ? cardError('session', t('dash_err_session'))
+                : upcomingSession ? (
                 <>
                   <p><strong>{t('dash_with')} {upcomingSession.therapistName}</strong></p>
                   <p className="cg-hint">{formatSession(upcomingSession.scheduledAt)} — {upcomingSession.duration} min</p>
@@ -358,11 +420,14 @@ export function UserDashboard() {
             </section>
 
             {/* Mi plan (HU-077): el mismo contenido de antes, sin color fijo ni emoji (adenda 12328). El plan completo sigue en /app/plan. */}
-            <section className="cg-card pg-card" aria-labelledby="dash-plan">
+            <section className={`cg-card pg-card${planState === 'ok' ? '' : ' pc-hold-plan'}`} aria-labelledby="dash-plan">
               <div className="pc-line">
-                <h2 id="dash-plan" className="pc-flush">{t('dash_plan')}</h2>
-                <Chip>{planName}</Chip>
+                <h2 id="dash-plan" className="pc-flush" tabIndex={-1}>{t('dash_plan')}</h2>
+                {planState === 'ok' && <Chip>{planName}</Chip>}
               </div>
+              {planState === 'loading' ? <p className="cg-hint" role="status">{t('loading')}</p>
+                : planState === 'error' ? cardError('plan', t('dash_err_plan'))
+                : <>
               {userPlan && userPlan.price > 0 ? (
                 <p className="pc-price">${userPlan.price} {userPlan.currency} / {t('dash_month')}</p>
               ) : (
@@ -382,17 +447,20 @@ export function UserDashboard() {
               {(planSlug === 'basic' || planSlug === 'essential') && (
                 <div className="pg-actions"><Link className="pc-link" to="/app/plan">{t('dash_see_plans')}</Link></div>
               )}
+                </>}
             </section>
           </div>
         </div>
 
         {/* ── RECOMENDACIONES ── */}
-        <section className="cg-card pg-card" aria-labelledby="dash-recs">
+        <section className={`cg-card pg-card${recsState === 'ok' ? '' : ' pc-hold-recs'}`} aria-labelledby="dash-recs">
           <div className="pc-line">
-            <h2 id="dash-recs" className="pc-flush">{t('dash_recs')}</h2>
+            <h2 id="dash-recs" className="pc-flush" tabIndex={-1}>{t('dash_recs')}</h2>
             <Button variant="ghost" onClick={() => void handleGenerateRecs()} disabled={loadingRecs} aria-busy={loadingRecs}>{t('dash_recs_generate')}</Button>
           </div>
-          {recommendations.length === 0 ? (
+          {recsState === 'loading' ? <p className="cg-hint" role="status">{t('loading')}</p>
+            : recsState === 'error' ? cardError('recs', t('dash_err_recs'))
+            : recommendations.length === 0 ? (
             <p className="cg-muted">{t('dash_recs_empty')}</p>
           ) : (
             <ItemList items={recommendations.map(rec => ({

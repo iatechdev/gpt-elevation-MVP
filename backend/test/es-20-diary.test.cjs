@@ -70,7 +70,7 @@ test('ES-20 diario A/B: nadie lee, edita ni borra entradas ajenas y los roles di
   const { state } = setup();
   const request = await startApp(t);
   const mine = (await request('POST', '/api/diary', { ...as(A), body: { date: today(), content: 'solo de A' } })).body;
-  assert.equal((await request('GET', '/api/diary')).status, 403);
+  assert.equal((await request('GET', '/api/diary')).status, 401);
   for (const actor of [as(B), as(1, 'admin'), as(2, 'superadmin'), as(301, 'therapist'), as(3, 'board')]) {
     assert.equal((await request('GET', `/api/diary/${mine.id}`, actor)).status, 404, actor.role + actor.id);
     assert.equal((await request('PUT', `/api/diary/${mine.id}`, { ...actor, body: { content: 'robado' } })).status, 404);

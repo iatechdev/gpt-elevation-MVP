@@ -19,7 +19,7 @@ test('ES-73: public plans are active/ordered/whitelisted and protected /me canno
   assert.equal(publicRead.status, 200);
   assert.equal(publicRead.headers.get('cache-control'), 'no-store');
   for (const prefix of ['/api/plans', '/api/user/plan']) {
-    assert.equal((await request('GET', prefix + '/me')).status, 403);
+    assert.equal((await request('GET', prefix + '/me')).status, 401);
     assert.equal((await request('GET', prefix + '/me', { headers: { Authorization: 'Bearer invalid' } })).status, 401);
     assert.equal((await request('GET', prefix + '/me?id=202', { role: 'user' })).status, 400);
     for (const id of [101, 202]) assert.equal((await request('GET', prefix + '/me', { role: 'user', id })).body.plan.id, id);

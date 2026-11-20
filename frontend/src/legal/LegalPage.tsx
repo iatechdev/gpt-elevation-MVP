@@ -6,7 +6,8 @@ import { useLanguage } from '../i18n/useLanguage'
 import { Banner } from '../cartografia/pieces'
 import { PublicFrame } from '../shell/frames'
 import { LEGAL, type LegalDoc, type LegalSection } from './legalCopy.ts'
-import { hasMarkers, inline } from './markup.tsx'
+import { contentHasMarkers, hasMarkers, inline } from './markup.tsx'
+import { useLegalContent } from './useLegalContent.ts'
 import './legal.css'
 
 function Section({ section }: { section: LegalSection }) {
@@ -22,10 +23,11 @@ function Section({ section }: { section: LegalSection }) {
 
 export function LegalPage({ doc }: { doc: LegalDoc }) {
   const { lang } = useLanguage()
-  const content = LEGAL[lang][doc]
+  // ES-336: el texto publicado en la base si llega y es válido; mientras tanto (o si falla) el empaquetado en legalCopy.ts: nunca una página vacía.
+  const { content } = useLegalContent(doc, lang)
   const other = LEGAL[lang][doc === 'privacy' ? 'terms' : 'privacy']
   const title = useRef<HTMLHeadingElement>(null)
-  const markers = hasMarkers(doc, lang) || hasMarkers(doc, lang === 'es' ? 'en' : 'es')
+  const markers = contentHasMarkers(content) || hasMarkers(doc, lang === 'es' ? 'en' : 'es')
   useEffect(() => { document.title = `${content.title} · Elevation` }, [content.title])
   useEffect(() => {
     if (!markers) return

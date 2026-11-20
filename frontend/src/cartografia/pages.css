@@ -87,6 +87,11 @@ a.cg-linkbtn { display: inline-block; min-height: 0; padding-block: 0.35rem; }
 /* ES-329 (Inicio y Mi profesional): piezas nuevas mínimas de la maqueta aprobada (12327/12328). Solo tokens --cg-*; ningún color ni estilo en línea. */
 .pc-stack { display: grid; gap: 1rem; min-width: 0; align-content: start; }
 .pc-stack > * { min-width: 0; }
+/* ES-332: mientras una lectura carga o falla, la tarjeta de Inicio reserva la altura aproximada de la tarjeta con datos (el aviso o «Cargando…» no empuja lo de abajo al llegar los datos; CLS). */
+.pc-hold-progress { min-height: 13.75rem; }
+.pc-hold-session { min-height: 11rem; }
+.pc-hold-plan { min-height: 15.25rem; }
+.pc-hold-recs { min-height: 14rem; }
 .pc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
 .pc-grid > * { min-width: 0; }
 @media (max-width: 900px) { .pc-grid { grid-template-columns: minmax(0, 1fr); } }

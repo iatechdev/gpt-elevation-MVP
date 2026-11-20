@@ -34,7 +34,7 @@ test('ES-211 PostgreSQL: activar es idempotente y atómico; nunca 0 ni 2 version
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
   const authModule = require.resolve('../../middlewares/auth');
   const pass = (req, _res, next) => { req.user = { id: 1, role: 'admin' }; next(); };
-  require.cache[authModule] = { id: authModule, filename: authModule, loaded: true, exports: { verificarEditorManifiesto: pass } };
+  require.cache[authModule] = { id: authModule, filename: authModule, loaded: true, exports: { verificarEditorManifiesto: pass, verificarPublicadorManifiesto: pass } };
 
   const EthicManifest = require('../../EthicManifest');
   await EthicManifest.sync();

@@ -69,6 +69,31 @@ test('ES-279 PostgreSQL + HTTP: control de edición simultánea de textos públi
     assert.equal((await put(A, { value: 'x'.repeat(5001), expectedUpdatedAt: null })).status, 400);
   });
 
+  // E380-1 (QA-Claude-3 sobre #380): solo se guardan textos PUBLICABLES. Antes una clave cualquiera (`no_existe`) respondía 200 y escribía una fila que ninguna pantalla muestra.
+  await t.test('E380-1: una clave que no es publicable es 400 estable y NO escribe (con y sin expectedUpdatedAt, en ES y EN); las claves del catálogo y las clásicas de la portada siguen guardando', async () => {
+    const before = Number((await q('SELECT count(*) n FROM "LandingContents"'))[0].n);
+    const hostile = ['no_existe', 'landing.no.existe', '__proto__', 'constructor', 'HERO_TITLE', 'hero_title ', ' hero_title', "x'; DROP TABLE \"LandingContents\";--", '../etc/passwd', 'a'.repeat(300)];
+    for (const key of hostile) {
+      for (const extra of [{}, { expectedUpdatedAt: null }]) {
+        for (const lang of ['es', 'en']) {
+          const out = await http(A, 'PUT', '/api/landing-content', { key, lang, value: 'texto', ...extra });
+          assert.equal(out.status, 400, `${JSON.stringify(key).slice(0, 40)} ${lang} ${JSON.stringify(extra)} → ${out.status}`);
+          assert.ok(['unknown_key', undefined].includes(out.body.code), JSON.stringify(out.body));
+        }
+      }
+    }
+    assert.equal(Number((await q('SELECT count(*) n FROM "LandingContents"'))[0].n), before, 'ninguna clave inválida creó una fila');
+    assert.equal((await http(A, 'PUT', '/api/landing-content', { key: 'no_existe', lang: 'en', value: 'x' })).body.error, 'Unknown landing key.');
+    assert.equal((await http(A, 'PUT', '/api/landing-content', { key: 'no_existe', lang: 'es', value: 'x' })).body.error, 'Clave landing desconocida.');
+    const { catalog } = require('../../content/landingDefaults');
+    for (const key of ['hero_title', 'hero_subtitle', 'cta_primary', 'cta_final_title', 'cta_final_subtitle', catalog[0].key, catalog[catalog.length - 1].key]) {
+      const out = await http(A, 'PUT', '/api/landing-content', { key, lang: 'es', value: `Valor de ${key}` });
+      assert.equal(out.status, 200, `${key}: ${out.status} ${JSON.stringify(out.body)}`);
+    }
+    assert.equal((await row(catalog[0].key)).value, `Valor de ${catalog[0].key}`);
+    assert.equal((await put(A, { value: 'Sin versión' })).status, 200); // se restablece el texto que usan las pruebas siguientes
+  });
+
   await t.test('versiones: solo superadministración las lee; la lectura pública no cambia ni expone quién guardó; administración, persona y sin sesión no escriben', async () => {
     const list = await http(A, 'GET', '/api/landing-content/versions?lang=es');
     assert.equal(list.status, 200);

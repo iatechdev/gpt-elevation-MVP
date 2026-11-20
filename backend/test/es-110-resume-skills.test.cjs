@@ -45,6 +45,8 @@ test('ES-110 lista: solo habilidades de una hoja de vida que existe, clasificada
   const res = await request('GET', '/api/user/resume-skills', ME);
   assert.equal(res.status, 200); assert.equal(res.body.skills.some((s) => s.name === 'Python'), false, 'una habilidad escrita a mano no es de la hoja de vida');
   assert.equal(res.body.skills.some((s) => s.name === 'Inglés técnico'), false, 'si la versión de origen se borró, no hay de dónde sacarla');
+  // ES-110 (actualizar la hoja de vida): no desaparece sin explicación; sale aparte como «versión borrada» (campo aditivo; la escrita a mano no entra)
+  assert.deepEqual(res.body.orphaned, [{ name: 'Inglés técnico', origin: 'deleted', classified: null, added: false }]);
   const by = Object.fromEntries(res.body.skills.map((s) => [s.name, s]));
   assert.deepEqual(by['Power BI'].classified, { skillKey: 'power_bi', labels: { es: 'Power BI', en: 'Power BI' } });
   assert.equal(by['Gestión de proyectos'].classified.skillKey, 'gestion_proyectos'); assert.equal(by['Storytelling con datos'].classified, null);
@@ -97,7 +99,7 @@ test('ES-110 entradas: forma exacta, requestId, tope y roles; sin sesión o con 
     { requestId: 'req-ok-123456', names: ['x'.repeat(61)] }, { requestId: 'req-ok-123456', names: Array.from({ length: 41 }, (_, i) => `H${i}`) }, { requestId: 'req-ok-123456', names: ['SQL'], userId: 202 }, { requestId: 'req ok 123456', names: ['SQL'] }]) {
     assert.equal((await post(request, body)).status, 400, JSON.stringify(body)?.slice(0, 60));
   }
-  for (const as of [{ role: 'therapist', id: 301 }, { role: 'admin', id: 9 }, {}]) { assert.equal((await post(request, { requestId: 'req-ok-123456', names: ['SQL'] }, as)).status, 403); assert.equal((await request('GET', '/api/user/resume-skills', as)).status, 403); }
+  for (const as of [{ role: 'therapist', id: 301 }, { role: 'admin', id: 9 }, {}]) { assert.equal((await post(request, { requestId: 'req-ok-123456', names: ['SQL'] }, as)).status, (as.role ? 403 : 401)); assert.equal((await request('GET', '/api/user/resume-skills', as)).status, (as.role ? 403 : 401)); }
   assert.equal(state.versions.length, 0);
   const own = await post(request, { requestId: 'req-ok-123456', names: ['SQL'], }, OTHER); assert.deepEqual(own.body.skipped, [{ name: 'SQL', reason: 'not_declared' }]); assert.equal(state.versions.length, 0, 'el contexto de otra persona no se usa');
 });
