@@ -241,6 +241,10 @@ jobs:
         run: npm run test:professional-reviews:pg
         env:
           ES175_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-303 invitación de revisor con código de un solo uso - canje atómico, 404 uniforme, topes por persona e IP, anular y purga (PostgreSQL real)
+        run: npm run test:reviewer-invites:pg
+        env:
+          ES303_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-173 mi opinión del piloto - permiso, versión, retiro real, agregados con umbral de 5, carreras y purga (PostgreSQL real)
         run: npm run test:pilot-feedback:pg
         env:

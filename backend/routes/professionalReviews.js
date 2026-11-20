@@ -3,12 +3,14 @@
 //   GET    /api/me/professional-reviews                  — mis revisiones recibidas (con mi objeción y la respuesta)
 //   POST   /api/me/professional-reviews/:id/objection    — { reason, requestId, locale } (una por revisión)
 //   GET    /api/me/review-shares                         — mis autorizaciones
-//   POST   /api/me/review-shares                         — { reviewerId, evidenceIds, requestId } autoriza a UN revisor sobre evidencias mías
+//   POST   /api/me/review-invites/lookup                 — { code } ES-303: ¿de quién es este código? Solo el NOMBRE del revisor y el vencimiento (no consume el código)
+//   POST   /api/me/review-shares                         — { inviteCode | shareId, evidenceIds, requestId } autoriza a UN revisor sobre evidencias mías (ES-303: ya NO por `reviewerId`: 410 use_invite)
 //   DELETE /api/me/review-shares/:id                     — retira
 // El titular siempre es req.user.id. Un id ajeno responde el mismo 404 que uno inexistente. verificarToken aplicado en server.js.
 const express = require('express');
 const router = express.Router();
 const reviews = require('../utils/reviews');
+const reviewInvites = require('../utils/reviewInvites');
 const { validateIdParams } = require('../middlewares/params');
 
 router.use((req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
@@ -18,7 +20,7 @@ const handle = (fn) => async (req, res) => {
   try {
     await fn(req, res);
   } catch (error) {
-    if (error instanceof reviews.ReviewError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.max ? { max: error.max } : {}) });
+    if (error instanceof reviews.ReviewError || error instanceof reviewInvites.InviteError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.max ? { max: error.max } : {}) });
     console.error('Error en revisiones profesionales:', error && error.name); // nunca textos de la persona ni parámetros de base de datos
     res.status(500).json({ code: 'reviews_failed', error: 'No se pudo completar la operación. / The operation could not be completed.' });
   }
@@ -30,7 +32,9 @@ router.post('/professional-reviews/:id/objection', handle(async (req, res) => {
   res.status(out.replay ? 200 : 201).json({ objection: { id: out.id, reviewId: out.reviewId, createdAt: out.createdAt } });
 }));
 router.get('/review-shares', handle(async (req, res) => res.json({ shares: await reviews.listShares(req.user.id) })));
-router.post('/review-shares', handle(async (req, res) => res.status(201).json({ share: await reviews.authorize(req.user.id, req.body) })));
+// ES-303: el código viaja en el CUERPO (nunca en la URL ni en logs; el manejador de errores solo registra el nombre del error). La IP solo alimenta el tope de intentos en memoria.
+router.post('/review-invites/lookup', handle(async (req, res) => res.json(await reviewInvites.lookup(req.user.id, req.body, { ip: req.ip, takeUserAttempt: reviews.takeAttempt, reviewerOf: reviews.reviewerOf }))));
+router.post('/review-shares', handle(async (req, res) => res.status(201).json({ share: await reviews.authorize(req.user.id, req.body, { ip: req.ip }) })));
 router.delete('/review-shares/:id', handle(async (req, res) => res.json({ share: await reviews.revoke(req.user.id, Number(req.params.id)) })));
 
 module.exports = router;

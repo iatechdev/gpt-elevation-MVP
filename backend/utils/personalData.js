@@ -70,6 +70,9 @@ const CORE = [
   // ES-173: la opinión de la persona sobre el piloto (catálogo cerrado, sin texto libre). Se exporta lo que ella respondió y se purga con la cuenta; nadie más la ve (solo agregados con umbral ≥ 5). No se exporta `lastRequestId` (referencia técnica).
   ['pilotFeedbacks', 'PilotFeedback', 'UserId', ['id', 'windowKey', 'questionnaireVersion', 'answers', 'version', 'status', 'createdAt', 'updatedAt']],
   ['invitations', 'Invitation', 'acceptedUserId', ['id', 'role', 'expiresAt', 'usedAt', 'createdAt']],
+  // ES-303: la invitación de revisor que la persona canjeó (usedByUserId). Se exporta solo cuándo vencía y cuándo la usó; NUNCA `tokenHash` (credencial de un solo uso) ni el revisor que la emitió (otra persona).
+  // Se purga con la cuenta (como la invitación de ES-192): el revisor deja de ver esa fila. Las no canjeadas son del revisor y se limpian solas (30 días tras vencer).
+  ['reviewerInvitesRedeemed', 'ReviewerInvite', 'usedByUserId', ['id', 'expiresAt', 'usedAt', 'createdAt']],
 ];
 const PROFILE = ['id', 'name', 'email', 'role', 'active', 'onboardingCompleted', 'motivation', 'planId', 'termsVersion', 'acceptedAt', 'createdAt', 'updatedAt'];
 const model = name => require('../' + name);

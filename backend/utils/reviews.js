@@ -17,6 +17,7 @@ const ProfessionalReview = require('../ProfessionalReview');
 const ReviewObjection = require('../ReviewObjection');
 const ReviewResponse = require('../ReviewResponse');
 const consent = require('./consent');
+const reviewInvites = require('./reviewInvites'); // ES-303 (PR A)
 const { deletionPending } = require('./deletionGuard');
 const { ordinalsFor } = require('./personOrdinals');
 const { encriptar, desencriptar } = require('./crypto');
@@ -67,10 +68,10 @@ async function withReviewConsent(personId, reviewerId, code, fn) {
   }
 }
 
-async function reviewerOf(id) {
+async function reviewerOf(id, transaction) { // ES-303: con `transaction` todo va por la MISMA conexión (dentro de una transacción no se pide otra: con el pool lleno varias canjes simultáneos se bloquearían entre sí)
   if (!isId(id)) return null;
-  const user = await User.findOne({ where: { id, role: 'therapist', active: true }, attributes: ['id', 'name'] });
-  if (!user || await deletionPending(user.id)) return null;
+  const user = await User.findOne({ where: { id, role: 'therapist', active: true }, attributes: ['id', 'name'], transaction });
+  if (!user || await deletionPending(user.id, transaction)) return null;
   return user;
 }
 
@@ -100,34 +101,58 @@ async function shareableRefs(userId, evidenceIds) {
   return refs;
 }
 
-async function authorize(userId, body) {
-  if (!hasKeysOnly(body, ['reviewerId', 'evidenceIds', 'requestId']) || !isId(body.reviewerId) || !isRequestId(body.requestId)
+// ES-303 (PR A): ya NO se elige al revisor por número. Dos formas, EXACTAMENTE una por solicitud:
+//   { inviteCode, evidenceIds, requestId }  — la primera vez: la persona canjea el código de un solo uso que le dio el revisor (el servidor resuelve al revisor dentro de la transacción);
+//   { shareId, evidenceIds, requestId }     — material nuevo para un revisor al que YA tiene autorizado (su última autorización con él sigue vigente): no pide código y no permite autorizar a nadie nuevo.
+// `reviewerId` en el cuerpo responde 410 `use_invite` (era el vector de sondeo). Orden fijo para no revelar nada: forma → tope de intentos (usuario e IP) → evidencias PROPIAS → código/autorización → revisor utilizable.
+const USE_INVITE = () => new ReviewError(410, 'use_invite', 'Ya no se elige a la persona revisora por número: usa el código de invitación que ella te dio.', 'A reviewer can no longer be chosen by number: use the invitation code they gave you.');
+const shareNotFound = () => new ReviewError(404, 'share_not_found', 'No se encontró esa autorización.', 'That authorization was not found.');
+
+async function authorize(userId, body, { ip } = {}) {
+  if (body && typeof body === 'object' && !Array.isArray(body) && Object.prototype.hasOwnProperty.call(body, 'reviewerId')) throw USE_INVITE();
+  const viaInvite = !!body && typeof body === 'object' && Object.prototype.hasOwnProperty.call(body, 'inviteCode');
+  const viaShare = !!body && typeof body === 'object' && Object.prototype.hasOwnProperty.call(body, 'shareId');
+  if (!hasKeysOnly(body, [viaInvite ? 'inviteCode' : 'shareId', 'evidenceIds', 'requestId']) || viaInvite === viaShare || !isRequestId(body.requestId)
     || !Array.isArray(body.evidenceIds) || body.evidenceIds.length < 1 || body.evidenceIds.length > MAX_EVIDENCE || !body.evidenceIds.every(isId)) throw invalid();
+  const rawCode = viaInvite ? reviewInvites.normalizeCode(body.inviteCode) : null;
+  if (viaInvite ? !rawCode : !isId(body.shareId)) throw invalid();
   const evidenceIds = [...new Set(body.evidenceIds)].sort((a, b) => a - b);
   if (evidenceIds.length !== body.evidenceIds.length) throw invalid();
-  takeAttempt(userId); // ANTES de validar evidencias o revisor: el tope es el mismo para cualquier reviewerId
+  takeAttempt(userId); // ANTES de validar evidencias, código o revisor: el mismo tope para cualquier valor
+  if (viaInvite) reviewInvites.takeIpAttempt(ip);
+  const conflict = () => new ReviewError(409, 'request_conflict', 'Ese identificador de solicitud ya se usó con otros datos.', 'That request identifier was already used with different data.');
   const replay = async () => {
     const found = await ReviewShare.findOne({ where: { UserId: userId, requestId: body.requestId } });
     if (!found) return null;
-    if (found.reviewerId !== body.reviewerId || !sameSet(found.evidenceRefs.map((r) => r.evidenceId).sort((a, b) => a - b), evidenceIds)) throw new ReviewError(409, 'request_conflict', 'Ese identificador de solicitud ya se usó con otros datos.', 'That request id was already used with different data.');
+    if (!sameSet(found.evidenceRefs.map((r) => r.evidenceId).sort((a, b) => a - b), evidenceIds)) throw conflict();
+    if (viaInvite) { const used = await reviewInvites.redeemedBy(userId, rawCode); if (!used || used.reviewerId !== found.reviewerId) throw conflict(); } // el código ya está usado: solo vale para repetir ESTA solicitud
+    else { const base = await ReviewShare.findOne({ where: { id: body.shareId, UserId: userId } }); if (!base || base.reviewerId !== found.reviewerId) throw conflict(); }
     return found;
   };
   const earlier = await replay();
   if (earlier) return shareView(earlier);
-  // E262-1: primero lo PROPIO de la persona (evidencias) y solo después el revisor: con una evidencia inválida la respuesta es la misma para cualquier reviewerId (no se enumeran profesionales);
-  // y cualquier revisor no utilizable (inexistente, sin rol therapist, inactivo, borrándose o uno mismo) da el mismo 404.
+  // E262-1: primero lo PROPIO de la persona (evidencias) y solo después el revisor: con una evidencia inválida la respuesta es la misma para cualquier código o autorización.
   const refs = await shareableRefs(userId, evidenceIds);
-  if (!await reviewerOf(body.reviewerId) || body.reviewerId === userId) throw new ReviewError(404, 'reviewer_not_found', 'No se encontró a esa persona revisora.', 'That reviewer was not found.');
-  // E262-4: el permiso y la autorización se crean en UNA transacción: si falla la autorización no queda el permiso concedido.
+  let reviewerId;
+  if (viaInvite) reviewerId = (await reviewInvites.resolve(userId, rawCode, reviewerOf)).reviewer.id; // 404 invite_not_found uniforme
+  else {
+    const base = await ReviewShare.findOne({ where: { id: body.shareId, UserId: userId } });
+    if (!base) throw shareNotFound();
+    const latest = await ReviewShare.findOne({ where: { UserId: userId, reviewerId: base.reviewerId }, order: [['materialVersion', 'DESC']] });
+    if (!latest || latest.status !== 'granted' || !await reviewerOf(base.reviewerId)) throw shareNotFound(); // retirada o revisor ya no utilizable: hace falta una invitación nueva
+    reviewerId = base.reviewerId;
+  }
+  // E262-4: el permiso y la autorización se crean en UNA transacción: si falla la autorización no queda el permiso concedido NI se consume el código.
   for (let attempt = 1; ; attempt++) {
     try {
       const share = await sequelize.transaction(async (transaction) => {
-        await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('review-share:' || :u || ':' || :r))", { replacements: { u: String(userId), r: String(body.reviewerId) }, transaction });
-        await consent.grantIn(userId, PURPOSE, consent.reviewerScope(body.reviewerId), transaction);
+        await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('review-share:' || :u || ':' || :r))", { replacements: { u: String(userId), r: String(reviewerId) }, transaction });
+        if (viaInvite) { const reviewer = await reviewInvites.redeemIn(userId, rawCode, reviewerOf, transaction); if (reviewer.id !== reviewerId) throw new ReviewError(404, 'invite_not_found', 'No se encontró esa invitación.', 'That invitation was not found.'); }
+        await consent.grantIn(userId, PURPOSE, consent.reviewerScope(reviewerId), transaction);
         // La autorización anterior a este revisor queda sustituida (sus revisiones se conservan y se ven con «el material cambió»).
-        await ReviewShare.update({ status: 'superseded' }, { where: { UserId: userId, reviewerId: body.reviewerId, status: 'granted' }, transaction });
-        const last = Number(await ReviewShare.max('materialVersion', { where: { UserId: userId, reviewerId: body.reviewerId }, transaction })) || 0;
-        return ReviewShare.create({ UserId: userId, reviewerId: body.reviewerId, materialVersion: last + 1, evidenceRefs: refs, status: 'granted', requestId: body.requestId }, { transaction });
+        await ReviewShare.update({ status: 'superseded' }, { where: { UserId: userId, reviewerId, status: 'granted' }, transaction });
+        const last = Number(await ReviewShare.max('materialVersion', { where: { UserId: userId, reviewerId }, transaction })) || 0;
+        return ReviewShare.create({ UserId: userId, reviewerId, materialVersion: last + 1, evidenceRefs: refs, status: 'granted', requestId: body.requestId }, { transaction });
       });
       return shareView(share);
     } catch (error) {
@@ -344,4 +369,4 @@ async function respond(reviewerId, objectionId, body) {
   }
 }
 
-module.exports = { _test: { setClock: (fn) => { clock = fn; }, reset: () => attempts.clear() }, ReviewError, authorize, revoke, listShares, listReviews, object, reviewerShares, createReview, reviewerObjections, respond, MAX_TEXT };
+module.exports = { _test: { setClock: (fn) => { clock = fn; }, reset: () => attempts.clear() }, ReviewError, reviewerOf, takeAttempt, authorize, revoke, listShares, listReviews, object, reviewerShares, createReview, reviewerObjections, respond, MAX_TEXT };
