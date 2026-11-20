@@ -2,7 +2,7 @@
 import type { ShellCopy } from './copy'
 import type { Role } from './access'
 
-export type NavKey = Exclude<keyof ShellCopy, 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy'>
+export type NavKey = Exclude<keyof ShellCopy, 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson'>
 export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 
 export const PUBLIC_NAV: NavItem[] = [

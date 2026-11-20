@@ -40,7 +40,7 @@ test('ES-112 pausa: es solo del cliente, no falla sin almacenamiento y no toca e
 test('ES-112 estructura: pestañas como enlaces, menú con las rutas que ya existían, barra de uso con rol y valores, escritura bloqueada al pausar o agotar', () => {
   const nav = read('../src/shell/nav.ts'); const bar = read('../src/space/ChatBar.tsx'); const controls = read('../src/space/ChatControls.tsx'); const page = read('../src/pages/ChatPage.tsx')
   assert.match(nav, /to: '\/app\/chat'/); assert.match(nav, /to: '\/app\/diary'/) // ES-153 (paso 2): las pestañas y el menú ya son los del marco de persona (shell/nav.ts)
-  assert.match(nav, /to: '\/app\/space\/tools'/); assert.match(read('../src/shell/Frame.tsx'), /aria-expanded=\{open\} aria-controls=\{id\}/)
+  assert.match(nav, /to: '\/app\/space\/tools'/); assert.match(read('../src/shell/AccountMenu.tsx'), /aria-expanded=\{open\} aria-controls=\{id\}/) // ES-359: el menú de cuenta (antes en Frame.tsx) conserva el botón con aria-expanded
   assert.match(bar, /role="progressbar"/); assert.match(bar, /aria-valuenow=/); assert.match(bar, /aria-pressed=\{paused\}/); assert.match(bar, /role="status"/)
   assert.doesNotMatch(bar, /msgs|localStorage/)
   assert.match(controls, /blocked\.paused \|\| blocked\.exhausted/); assert.match(controls, /\|\| off/)
