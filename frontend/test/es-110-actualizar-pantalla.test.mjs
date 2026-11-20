@@ -23,6 +23,8 @@ test('los 13 textos aprobados (ES/EN) están tal cual y el del tope de 40 lleva 
   assert.deepEqual([evidenceEs['evidence.rs_origin_deleted'], evidenceEn['evidence.rs_origin_deleted']], ['Origen: versión borrada', 'Source: deleted version'])
   assert.deepEqual([evidenceEs['evidence.rs_origin_deleted_text'], evidenceEn['evidence.rs_origin_deleted_text']], ['Esta evidencia salió de una versión que borraste; revísala.', 'This evidence came from a version you deleted; review it.'])
   assert.equal(placeholders(resumeEs.resume_overflow), 'n'); assert.equal(placeholders(resumeEn.resume_overflow), 'n'); assert.match(resumeEs.resume_overflow, /40/); assert.match(resumeEn.resume_overflow, /40/)
+  assert.deepEqual([resumeEs.resume_overflow_one, resumeEn.resume_overflow_one], ['1 habilidad nueva no cabe: tu contexto admite hasta 40.', '1 new skill does not fit: your context holds up to 40.'])
+  assert.ok(page.includes("n === 1 ? t('resume_overflow_one')"))
 })
 
 test('ES y EN tienen las mismas claves y marcadores en los textos nuevos, y ninguno promete empleo, evaluación ni niveles', () => {

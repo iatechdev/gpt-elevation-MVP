@@ -89,6 +89,7 @@ export function ResumeUpdatePage() {
   const title = t(changesScreen ? 'resume_changes_title' : 'resume_update')
   const version = found?.resume.version ?? 0
   const pendingLinks = diff ? diff.remain.filter(item => !item.linked && !item.handwritten) : [] // «Siguen»: lo ya vinculado a esta versión o escrito a mano no ofrece nada que decidir
+  const overflowText = (n: number) => (n === 1 ? t('resume_overflow_one') : fill(t('resume_overflow'), { n }))
   const count = (key: string, n: number) => `${t(key)}${DOT}${n}`
   return (
     <PersonScreen title={title} lead={changesScreen ? undefined : t('resume_update_help')} titleRef={heading}>
@@ -108,13 +109,13 @@ export function ResumeUpdatePage() {
         {changesScreen && diff && snapshot?.context && <>
           {phase === 'saved' && <>
             <Banner title={t('context_saved')}><div className="pg-actions"><Link className="cg-linkbtn" to={SKILLS_PATH}>{t('evidence.rs_title')}</Link><Link className="cg-linkbtn" to={HISTORY_PATH}>{t('resume_manage')}</Link></div></Banner>
-            {skipped > 0 && <p className="cg-hint" role="status">{fill(t('resume_overflow'), { n: skipped })}</p>}
+            {skipped > 0 && <p className="cg-hint" role="status">{overflowText(skipped)}</p>}
             <p className="cg-hint" role="status">{t('resume_confirmed_same')}</p>
           </>}
           {phase !== 'saved' && diff.unchanged && <Card as="section" className="pg-card"><h2>{t('resume_no_change')}</h2><p>{t('resume_confirmed_same')}</p>
             <div className="pg-actions"><Link className="cg-btn" to={HISTORY_PATH}>{t('resume_manage')}</Link></div></Card>}
           {phase !== 'saved' && !diff.unchanged && <>
-            {diff.overflow > 0 && <p className="cg-hint" role="status">{fill(t('resume_overflow'), { n: diff.overflow })}</p>}
+            {diff.overflow > 0 && <p className="cg-hint" role="status">{overflowText(diff.overflow)}</p>}
             {diff.added.length > 0 && <Card as="section" className="pg-card cv-group"><h2 id="cv-new">{count('resume_new_skills', diff.added.length)}</h2>
               <div role="group" aria-labelledby="cv-new">{diff.added.map(skill => <CheckField key={skill.name} disabled={busy} checked={choices.add.some(name => skillKey(name) === skillKey(skill.name))}
                 onChange={event => setChoices(previous => ({ ...previous, add: toggle(previous.add, skill.name, event.target.checked) }))}

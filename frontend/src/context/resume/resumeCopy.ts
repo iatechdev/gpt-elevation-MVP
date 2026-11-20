@@ -69,7 +69,7 @@ export const resumeEs = {
   resume_changes_title: 'Cambios frente a tu contexto actual', resume_new_skills: 'Habilidades nuevas', resume_still_skills: 'Siguen en tu hoja de vida', resume_gone_skills: 'Ya no aparecen en esta versión',
   resume_link_version: 'Vincular a la versión {n}', resume_keep: 'Mantener en mi contexto', resume_quit: 'Quitar de mi contexto',
   resume_confirmed_same: 'Tu evidencia confirmada no cambia.', resume_no_change: 'Tu hoja no cambió las habilidades.',
-  resume_overflow: '{n} habilidades nuevas no caben: tu contexto admite hasta 40.',
+  resume_overflow: '{n} habilidades nuevas no caben: tu contexto admite hasta 40.', resume_overflow_one: '1 habilidad nueva no cabe: tu contexto admite hasta 40.',
   resume_back_context: 'Volver a mi contexto', resume_schema_outdated: 'Esta página quedó desactualizada. Recárgala para continuar: no perderás lo ya guardado.',
 }
 export const resumeEn: Record<keyof typeof resumeEs, string> = {
@@ -142,7 +142,7 @@ export const resumeEn: Record<keyof typeof resumeEs, string> = {
   resume_changes_title: 'Changes compared with your current context', resume_new_skills: 'New skills', resume_still_skills: 'Still in your résumé', resume_gone_skills: 'No longer in this version',
   resume_link_version: 'Link to version {n}', resume_keep: 'Keep in my context', resume_quit: 'Remove from my context',
   resume_confirmed_same: 'Your confirmed evidence does not change.', resume_no_change: 'Your résumé did not change your skills.',
-  resume_overflow: '{n} new skills do not fit: your context holds up to 40.',
+  resume_overflow: '{n} new skills do not fit: your context holds up to 40.', resume_overflow_one: '1 new skill does not fit: your context holds up to 40.',
   resume_back_context: 'Back to my context', resume_schema_outdated: 'This page is out of date. Reload it to continue: you will not lose what is already saved.',
 }
 export const fill = (template: string, values: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''))
