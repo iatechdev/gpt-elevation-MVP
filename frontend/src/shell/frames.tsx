@@ -1,7 +1,8 @@
 // ES-153: los marcos por rol. Cada uno muestra solo las rutas de su rol; la ruta activa lleva aria-current="page" (lo pone NavLink).
 import { useContext, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Frame, NavLinks, PreferencesBar, SignOutButton, UserMenu } from './Frame'
+import { Frame, NavLinks } from './Frame'
+import { AccountMenu } from './AccountMenu'
 import { useCgTheme } from '../cartografia/themeState'
 import { useShellCopy } from './useShellCopy'
 import { PROFESSIONAL_LABEL } from './copy'
@@ -28,12 +29,12 @@ export function PublicFrame({ children, migrated = false }: { children: ReactNod
   )
 }
 
-/** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de usuario. */
+/** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de cuenta (ES-359: Preferencias y «Cerrar sesión» dentro). */
 export function PersonChrome({ children, migrated = false, footer = true }: { children: ReactNode; migrated?: boolean; footer?: boolean }) {
   const { c } = useShellCopy(); const [theme] = useCgTheme()
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
   // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={<PreferencesBar legacy={!migrated} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer} mobileOrder>{children}</Frame>
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer} mobileOrder>{children}</Frame>
 }
 
 /** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */
@@ -48,7 +49,7 @@ export function ProfessionalFrame({ children, migrated = false }: { children: Re
   return (
     <Frame
       brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandLabel={`${c.brandLabel}. ${PROFESSIONAL_LABEL[lang]}`} brandTo="/therapist/dashboard"
-      nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} account={<UserMenu name={readName(PROFESSIONAL_LABEL[lang])} items={PROFESSIONAL_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}
+      nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} preferences={null} account={<AccountMenu name={readName(PROFESSIONAL_LABEL[lang])} roleLabel={PROFESSIONAL_LABEL[lang]} items={PROFESSIONAL_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
 }
@@ -60,7 +61,7 @@ export function AdminFrame({ children, pilotPreview = false, migrated = false }:
   return (
     <Frame
       brandTo="/admin/dashboard"
-      account={<><span className="cg-role">{role === 'superadmin' ? c.superRole : c.adminRole}</span><span className="cg-name cg-who">{readName(c.adminRole)}</span><SignOutButton /></>}
+      preferences={null} account={<AccountMenu name={readName(c.adminRole)} roleLabel={role === 'superadmin' ? c.superRole : c.adminRole} items={[]} legacyTheme={!migrated} />}
       sidebar={(
         <div className="cg-side">
           <NavLinks items={visibleFor(ADMIN_NAV, role)} label={c.admin} className="cg-sidenav" />
@@ -82,7 +83,7 @@ export function BoardFrame({ children }: { children: ReactNode }) {
   return (
     <Frame
       brandTo="/manifiesto" nav={<NavLinks items={BOARD_NAV} label={c.boardRole} />}
-      account={<><span className="cg-role">{c.boardRole}</span><span className="cg-name cg-who">{readName(c.boardRole)}</span><SignOutButton /></>} mainClassName="elv-theme"
+      preferences={null} account={<AccountMenu name={readName(c.boardRole)} roleLabel={c.boardRole} items={[]} legacyTheme />} mainClassName="elv-theme"
     >{children}</Frame>
   )
 }
