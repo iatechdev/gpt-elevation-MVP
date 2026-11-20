@@ -1,6 +1,6 @@
 // ES-301: marcado mínimo de los textos legales (sin HTML): [[x]] marcador visible, **x** negrita.
 import { Fragment, type ReactNode } from 'react'
-import { LEGAL, type LegalDoc } from './legalCopy.ts'
+import { LEGAL, type LegalContent, type LegalDoc } from './legalCopy.ts'
 
 const TOKEN = /(\[\[[^\]]+\]\]|\*\*[^*]+\*\*)/g
 
@@ -13,8 +13,8 @@ export function inline(text: string): ReactNode[] {
   })
 }
 
-export const hasMarkers = (doc: LegalDoc, lang: 'es' | 'en') => {
-  const content = LEGAL[lang][doc]
-  return [content.updated ?? '', ...content.sections.flatMap(s => [...(s.paragraphs ?? []), ...(s.bullets ?? []), ...(s.numbered ?? [])])].some(text => text.includes('[['))
-}
+/** ¿El contenido que se muestra tiene algún marcador `[[…]]` (dato por completar)? ES-336: se mira el contenido que de verdad se pinta (el publicado o el del repo). */
+export const contentHasMarkers = (content: LegalContent) =>
+  [content.updated ?? '', ...content.sections.flatMap(s => [...(s.paragraphs ?? []), ...(s.bullets ?? []), ...(s.numbered ?? [])])].some(text => text.includes('[['))
 
+export const hasMarkers = (doc: LegalDoc, lang: 'es' | 'en') => contentHasMarkers(LEGAL[lang][doc])
