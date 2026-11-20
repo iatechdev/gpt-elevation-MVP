@@ -134,7 +134,7 @@ export function ResumeUpdatePage() {
                   </div></div></div> })}</Card>}
             <div className="pg-sticky">
               <p role="status" aria-live="polite">{busy ? t('context_saving') : t('resume_confirmed_same')}</p>
-              <div className="pg-actions cv-sticky-actions" style={{ margin: 0 }}>
+              <div className="pg-actions cv-sticky-actions">
                 <Link className="cg-btn cg-btn--ghost" to={HISTORY_PATH} aria-disabled={busy} onClick={event => { if (busy) event.preventDefault() }}>{t('resume_back')}</Link>
                 <Button disabled={busy || conflict} aria-busy={busy} onClick={() => void save()}>{busy ? t('context_saving') : t('btn_save')}</Button>
               </div>

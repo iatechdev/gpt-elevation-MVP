@@ -116,3 +116,40 @@ test('propiedades (800 casos al azar con semilla fija): tope, sin duplicados, na
     assert.deepEqual(applyChoices(skills, diffSkills(skills, suggested, version), choices).skills.map(x => skillKey(x.name)).sort().join('|'), [...keys].sort().join('|'), 'idempotente en los nombres')
   }
 })
+
+// Cierre del informativo de QA en #391: la suite propia no mataba «vincular fuera de siguen», «devolver alias de objetos» ni «añadir duplicados».
+test('vincular solo actúa sobre «siguen»: pedir vincular una nueva, una que ya no aparece, una escrita a mano o una inventada no cambia nada', () => {
+  const current = [s('Excel', 1), s('Power BI', 1), s('Dibujo', null, null)]
+  const diff = diffSkills(current, [s('Python', 2), s('Dibujo', 2)], 2)
+  assert.deepEqual(names(diff.added), ['Python']); assert.deepEqual(names(diff.gone), ['Excel', 'Power BI'])
+  const result = applyChoices(current, diff, { add: [], link: ['Python', 'Excel', 'Power BI', 'Inventada'], remove: [] })
+  assert.deepEqual(result.skills, current, 'nada vinculado, nada añadido: el contexto queda idéntico')
+  assert.equal(result.skills.find(skill => skill.name === 'Excel').resumeVersion, 1); assert.equal(result.skills.some(skill => skill.name === 'Python'), false)
+})
+
+test('la salida no comparte objetos con las entradas: cambiar la salida no toca el contexto, ni lo sugerido, ni el diff', () => {
+  const current = [s('Excel', 1), s('SQL', 1)], suggested = [s('SQL', 2), s('Python', 2)]
+  const before = frozen({ current, suggested })
+  const diff = diffSkills(current, suggested, 2)
+  const result = applyChoices(current, diff, { add: ['Python'], link: ['SQL'], remove: ['Excel'] })
+  for (const skill of result.skills) { skill.name = 'X'; skill.support = 'X'; skill.resumeVersion = 99 }
+  assert.deepEqual(frozen({ current, suggested }), before)
+  assert.deepEqual(names(diff.added), ['Python']); assert.equal(diff.added[0].resumeVersion, 2)
+  const again = applyChoices(current, diff, { add: ['Python'], link: ['SQL'], remove: [] })
+  for (const skill of again.skills) assert.equal(current.includes(skill) || suggested.includes(skill) || diff.added.includes(skill), false, 'ningún objeto de la salida es uno de la entrada')
+})
+
+test('añadir no duplica: el mismo nombre pedido varias veces (con otra forma) entra una sola vez, y lo que ya está en el contexto no se vuelve a añadir', () => {
+  const diff = diffSkills([s('Excel', 1)], [s('Python', 2), s('Excel', 2)], 2)
+  const result = applyChoices([s('Excel', 1)], diff, { add: ['Python', 'python', 'PYTHON', 'Excel', ' Python '], link: [], remove: [] })
+  assert.deepEqual(names(result.skills), ['Excel', 'Python'])
+  assert.equal(new Set(result.skills.map(skill => skillKey(skill.name))).size, result.skills.length)
+  assert.equal(applyChoices(result.skills, diffSkills(result.skills, [s('Python', 2)], 2), { add: ['Python'], link: [], remove: [] }).skills.length, 2)
+})
+
+test('añadir no duplica ni con un diff desactualizado: si el contexto ya trae la habilidad (otra pestaña la añadió), no se repite', () => {
+  const stale = diffSkills([s('Excel', 1)], [s('Python', 2)], 2)
+  const nowCurrent = [s('Excel', 1), s('python', 1, null)]
+  const result = applyChoices(nowCurrent, stale, { add: ['Python'], link: [], remove: [] })
+  assert.deepEqual(names(result.skills), ['Excel', 'python']); assert.equal(result.skipped, 0)
+})
