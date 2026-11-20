@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { models, record, startApp } = require('./support.cjs');
+const { models, database, record, startApp } = require('./support.cjs');
 
 const as = (id, role = 'user') => ({ role, id });
 const stamped = (claims = {}) => jwt.sign(
@@ -39,7 +39,7 @@ test('QA-18-01: solo el rol terapeuta entra a /api/therapist/*; la validación d
       assert.match(response.body.error, /Solo terapeutas/);
     }
   }
-  assert.equal((await request('GET', '/api/therapist/pacientes')).status, 403); // sin sesión
+  assert.equal((await request('GET', '/api/therapist/pacientes')).status, 401); // sin sesión
   const allowed = await request('GET', '/api/therapist/pacientes', as(301, 'therapist'));
   assert.notEqual(allowed.status, 403);
   // Montaje anterior a las rutas de terapeuta: el superadmin sigue revisando documentos y el usuario no.
@@ -58,6 +58,11 @@ test('QA-18-02: promedios de ánimo y valoración solo con suficientes entradas 
   models.MoodLog.count = async ({ where }) => mine(where.UserId).length;
   models.MoodLog.findAll = async ({ where }) => mine(where.UserId).map(value => ({ checkin_mood: value, checkout_mood: null }));
   models.SessionRating.findAll = async ({ where }) => mine(where.UserId).map(rating => ({ rating }));
+  // ES-341: la lista agrega por lote con SQL (GROUP BY). El doble devuelve, por persona, lo que daría esa consulta con las mismas entradas de arriba
+  // (la equivalencia real con PostgreSQL la prueba test/integration/es-341-postgres.cjs); las aserciones de abajo no cambian.
+  database.sequelize.query = async (sql, { replacements }) => replacements.ids.filter(id => mine(id).length).map(id => (/MoodLogs/.test(sql)
+    ? { UserId: id, sesiones: mine(id).length, mood_count: mine(id).length, mood_sum: mine(id).reduce((a, b) => a + b, 0) }
+    : { UserId: id, rating_count: mine(id).length, rating_sum: mine(id).reduce((a, b) => a + b, 0) }));
   const request = await startApp(t);
   const admin = as(1, 'admin');
 

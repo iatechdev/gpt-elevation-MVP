@@ -26,7 +26,7 @@ test('P1-4: plan request review requires admin even through the user mount', asy
     for (const prefix of ['/api/plan-requests', '/api/admin/plan-requests']) {
       for (const role of [undefined, 'user', 'therapist', 'board']) {
         const before = calls;
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls, before);
       }
       assert.equal((await request(method, prefix + suffix, {

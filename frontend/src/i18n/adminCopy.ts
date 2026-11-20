@@ -8,6 +8,10 @@ export const adminEnglish: Record<string, string> = {
   'Características en inglés, una por línea': 'Features in English, one per line',
   'Período desconocido': 'Unknown period',
   'Otros textos': 'Other texts',
+  // ES-279: aviso de conflicto de edición simultánea en Textos públicos (el EN requiere revisión humana)
+  'Otra persona guardó este texto mientras lo editabas. Tus cambios siguen en esta pantalla.': 'Someone else saved this text while you were editing it. Your changes are still on this screen.',
+  'Ver su versión': 'See their version', 'Ocultar su versión': 'Hide their version', 'Conservar la mía': 'Keep mine', 'Usar la suya': 'Use theirs',
+  'Su versión coincide con lo que tienes en pantalla.': 'Their version matches what you have on screen.', 'Su versión': 'Their version', 'Guardado por': 'Saved by',
   'El plan deja de verse en precios; las solicitudes realizadas se conservan. Puedes reactivarlo editándolo.': 'The plan will no longer appear in pricing; existing requests are kept. You can reactivate it by editing it.',
   'Planes': 'Plans', 'Textos públicos': 'Public texts', 'Introduce un precio válido.': 'Enter a valid price.',
   'No se pudieron cargar los planes.': 'Could not load plans.', 'Plan desactivado.': 'Plan deactivated.',

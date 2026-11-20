@@ -85,7 +85,7 @@ test('ES-29 catálogo: solo administración lo edita y las entradas inválidas d
     assert.equal((await request('GET', '/api/admin/skill-catalog', actor)).status, 403);
     assert.equal((await request('POST', '/api/admin/skill-catalog', actor)).status, 403);
   }
-  assert.equal((await request('GET', '/api/admin/skill-catalog')).status, 403);
+  assert.equal((await request('GET', '/api/admin/skill-catalog')).status, 401);
   const draft = (await request('POST', '/api/admin/skill-catalog', ADMIN)).body;
   const put = (key, body) => request('PUT', `/api/admin/skill-catalog/${draft.id}/skills/${key}`, { ...ADMIN, body });
   const bad = [
@@ -254,7 +254,7 @@ test('ES-29 aislamiento: cada persona ve solo su mapa y las evidencias ajenas no
   for (const role of ['admin', 'superadmin', 'therapist', 'facilitator']) {
     assert.equal((await request('GET', '/api/skill-map', { role, id: 303 })).body.skills[0].self, null);
   }
-  assert.equal((await request('GET', '/api/skill-map')).status, 403);
+  assert.equal((await request('GET', '/api/skill-map')).status, 401);
   const stolen = await self(request, V, { skillKey: 'comunicacion', level: 2, evidenceRefs: [{ evidenceId: e.id, version: 1 }] });
   assert.equal(stolen.body.code, 'evidence_not_valid');
 });

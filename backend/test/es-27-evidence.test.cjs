@@ -178,7 +178,7 @@ test('ES-27 aislamiento: un ID ajeno es 404 en leer, editar y borrar; otros role
   for (const role of ['admin', 'superadmin', 'therapist', 'facilitator']) {
     assert.deepEqual((await request('GET', '/api/evidence', { role, id: 303 })).body.evidence, []);
   }
-  assert.equal((await request('GET', '/api/evidence')).status, 403); // sin sesión
+  assert.equal((await request('GET', '/api/evidence')).status, 401); // sin sesión
   assert.equal((await request('GET', '/api/evidence/abc', A)).status, 404);
   assert.deepEqual(await evidence.getConfirmedEvidence(202, 'e'), []); // B no recibe nada de A
 });

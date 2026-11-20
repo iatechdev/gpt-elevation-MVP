@@ -30,7 +30,7 @@ test('P1-5: only admin can list or confirm matching; user can request and choose
     for (const prefix of ['/api/matching', '/api/admin/matching']) {
       for (const role of [undefined, 'user', 'therapist', 'board']) {
         const before = calls;
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls, before);
       }
       assert.equal((await request(method, prefix + suffix, {

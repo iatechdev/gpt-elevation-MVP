@@ -162,7 +162,7 @@ test('ES-192 PostgreSQL: invitación por enlace y contraseña con las reglas del
     await sequelize.query(`UPDATE "Invitations" SET "invitedBy" = :id WHERE "email" = 'degradado@example.invalid'`, { replacements: { id: admA.id } });
     assert.equal((await accept(stale.token)).status, 400); assert.equal(await User.count({ where: { email: 'degradado@example.invalid' } }), 0);
     await admA.update({ role: 'admin' });
-    assert.equal((await call(null, 'POST', '/api/admin/invitations', { email: 'z@example.invalid', role: 'user' })).status, 403); // sin sesión
+    assert.equal((await call(null, 'POST', '/api/admin/invitations', { email: 'z@example.invalid', role: 'user' })).status, 401); // sin sesión
     const person = await person_('user', 'Persona'); assert.equal((await call(person, 'POST', '/api/admin/invitations', { email: 'z@example.invalid', role: 'user' })).status, 403);
     const therapist = await person_('therapist', 'Terapeuta'); assert.equal((await call(therapist, 'POST', '/api/admin/invitations', { email: 'z@example.invalid', role: 'user' })).status, 403);
   });

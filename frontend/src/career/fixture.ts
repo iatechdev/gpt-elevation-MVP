@@ -1,10 +1,15 @@
 // ES-34: simulación sintética aislada. Sin fetch, almacenamiento, JWT, IDs de personas ni transporte real.
-export type ContextKey = 'education' | 'operations' | 'analysis'
+// En modo servidor las claves de contexto salen del catálogo publicado (cualquier clave del catálogo); el simulador usa estas tres.
+export type ContextKey = string
 export type Arrangement = 'remote' | 'hybrid' | 'onsite'
 export type Constraints = { markets: string[]; languages: string[]; arrangements: Arrangement[]; regulated: 'yes' | 'no' | 'unknown'; origin: ContextKey | ''; interests: ContextKey[]; preferred: Arrangement[] }
 export const emptyConstraints = (): Constraints => ({ markets: [], languages: [], arrangements: [], regulated: 'unknown', origin: '', interests: [], preferred: [] })
 export type Slot = 'continuity' | 'adjacency' | 'exploration'
-export type Route = { id: number; title: { es: string; en: string }; context: ContextKey; market: string; supported: boolean; regulated: boolean; stale: boolean; slot: Slot }
+// Modo servidor (ES-237 2b): `id` es el roleKey del catálogo; `preference`, `synthetic`, `tasks` y `sources` salen del servidor (el simulador no los trae y la pantalla usa sus textos de ejemplo).
+export type Preference = 'unknown' | 'matches' | 'partialMatch' | 'outside'
+export type RouteSource = { title: string; url: string; stale: boolean; synthetic: boolean }
+export type Route = { id: number | string; title: { es: string; en: string }; context: ContextKey; market: string; supported: boolean; regulated: boolean; stale: boolean; slot: Slot
+  roleKey?: string; synthetic?: boolean; preference?: Preference; tasks?: { es: string; en: string }[]; sources?: RouteSource[] }
 const catalog: Omit<Route, 'slot'>[] = [
   { id: 1, title: { es: 'Formación organizacional', en: 'Organizational training' }, context: 'education', market: 'CO', supported: true, regulated: false, stale: false },
   { id: 2, title: { es: 'Coordinación de operaciones', en: 'Operations coordination' }, context: 'operations', market: 'DK', supported: true, regulated: false, stale: true },
@@ -18,15 +23,17 @@ export type Reason = 'route_evidence_changed' | 'cited_evidence_changed' | 'cont
 export type Part = 'submission' | 'reflection' | 'decision'
 export type Carried = { submission?: { from: number; sample: string; assistance: Assistance | ''; evidence: boolean; retired: number }; reflection?: { from: number; observation: string; interpretation: string }; decision?: { from: number; decision: Decision; reason: string } }
 type History = { version: number; phase: Phase; basis: number; sample?: string; observation?: string; interpretation?: string; reason?: string }
-export type Experiment = { id: number; route: Route; version: number; basis: number; phase: Phase; minutes: number; sample: string; evidence: boolean; assistance: Assistance | ''; observation: string; interpretation: string; decision: Decision | ''; reason: string; review: boolean; carried?: Carried; versions: History[] }
+export type Experiment = { id: number; reasons?: Reason[]; reviewId?: number; task?: { es: string; en: string }; route: Route; version: number; basis: number; phase: Phase; minutes: number; sample: string; evidence: boolean; assistance: Assistance | ''; observation: string; interpretation: string; decision: Decision | ''; reason: string; review: boolean; carried?: Carried; versions: History[] }
 export type Action = { key: number; date: string; minutes: number; resource: boolean; cost: string; completed: string }
 export type Plan = { id: number; experimentId: number; experimentVersion: number; basis: number; version: number; status: 'accepted' | 'paused' | 'superseded'; actions: Action[]; budget: string; currency: 'USD' | 'COP'; versions: { version: number; status: 'accepted' | 'paused' | 'superseded' }[] }
 export type Reminder = { id: number; planId: number; planVersion: number; actionKey: number; dueAt: string; localTime: string; grant: number; status: 'active' | 'cancelled' | 'delivered' }
-export type State = { loaded: boolean; constraints: Constraints; basis: number; choices: { id: number; route: Route; decision: 'chosen' | 'rejected'; basis: number }[]; experiments: Experiment[]; plans: Plan[]; requested: boolean; notifications: boolean; grant: number; reminders: Reminder[]; basisLog: Reason[][] }
+export type CatalogContext = { key: string; label: { es: string; en: string }; synthetic: boolean }
+// `source`, `contexts`, `catalogUnavailable`, `routes` y `routesStatus` solo los llena el cliente de servidor; `routes` reemplaza al cálculo del simulador cuando existe.
+export type State = { source?: 'fixture' | 'api'; contexts?: CatalogContext[]; catalogUnavailable?: boolean; routes?: Route[]; routesStatus?: string; loaded: boolean; constraints: Constraints; basis: number; choices: { id: number; route: Route; decision: 'chosen' | 'rejected'; basis: number; version?: number }[]; experiments: Experiment[]; plans: Plan[]; requested: boolean; notifications: boolean; grant: number; reminders: Reminder[]; basisLog: Reason[][] }
 export type Command =
   | { type: 'constraints'; value: Constraints }
   | { type: 'choice'; route: Route; decision: 'chosen' | 'rejected' }
-  | { type: 'experiment'; routeId: number; minutes: number }
+  | { type: 'experiment'; routeId: number | string; minutes: number }
   | { type: 'change'; id: number; expected: number; value: Partial<Pick<Experiment, 'sample' | 'evidence' | 'assistance' | 'observation' | 'interpretation' | 'decision' | 'reason'>>; phase: Phase }
   | { type: 'review'; id?: number; selected?: boolean }
   | { type: 'rebase'; id: number }
@@ -37,19 +44,21 @@ export type Command =
   | { type: 'notifications'; enabled: boolean }
   | { type: 'reminder'; planId: number; key: number; localTime: string; accepted: boolean }
   | { type: 'ack' | 'cancel'; id: number }
-export class FixtureError extends Error { code: 'saveError' | 'lostAck' | 'conflict' | 'pending' | 'validate' | 'invalidPlan' | 'reminderInvalid'; constructor(code: FixtureError['code']) { super(code); this.code = code } }
+export class FixtureError extends Error { code: 'saveError' | 'lostAck' | 'conflict' | 'pending' | 'validate' | 'invalidPlan' | 'reminderInvalid' | 'expired' | 'routesChanged' | 'catalogUnavailable'; constructor(code: FixtureError['code']) { super(code); this.code = code } }
 export const isCurrent = (s: State, e: Experiment) => e.basis === s.basis
 // Razones acumuladas desde la base en que se creó la versión; basisLog[n - 1] explica el paso a la base n.
-export const reasonsFor = (s: State, e: Experiment): Reason[] => [...new Set(s.basisLog.slice(e.basis).flat())]
+export const reasonsFor = (s: State, e: Experiment): Reason[] => e.reasons ?? [...new Set(s.basisLog.slice(e.basis).flat())]
 const partOf = (phase: Phase): Part | null => phase === 'submitted' ? 'submission' : phase === 'self_reviewed' ? 'reflection' : phase === 'decided' ? 'decision' : null
 export const planCurrent = (s: State, p: Plan) => p.basis === s.basis && s.experiments.find(e => e.id === p.experimentId)?.version === p.experimentVersion
-export function preferenceFor(s: State, route: Route): 'unknown' | 'matches' | 'partialMatch' | 'outside' {
+export function preferenceFor(s: State, route: Route): Preference {
+  if (route.preference) return route.preference
   const c = s.constraints, contextMatch = c.interests.includes(route.context), arrangementMatch = c.preferred.some(m => m !== 'onsite')
   if (!c.interests.length && !c.preferred.length) return 'unknown'
   if ((!c.interests.length || contextMatch) && (!c.preferred.length || arrangementMatch)) return 'matches'
   return contextMatch || arrangementMatch ? 'partialMatch' : 'outside'
 }
 export function routesFor(s: State): Route[] {
+  if (s.routes) return s.routes
   if (!s.basis) return []
   const c = s.constraints
   const candidates = catalog.filter(r => c.markets.includes(r.market) && (!c.languages.length || c.languages.includes(r.market === 'DK' ? 'en' : 'es')) && (!c.arrangements.length || c.arrangements.some(m => m === 'remote' || m === 'hybrid')) && !(r.regulated && c.regulated === 'no'))

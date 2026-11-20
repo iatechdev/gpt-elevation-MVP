@@ -4,10 +4,15 @@ import { copy } from './copy'
 import { createFixtureRepository, scenario } from './fixtures'
 import { previewEnabled } from './model'
 import type { Metrics } from './model'
-import { PreviewShell } from './PreviewShell'
 import { usePilotToken } from './hooks'
+import { Banner, Button, Card, Chip } from '../cartografia'
+import type { ChipTone } from '../cartografia'
+import '../cartografia/pages.css'
+import './pilotMetrics.css'
 
 const metrics = ['activation', 'experiment', 'listening', 'utility'] as const
+// Estado en palabra (siempre con chip): listo = ok con ✓, protegido = en espera; el resto, neutro.
+const STATUS_TONE: Record<string, { tone: ChipTone; symbol?: string }> = { ready: { tone: 'ok', symbol: '✓' }, suppressed: { tone: 'wait' } }
 
 // ES-183 (diseño 12119): dos modos.
 //  · Por defecto (bandera apagada): metas «en definición» (sin cifras: decisión 31) y resultados «Sin datos». No pide NADA al servidor; «Actualizar» sigue deshabilitado hasta conectar GET /api/admin/pilot-metrics (ES-173).
@@ -15,20 +20,21 @@ const metrics = ['activation', 'experiment', 'listening', 'utility'] as const
 export function PilotMetricsPage() {
   const token = usePilotToken()
   const preview = previewEnabled(import.meta.env.VITE_ENABLE_PILOT_FEEDBACK_PREVIEW)
-  return <PreviewShell admin preview={preview}>{preview ? <MetricsSession key={token} token={token} /> : <NoData />}</PreviewShell>
+  // ES-310 (ES-349): dentro del marco de Administración (cabecera, idioma, «Saltar al contenido» y un solo main los pone el marco); aquí solo el contenido.
+  return <div className="pg pg-wide pm">{preview ? <MetricsSession key={token} token={token} /> : <NoData />}</div>
 }
 
 function Targets() {
   const { lang } = useLanguage(); const c = copy[lang]
   return <>
-    <h2>{c.targets}</h2>
+    <h2 className="pm-h2">{c.targets}</h2>
     <p>{c.targetWarning}</p>
-    <div className="pilot-grid">
-      {metrics.map(key => <article className="elv-card pilot-card" key={key}>
+    <div className="pm-grid">
+      {metrics.map(key => <Card as="article" className="pm-pending" key={key}>
         <h3>{c[key]}</h3>
         <p>{c.targetPending}</p>
-        <p className="pilot-note">{c.proposed}</p>
-      </article>)}
+        <p className="cg-hint">{c.proposed}</p>
+      </Card>)}
     </div>
   </>
 }
@@ -36,18 +42,18 @@ function Targets() {
 function NoData() {
   const { lang } = useLanguage(); const c = copy[lang]
   return <>
-    <h1>{c.metricsTitle}</h1>
+    <header className="pg-head"><h1 className="pg-title">{c.metricsTitle}</h1></header>
     <Targets />
-    <h2>{c.observedResults}</h2>
+    <h2 className="pm-h2">{c.observedResults}</h2>
     <p>{c.metricsPending}</p>
-    <div className="pilot-grid">
-      {metrics.map(key => <article className="elv-card pilot-card" key={key}>
+    <div className="pm-grid">
+      {metrics.map(key => <Card as="article" key={key}>
         <h3>{c[key]}</h3>
         <p>{c.noData}</p>
-      </article>)}
+      </Card>)}
     </div>
-    <button className="elv-btn" disabled aria-describedby="metrics-refresh-note">{c.refreshResults}</button>
-    <p id="metrics-refresh-note">{c.metricsRefreshPending}</p>
+    <div className="pg-actions"><Button variant="ghost" disabled aria-describedby="metrics-refresh-note">{c.refreshResults}</Button></div>
+    <p className="cg-hint" id="metrics-refresh-note">{c.metricsRefreshPending}</p>
   </>
 }
 
@@ -65,12 +71,13 @@ function MetricsSession({ token }: { token: string }) {
     return () => { active = false }
   }, [repository, token])
   return <>
-    <h1>{c.metricsTitle}</h1>
-    <p>{c.cohort}</p>
+    <header className="pg-head"><h1 className="pg-title">{c.metricsTitle}</h1><p className="pg-lead">{c.cohort}</p></header>
+    <Banner kind="note" title={c.preview}><p>{c.local}</p></Banner>
     <Targets />
-    <h2>{c.observed}</h2>
-    <p role="status" aria-live="polite">{loading ? c.loading : error ? c.loadError : null}</p>
-    {data && <div className="pilot-grid">{data.metrics.map(m => <article className="elv-card pilot-card" key={m.key}><h3>{c[m.key]}</h3><p>{c[m.status]}</p>{m.status === 'suppressed' && <p>{c.protected}</p>}{m.status === 'ready' && m.counts && <dl>{(['eligible', 'responded', 'missing', 'positive'] as const).map(key => <div key={key}><dt>{c[key]}</dt><dd>{m.counts![key]}</dd></div>)}</dl>}</article>)}</div>}
-    <button className="elv-btn" onClick={() => { setLoading(true); setData(null); void load() }}>{c.refresh}</button>
+    <h2 className="pm-h2">{c.observed}</h2>
+    <p role="status" aria-live="polite" className="cg-hint">{loading ? c.loading : null}</p>
+    {error && <Banner kind="error" title={c.loadError}><div className="pg-actions"><Button variant="ghost" onClick={() => { setLoading(true); setError(false); void load() }}>{c.retry}</Button></div></Banner>}
+    {data && <div className="pm-grid">{data.metrics.map(m => <Card as="article" key={m.key}><h3>{c[m.key]}</h3><p><Chip tone={(STATUS_TONE[m.status] ?? { tone: 'neutral' as ChipTone }).tone} symbol={STATUS_TONE[m.status]?.symbol}>{c[m.status]}</Chip></p>{m.status === 'suppressed' && <p className="cg-hint">{c.protected}</p>}{m.status === 'ready' && m.counts && <dl className="pm-dl">{(['eligible', 'responded', 'missing', 'positive'] as const).map(key => <div key={key}><dt>{c[key]}</dt><dd>{m.counts![key]}</dd></div>)}</dl>}</Card>)}</div>}
+    <div className="pg-actions"><Button variant="ghost" disabled={loading} aria-busy={loading || undefined} onClick={() => { setLoading(true); setData(null); void load() }}>{c.refresh}</Button></div>
   </>
 }

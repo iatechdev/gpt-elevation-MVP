@@ -402,7 +402,7 @@ test('ES-22 uso: cada persona ve solo su presupuesto; el resumen agregado es sol
   provider.fail = Object.assign(new Error('x'), { status: 503 });
   await post(request, { message: 'mensaje privado de B' }, as(B));
 
-  assert.equal((await request('GET', '/api/ai/usage')).status, 403);
+  assert.equal((await request('GET', '/api/ai/usage')).status, 401);
   const mine = (await request('GET', '/api/ai/usage', as(A))).body;
   assert.deepEqual([mine.configured, mine.limit, mine.used, mine.remaining, mine.period], [true, 5000, 300, 4700, 'month']);
   assert.doesNotMatch(JSON.stringify(mine), /cohort|8000/);

@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { models, database, transaction, record, startApp } = require('./support.cjs');
 
-test('P1-3 (ES-207): only the active manifest is public, history and mutations require admin or superadmin', async t => {
+test('P1-3 (ES-207): only the active manifest is public, history requires admin or superadmin and mutations require superadmin (ES-182)', async t => {
   let calls = 0;
   const manifest = record({ id: 7, version: 'v1', content: 'Synthetic public manifest', isActive: true, updatedAt: new Date('2026-11-08T12:00:00Z') });
   models.EthicManifest.findOne = async () => { calls++; return manifest; };
@@ -24,14 +24,19 @@ test('P1-3 (ES-207): only the active manifest is public, history and mutations r
     for (const prefix of ['/api/manifest', '/api/board']) {
       for (const role of [undefined, 'user', 'therapist', 'board']) {
         const before = calls;
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, 403);
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, (role === undefined ? 401 : 403));
         assert.equal(calls, before, 'No database work or transaction on denial');
       }
       assert.equal((await request(method, prefix + suffix, {
         body, headers: { Authorization: 'Bearer invalid' },
       })).status, 401);
+      // ES-182 (decisión 12079): admin y superadmin LEEN el historial; publicar y reactivar es solo de superadmin (admin recibe 403 sin trabajo en la base).
       for (const role of ['admin', 'superadmin']) {
-        assert.equal((await request(method, prefix + suffix, { role, body })).status, success);
+        const before = calls;
+        const readOnlyRoute = method === 'GET';
+        const allowed = readOnlyRoute || role === 'superadmin';
+        assert.equal((await request(method, prefix + suffix, { role, body })).status, allowed ? success : 403, `${role} ${method} ${suffix}`);
+        if (!allowed) assert.equal(calls, before, 'No database work or transaction on denial');
       }
     }
   });

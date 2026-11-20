@@ -97,7 +97,7 @@ test('ES-110 entradas: forma exacta, requestId, tope y roles; sin sesión o con 
     { requestId: 'req-ok-123456', names: ['x'.repeat(61)] }, { requestId: 'req-ok-123456', names: Array.from({ length: 41 }, (_, i) => `H${i}`) }, { requestId: 'req-ok-123456', names: ['SQL'], userId: 202 }, { requestId: 'req ok 123456', names: ['SQL'] }]) {
     assert.equal((await post(request, body)).status, 400, JSON.stringify(body)?.slice(0, 60));
   }
-  for (const as of [{ role: 'therapist', id: 301 }, { role: 'admin', id: 9 }, {}]) { assert.equal((await post(request, { requestId: 'req-ok-123456', names: ['SQL'] }, as)).status, 403); assert.equal((await request('GET', '/api/user/resume-skills', as)).status, 403); }
+  for (const as of [{ role: 'therapist', id: 301 }, { role: 'admin', id: 9 }, {}]) { assert.equal((await post(request, { requestId: 'req-ok-123456', names: ['SQL'] }, as)).status, (as.role ? 403 : 401)); assert.equal((await request('GET', '/api/user/resume-skills', as)).status, (as.role ? 403 : 401)); }
   assert.equal(state.versions.length, 0);
   const own = await post(request, { requestId: 'req-ok-123456', names: ['SQL'], }, OTHER); assert.deepEqual(own.body.skipped, [{ name: 'SQL', reason: 'not_declared' }]); assert.equal(state.versions.length, 0, 'el contexto de otra persona no se usa');
 });

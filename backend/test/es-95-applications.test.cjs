@@ -126,7 +126,7 @@ test('ES-95: un fallo de base de datos responde 500 sin registrar datos personal
 test('ES-95 backoffice: sin sesión 403 y llave inválida 401; persona, terapeuta o junta de otro rol 403; admin y superadmin sí; la lista no incluye la hoja de vida', async t => {
   const { apps } = install(); const request = await startApp(t);
   await post(request, good()); await post(request, good({ email: 'second@example.test' }));
-  assert.equal((await request('GET', '/api/admin/professional-applications')).status, 403); // sin llave: el middleware existente responde 403
+  assert.equal((await request('GET', '/api/admin/professional-applications')).status, 401); // sin llave: el middleware existente responde 403
   assert.equal((await request('GET', '/api/admin/professional-applications', { headers: { Authorization: 'Bearer invalid' } })).status, 401);
   for (const role of ['user', 'therapist', 'board']) assert.equal((await request('GET', '/api/admin/professional-applications', { role })).status, 403, role);
   for (const role of ['admin', 'superadmin']) {
@@ -171,7 +171,7 @@ test('ES-95 descarga: solo admin y superadmin, siempre como adjunto, sin sniffin
   const app = require('../server'); const server = app.listen(0, '127.0.0.1'); await once(server, 'listening'); t.after(() => server.close());
   const token = (role) => jwt.sign({ id: 101, role, name: 'Synthetic actor' }, process.env.JWT_SECRET, { expiresIn: '1m', jwtid: randomBytes(8).toString('hex') });
   const get = (path, role) => fetch(`http://127.0.0.1:${server.address().port}${path}`, role ? { headers: { Authorization: 'Bearer ' + token(role) } } : {});
-  assert.equal((await get('/api/admin/professional-applications/1/cv')).status, 403); // sin llave
+  assert.equal((await get('/api/admin/professional-applications/1/cv')).status, 401); // sin llave
   for (const role of ['user', 'therapist', 'board']) assert.equal((await get('/api/admin/professional-applications/1/cv', role)).status, 403, role);
   for (const role of ['admin', 'superadmin']) {
     const response = await get('/api/admin/professional-applications/1/cv', role); assert.equal(response.status, 200);
@@ -262,7 +262,7 @@ test('ES-107: GET /capacity es solo del backoffice y avisa si el formulario est�
   process.env.PRO_APP_MAX_PENDING = '1'; t.after(() => { delete process.env.PRO_APP_MAX_PENDING; });
   install(); const request = await startApp(t);
   const url = '/api/admin/professional-applications/capacity';
-  assert.equal((await request('GET', url)).status, 403); // sin sesión: no es público
+  assert.equal((await request('GET', url)).status, 401); // sin sesión: no es público
   for (const role of ['user', 'therapist']) assert.equal((await request('GET', url, { role, id: 5 })).status, 403);
   const open = await request('GET', url, { role: 'admin', id: 9 });
   assert.equal(open.status, 200); assert.equal(open.body.full, false); assert.equal(open.body.pending, 0);

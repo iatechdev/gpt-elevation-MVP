@@ -22,7 +22,7 @@ test('ES-181: la lista trae una fila por guía, sin texto, con versión activa y
     row({ key: 'a_guia', version: 1, status: 'active', isActive: true, proposed_by: 'Luz', updatedAt: '2026-11-04T10:00:00Z' }),
   ];
   const request = await startApp(t);
-  for (const role of [undefined, 'user', 'therapist', 'board']) assert.equal((await request('GET', '/api/admin/prompts', { role })).status, 403);
+  for (const role of [undefined, 'user', 'therapist', 'board']) assert.equal((await request('GET', '/api/admin/prompts', { role })).status, (role === undefined ? 401 : 403));
   const response = await request('GET', '/api/admin/prompts', { role: 'admin' });
   assert.equal(response.status, 200); assert.match(response.headers.get('cache-control'), /no-store/);
   assert.deepEqual(response.body.map((g) => g.key), ['a_guia', 'b_guia']);

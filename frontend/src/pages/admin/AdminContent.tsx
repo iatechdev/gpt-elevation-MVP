@@ -2,6 +2,8 @@ import { useAdminText } from '../../i18n/useAdminText'
 import { useLanguage } from '../../i18n/useLanguage'
 import landingFields from '../../../../shared/landing-content.json'
 import { LandingPendingPanel } from './LandingPendingPanel'
+import { LandingConflict } from './LandingConflict'
+import { conflictId, expectedFor, readSaveOutcome, readVersions, type LandingVersion } from './landingVersions.ts'
 import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
 import { landingFieldLabel } from './landingLabels'
@@ -10,7 +12,7 @@ import './adminContent.css'
 // frontend/src/pages/admin/AdminContent.tsx
 // HU-074 + HU-075 — CMS completo: Landing + Precios + Validaciones terapeutas
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { memo, useEffect, useMemo, useState, useCallback, useRef } from 'react'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
@@ -399,7 +401,6 @@ function PricingTab() {
                 <SelectField id="plan-period" label={tr("Período")} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
                   <option value="month">{tr("Mensual")}</option>
                   <option value="year">{tr("Anual")}</option>
-                  <option value="forever">{tr("Para siempre")}</option>
                 </SelectField>
               </div>
             </fieldset>
@@ -434,6 +435,33 @@ function PricingTab() {
   )
 }
 
+// ES-199 (PERF-05): cada fila guarda su propio texto y está memoizada. Antes cada pulsación hacía setContent en LandingTab y repintaba las 340 filas (~70 ms de JS por tecla con CPU ×4, sin contar los estilos).
+// Con `memo` y propiedades primitivas o estables, escribir en un campo solo repinta ese campo.
+// ES-279: el conflicto de edición simultánea va POR FILA (la fila memoizada recibe `conflict` y `forced` estables: solo se repinta la fila afectada). «Conservar la mía» reenvía con la versión vigente;
+// «Usar la suya» solo pone su texto en el campo (`forced`) sin guardar.
+type Conflict = { current: LandingVersion | null }
+const withoutKey = <T,>(map: Record<string, T>, key: string): Record<string, T> => (key in map ? Object.fromEntries(Object.entries(map).filter(([k]) => k !== key)) : map)
+type Forced = { nonce: number; value: string }
+const LandingRow = memo(function LandingRow({ fieldKey, label, initial, saving, busy, message, conflict, forced, onSave, onEdited, onKeepMine, onUseTheirs }: {
+  fieldKey: string; label: string; initial: string; saving: boolean; busy: boolean; message: string; conflict: Conflict | null; forced: Forced | null
+  onSave: (key: string, value: string) => void; onEdited: (key: string) => void; onKeepMine: (key: string, value: string) => void; onUseTheirs: (key: string) => void
+}) {
+  const tr = useAdminText()
+  const [value, setValue] = useState(initial)
+  // «Usar la suya» pone el texto ajeno en el campo: se ajusta durante el render al cambiar `forced` (patrón recomendado; no hace falta un efecto).
+  const [seenForced, setSeenForced] = useState(forced)
+  if (forced !== seenForced) { setSeenForced(forced); if (forced) setValue(forced.value) }
+  return (
+    <li className="cg-item ac-frow">
+      <TextField id={`landing-${fieldKey}`} label={tr(label)} disabled={saving} value={value} onChange={e => { setValue(e.target.value); if (message) onEdited(fieldKey) }}
+        aria-invalid={conflict ? true : undefined} aria-describedby={conflict ? conflictId(fieldKey) : undefined} />
+      <div className="ac-fact"><Button onClick={() => onSave(fieldKey, value)} aria-disabled={busy}>{saving ? '...' : tr('Guardar')}</Button></div>
+      {message && <p role="status" className={message.startsWith('✓') ? 'cg-hint' : 'cg-error'}>{tr(message)}</p>}
+      {conflict && <LandingConflict key={conflict.current?.updatedAt ?? 'none'} fieldKey={fieldKey} current={conflict.current} mine={value} busy={busy} onKeepMine={() => onKeepMine(fieldKey, value)} onUseTheirs={() => onUseTheirs(fieldKey)} />}
+    </li>
+  )
+})
+
 // ── Tab Landing ───────────────────────────────────────────────────────────────
 function LandingTab() {
   const tr = useAdminText()
@@ -448,47 +476,90 @@ function LandingTab() {
   const [loadError, setLoadError] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const savingRef = useRef(false)
+  // ES-279: versión (updatedAt) de cada texto, leída de /versions al cargar y renovada tras cada guardado; conflictos por fila; «Usar la suya» por fila.
+  const versionsRef = useRef<Record<string, string>>({})
+  const [conflicts, setConflicts] = useState<Record<string, Conflict>>({})
+  const [forced, setForced] = useState<Record<string, Forced>>({})
 
-  const fields = [
+  const fields = useMemo(() => [
     { key: 'hero_title',         label: 'Título Hero' },
     { key: 'hero_subtitle',      label: 'Subtítulo Hero' },
     { key: 'cta_primary',        label: 'CTA Principal' },
     ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: landingFieldLabel(key, interfaceLang) })), // ES-90: los pendientes se editan en su panel
-  ]
+  ], [interfaceLang])
 
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true)
     setLoadError(false)
-    setMsgs({})
-    fetch(`${API}/api/landing-content/admin?lang=${lang}`, {
-      headers: { Authorization: `Bearer ${token}` }, signal: controller.signal,
-    })
-      .then(r => { if (!r.ok) throw new Error('load'); return r.json() })
-      .then(data => {
+    setMsgs({}); setConflicts({}); setForced({}); versionsRef.current = {}
+    const headers = { Authorization: `Bearer ${token}` }
+    // Los textos y sus versiones se leen juntos: sin las versiones el servidor no puede proteger la edición, así que si no llegan es un error de carga. Una persona sin superadministración (403) puede leer, no guardar.
+    Promise.all([
+      fetch(`${API}/api/landing-content/admin?lang=${lang}`, { headers, signal: controller.signal }),
+      fetch(`${API}/api/landing-content/versions?lang=${lang}`, { headers, signal: controller.signal, cache: 'no-store' }),
+    ])
+      .then(async ([r, v]) => {
+        if (!r.ok) throw new Error('load')
+        const data = await r.json()
         if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('invalid')
-        if (!controller.signal.aborted) setContent(data)
+        let versions: Record<string, string> | null = {}
+        if (v.status !== 403) { if (!v.ok) throw new Error('versions'); versions = readVersions(await v.json()); if (!versions) throw new Error('versions') }
+        return { data, versions }
+      })
+      .then(({ data, versions }) => {
+        if (!controller.signal.aborted) { versionsRef.current = versions; setContent(data) }
       })
       .catch(() => { if (!controller.signal.aborted) { setContent({}); setLoadError(true) } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [lang, token, attempt])
 
-  const saveField = async (key: string) => {
+  // Al resolver un conflicto el foco vuelve al campo (el de la fila o el del panel de pendientes).
+  const focusField = (key: string) => (document.getElementById(`landing-${key}`) ?? document.getElementById(`pending-${key}`))?.focus()
+  // Tras guardar el campo está deshabilitado hasta que termina el guardado: el foco se devuelve cuando `saving` vuelve a null.
+  const pendingFocus = useRef<string | null>(null)
+  useEffect(() => { if (saving === null && pendingFocus.current) { const key = pendingFocus.current; pendingFocus.current = null; focusField(key) } }, [saving])
+  const saveField = useCallback(async (key: string, value: string | undefined, expected?: string | null) => {
     if (savingRef.current) return
     savingRef.current = true
     setSaving(key); setMsgs(m => ({ ...m, [key]: '' }))
     try {
+      const sent = expected !== undefined ? expected : expectedFor(versionsRef.current, key)
       const r = await fetch(`${API}/api/landing-content`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ key, lang, value: content[key] }),
+        body: JSON.stringify({ key, lang, value, expectedUpdatedAt: sent }),
       })
-      setMsgs(m => ({ ...m, [key]: r.ok ? '✓ Guardado' : r.status === 403 ? 'Solo superadmin puede guardar textos.' : 'Error guardando.' }))
+      const outcome = readSaveOutcome(r.status, await r.json().catch(() => null))
+      if (outcome.kind === 'conflict') {
+        // No se escribió nada y lo escrito se conserva: el aviso aparece en la fila y manda el texto vigente (o «ya no existe»).
+        setConflicts(c => ({ ...c, [key]: { current: outcome.current } }))
+      } else {
+        if (outcome.kind === 'saved') {
+          if (outcome.updatedAt) versionsRef.current = { ...versionsRef.current, [key]: outcome.updatedAt }
+          setConflicts(c => withoutKey(c, key))
+          pendingFocus.current = key
+        }
+        setMsgs(m => ({ ...m, [key]: outcome.kind === 'saved' ? '✓ Guardado' : outcome.kind === 'forbidden' ? 'Solo superadmin puede guardar textos.' : 'Error guardando.' }))
+      }
     } catch {
       setMsgs(m => ({ ...m, [key]: 'Error de conexión.' }))
     } finally { savingRef.current = false; setSaving(null) }
-  }
+  }, [lang, token])
+  const clearMessage = useCallback((key: string) => setMsgs(m => ({ ...m, [key]: '' })), [])
+  // «Conservar la mía»: reenvía el MISMO texto con la versión vigente (null si el texto ya no existe). Si vuelve a dar 409 se repite el aviso con la versión nueva.
+  const keepMine = useCallback((key: string, value: string | undefined) => { void saveField(key, value, conflicts[key]?.current?.updatedAt ?? null) }, [saveField, conflicts])
+  // «Usar la suya»: pone su texto en el campo y toma su versión como esperada; NO guarda.
+  const useTheirs = useCallback((key: string) => {
+    const theirs = conflicts[key]?.current; if (!theirs) return
+    versionsRef.current = { ...versionsRef.current, [key]: theirs.updatedAt }
+    setConflicts(c => withoutKey(c, key))
+    setForced(f => ({ ...f, [key]: { nonce: (f[key]?.nonce ?? 0) + 1, value: theirs.value } }))
+    setContent(c => ({ ...c, [key]: theirs.value })); setMsgs(m => ({ ...m, [key]: '' }))
+    focusField(key)
+  }, [conflicts])
+  const keepMineRow = useCallback((key: string, value: string) => keepMine(key, value), [keepMine])
 
   if (loading) return <p className="cg-hint" role="status">{tr("Cargando contenido...")}</p>
   if (loadError) return <Banner kind="error" title={tr('No se pudo cargar el contenido.')}><Button variant="ghost" onClick={() => setAttempt(n => n + 1)}>{tr('Reintentar')}</Button></Banner>
@@ -500,16 +571,10 @@ function LandingTab() {
           <button key={l} type="button" className="cg-lang__btn" disabled={saving !== null} aria-pressed={lang === l} onClick={() => setLang(l)}>{l.toUpperCase()}</button>
         ))}
       </div>
-      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={saveField} saving={saving} msgs={msgs} />
+      <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={key => void saveField(key, content[key])} saving={saving} msgs={msgs} conflicts={conflicts} onKeepMine={key => keepMine(key, content[key])} onUseTheirs={useTheirs} />
       <h2 className="ac-h2">{tr('Otros textos')}</h2>
       <ul className="cg-items" aria-label={tr('Otros textos')}>
-        {fields.map(f => (
-          <li key={f.key} className="cg-item ac-frow">
-            <TextField id={`landing-${f.key}`} label={tr(f.label)} disabled={saving === f.key} value={content[f.key] ?? ''} onChange={e => { setContent(c => ({ ...c, [f.key]: e.target.value })); setMsgs(m => ({ ...m, [f.key]: '' })) }} />
-            <div className="ac-fact"><Button onClick={() => void saveField(f.key)} aria-disabled={saving !== null}>{saving === f.key ? '...' : tr('Guardar')}</Button></div>
-            {msgs[f.key] && <p role="status" className={msgs[f.key].startsWith('✓') ? 'cg-hint' : 'cg-error'}>{tr(msgs[f.key])}</p>}
-          </li>
-        ))}
+        {fields.map(f => <LandingRow key={f.key} fieldKey={f.key} label={f.label} initial={content[f.key] ?? ''} saving={saving === f.key} busy={saving !== null} message={msgs[f.key] ?? ''} conflict={conflicts[f.key] ?? null} forced={forced[f.key] ?? null} onSave={saveField} onEdited={clearMessage} onKeepMine={keepMineRow} onUseTheirs={useTheirs} />)}
       </ul>
     </div>
   )

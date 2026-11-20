@@ -251,7 +251,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
       const expected = n >= MIN_AVERAGE_SAMPLE ? round1(values.reduce((a, b) => a + b, 0) / n) : null;
       assert.equal(m.avgRating, expected, `general con ${n} valoraciones`);
       assert.equal(proRow(m).avgRating, expected, `profesional con ${n} valoraciones`);
-      if (n < 5) assert.doesNotMatch(JSON.stringify(m), /"avgRating":\d/, 'ningún promedio de valoración (general ni por profesional) en la respuesta');
+      if (n < MIN_AVERAGE_SAMPLE) assert.doesNotMatch(JSON.stringify(m), /"avgRating":\d/, 'ningún promedio de valoración (general ni por profesional) en la respuesta');
     }
     // Las valoraciones fuera de 1-5 no cuentan para el mínimo: 3 válidas + 2 fuera de escala = 3 entradas válidas → null.
     await setRatings([4, 5, 3, 30000, 0]);

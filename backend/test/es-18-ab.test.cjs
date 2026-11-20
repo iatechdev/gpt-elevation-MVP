@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const { randomBytes } = require('node:crypto');
-const { models, anthropic, promptVault, record, startApp } = require('./support.cjs');
+const { models, database, anthropic, promptVault, record, startApp } = require('./support.cjs');
 
 // Personas sintéticas A y B: cada una con sus propios datos; los modelos simulados SÍ aplican el filtro `where`
 // que envía la ruta, así que si una ruta olvidara el propietario, A vería (o tocaría) datos de B.
@@ -152,6 +152,8 @@ test('El administrador no recibe texto de conversaciones y las respuestas no inc
   };
   models.MoodLog.count = async () => 1;
   models.SessionRating.findAll = async () => [];
+  // ES-341: la lista agrega por lote con SQL; el doble devuelve una fila de ánimo por persona (1 sesión, sin valores) y ninguna calificación, como los dobles de arriba.
+  database.sequelize.query = async (sql, { replacements }) => (/MoodLogs/.test(sql) ? replacements.ids.map(id => ({ UserId: id, sesiones: 1, mood_count: 0, mood_sum: 0 })) : []);
   const request = await startApp(t);
   const admin = { headers: bearer(1, 'admin') };
 

@@ -44,7 +44,7 @@ test('ES-23: preview and download deliver exactly the owner’s allowed data, in
 test('ES-23: guessed IDs and elevated roles cannot download another owner’s preview', async t => {
   setup();
   const request = await startApp(t);
-  assert.equal((await preview(request, {})).status, 403);
+  assert.equal((await preview(request, {})).status, 401);
   const p = await preview(request);
   assert.equal((await download(request, p.body.id, B)).status, 404);
   // An elevated role is not an export permission (it must pass its own legacy-policy review).

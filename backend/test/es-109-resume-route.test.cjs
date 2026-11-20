@@ -225,7 +225,7 @@ test('ES-109 (criterio 6): histórico solo del dueño — lista, descarga idént
   assert.deepEqual([missing.status, missing.body.code], [404, 'resume_not_found']);
   assert.deepEqual((await request('DELETE', `/api/user/resumes/${idTheirs}`, ME)).body, missing.body);
   assert.equal((await request('DELETE', '/api/user/resumes/abc', ME)).status, 404); assert.equal(state.rows.length, 2);
-  for (const as of [{ role: 'therapist', id: 301 }, { role: 'admin', id: 9 }, {}]) for (const [m, u] of [['GET', '/api/user/resumes'], ['GET', `/api/user/resumes/${idMine}/file`], ['DELETE', `/api/user/resumes/${idMine}`]]) assert.equal((await request(m, u, as)).status, 403, `${m} ${u} ${as.role}`);
+  for (const as of [{ role: 'therapist', id: 301 }, { role: 'admin', id: 9 }, {}]) for (const [m, u] of [['GET', '/api/user/resumes'], ['GET', `/api/user/resumes/${idMine}/file`], ['DELETE', `/api/user/resumes/${idMine}`]]) assert.equal((await request(m, u, as)).status, (as.role ? 403 : 401), `${m} ${u} ${as.role}`);
   // Borrar: de verdad y se marca lo derivado «para revisión».
   const del = await request('DELETE', `/api/user/resumes/${idMine}`, ME);
   assert.deepEqual([del.status, del.body], [200, { id: idMine, deleted: true }]);

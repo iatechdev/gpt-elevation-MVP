@@ -1,4 +1,4 @@
-// ES-237 (pasos 1–2a): el cliente `src/career/api.ts` contra el servidor REAL (routers de ES-33) y PostgreSQL REAL. Sin pantallas, sin IA, sin simulaciones de la base ni del servidor; datos sintéticos.
+// ES-237 (pasos 1–2b): el cliente `src/career/api.ts` y el cliente de servidor `serverClient.ts` (2b) contra el servidor REAL (routers de ES-33) y PostgreSQL REAL. Sin pantallas, sin IA, sin simulaciones de la base ni del servidor; datos sintéticos.
 // Las dependencias de ES-14/ES-32 (contexto, rutas, elección) son las reales (seedDemo). Cubre: titular por token, requestId repetido, versión caducada, transición inválida, IDs ajenos = 404,
 // entradas hostiles = 400 sin 500, y el plan (proponer → aceptar → pausar). Recordatorios: no cubiertos aquí (exigen el consentimiento de notificaciones; ver «no verificado» del PR).
 // Uso (desde frontend/, con NODE_PATH=<backend>/node_modules si el worktree no resuelve `pg`):
@@ -167,12 +167,119 @@ const { once } = require('node:events')
     const rr = api.newRequestId(), review = await api.requestRouteReview(A, { requestId: rr, note: 'Nota sintética' }); assert.equal(review.created, true)
     assert.equal((await api.requestRouteReview(A, { requestId: rr, note: 'Nota sintética' })).created, false); await fails(api.requestRouteReview(A, { requestId: api.newRequestId(), note: 'otra' }), 'conflict', 409, 'review_already_open')
     assert.equal((await api.getRouteReview(A)).reviewRequest.id, review.reviewRequest.id); assert.equal((await api.getRouteReview(B)).reviewRequest, null); check('pedir revisión: idempotente por requestId, una abierta a la vez (409 review_already_open) y B no ve la de A')
+
+    // --- E336-3: el roleKey se codifica en la ruta (con caracteres especiales sigue siendo «ficha inexistente», no otra ruta ni un 500) --------------
+    await fails(api.getRoleProfile(A, 'a/b?c=1&d'), 'not_found', 404, 'role_not_found'); check('E336-3: roleKey con «/», «?» y «&» se codifica: 404 role_not_found (no una ruta inexistente ni un 500)')
+
+    // --- E336-1: cancelar a mitad del cuerpo es una cancelación (AbortError), no «unavailable» ----------------------------------------------
+    const slow = require('node:http').createServer((req, res) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.write('{"a":'); /* el cuerpo nunca termina */ })
+    slow.listen(0, '127.0.0.1'); await once(slow, 'listening')
+    try {
+      const controller = new AbortController(); setTimeout(() => controller.abort(), 150)
+      let thrown = null
+      try { await api.getRoutes({ baseUrl: `http://127.0.0.1:${slow.address().port}`, token: A.token, signal: controller.signal }) } catch (error) { thrown = error }
+      assert.ok(thrown && !(thrown instanceof api.CareerApiError) && thrown.name === 'AbortError', 'se esperaba AbortError, llegó: ' + thrown)
+      check('E336-1: cancelar a mitad del cuerpo → AbortError (no CareerApiError unavailable)')
+    } finally { await new Promise(resolve => { slow.closeAllConnections(); slow.close(resolve) }) }
+
+    // --- Paso 2b: el cliente de SERVIDOR (serverClient.ts + adapter.ts) con servidor REAL y PostgreSQL REAL -------------------------------------
+    await build({ input: path.resolve(__dirname, '../src/career/serverClient.ts'), platform: 'node', output: { format: 'esm', file: path.join(out, 'serverClient.mjs') }, logLevel: 'warn' })
+    const sc = await import(pathToFileURL(path.join(out, 'serverClient.mjs')).href)
+    const person = async (name) => { const user = await User.create({ name: 'SYNTHETIC ' + name, email: `${name}@example.invalid`, password: randomBytes(32).toString('hex'), role: 'user', active: true }); await setContext(user.id, { availabilityMinutesPerWeek: 90 }); return user }
+    const c = await person('client-c'), d = await person('client-d')
+    const make = (user, fetcher) => sc.createServerClient({ baseUrl, token: () => issueToken(user), ...(fetcher ? { fetcher } : {}) })
+    const rid = () => randomUUID()
+    const screenFails = async (promise, code) => { try { await promise } catch (error) { assert.ok(error instanceof Error && typeof error.code === 'string' && !(error instanceof api.CareerApiError), 'error de pantalla: ' + error); assert.equal(error.code, code); return error } assert.fail('se esperaba el error ' + code) }
+    const formValue = { markets: ['CO'], languages: ['es'], arrangements: ['hybrid', 'remote'], regulated: 'unknown', origin: 'ctx_educacion_formacion', interests: ['ctx_contabilidad_analisis'], preferred: ['remote'] }
+
+    const cl = make(c)
+    await cl.load(); let st = cl.snapshot()
+    assert.equal(st.loaded, true); assert.equal(st.source, 'api'); assert.equal(st.basis, 0); assert.deepEqual(st.routes, []); assert.equal(st.routesStatus, 'needs_constraints'); assert.equal(st.catalogUnavailable, false); assert.deepEqual(st.experiments, []); assert.deepEqual(st.choices, [])
+    assert.ok(st.contexts.length > 0 && st.contexts.every(x => x.key && x.label.es && x.label.en)); check('2b: persona nueva = needs_constraints, sin rutas, y los contextos del formulario salen del catálogo publicado (etiquetas ES/EN)')
+
+    await screenFails(cl.send({ type: 'constraints', value: { ...formValue, arrangements: ['holograma'] } }, rid()), 'validate'); check('2b: una modalidad que el catálogo no conoce se rechaza antes de enviar')
+    await screenFails(cl.send({ type: 'constraints', value: { ...formValue, origin: 'ctx_inventado' } }, rid()), 'validate'); assert.equal(cl.snapshot().basis, 0); check('2b: un contexto inventado → validate (400 del servidor), sin guardar nada')
+    await cl.send({ type: 'constraints', value: formValue }, rid()); st = cl.snapshot()
+    assert.equal(st.basis, 1); assert.deepEqual(st.constraints.markets, ['CO']); assert.equal(st.constraints.origin, 'ctx_educacion_formacion'); assert.deepEqual(st.constraints.interests, ['ctx_contabilidad_analisis'])
+    assert.ok(st.routes.length > 0 && st.routes.every(r => r.id === r.roleKey && r.title.es && r.title.en && ['continuity', 'adjacency', 'exploration'].includes(r.slot))); check('2b: guardar restricciones (baseVersion 0→1) relee y entrega las rutas del servidor con su ranura y etiquetas ES/EN')
+    const direct = await api.getRoutes(sc_as(c)); assert.deepEqual(st.routes.map(r => r.roleKey), direct.routes.map(r => r.roleKey))
+    for (const route of st.routes) { const raw = direct.routes.find(r => r.roleKey === route.roleKey); assert.equal(route.synthetic, raw.synthetic === true || raw.sources.some(s => s.synthetic === true)); assert.equal(route.regulated, raw.regulated.isRegulated) }
+    check('2b: el chip «sintética» de cada ruta coincide con synthetic:true del servidor (ruta o fuente); nada se inventa')
+    function sc_as(user) { return { baseUrl, token: issueToken(user) } }
+
+    // 409 de restricciones: otra pestaña guardó antes; el formulario conserva lo escrito (aquí: el servidor no cambia y el error es «conflict»).
+    const other = make(c); await other.load()
+    await other.send({ type: 'constraints', value: { ...formValue, languages: ['es', 'en'] } }, rid())
+    await screenFails(cl.send({ type: 'constraints', value: { ...formValue, regulated: 'no' } }, rid()), 'conflict')
+    assert.deepEqual([...(await api.getConstraints(sc_as(c))).constraints.payload.languages].sort(), ['en', 'es']); assert.equal((await api.getConstraints(sc_as(c))).constraints.payload.acceptRegulated, 'unknown'); check('2b: guardar con una versión caducada → conflict y NO pisa lo guardado en otra pestaña')
+    await cl.load(); assert.equal(cl.snapshot().basis, 2); check('2b: recuperar (releer) trae la versión 2')
+
+    // elegir con rutas caducadas = «tus restricciones cambiaron»
+    const stale = make(c); await stale.load(); const staleRoute = stale.snapshot().routes[0]
+    await other.load(); await other.send({ type: 'constraints', value: { ...formValue, languages: ['es', 'en'], regulated: 'yes' } }, rid())
+    await screenFails(stale.send({ type: 'choice', route: staleRoute, decision: 'chosen' }, rid()), 'routesChanged'); check('2b: elegir con la base de rutas caducada → routesChanged («tus restricciones cambiaron; revisa las rutas»)')
+    await cl.load(); st = cl.snapshot(); assert.equal(st.basis, 3)
+    const free = st.routes.find(r => !r.regulated && r.tasks.length); assert.ok(free)
+    await cl.send({ type: 'choice', route: free, decision: 'chosen' }, rid()); st = cl.snapshot()
+    const mineChoice = st.choices.findLast(x => x.route.id === free.id); assert.equal(mineChoice.decision, 'chosen'); assert.equal(mineChoice.basis, st.basis); assert.equal(mineChoice.version, 3); check('2b: elegir una ruta (accepted) queda vigente con la versión de restricciones y se relee')
+    const rejectRoute = st.routes.find(r => r.id !== free.id)
+    if (rejectRoute) { await cl.send({ type: 'choice', route: rejectRoute, decision: 'rejected' }, rid()); assert.equal(cl.snapshot().choices.findLast(x => x.route.id === rejectRoute.id).decision, 'rejected'); check('2b: rechazar una ruta queda guardado como rechazada') }
+
+    // doble envío con un corte: el MISMO gesto reutiliza su requestId (1 sola fila) y el resultado incierto se informa como lostAck
+    let cutOnce = true
+    const cutting = (real) => async (input, init) => { const response = await real(input, init); if (cutOnce && String(input).endsWith('/api/experiments') && init?.method === 'POST') { cutOnce = false; await response.text(); throw new TypeError('corte de red sintético') } return response }
+    const flaky = make(c, cutting(fetch)); await flaky.load()
+    const e1 = await screenFails(flaky.send({ type: 'experiment', routeId: free.id, minutes: 20 }, rid()), 'lostAck')
+    assert.equal((await api.listExperiments(sc_as(c))).experiments.length, 1); check('2b: un corte tras guardar el experimento → lostAck (incierto); en el servidor ya hay 1 fila')
+    const resent = await flaky.send({ type: 'experiment', routeId: free.id, minutes: 20 }, rid()); assert.ok(Number.isSafeInteger(resent))
+    assert.equal((await api.listExperiments(sc_as(c))).experiments.length, 1); check('2b: reenviar el mismo gesto con otro requestId de pantalla reutiliza el del intento: sigue habiendo 1 fila (sin duplicar)')
+    const experiment = flaky.snapshot().experiments[0]; assert.equal(experiment.phase, 'ready'); assert.equal(experiment.basis, flaky.snapshot().basis); assert.ok(experiment.task && experiment.task.es && experiment.task.en); assert.equal(experiment.minutes, 20); check('2b: el experimento nace preparado, con base vigente y la tarea de la ficha (taskIndex 0)')
+
+    // ciclo del experimento con expectedVersion
+    await cl.load(); const exp = cl.snapshot().experiments[0]
+    await cl.send({ type: 'change', id: exp.id, expected: exp.version, phase: 'in_progress', value: {} }, rid()); assert.equal(cl.snapshot().experiments[0].phase, 'in_progress')
+    await screenFails(cl.send({ type: 'change', id: exp.id, expected: exp.version, phase: 'submitted', value: { sample: '', assistance: 'none' } }, rid()), 'validate')
+    await screenFails(cl.send({ type: 'change', id: exp.id, expected: exp.version, phase: 'in_progress', value: {} }, rid()), 'conflict'); check('2b: iniciar; entrega vacía → validate; versión caducada (expectedVersion) → conflict')
+    const v2 = cl.snapshot().experiments[0]
+    await cl.send({ type: 'change', id: v2.id, expected: v2.version, phase: 'submitted', value: { sample: 'Muestra sintética', assistance: 'planning', evidence: true } }, rid()); const submitted1 = cl.snapshot().experiments[0]; assert.equal(submitted1.phase, 'submitted'); assert.equal(submitted1.sample, 'Muestra sintética'); assert.equal(submitted1.assistance, 'planning'); assert.equal(submitted1.evidence, false)
+    await cl.send({ type: 'change', id: submitted1.id, expected: submitted1.version, phase: 'self_reviewed', value: { observation: 'Observé', interpretation: 'Interpreté' } }, rid())
+    const refl = cl.snapshot().experiments[0]; await cl.send({ type: 'change', id: refl.id, expected: refl.version, phase: 'decided', value: { decision: 'adjust', reason: 'Por qué sintético' } }, rid())
+    const done = cl.snapshot().experiments[0]; assert.equal(done.phase, 'decided'); assert.equal(done.decision, 'adjust'); assert.ok(done.versions.length >= 5); check('2b: entregar (sin referencias inventadas: evidence=false), reflexionar y decidir con las versiones del servidor')
+
+    // revisión humana de la entrega y de rutas
+    await cl.send({ type: 'review', id: done.id, selected: true }, rid()); const rev = cl.snapshot().experiments[0]; assert.equal(rev.review, true); assert.ok(rev.reviewId)
+    await cl.send({ type: 'review', id: rev.id }, rid()); assert.equal(cl.snapshot().experiments[0].review, false); check('2b: pedir y retirar la revisión humana de la entrega (includeSample) con el submissionVersion real')
+    await cl.send({ type: 'review' }, rid()); assert.equal(cl.snapshot().requested, true); await screenFails(cl.send({ type: 'review' }, rid()), 'conflict'); check('2b: pedir revisión de rutas (una abierta a la vez; el servidor no tiene «retirar»)')
+
+    // cambio de base → needs_review con motivos, rebase y borradores
+    await other.load(); await other.send({ type: 'constraints', value: { ...formValue, languages: ['es', 'en'], regulated: 'yes', preferred: [] } }, rid())
+    await cl.load(); const old = cl.snapshot().experiments[0]; assert.notEqual(old.basis, cl.snapshot().basis); assert.ok(old.reasons.length > 0, 'motivos del servidor: ' + JSON.stringify(old.reasons)); console.log('   motivos:', old.reasons.join(', '))
+    check('2b: al cambiar las restricciones el experimento queda «necesita revisión» con los motivos del servidor')
+    await cl.send({ type: 'rebase', id: old.id }, rid()); const fresh = cl.snapshot().experiments[0]; assert.equal(fresh.phase, 'ready'); assert.ok(fresh.carried && fresh.carried.submission && fresh.carried.reflection && fresh.carried.decision); assert.equal(fresh.carried.submission.sample, 'Muestra sintética'); assert.equal(fresh.carried.decision.decision, 'adjust')
+    await cl.send({ type: 'adopt', id: fresh.id, expected: fresh.version, part: 'submission' }, rid()); const adopted = cl.snapshot().experiments[0]; assert.equal(adopted.phase, 'submitted'); assert.equal(adopted.sample, 'Muestra sintética'); assert.ok(!adopted.carried.submission)
+    await cl.send({ type: 'discard', id: adopted.id, expected: adopted.version, part: 'reflection' }, rid()); assert.ok(!cl.snapshot().experiments[0].carried?.reflection); check('2b: empezar otra versión conserva entrega, reflexión y decisión como borradores «de la versión anterior»; usar uno y descartar otro')
+
+    // aislamiento A/B por token: D no ve nada de C y no puede actuar sobre sus ids
+    const dl = make(d); await dl.load(); const ds = dl.snapshot(); assert.deepEqual(ds.experiments, []); assert.deepEqual(ds.choices, []); assert.equal(ds.basis, 0); assert.equal(ds.requested, false)
+    await screenFails(dl.send({ type: 'rebase', id: exp.id }, rid()), 'conflict'); await fails(api.getExperiment(sc_as(d), exp.id), 'not_found', 404); check('2b: otra persona no ve experimentos, elecciones ni revisión de C; un id ajeno = 404 y la pantalla lo trata como conflict')
+
+    // plan y recordatorios: no conectados todavía (paso 3)
+    for (const command of [{ type: 'pause', planId: 1, expected: 1 }, { type: 'notifications', enabled: true }, { type: 'ack', id: 1 }]) await screenFails(cl.send(command, rid()), 'pending')
+    check('2b: plan, recordatorios y notificaciones responden «pending» (no se simula nada)')
+
+    // fallos de transporte y de sesión
+    const down = make(c, async (input) => { throw new TypeError('sin red') }); await screenFails(down.load(), 'saveError'); check('2b: sin red al leer → no hay un resultado confirmado (saveError)')
+    const five = make(c, async (input, init) => init?.method === 'POST' ? new Response('<html>bad gateway</html>', { status: 502 }) : fetch(input, init)); await five.load()
+    await screenFails(five.send({ type: 'rebase', id: cl.snapshot().experiments[0].id }, rid()), 'lostAck'); check('2b: un 502 con HTML al escribir → lostAck (incierto), nada se afirma')
+    await screenFails(sc.createServerClient({ baseUrl, token: () => '' }).load(), 'expired'); await screenFails(sc.createServerClient({ baseUrl, token: () => 'sintetico-no-valido' }).load(), 'expired'); check('2b: sin sesión o con token vencido → expired (la pantalla muestra «Entrar» con retorno)')
+    const noCatalog = make(c, async (input, init) => /\/api\/(route-catalog|routes)$/.test(String(input)) ? new Response(JSON.stringify({ code: 'catalog_unavailable', error: 'x' }), { status: 503, headers: { 'Content-Type': 'application/json' } }) : fetch(input, init))
+    await noCatalog.load(); const nc = noCatalog.snapshot(); assert.equal(nc.catalogUnavailable, true); assert.deepEqual(nc.routes, []); assert.deepEqual(nc.contexts, []); assert.ok(nc.experiments.length >= 1); check('2b: 503 catalog_unavailable → estado «catálogo no disponible» (sin rutas ni contextos inventados); el resto sigue leyéndose')
     console.log(`
 ${checks.length} comprobaciones OK`)
   } finally {
     if (server) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }
     if (sequelize) await sequelize.close().catch(() => {})
     if (started) await pg.stop().catch(() => {})
-    fs.rmSync(directory, { recursive: true, force: true }); fs.rmSync(out, { recursive: true, force: true })
+    for (const folder of [directory, out]) { try { fs.rmSync(folder, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 }) } catch { /* Windows puede tardar en soltar la carpeta: la limpieza no debe tapar el resultado */ } }
   }
 })().catch(error => { console.error('FALLA', error); process.exit(1) })

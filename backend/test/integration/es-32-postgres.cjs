@@ -124,7 +124,7 @@ test('ES-32 PostgreSQL + HTTP: motor, propiedad, versiones y ciclo de vida', { t
     assert.equal((await http('?UserId=' + b.id)).status, 400);
     assert.equal((await http('/choices', { method: 'POST', body: { ...choiceBody, UserId: b.id } })).status, 400);
     assert.equal((await http('/choices', { method: 'POST', actor: 'other', body: { ...choiceBody, requestId: randomUUID() } })).status, 409);
-    assert.equal((await http('', { actor: null })).status, 403);
+    assert.equal((await http('', { actor: null })).status, 401);
     await a.update({ role: 'admin' }); assert.equal((await http('')).status, 403); await a.update({ role: 'user' });
     const revoked = issueToken(a); await revokeToken(require('jsonwebtoken').decode(revoked)); assert.equal((await http('', { token: revoked })).status, 401);
   });

@@ -9,7 +9,7 @@ const { sessionProblem } = require('../utils/sessions');
 
 const tokenMiddleware = (options = {}) => async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(403).json({ error: 'Acceso denegado. No tienes llave.' });
+  if (!authHeader) return res.status(401).json({ error: 'Falta la sesión. Inicia sesión. / Missing session. Sign in.' });
   const token = authHeader.split(' ')[1];
   let payload;
   try {
@@ -84,4 +84,15 @@ const verificarEditorManifiesto = (req, res, next) => {
   });
 };
 
-module.exports = { verificarEditorManifiesto, verificarToken, verificarTokenParaBorrado, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };
+// ES-182 (decisión 12079): LEER el historial es de administración y superadmin (verificarEditorManifiesto); PUBLICAR, activar y reactivar versiones es SOLO de superadmin
+// (el manifiesto es el documento vinculante que gobierna a la IA: mínimo privilegio). El servidor es la autoridad; la pantalla solo deja de pintar los controles.
+const verificarPublicadorManifiesto = (req, res, next) => {
+  verificarToken(req, res, () => {
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Acceso denegado. Solo superadministración puede publicar o reactivar versiones del manifiesto.' });
+    }
+    next();
+  });
+};
+
+module.exports = { verificarPublicadorManifiesto, verificarEditorManifiesto, verificarToken, verificarTokenParaBorrado, verificarAdmin, verificarSuperAdmin, verificarBoard, verificarTerapeuta };

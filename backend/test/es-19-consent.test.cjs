@@ -57,7 +57,7 @@ function consentStore() {
 test('ES-19: catálogo cerrado de once propósitos (ES-173 añade pilot_feedback; ES-96 añade therapist_sharing, ES-109 resume_ai_reading y ES-121 insights_chat, insights_diary e insights_resume), todos sin decidir y solo visibles para su titular', async t => {
   consentStore();
   const request = await startApp(t);
-  assert.equal((await request('GET', '/api/consents')).status, 403);
+  assert.equal((await request('GET', '/api/consents')).status, 401);
   const response = await request('GET', '/api/consents', as(A));
   assert.equal(response.status, 200);
   assert.deepEqual(response.body.consents.map(c => c.purpose),
