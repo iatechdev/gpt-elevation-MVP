@@ -1,4 +1,5 @@
 // backend/routes/matching.js
+// GET  /api/matching/options  (ES-169 PR 2a: tema, estilo e idioma desde la base, ES/EN)
 // POST /api/matching/request
 // POST /api/matching/choose
 // GET  /api/admin/matching/pending
@@ -7,12 +8,13 @@
 
 const express          = require('express');
 const router           = express.Router();
-const { Op, Transaction } = require('sequelize');
+const { Op, Transaction, UniqueConstraintError } = require('sequelize');
 const { sequelize }     = require('../database');
 const consent          = require('../utils/consent');
 const { recordAdminAction } = require('../utils/adminAudit'); // ES-186 B
 const User             = require('../User');
 const MatchingRequest  = require('../MatchingRequest');
+const MatchingOption   = require('../MatchingOption');
 const TherapistProfile = require('../TherapistProfile');
 const anthropic        = require('../utils/anthropic');
 const { callClaude, AiBudgetNotConfiguredError, AiBudgetExhaustedError } = require('../utils/aiClient');
@@ -39,8 +41,17 @@ const ANSWER_CATALOG = {
   style: ['reflective', 'structured', 'spiritual', 'practical', 'reflective and exploratory', 'structured with goals', 'empathetic and listening', 'any'],
   language: ['es', 'en', 'both', 'Spanish', 'English', 'No preference'],
 };
+// ES-169 (PR 2a): tema, estilo e idioma se leen de la BASE (MatchingOptions, solo las ACTIVAS). Las claves de la semilla se gobiernan por la base (desactivar una la rechaza); los valores del catálogo anterior que no son de la semilla
+// (los que todavía envía la pantalla de «Tu progreso») se siguen aceptando hasta que el PR 2b unifique las pantallas; después se retiran de aquí. Un valor desconocido = 400 invalid_answers, sin tocar la IA.
+const KIND_OF = { area: 'topic', style: 'style', language: 'language' };
+const SEEDED = { area: ['anxiety', 'relationships', 'self-knowledge', 'habits', 'other'], style: ['reflective', 'structured', 'spiritual', 'practical'], language: ['es', 'en', 'both'] };
+const LEGACY_ONLY = Object.fromEntries(ANSWER_KEYS.map(key => [key, ANSWER_CATALOG[key].filter(value => !SEEDED[key].includes(value))]));
+async function allowedAnswers() {
+  const rows = await MatchingOption.findAll({ where: { active: true }, attributes: ['kind', 'key'] });
+  return Object.fromEntries(ANSWER_KEYS.map(key => [key, new Set([...rows.filter(row => row.kind === KIND_OF[key]).map(row => row.key), ...LEGACY_ONLY[key]])]));
+}
 const ANSWER_VALUE = /^[\p{L}\p{N}][\p{L}\p{N} _.-]{0,59}$/u;
-function cleanAnswers(raw) {
+function cleanAnswers(raw, allowed = null) { // sin `allowed` solo se valida la FORMA (barato, sin base); con `allowed`, además cada valor contra las listas
   if (!object(raw) || !Object.values(raw).every(value => typeof value === 'string')) return null; // cualquier valor que no sea texto (objeto, lista, número, null) invalida el cuerpo
   const clean = {};
   for (const key of ANSWER_KEYS) {
@@ -49,19 +60,65 @@ function cleanAnswers(raw) {
     const value = raw[key].trim();
     // estricto: si limpiar el texto (NFKC, caracteres invisibles o de control) lo cambia, se rechaza en vez de aceptarlo "arreglado"
     if (normalizeText(value) !== value || !ANSWER_VALUE.test(value) || redactSecrets(value) !== value) return null;
-    if (!ANSWER_CATALOG[key].includes(value)) return null; // ES-251: fuera del catálogo cerrado
+    if (allowed && !allowed[key].has(value)) return null; // ES-251/ES-169: fuera de las listas activas (base de datos) y del catálogo anterior
     clean[key] = value;
   }
   return Object.keys(clean).length ? clean : null; // sin ninguna respuesta conocida no hay nada con qué emparejar
 }
 const invalidAnswers = { code: 'invalid_answers', error: 'Respuestas no válidas. / Invalid answers.' };
 
+// GET /api/matching/options — las opciones ACTIVAS con su texto ES/EN, en el orden de la base. Solo lectura; la persona con sesión. Sin datos de nadie.
+router.get('/options', async (req, res) => {
+  try {
+    const rows = await MatchingOption.findAll({ where: { active: true }, order: [['kind', 'ASC'], ['position', 'ASC'], ['id', 'ASC']] });
+    const list = kind => rows.filter(row => row.kind === kind).map(row => ({ key: row.key, label_es: row.label_es, label_en: row.label_en }));
+    res.set('Cache-Control', 'no-store');
+    res.json({ topics: list('topic'), styles: list('style'), languages: list('language') });
+  } catch (error) {
+    console.error('❌ Error leyendo las opciones del emparejamiento:', error && error.name);
+    res.status(500).json({ code: 'options_failed', error: 'No se pudieron cargar las opciones. / The options could not be loaded.' });
+  }
+});
+
+// ES-169 (PR 2a): una solicitud con `requestId` es UNA fila y UNA llamada a la IA (doble clic, reintento por red). La fila se RESERVA antes de llamar al modelo (estado interno «searching», índice único por persona y requestId);
+// el mismo requestId con otras respuestas = 409 request_conflict; mientras otra petición la está resolviendo = 409 request_in_progress (reintentable); una reserva abandonada (> 2 min) se recupera. Sin `requestId` (cliente anterior) todo
+// funciona como antes. Si la búsqueda falla (sin profesionales, límite de IA, proveedor caído, salida inválida) la reserva se BORRA para que el reintento con el mismo requestId funcione.
+const isRequestId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(value);
+const STALE_SEARCH_MS = 2 * 60 * 1000;
+const sameAnswers = (a, b) => ANSWER_KEYS.every(key => (a[key] ?? null) === (b[key] ?? null));
+async function replayOf(request, userId) {
+  const ids = request.suggestions.map(item => item.therapistId);
+  const names = ids.length ? await User.findAll({ where: { id: ids }, attributes: ['id', 'name'] }) : [];
+  return { requestId: request.id, suggestions: request.suggestions.map(item => ({ ...item, therapistName: names.find(user => user.id === item.therapistId)?.name ?? 'Unknown' })) };
+}
+
 // POST /api/matching/request
 router.post('/request', validateBody({ answers: object }), async (req, res) => {
+  let claim = null; let settled = false;
   try {
     const userId   = req.user.id;
-    const answers = cleanAnswers(req.body.answers);
+    // 1) la forma, sin consultar nada; 2) cada valor contra las listas activas de la base (400 invalid_answers, sin tocar la IA)
+    if (!cleanAnswers(req.body.answers)) return res.status(400).json(invalidAnswers);
+    const answers = cleanAnswers(req.body.answers, await allowedAnswers());
     if (!answers) return res.status(400).json(invalidAnswers);
+    const clientRequestId = req.body.requestId;
+    if (clientRequestId !== undefined && !isRequestId(clientRequestId)) return res.status(400).json({ code: 'invalid_input', error: 'Datos de entrada inválidos. / Invalid input data.' });
+    if (clientRequestId !== undefined) {
+      for (let attempt = 1; attempt <= 2 && !claim; attempt++) {
+        try {
+          claim = await MatchingRequest.create({ UserId: userId, requestId: clientRequestId, answers, suggestions: [], status: 'searching' });
+        } catch (error) {
+          if (!(error instanceof UniqueConstraintError)) throw error;
+          const existing = await MatchingRequest.findOne({ where: { UserId: userId, requestId: clientRequestId } });
+          if (!existing) continue; // se borró entre medias: se vuelve a reservar
+          if (!sameAnswers(existing.answers, answers)) return res.status(409).json({ code: 'request_conflict', error: 'Ese identificador de solicitud ya se usó con otras respuestas. / That request identifier was already used with different answers.' });
+          if (existing.status !== 'searching') return res.json(await replayOf(existing, userId));
+          if (Date.now() - new Date(existing.updatedAt).getTime() > STALE_SEARCH_MS) { await existing.destroy(); continue; }
+          return res.status(409).json({ code: 'request_in_progress', retryable: true, error: 'Tu búsqueda sigue en curso. Espera un momento e inténtalo de nuevo. / Your search is still in progress. Wait a moment and try again.' });
+        }
+      }
+      if (!claim) return res.status(409).json({ code: 'request_in_progress', retryable: true, error: 'Tu búsqueda sigue en curso. Espera un momento e inténtalo de nuevo. / Your search is still in progress. Wait a moment and try again.' });
+    }
 
     const therapists = await User.findAll({
       where: { role: 'therapist', active: true },
@@ -135,12 +192,9 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
 
     // ES-242: solo se conserva y se devuelve el profesional y la razón; una puntuación que el modelo escriba igualmente se descarta (dato inventado).
     suggestions = suggestions.map(item => ({ therapistId: item.therapistId, reason: item.reason }));
-    const request = await MatchingRequest.create({
-      UserId: userId,
-      answers,
-      suggestions,
-      status: 'pending',
-    });
+    let request;
+    if (claim) { await claim.update({ suggestions, status: 'pending' }); request = claim; settled = true; }
+    else request = await MatchingRequest.create({ UserId: userId, answers, suggestions, status: 'pending' });
 
     res.json({
       requestId: request.id,
@@ -150,8 +204,10 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
       })),
     });
   } catch (error) {
-    console.error('❌ Error in matching:', error);
+    console.error('❌ Error in matching:', error && error.name);
     res.status(500).json({ error: 'Could not process matching request.' });
+  } finally {
+    if (claim && !settled) await claim.destroy().catch(() => {}); // la búsqueda no llegó a buen término: se libera el requestId para el reintento
   }
 });
 
