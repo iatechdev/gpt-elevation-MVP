@@ -75,6 +75,17 @@ test('ES-336 PostgreSQL + HTTP: documentos legales publicados, invariantes e inm
     assert.equal((await q('SELECT count(*) n FROM "LegalReleases"'))[0].n, '1', 'las lecturas no escriben');
   });
 
+  await t.test('solo lo PUBLICADO sale: un borrador más reciente no suplanta a la vigente en /current, y el 404 de un documento no publicado no se guarda en caché', async () => {
+    const draft = await newRelease('2099-09-v9');
+    try {
+      const cur = await http(null, 'GET', '/api/legal/current');
+      assert.equal(cur.status, 200); assert.equal(cur.body.version, TERMS.version); assert.notEqual(cur.body.version, '2099-09-v9');
+      const missing = await getRaw('/api/legal/cookies?lang=es');
+      assert.equal(missing.status, 404); assert.equal(missing.headers.get('cache-control'), 'no-store');
+      assert.equal((await missing.json()).code, 'not_published');
+    } finally { await q('DELETE FROM "LegalReleases" WHERE "id"=$1', [draft]); }
+  });
+
   await t.test('restricciones de la base: clave, idioma, estado, forma de la versión y duplicados', async () => {
     const draft = await newRelease('2026-12-v1');
     await rejects(`INSERT INTO "LegalDocumentVersions" ("releaseId","docKey","lang","content","contentHash") VALUES ($1,'otro','es','{}','x')`, [draft], /23514|check/i);
