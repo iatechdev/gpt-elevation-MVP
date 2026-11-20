@@ -1,12 +1,12 @@
-// ES-333 (PR 2): menú del chat (hoja inferior, Dialog de Cartografía). Reúne lo que salía de la cabecera propia y de los íconos sueltos:
-// Mi progreso, Recomendaciones, Administración (solo admin/superadmin), uso de IA, «Enter envía…» y Cerrar sesión (abre el check-out). En ≤ 900 px el marco de persona no dibuja
-// su encabezado en esta ruta: el menú conserva su navegación, el idioma y el tema (mismas piezas del marco). Sin textos nuevos: todo sale de copy.ts, shell/copy.ts y i18n.
-import type { MouseEvent as ReactMouseEvent } from 'react'
+// ES-333 (PR 2) / ES-342 (B1): menú del chat (Dialog de Cartografía: hoja inferior en móvil, centrada en escritorio). Cabecera fija con «Cerrar», pie fijo con «Cerrar sesión» y un cuerpo que es lo único que se desplaza.
+// Orden aprobado: Conversación (acciones de esta pantalla) → Principal → «Menú de usuario» plegado → Preferencias (idioma y tema, solo aquí) → Cerrar sesión. «Mi progreso» aparece una sola vez (en Conversación).
+// Sin textos nuevos: todo sale de copy.ts, shell/copy.ts y i18n. «Cerrar sesión» abre el check-out (como antes).
+import { useId, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { NavLink } from 'react-router-dom'
 import { Button, Dialog } from '../cartografia'
-import { NavLinks, PreferencesBar } from '../shell/Frame'
+import { LangSwitch, NavLinks, ThemeSwitch } from '../shell/Frame'
 import { leaveBlocked } from '../shell/leaveGuard'
 import { PERSON_MENU, PERSON_NAV } from '../shell/nav'
-import { NavLink } from 'react-router-dom'
 import { useShellCopy } from '../shell/useShellCopy'
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from './copy'
@@ -27,24 +27,42 @@ function guardLeave(event: ReactMouseEvent<HTMLElement>) {
   if (leaveBlocked(href)) { event.preventDefault(); event.stopPropagation() }
 }
 
-export function ChatMenu({ open, onClose, onProgress, onRecs, onAdmin, onCheckout, enterSends, onEnterSends, legacy = false }: ChatMenuProps) {
+/** Cuerpo del menú: solo existe mientras el Dialog está abierto, así «Menú de usuario» vuelve a quedar plegado en cada apertura. */
+function MenuBody({ onClose, onProgress, onRecs, onAdmin, enterSends, onEnterSends, legacy }: Omit<ChatMenuProps, 'open' | 'onCheckout'> & { legacy: boolean }) {
   const { lang, t } = useLanguage(); const c = copy[lang]; const { c: shell } = useShellCopy()
+  const [more, setMore] = useState(false); const ids = { conv: useId(), main: useId(), prefs: useId(), more: useId() }
   const pick = (action: () => void) => () => { onClose(); action() }
-  return <Dialog sheet open={open} onClose={onClose} title={c.menu} actions={<Button variant="ghost" onClick={onClose}>{c.close}</Button>}>
-    <div className="chat-menu">
-      <div className="chat-menu-list" role="group" aria-label={c.conversation}>
-        <button type="button" onClick={pick(onProgress)}>{c.progress}</button>
-        <button type="button" onClick={pick(onRecs)}>{t('rec_title')}</button>
-        {onAdmin && <button type="button" onClick={pick(onAdmin)}>{t('admin_title')}</button>}
-      </div>
-      <UsageText />
-      <label className="chat-enter"><input className="elv-checkbox" type="checkbox" checked={enterSends} onChange={event => onEnterSends(event.target.checked)} />{c.enterSends}</label>
-      <div className="chat-menu-list"><button type="button" onClick={pick(onCheckout)}>{c.signOut}</button></div>
-      <div className="chat-menu-frame" onClickCapture={guardLeave}>
-        <NavLinks items={PERSON_NAV} label={shell.main} className="chat-menu-list" />
-        <nav className="chat-menu-list" aria-label={shell.userMenu}>{PERSON_MENU.map(item => <NavLink key={item.to} to={item.to}>{shell[item.label]}</NavLink>)}</nav>
-        <PreferencesBar legacy={legacy} />
-      </div>
+  const userItems = PERSON_MENU.filter(item => item.label !== 'progress') // «Mi progreso» ya está en Conversación
+  return <div className="chat-menu" onClickCapture={guardLeave}>
+    <h3 className="chat-menu-h" id={ids.conv}>{c.conversation}</h3>
+    <div className="chat-menu-list" role="group" aria-labelledby={ids.conv}>
+      <button type="button" onClick={pick(onProgress)}>{c.progress}</button>
+      <button type="button" onClick={pick(onRecs)}>{t('rec_title')}</button>
+      {onAdmin && <button type="button" onClick={pick(onAdmin)}>{t('admin_title')}</button>}
     </div>
+    <UsageText />
+    <label className="chat-enter"><input className="elv-checkbox" type="checkbox" checked={enterSends} onChange={event => onEnterSends(event.target.checked)} />{c.enterSends}</label>
+    <h3 className="chat-menu-h" id={ids.main}>{shell.main}</h3>
+    <NavLinks items={PERSON_NAV} label={shell.main} className="chat-menu-list chat-menu-grid" />
+    <button type="button" className="chat-menu-disc" aria-expanded={more} aria-controls={ids.more} onClick={() => setMore(value => !value)}>
+      <span>{shell.userMenu}</span><span aria-hidden="true">{more ? '▴' : '▾'}</span>
+    </button>
+    <nav id={ids.more} className="chat-menu-list chat-menu-grid" aria-label={shell.userMenu} hidden={!more}>
+      {userItems.map(item => <NavLink key={item.to} to={item.to}>{shell[item.label]}</NavLink>)}
+    </nav>
+    <h3 className="chat-menu-h" id={ids.prefs}>{shell.preferences}</h3>
+    <div className="chat-menu-prefs" role="group" aria-labelledby={ids.prefs}>
+      <div className="chat-menu-pref"><span>{shell.language}</span><LangSwitch /></div>
+      <div className="chat-menu-pref"><span>{shell.theme}</span><ThemeSwitch legacy={legacy} /></div>
+    </div>
+  </div>
+}
+
+export function ChatMenu({ open, onClose, onProgress, onRecs, onAdmin, onCheckout, enterSends, onEnterSends, legacy = false }: ChatMenuProps) {
+  const { lang } = useLanguage(); const c = copy[lang]
+  return <Dialog sheet open={open} onClose={onClose} title={c.menu}
+    headerAction={<Button variant="ghost" onClick={onClose}>{c.close}</Button>}
+    actions={<Button variant="danger" onClick={() => { onClose(); onCheckout() }}>{c.signOut}</Button>}>
+    <MenuBody onClose={onClose} onProgress={onProgress} onRecs={onRecs} onAdmin={onAdmin} enterSends={enterSends} onEnterSends={onEnterSends} legacy={legacy} />
   </Dialog>
 }

@@ -8,10 +8,11 @@ import { fileURLToPath } from 'node:url'
 const here = path.dirname(fileURLToPath(import.meta.url))
 const read = file => fs.readFileSync(path.join(here, file), 'utf8')
 
-test('ES-206 punto 1: /app/dashboard y /app/chat tienen un h1 (visualmente oculto)', () => {
+test('ES-206 punto 1: /app/dashboard y /app/chat tienen un h1', () => {
   assert.match(read('../src/pages/UserDashboard.tsx'), /<PersonScreen title=\{t\('dash_title'\)\}/) // ES-329: el h1 «Mi panel» es visible y lo dibuja PersonScreen
   const copyFile = read('../src/pages/dashboardCopy.ts'); assert.match(copyFile, /dash_title: 'Mi panel'/); assert.match(copyFile, /dash_title: 'My dashboard'/)
-  assert.match(read('../src/pages/ChatPage.tsx'), /<h1 className="sr-only">\{lang === 'es' \? 'Conversación' : 'Conversation'\}<\/h1>/)
+  assert.match(read('../src/space/ChatBar.tsx'), /<h1>\{c\.conversation\}<\/h1>/) // ES-342 (B2): el h1 de la conversación es el título visible de la barra (ya no hay uno oculto)
+  assert.doesNotMatch(read('../src/pages/ChatPage.tsx'), /<h1/)
 })
 
 test('ES-206 punto 2: «Mis datos» y «Volver al inicio» miden al menos 24 px de alto', () => {
