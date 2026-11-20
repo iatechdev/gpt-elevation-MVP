@@ -47,3 +47,15 @@
 .ac-theirs p { margin: 0 0 .3rem; }
 .ac-theirs__text { white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 560px) { .ac-conflict__actions .cg-btn { width: 100%; } }
+/* ES-350 · Textos públicos: buscador y acordeones por grupo (solo tokens --cg-*). */
+.ac-search { margin: 0 0 1rem; max-width: 32rem; }
+.ac-search .cg-field { margin: 0; }
+.ac-count { margin: .4rem 0 0; min-height: 1.4em; }
+.ac-group { border-top: 1px solid var(--cg-line); margin: 0; }
+.ac-group:last-of-type { border-bottom: 1px solid var(--cg-line); }
+.ac-group[hidden] { display: none; }
+.ac-summary { display: flex; align-items: center; min-height: var(--cg-touch); padding: .3rem 0; cursor: pointer; font: 700 1.05rem var(--cg-font-cond); letter-spacing: .03em; text-transform: uppercase; color: var(--cg-ink); overflow-wrap: anywhere; }
+.ac-summary:hover { color: var(--cg-mark); }
+.ac-summary:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.ac-group > .cg-items { margin: 0 0 1rem; }
+.ac-frow[hidden] { display: none; }

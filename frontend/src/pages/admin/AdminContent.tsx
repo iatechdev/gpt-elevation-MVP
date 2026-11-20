@@ -7,6 +7,7 @@ import { conflictId, expectedFor, readSaveOutcome, readVersions, type LandingVer
 import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
 import { landingFieldLabel } from './landingLabels'
+import { countPhrase, groupFields, matchingKeys } from './landingGroups.ts'
 import { Banner, Button, CheckField, Chip, Dialog, ItemList, SelectField, Tabs, TextAreaField, TextField } from '../../cartografia'
 import './adminContent.css'
 // frontend/src/pages/admin/AdminContent.tsx
@@ -442,8 +443,8 @@ function PricingTab() {
 type Conflict = { current: LandingVersion | null }
 const withoutKey = <T,>(map: Record<string, T>, key: string): Record<string, T> => (key in map ? Object.fromEntries(Object.entries(map).filter(([k]) => k !== key)) : map)
 type Forced = { nonce: number; value: string }
-const LandingRow = memo(function LandingRow({ fieldKey, label, initial, saving, busy, message, conflict, forced, onSave, onEdited, onKeepMine, onUseTheirs }: {
-  fieldKey: string; label: string; initial: string; saving: boolean; busy: boolean; message: string; conflict: Conflict | null; forced: Forced | null
+const LandingRow = memo(function LandingRow({ fieldKey, label, hidden, initial, saving, busy, message, conflict, forced, onSave, onEdited, onKeepMine, onUseTheirs }: {
+  fieldKey: string; label: string; hidden: boolean; initial: string; saving: boolean; busy: boolean; message: string; conflict: Conflict | null; forced: Forced | null
   onSave: (key: string, value: string) => void; onEdited: (key: string) => void; onKeepMine: (key: string, value: string) => void; onUseTheirs: (key: string) => void
 }) {
   const tr = useAdminText()
@@ -452,7 +453,7 @@ const LandingRow = memo(function LandingRow({ fieldKey, label, initial, saving, 
   const [seenForced, setSeenForced] = useState(forced)
   if (forced !== seenForced) { setSeenForced(forced); if (forced) setValue(forced.value) }
   return (
-    <li className="cg-item ac-frow">
+    <li className="cg-item ac-frow" hidden={hidden}>
       <TextField id={`landing-${fieldKey}`} label={tr(label)} disabled={saving} value={value} onChange={e => { setValue(e.target.value); if (message) onEdited(fieldKey) }}
         aria-invalid={conflict ? true : undefined} aria-describedby={conflict ? conflictId(fieldKey) : undefined} />
       <div className="ac-fact"><Button onClick={() => onSave(fieldKey, value)} aria-disabled={busy}>{saving ? '...' : tr('Guardar')}</Button></div>
@@ -480,6 +481,7 @@ function LandingTab() {
   const versionsRef = useRef<Record<string, string>>({})
   const [conflicts, setConflicts] = useState<Record<string, Conflict>>({})
   const [forced, setForced] = useState<Record<string, Forced>>({})
+  const [query, setQuery] = useState('') // ES-350: búsqueda por nombre del texto (en el idioma de la interfaz)
 
   const fields = useMemo(() => [
     { key: 'hero_title',         label: 'Título Hero' },
@@ -487,6 +489,13 @@ function LandingTab() {
     { key: 'cta_primary',        label: 'CTA Principal' },
     ...landingFields.filter(({ key }) => !PENDING_KEYS.has(key)).map(({ key }) => ({ key, label: landingFieldLabel(key, interfaceLang) })), // ES-90: los pendientes se editan en su panel
   ], [interfaceLang])
+
+  // ES-350: textos agrupados por prefijo (el de la etiqueta que ya existe) y filtrados por la búsqueda; las filas ocultas siguen montadas.
+  const labelOf = useCallback((f: { key: string; label: string }) => tr(f.label), [tr])
+  const layout = useMemo(() => groupFields(fields, labelOf), [fields, labelOf])
+  const matches = useMemo(() => matchingKeys(fields, query, labelOf), [fields, query, labelOf])
+  const byKey = useMemo(() => new Map(fields.map(f => [f.key, f])), [fields])
+  const searching = query.trim() !== ''
 
   useEffect(() => {
     const controller = new AbortController()
@@ -573,9 +582,27 @@ function LandingTab() {
       </div>
       <LandingPendingPanel lang={lang} content={content} setValue={(key, value) => { setContent(c => ({ ...c, [key]: value })); setMsgs(m => ({ ...m, [key]: '' })) }} save={key => void saveField(key, content[key])} saving={saving} msgs={msgs} conflicts={conflicts} onKeepMine={key => keepMine(key, content[key])} onUseTheirs={useTheirs} />
       <h2 className="ac-h2">{tr('Otros textos')}</h2>
-      <ul className="cg-items" aria-label={tr('Otros textos')}>
-        {fields.map(f => <LandingRow key={f.key} fieldKey={f.key} label={f.label} initial={content[f.key] ?? ''} saving={saving === f.key} busy={saving !== null} message={msgs[f.key] ?? ''} conflict={conflicts[f.key] ?? null} forced={forced[f.key] ?? null} onSave={saveField} onEdited={clearMessage} onKeepMine={keepMineRow} onUseTheirs={useTheirs} />)}
-      </ul>
+      <div className="ac-search" role="search" aria-label={tr('Buscar textos públicos')}>
+        <TextField id="landing-search" type="search" label={tr('Buscar un texto')} placeholder={tr('Por nombre del texto')} value={query} autoComplete="off" onChange={e => setQuery(e.target.value)} />
+        <p role="status" aria-live="polite" className="cg-hint ac-count">{searching ? (matches.size === 0 ? tr('Sin resultados') : countPhrase(matches.size, interfaceLang, tr('1 resultado'), tr('{n} resultados'))) : ''}</p>
+      </div>
+      {layout.loose.length > 0 && (
+        <ul className="cg-items" aria-label={tr('Otros textos')}>
+          {layout.loose.map(key => byKey.get(key)!).map(f => <LandingRow key={f.key} fieldKey={f.key} label={f.label} hidden={!matches.has(f.key)} initial={content[f.key] ?? ''} saving={saving === f.key} busy={saving !== null} message={msgs[f.key] ?? ''} conflict={conflicts[f.key] ?? null} forced={forced[f.key] ?? null} onSave={saveField} onEdited={clearMessage} onKeepMine={keepMineRow} onUseTheirs={useTheirs} />)}
+        </ul>
+      )}
+      {layout.groups.map((group, index) => {
+        const visible = group.keys.filter(key => matches.has(key)).length
+        const summary = `${group.name}, ${countPhrase(searching ? visible : group.keys.length, interfaceLang, tr('1 texto'), tr('{n} textos'))}`
+        return (
+          <details key={group.id} className="ac-group" open={searching ? visible > 0 : index === 0} hidden={searching && visible === 0}>
+            <summary className="ac-summary">{summary}</summary>
+            <ul className="cg-items" aria-label={group.name}>
+              {group.keys.map(key => byKey.get(key)!).map(f => <LandingRow key={f.key} fieldKey={f.key} label={f.label} hidden={!matches.has(f.key)} initial={content[f.key] ?? ''} saving={saving === f.key} busy={saving !== null} message={msgs[f.key] ?? ''} conflict={conflicts[f.key] ?? null} forced={forced[f.key] ?? null} onSave={saveField} onEdited={clearMessage} onKeepMine={keepMineRow} onUseTheirs={useTheirs} />)}
+            </ul>
+          </details>
+        )
+      })}
     </div>
   )
 }

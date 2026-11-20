@@ -6,7 +6,7 @@ import fs from 'node:fs'
 const admin = fs.readFileSync(new URL('../src/pages/admin/AdminContent.tsx', import.meta.url), 'utf8')
 
 test('ES-199: LandingRow está memoizada, guarda su propio texto y solo avisa al padre cuando hay que limpiar un mensaje', () => {
-  assert.match(admin, /const LandingRow = memo\(function LandingRow\(\{ fieldKey, label, initial, saving, busy, message, conflict, forced, onSave, onEdited, onKeepMine, onUseTheirs \}/) // ES-279: + conflict/forced (objetos estables por fila) y los manejadores del aviso
+  assert.match(admin, /const LandingRow = memo\(function LandingRow\(\{ fieldKey, label, hidden, initial, saving, busy, message, conflict, forced, onSave, onEdited, onKeepMine, onUseTheirs \}/) // ES-279: + conflict/forced (objetos estables por fila) y los manejadores del aviso; ES-350: + hidden (booleano: el filtro oculta la fila SIN desmontarla)
   assert.match(admin, /const \[value, setValue\] = useState\(initial\)/)
   // teclear actualiza solo el estado de la fila; el padre solo se entera si había un mensaje que limpiar
   assert.match(admin, /onChange=\{e => \{ setValue\(e\.target\.value\); if \(message\) onEdited\(fieldKey\) \}\}/)
@@ -21,7 +21,9 @@ test('ES-199: LandingTab ya no guarda el texto de cada campo en su estado ni rec
   assert.match(tab, /const saveField = useCallback\(async \(key: string, value: string \| undefined, expected\?: string \| null\) => \{/) // ES-279: versión esperada opcional («Conservar la mía»)
   assert.match(tab, /\}, \[lang, token\]\)\n/)
   assert.match(tab, /const clearMessage = useCallback\(\(key: string\) => setMsgs\(m => \(\{ \.\.\.m, \[key\]: '' \}\)\), \[\]\)/)
-  assert.match(tab, /<LandingRow key=\{f\.key\} fieldKey=\{f\.key\} label=\{f\.label\} initial=\{content\[f\.key\] \?\? ''\} saving=\{saving === f\.key\} busy=\{saving !== null\} message=\{msgs\[f\.key\] \?\? ''\} conflict=\{conflicts\[f\.key\] \?\? null\} forced=\{forced\[f\.key\] \?\? null\} onSave=\{saveField\} onEdited=\{clearMessage\} onKeepMine=\{keepMineRow\} onUseTheirs=\{useTheirs\} \/>/)
+  // ES-350: la fila aparece dos veces (textos sueltos y textos de cada grupo) con las MISMAS propiedades primitivas y manejadores estables, más `hidden`.
+  assert.equal((tab.match(/<LandingRow key=\{f\.key\} fieldKey=\{f\.key\} label=\{f\.label\} hidden=\{!matches\.has\(f\.key\)\} initial=\{content\[f\.key\] \?\? ''\} saving=\{saving === f\.key\} busy=\{saving !== null\} message=\{msgs\[f\.key\] \?\? ''\} conflict=\{conflicts\[f\.key\] \?\? null\} forced=\{forced\[f\.key\] \?\? null\} onSave=\{saveField\} onEdited=\{clearMessage\} onKeepMine=\{keepMineRow\} onUseTheirs=\{useTheirs\} \/>/g) || []).length, 2)
+  assert.match(tab, /<LandingRow key=\{f\.key\} fieldKey=\{f\.key\} label=\{f\.label\} hidden=\{!matches\.has\(f\.key\)\} initial=\{content\[f\.key\] \?\? ''\} saving=\{saving === f\.key\} busy=\{saving !== null\} message=\{msgs\[f\.key\] \?\? ''\} conflict=\{conflicts\[f\.key\] \?\? null\} forced=\{forced\[f\.key\] \?\? null\} onSave=\{saveField\} onEdited=\{clearMessage\} onKeepMine=\{keepMineRow\} onUseTheirs=\{useTheirs\} \/>/)
 })
 
 test('ES-199: guardar envía el valor de LA FILA (no uno viejo del padre) y sigue ignorando un segundo guardado mientras hay uno en curso', () => {

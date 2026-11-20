@@ -34,7 +34,7 @@ test('ES-94: la pestaña Landing monta el panel antes de la lista general, pero 
   const admin = read('../src/pages/admin/AdminContent.tsx')
   assert.match(admin, /<LandingPendingPanel [\s\S]*?save=\{key => void saveField\(key, content\[key\]\)\}/) // ES-199: saveField ahora recibe el valor (las filas guardan su propio texto)
   assert.match(admin, /landingFields\.filter\(\(\{ key \}\) => !PENDING_KEYS\.has\(key\)\)/)
-  assert.ok(admin.indexOf('<LandingPendingPanel') < admin.indexOf('{fields.map(f =>'))
+  assert.ok(admin.indexOf('<LandingPendingPanel') < admin.indexOf("<h2 className=\"ac-h2\">{tr('Otros textos')}</h2>"), 'el panel de pendientes va antes de la lista general (ES-350: ahora agrupada)')
   const panel = read('../src/pages/admin/LandingPendingPanel.tsx')
   assert.match(panel, /if \(pending === 0\) return null/)
   assert.match(panel, /<section aria-labelledby="landing-pending-title"/); assert.doesNotMatch(panel, /fetch\(/)

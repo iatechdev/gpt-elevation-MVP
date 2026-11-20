@@ -8,6 +8,9 @@ export const adminEnglish: Record<string, string> = {
   'Características en inglés, una por línea': 'Features in English, one per line',
   'Período desconocido': 'Unknown period',
   'Otros textos': 'Other texts',
+  // ES-350 (textos PROPUESTOS por UX/UI-Claude en el comentario 12624; pendientes de aprobación de Alejo): buscador y acordeones de «Textos públicos».
+  'Buscar un texto': 'Search for a text', 'Por nombre del texto': 'By text name', 'Buscar textos públicos': 'Search public texts',
+  '1 resultado': '1 result', '{n} resultados': '{n} results', 'Sin resultados': 'No results', '1 texto': '1 text', '{n} textos': '{n} texts',
   // ES-279: aviso de conflicto de edición simultánea en Textos públicos (el EN requiere revisión humana)
   'Otra persona guardó este texto mientras lo editabas. Tus cambios siguen en esta pantalla.': 'Someone else saved this text while you were editing it. Your changes are still on this screen.',
   'Ver su versión': 'See their version', 'Ocultar su versión': 'Hide their version', 'Conservar la mía': 'Keep mine', 'Usar la suya': 'Use theirs',
