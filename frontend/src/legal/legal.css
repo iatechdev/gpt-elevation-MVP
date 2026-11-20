@@ -1,4 +1,11 @@
 /* ES-301: páginas legales. Solo tokens --cg-*; una columna de lectura, sin scroll interno. */
+/* ES-354 (CLS): en /privacidad (inglés, 390 px) el texto se reflowaba al llegar Barlow (CLS 0,197; sin la descarga, 0: medido con scripts/legal-cls.cjs). Misma solución que «Tu progreso» (E275-1, progress.css): las mismas
+   tipografías con font-display: optional (mismos archivos; el navegador igualmente las descarga y en la siguiente visita salen ya de la caché) y, mientras tanto, la reserva con el ancho de Barlow ya declarada en shell.css
+   («Barlow Frame»): el texto no cambia de tipografía a mitad de vista, así que no cambia de renglón. */
+@font-face { font-family: 'Barlow Legal'; font-style: normal; font-weight: 400; font-display: optional; src: url('@fontsource/barlow/files/barlow-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Legal'; font-style: normal; font-weight: 600; font-display: optional; src: url('@fontsource/barlow/files/barlow-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Barlow Condensed Legal'; font-style: normal; font-weight: 700; font-display: optional; src: url('@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2') format('woff2'); }
+.lg { --cg-font-cond: 'Barlow Condensed Legal', 'Barlow Condensed Frame', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow Legal', 'Barlow Frame', system-ui, sans-serif; font-family: var(--cg-font-sans); }
 .lg { max-width: 68ch; margin: 0 auto; padding: 1.5rem 0 2.5rem; min-width: 0; }
 .lg-title { margin: 0 0 0.5rem; overflow-wrap: anywhere; font: 700 clamp(1.9rem, 5vw, 2.6rem)/1.05 var(--cg-font-cond); letter-spacing: 0.02em; text-transform: uppercase; color: var(--cg-ink); }
 .lg-title:focus { outline: none; }
