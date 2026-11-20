@@ -497,3 +497,12 @@ jobs:
           npx vite preview --port 4350 --strictPort --host 127.0.0.1 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:4350/ >/dev/null && break; sleep 1; done
           ES290_URL=http://127.0.0.1:4350 PLAYWRIGHT_MODULE="$G/playwright" AXE_PATH="$G/axe-core/axe.min.js" node scripts/es290-291-audit.cjs
+      # ES-332 (punto 5): «Mi panel» con la API caída: 500 y corte de red por cada lectura, aviso en su tarjeta, «Reintentar» solo de lo fallido y foco. API simulada, datos sintéticos.
+      - name: Mi panel con la API caída (ES-332; 390 px, ES/EN)
+        env:
+          ES332_QUICK: '1'
+        run: |
+          G="$RUNNER_TEMP/guard/node_modules"
+          npx vite preview --port 4351 --strictPort --host 127.0.0.1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4351/ >/dev/null && break; sleep 1; done
+          BASE=http://127.0.0.1:4351 PLAYWRIGHT_MODULE="$G/playwright" AXE_PATH="$G/axe-core/axe.min.js" node scripts/es332-dashboard-errores.cjs

@@ -10,7 +10,8 @@ import '../evidence/register.ts' // ES-232: catálogo de textos de esta pantalla
 import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla (ya no va en el arranque)
 import './progressCopy.ts' // ES-254: «N de 5», palabras del ánimo y categorías de las recomendaciones (mismos textos que /app/progress)
 import './dashboardCopy.ts' // ES-329: textos de esta pantalla
-import { useState, useEffect, useRef } from 'react'
+import { CARD_HEADING, INITIAL_READS, cardStateOf, failedReads, type Card, type Read, type ReadState } from './dashboardReads.ts' // ES-332: estado de cada lectura (lógica pura, con pruebas)
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { copy } from '../space/copy'
 import { PersonScreen } from '../space/PersonScreen'
@@ -50,13 +51,6 @@ type PlanLimits = {
   canMatchTherapist: boolean
 }
 
-// ES-332 (punto 5): cada lectura tiene su estado. Antes el estado inicial (0, []) se pintaba como dato y un fallo se tragaba en silencio.
-type Read = 'progress' | 'upcoming' | 'therapist' | 'recommendations' | 'plan'
-type ReadState = 'loading' | 'ok' | 'error'
-// Tarjetas con lectura: el aviso de error y «Reintentar» viven en la tarjeta, que conserva su sitio y su título.
-type Card = 'progress' | 'session' | 'plan' | 'recs'
-const CARD_READS: Record<Card, Read[]> = { progress: ['progress'], session: ['upcoming', 'therapist'], plan: ['plan'], recs: ['recommendations'] }
-const CARD_HEADING: Record<Card, string> = { progress: 'dash-progress', session: 'dash-session', plan: 'dash-plan', recs: 'dash-recs' }
 const MOODS = [1, 2, 3, 4, 5]
 const REC_CATEGORIES = ['mindfulness', 'habit', 'reflection', 'resource']
 
@@ -83,11 +77,11 @@ export function UserDashboard() {
   const [pendingMood,    setPendingMood]    = useState<number | null>(null) // E322-1: opción elegida, aún sin registrar
 
   // ── Estado de cada lectura (ES-332) ──────────────────────────────────────
-  const [readState, setReadState] = useState<Record<Read, ReadState>>({ progress: 'loading', upcoming: 'loading', therapist: 'loading', recommendations: 'loading', plan: 'loading' })
+  const [readState, setReadState] = useState<Record<Read, ReadState>>(INITIAL_READS)
   const [retrying, setRetrying] = useState<Card | null>(null)
   const controllerRef = useRef<AbortController | null>(null)
   const focusCard = useRef<Card | null>(null) // tras un «Reintentar» que tiene éxito, el foco vuelve al título de la tarjeta (el botón desaparece)
-  const setRead = (read: Read, state: ReadState) => setReadState(prev => (prev[read] === state ? prev : { ...prev, [read]: state }))
+  const setRead = useCallback((read: Read, state: ReadState) => setReadState(prev => (prev[read] === state ? prev : { ...prev, [read]: state })), [])
 
   // ── Progress state ───────────────────────────────────────────────────────
   const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
@@ -127,37 +121,8 @@ export function UserDashboard() {
   // `ownLinks`: los enlaces del marco navegan sin preguntar; solo «Salir» (una acción) pasa por la despedida.
   useEffect(() => registerLeaveGuard(() => { setShowCheckout(true); return true }, { ownLinks: true }), [])
 
-  useEffect(() => {
-    const token = getToken()
-    if (!token) { navigate('/login'); return }
-
-    const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
-    setCheckedIn(alreadyCheckedIn)
-
-    // ES-200: las cinco lecturas son independientes y salen a la vez; al salir de la pantalla se cancelan y no actualizan estado.
-    const controller = new AbortController()
-    controllerRef.current = controller
-    const { signal } = controller
-    void loadProgress(signal)
-    void loadUpcomingSession(signal)
-    void loadTherapist(signal)
-    void loadRecommendations(signal)
-    void loadUserPlan(signal)
-    return () => controller.abort()
-  }, [navigate])
-
-  // ES-332: tras «Reintentar», cuando la tarjeta deja de estar cargando se libera el reintento y, si se recuperó, el foco pasa a su título (el botón ya no existe).
-  useEffect(() => {
-    const card = focusCard.current
-    if (!card || cardState(card) === 'loading') return
-    focusCard.current = null
-    setRetrying(null)
-    if (cardState(card) === 'ok') document.getElementById(CARD_HEADING[card])?.focus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readState, upcomingSession])
-
   // ── Data loaders ──────────────────────────────────────────────────────────
-  const loadProgress = async (signal: AbortSignal) => {
+  const loadProgress = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/user/progress', { signal })
       if (signal.aborted) return
@@ -175,9 +140,9 @@ export function UserDashboard() {
       setSessionsWeek(thisWeek)
       setRead('progress', 'ok')
     } catch { if (!signal.aborted) setRead('progress', 'error') }
-  }
+  }, [setRead])
 
-  const loadUpcomingSession = async (signal: AbortSignal) => {
+  const loadUpcomingSession = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/sessions/user/upcoming', { signal })
       if (signal.aborted) return
@@ -187,10 +152,10 @@ export function UserDashboard() {
       setUpcomingSession(data.session ?? null)
       setRead('upcoming', 'ok')
     } catch { if (!signal.aborted) setRead('upcoming', 'error') }
-  }
+  }, [setRead])
 
   // ES-200: antes esta lectura esperaba a que terminara la de la próxima sesión (cascada evitable: no depende de ella).
-  const loadTherapist = async (signal: AbortSignal) => {
+  const loadTherapist = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/sessions/user/my-therapist', { signal })
       if (signal.aborted) return
@@ -200,9 +165,9 @@ export function UserDashboard() {
       setTherapistId(data.therapist?.id ?? null)
       setRead('therapist', 'ok')
     } catch { if (!signal.aborted) setRead('therapist', 'error') }
-  }
+  }, [setRead])
 
-  const loadRecommendations = async (signal: AbortSignal) => {
+  const loadRecommendations = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/recommendations', { signal })
       if (signal.aborted) return
@@ -212,9 +177,9 @@ export function UserDashboard() {
       setRecommendations(data.slice(0, 4))
       setRead('recommendations', 'ok')
     } catch { if (!signal.aborted) setRead('recommendations', 'error') }
-  }
+  }, [setRead])
 
-  const loadUserPlan = async (signal: AbortSignal) => {
+  const loadUserPlan = useCallback(async (signal: AbortSignal) => {
     try {
       const res = await apiFetch('/api/user/plan/me', { signal })
       if (signal.aborted) return
@@ -225,18 +190,13 @@ export function UserDashboard() {
       setPlanLimits(data.limits ?? null)
       setRead('plan', 'ok')
     } catch { if (!signal.aborted) setRead('plan', 'error') }
-  }
+  }, [setRead])
 
-  // ES-332: estado de cada tarjeta a partir de las lecturas que la alimentan. «Próxima sesión» usa la lectura del profesional solo si no hay sesión próxima.
-  function cardState(card: Card): ReadState {
-    const reads = card === 'session' && upcomingSession ? ['upcoming' as Read] : CARD_READS[card]
-    const states = reads.map(r => readState[r])
-    return states.includes('error') ? 'error' : states.includes('loading') ? 'loading' : 'ok'
-  }
-  // «Reintentar» repite SOLO las lecturas fallidas de la tarjeta.
+  // ES-332: estado de cada tarjeta y reintento solo de lo fallido (lógica pura en dashboardReads.ts).
+  const cardState = (card: Card) => cardStateOf(readState, upcomingSession !== null, card)
   const retryCard = (card: Card) => {
     const signal = controllerRef.current?.signal
-    const failed = CARD_READS[card].filter(r => readState[r] === 'error')
+    const failed = failedReads(readState, card)
     if (retrying !== null || !signal || failed.length === 0) return
     setRetrying(card)
     focusCard.current = card
@@ -250,6 +210,35 @@ export function UserDashboard() {
       <div className="pg-actions"><Button aria-busy={retrying === card} onClick={() => retryCard(card)}>{t('pr_retry')}</Button></div>
     </Banner>
   )
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token) { navigate('/login'); return }
+
+    const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
+    setCheckedIn(alreadyCheckedIn)
+
+    // ES-200: las cinco lecturas son independientes y salen a la vez; al salir de la pantalla se cancelan y no actualizan estado.
+    const controller = new AbortController()
+    controllerRef.current = controller
+    const { signal } = controller
+    void loadProgress(signal)
+    void loadUpcomingSession(signal)
+    void loadTherapist(signal)
+    void loadRecommendations(signal)
+    void loadUserPlan(signal)
+    return () => controller.abort()
+  }, [navigate, loadProgress, loadUpcomingSession, loadTherapist, loadRecommendations, loadUserPlan])
+
+  // ES-332: tras «Reintentar», cuando la tarjeta deja de estar cargando se libera el reintento y, si se recuperó, el foco pasa a su título (el botón ya no existe).
+  useEffect(() => {
+    const card = focusCard.current
+    const state = card ? cardStateOf(readState, upcomingSession !== null, card) : 'loading'
+    if (!card || state === 'loading') return
+    focusCard.current = null
+    setRetrying(null)
+    if (state === 'ok') document.getElementById(CARD_HEADING[card])?.focus()
+  }, [readState, upcomingSession])
 
   // ── Check-in handler ──────────────────────────────────────────────────────
   const handleCheckin = async (mood: number) => {
