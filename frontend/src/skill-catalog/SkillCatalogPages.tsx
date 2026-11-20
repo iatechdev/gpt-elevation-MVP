@@ -109,6 +109,8 @@ function ManagerSession({ session }: { session: string }) {
     const links = (event: MouseEvent) => {
       const link = event.target instanceof Element ? event.target.closest('a[href]') : null
       if (!dirty || !link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      // Un enlace que abre otra pestaña o descarga no saca a la persona de esta pantalla: no pide confirmar.
+      if ((link.getAttribute('target') && link.getAttribute('target') !== '_self') || link.hasAttribute('download')) return
       const target = new URL((link as HTMLAnchorElement).href, window.location.href)
       if (target.origin !== window.location.origin || (target.pathname === window.location.pathname && target.search === window.location.search) || (target.hash && target.pathname === window.location.pathname)) return
       if (!window.confirm(t('skcat.leave'))) { event.preventDefault(); event.stopPropagation() }
@@ -190,7 +192,7 @@ function ManagerSession({ session }: { session: string }) {
           { key: 'status', header: t('skcat.col_status'), render: row => <StatusChip status={row.status} label={t(`skcat.status_${row.status}`)} /> },
           { key: 'published', header: t('skcat.published_on'), render: row => row.publishedAt ? row.publishedAt.slice(0, 10) : '—' },
           { key: 'count', header: t('skcat.skills_count'), render: row => row.skillCount },
-          { key: 'open', header: t('skcat.view'), render: row => <Button variant={row.status === 'draft' ? 'primary' : 'ghost'} disabled={busy} onClick={() => go(`/admin/skill-catalog/${row.id}`)}>{row.status === 'draft' ? t('skcat.open_draft') : t('skcat.view')}</Button> },
+          { key: 'open', header: t('skcat.view'), hidden: true, render: row => <Button variant={row.status === 'draft' ? 'primary' : 'ghost'} disabled={busy} onClick={() => go(`/admin/skill-catalog/${row.id}`)}>{row.status === 'draft' ? t('skcat.open_draft') : t('skcat.view')}</Button> },
         ]} /></Card>}
         <div className="pg-actions"><Button variant={versions.length ? 'ghost' : 'primary'} disabled={busy || !!draft} aria-describedby={draft ? 'skcat-create-reason' : undefined} onClick={() => void run('create')}>{t(versions.length ? 'skcat.create' : 'skcat.create_first')}</Button></div>
         {draft && <p className="cg-hint" id="skcat-create-reason">{t('skcat.create_help_open')}</p>}
@@ -206,12 +208,12 @@ function ManagerSession({ session }: { session: string }) {
     const setLevel = (n: typeof LEVELS[number], lang2: 'es' | 'en', value: string) => set({ levels: { ...form.levels, [n]: { ...form.levels[n], [lang2]: value } } })
     const missing = (value: string) => !creating && editable && !value.trim()
     // «Obligatorio para publicar» se dice con palabras (no solo con color) y cuelga del campo.
-    const req = (value: string) => missing(value) ? t('skcat.required_publish') : undefined
+    const req = (value: string) => missing(value) ? t('skcat.required_publish') : undefined // se muestra como indicación (hint), no como error: el campo incompleto no es inválido
     const readOnly = !editable
     const levelBlock = (n: typeof LEVELS[number]) => <div className="pc-pair" key={n}>
       {(['es', 'en'] as const).map(code => {
         const value = form.levels[n][code]; const fid = `skcat-l${n}${code}`
-        return <TextAreaField key={code} id={fid} label={`${fmt(t('skcat.f_level'), { n })} · ${code.toUpperCase()}`} value={value} disabled={readOnly} error={fieldErrors.level ? t('skcat.err_level') : req(value)} onChange={e => setLevel(n, code, e.target.value)} />
+        return <TextAreaField key={code} id={fid} label={`${fmt(t('skcat.f_level'), { n })} · ${code.toUpperCase()}`} value={value} disabled={readOnly} error={fieldErrors.level ? t('skcat.err_level') : undefined} hint={fieldErrors.level ? undefined : req(value)} className={req(value) && !fieldErrors.level ? 'sk-missing' : undefined} onChange={e => setLevel(n, code, e.target.value)} />
       })}
     </div>
     const moreFilled = LEVELS.slice(2).some(n => form.levels[n].es || form.levels[n].en)
@@ -234,7 +236,7 @@ function ManagerSession({ session }: { session: string }) {
             </SelectField>
             {([['es', 'labelEs'], ['en', 'labelEn']] as const).map(([code, field]) => {
               const value = form[field]; const bad = code === 'es' ? fieldErrors.label_es : fieldErrors.label_en
-              return <TextField key={code} id={`skcat-label-${code}`} label={t(`skcat.f_label_${code}`)} type="text" value={value} disabled={readOnly} error={bad ? t('skcat.err_label') : req(value)} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
+              return <TextField key={code} id={`skcat-label-${code}`} label={t(`skcat.f_label_${code}`)} type="text" value={value} disabled={readOnly} error={bad ? t('skcat.err_label') : undefined} hint={bad ? undefined : req(value)} className={req(value) && !bad ? 'sk-missing' : undefined} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
             })}
           </div>
           <h2 className="sk-h2">{t('skcat.f_levels')}</h2>
@@ -244,9 +246,9 @@ function ManagerSession({ session }: { session: string }) {
           <div className="pc-pair">
             {([['source', 'f_source', 'source'], ['verifiedBy', 'f_verified_by', 'verified_by']] as const).map(([field, label, errKey]) => {
               const value = form[field]; const bad = fieldErrors[errKey]
-              return <TextField key={field} id={`skcat-${field}`} label={t(`skcat.${label}`)} type="text" value={value} disabled={readOnly} error={bad ? t('skcat.err_text') : req(value)} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
+              return <TextField key={field} id={`skcat-${field}`} label={t(`skcat.${label}`)} type="text" value={value} disabled={readOnly} error={bad ? t('skcat.err_text') : undefined} hint={bad ? undefined : req(value)} className={req(value) && !bad ? 'sk-missing' : undefined} onChange={e => set({ [field]: e.target.value } as Partial<Form>)} />
             })}
-            <TextField id="skcat-date" label={t('skcat.f_verified_at')} type="date" value={form.verifiedAt} disabled={readOnly} error={fieldErrors.verified_at ? t('skcat.err_date') : req(form.verifiedAt)} onChange={e => set({ verifiedAt: e.target.value })} />
+            <TextField id="skcat-date" label={t('skcat.f_verified_at')} type="date" value={form.verifiedAt} disabled={readOnly} error={fieldErrors.verified_at ? t('skcat.err_date') : undefined} hint={fieldErrors.verified_at ? undefined : req(form.verifiedAt)} className={req(form.verifiedAt) && !fieldErrors.verified_at ? 'sk-missing' : undefined} onChange={e => set({ verifiedAt: e.target.value })} />
           </div>
           <fieldset className="cg-field" disabled={readOnly}>
             <legend className="cg-label">{t('skcat.f_territories')}</legend>
@@ -279,13 +281,13 @@ function ManagerSession({ session }: { session: string }) {
         <Button disabled={busy} onClick={() => { setNotice(null); setShowPublish(true) }}>{t('skcat.publish_btn')}</Button>
       </div>}
       {editable && !empty && <p className="cg-hint" role="status">{incomplete.length ? fmt(t('skcat.missing_summary'), { n: incomplete.length }) : t('skcat.missing_ok')}</p>}
-      {empty ? <p>{t('skcat.empty_skills')}</p> : <Card as="section" className="pg-card"><DataTable caption={t('skcat.title')} rowKey={skill => skill.skillKey} rows={detail.skills} columns={[
+      {empty ? <p>{t('skcat.empty_skills')}</p> : <Card as="section" className="pg-card"><DataTable caption={`${t('skcat.version')} ${detail.version}`} rowKey={skill => skill.skillKey} rows={detail.skills} columns={[
         { key: 'skill', header: t('skcat.col_skill'), render: skill => <strong>{skillName(skill)}</strong> },
         { key: 'key', header: t('skcat.col_key'), render: skill => <code>{skill.skillKey}</code> },
         { key: 'type', header: t('skcat.col_type'), render: skill => t(`skcat.${skill.type}`) },
         { key: 'territories', header: t('skcat.col_territories'), render: skill => (skill.territories.length ? <span className="sk-chips">{skill.territories.map(tid => <Chip key={tid}>{terrName(tid)}</Chip>)}</span> : <span className="cg-hint">{t('skcat.no_territory')}</span>) },
         { key: 'status', header: t('skcat.col_status'), render: skill => (skill.missing.length ? <Chip tone="bad" symbol="!">{fmt(t('skcat.status_missing'), { n: skill.missing.length })}</Chip> : <Chip tone="ok" symbol="✓">{t('skcat.status_complete')}</Chip>) },
-        { key: 'edit', header: t('skcat.edit'), render: skill => <Button variant="ghost" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}/skills/${skill.skillKey}`)}>{editable ? t('skcat.edit') : t('skcat.view')}</Button> },
+        { key: 'edit', header: t('skcat.edit'), hidden: true, render: skill => <Button variant="ghost" disabled={busy} onClick={() => go(`/admin/skill-catalog/${id}/skills/${skill.skillKey}`)}>{editable ? t('skcat.edit') : t('skcat.view')}</Button> },
       ]} /></Card>}
     </>}
     {ready && detail && showPublish && <Card as="section" className="pg-card">
