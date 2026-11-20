@@ -55,6 +55,9 @@ const SCENES = { versiones: '/admin/skill-catalog', borrador: '/admin/skill-cata
       await page.keyboard.press('Escape'); await page.waitForTimeout(200)
       extra.push(['Esc cierra y devuelve el foco al botón «Quitar»', await page.evaluate(() => !document.querySelector('dialog[open]') && /Quitar|Remove/.test(document.activeElement?.textContent || ''))])
     }
+    if (name === 'versiones' || name === 'borrador') extra.push(['encabezado de acciones solo para lectores (cg-sr), caption propio', await page.evaluate(() => { const th = document.querySelector('.cg-table thead th:last-child'); return !!th && th.firstElementChild?.classList.contains('cg-sr') })])
+    if (name === 'borrador') extra.push(['caption de habilidades = «Versión N»', await page.evaluate(() => /^(Versión|Version) [0-9]+$/.test(document.querySelector('.cg-table caption')?.textContent?.trim() ?? ''))])
+    if (name === 'habilidad') extra.push(['campos incompletos sin aria-invalid (es una indicación, no un error)', await page.evaluate(() => document.querySelectorAll('[aria-invalid="true"]').length === 0 && document.querySelectorAll('.sk-missing').length > 0)])
     if (name === 'nueva') extra.push(['errores de campo con palabras', await page.getByText(/obligatori|required|clave|key/i).count() > 0])
     if (name === 'publicar') extra.push(['panel «para publicar falta» con enlaces a los campos', await page.locator('a.cg-linkbtn').count() > 0])
     const bad = extra.filter(([, ok]) => !ok).map(([label]) => label)
