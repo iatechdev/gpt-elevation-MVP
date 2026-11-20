@@ -156,3 +156,24 @@ test('ES-188 «falta»: cada ruta del servidor tiene un ancla al campo del edito
   assert.ok(page.includes('open={moreFilled || !!fieldErrors.level || focusMoreLevel}'), 'los enlaces a niveles 3 y 4 abren la sección')
   assert.ok(page.includes('ref={inUseRef}') && page.includes('}, [inUse])') && !/ref={el => el?.focus()}/.test(page), 'ningún aviso roba el foco con un ref en línea: se enfoca solo cuando aparece')
 })
+
+test('ES-188 seguimiento QA: conflicto usa una sola alerta y conserva sus dos desenlaces', () => {
+  const page = read('../src/skill-catalog/SkillCatalogPages.tsx')
+  assert.match(page, /if \(action === 'save' && e instanceof SkillCatalogError && e\.code === 'skill_changed'\) \{ setConflict\(e\.current\); return \}/)
+  assert.doesNotMatch(page, /say\('conflict_changed'/)
+  assert.match(page, /conflict !== undefined && <div className="skcat-error" role="alert" tabIndex=\{-1\} ref=\{conflictRef\}>/)
+  assert.match(page, /conflict === null \? 'skcat\.conflict_removed' : 'skcat\.conflict_changed'/)
+  assert.match(page, /conflict === null \? 'skcat\.skill_back' : 'skcat\.conflict_load'/)
+  assert.match(page, /if \(conflict === null\) \{ setConflict\(undefined\); navigate\(`\/admin\/skill-catalog\/\$\{id\}`\); return \}/)
+  assert.match(page, /const adopted = fromSkill\(conflict\); setForm\(adopted\); setBaseline\(adopted\); setRowStamp\(conflict\.updatedAt\); setConflict\(undefined\); setFieldErrors\(\{\}\)/)
+})
+
+test('ES-188 seguimiento QA: los avisos y enlaces mantienen foco, anclas y estados accesibles', () => {
+  const page = read('../src/skill-catalog/SkillCatalogPages.tsx')
+  assert.match(page, /useEffect\(\(\) => \{\s*if \(conflict !== undefined\) conflictRef\.current\?\.focus\(\)\s*\}, \[conflict\]\)/)
+  assert.match(page, /useEffect\(\(\) => \{\s*if \(inUse && inUse\.length > 0\) inUseRef\.current\?\.focus\(\)\s*\}, \[inUse\]\)/)
+  assert.match(page, /inUse && inUse\.length > 0 && <div className="skcat-error" role="alert" tabIndex=\{-1\} ref=\{inUseRef\}>/)
+  assert.match(page, /if \(!anchor \|\| !ready\) return[\s\S]*if \(el\) \{ el\.focus\(\); el\.scrollIntoView\(\{ block: 'center' \}\) \}/)
+  assert.match(page, /const focusMoreLevel = \/\^skcat-l\[34\]\(\?:es\|en\)\$\/\.test\(anchor\)/)
+  assert.match(page, /open=\{moreFilled \|\| !!fieldErrors\.level \|\| focusMoreLevel\}/)
+})
