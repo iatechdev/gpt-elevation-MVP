@@ -21,10 +21,18 @@
     "TherapistPersonOrdinals_personId_fkey": "ES-177: clave foránea con ON DELETE CASCADE hacia Users creada por la migración; el modelo no la declara",
     "PasswordResets_UserId_fkey": "ES-132: clave foránea con ON DELETE CASCADE hacia Users creada por la migración; el modelo no la declara",
     "skill_candidates_owner_fk": "ES-85: clave foránea compuesta (UserId, jobId) que garantiza el mismo propietario; el modelo no la declara",
-    "skill_candidates_confirmed_check": "ES-89: CHECK (nivel confirmado entre 1 y el propuesto) que el modelo no declara"
+    "skill_candidates_confirmed_check": "ES-89: CHECK (nivel confirmado entre 1 y el propuesto) que el modelo no declara",
+    "LegalReleases_status_check": "ES-336: CHECK de dominio (borrador/vigente/archivada) que el modelo no declara",
+    "LegalReleases_changeKind_check": "ES-336: CHECK de dominio (material/menor) que el modelo no declara",
+    "legal_releases_version_shape": "ES-336: CHECK del formato de la versión que el modelo no declara",
+    "LegalDocumentVersions_docKey_check": "ES-336: CHECK de la lista cerrada de documentos que el modelo no declara",
+    "LegalDocumentVersions_lang_check": "ES-336: CHECK de idioma (es/en) que el modelo no declara",
+    "legal_document_versions_unique": "ES-336: UNIQUE (releaseId, docKey, lang) como restricción; el modelo declara el mismo índice único"
   },
   "indices": {
     "career_plan_owner_id": "ES-33: índice único (UserId, id) que respalda la clave foránea compuesta de CareerReminders; el modelo no lo declara",
-    "users_email_lower_unique": "ES-306: índice único sobre lower(email) creado por la migración solo si no hay cuentas duplicadas; el modelo declara únicamente el único exacto"
+    "users_email_lower_unique": "ES-306: índice único sobre lower(email) creado por la migración solo si no hay cuentas duplicadas; el modelo declara únicamente el único exacto",
+    "legal_releases_one_published": "ES-336: índice único parcial: a lo sumo una publicación vigente; el modelo no declara índices parciales",
+    "legal_releases_one_draft": "ES-336: índice único parcial: a lo sumo un borrador; el modelo no declara índices parciales"
   }
 }

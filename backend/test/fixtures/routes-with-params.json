@@ -27,6 +27,7 @@
   "GET /api/experiments/:id",
   "GET /api/experiments/:id/review-requests",
   "GET /api/junta/:id/download",
+  "GET /api/legal/:docKey",
   "GET /api/route-catalog/roles/:roleKey",
   "GET /api/routes/choices/:id",
   "GET /api/sessions/therapist/:id/notes",

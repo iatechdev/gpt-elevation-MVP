@@ -2,6 +2,7 @@
 // ES-336 (F1) · Lectura de los documentos legales publicados (LegalReleases / LegalDocumentVersions). Solo lectura: no hay editor en esta fase.
 // El SQL va crudo y con parámetros; el titular no interviene (los documentos son públicos y sin datos personales).
 const { sequelize } = require('../database');
+require('../LegalRelease'); require('../LegalDocumentVersion'); // registran las tablas en sync() (db:drift); la lectura va por SQL crudo
 const { DOC_KEYS, LANGS } = require('./legalContent');
 
 // La publicación vigente (a lo sumo una: índice único parcial) o null si no hay ninguna.
