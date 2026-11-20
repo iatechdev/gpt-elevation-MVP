@@ -10,7 +10,7 @@ test('ES-207: GET /api/manifest/active sin sesión devuelve solo versión, texto
   const request = await startApp(t);
   const res = await request('GET', '/api/manifest/active');
   assert.equal(res.status, 200);
-  assert.deepEqual(Object.keys(res.body).sort(), ['content', 'publishedAt', 'version']);
+  assert.deepEqual(Object.keys(res.body).sort(), ['content', 'contentEn', 'publishedAt', 'version']);
   assert.equal(res.body.publishedAt, '2026-11-08T12:00:00.000Z');
   const raw = JSON.stringify(res.body);
   for (const secret of ['Synthetic internal note', 'uploadedBy', 'uploader', 'email', '"id"']) assert.equal(raw.includes(secret), false, secret);

@@ -16,6 +16,13 @@ const EthicManifest = sequelize.define('EthicManifest', {
     allowNull: false,
   },
 
+  // ES-182 (E45-1): versión en INGLÉS del mismo texto (opcional, cifrada igual que `content`). `content` es la versión en español (base).
+  // Sin `contentEn` la pantalla pública en inglés muestra el español con un aviso visible: nunca texto en otro idioma sin avisar.
+  contentEn: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+
   // Versión legible: "v1", "v2", etc. — se autoincrementa en el endpoint
   version: {
     type: DataTypes.STRING(10),

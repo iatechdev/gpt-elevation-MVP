@@ -69,6 +69,7 @@
     "test:invitations:pg": "node --test test/integration/es-192-postgres.cjs",
     "test:admin-metrics:pg": "node --test test/integration/es-180-postgres.cjs",
     "test:prompt-unique:pg": "node --test test/integration/es-219-postgres.cjs",
+    "test:manifest-en:pg": "node --test test/integration/es-182-manifest-en-postgres.cjs",
     "test:rating-avg:pg": "node --test test/integration/es-273-postgres.cjs",
     "test:requestid-unique:pg": "node --test test/integration/es-288-postgres.cjs",
     "test:prompt-race:pg": "node --test test/integration/es-344-postgres.cjs",

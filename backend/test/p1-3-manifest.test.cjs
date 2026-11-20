@@ -14,7 +14,7 @@ test('P1-3 (ES-207): only the active manifest is public, history requires admin 
   const request = await startApp(t);
   const publicRead = await request('GET', '/api/manifest/active');
   assert.equal(publicRead.status, 200);
-  assert.deepEqual(publicRead.body, { version: 'v1', content: manifest.content, publishedAt: '2026-11-08T12:00:00.000Z' });
+  assert.deepEqual(publicRead.body, { version: 'v1', content: manifest.content, contentEn: null, publishedAt: '2026-11-08T12:00:00.000Z' });
 
   for (const [method, suffix, body, success] of [
     ['GET', '/manifest', undefined, 200],
