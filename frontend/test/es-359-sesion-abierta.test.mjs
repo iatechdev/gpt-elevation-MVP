@@ -4,6 +4,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { accessEs, accessEn } from '../src/access/accessCopy.ts'
+import { withName } from '../src/access/sessionNotice.ts'
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 const page = read('../src/pages/LoginPage.tsx')
@@ -26,7 +27,7 @@ test('ES-359 PR6: «Crear cuenta» con sesión verificada muestra el aviso (no r
   assert.match(page, /if \(!isRegistering\) return <Navigate to=\{destination\} replace \/>/)
   // el aviso: nombre, seguir (al mismo destino que antes), cerrar sesión y nota del formulario oculto; sin el formulario dentro del aviso
   const block = page.slice(page.indexOf("const shownName = readName()"), page.indexOf('// ES-128'))
-  assert.match(block, /access\.session_open'\)\.replace\('\{name\}', shownName\)/)
+  assert.match(block, /withName\(t\('access\.session_open'\), shownName\)/) // el nombre entra como texto literal (función de reemplazo), no con una cadena de reemplazo
   assert.match(block, /<Link className="ac-ghost" to=\{destination\}>\{t\('access\.session_continue'\)\}<\/Link>/)
   assert.match(block, /signOut\(BACKEND\)/); assert.match(block, /access\.session_signout_new/); assert.match(block, /access\.session_form_hidden/)
   assert.ok(!/<form\b|AccessField/.test(block), 'el formulario de registro NO se dibuja con una sesión abierta')
@@ -44,4 +45,15 @@ test('ES-359 PR6: estilos solo con tokens --cg-*, sin colores fijos, y la acció
   assert.ok(added.includes('.ac-ghost') && added.includes('.ac-actions'))
   assert.ok(!/#[0-9a-fA-F]{3,8}\b|rgb\(|hsl\(/.test(added), 'sin colores fijos')
   assert.match(added, /\.ac-ghost:focus-visible \{ outline: var\(--cg-focus\) solid var\(--cg-mark\)/)
+})
+
+test('ES-359 PR6 (revisión de pares): el nombre se pone como TEXTO LITERAL, sin interpretar patrones especiales de reemplazo (dólar-ampersand, dólar-1, dólar-dólar…)', () => {
+  for (const lang of [accessEs, accessEn]) for (const name of ['$&', '$1', '$$', "$'", '$`', 'Marta $& Pérez', '$<name>', '{name}']) {
+    const text = withName(lang['access.session_open'], name)
+    assert.ok(text.includes(name), `contiene el nombre literal: ${name}`)
+    assert.equal(text.split(name).length, 2, `el nombre aparece UNA vez: ${name}`)
+    assert.equal(text, lang['access.session_open'].replace('{name}', () => name))
+  }
+  assert.equal(withName('Hola {name}.', '$&'), 'Hola $&.') // con una cadena de reemplazo daría «Hola {name}.»
+  assert.equal(withName('Hola {name}.', 'Ana'), 'Hola Ana.')
 })

@@ -6,6 +6,7 @@ import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
 import { signOut } from '../access/signOut'
+import { withName } from '../access/sessionNotice'
 import { peekReturn, returnPathFor } from '../access/returnTo'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
@@ -137,7 +138,7 @@ export function LoginPage() {
     return (
       <AccessCard title={text('landing.access.register')}>
         <div className="ac-notice ac-session" role="status">
-          <p>{shownName ? t('access.session_open').replace('{name}', shownName) : t('access.session_open_noname')}</p>
+          <p>{shownName ? withName(t('access.session_open'), shownName) : t('access.session_open_noname')}</p>
           <div className="ac-actions">
             <Link className="ac-ghost" to={destination}>{t('access.session_continue')}</Link>
             <button type="button" className="ac-submit" disabled={leaving} aria-busy={leaving || undefined} onClick={() => { setLeaving(true); void signOut(BACKEND).then(() => setSignedOutHere(true)).finally(() => setLeaving(false)) }}>{t('access.session_signout_new')}</button>
