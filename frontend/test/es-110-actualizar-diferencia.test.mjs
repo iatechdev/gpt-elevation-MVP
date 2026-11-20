@@ -32,7 +32,7 @@ test('lo escrito a mano (sin hoja de vida) NUNCA «ya no aparece»; si la hoja n
   const diff = diffSkills(current, [s('python', 2), s('Docker', 2)], 2)
   assert.deepEqual(names(diff.gone), ['SQL'], 'solo lo que vino de una hoja de vida'); assert.deepEqual(names(diff.added), ['Docker'])
   assert.deepEqual(diff.remain.map(r => [r.current.name, r.handwritten, r.linked]), [['Python', true, false]])
-  assert.deepEqual(defaultChoices(diff).link, [], 'la escrita a mano no se vincula por defecto')
+  assert.deepEqual(defaultChoices(diff).link, [], 'nada se vincula por defecto (tampoco la escrita a mano)')
   assert.equal(diffSkills([s('Python', null, null)], [], 2).gone.length, 0); assert.equal(diffSkills([s('Python', null, null)], [], 2).unchanged, true)
 })
 
@@ -52,11 +52,12 @@ test('tope de 40: las nuevas que no caben se cuentan (overflow) y al aplicar se 
   assert.equal(result.skills.length, MAX_DECLARED_SKILLS); assert.equal(result.skipped, 2); assert.deepEqual(names(result.skills).slice(0, 38), names(current)); assert.deepEqual(names(result.skills).slice(38), ['Nueva A', 'Nueva B'])
 })
 
-test('elecciones por defecto: se añaden las nuevas, se vinculan las que siguen, NO se quita nada (se mantiene)', () => {
-  const diff = diffSkills([s('A', 1), s('B', 1), s('C', 1)], [s('A', 2), s('D', 2)], 2)
-  assert.deepEqual(defaultChoices(diff), { add: ['D'], link: ['A'], remove: [] })
-  const result = applyChoices([s('A', 1), s('B', 1), s('C', 1)], diff, defaultChoices(diff))
-  assert.deepEqual(result.skills.map(x => [x.name, x.resumeVersion]), [['A', 2], ['B', 1], ['C', 1], ['D', 2]], 'B y C se mantienen con su versión original')
+test('elecciones por defecto (maqueta aprobada): NADA marcado; aplicar sin elegir deja el contexto igual, y «Mantener» es lo que queda para lo que ya no aparece', () => {
+  const current = [s('A', 1), s('B', 1), s('C', 1)]; const diff = diffSkills(current, [s('A', 2), s('D', 2)], 2)
+  assert.deepEqual(defaultChoices(diff), { add: [], link: [], remove: [] })
+  assert.deepEqual(applyChoices(current, diff, defaultChoices(diff)).skills, current, 'B y C (ya no aparecen) se mantienen con su versión original; A no se vincula ni D se añade sin elegirlo')
+  const chosen = applyChoices(current, diff, { add: ['D'], link: ['A'], remove: [] })
+  assert.deepEqual(chosen.skills.map(x => [x.name, x.resumeVersion]), [['A', 2], ['B', 1], ['C', 1], ['D', 2]])
 })
 
 test('vincular: fija la versión nueva y toma la cita nueva, conserva el nombre de la persona; sin cita nueva conserva la que había', () => {
@@ -87,7 +88,7 @@ test('sin elegir nada el contexto no cambia (copia idéntica) y no se mutan los 
 
 test('idempotente: aplicar dos veces las mismas elecciones da lo mismo; volver a diferenciar tras aplicar no ofrece nada nuevo', () => {
   const current = [s('A', 1), s('B', 1), s('Mano', null, null)], suggested = [s('A', 2), s('C', 2), s('mano', 2)]
-  const diff = diffSkills(current, suggested, 2); const choices = { ...defaultChoices(diff), remove: ['B'] }
+  const diff = diffSkills(current, suggested, 2); const choices = { add: ['C'], link: ['A', 'Mano'], remove: ['B'] }
   const once = applyChoices(current, diff, choices).skills
   const twice = applyChoices(once, diffSkills(once, suggested, 2), { ...choices }).skills
   assert.deepEqual(twice, once)

@@ -55,13 +55,10 @@ export function diffSkills(current: DeclaredSkill[], suggested: DeclaredSkill[],
   return { version, added, remain, gone, overflow, unchanged }
 }
 
-/** Elecciones por defecto (decisiones aprobadas): se añaden las nuevas que caben, se vinculan las que siguen (salvo las escritas a mano) y NO se quita nada. */
+/** Elecciones por defecto (maqueta aprobada, ES-110 12761/12767): NADA marcado — ni añadir, ni vincular, ni quitar («Mantener en mi contexto» es lo que queda). La persona decide cada gesto. */
 export function defaultChoices(diff: SkillDiff): Choices {
-  return {
-    add: diff.added.map(skill => skill.name),
-    link: diff.remain.filter(item => !item.linked && !item.handwritten).map(item => item.current.name),
-    remove: [],
-  }
+  void diff
+  return { add: [], link: [], remove: [] }
 }
 
 /**
