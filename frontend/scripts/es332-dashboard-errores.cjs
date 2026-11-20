@@ -48,6 +48,10 @@ async function open(browser, { lang, width, scheme = 'light', modes = {}, delay 
   return { ctx, page, hits, modes }
 }
 const axeRun = async page => { await page.addScriptTag({ content: axeSource }); return page.evaluate(() => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length))) }
+// Esperas por condición: hay al menos `n` avisos; terminó el reintento (ningún botón ocupado); se recuperó (ningún aviso). Sin tiempos fijos.
+const settle = (page, n) => page.waitForFunction(count => document.querySelectorAll('[role="alert"]').length >= count, n, { timeout: 15000 })
+const retried = async page => { await page.waitForTimeout(150); await page.waitForFunction(() => !document.querySelector('[role="alert"] button[aria-busy="true"]'), null, { timeout: 15000 }) }
+const recovered = page => page.waitForFunction(() => document.querySelectorAll('[role="alert"]').length === 0, null, { timeout: 15000 })
 // Estado de las tarjetas: alertas por tarjeta, datos visibles y «0»/«—» como dato.
 const snapshot = page => page.evaluate(() => {
   const card = id => document.getElementById(id)?.closest('section')
@@ -67,7 +71,7 @@ const snapshot = page => page.evaluate(() => {
     for (const read of Object.keys(PATHS)) for (const mode of ['500', 'corte']) {
       const tag = `${read} ${mode} ${lang} ${width}px`
       const { ctx, page, hits, modes } = await open(browser, { lang, width, modes: { [read]: mode } })
-      await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await page.waitForTimeout(300)
+      await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await settle(page, 1)
       let s = await snapshot(page)
       const card = CARD[read]
       // 'upcoming'/'therapist': el aviso de la sesión sale con upcoming caído; si solo cae el profesional y no hay sesión próxima, también (se necesita para decidir qué mostrar).
@@ -81,7 +85,7 @@ const snapshot = page => page.evaluate(() => {
       check(s.retryButtons.length === 1 && s.retryButtons[0] === retryLabel, `${tag}: un botón «${retryLabel}» (${JSON.stringify(s.retryButtons)})`)
       // Reintentar con la lectura aún caída: solo esa lectura se repite; el aviso y el foco permanecen.
       const before = { ...hits }
-      await page.getByRole('button', { name: retryLabel, exact: true }).click(); await page.waitForTimeout(400)
+      await page.getByRole('button', { name: retryLabel, exact: true }).click(); await retried(page)
       const after = { ...hits }
       const repeated = Object.keys(PATHS).filter(k => after[k] !== before[k])
       check(repeated.length === 1 && repeated[0] === read, `${tag}: «Reintentar» repite solo ${read} (repitió ${repeated})`)
@@ -90,7 +94,7 @@ const snapshot = page => page.evaluate(() => {
       // Se recupera la API: «Reintentar» pinta los datos, quita el aviso y lleva el foco al título.
       delete modes[read]
       const b2 = { ...hits }
-      await page.getByRole('button', { name: retryLabel, exact: true }).click(); await page.waitForTimeout(500)
+      await page.getByRole('button', { name: retryLabel, exact: true }).click(); await recovered(page); await page.waitForFunction(id => document.activeElement && document.activeElement.id === id, card, { timeout: 5000 }).catch(() => {})
       const rep2 = Object.keys(PATHS).filter(k => hits[k] !== b2[k])
       s = await snapshot(page)
       check(rep2.length === 1 && rep2[0] === read, `${tag}: al recuperarse, solo se repitió ${read} (${rep2})`)
@@ -103,7 +107,7 @@ const snapshot = page => page.evaluate(() => {
       const tag = `todo ${mode} ${lang} ${width}px`
       const modes = Object.fromEntries(Object.keys(PATHS).map(k => [k, mode]))
       const { ctx, page } = await open(browser, { lang, width, modes })
-      await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await page.waitForTimeout(300)
+      await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await settle(page, 4)
       const s = await snapshot(page)
       check(s.totalAlerts === 4 && Object.values(s.alerts).every(a => a && a.length === 1), `${tag}: 4 avisos, uno por tarjeta (${s.totalAlerts})`)
       check(!s.bigZero && !s.trendDash && !/Gratis|Free/.test(s['dash-plan']), `${tag}: ningún dato falso`)
@@ -113,8 +117,8 @@ const snapshot = page => page.evaluate(() => {
     // Cargando (respuesta lenta): ni «0» ni plan vacío; sí «Cargando».
     {
       const tag = `cargando ${lang} ${width}px`
-      const { ctx, page } = await open(browser, { lang, width, delay: 2500 })
-      await page.goto(BASE + '/app/dashboard', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800)
+      const { ctx, page } = await open(browser, { lang, width, delay: 8000 })
+      await page.goto(BASE + '/app/dashboard', { waitUntil: 'domcontentloaded' }); await page.locator('section[aria-labelledby="dash-progress"] [role="status"]').waitFor({ timeout: 6000 }) // espera a la tarjeta en estado «Cargando…» (no un tiempo fijo: la máquina puede tardar; el «Cargando» de la ruta no cuenta)
       const s = await snapshot(page)
       check(!s.bigZero && !s.trendDash && !/Gratis|Free/.test(s['dash-plan']) && /Cargando|Loading/.test(s['dash-progress']) && s.totalAlerts === 0, `${tag}: sin «0» ni plan vacío mientras carga`)
       await ctx.close()
@@ -124,7 +128,7 @@ const snapshot = page => page.evaluate(() => {
   for (const lang of ['es', 'en']) for (const width of QUICK ? [390] : [390, 1360, 320]) for (const scheme of ['light', 'dark']) for (const which of ['todo', 'plan']) {
     const modes = which === 'todo' ? Object.fromEntries(Object.keys(PATHS).map(k => [k, '500'])) : { plan: '500' }
     const { ctx, page } = await open(browser, { lang, width, scheme, modes })
-    await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await page.waitForTimeout(300)
+    await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await settle(page, which === 'todo' ? 4 : 1)
     const axe = await axeRun(page)
     const m = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, h1: document.querySelectorAll('h1').length, inlineColor: [...document.querySelectorAll('main [style]')].filter(e => /color|background/.test(e.getAttribute('style') || '')).length }))
     check(axe.length === 0 && m.overflow <= 0 && m.h1 === 1 && m.inlineColor === 0, `axe/desborde ${which} ${lang} ${width}px ${scheme}: axe=[${axe}] desborde=${m.overflow} h1=${m.h1}`)
