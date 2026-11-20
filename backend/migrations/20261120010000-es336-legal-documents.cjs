@@ -34,6 +34,9 @@ async function up(arg) {
       "contentHash" CHAR(64) NOT NULL,
       CONSTRAINT "legal_document_versions_unique" UNIQUE ("releaseId", "docKey", "lang")
     )`);
+    // RLS activada como en el resto de tablas (ES-117): sin políticas, solo el rol dueño (la API) accede; los roles de la API pública de Supabase no ven filas.
+    await run('ALTER TABLE "LegalReleases" ENABLE ROW LEVEL SECURITY');
+    await run('ALTER TABLE "LegalDocumentVersions" ENABLE ROW LEVEL SECURITY');
     // Inmutabilidad. Un documento solo se puede cambiar o borrar mientras su publicación es un borrador.
     await run(`CREATE OR REPLACE FUNCTION legal_documents_guard() RETURNS trigger AS $$
       DECLARE parent_status TEXT;

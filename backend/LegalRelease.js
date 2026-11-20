@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, literal } = require('sequelize');
 const { sequelize } = require('./database');
 
 // ES-336 (F1) · Publicación de documentos legales (borrador / vigente / archivada). Texto público, sin datos personales.
@@ -11,7 +11,7 @@ const LegalRelease = sequelize.define('LegalRelease', {
   effectiveFrom: { type: DataTypes.DATE },
   notes: { type: DataTypes.STRING(500) },
   createdBy: { type: DataTypes.INTEGER },
-  createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: sequelize.literal('now()') },
+  createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: literal('now()') },
   publishedBy: { type: DataTypes.INTEGER },
   publishedAt: { type: DataTypes.DATE },
 }, {
