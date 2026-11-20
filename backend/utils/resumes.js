@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const { Transaction } = require('sequelize');
 const ParticipantResume = require('../ParticipantResume');
 const DerivedInvalidation = require('../DerivedInvalidation');
+const Evidence = require('../Evidence');
+const EvidenceVersion = require('../EvidenceVersion');
 const User = require('../User');
 const { encriptarBuffer, desencriptarBuffer } = require('./crypto');
 
@@ -38,12 +40,32 @@ async function getResumeFile(userId, id) {
   return row ? { pdf: desencriptarBuffer(row.data), version: row.version } : null;
 }
 
-// Borra de verdad, sin copias. Lo derivado de esa versión se marca «para revisión» (invalidación registrada, ES-20).
+// ES-110 (actualizar la hoja de vida): lo derivado de una versión que desaparece se marca «para revisión» SIN borrar ni reescribir nada.
+// Solo los BORRADORES de evidencia cuya versión vigente nació de esa hoja (origen 'resume'): se anota `sourceRevokedAt` dentro de `origins` (JSON privado) y se registra la invalidación
+// de la evidencia (la consume el mapa de habilidades). La evidencia CONFIRMADA no se toca (ni su contenido ni su estado ni su origen): la persona la respaldó con una situación real y solo ella decide.
+// Idempotente: lo ya marcado no se vuelve a marcar ni a registrar. Se llama dentro de la transacción que borra la hoja.
+async function markDraftsForReview(userId, resumeId, transaction) {
+  const evidences = await Evidence.findAll({ where: { UserId: userId, deletedAt: null }, transaction });
+  const at = new Date().toISOString(); let marked = 0;
+  for (const ev of evidences) {
+    const row = await EvidenceVersion.findOne({ where: { UserId: userId, EvidenceId: ev.id, version: ev.currentVersion }, transaction, lock: transaction ? Transaction.LOCK.UPDATE : undefined });
+    if (!row || row.status !== 'draft') continue;
+    const origins = Array.isArray(row.origins) ? row.origins : [];
+    if (!origins.some((o) => o && o.type === 'resume' && o.id === resumeId && !o.sourceRevokedAt)) continue; // idempotente
+    await row.update({ origins: origins.map((o) => (o && o.type === 'resume' && o.id === resumeId && !o.sourceRevokedAt ? { ...o, sourceRevokedAt: at } : o)) }, { transaction });
+    await DerivedInvalidation.create({ UserId: userId, sourceType: 'evidence', sourceId: ev.id, reason: 'source_revoked' }, { transaction });
+    marked += 1;
+  }
+  return marked;
+}
+
+// Borra de verdad, sin copias. Lo derivado de esa versión se marca «para revisión» (invalidación registrada, ES-20; borradores de evidencia, ES-110).
 async function deleteResume(userId, id, transaction) {
   const row = await ParticipantResume.findOne({ where: { id, UserId: userId }, attributes: ['id'], transaction, lock: transaction ? Transaction.LOCK.UPDATE : undefined });
   if (!row) return false;
   await row.destroy({ transaction });
   await DerivedInvalidation.create({ UserId: userId, sourceType: 'resume', sourceId: id, reason: 'deleted' }, { transaction });
+  await markDraftsForReview(userId, id, transaction);
   return true;
 }
 
@@ -53,6 +75,7 @@ async function revokeForConsent(userId, transaction) {
   for (const row of rows) {
     await row.destroy({ transaction });
     await DerivedInvalidation.create({ UserId: userId, sourceType: 'resume', sourceId: row.id, reason: 'deleted' }, { transaction });
+    await markDraftsForReview(userId, row.id, transaction);
   }
   return rows.length;
 }

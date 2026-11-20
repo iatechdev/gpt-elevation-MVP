@@ -189,7 +189,8 @@ async function getMap(userId) {
     skills.push(entry);
   }
   // Los eventos de invalidación de evidencia ya están reflejados en este cálculo: se marcan como procesados.
-  const pending = await DerivedInvalidation.findAll({ where: { UserId: userId, sourceType: 'evidence', handledAt: null } });
+  // ES-110: las invalidaciones de la hoja de vida (versión borrada o autorización retirada) también están reflejadas aquí (lo derivado salió «para revisión»): se consumen igual.
+  const pending = await DerivedInvalidation.findAll({ where: { UserId: userId, sourceType: ['evidence', 'resume'], handledAt: null } });
   for (const event of pending) await event.update({ handledAt: isoNow() });
   return { catalogVersion: catalog.version, skills };
 }
