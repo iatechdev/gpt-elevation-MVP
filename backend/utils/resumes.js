@@ -45,7 +45,9 @@ async function getResumeFile(userId, id) {
 // de la evidencia (la consume el mapa de habilidades). La evidencia CONFIRMADA no se toca (ni su contenido ni su estado ni su origen): la persona la respaldó con una situación real y solo ella decide.
 // Idempotente: lo ya marcado no se vuelve a marcar ni a registrar. Se llama dentro de la transacción que borra la hoja.
 async function markDraftsForReview(userId, resumeId, transaction) {
-  const evidences = await Evidence.findAll({ where: { UserId: userId, deletedAt: null }, transaction });
+  // E390-1: se BLOQUEAN las filas de evidencia (FOR UPDATE, en orden de id) como hace `evidence.update`: una edición de un borrador y este marcado se serializan. Si la edición va primero,
+  // aquí se lee su versión nueva (la vigente) y se marca; si va después, copia los orígenes ya marcados. Sin el bloqueo, la versión nueva del borrador quedaba sin marca.
+  const evidences = await Evidence.findAll({ where: { UserId: userId, deletedAt: null }, order: [['id', 'ASC']], transaction, lock: transaction ? Transaction.LOCK.UPDATE : undefined });
   const at = new Date().toISOString(); let marked = 0;
   for (const ev of evidences) {
     const row = await EvidenceVersion.findOne({ where: { UserId: userId, EvidenceId: ev.id, version: ev.currentVersion }, transaction, lock: transaction ? Transaction.LOCK.UPDATE : undefined });

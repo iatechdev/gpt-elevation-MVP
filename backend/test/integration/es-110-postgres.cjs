@@ -214,4 +214,35 @@ test('ES-110 PostgreSQL + HTTP: habilidades de la hoja de vida a evidencias (bor
     assert.equal(JSON.stringify(await q(`SELECT version, status, origins FROM "EvidenceVersions" WHERE "UserId"=$1`, [E.id])), eBefore);
     assert.deepEqual((await call(E, 'GET', '/api/user/resume-skills')).body.orphaned, []);
   });
+  await t.test('E390-2: con dos versiones vivas, borrar la v1 marca SOLO los borradores de la v1; retirar la autorización marca los de la v2', async () => {
+    const F = await mkUser(); assert.equal((await grant(F)).status, 200);
+    const up = async (extra) => { const r = await call(F, 'POST', '/api/user/resumes/analyze', form(makeTextPdf([...CV, ...extra]))); assert.equal(r.status, 200, r.text); return r.body; };
+    const one = await up([]); const two = await up(['Línea de la versión 2']); assert.deepEqual([one.resume.version, two.resume.version], [1, 2]);
+    const skills = one.suggestions.declaredSkills;
+    await call(F, 'PUT', '/api/user/context', { schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: { ...EMPTY, declaredSkills: [{ ...skills[0], resumeVersion: 1 }, { ...skills[1], resumeVersion: 2 }] } });
+    const made = await promote(F, [skills[0].name, skills[1].name]); assert.equal(made.body.created.length, 2);
+    const idV1 = made.body.created.find((c) => c.name === skills[0].name).id; const idV2 = made.body.created.find((c) => c.name === skills[1].name).id;
+    const marked = async (id) => (await q(`SELECT origins FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version DESC LIMIT 1`, [id]))[0].origins.some((o) => o.sourceRevokedAt);
+    assert.equal((await call(F, 'DELETE', `/api/user/resumes/${one.resume.id}`)).status, 200);
+    assert.deepEqual([await marked(idV1), await marked(idV2)], [true, false], 'borrar la v1 marca solo lo de la v1 (no los borradores de otra hoja)');
+    assert.equal((await grant(F, 'revoked')).status, 200);
+    assert.deepEqual([await marked(idV1), await marked(idV2)], [true, true], 'retirar la autorización borra la v2 y marca lo de la v2');
+    assert.equal(Number((await q(`SELECT count(*)::int AS n FROM "DerivedInvalidations" WHERE "UserId"=$1 AND "sourceType"='evidence' AND reason='source_revoked'`, [F.id]))[0].n), 2);
+  });
+
+  await t.test('E390-1 carrera real: borrar la hoja de vida y EDITAR el borrador a la vez (14 corridas) deja SIEMPRE la versión vigente marcada «para revisión»', { timeout: 200000 }, async () => {
+    const failures = [];
+    for (let run = 0; run < 14; run++) {
+      const G = await mkUser(); assert.equal((await grant(G)).status, 200);
+      const a = await call(G, 'POST', '/api/user/resumes/analyze', form(makeTextPdf(CV))); assert.equal(a.status, 200, a.text);
+      await call(G, 'PUT', '/api/user/context', { schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: { ...EMPTY, declaredSkills: a.body.suggestions.declaredSkills } });
+      const id = (await promote(G, ['Power BI'])).body.created[0].id;
+      const edit = () => call(G, 'PUT', `/api/evidence/${id}`, { payload: { title: 'Power BI', situation: `Edición ${run}`, artifactRefs: [{ kind: 'text', excerpt: 'Power BI para el equipo comercial' }] }, status: 'draft', baseVersion: 1, requestId: crypto.randomUUID() });
+      const [removed, edited] = run % 2 ? await Promise.all([call(G, 'DELETE', `/api/user/resumes/${a.body.resume.id}`), edit()]) : (await Promise.all([edit(), call(G, 'DELETE', `/api/user/resumes/${a.body.resume.id}`)])).reverse();
+      const latest = (await q(`SELECT version, origins FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version DESC LIMIT 1`, [id]))[0];
+      const list = (await call(G, 'GET', '/api/evidence')).body.evidence.find((e) => e.id === id);
+      if (removed.status !== 200 || ![201, 409].includes(edited.status) || !latest.origins.some((o) => o.sourceRevokedAt) || list.reviewReason !== 'source_revoked' || list.needsReview !== true) failures.push({ run, removed: removed.status, edited: edited.status, version: latest.version, marked: latest.origins.some((o) => o.sourceRevokedAt) });
+    }
+    assert.deepEqual(failures, [], 'ninguna corrida pierde la marca');
+  });
 });
