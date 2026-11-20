@@ -183,6 +183,8 @@ const summary = (ev, row, existingResumes) => {
   const out = { id: ev.id, version: row.version, status: row.status, authoring: row.authoring, createdAt: row.createdAt, payload: decode(row) };
   const resume = (Array.isArray(row.origins) ? row.origins : []).find((o) => o && o.type === 'resume');
   if (resume) out.origin = { kind: 'resume', version: resume.version, date: resume.stamp, needsReview: !(existingResumes && existingResumes.has(resume.id)) };
+  // E390-1 (cinturón): si la hoja de origen ya no existe, un BORRADOR sale «para revisión» aunque la marca persistida no estuviera (la lectura recalcula; lo confirmado no se toca).
+  if (resume && out.origin.needsReview && row.status === 'draft' && existingResumes) { out.needsReview = true; out.reviewReason = 'source_revoked'; }
   if (row.hasChatOrigin) out.fromChat = true;
   if (sourceRevoked(row)) { out.needsReview = true; out.reviewReason = 'source_revoked'; } // ES-296: solo el hecho, nunca ids ni citas del chat
   return out;
