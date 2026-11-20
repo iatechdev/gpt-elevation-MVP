@@ -5,6 +5,7 @@ import { useLanguage } from '../i18n/useLanguage'
 import { useLandingContent } from '../content/useLandingContent'
 import { useSessionEntry } from '../access/useSessionEntry'
 import { authFailureKey, isSessionInfo, registrationRequested, sessionDestination } from '../access/session'
+import { signOut } from '../access/signOut'
 import { peekReturn, returnPathFor } from '../access/returnTo'
 import { accessParams, planDestination, planIntent } from '../pricing/plans'
 import { knownProblems, passwordProblems, type PasswordProblem } from '../access/registrationPassword'
@@ -13,6 +14,8 @@ import { AccessCard, AccessField, TermsCheck } from '../access/AccessCard'
 import { fieldErrors, firstInvalid, type FieldErrors } from '../access/fieldErrors'
 import { TERMS_VERSION } from '../legal/version.ts'
 
+// El nombre que el navegador guardó al entrar (solo para mostrarlo; nunca se envía).
+const readName = () => { try { return (localStorage.getItem('elevation_name') ?? '').trim().slice(0, 80) } catch { return '' } }
 const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 /** ES-155 (tramo B): entrar y crear cuenta con Cartografía en el marco público. La lógica de sesión, el bloqueo por intentos y los requisitos de la contraseña no cambiaron:
@@ -42,6 +45,9 @@ export function LoginPage() {
   const passwordInput = useRef<HTMLInputElement>(null)
   const termsInput = useRef<HTMLInputElement>(null)
   const messageRef = useRef<HTMLParagraphElement>(null)
+  // ES-359 (PR6): tras «Cerrar sesión para crear una cuenta nueva» el formulario reaparece y el foco va al primer campo.
+  const [signedOutHere, setSignedOutHere] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const inputs = { name: nameInput, email: emailInput, password: passwordInput, terms: termsInput }
   // Tras cada rechazo del servidor el foco va al aviso (el contador dispara el efecto una vez por rechazo).
   useEffect(() => { if (rejections > 0) messageRef.current?.focus() }, [rejections])
@@ -121,7 +127,26 @@ export function LoginPage() {
 
   // ES-330: tras entrar se vuelve a la ruta protegida pedida (si el rol real puede entrar); si no, al inicio del rol. La intención de plan sigue primero.
   // El destino se recalcula sin consumir lo recordado: se olvida al LLEGAR (RoleGate), así un re-render o un remonte (p. ej. al sincronizar el idioma preferido) no pierde la ruta.
-  if (entry.result.status === 'verified') return <Navigate to={planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session)} replace />
+  const verified = entry.result.status === 'verified'
+  useEffect(() => { if (signedOutHere && !verified && entry.result.status !== 'checking') nameInput.current?.focus() }, [signedOutHere, verified, entry.result.status])
+  if (entry.result.status === 'verified') {
+    const destination = planDestination(params.toString()) ?? returnPathFor(peekReturn(), entry.result.session) ?? sessionDestination(entry.result.session)
+    // Entrar con una sesión abierta no tiene sentido: sigue llevando a la sesión. «Crear cuenta» con una sesión abierta ya NO redirige (ES-359 PR6): avisa y deja elegir.
+    if (!isRegistering) return <Navigate to={destination} replace />
+    const shownName = readName()
+    return (
+      <AccessCard title={text('landing.access.register')}>
+        <div className="ac-notice ac-session" role="status">
+          <p>{shownName ? t('access.session_open').replace('{name}', shownName) : t('access.session_open_noname')}</p>
+          <div className="ac-actions">
+            <Link className="ac-ghost" to={destination}>{t('access.session_continue')}</Link>
+            <button type="button" className="ac-submit" disabled={leaving} aria-busy={leaving || undefined} onClick={() => { setLeaving(true); void signOut(BACKEND).then(() => setSignedOutHere(true)).finally(() => setLeaving(false)) }}>{t('access.session_signout_new')}</button>
+          </div>
+        </div>
+        <p className="ac-note">{t('access.session_form_hidden')}</p>
+      </AccessCard>
+    )
+  }
 
   // ES-128: los requisitos que faltan, del cliente o del servidor, se nombran en el aviso.
   const policyError = authMessage?.key === 'landing.access.password_policy'
