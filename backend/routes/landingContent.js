@@ -43,6 +43,9 @@ const LANDING_DEFAULTS = {
   },
 };
 
+// Claves que el servidor acepta al guardar: el catálogo aprobado y las de LANDING_DEFAULTS (hero_title, hero_subtitle, cta_primary y las dos de cierre). Una sola lista para que PUT y la lectura no discrepen.
+const publishableKeys = new Set([...approvedKeys, ...Object.keys(LANDING_DEFAULTS.es)]);
+
 async function loadContent(lang) {
     const registros = await LandingContent.findAll({ where: { lang } });
     const content = { ...LANDING_DEFAULTS[lang], ...defaults[lang] };
@@ -88,8 +91,9 @@ router.put('/', verificarSuperAdmin, async (req, res) => {
       return res.status(400).json({ error: 'key, lang y value son requeridos.' });
     if (!['es', 'en'].includes(lang))
       return res.status(400).json({ error: 'lang debe ser es o en.' });
-    if (key.startsWith('landing.') && !approvedKeys.has(key))
-      return res.status(400).json({ error: lang === 'en' ? 'Unknown landing key.' : 'Clave landing desconocida.' });
+    // E380-1 (QA-Claude-3): solo se guardan textos PUBLICABLES: las claves del catálogo (`landing.*`) y las tres clásicas de la portada (LANDING_DEFAULTS). Antes una clave cualquiera (`no_existe`) devolvía 200 y escribía una fila que ninguna pantalla muestra.
+    if (!publishableKeys.has(key))
+      return res.status(400).json({ code: 'unknown_key', error: lang === 'en' ? 'Unknown landing key.' : 'Clave landing desconocida.' });
     if (key.length > 255 || value.length > 5000)
       return res.status(400).json({ error: lang === 'en' ? 'Content exceeds the allowed length.' : 'El contenido supera la longitud permitida.' });
     const expected = parseExpected(req.body.expectedUpdatedAt);
