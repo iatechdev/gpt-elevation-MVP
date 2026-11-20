@@ -24,6 +24,8 @@ const BODY = {
   recommendations: [{ id: 1, category: 'habit', content: 'Texto de ejemplo uno', generatedAt: new Date().toISOString() }],
   plan: { plan: { id: 2, slug: 'plus', name_es: 'Plus (ejemplo)', name_en: 'Plus (example)', price: 19, currency: 'USD', period: 'month', features_es: ['Característica uno (ejemplo)'], features_en: ['Feature one (example)'], isHighlighted: false }, limits: { chatMessagesDay: 10, sessionsMonth: 4, canAccessProgress: true, canMatchTherapist: true } },
 }
+// ES332_QUICK=1 (CI, job a11y-guard): solo 390 px y sin la medición de CLS (que es ruidosa y se mide aparte); las comprobaciones de errores y reintento son las mismas.
+const QUICK = process.env.ES332_QUICK === '1'
 let failures = 0, total = 0
 const check = (ok, label) => { total++; if (!ok) { failures++; console.log('FALLA ' + label) } }
 
@@ -60,7 +62,7 @@ const snapshot = page => page.evaluate(() => {
 
 ;(async () => {
   const browser = await chromium.launch()
-  for (const lang of ['es', 'en']) for (const width of [390, 1360]) {
+  for (const lang of ['es', 'en']) for (const width of QUICK ? [390] : [390, 1360]) {
     const retryLabel = lang === 'es' ? 'Reintentar' : 'Retry'
     for (const read of Object.keys(PATHS)) for (const mode of ['500', 'corte']) {
       const tag = `${read} ${mode} ${lang} ${width}px`
@@ -119,7 +121,7 @@ const snapshot = page => page.evaluate(() => {
     }
   }
   // axe en los estados con error (todo caído y una lectura caída), claro y oscuro, 390/1360/320, ES/EN.
-  for (const lang of ['es', 'en']) for (const width of [390, 1360, 320]) for (const scheme of ['light', 'dark']) for (const which of ['todo', 'plan']) {
+  for (const lang of ['es', 'en']) for (const width of QUICK ? [390] : [390, 1360, 320]) for (const scheme of ['light', 'dark']) for (const which of ['todo', 'plan']) {
     const modes = which === 'todo' ? Object.fromEntries(Object.keys(PATHS).map(k => [k, '500'])) : { plan: '500' }
     const { ctx, page } = await open(browser, { lang, width, scheme, modes })
     await page.goto(BASE + '/app/dashboard', { waitUntil: 'networkidle' }); await page.waitForTimeout(300)
@@ -129,7 +131,7 @@ const snapshot = page => page.evaluate(() => {
     await ctx.close()
   }
   // CLS a 390 px con CPU ×4 (10 corridas): con todo caído y con una lectura caída.
-  for (const which of ['todo', 'plan']) {
+  for (const which of QUICK ? [] : ['todo', 'plan']) {
     const values = [], cards = []
     for (let i = 0; i < 10; i++) {
       const modes = which === 'todo' ? Object.fromEntries(Object.keys(PATHS).map(k => [k, '500'])) : { plan: '500' }
