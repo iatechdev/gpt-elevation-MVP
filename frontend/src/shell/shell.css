@@ -41,7 +41,7 @@
 .cg-usermenu { position: relative; }
 .cg-usermenu__button { background: none; border: 0; border-bottom: 3px solid transparent; min-height: var(--cg-touch); padding: 0 0.2rem; cursor: pointer; color: var(--cg-ink); }
 .cg-usermenu__button:hover, .cg-usermenu__button[aria-expanded='true'] { border-color: var(--cg-ink); }
-.cg-usermenu__who { font-size: 1.1rem; }
+.cg-usermenu .cg-usermenu__who { font-size: 1.1rem; } /* más específico que .cg-name (cartografia.css): sin esto el nombre salía a 1,6–2,4 rem y empujaba el logo */
 .cg-usermenu__list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; list-style: none; margin: 0; padding: 0.3rem; min-width: 14rem; max-width: calc(100vw - 2rem); background: var(--cg-panel); border: 1.5px solid var(--cg-ink); display: grid; }
 .cg-usermenu__list[hidden] { display: none; }
 .cg-usermenu__list a, .cg-usermenu__out { display: flex; align-items: center; min-height: var(--cg-touch); padding: 0.55rem 0.7rem; color: var(--cg-ink); text-decoration: none; background: none; border: 0; width: 100%; text-align: left; font: inherit; cursor: pointer; }
