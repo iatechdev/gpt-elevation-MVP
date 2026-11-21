@@ -48,3 +48,13 @@ test('CSS: solo tokens (sin colores fijos), objetivos táctiles y selección vis
   assert.equal(/#[0-9a-fA-F]{3,8}\b/.test(part), false)
   assert.ok(part.includes('min-height: var(--cg-touch)') && part.includes("content: '✓ '"))
 })
+
+test('«Mis datos» (/app/data) está en el menú de cuenta de los CUATRO roles: persona, profesional, administración y junta', async () => {
+  const nav = await import('../src/shell/nav.ts')
+  const menus = { persona: nav.PERSON_MENU, profesional: nav.PROFESSIONAL_MENU, administración: nav.ADMIN_MENU, junta: nav.BOARD_MENU }
+  for (const [role, items] of Object.entries(menus)) assert.ok(items.some(item => item.to === '/app/data' && item.label === 'data'), `«Mis datos» falta en el menú de ${role}`)
+  assert.equal(shellCopy.es.data, 'Mis datos'); assert.equal(shellCopy.en.data, 'My data')
+  // y cada marco entrega SU menú al componente (no una lista vacía)
+  for (const needle of ['items={PERSON_MENU}', 'items={PROFESSIONAL_MENU}', 'items={ADMIN_MENU}', 'items={BOARD_MENU}']) assert.ok(frames.includes(needle), needle)
+  assert.doesNotMatch(frames, /items=\{\[\]\}/)
+})

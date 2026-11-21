@@ -6,7 +6,7 @@ import { AccountMenu } from './AccountMenu'
 import { useCgTheme } from '../cartografia/themeState'
 import { useShellCopy } from './useShellCopy'
 import { PROFESSIONAL_LABEL } from './copy'
-import { ADMIN_BOARD_GROUP, ADMIN_NAV, BOARD_NAV, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PROFESSIONAL_NAV, PUBLIC_NAV, visibleFor } from './nav'
+import { ADMIN_BOARD_GROUP, ADMIN_MENU, ADMIN_NAV, BOARD_MENU, BOARD_NAV, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PROFESSIONAL_NAV, PUBLIC_NAV, visibleFor } from './nav'
 import type { Role } from './access'
 import { PersonLayoutContext } from './personLayoutState'
 
@@ -61,7 +61,7 @@ export function AdminFrame({ children, pilotPreview = false, migrated = false }:
   return (
     <Frame
       brandTo="/admin/dashboard"
-      preferences={null} account={<AccountMenu name={readName(c.adminRole)} roleLabel={role === 'superadmin' ? c.superRole : c.adminRole} items={[]} legacyTheme={!migrated} />}
+      preferences={null} account={<AccountMenu name={readName(c.adminRole)} roleLabel={role === 'superadmin' ? c.superRole : c.adminRole} items={ADMIN_MENU} legacyTheme={!migrated} />}
       sidebar={(
         <div className="cg-side">
           <NavLinks items={visibleFor(ADMIN_NAV, role)} label={c.admin} className="cg-sidenav" />
@@ -83,7 +83,7 @@ export function BoardFrame({ children }: { children: ReactNode }) {
   return (
     <Frame
       brandTo="/manifiesto" nav={<NavLinks items={BOARD_NAV} label={c.boardRole} />}
-      preferences={null} account={<AccountMenu name={readName(c.boardRole)} roleLabel={c.boardRole} items={[]} legacyTheme />} mainClassName="elv-theme"
+      preferences={null} account={<AccountMenu name={readName(c.boardRole)} roleLabel={c.boardRole} items={BOARD_MENU} legacyTheme />} mainClassName="elv-theme"
     >{children}</Frame>
   )
 }

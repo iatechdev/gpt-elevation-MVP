@@ -91,6 +91,7 @@ const activeIs = (page, sel) => page.evaluate(s => document.activeElement === do
     const info = await page.evaluate(() => { const l = document.querySelector('.cg-usermenu__list'); return { open: !!l && !l.hidden, text: l ? l.innerText.toLowerCase() : '', overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, oldOut: document.querySelectorAll('.cg-signout').length } })
     check(info.open && info.oldOut === 0 && info.overflow <= 0, `${tag}: abre, sin el botón de salir antiguo y sin desborde (abierto=${info.open}, antiguo=${info.oldOut}, desborde=${info.overflow})`)
     check(/cerrar sesión|sign out/.test(info.text) && /preferencias|preferences/.test(info.text), `${tag}: Preferencias y «Cerrar sesión» dentro`)
+    check(/mis datos|my data/.test(info.text), `${tag}: «Mis datos» en el menú de cuenta (≤ 2 acciones para todos los roles)`)
     // El panel es flotante y tapa parte del contenido (axe lo cuenta como «objetivo parcialmente cubierto» de lo que queda debajo): con el panel abierto se mide el marco sin <main>; la página completa se mide con el panel cerrado.
     const axeRoles = await axeRun(page, 'main'); await btn.focus(); await page.keyboard.press('Escape'); const axePage = await axeRun(page); check(axeRoles.length === 0 && axePage.length === 0, `${tag}: axe = [${axeRoles}]`)
     await ctx.close()
