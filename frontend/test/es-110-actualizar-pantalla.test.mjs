@@ -59,6 +59,64 @@ test('la pantalla nunca guarda sola ni toca evidencia: un solo PUT del contexto 
 
 test('el origen «versión borrada» sustituye al párrafo anterior en la evidencia y conserva «Para revisión» y «Nada se borra solo»', () => {
   const origin = read('../src/evidence/ResumeOrigin.tsx')
-  assert.match(origin, /origin\.needsReview && <Banner title=\{t\('evidence\.rs_review'\)\}><p><strong>\{t\('evidence\.rs_origin_deleted'\)\}<\/strong><\/p><p>\{t\('evidence\.rs_origin_deleted_text'\)\}<\/p>/)
+  assert.match(origin, /origin\.needsReview && declared && <Banner title=\{t\('evidence\.rs_review'\)\}><p><strong>\{t\('evidence\.rs_origin_deleted'\)\}<\/strong><\/p><p>\{t\('evidence\.rs_origin_deleted_text'\)\}<\/p>/)
   assert.doesNotMatch(origin, /rs_review_text/); assert.match(origin, /rs_review_hint/)
+})
+
+// ── E398-4: las decisiones de la pantalla viven en resumeUpdateLogic.ts y se prueban aquí (antes solo las mataba el E2E de QA) ──
+import { entryOf, outcomeAfterFailure, pendingLinks, sameSkills } from '../src/context/resume/resumeUpdateLogic.ts'
+import { diffSkills } from '../src/context/resume/resumeDiff.ts'
+import { parseOrphaned, parseDeclared } from '../src/evidence/resumeSkills.ts'
+const sk = (name, resumeVersion = 1) => ({ name, support: null, resumeVersion })
+
+test('«Siguen»: solo se ofrece vincular lo que no está ya en la versión nueva y no está escrito a mano (G9)', () => {
+  const diff = diffSkills([sk('SQL', 1), sk('Power BI', 4), sk('Dibujo', null), sk('Excel', 1)], [sk('sql', 4), sk('Power BI', 4), sk('Dibujo', 4)], 4)
+  assert.deepEqual(diff.remain.map(item => item.current.name), ['SQL', 'Power BI', 'Dibujo'])
+  assert.deepEqual(pendingLinks(diff).map(item => item.current.name), ['SQL'], 'ni la ya vinculada (Power BI v4) ni la escrita a mano (Dibujo)')
+  assert.deepEqual(pendingLinks(diffSkills([sk('Excel', 4)], [sk('Excel', 4)], 4)), [])
+})
+
+test('entrada: sin contexto guardado va al formulario; con el tope de versiones (5 de 5) pide elegir cuál borrar; si no, sube (G7, G16)', () => {
+  assert.equal(entryOf({ version: 0, context: null }, { count: 0, max: 5 }), 'onboarding')
+  assert.equal(entryOf({ version: 3, context: null }, { count: 0, max: 5 }), 'onboarding', 'versión > 0 pero sin contexto = tampoco hay con qué comparar')
+  assert.equal(entryOf({ version: 3, context: {} }, { count: 5, max: 5 }), 'limit'); assert.equal(entryOf({ version: 3, context: {} }, { count: 6, max: 5 }), 'limit')
+  assert.equal(entryOf({ version: 3, context: {} }, { count: 4, max: 5 }), 'upload'); assert.equal(entryOf({ version: 1, context: {} }, { count: 0, max: 5 }), 'upload')
+  assert.equal(entryOf({ version: 0, context: null }, { count: 5, max: 5 }), 'onboarding', 'sin contexto manda antes que el tope')
+})
+
+test('guardar: respuesta perdida (0, 5xx, 409) cuyo contexto releído ya es lo elegido = guardado; si no, conflicto o error; 401/403 = sesión (G5)', () => {
+  const applied = [sk('SQL', 4), sk('Python', 4)], same = [sk('sql', 4), sk('PYTHON', 4)], other = [sk('SQL', 1)]
+  for (const status of [0, 500, 502, 503, 409]) assert.equal(outcomeAfterFailure({ status }, same, applied), 'saved', `status ${status}`)
+  assert.equal(outcomeAfterFailure({ status: 409 }, other, applied), 'conflict'); assert.equal(outcomeAfterFailure({ status: 409 }, null, applied), 'conflict', 'sin poder releer, un 409 sigue siendo conflicto')
+  assert.equal(outcomeAfterFailure({ status: 0 }, other, applied), 'error'); assert.equal(outcomeAfterFailure({ status: 503 }, null, applied), 'error')
+  assert.equal(outcomeAfterFailure({ status: 400, code: 'schema_outdated' }, null, applied), 'schema'); assert.equal(outcomeAfterFailure({ status: 400, code: 'otro' }, null, applied), 'error')
+  assert.equal(outcomeAfterFailure({ status: 400 }, same, applied), 'error', 'un 400 nunca es «se perdió la respuesta»: no se relee ni se da por guardado')
+  for (const status of [401, 403]) assert.equal(outcomeAfterFailure({ status }, same, applied), 'expired', 'ni con lo releído igual: sin sesión no se dice «guardado»')
+  assert.equal(sameSkills([sk('a', 1)], [sk('A', 1)]), true); assert.equal(sameSkills([sk('a', 1)], [sk('a', 2)]), false); assert.equal(sameSkills([sk('a')], [sk('a'), sk('b')]), false); assert.equal(sameSkills([sk('a'), sk('b')], [sk('b'), sk('a')]), false)
+})
+
+test('«Recargar contexto» solo relee el contexto (el análisis y las elecciones se conservan), el foco va al h1 y los radios se llaman como la habilidad (G6, G14, G15)', () => {
+  const reread = page.slice(page.indexOf('const reread = async'), page.indexOf('async function save()'))
+  assert.match(reread, /contextRequest\(\)/); assert.match(reread, /setSnapshot\(fresh\)/)
+  assert.doesNotMatch(reread, /setFound|setChoices|setPhase|analyzeResume|listResumes/, 'no vuelve a analizar ni borra lo elegido')
+  assert.match(page, /useEffect\(\(\) => \{ if \(phase !== 'loading'\) heading\.current\?\.focus\(\) \}, \[phase\]\)/); assert.match(page, /titleRef=\{heading\}/)
+  assert.match(page, /role="radiogroup" aria-label=\{skill\.name\}/)
+})
+
+test('`orphaned` (#390): se lee con tolerancia, se pinta sin casilla con «Origen: versión borrada», y la lista vacía no dice una explicación falsa', () => {
+  assert.deepEqual(parseOrphaned({ skills: [] }), [], 'respuesta antigua sin el campo'); assert.deepEqual(parseOrphaned(null), []); assert.deepEqual(parseOrphaned({ orphaned: 'x' }), [])
+  const good = { name: 'Excel', origin: 'deleted', classified: { skillKey: 'excel', labels: { es: 'Excel', en: 'Excel' } }, added: false }
+  assert.deepEqual(parseOrphaned({ orphaned: [good, { name: '' }, null, { name: 'X', added: 'si' }, { name: 'Sin catálogo', classified: { skillKey: '' }, added: true }] }),
+    [{ name: 'Excel', classified: good.classified, added: false }, { name: 'Sin catálogo', classified: null, added: true }])
+  assert.deepEqual(parseDeclared({ skills: [], orphaned: [good] }), [], 'las huérfanas nunca entran en la lista de las que se pueden añadir')
+  const list = read('../src/evidence/ResumeSkillsPage.tsx')
+  assert.match(list, /api\.overview\(signal\)/); assert.match(list, /!skills\.length && !orphaned\.length \? <section/, 'con huérfanas no se dice «no hay habilidades para revisar»')
+  assert.match(list, /orphaned\.length > 0 && <OrphanedList items=\{orphaned\} \/>/); assert.match(list, /l\('rs_origin_deleted'\)/)
+  const block = list.slice(list.indexOf('function OrphanedList')); assert.doesNotMatch(block, /CheckField|checkbox/, 'sin casilla: no se pueden añadir')
+})
+
+test('«revísala» solo en borradores: la evidencia confirmada dice su origen sin pedir revisión (E398-3)', () => {
+  const origin = read('../src/evidence/ResumeOrigin.tsx')
+  assert.match(origin, /origin\.needsReview && !declared && <small className="cg-hint"><strong>\{t\('evidence\.rs_origin_deleted'\)\}<\/strong><\/small>/)
+  assert.match(origin, /origin\.needsReview && declared && <Banner/); assert.equal((origin.match(/rs_origin_deleted_text/g) ?? []).length, 1)
 })
