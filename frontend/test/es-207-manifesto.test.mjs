@@ -48,7 +48,7 @@ test('ES-207 página: pide solo el endpoint público, muestra texto plano y cubr
 
 test('ES-207 textos: ES y EN con las mismas claves y marcadores, sin ternarios de idioma', () => {
   const es = read('../src/i18n/es.ts'), en = read('../src/i18n/en.ts')
-  assert.deepEqual([...keys(es)].sort(), [...keys(en)].sort()); assert.equal(keys(es).size, 8)
+  assert.deepEqual([...keys(es)].sort(), [...keys(en)].sort()); assert.equal(keys(es).size, 9)
   assert.match(es, /manifest_public_version: 'Versión \{version\} · publicada el \{date\}'/); assert.match(en, /manifest_public_version: 'Version \{version\} · published \{date\}'/)
   assert.equal(/lang === 'es' \?/.test(read('../src/pages/ManifestoPage.tsx')), false)
 })
