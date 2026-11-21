@@ -25,3 +25,19 @@
 .cgf-main, .cgf-main * { overflow-wrap: anywhere; }
 .cgf-list > li, .cgf-review, .cgf-event, .cgf-form, .cgf-main > * { min-width: 0; }
 .cgf-review .cg-textarea { box-sizing: border-box; max-width: 100%; }
+
+/* ES-303 (PR B): invitación de revisor con código de un solo uso. Solo tokens --cg-*; sin estilos en línea. */
+.rv-stack { display: grid; gap: var(--cg-s4); max-width: 46rem; }
+.rv-card { display: grid; gap: var(--cg-s3); }
+.rv-card h2, .rv-card p, .rv-card fieldset { margin: 0; }
+.rv-form { display: grid; gap: var(--cg-s3); }
+.rv-form .cg-field, .rv-form .cg-input { width: 100%; }
+.rv-codefield .cg-input { font-family: ui-monospace, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.rv-code { font: 700 1.6rem ui-monospace, Consolas, monospace; letter-spacing: .12em; border: 2px solid var(--cg-ink); padding: var(--cg-s3) var(--cg-s4); background: var(--cg-panel); overflow-wrap: anywhere; margin: var(--cg-s2) 0; }
+.rv-pick { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: var(--cg-s2); }
+.rv-chk { display: flex; gap: var(--cg-s3); align-items: flex-start; min-height: var(--cg-touch); padding: var(--cg-s2) 0; border-top: 1px solid var(--cg-line); }
+.rv-chk input { width: 1.4rem; height: 1.4rem; accent-color: var(--cg-ink); flex: none; margin-top: .15rem; }
+.rv-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.rv-row { display: grid; gap: var(--cg-s2); border-top: 1px solid var(--cg-line); padding: var(--cg-s3) 0; }
+.rv-row p { margin: 0; }
+.rv-row__top { display: flex; justify-content: space-between; gap: var(--cg-s2) var(--cg-s4); flex-wrap: wrap; align-items: center; }

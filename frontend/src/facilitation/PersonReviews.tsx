@@ -11,15 +11,31 @@ import { API, useSession } from '../routeCatalog/shared'
 import { useCopy } from './context'
 import type { TextKey } from './copy'
 import { PERSON_REVIEWS_SIGNED } from './personConfig'
+import { ReviewAuthorize } from './ReviewAuthorize'
+import { InviteIssuer } from './InviteIssuer'
+import { useAuthCopy } from './useAuthCopy'
 import { failureOf, ReviewsError, reviewsApi, type Failure, type ReviewView } from './personApi'
 import { LIMITS, textProblem } from './validation'
 import './person-reviews.css'
 
 type Api = ReturnType<typeof reviewsApi>
 
+// ES-303 (PR B): la misma ruta sirve a dos roles. La persona revisora (profesional) crea invitaciones; la persona autoriza con un código y ve las revisiones que recibió.
 export function PersonReviews() {
-  const session = useSession(); const token = (JSON.parse(session) as string[])[0]
-  return token ? <Active key={session} token={token} /> : <Navigate to="/login" replace />
+  const session = useSession(); const [token, role] = JSON.parse(session) as string[]
+  if (!token) return <Navigate to="/login" replace />
+  return role === 'therapist' ? <IssuerSide key={session} token={token} /> : <Active key={session} token={token} />
+}
+
+function IssuerSide({ token }: { token: string }) {
+  const { t } = useAuthCopy(); const [expired, setExpired] = useState(false)
+  return (
+    <PersonScreen title={t('inviteTitle')}>
+      <div className="cgf cgf-main">
+        {expired ? <Banner kind="error" title={t('sessionExpired')}><div className="cg-row"><Link className="cg-btn" to="/login">{t('retry')}</Link></div></Banner> : <InviteIssuer token={token} onSession={() => setExpired(true)} />}
+      </div>
+    </PersonScreen>
+  )
 }
 
 function Dialog({ onKeep, onLeave }: { onKeep: () => void; onLeave: () => void }) {
@@ -97,6 +113,7 @@ function Active({ token }: { token: string }) {
     <PersonScreen title={t('own')} lead={t('disclaimer')}>
       <div className="cgf cgf-main">
         {!PERSON_REVIEWS_SIGNED && <Banner title={t('validationBanner')} />}
+        <ReviewAuthorize token={token} onSession={() => setStatus('session')} />
         {flash && <p ref={flashRef} tabIndex={-1} role="status" className="cg-banner">{t(flash)}</p>}
         {content}
         {leave && <Dialog onKeep={() => setLeave(null)} onLeave={() => { const go = leave; setDrafts({}); setLeave(null); go() }} />}
