@@ -162,6 +162,26 @@ const CODE_RE = /^[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/;
     check('Persona: «Retirar acceso» retira de verdad (la fila pasa a «Retirada» y desaparecen las acciones)');
     await P2.context.close(); await P.context.close();
 
+    // S8c (QA-Claude-6, sobrevivía a mi prueba): se PIERDE LA RESPUESTA de autorizar (la petición SÍ llegó al servidor). «Reintentar» reutiliza el MISMO requestId: 2 peticiones, 1 id, UNA sola autorización y éxito.
+    { const pr = await mkUser('user'); const e1 = await mkEvidence(pr, 'Reintento uno'); const inv = await newInvite().catch(async () => { await q('UPDATE "ReviewerInvites" SET "revokedAt"=now() WHERE id=(SELECT id FROM "ReviewerInvites" WHERE "reviewerId"=$1 AND "usedAt" IS NULL AND "revokedAt" IS NULL ORDER BY id LIMIT 1)', [reviewer.id]); return newInvite(); });
+      const L = await open(pr); await settled(L.page); await L.page.locator('input[autocomplete=off]').fill(inv.code); await L.page.getByRole('button', { name: 'Continuar' }).click(); await L.page.locator('.rv-chk input').first().check();
+      const lost = []; await L.page.route('**/api/me/review-shares', async (route) => { if (route.request().method() === 'POST' && lost.length === 0) { lost.push(JSON.parse(route.request().postData()).requestId); await route.fetch(); return route.abort(); } return route.continue(); });
+      const before = apiRequests.filter((r) => r.method === 'POST' && /review-shares$/.test(r.path)).length;
+      await L.page.getByRole('button', { name: /Autorizar a Ana Revisora/ }).click(); await L.page.getByText('No pudimos guardar la autorización. Tu código no se gastó: inténtalo de nuevo.').waitFor();
+      assert.equal((await q('SELECT count(*)::int n FROM "ReviewShares" WHERE "UserId"=$1', [pr.id]))[0].n, 1, 'la primera petición SÍ llegó: ya hay una autorización aunque la respuesta se perdió');
+      await L.page.getByRole('button', { name: 'Reintentar' }).click(); await L.page.getByText(/Listo\. Autorizaste esta revisión\./).waitFor();
+      const posts = apiRequests.filter((r) => r.method === 'POST' && /review-shares$/.test(r.path)).slice(before); assert.equal(posts.length, 2, 'dos peticiones'); assert.equal(new Set(posts.map((r) => JSON.parse(r.body).requestId)).size, 1, 'un solo requestId'); assert.equal(JSON.parse(posts[1].body).requestId, lost[0]);
+      assert.equal((await q('SELECT count(*)::int n FROM "ReviewShares" WHERE "UserId"=$1', [pr.id]))[0].n, 1, 'UNA sola autorización tras el reintento (idempotente)'); void e1; await L.context.close(); }
+    check('Persona: con la RESPUESTA de autorizar perdida (la petición sí llegó), «Reintentar» usa el MISMO requestId y queda UNA sola autorización con éxito (S8c de QA-6)');
+    // S6e (QA-Claude-6): evidencias NO elegibles (origen en el chat o «para revisión») no se ofrecen aunque el servidor las liste.
+    { const pe = await mkUser('user'); const a1 = await mkEvidence(pe, 'Elegible A'); const a2 = await mkEvidence(pe, 'Del chat B'); const a3 = await mkEvidence(pe, 'Para revisión C'); const inv = await newInvite().catch(async () => { await q('UPDATE "ReviewerInvites" SET "revokedAt"=now() WHERE id=(SELECT id FROM "ReviewerInvites" WHERE "reviewerId"=$1 AND "usedAt" IS NULL AND "revokedAt" IS NULL ORDER BY id LIMIT 1)', [reviewer.id]); return newInvite(); });
+      const E = await open(pe); await settled(E.page);
+      await E.page.route('**/api/evidence', async (route) => { if (route.request().method() !== 'GET') return route.continue(); const response = await route.fetch(); const body = await response.json();
+        for (const row of body.evidence) { if (row.id === a2) row.fromChat = true; if (row.id === a3) row.origin = { kind: 'resume', version: 1, date: '2026-11-01T10:00:00.000Z', needsReview: true }; } return route.fulfill({ response, json: body }); });
+      await E.page.locator('input[autocomplete=off]').fill(inv.code); await E.page.getByRole('button', { name: 'Continuar' }).click(); await E.page.locator('.rv-chk input').first().waitFor();
+      const labels = await E.page.locator('.rv-chk').allTextContents(); assert.equal(labels.length, 1, JSON.stringify(labels)); assert.ok(labels[0].includes('Elegible A')); void a1; await E.context.close(); }
+    check('Persona: la evidencia del chat y la «para revisión» NO se ofrecen aunque el servidor las liste; solo la elegible (S6e de QA-6)');
+
     // ───────── Idiomas, anchos, temas: axe 0 y sin desbordes ─────────
     const person3 = await mkUser('user'); await mkEvidence(person3, 'Evidencia propia'); const reviewer2 = await mkUser('therapist'); await q('UPDATE "Users" SET name=$2 WHERE id=$1', [reviewer2.id, 'Ana Revisora']);
     let combos = 0;
