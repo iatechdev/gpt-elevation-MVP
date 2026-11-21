@@ -60,9 +60,18 @@ const safe = async (fn) => {
 
 // ES-287: ÚLTIMA barrera antes del proveedor, para TODOS los flujos (chat, recomendaciones, análisis, fuentes, resumen): se quitan los caracteres invisibles
 // (incluido el bloque Tags U+E0000–E007F) del `system` y de cada mensaje; el texto visible no cambia. Devuelve una copia: no toca el objeto de quien llama.
-const cleanContent = (content) => {
+// E384-3 (QA): también el contenido ANIDADO (p. ej. tool_result → content → text, o bloques dentro de bloques): se limpian `text` y `content` de cada bloque, recursivamente (con tope de profundidad). Los demás campos del bloque no cambian.
+const MAX_CONTENT_DEPTH = 8;
+const cleanContent = (content, depth = 0) => {
   if (typeof content === 'string') return stripInvisible(content);
-  if (Array.isArray(content)) return content.map((block) => (block && typeof block.text === 'string' ? { ...block, text: stripInvisible(block.text) } : block));
+  if (depth >= MAX_CONTENT_DEPTH) return content;
+  if (Array.isArray(content)) return content.map((block) => cleanContent(block, depth + 1));
+  if (content && typeof content === 'object') {
+    const out = { ...content };
+    if (typeof out.text === 'string') out.text = stripInvisible(out.text);
+    if (out.content !== undefined) out.content = cleanContent(out.content, depth + 1);
+    return out;
+  }
   return content;
 };
 function sanitizeBody(body) {
