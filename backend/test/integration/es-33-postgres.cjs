@@ -142,6 +142,11 @@ test('ES-33 PostgreSQL + HTTP con puertos ES-14/32 simulados explícitos', { tim
       ['/career-plan/versions', 'POST', { requestId: randomUUID(), planId, expectedVersion: 1, action: 'complete', actionKey: 'step_7', completionEvidence: 'synthetic' }],
     ]) assert.equal((await http(path, { actor: 'other', method, body })).status, 404);
     assert.equal((await http('/career-plan/versions', { method: 'POST', body: { ...planBody, requestId: randomUUID(), expectedVersion: 1, selections: [{ ...selections()[0], chosenDate: '2026-02-30' }] } })).status, 400);
+    // ES-377 (E377-2): aceptar sin `proposal` (ausente, nula o que no es un objeto) es 400 invalid_input, nunca 503; con proposal inválida (objeto) sigue siendo 409.
+    for (const bad of ['absent', null, 'texto', [], 7]) {
+      const body = { ...planBody, requestId: randomUUID(), expectedVersion: 1 }; if (bad === 'absent') delete body.proposal; else body.proposal = bad;
+      const r = await http('/career-plan/versions', { method: 'POST', body }); assert.equal(r.status, 400, `proposal=${JSON.stringify(bad)}`); assert.equal(r.data.code, 'invalid_input');
+    }
   });
   await t.test('recordatorios: sin consentimiento no activa; fecha ajena, falta de aceptación y dueño ajeno se rechazan', async () => {
     const reminder = { requestId: randomUUID(), action: 'accept', planVersionId: planId, actionKey: 'step_7', localDateTime: `${selections()[0].chosenDate}T09:00`, timeZone: context().timeZone, accepted: true };
