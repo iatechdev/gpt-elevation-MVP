@@ -35,7 +35,7 @@ export function ReviewAuthorize({ token, onSession }: { token: string; onSession
   const [step, setStep] = useState<Step>('code'); const [code, setCode] = useState(initialCode); const [fromLink, setFromLink] = useState(Boolean(initialCode))
   const [target, setTarget] = useState<Target>({ kind: 'code' }); const [lookup, setLookup] = useState<Lookup | null>(null)
   const [options, setOptions] = useState<Evidence[]>([]); const [chosen, setChosen] = useState<number[]>([])
-  const [problem, setProblem] = useState<Problem | ''>(''); const [flash, setFlash] = useState<AuthKey | ''>('')
+  const [problem, setProblem] = useState<Problem | ''>(''); const [flash, setFlash] = useState<AuthKey | ''>(''); const [note, setNote] = useState<'' | 'withdrawError' | 'evidenceLoadError'>('') // F421-3: avisos propios (no «tu código no se gastó»)
   const [shares, setShares] = useState<ShareView[] | 'loading' | 'error'>('loading'); const [attempt, setAttempt] = useState(0)
   const sent = useRef<{ requestId: string; key: string } | null>(null)
 
@@ -65,12 +65,16 @@ export function ReviewAuthorize({ token, onSession }: { token: string; onSession
   async function submitCode(event: React.FormEvent) {
     event.preventDefault()
     if (!codeComplete(code)) { setProblem('invalid'); return }
-    setProblem(''); setFlash(''); setStep('checking')
-    try { const found = await api.lookup(code); await loadOptions(); setLookup(found); setTarget({ kind: 'code' }); setChosen([]); sent.current = null; setStep('pick') } catch (error) { fail(error, 'code') }
+    setProblem(''); setFlash(''); setNote(''); setStep('checking')
+    try {
+      const found = await api.lookup(code)
+      try { await loadOptions() } catch (error) { if (problemOf(error) === 'session') { onSession(); return } setNote('evidenceLoadError'); setStep('code'); return } // el código NO se gastó: puede volver a pulsar Continuar
+      setLookup(found); setTarget({ kind: 'code' }); setChosen([]); sent.current = null; setStep('pick')
+    } catch (error) { fail(error, 'code') }
   }
   async function startAgain(share: ShareView) {
-    setProblem(''); setFlash(''); setLookup(null); setTarget({ kind: 'again', shareId: share.id }); setChosen([]); sent.current = null
-    try { await loadOptions(); setStep('pick') } catch (error) { fail(error, 'code') }
+    setProblem(''); setFlash(''); setNote(''); setLookup(null); setTarget({ kind: 'again', shareId: share.id }); setChosen([]); sent.current = null
+    try { await loadOptions(); setStep('pick') } catch (error) { setTarget({ kind: 'code' }); if (problemOf(error) === 'session') onSession(); else setNote('evidenceLoadError') }
   }
   async function authorize() {
     if (!chosen.length) return
@@ -90,7 +94,8 @@ export function ReviewAuthorize({ token, onSession }: { token: string; onSession
     }
   }
   async function withdraw(share: ShareView) {
-    try { await api.withdraw(share.id); setFlash('withdrawn'); setAttempt(n => n + 1) } catch (error) { if (problemOf(error) === 'session') onSession(); else setProblem('network') }
+    setNote(''); setFlash('')
+    try { await api.withdraw(share.id); setFlash('withdrawn'); setAttempt(n => n + 1) } catch (error) { if (problemOf(error) === 'session') onSession(); else setNote('withdrawError') }
   }
   const toggle = (id: number) => setChosen(previous => (previous.includes(id) ? previous.filter(value => value !== id) : [...previous, id]))
   const when = (value: string) => dateText(value, lang) ?? ''
@@ -101,6 +106,7 @@ export function ReviewAuthorize({ token, onSession }: { token: string; onSession
   return (
     <>
       {flash && <p ref={flashRef} tabIndex={-1} role="status" className="cg-banner"><span className="cg-banner__title">{t(flash)}{flash === 'okTitle' ? ` ${t('okBody')}` : ''}</span></p>}
+      {note && <Banner kind="error" title={t(note)} />}
       {(step === 'code' || step === 'checking') && (
         <Card as="section" className="rv-card">
           <h2 className="cg-h2">{t('cardTitle')}</h2>
@@ -151,7 +157,7 @@ export function ReviewAuthorize({ token, onSession }: { token: string; onSession
                 <li key={share.id} className="rv-row">
                   <div className="rv-row__top"><strong>{share.reviewerName ?? t('reviewer')}</strong>{active ? <Chip tone="ok" symbol="✓">{t('stGranted')}</Chip> : <Chip tone="wait" symbol="○">{t('stRevoked')}</Chip>}</div>
                   <p className="cg-hint">{t('since', { date: when(share.createdAt) })} · {share.evidenceCount === 1 ? t('evidenceOne') : t('evidenceCount', { n: share.evidenceCount })}</p>
-                  {active && <div className="cg-row"><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void startAgain(share)}>{t('update')}</button><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void withdraw(share)}>{t('withdraw')}</button></div>}
+                  {active && <div className="cg-row"><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} aria-label={`${t('update')} · ${share.reviewerName ?? t('reviewer')}`} onClick={() => void startAgain(share)}>{t('update')}</button><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} aria-label={`${t('withdraw')} · ${share.reviewerName ?? t('reviewer')}`} onClick={() => void withdraw(share)}>{t('withdraw')}</button></div>}
                 </li>
               )
             })}

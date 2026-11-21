@@ -26,7 +26,7 @@ export function InviteIssuer({ token, onSession }: { token: string; onSession: (
   const [invites, setInvites] = useState<InviteView[] | null>(null); const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading'); const [attempt, setAttempt] = useState(0)
   const [creating, setCreating] = useState(false); const [fresh, setFresh] = useState<{ code: string | null } | null>(null); const [copied, setCopied] = useState<'' | 'copied' | 'linkCopied' | 'copyFailed'>('')
   const [message, setMessage] = useState<'' | 'full' | 'createError' | 'notAllowed' | 'revoked' | 'revokeError'>(''); const [toRevoke, setToRevoke] = useState<InviteView | null>(null); const [revoking, setRevoking] = useState(false)
-  const pendingId = useRef<string | null>(null); const freshRef = useRef<HTMLElement>(null); const messageRef = useRef<HTMLParagraphElement>(null); const openerRef = useRef<HTMLButtonElement>(null)
+  const pendingId = useRef<string | null>(null); const freshRef = useRef<HTMLElement>(null); const messageRef = useRef<HTMLDivElement>(null); const openerRef = useRef<HTMLButtonElement>(null); const revokeOpener = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const meta = document.createElement('meta'); meta.name = 'referrer'; meta.content = 'no-referrer'; document.head.appendChild(meta)
@@ -42,6 +42,8 @@ export function InviteIssuer({ token, onSession }: { token: string; onSession: (
   useEffect(() => { if (message) messageRef.current?.focus() }, [message])
 
   const refresh = useCallback(() => setAttempt(n => n + 1), [])
+  // F421-1: al cerrar el diálogo SIN anular (Escape o «Conservar») el foco vuelve al botón que lo abrió; con «Sí, anular» el foco va al aviso.
+  const keepRevoke = () => { setToRevoke(null); requestAnimationFrame(() => revokeOpener.current?.focus()) }
   const active = invites ? activeInvites(invites) : 0; const full = active >= MAX_ACTIVE_INVITES
   const when = (value: string) => dateText(value, lang) ?? ''
 
@@ -73,8 +75,8 @@ export function InviteIssuer({ token, onSession }: { token: string; onSession: (
   return (
     <div className="rv-stack">
       <p className="cg-hint">{t('inviteLead')}</p>
-      {message && <Banner kind={message === 'revoked' ? 'note' : 'error'} title={t(message)} />}
-      {message && <p ref={messageRef} tabIndex={-1} className="fac-sr">{t(message)}</p>}
+      {/* F421-2: el aviso del tope es UNO solo: el derivado de la lista (con 10 activas) o, justo tras un 409 y antes de recargar, el del servidor. */}
+      {message && !(message === 'full' && full) && <div ref={messageRef} tabIndex={-1}><Banner kind={message === 'revoked' ? 'note' : 'error'} title={t(message)} /></div>}
       {full && <Banner kind="error" title={t('full')} />}
       <div className="cg-row"><button ref={openerRef} type="button" className="cg-btn" disabled={creating || full || status === 'loading'} onClick={() => void create()}>{creating ? t('creating') : t('create')}</button></div>
       {fresh && (
@@ -105,13 +107,13 @@ export function InviteIssuer({ token, onSession }: { token: string; onSession: (
               <li key={invite.id} className="rv-row">
                 <div className="rv-row__top"><strong>{t('invitation')} #{invite.id}</strong><Chip tone={invite.status === 'active' ? 'ok' : 'neutral'} symbol={invite.status === 'active' ? '✓' : '○'}>{stateLabel(invite)}</Chip></div>
                 <p className="cg-hint">{t('createdOn', { date: when(invite.createdAt) })} · {detail(invite)}</p>
-                {invite.status === 'active' && <div className="cg-row"><button type="button" className="cg-btn cg-btn--ghost" onClick={() => setToRevoke(invite)}>{t('revoke')}</button></div>}
+                {invite.status === 'active' && <div className="cg-row"><button type="button" className="cg-btn cg-btn--ghost" aria-label={`${t('revokeTitle')} #${invite.id}`} onClick={event => { revokeOpener.current = event.currentTarget; setToRevoke(invite) }}>{t('revoke')}</button></div>}
               </li>
             ))}
           </ul>
         )}
       </Card>
-      {toRevoke && <RevokeDialog busy={revoking} onKeep={() => setToRevoke(null)} onConfirm={() => void revoke()} />}
+      {toRevoke && <RevokeDialog busy={revoking} onKeep={keepRevoke} onConfirm={() => void revoke()} />}
     </div>
   )
 }

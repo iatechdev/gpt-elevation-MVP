@@ -82,7 +82,11 @@ const CODE_RE = /^[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/;
     await R.page.getByRole('button', { name: 'Listo' }).click();
     // anular con confirmación
     await R.page.getByRole('button', { name: 'Anular' }).first().click(); await R.page.getByRole('dialog').waitFor(); assert.match(await R.page.getByRole('dialog').textContent(), /¿Anular esta invitación\? La persona ya no podrá usar el código\./);
-    await R.page.keyboard.press('Escape'); await R.page.getByRole('dialog').waitFor({ state: 'detached' }); assert.equal((await q(`SELECT count(*)::int n FROM "ReviewerInvites" WHERE "revokedAt" IS NOT NULL`))[0].n, 0, 'Escape no anula');
+    await R.page.keyboard.press('Escape'); await R.page.getByRole('dialog').waitFor({ state: 'detached' });
+    const focusedLabel = () => R.page.evaluate(() => (document.activeElement && (document.activeElement.getAttribute('aria-label') || document.activeElement.tagName)) || '');
+    await R.page.waitForFunction(() => document.activeElement && /^Anular invitación #\d+$/.test(document.activeElement.getAttribute('aria-label') || '')); assert.match(await focusedLabel(), /^Anular invitación #\d+$/, 'Escape devuelve el foco al botón «Anular» que abrió el diálogo (F421-1)');
+    await R.page.getByRole('button', { name: 'Anular invitación #' }).first().click(); await R.page.getByRole('dialog').waitFor(); await R.page.getByRole('button', { name: 'Conservar' }).click(); await R.page.getByRole('dialog').waitFor({ state: 'detached' });
+    await R.page.waitForFunction(() => document.activeElement && /^Anular invitación #\d+$/.test(document.activeElement.getAttribute('aria-label') || '')); assert.match(await focusedLabel(), /^Anular invitación #\d+$/, '«Conservar» también devuelve el foco (F421-1)'); assert.equal((await q(`SELECT count(*)::int n FROM "ReviewerInvites" WHERE "revokedAt" IS NOT NULL`))[0].n, 0, 'Escape no anula');
     await R.page.getByRole('button', { name: 'Anular' }).first().click(); await axe(R.page, 'diálogo de anular'); await R.page.getByRole('button', { name: 'Sí, anular' }).click(); await R.page.locator('.cg-chip', { hasText: 'Anulada' }).first().waitFor();
     assert.equal((await q(`SELECT count(*)::int n FROM "ReviewerInvites" WHERE "reviewerId"=$1 AND "revokedAt" IS NOT NULL`, [reviewer.id]))[0].n, 1);
     check('Revisor: «Anular» pide confirmación (Escape conserva), «Sí, anular» anula de verdad y la lista dice «Anulada»');
@@ -157,6 +161,14 @@ const CODE_RE = /^[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/;
     await P2.page.getByLabel(/Evidencia nueva/).check(); await P2.page.getByRole('button', { name: 'Autorizar revisión' }).click(); await P2.page.getByText(/Listo\. Autorizaste esta revisión\./).waitFor();
     const updated = await q('SELECT status, "materialVersion" FROM "ReviewShares" WHERE "UserId"=$1 ORDER BY id', [person2.id]); assert.deepEqual(updated.map((r) => r.status), ['superseded', 'granted']); assert.equal(updated[1].materialVersion, 2); assert.equal(await P2.page.locator('.cg-chip', { hasText: 'Activa' }).count(), 1, 'una fila por persona revisora');
     void ev3; check('Persona: «Actualizar evidencias» no pide código, no marca nada, crea la versión 2 y la lista sigue con UNA fila');
+    await P2.page.route('**/api/me/review-shares/*', (route) => (route.request().method() === 'DELETE' ? route.fulfill({ status: 500, json: { code: 'boom' } }) : route.continue()));
+    await P2.page.getByRole('button', { name: 'Retirar acceso' }).click(); await P2.page.getByText('No pudimos retirar el acceso. Inténtalo de nuevo.').waitFor();
+    assert.equal(await P2.page.getByText('Tu código no se gastó').count(), 0, 'el fallo de retirar NO habla de «código» ni de «autorización» (F421-3)'); assert.equal((await q(`SELECT count(*)::int n FROM "ReviewShares" WHERE "UserId"=$1 AND status='granted'`, [person2.id]))[0].n, 1, 'no se retiró nada');
+    await P2.page.unroute('**/api/me/review-shares/*');
+    await P2.page.route('**/api/evidence', (route) => (route.request().method() === 'GET' ? route.fulfill({ status: 500, json: { code: 'boom' } }) : route.continue()));
+    await P2.page.getByRole('button', { name: 'Actualizar evidencias' }).click(); await P2.page.getByText('No pudimos cargar tus evidencias. Inténtalo de nuevo.').waitFor();
+    assert.equal(await P2.page.getByText('Tu código no se gastó').count(), 0, 'el fallo de cargar evidencias tampoco habla de «código» (F421-3)'); await P2.page.unroute('**/api/evidence');
+    check('Persona: si falla «Retirar acceso» o «Actualizar evidencias» el aviso es el PROPIO («No pudimos retirar el acceso…», «No pudimos cargar tus evidencias…»), nunca «Tu código no se gastó» (F421-3 de QA-5)');
     await P2.page.getByRole('button', { name: 'Retirar acceso' }).click(); await P2.page.getByText('Retiraste el acceso.').waitFor(); await P2.page.locator('.cg-chip', { hasText: 'Retirada' }).waitFor();
     assert.equal((await q(`SELECT status FROM "ReviewShares" WHERE "UserId"=$1 AND status='granted'`, [person2.id])).length, 0); assert.equal(await P2.page.getByRole('button', { name: 'Actualizar evidencias' }).count(), 0);
     check('Persona: «Retirar acceso» retira de verdad (la fila pasa a «Retirada» y desaparecen las acciones)');
@@ -181,6 +193,13 @@ const CODE_RE = /^[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/;
       await E.page.locator('input[autocomplete=off]').fill(inv.code); await E.page.getByRole('button', { name: 'Continuar' }).click(); await E.page.locator('.rv-chk input').first().waitFor();
       const labels = await E.page.locator('.rv-chk').allTextContents(); assert.equal(labels.length, 1, JSON.stringify(labels)); assert.ok(labels[0].includes('Elegible A')); void a1; await E.context.close(); }
     check('Persona: la evidencia del chat y la «para revisión» NO se ofrecen aunque el servidor las liste; solo la elegible (S6e de QA-6)');
+
+    // F421-2 (QA-5): lista desactualizada (otra pestaña creó la 10.ª) → el servidor responde 409 y el aviso del tope aparece UNA sola vez.
+    { const rv = await mkUser('therapist'); const S = await open(rv); await settled(S.page); await S.page.getByText('Aún no has creado invitaciones.').waitFor();
+      for (let i = 0; i < 10; i += 1) { const r = await call(rv, 'POST', '/api/reviewer/invites', { requestId: rid() }); assert.equal(r.status, 201); }
+      await S.page.getByRole('button', { name: 'Crear invitación' }).click(); await S.page.getByText(/Ya tienes 10 invitaciones activas/).first().waitFor(); await S.page.waitForLoadState('networkidle'); await S.page.waitForTimeout(400);
+      assert.equal(await S.page.getByText(/Ya tienes 10 invitaciones activas/).count(), 1, 'el aviso del tope aparece una sola vez (F421-2)'); assert.equal(await S.page.locator('[role=alert]', { hasText: 'Ya tienes 10 invitaciones activas' }).count(), 1); await S.context.close(); }
+    check('Revisor: tras un 409 por el tope, el aviso «Ya tienes 10 invitaciones activas…» aparece UNA sola vez (F421-2 de QA-5)');
 
     // ───────── Idiomas, anchos, temas: axe 0 y sin desbordes ─────────
     const person3 = await mkUser('user'); await mkEvidence(person3, 'Evidencia propia'); const reviewer2 = await mkUser('therapist'); await q('UPDATE "Users" SET name=$2 WHERE id=$1', [reviewer2.id, 'Ana Revisora']);

@@ -24,7 +24,7 @@ const words = {
   invalidEvidence: ['Alguna evidencia ya no se puede compartir. Actualizamos la lista; revisa tu selección.', 'Some evidence can no longer be shared. We refreshed the list; check your selection.'],
   gone: ['Esta autorización ya no está disponible. Pide un código nuevo a la persona revisora.', 'This authorization is no longer available. Ask the reviewer for a new code.'],
   okTitle: ['Listo. Autorizaste esta revisión.', 'Done. You authorized this review.'], okBody: ['Puedes retirar el acceso cuando quieras.', 'You can withdraw access whenever you want.'],
-  withdrawn: ['Retiraste el acceso.', 'You withdrew access.'], loadError: ['No pudimos cargar tus autorizaciones.', 'We could not load your authorizations.'], withdrawError: ['No pudimos retirar el acceso. Inténtalo de nuevo.', 'We could not withdraw access. Try again.'],
+  withdrawn: ['Retiraste el acceso.', 'You withdrew access.'], evidenceLoadError: ['No pudimos cargar tus evidencias. Inténtalo de nuevo.', 'We could not load your evidence. Try again.'], loadError: ['No pudimos cargar tus autorizaciones.', 'We could not load your authorizations.'], withdrawError: ['No pudimos retirar el acceso. Inténtalo de nuevo.', 'We could not withdraw access. Try again.'],
   listTitle: ['Mis autorizaciones', 'My authorizations'], none: ['Aún no has autorizado a nadie.', 'You have not authorized anyone yet.'],
   reviewer: ['Persona revisora', 'Reviewer'], since: ['Desde el {date}', 'Since {date}'], evidenceCount: ['{n} evidencias', '{n} pieces of evidence'], evidenceOne: ['1 evidencia', '1 piece of evidence'],
   stGranted: ['Activa', 'Active'], stRevoked: ['Retirada', 'Withdrawn'],
