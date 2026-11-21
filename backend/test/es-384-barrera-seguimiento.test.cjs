@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { stripInvisible } = require('../utils/promptSafety');
-const { sanitizeBody, AiInputRejectedError, AiProviderError, MAX_CONTENT_DEPTH } = require('../utils/aiClient');
+const { sanitizeBody, AiInputRejectedError, AiProviderError, MAX_CONTENT_DEPTH, MAX_CONTENT_NODES } = require('../utils/aiClient');
 
 const VS17 = String.fromCodePoint(0xE0100); const VS256 = String.fromCodePoint(0xE01EF); const TAG = String.fromCodePoint(0xE0041);
 const HIDDEN = `${VS17}${VS256}${TAG}`;
@@ -83,4 +83,34 @@ test('QA-416-01 (callClaude): un cuerpo demasiado profundo se rechaza ANTES de r
     await assert.rejects(callClaude({ userId: 1, kind: 'chat', body: { model: 'm', max_tokens: 5, messages: [{ role: 'user', content: [deep] }] } }), (e) => e instanceof AiInputRejectedError && e.code === 'provider_unavailable');
     assert.equal(calls, 0, 'el proveedor no se llamó');
   } finally { anthropic.messages.create = original; }
+});
+
+test('QA-426-1: un hijo compartido dos veces por nivel (2^n caminos) se rechaza por tope de nodos (too_many_nodes) en tiempo acotado; uno modesto se limpia', () => {
+  const build = (levels) => { let node = { type: 'text', text: `x${HIDDEN}` }; for (let i = 0; i < levels; i++) node = { a: node, b: node }; return node; };
+  const small = sanitizeBody({ messages: [{ role: 'user', content: [build(8)] }] });
+  assert.ok(!/[\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/u.test(JSON.stringify(small)), '2^8 caminos se limpian');
+  const started = process.hrtime.bigint();
+  assert.throws(() => sanitizeBody({ messages: [{ role: 'user', content: [build(30)] }] }), (e) => e instanceof AiInputRejectedError && e.reason === 'too_many_nodes');
+  const ms = Number(process.hrtime.bigint() - started) / 1e6; assert.ok(ms < 5000, `rechazo en ${ms.toFixed(0)} ms (con 2^30 caminos y sin tope tardaría horas)`);
+  assert.equal(MAX_CONTENT_NODES, 1000000);
+});
+
+test('QA-426-2: objetos no planos (Date, Buffer, Map, Set, instancias de clase) se RECHAZAN (unsupported) en vez de degradarse a {}; JSON plano y objetos sin prototipo siguen pasando', () => {
+  class Custom { constructor() { this.t = `x${HIDDEN}`; } }
+  for (const odd of [new Date(), Buffer.from('a'), new Map([['a', 1]]), new Set([1]), new Custom(), /re/]) {
+    assert.throws(() => sanitizeBody({ messages: [{ role: 'user', content: [{ type: 'text', text: 'a', extra: odd }] }] }), (e) => e instanceof AiInputRejectedError && e.reason === 'unsupported', Object.prototype.toString.call(odd));
+  }
+  const bare = Object.create(null); bare.t = `ok${HIDDEN}`;
+  assert.equal(sanitizeBody({ messages: [{ role: 'user', content: [bare] }] }).messages[0].content[0].t, 'ok');
+  assert.throws(() => sanitizeBody(new Date()), (e) => e.reason === 'unsupported', 'ni siquiera como raíz');
+});
+
+test('QA-426-2 (estática): ningún llamador real mete Date/Buffer en el cuerpo: los 7 llamadores construyen `content` como texto', () => {
+  const fs = require('node:fs'); const path = require('node:path'); const root = path.join(__dirname, '..');
+  const callers = ['routes/chat.js', 'routes/matching.js', 'routes/recommendations.js', 'routes/sessions.js', 'routes/therapistRoutes.js', 'utils/aiProposals.js', 'utils/resumeAnalysis.js'];
+  for (const file of callers) {
+    const source = fs.readFileSync(path.join(root, file), 'utf8'); const at = source.indexOf('callClaude({');
+    assert.ok(at > 0, file); const call = source.slice(at, at + 700);
+    assert.ok(!/new Date|Date\.now|Buffer/.test(call), `${file}: el cuerpo no lleva Date ni Buffer`);
+  }
 });

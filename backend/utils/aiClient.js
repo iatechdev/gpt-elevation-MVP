@@ -64,12 +64,16 @@ const safe = async (fn) => {
 // FALLA CERRADO (QA-416-01/02): no hay un «nivel a partir del cual se deja pasar». Se recorre en profundidad con un tope ALTO (64 niveles); si el cuerpo lo supera, o tiene un ciclo,
 // se RECHAZA con AiInputRejectedError (nada llega al proveedor) en vez de dejarlo sin limpiar. Recorrido iterativo: ninguna entrada puede desbordar la pila.
 const MAX_CONTENT_DEPTH = 64;
+// Tope de NODOS recorridos (cada valor de cada objeto/arreglo, contando CADA aparición): un hijo compartido varias veces por nivel se expande como en el JSON que viajaría (2^n); sin tope costaba segundos (QA-426). Un cuerpo real tiene unos cientos.
+const MAX_CONTENT_NODES = 1000000;
 class AiInputRejectedError extends AiProviderError {
-  constructor(reason) { super('bad_request'); this.message = 'El contenido enviado a la IA fue rechazado por la barrera de entrada.'; this.reason = reason; } // reason: 'too_deep' | 'cycle'; sin contenido
+  constructor(reason) { super('bad_request'); this.message = 'El contenido enviado a la IA fue rechazado por la barrera de entrada.'; this.reason = reason; } // reason: 'too_deep' | 'cycle' | 'too_many_nodes' | 'unsupported'; sin contenido
 }
 function sanitizeBody(body) {
   const clone = (value) => (Array.isArray(value) ? [] : {});
-  const root = clone(body); const ancestors = new Set();
+  const root = clone(body); const ancestors = new Set(); let nodes = 0;
+  // Solo JSON plano: objetos literales (o sin prototipo) y arreglos. Date, Buffer, Map, instancias de clase… se RECHAZAN (antes un Date pasaba a {} sin avisar).
+  const plain = (value) => { if (Array.isArray(value)) return true; const proto = Object.getPrototypeOf(value); return proto === Object.prototype || proto === null; };
   // Pila explícita con marca de «salida» para saber qué objetos están en el camino actual (ciclo = un ancestro se repite).
   const work = [{ enter: true, source: body, target: root, depth: 0 }];
   while (work.length) {
@@ -77,9 +81,11 @@ function sanitizeBody(body) {
     if (!step.enter) { ancestors.delete(step.source); continue; }
     if (step.depth > MAX_CONTENT_DEPTH) throw new AiInputRejectedError('too_deep');
     if (ancestors.has(step.source)) throw new AiInputRejectedError('cycle');
+    if (!plain(step.source)) throw new AiInputRejectedError('unsupported');
     ancestors.add(step.source); work.push({ enter: false, source: step.source });
     const entries = Array.isArray(step.source) ? step.source.map((v, k) => [k, v]) : Object.entries(step.source);
     for (const [key, value] of entries) {
+      if ((nodes += 1) > MAX_CONTENT_NODES) throw new AiInputRejectedError('too_many_nodes');
       const outKey = Array.isArray(step.source) ? key : stripInvisible(key);
       if (typeof value === 'string') step.target[outKey] = stripInvisible(value);
       else if (value && typeof value === 'object') { const child = clone(value); step.target[outKey] = child; work.push({ enter: true, source: value, target: child, depth: step.depth + 1 }); }
@@ -136,4 +142,4 @@ async function callClaude({ userId, kind, requestId = null, body: rawBody, now =
   return message;
 }
 
-module.exports = { callClaude, sanitizeBody, AiInputRejectedError, MAX_CONTENT_DEPTH, computeCost, classifyError, AiProviderError, AiBudgetNotConfiguredError, AiBudgetExhaustedError };
+module.exports = { callClaude, sanitizeBody, AiInputRejectedError, MAX_CONTENT_DEPTH, MAX_CONTENT_NODES, computeCost, classifyError, AiProviderError, AiBudgetNotConfiguredError, AiBudgetExhaustedError };
