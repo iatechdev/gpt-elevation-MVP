@@ -25,9 +25,9 @@ test('ES-359 PR2: las 3 entradas que no tenían enlace (Ejercicios, Brújula, Ca
   assert.equal(new Set(links.map(l => l.to)).size, links.length, 'sin enlaces repetidos')
 })
 
-test('ES-359 PR2: persona y superadministración ven los grupos; los demás roles ninguno todavía (PR5)', () => {
+test('ES-359 PR2/PR5: persona y superadministración ven los grupos de persona; profesional, administración y junta, los suyos', () => {
   assert.equal(groupsFor('user').length, 5); assert.equal(groupsFor('superadmin').length, 5)
-  for (const role of ['therapist', 'admin', 'board']) assert.equal(groupsFor(role).length, 0, role)
+  assert.deepEqual(groupsFor('therapist').map(g => g.items.length), [3]); assert.equal(groupsFor('admin').length, 4); assert.equal(groupsFor('board').length, 1)
 })
 
 test('ES-359 PR2: textos ES/EN de grupos y de las 4 entradas, con las mismas claves', () => {
@@ -42,7 +42,7 @@ test('ES-359 PR2: los 8 enlaces que pasan a la barra lateral salen del menú de 
   for (const link of moved) { assert.ok(links.some(l => l.to === link), `${link} está en la barra lateral`); assert.ok(!PERSON_MENU.some(i => i.to === link), `${link} ya no está en el menú de cuenta`) }
   assert.deepEqual(PERSON_MENU.map(i => i.to), ['/app/data', '/app/feedback', '/manifiesto'])
   const frames = read('../src/shell/frames.tsx')
-  assert.ok(frames.includes("const groups = groupsFor(readRole('user'))")); assert.ok(frames.includes('groups.map(g => ({ title: g.title ? c[g.title] : null, items: g.items }))'))
+  assert.ok(frames.includes("const groups = groupsFor(readRole('user'))")); assert.ok(frames.includes('groups.map(g => ({ title: g.title ? c[g.title] : null, items: g.items }))')) // dentro de `drawerGroups` (PR5)
 })
 
 test('ES-359 PR2: marcado y estilos — un <nav> con nombre, títulos de grupo, aria-current por NavLink, 40 px, barra + negrita (no solo color), solo tokens, escritorio ≥ 901 px', () => {

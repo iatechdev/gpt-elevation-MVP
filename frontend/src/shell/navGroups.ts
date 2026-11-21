@@ -21,8 +21,27 @@ export const PERSON_GROUPS: NavGroup[] = [
   { title: 'grpPro', items: [{ to: '/app/my-therapist', label: 'myProfessional' }, { to: '/app/professional-reviews', label: 'reviews' }] },
 ]
 
-/** Grupos que ve un rol (persona y superadministración entran a /app; el resto se añade en PR5). */
+/** Profesional (PR5): un grupo «Principal»; «Revisiones profesionales» pasa del menú de cuenta a la barra lateral. */
+export const PROFESSIONAL_GROUPS: NavGroup[] = [
+  { title: 'main', items: [{ to: '/therapist/dashboard', label: 'proPanel' }, { to: '/facilitation', label: 'proFacilitation' }, { to: '/app/professional-reviews', label: 'reviews' }] },
+]
+
+/** Administración y superadministración (misma navegación; en el diseño aprobado el grupo «Junta» lo ven ambas): Resumen, Personas, Contenido y Junta. */
+export const ADMIN_GROUPS: NavGroup[] = [
+  { title: 'grpOverview', items: [{ to: '/admin/dashboard', label: 'adPanel' }, { to: '/admin/metrics', label: 'adMetrics' }, { to: '/admin/pilot-metrics', label: 'adPilot' }] },
+  { title: 'grpPeople', items: [{ to: '/admin/users', label: 'adUsers' }] },
+  { title: 'grpContent', items: [{ to: '/admin/prompts', label: 'adGuides' }, { to: '/admin/content', label: 'adContent' }, { to: '/admin/route-catalog', label: 'adRoutes' }, { to: '/admin/skill-catalog', label: 'adSkills' }] },
+  { title: 'boardGroup', items: [{ to: '/admin/manifest', label: 'adManifest' }] },
+]
+
+/** Junta ética: solo el manifiesto (página pública). */
+export const BOARD_GROUPS: NavGroup[] = [{ title: null, items: [{ to: '/manifiesto', label: 'adManifest' }] }]
+
+/** Filtra por rol y descarta los grupos vacíos. */
+export const visibleGroups = (groups: NavGroup[], role: Role): NavGroup[] => groups.map(group => ({ ...group, items: visibleFor(group.items, role) })).filter(group => group.items.length > 0)
+
+/** Grupos que ve un rol en SU marco: persona y superadministración en /app (la superadministración usa ADMIN_GROUPS dentro de /admin); profesional, administración y junta, los suyos (PR5). */
 export const groupsFor = (role: Role): NavGroup[] => {
-  const groups = role === 'user' || role === 'superadmin' ? PERSON_GROUPS : []
-  return groups.map(group => ({ ...group, items: visibleFor(group.items, role) })).filter(group => group.items.length > 0)
+  const groups = role === 'therapist' ? PROFESSIONAL_GROUPS : role === 'admin' ? ADMIN_GROUPS : role === 'board' ? BOARD_GROUPS : PERSON_GROUPS
+  return visibleGroups(groups, role)
 }
