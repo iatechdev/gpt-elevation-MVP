@@ -10,6 +10,7 @@ import { confirmMatches } from '../src/space/dataRights.ts'
 import { parseCurrent } from '../src/space/currentPlan.ts'
 import { zoneForPath } from '../src/shell/access.ts'
 import { PERSON_MENU } from '../src/shell/nav.ts'
+import { PERSON_GROUPS } from '../src/shell/navGroups.ts'
 
 const read = (path) => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
 
@@ -83,7 +84,7 @@ test('ES-174: Mi plan solo lee el plan y pide cambios por los endpoints existent
 
 test('ES-174: /app/plan es de cualquier sesión válida, está en la ruta y el menú lleva a la pantalla propia', () => {
   assert.equal(zoneForPath('/app/plan'), 'member'); assert.equal(zoneForPath('/app/data'), 'member'); assert.equal(zoneForPath('/app/plan/x'), 'member')
-  assert.ok(PERSON_MENU.some((item) => item.to === '/app/plan' && item.label === 'plan'))
+  assert.ok(PERSON_GROUPS.flatMap(group => group.items).some((item) => item.to === '/app/plan' && item.label === 'plan')) // ES-359 PR2: «Mi plan» vive en la barra lateral y en el cajón
   assert.equal(PERSON_MENU.some((item) => item.to === '/pricing'), false)
   assert.match(read('../src/App.tsx'), /path="\/app\/plan" element=\{<PlanPage \/>\}/); assert.match(read('../src/App.tsx'), /const PlanPage = lazy\(/)
 })

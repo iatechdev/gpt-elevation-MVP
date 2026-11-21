@@ -7,6 +7,7 @@ import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
 import { NavDrawer, type DrawerGroup } from './NavDrawer'
+import type { NavGroup } from './navGroups'
 import { useShellCopy } from './useShellCopy'
 import { useNarrowHeader } from './narrowHeader'
 import { leaveBlocked } from './leaveGuard'
@@ -78,10 +79,12 @@ export type FrameProps = {
   mobileOrder?: boolean
   /** ES-359 (PR3): en ≤ 900 px el encabezado es una fila de 56 px (marca + «☰ Menú») y la navegación, las preferencias y «Cerrar sesión» viven en el cajón. */
   drawer?: { groups: DrawerGroup[]; name: string; roleLabel: string; legacyTheme?: boolean }
+  /** ES-359 (PR2): con barra lateral por grupos en escritorio (≥ 901 px): el encabezado deja de repetir los enlaces y la barra mide 14,5 rem. */
+  sidebarWide?: boolean
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, drawer, children }: FrameProps) {
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, drawer, sidebarWide = false, children }: FrameProps) {
   const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder; const compact = useNarrowHeader() && !!drawer
   const [drawerOpen, setDrawerOpen] = useState(false); const menuButton = useRef<HTMLButtonElement>(null)
   // El cajón se cierra al cambiar de ruta (incluido el botón «atrás» del navegador) y si la pantalla deja de ser móvil. Sin efecto con setState: se ajusta el estado durante el render.
@@ -98,7 +101,7 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
     main.current?.focus({ preventScroll: false })
   }, [pathname])
   return (
-    <CartografiaRoot theme={theme} className="cg-frame">
+    <CartografiaRoot theme={theme} className={sidebarWide ? 'cg-frame cg-frame--wide-side' : 'cg-frame'}>
       <a className="cg-skip" href="#main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{c.skip}</a>
       {header && (
         <header className="cg-header" data-compact={compact || undefined} onClickCapture={guardLeave}>
@@ -108,11 +111,31 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
         </header>
       )}
       {compact && drawer && <NavDrawer open={drawerShown} onClose={() => setDrawerOpen(false)} opener={menuButton} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} />}
-      <div className={sidebar ? 'cg-body cg-body--side' : 'cg-body'}>
+      <div className={sidebar ? `cg-body cg-body--side${sidebarWide ? ' cg-body--wideside' : ''}` : 'cg-body'}>
         {sidebar}
         <main id="main" ref={main} tabIndex={-1} className={`cg-main ${mainClassName}`.trim()}>{children}</main>
       </div>
       {footer && <SiteFooter />}
     </CartografiaRoot>
+  )
+}
+
+/** ES-359 (PR2): barra lateral por grupos. Un <nav> por grupo (título en versalitas como su nombre accesible); el enlace de la pantalla actual lleva aria-current (NavLink). */
+export function SideNav({ groups, label }: { groups: NavGroup[]; label: string }) {
+  const { c } = useShellCopy(); const base = useId()
+  return (
+    <nav className="cg-side cg-side--groups" aria-label={label}>
+      {groups.map((group, index) => {
+        const titleId = `${base}-g${index}`
+        return (
+          <div key={group.title ?? 'top'} className="cg-sidegroup">
+            {group.title && <p className="cg-tag cg-side__group" id={titleId}>{c[group.title]}</p>}
+            <ul className="cg-sidelist" aria-labelledby={group.title ? titleId : undefined}>
+              {group.items.map(item => <li key={item.to}><NavLink to={item.to}>{c[item.label]}</NavLink></li>)}
+            </ul>
+          </div>
+        )
+      })}
+    </nav>
   )
 }

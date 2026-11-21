@@ -19,7 +19,7 @@ test('ES-15: el menú de «Mi espacio» usa /app/space/tools y ya no reclama /ap
   const app = read('../src/App.tsx')
   assert.match(app, /<Route path="\/app\/space\/tools" element=\{<SpaceToolsPage \/>\} \/>/)
   assert.doesNotMatch(app, /path="\/app\/next-step"[^>]*NextStepPage|NextStepPage/)
-  assert.match(read('../src/shell/nav.ts'), /to: '\/app\/space\/tools'/)
+  assert.match(read('../src/shell/navGroups.ts'), /to: '\/app\/space\/tools'/)
 })
 
 test('ES-15: el rótulo del menú es propio y ya no repite «Mi siguiente paso» (nombre del recorrido de ES-34)', () => {
