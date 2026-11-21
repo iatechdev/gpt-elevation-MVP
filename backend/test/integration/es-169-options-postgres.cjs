@@ -31,6 +31,15 @@ test('ES-169 PR 2a PostgreSQL + HTTP: opciones del emparejamiento desde la base 
     await q(`UPDATE "MatchingOptions" SET label_es='Editado por el equipo' WHERE key='habits'`); await up(require('../../database').sequelize);
     assert.equal(Number((await q('SELECT count(*) n FROM "MatchingOptions"'))[0].n), 12, 'volver a correrla no duplica'); assert.equal((await q(`SELECT label_es FROM "MatchingOptions" WHERE key='habits'`))[0].label_es, 'Editado por el equipo', 'ni pisa lo que el equipo editó');
     await q(`UPDATE "MatchingOptions" SET label_es='Hábitos' WHERE key='habits'`);
+    // E412-1 (QA-Claude-3): una base creada por sync() (staging, ES-115) ya tiene la tabla, con createdAt/updatedAt NOT NULL y SIN DEFAULT; la migración debe sembrar sin fallar y sin cambiar las columnas.
+    const { sequelize } = require('../../database'); const MatchingOption = require('../../MatchingOption');
+    await q('DROP TABLE "MatchingOptions"'); await MatchingOption.sync();
+    assert.equal((await q(`SELECT column_default FROM information_schema.columns WHERE table_name='MatchingOptions' AND column_name='createdAt'`))[0].column_default, null, 'sync() no pone DEFAULT');
+    assert.equal(Number((await q('SELECT count(*) n FROM "MatchingOptions"'))[0].n), 0);
+    await up(sequelize); await up(sequelize);
+    assert.equal(Number((await q('SELECT count(*) n FROM "MatchingOptions"'))[0].n), 12, 'sembró sobre la tabla de sync() y repetir no duplica');
+    assert.ok((await q('SELECT 1 FROM "MatchingOptions" WHERE "createdAt" IS NULL OR "updatedAt" IS NULL')).length === 0);
+    assert.equal((await q(`SELECT column_default FROM information_schema.columns WHERE table_name='MatchingOptions' AND column_name='updatedAt'`))[0].column_default, null, 'la migración no añade DEFAULT (sin deriva con sync)');
     assert.equal((await q(`SELECT relrowsecurity FROM pg_class WHERE relname='MatchingOptions'`))[0].relrowsecurity, true, 'RLS activada');
     const idx = await q(`SELECT indexdef FROM pg_indexes WHERE indexname='matching_requests__request'`); assert.match(idx[0].indexdef, /UNIQUE.*\("UserId", "requestId"\).*WHERE/s);
   });
@@ -58,7 +67,7 @@ test('ES-169 PR 2a PostgreSQL + HTTP: opciones del emparejamiento desde la base 
     assert.equal(calls, before, 'ninguna respuesta inválida llegó a la IA');
     await q(`UPDATE "MatchingOptions" SET active=false WHERE key='habits'`); const off = await request(person, { area: 'habits' }); assert.equal(off.status, 400); assert.equal(off.body.code, 'invalid_answers', 'una opción desactivada se rechaza');
     await q(`UPDATE "MatchingOptions" SET active=true WHERE key='habits'`); assert.equal((await request(person, { area: 'habits' })).status, 200);
-    await q(`INSERT INTO "MatchingOptions" (kind, key, label_es, label_en, position) VALUES ('topic','career-change','Cambio de carrera','Career change',9)`);
+    await q(`INSERT INTO "MatchingOptions" (kind, key, label_es, label_en, position, "createdAt", "updatedAt") VALUES ('topic','career-change','Cambio de carrera','Career change',9, now(), now())`);
     assert.equal((await request(person, { area: 'career-change' })).status, 200, 'una opción NUEVA de la base entra sin tocar código');
     assert.ok((await http(person, 'GET', '/api/matching/options')).body.topics.some((o) => o.key === 'career-change'));
     await q(`UPDATE "MatchingOptions" SET active=false WHERE key='career-change'`); assert.equal((await request(person, { area: 'career-change' })).status, 400);
