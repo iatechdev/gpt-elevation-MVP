@@ -169,7 +169,13 @@ export function BoardManifest() {
         {success && <span className="cg-banner__title">{success}</span>}
       </div>
 
-      {loading && !active && <div className="bm-skel" aria-hidden="true" />}{/* E409-1: reserva la altura de «Versión vigente» mientras carga, para que el historial y los botones no salten al llegar los datos */}
+      {/* E409-1: la altura de «Versión vigente» se reserva mientras carga y, si no hay vigente (vacío, error o solo versiones inactivas), la ocupa un bloque con la misma altura mínima: el historial y los botones no saltan en ningún desenlace. */}
+      {!active && (loading ? <div className="bm-skel" aria-hidden="true" /> : (
+        <Card as="section" className="pg-card bm-active bm-active--none">
+          <h2 className="bm-h2">{t('board_active_version')}</h2>
+          <p className="cg-hint">—</p>
+        </Card>
+      ))}
       {active && (
         <Card as="section" className="pg-card bm-active">
           <h2 className="bm-h2">{t('board_active_version')} — {active.version}</h2>

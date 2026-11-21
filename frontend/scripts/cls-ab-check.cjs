@@ -5,6 +5,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const PR = process.env.PR, MAIN = process.env.MAIN, SCENARIO = process.env.SCENARIO || 'manifest', RUNS = Number(process.env.RUNS || 10), DELAYS = (process.env.DELAY || '0,150,400,900').split(',').map(Number)
 const txt = 'Texto sintético del manifiesto. '.repeat(30)
 const versions = [3, 2, 1].map(n => ({ id: n, version: `v${n}`, isActive: n === 3, note: n === 3 ? 'Nota de ejemplo' : null, content: txt, contentEn: n === 3 ? txt : null, createdAt: '2026-11-0' + n + 'T00:00:00Z', uploader: { id: 1, name: 'Alejo', email: 'a@x.test' } }))
+const SHAPE = process.env.SHAPE || 'active' // active | empty | error | noactive (E409-1: también sin versión vigente)
 const ROUTE = SCENARIO === 'manifest' ? '/admin/manifest' : '/login?mode=register&invite=tokeninvalido0123456789'
 async function once(browser, base, DELAY) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
@@ -13,7 +14,7 @@ async function once(browser, base, DELAY) {
     new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__c += e.value }).observe({ type: 'layout-shift', buffered: true }) }, ['superadmin', SCENARIO])
   await page.route('**/api/**', async route => { const p = new URL(route.request().url()).pathname; await new Promise(r => setTimeout(r, DELAY))
     if (p === '/api/session') return route.fulfill({ json: { role: 'superadmin', onboardingCompleted: true } })
-    if (p === '/api/board/manifest') return route.fulfill({ json: versions })
+    if (p === '/api/board/manifest') return SHAPE === 'error' ? route.fulfill({ status: 500, json: { error: 'x' } }) : route.fulfill({ json: SHAPE === 'empty' ? [] : SHAPE === 'noactive' ? versions.map(v => ({ ...v, isActive: false })) : versions })
     if (/invit/i.test(p)) return route.fulfill({ status: 404, json: { code: 'invitation_invalid' } })
     return route.fulfill({ json: {} }) })
   await page.goto(base + ROUTE, { waitUntil: 'networkidle' }); await page.waitForTimeout(1200)
