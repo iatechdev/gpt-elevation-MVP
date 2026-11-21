@@ -170,7 +170,7 @@ html.cg-scroll-lock { overflow: hidden; }
 .cg-sidelist a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: -3px; }
 .cg-sidelist a[aria-current='page'] { box-shadow: inset 4px 0 0 var(--cg-mark); font-weight: 800; background: var(--cg-panel); }
 @media (min-width: 901px) {
-  .cg-body--wideside { grid-template-columns: 14.5rem minmax(0, 1fr); }
+  .cg-body--wideside { grid-template-columns: 14.5rem minmax(0, 1fr); gap: 1.5rem; max-width: calc(1240px + 15rem); } /* la barra se SUMA al ancho máximo de siempre: el contenido útil no se come el ancho que ya tenía (límite ≥ 80 %) */
   .cg-frame--wide-side .cg-header > .cg-nav { display: none; }
 }
 @media (max-width: 900px) { .cg-body--wideside > .cg-side--groups { display: none; } }
