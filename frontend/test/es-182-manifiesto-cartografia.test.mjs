@@ -42,7 +42,7 @@ test('ES-349 seguimiento: sin texto crudo del servidor, se relee antes de afirma
   assert.match(page, /const fresh = await readVersions\(\)[\s\S]*fresh\?\.some\(v => v\.id === id && v\.isActive\)/, 'releer y comparar antes de afirmar')
   assert.match(page, /toLocaleDateString\(lang === 'en' \? 'en-US' : 'es-CO'/)
   assert.match(page, /disabled=\{activating !== null\} onClick=\{\(\) => setConfirming\(v\)\}/, 'mientras una versión se reactiva, ninguna otra puede')
-  assert.match(page, /<Chip tone="ok" symbol="●">\{t\('board_active_badge'\)\}<\/Chip>\}\s*<strong>\{v\.version\}/, 'el chip ACTIVO va solo con v.isActive')
+  assert.match(page, /<Chip tone="ok" symbol="●">\{t\('board_active_badge'\)\}<\/Chip>\}\s*(?:\{v\.contentEn && <Chip symbol="EN">\{t\('board_has_en'\)\}<\/Chip>\}\s*)?<strong>\{v\.version\}/, 'el chip ACTIVO va solo con v.isActive (E45-1: puede seguirle la marca EN)')
 })
 
 test('ES-182 (decisión 12079): solo superadmin ve publicar y reactivar; administración solo lee (el servidor sigue siendo la autoridad)', () => {
