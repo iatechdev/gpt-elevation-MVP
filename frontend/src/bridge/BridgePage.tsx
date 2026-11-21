@@ -63,7 +63,7 @@ export function BridgePage() {
   const explain = (error: unknown): string => {
     if (!(error instanceof CompassError)) return c.saveError
     if (error.status === 401) { setExpired(true); return c.session }
-    return ({ field_not_shareable: c.notShareable, consent_required: c.consent, preview_expired: c.expired, preview_mismatch: c.saveError, conflict: c.conflict } as Record<string, string>)[error.code] ?? c.saveError
+    return ({ field_not_shareable: c.notShareable, consent_required: c.consent, source_consent_required: c.sourceConsentRequired, source_consent_revoked: c.sourceConsentRevoked, preview_expired: c.expired, preview_mismatch: c.saveError, conflict: c.conflict } as Record<string, string>)[error.code] ?? c.saveError
   }
   // Una acción = una versión nueva del contexto aprobado. ANTES de componerla se relee la versión activa: si otra pestaña la cambió desde que esta pantalla la mostró,
   // no se compone nada (volvería a cruzar un texto revocado o perdería uno autorizado); se actualiza la pantalla y se avisa. Sin textos que cruzar, se revoca la versión activa.
