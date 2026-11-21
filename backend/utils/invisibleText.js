@@ -17,12 +17,12 @@
 //
 // No normaliza NFC/NFD (el nombre no es un identificador) ni detecta homoglifos.
 
-// ES-352 (E397-1, QA): blancos «de relleno», sin significado propio y con aspecto vacío (CGJ, marca árabe de letra, rellenos Hangul y jemer, separador mongol, reservado U+2065,
+// ES-352 (E397-1, QA): blancos «de relleno», sin significado propio y con aspecto vacío (CGJ, marca árabe de letra [ALM], rellenos Hangul, separador mongol, reservado U+2065,
 // controles de formato obsoletos U+206A–206F, braille en blanco, Hangul de relleno). NO incluye los selectores de variación (FE00–FE0F, U+180B–180D mongoles), que se permiten.
 // La barrera de la IA (promptSafety.stripInvisible) quita esta misma lista: una sola fuente.
-const BLANK_FILLERS_RE = /[\u{034F}\u{061C}\u{115F}\u{1160}\u{17B4}\u{17B5}\u{180E}\u{2065}\u{206A}-\u{206F}\u{2800}\u{3164}\u{FFA0}]/gu;
+const BLANK_FILLERS_RE = /[\u{034F}\u{061C}\u{115F}\u{1160}\u{180E}\u{2065}\u{206A}-\u{206F}\u{2800}\u{3164}\u{FFA0}]/gu;
 // Rechazados en nombres. \p{Cc}: controles C0/C1 (NUL, saltos de línea, tabulaciones, DEL…) y, al final, los blancos de relleno (la prueba comprueba que coinciden con BLANK_FILLERS_RE).
-const FORBIDDEN_IN_NAME = /[\p{Cc}\u{200B}\u{200E}\u{200F}\u{2028}\u{2029}\u{202A}-\u{202E}\u{2060}\u{2066}-\u{2069}\u{FEFF}\u{E0000}-\u{E007F}\u{034F}\u{061C}\u{115F}\u{1160}\u{17B4}\u{17B5}\u{180E}\u{2065}\u{206A}-\u{206F}\u{2800}\u{3164}\u{FFA0}]/u;
+const FORBIDDEN_IN_NAME = /[\p{Cc}\u{200B}\u{200E}\u{200F}\u{2028}\u{2029}\u{202A}-\u{202E}\u{2060}\u{2066}-\u{2069}\u{FEFF}\u{E0000}-\u{E007F}\u{034F}\u{061C}\u{115F}\u{1160}\u{180E}\u{2065}\u{206A}-\u{206F}\u{2800}\u{3164}\u{FFA0}]/u;
 // «Visible»: al menos una letra, un número o un símbolo/emoji (ES-324 admite nombres hechos solo de emoji). NO cuentan la puntuación, los espacios, ZWNJ/ZWJ, los selectores de variación
 // ni una marca combinante suelta (E397-1: se dibuja como un círculo punteado o nada, no es un nombre).
 const VISIBLE = /[\p{L}\p{N}\p{S}]/u;
