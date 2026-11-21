@@ -32,7 +32,7 @@ beforeEach(() => {
   models.PasswordReset.update = async (values, { where }) => { const hit = rows.filter(row => matches(row, where)); hit.forEach(row => Object.assign(row, values)); return [hit.length]; };
   models.User.findOne = async ({ where }) => users.get(where.email) ?? null;
   models.User.findByPk = async id => [...users.values()].find(user => user.id === id) ?? null;
-  models.AuthRevocation.upsert = async values => { revoked.push(values.UserId); };
+  models.AuthRevocation.advanceCut = async (UserId) => { revoked.push(UserId); };
   mailer.providers.test = async message => { sent.push(message); };
   for (const level of ['error', 'log', 'warn']) console[level] = (...args) => { logs.push(args.join(' ')); };
 });
