@@ -16,7 +16,13 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     const out = await http(person, 'POST', '/api/evidence', { payload: evidencePayload(title), status: 'confirmed', requestId: rid() });
     assert.equal(out.status, 201, JSON.stringify(out.body)); return out.body.id;
   };
-  const share = async (person, reviewer, ids, requestId = rid()) => http(person, 'POST', '/api/me/review-shares', { reviewerId: reviewer.id, evidenceIds: ids, requestId });
+  // ES-303: ya NO se autoriza por reviewerId. El revisor emite una invitación de un solo uso y la persona la canjea al autorizar (si quien invita no puede, se devuelve esa respuesta).
+  const invite = async (reviewer) => http(reviewer, 'POST', '/api/reviewer/invites', { requestId: rid() });
+  const share = async (person, reviewer, ids, requestId = rid(), code = null) => {
+    let inviteCode = code; if (!inviteCode) { const inv = await invite(reviewer); if (inv.status !== 201) return inv; inviteCode = inv.body.code; }
+    return http(person, 'POST', '/api/me/review-shares', { inviteCode, evidenceIds: ids, requestId });
+  };
+  const randomCode = () => Array.from({ length: 4 }, () => crypto.randomBytes(2).toString('hex').toUpperCase().replace(/[IOLU]/g, '7')).join('-');
   const review = (reviewer, shareId, ids, extra = {}) => http(reviewer, 'POST', '/api/reviewer/reviews', { shareId, evidenceIds: ids, observation: 'Observación de prueba', limits: 'Límites de prueba', locale: 'es', requestId: rid(), ...extra });
   const object = (person, reviewId, reason = 'No coincide con lo que hice', requestId = rid(), locale = 'es') => http(person, 'POST', `/api/me/professional-reviews/${reviewId}/objection`, { reason, requestId, locale });
   // Escenario base: persona, revisor (therapist), una evidencia compartida y una revisión.
@@ -63,10 +69,11 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     const oresp = await http(other, 'POST', '/api/reviewer/objections/1/response', { text: 'x', requestId: rid(), locale: 'es' }); assert.equal(oresp.status, 404);
     for (const route of ['/api/reviewer/shares', '/api/reviewer/objections']) assert.equal((await http(a.person, 'GET', route)).status, 403, 'una persona no entra al lado del revisor');
     assert.ok([401, 403].includes((await http(null, 'GET', '/api/me/professional-reviews')).status), 'sin sesión no entra');
-    // revisor inexistente o que no es therapist: mismo 404 reviewer_not_found
+    // ES-303: quien no es therapist no puede emitir invitaciones (403) y un código inexistente da siempre el mismo 404 invite_not_found
     const ev = await evidence(b); const notTherapist = await mkUser('user');
-    const x = await share(b, notTherapist, [ev]); const y = await http(b, 'POST', '/api/me/review-shares', { reviewerId: 99999999, evidenceIds: [ev], requestId: rid() });
-    assert.equal(x.status, 404); assert.equal(x.body.code, 'reviewer_not_found'); assert.deepEqual(x.body, y.body);
+    const x = await share(b, notTherapist, [ev]); assert.equal(x.status, 403);
+    const y = await http(b, 'POST', '/api/me/review-shares', { inviteCode: randomCode(), evidenceIds: [ev], requestId: rid() }); const z = await http(b, 'POST', '/api/me/review-shares', { inviteCode: randomCode(), evidenceIds: [ev], requestId: rid() });
+    assert.equal(y.status, 404); assert.equal(y.body.code, 'invite_not_found'); assert.deepEqual(y.body, z.body);
     // evidencia ajena o inexistente
     assert.equal((await share(b, other, [a.ev])).status, 400); assert.equal((await share(b, other, [a.ev])).body.code, 'invalid_evidence'); assert.equal((await share(b, other, [123456789])).body.code, 'invalid_evidence');
     // el permiso nunca se concede desde /api/consents (el alcance y las evidencias no vienen de ahí)
@@ -156,9 +163,11 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     assert.equal((await share(person, reviewer, [draft.body.id])).body.code, 'invalid_evidence', 'un borrador no se comparte');
     const ev = await evidence(person, 'Una'); const del = await evidence(person, 'Borrada'); assert.ok((await http(person, 'DELETE', `/api/evidence/${del}`)).status < 300);
     assert.equal((await share(person, reviewer, [del])).body.code, 'invalid_evidence', 'una borrada no se comparte');
-    for (const bad of [[], [ev, ev], Array.from({ length: 21 }, (_, i) => i + 1), ['1'], [0]]) assert.equal((await http(person, 'POST', '/api/me/review-shares', { reviewerId: reviewer.id, evidenceIds: bad, requestId: rid() })).status, 400);
-    assert.equal((await http(person, 'POST', '/api/me/review-shares', { reviewerId: person.id, evidenceIds: [ev], requestId: rid() })).status, 404, 'no puedes ser tu propio revisor');
-    const rq = rid(); const s1 = await share(person, reviewer, [ev], rq); const s2 = await share(person, reviewer, [ev], rq);
+    const inv0 = await invite(reviewer); assert.equal(inv0.status, 201);
+    for (const bad of [[], [ev, ev], Array.from({ length: 21 }, (_, i) => i + 1), ['1'], [0]]) assert.equal((await http(person, 'POST', '/api/me/review-shares', { inviteCode: inv0.body.code, evidenceIds: bad, requestId: rid() })).status, 400);
+    const evReviewer = await evidence(reviewer, 'Del propio revisor'); const own = await invite(reviewer);
+    assert.equal((await http(reviewer, 'POST', '/api/me/review-shares', { inviteCode: own.body.code, evidenceIds: [evReviewer], requestId: rid() })).status, 404, 'no puedes ser tu propio revisor (su código no te sirve)');
+    const rq = rid(); const inv1 = await invite(reviewer); const s1 = await share(person, reviewer, [ev], rq, inv1.body.code); const s2 = await share(person, reviewer, [ev], rq, inv1.body.code);
     assert.equal(s1.status, 201); assert.equal(s2.status, 201); assert.equal(s1.body.share.id, s2.body.share.id); assert.equal((await q('SELECT count(*)::int n FROM "ReviewShares" WHERE "UserId"=$1', [person.id]))[0].n, 1);
     const ev2 = await evidence(person, 'Dos'); assert.equal((await share(person, reviewer, [ev2], rq)).status, 409, 'mismo requestId con otros datos');
     const out = await http(reviewer, 'GET', '/api/reviewer/shares'); const text = JSON.stringify(out.body);
@@ -192,13 +201,17 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     assert.equal((await object(s2.person, s2.reviewId)).status, 403);
   });
 
-  await t.test('E262-1: un reviewerId no utilizable (persona, admin, inexistente, uno mismo) responde IGUAL con evidencia inválida o válida; no se enumeran profesionales', async () => {
-    const person = await mkUser('user'); const therapist = await mkUser('therapist'); const plain = await mkUser('user'); const admin = await mkUser('admin'); const ev = await evidence(person);
-    const bad = (reviewer) => http(person, 'POST', '/api/me/review-shares', { reviewerId: reviewer, evidenceIds: [987654], requestId: rid() });
-    const outs = await Promise.all([therapist.id, plain.id, admin.id, 99999999, person.id].map(bad));
+  await t.test('E262-1 (ES-303): un código no utilizable (inexistente, usado, anulado, de un revisor inactivo) responde IGUAL con evidencia inválida o válida; no se enumeran profesionales', async () => {
+    const person = await mkUser('user'); const therapist = await mkUser('therapist'); const ev = await evidence(person);
+    const used = await invite(therapist); assert.equal((await share(person, therapist, [ev], rid(), used.body.code)).status, 201);
+    const revoked = await invite(therapist); assert.equal((await http(therapist, 'DELETE', `/api/reviewer/invites/${revoked.body.invite.id}`)).status, 200);
+    const inactive = await mkUser('therapist'); const gone = await invite(inactive); await q('UPDATE "Users" SET active=false WHERE id=$1', [inactive.id]);
+    const unusable = [randomCode(), used.body.code, revoked.body.code, gone.body.code];
+    const bad = (code) => http(person, 'POST', '/api/me/review-shares', { inviteCode: code, evidenceIds: [987654], requestId: rid() });
+    const outs = await Promise.all(unusable.map(bad));
     assert.ok(outs.every((o) => o.status === 400 && o.body.code === 'invalid_evidence'), 'con evidencia inválida, la misma respuesta para cualquier id: ' + JSON.stringify(outs.map((o) => [o.status, o.body.code])));
-    const good = await Promise.all([plain.id, admin.id, 99999999, person.id].map((id) => http(person, 'POST', '/api/me/review-shares', { reviewerId: id, evidenceIds: [ev], requestId: rid() })));
-    assert.ok(good.every((o) => o.status === 404 && o.body.code === 'reviewer_not_found' && JSON.stringify(o.body) === JSON.stringify(good[0].body)), 'con evidencia válida, el mismo 404 para todo id no utilizable');
+    const good = await Promise.all(unusable.map((code) => http(person, 'POST', '/api/me/review-shares', { inviteCode: code, evidenceIds: [ev], requestId: rid() })));
+    assert.ok(good.every((o) => o.status === 404 && o.body.code === 'invite_not_found' && JSON.stringify(o.body) === JSON.stringify(good[0].body)), 'con evidencia válida, el mismo 404 para todo código no utilizable: ' + JSON.stringify(good.map((o) => [o.status, o.body.code])));
   });
 
   await t.test('E262-2/3: editar la evidencia compartida avisa «el material cambió» al revisor y a la persona; borrarla la quita del material del revisor y no se puede citar', async () => {
@@ -243,26 +256,33 @@ test('ES-175 PostgreSQL + HTTP: revisiones profesionales, objeción y autorizaci
     const ra = await review(reviewer, shA, [people[1].ev]); assert.equal(ra.status, 201);
     const cross = await review(reviewer, shB, [people[2].ev], { supersedesId: ra.body.review.id }); assert.equal(cross.status, 404, 'no se puede «corregir» la revisión de otra persona');
     const lim = await mkUser('user'); const limEv = await evidence(lim); let last; // E262-7
-    for (let i = 0; i < 31; i++) last = await share(lim, reviewer, [limEv]);
+    // ES-303: el 1.º intento canjea una invitación; los 29 siguientes re-autorizan por `shareId` (sin código nuevo); el 31.º da 429. (El revisor tiene un tope de 10 invitaciones activas: no se emiten 31.)
+    const first = await share(lim, reviewer, [limEv]); assert.equal(first.status, 201); const limShare = first.body.share.id; last = first;
+    for (let i = 1; i < 31; i++) last = await http(lim, 'POST', '/api/me/review-shares', { shareId: limShare, evidenceIds: [limEv], requestId: rid() });
     assert.equal(last.status, 429); assert.equal(last.body.code, 'rate_limited');
     assert.equal(Number((await q('SELECT count(*) n FROM "ReviewShares" WHERE "UserId"=$1', [lim.id]))[0].n), 30);
   });
 
-  await t.test('E262-7: el tope de 30 INTENTOS por persona y hora es UNIFORME: la 31.ª petición da el mismo 429 con un revisor utilizable, inexistente, persona o admin; la ventana se libera', async () => {
-    const reviews = require('../../utils/reviews'); const reviewer = await mkUser('therapist'); const plain = await mkUser('user'); const admin = await mkUser('admin');
-    const kinds = [['utilizable', reviewer.id], ['inexistente', 99999999], ['persona', plain.id], ['admin', admin.id]];
-    let clockNow = Date.now(); reviews._test.setClock(() => clockNow);
+  await t.test('E262-7 (ES-303): el tope de 30 INTENTOS por persona y hora es UNIFORME: la 31.ª petición da el mismo 429 con un código utilizable, desconocido, usado o anulado; la ventana se libera', async () => {
+    const reviews = require('../../utils/reviews'); const reviewInvites = require('../../utils/reviewInvites'); const reviewer = await mkUser('therapist');
+    let clockNow = Date.now(); reviews._test.setClock(() => clockNow); reviewInvites._test.setClock(() => clockNow);
     try {
       const out = [];
-      for (const [kind, reviewerId] of kinds) {
-        const me = await mkUser('user'); const ev = await evidence(me);
-        for (let i = 0; i < 30; i++) { const r = await http(me, 'POST', '/api/me/review-shares', { reviewerId, evidenceIds: [ev], requestId: rid() }); assert.notEqual(r.status, 429, `${kind}: el intento ${i + 1} aún cabe`); }
-        const over = await http(me, 'POST', '/api/me/review-shares', { reviewerId, evidenceIds: [ev], requestId: rid() }); out.push([kind, over.status, over.body.code]);
-        const again = await http(me, 'POST', '/api/me/review-shares', { reviewerId: 12345678, evidenceIds: [ev], requestId: rid() }); out.push(['otro id', again.status, again.body.code]);
-        if (kind === 'utilizable') { clockNow += 3600 * 1000 + 1000; const freed = await http(me, 'POST', '/api/me/review-shares', { reviewerId, evidenceIds: [ev], requestId: rid() }); assert.equal(freed.status, 201, 'pasada la hora, el tope se libera: ' + JSON.stringify(freed.body)); }
+      for (const kind of ['utilizable', 'desconocido', 'usado', 'anulado']) {
+        reviewInvites._test.reset(); // el tope por IP (60/h) es aparte: aquí se mide el de la PERSONA (30/h)
+        const me = await mkUser('user'); const ev = await evidence(me); const other = await mkUser('user'); const evOther = await evidence(other);
+        const fresh = await invite(reviewer); const usedInv = await invite(reviewer); await http(other, 'POST', '/api/me/review-shares', { inviteCode: usedInv.body.code, evidenceIds: [evOther], requestId: rid() });
+        const cancelled = await invite(reviewer); await http(reviewer, 'DELETE', `/api/reviewer/invites/${cancelled.body.invite.id}`);
+        const code = kind === 'utilizable' ? fresh.body.code : kind === 'usado' ? usedInv.body.code : kind === 'anulado' ? cancelled.body.code : randomCode();
+        const attempt = (c) => http(me, 'POST', '/api/me/review-shares', { inviteCode: c, evidenceIds: [ev], requestId: rid() });
+        // los 30 intentos no se pueden hacer con el código utilizable (el primero lo consume): se usan códigos desconocidos y al final se prueba el utilizable
+        for (let i = 0; i < 30; i++) { const r = await attempt(kind === 'utilizable' ? randomCode() : code); assert.notEqual(r.status, 429, `${kind}: el intento ${i + 1} aún cabe`); }
+        const over = await attempt(code); out.push([kind, over.status, over.body.code]);
+        const again = await attempt(randomCode()); out.push(['otro código', again.status, again.body.code]);
+        if (kind === 'utilizable') { clockNow += 3600 * 1000 + 1000; reviewInvites._test.reset(); const freed = await attempt(fresh.body.code); assert.equal(freed.status, 201, 'pasada la hora, el tope se libera y el código sirve: ' + JSON.stringify(freed.body)); }
       }
       assert.ok(out.every(([, status, code]) => status === 429 && code === 'rate_limited'), JSON.stringify(out));
-    } finally { reviews._test.setClock(() => Date.now()); reviews._test.reset(); }
+    } finally { reviews._test.setClock(() => Date.now()); reviews._test.reset(); reviewInvites._test.setClock(() => Date.now()); reviewInvites._test.reset(); }
   });
 
   await t.test('ES-23: las 4 tablas entran a personalData.CORE (se exporta descifrado, sin requestId) y la autorización queda en el historial de consentimientos', async () => {

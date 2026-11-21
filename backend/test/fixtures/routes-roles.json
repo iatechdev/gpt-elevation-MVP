@@ -72,6 +72,15 @@
     ],
     "session": true
   },
+  "DELETE /api/reviewer/invites/:id": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
+    "session": true
+  },
   "DELETE /api/sessions/user/my-therapist": {
     "denied": [],
     "session": true
@@ -536,6 +545,15 @@
   },
   "GET /api/recommendations/": {
     "denied": [],
+    "session": true
+  },
+  "GET /api/reviewer/invites": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
     "session": true
   },
   "GET /api/reviewer/objections": {
@@ -1202,6 +1220,10 @@
     "denied": [],
     "session": true
   },
+  "POST /api/me/review-invites/lookup": {
+    "denied": [],
+    "session": true
+  },
   "POST /api/me/review-shares": {
     "denied": [],
     "session": true
@@ -1257,6 +1279,15 @@
   "POST /api/register": {
     "denied": [],
     "session": false
+  },
+  "POST /api/reviewer/invites": {
+    "denied": [
+      "admin",
+      "board",
+      "superadmin",
+      "user"
+    ],
+    "session": true
   },
   "POST /api/reviewer/objections/:id/response": {
     "denied": [
