@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation · Dirección C · Taller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Dirección C · Taller.
+   Concepto: cada cosa que sabes hacer es una ficha de trabajo, con su frase de respaldo y su sello.
+   Nada se archiva sin que la persona lo selle. Los niveles se leen en un calibre de cuatro marcas.
+   Color: azul de overol y negro de taller; el naranja de seguridad solo marca lo que espera una decisión. */
+:root{
+  --paper:#F0EFEB; --sheet:#FFFFFF; --ink:#0D0F14; --muted:#4A4F5C; --rule:#0D0F14;
+  --blue:#1D3E9E; --blue-ink:#1D3E9E; --on-blue:#FFFFFF; --signal:#FF5A14; --on-signal:#0D0F14; --shadow:#0D0F14;
+  --wide:'Archivo',system-ui,sans-serif; --mono:'DM Mono',ui-monospace,Menlo,monospace;
+  --gut:max(16px,env(safe-area-inset-left,0px)); --gutr:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0B0F1E; --sheet:#151A30; --ink:#F1F2F7; --muted:#A8AEC2; --rule:#F1F2F7;
+  --blue-ink:#8EA6FF; --shadow:#000; color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#0B0F1E;--sheet:#151A30;--ink:#F1F2F7;--muted:#A8AEC2;--rule:#F1F2F7;--blue-ink:#8EA6FF;--shadow:#000;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.5 var(--wide);padding-left:var(--gut);padding-right:var(--gutr)}
+button,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:3px}
+.sr{position:absolute;left:-9999px}
+.wrap{max-width:1240px;margin:0 auto}
+.proto{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;padding:.6rem 0;font:500 .75rem var(--mono);color:var(--muted)}
+.proto b{color:var(--ink);font-weight:500;margin-right:auto}
+.proto button{background:none;border:1.5px solid var(--rule);padding:.3rem .65rem;cursor:pointer;font:500 .75rem var(--mono)}
+.proto button[aria-current="true"]{background:var(--ink);color:var(--paper)}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0 1.1rem;border-top:4px solid var(--ink)}
+.brand{font:900 1.5rem/1 var(--wide);font-stretch:125%;letter-spacing:-.02em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+.brand i{font-style:normal;background:var(--signal);color:var(--on-signal);padding:0 .25rem;margin-left:.15rem}
+nav.main{display:flex;gap:1.4rem;font:700 .85rem var(--wide);font-stretch:75%;letter-spacing:.1em;text-transform:uppercase}
+nav.main a{color:var(--ink);text-decoration:none;border-bottom:3px solid transparent}
+nav.main a:hover{border-color:var(--signal)}
+.view{display:none}.view.on{display:block}
+
+.big{font:900 clamp(2.6rem,8.4vw,7rem)/.92 var(--wide);font-stretch:125%;text-transform:uppercase;letter-spacing:-.03em;margin:0;text-wrap:balance}
+h2{font:800 1.5rem/1.05 var(--wide);font-stretch:112%;text-transform:uppercase;letter-spacing:-.01em;margin:0}
+.lab{font:700 .78rem var(--wide);font-stretch:62%;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.m{font:500 .78rem var(--mono);color:var(--muted)}
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:.55rem 1.2rem;background:var(--ink);color:var(--paper);border:2px solid var(--ink);font:800 .9rem var(--wide);font-stretch:100%;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:4px 4px 0 var(--shadow)}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--shadow)}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--shadow)}
+.btn.sig{background:var(--signal);color:var(--on-signal)}
+.btn.alt{background:var(--sheet);color:var(--ink)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.view .row{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
+
+/* portada */
+.hero{background:var(--blue);color:var(--on-blue);margin:0 calc(var(--gutr) * -1) 0 calc(var(--gut) * -1);padding:clamp(1.8rem,5vw,3.6rem) max(16px,env(safe-area-inset-left,0px)) clamp(2rem,5vw,3.4rem)}
+.hero>div{max-width:1240px;margin:0 auto}
+.hero p.lead{max-width:36rem;font-size:1.25rem;margin:1.4rem 0 0}
+.bench{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:2.4rem;padding:2.6rem 0;align-items:start}
+textarea{width:100%;min-height:96px;padding:.8rem;background:var(--sheet);border:2px solid var(--ink);font:400 1rem/1.5 var(--wide);border-radius:0;resize:vertical}
+.ficha{background:var(--sheet);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--shadow);position:relative}
+.ficha[hidden]{display:none}
+.ficha .hd{display:flex;justify-content:space-between;gap:.6rem;align-items:center;padding:.5rem .9rem;border-bottom:2px dashed var(--ink)}
+.ficha .bd{padding:.9rem 1rem 1rem;display:grid;gap:.7rem}
+.ficha .fld b{display:block}
+.ficha q{font:500 1rem/1.5 var(--mono);quotes:'«' '»'}
+.sello{display:inline-block;border:3px double currentColor;padding:.1rem .55rem;font:900 .8rem var(--wide);font-stretch:100%;letter-spacing:.14em;text-transform:uppercase;transform:rotate(-4deg)}
+.sello.p{background:var(--signal);color:var(--on-signal);border-color:var(--on-signal)}
+.sello.c{color:var(--blue-ink)}
+.sello.x{color:var(--muted);text-decoration:line-through}
+.stations{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:4px solid var(--ink);counter-reset:s}
+.stations>div{padding:1rem 1rem 1.4rem 0;border-right:2px solid var(--ink)}.stations>div+div{padding-left:1rem}.stations>div:last-child{border:0}
+.stations .n{font:900 2.6rem/1 var(--wide);font-stretch:125%;color:var(--blue-ink)}
+.stations p{margin:.4rem 0 0}
+.slot{margin:2rem 0;aspect-ratio:21/7;border:3px dashed var(--ink);display:grid;place-items:center;text-align:center;padding:1rem;font:500 .85rem var(--mono);color:var(--muted)}
+footer.f{padding:1rem 0 2rem;border-top:2px solid var(--ink);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+
+/* banco de trabajo */
+.bank{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:2rem;padding:1.4rem 0 2rem}
+.bank h1{font:900 clamp(2rem,5vw,3.4rem)/.95 var(--wide);font-stretch:125%;text-transform:uppercase;letter-spacing:-.03em;margin:.2rem 0 1rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+.col>.lab{display:flex;justify-content:space-between;border-bottom:4px solid var(--ink);padding-bottom:.4rem;margin-bottom:1rem}
+.col .ficha{margin-bottom:1.2rem}
+.empty{border:2px dashed var(--ink);padding:1rem;color:var(--muted);font-size:.95rem}
+.tools{background:var(--sheet);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--shadow);align-self:start;position:sticky;top:1rem}
+.tools .hd{padding:.6rem 1rem;border-bottom:2px solid var(--ink);background:var(--ink);color:var(--paper)}
+.tools ul{list-style:none;margin:0;padding:0}
+.tools li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.8rem;align-items:center;padding:.55rem 1rem;border-bottom:1px solid var(--ink)}
+.tools li:last-child{border:0}
+.tools li.on b{color:var(--blue-ink)}
+.gauge{display:inline-grid;grid-template-columns:repeat(4,12px);gap:3px;align-items:end}
+.gauge i{display:block;background:transparent;border:1.5px solid var(--ink);height:8px}
+.gauge i:nth-child(2){height:12px}.gauge i:nth-child(3){height:16px}.gauge i:nth-child(4){height:20px}
+.gauge i.f{background:var(--blue-ink);border-color:var(--blue-ink)}
+.tools .ft{padding:.7rem 1rem;border-top:2px solid var(--ink);font-size:.85rem;color:var(--muted)}
+.lvl{display:flex;gap:.4rem;flex-wrap:wrap}
+.lvl label{border:2px solid var(--ink);padding:.15rem .7rem;font:800 1rem var(--wide);cursor:pointer;background:var(--sheet)}
+.lvl input{position:absolute;opacity:0}
+.lvl label:has(input:checked){background:var(--ink);color:var(--paper)}
+.lvl label:has(input:focus-visible){outline:3px solid var(--signal);outline-offset:2px}
+
+/* conversación */
+.talk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:2rem;padding:1.2rem 0 0}
+.tn{display:grid;grid-template-columns:7.2rem minmax(0,1fr);gap:1rem;padding:1rem 0;border-top:2px solid var(--ink)}
+.tn .who{font:900 .8rem/1 var(--wide);font-stretch:112%;letter-spacing:.1em;text-transform:uppercase;padding:.35rem .5rem;align-self:start;text-align:center}
+.tn.me .who{background:var(--ink);color:var(--paper)}
+.tn.ai .who{background:var(--blue);color:var(--on-blue)}
+.tn p{margin:0;font-size:1.1rem;max-width:38rem}
+.tn.ai p{font-weight:500}
+.composer{position:sticky;bottom:0;background:var(--paper);border-top:4px solid var(--ink);padding:.8rem 0 calc(.8rem + env(safe-area-inset-bottom,0px));margin-top:1rem}
+.composer .row{margin:0;align-items:flex-end}.composer textarea{min-height:56px;flex:1}
+.side{position:sticky;top:1rem;align-self:start}
+.side .ficha .bd{gap:.4rem}
+
+@media (max-width:900px){
+  .bench,.bank,.talk{grid-template-columns:1fr}.cols{grid-template-columns:1fr}
+  .tools,.side{position:static}.stations{grid-template-columns:1fr 1fr}.stations>div:nth-child(2){border-right:0}.stations>div:nth-child(3){padding-left:0;border-top:2px solid var(--ink)}.stations>div:nth-child(4){border-top:2px solid var(--ink)}
+  nav.main{display:none}.tn{grid-template-columns:6.4rem minmax(0,1fr);gap:.8rem}.tn .who{font-size:.7rem;letter-spacing:.04em;padding:.35rem .3rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.btn:hover,.btn:active{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="proto" role="toolbar" aria-label="Pantallas del prototipo">
+    <b>Dirección C · Taller · prototipo</b>
+    <button data-go="portada" aria-current="true">Portada</button>
+    <button data-go="inicio">Inicio con sesión</button>
+    <button data-go="chat">Conversación</button>
+  </div>
+  <header class="top">
+    <a class="brand" href="#portada" aria-label="Elevation, inicio">Elevation<i>↗</i></a>
+    <nav class="main" aria-label="Principal"><a href="#" data-go="portada">Cómo funciona</a><a href="#" data-go="portada">Privacidad</a><a href="#" data-go="inicio">Entrar</a></nav>
+  </header>
+
+  <!-- PORTADA -->
+  <main id="v-portada" class="view on">
+    <section class="hero" aria-label="Portada"><div>
+      <h1 class="big">Tu oficio no cabe en un cargo.</h1>
+      <p class="lead">Cuéntanos qué hiciste. Armamos contigo una ficha por cada cosa que sabes hacer, con la frase que la respalda. La sellas tú.</p>
+    </div></section>
+
+    <section class="bench" aria-labelledby="b1">
+      <div>
+        <p class="lab" id="b1">Arma una ficha con una escena de ejemplo</p>
+        <label class="sr" for="sc">Tu escena</label>
+        <textarea id="sc" maxlength="360">El pedido se atrasó, avisé a todos y reorganicé la entrega.</textarea>
+        <div class="row"><button class="btn sig" id="make">Armar la ficha</button><button class="btn alt" data-go="chat">Escribir la mía</button></div>
+        <p class="m" style="margin:.8rem 0 0">Escena de ejemplo, no es tuya.</p>
+      </div>
+      <article class="ficha" id="f1" hidden aria-live="polite">
+        <div class="hd"><span class="lab" style="color:var(--ink)">Ficha de trabajo · ejemplo</span><span class="sello p" id="f1s">Propuesta</span></div>
+        <div class="bd">
+          <div class="fld"><span class="lab">Posible capacidad</span><b style="font-size:1.25rem">Planificación y organización</b></div>
+          <div class="fld"><span class="lab">Se apoya en</span><q>reorganicé la entrega</q></div>
+          <p id="f1t" style="margin:0;font-size:.95rem">Es una sugerencia, no una evaluación. Si la sellas, queda en tu banco de trabajo.</p>
+          <div class="row" id="f1a" style="margin:0"><button class="btn" data-f="seal">Sellar ficha</button><button class="btn alt" data-f="void">Descartar</button></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="stations" aria-label="Cómo funciona">
+      <div><span class="n">01</span><p><b>Cuentas</b><br>Una escena real, en tus palabras.</p></div>
+      <div><span class="n">02</span><p><b>Armamos la ficha</b><br>Con la capacidad posible y la frase que la respalda.</p></div>
+      <div><span class="n">03</span><p><b>La sellas tú</b><br>Sin tu sello, no se guarda nada.</p></div>
+      <div><span class="n">04</span><p><b>Va a tu banco</b><br>Tu nivel es el que tú registras. Nadie lo certifica.</p></div>
+    </section>
+    <div class="slot">Espacio reservado para fotografía real · persona en su lugar de trabajo, Bogotá<br>Por encargar. No se genera con IA.</div>
+    <footer class="f"><span>Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.</span><span>Tú decides qué guardar.</span></footer>
+  </main>
+
+  <!-- INICIO CON SESIÓN -->
+  <main id="v-inicio" class="view">
+    <div class="bank">
+      <section aria-labelledby="bt">
+        <p class="lab">Banco de trabajo <span class="m">· ejemplo</span></p>
+        <h1 id="bt">Hola, Camila.</h1>
+        <div class="cols">
+          <div class="col"><div class="lab"><span>Esperan tu sello</span><span id="cp">2</span></div><div id="cpend"></div></div>
+          <div class="col"><div class="lab"><span>Selladas por ti</span><span id="cc">1</span></div><div id="cconf"></div></div>
+        </div>
+      </section>
+      <aside class="tools" aria-label="Herramientas, tus capacidades">
+        <div class="hd"><span class="lab" style="color:var(--paper)">Tus herramientas</span></div>
+        <ul id="tl"></ul>
+        <div class="ft">Un nivel es lo que registras con tu evidencia. Sin evidencia, queda sin evaluar.</div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- CONVERSACIÓN -->
+  <main id="v-chat" class="view">
+    <div class="talk">
+      <section aria-labelledby="ct">
+        <p class="lab">Esto no es terapia ni diagnóstico. Puedes pausar cuando quieras.</p>
+        <h2 id="ct" style="margin:.3rem 0 1rem">Conversación</h2>
+        <div id="tr">
+          <div class="tn ai"><span class="who">Elevation</span><p>Cuéntame una situación de trabajo que te dejó pensando. Una frase basta.</p></div>
+          <div class="tn me"><span class="who">Tú</span><p>Esta semana se atrasó un pedido grande y me tocó reorganizar todo.</p></div>
+          <div class="tn ai"><span class="who">Elevation</span><p>Suena a una semana movida. ¿Qué fue lo primero que hiciste cuando supiste del atraso?</p></div>
+          <div class="tn me"><span class="who">Tú</span><p>Avisé a todos y reorganicé la entrega.</p></div>
+          <div class="tn ai"><span class="who">Elevation</span><div><p>En lo que cuentas aparece algo que podría ser coordinar cambios. Armé una ficha con eso. Es una posibilidad, no una evaluación.</p>
+            <article class="ficha" id="cf1" style="margin-top:1rem;max-width:34rem"><div class="hd"><span class="lab" style="color:var(--ink)">Ficha propuesta</span><span class="sello p" id="cf1s">Propuesta</span></div>
+              <div class="bd"><b style="font-size:1.15rem">Planificación y organización</b><q>reorganicé la entrega</q>
+                <div class="row" id="cf1a" style="margin:0"><button class="btn" data-c="seal">Sellar ficha</button><button class="btn alt" data-c="void">Descartar</button></div></div></article></div></div>
+        </div>
+        <form class="composer" id="cform"><label class="sr" for="cm">Tu mensaje</label>
+          <div class="row"><textarea id="cm" maxlength="500" placeholder="Escribe lo que quieras compartir."></textarea><button class="btn sig" type="submit">Enviar</button></div>
+          <p class="m" style="margin:.5rem 0 0">Tu conversación es privada. Tú decides qué se guarda como evidencia.</p></form>
+      </section>
+      <aside class="side" aria-label="Tu banco de trabajo">
+        <article class="ficha"><div class="hd"><span class="lab" style="color:var(--ink)">Tu banco</span></div>
+          <div class="bd"><p style="margin:0" id="sn">1 ficha sellada, 2 esperan tu sello.</p><button class="btn alt" data-go="inicio">Ver banco de trabajo</button></div></article>
+      </aside>
+    </div>
+  </main>
+</div>
+<script>
+(function(){
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+  var CAPS=['Adaptabilidad','Análisis de información','Aprendizaje autónomo','Comunicación','Influencia y liderazgo','Planificación y organización','Resolución de problemas','Trabajo en equipo'];
+  var LV={3:2};var FICHAS=[
+    {id:1,cap:5,q:'reorganicé la entrega',st:'p'},
+    {id:2,cap:3,q:'Le expliqué al cliente qué había pasado antes de que preguntara',st:'c'},
+    {id:3,cap:7,q:'el turno de la tarde supiera dónde íbamos',st:'p'}];
+  function gauge(n){var h='<span class="gauge" role="img" aria-label="'+(n?'Nivel '+n+' de 4':'Sin evaluar')+'">';for(var i=1;i<=4;i++)h+='<i class="'+(i<=n?'f':'')+'"></i>';return h+'</span>'}
+  function ficha(f){var h='<article class="ficha"><div class="hd"><span class="lab" style="color:var(--ink)">Ficha '+(f.id<10?'0':'')+f.id+'</span><span class="sello '+(f.st==='p'?'p':'c')+'">'+(f.st==='p'?'Propuesta':'Sellada')+'</span></div><div class="bd"><b style="font-size:1.15rem">'+esc(CAPS[f.cap])+'</b><q>'+esc(f.q)+'</q>';
+    if(f.st==='p')h+='<div class="row" style="margin:0"><button class="btn" data-s="'+f.id+'">Sellar ficha</button><button class="btn alt" data-d="'+f.id+'">Descartar</button></div>';
+    else if(!LV[f.cap])h+='<fieldset style="border:0;margin:0;padding:0"><legend class="lab">Registrar mi nivel (1 a 4)</legend><div class="lvl">'+[1,2,3,4].map(function(n){return'<label><input type="radio" name="l'+f.id+'" value="'+n+'"><span>'+n+'</span></label>'}).join('')+'</div></fieldset><div class="row" style="margin:0"><button class="btn alt" data-l="'+f.id+'">Registrar nivel</button></div>';
+    else h+='<p class="m" style="margin:0">Nivel '+LV[f.cap]+' de 4, registrado por ti. Sin revisión humana.</p>';
+    return h+'</div></article>'}
+  function render(){var p=FICHAS.filter(function(f){return f.st==='p'}),c=FICHAS.filter(function(f){return f.st==='c'});
+    document.getElementById('cpend').innerHTML=p.length?p.map(ficha).join(''):'<p class="empty">No hay fichas esperando. Cuéntanos otra escena cuando quieras.</p>';
+    document.getElementById('cconf').innerHTML=c.length?c.map(ficha).join(''):'<p class="empty">Aún no has sellado ninguna.</p>';
+    document.getElementById('cp').textContent=p.length;document.getElementById('cc').textContent=c.length;
+    document.getElementById('tl').innerHTML=CAPS.map(function(n,i){return'<li class="'+(LV[i]?'on':'')+'"><b>'+esc(n)+'</b>'+gauge(LV[i]||0)+'</li>'}).join('');
+    document.getElementById('sn').textContent=c.length+(c.length===1?' ficha sellada, ':' fichas selladas, ')+p.length+(p.length===1?' espera tu sello.':' esperan tu sello.')}
+  document.getElementById('v-inicio').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+    if(b.dataset.s){FICHAS.find(function(f){return f.id==b.dataset.s}).st='c'}
+    else if(b.dataset.d){FICHAS=FICHAS.filter(function(f){return f.id!=b.dataset.d})}
+    else if(b.dataset.l){var f=FICHAS.find(function(x){return x.id==b.dataset.l}),r=b.closest('.bd').querySelector('input:checked');if(!r)return;LV[f.cap]=+r.value}
+    else return;render()});
+  render();
+  /* portada */
+  var f1=document.getElementById('f1'),s=document.getElementById('f1s'),t=document.getElementById('f1t'),a=document.getElementById('f1a');
+  document.getElementById('make').addEventListener('click',function(){f1.hidden=false;s.className='sello p';s.textContent='Propuesta';
+    t.textContent='Es una sugerencia, no una evaluación. Si la sellas, queda en tu banco de trabajo.';
+    a.innerHTML='<button class="btn" data-f="seal">Sellar ficha</button><button class="btn alt" data-f="void">Descartar</button>'});
+  f1.addEventListener('click',function(e){var b=e.target.closest('[data-f]');if(!b)return;
+    if(b.dataset.f==='seal'){s.className='sello c';s.textContent='Sellada';t.textContent='Sellada por ti. En el producto real, aquí podrías registrar tu nivel con evidencia.';a.innerHTML='<button class="btn alt" data-go="inicio">Ver un banco de trabajo</button>'}
+    else{s.className='sello x';s.textContent='Descartada';t.textContent='Descartada. No se guarda nada.';a.innerHTML=''}});
+  /* conversación */
+  document.getElementById('cf1').addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(!b)return;
+    var st=document.getElementById('cf1s'),ac=document.getElementById('cf1a');
+    if(b.dataset.c==='seal'){st.className='sello c';st.textContent='Sellada';ac.innerHTML='<span class="m">Sellada por ti. Está en tu banco de trabajo.</span>';
+      var f=FICHAS.find(function(x){return x.id===1});if(f)f.st='c';render()}
+    else{st.className='sello x';st.textContent='Descartada';ac.innerHTML='<span class="m">Descartada. No se guarda nada.</span>'}});
+  document.getElementById('cform').addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('cm'),v=t.value.trim();if(!v)return;
+    var tr=document.getElementById('tr');function add(c,w,x){var d=document.createElement('div');d.className='tn '+c;var sp=document.createElement('span');sp.className='who';sp.textContent=w;var p=document.createElement('p');p.textContent=x;d.append(sp,p);tr.append(d);return d}
+    add('me','Tú',v);var r=add('ai','Elevation','Gracias por contarlo. En este prototipo no hay respuesta real; en el producto, aquí seguiría una pregunta.');t.value='';r.scrollIntoView({block:'nearest'})});
+  /* navegación */
+  var V={portada:1,inicio:1,chat:1};
+  function show(n){if(!V[n])n='portada';for(var k in V)document.getElementById('v-'+k).classList.toggle('on',k===n);
+    document.querySelectorAll('.proto [data-go]').forEach(function(b){b.setAttribute('aria-current',b.dataset.go===n?'true':'false')});
+    try{history.replaceState(null,'','#'+n)}catch(e){}window.scrollTo(0,0)}
+  document.addEventListener('click',function(e){var g=e.target.closest('[data-go]');if(g){e.preventDefault();show(g.dataset.go)}});
+  window.addEventListener('hashchange',function(){show((location.hash||'').slice(1))});
+  show((location.hash||'').slice(1));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+{
+ "registro-es-escritorio": {
+  "campos": [
+   {
+    "tipo": "text",
+    "id": "access-name",
+    "obligatorio": true
+   },
+   {
+    "tipo": "email",
+    "id": "access-email",
+    "obligatorio": true
+   },
+   {
+    "tipo": "password",
+    "id": "access-password",
+    "obligatorio": true
+   }
+  ],
+  "casillas": 0,
+  "textoPolitica": false
+ },
+ "planes-es-escritorio": {
+  "botones": [
+   "ES",
+   "EN",
+   "Solicitar este plan",
+   "Solicitar este plan"
+  ],
+  "enlaces": [
+   "Saltar al contenido",
+   "elevation",
+   "Cómo funciona",
+   "Skill Map",
+   "Planes",
+   "Ingresar",
+   "Continuar a mi espacio"
+  ]
+ },
+ "registro-es-movil": {
+  "campos": [
+   {
+    "tipo": "text",
+    "id": "access-name",
+    "obligatorio": true
+   },
+   {
+    "tipo": "email",
+    "id": "access-email",
+    "obligatorio": true
+   },
+   {
+    "tipo": "password",
+    "id": "access-password",
+    "obligatorio": true
+   }
+  ],
+  "casillas": 0,
+  "textoPolitica": false
+ },
+ "planes-es-movil": {
+  "botones": [
+   "☰",
+   "Solicitar este plan",
+   "Solicitar este plan"
+  ],
+  "enlaces": [
+   "Saltar al contenido",
+   "elevation",
+   "Continuar a mi espacio"
+  ]
+ },
+ "registro-en-escritorio": {
+  "campos": [
+   {
+    "tipo": "text",
+    "id": "access-name",
+    "obligatorio": true
+   },
+   {
+    "tipo": "email",
+    "id": "access-email",
+    "obligatorio": true
+   },
+   {
+    "tipo": "password",
+    "id": "access-password",
+    "obligatorio": true
+   }
+  ],
+  "casillas": 0,
+  "textoPolitica": false
+ },
+ "planes-en-escritorio": {
+  "botones": [
+   "ES",
+   "EN",
+   "Request this plan",
+   "Request this plan"
+  ],
+  "enlaces": [
+   "Skip to content",
+   "elevation",
+   "How it works",
+   "Skill Map",
+   "Plans",
+   "Log in",
+   "Continue to my space"
+  ]
+ },
+ "registro-en-movil": {
+  "campos": [
+   {
+    "tipo": "text",
+    "id": "access-name",
+    "obligatorio": true
+   },
+   {
+    "tipo": "email",
+    "id": "access-email",
+    "obligatorio": true
+   },
+   {
+    "tipo": "password",
+    "id": "access-password",
+    "obligatorio": true
+   }
+  ],
+  "casillas": 0,
+  "textoPolitica": false
+ },
+ "planes-en-movil": {
+  "botones": [
+   "☰",
+   "Request this plan",
+   "Request this plan"
+  ],
+  "enlaces": [
+   "Skip to content",
+   "elevation",
+   "Continue to my space"
+  ]
+ }
+}

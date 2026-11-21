@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ES-153 · Marcos Persona y Público (maqueta)</title>
+<style>
+/* Maqueta estática de DISEÑO (no es código de producto). Tokens copiados de frontend/src/cartografia/cartografia.css y reglas de
+   frontend/src/shell/shell.css (main a 14-nov-2026); lo NUEVO está marcado «NUEVO». Sin tipografías autoalojadas: usa la alternativa
+   del sistema (Arial Narrow); en producción cargan Barlow Condensed / Barlow / Spectral. */
+.cg{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;
+--cg-font-cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;--cg-font-sans:'Barlow',system-ui,sans-serif;--cg-font-name:'Spectral',Georgia,serif;
+--cg-touch:2.875rem;--cg-focus:3px;color-scheme:light;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 var(--cg-font-sans)}
+@media (prefers-color-scheme:dark){.cg:not([data-theme='light']){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}}
+.cg[data-theme='dark']{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+.cg :focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:3px}
+.cg a{color:var(--cg-mark);text-underline-offset:3px}
+.cg-muted{color:var(--cg-muted)}
+.cg-tag{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-h1{font:700 clamp(2rem,6vw,3.2rem)/.95 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .6rem}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch);padding:.55rem 1.2rem;background:var(--cg-ink);color:var(--cg-ground);border:0;border-radius:0;font:700 1rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.cg-btn:hover{background:var(--cg-mark)}
+.cg a.cg-btn{color:var(--cg-ground)}
+.cg-btn--ghost,.cg a.cg-btn--ghost{background:none;color:var(--cg-ink);border:1.5px solid var(--cg-ink)}
+.cg-btn--ghost:hover{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-row{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.cg-banner{border:1.5px solid var(--cg-ink);background:var(--cg-panel);padding:1rem 1.2rem;max-width:40rem}
+.cg-banner--error{border-color:var(--cg-err)}
+.cg-banner__title{font:700 1.3rem var(--cg-font-cond);text-transform:uppercase;margin:0 0 .3rem}
+.cg-banner p{margin:.3rem 0}
+
+/* ===== marco (shell.css) ===== */
+.cg-frame{min-height:100dvh;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.cg-skip{position:absolute;left:1rem;top:-10rem;z-index:100;background:var(--cg-panel);color:var(--cg-mark);border:2px solid var(--cg-ink);padding:.7rem 1rem;font-weight:600}
+.cg-skip:focus{top:1rem}
+.cg-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.4rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.cg-brand{font:700 1.7rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg a.cg-brand{color:var(--cg-ink)}
+.cg-brand i{font-style:normal;color:var(--cg-mark)}
+.cg-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.cg-nav a:not(.cg-btn){color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)} /* NUEVO: min-width y justify-content: objetivo ≥ 44 px también en palabras cortas como «Mapa» */
+.cg-nav a:not(.cg-btn):hover{border-color:var(--cg-mark)}
+.cg-nav a[aria-current='page']{border-color:var(--cg-ink)}
+.cg-header__end{display:flex;align-items:center;gap:.7rem 1rem;flex-wrap:wrap;margin-left:auto}
+.cg-lang{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-lang__btn{min-width:var(--cg-touch);min-height:var(--cg-touch);background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;cursor:pointer}
+.cg-lang__btn[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-usermenu{position:relative}
+.cg-usermenu__button{background:none;border:0;border-bottom:3px solid transparent;min-height:var(--cg-touch);padding:0 .2rem;cursor:pointer;color:var(--cg-ink);font:italic 500 1.1rem var(--cg-font-name)}
+.cg-usermenu__button:hover,.cg-usermenu__button[aria-expanded='true'],.cg-usermenu__button.is-here{border-color:var(--cg-ink)}
+.cg-usermenu__list{position:absolute;right:0;top:calc(100% + 6px);z-index:20;list-style:none;margin:0;padding:.3rem;min-width:14rem;max-width:calc(100vw - 2rem);background:var(--cg-panel);border:1.5px solid var(--cg-ink);display:grid}
+.cg-usermenu__list[hidden]{display:none}
+.cg-usermenu__list a,.cg-usermenu__out{display:flex;align-items:center;min-height:var(--cg-touch);padding:.55rem .7rem;color:var(--cg-ink);text-decoration:none;background:none;border:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+.cg a.cg-usermenu__link{color:var(--cg-ink)}
+.cg-usermenu__list a:hover,.cg-usermenu__out:hover{background:var(--cg-ground)}
+.cg-usermenu__list a[aria-current='page']{background:var(--cg-ground);box-shadow:inset 4px 0 0 var(--cg-mark)}
+.cg-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 0 2rem;min-width:0}
+.cg-main{min-width:0;outline:none}
+.cg-main:focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:4px}
+.cg-footer{display:flex;justify-content:space-between;gap:.4rem 1rem;flex-wrap:wrap;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted);max-width:1240px;width:100%;margin:0 auto}
+
+/* ===== NUEVO: Persona en móvil, tema, preferencias ===== */
+.cg-nav--person{display:flex}
+.cg-prefs{display:flex;gap:.6rem 1.4rem;flex-wrap:wrap;align-items:center;width:100%;max-width:1240px;margin:0 auto;padding:.8rem 0;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted)}
+.cg-prefs__group{display:inline-flex;align-items:center;gap:.6rem}
+.cg-seg{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-seg button{min-height:var(--cg-touch);min-width:var(--cg-touch);padding:0 .8rem;background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cg-seg button[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-seg button+button{border-left:1.5px solid var(--cg-ink)}
+.cg-only-narrow{display:none}
+@media (max-width:900px){
+ .cg-body{padding-top:.6rem}
+ /* fila 1: marca + menú de usuario; fila 2: cuadrícula fija de 3 columnas (alto fijo: sin CLS, lección de E263-2) */
+ .cg-header--person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 .8rem;padding:.4rem 0 .6rem}
+ .cg-header--person .cg-brand{grid-column:1;grid-row:1}
+ .cg-header--person .cg-header__end,.cg-header--person .cg-usermenu{display:contents}
+ .cg-header--person .cg-usermenu__button{grid-column:2;grid-row:1;justify-self:end}
+ /* el menú se abre EN LÍNEA bajo la cuadrícula y empuja el contenido: no tapa la navegación (WCAG 2.5.8) */
+ .cg-header--person .cg-usermenu__list{grid-column:1 / -1;grid-row:3;position:static;max-width:none;margin-top:.4rem}
+ .cg-header--person .cg-nav{grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}
+ .cg-header--person .cg-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .cg-header--person .cg-lang{display:none}
+ .cg-only-narrow{display:flex}
+ .cg-nav--grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.2rem 1rem;width:100%}
+ .cg-nav--grid a{min-width:0;overflow-wrap:anywhere}
+ .cg-nav--grid a.cg-btn{justify-content:center}
+}
+@media (max-width:360px){.cg-header--person .cg-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}} /* NUEVO: a 320 px «Conversación» cabe sin partirse */
+@media (min-width:901px){.cg-only-narrow{display:none!important}}
+.cg-main.elv-light{background:#fbfaf6;color:#1b1b18;padding:1rem;--keep:1}
+.cg-skel{display:grid;gap:.6rem;max-width:40rem}
+.cg-skel i{display:block;height:1rem;background:var(--cg-line);opacity:.6}
+@media (prefers-reduced-motion:no-preference){.cg-skel i{animation:pulse 1.4s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.3}}
+.card{border:1.5px solid var(--cg-ink);background:var(--cg-panel);padding:1rem 1.2rem;max-width:44rem;margin-top:1rem}
+
+/* ===== sólo de la lámina (NO es parte del diseño) ===== */
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center}
+.proto select,.proto button{font:inherit;min-height:32px;max-width:100%}
+.proto label{max-width:100%}.proto select{max-width:60vw}
+.proto b{color:#1d4f91}
+.notes{max-width:1240px;margin:0 auto;padding:1rem 16px 3rem;font:15px/1.5 system-ui,sans-serif}
+</style>
+</head>
+<body>
+<div class="proto" id="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)">
+ <b>Lámina de diseño ES-153</b>
+ <label>Escena
+  <select id="scene">
+   <option value="person">Persona · pantalla (ejemplo)</option>
+   <option value="menu">Persona · menú de usuario abierto</option>
+   <option value="legacy">Persona · pantalla aún no migrada (tema claro fijo)</option>
+   <option value="loading">Persona · cambiando de pantalla (cargando)</option>
+   <option value="error">Persona · error al mostrar la pantalla</option>
+   <option value="chat">Persona · chat (sin pie)</option>
+   <option value="public">Público · precios / profesionales</option>
+   <option value="room">Sala de sesión (se queda como está)</option>
+   <option value="expired">Sesión vencida</option>
+   <option value="noaccess">Sin acceso</option>
+   <option value="unavailable">No se pudo verificar la sesión</option>
+  </select></label>
+ <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
+ <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
+ <span>Los controles de esta barra no existen en la plataforma.</span>
+</div>
+
+<div id="root"></div>
+
+<section class="notes cg" id="notes" aria-label="Notas de diseño"></section>
+
+<script>
+const T={es:{skip:'Saltar al contenido',lang:'Idioma',main:'Principal',menu:'Menú de usuario',how:'Cómo funciona',privacy:'Privacidad',manifest:'Manifiesto ético',signIn:'Entrar',signUp:'Crear cuenta',
+ map:'Mapa',chat:'Conversación',evidence:'Evidencias',diary:'Diario',next:'Siguiente paso',today:'Hoy',bridge:'El Puente',pro:'Mi profesional',tools:'Mis herramientas',progress:'Mi progreso',plan:'Mi plan',resumes:'Hojas de vida',reviews:'Revisiones profesionales',data:'Mis datos',feedback:'Tu opinión',out:'Salir',
+ foot1:'Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.',foot2:'Tú decides qué guardar.',
+ prefs:'Preferencias',theme:'Tema',tsys:'Sistema',tlight:'Claro',tdark:'Oscuro',
+ h1:'Título de la pantalla',ph:'Marcador de posición: aquí va el contenido real de cada pantalla (sin encabezado propio, sin selector de idioma propio).',
+ loading:'Cargando la pantalla…',errT:'No pudimos mostrar esta pantalla.',errP:'El menú sigue funcionando. Puedes volver a intentarlo o ir a otra pantalla.',retry:'Reintentar',
+ expT:'Tu sesión terminó.',expP:'Por seguridad cerramos tu sesión. Lo que escribías sin guardar no se pierde en este dispositivo hasta que cierres la pestaña. Entra de nuevo para continuar.',expB:'Entrar',
+ noT:'Tu rol no tiene acceso a esta pantalla.',noP:'Si crees que deberías verla, pídeselo a quien administra la plataforma.',noB:'Ir a mi inicio',
+ unT:'No pudimos verificar tu sesión.',unP:'Tu sesión sigue abierta. Revisa tu conexión e inténtalo de nuevo.',
+ roomExit:'Salir de la sala',roomNote:'Pantalla completa: sin encabezado ni pie. Mantiene su salida visible y «Saltar al contenido».',
+ here:'estás aquí',themeNote:'Disponible en las pantallas ya migradas a Cartografía.'},
+en:{skip:'Skip to content',lang:'Language',main:'Main',menu:'User menu',how:'How it works',privacy:'Privacy',manifest:'Ethical manifest',signIn:'Sign in',signUp:'Create account',
+ map:'Map',chat:'Conversation',evidence:'Evidence',diary:'Diary',next:'Next step',today:'Today',bridge:'The Bridge',pro:'My professional',tools:'My tools',progress:'My progress',plan:'My plan',resumes:'Résumés',reviews:'Professional reviews',data:'My data',feedback:'Your feedback',out:'Sign out',
+ foot1:'Elevation is support and self-knowledge. It is not therapy or diagnosis.',foot2:'You decide what to save.',
+ prefs:'Preferences',theme:'Theme',tsys:'System',tlight:'Light',tdark:'Dark',
+ h1:'Screen title',ph:'Placeholder: the real content of each screen goes here (no header of its own, no language switch of its own).',
+ loading:'Loading the screen…',errT:'We could not show this screen.',errP:'The menu still works. You can try again or go to another screen.',retry:'Try again',
+ expT:'Your session ended.',expP:'For your security we signed you out. What you were typing and had not saved stays on this device until you close the tab. Sign in again to continue.',expB:'Sign in',
+ noT:'Your role does not have access to this screen.',noP:'If you think you should see it, ask whoever administers the platform.',noB:'Go to my home',
+ unT:'We could not verify your session.',unP:'Your session is still open. Check your connection and try again.',
+ roomExit:'Leave the room',roomNote:'Full screen: no header or footer. Keeps its exit visible and “Skip to content”.',
+ here:'you are here',themeNote:'Available on screens already migrated to Cartografía.'}};
+const q=id=>document.getElementById(id);
+let lang='es',theme='system',scene='person',menuOpen=false;
+const c=()=>T[lang];
+function langSw(){return `<div class="cg-lang" role="group" aria-label="${c().lang}">${['es','en'].map(l=>`<button type="button" class="cg-lang__btn" lang="${l}" aria-pressed="${lang===l}" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}</div>`}
+function themeSw(){return `<div class="cg-seg" role="group" aria-label="${c().theme}">${[['system','tsys'],['light','tlight'],['dark','tdark']].map(([v,k])=>`<button type="button" aria-pressed="${theme===v}" data-theme-set="${v}">${c()[k]}</button>`).join('')}</div>`}
+function prefs(migrated){return `<div class="cg-prefs" role="group" aria-label="${c().prefs}"><span class="cg-only-narrow cg-prefs__group"><span id="pl">${c().lang}</span>${langSw()}</span>${migrated?`<span class="cg-prefs__group"><span>${c().theme}</span>${themeSw()}</span>`:`<span>${c().themeNote}</span>`}</div>`}
+function footer(){return `<footer class="cg-footer"><span>${c().foot1}</span><span>${c().foot2}</span></footer>`}
+const PERSON=['map','chat','evidence','diary','next'], MENU=['today','bridge','pro','tools','progress','plan','resumes','reviews','data','feedback','manifest','out'];
+function userMenu(here){const k=c();return `<div class="cg-usermenu"><button type="button" class="cg-usermenu__button${here?' is-here':''}" aria-expanded="${menuOpen}" aria-controls="um" aria-label="${k.menu}: Ana (ejemplo)" data-um><span>Ana</span><span aria-hidden="true"> ▾</span></button><ul class="cg-usermenu__list" id="um" ${menuOpen?'':'hidden'}>${MENU.map(m=>m==='out'?`<li><button type="button" class="cg-usermenu__out">${k.out}</button></li>`:`<li><a class="cg-usermenu__link" href="#${m}" ${here===m?'aria-current="page"':''}>${k[m]}</a></li>`).join('')}</ul></div>`}
+function personFrame(inner,{migrated=true,active='diary',here=null,foot=true}={}){const k=c();
+ return `<div class="cg cg-frame" ${theme==='system'||!migrated?(migrated?'':'data-theme="light"'):`data-theme="${theme}"`}><a class="cg-skip" href="#main">${k.skip}</a>
+ <header class="cg-header cg-header--person"><a class="cg-brand" href="#hoy" aria-label="Elevation">Elevation<i>.</i></a>
+  <nav class="cg-nav" aria-label="${k.main}">${PERSON.map(p=>`<a href="#${p}" ${active===p?'aria-current="page"':''}>${k[p]}</a>`).join('')}</nav>
+  <div class="cg-header__end">${langSw()}${userMenu(here)}</div></header>
+ <div class="cg-body"><main id="main" tabindex="-1" class="cg-main${migrated?'':' elv-light'}">${inner}</main></div>
+ ${foot?prefs(migrated)+footer():''}</div>`}
+function pubFrame(inner){const k=c();return `<div class="cg cg-frame" ${theme==='system'?'':`data-theme="${theme}"`}><a class="cg-skip" href="#main">${k.skip}</a>
+ <header class="cg-header"><a class="cg-brand" href="#" aria-label="Elevation">Elevation<i>.</i></a>
+ <nav class="cg-nav cg-nav--grid" aria-label="${k.how}"><a href="#how">${k.how}</a><a href="#priv">${k.privacy}</a><a href="#man">${k.manifest}</a><a href="#in">${k.signIn}</a><a class="cg-btn" href="#up">${k.signUp}</a></nav>
+ <div class="cg-header__end">${langSw()}</div></header>
+ <div class="cg-body"><main id="main" tabindex="-1" class="cg-main">${inner}</main></div>${`<div class="cg-prefs" role="group" aria-label="${k.prefs}"><span class="cg-prefs__group"><span>${k.theme}</span>${themeSw()}</span></div>`}${footer()}</div>`}
+const content=()=>`<h1 class="cg-h1">${c().h1}</h1><div class="card"><p>${c().ph}</p></div>`;
+function gate(inner){return `<div class="cg cg-frame" ${theme==='system'?'':`data-theme="${theme}"`}><main id="main" tabindex="-1" class="cg-main" style="max-width:40rem;margin:3rem auto;width:100%">${inner}</main></div>`}
+function render(){const k=c();let h='';
+ if(scene==='person')h=personFrame(content());
+ if(scene==='menu'){menuOpen=true;h=personFrame(content(),{here:'plan'})}
+ if(scene==='legacy')h=personFrame(`<h1 class="cg-h1">${k.h1}</h1><div class="card"><p>${k.ph}</p></div>`,{migrated:false});
+ if(scene==='loading')h=personFrame(`<h1 class="cg-h1" style="visibility:hidden">${k.h1}</h1><div class="cg-skel" role="status" aria-live="polite"><span class="cg-muted">${k.loading}</span><i style="width:70%"></i><i style="width:90%"></i><i style="width:55%"></i></div>`,{active:'evidence'});
+ if(scene==='error')h=personFrame(`<div class="cg-banner cg-banner--error" role="alert"><h1 class="cg-banner__title">${k.errT}</h1><p>${k.errP}</p><div class="cg-row"><button type="button" class="cg-btn">${k.retry}</button></div></div>`);
+ if(scene==='chat')h=personFrame(`<h1 class="cg-h1">${k.chat}</h1><div class="card" style="min-height:40vh"><p>${k.ph}</p></div><div class="card" style="position:sticky;bottom:0"><p>Compositor del chat (ES-162, sin cambios)</p></div>`,{active:'chat',foot:false});
+ if(scene==='public')h=pubFrame(content());
+ if(scene==='room')h=`<div class="cg" data-theme="dark" style="min-height:100dvh;padding:1rem 16px"><a class="cg-skip" href="#main">${k.skip}</a><main id="main" tabindex="-1" class="cg-main"><div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap"><h1 class="cg-h1" style="margin:0">${k.h1}</h1><a class="cg-btn cg-btn--ghost" href="#salir">${k.roomExit}</a></div><div class="card"><p>${k.roomNote}</p></div></main></div>`;
+ if(scene==='expired')h=gate(`<div class="cg-banner cg-banner--error" role="alert"><h1 class="cg-banner__title">${k.expT}</h1><p>${k.expP}</p><div class="cg-row"><a class="cg-btn" href="#login">${k.expB}</a></div></div>`);
+ if(scene==='noaccess')h=gate(`<div class="cg-banner cg-banner--error" role="alert"><h1 class="cg-banner__title">${k.noT}</h1><p>${k.noP}</p><div class="cg-row"><a class="cg-btn cg-btn--ghost" href="#home">${k.noB}</a></div></div>`);
+ if(scene==='unavailable')h=gate(`<div class="cg-banner cg-banner--error" role="alert"><h1 class="cg-banner__title">${k.unT}</h1><p>${k.unP}</p><div class="cg-row"><button type="button" class="cg-btn">${k.retry}</button></div></div>`);
+ q('root').innerHTML=h;document.documentElement.lang=lang;document.body.style.background=(theme==='dark'||(theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))&&scene!=='room'?'#0e1613':(scene==='room'?'#0e1613':'#e7ece8');
+ const n=q('notes');n.dataset.theme=theme==='system'?'':theme;}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-lang],[data-theme-set],[data-um],.cg-usermenu__out');if(!t)return;
+ if(t.dataset.lang){lang=t.dataset.lang;q('lang').value=lang;render()}
+ else if(t.dataset.themeSet){theme=t.dataset.themeSet;q('theme').value=theme;render();const b=document.querySelector(`[data-theme-set="${theme}"]`);b&&b.focus()}
+ else if(t.hasAttribute('data-um')){menuOpen=!menuOpen;render();document.querySelector('[data-um]').focus()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menuOpen){menuOpen=false;render();const b=document.querySelector('[data-um]');b&&b.focus()}});
+q('scene').onchange=e=>{scene=e.target.value;menuOpen=scene==='menu';render()};q('lang').onchange=e=>{lang=e.target.value;render()};q('theme').onchange=e=>{theme=e.target.value;render()};
+const h=location.hash.slice(1);if(h){const p=new URLSearchParams(h);if(p.get('scene')){scene=p.get('scene');q('scene').value=scene}if(p.get('lang')){lang=p.get('lang');q('lang').value=lang}if(p.get('theme')){theme=p.get('theme');q('theme').value=theme}}
+if(scene==='menu')menuOpen=true;
+render();
+q('notes').innerHTML='<h2 style="font:700 1.4rem var(--cg-font-cond);text-transform:uppercase">Lectura rápida de la lámina</h2><p class="cg-muted">Escribe en el ticket ES-153 el detalle completo; esta lámina solo muestra el diseño. Lo marcado NUEVO en el CSS de este archivo es lo que se propone añadir a <code>shell.css</code>.</p>';
+</script>
+</body>
+</html>

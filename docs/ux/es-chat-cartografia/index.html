@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat en Cartografía, mobile-first (maqueta)</title>
+<style>
+/* Maqueta de DISEÑO (no es código de producto): /app/chat mobile-first (ES-333). Flujos, estados y textos NO cambian: salen de space/copy.ts, ChatBar, ChatControls,
+   ChatLimitsNotice, i18n (chat_*, rec_*, checkout_*). Tokens y piezas = cartografia.css; lo NUEVO está marcado «NUEVO». Datos de ejemplo. Meta: hilo >= 50 % del alto visible. */
+.cg{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;
+--cg-font-cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;--cg-font-sans:'Barlow',system-ui,sans-serif;--cg-font-name:'Spectral',Georgia,serif;
+--cg-touch:2.875rem;--cg-focus:3px;color-scheme:light;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 var(--cg-font-sans)}
+@media (prefers-color-scheme:dark){.cg:not([data-theme='light']){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}}
+.cg[data-theme='dark']{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}body{margin:0}
+.cg :focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:3px}
+.cg a{color:var(--cg-mark);text-underline-offset:3px}
+.cg-muted{color:var(--cg-muted)}
+.cg-tag{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch);padding:.55rem 1.2rem;background:var(--cg-ink);color:var(--cg-ground);border:0;border-radius:0;font:700 1rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.cg-btn:hover{background:var(--cg-mark)}
+.cg a.cg-btn{color:var(--cg-ground)}
+.cg-btn--ghost,.cg a.cg-btn--ghost{background:none;color:var(--cg-ink);box-shadow:inset 0 0 0 1.5px var(--cg-ink)}
+.cg-btn--ghost:hover{background:none;color:var(--cg-mark);box-shadow:inset 0 0 0 1.5px var(--cg-mark)}
+.cg-btn--danger{background:var(--cg-err);color:var(--cg-ground)}.cg-btn--danger:hover{background:var(--cg-err)}
+.cg-btn:disabled{opacity:.55;cursor:not-allowed;background:var(--cg-ink);color:var(--cg-ground)}
+.cg-btn--ghost:disabled{background:none;color:var(--cg-ink)}
+.cg-linkbtn{min-width:var(--cg-touch);background:none;border:0;border-bottom:1.5px solid var(--cg-mark);border-radius:0;padding:.1rem 0;min-height:var(--cg-touch);font:600 1rem var(--cg-font-sans);color:var(--cg-ink);cursor:pointer}
+.cg-card{background:var(--cg-panel);border:1.5px solid var(--cg-ink);padding:1rem 1.1rem}
+.cg-banner{border:1.5px solid var(--cg-ink);padding:.8rem 1rem;background:var(--cg-panel);margin:1rem 0}
+.cg-banner--error{border-color:var(--cg-err)}
+.cg-banner__title{display:block;font-weight:600}
+.cg-banner--error .cg-banner__title::before{content:'\26A0\00a0';color:var(--cg-err)}
+.cg-chip{display:inline-flex;gap:.3rem;align-items:center;border:1px solid var(--cg-line);padding:.05rem .45rem;font:600 .78rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-chip--ok{border-color:var(--cg-good);color:var(--cg-good)}.cg-chip--wait{border-color:var(--cg-mark);color:var(--cg-mark)}.cg-chip--bad{border-color:var(--cg-err);color:var(--cg-err)}
+.cg-field{display:grid;gap:.3rem;margin-top:1rem;border:0;padding:0;min-width:0}
+.cg-label{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;padding:0}
+.cg-input,.cg-textarea{width:100%;min-height:var(--cg-touch);padding:.7rem .8rem;background:var(--cg-panel);color:var(--cg-ink);border:1.5px solid var(--cg-ink);border-radius:0;font:inherit}
+.cg-textarea{min-height:9rem;resize:vertical;line-height:1.5}
+.cg-input[aria-invalid='true'],.cg-textarea[aria-invalid='true']{border-color:var(--cg-err);border-width:2px}
+.cg-hint{color:var(--cg-muted);font-size:.85rem;margin:0}
+.cg-error{color:var(--cg-err);font-size:.9rem;margin:0}.cg-error::before{content:'\26A0\00a0'}
+.cg-items{list-style:none;margin:0;padding:0}
+.cg-item{border-top:1px solid var(--cg-line);padding:.9rem 0;display:grid;gap:.4rem}.cg-item:first-child{border-top:2px solid var(--cg-ink)}
+.cg-dialog{background:var(--cg-panel);color:var(--cg-ink);border:2px solid var(--cg-ink);padding:1.3rem 1.4rem;max-width:min(30rem,calc(100vw - 2rem));width:100%}
+.cg-dialog__actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.2rem}
+.cg-scrim{background:rgb(14 22 19/.55);padding:1.2rem 0;display:flex;justify-content:center}
+/* marco (shell.css + ES-153 aprobado) */
+.cg-frame{min-height:100dvh;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.cg-skip{position:absolute;left:1rem;top:-10rem;z-index:100;background:var(--cg-panel);color:var(--cg-mark);border:2px solid var(--cg-ink);padding:.7rem 1rem;font-weight:600}.cg-skip:focus{top:1rem}
+.cg-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.4rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.cg a.cg-brand{font:700 1.7rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg-brand i{font-style:normal;color:var(--cg-mark)}
+.cg-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.cg-nav a{color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)}
+.cg-nav a:hover{border-color:var(--cg-mark)}.cg-nav a[aria-current='page']{border-color:var(--cg-ink)}
+.cg-header__end{display:flex;align-items:center;gap:.7rem 1rem;flex-wrap:wrap;margin-left:auto}
+.cg-lang,.cg-seg{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-lang__btn,.cg-seg button{min-width:var(--cg-touch);min-height:var(--cg-touch);padding:0 .8rem;background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cg-lang__btn[aria-pressed='true'],.cg-seg button[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-seg button+button{border-left:1.5px solid var(--cg-ink)}
+.cg-usermenu__button{background:none;border:0;border-bottom:3px solid transparent;min-height:var(--cg-touch);padding:0 .2rem;color:var(--cg-ink);font:italic 500 1.1rem var(--cg-font-name)}
+.cg-usermenu__button.is-here{border-color:var(--cg-ink)}
+.cg-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 0 2rem;min-width:0}
+.cg-main{min-width:0;outline:none}
+.cg-prefs{display:flex;gap:.6rem 1.4rem;flex-wrap:wrap;align-items:center;width:100%;max-width:1240px;margin:0 auto;padding:.8rem 0;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted)}
+.cg-prefs__group{display:inline-flex;align-items:center;gap:.6rem}
+.cg-footer{display:flex;justify-content:space-between;gap:.4rem 1rem;flex-wrap:wrap;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted);max-width:1240px;width:100%;margin:0 auto}
+.cg-only-narrow{display:none}
+@media (max-width:900px){
+ .cg-body{padding-top:.6rem}
+ .cg-header--person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 .8rem;padding:.4rem 0 .6rem}
+ .cg-header--person .cg-header__end{display:contents}
+ .cg-header--person .cg-usermenu__button{grid-column:2;grid-row:1;justify-self:end}
+ .cg-header--person .cg-nav{grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}
+ .cg-header--person .cg-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .cg-header--person .cg-lang{display:none}.cg-only-narrow{display:flex}}
+@media (max-width:360px){.cg-header--person .cg-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}}
+@media (min-width:901px){.cg-only-narrow{display:none!important}}
+/* ===== NUEVO en estas pantallas ===== */
+.pg-head{margin:0 0 1.2rem;max-width:46rem}.pg-head .cg-tag{margin:0 0 .3rem}
+.pg-title{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .5rem}   /* título de las pantallas de utilidad; el .cg-h1 de 4 rem queda para portada y mapa */
+.pg-lead{margin:0}
+.pg-stack{display:grid;gap:1rem;max-width:46rem}
+.pg-card h2{font:700 1.35rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.03em;margin:0 0 .5rem}
+.pg-card h3{font:700 1.15rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.04em;margin:.2rem 0}
+.pg-card p{margin:.4rem 0}
+.pg-actions{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}
+.pg-price{font:700 1.5rem var(--cg-font-cond)}
+.pg-feat{margin:.5rem 0;padding-left:1.2rem}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1fr) 3rem minmax(0,1fr);gap:1rem;align-items:start}
+.pg-arrow{align-self:center;text-align:center;font:700 1.6rem var(--cg-font-cond);color:var(--cg-muted)}
+.pg-work{display:grid;grid-template-columns:minmax(0,18rem) minmax(0,1fr);gap:1.4rem;align-items:start}
+.pg-paper{font:400 1.15rem/1.6 var(--cg-font-name);min-height:11rem}   /* lo que la persona escribe en el diario va en Spectral */
+.pg-quote{font:italic 400 1.1rem/1.5 var(--cg-font-name);border-left:4px solid var(--cg-line);margin:.4rem 0;padding:.2rem 0 .2rem .9rem}
+.pg-quote--hidden{border-left-style:dashed;color:var(--cg-muted);font-family:var(--cg-font-sans);font-style:normal}
+.pg-switch{display:inline-flex;align-items:center;gap:.7rem;min-height:var(--cg-touch);background:none;border:0;padding:0;font:inherit;color:var(--cg-ink);cursor:pointer}
+.pg-switch__track{width:3.2rem;height:1.8rem;border:2px solid var(--cg-ink);background:var(--cg-ground);position:relative;flex:none}
+.pg-switch__track::after{content:'';position:absolute;top:2px;left:2px;width:1.2rem;height:1.2rem;background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track{background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track::after{left:auto;right:2px;background:var(--cg-ground)}
+.pg-switch__word{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase}
+.pg-todo{border:1.5px dashed var(--cg-line);padding:.5rem .8rem;color:var(--cg-muted);font-size:.9rem}   /* marcador: se mantiene el texto actual de copy.ts */
+@media (max-width:900px){.pg-cols{grid-template-columns:minmax(0,1fr)}.pg-work{grid-template-columns:minmax(0,1fr)}}
+.pg-radios{display:flex;flex-wrap:wrap;gap:.5rem}
+.pg-radios label{display:inline-flex;align-items:center;gap:.5rem;min-height:var(--cg-touch);padding:0 .9rem;border:1.5px solid var(--cg-ink);cursor:pointer;font:600 1rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase}
+.pg-radios input{width:1.2rem;height:1.2rem;accent-color:var(--cg-ink)}
+.pg-radios label:has(input:checked){background:var(--cg-ink);color:var(--cg-ground)}
+.pg-radios label:has(input:focus-visible){outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pg-pick{display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch);cursor:pointer}.pg-pick input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--cg-ink);flex:none}
+fieldset.cg-field legend{padding:0}
+/* ===== sólo de la lámina ===== */
+/* NUEVO (ES-342 parte C): cabecera compacta del marco de persona */
+.fm{position:relative;min-height:calc(100dvh - var(--proto,0px));display:flex;flex-direction:column;background:var(--cg-ground);color:var(--cg-ink)}
+.fm-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5rem;min-height:56px;padding:.2rem .8rem;border-bottom:1px solid var(--cg-line)}
+.cg a.fm-brand{font:700 1.4rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;color:var(--cg-ink);text-decoration:none;display:inline-flex;align-items:center;min-height:var(--cg-touch)}.fm-brand i{font-style:normal;color:var(--cg-mark)}
+.fm .cx-menu{grid-area:auto;padding:0 .8rem;display:inline-flex;align-items:center;gap:.4rem}.fm .cx-menu__w{display:inline;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase}
+.fm-nav,.fm-end{display:none}
+.fm-body{padding:1rem .8rem 2rem;width:100%;max-width:1240px;margin:0 auto}
+.fm-body h1{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .8rem}
+.fm-body .cg-card{padding:1rem 1.1rem;margin:0 0 1rem}
+.fm .cx-scrim{position:absolute}
+.fm-who{margin:0;color:var(--cg-muted);font-size:.9rem}
+.fm-name{font:600 1rem var(--cg-font-cond);letter-spacing:.04em}
+@media (min-width:901px){.fm-top{grid-template-columns:auto minmax(0,1fr) auto;gap:1.4rem;padding:.5rem max(1.5rem,calc((100% - 1240px)/2 + 1.5rem))}.fm .cx-menu{display:none}.fm-nav{display:flex;gap:1.2rem;flex-wrap:wrap}.fm-nav a{color:var(--cg-ink);text-decoration:none;font:600 .95rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;min-height:var(--cg-touch);display:inline-flex;align-items:center;border-bottom:3px solid transparent}.fm-nav a[aria-current='page']{border-color:var(--cg-ink)}.fm-end{display:flex;align-items:center;gap:.8rem}.fm-body{padding:1.5rem 1.5rem 2rem}}
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+/* NUEVO (ES-333) */
+body.bare .proto{display:none}
+.cx{position:relative;height:calc(100vh - var(--proto,0px));height:calc(100dvh - var(--proto,0px));display:flex;flex-direction:column;background:var(--cg-ground);color:var(--cg-ink);overflow:hidden}
+.cx-top{flex:none;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"menu title pause";align-items:center;gap:.3rem .5rem;padding:.2rem .6rem;min-height:56px;border-bottom:1px solid var(--cg-line)}
+.cx-menu{grid-area:menu;min-width:var(--cg-touch);min-height:var(--cg-touch);border:1.5px solid var(--cg-ink);background:var(--cg-ground);color:var(--cg-ink);font:600 1.2rem var(--cg-font-cond);cursor:pointer}.cx-menu__w{display:none}
+.cx-brand,.cx-nav,.cx-end{display:none}
+.cx-title{grid-area:title;min-width:0}.cx-title h1{font:700 1.05rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.06em;margin:0}.cx-title p{margin:0;font-size:.8rem;line-height:1.25;color:var(--cg-muted);text-wrap:balance}
+.cx-pause{grid-area:pause;min-height:var(--cg-touch);padding:0 .8rem}
+.cx-use{flex:none}.cx-meter{height:6px;background:var(--cg-line)}.cx-meter i{display:block;height:100%;background:var(--cg-mark)}.cx-use__t{display:none}.cx-use .cx-note{padding:.2rem .6rem}
+.cx-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;width:100%;max-width:760px;margin:0 auto}
+.cx-thread{flex:1 1 auto;min-height:0;overflow-y:auto;padding:.8rem;display:flex;flex-direction:column;gap:1rem}.cx-thread:focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:-3px}
+.cx-msg{max-width:92%;padding:.65rem .85rem;border:1.5px solid var(--cg-line);background:var(--cg-panel)}.cx-msg p{margin:0;line-height:1.55;overflow-wrap:anywhere}
+.cx-msg--you{align-self:flex-end;background:var(--cg-ink);color:var(--cg-ground);border-color:var(--cg-ink)}
+.cx-who{display:block;font:600 .7rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.25rem;color:var(--cg-muted)}.cx-msg--you .cx-who{color:inherit}
+.cx-welcome{margin:0;line-height:1.55}
+.cx-comp{flex:none;border-top:1px solid var(--cg-line);background:var(--cg-panel);padding:.4rem .6rem calc(.5rem + env(safe-area-inset-bottom,0px));display:grid;gap:.4rem}
+.cx-comp__tools{display:flex;flex-wrap:wrap;gap:.4rem;align-items:flex-start}
+.cx-tool{flex:1 1 9rem;min-height:var(--cg-touch);display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;gap:.4rem;padding:.2rem .5rem;box-sizing:border-box;border:1.5px solid var(--cg-ink);background:var(--cg-ground);color:var(--cg-ink);font:600 .85rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;list-style:none}
+.cx-lim{flex:1 1 9rem;min-width:0}.cx-lim summary{width:100%}.cx-lim summary::-webkit-details-marker{display:none}.cx-lim p{margin:.4rem 0 0}.cx-lim[open]{flex-basis:100%}
+.cx-limits{margin:0;font-size:.78rem;line-height:1.4;color:var(--cg-muted)}
+.cx-lim{display:none}
+@media (max-height:400px){.cx-limits{display:none}}
+@media (max-width:900px){.cx-enter{display:none}}
+@media (max-height:400px){.cx-comp__tools{display:none}}
+.cx-slow{align-self:stretch}
+.cx-enter{margin:0}
+.cx-comp__row{display:flex;gap:.5rem;align-items:flex-end}.cx-ta{flex:1;min-width:0;display:block;margin:0}.cx-ta textarea{width:100%;min-height:var(--cg-touch);max-height:7.5rem;resize:none;display:block;box-sizing:border-box}.cx-send{min-height:var(--cg-touch);flex:none}
+.cx-callout{margin:0;border-left:4px solid var(--cg-mark);padding:.4rem .8rem;background:var(--cg-panel)}.cx-callout--err{border-left-color:var(--cg-err)}
+.cx-pending{border:1.5px dashed var(--cg-ink);padding:.6rem .85rem}.cx-pending p{margin:0 0 .4rem}.cx-acts{display:flex;flex-wrap:wrap;gap:.5rem}
+.cx-trunc{margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--cg-line);display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.cx-trunc p{flex:1 1 12rem;margin:0;font-size:.88rem}.cx-trunc small{display:block;font-size:.78rem;color:var(--cg-muted)}
+.cx-slow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.cx-slow p{flex:1 1 14rem}
+.cx-diary{border:1px solid var(--cg-line);padding:.6rem;max-height:30dvh;overflow:auto;background:var(--cg-ground)}.cx-fs{border:0;margin:0 0 .4rem;padding:0;min-width:0}.cx-fs legend{font:600 .9rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase;padding:0}
+.cx-chk{display:flex;gap:.6rem;align-items:center;min-height:var(--cg-touch);cursor:pointer}.cx-chk input{width:1.4rem;height:1.4rem;accent-color:var(--cg-ink);flex:none}.cx-help summary{min-height:var(--cg-touch);display:flex;align-items:center;cursor:pointer}
+.cx-note{margin:0;font-size:.82rem;color:var(--cg-muted)}.cx-muted{color:var(--cg-muted)}.cx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.cx-scrim{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;z-index:5}
+.cx-sheet{width:100%;max-width:34rem;max-height:92%;overflow:auto;border-radius:0}.cx-sheet__head{display:flex;justify-content:space-between;align-items:center;gap:.6rem}.cx-sheet h2{margin:0;font:700 1.2rem var(--cg-font-cond);text-transform:uppercase}
+.cx-list{display:grid;margin:.6rem 0}.cx-list a,.cx-list button{display:flex;align-items:center;min-height:var(--cg-touch);padding:0 .5rem;border:0;border-bottom:1px solid var(--cg-line);background:none;color:var(--cg-ink);font:inherit;text-decoration:none;text-align:left;cursor:pointer}
+.cx-list [aria-current=page]{font-weight:700;border-left:4px solid var(--cg-mark)}.cx-prefs{display:flex;flex-wrap:wrap;gap:.5rem .8rem;align-items:center;margin:.6rem 0}
+.cx-scale{display:flex;flex-wrap:wrap;gap:.4rem;margin:.4rem 0}.cx-scale button{min-height:var(--cg-touch);min-width:var(--cg-touch);padding:0 .6rem;border:1.5px solid var(--cg-ink);background:var(--cg-ground);color:var(--cg-ink);font:600 1rem var(--cg-font-cond);cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}.cx-scale small{font:500 .7rem var(--cg-font-sans)}.cx-scale button[aria-pressed=true]{background:var(--cg-ink);color:var(--cg-ground)}
+/* NUEVO (ES-342 B1): menú reagrupado con cabecera y pie fijos */
+.cx-sheet--menu{display:flex;flex-direction:column;padding:0;overflow:hidden;max-height:92%}.cx-sheet--menu .cx-sticky{flex:none;padding:.6rem 1rem;background:var(--cg-panel)}.cx-sheet--menu .cx-sheet__head{border-bottom:1px solid var(--cg-line)}.cx-sheet--menu .cg-dialog__actions{border-top:1px solid var(--cg-line);margin:0}
+.cx-sheet__body{overflow:auto;padding:0 1rem 1rem;flex:1 1 auto;min-height:0}.cx-gh{font:600 .8rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted);margin:1rem 0 .1rem}
+.cx-grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 .8rem}.cx-grid2 a{min-width:0;overflow-wrap:anywhere}@media (max-width:359px){.cx-grid2{grid-template-columns:minmax(0,1fr)}}
+.cx-disc{display:flex;justify-content:space-between;align-items:center;gap:.6rem;width:100%;min-height:var(--cg-touch);padding:0 .8rem;border:1.5px solid var(--cg-ink);background:var(--cg-ground);color:var(--cg-ink);font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:.5rem}
+.cx-prefs2{display:grid;gap:.4rem;margin:.4rem 0}.cx-prefs2>div{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.cx-prefs2 span{min-width:4.5rem}
+@media (min-width:901px){
+ .cx-top{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"brand nav end" "title title pause";row-gap:.2rem;padding:.6rem 1.5rem;align-items:center}
+ .cx-menu{display:none}.cx-brand{display:inline-flex;grid-area:brand;font:700 1.4rem var(--cg-font-cond);color:var(--cg-ink);text-decoration:none}.cx-nav{display:flex;grid-area:nav;gap:1.2rem;flex-wrap:wrap}.cx-nav a{color:var(--cg-ink);text-decoration:none;font:600 .95rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;min-height:var(--cg-touch);display:inline-flex;align-items:center}.cx-nav a[aria-current=page]{border-bottom:4px solid var(--cg-mark)}.cx-end{display:block;grid-area:end}
+ .cx-use{max-width:760px;margin:0 auto;width:100%}.cx-use__t{display:block;font-size:.8rem;color:var(--cg-muted);padding:.2rem 0}
+}
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+.cx-brand{min-height:var(--cg-touch);align-items:center}.cx-callout a{display:inline-flex;align-items:center;min-height:var(--cg-touch);color:var(--cg-ink)}
+</style>
+</head>
+<body>
+<div class="proto" id="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · Chat (ES-333)</b>
+ <label>Pantalla <select id="scene"><option value="chat">Chat · conversación</option><option value="frame-page">Marco de persona · cabecera compacta (Mapa)</option><option value="frame-menu">Marco de persona · menú abierto</option><option value="frame-menu-more">Marco de persona · «Menú de usuario» abierto</option><option value="chat-empty">Chat · sin mensajes</option><option value="chat-menu">Chat · menú reagrupado (ES-342 B1)</option><option value="chat-menu-more">Chat · menú con «Menú de usuario» abierto</option><option value="chat-menu-admin">Chat · menú de administración</option><option value="chat-paused">Chat · en pausa</option><option value="chat-limit">Chat · límite de uso</option><option value="chat-error">Chat · envío sin confirmar</option><option value="chat-slow">Chat · respuesta lenta</option><option value="chat-trunc">Chat · respuesta cortada</option><option value="chat-diary">Chat · selector del diario</option><option value="chat-counter">Chat · contador de caracteres</option><option value="chat-recs">Chat · recomendaciones</option><option value="chat-recs-loading">Chat · recomendaciones cargando</option><option value="chat-out">Chat · cerrar sesión (check-out)</option><option value="chat-expired">Chat · sesión vencida</option><option value="chat-loaderr">Chat · error de carga</option><option value="chat-usage-loading">Chat · uso cargando</option><option value="chat-usage-error">Chat · uso con error</option><option value="chat-usage-none">Chat · uso sin límite definido</option></select></label>
+ <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
+ <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
+ <span>Esta barra no existe en la plataforma. Los datos de la lámina son de ejemplo. Para medir: #bare=1.</span></div>
+<div id="root"></div>
+<script>
+const S={es:{skip:'Saltar al contenido',lang:'Idioma',main:'Principal',menu:'Menú de usuario',menuBtn:'Menú',umenu:'Menú de usuario',prefs:'Preferencias',tauto:'Auto',uitems:['Hoy','El Puente','Mi profesional','Mis herramientas','Mi plan','Hojas de vida','Revisiones profesionales','Mis datos','Tu opinión','Manifiesto ético'],
+ nav:['Mapa','Conversación','Evidencias','Diario','Siguiente paso'],theme:'Tema',tsys:'Sistema',tlight:'Claro',tdark:'Oscuro',ex:'(ejemplo)',close:'Cerrar',
+ conv:'Conversación',priv:'Privada · Solo visible para ti',pause:'Pausar',resume:'Retomar',
+ usage:'Uso de IA este periodo',usageVal:'42 % usado',renews:'Se renueva el 30 nov.',usageLoading:'Consultando tu uso de IA…',usageError:'No pudimos consultar tu uso de IA. Reintentar',usageNone:'Aún no hay un límite de uso definido para tu cuenta, por eso no se muestra la barra.',
+ paused:'Conversación en pausa. No se envía nada al acompañante hasta que la retomes. Tu historial sigue aquí.',exhausted:'Llegaste al límite de este periodo. Puedes seguir escribiendo en tu diario; la conversación se reactiva el 30 nov.',
+ welcome:'Soy Elevation, un asistente de IA para explorar lo que quieras compartir. Puedes omitir cualquier tema o hacer una pausa. ¿Qué te gustaría explorar hoy?',
+ you:'Tú',bot:'ELEVATION · Asistente de IA',thinking:'Preparando respuesta…',
+ diaryNone:'Diario: sin seleccionar',diaryCount:'Diario: 2/3',choose:'Elegir entradas para este envío',limit:'Hasta las 100 entradas más recientes; esta lista puede no incluir todo tu diario.',noneSel:'Sin seleccionar diario',howTitle:'Cómo se usa tu diario en el chat',ctxLimit:'De cada entrada que selecciones, el chat lee hasta 2.000 caracteres, según la versión guardada al enviar tu mensaje.',ctxPriv:'Esta selección permite consultar esas entradas en el chat; no autoriza su uso profesional.',deselect:'Dejar de seleccionar evita nuevas lecturas directas, pero no borra lo que ya apareció en la conversación.',
+ composer:'Mensaje',send:'Enviar',sending:'Enviando…',enter:'Enter envía el mensaje (Shift+Enter agrega una línea)',counter:'3.712 / 4.000 caracteres',
+ limitsLabel:'Límites del asistente',limits:'El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia. La IA puede equivocarse.',
+ unconf:'Sin confirmar',check:'Consultar estado',retry:'Reintentar el mismo envío',copy:'Copiar',slow:'Esto está tardando más de lo normal. Puedes seguir esperando o dejar de esperar; si dejas de esperar, usa «Consultar estado» para ver si la respuesta ya se guardó.',stop:'Dejar de esperar',
+ trunc:'La respuesta se cortó por longitud.',truncHint:'Continuar envía un mensaje corto pidiendo que siga.',cont:'Continuar',
+ session:'Tu sesión venció. Inicia sesión para continuar.',login:'Iniciar sesión',loadErr:'No pudimos cargar. Reintentar',
+ progress:'Mi progreso',rec:'Recomendaciones para ti',recSub:'Basadas en tu estado emocional reciente',recGen:'Generar nuevas',recLoading:'Generando recomendaciones...',recCat:'Hábito',admin:'Panel de Administración',signOut:'Cerrar sesión',
+ coLabel:'CHECK-OUT',coTitle:'¿Cómo te vas?',coHint:'Tómate un momento antes de cerrar.',coRate:'¿Cómo fue la conversación?',coSkip:'Saltar',coStars:['Muy mala','Regular','Buena','Muy buena','Excelente'],moods:['muy bajo','bajo','medio','alto','muy alto'],of5:n=>n+' de 5'},
+en:{skip:'Skip to content',lang:'Language',main:'Main',menu:'User menu',menuBtn:'Menu',umenu:'User menu',prefs:'Preferences',tauto:'Auto',uitems:['Today','The Bridge','My professional','My tools','My plan','Résumés','Professional reviews','My data','Your feedback','Ethical manifest'],
+ nav:['Map','Conversation','Evidence','Diary','Next step'],theme:'Theme',tsys:'System',tlight:'Light',tdark:'Dark',ex:'(example)',close:'Close',
+ conv:'Conversation',priv:'Private · Only visible to you',pause:'Pause',resume:'Resume',
+ usage:'AI use this period',usageVal:'42% used',renews:'Renews on Nov 30',usageLoading:'Checking your AI use…',usageError:'We could not check your AI use. Retry',usageNone:'No usage limit has been set for your account yet, so the bar is not shown.',
+ paused:'Conversation paused. Nothing is sent to the companion until you resume. Your history stays here.',exhausted:'You reached this period’s limit. You can keep writing in your journal; the conversation reopens on Nov 30.',
+ welcome:'I’m Elevation, an AI assistant for exploring what you choose to share. You can skip any topic or pause. What would you like to explore today?',
+ you:'You',bot:'ELEVATION · AI assistant',thinking:'Preparing a response…',
+ diaryNone:'Journal: none selected',diaryCount:'Journal: 2/3',choose:'Choose entries for this message',limit:'Up to the 100 most recent entries; this list may not include your entire journal.',noneSel:'No journal entries selected',howTitle:'How your journal is used in chat',ctxLimit:'From each entry you select, the chat reads up to 2,000 characters, using the version saved when you send your message.',ctxPriv:'This selection lets chat consult those entries; it does not authorize career use.',deselect:'Deselecting prevents new direct reads, but does not erase what has already appeared in the conversation.',
+ composer:'Message',send:'Send',sending:'Sending…',enter:'Enter sends the message (Shift+Enter adds a line)',counter:'3,712 / 4,000 characters',
+ limitsLabel:'Assistant limits',limits:'Elevation’s AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care. The AI can make mistakes.',
+ unconf:'Unconfirmed',check:'Check status',retry:'Retry the same message',copy:'Copy',slow:'This is taking longer than usual. You can keep waiting or stop waiting; if you stop, use “Check status” to see whether the reply was already saved.',stop:'Stop waiting',
+ trunc:'The response was cut off because of its length.',truncHint:'Continue sends a short message asking it to keep going.',cont:'Continue',
+ session:'Your session expired. Sign in to continue.',login:'Sign in',loadErr:'We could not load. Retry',
+ progress:'My progress',rec:'Recommendations for you',recSub:'Based on your recent emotional state',recGen:'Generate new ones',recLoading:'Generating recommendations...',recCat:'Habit',admin:'Admin Panel',signOut:'Sign out',
+ coLabel:'CHECK-OUT',coTitle:'How are you leaving?',coHint:'Take a moment before closing.',coRate:'How was the conversation?',coSkip:'Skip',coStars:['Very poor','Fair','Good','Very good','Excellent'],moods:['very low','low','medium','high','very high'],of5:n=>n+' of 5'}};
+const q=id=>document.getElementById(id);let lang='es',theme='system',scene='chat';const c=()=>S[lang];
+const ph=()=>lang==='es'?'Texto de ejemplo':'Example text';
+const langSw=()=>`<div class="cg-lang" role="group" aria-label="${c().lang}">${['es','en'].map(l=>`<button type="button" class="cg-lang__btn" lang="${l}" aria-pressed="${lang===l}" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}</div>`;
+const themeSw=()=>`<div class="cg-seg" role="group" aria-label="${c().theme}">${[['system','tsys'],['light','tlight'],['dark','tdark']].map(([v,k])=>`<button type="button" aria-pressed="${theme===v}" data-theme-set="${v}">${c()[k]}</button>`).join('')}</div>`;
+const btn=(t,cl='')=>`<button type="button" class="cg-btn ${cl}">${t}</button>`;
+const chk=(on,l,ex='')=>`<label class="cx-chk"><input type="checkbox" ${on?'checked':''}><span>${l}</span></label>${ex}`;
+function sheet(title,inner,acts){return `<div class="cg-scrim cx-scrim"><div class="cg-dialog cx-sheet" role="dialog" aria-modal="true" aria-labelledby="sh"><div class="cx-sheet__head"><h2 id="sh">${title}</h2><button type="button" class="cg-btn cg-btn--ghost">${c().close}</button></div>${inner}${acts?`<div class="cg-dialog__actions">${acts}</div>`:''}</div></div>`}
+
+function frameScene(s,k){
+ const more=s==='frame-menu-more',open=s!=='frame-page';
+ const th='<div class="cg-seg" role="group" aria-label="'+k.theme+'">'+[['system',k.tauto],['light',k.tlight],['dark',k.tdark]].map(([v,l])=>'<button type="button" aria-pressed="'+(theme===v)+'" data-theme-set="'+v+'">'+l+'</button>').join('')+'</div>';
+ const nav='<nav class="fm-nav" aria-label="'+k.main+'">'+k.nav.map((n,i)=>'<a href="#n'+i+'" '+(i===0?'aria-current="page"':'')+'>'+n+'</a>').join('')+'</nav>';
+ const top='<header class="fm-top"><a class="fm-brand" href="#h" aria-label="Elevation">Elevation<i>.</i></a>'+nav+'<div class="fm-end">'+langSw()+'<span class="fm-name">Marta '+k.ex+'</span></div><button type="button" class="cx-menu" aria-haspopup="dialog" aria-expanded="'+open+'">☰<span class="cx-menu__w"> '+k.menuBtn+'</span></button></header>';
+ const body='<main id="main" class="fm-body"><h1>'+k.nav[0]+'</h1><section class="cg-card"><p>'+ph()+' '+k.ex+'</p><p class="cx-note">'+ph()+' '+k.ex+'</p></section><section class="cg-card"><p>'+ph()+' '+k.ex+'</p></section></main>';
+ let ov='';
+ if(open)ov='<div class="cg-scrim cx-scrim"><div class="cg-dialog cx-sheet cx-sheet--menu" role="dialog" aria-modal="true" aria-labelledby="sh"><div class="cx-sheet__head cx-sticky"><div><h2 id="sh">'+k.menuBtn+'</h2><p class="fm-who">Marta '+k.ex+'</p></div><button type="button" class="cg-btn cg-btn--ghost">'+k.close+'</button></div><div class="cx-sheet__body">'
+  +'<h3 class="cx-gh" id="g2">'+k.main+'</h3><nav class="cx-list cx-grid2" aria-labelledby="g2">'+k.nav.map((n,i)=>'<a href="#n'+i+'" '+(i===0?'aria-current="page"':'')+'>'+n+'</a>').join('')+'</nav>'
+  +'<button type="button" class="cx-disc" aria-expanded="'+more+'" aria-controls="um"><span>'+k.umenu+'</span><span aria-hidden="true">'+(more?'▴':'▾')+'</span></button>'+(more?'<nav id="um" class="cx-list cx-grid2" aria-label="'+k.umenu+'">'+k.uitems.map(n=>'<a href="#u">'+n+'</a>').join('')+'</nav>':'')
+  +'<h3 class="cx-gh" id="g3">'+k.prefs+'</h3><div class="cx-prefs2"><div><span>'+k.lang+'</span>'+langSw()+'</div><div><span>'+k.theme+'</span>'+th+'</div></div>'
+  +'</div><div class="cg-dialog__actions cx-sticky">'+btn(k.signOut,'cg-btn--danger')+'</div></div></div>';
+ return '<div class="cg fm" '+(theme==='system'?'':'data-theme="'+theme+'"')+'><a class="cg-skip" href="#main">'+k.skip+'</a>'+top+body+ov+'</div>'}
+function sc(){const k=c();const s=scene;if(s.startsWith("frame-"))return frameScene(s,k);
+ const paused=s==='chat-paused',exh=s==='chat-limit',expired=s==='chat-expired',empty=s==='chat-empty',pend=s==='chat-error'||s==='chat-slow',trunc=s==='chat-trunc',thinking=s==='chat-slow'||s==='chat-thinking';
+ const usageHtml=s==='chat-usage-loading'?`<p class="cx-note" role="status">${k.usageLoading}</p>`:s==='chat-usage-error'?`<p class="cx-note" role="status"><button type="button" class="cg-linkbtn">${k.usageError}</button></p>`:s==='chat-usage-none'?`<p class="cx-note" role="status">${k.usageNone}</p>`:`<div class="cx-meter" role="progressbar" aria-label="${k.usage}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${exh?100:42}"><i style="width:${exh?100:42}%"></i></div>`;
+ const bubbles=empty?`<p class="cx-welcome">${k.welcome}</p>`:`<article class="cx-msg cx-msg--bot"><span class="cx-who">${k.bot}</span><p>${k.welcome}</p></article><article class="cx-msg cx-msg--you"><span class="cx-who">${k.you}</span><p>${ph()} ${k.ex}</p></article><article class="cx-msg cx-msg--bot"><span class="cx-who">${k.bot}</span><p>${ph()} ${k.ex}. ${ph()} ${k.ex}.</p>${trunc?`<div class="cx-trunc"><p role="status">${k.trunc}<small>${k.truncHint}</small></p>${btn(k.cont)}</div>`:''}</article>`;
+ const pendHtml=pend?`<div class="cx-pending"><p><strong>${k.unconf}</strong></p><p class="cx-priv">${ph()} ${k.ex}</p><div class="cx-acts">${btn(k.check)}${btn(k.retry)}${btn(k.copy,'cg-btn--ghost')}</div></div>`:'';
+ const thinkHtml=thinking?`<div class="cx-msg cx-msg--bot" role="status"><span class="cx-who">${k.bot}</span><p class="cx-muted">${k.thinking}</p></div>`:'';
+ const calls=(paused?`<p class="cx-callout" role="status">${k.paused}</p>`:'')+(exh?`<p class="cx-callout" role="status">${k.exhausted}</p>`:'')+(expired?`<p class="cx-callout cx-callout--err" role="alert">${k.session} <a href="#l">${k.login}</a></p>`:'')+(s==='chat-loaderr'?`<p><button type="button" class="cg-btn">${k.loadErr}</button></p>`:'');
+ const off=paused||exh;
+ const diaryPanel='';const diaryInner=`<div class="cx-diary" id="dp"><fieldset class="cx-fs"><legend>${k.choose}</legend><p class="cx-note">${k.limit}</p>${chk(1,ph()+' 1 '+k.ex)}${chk(1,ph()+' 2 '+k.ex)}${chk(0,ph()+' 3 '+k.ex)}<button type="button" class="cg-btn cg-btn--ghost">${k.noneSel}</button></fieldset><details class="cx-help"><summary>${k.howTitle}</summary><p class="cx-note">${k.ctxLimit}</p><p class="cx-note">${k.ctxPriv} ${k.deselect}</p></details></div>`;
+ const slowHtml0=s==='chat-slow'?`<div class="cx-slow"><p role="status" class="cx-note">${k.slow}</p>${btn(k.stop,'cg-btn--ghost')}</div>`:'';
+ const comp=expired?'':`<form class="cx-comp" onsubmit="return false">${diaryPanel}<div class="cx-comp__tools"><button type="button" class="cx-tool" aria-expanded="${s==='chat-diary'}" ${off?'':''}>${s==='chat-diary'?k.diaryCount:k.diaryNone} <span aria-hidden="true">${s==='chat-diary'?'▴':'▾'}</span></button><details class="cx-lim"><summary class="cx-tool">${k.limitsLabel} <span aria-hidden="true">▾</span></summary><p class="cx-note">${k.limits}</p></details></div>${s==='chat-counter'?`<p class="cx-note cx-counter" role="status">${k.counter}</p>`:''}<div class="cx-comp__row"><label class="cx-ta"><span class="cx-sr">${k.composer}</span><textarea class="cg-textarea" rows="1" ${off?'disabled':''} aria-label="${k.composer}">${s==='chat-counter'?ph()+' '+k.ex:''}</textarea></label><button class="cg-btn cx-send" ${off?'disabled':''}>${thinking?k.sending:k.send}</button></div><p class="cx-note cx-enter">${chk(0,k.enter)}</p><p class="cx-limits" role="note" aria-label="${k.limitsLabel}">${k.limits}</p></form>`;
+ const navH=`<nav class="cx-nav" aria-label="${k.main}">${k.nav.map((n,i)=>`<a href="#n${i}" ${i===1?'aria-current="page"':''}>${n}</a>`).join('')}</nav>`;
+ const top=`<header class="cx-top"><button type="button" class="cx-menu" aria-haspopup="dialog" aria-label="${k.menuBtn}">☰<span class="cx-menu__w"> ${k.menuBtn}</span></button><a class="cx-brand" href="#h" aria-label="Elevation">Elevation<i>.</i></a>${navH}<div class="cx-title"><h1>${k.conv}</h1><p>${k.priv}</p></div><button type="button" class="cg-btn cg-btn--ghost cx-pause" aria-pressed="${paused}">${paused?k.resume:k.pause}</button><div class="cx-end">${langSw()}</div></header><div class="cx-use">${usageHtml}<span class="cx-use__t">${k.usage} · ${k.usageVal} · ${k.renews}</span></div>`;
+ let ov='';
+ if(s==='chat-menu'||s==='chat-menu-more'||s==='chat-menu-admin'){const more=s==='chat-menu-more',adm=s==='chat-menu-admin';const th=()=>'<div class="cg-seg" role="group" aria-label="'+k.theme+'">'+[['system',k.tauto],['light',k.tlight],['dark',k.tdark]].map(([v,l])=>'<button type="button" aria-pressed="'+(theme===v)+'" data-theme-set="'+v+'">'+l+'</button>').join('')+'</div>';
+  ov='<div class="cg-scrim cx-scrim"><div class="cg-dialog cx-sheet cx-sheet--menu" role="dialog" aria-modal="true" aria-labelledby="sh"><div class="cx-sheet__head cx-sticky"><h2 id="sh">'+k.menuBtn+'</h2><button type="button" class="cg-btn cg-btn--ghost">'+k.close+'</button></div><div class="cx-sheet__body">'
+  +'<h3 class="cx-gh" id="g1">'+k.conv+'</h3><div class="cx-list" role="group" aria-labelledby="g1"><a href="#p">'+k.progress+'</a><button type="button">'+k.rec+'</button>'+(adm?'<a href="#a">'+k.admin+'</a>':'')+'</div><p class="cx-note">'+k.usage+': '+k.usageVal+' · '+k.renews+'</p>'+chk(0,k.enter)
+  +'<h3 class="cx-gh" id="g2">'+k.main+'</h3><nav class="cx-list cx-grid2" aria-labelledby="g2">'+k.nav.map((n,i)=>'<a href="#n'+i+'" '+(i===1?'aria-current="page"':'')+'>'+n+'</a>').join('')+'</nav>'
+  +'<button type="button" class="cx-disc" aria-expanded="'+more+'" aria-controls="um"><span>'+k.umenu+'</span><span aria-hidden="true">'+(more?'▴':'▾')+'</span></button>'+(more?'<nav id="um" class="cx-list cx-grid2" aria-label="'+k.umenu+'">'+k.uitems.map(n=>'<a href="#u">'+n+'</a>').join('')+'</nav>':'')
+  +'<h3 class="cx-gh" id="g3">'+k.prefs+'</h3><div class="cx-prefs2"><div><span>'+k.lang+'</span>'+langSw()+'</div><div><span>'+k.theme+'</span>'+th()+'</div></div>'
+  +'</div><div class="cg-dialog__actions cx-sticky">'+btn(k.signOut,'cg-btn--danger')+'</div></div></div>'}
+ if(s==='chat-diary')ov=sheet(k.choose,diaryInner,btn(k.close,'cg-btn--ghost'));
+ if(s==='chat-recs')ov=sheet(k.rec,`<p class="cx-note">${k.recSub}</p><ul class="cg-items"><li class="cg-item"><span class="cg-tag">${k.recCat}</span><p>${ph()} ${k.ex}</p></li><li class="cg-item"><span class="cg-tag">${k.recCat}</span><p>${ph()} ${k.ex}</p></li></ul>`,btn(k.recGen));
+ if(s==='chat-recs-loading')ov=sheet(k.rec,`<p class="cx-note">${k.recSub}</p><p role="status">${k.recLoading}</p>`,'');
+ if(s==='chat-out')ov=sheet(k.coTitle,`<p class="cg-tag">${k.coLabel}</p><p>${k.coHint}</p><div class="cx-scale" role="group" aria-label="${k.coTitle}">${k.moods.map((w,i)=>`<button type="button" aria-pressed="${i===3}">${i+1}<small>${w}</small></button>`).join('')}</div><p class="cg-label">${k.coRate}</p><div class="cx-scale" role="group" aria-label="${k.coRate}">${k.coStars.map((w,i)=>`<button type="button" aria-pressed="${i===3}">${i+1}<small>${w}</small></button>`).join('')}</div>`,btn(k.coSkip,'cg-btn--ghost')+btn(k.signOut));
+ return `<div class="cg cx" ${theme==='system'?'':`data-theme="${theme}"`}><a class="cg-skip" href="#thr">${k.skip}</a>${top}<main id="main" class="cx-main"><div id="thr" class="cx-thread" role="region" aria-label="${k.conv}" tabindex="0">${bubbles}${thinkHtml}${pendHtml}${slowHtml0}${calls}</div>${comp}</main>${ov}</div>`}
+
+function render(){q('root').innerHTML=sc();document.documentElement.lang=lang;const dark=theme==='dark'||(theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.body.style.background=dark?'#0e1613':'#e7ece8';document.documentElement.style.setProperty('--proto',document.body.classList.contains('bare')?'0px':q('proto').offsetHeight+'px')}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-lang],[data-theme-set]');if(!t)return;if(t.dataset.lang){lang=t.dataset.lang;q('lang').value=lang}else{theme=t.dataset.themeSet;q('theme').value=theme}render()});
+q('scene').onchange=e=>{scene=e.target.value;render()};q('lang').onchange=e=>{lang=e.target.value;render()};q('theme').onchange=e=>{theme=e.target.value;render()};
+const hh=new URLSearchParams(location.hash.slice(1));if(hh.get('scene')){scene=hh.get('scene');q('scene').value=scene}if(hh.get('lang')){lang=hh.get('lang');q('lang').value=lang}if(hh.get('theme')){theme=hh.get('theme');q('theme').value=theme}if(hh.get('bare'))document.body.classList.add('bare')
+render();
+</script>
+</body>
+</html>

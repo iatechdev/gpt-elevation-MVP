@@ -1,0 +1,20 @@
+/* ES-148 · Tokens del diseño final propuesto.
+   NO introduce paleta nueva: usa los tokens de frontend/src/styles/tokens.css (ES-37) y de la landing (docs/landing/DISENO-FASE1.md).
+   Lo único nuevo es la versión oscura para la app (ya existe en landing) y el alias --mono. */
+:root{
+  --bg:#FAFAF9; --surface:#F2F1EF; --card:#FFFFFF; --ink:#1A1A18; --ink-2:#5E5E5A;
+  --line:#E0DED9; --control:#8A8780;
+  --action:#1A1A18; --action-text:#FFFFFF;
+  --ocre:#B8963E;            /* decorativo: nunca como color de texto */
+  --ocre-text:#7D6218; --link:#7D6218; --ocre-bg:#F6EFDC;
+  --ai:#065F46; --ai-bg:#F0FDFA;
+  --ok:#065F46; --ok-bg:#F0FDFA; --error:#7A3030; --error-bg:#F7E6E6; --info:#075985; --info-bg:#E0F2FE;
+  --focus:#2F6B8F;
+  --r:.75rem; --r-lg:1.25rem; --touch:2.75rem;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:ui-monospace,'JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]){--bg:#151513;--surface:#222119;--card:#1C1B18;--ink:#F3F1EA;--ink-2:#B4B2AA;--line:#34332F;--control:#8D8A82;--action:#F3F1EA;--action-text:#151513;--ocre:#C9A64B;--ocre-text:#D9B861;--link:#D9B861;--ocre-bg:#2B2616;--ai:#6EE7B7;--ai-bg:#10241F;--ok:#6EE7B7;--ok-bg:#10241F;--error:#F1ABAB;--error-bg:#2E1A1A;--info:#9FD3F2;--info-bg:#112733;--focus:#7CC0E8}
+}
+:root[data-theme=dark]{--bg:#151513;--surface:#222119;--card:#1C1B18;--ink:#F3F1EA;--ink-2:#B4B2AA;--line:#34332F;--control:#8D8A82;--action:#F3F1EA;--action-text:#151513;--ocre:#C9A64B;--ocre-text:#D9B861;--link:#D9B861;--ocre-bg:#2B2616;--ai:#6EE7B7;--ai-bg:#10241F;--ok:#6EE7B7;--ok-bg:#10241F;--error:#F1ABAB;--error-bg:#2E1A1A;--info:#9FD3F2;--info-bg:#112733;--focus:#7CC0E8}

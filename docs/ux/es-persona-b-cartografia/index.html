@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persona B en Cartografía (maqueta)</title>
+<style>
+/* Maqueta de DISEÑO (no es código de producto): migración visual de Evidencias, Hojas de vida, Habilidades de la hoja de vida y Brújula
+   al marco de Persona aprobado en ES-153. Flujos, estados y textos NO cambian: salen de los diseños ya aprobados y de
+   evidence/copy.ts / resumeCopy.ts / compass/copy.ts. Tokens y piezas = cartografia.css / shell.css de main; lo NUEVO está marcado «NUEVO».
+   Sin tipografías autoalojadas (usa la alternativa del sistema). Todos los datos de la lámina son de ejemplo. */
+.cg{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;
+--cg-font-cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;--cg-font-sans:'Barlow',system-ui,sans-serif;--cg-font-name:'Spectral',Georgia,serif;
+--cg-touch:2.875rem;--cg-focus:3px;color-scheme:light;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 var(--cg-font-sans)}
+@media (prefers-color-scheme:dark){.cg:not([data-theme='light']){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}}
+.cg[data-theme='dark']{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}body{margin:0}
+.cg :focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:3px}
+.cg a{color:var(--cg-mark);text-underline-offset:3px}
+.cg-muted{color:var(--cg-muted)}
+.cg-tag{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch);padding:.55rem 1.2rem;background:var(--cg-ink);color:var(--cg-ground);border:0;border-radius:0;font:700 1rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.cg-btn:hover{background:var(--cg-mark)}
+.cg a.cg-btn{color:var(--cg-ground)}
+.cg-btn--ghost,.cg a.cg-btn--ghost{background:none;color:var(--cg-ink);box-shadow:inset 0 0 0 1.5px var(--cg-ink)}
+.cg-btn--ghost:hover{background:none;color:var(--cg-mark);box-shadow:inset 0 0 0 1.5px var(--cg-mark)}
+.cg-btn--danger{background:var(--cg-err);color:var(--cg-ground)}.cg-btn--danger:hover{background:var(--cg-err)}
+.cg-btn:disabled{opacity:.55;cursor:not-allowed;background:var(--cg-ink);color:var(--cg-ground)}
+.cg-btn--ghost:disabled{background:none;color:var(--cg-ink)}
+.cg-linkbtn{min-width:var(--cg-touch);background:none;border:0;border-bottom:1.5px solid var(--cg-mark);border-radius:0;padding:.1rem 0;min-height:var(--cg-touch);font:600 1rem var(--cg-font-sans);color:var(--cg-ink);cursor:pointer}
+.cg-card{background:var(--cg-panel);border:1.5px solid var(--cg-ink);padding:1rem 1.1rem}
+.cg-banner{border:1.5px solid var(--cg-ink);padding:.8rem 1rem;background:var(--cg-panel);margin:1rem 0}
+.cg-banner--error{border-color:var(--cg-err)}
+.cg-banner__title{display:block;font-weight:600}
+.cg-banner--error .cg-banner__title::before{content:'\26A0\00a0';color:var(--cg-err)}
+.cg-chip{display:inline-flex;gap:.3rem;align-items:center;border:1px solid var(--cg-line);padding:.05rem .45rem;font:600 .78rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-chip--ok{border-color:var(--cg-good);color:var(--cg-good)}.cg-chip--wait{border-color:var(--cg-mark);color:var(--cg-mark)}.cg-chip--bad{border-color:var(--cg-err);color:var(--cg-err)}
+.cg-field{display:grid;gap:.3rem;margin-top:1rem;border:0;padding:0;min-width:0}
+.cg-label{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;padding:0}
+.cg-input,.cg-textarea{width:100%;min-height:var(--cg-touch);padding:.7rem .8rem;background:var(--cg-panel);color:var(--cg-ink);border:1.5px solid var(--cg-ink);border-radius:0;font:inherit}
+.cg-textarea{min-height:9rem;resize:vertical;line-height:1.5}
+.cg-input[aria-invalid='true'],.cg-textarea[aria-invalid='true']{border-color:var(--cg-err);border-width:2px}
+.cg-hint{color:var(--cg-muted);font-size:.85rem;margin:0}
+.cg-error{color:var(--cg-err);font-size:.9rem;margin:0}.cg-error::before{content:'\26A0\00a0'}
+.cg-items{list-style:none;margin:0;padding:0}
+.cg-item{border-top:1px solid var(--cg-line);padding:.9rem 0;display:grid;gap:.4rem}.cg-item:first-child{border-top:2px solid var(--cg-ink)}
+.cg-dialog{background:var(--cg-panel);color:var(--cg-ink);border:2px solid var(--cg-ink);padding:1.3rem 1.4rem;max-width:min(30rem,calc(100vw - 2rem));width:100%}
+.cg-dialog__actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.2rem}
+.cg-scrim{background:rgb(14 22 19/.55);padding:1.2rem 0;display:flex;justify-content:center}
+/* marco (shell.css + ES-153 aprobado) */
+.cg-frame{min-height:100dvh;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.cg-skip{position:absolute;left:1rem;top:-10rem;z-index:100;background:var(--cg-panel);color:var(--cg-mark);border:2px solid var(--cg-ink);padding:.7rem 1rem;font-weight:600}.cg-skip:focus{top:1rem}
+.cg-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.4rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.cg a.cg-brand{font:700 1.7rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg-brand i{font-style:normal;color:var(--cg-mark)}
+.cg-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.cg-nav a{color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)}
+.cg-nav a:hover{border-color:var(--cg-mark)}.cg-nav a[aria-current='page']{border-color:var(--cg-ink)}
+.cg-header__end{display:flex;align-items:center;gap:.7rem 1rem;flex-wrap:wrap;margin-left:auto}
+.cg-lang,.cg-seg{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-lang__btn,.cg-seg button{min-width:var(--cg-touch);min-height:var(--cg-touch);padding:0 .8rem;background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cg-lang__btn[aria-pressed='true'],.cg-seg button[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-seg button+button{border-left:1.5px solid var(--cg-ink)}
+.cg-usermenu__button{background:none;border:0;border-bottom:3px solid transparent;min-height:var(--cg-touch);padding:0 .2rem;color:var(--cg-ink);font:italic 500 1.1rem var(--cg-font-name)}
+.cg-usermenu__button.is-here{border-color:var(--cg-ink)}
+.cg-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 0 2rem;min-width:0}
+.cg-main{min-width:0;outline:none}
+.cg-prefs{display:flex;gap:.6rem 1.4rem;flex-wrap:wrap;align-items:center;width:100%;max-width:1240px;margin:0 auto;padding:.8rem 0;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted)}
+.cg-prefs__group{display:inline-flex;align-items:center;gap:.6rem}
+.cg-footer{display:flex;justify-content:space-between;gap:.4rem 1rem;flex-wrap:wrap;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted);max-width:1240px;width:100%;margin:0 auto}
+.cg-only-narrow{display:none}
+@media (max-width:900px){
+ .cg-body{padding-top:.6rem}
+ .cg-header--person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 .8rem;padding:.4rem 0 .6rem}
+ .cg-header--person .cg-header__end{display:contents}
+ .cg-header--person .cg-usermenu__button{grid-column:2;grid-row:1;justify-self:end}
+ .cg-header--person .cg-nav{grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}
+ .cg-header--person .cg-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .cg-header--person .cg-lang{display:none}.cg-only-narrow{display:flex}}
+@media (max-width:360px){.cg-header--person .cg-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}}
+@media (min-width:901px){.cg-only-narrow{display:none!important}}
+/* ===== NUEVO en estas pantallas ===== */
+.pg-head{margin:0 0 1.2rem;max-width:46rem}.pg-head .cg-tag{margin:0 0 .3rem}
+.pg-title{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .5rem}   /* título de las pantallas de utilidad; el .cg-h1 de 4 rem queda para portada y mapa */
+.pg-lead{margin:0}
+.pg-stack{display:grid;gap:1rem;max-width:46rem}
+.pg-card h2{font:700 1.35rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.03em;margin:0 0 .5rem}
+.pg-card h3{font:700 1.15rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.04em;margin:.2rem 0}
+.pg-card p{margin:.4rem 0}
+.pg-actions{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}
+.pg-price{font:700 1.5rem var(--cg-font-cond)}
+.pg-feat{margin:.5rem 0;padding-left:1.2rem}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1fr) 3rem minmax(0,1fr);gap:1rem;align-items:start}
+.pg-arrow{align-self:center;text-align:center;font:700 1.6rem var(--cg-font-cond);color:var(--cg-muted)}
+.pg-work{display:grid;grid-template-columns:minmax(0,18rem) minmax(0,1fr);gap:1.4rem;align-items:start}
+.pg-paper{font:400 1.15rem/1.6 var(--cg-font-name);min-height:11rem}   /* lo que la persona escribe en el diario va en Spectral */
+.pg-quote{font:italic 400 1.1rem/1.5 var(--cg-font-name);border-left:4px solid var(--cg-line);margin:.4rem 0;padding:.2rem 0 .2rem .9rem}
+.pg-quote--hidden{border-left-style:dashed;color:var(--cg-muted);font-family:var(--cg-font-sans);font-style:normal}
+.pg-switch{display:inline-flex;align-items:center;gap:.7rem;min-height:var(--cg-touch);background:none;border:0;padding:0;font:inherit;color:var(--cg-ink);cursor:pointer}
+.pg-switch__track{width:3.2rem;height:1.8rem;border:2px solid var(--cg-ink);background:var(--cg-ground);position:relative;flex:none}
+.pg-switch__track::after{content:'';position:absolute;top:2px;left:2px;width:1.2rem;height:1.2rem;background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track{background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track::after{left:auto;right:2px;background:var(--cg-ground)}
+.pg-switch__word{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase}
+.pg-todo{border:1.5px dashed var(--cg-line);padding:.5rem .8rem;color:var(--cg-muted);font-size:.9rem}   /* marcador: se mantiene el texto actual de copy.ts */
+@media (max-width:900px){.pg-cols{grid-template-columns:minmax(0,1fr)}.pg-work{grid-template-columns:minmax(0,1fr)}}
+.pg-radios{display:flex;flex-wrap:wrap;gap:.5rem}
+.pg-radios label{display:inline-flex;align-items:center;gap:.5rem;min-height:var(--cg-touch);padding:0 .9rem;border:1.5px solid var(--cg-ink);cursor:pointer;font:600 1rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase}
+.pg-radios input{width:1.2rem;height:1.2rem;accent-color:var(--cg-ink)}
+.pg-radios label:has(input:checked){background:var(--cg-ink);color:var(--cg-ground)}
+.pg-radios label:has(input:focus-visible){outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pg-pick{display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch);cursor:pointer}.pg-pick input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--cg-ink);flex:none}
+fieldset.cg-field legend{padding:0}
+/* ===== sólo de la lámina ===== */
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · Persona B</b>
+ <label>Pantalla <select id="scene">
+  <option value="evidence">Evidencias · lista con filtro</option><option value="evidence-new">Evidencias · nueva</option><option value="evidence-review">Evidencias · revisión</option><option value="evidence-uncertain">Evidencias · guardado incierto</option><option value="evidence-delete">Evidencias · diálogo borrar</option>
+  <option value="resumes">Hojas de vida</option><option value="resumes-delete">Hojas de vida · diálogo borrar versión</option><option value="resume-skills">Habilidades de la hoja de vida</option>
+  <option value="compass">Brújula</option><option value="compass-preview">Brújula · vista previa</option><option value="compass-uncertain">Brújula · confirmación incierta</option><option value="compass-withdraw">Brújula · diálogo retirar</option>
+ </select></label>
+ <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
+ <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
+ <span>Esta barra no existe en la plataforma. Los datos de la lámina son de ejemplo.</span></div>
+<div id="root"></div>
+<script>
+const S={es:{skip:'Saltar al contenido',lang:'Idioma',main:'Principal',menu:'Menú de usuario',
+ nav:['Mapa','Conversación','Evidencias','Diario','Siguiente paso'],foot1:'Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.',foot2:'Tú decides qué guardar.',prefs:'Preferencias',theme:'Tema',tsys:'Sistema',tlight:'Claro',tdark:'Oscuro',ex:'(ejemplo)',cancel:'Cancelar',
+ // evidencias (evidence/copy.ts)
+ eTitle:'Mis evidencias',eNew:'Nueva evidencia',eIntro:'Solo las versiones confirmadas pueden usarse para evaluar capacidades.',ePriv:'No necesitas compartir experiencias íntimas.',fStatus:'Estado',fAll:'Todas',draft:'Borrador',confirmed:'Confirmada',fCount:'2 evidencias',detail:'Ver detalle e historial',eEdit:'Editar',eDel:'Borrar',
+ fTitle:'Título',situation:'Situación',resp:'Mi responsabilidad',actions:'Acciones que realicé',addAction:'Añadir acción',goal:'Meta buscada',delivered:'Lo que entregué realmente',effect:'Efecto observado',learning:'Lo que aprendí',autonomy:'Autonomía declarada',autoOpts:['Por confirmar','Conceptual','Con asistencia','Autónoma y repetible','Lidera o enseña'],autoHelp:'Es autorreporte, no una certificación de capacidad.',required:'Necesario para confirmar',
+ saveDraft:'Guardar borrador',review:'Revisar para confirmar',reviewed:'He revisado esta evidencia.',confirm:'Confirmar evidencia',keepEdit:'Seguir editando',warning:'Una meta no es un resultado logrado. Revisa cada campo antes de confirmar.',reviewNote:'Al confirmar, esta versión queda como respaldo de tu nivel.',
+ uncertain:'Tu texto sigue aquí. Reintenta y no se duplica.',retry:'Reintentar',delTitle:'¿Borrar esta evidencia?',delBody:'Se borra con todas sus versiones. Los niveles que registraste sobre ella quedan sin respaldo. No se puede deshacer.',delYes:'Sí, borrar',
+ // hojas de vida (resumeCopy.ts)
+ rTitle:'Mis hojas de vida',rPriv:'Solo tú puedes verlas. Están cifradas y no llegan a nadie más sin tu autorización aparte.',rVersions:'Versiones',rCount:'2 de 5',rVersion:'Versión',rCurrent:'Actual',rView:'Ver',rDownload:'Descargar',rDelete:'Borrar',rUpload:'Subir una nueva versión',
+ rDelTitle:'¿Borrar la versión 1 (2026-11-02)?',rDelBody:'Se elimina de verdad, sin copias. No se puede deshacer. Las evidencias que ya creaste desde ella se conservan con su origen; lo derivado queda «para revisión».',rDelYes:'Sí, borrar esta versión',
+ wTitle:'Tu autorización de lectura con IA',wBody:'Si la retiras, borramos todas tus hojas de vida y dejamos de analizar nuevas. Puedes volver a autorizar cuando quieras.',wBtn:'Retirar autorización',
+ // habilidades de la hoja de vida (evidence/copy.ts rs_*)
+ sTitle:'Habilidades de tu hoja de vida',sIntro:'Esto es lo que tu hoja de vida dice. Todavía no es evidencia: tú decides cuáles pasan a «Mis evidencias».',sNone:'Ninguna está marcada. Marca solo las que quieras.',sDeclared:'Declarada',sSource:'Hoja de vida v2 · 2026-11-02',sCount:'Seleccionadas: 1',sReview:'Revisar y añadir 1',sNoLevel:'Nivel sin definir',
+ // brújula (compass/copy.ts)
+ cTitle:'Brújula profesional',cIntro:'Tú eliges qué texto autorizas para el recorrido profesional.',cPriv:'No necesitas compartir experiencias íntimas.',cCaution:'No incluyas información de salud ni datos de otras personas.',cCurrent:'Contexto actual',cNew:'Nuevo contexto directo',cCategory:'Selecciona una categoría',cMot:'Qué me motiva',cText:'Texto que quiero autorizar',cSelect:'Incluir en la autorización',cReject:'Rechazar este campo',cAdd:'Añadir campo',cLimit:'Hasta 12 campos, 3 por categoría y 500 caracteres por texto.',cPreview:'Ver exactamente qué autorizo',
+ cAuth:'He revisado estos campos y autorizo su uso profesional.',cConfirm:'Confirmar autorización',cEdit:'Seguir editando',cExpires:'Vence',cReplaces:'Esta autorización reemplaza la versión activa completa. Los campos no seleccionados no estarán en la nueva versión.',cWithdraw:'Retirar contexto vigente',cHistory:'Ver historial',cVersion:'Versión',cActive:'Activa',
+ cUncertain:'No pudimos verificar la confirmación. Tu selección sigue aquí.',cCheck:'Comprobar',cRetry:'Reintentar',cWTitle:'Retirar contexto',cWBody:'Tu profesional dejará de ver este contexto. No borra tus textos guardados ni otros permisos, que se gestionan por separado.'},
+en:{skip:'Skip to content',lang:'Language',main:'Main',menu:'User menu',
+ nav:['Map','Conversation','Evidence','Diary','Next step'],foot1:'Elevation is support and self-knowledge. It is not therapy or diagnosis.',foot2:'You decide what to save.',prefs:'Preferences',theme:'Theme',tsys:'System',tlight:'Light',tdark:'Dark',ex:'(example)',cancel:'Cancel',
+ eTitle:'My evidence',eNew:'New evidence',eIntro:'Only confirmed versions can be used to assess skills.',ePriv:'You do not need to share intimate experiences.',fStatus:'Status',fAll:'All',draft:'Draft',confirmed:'Confirmed',fCount:'2 entries',detail:'View details and history',eEdit:'Edit',eDel:'Delete',
+ fTitle:'Title',situation:'Situation',resp:'My responsibility',actions:'Actions I took',addAction:'Add action',goal:'Intended goal',delivered:'What I actually delivered',effect:'Observed effect',learning:'What I learned',autonomy:'Self-reported autonomy',autoOpts:['To be confirmed','Conceptual','With assistance','Autonomous and repeatable','Leads or teaches'],autoHelp:'This is self-report, not a skill certification.',required:'Required to confirm',
+ saveDraft:'Save draft',review:'Review before confirming',reviewed:'I have reviewed this evidence.',confirm:'Confirm evidence',keepEdit:'Keep editing',warning:'A goal is not an achieved result. Review each field before confirming.',reviewNote:'Once confirmed, this version supports your level.',
+ uncertain:'Your text is still here. Retry and it will not be duplicated.',retry:'Retry',delTitle:'Delete this evidence?',delBody:'It is deleted with all its versions. Any levels you recorded on it are left without support. This cannot be undone.',delYes:'Yes, delete',
+ rTitle:'My résumés',rPriv:'Only you can see them. They are encrypted and reach nobody else without separate permission.',rVersions:'Versions',rCount:'2 of 5',rVersion:'Version',rCurrent:'Current',rView:'View',rDownload:'Download',rDelete:'Delete',rUpload:'Upload a new version',
+ rDelTitle:'Delete version 1 (2026-11-02)?',rDelBody:'It is deleted for good, with no copies. This cannot be undone. Evidence you already created from it is kept with its source; anything derived is marked “for review”.',rDelYes:'Yes, delete this version',
+ wTitle:'Your AI-reading permission',wBody:'If you withdraw it, we delete all your résumés and stop analyzing new ones. You can allow it again whenever you want.',wBtn:'Withdraw permission',
+ sTitle:'Skills from your résumé',sIntro:'This is what your résumé says. It is not evidence yet: you decide which ones move to “My evidence”.',sNone:'None is ticked. Tick only the ones you want.',sDeclared:'Declared',sSource:'Résumé v2 · 2026-11-02',sCount:'Selected: 1',sReview:'Review and add 1',sNoLevel:'Level not defined',
+ cTitle:'Career compass',cIntro:'You choose which text you authorize for your career journey.',cPriv:'You do not need to share intimate experiences.',cCaution:"Do not include health information or other people's data.",cCurrent:'Current context',cNew:'New direct context',cCategory:'Choose a category',cMot:'What motivates me',cText:'Text I want to authorize',cSelect:'Include in the authorization',cReject:'Reject this field',cAdd:'Add field',cLimit:'Up to 12 fields, 3 per category and 500 characters per text.',cPreview:'See exactly what I authorize',
+ cAuth:'I have reviewed these fields and authorize their professional use.',cConfirm:'Confirm authorization',cEdit:'Keep editing',cExpires:'Expires',cReplaces:'This authorization replaces the entire active version. Unselected fields will not be in the new version.',cWithdraw:'Withdraw current context',cHistory:'View history',cVersion:'Version',cActive:'Active',
+ cUncertain:'We could not verify the confirmation. Your selection is still here.',cCheck:'Check',cRetry:'Retry',cWTitle:'Withdraw context',cWBody:'Your professional will stop seeing this context. It does not delete your saved texts or other permissions, which are managed separately.'}};
+const q=id=>document.getElementById(id);let lang='es',theme='system',scene='evidence';const c=()=>S[lang];
+const langSw=()=>`<div class="cg-lang" role="group" aria-label="${c().lang}">${['es','en'].map(l=>`<button type="button" class="cg-lang__btn" lang="${l}" aria-pressed="${lang===l}" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}</div>`;
+const themeSw=()=>`<div class="cg-seg" role="group" aria-label="${c().theme}">${[['system','tsys'],['light','tlight'],['dark','tdark']].map(([v,k])=>`<button type="button" aria-pressed="${theme===v}" data-theme-set="${v}">${c()[k]}</button>`).join('')}</div>`;
+const prefs=()=>`<div class="cg-prefs" role="group" aria-label="${c().prefs}"><span class="cg-only-narrow cg-prefs__group"><span>${c().lang}</span>${langSw()}</span><span class="cg-prefs__group"><span>${c().theme}</span>${themeSw()}</span></div><footer class="cg-footer"><span>${c().foot1}</span><span>${c().foot2}</span></footer>`;
+function frame(inner,{active=null,here=false}={}){const k=c();return `<div class="cg cg-frame" ${theme==='system'?'':`data-theme="${theme}"`}><a class="cg-skip" href="#main">${k.skip}</a>
+ <header class="cg-header cg-header--person"><a class="cg-brand" href="#h" aria-label="Elevation">Elevation<i>.</i></a>
+ <nav class="cg-nav" aria-label="${k.main}">${k.nav.map((n,i)=>`<a href="#n${i}" ${active===i?'aria-current="page"':''}>${n}</a>`).join('')}</nav>
+ <div class="cg-header__end">${langSw()}<button type="button" class="cg-usermenu__button${here?' is-here':''}" aria-expanded="false" aria-label="${k.menu}: Ana ${k.ex}"><span>Ana</span><span aria-hidden="true"> ▾</span></button></div></header>
+ <div class="cg-body"><main id="main" tabindex="-1" class="cg-main">${inner}</main></div>${prefs()}</div>`}
+const head=(title,lead,tag)=>`<header class="pg-head">${tag?`<p class="cg-tag">${tag}</p>`:''}<h1 class="pg-title">${title}</h1>${lead?`<p class="pg-lead">${lead}</p>`:''}</header>`;
+const card=(title,body,id)=>`<section class="cg-card pg-card" ${id?`aria-labelledby="${id}"`:''}><h2 ${id?`id="${id}"`:''}>${title}</h2>${body}</section>`;
+const dlg=(title,inner,acts)=>`<div class="cg-scrim"><div class="cg-dialog" role="dialog" aria-modal="true" aria-labelledby="dg"><h2 id="dg" class="pg-card" style="font:700 1.35rem var(--cg-font-cond);text-transform:uppercase;margin:0 0 .6rem">${title}</h2>${inner}<div class="cg-dialog__actions">${acts}</div></div></div>`;
+const btn=(t,cl='')=>`<button type="button" class="cg-btn ${cl}">${t}</button>`;
+const fld=(id,label,val,ta)=>`<div class="cg-field"><label class="cg-label" for="${id}">${label}</label>${ta?`<textarea class="cg-textarea" id="${id}" style="min-height:5rem">${val}</textarea>`:`<input class="cg-input" id="${id}" value="${val}">`}</div>`;
+const note=(t,err)=>`<div class="cg-banner${err?' cg-banner--error':''}" ${err?'role="alert"':'role="note"'}><span class="cg-banner__title">${t}</span></div>`;
+function sc(){const k=c();let h='',a=2,here=false;
+ if(scene==='evidence'){h=head(k.eTitle,k.eIntro+' '+k.ePriv,'')+`<div class="pg-actions" style="margin:0 0 1rem">${btn(k.eNew)}</div><fieldset class="cg-field" style="max-width:46rem"><legend class="cg-label">${k.fStatus}</legend><div class="pg-radios"><label><input type="radio" name="f" checked>${k.fAll}</label><label><input type="radio" name="f">${k.draft}</label><label><input type="radio" name="f">${k.confirmed}</label></div></fieldset><p class="cg-hint" role="status" style="margin:.6rem 0">${k.fCount}</p><div class="pg-stack">${[['confirmed','cg-chip--ok'],['draft','']].map(([s,cl],i)=>`<article class="cg-card pg-card"><div style="display:flex;justify-content:space-between;gap:.8rem;flex-wrap:wrap;align-items:baseline"><h2 style="margin:0">${lang==='es'?'Título de la evidencia':'Evidence title'} ${i+1} ${k.ex}</h2><span class="cg-chip ${cl}">${s==='confirmed'?'✓ '+k.confirmed:k.draft}</span></div><div class="pg-actions"><a class="cg-btn cg-btn--ghost" href="#d">${k.detail}</a>${btn(k.eEdit,'cg-btn--ghost')}${btn(k.eDel,'cg-btn--ghost')}</div></article>`).join('')}</div>`}
+ if(scene==='evidence-delete'){h=head(k.eTitle,k.eIntro+' '+k.ePriv,'')+`<div class="pg-stack"><article class="cg-card pg-card"><h2>${lang==='es'?'Título de la evidencia':'Evidence title'} 1 ${k.ex}</h2><div class="pg-actions">${btn(k.eDel,'cg-btn--ghost')}</div></article></div>`+dlg(k.delTitle,`<p>${k.delBody}</p>`,btn(k.cancel,'cg-btn--ghost')+btn(k.delYes,'cg-btn--danger'))}
+ if(scene.startsWith('evidence-new')||scene==='evidence-review'||scene==='evidence-uncertain'){const rev=scene==='evidence-review'||scene==='evidence-uncertain';h=head(k.eNew,k.eIntro+' '+k.ePriv,'')+`<div class="pg-stack"><section class="cg-card pg-card">`+(rev?`<h2>${k.review}</h2><p>${k.warning}</p><dl style="margin:.6rem 0"><dt class="cg-tag">${k.fTitle}</dt><dd style="margin:0 0 .5rem">${lang==='es'?'Título de ejemplo':'Example title'} ${k.ex}</dd><dt class="cg-tag">${k.goal}</dt><dd style="margin:0 0 .5rem">${lang==='es'?'Texto de ejemplo':'Example text'} ${k.ex}</dd></dl><label class="cg-check" style="display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch)"><input type="checkbox" checked style="width:1.4rem;height:1.4rem;accent-color:var(--cg-ink)"><span>${k.reviewed}</span></label><p class="cg-hint">${k.reviewNote}</p>`+(scene==='evidence-uncertain'?note(k.uncertain,true)+`<div class="pg-actions">${btn(k.retry)}${btn(k.keepEdit,'cg-btn--ghost')}</div>`:`<div class="pg-actions">${btn(k.confirm)}${btn(k.keepEdit,'cg-btn--ghost')}</div>`):`<h2>${k.eNew}</h2><span class="cg-chip">${k.required}</span>`+fld('t',k.fTitle,'',0)+fld('s',k.situation,'',1)+fld('r',k.resp,'',1)+fld('a',k.actions,'',1)+`<div class="pg-actions" style="margin-top:.4rem"><button type="button" class="cg-linkbtn">${k.addAction}</button></div>`+fld('g',k.goal,'',1)+fld('d',k.delivered,'',1)+fld('e',k.effect,'',1)+fld('l',k.learning,'',1)+`<fieldset class="cg-field"><legend class="cg-label">${k.autonomy}</legend><div class="pg-radios">${k.autoOpts.map((o,i)=>`<label><input type="radio" name="au" ${i===0?'checked':''}>${o}</label>`).join('')}</div><p class="cg-hint">${k.autoHelp}</p></fieldset><div class="pg-actions">${btn(k.saveDraft,'cg-btn--ghost')}${btn(k.review)}</div>`)+`</section></div>`}
+ if(scene.startsWith('resumes')){a=null;here=true;h=head(k.rTitle,k.rPriv)+`<div class="pg-stack">`+card(k.rVersions+' · '+k.rCount,`<ul class="cg-items" style="margin-top:.4rem">${[2,1].map(n=>`<li class="cg-item"><div style="display:flex;justify-content:space-between;gap:.8rem;flex-wrap:wrap;align-items:baseline"><strong>${k.rVersion} ${n} · 2026-11-0${n} ${k.ex}</strong>${n===2?`<span class="cg-chip cg-chip--ok">✓ ${k.rCurrent}</span>`:''}</div><div class="pg-actions" style="margin-top:.2rem">${btn(k.rView,'cg-btn--ghost')}${btn(k.rDownload,'cg-btn--ghost')}${btn(k.rDelete,'cg-btn--ghost')}</div></li>`).join('')}</ul><div class="pg-actions">${btn(k.rUpload)}</div>`,'rv')+card(k.wTitle,`<p>${k.wBody}</p><div class="pg-actions">${btn(k.wBtn,'cg-btn--danger')}</div>`,'rw')+`</div>`+(scene==='resumes-delete'?dlg(k.rDelTitle,`<p>${k.rDelBody}</p>`,btn(k.cancel,'cg-btn--ghost')+btn(k.rDelYes,'cg-btn--danger')):'')}
+ if(scene==='resume-skills'){a=2;h=head(k.sTitle,k.sIntro)+`<div class="pg-stack"><p class="cg-hint">${k.sNone}</p><ul class="cg-items">${[[1,1],[0,0]].map(([on],i)=>`<li class="cg-item"><label class="pg-pick"><input type="checkbox" ${i===0?'checked':''}><span><strong>${lang==='es'?'Habilidad de ejemplo':'Example skill'} ${i+1} ${k.ex}</strong></span></label><div style="display:flex;gap:.5rem;flex-wrap:wrap"><span class="cg-chip">${k.sDeclared}</span><span class="cg-chip">${k.sNoLevel}</span><span class="cg-hint">${k.sSource}</span></div></li>`).join('')}</ul><p class="cg-hint" role="status">${k.sCount}</p><div class="pg-actions">${btn(k.sReview)}</div></div>`}
+ if(scene.startsWith('compass')){a=null;here=true;const prev=scene==='compass-preview',unc=scene==='compass-uncertain';h=head(k.cTitle,k.cIntro+' '+k.cPriv,'')+`<div class="pg-stack"><p class="cg-hint">${k.cCaution}</p>`+card(k.cCurrent,`<p><span class="cg-chip cg-chip--ok">✓ ${k.cActive}</span> <span class="cg-hint">${k.cVersion} 2 ${k.ex}</span></p><p><strong>${k.cMot}:</strong> ${lang==='es'?'Texto de ejemplo':'Example text'} ${k.ex}</p><div class="pg-actions"><button type="button" class="cg-linkbtn">${k.cHistory}</button>${btn(k.cWithdraw,'cg-btn--ghost')}</div>`,'cc')+card(k.cNew,`<p class="cg-hint">${k.cLimit}</p>`+(prev||unc?`<p class="cg-hint">${k.cExpires}: 10:42</p><dl style="margin:.4rem 0"><dt class="cg-tag">${k.cMot}</dt><dd style="margin:0 0 .5rem">${lang==='es'?'Texto de ejemplo':'Example text'} ${k.ex}</dd></dl>${note(k.cReplaces)}<label class="cg-check" style="display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch)"><input type="checkbox" checked style="width:1.4rem;height:1.4rem;accent-color:var(--cg-ink)"><span>${k.cAuth}</span></label>`+(unc?note(k.cUncertain,true)+`<div class="pg-actions">${btn(k.cCheck,'cg-btn--ghost')}${btn(k.cRetry)}</div>`:`<div class="pg-actions">${btn(k.cEdit,'cg-btn--ghost')}${btn(k.cConfirm)}</div>`):`<div class="cg-field"><label class="cg-label" for="cat">${k.cCategory}</label><select class="cg-input" id="cat"><option>${k.cMot}</option></select></div>${fld('tx',k.cText,'',1)}<label class="cg-check" style="display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch)"><input type="checkbox" checked style="width:1.4rem;height:1.4rem;accent-color:var(--cg-ink)"><span>${k.cSelect}</span></label><div class="pg-actions">${btn(k.cReject,'cg-btn--ghost')}${btn(k.cAdd,'cg-btn--ghost')}${btn(k.cPreview)}</div>`),'cn')+`</div>`+(scene==='compass-withdraw'?dlg(k.cWTitle,`<p>${k.cWBody}</p>`,btn(k.cancel,'cg-btn--ghost')+btn(k.cWTitle,'cg-btn--danger')):'')}
+ return frame(h,{active:a,here})}
+function render(){q('root').innerHTML=sc();document.documentElement.lang=lang;const dark=theme==='dark'||(theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.body.style.background=dark?'#0e1613':'#e7ece8'}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-lang],[data-theme-set]');if(!t)return;if(t.dataset.lang){lang=t.dataset.lang;q('lang').value=lang}else{theme=t.dataset.themeSet;q('theme').value=theme}render()});
+q('scene').onchange=e=>{scene=e.target.value;render()};q('lang').onchange=e=>{lang=e.target.value;render()};q('theme').onchange=e=>{theme=e.target.value;render()};
+const hh=new URLSearchParams(location.hash.slice(1));if(hh.get('scene')){scene=hh.get('scene');q('scene').value=scene}if(hh.get('lang')){lang=hh.get('lang');q('lang').value=lang}if(hh.get('theme')){theme=hh.get('theme');q('theme').value=theme}
+render();
+</script>
+</body>
+</html>
