@@ -52,8 +52,16 @@ const axe = async page => { await page.evaluate(axeSource); return page.evaluate
     check(await page.evaluate(() => !document.documentElement.classList.contains('cg-scroll-lock')), `${tag}: el fondo vuelve a desplazarse`)
     await page.locator('.cg-menubtn').click(); await page.locator('dialog.cg-drawer[open]').waitFor(); await page.mouse.click(width - 4, 400); await page.waitForTimeout(200)
     check(await page.locator('dialog.cg-drawer[open]').count() === 0, `${tag}: clic en el velo cierra`)
-    await page.locator('.cg-menubtn').click(); await page.locator('.cg-drawer__list a').nth(1).click(); await page.waitForTimeout(500)
+    await page.locator('.cg-menubtn').click(); await page.locator('.cg-drawer__list a').nth(5).click(); await page.waitForTimeout(500)
     check(await page.locator('dialog.cg-drawer[open]').count() === 0, `${tag}: elegir un enlace cierra el cajón`)
+    // «atrás» del navegador con el cajón abierto: cambia la ruta, el cajón se cierra, el fondo vuelve a desplazarse y el foco queda en un elemento visible (el <main> de la ruta o el botón ☰)
+    const before = new URL(page.url()).pathname
+    await page.locator('.cg-menubtn').click(); await page.locator('dialog.cg-drawer[open]').waitFor(); await page.evaluate(() => history.back()); await page.waitForTimeout(600)
+    const back = await page.evaluate(() => ({ path: location.pathname, open: document.querySelectorAll('dialog.cg-drawer[open]').length, lock: document.documentElement.classList.contains('cg-scroll-lock'), expanded: document.querySelector('.cg-menubtn')?.getAttribute('aria-expanded'),
+      focus: document.activeElement === document.body ? 'body' : document.activeElement.id === 'main' ? 'main' : document.activeElement.className }))
+    check(back.path !== before, `${tag}: «atrás» cambió de ruta (${before} → ${back.path})`); check(back.open === 0 && !back.lock && back.expanded === 'false', `${tag}: «atrás» cierra el cajón y libera el fondo (abierto=${back.open}, bloqueo=${back.lock}, expandido=${back.expanded})`)
+    check(back.focus === 'main' || back.focus === 'cg-menubtn', `${tag}: foco coherente tras «atrás» (${back.focus})`)
+    await page.evaluate(() => history.forward()); await page.waitForTimeout(500)
     check(errors.length === 0, `${tag}: sin errores de JS ${errors.slice(0, 1)}`); await ctx.close()
   }
   { const { ctx, page } = await setup(browser, { lang: 'es', width: 1360, scheme: 'light' })

@@ -84,7 +84,10 @@ export type FrameProps = {
 export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, drawer, children }: FrameProps) {
   const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder; const compact = useNarrowHeader() && !!drawer
   const [drawerOpen, setDrawerOpen] = useState(false); const menuButton = useRef<HTMLButtonElement>(null)
-  useEffect(() => { if (!compact) setDrawerOpen(false) }, [compact])
+  // El cajón se cierra al cambiar de ruta (incluido el botón «atrás» del navegador) y si la pantalla deja de ser móvil. Sin efecto con setState: se ajusta el estado durante el render.
+  const [drawerPath, setDrawerPath] = useState(pathname)
+  if (drawerPath !== pathname) { setDrawerPath(pathname); if (drawerOpen) setDrawerOpen(false) }
+  const drawerShown = drawerOpen && compact
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // ES-359: `preferences={null}` = sin preferencias en el encabezado (viven dentro del menú de cuenta); sin la propiedad, el idioma suelto (pantallas públicas).
   const prefs = preferences === undefined ? <LangSwitch /> : preferences
@@ -99,11 +102,11 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
       {header && (
         <header className="cg-header" data-compact={compact || undefined} onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
-          {compact ? <button ref={menuButton} type="button" className="cg-menubtn" aria-haspopup="dialog" aria-expanded={drawerOpen} onClick={() => setDrawerOpen(true)}><span className="cg-menubtn__icon" aria-hidden="true" /> {c.menu}</button> : <>{narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
+          {compact ? <button ref={menuButton} type="button" className="cg-menubtn" aria-haspopup="dialog" aria-expanded={drawerShown} onClick={() => setDrawerOpen(true)}><span className="cg-menubtn__icon" aria-hidden="true" /> {c.menu}</button> : <>{narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
           {narrow && nav}</>}
         </header>
       )}
-      {compact && drawer && <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} opener={menuButton} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} />}
+      {compact && drawer && <NavDrawer open={drawerShown} onClose={() => setDrawerOpen(false)} opener={menuButton} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} />}
       <div className={sidebar ? 'cg-body cg-body--side' : 'cg-body'}>
         {sidebar}
         <main id="main" ref={main} tabIndex={-1} className={`cg-main ${mainClassName}`.trim()}>{children}</main>
