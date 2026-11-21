@@ -6,13 +6,14 @@ const { catalog } = require('../content/landingDefaults');
 
 const row = (key, lang, value) => ({ key, lang, value });
 
-test('ES-106: un override huérfano no se publica; uno vigente, los heredados y las claves no landing sí; blancos y no textos se ignoran', async t => {
+test('ES-106: un override huérfano no se publica; uno vigente, los heredados sí y las claves que no son de la portada no (ES-279); blancos y no textos se ignoran', async t => {
   const stored = [
     row('landing.modules.elevation.status', 'es', 'En piloto'), // clave eliminada en ES-94
     row('landing.clave.que.nunca.existio', 'es', 'huérfano'),
     row('landing.skillmap.routes.continuity.pending', 'es', 'Texto editado vigente'),
     row('hero_title', 'es', 'Título heredado editado'),
-    row('otra_clave_no_landing', 'es', 'se conserva'),
+    row('otra_clave_no_landing', 'es', 'no se publica'), // ES-279: una clave que no es de la portada ni del catálogo tampoco sale
+    row('non-landing.secreto', 'es', 'no se publica'),
     row('landing.nav.skip', 'es', '   '), // en blanco: se ignora y queda el defecto
     row('landing.nav.how', 'es', 7), // no es texto
     row('landing.modules.elevation.status', 'en', 'In pilot'),
@@ -23,7 +24,7 @@ test('ES-106: un override huérfano no se publica; uno vigente, los heredados y 
   assert.equal('landing.modules.elevation.status' in es, false);
   assert.equal('landing.clave.que.nunca.existio' in es, false);
   assert.equal(es['landing.skillmap.routes.continuity.pending'], 'Texto editado vigente');
-  assert.equal(es.hero_title, 'Título heredado editado'); assert.equal(es.otra_clave_no_landing, 'se conserva');
+  assert.equal(es.hero_title, 'Título heredado editado'); assert.equal('otra_clave_no_landing' in es, false); assert.equal('non-landing.secreto' in es, false);
   assert.equal(es['landing.nav.skip'], catalog.find(e => e.key === 'landing.nav.skip').es);
   assert.equal(es['landing.nav.how'], catalog.find(e => e.key === 'landing.nav.how').es);
   const en = (await request('GET', '/api/landing-content?lang=en')).body;
