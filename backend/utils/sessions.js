@@ -12,15 +12,18 @@ const { deletionPending } = require('./deletionGuard');
 
 const SESSION_TTL = '8h';
 
-// Último corte de sesiones hecho por ESTE proceso (ms). La validación revoca todo token con iatMs <= corte (en el mismo milisegundo no se sabe el orden, así que se revoca). Para que un inicio de sesión POSTERIOR al corte nunca
-// quede revocado por caer en ese mismo milisegundo (QA-18-05; intermitencia 401 en el CI de main), un token emitido por este proceso lleva siempre iatMs > último corte.
+// RELOJ MONÓTONO DE ESTE PROCESO (ms). La validación revoca todo token con iatMs <= corte (en el mismo milisegundo no se sabe el orden, así que se revoca).
+//  · Un token emitido DESPUÉS de un corte lleva iatMs > último corte (QA-18-05; intermitencia 401 en el CI de main, ES-365).
+//  · Un corte lleva instante >= el iatMs de TODO token que este proceso emitió (QA-419-1): si el reloj retrocede (NTP, VM), un token emitido en esa ventana puede llevar un iatMs «futuro» y el corte de esa persona igualmente lo cubre.
+// LÍMITE: las dos marcas son POR PROCESO. Con varias instancias, o con relojes distintos entre ellas, el orden no está garantizado (un login puede revocarse de más o un token con reloj adelantado puede sobrevivir a un corte hecho en otra instancia): QA-419-2, ticket aparte (tiempo de la base o versión de sesión por persona).
 let lastCutMs = 0;
+let lastIssuedMs = 0;
 
 // Cada token lleva un identificador único (jti) para poder revocarlo.
 const issueToken = (user) => jwt.sign(
   // iatMs: instante de emisión en milisegundos (el claim estándar iat solo llega al segundo); permite que un inicio de sesión
   // inmediatamente posterior a un corte de sesiones no quede revocado (QA-18-05).
-  { id: user.id, name: user.name, role: user.role, iatMs: Math.max(Date.now(), lastCutMs + 1) },
+  { id: user.id, name: user.name, role: user.role, iatMs: (lastIssuedMs = Math.max(Date.now(), lastCutMs + 1, lastIssuedMs)) },
   JWT_SECRET,
   { expiresIn: SESSION_TTL, jwtid: crypto.randomBytes(16).toString('hex') },
 );
@@ -51,8 +54,8 @@ const revokeToken = async (payload) => {
 };
 
 const revokeUserSessions = async (userId) => {
-  const cut = new Date(Date.now()); lastCutMs = Math.max(lastCutMs, cut.getTime());
-  await AuthRevocation.upsert({ UserId: userId, revokedBefore: cut });
+  const cut = new Date(Math.max(Date.now(), lastIssuedMs)); lastCutMs = Math.max(lastCutMs, cut.getTime());
+  await AuthRevocation.advanceCut(userId, cut); // el corte solo avanza (GREATEST): dos cortes simultáneos de la misma persona no se pisan (QA-419-3)
 };
 
 module.exports = { issueToken, sessionProblem, revokeToken, revokeUserSessions, SESSION_TTL };

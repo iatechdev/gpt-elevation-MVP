@@ -43,6 +43,7 @@ models.RevokedToken.upsert = async () => {};
 models.RevokedToken.destroy = async () => 0;
 models.AuthRevocation.findByPk = async () => null;
 models.AuthRevocation.upsert = async () => {};
+models.AuthRevocation.advanceCut = async () => {}; // QA-419-3: el corte solo avanza (GREATEST en la base)
 models.DeletionRequest.findOne = async () => null;
 models.DeletionRequest.findAll = async () => []; // ES-101: el terapeuta consulta las eliminaciones aceptadas
 models.User.findAll = async () => []; // ES-101: por defecto nadie está inactivo; las pruebas que listan usuarios lo sobrescriben

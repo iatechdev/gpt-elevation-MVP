@@ -19,7 +19,7 @@ function sessionStore() {
   models.RevokedToken.findByPk = async jti => revoked.get(jti) ?? null;
   models.RevokedToken.upsert = async row => { revoked.set(row.jti, row); };
   models.AuthRevocation.findByPk = async id => cutoffs.get(id) ?? null;
-  models.AuthRevocation.upsert = async row => { cutoffs.set(row.UserId, row); };
+  models.AuthRevocation.advanceCut = async (UserId, revokedBefore) => { cutoffs.set(UserId, { UserId, revokedBefore }); };
   return { cutoffs };
 }
 

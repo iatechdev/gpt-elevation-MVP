@@ -14,4 +14,11 @@ const AuthRevocation = sequelize.define('AuthRevocation', {
   },
 });
 
+// El corte SOLO AVANZA (QA-419-3): dos cortes simultáneos de la misma persona no se pisan; el commit tardío del más antiguo no puede retroceder el corte, así que un token emitido entre ambos no vuelve a valer.
+AuthRevocation.advanceCut = (UserId, revokedBefore) => sequelize.query(
+  'INSERT INTO "AuthRevocations" ("UserId", "revokedBefore", "createdAt", "updatedAt") VALUES (:UserId, :revokedBefore, now(), now()) '
+  + 'ON CONFLICT ("UserId") DO UPDATE SET "revokedBefore" = GREATEST("AuthRevocations"."revokedBefore", EXCLUDED."revokedBefore"), "updatedAt" = now()',
+  { replacements: { UserId, revokedBefore } },
+);
+
 module.exports = AuthRevocation;

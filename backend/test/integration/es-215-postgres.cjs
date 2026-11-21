@@ -46,6 +46,7 @@ test('ES-215 PostgreSQL: rango del objetivo al cambiar rol o estado de una cuent
   app.get('/api/probe', verificarAdmin, (req, res) => res.json({ ok: true }));
   server = app.listen(0, '127.0.0.1'); await once(server, 'listening');
 
+  const q1 = (text, params) => sequelize.query(text.replace(/\$(\d)/g, ':p$1'), { replacements: Object.fromEntries((params || []).map((v, i) => ['p' + (i + 1), v])), type: Sequelize.QueryTypes.SELECT });
   const person = (role, name, extra = {}) => User.create({ name, email: `${name.toLowerCase()}@example.invalid`, password: 'x', role, ...extra });
   // Una sesión por persona, emitida la primera vez que se usa: así se ve si un cambio de rol o estado la corta (un token nuevo sería válido).
   const tokens = new Map();
@@ -163,5 +164,52 @@ test('ES-215 PostgreSQL: rango del objetivo al cambiar rol o estado de una cuent
       assert.equal(cutNow, frozen); assert.ok(lateMs > cutNow, 'iatMs ' + lateMs + ' > corte ' + cutNow); assert.ok(earlyMs <= cutNow);
       assert.equal(await sessionProblem(jwt.decode(early)), 'revoked', 'la emitida antes del corte (mismo ms) se revoca'); assert.equal(await sessionProblem(jwt.decode(late)), null, 'la emitida después vale');
     } finally { Date.now = realNow; }
+  });
+
+  // QA-419-1 (Media-Baja, regresión de ES-365) y QA-419-3: reloj monótono por proceso y corte que solo avanza. Reloj CONTROLADO (Date.now), PostgreSQL real, la validación real (sessionProblem).
+  await t.test('QA-419-1 C4: corte(B) → login(A) → corte(A) en el MISMO milisegundo: el token de A queda revocado por el corte de A', async () => {
+    const { revokeUserSessions, issueToken: issue, sessionProblem } = require('../../utils/sessions'); const jwt = require('jsonwebtoken');
+    const [a, b] = [await person('user', 'C4A'), await person('user', 'C4B')]; const realNow = Date.now; const T = realNow.call(Date) + 3600000;
+    try {
+      Date.now = () => T; await revokeUserSessions(b.id); const token = issue(a); await revokeUserSessions(a.id);
+      const payload = jwt.decode(token); const cut = new Date((await AuthRevocation.findByPk(a.id)).revokedBefore).getTime();
+      assert.ok(payload.iatMs <= cut, 'iatMs ' + payload.iatMs + ' <= corte ' + cut); assert.equal(await sessionProblem(payload), 'revoked', 'el corte de A cubre el token que A emitió');
+      const after = issue(a); assert.equal(await sessionProblem(jwt.decode(after)), null, 'y el login posterior al corte vale');
+    } finally { Date.now = realNow; }
+  });
+
+  await t.test('QA-419-1 C5: reloj retrocedido 5 s → el token emitido tras el retroceso queda revocado por un corte posterior de la misma persona', async () => {
+    const { revokeUserSessions, issueToken: issue, sessionProblem } = require('../../utils/sessions'); const jwt = require('jsonwebtoken');
+    const [a, b] = [await person('user', 'C5A'), await person('user', 'C5B')]; const realNow = Date.now; const T = realNow.call(Date) + 7200000;
+    try {
+      Date.now = () => T; await revokeUserSessions(b.id);
+      Date.now = () => T - 5000; const token = issue(a); // iatMs futuro (T+1) por el corte anterior
+      Date.now = () => T - 4000; await revokeUserSessions(a.id); // p. ej. cambio de contraseña con el reloj aún atrasado
+      const payload = jwt.decode(token); const cut = new Date((await AuthRevocation.findByPk(a.id)).revokedBefore).getTime();
+      assert.ok(payload.iatMs > T - 4000, 'el token lleva un iatMs adelantado: ' + (payload.iatMs - T)); assert.ok(cut >= payload.iatMs, 'el corte (' + (cut - T) + ') cubre el iatMs (' + (payload.iatMs - T) + ')');
+      assert.equal(await sessionProblem(payload), 'revoked', 'FALLA ABIERTA si esto vale');
+    } finally { Date.now = realNow; }
+  });
+
+  await t.test('QA-419-1 C6: reloj retrocedido SIN corte previo: un token emitido «en el futuro» queda cubierto por un corte posterior aunque el reloj siga atrasado', async () => {
+    const { revokeUserSessions, issueToken: issue, sessionProblem } = require('../../utils/sessions'); const jwt = require('jsonwebtoken');
+    const a = await person('user', 'C6A'); const realNow = Date.now; const T = realNow.call(Date) + 14400000;
+    try {
+      Date.now = () => T + 100; const early = issue(a); // este proceso ya emitió un token con iatMs = T + 100
+      Date.now = () => T; const late = issue(a); // el reloj retrocedió 100 ms: el segundo token no puede llevar un iatMs menor (reloj monótono)
+      assert.ok(jwt.decode(late).iatMs >= jwt.decode(early).iatMs, 'iatMs monótono');
+      await revokeUserSessions(a.id); // corte con el reloj todavía atrasado
+      for (const token of [early, late]) assert.equal(await sessionProblem(jwt.decode(token)), 'revoked', 'el corte cubre todo lo emitido por este proceso');
+    } finally { Date.now = realNow; }
+  });
+
+  await t.test('QA-419-3: el corte solo avanza (GREATEST): un corte tardío más antiguo no retrocede el corte y un token emitido entre ambos no vuelve a valer; 30 cortes simultáneos terminan en el máximo', async () => {
+    const who = await person('user', 'Greatest'); const base = Date.now() + 10800000;
+    await AuthRevocation.advanceCut(who.id, new Date(base + 500)); await AuthRevocation.advanceCut(who.id, new Date(base)); // el «commit tardío» del corte antiguo
+    assert.equal(new Date((await AuthRevocation.findByPk(who.id)).revokedBefore).getTime(), base + 500, 'no retrocede');
+    const many = await person('user', 'Greatest2'); const stamps = Array.from({ length: 30 }, (_, i) => base + ((i * 37) % 30) * 10);
+    await Promise.all(stamps.map((ms) => AuthRevocation.advanceCut(many.id, new Date(ms))));
+    assert.equal(new Date((await AuthRevocation.findByPk(many.id)).revokedBefore).getTime(), Math.max(...stamps), 'queda el máximo, sin importar el orden de llegada');
+    assert.equal((await q1('SELECT count(*)::int n FROM "AuthRevocations" WHERE "UserId" = $1', [many.id]))[0].n, 1, 'una sola fila');
   });
 });
