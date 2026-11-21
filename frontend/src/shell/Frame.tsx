@@ -1,11 +1,12 @@
 // ES-153: piezas comunes de los marcos de página: «saltar al contenido», un solo <main> que recibe el foco al cambiar de ruta,
 // selector de idioma, piezas de preferencias (idioma y tema; el menú de cuenta vive en AccountMenu.tsx) y pie con el aviso «no es terapia ni diagnóstico».
-import { useEffect, useId, useRef, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
-import type { NavItem } from './nav'
+import type { NavGroup, NavItem } from './nav'
+import { NavDrawer } from './NavDrawer'
 import { useShellCopy } from './useShellCopy'
 import { useNarrowHeader } from './narrowHeader'
 import { leaveBlocked } from './leaveGuard'
@@ -75,11 +76,15 @@ export type FrameProps = {
   theme?: CgTheme
   /** ES-321: en la disposición móvil (≤ 900 px) el DOM sigue el orden visual (marca → menú → preferencias → navegación) para que Tab no suba; en escritorio, el de siempre. */
   mobileOrder?: boolean
+  /** ES-359 (PR3): en ≤ 900 px el encabezado es una fila de 56 px (marca + «☰ Menú») y la navegación, las preferencias y «Cerrar sesión» viven en el cajón. */
+  drawer?: { groups: NavGroup[]; name: string; roleLabel: string; legacyTheme?: boolean }
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, children }: FrameProps) {
-  const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, drawer, children }: FrameProps) {
+  const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder; const compact = useNarrowHeader() && !!drawer
+  const [drawerOpen, setDrawerOpen] = useState(false); const menuButton = useRef<HTMLButtonElement>(null)
+  useEffect(() => { if (!compact) setDrawerOpen(false) }, [compact])
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // ES-359: `preferences={null}` = sin preferencias en el encabezado (viven dentro del menú de cuenta); sin la propiedad, el idioma suelto (pantallas públicas).
   const prefs = preferences === undefined ? <LangSwitch /> : preferences
@@ -92,12 +97,13 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
     <CartografiaRoot theme={theme} className="cg-frame">
       <a className="cg-skip" href="#main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{c.skip}</a>
       {header && (
-        <header className="cg-header" onClickCapture={guardLeave}>
+        <header className="cg-header" data-compact={compact || undefined} onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
-          {narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
-          {narrow && nav}
+          {compact ? <button ref={menuButton} type="button" className="cg-menubtn" aria-haspopup="dialog" aria-expanded={drawerOpen} onClick={() => setDrawerOpen(true)}><span className="cg-menubtn__icon" aria-hidden="true" /> {c.menu}</button> : <>{narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
+          {narrow && nav}</>}
         </header>
       )}
+      {compact && drawer && <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} opener={menuButton} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} />}
       <div className={sidebar ? 'cg-body cg-body--side' : 'cg-body'}>
         {sidebar}
         <main id="main" ref={main} tabIndex={-1} className={`cg-main ${mainClassName}`.trim()}>{children}</main>

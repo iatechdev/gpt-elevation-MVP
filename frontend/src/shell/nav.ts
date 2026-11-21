@@ -2,7 +2,7 @@
 import type { ShellCopy } from './copy'
 import type { Role } from './access'
 
-export type NavKey = Exclude<keyof ShellCopy, 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson'>
+export type NavKey = Exclude<keyof ShellCopy, 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson' | 'menu' | 'close'>
 export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 
 export const PUBLIC_NAV: NavItem[] = [
@@ -59,3 +59,6 @@ export const ADMIN_BOARD_GROUP: NavItem[] = [{ to: '/admin/manifest', label: 'ad
 export const BOARD_NAV: NavItem[] = [{ to: '/manifiesto', label: 'adManifest' }]
 
 export const visibleFor = (items: NavItem[], role: Role) => items.filter(item => !item.roles || item.roles.includes(role))
+
+/** ES-359 (PR3): un grupo del cajón móvil. `title` ya viene en el idioma activo (sin título = grupo suelto, se anuncia con el nombre «Principal»). */
+export type NavGroup = { title?: string; items: NavItem[] }
