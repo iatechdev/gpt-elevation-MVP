@@ -12,7 +12,8 @@ const es = {
   // persona
   map: 'Mapa', chat: 'Conversación', evidence: 'Evidencias', diary: 'Diario', next: 'Siguiente paso',
   today: 'Hoy', bridge: 'El Puente', myProfessional: 'Mi profesional', tools: 'Mis herramientas', progress: 'Mi progreso', plan: 'Mi plan',
-  resumes: 'Hojas de vida', reviews: 'Revisiones profesionales', data: 'Mis datos', feedback: 'Tu opinión', signOut: 'Salir', signingOut: 'Saliendo…',
+  resumes: 'Hojas de vida', reviews: 'Revisiones profesionales', data: 'Mis datos', feedback: 'Tu opinión', signOut: 'Cerrar sesión', signingOut: 'Saliendo…',
+  rolePerson: 'Persona', // ES-359 (aprobado en ES-359)
   // profesional
   proPanel: 'Panel', proFacilitation: 'Personas en facilitación',
   // administración y junta
@@ -36,6 +37,7 @@ const en: typeof es = {
   map: 'Map', chat: 'Conversation', evidence: 'Evidence', diary: 'Diary', next: 'Next step',
   today: 'Today', bridge: 'The Bridge', myProfessional: 'My professional', tools: 'My tools', progress: 'My progress', plan: 'My plan',
   resumes: 'Résumés', reviews: 'Professional reviews', data: 'My data', feedback: 'Your feedback', signOut: 'Sign out', signingOut: 'Signing out…',
+  rolePerson: 'Person',
   proPanel: 'Dashboard', proFacilitation: 'Facilitation participants',
   adminRole: 'Administration', superRole: 'Superadministration', boardRole: 'Ethics board', boardGroup: 'Board',
   adPanel: 'Dashboard', adGuides: 'AI guides', adContent: 'Content', adUsers: 'Users', adMetrics: 'Metrics',

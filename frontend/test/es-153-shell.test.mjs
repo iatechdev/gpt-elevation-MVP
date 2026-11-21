@@ -104,7 +104,7 @@ test('ES-153 marco: saltar al contenido, un solo <main> con foco al cambiar de r
 })
 
 test('ES-153 menú de usuario: botón con aria-expanded, Escape cierra y devuelve el foco, clic fuera cierra, salir con texto', () => {
-  const frame = read('../src/shell/Frame.tsx')
+  const frame = read('../src/shell/AccountMenu.tsx') // ES-359: el menú de cuenta (antes UserMenu en Frame.tsx)
   for (const needle of ['aria-expanded={open}', 'aria-controls={id}', "event.key === 'Escape'", 'button.current?.focus()', "document.addEventListener('mousedown'", 'hidden={!open}', 'c.signOut']) assert.ok(frame.includes(needle), needle)
 })
 

@@ -102,7 +102,7 @@ test('ES-38: shell provides skip target, named navigation, collapsed disclosure 
     assert.match(markup, /href="#main"/) // ES-153: «Saltar al contenido» y un solo <main> que recibe el foco
     assert.match(markup, /id="main"[^>]*tabindex="-1"/)
     assert.equal((markup.match(/<main/g) ?? []).length, 1)
-    assert.match(markup, new RegExp(lang === 'es' ? 'Salir' : 'Sign out')) // ES-153: botón de salida con texto en el encabezado
+    assert.match(markup, new RegExp(lang === 'es' ? 'Cerrar sesión' : 'Sign out')) // ES-153 / ES-359: «Cerrar sesión» (antes «Salir») con texto, dentro del menú de cuenta del encabezado
     assert.match(markup, /Elevation es acompañamiento|Elevation is support/) // el pie conserva el aviso «no es terapia ni diagnóstico»
     assert.match(markup, /aria-pressed="true"/)
   }
