@@ -1,0 +1,14 @@
+BASE pruebas del PR (pasan/fallan): 16/0
+m1 despliegue sin hidden (siempre abierto): 15/1 → DETECTADA
+m2 «Mi progreso» duplicado (sin filtrar la lista de usuario): 15/1 → DETECTADA
+m3 sin aria-expanded en el despliegue: 15/1 → DETECTADA
+m4 sin «Cerrar» arriba (headerAction): 15/1 → DETECTADA
+m5 pie «Cerrar sesión» sin variante de peligro: 14/2 → DETECTADA
+m6 ☰ sin nombre accesible «Menú»: 15/1 → DETECTADA
+m7 título h1 → h2: 14/2 → DETECTADA
+m8 «Pausar» sin ghost: 15/1 → DETECTADA
+m9 barra de uso sin --cg-mark: 15/1 → DETECTADA
+m10 Dialog sin data-fixed (cabecera/pie no fijos): 15/1 → DETECTADA
+m11 idioma/tema vuelven a PreferencesBar suelta: 16/0 → SOBREVIVE
+m12 el h1 oculto original vuelve (dos h1): 14/2 → DETECTADA
+SOBREVIVEN 1 de 12

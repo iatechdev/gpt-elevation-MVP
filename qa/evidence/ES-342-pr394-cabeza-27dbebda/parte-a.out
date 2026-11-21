@@ -1,0 +1,13 @@
+390×844 light      hilo main 69% → PR 69% (Δ 0) | Enviar main [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] PR [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] | desborde PR 0
+390×844 dark       hilo main 69% → PR 69% (Δ 0) | Enviar main [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] PR [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] | desborde PR 0
+320×568 light      hilo main 51% → PR 51% (Δ 0) | Enviar main [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] PR [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] | desborde PR 0
+320×568 dark       hilo main 51% → PR 51% (Δ 0) | Enviar main [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] PR [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] | desborde PR 0
+1024×768 light     hilo main 55% → PR 55% (Δ 0) | Enviar main [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] PR [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] | desborde PR 0
+1024×768 dark      hilo main 55% → PR 55% (Δ 0) | Enviar main [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] PR [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] | desborde PR 0
+1360×900 light     hilo main 63% → PR 63% (Δ 0) | Enviar main [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] PR [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] | desborde PR 0
+1360×900 dark      hilo main 63% → PR 63% (Δ 0) | Enviar main [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] PR [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] | desborde PR 0
+1280×720 light     hilo main 61% → PR 60% (Δ -1) | Enviar main [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] PR [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] | desborde PR 0
+1280×720 dark      hilo main 61% → PR 60% (Δ -1) | Enviar main [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] PR [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] | desborde PR 0
+900×800 light      hilo main 72% → PR 72% (Δ 0) | Enviar main [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] PR [rgb(242, 245, 242) / rgb(71, 85, 80) / 1] | desborde PR 0
+900×800 dark       hilo main 72% → PR 72% (Δ 0) | Enviar main [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] PR [rgb(21, 32, 28) / rgb(157, 170, 164) / 1] | desborde PR 0
+filas con Enviar distinto o desborde: 0

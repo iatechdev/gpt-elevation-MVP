@@ -1,0 +1,67 @@
+INFO M5 barra main light es 1360×900 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light es 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue main light es 1360×900 user :: {"n":5,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main light es 1360×900 user)
+INFO M5 barra main light es 390×800 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light es 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue main light es 390×800 user :: {"n":26,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main light es 390×800 user)
+INFO M5 barra main light es 390×800 superadmin :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light es 390×800 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue main light es 390×800 superadmin :: {"n":27,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main light es 390×800 superadmin)
+INFO M5 barra main light es 320×568 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light es 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue main light es 320×568 user :: {"n":26,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main light es 320×568 user)
+INFO M5 barra main light es 320×568 superadmin :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light es 320×568 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue main light es 320×568 superadmin :: {"n":27,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main light es 320×568 superadmin)
+INFO M5 barra main light en 1360×900 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light en 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue main light en 1360×900 user :: {"n":5,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main light en 1360×900 user)
+INFO M5 barra main light en 390×800 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light en 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue main light en 390×800 user :: {"n":26,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main light en 390×800 user)
+INFO M5 barra main light en 390×800 superadmin :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light en 390×800 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue main light en 390×800 superadmin :: {"n":27,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main light en 390×800 superadmin)
+INFO M5 barra main light en 320×568 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light en 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue main light en 320×568 user :: {"n":26,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main light en 320×568 user)
+INFO M5 barra main light en 320×568 superadmin :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(31, 95, 70)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main light en 320×568 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue main light en 320×568 superadmin :: {"n":27,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main light en 320×568 superadmin)
+INFO M5 barra main dark es 1360×900 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(125, 211, 168)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main dark es 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue main dark es 1360×900 user :: {"n":5,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main dark es 1360×900 user)
+INFO M5 barra main dark es 390×800 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(125, 211, 168)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main dark es 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue main dark es 390×800 user :: {"n":26,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main dark es 390×800 user)
+INFO M5 barra main dark es 320×568 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENÚ","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":75,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(125, 211, 168)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main dark es 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue main dark es 320×568 user :: {"n":26,"heads":["H2:MENÚ"],"head":"","foot":"CERRAR","active":"Mi progreso"}
+OK   sin excepciones de página (main dark es 320×568 user)
+INFO M5 barra main dark en 1360×900 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(125, 211, 168)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main dark en 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue main dark en 1360×900 user :: {"n":5,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main dark en 1360×900 user)
+INFO M5 barra main dark en 390×800 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(125, 211, 168)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main dark en 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue main dark en 390×800 user :: {"n":26,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main dark en 390×800 user)
+INFO M5 barra main dark en 320×568 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H2","h1w":"600","h1f":"\"Cascadia Code\", SFMono-Regular, Consolas, monospace","h1s":12,"h1x":"uppercase","btn":{"w":59,"h":46},"btnLabel":null,"btnText":"MENU","btnWordShown":false,"pauseClass":"space-ghost","pauseSize":{"w":67,"h":46},"pauseFont":"\"Cascadia Code\", SFMono-Regular, Consolas, monospa","pauseW":"400","meter":"rgb(125, 211, 168)","mark":"rgb(26, 26, 24)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   sin desborde horizontal en la pantalla (main dark en 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue main dark en 320×568 user :: {"n":26,"heads":["H2:MENU"],"head":"","foot":"CLOSE","active":"My progress"}
+OK   sin excepciones de página (main dark en 320×568 user)
+OK   M9 CLS ≤ 0,1 a 390 px con CPU×4 al abrir y desplegar (main es) :: 0.0149
+OK   M9 CLS ≤ 0,1 a 390 px con CPU×4 al abrir y desplegar (main en) :: 0.0154
+RESUMEN main: 34/34 OK, 0 fallan

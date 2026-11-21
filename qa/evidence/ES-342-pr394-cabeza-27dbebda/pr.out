@@ -1,0 +1,515 @@
+INFO M5 barra pr light es 1360×900 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":79,"h":46},"btnLabel":"Menú","btnText":"☰ MENÚ","btnWordShown":true,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr light es 1360×900 user) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light es 1360×900 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr light es 1360×900 user) :: 79×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light es 1360×900 user) :: visible=true
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light es 1360×900 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light es 1360×900 user) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light es 1360×900 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light es 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr light es 1360×900 user :: {"n":16,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light es 1360×900 user) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr light es 1360×900 user) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr light es 1360×900 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light es 1360×900 user)
+OK   M2 «Administración» solo con rol (pr light es 1360×900 user) :: admin visible=false
+OK   M2 controles con «Menú de usuario» plegado: 16 (pr light es 1360×900 user) :: 16
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr light es 1360×900 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light es 1360×900 user)
+OK   M3 posición de la hoja (pr light es 1360×900 user) :: {"t":40,"b":860,"l":408,"r":952} vh 900
+OK   M3 sin desborde horizontal con el menú abierto (pr light es 1360×900 user) :: 0 px
+OK   M4 el foco entra en el menú (pr light es 1360×900 user) :: foco en «CERRAR»
+OK   M2 desplegado: 26 controles (pr light es 1360×900 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light es 1360×900 user)
+OK   M9 axe desplegado = 0 (pr light es 1360×900 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light es 1360×900 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr light es 1360×900 user :: CERRAR → Mi progreso → Recomendaciones para ti → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light es 1360×900 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr light es 1360×900 user) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light es 1360×900 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light es 1360×900 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light es 1360×900 user)
+OK   sin excepciones de página (pr light es 1360×900 user)
+INFO M5 barra pr light es 390×800 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menú","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr light es 390×800 user) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light es 390×800 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr light es 390×800 user) :: 46×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light es 390×800 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light es 390×800 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light es 390×800 user) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light es 390×800 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light es 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr light es 390×800 user :: {"n":16,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light es 390×800 user) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr light es 390×800 user) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr light es 390×800 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light es 390×800 user)
+OK   M2 «Administración» solo con rol (pr light es 390×800 user) :: admin visible=false
+OK   M2 controles con «Menú de usuario» plegado: 16 (pr light es 390×800 user) :: 16
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr light es 390×800 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light es 390×800 user)
+OK   M3 posición de la hoja (pr light es 390×800 user) :: {"t":64,"b":800,"l":0,"r":390} vh 800
+OK   M3 sin desborde horizontal con el menú abierto (pr light es 390×800 user) :: 0 px
+OK   M4 el foco entra en el menú (pr light es 390×800 user) :: foco en «CERRAR»
+OK   M2 desplegado: 26 controles (pr light es 390×800 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light es 390×800 user)
+OK   M9 axe desplegado = 0 (pr light es 390×800 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light es 390×800 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr light es 390×800 user :: CERRAR → Mi progreso → Recomendaciones para ti → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light es 390×800 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr light es 390×800 user) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light es 390×800 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light es 390×800 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light es 390×800 user)
+OK   sin excepciones de página (pr light es 390×800 user)
+INFO M5 barra pr light es 390×800 superadmin :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menú","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr light es 390×800 superadmin) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light es 390×800 superadmin) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr light es 390×800 superadmin) :: 46×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light es 390×800 superadmin) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light es 390×800 superadmin) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light es 390×800 superadmin) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light es 390×800 superadmin) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light es 390×800 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue pr light es 390×800 superadmin :: {"n":17,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light es 390×800 superadmin) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr light es 390×800 superadmin) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr light es 390×800 superadmin) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light es 390×800 superadmin)
+OK   M2 «Administración» solo con rol (pr light es 390×800 superadmin) :: admin visible=true
+OK   M2 controles con «Menú de usuario» plegado: 17 (pr light es 390×800 superadmin) :: 17
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr light es 390×800 superadmin)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light es 390×800 superadmin)
+OK   M3 posición de la hoja (pr light es 390×800 superadmin) :: {"t":64,"b":800,"l":0,"r":390} vh 800
+OK   M3 sin desborde horizontal con el menú abierto (pr light es 390×800 superadmin) :: 0 px
+OK   M4 el foco entra en el menú (pr light es 390×800 superadmin) :: foco en «CERRAR»
+OK   M2 desplegado: 27 controles (pr light es 390×800 superadmin) :: 27
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light es 390×800 superadmin)
+OK   M9 axe desplegado = 0 (pr light es 390×800 superadmin)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light es 390×800 superadmin) :: 18 pasos; fuera: 0
+INFO M4 orden de Tab pr light es 390×800 superadmin :: CERRAR → Mi progreso → Recomendaciones para ti → Panel de Administración → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light es 390×800 superadmin) :: Cerrar 0, Mapa 5, despliegue 10, ES 11, Cerrar sesión 16 de 17
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr light es 390×800 superadmin) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light es 390×800 superadmin) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light es 390×800 superadmin)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light es 390×800 superadmin)
+OK   sin excepciones de página (pr light es 390×800 superadmin)
+INFO M5 barra pr light es 320×568 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menú","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr light es 320×568 user) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light es 320×568 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr light es 320×568 user) :: 46×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light es 320×568 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light es 320×568 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light es 320×568 user) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light es 320×568 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light es 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr light es 320×568 user :: {"n":16,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light es 320×568 user) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr light es 320×568 user) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr light es 320×568 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light es 320×568 user)
+OK   M2 «Administración» solo con rol (pr light es 320×568 user) :: admin visible=false
+OK   M2 controles con «Menú de usuario» plegado: 16 (pr light es 320×568 user) :: 16
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr light es 320×568 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light es 320×568 user)
+OK   M3 posición de la hoja (pr light es 320×568 user) :: {"t":45,"b":568,"l":0,"r":320} vh 568
+OK   M3 sin desborde horizontal con el menú abierto (pr light es 320×568 user) :: 0 px
+OK   M4 el foco entra en el menú (pr light es 320×568 user) :: foco en «CERRAR»
+OK   M2 desplegado: 26 controles (pr light es 320×568 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light es 320×568 user)
+OK   M9 axe desplegado = 0 (pr light es 320×568 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light es 320×568 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr light es 320×568 user :: CERRAR → Mi progreso → Recomendaciones para ti → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light es 320×568 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr light es 320×568 user) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light es 320×568 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light es 320×568 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light es 320×568 user)
+OK   sin excepciones de página (pr light es 320×568 user)
+INFO M5 barra pr light es 320×568 superadmin :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menú","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr light es 320×568 superadmin) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light es 320×568 superadmin) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr light es 320×568 superadmin) :: 46×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light es 320×568 superadmin) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light es 320×568 superadmin) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light es 320×568 superadmin) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light es 320×568 superadmin) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light es 320×568 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue pr light es 320×568 superadmin :: {"n":17,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light es 320×568 superadmin) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr light es 320×568 superadmin) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr light es 320×568 superadmin) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light es 320×568 superadmin)
+OK   M2 «Administración» solo con rol (pr light es 320×568 superadmin) :: admin visible=true
+OK   M2 controles con «Menú de usuario» plegado: 17 (pr light es 320×568 superadmin) :: 17
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr light es 320×568 superadmin)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light es 320×568 superadmin)
+OK   M3 posición de la hoja (pr light es 320×568 superadmin) :: {"t":45,"b":568,"l":0,"r":320} vh 568
+OK   M3 sin desborde horizontal con el menú abierto (pr light es 320×568 superadmin) :: 0 px
+OK   M4 el foco entra en el menú (pr light es 320×568 superadmin) :: foco en «CERRAR»
+OK   M2 desplegado: 27 controles (pr light es 320×568 superadmin) :: 27
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light es 320×568 superadmin)
+OK   M9 axe desplegado = 0 (pr light es 320×568 superadmin)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light es 320×568 superadmin) :: 18 pasos; fuera: 0
+INFO M4 orden de Tab pr light es 320×568 superadmin :: CERRAR → Mi progreso → Recomendaciones para ti → Panel de Administración → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light es 320×568 superadmin) :: Cerrar 0, Mapa 5, despliegue 10, ES 11, Cerrar sesión 16 de 17
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr light es 320×568 superadmin) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light es 320×568 superadmin) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light es 320×568 superadmin)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light es 320×568 superadmin)
+OK   sin excepciones de página (pr light es 320×568 superadmin)
+INFO M5 barra pr light en 1360×900 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":79,"h":46},"btnLabel":"Menu","btnText":"☰ MENU","btnWordShown":true,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr light en 1360×900 user) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light en 1360×900 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr light en 1360×900 user) :: 79×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light en 1360×900 user) :: visible=true
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light en 1360×900 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light en 1360×900 user) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light en 1360×900 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light en 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr light en 1360×900 user :: {"n":16,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light en 1360×900 user) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr light en 1360×900 user) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr light en 1360×900 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light en 1360×900 user)
+OK   M2 «Administración» solo con rol (pr light en 1360×900 user) :: admin visible=false
+OK   M2 controles con «User menu» plegado: 16 (pr light en 1360×900 user) :: 16
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr light en 1360×900 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light en 1360×900 user)
+OK   M3 posición de la hoja (pr light en 1360×900 user) :: {"t":40,"b":860,"l":408,"r":952} vh 900
+OK   M3 sin desborde horizontal con el menú abierto (pr light en 1360×900 user) :: 0 px
+OK   M4 el foco entra en el menú (pr light en 1360×900 user) :: foco en «CLOSE»
+OK   M2 desplegado: 26 controles (pr light en 1360×900 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light en 1360×900 user)
+OK   M9 axe desplegado = 0 (pr light en 1360×900 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light en 1360×900 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr light en 1360×900 user :: CLOSE → My progress → Recommendations for you → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light en 1360×900 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr light en 1360×900 user) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light en 1360×900 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light en 1360×900 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light en 1360×900 user)
+OK   sin excepciones de página (pr light en 1360×900 user)
+INFO M5 barra pr light en 390×800 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menu","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr light en 390×800 user) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light en 390×800 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr light en 390×800 user) :: 46×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light en 390×800 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light en 390×800 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light en 390×800 user) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light en 390×800 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light en 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr light en 390×800 user :: {"n":16,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light en 390×800 user) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr light en 390×800 user) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr light en 390×800 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light en 390×800 user)
+OK   M2 «Administración» solo con rol (pr light en 390×800 user) :: admin visible=false
+OK   M2 controles con «User menu» plegado: 16 (pr light en 390×800 user) :: 16
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr light en 390×800 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light en 390×800 user)
+OK   M3 posición de la hoja (pr light en 390×800 user) :: {"t":64,"b":800,"l":0,"r":390} vh 800
+OK   M3 sin desborde horizontal con el menú abierto (pr light en 390×800 user) :: 0 px
+OK   M4 el foco entra en el menú (pr light en 390×800 user) :: foco en «CLOSE»
+OK   M2 desplegado: 26 controles (pr light en 390×800 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light en 390×800 user)
+OK   M9 axe desplegado = 0 (pr light en 390×800 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light en 390×800 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr light en 390×800 user :: CLOSE → My progress → Recommendations for you → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light en 390×800 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr light en 390×800 user) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light en 390×800 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light en 390×800 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light en 390×800 user)
+OK   sin excepciones de página (pr light en 390×800 user)
+INFO M5 barra pr light en 390×800 superadmin :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menu","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr light en 390×800 superadmin) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light en 390×800 superadmin) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr light en 390×800 superadmin) :: 46×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light en 390×800 superadmin) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light en 390×800 superadmin) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light en 390×800 superadmin) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light en 390×800 superadmin) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light en 390×800 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue pr light en 390×800 superadmin :: {"n":17,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light en 390×800 superadmin) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr light en 390×800 superadmin) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr light en 390×800 superadmin) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light en 390×800 superadmin)
+OK   M2 «Administración» solo con rol (pr light en 390×800 superadmin) :: admin visible=true
+OK   M2 controles con «User menu» plegado: 17 (pr light en 390×800 superadmin) :: 17
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr light en 390×800 superadmin)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light en 390×800 superadmin)
+OK   M3 posición de la hoja (pr light en 390×800 superadmin) :: {"t":64,"b":800,"l":0,"r":390} vh 800
+OK   M3 sin desborde horizontal con el menú abierto (pr light en 390×800 superadmin) :: 0 px
+OK   M4 el foco entra en el menú (pr light en 390×800 superadmin) :: foco en «CLOSE»
+OK   M2 desplegado: 27 controles (pr light en 390×800 superadmin) :: 27
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light en 390×800 superadmin)
+OK   M9 axe desplegado = 0 (pr light en 390×800 superadmin)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light en 390×800 superadmin) :: 18 pasos; fuera: 0
+INFO M4 orden de Tab pr light en 390×800 superadmin :: CLOSE → My progress → Recommendations for you → Admin Panel → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light en 390×800 superadmin) :: Cerrar 0, Mapa 5, despliegue 10, ES 11, Cerrar sesión 16 de 17
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr light en 390×800 superadmin) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light en 390×800 superadmin) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light en 390×800 superadmin)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light en 390×800 superadmin)
+OK   sin excepciones de página (pr light en 390×800 superadmin)
+INFO M5 barra pr light en 320×568 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menu","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr light en 320×568 user) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light en 320×568 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr light en 320×568 user) :: 46×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light en 320×568 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light en 320×568 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light en 320×568 user) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light en 320×568 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light en 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr light en 320×568 user :: {"n":16,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light en 320×568 user) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr light en 320×568 user) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr light en 320×568 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light en 320×568 user)
+OK   M2 «Administración» solo con rol (pr light en 320×568 user) :: admin visible=false
+OK   M2 controles con «User menu» plegado: 16 (pr light en 320×568 user) :: 16
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr light en 320×568 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light en 320×568 user)
+OK   M3 posición de la hoja (pr light en 320×568 user) :: {"t":45,"b":568,"l":0,"r":320} vh 568
+OK   M3 sin desborde horizontal con el menú abierto (pr light en 320×568 user) :: 0 px
+OK   M4 el foco entra en el menú (pr light en 320×568 user) :: foco en «CLOSE»
+OK   M2 desplegado: 26 controles (pr light en 320×568 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light en 320×568 user)
+OK   M9 axe desplegado = 0 (pr light en 320×568 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light en 320×568 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr light en 320×568 user :: CLOSE → My progress → Recommendations for you → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light en 320×568 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr light en 320×568 user) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light en 320×568 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light en 320×568 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light en 320×568 user)
+OK   sin excepciones de página (pr light en 320×568 user)
+INFO M5 barra pr light en 320×568 superadmin :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menu","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(29, 79, 145)","mark":"rgb(29, 79, 145)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr light en 320×568 superadmin) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr light en 320×568 superadmin) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr light en 320×568 superadmin) :: 46×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr light en 320×568 superadmin) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr light en 320×568 superadmin) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr light en 320×568 superadmin) :: rgb(29, 79, 145) vs rgb(29, 79, 145)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr light en 320×568 superadmin) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr light en 320×568 superadmin) :: 0 px
+INFO M1 menú cerrado-despliegue pr light en 320×568 superadmin :: {"n":17,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr light en 320×568 superadmin) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr light en 320×568 superadmin) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr light en 320×568 superadmin) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr light en 320×568 superadmin)
+OK   M2 «Administración» solo con rol (pr light en 320×568 superadmin) :: admin visible=true
+OK   M2 controles con «User menu» plegado: 17 (pr light en 320×568 superadmin) :: 17
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr light en 320×568 superadmin)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr light en 320×568 superadmin)
+OK   M3 posición de la hoja (pr light en 320×568 superadmin) :: {"t":45,"b":568,"l":0,"r":320} vh 568
+OK   M3 sin desborde horizontal con el menú abierto (pr light en 320×568 superadmin) :: 0 px
+OK   M4 el foco entra en el menú (pr light en 320×568 superadmin) :: foco en «CLOSE»
+OK   M2 desplegado: 27 controles (pr light en 320×568 superadmin) :: 27
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr light en 320×568 superadmin)
+OK   M9 axe desplegado = 0 (pr light en 320×568 superadmin)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr light en 320×568 superadmin) :: 18 pasos; fuera: 0
+INFO M4 orden de Tab pr light en 320×568 superadmin :: CLOSE → My progress → Recommendations for you → Admin Panel → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr light en 320×568 superadmin) :: Cerrar 0, Mapa 5, despliegue 10, ES 11, Cerrar sesión 16 de 17
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr light en 320×568 superadmin) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr light en 320×568 superadmin) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr light en 320×568 superadmin)
+OK   M9 axe menú cerrado-despliegue = 0 (pr light en 320×568 superadmin)
+OK   sin excepciones de página (pr light en 320×568 superadmin)
+INFO M5 barra pr dark es 1360×900 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":79,"h":46},"btnLabel":"Menú","btnText":"☰ MENÚ","btnWordShown":true,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(127, 176, 232)","mark":"rgb(127, 176, 232)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr dark es 1360×900 user) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr dark es 1360×900 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr dark es 1360×900 user) :: 79×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr dark es 1360×900 user) :: visible=true
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr dark es 1360×900 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr dark es 1360×900 user) :: rgb(127, 176, 232) vs rgb(127, 176, 232)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr dark es 1360×900 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr dark es 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr dark es 1360×900 user :: {"n":16,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr dark es 1360×900 user) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr dark es 1360×900 user) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr dark es 1360×900 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr dark es 1360×900 user)
+OK   M2 «Administración» solo con rol (pr dark es 1360×900 user) :: admin visible=false
+OK   M2 controles con «Menú de usuario» plegado: 16 (pr dark es 1360×900 user) :: 16
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr dark es 1360×900 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr dark es 1360×900 user)
+OK   M3 posición de la hoja (pr dark es 1360×900 user) :: {"t":40,"b":860,"l":408,"r":952} vh 900
+OK   M3 sin desborde horizontal con el menú abierto (pr dark es 1360×900 user) :: 0 px
+OK   M4 el foco entra en el menú (pr dark es 1360×900 user) :: foco en «CERRAR»
+OK   M2 desplegado: 26 controles (pr dark es 1360×900 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr dark es 1360×900 user)
+OK   M9 axe desplegado = 0 (pr dark es 1360×900 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr dark es 1360×900 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr dark es 1360×900 user :: CERRAR → Mi progreso → Recomendaciones para ti → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr dark es 1360×900 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr dark es 1360×900 user) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr dark es 1360×900 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr dark es 1360×900 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr dark es 1360×900 user)
+OK   sin excepciones de página (pr dark es 1360×900 user)
+INFO M5 barra pr dark es 390×800 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menú","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(127, 176, 232)","mark":"rgb(127, 176, 232)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr dark es 390×800 user) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr dark es 390×800 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr dark es 390×800 user) :: 46×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr dark es 390×800 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr dark es 390×800 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr dark es 390×800 user) :: rgb(127, 176, 232) vs rgb(127, 176, 232)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr dark es 390×800 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr dark es 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr dark es 390×800 user :: {"n":16,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr dark es 390×800 user) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr dark es 390×800 user) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr dark es 390×800 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr dark es 390×800 user)
+OK   M2 «Administración» solo con rol (pr dark es 390×800 user) :: admin visible=false
+OK   M2 controles con «Menú de usuario» plegado: 16 (pr dark es 390×800 user) :: 16
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr dark es 390×800 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr dark es 390×800 user)
+OK   M3 posición de la hoja (pr dark es 390×800 user) :: {"t":64,"b":800,"l":0,"r":390} vh 800
+OK   M3 sin desborde horizontal con el menú abierto (pr dark es 390×800 user) :: 0 px
+OK   M4 el foco entra en el menú (pr dark es 390×800 user) :: foco en «CERRAR»
+OK   M2 desplegado: 26 controles (pr dark es 390×800 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr dark es 390×800 user)
+OK   M9 axe desplegado = 0 (pr dark es 390×800 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr dark es 390×800 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr dark es 390×800 user :: CERRAR → Mi progreso → Recomendaciones para ti → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr dark es 390×800 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr dark es 390×800 user) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr dark es 390×800 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr dark es 390×800 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr dark es 390×800 user)
+OK   sin excepciones de página (pr dark es 390×800 user)
+INFO M5 barra pr dark es 320×568 user :: {"h1n":1,"h1t":"CONVERSACIÓN","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menú","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":80,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(127, 176, 232)","mark":"rgb(127, 176, 232)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversación» en la barra (pr dark es 320×568 user) :: 1 h1; H1 «CONVERSACIÓN»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr dark es 320×568 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menú» (pr dark es 320×568 user) :: 46×46 «Menú»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr dark es 320×568 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr dark es 320×568 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr dark es 320×568 user) :: rgb(127, 176, 232) vs rgb(127, 176, 232)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr dark es 320×568 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr dark es 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr dark es 320×568 user :: {"n":16,"heads":["H2:MENÚ","H3:CONVERSACIÓN","H3:PRINCIPAL","H3:PREFERENCIAS"],"head":"MENÚ CERRAR","foot":"CERRAR SESIÓN","active":"CERRAR"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr dark es 320×568 user) :: MENÚ | CONVERSACIÓN | PRINCIPAL | PREFERENCIAS
+OK   M1 cabecera «Menú» + «Cerrar» arriba y pie «Cerrar sesión» fijos (pr dark es 320×568 user) :: head «MENÚ CERRAR» foot «CERRAR SESIÓN» pie dentro true
+OK   M2 «Mi progreso» UNA sola vez (pr dark es 320×568 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr dark es 320×568 user)
+OK   M2 «Administración» solo con rol (pr dark es 320×568 user) :: admin visible=false
+OK   M2 controles con «Menú de usuario» plegado: 16 (pr dark es 320×568 user) :: 16
+OK   M1 «Menú de usuario» plegado al abrir (aria-expanded=false) (pr dark es 320×568 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr dark es 320×568 user)
+OK   M3 posición de la hoja (pr dark es 320×568 user) :: {"t":45,"b":568,"l":0,"r":320} vh 568
+OK   M3 sin desborde horizontal con el menú abierto (pr dark es 320×568 user) :: 0 px
+OK   M4 el foco entra en el menú (pr dark es 320×568 user) :: foco en «CERRAR»
+OK   M2 desplegado: 26 controles (pr dark es 320×568 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr dark es 320×568 user)
+OK   M9 axe desplegado = 0 (pr dark es 320×568 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr dark es 320×568 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr dark es 320×568 user :: CERRAR → Mi progreso → Recomendaciones para ti → Enter envía el mensaje (Shift+Enter agrega una línea) → Mapa → Conversación → Evidencias → Diario → Siguiente paso → MENÚ DE USUARIO ▾ → ES → EN → Auto → Claro → Oscuro → CERRAR SESIÓN
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr dark es 320×568 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Cerrar sesión») (pr dark es 320×568 user) :: «CERRAR SESIÓN»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr dark es 320×568 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr dark es 320×568 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr dark es 320×568 user)
+OK   sin excepciones de página (pr dark es 320×568 user)
+INFO M5 barra pr dark en 1360×900 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":79,"h":46},"btnLabel":"Menu","btnText":"☰ MENU","btnWordShown":true,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(127, 176, 232)","mark":"rgb(127, 176, 232)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr dark en 1360×900 user) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr dark en 1360×900 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr dark en 1360×900 user) :: 79×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr dark en 1360×900 user) :: visible=true
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr dark en 1360×900 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr dark en 1360×900 user) :: rgb(127, 176, 232) vs rgb(127, 176, 232)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr dark en 1360×900 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr dark en 1360×900 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr dark en 1360×900 user :: {"n":16,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr dark en 1360×900 user) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr dark en 1360×900 user) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr dark en 1360×900 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr dark en 1360×900 user)
+OK   M2 «Administración» solo con rol (pr dark en 1360×900 user) :: admin visible=false
+OK   M2 controles con «User menu» plegado: 16 (pr dark en 1360×900 user) :: 16
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr dark en 1360×900 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr dark en 1360×900 user)
+OK   M3 posición de la hoja (pr dark en 1360×900 user) :: {"t":40,"b":860,"l":408,"r":952} vh 900
+OK   M3 sin desborde horizontal con el menú abierto (pr dark en 1360×900 user) :: 0 px
+OK   M4 el foco entra en el menú (pr dark en 1360×900 user) :: foco en «CLOSE»
+OK   M2 desplegado: 26 controles (pr dark en 1360×900 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr dark en 1360×900 user)
+OK   M9 axe desplegado = 0 (pr dark en 1360×900 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr dark en 1360×900 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr dark en 1360×900 user :: CLOSE → My progress → Recommendations for you → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr dark en 1360×900 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr dark en 1360×900 user) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr dark en 1360×900 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr dark en 1360×900 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr dark en 1360×900 user)
+OK   sin excepciones de página (pr dark en 1360×900 user)
+INFO M5 barra pr dark en 390×800 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menu","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(127, 176, 232)","mark":"rgb(127, 176, 232)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr dark en 390×800 user) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr dark en 390×800 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr dark en 390×800 user) :: 46×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr dark en 390×800 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr dark en 390×800 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr dark en 390×800 user) :: rgb(127, 176, 232) vs rgb(127, 176, 232)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr dark en 390×800 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr dark en 390×800 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr dark en 390×800 user :: {"n":16,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr dark en 390×800 user) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr dark en 390×800 user) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr dark en 390×800 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr dark en 390×800 user)
+OK   M2 «Administración» solo con rol (pr dark en 390×800 user) :: admin visible=false
+OK   M2 controles con «User menu» plegado: 16 (pr dark en 390×800 user) :: 16
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr dark en 390×800 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr dark en 390×800 user)
+OK   M3 posición de la hoja (pr dark en 390×800 user) :: {"t":64,"b":800,"l":0,"r":390} vh 800
+OK   M3 sin desborde horizontal con el menú abierto (pr dark en 390×800 user) :: 0 px
+OK   M4 el foco entra en el menú (pr dark en 390×800 user) :: foco en «CLOSE»
+OK   M2 desplegado: 26 controles (pr dark en 390×800 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr dark en 390×800 user)
+OK   M9 axe desplegado = 0 (pr dark en 390×800 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr dark en 390×800 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr dark en 390×800 user :: CLOSE → My progress → Recommendations for you → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr dark en 390×800 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr dark en 390×800 user) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr dark en 390×800 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr dark en 390×800 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr dark en 390×800 user)
+OK   sin excepciones de página (pr dark en 390×800 user)
+INFO M5 barra pr dark en 320×568 user :: {"h1n":1,"h1t":"CONVERSATION","h1tag":"H1","h1w":"700","h1f":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Arial Narrow\"","h1s":16.8,"h1x":"uppercase","btn":{"w":46,"h":46},"btnLabel":"Menu","btnText":"☰","btnWordShown":false,"pauseClass":"cg-btn cg-btn--ghost chat-pause","pauseSize":{"w":70,"h":46},"pauseFont":"\"Barlow Condensed\", \"Barlow Condensed Frame\", \"Ari","pauseW":"700","meter":"rgb(127, 176, 232)","mark":"rgb(127, 176, 232)","usageFont":"Inter, sans-serif","usageCase":"none","usageText":"","overX":0}
+OK   M5 un solo h1 visible «Conversation» en la barra (pr dark en 320×568 user) :: 1 h1; H1 «CONVERSATION»
+OK   M5 h1: 700, condensada, ≈ 1,05 rem (pr dark en 320×568 user) :: 700 "Barlow Condensed", "Barlow Condensed Frame", "Arial Narrow" 16.8px
+OK   M5 ☰ ≥ 46×46 y nombre accesible «Menu» (pr dark en 320×568 user) :: 46×46 «Menu»
+OK   M5 palabra «Menú» visible solo a ≥ 901 px (pr dark en 320×568 user) :: visible=false
+OK   M5 «Pausar» = ghost de Cartografía ≥ 46 px, sin monoespaciada (pr dark en 320×568 user) :: cg-btn cg-btn--ghost chat-pause 46px "Barlow Condensed", "Barlow Condensed Frame", "Ari
+OK   M5 barra de uso con --cg-mark (pr dark en 320×568 user) :: rgb(127, 176, 232) vs rgb(127, 176, 232)
+OK   M5 texto de uso en sans y sin mayúsculas forzadas (pr dark en 320×568 user) :: Inter, sans-serif none «»
+OK   sin desborde horizontal en la pantalla (pr dark en 320×568 user) :: 0 px
+INFO M1 menú cerrado-despliegue pr dark en 320×568 user :: {"n":16,"heads":["H2:MENU","H3:CONVERSATION","H3:MAIN","H3:PREFERENCES"],"head":"MENU CLOSE","foot":"SIGN OUT","active":"CLOSE"}
+OK   M1 orden Menú → Conversación → Principal → Preferencias (pr dark en 320×568 user) :: MENU | CONVERSATION | MAIN | PREFERENCES
+OK   M1 cabecera «Menu» + «Close» arriba y pie «Sign out» fijos (pr dark en 320×568 user) :: head «MENU CLOSE» foot «SIGN OUT» pie dentro true
+OK   M2 «My progress» UNA sola vez (pr dark en 320×568 user) :: 1 veces
+OK   M2 «Recomendaciones», nota de uso y «Enter envía» presentes (pr dark en 320×568 user)
+OK   M2 «Administración» solo con rol (pr dark en 320×568 user) :: admin visible=false
+OK   M2 controles con «User menu» plegado: 16 (pr dark en 320×568 user) :: 16
+OK   M1 «User menu» plegado al abrir (aria-expanded=false) (pr dark en 320×568 user)
+OK   M2 idioma y tema solo dentro de «Preferencias» (pr dark en 320×568 user)
+OK   M3 posición de la hoja (pr dark en 320×568 user) :: {"t":45,"b":568,"l":0,"r":320} vh 568
+OK   M3 sin desborde horizontal con el menú abierto (pr dark en 320×568 user) :: 0 px
+OK   M4 el foco entra en el menú (pr dark en 320×568 user) :: foco en «CLOSE»
+OK   M2 desplegado: 26 controles (pr dark en 320×568 user) :: 26
+OK   M1 aria-expanded=true al desplegar y el pie sigue visible (pr dark en 320×568 user)
+OK   M9 axe desplegado = 0 (pr dark en 320×568 user)
+OK   M4 Tab atrapado dentro del menú y cíclico (pr dark en 320×568 user) :: 17 pasos; fuera: 0
+INFO M4 orden de Tab pr dark en 320×568 user :: CLOSE → My progress → Recommendations for you → Enter sends the message (Shift+Enter adds a line) → Map → Conversation → Evidence → Diary → Next step → USER MENU ▾ → ES → EN → Auto → Light → Dark → SIGN OUT
+OK   M4 orden pedido: Cerrar → … → Principal → despliegue → idioma → … → Cerrar sesión (pr dark en 320×568 user) :: Cerrar 0, Mapa 4, despliegue 9, ES 10, Cerrar sesión 15 de 16
+OK   M4 Shift+Tab desde el primero va al último («Sign out») (pr dark en 320×568 user) :: «SIGN OUT»
+OK   M4 Esc cierra y devuelve el foco al botón Menú (pr dark en 320×568 user) :: cerrado=true foco=chat-menu-btn
+OK   M1 al reabrir el despliegue vuelve plegado (pr dark en 320×568 user)
+OK   M9 axe menú cerrado-despliegue = 0 (pr dark en 320×568 user)
+OK   sin excepciones de página (pr dark en 320×568 user)
+OK   M9 CLS ≤ 0,1 a 390 px con CPU×4 al abrir y desplegar (pr es) :: 0.0151
+OK   M9 CLS ≤ 0,1 a 390 px con CPU×4 al abrir y desplegar (pr en) :: 0.0156
+RESUMEN pr: 466/466 OK, 0 fallan
