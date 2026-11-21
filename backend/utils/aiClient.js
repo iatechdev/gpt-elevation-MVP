@@ -59,27 +59,34 @@ const safe = async (fn) => {
 };
 
 // ES-287: ÚLTIMA barrera antes del proveedor, para TODOS los flujos (chat, recomendaciones, análisis, fuentes, resumen): se quitan los caracteres invisibles
-// (incluido el bloque Tags U+E0000–E007F) del `system` y de cada mensaje; el texto visible no cambia. Devuelve una copia: no toca el objeto de quien llama.
-// E384-3 (QA): también el contenido ANIDADO (p. ej. tool_result → content → text, o bloques dentro de bloques): se limpian `text` y `content` de cada bloque, recursivamente (con tope de profundidad). Los demás campos del bloque no cambian.
-const MAX_CONTENT_DEPTH = 8;
-const cleanContent = (content, depth = 0) => {
-  if (typeof content === 'string') return stripInvisible(content);
-  if (depth >= MAX_CONTENT_DEPTH) return content;
-  if (Array.isArray(content)) return content.map((block) => cleanContent(block, depth + 1));
-  if (content && typeof content === 'object') {
-    const out = { ...content };
-    if (typeof out.text === 'string') out.text = stripInvisible(out.text);
-    if (out.content !== undefined) out.content = cleanContent(out.content, depth + 1);
-    return out;
-  }
-  return content;
-};
+// (incluido el bloque Tags U+E0000–E007F y los selectores suplementarios) de TODO texto del cuerpo: `system`, mensajes, bloques anidados (tool_result → content → text),
+// `tool_use.input` (valores y claves) y cualquier otro campo de texto. El texto visible no cambia. Devuelve una copia: no toca el objeto de quien llama.
+// FALLA CERRADO (QA-416-01/02): no hay un «nivel a partir del cual se deja pasar». Se recorre en profundidad con un tope ALTO (64 niveles); si el cuerpo lo supera, o tiene un ciclo,
+// se RECHAZA con AiInputRejectedError (nada llega al proveedor) en vez de dejarlo sin limpiar. Recorrido iterativo: ninguna entrada puede desbordar la pila.
+const MAX_CONTENT_DEPTH = 64;
+class AiInputRejectedError extends AiProviderError {
+  constructor(reason) { super('bad_request'); this.message = 'El contenido enviado a la IA fue rechazado por la barrera de entrada.'; this.reason = reason; } // reason: 'too_deep' | 'cycle'; sin contenido
+}
 function sanitizeBody(body) {
-  const out = { ...body };
-  if (typeof out.system === 'string') out.system = stripInvisible(out.system);
-  else if (Array.isArray(out.system)) out.system = cleanContent(out.system);
-  if (Array.isArray(out.messages)) out.messages = out.messages.map((message) => (message && typeof message === 'object' ? { ...message, content: cleanContent(message.content) } : message));
-  return out;
+  const clone = (value) => (Array.isArray(value) ? [] : {});
+  const root = clone(body); const ancestors = new Set();
+  // Pila explícita con marca de «salida» para saber qué objetos están en el camino actual (ciclo = un ancestro se repite).
+  const work = [{ enter: true, source: body, target: root, depth: 0 }];
+  while (work.length) {
+    const step = work.pop();
+    if (!step.enter) { ancestors.delete(step.source); continue; }
+    if (step.depth > MAX_CONTENT_DEPTH) throw new AiInputRejectedError('too_deep');
+    if (ancestors.has(step.source)) throw new AiInputRejectedError('cycle');
+    ancestors.add(step.source); work.push({ enter: false, source: step.source });
+    const entries = Array.isArray(step.source) ? step.source.map((v, k) => [k, v]) : Object.entries(step.source);
+    for (const [key, value] of entries) {
+      const outKey = Array.isArray(step.source) ? key : stripInvisible(key);
+      if (typeof value === 'string') step.target[outKey] = stripInvisible(value);
+      else if (value && typeof value === 'object') { const child = clone(value); step.target[outKey] = child; work.push({ enter: true, source: value, target: child, depth: step.depth + 1 }); }
+      else step.target[outKey] = value;
+    }
+  }
+  return root;
 }
 
 // body: { model, max_tokens, system?, messages }. Lanza AiBudgetNotConfiguredError, AiBudgetExhaustedError o AiProviderError.
@@ -129,4 +136,4 @@ async function callClaude({ userId, kind, requestId = null, body: rawBody, now =
   return message;
 }
 
-module.exports = { callClaude, sanitizeBody, computeCost, classifyError, AiProviderError, AiBudgetNotConfiguredError, AiBudgetExhaustedError };
+module.exports = { callClaude, sanitizeBody, AiInputRejectedError, MAX_CONTENT_DEPTH, computeCost, classifyError, AiProviderError, AiBudgetNotConfiguredError, AiBudgetExhaustedError };
