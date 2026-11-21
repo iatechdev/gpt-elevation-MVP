@@ -39,12 +39,12 @@ export function InviteIssuer({ token, onSession }: { token: string; onSession: (
     return () => controller.abort()
   }, [api, attempt, onSession])
   useEffect(() => { if (fresh) freshRef.current?.focus() }, [fresh])
-  useEffect(() => { if (message) messageRef.current?.focus() }, [message])
 
   const refresh = useCallback(() => setAttempt(n => n + 1), [])
   // F421-1: al cerrar el diálogo SIN anular (Escape o «Conservar») el foco vuelve al botón que lo abrió; con «Sí, anular» el foco va al aviso.
   const keepRevoke = () => { setToRevoke(null); requestAnimationFrame(() => revokeOpener.current?.focus()) }
   const active = invites ? activeInvites(invites) : 0; const full = active >= MAX_ACTIVE_INVITES
+  useEffect(() => { if (message) messageRef.current?.focus() }, [message, full]) // `full` también: tras el 409 el aviso pasa del banner del servidor al derivado de la lista y el foco debe seguirlo
   const when = (value: string) => dateText(value, lang) ?? ''
 
   async function create() {
@@ -77,7 +77,8 @@ export function InviteIssuer({ token, onSession }: { token: string; onSession: (
       <p className="cg-hint">{t('inviteLead')}</p>
       {/* F421-2: el aviso del tope es UNO solo: el derivado de la lista (con 10 activas) o, justo tras un 409 y antes de recargar, el del servidor. */}
       {message && !(message === 'full' && full) && <div ref={messageRef} tabIndex={-1}><Banner kind={message === 'revoked' ? 'note' : 'error'} title={t(message)} /></div>}
-      {full && <Banner kind="error" title={t('full')} />}
+      {/* O303-focus (QA-421 v2): tras el 409 el botón queda deshabilitado y el aviso derivado de la lista reemplaza al del servidor: el foco se queda en el aviso (no cae en <body>). */}
+      {full && (message === 'full' ? <div ref={messageRef} tabIndex={-1}><Banner kind="error" title={t('full')} /></div> : <Banner kind="error" title={t('full')} />)}
       <div className="cg-row"><button ref={openerRef} type="button" className="cg-btn" disabled={creating || full || status === 'loading'} onClick={() => void create()}>{creating ? t('creating') : t('create')}</button></div>
       {fresh && (
         <Card as="section" className="rv-card">
