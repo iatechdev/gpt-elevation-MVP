@@ -10,7 +10,7 @@ const axeSource = fs.readFileSync(process.env.AXE_PATH, 'utf8'); const BASE = pr
 let failures = 0, total = 0
 const check = (ok, label) => { total++; if (!ok) { failures++; console.log('FALLA ' + label) } }
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
-const TITLES = { es: { main: 'Principal', overview: 'Resumen', people: 'Personas', content: 'Contenido', board: 'Junta', user: 'Menú de usuario', prefs: 'Preferencias' }, en: { main: 'Main', overview: 'Overview', people: 'People', content: 'Content', board: 'Board', user: 'User menu', prefs: 'Preferences' } }
+const TITLES = { es: { main: 'Principal', overview: 'Resumen', people: 'Personas', content: 'Contenido', board: 'Junta', user: 'Menú de usuario', prefs: 'Preferencias' }, en: { main: 'Home', overview: 'Overview', people: 'People', content: 'Content', board: 'Board', user: 'User menu', prefs: 'Preferences' } }
 const ADMIN_LINKS = ['/admin/dashboard', '/admin/metrics', '/admin/pilot-metrics', '/admin/users', '/admin/prompts', '/admin/content', '/admin/route-catalog', '/admin/skill-catalog', '/admin/manifest']
 const ROLES = {
   therapist: { home: '/therapist/dashboard', side: ['/therapist/dashboard', '/facilitation', '/app/professional-reviews'], menu: ['/app/data', '/manifiesto'], heads: t => [t.main], roleFrame: true },
