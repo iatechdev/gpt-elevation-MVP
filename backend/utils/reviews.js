@@ -173,8 +173,13 @@ async function revoke(userId, shareId) {
   return shareView(await ReviewShare.findByPk(share.id));
 }
 
+// ES-367: la persona DUEÑA ve el NOMBRE de a quién autorizó (ya lo vio al canjear la invitación). Solo el nombre: nada de correo, especialidad ni estado de la cuenta. Un revisor eliminado = null.
 async function listShares(userId) {
-  return (await ReviewShare.findAll({ where: { UserId: userId }, order: [['id', 'DESC']], limit: 200 })).map(shareView);
+  const rows = await ReviewShare.findAll({ where: { UserId: userId }, order: [['id', 'DESC']], limit: 200 });
+  const ids = [...new Set(rows.map((row) => row.reviewerId))];
+  const people = ids.length ? await User.findAll({ where: { id: ids }, attributes: ['id', 'name'] }) : [];
+  const names = new Map(people.map((person) => [person.id, typeof person.name === 'string' && person.name.trim() ? person.name : null]));
+  return rows.map((row) => ({ ...shareView(row), reviewerName: names.get(row.reviewerId) ?? null }));
 }
 
 // ───────────────────────── La persona: lo que recibió ─────────────────────────

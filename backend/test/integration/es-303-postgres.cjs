@@ -184,4 +184,27 @@ test('ES-303 PostgreSQL + HTTP: invitación de revisor con código de un solo us
     assert.equal(await rowOf(inv.invite.id), undefined, 'la invitación que canjeó la persona se purgó con su cuenta'); assert.equal((await rowOf(untouched.invite.id)).usedByUserId, bystander.id, 'la de otra persona no se toca');
     assert.equal((await q('SELECT count(*)::int n FROM "ReviewShares" WHERE "UserId"=$1', [person.id]))[0].n, 0, 'la autorización de la persona se purgó con su cuenta');
   });
+
+  // ES-367: «Mis autorizaciones» muestra el NOMBRE de la persona revisora, solo a la persona dueña, solo el nombre.
+  await t.test('ES-367: GET /api/me/review-shares trae reviewerName solo para el dueño; B no ve nada de A; revisor eliminado = null; nada de correo ni especialidad', async () => {
+    const reviewer = await mkUser('therapist'); await q('UPDATE "Users" SET name=$2 WHERE id=$1', [reviewer.id, 'Ana Revisora Sintética']);
+    const a = await mkUser('user'); const b = await mkUser('user'); const evA = await evidence(a); const evB = await evidence(b);
+    const invA = (await issue(reviewer)).body; assert.equal((await redeem(a, invA.code, [evA])).status, 201);
+    const listA = await http(a, 'GET', '/api/me/review-shares'); assert.equal(listA.status, 200); assert.equal(listA.body.shares.length, 1);
+    assert.equal(listA.body.shares[0].reviewerName, 'Ana Revisora Sintética'); assert.equal(listA.body.shares[0].reviewerId, reviewer.id);
+    assert.deepEqual(Object.keys(listA.body.shares[0]).sort(), ['createdAt', 'evidenceCount', 'id', 'materialVersion', 'reviewerId', 'reviewerName', 'revokedAt', 'status'], 'solo estos campos: sin correo, especialidad ni datos de la cuenta');
+    const text = JSON.stringify(listA.body); assert.ok(!/@|specialt|email|bio/i.test(text.replace(/reviewerName/g, '')), 'nada de correo ni perfil');
+    // B (otra persona) no ve nada de A, ni siquiera el nombre del revisor
+    const listB = await http(b, 'GET', '/api/me/review-shares'); assert.equal(listB.status, 200); assert.deepEqual(listB.body.shares, []); assert.ok(!JSON.stringify(listB.body).includes('Ana Revisora'));
+    const invB = (await issue(reviewer)).body; assert.equal((await redeem(b, invB.code, [evB])).status, 201);
+    const again = await http(b, 'GET', '/api/me/review-shares'); assert.equal(again.body.shares.length, 1); assert.equal(again.body.shares[0].reviewerName, 'Ana Revisora Sintética', 'B ve el nombre de SU propia autorización');
+    assert.ok(again.body.shares[0].id !== listA.body.shares[0].id); assert.equal((await http(a, 'GET', '/api/me/review-shares')).body.shares.length, 1, 'A sigue viendo solo la suya');
+    // sin sesión: 401; un revisor (therapist) sin autorizaciones propias: lista vacía
+    assert.equal((await http(null, 'GET', '/api/me/review-shares')).status, 401); assert.deepEqual((await http(reviewer, 'GET', '/api/me/review-shares')).body.shares, []);
+    // retirar no cambia el nombre; un revisor eliminado = null (y sin error)
+    assert.equal((await http(a, 'DELETE', '/api/me/review-shares/' + listA.body.shares[0].id)).status, 200); assert.equal((await http(a, 'GET', '/api/me/review-shares')).body.shares[0].reviewerName, 'Ana Revisora Sintética');
+    await q('UPDATE "Users" SET name=$2 WHERE id=$1', [reviewer.id, '   ']); assert.equal((await http(a, 'GET', '/api/me/review-shares')).body.shares[0].reviewerName, null, 'nombre vacío = null');
+    await q('DELETE FROM "ReviewerInvites" WHERE "reviewerId"=$1', [reviewer.id]); await q('UPDATE "ReviewShares" SET "reviewerId"=$2 WHERE "UserId"=$1', [a.id, 987654321]);
+    const gone = await http(a, 'GET', '/api/me/review-shares'); assert.equal(gone.status, 200); assert.equal(gone.body.shares[0].reviewerName, null, 'revisor que ya no existe = null');
+  });
 });
