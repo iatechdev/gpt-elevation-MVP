@@ -2,7 +2,7 @@
 import type { ShellCopy } from './copy'
 import type { Role } from './access'
 
-export type GroupKey = 'grpSupport' | 'grpCareer' | 'grpFollow' | 'grpPro' | 'grpOverview' | 'grpPeople' | 'grpContent' | 'main' | 'boardGroup'
+export type GroupKey = 'grpSupport' | 'grpCareer' | 'grpFollow' | 'grpPro' | 'grpOverview' | 'grpPeople' | 'grpContent' | 'grpHome' | 'boardGroup'
 export type NavKey = Exclude<keyof ShellCopy, GroupKey | 'skip' | 'language' | 'brandLabel' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson' | 'menu' | 'close'>
 export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 
@@ -34,7 +34,7 @@ export const PROFESSIONAL_NAV: NavItem[] = [
 /** ES-359: «Mis datos» (descargar mis datos y pedir eliminar la cuenta) está en el menú de cuenta de los CUATRO roles (decisión de Infra: ≤ 2 acciones para todos; la ruta /app/data se dibuja en el marco de persona hasta PR5). */
 export const ACCOUNT_DATA: NavItem = { to: '/app/data', label: 'data' }
 export const PROFESSIONAL_MENU: NavItem[] = [ACCOUNT_DATA, { to: '/manifiesto', label: 'adManifest' }]
-export const ADMIN_MENU: NavItem[] = [ACCOUNT_DATA, { to: '/manifiesto', label: 'adManifest' }] // ES-359 (PR5, F403-1): la página pública del manifiesto a ≤ 2 acciones (el enlace «Junta» edita en /admin/manifest)
+export const ADMIN_MENU: NavItem[] = [ACCOUNT_DATA, { to: '/manifiesto', label: 'adManifestPublic' }] // ES-359 (PR5, F403-1): la página pública del manifiesto a ≤ 2 acciones (el enlace «Junta» edita en /admin/manifest)
 export const BOARD_MENU: NavItem[] = [ACCOUNT_DATA]
 
 export const ADMIN_NAV: NavItem[] = [
@@ -48,7 +48,7 @@ export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/pilot-metrics', label: 'adPilot' },
 ]
 // ES-207: la edición del manifiesto es de administración y superadministración; la junta ética lo lee en la página pública.
-export const ADMIN_BOARD_GROUP: NavItem[] = [{ to: '/admin/manifest', label: 'adManifest' }]
+export const ADMIN_BOARD_GROUP: NavItem[] = [{ to: '/admin/manifest', label: 'adManifestManage' }]
 export const BOARD_NAV: NavItem[] = [{ to: '/manifiesto', label: 'adManifest' }]
 
 export const visibleFor = (items: NavItem[], role: Role) => items.filter(item => !item.roles || item.roles.includes(role))

@@ -14,7 +14,7 @@ const frames = read('../src/shell/frames.tsx'), app = read('../src/App.tsx'), cs
 const hrefs = groups => groups.flatMap(g => g.items.map(i => i.to))
 
 test('ES-359 PR5: grupos del diseño aprobado — profesional «Principal», administración Resumen/Personas/Contenido/Junta, junta solo el manifiesto', () => {
-  assert.deepEqual(PROFESSIONAL_GROUPS.map(g => [g.title, g.items.map(i => i.to)]), [['main', ['/therapist/dashboard', '/facilitation', '/app/professional-reviews']]])
+  assert.deepEqual(PROFESSIONAL_GROUPS.map(g => [g.title, g.items.map(i => i.to)]), [['grpHome', ['/therapist/dashboard', '/facilitation', '/app/professional-reviews']]])
   assert.deepEqual(ADMIN_GROUPS.map(g => [g.title, g.items.map(i => i.to)]), [
     ['grpOverview', ['/admin/dashboard', '/admin/metrics', '/admin/pilot-metrics']], ['grpPeople', ['/admin/users']],
     ['grpContent', ['/admin/prompts', '/admin/content', '/admin/route-catalog', '/admin/skill-catalog']], ['boardGroup', ['/admin/manifest']],
@@ -92,4 +92,15 @@ test('ES-359 PR5 (QA-403-02): el Panel de administración muestra sus dos cargas
   assert.match(admin, /window\.setTimeout\(\(\) => setRevealed\(true\), 2000\)/); assert.match(admin, /window\.clearTimeout\(timer\)/)
   assert.match(admin, /\{!revealed \? <p role="status" aria-busy="true" className="ao-status">\{tr\('Cargando métricas\.\.\.'\)\}<\/p> : <>/)
   assert.match(admin, /onRetry=\{metrics\.retry\}/); assert.match(admin, /onRetry=\{alerts\.retry\}/)
+})
+
+test('ES-359 (F403-3): los dos «Manifiesto ético» del admin se distinguen por nombre y el grupo del profesional es «Home» en EN', () => {
+  const link = (items, to) => items.find(i => i.to === to)
+  const adminManage = ADMIN_GROUPS.flatMap(g => g.items).find(i => i.to === '/admin/manifest')
+  assert.equal(adminManage.label, 'adManifestManage'); assert.equal(link(ADMIN_MENU, '/manifiesto').label, 'adManifestPublic')
+  assert.equal(shellCopy.es.adManifestManage, 'Manifiesto ético (administrar)'); assert.equal(shellCopy.en.adManifestManage, 'Ethics manifesto (manage)')
+  assert.equal(shellCopy.es.adManifestPublic, 'Manifiesto ético (página pública)'); assert.equal(shellCopy.en.adManifestPublic, 'Ethics manifesto (public page)')
+  assert.notEqual(shellCopy.es.adManifestManage, shellCopy.es.adManifestPublic)
+  assert.equal(PROFESSIONAL_GROUPS[0].title, 'grpHome'); assert.equal(shellCopy.es.grpHome, 'Principal'); assert.equal(shellCopy.en.grpHome, 'Home')
+  assert.equal(shellCopy.en.main, 'Main', 'la etiqueta de navegación «Main» no cambia')
 })
