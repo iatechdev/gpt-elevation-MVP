@@ -34,8 +34,8 @@ export function ChatBar({ sent, menu }: { sent: number; menu?: ReactNode }) {
   return <section className="space-scope space-chatbar" aria-label={c.conversation}>
     <div className="space-chatbar-head">
       {menu}
-      <div className="space-chatbar-copy"><h2>{c.conversation}</h2><p>{c.convPrivate}</p></div>
-      <button type="button" className="space-ghost" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? c.resume : c.pause}</button>
+      <div className="space-chatbar-copy"><h1>{c.conversation}</h1><p>{c.convPrivate}</p></div>
+      <button type="button" className="cg-btn cg-btn--ghost chat-pause" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? c.resume : c.pause}</button>
     </div>
     {ready && ready.configured && <div className="space-usage">
       <div className={`space-meter${isExhausted(ready) ? ' space-meter-full' : ''}`} role="progressbar" aria-label={c.usage} aria-valuemin={0} aria-valuemax={100} aria-valuenow={usedPercent(ready)}><i style={{ width: `${usedPercent(ready)}%` }} /></div>

@@ -42,7 +42,7 @@ export function Tabs({ tabs, label, defaultId, onChange }: { tabs: TabItem[]; la
 
 /** Diálogo modal sobre <dialog>.showModal(): el foco entra al abrir y vuelve al disparador al cerrar, Tab queda atrapado, Escape cierra
  *  (lo resuelve el padre con `onClose`), aria-modal y el título enlazado con aria-labelledby. El contenido solo existe mientras está abierto. */
-export function Dialog({ open, onClose, title, children, actions, sheet, wide }: { open: boolean; onClose: () => void; title: string; children?: ReactNode; actions: ReactNode; sheet?: boolean; wide?: boolean }) {
+export function Dialog({ open, onClose, title, children, actions, sheet, wide, headerAction }: { open: boolean; onClose: () => void; title: string; children?: ReactNode; actions: ReactNode; sheet?: boolean; wide?: boolean; /** ES-342 (B1): botón junto al título (p. ej. «Cerrar»); con él la cabecera y el pie quedan fijos y solo el cuerpo se desplaza. */ headerAction?: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
   const titleId = useId()
@@ -69,11 +69,13 @@ export function Dialog({ open, onClose, title, children, actions, sheet, wide }:
     }
   }, [open])
   return (
-    <dialog ref={ref} className="cg-dialog" tabIndex={-1} aria-modal="true" aria-labelledby={titleId} data-sheet={sheet ? '' : undefined} data-wide={wide ? '' : undefined} onKeyDown={trap} onCancel={event => { event.preventDefault(); onClose() }}>
+    <dialog ref={ref} className="cg-dialog" tabIndex={-1} aria-modal="true" aria-labelledby={titleId} data-sheet={sheet ? '' : undefined} data-wide={wide ? '' : undefined} data-fixed={headerAction ? '' : undefined} onKeyDown={trap} onCancel={event => { event.preventDefault(); onClose() }}>
       {open && (
         <>
-          <h2 className="cg-h2" id={titleId}>{title}</h2>
-          {children}
+          {headerAction
+            ? <div className="cg-dialog__head"><h2 className="cg-h2" id={titleId}>{title}</h2>{headerAction}</div>
+            : <h2 className="cg-h2" id={titleId}>{title}</h2>}
+          {headerAction ? <div className="cg-dialog__body">{children}</div> : children}
           <div className="cg-dialog__actions">{actions}</div>
         </>
       )}

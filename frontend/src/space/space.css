@@ -139,8 +139,6 @@
 .chat-menu-list { display: grid; }
 .chat-menu-list a, .chat-menu-list button { display: flex; align-items: center; min-height: 46px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--cg-line); background: transparent; color: var(--cg-ink); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
 .chat-menu-list [aria-current=page] { font-weight: 700; border-left: 4px solid var(--cg-mark); }
-.chat-menu-frame { display: grid; gap: 10px; }
-@media (min-width: 901px) { .chat-menu-frame { display: none; } }
 /* En ≤ 900 px el encabezado del marco no se dibuja en el chat: su navegación, idioma y tema están en el menú. */
 @media (max-width: 900px) { .cg-frame:has(.chat-shell) > .cg-header { display: none; } }
 /* ES-333 (PR 1): estructura del chat con tokens (sin estilos en línea ni colores fijos en cabecera, hilo y recomendaciones). El check-out y el panel de administración se tratan en los PR 2 y 3. */
@@ -209,3 +207,37 @@
   .chat-composer .chat-composer-row { grid-column: 2; grid-row: 2; }
   .chat-composer-top .elv-btn { flex: 0 0 auto; }
 }
+
+/* ES-342 (PARTE B, diseño aprobado en ES-342: maqueta docs/ux/es-chat-cartografia, escenas «Chat · menú reagrupado»). Solo tokens --cg-*. */
+/* B2: barra superior con las piezas de Cartografía (☰ 46×46, título h1 condensado 700, «Pausar» ghost, barra de uso con --cg-mark, texto de uso en sans). */
+.chat-menu-btn { min-width: var(--cg-touch); min-height: var(--cg-touch); padding: 0 .6rem; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border: 1.5px solid var(--cg-ink); background: var(--cg-ground); color: var(--cg-ink); font: 600 1.2rem var(--cg-font-cond); cursor: pointer; }
+.chat-menu-btn:hover { color: var(--cg-mark); border-color: var(--cg-mark); }
+.chat-menu-btn:focus-visible, .chat-shell .chat-pause:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.chat-menu-btn__w { display: none; font-size: .95rem; letter-spacing: .08em; text-transform: uppercase; }
+@media (min-width: 901px) { .chat-menu-btn__w { display: inline; } }
+.chat-shell .space-chatbar-head h1 { margin: 0; font: 700 1.05rem / 1.1 var(--cg-font-cond); text-transform: uppercase; letter-spacing: .06em; }
+.chat-shell .space-chatbar-head p { color: var(--cg-muted); }
+.chat-shell .space-chatbar .chat-pause { min-height: var(--cg-touch); padding: 0 .8rem; }
+.chat-shell .space-chatbar .chat-pause[aria-pressed=true] { background: var(--cg-ink); color: var(--cg-ground); box-shadow: none; }
+.chat-shell .space-meter:not(.space-meter-full) i { background: var(--cg-mark); }
+.chat-shell .space-usage-text, .chat-menu .space-usage-text { font-family: var(--cg-font-sans); font-size: .8rem; letter-spacing: 0; text-transform: none; color: var(--cg-muted); }
+/* B1: menú reagrupado. Cabecera y pie fijos; el cuerpo es lo único que se desplaza. Hoja inferior en móvil, centrada en escritorio. */
+.cg-dialog[data-sheet][data-fixed] { padding: 0; }
+.cg-dialog[data-sheet][data-fixed][open] { display: flex; flex-direction: column; overflow: hidden; }
+.cg-dialog[data-sheet][data-fixed] .cg-dialog__head { flex: none; display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .6rem 1rem; border-bottom: 1px solid var(--cg-line); }
+.cg-dialog[data-sheet][data-fixed] .cg-dialog__head .cg-h2 { font-size: 1.2rem; }
+.cg-dialog[data-sheet][data-fixed] .cg-dialog__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 1rem 1rem; }
+.cg-dialog[data-sheet][data-fixed] .cg-dialog__actions { flex: none; margin: 0; padding: .6rem 1rem; border-top: 1px solid var(--cg-line); justify-content: stretch; }
+.cg-dialog[data-sheet][data-fixed] .cg-dialog__actions .cg-btn { flex: 1 1 auto; }
+@media (min-width: 901px) { .cg-dialog[data-sheet][data-fixed] { margin: auto; } }
+.chat-menu-h { margin: 1rem 0 .1rem; font: 600 .8rem var(--cg-font-cond); letter-spacing: .12em; text-transform: uppercase; color: var(--cg-muted); }
+.chat-menu .space-note, .chat-menu .space-usage-text { margin: .4rem 0 0; }
+.chat-menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 .8rem; }
+.chat-menu-grid a { min-width: 0; overflow-wrap: anywhere; }
+.chat-menu-grid[hidden] { display: none; }
+@media (max-width: 359px) { .chat-menu-grid { grid-template-columns: minmax(0, 1fr); } }
+.chat-menu-disc { display: flex; justify-content: space-between; align-items: center; gap: .6rem; width: 100%; min-height: var(--cg-touch); padding: 0 .8rem; margin-top: .5rem; border: 1.5px solid var(--cg-ink); background: var(--cg-ground); color: var(--cg-ink); font: 600 .95rem var(--cg-font-cond); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.chat-menu-disc:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.chat-menu-prefs { display: grid; gap: .4rem; margin: .4rem 0; }
+.chat-menu-pref { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.chat-menu-pref > span { min-width: 4.5rem; }
