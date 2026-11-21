@@ -2,7 +2,8 @@
 import type { ShellCopy } from './copy'
 import type { Role } from './access'
 
-export type NavKey = Exclude<keyof ShellCopy, 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson' | 'menu' | 'close'>
+export type GroupKey = 'grpSupport' | 'grpCareer' | 'grpFollow' | 'grpPro' | 'grpOverview' | 'grpPeople' | 'grpContent'
+export type NavKey = Exclude<keyof ShellCopy, GroupKey | 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson' | 'menu' | 'close'>
 export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 
 export const PUBLIC_NAV: NavItem[] = [
@@ -21,14 +22,6 @@ export const PERSON_NAV: NavItem[] = [
 ]
 
 export const PERSON_MENU: NavItem[] = [
-  { to: '/app/checkin', label: 'today' },
-  { to: '/app/bridge', label: 'bridge' },
-  { to: '/app/my-therapist', label: 'myProfessional' },
-  { to: '/app/space/tools', label: 'tools' },
-  { to: '/app/progress', label: 'progress' },
-  { to: '/app/plan', label: 'plan' }, // ES-174: «Mi plan» lleva a la pantalla propia (antes a /pricing, que sigue público)
-  { to: '/app/context/resumes', label: 'resumes' },
-  { to: '/app/professional-reviews', label: 'reviews' },
   { to: '/app/data', label: 'data' },
   { to: '/app/feedback', label: 'feedback' },
   { to: '/manifiesto', label: 'adManifest' }, // ES-207

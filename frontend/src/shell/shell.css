@@ -160,3 +160,17 @@ html.cg-scroll-lock { overflow: hidden; }
 .cg-drawer__list a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: -3px; }
 .cg-drawer__prefs { display: grid; gap: 0.4rem; margin: 0.4rem 0; }
 .cg-drawer__prefs .cg-lang__btn[aria-pressed='true']::before, .cg-drawer__prefs .cg-seg__btn[aria-pressed='true']::before { content: '✓ '; }
+
+/* ES-359 (PR2): barra lateral por grupos de la persona (≥ 901 px). Solo tokens --cg-*. En ≤ 900 px no se dibuja: los mismos grupos viven en el cajón (PR3). */
+.cg-side--groups { display: grid; gap: 0.2rem; }
+.cg-sidegroup { min-width: 0; }
+.cg-sidelist { list-style: none; margin: 0; padding: 0; display: grid; }
+.cg-sidelist a { display: flex; align-items: center; min-height: 2.5rem; padding: 0 0.8rem; color: var(--cg-ink); text-decoration: none; font: 600 1rem var(--cg-font-cond); letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid var(--cg-line); overflow-wrap: anywhere; }
+.cg-sidelist a:hover { background: var(--cg-panel); }
+.cg-sidelist a:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: -3px; }
+.cg-sidelist a[aria-current='page'] { box-shadow: inset 4px 0 0 var(--cg-mark); font-weight: 800; background: var(--cg-panel); }
+@media (min-width: 901px) {
+  .cg-body--wideside { grid-template-columns: 14.5rem minmax(0, 1fr); }
+  .cg-frame--wide-side .cg-header > .cg-nav { display: none; }
+}
+@media (max-width: 900px) { .cg-body--wideside > .cg-side--groups { display: none; } }

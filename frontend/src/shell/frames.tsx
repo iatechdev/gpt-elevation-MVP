@@ -1,8 +1,9 @@
 // ES-153: los marcos por rol. Cada uno muestra solo las rutas de su rol; la ruta activa lleva aria-current="page" (lo pone NavLink).
 import { useContext, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Frame, NavLinks } from './Frame'
+import { Frame, NavLinks, SideNav } from './Frame'
 import { AccountMenu } from './AccountMenu'
+import { groupsFor } from './navGroups'
 import { useCgTheme } from '../cartografia/themeState'
 import { useShellCopy } from './useShellCopy'
 import { PROFESSIONAL_LABEL } from './copy'
@@ -34,8 +35,9 @@ export function PersonChrome({ children, migrated = false, footer = true }: { ch
   const { c } = useShellCopy(); const [theme] = useCgTheme()
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
   // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer} mobileOrder
-    drawer={{ groups: [{ title: null, items: PERSON_NAV }, { title: c.userMenu, items: PERSON_MENU }], name: readName('Elevation'), roleLabel: c.rolePerson, legacyTheme: !migrated }}>{children}</Frame>
+  const groups = groupsFor(readRole('user'))
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} sidebar={<SideNav groups={groups} label={c.main} />} sidebarWide footer={footer} mobileOrder
+    drawer={{ groups: [...(groups.length ? groups.map(g => ({ title: g.title ? c[g.title] : null, items: g.items })) : [{ title: null, items: PERSON_NAV }]), { title: c.userMenu, items: PERSON_MENU }], name: readName('Elevation'), roleLabel: c.rolePerson, legacyTheme: !migrated }}>{children}</Frame>
 }
 
 /** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */
