@@ -1,6 +1,7 @@
 import { useAdminText } from '../../i18n/useAdminText'
 // frontend/src/pages/admin/AdminDashboard.tsx
 // HU-047 + HU-063 + ES-180 (HU-P29) + ES-310 — Resumen de la plataforma: cifras con palabra, avisos con estado propio, actividad de 30 días. Cartografía.
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../cartografia/pages.css'
 import { Card } from '../../cartografia'
@@ -15,6 +16,11 @@ export function AdminDashboard() {
   const metrics = useAdminResource<Metrics>('/api/admin/metrics')
   const alerts = useAdminResource<AdminAlerts>('/api/admin/usuarios/alerts')
 
+  // ES-359 (PR5, QA-403-02): las dos cargas se MUESTRAN juntas (un solo «Cargando...» hasta que ambas responden, bien o con error, o pasan 2 s): ningún bloque se desplaza cuando otro cambia de alto.
+  const [revealed, setRevealed] = useState(false)
+  if (!revealed && metrics.state !== 'loading' && alerts.state !== 'loading') setRevealed(true)
+  useEffect(() => { const timer = window.setTimeout(() => setRevealed(true), 2000); return () => window.clearTimeout(timer) }, [])
+
   const sections = alerts.data?.sections
   const guides = sections?.guides
   const incomplete = sections?.professionalsIncomplete
@@ -27,6 +33,7 @@ export function AdminDashboard() {
         <p className="pg-lead">{tr('Resumen de la plataforma')}</p>
       </header>
 
+      {!revealed ? <p role="status" aria-busy="true" className="ao-status">{tr('Cargando métricas...')}</p> : <>
       {/* Mientras cargan se reserva el alto de las cifras (ES-310, CLS): la copia oculta usa las mismas piezas que el resultado. */}
       {metrics.state === 'loading' && (
         <div className="ao-hold">
@@ -100,6 +107,7 @@ export function AdminDashboard() {
         <CardTitle>{tr('Actividad, últimos 30 días')}</CardTitle>
         {metrics.state === 'ok' && metrics.data ? <ActivityChart metrics={metrics.data} /> : <p className={`ao-status${metrics.state === 'loading' ? ' ao-chart-hold' : ''}`}>{metrics.state === 'loading' ? tr('Cargando...') : tr('Sin datos')}</p>}
       </Card>
+      </>}
     </div>
   )
 }

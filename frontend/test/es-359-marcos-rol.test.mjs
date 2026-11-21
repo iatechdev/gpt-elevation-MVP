@@ -84,3 +84,12 @@ test('ES-359 PR5 (QA-400-02): el Inicio de profesional muestra sus bloques junto
   assert.match(dash, /\{!revealed \? <section className="cg-card tp-block" aria-busy="true"><p role="status" className="tp-muted">\{t\('therapist_loading'\)\}<\/p><\/section> : <>/)
   for (const need of ["useSection<PanelPerson[]>('/api/therapist/pacientes')", "useSection<UpcomingSession[]>('/api/sessions/therapist/upcoming')", "useSection<AlertsData>('/api/therapist/alerts')", "useSection<ValidationDoc[]>('/api/therapist/validation/status')", "useSection<PromptData>('/api/therapist/prompt')"]) assert.ok(dash.includes(need), need)
 })
+
+test('ES-359 PR5 (QA-403-02): el Panel de administración muestra sus dos cargas juntas (un «Cargando...» hasta que ambas responden o pasan 2 s) y cada una sigue con su error y «Reintentar»', () => {
+  const admin = read('../src/pages/admin/AdminDashboard.tsx')
+  assert.match(admin, /const \[revealed, setRevealed\] = useState\(false\)/)
+  assert.match(admin, /if \(!revealed && metrics\.state !== 'loading' && alerts\.state !== 'loading'\) setRevealed\(true\)/) // listas O con error
+  assert.match(admin, /window\.setTimeout\(\(\) => setRevealed\(true\), 2000\)/); assert.match(admin, /window\.clearTimeout\(timer\)/)
+  assert.match(admin, /\{!revealed \? <p role="status" aria-busy="true" className="ao-status">\{tr\('Cargando métricas\.\.\.'\)\}<\/p> : <>/)
+  assert.match(admin, /onRetry=\{metrics\.retry\}/); assert.match(admin, /onRetry=\{alerts\.retry\}/)
+})
