@@ -37,11 +37,12 @@ test('ES-359 PR2: textos ES/EN de grupos y de las 4 entradas, con las mismas cla
   assert.deepEqual(Object.keys(shellCopy.es).sort(), Object.keys(shellCopy.en).sort())
 })
 
-test('ES-359 PR2: los 8 enlaces que pasan a la barra lateral siguen en el menú de usuario SOLO en móvil (narrowOnly) hasta el cajón; Mis datos, Tu opinión y el Manifiesto se quedan siempre', () => {
-  const moved = PERSON_MENU.filter(i => i.narrowOnly).map(i => i.to).sort()
-  assert.deepEqual(moved, ['/app/bridge', '/app/checkin', '/app/context/resumes', '/app/my-therapist', '/app/plan', '/app/professional-reviews', '/app/progress', '/app/space/tools'])
-  for (const link of moved) assert.ok(links.some(l => l.to === link), `${link} está en la barra lateral`)
-  assert.deepEqual(PERSON_MENU.filter(i => !i.narrowOnly).map(i => i.to), ['/app/data', '/app/feedback', '/manifiesto'])
+test('ES-359 PR2: los 8 enlaces que pasan a la barra lateral salen del menú de cuenta (Mis datos, Tu opinión y el Manifiesto se quedan) y el cajón móvil lleva los MISMOS grupos', () => {
+  const moved = ['/app/bridge', '/app/checkin', '/app/context/resumes', '/app/my-therapist', '/app/plan', '/app/professional-reviews', '/app/progress', '/app/space/tools']
+  for (const link of moved) { assert.ok(links.some(l => l.to === link), `${link} está en la barra lateral`); assert.ok(!PERSON_MENU.some(i => i.to === link), `${link} ya no está en el menú de cuenta`) }
+  assert.deepEqual(PERSON_MENU.map(i => i.to), ['/app/data', '/app/feedback', '/manifiesto'])
+  const frames = read('../src/shell/frames.tsx')
+  assert.ok(frames.includes("const groups = groupsFor(readRole('user'))")); assert.ok(frames.includes('groups.map(g => ({ title: g.title ? c[g.title] : null, items: g.items }))'))
 })
 
 test('ES-359 PR2: marcado y estilos — un <nav> con nombre, títulos de grupo, aria-current por NavLink, 40 px, barra + negrita (no solo color), solo tokens, escritorio ≥ 901 px', () => {
@@ -52,5 +53,5 @@ test('ES-359 PR2: marcado y estilos — un <nav> con nombre, títulos de grupo, 
   assert.match(added, /\.cg-sidelist a \{[^}]*min-height: 2\.5rem/); assert.match(added, /\[aria-current='page'\] \{ box-shadow: inset 4px 0 0 var\(--cg-mark\); font-weight: 800/)
   assert.match(added, /@media \(min-width: 901px\) \{[\s\S]*14\.5rem[\s\S]*\.cg-frame--wide-side \.cg-header > \.cg-nav \{ display: none; \}/)
   assert.ok(!/#[0-9a-fA-F]{3,8}\b|rgb\(|hsl\(/.test(added), 'sin colores fijos')
-  assert.match(read('../src/shell/frames.tsx'), /<SideNav groups=\{groupsFor\(readRole\('user'\)\)\} label=\{c\.main\} \/>\} sidebarWide footer=\{footer\} mobileOrder>/)
+  assert.match(read('../src/shell/frames.tsx'), /sidebar=\{<SideNav groups=\{groups\} label=\{c\.main\} \/>\} sidebarWide footer=\{footer\} mobileOrder/)
 })

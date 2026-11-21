@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PERSON_MENU } from '../src/shell/nav.ts'
+import { PERSON_GROUPS } from '../src/shell/navGroups.ts'
 import { shellCopy } from '../src/shell/copy.ts'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../src')
 
@@ -16,7 +17,8 @@ test('ES-212: el menú de usuario del marco de persona trae el enlace al manifie
 })
 
 test('ES-212: el resto del menú no cambia (Puente, Herramientas, Mis datos); el mapa va en la barra principal', () => {
-  for (const to of ['/app/bridge', '/app/space/tools', '/app/data']) assert.ok(PERSON_MENU.some(entry => entry.to === to), to)
+  for (const to of ['/app/bridge', '/app/space/tools']) assert.ok(PERSON_GROUPS.flatMap(group => group.items).some(entry => entry.to === to), to) // ES-359 PR2: ya no están en el menú de cuenta
+  assert.ok(PERSON_MENU.some(entry => entry.to === '/app/data'))
   assert.ok(readFileSync(resolve(root, 'shell/nav.ts'), 'utf8').includes("to: '/app/skill-map'"))
 })
 

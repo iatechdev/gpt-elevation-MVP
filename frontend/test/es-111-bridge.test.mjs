@@ -75,5 +75,5 @@ test('ES-111 estructura: confirmación en la tarjeta, ojo accesible, nada cruza 
   assert.match(page, /role="status" aria-live="polite"/); assert.match(page, /role="alert"/)
   assert.doesNotMatch(page, /localStorage|sessionStorage|indexedDB|document\.cookie/); assert.doesNotMatch(page, /insight\.fragment[^}]*(api|fetch|preview|confirm)/)
   assert.match(css, /br-blur/); assert.match(css, /dashed/); assert.doesNotMatch(css, /#0d9488|#B5503C|#4a6741/i)
-  assert.match(nav, /to: '\/app\/bridge'/); assert.match(app, /path="\/app\/bridge"/); assert.match(app, /path="\/app\/compass"/) // la Brújula convive
+  assert.match(read('../src/shell/navGroups.ts'), /to: '\/app\/bridge'/); assert.match(app, /path="\/app\/bridge"/); assert.match(app, /path="\/app\/compass"/) // la Brújula convive
 })
