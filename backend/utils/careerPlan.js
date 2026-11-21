@@ -252,8 +252,10 @@ async function savePlan(userId, input) {
     let current, next, experimentId, live;
     if (input.action === 'accept') {
       shape(input, ['requestId', 'expectedVersion', 'proposal', 'token', 'selections', 'action']);
+      // ES-377 (E377-2): `proposal` ausente o que no es un objeto es una entrada inválida (400), no un fallo del servicio (antes: TypeError → 503).
+      if (!input.proposal || typeof input.proposal !== 'object' || Array.isArray(input.proposal)) throw invalid();
       checkToken('es33-plan', userId, input);
-      experimentId = id(input.proposal?.experimentId);
+      experimentId = id(input.proposal.experimentId);
       const experiment = await ownExperiment(userId, experimentId, transaction), row = await currentVersion(userId, experiment, transaction);
       live = await basis(userId, experiment.choiceId); if (row.basisHash !== expectedHash(live, unpack(row)) || row.version !== input.proposal.experimentVersion) throw conflict();
       const expected = { ...rules.proposePlan({ ...unpack(row), basisHash: row.basisHash }, row.version, live.context, live.route.resources, input.proposal.budget ?? null), experimentId };
