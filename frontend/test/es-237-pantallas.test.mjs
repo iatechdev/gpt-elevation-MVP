@@ -96,7 +96,8 @@ test('pantallas: el chip «sintética», la ficha real, el plan y la evidencia d
   assert.match(pages, /source\.url\.startsWith\('https:\/\/'\)/, 'solo se enlazan fuentes https')
   assert.match(pages, /example\.org\/synthetic-source/, 'el ejemplo del simulador sigue ahí (modo simulador)')
   assert.match(pages, /c\.state\.source !== 'api' && <CheckField/, 'sin referencias de evidencia inventadas en modo servidor')
-  assert.match(pages, /if \(c\.state\.source === 'api'\) return <section className="pc-col"><h2 className="pc-h2">\{c\.t\('plan'\)\}<\/h2><p role="status">\{c\.t\('pending'\)\}<\/p><\/section>/)
+  // Paso 3: el plan va contra el servidor; solo los recordatorios y las notificaciones siguen «pendientes» (sin endpoint de consentimiento ni correo) y el simulador del recordatorio no se muestra en modo servidor.
+  assert.match(pages, /\{real && <p role="status">\{c\.t\('pending'\)\}<\/p>\}/); assert.match(pages, /\{!real && <><CheckField disabled=\{blocked\} checked=\{c\.state\.notifications\}/); assert.match(pages, /type: 'propose', experimentId: selected\.id/)
   assert.match(pages, /c\.state\.catalogUnavailable \? \(<div role="alert">/)
 })
 
@@ -108,9 +109,44 @@ test('marco: VITE_CAREER_SOURCE=api elige el cliente de servidor (el simulador e
   assert.match(shell, /code === 'lostAck' \|\| code === 'conflict' \|\| code === 'routesChanged'/, 'tras «tus restricciones cambiaron» hay que releer antes de seguir')
 })
 
-test('cliente de servidor: el plan y los recordatorios responden «pending» (paso 3), sin simular, y un gesto incierto conserva su requestId', () => {
+test('cliente de servidor: los recordatorios y las notificaciones responden «pending» (el plan sí va al servidor, paso 3), sin simular, y un gesto incierto conserva su requestId', () => {
   const client = read('../src/career/serverClient.ts')
-  assert.match(client, /default: throw new FixtureError\('pending'\)/)
-  assert.match(client, /const prior = frozen\.get\(key\)/); assert.match(client, /proposed \?\?= await proposeExperiment/)
+  assert.match(client, /default: throw new FixtureError\('pending'\)/); assert.match(client, /case 'plan': \{/); assert.match(client, /case 'complete': case 'pause': \{/)
+  assert.match(client, /frozen\.get\(key\) \?\? plan\(input, requestId\)/); assert.match(client, /proposed \?\?= await proposePlan/); assert.match(client, /proposed \?\?= await proposeExperiment/)
   assert.doesNotMatch(client, /localStorage|sessionStorage|console\.|document\.cookie|userId/)
+})
+
+test('paso 3: con datos reales la disponibilidad solo se muestra si el servidor la trae confirmada; sin dato no hay cifra ni zona inventadas', () => {
+  const pages = read('../src/career/CareerPages.tsx')
+  assert.match(pages, /if \(c\.state\.source === 'api'\) return av && av\.weeklyMinutes > 0 && av\.timeZone \?/)
+  assert.match(pages, /availabilityLine\(c, plan\.availability\) && <p>/)
+  assert.match(pages, /America\/Bogota`/, 'la línea fija del simulador sigue solo en modo simulador')
+})
+
+test('E377-3: en modo servidor el aviso de plan inválido no nombra una cifra fija (la disponibilidad real puede ser otra); el simulador conserva el suyo', async () => {
+  const { tr } = await import('../src/career/copy.ts')
+  for (const lang of ['es', 'en']) {
+    assert.doesNotMatch(tr(lang, 'invalidPlan', true), /\d/, `modo servidor (${lang}): sin cifras`)
+    assert.match(tr(lang, 'invalidPlan', false), /60/, `simulador (${lang}): conserva «60»`)
+  }
+  assert.match(tr('es', 'invalidPlan', true), /disponibilidad semanal/); assert.match(tr('en', 'invalidPlan', true), /weekly availability/)
+  assert.match(tr('es', 'invalidPlan', true), /precio desconocido/); assert.match(tr('en', 'invalidPlan', true), /unknown price/)
+})
+
+test('E377-1: al confirmar el plan la propuesta se reemplaza al instante por el plan en espera (misma forma), la lista de versiones ya está y la propuesta sigue montada para volver si el servidor rechaza', () => {
+  const pages = read('../src/career/CareerPages.tsx')
+  assert.match(pages, /onPending\(waiting\(\)\)\n\s+const result = await c\.save\(\{ type: 'plan'/, 'el plan en espera se muestra ANTES de esperar al servidor')
+  assert.match(pages, /if \(result\.ok\) \{ setReview\(false\); setSelected\(\[\]\); onAccepted\(\) \} else onPending\(null\)/, 'si el servidor rechaza, la propuesta vuelve')
+  assert.match(pages, /<div hidden=\{waiting !== null\}><PlanProposal /, 'la propuesta se oculta, no se desmonta (conserva lo escrito)')
+  assert.match(pages, /\(c\.state\.plans\.length > 0 \|\| waiting\) && <SelectField label=\{c\.t\('versions'\)\}/, 'la lista de versiones ya existe mientras se espera (evita el salto de ~100 px)')
+  assert.match(pages, /\[\.\.\.c\.state\.plans, \.\.\.\(waiting \? \[waiting\] : \[\]\)\]/); assert.match(pages, /aria-busy=\{waiting !== null\}/)
+  assert.match(pages, /const plan = waiting \?\? saved/)
+})
+
+test('E377-5 y W4: mientras se espera la respuesta no se afirma «aceptado» (título y opción dicen «Guardando…», sin versión) y el plan en espera se retira al aceptar', () => {
+  const pages = read('../src/career/CareerPages.tsx')
+  assert.ok(pages.includes("<h3>{waiting ? c.t('saving') : `${c.t(plan.status)} · ${c.t('version')} ${plan.version}`}</h3>"))
+  assert.ok(pages.includes("p === waiting ? c.t('saving') : `${c.t('version')} ${p.version} · ${c.t(p.status)}`"))
+  assert.ok(pages.includes("onAccepted={() => { setWaiting(null); setProposal(false); setSelectedId('') }}"), 'al aceptar se retira el plan en espera (W4)')
+  assert.ok(pages.includes('else onPending(null)'), 'al rechazar también')
 })

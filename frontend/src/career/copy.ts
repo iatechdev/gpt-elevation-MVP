@@ -94,11 +94,14 @@ export type CopyKey = keyof typeof copy
 export type Locale = 'es' | 'en'
 // Modo servidor (ES-237 2b): estos textos dicen «simulación»/«sintético» en el simulador y dejarían de ser ciertos con datos reales; el simulador conserva los suyos.
 const serverCopy: Partial<Record<CopyKey, readonly [string, string]>> = {
-  preview: ['Vista preliminar. Tus restricciones, elecciones y experimentos se guardan en tu cuenta; el plan y los recordatorios todavía no.', 'Preview. Your constraints, choices and experiments are saved to your account; the plan and reminders are not yet.'],
+  preview: ['Vista preliminar. Tus restricciones, elecciones, experimentos y plan se guardan en tu cuenta; los recordatorios todavía no.', 'Preview. Your constraints, choices, experiments and plan are saved to your account; reminders are not yet.'],
   saved: ['Guardado', 'Saved'], recover: ['Recuperar el estado guardado', 'Retrieve the saved state'], noHistory: ['No hay decisiones guardadas.', 'No decisions have been saved.'],
   contextHelp: ['Las opciones salen del catálogo de rutas publicado.', 'The options come from the published route catalog.'],
   // Ficha de la ruta con datos reales: tareas y fuentes del catálogo, no el ejemplo del simulador.
   tasks: ['Tareas de la ficha', 'Tasks in the profile'], source: ['Fuentes consultadas', 'Sources consulted'], openSource: ['Abrir fuente en otra pestaña', 'Open source in another tab'],
   supported: ['Sustentada por tu evidencia registrada', 'Supported by your recorded evidence'],
+  // Plan con datos reales (paso 3): disponibilidad y recurso salen del servidor.
+  invalidPlan: ['Revisa fechas, dependencias, esfuerzo y costos. El plan debe caber en tu disponibilidad semanal confirmada; un precio desconocido no permite confirmar el presupuesto.', 'Review dates, dependencies, effort and costs. The plan must fit within your confirmed weekly availability; an unknown price cannot confirm the budget.'],
+  availability: ['Disponibilidad semanal confirmada', 'Confirmed weekly availability'], resource: ['Recursos del catálogo', 'Catalog resources'],
 }
 export const tr = (lang: Locale, key: CopyKey, server = false) => (server ? serverCopy[key] ?? copy[key] : copy[key])[lang === 'es' ? 0 : 1]
