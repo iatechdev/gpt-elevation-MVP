@@ -17,6 +17,7 @@ const { isValidEmail, MAX_EMAIL } = require('../utils/emailGuard'); // ES-252/ES
 const { passwordProblems, policy } = require('../utils/registrationPassword');
 const terms = require('../utils/terms'); // ES-301
 const { normalizeEmail, findUserByEmail } = require('../utils/emailNormalize'); // ES-306
+const { isValidName } = require('../utils/invisibleText'); // ES-352
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -79,8 +80,9 @@ const loginLimiter = rateLimit({
 
 // ES-324 (E305-2): el nombre del registro tiene tope (100 caracteres, el mismo de las invitaciones; la columna es varchar(255)) y no admite caracteres de control (NUL, saltos de línea…).
 // Se cuenta en caracteres (puntos de código), no en bytes ni unidades UTF-16: acentos, ñ y emoji cuentan 1. NO se rechaza el formato Unicode (el ZWNJ de nombres persas es legítimo).
-const MAX_NAME = 100;
-const validName = (name) => typeof name === 'string' && name.trim().length > 0 && [...name.trim()].length <= MAX_NAME && !/\p{Cc}/u.test(name);
+// ES-352: la regla vive en utils/invisibleText.js (tabla de decisión por campo): además de los controles se rechazan ZWSP, marcas y controles de dirección, U+2028/2029, BOM y «tags»;
+// se PERMITEN ZWNJ/ZWJ y los selectores de variación (persa, emoji compuestos, escrituras índicas); exige al menos una letra, marca o número.
+const validName = (name) => isValidName(name);
 
 // POST /api/register
 router.post('/register', registerLimiter, validateBody({ name: nonempty, email: nonempty, password: nonempty }), async (req, res) => {

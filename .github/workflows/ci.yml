@@ -261,6 +261,10 @@ jobs:
         run: npm run test:register-name:pg
         env:
           ES324_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-352 nombres con caracteres invisibles y de direccion - registro e invitacion rechazan (400 invalid_name) y conservan ZWNJ/ZWJ (PostgreSQL real)
+        run: npm run test:invisible-name:pg
+        env:
+          ES352_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: E273-6 revocar el puente actúa en las tres piezas y respeta la guarda de eliminación (PostgreSQL real; antes no corría en CI)
         run: npm run test:integration:pg
         env:
