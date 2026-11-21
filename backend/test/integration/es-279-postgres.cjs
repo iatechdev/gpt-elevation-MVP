@@ -78,7 +78,7 @@ test('ES-279 PostgreSQL + HTTP: control de edición simultánea de textos públi
         for (const lang of ['es', 'en']) {
           const out = await http(A, 'PUT', '/api/landing-content', { key, lang, value: 'texto', ...extra });
           assert.equal(out.status, 400, `${JSON.stringify(key).slice(0, 40)} ${lang} ${JSON.stringify(extra)} → ${out.status}`);
-          assert.ok(['unknown_key', undefined].includes(out.body.code), JSON.stringify(out.body));
+          assert.equal(out.body.code, 'unknown_key', JSON.stringify(out.body)); // E388-1: el código estable del 400 se comprueba (antes también valía «sin código»)
         }
       }
     }
