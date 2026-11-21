@@ -47,3 +47,15 @@ test('ES-359 PR3: el icono ☰ del botón «Menú» es el escape CSS de U+2630 (
     assert.ok(!text.includes('³'), `${name}: «³» (escape corrupto)`); assert.ok(!text.includes('�'), `${name}: carácter de sustitución`)
   }
 })
+
+test('ES-359 PR3 (mutaciones): el botón abre, el velo y los enlaces cierran, «Cerrar sesión» llama a useSignOut y el cajón solo existe en móvil', () => {
+  assert.match(frame, /onClick=\{\(\) => setDrawerOpen\(true\)\}/) // el botón ☰ abre
+  assert.match(frame, /onClose=\{\(\) => setDrawerOpen\(false\)\}/) // y el cajón se cierra por su `onClose`
+  assert.match(frame, /\{compact && drawer && <NavDrawer open=\{drawerShown\}/) // sin modo móvil no hay cajón (se desmonta y libera el bloqueo)
+  assert.match(drawer, /event\.target === document\.documentElement \|\| event\.target === ref\.current\) onClose\(\)/) // velo
+  assert.match(drawer, /if \(!href\.startsWith\('#'\) && leaveBlocked\(href\)\) \{ event\.preventDefault\(\); return \}\s*onClose\(\)/) // elegir un enlace cierra (salvo que la guardia lo detenga)
+  assert.match(drawer, /<button type="button" className="cg-btn cg-btn--ghost" onClick=\{onClose\}>\{c\.close\}<\/button>/) // «Cerrar»
+  assert.match(drawer, /onClick=\{\(\) => void leave\(\)\}/) // «Cerrar sesión» ejecuta el cierre
+  assert.match(drawer, /return \(\) => \{ document\.documentElement\.classList\.remove\(LOCK\) \}/) // al desmontar se libera el bloqueo de desplazamiento
+  assert.match(drawer, /if \(!open && dialog\.open\) \{ dialog\.close\(\); document\.documentElement\.classList\.remove\(LOCK\); opener\.current\?\.focus\(\) \}/) // al cerrar: libera y devuelve el foco
+})
