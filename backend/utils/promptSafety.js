@@ -32,7 +32,10 @@ const INVISIBLE_NO_JOINERS = /[­​‎‏‪-‮⁠-⁤⁦-⁩﻿]/g;
 const MEANINGFUL = '\\p{L}\\p{M}\\p{Extended_Pictographic}\\u{FE0F}\\u{1F3FB}-\\u{1F3FF}\\u{1F9B0}-\\u{1F9B3}';
 const LOOSE_JOINER = new RegExp(`(?<![${MEANINGFUL}])[\\u200C\\u200D]|[\\u200C\\u200D](?![${MEANINGFUL}])`, 'gu');
 // ES-287 + ES-352: copia de un texto SIN los caracteres invisibles (INVISIBLE, los blancos de relleno de utils/invisibleText y el bloque Tags), salvo un ZWNJ/ZWJ legítimo. La usan fenceUntrusted y la puerta de salida al proveedor (aiClient).
-const stripInvisible = (text) => String(text).replace(INVISIBLE_NO_JOINERS, '').replace(BLANK_FILLERS_RE, '').replace(TAGS, '').replace(LOOSE_JOINER, '');
+// E384-1 (QA): selectores de variación SUPLEMENTARIOS (U+E0100–E01EF, variantes de ideogramas): invisibles por sí solos, sin uso en texto de acompañamiento y otro canal para esconder instrucciones. Se quitan SOLO en lo que va al proveedor
+// (el texto guardado no cambia). U+FE00–FE0F (incluido el selector de emoji FE0F) NO se tocan: cambian cómo se dibuja un carácter visible y se permiten (ES-352).
+const SUPPLEMENTARY_VS = /[\u{E0100}-\u{E01EF}]/gu;
+const stripInvisible = (text) => String(text).replace(INVISIBLE_NO_JOINERS, '').replace(BLANK_FILLERS_RE, '').replace(TAGS, '').replace(SUPPLEMENTARY_VS, '').replace(LOOSE_JOINER, '');
 
 const capText = (text, max = MAX_MESSAGE_CHARS) => (text.length > max ? text.slice(0, max) : text);
 
