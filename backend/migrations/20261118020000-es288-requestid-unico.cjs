@@ -23,6 +23,24 @@ async function findDuplicates(sequelize, target, options = {}) {
      ) ranked WHERE "n" > 1 ORDER BY "id"`, { type: 'SELECT', ...options });
 }
 
+// E385-1 (QA): la marca «<original recortado>~dup<id>» ya podría existir en otra fila del mismo grupo (p. ej. un requestId que la persona o el cliente puso exactamente así): el índice único fallaría y el arranque se detendría.
+// Se comprueba por fila y, si choca, se añade «_<n>» (y se recorta más el original para seguir cabiendo en VARCHAR(64)) hasta encontrar una libre. Sin choques el resultado es el mismo de siempre.
+async function markDuplicate(sequelize, target, row, transaction) {
+  const join = target.columns.filter((c) => c !== 'requestId').map((c) => `a."${c}" = b."${c}"`).join(' AND ');
+  for (let n = 0; n < 1000; n += 1) {
+    const base = String(row.requestId).slice(0, n === 0 ? 50 : 40);
+    const candidate = n === 0 ? `${base}~dup${row.id}` : `${base}~dup${row.id}_${n}`;
+    const taken = await sequelize.query(
+      `SELECT 1 FROM "${target.table}" a JOIN "${target.table}" b ON ${join} WHERE a."id" = :id AND b."id" <> :id AND b."requestId" = :candidate LIMIT 1`,
+      { type: 'SELECT', replacements: { id: row.id, candidate }, transaction });
+    if (!taken.length) {
+      await sequelize.query(`UPDATE "${target.table}" SET "requestId" = :candidate WHERE "id" = :id`, { replacements: { id: row.id, candidate }, transaction });
+      return candidate;
+    }
+  }
+  throw new Error(`ES-288: no se encontró una marca libre para ${target.table}.${row.id}`);
+}
+
 async function up(arg) {
   const sequelize = arg.sequelize || arg;
   const resolved = {};
@@ -30,12 +48,7 @@ async function up(arg) {
     for (const target of TARGETS) {
       await sequelize.query(`LOCK TABLE "${target.table}" IN SHARE ROW EXCLUSIVE MODE`, { transaction });
       const duplicates = await findDuplicates(sequelize, target, { transaction });
-      if (duplicates.length) {
-        // El sufijo incluye el id de la fila: único por construcción. Se recorta el original para caber en VARCHAR(64).
-        await sequelize.query(
-          `UPDATE "${target.table}" SET "requestId" = left("requestId", 50) || '~dup' || "id" WHERE "id" IN (:ids)`,
-          { replacements: { ids: duplicates.map((row) => row.id) }, transaction });
-      }
+      for (const row of duplicates) await markDuplicate(sequelize, target, row, transaction);
       resolved[target.table] = duplicates.length;
       await sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS "${target.index}" ON "${target.table}" (${quoted(target.columns)}) WHERE ${target.where}`, { transaction });
     }

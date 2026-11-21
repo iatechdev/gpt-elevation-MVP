@@ -102,4 +102,38 @@ test('ES-288 PostgreSQL: índices únicos con requestId, migración con duplicad
     assert.ok((await q(`SELECT count(*)::int AS n FROM "AiUsages" WHERE "requestId" LIKE '%~dup%'`))[0].n >= 2);
     await dropIndexes();
   });
+
+  // E385-1 / E385-4 (QA): la marca «~dup<id>» puede coincidir con el requestId de OTRA fila del mismo grupo, y con un requestId de 64 caracteres la marca debe seguir cabiendo.
+  await t.test('E385-1: si ya existe una fila completada cuyo requestId es EXACTAMENTE la marca, la migración NO aborta: elige otra marca libre y no pierde nada', async () => {
+    await dropIndexes();
+    const first = await AiUsage.create(usage({ UserId: 9121, requestId: 'collide' }));
+    const dup = await AiUsage.create(usage({ UserId: 9121, requestId: 'collide' }));
+    const squatter = await AiUsage.create(usage({ UserId: 9121, requestId: `collide~dup${dup.id}` })); // el requestId que la marca usaría
+    const note1 = await SessionNote.create(note({ sessionId: 9131, requestId: 'ncollide' })); const noteDup = await SessionNote.create(note({ sessionId: 9131, requestId: 'ncollide' }));
+    await SessionNote.create(note({ sessionId: 9131, requestId: `ncollide~dup${noteDup.id}` }));
+    const before = await AiUsage.count(); const beforeNotes = await SessionNote.count();
+    const resolved = await migration.up(sequelize);
+    assert.ok(resolved.AiUsages >= 1 && resolved.SessionNotes >= 1);
+    assert.equal(await AiUsage.count(), before); assert.equal(await SessionNote.count(), beforeNotes);
+    const rows = await q('SELECT "id","requestId" FROM "AiUsages" WHERE "UserId" = 9121 ORDER BY "id"');
+    assert.equal(rows[0].requestId, 'collide', 'la más antigua queda tal cual'); assert.equal(rows[2].requestId, `collide~dup${dup.id}`, 'la fila que ya tenía esa marca no se toca');
+    assert.equal(rows[1].requestId, `collide~dup${dup.id}_1`, 'el duplicado recibe la marca libre con contador');
+    assert.equal(new Set(rows.map((r) => r.requestId)).size, 3);
+    const notes = await q('SELECT "id","requestId" FROM "SessionNotes" WHERE "sessionId" = 9131 ORDER BY "id"');
+    assert.deepEqual(notes.map((r) => r.requestId), ['ncollide', `ncollide~dup${noteDup.id}_1`, `ncollide~dup${noteDup.id}`]);
+    assert.ok(first && squatter && note1 && squatter.id > dup.id);
+    assert.deepEqual(await indexes(), ['ai_usages__request_done', 'session_notes__request']);
+  });
+
+  await t.test('E385-4: con un requestId de 64 caracteres la marca cabe en VARCHAR(64), es única y el contenido no cambia (recortar a 60 en vez de 50 NO pasa)', async () => {
+    await dropIndexes();
+    const long = 'x'.repeat(64);
+    const a = await AiUsage.create(usage({ UserId: 9122, requestId: long })); const b = await AiUsage.create(usage({ UserId: 9122, requestId: long })); const c = await AiUsage.create(usage({ UserId: 9122, requestId: long }));
+    await migration.up(sequelize);
+    const rows = await q('SELECT "id","requestId" FROM "AiUsages" WHERE "UserId" = 9122 ORDER BY "id"');
+    assert.equal(rows[0].requestId, long); assert.equal(rows[1].requestId, `${'x'.repeat(50)}~dup${b.id}`); assert.equal(rows[2].requestId, `${'x'.repeat(50)}~dup${c.id}`);
+    assert.ok(rows.every((r) => r.requestId.length <= 64)); assert.equal(new Set(rows.map((r) => r.requestId)).size, 3); assert.ok(a);
+    const source = require('node:fs').readFileSync(require.resolve('../../migrations/20261118020000-es288-requestid-unico.cjs'), 'utf8');
+    assert.ok(source.includes('slice(0, n === 0 ? 50 : 40)'), 'el recorte es 50 (40 con contador): con 60 una marca con id largo no cabría');
+  });
 });
