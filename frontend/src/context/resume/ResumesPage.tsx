@@ -8,9 +8,11 @@ import { Banner, Button, Card, Chip, Dialog, ItemList } from '../../cartografia'
 import { Notice, PersonScreen } from '../../space/PersonScreen'
 import { MAX_VERSIONS, checkResumeConsent, deleteResume, fetchResumeBlob, listResumes, readResumeConsent, setResumeConsent, type ResumeMeta } from './resumeApi'
 import { fill } from './resumeCopy'
+import './resumeUpdate.css'
 
 type Phase = 'loading' | 'ready' | 'error'
 const CONTEXT_PATH = '/app/onboarding'
+const UPDATE_PATH = '/app/context/resumes/update' // ES-110: «Actualizar mi hoja de vida»
 
 export function ResumesPage() {
   const { t, lang } = useLanguage()
@@ -94,6 +96,7 @@ export function ResumesPage() {
       {phase === 'error' && <Banner kind="error" title={t('resume_hist_error')}><div className="pg-actions"><Button variant="ghost" onClick={() => void load()}>{t('resume_hist_retry')}</Button></div></Banner>}
 
       {phase === 'ready' && <>
+        <div className="cv-prim"><Link className="cg-btn" to={UPDATE_PATH}>{t('resume_update')}</Link><p className="cg-hint">{t('resume_update_help')}</p></div>
         <Card as="section" className="pg-card"><div className="pg-meta"><h2 id="rs-versions">{t('resume_hist_versions')}</h2><Chip>{fill(t('resume_hist_count'), { n: items.length, max })}</Chip></div>
           {items.length === 0 ? <p>{t('resume_hist_empty')}</p> : <ItemList label={t('resume_hist_versions')} items={items.map((item, index) => ({
             id: String(item.id),
@@ -106,7 +109,6 @@ export function ResumesPage() {
                 <Button variant="ghost" disabled={busy} aria-label={`${t('resume_delete')}: ${who(item)}`} onClick={() => ask({ kind: 'delete', item })}>{t('resume_delete')}</Button>
               </div></>,
           }))} />}
-          <div className="pg-actions"><Link className="cg-btn" to={CONTEXT_PATH}>{t('resume_upload_new')}</Link></div>
         </Card>
 
         {consent && <Card as="section" className="pg-card"><h2 id="rs-withdraw">{t('resume_withdraw_title')}</h2><p>{t('resume_withdraw_body')}</p>

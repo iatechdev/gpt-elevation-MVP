@@ -30,7 +30,11 @@ export type ExperimentPayload = { lifecycle: Lifecycle; roleKey: string; taskInd
 export type ExperimentVersion = { id: number; experimentId: number; version: number; lifecycle: Lifecycle; payload: ExperimentPayload; createdAt: string }
 export type ExperimentView = { experiment: { id: number; choiceId: number; currentVersion: number }; current: ExperimentVersion; basis: Basis; versions: ExperimentVersion[]; nextAfter: number | null; humanReview: Record<string, unknown> }
 export type ExperimentProposal = { proposal: Record<string, unknown>; token: string }
-export type PlanProposal = { proposal: Record<string, unknown>; token: string }
+export type PlanResource = { resourceKey: string; title?: string; url?: string; duration?: { minutes?: number }; price?: { published?: boolean; amount?: number; currency?: string } }
+export type PlanAction = { actionKey: string; horizonDays: 7 | 30 | 90; estimatedMinutes: number; chosenDate: string | null; status: string; dependencies: string[]; resourceRefs: string[]; cost?: { status?: string; amount?: number; currency?: string }; completionEvidence?: { actual?: { text?: string } | null } }
+export type PlanPayload = { experimentVersion: number; availability: { weeklyMinutes: number; timeZone: string }; budget: { amount: number; currency: string } | null; status: string; actions: PlanAction[]; resources: PlanResource[]; [key: string]: unknown }
+export type PlanRecord = { id: number; experimentId: number; version: number; status: 'accepted' | 'paused' | 'superseded'; payload: PlanPayload; basis: Basis; createdAt: string }
+export type PlanProposal = { proposal: Record<string, unknown> & { experimentId?: number; experimentVersion?: number; availability?: PlanPayload['availability']; resources?: PlanResource[] }; token: string }
 export type PlanSelection = { actionKey: string; chosenDate: string; estimatedMinutes: number; resourceRefs: string[]; declaredCost?: { status?: string; amount?: number; currency?: string } }
 export type Money = { amount: number; currency: string }
 
@@ -93,8 +97,8 @@ export const requestReview = async (o: Opts, id: number, input: { requestId: str
 
 // Plan -----------------------------------------------------------------------------------------------------------------------------------
 export const proposePlan = (o: Opts, input: { experimentId: number; expectedVersion: number; budget?: Money | null }) => call(o, '/api/career-plan/proposals', 'POST', input) as Promise<PlanProposal>
-export const savePlan = (o: Opts, input: { requestId: string; expectedVersion: number } & PlanChange) => call(o, '/api/career-plan/versions', 'POST', input) as Promise<{ plan: Record<string, unknown>; created: boolean }>
-export const listPlans = (o: Opts, cursor?: number) => call(o, `/api/career-plan${after(cursor)}`, 'GET') as Promise<{ plans: unknown[]; nextAfter: number | null }>
+export const savePlan = (o: Opts, input: { requestId: string; expectedVersion: number } & PlanChange) => call(o, '/api/career-plan/versions', 'POST', input) as Promise<{ plan: PlanRecord; created: boolean }>
+export const listPlans = (o: Opts, cursor?: number) => call(o, `/api/career-plan${after(cursor)}`, 'GET') as Promise<{ plans: PlanRecord[]; nextAfter: number | null }>
 export const getPlan = async (o: Opts, id: number) => call(o, `/api/career-plan/versions/${safeId(id)}`, 'GET') as Promise<{ plan: Record<string, unknown> }>
 export const listReminders = (o: Opts, { history = false, cursor }: { history?: boolean; cursor?: number } = {}) =>
   call(o, `/api/career-plan/reminders${history ? '?history=true' : cursor ? `?after=${cursor}` : ''}`, 'GET') as Promise<{ reminders: unknown[]; nextAfter: number | null }>

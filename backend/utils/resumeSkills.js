@@ -80,6 +80,23 @@ async function listCandidates(userId, transaction) {
   return skills;
 }
 
+// ES-110 (actualizar la hoja de vida): habilidades declaradas cuya versión de origen YA NO existe (la persona la borró). No se pueden añadir (no hay de dónde sacarlas), pero tampoco
+// desaparecen sin explicación: se devuelven aparte para poder decir «versión borrada». Campo ADITIVO: el contrato de `skills` no cambia.
+async function listOrphaned(userId, transaction) {
+  const context = await readContext(userId, transaction);
+  const resumes = await ParticipantResume.findAll({ where: { UserId: userId }, attributes: ['version'], transaction });
+  const alive = new Set(resumes.map((r) => r.version));
+  const { index } = await catalogIndex(transaction);
+  const added = await addedKeys(userId, transaction);
+  const out = [];
+  for (const skill of context ? context.declaredSkills : []) {
+    if (skill.resumeVersion === null || alive.has(skill.resumeVersion)) continue; // sin versión de origen = escrita a mano; con versión viva = candidata normal
+    const hit = index.get(fold(skill.name)) ?? null;
+    out.push({ name: skill.name, origin: 'deleted', classified: hit ? { skillKey: hit.skillKey, labels: hit.labels } : null, added: hit ? added.has(hit.skillKey) : false });
+  }
+  return out;
+}
+
 const ownTransaction = async (fn) => {
   const transaction = await sequelize.transaction();
   try { const result = await fn(transaction); await transaction.commit(); return result; } catch (error) { await transaction.rollback().catch(() => {}); throw error; }
@@ -121,4 +138,4 @@ async function promote(userId, body) {
     return { created, skipped };
   });
 }
-module.exports = { ResumeSkillsError, MAX_SELECTED, listCandidates, promote };
+module.exports = { ResumeSkillsError, MAX_SELECTED, listCandidates, listOrphaned, promote };

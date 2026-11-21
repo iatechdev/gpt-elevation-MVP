@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { Banner, Button, CheckField, Chip, Dialog, ItemList } from '../cartografia'
 import { Notice, PersonScreen } from '../space/PersonScreen'
-import { formatDate, resumeSkillsApi, selectable, whyNot, SkillsError, type Declared } from './resumeSkills'
+import { formatDate, resumeSkillsApi, selectable, whyNot, SkillsError, type Declared, type Orphaned } from './resumeSkills'
 import { readEvidenceToken, useEvidenceToken } from './session'
 
 const backend = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
@@ -19,6 +19,7 @@ export function ResumeSkillsPage() {
   const [phase, setPhase] = useState<Phase>('loading')
   const [status, setStatus] = useState(0)
   const [skills, setSkills] = useState<Declared[]>([])
+  const [orphaned, setOrphaned] = useState<Orphaned[]>([])
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [dialog, setDialog] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -28,7 +29,7 @@ export function ResumeSkillsPage() {
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
 
   const load = useCallback((signal?: AbortSignal) => {
-    void api.list(signal).then(list => { if (alive.current && !signal?.aborted) { setSkills(list); setPhase('ready') } })
+    void api.overview(signal).then(({ skills: list, orphaned: gone }) => { if (alive.current && !signal?.aborted) { setSkills(list); setOrphaned(gone); setPhase('ready') } })
       .catch((error: unknown) => { if (alive.current && !signal?.aborted) { setStatus(error instanceof SkillsError ? error.status : 503); setPhase('error') } })
   }, [api])
   useEffect(() => { const controller = new AbortController(); load(controller.signal); return () => controller.abort() }, [load])
@@ -53,8 +54,9 @@ export function ResumeSkillsPage() {
       : phase === 'loading' ? <div className="cg-screen-loading" role="status" aria-busy="true"><i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" /><span className="cg-sr">{l('rs_loading')}</span></div>
         : phase === 'error' ? <Banner kind="error" title={`${status === 401 ? l('expired') : l('rs_load_error')} ${status !== 401 ? l('rs_intact') : ''}`.trim()}>
           <div className="pg-actions">{status === 401 ? <Link className="cg-linkbtn" to="/login">{l('signin')}</Link> : <Button variant="ghost" onClick={() => { setPhase('loading'); load() }}>{l('retry')}</Button>}</div></Banner>
-          : !skills.length ? <section className="cg-card pg-card"><h2>{l('rs_empty')}</h2><p>{l('rs_empty_why')}</p><div className="pg-actions"><Link className="cg-btn" to="/app/context/resumes">{l('rs_see_resumes')}</Link></div></section>
+          : !skills.length && !orphaned.length ? <section className="cg-card pg-card"><h2>{l('rs_empty')}</h2><p>{l('rs_empty_why')}</p><div className="pg-actions"><Link className="cg-btn" to="/app/context/resumes">{l('rs_see_resumes')}</Link></div></section>
             : <>
+              {skills.length > 0 && <>
               <div className="pg-pick__chips"><Chip symbol="○">{l('rs_declared')}</Chip><Chip tone="ok" symbol="✓">{l('rs_backed')}</Chip></div>
               <p className="cg-hint" role="status">{picked.size ? '' : l('rs_none_picked')}</p>
               <ItemList label={l('rs_title')} items={skills.map(skill => {
@@ -74,6 +76,8 @@ export function ResumeSkillsPage() {
                 <p role="status" aria-live="polite">{l('rs_count').replace('{n}', String(picked.size))}</p>
                 <Button disabled={!picked.size} onClick={() => setDialog(true)}>{picked.size ? l('rs_review_n').replace('{n}', String(picked.size)) : l('rs_add')}</Button>
               </div>
+              </>}
+              {orphaned.length > 0 && <OrphanedList items={orphaned} />}
             </>}
     {ready && <Dialog open={dialog} onClose={closeDialog} title={l('rs_confirm_title').replace('{n}', String(chosen.length))}
       actions={<>
@@ -91,4 +95,16 @@ export function ResumeSkillsPage() {
     </Dialog>}
     <p><Link className="cg-linkbtn" to="/app/evidence">{l('list')}</Link></p>
   </PersonScreen>
+}
+
+// E398-2: las habilidades cuya versión de origen se borró siguen en el contexto pero no se pueden añadir (ya no hay hoja que las respalde). Se muestran con su origen, sin casilla y sin explicaciones falsas.
+function OrphanedList({ items }: { items: Orphaned[] }) {
+  const { t, lang } = useLanguage(); const l = (key: string) => t(`evidence.${key}`)
+  return <ItemList label={l('rs_origin_deleted')} items={items.map(skill => {
+    const named = skill.classified ? (lang === 'en' ? skill.classified.labels.en : skill.classified.labels.es) ?? skill.classified.labels.es ?? skill.classified.labels.en : null
+    return { id: `orphan-${skill.name}`, top: <span className="pg-pick__info"><span><strong>{skill.name}</strong> <Chip symbol="○">{l('rs_declared_short')}</Chip></span>
+      <small className="cg-hint"><strong>{l('rs_origin_deleted')}</strong></small>
+      {named && <small>{l('rs_classified_as')} <b>{named}</b></small>}
+      {skill.added && <small>{l('rs_already')}</small>}</span> }
+  })} />
 }

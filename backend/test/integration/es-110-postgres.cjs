@@ -175,4 +175,74 @@ test('ES-110 PostgreSQL + HTTP: habilidades de la hoja de vida a evidencias (bor
     const list = await call(C, 'GET', '/api/evidence'); assert.equal(list.body.evidence.length, 1); assert.equal(list.body.evidence[0].origin.needsReview, true);
     const ctx = await call(C, 'GET', '/api/user/context'); assert.equal(ctx.body.context.declaredSkills.length, 4, 'el contexto ya guardado no cambia');
   });
+  await t.test('ES-110 actualizar la hoja de vida: al borrar una versión SOLO los borradores salen «para revisión» (marca persistida); lo confirmado, intacto; idempotente; otra persona no cambia', async () => {
+    const D = await mkUser(); const E = await mkUser(); assert.equal((await grant(D)).status, 200); assert.equal((await grant(E)).status, 200);
+    const upload = async (who, extra = []) => { const r = await call(who, 'POST', '/api/user/resumes/analyze', form(makeTextPdf([...CV, ...extra]))); assert.equal(r.status, 200, r.text); return r.body; };
+    const setContext = async (who, declaredSkills) => assert.equal((await call(who, 'PUT', '/api/user/context', { schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: { ...EMPTY, declaredSkills } })).status, 200);
+    // D: v1 con dos habilidades promovidas; una se CONFIRMA (la persona la respalda con una situación real), la otra queda en borrador. Después sube una v2 distinta (se conserva la v1).
+    const first = await upload(D); await setContext(D, first.suggestions.declaredSkills);
+    const promoted = await promote(D, ['Power BI', 'SQL']); assert.equal(promoted.body.created.length, 2); const draftId = promoted.body.created[0].id; const confirmedId = promoted.body.created[1].id;
+    const claim = (text) => ({ text, source: 'self_report' }); const full = { title: 'SQL', situation: 'Reportes semanales', responsibility: claim('Yo escribía las consultas'), actions: [claim('Escribí consultas')], delivered: claim('Un reporte'), observedEffect: { known: true, claim: claim('Se leyó cada semana') }, artifactRefs: [{ kind: 'text', excerpt: 'Consultas SQL para reportes semanales' }] };
+    const confirm = await call(D, 'PUT', `/api/evidence/${confirmedId}`, { payload: full, status: 'confirmed', baseVersion: 1, requestId: crypto.randomUUID() }); assert.equal(confirm.status, 201, confirm.text);
+    const second = await upload(D, ['Línea nueva de la versión 2']); assert.equal(second.resume.version, 2); assert.equal(second.reused, false, 'una versión nueva NO bloquea ni pisa la anterior');
+    const snapshot = async () => (await q(`SELECT v."EvidenceId", v.version, v.status, v.payload, v.origins FROM "EvidenceVersions" v WHERE v."UserId"=$1 ORDER BY v."EvidenceId", v.version`, [D.id]));
+    const before = await snapshot(); const confirmedBefore = JSON.stringify(before.filter((r) => r.EvidenceId === confirmedId));
+    // E: otra persona con su propio borrador de la hoja de vida (no debe cambiar)
+    const e1 = await upload(E); await setContext(E, e1.suggestions.declaredSkills); const e2 = await promote(E, ['Power BI']); assert.equal(e2.body.created.length, 1);
+    const eBefore = JSON.stringify(await q(`SELECT version, status, origins FROM "EvidenceVersions" WHERE "UserId"=$1`, [E.id]));
+
+    const removed = await call(D, 'DELETE', `/api/user/resumes/${first.resume.id}`); assert.equal(removed.status, 200, removed.text);
+    const after = await snapshot();
+    const draftRow = after.find((r) => r.EvidenceId === draftId); assert.equal(draftRow.status, 'draft'); assert.match(draftRow.origins[0].sourceRevokedAt, /^\d{4}-\d{2}-\d{2}T/, 'el borrador queda marcado «para revisión» (marca persistida)');
+    assert.equal(JSON.stringify(after.filter((r) => r.EvidenceId === confirmedId)), confirmedBefore, 'la evidencia CONFIRMADA no cambia: ni contenido, ni estado, ni origen');
+    assert.equal(Number((await q(`SELECT count(*)::int AS n FROM "Evidence" WHERE "UserId"=$1 AND "deletedAt" IS NULL`, [D.id]))[0].n), 2, 'nada se borra');
+    assert.equal(Number((await q(`SELECT count(*)::int AS n FROM "DerivedInvalidations" WHERE "UserId"=$1 AND "sourceType"='evidence' AND reason='source_revoked'`, [D.id]))[0].n), 1, 'una invalidación por borrador marcado');
+    const list = await call(D, 'GET', '/api/evidence'); const byId = Object.fromEntries(list.body.evidence.map((e) => [e.id, e]));
+    assert.deepEqual([byId[draftId].needsReview, byId[draftId].reviewReason], [true, 'source_revoked']); assert.equal(byId[confirmedId].reviewReason, undefined);
+    const skills = await call(D, 'GET', '/api/user/resume-skills'); assert.equal(skills.status, 200); assert.deepEqual(skills.body.skills, [], 'sin su hoja de vida no hay qué añadir');
+    assert.deepEqual(skills.body.orphaned.map((s) => [s.name, s.origin]).sort(), [['Gestión de proyectos', 'deleted'], ['Power BI', 'deleted'], ['SQL', 'deleted'], ['Storytelling con datos', 'deleted']], 'las habilidades de la versión borrada se muestran como «versión borrada», no desaparecen');
+    assert.deepEqual((await promote(D, ['Gestión de proyectos'])).body.skipped, [{ name: 'Gestión de proyectos', reason: 'not_declared' }], 'una habilidad de una versión borrada no se puede añadir');
+    // idempotente: borrar otra vez no marca ni registra nada más; retirar la autorización (borra la v2) tampoco duplica lo del borrador
+    assert.equal((await call(D, 'DELETE', `/api/user/resumes/${first.resume.id}`)).status, 404);
+    assert.equal((await grant(D, 'revoked')).status, 200);
+    assert.equal(Number((await q(`SELECT count(*)::int AS n FROM "DerivedInvalidations" WHERE "UserId"=$1 AND "sourceType"='evidence' AND reason='source_revoked'`, [D.id]))[0].n), 1, 'idempotente');
+    assert.equal(JSON.stringify((await snapshot()).filter((r) => r.EvidenceId === confirmedId)), confirmedBefore, 'tampoco al retirar la autorización se toca lo confirmado');
+    // el mapa de habilidades consume la invalidación de la hoja de vida
+    await require('../../utils/skillMap').getMap(D.id);
+    assert.equal(Number((await q(`SELECT count(*)::int AS n FROM "DerivedInvalidations" WHERE "UserId"=$1 AND "sourceType" IN ('resume','evidence') AND "handledAt" IS NULL`, [D.id]))[0].n), 0, 'ninguna invalidación queda sin consumir');
+    // aislamiento: lo de E no cambió
+    assert.equal(JSON.stringify(await q(`SELECT version, status, origins FROM "EvidenceVersions" WHERE "UserId"=$1`, [E.id])), eBefore);
+    assert.deepEqual((await call(E, 'GET', '/api/user/resume-skills')).body.orphaned, []);
+  });
+  await t.test('E390-2: con dos versiones vivas, borrar la v1 marca SOLO los borradores de la v1; retirar la autorización marca los de la v2', async () => {
+    const F = await mkUser(); assert.equal((await grant(F)).status, 200);
+    const up = async (extra) => { const r = await call(F, 'POST', '/api/user/resumes/analyze', form(makeTextPdf([...CV, ...extra]))); assert.equal(r.status, 200, r.text); return r.body; };
+    const one = await up([]); const two = await up(['Línea de la versión 2']); assert.deepEqual([one.resume.version, two.resume.version], [1, 2]);
+    const skills = one.suggestions.declaredSkills;
+    await call(F, 'PUT', '/api/user/context', { schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: { ...EMPTY, declaredSkills: [{ ...skills[0], resumeVersion: 1 }, { ...skills[1], resumeVersion: 2 }] } });
+    const made = await promote(F, [skills[0].name, skills[1].name]); assert.equal(made.body.created.length, 2);
+    const idV1 = made.body.created.find((c) => c.name === skills[0].name).id; const idV2 = made.body.created.find((c) => c.name === skills[1].name).id;
+    const marked = async (id) => (await q(`SELECT origins FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version DESC LIMIT 1`, [id]))[0].origins.some((o) => o.sourceRevokedAt);
+    assert.equal((await call(F, 'DELETE', `/api/user/resumes/${one.resume.id}`)).status, 200);
+    assert.deepEqual([await marked(idV1), await marked(idV2)], [true, false], 'borrar la v1 marca solo lo de la v1 (no los borradores de otra hoja)');
+    assert.equal((await grant(F, 'revoked')).status, 200);
+    assert.deepEqual([await marked(idV1), await marked(idV2)], [true, true], 'retirar la autorización borra la v2 y marca lo de la v2');
+    assert.equal(Number((await q(`SELECT count(*)::int AS n FROM "DerivedInvalidations" WHERE "UserId"=$1 AND "sourceType"='evidence' AND reason='source_revoked'`, [F.id]))[0].n), 2);
+  });
+
+  await t.test('E390-1 carrera real: borrar la hoja de vida y EDITAR el borrador a la vez (14 corridas) deja SIEMPRE la versión vigente marcada «para revisión»', { timeout: 200000 }, async () => {
+    const failures = [];
+    for (let run = 0; run < 14; run++) {
+      const G = await mkUser(); assert.equal((await grant(G)).status, 200);
+      const a = await call(G, 'POST', '/api/user/resumes/analyze', form(makeTextPdf(CV))); assert.equal(a.status, 200, a.text);
+      await call(G, 'PUT', '/api/user/context', { schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: { ...EMPTY, declaredSkills: a.body.suggestions.declaredSkills } });
+      const id = (await promote(G, ['Power BI'])).body.created[0].id;
+      const edit = () => call(G, 'PUT', `/api/evidence/${id}`, { payload: { title: 'Power BI', situation: `Edición ${run}`, artifactRefs: [{ kind: 'text', excerpt: 'Power BI para el equipo comercial' }] }, status: 'draft', baseVersion: 1, requestId: crypto.randomUUID() });
+      const [removed, edited] = run % 2 ? await Promise.all([call(G, 'DELETE', `/api/user/resumes/${a.body.resume.id}`), edit()]) : (await Promise.all([edit(), call(G, 'DELETE', `/api/user/resumes/${a.body.resume.id}`)])).reverse();
+      const latest = (await q(`SELECT version, origins FROM "EvidenceVersions" WHERE "EvidenceId"=$1 ORDER BY version DESC LIMIT 1`, [id]))[0];
+      const list = (await call(G, 'GET', '/api/evidence')).body.evidence.find((e) => e.id === id);
+      if (removed.status !== 200 || ![201, 409].includes(edited.status) || !latest.origins.some((o) => o.sourceRevokedAt) || list.reviewReason !== 'source_revoked' || list.needsReview !== true) failures.push({ run, removed: removed.status, edited: edited.status, version: latest.version, marked: latest.origins.some((o) => o.sourceRevokedAt) });
+    }
+    assert.deepEqual(failures, [], 'ninguna corrida pierde la marca');
+  });
 });

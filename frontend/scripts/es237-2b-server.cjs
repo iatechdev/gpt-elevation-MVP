@@ -1,5 +1,5 @@
 // ES-237 (paso 2b): servidor LOCAL para probar las pantallas en un navegador contra el backend REAL (routers de ES-31/32/33) y PostgreSQL REAL embebido. Solo local y con datos SINTÉTICOS: nada de staging ni de producción, 0 IA.
-// Qué monta: /api/experiments, /api/routes, /api/route-catalog con verificarToken real, un /api/session mínimo (el marco de persona lo consulta) y un endpoint SOLO DE PRUEBA, POST /__test/persona,
+// Qué monta: /api/experiments, /api/career-plan, /api/routes, /api/route-catalog con verificarToken real, un /api/session mínimo (el marco de persona lo consulta) y un endpoint SOLO DE PRUEBA, POST /__test/persona,
 // que crea una persona sintética nueva (con disponibilidad semanal confirmada) y devuelve su token. NO_CATALOG=1 no publica el catálogo (para ver el 503 catalog_unavailable como estado real).
 // Uso (desde frontend/): ES237_BACKEND_DIR=../backend NODE_PATH=../backend/node_modules PORT=8197 node scripts/es237-2b-server.cjs   (imprime «LISTO <puerto>» cuando está listo; Ctrl+C lo detiene)
 const assert = require('node:assert/strict')
@@ -53,7 +53,7 @@ const { once } = require('node:events')
     app.use(express.json())
     app.get('/api/session', verificarToken, (req, res) => res.json({ role: 'user', onboardingCompleted: true }))
     app.post('/__test/persona', async (req, res) => res.json(await persona()))
-    app.use('/api/experiments', verificarToken, fromBackend('./routes/careerPlan').experiments)
+    app.use('/api/experiments', verificarToken, fromBackend('./routes/careerPlan').experiments); app.use('/api/career-plan', verificarToken, fromBackend('./routes/careerPlan').plans)
     app.use('/api/routes', verificarToken, fromBackend('./routes/routes')); app.use('/api/route-catalog', verificarToken, fromBackend('./routes/routeCatalog'))
     server = app.listen(Number(process.env.PORT) || 0, '127.0.0.1'); await once(server, 'listening')
     console.log(`LISTO ${server.address().port}`)

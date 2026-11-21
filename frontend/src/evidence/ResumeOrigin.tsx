@@ -21,7 +21,9 @@ export function OriginBlock({ row }: { row: Evidence }) {
       <Chip>{t('evidence.rs_level_none')}</Chip>
       {declared ? <DeclaredBadge short /> : <BackedBadge />}
     </div>
-    {origin.needsReview && <Banner title={t('evidence.rs_review')}><p>{t('evidence.rs_review_text').replace('{v}', String(origin.version))}</p><small className="cg-hint">{t('evidence.rs_review_hint')}</small></Banner>}
+    {/* E398-3: pedir «revísala» solo tiene sentido en un BORRADOR; la evidencia CONFIRMADA no cambia (se dice su origen, sin pedir revisión). */}
+    {origin.needsReview && !declared && <small className="cg-hint"><strong>{t('evidence.rs_origin_deleted')}</strong></small>}
+    {origin.needsReview && declared && <Banner title={t('evidence.rs_review')}><p><strong>{t('evidence.rs_origin_deleted')}</strong></p><p>{t('evidence.rs_origin_deleted_text')}</p><small className="cg-hint">{t('evidence.rs_review_hint')}</small></Banner>}
     {declared && !origin.needsReview && <small className="cg-hint">{t('evidence.rs_back_it')}</small>}
   </div>
 }

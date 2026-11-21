@@ -156,3 +156,14 @@ test('ES-188 «falta»: cada ruta del servidor tiene un ancla al campo del edito
   assert.ok(page.includes('open={moreFilled || !!fieldErrors.level || focusMoreLevel}'), 'los enlaces a niveles 3 y 4 abren la sección')
   assert.ok(page.includes('ref={inUseRef}') && page.includes('}, [inUse])') && !/ref={el => el?.focus()}/.test(page), 'ningún aviso roba el foco con un ref en línea: se enfoca solo cuando aparece')
 })
+
+test('ES-349 seguimientos de #361: la guarda de enlaces ignora target distinto de _self y download; la columna de acciones es solo para lectores; caption por tabla; incompleto no es inválido', () => {
+  const page = read('../src/skill-catalog/SkillCatalogPages.tsx'), pieces = read('../src/cartografia/pieces.tsx')
+  assert.match(page, /link\.getAttribute\('target'\) && link\.getAttribute\('target'\) !== '_self'\) \|\| link\.hasAttribute\('download'\)\) return/)
+  assert.match(pieces, /hidden\?: boolean/); assert.match(pieces, /column\.hidden \? <span className="cg-sr">\{column\.header\}<\/span> : column\.header/)
+  assert.equal((page.match(/hidden: true/g) ?? []).length, 2, 'las dos columnas de acciones (Ver / Editar)')
+  assert.match(page, /caption=\{`\$\{t\('skcat\.version'\)\} \$\{detail\.version\}`\}/)
+  // «Obligatorio para publicar» sale como indicación (hint), no como error: el campo incompleto no lleva aria-invalid
+  assert.doesNotMatch(page, /error=\{[^}]*req\(/)
+  assert.match(page, /hint=\{[^}]*req\(/)
+})
