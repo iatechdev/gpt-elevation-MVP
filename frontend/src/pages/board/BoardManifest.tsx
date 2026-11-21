@@ -169,6 +169,7 @@ export function BoardManifest() {
         {success && <span className="cg-banner__title">{success}</span>}
       </div>
 
+      {loading && !active && <div className="bm-skel" aria-hidden="true" />}{/* E409-1: reserva la altura de «Versión vigente» mientras carga, para que el historial y los botones no salten al llegar los datos */}
       {active && (
         <Card as="section" className="pg-card bm-active">
           <h2 className="bm-h2">{t('board_active_version')} — {active.version}</h2>

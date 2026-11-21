@@ -60,3 +60,10 @@ test('ES-349: los textos del Manifiesto existen en ES y EN, sin emojis', () => {
   }
   assert.ok(es.manifest_view_public && en.manifest_view_public)
 })
+
+test('E409-1: mientras carga se reserva la altura de «Versión vigente» (marcador aria-hidden, solo sin datos) para que el historial no salte', () => {
+  const page = read('../src/pages/board/BoardManifest.tsx'), css = read('../src/pages/board/boardManifest.css')
+  assert.ok(page.includes('{loading && !active && <div className="bm-skel" aria-hidden="true" />}'))
+  assert.match(css, /\.bm-skel \{ min-height: 18\.5rem; margin: 0 0 1rem; \}/)
+  assert.doesNotMatch(css.slice(css.indexOf('E409-1')), /#[0-9a-fA-F]{3,8}\b|rgb\(|animation/)
+})
