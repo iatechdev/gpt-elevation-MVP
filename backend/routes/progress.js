@@ -12,6 +12,7 @@ const WellnessRecommendation = require('../WellnessRecommendation');
 const { desencriptar }      = require('../utils/crypto');
 const { averageMood, averageRating, round1 } = require('../utils/moodStats');
 const { validateBody, text, optional } = require('../middlewares/validateBody');
+const { timeZoneFor, dayInZone, dayBack, clock } = require('../utils/personTimeZone'); // E393-3: el día de la persona (su zona)
 
 // GET /api/user/progress
 router.get('/progress', async (req, res) => {
@@ -37,10 +38,13 @@ router.get('/progress', async (req, res) => {
     const avgMood   = round1(averageMood(moodLogs));
     const avgRating = round1(averageRating(ratings));
 
+    // E393-3: la racha cuenta días de calendario en la zona de la persona (antes: 24 h hacia atrás sobre el día UTC).
+    const timeZone = await timeZoneFor(userId);
+    const today = dayInZone(clock.now(), timeZone);
     let streak = 0;
     const logDates = [...new Set(moodLogs.map(m => m.date))].sort().reverse();
     for (let i = 0; i < logDates.length; i++) {
-      const expected = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+      const expected = dayBack(today, i);
       if (logDates[i] === expected) streak++;
       else break;
     }
@@ -49,6 +53,7 @@ router.get('/progress', async (req, res) => {
       stats: { totalSessions: moodLogs.length, avgMood, avgRating, streak },
       moodLogs,
       ratings,
+      timeZone, // E393-3: la pantalla cuenta «esta semana» y pinta la tendencia con esta misma zona
       recommendations: recommendations.map(r => ({
         id: r.id,
         category: r.category,

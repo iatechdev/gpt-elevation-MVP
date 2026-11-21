@@ -34,6 +34,16 @@ test('el día de hoy sale del mismo criterio que el de los registros (UTC): pasa
   assert.equal(todayKey(new Date('2026-11-20T23:59:59Z')), '2026-11-20')
 })
 
+test('E393-3: «hoy» es el día en la zona de la persona: a las 19:00 de Bogotá sigue siendo el mismo día; UTC+13 ya es el siguiente; sin zona o zona desconocida, UTC como antes', () => {
+  assert.equal(todayKey(new Date('2026-11-21T00:00:00Z'), 'America/Bogota'), '2026-11-20') // 19:00 del 20 en Bogotá
+  assert.equal(todayKey(new Date('2026-11-21T04:59:59Z'), 'America/Bogota'), '2026-11-20')
+  assert.equal(todayKey(new Date('2026-11-21T05:00:00Z'), 'America/Bogota'), '2026-11-21')
+  assert.equal(todayKey(new Date('2026-11-20T12:00:00Z'), 'Pacific/Auckland'), '2026-11-21') // 01:00 del 21 en UTC+13
+  assert.equal(todayKey(new Date('2026-11-21T00:00:00Z')), '2026-11-21'); assert.equal(todayKey(new Date('2026-11-21T00:00:00Z'), 'Marte/Olimpo'), '2026-11-21'); assert.equal(todayKey(new Date('2026-11-21T00:00:00Z'), null), '2026-11-21')
+  // la semana: viernes 20 por la noche en Bogotá sigue siendo la semana del lunes 16 y cuenta sus registros
+  assert.equal(entriesThisWeek(logs('2026-11-16', '2026-11-20'), todayKey(new Date('2026-11-21T02:00:00Z'), 'America/Bogota')), 2)
+})
+
 test('la tendencia son los 7 últimos días terminando hoy, con el día de la semana de ESE día (no el local)', () => {
   const days = lastSevenDays('2026-11-20')
   assert.deepEqual(days.map((d) => d.dateStr), ['2026-11-14', '2026-11-15', '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'])
@@ -43,8 +53,8 @@ test('la tendencia son los 7 últimos días terminando hoy, con el día de la se
 })
 
 test('el componente usa esas funciones y ya no mezcla horas locales con el día UTC', () => {
-  assert.ok(dashboard.includes('entriesThisWeek(data.moodLogs ?? [], todayKey(new Date()))'))
-  assert.ok(dashboard.includes('lastSevenDays(todayKey(new Date()))'))
+  assert.ok(dashboard.includes('entriesThisWeek(data.moodLogs ?? [], todayKey(new Date(), zone))')) // E393-3: con la zona de la persona (la misma función, una zona)
+  assert.ok(dashboard.includes('lastSevenDays(todayKey(new Date(), timeZone))'))
   assert.ok(dashboard.includes("timeZone: 'UTC'"))
   assert.doesNotMatch(dashboard, /new Date\(m\.date\)/)
   assert.doesNotMatch(dashboard, /monday\.setDate|setHours\(0, 0, 0, 0\)/)
