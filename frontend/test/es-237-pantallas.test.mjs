@@ -122,3 +122,23 @@ test('paso 3: con datos reales la disponibilidad solo se muestra si el servidor 
   assert.match(pages, /availabilityLine\(c, plan\.availability\) && <p>/)
   assert.match(pages, /America\/Bogota`/, 'la línea fija del simulador sigue solo en modo simulador')
 })
+
+test('E377-3: en modo servidor el aviso de plan inválido no nombra una cifra fija (la disponibilidad real puede ser otra); el simulador conserva el suyo', async () => {
+  const { tr } = await import('../src/career/copy.ts')
+  for (const lang of ['es', 'en']) {
+    assert.doesNotMatch(tr(lang, 'invalidPlan', true), /\d/, `modo servidor (${lang}): sin cifras`)
+    assert.match(tr(lang, 'invalidPlan', false), /60/, `simulador (${lang}): conserva «60»`)
+  }
+  assert.match(tr('es', 'invalidPlan', true), /disponibilidad semanal/); assert.match(tr('en', 'invalidPlan', true), /weekly availability/)
+  assert.match(tr('es', 'invalidPlan', true), /precio desconocido/); assert.match(tr('en', 'invalidPlan', true), /unknown price/)
+})
+
+test('E377-1: al confirmar el plan la propuesta se reemplaza al instante por el plan en espera (misma forma), la lista de versiones ya está y la propuesta sigue montada para volver si el servidor rechaza', () => {
+  const pages = read('../src/career/CareerPages.tsx')
+  assert.match(pages, /onPending\(waiting\(\)\)\n\s+const result = await c\.save\(\{ type: 'plan'/, 'el plan en espera se muestra ANTES de esperar al servidor')
+  assert.match(pages, /if \(result\.ok\) \{ setReview\(false\); setSelected\(\[\]\); onAccepted\(\) \} else onPending\(null\)/, 'si el servidor rechaza, la propuesta vuelve')
+  assert.match(pages, /<div hidden=\{waiting !== null\}><PlanProposal /, 'la propuesta se oculta, no se desmonta (conserva lo escrito)')
+  assert.match(pages, /\(c\.state\.plans\.length > 0 \|\| waiting\) && <SelectField label=\{c\.t\('versions'\)\}/, 'la lista de versiones ya existe mientras se espera (evita el salto de ~100 px)')
+  assert.match(pages, /\[\.\.\.c\.state\.plans, \.\.\.\(waiting \? \[waiting\] : \[\]\)\]/); assert.match(pages, /aria-busy=\{waiting !== null\}/)
+  assert.match(pages, /const plan = waiting \?\? saved/)
+})

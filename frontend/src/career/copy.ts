@@ -101,6 +101,7 @@ const serverCopy: Partial<Record<CopyKey, readonly [string, string]>> = {
   tasks: ['Tareas de la ficha', 'Tasks in the profile'], source: ['Fuentes consultadas', 'Sources consulted'], openSource: ['Abrir fuente en otra pestaña', 'Open source in another tab'],
   supported: ['Sustentada por tu evidencia registrada', 'Supported by your recorded evidence'],
   // Plan con datos reales (paso 3): disponibilidad y recurso salen del servidor.
+  invalidPlan: ['Revisa fechas, dependencias, esfuerzo y costos. El plan debe caber en tu disponibilidad semanal confirmada; un precio desconocido no permite confirmar el presupuesto.', 'Review dates, dependencies, effort and costs. The plan must fit within your confirmed weekly availability; an unknown price cannot confirm the budget.'],
   availability: ['Disponibilidad semanal confirmada', 'Confirmed weekly availability'], resource: ['Recursos del catálogo', 'Catalog resources'],
 }
 export const tr = (lang: Locale, key: CopyKey, server = false) => (server ? serverCopy[key] ?? copy[key] : copy[key])[lang === 'es' ? 0 : 1]

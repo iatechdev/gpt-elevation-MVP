@@ -281,6 +281,13 @@ const { once } = require('node:events')
     await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(7, -5)], budget: '', currency: 'USD' }, rid()), 'invalidPlan')
     await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(30, 3)], budget: '', currency: 'USD' }, rid()), 'invalidPlan'); check('3: minutos fuera de rango, fecha pasada o dependencia faltante → invalidPlan (400/422 del servidor, sin 500)')
     await screenFails(ce.send({ type: 'plan', experimentId: planExp, actions: [act(7, 3, 20, { cost: '5' })], budget: '1', currency: 'USD' }, rid()), 'invalidPlan'); check('3: costo declarado que supera el presupuesto → invalidPlan (budget_exceeded)')
+    // E377 (M11): lo que la persona marca como recurso SÍ viaja en la aceptación (selections[].resourceRefs) y lo no marcado viaja vacío; el servidor lo rechaza (clave desconocida), pero el cuerpo enviado es lo que se comprueba.
+    const sent = []; const spy = make(e5, async (input, init) => { if (String(input).endsWith('/api/career-plan/versions') && init?.method === 'POST') sent.push(JSON.parse(init.body)); return fetch(input, init) })
+    await spy.load()
+    await screenFails(spy.send({ type: 'plan', experimentId: planExp, actions: [act(7, 3, 20, { resources: ['recurso-inexistente-a'] }), act(30, 11, 30)], budget: '', currency: 'USD' }, rid()), 'invalidPlan')
+    const acceptBody = sent.filter(b => b.action === 'accept').at(-1); assert.ok(acceptBody, 'se envió la aceptación')
+    assert.deepEqual(acceptBody.selections.map(x => [x.actionKey, x.resourceRefs]), [['step_7', ['recurso-inexistente-a']], ['step_30', []]]); check('3 (M11): los recursos marcados viajan en resourceRefs de cada acción y lo no marcado viaja vacío')
+    assert.equal((await api.listPlans(ceApi)).plans.length, 0); check('3: el rechazo por recurso desconocido no crea plan (0 planes)')
     let cutPlan = true
     const planFlaky = make(e5, async (input, init) => { const response = await fetch(input, init); if (cutPlan && String(input).endsWith('/api/career-plan/versions') && init?.method === 'POST') { cutPlan = false; await response.text(); throw new TypeError('corte de red sintético') } return response })
     await planFlaky.load()
