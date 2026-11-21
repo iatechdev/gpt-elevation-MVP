@@ -3,7 +3,7 @@ const fs = require('node:fs')
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const PR = process.env.PR, MAIN = process.env.MAIN; const axeSource = fs.readFileSync(process.env.AXE_PATH, 'utf8')
 let failures = 0; const log = (ok, msg) => { if (!ok) failures++; console.log(`${ok ? 'OK   ' : 'FALLA'} ${msg}`) }
-const ROUTES = ['/app/dashboard', '/app/skill-map', '/app/progress', '/app/my-therapist']
+const ROUTES = process.env.ROUTES ? process.env.ROUTES.split(',') : ['/app/dashboard', '/app/skill-map', '/app/progress', '/app/my-therapist']
 async function open(browser, base, route, { width, lang = 'es', scheme = 'light', cpu = 1 }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' }); const page = await ctx.newPage()
   await page.addInitScript(([l]) => { localStorage.setItem('elevation_token', 'tok'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elevation_name', 'Marta'); localStorage.setItem('elv_lang', l); window.__c = 0
@@ -23,13 +23,21 @@ async function open(browser, base, route, { width, lang = 'es', scheme = 'light'
       const hdrNav = document.querySelector('.cg-header > .cg-nav'); return { scrollW: document.documentElement.scrollWidth, innerW: innerWidth, side: !!vis, groups: side ? side.querySelectorAll('.cg-sidegroup').length : 0, links: side ? side.querySelectorAll('a').length : 0,
         hdrNavShown: hdrNav ? getComputedStyle(hdrNav).display !== 'none' : false, current: side ? side.querySelectorAll('a[aria-current="page"]').length : 0, small: side ? [...side.querySelectorAll('a')].filter(a => a.getBoundingClientRect().height > 0 && a.getBoundingClientRect().height < 39.5).length : 0 } })
     const wide = width >= 901
-    const ok = bad.length === 0 && m.scrollW <= m.innerW && m.side === wide && m.hdrNavShown === !wide && (!wide || (m.groups === 5 && m.links === 17 && m.current === 1 && m.small === 0))
+    const ok = bad.length === 0 && m.scrollW <= m.innerW && m.side === wide && m.hdrNavShown === false && (!wide || (m.groups === 5 && m.links === 17 && m.current === 1 && m.small === 0))
     log(ok, `skill-map ${width} ${lang} ${scheme}${ok ? '' : ` axe[${bad}] ${JSON.stringify(m)}`}`); await ctx.close() }
   { // teclado: Tab llega a los enlaces de la barra y el foco es visible; Enter navega
     const { ctx, page } = await open(browser, PR, '/app/dashboard', { width: 1360 }); const seen = []
     for (let i = 0; i < 40; i++) { await page.keyboard.press('Tab'); seen.push(await page.evaluate(() => { const e = document.activeElement; return e && e.closest('.cg-side--groups') ? (e.textContent || '').trim() : '' })) }
     const inSide = seen.filter(Boolean); log(inSide.length >= 15 && inSide.includes('Ejercicios opcionales') && inSide.includes('Brújula profesional') && inSide.includes('Catálogo de rutas'), `teclado: Tab recorre la barra (${inSide.length} enlaces, incluye las 3 entradas nuevas)`)
     await page.getByRole('link', { name: 'Catálogo de rutas', exact: true }).first().click(); await page.waitForTimeout(500); log(new URL(page.url()).pathname === '/app/route-catalog', `Enter/clic navega a ${new URL(page.url()).pathname}`); await ctx.close() }
+  { // ≤ 900 px: el cajón (PR3) lleva los MISMOS 5 grupos / 17 enlaces; «Hoy» queda a 2 acciones (Menú → Hoy) y las 8 entradas ya no están en el menú de cuenta
+    const { ctx, page } = await open(browser, PR, '/app/dashboard', { width: 390 })
+    await page.getByRole('button', { name: /Menú/ }).first().click(); await page.waitForTimeout(400)
+    const d = await page.evaluate(() => { const dlg = document.querySelector('dialog.cg-drawer'); return { open: !!dlg && dlg.open, links: dlg ? [...dlg.querySelectorAll('a')].map(a => a.textContent.trim()) : [] } })
+    const names = ['Hoy', 'El Puente', 'Mi profesional', 'Mis herramientas', 'Mi progreso', 'Mi plan', 'Hojas de vida', 'Revisiones profesionales', 'Ejercicios opcionales', 'Brújula profesional', 'Catálogo de rutas']
+    log(d.open && names.every(n => d.links.includes(n)) && d.links.filter(n => n === 'Mi plan').length === 1, `cajón móvil abierto con ${d.links.length} enlaces (las 11 entradas movidas/nuevas, sin duplicados de Mi plan)`)
+    await page.getByRole('link', { name: 'Hoy', exact: true }).first().click(); await page.waitForTimeout(500)
+    log(new URL(page.url()).pathname === '/app/checkin', `«Hoy» a 2 acciones desde el móvil: ${new URL(page.url()).pathname}`); await ctx.close() }
   { // contenido útil: área de <main> a 1360 PR vs main
     const a = await open(browser, PR, '/app/skill-map', { width: 1360 }), b = await open(browser, MAIN, '/app/skill-map', { width: 1360 })
     const wa = await a.page.evaluate(() => document.querySelector('main').getBoundingClientRect().width), wb = await b.page.evaluate(() => document.querySelector('main').getBoundingClientRect().width)
