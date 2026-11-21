@@ -105,6 +105,7 @@ function ValidationsTab({ onChanged }: { onChanged?: () => void }) {
   const [docs, setDocs]           = useState<ValidationDoc[]>([])
   const [loading, setLoading]     = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [forbidden, setForbidden] = useState(false) // ES-423 (B3): un 403 es falta de permiso, no un fallo recuperable: sin «Reintentar»
   const [actionDoc, setActionDoc] = useState<ValidationDoc | null>(null)
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null)
   const [note, setNote]           = useState('')
@@ -115,12 +116,12 @@ function ValidationsTab({ onChanged }: { onChanged?: () => void }) {
   const [loadingUrl, setLoadingUrl] = useState<number | null>(null)
 
   const load = useCallback(() => {
-    setLoading(true); setLoadError('')
+    setLoading(true); setLoadError(''); setForbidden(false)
     fetch(`${API}/api/junta/pending`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async r => {
-        if (!r.ok) { setDocs([]); setLoadError(r.status === 403 ? 'Solo superadministración puede revisar los documentos de validación.' : 'No se pudieron cargar los documentos.'); return }
+        if (!r.ok) { setDocs([]); setForbidden(r.status === 403); setLoadError(r.status === 403 ? 'Solo superadministración puede revisar los documentos de validación.' : 'No se pudieron cargar los documentos.'); return }
         const data = await r.json()
         setDocs(Array.isArray(data) ? data : [])
       })
@@ -180,7 +181,7 @@ function ValidationsTab({ onChanged }: { onChanged?: () => void }) {
       </div>
 
       <p className="ac-status cg-hint" role="status">{msg ? tr(msg) : ''}</p>
-      {loadError && <Banner kind="error" title={tr(loadError)}><Button variant="ghost" onClick={load}>{tr('Reintentar')}</Button></Banner>}
+      {loadError && <Banner kind="error" title={tr(loadError)}>{!forbidden && <Button variant="ghost" onClick={load}>{tr('Reintentar')}</Button>}</Banner>}
       {!loading && !loadError && docs.length === 0 && <p className="cg-hint">{tr("No hay documentos pendientes de revisión.")}</p>}
 
       <ItemList label={tr('Validaciones')} items={docs.map(doc => ({
