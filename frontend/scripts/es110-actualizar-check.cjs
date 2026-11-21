@@ -49,6 +49,7 @@ async function open(browser, state, { width = 1360, lang = 'es', scheme = 'light
     const del = p.match(/^\/api\/user\/resumes\/(\d+)$/)
     if (del && req.method() === 'DELETE') { state.deleted.push(Number(del[1])); state.resumes = state.resumes.filter(r => r.id !== Number(del[1])); return route.fulfill({ json: { deleted: true } }) }
     if (p === '/api/user/resumes') return route.fulfill({ json: { resumes: state.resumes, maxVersions: 5 } })
+    if (p === '/api/user/resume-skills') return route.fulfill({ json: { skills: state.skillsList ?? [], orphaned: state.orphaned ?? [] } })
     if (p === '/api/evidence') return route.fulfill({ json: { evidence: [{ id: 7, version: 1, status: 'draft', authoring: 'person', createdAt: '2026-11-10T10:00:00Z', payload: { title: 'Excel avanzado (ejemplo)' }, origin: { kind: 'resume', version: 1, date: '2026-07-18T12:00:00Z', needsReview: true } }] } })
     return route.fulfill({ json: {} })
   })
@@ -72,10 +73,12 @@ const SCENES = {
   cambios: toChanges,
   guardado: async (page, lang) => { await toChanges(page, lang); await page.getByRole('button', { name: T(lang).save }).click(); await page.getByText(T(lang).saved).waitFor() },
   evidencia: async (page, lang) => goto(page, '/app/evidence', lang),
+  huerfanas: async (page, lang) => goto(page, '/app/evidence/resume-skills', lang),
   sincambios: toChanges,
   conflicto: async (page, lang) => { await toChanges(page, lang); await page.getByRole('checkbox', { name: /Python/ }).check(); await page.getByRole('button', { name: T(lang).save }).click(); await page.getByRole('button', { name: /Recargar contexto|Reload context/ }).waitFor() },
 }
-const SCENE_STATE = { sincambios: () => newState({ suggested: [sk('Excel', 4), sk('SQL', 4)], snapshot: { schemaVersion: 2, version: 3, context: baseContext([sk('Excel', 4), sk('SQL', 4)]), savedAt: '2026-11-20T10:00:00.000Z', completedAt: null } }), conflicto: () => newState({ putMode: 'conflict' }) }
+const ORPHANS = [{ name: 'Excel avanzado (ejemplo)', origin: 'deleted', classified: { skillKey: 'excel', labels: { es: 'Excel', en: 'Excel' } }, added: false }, { name: 'Gestión de proyectos (ejemplo)', origin: 'deleted', classified: null, added: true }]
+const SCENE_STATE = { huerfanas: () => newState({ orphaned: ORPHANS }), sincambios: () => newState({ suggested: [sk('Excel', 4), sk('SQL', 4)], snapshot: { schemaVersion: 2, version: 3, context: baseContext([sk('Excel', 4), sk('SQL', 4)]), savedAt: '2026-11-20T10:00:00.000Z', completedAt: null } }), conflicto: () => newState({ putMode: 'conflict' }) }
 const mustPass = (ok, label) => { if (!ok) throw new Error(label) }
 
 async function flows(browser) {
@@ -156,6 +159,16 @@ async function flows(browser) {
     const state = newState(); const { ctx, page } = await open(browser, state); await goto(page, '/app/evidence', 'es')
     const hasText = await page.getByText('Origen: versión borrada').count(); check('evidencia «para revisión»: «Origen: versión borrada» y «Esta evidencia salió de una versión que borraste; revísala.»', hasText >= 1 && await page.getByText('Esta evidencia salió de una versión que borraste; revísala.').count() >= 1)
     await ctx.close()
+  }
+  { // 9b. Habilidades de una versión borrada (orphaned de #390)
+    const state = newState({ orphaned: ORPHANS }); const { ctx, page } = await open(browser, state); await goto(page, '/app/evidence/resume-skills', 'es')
+    check('huérfanas: se listan con «Origen: versión borrada» y «Declarada», sin casilla, y NO sale «No hay habilidades para revisar»', await page.getByText('Origen: versión borrada').count() >= 2 && await page.getByText('Excel avanzado (ejemplo)').count() === 1 && await page.locator('main input[type=checkbox]').count() === 0 && await page.getByText(/No hay habilidades para revisar/).count() === 0)
+    const empty = newState({ orphaned: [] }); const second = await open(browser, empty); await goto(second.page, '/app/evidence/resume-skills', 'es')
+    check('sin huérfanas ni candidatas se conserva el estado vacío de siempre', await second.page.getByText(/No hay habilidades para revisar/).count() === 1); await second.ctx.close(); await ctx.close()
+    const draft = newState(); const third = await open(browser, draft); await goto(third.page, '/app/evidence', 'es')
+    check('E398-3: el borrador sí pide «revísala»', await third.page.getByText('Esta evidencia salió de una versión que borraste; revísala.').count() >= 1); await third.ctx.close()
+    const confirmed = newState(); const fourth = await open(browser, confirmed, {}); await fourth.page.route('**/api/evidence', r => r.fulfill({ json: { evidence: [{ id: 8, version: 2, status: 'confirmed', authoring: 'person', createdAt: '2026-11-10T10:00:00Z', payload: { title: 'Confirmada (ejemplo)' }, origin: { kind: 'resume', version: 1, date: '2026-07-18T12:00:00Z', needsReview: true } }] } })); await goto(fourth.page, '/app/evidence', 'es')
+    check('E398-3: la confirmada dice «Origen: versión borrada» SIN pedir «revísala» ni «Para revisión»', await fourth.page.getByText('Origen: versión borrada').count() >= 1 && await fourth.page.getByText('Esta evidencia salió de una versión que borraste; revísala.').count() === 0); await fourth.ctx.close()
   }
   { // 10. Teclado: todo el flujo sin ratón
     const state = newState(); const { ctx, page } = await open(browser, state); await toChanges(page, 'es')

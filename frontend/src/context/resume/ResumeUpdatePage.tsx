@@ -16,6 +16,7 @@ import { ContextError, contextRequest, type ContextSnapshot, type DeclaredSkill 
 import { deleteResume, listResumes, type ResumeMeta } from './resumeApi'
 import { fill } from './resumeCopy'
 import { applyChoices, defaultChoices, diffSkills, skillKey, type Choices } from './resumeDiff'
+import { entryOf, outcomeAfterFailure, pendingLinks } from './resumeUpdateLogic'
 import { ResumeStarter } from './ResumeStarter'
 
 const HISTORY_PATH = '/app/context/resumes'
@@ -25,8 +26,6 @@ type Phase = 'loading' | 'loadError' | 'expired' | 'upload' | 'limit' | 'changes
 type Found = { resume: ResumeMeta; suggested: DeclaredSkill[] }
 
 const toggle = (list: string[], name: string, on: boolean) => { const rest = list.filter(item => skillKey(item) !== skillKey(name)); return on ? [...rest, name] : rest }
-// La respuesta de guardar puede perderse: se compara lo que el servidor guardó con lo elegido (mismos nombres y versiones) antes de decir algo.
-const sameSkills = (a: DeclaredSkill[], b: DeclaredSkill[]) => a.length === b.length && a.every((skill, index) => skillKey(skill.name) === skillKey(b[index].name) && skill.resumeVersion === b[index].resumeVersion)
 
 export function ResumeUpdatePage() {
   const { t } = useLanguage()
@@ -48,9 +47,9 @@ export function ResumeUpdatePage() {
       if (controller.signal.aborted) return
       if (!list) { setPhase('loadError'); return }
       // Sin contexto guardado no hay con qué comparar: se empieza desde cero en el formulario (donde vive «Empieza desde tu hoja de vida»).
-      if (context.version === 0 || !context.context) { navigate('/app/onboarding', { replace: true }); return }
-      setSnapshot(context); setVersions({ items: list.resumes, max: list.maxVersions })
-      setPhase(list.resumes.length >= list.maxVersions ? 'limit' : 'upload')
+      const entry = entryOf(context, { count: list.resumes.length, max: list.maxVersions })
+      if (entry === 'onboarding') { navigate('/app/onboarding', { replace: true }); return }
+      setSnapshot(context); setVersions({ items: list.resumes, max: list.maxVersions }); setPhase(entry)
     }).catch((error: unknown) => { if (!controller.signal.aborted) setPhase(error instanceof ContextError && [401, 403].includes(error.status) ? 'expired' : 'loadError') })
     return () => controller.abort()
   }, [attempt, navigate])
@@ -72,14 +71,15 @@ export function ResumeUpdatePage() {
       const data = await contextRequest({ schemaVersion: 2, expectedVersion: snapshot.version, action: 'save_draft', context: { ...snapshot.context, declaredSkills: applied.skills } })
       setSnapshot(data); setSkipped(applied.skipped); setPhase('saved'); return
     } catch (error) {
-      if (error instanceof ContextError && [401, 403].includes(error.status)) { setPhase('expired'); return }
-      const status = error instanceof ContextError ? error.status : 0
-      if (status === 0 || status >= 500 || status === 409) { // ¿se guardó y se perdió la respuesta?
-        try { const fresh = await contextRequest(); if (fresh.context && sameSkills(fresh.context.declaredSkills, applied.skills)) { setSnapshot(fresh); setSkipped(applied.skipped); setPhase('saved'); return } } catch { /* sigue: se dice que no se pudo guardar */ }
-      }
+      const failure = error instanceof ContextError ? { status: error.status, code: error.code } : { status: 0 }
+      let fresh: ContextSnapshot | null = null
+      if (failure.status === 0 || failure.status >= 500 || failure.status === 409) { try { fresh = await contextRequest() } catch { /* sin releer: se dice que no se pudo guardar */ } } // ¿se guardó y se perdió la respuesta?
+      const outcome = outcomeAfterFailure(failure, fresh?.context?.declaredSkills ?? null, applied.skills)
+      if (outcome === 'expired') { setPhase('expired'); return }
+      if (outcome === 'saved' && fresh) { setSnapshot(fresh); setSkipped(applied.skipped); setPhase('saved'); return }
       setPhase('changes')
-      if (status === 409) { setConflict(true); setNotice('context_conflict') }
-      else if (error instanceof ContextError && status === 400 && error.code === 'schema_outdated') { setConflict(true); setNotice('resume_schema_outdated') }
+      if (outcome === 'conflict') { setConflict(true); setNotice('context_conflict') }
+      else if (outcome === 'schema') { setConflict(true); setNotice('resume_schema_outdated') }
       else setNotice('context_save_error')
     }
   }
@@ -88,7 +88,7 @@ export function ResumeUpdatePage() {
   const busy = phase === 'saving'
   const title = t(changesScreen ? 'resume_changes_title' : 'resume_update')
   const version = found?.resume.version ?? 0
-  const pendingLinks = diff ? diff.remain.filter(item => !item.linked && !item.handwritten) : [] // «Siguen»: lo ya vinculado a esta versión o escrito a mano no ofrece nada que decidir
+  const links = diff ? pendingLinks(diff) : []
   const overflowText = (n: number) => (n === 1 ? t('resume_overflow_one') : fill(t('resume_overflow'), { n }))
   const count = (key: string, n: number) => `${t(key)}${DOT}${n}`
   return (
@@ -120,8 +120,8 @@ export function ResumeUpdatePage() {
               <div role="group" aria-labelledby="cv-new">{diff.added.map(skill => <CheckField key={skill.name} disabled={busy} checked={choices.add.some(name => skillKey(name) === skillKey(skill.name))}
                 onChange={event => setChoices(previous => ({ ...previous, add: toggle(previous.add, skill.name, event.target.checked) }))}
                 label={<span className="cv-name"><strong>{skill.name}</strong><span className="cv-sk">{t('evidence.rs_declared_short')}</span></span>} />)}</div></Card>}
-            {pendingLinks.length > 0 && <Card as="section" className="pg-card cv-group"><h2 id="cv-still">{count('resume_still_skills', pendingLinks.length)}</h2>
-              {pendingLinks.map(item => <div className="cv-row" key={item.current.name}>
+            {links.length > 0 && <Card as="section" className="pg-card cv-group"><h2 id="cv-still">{count('resume_still_skills', links.length)}</h2>
+              {links.map(item => <div className="cv-row" key={item.current.name}>
                 <div className="cv-row__top"><strong>{item.current.name}</strong><span className="cg-hint">{fill(t('resume_version'), { n: item.current.resumeVersion ?? 0 })}</span></div>
                 <CheckField disabled={busy} checked={choices.link.some(name => skillKey(name) === skillKey(item.current.name))}
                   onChange={event => setChoices(previous => ({ ...previous, link: toggle(previous.link, item.current.name, event.target.checked) }))}
