@@ -11,10 +11,11 @@ const { startRealApi } = require('../support/realApi.cjs');
 test('ES-169 PR 2a PostgreSQL + HTTP: opciones del emparejamiento desde la base y solicitud idempotente', { timeout: 900000 }, async (t) => {
   const { q, mkUser, http } = await startRealApi(t, { envVar: 'ES169_TEST_DATABASE_URL', prefix: 'es169' });
   const anthropic = require('../../utils/anthropic'); const rid = () => crypto.randomUUID();
-  let calls = 0; let delay = 0; let fail = false; let therapistIds = [];
+  let calls = 0; let delay = 0; let fail = false; let garbage = false; let therapistIds = [];
   anthropic.messages.create = async () => {
     calls += 1; if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
     if (fail) throw Object.assign(new Error('proveedor caído'), { code: 'sintetico' });
+    if (garbage) return { content: [{ type: 'text', text: 'esto no es JSON' }] };
     return { content: [{ type: 'text', text: JSON.stringify(therapistIds.slice(0, 2).map((id) => ({ therapistId: id, reason: 'Razón sintética', score: 9 }))) }] };
   };
   const therapist = await mkUser('therapist'); const other = await mkUser('therapist'); therapistIds = [therapist.id, other.id];
@@ -106,6 +107,25 @@ test('ES-169 PR 2a PostgreSQL + HTTP: opciones del emparejamiento desde la base 
     const busy = await request(person, OK, fresh); assert.equal(busy.status, 409); assert.equal(busy.body.code, 'request_in_progress');
     await q(`UPDATE "Users" SET active=false WHERE id = ANY($1)`, [therapistIds]); const none = rid(); const empty = await request(person, OK, none); assert.equal(empty.status, 404);
     assert.equal((await q(`SELECT count(*) n FROM "MatchingRequests" WHERE "requestId"=$1`, [none]))[0].n, '0', 'sin profesionales tampoco deja reserva'); await q(`UPDATE "Users" SET active=true WHERE id = ANY($1)`, [therapistIds]);
+  });
+
+  // E412-3 (QA-Claude-3; fallo real en el CI de main): la reserva debe estar liberada CUANDO la persona recibe el error; si no, el reintento inmediato recibe 409 request_in_progress. Sin esperas ni tiempos: se mira justo al recibir la respuesta.
+  await t.test('la reserva se libera ANTES de responder el fallo (proveedor caído, salida inválida, sin profesionales): 12 repeticiones con el borrado retrasado, comprobando la base y el reintento inmediato', async () => {
+    // Determinista: se RETRASA el borrado de la reserva 40 ms. Si el servidor respondiera antes de borrarla (como antes), el error llegaría con la fila todavía en la base y esta prueba fallaría siempre, no «1 de 30».
+    const MatchingRequestModel = require('../../MatchingRequest'); const realDestroy = MatchingRequestModel.prototype.destroy;
+    MatchingRequestModel.prototype.destroy = async function slowDestroy(...args) { await new Promise((resolve) => setTimeout(resolve, 40)); return realDestroy.apply(this, args); };
+    t.after(() => { MatchingRequestModel.prototype.destroy = realDestroy; });
+    const person = await mkUser('user');
+    for (let i = 0; i < 12; i += 1) {
+      for (const [label, status] of [['down', 502], ['garbage', 502]]) {
+        const requestId = rid(); fail = label === 'down'; garbage = label === 'garbage';
+        try { const out = await request(person, OK, requestId); assert.equal(out.status, status, label); } finally { fail = false; garbage = false; }
+        assert.equal((await q('SELECT count(*) n FROM "MatchingRequests" WHERE "requestId"=$1', [requestId]))[0].n, '0', label + ' ' + i + ': reserva liberada al recibir el error');
+        const retry = await request(person, OK, requestId); assert.equal(retry.status, 200, label + ' ' + i + ': el reintento inmediato no recibe 409'); await q('DELETE FROM "MatchingRequests" WHERE "requestId"=$1', [requestId]);
+      }
+    }
+    await q('UPDATE "Users" SET active=false WHERE id = ANY($1)', [therapistIds]);
+    try { for (let i = 0; i < 8; i += 1) { const requestId = rid(); const out = await request(person, OK, requestId); assert.equal(out.status, 404); assert.equal((await q('SELECT count(*) n FROM "MatchingRequests" WHERE "requestId"=$1', [requestId]))[0].n, '0', 'sin profesionales ' + i); } } finally { await q('UPDATE "Users" SET active=true WHERE id = ANY($1)', [therapistIds]); }
   });
 
   await t.test('elegir (choose): del dueño, repetible sin duplicar, 404 para otra persona, 409 si ya está resuelta o la reserva sigue en curso; el equipo ve la clave «anxiety»', async () => {
