@@ -1,6 +1,7 @@
 // CLS A/B intercalado (390 px, CPU×4) de /app/dashboard (Inicio de persona) con API simulada, DATOS SINTÉTICOS y latencias distintas por lectura (llegan escalonadas). Evidencia; no corre en CI.
 // Uso: PLAYWRIGHT_MODULE=… PR=http://127.0.0.1:4361 MAIN=http://127.0.0.1:4362 RUNS=6 node scripts/cls-ab-inicio.cjs   (SCENE=vacio|datos|errores)
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
+const WIDTH = Number(process.env.WIDTH || 390), CHECKIN = process.env.CHECKIN !== 'no' // WIDTH=1280 CHECKIN=no: sin registro de hoy (ES-369, QA-424-3)
 const PR = process.env.PR, MAIN = process.env.MAIN, RUNS = Number(process.env.RUNS || 6), SCENE = process.env.SCENE || 'datos'
 const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().split('T')[0] }
 const logs = SCENE === 'datos' || SCENE === 'completo' ? [0, 1, 2, 4, 5].map((n, i) => ({ id: i + 1, date: day(n), checkin_mood: 2 + (i % 3), checkout_mood: 3 + (i % 2) })) : []
@@ -11,10 +12,11 @@ const FULL = { upcoming: { id: 1, scheduledAt: new Date(now + 86400000 * 2).toIS
 const FULLSCENE = SCENE === 'completo'
 const SETS = [[0, 0, 0, 0, 0], [100, 300, 200, 600, 400], [900, 100, 500, 200, 700], [300, 900, 100, 400, 800]]
 async function once(browser, base, delays) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 900 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
+  const ctx = await browser.newContext({ viewport: { width: WIDTH, height: 900 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
   const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
-  await page.addInitScript(() => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elevation_checkin_date', new Date().toDateString()); window.__c = 0
-    new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__c += e.value }).observe({ type: 'layout-shift', buffered: true }) })
+  await page.addInitScript(ck => { localStorage.setItem('elevation_token', 'h.' + btoa(JSON.stringify({ id: 7 })) + '.s'); localStorage.setItem('elevation_role', 'user'); if (ck) localStorage.setItem('elevation_checkin_date', new Date().toDateString()) // marca anterior (main)
+    if (ck) localStorage.setItem('elevation_checkin', JSON.stringify({ id: '7', day: new Date().toISOString().slice(0, 10) })); window.__c = 0
+    new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__c += e.value }).observe({ type: 'layout-shift', buffered: true }) }, CHECKIN)
   const order = ['/api/user/progress', '/api/sessions/user/upcoming', '/api/sessions/user/my-therapist', '/api/recommendations', '/api/user/plan/me']
   await page.route('**/api/**', async route => { const p = new URL(route.request().url()).pathname; const i = order.indexOf(p); await new Promise(r => setTimeout(r, i >= 0 ? delays[i] : 0))
     if (p === '/api/session') return route.fulfill({ json: { role: 'user', onboardingCompleted: true } })
@@ -31,5 +33,5 @@ const med = a => [...a].sort((x, y) => x - y)[a.length >> 1]
 ;(async () => { const b = await chromium.launch(); const pr = [], mn = []
   for (let i = 0; i < RUNS; i++) for (const d of SETS) for (const [arr, base] of [[pr, PR], [mn, MAIN]]) arr.push(await once(b, base, d))
   await b.close(); const f = a => a.map(x => x.toFixed(3)).join(' ')
-  console.log(`CLS Inicio ${SCENE} 390 CPU×4 ×${RUNS} intercaladas\n  PR   mediana ${med(pr).toFixed(3)} máx ${Math.max(...pr).toFixed(3)}\n  main mediana ${med(mn).toFixed(3)} máx ${Math.max(...mn).toFixed(3)}`)
+  console.log(`CLS Inicio ${SCENE} ${WIDTH} px CPU×4${CHECKIN ? '' : ' sin registro de hoy'} ×${RUNS} intercaladas\n  PR   mediana ${med(pr).toFixed(3)} máx ${Math.max(...pr).toFixed(3)}\n  main mediana ${med(mn).toFixed(3)} máx ${Math.max(...mn).toFixed(3)}`)
   const ok = Math.max(...pr) <= 0.1; console.log(ok ? 'OK    PR máx ≤ 0,1' : 'FALLA PR máx > 0,1'); process.exit(ok ? 0 : 1) })()

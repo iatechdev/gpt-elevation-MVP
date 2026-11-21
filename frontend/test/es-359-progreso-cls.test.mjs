@@ -5,7 +5,7 @@ import fs from 'node:fs'
 
 const page = fs.readFileSync(new URL('../src/pages/UserDashboard.tsx', import.meta.url), 'utf8')
 
-test('E393-1: checkedIn parte de localStorage (inicializador perezoso con try/catch), no de false', () => {
-  assert.match(page, /const \[checkedIn, +setCheckedIn\] += useState\(\(\) => \{ try \{ return localStorage\.getItem\('elevation_checkin_date'\) === new Date\(\)\.toDateString\(\) \} catch \{ return false \} \}\)/)
+test('E393-1: checkedIn parte de la marca del navegador (inicializador perezoso), no de false; la lectura tolera almacenamiento bloqueado (ES-369)', () => {
+  assert.match(page, /const \[checkedIn, +setCheckedIn\] += useState\(\(\) => checkinDone\(getToken\(\)\)\)/)
   assert.doesNotMatch(page, /const \[checkedIn, +setCheckedIn\] += useState\(false\)/)
 })
