@@ -50,7 +50,9 @@ test('el componente usa esas funciones y ya no mezcla horas locales con el día 
   assert.doesNotMatch(dashboard, /monday\.setDate|setHours\(0, 0, 0, 0\)/)
 })
 
-test('el nombre del menú de usuario mide 1,1 rem: la regla es más específica que .cg-name (cartografia.css), que es del tamaño de un título', () => {
-  assert.match(shellCss, /^\.cg-usermenu \.cg-usermenu__who \{ font-size: 1\.1rem; \}/m)
-  assert.doesNotMatch(shellCss, /^\.cg-usermenu__who \{ font-size/m)
+test('el nombre dentro del menú de cuenta no tiene el tamaño de un título (ES-359 PR1: ya no usa .cg-name, que es del tamaño de un título, y mide 1,05 rem)', () => {
+  assert.match(shellCss, /^\.cg-usermenu__name \{ font-size: 1\.05rem;/m)
+  const menu = readFileSync(new URL('../src/shell/AccountMenu.tsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(menu, /cg-name/)
+  assert.doesNotMatch(shellCss, /^\.cg-usermenu__who/m)
 })
