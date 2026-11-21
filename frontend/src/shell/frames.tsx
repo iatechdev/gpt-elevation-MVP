@@ -12,6 +12,7 @@ import { PROFESSIONAL_LABEL, type ShellCopy } from './copy'
 import { ADMIN_MENU, BOARD_MENU, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PUBLIC_NAV, type NavItem } from './nav'
 import type { Role } from './access'
 import { PersonLayoutContext } from './personLayoutState'
+import { useDrawerExtra } from './drawerExtra'
 
 const readName = (fallback: string) => { try { return localStorage.getItem('elevation_name') || fallback } catch { return fallback } }
 const readRole = (fallback: Role): Role => {
@@ -43,9 +44,11 @@ export function PersonChrome({ children, migrated = false, footer = true }: { ch
   const { c } = useShellCopy(); const [theme] = useCgTheme()
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
   // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
-  const groups = groupsFor(readRole('user'))
+  const groups = groupsFor(readRole('user')); const extra = useDrawerExtra()
+  // ES-359 (PR4): el chat añade su grupo «Conversación» arriba del cajón y pide no repetir lo que ya lleva (p. ej. «Mi progreso»).
+  const drawerOnly = extra?.omit ? groups.map(g => ({ ...g, items: g.items.filter(i => !extra.omit?.includes(i.to)) })).filter(g => g.items.length) : groups
   return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} sidebar={<SideNav groups={groups} label={c.main} />} sidebarWide footer={footer} mobileOrder
-    drawer={{ groups: drawerGroups(groups, PERSON_MENU, c, PERSON_NAV), name: readName('Elevation'), roleLabel: c.rolePerson, legacyTheme: !migrated }}>{children}</Frame>
+    drawer={{ groups: drawerGroups(drawerOnly, PERSON_MENU, c, PERSON_NAV), name: readName('Elevation'), roleLabel: c.rolePerson, legacyTheme: !migrated, extra: extra?.render }}>{children}</Frame>
 }
 
 /** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */

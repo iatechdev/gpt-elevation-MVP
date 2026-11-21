@@ -28,7 +28,7 @@ test('ES-342 B1: «Mi progreso» una sola vez y «Menú de usuario» plegado, co
 test('ES-342 B1: sin textos nuevos (todo sale de copy.ts, shell/copy.ts e i18n) y los grupos se anuncian con h3 + role=group/aria-labelledby', () => {
   const jsx = menu.split('\n').filter(line => !line.trim().startsWith('//')).join('\n').replace(/=>/g, '').replace(/<[^>]*>/g, '<>')
   assert.doesNotMatch(jsx, /<>\s*[A-Za-záéíóú]{3,}/, 'texto literal en el menú')
-  assert.match(menu, /role="group" aria-labelledby=\{ids\.conv\}/); assert.match(menu, /role="group" aria-labelledby=\{ids\.prefs\}/)
+  assert.match(menu, /role="group" aria-labelledby=\{heading\}/); assert.match(menu, /role="group" aria-labelledby=\{ids\.prefs\}/)
 })
 
 test('ES-342 B1: el Dialog con headerAction fija cabecera y pie y solo el cuerpo se desplaza; en escritorio la hoja va centrada', () => {
