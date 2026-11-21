@@ -27,6 +27,7 @@ test('ES-359 PR3: en ≤ 900 px el marco con `drawer` dibuja marca + «☰ Menú
   // «atrás» del navegador (cambio de ruta) y salir del modo móvil cierran el cajón, sin setState dentro de un efecto (lint react-hooks/set-state-in-effect)
   assert.match(frame, /if \(drawerPath !== pathname\) \{ setDrawerPath\(pathname\); if \(drawerOpen\) setDrawerOpen\(false\) \}/)
   assert.match(frame, /const drawerShown = drawerOpen && compact/)
+  assert.match(frame, /if \(!compact && drawerOpen\) setDrawerOpen\(false\)/) // QA-401-04: al volver a móvil el cajón no reaparece abierto
   assert.doesNotMatch(frame, /useEffect\(\(\) => \{ if \(!compact\) setDrawerOpen/)
   assert.match(frame, /<span className="cg-menubtn__icon" aria-hidden="true" \/> \{c\.menu\}/)
   assert.match(css, /\.cg-header\[data-compact\] \{ flex-wrap: nowrap; min-height: 56px;/)

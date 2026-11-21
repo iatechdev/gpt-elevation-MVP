@@ -62,6 +62,12 @@ const axe = async page => { await page.evaluate(axeSource); return page.evaluate
     check(back.path !== before, `${tag}: «atrás» cambió de ruta (${before} → ${back.path})`); check(back.open === 0 && !back.lock && back.expanded === 'false', `${tag}: «atrás» cierra el cajón y libera el fondo (abierto=${back.open}, bloqueo=${back.lock}, expandido=${back.expanded})`)
     check(back.focus === 'main' || back.focus === 'cg-menubtn', `${tag}: foco coherente tras «atrás» (${back.focus})`)
     await page.evaluate(() => history.forward()); await page.waitForTimeout(500)
+    // girar el teléfono con el cajón abierto (390 → 1100 → 390): al volver a móvil el cajón NO reaparece abierto (QA-401-04)
+    await page.locator('.cg-menubtn').click(); await page.locator('dialog.cg-drawer[open]').waitFor()
+    await page.setViewportSize({ width: 1100, height: 800 }); await page.waitForTimeout(400); const wide = await page.locator('dialog.cg-drawer[open]').count()
+    await page.setViewportSize({ width, height: 800 }); await page.waitForTimeout(400)
+    const again = await page.evaluate(() => ({ open: document.querySelectorAll('dialog.cg-drawer[open]').length, expanded: document.querySelector('.cg-menubtn')?.getAttribute('aria-expanded'), lock: document.documentElement.classList.contains('cg-scroll-lock') }))
+    check(wide === 0 && again.open === 0 && again.expanded === 'false' && !again.lock, `${tag}: el cajón no reaparece al volver a móvil (a 1100: ${wide}; al volver: abierto=${again.open}, expandido=${again.expanded}, bloqueo=${again.lock})`)
     check(errors.length === 0, `${tag}: sin errores de JS ${errors.slice(0, 1)}`); await ctx.close()
   }
   { const { ctx, page } = await setup(browser, { lang: 'es', width: 1360, scheme: 'light' })

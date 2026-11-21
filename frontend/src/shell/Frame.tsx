@@ -87,6 +87,7 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
   // El cajón se cierra al cambiar de ruta (incluido el botón «atrás» del navegador) y si la pantalla deja de ser móvil. Sin efecto con setState: se ajusta el estado durante el render.
   const [drawerPath, setDrawerPath] = useState(pathname)
   if (drawerPath !== pathname) { setDrawerPath(pathname); if (drawerOpen) setDrawerOpen(false) }
+  if (!compact && drawerOpen) setDrawerOpen(false) // al pasar a escritorio (o girar el teléfono) el estado se reinicia: al volver a móvil el cajón NO reaparece abierto
   const drawerShown = drawerOpen && compact
   const main = useRef<HTMLElement>(null); const first = useRef(true)
   // ES-359: `preferences={null}` = sin preferencias en el encabezado (viven dentro del menú de cuenta); sin la propiedad, el idioma suelto (pantallas públicas).
