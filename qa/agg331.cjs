@@ -1,0 +1,4 @@
+// [QA-Claude-3] Agrega r331.txt: mediana de CLS y de contenido útil por (build, ruta, modo). Uso: node qa/agg331.cjs <r331.txt>
+const fs = require('fs'); const g = {}; const med = a => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]
+for (const l of fs.readFileSync(process.argv[2], 'utf8').split('\n').filter(l => l.startsWith('R331 '))) { const m = l.match(/^R331 (\S+) (\S+) (\S+) CLS (\[[^\]]*\]) UTIL (\[[^\]]*\]) SRC (\{.*\})$/); if (!m) continue; const k = m[3] + ' ' + m[2] + ' ' + m[1]; (g[k] ??= { cls: [], ut: [], src: {} }); g[k].cls.push(...JSON.parse(m[4])); g[k].ut.push(...JSON.parse(m[5])); const s = JSON.parse(m[6]); for (const [a, n] of Object.entries(s)) g[k].src[a] = (g[k].src[a] || 0) + n }
+for (const k of Object.keys(g).sort()) { const v = g[k]; console.log(k.padEnd(52), 'n=' + v.cls.length, 'CLS med', med(v.cls), 'máx', Math.max(...v.cls), '| útil med', med(v.ut), '| fuentes', Object.keys(v.src).slice(0, 4).join(',')) }
