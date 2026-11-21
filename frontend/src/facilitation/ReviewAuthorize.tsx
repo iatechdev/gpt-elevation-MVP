@@ -149,7 +149,7 @@ export function ReviewAuthorize({ token, onSession }: { token: string; onSession
               const active = share.status === 'granted'
               return (
                 <li key={share.id} className="rv-row">
-                  <div className="rv-row__top"><strong>{t('reviewer')}</strong>{active ? <Chip tone="ok" symbol="✓">{t('stGranted')}</Chip> : <Chip tone="wait" symbol="○">{t('stRevoked')}</Chip>}</div>
+                  <div className="rv-row__top"><strong>{share.reviewerName ?? t('reviewer')}</strong>{active ? <Chip tone="ok" symbol="✓">{t('stGranted')}</Chip> : <Chip tone="wait" symbol="○">{t('stRevoked')}</Chip>}</div>
                   <p className="cg-hint">{t('since', { date: when(share.createdAt) })} · {share.evidenceCount === 1 ? t('evidenceOne') : t('evidenceCount', { n: share.evidenceCount })}</p>
                   {active && <div className="cg-row"><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void startAgain(share)}>{t('update')}</button><button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void withdraw(share)}>{t('withdraw')}</button></div>}
                 </li>

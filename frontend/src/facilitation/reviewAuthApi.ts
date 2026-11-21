@@ -7,7 +7,7 @@ const string = (value: unknown) => (typeof value === 'string' ? value : '')
 
 export type InviteStatus = 'active' | 'used' | 'revoked' | 'expired'
 export type InviteView = { id: number; status: InviteStatus; createdAt: string; expiresAt: string; usedAt: string | null; revokedAt: string | null }
-export type ShareView = { id: number; reviewerId: number; materialVersion: number; evidenceCount: number; status: 'granted' | 'revoked' | 'superseded'; createdAt: string; revokedAt: string | null }
+export type ShareView = { id: number; reviewerId: number; reviewerName: string | null; materialVersion: number; evidenceCount: number; status: 'granted' | 'revoked' | 'superseded'; createdAt: string; revokedAt: string | null }
 export type Lookup = { reviewerName: string; expiresAt: string }
 
 export class AuthError extends Error {
@@ -37,7 +37,7 @@ export function parseShares(body: unknown): ShareView[] {
   return list.map((value: unknown) => {
     const row = object(value)
     if (!SHARE_STATUSES.includes(string(row.status))) throw new Error('Invalid share status')
-    return { id: id(row.id), reviewerId: id(row.reviewerId), materialVersion: Number(row.materialVersion) || 0, evidenceCount: Number(row.evidenceCount) || 0, status: string(row.status) as ShareView['status'], createdAt: date(row.createdAt), revokedAt: optionalDate(row.revokedAt) }
+    return { id: id(row.id), reviewerId: id(row.reviewerId), reviewerName: typeof row.reviewerName === 'string' && row.reviewerName.trim() ? row.reviewerName : null, materialVersion: Number(row.materialVersion) || 0, evidenceCount: Number(row.evidenceCount) || 0, status: string(row.status) as ShareView['status'], createdAt: date(row.createdAt), revokedAt: optionalDate(row.revokedAt) }
   })
 }
 export function parseLookup(body: unknown): Lookup {

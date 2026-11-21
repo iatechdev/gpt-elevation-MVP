@@ -39,14 +39,14 @@ test('ES-303: parseInvites, parseShares y parseLookup validan la forma completa;
   const inv = { id: 3, status: 'active', createdAt: '2026-11-21T10:00:00.000Z', expiresAt: '2026-11-28T10:00:00.000Z', usedAt: null, revokedAt: null }
   assert.deepEqual(parseInvites({ invites: [inv] }), [inv]); assert.deepEqual(parseInvites({ invites: [] }), [])
   for (const bad of [{}, { invites: 'x' }, { invites: [{ ...inv, status: 'otro' }] }, { invites: [{ ...inv, id: 0 }] }, { invites: [{ ...inv, createdAt: 'no' }] }, null]) assert.throws(() => parseInvites(bad), undefined, JSON.stringify(bad))
-  const share = { id: 9, reviewerId: 4, materialVersion: 2, evidenceCount: 3, status: 'granted', createdAt: '2026-11-21T10:00:00.000Z', revokedAt: null }
-  assert.deepEqual(parseShares({ shares: [share] }), [share]); assert.throws(() => parseShares({ shares: [{ ...share, status: 'x' }] })); assert.throws(() => parseShares({}))
+  const share = { id: 9, reviewerId: 4, reviewerName: 'Ana', materialVersion: 2, evidenceCount: 3, status: 'granted', createdAt: '2026-11-21T10:00:00.000Z', revokedAt: null }
+  assert.deepEqual(parseShares({ shares: [share] }), [share]); assert.equal(parseShares({ shares: [{ ...share, reviewerName: undefined }] })[0].reviewerName, null, 'sin nombre (servidor anterior) = null'); assert.equal(parseShares({ shares: [{ ...share, reviewerName: '  ' }] })[0].reviewerName, null); assert.equal(parseShares({ shares: [{ ...share, reviewerName: 7 }] })[0].reviewerName, null); assert.throws(() => parseShares({ shares: [{ ...share, status: 'x' }] })); assert.throws(() => parseShares({}))
   assert.deepEqual(parseLookup({ reviewer: { name: 'Ana' }, expiresAt: '2026-11-28T10:00:00.000Z' }), { reviewerName: 'Ana', expiresAt: '2026-11-28T10:00:00.000Z' })
   for (const bad of [{}, { reviewer: { name: '' }, expiresAt: '2026-11-28T10:00:00.000Z' }, { reviewer: { name: 'Ana' } }, { reviewer: { name: 'Ana' }, expiresAt: 'no' }]) assert.throws(() => parseLookup(bad))
 })
 
 test('ES-303: latestShares deja UNA fila por persona revisora (la más reciente) y activeInvites cuenta las activas sin vencer', () => {
-  const s = (id, reviewerId, status) => ({ id, reviewerId, materialVersion: 1, evidenceCount: 1, status, createdAt: '2026-11-21T10:00:00.000Z', revokedAt: null })
+  const s = (id, reviewerId, status) => ({ id, reviewerId, reviewerName: null, materialVersion: 1, evidenceCount: 1, status, createdAt: '2026-11-21T10:00:00.000Z', revokedAt: null })
   assert.deepEqual(latestShares([s(1, 4, 'superseded'), s(2, 4, 'granted'), s(3, 5, 'revoked'), s(4, 5, 'superseded')]).map(x => x.id), [4, 2], 'por revisor, la de id mayor; orden por id descendente')
   assert.deepEqual(latestShares([]), [])
   const now = Date.parse('2026-11-22T00:00:00.000Z'); const i = (status, expiresAt) => ({ id: 1, status, createdAt: expiresAt, expiresAt, usedAt: null, revokedAt: null })
