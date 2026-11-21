@@ -6,7 +6,7 @@
 const express   = require('express');
 const router    = express.Router();
 const bcrypt    = require('bcryptjs');
-const { issueToken } = require('../utils/sessions');
+const { issueToken, currentSessionVersion } = require('../utils/sessions');
 const rateLimit = require('express-rate-limit');
 const { loginRateMax, registerRateMax } = require('../utils/loginRateLimit');
 const { createHashGate, ServerBusyError } = require('../utils/hashGate');
@@ -178,7 +178,7 @@ router.post('/login', loginLimiter, validateBody({ email: nonempty, password: no
     if (await deletionPending(user.id)) return res.status(403).json({
       code: 'deletion_pending', error: 'La cuenta tiene una solicitud de eliminación. / The account has a deletion request.',
     });
-    const token = issueToken(user);
+    const token = issueToken(user, await currentSessionVersion(user.id)); // ES-366: la versión de sesión se lee de la base justo antes de firmar
 
     res.json({
       message: 'Inicio de sesión exitoso',
