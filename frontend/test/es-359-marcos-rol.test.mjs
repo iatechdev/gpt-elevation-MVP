@@ -26,7 +26,9 @@ test('ES-359 PR5: grupos del diseño aprobado — profesional «Principal», adm
 
 test('ES-359 PR5: groupsFor por rol — cada rol ve SU navegación; persona y superadministración (zona de persona) la de persona', () => {
   assert.deepEqual(hrefs(groupsFor('therapist')), hrefs(PROFESSIONAL_GROUPS)); assert.deepEqual(hrefs(groupsFor('admin')), hrefs(ADMIN_GROUPS)); assert.deepEqual(hrefs(groupsFor('board')), hrefs(BOARD_GROUPS))
-  assert.deepEqual(hrefs(groupsFor('user')), hrefs(PERSON_GROUPS)); assert.deepEqual(hrefs(groupsFor('superadmin')), hrefs(PERSON_GROUPS))
+  assert.deepEqual(hrefs(groupsFor('user')), hrefs(PERSON_GROUPS))
+  // ES-359 (M3): superadministración comparte el marco de persona pero no ve los enlaces a pantallas solo-persona (siguiente paso, hojas de vida, mi profesional)
+  assert.deepEqual(hrefs(groupsFor('superadmin')), hrefs(PERSON_GROUPS).filter(href => !['/app/next-step', '/app/context/resumes', '/app/my-therapist'].includes(href)))
   assert.deepEqual(hrefs(visibleGroups(ADMIN_GROUPS, 'superadmin')), hrefs(ADMIN_GROUPS)) // dentro de /admin la superadministración usa los grupos de administración
 })
 

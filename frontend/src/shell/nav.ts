@@ -18,7 +18,7 @@ export const PERSON_NAV: NavItem[] = [
   { to: '/app/chat', label: 'chat' },
   { to: '/app/evidence', label: 'evidence' },
   { to: '/app/diary', label: 'diary' },
-  { to: '/app/next-step', label: 'next' },
+  { to: '/app/next-step', label: 'next', roles: ['user'] }, // ES-359: sus APIs solo las abre el servidor a la persona usuaria
 ]
 
 export const PERSON_MENU: NavItem[] = [
