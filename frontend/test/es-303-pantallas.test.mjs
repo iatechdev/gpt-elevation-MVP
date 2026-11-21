@@ -121,3 +121,10 @@ test('ES-303 (alcance): la ruta es /app/professional-reviews; el profesional ve 
   assert.ok(/chosen\.length === 0/.test(files.person), 'autorizar deshabilitado sin selección')
   assert.ok(readdirSync(new URL('../src/facilitation/', import.meta.url)).includes('reviewAuthApi.ts'))
 })
+
+test('O303-focus (QA-421 v2): tras el 409 del tope el foco se queda en el aviso (el banner derivado de la lista conserva la referencia) y se reubica cuando cambia full', () => {
+  const src = files.reviewer
+  assert.ok(src.includes("{full && (message === 'full' ? <div ref={messageRef} tabIndex={-1}><Banner kind=\"error\" title={t('full')} /></div> : <Banner kind=\"error\" title={t('full')} />)}"), 'con message=full y full, el aviso derivado lleva ref y tabIndex')
+  assert.ok(src.includes('}, [message, full])'), 'el efecto de foco también depende de full')
+  assert.ok(src.includes("{message && !(message === 'full' && full) && <div ref={messageRef} tabIndex={-1}>"), 'el aviso del servidor sigue siendo único (F421-2)')
+})
