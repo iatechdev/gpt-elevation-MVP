@@ -8,12 +8,13 @@ const express = require('express');
 const router  = express.Router();
 const MoodLog = require('../MoodLog');
 const { validateBody, score } = require('../middlewares/validateBody');
+const { todayFor } = require('../utils/personTimeZone'); // E393-3: el día es el de la zona de la persona, no el UTC del servidor
 
 // POST /api/mood/checkin
 router.post('/checkin', validateBody({ mood: score }), async (req, res) => {
   try {
     const { mood } = req.body;
-    const today = new Date().toISOString().split('T')[0];
+    const today = await todayFor(req.user.id);
     const [log] = await MoodLog.upsert({ UserId: req.user.id, date: today, checkin_mood: mood });
     res.json({ message: 'Check-in registrado.', log });
   } catch (error) {
@@ -26,7 +27,7 @@ router.post('/checkin', validateBody({ mood: score }), async (req, res) => {
 router.post('/checkout', validateBody({ mood: score }), async (req, res) => {
   try {
     const { mood } = req.body;
-    const today = new Date().toISOString().split('T')[0];
+    const today = await todayFor(req.user.id);
     const [log] = await MoodLog.upsert({ UserId: req.user.id, date: today, checkout_mood: mood });
     res.json({ message: 'Check-out registrado.', log });
   } catch (error) {

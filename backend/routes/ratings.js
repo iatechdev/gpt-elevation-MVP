@@ -9,6 +9,7 @@ const SessionRating = require('../SessionRating');
 const { sequelize } = require('../database');
 const { MIN_AVERAGE_SAMPLE, MIN_DISTINCT_PEOPLE } = require('../utils/minAverageSample');
 const { validateBody, score } = require('../middlewares/validateBody');
+const { todayFor } = require('../utils/personTimeZone'); // E393-3
 const { verificarAdmin } = require('../middlewares/auth');
 
 // POST /api/rating
@@ -17,7 +18,7 @@ router.post('/rating', validateBody({ rating: score }), async (req, res) => {
     const { rating } = req.body;
     if (!rating || rating < 1 || rating > 5)
       return res.status(400).json({ error: 'Rating debe ser entre 1 y 5.' });
-    const today = new Date().toISOString().split('T')[0];
+    const today = await todayFor(req.user.id);
     await SessionRating.create({ UserId: req.user.id, rating, date: today });
     res.json({ message: 'Calificación guardada.' });
   } catch (error) {

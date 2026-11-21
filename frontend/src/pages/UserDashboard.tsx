@@ -87,6 +87,7 @@ export function UserDashboard() {
   // ── Progress state ───────────────────────────────────────────────────────
   const [moodLogs,      setMoodLogs]      = useState<MoodLog[]>([])
   const [sessionsWeek,  setSessionsWeek]  = useState(0)
+  const [timeZone,      setTimeZone]      = useState<string | null>(null) // E393-3: la zona de la persona (la devuelve /api/user/progress) para saber qué día es hoy
 
   // ── Upcoming session ─────────────────────────────────────────────────────
   const [upcomingSession, setUpcomingSession] = useState<UpcomingSession | null>(null)
@@ -132,7 +133,9 @@ export function UserDashboard() {
       if (signal.aborted) return
       setMoodLogs(data.moodLogs ?? [])
 
-      setSessionsWeek(entriesThisWeek(data.moodLogs ?? [], todayKey(new Date())))
+      const zone = typeof data.timeZone === 'string' ? data.timeZone : null
+      setTimeZone(zone)
+      setSessionsWeek(entriesThisWeek(data.moodLogs ?? [], todayKey(new Date(), zone)))
       setRead('progress', 'ok')
     } catch { if (!signal.aborted) setRead('progress', 'error') }
   }, [setRead])
@@ -278,7 +281,7 @@ export function UserDashboard() {
 
   // ── Mood trend for last 7 days ────────────────────────────────────────────
   const getMoodTrend = () => {
-    return lastSevenDays(todayKey(new Date())).map(({ dateStr, date }) => {
+    return lastSevenDays(todayKey(new Date(), timeZone)).map(({ dateStr, date }) => {
       const log = moodLogs.find(m => String(m.date).slice(0, 10) === dateStr)
       const moods = [log?.checkin_mood, log?.checkout_mood].filter(Boolean) as number[]
       const avg   = moods.length > 0 ? moods.reduce((a, b) => a + b, 0) / moods.length : null
