@@ -57,3 +57,10 @@ test('ES-359 PR6 (revisión de pares): el nombre se pone como TEXTO LITERAL, sin
   assert.equal(withName('Hola {name}.', '$&'), 'Hola $&.') // con una cadena de reemplazo daría «Hola {name}.»
   assert.equal(withName('Hola {name}.', 'Ana'), 'Hola Ana.')
 })
+
+test('E392-2: mientras se verifica la sesión guardada se reserva la altura del formulario (marcador aria-hidden, distinto en «Crear cuenta»), sin animación ni colores', () => {
+  const page = readFileSync(new URL('../src/pages/LoginPage.tsx', import.meta.url), 'utf8'), css = readFileSync(new URL('../src/access/accessCartografia.css', import.meta.url), 'utf8')
+  assert.ok(page.includes("{entry.result.status === 'checking' && <div className={isRegistering ? 'ac-hold ac-hold--register' : 'ac-hold'} aria-hidden=\"true\" />}"))
+  assert.match(css, /\.ac-hold \{ min-height: 13\.5rem; \}/); assert.match(css, /\.ac-hold--register \{ min-height: 48rem; \}/)
+  assert.doesNotMatch(css.slice(css.indexOf('E392-2')), /#[0-9a-fA-F]{3,8}\b|rgb\(|animation/)
+})
