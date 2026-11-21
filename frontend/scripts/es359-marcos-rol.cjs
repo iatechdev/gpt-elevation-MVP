@@ -14,8 +14,8 @@ const TITLES = { es: { main: 'Principal', overview: 'Resumen', people: 'Personas
 const ADMIN_LINKS = ['/admin/dashboard', '/admin/metrics', '/admin/pilot-metrics', '/admin/users', '/admin/prompts', '/admin/content', '/admin/route-catalog', '/admin/skill-catalog', '/admin/manifest']
 const ROLES = {
   therapist: { home: '/therapist/dashboard', side: ['/therapist/dashboard', '/facilitation', '/app/professional-reviews'], menu: ['/app/data', '/manifiesto'], heads: t => [t.main], roleFrame: true },
-  admin: { home: '/admin/users', side: ADMIN_LINKS, menu: ['/app/data'], heads: t => [t.overview, t.people, t.content, t.board], roleFrame: true },
-  superadmin: { home: '/admin/users', side: ADMIN_LINKS, menu: ['/app/data'], heads: t => [t.overview, t.people, t.content, t.board], roleFrame: false }, // en /app, la superadministración usa el marco de persona
+  admin: { home: '/admin/users', side: ADMIN_LINKS, menu: ['/app/data', '/manifiesto'], heads: t => [t.overview, t.people, t.content, t.board], roleFrame: true },
+  superadmin: { home: '/admin/users', side: ADMIN_LINKS, menu: ['/app/data', '/manifiesto'], heads: t => [t.overview, t.people, t.content, t.board], roleFrame: false }, // en /app, la superadministración usa el marco de persona
   board: { home: '/app/data', side: ['/manifiesto'], menu: ['/app/data'], heads: () => [], roleFrame: true },
 }
 async function open(browser, { role, lang, width, scheme, path }) {

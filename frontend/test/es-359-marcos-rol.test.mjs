@@ -21,7 +21,7 @@ test('ES-359 PR5: grupos del diseño aprobado — profesional «Principal», adm
   ])
   assert.deepEqual(BOARD_GROUPS.map(g => [g.title, g.items.map(i => i.to)]), [[null, ['/manifiesto']]])
   assert.deepEqual(PROFESSIONAL_MENU.map(i => i.to), ['/app/data', '/manifiesto']) // «Revisiones profesionales» pasó del menú de cuenta a la barra lateral
-  assert.deepEqual(ADMIN_MENU.map(i => i.to), ['/app/data']); assert.deepEqual(BOARD_MENU.map(i => i.to), ['/app/data'])
+  assert.deepEqual(ADMIN_MENU.map(i => i.to), ['/app/data', '/manifiesto']); assert.deepEqual(BOARD_MENU.map(i => i.to), ['/app/data'])
 })
 
 test('ES-359 PR5: groupsFor por rol — cada rol ve SU navegación; persona y superadministración (zona de persona) la de persona', () => {
@@ -33,7 +33,7 @@ test('ES-359 PR5: groupsFor por rol — cada rol ve SU navegación; persona y su
 test('ES-359 PR5: alcanzabilidad por rol (≤ 2 acciones: enlace de la barra o «Menú» → enlace) — las rutas de referencia (Infra, 12756) están y cada enlace es de una zona que el rol puede entrar', () => {
   const reach = { therapist: [...hrefs(PROFESSIONAL_GROUPS), ...PROFESSIONAL_MENU.map(i => i.to)], admin: [...hrefs(ADMIN_GROUPS), ...ADMIN_MENU.map(i => i.to)], superadmin: [...hrefs(ADMIN_GROUPS), ...ADMIN_MENU.map(i => i.to)], board: [...hrefs(BOARD_GROUPS), ...BOARD_MENU.map(i => i.to)] }
   const expected = {
-    admin: ['/admin/dashboard', '/admin/metrics', '/admin/pilot-metrics', '/admin/users', '/admin/prompts', '/admin/content', '/admin/route-catalog', '/admin/skill-catalog', '/admin/manifest', '/app/data'],
+    admin: ['/admin/dashboard', '/admin/metrics', '/admin/pilot-metrics', '/admin/users', '/admin/prompts', '/admin/content', '/admin/route-catalog', '/admin/skill-catalog', '/admin/manifest', '/app/data', '/manifiesto'],
     therapist: ['/therapist/dashboard', '/facilitation', '/app/professional-reviews', '/manifiesto', '/app/data'], board: ['/manifiesto', '/app/data'],
   }
   expected.superadmin = expected.admin
