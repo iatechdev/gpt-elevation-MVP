@@ -9,7 +9,7 @@ import { groupsFor, visibleGroups, ADMIN_GROUPS, type NavGroup } from './navGrou
 import { useCgTheme } from '../cartografia/themeState'
 import { useShellCopy } from './useShellCopy'
 import { PROFESSIONAL_LABEL, type ShellCopy } from './copy'
-import { ADMIN_MENU, BOARD_MENU, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PUBLIC_NAV, type NavItem } from './nav'
+import { ADMIN_MENU, BOARD_MENU, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PUBLIC_NAV, visibleFor, type NavItem } from './nav'
 import type { Role } from './access'
 import { PersonLayoutContext } from './personLayoutState'
 
@@ -44,7 +44,8 @@ export function PersonChrome({ children, migrated = false, footer = true }: { ch
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
   // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
   const groups = groupsFor(readRole('user'))
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} sidebar={<SideNav groups={groups} label={c.main} />} sidebarWide footer={footer} mobileOrder
+  const navItems = visibleFor(PERSON_NAV, readRole('user')) // ES-359: sin enlaces a pantallas que el rol no puede usar
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={navItems} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} sidebar={<SideNav groups={groups} label={c.main} />} sidebarWide footer={footer} mobileOrder
     drawer={{ groups: drawerGroups(groups, PERSON_MENU, c, PERSON_NAV), name: readName('Elevation'), roleLabel: c.rolePerson, legacyTheme: !migrated }}>{children}</Frame>
 }
 

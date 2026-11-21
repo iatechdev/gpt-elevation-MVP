@@ -6,6 +6,9 @@ import type { Role } from './access.ts'
 
 export type NavGroup = { title: GroupKey | null; items: NavItem[] }
 
+/** ES-359: pantallas cuyas APIs solo abre el servidor a la persona usuaria: superadministración (que comparte el marco de persona) no ve el enlace, igual que la compuerta no le deja entrar. */
+const ONLY_PERSON: readonly Role[] = ['user']
+
 /** Persona: «Mi panel» sin título; luego cuatro grupos. «Mi progreso» aparece solo aquí (en el chat va dentro del grupo «Conversación» de esa ruta, PR4). */
 export const PERSON_GROUPS: NavGroup[] = [
   { title: null, items: [{ to: '/app/dashboard', label: 'panel' }] },
@@ -14,11 +17,11 @@ export const PERSON_GROUPS: NavGroup[] = [
     { to: '/app/bridge', label: 'bridge' }, { to: '/app/space/tools', label: 'tools' }, { to: '/app/exercises', label: 'exercises' }, // «Ejercicios opcionales»: antes sin enlace entrante
   ] },
   { title: 'grpCareer', items: [
-    { to: '/app/skill-map', label: 'map' }, { to: '/app/evidence', label: 'evidence' }, { to: '/app/next-step', label: 'next' },
-    { to: '/app/compass', label: 'compass' }, { to: '/app/route-catalog', label: 'routeCatalog' }, { to: '/app/context/resumes', label: 'resumes' }, // Brújula y Catálogo de rutas: antes sin enlace entrante
+    { to: '/app/skill-map', label: 'map' }, { to: '/app/evidence', label: 'evidence' }, { to: '/app/next-step', label: 'next', roles: ONLY_PERSON },
+    { to: '/app/compass', label: 'compass' }, { to: '/app/route-catalog', label: 'routeCatalog' }, { to: '/app/context/resumes', label: 'resumes', roles: ONLY_PERSON }, // Brújula y Catálogo de rutas: antes sin enlace entrante
   ] },
   { title: 'grpFollow', items: [{ to: '/app/progress', label: 'progress' }, { to: '/app/plan', label: 'plan' }] },
-  { title: 'grpPro', items: [{ to: '/app/my-therapist', label: 'myProfessional' }, { to: '/app/professional-reviews', label: 'reviews' }] },
+  { title: 'grpPro', items: [{ to: '/app/my-therapist', label: 'myProfessional', roles: ONLY_PERSON }, { to: '/app/professional-reviews', label: 'reviews' }] },
 ]
 
 /** Profesional (PR5): un grupo «Principal»; «Revisiones profesionales» pasa del menú de cuenta a la barra lateral. */
