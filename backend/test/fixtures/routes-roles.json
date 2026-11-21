@@ -138,6 +138,14 @@
     ],
     "session": true
   },
+  "GET /api/admin/matching/options": {
+    "denied": [
+      "board",
+      "therapist",
+      "user"
+    ],
+    "session": true
+  },
   "GET /api/admin/matching/pending": {
     "denied": [
       "board",
@@ -473,6 +481,10 @@
       "therapist",
       "user"
     ],
+    "session": true
+  },
+  "GET /api/matching/options": {
+    "denied": [],
     "session": true
   },
   "GET /api/matching/pending": {

@@ -42,8 +42,12 @@ const MatchingRequest = sequelize.define('MatchingRequest', {
   status: {
     type: DataTypes.STRING,
     defaultValue: 'pending',
-    // Values: 'pending' | 'confirmed' | 'rejected'
+    // Values: 'pending' | 'confirmed' | 'rejected' · 'searching' = reserva interna mientras se llama a la IA (ES-169 PR 2a; nunca se elige ni se confirma)
   },
+  // ES-169 (PR 2a): identificador del cliente; una misma solicitud (doble clic, reintento) es una sola fila. Nulo = cliente anterior. Índice único parcial (UserId, requestId) en la migración.
+  requestId: { type: DataTypes.STRING(64), allowNull: true },
+}, {
+  indexes: [{ name: 'matching_requests__request', unique: true, fields: ['UserId', 'requestId'], where: { requestId: { [require('sequelize').Op.ne]: null } } }],
 });
 
 module.exports = MatchingRequest;
