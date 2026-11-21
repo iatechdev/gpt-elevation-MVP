@@ -21,7 +21,8 @@ test('ES-153 P1: todo /app/* va dentro de PersonLayout salvo la sala de sesión,
 
 test('ES-153 P1: el marco no se desmonta entre pantallas (Suspense y límite de error van DENTRO del main), el chat no lleva pie y PersonFrame no duplica el marco', () => {
   const layout = read('../src/shell/PersonLayout.tsx')
-  assert.match(layout, /<PersonChrome[^>]*>\s*<RouteErrorBoundary resetKey=\{pathname\}><Suspense fallback=\{<ScreenLoading \/>\}><Outlet \/><\/Suspense><\/RouteErrorBoundary>\s*<\/PersonChrome>/)
+  assert.match(layout, /<Chrome[^>]*>\s*<RouteErrorBoundary resetKey=\{pathname\}><Suspense fallback=\{<ScreenLoading \/>\}><Outlet \/><\/Suspense><\/RouteErrorBoundary>\s*<\/Chrome>/) // ES-359 (PR5): Chrome = PersonChrome, o MemberChrome en las rutas de «Mis datos» y «Revisiones»
+  assert.match(layout, /const Chrome = isRoleFramePath\(pathname\) \? MemberChrome : PersonChrome/)
   assert.match(layout, /role="status" aria-live="polite"/)
   const frames = read('../src/shell/frames.tsx')
   assert.match(frames, /return inLayout \? <>\{children\}<\/> : <PersonChrome/)

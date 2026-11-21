@@ -16,7 +16,8 @@ test('ES-284: Frame acepta brandLabel y lo usa en el aria-label del enlace de la
 
 test('ES-284: el marco del profesional pasa un nombre que incluye el texto visible, en ES y EN', () => {
   const frames = read('../src/shell/frames.tsx')
-  assert.match(frames, /brandLabel=\{`\$\{c\.brandLabel\}\. \$\{PROFESSIONAL_LABEL\[lang\]\}`\}/)
+  assert.match(frames, /const label = PROFESSIONAL_LABEL\[lang\]/) // ES-359 (PR5): `label` = PROFESSIONAL_LABEL[lang]
+  assert.match(frames, /brandLabel=\{`\$\{c\.brandLabel\}\. \$\{label\}`\}/)
   const copy = read('../src/shell/copy.ts')
   assert.match(copy, /PROFESSIONAL_LABEL = \{ es: 'Profesional', en: 'Professional' \}/)
   // los demás marcos no cambian de nombre accesible
