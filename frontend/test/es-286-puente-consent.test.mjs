@@ -49,3 +49,13 @@ test('ES-286: los textos dicen qué pasó y qué hacer, sin culpar ni prometer: 
   assert.match(bridgeCopy.en.sourceConsentRevoked, /withdrawn/); assert.match(bridgeCopy.en.sourceConsentRevoked, /nothing was saved/); assert.match(bridgeCopy.en.sourceConsentRevoked, /Allow it again|leave it out/)
   for (const lang of ['es', 'en']) for (const key of ['sourceConsentRequired', 'sourceConsentRevoked']) assert.doesNotMatch(bridgeCopy[lang][key], /culpa|tu error|fault|your mistake|garant|guarantee/i)
 })
+
+test('F404-1: tras source_consent_required / source_consent_revoked se relee el permiso de las fuentes (sin esperar a cambiar de pestaña)', () => {
+  const page = readFileSync(new URL('../src/bridge/BridgePage.tsx', import.meta.url), 'utf8'), panel = readFileSync(new URL('../src/bridge/SourcesPanel.tsx', import.meta.url), 'utf8')
+  assert.ok(page.includes("if (error.code === 'source_consent_required' || error.code === 'source_consent_revoked') setSyncKey(key => key + 1)"))
+  assert.ok(page.includes('syncKey={syncKey}'))
+  assert.ok(panel.includes('const check = async (force: boolean) =>'))
+  assert.ok(panel.includes('if ((!force && document.visibilityState !== \'visible\') || !permsRef.current) return'))
+  assert.ok(panel.includes('useEffect(() => { if (syncKey > 0) void syncNow.current() }, [syncKey])'))
+  assert.ok(panel.includes('const refresh = () => { void check(false) }') && panel.includes("document.addEventListener('visibilitychange', refresh)"), 'volver a la pestaña sigue releyendo')
+})
