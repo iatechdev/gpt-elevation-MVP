@@ -54,6 +54,7 @@
     "test:diary-request:pg": "node --test test/integration/es-163-postgres.cjs",
     "test:planreq:pg": "node --test test/integration/es-223-postgres.cjs",
     "test:pricing-plans:pg": "node --test test/integration/es-73-postgres.cjs",
+    "test:person-timezone:pg": "node --test test/integration/es-393-postgres.cjs",
     "test:progress:pg": "node --test test/integration/es-257-postgres.cjs",
     "test:manifest:pg": "node --test test/integration/es-211-postgres.cjs",
     "test:bridge:pg": "node --test test/integration/es-25-postgres.cjs",
