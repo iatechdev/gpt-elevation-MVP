@@ -142,3 +142,11 @@ test('E377-1: al confirmar el plan la propuesta se reemplaza al instante por el 
   assert.match(pages, /\[\.\.\.c\.state\.plans, \.\.\.\(waiting \? \[waiting\] : \[\]\)\]/); assert.match(pages, /aria-busy=\{waiting !== null\}/)
   assert.match(pages, /const plan = waiting \?\? saved/)
 })
+
+test('E377-5 y W4: mientras se espera la respuesta no se afirma «aceptado» (título y opción dicen «Guardando…», sin versión) y el plan en espera se retira al aceptar', () => {
+  const pages = read('../src/career/CareerPages.tsx')
+  assert.ok(pages.includes("<h3>{waiting ? c.t('saving') : `${c.t(plan.status)} · ${c.t('version')} ${plan.version}`}</h3>"))
+  assert.ok(pages.includes("p === waiting ? c.t('saving') : `${c.t('version')} ${p.version} · ${c.t(p.status)}`"))
+  assert.ok(pages.includes("onAccepted={() => { setWaiting(null); setProposal(false); setSelectedId('') }}"), 'al aceptar se retira el plan en espera (W4)')
+  assert.ok(pages.includes('else onPending(null)'), 'al rechazar también')
+})
