@@ -12,12 +12,12 @@ import type { Insight, SourceId } from './logic'
 
 type Copy = Record<keyof typeof bridgeCopy.es, string>
 type Perms = Record<SourceId, boolean>
-type Props = { baseUrl: string; token: string; lang: 'es' | 'en'; onResult: (source: SourceId, insights: Insight[]) => void; onExpired: () => void; onPerms?: (perms: Perms) => void; reloadKey?: number }
+type Props = { baseUrl: string; token: string; lang: 'es' | 'en'; onResult: (source: SourceId, insights: Insight[]) => void; onExpired: () => void; onPerms?: (perms: Perms) => void; reloadKey?: number; syncKey?: number }
 type Notice = { kind: 'ok' | 'error' | 'info'; text: string; source?: SourceId; retry?: boolean; upload?: boolean } | null
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [key, value]) => out.replace(`{${key}}`, String(value)), text)
 const dateOf = (iso: string, lang: string) => { const d = new Date(iso); return Number.isFinite(d.getTime()) ? d.toLocaleDateString(lang === 'en' ? 'en' : 'es', { day: 'numeric', month: 'short', timeZone: 'UTC' }) : '' }
 
-export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerms, reloadKey = 0 }: Props) {
+export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerms, reloadKey = 0, syncKey = 0 }: Props) {
   const c: Copy = bridgeCopy[lang]
   const opts = useMemo(() => ({ baseUrl, token }), [baseUrl, token])
   const [perms, setPerms] = useState<Record<SourceId, boolean> | null>(null); const [loadError, setLoadError] = useState(false)
@@ -26,7 +26,7 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
   const [asking, setAsking] = useState<SourceId | null>(null); const [notice, setNotice] = useState<Notice>(null)
   const [unsure, setUnsure] = useState<{ source: SourceId; granted: boolean } | null>(null) // ES-247: cambio de permiso sin confirmar
   const section = useRef<HTMLElement | null>(null)
-  const alive = useRef(true); const permsRef = useRef<Perms | null>(null)
+  const alive = useRef(true); const permsRef = useRef<Perms | null>(null); const syncNow = useRef(async (): Promise<void> => undefined)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
 
   const load = useCallback(async (signal?: AbortSignal) => {
@@ -44,8 +44,8 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
   // ES-168 (G4): al volver a esta pestaña se releen los permisos; si cambiaron en otra pestaña o dispositivo, se actualizan y se avisa.
   useEffect(() => {
     if (!token) return
-    const refresh = async () => {
-      if (document.visibilityState !== 'visible' || !permsRef.current) return
+    const check = async (force: boolean) => {
+      if ((!force && document.visibilityState !== 'visible') || !permsRef.current) return
       try {
         const fresh = await readPermissions(opts)
         if (!alive.current || !permsRef.current) return
@@ -56,9 +56,13 @@ export function SourcesPanel({ baseUrl, token, lang, onResult, onExpired, onPerm
         }
       } catch { /* sin red al volver: se queda lo que ya se ve; cada acción relee de todos modos */ }
     }
+    const refresh = () => { void check(false) }
+    syncNow.current = () => check(true)
     document.addEventListener('visibilitychange', refresh)
     return () => document.removeEventListener('visibilitychange', refresh)
   }, [token, opts, onPerms, onResult, c.permsChanged])
+  // F404-1 (syncKey: sube cada vez que hay que releer ya, sin esperar a volver a la pestaña): tras source_consent_required / source_consent_revoked el interruptor deja de decir «Autorizado» sin cambiar de pestaña.
+  useEffect(() => { if (syncKey > 0) void syncNow.current() }, [syncKey])
 
   // Diálogo (ES-307 PR 4: el Dialog de Cartografía): el foco entra en «Cancelar» (primer botón), Tab se queda dentro, Esc cancela y el foco vuelve al interruptor.
   const focusSwitch = (source: SourceId) => { requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-source="${source}"]`)?.focus()) }

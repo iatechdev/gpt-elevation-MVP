@@ -23,7 +23,7 @@ export const PERSON_GROUPS: NavGroup[] = [
 
 /** Profesional (PR5): un grupo «Principal»; «Revisiones profesionales» pasa del menú de cuenta a la barra lateral. */
 export const PROFESSIONAL_GROUPS: NavGroup[] = [
-  { title: 'main', items: [{ to: '/therapist/dashboard', label: 'proPanel' }, { to: '/facilitation', label: 'proFacilitation' }, { to: '/app/professional-reviews', label: 'reviews' }] },
+  { title: 'grpHome', items: [{ to: '/therapist/dashboard', label: 'proPanel' }, { to: '/facilitation', label: 'proFacilitation' }, { to: '/app/professional-reviews', label: 'reviews' }] },
 ]
 
 /** Administración y superadministración (misma navegación; en el diseño aprobado el grupo «Junta» lo ven ambas): Resumen, Personas, Contenido y Junta. */
@@ -31,7 +31,7 @@ export const ADMIN_GROUPS: NavGroup[] = [
   { title: 'grpOverview', items: [{ to: '/admin/dashboard', label: 'adPanel' }, { to: '/admin/metrics', label: 'adMetrics' }, { to: '/admin/pilot-metrics', label: 'adPilot' }] },
   { title: 'grpPeople', items: [{ to: '/admin/users', label: 'adUsers' }] },
   { title: 'grpContent', items: [{ to: '/admin/prompts', label: 'adGuides' }, { to: '/admin/content', label: 'adContent' }, { to: '/admin/route-catalog', label: 'adRoutes' }, { to: '/admin/skill-catalog', label: 'adSkills' }] },
-  { title: 'boardGroup', items: [{ to: '/admin/manifest', label: 'adManifest' }] },
+  { title: 'boardGroup', items: [{ to: '/admin/manifest', label: 'adManifestManage' }] },
 ]
 
 /** Junta ética: solo el manifiesto (página pública). */
