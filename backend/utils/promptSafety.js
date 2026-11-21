@@ -3,6 +3,7 @@
 // Limitación: normalizar y delimitar reduce el riesgo de inyección de prompts, no lo elimina.
 
 const crypto = require('crypto');
+const { BLANK_FILLERS_RE } = require('./invisibleText');
 
 const MAX_MESSAGE_CHARS = 4000;
 
@@ -24,8 +25,13 @@ const normalizeText = (text) => String(text)
   .replace(/\r\n?/g, '\n')
   .trim();
 
-// ES-287: copia de un texto SIN los caracteres invisibles (INVISIBLE y el bloque Tags). La usan fenceUntrusted y la puerta de salida al proveedor (aiClient).
-const stripInvisible = (text) => String(text).replace(INVISIBLE, '').replace(TAGS, '');
+// ES-352: ZWNJ (U+200C) y ZWJ (U+200D) tienen un uso legítimo (persa y otras escrituras, escrituras índicas, emoji compuestos); quitarlos cambia el texto visible (la palabra persa pierde su forma, 👩‍💻 se parte en dos emoji).
+// La barrera los CONSERVA solo si hay UNO entre dos caracteres con significado (letra, marca combinante, emoji); en cadena, al borde, junto a espacios o signos se quitan (así es como se esconde un mensaje en bits).
+const INVISIBLE_NO_JOINERS = /[­​‎‏‪-‮⁠-⁤⁦-⁩﻿]/g;
+const MEANINGFUL = '\\p{L}\\p{M}\\p{Extended_Pictographic}\\u{FE0F}';
+const LOOSE_JOINER = new RegExp(`(?<![${MEANINGFUL}])[\\u200C\\u200D]|[\\u200C\\u200D](?![\\p{L}\\p{M}\\p{Extended_Pictographic}])`, 'gu');
+// ES-287 + ES-352: copia de un texto SIN los caracteres invisibles (INVISIBLE, los blancos de relleno de utils/invisibleText y el bloque Tags), salvo un ZWNJ/ZWJ legítimo. La usan fenceUntrusted y la puerta de salida al proveedor (aiClient).
+const stripInvisible = (text) => String(text).replace(INVISIBLE_NO_JOINERS, '').replace(BLANK_FILLERS_RE, '').replace(TAGS, '').replace(LOOSE_JOINER, '');
 
 const capText = (text, max = MAX_MESSAGE_CHARS) => (text.length > max ? text.slice(0, max) : text);
 
