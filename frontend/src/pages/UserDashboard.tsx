@@ -11,6 +11,7 @@ import '../context/register.ts' // ES-232: catálogo de textos de esta pantalla 
 import './progressCopy.ts' // ES-254: «N de 5», palabras del ánimo y categorías de las recomendaciones (mismos textos que /app/progress)
 import './dashboardCopy.ts' // ES-329: textos de esta pantalla
 import { CARD_HEADING, INITIAL_READS, cardStateOf, failedReads, type Card, type Read, type ReadState } from './dashboardReads.ts' // ES-332: estado de cada lectura (lógica pura, con pruebas)
+import { entriesThisWeek, lastSevenDays, todayKey } from './dashboardWeek.ts' // fechas de la semana y de la tendencia (todas con el mismo día, el de los registros)
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { copy } from '../space/copy'
@@ -131,13 +132,7 @@ export function UserDashboard() {
       if (signal.aborted) return
       setMoodLogs(data.moodLogs ?? [])
 
-      const monday = new Date()
-      monday.setDate(monday.getDate() - monday.getDay() + 1)
-      monday.setHours(0, 0, 0, 0)
-      const thisWeek = (data.moodLogs ?? []).filter((m: MoodLog) =>
-        new Date(m.date) >= monday
-      ).length
-      setSessionsWeek(thisWeek)
+      setSessionsWeek(entriesThisWeek(data.moodLogs ?? [], todayKey(new Date())))
       setRead('progress', 'ok')
     } catch { if (!signal.aborted) setRead('progress', 'error') }
   }, [setRead])
@@ -283,14 +278,11 @@ export function UserDashboard() {
 
   // ── Mood trend for last 7 days ────────────────────────────────────────────
   const getMoodTrend = () => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date()
-      d.setDate(d.getDate() - (6 - i))
-      const dateStr = d.toISOString().split('T')[0]
-      const log = moodLogs.find(m => m.date === dateStr)
+    return lastSevenDays(todayKey(new Date())).map(({ dateStr, date }) => {
+      const log = moodLogs.find(m => String(m.date).slice(0, 10) === dateStr)
       const moods = [log?.checkin_mood, log?.checkout_mood].filter(Boolean) as number[]
       const avg   = moods.length > 0 ? moods.reduce((a, b) => a + b, 0) / moods.length : null
-      return { dateStr, day: d.toLocaleDateString(locale, { weekday: 'short' }), avg }
+      return { dateStr, day: date.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }), avg }
     })
   }
   const formatAvg = (avg: number) => t('pr_of5', { n: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(avg) })
