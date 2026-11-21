@@ -14,12 +14,15 @@ type Props = {
   historyPath: string
   onResult: (result: Ok) => void
   onManual: () => void
+  /** ES-110: «update» = actualizar la hoja de vida desde «Mis hojas de vida»: sin insignia ni introducción de «empieza desde cero» y sin «Llenar a mano» al inicio. */
+  mode?: 'start' | 'update'
 }
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 const FILE_ERRORS: ErrorCode[] = ['empty', 'not_pdf', 'too_large']
 const newId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : '00000000-0000-4000-8000-000000000000'.replace(/0/g, () => Math.floor(Math.random() * 16).toString(16)))
 
-export function ResumeStarter({ t, disabled, historyPath, onResult, onManual }: Props) {
+export function ResumeStarter({ t, disabled, historyPath, onResult, onManual, mode = 'start' }: Props) {
+  const updating = mode === 'update'
   const [stage, setStage] = useState<Stage>('idle')
   const [file, setFile] = useState<File | null>(null)
   const [consent, setConsent] = useState(false) // siempre parte desmarcada: la autorización es explícita en cada análisis
@@ -69,9 +72,9 @@ export function ResumeStarter({ t, disabled, historyPath, onResult, onManual }: 
     <section className="rs-card rs-tint" aria-labelledby="rs-heading" aria-busy={stage === 'analyzing'}>
       <div className="rs-live" role="status" aria-live="polite">{live}</div>
       {stage === 'idle' && <>
-        <span className="rs-badge rs-badge-sage">{t('resume_badge')}</span>
-        <h2 id="rs-heading" ref={heading} tabIndex={-1}>{t('resume_title')}</h2>
-        <p>{t('resume_intro')}</p>
+        {!updating && <span className="rs-badge rs-badge-sage">{t('resume_badge')}</span>}
+        <h2 id="rs-heading" ref={heading} tabIndex={-1}>{t(updating ? 'resume_update' : 'resume_title')}</h2>
+        {!updating && <p>{t('resume_intro')}</p>}
         <p className="rs-pdf"><DocIcon /> <span id="rs-pdf-note">{t('resume_pdf_notice')}</span></p>
         <div className={`rs-drop${dragging ? ' rs-drop-active' : ''}`}
           onDragOver={event => { event.preventDefault(); if (!disabled) setDragging(true) }} onDragLeave={() => setDragging(false)}
@@ -82,7 +85,7 @@ export function ResumeStarter({ t, disabled, historyPath, onResult, onManual }: 
         </div>
         <input ref={input} type="file" accept="application/pdf,.pdf" hidden tabIndex={-1} aria-hidden="true" onChange={event => pick(event.target.files?.[0])} />
         <p className="rs-help"><LockIcon /> {t('resume_nothing_sent')}</p>
-        <div className="rs-actions"><button type="button" className="elv-btn" onClick={onManual}>{t('resume_manual')}</button></div>
+        {!updating && <div className="rs-actions"><button type="button" className="elv-btn" onClick={onManual}>{t('resume_manual')}</button></div>}
       </>}
 
       {stage === 'picked' && file && <>

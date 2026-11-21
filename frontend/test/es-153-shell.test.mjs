@@ -104,13 +104,14 @@ test('ES-153 marco: saltar al contenido, un solo <main> con foco al cambiar de r
 })
 
 test('ES-153 menú de usuario: botón con aria-expanded, Escape cierra y devuelve el foco, clic fuera cierra, salir con texto', () => {
-  const frame = read('../src/shell/Frame.tsx')
+  const frame = read('../src/shell/AccountMenu.tsx') // ES-359: el menú de cuenta (antes UserMenu en Frame.tsx)
   for (const needle of ['aria-expanded={open}', 'aria-controls={id}', "event.key === 'Escape'", 'button.current?.focus()', "document.addEventListener('mousedown'", 'hidden={!open}', 'c.signOut']) assert.ok(frame.includes(needle), needle)
 })
 
-test('ES-153 administración en móvil: la barra lateral pasa a una fila que se ajusta; objetivos de 46 px', () => {
+test('ES-153 administración en móvil: la barra lateral se oculta (ES-359 PR5: su navegación vive en el cajón y ya no hay una fila que se ajusta); objetivos de 46 px', () => {
   const css = read('../src/shell/shell.css')
-  assert.match(css, /@media \(max-width: 900px\)[\s\S]*\.cg-sidenav \{ display: flex; flex-wrap: wrap/)
+  assert.match(css, /@media \(max-width: 900px\) \{ \.cg-body--wideside > \.cg-side--groups \{ display: none; \} \}/)
+  assert.doesNotMatch(css, /\.cg-sidenav/) // la barra antigua de administración se sustituyó por SideNav
   for (const selector of ['.cg-lang__btn', '.cg-usermenu__button', '.cg-signout']) assert.ok(css.includes(selector), selector)
   assert.equal((css.match(/min-height: var\(--cg-touch\)/g) ?? []).length >= 6, true)
   assert.equal(/#[0-9a-fA-F]{3,8}\b/.test(css), false) // solo tokens

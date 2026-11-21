@@ -24,12 +24,15 @@ export type Part = 'submission' | 'reflection' | 'decision'
 export type Carried = { submission?: { from: number; sample: string; assistance: Assistance | ''; evidence: boolean; retired: number }; reflection?: { from: number; observation: string; interpretation: string }; decision?: { from: number; decision: Decision; reason: string } }
 type History = { version: number; phase: Phase; basis: number; sample?: string; observation?: string; interpretation?: string; reason?: string }
 export type Experiment = { id: number; reasons?: Reason[]; reviewId?: number; task?: { es: string; en: string }; route: Route; version: number; basis: number; phase: Phase; minutes: number; sample: string; evidence: boolean; assistance: Assistance | ''; observation: string; interpretation: string; decision: Decision | ''; reason: string; review: boolean; carried?: Carried; versions: History[] }
-export type Action = { key: number; date: string; minutes: number; resource: boolean; cost: string; completed: string }
-export type Plan = { id: number; experimentId: number; experimentVersion: number; basis: number; version: number; status: 'accepted' | 'paused' | 'superseded'; actions: Action[]; budget: string; currency: 'USD' | 'COP'; versions: { version: number; status: 'accepted' | 'paused' | 'superseded' }[] }
+// Modo servidor: `resources` son los resourceKey elegidos del catálogo (la casilla `resource` del simulador queda en false); `currency` de la acción sale del plan.
+export type Action = { key: number; date: string; minutes: number; resource: boolean; cost: string; completed: string; resources?: string[] }
+export type PlanResourceView = { key: string; title: string; url: string; minutes: number | null; price: string }
+export type PlanProposalView = { experimentId: number; experimentVersion: number; weeklyMinutes: number; timeZone: string; resources: PlanResourceView[] }
+export type Plan = { availability?: { weeklyMinutes: number; timeZone: string }; id: number; experimentId: number; experimentVersion: number; basis: number; version: number; status: 'accepted' | 'paused' | 'superseded'; actions: Action[]; budget: string; currency: 'USD' | 'COP'; versions: { version: number; status: 'accepted' | 'paused' | 'superseded' }[] }
 export type Reminder = { id: number; planId: number; planVersion: number; actionKey: number; dueAt: string; localTime: string; grant: number; status: 'active' | 'cancelled' | 'delivered' }
 export type CatalogContext = { key: string; label: { es: string; en: string }; synthetic: boolean }
 // `source`, `contexts`, `catalogUnavailable`, `routes` y `routesStatus` solo los llena el cliente de servidor; `routes` reemplaza al cálculo del simulador cuando existe.
-export type State = { source?: 'fixture' | 'api'; contexts?: CatalogContext[]; catalogUnavailable?: boolean; routes?: Route[]; routesStatus?: string; loaded: boolean; constraints: Constraints; basis: number; choices: { id: number; route: Route; decision: 'chosen' | 'rejected'; basis: number; version?: number }[]; experiments: Experiment[]; plans: Plan[]; requested: boolean; notifications: boolean; grant: number; reminders: Reminder[]; basisLog: Reason[][] }
+export type State = { planProposal?: PlanProposalView; source?: 'fixture' | 'api'; contexts?: CatalogContext[]; catalogUnavailable?: boolean; routes?: Route[]; routesStatus?: string; loaded: boolean; constraints: Constraints; basis: number; choices: { id: number; route: Route; decision: 'chosen' | 'rejected'; basis: number; version?: number }[]; experiments: Experiment[]; plans: Plan[]; requested: boolean; notifications: boolean; grant: number; reminders: Reminder[]; basisLog: Reason[][] }
 export type Command =
   | { type: 'constraints'; value: Constraints }
   | { type: 'choice'; route: Route; decision: 'chosen' | 'rejected' }
@@ -38,6 +41,7 @@ export type Command =
   | { type: 'review'; id?: number; selected?: boolean }
   | { type: 'rebase'; id: number }
   | { type: 'adopt' | 'discard'; id: number; expected: number; part: Part }
+  | { type: 'propose'; experimentId: number }
   | { type: 'plan'; experimentId: number; actions: Action[]; budget: string; currency: 'USD' | 'COP' }
   | { type: 'complete'; planId: number; expected: number; key: number; text: string }
   | { type: 'pause'; planId: number; expected: number }
@@ -71,7 +75,7 @@ export function routesFor(s: State): Route[] {
 }
 const validDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(Date.parse(date)) && new Date(date).toISOString().slice(0, 10) === date
 const week = (date: string) => { const d = new Date(date); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() || 7) + 1); return d.toISOString().slice(0, 10) }
-export function validActions(actions: Action[], budget: string, now = new Date()): boolean {
+export function validActions(actions: Action[], budget: string, now = new Date(), weeklyLimit = 60): boolean {
   if (!actions.length || actions.length > 3 || new Set(actions.map(a => a.key)).size !== actions.length) return false
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en', { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).map(p => [p.type, p.value]))
   const today = `${parts.year}-${parts.month}-${parts.day}`
@@ -87,7 +91,7 @@ export function validActions(actions: Action[], budget: string, now = new Date()
       total += Number(a.cost)
     }
   }
-  return [...weeks.values()].every(minutes => minutes <= 60) && (budget === '' || (Number.isFinite(Number(budget)) && Number(budget) >= total && Number(budget) >= 0))
+  return [...weeks.values()].every(minutes => minutes <= weeklyLimit) && (budget === '' || (Number.isFinite(Number(budget)) && Number(budget) >= total && Number(budget) >= 0))
 }
 // La vista usa solo America/Bogota, snapshot sintético fijo; no infiere la zona del participante real.
 export const fixtureInstant = (localTime: string) => {

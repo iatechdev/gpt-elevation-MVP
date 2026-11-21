@@ -16,3 +16,7 @@ export const isMigratedPersonPath = (pathname: string) => MIGRATED_PERSON_PATHS.
 
 /** El chat no lleva pie: el compositor ocupa el fondo y el chat muestra siempre sus propios «Límites del asistente». */
 export const personFooterHidden = (pathname: string) => pathname === '/app/chat'
+
+/** ES-359 (PR5): rutas de /app que valen para cualquier sesión válida y se dibujan en el marco del ROL (profesional, administración, junta): «Mis datos» y «Revisiones profesionales». */
+export const ROLE_FRAME_PATHS: readonly string[] = ['/app/data', '/app/professional-reviews']
+export const isRoleFramePath = (pathname: string) => ROLE_FRAME_PATHS.some(path => pathname === path || pathname.startsWith(`${path}/`))

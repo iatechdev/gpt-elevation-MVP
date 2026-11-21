@@ -25,12 +25,13 @@ test('ES-153 P3: ThemeSwitch usa botones con aria-pressed; en pantalla heredada 
   assert.ok(!/\sdisabled[=\s>{]/.test(part.replace(/aria-disabled/g, '')), 'sin el atributo disabled (rompería el orden de Tab)')
   assert.ok(part.includes('<LangSwitch />') || frame.includes('<LangSwitch /><ThemeSwitch legacy={legacy} />'), 'idioma y tema juntos en PreferencesBar')
   assert.ok(frame.includes('role="group" aria-label={c.preferences}'))
-  assert.ok(frame.includes('{preferences ?? <LangSwitch />}'), 'los demás marcos conservan solo el idioma')
+  assert.ok(frame.includes('const prefs = preferences === undefined ? <LangSwitch /> : preferences'), 'sin la propiedad, los marcos públicos conservan solo el idioma (ES-359: preferences={null} = sin preferencias en el encabezado)')
 })
 
 test('ES-153 P3: el marco de persona usa el tema elegido solo en pantallas migradas (el resto sigue claro fijo), la rejilla de 3 columnas y PreferencesBar', () => {
   const frames = read('../src/shell/frames.tsx')
-  assert.ok(frames.includes("theme={migrated ? theme : 'light'}") && frames.includes('preferences={<PreferencesBar legacy={!migrated} />}'))
+  assert.ok(frames.includes("theme={migrated ? theme : 'light'}") && frames.includes('preferences={null}') && frames.includes('legacyTheme={!migrated}')) // ES-359: idioma y tema viven DENTRO del menú de cuenta (AccountMenu: LangSwitch + ThemeSwitch)
+  assert.ok(read('../src/shell/AccountMenu.tsx').includes('<LangSwitch />') && read('../src/shell/AccountMenu.tsx').includes('<ThemeSwitch legacy={legacyTheme} />'))
   assert.ok(frames.includes('className="cg-nav cg-nav--grid3"'))
   assert.ok(!frames.slice(frames.indexOf('export function ProfessionalFrame')).includes('PreferencesBar'), 'solo el marco de persona')
 })

@@ -7,6 +7,7 @@ import { conflictId, expectedFor, readSaveOutcome, readVersions, type LandingVer
 import { ProfessionalApplicationsPanel } from './ProfessionalApplicationsPanel'
 import { PENDING_KEYS } from './landingPending'
 import { landingFieldLabel } from './landingLabels'
+import { normalizeChoices, serverFieldError } from './planChoices.ts'
 import { Banner, Button, CheckField, Chip, Dialog, ItemList, SelectField, Tabs, TextAreaField, TextField } from '../../cartografia'
 import './adminContent.css'
 // frontend/src/pages/admin/AdminContent.tsx
@@ -237,6 +238,8 @@ function PricingTab() {
   const [loadError, setLoadError] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
   const busyRef = useRef(false)
+  const focusAfterSave = useRef<string | null>(null) // E366-2: el campo con error del servidor recibe el foco cuando el formulario vuelve a estar habilitado (mientras guarda, el <fieldset> está deshabilitado)
+  useEffect(() => { if (!saving && focusAfterSave.current) { document.getElementById(focusAfterSave.current)?.focus(); focusAfterSave.current = null } }, [saving])
 
   const load = useCallback((initial = false) => {
     if (initial) setLoading(true)
@@ -262,7 +265,9 @@ function PricingTab() {
   }
 
   const openEdit = (p: PricingPlan) => {
-    setForm({ ...p }); setFeatInputEs((p.features_es ?? []).join('\n')); setFeatInputEn((p.features_en ?? []).join('\n')); setErrors({})
+    // E366-2: un plan heredado con moneda o período fuera de lista se abre con lo que el desplegable MUESTRA y el campo marcado (antes se reenviaba el valor heredado y el servidor respondía 400 sin decir el campo).
+    const { values, errors: legacy } = normalizeChoices(p)
+    setForm({ ...p, ...values }); setFeatInputEs((p.features_es ?? []).join('\n')); setFeatInputEn((p.features_en ?? []).join('\n')); setErrors(legacy)
     setEditing(p); setShowForm(true); setMsg('')
   }
 
@@ -297,7 +302,12 @@ function PricingTab() {
           features_en: featInputEn.split(/\r?\n/).map(line => line.trim()).filter(Boolean),
         }),
       })
-      if (!r.ok) return setMsg('Error guardando.')
+      if (!r.ok) {
+        // E366-2: un 400 `invalid_plan` con campo se pinta bajo ESE campo (mensaje bilingüe del servidor) y el foco va a él; cualquier otro fallo, el aviso de siempre.
+        const fieldError = serverFieldError(r.status, await r.json().catch(() => null))
+        if (fieldError) { setErrors({ [fieldError.id]: fieldError.message }); focusAfterSave.current = fieldError.id; return }
+        return setMsg('Error guardando.')
+      }
       setMsg(editing ? 'Plan actualizado.' : 'Plan creado.')
       closeForm(); void load()
     } catch { setMsg('Error de conexión.') }
@@ -393,12 +403,12 @@ function PricingTab() {
               <div className="ac-grid3">
                 <TextField id="plan-price" label={tr("Precio")} type="number" min="0" max="99999999.99" step="0.01" value={form.price} error={errors['plan-price'] ? tr(errors['plan-price']) : undefined}
                   onChange={e => { setForm(f => ({ ...f, price: e.target.value })); setErrors(current => ({ ...current, 'plan-price': '' })) }} />
-                <SelectField id="plan-currency" label={tr("Moneda")} value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
+                <SelectField id="plan-currency" label={tr("Moneda")} value={form.currency} error={errors['plan-currency'] || undefined} onChange={e => { setForm(f => ({ ...f, currency: e.target.value })); setErrors(current => ({ ...current, 'plan-currency': '' })) }}>
                   <option value="USD">USD</option>
                   <option value="COP">COP</option>
                   <option value="EUR">EUR</option>
                 </SelectField>
-                <SelectField id="plan-period" label={tr("Período")} value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}>
+                <SelectField id="plan-period" label={tr("Período")} value={form.period} error={errors['plan-period'] || undefined} onChange={e => { setForm(f => ({ ...f, period: e.target.value })); setErrors(current => ({ ...current, 'plan-period': '' })) }}>
                   <option value="month">{tr("Mensual")}</option>
                   <option value="year">{tr("Anual")}</option>
                 </SelectField>

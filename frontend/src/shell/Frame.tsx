@@ -1,18 +1,17 @@
 // ES-153: piezas comunes de los marcos de página: «saltar al contenido», un solo <main> que recibe el foco al cambiar de ruta,
-// selector de idioma, menú de usuario (teclado, Escape y retorno del foco) y pie con el aviso «no es terapia ni diagnóstico».
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+// selector de idioma, piezas de preferencias (idioma y tema; el menú de cuenta vive en AccountMenu.tsx) y pie con el aviso «no es terapia ni diagnóstico».
+import { useEffect, useId, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
-import { signOut } from '../access/signOut'
 import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
+import { NavDrawer, type DrawerGroup } from './NavDrawer'
+import type { NavGroup } from './navGroups'
 import { useShellCopy } from './useShellCopy'
 import { useNarrowHeader } from './narrowHeader'
 import { leaveBlocked } from './leaveGuard'
 import './shell.css'
-
-const BACKEND = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 export function LangSwitch() {
   const { lang, setLang } = useLanguage(); const { c } = useShellCopy()
@@ -57,50 +56,6 @@ export function NavLinks({ items, label, className }: { items: NavItem[]; label:
   )
 }
 
-/** Menú de usuario como botón + lista de enlaces: Enter/Espacio abre, Escape cierra y devuelve el foco al botón, un clic fuera también cierra. */
-export function UserMenu({ name, items, withSignOut = true }: { name: string; items: NavItem[]; withSignOut?: boolean }) {
-  const { c } = useShellCopy(); const navigate = useNavigate()
-  const [open, setOpen] = useState(false); const [leaving, setLeaving] = useState(false)
-  const button = useRef<HTMLButtonElement>(null); const root = useRef<HTMLDivElement>(null); const id = useId()
-  const close = (focus: boolean) => { setOpen(false); if (focus) button.current?.focus() }
-  useEffect(() => {
-    if (!open) return
-    const outside = (event: MouseEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false) }
-    document.addEventListener('mousedown', outside)
-    return () => document.removeEventListener('mousedown', outside)
-  }, [open])
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Escape' && open) { event.stopPropagation(); close(true) } }
-  const leave = async () => {
-    if (leaving || leaveBlocked('/', 'action')) return
-    setLeaving(true)
-    await signOut(BACKEND)
-    navigate('/', { replace: true })
-  }
-  return (
-    <div className="cg-usermenu" ref={root} onKeyDown={onKeyDown}>
-      <button ref={button} type="button" className="cg-usermenu__button" aria-expanded={open} aria-controls={id} aria-label={`${c.userMenu}: ${name}`} onClick={() => setOpen(value => !value)}>
-        <span className="cg-name cg-usermenu__who">{name}</span><span aria-hidden="true"> ▾</span>
-      </button>
-      <ul className="cg-usermenu__list" id={id} hidden={!open} onClick={event => { if ((event.target as HTMLElement).closest('a')) setOpen(false) }}>
-        {items.map(item => <li key={item.to}><NavLink to={item.to}>{c[item.label]}</NavLink></li>)}
-        {withSignOut && <li><button type="button" className="cg-usermenu__out" onClick={() => void leave()} disabled={leaving} aria-busy={leaving}>{leaving ? c.signingOut : c.signOut}</button></li>}
-      </ul>
-    </div>
-  )
-}
-
-/** Salir sin menú (administración y junta): botón visible con texto. */
-export function SignOutButton() {
-  const { c } = useShellCopy(); const navigate = useNavigate(); const [leaving, setLeaving] = useState(false)
-  const leave = async () => {
-    if (leaving || leaveBlocked('/', 'action')) return
-    setLeaving(true)
-    await signOut(BACKEND)
-    navigate('/', { replace: true })
-  }
-  return <button type="button" className="cg-btn cg-btn--ghost cg-signout" onClick={() => void leave()} disabled={leaving} aria-busy={leaving}>{leaving ? c.signingOut : c.signOut}</button>
-}
-
 export function SiteFooter() {
   const { c } = useShellCopy()
   return <footer className="cg-footer"><span>{c.foot1}</span><span>{c.foot2}</span></footer>
@@ -122,32 +77,65 @@ export type FrameProps = {
   theme?: CgTheme
   /** ES-321: en la disposición móvil (≤ 900 px) el DOM sigue el orden visual (marca → menú → preferencias → navegación) para que Tab no suba; en escritorio, el de siempre. */
   mobileOrder?: boolean
+  /** ES-359 (PR3): en ≤ 900 px el encabezado es una fila de 56 px (marca + «☰ Menú») y la navegación, las preferencias y «Cerrar sesión» viven en el cajón. */
+  drawer?: { groups: DrawerGroup[]; name: string; roleLabel: string; legacyTheme?: boolean }
+  /** ES-359 (PR2): con barra lateral por grupos en escritorio (≥ 901 px): el encabezado deja de repetir los enlaces y la barra mide 14,5 rem. */
+  sidebarWide?: boolean
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
-export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, children }: FrameProps) {
-  const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder
+export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, drawer, sidebarWide = false, children }: FrameProps) {
+  const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder; const compact = useNarrowHeader() && !!drawer
+  const [drawerOpen, setDrawerOpen] = useState(false); const menuButton = useRef<HTMLButtonElement>(null)
+  // El cajón se cierra al cambiar de ruta (incluido el botón «atrás» del navegador) y si la pantalla deja de ser móvil. Sin efecto con setState: se ajusta el estado durante el render.
+  const [drawerPath, setDrawerPath] = useState(pathname)
+  if (drawerPath !== pathname) { setDrawerPath(pathname); if (drawerOpen) setDrawerOpen(false) }
+  if (!compact && drawerOpen) setDrawerOpen(false) // al pasar a escritorio (o girar el teléfono) el estado se reinicia: al volver a móvil el cajón NO reaparece abierto
+  const drawerShown = drawerOpen && compact
   const main = useRef<HTMLElement>(null); const first = useRef(true)
+  // ES-359: `preferences={null}` = sin preferencias en el encabezado (viven dentro del menú de cuenta); sin la propiedad, el idioma suelto (pantallas públicas).
+  const prefs = preferences === undefined ? <LangSwitch /> : preferences
   // Al cambiar de ruta el foco pasa al <main> (no en la primera carga, para no robar el foco de quien llega por teclado).
   useEffect(() => {
     if (first.current) { first.current = false; return }
     main.current?.focus({ preventScroll: false })
   }, [pathname])
   return (
-    <CartografiaRoot theme={theme} className="cg-frame">
+    <CartografiaRoot theme={theme} className={sidebarWide ? 'cg-frame cg-frame--wide-side' : 'cg-frame'}>
       <a className="cg-skip" href="#main" onClick={event => { event.preventDefault(); main.current?.focus(); main.current?.scrollIntoView() }}>{c.skip}</a>
       {header && (
-        <header className="cg-header" onClickCapture={guardLeave}>
+        <header className="cg-header" data-compact={compact || undefined} onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
-          {narrow ? <div className="cg-header__end">{account}{preferences ?? <LangSwitch />}</div> : <>{nav}<div className="cg-header__end">{preferences ?? <LangSwitch />}{account}</div></>}
-          {narrow && nav}
+          {compact ? <button ref={menuButton} type="button" className="cg-menubtn" aria-haspopup="dialog" aria-expanded={drawerShown} onClick={() => setDrawerOpen(true)}><span className="cg-menubtn__icon" aria-hidden="true" /> {c.menu}</button> : <>{narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
+          {narrow && nav}</>}
         </header>
       )}
-      <div className={sidebar ? 'cg-body cg-body--side' : 'cg-body'}>
+      {compact && drawer && <NavDrawer open={drawerShown} onClose={() => setDrawerOpen(false)} opener={menuButton} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} />}
+      <div className={sidebar ? `cg-body cg-body--side${sidebarWide ? ' cg-body--wideside' : ''}` : 'cg-body'}>
         {sidebar}
         <main id="main" ref={main} tabIndex={-1} className={`cg-main ${mainClassName}`.trim()}>{children}</main>
       </div>
       {footer && <SiteFooter />}
     </CartografiaRoot>
+  )
+}
+
+/** ES-359 (PR2): barra lateral por grupos. Un <nav> por grupo (título en versalitas como su nombre accesible); el enlace de la pantalla actual lleva aria-current (NavLink). */
+export function SideNav({ groups, label }: { groups: NavGroup[]; label: string }) {
+  const { c } = useShellCopy(); const base = useId()
+  return (
+    <nav className="cg-side cg-side--groups" aria-label={label}>
+      {groups.map((group, index) => {
+        const titleId = `${base}-g${index}`
+        return (
+          <div key={group.title ?? 'top'} className="cg-sidegroup">
+            {group.title && <p className="cg-tag cg-side__group" id={titleId}>{c[group.title]}</p>}
+            <ul className="cg-sidelist" aria-labelledby={group.title ? titleId : undefined}>
+              {group.items.map(item => <li key={item.to}><NavLink to={item.to}>{c[item.label]}</NavLink></li>)}
+            </ul>
+          </div>
+        )
+      })}
+    </nav>
   )
 }

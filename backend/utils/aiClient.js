@@ -3,6 +3,7 @@
 // registro de uso sin contenido y liberación de la reserva si la llamada falla.
 
 const anthropic = require('./anthropic');
+const { stripInvisible } = require('./promptSafety');
 const AiUsage = require('../AiUsage');
 const pricingDefault = require('../config/aiPricing.json');
 const {
@@ -57,8 +58,24 @@ const safe = async (fn) => {
   try { await fn(); } catch (error) { console.error('⚠️ Registro de uso de IA no guardado:', error.code || error.name); }
 };
 
+// ES-287: ÚLTIMA barrera antes del proveedor, para TODOS los flujos (chat, recomendaciones, análisis, fuentes, resumen): se quitan los caracteres invisibles
+// (incluido el bloque Tags U+E0000–E007F) del `system` y de cada mensaje; el texto visible no cambia. Devuelve una copia: no toca el objeto de quien llama.
+const cleanContent = (content) => {
+  if (typeof content === 'string') return stripInvisible(content);
+  if (Array.isArray(content)) return content.map((block) => (block && typeof block.text === 'string' ? { ...block, text: stripInvisible(block.text) } : block));
+  return content;
+};
+function sanitizeBody(body) {
+  const out = { ...body };
+  if (typeof out.system === 'string') out.system = stripInvisible(out.system);
+  else if (Array.isArray(out.system)) out.system = cleanContent(out.system);
+  if (Array.isArray(out.messages)) out.messages = out.messages.map((message) => (message && typeof message === 'object' ? { ...message, content: cleanContent(message.content) } : message));
+  return out;
+}
+
 // body: { model, max_tokens, system?, messages }. Lanza AiBudgetNotConfiguredError, AiBudgetExhaustedError o AiProviderError.
-async function callClaude({ userId, kind, requestId = null, body, now = new Date() }) {
+async function callClaude({ userId, kind, requestId = null, body: rawBody, now = new Date() }) {
+  const body = sanitizeBody(rawBody);
   const config = readConfig();
   const estimate = estimateTokens(body);
   const reservation = await reserve(userId, estimate, now); // puede rechazar sin llamar al proveedor
@@ -103,4 +120,4 @@ async function callClaude({ userId, kind, requestId = null, body, now = new Date
   return message;
 }
 
-module.exports = { callClaude, computeCost, classifyError, AiProviderError, AiBudgetNotConfiguredError, AiBudgetExhaustedError };
+module.exports = { callClaude, sanitizeBody, computeCost, classifyError, AiProviderError, AiBudgetNotConfiguredError, AiBudgetExhaustedError };

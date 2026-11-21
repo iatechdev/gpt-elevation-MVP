@@ -6,6 +6,8 @@ export type Declared = {
   resume: { id: number; version: number; createdAt: string }
   added: boolean
 }
+// Habilidades que siguen en el contexto pero cuya versión de origen se borró (#390: campo aditivo `orphaned`). No se pueden añadir a «Mis evidencias» (ya no hay hoja que las respalde).
+export type Orphaned = { name: string; classified: Declared['classified']; added: boolean }
 export type PromoteResult = { created: { id: number; name: string; skillKey: string; replayed: boolean }[]; skipped: { name: string; reason: string }[] }
 export class SkillsError extends Error {
   readonly status: number
@@ -24,6 +26,18 @@ export function parseDeclared(value: unknown): Declared[] {
     if (c !== null && !(object(c) && typeof c.skillKey === 'string' && c.skillKey && object(c.labels) && label(c.labels.es) && label(c.labels.en))) throw new Error('Invalid classification')
     return item as unknown as Declared
   })
+}
+// `orphaned` es opcional y tolerante: una respuesta antigua, sin el campo o con un elemento mal formado no rompe la lista (se ignora lo malformado, nunca se inventa).
+export function parseOrphaned(value: unknown): Orphaned[] {
+  if (!object(value) || !Array.isArray(value.orphaned)) return []
+  const out: Orphaned[] = []
+  for (const item of value.orphaned) {
+    if (!object(item) || typeof item.name !== 'string' || !item.name.trim() || typeof item.added !== 'boolean') continue
+    const c = item.classified
+    const classified = object(c) && typeof c.skillKey === 'string' && c.skillKey && object(c.labels) && label(c.labels.es) && label(c.labels.en) ? c as unknown as Declared['classified'] : null
+    out.push({ name: item.name, classified, added: item.added })
+  }
+  return out
 }
 export function parsePromote(value: unknown): PromoteResult {
   if (!object(value) || !Array.isArray(value.created) || !Array.isArray(value.skipped)) throw new Error('Invalid result')
@@ -46,6 +60,7 @@ export function resumeSkillsApi(baseUrl: string, token: string, fetcher: typeof 
   }
   return {
     list: async (signal?: AbortSignal) => parseDeclared(await call('', { signal })),
+    overview: async (signal?: AbortSignal) => { const value = await call('', { signal }); return { skills: parseDeclared(value), orphaned: parseOrphaned(value) } },
     promote: async (names: string[], requestId: string) => parsePromote(await call('/promote', { method: 'POST', body: JSON.stringify({ requestId, names }) })),
   }
 }

@@ -45,6 +45,8 @@ test('ES-110 lista: solo habilidades de una hoja de vida que existe, clasificada
   const res = await request('GET', '/api/user/resume-skills', ME);
   assert.equal(res.status, 200); assert.equal(res.body.skills.some((s) => s.name === 'Python'), false, 'una habilidad escrita a mano no es de la hoja de vida');
   assert.equal(res.body.skills.some((s) => s.name === 'Inglés técnico'), false, 'si la versión de origen se borró, no hay de dónde sacarla');
+  // ES-110 (actualizar la hoja de vida): no desaparece sin explicación; sale aparte como «versión borrada» (campo aditivo; la escrita a mano no entra)
+  assert.deepEqual(res.body.orphaned, [{ name: 'Inglés técnico', origin: 'deleted', classified: null, added: false }]);
   const by = Object.fromEntries(res.body.skills.map((s) => [s.name, s]));
   assert.deepEqual(by['Power BI'].classified, { skillKey: 'power_bi', labels: { es: 'Power BI', en: 'Power BI' } });
   assert.equal(by['Gestión de proyectos'].classified.skillKey, 'gestion_proyectos'); assert.equal(by['Storytelling con datos'].classified, null);

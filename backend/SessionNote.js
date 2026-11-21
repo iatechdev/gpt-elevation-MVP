@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { sequelize } = require('./database');
 
 // ES-179: `isLive` marca la ÚNICA nota en vivo de una sesión (autoguardado); las filas anteriores (isLive NULL) son historial y no se tocan.
@@ -14,6 +14,8 @@ const SessionNote = sequelize.define('SessionNote', {
 }, {
   indexes: [
     { name: 'session_notes__live', unique: true, fields: ['sessionId', 'therapistId'], where: { isLive: true } },
+    // ES-288: un requestId no se repite dentro de la misma sesión y profesional (defensa en profundidad; la migración 20261118020000 lo crea).
+    { name: 'session_notes__request', unique: true, fields: ['sessionId', 'therapistId', 'requestId'], where: { requestId: { [Op.ne]: null } } },
   ],
 });
 

@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const { sequelize } = require('./database');
 
 // Registro de cada llamada al proveedor de IA (ES-22): tipo, modelo, versión de la aplicación, tokens, latencia, error y
@@ -21,7 +21,11 @@ const AiUsage = sequelize.define('AiUsage', {
   errorCode: { type: DataTypes.STRING(32), allowNull: true },
   stopReason: { type: DataTypes.STRING(24), allowNull: true },  // motivo de cierre del proveedor (end_turn | max_tokens ...); ES43-QA-01
 }, {
-  indexes: [{ fields: ['periodKey'] }, { fields: ['UserId', 'periodKey'] }],
+  indexes: [
+    { fields: ['periodKey'] }, { fields: ['UserId', 'periodKey'] },
+    // ES-288: a lo sumo UN consumo completado por (persona, tipo, requestId); los fallidos se reintentan con el mismo requestId y no cuentan. Igual que la migración 20261118020000.
+    { name: 'ai_usages__request_done', unique: true, fields: ['UserId', 'kind', 'requestId'], where: { requestId: { [Op.ne]: null }, status: 'completed' } },
+  ],
 });
 
 module.exports = AiUsage;

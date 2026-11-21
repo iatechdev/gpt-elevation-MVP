@@ -1,11 +1,15 @@
 // ES-153: los marcos por rol. Cada uno muestra solo las rutas de su rol; la ruta activa lleva aria-current="page" (lo pone NavLink).
+// ES-359 (PR5): profesional, administración y junta usan la misma estructura que persona: barra lateral con grupos en escritorio y SU cajón en ≤ 900 px.
 import { useContext, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Frame, NavLinks, PreferencesBar, SignOutButton, UserMenu } from './Frame'
+import { Frame, NavLinks, SideNav } from './Frame'
+import { AccountMenu } from './AccountMenu'
+import type { DrawerGroup } from './NavDrawer'
+import { groupsFor, visibleGroups, ADMIN_GROUPS, type NavGroup } from './navGroups'
 import { useCgTheme } from '../cartografia/themeState'
 import { useShellCopy } from './useShellCopy'
-import { PROFESSIONAL_LABEL } from './copy'
-import { ADMIN_BOARD_GROUP, ADMIN_NAV, BOARD_NAV, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PROFESSIONAL_NAV, PUBLIC_NAV, visibleFor } from './nav'
+import { PROFESSIONAL_LABEL, type ShellCopy } from './copy'
+import { ADMIN_MENU, BOARD_MENU, PERSON_MENU, PERSON_NAV, PROFESSIONAL_MENU, PUBLIC_NAV, type NavItem } from './nav'
 import type { Role } from './access'
 import { PersonLayoutContext } from './personLayoutState'
 
@@ -16,6 +20,12 @@ const readRole = (fallback: Role): Role => {
     return value === 'user' || value === 'admin' || value === 'superadmin' || value === 'therapist' || value === 'board' ? value : fallback
   } catch { return fallback }
 }
+
+/** Cajón móvil de un rol: sus grupos con el título ya traducido y, al final, «Menú de usuario» con lo de cuenta (ES-359). */
+const drawerGroups = (groups: NavGroup[], menu: NavItem[], c: ShellCopy, fallback: NavItem[]): DrawerGroup[] => [
+  ...(groups.length ? groups.map(g => ({ title: g.title ? c[g.title] : null, items: g.items })) : [{ title: null, items: fallback }]),
+  { title: c.userMenu, items: menu },
+]
 
 /** Público: marca, «Cómo funciona», «Privacidad», «Entrar» y «Crear cuenta». */
 export function PublicFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
@@ -28,12 +38,14 @@ export function PublicFrame({ children, migrated = false }: { children: ReactNod
   )
 }
 
-/** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de usuario. */
+/** Persona: Mapa, Conversación, Evidencias, Diario, Siguiente paso + menú de cuenta (ES-359: Preferencias y «Cerrar sesión» dentro). */
 export function PersonChrome({ children, migrated = false, footer = true }: { children: ReactNode; migrated?: boolean; footer?: boolean }) {
   const { c } = useShellCopy(); const [theme] = useCgTheme()
   // `migrated`: la pantalla ya usa Cartografía (ES-160): sin el ámbito de tokens antiguos y con el tema elegido (Auto = el del sistema).
   // ES-153 (paso 3): las pantallas heredadas siguen con lienzo claro fijo y el selector de tema queda con aria-disabled.
-  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={<PreferencesBar legacy={!migrated} />} account={<UserMenu name={readName('Elevation')} items={PERSON_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} footer={footer} mobileOrder>{children}</Frame>
+  const groups = groupsFor(readRole('user'))
+  return <Frame brandTo="/app/dashboard" nav={<NavLinks items={PERSON_NAV} label={c.main} className="cg-nav cg-nav--grid3" />} preferences={null} account={<AccountMenu name={readName('Elevation')} roleLabel={c.rolePerson} items={PERSON_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? theme : 'light'} sidebar={<SideNav groups={groups} label={c.main} />} sidebarWide footer={footer} mobileOrder
+    drawer={{ groups: drawerGroups(groups, PERSON_MENU, c, PERSON_NAV), name: readName('Elevation'), roleLabel: c.rolePerson, legacyTheme: !migrated }}>{children}</Frame>
 }
 
 /** Persona: dentro de PersonLayout (ES-153, todo /app/* menos la sala) el marco ya está puesto y esto solo deja pasar el contenido; fuera, dibuja el marco. */
@@ -42,49 +54,56 @@ export function PersonFrame({ children, migrated = false }: { children: ReactNod
   return inLayout ? <>{children}</> : <PersonChrome migrated={migrated}>{children}</PersonChrome>
 }
 
-/** Profesional: Panel y Personas en facilitación + menú (Revisiones profesionales, Salir); marca «Profesional». `migrated` (ES-309): la pantalla ya usa Cartografía → tema claro/oscuro del sistema y sin elv-theme. */
+/** Profesional: grupo «Principal» (Panel, Personas en facilitación, Revisiones profesionales) en la barra lateral y, en móvil, su cajón; menú de cuenta con Mis datos y el Manifiesto. `migrated` (ES-309): tema claro/oscuro del sistema y sin elv-theme. */
 export function ProfessionalFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
-  const { c, lang } = useShellCopy()
+  const { c, lang } = useShellCopy(); const groups = groupsFor('therapist'); const label = PROFESSIONAL_LABEL[lang]
   return (
     <Frame
-      brand={<>Elevation<i>.</i> <span className="cg-brand__role">{PROFESSIONAL_LABEL[lang]}</span></>} brandLabel={`${c.brandLabel}. ${PROFESSIONAL_LABEL[lang]}`} brandTo="/therapist/dashboard"
-      nav={<NavLinks items={PROFESSIONAL_NAV} label={c.main} />} account={<UserMenu name={readName(PROFESSIONAL_LABEL[lang])} items={PROFESSIONAL_MENU} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}
+      brand={<>Elevation<i>.</i> <span className="cg-brand__role">{label}</span></>} brandLabel={`${c.brandLabel}. ${label}`} brandTo="/therapist/dashboard"
+      preferences={null} account={<AccountMenu name={readName(label)} roleLabel={label} items={PROFESSIONAL_MENU} legacyTheme={!migrated} />} mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}
+      sidebar={<SideNav groups={groups} label={c.main} />} sidebarWide
+      drawer={{ groups: drawerGroups(groups, PROFESSIONAL_MENU, c, []), name: readName(label), roleLabel: label, legacyTheme: !migrated }}
     >{children}</Frame>
   )
 }
 
-/** Administración: barra lateral (en móvil, una fila que se ajusta) y grupo «Junta» solo para superadministración. */
+/** Administración y superadministración: grupos Resumen, Personas, Contenido y Junta en la barra lateral y, en móvil, su cajón (QA-400-03: ya no el de persona). */
 export function AdminFrame({ children, pilotPreview = false, migrated = false }: { children: ReactNode; pilotPreview?: boolean; migrated?: boolean }) {
-  const { c } = useShellCopy(); const role = readRole('admin')
-  const group = visibleFor(ADMIN_BOARD_GROUP, role)
+  const { c } = useShellCopy(); const role = readRole('admin'); const groups = visibleGroups(ADMIN_GROUPS, role)
+  const roleLabel = role === 'superadmin' ? c.superRole : c.adminRole
   return (
     <Frame
       brandTo="/admin/dashboard"
-      account={<><span className="cg-role">{role === 'superadmin' ? c.superRole : c.adminRole}</span><span className="cg-name cg-who">{readName(c.adminRole)}</span><SignOutButton /></>}
-      sidebar={(
-        <div className="cg-side">
-          <NavLinks items={visibleFor(ADMIN_NAV, role)} label={c.admin} className="cg-sidenav" />
-          {group.length > 0 && <>
-            <p className="cg-tag cg-side__group">{c.boardGroup}</p>
-            <NavLinks items={group} label={c.boardGroup} className="cg-sidenav" />
-          </>}
-        </div>
-      )}
+      preferences={null} account={<AccountMenu name={readName(c.adminRole)} roleLabel={roleLabel} items={ADMIN_MENU} legacyTheme={!migrated} />}
+      sidebar={<SideNav groups={groups} label={c.admin} />} sidebarWide
+      drawer={{ groups: drawerGroups(groups, ADMIN_MENU, c, []), name: readName(c.adminRole), roleLabel, legacyTheme: !migrated }}
       // `migrated` (ES-310): la pantalla ya usa Cartografía: sin el ámbito de tokens antiguos y con tema claro/oscuro del sistema. `pilotPreview` se conserva tal cual (ES-183).
       mainClassName={`${migrated ? '' : 'elv-theme'}${pilotPreview ? ' pilot-admin-layout' : ''}`.trim()} theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
 }
 
-/** Junta: solo el manifiesto (página pública /manifiesto, ES-207), sin barra lateral. */
-export function BoardFrame({ children }: { children: ReactNode }) {
-  const { c } = useShellCopy()
+/** Junta: solo el manifiesto (página pública /manifiesto, ES-207); misma estructura (barra lateral y cajón) con un solo enlace. `migrated`: «Mis datos» ya usa Cartografía. */
+export function BoardFrame({ children, migrated = false }: { children: ReactNode; migrated?: boolean }) {
+  const { c } = useShellCopy(); const groups = groupsFor('board')
   return (
     <Frame
-      brandTo="/manifiesto" nav={<NavLinks items={BOARD_NAV} label={c.boardRole} />}
-      account={<><span className="cg-role">{c.boardRole}</span><span className="cg-name cg-who">{readName(c.boardRole)}</span><SignOutButton /></>} mainClassName="elv-theme"
+      brandTo="/manifiesto" preferences={null} account={<AccountMenu name={readName(c.boardRole)} roleLabel={c.boardRole} items={BOARD_MENU} legacyTheme={!migrated} />}
+      sidebar={<SideNav groups={groups} label={c.boardRole} />} sidebarWide
+      drawer={{ groups: drawerGroups(groups, BOARD_MENU, c, []), name: readName(c.boardRole), roleLabel: c.boardRole, legacyTheme: !migrated }}
+      mainClassName={migrated ? '' : 'elv-theme'} theme={migrated ? 'system' : 'light'}
     >{children}</Frame>
   )
+}
+
+/** ES-359 (PR5): «Mis datos» y «Revisiones profesionales» valen para cualquier sesión válida y viven bajo /app (PersonLayout); aquí se dibujan en el marco del ROL de la sesión
+ *  (profesional, administración o junta) en vez del de persona. Persona y superadministración (zona de persona) siguen con el marco de persona. El rol del navegador solo elige el marco: el servidor decide el acceso. */
+export function MemberChrome({ children, migrated = false, footer = true }: { children: ReactNode; migrated?: boolean; footer?: boolean }) {
+  const role = readRole('user')
+  if (role === 'therapist') return <ProfessionalFrame migrated={migrated}>{children}</ProfessionalFrame>
+  if (role === 'admin') return <AdminFrame migrated={migrated}>{children}</AdminFrame>
+  if (role === 'board') return <BoardFrame migrated={migrated}>{children}</BoardFrame>
+  return <PersonChrome migrated={migrated} footer={footer}>{children}</PersonChrome>
 }
 
 /** Sala de sesión (persona y profesional): sin encabezado ni pie, pantalla completa. */

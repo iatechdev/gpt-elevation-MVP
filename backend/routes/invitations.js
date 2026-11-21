@@ -40,6 +40,7 @@ const hashToken = token => crypto.createHash('sha256').update(token).digest('hex
 const STALE_AFTER_MS = 30 * 24 * 60 * 60 * 1000; // el correo de quien nunca se registró no se conserva más de 30 días
 
 const { isValidEmail } = require('../utils/emailGuard'); // ES-252/ES-259
+const { isValidName } = require('../utils/invisibleText'); // ES-352: misma regla de nombres que el registro
 const INVALID_LINK = { code: 'invitation_invalid', error: 'Este enlace ya no sirve. Pide una invitación nueva. / This link no longer works. Ask for a new invitation.' };
 
 const limiter = (variable, fallback) => rateLimit({
@@ -153,11 +154,11 @@ const publicRouter = express.Router();
 publicRouter.post('/accept', limiter('INVITATION_ACCEPT_LIMIT', 10), validateBody({ token: nonempty, name: nonempty, password: nonempty }), async (req, res) => {
   try {
     const { token, password } = req.body;
-    const name = String(req.body.name).trim();
+    const rawName = String(req.body.name); const name = rawName.trim(); // ES-352: se valida el texto SIN recortar (trim() también se come U+FEFF y U+2028/2029 y los dejaría pasar)
     // La política se valida antes de gastar el enlace: una contraseña débil no lo consume.
     const missing = passwordProblems(password);
     if (missing.length) return res.status(400).json({ code: 'password_policy', missing, error: `${policy.message.es} / ${policy.message.en}` });
-    if (!name || name.length > 100) return res.status(400).json({ code: 'invalid_name', error: 'Nombre inválido. / Invalid name.' });
+    if (!isValidName(rawName)) return res.status(400).json({ code: 'invalid_name', error: 'Nombre inválido. / Invalid name.' });
     if (token.length > 128) return res.status(400).json(INVALID_LINK);
     // ES-326 (E301-4): quien acepta una invitación también acepta el aviso de privacidad y los términos. Misma validación y mismos 400 estables que el registro (el SERVIDOR pone versión y fecha);
     // va ANTES de consumir el enlace: un rechazo no lo gasta, y sin aceptación no se crea ni se activa la cuenta.

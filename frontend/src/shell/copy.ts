@@ -12,7 +12,12 @@ const es = {
   // persona
   map: 'Mapa', chat: 'Conversación', evidence: 'Evidencias', diary: 'Diario', next: 'Siguiente paso',
   today: 'Hoy', bridge: 'El Puente', myProfessional: 'Mi profesional', tools: 'Mis herramientas', progress: 'Mi progreso', plan: 'Mi plan',
-  resumes: 'Hojas de vida', reviews: 'Revisiones profesionales', data: 'Mis datos', feedback: 'Tu opinión', signOut: 'Salir', signingOut: 'Saliendo…',
+  resumes: 'Hojas de vida', reviews: 'Revisiones profesionales', data: 'Mis datos', feedback: 'Tu opinión', signOut: 'Cerrar sesión', signingOut: 'Saliendo…',
+  rolePerson: 'Persona', // ES-359 (aprobado en ES-359)
+  menu: 'Menú', close: 'Cerrar', // ES-359 (PR3): textos existentes del chat, reutilizados por el cajón móvil
+  // ES-359 (PR2): «Mi panel», las 3 entradas que no tenían enlace y los títulos de grupo de la barra lateral (textos aprobados en ES-359, comentario 12752; el inglés queda a revisión de Alejo)
+  panel: 'Mi panel', exercises: 'Ejercicios opcionales', compass: 'Brújula profesional', routeCatalog: 'Catálogo de rutas',
+  grpSupport: 'Acompañamiento', grpCareer: 'Mi carrera', grpFollow: 'Seguimiento', grpPro: 'Con mi profesional', grpOverview: 'Resumen', grpPeople: 'Personas', grpContent: 'Contenido',
   // profesional
   proPanel: 'Panel', proFacilitation: 'Personas en facilitación',
   // administración y junta
@@ -35,7 +40,11 @@ const en: typeof es = {
   how: 'How it works', privacy: 'Privacy', signIn: 'Sign in', signUp: 'Create account',
   map: 'Map', chat: 'Conversation', evidence: 'Evidence', diary: 'Diary', next: 'Next step',
   today: 'Today', bridge: 'The Bridge', myProfessional: 'My professional', tools: 'My tools', progress: 'My progress', plan: 'My plan',
+  panel: 'My dashboard', exercises: 'Optional exercises', compass: 'Career compass', routeCatalog: 'Route catalog',
+  grpSupport: 'Support', grpCareer: 'My career', grpFollow: 'Follow-up', grpPro: 'With my professional', grpOverview: 'Overview', grpPeople: 'People', grpContent: 'Content',
   resumes: 'Résumés', reviews: 'Professional reviews', data: 'My data', feedback: 'Your feedback', signOut: 'Sign out', signingOut: 'Signing out…',
+  rolePerson: 'Person',
+  menu: 'Menu', close: 'Close',
   proPanel: 'Dashboard', proFacilitation: 'Facilitation participants',
   adminRole: 'Administration', superRole: 'Superadministration', boardRole: 'Ethics board', boardGroup: 'Board',
   adPanel: 'Dashboard', adGuides: 'AI guides', adContent: 'Content', adUsers: 'Users', adMetrics: 'Metrics',

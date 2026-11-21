@@ -2,7 +2,8 @@
 import type { ShellCopy } from './copy'
 import type { Role } from './access'
 
-export type NavKey = Exclude<keyof ShellCopy, 'skip' | 'language' | 'brandLabel' | 'main' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy'>
+export type GroupKey = 'grpSupport' | 'grpCareer' | 'grpFollow' | 'grpPro' | 'grpOverview' | 'grpPeople' | 'grpContent' | 'main' | 'boardGroup'
+export type NavKey = Exclude<keyof ShellCopy, GroupKey | 'skip' | 'language' | 'brandLabel' | 'userMenu' | 'admin' | 'preferences' | 'theme' | 'themeSystem' | 'themeLight' | 'themeDark' | 'themeLegacy' | 'rolePerson' | 'menu' | 'close'>
 export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 
 export const PUBLIC_NAV: NavItem[] = [
@@ -21,14 +22,6 @@ export const PERSON_NAV: NavItem[] = [
 ]
 
 export const PERSON_MENU: NavItem[] = [
-  { to: '/app/checkin', label: 'today' },
-  { to: '/app/bridge', label: 'bridge' },
-  { to: '/app/my-therapist', label: 'myProfessional' },
-  { to: '/app/space/tools', label: 'tools' },
-  { to: '/app/progress', label: 'progress' },
-  { to: '/app/plan', label: 'plan' }, // ES-174: «Mi plan» lleva a la pantalla propia (antes a /pricing, que sigue público)
-  { to: '/app/context/resumes', label: 'resumes' },
-  { to: '/app/professional-reviews', label: 'reviews' },
   { to: '/app/data', label: 'data' },
   { to: '/app/feedback', label: 'feedback' },
   { to: '/manifiesto', label: 'adManifest' }, // ES-207
@@ -38,7 +31,11 @@ export const PROFESSIONAL_NAV: NavItem[] = [
   { to: '/therapist/dashboard', label: 'proPanel' },
   { to: '/facilitation', label: 'proFacilitation' },
 ]
-export const PROFESSIONAL_MENU: NavItem[] = [{ to: '/app/professional-reviews', label: 'reviews' }, { to: '/manifiesto', label: 'adManifest' }]
+/** ES-359: «Mis datos» (descargar mis datos y pedir eliminar la cuenta) está en el menú de cuenta de los CUATRO roles (decisión de Infra: ≤ 2 acciones para todos; la ruta /app/data se dibuja en el marco de persona hasta PR5). */
+export const ACCOUNT_DATA: NavItem = { to: '/app/data', label: 'data' }
+export const PROFESSIONAL_MENU: NavItem[] = [ACCOUNT_DATA, { to: '/manifiesto', label: 'adManifest' }]
+export const ADMIN_MENU: NavItem[] = [ACCOUNT_DATA, { to: '/manifiesto', label: 'adManifest' }] // ES-359 (PR5, F403-1): la página pública del manifiesto a ≤ 2 acciones (el enlace «Junta» edita en /admin/manifest)
+export const BOARD_MENU: NavItem[] = [ACCOUNT_DATA]
 
 export const ADMIN_NAV: NavItem[] = [
   { to: '/admin/dashboard', label: 'adPanel' },
@@ -55,3 +52,4 @@ export const ADMIN_BOARD_GROUP: NavItem[] = [{ to: '/admin/manifest', label: 'ad
 export const BOARD_NAV: NavItem[] = [{ to: '/manifiesto', label: 'adManifest' }]
 
 export const visibleFor = (items: NavItem[], role: Role) => items.filter(item => !item.roles || item.roles.includes(role))
+

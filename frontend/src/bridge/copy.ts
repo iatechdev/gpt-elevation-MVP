@@ -23,6 +23,9 @@ export const bridgeCopy = {
     review: 'Para revisión', reviewText: 'Algo de lo que autorizaste cambió o ya no existe. Revisa lo que sigue cruzando.',
     limitTotal: 'Ya cruzaron 12 textos. Retira alguno para autorizar otro.', limitKey: 'Ya hay 3 textos de esta categoría. Retira uno para autorizar otro.',
     notShareable: 'Este texto no se puede compartir. Déjalo fuera.', consent: 'Necesitas autorizar el puente profesional antes de cruzar esto.',
+    // ES-286: el permiso de la FUENTE (chat, diario u hoja de vida) del que sale el texto: al previsualizar falta; al confirmar se retiró mientras tanto. Textos aprobados en ES-286.
+    sourceConsentRequired: 'Para usar esa fuente como origen, primero autoriza su análisis en la sección de fuentes de esta pantalla. Tu texto sigue aquí y no se guardó nada.',
+    sourceConsentRevoked: 'El permiso de esa fuente se retiró mientras preparabas esto, así que no se guardó nada. Autorízala de nuevo para usarla, o déjala fuera de lo que cruzas.',
     expired: 'La vista previa venció. Intenta de nuevo.', conflict: 'Otro cambio ocurrió al mismo tiempo. Intenta de nuevo.', saveError: 'No pudimos guardar. Intenta de nuevo.',
     session: 'Tu sesión venció. Inicia sesión para continuar.', login: 'Iniciar sesión', home: 'Volver al inicio',
     insightOf: 'Entrada del', categories: 'Categoría',
@@ -117,6 +120,8 @@ export const bridgeCopy = {
     review: 'For review', reviewText: 'Something you authorized has changed or no longer exists. Review what still crosses.',
     limitTotal: '12 texts have already crossed. Remove one to authorize another.', limitKey: 'There are already 3 texts in this category. Remove one to authorize another.',
     notShareable: 'This text cannot be shared. Leave it out.', consent: 'You need to authorize the professional bridge before crossing this.',
+    sourceConsentRequired: 'To use that source as an origin, first allow its analysis in the sources section of this screen. Your text is still here and nothing was saved.',
+    sourceConsentRevoked: 'The permission for that source was withdrawn while you were preparing this, so nothing was saved. Allow it again to use it, or leave it out of what you cross.',
     expired: 'The preview expired. Try again.', conflict: 'Another change happened at the same time. Try again.', saveError: 'We could not save. Try again.',
     session: 'Your session expired. Sign in to continue.', login: 'Sign in', home: 'Back to home',
     insightOf: 'Entry of', categories: 'Category',

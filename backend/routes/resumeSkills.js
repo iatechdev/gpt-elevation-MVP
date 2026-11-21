@@ -1,6 +1,6 @@
 // backend/routes/resumeSkills.js
 // ES-110 — habilidades declaradas en la hoja de vida → «Mis evidencias», solo las que la persona acepta.
-//   GET  /api/user/resume-skills          habilidades declaradas (con su clasificación en el catálogo vigente y si ya pasaron)
+//   GET  /api/user/resume-skills          habilidades declaradas (con su clasificación en el catálogo vigente y si ya pasaron) + `orphaned`: las de una versión borrada (origin 'deleted', solo informativas)
 //   POST /api/user/resume-skills/promote  { requestId, names } crea borradores de evidencia sin nivel; idempotente por requestId
 // Solo la persona dueña (propietario de la sesión). verificarToken está montado en server.js.
 const router = require('express').Router();
@@ -18,7 +18,7 @@ const fail = (res, error) => {
 };
 
 router.get('/', async (req, res) => {
-  try { res.json({ skills: await resumeSkills.listCandidates(req.user.id) }); } catch (error) { fail(res, error); }
+  try { res.json({ skills: await resumeSkills.listCandidates(req.user.id), orphaned: await resumeSkills.listOrphaned(req.user.id) }); } catch (error) { fail(res, error); }
 });
 router.post('/promote', async (req, res) => {
   try { res.json(await resumeSkills.promote(req.user.id, req.body)); } catch (error) { fail(res, error); }

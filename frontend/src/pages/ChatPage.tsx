@@ -154,13 +154,12 @@ export function ChatPage() {
 
   return (
     <div className="chat-shell">
-      <h1 className="sr-only">{lang === 'es' ? 'Conversación' : 'Conversation'}</h1>
 
       {/* Mensajes */}
       {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
       <div className="chat-main">
         <div className="chat-top">
-          <ChatBar sent={messages.length} menu={<button type="button" className="chat-menu-btn space-ghost" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>{copy[lang].menu}</button>} />
+          <ChatBar sent={messages.length} menu={<button type="button" className="chat-menu-btn" aria-label={copy[lang].menu} aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span aria-hidden="true">☰</span><span className="chat-menu-btn__w" aria-hidden="true">{copy[lang].menu}</span></button>} />
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>

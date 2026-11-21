@@ -241,6 +241,10 @@ jobs:
         run: npm run test:professional-reviews:pg
         env:
           ES175_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-303 invitación de revisor con código de un solo uso - canje atómico, 404 uniforme, topes por persona e IP, anular y purga (PostgreSQL real)
+        run: npm run test:reviewer-invites:pg
+        env:
+          ES303_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-173 mi opinión del piloto - permiso, versión, retiro real, agregados con umbral de 5, carreras y purga (PostgreSQL real)
         run: npm run test:pilot-feedback:pg
         env:
@@ -257,6 +261,10 @@ jobs:
         run: npm run test:register-name:pg
         env:
           ES324_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-352 nombres con caracteres invisibles y de direccion - registro e invitacion rechazan (400 invalid_name) y conservan ZWNJ/ZWJ (PostgreSQL real)
+        run: npm run test:invisible-name:pg
+        env:
+          ES352_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: E273-6 revocar el puente actúa en las tres piezas y respeta la guarda de eliminación (PostgreSQL real; antes no corría en CI)
         run: npm run test:integration:pg
         env:
@@ -285,6 +293,10 @@ jobs:
         run: npm run test:my-professional:pg
         env:
           ES240_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-336 documentos legales versionados - migración, invariantes e inmutabilidad, semilla y lectura pública (PostgreSQL real)
+        run: npm run test:legal-docs:pg
+        env:
+          ES336_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-262 entradas hostiles de fecha y de id en sesiones, notas y solicitudes de plan (PostgreSQL real)
         run: npm run test:hostile-dates:pg
         env:

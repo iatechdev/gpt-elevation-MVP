@@ -7,6 +7,7 @@ const REJECTED_RETENTION_DAYS = 180; // cifra propuesta (no es un dato legal ver
 const STATUSES = ['pending', 'approved', 'rejected'];
 const LOCALES = ['es', 'en'];
 const { isValidEmail } = require('./emailGuard');
+const { nameProblem } = require('./invisibleText'); // ES-352
 
 // Campo → [obligatorio, máximo de caracteres]
 const FIELDS = {
@@ -34,7 +35,10 @@ function validateApplication(body, file) {
   for (const [key, [required, max]] of Object.entries(FIELDS)) {
     const raw = input[key];
     if (raw !== undefined && typeof raw !== 'string') { fields.push(key); continue; }
-    const text = normalizeText(raw ?? '').trim();
+    // ES-352: el NOMBRE se valida sin normalizar (normalizeText borraría en silencio ZWSP/RLO y el texto guardado no sería lo que la persona escribió): se rechaza como en el registro.
+    if (key === 'name' && typeof raw === 'string' && raw.trim() && ['forbidden', 'no_visible'].includes(nameProblem(raw, FIELDS.name[1]))) { fields.push(key); continue; }
+    // El nombre ya pasó la regla anterior: se guarda tal cual lo escribió (sin normalizeText, que borraría el ZWNJ legítimo de los nombres persas).
+    const text = key === 'name' && typeof raw === 'string' ? raw.trim() : normalizeText(raw ?? '').trim();
     if (!text) { if (required) fields.push(key); values[key] = null; continue; }
     if (text.length > max) { fields.push(key); continue; }
     values[key] = text;

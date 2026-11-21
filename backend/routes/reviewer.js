@@ -5,10 +5,14 @@
 //   POST /api/reviewer/reviews                      — registra una revisión inmutable { shareId, evidenceIds, observation, limits, locale, requestId, supersedesId? }
 //   GET  /api/reviewer/objections                   — objeciones recibidas
 //   POST /api/reviewer/objections/:id/response      — { text, requestId, locale } (una por objeción)
+//   POST   /api/reviewer/invites                    — ES-303: { requestId } emite una invitación de un solo uso (el código sale UNA vez)
+//   GET    /api/reviewer/invites                    — mis invitaciones (estado y fechas; nunca el código ni quién la canjeó)
+//   DELETE /api/reviewer/invites/:id                — anula una invitación activa
 // verificarTerapeuta aplicado en server.js.
 const express = require('express');
 const router = express.Router();
 const reviews = require('../utils/reviews');
+const reviewInvites = require('../utils/reviewInvites');
 const { validateIdParams } = require('../middlewares/params');
 
 router.use((req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
@@ -18,12 +22,19 @@ const handle = (fn) => async (req, res) => {
   try {
     await fn(req, res);
   } catch (error) {
-    if (error instanceof reviews.ReviewError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.max ? { max: error.max } : {}) });
+    if (error instanceof reviews.ReviewError || error instanceof reviewInvites.InviteError) return res.status(error.status).json({ code: error.code, error: error.message, ...(error.max ? { max: error.max } : {}) });
     console.error('Error en el lado del revisor:', error && error.name);
     res.status(500).json({ code: 'reviews_failed', error: 'No se pudo completar la operación. / The operation could not be completed.' });
   }
 };
 
+router.post('/invites', handle(async (req, res) => {
+  if (!await reviews.reviewerOf(req.user.id)) throw new reviewInvites.InviteError(403, 'not_allowed', 'No puedes emitir invitaciones.', 'You cannot issue invitations.'); // rol y cuenta activa vigentes en la base, no solo en el token
+  const out = await reviewInvites.issue(req.user, req.body);
+  res.status(out.replay ? 200 : 201).json(out.replay ? { invite: out.invite } : { invite: out.invite, code: out.code });
+}));
+router.get('/invites', handle(async (req, res) => res.json({ invites: await reviewInvites.listForReviewer(req.user.id) })));
+router.delete('/invites/:id', handle(async (req, res) => res.json({ invite: await reviewInvites.revoke(req.user.id, Number(req.params.id)) })));
 router.get('/shares', handle(async (req, res) => res.json({ shares: await reviews.reviewerShares(req.user.id) })));
 router.post('/reviews', handle(async (req, res) => {
   const out = await reviews.createReview(req.user.id, req.body);
