@@ -54,3 +54,7 @@
 .ac-ghost { display: inline-flex; align-items: center; justify-content: center; min-height: var(--cg-touch); padding: 0.7rem 1.2rem; background: none; color: var(--cg-ink); border: 1.5px solid var(--cg-ink); border-radius: 0; font: 700 1rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
 .ac-ghost:hover { color: var(--cg-mark); border-color: var(--cg-mark); }
 .ac-ghost:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+
+/* E392-2: marcador de altura del formulario mientras se verifica la sesión guardada (≈ formulario de «Entrar» y de «Crear cuenta» a 390 px; sin animación). */
+.ac-hold { min-height: 13.5rem; }
+.ac-hold--register { min-height: 48rem; }
