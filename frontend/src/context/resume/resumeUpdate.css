@@ -1,0 +1,35 @@
+/* ES-110 (PR 2): «Actualizar mi hoja de vida». Solo tokens de Cartografía; piezas nuevas mínimas (maqueta aprobada: .cv-prim, .cv-row, .cv-seg, .cv-sk). */
+.cv-prim { display: grid; gap: 0.4rem; justify-items: start; margin: 0 0 1rem; }
+.cv-prim p { margin: 0; }
+.cv-row { display: grid; gap: 0.4rem; border-top: 1px solid var(--cg-line); padding: 0.8rem 0; }
+.cv-row:first-of-type { border-top: 2px solid var(--cg-ink); }
+.cv-row__top { display: flex; justify-content: space-between; gap: 0.6rem 1rem; flex-wrap: wrap; align-items: center; }
+.cv-row__top strong { overflow-wrap: anywhere; }
+.cv-seg { display: inline-flex; flex-wrap: wrap; border: 1.5px solid var(--cg-ink); }
+.cv-seg label { position: relative; display: flex; align-items: center; min-height: var(--cg-touch); padding: 0 0.8rem; cursor: pointer; font: 600 0.9rem var(--cg-font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.cv-seg label + label { border-left: 1.5px solid var(--cg-ink); }
+.cv-seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.cv-seg label:has(input:checked) { background: var(--cg-ink); color: var(--cg-ground); }
+.cv-seg label:has(input:checked) span::before { content: '✓ '; }
+.cv-seg label:has(input:focus-visible) { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+.cv-sk { border: 1px dashed var(--cg-ink); padding: 0.05rem 0.45rem; font: 600 0.78rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.cv-name { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; overflow-wrap: anywhere; }
+.cv-skel { height: 1rem; background: var(--cg-line); margin: 0.6rem 0; max-width: 70%; }
+.cv-skel--l { max-width: 100%; height: 3rem; }
+.cv-group .cg-check { margin-top: 0; }
+.cv-update .participant-context-scope.cg-onboarding { max-width: none; margin-inline: 0; padding: 0; }
+.cv-sticky-actions { margin: 0; }
+/* La tarjeta de ES-109 (ResumeStarter) trae colores fijos de su tema claro (resume.css, misma especificidad que onboardingCartografia.css y cargada después): en oscuro quedaba texto claro sobre blanco.
+   Aquí se resuelve con los tokens de Cartografía con más especificidad, solo dentro de esta pantalla (la de «Tu punto de partida» no se toca). Casilla de autorización de 24 px (objetivo mínimo). */
+.cv-update .cg-onboarding .rs-card, .cv-update .cg-onboarding .rs-file, .cv-update .cg-onboarding .rs-box, .cv-update .cg-onboarding .rs-card details { background: var(--cg-panel); border-color: var(--cg-line); border-radius: 0; color: var(--cg-ink); }
+.cv-update .cg-onboarding .rs-tint { background: color-mix(in srgb, var(--cg-good) 12%, var(--cg-panel)); border-color: var(--cg-good); color: var(--cg-ink); }
+.cv-update .cg-onboarding .rs-tint .rs-box { background: var(--cg-panel); }
+.cv-update .cg-onboarding .rs-help, .cv-update .cg-onboarding .rs-card small, .cv-update .cg-onboarding .rs-tint .rs-help { color: var(--cg-muted); }
+.cv-update .cg-onboarding .rs-pdf { color: var(--cg-good); }
+.cv-update .cg-onboarding .rs-drop { border-color: var(--cg-muted); background: var(--cg-ground); border-radius: 0; }
+.cv-update .cg-onboarding .rs-drop strong { color: var(--cg-ink); }
+.cv-update .cg-onboarding .rs-bar { background: var(--cg-line); }
+.cv-update .cg-onboarding .rs-bar i { background: var(--cg-mark); }
+.cv-update .cg-onboarding .rs-error { background: color-mix(in srgb, var(--cg-err) 12%, var(--cg-panel)); border-color: var(--cg-err); color: var(--cg-ink); border-radius: 0; }
+.cv-update .cg-onboarding .rs-consent input { width: 1.5rem; height: 1.5rem; }
+@media (max-width: 639px) { .cv-sticky-actions .cg-btn { flex: 1 1 100%; } }

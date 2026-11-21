@@ -40,6 +40,7 @@ const UserDashboard = lazy(() => import('./pages/UserDashboard.tsx').then(m => (
 const MyTherapist = lazy(() => import('./pages/MyTherapist.tsx').then(m => ({ default: m.MyTherapist })))
 const Onboarding = lazy(() => import('./pages/Onboarding.tsx').then(m => ({ default: m.Onboarding })))
 const ResumesPage = lazy(() => import('./context/resume/ResumesPage').then(m => ({ default: m.ResumesPage })))
+const ResumeUpdatePage = lazy(() => import('./context/resume/ResumeUpdatePage').then(m => ({ default: m.ResumeUpdatePage })))
 const ResumeSkillsPage = lazy(() => import('./evidence/ResumeSkillsPage').then(m => ({ default: m.ResumeSkillsPage })))
 const EvidenceListPage = lazy(() => import('./pages/EvidencePages.tsx').then(m => ({ default: m.EvidenceListPage })))
 const EvidenceDetailPage = lazy(() => import('./pages/EvidencePages.tsx').then(m => ({ default: m.EvidenceDetailPage })))
@@ -136,6 +137,7 @@ export default function App() {
         <Route path="/app/plan" element={<PlanPage />} /> {/* ES-174 — Mi plan */}
         <Route path="/app/onboarding"   element={<Onboarding />} />
         <Route path="/app/context/resumes" element={<ResumesPage />} /> {/* ES-109 — mis hojas de vida */}
+        <Route path="/app/context/resumes/update" element={<ResumeUpdatePage />} /> {/* ES-110 — actualizar mi hoja de vida */}
         <Route path="/app/checkin"      element={<CheckinPage />} />
         <Route path="/app/chat"         element={<SpaceSession><ChatPage /></SpaceSession>} />
         <Route path="/app/progress"     element={<UserProgress />} />
