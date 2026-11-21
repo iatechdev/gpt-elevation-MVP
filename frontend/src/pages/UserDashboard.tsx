@@ -72,7 +72,8 @@ export function UserDashboard() {
   const locale      = lang === 'es' ? 'es-CO' : 'en-US'
 
   // ── Check-in state ───────────────────────────────────────────────────────
-  const [checkedIn,      setCheckedIn]      = useState(false)
+  // E393-1: el registro de hoy se lee desde el primer pintado (antes se ponía en un efecto: la tarjeta «Estado emocional» salía con el formulario de 161 px y se encogía, y «Tu progreso» subía → CLS).
+  const [checkedIn,      setCheckedIn]      = useState(() => { try { return localStorage.getItem('elevation_checkin_date') === new Date().toDateString() } catch { return false } })
   const [todayMood,      setTodayMood]      = useState<number | null>(null)
   const [checkingIn,     setCheckingIn]     = useState(false)
   const [pendingMood,    setPendingMood]    = useState<number | null>(null) // E322-1: opción elegida, aún sin registrar
