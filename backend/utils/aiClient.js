@@ -64,8 +64,8 @@ const safe = async (fn) => {
 // FALLA CERRADO (QA-416-01/02): no hay un «nivel a partir del cual se deja pasar». Se recorre en profundidad con un tope ALTO (64 niveles); si el cuerpo lo supera, o tiene un ciclo,
 // se RECHAZA con AiInputRejectedError (nada llega al proveedor) en vez de dejarlo sin limpiar. Recorrido iterativo: ninguna entrada puede desbordar la pila.
 const MAX_CONTENT_DEPTH = 64;
-// Tope de NODOS recorridos (cada valor de cada objeto/arreglo, contando CADA aparición): un hijo compartido varias veces por nivel se expande como en el JSON que viajaría (2^n); sin tope costaba segundos (QA-426). Un cuerpo real tiene unos cientos.
-const MAX_CONTENT_NODES = 1000000;
+// Tope de NODOS recorridos (cada valor de cada objeto/arreglo, contando CADA aparición): un hijo compartido varias veces por nivel se expande como en el JSON que viajaría (2^n); sin tope costaba segundos (QA-426). Un cuerpo real tiene unos cientos (el chat: 21 mensajes ≈ 65 nodos); 100 000 deja holgura de sobra y acota el rechazo a ~0,15 s (QA-429).
+const MAX_CONTENT_NODES = 100000;
 class AiInputRejectedError extends AiProviderError {
   constructor(reason) { super('bad_request'); this.message = 'El contenido enviado a la IA fue rechazado por la barrera de entrada.'; this.reason = reason; } // reason: 'too_deep' | 'cycle' | 'too_many_nodes' | 'unsupported'; sin contenido
 }
