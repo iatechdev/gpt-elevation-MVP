@@ -31,6 +31,8 @@ const axe = async page => { await page.evaluate(axeSource); return page.evaluate
     const h = await page.evaluate(() => { const hd = document.querySelector('header.cg-header'), b = document.querySelector('.cg-menubtn'), r = b.getBoundingClientRect()
       return { height: Math.round(hd.getBoundingClientRect().height), btn: [Math.round(r.width), Math.round(r.height)], popup: b.getAttribute('aria-haspopup'), expanded: b.getAttribute('aria-expanded'), text: b.textContent.replace(/\s+/g, ' ').trim(), loose: hd.querySelectorAll('.cg-lang, .cg-seg, .cg-usermenu, .cg-name').length, overX: document.documentElement.scrollWidth - innerWidth } })
     check(h.height <= 60, `${tag}: cabecera ≤ 60 px (${h.height})`); check(h.btn[0] >= 46 && h.btn[1] >= 46, `${tag}: botón ≥ 46×46 (${h.btn})`); check(h.popup === 'dialog' && h.expanded === 'false', `${tag}: aria-haspopup/aria-expanded`)
+    const icon = await page.evaluate(() => getComputedStyle(document.querySelector('.cg-menubtn__icon'), '::before').content)
+    check(icon === '"' + String.fromCharCode(0x2630) + '"', `${tag}: el icono dibuja ☰ (contenido calculado ${icon})`)
     check(h.text.endsWith(t.menu), `${tag}: «☰ ${t.menu}» (${h.text})`); check(h.loose === 0, `${tag}: sin idioma, tema ni nombre sueltos en la cabecera`); check(h.overX <= 0, `${tag}: sin desborde`)
     let v = await axe(page); check(v.length === 0, `${tag}: axe 0 con el cajón cerrado ${v}`)
     await page.locator('.cg-menubtn').click(); await page.locator('dialog.cg-drawer[open]').waitFor(); await page.waitForTimeout(200)

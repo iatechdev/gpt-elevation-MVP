@@ -35,3 +35,11 @@ test('ES-359 PR3: sin textos nuevos (Menú y Cerrar ya existían en el chat) y e
   assert.ok(block.length > 800); assert.doesNotMatch(block.replace(/rgb\(14 22 19 \/ 0\.55\)/, ''), /#[0-9a-fA-F]{3,8}\b|rgb\(/)
   assert.doesNotMatch(drawer, /style=\{\{/)
 })
+
+test('ES-359 PR3: el icono ☰ del botón «Menú» es el escape CSS de U+2630 (no bytes corruptos como «³0») y no queda ningún carácter de sustitución en los archivos del cajón', () => {
+  const BS = String.fromCharCode(92) // la barra invertida del escape CSS
+  assert.ok(css.includes(`.cg-menubtn__icon::before { content: "${BS}2630"; }`), 'el contenido del icono debe ser el escape CSS de U+2630')
+  for (const [name, text] of [['shell.css', css], ['NavDrawer.tsx', drawer], ['Frame.tsx', frame], ['frames.tsx', frames], ['copy.ts', copy]]) {
+    assert.ok(!text.includes('³'), `${name}: «³» (escape corrupto)`); assert.ok(!text.includes('�'), `${name}: carácter de sustitución`)
+  }
+})

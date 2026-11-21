@@ -139,7 +139,7 @@
 /* ES-359 (PR3): cabecera móvil de 56 px («marca + ☰ Menú») y cajón de navegación (≤ 900 px). Solo tokens --cg-*. */
 .cg-header[data-compact] { flex-wrap: nowrap; min-height: 56px; padding: 0.3rem 0.8rem; max-width: none; }
 .cg-menubtn { display: inline-flex; align-items: center; gap: 0.4rem; min-width: var(--cg-touch); min-height: var(--cg-touch); padding: 0 0.8rem; border: 1.5px solid var(--cg-ink); background: var(--cg-ground); color: var(--cg-ink); font: 600 0.95rem var(--cg-font-cond); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
-.cg-menubtn__icon::before { content: "³0"; }
+.cg-menubtn__icon::before { content: "\2630"; }
 .cg-menubtn:hover { color: var(--cg-mark); border-color: var(--cg-mark); }
 .cg-menubtn:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
 html.cg-scroll-lock { overflow: hidden; }
