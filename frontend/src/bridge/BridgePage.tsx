@@ -35,7 +35,7 @@ export function BridgePage() {
   const [peek, setPeek] = useState<ReadonlySet<string>>(new Set()); const [confirming, setConfirming] = useState<string | null>(null)
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<Notice>(null); const [askAll, setAskAll] = useState(false)
   // ES-168: «Retirar todo» retira lo cruzado Y los permisos de lectura de las tres fuentes. SourcesPanel avisa de los permisos y se recarga con reloadKey.
-  const [perms, setPerms] = useState<Record<SourceId, boolean> | null>(null); const [reloadKey, setReloadKey] = useState(0)
+  const [perms, setPerms] = useState<Record<SourceId, boolean> | null>(null); const [reloadKey, setReloadKey] = useState(0); const [syncKey, setSyncKey] = useState(0)
   const confirmButton = useRef<HTMLButtonElement | null>(null); const proHeading = useRef<HTMLHeadingElement | null>(null)
   const [focusTarget, setFocusTarget] = useState<Focus>(null)
   // El mismo intento (mismas claves y textos) conserva su requestId hasta que sale bien: si se pierde la respuesta, reintentar no crea una versión idéntica de más.
@@ -63,6 +63,7 @@ export function BridgePage() {
   const explain = (error: unknown): string => {
     if (!(error instanceof CompassError)) return c.saveError
     if (error.status === 401) { setExpired(true); return c.session }
+    if (error.code === 'source_consent_required' || error.code === 'source_consent_revoked') setSyncKey(key => key + 1) // F404-1: releer los permisos de las fuentes para que el interruptor refleje «Retirado»
     return ({ field_not_shareable: c.notShareable, consent_required: c.consent, source_consent_required: c.sourceConsentRequired, source_consent_revoked: c.sourceConsentRevoked, preview_expired: c.expired, preview_mismatch: c.saveError, conflict: c.conflict } as Record<string, string>)[error.code] ?? c.saveError
   }
   // Una acción = una versión nueva del contexto aprobado. ANTES de componerla se relee la versión activa: si otra pestaña la cambió desde que esta pantalla la mostró,
@@ -127,7 +128,7 @@ export function BridgePage() {
       {ctx && <div className="br-cols">
         <section className="br-col" aria-labelledby="bridge-private">
           <h2 id="bridge-private" className="br-h">🔒 {c.private}</h2>
-          <SectionBoundary><SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} onPerms={setPerms} reloadKey={reloadKey} /></SectionBoundary>
+          <SectionBoundary><SourcesPanel baseUrl={backend} token={token} lang={lang} onResult={onResult} onExpired={onExpired} onPerms={setPerms} reloadKey={reloadKey} syncKey={syncKey} /></SectionBoundary>
           {!todo.length && <div className="br-empty" role="status"><p>{insights.length ? c.nothing : c.empty}</p>{!insights.length && <p className="cg-hint">{c.emptyNote} <Link to="/app/compass">{c.toCompass}</Link></p>}</div>}
           {todo.map(insight => {
             const open = peek.has(insight.id); const asking = confirming === insight.id; const blocked = whyNot(active, insight)
