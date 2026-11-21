@@ -14,6 +14,7 @@ const es = {
   today: 'Hoy', bridge: 'El Puente', myProfessional: 'Mi profesional', tools: 'Mis herramientas', progress: 'Mi progreso', plan: 'Mi plan',
   resumes: 'Hojas de vida', reviews: 'Revisiones profesionales', data: 'Mis datos', feedback: 'Tu opinión', signOut: 'Cerrar sesión', signingOut: 'Saliendo…',
   rolePerson: 'Persona', // ES-359 (aprobado en ES-359)
+  menu: 'Menú', close: 'Cerrar', // ES-359 (PR3): textos existentes del chat, reutilizados por el cajón móvil
   // profesional
   proPanel: 'Panel', proFacilitation: 'Personas en facilitación',
   // administración y junta
@@ -38,6 +39,7 @@ const en: typeof es = {
   today: 'Today', bridge: 'The Bridge', myProfessional: 'My professional', tools: 'My tools', progress: 'My progress', plan: 'My plan',
   resumes: 'Résumés', reviews: 'Professional reviews', data: 'My data', feedback: 'Your feedback', signOut: 'Sign out', signingOut: 'Signing out…',
   rolePerson: 'Person',
+  menu: 'Menu', close: 'Close',
   proPanel: 'Dashboard', proFacilitation: 'Facilitation participants',
   adminRole: 'Administration', superRole: 'Superadministration', boardRole: 'Ethics board', boardGroup: 'Board',
   adPanel: 'Dashboard', adGuides: 'AI guides', adContent: 'Content', adUsers: 'Users', adMetrics: 'Metrics',

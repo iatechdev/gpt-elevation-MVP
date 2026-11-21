@@ -31,7 +31,7 @@ test('ES-153 P1: cada guardia de borrador de las pantallas de persona se registr
   assert.match(read('../src/career/CareerShell.tsx'), /registerLeaveGuard\(to => \{[\s\S]*setPending\(to\); return true/)
   for (const file of ['../src/space/hooks.ts', '../src/pilot/hooks.ts']) assert.match(read(file), /registerLeaveGuard\(cancel, \{ ownLinks: true \}\)/)
   const frame = read('../src/shell/Frame.tsx')
-  assert.match(frame, /<header className="cg-header" onClickCapture=\{guardLeave\}>/); assert.match(frame, /leaveBlocked\(href\)/)
+  assert.match(frame, /<header className="cg-header" data-compact=\{compact \|\| undefined\} onClickCapture=\{guardLeave\}>/); assert.match(frame, /leaveBlocked\(href\)/)
   // ES-359: el menú de cuenta y el cajón comparten useSignOut: «Cerrar sesión» (el antiguo «Salir») consulta la guardia en un solo lugar
   assert.equal((read('../src/shell/useSignOut.ts').match(/leaveBlocked\('\/', 'action'\)/g) ?? []).length, 1, '«Cerrar sesión» consulta la guardia')
   assert.ok(read('../src/shell/AccountMenu.tsx').includes('useSignOut()'), 'el menú de cuenta usa ese cierre')

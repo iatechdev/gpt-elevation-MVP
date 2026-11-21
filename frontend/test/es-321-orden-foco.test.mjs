@@ -28,7 +28,7 @@ test('ES-321: Frame dibuja marca → menú → preferencias → navegación en m
 test('ES-321: solo el marco de persona activa mobileOrder; sin textos ni estilos nuevos', () => {
   const frames = read('../src/shell/frames.tsx')
   assert.equal((frames.match(/mobileOrder/g) ?? []).length, 1, 'una sola activación')
-  assert.ok(frames.slice(frames.indexOf('export function PersonChrome'), frames.indexOf('export function PersonFrame')).includes('footer={footer} mobileOrder>'))
+  assert.ok(frames.slice(frames.indexOf('export function PersonChrome'), frames.indexOf('export function PersonFrame')).includes('footer={footer} mobileOrder'))
   assert.ok(!frames.slice(frames.indexOf('export function ProfessionalFrame')).includes('mobileOrder'))
   const css = read('../src/shell/shell.css'); assert.ok(css.includes('.cg-nav--grid3 { grid-column: 1 / -1; grid-row: 3;') && css.includes('.cg-usermenu { grid-column: 2; grid-row: 1; justify-self: end; }'), 'la rejilla no cambia: cada pieza se coloca por su clase')
 })
