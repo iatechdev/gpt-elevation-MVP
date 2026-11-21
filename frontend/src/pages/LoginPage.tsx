@@ -162,6 +162,7 @@ export function LoginPage() {
   return (
     <AccessCard title={isRegistering ? text('landing.access.register') : t('access.sign_in')} intro={t('login_subtitle')}>
       {entry.result.status === 'checking' && <p role="status" className="ac-notice">{text('landing.access.checking')}</p>}
+      {entry.result.status === 'checking' && <div className={isRegistering ? 'ac-hold ac-hold--register' : 'ac-hold'} aria-hidden="true" />}{/* E392-2: reserva la altura del formulario mientras se verifica la sesión; el pie no salta al aparecer */}
       {entry.result.status === 'invalid' && <p role="status" className="ac-notice">{text('landing.access.expired')}</p>}
       {entry.result.status === 'unavailable' && <div role="alert" className="ac-notice ac-notice--error">
         <p>{text('landing.access.unavailable')}</p>
