@@ -15,6 +15,8 @@ const BAD = {
   'ZWSP en medio': 'An\u{200B}a', 'solo ZWSP': '\u{200B}', 'RLO': '\u{202E}anA', 'LRM': 'Ana\u{200E}', 'RLM': 'Ana\u{200F}', 'isolate U+2067': '\u{2067}Ana', 'pop U+2069': 'Ana\u{2069}',
   'separador de línea U+2028': 'Ana\u{2028}Pérez', 'separador de párrafo U+2029': 'Ana\u{2029}Pérez', 'BOM al inicio': '\u{FEFF}Ana', 'tag': 'Ana\u{E0041}', 'word joiner': 'An\u{2060}a', 'NUL': 'Ana\u{0}', 'salto de línea': 'Ana\nPérez',
   'solo signos de puntuación': '!!!', 'solo ZWNJ/ZWJ (nada que dibujar)': '\u{200C}\u{200D}',
+  // E397-1 (QA-Claude-5): nombres que SE VEN en blanco
+  'braille en blanco U+2800': '\u{2800}', 'relleno Hangul U+3164': '\u{3164}', 'relleno Hangul U+FFA0': 'Ana\u{FFA0}', 'fillers U+115F/1160': '\u{115F}\u{1160}', 'CGJ U+034F': 'A\u{034F}na', 'marca combinante suelta': '\u{0301}', 'ALM U+061C': 'Ana\u{061C}', 'separador mongol U+180E': 'Ana\u{180E}',
 };
 const GOOD = { 'persa con ZWNJ': 'می\u{200C}خواهم', 'árabe': 'محمد', 'hebreo': 'דוד כהן', 'índica con ZWJ': 'क्\u{200D}ष', 'emoji compuesto con letras': 'Ana 👨\u{200D}👩\u{200D}👧', 'selector de variación': 'Ana ❤\u{FE0F}', 'acentos': 'María José Núñez-Peña' };
 

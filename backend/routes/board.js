@@ -27,13 +27,18 @@ async function lockManifests(t) {
 
 // ── POST /api/board/manifest ──────────────────────────────────────────────────
 // Upload a new version of the ethics manifest
-// Body: { content: string, note?: string }
-router.post('/manifest', verificarPublicadorManifiesto, validateBody({ content: nonempty, note: optional(text) }), async (req, res) => {
-  const { content, note } = req.body;
+// Body: { content: string, contentEn?: string, note?: string }  (ES-182 / E45-1: `contentEn` = la misma versión en inglés, opcional)
+router.post('/manifest', verificarPublicadorManifiesto, validateBody({ content: nonempty, contentEn: optional(text), note: optional(text) }), async (req, res) => {
+  const { content, contentEn, note } = req.body;
   const uploadedBy = req.user.id;
 
   if (!content || content.trim().length < 50) {
     return res.status(400).json({ error: 'Manifest must be at least 50 characters long.' });
+  }
+  // ES-182: la versión en inglés es opcional; vacía = ausente. Si viene, el mismo mínimo que el español (no se guardan textos de relleno).
+  const english = typeof contentEn === 'string' ? contentEn.trim() : '';
+  if (english && english.length < 50) {
+    return res.status(400).json({ code: 'invalid_input', field: 'contentEn', error: 'The English version must be at least 50 characters long or left empty.' });
   }
 
   const t = await sequelize.transaction();
@@ -61,6 +66,7 @@ router.post('/manifest', verificarPublicadorManifiesto, validateBody({ content: 
     // Create new encrypted manifest
     const newManifest = await EthicManifest.create({
       content: encriptar(content.trim()),
+      contentEn: english ? encriptar(english) : null,
       version: nextVersion,
       isActive: true,
       uploadedBy,
@@ -102,6 +108,7 @@ router.get('/manifest', verificarEditorManifiesto, async (req, res) => {
       isActive:  m.isActive,
       note:      m.note,
       content:   desencriptar(m.content),
+      contentEn: m.contentEn ? desencriptar(m.contentEn) : null, // ES-182: null = esta versión no tiene inglés
       uploader:  m.uploader,
       createdAt: m.createdAt,
     }));
@@ -166,6 +173,7 @@ router.get('/active', async (req, res) => {
     res.json({
       version: active.version,
       content: desencriptar(active.content),
+      contentEn: active.contentEn ? desencriptar(active.contentEn) : null, // ES-182 (E45-1): null = sin versión en inglés (la pantalla avisa y muestra el español)
       publishedAt: active.updatedAt ? new Date(active.updatedAt).toISOString() : null,
     });
   } catch (error) {

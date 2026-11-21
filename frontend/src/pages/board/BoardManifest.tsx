@@ -15,6 +15,7 @@ interface ManifestVersion {
   isActive: boolean
   note: string | null
   content: string
+  contentEn?: string | null
   createdAt: string
   uploader: { id: number; name: string; email: string }
 }
@@ -32,6 +33,8 @@ export function BoardManifest() {
 
   const [newContent, setNewContent] = useState('')
   const [newNote, setNewNote]       = useState('')
+  const [newContentEn, setNewContentEn] = useState('')
+  const [fieldErrorEn, setFieldErrorEn] = useState<string | null>(null)
   const [showForm, setShowForm]     = useState(false)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [confirming, setConfirming] = useState<ManifestVersion | null>(null)
@@ -72,9 +75,16 @@ export function BoardManifest() {
       document.getElementById('bm-content')?.focus()
       return
     }
+    // E45-1: la versión en inglés es opcional, pero si viene debe tener el mismo mínimo (el servidor también lo exige: 400 invalid_input)
+    if (newContentEn.trim() && newContentEn.trim().length < 50) {
+      setFieldErrorEn(t('board_error_min'))
+      document.getElementById('bm-content-en')?.focus()
+      return
+    }
     setSubmitting(true)
     setError(null)
     setFieldError(null)
+    setFieldErrorEn(null)
     setSuccess(null)
     try {
       const res = await fetch(`${API}/api/board/manifest`, {
@@ -83,13 +93,14 @@ export function BoardManifest() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ content: newContent.trim(), note: newNote.trim() || undefined }),
+        body: JSON.stringify({ content: newContent.trim(), note: newNote.trim() || undefined, contentEn: newContentEn.trim() || undefined }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error('upload')
       setSuccess(`${t('board_success_upload')} ${data.version}`)
       setNewContent('')
       setNewNote('')
+      setNewContentEn('')
       setShowForm(false)
       await fetchVersions(t('board_error_load'))
     } catch {
@@ -162,7 +173,7 @@ export function BoardManifest() {
         <Card as="section" className="pg-card bm-active">
           <h2 className="bm-h2">{t('board_active_version')} — {active.version}</h2>
           <p className="bm-row">
-            <Chip tone="ok" symbol="●">{t('board_active_badge')}</Chip>
+            <Chip tone="ok" symbol="●">{t('board_active_badge')}</Chip>{active.contentEn && <Chip symbol="EN">{t('board_has_en')}</Chip>}
             <span className="cg-hint">{fmtDate(active.createdAt)} · {active.uploader?.name}</span>
           </p>
           {active.note && <p className="cg-hint bm-note">{active.note}</p>}
@@ -187,6 +198,8 @@ export function BoardManifest() {
             <TextAreaField id="bm-content" label={`${t('board_form_content')} *`} value={newContent} rows={10}
               onChange={e => { setNewContent(e.target.value); setFieldError(null) }} placeholder={t('board_form_content_placeholder')} disabled={submitting}
               hint={fieldError ? undefined : `${newContent.length} ${t('board_form_chars')}`} error={fieldError ?? undefined} />
+            <TextAreaField id="bm-content-en" label={t('board_form_content_en')} value={newContentEn} rows={10} lang="en"
+              onChange={e => { setNewContentEn(e.target.value); setFieldErrorEn(null) }} disabled={submitting} hint={fieldErrorEn ? undefined : t('board_form_content_en_hint')} error={fieldErrorEn ?? undefined} />
             <div className="pg-actions">
               <Button onClick={() => void handleSubmit()} disabled={submitting} aria-busy={submitting || undefined}>
                 {submitting ? t('board_publishing') : t('board_publish')}
@@ -211,6 +224,7 @@ export function BoardManifest() {
                     onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}>
                     <span className="bm-ver__name">
                       {v.isActive && <Chip tone="ok" symbol="●">{t('board_active_badge')}</Chip>}
+                      {v.contentEn && <Chip symbol="EN">{t('board_has_en')}</Chip>}
                       <strong>{v.version}</strong>
                       {v.note && <span className="cg-hint">{v.note}</span>}
                     </span>

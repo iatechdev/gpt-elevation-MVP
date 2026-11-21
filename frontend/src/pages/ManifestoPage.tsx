@@ -11,7 +11,7 @@ import './manifesto.css'
 
 const API = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
-type Manifesto = { version: string; content: string; publishedAt: string | null }
+type Manifesto = { version: string; content: string; contentEn: string | null; publishedAt: string | null }
 type State = { status: 'loading' } | { status: 'empty' } | { status: 'error' } | { status: 'ready'; manifesto: Manifesto }
 
 const hasSession = () => { try { return Boolean(localStorage.getItem('elevation_token')) && localStorage.getItem('elevation_role') === 'board' } catch { return false } }
@@ -36,7 +36,8 @@ export function ManifestoPage() {
       const data: unknown = await res.json()
       if (data && typeof data === 'object' && (data as { content?: unknown }).content === null) { setState({ status: 'empty' }); return }
       if (!isManifesto(data) || !data.content.trim()) throw new Error('shape')
-      setState({ status: 'ready', manifesto: { version: data.version, content: data.content, publishedAt: data.publishedAt ?? null } })
+      const en = (data as { contentEn?: unknown }).contentEn // E45-1: opcional; ausente o vacío = no hay versión en inglés
+      setState({ status: 'ready', manifesto: { version: data.version, content: data.content, contentEn: typeof en === 'string' && en.trim() ? en : null, publishedAt: data.publishedAt ?? null } })
     } catch (error) {
       if (signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) return
       setState({ status: 'error' })
@@ -45,6 +46,9 @@ export function ManifestoPage() {
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort() }, [load])
 
   const Frame = hasSession() ? BoardFrame : PublicFrame
+  // E45-1: en inglés se muestra la versión en inglés si existe; si no, el texto en español con un aviso y lang="es" en el cuerpo (lectores de pantalla pronuncian bien).
+  const fallback = lang === 'en' && state.status === 'ready' && !state.manifesto.contentEn
+  const body = state.status === 'ready' ? (lang === 'en' && state.manifesto.contentEn ? state.manifesto.contentEn : state.manifesto.content) : ''
   const date = state.status === 'ready' && state.manifesto.publishedAt ? formatDate(state.manifesto.publishedAt, lang, { dateStyle: 'long' }) : ''
   return (
     <Frame>
@@ -60,8 +64,9 @@ export function ManifestoPage() {
         {state.status === 'ready' && (
           <>
             <p className="cg-tag manifesto__meta">{date ? t('manifest_public_version', { version: state.manifesto.version, date }) : state.manifesto.version}</p>
-            <div className="manifesto__body">
-              {splitParagraphs(state.manifesto.content).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+            {fallback && <Banner kind="note" title={t('manifest_public_en_missing')} />}
+            <div className="manifesto__body" lang={fallback ? 'es' : undefined}>
+              {splitParagraphs(body).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
             </div>
           </>
         )}

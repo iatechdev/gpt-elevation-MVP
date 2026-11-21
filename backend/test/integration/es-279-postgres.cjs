@@ -107,4 +107,32 @@ test('ES-279 PostgreSQL + HTTP: control de edición simultánea de textos públi
     assert.equal(pub.status, 200); assert.equal(pub.body.hero_title, 'Sin versión');
     assert.ok(!JSON.stringify(pub.body).includes('updatedBy') && !JSON.stringify(pub.body).includes('updatedAt'));
   });
+
+  // ES-279 (Infra): la LECTURA publica solo claves publicables, las mismas que acepta el PUT. Filas heredadas o escritas por otra vía (SQL directo) de claves que no son de la portada no salen ni en la lectura pública ni en la de administración.
+  await t.test('lectura: una fila guardada de `non-landing.*`, de una `landing.*` retirada o de una clave suelta NO se publica (pública y administración, ES y EN); las publicables sí', async () => {
+    const { catalog } = require('../../content/landingDefaults');
+    const key = catalog[0].key;
+    const planted = [['non-landing.secreto', 'SECRETO-INTERNO'], ['non-landing.', 'VACIA'], ['landing.retirada.clave', 'HUERFANA'], ['otra_clave_suelta', 'SUELTA'], ['__proto__', 'PROTO'], ['HERO_TITLE', 'MAYUSCULAS']];
+    for (const lang of ['es', 'en']) {
+      for (const [k, v] of planted) await q('INSERT INTO "LandingContents" (key, lang, value, updated_by, "createdAt", "updatedAt") VALUES ($1,$2,$3,$4, now(), now()) ON CONFLICT DO NOTHING', [k, lang, v + '-' + lang, 'sql']);
+      await q('INSERT INTO "LandingContents" (key, lang, value, updated_by, "createdAt", "updatedAt") VALUES ($1,$2,$3,$4, now(), now()) ON CONFLICT (key, lang) DO UPDATE SET value = EXCLUDED.value', [key, lang, 'Vigente ' + lang, 'sql']);
+    }
+    const sa = await mkUser('superadmin');
+    for (const lang of ['es', 'en']) {
+      for (const [label, who, route] of [['pública', null, '/api/landing-content?lang='], ['administración', sa, '/api/landing-content/admin?lang=']]) {
+        const out = await http(who, 'GET', route + lang);
+        assert.equal(out.status, 200, label);
+        const text = JSON.stringify(out.body);
+        for (const [k, v] of planted) {
+          assert.equal(Object.prototype.hasOwnProperty.call(out.body, k), false, label + ' ' + lang + ' publicó ' + k);
+          assert.ok(!text.includes(v + '-' + lang), label + ' ' + lang + ' filtró el valor de ' + k);
+        }
+        assert.equal(out.body[key], 'Vigente ' + lang, label + ' ' + lang + ': la clave del catálogo sí se publica');
+      }
+    }
+    // la fila escrita por la ruta (publicable) sigue saliendo
+    assert.equal((await put(A, { value: 'Visible', expectedUpdatedAt: undefined })).status, 200);
+    assert.equal((await http(null, 'GET', '/api/landing-content?lang=es')).body.hero_title, 'Visible');
+    await q('DELETE FROM "LandingContents" WHERE value LIKE $1 OR value LIKE $2 OR value LIKE $3 OR value LIKE $4 OR value LIKE $5 OR value LIKE $6', ['SECRETO-INTERNO-%', 'VACIA-%', 'HUERFANA-%', 'SUELTA-%', 'PROTO-%', 'MAYUSCULAS-%']);
+  });
 });
