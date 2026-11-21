@@ -26,7 +26,7 @@ test('ES-359 PR3: en ≤ 900 px el marco con `drawer` dibuja marca + «☰ Menú
   assert.match(frame, /className="cg-menubtn" aria-haspopup="dialog" aria-expanded=\{drawerOpen\}/)
   assert.match(frame, /<span className="cg-menubtn__icon" aria-hidden="true" \/> \{c\.menu\}/)
   assert.match(css, /\.cg-header\[data-compact\] \{ flex-wrap: nowrap; min-height: 56px;/)
-  assert.match(frames, /drawer=\{\{ groups: \[\{ items: PERSON_NAV \}, \{ title: c\.userMenu, items: PERSON_MENU \}\]/)
+  assert.match(frames, /drawer=\{\{ groups: \[\{ title: null, items: PERSON_NAV \}, \{ title: c\.userMenu, items: PERSON_MENU \}\]/)
 })
 
 test('ES-359 PR3: sin textos nuevos (Menú y Cerrar ya existían en el chat) y el CSS usa solo tokens', () => {

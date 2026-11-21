@@ -5,15 +5,18 @@ import { useEffect, useId, useRef, type MouseEvent as ReactMouseEvent, type Reac
 import { NavLink } from 'react-router-dom'
 import { LangSwitch, ThemeSwitch } from './Frame'
 import { leaveBlocked } from './leaveGuard'
-import type { NavGroup } from './nav'
+import type { NavItem } from './nav'
 import { useShellCopy } from './useShellCopy'
 import { useSignOut } from './useSignOut'
+
+/** Un grupo del cajón: `title` ya viene traducido por quien llama (sin título = grupo suelto, se anuncia como «Principal»). */
+export type DrawerGroup = { title: string | null; items: NavItem[] }
 
 export type NavDrawerProps = {
   open: boolean; onClose: () => void
   /** Botón que lo abrió: recibe el foco al cerrar. */
   opener: RefObject<HTMLElement | null>
-  groups: NavGroup[]
+  groups: DrawerGroup[]
   /** Contenido propio de la pantalla (p. ej. el grupo «Conversación» del chat), arriba de los grupos del rol. */
   extra?: ReactNode
   name: string; roleLabel: string

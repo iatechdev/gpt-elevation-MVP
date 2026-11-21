@@ -5,8 +5,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
-import type { NavGroup, NavItem } from './nav'
-import { NavDrawer } from './NavDrawer'
+import type { NavItem } from './nav'
+import { NavDrawer, type DrawerGroup } from './NavDrawer'
 import { useShellCopy } from './useShellCopy'
 import { useNarrowHeader } from './narrowHeader'
 import { leaveBlocked } from './leaveGuard'
@@ -77,7 +77,7 @@ export type FrameProps = {
   /** ES-321: en la disposición móvil (≤ 900 px) el DOM sigue el orden visual (marca → menú → preferencias → navegación) para que Tab no suba; en escritorio, el de siempre. */
   mobileOrder?: boolean
   /** ES-359 (PR3): en ≤ 900 px el encabezado es una fila de 56 px (marca + «☰ Menú») y la navegación, las preferencias y «Cerrar sesión» viven en el cajón. */
-  drawer?: { groups: NavGroup[]; name: string; roleLabel: string; legacyTheme?: boolean }
+  drawer?: { groups: DrawerGroup[]; name: string; roleLabel: string; legacyTheme?: boolean }
 }
 
 /** Marco genérico. El tema se fija en claro mientras las pantallas de contenido no migren a los tokens `--cg-*`. */
