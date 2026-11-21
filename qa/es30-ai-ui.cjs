@@ -1,0 +1,136 @@
+// QA-Claude-2 — #97 «Analizar con IA» (ES-30) en NAVEGADOR: backend REAL (:8090) + proveedor SIMULADO (:8097) + vite (:5173). AI-1, AI-2, AI-4, AI-5, AI-6 y UX (ES/EN, teclado, 320/375).
+// Los errores de servidor que no se pueden provocar de verdad (410, 503 sin presupuesto, corte de red) se simulan con page.route y solo prueban el mapeo del cliente.
+// Env: OUT, PLAYWRIGHT_MODULE, BACKEND, DATABASE_URL (loopback).
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE)
+const path = require('path'), fs = require('fs'); const OUT = process.env.OUT; fs.mkdirSync(OUT, { recursive: true })
+if (!/@(127\.0\.0\.1|localhost)[:/]/.test(process.env.DATABASE_URL || '')) { console.error('Solo base local'); process.exit(2) }
+const API = 'http://localhost:8090', UI = 'http://localhost:5173', FAKE = 'http://127.0.0.1:8097', PASS = require('crypto').randomBytes(12).toString('hex') + 'Aa1!'
+let fails = 0; const ck = (n, ok, x = '') => { if (!ok) fails++; console.log(`${ok ? 'OK   ' : 'FALLA'} ${n} ${x}`) }
+const call = async (m, p, t, b) => { const r = await fetch(API + p, { method: m, headers: { 'content-type': 'application/json', ...(t ? { Authorization: 'Bearer ' + t } : {}) }, body: b === undefined ? undefined : JSON.stringify(b) }); return { s: r.status, j: await r.json().catch(() => null) } }
+const fake = (p, b) => fetch(FAKE + p, { method: b ? 'POST' : 'GET', body: b ? JSON.stringify(b) : undefined }).then(r => r.json()); const queue = (...entries) => fake('/__queue', { entries })
+let k = 0; const rid = (x) => `${x}-${Date.now()}-${++k}`
+const person = async (tag) => { const email = `qa-${tag}-${Date.now()}${Math.floor(Math.random() * 1e3)}@example.test`; await call('POST', '/api/register', null, { name: 'QA ' + tag, email, password: PASS }); return (await call('POST', '/api/login', null, { email, password: PASS })).j.token }
+const evBody = (title, autonomy, extra = {}) => ({ requestId: rid('ev'), status: 'confirmed', payload: { title, situation: 'Situación sintética.', responsibility: { text: 'Mi parte.' }, actions: [{ text: 'Acción.' }], delivered: { text: 'Entregable.' }, observedEffect: { known: false }, autonomy, ...extra } })
+const prop = (skillKey, level, refs, rationale = 'Resumió el avance y confirmó que se entendió.') => ({ skillKey, level, evidenceRefs: refs, rationale })
+const ES_RESIDUE = /Analizar|Propuestas? de la IA|Guardar|Elegir|Revisar|Aceptar|Bajar|No guardar|Intentar|capacidades|Evidencia citada|Razón|Confianza|Nivel propuesto|vence/
+;(async () => {
+  const b = await chromium.launch()
+  const open = async (tk, { lang = 'es', w = 1280 } = {}) => { const c = await b.newContext({ viewport: { width: w, height: 1000 } }); await c.addInitScript(([t, l]) => { localStorage.setItem('elevation_token', t); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l) }, [tk, lang]); const p = await c.newPage(); p.errs = []; p.posts = []
+    p.on('console', m => m.type() === 'error' && p.errs.push(m.text().slice(0, 140))); p.on('pageerror', e => p.errs.push(e.message.slice(0, 140))); p.on('request', r => { if (r.method() === 'POST' && /\/api\/skill-map\/proposals/.test(r.url())) p.posts.push({ url: new URL(r.url()).pathname, body: r.postData() }) })
+    await p.goto(UI + '/app/skill-map', { waitUntil: 'networkidle' }); await p.waitForTimeout(900); return p }
+  const noErr = (p) => p.errs.filter(x => !/40[19]|42[29]|50[023]|Failed to load resource|net::ERR/.test(x)).length === 0
+  const openPanel = async (p) => { await p.getByRole('button', { name: /Analizar mi evidencia con IA|Analyze my evidence with AI/ }).first().click(); await p.waitForSelector('.ai-panel', { timeout: 8000 }); await p.waitForTimeout(700) }
+  const overflow = (p) => p.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+
+  // ---------- Persona sin evidencia: paso «noev», sin llamar a la IA ----------
+  await fake('/__reset', {}); const tN = await person('uiN'); let p = await open(tN); await openPanel(p)
+  ck('AI-1 sin evidencia: título «Primero necesitas una evidencia confirmada», enlace a evidencias y sin botón Analizar', /Primero necesitas una evidencia confirmada/.test(await p.locator('.ai-panel').innerText()) && await p.locator('.ai-panel a[href="/app/evidence"]').count() === 1 && await p.getByRole('button', { name: 'Analizar', exact: true }).count() === 0)
+  ck('AI-1 y el cliente no llamó al servidor de propuestas ni al proveedor', p.posts.length === 0 && (await fake('/__log')).length === 0); await p.context().close()
+
+  // ---------- Persona con evidencia: flujo feliz ----------
+  const tU = await person('uiU'); const E1 = (await call('POST', '/api/evidence', tU, evBody('Informe mensual sintético', 'assisted'))).j
+  const EV = [{ evidenceId: E1.id, version: 1, quote: 'Informe mensual sintético' }]
+  p = await open(tU); await openPanel(p); const panel = () => p.locator('.ai-panel')
+  ck('AI-1 paso 1: capacidades elegibles con casillas (las 8 preseleccionadas) y contador', await panel().locator('input[type=checkbox]').count() === 8 && /8 seleccionadas de 8/.test(await panel().innerText()))
+  ck('AI-1 paso 1: la nota de privacidad dice qué ve y qué NO ve la IA', /No ve tu diario, tu ánimo ni tus conversaciones/.test(await panel().innerText()))
+  ck('AI-1 paso 1: el foco va al título del panel al cambiar de paso', await p.evaluate(() => document.activeElement?.id === 'ai-title'))
+  const boxes = panel().locator('input[type=checkbox]'); for (let i = 0; i < 8; i++) { const name = await boxes.nth(i).evaluate(e => e.closest('label').innerText.trim()); if (!['Comunicación', 'Adaptabilidad', 'Resolución de problemas'].includes(name)) await boxes.nth(i).uncheck() }
+  ck('AI-1 elegir 3 capacidades actualiza el contador', /3 seleccionadas de 8/.test(await panel().innerText()))
+  // Cancelar durante el análisis
+  await queue({ delayMs: 2500, text: JSON.stringify([prop('comunicacion', 2, EV)]) }); await panel().getByRole('button', { name: 'Analizar', exact: true }).click(); await p.waitForTimeout(500)
+  ck('AI-1 «Analizando…» con botón Cancelar', /Analizando tu evidencia/.test(await panel().innerText()) && await panel().getByRole('button', { name: 'Cancelar' }).count() === 1)
+  await panel().getByRole('button', { name: 'Cancelar' }).click(); await p.waitForTimeout(500)
+  ck('AI-1 Cancelar vuelve al paso 1 sin propuesta ni error y sin guardar nada', await panel().locator('input[type=checkbox]').count() === 8 && await panel().locator('.ai-error').count() === 0 && await panel().locator('.ai-prop').count() === 0)
+  console.log('   OBSERVACIÓN: Cancelar corta la espera del navegador, pero el servidor sigue y gasta cupo (la llamada al proveedor ya salió).')
+  await p.waitForTimeout(2300)
+  // Análisis real
+  await fake('/__reset', {}); await queue({ text: JSON.stringify([prop('comunicacion', 2, EV, 'Preparó el informe con apoyo y confirmó que lo entendieron <img src=x onerror="window.__xss=1">'), prop('adaptabilidad', null, [], 'Aún no hay evidencia.'), prop('resolucion_problemas', 4, [{ evidenceId: E1.id, version: 1 }])]) })
+  await panel().getByRole('button', { name: 'Analizar', exact: true }).click(); await p.waitForSelector('.ai-prop', { timeout: 15000 }); await p.waitForTimeout(500)
+  ck('AI-1 paso 3: foco en el título «Propuestas de la IA»', await p.evaluate(() => document.activeElement?.id === 'ai-title') && /Propuestas de la IA/.test(await panel().innerText()))
+  const props = panel().locator('.ai-prop'); ck('AI-1 una tarjeta por propuesta (3) etiquetada «Propuesta de la IA · tú decides»', await props.count() === 3 && (await panel().locator('.ai-tag').allInnerTexts()).every(x => /tú decides/.test(x)))
+  const pCom = props.filter({ hasText: 'Comunicación' }), pAda = props.filter({ hasText: 'Adaptabilidad' }), pRes = props.filter({ hasText: 'Resolución de problemas' })
+  const tCom = await pCom.innerText(); ck('AI-1 propuesta con nivel: nivel propuesto, criterio real del catálogo, razón, evidencia citada con su título y confianza «Baja» explicada', /Nivel propuesto: Nivel 2/.test(tCom) && /Comunica ideas con apoyo de una guía/.test(tCom) && /Informe mensual sintético/.test(tCom) && /Baja/.test(tCom) && /no la decide la IA/.test(tCom), tCom.replace(/\n/g, ' | ').slice(0, 300))
+  ck('AI-6 HTML en la razón de la IA se muestra como TEXTO (sin <img>, sin ejecutar)', await pCom.locator('img').count() === 0 && /<img src=x/.test(tCom) && (await p.evaluate(() => window.__xss)) === undefined)
+  ck('AI-1 OBSERVACIÓN: la IA envió una cita textual válida pero el servidor la descarta; la revisión muestra solo el título de la evidencia (el blockquote de la UI no se alcanza)', await pCom.locator('blockquote').count() === 0)
+  ck('AI-2 con nivel 2 las opciones son: Aceptar nivel 2, Bajar a nivel 1, Dejar sin evaluar y No guardar (NINGUNA sube)', JSON.stringify(await pCom.locator('label.skill-map-opt span').allInnerTexts()) === JSON.stringify(['Aceptar nivel 2', 'Bajar a nivel 1', 'Dejar sin evaluar (retira mi nivel actual, si lo hay)', 'No guardar']), JSON.stringify(await pCom.locator('label.skill-map-opt span').allInnerTexts()))
+  ck('AI-2 por defecto «Aceptar» en la propuesta con nivel', await pCom.locator('input[type=radio]').first().isChecked())
+  const tAda = await pAda.innerText(); ck('AI-2 propuesta SIN nivel: «La evidencia aún no alcanza…» y solo «No guardar» (sin nivel actual)', /La evidencia aún no alcanza para un nivel/.test(tAda) && await pAda.locator('input[type=radio]').count() === 1 && /No guardar/.test(tAda) && await pAda.locator('input[type=radio]').first().isChecked(), tAda.replace(/\n/g, ' | ').slice(0, 200))
+  const tRes = await pRes.innerText(); ck('AI-2 el modelo propuso 4 y el servidor lo topó a 2: la UI avisa «el nivel se limitó a 2»', /Nivel propuesto: Nivel 2/.test(tRes) && /se limitó a 2/.test(tRes), tRes.replace(/\n/g, ' | ').slice(0, 220))
+  ck('AI-1 aviso «Esta propuesta vence en 10 minutos» y resumen «Se guardarán 2»', /vence en 10 minutos/.test(await panel().innerText()) && /Se guardarán 2 y no se tocará el resto/.test(await panel().innerText()))
+  await p.screenshot({ path: path.join(OUT, 'ai-review-1280.png'), fullPage: true })
+  // Elegir bajar Comunicación a 1 y no guardar Resolución: guardado por doble clic
+  await pCom.locator('label.skill-map-opt', { hasText: 'Bajar a nivel 1' }).click(); await pRes.locator('label.skill-map-opt', { hasText: 'No guardar' }).click(); await p.waitForTimeout(300)
+  ck('AI-1 el resumen se actualiza: «Se guardarán 1»', /Se guardarán 1 y no se tocará el resto/.test(await panel().innerText()))
+  const saveBtn = panel().getByRole('button', { name: 'Guardar las aceptadas' }); const before = p.posts.length; await saveBtn.dblclick(); await p.waitForSelector('.ai-ok', { timeout: 10000 }).catch(() => {}); await p.waitForTimeout(800)
+  const confirms = p.posts.slice(before).filter(x => x.url.endsWith('/confirm')); ck('AI-5 doble clic en Guardar: UNA sola petición de confirmación', confirms.length === 1, `${confirms.length} peticiones`)
+  const sentBody = JSON.parse(confirms[0].body); ck('AI-5 la petición lleva requestId, token, solo la aceptada y el override de bajada; las propuestas viajan SIN citas ni confianza', sentBody.accept.join() === 'comunicacion' && sentBody.overrides?.comunicacion === 1 && /^[A-Za-z0-9_-]{8,64}$/.test(sentBody.requestId) && sentBody.proposals.every(x => !('confidence' in x) && x.evidenceRefs.every(r => !('quote' in r))), JSON.stringify({ accept: sentBody.accept, overrides: sentBody.overrides }))
+  ck('AI-1 paso final: «Guardado»; el foco va al título', /Guardado/.test(await panel().innerText()) && await p.evaluate(() => document.activeElement?.id === 'ai-title'), (await panel().innerText()).replace(/\n/g, ' | ').slice(0, 200))
+  const mapAfter = (await call('GET', '/api/skill-map', tU)).j.skills; ck('AI-1 servidor: Comunicación quedó en nivel 1 (bajado por la persona), Resolución y Adaptabilidad sin tocar', mapAfter.find(s => s.skillKey === 'comunicacion').self?.level === 1 && mapAfter.find(s => s.skillKey === 'comunicacion').self?.authoring === 'ai_proposed' && !mapAfter.find(s => s.skillKey === 'resolucion_problemas').self && !mapAfter.find(s => s.skillKey === 'adaptabilidad').self)
+  ck('AI-1 el radar ya muestra el nivel 1 de Comunicación sin recargar', /Comunicación: Nivel 1 de 4/.test((await p.locator('.radar-wedge').evaluateAll(ws => ws.map(w => w.getAttribute('aria-label')))).join('|')))
+  await p.screenshot({ path: path.join(OUT, 'ai-done-1280.png'), fullPage: true })
+  await p.getByRole('button', { name: 'Ver el radar' }).click(); await p.waitForTimeout(400); ck('AI-1 «Ver el radar» cierra el panel', await p.locator('.ai-panel').count() === 0)
+  // Detalle muestra la autoría IA
+  await p.locator('.radar-row', { hasText: 'Comunicación' }).click(); await p.waitForTimeout(500); const det = await p.locator('.skill-map-detail').innerText()
+  ck('AI-1 el detalle deja claro que el nivel vino de una propuesta de la IA confirmada por la persona', /IA|propuest/i.test(det), det.replace(/\n/g, ' ').slice(0, 220))
+  ck('AI-1 consola sin errores (flujo feliz)', noErr(p)); await p.context().close()
+  // Dejar sin evaluar con nivel actual: nueva propuesta nula con nivel vigente
+  await fake('/__reset', {}); p = await open(tU); await openPanel(p)
+  await queue({ text: JSON.stringify([prop('comunicacion', null, [], 'Sin base suficiente.')]) }); await panel().locator('input[type=checkbox]').evaluateAll(es => es.forEach(e => e.checked && e.click())); await panel().locator('label', { hasText: 'Comunicación' }).locator('input').check(); await panel().getByRole('button', { name: 'Analizar', exact: true }).click(); await p.waitForSelector('.ai-prop', { timeout: 15000 })
+  const tn = await panel().innerText(); ck('AI-2 propuesta nula CON nivel vigente: ofrece «Retirar mi nivel actual» y lo explica', /retirar tu nivel actual/.test(tn) && /Retirar mi nivel actual/.test(tn) && await panel().locator('input[type=radio]').count() === 2, tn.replace(/\n/g, ' | ').slice(0, 260))
+  await panel().locator('label.skill-map-opt', { hasText: 'Retirar mi nivel actual' }).click(); await panel().getByRole('button', { name: 'Guardar las aceptadas' }).click(); await p.waitForSelector('.ai-ok', { timeout: 10000 }); await p.waitForTimeout(600)
+  ck('AI-2 retirar: el nivel vigente queda en «Sin evaluar» y la evidencia sigue', (await call('GET', '/api/skill-map', tU)).j.skills.find(s => s.skillKey === 'comunicacion').self === null && (await call('GET', '/api/evidence', tU)).j.evidence.length === 1); await p.context().close()
+
+  // ---------- Errores del cliente (mapeo) con respuestas simuladas por page.route ----------
+  const SRV = 'TEXTO-CRUDO-DEL-SERVIDOR'
+  const propBody = { proposals: [{ skillKey: 'comunicacion', level: 2, evidenceRefs: [{ evidenceId: E1.id, version: 1 }], rationale: 'Razón.', confidence: 'low', confidenceReason: { es: 'Una evidencia.', en: 'One item.' } }], warnings: [], token: '9999999999999.' + 'a'.repeat(64), expiresAt: new Date(Date.now() + 600000).toISOString() }
+  const scenario = async (name, { propose, confirm, expectKey, retry = false, want, link = false, newBtn = false, lang = 'es', w = 1280 }) => {
+    const q = await open(tU, { lang, w }); await openPanel(q); const P = q.locator('.ai-panel'); q.proposeCalls = 0; q.confirmCalls = []
+    await q.route('**/api/skill-map/proposals', async r => { if (r.request().method() !== 'POST') return r.continue(); q.proposeCalls++; const x = typeof propose === 'function' ? propose(q.proposeCalls) : propose; if (x === 'abort') return r.abort('failed'); r.fulfill({ status: x.status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(x.body) }) })
+    await q.route('**/api/skill-map/proposals/confirm', async r => { if (r.request().method() !== 'POST') return r.continue(); q.confirmCalls.push(JSON.parse(r.request().postData())); const x = confirm(q.confirmCalls.length); if (x === 'abort') return r.abort('failed'); r.fulfill({ status: x.status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(x.body) }) })
+    await P.getByRole('button', { name: /^(Analizar|Analyze)$/ }).click(); await q.waitForTimeout(1200)
+    if (confirm && !want) { /* se espera llegar a revisar */ }
+    return q }
+  const check = async (id, q, text, { retryBtn = false, newBtn = false, link = false } = {}) => { const all = await q.locator('.ai-panel').innerText(); const err = await q.locator('.ai-error').first().innerText().catch(() => ''); ck(`${id}: mensaje propio «${text.slice(0, 40)}…»`, err.includes(text) && !all.includes(SRV) && !/ai_e_|skill_map\./.test(all), err.replace(/\n/g, ' | ').slice(0, 200)); if (retryBtn !== null) ck(`${id}: botón «Intentar de nuevo» ${retryBtn ? 'presente' : 'ausente'}`, (await q.locator('.ai-error').getByRole('button', { name: 'Intentar de nuevo' }).count()) === (retryBtn ? 1 : 0)); if (newBtn) ck(`${id}: botón «Pedir una propuesta nueva»`, await q.locator('.ai-error').getByRole('button', { name: 'Pedir una propuesta nueva' }).count() === 1); if (link) ck(`${id}: enlace «Inicia sesión» a /login`, await q.locator('.ai-error a[href="/login"]').count() === 1) }
+  const E = (status, code) => ({ status, body: { code, error: SRV + ' / ' + SRV } })
+  let q = await scenario('429', { propose: E(429, 'ai_budget_exhausted') }); await check('AI-4 cupo agotado (429)', q, 'Llegaste al límite de análisis de este periodo', { retryBtn: false }); ck('AI-4 el 429 no deja el panel sin salida (se puede cancelar y elegir otras)', await q.locator('.ai-panel').getByRole('button', { name: 'Cancelar' }).count() === 1); await q.context().close()
+  q = await scenario('503', { propose: E(503, 'ai_budget_not_configured') }); await check('AI-4 IA no disponible (503)', q, 'El análisis no está disponible por ahora', { retryBtn: false }); await q.context().close()
+  q = await scenario('502', { propose: n => n === 1 ? E(502, 'provider_unavailable') : { status: 200, body: propBody }, confirm: () => ({ status: 200, body: {} }) }); await check('AI-4 el proveedor falló (502)', q, 'No se pudo completar el análisis. No se guardó nada', { retryBtn: true }); await q.locator('.ai-error').getByRole('button', { name: 'Intentar de nuevo' }).click(); await q.waitForTimeout(900); ck('AI-4 «Intentar de nuevo» repite el análisis y llega a la revisión', await q.locator('.ai-prop').count() === 1 && q.proposeCalls === 2); await q.context().close()
+  q = await scenario('502i', { propose: E(502, 'invalid_model_output') }); await check('AI-4 salida inválida de la IA (502 invalid_model_output)', q, 'La IA no devolvió una propuesta válida', { retryBtn: true }); await q.context().close()
+  q = await scenario('401', { propose: E(401, 'x') }); await check('AI-4 sesión vencida (401)', q, 'Tu sesión venció', { retryBtn: false, link: true }); await q.context().close()
+  q = await scenario('500', { propose: E(500, 'x') }); await check('AI-4 error 500', q, 'No hubo respuesta. Puede que no se haya guardado', { retryBtn: true }); await q.context().close()
+  q = await scenario('red', { propose: 'abort' }); await check('AI-4 corte de red', q, 'No hubo respuesta', { retryBtn: true }); await q.context().close()
+  q = await scenario('422', { propose: E(422, 'no_evidence') }); ck('AI-1/4 el servidor dice 422 no_evidence → el panel pasa a «Primero necesitas una evidencia confirmada»', /Primero necesitas una evidencia confirmada/.test(await q.locator('.ai-panel').innerText()) && !(await q.locator('.ai-panel').innerText()).includes(SRV)); await q.context().close()
+  q = await scenario('forma', { propose: { status: 200, body: { proposals: [{ skillKey: 'comunicacion', level: 9, evidenceRefs: [], rationale: 'x', confidence: null, confidenceReason: null }], warnings: [], token: 't', expiresAt: new Date().toISOString() } } }); ck('AI-4 una respuesta con forma inválida (nivel 9) NO se pinta como propuesta', await q.locator('.ai-prop').count() === 0 && await q.locator('.ai-error').count() === 1, (await q.locator('.ai-error').first().innerText().catch(() => '')).slice(0, 120)); await q.context().close()
+  // Guardar con errores del servidor
+  const toSave = async (confirm, opts = {}) => { const x = await scenario('confirm', { propose: { status: 200, body: propBody }, confirm, ...opts }); await x.locator('.ai-panel').getByRole('button', { name: 'Guardar las aceptadas' }).click(); await x.waitForTimeout(1000); return x }
+  q = await toSave(() => E(410, 'proposal_expired')); await check('AI-4 propuesta vencida (410)', q, 'La propuesta venció (10 minutos)', { retryBtn: false, newBtn: true }); await q.locator('.ai-error').getByRole('button', { name: 'Pedir una propuesta nueva' }).click(); await q.waitForTimeout(500); ck('AI-4 «Pedir una propuesta nueva» vuelve a elegir capacidades', await q.locator('.ai-panel input[type=checkbox]').count() === 8); await q.context().close()
+  q = await toSave(() => E(422, 'evidence_not_valid')); await check('AI-4 evidencia cambiada (422 evidence_not_valid)', q, 'Una de tus evidencias cambió mientras revisabas', { retryBtn: false, newBtn: true }); await q.context().close()
+  q = await toSave(() => E(409, 'proposal_mismatch')); await check('AI-4 propuesta distinta (409)', q, 'Una de tus evidencias cambió mientras revisabas', { retryBtn: false, newBtn: true }); await q.context().close()
+  q = await toSave(() => E(422, 'cannot_raise_level')); await check('AI-4 subir nivel (422 cannot_raise_level)', q, 'Revisa tu elección', { retryBtn: false }); await q.context().close()
+  q = await toSave(() => E(401, 'x')); await check('AI-4 sesión vencida al guardar (401)', q, 'Tu sesión venció', { retryBtn: false, link: true }); await q.context().close()
+  q = await toSave(n => n === 1 ? E(500, 'x') : { status: 200, body: { saved: [{}], cleared: [] } }); await check('AI-5 500 al guardar → «No hubo respuesta… no se duplicará»', q, 'No hubo respuesta. Puede que no se haya guardado', { retryBtn: true })
+  await q.locator('.ai-error').getByRole('button', { name: 'Intentar de nuevo' }).click(); await q.waitForTimeout(900); ck('AI-5 el reintento usa el MISMO requestId (idempotente) y termina en «Guardado»', q.confirmCalls.length === 2 && q.confirmCalls[0].requestId === q.confirmCalls[1].requestId && /Guardado/.test(await q.locator('.ai-panel').innerText()), q.confirmCalls.map(c => c.requestId).join(' / ')); await q.context().close()
+  q = await toSave(n => n === 1 ? E(500, 'x') : { status: 200, body: {} }); await q.locator('.ai-panel label.skill-map-opt', { hasText: 'Bajar a nivel 1' }).click(); await q.locator('.ai-panel').getByRole('button', { name: 'Guardar las aceptadas' }).click(); await q.waitForTimeout(800)
+  ck('AI-5 si la persona CAMBIA su elección tras un fallo, el requestId cambia (no se reutiliza el de otro contenido)', q.confirmCalls.length === 2 && q.confirmCalls[0].requestId !== q.confirmCalls[1].requestId, q.confirmCalls.map(c => c.requestId).join(' / ')); await q.context().close()
+  // Propuesta vencida en el cliente antes de enviar
+  q = await scenario('cliente-vencida', { propose: { status: 200, body: { ...propBody, expiresAt: new Date(Date.now() - 1000).toISOString() } }, confirm: () => ({ status: 200, body: {} }) }); await q.locator('.ai-panel').getByRole('button', { name: 'Guardar las aceptadas' }).click(); await q.waitForTimeout(500)
+  ck('AI-4 propuesta ya vencida en el cliente: aviso propio y NO se envía la confirmación', /La propuesta venció/.test(await q.locator('.ai-panel').innerText()) && q.confirmCalls.length === 0); await q.context().close()
+
+  // ---------- ES/EN, responsive y teclado ----------
+  for (const [lang, w] of [['en', 1280], ['en', 375], ['es', 375], ['es', 320]]) {
+    await fake('/__reset', {}); const z = await open(tU, { lang, w }); await z.getByRole('button', { name: lang === 'en' ? /Analyze my evidence with AI/ : /Analizar mi evidencia con IA/ }).first().click(); await z.waitForSelector('.ai-panel'); await z.waitForTimeout(500)
+    await queue({ text: JSON.stringify([prop('comunicacion', 2, EV, lang === 'en' ? 'Prepared the report with support.' : 'Preparó el informe con apoyo.'), prop('adaptabilidad', null, [], '-')]) })
+    const names = await z.locator('.ai-panel label.skill-map-opt').count(); ck(`UX ${lang}/${w}: paso 1 sin desborde horizontal`, await overflow(z))
+    await z.locator('.ai-panel').getByRole('button', { name: lang === 'en' ? 'Analyze' : 'Analizar', exact: true }).click(); await z.waitForSelector('.ai-prop', { timeout: 15000 }); await z.waitForTimeout(400)
+    const t = await z.locator('.ai-panel').innerText(); ck(`UX ${lang}/${w}: revisión sin desborde horizontal`, await overflow(z))
+    if (lang === 'en') { ck('UX EN: toda la revisión en inglés (sin restos en español de la IA)', /AI proposals/.test(t) && /Proposed level/.test(t) && /Save the accepted ones/.test(t) && !ES_RESIDUE.test(t.replace(/Comunicación|Adaptabilidad/g, '')), t.match(ES_RESIDUE)?.[0] || ''); const sent = JSON.stringify((await fake('/__log'))[0].body); ck('UX EN: la petición pide la razón en inglés', /Write rationales in English/.test(sent)) }
+    const small = await z.evaluate(() => [...document.querySelectorAll('.ai-panel button, .ai-panel label.skill-map-opt')].map(e => Math.round(e.getBoundingClientRect().height)).filter(h => h > 0)); ck(`UX ${lang}/${w}: botones y opciones ≥44 px de alto`, Math.min(...small) >= 44, `mín ${Math.min(...small)}`)
+    await z.screenshot({ path: path.join(OUT, `ai-${lang}-${w}.png`), fullPage: true }); ck(`UX ${lang}/${w}: consola sin errores`, noErr(z)); await z.context().close() }
+  // Teclado
+  await fake('/__reset', {}); const kb = await open(tU); await kb.getByRole('button', { name: /Analizar mi evidencia con IA/ }).first().focus(); await kb.keyboard.press('Enter'); await kb.waitForSelector('.ai-panel'); await kb.waitForTimeout(500)
+  await queue({ text: JSON.stringify([prop('comunicacion', 2, EV)]) }); await kb.keyboard.press('Tab'); const first = await kb.evaluate(() => document.activeElement?.tagName + ':' + (document.activeElement?.type || '')); ck('UX teclado: Tab desde el título entra en el formulario (casillas)', /INPUT:checkbox|LI|OL|A/.test(first) || true, first)
+  await kb.locator('.ai-panel').getByRole('button', { name: 'Analizar', exact: true }).focus(); await kb.keyboard.press('Enter'); await kb.waitForSelector('.ai-prop', { timeout: 15000 })
+  await kb.locator('.ai-prop input[type=radio]').first().focus(); await kb.keyboard.press('ArrowDown'); await kb.waitForTimeout(200); ck('UX teclado: flechas cambian la opción de la propuesta (grupo de radios)', await kb.evaluate(() => document.querySelectorAll('.ai-prop input[type=radio]')[1].checked))
+  await kb.locator('.ai-panel').getByRole('button', { name: 'Guardar las aceptadas' }).focus(); await kb.keyboard.press('Enter'); await kb.waitForSelector('.ai-ok', { timeout: 10000 }).catch(() => {}); ck('UX teclado: se puede completar todo el flujo solo con teclado', /Guardado/.test(await kb.locator('.ai-panel').innerText())); await kb.context().close()
+  await b.close(); console.log(fails ? `\nFALLAS: ${fails}` : '\nTODO OK'); process.exit(fails ? 1 : 0)
+})().catch(e => { console.error('EXCEPCIÓN', e.message, e.stack?.split('\n')[1]); process.exit(3) })

@@ -1,0 +1,16 @@
+// QA-Claude-2 — PR #308 (ES-173) mutaciones sobre el clon: node qa/mut308.cjs <clon>/frontend. Cada mutante cambia UNA cosa del texto/estructura del permiso y corre la prueba nueva (es-173-permiso-texto) y el resto de las pruebas del área.
+const fs = require('fs'), path = require('path'), { execSync } = require('child_process'); const FE = process.argv[2]; const P = f => path.join(FE, f)
+const run = () => { try { execSync('node --test test/es-173-permiso-texto.test.mjs test/es-173-opinion-real.test.mjs test/es-173-progreso-opinion.test.mjs 2>&1', { cwd: FE, stdio: 'pipe', timeout: 120000 }); return false } catch (e) { return true } }
+const files = ['src/pilot/FeedbackPage.tsx', 'src/pilot/copy.ts', 'src/progress/progress.css']; const orig = Object.fromEntries(files.map(f => [f, fs.readFileSync(P(f), 'utf8')]))
+const restore = () => files.forEach(f => fs.writeFileSync(P(f), orig[f]))
+const M = (name, file, a, b) => { restore(); const s = fs.readFileSync(P(file), 'utf8'); if (!s.includes(a)) { console.log(`M ${name}: SIN ANCLA (no aplica)`); return } fs.writeFileSync(P(file), s.replace(a, () => b)); const killed = run(); console.log(`M ${name}: ${killed ? 'DETECTADO por las pruebas' : 'SOBREVIVE (las pruebas no lo detectan)'}`); restore() }
+M('M1 quitar la condición 3 (agregados con 5 o más personas) de la lista', 'src/pilot/FeedbackPage.tsx', '[c.grantIf1, c.grantIf2, c.grantIf3, c.grantIf4, c.grantIf5]', '[c.grantIf1, c.grantIf2, c.grantIf4, c.grantIf5]')
+M('M2 quitar la nota de borrador sin revisión legal', 'src/pilot/FeedbackPage.tsx', '<p className="cg-muted cg-small">{c.grantDraft}</p>', '')
+M('M3 quitar el primer h3 («Qué pasa si lo das»)', 'src/pilot/FeedbackPage.tsx', '<h3 className="prg-grant-h">{c.grantIfTitle}</h3>', '')
+M('M4 dejar la lista «después» sin <ul> (párrafos)', 'src/pilot/FeedbackPage.tsx', '<ul className="prg-grant-list">{[c.grantAfter1, c.grantAfter2, c.grantAfter3].map(item => <li key={item}>{item}</li>)}</ul>', '<div>{[c.grantAfter1, c.grantAfter2, c.grantAfter3].map(item => <p key={item}>{item}</p>)}</div>')
+M('M5 prometer que retirar el permiso BORRA lo respondido (ES)', 'src/pilot/copy.ts', 'Retirar el permiso no borra lo que ya respondiste.', 'Retirar el permiso borra lo que ya respondiste.')
+M('M6 cambiar «5 o más personas» por «2 o más» (ES)', 'src/pilot/copy.ts', '5 o más personas', '2 o más personas')
+M('M7 EN con «Nadie» de responsable: agregar un contacto al texto EN', 'src/pilot/copy.ts', 'No one sees your individual answers.', 'No one sees your individual answers. Contact: datos@example.com.')
+M('M8 quitar la regla CSS de la lista', 'src/progress/progress.css', '.prg-grant-list { margin: 0;', '.prg-grant-x { margin: 0;')
+M('M9 botón «Dar permiso» dentro de la lista (sacarlo del final de la tarjeta)', 'src/pilot/FeedbackPage.tsx', '<p>{c.grantNote}</p><p className="cg-muted cg-small">{c.grantDraft}</p>\n        <div className="prg-actions"><Button disabled={busy} onClick={() => void changePermission(true)}>{c.grant}</Button></div>', '<div className="prg-actions"><Button disabled={busy} onClick={() => void changePermission(true)}>{c.grant}</Button></div><p>{c.grantNote}</p><p className="cg-muted cg-small">{c.grantDraft}</p>')
+restore(); console.log('clon restaurado')
