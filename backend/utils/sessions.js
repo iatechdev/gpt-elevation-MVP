@@ -12,11 +12,15 @@ const { deletionPending } = require('./deletionGuard');
 
 const SESSION_TTL = '8h';
 
+// Último corte de sesiones hecho por ESTE proceso (ms). La validación revoca todo token con iatMs <= corte (en el mismo milisegundo no se sabe el orden, así que se revoca). Para que un inicio de sesión POSTERIOR al corte nunca
+// quede revocado por caer en ese mismo milisegundo (QA-18-05; intermitencia 401 en el CI de main), un token emitido por este proceso lleva siempre iatMs > último corte.
+let lastCutMs = 0;
+
 // Cada token lleva un identificador único (jti) para poder revocarlo.
 const issueToken = (user) => jwt.sign(
   // iatMs: instante de emisión en milisegundos (el claim estándar iat solo llega al segundo); permite que un inicio de sesión
   // inmediatamente posterior a un corte de sesiones no quede revocado (QA-18-05).
-  { id: user.id, name: user.name, role: user.role, iatMs: Date.now() },
+  { id: user.id, name: user.name, role: user.role, iatMs: Math.max(Date.now(), lastCutMs + 1) },
   JWT_SECRET,
   { expiresIn: SESSION_TTL, jwtid: crypto.randomBytes(16).toString('hex') },
 );
@@ -47,7 +51,8 @@ const revokeToken = async (payload) => {
 };
 
 const revokeUserSessions = async (userId) => {
-  await AuthRevocation.upsert({ UserId: userId, revokedBefore: new Date() });
+  const cut = new Date(Date.now()); lastCutMs = Math.max(lastCutMs, cut.getTime());
+  await AuthRevocation.upsert({ UserId: userId, revokedBefore: cut });
 };
 
 module.exports = { issueToken, sessionProblem, revokeToken, revokeUserSessions, SESSION_TTL };
