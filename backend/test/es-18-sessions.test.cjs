@@ -22,7 +22,7 @@ function sessionStore() {
   models.RevokedToken.upsert = async row => { revoked.set(row.jti, row); };
   models.RevokedToken.destroy = async () => 0;
   models.AuthRevocation.findByPk = async id => cutoffs.get(id) ?? null;
-  models.AuthRevocation.advanceCut = async (UserId, revokedBefore) => { cutoffs.set(UserId, { UserId, revokedBefore }); };
+  models.AuthRevocation.advanceCut = async (UserId, revokedBefore) => { cutoffs.set(UserId, { UserId, revokedBefore, sessionVersion: (cutoffs.get(UserId)?.sessionVersion ?? 0) + 1 }); }; // ES-366: cada corte sube la versión
   return { revoked, cutoffs };
 }
 
