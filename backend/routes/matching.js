@@ -95,6 +95,10 @@ async function replayOf(request, userId) {
 // POST /api/matching/request
 router.post('/request', validateBody({ answers: object }), async (req, res) => {
   let claim = null; let settled = false;
+  // E412-3 (QA-Claude-3, CI de main): la reserva se libera ANTES de enviar cualquier respuesta (éxito, 4xx, 5xx). Si se liberara después (en `finally`), la persona podría reintentar con el mismo requestId y ver 409 request_in_progress.
+  const release = async () => { const held = claim; if (held && !settled) { claim = null; await held.destroy().catch(() => {}); } };
+  const sendJson = res.json.bind(res);
+  res.json = (body) => { release().then(() => sendJson(body), () => sendJson(body)); return res; };
   try {
     const userId   = req.user.id;
     // 1) la forma, sin consultar nada; 2) cada valor contra las listas activas de la base (400 invalid_answers, sin tocar la IA)
@@ -207,7 +211,7 @@ Return ONLY a valid JSON array with the top 3 matches (or fewer if less availabl
     console.error('❌ Error in matching:', error && error.name);
     res.status(500).json({ error: 'Could not process matching request.' });
   } finally {
-    if (claim && !settled) await claim.destroy().catch(() => {}); // la búsqueda no llegó a buen término: se libera el requestId para el reintento
+    await release(); // red de seguridad: normalmente ya se liberó antes de responder
   }
 });
 

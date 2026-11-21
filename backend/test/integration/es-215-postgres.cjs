@@ -49,9 +49,18 @@ test('ES-215 PostgreSQL: rango del objetivo al cambiar rol o estado de una cuent
   const person = (role, name, extra = {}) => User.create({ name, email: `${name.toLowerCase()}@example.invalid`, password: 'x', role, ...extra });
   // Una sesión por persona, emitida la primera vez que se usa: así se ve si un cambio de rol o estado la corta (un token nuevo sería válido).
   const tokens = new Map();
-  const tokenFor = (who) => { if (!tokens.has(who.id)) tokens.set(who.id, issueToken(who)); return tokens.get(who.id); };
+  // E215-flaky (Infra, CI de main): la sesión se emite en el PRIMER uso. Si la cuenta ya tenía un corte de sesiones (p. ej. la desactivaron justo antes), el token debe quedar ESTRICTAMENTE después del corte: la comparación del servidor es `iatMs <= revokedBefore`
+  // (a propósito: en el mismo milisegundo no se sabe el orden y se revoca), y con una base local el primer uso puede caer en el mismo milisegundo que el corte → 401 en vez del 409 que se quiere ver. Se espera a que el reloj pase del corte; no depende de tiempos fijos.
+  const tokenFor = async (who) => {
+    if (!tokens.has(who.id)) {
+      const cut = await AuthRevocation.findByPk(who.id);
+      if (cut) while (Date.now() <= new Date(cut.revokedBefore).getTime()) await new Promise((resolve) => setTimeout(resolve, 1));
+      tokens.set(who.id, issueToken(who));
+    }
+    return tokens.get(who.id);
+  };
   const call = async (who, method, path, body) => {
-    const response = await fetch(`http://127.0.0.1:${server.address().port}${path}`, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenFor(who)}` }, body: body === undefined ? undefined : JSON.stringify(body) });
+    const response = await fetch(`http://127.0.0.1:${server.address().port}${path}`, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await tokenFor(who)}` }, body: body === undefined ? undefined : JSON.stringify(body) });
     const text = await response.text();
     let json = null; try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text.slice(0, 80) }; }
     return { status: response.status, body: json };
@@ -137,5 +146,22 @@ test('ES-215 PostgreSQL: rango del objetivo al cambiar rol o estado de una cuent
     assert.equal((await call(adm, 'PUT', `/api/admin/usuarios/${sup.id}`, { active: false })).status, 403);
     assert.equal((await call(sup, 'PUT', `/api/admin/usuarios/${sup.id}`, { role: 'user' })).status, 403);
     assert.equal((await row(sup)).role, 'superadmin');
+  });
+
+  // Causa raíz de la intermitencia del CI de main (401 en vez de 409): un token emitido en el MISMO milisegundo que el corte de sesiones se revoca (iatMs <= revokedBefore, a propósito). Esta prueba la fija sin depender de tiempos.
+  await t.test('frontera del corte de sesiones: un token emitido en el mismo milisegundo que el corte queda revocado y uno 1 ms después vale; tokenFor espera a pasar el corte', async () => {
+    const { sessionProblem } = require('../../utils/sessions'); const jwt = require('jsonwebtoken');
+    const who = await person('user', 'Frontera'); const cut = new Date(); await AuthRevocation.upsert({ UserId: who.id, revokedBefore: cut });
+    const mint = (iatMs) => ({ id: who.id, role: 'user', jti: 'frontera-' + iatMs, iatMs });
+    assert.equal(await sessionProblem(mint(cut.getTime() - 1)), 'revoked'); assert.equal(await sessionProblem(mint(cut.getTime())), 'revoked', 'mismo milisegundo = revocada');
+    assert.equal(await sessionProblem(mint(cut.getTime() + 1)), null, '1 ms después = válida'); void jwt;
+    // el arreglo de raíz: con el reloj CONGELADO en el instante del corte (peor caso: mismo milisegundo), un inicio de sesión posterior emitido por este proceso lleva iatMs > corte y NO queda revocado
+    const { revokeUserSessions, issueToken: issue } = require('../../utils/sessions'); const realNow = Date.now; const frozen = realNow.call(Date) + 60000;
+    try {
+      Date.now = () => frozen; const early = issue(who); await revokeUserSessions(who.id); const late = issue(who);
+      const lateMs = jwt.decode(late).iatMs; const earlyMs = jwt.decode(early).iatMs; const cutNow = new Date((await AuthRevocation.findByPk(who.id)).revokedBefore).getTime();
+      assert.equal(cutNow, frozen); assert.ok(lateMs > cutNow, 'iatMs ' + lateMs + ' > corte ' + cutNow); assert.ok(earlyMs <= cutNow);
+      assert.equal(await sessionProblem(jwt.decode(early)), 'revoked', 'la emitida antes del corte (mismo ms) se revoca'); assert.equal(await sessionProblem(jwt.decode(late)), null, 'la emitida después vale');
+    } finally { Date.now = realNow; }
   });
 });
