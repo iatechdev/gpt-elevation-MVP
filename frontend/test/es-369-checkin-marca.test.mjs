@@ -32,8 +32,19 @@ test('ES-369 (QA-424-1): el día es el de la ZONA de la persona (#411), no el de
   markCheckin(token, evening, store)
   assert.equal(checkinDone(token, new Date('2026-11-21T04:30:00Z'), store), true, 'a las 23:30 locales del mismo día sigue marcado')
   assert.equal(checkinDone(token, new Date('2026-11-21T05:00:00Z'), store), false, 'a medianoche de Bogotá cambia el día')
-  assert.equal(personToday(token, evening, makeStore()), '2026-11-21', 'sin zona recordada, el día UTC (como antes)')
+  assert.equal(personToday(token, evening, makeStore()), '2026-11-20', 'sin zona recordada, el respaldo es America/Bogota (como el servidor), no UTC')
   rememberZone(token, 'Zona/Inventada', store); assert.equal(personToday(token, evening, store), '2026-11-21', 'una zona que el navegador no conoce cae a UTC sin lanzar')
+})
+
+test('ES-369 (QA-432-1): sin zona recordada (registro desde Hoy o CheckinPage) la marca sigue vigente de 19:00 a 23:59 de Bogotá y cambia a medianoche', () => {
+  for (const [label, store] of [['Hoy/CheckinPage sin zona', makeStore()], ['con la zona ya recordada', (() => { const s = makeStore(); rememberZone(tokenOf(1), 'America/Bogota', s); return s })()]]) {
+    for (const utc of ['2026-11-21T00:00:00Z', '2026-11-21T02:59:00Z', '2026-11-21T04:59:00Z']) { // 19:00, 21:59 y 23:59 del día 20 en Bogotá
+      const at = new Date(utc); markCheckin(tokenOf(1), at, store)
+      assert.equal(checkinDone(tokenOf(1), at, store), true, `${label}: ${utc} marca y lee el mismo día`)
+      assert.equal(checkinDone(tokenOf(1), new Date('2026-11-21T04:59:59Z'), store), true, `${label}: sigue vigente hasta las 23:59:59 locales`)
+      assert.equal(checkinDone(tokenOf(1), new Date('2026-11-21T05:00:00Z'), store), false, `${label}: cambia a medianoche local, no antes ni después`)
+    }
+  }
 })
 
 test('ES-369 (QA-424-2): con el almacenamiento bloqueado nada lanza y no hay marca', () => {

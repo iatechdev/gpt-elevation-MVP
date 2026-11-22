@@ -42,8 +42,11 @@ export function rememberZone(token: string, zone: string | null, store: Store | 
   try { store.setItem(PERSON_ZONE_KEY, JSON.stringify({ id, zone })) } catch { /* almacenamiento no disponible */ }
 }
 
-/** El día de hoy de ESTA persona: AAAA-MM-DD en su zona (UTC mientras no se conozca). */
-export const personToday = (token: string, now: Date = new Date(), store: Store | null = defaultStore()): string => todayKey(now, rememberedZone(token, store))
+/** Zona de respaldo mientras no se conozca la de la persona: la misma que usa el servidor (E393-3 / #411). Con UTC, entre las 19:00 y las 23:59 de Bogotá la marca caería en el día siguiente. */
+export const FALLBACK_ZONE = 'America/Bogota'
+
+/** El día de hoy de ESTA persona: AAAA-MM-DD en su zona (America/Bogota, como el servidor, mientras no se conozca). */
+export const personToday = (token: string, now: Date = new Date(), store: Store | null = defaultStore()): string => todayKey(now, rememberedZone(token, store) ?? FALLBACK_ZONE)
 
 /** ¿Esta persona ya registró su ánimo hoy en este navegador? Falso con otra persona, otro día, sin token o con el almacenamiento bloqueado. */
 export function checkinDone(token: string, now: Date = new Date(), store: Store | null = defaultStore()): boolean {
