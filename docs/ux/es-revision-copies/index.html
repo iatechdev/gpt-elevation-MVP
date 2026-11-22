@@ -362,6 +362,10 @@ const K = [
  ['landing.access.reset.send','c','Enviar enlace para restablecer la contraseña','Send link to reset your password'],
  // --- Mis datos (dataCopy.ts)
  ['data.intro','c','Aquí puedes llevarte una copia de tus datos o pedir que cerremos tu cuenta.','Here you can take a copy of your data or ask us to close your account.','Hoy termina en «Solo tú los ves».'],
+ ['resume_wh_2','c','Al proveedor de IA solo llega texto. El PDF original se guarda cifrado y tú puedes verlo, descargarlo o borrarlo.','Only text reaches the AI provider. The original PDF is stored encrypted, and you can view, download or delete it.','Hoy (resumeCopy.ts): «…y solo tú puedes verlo…». Se deja de afirmar exclusividad. Cifrado en reposo y quién del equipo accede: lo confirma Mauricio (técnica).'],
+ ['resume_hist_private','c','Están cifradas. No llegan a ningún profesional sin tu autorización aparte.','They are stored encrypted. They do not reach any professional without your separate permission.','Hoy: «Solo tú puedes verlas…». Que la autorización por profesional sea aparte y revocable lo verifica QA (caso de revocación).'],
+ ['resume_kept_saved','c','Tu hoja de vida quedó guardada y cifrada.','Your résumé was saved and encrypted.','Hoy: «…cifrada, solo para ti» / «…just for you».'],
+ ['journal.private (journalCopy.ts)','c','Privado · Tú decides si el asistente lo usa','Private · You decide whether the assistant uses it','Hoy: «Privado · Solo para ti». Cuadra con «Tú eliges si el asistente puede consultar una entrada». Mismo criterio que en registro.'],
  ['data.exportBody','c','Un archivo JSON con lo que guardamos de ti. Prepara el archivo y luego descárgalo; queda disponible unos minutos.','A JSON file with what we keep about you. Prepare the file, then download it; it stays available for a few minutes.','Hoy termina en «y solo tú lo ves». Se puede decir «solo tu cuenta puede descargarlo» si Tecnología lo confirma.']
 ]
 const KM = Object.fromEntries(K.map(r => [r[0], r]))
@@ -383,7 +387,7 @@ const RET = [
  ['Texto antiguo de portada y héroe', 'landing.hero.*, landing.doors.*, landing.example.*, landing.problem.*, landing.journey.*', 'Son del diseño anterior (ES-61…74). LandingPage.tsx ya renderiza el héroe de portada y LandingTail. Retirar solo si se confirma que ningún componente los usa.', 'LandingPage.tsx importa Hero (portada) y LandingTail; HeroDoors, ExampleStrip y LandingJourney no aparecen en LandingTail. No verificado en tiempo de ejecución.'],
  ['Aviso clínico repetido', 'landing.pricing.notice (duplicado de landing.footer.notice)', 'Se conserva una sola vez, en el cierre. Alejo pide no repetirlo donde distrae.', 'Alejo, hallazgo 17.'],
  ['Línea «Máximo 72 bytes» en la lista de requisitos', 'landing.access.pw.max_bytes', '«Bytes» es un término técnico y la nota queda desconectada de la acción. El límite se avisa solo cuando se supera.', 'Alejo, hallazgo 15.'],
- ['«Solo tú los ves» y «Un espacio solo para ti»', 'access.privacy_note, login_subtitle, dataCopy.ts (intro y exportBody)', 'Puede entenderse como que ni la IA ni proveedores procesan el contenido. Se dice qué ve cada actor.', 'Triaje de Infra y aviso de privacidad (proveedor de IA).']
+ ['«Solo tú los ves» y «Un espacio solo para ti»', 'access.privacy_note, login_subtitle, dataCopy.ts (intro y exportBody), resumeCopy.ts (resume_wh_2, resume_hist_private, resume_kept_saved «solo para ti»), journalCopy.ts («Privado · Solo para ti»)', 'Puede entenderse como que ni la IA ni proveedores procesan el contenido. Se dice qué ve cada actor.', 'Triaje de Infra y aviso de privacidad (proveedor de IA).']
 ]
 
 const CLAIMS = [
@@ -393,6 +397,7 @@ const CLAIMS = [
  ['Crear una cuenta es gratis', 'Registro (access.no_payment)', 'Que crear y mantener la cuenta no cuesta ni pasa sola a un plan de pago.', 'Alejo (negocio)'],
  ['Exportar y eliminar los datos', 'landing.features.data, landing.trust.4, «¿Puedo borrar mis datos?»', 'Estado real en producción, plazos y qué pasa con copias de respaldo (aviso §9 y §10).', 'Mauricio (técnica), abogado'],
  ['Límite de 72 bytes en la contraseña', 'Registro, landing.access.pw.too_long', 'Si el límite es técnico (hash). Si no lo es, se retira.', 'Mauricio (técnica)'],
+ ['Hojas de vida y diario: cifrados y sin acceso de profesionales no autorizados', 'resumeCopy.ts (resume_wh_2, resume_hist_private, resume_kept_saved), journalCopy.ts (chip «Privado»)', 'Cifrado en reposo; que un profesional solo vea una hoja con autorización aparte y revocable; que no se afirme exclusividad frente al equipo de Elevation ni al proveedor de IA (a la IA solo llega texto sin datos de contacto, según resume_wh_1).', 'Mauricio (técnica), QA-5 (caso de revocación), abogado'],
  ['Pausar, cerrar, borrar entradas y elegir una entrada para la conversación', 'landing.features.conversation y journal', 'Que cada acción exista en producción.', 'Mauricio (técnica)'],
  ['Contar una situación real y recibir sugerencias; aceptar o registrar', 'Hero, «Cómo funciona», CTA de la demostración', 'Flujo real de una cuenta: nombre exacto del control y qué se guarda.', 'Mauricio (técnica), Alejo'],
  ['Estado de cada función (Disponible / En preparación)', 'Todas las tarjetas de la portada', 'Lista de funciones de producto con cuatro datos por función (instructivo, paso 1).', 'Alejo (producto)'],
