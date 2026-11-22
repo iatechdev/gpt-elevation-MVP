@@ -21,8 +21,7 @@ const sections = load(`${root}landing/PortadaSections.tsx`)
 const requirements = load(`${root}../access/PasswordRequirements.tsx`)
 const text = lang => key => { const entry = byKey[key]; if (!entry) throw new Error(`sin clave ${key}`); return entry[lang] }
 const html = element => renderToStaticMarkup(createElement(MemoryRouter, null, element))
-// Lo que ve una persona: todo el catálogo salvo landing.pricing.* (la página /pricing sigue existiendo y lee los planes de la base: fuera de este ticket, ver PR).
-const visible = catalog.filter(entry => !entry.key.startsWith('landing.pricing.'))
+const visible = catalog
 
 test('ES-360 marcadores internos: ningún texto del catálogo trae notas de diseño, planes de prueba, estados de la escala vieja ni marcadores pendientes (ES y EN)', () => {
   const internal = /sintétic|synthetic|dato de prueba|test data|plan de prueba|test plan|espacio reservado|space reserved|fotograf|photograph|POR COMPLETAR|POR REVISAR|TO BE COMPLETED|\bTODO\b|lorem|\[\[|\{\{|\bundefined\b|\bNaN\b|\bnull\b|qa-/i
@@ -154,4 +153,13 @@ test('ES-360 (diseño 12871) hojas de vida y diario: sin «solo tú» ni «solo 
   assert.doesNotMatch(resume, only); assert.doesNotMatch(journal, only)
   for (const phrase of ['Al proveedor de IA solo llega texto', 'Tu hoja de vida quedó guardada y cifrada.', 'No llegan a ningún profesional sin tu autorización aparte.', 'Only text reaches the AI provider', 'Your résumé was saved and encrypted.', 'They do not reach any professional without your separate permission.']) assert.ok(resume.includes(phrase), phrase)
   assert.ok(journal.includes('Privado · Tú decides si el asistente lo usa') && journal.includes('Private · You decide whether the assistant uses it'))
+})
+
+test('ES-360 sin planes públicos: /pricing redirige a la portada, ya no existen PricingPage/LandingPlans/PlanCards ni textos de planes (solo el período que exige el servidor)', () => {
+  const app = read('../src/App.tsx')
+  assert.match(app, /<Route path="\/pricing" element=\{<Navigate to="\/" replace \/>\} \/>/); assert.doesNotMatch(app, /PricingPage/)
+  for (const file of ['pages/PricingPage.tsx', 'components/landing/LandingPlans.tsx', 'components/landing/PlanCards.tsx', 'pricing/pricing.css']) assert.throws(() => read('../src/' + file), /ENOENT/, file)
+  assert.deepEqual(catalog.filter(entry => /^landing\.pricing\./.test(entry.key)).map(entry => entry.key).sort(), ['landing.pricing.period.month', 'landing.pricing.period.year'])
+  assert.equal(byKey['landing.nav.plans'], undefined)
+  for (const entry of catalog) for (const lang of ['es', 'en']) assert.doesNotMatch(entry[lang], /cambia de plan|change plans|plan de prueba|solicitar este plan|request this plan/i, entry.key)
 })

@@ -81,9 +81,7 @@ test('ES-155 C E282-1: el cuerpo y lo conservado comparten un solo límite de Su
   const page = read('../src/pages/LandingPage.tsx')
   assert.match(page, /<Suspense fallback=\{<div className="pt-try-skel" aria-hidden="true" \/>\}>\s*<PortadaBody text=\{text\} \/>\s*<LandingTail /)
   assert.ok(!/<Suspense fallback=\{null\}>/.test(page), 'sin un segundo límite que deje llegar el bloque de abajo antes')
-  assert.match(read('../src/pricing/pricing.css'), /\.pp-state \{ min-height: calc\(14rem \+ 27px\); \}/)
-  const plans = read('../src/components/landing/LandingPlans.tsx')
-  assert.equal(plans.match(/className="pp-state"/g)?.length, 3, 'cargando, error y vacío reservan lo mismo')
+  // ES-360: ya no hay catálogo de planes en la portada ni página /pricing (se retiraron pricing.css, LandingPlans y PlanCards); se conserva el límite único de Suspense y el salto al ancla
   const hook = read('../src/components/portada/useScrollToHash.ts')
   assert.ok(hook.includes('.pp-skel') && hook.includes('MutationObserver') && hook.includes('SETTLE_LIMIT_MS'))
   assert.ok((hook.match(/requestAnimationFrame/g) ?? []).length === 2, 'el salto va dos cuadros después de que el catálogo crezca: en el mismo cuadro, lo que queda a la vista cuenta como desplazado')
