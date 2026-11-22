@@ -32,7 +32,7 @@ test('ES-128: mensajes ES/EN del servidor y del catálogo coinciden; el error de
 })
 
 test('ES-128: el catálogo tiene todos los textos de los requisitos en ES (tuteo) y EN, sin voseo', () => {
-  const keys = ['title', 'length', 'upper', 'lower', 'digit', 'special', 'max_bytes', 'met', 'pending', 'summary', 'missing',
+  const keys = ['title', 'length', 'upper', 'lower', 'digit', 'special', 'too_long', 'met', 'pending', 'summary', 'missing',
     ...[...backend.policy.rules, 'max_bytes', 'common'].map(id => `missing.${id}`)].map(k => `landing.access.pw.${k}`)
   for (const key of keys) { const item = entry(key); assert.ok(item?.es && item?.en, key); assert.doesNotMatch(item.es, /\b(tenés|usá|vos|elegí)\b/i) }
   assert.match(entry('landing.access.pw.summary').es, /\{n\}.*\{total\}/); assert.match(entry('landing.access.pw.missing').en, /\{list\}/)

@@ -10,7 +10,7 @@ test('ES-106: un override huérfano no se publica; uno vigente, los heredados s�
   const stored = [
     row('landing.modules.elevation.status', 'es', 'En piloto'), // clave eliminada en ES-94
     row('landing.clave.que.nunca.existio', 'es', 'huérfano'),
-    row('landing.skillmap.routes.continuity.pending', 'es', 'Texto editado vigente'),
+    row('landing.skillmap.experiment.body', 'es', 'Texto editado vigente'),
     row('hero_title', 'es', 'Título heredado editado'),
     row('otra_clave_no_landing', 'es', 'no se publica'), // ES-279: una clave que no es de la portada ni del catálogo tampoco sale
     row('non-landing.secreto', 'es', 'no se publica'),
@@ -23,13 +23,13 @@ test('ES-106: un override huérfano no se publica; uno vigente, los heredados s�
   const es = (await request('GET', '/api/landing-content?lang=es')).body;
   assert.equal('landing.modules.elevation.status' in es, false);
   assert.equal('landing.clave.que.nunca.existio' in es, false);
-  assert.equal(es['landing.skillmap.routes.continuity.pending'], 'Texto editado vigente');
+  assert.equal(es['landing.skillmap.experiment.body'], 'Texto editado vigente');
   assert.equal(es.hero_title, 'Título heredado editado'); assert.equal('otra_clave_no_landing' in es, false); assert.equal('non-landing.secreto' in es, false);
   assert.equal(es['landing.nav.skip'], catalog.find(e => e.key === 'landing.nav.skip').es);
   assert.equal(es['landing.nav.how'], catalog.find(e => e.key === 'landing.nav.how').es);
   const en = (await request('GET', '/api/landing-content?lang=en')).body;
   assert.equal('landing.modules.elevation.status' in en, false);
-  assert.equal(en['landing.skillmap.routes.continuity.pending'], catalog.find(e => e.key === 'landing.skillmap.routes.continuity.pending').en); // el override es solo de ES
+  assert.equal(en['landing.skillmap.experiment.body'], catalog.find(e => e.key === 'landing.skillmap.experiment.body').en); // el override es solo de ES
 });
 
 test('ES-106: sin overrides responde el catálogo completo y ante un fallo de base de datos responde los defectos', async t => {

@@ -38,11 +38,11 @@ const en: Record<string, string> = {
 
   // ── Login ─────────────────────────────────────────────────────────────────
   login_title: 'Welcome back',
-  login_subtitle: 'A space just for you',
+  login_subtitle: 'Your non-clinical support and your skills map.',
   label_email: 'hello@example.com',
   label_password: '••••••••',
   label_name: 'Your name',
-  btn_login: 'Enter my space',
+  btn_login: 'Sign in',
   btn_register: 'Create my journal',
   link_register: 'First time here? Create my journal',
   link_login: 'Already have an account? Sign in',

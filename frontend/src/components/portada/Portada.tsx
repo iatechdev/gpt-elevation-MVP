@@ -1,5 +1,7 @@
-// ES-155 (tramo C): portada «Cartografía». Hero con relieve decorativo, leyenda de símbolos, pieza «pruébalo con una escena», tres pasos y un hueco para fotografía real.
+// ES-155 (tramo C): portada «Cartografía». Hero con relieve decorativo, dos acciones (probar un ejemplo, crear cuenta) y leyenda de símbolos; la demostración fija y los tres pasos van en PortadaBody.
 // Todos los textos salen de `landing.portada.*` (CMS editable, con respaldo ES/EN en shared/landing-content.json). Sin promesas de empleo ni de resultados; el ejemplo va rotulado.
+import type { MouseEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useAfterFirstPaint } from './useAfterFirstPaint'
 import { ReliefCanvas, type ReliefPoint } from '../../cartografia'
 import './portada.css'
@@ -12,6 +14,15 @@ const HERO_POINTS: ReliefPoint[] = [
   { x: 0.2, y: 0.34, level: 1 }, { x: 0.46, y: 0.6, level: 3 }, { x: 0.68, y: 0.36, level: 4 }, { x: 0.84, y: 0.66, level: 2 }, { x: 0.3, y: 0.78, level: 2 },
 ]
 
+/** El salto a #ejemplo también lleva el foco a la sección (el destino de un enlace interno debe poder leerse con teclado y lector de pantalla). */
+const goToExample = (event: MouseEvent<HTMLAnchorElement>) => {
+  const target = document.getElementById('ejemplo')
+  if (!target) return
+  event.preventDefault()
+  target.scrollIntoView({ block: 'start' }); target.focus({ preventScroll: true })
+  window.history.replaceState(null, '', '#ejemplo')
+}
+
 export function Hero({ text }: { text: Text }) {
   const p = t(text); const ready = useAfterFirstPaint()
   return (
@@ -21,6 +32,11 @@ export function Hero({ text }: { text: Text }) {
       <div className="pt-hero__in">
         <h1 id="pt-hero-title">{p('hero_pre')} <em>{p('hero_em')}</em></h1>
         <p className="pt-lead">{p('lead')}</p>
+        {/* ES-360: dos acciones con el nombre de lo que ocurre al pulsarlas. «Probar un ejemplo» baja a la demostración fija (sin cuenta); «Crear cuenta» va al registro. */}
+        <div className="pt-actions">
+          <a className="cg-btn" href="#ejemplo" onClick={goToExample}>{p('cta_try')}</a>
+          <Link className="cg-btn cg-btn--ghost" to="/login?mode=register">{p('cta_create')}</Link>
+        </div>
       </div>
       <div className="pt-legend">
         <span className="cg-tag">{p('legend')}</span>

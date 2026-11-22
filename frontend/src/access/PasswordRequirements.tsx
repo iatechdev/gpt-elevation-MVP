@@ -33,7 +33,8 @@ export function PasswordRequirements({ id, password, showErrors, serverProblems 
           )
         })}
       </ul>
-      <p className={bytesOver ? 'is-bad' : undefined}>{text('landing.access.pw.max_bytes')}</p>
+      {/* ES-360: el límite de bytes ya no se lista de antemano; se avisa solo cuando se supera, con palabras comunes. */}
+      {bytesOver && <p className="is-bad">{text('landing.access.pw.too_long')}</p>}
       <p aria-live="polite" className={visibleSummary ? undefined : 'ac-sr'}>{summary}</p>
     </div>
   )

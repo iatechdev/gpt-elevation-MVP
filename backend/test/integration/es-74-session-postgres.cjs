@@ -80,7 +80,7 @@ test('ES-74 Postgres: real owner reader, role/onboarding, revocation, deletion a
   assert.equal((await call('/session', afterCutoff)).status, 401);
   assert.equal((await call('/session', bToken)).status, 200);
   const editor = await User.create({ name: 'Synthetic editor', email: 'editor@example.invalid', password: 'not-a-real-credential', role: 'superadmin', active: true, onboardingCompleted: true });
-  const edit = { key: 'landing.join.title', lang: 'en', value: 'Synthetic persisted title' };
+  const edit = { key: 'landing.next.title', lang: 'en', value: 'Synthetic persisted title' };
   assert.equal((await call('/landing-content', bToken, 'PUT', edit)).status, 403);
   assert.equal((await call('/landing-content', issueToken(editor), 'PUT', edit)).status, 200);
   assert.equal((await call('/landing-content?lang=en')).body[edit.key], edit.value);

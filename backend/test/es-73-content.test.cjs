@@ -9,7 +9,7 @@ test('ES-73: new copy uses the existing public read and protected CMS write (moc
   models.LandingContent.upsert = async row => { rows.set(row.key + ':' + row.lang, row); };
   const request = await startApp(t); // production Express mounts, real HTTP and signed JWTs
   const entries = catalog.filter(entry => /^landing\.(pricing)\./.test(entry.key));
-  assert.ok(entries.length >= 25);
+  assert.ok(entries.length >= 24); // ES-360: se retiró landing.pricing.number
   const body = { key: 'landing.pricing.title', lang: 'es', value: 'Synthetic editorial change' };
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
     assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, (role === undefined ? 401 : 403));

@@ -5,9 +5,10 @@ const { models, startApp } = require('./support.cjs');
 const { catalog } = require('../content/landingDefaults');
 
 const PENDING_KEYS = [
-  // ES-94: textos definitivos que explican cada ruta; el estado de Elevation es vacío a propósito (sin etiqueta).
-  'landing.skillmap.routes.continuity.pending', 'landing.skillmap.routes.adjacent.pending',
-  'landing.skillmap.routes.exploratory.pending', 'landing.join.professional_pending',
+  // ES-94: el estado de Elevation es vacío a propósito (sin etiqueta). ES-360: el detalle de las tres rutas y «Cómo vincularte» se retiraron; los textos pendientes que sí se publican
+  // son los de rutas, experimento, tareas e IA y la solicitud profesional (todos en «En preparación» o sin promesa de acceso).
+  'landing.skillmap.routes.body', 'landing.skillmap.experiment.body',
+  'landing.skillmap.ai.body', 'landing.pros.intro',
 ];
 const marker = /\[[^\]]*\]/;
 
@@ -26,8 +27,8 @@ test('ES-90: GET público devuelve los textos provisionales honestos y ningún m
   }
   const es = (await request('GET', '/api/landing-content?lang=es')).body;
   assert.equal('landing.modules.elevation.status' in es, false); // ES-94: Elevation no lleva etiqueta de estado
-  assert.match(es['landing.skillmap.routes.continuity.pending'], /^Un rol del mismo contexto del que vienes\./);
-  assert.equal((await request('GET', '/api/landing-content?lang=en')).body['landing.join.professional_pending'], 'Fill in the form: the Elevation team reviews your application and writes to the email you provide. Afterwards, a board verifies your credentials before giving you access.');
+  assert.match(es['landing.skillmap.routes.body'], /^Tres rutas posibles para explorar/);
+  assert.equal((await request('GET', '/api/landing-content?lang=en')).body['landing.pros.intro'], 'Fill in the request with your professional details and attach your CV. The Elevation team will review the information and contact you by email to explain the next steps.');
 });
 
 test('ES-90: solo el superadmin reemplaza un pendiente y el valor nuevo se publica; otros roles reciben 403', async t => {
@@ -35,7 +36,7 @@ test('ES-90: solo el superadmin reemplaza un pendiente y el valor nuevo se publi
   models.LandingContent.findAll = async ({ where }) => rows.filter(row => row.lang === where.lang);
   models.LandingContent.upsert = async row => { rows.push(row); };
   const request = await startApp(t);
-  const body = { key: 'landing.skillmap.routes.continuity.pending', lang: 'es', value: 'Valor sintético de prueba' };
+  const body = { key: 'landing.skillmap.routes.body', lang: 'es', value: 'Valor sintético de prueba' };
   for (const role of ['user', 'admin', 'therapist']) assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, 403, role);
   assert.equal(rows.length, 0);
   assert.equal((await request('PUT', '/api/landing-content', { role: 'superadmin', body })).status, 200);

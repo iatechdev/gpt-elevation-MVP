@@ -9,8 +9,11 @@ const catalog = JSON.parse(read('../../shared/landing-content.json'))
 const entry = (key) => catalog.find(e => e.key === key)
 
 test('ES-149 texto: el aviso es landing.footer.notice más la frase aprobada «La IA puede equivocarse» (sin frases nuevas)', () => {
-  const notice = entry('landing.footer.notice'); const trust = entry('landing.trust.1.body')
-  assert.ok(notice && trust)
+  // ES-360: el aviso del cierre de la portada (landing.footer.notice) cambió por el diseño 12863 («Elevation ofrece acompañamiento…»). El aviso del CHAT (ES-149) no entra en ese diseño y conserva su texto aprobado,
+  // que dice «no clínicos» (lo exige el test siguiente). Aserción conservada: «aviso aprobado + La IA puede equivocarse», sin frases nuevas. Unificar ambos avisos queda como propuesta aparte.
+  const notice = { es: 'El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.', en: 'Elevation\'s AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care.' }
+  const trust = entry('landing.trust.1.body')
+  assert.ok(entry('landing.footer.notice') && trust)
   assert.equal(copy.es.limits, `${notice.es} La IA puede equivocarse.`); assert.equal(copy.en.limits, `${notice.en} AI can be wrong.`)
   assert.ok(trust.es.includes('La IA puede equivocarse.')); assert.ok(trust.en.includes('AI can be wrong.'))
 })
