@@ -9,7 +9,7 @@ const iso = d => new Date(Date.now() - d * 86400000).toISOString()
 const people = [1, 2, 3, 4].map(n => ({ id: 100 + n, name: `Persona Sintética ${n}`, ordinal: n, email: `p${n}@example.test`, active: true, createdAt: iso(60), sharing: true, lastMood: { checkin_mood: 4, checkout_mood: 5, date: iso(n) }, moodTrend: 'neutral', avgRating: 4, totalSessions: 3, sessionsThisWeek: 1, trend: 'stable' }))
 const upcoming = [1, 2].map(n => ({ id: 50 + n, patientId: 100 + n, scheduledAt: new Date(Date.now() + n * 3600000).toISOString(), duration: 50, status: 'scheduled', patientName: `Persona Sintética ${n}`, phase: 'upcoming' }))
 async function run(browser, base, [, role, path, data]) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
+  const ctx = await browser.newContext({ viewport: { width: Number(process.env.WIDTH || 390), height: 844 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
   await page.addInitScript(r => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', r); localStorage.setItem('elevation_name', 'Persona Sintética'); localStorage.setItem('elv_lang', 'es'); window.__cls = 0
     new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value }).observe({ type: 'layout-shift', buffered: true }) }, role)
   await page.route('**/api/**', async r => { const p = new URL(r.request().url()).pathname; await new Promise(x => setTimeout(x, 80)); const full = data === 'data'
