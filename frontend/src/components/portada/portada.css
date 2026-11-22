@@ -23,3 +23,4 @@
 .pt-try-skel { min-height: 60rem; margin-top: 1.4rem; }
 @media (min-width: 900px) { .pt-try-skel { min-height: 40rem; } }
 .pt-hero a.cg-btn { color: var(--cg-ground); }
+.pt-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.8rem; align-items: center; }

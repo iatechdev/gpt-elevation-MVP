@@ -11,18 +11,13 @@
   },
   {
     "key": "landing.nav.skillmap",
-    "es": "Skill Map",
-    "en": "Skill Map"
+    "es": "SkillMap",
+    "en": "SkillMap"
   },
   {
     "key": "landing.nav.pros",
-    "es": "Para psicólogos",
-    "en": "For psychologists"
-  },
-  {
-    "key": "landing.nav.plans",
-    "es": "Planes",
-    "en": "Plans"
+    "es": "Profesionales",
+    "en": "Professionals"
   },
   {
     "key": "landing.header.home",
@@ -31,8 +26,8 @@
   },
   {
     "key": "landing.header.login",
-    "es": "Ingresar",
-    "en": "Log in"
+    "es": "Iniciar sesión",
+    "en": "Sign in"
   },
   {
     "key": "landing.header.language",
@@ -126,7 +121,11 @@
     "en": "When your job stops fitting you or your industry changes, it is common to feel your identity is tied to a job title, not know which other industries exist, and fear investing in the wrong training. Many tools give you lists of careers or courses, but do not explain why they fit or how to begin."
   },
   { "key": "landing.modules.number", "es": "04", "en": "04" },
-  { "key": "landing.modules.label", "es": "Elevation + Skill Map", "en": "Elevation + Skill Map" },
+  {
+    "key": "landing.modules.label",
+    "es": "Elevation + SkillMap",
+    "en": "Elevation + SkillMap"
+  },
   { "key": "landing.modules.title", "es": "Dos módulos, un mismo recorrido", "en": "Two modules, one journey" },
   { "key": "landing.modules.elevation.title", "es": "Elevation", "en": "Elevation" },
   {
@@ -134,7 +133,11 @@
     "es": "Conversación con inteligencia artificial, ejercicios breves y un diario privado para explorar lo que vives, tus valores y lo que quieres conservar o cambiar. Con pausas, con silencio y sin tareas impuestas.",
     "en": "AI-supported conversation, short exercises and a private journal to explore what you are going through, your values, and what you want to keep or change. With pauses, with silence, and no imposed tasks."
   },
-  { "key": "landing.modules.skillmap.title", "es": "Skill Map", "en": "Skill Map" },
+  {
+    "key": "landing.modules.skillmap.title",
+    "es": "SkillMap",
+    "en": "SkillMap"
+  },
   { "key": "landing.modules.skillmap.status", "es": "Disponible", "en": "Available" },
   {
     "key": "landing.modules.skillmap.body",
@@ -144,8 +147,8 @@
   { "key": "landing.modules.nontechnical", "es": "Funciona también para profesiones no tecnológicas.", "en": "It also works for non-technical professions." },
   {
     "key": "landing.modules.connection",
-    "es": "Elevation es la experiencia principal y Skill Map es su módulo profesional. El espacio del profesional acreditado permanece separado del chat con IA. La conexión del Skill Map con ese espacio, mediante conclusiones profesionales revisadas y autorizadas por la persona, está prevista y aún no está disponible.",
-    "en": "Elevation is the main experience and Skill Map is its professional module. The accredited professional’s space remains separate from the AI chat. A connection from Skill Map to that space, through professional conclusions reviewed and authorised by the participant, is planned and is not yet available."
+    "es": "Elevation es la experiencia principal y SkillMap es su módulo profesional. El espacio del profesional acreditado permanece separado del chat con IA. La conexión del SkillMap con ese espacio, mediante conclusiones profesionales revisadas y autorizadas por la persona, está prevista y aún no está disponible.",
+    "en": "Elevation is the main experience and SkillMap is its professional module. The accredited professional’s space remains separate from the AI chat. A connection from SkillMap to that space, through professional conclusions reviewed and authorised by the participant, is planned and is not yet available."
   },
   { "key": "landing.journey.number", "es": "05", "en": "05" },
   { "key": "landing.journey.label", "es": "Cómo funciona", "en": "How it works" },
@@ -160,7 +163,11 @@
   { "key": "landing.journey.3.title", "es": "Tú decides qué compartir.", "en": "You decide what to share." },
   { "key": "landing.journey.3.body", "es": "Solo las conclusiones profesionales que revises y autorices pasan al proceso de carrera.", "en": "Only the professional conclusions you review and authorise move into the career process." },
   { "key": "landing.journey.4.number", "es": "04", "en": "04" },
-  { "key": "landing.journey.4.title", "es": "Tus evidencias y tu Skill Map.", "en": "Your evidence and your Skill Map." },
+  {
+    "key": "landing.journey.4.title",
+    "es": "Tus evidencias y tu SkillMap.",
+    "en": "Your evidence and your SkillMap."
+  },
   { "key": "landing.journey.4.body", "es": "Cuentas casos de tu trayectoria y ves qué capacidades respaldan.", "en": "You describe cases from your career and see what capabilities they support." },
   { "key": "landing.journey.5.number", "es": "05", "en": "05" },
   { "key": "landing.journey.5.title", "es": "Compara tres rutas.", "en": "Compare three routes." },
@@ -169,29 +176,15 @@
   { "key": "landing.journey.6.title", "es": "Prueba, decide y planifica.", "en": "Test, decide and plan." },
   { "key": "landing.journey.6.body", "es": "Un experimento pequeño, una decisión razonada y un plan a 7, 30 y 90 días.", "en": "A small experiment, a reasoned decision and a 7-, 30- and 90-day plan." },
   { "key": "landing.journey.note", "es": "Diseñado como un recorrido de 30 días. Es una propuesta que estamos validando; no es un plazo para conseguir empleo.", "en": "Designed as a 30-day journey. It is a proposal we are validating; it is not a timeline for finding a job." },
-  {"key":"landing.join.number","es":"13","en":"13"},
-  {"key":"landing.join.label","es":"Cómo vincularte","en":"How to join"},
-  {"key":"landing.join.title","es":"Empezar es sencillo","en":"Getting started is simple"},
-  {"key":"landing.join.people","es":"Personas","en":"People"},
-  {"key":"landing.join.steps.1.number","es":"01","en":"01"},
-  {"key":"landing.join.steps.1.body","es":"Crea tu cuenta con tu nombre, correo y contraseña.","en":"Create your account with your name, email and password."},
-  {"key":"landing.join.steps.2.number","es":"02","en":"02"},
-  {"key":"landing.join.steps.2.body","es":"Elige tu idioma.","en":"Choose your language."},
-  {"key":"landing.join.steps.3.number","es":"03","en":"03"},
-  {"key":"landing.join.steps.3.body","es":"Empieza por la puerta que prefieras.","en":"Start with the door you prefer."},
-  {"key":"landing.join.steps.4.number","es":"04","en":"04"},
-  {"key":"landing.join.steps.4.body","es":"Decide qué compartir y qué guardar para ti.","en":"Decide what to share and what to keep to yourself."},
-  {"key":"landing.join.soon","es": "En preparación","en": "In preparation"},
-  {"key":"landing.join.create","es":"Crear cuenta","en":"Create an account"},
-  {"key":"landing.join.professionals","es":"Profesionales","en":"Professionals"},
-  {"key":"landing.join.professional_body","es":"Cuéntanos tu perfil profesional y validaremos tus credenciales antes de darte acceso.","en":"Tell us about your professional profile and we will verify your credentials before giving you access."},
-  {"key":"landing.join.professional_pending","es":"Completa el formulario: el equipo de Elevation revisa tu solicitud y te escribe al correo que indiques. Después, una junta valida tus credenciales antes de darte acceso.","en":"Fill in the form: the Elevation team reviews your application and writes to the email you provide. Afterwards, a board verifies your credentials before giving you access."},
-  {"key":"landing.join.professional_cta","es":"Unirme como profesional","en":"Join as a professional"},
   {"key":"landing.access.checking","es":"Verificando sesión…","en":"Checking session…"},
   {"key":"landing.access.expired","es":"Tu sesión ya no es válida. Inicia sesión de nuevo.","en":"Your session is no longer valid. Please sign in again."},
   {"key":"landing.access.unavailable","es":"No pudimos verificar tu sesión.","en":"We could not verify your session."},
   {"key":"landing.access.retry","es":"Reintentar","en":"Try again"},
-  {"key":"landing.access.register","es":"Crear cuenta","en":"Create an account"},
+  {
+    "key": "landing.access.register",
+    "es": "Crear cuenta",
+    "en": "Create account"
+  },
   {"key":"landing.access.register_link","es":"¿Primera vez aquí? Crear cuenta","en":"First time here? Create an account"},
   {"key":"landing.access.registered","es":"Registro exitoso. Ahora inicia sesión.","en":"Registration successful. Please sign in."},
   {"key":"landing.access.submitting","es":"Enviando…","en":"Submitting…"},
@@ -208,112 +201,148 @@
   {"key":"landing.access.credentials","es":"Credenciales incorrectas.","en":"Incorrect credentials."},
   {"key":"landing.access.invalid","es":"Revisa los datos del formulario.","en":"Check the form details."},
   {"key":"landing.access.failed","es":"No se pudo completar el acceso. Inténtalo de nuevo.","en":"Access could not be completed. Please try again."},
-  { "key": "landing.features.number", "es": "07", "en": "07" },
-  { "key": "landing.features.label", "es": "Qué ofrece a las personas", "en": "What it offers people" },
-  { "key": "landing.features.title", "es": "Qué ofrece a las personas", "en": "What it offers people" },
-  { "key": "landing.features.conversation.title", "es": "Conversación con ritmo", "en": "Conversation at your pace" },
-  { "key": "landing.features.conversation.body", "es": "Una pregunta a la vez, con pausas y silencio. Puedes cerrar sin tarea.", "en": "One question at a time, with pauses and silence. You can close without a task." },
-  { "key": "landing.features.conversation.status", "es": "Disponible", "en": "Available" },
-  { "key": "landing.features.exercises.title", "es": "Ejercicios", "en": "Exercises" },
+  {
+    "key": "landing.features.label",
+    "es": "Qué puedes hacer en Elevation",
+    "en": "What you can do in Elevation"
+  },
+  {
+    "key": "landing.features.title",
+    "es": "Acompañamiento personal, a tu ritmo",
+    "en": "Personal support, at your pace"
+  },
+  {
+    "key": "landing.features.conversation.title",
+    "es": "Conversación",
+    "en": "Conversation"
+  },
+  {
+    "key": "landing.features.conversation.body",
+    "es": "Una pregunta a la vez. Puedes pausar cuando quieras.",
+    "en": "One question at a time. You can pause whenever you like."
+  },
+  {
+    "key": "landing.features.exercises.title",
+    "es": "Ejercicios breves",
+    "en": "Short exercises"
+  },
   { "key": "landing.features.exercises.body", "es": "Ejercicios cortos de reflexión, valores o reconocimiento de logros, con propósito, duración y opción de omitirlos.", "en": "Short exercises on reflection, values or recognising achievements, with purpose, duration and an option to skip." },
-  { "key": "landing.features.exercises.status", "es": "En preparación", "en": "In preparation" },
-  { "key": "landing.features.journal.title", "es": "Diario privado", "en": "Private journal" },
-  { "key": "landing.features.journal.body", "es": "Crea, edita y borra entradas. Tú eliges si el acompañamiento puede consultar una.", "en": "Create, edit and delete entries. You choose whether the support can read one." },
-  { "key": "landing.features.journal.status", "es": "Disponible", "en": "Available" },
-  { "key": "landing.features.compass.title", "es": "Brújula editable", "en": "Editable compass" },
-  { "key": "landing.features.compass.body", "es": "Valores, intereses y límites que tú confirmas.", "en": "Values, interests and limits that you confirm." },
-  { "key": "landing.features.compass.status", "es": "Disponible", "en": "Available" },
-  { "key": "landing.features.languages.title", "es": "Español e inglés", "en": "Spanish and English" },
-  { "key": "landing.features.languages.body", "es": "Toda la experiencia en los dos idiomas; tu idioma, tu país y tu mercado laboral son cosas distintas.", "en": "The whole experience in two languages; your language, country and target job market are separate things." },
-  { "key": "landing.features.languages.status", "es": "Disponible", "en": "Available" },
+  {
+    "key": "landing.features.journal.title",
+    "es": "Diario",
+    "en": "Journal"
+  },
+  {
+    "key": "landing.features.journal.body",
+    "es": "Crea, edita o borra tus entradas. Tú eliges si el asistente puede consultar una.",
+    "en": "Create, edit or delete your entries. You choose whether the assistant may read one."
+  },
+  {
+    "key": "landing.features.compass.title",
+    "es": "Tu brújula",
+    "en": "Your compass"
+  },
+  {
+    "key": "landing.features.compass.body",
+    "es": "Define los valores, intereses y límites que quieres tener presentes.",
+    "en": "Set out the values, interests and limits you want to keep in mind."
+  },
   { "key": "landing.features.data.title", "es": "Tus datos", "en": "Your data" },
   { "key": "landing.features.data.body", "es": "Exporta un resumen profesional o elimina tu cuenta y sus derivados.", "en": "Export a professional summary or delete your account and derived data." },
-  { "key": "landing.features.data.status", "es": "En preparación", "en": "In preparation" },
-  { "key": "landing.skillmap.number", "es": "09", "en": "09" },
-  { "key": "landing.skillmap.label", "es": "Skill Map", "en": "Skill Map" },
-  { "key": "landing.skillmap.title", "es": "Tu experiencia, convertida en capacidades con evidencia", "en": "Your experience, turned into capabilities with evidence" },
-  { "key": "landing.skillmap.status", "es": "Disponible", "en": "Available" },
-  { "key": "landing.skillmap.capabilities.title", "es": "Capacidades", "en": "Capabilities" },
-  { "key": "landing.skillmap.capabilities.body", "es": "Capacidades transversales y de dominio, cada una con su evidencia y su criterio de evaluación.", "en": "Transversal and domain capabilities, each with its evidence and assessment criteria." },
-  { "key": "landing.skillmap.evidence.title", "es": "Estados claros", "en": "Clear states" },
-  { "key": "landing.skillmap.evidence.body", "es": "Sin evidencia, evidencia inicial, evidencia revisada o contradictoria. Sin evidencia se muestra vacío, nunca un déficit inventado.", "en": "No evidence, initial evidence, reviewed evidence or contradictory. With no evidence it stays empty, never an invented deficit." },
-  { "key": "landing.skillmap.evidence.none", "es": "Sin evidencia", "en": "No evidence" },
-  { "key": "landing.skillmap.evidence.initial", "es": "Evidencia inicial", "en": "Initial evidence" },
-  { "key": "landing.skillmap.evidence.reviewed", "es": "Evidencia revisada", "en": "Reviewed evidence" },
-  { "key": "landing.skillmap.evidence.contradictory", "es": "Contradictoria", "en": "Contradictory" },
-  { "key": "landing.skillmap.autonomy.title", "es": "Autonomía en cuatro niveles", "en": "Autonomy in four levels" },
-  { "key": "landing.skillmap.autonomy.1.number", "es": "01", "en": "01" },
-  { "key": "landing.skillmap.autonomy.1.title", "es": "Conceptual", "en": "Conceptual" },
-  { "key": "landing.skillmap.autonomy.2.number", "es": "02", "en": "02" },
-  { "key": "landing.skillmap.autonomy.2.title", "es": "Aplicada con asistencia", "en": "Applied with assistance" },
-  { "key": "landing.skillmap.autonomy.3.number", "es": "03", "en": "03" },
-  { "key": "landing.skillmap.autonomy.3.title", "es": "Autónoma y repetible", "en": "Autonomous and repeatable" },
-  { "key": "landing.skillmap.autonomy.4.number", "es": "04", "en": "04" },
-  { "key": "landing.skillmap.autonomy.4.title", "es": "Lidera o enseña", "en": "Leads or teaches" },
-  { "key": "landing.skillmap.autonomy.note", "es": "Es una guía, no una certificación.", "en": "It is a guide, not a certification." },
-  { "key": "landing.skillmap.routes.title", "es": "Tres rutas fundamentadas", "en": "Three grounded routes" },
-  { "key": "landing.skillmap.routes.body", "es": "Tres rutas fundamentadas con fuentes y fechas: continuidad, adyacente y exploratoria. Sin un porcentaje de empleabilidad ni de reemplazo por IA. Tú decides cuál aceptar y puedes rechazar cualquiera.", "en": "Three grounded routes with sources and dates: continuity, adjacent and exploratory. No employability or AI replacement percentage. You decide which to accept, and you can reject any of them." },
-  { "key": "landing.skillmap.routes.continuity.title", "es": "Continuidad", "en": "Continuity" },
-  { "key": "landing.skillmap.routes.continuity.status", "es": "En preparación", "en": "In preparation" },
-  { "key": "landing.skillmap.routes.continuity.pending", "es": "Un rol del mismo contexto del que vienes. Parte de lo que ya sabes hacer y te muestra qué barreras y brechas tendrías para dar el siguiente paso allí.", "en": "A role in the same context you already work in. It starts from what you can already do and shows which barriers and gaps you would face to take the next step there." },
-  { "key": "landing.skillmap.routes.adjacent.title", "es": "Adyacente", "en": "Adjacent" },
-  { "key": "landing.skillmap.routes.adjacent.status", "es": "En preparación", "en": "In preparation" },
-  { "key": "landing.skillmap.routes.adjacent.pending", "es": "Un rol de otro contexto que comparte contigo al menos una capacidad esencial que ya demostraste. Te explica por qué encaja y qué te faltaría.", "en": "A role in a different context that shares at least one essential capability you have already shown. It explains why it fits and what you would still need." },
-  { "key": "landing.skillmap.routes.exploratory.title", "es": "Exploratoria", "en": "Exploratory" },
-  { "key": "landing.skillmap.routes.exploratory.status", "es": "En preparación", "en": "In preparation" },
-  { "key": "landing.skillmap.routes.exploratory.pending", "es": "Un rol ligado a tus intereses, donde lo que ya demostraste aún no alcanza del todo. Te propone una prueba pequeña para ver si te gusta antes de decidir.", "en": "A role linked to your interests, where what you have shown does not fully cover it yet. It suggests a small test so you can see whether you like it before you decide." },
-  { "key": "landing.skillmap.experiment.title", "es": "Un experimento de 20 a 45 minutos", "en": "A 20-to-45-minute experiment" },
-  { "key": "landing.skillmap.experiment.body", "es": "Para probar una ruta antes de invertir en ella.", "en": "To test a route before investing in it." },
-  { "key": "landing.skillmap.ai.title", "es": "Era de la IA", "en": "Age of AI" },
+  {
+    "key": "landing.features.intro",
+    "es": "Puedes conversar con el asistente de Elevation, escribir en tu diario y definir tus valores, intereses y límites. Avanzas a tu ritmo y decides qué información compartir.",
+    "en": "You can talk with the Elevation assistant, write in your journal and set out your values, interests and limits. You move at your pace and decide what information to share."
+  },
+  {
+    "key": "landing.skillmap.label",
+    "es": "SkillMap",
+    "en": "SkillMap"
+  },
+  {
+    "key": "landing.skillmap.title",
+    "es": "Organiza tus experiencias en un mapa de capacidades",
+    "en": "Organise your experiences into a map of capabilities"
+  },
+  {
+    "key": "landing.skillmap.routes.title",
+    "es": "Rutas profesionales",
+    "en": "Career routes"
+  },
+  {
+    "key": "landing.skillmap.routes.body",
+    "es": "Tres rutas posibles para explorar, con fuentes y fechas. Sin porcentajes de empleabilidad ni de reemplazo por IA.",
+    "en": "Three possible routes to explore, with sources and dates. No employability or AI-replacement percentages."
+  },
+  {
+    "key": "landing.skillmap.experiment.title",
+    "es": "Un experimento corto",
+    "en": "A short experiment"
+  },
+  {
+    "key": "landing.skillmap.experiment.body",
+    "es": "Un experimento de 20 a 45 minutos para probar una ruta antes de invertir en ella.",
+    "en": "A 20-to-45-minute experiment to test a route before investing in it."
+  },
+  {
+    "key": "landing.skillmap.ai.title",
+    "es": "Tareas y era de la IA",
+    "en": "Tasks and the age of AI"
+  },
   { "key": "landing.skillmap.ai.body", "es": "Entender cómo cambian las tareas de los roles que exploras y qué capacidades de criterio siguen importando. No predecimos qué profesión desaparecerá.", "en": "Understand how the tasks of the roles you explore are changing and which judgement skills still matter. We do not predict which profession will disappear." },
-  { "key": "landing.skillmap.connection", "es": "Elevation es la experiencia principal y Skill Map es su módulo profesional. El espacio del profesional acreditado permanece separado del chat con IA. La conexión del Skill Map con ese espacio, mediante conclusiones profesionales revisadas y autorizadas por la persona, está prevista y aún no está disponible.", "en": "Elevation is the main experience and Skill Map is its professional module. The accredited professional’s space remains separate from the AI chat. A connection from Skill Map to that space, through professional conclusions reviewed and authorised by the participant, is planned and is not yet available." },
-  {"key":"landing.pricing.number","es":"12","en":"12"},
-  {"key":"landing.pricing.title","es":"Elige cómo quieres acompañarte","en":"Choose how you want to be supported"},
-  {"key":"landing.pricing.subtitle","es":"Empieza sin costo y cambia de plan cuando lo necesites.","en":"Start at no cost and change plans whenever you need."},
-  {"key":"landing.pricing.free","es":"Gratis","en":"Free"},
-  {"key":"landing.pricing.featured","es":"Destacado","en":"Featured"},
-  {"key":"landing.pricing.register","es":"Crear cuenta y solicitar este plan","en":"Create an account and request this plan"},
-  {"key":"landing.pricing.request","es":"Solicitar este plan","en":"Request this plan"},
-  {"key":"landing.pricing.note","es":"Los planes de pago pasan por la aprobación de un administrador.","en":"Paid plans go through administrator approval."},
-  {"key":"landing.pricing.loading","es":"Cargando planes…","en":"Loading plans…"},
-  {"key":"landing.pricing.load_error","es":"No se pudieron cargar los planes. Inténtalo de nuevo.","en":"Plans could not be loaded. Please try again."},
-  {"key":"landing.pricing.retry","es":"Reintentar","en":"Try again"},
-  {"key":"landing.pricing.empty","es":"Pronto publicaremos los planes.","en":"We will publish the plans soon."},
-  {"key":"landing.pricing.review","es":"Revisa el plan seleccionado antes de enviar tu solicitud.","en":"Review the selected plan before submitting your request."},
-  {"key":"landing.pricing.retired","es":"El plan seleccionado ya no está disponible. Revisa las opciones actuales.","en":"The selected plan is no longer available. Review the current options."},
-  {"key":"landing.pricing.submitting","es":"Enviando solicitud…","en":"Submitting request…"},
-  {"key":"landing.pricing.submitted","es":"Tu solicitud quedó registrada y está en revisión. El plan aún no está activado.","en":"Your request was recorded and is under review. The plan is not active yet."},
-  {"key":"landing.pricing.pending","es":"Ya tienes una solicitud en revisión.","en":"You already have a request under review."},
-  {"key":"landing.pricing.checking_request","es":"Consultando el estado de tu solicitud…","en":"Checking your request status…"},
-  {"key":"landing.pricing.request_error","es":"No pudimos consultar tu solicitud. Comprueba el estado antes de solicitar.","en":"We could not check your request. Check its status before requesting."},
-  {"key":"landing.pricing.unknown","es":"No pudimos confirmar el resultado. Comprueba el estado antes de volver a solicitarlo.","en":"We could not confirm the result. Check its status before requesting again."},
-  {"key":"landing.pricing.check_status","es":"Comprobar estado","en":"Check status"},
-  {"key":"landing.pricing.space","es":"Continuar a mi espacio","en":"Continue to my space"},
+  {
+    "key": "landing.skillmap.intro",
+    "es": "SkillMap te ayuda a relacionar ejemplos de tu experiencia con capacidades que podrías estar demostrando. Puedes revisar la evidencia asociada y decidir qué aceptar.",
+    "en": "SkillMap helps you link examples from your experience to capabilities you may be showing. You can review the related evidence and decide what to accept."
+  },
+  {
+    "key": "landing.skillmap.p1.title",
+    "es": "La evidencia importa",
+    "en": "Evidence matters"
+  },
+  {
+    "key": "landing.skillmap.p1.body",
+    "es": "Cada sugerencia indica qué parte de tu experiencia la respalda.",
+    "en": "Each suggestion shows which part of your experience supports it."
+  },
+  {
+    "key": "landing.skillmap.p2.title",
+    "es": "Lo que no has contado no es una carencia",
+    "en": "What you have not told us is not a gap"
+  },
+  {
+    "key": "landing.skillmap.p2.body",
+    "es": "Si todavía no hay evidencia, el mapa lo muestra como información pendiente, no como falta de capacidad.",
+    "en": "If there is no evidence yet, the map shows it as pending information, not as a lack of capability."
+  },
+  {
+    "key": "landing.skillmap.p3.title",
+    "es": "Tú decides",
+    "en": "You decide"
+  },
+  {
+    "key": "landing.skillmap.p3.body",
+    "es": "Puedes aceptar o descartar sugerencias. El mapa no certifica tus competencias ni predice si conseguirás empleo.",
+    "en": "You can accept or discard suggestions. The map does not certify your skills or predict whether you will find work."
+  },
   {"key":"landing.pricing.period.month","es":"/ mes","en":"/ month"},
   {"key":"landing.pricing.period.year","es":"/ año","en":"/ year"},
-  {"key":"landing.pricing.notice","es":"El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.","en":"Elevation's AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care."},
-  { "key": "landing.project.number", "es": "11", "en": "11" },
-  { "key": "landing.project.label", "es": "Objetivos y estado del proyecto", "en": "Project objectives and status" },
-  { "key": "landing.project.title", "es": "Lo que queremos lograr, y dónde estamos", "en": "What we want to achieve, and where we are" },
-  { "key": "landing.project.goals.label", "es": "Objetivos", "en": "Objectives" },
-  { "key": "landing.project.goals.1", "es": "Acompañamiento respetuoso y sin presión.", "en": "Respectful, pressure-free support." },
-  { "key": "landing.project.goals.2", "es": "Un mapa de capacidades respaldado por evidencia.", "en": "A capability map backed by evidence." },
-  { "key": "landing.project.goals.3", "es": "Decisiones profesionales mejor fundamentadas.", "en": "Better-grounded career decisions." },
-  { "key": "landing.project.goals.4", "es": "Privacidad bajo tu control.", "en": "Privacy under your control." },
-  { "key": "landing.project.goals.5", "es": "Una experiencia completa en español e inglés.", "en": "A complete experience in Spanish and English." },
-  { "key": "landing.project.state.label", "es": "Estado", "en": "Status" },
-  { "key": "landing.project.state.body", "es": "Estamos construyendo la plataforma por etapas. Primero, un piloto cerrado con un grupo pequeño de personas en reconversión profesional, para aprender antes de ampliar. No presentamos cifras de eficacia ni de tracción porque todavía no existen.", "en": "We are building the platform in stages. First, a closed pilot with a small group of people changing careers, so we learn before we scale. We do not present efficacy or traction figures because they do not exist yet." },
   {"key":"landing.footer.brand","es":"elevation","en":"elevation"},
-  {"key":"landing.footer.notice","es":"El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.","en":"Elevation's AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care."},
+  {
+    "key": "landing.footer.notice",
+    "es": "Elevation ofrece acompañamiento y orientación profesional con inteligencia artificial. No es terapia, no ofrece atención médica y no sustituye la atención psicológica, médica ni de emergencia.",
+    "en": "Elevation offers support and career guidance with artificial intelligence. It is not therapy, does not provide medical care and does not replace psychological, medical or emergency care."
+  },
   {"key":"landing.footer.copyright","es":"© {year}","en":"© {year}"},
-  {"key":"landing.trust.number","es":"06","en":"06"},
-  {"key":"landing.faq.number","es":"14","en":"14"},
+  {
+    "key": "landing.footer.privacy",
+    "es": "Aviso de privacidad",
+    "en": "Privacy notice"
+  },
   {"key":"landing.faq.label","es":"Preguntas frecuentes","en":"Frequently asked questions"},
   {"key":"landing.faq.title","es":"Preguntas frecuentes","en":"Frequently asked questions"},
-  {"key":"landing.faq.plans","es":"Ver planes","en":"View plans"},
   {"key":"landing.trust.label","es":"Privacidad y límites","en":"Privacy and limits"},
   {"key":"landing.trust.title","es":"Tu espacio es tuyo, y sabemos cuáles son nuestros límites","en":"Your space is yours, and we are clear about our limits"},
-  {"key":"landing.trust.coming","es":"Consulta disponibilidad","en":"Check availability"},
   {"key":"landing.trust.policy","es":"Política de privacidad","en":"Privacy policy"},
   {"key":"landing.trust.pending","es":"Pendiente de revisión","en":"Pending review"},
   {"key":"landing.trust.1.title","es":"Acompañamiento no clínico","en":"Non-clinical support"},
@@ -331,10 +360,18 @@
   {"key":"landing.faq.q2","es":"¿Mis conversaciones son privadas?","en":"Are my conversations private?"},
   {"key":"landing.faq.a2","es":"El profesional no lee tu chat con IA ni tu diario. Con tu permiso específico por fuente y finalidad, la IA puede analizar el chat, el diario o la hoja de vida seleccionados para proponerte insights. No se comparten automáticamente con el mapa ni con el profesional.","en":"The professional does not read your AI chat or journal. With your specific permission for each source and purpose, AI may analyse selected chat, journal or resume material to propose insights. They are not automatically shared with the map or the professional."},
   {"key":"landing.faq.q3","es":"¿Qué puede ver mi psicólogo/a?","en":"What can my psychologist see?"},
-  {"key":"landing.faq.a3","es":"El alcance depende de la vinculación y los permisos habilitados. La información del espacio profesional está separada del chat con IA. La conexión con Skill Map está pendiente; no se anuncia acceso a sus conclusiones como disponible.","en":"Access depends on the relationship and enabled permissions. Information in the professional's space is separate from the AI chat. The Skill Map connection is pending; access to its conclusions is not announced as available."},
+  {
+    "key": "landing.faq.a3",
+    "es": "El alcance depende de la vinculación y los permisos habilitados. La información del espacio profesional está separada del chat con IA. La conexión con SkillMap está pendiente; no se anuncia acceso a sus conclusiones como disponible.",
+    "en": "Access depends on the relationship and enabled permissions. Information in the professional's space is separate from the AI chat. The SkillMap connection is pending; access to its conclusions is not announced as available."
+  },
   {"key":"landing.faq.q4","es":"¿Qué hace la IA?","en":"What does the AI do?"},
   {"key":"landing.faq.a4","es":"La IA puede proponer insights a partir de las fuentes que selecciones y autorices por separado. También analiza tu contexto profesional autorizado para proponer competencias candidatas. Tú revisas, corriges, rechazas o confirmas las propuestas. Puede equivocarse; una propuesta no certifica una competencia.","en":"AI may propose insights from the sources you select and authorise separately. It also analyses your authorised career context to propose candidate capabilities. You review, correct, reject or confirm proposals. It can be wrong; a proposal does not certify a capability."},
-  {"key":"landing.faq.q5","es":"¿El Skill Map certifica mis capacidades?","en":"Does Skill Map certify my capabilities?"},
+  {
+    "key": "landing.faq.q5",
+    "es": "¿El SkillMap certifica mis capacidades?",
+    "en": "Does SkillMap certify my capabilities?"
+  },
   {"key":"landing.faq.a5","es":"No. Muestra qué evidencia respalda cada capacidad. Aceptar una capacidad candidata no acredita un nivel.","en":"No. It shows what evidence supports each capability. Accepting a candidate capability does not certify a level."},
   {"key":"landing.faq.q6","es":"¿Me garantizan un empleo?","en":"Do you guarantee a job?"},
   {"key":"landing.faq.a6","es":"No. Conseguir empleo depende de condiciones externas y no forma parte de lo que ofrecemos.","en":"No. Getting a job depends on external conditions and is not part of what we offer."},
@@ -343,48 +380,44 @@
   {"key":"landing.faq.q8","es":"¿Puedo borrar mis datos?","en":"Can I delete my data?"},
   {"key":"landing.faq.a8","es":"La exportación y la solicitud de eliminación se gestionan desde las opciones de datos de tu cuenta, cuando estén habilitadas. Consulta allí su disponibilidad y límites. No anunciamos plazos de borrado sin verificarlos.","en":"Export and deletion requests are managed through your account data controls when enabled. Check their availability and limits there. We do not announce deletion deadlines without verifying them."},
   {"key":"landing.faq.q9","es":"¿Cuánto cuesta?","en":"How much does it cost?"},
-  {"key":"landing.faq.a9","es":"Consulta los planes y precios disponibles en la página de planes. La solicitud no cobra ni activa automáticamente un plan.","en":"Check the plans page for available plans and prices. A request does not charge you or automatically activate a plan."},
+  {
+    "key": "landing.faq.a9",
+    "es": "Por ahora no hay pago en línea: crear una cuenta no te cobra nada.",
+    "en": "There is no online payment for now: creating an account does not charge you anything."
+  },
   {"key":"landing.faq.q10","es":"¿En qué idiomas está?","en":"Which languages are available?"},
   {"key":"landing.faq.a10","es":"Español e inglés.","en":"Spanish and English."},
-  {"key":"landing.pros.number","es":"08","en":"08"},
-  {"key":"landing.pros.label","es":"Profesionales","en":"Professionals"},
-  {"key":"landing.pros.title","es":"Para quienes acompañan a otras personas","en":"For those who support other people"},
-  {"key":"landing.pros.intro","es":"Si eres profesional de la psicología, puedes presentar tu perfil para que el equipo de Elevation revise tu incorporación. El espacio del profesional acreditado está separado del asistente de IA, que ofrece acompañamiento no clínico. El criterio profesional es tuyo.","en":"If you are a psychology professional, you can submit your profile for the Elevation team to review your application. The accredited professional's space is separate from the AI assistant, which offers non-clinical support. The professional judgement is yours."},
-  {"key":"landing.pros.private.title","es":"Lo que no ves","en":"What you do not see"},
-  {"key":"landing.pros.private.body","es":"No lees las conversaciones de la persona con el asistente de IA. Ese chat y su diario son espacios privados separados.","en":"You do not read the person's conversations with the AI assistant. That chat and their journal are separate private spaces."},
-  {"key":"landing.pros.bridge.title","es":"Y el Skill Map","en":"And Skill Map"},
-  {"key":"landing.pros.bridge.body","es":"Está prevista una conexión para que la persona pueda compartir, si lo decide, las conclusiones profesionales que haya revisado y autorizado. Esa conexión con tu espacio aún no está disponible.","en":"A connection is planned so the person can share, if they choose, professional conclusions they have reviewed and authorised. That connection to your space is not yet available."},
-  {"key":"landing.pros.bridge.status","es":"Próximamente","en":"Coming soon"},
-  {"key":"landing.pros.invitation.title","es":"Aporta tu criterio al piloto","en":"Contribute your expertise to the pilot"},
-  {"key":"landing.pros.invitation.body","es":"Queremos contar con profesionales de la psicología para revisar el encuadre, el lenguaje, la seguridad y la privacidad del piloto. Las condiciones de participación se acuerdan por separado.","en":"We want psychology professionals to help review the pilot's framing, language, safety and privacy. Participation terms are agreed separately."},
-  {"key":"landing.pros.cta","es":"Unirme como profesional","en":"Join as a professional"},
-  {"key":"landing.pros.cta_note","es":"La solicitud no crea una cuenta ni concede acceso automático. El equipo revisa tu perfil antes de continuar con la validación.","en":"An application does not create an account or grant automatic access. The team reviews your profile before proceeding with verification."},
-  {"key":"landing.pros.1.title","es":"Panel de personas vinculadas","en":"Panel for people linked to you"},
-  {"key":"landing.pros.1.body","es":"Consulta registros de ánimo de entrada y salida y valoraciones de las personas vinculadas, según los permisos habilitados.","en":"View mood check-in and check-out records and ratings for people linked to you, according to enabled permissions."},
-  {"key":"landing.pros.1.status","es":"Disponibilidad por confirmar","en":"Availability to be confirmed"},
-  {"key":"landing.pros.2.title","es":"Historia y notas del profesional","en":"Professional history and notes"},
-  {"key":"landing.pros.2.body","es":"Registra notas para tu seguimiento. Se guardan cifradas y su acceso está restringido al profesional vinculado.","en":"Record notes for your follow-up. They are stored encrypted and access is restricted to the linked professional."},
-  {"key":"landing.pros.2.status","es":"Disponibilidad por confirmar","en":"Availability to be confirmed"},
-  {"key":"landing.pros.3.title","es":"Resúmenes con IA","en":"AI summaries"},
-  {"key":"landing.pros.3.body","es":"Síntesis basadas en registros de ánimo y valoraciones para apoyar tu revisión. No utilizan tus notas ni las conversaciones con el asistente. La IA puede equivocarse.","en":"Summaries based on mood records and ratings to support your review. They do not use your notes or conversations with the assistant. AI can be wrong."},
-  {"key":"landing.pros.3.status","es":"Disponibilidad por confirmar","en":"Availability to be confirmed"},
-  {"key":"landing.pros.4.title","es":"Sesiones y videollamada","en":"Sessions and video calls"},
-  {"key":"landing.pros.4.body","es":"Organización y seguimiento de sesiones. La disponibilidad de videollamada requiere confirmar el servicio habilitado.","en":"Session organisation and follow-up. Video call availability requires confirmation that the service is enabled."},
-  {"key":"landing.pros.4.status","es":"Disponibilidad por confirmar","en":"Availability to be confirmed"},
-  {"key":"landing.pros.5.title","es":"Tu estilo de acompañamiento","en":"Your style of support"},
-  {"key":"landing.pros.5.body","es":"Puedes proponer un estilo para el asistente. Los cambios requieren revisión y aprobación antes de activarse.","en":"You can propose a style for the assistant. Changes require review and approval before activation."},
-  {"key":"landing.pros.5.status","es":"Disponibilidad por confirmar","en":"Availability to be confirmed"},
-  {"key":"landing.pros.6.title","es":"Revisión de credenciales","en":"Credential review"},
-  {"key":"landing.pros.6.body","es":"La incorporación requiere revisión del perfil y validación de credenciales antes de conceder acceso profesional.","en":"Joining requires profile review and credential verification before professional access is granted."},
-  {"key":"landing.pros.6.status","es":"Disponibilidad por confirmar","en":"Availability to be confirmed"},
-  {"key":"landing.access.password_policy","es":"Usa al menos 8 caracteres con mayúscula, minúscula, número y un carácter especial (hasta 72 bytes UTF-8); evita contraseñas comunes.","en":"Use at least 8 characters with an uppercase letter, a lowercase letter, a number and a special character (up to 72 UTF-8 bytes); avoid common passwords."},
+  {
+    "key": "landing.pros.title",
+    "es": "¿Eres profesional y quieres solicitar acceso?",
+    "en": "Are you a professional and want to request access?"
+  },
+  {
+    "key": "landing.pros.intro",
+    "es": "Completa la solicitud con tus datos profesionales y adjunta tu hoja de vida. El equipo de Elevation revisará la información y se comunicará contigo por correo para explicarte los siguientes pasos.",
+    "en": "Fill in the request with your professional details and attach your CV. The Elevation team will review the information and contact you by email to explain the next steps."
+  },
+  {
+    "key": "landing.pros.cta",
+    "es": "Solicitar acceso profesional",
+    "en": "Request professional access"
+  },
+  {
+    "key": "landing.pros.cta_note",
+    "es": "Enviar la solicitud no crea una cuenta ni da acceso automático.",
+    "en": "Sending the request does not create an account or give automatic access."
+  },
+  {
+    "key": "landing.access.password_policy",
+    "es": "Usa al menos 8 caracteres con mayúscula, minúscula, número y un carácter especial. Evita contraseñas comunes.",
+    "en": "Use at least 8 characters with an uppercase letter, a lowercase letter, a number and a special character. Avoid common passwords."
+  },
   {"key":"landing.access.pw.title","es":"Tu contraseña debe tener:","en":"Your password must have:"},
   {"key":"landing.access.pw.length","es":"Al menos 8 caracteres","en":"At least 8 characters"},
   {"key":"landing.access.pw.upper","es":"Una mayúscula (A-Z)","en":"One uppercase letter (A-Z)"},
   {"key":"landing.access.pw.lower","es":"Una minúscula (a-z)","en":"One lowercase letter (a-z)"},
   {"key":"landing.access.pw.digit","es":"Un número (0-9)","en":"One number (0-9)"},
   {"key":"landing.access.pw.special","es":"Un carácter especial (! ? # $ % & * …); el espacio no cuenta","en":"One special character (! ? # $ % & * …); a space does not count"},
-  {"key":"landing.access.pw.max_bytes","es":"Máximo 72 bytes: las tildes y los emojis ocupan más de uno.","en":"Up to 72 bytes: accents and emojis take more than one."},
   {"key":"landing.access.pw.met","es":"cumplido","en":"met"},
   {"key":"landing.access.pw.pending","es":"pendiente","en":"pending"},
   {"key":"landing.access.pw.summary","es":"{n} de {total} requisitos cumplidos","en":"{n} of {total} requirements met"},
@@ -394,12 +427,20 @@
   {"key":"landing.access.pw.missing.lower","es":"una minúscula","en":"a lowercase letter"},
   {"key":"landing.access.pw.missing.digit","es":"un número","en":"a number"},
   {"key":"landing.access.pw.missing.special","es":"un carácter especial","en":"a special character"},
-  {"key":"landing.access.pw.missing.max_bytes","es":"no superar los 72 bytes","en":"not exceed 72 bytes"},
+  {
+    "key": "landing.access.pw.missing.max_bytes",
+    "es": "acortarla (las tildes y los emojis ocupan más espacio)",
+    "en": "make it shorter (accents and emojis take up more room)"
+  },
   {"key":"landing.access.pw.missing.common","es":"no ser una contraseña muy común","en":"not be a very common password"},
   {"key":"landing.access.reset.forgot_link","es":"¿Olvidaste tu contraseña?","en":"Forgot your password?"},
   {"key":"landing.access.reset.forgot_title","es":"Recuperar contraseña","en":"Reset your password"},
   {"key":"landing.access.reset.forgot_intro","es":"Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.","en":"Enter your account email and we will send you a link to choose a new password."},
-  {"key":"landing.access.reset.send","es":"Enviar enlace","en":"Send link"},
+  {
+    "key": "landing.access.reset.send",
+    "es": "Enviar enlace para restablecer la contraseña",
+    "en": "Send link to reset your password"
+  },
   {"key":"landing.access.reset.sent","es":"Si existe una cuenta con ese correo, te enviaremos un enlace. Caduca en 30 minutos.","en":"If an account exists for that email, we will send you a link. It expires in 30 minutes."},
   {"key":"landing.access.reset.back","es":"Volver a iniciar sesión","en":"Back to sign in"},
   {"key":"landing.access.reset.title","es":"Elige tu contraseña nueva","en":"Choose your new password"},
@@ -412,19 +453,24 @@
   {"key":"landing.access.reset.invalid","es":"Este enlace ya no sirve. Pide uno nuevo.","en":"This link no longer works. Request a new one."},
   {"key":"landing.access.reset.request_new","es":"Pedir un enlace nuevo","en":"Request a new link"},
   {
+    "key": "landing.access.pw.too_long",
+    "es": "Tu contraseña es demasiado larga. Acórtala: las tildes y los emojis ocupan más espacio que otras letras.",
+    "en": "Your password is too long. Shorten it: accented letters and emojis take up more room than other characters."
+  },
+  {
     "key": "landing.portada.hero_pre",
-    "es": "Tu experiencia tiene",
-    "en": "Your experience has"
+    "es": "Reconoce lo que sabes hacer a partir de tu",
+    "en": "Recognise what you can do, starting from your"
   },
   {
     "key": "landing.portada.hero_em",
-    "es": "relieve.",
-    "en": "relief."
+    "es": "experiencia.",
+    "en": "experience."
   },
   {
     "key": "landing.portada.lead",
-    "es": "Cuéntanos una escena de tu trabajo. Cada capacidad que confirmes con evidencia levanta tu mapa. Lo que no tiene respaldo se queda plano.",
-    "en": "Tell us about one scene from your work. Each capability you confirm with evidence raises your map. What has no backing stays flat."
+    "es": "Cuenta una situación real de tu trabajo. SkillMap te ayuda a reconocer las capacidades que aparecen en ella y a revisar qué evidencia las respalda. Tú decides qué sugerencias aceptar.",
+    "en": "Describe a real situation from your work. SkillMap helps you recognise the capabilities in it and review the evidence behind them. You decide which suggestions to accept."
   },
   {
     "key": "landing.portada.here",
@@ -438,18 +484,18 @@
   },
   {
     "key": "landing.portada.leg1",
-    "es": "Nivel registrado por ti, con evidencia",
+    "es": "Nivel que registraste, con evidencia",
     "en": "Level you recorded, with evidence"
   },
   {
     "key": "landing.portada.leg2",
-    "es": "Pista sugerida, esperando tu respuesta",
-    "en": "Suggested hint, waiting for your answer"
+    "es": "Sugerencia que espera tu respuesta",
+    "en": "Suggestion waiting for your answer"
   },
   {
     "key": "landing.portada.leg3",
-    "es": "Sin evaluar",
-    "en": "Not assessed"
+    "es": "Aún sin evidencia",
+    "en": "No evidence yet"
   },
   {
     "key": "landing.portada.leg4",
@@ -458,73 +504,68 @@
   },
   {
     "key": "landing.portada.try_title",
-    "es": "Pruébalo con una escena de ejemplo",
-    "en": "Try it with a sample scene"
+    "es": "Mira cómo funciona con un ejemplo",
+    "en": "See how it works with an example"
   },
   {
     "key": "landing.portada.try_example",
-    "es": "Ejemplo, no es tuyo",
-    "en": "Sample, not yours"
+    "es": "Ejemplo fijo · no se guarda",
+    "en": "Fixed example · not saved"
   },
   {
     "key": "landing.portada.try_label",
-    "es": "Tu escena",
-    "en": "Your scene"
+    "es": "Escena de ejemplo",
+    "en": "Example scene"
   },
   {
     "key": "landing.portada.try_value",
-    "es": "El pedido se atrasó, avisé a todos y reorganicé la entrega.",
-    "en": "The order was late, I told everyone and rearranged the delivery."
+    "es": "El pedido iba tarde. Avisé al equipo y reorganizamos la entrega.",
+    "en": "The order was running late. I told the team and we rearranged the delivery."
   },
   {
     "key": "landing.portada.try_mark",
-    "es": "Marcar en el mapa",
-    "en": "Mark it on the map"
+    "es": "Ver la sugerencia",
+    "en": "See the suggestion"
   },
   {
     "key": "landing.portada.try_own",
-    "es": "Escribir la mía",
-    "en": "Write my own"
-  },
-  {
-    "key": "landing.portada.try_empty",
-    "es": "Escribe una escena para marcarla.",
-    "en": "Write a scene to mark it."
+    "es": "Crear cuenta para registrar una escena",
+    "en": "Create an account to record a scene"
   },
   {
     "key": "landing.portada.try_note",
-    "es": "La pista es un ejemplo fijo: no analiza lo que escribas aquí. Nada se envía ni se guarda.",
-    "en": "The hint is a fixed sample: it does not analyse what you write here. Nothing is sent or saved."
+    "es": "Es un ejemplo fijo: la sugerencia ya está preparada. Nada de esto se envía ni se guarda.",
+    "en": "This is a fixed example: the suggestion is already prepared. None of this is sent or saved."
   },
   {
     "key": "landing.portada.hint_title",
-    "es": "Posible pista",
-    "en": "Possible hint"
+    "es": "Posible sugerencia",
+    "en": "Possible suggestion"
   },
   {
     "key": "landing.portada.hint_body",
-    "es": "Se apoya en «reorganicé la entrega». Es una sugerencia, no una evaluación.",
-    "en": "It rests on “rearranged the delivery”. It is a suggestion, not an assessment."
+    "es": "Se apoya en la frase «reorganizamos la entrega». Es algo para que revises, no una evaluación.",
+    "en": "It rests on the phrase “we rearranged the delivery”. It is something for you to review, not an assessment."
   },
   {
     "key": "landing.portada.hint_yes",
-    "es": "Sí, un poco",
-    "en": "Yes, a little"
+    "es": "Sí, la respalda",
+    "en": "Yes, it supports it"
   },
   {
     "key": "landing.portada.hint_no",
-    "es": "No todavía",
-    "en": "Not yet"
+    "es": "No estoy de acuerdo",
+    "en": "I disagree"
   },
   {
     "key": "landing.portada.hint_ok",
-    "es": "Anotada. Para que suba en el mapa, registras tu nivel con evidencia. Así se vería un nivel 1:",
-    "en": "Noted. To raise it on the map, you record your level with evidence. This is how level 1 would look:"
+    "es": "En tu cuenta, para que suba en el mapa registrarías tu nivel con evidencia. Aquí no se guarda nada. Así se vería un nivel 1:",
+    "en": "In your account, to raise it on the map you would record your level with evidence. Nothing is saved here. This is how level 1 would look:"
   },
   {
     "key": "landing.portada.hint_no_ok",
-    "es": "Entendido: no se anota nada.",
-    "en": "Understood: nothing is noted."
+    "es": "Entendido: la sugerencia se descarta y no se anota nada.",
+    "en": "Understood: the suggestion is discarded and nothing is noted."
   },
   {
     "key": "landing.portada.see_rise",
@@ -543,37 +584,117 @@
   },
   {
     "key": "landing.portada.st1",
-    "es": "1 · Cuentas",
-    "en": "1 · You tell"
+    "es": "1 · Describe una situación real",
+    "en": "1 · Describe a real situation"
   },
   {
     "key": "landing.portada.st1b",
-    "es": "Una escena real, en tus palabras.",
-    "en": "One real scene, in your own words."
+    "es": "Cuenta qué ocurrió y qué hiciste.",
+    "en": "Say what happened and what you did."
   },
   {
     "key": "landing.portada.st2",
-    "es": "2 · Revisas",
-    "en": "2 · You review"
+    "es": "2 · Revisa las sugerencias",
+    "en": "2 · Review the suggestions"
   },
   {
     "key": "landing.portada.st2b",
-    "es": "Te mostramos qué frase respalda cada pista. Tú aceptas o descartas.",
-    "en": "We show which phrase backs each hint. You accept or discard."
+    "es": "Mira qué parte de tu relato respalda cada una.",
+    "en": "See which part of your account supports each one."
   },
   {
     "key": "landing.portada.st3",
-    "es": "3 · Registras",
-    "en": "3 · You record"
+    "es": "3 · Decide qué aceptar",
+    "en": "3 · Decide what to accept"
   },
   {
     "key": "landing.portada.st3b",
-    "es": "Tu nivel es el que tú registras con evidencia. Nadie lo certifica.",
-    "en": "Your level is the one you record with evidence. No one certifies it."
+    "es": "Tú eliges qué sugerencias incorporar a tu mapa.",
+    "en": "You choose which suggestions go into your map."
   },
   {
-    "key": "landing.portada.photo",
-    "es": "Espacio reservado para fotografía real · persona en su lugar de trabajo, Bogotá · por encargar, no se genera con IA",
-    "en": "Space reserved for a real photograph · a person at their workplace, Bogotá · to be commissioned, not generated with AI"
+    "key": "landing.portada.cta_try",
+    "es": "Probar un ejemplo",
+    "en": "Try an example"
+  },
+  {
+    "key": "landing.portada.cta_create",
+    "es": "Crear cuenta",
+    "en": "Create account"
+  },
+  {
+    "key": "landing.portada.hero_alt",
+    "es": "Ilustración de un mapa de relieve con un punto marcado: «Tú estás aquí».",
+    "en": "Illustration of a relief map with one marked point: “You are here”."
+  },
+  {
+    "key": "landing.portada.hint_q",
+    "es": "¿La frase respalda la sugerencia?",
+    "en": "Does the phrase support the suggestion?"
+  },
+  {
+    "key": "landing.portada.steps_heading",
+    "es": "De una experiencia a una capacidad",
+    "en": "From an experience to a capability"
+  },
+  {
+    "key": "landing.portada.steps_note",
+    "es": "El mapa organiza la evidencia que compartes. No es una certificación profesional ni una medida de tu valor o potencial.",
+    "en": "The map organises the evidence you share. It is not a professional certification or a measure of your worth or potential."
+  },
+  {
+    "key": "landing.status.available",
+    "es": "Disponible",
+    "en": "Available"
+  },
+  {
+    "key": "landing.status.soon",
+    "es": "En preparación",
+    "en": "In preparation"
+  },
+  {
+    "key": "landing.soon.title",
+    "es": "En preparación",
+    "en": "In preparation"
+  },
+  {
+    "key": "landing.soon.intro",
+    "es": "Todavía no puedes usar estas funciones.",
+    "en": "You cannot use these features yet."
+  },
+  {
+    "key": "landing.langs.title",
+    "es": "Una experiencia en español e inglés",
+    "en": "An experience in Spanish and English"
+  },
+  {
+    "key": "landing.langs.body",
+    "es": "La interfaz está disponible en español e inglés.",
+    "en": "The interface is available in Spanish and English."
+  },
+  {
+    "key": "landing.next.title",
+    "es": "Empieza por lo que necesitas",
+    "en": "Start with what you need"
+  },
+  {
+    "key": "landing.next.body",
+    "es": "Crea una cuenta para usar las funciones disponibles y conocer las opciones de acompañamiento.",
+    "en": "Create an account to use the available features and learn about the support options."
+  },
+  {
+    "key": "landing.next.login",
+    "es": "Ya tengo una cuenta: iniciar sesión",
+    "en": "I already have an account: sign in"
+  },
+  {
+    "key": "landing.next.pilot.title",
+    "es": "Elevation está en piloto cerrado",
+    "en": "Elevation is in a closed pilot"
+  },
+  {
+    "key": "landing.next.pilot.body",
+    "es": "Por ahora el servicio es para las personas del piloto. Si ya tienes cuenta, inicia sesión.",
+    "en": "For now the service is for the people in the pilot. If you already have an account, sign in."
   }
 ]

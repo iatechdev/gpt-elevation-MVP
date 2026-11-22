@@ -3,9 +3,9 @@ export const dataCopy = {
   es: {
     title: 'Mis datos',
     menu: 'Mis datos',
-    intro: 'Aquí puedes llevarte una copia de tus datos o pedir que cerremos tu cuenta. Solo tú los ves.',
+    intro: 'Aquí puedes llevarte una copia de tus datos o pedir que cerremos tu cuenta.',
     exportTitle: 'Descargar mis datos',
-    exportBody: 'Un archivo JSON con lo que guardamos de ti. Prepara el archivo y luego descárgalo; queda disponible unos minutos y solo tú lo ves.',
+    exportBody: 'Un archivo JSON con lo que guardamos de ti. Prepara el archivo y luego descárgalo; queda disponible unos minutos.',
     prepare: 'Preparar mi archivo',
     preparing: 'Preparando…',
     sections: 'Qué incluye: {list}',
@@ -42,9 +42,9 @@ export const dataCopy = {
   en: {
     title: 'My data',
     menu: 'My data',
-    intro: 'Here you can take a copy of your data or ask us to delete your account. Only you see them.',
+    intro: 'Here you can take a copy of your data or ask us to close your account.',
     exportTitle: 'Download my data',
-    exportBody: 'A JSON file with what we keep about you. Prepare the file, then download it; it stays available for a few minutes and only you see it.',
+    exportBody: 'A JSON file with what we keep about you. Prepare the file, then download it; it stays available for a few minutes.',
     prepare: 'Prepare my file',
     preparing: 'Preparing…',
     sections: 'What it includes: {list}',

@@ -65,10 +65,11 @@ test('ES-95 backoffice: la pestaña lista, aprueba, rechaza con motivo, descarga
   assert.match(users, /state as \{ newTherapist\?/); assert.match(users, /email: String\(data\.email \?\? ''\)\.slice\(0, 254\)/); assert.match(invite, /prefill \? 'therapist' : 'user'/); assert.doesNotMatch(users, /password: ''/); /* ES-186: la precarga ya no lleva contraseña, invita por correo */ assert.match(users, /navigate\(location\.pathname, \{ replace: true, state: null \}\)/); assert.doesNotMatch(users, /searchParams\.get\('newTherapist'\)/)
 })
 
+// ES-360: el bloque «Cómo vincularte» (LandingJoin) se retiró; la solicitud profesional la lleva la sección «Profesionales» (PortadaSections.Professionals). Se conserva: enlaza al formulario y el texto deja de ser provisional.
 test('ES-95 landing: el bloque de profesionales enlaza al formulario y el texto del catálogo deja de ser provisional', () => {
-  const join = read('../src/components/landing/LandingJoin.tsx'); const catalog = JSON.parse(read('../../shared/landing-content.json'))
-  assert.match(join, /<Link to="\/profesionales" className="elv-btn landing-join-create">\{text\('landing\.join\.professional_cta'\)\}<\/Link>/)
-  const cta = catalog.find(entry => entry.key === 'landing.join.professional_cta')
-  assert.deepEqual([cta.es, cta.en], ['Unirme como profesional', 'Join as a professional'])
-  for (const entry of catalog.filter(e => e.key.startsWith('landing.join.professional'))) for (const lang of ['es', 'en']) assert.doesNotMatch(entry[lang], /\[|Próximamente|Coming soon/, entry.key)
+  const pros = read('../src/components/landing/PortadaSections.tsx'); const catalog = JSON.parse(read('../../shared/landing-content.json'))
+  assert.match(pros, /<Link className="cg-btn cg-btn--ghost" to="\/profesionales"[^>]*>\{text\('landing\.pros\.cta'\)\}<\/Link>/)
+  const cta = catalog.find(entry => entry.key === 'landing.pros.cta')
+  assert.deepEqual([cta.es, cta.en], ['Solicitar acceso profesional', 'Request professional access'])
+  for (const entry of catalog.filter(e => /^landing\.pros\./.test(e.key))) for (const lang of ['es', 'en']) assert.doesNotMatch(entry[lang], /\[|Próximamente|Coming soon/, entry.key)
 })

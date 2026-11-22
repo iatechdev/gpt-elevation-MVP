@@ -15,7 +15,8 @@ const byKey = Object.fromEntries(catalog.map(entry => [entry.key, entry]))
 const root = new URL('../src/components/portada/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 const load = createLoader()
 const { Hero } = load(`${root}Portada.tsx`)
-const { TryScene, Steps, PhotoSlot } = load(`${root}PortadaBody.tsx`)
+const portadaBody = load(`${root}PortadaBody.tsx`)
+const { TryScene, Steps } = portadaBody
 const text = lang => key => byKey[key][lang]
 const html = (element) => renderToStaticMarkup(createElement(MemoryRouter, null, element))
 
@@ -34,27 +35,27 @@ test('ES-155 C: cada clave landing.portada.* usada por los componentes existe en
 test('ES-155 C: ningún texto de la portada promete empleo, ingresos ni resultados, ni inventa testimonios o cifras', () => {
   const forbidden = /empleo garantizado|garantiz|asegura(mos)? (que )?(consigas|encontr)|conseguir(á|ás)? (un )?trabajo|aumenta(rás)? tu sueldo|\b\d+\s?%|testimoni|reseñas? de|resultados garantizados|guarantee|you will (get|land|find)|testimonial|salary|certificad[oa] por/i
   for (const entry of portada) for (const lang of ['es', 'en']) assert.ok(!forbidden.test(entry[lang]), `${entry.key} (${lang}): ${entry[lang]}`)
-  // lo que sí dice: que nadie certifica el nivel y que la pista es una sugerencia
-  assert.match(byKey['landing.portada.st3b'].es, /Nadie lo certifica/); assert.match(byKey['landing.portada.hint_body'].es, /sugerencia, no una evaluación/)
+  // lo que sí dice (ES-360): que el mapa no es una certificación y que la pista es algo para revisar, no una evaluación (antes: «Nadie lo certifica» y «sugerencia, no una evaluación»)
+  assert.match(byKey['landing.portada.steps_note'].es, /No es una certificación profesional/); assert.match(byKey['landing.portada.hint_body'].es, /no una evaluación/)
 })
 
-test('ES-155 C (render): el ejemplo va rotulado y avisa que la pista es fija; la escena es editable y limitada; «Escribir la mía» lleva al registro', () => {
+// ES-360: la escena deja de ser un cuadro editable (ya no hay <textarea> ni maxLength): es una cita de solo lectura. Se conserva: rótulo de ejemplo, aviso de pista fija, enlace al registro y región viva.
+test('ES-155 C (render): el ejemplo va rotulado y avisa que la pista es fija; la escena es una cita de solo lectura; «Crear cuenta para registrar una escena» lleva al registro', () => {
   for (const lang of ['es', 'en']) {
     const out = html(createElement(TryScene, { text: text(lang) }))
     assert.ok(out.includes(`>${byKey['landing.portada.try_example'][lang]}<`), `rótulo de ejemplo (${lang})`)
     assert.ok(out.includes(byKey['landing.portada.try_note'][lang]), `aviso «pista fija, nada se envía ni se guarda» (${lang})`)
-    assert.match(out, /<textarea[^>]*maxLength="360"|<textarea[^>]*maxlength="360"/i); assert.ok(out.includes(byKey['landing.portada.try_value'][lang]))
+    assert.doesNotMatch(out, /<textarea|<input|contenteditable/i); assert.match(out, /<blockquote[^>]*>/); assert.ok(out.includes(byKey['landing.portada.try_value'][lang]))
     assert.match(out, /href="\/login\?mode=register"/); assert.match(out, /aria-live="polite"/)
   }
 })
 
-test('ES-155 C (render): el relieve del hero es decorativo (aria-hidden), la leyenda tiene cuatro símbolos y el hueco de fotografía es un marcador sin imagen', () => {
+test('ES-155 C (render): el relieve del hero es decorativo (aria-hidden), la leyenda tiene cuatro símbolos y ya no hay nota de fotografía (ES-360)', () => {
   const hero = html(createElement(Hero, { text: text('es') }))
   assert.match(hero, /class="pt-hero__relief" aria-hidden="true"/); assert.equal((hero.match(/class="pt-sym /g) ?? []).length, 4)
-  assert.ok(hero.includes('Tu experiencia tiene <em>relieve.</em>'), 'h1 con el énfasis')
-  const photo = html(createElement(PhotoSlot, { text: text('es') }))
-  assert.ok(photo.includes('role="note"') && photo.includes('Espacio reservado para fotografía real') && !/<img|<picture|<svg|url\(/.test(photo), 'marcador sin imagen')
-  assert.match(byKey['landing.portada.photo'].es, /no se genera con IA/)
+  assert.ok(hero.includes('Reconoce lo que sabes hacer a partir de tu <em>experiencia.</em>'), 'h1 con el énfasis')
+  assert.ok(hero.includes('href="#ejemplo"') && hero.includes('href="/login?mode=register"'), 'dos acciones: probar un ejemplo y crear cuenta')
+  assert.equal(portadaBody.PhotoSlot, undefined, 'la nota de fotografía ya no existe'); assert.equal(byKey['landing.portada.photo'], undefined)
   const steps = html(createElement(Steps, { text: text('en') }))
   assert.equal((steps.match(/<li>/g) ?? []).length, 3); assert.ok(steps.includes('id="como-funciona"'))
 })
@@ -71,7 +72,8 @@ test('ES-155 C: la pieza de ejemplo no hace red ni guarda nada; la portada no us
   assert.ok(page.includes("lazy(() => import('../components/portada/PortadaBody'))") && page.includes("lazy(() => import('../components/landing/LandingTail'))") && page.includes('<PublicFrame migrated>'))
   assert.ok(!/ExampleStrip|HeroDoors|LandingJourney|LandingHeader/.test(page), 'lo reemplazado ya no se monta (los componentes se conservan)')
   const tail = read('../src/components/landing/LandingTail.tsx')
-  for (const part of ['LandingPlans', 'LandingTrust', 'LandingFaq', 'LandingProject', 'LandingJoin', 'LandingFooter']) assert.ok(tail.includes(`<${part}`), `se conserva ${part}`)
+  for (const part of ['LandingTrust', 'LandingFaq', 'LandingFooter', 'Features', 'SkillMap', 'Languages', 'NextStep']) assert.ok(tail.includes(`<${part}`), `se conserva/entra ${part}`)
+  for (const part of ['LandingPlans', 'LandingProject', 'LandingJoin']) assert.ok(!tail.includes(part), `ES-360: la portada ya no monta ${part}`)
   assert.ok(read('../src/components/portada/useAfterFirstPaint.ts').includes('requestIdleCallback'), 'el canvas espera al reposo')
 })
 
@@ -79,9 +81,7 @@ test('ES-155 C E282-1: el cuerpo y lo conservado comparten un solo límite de Su
   const page = read('../src/pages/LandingPage.tsx')
   assert.match(page, /<Suspense fallback=\{<div className="pt-try-skel" aria-hidden="true" \/>\}>\s*<PortadaBody text=\{text\} \/>\s*<LandingTail /)
   assert.ok(!/<Suspense fallback=\{null\}>/.test(page), 'sin un segundo límite que deje llegar el bloque de abajo antes')
-  assert.match(read('../src/pricing/pricing.css'), /\.pp-state \{ min-height: calc\(14rem \+ 27px\); \}/)
-  const plans = read('../src/components/landing/LandingPlans.tsx')
-  assert.equal(plans.match(/className="pp-state"/g)?.length, 3, 'cargando, error y vacío reservan lo mismo')
+  // ES-360: ya no hay catálogo de planes en la portada ni página /pricing (se retiraron pricing.css, LandingPlans y PlanCards); se conserva el límite único de Suspense y el salto al ancla
   const hook = read('../src/components/portada/useScrollToHash.ts')
   assert.ok(hook.includes('.pp-skel') && hook.includes('MutationObserver') && hook.includes('SETTLE_LIMIT_MS'))
   assert.ok((hook.match(/requestAnimationFrame/g) ?? []).length === 2, 'el salto va dos cuadros después de que el catálogo crezca: en el mismo cuadro, lo que queda a la vista cuenta como desplazado')

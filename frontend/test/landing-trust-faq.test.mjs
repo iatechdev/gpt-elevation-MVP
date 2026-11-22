@@ -37,14 +37,14 @@ test('ES-69: review switch accepts only literal true string; real sections conta
       assert.ok(html.includes(`aria-controls="landing-faq-answer-${i}"`))
       assert.ok(html.includes(`aria-labelledby="landing-faq-question-${i}"`))
     }
-    assert.ok(html.includes('href="/pricing"'))
+    assert.ok(!html.includes('href="/pricing"'), 'ES-360: la respuesta de «¿Cuánto cuesta?» ya no remite a una página de planes')
     assert.doesNotMatch(html, /href="\/privacy"|<form|<input|<script|<img/)
     for (const entry of entries) assert.ok(html.includes(escape(entry[lang])), entry.key)
   }
 })
 
 test('ES-69: all forty editorial keys are bilingual/editable and malformed or offline CMS preserves defaults', async t => {
-  assert.equal(entries.length, 40)
+  assert.equal(entries.length, 36) // ES-360: 40 − number (trust, faq) − trust.coming − faq.plans
   assert.equal(new Set(catalog.map(x => x.key)).size, catalog.length)
   for (const lang of ['es', 'en']) {
     const edits = Object.fromEntries(entries.map(x => [x.key, `Synthetic ${lang} ${x.key}`]))
@@ -71,11 +71,11 @@ test('ES-69: all forty editorial keys are bilingual/editable and malformed or of
 test('ES-69: pending rights/policy, no price or free promise, native keyboard buttons and correct section order', () => {
   const html = render('es') + render('en')
   assert.doesNotMatch(html, /\bGratis\b|\bFree\b|USD|\$|tel:|https?:|href="\/app|href="\/api/)
-  assert.ok(html.includes('Consulta disponibilidad') && html.includes('Check availability'))
+  assert.ok(!/Consulta disponibilidad|Check availability|Próximamente|Coming soon/.test(html), 'ES-360: una sola escala de estado; sin «Consulta disponibilidad»')
   assert.ok(html.includes('Pendiente de revisión') && html.includes('Pending review'))
   const page = read('../src/components/landing/LandingTail.tsx') // ES-155 C: las secciones conservadas viven en LandingTail
-  assert.ok(page.indexOf('<LandingTrust') < page.indexOf('<LandingFeatures'))
-  assert.ok(page.indexOf('<LandingJoin') < page.indexOf('<LandingFaq'))
+  assert.ok(page.indexOf('<LandingTrust') < page.indexOf('<Features'))
+  assert.ok(page.indexOf('<NextStep') < page.indexOf('<LandingFaq')) // ES-360: «Próximo paso» sustituye a «Cómo vincularte» (LandingJoin)
   assert.equal((page.match(/trustFaqEnabled\(import\.meta\.env\.VITE_ENABLE_LANDING_TRUST_FAQ\)/g) ?? []).length, 1, 'una sola lectura de la bandera (const trust) para confianza y preguntas')
   assert.match(read('../src/components/landing/LandingPrimitives.tsx'), /type=\{type\}/)
 })

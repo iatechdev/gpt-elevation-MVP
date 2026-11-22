@@ -9,7 +9,7 @@ test('ES-71: new copy uses the existing public read and protected CMS write (moc
   models.LandingContent.upsert = async row => { rows.set(row.key + ':' + row.lang, row); };
   const request = await startApp(t); // production Express mounts, real HTTP and signed JWTs
   const entries = catalog.filter(entry => /^landing\.(pros)\./.test(entry.key));
-  assert.ok(entries.length === 31);
+  assert.ok(entries.length === 4); // ES-360: título, introducción, botón y nota (se retiran las seis tarjetas, «Puente» y los estados)
   const body = { key: 'landing.pros.intro', lang: 'es', value: 'Synthetic editorial change' };
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
     assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, (role === undefined ? 401 : 403));

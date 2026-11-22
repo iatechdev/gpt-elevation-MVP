@@ -22,7 +22,6 @@ const AcceptInvitationPage = lazy(() => import('./access/AcceptInvitationPage.ts
 const ResetPasswordPage = lazy(() => import('./access/PasswordResetPages.tsx').then(m => ({ default: m.ResetPasswordPage })))
 const CheckinPage = lazy(() => import('./pages/CheckinPage.tsx').then(m => ({ default: m.CheckinPage })))
 const ChatPage = lazy(() => import('./pages/ChatPage.tsx').then(m => ({ default: m.ChatPage })))
-const PricingPage = lazy(() => import('./pages/PricingPage.tsx').then(m => ({ default: m.PricingPage })))
 const DesignSystemPage = lazy(() => import('./cartografia/DesignSystemPage.tsx').then(m => ({ default: m.DesignSystemPage }))) // ES-152 — página interna de componentes
 const AdminLayout = lazy(() => import('./layouts/AdminLayout.tsx').then(m => ({ default: m.AdminLayout })))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard.tsx').then(m => ({ default: m.AdminDashboard })))
@@ -102,7 +101,7 @@ export default function App() {
       <Route path="/reset-password"  element={<ResetPasswordPage />} />
       <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
       <Route path="/profesionales" element={<ProfessionalApplicationPage />} /> {/* ES-95 — solicitud pública de profesionales */}
-      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/pricing" element={<Navigate to="/" replace />} /> {/* ES-360: la página pública de planes se retiró (sin planes ni precios hasta que existan reales); «Mi plan» (/app/plan) sigue dentro de la cuenta */}
       <Route path="/manifiesto" element={<ManifestoPage />} /> {/* ES-207 — lectura pública del manifiesto ético */}
       <Route path="/privacidad" element={<PrivacyPage />} /> {/* ES-301 — aviso de privacidad (borrador sin revisión legal) */}
       <Route path="/terminos" element={<TermsPage />} /> {/* ES-301 — términos de uso (borrador sin revisión legal) */}

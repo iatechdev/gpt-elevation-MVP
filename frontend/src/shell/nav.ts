@@ -8,7 +8,7 @@ export type NavItem = { to: string; label: NavKey; roles?: readonly Role[] }
 
 export const PUBLIC_NAV: NavItem[] = [
   { to: '/#como-funciona', label: 'how' },
-  { to: '/#privacidad', label: 'privacy' },
+  { to: '/privacidad', label: 'privacy' }, // ES-360: el aviso completo (antes /#privacidad, un ancla de la portada que el enlace no anunciaba)
   { to: '/manifiesto', label: 'adManifest' }, // ES-207 — manifiesto ético público
   { to: '/login', label: 'signIn' },
 ]

@@ -23,12 +23,14 @@ const render = (lang, values) => {
     createElement(LandingFooter, props))))
 }
 
+// ES-360: el pie lleva ahora «Aviso de privacidad» (landing.footer.privacy → /privacidad, el documento completo): 4 claves y UN enlace. Se conserva: aviso completo, sin CTA, sin enlaces no aprobados.
 test('ES-65: actual ES/EN footer has full notice, no CTA and hidden unapproved links', () => {
-  assert.equal(entries.length, 3)
+  assert.equal(entries.length, 4)
   assert.equal(new Set(catalog.map(entry => entry.key)).size, catalog.length)
   for (const lang of ['es', 'en']) {
     const html = render(lang)
-    assert.equal((html.match(/<a /g) ?? []).length, 0)
+    assert.equal((html.match(/<a /g) ?? []).length, 1)
+    assert.match(html, /<a class="elv-link" href="\/privacidad"[^>]*>/)
     assert.match(html, /<footer class="elv-footer landing-footer">/)
     assert.equal((html.match(/<li>/g) ?? []).length, 0)
     assert.doesNotMatch(html, /href="#"|href="\/privacy|mailto:|tel:|<button|onclick|I am a professional|Soy profesional/)
@@ -50,11 +52,12 @@ test('ES-65: CMS edits affect all copy, are escaped and cannot change destinatio
   }
 })
 
-test('ES-207: con «manifestLabel» el pie lleva un solo enlace interno al manifiesto público; sin él sigue sin enlaces', () => {
+test('ES-207: con «manifestLabel» el pie lleva además el enlace interno al manifiesto público (ES-360: junto al de privacidad); sin él solo queda el de privacidad', () => {
   for (const [lang, label] of [['es', 'Manifiesto ético'], ['en', 'Ethical manifesto']]) {
     const props = { text: key => landingText(key, lang), manifestLabel: label }
     const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LandingFooter, props)))
-    assert.equal((html.match(/<a /g) ?? []).length, 1)
+    assert.equal((html.match(/<a /g) ?? []).length, 2)
+    assert.match(html, /href="\/privacidad"/)
     assert.match(html, new RegExp(`<a class="elv-link" href="/manifiesto"[^>]*>${label}</a>`))
     assert.doesNotMatch(html, /mailto:|tel:|href="#"/)
   }

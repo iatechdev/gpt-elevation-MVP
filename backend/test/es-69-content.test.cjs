@@ -9,7 +9,7 @@ test('ES-69: new copy uses the existing public read and protected CMS write (moc
   models.LandingContent.upsert = async row => { rows.set(row.key + ':' + row.lang, row); };
   const request = await startApp(t); // production Express mounts, real HTTP and signed JWTs
   const entries = catalog.filter(entry => /^landing\.(trust|faq)\./.test(entry.key));
-  assert.ok(entries.length === 40);
+  assert.ok(entries.length === 36); // ES-360: − number (trust, faq), − trust.coming, − faq.plans
   const body = { key: 'landing.trust.4.body', lang: 'es', value: 'Synthetic editorial change' };
   for (const role of [undefined, 'user', 'therapist', 'board', 'admin']) {
     assert.equal((await request('PUT', '/api/landing-content', { role, body })).status, (role === undefined ? 401 : 403));

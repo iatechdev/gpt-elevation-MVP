@@ -1,19 +1,16 @@
 import { useSpaceRoutes } from '../../space/routesContext'
 import { LandingSurface } from './LandingSurface'
 import { LandingFooter } from './LandingClosing'
-import { LandingFeatures, LandingSkillMap } from './LandingOffering'
-import { LandingProject } from './LandingProject'
+import { Features, SkillMap, Languages, NextStep, Professionals } from './PortadaSections'
 import { LandingTrust, LandingFaq } from './LandingTrustFaq'
 import { trustFaqEnabled } from '../../content/landingTrustFaq'
-import { LandingProfessionals } from './LandingProfessionals'
 import { professionalsEnabled } from '../../content/landingProfessionals'
-import { LandingJoin } from './LandingJoin'
-import { LandingPlans } from './LandingPlans'
 import { useScrollToHash } from '../portada/useScrollToHash'
 import '../portada/portadaTail.css'
 
-/** ES-155 (tramo C): lo que se CONSERVA de la portada de ES-61…74, debajo del hero nuevo. Va en un bloque aparte (se descarga en paralelo, sin bloquear el primer pintado):
- *  su CSS (landing.css) ya no pesa en el arranque. Mismo contenido del CMS `landing.*`, con los colores del sistema (portadaTail.css). */
+/** ES-155 (tramo C) y ES-360: lo que va debajo de «Cómo funciona» en la portada. Va en un bloque aparte (se descarga en paralelo, sin bloquear el primer pintado).
+ *  ES-360: se retiraron la sección de planes (ya no se leen planes de la base desde la portada), «Estado del proyecto» y «Cómo vincularte»; la oferta se explica en
+ *  «Qué puedes hacer», SkillMap, idiomas, próximo paso y solicitud profesional, con una sola escala de estado (Disponible / En preparación). */
 export default function LandingTail({ text, manifestLabel }: { text: (key: string) => string; manifestLabel: string }) {
   const routes = useSpaceRoutes()
   useScrollToHash()
@@ -21,14 +18,13 @@ export default function LandingTail({ text, manifestLabel }: { text: (key: strin
   const trust = trustFaqEnabled(import.meta.env.VITE_ENABLE_LANDING_TRUST_FAQ)
   return (
     <LandingSurface className="cg-tail">
-      {/* El enlace «Privacidad» del marco va a #privacidad: con la sección de confianza apagada (bandera) lleva al aviso del cierre, nunca a un ancla vacía */}
+      {/* Con la sección de confianza apagada (bandera), el ancla antigua /#privacidad lleva al pie, nunca a un ancla vacía */}
       {trust && <div id="privacidad" tabIndex={-1}><LandingTrust text={text} /></div>}
-      <LandingFeatures text={text} />
-      {showProfessionals && <LandingProfessionals text={text} applicationAvailable={routes.has('/profesionales')} />}
-      <LandingSkillMap text={text} />
-      <LandingPlans text={text} />
-      <LandingProject text={text} />
-      <LandingJoin text={text} />
+      <Features text={text} />
+      <SkillMap text={text} />
+      <Languages text={text} />
+      <NextStep text={text} />
+      {showProfessionals && <Professionals text={text} applicationAvailable={routes.has('/profesionales')} />}
       {trust && <LandingFaq text={text} />}
       <div id={trust ? undefined : 'privacidad'} tabIndex={trust ? undefined : -1}><LandingFooter text={text} manifestLabel={manifestLabel} /></div>
     </LandingSurface>
