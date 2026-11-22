@@ -17,7 +17,7 @@ test('ES-354: Barlow y Barlow Condensed del contenido legal usan font-display: s
 })
 
 test('ES-354: las reservas locales llevan el size-adjust medido (98 % / 96 % / 80 %) y .lg las usa tras la fuente real', () => {
-  const fallbacks = faces.filter(f => /local\('Arial'\)/.test(f))
+  const fallbacks = faces.filter(f => /local\('Arial'\)/.test(f) && !f.includes('Fallback Wide')) // ES-375: la reserva ancha (96 %, desde 680 px) se prueba en es-375-legal-ancho
   assert.equal(fallbacks.length, 3)
   assert.match(fallbacks[0], /'Barlow Legal Fallback'[^}]*font-weight: 400 500; size-adjust: 98%/)
   assert.match(fallbacks[1], /'Barlow Legal Fallback'[^}]*font-weight: 600 700; size-adjust: 96%/)

@@ -8,7 +8,7 @@ const BASE = process.env.BASE || 'http://127.0.0.1:5311'
 const WHICH = process.argv[2] || 'sans400'
 const RANGES = { sans400: [88, 104], sans600: [82, 98], cond700: [56, 80] }
 const PAGES = [['/privacidad', 'es'], ['/privacidad', 'en'], ['/terminos', 'es'], ['/terminos', 'en']]
-const WIDTHS = [390, 1360]
+const WIDTHS = (process.env.WIDTHS || '390,1360').split(',').map(Number)
 const UR = 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD'
 
 const positions = () => [...document.querySelectorAll('.lg h1, .lg h2, .lg p, .lg li')].map(e => Math.round(e.getBoundingClientRect().top + scrollY)).concat([document.documentElement.scrollHeight])
