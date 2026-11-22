@@ -6,7 +6,8 @@ import { useLanguage } from '../i18n/useLanguage'
 import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
-import { NavDrawer, type DrawerGroup } from './NavDrawer'
+import { NavDrawer, type DrawerGroup, type NavDrawerProps } from './NavDrawer'
+import { onDrawerRequest } from './drawerExtra'
 import type { NavGroup } from './navGroups'
 import { useShellCopy } from './useShellCopy'
 import { useNarrowHeader } from './narrowHeader'
@@ -78,7 +79,7 @@ export type FrameProps = {
   /** ES-321: en la disposición móvil (≤ 900 px) el DOM sigue el orden visual (marca → menú → preferencias → navegación) para que Tab no suba; en escritorio, el de siempre. */
   mobileOrder?: boolean
   /** ES-359 (PR3): en ≤ 900 px el encabezado es una fila de 56 px (marca + «☰ Menú») y la navegación, las preferencias y «Cerrar sesión» viven en el cajón. */
-  drawer?: { groups: DrawerGroup[]; name: string; roleLabel: string; legacyTheme?: boolean }
+  drawer?: { groups: DrawerGroup[]; name: string; roleLabel: string; legacyTheme?: boolean; extra?: NavDrawerProps['extra'] }
   /** ES-359 (PR2): con barra lateral por grupos en escritorio (≥ 901 px): el encabezado deja de repetir los enlaces y la barra mide 14,5 rem. */
   sidebarWide?: boolean
 }
@@ -87,6 +88,9 @@ export type FrameProps = {
 export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferences, sidebar, footer = true, header = true, mainClassName = '', theme = 'light', mobileOrder = false, drawer, sidebarWide = false, children }: FrameProps) {
   const { c } = useShellCopy(); const { pathname } = useLocation(); const narrow = useNarrowHeader() && mobileOrder; const compact = useNarrowHeader() && !!drawer
   const [drawerOpen, setDrawerOpen] = useState(false); const menuButton = useRef<HTMLButtonElement>(null)
+  // Botón que abrió el cajón (el «☰ Menú» del encabezado, o el de la barra de una pantalla sin encabezado, como el chat: drawerExtra.requestDrawer): recibe el foco al cerrar.
+  const drawerOpener = useRef<HTMLElement | null>(null)
+  useEffect(() => onDrawerRequest(opener => { drawerOpener.current = opener; setDrawerOpen(true) }), [])
   // El cajón se cierra al cambiar de ruta (incluido el botón «atrás» del navegador) y si la pantalla deja de ser móvil. Sin efecto con setState: se ajusta el estado durante el render.
   const [drawerPath, setDrawerPath] = useState(pathname)
   if (drawerPath !== pathname) { setDrawerPath(pathname); if (drawerOpen) setDrawerOpen(false) }
@@ -106,11 +110,11 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
       {header && (
         <header className="cg-header" data-compact={compact || undefined} onClickCapture={guardLeave}>
           <Link className="cg-brand" to={brandTo} aria-label={brandLabel ?? c.brandLabel}>{brand ?? <>Elevation<i>.</i></>}</Link>
-          {compact ? <button ref={menuButton} type="button" className="cg-menubtn" aria-haspopup="dialog" aria-expanded={drawerShown} onClick={() => setDrawerOpen(true)}><span className="cg-menubtn__icon" aria-hidden="true" /> {c.menu}</button> : <>{narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
+          {compact ? <button ref={menuButton} type="button" className="cg-menubtn" aria-haspopup="dialog" aria-expanded={drawerShown} onClick={() => { drawerOpener.current = menuButton.current; setDrawerOpen(true) }}><span className="cg-menubtn__icon" aria-hidden="true" /> {c.menu}</button> : <>{narrow ? <div className="cg-header__end">{account}{prefs}</div> : <>{nav}<div className="cg-header__end">{prefs}{account}</div></>}
           {narrow && nav}</>}
         </header>
       )}
-      {compact && drawer && <NavDrawer open={drawerShown} onClose={() => setDrawerOpen(false)} opener={menuButton} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} />}
+      {compact && drawer && <NavDrawer open={drawerShown} onClose={() => setDrawerOpen(false)} opener={drawerOpener} groups={drawer.groups} name={drawer.name} roleLabel={drawer.roleLabel} legacyTheme={drawer.legacyTheme} extra={drawer.extra} />}
       <div className={sidebar ? `cg-body cg-body--side${sidebarWide ? ' cg-body--wideside' : ''}` : 'cg-body'}>
         {sidebar}
         <main id="main" ref={main} tabIndex={-1} className={`cg-main ${mainClassName}`.trim()}>{children}</main>

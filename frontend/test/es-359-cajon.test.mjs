@@ -15,7 +15,7 @@ test('ES-359 PR3: el cajón es un <dialog> modal con foco de vuelta al botón, E
 })
 
 test('ES-359 PR3: contenido del cajón = cabecera fija (Menú, nombre y rol, Cerrar), extra, grupos, Preferencias y pie fijo «Cerrar sesión» (useSignOut)', () => {
-  for (const part of ['{c.menu}', '{c.close}', '{extra}', '{c.preferences}', '<LangSwitch />', '<ThemeSwitch legacy={legacyTheme} />', '{leaving ? c.signingOut : c.signOut}', 'useSignOut()']) assert.ok(drawer.includes(part), part)
+  for (const part of ['{c.menu}', '{c.close}', "typeof extra === 'function' ? extra(onClose) : extra", '{c.preferences}', '<LangSwitch />', '<ThemeSwitch legacy={legacyTheme} />', '{leaving ? c.signingOut : c.signOut}', 'useSignOut()']) assert.ok(drawer.includes(part), part)
   assert.match(drawer, /leaveBlocked\(href\)/) // un borrador sin guardar pregunta antes de navegar
   assert.match(css, /\.cg-drawer__foot \{ flex: none;/); assert.match(css, /\.cg-drawer__body \{ flex: 1 1 auto; min-height: 0; overflow-y: auto;/)
 })
@@ -33,7 +33,7 @@ test('ES-359 PR3: en ≤ 900 px el marco con `drawer` dibuja marca + «☰ Menú
   assert.match(css, /\.cg-header\[data-compact\] \{ flex-wrap: nowrap; min-height: 56px;/)
   // ES-359 PR2/PR5: el cajón lleva los mismos grupos que la barra lateral (helper `drawerGroups`, con «Menú de usuario» al final) y cada rol usa el SUYO
   assert.ok(frames.includes('groups.map(g => ({ title: g.title ? c[g.title] : null, items: g.items }))')); assert.ok(frames.includes('{ title: c.userMenu, items: menu }'))
-  assert.ok(frames.includes('drawer={{ groups: drawerGroups(groups, PERSON_MENU, c, PERSON_NAV)'))
+  assert.ok(frames.includes('drawer={{ groups: drawerGroups(drawerOnly, PERSON_MENU, c, PERSON_NAV)')) // drawerOnly = los grupos sin lo que la pantalla ya pone en `extra` (PR4)
 })
 
 test('ES-359 PR3: sin textos nuevos (Menú y Cerrar ya existían en el chat) y el CSS usa solo tokens', () => {
@@ -52,7 +52,7 @@ test('ES-359 PR3: el icono ☰ del botón «Menú» es el escape CSS de U+2630 (
 })
 
 test('ES-359 PR3 (mutaciones): el botón abre, el velo y los enlaces cierran, «Cerrar sesión» llama a useSignOut y el cajón solo existe en móvil', () => {
-  assert.match(frame, /onClick=\{\(\) => setDrawerOpen\(true\)\}/) // el botón ☰ abre
+  assert.match(frame, /onClick=\{\(\) => \{ drawerOpener\.current = menuButton\.current; setDrawerOpen\(true\) \}\}/) // el botón ☰ abre (y queda como destino del foco al cerrar)
   assert.match(frame, /onClose=\{\(\) => setDrawerOpen\(false\)\}/) // y el cajón se cierra por su `onClose`
   assert.match(frame, /\{compact && drawer && <NavDrawer open=\{drawerShown\}/) // sin modo móvil no hay cajón (se desmonta y libera el bloqueo)
   assert.match(drawer, /event\.target === document\.documentElement \|\| event\.target === ref\.current\) onClose\(\)/) // velo

@@ -112,9 +112,8 @@ test('ES-134: todos los cierres de sesión de la aplicación limpian el mensaje 
   assert.ok(read('../src/pages/UserDashboard.tsx').includes('registerLeaveGuard')) // ES-329: «Salir» lo pone el marco; el panel registra su despedida (check-out) como guardia de salida
   for (const file of ['../src/pages/ChatPage.tsx']) {
     const source = read(file)
-    const removals = source.match(/localStorage\.removeItem\('elevation_token'\)/g) ?? []
-    const cleared = source.match(/clearPending\(\)[^\n]*\n\s*localStorage\.removeItem\('elevation_token'\)|clearPending\(\); localStorage\.removeItem\('elevation_token'\)/g) ?? []
-    assert.ok(removals.length > 0 && cleared.length === removals.length, `${file}: ${cleared.length}/${removals.length}`)
+    // ES-359 (PR4): el chat también cierra con signOut() (revoca en el servidor, limpia el pendiente y la sesión local) y ya no borra el token por su cuenta.
+    assert.ok(source.includes('await signOut(BACKEND)') && !source.includes("localStorage.removeItem('elevation_token')"), file)
   }
 })
 

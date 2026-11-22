@@ -27,21 +27,30 @@ function guardLeave(event: ReactMouseEvent<HTMLElement>) {
   if (leaveBlocked(href)) { event.preventDefault(); event.stopPropagation() }
 }
 
-/** Cuerpo del menú: solo existe mientras el Dialog está abierto, así «Menú de usuario» vuelve a quedar plegado en cada apertura. */
-function MenuBody({ onClose, onProgress, onRecs, onAdmin, enterSends, onEnterSends, legacy }: Omit<ChatMenuProps, 'open' | 'onCheckout'> & { legacy: boolean }) {
-  const { lang, t } = useLanguage(); const c = copy[lang]; const { c: shell } = useShellCopy()
-  const [more, setMore] = useState(false); const ids = { conv: useId(), main: useId(), prefs: useId(), more: useId() }
-  const pick = (action: () => void) => () => { onClose(); action() }
-  const userItems = PERSON_MENU.filter(item => item.label !== 'progress') // «Mi progreso» ya está en Conversación
-  return <div className="chat-menu" onClickCapture={guardLeave}>
-    <h3 className="chat-menu-h" id={ids.conv}>{c.conversation}</h3>
-    <div className="chat-menu-list" role="group" aria-labelledby={ids.conv}>
+/** Grupo «Conversación»: lo propio de esta pantalla. Vive en la hoja de escritorio (MenuBody) y, a ≤ 900 px, arriba del cajón del marco (ES-359 PR4, drawerExtra).
+ *  «Recomendaciones» se abre un cuadro después de cerrar el menú: así el foco vuelve primero al botón que abrió el menú y la hoja lo recuerda como destino. */
+export function ConversationGroup({ onClose, onProgress, onRecs, onAdmin, enterSends, onEnterSends }: Pick<ChatMenuProps, 'onProgress' | 'onRecs' | 'onAdmin' | 'enterSends' | 'onEnterSends'> & { onClose: () => void }) {
+  const { lang, t } = useLanguage(); const c = copy[lang]; const heading = useId()
+  const pick = (action: () => void) => () => { onClose(); requestAnimationFrame(action) }
+  return <>
+    <h3 className="chat-menu-h" id={heading}>{c.conversation}</h3>
+    <div className="chat-menu-list" role="group" aria-labelledby={heading}>
       <button type="button" onClick={pick(onProgress)}>{c.progress}</button>
       <button type="button" onClick={pick(onRecs)}>{t('rec_title')}</button>
       {onAdmin && <button type="button" onClick={pick(onAdmin)}>{t('admin_title')}</button>}
     </div>
     <UsageText />
     <label className="chat-enter"><input className="elv-checkbox" type="checkbox" checked={enterSends} onChange={event => onEnterSends(event.target.checked)} />{c.enterSends}</label>
+  </>
+}
+
+/** Cuerpo del menú: solo existe mientras el Dialog está abierto, así «Menú de usuario» vuelve a quedar plegado en cada apertura. */
+function MenuBody({ onClose, onProgress, onRecs, onAdmin, enterSends, onEnterSends, legacy }: Omit<ChatMenuProps, 'open' | 'onCheckout'> & { legacy: boolean }) {
+  const { c: shell } = useShellCopy()
+  const [more, setMore] = useState(false); const ids = { main: useId(), prefs: useId(), more: useId() }
+  const userItems = PERSON_MENU.filter(item => item.label !== 'progress') // «Mi progreso» ya está en Conversación
+  return <div className="chat-menu" onClickCapture={guardLeave}>
+    <ConversationGroup onClose={onClose} onProgress={onProgress} onRecs={onRecs} onAdmin={onAdmin} enterSends={enterSends} onEnterSends={onEnterSends} />
     <h3 className="chat-menu-h" id={ids.main}>{shell.main}</h3>
     <NavLinks items={PERSON_NAV} label={shell.main} className="chat-menu-list chat-menu-grid" />
     <button type="button" className="chat-menu-disc" aria-expanded={more} aria-controls={ids.more} onClick={() => setMore(value => !value)}>
