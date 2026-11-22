@@ -59,3 +59,17 @@ Solo contenido público, sin conversaciones, diario o datos de personas. No hay 
 ## Integración pendiente
 
 Este PR prepara el contrato y editor. ES-62/63/64 harán visible el contenido nuevo y usarán useLandingContent; no se acredita aún el ciclo editor → nueva landing. La semilla real y persistencia Postgres en staging requieren verificación posterior. No declarar ES-66 integrada o Listo mientras falten esas comprobaciones.
+
+## ES-378: refrescar los textos sembrados (operador, solo staging)
+
+`findOrCreate` del seed original no actualiza filas que ya existen, así que las filas de staging sembradas con textos antiguos tapaban `shared/landing-content.json` (H440-1). Paso aditivo e idempotente, con el mismo guardia (`APP_ENV=staging` y `LANDING_SEED_CONFIRM=staging`; confirmar que la conexión es la de staging, nunca producción):
+
+```
+node backend/scripts/seedLandingContent.js --refresh --dry-run   # cuenta lo que haría, no escribe
+node backend/scripts/seedLandingContent.js --refresh             # lo aplica en una sola transacción
+```
+
+- Actualiza SOLO las filas con `updated_by = 'ES-66 seed'` (nadie las editó) cuyo valor difiere del JSON; las editadas por una persona no se tocan.
+- Crea las claves nuevas; borra las filas sembradas de claves `landing.*` retiradas (las retiradas que editó una persona se dejan: la lectura pública ya las ignora).
+- La salida es auditoría sin datos: conteos y nombres de clave, nunca los textos. Segunda corrida: sin cambios.
+- Es script de operador y NO corre en el arranque: modifica contenido que edita el equipo, así que debe ejecutarse a propósito, con dry-run antes y fuera de una migración (las migraciones no deben depender de un JSON que cambia). Producción vacía: el seed ya crea los valores nuevos.
