@@ -147,3 +147,11 @@ test('ES-360 bilingüe: cada clave del diseño existe en ES y EN, no vacía, sin
   for (const key of fresh) { const entry = byKey[key]; assert.ok(entry && entry.es.trim() && entry.en.trim(), key); assert.notEqual(entry.es, entry.en, `${key}: ES y EN no pueden ser idénticos`) }
   for (const key of fresh.filter(item => !['landing.status.available'].includes(item))) assert.doesNotMatch(byKey[key].en, /[áéíóúñ¿¡]/i, `${key}: el inglés no lleva español`)
 })
+
+test('ES-360 (diseño 12871) hojas de vida y diario: sin «solo tú» ni «solo para ti»; dicen qué se cifra y qué profesional no llega sin autorización', () => {
+  const resume = read('../src/context/resume/resumeCopy.ts'), journal = read('../src/space/journalCopy.ts')
+  const only = /solo tú|solo para ti|only you|only for you|just for you/i
+  assert.doesNotMatch(resume, only); assert.doesNotMatch(journal, only)
+  for (const phrase of ['Al proveedor de IA solo llega texto', 'Tu hoja de vida quedó guardada y cifrada.', 'No llegan a ningún profesional sin tu autorización aparte.', 'Only text reaches the AI provider', 'Your résumé was saved and encrypted.', 'They do not reach any professional without your separate permission.']) assert.ok(resume.includes(phrase), phrase)
+  assert.ok(journal.includes('Privado · Tú decides si el asistente lo usa') && journal.includes('Private · You decide whether the assistant uses it'))
+})
