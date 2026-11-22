@@ -65,6 +65,7 @@
     "test:evidence:pg": "node --test test/integration/es-27-postgres.cjs",
     "test:integration:pg": "node --test test/integration/es-integration-consent-hooks.cjs",
     "test:insights:pg": "node --test test/integration/es-121-postgres.cjs",
+    "test:operator-link:pg": "node --test test/integration/es-376-postgres.cjs",
     "test:passwordreset:pg": "node --test test/integration/es-132-postgres.cjs",
     "test:contact-entries:pg": "node --test test/integration/es-193-postgres.cjs",
     "test:prompt-review:pg": "node --test test/integration/es-191-postgres.cjs",
