@@ -106,8 +106,8 @@ export function ChatPage() {
     chatEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [messages, sending])
 
+  // ES-373 (O427-2): la pregunta «Si sales, perderás…» (canLeave) se hace ANTES de abrir la despedida, a cualquier ancho; aquí ya no se repite.
   const handleLogout = async () => {
-    if (!chat.canLeave()) return
     await signOut(BACKEND) // ES-136: revoca la sesión en el servidor y borra la local (incluido el mensaje pendiente del chat)
     navigate('/', { replace: true })
   }
@@ -208,7 +208,7 @@ export function ChatPage() {
       </div>
 
       {!narrow && <ChatMenu open={menuOpen} onClose={() => setMenuOpen(false)} onProgress={() => { if (chat.canLeave()) navigate('/app/progress') }} onRecs={() => setShowRecs(true)}
-        onAdmin={['admin', 'superadmin'].includes(role) ? () => { if (chat.canLeave()) navigate('/admin/dashboard') } : undefined} onCheckout={() => setShowCheckout(true)} enterSends={enterSends} onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} />}
+        onAdmin={['admin', 'superadmin'].includes(role) ? () => { if (chat.canLeave()) navigate('/admin/dashboard') } : undefined} onCheckout={() => { if (chat.canLeave()) setShowCheckout(true) }} enterSends={enterSends} onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} />}
 
       {/* HU-051 — Recomendaciones: hoja inferior (antes un bloque dentro del hilo que partía «Recomendaciones» a mitad de palabra, E293-2) */}
       <Dialog sheet open={showRecs} onClose={() => setShowRecs(false)} title={t('rec_title')}
