@@ -8,7 +8,7 @@ const es = {
   // ES-153 (paso 3): preferencias del marco de persona (idioma + tema)
   preferences: 'Preferencias', theme: 'Tema', themeSystem: 'Auto', themeLight: 'Claro', themeDark: 'Oscuro', themeLegacy: 'Esta pantalla aún solo tiene tema claro.',
   // público
-  how: 'Cómo funciona', privacy: 'Privacidad', signIn: 'Entrar', signUp: 'Crear cuenta',
+  how: 'Cómo funciona', privacy: 'Privacidad', signIn: 'Iniciar sesión', signUp: 'Crear cuenta',
   // persona
   map: 'Mapa', chat: 'Conversación', evidence: 'Evidencias', diary: 'Diario', next: 'Siguiente paso',
   today: 'Hoy', bridge: 'El Puente', myProfessional: 'Mi profesional', tools: 'Mis herramientas', progress: 'Mi progreso', plan: 'Mi plan',

@@ -8,8 +8,8 @@ export function LandingFooter({ text, manifestLabel }: Props) {
     <div className="landing-footer-inner">
       <span className="landing-footer-brand">{text('landing.footer.brand')}<span aria-hidden="true">·</span></span>
       <p className="landing-footer-notice">{text('landing.footer.notice')}</p>
-      {/* D-08 / ES-90: unapproved links stay hidden. /privacy is preserved. ES-207: el manifiesto ético público está aprobado. */}
-      {manifestLabel && <p className="landing-footer-meta"><Link className="elv-link" to="/manifiesto">{manifestLabel}</Link></p>}
+      {/* D-08 / ES-90: unapproved links stay hidden. ES-207: el manifiesto ético público está aprobado. ES-360: «Aviso de privacidad» lleva al documento (/privacidad), no a un ancla de la portada. */}
+      <p className="landing-footer-meta"><Link className="elv-link" to="/privacidad">{text('landing.footer.privacy')}</Link>{manifestLabel && <> <span aria-hidden="true">·</span> <Link className="elv-link" to="/manifiesto">{manifestLabel}</Link></>}</p>
       <p className="landing-footer-meta">{text('landing.footer.copyright').replaceAll('{year}', String(new Date().getFullYear()))}</p>
     </div>
   </footer>

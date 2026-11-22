@@ -40,7 +40,7 @@ test('ES-62: LanguageProvider sincroniza <html lang> y tolera un almacenamiento 
   assert.match(provider, /resolveInitialLang\(readSavedLang\(\), navigator\.language\)/)
 })
 
-test('ES-62/68/70/73: actual header links reach existing sections, including Plans and home sections from /pricing', () => {
+test('ES-62/68/70/73: actual header links reach existing sections, and home sections (ES-360: sin enlace a Planes)', () => {
   const used = [...header.matchAll(/text\((?:'|`)(landing\.[^'`]+)(?:'|`)\)/g)].map(match => match[1])
     .flatMap(key => key.includes('${code}') ? ['es', 'en'].map(code => key.replace('${code}', code)) : [key])
   assert.ok(used.length >= 5)
@@ -51,7 +51,7 @@ test('ES-62/68/70/73: actual header links reach existing sections, including Pla
     })))
     assert.ok(html.includes(`href="${homeSections ? '/' : ''}#como-funciona"`))
     assert.ok(html.includes(`href="${homeSections ? '/' : ''}#skill-map"`))
-    assert.ok(html.includes('href="#planes"'))
+    assert.ok(!html.includes('href="#planes"'))
   }
   assert.match(header, /showProfessionals && <a[^>]+href="#profesionales"/)
   assert.doesNotMatch(header, /dangerouslySetInnerHTML|fetch\(/)
