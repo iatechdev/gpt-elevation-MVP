@@ -22,6 +22,7 @@ import { Banner, ItemList } from '../cartografia/pieces'
 import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
 import { registerLeaveGuard } from '../shell/leaveGuard'
+import { canEnter, type Role } from '../shell/access'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { ProgressMatching } from '../progress/ProgressMatching'
 import { CareerEntry } from '../career/CareerShell'
@@ -30,6 +31,7 @@ import { ExerciseTools } from '../exercises/ExerciseTools'
 import { checkinDone, markCheckin, rememberZone } from '../checkin/checkinMark'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
+const storedRole = (): Role => { try { const value = localStorage.getItem('elevation_role'); return value === 'admin' || value === 'superadmin' || value === 'therapist' || value === 'board' ? value : 'user' } catch { return 'user' } }
 const getToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } } // ES-369 (QA-424-2): el almacenamiento bloqueado no rompe la pantalla
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -474,7 +476,8 @@ export function UserDashboard() {
 
         {/* ── ENLACES ── */}
         <nav className="pc-links" aria-label={t('dash_title')}>
-          <Link className="pc-link context-dashboard-link" to="/app/onboarding">{t('context_link')}</Link>
+          {/* ES-372 (O428-1): «/app/onboarding» es de la zona participante (solo rol user); los demás roles no ven un enlace que termina en «sin acceso». */}
+          {canEnter(storedRole(), 'participant') && <Link className="pc-link context-dashboard-link" to="/app/onboarding">{t('context_link')}</Link>}
           <Link className="pc-link evidence-dashboard-link" to="/app/evidence">{t('evidence.title')}</Link>
           <Link className="pc-link" to="/app/compass">{t('compass.title')}</Link>
           <Link className="pc-link" to="/app/route-catalog">{t('catalog.title')}</Link>
