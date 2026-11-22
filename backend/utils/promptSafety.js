@@ -18,10 +18,14 @@ const TAGS = /[\u{E0000}-\u{E007F}]/gu;
 // eslint-disable-next-line no-control-regex
 const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;
 
+// ES-361: normalizeText conserva el ZWNJ/ZWJ LEGÍTIMO (uno entre letras, marcas o emoji) con la MISMA regla de la barrera (LOOSE_JOINER, definida más abajo); el resto de INVISIBLE se quita igual que antes.
+// Orden fijo para que sea idempotente: primero invisibles y controles, luego los ZWNJ/ZWJ sueltos (así «a ZWJ <control> b» no deja un ZWJ que una segunda pasada sí quitaría).
+const INVISIBLE_KEEP_JOINERS = /[­​‎‏‪-‮⁠-⁤⁦-⁩﻿]/g;
 const normalizeText = (text) => String(text)
   .normalize('NFC')
-  .replace(INVISIBLE, '')
+  .replace(INVISIBLE_KEEP_JOINERS, '')
   .replace(CONTROL, '')
+  .replace(LOOSE_JOINER, '')
   .replace(/\r\n?/g, '\n')
   .trim();
 
