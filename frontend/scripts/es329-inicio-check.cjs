@@ -30,7 +30,7 @@ async function setup(browser, { lang, width, scheme, scene, checkedIn }) {
     if (p === '/api/recommendations') return route.fulfill({ json: d.recs })
     if (p === '/api/user/plan/me') return route.fulfill({ json: { plan: d.plan, limits: d.limits } })
     return route.fulfill({ json: {} }) })
-  await page.addInitScript(([l, c]) => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); if (c) localStorage.setItem('elevation_checkin_date', new Date().toDateString()) }, [lang, checkedIn])
+  await page.addInitScript(([l, c]) => { localStorage.setItem('elevation_token', 'h.' + btoa(JSON.stringify({ id: 7 })) + '.s'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); if (c) localStorage.setItem('elevation_checkin', JSON.stringify({ id: '7', day: new Date().toISOString().slice(0, 10) })) }, [lang, checkedIn])
   return { ctx, page }
 }
 async function axeRun(page) {

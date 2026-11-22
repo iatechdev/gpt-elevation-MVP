@@ -44,7 +44,7 @@ async function open(browser, { lang, width, scheme = 'light', modes = {}, delay 
     if (mode === 'corte') return route.abort('connectionrefused')
     return route.fulfill({ json: BODY[key] })
   })
-  await page.addInitScript(([l]) => { localStorage.setItem('elevation_token', 't'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); localStorage.setItem('elevation_checkin_date', new Date().toDateString()) }, [lang])
+  await page.addInitScript(([l]) => { localStorage.setItem('elevation_token', 'h.' + btoa(JSON.stringify({ id: 7 })) + '.s'); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); localStorage.setItem('elevation_checkin', JSON.stringify({ id: '7', day: new Date().toISOString().slice(0, 10) })) }, [lang])
   return { ctx, page, hits, modes }
 }
 const axeRun = async page => { await page.addScriptTag({ content: axeSource }); return page.evaluate(() => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then(r => r.violations.map(v => v.id + ':' + v.nodes.length))) }

@@ -1,11 +1,12 @@
 import { clearPending } from '../space/pending.ts'
 import { readStoredToken } from './session.ts'
 import { signedOut } from './returnTo.ts'
+import { CHECKIN_MARK_KEY, LEGACY_CHECKIN_KEY, PERSON_ZONE_KEY } from '../checkin/checkinMark.ts'
 
 // ES-136: cierre de sesión único. Pide al servidor revocar el token (POST /api/logout, ES-18) y, pase lo que pase, borra la sesión local y el
 // mensaje pendiente del chat. Si el servidor no responde, el token sigue válido hasta vencer: salir no se bloquea por eso.
 export const SIGN_OUT_TIMEOUT_MS = 5000
-const SESSION_KEYS = ['elevation_token', 'elevation_role', 'elevation_name', 'elevation_checkin_date']
+const SESSION_KEYS = ['elevation_token', 'elevation_role', 'elevation_name', LEGACY_CHECKIN_KEY, CHECKIN_MARK_KEY, PERSON_ZONE_KEY]
 
 export async function signOut(backend: string, fetcher: typeof fetch = fetch): Promise<{ revoked: boolean }> {
   const token = readStoredToken()
