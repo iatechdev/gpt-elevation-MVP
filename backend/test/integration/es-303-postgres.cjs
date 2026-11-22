@@ -207,4 +207,25 @@ test('ES-303 PostgreSQL + HTTP: invitación de revisor con código de un solo us
     await q('DELETE FROM "ReviewerInvites" WHERE "reviewerId"=$1', [reviewer.id]); await q('UPDATE "ReviewShares" SET "reviewerId"=$2 WHERE "UserId"=$1', [a.id, 987654321]);
     const gone = await http(a, 'GET', '/api/me/review-shares'); assert.equal(gone.status, 200); assert.equal(gone.body.shares[0].reviewerName, null, 'revisor que ya no existe = null');
   });
+
+  // ES-367 (seguimiento de QA): con DOS o más revisores cada fila lleva el nombre de SU revisor (no el de otro); el nombre es el actual (en vivo); B solo ve sus propias filas.
+  await t.test('ES-367: con ≥2 revisores cada autorización muestra el nombre de su revisor; el nombre es el vigente; ninguna persona ve nombres de revisores que no autorizó', async () => {
+    const r1 = await mkUser('therapist'); const r2 = await mkUser('therapist'); const r3 = await mkUser('therapist')
+    await q('UPDATE "Users" SET name=$2 WHERE id=$1', [r1.id, 'Revisora Uno Sintética']); await q('UPDATE "Users" SET name=$2 WHERE id=$1', [r2.id, 'Revisor Dos Sintético']); await q('UPDATE "Users" SET name=$2 WHERE id=$1', [r3.id, 'Revisora Tres Sintética'])
+    const a = await mkUser('user'); const b = await mkUser('user'); const evA = await evidence(a); const evB = await evidence(b)
+    for (const r of [r1, r2, r3]) assert.equal((await redeem(a, (await issue(r)).body.code, [evA])).status, 201)
+    assert.equal((await redeem(b, (await issue(r2)).body.code, [evB])).status, 201)
+    const nameOf = { [r1.id]: 'Revisora Uno Sintética', [r2.id]: 'Revisor Dos Sintético', [r3.id]: 'Revisora Tres Sintética' }
+    const listA = (await http(a, 'GET', '/api/me/review-shares')).body.shares; assert.equal(listA.length, 3); assert.deepEqual(listA.map((s) => s.reviewerId).sort(), [r1.id, r2.id, r3.id].sort())
+    for (const share of listA) assert.equal(share.reviewerName, nameOf[share.reviewerId], 'cada fila lleva el nombre de SU revisor (id ' + share.reviewerId + ')')
+    // B autorizó solo a r2: no ve los nombres de r1 ni r3 ni los ids ajenos
+    const listB = (await http(b, 'GET', '/api/me/review-shares')).body.shares; assert.equal(listB.length, 1); assert.equal(listB[0].reviewerId, r2.id); assert.equal(listB[0].reviewerName, 'Revisor Dos Sintético')
+    const textB = JSON.stringify(listB); assert.ok(!textB.includes('Uno') && !textB.includes('Tres'), 'B no ve nombres de revisores que no autorizó')
+    // el nombre es el VIGENTE: si el revisor lo cambia, la lista lo refleja solo en su fila
+    await q('UPDATE "Users" SET name=$2 WHERE id=$1', [r1.id, 'Revisora Uno Renombrada'])
+    const after = (await http(a, 'GET', '/api/me/review-shares')).body.shares; for (const share of after) assert.equal(share.reviewerName, share.reviewerId === r1.id ? 'Revisora Uno Renombrada' : nameOf[share.reviewerId])
+    assert.equal((await http(b, 'GET', '/api/me/review-shares')).body.shares[0].reviewerName, 'Revisor Dos Sintético', 'el cambio de r1 no toca la lista de B')
+    // un revisor no recibe la lista de autorizaciones de las personas ni sus nombres por esta ruta
+    assert.deepEqual((await http(r2, 'GET', '/api/me/review-shares')).body.shares, [])
+  });
 });
