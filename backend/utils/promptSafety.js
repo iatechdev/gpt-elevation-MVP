@@ -17,11 +17,14 @@ const TAGS = /[\u{E0000}-\u{E007F}]/gu;
 // Controles (salvo salto de línea y tabulación).
 // eslint-disable-next-line no-control-regex
 const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;
+// ES-377: separador de línea (U+2028) y de párrafo (U+2029): se tratan como un salto de línea normal, en normalizeText y en la barrera hacia el proveedor (stripInvisible) con la MISMA regla.
+const LINE_SEPARATORS = /[\u2028\u2029]/g;
 
 const normalizeText = (text) => String(text)
   .normalize('NFC')
   .replace(INVISIBLE, '')
   .replace(CONTROL, '')
+  .replace(LINE_SEPARATORS, '\n') // ES-377: U+2028/U+2029 son saltos de línea (no pasan crudos al modelo ni a los detectores por línea)
   .replace(/\r\n?/g, '\n')
   .trim();
 
@@ -35,7 +38,7 @@ const LOOSE_JOINER = new RegExp(`(?<![${MEANINGFUL}])[\\u200C\\u200D]|[\\u200C\\
 // E384-1 (QA): selectores de variación SUPLEMENTARIOS (U+E0100–E01EF, variantes de ideogramas): invisibles por sí solos, sin uso en texto de acompañamiento y otro canal para esconder instrucciones. Se quitan SOLO en lo que va al proveedor
 // (el texto guardado no cambia). U+FE00–FE0F (incluido el selector de emoji FE0F) NO se tocan: cambian cómo se dibuja un carácter visible y se permiten (ES-352).
 const SUPPLEMENTARY_VS = /[\u{E0100}-\u{E01EF}]/gu;
-const stripInvisible = (text) => String(text).replace(INVISIBLE_NO_JOINERS, '').replace(BLANK_FILLERS_RE, '').replace(TAGS, '').replace(SUPPLEMENTARY_VS, '').replace(LOOSE_JOINER, '');
+const stripInvisible = (text) => String(text).replace(INVISIBLE_NO_JOINERS, '').replace(BLANK_FILLERS_RE, '').replace(TAGS, '').replace(SUPPLEMENTARY_VS, '').replace(LOOSE_JOINER, '').replace(LINE_SEPARATORS, '\n');
 
 const capText = (text, max = MAX_MESSAGE_CHARS) => (text.length > max ? text.slice(0, max) : text);
 
