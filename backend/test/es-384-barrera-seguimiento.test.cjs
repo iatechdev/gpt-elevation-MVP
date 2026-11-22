@@ -92,7 +92,7 @@ test('QA-426-1: un hijo compartido dos veces por nivel (2^n caminos) se rechaza 
   const started = process.hrtime.bigint();
   assert.throws(() => sanitizeBody({ messages: [{ role: 'user', content: [build(30)] }] }), (e) => e instanceof AiInputRejectedError && e.reason === 'too_many_nodes');
   const ms = Number(process.hrtime.bigint() - started) / 1e6; assert.ok(ms < 5000, `rechazo en ${ms.toFixed(0)} ms (con 2^30 caminos y sin tope tardaría horas)`);
-  assert.equal(MAX_CONTENT_NODES, 1000000);
+  assert.equal(MAX_CONTENT_NODES, 100000);
 });
 
 test('QA-426-2: objetos no planos (Date, Buffer, Map, Set, instancias de clase) se RECHAZAN (unsupported) en vez de degradarse a {}; JSON plano y objetos sin prototipo siguen pasando', () => {
@@ -113,4 +113,18 @@ test('QA-426-2 (estática): ningún llamador real mete Date/Buffer en el cuerpo:
     assert.ok(at > 0, file); const call = source.slice(at, at + 700);
     assert.ok(!/new Date|Date\.now|Buffer/.test(call), `${file}: el cuerpo no lleva Date ni Buffer`);
   }
+});
+
+test('QA-429: tope de 100 000 nodos: la frontera exacta (CAP pasa, CAP+1 se rechaza), el rechazo es rápido y los cuerpos reales caben con holgura', () => {
+  assert.equal(MAX_CONTENT_NODES, 100000);
+  const flat = (count) => ({ x: Array.from({ length: count }, () => 'a') }); // nodos = 1 (la entrada x) + count
+  assert.doesNotThrow(() => sanitizeBody(flat(MAX_CONTENT_NODES - 1)), 'exactamente el tope pasa');
+  assert.throws(() => sanitizeBody(flat(MAX_CONTENT_NODES)), (e) => e instanceof AiInputRejectedError && e.reason === 'too_many_nodes');
+  let deepShared = { t: 'x' }; for (let i = 0; i < 40; i++) deepShared = { a: deepShared, b: deepShared };
+  const started = process.hrtime.bigint(); assert.throws(() => sanitizeBody({ m: [deepShared] }), (e) => e.reason === 'too_many_nodes');
+  const ms = Number(process.hrtime.bigint() - started) / 1e6; assert.ok(ms < 1000, `rechazo en ${ms.toFixed(0)} ms`);
+  // Cuerpo real más grande posible del chat: HISTORY_LIMIT (20) + 1 mensajes, cada uno con 20 bloques de 3 campos y un tool_use anidado: ~3 500 nodos, 3 % del tope.
+  const block = (i) => ({ type: 'tool_use', id: 't' + i, name: 'x', input: { a: 'v', b: { c: ['v', 'v'] } } });
+  const messages = Array.from({ length: 21 }, () => ({ role: 'user', content: Array.from({ length: 20 }, (_, i) => block(i)) }));
+  assert.doesNotThrow(() => sanitizeBody({ model: 'm', max_tokens: 5, system: [{ type: 'text', text: 's' }], messages }));
 });
