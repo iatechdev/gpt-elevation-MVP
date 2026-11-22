@@ -162,10 +162,10 @@ test('ES-371: política de TLS por host (pura): propia máquina vs. remoto, puer
   const o = smtpOptions({ SMTP_HOST: 'smtp.example.test' });
   assert.equal(o.pool, true); assert.equal(o.maxConnections, 2); assert.equal(o.logger, false); assert.equal(o.debug, false);
   assert.equal(o.disableFileAccess, true); assert.equal(o.disableUrlAccess, true);
-  assert.equal(o.connectionTimeout, 15000); assert.equal(o.socketTimeout, 15000); assert.equal(o.greetingTimeout, 15000);
+  assert.equal(o.connectionTimeout, 5000); assert.equal(o.socketTimeout, 5000); assert.equal(o.greetingTimeout, 5000);
   assert.equal(smtpOptions({ SMTP_HOST: 'x.test', SMTP_TIMEOUT_MS: '999999999' }).socketTimeout, 60000);
   assert.equal(smtpOptions({ SMTP_HOST: 'x.test', SMTP_TIMEOUT_MS: '1' }).socketTimeout, 500);
-  assert.equal(smtpOptions({ SMTP_HOST: 'x.test', SMTP_TIMEOUT_MS: '-5' }).socketTimeout, 15000);
+  assert.equal(smtpOptions({ SMTP_HOST: 'x.test', SMTP_TIMEOUT_MS: '-5' }).socketTimeout, 5000);
 });
 
 test('ES-371: configuración incompleta o peligrosa falla con un código fijo y sin valores', async () => {
@@ -311,4 +311,113 @@ test('ES-371: nada de lo que registra el módulo contiene el enlace, el destinat
   } finally { Object.assign(console, original); await srv.close(); }
   const all = lines.join('\n');
   for (const secret of [SECRET, 'TOKEN_abc123', 'persona@example.test', 'buzon@example.test']) assert.ok(!all.includes(secret), `el log no debe contener «${secret}»`);
+});
+
+// ─────────── Endurecimiento (hallazgos Bajo de QA-Claude-6 sobre d35a9b53) ───────────
+const CH = (...codes) => String.fromCharCode(...codes);
+const FROM_OK = 'Elevation <no-reply@staging.example.test>';
+
+test('ES-371: en producción un SMTP_HOST local/loopback se rechaza (no se desactiva TLS); fuera de producción sigue permitido', async () => {
+  const srv = await fakeServer();
+  try {
+    for (const host of ['localhost', 'LOCALHOST', '127.0.0.1', '127.0.0.2', '127.1.2.3', '::1', '[::1]', '0.0.0.0', 'api.localhost', 'localhost.']) {
+      const error = await caught(async () => smtpOptions({ SMTP_HOST: host, NODE_ENV: 'production' }));
+      assert.ok(error instanceof SmtpMailError, host); assert.equal(error.code, 'config', host); assertNoLeak(error);
+      assert.ok(smtpOptions({ SMTP_HOST: host, NODE_ENV: 'development' }), host); // fuera de producción no cambia nada
+      assert.ok(smtpOptions({ SMTP_HOST: host }), host);
+    }
+    assert.ok(smtpOptions({ SMTP_HOST: 'smtp.example.test', NODE_ENV: 'production' }), 'un host remoto en producción sigue siendo válido');
+    assert.ok(smtpOptions({ SMTP_HOST: 'localhost.example.test', NODE_ENV: 'production' }));
+    assert.equal(smtpOptions({ SMTP_HOST: 'smtp.example.test', NODE_ENV: ' Production ' }).requireTLS, true);
+    assert.equal((await caught(async () => smtpOptions({ SMTP_HOST: '127.0.0.1', NODE_ENV: ' PRODUCTION ' }))).code, 'config', 'se normaliza NODE_ENV');
+    // De punta a punta: con NODE_ENV=production y el servidor local no se abre ni una conexión.
+    const before = process.env.NODE_ENV; process.env.NODE_ENV = 'production';
+    try {
+      await withEnv(envFor(srv), async () => {
+        const error = await caught(() => sendSmtp({ to: 'persona@example.test', from: process.env.MAIL_FROM, subject: 'Prueba', text: LINK }));
+        assert.ok(error instanceof SmtpMailError); assert.equal(error.code, 'config');
+      });
+    } finally { if (before === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = before; }
+    assert.equal(srv.state.connections, 0); assert.equal(srv.state.messages.length, 0);
+  } finally { await srv.close(); }
+});
+
+test('ES-371: remitente — CR/LF/NUL/bidi/ancho cero en el nombre visible, dos buzones y nombres con <>,;" se rechazan; los nombres normales con acentos pasan', async () => {
+  const bad = [
+    `Eleva${CH(13, 10)}tion <no-reply@staging.example.test>`, `Eleva${CH(10)}tion <no-reply@staging.example.test>`, `Eleva${CH(13)}tion <no-reply@staging.example.test>`,
+    `Eleva${CH(0)}tion <no-reply@staging.example.test>`, `Eleva${CH(0x202E)}tion <no-reply@staging.example.test>`, `Eleva${CH(0x200B)}tion <no-reply@staging.example.test>`,
+    `Eleva${CH(0x2028)}tion <no-reply@staging.example.test>`, `Eleva${CH(0xFEFF)}tion <no-reply@staging.example.test>`, `Elevation <no-reply@staging.example.test${CH(10)}>`,
+    'no-reply@staging.example.test, otra@staging.example.test', 'Elevation <no-reply@staging.example.test>, Otra <otra@staging.example.test>', 'Elevation, Equipo <no-reply@staging.example.test>',
+    'A <a@staging.example.test> <b@staging.example.test>', 'Eleva"tion <no-reply@staging.example.test>', 'Eleva;tion <no-reply@staging.example.test>', 'otra@x.co <no-reply@staging.example.test>',
+    `${'N'.repeat(101)} <no-reply@staging.example.test>`, 'Elevation <>', 'Elevation <sin-arroba>', '<>', '', '   ', undefined, null, 42,
+  ];
+  for (const from of bad) { assert.equal(checkFrom(from), false, JSON.stringify(from)); }
+  for (const from of [FROM_OK, 'no-reply@staging.example.test', '  Elevación Equipo <no-reply@staging.example.test>  ', 'Equipo Elevation (piloto) <no-reply@staging.example.test>']) assert.equal(checkFrom(from), true, from);
+  const srv = await fakeServer();
+  try {
+    await withEnv(envFor(srv), async () => {
+      for (const from of bad) {
+        const error = await caught(() => sendSmtp({ to: 'persona@example.test', from, subject: 'Hola', text: 'x' }));
+        assert.ok(error instanceof SmtpMailError, JSON.stringify(from)); assert.equal(error.code, 'config', JSON.stringify(from));
+      }
+      await sendSmtp({ to: 'persona@example.test', from: '  Elevación Equipo <no-reply@staging.example.test>  ', subject: 'Hola', text: 'x' });
+    });
+    assert.equal(srv.state.messages.length, 1, 'solo el remitente válido llegó a enviarse');
+    assert.equal(srv.state.messages[0].from, 'no-reply@staging.example.test');
+    assert.equal(headerOf(srv.state.messages[0].raw, 'Bcc'), null);
+  } finally { await srv.close(); }
+});
+
+test('ES-371: asunto con NUL, bidi, ancho cero o saltos de línea se rechaza antes de abrir conexión; con acentos y emoji pasa', async () => {
+  const srv = await fakeServer();
+  try {
+    await withEnv(envFor(srv), async () => {
+      const from = process.env.MAIL_FROM;
+      for (const subject of [`Hola${CH(0)}x`, `Hola${CH(0x202E)}x`, `Hola${CH(0x202A)}x`, `Hola${CH(0x2066)}x`, `Hola${CH(0x200B)}x`, `Hola${CH(0x200D)}x`, `Hola${CH(0xFEFF)}x`, `Hola${CH(13, 10)}Bcc: x@y.co`, `Hola${CH(10)}x`, `Hola${CH(0x2028)}x`, `Hola${CH(0x2029)}x`, '', undefined, 42]) {
+        const error = await caught(() => sendSmtp({ to: 'persona@example.test', from, subject, text: 'x' }));
+        assert.ok(error instanceof SmtpMailError, JSON.stringify(subject)); assert.equal(error.code, 'message', JSON.stringify(subject));
+      }
+      assert.equal(srv.state.connections, 0, 'ni siquiera se abrió una conexión');
+      await sendSmtp({ to: 'persona@example.test', from, subject: 'Crea una contraseña nueva en Elevación', text: 'x' });
+    });
+    assert.equal(srv.state.messages.length, 1);
+  } finally { await srv.close(); }
+});
+
+test('ES-371: el host con espacios, saltos de línea o caracteres invisibles se rechaza', async () => {
+  for (const host of ['smtp.example.test ', ' smtp.example.test x', `smtp.example.test${CH(0x200B)}`, `smtp${CH(0)}.example.test`, `smtp.example.test${CH(10)}RCPT`, 'smtp .example.test']) {
+    const error = await caught(async () => smtpOptions({ SMTP_HOST: host }));
+    if (host === 'smtp.example.test ') { assert.equal(error, null, 'los espacios a los lados se recortan'); continue; }
+    assert.ok(error instanceof SmtpMailError, JSON.stringify(host)); assert.equal(error.code, 'config');
+  }
+});
+
+test('ES-371: tope TOTAL del envío — un servidor que gotea bytes sin parar (sin quedar inactivo) se corta en el plazo, no espera por siempre', async () => {
+  let accepted = 0; const sockets = new Set();
+  const drip = net.createServer(socket => {
+    accepted += 1; sockets.add(socket); socket.on('error', () => {}); socket.on('close', () => sockets.delete(socket));
+    socket.write('220 listo\r\n'); // el saludo termina: ya no aplican el plazo de saludo ni el de conexión
+    socket.on('data', () => {
+      // responde a cada comando con una línea de continuación cada 150 ms, sin cerrarla nunca: el socket jamás queda inactivo
+      const timer = setInterval(() => { if (socket.destroyed) return clearInterval(timer); socket.write('250-x\r\n'); }, 150);
+      socket.on('close', () => clearInterval(timer));
+    });
+  });
+  await new Promise(resolve => drip.listen(0, '127.0.0.1', resolve));
+  const port = drip.address().port;
+  try {
+    await withEnv({ SMTP_HOST: '127.0.0.1', SMTP_PORT: String(port), SMTP_TIMEOUT_MS: '1200', MAIL_FROM: FROM_OK }, async () => {
+      const started = Date.now();
+      const error = await caught(() => sendSmtp({ to: 'persona@example.test', from: process.env.MAIL_FROM, subject: 'Prueba', text: LINK }));
+      const elapsed = Date.now() - started;
+      assert.ok(error instanceof SmtpMailError); assert.equal(error.code, 'timeout'); assertNoLeak(error);
+      assert.ok(elapsed >= 1000 && elapsed < 3500, `tardó ${elapsed} ms (plazo 1200 ms)`);
+    });
+    assert.equal(accepted, 1, 'un solo intento');
+  } finally { for (const socket of sockets) socket.destroy(); await new Promise(resolve => drip.close(resolve)); }
+});
+
+test('ES-371: el plazo por defecto es corto (5 s) y se puede ajustar dentro de 0,5–60 s', () => {
+  assert.equal(smtpOptions({ SMTP_HOST: 'smtp.example.test' }).socketTimeout, 5000);
+  assert.equal(smtpOptions({ SMTP_HOST: 'smtp.example.test', SMTP_TIMEOUT_MS: '20000' }).socketTimeout, 20000);
 });
