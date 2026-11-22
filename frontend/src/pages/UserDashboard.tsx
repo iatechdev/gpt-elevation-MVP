@@ -22,14 +22,17 @@ import { Banner, ItemList } from '../cartografia/pieces'
 import { signOut } from '../access/signOut'
 import { useLanguage } from '../i18n/useLanguage'
 import { registerLeaveGuard } from '../shell/leaveGuard'
+import { canEnter, type Role } from '../shell/access'
 import { FeedbackPreviewLink } from '../pilot/PreviewShell'
 import { ProgressMatching } from '../progress/ProgressMatching'
 import { CareerEntry } from '../career/CareerShell'
 import { MapAccessCard } from '../skill-map/MapAccess'
 import { ExerciseTools } from '../exercises/ExerciseTools'
+import { checkinDone, markCheckin, rememberZone } from '../checkin/checkinMark'
 
 const API      = import.meta.env.VITE_BACKEND_URL ?? (import.meta.env.DEV ? 'http://localhost:8080' : '')
-const getToken = () => localStorage.getItem('elevation_token') ?? ''
+const storedRole = (): Role => { try { const value = localStorage.getItem('elevation_role'); return value === 'admin' || value === 'superadmin' || value === 'therapist' || value === 'board' ? value : 'user' } catch { return 'user' } }
+const getToken = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } } // ES-369 (QA-424-2): el almacenamiento bloqueado no rompe la pantalla
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MoodLog        = { id: number; date: string; checkin_mood: number | null; checkout_mood: number | null }
@@ -73,7 +76,7 @@ export function UserDashboard() {
 
   // ── Check-in state ───────────────────────────────────────────────────────
   // E393-1: el registro de hoy se lee desde el primer pintado (antes se ponía en un efecto: la tarjeta «Estado emocional» salía con el formulario de 161 px y se encogía, y «Tu progreso» subía → CLS).
-  const [checkedIn,      setCheckedIn]      = useState(() => { try { return localStorage.getItem('elevation_checkin_date') === new Date().toDateString() } catch { return false } })
+  const [checkedIn,      setCheckedIn]      = useState(() => checkinDone(getToken()))
   const [todayMood,      setTodayMood]      = useState<number | null>(null)
   const [checkingIn,     setCheckingIn]     = useState(false)
   const [pendingMood,    setPendingMood]    = useState<number | null>(null) // E322-1: opción elegida, aún sin registrar
@@ -136,6 +139,8 @@ export function UserDashboard() {
 
       const zone = typeof data.timeZone === 'string' ? data.timeZone : null
       setTimeZone(zone)
+      rememberZone(getToken(), zone) // ES-369: el día de la marca del check-in es el de esta zona
+      setCheckedIn(checkinDone(getToken()))
       setSessionsWeek(entriesThisWeek(data.moodLogs ?? [], todayKey(new Date(), zone)))
       setRead('progress', 'ok')
     } catch { if (!signal.aborted) setRead('progress', 'error') }
@@ -214,8 +219,7 @@ export function UserDashboard() {
     const token = getToken()
     if (!token) { navigate('/login'); return }
 
-    const alreadyCheckedIn = localStorage.getItem('elevation_checkin_date') === new Date().toDateString()
-    setCheckedIn(alreadyCheckedIn)
+    setCheckedIn(checkinDone(token)) // ES-369: de esta persona y de hoy en su zona
 
     // ES-200: las cinco lecturas son independientes y salen a la vez; al salir de la pantalla se cancelan y no actualizan estado.
     const controller = new AbortController()
@@ -250,7 +254,7 @@ export function UserDashboard() {
       if (!res.ok) return
       setTodayMood(mood)
       setCheckedIn(true)
-      localStorage.setItem('elevation_checkin_date', new Date().toDateString())
+      markCheckin(getToken())
     } catch { /* silent */ }
     finally { setCheckingIn(false) }
   }
@@ -472,7 +476,8 @@ export function UserDashboard() {
 
         {/* ── ENLACES ── */}
         <nav className="pc-links" aria-label={t('dash_title')}>
-          <Link className="pc-link context-dashboard-link" to="/app/onboarding">{t('context_link')}</Link>
+          {/* ES-372 (O428-1): «/app/onboarding» es de la zona participante (solo rol user); los demás roles no ven un enlace que termina en «sin acceso». */}
+          {canEnter(storedRole(), 'participant') && <Link className="pc-link context-dashboard-link" to="/app/onboarding">{t('context_link')}</Link>}
           <Link className="pc-link evidence-dashboard-link" to="/app/evidence">{t('evidence.title')}</Link>
           <Link className="pc-link" to="/app/compass">{t('compass.title')}</Link>
           <Link className="pc-link" to="/app/route-catalog">{t('catalog.title')}</Link>

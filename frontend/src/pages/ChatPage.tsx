@@ -1,7 +1,11 @@
 import { memo, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChatBar, ThreadNotices } from '../space/ChatBar'
-import { ChatMenu } from '../space/ChatMenu'
+import { ChatMenu, ConversationGroup } from '../space/ChatMenu'
+import { registerDrawerExtra, requestDrawer } from '../shell/drawerExtra'
+import { registerLeaveGuard } from '../shell/leaveGuard'
+import { useNarrowHeader } from '../shell/narrowHeader'
+import { signOut } from '../access/signOut'
 import { Button, Dialog, ScaleField } from '../cartografia'
 import { readEnterSends, writeEnterSends } from '../space/chatKeys'
 import { CompassBanner } from '../space/CompassBanner'
@@ -11,7 +15,6 @@ import { ChatLimitsNotice } from '../space/ChatLimitsNotice'
 import '../space/space.css' // ES-153: antes lo traía el menú de Mi espacio
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
-import { clearPending } from '../space/pending'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -65,6 +68,9 @@ export function ChatPage() {
 
   // HU-021 — Check-out de ánimo
   const [menuOpen, setMenuOpen] = useState(false)
+  // ES-359 (PR4): a ≤ 900 px el botón «☰» de la barra abre el cajón del marco (con «Conversación» arriba; el encabezado del marco está oculto en el chat); la hoja propia solo existe en escritorio.
+  const narrow = useNarrowHeader()
+  if (narrow && menuOpen) setMenuOpen(false)
   const [enterSends, setEnterSends] = useState(readEnterSends) // «Enter envía»: preferencia de este navegador (desactivada por defecto); se cambia desde el menú
   const [showCheckout,   setShowCheckout]   = useState(false)
   const [checkoutMood,   setCheckoutMood]   = useState<number | null>(null)
@@ -100,14 +106,10 @@ export function ChatPage() {
     chatEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [messages, sending])
 
-  const handleLogout = () => {
-    if (!chat.canLeave()) return
-    clearPending() // QA-134-01: el mensaje pendiente del chat no sobrevive al cierre de sesión
-    localStorage.removeItem('elevation_token')
-    localStorage.removeItem('elevation_role')
-    localStorage.removeItem('elevation_name')
-    localStorage.removeItem('elevation_checkin_date')
-    navigate('/login')
+  // ES-373 (O427-2): la pregunta «Si sales, perderás…» (canLeave) se hace ANTES de abrir la despedida, a cualquier ancho; aquí ya no se repite.
+  const handleLogout = async () => {
+    await signOut(BACKEND) // ES-136: revoca la sesión en el servidor y borra la local (incluido el mensaje pendiente del chat)
+    navigate('/', { replace: true })
   }
 
   // HU-021 + HU-022 — Guardar checkout + rating y cerrar sesión
@@ -131,9 +133,22 @@ export function ChatPage() {
     setShowCheckout(false)
     setCheckoutMood(null)
     setStarRating(null)
-    handleLogout()
+    await handleLogout()
   }
 
+
+  // ES-359 (PR4): lo que el chat añade al marco. Lo cambiante (canLeave) se lee por referencia para no volver a registrar en cada pintado.
+  const live = useRef({ canLeave: chat.canLeave }); useEffect(() => { live.current = { canLeave: chat.canLeave } })
+  const isAdmin = ['admin', 'superadmin'].includes(role)
+  useEffect(() => registerDrawerExtra({
+    omit: ['/app/progress'], // «Mi progreso» ya va en «Conversación»
+    render: close => <div className="chat-menu"><ConversationGroup onClose={close} enterSends={enterSends}
+      onProgress={() => { if (live.current.canLeave()) navigate('/app/progress') }} onRecs={() => setShowRecs(true)}
+      onAdmin={isAdmin ? () => { if (live.current.canLeave()) navigate('/admin/dashboard') } : undefined}
+      onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} /></div>,
+  }), [enterSends, isAdmin, navigate])
+  // «Cerrar sesión» de los menús del marco (cajón y menú de cuenta) abre la despedida (check-out) como el menú propio del chat; antes pregunta si hay un mensaje sin enviar.
+  useEffect(() => registerLeaveGuard(() => { if (!live.current.canLeave()) return true; setShowCheckout(true); return true }, { ownLinks: true }), [])
 
   // HU-051 — Generate recommendations
   const handleGenerateRecs = async () => {
@@ -159,7 +174,7 @@ export function ChatPage() {
       {/* ES-123: la conversación ocupa el alto restante (scroll propio) entre la cabecera y la caja de mensaje, que va en el flujo y no fija con relleno de 300 px */}
       <div className="chat-main">
         <div className="chat-top">
-          <ChatBar sent={messages.length} menu={<button type="button" className="chat-menu-btn" aria-label={copy[lang].menu} aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><span aria-hidden="true">☰</span><span className="chat-menu-btn__w" aria-hidden="true">{copy[lang].menu}</span></button>} />
+          <ChatBar sent={messages.length} menu={<button type="button" className="chat-menu-btn" aria-label={copy[lang].menu} aria-haspopup="dialog" aria-expanded={narrow ? undefined : menuOpen} onClick={event => { if (narrow) requestDrawer(event.currentTarget); else setMenuOpen(true) }}><span aria-hidden="true">☰</span><span className="chat-menu-btn__w" aria-hidden="true">{copy[lang].menu}</span></button>} />
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
         <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
@@ -192,8 +207,8 @@ export function ChatPage() {
         </div>
       </div>
 
-      <ChatMenu open={menuOpen} onClose={() => setMenuOpen(false)} onProgress={() => { if (chat.canLeave()) navigate('/app/progress') }} onRecs={() => setShowRecs(true)}
-        onAdmin={['admin', 'superadmin'].includes(role) ? () => { if (chat.canLeave()) navigate('/admin/dashboard') } : undefined} onCheckout={() => setShowCheckout(true)} enterSends={enterSends} onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} />
+      {!narrow && <ChatMenu open={menuOpen} onClose={() => setMenuOpen(false)} onProgress={() => { if (chat.canLeave()) navigate('/app/progress') }} onRecs={() => setShowRecs(true)}
+        onAdmin={['admin', 'superadmin'].includes(role) ? () => { if (chat.canLeave()) navigate('/admin/dashboard') } : undefined} onCheckout={() => { if (chat.canLeave()) setShowCheckout(true) }} enterSends={enterSends} onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} />}
 
       {/* HU-051 — Recomendaciones: hoja inferior (antes un bloque dentro del hilo que partía «Recomendaciones» a mitad de palabra, E293-2) */}
       <Dialog sheet open={showRecs} onClose={() => setShowRecs(false)} title={t('rec_title')}

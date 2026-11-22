@@ -10,10 +10,11 @@ import { MoodScale } from '../checkin/MoodScale'
 import { SupportNotice } from '../checkin/SupportNotice'
 import { countryFor } from '../checkin/contactEntries'
 import { needsSupport, saveMood, type MoodValue } from '../checkin/moodLogic'
+import { markCheckin } from '../checkin/checkinMark'
 import '../checkin/checkin.css'
 
 type Phase = 'idle' | 'saving' | 'error' | 'saved'
-const markDone = () => { try { localStorage.setItem('elevation_checkin_date', new Date().toDateString()) } catch { /* almacenamiento no disponible */ } }
+const markDone = () => markCheckin(readStoredToken()) // ES-369: la marca lleva a su dueña y el día en su zona
 
 /** ES-159 · Hoy: el registro del día (escala de cinco palabras). Solo la persona lo ve; guardar es opcional y un error no la deja sin conversación. */
 function CheckinContent() {

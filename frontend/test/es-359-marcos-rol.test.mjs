@@ -26,7 +26,9 @@ test('ES-359 PR5: grupos del diseño aprobado — profesional «Principal», adm
 
 test('ES-359 PR5: groupsFor por rol — cada rol ve SU navegación; persona y superadministración (zona de persona) la de persona', () => {
   assert.deepEqual(hrefs(groupsFor('therapist')), hrefs(PROFESSIONAL_GROUPS)); assert.deepEqual(hrefs(groupsFor('admin')), hrefs(ADMIN_GROUPS)); assert.deepEqual(hrefs(groupsFor('board')), hrefs(BOARD_GROUPS))
-  assert.deepEqual(hrefs(groupsFor('user')), hrefs(PERSON_GROUPS)); assert.deepEqual(hrefs(groupsFor('superadmin')), hrefs(PERSON_GROUPS))
+  assert.deepEqual(hrefs(groupsFor('user')), hrefs(PERSON_GROUPS))
+  // ES-359 (M3): superadministración comparte el marco de persona pero no ve los enlaces a pantallas solo-persona (siguiente paso, hojas de vida, mi profesional)
+  assert.deepEqual(hrefs(groupsFor('superadmin')), hrefs(PERSON_GROUPS).filter(href => !['/app/next-step', '/app/context/resumes', '/app/my-therapist'].includes(href)))
   assert.deepEqual(hrefs(visibleGroups(ADMIN_GROUPS, 'superadmin')), hrefs(ADMIN_GROUPS)) // dentro de /admin la superadministración usa los grupos de administración
 })
 
@@ -52,7 +54,7 @@ test('ES-359 PR5: los marcos de profesional, administración y junta usan barra 
   assert.equal((frames.match(/sidebar=\{<SideNav groups=\{groups\} label=\{[^}]+\} \/>\} sidebarWide/g) ?? []).length, 4) // persona + los tres marcos nuevos
   assert.match(frames, /const groups = visibleGroups\(ADMIN_GROUPS, role\)/); assert.match(frames, /const groups = groupsFor\('therapist'\)/); assert.match(frames, /const groups = groupsFor\('board'\)/)
   assert.doesNotMatch(frames, /cg-sidenav|NavLinks items=\{visibleFor|ADMIN_BOARD_GROUP/); assert.doesNotMatch(css, /\.cg-sidenav/)
-  assert.equal((frames.match(/drawerGroups\(groups, PERSON_MENU/g) ?? []).length, 1) // el menú de persona solo lo recibe el cajón de persona (el de ningún otro rol)
+  assert.equal((frames.match(/drawerGroups\(drawerOnly, PERSON_MENU/g) ?? []).length, 1) // el menú de persona solo lo recibe el cajón de persona (el de ningún otro rol)
 })
 
 test('ES-359 PR5: «Mis datos» y «Revisiones profesionales» se dibujan en el marco del ROL (profesional, administración, junta); persona y superadministración, en el de persona', () => {

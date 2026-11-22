@@ -18,7 +18,7 @@ export type NavDrawerProps = {
   opener: RefObject<HTMLElement | null>
   groups: DrawerGroup[]
   /** Contenido propio de la pantalla (p. ej. el grupo «Conversación» del chat), arriba de los grupos del rol. */
-  extra?: ReactNode
+  extra?: ReactNode | ((close: () => void) => ReactNode)
   name: string; roleLabel: string
   /** Pantalla heredada (solo tema claro): el selector de tema queda con aria-disabled. */
   legacyTheme?: boolean
@@ -60,7 +60,7 @@ export function NavDrawer({ open, onClose, opener, groups, extra, name, roleLabe
           <button type="button" className="cg-btn cg-btn--ghost" onClick={onClose}>{c.close}</button>
         </div>
         <div className="cg-drawer__body">
-          {extra}
+          {typeof extra === 'function' ? extra(onClose) : extra}
           {groups.map((group, index) => (
             <section key={group.title ?? `g${index}`}>
               {group.title && <h3 className="cg-drawer__h" id={`${titleId}-g${index}`}>{group.title}</h3>}

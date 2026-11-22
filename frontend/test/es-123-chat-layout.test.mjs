@@ -25,7 +25,7 @@ test('ES-123 diseño: «Mi progreso» y «Cerrar sesión» salen en el menú con
   const page = read('../src/pages/ChatPage.tsx'); const menu = read('../src/space/ChatMenu.tsx')
   assert.match(menu, /<button type="button" onClick=\{pick\(onProgress\)\}>\{c\.progress\}<\/button>/)
   assert.match(menu, /<Button variant="danger" onClick=\{\(\) => \{ onClose\(\); onCheckout\(\) \}\}>\{c\.signOut\}<\/Button>/) // ES-342 (B1): «Cerrar sesión» es el pie fijo del menú (botón de peligro)
-  assert.equal((page.match(/navigate\('\/app\/progress'\)/g) || []).length, 1)
+  assert.equal((page.match(/navigate\('\/app\/progress'\)/g) || []).length, 2) // el menú de escritorio y el grupo «Conversación» del cajón móvil (PR4): mismo destino y misma confirmación
   assert.match(page, /onProgress=\{\(\) => \{ if \(chat\.canLeave\(\)\) navigate\('\/app\/progress'\) \}\}/) // sigue pidiendo confirmación si hay un envío sin confirmar
   assert.ok(!page.includes('<header'), 'la cabecera propia (marca, idioma, íconos) ya no existe: el marco y el menú la reemplazan')
 })
