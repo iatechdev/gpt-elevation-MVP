@@ -155,5 +155,32 @@ test('ES-389 PostgreSQL: diario crudo, turnos guardados y puente profesional con
     assert.equal(ok.insights.length, 2, 'un texto del modelo ordinario con invisibles inocuos se conserva (sin falso positivo)');
   });
 
+  await t.test('ES-390: MEZCLA (separador entre palabras + relleno DENTRO de una palabra) en diario crudo, turno guardado y puente: igual que la frase limpia', async () => {
+    const mixes = [[SEPARATORS.ZWSP, SEPARATORS.SHY], [SEPARATORS.VT, SEPARATORS.NUL], [SEPARATORS.BOM, SEPARATORS.ZWJ], [SEPARATORS.NEL, SEPARATORS.ZWSP]];
+    for (const [between, inner] of mixes) {
+      const text = `me${between}qu${inner}iero${between}morir`;
+      const entry = await diary(text); const stored = await turn(text); const before = calls.length;
+      assert.equal((await reject(() => proposeInsights(userId, { sources: ['diary'], entryIds: [entry.id], locale: 'es' })))?.code, 'no_usable_source', 'diario crudo');
+      assert.equal((await reject(() => proposeInsights(userId, { sources: ['chat'], turnIds: [stored.id], locale: 'es' })))?.code, 'no_usable_source', 'turno (insights)');
+      assert.equal((await reject(() => proposeEvidence(userId, { turnIds: [stored.id], locale: 'es' })))?.code, 'no_usable_source', 'turno (evidencia)');
+      const bridgeError = await reject(() => bridge.preview(userId, { fields: [{ key: 'motivations', text }] }));
+      assert.equal(bridgeError?.status, 422, 'puente'); assert.equal(bridgeError?.code, 'field_not_shareable');
+      assert.equal(calls.length, before, 'sin llamada al proveedor');
+    }
+  });
+
+  await t.test('F457-1: un diario/turno de riesgo MEDIO guardado crudo con controles NO se usa como fuente (cualquier nivel excluye) y al proveedor NUNCA viaja un control', async () => {
+    const CONTROLS = /[ ---]/;
+    const text = `Me siento mal: no${SEPARATORS.ZWSP}pue${SEPARATORS.NUL}do${SEPARATORS.VT}mas con reuniones largas sin decisiones.`;
+    const entry = await diary(text); const stored = await turn(text);
+    provider.out = [{ key: 'energy_drains', text: 'Parece que las reuniones largas sin decisiones te agotan.', quotes: [{ source: 'diary', id: entry.id, quote: 'reuniones largas' }] }];
+    const before = calls.length;
+    await reject(() => proposeInsights(userId, { sources: ['diary', 'chat'], entryIds: [entry.id], turnIds: [stored.id], locale: 'es' }));
+    await reject(() => proposeEvidence(userId, { turnIds: [stored.id], locale: 'es' }));
+    assert.equal(calls.length, before, 'cualquier nivel de riesgo excluye la fuente: no se llama al proveedor');
+    const hasControl = (v) => (typeof v === 'string' ? CONTROLS.test(v) : v && typeof v === 'object' ? Object.values(v).some(hasControl) : false);
+    for (const call of calls.slice(before)) assert.equal(hasControl(call), false, 'ningún control en el cuerpo que viaja');
+  });
+
   assert.ok(ORDINARY_CHAT.length > 0);
 });

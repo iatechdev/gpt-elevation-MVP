@@ -75,6 +75,13 @@ const tidy = (text) => text.replace(/\s+/g, ' ');
 // ES-387: controles y caracteres de formato (como separador o relleno); CONTROLS = los controles que NO son espacio en blanco (\t \n \r ya son espacios).
 // Tope de la lectura nueva: express.json() acepta cuerpos de hasta 100 kB (≈100 000 caracteres), así que nada que llegue por HTTP lo supera; un texto de millones de caracteres (solo posible en pruebas hostiles) conserva las formas de siempre y no paga el costo extra.
 const GAP_FORMS_MAX = 200000;
+// ES-390: marcador de una racha de controles/invisibles (U+0001: los pasos de unmask y flat no lo tocan; todo U+0001 del texto ya se tomó por racha).
+const GAP_MARK = '\u0001';
+// Blanco REAL (espacio, tab, salto, NBSP, Zs, U+2028/9): separa palabras. VT, FF y BOM también son \s en JavaScript, pero aquí son huecos como los demás controles/invisibles.
+const REAL_BLANK = '[ \t\n\r\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]';
+const GAP_RUNS = /(?![\t\n\r])[\p{Cc}\p{Cf}]+/gu;
+const BLANK_OR_MARK = new RegExp('(?:' + REAL_BLANK + '|' + GAP_MARK + ')+', 'g'); // una racha MIXTA (marcador + blanco real, en cualquier orden) es UNA sola racha (QA-6: la alternancia anterior nunca llegaba a la rama mixta si empezaba por marcador)
+const HAS_BLANK = new RegExp(REAL_BLANK);
 const GAPS = /[\p{Cc}\p{Cf}]/gu; const GAPS_TEST = /[\p{Cc}\p{Cf}]/u;
 const CONTROLS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;
 const CONTROLS_TEST = new RegExp(CONTROLS.source);
@@ -96,6 +103,8 @@ function* riskFormsWith(raw, unmask, fresh, nfkc = raw.normalize('NFKC'), lowere
   if (!plain && raw.length <= GAP_FORMS_MAX && GAPS_TEST.test(nfkc)) {
     const spacedOpen = unmask(raw, ' ', lowered.replace(GAPS, ' ')); const spaced = flat(spacedOpen);
     if (fresh(spaced)) yield spaced;
+    // ES-390: MEZCLA (un separador entre palabras y otros DENTRO de palabras en el mismo mensaje): no se sabe cuál es cuál, así que cada racha se deja como un MARCADOR y las reglas se leen tolerantes (el marcador vale espacio o nada).
+    const marked = unmask(raw, ' ', lowered.replace(GAP_RUNS, GAP_MARK).replace(BLANK_OR_MARK, (run) => (HAS_BLANK.test(run) ? ' ' : GAP_MARK))); const markedForm = flat(marked); if (markedForm.includes(GAP_MARK) && fresh('tolerant:' + markedForm)) yield { tolerant: markedForm };
     if (CONTROLS_TEST.test(lowered)) { const stripped = flat(unmask(raw, '', lowered.replace(CONTROLS, ''))); if (fresh(stripped)) yield stripped; } // solo si hay controles (no espacio): los Cf ya se quitan en las formas de arriba
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
@@ -155,6 +164,35 @@ const MEDIUM = [
 // -> { level: 'high' | 'medium' | null, lang: 'es' | 'en' | null } (el idioma del patrón que coincidió; no es el país)
 const united = (rules) => new RegExp(rules.map((rule) => '(?:' + rule.re.source + ')').join('|'));
 const UNITED = { high: united(HIGH), medium: united(MEDIUM) }; // equivalente a probar cada regla: alguna coincide ⇔ la unión coincide
+// ES-390: cada regla se vuelve tolerante al marcador: tras cada letra puede haber un marcador (relleno DENTRO de la palabra) y cada espacio puede ser un marcador (separador).
+function tolerant(source) {
+  let out = ''; let inClass = false;
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source[i];
+    if (inClass) { out += ch; if (ch === ']') inClass = false; continue; }
+    if (ch === '\\') {
+      const next = source[i + 1];
+      if (next === 's' && source[i + 2] === '+') { out += '[\\s' + GAP_MARK + ']+'; i += 2; } else { out += ch + next; i += 1; }
+      continue;
+    }
+    if (ch === '[') { inClass = true; out += ch; continue; }
+    if (ch === ' ') { out += '[ ' + GAP_MARK + ']'; continue; }
+    if (/[a-z0-9']/.test(ch)) { out += '?*+{'.includes(source[i + 1] ?? '') ? '(?:' + ch + GAP_MARK + '?)' : ch + GAP_MARK + '?'; continue; } // un cuantificador siguiente se aplica a la letra CON su marcador opcional
+    out += ch;
+  }
+  return out;
+}
+const TOLERANT = Object.fromEntries([['high', HIGH], ['medium', MEDIUM]].map(([level, rules]) => [level, rules.map((rule) => ({ lang: rule.lang, re: new RegExp(tolerant(rule.re.source)) }))]));
+const TOLERANT_UNITED = Object.fromEntries(Object.entries(TOLERANT).map(([level, rules]) => [level, new RegExp(rules.map((rule) => '(?:' + rule.re.source + ')').join('|'))]));
+// La forma con marcadores se entrega como { tolerant: texto } (NO como cadena): un U+0001 escrito por la persona en una forma normal no la convierte en tolerante (O457-1).
+function matchTolerant(marked) {
+  for (const level of ['high', 'medium']) {
+    if (!TOLERANT_UNITED[level].test(marked)) continue;
+    const hit = TOLERANT[level].find((rule) => rule.re.test(marked));
+    if (hit) return { level, lang: hit.lang };
+  }
+  return { level: null, lang: null };
+}
 function matchForm(normalized) {
   for (const [level, rules] of [['high', HIGH], ['medium', MEDIUM]]) {
     if (!UNITED[level].test(normalized)) continue;
@@ -178,7 +216,7 @@ function detectRisk(text) {
 function evaluate(text) {
   let best = { level: null, lang: null };
   for (const form of riskForms(text)) {
-    const hit = matchForm(form);
+    const hit = typeof form === 'string' ? matchForm(form) : matchTolerant(form.tolerant);
     if (hit.level === 'high') return hit;
     if (hit.level === 'medium' && best.level !== 'medium') best = hit;
   }
@@ -193,7 +231,13 @@ function normalizeForRisk(raw, normalize) {
   const text = String(raw); const usual = normalize(text);
   if (text.length > GAP_FORMS_MAX || !GAPS_TEST.test(text)) return usual;
   const spaced = normalize(text.replace(GAPS, ' '));
-  return spaced !== usual && (RANK[detectRisk(spaced).level] || 0) > (RANK[detectRisk(usual).level] || 0) ? spaced : usual;
+  const rank = (value) => RANK[detectRisk(value).level] || 0;
+  let best = usual; let bestRank = rank(usual);
+  if (spaced !== usual && rank(spaced) > bestRank) { best = spaced; bestRank = rank(spaced); }
+  // ES-390: en una mezcla ni «espacio» ni «quitado» bastan: se conserva el texto crudo (recortado) solo si SU lectura tolerante activa más que las otras; evaluarlo de nuevo da lo mismo (historial).
+  const rawText = text.trim();
+  if (rawText !== best && rank(rawText) > bestRank) best = rawText;
+  return best;
 }
 
 const normalizeCountry = (value) => (typeof value === 'string' && /^[A-Za-z]{2}$/.test(value) ? value.toUpperCase() : null);
