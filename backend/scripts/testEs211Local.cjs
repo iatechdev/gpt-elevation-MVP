@@ -31,8 +31,8 @@ async function main() {
   finally {
     if (pg) await pg.stop();
     const parent = path.resolve(__dirname, '../node_modules');
-    if (path.dirname(path.resolve(directory)) !== parent || !path.basename(directory).startsWith('.es211-pg-')) throw new Error('Unexpected temporary directory');
-    await rm(directory, { recursive: true, force: true });
+    if (path.dirname(path.resolve(directory)) !== parent || !path.basename(directory).startsWith('.es211-pg-')) { failed = true; console.error('Directorio temporal inesperado: no se borra'); }
+    else await rm(directory, { recursive: true, force: true });
   }
   // embedded-postgres puede programar salida 0 durante cleanup: el fallo debe prevalecer.
   if (failed) process.exit(1);
