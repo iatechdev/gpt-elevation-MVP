@@ -1,0 +1,6 @@
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE)
+;(async () => { const p0 = await (await fetch('http://127.0.0.1:8199/__test/persona', { method: 'POST' })).json(); const b = await chromium.launch(); const c = await b.newContext({ viewport: { width: 1360, height: 1000 } }); const pg = await c.newPage()
+  await pg.addInitScript(([tk]) => { localStorage.setItem('elevation_token', tk); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', 'es') }, [p0.token])
+  const errs = []; pg.on('requestfailed', r => errs.push('FAIL ' + r.url())); pg.on('response', r => { if (r.url().includes(':8199') && r.status() >= 400) errs.push(r.status() + ' ' + r.url()) }); pg.on('pageerror', e => errs.push('JS ' + e.message))
+  await pg.goto('http://127.0.0.1:4365/app/next-step', { waitUntil: 'networkidle' }); await new Promise(r => setTimeout(r, 1500))
+  console.log(pg.url()); console.log((await pg.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ').slice(0, 600)); console.log(errs.slice(0, 6)); await b.close() })()
