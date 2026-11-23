@@ -1,0 +1,9 @@
+{
+  "status": 202,
+  "body": {
+    "emailSent": false,
+    "reason": "rate_limited",
+    "limitPerHour": 3,
+    "message": "Se alcanzó el límite de enlaces por hora para esta cuenta. / The hourly limit of links for this account was reached."
+  }
+}

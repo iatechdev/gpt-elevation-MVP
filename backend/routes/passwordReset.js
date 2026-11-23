@@ -59,7 +59,7 @@ async function issueLinkForUser(user, locale) {
   try {
     await User.findOne({ where: { id: user.id }, transaction, lock: true });
     const recent = await PasswordReset.count({ where: { UserId: user.id, createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } }, transaction });
-    if (recent >= perAccountPerHour()) { await transaction.commit(); return { emailSent: false, reason: 'rate_limited' }; }
+    if (recent >= perAccountPerHour()) { await transaction.commit(); return { emailSent: false, reason: 'rate_limited', limit: perAccountPerHour() }; }
     // Solo vale el último enlace pedido.
     await PasswordReset.update({ usedAt: new Date() }, { where: { UserId: user.id, usedAt: null }, transaction });
     await PasswordReset.create({ UserId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + ttlMinutes() * 60 * 1000) }, { transaction });

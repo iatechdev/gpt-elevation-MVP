@@ -124,6 +124,7 @@ test('ES-379 PostgreSQL + HTTP: emailSent veraz y enlace invalidado si el correo
     const { result: reply, logs } = await captureLogs(() => http(sup, 'POST', `/api/admin/usuarios/${person.id}/reset-link`, {}));
     assert.equal(reply.status, 202); assert.equal(reply.body.emailSent, false); assert.equal(reply.body.expiresInMinutes, undefined);
     contractFixture('es-379-reset-link-not-sent.json', reply.status, reply.body);
+    assert.equal(reply.body.reason, 'unavailable'); assert.equal(reply.body.limitPerHour, undefined);
     assert.match(reply.body.message, /No se pudo enviar el correo/); assert.match(reply.body.message, /could not be sent/);
     assert.equal(sink.messages.length, 1, 'se intentó una vez');
     const token = tokenFrom(sink.messages[0]);
@@ -177,13 +178,27 @@ test('ES-379 PostgreSQL + HTTP: emailSent veraz y enlace invalidado si el correo
     for (let i = 0; i < 3; i += 1) assert.equal((await http(sup, 'POST', `/api/admin/usuarios/${person.id}/reset-link`, {})).body.emailSent, true);
     const fourth = await http(sup, 'POST', `/api/admin/usuarios/${person.id}/reset-link`, {});
     assert.equal(fourth.body.emailSent, false); assert.equal((await resets(person.id)).length, 3); assert.equal(sink.messages.length, 3);
+    assert.equal(fourth.status, 202); assert.equal(fourth.body.reason, 'rate_limited'); assert.equal(fourth.body.limitPerHour, 3, 'el límite sale del valor real del servidor');
+    contractFixture('es-379-reset-link-rate-limited.json', fourth.status, fourth.body);
+    const saved = process.env.PASSWORD_RESET_PER_ACCOUNT_HOUR; process.env.PASSWORD_RESET_PER_ACCOUNT_HOUR = '5';
+    try {
+      const other = await mkUser('user');
+      for (let i = 0; i < 5; i += 1) assert.equal((await http(sup, 'POST', `/api/admin/usuarios/${other.id}/reset-link`, {})).body.emailSent, true);
+      const sixth = await http(sup, 'POST', `/api/admin/usuarios/${other.id}/reset-link`, {});
+      assert.equal(sixth.body.reason, 'rate_limited'); assert.equal(sixth.body.limitPerHour, 5, 'si cambia el límite del servidor, cambia el número');
+    } finally { if (saved === undefined) delete process.env.PASSWORD_RESET_PER_ACCOUNT_HOUR; else process.env.PASSWORD_RESET_PER_ACCOUNT_HOUR = saved; }
   });
 
   await t.test('cuenta inactiva: emailSent:false y sin enlace', async () => {
     PROVIDER();
     const person = await mkUser('user'); await q('UPDATE "Users" SET active=false WHERE id=$1', [person.id]);
     const reply = await http(sup, 'POST', `/api/admin/usuarios/${person.id}/reset-link`, {});
-    assert.equal(reply.status, 202); assert.equal(reply.body.emailSent, false); assert.equal((await resets(person.id)).length, 0);
+    assert.equal(reply.status, 202); assert.equal(reply.body.emailSent, false); assert.equal(reply.body.reason, 'not_eligible'); assert.equal(reply.body.limitPerHour, undefined); assert.equal((await resets(person.id)).length, 0);
+    contractFixture('es-379-reset-link-not-eligible.json', reply.status, reply.body);
+    assert.ok(!JSON.stringify(reply.body).includes(person.email) && !JSON.stringify(reply.body).includes(String(person.id)), 'la respuesta no lleva datos de la cuenta');
+    const pending = await mkUser('user'); await q('INSERT INTO "DeletionRequests" (id, "UserId", status, attempts, "createdAt", "updatedAt") VALUES ($1, $2, $3, 0, now(), now())', [crypto.randomUUID(), pending.id, 'accepted']);
+    const gone = await http(sup, 'POST', `/api/admin/usuarios/${pending.id}/reset-link`, {});
+    assert.equal(gone.status, 409, 'la baja pendiente la rechaza la ruta antes de llegar al envío (refuseDeletionPending)');
   });
 
   await t.test('las reglas de acceso no cambian (solo superadmin; no a otro superadmin; 404)', async () => {

@@ -64,3 +64,59 @@ test('ES-379: la pantalla muestra el aviso en la región viva con role=alert par
   assert.match(source, /setMsg\(\{ kind: outcome\.ok \? 'ok' : 'error', text: outcome\.message \}\)/)
   assert.match(source, /if \(outcome\.ok\) onChanged\(\)/)
 })
+
+const NOT_SENT = 'No se pudo enviar el correo (el envío no está configurado o falló). El enlace no se creó para nadie; pide a quien opera el servidor que lo emita.'
+
+test('ES-379: límite por hora — el texto lleva el número REAL del servidor (fixture real) y tiene inglés', () => {
+  const limited = fixture('es-379-reset-link-rate-limited.json')
+  assert.equal(limited.body.reason, 'rate_limited'); assert.equal(limited.body.emailSent, false)
+  const result = logic.resetLinkResult(limited.status, limited.body)
+  assert.equal(result.ok, false)
+  assert.equal(result.message, `Se alcanzó el límite de ${limited.body.limitPerHour} enlaces por hora para esta cuenta. Espera un rato antes de enviarlo de nuevo.`)
+  assert.equal(adminText(result.message, 'en'), `The limit of ${limited.body.limitPerHour} links per hour for this account was reached. Wait a while before sending again.`)
+  for (const limit of [1, 3, 5, 10, 1000]) {
+    const message = logic.resetLinkResult(202, { emailSent: false, reason: 'rate_limited', limitPerHour: limit }).message
+    assert.ok(message.includes(`de ${limit} enlaces`), String(limit)); assert.ok(adminText(message, 'en').includes(`limit of ${limit} links`), String(limit))
+  }
+  assert.ok(!/\b3\b/.test(logic.resetLinkResult(202, { emailSent: false, reason: 'rate_limited', limitPerHour: 7 }).message), 'ningún «3» fijo en el texto')
+})
+
+test('ES-379: límite por hora con número ausente o absurdo cae al texto general (no inventa un número)', () => {
+  for (const limitPerHour of [undefined, null, 0, -1, 2.5, '3', 5000, NaN]) {
+    assert.equal(logic.resetLinkResult(202, { emailSent: false, reason: 'rate_limited', limitPerHour }).message, NOT_SENT, String(limitPerHour))
+  }
+})
+
+test('ES-379: cuenta que no puede recibirlo (inactiva o con baja pendiente) — texto propio con inglés (fixture real)', () => {
+  const eligible = fixture('es-379-reset-link-not-eligible.json')
+  assert.equal(eligible.body.reason, 'not_eligible'); assert.equal(eligible.body.emailSent, false)
+  const result = logic.resetLinkResult(eligible.status, eligible.body)
+  assert.deepEqual(result, { ok: false, message: 'La cuenta no puede recibir el enlace: está inactiva o tiene una baja pendiente.' })
+  assert.equal(adminText(result.message, 'en'), 'This account cannot receive the link: it is inactive or has a pending deletion.')
+})
+
+test('ES-379: causa «unavailable», desconocida o ausente → el texto general; cada causa tiene un texto distinto', () => {
+  const notSent = fixture('es-379-reset-link-not-sent.json')
+  assert.equal(notSent.body.reason, 'unavailable')
+  for (const reason of ['unavailable', 'otra', undefined, null, 42, '']) assert.equal(logic.resetLinkResult(202, { emailSent: false, reason }).message, NOT_SENT, String(reason))
+  const texts = new Set([
+    logic.resetLinkResult(202, { emailSent: false, reason: 'rate_limited', limitPerHour: 3 }).message,
+    logic.resetLinkResult(202, { emailSent: false, reason: 'not_eligible' }).message,
+    logic.resetLinkResult(202, { emailSent: false, reason: 'unavailable' }).message,
+    logic.resetSentText(30),
+  ])
+  assert.equal(texts.size, 4)
+})
+
+test('ES-379: la respuesta de cada causa no trae datos de la cuenta (fixtures reales)', () => {
+  for (const name of ['sent', 'not-sent', 'rate-limited', 'not-eligible']) {
+    const { body } = fixture(`es-379-reset-link-${name}.json`)
+    assert.deepEqual(Object.keys(body).filter((key) => !['emailSent', 'expiresInMinutes', 'reason', 'limitPerHour', 'message'].includes(key)), [], name)
+  }
+})
+
+test('ES-379: el número del límite solo cuenta con la causa «rate_limited» (otra causa con limitPerHour no cambia el texto)', () => {
+  assert.equal(logic.resetLinkResult(202, { emailSent: false, reason: 'unavailable', limitPerHour: 3 }).message, NOT_SENT)
+  assert.equal(logic.resetLinkResult(202, { emailSent: false, reason: 'not_eligible', limitPerHour: 3 }).message, logic.MSG.resetNotEligible)
+  assert.equal(logic.resetLinkResult(202, { emailSent: false, limitPerHour: 3 }).message, NOT_SENT)
+})
