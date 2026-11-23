@@ -12,7 +12,7 @@ const { deletionPending } = require('./deletionGuard');
 const { recordAdminAction } = require('./adminAudit');
 
 const ALLOWED_ROLES = ['user', 'therapist']; // persona y profesional; nunca board, admin ni superadmin
-const OPERATOR_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/; // identificador de operador: no secreto, sin datos personales (ej. «ops-ana»); lista cerrada de caracteres
+const { isValidOperatorId } = require('./operatorId'); // ES-393: rol/guardia con prefijo conocido, forma cerrada y sin forma de clave o token
 const DEFAULT_TTL_MINUTES = 15;
 const MIN_TTL_MINUTES = 5;
 const MAX_TTL_MINUTES = 60;
@@ -52,7 +52,7 @@ const hashToken = token => crypto.createHash('sha256').update(token).digest('hex
 async function issueOperatorLink({ email, base, operatorId, env = process.env }) {
   const given = operatorId === undefined ? env.OPERATOR_ID : operatorId; // solo una cadena vale: null, números u objetos no se convierten en «null» ni «42»
   const label = typeof given === 'string' ? given.trim() : '';
-  if (!OPERATOR_ID.test(label)) throw new OperatorLinkError('operator_id'); // sin saber QUIÉN opera no se emite nada
+  if (!isValidOperatorId(label)) throw new OperatorLinkError('operator_id'); // sin saber QUIÉN opera no se emite nada
   const OPERATOR = { id: null, role: 'operator', label };
   const limit = perAccountPerHour(env);
   const safeBase = checkBase(base || env.APP_BASE_URL || env.FRONTEND_URL);
@@ -92,4 +92,4 @@ async function issueOperatorLink({ email, base, operatorId, env = process.env })
   return { link: `${safeBase}/reset-password#token=${token}`, expiresAt, minutes };
 }
 
-module.exports = { issueOperatorLink, OperatorLinkError, ALLOWED_ROLES, ttlMinutes, perAccountPerHour, checkBase, OPERATOR_ID };
+module.exports = { issueOperatorLink, OperatorLinkError, ALLOWED_ROLES, ttlMinutes, perAccountPerHour, checkBase, isValidOperatorId };

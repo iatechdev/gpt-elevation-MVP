@@ -185,7 +185,12 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
     assert.equal((await http({ token: 'x' }, 'GET', '/api/superadmin/audit')).status, 401);
     const first = await http(sup, 'GET', '/api/superadmin/audit?limit=5');
     assert.equal(first.status, 200); assert.equal(first.body.entries.length, 5); assert.ok(first.body.nextBefore);
-    assert.deepEqual(Object.keys(first.body.entries[0]).sort(), ['action', 'actorId', 'actorRole', 'createdAt', 'id', 'result', 'targetId', 'targetType']);
+    assert.deepEqual(Object.keys(first.body.entries[0]).sort(), ['action', 'actorId', 'actorLabel', 'actorRole', 'createdAt', 'id', 'result', 'targetId', 'targetType']); // ES-393: actorLabel (NULL si actúa una cuenta)
+    assert.ok(first.body.entries.every((entry) => entry.actorLabel === null), 'las acciones de cuentas de la aplicación no llevan etiqueta');
+    { const { recordAdminAction } = require('../../utils/adminAudit'); await recordAdminAction({ actor: { id: null, role: 'operator', label: 'ops-ana' }, action: 'user.operator_link', targetType: 'user', targetId: 1 });
+      const mine = await http(sup, 'GET', '/api/superadmin/audit?limit=1'); assert.equal(mine.body.entries[0].actorRole, 'operator'); assert.equal(mine.body.entries[0].actorLabel, 'ops-ana'); assert.equal(mine.body.entries[0].actorId, null);
+      assert.ok(!JSON.stringify(mine.body).match(/token|@/i), 'la lectura no lleva token ni correos');
+      assert.equal((await http(adm, 'GET', '/api/superadmin/audit?limit=1')).status, 403, 'solo superadmin ve la etiqueta'); }
     const ids = first.body.entries.map((e) => e.id); assert.deepEqual(ids, [...ids].sort((a, b) => b - a), 'más reciente primero');
     const second = await http(sup, 'GET', `/api/superadmin/audit?limit=5&before=${first.body.nextBefore}`);
     assert.ok(second.body.entries.every((e) => e.id < first.body.nextBefore));
