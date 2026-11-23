@@ -1,5 +1,6 @@
 // [QA-Claude-5] ES-45 FASE A: tope de registro por IP en STAGING (autorizado por Mauricio en mi chat el 23-nov-2026 y por Infra: hasta 31 registros, solo qa-sint-*, TRUST_PROXY_HOPS=1; bajas sin purga).
 // Uso: STG=$STG node qa/qa5-es45-abuso-staging.cjs
+const STG_OK = (() => { try { const u = new URL(process.env.STG || ''); return u.protocol === 'https:' && u.port === '' && !u.username && /^backend-staging-[a-z0-9]+[.]up[.]railway[.]app$/.test(u.hostname) } catch { return false } })(); if (!STG_OK) { console.error('STG debe ser el staging autorizado (https://backend-staging-<id>.up.railway.app); se rechaza cualquier otro host y nunca un dominio de producción'); process.exit(2) }
 const crypto = require('crypto'); const API = process.env.STG; const MAX = Number(process.env.MAX || 33)
 let ok = 0, bad = 0; const check = (l, c, ev) => { if (c) { ok++; console.log('OK    ' + l) } else { bad++; console.log('FALLA ' + l + (ev !== undefined ? ' · ' + String(ev).slice(0, 300) : '')) } }
 const info = (...a) => console.log('INFO ', ...a); const pass = 'Qa5-' + crypto.randomBytes(8).toString('hex') + 'A1!'

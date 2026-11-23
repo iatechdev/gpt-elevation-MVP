@@ -1,5 +1,6 @@
 // [QA-Claude-5] ES-45 FASE A: roles PROFESIONAL (therapist) y SUPERADMIN en STAGING, cuentas qa-sint-* promovidas por Infra; mas el vínculo profesional ↔ persona (invitación de revisor) y los límites entre roles. Sin IA.
 // Uso: STG=$STG PLAYWRIGHT_MODULE=... AXE=... node qa/qa5-es45-roles-staging.cjs   (credenciales en $QA_TOOLS/qa5/out/cred-stg-roles.json)
+const STG_OK = (() => { try { const u = new URL(process.env.STG || ''); return u.protocol === 'https:' && u.port === '' && !u.username && /^backend-staging-[a-z0-9]+[.]up[.]railway[.]app$/.test(u.hostname) } catch { return false } })(); if (!STG_OK) { console.error('STG debe ser el staging autorizado (https://backend-staging-<id>.up.railway.app); se rechaza cualquier otro host y nunca un dominio de producción'); process.exit(2) }
 const fs = require('fs'); const crypto = require('crypto'); const { chromium } = require(process.env.PLAYWRIGHT_MODULE); const axeSource = fs.readFileSync(process.env.AXE, 'utf8')
 const BASE = process.env.STG, API = process.env.STG; const OUT = (process.env.QA_TOOLS || '.') + '/qa5/out/es45-stg-roles'; fs.mkdirSync(OUT, { recursive: true })
 const CR = JSON.parse(fs.readFileSync((process.env.QA_TOOLS || '.') + '/qa5/out/cred-stg-roles.json', 'utf8')); const pass = CR.pass
