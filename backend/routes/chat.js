@@ -239,7 +239,7 @@ ${manifest}
     });
     // ES-298 (E281-1): el turno INTERRUMPIDO por crisis (la frase y la respuesta de apoyo que la siguió) no se envía al proveedor en los mensajes siguientes. Se vuelve a evaluar el
     // texto completo (antes de acotarlo) con el mismo detector; el indicador NUNCA se guarda. Lo que ve la persona en su historial no cambia: solo se omite de lo que sale hacia el proveedor.
-    const secuencia = recientes.reverse().map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: normalizeText(desencriptar(m.content)) }));
+    const secuencia = recientes.reverse().map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: normalizeForRisk(desencriptar(m.content), normalizeText) /* ES-390: lo guardado de una mezcla conserva los huecos; se relee igual que al entrar */ }));
     const interrumpidos = new Set();
     secuencia.forEach((m, i) => {
       if (m.role === 'user' && detectRisk(m.text).level === 'high') { interrumpidos.add(i); if (secuencia[i + 1]?.role === 'assistant') interrumpidos.add(i + 1); }
