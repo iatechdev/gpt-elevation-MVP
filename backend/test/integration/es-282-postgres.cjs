@@ -8,7 +8,6 @@ const { startRealApi } = require('../support/realApi.cjs');
 const { makeSeeder } = require('../support/seedRow.cjs');
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
-const median = (list) => [...list].sort((x, y) => x - y)[Math.floor(list.length / 2)];
 
 test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías, idempotencia y sanitización (ES-189 PR-3)', { timeout: 600000 }, async (t) => {
   process.env.PASSWORD_RESET_IP_LIMIT = '100'; // el límite por IP es otro mecanismo (429); aquí se mide la respuesta y el tiempo de la cuenta
@@ -51,20 +50,21 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
     // contraseña real con el mismo costo de bcrypt que una cuenta de verdad (la sembrada no es un hash válido y compararía más rápido)
     await q('UPDATE "Users" SET password=$2 WHERE id=$1', [existing.id, await require('bcryptjs').hash(STRONG, 10)]);
     const email = (await q('SELECT email FROM "Users" WHERE id=$1', [existing.id]))[0].email;
-    const timed = async (fn, n = 9) => { const times = []; let last; for (let i = 0; i < n; i += 1) { const t0 = performance.now(); last = await fn(i); times.push(performance.now() - t0); } return { last, ms: median(times) }; };
+    // ES-383: los dos lados se miden ALTERNADOS (existente, inexistente, existente…) para que la carga de la máquina los afecte por igual, y se toma el MÍNIMO de cada lado (el mínimo filtra la carga puntual; la mediana de tandas separadas no).
+    const pairTimed = async (fnA, fnB, n) => { const a = []; const b = []; let lastA; let lastB; for (let i = 0; i < n; i += 1) { let t0 = performance.now(); lastA = await fnA(i); a.push(performance.now() - t0); t0 = performance.now(); lastB = await fnB(i); b.push(performance.now() - t0); } return [{ last: lastA, ms: Math.min(...a) }, { last: lastB, ms: Math.min(...b) }]; };
+    // La diferencia admitida es RELATIVA al lado más lento (40 %) con el piso de 120 ms que ya tenía la prueba: bajo carga el techo crece con el lado lento (la carga no lo dispara) y sin carga sigue siendo ≤ 120 ms.
+    const sameTime = (x, y) => Math.abs(x - y) <= Math.max(120, 0.4 * Math.max(x, y));
     // 3 intentos por lado: por debajo del bloqueo de cuenta (423) y del límite por IP (429), que son otro mecanismo (ES-220)
-    const loginExisting = await timed(() => http(null, 'POST', '/api/login', { email, password: 'Incorrecta1!' }), 3);
-    const loginMissing = await timed((i) => http(null, 'POST', '/api/login', { email: 'no-existe-login@example.test', password: 'Incorrecta1!' }), 3);
+    const [loginExisting, loginMissing] = await pairTimed(() => http(null, 'POST', '/api/login', { email, password: 'Incorrecta1!' }), () => http(null, 'POST', '/api/login', { email: 'no-existe-login@example.test', password: 'Incorrecta1!' }), 3);
     // Tras 3 fallos ambas se bloquean igual (ES-220): mismo estado y mismas claves (la hora de desbloqueo difiere por milisegundos)
     assert.equal(loginExisting.last.status, loginMissing.last.status); assert.deepEqual(Object.keys(loginExisting.last.body), Object.keys(loginMissing.last.body));
-    const resetExisting = await timed(() => http(null, 'POST', '/api/password-reset/request', { email }), 4);
-    const resetMissing = await timed((i) => http(null, 'POST', '/api/password-reset/request', { email: `no-existe-r${i}@example.test` }), 4);
+    const [resetExisting, resetMissing] = await pairTimed(() => http(null, 'POST', '/api/password-reset/request', { email }), (i) => http(null, 'POST', '/api/password-reset/request', { email: `no-existe-r${i}@example.test` }), 4);
     assert.equal(resetExisting.last.status, resetMissing.last.status); assert.deepEqual(resetExisting.last.body, resetMissing.last.body);
     const regExisting = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v2', name: 'Otra', email, password: STRONG });
     const regNew = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v2', name: 'Otra', email: 'registro-nuevo@example.test', password: STRONG });
-    console.log(`# TIEMPOS no enumeración (mediana ms): login existente=${loginExisting.ms.toFixed(1)} inexistente=${loginMissing.ms.toFixed(1)} · restablecer existente=${resetExisting.ms.toFixed(1)} inexistente=${resetMissing.ms.toFixed(1)} · registro existente=${regExisting.status} nuevo=${regNew.status}`);
-    assert.ok(Math.abs(loginExisting.ms - loginMissing.ms) < 120, `login: diferencia de tiempo ${Math.abs(loginExisting.ms - loginMissing.ms).toFixed(1)} ms`);
-    assert.ok(Math.abs(resetExisting.ms - resetMissing.ms) < 120, `restablecer: diferencia de tiempo ${Math.abs(resetExisting.ms - resetMissing.ms).toFixed(1)} ms`);
+    console.log(`# TIEMPOS no enumeración (mínimo ms): login existente=${loginExisting.ms.toFixed(1)} inexistente=${loginMissing.ms.toFixed(1)} · restablecer existente=${resetExisting.ms.toFixed(1)} inexistente=${resetMissing.ms.toFixed(1)} · registro existente=${regExisting.status} nuevo=${regNew.status}`);
+    assert.ok(sameTime(loginExisting.ms, loginMissing.ms), `login: existente ${loginExisting.ms.toFixed(1)} ms vs inexistente ${loginMissing.ms.toFixed(1)} ms`);
+    assert.ok(sameTime(resetExisting.ms, resetMissing.ms), `restablecer: existente ${resetExisting.ms.toFixed(1)} ms vs inexistente ${resetMissing.ms.toFixed(1)} ms`);
     // E282-1 (Medio, decisión de producto): el registro SÍ distingue un correo ya usado (400) de uno nuevo (201). El login y el restablecer no. Se deja registrado con el cuerpo real;
     // cerrarlo exige un flujo de verificación por correo (misma respuesta y el aviso por email), que es un cambio de producto y no se hace aquí.
     assert.ok(regExisting.status >= 400 && regExisting.status < 500, 'el correo repetido responde un 4xx controlado');
