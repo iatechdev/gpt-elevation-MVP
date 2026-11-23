@@ -235,13 +235,13 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
   await t.test('ES-386 quién opera: OPERATOR_ID es obligatorio y de lista cerrada; queda en la auditoría y nada se emite sin él', async () => {
     const user = await mk();
     const resetsBefore = await PasswordReset.count(); const auditBefore = await AdminAuditEntry.count();
-    for (const operatorId of ['', '   ', undefined, null, 'a'.repeat(33), 'con espacio', 'con\nsalto', 'ana@correo.co', '-empieza', '.empieza', 'tilde-á', `ops${String.fromCharCode(0x202E)}x`, `ops${String.fromCharCode(0x200B)}x`, "ops'--", 'ops;drop']) {
+    for (const operatorId of ['juan.perez', 'A', 'maria', 'juan-perez', 'sk-ant-api03-abc', 'ops-sk-ant-api03-AbCdEfGh', 'ops-AKIAIOSFODNN7EXAMPLE', 'ops-ASIAIOSFODNN7EXAMPLE', 'ops-glpat-abcdefghijklmnop', 'ops-1234567890123456789', 'ops-ABCDEFGHIJKLMNOPQRST', 'ops-0123456789ab', 'ops-ghp_abcdefghijkl', 'ops-xoxb-1234-abcd', 'ops-eyJhbGciOiJIUzI1NiJ9', 'ops-sk_live_abcdefgh', 'ops.pk_test_abcdefgh', 'ops-github_pat_11AAAA', 'ops-AKIAABCDEFGHIJKL', 'ops-ASIAABCDEFGHIJKL', 'ops-eyJabcdefgh', 'guardia-sk-live-abcdefgh', 'oncall-ghp_abcdefghijkl', 'infra-eyJhbGciOiJIUzI1NiJ9', 'soporte-xoxb-1234-abcd', 'guardia-glpat-abcdefghij', 'ops-turno-AKIAIOSFODNN7EXAMPLE', 'ops-AKIAIOSFODNN7EXAMPLE-turno', 'ops-turno-sk-ant-api03-abcdef-n1', 'oncall-1-ghp_abcdefghijkl-x', 'ops.xoxp-1234-abcd.x', 'guardia-deadbeef0123', 'infra-0123456789012', 'ops-turno-9876543210987654', 'soporte-ABCDEFGHIJKLMNOPQRSTU', 'oncall-password', 'ops-api-key-1', 'infra-secret-x', 'ghp_abcdefghijklmnopqrstuvwxyz0123456789', 'AKIAIOSFODNN7EXAMPLE', 'eyJhbGciOiJIUzI1NiJ9', 'ops-token-abc', 'ops-secret', 'ops-0123456789abcdef0123', 'ops-aB3dE5gH7jK9mN', `ops-${'x'.repeat(28)}`, 'xoxb-1234-abcd', 'Bearer abc', '', '   ', undefined, null, 'a'.repeat(33), 'con espacio', 'con\nsalto', 'ana@correo.co', '-empieza', '.empieza', 'tilde-á', `ops${String.fromCharCode(0x202E)}x`, `ops${String.fromCharCode(0x200B)}x`, "ops'--", 'ops;drop']) {
       const env = { ...process.env }; delete env.OPERATOR_ID;
       const error = await failure(issueOperatorLink({ email: user.email, operatorId, env }));
       assert.ok(error instanceof OperatorLinkError, JSON.stringify(operatorId)); assert.equal(error.code, 'operator_id', JSON.stringify(operatorId));
     }
     assert.equal(await PasswordReset.count(), resetsBefore); assert.equal(await AdminAuditEntry.count(), auditBefore, 'sin operador identificado no se emite ni se audita nada');
-    for (const operatorId of ['ops-ana', 'A', 'ops.ana_01', 'x'.repeat(32)]) {
+    for (const operatorId of ['ops-ana', 'ops', 'guardia.turno_2', `ops-${'x'.repeat(15)}-${'y'.repeat(12)}`, 'SOPORTE-N1']) {
       const person = await mk(); await issueOperatorLink({ email: person.email, operatorId });
       const row = await AdminAuditEntry.findOne({ where: { targetId: person.id } });
       assert.equal(row.actorLabel, operatorId); assert.equal(row.actorRole, 'operator'); assert.equal(row.actorId, null);
@@ -254,7 +254,7 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
 
   await t.test('ES-386 la auditoría no guarda como etiqueta nada que no sea un identificador válido (defensa de la capa de auditoría)', async () => {
     const { recordAdminAction } = require('../../utils/adminAudit');
-    for (const [label, expected] of [['ops-ana', 'ops-ana'], ['con espacio', null], ['ana@correo.co', null], ['a'.repeat(33), null], [undefined, null], [42, null], ['', null], [`ops${String.fromCharCode(0x202E)}`, null]]) {
+    for (const [label, expected] of [['ops-ana', 'ops-ana'], ['juan.perez', null], ['sk-ant-api03-abc', null], ['con espacio', null], ['ana@correo.co', null], ['a'.repeat(33), null], [undefined, null], [42, null], ['', null], [`ops${String.fromCharCode(0x202E)}`, null]]) {
       const row = await recordAdminAction({ actor: { id: null, role: 'operator', label }, action: 'user.operator_link', targetType: 'user', targetId: 99 });
       assert.equal(row.actorLabel ?? null, expected, JSON.stringify(label)); assert.equal((await AdminAuditEntry.findByPk(row.id)).actorLabel, expected);
     }
@@ -376,5 +376,26 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
     assert.equal((await sequelize.query("SELECT count(*)::int AS n FROM information_schema.columns WHERE table_name = 'AdminAuditEntries' AND column_name = 'actorLabel'", { type: 'SELECT' }))[0].n, 1);
     const after = await mk(); await issueOperatorLink({ email: after.email, operatorId: 'ops-ana' });
     assert.equal((await AdminAuditEntry.findOne({ where: { targetId: after.id } })).actorLabel, 'ops-ana');
+  });
+
+  await t.test('ES-393 la etiqueta de operador SOLO la guarda el actor «operator»: ningún otro llamador escribe texto en actorLabel', async () => {
+    const { recordAdminAction } = require('../../utils/adminAudit');
+    for (const actor of [{ id: 7, role: 'admin', label: 'ops-ana' }, { id: 7, role: 'superadmin', label: 'ops-ana' }, { id: null, role: 'user', label: 'ops-ana' }, { id: null, label: 'ops-ana' }, { id: null, role: 'OPERATOR', label: 'ops-ana' }, { id: null, role: 'operator ', label: 'ops-ana' }, { role: undefined, label: 'ops-ana' }, null, undefined]) {
+      const row = await recordAdminAction({ actor, action: 'user.update', targetType: 'user', targetId: 3 });
+      assert.equal((await AdminAuditEntry.findByPk(row.id)).actorLabel, null, JSON.stringify(actor));
+    }
+    const ok = await recordAdminAction({ actor: { id: null, role: 'operator', label: 'ops-ana' }, action: 'user.operator_link', targetType: 'user', targetId: 3 });
+    assert.equal((await AdminAuditEntry.findByPk(ok.id)).actorLabel, 'ops-ana');
+    const nombre = await recordAdminAction({ actor: { id: null, role: 'operator', label: 'juan.perez' }, action: 'user.operator_link', targetType: 'user', targetId: 3 });
+    assert.equal((await AdminAuditEntry.findByPk(nombre.id)).actorLabel, null, 'ni un operador puede guardar un nombre propio ni un secreto');
+  });
+
+  await t.test('ES-393 el identificador de operador: prefijo de rol, forma cerrada, sin forma de clave o token (unidad)', () => {
+    const { isValidOperatorId, looksLikeSecret, ROLE_PREFIXES } = require('../../utils/operatorId');
+    assert.deepEqual(ROLE_PREFIXES, ['ops', 'guardia', 'oncall', 'soporte', 'infra']);
+    for (const good of ['ops-ana', 'ops', 'ops-guardia-1', 'guardia.turno_2', 'oncall-1', 'soporte-n1', 'infra-a', 'OPS-ANA', 'ops.a_b-c', 'ops-' + 'x'.repeat(15) + '-' + 'y'.repeat(12)]) assert.equal(isValidOperatorId(good), true, good);
+    for (const bad of ['juan.perez', 'maria', 'a', 'x'.repeat(40), 'ops-' + 'x'.repeat(29), 'ops ana', 'ops@x.co', '-ops', '.ops', 'ops-ana\n', 'ops-ana ', ' ops-ana', '', null, undefined, 42, {}, ['ops-ana'],
+      'ops-' + 'ab-'.repeat(10), 'sk-ant-api03-abc', 'ops-sk-ant-api03-AbCdEf', 'ops-AKIAIOSFODNN7EXAMPLE', 'ops-ASIAIOSFODNN7EXAMPLE', 'ops-glpat-abcdefghijklmnop', 'ops-1234567890123456789', 'ops-ABCDEFGHIJKLMNOPQRST', 'ops-0123456789ab', 'ops-ghp_abcdefghijkl', 'ops-xoxb-1234-abcd', 'ops-eyJhbGciOiJIUzI1NiJ9', 'ops-sk_live_abcdefgh', 'ops.pk_test_abcdefgh', 'ops-github_pat_11AAAA', 'ops-Bearer-x', 'ghp_abcdefghijklmnopqrstuvwxyz0123456789', 'github_pat_11AAAA', 'xoxb-123-abc', 'AKIAIOSFODNN7EXAMPLE', 'eyJhbGciOiJIUzI1NiJ9', 'ops-token-1', 'ops-secret-1', 'ops-apikey', 'ops-api_key', 'ops-password1', 'ops-0123456789abcdef0123', 'ops-aB3dE5gH7jK9mN1']) assert.equal(isValidOperatorId(bad), false, JSON.stringify(bad));
+    assert.equal(looksLikeSecret('ops-ana'), false); assert.equal(looksLikeSecret('sk-live-abc'), true); assert.equal(looksLikeSecret('ops-' + 'a'.repeat(24)), true);
   });
 });

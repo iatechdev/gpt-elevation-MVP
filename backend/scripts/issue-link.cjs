@@ -20,7 +20,7 @@ const { issueOperatorLink, OperatorLinkError } = require('../utils/operatorLink'
 
 const MESSAGES = {
   config: 'Se niega: define APP_BASE_URL (o FRONTEND_URL) con una dirección https.',
-  operator_id: 'Se niega: define OPERATOR_ID (tu identificador de operador, sin datos personales: letras, números, punto, guion o guion bajo; hasta 32). Queda en la auditoría.',
+  operator_id: 'Se niega: define OPERATOR_ID con un ROL o TURNO que empiece por ops, guardia, oncall, soporte o infra (ej. ops-guardia-1): nunca un nombre ni un secreto; letras, números, punto, guion o guion bajo; hasta 32. Queda en la auditoría.',
   not_found: 'No se emitió ningún enlace: la cuenta no existe.',
   role_not_allowed: 'No se emitió ningún enlace: solo se permite para personas y profesionales (el intento quedó auditado).',
   inactive: 'No se emitió ningún enlace: la cuenta no está activa.',

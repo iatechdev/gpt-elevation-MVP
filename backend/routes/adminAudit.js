@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
     if (q.limit !== undefined) { const v = one(q.limit); if (typeof v !== 'string' || !INT.test(v) || Number(v) > 100) return bad(res, 'limit'); limit = Number(v); }
     const rows = await AdminAuditEntry.findAll({
       where, order: [['id', 'DESC']], limit: limit + 1,
-      attributes: ['id', 'actorId', 'actorRole', 'action', 'targetType', 'targetId', 'result', 'createdAt'],
+      attributes: ['id', 'actorId', 'actorRole', 'actorLabel', 'action', 'targetType', 'targetId', 'result', 'createdAt'], // ES-393: actorLabel (rol/guardia del operador; NULL si actúa una cuenta); la ruta es solo de superadmin
     });
     const page = rows.slice(0, limit);
     res.json({ entries: page, nextBefore: rows.length > limit ? page[page.length - 1].id : null });
