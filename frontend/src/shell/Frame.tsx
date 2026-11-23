@@ -7,7 +7,7 @@ import { CartografiaRoot } from '../cartografia/theme'
 import { useCgTheme, type CgTheme } from '../cartografia/themeState'
 import type { NavItem } from './nav'
 import { NavDrawer, type DrawerGroup, type NavDrawerProps } from './NavDrawer'
-import { onDrawerRequest } from './drawerExtra'
+import { onDrawerClose, onDrawerRequest } from './drawerExtra'
 import type { NavGroup } from './navGroups'
 import { useShellCopy } from './useShellCopy'
 import { useNarrowHeader } from './narrowHeader'
@@ -91,6 +91,7 @@ export function Frame({ brand, brandLabel, brandTo = '/', nav, account, preferen
   // Botón que abrió el cajón (el «☰ Menú» del encabezado, o el de la barra de una pantalla sin encabezado, como el chat: drawerExtra.requestDrawer): recibe el foco al cerrar.
   const drawerOpener = useRef<HTMLElement | null>(null)
   useEffect(() => onDrawerRequest(opener => { drawerOpener.current = opener; setDrawerOpen(true) }), [])
+  useEffect(() => onDrawerClose(focus => { if (focus) drawerOpener.current = focus; setDrawerOpen(false) }), []) // ES-374
   // El cajón se cierra al cambiar de ruta (incluido el botón «atrás» del navegador) y si la pantalla deja de ser móvil. Sin efecto con setState: se ajusta el estado durante el render.
   const [drawerPath, setDrawerPath] = useState(pathname)
   if (drawerPath !== pathname) { setDrawerPath(pathname); if (drawerOpen) setDrawerOpen(false) }
