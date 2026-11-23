@@ -12,7 +12,7 @@ test('ES-373: escritorio (≥901 px): «Cerrar sesión» del menú pregunta ANTE
 })
 
 test('ES-373: móvil (≤900 px): la guardia del marco pregunta antes y abre la despedida solo si se acepta', () => {
-  assert.match(page, /registerLeaveGuard\(\(\) => \{ if \(!live\.current\.canLeave\(\)\) return true; setShowCheckout\(true\); return true \}, \{ ownLinks: true \}\)/)
+  assert.match(page, /registerLeaveGuard\(\(\) => \{ if \(!live\.current\.canLeave\(\)\) \{ notifyStay\(\); return true \} setShowCheckout\(true\); return true \}, \{ ownLinks: true \}\)/)
 })
 
 test('ES-373: handleLogout («Saltar» y fin de la despedida) ya NO vuelve a preguntar: la pregunta no sale dos veces', () => {

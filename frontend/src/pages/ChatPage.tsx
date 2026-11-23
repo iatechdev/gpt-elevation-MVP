@@ -2,7 +2,7 @@ import { memo, useState, useEffect, useRef, useCallback, type ReactNode } from '
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChatBar, ThreadNotices } from '../space/ChatBar'
 import { ChatMenu, ConversationGroup } from '../space/ChatMenu'
-import { registerDrawerExtra, requestDrawer } from '../shell/drawerExtra'
+import { closeDrawer, notifyStay, registerDrawerExtra, requestDrawer } from '../shell/drawerExtra'
 import { registerLeaveGuard } from '../shell/leaveGuard'
 import { useNarrowHeader } from '../shell/narrowHeader'
 import { signOut } from '../access/signOut'
@@ -141,13 +141,14 @@ export function ChatPage() {
   const isAdmin = ['admin', 'superadmin'].includes(role)
   useEffect(() => registerDrawerExtra({
     omit: ['/app/progress'], // «Mi progreso» ya va en «Conversación»
+    stay: () => { closeDrawer(document.querySelector<HTMLElement>('.chat-shell .space-message')) }, // ES-374: cancelar «Si sales…» devuelve a la persona a su texto
     render: close => <div className="chat-menu"><ConversationGroup onClose={close} enterSends={enterSends}
       onProgress={() => { if (live.current.canLeave()) navigate('/app/progress') }} onRecs={() => setShowRecs(true)}
       onAdmin={isAdmin ? () => { if (live.current.canLeave()) navigate('/admin/dashboard') } : undefined}
       onEnterSends={value => { setEnterSends(value); writeEnterSends(value) }} /></div>,
   }), [enterSends, isAdmin, navigate])
   // «Cerrar sesión» de los menús del marco (cajón y menú de cuenta) abre la despedida (check-out) como el menú propio del chat; antes pregunta si hay un mensaje sin enviar.
-  useEffect(() => registerLeaveGuard(() => { if (!live.current.canLeave()) return true; setShowCheckout(true); return true }, { ownLinks: true }), [])
+  useEffect(() => registerLeaveGuard(() => { if (!live.current.canLeave()) { notifyStay(); return true } setShowCheckout(true); return true }, { ownLinks: true }), [])
 
   // HU-051 — Generate recommendations
   const handleGenerateRecs = async () => {

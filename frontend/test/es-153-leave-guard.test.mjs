@@ -29,7 +29,7 @@ test('ES-153 P1: cada guardia de borrador de las pantallas de persona se registr
     assert.match(src, /registerLeaveGuard\(\(\) => cancel\(\)\)/, `${name} registra su guardia en el marco`); assert.match(src, /leave\(\); if \(active === guard\)/, `${name} la da de baja`)
   }
   assert.match(read('../src/career/CareerShell.tsx'), /registerLeaveGuard\(to => \{[\s\S]*setPending\(to\); return true/)
-  for (const file of ['../src/space/hooks.ts', '../src/pilot/hooks.ts']) assert.match(read(file), /registerLeaveGuard\(cancel, \{ ownLinks: true \}\)/)
+  for (const file of ['../src/space/hooks.ts', '../src/pilot/hooks.ts']) assert.match(read(file), /registerLeaveGuard\((?:cancel|\(\) => \{ const stay = cancel\(\); if \(stay\) notifyStay\(\); return stay \}), \{ ownLinks: true \}\)/) // ES-374: la guardia de space/hooks.ts avisa además con notifyStay(); aserción conservada: sigue registrándose con ownLinks
   const frame = read('../src/shell/Frame.tsx')
   assert.match(frame, /<header className="cg-header" data-compact=\{compact \|\| undefined\} onClickCapture=\{guardLeave\}>/); assert.match(frame, /leaveBlocked\(href\)/)
   // ES-359: el menú de cuenta y el cajón comparten useSignOut: «Cerrar sesión» (el antiguo «Salir») consulta la guardia en un solo lugar
