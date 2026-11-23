@@ -16,7 +16,6 @@ const contentMatches = (mimetype, buffer) => typeof mimetype === 'string' && Obj
 // Nombre para mostrar: sin directorios (ni «/» ni «\»), sin caracteres de control, acotado. Nunca vacío.
 function safeDocumentName(original) {
   const base = String(original ?? '').split(/[\\/]/).pop();
-  // eslint-disable-next-line no-control-regex
   const clean = base.replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '').replace(/^\.+/, '').trim().slice(0, 150);
   return clean || 'documento';
 }

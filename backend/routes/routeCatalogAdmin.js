@@ -41,7 +41,7 @@ router.put('/:id/:kind/:key', handle(async (req, res) => {
   let content = req.body;
   let expected;
   if (content && typeof content === 'object' && !Array.isArray(content)) {
-    const { expectedUpdatedAt, updatedAt, ...rest } = content; // eslint-disable-line no-unused-vars
+    const { expectedUpdatedAt, updatedAt, ...rest } = content;
     content = rest;
     if (expectedUpdatedAt === null) expected = null; // ES-266: «elemento nuevo»
     else if (expectedUpdatedAt !== undefined) {
