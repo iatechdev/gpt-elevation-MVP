@@ -14,7 +14,7 @@ const PasswordReset = require('../PasswordReset');
 const { deletionPending } = require('../utils/deletionGuard');
 const { revokeUserSessions } = require('../utils/sessions');
 const { passwordProblems, policy } = require('../utils/registrationPassword');
-const { sendPasswordReset } = require('../utils/mailer');
+const { sendPasswordReset, providerConfigured } = require('../utils/mailer');
 const { validateBody, nonempty } = require('../middlewares/validateBody');
 const { findUserByEmail } = require('../utils/emailNormalize'); // ES-306
 
@@ -46,15 +46,20 @@ async function issueLink(email, locale) {
 }
 
 // ES-192: también la usa administración (POST /api/admin/usuarios/:id/reset-link): el enlace va al correo de la cuenta, nunca a quien lo pide.
+// ES-379: devuelve { emailSent, minutes? , reason? }. `emailSent:true` solo si el proveedor aceptó el mensaje. Si no sale, NO queda ningún enlace vivo:
+// sin proveedor o sin base del enlace ni siquiera se crea; si el envío falla, el enlace recién creado se invalida (el token nunca salió del proceso).
 async function issueLinkForUser(user, locale) {
-  if (!user || user.active === false || await deletionPending(user.id)) return;
+  if (!user || user.active === false || await deletionPending(user.id)) return { emailSent: false, reason: 'not_eligible' };
+  const base = String(process.env.APP_BASE_URL || process.env.FRONTEND_URL || '').replace(/\/+$/, '');
+  if (!base) { console.error('Enlace de restablecimiento no emitido: falta APP_BASE_URL o FRONTEND_URL.'); return { emailSent: false, reason: 'no_base' }; }
+  if (!providerConfigured()) { console.error('Enlace de restablecimiento no emitido: sin proveedor de correo configurado (ES-12).'); return { emailSent: false, reason: 'not_configured' }; }
   // Contar, invalidar y crear van juntos bajo un bloqueo de la fila de la persona: solicitudes simultáneas se ponen en fila (QA-132-01).
   const token = crypto.randomBytes(32).toString('base64url');
   const transaction = await sequelize.transaction();
   try {
     await User.findOne({ where: { id: user.id }, transaction, lock: true });
     const recent = await PasswordReset.count({ where: { UserId: user.id, createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } }, transaction });
-    if (recent >= perAccountPerHour()) { await transaction.commit(); return; }
+    if (recent >= perAccountPerHour()) { await transaction.commit(); return { emailSent: false, reason: 'rate_limited', limit: perAccountPerHour() }; }
     // Solo vale el último enlace pedido.
     await PasswordReset.update({ usedAt: new Date() }, { where: { UserId: user.id, usedAt: null }, transaction });
     await PasswordReset.create({ UserId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + ttlMinutes() * 60 * 1000) }, { transaction });
@@ -63,11 +68,15 @@ async function issueLinkForUser(user, locale) {
     await transaction.rollback().catch(() => {});
     throw error;
   }
-  const base = String(process.env.APP_BASE_URL || process.env.FRONTEND_URL || '').replace(/\/+$/, '');
   // El token va en el fragmento (#): no viaja al servidor, ni a registros de acceso, ni en Referer.
-  if (!base) return;
-  const { sent } = await sendPasswordReset({ to: user.email, link: `${base}/reset-password#token=${token}`, locale, minutes: ttlMinutes() });
-  if (!sent) console.error('Correo de recuperación no enviado: sin proveedor configurado (ES-12).');
+  let sent = false;
+  try { ({ sent } = await sendPasswordReset({ to: user.email, link: `${base}/reset-password#token=${token}`, locale, minutes: ttlMinutes() })); }
+  catch { console.error('Correo de recuperación no enviado.'); }
+  if (!sent) {
+    await PasswordReset.update({ usedAt: new Date() }, { where: { tokenHash: hashToken(token), usedAt: null } }).catch(() => console.error('No se pudo invalidar el enlace no enviado.'));
+    return { emailSent: false, reason: 'send_failed' };
+  }
+  return { emailSent: true, minutes: ttlMinutes() };
 }
 
 router.post('/password-reset/request', limiter('PASSWORD_RESET_IP_LIMIT', 5), validateBody({ email: nonempty }), (req, res) => {

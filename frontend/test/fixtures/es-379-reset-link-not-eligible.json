@@ -1,0 +1,8 @@
+{
+  "status": 202,
+  "body": {
+    "emailSent": false,
+    "reason": "not_eligible",
+    "message": "La cuenta no puede recibir el enlace: está inactiva o tiene una baja pendiente. / This account cannot receive the link: it is inactive or has a pending deletion."
+  }
+}
