@@ -11,7 +11,7 @@ const { desencriptar, desencriptarBuffer } = require('./crypto');
 const { checkResumeFile, extractResumeText, ResumePdfError } = require('./resumePdf');
 const { sanitizeResumeText, ResumeSanitizeError } = require('./resumeSanitizer');
 const { normalizeText, capText, redactSecrets, fenceUntrusted } = require('./promptSafety');
-const { detectRisk, normalizeForRisk } = require('./safety');
+const { detectRisk } = require('./safety');
 const consent = require('./consent');
 const { FIELD_KEYS } = require('./careerContext');
 const skillCatalog = require('./skillCatalog');
@@ -64,7 +64,7 @@ function parseBody(body) {
 }
 
 const notFound = () => new ProposalError(404, 'origin_not_found', 'No se encontró el origen indicado.', 'The referenced source was not found.');
-const clean = (text, source) => capText(normalizeForRisk(text, normalizeText), MAX_SOURCE_CHARS[source]); // ES-387: ver safety.normalizeForRisk
+const clean = (text, source) => capText(normalizeText(text), MAX_SOURCE_CHARS[source]);
 
 // Una consulta tras otra: dentro de una transacción comparten conexión y no hay nada que ganar en paralelo.
 async function inOrder(ids, read) { const out = []; for (const id of ids) out.push(await read(id)); return out; }
@@ -193,7 +193,7 @@ function buildInsight(item, texts, skillKeys) {
   if (!isPlain(item) || !Object.keys(item).every((k) => ['key', 'text', 'skillKey', 'quotes'].includes(k))) return null;
   if (!FIELD_KEYS.includes(item.key) || !str(item.text) || !Array.isArray(item.quotes) || item.quotes.length < 1 || item.quotes.length > MAX_QUOTES) return null;
   if (item.skillKey !== undefined && (!str(item.skillKey) || !skillKeys.has(item.skillKey))) return null;
-  const text = redactSecrets(normalizeForRisk(item.text, normalizeText)); // ES-387
+  const text = redactSecrets(normalizeText(item.text));
   if (text.length < 1 || text.length > MAX_TEXT || detectRisk(text).level) return null;
   const origins = [];
   for (const q of item.quotes) {

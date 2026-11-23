@@ -16,7 +16,7 @@ const ChatTurn = require('../ChatTurn');
 const { encriptarV2, desencriptar } = require('./crypto');
 const professionalCrypto = require('./professionalCrypto');
 const { normalizeText, redactSecrets } = require('./promptSafety');
-const { detectRisk, normalizeForRisk } = require('./safety');
+const { detectRisk } = require('./safety');
 const consent = require('./consent');
 const skillCatalog = require('./skillCatalog');
 
@@ -68,7 +68,7 @@ function normalizeFields(fields) {
     if (!isPlain(field) || Object.keys(field).some((k) => !['key', 'text', 'origin', 'skillKey'].includes(k))) throw invalid();
     if (field.skillKey !== undefined && (typeof field.skillKey !== 'string' || !skillCatalog.KEY_RE.test(field.skillKey))) throw invalid();
     if (!FIELD_KEYS.includes(field.key) || typeof field.text !== 'string') throw invalid();
-    const text = redactSecrets(normalizeForRisk(field.text, normalizeText)); // ES-387: la forma con controles/invisibles como espacio solo gana si activa el detector de crisis
+    const text = redactSecrets(normalizeText(field.text));
     if (text.length < 1 || text.length > MAX_TEXT) {
       throw invalid('Cada campo debe tener entre 1 y 500 caracteres.', 'Each field must be 1 to 500 characters.');
     }

@@ -6,7 +6,7 @@
 const ChatTurn = require('../ChatTurn');
 const { desencriptar } = require('./crypto');
 const { normalizeText, capText, redactSecrets, fenceUntrusted } = require('./promptSafety');
-const { detectRisk, normalizeForRisk } = require('./safety');
+const { detectRisk } = require('./safety');
 const consent = require('./consent');
 const { normalizePayload } = require('./evidence');
 const proposalToken = require('./proposalToken');
@@ -78,7 +78,7 @@ async function proposeEvidence(userId, rawBody) {
   for (const id of turnIds) {
     const turn = await ChatTurn.findOne({ where: { id, UserId: userId }, attributes: ['id', 'userContent'] });
     if (!turn) throw new ProposalError(404, 'origin_not_found', 'No se encontró el origen indicado.', 'The referenced source was not found.');
-    const text = capText(normalizeForRisk(desencriptar(turn.userContent), normalizeText), MAX_TURN_CHARS); // ES-387
+    const text = capText(normalizeText(desencriptar(turn.userContent)), MAX_TURN_CHARS);
     if (!text || detectRisk(text).level) continue; // no se usa como fuente; no se dice por qué ni se guarda
     usable.set(id, text);
   }

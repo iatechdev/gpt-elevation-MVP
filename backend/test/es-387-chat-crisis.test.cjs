@@ -54,22 +54,3 @@ test('ES-387 (chat): normalizeForRisk no cambia lo que no es crisis (persa con Z
   assert.equal(normalizeForRisk(`me${c(0x200B)}quiero${c(0x200B)}morir`, normalizeText), 'me quiero morir');
   assert.equal(normalizeForRisk(`no${c(0x200B)}aguanto${c(0x200B)}mas`, normalizeText), 'no aguanto mas', 'el nivel medio también');
 });
-
-test('ES-387 (consumidores): el puente profesional rechaza (field_not_shareable) un campo con la frase de crisis hecha con controles o invisibles; un texto normal pasa', () => {
-  const { normalizeFields, BridgeError } = require('../utils/careerContext');
-  for (const separator of [c(0x200B), c(0xAD), c(0x2060), c(0x0B), c(0x1F), c(0xFEFF)]) {
-    assert.throws(() => normalizeFields([{ key: 'motivations', text: `me${separator}quiero${separator}morir` }]), (e) => e instanceof BridgeError && e.code === 'field_not_shareable', JSON.stringify(separator));
-    assert.throws(() => normalizeFields([{ key: 'values', text: `quiero${separator}morir` }]), (e) => e instanceof BridgeError && e.code === 'field_not_shareable');
-  }
-  const ok = normalizeFields([{ key: 'values', text: `Me importa${c(0x200B)}aprender${c(0x200B)}cada día` }]);
-  assert.equal(ok.length, 1);
-});
-
-test('ES-387 (consumidores, lectura de código): evidencia e insights normalizan con normalizeForRisk ANTES de detectRisk', () => {
-  const fs = require('node:fs');
-  for (const file of ['../utils/insightProposal', '../utils/evidenceProposal', '../utils/careerContext']) {
-    const src = fs.readFileSync(require.resolve(file), 'utf8');
-    assert.ok(/normalizeForRisk\(/.test(src), file);
-  }
-  assert.ok(fs.readFileSync(require.resolve('../utils/insightProposal'), 'utf8').includes('const clean = (text, source) => capText(normalizeForRisk(text, normalizeText)'));
-});
