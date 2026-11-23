@@ -80,7 +80,7 @@ const GAP_MARK = '\u0001';
 // Blanco REAL (espacio, tab, salto, NBSP, Zs, U+2028/9): separa palabras. VT, FF y BOM también son \s en JavaScript, pero aquí son huecos como los demás controles/invisibles.
 const REAL_BLANK = '[ \t\n\r\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]';
 const GAP_RUNS = /(?![\t\n\r])[\p{Cc}\p{Cf}]+/gu;
-const BLANK_OR_MARK = new RegExp(REAL_BLANK + '+|' + GAP_MARK + '+|(?:' + REAL_BLANK + '|' + GAP_MARK + ')+', 'g');
+const BLANK_OR_MARK = new RegExp('(?:' + REAL_BLANK + '|' + GAP_MARK + ')+', 'g'); // una racha MIXTA (marcador + blanco real, en cualquier orden) es UNA sola racha (QA-6: la alternancia anterior nunca llegaba a la rama mixta si empezaba por marcador)
 const HAS_BLANK = new RegExp(REAL_BLANK);
 const GAPS = /[\p{Cc}\p{Cf}]/gu; const GAPS_TEST = /[\p{Cc}\p{Cf}]/u;
 const CONTROLS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;

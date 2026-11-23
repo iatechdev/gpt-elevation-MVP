@@ -145,3 +145,32 @@ test('ES-390 (F457-1): la barrera de salida (stripInvisible / fenceUntrusted) qu
   const fenced = fenceUntrusted('the message', `x${c(0)}y${c(0x0B)}z`).block;
   assert.ok(!/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/.test(fenced));
 });
+
+test('ES-390 (QA-6, racha mixta): marcador + BLANCO REAL en la misma racha, en cualquier orden y con separador distinto por hueco, se detecta igual que la frase limpia', () => {
+  const [Z, R, F, S, V, N] = [SEP.ZWSP, SEP.RLO, SEP.FS, SEP.SHY, SEP.VT, SEP.NUL];
+  // El caso mínimo de QA-6: «voy ZWSP␠a RLO hacerme ␠ZWSP da FS ño» (limpio: medium).
+  const minimal = `voy ${Z} a ${R}hacerme ${Z}da${F}ño`;
+  assert.equal(detectRisk('voy a hacerme daño').level, 'medium'); assert.equal(detectRisk(minimal).level, 'medium');
+  assert.equal(detectRisk(`voy${Z} a${R}hacerme ${Z}da${F}ño`).level, 'medium');
+  for (const [a, b, d] of [[`${Z} `, ` ${R}`, ` ${F}`], [` ${Z}`, `${R} `, `${F} `], [`${Z}  ${V}`, ` ${N} `, `${S} `], [` ${Z} `, ` ${F} `, ` ${R} `]]) {
+    for (const phrase of ['me quiero morir', 'no quiero seguir viviendo', 'i want to kill myself', 'quiero suicidarme']) {
+      const words = phrase.split(' ');
+      const text = words.map((w, i) => (i === 0 ? w : `${[a, b, d][i % 3]}${w}`)).join('');
+      assert.equal(detectRisk(text).level, 'high', `${JSON.stringify([a, b, d])}: «${phrase}»`);
+      assert.equal(detectRisk(normalizeForRisk(text, normalizeText)).level, 'high', 'camino del chat');
+      const inner = text.replace(words[1].slice(0, 2), words[1].slice(0, 1) + S + words[1].slice(1, 2));
+      assert.equal(detectRisk(inner).level, 'high', `con relleno dentro: «${phrase}»`);
+    }
+  }
+  // Barrido determinista: separador distinto por hueco (con o sin blanco real alrededor) + relleno dentro de una palabra.
+  let seed = 457; const rnd = (n) => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed % n; };
+  const seps = Object.values(SEP); const glue = ['', ' ', '  ']; let cases = 0;
+  for (let i = 0; i < 3000; i += 1) {
+    const phrase = PHRASES[rnd(PHRASES.length)]; const words = phrase.split(' ');
+    const gap = () => glue[rnd(3)] + seps[rnd(seps.length)] + (rnd(2) ? seps[rnd(seps.length)] : '') + glue[rnd(3)];
+    let text = words[0]; for (let k = 1; k < words.length; k += 1) text += (rnd(4) ? gap() : ' ') + words[k];
+    const w = words[rnd(words.length)]; if (w.length > 2) text = text.replace(w, w.slice(0, 1) + seps[rnd(seps.length)] + w.slice(1));
+    cases += 1; assert.equal(detectRisk(text).level, 'high', JSON.stringify(text));
+  }
+  assert.equal(cases, 3000);
+});
