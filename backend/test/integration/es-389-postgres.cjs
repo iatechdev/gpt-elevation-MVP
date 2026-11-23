@@ -138,5 +138,22 @@ test('ES-389 PostgreSQL: diario crudo, turnos guardados y puente profesional con
     assert.equal(await preview(`Me importa${c(0x200B)}aprender${c(0x200B)}cada día`), null, 'un campo ordinario con invisibles pasa');
   });
 
+  await t.test('texto que PROPONE EL MODELO (buildInsight) con la frase de crisis hecha con controles/invisibles: se DESCARTA igual que la limpia; el insight ordinario se conserva', async () => {
+    const entry = await diary(ORDINARY_DIARY);
+    const ordinary = { key: 'energy_drains', text: 'Parece que las reuniones largas sin decisiones te agotan.', quotes: [{ source: 'diary', id: entry.id, quote: 'Me agota' }] };
+    const withText = (text) => ({ key: 'motivations', text, quotes: [{ source: 'diary', id: entry.id, quote: 'Me agota' }] });
+    const run = async (items) => { provider.out = items; return proposeInsights(userId, { sources: ['diary'], entryIds: [entry.id], locale: 'es' }); };
+    const clean = await run([ordinary, withText('Parece que dices: me quiero morir.')]);
+    assert.equal(clean.insights.length, 1); assert.equal(clean.discarded, 1, 'la limpia se descarta');
+    for (const [name, separator] of Object.entries(SEPARATORS)) {
+      const result = await run([ordinary, withText(`Parece que dices: me${separator}quiero${separator}morir.`)]);
+      assert.equal(result.insights.length, 1, `${name}: solo queda el ordinario`);
+      assert.equal(result.discarded, clean.discarded, `${name}: igual que la limpia`);
+      assert.ok(!JSON.stringify(result.insights).includes('quiero'), `${name}: la frase de crisis no sale en la propuesta`);
+    }
+    const ok = await run([ordinary, withText(`Parece que te importa${c(0x200B)}aprender${c(0x0B)}cada día.`)]);
+    assert.equal(ok.insights.length, 2, 'un texto del modelo ordinario con invisibles inocuos se conserva (sin falso positivo)');
+  });
+
   assert.ok(ORDINARY_CHAT.length > 0);
 });
