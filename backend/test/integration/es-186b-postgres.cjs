@@ -246,7 +246,7 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
   await t.test('ES-264 · la auditoría NO admite texto libre: columnas cerradas (sin text/json) y acción, objetivo y resultado de listas cerradas', async () => {
     const cols = await q(`SELECT column_name, data_type, character_maximum_length FROM information_schema.columns WHERE table_schema='public' AND table_name='AdminAuditEntries' ORDER BY column_name`);
     assert.deepEqual(cols.map((c) => `${c.column_name}:${c.data_type}${c.character_maximum_length ? '(' + c.character_maximum_length + ')' : ''}`), [
-      'action:character varying(40)', 'actorId:integer', 'actorRole:character varying(16)', 'createdAt:timestamp with time zone', 'id:integer',
+      'action:character varying(40)', 'actorId:integer', 'actorLabel:character varying(32)', 'actorRole:character varying(16)', 'createdAt:timestamp with time zone', 'id:integer',
       'result:character varying(12)', 'targetId:integer', 'targetType:character varying(24)']);
     const { recordAdminAction } = require('../../utils/adminAudit');
     const before = (await audit()).length;
