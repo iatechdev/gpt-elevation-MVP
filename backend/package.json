@@ -124,7 +124,8 @@
     "check:workflows": "node scripts/check-workflows.cjs",
     "db:adopt": "node scripts/adopt-existing-schema.cjs",
     "db:migrate:deploy": "node scripts/migrate-deploy.cjs",
-    "test:migrate-deploy:pg": "node --test test/integration/es-115-postgres.cjs"
+    "test:migrate-deploy:pg": "node --test test/integration/es-115-postgres.cjs",
+    "test:crisis-consumers:pg": "node --test test/integration/es-389-postgres.cjs"
   },
   "keywords": [],
   "author": "",
