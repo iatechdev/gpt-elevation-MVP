@@ -7,7 +7,7 @@
   --color-primary: var(--cg-mark); --color-primary-content: var(--cg-ground); --color-neutral: var(--cg-ink); --color-neutral-content: var(--cg-ground); --color-error: var(--cg-err);
   --radius-selector: 0; --radius-field: 0; --radius-box: 0;
   --elv-line: var(--cg-line);
-  color-scheme: inherit; min-height: 0; background: transparent; color: var(--cg-ink); font: 1rem/1.6 var(--cg-font-sans); padding: 1.4rem 0 2rem;
+  color-scheme: inherit; min-height: 100svh; /* ES-402: la pantalla reserva una pantalla de alto: el pie ya está fuera de vista al cargar y no salta cuando llega el formulario (CLS 0,14 → ≤ 0,1 a 320/390 px) */ background: transparent; color: var(--cg-ink); font: 1rem/1.6 var(--cg-font-sans); padding: 1.4rem 0 2rem;
 }
 .participant-context-scope.cg-onboarding { max-width: 40rem; margin-inline: auto; }
 .cg-onboarding h1 { font: 700 clamp(2rem, 5vw, 3rem)/1.05 var(--cg-font-cond); letter-spacing: 0.02em; text-transform: uppercase; }
