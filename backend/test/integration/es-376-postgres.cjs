@@ -55,6 +55,7 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
   await require('../../migrations/20261123010000-es386-audit-actor-label.cjs').up(sequelize); // ES-386
   const PasswordReset = require('../../PasswordReset');
   const AdminAuditEntry = require('../../AdminAuditEntry');
+  const { recordDenied } = require('../../utils/adminAudit');
   const { issueOperatorLink, OperatorLinkError, ttlMinutes, perAccountPerHour, checkBase } = require('../../utils/operatorLink');
 
   const app = express();
@@ -255,9 +256,9 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
     const { recordAdminAction } = require('../../utils/adminAudit');
     for (const [label, expected] of [['ops-ana', 'ops-ana'], ['con espacio', null], ['ana@correo.co', null], ['a'.repeat(33), null], [undefined, null], [42, null], ['', null], [`ops${String.fromCharCode(0x202E)}`, null]]) {
       const row = await recordAdminAction({ actor: { id: null, role: 'operator', label }, action: 'user.operator_link', targetType: 'user', targetId: 99 });
-      assert.equal(row.actorLabel, expected, JSON.stringify(label)); assert.equal((await AdminAuditEntry.findByPk(row.id)).actorLabel, expected);
+      assert.equal(row.actorLabel ?? null, expected, JSON.stringify(label)); assert.equal((await AdminAuditEntry.findByPk(row.id)).actorLabel, expected);
     }
-    assert.equal((await recordAdminAction({ actor: { id: 5, role: 'admin' }, action: 'user.update', targetType: 'user', targetId: 1 })).actorLabel, null, 'una cuenta de la aplicación no lleva etiqueta');
+    assert.equal((await recordAdminAction({ actor: { id: 5, role: 'admin' }, action: 'user.update', targetType: 'user', targetId: 1 })).actorLabel ?? null, null, 'una cuenta de la aplicación no lleva etiqueta');
   });
 
   await t.test('ES-386 cuota propia: las solicitudes anónimas de la ruta pública (filas de PasswordResets) NO agotan la cuota del operador', async () => {
@@ -350,5 +351,30 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
     await User.update({ role: 'user' }, { where: { id: user.id } });
     for (let i = 0; i < 3; i += 1) await issueOperatorLink({ email: user.email, operatorId: 'ops-ana' });
     assert.equal((await failure(issueOperatorLink({ email: user.email, operatorId: 'ops-ana' }))).code, 'rate_limited', 'el tope sigue siendo 3 de éxitos');
+  });
+
+  await t.test('ES-386 despliegue: sin la columna actorLabel (migración aún no aplicada) la auditoría de siempre sigue funcionando; el script de operador NO emite (falla cerrado); la migración es idempotente', async () => {
+    const { recordAdminAction } = require('../../utils/adminAudit');
+    await sequelize.query('ALTER TABLE "AdminAuditEntries" DROP COLUMN "actorLabel"');
+    try {
+      const row = await recordAdminAction({ actor: { id: 7, role: 'admin' }, action: 'user.update', targetType: 'user', targetId: 1 });
+      assert.ok(row.id && row.actorId === 7 && row.result === 'ok', 'una acción de administración se audita aunque la columna no exista todavía');
+      assert.equal((await sequelize.query('SELECT count(*)::int AS n FROM "AdminAuditEntries" WHERE id = :id', { replacements: { id: row.id }, type: 'SELECT' }))[0].n, 1);
+      await recordDenied({ id: 7, role: 'admin' }, 'user.reset_link', 'user', 1);
+      const user = await mk();
+      const error = await failure(issueOperatorLink({ email: user.email, operatorId: 'ops-ana' }));
+      assert.ok(error instanceof OperatorLinkError); assert.equal(error.code, 'failed', 'sin la columna el operador no emite');
+      assert.equal(await PasswordReset.count({ where: { UserId: user.id } }), 0, 'ni deja filas');
+    } finally { await require('../../migrations/20261123010000-es386-audit-actor-label.cjs').up(sequelize); }
+    const migration = require('../../migrations/20261123010000-es386-audit-actor-label.cjs');
+    await migration.up(sequelize); await migration.up(sequelize); // idempotente
+    const cols = await sequelize.query("SELECT data_type, character_maximum_length, is_nullable FROM information_schema.columns WHERE table_name = 'AdminAuditEntries' AND column_name = 'actorLabel'", { type: 'SELECT' });
+    assert.deepEqual(cols, [{ data_type: 'character varying', character_maximum_length: 32, is_nullable: 'YES' }]);
+    // y sobre una tabla creada por sync() (que ya trae la columna del modelo): la migración no cambia nada ni falla (lección de ES-169, #412)
+    await sequelize.query('DROP TABLE "AdminAuditEntries"'); await AdminAuditEntry.sync();
+    await migration.up(sequelize); await migration.up(sequelize);
+    assert.equal((await sequelize.query("SELECT count(*)::int AS n FROM information_schema.columns WHERE table_name = 'AdminAuditEntries' AND column_name = 'actorLabel'", { type: 'SELECT' }))[0].n, 1);
+    const after = await mk(); await issueOperatorLink({ email: after.email, operatorId: 'ops-ana' });
+    assert.equal((await AdminAuditEntry.findOne({ where: { targetId: after.id } })).actorLabel, 'ops-ana');
   });
 });

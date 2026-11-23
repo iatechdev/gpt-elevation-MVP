@@ -16,10 +16,13 @@ async function recordAdminAction({ actor, action, targetType = null, targetId = 
   if (targetType !== null && !TARGET_TYPES.has(targetType)) throw new Error('Tipo de objetivo de auditoría desconocido.');
   // ES-386: el identificador de operador sale de una lista cerrada de caracteres (letras, números, punto, guion y guion bajo; hasta 32); cualquier otra cosa se descarta, no se guarda.
   const label = typeof actor?.label === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/.test(actor.label) ? actor.label : null;
+  // Solo se incluye la columna cuando HAY etiqueta: con una cuenta de la aplicación (el caso de siempre) la escritura no toca `actorLabel`, así que un servidor nuevo sigue auditando aunque la migración
+  // aún no se haya aplicado (migrate-deploy corre antes del arranque, pero esto evita una ventana de fallos). `returning` pide solo las columnas que existen desde antes.
   return AdminAuditEntry.create({
-    actorId: Number.isInteger(actor?.id) ? actor.id : null, actorRole: typeof actor?.role === 'string' ? actor.role.slice(0, 16) : null, actorLabel: label,
+    actorId: Number.isInteger(actor?.id) ? actor.id : null, actorRole: typeof actor?.role === 'string' ? actor.role.slice(0, 16) : null,
+    ...(label ? { actorLabel: label } : {}),
     action, targetType, targetId: Number.isInteger(targetId) ? targetId : null, result,
-  }, { transaction });
+  }, { transaction, ...(label ? {} : { fields: ['actorId', 'actorRole', 'action', 'targetType', 'targetId', 'result'], returning: ['id', 'actorId', 'actorRole', 'action', 'targetType', 'targetId', 'result', 'createdAt'] }) });
 }
 
 // Una acción NEGADA no cambia nada que revertir: se registra aparte y sin bloquear la respuesta (un fallo de auditoría aquí no convierte el 403 en 500).
