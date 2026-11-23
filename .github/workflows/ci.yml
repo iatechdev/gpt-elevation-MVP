@@ -151,6 +151,7 @@ jobs:
           ES180_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
           ES216_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
           ES29_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES282_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
         run: npm run test:perf
 
   data-rights-postgres:
