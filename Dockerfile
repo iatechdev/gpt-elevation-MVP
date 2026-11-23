@@ -10,6 +10,9 @@ ENV VITE_ENABLE_COMPASS_CHAT=$VITE_ENABLE_COMPASS_CHAT
 # ES-173: «Tu opinión» real (servidor). Vacía = apagada. Solo se enciende en Railway staging por decisión de Mauricio.
 ARG VITE_ENABLE_PILOT_FEEDBACK_LIVE
 ENV VITE_ENABLE_PILOT_FEEDBACK_LIVE=$VITE_ENABLE_PILOT_FEEDBACK_LIVE
+# ES-237 (ES-400): rutas, experimentos y plan (/app/next-step). Vacía = apagada. Solo se enciende en Railway staging (D1, 23-nov-2026); producción no la define.
+ARG VITE_ENABLE_CAREER_PREVIEW
+ENV VITE_ENABLE_CAREER_PREVIEW=$VITE_ENABLE_CAREER_PREVIEW
 
 COPY . .
 
