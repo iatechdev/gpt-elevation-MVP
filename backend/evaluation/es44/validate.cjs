@@ -39,7 +39,7 @@ function validateCorpus(corpus) {
     if (ids.has(c.caseId) || c.caseId !== `ES44-${String(i + 1).padStart(3, '0')}`) errors.push(`case sequence ${i + 1}`);
     ids.add(c.caseId);
     if (new Set(c.input.sources.map(s => s.ref)).size !== c.input.sources.length) errors.push(`${c.caseId}: duplicate source refs`);
-    if (c.author !== corpus.author) errors.push(`${c.caseId}: author mismatch`);
+    if (!corpus.author.split(';').map(a => a.trim()).includes(c.author)) errors.push(`${c.caseId}: author mismatch`);
     if (c.input.sources[0].kind !== 'chat_turn') errors.push(`${c.caseId}: initial turn required by local adapter`);
     if (c.expected.controls.includes('safety_source_excluded') && !c.input.sources.some(s => s.ref === 'risk-turn' && s.kind === 'chat_turn' && !s.authorized)) errors.push(`${c.caseId}: missing risk source reference`);
   }
