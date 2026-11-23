@@ -119,6 +119,58 @@ jobs:
       - name: Auditar dependencias (bloquea en alta o crítica)
         run: npm audit --omit=dev --audit-level=high
 
+  # ES-383: rendimiento APARTE de la corrección. Los techos de tiempo ya no están en las pruebas que bloquean (npm test y los scripts :pg solo los informan);
+  # aquí se ejecutan en modo estricto, con el techo escalado por la velocidad que mide la misma corrida. NO bloquea PR: un runner cargado no pone el PR en rojo
+  # (continue-on-error); el resultado se lee en el registro del job. Para que bloquee, quitar continue-on-error.
+  perf:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Rendimiento (PERF_STRICT=1; informa, no bloquea)
+        env:
+          ES85_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES179_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES180_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES216_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES29_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+        run: |
+          set -o pipefail
+          npm run test:perf 2>&1 | tee "$RUNNER_TEMP/perf.log"
+      # ES-383 (O452-2): un perf en rojo con continue-on-error ya no obliga a abrir el registro: anotacion ::warning:: por cada prueba lenta y tabla en el resumen del job.
+      - name: Resumen de rendimiento (anotaciones y resumen del job)
+        if: always()
+        run: |
+          LOG="$RUNNER_TEMP/perf.log"
+          [ -f "$LOG" ] || { echo '### Rendimiento (test:perf)' >> "$GITHUB_STEP_SUMMARY"; echo 'No hubo registro (el paso previo no llego a ejecutarse).' >> "$GITHUB_STEP_SUMMARY"; exit 0; }
+          SLOW=$(grep -E 'PERF LENTO' "$LOG" | sed -E 's/^[# ]*//' | sort -u || true)
+          OKS=$(grep -cE 'PERF OK' "$LOG" || true)
+          { echo '### Rendimiento (test:perf) - informativo, no bloquea'; echo;
+            echo "Mediciones dentro del techo: ${OKS:-0}";
+            if [ -n "$SLOW" ]; then echo; echo '**Pruebas LENTAS (revisar; no bloquean el PR):**'; echo; echo '```'; echo "$SLOW"; echo '```'; else echo; echo 'Ninguna prueba lenta.'; fi; } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$SLOW" ]; then echo "$SLOW" | while IFS= read -r line; do echo "::warning title=Rendimiento lento (test:perf)::$line"; done; fi
+          if grep -qE '^# fail [1-9]|^not ok' "$LOG"; then echo '::warning title=test:perf fallo::Hay pruebas de rendimiento en rojo (ver el registro del paso anterior); no bloquea el PR.'; fi
+
   data-rights-postgres:
     runs-on: ubuntu-latest
     services:

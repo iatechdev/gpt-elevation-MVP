@@ -4,6 +4,7 @@
 // Uso (en backend/):  ES216_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54329/postgres npm run test:experiment-read:pg
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('../perf-gate.cjs'); // ES-383: los techos de tiempo informan; solo fallan con PERF_STRICT=1 (npm run test:perf)
 const { randomBytes, randomUUID } = require('node:crypto');
 const { Sequelize } = require('sequelize');
 
@@ -88,7 +89,7 @@ test('ES-216 PostgreSQL: lectura del experimento con muchas evidencias', { timeo
     const timing = await timed(() => careerPlan.getExperiment(a.id, experimentId));
     console.log(`ES-216 medición con ${confirmedNow} evidencias: consultas=${queries} p50=${timing.p50.toFixed(0)}ms p95=${timing.p95.toFixed(0)}ms max=${timing.max.toFixed(0)}ms`);
     assert.ok(queries < 100, `el GET hizo ${queries} consultas con ${confirmedNow} evidencias (debe ser constante, no una por evidencia)`);
-    assert.ok(timing.p95 < 500, `p95 ${timing.p95.toFixed(0)} ms (umbral aprobado 500 ms)`);
+    perfAssert('ES-216 GET del experimento p95 (umbral aprobado 500 ms)', timing.p95, 500);
   });
 
   await t.test('escrituras de la cadena con muchas evidencias: proponer, crear y cambiar un experimento p95 < 600 ms (umbral 800 ms con 25 % de margen)', async () => {
@@ -105,7 +106,7 @@ test('ES-216 PostgreSQL: lectura del experimento con muchas evidencias', { timeo
       samples.sort((x, y) => x - y);
       const p95 = samples[Math.min(samples.length - 1, Math.ceil(samples.length * 0.95) - 1)];
       console.log(`ES-216 escritura ${name} con ${confirmedNow} evidencias: p50=${samples[Math.floor(samples.length / 2)].toFixed(0)}ms p95=${p95.toFixed(0)}ms`);
-      assert.ok(p95 < 600, `${name} p95 ${p95.toFixed(0)} ms (máximo propuesto 600 ms)`);
+      perfAssert('ES-216 escritura ' + name + ' p95 (máximo propuesto 600 ms)', p95, 600);
     }
   });
 

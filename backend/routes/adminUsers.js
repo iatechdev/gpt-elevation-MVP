@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../database');
-const { Op, Transaction } = require('sequelize');
+const { Transaction } = require('sequelize');
 const User = require('../User');
 const MoodLog = require('../MoodLog');
 const SessionRating = require('../SessionRating');

@@ -3,6 +3,7 @@
 // ni «sin espacios», ni faltas de ortografía: eso es del especialista (ES-44/46). Corpus de QA Elevation (163 casos que antes NO se detectaban) en test/fixtures.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { models, anthropic, promptVault, startApp } = require('./support.cjs');
 const { install } = require('./es-20-store.cjs');
 const { detectRisk, _steps } = require('../utils/safety');
@@ -71,7 +72,7 @@ test('ES-304 costo: entradas largas o patológicas se evalúan rápido (sin retr
   const started = Date.now();
   for (const text of ['a '.repeat(50000), 'a.'.repeat(50000), '1'.repeat(100000), 'quiero '.repeat(20000), '\u{E0041}'.repeat(100000), 'x́'.repeat(50000), 'ㅤ'.repeat(100000)]) detectRisk(text);
   for (let i = 0; i < 20; i++) detectRisk('Estoy cansado de mi trabajo y quiero cambiar de carrera, ¿por dónde empiezo? '.repeat(25));
-  assert.ok(Date.now() - started < 3000, 'tiempo total ' + (Date.now() - started) + ' ms');
+  perfAssert('ES-304 entradas patológicas', Date.now() - started, 3000);
 });
 
 // ── Dentro del chat: el apoyo en vivo y el filtro de ES-298 usan el mismo detector; el texto guardado NO cambia ─────────────────────────────────────────────────────────────────────────────
@@ -110,8 +111,13 @@ test('ES-304 costo del PEOR caso real (21 mensajes de 4.000 caracteres): con la 
   const natural = 'Estoy cansado de mi trabajo y quiero cambiar de carrera, ¿por dónde empiezo? Tengo 3 años de experiencia. ';
   const msgs = Array.from({ length: 21 }, (_, i) => (natural + i + ' ').repeat(40).slice(0, 4000));
   const timeOf = () => { const s = process.hrtime.bigint(); for (const m of msgs) detectRisk(m); return Number(process.hrtime.bigint() - s) / 1e6; };
-  const cold = []; for (let r = 0; r < 5; r++) { _steps.clearMemo(); cold.push(timeOf()); } const warm = Math.min(timeOf(), timeOf());
-  assert.ok(warm < Math.min(...cold) / 5, 'con memoria (' + warm.toFixed(1) + ' ms) debe costar menos de la quinta parte del frío (' + cold.map((n) => n.toFixed(0)) + ' ms)');
+  // Corrección (sin reloj): tras la primera pasada la memoria tiene una entrada por mensaje y la segunda pasada la APROVECHA (no agrega entradas ni cambia los resultados).
+  _steps.clearMemo(); const first = msgs.map((m) => detectRisk(m)); const sizeAfterFirst = _steps.memoSize();
+  assert.equal(sizeAfterFirst, msgs.length, 'una entrada de memoria por mensaje evaluado');
+  const second = msgs.map((m) => detectRisk(m)); assert.equal(_steps.memoSize(), sizeAfterFirst, 'la segunda pasada reutiliza la memoria: no agrega entradas'); assert.deepEqual(second, first);
+  // Rendimiento (informa; falla solo con PERF_STRICT=1): mínimo de varias repeticiones en frío contra mínimo en caliente (el mínimo filtra la carga puntual del equipo).
+  const cold = []; for (let r = 0; r < 5; r++) { _steps.clearMemo(); cold.push(timeOf()); } const warm = Math.min(timeOf(), timeOf(), timeOf());
+  perfCheck('ES-304 memoria caliente < frío/5', warm < Math.min(...cold) / 5, 'con memoria ' + warm.toFixed(1) + ' ms; en frío ' + cold.map((n) => n.toFixed(0)) + ' ms');
 });
 
 // ── Equivalencia: la versión optimizada decide IGUAL que la referencia (todas las formas, un `flat` por forma, regla por regla) en miles de textos generados ──────────────────────────────────────

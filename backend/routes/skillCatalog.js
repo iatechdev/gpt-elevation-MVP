@@ -44,7 +44,7 @@ router.put('/:id/skills/:skillKey', handle(async (req, res) => {
   let content = req.body;
   let expected;
   if (content && typeof content === 'object' && !Array.isArray(content)) {
-    const { expectedUpdatedAt, updatedAt, ...rest } = content; // eslint-disable-line no-unused-vars
+    const { expectedUpdatedAt, updatedAt, ...rest } = content;
     content = rest;
     if (expectedUpdatedAt !== undefined) {
       expected = typeof expectedUpdatedAt === 'string' ? new Date(expectedUpdatedAt) : new Date(NaN);
