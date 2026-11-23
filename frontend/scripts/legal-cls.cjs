@@ -8,7 +8,7 @@ const i = process.argv.indexOf('--cpu'); const CPU = i === -1 ? 1 : Number(proce
 ;(async () => {
   const browser = await chromium.launch()
   for (const [route, lang] of [['/privacidad', 'es'], ['/privacidad', 'en'], ['/terminos', 'es'], ['/terminos', 'en']]) {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
+    const ctx = await browser.newContext({ viewport: { width: Number(process.env.WIDTH || 390), height: 844 }, reducedMotion: 'reduce' }); const page = await ctx.newPage()
     if (CPU > 1) { const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU }) }
     await page.addInitScript(l => { localStorage.setItem('elv_lang', l); window.__shifts = []; window.__cls = 0
       new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) { window.__cls += e.value; window.__shifts.push([Math.round(e.startTime), +e.value.toFixed(4), (e.sources || []).map(s => ((s.node && (s.node.className || s.node.nodeName)) || '?').toString().slice(0, 24) + ' ' + Math.round(s.previousRect.y) + '→' + Math.round(s.currentRect.y)).join(' | ')]) } }).observe({ type: 'layout-shift', buffered: true }) }, lang)
