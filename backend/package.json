@@ -26,6 +26,7 @@
     "test:superadmin-access:pg": "node --test test/integration/es-334-postgres.cjs",
     "test:bridge-source-consent:pg": "node --test test/integration/es-233-postgres.cjs",
     "test:landing-concurrency:pg": "node --test test/integration/es-279-postgres.cjs",
+    "test:landing-seed-refresh:pg": "node --test test/integration/es-378-postgres.cjs",
     "test:purge-hardening:pg": "node --test test/integration/es-283-postgres.cjs",
     "test:transversal:pg": "node --test test/integration/es-282-postgres.cjs",
     "test:pricing-validation:pg": "node --test test/integration/es-278-postgres.cjs",
