@@ -14,8 +14,10 @@ async function recordAdminAction({ actor, action, targetType = null, targetId = 
   if (!ACTIONS.has(action)) throw new Error(`Acción de auditoría desconocida: ${action}`);
   if (!RESULTS.has(result)) throw new Error(`Resultado de auditoría desconocido: ${result}`);
   if (targetType !== null && !TARGET_TYPES.has(targetType)) throw new Error('Tipo de objetivo de auditoría desconocido.');
+  // ES-386: el identificador de operador sale de una lista cerrada de caracteres (letras, números, punto, guion y guion bajo; hasta 32); cualquier otra cosa se descarta, no se guarda.
+  const label = typeof actor?.label === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/.test(actor.label) ? actor.label : null;
   return AdminAuditEntry.create({
-    actorId: Number.isInteger(actor?.id) ? actor.id : null, actorRole: typeof actor?.role === 'string' ? actor.role.slice(0, 16) : null,
+    actorId: Number.isInteger(actor?.id) ? actor.id : null, actorRole: typeof actor?.role === 'string' ? actor.role.slice(0, 16) : null, actorLabel: label,
     action, targetType, targetId: Number.isInteger(targetId) ? targetId : null, result,
   }, { transaction });
 }

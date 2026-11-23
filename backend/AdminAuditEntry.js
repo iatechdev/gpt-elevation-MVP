@@ -7,6 +7,7 @@ const { sequelize } = require('./database');
 const AdminAuditEntry = sequelize.define('AdminAuditEntry', {
   actorId: { type: DataTypes.INTEGER, allowNull: true },
   actorRole: { type: DataTypes.STRING(16), allowNull: true },
+  actorLabel: { type: DataTypes.STRING(32), allowNull: true }, // ES-386: identificador de OPERADOR (no secreto, sin datos personales) cuando actúa el script de operador; NULL en el resto
   action: { type: DataTypes.STRING(40), allowNull: false },
   targetType: { type: DataTypes.STRING(24), allowNull: true },
   targetId: { type: DataTypes.INTEGER, allowNull: true },

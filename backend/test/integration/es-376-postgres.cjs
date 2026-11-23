@@ -38,7 +38,8 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
   delete process.env.MAIL_PROVIDER; // sin proveedor: es justo el caso de este ticket
   const BASE = 'https://app.example.invalid';
   process.env.APP_BASE_URL = BASE;
-  delete process.env.OPERATOR_LINK_TTL_MINUTES;
+  delete process.env.OPERATOR_LINK_TTL_MINUTES; delete process.env.OPERATOR_LINK_PER_ACCOUNT_HOUR;
+  process.env.OPERATOR_ID = 'ops-test'; // ES-386: quién opera es obligatorio
   const dbModule = require.resolve('../../database');
   require.cache[dbModule] = { id: dbModule, filename: dbModule, loaded: true, exports: { sequelize } };
 
@@ -51,9 +52,10 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
   await Promise.all([User, DeletionRequest, AuthRevocation, RevokedToken, Invitation].map(model => model.sync()));
   await require('../../migrations/20261101-es132-password-reset.cjs').up(sequelize);
   await require('../../migrations/20261112010000-es186-admin-audit.cjs').up(sequelize);
+  await require('../../migrations/20261123010000-es386-audit-actor-label.cjs').up(sequelize); // ES-386
   const PasswordReset = require('../../PasswordReset');
   const AdminAuditEntry = require('../../AdminAuditEntry');
-  const { issueOperatorLink, OperatorLinkError, ttlMinutes, checkBase } = require('../../utils/operatorLink');
+  const { issueOperatorLink, OperatorLinkError, ttlMinutes, perAccountPerHour, checkBase } = require('../../utils/operatorLink');
 
   const app = express();
   app.use(express.json());
@@ -87,6 +89,7 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
         const audit = await AdminAuditEntry.findAll({ where: { targetId: user.id } });
         assert.equal(audit.length, 1);
         assert.deepEqual([audit[0].actorId, audit[0].actorRole, audit[0].action, audit[0].targetType, audit[0].result], [null, 'operator', 'user.operator_link', 'user', 'ok']);
+        assert.equal(audit[0].actorLabel, 'ops-test', 'la auditoría dice QUIÉN operó');
       }
     } finally { Object.assign(console, original); }
     const stored = await everythingStored();
@@ -178,7 +181,7 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
     const user = await mk();
     for (const base of ['', undefined, 'http://app.example.invalid', 'ftp://app.example.invalid', 'https://usuario:clave@app.example.invalid', 'https://app.example.invalid?x=1', 'no es una url', 'https://app.example.invalid#frag']) {
       const env = { APP_BASE_URL: undefined, FRONTEND_URL: undefined };
-      const error = await failure(issueOperatorLink({ email: user.email, base, env })); assert.equal(error && error.code, 'config', String(base));
+      const error = await failure(issueOperatorLink({ email: user.email, base, operatorId: 'ops-test', env })); assert.equal(error && error.code, 'config', String(base));
     }
     assert.equal(checkBase('http://localhost:5173/'), 'http://localhost:5173');
     assert.equal(await PasswordReset.count({ where: { UserId: user.id } }), 0);
@@ -197,7 +200,7 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
   await t.test('el script: exige la bandera, se niega si la salida no es una terminal y, si se autoriza, imprime SOLO el enlace en stdout', async () => {
     const script = path.join(__dirname, '..', '..', 'scripts', 'issue-link.cjs');
     const run = (args, env) => new Promise((resolve) => {
-      const child = spawn(process.execPath, [script, ...args], { cwd: path.join(__dirname, '..', '..'), env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, NODE_PATH: process.env.NODE_PATH || '', DATABASE_URL: databaseUrl, DB_SSL: 'false', ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+      const child = spawn(process.execPath, [script, ...args], { cwd: path.join(__dirname, '..', '..'), env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, NODE_PATH: process.env.NODE_PATH || '', DATABASE_URL: databaseUrl, DB_SSL: 'false', OPERATOR_ID: 'ops-test', ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
       let stdout = ''; let stderr = '';
       child.stdout.on('data', c => { stdout += c; }); child.stderr.on('data', c => { stderr += c; });
       child.on('exit', code => resolve({ code, stdout, stderr }));
@@ -225,5 +228,127 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
     assert.equal(missing.code, 1); assert.equal(missing.stdout, ''); assert.ok(!missing.stderr.includes('nadie@'));
     const httpBase = await run(['--email', user.email, '--stdout-ok'], { APP_BASE_URL: 'http://app.example.invalid', ALLOW_OPERATOR_LINK: 'true' });
     assert.equal(httpBase.code, 1); assert.equal(httpBase.stdout, '');
+  });
+
+  // ─────────── ES-386 · seguimientos de QA-Claude-6 sobre #441 ───────────
+  await t.test('ES-386 quién opera: OPERATOR_ID es obligatorio y de lista cerrada; queda en la auditoría y nada se emite sin él', async () => {
+    const user = await mk();
+    const resetsBefore = await PasswordReset.count(); const auditBefore = await AdminAuditEntry.count();
+    for (const operatorId of ['', '   ', undefined, null, 'a'.repeat(33), 'con espacio', 'con\nsalto', 'ana@correo.co', '-empieza', '.empieza', 'tilde-á', `ops${String.fromCharCode(0x202E)}x`, `ops${String.fromCharCode(0x200B)}x`, "ops'--", 'ops;drop']) {
+      const env = { ...process.env }; delete env.OPERATOR_ID;
+      const error = await failure(issueOperatorLink({ email: user.email, operatorId, env }));
+      assert.ok(error instanceof OperatorLinkError, JSON.stringify(operatorId)); assert.equal(error.code, 'operator_id', JSON.stringify(operatorId));
+    }
+    assert.equal(await PasswordReset.count(), resetsBefore); assert.equal(await AdminAuditEntry.count(), auditBefore, 'sin operador identificado no se emite ni se audita nada');
+    for (const operatorId of ['ops-ana', 'A', 'ops.ana_01', 'x'.repeat(32)]) {
+      const person = await mk(); await issueOperatorLink({ email: person.email, operatorId });
+      const row = await AdminAuditEntry.findOne({ where: { targetId: person.id } });
+      assert.equal(row.actorLabel, operatorId); assert.equal(row.actorRole, 'operator'); assert.equal(row.actorId, null);
+    }
+    const viaEnv = await mk(); await issueOperatorLink({ email: viaEnv.email, env: { ...process.env, OPERATOR_ID: 'ops-env' } });
+    assert.equal((await AdminAuditEntry.findOne({ where: { targetId: viaEnv.id } })).actorLabel, 'ops-env', 'toma OPERATOR_ID del entorno');
+    const denied = await mk('admin'); await failure(issueOperatorLink({ email: denied.email, operatorId: 'ops-ana' }));
+    assert.equal((await AdminAuditEntry.findOne({ where: { targetId: denied.id } })).actorLabel, 'ops-ana', 'también en el intento denegado');
+  });
+
+  await t.test('ES-386 la auditoría no guarda como etiqueta nada que no sea un identificador válido (defensa de la capa de auditoría)', async () => {
+    const { recordAdminAction } = require('../../utils/adminAudit');
+    for (const [label, expected] of [['ops-ana', 'ops-ana'], ['con espacio', null], ['ana@correo.co', null], ['a'.repeat(33), null], [undefined, null], [42, null], ['', null], [`ops${String.fromCharCode(0x202E)}`, null]]) {
+      const row = await recordAdminAction({ actor: { id: null, role: 'operator', label }, action: 'user.operator_link', targetType: 'user', targetId: 99 });
+      assert.equal(row.actorLabel, expected, JSON.stringify(label)); assert.equal((await AdminAuditEntry.findByPk(row.id)).actorLabel, expected);
+    }
+    assert.equal((await recordAdminAction({ actor: { id: 5, role: 'admin' }, action: 'user.update', targetType: 'user', targetId: 1 })).actorLabel, null, 'una cuenta de la aplicación no lleva etiqueta');
+  });
+
+  await t.test('ES-386 cuota propia: las solicitudes anónimas de la ruta pública (filas de PasswordResets) NO agotan la cuota del operador', async () => {
+    const user = await mk();
+    for (let i = 0; i < 6; i += 1) await PasswordReset.create({ UserId: user.id, tokenHash: sha256(`publica-${user.id}-${i}`), expiresAt: new Date(Date.now() + 60000) }); // lo que dejarían 6 solicitudes anónimas
+    const first = await issueOperatorLink({ email: user.email, operatorId: 'ops-ana' });
+    assert.equal((await confirm(tokenOf(first.link), NEW)).status, 200, 'el operador pudo emitir y el enlace sirve');
+    const other = await mk();
+    for (let i = 0; i < 3; i += 1) await issueOperatorLink({ email: other.email, operatorId: 'ops-ana' });
+    assert.equal((await failure(issueOperatorLink({ email: other.email, operatorId: 'ops-ana' }))).code, 'rate_limited', 'el operador sí tiene su propio tope');
+    // el tope es por cuenta y no por operador: otro operador sobre la MISMA cuenta tampoco lo supera, y otra cuenta no se ve afectada
+    assert.equal((await failure(issueOperatorLink({ email: other.email, operatorId: 'ops-bruno' }))).code, 'rate_limited');
+    const third = await mk(); await issueOperatorLink({ email: third.email, operatorId: 'ops-ana' });
+  });
+
+  await t.test('ES-386 cuota propia: el tope sale de OPERATOR_LINK_PER_ACCOUNT_HOUR (1–10, por defecto 3), solo cuentan los éxitos y no los intentos denegados ni los vencidos', async () => {
+    assert.equal(perAccountPerHour({}), 3); assert.equal(perAccountPerHour({ OPERATOR_LINK_PER_ACCOUNT_HOUR: '0' }), 3); assert.equal(perAccountPerHour({ OPERATOR_LINK_PER_ACCOUNT_HOUR: '-2' }), 3); assert.equal(perAccountPerHour({ OPERATOR_LINK_PER_ACCOUNT_HOUR: 'x' }), 3);
+    assert.equal(perAccountPerHour({ OPERATOR_LINK_PER_ACCOUNT_HOUR: '1' }), 1); assert.equal(perAccountPerHour({ OPERATOR_LINK_PER_ACCOUNT_HOUR: '99' }), 10); assert.equal(perAccountPerHour({ OPERATOR_LINK_PER_ACCOUNT_HOUR: '5' }), 5);
+    const env = { ...process.env, OPERATOR_LINK_PER_ACCOUNT_HOUR: '1' };
+    const one = await mk(); await issueOperatorLink({ email: one.email, operatorId: 'ops-ana', env });
+    assert.equal((await failure(issueOperatorLink({ email: one.email, operatorId: 'ops-ana', env }))).code, 'rate_limited');
+    const five = await mk(); const env5 = { ...process.env, OPERATOR_LINK_PER_ACCOUNT_HOUR: '5' };
+    for (let i = 0; i < 5; i += 1) await issueOperatorLink({ email: five.email, operatorId: 'ops-ana', env: env5 });
+    assert.equal((await failure(issueOperatorLink({ email: five.email, operatorId: 'ops-ana', env: env5 }))).code, 'rate_limited');
+    // una emisión de hace más de una hora ya no cuenta
+    const old = await mk(); for (let i = 0; i < 3; i += 1) await issueOperatorLink({ email: old.email, operatorId: 'ops-ana' });
+    await sequelize.query(`UPDATE "AdminAuditEntries" SET "createdAt" = now() - interval '61 minutes' WHERE "targetId" = :id AND action = 'user.operator_link'`, { replacements: { id: old.id } });
+    await issueOperatorLink({ email: old.email, operatorId: 'ops-ana' });
+    // los intentos denegados (rol) y fallidos no gastan la cuota de nadie
+    const admin = await mk('admin'); for (let i = 0; i < 5; i += 1) assert.equal((await failure(issueOperatorLink({ email: admin.email, operatorId: 'ops-ana' }))).code, 'role_not_allowed');
+  });
+
+  await t.test('ES-386 carrera: emisiones simultáneas del operador sobre la MISMA cuenta respetan el tope exacto y dejan UN solo enlace vivo (30 cuentas × 8 a la vez)', async () => {
+    for (let round = 0; round < 30; round += 1) {
+      const user = await mk();
+      const results = await Promise.allSettled(Array.from({ length: 8 }, () => issueOperatorLink({ email: user.email, operatorId: 'ops-ana' })));
+      const ok = results.filter(r => r.status === 'fulfilled'); const limited = results.filter(r => r.status === 'rejected' && r.reason && r.reason.code === 'rate_limited');
+      assert.equal(ok.length, 3, `ronda ${round}: exactamente 3 éxitos, hubo ${ok.length}`); assert.equal(limited.length, 5, `ronda ${round}: 5 con rate_limited`);
+      assert.equal(await AdminAuditEntry.count({ where: { targetId: user.id, action: 'user.operator_link', result: 'ok' } }), 3);
+      const live = (await sequelize.query('SELECT count(*)::int AS n FROM "PasswordResets" WHERE "UserId" = :id AND "usedAt" IS NULL', { replacements: { id: user.id }, type: 'SELECT' }))[0].n;
+      assert.equal(live, 1, `ronda ${round}: un solo enlace vivo`);
+      const statuses = await Promise.all(ok.map(r => confirm(tokenOf(r.value.link), NEW).then(res => res.status)));
+      assert.deepEqual(statuses.sort(), [200, 400, 400], `ronda ${round}: solo sirve el último`);
+    }
+  });
+
+  await t.test('ES-386 el rol y el estado se RECOMPRUEBAN bajo el bloqueo: si cambian mientras se espera, no se emite nada', async () => {
+    const holdAndChange = async (change) => {
+      const user = await mk();
+      const holder = await sequelize.transaction();
+      await User.findOne({ where: { id: user.id }, transaction: holder, lock: true }); // quien cambia la cuenta tiene el bloqueo
+      const pending = failure(issueOperatorLink({ email: user.email, operatorId: 'ops-ana' })); // lee la cuenta (aún como persona activa) y espera el bloqueo
+      await new Promise(resolve => setTimeout(resolve, 400));
+      await change(user, holder);
+      await holder.commit();
+      return { user, error: await pending };
+    };
+    const toAdmin = await holdAndChange((user, tx) => User.update({ role: 'admin' }, { where: { id: user.id }, transaction: tx }));
+    assert.ok(toAdmin.error instanceof OperatorLinkError); assert.equal(toAdmin.error.code, 'role_not_allowed', 'pasó a admin mientras esperaba');
+    assert.equal(await PasswordReset.count({ where: { UserId: toAdmin.user.id } }), 0);
+    assert.equal((await AdminAuditEntry.findOne({ where: { targetId: toAdmin.user.id } })).result, 'denied');
+    const toInactive = await holdAndChange((user, tx) => User.update({ active: false }, { where: { id: user.id }, transaction: tx }));
+    assert.equal(toInactive.error && toInactive.error.code, 'inactive', 'se desactivó mientras esperaba'); assert.equal(await PasswordReset.count({ where: { UserId: toInactive.user.id } }), 0);
+    const toPending = await holdAndChange((user, tx) => DeletionRequest.create({ id: require('node:crypto').randomUUID(), UserId: user.id }, { transaction: tx }));
+    assert.equal(toPending.error && toPending.error.code, 'deletion_pending', 'se pidió su baja mientras esperaba'); assert.equal(await PasswordReset.count({ where: { UserId: toPending.user.id } }), 0);
+  });
+
+  await t.test('ES-386 el script: sin OPERATOR_ID no emite nada; con él, queda en la auditoría', async () => {
+    const script = path.join(__dirname, '..', '..', 'scripts', 'issue-link.cjs');
+    const run = (args, env) => new Promise((resolve) => {
+      const child = spawn(process.execPath, [script, ...args], { cwd: path.join(__dirname, '..', '..'), env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, NODE_PATH: process.env.NODE_PATH || '', DATABASE_URL: databaseUrl, DB_SSL: 'false', APP_BASE_URL: BASE, ALLOW_OPERATOR_LINK: 'true', ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+      let stdout = ''; let stderr = ''; child.stdout.on('data', c => { stdout += c; }); child.stderr.on('data', c => { stderr += c; }); child.on('exit', code => resolve({ code, stdout, stderr }));
+    });
+    const user = await mk();
+    const none = await run(['--email', user.email, '--stdout-ok'], {});
+    assert.equal(none.code, 1); assert.equal(none.stdout, ''); assert.match(none.stderr, /OPERATOR_ID/); assert.ok(!none.stderr.includes(user.email));
+    const bad = await run(['--email', user.email, '--stdout-ok'], { OPERATOR_ID: 'ana@correo.co' });
+    assert.equal(bad.code, 1); assert.equal(bad.stdout, '');
+    assert.equal(await PasswordReset.count({ where: { UserId: user.id } }), 0);
+    const ok = await run(['--email', user.email, '--stdout-ok'], { OPERATOR_ID: 'ops-ana' });
+    assert.equal(ok.code, 0, ok.stderr); assert.equal((await AdminAuditEntry.findOne({ where: { targetId: user.id } })).actorLabel, 'ops-ana');
+    const limited = await run(['--email', user.email, '--stdout-ok'], { OPERATOR_ID: 'ops-ana', OPERATOR_LINK_PER_ACCOUNT_HOUR: '1' });
+    assert.equal(limited.code, 1); assert.equal(limited.stdout, ''); assert.match(limited.stderr, /tope de enlaces de operador/);
+  });
+
+  await t.test('ES-386 los intentos DENEGADOS no gastan la cuota: una cuenta que fue admin y luego es persona puede recibir sus 3 enlaces', async () => {
+    const user = await mk('admin');
+    for (let i = 0; i < 4; i += 1) assert.equal((await failure(issueOperatorLink({ email: user.email, operatorId: 'ops-ana' }))).code, 'role_not_allowed');
+    assert.equal(await AdminAuditEntry.count({ where: { targetId: user.id, result: 'denied' } }), 4);
+    await User.update({ role: 'user' }, { where: { id: user.id } });
+    for (let i = 0; i < 3; i += 1) await issueOperatorLink({ email: user.email, operatorId: 'ops-ana' });
+    assert.equal((await failure(issueOperatorLink({ email: user.email, operatorId: 'ops-ana' }))).code, 'rate_limited', 'el tope sigue siendo 3 de éxitos');
   });
 });

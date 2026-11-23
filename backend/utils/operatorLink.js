@@ -6,20 +6,29 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../database');
 const User = require('../User');
 const PasswordReset = require('../PasswordReset');
+const AdminAuditEntry = require('../AdminAuditEntry');
 const { findUserByEmail } = require('./emailNormalize');
 const { deletionPending } = require('./deletionGuard');
 const { recordAdminAction } = require('./adminAudit');
 
 const ALLOWED_ROLES = ['user', 'therapist']; // persona y profesional; nunca board, admin ni superadmin
-const OPERATOR = { id: null, role: 'operator' }; // quien opera no es una cuenta de la aplicación: la auditoría guarda solo el rol
+const OPERATOR_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/; // identificador de operador: no secreto, sin datos personales (ej. «ops-ana»); lista cerrada de caracteres
 const DEFAULT_TTL_MINUTES = 15;
 const MIN_TTL_MINUTES = 5;
 const MAX_TTL_MINUTES = 60;
-const PER_ACCOUNT_PER_HOUR = 3; // el mismo tope que el enlace pedido por la persona
+const DEFAULT_PER_ACCOUNT_HOUR = 3;
 
 class OperatorLinkError extends Error {
   // `code` sale de una lista cerrada; el mensaje nunca lleva correo, id, enlace ni token.
   constructor(code) { super(`No se emitió el enlace (${code}).`); this.name = 'OperatorLinkError'; this.code = code; }
+}
+
+// ES-386: cuota PROPIA del operador (OPERATOR_LINK_PER_ACCOUNT_HOUR, 1–10): se cuenta en la auditoría de operador, no en PasswordResets, para que las solicitudes anónimas de la ruta pública
+// (que comparten esa tabla) no puedan agotarla y bloquear al operador.
+function perAccountPerHour(env = process.env) {
+  const raw = Number(env.OPERATOR_LINK_PER_ACCOUNT_HOUR);
+  if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_PER_ACCOUNT_HOUR;
+  return Math.min(10, Math.max(1, Math.trunc(raw)));
 }
 
 function ttlMinutes(env = process.env) {
@@ -40,7 +49,12 @@ function checkBase(value) {
 
 const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
 
-async function issueOperatorLink({ email, base, env = process.env }) {
+async function issueOperatorLink({ email, base, operatorId, env = process.env }) {
+  const given = operatorId === undefined ? env.OPERATOR_ID : operatorId; // solo una cadena vale: null, números u objetos no se convierten en «null» ni «42»
+  const label = typeof given === 'string' ? given.trim() : '';
+  if (!OPERATOR_ID.test(label)) throw new OperatorLinkError('operator_id'); // sin saber QUIÉN opera no se emite nada
+  const OPERATOR = { id: null, role: 'operator', label };
+  const limit = perAccountPerHour(env);
   const safeBase = checkBase(base || env.APP_BASE_URL || env.FRONTEND_URL);
   const minutes = ttlMinutes(env);
   if (typeof email !== 'string' || !email.trim() || email.length > 254) throw new OperatorLinkError('not_found');
@@ -61,8 +75,9 @@ async function issueOperatorLink({ email, base, env = process.env }) {
     }
     if (locked.active === false) throw new OperatorLinkError('inactive');
     if (await deletionPending(locked.id, transaction)) throw new OperatorLinkError('deletion_pending');
-    const recent = await PasswordReset.count({ where: { UserId: locked.id, createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } }, transaction });
-    if (recent >= PER_ACCOUNT_PER_HOUR) throw new OperatorLinkError('rate_limited');
+    // Se cuenta bajo el bloqueo de la fila: emisiones simultáneas del operador se ponen en fila y el tope se respeta exactamente.
+    const recent = await AdminAuditEntry.count({ where: { action: 'user.operator_link', targetType: 'user', targetId: locked.id, result: 'ok', createdAt: { [Op.gt]: new Date(Date.now() - 60 * 60 * 1000) } }, transaction });
+    if (recent >= limit) throw new OperatorLinkError('rate_limited');
     await PasswordReset.update({ usedAt: new Date() }, { where: { UserId: locked.id, usedAt: null }, transaction }); // solo vale el último enlace
     expiresAt = new Date(Date.now() + minutes * 60 * 1000);
     await PasswordReset.create({ UserId: locked.id, tokenHash: hashToken(token), expiresAt }, { transaction });
@@ -77,4 +92,4 @@ async function issueOperatorLink({ email, base, env = process.env }) {
   return { link: `${safeBase}/reset-password#token=${token}`, expiresAt, minutes };
 }
 
-module.exports = { issueOperatorLink, OperatorLinkError, ALLOWED_ROLES, ttlMinutes, checkBase };
+module.exports = { issueOperatorLink, OperatorLinkError, ALLOWED_ROLES, ttlMinutes, perAccountPerHour, checkBase, OPERATOR_ID };
