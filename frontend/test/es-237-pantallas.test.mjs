@@ -101,9 +101,9 @@ test('pantallas: el chip «sintética», la ficha real, el plan y la evidencia d
   assert.match(pages, /c\.state\.catalogUnavailable \? \(<div role="alert">/)
 })
 
-test('marco: VITE_CAREER_SOURCE=api elige el cliente de servidor (el simulador es el valor por defecto); 401 recuerda la pantalla y ofrece «Entrar» (ES-330)', () => {
+test('marco: el modo servidor es el predeterminado y solo VITE_CAREER_SOURCE=fixture elige el simulador; 401 recuerda la pantalla y ofrece «Entrar» (ES-330)', () => {
   const shell = read('../src/career/CareerShell.tsx')
-  assert.match(shell, /const serverMode = import\.meta\.env\.VITE_CAREER_SOURCE === 'api'/)
+  assert.match(shell, /const serverMode = import\.meta\.env\.VITE_CAREER_SOURCE !== 'fixture'/)
   assert.match(shell, /serverMode \? createServerClient\(\{ baseUrl: import\.meta\.env\.VITE_BACKEND_URL \|\| '', token \}\) : createFixture\(/)
   assert.match(shell, /rememberReturn\(location\.pathname, location\.search\)/); assert.match(shell, /<Link className="cg-btn" to="\/login">\{t\('signIn'\)\}<\/Link>/)
   assert.match(shell, /code === 'lostAck' \|\| code === 'conflict' \|\| code === 'routesChanged'/, 'tras «tus restricciones cambiaron» hay que releer antes de seguir')

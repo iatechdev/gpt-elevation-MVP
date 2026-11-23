@@ -1,6 +1,6 @@
 // Servidor simulado con datos SINTÉTICOS para revisar Skill Map y Compass sin backend (ES-37).
 // Uso:  node scripts/mock-es37.mjs            (puerto 8099)
-//       VITE_BACKEND_URL=http://localhost:8099 VITE_ENABLE_CAREER_PREVIEW=true npx vite
+//       VITE_BACKEND_URL=http://localhost:8099 VITE_ENABLE_CAREER_PREVIEW=true VITE_CAREER_SOURCE=fixture npx vite
 //       (los territorios de las 4 capacidades de ejemplo vienen del propio simulador, como los enviaría el catálogo)
 //       y en el navegador: localStorage.setItem('elevation_token','sintetico')
 // No hay datos reales ni secretos; cualquier token es válido.

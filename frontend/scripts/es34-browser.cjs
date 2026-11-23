@@ -19,7 +19,7 @@ async function serve(directory) {
 async function build(mode) {
   const directory = path.resolve(root, 'node_modules', '.es34-build-' + mode);
   assert.equal(path.dirname(directory), path.join(root, 'node_modules')); assert.match(path.basename(directory), /^\.es34-build-[a-z-]+$/);
-  const result = spawnSync(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', directory, '--emptyOutDir'], { cwd: root, encoding: 'utf8', env: { ...process.env, VITE_ENABLE_CAREER_PREVIEW: mode === 'disabled' ? 'false' : 'true', VITE_CAREER_FIXTURE_SCENARIO: mode === 'disabled' ? 'normal' : mode, VITE_BACKEND_URL: '' } });
+  const result = spawnSync(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', directory, '--emptyOutDir'], { cwd: root, encoding: 'utf8', env: { ...process.env, VITE_ENABLE_CAREER_PREVIEW: mode === 'disabled' ? 'false' : 'true', VITE_CAREER_SOURCE: 'fixture', VITE_CAREER_FIXTURE_SCENARIO: mode === 'disabled' ? 'normal' : mode, VITE_BACKEND_URL: '' } });
   assert.equal(result.status, 0, result.stderr || result.stdout); return serve(directory);
 }
 async function pageAt(base, pathname = '/app/next-step', locale = 'es') {

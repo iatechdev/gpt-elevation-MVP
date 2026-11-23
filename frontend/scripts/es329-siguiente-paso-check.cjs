@@ -1,5 +1,5 @@
 // ES-329 (Siguiente paso): /app/next-step dentro del marco de persona. Chromium, vista previa con DATOS SINTÉTICOS del fixture (sin servidor, sin IA).
-// Uso: VITE_ENABLE_CAREER_PREVIEW=true npx vite build --outDir dist && npx vite preview --outDir dist --host 127.0.0.1 --port 4113 --strictPort
+// Uso: VITE_ENABLE_CAREER_PREVIEW=true VITE_CAREER_SOURCE=fixture npx vite build --outDir dist && npx vite preview --outDir dist --host 127.0.0.1 --port 4113 --strictPort
 //   PLAYWRIGHT_MODULE=<playwright> AXE_PATH=<axe.min.js> BASE=http://127.0.0.1:4113 node scripts/es329-siguiente-paso-check.cjs
 // Escenas: rutas-vacio, rutas (con restricciones guardadas), experimentos-vacio, plan-vacio, experimento (en curso), cambio-de-base (aviso + borradores), salida (diálogo con borrador sin guardar)
 //   × ES/EN × 390/1360/320 × claro/oscuro: axe wcag2a/2aa/21a/21aa/22aa = 0, UN solo h1, un «Saltar al contenido», sin desborde, sin emojis, 0 colores en línea, sin cabecera propia.
