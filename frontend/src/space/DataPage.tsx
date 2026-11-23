@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/useLanguage'
 import { signOut } from '../access/signOut'
 import { endFarewell, startFarewell } from '../access/farewell'
-import { dataCopy, sectionLabels } from './dataCopy'
+import { dataCopy, describeSections } from './dataCopy'
 import { confirmMatches, dataErrorKey, downloadExport, prepareExport, requestDeletion } from './dataRights'
 import type { DataErrorKey, ExportPreview } from './dataRights'
 import { useSpaceToken } from './hooks'
@@ -76,8 +76,7 @@ export function DataPage() {
   if (done) return <PersonScreen title={c.title}><Notice text={c.deleteDone} /><div className="pg-actions"><Link className="cg-btn" to="/">{c.backHome}</Link></div></PersonScreen>
   const message = status ? (status.k === 'downloaded' ? c.downloaded : c[status.k]) : ''
   const isError = !!status && status.k !== 'downloaded'
-  const labels: Record<string, string> = sectionLabels[lang]
-  const list = preview ? preview.sections.map(s => { const name = labels[s.name] ?? s.name; return s.count === null ? name : `${name} (${s.count})` }).join(' · ') : ''
+  const list = preview ? describeSections(preview.sections, lang).join(' · ') : '' // ES-401: etiquetas legibles; las claves desconocidas, como «Otros datos»
   const statusNode = (id?: string) => <Notice id={id} error={isError} text={message}>
     {status?.k === 'session' && <> <Link className="cg-linkbtn" to="/login">{c.login}</Link></>}
   </Notice>
