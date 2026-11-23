@@ -46,26 +46,27 @@ const REASONS = {
 };
 
 // Minúsculas, sin tildes, sin apóstrofos y con espacios simples: la comparación no depende de cómo se escriba.
-// Los puntos, dos puntos, signos y saltos de línea se vuelven `|` (corte de oración, usado por la negación).
+// Los puntos, dos puntos y signos se vuelven `|` (corte de oración, usado por la negación; ninguna frase lo cruza).
+// ES-382: un salto de línea se vuelve `~`: para las FRASES es un espacio (toRegExp deja pasar un `~` entre palabras; antes `|` partía «Ignora\nlas instrucciones» y evadía la revisión) y para la NEGACIÓN sigue siendo corte de oración.
 const fold = (text) => normalizeText(text).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .replace(/['’`]/g, '').replace(/[.;:!?\n]+/g, ' | ').replace(/[^a-z0-9%*|\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  .replace(/['’`]/g, '').replace(/[.;:!?]+/g, ' | ').replace(/[^a-z0-9%*|\s]/g, ' ').replace(/\s+/g, (run) => (run.includes('\n') ? ' ~ ' : ' ')).trim();
 
 // Frase de la regla -> expresión. `*` solo vale al FINAL de una palabra (prefijo: «diagnos*»); en cualquier otro sitio se ignora.
 // Así cada comodín va seguido de un espacio o del final y la coincidencia no retrocede: sin riesgo de ReDoS aunque la frase
 // la escriba una persona administradora (probado con `*a*a*a…b` y `(a+)+$` en test/es-191-review.test.cjs).
 const toRegExp = (phrase) => {
   const folded = fold(phrase);
-  if (!folded.replace(/[*\s|]/g, '')) return null;
-  const words = folded.split(' ').filter((w) => w.replace(/\*/g, '')).map((w) => {
+  if (!folded.replace(/[*\s|~]/g, '')) return null;
+  const words = folded.split(' ').filter((w) => w !== '~' && w.replace(/\*/g, '')).map((w) => {
     const stem = w.replace(/\*/g, '').replace(/[.\\+?^${}()|[\]]/g, '\\$&');
     return w.endsWith('*') ? `${stem}[a-z0-9]*` : stem;
   });
-  return new RegExp(`(?:^|[^a-z0-9])(${words.join(' ')})(?![a-z0-9])`, 'g');
+  return new RegExp(`(?:^|[^a-z0-9])(${words.join(' (?:~ )?')})(?![a-z0-9])`, 'g');
 };
 
 const negated = (text, index) => {
   // La negación solo cuenta dentro de la misma oración: `|` marca el corte.
-  const before = text.slice(0, index).split('|').pop().split(' ').filter(Boolean).slice(-NEGATION_WINDOW);
+  const before = text.slice(0, index).split(/[|~]/).pop().split(' ').filter(Boolean).slice(-NEGATION_WINDOW);
   return before.some((word) => NEGATORS.has(word));
 };
 
