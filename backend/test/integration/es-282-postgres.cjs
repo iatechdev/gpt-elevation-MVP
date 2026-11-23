@@ -3,7 +3,6 @@
 //   ES282_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54391/postgres node --test test/integration/es-282-postgres.cjs
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { perfCheck } = require('../perf-gate.cjs'); // ES-383: la comparación de tiempos de login informa; falla solo con PERF_STRICT=1
 const crypto = require('node:crypto');
 const { startRealApi } = require('../support/realApi.cjs');
 const { makeSeeder } = require('../support/seedRow.cjs');
@@ -51,13 +50,13 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
     // contraseña real con el mismo costo de bcrypt que una cuenta de verdad (la sembrada no es un hash válido y compararía más rápido)
     await q('UPDATE "Users" SET password=$2 WHERE id=$1', [existing.id, await require('bcryptjs').hash(STRONG, 10)]);
     const email = (await q('SELECT email FROM "Users" WHERE id=$1', [existing.id]))[0].email;
-    // ES-383: la propiedad «no enumeración por tiempo» de login es TRABAJO IGUAL, y se afirma contando el trabajo (una comparación bcrypt con un hash del mismo coste en AMBOS caminos), no con el reloj:
-    // con la máquina cargada, el tiempo (de pared o de CPU) de tres intentos por lado varía más que un hash. La comparación de tiempos queda como medición informativa (perfCheck; estricta en npm run test:perf).
+    // ES-383 (O452-1): la no enumeración por tiempo es SEGURIDAD y se afirma DURO con dos pruebas: (1) TRABAJO IGUAL contado (una comparación bcrypt con un hash del mismo coste en AMBOS caminos, independiente del reloj)
+    // y (2) tiempo comparable con tolerancia RELATIVA (la diferencia de las medianas no supera max(120 ms, 40 % del lado más lento): la carga de la máquina la hace crecer en proporción, no la rompe).
     const bcryptjs = require('bcryptjs'); const realCompare = bcryptjs.compare; let compares = [];
     bcryptjs.compare = (plain, hash, ...rest) => { compares.push(String(hash).slice(0, 7)); return realCompare.call(bcryptjs, plain, hash, ...rest); };
     t.after(() => { bcryptjs.compare = realCompare; });
-    // Los dos lados se miden ALTERNADOS (existente, inexistente, existente…) y se toma el MÍNIMO de cada uno.
-    const pairTimed = async (fnA, fnB, n) => { const a = []; const b = []; let lastA; let lastB; for (let i = 0; i < n; i += 1) { let t0 = performance.now(); lastA = await fnA(i); a.push(performance.now() - t0); t0 = performance.now(); lastB = await fnB(i); b.push(performance.now() - t0); } return [{ last: lastA, ms: Math.min(...a) }, { last: lastB, ms: Math.min(...b) }]; };
+    // Los dos lados se miden ALTERNADOS (existente, inexistente, existente…) y se toma la MEDIANA de cada uno (3 por lado: el máximo antes del bloqueo de cuenta y del límite por IP).
+    const pairTimed = async (fnA, fnB, n) => { const a = []; const b = []; let lastA; let lastB; for (let i = 0; i < n; i += 1) { let t0 = performance.now(); lastA = await fnA(i); a.push(performance.now() - t0); t0 = performance.now(); lastB = await fnB(i); b.push(performance.now() - t0); } return [{ last: lastA, ms: [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)] }, { last: lastB, ms: [...b].sort((x, y) => x - y)[Math.floor(b.length / 2)] }]; };
     // Diferencia admitida: la mayor entre 120 ms (el piso que ya tenía la prueba) y el 40 % del lado más lento.
     const sameTime = (x, y) => Math.abs(x - y) <= Math.max(120, 0.4 * Math.max(x, y));
     // 3 intentos por lado: por debajo del bloqueo de cuenta (423) y del límite por IP (429), que son otro mecanismo (ES-220)
@@ -68,9 +67,9 @@ test('ES-282 PostgreSQL + HTTP: contraseñas, no enumeración, cabeceras, guías
     assert.equal(resetExisting.last.status, resetMissing.last.status); assert.deepEqual(resetExisting.last.body, resetMissing.last.body);
     const regExisting = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v2', name: 'Otra', email, password: STRONG });
     const regNew = await http(null, 'POST', '/api/register', { acceptedTerms: true, termsVersion: '2026-11-v2', name: 'Otra', email: 'registro-nuevo@example.test', password: STRONG });
-    console.log(`# TIEMPOS no enumeración (mínimo ms de pared): login existente=${loginExisting.ms.toFixed(1)} inexistente=${loginMissing.ms.toFixed(1)} · restablecer existente=${resetExisting.ms.toFixed(1)} inexistente=${resetMissing.ms.toFixed(1)} · registro existente=${regExisting.status} nuevo=${regNew.status}`);
+    console.log(`# TIEMPOS no enumeración (mediana ms de pared): login existente=${loginExisting.ms.toFixed(1)} inexistente=${loginMissing.ms.toFixed(1)} · restablecer existente=${resetExisting.ms.toFixed(1)} inexistente=${resetMissing.ms.toFixed(1)} · registro existente=${regExisting.status} nuevo=${regNew.status}`);
     assert.equal(compares.length, 6, 'cada intento de login (3 de cuenta existente + 3 de inexistente) hace UNA comparación bcrypt'); assert.equal(new Set(compares).size, 1, 'y con un hash del mismo coste en ambos caminos: ' + [...new Set(compares)]);
-    perfCheck('ES-282 login existente vs inexistente (tiempo comparable)', sameTime(loginExisting.ms, loginMissing.ms), `existente ${loginExisting.ms.toFixed(1)} ms vs inexistente ${loginMissing.ms.toFixed(1)} ms`);
+    assert.ok(sameTime(loginExisting.ms, loginMissing.ms), `login: mediana existente ${loginExisting.ms.toFixed(1)} ms vs inexistente ${loginMissing.ms.toFixed(1)} ms`);
     assert.ok(sameTime(resetExisting.ms, resetMissing.ms), `restablecer: existente ${resetExisting.ms.toFixed(1)} ms vs inexistente ${resetMissing.ms.toFixed(1)} ms`);
     // E282-1 (Medio, decisión de producto): el registro SÍ distingue un correo ya usado (400) de uno nuevo (201). El login y el restablecer no. Se deja registrado con el cuerpo real;
     // cerrarlo exige un flujo de verificación por correo (misma respuesta y el aviso por email), que es un cambio de producto y no se hace aquí.
