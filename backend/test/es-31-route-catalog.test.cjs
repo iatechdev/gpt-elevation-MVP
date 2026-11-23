@@ -14,8 +14,6 @@ const U = { role: 'user', id: 101 };
 const ADMIN = { role: 'admin', id: 900 };
 const SUPER = { role: 'superadmin', id: 901 };
 const BASE = '/api/admin/route-catalog';
-const today = () => new Date().toISOString().slice(0, 10);
-const daysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 
 async function loadSynthetic(request, mutate = (d) => d) {
   const draft = (await request('POST', BASE, ADMIN)).body;

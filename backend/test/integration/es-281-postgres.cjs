@@ -255,7 +255,7 @@ test('ES-281 PostgreSQL + HTTP: matriz A/B de propietario y rol, y contrato cris
       for (const key of ['con', 'revocado']) { // la persona autoriza compartir con SU profesional por la API real
         assert.equal((await http(people[key], 'PUT', '/api/consents/therapist_sharing', { status: 'granted' })).status, 200, 'autorizar ' + key);
       }
-      for (const [key, person] of Object.entries(people)) {
+      for (const [, person] of Object.entries(people)) {
         const c = person.canary;
         assert.equal((await http(person, 'POST', '/api/diary', { date: '2026-10-01', content: c.diary })).status, 201);
         assert.equal((await http(person, 'POST', '/api/mood/checkin', { mood: 1 })).status, 200);

@@ -11,7 +11,6 @@ const { Client } = require('pg');
 const { Sequelize } = require('sequelize');
 
 const backend = path.resolve(__dirname, '..', '..');
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('ES-178 PostgreSQL + HTTP: notas de seguimiento con control de edición concurrente, máximo y texto obligatorio', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES178_TEST_DATABASE_URL, 'Se requiere ES178_TEST_DATABASE_URL (clúster desechable en loopback)');

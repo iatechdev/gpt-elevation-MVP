@@ -102,7 +102,7 @@ test('ES-301 PostgreSQL + HTTP: /api/register guarda la aceptación con versión
     const { personalData } = require('../../utils/personalData'); const User = require('../../User'); const { requestDeletion } = require('../../utils/dataRights'); const { processDeletion } = require('../../utils/deletionProcessor');
     const mineMail = email(); const otherMail = email();
     assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, mineMail)).status, 201); assert.equal((await register({ acceptedTerms: true, termsVersion: '2026-11-v2' }, otherMail)).status, 201);
-    const mine = await row(mineMail); const other = await row(otherMail);
+    const mine = await row(mineMail);
     const data = await personalData(await User.findByPk(mine.id), 'es'); assert.equal(data.profile.termsVersion, '2026-11-v2'); assert.ok(data.profile.acceptedAt, 'la fecha de aceptación se exporta'); assert.ok(!('password' in data.profile));
     await requestDeletion(mine.id); const request = (await q('SELECT id FROM "DeletionRequests" WHERE "UserId"=$1', [mine.id]))[0].id; await processDeletion(request, { quiescent: true });
     const purged = await row(mineMail); assert.equal(purged, undefined, 'el correo original ya no está (lápida)');

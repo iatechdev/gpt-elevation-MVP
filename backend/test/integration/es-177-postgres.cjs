@@ -22,7 +22,6 @@ function contractFixture(name, status, body) {
   const saved = JSON.parse(fs.readFileSync(file, 'utf8')); assert.equal(saved.status, status, name);
   assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES177_WRITE_FIXTURE=1 y revisa la pantalla`);
 }
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('ES-177 PostgreSQL + HTTP: una guía pendiente por profesional y avisos sin porcentaje', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES177_TEST_DATABASE_URL, 'Se requiere ES177_TEST_DATABASE_URL (clúster desechable en loopback)');

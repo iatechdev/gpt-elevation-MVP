@@ -2,7 +2,7 @@
 // y la experiencia, la educación y las habilidades sí deben conservarse.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { sanitizeResumeText, ResumeSanitizeError } = require('../utils/resumeSanitizer');
 
 const BODY = [

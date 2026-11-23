@@ -2,7 +2,7 @@
 // Es una ayuda, NO una protección completa: no cubre CJK, símbolos, emojis, cifras de otras escrituras, mapeos de varias letras ni otros alfabetos completos. El texto guardado/mostrado NO cambia.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');

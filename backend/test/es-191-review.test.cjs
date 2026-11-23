@@ -1,7 +1,7 @@
 // ES-191: la revisión automática de las guías de la IA (algoritmo puro). Sin base de datos ni proveedor: las reglas se pasan como datos.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { INITIAL_RULES } = require('../migrations/20261107000000-es191-prompt-review.cjs');
 const { reviewPrompt, describeReasons, loadActiveRules, PromptReviewError, REASONS, maxChars } = require('../utils/promptReview');
 

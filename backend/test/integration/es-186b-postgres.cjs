@@ -63,8 +63,7 @@ test('ES-186 parte B PostgreSQL + HTTP: auditoría de administración en la mism
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
-  const { setConsent } = require('../../utils/consent');
-  const { verificarToken, verificarAdmin, verificarSuperAdmin } = require('../../middlewares/auth');
+  const { verificarAdmin } = require('../../middlewares/auth');
   const express = require('express');
   const api = express(); api.use(express.json());
   api.use('/api/admin/matching', verificarAdmin, require('../../routes/matching'));
