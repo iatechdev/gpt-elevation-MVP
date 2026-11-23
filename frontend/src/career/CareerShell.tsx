@@ -119,7 +119,8 @@ function CareerSession({ session }: { session: string }) {
         {dirtyCount > 1 && <p className="pc-warn" role="status">{t('otherDraft')}</p>}
         <div ref={notice} tabIndex={-1} aria-live="polite" className={error ? 'cg-error' : ''}>
           {(busy || error || message) && <p>{busy ? t(state.loaded ? 'saving' : 'loading') : error ? t(error) : message ? t(message) : null}</p>}
-          {error && error !== 'validate' && <button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
+          {error === 'needsContext' && <p><Link className="pc-link" to="/app/onboarding">{t('contextLink')}</Link></p>}
+          {error && error !== 'validate' && error !== 'needsContext' && <button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
         </div>
         {!state.loaded ? <p role="status">{error ? t('empty') : t('loading')}</p> : <CareerContext.Provider value={{ state, client, reload: () => void load(), lang, t, busy, uncertain, dirty: dirty || dirtyCount > 0, setDirty: setDirtyValue, otherDirty, send, navigate }}><div aria-busy={busy}><Outlet /></div></CareerContext.Provider>}
       </>}
