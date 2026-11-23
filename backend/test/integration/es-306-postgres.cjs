@@ -9,6 +9,8 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const bcrypt = require('bcryptjs');
 process.env.LOGIN_RATE_LIMIT_MAX = '100000'; process.env.PASSWORD_RESET_IP_LIMIT = '100000';
+// ES-379: la recuperación solo emite enlace si hay proveedor y base del enlace (antes creaba la fila aunque no hubiera cómo enviarla): aquí el proveedor es simulado.
+process.env.MAIL_PROVIDER = 'test'; process.env.APP_BASE_URL = 'https://app.example.invalid'; require('../../utils/mailer').providers.test = async () => {};
 process.env.REGISTER_RATE_LIMIT_MAX = '100000'; // ES-221: ráfagas de registros desde una sola IP (el límite real es 30 por hora y no se respeta en producción)
 const { startRealApi } = require('../support/realApi.cjs');
 
