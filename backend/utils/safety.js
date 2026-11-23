@@ -72,6 +72,12 @@ const spaceOut = (text) => text.replace(/[^a-z\u00e0-\u00ff0-9']+/gi, ' ');
 // E304-8: «llano» = ASCII visible + letras latinas acentuadas + ¡ ¿ « ». NO incluye ª º ¹ ² ³ ¨ ¯ ´ ¸ ni otros símbolos de Latin-1 que NFKC convierte o que se intercalan entre letras («quierº mºrir», «su¹c¹d¹o»).
 const PLAIN = /^[\x20-\x7e\n\r\t\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff\u00a1\u00bf\u00ab\u00bb]*$/;
 const tidy = (text) => text.replace(/\s+/g, ' ');
+// ES-387: controles y caracteres de formato (como separador o relleno); CONTROLS = los controles que NO son espacio en blanco (\t \n \r ya son espacios).
+// Tope de la lectura nueva: express.json() acepta cuerpos de hasta 100 kB (≈100 000 caracteres), así que nada que llegue por HTTP lo supera; un texto de millones de caracteres (solo posible en pruebas hostiles) conserva las formas de siempre y no paga el costo extra.
+const GAP_FORMS_MAX = 200000;
+const GAPS = /[\p{Cc}\p{Cf}]/gu; const GAPS_TEST = /[\p{Cc}\p{Cf}]/u;
+const CONTROLS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;
+const CONTROLS_TEST = new RegExp(CONTROLS.source);
 function* riskFormsWith(raw, unmask, fresh, nfkc = raw.normalize('NFKC'), lowered = nfkc.toLowerCase()) {
   const first = flat(raw); if (fresh(first)) yield first;
   const plain = PLAIN.test(raw);
@@ -84,6 +90,13 @@ function* riskFormsWith(raw, unmask, fresh, nfkc = raw.normalize('NFKC'), lowere
   if (!plain && FILLER_TEST.test(nfkc)) {
     const spacedOpen = unmask(raw, ' ', lowered); const spaced = flat(spacedOpen); const spacedJoined = joinSpelled(spacedOpen);
     for (const thunk of [() => spaced, () => (spacedJoined === spacedOpen ? spaced : flat(spacedJoined)), () => tidy(spaceOut(spaced))]) { const f = thunk(); if (fresh(f)) yield f; }
+  }
+  // ES-387: controles (\p{Cc}: VT, FF, NEL, FS–US, NUL, DEL...) e invisibles de formato (\p{Cf}: ZWSP, ZWJ, LRM, WJ, BOM, SHY, RLO...) como SEPARADOR entre palabras o como relleno DENTRO de una palabra. Las formas de arriba solo los quitan
+  // (los Cf) o los dejan (los Cc): «me[ZWSP]quiero[ZWSP]morir» se leía «mequieromorir» y «mor[NUL]ir» no se leía. Se leen las dos veces: como ESPACIO y con los controles quitados. ADITIVO: van al final, nada que se detectaba deja de detectarse.
+  if (!plain && raw.length <= GAP_FORMS_MAX && GAPS_TEST.test(nfkc)) {
+    const spacedOpen = unmask(raw, ' ', lowered.replace(GAPS, ' ')); const spaced = flat(spacedOpen);
+    if (fresh(spaced)) yield spaced;
+    if (CONTROLS_TEST.test(lowered)) { const stripped = flat(unmask(raw, '', lowered.replace(CONTROLS, ''))); if (fresh(stripped)) yield stripped; } // solo si hay controles (no espacio): los Cf ya se quitan en las formas de arriba
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
 }
