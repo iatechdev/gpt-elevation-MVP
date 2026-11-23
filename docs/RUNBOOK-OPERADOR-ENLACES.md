@@ -16,7 +16,11 @@ Solo quien tenga acceso a las variables y a la base del entorno (Railway). El sc
 Es **obligatorio**: sin él no se emite nada. Queda en la auditoría (la ve el superadmin en `GET /api/superadmin/audit`, campo `actorLabel`).
 - Usa el **rol o el turno de guardia**, no tu nombre: `ops-guardia-1`, `soporte-n1`, `oncall-2`, `infra-a`.
 - Debe empezar por un prefijo de rol (`ops`, `guardia`, `oncall`, `soporte`, `infra`), tener hasta 32 caracteres y solo letras, números, punto, guion y guion bajo.
-- **Nunca** un nombre propio (`juan.perez`), un correo, un teléfono ni un secreto. El código rechaza lo que tiene forma de clave o token (`sk-…`, `ghp_…`, `AKIA…`, `eyJ…`, «token», «secret», cadenas largas de alta entropía) y lo que no empieza por un prefijo de rol, **pero no puede saber si `ops-juan` lleva el nombre de alguien**: eso depende de ti.
+- **Nunca** un nombre propio (`juan.perez`), un correo, un teléfono ni un secreto. Esto es lo que el validador (`backend/utils/operatorId.js`) hace, exactamente:
+  - **Acepta** solo si el identificador tiene la forma cerrada y **empieza por uno de los prefijos de rol** (sin importar mayúsculas): por eso `juan.perez` y `maria` se rechazan.
+  - **Rechaza en CUALQUIER posición** (al principio, en medio o al final, tras un guion, punto o guion bajo) lo que tiene forma de clave o token: `sk-…`/`pk_…`/`rk-…` con cuerpo de 8 o más caracteres, `ghp_…`/`gho_…`/`ghu_…`/`ghs_…`/`ghr_…`, `github_pat_…`, `glpat-…`, `xox…-`, identificadores de acceso de AWS (`AKIA…`, `ASIA…` y similares, con 12 o más caracteres detrás), JWT (`eyJ…`), «bearer»/«basic» seguidos de separador, y las palabras «api key», «secret», «token» y «passw…».
+  - **Rechaza además** cualquier tramo (entre separadores) de **20 o más caracteres**, un tramo de **12 o más dígitos**, un tramo **hexadecimal de 12 o más** caracteres que mezcle dígitos y letras a–f, y un tramo de **14 o más** con mayúsculas, minúsculas y dígitos.
+  - **No puede** saber si `ops-juan` lleva el nombre de alguien, ni detectar un secreto que no tenga esas formas (por ejemplo una contraseña corta o una frase): eso depende de ti. Usa el rol o el turno.
 - El valor es **autodeclarado**: da trazabilidad (qué turno), no identidad. La identidad de quien opera sale del acceso a Railway.
 
 ## 4. Variables que necesita el script
@@ -32,14 +36,24 @@ Es **obligatorio**: sin él no se emite nada. Queda en la auditoría (la ve el s
 ## 5. Pasos
 1. Elige el **entorno** (staging o production). En staging se prueba el procedimiento; **en producción no se prueba con cuentas reales** que no hayan pedido el enlace.
 2. Abre una **terminal propia** (el script se niega si la salida no es una terminal, para que el enlace no acabe en un archivo, un log o un CI).
-3. Ejecuta el script con las variables **solo para ese comando**, desde la raíz del repositorio:
+3. Ejecuta el script desde la raíz del repositorio, en PowerShell, con las variables **solo en tu sesión** (no en el repositorio ni en un `.env` versionado) y el correo **sin dejarlo escrito en el historial**:
    ```powershell
-   railway run --environment staging --service backend node backend/scripts/issue-link.cjs --email persona@dominio.co
+   $env:ALLOW_OPERATOR_LINK = 'true'
+   $env:OPERATOR_ID = 'ops-guardia-1'
+   $correo = Read-Host 'Correo de la persona'
+   railway run --environment staging --service backend node backend/scripts/issue-link.cjs --email $correo
    ```
-   con `ALLOW_OPERATOR_LINK=true` y `OPERATOR_ID=ops-guardia-1` definidos en tu sesión de terminal (no en el repositorio, ni en un archivo `.env` versionado). `railway ssh` dentro del contenedor también sirve si ofrece terminal interactiva.
+   Al terminar, **limpia**:
+   ```powershell
+   Remove-Item Env:ALLOW_OPERATOR_LINK, Env:OPERATOR_ID
+   Remove-Variable correo
+   Clear-Host
+   ```
+   `railway ssh` dentro del contenedor también sirve si ofrece terminal interactiva.
+   **Ten presente:** `railway run` inyecta **todas** las variables del servicio (incluidas `DATABASE_URL` y las claves) en el proceso local mientras dura el comando. Trata esa terminal como **sensible**, no compartas pantalla y **ciérrala al terminar**.
 4. El script imprime **una sola línea**: el enlace (`https://…/reset-password#token=…`). Por la salida de errores añade el aviso de vencimiento. Si algo falla, dice por qué **sin imprimir nada más** (ver sección 7).
-5. **Entrega el enlace a la persona por un canal privado y directo** (mensaje directo, llamada) y pídele que lo abra y elija su contraseña de inmediato.
-6. **Cierra la terminal o límpiala** (`Clear-Host`) para que el enlace no quede a la vista ni en el historial visible.
+5. **Entrega el enlace a la persona por un canal que no lo deje guardado**: **léeselo por una llamada** o mándalo en un **mensaje que se borre tras leerlo**, y pídele que lo abra y elija su contraseña de inmediato. Un mensaje directo normal deja el enlace en un **historial sincronizado** (varios dispositivos y copias de seguridad); si no queda otra opción, el enlace vence en minutos y sirve una sola vez, pero **bórralo** del chat en cuanto se use.
+6. **Cierra la terminal** (o al menos límpiala con `Clear-Host`) para que el enlace no quede a la vista ni en el historial visible.
 
 ## 6. Reglas del enlace
 - **Un solo uso.** Cuando la persona elige su contraseña, el enlace deja de servir; también deja de servir cualquier enlace anterior de esa cuenta (el último enlace emitido invalida al anterior).
@@ -63,7 +77,7 @@ Es **obligatorio**: sin él no se emite nada. Queda en la auditoría (la ve el s
 ## 8. Qué NO registrar
 - **No pegues el enlace ni el token** en un chat, un ticket de Jira, un PR, un correo, una captura ni un log. Se lo das a la persona por un canal privado y se descarta.
 - No pongas el correo de la persona en un ticket junto con el hecho de que se le emitió un enlace; usa «cuenta de una persona del piloto» y el identificador numérico si hace falta.
-- No guardes el comando con el correo en notas compartidas. El historial de tu terminal puede conservar el correo (argumento `--email`): límpialo si el equipo lo exige.
+- No guardes el comando con el correo en notas compartidas. Un correo escrito como argumento queda en el historial de la terminal: por eso el ejemplo lo lee con `Read-Host` en una variable (el historial guarda `$correo`, no la dirección) y la borra al final. Aun así, el correo viaja como argumento del proceso mientras corre.
 
 ## 9. Auditoría
 Cada emisión deja una entrada `user.operator_link` en `AdminAuditEntries` con: quién (`actorRole = operator`, `actorLabel = tu OPERATOR_ID`), a quién (id de la cuenta), cuándo y el resultado (`ok` o `denied`). **No** guarda el token, el enlace ni el correo. El superadmin la consulta en `GET /api/superadmin/audit`.

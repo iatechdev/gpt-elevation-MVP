@@ -6,16 +6,23 @@
 // Lo que NO puede hacer: saber si «ops-juan» lleva el nombre de alguien. Eso se documenta en el runbook (docs/RUNBOOK-OPERADOR-ENLACES.md): se usa el rol o el turno, no un nombre.
 const ROLE_PREFIXES = ['ops', 'guardia', 'oncall', 'soporte', 'infra'];
 const SHAPE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/;
+// El identificador YA empieza por un prefijo de rol, así que un secreto solo puede ir DESPUÉS (p. ej. «ops-AKIA…»): los patrones buscan al inicio o tras un separador.
+const START = '(^|[-_.])';
 const KNOWN_SECRET = [
-  /^(sk|pk|rk)[-_]/i, /^(ghp|gho|ghu|ghs|ghr)_/i, /^github_pat_/i, /^xox[abeprs]-/i, /^AKIA[0-9A-Z]{8,}/, /^eyJ/,
-  /^(bearer|basic)[-_. ]/i, /(^|[-_.])(sk|pk)[-_](ant|live|test|proj)/i, /(api[-_.]?key|secret|token|passw)/i,
+  new RegExp(START + '(sk|pk|rk)[-_][A-Za-z0-9_-]{8,}', 'i'), // sk-live-…, sk-ant-…, pk_test_…
+  new RegExp(START + '(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{8,}', 'i'), new RegExp(START + 'github_pat_', 'i'), new RegExp(START + 'glpat-[A-Za-z0-9_-]{8,}', 'i'),
+  new RegExp(START + 'xox[abeprs]-', 'i'),
+  new RegExp(START + '(AKIA|ASIA|AGPA|AIDA|AROA|ANPA|ANVA|AIPA)[0-9A-Z]{12,}'), // identificadores de acceso de AWS (mayúsculas, como se emiten)
+  new RegExp(START + 'eyJ[A-Za-z0-9_-]{8,}'), // JWT
+  new RegExp(START + '(bearer|basic)[-_. ]', 'i'), /(api[-_.]?key|secret|token|passw)/i,
 ];
 
 function looksLikeSecret(value) {
   if (KNOWN_SECRET.some((pattern) => pattern.test(value))) return true;
   return value.split(/[-_.]/).some((segment) => (
-    segment.length >= 24
-    || (segment.length >= 20 && /^[0-9a-f]+$/i.test(segment))
+    segment.length >= 20 // ningún rol ni turno de guardia necesita 20 caracteres seguidos
+    || (segment.length >= 12 && /^\d+$/.test(segment)) // solo dígitos y largo: un identificador numérico o una clave
+    || (segment.length >= 12 && /^[0-9a-f]+$/i.test(segment) && /[0-9]/.test(segment) && /[a-f]/i.test(segment)) // hexadecimal largo (con dígitos y letras)
     || (segment.length >= 14 && /[a-z]/.test(segment) && /[A-Z]/.test(segment) && /\d/.test(segment))
   ));
 }
