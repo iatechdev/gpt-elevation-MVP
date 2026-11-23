@@ -33,7 +33,7 @@ async function serve(directory) {
 function build(flag) {
   const directory = path.resolve(root, 'node_modules', '.es166-' + flag)
   const result = spawnSync(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', directory, '--emptyOutDir'],
-    { cwd: root, encoding: 'utf8', env: { ...process.env, VITE_ENABLE_CAREER_PREVIEW: flag === 'on' ? 'true' : 'false' } })
+    { cwd: root, encoding: 'utf8', env: { ...process.env, VITE_ENABLE_CAREER_PREVIEW: flag === 'on' ? 'true' : 'false', VITE_CAREER_SOURCE: 'fixture' } })
   if (result.status !== 0) throw new Error(result.stderr || result.stdout)
   return directory
 }
