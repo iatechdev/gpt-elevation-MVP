@@ -36,7 +36,7 @@ function summarySetup(output) {
 }
 
 test('ES-105 (F03): una respuesta vacía o de solo espacios del proveedor responde 502 reintentable; una válida se recorta y sigue en 200', async t => {
-  const calls = summarySetup('   \n  '); const request = await startApp(t);
+  summarySetup('   \n  '); const request = await startApp(t);
   const logs = []; const previous = console.error; console.error = (...args) => logs.push(args);
   try {
     for (const empty of ['', '   ', '\n\t']) {

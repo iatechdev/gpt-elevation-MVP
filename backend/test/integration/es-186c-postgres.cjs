@@ -63,8 +63,7 @@ test('ES-186 parte C PostgreSQL + HTTP: «Eliminar» solicita la eliminación po
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
-  const { setConsent } = require('../../utils/consent');
-  const { verificarToken, verificarAdmin, verificarSuperAdmin } = require('../../middlewares/auth');
+  const { verificarAdmin, verificarSuperAdmin } = require('../../middlewares/auth');
   const express = require('express');
   const api = express(); api.use(express.json());
   api.use('/api/admin/matching', verificarAdmin, require('../../routes/matching'));

@@ -3,7 +3,7 @@
 // Express real, HTTP y JWT reales; la persistencia y el proveedor son dobles (ver support.cjs).
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { models, anthropic, record, startApp, grantTherapistSharing } = require('./support.cjs');
 
 const T1 = 101;

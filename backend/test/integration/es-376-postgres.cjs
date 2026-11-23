@@ -94,7 +94,7 @@ test('ES-376 PostgreSQL: enlace de operador de un solo uso, sin guardar el token
       }
     } finally { Object.assign(console, original); }
     const stored = await everythingStored();
-    for (const { token, user } of issued) { assert.ok(!stored.includes(token), 'el token no está en ninguna tabla'); assert.ok(!logs.join('\n').includes(token)); }
+    for (const { token } of issued) { assert.ok(!stored.includes(token), 'el token no está en ninguna tabla'); assert.ok(!logs.join('\n').includes(token)); }
     assert.ok(!JSON.stringify(await sequelize.query('SELECT * FROM "AdminAuditEntries"', { type: 'SELECT' })).includes('example.invalid'), 'la auditoría no lleva correos');
     assert.equal(logs.join('\n').includes('example.invalid'), false, 'nada se registró con correos ni enlaces');
     // Un solo uso, con la ruta pública REAL.

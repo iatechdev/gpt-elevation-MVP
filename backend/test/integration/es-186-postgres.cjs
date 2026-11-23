@@ -24,7 +24,6 @@ function contractFixture(name, status, body) {
   assert.equal(saved.status, status, name);
   assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES186_WRITE_FIXTURE=1 y revisa la pantalla`);
 }
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('ES-186 PostgreSQL + HTTP: invitaciones y enlace de restablecimiento con la forma real de la respuesta', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES186_TEST_DATABASE_URL, 'Se requiere ES186_TEST_DATABASE_URL (clúster desechable en loopback)');

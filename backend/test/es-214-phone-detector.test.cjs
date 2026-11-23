@@ -1,7 +1,7 @@
 // ES-214 (E208-1): el detector de teléfonos del servidor atrapa las escrituras que QA reportó como falsos negativos y sigue sin tocar años, precios, fechas, «3 meses» ni cantidades.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { containsPhoneNumber } = require('../utils/promptSafety');
 
 // Casos del informe de QA de ES-208 (E208-1) y variantes de la misma familia.
