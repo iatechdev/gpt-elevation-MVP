@@ -101,6 +101,11 @@
 .cg-frame:has(.chat-shell) { height: 100dvh; overflow-y: auto; }
 .cg-frame:has(.chat-shell) > .cg-body { display: flex; flex-direction: column; min-height: 0; padding: .5rem 0 0; }
 .cg-frame:has(.chat-shell) .cg-main { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; padding: 0; }
+/* ES-394: con la barra lateral de persona (>900 px) el chat conservaba la regla de columna de arriba y la barra quedaba APILADA encima del chat: el hilo medía ~12 px y el marco se desplazaba. Se mantiene la rejilla de dos columnas y la barra se desplaza por su cuenta. */
+@media (min-width: 901px) {
+  .cg-frame:has(.chat-shell) > .cg-body--wideside { display: grid; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  .cg-frame:has(.chat-shell) > .cg-body--wideside > .cg-side--groups { min-height: 0; overflow-y: auto; }
+}
 .cg-main > div:has(> .chat-shell) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; } /* el envoltorio sin clase del Suspense de PersonLayout */
 .cg-main .chat-shell { flex: 1 1 0; height: auto; min-height: 0; overflow: visible; }
 .cg-main .chat-main { padding-top: 0; flex: 1 1 0; min-height: 0; }
@@ -241,3 +246,10 @@
 .chat-menu-prefs { display: grid; gap: .4rem; margin: .4rem 0; }
 .chat-menu-pref { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .chat-menu-pref > span { min-width: 4.5rem; }
+
+/* ES-394: control «Ir al último mensaje». La ranura mide 0 de alto y va pegada al borde inferior del hilo, así que mostrarlo u ocultarlo no mueve nada (CLS 0). */
+.chat-scroll { overflow-anchor: none; } /* el hilo decide su propio desplazamiento (useThreadScroll); el ancla automática del navegador lo movía al final al llegar una respuesta larga */
+.chat-jump-slot { position: sticky; bottom: 0; height: 0; overflow: visible; z-index: 1; }
+.chat-jump { position: absolute; right: 0; bottom: .5rem; min-height: var(--cg-touch); padding: 0 .9rem; border: 1.5px solid var(--cg-ink); background: var(--cg-ground); color: var(--cg-ink); font: 600 .95rem var(--cg-font-cond); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.chat-jump:hover { color: var(--cg-mark); border-color: var(--cg-mark); }
+.chat-jump:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }

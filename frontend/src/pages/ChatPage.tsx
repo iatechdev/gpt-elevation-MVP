@@ -15,6 +15,7 @@ import { ChatLimitsNotice } from '../space/ChatLimitsNotice'
 import '../space/space.css' // ES-153: antes lo traía el menú de Mi espacio
 import { useLanguage } from '../i18n/useLanguage'
 import { copy } from '../space/copy'
+import { useThreadScroll } from '../space/useThreadScroll'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || ''
 
@@ -64,7 +65,9 @@ export function ChatPage() {
   const [compassStarted, setCompassStarted] = useState(false)
   useEffect(() => { if (chat.intent) setCompassStarted(true) }, [chat.intent])
   const { messages, busy: sending } = chat
-  const chatEndRef = useRef<HTMLDivElement>(null)
+  // ES-394: el hilo sigue la respuesta si la persona está al final; si subió, aparece «Ir al último mensaje»
+  const scrollRef = useRef<HTMLDivElement>(null); const transcriptRef = useRef<HTMLDivElement>(null)
+  const thread = useThreadScroll(scrollRef, transcriptRef, messages.length, sending, chat.loaded)
 
   // HU-021 — Check-out de ánimo
   const [menuOpen, setMenuOpen] = useState(false)
@@ -101,10 +104,6 @@ export function ChatPage() {
     // HU-051 — Load existing recommendations
     void loadExistingRecs()
   }, [navigate, loadExistingRecs])
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
-  }, [messages, sending])
 
   // ES-373 (O427-2): la pregunta «Si sales, perderás…» (canLeave) se hace ANTES de abrir la despedida, a cualquier ancho; aquí ya no se repite.
   const handleLogout = async () => {
@@ -177,8 +176,8 @@ export function ChatPage() {
           <ChatBar sent={messages.length} menu={<button type="button" className="chat-menu-btn" aria-label={copy[lang].menu} aria-haspopup="dialog" aria-expanded={narrow ? undefined : menuOpen} onClick={event => { if (narrow) requestDrawer(event.currentTarget); else setMenuOpen(true) }}><span aria-hidden="true">☰</span><span className="chat-menu-btn__w" aria-hidden="true">{copy[lang].menu}</span></button>} />
           {compass && <CompassBanner lang={lang} started={compassStarted} canLeave={chat.canLeave} />}
         </div>
-        <div className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
-        <div className="chat-transcript">
+        <div ref={scrollRef} onScroll={thread.onScroll} onWheel={thread.onWheel} onTouchMove={thread.onTouchMove} onKeyDown={thread.onKeyDown} onPointerDown={thread.onPointerDown} className="chat-scroll" role="region" aria-label={copy[lang].conversation} tabIndex={0}>
+        <div ref={transcriptRef} className="chat-transcript">
           {!messages.length && chat.loaded && <p>{t('chat_welcome')}</p>}
           {/* ES-199: cada burbuja se pinta una sola vez; teclear en el cuadro de mensaje ya no vuelve a pintar todo el historial. Solo la última (que lleva el aviso de respuesta cortada) se repinta. */}
           {messages.map((msg, i) => (
@@ -198,8 +197,9 @@ export function ChatPage() {
           <ThreadNotices />
           <ChatStatus chat={chat} />
 
-          <div ref={chatEndRef} />
         </div>
+        {/* ES-394: ranura de alto 0 pegada al borde inferior del hilo (no ocupa espacio ni mueve nada); es una región viva, así que el control se anuncia al aparecer */}
+        <div className="chat-jump-slot" aria-live="polite">{thread.away && messages.length > 0 && <button type="button" className="chat-jump" onClick={thread.jump}><span aria-hidden="true">↓</span> {copy[lang].jumpLatest}</button>}</div>
         </div>
         <div className="chat-input-bar">
           <ChatInput chat={chat} enterSends={enterSends} />
