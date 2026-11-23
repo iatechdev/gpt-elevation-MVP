@@ -154,7 +154,22 @@ jobs:
           ES180_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
           ES216_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
           ES29_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
-        run: npm run test:perf
+        run: |
+          set -o pipefail
+          npm run test:perf 2>&1 | tee "$RUNNER_TEMP/perf.log"
+      # ES-383 (O452-2): un perf en rojo con continue-on-error ya no obliga a abrir el registro: anotacion ::warning:: por cada prueba lenta y tabla en el resumen del job.
+      - name: Resumen de rendimiento (anotaciones y resumen del job)
+        if: always()
+        run: |
+          LOG="$RUNNER_TEMP/perf.log"
+          [ -f "$LOG" ] || { echo '### Rendimiento (test:perf)' >> "$GITHUB_STEP_SUMMARY"; echo 'No hubo registro (el paso previo no llego a ejecutarse).' >> "$GITHUB_STEP_SUMMARY"; exit 0; }
+          SLOW=$(grep -E 'PERF LENTO' "$LOG" | sed -E 's/^[# ]*//' | sort -u || true)
+          OKS=$(grep -cE 'PERF OK' "$LOG" || true)
+          { echo '### Rendimiento (test:perf) - informativo, no bloquea'; echo;
+            echo "Mediciones dentro del techo: ${OKS:-0}";
+            if [ -n "$SLOW" ]; then echo; echo '**Pruebas LENTAS (revisar; no bloquean el PR):**'; echo; echo '```'; echo "$SLOW"; echo '```'; else echo; echo 'Ninguna prueba lenta.'; fi; } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$SLOW" ]; then echo "$SLOW" | while IFS= read -r line; do echo "::warning title=Rendimiento lento (test:perf)::$line"; done; fi
+          if grep -qE '^# fail [1-9]|^not ok' "$LOG"; then echo '::warning title=test:perf fallo::Hay pruebas de rendimiento en rojo (ver el registro del paso anterior); no bloquea el PR.'; fi
 
   data-rights-postgres:
     runs-on: ubuntu-latest
