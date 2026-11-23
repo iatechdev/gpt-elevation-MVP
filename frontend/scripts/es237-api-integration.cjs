@@ -306,6 +306,17 @@ const { once } = require('node:events')
     await cePeer.load(); assert.deepEqual(cePeer.snapshot().plans, []); await fails(api.getPlan(sc_as(await User.findOne({ where: { email: 'client-f@example.invalid' } })), pausedPlan.id), 'not_found', 404); check('3: otra persona no ve el plan (lista vacía) y un id ajeno = 404')
     await screenFails(ce.send({ type: 'notifications', enabled: true }, rid()), 'pending'); await screenFails(ce.send({ type: 'reminder', planId: pausedPlan.id, key: 30, localTime: '2030-01-01T10:00', accepted: true }, rid()), 'pending'); check('3: notificaciones y recordatorios siguen «pending» (sin endpoint de consentimiento ni correo; nada simulado)')
 
+    // ES-398 (F45-1): sin disponibilidad semanal (o sin contexto) el servidor responde 409 con un código de contexto; la pantalla lo dice (needsContext) y, completado el contexto, el experimento se acepta.
+    const bare = await User.create({ name: 'SYNTHETIC client-g', email: 'client-g@example.invalid', password: randomBytes(32).toString('hex'), role: 'user', active: true })
+    await setContext(bare.id, { availabilityMinutesPerWeek: null })
+    const noAvail = make(bare); await noAvail.load(); await noAvail.send({ type: 'constraints', value: formValue }, rid())
+    const noAvailRoute = noAvail.snapshot().routes.find(r => !r.regulated && r.tasks.length); assert.ok(noAvailRoute)
+    await noAvail.send({ type: 'choice', route: noAvailRoute, decision: 'chosen' }, rid())
+    await screenFails(noAvail.send({ type: 'experiment', routeId: noAvailRoute.id, minutes: 20 }, rid()), 'needsContext'); assert.equal((await api.listExperiments(sc_as(bare))).experiments.length, 0)
+    check('4 (ES-398): sin disponibilidad semanal, aceptar el experimento → needsContext (409 availability_unknown), sin crear nada')
+    await setContext(bare.id, { availabilityMinutesPerWeek: 90 })
+    await noAvail.send({ type: 'experiment', routeId: noAvailRoute.id, minutes: 20 }, rid()); assert.equal((await api.listExperiments(sc_as(bare))).experiments.length, 1)
+    check('4 (ES-398): tras completar la disponibilidad, el mismo gesto acepta el experimento (1 fila)')
     // fallos de transporte y de sesión
     const down = make(c, async (input) => { throw new TypeError('sin red') }); await screenFails(down.load(), 'saveError'); check('2b: sin red al leer → no hay un resultado confirmado (saveError)')
     const five = make(c, async (input, init) => init?.method === 'POST' ? new Response('<html>bad gateway</html>', { status: 502 }) : fetch(input, init)); await five.load()

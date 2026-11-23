@@ -11,41 +11,49 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}★☆♡]/u
 let failures = 0, total = 0
 const T = {
   es: { save: /Guardar restricciones/, choose: /Elegir esta ruta/, accept: /Revisar y aceptar experimento/, start: /^Iniciar$/, saveSub: /Guardar entrega/, saveRefl: /Guardar mi reflexión/, saveDec: /Guardar decisión/, obs: 'Observación', interp: 'Interpretación', decision: 'Decisión', reason: 'Razón de tu decisión', cont: 'Continuar', proposePlan: /Proponer plan/, reviewSel: /Revisar selección/, confirmPlan: /Confirmar plan/, selAction: 'Aceptar acción', dateL: 'Fecha elegida', availab: 'Disponibilidad semanal confirmada', planAccepted: 'Plan aceptado', pickExp: 'Experimento', rebase: /Revisar fundamento y empezar otra versión/, co: 'Colombia', esl: 'Español', eng: 'Inglés', remote: 'Remota', hybrid: 'Híbrida', help: 'Ayuda utilizada', none: 'Ninguna', sample: 'Muestra escrita', exp: 'Experimentos', plan: 'Plan', routes: 'Rutas', origin: 'Contexto de origen (opcional)', interests: /Contextos de interés/,
-    needsConstraints: 'Guarda un mercado objetivo', pending: 'El contrato del servicio está pendiente', catalog: 'El catálogo de rutas aún no está disponible', retry: /Reintentar lectura/, expired: 'Tu sesión venció', signIn: 'Entrar', conflict: 'La versión o el fundamento cambió', recover: /Recuperar el estado guardado/, basis: 'Tu experimento necesita revisión', carried: 'De la versión anterior, por revisar', previewText: 'se guardan en tu cuenta', synthetic: 'SINTÉTICO', saved: 'Guardado' },
+    needsConstraints: 'Guarda un mercado objetivo', needsContext: 'Falta información de tu contexto', contextLink: 'Mi contexto', pending: 'El contrato del servicio está pendiente', catalog: 'El catálogo de rutas aún no está disponible', retry: /Reintentar lectura/, expired: 'Tu sesión venció', signIn: 'Entrar', conflict: 'La versión o el fundamento cambió', recover: /Recuperar el estado guardado/, basis: 'Tu experimento necesita revisión', carried: 'De la versión anterior, por revisar', previewText: 'se guardan en tu cuenta', synthetic: 'SINTÉTICO', saved: 'Guardado' },
   en: { save: /Save constraints/, choose: /Choose this route/, accept: /Review and accept experiment/, start: /^Start$/, saveSub: /Save submission/, saveRefl: /Save my reflection/, saveDec: /Save decision/, obs: 'Observation', interp: 'Interpretation', decision: 'Decision', reason: 'Reason for your decision', cont: 'Continue', proposePlan: /Propose plan/, reviewSel: /Review selection/, confirmPlan: /Confirm plan/, selAction: 'Accept action', dateL: 'Chosen date', availab: 'Confirmed weekly availability', planAccepted: 'Accepted plan', pickExp: 'Experiment', rebase: /Review the basis and start a new version/, co: 'Colombia', esl: 'Spanish', eng: 'English', remote: 'Remote', hybrid: 'Hybrid', help: 'Assistance used', none: 'None', sample: 'Written sample', exp: 'Experiments', plan: 'Plan', routes: 'Routes', origin: 'Starting context (optional)', interests: /Contexts of interest/,
-    needsConstraints: 'Save a target market', pending: 'The service contract is pending', catalog: 'The route catalog is not available yet', retry: /Retry loading/, expired: 'Your session expired', signIn: 'Sign in', conflict: 'The version or basis changed', recover: /Retrieve the saved state/, basis: 'Your experiment needs review', carried: 'From the previous version, to review', previewText: 'saved to your account', synthetic: 'SYNTHETIC', saved: 'Saved' } }
-const newPersona = async () => (await fetch(`${API}/__test/persona`, { method: 'POST' })).json()
+    needsConstraints: 'Save a target market', needsContext: 'Some of your context is missing', contextLink: 'My context', pending: 'The service contract is pending', catalog: 'The route catalog is not available yet', retry: /Retry loading/, expired: 'Your session expired', signIn: 'Sign in', conflict: 'The version or basis changed', recover: /Retrieve the saved state/, basis: 'Your experiment needs review', carried: 'From the previous version, to review', previewText: 'saved to your account', synthetic: 'SYNTHETIC', saved: 'Saved' } }
+const newPersona = async (noAvailability = false) => (await fetch(`${API}/__test/persona${noAvailability ? '?noavail=1' : ''}`, { method: 'POST' })).json()
 const catalog = async token => (await fetch(`${API}/api/route-catalog`, { headers: { Authorization: `Bearer ${token}` } })).json()
 const putConstraints = (token, body) => fetch(`${API}/api/routes/constraints`, { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
 const payloadOf = (origin, interest, over = {}) => ({ targetMarkets: ['CO'], languages: ['es'], modalities: ['hybrid', 'remote'], acceptRegulated: 'unknown', originContextKey: origin, interestContextKeys: [interest], preferredModalities: ['remote'], ...over })
+// ES-237 (paso 4): esperar a que la red quede quieta en vez de tiempos fijos (con el equipo cargado, 700–900 ms no alcanzan y el aviso «¿Salir sin guardar?» salta con un guardado en vuelo).
+const settle = async page => { await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(150) }
 let CTX = null
 const labelOf = (key, lang) => CTX.find(c => c.contextKey === key).labels[lang]
 async function saveConstraints(page, x, lang) {
   await page.getByLabel(x.co, { exact: true }).first().check(); await page.getByLabel(x.esl, { exact: true }).first().check(); await page.getByLabel(x.remote, { exact: true }).first().check()
   await page.getByLabel(x.origin).selectOption({ label: labelOf('ctx_educacion_formacion', lang) })
   await page.getByRole('group', { name: x.interests }).getByLabel(labelOf('ctx_contabilidad_analisis', lang), { exact: true }).check()
-  await page.getByRole('button', { name: x.save }).click(); await page.waitForTimeout(700)
+  await page.getByRole('button', { name: x.save }).click(); await settle(page)
 }
 async function scene(browser, { lang, width, scheme, name, confirmDelay = 0, cpu = 1, reject = false }) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme, reducedMotion: 'reduce' }); const page = await ctx.newPage(); const x = T[lang], extra = {}
   if (cpu > 1) { const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpu }) }
   if (reject) await page.route('**/api/career-plan/versions', async route => { if (route.request().method() === 'POST') { await new Promise(resolve => setTimeout(resolve, 700)); return route.fulfill({ status: 422, json: { error: 'needs_scope_reduction' } }) } await route.continue() }) // el servidor rechaza al aceptar
   if (confirmDelay) await page.route('**/api/career-plan/versions', async route => { if (route.request().method() === 'POST') await new Promise(resolve => setTimeout(resolve, confirmDelay)); await route.continue() }) // servidor lento solo al aceptar el plan
-  const person = await newPersona(); if (!CTX && PHASE === 'main') CTX = (await catalog(person.token)).contexts
+  const person = await newPersona(name === 'sin-disponibilidad'); if (!CTX && PHASE === 'main') CTX = (await catalog(person.token)).contexts
   await page.addInitScript(([l, token]) => { localStorage.setItem('elevation_token', token); localStorage.setItem('elevation_role', 'user'); localStorage.setItem('elv_lang', l); window.__cls = 0; new PerformanceObserver(list => { for (const e of list.getEntries()) if (!e.hadRecentInput) { window.__cls += e.value; (window.__src = window.__src || []).push(...e.sources.map(x => `${x.node && (x.node.nodeName + '.' + (x.node.className || '').toString().slice(0, 30))}:${Math.round(x.previousRect.y)}→${Math.round(x.currentRect.y)} h${Math.round(x.previousRect.height)}→${Math.round(x.currentRect.height)}`)) } }).observe({ type: 'layout-shift', buffered: true }) }, [lang, person.token])
   if (name === 'sesion-vencida') await page.route('**/api/routes', route => route.fulfill({ status: 401, json: { error: 'x' } }))
-  const go = async path => { await page.goto(BASE + path, { waitUntil: 'networkidle' }); await page.waitForTimeout(500) }
-  const link = async label => { await page.getByRole('navigation', { name: /Mi siguiente paso|My next step/ }).getByRole('link', { name: label, exact: true }).click(); await page.waitForTimeout(400) }
-  const choose = async () => { // elige la primera ruta cuyo botón «aceptar experimento» queda habilitado (una regulada no lo permite)
+  const go = async path => { await page.goto(BASE + path, { waitUntil: 'networkidle' }); await settle(page) }
+  const link = async label => { await page.getByRole('navigation', { name: /Mi siguiente paso|My next step/ }).getByRole('link', { name: label, exact: true }).click(); await settle(page) }
+  const choose = async () => { // elige la primera ruta cuyo botón «aceptar experimento» queda habilitado (una regulada no lo permite). Las rutas se identifican por su título: al elegir una, su tarjeta cambia y deja de ser «la n-ésima con Elegir».
     const cards = page.locator('article.pg-card').filter({ has: page.getByRole('button', { name: x.choose }) })
-    for (let i = 0; i < await cards.count(); i++) { await cards.nth(i).getByRole('button', { name: x.choose }).click(); await page.waitForTimeout(700); const accept = cards.nth(i).getByRole('button', { name: x.accept }); if (await accept.count() && await accept.isEnabled()) { extra.card = i; return accept } }
+    await cards.first().waitFor({ timeout: 15000 }); const titles = (await cards.locator('h3').allTextContents()).map(t => t.trim())
+    for (const [i, title] of titles.entries()) {
+      const card = page.locator('article.pg-card').filter({ has: page.getByRole('heading', { name: title, exact: true }) })
+      await card.getByRole('button', { name: x.choose }).click(); await settle(page)
+      const accept = card.getByRole('button', { name: x.accept }); await accept.waitFor({ timeout: 5000 }).catch(() => {})
+      if (await accept.count() && await accept.isEnabled()) { extra.card = i; return accept }
+    }
     throw new Error('ninguna ruta permite aceptar el experimento')
   }
   const toExperiment = async () => {
     await go('/app/next-step'); await saveConstraints(page, x, lang)
-    const accept = await choose(); await accept.click(); await page.waitForTimeout(900)
-    await page.getByRole('button', { name: x.start }).click(); await page.waitForTimeout(700)
-    await page.getByLabel(x.sample).fill('Texto de ejemplo'); await page.getByLabel(x.help).selectOption({ label: x.none }); await page.getByRole('button', { name: x.saveSub }).click(); await page.waitForTimeout(800)
+    const accept = await choose(); await accept.click(); await settle(page)
+    await page.getByRole('button', { name: x.start }).click(); await settle(page)
+    await page.getByLabel(x.sample).fill('Texto de ejemplo'); await page.getByLabel(x.help).selectOption({ label: x.none }); await page.getByRole('button', { name: x.saveSub }).click(); await settle(page)
   }
   if (name === 'catalogo' || name === 'rutas-vacio' || name === 'sesion-vencida') await go('/app/next-step')
   if (name === 'rutas') { await go('/app/next-step'); await saveConstraints(page, x, lang) }
@@ -53,27 +61,31 @@ async function scene(browser, { lang, width, scheme, name, confirmDelay = 0, cpu
   if (name === 'experimento') await toExperiment()
   if (name === 'plan') {
     await toExperiment()
-    await page.getByLabel(x.obs).fill('Observé algo'); await page.getByLabel(x.interp).fill('Interpreté algo'); await page.getByRole('button', { name: x.saveRefl }).click(); await page.waitForTimeout(800)
-    await page.getByLabel(x.decision, { exact: true }).selectOption({ label: x.cont }); await page.getByLabel(x.reason).fill('Seguir con esto'); await page.getByRole('button', { name: x.saveDec }).click(); await page.waitForTimeout(800)
-    await link(x.plan); await page.getByLabel(x.pickExp, { exact: true }).selectOption({ index: 1 }); await page.getByRole('button', { name: x.proposePlan }).click(); await page.waitForTimeout(900)
+    await page.getByLabel(x.obs).fill('Observé algo'); await page.getByLabel(x.interp).fill('Interpreté algo'); await page.getByRole('button', { name: x.saveRefl }).click(); await settle(page)
+    await page.getByLabel(x.decision, { exact: true }).selectOption({ label: x.cont }); await page.getByLabel(x.reason).fill('Seguir con esto'); await page.getByRole('button', { name: x.saveDec }).click(); await settle(page)
+    await link(x.plan); await page.getByLabel(x.pickExp, { exact: true }).selectOption({ index: 1 }); await page.getByRole('button', { name: x.proposePlan }).click(); await settle(page)
     extra.availability = await page.getByText(x.availab).count()
     await page.getByLabel(x.selAction).first().check(); await page.getByLabel(x.dateL).first().fill(new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10))
-    await page.getByRole('button', { name: x.reviewSel }).click(); await page.waitForTimeout(400); await page.evaluate(() => { window.__cls = 0; window.__src = [] }); if (process.env.CLS_SRC === '1') console.log('  antes:', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('main section.cg-card, main article.cg-card')].map(e => `${e.tagName}:${e.querySelector('h3')?.textContent?.slice(0, 20)}:y${Math.round(e.getBoundingClientRect().y + scrollY)} h${Math.round(e.getBoundingClientRect().height)}`)))); await page.getByRole('button', { name: x.confirmPlan }).click(); await page.waitForTimeout(150); extra.waitingText = await page.evaluate(() => document.querySelector('article.cg-card')?.innerText ?? '') /* E377-5: lo que se afirma mientras se espera */; extra.waitingOption = await page.evaluate(() => [...document.querySelectorAll('main select option')].map(o => o.textContent).join(' | ')); if (process.env.CLS_SRC === '1') { console.log('  esperando:', await await page.evaluate(() => [...document.querySelector('article.cg-card').querySelectorAll(':scope > *, :scope form > *, :scope form fieldset > *')].map(e => e.tagName + '.' + (e.className||'').toString().slice(0,15) + ':' + Math.round(e.getBoundingClientRect().height)).join(' '))) } await page.waitForTimeout(1000 + confirmDelay); if (process.env.CLS_SRC === '1') console.log('  final:', await await page.evaluate(() => [...document.querySelector('article.cg-card').querySelectorAll(':scope > *, :scope form > *, :scope form fieldset > *')].map(e => e.tagName + '.' + (e.className||'').toString().slice(0,15) + ':' + Math.round(e.getBoundingClientRect().height)).join(' '))); extra.confirmCls = await page.evaluate(() => window.__cls); if (process.env.CLS_SRC === '1') console.log('  después:', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('main section.cg-card, main article.cg-card')].map(e => `${e.tagName}:${e.querySelector('h3')?.textContent?.slice(0, 20)}:y${Math.round(e.getBoundingClientRect().y + scrollY)} h${Math.round(e.getBoundingClientRect().height)}`)))); if (process.env.CLS_SRC === '1') console.log('  fuentes:', JSON.stringify(await page.evaluate(() => window.__src)))
+    await page.getByRole('button', { name: x.reviewSel }).click(); await settle(page); await page.evaluate(() => { window.__cls = 0; window.__src = [] }); if (process.env.CLS_SRC === '1') console.log('  antes:', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('main section.cg-card, main article.cg-card')].map(e => `${e.tagName}:${e.querySelector('h3')?.textContent?.slice(0, 20)}:y${Math.round(e.getBoundingClientRect().y + scrollY)} h${Math.round(e.getBoundingClientRect().height)}`)))); await page.getByRole('button', { name: x.confirmPlan }).click(); await settle(page); extra.waitingText = await page.evaluate(() => document.querySelector('article.cg-card')?.innerText ?? '') /* E377-5: lo que se afirma mientras se espera */; extra.waitingOption = await page.evaluate(() => [...document.querySelectorAll('main select option')].map(o => o.textContent).join(' | ')); if (process.env.CLS_SRC === '1') { console.log('  esperando:', await await page.evaluate(() => [...document.querySelector('article.cg-card').querySelectorAll(':scope > *, :scope form > *, :scope form fieldset > *')].map(e => e.tagName + '.' + (e.className||'').toString().slice(0,15) + ':' + Math.round(e.getBoundingClientRect().height)).join(' '))) } await page.waitForTimeout(1000 + confirmDelay); if (process.env.CLS_SRC === '1') console.log('  final:', await await page.evaluate(() => [...document.querySelector('article.cg-card').querySelectorAll(':scope > *, :scope form > *, :scope form fieldset > *')].map(e => e.tagName + '.' + (e.className||'').toString().slice(0,15) + ':' + Math.round(e.getBoundingClientRect().height)).join(' '))); extra.confirmCls = await page.evaluate(() => window.__cls); if (process.env.CLS_SRC === '1') console.log('  después:', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('main section.cg-card, main article.cg-card')].map(e => `${e.tagName}:${e.querySelector('h3')?.textContent?.slice(0, 20)}:y${Math.round(e.getBoundingClientRect().y + scrollY)} h${Math.round(e.getBoundingClientRect().height)}`)))); if (process.env.CLS_SRC === '1') console.log('  fuentes:', JSON.stringify(await page.evaluate(() => window.__src)))
   }
   if (name === 'cambio-de-base') {
     await toExperiment(); await link(x.routes)
-    await page.getByLabel(x.eng, { exact: true }).first().check(); await page.getByRole('button', { name: x.save }).click(); await page.waitForTimeout(800)
-    await link(x.exp); await page.getByRole('button', { name: /^(Abrir|Open)$/ }).first().click(); await page.waitForTimeout(900)
+    await page.getByLabel(x.eng, { exact: true }).first().check(); await page.getByRole('button', { name: x.save }).click(); await settle(page)
+    await link(x.exp); await page.getByRole('button', { name: /^(Abrir|Open)$/ }).first().click(); await settle(page)
     extra.notice = await page.getByText(x.basis).count()
-    await page.getByRole('button', { name: x.rebase }).click(); await page.waitForTimeout(900)
+    await page.getByRole('button', { name: x.rebase }).click(); await settle(page)
   }
   if (name === 'conflicto') { // otra pestaña (otro dispositivo) guarda primero: la pantalla conserva lo escrito y no pisa lo guardado
     await go('/app/next-step'); await page.getByLabel(x.co, { exact: true }).first().check(); await page.getByLabel(x.esl, { exact: true }).first().check()
     const first = await putConstraints(person.token, { requestId: 'otra-pestana-0001', baseVersion: 0, payload: payloadOf('ctx_educacion_formacion', 'ctx_contabilidad_analisis') }); extra.firstStatus = first.status
-    await page.getByLabel(x.remote, { exact: true }).first().check(); await page.getByRole('button', { name: x.save }).click(); await page.waitForTimeout(900)
+    await page.getByLabel(x.remote, { exact: true }).first().check(); await page.getByRole('button', { name: x.save }).click(); await settle(page)
     extra.typed = await page.getByLabel(x.co, { exact: true }).first().isChecked() && await page.getByLabel(x.remote, { exact: true }).first().isChecked()
   }
-  await page.waitForTimeout(250)
+  if (name === 'sin-disponibilidad') { // ES-398: sin disponibilidad semanal, aceptar el experimento dice qué falta y lleva a «Mi contexto»; no queda bloqueado
+    await go('/app/next-step'); await saveConstraints(page, x, lang); const accept = await choose(); await accept.click(); await settle(page)
+    await page.getByRole('link', { name: x.contextLink, exact: true }).waitFor({ timeout: 10000 }).catch(() => {}); await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]'), null, { timeout: 10000 }).catch(() => {}); extra.stillEnabled = await accept.isEnabled().catch(() => false); extra.choose = choose
+  }
+  await settle(page)
   return { ctx, page, x, extra, person }
 }
 const checksFor = async (name, page, x, extra, lang, person) => {
@@ -86,6 +98,14 @@ const checksFor = async (name, page, x, extra, lang, person) => {
     const cards = await page.locator('article.pg-card').count(); want('hay rutas reales del servidor', cards >= 1)
     const chips = await page.locator('.cg-chip').allInnerTexts(); want('chip «sintética» solo en rutas marcadas por el servidor', chips.every(c => /SINT|SYNTH/i.test(c) || true) && chips.length === cards)
     want('«Guardado» tras guardar', has(x.saved)); want('sin ejemplo del simulador (example.org/synthetic)', !(await page.locator('a[href*="example.org/synthetic"]').count()))
+  }
+  if (name === 'sin-disponibilidad') {
+    const link = page.getByRole('link', { name: x.contextLink, exact: true })
+    want('aviso de contexto incompleto (no «versión o fundamento cambió»)', has(x.needsContext) && !has(x.conflict)); want('un enlace «Mi contexto» a /app/onboarding', await link.count() === 1 && (await link.getAttribute('href')) === '/app/onboarding')
+    want('sin botón «Recuperar» y la pantalla no queda bloqueada (se puede volver a aceptar)', !(await page.getByRole('button', { name: x.recover }).count()) && extra.stillEnabled)
+    await link.focus(); want('el enlace recibe el foco por teclado', await link.evaluate(el => el === document.activeElement)); await page.keyboard.press('Enter'); await settle(page); want('Enter navega a Mi contexto', page.url().includes('/app/onboarding'))
+    await fetch(`${API}/__test/disponibilidad?userId=${person.userId}`, { method: 'POST' }); await page.goto(BASE + '/app/next-step', { waitUntil: 'networkidle' }); await settle(page)
+    const again = page.getByRole('button', { name: x.accept }).first(); await again.waitFor({ timeout: 8000 }).catch(() => {}); await again.click().catch(() => {}); await settle(page); await page.getByRole('button', { name: x.start }).waitFor({ timeout: 10000 }).catch(() => {}); want('tras completar la disponibilidad, el experimento se acepta', await page.getByRole('button', { name: x.start }).count() > 0)
   }
   if (name === 'catalogo') { want('503 catalog_unavailable = texto aprobado', has(x.catalog)); want('botón Reintentar lectura', await page.getByRole('button', { name: x.retry }).count() > 0) }
   if (name === 'plan-vacio') want('sin experimentos: plan vacío; los recordatorios «pendientes»', has(x.pending))
@@ -105,7 +125,7 @@ const checksFor = async (name, page, x, extra, lang, person) => {
 }
 ;(async () => {
   const browser = await chromium.launch()
-  const SCENES = PHASE === 'nocatalog' ? ['catalogo'] : ['rutas-vacio', 'rutas', 'experimento', 'cambio-de-base', 'plan-vacio', 'plan', 'sesion-vencida', 'conflicto']
+  const SCENES = PHASE === 'nocatalog' ? ['catalogo'] : ['rutas-vacio', 'rutas', 'experimento', 'cambio-de-base', 'plan-vacio', 'plan', 'sesion-vencida', 'conflicto', 'sin-disponibilidad']
   for (const name of process.env.ONLY_CLS === '1' || process.env.CLS_CONFIRM === '1' || process.env.CONFIRM_REJECT === '1' ? [] : (process.env.ONLY ? process.env.ONLY.split(',') : SCENES)) for (const lang of ['es', 'en']) for (const width of [390, 1360, 320]) for (const scheme of ['light', 'dark']) {
     total++
     let s
